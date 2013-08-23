@@ -78,24 +78,24 @@ class DLLSYMBOL MeshObject
     void reserve_vertices(const size_t count);
     size_t push_vertex(const GVector3& vertex);
     size_t get_vertex_count() const;
-    GVector3 get_vertex(const size_t index) const;
+    const GVector3& get_vertex(const size_t index) const;
 
     // Insert and access vertex normals.
     void reserve_vertex_normals(const size_t count);
     size_t push_vertex_normal(const GVector3& normal);
     size_t get_vertex_normal_count() const;
-    GVector3 get_vertex_normal(const size_t index) const;
+    const GVector3& get_vertex_normal(const size_t index) const;
 
     // Insert and access texture coordinates.
     size_t push_tex_coords(const GVector2& tex_coords);
     size_t get_tex_coords_count() const;
-    GVector2 get_tex_coords(const size_t index) const;
+    const GVector2& get_tex_coords(const size_t index) const;
 
     // Insert and access triangles.
     void reserve_triangles(const size_t count);
     size_t push_triangle(const Triangle& triangle);
     size_t get_triangle_count() const;
-    Triangle get_triangle(const size_t index) const;
+    const Triangle& get_triangle(const size_t index) const;
 
     // Set/get the number of motion segments (the number of motion vectors per vertex).
     void set_motion_segment_count(const size_t count);
@@ -113,6 +113,9 @@ class DLLSYMBOL MeshObject
     GVector3 get_vertex_pose(
         const size_t    vertex_index,
         const size_t    motion_segment_index) const;
+
+    // Remove all vertex poses.
+    void clear_vertex_poses();
 
     // Insert and access material slots.
     void reserve_material_slots(const size_t count);

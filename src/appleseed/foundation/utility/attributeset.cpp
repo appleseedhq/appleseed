@@ -64,6 +64,15 @@ AttributeSet::ChannelID AttributeSet::create_channel(
     return m_channels.size() - 1;
 }
 
+void AttributeSet::delete_channel(const ChannelID channel_id)
+{
+    assert(channel_id < m_channels.size());
+
+    delete m_channels[channel_id];
+
+    m_channels.erase(m_channels.begin() + channel_id);
+}
+
 AttributeSet::ChannelID AttributeSet::find_channel(const char* name) const
 {
     assert(name);

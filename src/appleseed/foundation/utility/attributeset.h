@@ -64,6 +64,9 @@ class AttributeSet
         const NumericTypeID type,
         const size_t        dimension);
 
+    // Delete an existing channel.
+    void delete_channel(const ChannelID channel_id);
+
     // Find a given attribute channel. Return InvalidChannelID if
     // the requested channel does not exist. Since this method is
     // typically called with a literal value in argument ("uv"),
@@ -72,8 +75,7 @@ class AttributeSet
     ChannelID find_channel(const char* name) const;
 
     // Return the number of attributes in a given attribute channel.
-    size_t get_attribute_count(
-        const ChannelID     channel_id) const;
+    size_t get_attribute_count(const ChannelID channel_id) const;
 
     // Insert a new attribute at the end of a given attribute channel.
     // Return the index of the attribute in the attribute channel.
@@ -114,8 +116,7 @@ class AttributeSet
 // AttributeSet class implementation.
 //
 
-inline size_t AttributeSet::get_attribute_count(
-    const ChannelID         channel_id) const
+inline size_t AttributeSet::get_attribute_count(const ChannelID channel_id) const
 {
     // Get the channel descriptor.
     assert(channel_id < m_channels.size());
