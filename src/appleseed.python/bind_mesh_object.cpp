@@ -140,7 +140,7 @@ void bind_mesh_object()
 
         .def("push_tex_coords", &MeshObject::push_tex_coords)
         .def("get_tex_coords_count", &MeshObject::get_tex_coords_count)
-        .def("get_tex_coords", &MeshObject::get_tex_coords, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("get_tex_coords", &MeshObject::get_tex_coords)
 
         .def("reserve_triangles", &MeshObject::reserve_triangles)
         .def("push_triangle", &MeshObject::push_triangle)
