@@ -31,7 +31,7 @@
 # CMake configuration.
 #--------------------------------------------------------------------------------------------------
 
-cmake_minimum_required (VERSION 2.8 FATAL_ERROR)
+cmake_minimum_required (VERSION 2.8.8 FATAL_ERROR)
 
 cmake_policy (SET CMP0008 NEW)  # libraries linked by full-path must have a valid library file name
 
