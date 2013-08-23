@@ -331,6 +331,8 @@ namespace
         struct SortedEntityVector
           : public vector<typename Collection::value_type*>
         {
+            typedef vector<typename Collection::value_type*> Base;
+
             struct EntitySortingPredicate
             {
                 bool operator()(const Entity* lhs, const Entity* rhs) const
@@ -344,9 +346,9 @@ namespace
                 reserve(collection.size());
 
                 for (each<Collection> i = collection; i; ++i)
-                    push_back(&*i);
+                    Base::push_back(&*i);
 
-                sort(begin(), end(), EntitySortingPredicate());
+                sort(Base::begin(), Base::end(), EntitySortingPredicate());
             }
         };
 
