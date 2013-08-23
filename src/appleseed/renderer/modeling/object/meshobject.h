@@ -89,7 +89,7 @@ class DLLSYMBOL MeshObject
     // Insert and access texture coordinates.
     size_t push_tex_coords(const GVector2& tex_coords);
     size_t get_tex_coords_count() const;
-    const GVector2& get_tex_coords(const size_t index) const;
+    GVector2 get_tex_coords(const size_t index) const;
 
     // Insert and access triangles.
     void reserve_triangles(const size_t count);

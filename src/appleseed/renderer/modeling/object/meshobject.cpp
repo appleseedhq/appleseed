@@ -183,7 +183,7 @@ size_t MeshObject::get_tex_coords_count() const
     return impl->m_tess.get_uv_vertex_count();
 }
 
-const GVector2& MeshObject::get_tex_coords(const size_t index) const
+GVector2 MeshObject::get_tex_coords(const size_t index) const
 {
     return impl->m_tess.get_uv_vertex(index);
 }
