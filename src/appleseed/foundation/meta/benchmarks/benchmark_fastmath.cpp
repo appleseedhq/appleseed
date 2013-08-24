@@ -85,14 +85,6 @@ BENCHMARK_SUITE(Foundation_Math_FastMath)
             m_output[i] = faster_pow2(m_output[i]);
     }
 
-    BENCHMARK_CASE_F(ScalarOldFastPow2, Fixture)
-    {
-        memcpy(m_output, m_values, N * sizeof(float));
-
-        for (size_t i = 0; i < N; ++i)
-            m_output[i] = old_fast_pow2(m_output[i]);
-    }
-
     // Log2(x).
 
     BENCHMARK_CASE_F(ScalarFastLog2, Fixture)
@@ -109,22 +101,6 @@ BENCHMARK_SUITE(Foundation_Math_FastMath)
 
         for (size_t i = 0; i < N; ++i)
             m_output[i] = faster_log2(m_output[i]);
-    }
-
-    BENCHMARK_CASE_F(ScalarOldFastLog2, Fixture)
-    {
-        memcpy(m_output, m_values, N * sizeof(float));
-
-        for (size_t i = 0; i < N; ++i)
-            m_output[i] = old_fast_log2(m_output[i]);
-    }
-
-    BENCHMARK_CASE_F(ScalarOldFastLog2Refined, Fixture)
-    {
-        memcpy(m_output, m_values, N * sizeof(float));
-
-        for (size_t i = 0; i < N; ++i)
-            m_output[i] = old_fast_log2_refined(m_output[i]);
     }
 
     // Pow(x).
@@ -151,22 +127,6 @@ BENCHMARK_SUITE(Foundation_Math_FastMath)
 
         for (size_t i = 0; i < N; ++i)
             m_output[i] = faster_pow(m_output[i], Exponent);
-    }
-
-    BENCHMARK_CASE_F(ScalarOldFastPow, Fixture)
-    {
-        memcpy(m_output, m_values, N * sizeof(float));
-
-        for (size_t i = 0; i < N; ++i)
-            m_output[i] = old_fast_pow(m_output[i], Exponent);
-    }
-
-    BENCHMARK_CASE_F(ScalarOldFastPowRefined, Fixture)
-    {
-        memcpy(m_output, m_values, N * sizeof(float));
-
-        for (size_t i = 0; i < N; ++i)
-            m_output[i] = old_fast_pow_refined(m_output[i], Exponent);
     }
 
     BENCHMARK_CASE_F(VectorOldFastPow, Fixture)
@@ -235,13 +195,5 @@ BENCHMARK_SUITE(Foundation_Math_FastMath)
 
         for (size_t i = 0; i < N; ++i)
             m_output[i] = faster_exp(m_output[i]);
-    }
-
-    BENCHMARK_CASE_F(ScalarOldFastExp, Fixture)
-    {
-        memcpy(m_output, m_values, N * sizeof(float));
-
-        for (size_t i = 0; i < N; ++i)
-            m_output[i] = old_fast_exp(m_output[i]);
     }
 }

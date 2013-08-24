@@ -125,19 +125,14 @@ namespace foundation
 // Fast approximation of 2^p.
 float fast_pow2(const float p);
 float faster_pow2(const float p);
-float old_fast_pow2(const float x);
 
 // Fast approximation of the base-2 logarithm.
 float fast_log2(const float x);
 float faster_log2(const float x);
-float old_fast_log2(const float x);
-float old_fast_log2_refined(const float x);
 
 // Fast approximation of x^p.
 float fast_pow(const float x, const float p);
 float faster_pow(const float x, const float p);
-float old_fast_pow(const float a, const float b);
-float old_fast_pow_refined(const float a, const float b);
 void old_fast_pow(float a[4], const float b);           // a must be 16-byte aligned if APPLESEED_FOUNDATION_USE_SSE is defined
 void old_fast_pow_refined(float a[4], const float b);   // a must be 16-byte aligned if APPLESEED_FOUNDATION_USE_SSE is defined
 
@@ -148,7 +143,6 @@ float faster_log(const float x);
 // Fast approximation of e^p.
 float fast_exp(const float p);
 float faster_exp(const float p);
-float old_fast_exp(const float x);
 
 // Fast approximation of the square root.
 float fast_sqrt(const float x);
@@ -182,17 +176,9 @@ inline float faster_pow2(const float p)
     return v.f;
 }
 
-inline float old_fast_pow2(const float x)
-{
-    float y = x - std::floor(x);
-    y = (y - y * y) * 0.33971f;
-    float z = x + 127.0f - y;
-    z *= 8388608.0f;                            // z *= 2 ^ 23
-    return binary_cast<float>(static_cast<int32>(z));
-}
-
 inline float fast_log2(const float x)
 {
+    assert(x > 0.0f);
     union { float f; uint32 i; } vx = { x };
     union { uint32 i; float f; } mx = { (vx.i & 0x007FFFFF) | 0x3f000000 };
     float y = static_cast<float>(vx.i);
@@ -204,30 +190,11 @@ inline float fast_log2(const float x)
 
 inline float faster_log2(const float x)
 {
+    assert(x > 0.0f);
     union { float f; uint32 i; } vx = { x };
     float y = static_cast<float>(vx.i);
     y *= 1.1920928955078125e-7f;
     return y - 126.94269504f;
-}
-
-inline float old_fast_log2(const float x)
-{
-    assert(x > 0.0f);
-    float y = static_cast<float>(binary_cast<int32>(x));
-    y *= 0.1192092896e-6f;                      // y *= 2 ^ (-23)
-    y -= 127.0f;
-    return y;
-}
-
-inline float old_fast_log2_refined(const float x)
-{
-    assert(x > 0.0f);
-    float y = static_cast<float>(binary_cast<int32>(x));
-    y *= 0.1192092896e-6f;                      // y *= 2 ^ (-23)
-    y -= 127.0f;
-    float z = y - std::floor(y);
-    z = (z - z * z) * 0.346607f;
-    return y + z;
 }
 
 inline float fast_pow(const float x, const float p)
@@ -238,18 +205,6 @@ inline float fast_pow(const float x, const float p)
 inline float faster_pow(const float x, const float p)
 {
     return faster_pow2(p * faster_log2(x));
-}
-
-inline float old_fast_pow(const float a, const float b)
-{
-    assert(a >= 0.0f);
-    return a > 0.0f ? old_fast_pow2(b * old_fast_log2(a)) : 0.0f;
-}
-
-inline float old_fast_pow_refined(const float a, const float b)
-{
-    assert(a >= 0.0f);
-    return a > 0.0f ? old_fast_pow2(b * old_fast_log2_refined(a)) : 0.0f;
 }
 
 #ifdef APPLESEED_FOUNDATION_USE_SSE
@@ -305,18 +260,18 @@ inline void old_fast_pow_refined(float a[4], const float b)
 
 inline void old_fast_pow(float a[4], const float b)
 {
-    a[0] = old_fast_pow(a[0], b);
-    a[1] = old_fast_pow(a[1], b);
-    a[2] = old_fast_pow(a[2], b);
-    a[3] = old_fast_pow(a[3], b);
+    a[0] = fast_pow(a[0], b);
+    a[1] = fast_pow(a[1], b);
+    a[2] = fast_pow(a[2], b);
+    a[3] = fast_pow(a[3], b);
 }
 
 inline void old_fast_pow_refined(float a[4], const float b)
 {
-    a[0] = old_fast_pow_refined(a[0], b);
-    a[1] = old_fast_pow_refined(a[1], b);
-    a[2] = old_fast_pow_refined(a[2], b);
-    a[3] = old_fast_pow_refined(a[3], b);
+    a[0] = fast_pow(a[0], b);
+    a[1] = fast_pow(a[1], b);
+    a[2] = fast_pow(a[2], b);
+    a[3] = fast_pow(a[3], b);
 }
 
 #endif  // APPLESEED_FOUNDATION_USE_SSE
@@ -329,6 +284,7 @@ inline float fast_log(const float x)
 inline float faster_log(const float x)
 {
     // What follows is the inlined version of 0.69314718f * faster_log2(x).
+    assert(x > 0.0f);
     union { float f; uint32 i; } vx = { x };
     float y = static_cast<float>(vx.i);
     y *= 8.2629582881927490e-8f;
@@ -343,11 +299,6 @@ inline float fast_exp(const float p)
 inline float faster_exp(const float p)
 {
     return faster_pow2(1.442695040f * p);
-}
-
-inline float old_fast_exp(const float x)
-{
-    return old_fast_pow2(x * 1.442695f);        // 2 ^ (x / ln(2))
 }
 
 inline float fast_sqrt(const float x)

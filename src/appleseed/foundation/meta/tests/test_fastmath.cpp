@@ -194,9 +194,8 @@ TEST_SUITE(Foundation_Math_FastMath)
         const FuncDef<float (*)(float)> functions[] =
         {
             { "scalar_std_pow2", "std::pow[2]", "black", scalar_std_pow2 },
-            { "scalar_fast_pow2", "foundation::fast_pow2", "red", fast_pow2 },
-            { "scalar_faster_pow2", "foundation::faster_pow2", "green", faster_pow2 },
-            { "scalar_old_fast_pow2", "foundation::old_fast_pow2", "blue", old_fast_pow2 }
+            { "scalar_fast_pow2", "foundation::fast_pow2", "green", fast_pow2 },
+            { "scalar_faster_pow2", "foundation::faster_pow2", "red", faster_pow2 }
         };
 
         plot_functions(
@@ -220,10 +219,8 @@ TEST_SUITE(Foundation_Math_FastMath)
         const FuncDef<float (*)(float)> functions[] =
         {
             { "scalar_std_log2", "std::log[2]", "black", scalar_std_log2 },
-            { "scalar_fast_log2", "foundation::fast_log2", "red", fast_log2 },
-            { "scalar_faster_log2", "foundation::faster_log2", "green", faster_log2 },
-            { "scalar_old_fast_log2", "foundation::old_fast_log2", "blue", old_fast_log2 },
-            { "scalar_old_fast_log2_refined", "foundation::old_fast_log2_refined", "yellow", old_fast_log2_refined }
+            { "scalar_fast_log2", "foundation::fast_log2", "green", fast_log2 },
+            { "scalar_faster_log2", "foundation::faster_log2", "red", faster_log2 }
         };
 
         plot_functions(
@@ -252,16 +249,6 @@ TEST_SUITE(Foundation_Math_FastMath)
     float scalar_faster_pow(const float x)
     {
         return faster_pow(x, Exponent);
-    }
-
-    float scalar_old_fast_pow(const float x)
-    {
-        return old_fast_pow(x, Exponent);
-    }
-
-    float scalar_old_fast_pow_refined(const float x)
-    {
-        return old_fast_pow_refined(x, Exponent);
     }
 
     void vector_std_pow(float x[4])
@@ -308,19 +295,6 @@ TEST_SUITE(Foundation_Math_FastMath)
         EXPECT_LT(0.0003f, error);
     }
 
-    TEST_CASE(ScalarOldFastPowRefined)
-    {
-        const float error =
-            compute_max_relative_error(
-                scalar_std_pow,
-                scalar_old_fast_pow_refined,
-                0.0f,
-                1.0f,
-                1000);
-
-        EXPECT_LT(0.016f, error);
-    }
-
     TEST_CASE(VectorOldFastPow)
     {
         const float error =
@@ -352,10 +326,8 @@ TEST_SUITE(Foundation_Math_FastMath)
         const FuncDef<float (*)(float)> functions[] =
         {
             { "scalar_std_pow", "std::pow", "black", scalar_std_pow },
-            { "scalar_fast_pow", "foundation::fast_pow", "red", scalar_fast_pow },
-            { "scalar_faster_pow", "foundation::faster_pow", "green", scalar_faster_pow },
-            { "scalar_old_fast_pow", "foundation::old_fast_pow (scalar)", "blue", scalar_old_fast_pow },
-            { "scalar_old_fast_pow_refined", "foundation::old_fast_pow_refined (scalar)", "yellow", scalar_old_fast_pow_refined }
+            { "scalar_fast_pow", "foundation::fast_pow", "green", scalar_fast_pow },
+            { "scalar_faster_pow", "foundation::faster_pow", "red", scalar_faster_pow }
         };
 
         plot_functions(
@@ -374,8 +346,8 @@ TEST_SUITE(Foundation_Math_FastMath)
         const FuncDef<float (*)(float)> functions[] =
         {
             { "scalar_std_log", "std::log", "black", log },
-            { "scalar_fast_log", "foundation::fast_log", "red", fast_log },
-            { "scalar_faster_log", "foundation::faster_log", "green", faster_log }
+            { "scalar_fast_log", "foundation::fast_log", "green", fast_log },
+            { "scalar_faster_log", "foundation::faster_log", "red", faster_log }
         };
 
         plot_functions(
@@ -394,9 +366,8 @@ TEST_SUITE(Foundation_Math_FastMath)
         const FuncDef<float (*)(float)> functions[] =
         {
             { "scalar_std_exp", "std::exp", "black", exp },
-            { "scalar_fast_exp", "foundation::fast_exp", "red", fast_exp },
-            { "scalar_faster_exp", "foundation::faster_exp", "green", faster_exp },
-            { "scalar_old_fast_exp", "foundation::old_fast_exp", "blue", old_fast_exp }
+            { "scalar_fast_exp", "foundation::fast_exp", "green", fast_exp },
+            { "scalar_faster_exp", "foundation::faster_exp", "red", faster_exp }
         };
 
         plot_functions(
