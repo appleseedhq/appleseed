@@ -34,6 +34,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/platform/compiler.h"
 
 // Standard headers.
 #include <cassert>
@@ -165,13 +166,13 @@ inline SpectrumStack& SpectrumStack::operator/=(const float rhs)
     return *this;
 }
 
-inline void SpectrumStack::set(const size_t index, const Spectrum& rhs)
+FORCE_INLINE void SpectrumStack::set(const size_t index, const Spectrum& rhs)
 {
     if (index < m_size)
         m_aovs[index] = rhs;
 }
 
-inline void SpectrumStack::add(const size_t index, const Spectrum& rhs)
+FORCE_INLINE void SpectrumStack::add(const size_t index, const Spectrum& rhs)
 {
     if (index < m_size)
         m_aovs[index] += rhs;
