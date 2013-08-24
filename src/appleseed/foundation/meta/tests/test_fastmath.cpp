@@ -32,12 +32,15 @@
 #ifdef APPLESEED_FOUNDATION_USE_SSE
 #include "foundation/platform/sse.h"
 #endif
+#include "foundation/utility/countof.h"
+#include "foundation/utility/maplefile.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <string>
 
 using namespace foundation;
 using namespace std;
@@ -45,18 +48,18 @@ using namespace std;
 TEST_SUITE(Foundation_Math_FastMath)
 {
     template <typename T>
-    T compute_error(const T ref_value, const T value)
+    T compute_relative_error(const T ref, const T value)
     {
         return
-            ref_value == T(0.0)
-                ? abs(ref_value - value)
-                : abs(ref_value - value) / ref_value;
+            ref == T(0.0)
+                ? abs(ref - value)
+                : abs(ref - value) / ref;
     }
 
     template <typename T, typename Function>
     T compute_max_relative_error(
-        Function&       func,
-        const T         exponent,
+        const Function& ref,
+        const Function& func,
         const T         low,
         const T         high,
         const size_t    step_count)
@@ -73,74 +76,20 @@ TEST_SUITE(Foundation_Math_FastMath)
                     low,
                     high);
 
-            const T ref_value = pow(x, exponent);
-            const T value = func(x, exponent);
+            const T ref_value = ref(x);
+            const T value = func(x);
+            const T error = compute_relative_error(ref_value, value);
 
-            const T error = compute_error(ref_value, value);
             max_error = max(error, max_error);
         }
 
         return max_error;
     }
 
-    float std_pow(const float x, const float y)
-    {
-        return pow(x, y);
-    }
-
-    float scalar_fast_pow(const float x, const float y)
-    {
-        return fast_pow(x, y);
-    }
-
-    float scalar_fast_pow_refined(const float x, const float y)
-    {
-        return fast_pow_refined(x, y);
-    }
-
-    TEST_CASE(ComputeMaxRelativeError_GivenStdPowFunction_ReturnsZero)
-    {
-        const float error =
-            compute_max_relative_error(
-                std_pow,
-                2.4f,
-                0.0f,
-                1.0f,
-                1000);
-
-        EXPECT_EQ(0.0f, error);
-    }
-
-    TEST_CASE(FastPow)
-    {
-        const float error =
-            compute_max_relative_error(
-                scalar_fast_pow,
-                2.4f,
-                0.0f,
-                1.0f,
-                1000);
-
-        EXPECT_LT(0.14f, error);
-    }
-
-    TEST_CASE(FastPowRefined)
-    {
-        const float error =
-            compute_max_relative_error(
-                scalar_fast_pow_refined,
-                2.4f,
-                0.0f,
-                1.0f,
-                1000);
-
-        EXPECT_LT(0.016f, error);
-    }
-
     template <typename T, typename Function>
     T compute_max_relative_error_sse(
-        Function&       func,
-        const T         exponent,
+        const Function& ref,
+        const Function& func,
         const T         low,
         const T         high,
         const size_t    step_count)
@@ -162,16 +111,15 @@ TEST_SUITE(Foundation_Math_FastMath)
                         high);
             }
 
-            T ref_values[4];
+            SSE_ALIGN T ref_values[4] = { x[0], x[1], x[2], x[3] };
+            ref(ref_values);
 
-            for (size_t j = 0; j < 4; ++j)
-                ref_values[j] = pow(x[j], exponent);
-
-            func(x, exponent);
+            SSE_ALIGN T values[4] = { x[0], x[1], x[2], x[3] };
+            func(values);
 
             for (size_t j = 0; j < 4; ++j)
             {
-                const T error = compute_error(ref_values[j], x[j]);
+                const T error = compute_relative_error(ref_values[j], values[j]);
                 max_error = max(error, max_error);
             }
         }
@@ -179,22 +127,206 @@ TEST_SUITE(Foundation_Math_FastMath)
         return max_error;
     }
 
-    void vector_fast_pow(float x[4], const float y)
+    template <typename Function>
+    struct FuncDef
     {
-        fast_pow(x, y);
+        string      m_name;
+        string      m_legend;
+        string      m_color;
+        Function    m_function;
+    };
+
+    template <typename T, typename Function>
+    void plot_functions(
+        const string&           filename,
+        const FuncDef<Function> functions[],
+        const size_t            function_count,
+        const T                 low,
+        const T                 high,
+        const size_t            step_count)
+    {
+        MapleFile file(filename);
+
+        vector<MaplePlotDef> plot_defs;
+        plot_defs.reserve(function_count);
+
+        for (size_t f = 0; f < function_count; ++f)
+        {
+            vector<float> xs, ys;
+
+            xs.reserve(step_count);
+            ys.reserve(step_count);
+
+            for (size_t i = 0; i < step_count; ++i)
+            {
+                const T x =
+                    fit<T>(
+                        static_cast<T>(i),
+                        static_cast<T>(0),
+                        static_cast<T>(step_count - 1),
+                        low,
+                        high);
+
+                xs.push_back(x);
+                ys.push_back(functions[f].m_function(x));
+            }
+
+            file.define(functions[f].m_name, xs, ys);
+
+            MaplePlotDef plot_def(functions[f].m_name);
+            plot_def.set_legend(functions[f].m_legend);
+            plot_def.set_color(functions[f].m_color);
+            plot_defs.push_back(plot_def);
+        }
+
+        file.plot(plot_defs);
     }
 
-    void vector_fast_pow_refined(float x[4], const float y)
+    // Pow2(x).
+
+    float scalar_std_pow2(const float x)
     {
-        fast_pow_refined(x, y);
+        return pow(2.0f, x);
     }
 
-    TEST_CASE(FastPowSSE)
+    TEST_CASE(PlotPow2Functions)
+    {
+        const FuncDef<float (*)(float)> functions[] =
+        {
+            { "scalar_std_pow2", "std::pow[2]", "black", scalar_std_pow2 },
+            { "scalar_fast_pow2", "foundation::fast_pow2", "red", fast_pow2 },
+            { "scalar_faster_pow2", "foundation::faster_pow2", "green", faster_pow2 },
+            { "scalar_old_fast_pow2", "foundation::old_fast_pow2", "blue", old_fast_pow2 }
+        };
+
+        plot_functions(
+            "unit tests/outputs/test_fastmath_pow2.mpl",
+            functions,
+            countof(functions),
+            0.0f,
+            1.0f,
+            1000);
+    }
+
+    // Log2(x).
+
+    float scalar_std_log2(const float x)
+    {
+        return log(x) / log(2.0f);
+    }
+
+    TEST_CASE(PlotLog2Functions)
+    {
+        const FuncDef<float (*)(float)> functions[] =
+        {
+            { "scalar_std_log2", "std::log[2]", "black", scalar_std_log2 },
+            { "scalar_fast_log2", "foundation::fast_log2", "red", fast_log2 },
+            { "scalar_faster_log2", "foundation::faster_log2", "green", faster_log2 },
+            { "scalar_old_fast_log2", "foundation::old_fast_log2", "blue", old_fast_log2 },
+            { "scalar_old_fast_log2_refined", "foundation::old_fast_log2_refined", "yellow", old_fast_log2_refined }
+        };
+
+        plot_functions(
+            "unit tests/outputs/test_fastmath_log2.mpl",
+            functions,
+            countof(functions),
+            0.1f,
+            1.0f,
+            1000);
+    }
+
+    // Pow(x).
+
+    const float Exponent = 2.4f;
+
+    float scalar_std_pow(const float x)
+    {
+        return pow(x, Exponent);
+    }
+
+    float scalar_fast_pow(const float x)
+    {
+        return fast_pow(x, Exponent);
+    }
+
+    float scalar_faster_pow(const float x)
+    {
+        return faster_pow(x, Exponent);
+    }
+
+    float scalar_old_fast_pow(const float x)
+    {
+        return old_fast_pow(x, Exponent);
+    }
+
+    float scalar_old_fast_pow_refined(const float x)
+    {
+        return old_fast_pow_refined(x, Exponent);
+    }
+
+    void vector_std_pow(float x[4])
+    {
+        x[0] = pow(x[0], Exponent);
+        x[1] = pow(x[1], Exponent);
+        x[2] = pow(x[2], Exponent);
+        x[3] = pow(x[3], Exponent);
+    }
+
+    void vector_old_fast_pow(float x[4])
+    {
+        old_fast_pow(x, Exponent);
+    }
+
+    void vector_old_fast_pow_refined(float x[4])
+    {
+        old_fast_pow_refined(x, Exponent);
+    }
+
+    TEST_CASE(ComputeMaxRelativeError_GivenScalarStdPowFunction_ReturnsZero)
+    {
+        const float error =
+            compute_max_relative_error(
+                scalar_std_pow,
+                scalar_std_pow,
+                0.0f,
+                1.0f,
+                1000);
+
+        EXPECT_EQ(0.0f, error);
+    }
+
+    TEST_CASE(ScalarFastPow)
+    {
+        const float error =
+            compute_max_relative_error(
+                scalar_std_pow,
+                scalar_fast_pow,
+                0.0f,
+                1.0f,
+                1000);
+
+        EXPECT_LT(0.0003f, error);
+    }
+
+    TEST_CASE(ScalarOldFastPowRefined)
+    {
+        const float error =
+            compute_max_relative_error(
+                scalar_std_pow,
+                scalar_old_fast_pow_refined,
+                0.0f,
+                1.0f,
+                1000);
+
+        EXPECT_LT(0.016f, error);
+    }
+
+    TEST_CASE(VectorOldFastPow)
     {
         const float error =
             compute_max_relative_error_sse(
-                vector_fast_pow,
-                2.4f,
+                vector_std_pow,
+                vector_old_fast_pow,
                 0.0f,
                 1.0f,
                 1000);
@@ -202,16 +334,77 @@ TEST_SUITE(Foundation_Math_FastMath)
         EXPECT_LT(0.14f, error);
     }
 
-    TEST_CASE(FastPowRefinedSSE)
+    TEST_CASE(VectorOldFastPowRefined)
     {
         const float error =
             compute_max_relative_error_sse(
-                vector_fast_pow_refined,
-                2.4f,
+                vector_std_pow,
+                vector_old_fast_pow_refined,
                 0.0f,
                 1.0f,
                 1000);
 
         EXPECT_LT(0.016f, error);
+    }
+
+    TEST_CASE(PlotPowFunctions)
+    {
+        const FuncDef<float (*)(float)> functions[] =
+        {
+            { "scalar_std_pow", "std::pow", "black", scalar_std_pow },
+            { "scalar_fast_pow", "foundation::fast_pow", "red", scalar_fast_pow },
+            { "scalar_faster_pow", "foundation::faster_pow", "green", scalar_faster_pow },
+            { "scalar_old_fast_pow", "foundation::old_fast_pow (scalar)", "blue", scalar_old_fast_pow },
+            { "scalar_old_fast_pow_refined", "foundation::old_fast_pow_refined (scalar)", "yellow", scalar_old_fast_pow_refined }
+        };
+
+        plot_functions(
+            "unit tests/outputs/test_fastmath_pow.mpl",
+            functions,
+            countof(functions),
+            0.0f,
+            1.0f,
+            1000);
+    }
+
+    // Log(x).
+
+    TEST_CASE(PlotLogFunctions)
+    {
+        const FuncDef<float (*)(float)> functions[] =
+        {
+            { "scalar_std_log", "std::log", "black", log },
+            { "scalar_fast_log", "foundation::fast_log", "red", fast_log },
+            { "scalar_faster_log", "foundation::faster_log", "green", faster_log }
+        };
+
+        plot_functions(
+            "unit tests/outputs/test_fastmath_log.mpl",
+            functions,
+            countof(functions),
+            0.1f,
+            1.0f,
+            1000);
+    }
+
+    // Exp(x).
+
+    TEST_CASE(PlotExpFunctions)
+    {
+        const FuncDef<float (*)(float)> functions[] =
+        {
+            { "scalar_std_exp", "std::exp", "black", exp },
+            { "scalar_fast_exp", "foundation::fast_exp", "red", fast_exp },
+            { "scalar_faster_exp", "foundation::faster_exp", "green", faster_exp },
+            { "scalar_old_fast_exp", "foundation::old_fast_exp", "blue", old_fast_exp }
+        };
+
+        plot_functions(
+            "unit tests/outputs/test_fastmath_exp.mpl",
+            functions,
+            countof(functions),
+            0.0f,
+            1.0f,
+            1000);
     }
 }

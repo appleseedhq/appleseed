@@ -231,7 +231,7 @@ namespace
             if (GammaCorrect)
             {
                 const float old_alpha = color[3];
-                fast_pow_refined(&color[0], rcp_target_gamma);
+                old_fast_pow_refined(&color[0], rcp_target_gamma);
                 color[3] = old_alpha;
             }
 

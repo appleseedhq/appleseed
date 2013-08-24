@@ -636,14 +636,14 @@ inline float fast_linear_rgb_to_srgb(const float c)
 {
     return c <= 0.0031308f
         ? 12.92f * c
-        : 1.055f * fast_pow_refined(c, 1.0f / 2.4f) - 0.055f;
+        : 1.055f * fast_pow(c, 1.0f / 2.4f) - 0.055f;
 }
 
 inline float fast_srgb_to_linear_rgb(const float c)
 {
     return c <= 0.04045f
         ? (1.0f / 12.92f) * c
-        : fast_pow_refined((c + 0.055f) * (1.0f / 1.055f), 2.4f);
+        : fast_pow((c + 0.055f) * (1.0f / 1.055f), 2.4f);
 }
 
 #ifdef APPLESEED_FOUNDATION_USE_SSE
