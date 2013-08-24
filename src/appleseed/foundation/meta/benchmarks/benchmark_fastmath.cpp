@@ -42,7 +42,6 @@ using namespace std;
 
 BENCHMARK_SUITE(Foundation_Math_FastMath)
 {
-    const float Exponent = 2.4f;
     const size_t N = 100;
 
     struct Fixture
@@ -85,6 +84,22 @@ BENCHMARK_SUITE(Foundation_Math_FastMath)
             m_output[i] = faster_pow2(m_output[i]);
     }
 
+    BENCHMARK_CASE_F(VectorFastPow2, Fixture)
+    {
+        memcpy(m_output, m_values, N * sizeof(float));
+
+        for (size_t i = 0; i < N; i += 4)
+            fast_pow2(&m_output[i]);
+    }
+
+    BENCHMARK_CASE_F(VectorFasterPow2, Fixture)
+    {
+        memcpy(m_output, m_values, N * sizeof(float));
+
+        for (size_t i = 0; i < N; i += 4)
+            faster_pow2(&m_output[i]);
+    }
+
     // Log2(x).
 
     BENCHMARK_CASE_F(ScalarFastLog2, Fixture)
@@ -103,7 +118,25 @@ BENCHMARK_SUITE(Foundation_Math_FastMath)
             m_output[i] = faster_log2(m_output[i]);
     }
 
+    BENCHMARK_CASE_F(VectorFastLog2, Fixture)
+    {
+        memcpy(m_output, m_values, N * sizeof(float));
+
+        for (size_t i = 0; i < N; i += 4)
+            fast_log2(&m_output[i]);
+    }
+
+    BENCHMARK_CASE_F(VectorFasterLog2, Fixture)
+    {
+        memcpy(m_output, m_values, N * sizeof(float));
+
+        for (size_t i = 0; i < N; i += 4)
+            faster_log2(&m_output[i]);
+    }
+
     // Pow(x).
+
+    const float Exponent = 2.4f;
 
     BENCHMARK_CASE_F(StdPow, Fixture)
     {
@@ -129,20 +162,20 @@ BENCHMARK_SUITE(Foundation_Math_FastMath)
             m_output[i] = faster_pow(m_output[i], Exponent);
     }
 
-    BENCHMARK_CASE_F(VectorOldFastPow, Fixture)
+    BENCHMARK_CASE_F(VectorFastPow, Fixture)
     {
         memcpy(m_output, m_values, N * sizeof(float));
 
         for (size_t i = 0; i < N; i += 4)
-            old_fast_pow(&m_output[i], Exponent);
+            fast_pow(&m_output[i], Exponent);
     }
 
-    BENCHMARK_CASE_F(VectorOldFastPowRefined, Fixture)
+    BENCHMARK_CASE_F(VectorFasterPow, Fixture)
     {
         memcpy(m_output, m_values, N * sizeof(float));
 
         for (size_t i = 0; i < N; i += 4)
-            old_fast_pow_refined(&m_output[i], Exponent);
+            faster_pow(&m_output[i], Exponent);
     }
 
     // Log(x).
@@ -171,6 +204,22 @@ BENCHMARK_SUITE(Foundation_Math_FastMath)
             m_output[i] = faster_log(m_output[i]);
     }
 
+    BENCHMARK_CASE_F(VectorFastLog, Fixture)
+    {
+        memcpy(m_output, m_values, N * sizeof(float));
+
+        for (size_t i = 0; i < N; i += 4)
+            fast_log(&m_output[i]);
+    }
+
+    BENCHMARK_CASE_F(VectorFasterLog, Fixture)
+    {
+        memcpy(m_output, m_values, N * sizeof(float));
+
+        for (size_t i = 0; i < N; i += 4)
+            faster_log(&m_output[i]);
+    }
+
     // Exp(x).
 
     BENCHMARK_CASE_F(StdExp, Fixture)
@@ -195,5 +244,21 @@ BENCHMARK_SUITE(Foundation_Math_FastMath)
 
         for (size_t i = 0; i < N; ++i)
             m_output[i] = faster_exp(m_output[i]);
+    }
+
+    BENCHMARK_CASE_F(VectorFastExp, Fixture)
+    {
+        memcpy(m_output, m_values, N * sizeof(float));
+
+        for (size_t i = 0; i < N; i += 4)
+            fast_exp(&m_output[i]);
+    }
+
+    BENCHMARK_CASE_F(VectorFasterExp, Fixture)
+    {
+        memcpy(m_output, m_values, N * sizeof(float));
+
+        for (size_t i = 0; i < N; i += 4)
+            faster_exp(&m_output[i]);
     }
 }

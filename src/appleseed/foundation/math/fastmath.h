@@ -133,8 +133,6 @@ float faster_log2(const float x);
 // Fast approximation of x^p.
 float fast_pow(const float x, const float p);
 float faster_pow(const float x, const float p);
-void old_fast_pow(float a[4], const float b);           // a must be 16-byte aligned if APPLESEED_FOUNDATION_USE_SSE is defined
-void old_fast_pow_refined(float a[4], const float b);   // a must be 16-byte aligned if APPLESEED_FOUNDATION_USE_SSE is defined
 
 // Fast approximation of the natural logarithm.
 float fast_log(const float x);
@@ -143,6 +141,35 @@ float faster_log(const float x);
 // Fast approximation of e^p.
 float fast_exp(const float p);
 float faster_exp(const float p);
+
+// SSE variants of the functions above.
+#ifdef APPLESEED_FOUNDATION_USE_SSE
+__m128 fast_pow2(const __m128 p);
+__m128 faster_pow2(const __m128 p);
+__m128 fast_log2(const __m128 x);
+__m128 faster_log2(const __m128 x);
+__m128 fast_pow(const __m128 x, const __m128 p);
+__m128 faster_pow(const __m128 x, const __m128 p);
+__m128 fast_log(const __m128 x);
+__m128 faster_log(const __m128 x);
+__m128 fast_exp(const __m128 x);
+__m128 faster_exp(const __m128 x);
+#endif
+
+// Vectorized variants of the functions above.
+// When APPLESEED_FOUNDATION_USE_SSE is defined, all array arguments must be 16-byte aligned.
+void fast_pow2(float p[4]);
+void faster_pow2(float p[4]);
+void fast_log2(float x[4]);
+void faster_log2(float x[4]);
+void fast_pow(float x[4], const float p[4]);
+void faster_pow(float x[4], const float p[4]);
+void fast_pow(float x[4], const float p);
+void faster_pow(float x[4], const float p);
+void fast_log(float x[4]);
+void faster_log(float x[4]);
+void fast_exp(float x[4]);
+void faster_exp(float x[4]);
 
 // Fast approximation of the square root.
 float fast_sqrt(const float x);
@@ -163,8 +190,11 @@ inline float fast_pow2(const float p)
     const float clipp = (p < -126) ? -126.0f : p;
     const int w = static_cast<int>(clipp);
     const float z = clipp - w + offset;
-    union { uint32 i; float f; } v =
-        { static_cast<uint32>((1 << 23) * (clipp + 121.2740575f + 27.7280233f / (4.84252568f - z) - 1.49012907f * z)) };
+    const union { uint32 i; float f; } v =
+    {
+        static_cast<uint32>((1 << 23) * (clipp + 121.2740575f + 27.7280233f / (4.84252568f - z) - 1.49012907f * z))
+    };
+
     return v.f;
 }
 
@@ -172,17 +202,22 @@ inline float faster_pow2(const float p)
 {
     // Underflow of exponential is common practice in numerical routines, so handle it here.
     const float clipp = (p < -126) ? -126.0f : p;
-    union { uint32 i; float f; } v = { static_cast<uint32>((1 << 23) * (clipp + 126.94269504f)) };
+    const union { uint32 i; float f; } v =
+    {
+        static_cast<uint32>((1 << 23) * (clipp + 126.94269504f))
+    };
+
     return v.f;
 }
 
 inline float fast_log2(const float x)
 {
     assert(x > 0.0f);
-    union { float f; uint32 i; } vx = { x };
-    union { uint32 i; float f; } mx = { (vx.i & 0x007FFFFF) | 0x3f000000 };
-    float y = static_cast<float>(vx.i);
-    y *= 1.1920928955078125e-7f;
+
+    const union { float f; uint32 i; } vx = { x };
+    const union { uint32 i; float f; } mx = { (vx.i & 0x007FFFFF) | 0x3f000000 };
+    const float y = static_cast<float>(vx.i) * 1.1920928955078125e-7f;
+
     return y - 124.22551499f
              - 1.498030302f * mx.f 
              - 1.72587999f / (0.3520887068f + mx.f);
@@ -191,9 +226,10 @@ inline float fast_log2(const float x)
 inline float faster_log2(const float x)
 {
     assert(x > 0.0f);
-    union { float f; uint32 i; } vx = { x };
-    float y = static_cast<float>(vx.i);
-    y *= 1.1920928955078125e-7f;
+
+    const union { float f; uint32 i; } vx = { x };
+    const float y = static_cast<float>(vx.i) * 1.1920928955078125e-7f;
+
     return y - 126.94269504f;
 }
 
@@ -207,75 +243,6 @@ inline float faster_pow(const float x, const float p)
     return faster_pow2(p * faster_log2(x));
 }
 
-#ifdef APPLESEED_FOUNDATION_USE_SSE
-
-inline void old_fast_pow(float a[4], const float b)
-{
-    assert(is_aligned(a, 16));
-
-    __m128 x = _mm_cvtepi32_ps(_mm_load_si128((__m128i*)a));
-
-    const __m128 K = _mm_set1_ps(127.0f);
-    x = _mm_mul_ps(x, _mm_set1_ps(0.1192092896e-6f));     // x *= 2 ^ (-23)
-    x = _mm_sub_ps(x, K);
-    x = _mm_mul_ps(x, _mm_set1_ps(b));
-
-    __m128 y = _mm_sub_ps(x, floorps(x));
-    y = _mm_sub_ps(y, _mm_mul_ps(y, y));
-    y = _mm_mul_ps(y, _mm_set1_ps(0.33971f));
-    y = _mm_sub_ps(_mm_add_ps(x, K), y);
-    y = _mm_mul_ps(y, _mm_set1_ps(8388608.0f));           // y *= 2 ^ 23
-
-    _mm_store_si128((__m128i*)a, _mm_cvtps_epi32(y));
-}
-
-inline void old_fast_pow_refined(float a[4], const float b)
-{
-    assert(is_aligned(a, 16));
-
-    __m128 x = _mm_cvtepi32_ps(_mm_load_si128((__m128i*)a));
-
-    const __m128 K = _mm_set1_ps(127.0f);
-    x = _mm_mul_ps(x, _mm_set1_ps(0.1192092896e-6f));     // x *= 2 ^ (-23)
-    x = _mm_sub_ps(x, K);
-
-    // One Newton-Raphson refinement step.
-    __m128 z = _mm_sub_ps(x, floorps(x));
-    z = _mm_sub_ps(z, _mm_mul_ps(z, z));
-    z = _mm_mul_ps(z, _mm_set1_ps(0.346607f));
-    x = _mm_add_ps(x, z);
-
-    x = _mm_mul_ps(x, _mm_set1_ps(b));
-
-    __m128 y = _mm_sub_ps(x, floorps(x));
-    y = _mm_sub_ps(y, _mm_mul_ps(y, y));
-    y = _mm_mul_ps(y, _mm_set1_ps(0.33971f));
-    y = _mm_sub_ps(_mm_add_ps(x, K), y);
-    y = _mm_mul_ps(y, _mm_set1_ps(8388608.0f));           // y *= 2 ^ 23
-
-    _mm_store_si128((__m128i*)a, _mm_cvtps_epi32(y));
-}
-
-#else
-
-inline void old_fast_pow(float a[4], const float b)
-{
-    a[0] = fast_pow(a[0], b);
-    a[1] = fast_pow(a[1], b);
-    a[2] = fast_pow(a[2], b);
-    a[3] = fast_pow(a[3], b);
-}
-
-inline void old_fast_pow_refined(float a[4], const float b)
-{
-    a[0] = fast_pow(a[0], b);
-    a[1] = fast_pow(a[1], b);
-    a[2] = fast_pow(a[2], b);
-    a[3] = fast_pow(a[3], b);
-}
-
-#endif  // APPLESEED_FOUNDATION_USE_SSE
-
 inline float fast_log(const float x)
 {
     return 0.69314718f * fast_log2(x);
@@ -283,11 +250,13 @@ inline float fast_log(const float x)
 
 inline float faster_log(const float x)
 {
-    // What follows is the inlined version of 0.69314718f * faster_log2(x).
+    // Inlined version of 0.69314718f * faster_log2(x).
+
     assert(x > 0.0f);
-    union { float f; uint32 i; } vx = { x };
-    float y = static_cast<float>(vx.i);
-    y *= 8.2629582881927490e-8f;
+
+    const union { float f; uint32 i; } vx = { x };
+    const float y = static_cast<float>(vx.i) * 8.2629582881927490e-8f;
+
     return y - 87.989971088f;
 }
 
@@ -300,6 +269,269 @@ inline float faster_exp(const float p)
 {
     return faster_pow2(1.442695040f * p);
 }
+
+#ifdef APPLESEED_FOUNDATION_USE_SSE
+
+inline __m128 fast_pow2(const __m128 p)
+{
+    const __m128 ltzero = _mm_cmplt_ps(p, _mm_set1_ps(0.0f));
+    const __m128 offset = _mm_and_ps(ltzero, _mm_set1_ps(1.0f));
+    const __m128 lt126 = _mm_cmplt_ps(p, _mm_set1_ps(-126.0f));
+    const __m128 clipp = _mm_or_ps(_mm_andnot_ps(lt126, p), _mm_and_ps(lt126, _mm_set1_ps(-126.0f)));
+    const __m128i w = _mm_cvttps_epi32(clipp);
+    const __m128 z = _mm_add_ps(_mm_sub_ps(clipp, _mm_cvtepi32_ps(w)), offset);
+
+    const union { __m128i i; __m128 f; } v =
+    {
+        _mm_cvttps_epi32(
+            _mm_mul_ps(
+                _mm_set1_ps(1 << 23),
+                _mm_sub_ps(
+                    _mm_add_ps(
+                        _mm_add_ps(clipp, _mm_set1_ps(121.2740575f)),
+                        _mm_div_ps(_mm_set1_ps(27.7280233f), _mm_sub_ps(_mm_set1_ps(4.84252568f), z))
+                    ),
+                    _mm_mul_ps(_mm_set1_ps(1.49012907f), z)
+                )
+            )
+        )
+    };
+
+    return v.f;
+}
+
+inline __m128 faster_pow2(const __m128 p)
+{
+    const __m128 lt126 = _mm_cmplt_ps(p, _mm_set1_ps(-126.0f));
+    const __m128 clipp = _mm_or_ps(_mm_andnot_ps(lt126, p), _mm_and_ps(lt126, _mm_set1_ps(-126.0f)));
+
+    const union { __m128i i; __m128 f; } v =
+    {
+        _mm_cvttps_epi32(
+            _mm_mul_ps(
+                _mm_set1_ps(1 << 23),
+                _mm_add_ps(clipp, _mm_set1_ps(126.94269504f))
+            )
+        )
+    };
+
+    return v.f;
+}
+
+inline __m128 fast_log2(const __m128 x)
+{
+    const __m128i a = _mm_set1_epi32(0x007FFFFF);
+    const __m128i b = _mm_set1_epi32(0x3f000000);
+
+    const union { __m128 f; __m128i i; } vx = { x };
+    const union { __m128i i; __m128 f; } mx = { _mm_or_si128(_mm_and_si128(vx.i, a), b) };
+
+    const __m128 y = _mm_mul_ps(_mm_cvtepi32_ps(vx.i), _mm_set1_ps(1.1920928955078125e-7f));
+
+    return
+        _mm_sub_ps(
+            _mm_sub_ps(
+                _mm_sub_ps(y, _mm_set1_ps(124.22551499f)),
+                _mm_mul_ps(_mm_set1_ps(1.498030302f), mx.f)),
+            _mm_div_ps(
+                _mm_set1_ps(1.72587999f),
+                _mm_add_ps(_mm_set1_ps(0.3520887068f), mx.f)));
+}
+
+inline __m128 faster_log2(const __m128 x)
+{
+    const union { __m128 f; __m128i i; } vx = { x };
+
+    const __m128 y = _mm_mul_ps(_mm_cvtepi32_ps(vx.i), _mm_set1_ps(1.1920928955078125e-7f));
+
+    return _mm_sub_ps(y, _mm_set1_ps(126.94269504f));
+}
+
+inline __m128 fast_pow(const __m128 x, const __m128 p)
+{
+    return fast_pow2(_mm_mul_ps(p, fast_log2(x)));
+}
+
+inline __m128 faster_pow(const __m128 x, const __m128 p)
+{
+    return faster_pow2(_mm_mul_ps(p, faster_log2(x)));
+}
+
+inline __m128 fast_log(const __m128 x)
+{
+    return _mm_mul_ps(_mm_set1_ps(0.69314718f), fast_log2(x));
+}
+
+inline __m128 faster_log(const __m128 x)
+{
+    // Inlined version of _mm_mul_ps(_mm_set1_ps(0.69314718f), faster_log2(x)).
+
+    const union { __m128 f; __m128i i; } vx = { x };
+
+    const __m128 y = _mm_mul_ps(_mm_cvtepi32_ps(vx.i), _mm_set1_ps(8.2629582881927490e-8f));
+
+    return _mm_sub_ps(y, _mm_set1_ps(87.989971088f));
+}
+
+inline __m128 fast_exp(const __m128 x)
+{
+    return fast_pow2(_mm_mul_ps(_mm_set1_ps(1.442695040f), x));
+}
+
+inline __m128 faster_exp(const __m128 x)
+{
+    return faster_pow2(_mm_mul_ps(_mm_set1_ps(1.442695040f), x));
+}
+
+inline void fast_pow2(float p[4])
+{
+    assert(is_aligned(p, 16));
+    _mm_store_ps(p, fast_pow2(_mm_load_ps(p)));
+}
+
+inline void faster_pow2(float p[4])
+{
+    assert(is_aligned(p, 16));
+    _mm_store_ps(p, faster_pow2(_mm_load_ps(p)));
+}
+
+inline void fast_log2(float x[4])
+{
+    assert(is_aligned(x, 16));
+    _mm_store_ps(x, fast_log2(_mm_load_ps(x)));
+}
+
+inline void faster_log2(float x[4])
+{
+    assert(is_aligned(x, 16));
+    _mm_store_ps(x, faster_log2(_mm_load_ps(x)));
+}
+
+inline void fast_pow(float x[4], const float p[4])
+{
+    assert(is_aligned(x, 16));
+    assert(is_aligned(p, 16));
+    _mm_store_ps(x, fast_pow(_mm_load_ps(x), _mm_load_ps(p)));
+}
+
+inline void faster_pow(float x[4], const float p[4])
+{
+    assert(is_aligned(x, 16));
+    assert(is_aligned(p, 16));
+    _mm_store_ps(x, faster_pow(_mm_load_ps(x), _mm_load_ps(p)));
+}
+
+inline void fast_pow(float x[4], const float p)
+{
+    assert(is_aligned(x, 16));
+    _mm_store_ps(x, fast_pow(_mm_load_ps(x), _mm_set1_ps(p)));
+}
+
+inline void faster_pow(float x[4], const float p)
+{
+    assert(is_aligned(x, 16));
+    _mm_store_ps(x, faster_pow(_mm_load_ps(x), _mm_set1_ps(p)));
+}
+
+inline void fast_log(float x[4])
+{
+    assert(is_aligned(x, 16));
+    _mm_store_ps(x, fast_log(_mm_load_ps(x)));
+}
+
+inline void faster_log(float x[4])
+{
+    assert(is_aligned(x, 16));
+    _mm_store_ps(x, faster_log(_mm_load_ps(x)));
+}
+
+inline void fast_exp(float x[4])
+{
+    assert(is_aligned(x, 16));
+    _mm_store_ps(x, fast_exp(_mm_load_ps(x)));
+}
+
+inline void faster_exp(float x[4])
+{
+    assert(is_aligned(x, 16));
+    _mm_store_ps(x, faster_exp(_mm_load_ps(x)));
+}
+
+#else
+
+inline void fast_pow2(float p[4])
+{
+    for (size_t i = 0; i < 4; ++i)
+        p[i] = fast_pow2(p[i]);
+}
+
+inline void faster_pow2(float p[4])
+{
+    for (size_t i = 0; i < 4; ++i)
+        p[i] = faster_pow2(p[i]);
+}
+
+inline void fast_log2(float x[4])
+{
+    for (size_t i = 0; i < 4; ++i)
+        x[i] = fast_log2(x[i]);
+}
+
+inline void faster_log2(float x[4])
+{
+    for (size_t i = 0; i < 4; ++i)
+        x[i] = faster_log2(x[i]);
+}
+
+inline void fast_pow(float x[4], const float p[4])
+{
+    for (size_t i = 0; i < 4; ++i)
+        x[i] = fast_pow(x[i], p[i]);
+}
+
+inline void faster_pow(float x[4], const float p[4])
+{
+    for (size_t i = 0; i < 4; ++i)
+        x[i] = faster_pow(x[i], p[i]);
+}
+
+inline void fast_pow(float x[4], const float p)
+{
+    for (size_t i = 0; i < 4; ++i)
+        x[i] = fast_pow(x[i], p);
+}
+
+inline void faster_pow(float x[4], const float p)
+{
+    for (size_t i = 0; i < 4; ++i)
+        x[i] = faster_pow(x[i], p);
+}
+
+inline void fast_log(float x[4])
+{
+    for (size_t i = 0; i < 4; ++i)
+        x[i] = fast_log(x[i]);
+}
+
+inline void faster_log(float x[4])
+{
+    for (size_t i = 0; i < 4; ++i)
+        x[i] = faster_log(x[i]);
+}
+
+inline void fast_exp(float x[4])
+{
+    for (size_t i = 0; i < 4; ++i)
+        x[i] = fast_exp(x[i]);
+}
+
+inline void faster_exp(float x[4])
+{
+    for (size_t i = 0; i < 4; ++i)
+        x[i] = faster_exp(x[i]);
+}
+
+#endif  // APPLESEED_FOUNDATION_USE_SSE
 
 inline float fast_sqrt(const float x)
 {

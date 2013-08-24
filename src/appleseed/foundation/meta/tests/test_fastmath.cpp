@@ -259,14 +259,14 @@ TEST_SUITE(Foundation_Math_FastMath)
         x[3] = pow(x[3], Exponent);
     }
 
-    void vector_old_fast_pow(float x[4])
+    void vector_fast_pow(float x[4])
     {
-        old_fast_pow(x, Exponent);
+        fast_pow(x, Exponent);
     }
 
-    void vector_old_fast_pow_refined(float x[4])
+    void vector_faster_pow(float x[4])
     {
-        old_fast_pow_refined(x, Exponent);
+        faster_pow(x, Exponent);
     }
 
     TEST_CASE(ComputeMaxRelativeError_GivenScalarStdPowFunction_ReturnsZero)
@@ -295,30 +295,43 @@ TEST_SUITE(Foundation_Math_FastMath)
         EXPECT_LT(0.00031f, error);
     }
 
-    TEST_CASE(VectorOldFastPow)
+    TEST_CASE(ScalarFasterPow)
     {
         const float error =
-            compute_max_relative_error_sse(
-                vector_std_pow,
-                vector_old_fast_pow,
+            compute_max_relative_error(
+                scalar_std_pow,
+                scalar_faster_pow,
                 0.1f,
                 1.0f,
                 1000);
 
-        EXPECT_LT(0.14f, error);
+        EXPECT_LT(0.114f, error);
     }
 
-    TEST_CASE(VectorOldFastPowRefined)
+    TEST_CASE(VectorFastPow)
     {
         const float error =
             compute_max_relative_error_sse(
                 vector_std_pow,
-                vector_old_fast_pow_refined,
+                vector_fast_pow,
                 0.1f,
                 1.0f,
                 1000);
 
-        EXPECT_LT(0.016f, error);
+        EXPECT_LT(0.00031f, error);
+    }
+
+    TEST_CASE(VectorFasterPow)
+    {
+        const float error =
+            compute_max_relative_error_sse(
+                vector_std_pow,
+                vector_faster_pow,
+                0.1f,
+                1.0f,
+                1000);
+
+        EXPECT_LT(0.114f, error);
     }
 
     TEST_CASE(PlotPowFunctions)
