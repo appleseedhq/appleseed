@@ -53,7 +53,7 @@ TEST_SUITE(Foundation_Math_FastMath)
         return
             ref == T(0.0)
                 ? abs(ref - value)
-                : abs(ref - value) / ref;
+                : abs((ref - value) / ref);
     }
 
     template <typename T, typename Function>
@@ -275,7 +275,7 @@ TEST_SUITE(Foundation_Math_FastMath)
             compute_max_relative_error(
                 scalar_std_pow,
                 scalar_std_pow,
-                0.0f,
+                0.1f,
                 1.0f,
                 1000);
 
@@ -288,11 +288,11 @@ TEST_SUITE(Foundation_Math_FastMath)
             compute_max_relative_error(
                 scalar_std_pow,
                 scalar_fast_pow,
-                0.0f,
+                0.1f,
                 1.0f,
                 1000);
 
-        EXPECT_LT(0.0003f, error);
+        EXPECT_LT(0.00031f, error);
     }
 
     TEST_CASE(VectorOldFastPow)
@@ -301,7 +301,7 @@ TEST_SUITE(Foundation_Math_FastMath)
             compute_max_relative_error_sse(
                 vector_std_pow,
                 vector_old_fast_pow,
-                0.0f,
+                0.1f,
                 1.0f,
                 1000);
 
@@ -314,7 +314,7 @@ TEST_SUITE(Foundation_Math_FastMath)
             compute_max_relative_error_sse(
                 vector_std_pow,
                 vector_old_fast_pow_refined,
-                0.0f,
+                0.1f,
                 1.0f,
                 1000);
 
@@ -334,7 +334,7 @@ TEST_SUITE(Foundation_Math_FastMath)
             "unit tests/outputs/test_fastmath_pow.mpl",
             functions,
             countof(functions),
-            0.0f,
+            0.1f,
             1.0f,
             1000);
     }
