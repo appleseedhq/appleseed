@@ -26,49 +26,53 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMLIGHTINGENGINE_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMLIGHTINGENGINE_H
+// Interface header.
+#include "sppmphoton.h"
 
-// appleseed.renderer headers.
-#include "renderer/kernel/lighting/ilightingengine.h"
-#include "renderer/utility/paramarray.h"
-
-// appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
-
-// Forward declarations.
-namespace renderer  { class LightSampler; }
-namespace renderer  { class SPPMPassCallback; }
+using namespace foundation;
 
 namespace renderer
 {
 
 //
-// SPPM lighting engine factory.
+// PhotonVector class implementation.
 //
 
-class SPPMLightingEngineFactory
-  : public ILightingEngineFactory
+bool PhotonVector::empty() const
 {
-  public:
-    // Constructor.
-    SPPMLightingEngineFactory(
-        const SPPMPassCallback&     pass_callback,
-        const LightSampler&         light_sampler,
-        const ParamArray&           params);
+    assert(m_positions.empty() == m_payloads.empty());
+    return m_positions.empty();
+}
 
-    // Delete this instance.
-    virtual void release() OVERRIDE;
+size_t PhotonVector::size() const
+{
+    assert(m_positions.size() == m_payloads.size());
+    return m_positions.size();
+}
 
-    // Return a new path tracing lighting engine instance.
-    virtual ILightingEngine* create() OVERRIDE;
+size_t PhotonVector::get_memory_size() const
+{
+    return
+        m_positions.capacity() * sizeof(Vector3f) +
+        m_payloads.capacity() * sizeof(SPPMPhotonPayload);
+}
 
-  private:
-    const SPPMPassCallback&         m_pass_callback;
-    const LightSampler&             m_light_sampler;
-    ParamArray                      m_params;
-};
+void PhotonVector::swap(PhotonVector& rhs)
+{
+    m_positions.swap(rhs.m_positions);
+    m_payloads.swap(rhs.m_payloads);
+}
 
-}       // namespace renderer
+void PhotonVector::reserve(const size_t capacity)
+{
+    m_positions.reserve(capacity);
+    m_payloads.reserve(capacity);
+}
 
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMLIGHTINGENGINE_H
+void PhotonVector::push_back(const SPPMPhoton& photon)
+{
+    m_positions.push_back(photon.m_position);
+    m_payloads.push_back(photon.m_payload);
+}
+
+}   // namespace renderer

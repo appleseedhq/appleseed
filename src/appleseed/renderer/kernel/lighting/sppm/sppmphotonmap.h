@@ -26,49 +26,48 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMLIGHTINGENGINE_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMLIGHTINGENGINE_H
+#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMPHOTONMAP_H
+#define APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMPHOTONMAP_H
 
 // appleseed.renderer headers.
-#include "renderer/kernel/lighting/ilightingengine.h"
-#include "renderer/utility/paramarray.h"
+#include "renderer/kernel/lighting/sppm/sppmphoton.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
+#include "foundation/math/knn.h"
 
-// Forward declarations.
-namespace renderer  { class LightSampler; }
-namespace renderer  { class SPPMPassCallback; }
+// Standard headers.
+#include <cstddef>
 
 namespace renderer
 {
 
-//
-// SPPM lighting engine factory.
-//
-
-class SPPMLightingEngineFactory
-  : public ILightingEngineFactory
+class SPPMPhotonMap
+  : public foundation::knn::Tree3f
 {
   public:
-    // Constructor.
-    SPPMLightingEngineFactory(
-        const SPPMPassCallback&     pass_callback,
-        const LightSampler&         light_sampler,
-        const ParamArray&           params);
+    // Constructor, moves the photons into the photon map.
+    explicit SPPMPhotonMap(PhotonVector& photons);
 
-    // Delete this instance.
-    virtual void release() OVERRIDE;
+    // Return the size (in bytes) of this object in memory.
+    size_t get_memory_size() const;
 
-    // Return a new path tracing lighting engine instance.
-    virtual ILightingEngine* create() OVERRIDE;
+    // Return the payload of the index'th photon in the photon map.
+    const SPPMPhotonPayload& get_photon_payload(const size_t index) const;
 
   private:
-    const SPPMPassCallback&         m_pass_callback;
-    const LightSampler&             m_light_sampler;
-    ParamArray                      m_params;
+    PhotonVector m_photons;
 };
+
+
+//
+// SPPMPhotonMap class implementation.
+//
+
+inline const SPPMPhotonPayload& SPPMPhotonMap::get_photon_payload(const size_t index) const
+{
+    return m_photons.m_payloads[index];
+}
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMLIGHTINGENGINE_H
+#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMPHOTONMAP_H

@@ -26,49 +26,54 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMLIGHTINGENGINE_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMLIGHTINGENGINE_H
+// Interface header.
+#include "sppmphotonmap.h"
 
 // appleseed.renderer headers.
-#include "renderer/kernel/lighting/ilightingengine.h"
-#include "renderer/utility/paramarray.h"
+#include "renderer/global/globallogger.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
+#include "foundation/platform/defaulttimers.h"
+#include "foundation/utility/statistics.h"
 
-// Forward declarations.
-namespace renderer  { class LightSampler; }
-namespace renderer  { class SPPMPassCallback; }
+using namespace foundation;
 
 namespace renderer
 {
 
-//
-// SPPM lighting engine factory.
-//
-
-class SPPMLightingEngineFactory
-  : public ILightingEngineFactory
+SPPMPhotonMap::SPPMPhotonMap(PhotonVector& photons)
 {
-  public:
-    // Constructor.
-    SPPMLightingEngineFactory(
-        const SPPMPassCallback&     pass_callback,
-        const LightSampler&         light_sampler,
-        const ParamArray&           params);
+    m_photons.swap(photons);
 
-    // Delete this instance.
-    virtual void release() OVERRIDE;
+    if (!m_photons.empty())
+    {
+        const size_t photon_count = m_photons.size();
 
-    // Return a new path tracing lighting engine instance.
-    virtual ILightingEngine* create() OVERRIDE;
+        RENDERER_LOG_INFO(
+            "building sppm photon map from %s photon%s...",
+            pretty_uint(photon_count).c_str(),
+            photon_count > 1 ? "s" : "");
 
-  private:
-    const SPPMPassCallback&         m_pass_callback;
-    const LightSampler&             m_light_sampler;
-    ParamArray                      m_params;
-};
+        knn::Builder3f builder(*this);
+        builder.build_move_points<DefaultWallclockTimer>(m_photons.m_positions);
 
-}       // namespace renderer
+        Statistics statistics;
+        statistics.insert_time("build time", builder.get_build_time());
+        statistics.insert_size("total size", get_memory_size());
+        statistics.merge(knn::TreeStatistics<knn::Tree3f>(*this));
 
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMLIGHTINGENGINE_H
+        RENDERER_LOG_DEBUG("%s",
+            StatisticsVector::make(
+                "sppm photon map statistics",
+                statistics).to_string().c_str());
+    }
+}
+
+size_t SPPMPhotonMap::get_memory_size() const
+{
+    return
+        knn::Tree3f::get_memory_size() +
+        m_photons.get_memory_size();
+}
+
+}   // namespace renderer

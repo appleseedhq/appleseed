@@ -92,12 +92,14 @@ namespace
                     JobManager::KeepRunningOnEmptyQueue));
 
             // Instantiate tile renderers, one per rendering thread.
+            m_tile_renderers.reserve(m_params.m_thread_count);
             for (size_t i = 0; i < m_params.m_thread_count; ++i)
                 m_tile_renderers.push_back(tile_renderer_factory->create(i == 0));
 
             if (tile_callback_factory)
             {
                 // Instantiate tile callbacks, one per rendering thread.
+                m_tile_callbacks.reserve(m_params.m_thread_count);
                 for (size_t i = 0; i < m_params.m_thread_count; ++i)
                     m_tile_callbacks.push_back(tile_callback_factory->create());
             }
@@ -108,12 +110,12 @@ namespace
         virtual ~GenericFrameRenderer()
         {
             // Delete tile callbacks.
-            for (const_each<vector<ITileCallback*> > i = m_tile_callbacks; i; ++i)
-                (*i)->release();
+            for (size_t i = 0; i < m_tile_callbacks.size(); ++i)
+                m_tile_callbacks[i]->release();
 
             // Delete tile renderers.
-            for (const_each<vector<ITileRenderer*> > i = m_tile_renderers; i; ++i)
-                (*i)->release();
+            for (size_t i = 0; i < m_tile_renderers.size(); ++i)
+                m_tile_renderers[i]->release();
         }
 
         virtual void release() OVERRIDE
@@ -262,6 +264,10 @@ namespace
 
             virtual void execute(const size_t thread_index) OVERRIDE
             {
+                // Poor man's fence: wait until all tile jobs are done before starting a new pass.
+                while (m_job_queue.get_total_job_count() != 1)
+                    yield();
+
                 // Invoke the pass callback if there is one.
                 if (m_pass_callback)
                     m_pass_callback->pre_render();

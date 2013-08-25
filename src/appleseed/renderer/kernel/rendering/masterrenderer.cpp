@@ -285,6 +285,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
 
     const Scene& scene = *m_project.get_scene();
     Frame& frame = *m_project.get_frame();
+    const TraceContext& trace_context = m_project.get_trace_context();
 
     // Create the texture store.
     TextureStore texture_store(scene, m_params.child("texture_store"));
@@ -299,6 +300,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     // Create a lighting engine factory.
     //
 
+    auto_ptr<IPassCallback> pass_callback;
     auto_ptr<ILightingEngineFactory> lighting_engine_factory;
     {
         const string lighting_engine_param =
@@ -309,21 +311,30 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
             lighting_engine_factory.reset(
                 new DRTLightingEngineFactory(
                     light_sampler,
-                    m_params.child("drt")));
+                    m_params.child("drt")));    // todo: change to "drt_lighting_engine"
         }
         else if (lighting_engine_param == "pt")
         {
             lighting_engine_factory.reset(
                 new PTLightingEngineFactory(
                     light_sampler,
-                    m_params.child("pt")));
+                    m_params.child("pt")));     // todo: change to "pt_lighting_engine"
         }
         else if (lighting_engine_param == "sppm")
         {
+            SPPMPassCallback* sppm_pass_callback =
+                new SPPMPassCallback(
+                    light_sampler,
+                    trace_context,
+                    texture_store,
+                    m_params.child("sppm_pass_callback"));
+            pass_callback.reset(sppm_pass_callback);
+
             lighting_engine_factory.reset(
                 new SPPMLightingEngineFactory(
+                    *sppm_pass_callback,
                     light_sampler,
-                    m_params.child("sppm")));
+                    m_params.child("sppm_lighting_engine")));
         }
         else
         {
@@ -350,7 +361,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
                 new GenericSampleRendererFactory(
                     scene,
                     frame,
-                    m_project.get_trace_context(),
+                    trace_context,
                     texture_store,
                     lighting_engine_factory.get(),
                     shading_engine,
@@ -369,6 +380,43 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
             RENDERER_LOG_ERROR(
                 "invalid value for \"sample_renderer\" parameter: \"%s\".",
                 sample_renderer_param.c_str());
+
+            return IRendererController::AbortRendering;
+        }
+    }
+
+    //
+    // Create a sample generator factory.
+    //
+
+    auto_ptr<ISampleGeneratorFactory> sample_generator_factory;
+    {
+        const string sample_generator_param =
+            m_params.get_optional<string>("sample_generator", "");
+
+        if (sample_generator_param == "generic")
+        {
+            sample_generator_factory.reset(
+                new GenericSampleGeneratorFactory(
+                    frame,
+                    sample_renderer_factory.get()));
+        }
+        else if (sample_generator_param == "lighttracing")
+        {
+            sample_generator_factory.reset(
+                new LightTracingSampleGeneratorFactory(
+                    scene,
+                    frame,
+                    trace_context,
+                    texture_store,
+                    light_sampler,
+                    m_params.child("lighttracing_sample_generator")));
+        }
+        else if (!sample_generator_param.empty())
+        {
+            RENDERER_LOG_ERROR(
+                "invalid value for \"sample_generator\" parameter: \"%s\".",
+                sample_generator_param.c_str());
 
             return IRendererController::AbortRendering;
         }
@@ -438,7 +486,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
             tile_renderer_factory.reset(
                 new EWATestTileRendererFactory(
                     scene,
-                    m_project.get_trace_context(),
+                    trace_context,
                     texture_store,
                     m_params.child("ewatest_tile_renderer")));
         }
@@ -447,67 +495,6 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
             RENDERER_LOG_ERROR(
                 "invalid value for \"tile_renderer\" parameter: \"%s\".",
                 tile_renderer_param.c_str());
-
-            return IRendererController::AbortRendering;
-        }
-    }
-
-    //
-    // Create a sample generator factory.
-    //
-
-    auto_ptr<ISampleGeneratorFactory> sample_generator_factory;
-    {
-        const string sample_generator_param =
-            m_params.get_optional<string>("sample_generator", "");
-
-        if (sample_generator_param == "generic")
-        {
-            sample_generator_factory.reset(
-                new GenericSampleGeneratorFactory(
-                    frame,
-                    sample_renderer_factory.get()));
-        }
-        else if (sample_generator_param == "lighttracing")
-        {
-            sample_generator_factory.reset(
-                new LightTracingSampleGeneratorFactory(
-                    scene,
-                    frame,
-                    m_project.get_trace_context(),
-                    texture_store,
-                    light_sampler,
-                    m_params.child("lighttracing_sample_generator")));
-        }
-        else if (!sample_generator_param.empty())
-        {
-            RENDERER_LOG_ERROR(
-                "invalid value for \"sample_generator\" parameter: \"%s\".",
-                sample_generator_param.c_str());
-
-            return IRendererController::AbortRendering;
-        }
-    }
-
-    //
-    // Create a pass callback.
-    //
-
-    auto_ptr<IPassCallback> pass_callback;
-    {
-        const string pass_callback_param =
-            m_params.get_optional<string>("pass_callback", "");
-
-        if (pass_callback_param == "sppm")
-        {
-            pass_callback.reset(
-                new SPPMPassCallback());
-        }
-        else if (!pass_callback_param.empty())
-        {
-            RENDERER_LOG_ERROR(
-                "invalid value for \"pass_callback\" parameter: \"%s\".",
-                pass_callback_param.c_str());
 
             return IRendererController::AbortRendering;
         }

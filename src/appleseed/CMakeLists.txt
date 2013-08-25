@@ -889,6 +889,10 @@ set (renderer_kernel_lighting_sppm_sources
     renderer/kernel/lighting/sppm/sppmlightingengine.h
     renderer/kernel/lighting/sppm/sppmpasscallback.cpp
     renderer/kernel/lighting/sppm/sppmpasscallback.h
+    renderer/kernel/lighting/sppm/sppmphoton.cpp
+    renderer/kernel/lighting/sppm/sppmphoton.h
+    renderer/kernel/lighting/sppm/sppmphotonmap.cpp
+    renderer/kernel/lighting/sppm/sppmphotonmap.h
 )
 list (APPEND appleseed_sources
     ${renderer_kernel_lighting_sppm_sources}

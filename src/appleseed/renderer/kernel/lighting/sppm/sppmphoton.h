@@ -26,49 +26,62 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMLIGHTINGENGINE_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMLIGHTINGENGINE_H
+#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMPHOTON_H
+#define APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMPHOTON_H
 
 // appleseed.renderer headers.
-#include "renderer/kernel/lighting/ilightingengine.h"
-#include "renderer/utility/paramarray.h"
+#include "renderer/global/globaltypes.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
+#include "foundation/math/vector.h"
 
-// Forward declarations.
-namespace renderer  { class LightSampler; }
-namespace renderer  { class SPPMPassCallback; }
+// Standard headers.
+#include <cstddef>
+#include <vector>
 
 namespace renderer
 {
 
 //
-// SPPM lighting engine factory.
+// A photon in the SPPM photon map.
 //
 
-class SPPMLightingEngineFactory
-  : public ILightingEngineFactory
+class SPPMPhotonPayload
 {
   public:
-    // Constructor.
-    SPPMLightingEngineFactory(
-        const SPPMPassCallback&     pass_callback,
-        const LightSampler&         light_sampler,
-        const ParamArray&           params);
+    foundation::Vector3f    m_incoming;     // incoming direction (NOT unit length)
+    Spectrum                m_flux;         // flux carried by this photon (in W)
+};
 
-    // Delete this instance.
-    virtual void release() OVERRIDE;
+class SPPMPhoton
+{
+  public:
+    foundation::Vector3f    m_position;
+    SPPMPhotonPayload       m_payload;
+};
 
-    // Return a new path tracing lighting engine instance.
-    virtual ILightingEngine* create() OVERRIDE;
 
-  private:
-    const SPPMPassCallback&         m_pass_callback;
-    const LightSampler&             m_light_sampler;
-    ParamArray                      m_params;
+//
+// A vector of photons.
+//
+
+class PhotonVector
+{
+  public:
+    std::vector<foundation::Vector3f>   m_positions;
+    std::vector<SPPMPhotonPayload>      m_payloads;
+
+    bool empty() const;
+    size_t size() const;
+
+    // Return the size (in bytes) of this object in memory.
+    size_t get_memory_size() const;
+
+    void swap(PhotonVector& rhs);
+    void reserve(const size_t capacity);
+    void push_back(const SPPMPhoton& photon);
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMLIGHTINGENGINE_H
+#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMPHOTON_H
