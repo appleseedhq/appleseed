@@ -212,7 +212,7 @@ inline float faster_pow2(const float p)
 
 inline float fast_log2(const float x)
 {
-    assert(x > 0.0f);
+    assert(x >= 0.0f);
 
     const union { float f; uint32 i; } vx = { x };
     const union { uint32 i; float f; } mx = { (vx.i & 0x007FFFFF) | 0x3f000000 };
@@ -225,7 +225,7 @@ inline float fast_log2(const float x)
 
 inline float faster_log2(const float x)
 {
-    assert(x > 0.0f);
+    assert(x >= 0.0f);
 
     const union { float f; uint32 i; } vx = { x };
     const float y = static_cast<float>(vx.i) * 1.1920928955078125e-7f;
@@ -252,7 +252,7 @@ inline float faster_log(const float x)
 {
     // Inlined version of 0.69314718f * faster_log2(x).
 
-    assert(x > 0.0f);
+    assert(x >= 0.0f);
 
     const union { float f; uint32 i; } vx = { x };
     const float y = static_cast<float>(vx.i) * 8.2629582881927490e-8f;
