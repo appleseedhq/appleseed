@@ -104,7 +104,7 @@ namespace
 
             // Evaluate the BSDF's inputs.
             InputEvaluator input_evaluator(shading_context.get_texture_cache());
-            input_evaluator.evaluate(bsdf->get_inputs(), shading_point.get_uv(0));
+            bsdf->evaluate_inputs(input_evaluator, shading_point.get_uv(0));
 
             // Compute the outgoing direction (toward the camera).
             const Vector3d outgoing = -normalize(shading_point.get_ray().m_dir);
