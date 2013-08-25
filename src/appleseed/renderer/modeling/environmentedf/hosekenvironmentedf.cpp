@@ -40,6 +40,7 @@
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
+#include "foundation/math/fastmath.h"
 #include "foundation/math/sampling.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
@@ -411,7 +412,7 @@ namespace
 
             // Apply luminance gamma and multiplier.
             if (m_uniform_values.m_luminance_gamma != 1.0)
-                luminance = pow(luminance, static_cast<float>(m_uniform_values.m_luminance_gamma));
+                luminance = fast_pow(luminance, static_cast<float>(m_uniform_values.m_luminance_gamma));
             luminance *= static_cast<float>(m_uniform_values.m_luminance_multiplier);
 
             // Compute the final sky radiance.
