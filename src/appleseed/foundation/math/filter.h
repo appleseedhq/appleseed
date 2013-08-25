@@ -281,8 +281,10 @@ inline T GaussianFilter2<T>::evaluate(const T x, const T y) const
 {
     const T nx = x * Filter2<T>::m_rcp_xradius;
     const T ny = y * Filter2<T>::m_rcp_yradius;
+
     const T fx = gaussian(nx, m_alpha) - m_shift;
     const T fy = gaussian(ny, m_alpha) - m_shift;
+
     return fx * fy;
 }
 
