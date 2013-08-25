@@ -41,6 +41,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
+#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <memory>
@@ -83,6 +84,7 @@ class SPPMPassCallback
     TextureCache                    m_texture_cache;
     Intersector                     m_intersector;
     std::auto_ptr<SPPMPhotonMap>    m_photon_map;
+    foundation::uint32              m_pass_number;
 
     void trace_photons(
         PhotonVector&               photons);

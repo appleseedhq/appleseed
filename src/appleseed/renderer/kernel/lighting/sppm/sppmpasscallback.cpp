@@ -44,7 +44,6 @@
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
 #include "foundation/math/rng.h"
-#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <cassert>
@@ -69,6 +68,7 @@ SPPMPassCallback::SPPMPassCallback(
   , m_light_sampler(light_sampler)
   , m_texture_cache(texture_store)
   , m_intersector(trace_context, m_texture_cache /*, m_params.m_report_self_intersections*/)
+  , m_pass_number(0)
 {
 }
 
@@ -79,6 +79,8 @@ void SPPMPassCallback::release()
 
 void SPPMPassCallback::pre_render()
 {
+    ++m_pass_number;
+
     // Trace photons.
     PhotonVector photons;
     trace_photons(photons);
@@ -96,16 +98,17 @@ void SPPMPassCallback::trace_photons(PhotonVector& photons)
         PhotonCount,
         PhotonCount > 1 ? "s" : "");
 
-    photons.reserve(PhotonCount);
-
-    const float flux_multiplier = 1.0f / PhotonCount;
-
-    MersenneTwister rng;
+    const uint32 instance = hashint32(m_pass_number);
+    MersenneTwister rng(instance);
     SamplingContext sampling_context(
         rng,
         4,
-        PhotonCount,
-        0);
+        0,                  // number of samples -- unknown
+        instance);
+
+    photons.reserve(PhotonCount);
+
+    const float flux_multiplier = 1.0f / PhotonCount;
 
     for (size_t i = 0; i < PhotonCount; ++i)
         trace_photon(sampling_context, flux_multiplier, photons);
