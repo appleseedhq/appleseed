@@ -285,6 +285,9 @@ Color<T, 3> srgb_to_linear_rgb(const Color<T, 3>& srgb);
 // Variants of the above functions using a fast approximation of the power function.
 float fast_linear_rgb_to_srgb(const float c);
 float fast_srgb_to_linear_rgb(const float c);
+#ifdef APPLESEED_FOUNDATION_USE_SSE
+inline __m128 fast_linear_rgb_to_srgb(const __m128 linear_rgb);
+#endif
 Color3f fast_linear_rgb_to_srgb(const Color3f& linear_rgb);
 Color3f fast_srgb_to_linear_rgb(const Color3f& srgb);
 
@@ -648,6 +651,20 @@ inline float fast_srgb_to_linear_rgb(const float c)
 
 #ifdef APPLESEED_FOUNDATION_USE_SSE
 
+inline __m128 fast_linear_rgb_to_srgb(const __m128 linear_rgb)
+{
+    // Apply 2.4 gamma correction.
+    const __m128 y = fast_pow(linear_rgb, _mm_set1_ps(1.0f / 2.4f));
+
+    // Compute both outcomes of the branch.
+    const __m128 a = _mm_mul_ps(_mm_set1_ps(12.92f), linear_rgb);
+    const __m128 b = _mm_sub_ps(_mm_mul_ps(_mm_set1_ps(1.055f), y), _mm_set1_ps(0.055f));
+
+    // Interleave them based on the actual comparison.
+    const __m128 mask = _mm_cmple_ps(linear_rgb, _mm_set1_ps(0.0031308f));
+    return _mm_add_ps(_mm_and_ps(mask, a), _mm_andnot_ps(mask, b));
+}
+
 inline Color3f fast_linear_rgb_to_srgb(const Color3f& linear_rgb)
 {
     SSE_ALIGN float transfer[4] =
@@ -658,38 +675,7 @@ inline Color3f fast_linear_rgb_to_srgb(const Color3f& linear_rgb)
         linear_rgb[2]
     };
 
-    __m128 c = _mm_load_ps(transfer);
-    __m128 x = _mm_cvtepi32_ps(_mm_castps_si128(c));
-
-    const __m128 K = _mm_set1_ps(127.0f);
-    x = _mm_mul_ps(x, _mm_set1_ps(0.1192092896e-6f));     // x *= pow(2.0f, -23)
-    x = _mm_sub_ps(x, K);
-
-    // One Newton-Raphson refinement step.
-    __m128 z = _mm_sub_ps(x, floorps(x));
-    z = _mm_sub_ps(z, _mm_mul_ps(z, z));
-    z = _mm_mul_ps(z, _mm_set1_ps(0.346607f));
-    x = _mm_add_ps(x, z);
-
-    x = _mm_mul_ps(x, _mm_set1_ps(1.0f / 2.4f));
-
-    __m128 y = _mm_sub_ps(x, floorps(x));
-    y = _mm_sub_ps(y, _mm_mul_ps(y, y));
-    y = _mm_mul_ps(y, _mm_set1_ps(0.33971f));
-    y = _mm_sub_ps(_mm_add_ps(x, K), y);
-    y = _mm_mul_ps(y, _mm_set1_ps(8388608.0f));           // y *= pow(2.0f, 23)
-
-    y = _mm_castsi128_ps(_mm_cvtps_epi32(y));
-
-    // Compute both outcomes of the branch.
-    const __m128 a = _mm_mul_ps(_mm_set1_ps(12.92f), c);
-    const __m128 b = _mm_sub_ps(_mm_mul_ps(_mm_set1_ps(1.055f), y), _mm_set1_ps(0.055f));
-
-    // Interleave them based on the actual comparison.
-    const __m128 mask = _mm_cmple_ps(c, _mm_set1_ps(0.0031308f));
-    c = _mm_add_ps(_mm_and_ps(mask, a), _mm_andnot_ps(mask, b));
-
-    _mm_store_ps(transfer, c);
+    _mm_store_ps(transfer, fast_linear_rgb_to_srgb(_mm_load_ps(transfer)));
 
     return Color3f(transfer[0], transfer[1], transfer[2]);
 }
