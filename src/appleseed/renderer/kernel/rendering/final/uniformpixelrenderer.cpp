@@ -104,20 +104,6 @@ namespace
             delete this;
         }
 
-        virtual void on_tile_begin(
-            const Frame&                frame,
-            Tile&                       tile,
-            TileStack&                  aov_tiles) OVERRIDE
-        {
-        }
-
-        virtual void on_tile_end(
-            const Frame&                frame,
-            Tile&                       tile,
-            TileStack&                  aov_tiles) OVERRIDE
-        {
-        }
-
         virtual void render_pixel(
             const Frame&                frame,
             Tile&                       tile,
