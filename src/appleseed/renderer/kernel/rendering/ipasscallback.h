@@ -51,7 +51,7 @@ class DLLSYMBOL IPassCallback
   : public foundation::IUnknown
 {
   public:
-    virtual void pre_render(Frame& frame) = 0;
+    virtual void pre_render(const Frame& frame) = 0;
 };
 
 }       // namespace renderer
