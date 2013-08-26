@@ -239,7 +239,6 @@ set (foundation_math_sources
     foundation/math/area.h
     foundation/math/basis.h
     foundation/math/bestcandidate.h
-    foundation/math/bih.h
     foundation/math/bsp.h
     foundation/math/bvh.h
     foundation/math/cdf.h
