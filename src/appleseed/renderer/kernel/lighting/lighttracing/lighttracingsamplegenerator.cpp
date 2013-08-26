@@ -259,7 +259,6 @@ namespace
                 const BSDF::Mode            bsdf_mode) const
             {
                 assert(bsdf_mode != BSDF::Absorption);
-
                 return true;
             }
 
