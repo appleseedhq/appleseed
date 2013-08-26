@@ -35,6 +35,9 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
+// Forward declarations.
+namespace renderer  { class Frame; }
+
 namespace renderer
 {
 
@@ -48,7 +51,7 @@ class DLLSYMBOL IPassCallback
   : public foundation::IUnknown
 {
   public:
-    virtual void pre_render() = 0;
+    virtual void pre_render(Frame& frame) = 0;
 };
 
 }       // namespace renderer

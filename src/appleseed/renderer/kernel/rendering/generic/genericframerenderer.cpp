@@ -270,7 +270,7 @@ namespace
 
                 // Invoke the pass callback if there is one.
                 if (m_pass_callback)
-                    m_pass_callback->pre_render();
+                    m_pass_callback->pre_render(m_frame);
 
                 // Create tile jobs.
                 TileJobFactory::TileJobVector tile_jobs;
