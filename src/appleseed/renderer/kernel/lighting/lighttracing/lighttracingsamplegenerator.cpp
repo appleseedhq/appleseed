@@ -208,7 +208,7 @@ namespace
             const LightingConditions&       m_lighting_conditions;
             const ShadingContext&           m_shading_context;
 
-            const Spectrum                  m_initial_alpha;        // initial particle flux (in W)
+            const Spectrum                  m_initial_flux;         // initial particle flux (in W)
             Transformd                      m_camera_transform;     // camera transform at selected time
             Vector3d                        m_camera_position;      // camera position in world space
             Vector3d                        m_camera_direction;     // camera direction (gaze) in world space
@@ -223,14 +223,14 @@ namespace
                 const Frame&                frame,
                 const ShadingContext&       shading_context,
                 SampleVector&               samples,
-                const Spectrum&             initial_alpha)
+                const Spectrum&             initial_flux)
               : m_params(params)
               , m_camera(*scene.get_camera())
               , m_lighting_conditions(frame.get_lighting_conditions())
               , m_shading_context(shading_context)
               , m_samples(samples)
               , m_sample_count(0)
-              , m_initial_alpha(initial_alpha)
+              , m_initial_flux(initial_flux)
             {
                 // Compute the world space position and direction of the camera.
                 // todo: add support for camera motion blur.
@@ -415,7 +415,7 @@ namespace
                 assert(g >= 0.0);
 
                 // Store the contribution of this vertex.
-                Spectrum radiance = m_initial_alpha;
+                Spectrum radiance = m_initial_flux;
                 radiance *= vertex.m_throughput;
                 radiance *= bsdf_value;
                 radiance *= static_cast<float>(g * flux_to_radiance);
@@ -583,24 +583,18 @@ namespace
                 edf_prob);
 
             // Compute the initial particle weight.
-            Spectrum initial_alpha = edf_value;
-            initial_alpha *=
+            Spectrum initial_flux = edf_value;
+            initial_flux *=
                 static_cast<float>(
                     dot(emission_direction, light_sample.m_shading_normal)
                         / (light_sample.m_probability * edf_prob));
 
-            // Manufacture a shading point at the position of the light sample.
-            // It will be used to avoid self-intersections.
+            // Make a shading point that will be used to avoid self-intersections with the light sample.
             ShadingPoint parent_shading_point;
-            m_intersector.manufacture_hit(
+            light_sample.make_shading_point(
                 parent_shading_point,
-                ShadingRay(light_sample.m_point, emission_direction, 0.0, 0.0, 0.0f, ~0),
-                light_sample.m_triangle->m_assembly_instance,
-                light_sample.m_triangle->m_assembly_instance->transform_sequence().get_earliest_transform(),
-                light_sample.m_triangle->m_object_instance_index,
-                light_sample.m_triangle->m_region_index,
-                light_sample.m_triangle->m_triangle_index,
-                light_sample.m_triangle->m_triangle_support_plane);
+                emission_direction,
+                m_intersector);
 
             // Build the light ray.
             sampling_context.split_in_place(1, 1);
@@ -617,7 +611,7 @@ namespace
                 m_frame,
                 m_shading_context,
                 samples,
-                initial_alpha);
+                initial_flux);
             PathTracerType path_tracer(
                 path_visitor,
                 m_params.m_rr_min_path_length,
@@ -673,8 +667,8 @@ namespace
             emission_direction = normalize(light_sample.m_light_transform.vector_to_parent(emission_direction));
 
             // Compute the initial particle weight.
-            Spectrum initial_alpha = light_value;
-            initial_alpha /= static_cast<float>(light_sample.m_probability * light_prob);
+            Spectrum initial_flux = light_value;
+            initial_flux /= static_cast<float>(light_sample.m_probability * light_prob);
 
             // Build the light ray.
             sampling_context.split_in_place(1, 1);
@@ -691,7 +685,7 @@ namespace
                 m_frame,
                 m_shading_context,
                 samples,
-                initial_alpha);
+                initial_flux);
             PathTracerType path_tracer(
                 path_visitor,
                 m_params.m_rr_min_path_length,
@@ -757,8 +751,8 @@ namespace
                 disk_point[1] * basis.get_tangent_v();
 
             // Compute the initial particle weight.
-            Spectrum initial_alpha = env_edf_value;
-            initial_alpha /= static_cast<float>(m_disk_point_prob * env_edf_prob);
+            Spectrum initial_flux = env_edf_value;
+            initial_flux /= static_cast<float>(m_disk_point_prob * env_edf_prob);
 
             // Build the light ray.
             const ShadingRay light_ray(ray_origin, -outgoing, 0.0f, ~0);
@@ -770,7 +764,7 @@ namespace
                 m_frame,
                 m_shading_context,
                 samples,
-                initial_alpha);
+                initial_flux);
             PathTracerType path_tracer(
                 path_visitor,
                 m_params.m_rr_min_path_length,

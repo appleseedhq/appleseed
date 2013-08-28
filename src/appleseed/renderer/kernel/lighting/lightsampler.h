@@ -52,6 +52,7 @@
 namespace renderer  { class Assembly; }
 namespace renderer  { class AssemblyInstance; }
 namespace renderer  { class EDF; }
+namespace renderer  { class Intersector; }
 namespace renderer  { class Light; }
 namespace renderer  { class ParamArray; }
 namespace renderer  { class Scene; }
@@ -152,6 +153,12 @@ class LightSample
 
     // Data common to all sample types.
     double                      m_probability;                  // probability density of this sample
+
+    // Construct a shading point out of this light sample and a given direction.
+    void make_shading_point(
+        ShadingPoint&                   shading_point,
+        const foundation::Vector3d&     direction,
+        const Intersector&              intersector) const;
 };
 
 
