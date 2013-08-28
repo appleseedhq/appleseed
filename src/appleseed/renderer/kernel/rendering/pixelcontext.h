@@ -26,59 +26,45 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_ILIGHTINGENGINE_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_ILIGHTINGENGINE_H
-
-// appleseed.renderer headers.
-#include "renderer/global/globaltypes.h"
+#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_PIXELCONTEXT_H
+#define APPLESEED_RENDERER_KERNEL_RENDERING_PIXELCONTEXT_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts/iunknown.h"
-
-// Forward declarations.
-namespace foundation    { class StatisticsVector; }
-namespace renderer      { class PixelContext; }
-namespace renderer      { class ShadingContext; }
-namespace renderer      { class ShadingPoint; }
-namespace renderer      { class SpectrumStack; }
+#include "foundation/math/vector.h"
 
 namespace renderer
 {
 
 //
-// Lighting engine interface.
-//
+// This class identifies the pixel currently being rendered throughout the
+// Tile Renderer -> Pixel Renderer -> Sample Renderer -> Surface Shader -> Lighting Engine chain.
 
-class ILightingEngine
-  : public foundation::IUnknown
+class PixelContext
 {
   public:
-    // Compute the lighting at a given point of the scene.
-    virtual void compute_lighting(
-        SamplingContext&        sampling_context,
-        const PixelContext&     pixel_context,
-        const ShadingContext&   shading_context,
-        const ShadingPoint&     shading_point,
-        Spectrum&               radiance,           // output radiance, in W.sr^-1.m^-2
-        SpectrumStack&          aovs) = 0;
+    const int m_ix, m_iy;
 
-    // Retrieve performance statistics.
-    virtual foundation::StatisticsVector get_statistics() const = 0;
+    PixelContext(const int ix, const int iy);
+
+    foundation::Vector2i get_pixel_coordinates() const;
 };
 
 
 //
-// Interface of a ILightingEngine factory.
+// PixelContext class implementation.
 //
 
-class ILightingEngineFactory
-  : public foundation::IUnknown
+inline PixelContext::PixelContext(const int ix, const int iy)
+  : m_ix(ix)
+  , m_iy(iy)
 {
-  public:
-    // Return a new sample lighting engine instance.
-    virtual ILightingEngine* create() = 0;
-};
+}
+
+inline foundation::Vector2i PixelContext::get_pixel_coordinates() const
+{
+    return foundation::Vector2i(m_ix, m_iy);
+}
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_ILIGHTINGENGINE_H
+#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_PIXELCONTEXT_H

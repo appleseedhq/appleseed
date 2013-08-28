@@ -43,6 +43,7 @@
 namespace foundation    { class StatisticsVector; }
 namespace foundation    { class Tile; }
 namespace renderer      { class Frame; }
+namespace renderer      { class PixelContext; }
 namespace renderer      { class ShadingResultFrameBuffer; }
 namespace renderer      { class TileStack; }
 
@@ -75,8 +76,7 @@ class IPixelRenderer
         foundation::Tile&           tile,
         TileStack&                  aov_tiles,
         const foundation::AABB2u&   tile_bbox,
-        const int                   ix,
-        const int                   iy,
+        const PixelContext&         pixel_context,
         const int                   tx,
         const int                   ty,
         SamplingContext::RNGType&   rng,

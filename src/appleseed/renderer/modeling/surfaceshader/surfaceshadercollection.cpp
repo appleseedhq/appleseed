@@ -48,6 +48,7 @@
 
 // Forward declarations.
 namespace renderer  { class Assembly; }
+namespace renderer  { class PixelContext; }
 namespace renderer  { class Project; }
 namespace renderer  { class ShadingContext; }
 namespace renderer  { class ShadingPoint; }
@@ -124,12 +125,14 @@ namespace
 
         virtual void evaluate(
             SamplingContext&        sampling_context,
+            const PixelContext&     pixel_context,
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
             ShadingResult&          shading_result) const OVERRIDE
         {
             m_surface_shaders[0]->evaluate(
                 sampling_context,
+                pixel_context,
                 shading_context,
                 shading_point,
                 shading_result);
@@ -146,6 +149,7 @@ namespace
 
                     m_surface_shaders[i]->evaluate(
                         sampling_context,
+                        pixel_context,
                         shading_context,
                         shading_point,
                         local_result);

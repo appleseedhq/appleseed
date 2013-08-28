@@ -52,6 +52,7 @@
 
 // Forward declarations.
 namespace renderer  { class Assembly; }
+namespace renderer  { class PixelContext; }
 namespace renderer  { class Project; }
 
 using namespace foundation;
@@ -131,6 +132,7 @@ namespace
 
         virtual void evaluate(
             SamplingContext&        sampling_context,
+            const PixelContext&     pixel_context,
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
             ShadingResult&          shading_result) const OVERRIDE

@@ -38,6 +38,7 @@
 
 // Forward declarations.
 namespace foundation    { class StatisticsVector; }
+namespace renderer      { class PixelContext; }
 namespace renderer      { class ShadingResult; }
 
 namespace renderer
@@ -55,6 +56,7 @@ class ISampleRenderer
     // normalized device coordinates (http://appleseedhq.net/conventions).
     virtual void render_sample(
         SamplingContext&                sampling_context,
+        const PixelContext&             pixel_context,
         const foundation::Vector2d&     image_point,
         ShadingResult&                  shading_result) = 0;
 

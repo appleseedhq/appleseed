@@ -40,6 +40,9 @@
 // Standard headers.
 #include <cmath>
 
+// Forward declarations.
+namespace renderer  { class PixelContext; }
+
 using namespace foundation;
 using namespace std;
 
@@ -63,6 +66,7 @@ namespace
 
         virtual void render_sample(
             SamplingContext&    sampling_context,
+            const PixelContext& pixel_context,
             const Vector2d&     image_point,
             ShadingResult&      shading_result) OVERRIDE
         {

@@ -59,6 +59,7 @@
 
 // Forward declarations.
 namespace renderer  { class EnvironmentEDF; }
+namespace renderer  { class PixelContext; }
 
 using namespace foundation;
 using namespace std;
@@ -147,6 +148,7 @@ namespace
 
         virtual void compute_lighting(
             SamplingContext&        sampling_context,
+            const PixelContext&     pixel_context,
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
             Spectrum&               radiance,               // output radiance, in W.sr^-1.m^-2

@@ -178,6 +178,7 @@ namespace
 
 void DiagnosticSurfaceShader::evaluate(
     SamplingContext&        sampling_context,
+    const PixelContext&     pixel_context,
     const ShadingContext&   shading_context,
     const ShadingPoint&     shading_point,
     ShadingResult&          shading_result) const

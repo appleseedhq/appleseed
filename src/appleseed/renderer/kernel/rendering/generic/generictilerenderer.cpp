@@ -35,6 +35,7 @@
 #include "renderer/kernel/aov/imagestack.h"
 #include "renderer/kernel/aov/tilestack.h"
 #include "renderer/kernel/rendering/ipixelrenderer.h"
+#include "renderer/kernel/rendering/pixelcontext.h"
 #include "renderer/kernel/rendering/shadingresultframebuffer.h"
 #include "renderer/modeling/frame/frame.h"
 
@@ -173,9 +174,10 @@ namespace
                     ty > static_cast<int>(tile_bbox.max.y) + m_margin_height)
                     continue;
 
-                // Compute the coordinates of the pixel in the padded image.
-                const int ix = static_cast<int>(tile_origin_x) + tx;
-                const int iy = static_cast<int>(tile_origin_y) + ty;
+                // Create a pixel context that identifies the pixel currently being rendered.
+                const PixelContext pixel_context(
+                    static_cast<int>(tile_origin_x) + tx,
+                    static_cast<int>(tile_origin_y) + ty);
 
 #ifdef DEBUG_BREAK_AT_PIXEL
 
@@ -191,7 +193,7 @@ namespace
                     tile,
                     aov_tiles,
                     tile_bbox,
-                    ix, iy,
+                    pixel_context,
                     tx, ty,
                     m_rng,
                     framebuffer);

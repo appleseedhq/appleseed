@@ -75,6 +75,7 @@ void ShadingEngine::create_diagnostic_surface_shader(const ParamArray& params)
 
 void ShadingEngine::shade_hit_point(
     SamplingContext&        sampling_context,
+    const PixelContext&     pixel_context,
     const ShadingContext&   shading_context,
     const ShadingPoint&     shading_point,
     ShadingResult&          shading_result) const
@@ -125,6 +126,7 @@ void ShadingEngine::shade_hit_point(
         // Execute the surface shader.
         surface_shader->evaluate(
             sampling_context,
+            pixel_context,
             shading_context,
             shading_point,
             shading_result);

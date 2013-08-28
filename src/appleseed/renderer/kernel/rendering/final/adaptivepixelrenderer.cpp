@@ -37,6 +37,7 @@
 #include "renderer/kernel/aov/tilestack.h"
 #include "renderer/kernel/rendering/final/variationtracker.h"
 #include "renderer/kernel/rendering/isamplerenderer.h"
+#include "renderer/kernel/rendering/pixelcontext.h"
 #include "renderer/kernel/rendering/pixelrendererbase.h"
 #include "renderer/kernel/rendering/shadingresultframebuffer.h"
 #include "renderer/kernel/shading/shadingresult.h"
@@ -163,13 +164,16 @@ namespace
             Tile&                       tile,
             TileStack&                  aov_tiles,
             const AABB2u&               tile_bbox,
-            const int                   ix,
-            const int                   iy,
+            const PixelContext&         pixel_context,
             const int                   tx,
             const int                   ty,
             SamplingContext::RNGType&   rng,
             ShadingResultFrameBuffer&   framebuffer) OVERRIDE
         {
+            const int ix = pixel_context.m_ix;
+            const int iy = pixel_context.m_iy;
+            const size_t aov_count = frame.aov_images().size();
+
             m_scratch_fb->clear();
 
             // Create a sampling context.
@@ -181,7 +185,6 @@ namespace
                 0,                      // number of samples -- unknown
                 instance);              // initial instance number
 
-            const size_t aov_count = frame.aov_images().size();
             VariationTracker trackers[3];
 
             while (true)
@@ -213,6 +216,7 @@ namespace
                     shading_result.m_aovs.set_size(aov_count);
                     m_sample_renderer->render_sample(
                         child_sampling_context,
+                        pixel_context,
                         sample_position,
                         shading_result);
 
