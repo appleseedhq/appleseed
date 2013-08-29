@@ -29,14 +29,14 @@
 #ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMPHOTONMAP_H
 #define APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMPHOTONMAP_H
 
-// appleseed.renderer headers.
-#include "renderer/kernel/lighting/sppm/sppmphoton.h"
-
 // appleseed.foundation headers.
 #include "foundation/math/knn.h"
 
 // Standard headers.
 #include <cstddef>
+
+// Forward declarations.
+namespace renderer  { class SPPMPhotonVector; }
 
 namespace renderer
 {
@@ -45,28 +45,12 @@ class SPPMPhotonMap
   : public foundation::knn::Tree3f
 {
   public:
-    // Constructor, moves the photons into the photon map.
-    explicit SPPMPhotonMap(PhotonVector& photons);
+    // Constructor, *moves* the photon positions into the map.
+    explicit SPPMPhotonMap(SPPMPhotonVector& photons);
 
     // Return the size (in bytes) of this object in memory.
     size_t get_memory_size() const;
-
-    // Return the payload of the index'th photon in the photon map.
-    const SPPMPhotonPayload& get_photon_payload(const size_t index) const;
-
-  private:
-    PhotonVector m_photons;
 };
-
-
-//
-// SPPMPhotonMap class implementation.
-//
-
-inline const SPPMPhotonPayload& SPPMPhotonMap::get_photon_payload(const size_t index) const
-{
-    return m_photons.m_payloads[index];
-}
 
 }       // namespace renderer
 

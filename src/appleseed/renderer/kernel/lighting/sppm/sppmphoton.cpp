@@ -35,44 +35,44 @@ namespace renderer
 {
 
 //
-// PhotonVector class implementation.
+// SPPMPhotonVector class implementation.
 //
 
-bool PhotonVector::empty() const
+bool SPPMPhotonVector::empty() const
 {
-    assert(m_positions.empty() == m_payloads.empty());
+    assert(m_positions.empty() == m_data.empty());
     return m_positions.empty();
 }
 
-size_t PhotonVector::size() const
+size_t SPPMPhotonVector::size() const
 {
-    assert(m_positions.size() == m_payloads.size());
+    assert(m_positions.size() == m_data.size());
     return m_positions.size();
 }
 
-size_t PhotonVector::get_memory_size() const
+size_t SPPMPhotonVector::get_memory_size() const
 {
     return
         m_positions.capacity() * sizeof(Vector3f) +
-        m_payloads.capacity() * sizeof(SPPMPhotonPayload);
+        m_data.capacity() * sizeof(SPPMPhotonData);
 }
 
-void PhotonVector::swap(PhotonVector& rhs)
+void SPPMPhotonVector::swap(SPPMPhotonVector& rhs)
 {
     m_positions.swap(rhs.m_positions);
-    m_payloads.swap(rhs.m_payloads);
+    m_data.swap(rhs.m_data);
 }
 
-void PhotonVector::reserve(const size_t capacity)
+void SPPMPhotonVector::reserve(const size_t capacity)
 {
     m_positions.reserve(capacity);
-    m_payloads.reserve(capacity);
+    m_data.reserve(capacity);
 }
 
-void PhotonVector::push_back(const SPPMPhoton& photon)
+void SPPMPhotonVector::push_back(const SPPMPhoton& photon)
 {
     m_positions.push_back(photon.m_position);
-    m_payloads.push_back(photon.m_payload);
+    m_data.push_back(photon.m_data);
 }
 
 }   // namespace renderer

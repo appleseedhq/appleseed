@@ -26,63 +26,60 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMPHOTON_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMPHOTON_H
+#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMGATHERPOINT_H
+#define APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMGATHERPOINT_H
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/basis.h"
 #include "foundation/math/vector.h"
+#include "foundation/platform/thread.h"
 
 // Standard headers.
 #include <cstddef>
 #include <vector>
 
+// Forward declarations.
+namespace renderer  { class BSDF; }
+
 namespace renderer
 {
 
 //
-// A photon in the SPPM photon map.
+// A gather point.
 //
 
-class SPPMPhotonData
+class SPPMGatherPoint
 {
   public:
-    foundation::Vector3f    m_incoming;             // incoming direction, world space, unit length
-    foundation::Vector3f    m_geometric_normal;     // geometric normal at the photon location, world space, unit length
-    Spectrum                m_flux;                 // flux carried by this photon (in W)
+    foundation::Vector3f    m_position;             // location of the gather point, in world space
+    foundation::Vector2d    m_uv;                   // UV coordinates at the gather point
+    foundation::Vector3d    m_geometric_normal;     // geometric normal at the gather point, in world space, unit length
+    foundation::Basis3d     m_shading_basis;        // shading basis, in world space
+    foundation::Vector3d    m_incoming;             // incoming direction, in world space, unit length
+    const BSDF*             m_bsdf;                 // BSDF at the gather point
+    Spectrum                m_throughput;           // total throughput from this gather point to the camera
+    size_t                  m_pixel_index;          // index of the pixel (y * width + x)
 };
 
-class SPPMPhoton
-{
-  public:
-    foundation::Vector3f    m_position;
-    SPPMPhotonData          m_data;
-};
-
 
 //
-// A vector of photons.
+// A vector of gather points.
 //
 
-class SPPMPhotonVector
+class SPPMGatherPointVector
+  : public std::vector<SPPMGatherPoint>
 {
   public:
-    std::vector<foundation::Vector3f>   m_positions;
-    std::vector<SPPMPhotonData>         m_data;
+    // Thread-safe.
+    void append(const SPPMGatherPointVector& rhs);
 
-    bool empty() const;
-    size_t size() const;
-
-    // Return the size (in bytes) of this object in memory.
-    size_t get_memory_size() const;
-
-    void swap(SPPMPhotonVector& rhs);
-    void reserve(const size_t capacity);
-    void push_back(const SPPMPhoton& photon);
+  private:
+    boost::mutex m_mutex;
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMPHOTON_H
+#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMGATHERPOINT_H

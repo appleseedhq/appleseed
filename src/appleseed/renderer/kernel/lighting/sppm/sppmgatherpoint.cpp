@@ -27,54 +27,21 @@
 //
 
 // Interface header.
-#include "sppmphotonmap.h"
+#include "sppmgatherpoint.h"
 
-// appleseed.renderer headers.
-#include "renderer/global/globallogger.h"
-#include "renderer/kernel/lighting/sppm/sppmphoton.h"
-
-// appleseed.foundation headers.
-#include "foundation/platform/defaulttimers.h"
-#include "foundation/utility/statistics.h"
-#include "foundation/utility/string.h"
-
-// Standard headers.
-#include <string>
-
-using namespace foundation;
+using namespace boost;
 
 namespace renderer
 {
 
-SPPMPhotonMap::SPPMPhotonMap(SPPMPhotonVector& photons)
+//
+// SPPMGatherPointVector class implementation.
+//
+
+void SPPMGatherPointVector::append(const SPPMGatherPointVector& rhs)
 {
-    if (!photons.empty())
-    {
-        const size_t photon_count = photons.size();
-
-        RENDERER_LOG_INFO(
-            "building sppm photon map from %s %s...",
-            pretty_uint(photon_count).c_str(),
-            photon_count > 1 ? "photons" : "photon");
-
-        knn::Builder3f builder(*this);
-        builder.build_move_points<DefaultWallclockTimer>(photons.m_positions);
-
-        Statistics statistics;
-        statistics.insert_time("build time", builder.get_build_time());
-        statistics.insert_size("total size", get_memory_size());
-        statistics.merge(knn::TreeStatistics<knn::Tree3f>(*this));
-
-        RENDERER_LOG_DEBUG("%s",
-            StatisticsVector::make(
-                "sppm photon map statistics",
-                statistics).to_string().c_str());
-    }
-}
-
-size_t SPPMPhotonMap::get_memory_size() const
-{
-    return knn::Tree3f::get_memory_size();
+    mutex::scoped_lock lock(m_mutex);
+    insert(end(), rhs.begin(), rhs.end());
 }
 
 }   // namespace renderer

@@ -26,63 +26,57 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMPHOTON_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMPHOTON_H
+#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMGATHERPOINTTRACER_H
+#define APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMGATHERPOINTTRACER_H
 
 // appleseed.renderer headers.
-#include "renderer/global/globaltypes.h"
+#include "renderer/kernel/rendering/ipixelrenderer.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/vector.h"
+#include "foundation/platform/compiler.h"
 
 // Standard headers.
 #include <cstddef>
-#include <vector>
+
+// Forward declarations.
+namespace renderer  { class Scene; }
+namespace renderer  { class SPPMGatherPointVector; }
+namespace renderer  { class TextureStore; }
+namespace renderer  { class TraceContext; }
 
 namespace renderer
 {
 
 //
-// A photon in the SPPM photon map.
+// A pixel renderer that trace paths from the camera and create gather points.
 //
 
-class SPPMPhotonData
+class SPPMGatherPointTracerFactory
+  : public IPixelRendererFactory
 {
   public:
-    foundation::Vector3f    m_incoming;             // incoming direction, world space, unit length
-    foundation::Vector3f    m_geometric_normal;     // geometric normal at the photon location, world space, unit length
-    Spectrum                m_flux;                 // flux carried by this photon (in W)
-};
+    // Constructor.
+    SPPMGatherPointTracerFactory(
+        const Scene&            scene,
+        const TraceContext&     trace_context,
+        TextureStore&           texture_store,
+        const size_t            pass_hash,
+        SPPMGatherPointVector&  global_gather_points);
 
-class SPPMPhoton
-{
-  public:
-    foundation::Vector3f    m_position;
-    SPPMPhotonData          m_data;
-};
+    // Delete this instance.
+    virtual void release() OVERRIDE;
 
+    // Return a new gather point tracer instance.
+    virtual IPixelRenderer* create(const bool primary) OVERRIDE;
 
-//
-// A vector of photons.
-//
-
-class SPPMPhotonVector
-{
-  public:
-    std::vector<foundation::Vector3f>   m_positions;
-    std::vector<SPPMPhotonData>         m_data;
-
-    bool empty() const;
-    size_t size() const;
-
-    // Return the size (in bytes) of this object in memory.
-    size_t get_memory_size() const;
-
-    void swap(SPPMPhotonVector& rhs);
-    void reserve(const size_t capacity);
-    void push_back(const SPPMPhoton& photon);
+  private:
+    const Scene&                m_scene;
+    const TraceContext&         m_trace_context;
+    TextureStore&               m_texture_store;
+    const size_t                m_pass_hash;
+    SPPMGatherPointVector&      m_global_gather_points;
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMPHOTON_H
+#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMGATHERPOINTTRACER_H

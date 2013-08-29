@@ -37,7 +37,6 @@
 #include "foundation/platform/compiler.h"
 
 // Forward declarations.
-namespace renderer  { class LightSampler; }
 namespace renderer  { class SPPMPassCallback; }
 
 namespace renderer
@@ -54,7 +53,6 @@ class SPPMLightingEngineFactory
     // Constructor.
     SPPMLightingEngineFactory(
         const SPPMPassCallback&     pass_callback,
-        const LightSampler&         light_sampler,
         const ParamArray&           params);
 
     // Delete this instance.
@@ -65,7 +63,6 @@ class SPPMLightingEngineFactory
 
   private:
     const SPPMPassCallback&         m_pass_callback;
-    const LightSampler&             m_light_sampler;
     ParamArray                      m_params;
 };
 

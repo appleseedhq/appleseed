@@ -31,32 +31,37 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/kernel/intersection/intersector.h"
-#include "renderer/kernel/lighting/sppm/sppmphoton.h"
+#include "renderer/kernel/lighting/sppm/sppmpixelstatistics.h"
 #include "renderer/kernel/rendering/ipasscallback.h"
-#include "renderer/kernel/texturing/texturecache.h"
-#include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/aabb.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
 
 // Standard headers.
-#include <memory>
+#include <cassert>
+#include <cstddef>
+#include <vector>
 
 // Forward declarations.
-namespace renderer  { class LightSample; }
+namespace renderer  { class Frame; }
 namespace renderer  { class LightSampler; }
-namespace renderer  { class PathVertex; }
-namespace renderer  { class ShadingPoint; }
+namespace renderer  { class Scene; }
+namespace renderer  { class SPPMGatherPointVector; }
 namespace renderer  { class SPPMPhotonMap; }
+namespace renderer  { class SPPMPhotonVector; }
 namespace renderer  { class TextureStore; }
 namespace renderer  { class TraceContext; }
 
 namespace renderer
 {
+
+//
+// This class is the backbone of the SPPM implementation.
+//
 
 class SPPMPassCallback
   : public IPassCallback
@@ -64,71 +69,54 @@ class SPPMPassCallback
   public:
     // Constructor.
     SPPMPassCallback(
-        const LightSampler&         light_sampler,
-        const TraceContext&         trace_context,
-        TextureStore&               texture_store,
-        const ParamArray&           params);
+        const Scene&                    scene,
+        const LightSampler&             light_sampler,
+        const TraceContext&             trace_context,
+        TextureStore&                   texture_store,
+        const ParamArray&               params);
 
     // Delete this instance.
     virtual void release() OVERRIDE;
 
     // This method is called at the beginning of a pass.
-    virtual void pre_render() OVERRIDE;
+    virtual void pre_render(const Frame& frame) OVERRIDE;
 
-    // Return the SPPM photon map stored in this object.
-    const SPPMPhotonMap& get_photon_map() const;
+    // Return radiance for a given pixel.
+    void get_pixel_radiance(
+        const foundation::Vector2i&     p,
+        Spectrum&                       radiance) const;
 
   private:
-    const ParamArray                m_params;
-    const LightSampler&             m_light_sampler;
-    TextureCache                    m_texture_cache;
-    Intersector                     m_intersector;
-    std::auto_ptr<SPPMPhotonMap>    m_photon_map;
-    foundation::uint32              m_pass_number;
-
-    void trace_photons(
-        PhotonVector&               photons);
-
-    void trace_photon(
-        SamplingContext&            sampling_context,
-        const float                 flux_multiplier,
-        PhotonVector&               photons);
-
-    void trace_emitting_triangle_photon(
-        SamplingContext&            sampling_context,
-        LightSample&                light_sample,
-        const float                 flux_multiplier,
-        PhotonVector&               photons);
-
-    void trace_non_physical_light_photon(
-        SamplingContext&            sampling_context,
-        LightSample&                light_sample,
-        const float                 flux_multiplier,
-        PhotonVector&               photons);
-
-    struct PathVisitor
+    struct Parameters
     {
-        const Spectrum  m_initial_alpha;    // initial particle flux (in W)
-        PhotonVector&   m_photons;
+        float   m_initial_radius;
+        float   m_alpha;
+        size_t  m_photon_count_per_pass;
+        size_t  m_photon_count_per_estimate;
 
-        PathVisitor(
-            const ParamArray&           params,
-            const Spectrum&             initial_alpha,
-            PhotonVector&               photons);
-
-        bool accept_scattering_mode(
-            const BSDF::Mode            prev_bsdf_mode,
-            const BSDF::Mode            bsdf_mode) const;
-
-        bool visit_vertex(const PathVertex& vertex);
-
-        void visit_environment(
-            const ShadingPoint&         shading_point,
-            const foundation::Vector3d& outgoing,
-            const BSDF::Mode            prev_bsdf_mode,
-            const double                prev_bsdf_prob,
-            const Spectrum&             throughput);
+        explicit Parameters(const ParamArray& params);
     };
+
+    const Parameters                    m_params;
+    const Scene&                        m_scene;
+    const LightSampler&                 m_light_sampler;
+    const TraceContext&                 m_trace_context;
+    TextureStore&                       m_texture_store;
+    foundation::uint32                  m_pass_number;
+    foundation::AABB2i                  m_frame_bbox;
+    size_t                              m_frame_width;
+    std::vector<SPPMPixelStatistics>    m_pixel_statistics;
+    size_t                              m_emitted_photon_count;
+
+    void create_gather_points(
+        SPPMGatherPointVector&          gather_points,
+        const size_t                    pass_hash,
+        const Frame&                    frame);
+
+    void update_pixel_statistics(
+        const SPPMGatherPointVector&    gather_points,
+        const SPPMPhotonVector&         photons,
+        const SPPMPhotonMap&            photon_map);
 };
 
 
@@ -136,9 +124,13 @@ class SPPMPassCallback
 // SPPMPassCallback class implementation.
 //
 
-inline const SPPMPhotonMap& SPPMPassCallback::get_photon_map() const
+inline void SPPMPassCallback::get_pixel_radiance(
+    const foundation::Vector2i&         p,
+    Spectrum&                           radiance) const
 {
-    return *m_photon_map.get();
+    if (m_frame_bbox.contains(p))
+        radiance = m_pixel_statistics[p.y * m_frame_width + p.x].m_radiance;
+    else radiance.set(0.0f);
 }
 
 }       // namespace renderer

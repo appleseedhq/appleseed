@@ -26,55 +26,27 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "sppmphotonmap.h"
+#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMPIXELSTATISTICS_H
+#define APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMPIXELSTATISTICS_H
 
 // appleseed.renderer headers.
-#include "renderer/global/globallogger.h"
-#include "renderer/kernel/lighting/sppm/sppmphoton.h"
-
-// appleseed.foundation headers.
-#include "foundation/platform/defaulttimers.h"
-#include "foundation/utility/statistics.h"
-#include "foundation/utility/string.h"
-
-// Standard headers.
-#include <string>
-
-using namespace foundation;
+#include "renderer/global/globaltypes.h"
 
 namespace renderer
 {
 
-SPPMPhotonMap::SPPMPhotonMap(SPPMPhotonVector& photons)
+//
+// Shared pixel statistics.
+//
+
+class SPPMPixelStatistics
 {
-    if (!photons.empty())
-    {
-        const size_t photon_count = photons.size();
+  public:
+    float       m_radius;       // current photon radius
+    Spectrum    m_tau;          // accumulated reflected flux in W
+    Spectrum    m_radiance;     // final pixel radiance
+};
 
-        RENDERER_LOG_INFO(
-            "building sppm photon map from %s %s...",
-            pretty_uint(photon_count).c_str(),
-            photon_count > 1 ? "photons" : "photon");
+}       // namespace renderer
 
-        knn::Builder3f builder(*this);
-        builder.build_move_points<DefaultWallclockTimer>(photons.m_positions);
-
-        Statistics statistics;
-        statistics.insert_time("build time", builder.get_build_time());
-        statistics.insert_size("total size", get_memory_size());
-        statistics.merge(knn::TreeStatistics<knn::Tree3f>(*this));
-
-        RENDERER_LOG_DEBUG("%s",
-            StatisticsVector::make(
-                "sppm photon map statistics",
-                statistics).to_string().c_str());
-    }
-}
-
-size_t SPPMPhotonMap::get_memory_size() const
-{
-    return knn::Tree3f::get_memory_size();
-}
-
-}   // namespace renderer
+#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMPIXELSTATISTICS_H

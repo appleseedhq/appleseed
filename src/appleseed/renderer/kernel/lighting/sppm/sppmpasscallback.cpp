@@ -30,24 +30,29 @@
 #include "sppmpasscallback.h"
 
 // appleseed.renderer headers.
-#include "renderer/global/globallogger.h"
+#include "renderer/kernel/lighting/sppm/sppmgatherpoint.h"
+#include "renderer/kernel/lighting/sppm/sppmgatherpointtracer.h"
+#include "renderer/kernel/lighting/sppm/sppmphoton.h"
 #include "renderer/kernel/lighting/sppm/sppmphotonmap.h"
-#include "renderer/kernel/lighting/lightsampler.h"
-#include "renderer/kernel/lighting/pathtracer.h"
-#include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/kernel/shading/shadingray.h"
-#include "renderer/modeling/edf/edf.h"
+#include "renderer/kernel/lighting/sppm/sppmphotontracer.h"
+#include "renderer/kernel/rendering/generic/genericframerenderer.h"
+#include "renderer/kernel/rendering/generic/generictilerenderer.h"
+#include "renderer/kernel/rendering/iframerenderer.h"
+#include "renderer/kernel/rendering/itilerenderer.h"
+#include "renderer/modeling/bsdf/bsdf.h"
+#include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/input/inputevaluator.h"
-#include "renderer/modeling/scene/assemblyinstance.h"
-#include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/basis.h"
-#include "foundation/math/rng.h"
+#include "foundation/image/canvasproperties.h"
+#include "foundation/image/image.h"
+#include "foundation/math/knn.h"
+#include "foundation/math/scalar.h"
+#include "foundation/utility/string.h"
 
 // Standard headers.
-#include <cassert>
-#include <cstddef>
+#include <cmath>
+#include <memory>
 
 using namespace foundation;
 using namespace std;
@@ -58,17 +63,34 @@ namespace renderer
 //
 // SPPMPassCallback class implementation.
 //
+// References:
+//
+//   Progressive Photon Mapping: A Probabilistic Approach
+//   Claude Knaus, Matthias Zwicker
+//   http://www.cgg.unibe.ch/publications/2011/progressive-photon-mapping-a-probabilistic-approach
+//
+//   Progressive Photon Mapping
+//   Toshiya Hachisuka, Shinji Ogaki, Henrik Wann Jensen
+//   http://cs.au.dk/~toshiya/ppm.pdf
+//
+//   Stochastic Progressive Photon Mapping
+//   Toshiya Hachisuka, Henrik Wann Jensen
+//   http://cs.au.dk/~toshiya/sppm.pdf
+//
 
 SPPMPassCallback::SPPMPassCallback(
-    const LightSampler&     light_sampler,
-    const TraceContext&     trace_context,
-    TextureStore&           texture_store,
-    const ParamArray&       params)
+    const Scene&                    scene,
+    const LightSampler&             light_sampler,
+    const TraceContext&             trace_context,
+    TextureStore&                   texture_store,
+    const ParamArray&               params)
   : m_params(params)
+  , m_scene(scene)
   , m_light_sampler(light_sampler)
-  , m_texture_cache(texture_store)
-  , m_intersector(trace_context, m_texture_cache /*, m_params.m_report_self_intersections*/)
+  , m_trace_context(trace_context)
+  , m_texture_store(texture_store)
   , m_pass_number(0)
+  , m_emitted_photon_count(0)
 {
 }
 
@@ -77,208 +99,192 @@ void SPPMPassCallback::release()
     delete this;
 }
 
-void SPPMPassCallback::pre_render()
+void SPPMPassCallback::pre_render(const Frame& frame)
 {
+    RENDERER_LOG_INFO("sppm pass %s...", pretty_uint(m_pass_number).c_str());
+
+    // Create pixel statistics if they don't exist yet.
+    if (m_pixel_statistics.empty())
+    {
+        RENDERER_LOG_INFO("initializing sppm pixel statistics...");
+
+        const CanvasProperties& props = frame.image().properties();
+
+        m_frame_bbox.min.x = 0;
+        m_frame_bbox.min.y = 0;
+        m_frame_bbox.max.x = static_cast<int>(props.m_canvas_width) - 1;
+        m_frame_bbox.max.y = static_cast<int>(props.m_canvas_height) - 1;
+
+        m_frame_width = props.m_canvas_width;
+
+        SPPMPixelStatistics initial;
+        initial.m_radius = m_params.m_initial_radius;
+        initial.m_tau.set(0.0f);
+
+        m_pixel_statistics.resize(props.m_pixel_count, initial);
+    }
+
+    // Generate a new hash at each pass.
+    const size_t pass_hash = hashint32(m_pass_number);
+
+    // Create a new set of gather points.
+    SPPMGatherPointVector gather_points;
+    create_gather_points(
+        gather_points,
+        pass_hash,
+        frame);
+
+    // Create a new set of photons.
+    SPPMPhotonVector photons;
+    SPPMPhotonTracer photon_tracer(
+        m_light_sampler,
+        m_trace_context,
+        m_texture_store);
+    photon_tracer.trace_photons(
+        photons,
+        pass_hash,
+        m_params.m_photon_count_per_pass);
+    m_emitted_photon_count += m_params.m_photon_count_per_pass;
+
+    // Build a photon map.
+    const SPPMPhotonMap photon_map(photons);
+
+    // Update pixel statistics.
+    update_pixel_statistics(gather_points, photons, photon_map);
+
     ++m_pass_number;
-
-    // Trace photons.
-    PhotonVector photons;
-    trace_photons(photons);
-
-    // Build the photon map.
-    m_photon_map.reset(new SPPMPhotonMap(photons));
 }
 
-void SPPMPassCallback::trace_photons(PhotonVector& photons)
+void SPPMPassCallback::create_gather_points(
+    SPPMGatherPointVector&          gather_points,
+    const size_t                    pass_hash,
+    const Frame&                    frame)
 {
-    const size_t PhotonCount = 1000000;
+    RENDERER_LOG_INFO("creating sppm gather points...");
+
+    auto_ptr<IPixelRendererFactory> pixel_renderer_factory(
+        new SPPMGatherPointTracerFactory(
+            m_scene,
+            m_trace_context,
+            m_texture_store,
+            pass_hash,
+            gather_points));
+
+    auto_ptr<ITileRendererFactory> tile_renderer_factory(
+        new GenericTileRendererFactory(
+            frame,
+            pixel_renderer_factory.get(),
+            ParamArray()));
+
+    auto_ptr<IFrameRenderer> frame_renderer(
+        GenericFrameRendererFactory::create(
+            frame,
+            tile_renderer_factory.get(),
+            0,                                              // no tile callback factory
+            0,                                              // no pass callback
+            GenericFrameRendererFactory::SinglePass,
+            ParamArray()));
+
+    frame_renderer->render();
+}
+
+void SPPMPassCallback::update_pixel_statistics(
+    const SPPMGatherPointVector&    gather_points,
+    const SPPMPhotonVector&         photons,
+    const SPPMPhotonMap&            photon_map)
+{
+    assert(!m_pixel_statistics.empty());
+
+    const size_t point_count = gather_points.size();
 
     RENDERER_LOG_INFO(
-        "tracing " FMT_SIZE_T " photon%s...",
-        PhotonCount,
-        PhotonCount > 1 ? "s" : "");
+        "updating sppm pixel statistics from %s %s...",
+        pretty_uint(point_count).c_str(),
+        point_count > 1 ? "gather points" : "gather point");
 
-    const uint32 instance = hashint32(m_pass_number);
-    MersenneTwister rng(instance);
-    SamplingContext sampling_context(
-        rng,
-        4,
-        0,                  // number of samples -- unknown
-        instance);
+    TextureCache texture_cache(m_texture_store);
 
-    photons.reserve(PhotonCount);
+    knn::Answer<float> answer(m_params.m_photon_count_per_estimate);
+    knn::Query3f query(photon_map, answer);
 
-    const float flux_multiplier = 1.0f / PhotonCount;
-
-    for (size_t i = 0; i < PhotonCount; ++i)
-        trace_photon(sampling_context, flux_multiplier, photons);
-}
-
-void SPPMPassCallback::trace_photon(
-    SamplingContext&        sampling_context,
-    const float             flux_multiplier,
-    PhotonVector&           photons)
-{
-    LightSample light_sample;
-    m_light_sampler.sample(sampling_context.next_vector2<4>(), light_sample);
-
-    if (light_sample.m_triangle)
+    // Loop over the gather points.
+    for (size_t i = 0; i < point_count; ++i)
     {
-        trace_emitting_triangle_photon(
-            sampling_context,
-            light_sample,
-            flux_multiplier,
-            photons);
+        const SPPMGatherPoint& gather_point = gather_points[i];
+        SPPMPixelStatistics& stats = m_pixel_statistics[gather_point.m_pixel_index];
+        Spectrum tau(0.0f);
+
+        // Gather photons within the search radius.
+        query.run(gather_point.m_position, stats.m_radius);
+        const size_t photon_count = answer.size();
+        if (photon_count == 0)
+            continue;
+
+        // Loop over the photons within the search radius.
+        for (size_t j = 0; j < photon_count; ++j)
+        {
+            // Retrieve the j'th photon.
+            const knn::Answer<float>::Entry& photon = answer.get(j);
+            const SPPMPhotonData& data = photons.m_data[photon.m_index];
+
+#if 0
+            // Simple check to reduce the bias intrinsic to photon mapping.
+            if (dot(Vector3d(data.m_geometric_normal), gather_point.m_geometric_normal) <= -0.1)
+                continue;
+#endif
+
+            // Evaluate the BSDF's inputs.
+            InputEvaluator input_evaluator(texture_cache);
+            gather_point.m_bsdf->evaluate_inputs(input_evaluator, gather_point.m_uv);
+
+            // Evaluate the BSDF for this photon.
+            assert(gather_point.m_bsdf);
+            Spectrum bsdf_value;
+            const double bsdf_prob =
+                gather_point.m_bsdf->evaluate(
+                    input_evaluator.data(),
+                    true,                                       // adjoint
+                    true,                                       // multiply by |cos(incoming, normal)|
+                    gather_point.m_geometric_normal,
+                    gather_point.m_shading_basis,
+                    gather_point.m_incoming,                    // toward the camera
+                    normalize(Vector3d(data.m_incoming)),       // toward the light
+                    BSDF::AllScatteringModes,
+                    bsdf_value);
+            if (bsdf_prob == 0.0)
+                continue;
+
+            // Accumulate reflected flux.
+            bsdf_value *= data.m_flux;
+            tau += bsdf_value;
+        }
+
+        // Density estimation.
+        tau /= static_cast<float>(Pi * stats.m_radius * stats.m_radius);
+
+        // Apply gather point throughput.
+        tau *= gather_point.m_throughput;
+
+        // Update shared statistics.
+        const float ratio = (m_pass_number + m_params.m_alpha) / (m_pass_number + 1.0f);
+        assert(ratio <= 1.0);
+        stats.m_radius *= sqrt(ratio);
+        stats.m_tau += tau;
+        stats.m_radiance = stats.m_tau / static_cast<float>(m_emitted_photon_count);
     }
-    else
-    {
-        trace_non_physical_light_photon(
-            sampling_context,
-            light_sample,
-            flux_multiplier,
-            photons);
-    }
-}
-
-void SPPMPassCallback::trace_emitting_triangle_photon(
-    SamplingContext&        sampling_context,
-    LightSample&            light_sample,
-    const float             flux_multiplier,
-    PhotonVector&           photons)
-{
-    // Make sure the geometric normal of the light sample is in the same hemisphere as the shading normal.
-    light_sample.m_geometric_normal =
-        flip_to_same_hemisphere(
-            light_sample.m_geometric_normal,
-            light_sample.m_shading_normal);
-
-    const EDF* edf = light_sample.m_triangle->m_edf;
-
-    // Evaluate the EDF inputs.
-    InputEvaluator input_evaluator(m_texture_cache);
-    const void* edf_data =
-        input_evaluator.evaluate(edf->get_inputs(), light_sample.m_bary);
-
-    // Sample the EDF.
-    SamplingContext child_sampling_context = sampling_context.split(2, 1);
-    Vector3d emission_direction;
-    Spectrum edf_value;
-    double edf_prob;
-    edf->sample(
-        edf_data,
-        light_sample.m_geometric_normal,
-        Basis3d(light_sample.m_shading_normal),
-        child_sampling_context.next_vector2<2>(),
-        emission_direction,
-        edf_value,
-        edf_prob);
-
-    // Compute the initial particle weight.
-    Spectrum initial_alpha = edf_value;
-    initial_alpha *=
-        static_cast<float>(
-            flux_multiplier *
-            dot(emission_direction, light_sample.m_shading_normal)
-                / (light_sample.m_probability * edf_prob));
-
-    // Manufacture a shading point at the position of the light sample.
-    // It will be used to avoid self-intersections.
-    ShadingPoint parent_shading_point;
-    m_intersector.manufacture_hit(
-        parent_shading_point,
-        ShadingRay(light_sample.m_point, emission_direction, 0.0, 0.0, 0.0f, ~0),
-        light_sample.m_triangle->m_assembly_instance,
-        light_sample.m_triangle->m_assembly_instance->transform_sequence().get_earliest_transform(),
-        light_sample.m_triangle->m_object_instance_index,
-        light_sample.m_triangle->m_region_index,
-        light_sample.m_triangle->m_triangle_index,
-        light_sample.m_triangle->m_triangle_support_plane);
-
-    // Build the light ray.
-    child_sampling_context.split_in_place(1, 1);
-    const ShadingRay light_ray(
-        light_sample.m_point,
-        emission_direction,
-        child_sampling_context.next_double2(),
-        ~0);
-
-    // Build the path tracer.
-    PathVisitor path_visitor(
-        m_params,
-        initial_alpha,
-        photons);
-    PathTracer<PathVisitor, true> path_tracer(      // true = adjoint
-        path_visitor,
-        3,                                          // m_params.m_rr_min_path_length
-        ~0,                                         // m_params.m_max_path_length
-        1000);                                      // m_params.m_max_iterations
-
-    // Trace the light path.
-    const size_t path_length =
-        path_tracer.trace(
-            child_sampling_context,
-            m_intersector,
-            m_texture_cache,
-            light_ray,
-            &parent_shading_point);
-
-    // Update path statistics.
-    //++m_path_count;
-    //m_path_length.insert(path_length);
-}
-
-void SPPMPassCallback::trace_non_physical_light_photon(
-    SamplingContext&        sampling_context,
-    LightSample&            light_sample,
-    const float             flux_multiplier,
-    PhotonVector&           photons)
-{
 }
 
 
 //
-// SPPMPassCallback::PathVisitor class implementation.
+// SPPMPassCallback::Parameters class implementation.
 //
 
-SPPMPassCallback::PathVisitor::PathVisitor(
-    const ParamArray&       params,
-    const Spectrum&         initial_alpha,
-    PhotonVector&           photons)
-  : m_initial_alpha(initial_alpha)
-  , m_photons(photons)
+SPPMPassCallback::Parameters::Parameters(const ParamArray& params)
+  : m_initial_radius(params.get_required<float>("initial_radius", 0.1f))
+  , m_alpha(params.get_optional<float>("alpha", 0.7f))
+  , m_photon_count_per_pass(params.get_optional<size_t>("photons_per_pass", 100000))
+  , m_photon_count_per_estimate(params.get_optional<size_t>("photons_per_estimate", 100))
 {
-}
-
-bool SPPMPassCallback::PathVisitor::accept_scattering_mode(
-    const BSDF::Mode        prev_bsdf_mode,
-    const BSDF::Mode        bsdf_mode) const
-{
-    assert(bsdf_mode != BSDF::Absorption);
-    return true;
-}
-
-bool SPPMPassCallback::PathVisitor::visit_vertex(const PathVertex& vertex)
-{
-    SPPMPhoton photon;
-    photon.m_position = vertex.get_point();
-
-    photon.m_payload.m_incoming = -vertex.get_ray().m_dir;
-    photon.m_payload.m_flux = m_initial_alpha;
-    photon.m_payload.m_flux *= vertex.m_throughput;
-
-    m_photons.push_back(photon);
-
-    return true;
-}
-
-void SPPMPassCallback::PathVisitor::visit_environment(
-    const ShadingPoint&     shading_point,
-    const Vector3d&         outgoing,
-    const BSDF::Mode        prev_bsdf_mode,
-    const double            prev_bsdf_prob,
-    const Spectrum&         throughput)
-{
-    // The photon escapes.
 }
 
 }   // namespace renderer
