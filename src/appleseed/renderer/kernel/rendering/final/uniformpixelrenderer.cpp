@@ -110,7 +110,7 @@ namespace
             const Frame&                frame,
             Tile&                       tile,
             TileStack&                  aov_tiles,
-            const AABB2u&               tile_bbox,
+            const AABB2i&               tile_bbox,
             const PixelContext&         pixel_context,
             const int                   tx,
             const int                   ty,

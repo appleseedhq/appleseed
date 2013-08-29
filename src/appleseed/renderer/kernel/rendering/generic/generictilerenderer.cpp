@@ -80,7 +80,7 @@ namespace
 
     // Define this symbol to break execution into the debugger
     // when a specific pixel is about to be rendered.
-    // #define DEBUG_BREAK_AT_PIXEL Vector2u(0, 0)
+    // #define DEBUG_BREAK_AT_PIXEL Vector2i(0, 0)
 
 #endif
 
@@ -121,15 +121,13 @@ namespace
             const size_t aov_count = frame.aov_images().size();
             const size_t tile_origin_x = frame_properties.m_tile_width * tile_x;
             const size_t tile_origin_y = frame_properties.m_tile_height * tile_y;
-            const size_t tile_width = tile.get_width();
-            const size_t tile_height = tile.get_height();
 
             // Compute the image space bounding box of the pixels to render.
             AABB2u tile_bbox;
             tile_bbox.min.x = tile_origin_x;
             tile_bbox.min.y = tile_origin_y;
-            tile_bbox.max.x = tile_origin_x + tile_width - 1;
-            tile_bbox.max.y = tile_origin_y + tile_height - 1;
+            tile_bbox.max.x = tile_origin_x + tile.get_width() - 1;
+            tile_bbox.max.y = tile_origin_y + tile.get_height() - 1;
             tile_bbox = AABB2u::intersect(tile_bbox, frame.get_crop_window());
             if (!tile_bbox.is_valid())
                 return;
@@ -182,7 +180,7 @@ namespace
 #ifdef DEBUG_BREAK_AT_PIXEL
 
                 // Break in the debugger when this pixel is reached.
-                if (Vector2u(ix, iy) == DEBUG_BREAK_AT_PIXEL)
+                if (pixel_context.get_pixel_coordinates() == DEBUG_BREAK_AT_PIXEL)
                     BREAKPOINT();
 
 #endif
@@ -192,7 +190,7 @@ namespace
                     frame,
                     tile,
                     aov_tiles,
-                    tile_bbox,
+                    AABB2i(tile_bbox),
                     pixel_context,
                     tx, ty,
                     m_rng,

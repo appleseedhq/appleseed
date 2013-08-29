@@ -75,7 +75,7 @@ class IPixelRenderer
         const Frame&                frame,
         foundation::Tile&           tile,
         TileStack&                  aov_tiles,
-        const foundation::AABB2u&   tile_bbox,
+        const foundation::AABB2i&   tile_bbox,
         const PixelContext&         pixel_context,
         const int                   tx,
         const int                   ty,
