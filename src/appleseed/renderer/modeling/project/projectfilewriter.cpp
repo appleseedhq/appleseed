@@ -343,7 +343,7 @@ namespace
 
             explicit SortedEntityVector(Collection& collection)
             {
-                reserve(collection.size());
+                Base::reserve(collection.size());
 
                 for (each<Collection> i = collection; i; ++i)
                     Base::push_back(&*i);
