@@ -324,7 +324,7 @@ bool SBVHPartitioner<ItemHandler, AABBVector>::split(
         {
             const ValueType overlap_sa = surface_area(overlap_bbox);
             const ValueType overlap_factor = overlap_sa * m_root_bbox_rcp_sa;
-            const ValueType Alpha = ValueType(1.0e-5);
+            const ValueType Alpha = ValueType(1.0e-4);
             if (overlap_factor <= Alpha)
                 do_find_spatial_split = false;
         }
