@@ -42,6 +42,7 @@
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <limits>
 
 // Enable or disable k-nn query statistics.
 #undef FOUNDATION_KNN_ENABLE_QUERY_STATS
@@ -72,8 +73,21 @@ class Query
 #endif
         ) const;
 
+    void run(
+        const VectorType&   query_point,
+        const ValueType     query_max_square_distance
 #ifdef FOUNDATION_KNN_ENABLE_QUERY_STATS
-    void run(const VectorType& query_point) const;
+        , QueryStatistics&  stats
+#endif
+        ) const;
+
+#ifdef FOUNDATION_KNN_ENABLE_QUERY_STATS
+    void run(
+        const VectorType&   query_point) const;
+
+    void run(
+        const VectorType&   query_point,
+        const ValueType     query_max_square_distance) const;
 #endif
 
   private:
@@ -114,7 +128,8 @@ class Query
         ) const;
 
     void find_multiple_nearest_neighbors(
-        const VectorType&   query_point
+        const VectorType&   query_point,
+        const ValueType     query_max_square_distance
 #ifdef FOUNDATION_KNN_ENABLE_QUERY_STATS
         , QueryStatistics&  stats
 #endif
@@ -154,6 +169,24 @@ inline void Query<T, N>::run(
 #endif
     ) const
 {
+    run(
+        query_point,
+        std::numeric_limits<ValueType>::max()
+#ifdef FOUNDATION_KNN_ENABLE_QUERY_STATS
+        , stats
+#endif
+        );
+}
+
+template <typename T, size_t N>
+inline void Query<T, N>::run(
+    const VectorType&       query_point,
+    const ValueType         query_max_square_distance
+#ifdef FOUNDATION_KNN_ENABLE_QUERY_STATS
+    , QueryStatistics&      stats
+#endif
+    ) const
+{
     assert(!m_tree.empty());
 
     m_answer.clear();
@@ -169,9 +202,9 @@ inline void Query<T, N>::run(
     else
     {
 #ifdef FOUNDATION_KNN_ENABLE_QUERY_STATS
-        find_multiple_nearest_neighbors(query_point, stats);
+        find_multiple_nearest_neighbors(query_point, query_max_square_distance, stats);
 #else
-        find_multiple_nearest_neighbors(query_point);
+        find_multiple_nearest_neighbors(query_point, query_max_square_distance);
 #endif
     }
 }
@@ -179,10 +212,20 @@ inline void Query<T, N>::run(
 #ifdef FOUNDATION_KNN_ENABLE_QUERY_STATS
 
 template <typename T, size_t N>
-inline void Query<T, N>::run(const VectorType& query_point) const
+inline void Query<T, N>::run(
+    const VectorType&       query_point) const
 {
     QueryStatistics stats;
     run(query_point, stats);
+}
+
+template <typename T, size_t N>
+inline void Query<T, N>::run(
+    const VectorType&       query_point,
+    const ValueType         query_max_square_distance) const
+{
+    QueryStatistics stats;
+    run(query_point, query_max_square_distance, stats);
 }
 
 #endif
@@ -228,7 +271,8 @@ inline void Query<T, N>::find_single_nearest_neighbor(
 
 template <typename T, size_t N>
 inline void Query<T, N>::find_multiple_nearest_neighbors(
-    const VectorType&       query_point
+    const VectorType&       query_point,
+    const ValueType         query_max_square_distance
 #ifdef FOUNDATION_KNN_ENABLE_QUERY_STATS
     , QueryStatistics&      stats
 #endif
@@ -293,39 +337,50 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
         size_t point_index = node->get_point_index();
         const VectorType* RESTRICT point_ptr = points + point_index;
         const VectorType* RESTRICT point_end = point_ptr + node->get_point_count();
-        const VectorType* RESTRICT array_max = point_ptr + max_answer_size;
-        const VectorType* RESTRICT array_end = array_max < point_end ? array_max : point_end;
 
         // First, we fill up the answer like an array.
-        while (point_ptr < array_end)
+        while (point_ptr < point_end && m_answer.m_size < max_answer_size)
         {
             FOUNDATION_KNN_QUERY_STATS(++tested_point_count);
 
             const ValueType square_dist = square_distance(*point_ptr++, query_point);
 
-            m_answer.array_insert(point_index++, square_dist);
-
-            if (max_square_distance < square_dist)
-                max_square_distance = square_dist;
-        }
-
-        // At this point the answer is full, so we transform it into a heap.
-        m_answer.make_heap();
-
-        // Then, we insert the remaining points into the answer.
-        while (point_ptr < point_end)
-        {
-            FOUNDATION_KNN_QUERY_STATS(++tested_point_count);
-
-            const ValueType square_dist = square_distance(*point_ptr++, query_point);
-
-            if (square_dist < max_square_distance)
+            if (square_dist <= query_max_square_distance)
             {
-                m_answer.heap_insert(point_index, square_dist);
-                max_square_distance = m_answer.top().m_distance;
+                m_answer.array_insert(point_index, square_dist);
+
+                if (max_square_distance < square_dist)
+                    max_square_distance = square_dist;
             }
 
             ++point_index;
+        }
+
+        if (m_answer.m_size == max_answer_size)
+        {
+            // The answer is full, so we transform it into a heap.
+            m_answer.make_heap();
+
+            // Then, we insert the remaining points into the answer.
+            while (point_ptr < point_end)
+            {
+                FOUNDATION_KNN_QUERY_STATS(++tested_point_count);
+
+                const ValueType square_dist = square_distance(*point_ptr++, query_point);
+
+                if (square_dist < max_square_distance)
+                {
+                    m_answer.heap_insert(point_index, square_dist);
+                    max_square_distance = m_answer.top().m_distance;
+                }
+
+                ++point_index;
+            }
+        }
+        else
+        {
+            // We ran out of points.
+            max_square_distance = query_max_square_distance;
         }
     }
 
@@ -474,8 +529,18 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
 
             if (square_dist < max_square_distance)
             {
-                m_answer.heap_insert(point_index, square_dist);
-                max_square_distance = m_answer.top().m_distance;
+                if (m_answer.m_size == max_answer_size)
+                {
+                    m_answer.heap_insert(point_index, square_dist);
+                    max_square_distance = m_answer.top().m_distance;
+                }
+                else
+                {
+                    m_answer.array_insert(point_index, square_dist);
+
+                    if (m_answer.m_size == max_answer_size)
+                        m_answer.make_heap();
+                }
             }
 
             ++point_index;

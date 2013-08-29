@@ -170,6 +170,9 @@ inline void Answer<T>::array_insert(const size_t index, const ValueType distance
 template <typename T>
 inline void Answer<T>::make_heap()
 {
+    assert(m_size == m_max_size);
+    assert(!m_heap);
+
     size_t i = m_size / 2;
 
     while (i--)
