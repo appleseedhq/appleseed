@@ -68,17 +68,13 @@ namespace
       : public FrameRendererBase
     {
       public:
-        typedef GenericFrameRendererFactory::PassMode PassMode;
-
         GenericFrameRenderer(
             const Frame&            frame,
             ITileRendererFactory*   tile_renderer_factory,
             ITileCallbackFactory*   tile_callback_factory,
             IPassCallback*          pass_callback,
-            const PassMode          pass_mode,
             const ParamArray&       params)
           : m_frame(frame)
-          , m_pass_mode(pass_mode)
           , m_params(params)
           , m_pass_callback(pass_callback)
         {
@@ -143,10 +139,10 @@ namespace
                 new PassJob(
                     m_frame,
                     m_params.m_tile_ordering,
+                    m_params.m_pass_count,
                     m_tile_renderers,
                     m_tile_callbacks,
                     m_pass_callback,
-                    m_pass_mode,
                     m_job_queue,
                     m_abort_switch));
 
@@ -183,10 +179,12 @@ namespace
         {
             const size_t                        m_thread_count;     // number of rendering threads
             const TileJobFactory::TileOrdering  m_tile_ordering;    // tile rendering order
+            const size_t                        m_pass_count;       // number of rendering passes
 
             explicit Parameters(const ParamArray& params)
               : m_thread_count(FrameRendererBase::get_rendering_thread_count(params))
               , m_tile_ordering(get_tile_ordering(params))
+              , m_pass_count(params.get_optional<size_t>("pass_count", 1))
             {
             }
 
@@ -231,19 +229,19 @@ namespace
             PassJob(
                 const Frame&                        frame,
                 const TileJobFactory::TileOrdering  tile_ordering,
+                const size_t                        pass_count,
                 vector<ITileRenderer*>&             tile_renderers,
                 vector<ITileCallback*>&             tile_callbacks,
                 IPassCallback*                      pass_callback,
-                const PassMode                      pass_mode,
                 JobQueue&                           job_queue,
                 AbortSwitch&                        abort_switch,
                 const size_t                        pass = 0)
               : m_frame(frame)
               , m_tile_ordering(tile_ordering)
+              , m_pass_count(pass_count)
               , m_tile_renderers(tile_renderers)
               , m_tile_callbacks(tile_callbacks)
               , m_pass_callback(pass_callback)
-              , m_pass_mode(pass_mode)
               , m_job_queue(job_queue)
               , m_abort_switch(abort_switch)
               , m_pass(pass)
@@ -260,8 +258,8 @@ namespace
                 if (m_pass_callback && m_pass > 0)
                     m_pass_callback->post_render(m_frame);
 
-                // In single pass mode, stop after one complete pass.
-                if (m_pass_mode == GenericFrameRendererFactory::SinglePass && m_pass == 1)
+                // Stop when all passes have been rendered.
+                if (m_pass == m_pass_count)
                     return;
 
                 // Handle aborts between passes.
@@ -293,10 +291,10 @@ namespace
                     new PassJob(
                         m_frame,
                         m_tile_ordering,
+                        m_pass_count,
                         m_tile_renderers,
                         m_tile_callbacks,
                         m_pass_callback,
-                        m_pass_mode,
                         m_job_queue,
                         m_abort_switch,
                         m_pass + 1));
@@ -305,18 +303,17 @@ namespace
           private:
             const Frame&                            m_frame;
             const TileJobFactory::TileOrdering      m_tile_ordering;
+            const size_t                            m_pass;
             vector<ITileRenderer*>&                 m_tile_renderers;
             vector<ITileCallback*>&                 m_tile_callbacks;
             IPassCallback*                          m_pass_callback;
-            const PassMode                          m_pass_mode;
+            const size_t                            m_pass_count;
             JobQueue&                               m_job_queue;
             AbortSwitch&                            m_abort_switch;
-            const size_t                            m_pass;
             TileJobFactory                          m_tile_job_factory;
         };
 
         const Frame&                m_frame;            // target framebuffer
-        const PassMode              m_pass_mode;
         const Parameters            m_params;
 
         JobQueue                    m_job_queue;
@@ -353,13 +350,11 @@ GenericFrameRendererFactory::GenericFrameRendererFactory(
     ITileRendererFactory*   tile_renderer_factory,
     ITileCallbackFactory*   tile_callback_factory,
     IPassCallback*          pass_callback,
-    const PassMode          pass_mode,
     const ParamArray&       params)
   : m_frame(frame)
   , m_tile_renderer_factory(tile_renderer_factory)  
   , m_tile_callback_factory(tile_callback_factory)
   , m_pass_callback(pass_callback)
-  , m_pass_mode(pass_mode)
   , m_params(params)
 {
 }
@@ -377,7 +372,6 @@ IFrameRenderer* GenericFrameRendererFactory::create()
             m_tile_renderer_factory,
             m_tile_callback_factory,
             m_pass_callback,
-            m_pass_mode,
             m_params);
 }
 
@@ -386,7 +380,6 @@ IFrameRenderer* GenericFrameRendererFactory::create(
     ITileRendererFactory*   tile_renderer_factory,
     ITileCallbackFactory*   tile_callback_factory,
     IPassCallback*          pass_callback,
-    const PassMode          pass_mode,
     const ParamArray&       params)
 {
     return
@@ -395,7 +388,6 @@ IFrameRenderer* GenericFrameRendererFactory::create(
             tile_renderer_factory,
             tile_callback_factory,
             pass_callback,
-            pass_mode,
             params);
 }
 

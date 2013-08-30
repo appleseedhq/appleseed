@@ -521,9 +521,6 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
                     tile_renderer_factory.get(),
                     m_tile_callback_factory,
                     pass_callback.get(),
-                    pass_callback.get()
-                        ? GenericFrameRendererFactory::MultiPass
-                        : GenericFrameRendererFactory::SinglePass,
                     params));
         }
         else if (frame_renderer_param == "progressive")
