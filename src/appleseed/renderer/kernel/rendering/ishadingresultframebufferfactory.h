@@ -26,52 +26,37 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_GENERICTILERENDERER_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_GENERICTILERENDERER_H
-
-// appleseed.renderer headers.
-#include "renderer/kernel/rendering/itilerenderer.h"
-#include "renderer/utility/paramarray.h"
+#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_ISHADINGRESULTFRAMEBUFFERFACTORY_H
+#define APPLESEED_RENDERER_KERNEL_RENDERING_ISHADINGRESULTFRAMEBUFFERFACTORY_H
 
 // appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
+#include "foundation/core/concepts/iunknown.h"
+#include "foundation/math/aabb.h"
+
+// Standard headers.
+#include <cstddef>
 
 // Forward declarations.
 namespace renderer  { class Frame; }
-namespace renderer  { class IPixelRendererFactory; }
-namespace renderer  { class IShadingResultFrameBufferFactory; }
+namespace renderer  { class ShadingResultFrameBuffer; }
 
 namespace renderer
 {
 
-//
-// Generic tile renderer factory.
-//
-
-class GenericTileRendererFactory
-  : public ITileRendererFactory
+class IShadingResultFrameBufferFactory
+  : public foundation::IUnknown
 {
   public:
-    // Constructor.
-    GenericTileRendererFactory(
-        const Frame&                        frame,
-        IPixelRendererFactory*              pixel_renderer_factory,
-        IShadingResultFrameBufferFactory*   framebuffer_factory, 
-        const ParamArray&                   params);
+    virtual ShadingResultFrameBuffer* create(
+        const Frame&                frame,
+        const size_t                tile_x,
+        const size_t                tile_y,
+        const foundation::AABB2u&   tile_bbox) = 0;
 
-    // Delete this instance.
-    virtual void release() OVERRIDE;
-
-    // Return a new generic tile renderer instance.
-    virtual ITileRenderer* create(const bool primary) OVERRIDE;
-
-  private:
-    const Frame&                            m_frame;
-    IPixelRendererFactory*                  m_pixel_renderer_factory;
-    IShadingResultFrameBufferFactory*       m_framebuffer_factory;
-    ParamArray                              m_params;
+    virtual void destroy(
+        ShadingResultFrameBuffer*   framebuffer) = 0;
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_GENERICTILERENDERER_H
+#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_ISHADINGRESULTFRAMEBUFFERFACTORY_H

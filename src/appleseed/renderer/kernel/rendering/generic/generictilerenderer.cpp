@@ -35,6 +35,7 @@
 #include "renderer/kernel/aov/imagestack.h"
 #include "renderer/kernel/aov/tilestack.h"
 #include "renderer/kernel/rendering/ipixelrenderer.h"
+#include "renderer/kernel/rendering/ishadingresultframebufferfactory.h"
 #include "renderer/kernel/rendering/pixelcontext.h"
 #include "renderer/kernel/rendering/shadingresultframebuffer.h"
 #include "renderer/modeling/frame/frame.h"
@@ -89,11 +90,13 @@ namespace
     {
       public:
         GenericTileRenderer(
-            const Frame&                frame,
-            IPixelRendererFactory*      factory,
-            const ParamArray&           params,
-            const bool                  primary)
-          : m_pixel_renderer(factory->create(primary))
+            const Frame&                        frame,
+            IPixelRendererFactory*              pixel_renderer_factory,
+            IShadingResultFrameBufferFactory*   framebuffer_factory, 
+            const ParamArray&                   params,
+            const bool                          primary)
+          : m_pixel_renderer(pixel_renderer_factory->create(primary))
+          , m_framebuffer_factory(framebuffer_factory)
         {
             compute_tile_margins(frame, primary);
             compute_pixel_ordering(frame);
@@ -119,7 +122,6 @@ namespace
             // Retrieve tile properties.
             Tile& tile = frame.image().tile(tile_x, tile_y);
             TileStack aov_tiles = frame.aov_images().tiles(tile_x, tile_y);
-            const size_t aov_count = frame.aov_images().size();
             const size_t tile_origin_x = frame_properties.m_tile_width * tile_x;
             const size_t tile_origin_y = frame_properties.m_tile_height * tile_y;
 
@@ -142,14 +144,14 @@ namespace
             // Inform the pixel renderer that we are about to render a tile.
             m_pixel_renderer->on_tile_begin(frame, tile, aov_tiles);
 
-            // Allocate the framebuffer into which we will accumulate the samples.
-            ShadingResultFrameBuffer framebuffer(
-                tile_width,
-                tile_height,
-                aov_count,
-                tile_bbox,
-                frame.get_filter());
-            framebuffer.clear();
+            // Create the framebuffer into which we will accumulate the samples.
+            ShadingResultFrameBuffer* framebuffer =
+                m_framebuffer_factory->create(
+                    frame,
+                    tile_x,
+                    tile_y,
+                    tile_bbox);
+            assert(framebuffer);
 
             // Seed the RNG with the tile index.
             m_rng = SamplingContext::RNGType(
@@ -196,13 +198,16 @@ namespace
                     pass_hash,
                     tx, ty,
                     m_rng,
-                    framebuffer);
+                    *framebuffer);
             }
 
             // Develop the framebuffer to the tile.
             if (frame.is_premultiplied_alpha())
-                framebuffer.develop_to_tile_premult_alpha(tile, aov_tiles);
-            else framebuffer.develop_to_tile_straight_alpha(tile, aov_tiles);
+                framebuffer->develop_to_tile_premult_alpha(tile, aov_tiles);
+            else framebuffer->develop_to_tile_straight_alpha(tile, aov_tiles);
+
+            // Release the framebuffer.
+            m_framebuffer_factory->destroy(framebuffer);
 
             // Inform the pixel renderer that we are done rendering the tile.
             m_pixel_renderer->on_tile_end(frame, tile, aov_tiles);
@@ -215,6 +220,7 @@ namespace
 
       protected:
         auto_release_ptr<IPixelRenderer>    m_pixel_renderer;
+        IShadingResultFrameBufferFactory*   m_framebuffer_factory;
         int                                 m_margin_width;
         int                                 m_margin_height;
         vector<Vector<int16, 2> >           m_pixel_ordering;
@@ -282,11 +288,13 @@ namespace
 //
 
 GenericTileRendererFactory::GenericTileRendererFactory(
-    const Frame&                frame,
-    IPixelRendererFactory*      factory,
-    const ParamArray&           params)
+    const Frame&                        frame,
+    IPixelRendererFactory*              pixel_renderer_factory,
+    IShadingResultFrameBufferFactory*   framebuffer_factory, 
+    const ParamArray&                   params)
   : m_frame(frame)
-  , m_factory(factory)
+  , m_pixel_renderer_factory(pixel_renderer_factory)
+  , m_framebuffer_factory(framebuffer_factory)
   , m_params(params)
 {
 }
@@ -298,7 +306,13 @@ void GenericTileRendererFactory::release()
 
 ITileRenderer* GenericTileRendererFactory::create(const bool primary)
 {
-    return new GenericTileRenderer(m_frame, m_factory, m_params, primary);
+    return
+        new GenericTileRenderer(
+            m_frame,
+            m_pixel_renderer_factory,
+            m_framebuffer_factory,
+            m_params,
+            primary);
 }
 
 }   // namespace renderer

@@ -998,6 +998,8 @@ source_group ("renderer\\kernel\\rendering\\progressive" FILES
 set (renderer_kernel_rendering_sources
     renderer/kernel/rendering/defaultrenderercontroller.cpp
     renderer/kernel/rendering/defaultrenderercontroller.h
+    renderer/kernel/rendering/ephemeralshadingresultframebufferfactory.cpp
+    renderer/kernel/rendering/ephemeralshadingresultframebufferfactory.h
     renderer/kernel/rendering/framerendererbase.cpp
     renderer/kernel/rendering/framerendererbase.h
     renderer/kernel/rendering/globalsampleaccumulationbuffer.cpp
@@ -1008,12 +1010,15 @@ set (renderer_kernel_rendering_sources
     renderer/kernel/rendering/irenderercontroller.h
     renderer/kernel/rendering/isamplegenerator.h
     renderer/kernel/rendering/isamplerenderer.h
+    renderer/kernel/rendering/ishadingresultframebufferfactory.h
     renderer/kernel/rendering/itilecallback.h
     renderer/kernel/rendering/itilerenderer.h
     renderer/kernel/rendering/localsampleaccumulationbuffer.cpp
     renderer/kernel/rendering/localsampleaccumulationbuffer.h
     renderer/kernel/rendering/masterrenderer.cpp
     renderer/kernel/rendering/masterrenderer.h
+    renderer/kernel/rendering/permanentshadingresultframebufferfactory.cpp
+    renderer/kernel/rendering/permanentshadingresultframebufferfactory.h
     renderer/kernel/rendering/pixelcontext.h
     renderer/kernel/rendering/pixelrendererbase.cpp
     renderer/kernel/rendering/pixelrendererbase.h
