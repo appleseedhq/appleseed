@@ -278,6 +278,10 @@
         <configuration name="final" base="base_final">
             <parameter name="lighting_engine" value="sppm" />
             <parameter name="pixel_renderer" value="uniform" />
+            <parameter name="shading_result_framebuffer" value="permanent" />
+            <parameters name="generic_frame_renderer">
+                <parameter name="pass_count" value="10" />
+            </parameters>
             <parameters name="sppm_lighting_engine">
                 <parameter name="max_photons_per_estimate" value="100" />
             </parameters>
@@ -288,7 +292,7 @@
             </parameters>
             <parameters name="uniform_pixel_renderer">
                 <parameter name="decorrelate_pixels" value="true" />
-                <parameter name="samples" value="1" />
+                <parameter name="samples" value="2" />
             </parameters>
         </configuration>
         <configuration name="interactive" base="base_interactive" />
