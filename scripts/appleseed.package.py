@@ -28,7 +28,7 @@
 #
 
 # Package builder settings.
-VersionString = "2.3.2"
+VersionString = "2.3.4"
 SettingsFileName = "appleseed.package.configuration.xml"
 
 # Imports.
@@ -75,9 +75,9 @@ def safe_make_directory(path):
         os.makedirs(path)
 
 def pushd(path):
-    current_path = os.getcwd()
+    old_path = os.getcwd()
     os.chdir(path)
-    return current_path
+    return old_path
 
 def extract_zip_file(zip_path, output_path):
     zf = zipfile.ZipFile(zip_path)
@@ -140,9 +140,9 @@ class PackageInfo:
         self.print_summary()
 
     def retrieve_git_tag(self):
-        current_path = pushd(self.settings.appleseed_path)
+        old_path = pushd(self.settings.appleseed_path)
         self.version = Popen("git describe --long", stdout=PIPE, shell=True).stdout.read().strip()
-        os.chdir(current_path)
+        os.chdir(old_path)
 
     def build_package_path(self):
         package_name = "appleseed-" + self.version + "-" + self.settings.platform_name + ".zip"
@@ -185,9 +185,6 @@ class PackageBuilder:
         self.build_final_zip_file()
         self.remove_stage()
 
-    def alterate_stage(self):
-        return
-
     def remove_leftovers(self):
         progress("Removing leftovers from previous invocations")
         safe_delete_directory("appleseed")
@@ -196,9 +193,9 @@ class PackageBuilder:
 
     def retrieve_sandbox_from_git_repository(self):
         progress("Retrieving sandbox from Git repository")
-        current_path = pushd(os.path.join(self.settings.appleseed_path, "sandbox"))
-        os.system("git archive --format=zip --output=" + os.path.join(current_path, "sandbox.zip") + " --worktree-attributes HEAD")
-        os.chdir(current_path)
+        old_path = pushd(os.path.join(self.settings.appleseed_path, "sandbox"))
+        os.system("git archive --format=zip --output=" + os.path.join(old_path, "sandbox.zip") + " --worktree-attributes HEAD")
+        os.chdir(old_path)
 
     def deploy_sandbox_to_stage(self):
         progress("Deploying sandbox to staging directory")
@@ -248,21 +245,24 @@ class PackageBuilder:
         shutil.copy(os.path.join(self.settings.appleseed_path, "LICENSE.txt"), "appleseed/")
         shutil.copy(os.path.join(self.settings.appleseed_path, "README.md"), "appleseed/")
 
-    def build_final_zip_file(self):
-        progress("Building final zip file from staging directory")
-        package_base_path = os.path.splitext(self.package_info.package_path)[0]
-        archive_util.make_zipfile(package_base_path, "appleseed")
-
-    def create_preserve_file(self, path):
-        f = open(os.path.join(path, "preserve.txt"), "w")
-        f.write("This file allows to preserve this otherwise empty directory.\n")
-        f.close()
-
     def add_dummy_files_into_empty_directories(self):
         progress("Adding dummy files to preserve empty directories")
         for dirpath, dirnames, filenames in os.walk("."):
             if len(dirnames) == 0 and len(filenames) == 0:
                 self.create_preserve_file(dirpath)
+
+    def create_preserve_file(self, path):
+        with open(os.path.join(path, "preserve.txt"), "w") as f:
+            f.write("This file allows to preserve this otherwise empty directory.\n")
+
+    # This method is overridden in the platform-specific builders below.
+    def alterate_stage(self):
+        return
+
+    def build_final_zip_file(self):
+        progress("Building final zip file from staging directory")
+        package_base_path = os.path.splitext(self.package_info.package_path)[0]
+        archive_util.make_zipfile(package_base_path, "appleseed")
 
     def remove_stage(self):
         safe_delete_directory("appleseed")
@@ -300,6 +300,7 @@ class MacPackageBuilder(PackageBuilder):
     def alterate_stage(self):
         self.add_dependencies_to_stage()
         self.fixup_binaries()
+        self.create_qt_conf_file()
         self.copy_run_script()
         safe_delete_file("appleseed/bin/.DS_Store")
 
@@ -366,9 +367,20 @@ class MacPackageBuilder(PackageBuilder):
     def get_qt_framework_path(self, framework_name):
         return os.path.join(self.settings.qt_runtime_path, framework_name + ".framework", "Versions", "4", framework_name)
 
+    def create_qt_conf_file(self):
+        safe_make_directory("appleseed/bin/Contents/Resources")
+        open("appleseed/bin/Contents/Resources/qt.conf", "w").close()
+
     def copy_run_script(self):
+        script_filename = "run-appleseed.sh"
         dest_path = os.path.join("appleseed", "bin")
-        shutil.copy("run-appleseed.sh", dest_path)
+        shutil.copy(script_filename, dest_path)
+        self.make_executable(os.path.join(dest_path, script_filename))
+
+    def make_executable(self, filepath):
+        mode = os.stat(filepath)[ST_MODE]
+        mode |= S_IXUSR | S_IXGRP | S_IXOTH
+        os.chmod(filepath, mode)
 
 
 #--------------------------------------------------------------------------------------------------
@@ -398,16 +410,17 @@ class LinuxPackageBuilder(PackageBuilder):
         src_filepath = os.path.join("/usr/local/lib", library_filename)
         dest_path = os.path.join("appleseed", "bin")
         shutil.copy(src_filepath, dest_path)
-        self.make_executable(os.path.join(dest_path, library_filename))
+
+    def copy_run_script(self):
+        script_filename = "run-appleseed.sh"
+        dest_path = os.path.join("appleseed", "bin")
+        shutil.copy(script_filename, dest_path)
+        self.make_executable(os.path.join(dest_path, script_filename))
 
     def make_executable(self, filepath):
         mode = os.stat(filepath)[ST_MODE]
         mode |= S_IXUSR | S_IXGRP | S_IXOTH
         os.chmod(filepath, mode)
-
-    def copy_run_script(self):
-        dest_path = os.path.join("appleseed", "bin")
-        shutil.copy("run-appleseed.sh", dest_path)
 
 
 #--------------------------------------------------------------------------------------------------
