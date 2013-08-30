@@ -68,7 +68,7 @@ namespace
         SpecularBTDFImpl(
             const char*         name,
             const ParamArray&   params)
-          : BSDF(name, Transmissive, params)
+          : BSDF(name, Transmissive, Specular, params)
         {
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");

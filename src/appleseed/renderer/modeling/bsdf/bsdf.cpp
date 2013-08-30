@@ -54,9 +54,11 @@ namespace
 BSDF::BSDF(
     const char*         name,
     const Type          type,
+    const int           modes,
     const ParamArray&   params)
   : ConnectableEntity(g_class_uid, params)
   , m_type(type)
+  , m_modes(modes)
 {
     set_name(name);
 }

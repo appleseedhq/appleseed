@@ -72,7 +72,7 @@ namespace
         BSDFBlendImpl(
             const char*         name,
             const ParamArray&   params)
-          : BSDF(name, Reflective, params)
+          : BSDF(name, Reflective, AllScatteringModes, params)
         {
             m_inputs.declare("weight", InputFormatScalar);
         }

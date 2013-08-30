@@ -81,7 +81,7 @@ namespace
         MicrofacetBRDFImpl(
             const char*         name,
             const ParamArray&   params)
-          : BSDF(name, Reflective, params)
+          : BSDF(name, Reflective, Glossy, params)
         {
             m_inputs.declare("glossiness", InputFormatScalar);
             m_inputs.declare("glossiness_multiplier", InputFormatScalar, "1.0");
