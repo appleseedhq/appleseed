@@ -77,6 +77,7 @@ class IPixelRenderer
         TileStack&                  aov_tiles,
         const foundation::AABB2i&   tile_bbox,
         const PixelContext&         pixel_context,
+        const size_t                pass_hash,
         const int                   tx,
         const int                   ty,
         SamplingContext::RNGType&   rng,

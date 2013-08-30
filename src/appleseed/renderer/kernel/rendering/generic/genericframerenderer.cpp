@@ -39,6 +39,8 @@
 #include "renderer/kernel/rendering/itilerenderer.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/hash.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/job.h"
 #include "foundation/utility/statistics.h"
@@ -136,35 +138,17 @@ namespace
 
             m_abort_switch.clear();
 
-            if (m_pass_mode == GenericFrameRendererFactory::SinglePass)
-            {
-                // Create tile jobs.
-                TileJobFactory::TileJobVector tile_jobs;
-                m_tile_job_factory.create(
+            // Create and schedule the initial (and possibly only) pass job.
+            m_job_queue.schedule(
+                new PassJob(
                     m_frame,
                     m_params.m_tile_ordering,
                     m_tile_renderers,
                     m_tile_callbacks,
-                    tile_jobs,
-                    m_abort_switch);
-
-                // Schedule tile jobs.
-                for (const_each<TileJobFactory::TileJobVector> i = tile_jobs; i; ++i)
-                    m_job_queue.schedule(*i);
-            }
-            else
-            {
-                // Create and schedule the initial pass job.
-                m_job_queue.schedule(
-                    new PassJob(
-                        m_frame,
-                        m_params.m_tile_ordering,
-                        m_tile_renderers,
-                        m_tile_callbacks,
-                        m_pass_callback,
-                        m_job_queue,
-                        m_abort_switch));
-            }
+                    m_pass_callback,
+                    m_pass_mode,
+                    m_job_queue,
+                    m_abort_switch));
 
             // Start job execution.
             m_job_manager->start();
@@ -250,15 +234,19 @@ namespace
                 vector<ITileRenderer*>&             tile_renderers,
                 vector<ITileCallback*>&             tile_callbacks,
                 IPassCallback*                      pass_callback,
+                const PassMode                      pass_mode,
                 JobQueue&                           job_queue,
-                AbortSwitch&                        abort_switch)
+                AbortSwitch&                        abort_switch,
+                const size_t                        pass = 0)
               : m_frame(frame)
               , m_tile_ordering(tile_ordering)
               , m_tile_renderers(tile_renderers)
               , m_tile_callbacks(tile_callbacks)
               , m_pass_callback(pass_callback)
+              , m_pass_mode(pass_mode)
               , m_job_queue(job_queue)
               , m_abort_switch(abort_switch)
+              , m_pass(pass)
             {
             }
 
@@ -268,17 +256,31 @@ namespace
                 while (m_job_queue.get_total_job_count() != 1)
                     yield();
 
-                // Invoke the pass callback if there is one.
+                // Invoke the post-pass callback (of the previous pass) if there is one.
+                if (m_pass_callback && m_pass > 0)
+                    m_pass_callback->post_render(m_frame);
+
+                // In single pass mode, stop after one complete pass.
+                if (m_pass_mode == GenericFrameRendererFactory::SinglePass && m_pass == 1)
+                    return;
+
+                // Handle aborts between passes.
+                if (m_abort_switch.is_aborted())
+                    return;
+
+                // Invoke the pre-pass callback if there is one.
                 if (m_pass_callback)
                     m_pass_callback->pre_render(m_frame);
 
                 // Create tile jobs.
+                const uint32 pass_hash = hashint32(static_cast<uint32>(m_pass));
                 TileJobFactory::TileJobVector tile_jobs;
                 m_tile_job_factory.create(
                     m_frame,
                     m_tile_ordering,
                     m_tile_renderers,
                     m_tile_callbacks,
+                    pass_hash,
                     tile_jobs,
                     m_abort_switch);
 
@@ -287,18 +289,17 @@ namespace
                     m_job_queue.schedule(*i);
 
                 // This job reschedules itself automatically.
-                if (!m_abort_switch.is_aborted())
-                {
-                    m_job_queue.schedule(
-                        new PassJob(
-                            m_frame,
-                            m_tile_ordering,
-                            m_tile_renderers,
-                            m_tile_callbacks,
-                            m_pass_callback,
-                            m_job_queue,
-                            m_abort_switch));
-                }
+                m_job_queue.schedule(
+                    new PassJob(
+                        m_frame,
+                        m_tile_ordering,
+                        m_tile_renderers,
+                        m_tile_callbacks,
+                        m_pass_callback,
+                        m_pass_mode,
+                        m_job_queue,
+                        m_abort_switch,
+                        m_pass + 1));
             }
 
           private:
@@ -307,8 +308,10 @@ namespace
             vector<ITileRenderer*>&                 m_tile_renderers;
             vector<ITileCallback*>&                 m_tile_callbacks;
             IPassCallback*                          m_pass_callback;
+            const PassMode                          m_pass_mode;
             JobQueue&                               m_job_queue;
             AbortSwitch&                            m_abort_switch;
+            const size_t                            m_pass;
             TileJobFactory                          m_tile_job_factory;
         };
 

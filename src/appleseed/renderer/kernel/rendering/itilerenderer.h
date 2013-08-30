@@ -56,6 +56,7 @@ class ITileRenderer
         const Frame&                frame,
         const size_t                tile_x,
         const size_t                tile_y,
+        const size_t                pass_hash,
         foundation::AbortSwitch&    abort_switch) = 0;
 
     // Retrieve performance statistics.

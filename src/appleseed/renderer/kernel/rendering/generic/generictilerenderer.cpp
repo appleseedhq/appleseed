@@ -105,10 +105,11 @@ namespace
         }
 
         virtual void render_tile(
-            const Frame&                frame,
-            const size_t                tile_x,
-            const size_t                tile_y,
-            AbortSwitch&                abort_switch) OVERRIDE
+            const Frame&    frame,
+            const size_t    tile_x,
+            const size_t    tile_y,
+            const size_t    pass_hash,
+            AbortSwitch&    abort_switch) OVERRIDE
         {
             // Retrieve frame properties.
             const CanvasProperties& frame_properties = frame.image().properties();
@@ -192,6 +193,7 @@ namespace
                     aov_tiles,
                     AABB2i(tile_bbox),
                     pixel_context,
+                    pass_hash,
                     tx, ty,
                     m_rng,
                     framebuffer);

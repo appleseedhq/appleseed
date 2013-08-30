@@ -37,13 +37,14 @@
 #include "foundation/platform/compiler.h"
 
 // Forward declarations.
+namespace renderer  { class LightSampler; }
 namespace renderer  { class SPPMPassCallback; }
 
 namespace renderer
 {
 
 //
-// SPPM lighting engine factory.
+// Stochastic Progressive Photon Mapping (SPPM) lighting engine factory.
 //
 
 class SPPMLightingEngineFactory
@@ -53,16 +54,18 @@ class SPPMLightingEngineFactory
     // Constructor.
     SPPMLightingEngineFactory(
         const SPPMPassCallback&     pass_callback,
+        const LightSampler&         light_sampler,
         const ParamArray&           params);
 
     // Delete this instance.
     virtual void release() OVERRIDE;
 
-    // Return a new path tracing lighting engine instance.
+    // Return a new SPPM lighting engine instance.
     virtual ILightingEngine* create() OVERRIDE;
 
   private:
     const SPPMPassCallback&         m_pass_callback;
+    const LightSampler&             m_light_sampler;
     ParamArray                      m_params;
 };
 

@@ -334,6 +334,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
             lighting_engine_factory.reset(
                 new SPPMLightingEngineFactory(
                     *sppm_pass_callback,
+                    light_sampler,
                     m_params.child("sppm_lighting_engine")));
         }
         else

@@ -102,6 +102,7 @@ namespace
             const Frame&            frame,
             const size_t            tile_x,
             const size_t            tile_y,
+            const size_t            pass_hash,
             AbortSwitch&            abort_switch) OVERRIDE
         {
             Image& image = frame.image();

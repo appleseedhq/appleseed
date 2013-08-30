@@ -40,6 +40,7 @@
 #include "foundation/image/tile.h"
 
 // Standard headers.
+#include <cassert>
 #include <exception>
 
 using namespace foundation;
@@ -58,12 +59,14 @@ TileJob::TileJob(
     const Frame&                frame,
     const size_t                tile_x,
     const size_t                tile_y,
+    const size_t                pass_hash,
     AbortSwitch&                abort_switch)
   : m_tile_renderers(tile_renderers)
   , m_tile_callbacks(tile_callbacks)
   , m_frame(frame)
   , m_tile_x(tile_x)
   , m_tile_y(tile_y)
+  , m_pass_hash(pass_hash)
   , m_abort_switch(abort_switch)
 {
     // Either there is no tile callback, or there is the same number
@@ -106,6 +109,7 @@ void TileJob::execute(const size_t thread_index)
             m_frame,
             m_tile_x,
             m_tile_y,
+            m_pass_hash,
             m_abort_switch);
     }
     catch (const exception&)

@@ -51,7 +51,11 @@ class DLLSYMBOL IPassCallback
   : public foundation::IUnknown
 {
   public:
+    // This method is called at the beginning of a pass.
     virtual void pre_render(const Frame& frame) = 0;
+
+    // This method is called at the end of a pass.
+    virtual void post_render(const Frame& frame) = 0;
 };
 
 }       // namespace renderer

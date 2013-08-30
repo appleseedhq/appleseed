@@ -29,19 +29,17 @@
 #ifndef APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_TILEJOB_H
 #define APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_TILEJOB_H
 
-// appleseed.renderer headers.
-#include "renderer/global/global.h"
-
 // appleseed.foundation headers.
 #include "foundation/utility/job.h"
 
 // Standard headers.
+#include <cstddef>
 #include <vector>
 
 // Forward declarations.
-namespace renderer      { class Frame; }
-namespace renderer      { class ITileRenderer; }
-namespace renderer      { class ITileCallback; }
+namespace renderer  { class Frame; }
+namespace renderer  { class ITileCallback; }
+namespace renderer  { class ITileRenderer; }
 
 namespace renderer
 {
@@ -64,6 +62,7 @@ class TileJob
         const Frame&                frame,
         const size_t                tile_x,
         const size_t                tile_y,
+        const size_t                pass_hash,
         foundation::AbortSwitch&    abort_switch);
 
     // Execute the job.
@@ -75,6 +74,7 @@ class TileJob
     const Frame&                    m_frame;
     const size_t                    m_tile_x;
     const size_t                    m_tile_y;
+    const size_t                    m_pass_hash;
     foundation::AbortSwitch&        m_abort_switch;
 };
 

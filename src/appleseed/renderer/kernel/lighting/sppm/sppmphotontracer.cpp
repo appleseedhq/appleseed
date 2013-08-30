@@ -146,6 +146,14 @@ namespace
         {
             assert(vertex.m_path_length == 1 || m_cast_indirect_light);
 
+            // Don't store photons on surfaces without a BSDF.
+            if (vertex.m_bsdf == 0)
+                return true;
+
+            // Don't store photons on purely specular surfaces.
+            if (vertex.m_bsdf->is_purely_specular())
+                return true;
+
             SPPMPhoton photon;
             photon.m_position = vertex.get_point();
             photon.m_data.m_incoming = Vector3f(vertex.m_outgoing);

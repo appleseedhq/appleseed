@@ -165,6 +165,7 @@ namespace
             TileStack&                  aov_tiles,
             const AABB2i&               tile_bbox,
             const PixelContext&         pixel_context,
+            const size_t                pass_hash,
             const int                   tx,
             const int                   ty,
             SamplingContext::RNGType&   rng,
@@ -178,7 +179,10 @@ namespace
 
             // Create a sampling context.
             const size_t frame_width = frame.image().properties().m_canvas_width;
-            const size_t instance = hashint32(static_cast<uint32>(iy * frame_width + ix));
+            const size_t instance =
+                mix32(
+                    static_cast<uint32>(pass_hash),
+                    static_cast<uint32>(iy * frame_width + ix));
             SamplingContext sampling_context(
                 rng,
                 2,                      // number of dimensions

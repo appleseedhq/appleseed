@@ -884,10 +884,6 @@ source_group ("renderer\\kernel\\lighting\\pt" FILES
 )
 
 set (renderer_kernel_lighting_sppm_sources
-    renderer/kernel/lighting/sppm/sppmgatherpoint.cpp
-    renderer/kernel/lighting/sppm/sppmgatherpoint.h
-    renderer/kernel/lighting/sppm/sppmgatherpointtracer.cpp
-    renderer/kernel/lighting/sppm/sppmgatherpointtracer.h
     renderer/kernel/lighting/sppm/sppmlightingengine.cpp
     renderer/kernel/lighting/sppm/sppmlightingengine.h
     renderer/kernel/lighting/sppm/sppmpasscallback.cpp
@@ -898,7 +894,6 @@ set (renderer_kernel_lighting_sppm_sources
     renderer/kernel/lighting/sppm/sppmphotonmap.h
     renderer/kernel/lighting/sppm/sppmphotontracer.cpp
     renderer/kernel/lighting/sppm/sppmphotontracer.h
-    renderer/kernel/lighting/sppm/sppmpixelstatistics.h
 )
 list (APPEND appleseed_sources
     ${renderer_kernel_lighting_sppm_sources}
