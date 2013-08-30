@@ -48,8 +48,6 @@
 #include "renderer/utility/stochasticcast.h"
 
 // appleseed.foundation headers.
-#include "foundation/image/color.h"
-#include "foundation/image/colorspace.h"
 #include "foundation/math/basis.h"
 #include "foundation/math/knn.h"
 #include "foundation/math/mis.h"
@@ -117,8 +115,8 @@ namespace
               , m_rr_min_path_length(nz(params.get_optional<size_t>("rr_min_path_length", 3)))
               , m_ibl_env_sample_count(params.get_optional<double>("ibl_env_samples", 1.0))
               , m_max_photons_per_estimate(params.get_optional<size_t>("max_photons_per_estimate", 100))
-              , m_view_photons(params.get_optional<bool>("view_photons"))
-              , m_view_photons_radius(params.get_optional<float>("view_photons_radius"))
+              , m_view_photons(params.get_optional<bool>("view_photons", false))
+              , m_view_photons_radius(params.get_optional<float>("view_photons_radius", 1.0e-3f))
             {
                 // Precompute the reciprocal of the number of environment samples.
                 m_rcp_ibl_env_sample_count =
@@ -499,9 +497,18 @@ namespace
                 Vector3f(shading_point.get_point()),
                 square(m_params.m_view_photons_radius));
 
-            if (m_answer.empty())
-                radiance.set(0.0f);
-            else linear_rgb_reflectance_to_spectrum(Color3f(1.0f, 0.0f, 0.0f), radiance);
+            radiance.set(0.0f);
+
+            const size_t photon_count = m_answer.size();
+
+            for (size_t i = 0; i < photon_count; ++i)
+            {
+                const knn::Answer<float>::Entry& photon = m_answer.get(i);
+                radiance += m_pass_callback.get_photon_data(photon.m_index).m_flux;
+            }
+
+            if (photon_count > 1)
+                radiance /= static_cast<float>(photon_count);
         }
     };
 }
