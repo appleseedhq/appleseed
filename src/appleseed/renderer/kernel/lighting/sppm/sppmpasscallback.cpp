@@ -32,6 +32,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/kernel/lighting/sppm/sppmphotontracer.h"
+#include "renderer/modeling/scene/scene.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
@@ -66,8 +67,11 @@ SPPMPassCallback::SPPMPassCallback(
   , m_texture_store(texture_store)
   , m_pass_number(0)
   , m_emitted_photon_count(0)
-  , m_lookup_radius(m_params.m_initial_lookup_radius)
 {
+    // Compute the initial lookup radius.
+    const float scene_diameter = static_cast<float>(2.0 * scene.compute_radius());
+    const float diameter_factor = m_params.m_initial_radius_percents / 100.0f;
+    m_lookup_radius = scene_diameter * diameter_factor;
 }
 
 void SPPMPassCallback::release()
@@ -119,7 +123,7 @@ void SPPMPassCallback::post_render(const Frame& frame)
 //
 
 SPPMPassCallback::Parameters::Parameters(const ParamArray& params)
-  : m_initial_lookup_radius(params.get_required<float>("initial_radius", 0.1f))
+  : m_initial_radius_percents(params.get_required<float>("initial_radius", 0.1f))
   , m_alpha(params.get_optional<float>("alpha", 0.7f))
   , m_photon_count_per_pass(params.get_optional<size_t>("photons_per_pass", 100000))
 {

@@ -94,7 +94,7 @@ class SPPMPassCallback
   private:
     struct Parameters
     {
-        float   m_initial_lookup_radius;
+        float   m_initial_radius_percents;
         float   m_alpha;
         size_t  m_photon_count_per_pass;
 

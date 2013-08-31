@@ -184,7 +184,7 @@ namespace
             explicit Parameters(const ParamArray& params)
               : m_thread_count(FrameRendererBase::get_rendering_thread_count(params))
               , m_tile_ordering(get_tile_ordering(params))
-              , m_pass_count(params.get_optional<size_t>("pass_count", 1))
+              , m_pass_count(params.get_optional<size_t>("passes", 1))
             {
             }
 
