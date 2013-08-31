@@ -270,10 +270,6 @@ namespace
                 if (BSDF::has_diffuse(bsdf_mode))
                     return false;
 
-                // No caustics.
-                if (BSDF::has_diffuse(prev_bsdf_mode) && BSDF::has_glossy_or_specular(bsdf_mode))
-                    return false;
-
                 return true;
             }
 
