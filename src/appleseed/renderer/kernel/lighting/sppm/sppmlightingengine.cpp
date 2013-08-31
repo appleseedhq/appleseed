@@ -369,6 +369,10 @@ namespace
                 Spectrum&               vertex_radiance,
                 SpectrumStack&          vertex_aovs)
             {
+                // No indirect lighting if the photon map is empty.
+                if (m_pass_callback.get_photon_map().empty())
+                    return;
+
                 // Find the nearby photons around the path vertex.
                 const knn::Query3f query(m_pass_callback.get_photon_map(), m_answer);
                 query.run(

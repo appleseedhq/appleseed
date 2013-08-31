@@ -48,10 +48,10 @@ namespace renderer
 
 SPPMPhotonMap::SPPMPhotonMap(SPPMPhotonVector& photons)
 {
-    if (!photons.empty())
-    {
-        const size_t photon_count = photons.size();
+    const size_t photon_count = photons.size();
 
+    if (photon_count > 0)
+    {
         RENDERER_LOG_INFO(
             "building sppm photon map from %s %s...",
             pretty_uint(photon_count).c_str(),
@@ -68,6 +68,11 @@ SPPMPhotonMap::SPPMPhotonMap(SPPMPhotonVector& photons)
             StatisticsVector::make(
                 "sppm photon map statistics",
                 statistics).to_string().c_str());
+    }
+    else
+    {
+        RENDERER_LOG_WARNING(
+            "cannot build sppm photon map because no photon were stored by the photon tracing pass.");
     }
 }
 
