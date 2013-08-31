@@ -385,6 +385,7 @@ namespace
                 if (photon_count < MinPhotonCount)
                     return;
 
+                size_t included_photon_count = 0;
                 float max_square_dist = 0.0f;
                 Spectrum indirect_radiance(0.0f);
 
@@ -395,11 +396,9 @@ namespace
                     const knn::Answer<float>::Entry& photon = m_answer.get(i);
                     const SPPMPhotonData& data = m_pass_callback.get_photon_data(photon.m_index);
 
-#if 0
-                    // Simple check to reduce the bias intrinsic to photon mapping.
-                    if (dot(Vector3d(data.m_geometric_normal), gather_point.m_geometric_normal) <= -0.1)
+                    // Reject photons that are facing away.
+                    if (dot(vertex.get_geometric_normal(), Vector3d(data.m_geometric_normal)) < 0.0)
                         continue;
-#endif
 
                     // Keep track of the farthest photon.
                     if (max_square_dist < photon.m_square_dist)
@@ -422,9 +421,14 @@ namespace
                         continue;
 
                     // Accumulate reflected flux.
+                    ++included_photon_count;
                     bsdf_value *= data.m_flux;
                     indirect_radiance += bsdf_value;
                 }
+
+                // Unreliable density estimation if too few photons were actually included.
+                if (included_photon_count < MinPhotonCount)
+                    return;
 
                 // Density estimation.
                 indirect_radiance /=
