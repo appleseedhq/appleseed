@@ -171,7 +171,9 @@ namespace
                 const int ty = m_pixel_ordering[i].y;
 
                 // Skip pixels outside the intersection of the padded tile and the crop window.
-                if (tx > static_cast<int>(tile_bbox.max.x) + m_margin_width ||
+                if (tx < static_cast<int>(tile_bbox.min.x) - m_margin_width  ||
+                    ty < static_cast<int>(tile_bbox.min.y) - m_margin_height ||
+                    tx > static_cast<int>(tile_bbox.max.x) + m_margin_width  ||
                     ty > static_cast<int>(tile_bbox.max.y) + m_margin_height)
                     continue;
 
