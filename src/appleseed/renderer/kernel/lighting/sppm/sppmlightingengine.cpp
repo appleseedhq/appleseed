@@ -369,17 +369,19 @@ namespace
                 Spectrum&               vertex_radiance,
                 SpectrumStack&          vertex_aovs)
             {
-                const float radius = m_pass_callback.get_lookup_radius();
-
                 // Find the nearby photons around the path vertex.
                 const knn::Query3f query(m_pass_callback.get_photon_map(), m_answer);
-                query.run(Vector3f(vertex.get_point()), radius * radius);
+                query.run(
+                    Vector3f(vertex.get_point()),
+                    square(m_pass_callback.get_lookup_radius()));
 
-                // No indirect lighting if no photons are found.
+                // Cannot do proper density estimation if too few photons are found.
+                const size_t MinPhotonCount = 4;
                 const size_t photon_count = m_answer.size();
-                if (photon_count == 0)
+                if (photon_count < MinPhotonCount)
                     return;
 
+                float max_square_dist = 0.0f;
                 Spectrum indirect_radiance(0.0f);
 
                 // Loop over the nearby photons.
@@ -394,6 +396,10 @@ namespace
                     if (dot(Vector3d(data.m_geometric_normal), gather_point.m_geometric_normal) <= -0.1)
                         continue;
 #endif
+
+                    // Keep track of the farthest photon.
+                    if (max_square_dist < photon.m_square_dist)
+                        max_square_dist = photon.m_square_dist;
 
                     // Evaluate the BSDF for this photon.
                     Spectrum bsdf_value;
@@ -419,7 +425,7 @@ namespace
                 // Density estimation.
                 indirect_radiance /=
                     static_cast<float>(
-                        Pi * radius * radius * m_pass_callback.get_emitted_photon_count());
+                        Pi * max_square_dist * m_pass_callback.get_emitted_photon_count());
 
                 // Add the indirect lighting contribution.
                 vertex_radiance += indirect_radiance;
