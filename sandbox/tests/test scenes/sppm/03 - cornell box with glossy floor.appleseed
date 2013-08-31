@@ -299,7 +299,7 @@
             </parameters>
             <parameters name="sppm_lighting_engine">
                 <parameter name="enable_ibl" value="true" />
-                <parameter name="max_photons_per_estimate" value="200" />
+                <parameter name="max_photons_per_estimate" value="300" />
                 <parameter name="rr_min_path_length" value="3" />
             </parameters>
             <parameters name="sppm_pass_callback">
