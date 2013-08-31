@@ -40,6 +40,7 @@
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/input/inputevaluator.h"
+#include "renderer/modeling/light/light.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/utility/transformsequence.h"
 
@@ -47,6 +48,7 @@
 #include "foundation/math/basis.h"
 #include "foundation/math/hash.h"
 #include "foundation/math/rng.h"
+#include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/string.h"
@@ -262,6 +264,59 @@ void SPPMPhotonTracer::trace_non_physical_light_photon(
     SamplingContext&        sampling_context,
     LightSample&            light_sample)
 {
+    // Sample the light.
+    InputEvaluator input_evaluator(m_texture_cache);
+    SamplingContext child_sampling_context = sampling_context.split(2, 1);
+    Vector3d emission_position, emission_direction;
+    Spectrum light_value;
+    double light_prob;
+    light_sample.m_light->sample(
+        input_evaluator,
+        child_sampling_context.next_vector2<2>(),
+        emission_position,
+        emission_direction,
+        light_value,
+        light_prob);
+
+    // Transform the emission position and direction from assembly space to world space.
+    emission_position = light_sample.m_light_transform.point_to_parent(emission_position);
+    emission_direction = normalize(light_sample.m_light_transform.vector_to_parent(emission_direction));
+
+    // Compute the initial particle weight.
+    Spectrum initial_flux = light_value;
+    initial_flux /= static_cast<float>(light_sample.m_probability * light_prob);
+
+    // Build the light ray.
+    child_sampling_context.split_in_place(1, 1);
+    const ShadingRay light_ray(
+        emission_position,
+        emission_direction,
+        child_sampling_context.next_double2(),
+        ~0);
+
+    // Build the path tracer.
+    const bool cast_indirect_light = (light_sample.m_light->get_flags() & EDF::CastIndirectLight) != 0;
+    PathVisitor path_visitor(
+        initial_flux,
+        cast_indirect_light,
+        photons);
+    PathTracer<PathVisitor, true> path_tracer(      // true = adjoint
+        path_visitor,
+        3,                                          // m_params.m_rr_min_path_length
+        ~0,                                         // m_params.m_max_path_length
+        1000);                                      // m_params.m_max_iterations
+
+    // Trace the light path.
+    const size_t path_length =
+        path_tracer.trace(
+            child_sampling_context,
+            m_intersector,
+            m_texture_cache,
+            light_ray);
+
+    // Update path statistics.
+    //++m_path_count;
+    //m_path_length.insert(path_length);
 }
 
 }   // namespace renderer
