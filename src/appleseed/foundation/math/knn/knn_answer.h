@@ -57,8 +57,8 @@ class Answer
 
     struct Entry
     {
-        size_t      m_index;
-        ValueType   m_distance;
+        size_t          m_index;
+        ValueType       m_square_dist;
 
         void swap(Entry& rhs);
 
@@ -75,11 +75,15 @@ class Answer
 
     void clear();
 
-    void array_insert(const size_t index, const ValueType distance);
+    void array_insert(
+        const size_t    index,
+        const ValueType square_dist);
 
     void make_heap();
 
-    void heap_insert(const size_t index, const ValueType distance);
+    void heap_insert(
+        const size_t    index, const
+        ValueType       square_dist);
 
     void sort();
 
@@ -90,12 +94,12 @@ class Answer
   private:
     template <typename, size_t> friend class Query;
 
-    const size_t    m_max_size;
-    Entry*          m_entries;
-    size_t          m_size;
+    const size_t        m_max_size;
+    Entry*              m_entries;
+    size_t              m_size;
 
 #ifndef NDEBUG
-    bool            m_heap;
+    bool                m_heap;
 #endif
 
     void heapify(const size_t index);
@@ -117,7 +121,7 @@ inline void Answer<T>::Entry::swap(Entry& rhs)
 template <typename T>
 inline bool Answer<T>::Entry::operator<(const Entry& rhs) const
 {
-    return m_distance < rhs.m_distance;
+    return m_square_dist < rhs.m_square_dist;
 }
 
 template <typename T>
@@ -157,14 +161,16 @@ inline void Answer<T>::clear()
 }
 
 template <typename T>
-inline void Answer<T>::array_insert(const size_t index, const ValueType distance)
+inline void Answer<T>::array_insert(
+    const size_t        index,
+    const ValueType     square_dist)
 {
     assert(m_size < m_max_size);
     assert(!m_heap);
 
     Entry& entry = m_entries[m_size++];
     entry.m_index = index;
-    entry.m_distance = distance;
+    entry.m_square_dist = square_dist;
 }
 
 template <typename T>
@@ -184,12 +190,14 @@ inline void Answer<T>::make_heap()
 }
 
 template <typename T>
-inline void Answer<T>::heap_insert(const size_t index, const ValueType distance)
+inline void Answer<T>::heap_insert(
+    const size_t        index,
+    const ValueType     square_dist)
 {
     assert(m_heap);
 
     m_entries->m_index = index;
-    m_entries->m_distance = distance;
+    m_entries->m_square_dist = square_dist;
 
     heapify(0);
 }

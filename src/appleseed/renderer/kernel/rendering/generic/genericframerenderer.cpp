@@ -271,7 +271,7 @@ namespace
                     m_pass_callback->pre_render(m_frame);
 
                 // Create tile jobs.
-                const uint32 pass_hash = hashint32(static_cast<uint32>(m_pass));
+                const uint32 pass_hash = hash_uint32(static_cast<uint32>(m_pass));
                 TileJobFactory::TileJobVector tile_jobs;
                 m_tile_job_factory.create(
                     m_frame,

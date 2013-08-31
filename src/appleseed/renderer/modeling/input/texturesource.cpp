@@ -63,9 +63,9 @@ namespace
     {
         const uint32 u = static_cast<uint32>(i);    // keep the low 32 bits
 
-        const uint32 x = hashint32(u);
-        const uint32 y = hashint32(u + 1);
-        const uint32 z = hashint32(u + 2);
+        const uint32 x = hash_uint32(u);
+        const uint32 y = hash_uint32(u + 1);
+        const uint32 z = hash_uint32(u + 2);
 
         return
             Color4f(
@@ -205,7 +205,7 @@ Color4f TextureSource::get_texel(
 
     return
         integer_to_color(
-            mix32(
+            mix_uint32(
                 static_cast<uint32>(m_assembly_uid),
                 static_cast<uint32>(m_texture_uid),
                 static_cast<uint32>(tile_x),

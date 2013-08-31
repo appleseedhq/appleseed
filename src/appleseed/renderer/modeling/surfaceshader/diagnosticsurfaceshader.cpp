@@ -165,9 +165,10 @@ namespace
     inline Color3f integer_to_color(const T i)
     {
         const uint32 u = static_cast<uint32>(i);    // keep the low 32 bits
-        const uint32 x = hashint32(u);
-        const uint32 y = hashint32(u + 1);
-        const uint32 z = hashint32(u + 2);
+
+        const uint32 x = hash_uint32(u);
+        const uint32 y = hash_uint32(u + 1);
+        const uint32 z = hash_uint32(u + 2);
 
         return Color3f(
             static_cast<float>(x) * (1.0f / 4294967295.0f),
@@ -324,7 +325,7 @@ void DiagnosticSurfaceShader::evaluate(
       case Regions:
         {
             const uint32 h =
-                mix32(
+                mix_uint32(
                     static_cast<uint32>(shading_point.get_object_instance().get_uid()),
                     static_cast<uint32>(shading_point.get_region_index()));
             shading_result.set_to_linear_rgb(integer_to_color(h));
@@ -334,7 +335,7 @@ void DiagnosticSurfaceShader::evaluate(
       case Triangles:
         {
             const uint32 h =
-                mix32(
+                mix_uint32(
                     static_cast<uint32>(shading_point.get_object_instance().get_uid()),
                     static_cast<uint32>(shading_point.get_region_index()),
                     static_cast<uint32>(shading_point.get_triangle_index()));

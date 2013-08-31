@@ -329,7 +329,7 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
     //   (if it's an interior node), and compute an initial maximum search distance.
     //
 
-    ValueType max_square_distance(0.0);
+    ValueType max_square_dist(0.0);
 
     {
         FOUNDATION_KNN_QUERY_STATS(++visited_leaf_count);
@@ -349,8 +349,8 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
             {
                 m_answer.array_insert(point_index, square_dist);
 
-                if (max_square_distance < square_dist)
-                    max_square_distance = square_dist;
+                if (max_square_dist < square_dist)
+                    max_square_dist = square_dist;
             }
 
             ++point_index;
@@ -368,10 +368,10 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
 
                 const ValueType square_dist = square_distance(*point_ptr++, query_point);
 
-                if (square_dist < max_square_distance)
+                if (square_dist < max_square_dist)
                 {
                     m_answer.heap_insert(point_index, square_dist);
-                    max_square_distance = m_answer.top().m_distance;
+                    max_square_dist = m_answer.top().m_square_dist;
                 }
 
                 ++point_index;
@@ -380,7 +380,7 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
         else
         {
             // We ran out of points.
-            max_square_distance = query_max_square_distance;
+            max_square_dist = query_max_square_distance;
         }
     }
 
@@ -427,7 +427,7 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
 
         // Push the node that we don't visit now to the node stack.
         const ValueType square_distance = distance * distance;
-        if (square_distance < max_square_distance)
+        if (square_distance < max_square_dist)
         {
             VectorType dvec(0.0);
             dvec[split_dim] = distance;
@@ -464,7 +464,7 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
     {
         const NodeEntry* top_entry = node_queue + node_queue_size;
 
-        if (top_entry->m_dvec_square_norm >= max_square_distance)
+        if (top_entry->m_dvec_square_norm >= max_square_dist)
             continue;
 
         node = top_entry->m_node;
@@ -492,7 +492,7 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
                 break;
 
             // Push the node that we don't visit now to the node stack.
-            if (distance * distance < max_square_distance)
+            if (distance * distance < max_square_dist)
             {
                 VectorType dvec = parent_dvec;
                 dvec[split_dim] = distance;
@@ -527,12 +527,12 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
 
             const ValueType square_dist = square_distance(*point_ptr++, query_point);
 
-            if (square_dist < max_square_distance)
+            if (square_dist < max_square_dist)
             {
                 if (m_answer.m_size == max_answer_size)
                 {
                     m_answer.heap_insert(point_index, square_dist);
-                    max_square_distance = m_answer.top().m_distance;
+                    max_square_dist = m_answer.top().m_square_dist;
                 }
                 else
                 {

@@ -215,8 +215,8 @@ TEST_SUITE(Foundation_Math_Knn_Answer)
         {
             const size_t left = 2 * i + 1;
             const size_t right = left + 1;
-            EXPECT_LT(answer.get(i).m_distance, answer.get(left).m_distance);
-            EXPECT_LT(answer.get(i).m_distance, answer.get(right).m_distance);
+            EXPECT_LT(answer.get(i).m_square_dist, answer.get(left).m_square_dist);
+            EXPECT_LT(answer.get(i).m_square_dist, answer.get(right).m_square_dist);
         }
     }
 
@@ -382,7 +382,7 @@ TEST_SUITE(Foundation_Math_Knn_Query)
 
             for (size_t j = 0; j < AnswerSize; ++j)
             {
-                if (full_answer.get(j).m_distance > QueryMaxSquareDistance)
+                if (full_answer.get(j).m_square_dist > QueryMaxSquareDistance)
                 {
                     EXPECT_EQ(j, limited_answer.size());
                     break;

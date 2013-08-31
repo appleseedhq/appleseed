@@ -90,7 +90,7 @@ void SPPMPassCallback::pre_render(const Frame& frame)
         m_texture_store);
     photon_tracer.trace_photons(
         *m_photons,
-        hashint32(m_pass_number),
+        hash_uint32(m_pass_number),
         m_params.m_photon_count_per_pass);
     m_emitted_photon_count = m_params.m_photon_count_per_pass;
 

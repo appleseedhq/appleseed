@@ -314,7 +314,7 @@ inline bool EmittingTriangleKey::operator==(const EmittingTriangleKey& rhs) cons
 inline size_t EmittingTriangleKeyHasher::operator()(const EmittingTriangleKey& key) const
 {
     return
-        foundation::mix32(
+        foundation::mix_uint32(
             static_cast<foundation::uint32>(key.m_assembly_instance_uid),
             key.m_object_instance_index,
             key.m_region_index,
