@@ -465,8 +465,9 @@ void RenderSettingsWindow::create_sppm_advanced_settings(QVBoxLayout* parent)
 
     sublayout->addRow("Initial Radius:", create_double_input("sppm.advanced.initial_radius", 0.001, 100.0, 3, 1.0, "%"));
     sublayout->addRow("Alpha:", create_double_input("sppm.advanced.alpha", 0.0, 1.0, 1, 0.1));
-    sublayout->addRow("Photons Per Pass:", create_integer_input("sppm.advanced.photons_per_pass", 1, 1000000000));
-    sublayout->addRow("Max Photons in Radiance Estimation:", create_integer_input("sppm.advanced.max_photons_per_estimate", 1, 1000000000));
+    sublayout->addRow("Light Photons Per Pass:", create_integer_input("sppm.advanced.light_photons_per_pass", 0, 1000000000));
+    sublayout->addRow("Environment Photons Per Pass:", create_integer_input("sppm.advanced.env_photons_per_pass", 0, 1000000000));
+    sublayout->addRow("Max Photons in Radiance Estimation:", create_integer_input("sppm.advanced.max_photons_per_estimate", 8, 1000000000));
 }
 
 //---------------------------------------------------------------------------------------------
@@ -767,7 +768,8 @@ void RenderSettingsWindow::create_direct_links()
     create_direct_link("sppm.bounces.rr_start_bounce", "sppm_lighting_engine.rr_min_path_length", 3);
     create_direct_link("sppm.advanced.alpha", "sppm_pass_callback.alpha", 0.7);
     create_direct_link("sppm.advanced.initial_radius", "sppm_pass_callback.initial_radius", 1.0);
-    create_direct_link("sppm.advanced.photons_per_pass", "sppm_pass_callback.photons_per_pass", 100000);
+    create_direct_link("sppm.advanced.light_photons_per_pass", "sppm_pass_callback.light_photons_per_pass", 100000);
+    create_direct_link("sppm.advanced.env_photons_per_pass", "sppm_pass_callback.env_photons_per_pass", 100000);
     create_direct_link("sppm.advanced.max_photons_per_estimate", "sppm_lighting_engine.max_photons_per_estimate", 100);
 }
 

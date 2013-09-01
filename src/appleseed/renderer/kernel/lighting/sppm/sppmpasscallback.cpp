@@ -37,6 +37,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/hash.h"
+#include "foundation/utility/job.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
@@ -79,7 +80,9 @@ void SPPMPassCallback::release()
     delete this;
 }
 
-void SPPMPassCallback::pre_render(const Frame& frame)
+void SPPMPassCallback::pre_render(
+    const Frame&            frame,
+    AbortSwitch&            abort_switch)
 {
     RENDERER_LOG_INFO(
         "beginning sppm pass %s, lookup radius is %f.",
@@ -87,22 +90,31 @@ void SPPMPassCallback::pre_render(const Frame& frame)
         m_lookup_radius);
 
     // Create a new set of photons.
-    m_photons.reset(new SPPMPhotonVector());
+    m_photons.clear_keep_memory();
     SPPMPhotonTracer photon_tracer(
+        m_scene,
         m_light_sampler,
         m_trace_context,
         m_texture_store);
-    photon_tracer.trace_photons(
-        *m_photons,
-        hash_uint32(m_pass_number),
-        m_params.m_photon_count_per_pass);
-    m_emitted_photon_count = m_params.m_photon_count_per_pass;
+    m_emitted_photon_count =
+        photon_tracer.trace_photons(
+            m_photons,
+            hash_uint32(m_pass_number),
+            m_params.m_light_photon_count_per_pass,
+            m_params.m_env_photon_count_per_pass,
+            abort_switch);
+
+    // Stop there if rendering was aborted.
+    if (abort_switch.is_aborted())
+        return;
 
     // Build a new photon map.
-    m_photon_map.reset(new SPPMPhotonMap(*m_photons));
+    m_photon_map.reset(new SPPMPhotonMap(m_photons));
 }
 
-void SPPMPassCallback::post_render(const Frame& frame)
+void SPPMPassCallback::post_render(
+    const Frame&            frame,
+    AbortSwitch&            abort_switch)
 {
     // Shrink the lookup radius for the next pass.
     const float k = (m_pass_number + m_params.m_alpha) / (m_pass_number + 1);
@@ -125,7 +137,8 @@ void SPPMPassCallback::post_render(const Frame& frame)
 SPPMPassCallback::Parameters::Parameters(const ParamArray& params)
   : m_initial_radius_percents(params.get_required<float>("initial_radius", 0.1f))
   , m_alpha(params.get_optional<float>("alpha", 0.7f))
-  , m_photon_count_per_pass(params.get_optional<size_t>("photons_per_pass", 100000))
+  , m_light_photon_count_per_pass(params.get_optional<size_t>("light_photons_per_pass", 100000))
+  , m_env_photon_count_per_pass(params.get_optional<size_t>("env_photons_per_pass", 100000))
 {
 }
 

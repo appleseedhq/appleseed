@@ -38,11 +38,14 @@
 #include "foundation/core/concepts/noncopyable.h"
 
 // Forward declarations.
-namespace renderer  { class LightSample; }
-namespace renderer  { class LightSampler; }
-namespace renderer  { class SPPMPhotonVector; }
-namespace renderer  { class TextureStore; }
-namespace renderer  { class TraceContext; }
+namespace foundation    { class AbortSwitch; }
+namespace renderer      { class EnvironmentEDF; }
+namespace renderer      { class LightSample; }
+namespace renderer      { class LightSampler; }
+namespace renderer      { class Scene; }
+namespace renderer      { class SPPMPhotonVector; }
+namespace renderer      { class TextureStore; }
+namespace renderer      { class TraceContext; }
 
 // Standard headers.
 #include <cstddef>
@@ -55,17 +58,21 @@ class SPPMPhotonTracer
 {
   public:
     SPPMPhotonTracer(
+        const Scene&                scene,
         const LightSampler&         light_sampler,
         const TraceContext&         trace_context,
         TextureStore&               texture_store);
 
-    void trace_photons(
+    // Returns the total number of emitted photons.
+    size_t trace_photons(
         SPPMPhotonVector&           photons,
         const size_t                pass_hash,
-        const size_t                photon_count);
+        const size_t                light_photon_count,
+        const size_t                env_photon_count,
+        foundation::AbortSwitch&    abort_switch);
 
   private:
-    void trace_photon(
+    void trace_light_photon(
         SPPMPhotonVector&           photons,
         SamplingContext&            sampling_context);
 
@@ -77,12 +84,20 @@ class SPPMPhotonTracer
     void trace_non_physical_light_photon(
         SPPMPhotonVector&           photons,
         SamplingContext&            sampling_context,
-        LightSample&                light_sample);
+        const LightSample&          light_sample);
+
+    void trace_env_photon(
+        SPPMPhotonVector&           photons,
+        SamplingContext&            sampling_context,
+        const EnvironmentEDF*       env_edf);
 
   private:
+    const Scene&                    m_scene;
     const LightSampler&             m_light_sampler;
     TextureCache                    m_texture_cache;
     Intersector                     m_intersector;
+    const double                    m_safe_scene_radius;
+    const double                    m_disk_point_prob;
 };
 
 }       // namespace renderer

@@ -36,7 +36,8 @@
 #include "main/dllsymbol.h"
 
 // Forward declarations.
-namespace renderer  { class Frame; }
+namespace foundation    { class AbortSwitch; }
+namespace renderer      { class Frame; }
 
 namespace renderer
 {
@@ -52,10 +53,14 @@ class DLLSYMBOL IPassCallback
 {
   public:
     // This method is called at the beginning of a pass.
-    virtual void pre_render(const Frame& frame) = 0;
+    virtual void pre_render(
+        const Frame&                frame,
+        foundation::AbortSwitch&    abort_switch) = 0;
 
     // This method is called at the end of a pass.
-    virtual void post_render(const Frame& frame) = 0;
+    virtual void post_render(
+        const Frame&                frame,
+        foundation::AbortSwitch&    abort_switch) = 0;
 };
 
 }       // namespace renderer

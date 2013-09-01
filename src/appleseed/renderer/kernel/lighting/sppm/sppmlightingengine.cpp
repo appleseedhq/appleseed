@@ -280,25 +280,8 @@ namespace
 
                 if (vertex.m_bsdf && !vertex.m_bsdf->is_purely_specular())
                 {
-                    /*
-                    const int scattering_modes =
-                        vertex.m_prev_bsdf_mode == BSDF::Diffuse
-                            ? BSDF::Diffuse
-                            : BSDF::AllScatteringModes;
-
-                    // Image-based lighting.
-                    if (m_params.m_enable_ibl && m_env_edf)
-                    {
-                        add_image_based_lighting_contribution(
-                            vertex,
-                            scattering_modes,
-                            vertex_radiance,
-                            vertex_aovs);
-                    }
-                    */
-
-                    // Indirect lighting from photon map.
-                    add_indirect_lighting_contribution(
+                    // Lighting from photon map.
+                    add_photon_map_lighting_contribution(
                         vertex,
                         vertex_radiance,
                         vertex_aovs);
@@ -323,44 +306,7 @@ namespace
                 return true;
             }
 
-            void add_image_based_lighting_contribution(
-                const PathVertex&       vertex,
-                const int               scattering_modes,
-                Spectrum&               vertex_radiance,
-                SpectrumStack&          vertex_aovs)
-            {
-                Spectrum ibl_radiance;
-
-                const size_t env_sample_count =
-                    stochastic_cast<size_t>(
-                        m_sampling_context,
-                        m_params.m_ibl_env_sample_count);
-
-                const size_t bsdf_sample_count = env_sample_count;
-
-                // Always sample both the environment and the BSDF. When sampling the BSDF,
-                // we limit ourselves to sampling diffuse components of the BSDF; sampling
-                // of glossy components will be done by extending the current path.
-                compute_ibl(
-                    m_shading_context,
-                    *m_env_edf,
-                    vertex,
-                    BSDF::Diffuse,
-                    scattering_modes,
-                    bsdf_sample_count,
-                    env_sample_count,
-                    ibl_radiance);
-
-                // Divide by the sample count when this number is less than 1.
-                if (m_params.m_rcp_ibl_env_sample_count > 0.0f)
-                    ibl_radiance *= m_params.m_rcp_ibl_env_sample_count;
-
-                // Add the image-based lighting contribution.
-                vertex_radiance += ibl_radiance;
-                vertex_aovs.add(m_env_edf->get_render_layer_index(), ibl_radiance);
-            }
-
-            void add_indirect_lighting_contribution(
+            void add_photon_map_lighting_contribution(
                 const PathVertex&       vertex,
                 Spectrum&               vertex_radiance,
                 SpectrumStack&          vertex_aovs)
@@ -376,7 +322,7 @@ namespace
                     square(m_pass_callback.get_lookup_radius()));
 
                 // Cannot do proper density estimation if too few photons are found.
-                const size_t MinPhotonCount = 4;
+                const size_t MinPhotonCount = 8;
                 const size_t photon_count = m_answer.size();
                 if (photon_count < MinPhotonCount)
                     return;
@@ -394,6 +340,10 @@ namespace
 
                     // Reject photons that are facing away.
                     if (dot(vertex.get_geometric_normal(), Vector3d(data.m_geometric_normal)) < 0.0)
+                        continue;
+
+                    // Reject photons on the wrong side of the surface.
+                    if (dot(vertex.m_outgoing, Vector3d(data.m_geometric_normal)) < 0.0)
                         continue;
 
                     // Keep track of the farthest photon.
@@ -475,18 +425,6 @@ namespace
                     -outgoing,
                     env_radiance,
                     env_prob);
-
-                // Multiple importance sampling.
-                if (prev_bsdf_mode != BSDF::Specular)
-                {
-                    assert(prev_bsdf_prob > 0.0);
-                    const double env_sample_count = max(m_params.m_ibl_env_sample_count, 1.0);
-                    const double mis_weight =
-                        mis_power2(
-                            1.0 * prev_bsdf_prob,
-                            env_sample_count * env_prob);
-                    env_radiance *= static_cast<float>(mis_weight);
-                }
 
                 // Update the path radiance.
                 env_radiance *= throughput;

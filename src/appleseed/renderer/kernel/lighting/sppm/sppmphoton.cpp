@@ -29,6 +29,9 @@
 // Interface header.
 #include "sppmphoton.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/memory.h"
+
 using namespace foundation;
 
 namespace renderer
@@ -61,6 +64,12 @@ void SPPMPhotonVector::swap(SPPMPhotonVector& rhs)
 {
     m_positions.swap(rhs.m_positions);
     m_data.swap(rhs.m_data);
+}
+
+void SPPMPhotonVector::clear_keep_memory()
+{
+    foundation::clear_keep_memory(m_positions);
+    foundation::clear_keep_memory(m_data);
 }
 
 void SPPMPhotonVector::reserve(const size_t capacity)

@@ -43,13 +43,14 @@
 #include <memory>
 
 // Forward declarations.
-namespace renderer  { class Frame; }
-namespace renderer  { class LightSampler; }
-namespace renderer  { class ParamArray; }
-namespace renderer  { class Scene; }
-namespace renderer  { class SPPMPhotonData; }
-namespace renderer  { class TextureStore; }
-namespace renderer  { class TraceContext; }
+namespace foundation    { class AbortSwitch; }
+namespace renderer      { class Frame; }
+namespace renderer      { class LightSampler; }
+namespace renderer      { class ParamArray; }
+namespace renderer      { class Scene; }
+namespace renderer      { class SPPMPhotonData; }
+namespace renderer      { class TextureStore; }
+namespace renderer      { class TraceContext; }
 
 namespace renderer
 {
@@ -74,10 +75,14 @@ class SPPMPassCallback
     virtual void release() OVERRIDE;
 
     // This method is called at the beginning of a pass.
-    virtual void pre_render(const Frame& frame) OVERRIDE;
+    virtual void pre_render(
+        const Frame&                frame,
+        foundation::AbortSwitch&    abort_switch) OVERRIDE;
 
     // This method is called at the end of a pass.
-    virtual void post_render(const Frame& frame) OVERRIDE;
+    virtual void post_render(
+        const Frame&                frame,
+        foundation::AbortSwitch&    abort_switch) OVERRIDE;
 
     // Return the number of photons emitted for this pass.
     size_t get_emitted_photon_count() const;
@@ -96,7 +101,8 @@ class SPPMPassCallback
     {
         float   m_initial_radius_percents;
         float   m_alpha;
-        size_t  m_photon_count_per_pass;
+        size_t  m_light_photon_count_per_pass;
+        size_t  m_env_photon_count_per_pass;
 
         explicit Parameters(const ParamArray& params);
     };
@@ -108,7 +114,7 @@ class SPPMPassCallback
     TextureStore&                   m_texture_store;
     foundation::uint32              m_pass_number;
     size_t                          m_emitted_photon_count;
-    std::auto_ptr<SPPMPhotonVector> m_photons;
+    SPPMPhotonVector                m_photons;
     std::auto_ptr<SPPMPhotonMap>    m_photon_map;
     float                           m_lookup_radius;
 };
@@ -125,7 +131,7 @@ inline size_t SPPMPassCallback::get_emitted_photon_count() const
 
 inline const SPPMPhotonData& SPPMPassCallback::get_photon_data(const size_t i) const
 {
-    return m_photons->m_data[i];
+    return m_photons.m_data[i];
 }
 
 inline const SPPMPhotonMap& SPPMPassCallback::get_photon_map() const

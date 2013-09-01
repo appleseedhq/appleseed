@@ -256,7 +256,7 @@ namespace
 
                 // Invoke the post-pass callback (of the previous pass) if there is one.
                 if (m_pass_callback && m_pass > 0)
-                    m_pass_callback->post_render(m_frame);
+                    m_pass_callback->post_render(m_frame, m_abort_switch);
 
                 // Stop when all passes have been rendered.
                 if (m_pass == m_pass_count)
@@ -268,7 +268,7 @@ namespace
 
                 // Invoke the pre-pass callback if there is one.
                 if (m_pass_callback)
-                    m_pass_callback->pre_render(m_frame);
+                    m_pass_callback->pre_render(m_frame, m_abort_switch);
 
                 // Create tile jobs.
                 const uint32 pass_hash = hash_uint32(static_cast<uint32>(m_pass));

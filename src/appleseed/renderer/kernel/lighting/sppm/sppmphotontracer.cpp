@@ -39,18 +39,23 @@
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/edf/edf.h"
+#include "renderer/modeling/environment/environment.h"
+#include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
+#include "renderer/modeling/scene/scene.h"
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
 #include "foundation/math/hash.h"
 #include "foundation/math/rng.h"
+#include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/job.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
@@ -62,40 +67,79 @@ using namespace foundation;
 namespace renderer
 {
 
+namespace
+{
+    const size_t rr_min_path_length = 5;
+}
+
 SPPMPhotonTracer::SPPMPhotonTracer(
+    const Scene&            scene,
     const LightSampler&     light_sampler,
     const TraceContext&     trace_context,
     TextureStore&           texture_store)
-  : m_light_sampler(light_sampler)
+  : m_scene(scene)
+  , m_light_sampler(light_sampler)
   , m_texture_cache(texture_store)
   , m_intersector(trace_context, m_texture_cache /*, m_params.m_report_self_intersections*/)
+  , m_safe_scene_radius(scene.compute_radius() * (1.0 + 1.0e-3))
+  , m_disk_point_prob(1.0 / (Pi * square(m_safe_scene_radius)))
 {
 }
 
-void SPPMPhotonTracer::trace_photons(
+size_t SPPMPhotonTracer::trace_photons(
     SPPMPhotonVector&       photons,
     const size_t            pass_hash,
-    const size_t            photon_count)
+    const size_t            light_photon_count,
+    const size_t            env_photon_count,
+    AbortSwitch&            abort_switch)
 {
-    RENDERER_LOG_INFO(
-        "tracing %s sppm %s...",
-        pretty_uint(photon_count).c_str(),
-        photon_count > 1 ? "photons" : "photon");
+    size_t emitted_photon_count = 0;
 
     MersenneTwister rng(static_cast<uint32>(pass_hash));
     SamplingContext sampling_context(
         rng,
-        4,
-        0,                  // number of samples -- unknown
-        pass_hash);
+        0,                  // number of dimensions
+        pass_hash,          // number of samples
+        pass_hash);         // initial instance number -- end of sequence
 
-    photons.reserve(photon_count);
+    if (m_light_sampler.has_lights_or_emitting_triangles())
+    {
+        RENDERER_LOG_INFO(
+            "tracing %s sppm light %s...",
+            pretty_uint(light_photon_count).c_str(),
+            light_photon_count > 1 ? "photons" : "photon");
 
-    for (size_t i = 0; i < photon_count; ++i)
-        trace_photon(photons, sampling_context);
+        sampling_context.split_in_place(4, light_photon_count);
+
+        for (size_t i = 0; i < light_photon_count && !abort_switch.is_aborted(); ++i)
+        {
+            trace_light_photon(photons, sampling_context);
+            ++emitted_photon_count;
+        }
+    }
+
+    const EnvironmentEDF* env_edf = m_scene.get_environment()->get_environment_edf();
+
+    if (env_edf)
+    {
+        RENDERER_LOG_INFO(
+            "tracing %s sppm environment %s...",
+            pretty_uint(env_photon_count).c_str(),
+            env_photon_count > 1 ? "photons" : "photon");
+
+        sampling_context.split_in_place(2, env_photon_count);
+
+        for (size_t i = 0; i < env_photon_count && !abort_switch.is_aborted(); ++i)
+        {
+            trace_env_photon(photons, sampling_context, env_edf);
+            ++emitted_photon_count;
+        }
+    }
+
+    return emitted_photon_count;
 }
 
-void SPPMPhotonTracer::trace_photon(
+void SPPMPhotonTracer::trace_light_photon(
     SPPMPhotonVector&       photons,
     SamplingContext&        sampling_context)
 {
@@ -225,9 +269,9 @@ void SPPMPhotonTracer::trace_emitting_triangle_photon(
         emission_direction,
         m_intersector);
 
-    // Build the light ray.
+    // Build the photon ray.
     child_sampling_context.split_in_place(1, 1);
-    const ShadingRay light_ray(
+    const ShadingRay ray(
         light_sample.m_point,
         emission_direction,
         child_sampling_context.next_double2(),
@@ -241,28 +285,23 @@ void SPPMPhotonTracer::trace_emitting_triangle_photon(
         photons);
     PathTracer<PathVisitor, true> path_tracer(      // true = adjoint
         path_visitor,
-        3,                                          // m_params.m_rr_min_path_length
+        rr_min_path_length,
         ~0,                                         // m_params.m_max_path_length
         1000);                                      // m_params.m_max_iterations
 
-    // Trace the light path.
-    const size_t path_length =
-        path_tracer.trace(
-            child_sampling_context,
-            m_intersector,
-            m_texture_cache,
-            light_ray,
-            &parent_shading_point);
-
-    // Update path statistics.
-    //++m_path_count;
-    //m_path_length.insert(path_length);
+    // Trace the photon path.
+    path_tracer.trace(
+        child_sampling_context,
+        m_intersector,
+        m_texture_cache,
+        ray,
+        &parent_shading_point);
 }
 
 void SPPMPhotonTracer::trace_non_physical_light_photon(
     SPPMPhotonVector&       photons,
     SamplingContext&        sampling_context,
-    LightSample&            light_sample)
+    const LightSample&      light_sample)
 {
     // Sample the light.
     InputEvaluator input_evaluator(m_texture_cache);
@@ -286,9 +325,9 @@ void SPPMPhotonTracer::trace_non_physical_light_photon(
     Spectrum initial_flux = light_value;
     initial_flux /= static_cast<float>(light_sample.m_probability * light_prob);
 
-    // Build the light ray.
+    // Build the photon ray.
     child_sampling_context.split_in_place(1, 1);
-    const ShadingRay light_ray(
+    const ShadingRay ray(
         emission_position,
         emission_direction,
         child_sampling_context.next_double2(),
@@ -302,21 +341,81 @@ void SPPMPhotonTracer::trace_non_physical_light_photon(
         photons);
     PathTracer<PathVisitor, true> path_tracer(      // true = adjoint
         path_visitor,
-        3,                                          // m_params.m_rr_min_path_length
+        rr_min_path_length,
         ~0,                                         // m_params.m_max_path_length
         1000);                                      // m_params.m_max_iterations
 
-    // Trace the light path.
-    const size_t path_length =
-        path_tracer.trace(
-            child_sampling_context,
-            m_intersector,
-            m_texture_cache,
-            light_ray);
+    // Trace the photon path.
+    path_tracer.trace(
+        child_sampling_context,
+        m_intersector,
+        m_texture_cache,
+        ray);
+}
 
-    // Update path statistics.
-    //++m_path_count;
-    //m_path_length.insert(path_length);
+void SPPMPhotonTracer::trace_env_photon(
+    SPPMPhotonVector&       photons,
+    SamplingContext&        sampling_context,
+    const EnvironmentEDF*   env_edf)
+{
+    // Sample the environment.
+    InputEvaluator input_evaluator(m_texture_cache);
+    Vector3d outgoing;
+    Spectrum env_edf_value;
+    double env_edf_prob;
+    env_edf->sample(
+        input_evaluator,
+        sampling_context.next_vector2<2>(),
+        outgoing,                                   // points toward the environment
+        env_edf_value,
+        env_edf_prob);
+
+    // Compute the center of the tangent disk.
+    const Vector3d disk_center = m_safe_scene_radius * outgoing;
+
+    // Uniformly sample the tangent disk.
+    SamplingContext child_sampling_context = sampling_context.split(2, 1);
+    const Vector2d disk_point =
+        m_safe_scene_radius *
+        sample_disk_uniform(child_sampling_context.next_vector2<2>());
+
+    // Compute the origin of the photon ray.
+    const Basis3d basis(-outgoing);
+    const Vector3d ray_origin =
+        disk_center +
+        disk_point[0] * basis.get_tangent_u() +
+        disk_point[1] * basis.get_tangent_v();
+
+    // Compute the initial particle weight.
+    Spectrum initial_flux = env_edf_value;
+    initial_flux /= static_cast<float>(m_disk_point_prob * env_edf_prob);
+
+    // Build the photon ray.
+    child_sampling_context.split_in_place(1, 1);
+    const ShadingRay ray(
+        ray_origin,
+        -outgoing,
+        child_sampling_context.next_double2(),
+        ~0);
+
+    // Build the path tracer.
+    const bool cast_indirect_light = true;          // right now environments always cast indirect light
+    PathVisitor path_visitor(
+        initial_flux,
+        cast_indirect_light,
+        photons);
+    PathTracer<PathVisitor, true> path_tracer(      // true = adjoint
+        path_visitor,
+        rr_min_path_length,
+        ~0,                                         // m_params.m_max_path_length
+        1000);                                      // m_params.m_max_iterations
+
+    // Trace the photon path.
+    path_tracer.trace(
+        child_sampling_context,
+        m_intersector,
+        m_texture_cache,
+        ray);
 }
 
 }   // namespace renderer

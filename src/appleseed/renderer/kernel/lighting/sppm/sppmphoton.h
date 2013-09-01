@@ -79,6 +79,7 @@ class SPPMPhotonVector
     size_t get_memory_size() const;
 
     void swap(SPPMPhotonVector& rhs);
+    void clear_keep_memory();
     void reserve(const size_t capacity);
     void push_back(const SPPMPhoton& photon);
 };
