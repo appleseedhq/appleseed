@@ -723,12 +723,12 @@ namespace
         {
             // Sample the environment.
             sampling_context.split_in_place(2, 1);
-            InputEvaluator env_edf_input_evaluator(m_texture_cache);
+            InputEvaluator input_evaluator(m_texture_cache);
             Vector3d outgoing;
             Spectrum env_edf_value;
             double env_edf_prob;
             env_edf->sample(
-                env_edf_input_evaluator,
+                input_evaluator,
                 sampling_context.next_vector2<2>(),
                 outgoing,               // points toward the environment
                 env_edf_value,
@@ -755,7 +755,12 @@ namespace
             initial_flux /= static_cast<float>(m_disk_point_prob * env_edf_prob);
 
             // Build the light ray.
-            const ShadingRay light_ray(ray_origin, -outgoing, 0.0f, ~0);
+            sampling_context.split_in_place(1, 1);
+            const ShadingRay light_ray(
+                ray_origin,
+                -outgoing,
+                sampling_context.next_double2(),
+                ~0);
 
             // Build the path tracer.
             PathVisitor path_visitor(
