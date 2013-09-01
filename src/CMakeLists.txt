@@ -453,12 +453,18 @@ EXECUTE_PROCESS (
 #--------------------------------------------------------------------------------------------------
 
 install (
-    PROGRAMS ../scripts/run-appleseed.sh
+    PROGRAMS
+        ../scripts/run-appleseed.sh
     DESTINATION bin
 )
 
 install (
-    FILES ../scripts/watch_folder.py
+    FILES
+        ../scripts/convertmany.py
+        ../scripts/rendermanager.py
+        ../scripts/rendermany.py
+        ../scripts/rendernode.py
+        ../scripts/updatemany.py
     DESTINATION bin
 )
 
@@ -471,7 +477,6 @@ install (
 
 install (
     DIRECTORY
-        ../sandbox/animations
         ../sandbox/extras
         ../sandbox/images
         ../sandbox/scenes
