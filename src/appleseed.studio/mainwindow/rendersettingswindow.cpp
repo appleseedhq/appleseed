@@ -480,7 +480,7 @@ void RenderSettingsWindow::create_sppm_radiance_estimation_settings(QVBoxLayout*
     layout->addLayout(sublayout);
 
     create_bounce_settings(sublayout, "sppm.radiance_estimation");
-    sublayout->addRow("Initial Radius:", create_double_input("sppm.radiance_estimation.initial_radius", 0.001, 100.0, 3, 1.0, "%"));
+    sublayout->addRow("Initial Radius:", create_double_input("sppm.radiance_estimation.initial_radius", 0.001, 100.0, 3, 0.1, "%"));
     sublayout->addRow("Max Photons:", create_integer_input("sppm.radiance_estimation.max_photons", 8, 1000000000));
     sublayout->addRow("Alpha:", create_double_input("sppm.radiance_estimation.alpha", 0.0, 1.0, 1, 0.1));
 }
