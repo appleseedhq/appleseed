@@ -247,15 +247,9 @@ namespace
 
                 if (vertex.m_bsdf)
                 {
-                    const int scattering_modes =
-                        vertex.m_prev_bsdf_mode == BSDF::Diffuse
-                            ? BSDF::Diffuse
-                            : BSDF::AllScatteringModes;
-
                     // Direct lighting.
                     add_direct_lighting_contribution(
                         vertex,
-                        scattering_modes,
                         vertex_radiance,
                         vertex_aovs);
 
@@ -264,7 +258,6 @@ namespace
                     {
                         add_image_based_lighting_contribution(
                             vertex,
-                            scattering_modes,
                             vertex_radiance,
                             vertex_aovs);
                     }
@@ -291,7 +284,6 @@ namespace
 
             void add_direct_lighting_contribution(
                 const PathVertex&       vertex,
-                const int               scattering_modes,
                 Spectrum&               vertex_radiance,
                 SpectrumStack&          vertex_aovs)
             {
@@ -312,7 +304,7 @@ namespace
                     m_light_sampler,
                     vertex,
                     BSDF::Diffuse,
-                    scattering_modes,
+                    BSDF::AllScatteringModes,
                     bsdf_sample_count,
                     light_sample_count);
 
@@ -337,7 +329,6 @@ namespace
 
             void add_image_based_lighting_contribution(
                 const PathVertex&       vertex,
-                const int               scattering_modes,
                 Spectrum&               vertex_radiance,
                 SpectrumStack&          vertex_aovs)
             {
@@ -358,7 +349,7 @@ namespace
                     *m_env_edf,
                     vertex,
                     BSDF::Diffuse,
-                    scattering_modes,
+                    BSDF::AllScatteringModes,
                     bsdf_sample_count,
                     env_sample_count,
                     ibl_radiance);
