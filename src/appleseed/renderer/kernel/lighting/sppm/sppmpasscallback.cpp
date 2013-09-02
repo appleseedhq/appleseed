@@ -31,7 +31,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
-#include "renderer/kernel/lighting/sppm/sppmphotontracer.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/utility/paramarray.h"
 
@@ -62,10 +61,11 @@ SPPMPassCallback::SPPMPassCallback(
     TextureStore&           texture_store,
     const ParamArray&       params)
   : m_params(params)
-  , m_scene(scene)
-  , m_light_sampler(light_sampler)
-  , m_trace_context(trace_context)
-  , m_texture_store(texture_store)
+  , m_photon_tracer(
+        scene,
+        light_sampler,
+        trace_context,
+        texture_store)
   , m_pass_number(0)
   , m_emitted_photon_count(0)
 {
@@ -91,13 +91,8 @@ void SPPMPassCallback::pre_render(
 
     // Create a new set of photons.
     m_photons.clear_keep_memory();
-    SPPMPhotonTracer photon_tracer(
-        m_scene,
-        m_light_sampler,
-        m_trace_context,
-        m_texture_store);
     m_emitted_photon_count =
-        photon_tracer.trace_photons(
+        m_photon_tracer.trace_photons(
             m_photons,
             hash_uint32(m_pass_number),
             m_params.m_light_photon_count_per_pass,

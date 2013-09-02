@@ -32,6 +32,7 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/sppm/sppmphoton.h"
 #include "renderer/kernel/lighting/sppm/sppmphotonmap.h"
+#include "renderer/kernel/lighting/sppm/sppmphotontracer.h"
 #include "renderer/kernel/rendering/ipasscallback.h"
 
 // appleseed.foundation headers.
@@ -108,10 +109,7 @@ class SPPMPassCallback
     };
 
     const Parameters                m_params;
-    const Scene&                    m_scene;
-    const LightSampler&             m_light_sampler;
-    const TraceContext&             m_trace_context;
-    TextureStore&                   m_texture_store;
+    SPPMPhotonTracer                m_photon_tracer;
     foundation::uint32              m_pass_number;
     size_t                          m_emitted_photon_count;
     SPPMPhotonVector                m_photons;
