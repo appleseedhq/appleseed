@@ -355,8 +355,8 @@ namespace
                     const double bsdf_prob =
                         vertex.m_bsdf->evaluate(
                             vertex.m_bsdf_data,
-                            true,                                   // adjoint
-                            true,                                   // multiply by |cos(incoming, normal)|
+                            false,                                  // not adjoint
+                            false,                                  // don't multiply by |cos(incoming, normal)|
                             vertex.get_geometric_normal(),
                             vertex.get_shading_basis(),
                             vertex.m_outgoing,                      // toward the camera
