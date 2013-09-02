@@ -56,19 +56,17 @@ class Stopwatch
 
     // Return the internal timer.
     Timer& get_timer();
+    const Timer& get_timer() const;
+
+    // Set the elapsed time to 0.
+    void clear();
 
     // Start or restart the stopwatch.
     void start();
 
-    // Stop the stopwatch.
-    void stop();
-
     // Measure the time elapsed since the last call to start().
     // The stopwatch keeps running.
     Stopwatch& measure();
-
-    // Return true if the stopwatch is running, i.e. if start() has been called at least once.
-    bool is_running() const;
 
     // Read the number of timer ticks elapsed since the last call to start().
     // measure() must have been called prior to calling this method.
@@ -82,7 +80,6 @@ class Stopwatch
     Timer   m_timer;        // internal timer
     uint64  m_timer_freq;   // frequency of the internal timer
     uint64  m_overhead;     // measured overhead of calling start() + measure()
-    bool    m_is_running;   // true if start() was called at least once
     uint64  m_start;        // timer value when start() is called
     uint64  m_elapsed;      // elapsed time when measure() is called, adjusted for overhead
 
@@ -111,7 +108,6 @@ Stopwatch<Timer>::Stopwatch(const size_t overhead_measures)
         m_overhead = measure_overhead(overhead_measures);
     }
 
-    m_is_running = false;
     m_start = 0;
     m_elapsed = 0;
 }
@@ -123,24 +119,27 @@ inline Timer& Stopwatch<Timer>::get_timer()
 }
 
 template <typename Timer>
-inline void Stopwatch<Timer>::start()
+inline const Timer& Stopwatch<Timer>::get_timer() const
 {
-    m_is_running = true;
-    m_start = m_timer.read();
+    return m_timer;
 }
 
 template <typename Timer>
-inline void Stopwatch<Timer>::stop()
+inline void Stopwatch<Timer>::clear()
 {
-    m_is_running = false;
+    m_elapsed = 0;
+}
+
+template <typename Timer>
+inline void Stopwatch<Timer>::start()
+{
+    m_start = m_timer.read();
 }
 
 template <typename Timer>
 inline Stopwatch<Timer>& Stopwatch<Timer>::measure()
 {
-    assert(m_is_running);
-
-    // Compute elapsed time.
+    // Compute and store elapsed time.
     const uint64 end = m_timer.read();
     m_elapsed = end >= m_start ? end - m_start : 0;
 
@@ -150,12 +149,6 @@ inline Stopwatch<Timer>& Stopwatch<Timer>::measure()
     else m_elapsed = 0;
 
     return *this;
-}
-
-template <typename Timer>
-bool Stopwatch<Timer>::is_running() const
-{
-    return m_is_running;
 }
 
 template <typename Timer>

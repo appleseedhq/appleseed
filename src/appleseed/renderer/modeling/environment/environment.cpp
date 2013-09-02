@@ -72,10 +72,15 @@ void Environment::release()
     delete this;
 }
 
+const char* Environment::get_model() const
+{
+    return EnvironmentFactory::get_model();
+}
+
 bool Environment::on_frame_begin(const Project& project)
 {
-    m_environment_edf = static_cast<EnvironmentEDF*>(m_inputs.get_entity("environment_edf"));
-    m_environment_shader = static_cast<EnvironmentShader*>(m_inputs.get_entity("environment_shader"));
+    m_environment_edf = get_uncached_environment_edf();
+    m_environment_shader = get_uncached_environment_shader();
 
     return true;
 }
@@ -86,9 +91,14 @@ void Environment::on_frame_end(const Project& project)
     m_environment_shader = 0;
 }
 
-const char* Environment::get_model() const
+EnvironmentEDF* Environment::get_uncached_environment_edf() const
 {
-    return EnvironmentFactory::get_model();
+    return static_cast<EnvironmentEDF*>(m_inputs.get_entity("environment_edf"));
+}
+
+EnvironmentShader* Environment::get_uncached_environment_shader() const
+{
+    return static_cast<EnvironmentShader*>(m_inputs.get_entity("environment_shader"));
 }
 
 

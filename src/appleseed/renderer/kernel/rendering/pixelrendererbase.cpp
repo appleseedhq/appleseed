@@ -63,6 +63,20 @@ PixelRendererBase::~PixelRendererBase()
     }
 }
 
+void PixelRendererBase::on_tile_begin(
+    const Frame&    frame,
+    Tile&           tile,
+    TileStack&      aov_tiles)
+{
+}
+
+void PixelRendererBase::on_tile_end(
+    const Frame&    frame,
+    Tile&           tile,
+    TileStack&      aov_tiles)
+{
+}
+
 void PixelRendererBase::signal_invalid_sample()
 {
     // todo: mark pixel as faulty in the diagnostic map.

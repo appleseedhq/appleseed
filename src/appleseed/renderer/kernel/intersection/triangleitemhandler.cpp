@@ -34,7 +34,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/intersection.h"
-#ifndef APPLESEED_FOUNDATION_USE_SSE
+#ifdef APPLESEED_FOUNDATION_USE_SSE
 #include "foundation/platform/sse.h"
 #endif
 

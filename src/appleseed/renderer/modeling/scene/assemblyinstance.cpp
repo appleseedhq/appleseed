@@ -133,7 +133,7 @@ void AssemblyInstance::bind_assembly(const AssemblyContainer& assemblies)
 void AssemblyInstance::check_assembly() const
 {
     if (m_assembly == 0)
-        throw ExceptionUnknownEntity(impl->m_assembly_name.c_str());
+        throw ExceptionUnknownEntity(impl->m_assembly_name.c_str(), this);
 }
 
 bool AssemblyInstance::on_frame_begin(const Project& project)

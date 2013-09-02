@@ -36,6 +36,7 @@
 #include "renderer/kernel/aov/spectrumstack.h"
 #include "renderer/kernel/rendering/final/pixelsampler.h"
 #include "renderer/kernel/rendering/isamplerenderer.h"
+#include "renderer/kernel/rendering/pixelcontext.h"
 #include "renderer/kernel/rendering/pixelrendererbase.h"
 #include "renderer/kernel/rendering/shadingresultframebuffer.h"
 #include "renderer/kernel/shading/shadingresult.h"
@@ -49,6 +50,7 @@
 #include "foundation/math/rng.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/statistics.h"
 
@@ -104,39 +106,30 @@ namespace
             delete this;
         }
 
-        virtual void on_tile_begin(
-            const Frame&                frame,
-            Tile&                       tile,
-            TileStack&                  aov_tiles) OVERRIDE
-        {
-        }
-
-        virtual void on_tile_end(
-            const Frame&                frame,
-            Tile&                       tile,
-            TileStack&                  aov_tiles) OVERRIDE
-        {
-        }
-
         virtual void render_pixel(
             const Frame&                frame,
             Tile&                       tile,
             TileStack&                  aov_tiles,
-            const AABB2u&               tile_bbox,
-            const int                   ix,
-            const int                   iy,
+            const AABB2i&               tile_bbox,
+            const PixelContext&         pixel_context,
+            const size_t                pass_hash,
             const int                   tx,
             const int                   ty,
             SamplingContext::RNGType&   rng,
             ShadingResultFrameBuffer&   framebuffer) OVERRIDE
         {
+            const int ix = pixel_context.m_ix;
+            const int iy = pixel_context.m_iy;
             const size_t aov_count = frame.aov_images().size();
 
             if (m_params.m_decorrelate)
             {
                 // Create a sampling context.
                 const size_t frame_width = frame.image().properties().m_canvas_width;
-                const size_t instance = hashint32(static_cast<uint32>(iy * frame_width + ix));
+                const size_t instance =
+                    mix_uint32(
+                        static_cast<uint32>(pass_hash),
+                        static_cast<uint32>(iy * frame_width + ix));
                 SamplingContext sampling_context(
                     rng,
                     2,                  // number of dimensions
@@ -160,6 +153,7 @@ namespace
                     shading_result.m_aovs.set_size(aov_count);
                     m_sample_renderer->render_sample(
                         child_sampling_context,
+                        pixel_context,
                         sample_position,
                         shading_result);
 
@@ -200,6 +194,7 @@ namespace
                         shading_result.m_aovs.set_size(aov_count);
                         m_sample_renderer->render_sample(
                             sampling_context,
+                            pixel_context,
                             sample_position,
                             shading_result);
 

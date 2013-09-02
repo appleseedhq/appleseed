@@ -29,8 +29,14 @@
 // Interface header.
 #include "edf.h"
 
+// appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
+
 // appleseed.foundation headers.
 #include "foundation/utility/uid.h"
+
+// Standard headers.
+#include <string>
 
 using namespace foundation;
 
@@ -51,9 +57,13 @@ EDF::EDF(
     const ParamArray&   params)
   : ConnectableEntity(g_class_uid, params)
   , m_flags(0)
-  , m_importance_multiplier(1.0)
 {
     set_name(name);
+}
+
+double EDF::get_uncached_importance_multiplier() const
+{
+    return m_params.get_optional<double>("importance_multiplier", 1.0);
 }
 
 bool EDF::on_frame_begin(
@@ -65,8 +75,12 @@ bool EDF::on_frame_begin(
     if (m_params.get_optional<bool>("cast_indirect_light", true))
         m_flags |= CastIndirectLight;
 
-    m_importance_multiplier =
-        m_params.get_optional<double>("importance_multiplier", 1.0);
+    if (get_uncached_importance_multiplier() <= 0.0)
+    {
+        RENDERER_LOG_WARNING(
+            "edf \"%s\" has negative or zero importance; expect artifacts and/or slowdowns.",
+            get_path().c_str());
+    }
 
     return true;
 }

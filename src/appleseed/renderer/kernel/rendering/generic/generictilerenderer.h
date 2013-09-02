@@ -39,6 +39,7 @@
 // Forward declarations.
 namespace renderer  { class Frame; }
 namespace renderer  { class IPixelRendererFactory; }
+namespace renderer  { class IShadingResultFrameBufferFactory; }
 
 namespace renderer
 {
@@ -53,9 +54,10 @@ class GenericTileRendererFactory
   public:
     // Constructor.
     GenericTileRendererFactory(
-        const Frame&            frame,
-        IPixelRendererFactory*  factory,
-        const ParamArray&       params);
+        const Frame&                        frame,
+        IPixelRendererFactory*              pixel_renderer_factory,
+        IShadingResultFrameBufferFactory*   framebuffer_factory, 
+        const ParamArray&                   params);
 
     // Delete this instance.
     virtual void release() OVERRIDE;
@@ -64,9 +66,10 @@ class GenericTileRendererFactory
     virtual ITileRenderer* create(const bool primary) OVERRIDE;
 
   private:
-    const Frame&                m_frame;
-    IPixelRendererFactory*      m_factory;
-    ParamArray                  m_params;
+    const Frame&                            m_frame;
+    IPixelRendererFactory*                  m_pixel_renderer_factory;
+    IShadingResultFrameBufferFactory*       m_framebuffer_factory;
+    ParamArray                              m_params;
 };
 
 }       // namespace renderer

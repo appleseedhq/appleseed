@@ -59,7 +59,7 @@ namespace detail
                 result.push_back(ex());
             else
             {
-                PyErr_SetString(PyExc_TypeError, "Incompatible type type. Only floats." );
+                PyErr_SetString(PyExc_TypeError, "Incompatible type type. Only floats.");
                 bpy::throw_error_already_set();
             }
         }

@@ -134,6 +134,9 @@ class RenderSettingsWindow
     void create_pt_advanced_ibl_settings(QVBoxLayout* parent);
     void create_pt_advanced_max_ray_intensity_settings(QVBoxLayout* parent);
 
+    void create_sppm_panel(QLayout* parent);
+    void create_sppm_advanced_settings(QVBoxLayout* parent);
+
     void create_system_panel(QLayout* parent);
     void create_system_override_rendering_threads_settings(QVBoxLayout* parent);
     void create_system_override_texture_store_max_size_settings(QVBoxLayout* parent);
@@ -164,6 +167,14 @@ class RenderSettingsWindow
         const int                       decimals,
         const double                    step);
 
+    QDoubleSpinBox* create_double_input(
+        const std::string&              widget_key,
+        const double                    min,
+        const double                    max,
+        const int                       decimals,
+        const double                    step,
+        const QString&                  label);
+
     QCheckBox* create_checkbox(
         const std::string&              widget_key,
         const QString&                  label);
@@ -192,6 +203,14 @@ class RenderSettingsWindow
 
     void load_directly_linked_values(const renderer::Configuration& config);
     void save_directly_linked_values(renderer::Configuration& config);
+
+    void load_bounce_settings(
+        const renderer::Configuration&  config,
+        const std::string&              lighting_engine);
+
+    void save_bounce_settings(
+        renderer::Configuration&        config,
+        const std::string&              lighting_engine);
 
     template <typename T>
     void set_widget(

@@ -32,6 +32,11 @@
 // appleseed.foundation headers.
 #include "foundation/platform/thread.h"
 #include "foundation/platform/x86timer.h"
+#include "foundation/utility/log.h"
+#include "foundation/utility/string.h"
+
+// Standard headers.
+#include <string>
 
 // Windows.
 #if defined _WIN32
@@ -48,17 +53,22 @@
 
     // Platform headers.
     #include <sys/sysctl.h>
+    #include <sys/types.h>
 
 // Linux.
 #elif defined __linux__
 
     // Platform headers.
+    #include <sys/sysinfo.h>
+    #include <sys/types.h>
     #include <unistd.h>
 
 // Unsupported platform.
 #else
-#error Unsupported platform.
+    #error Unsupported platform.
 #endif
+
+using namespace std;
 
 namespace foundation
 {
@@ -66,6 +76,26 @@ namespace foundation
 // ------------------------------------------------------------------------------------------------
 // Common code.
 // ------------------------------------------------------------------------------------------------
+
+void System::print_information(Logger& logger)
+{
+    LOG_INFO(
+        logger,
+        "system information:\n"
+        "  logical cores    %s\n"
+        "  L1 data cache    size %s, line size %s\n"
+        "  L2 cache         size %s, line size %s\n"
+        "  L3 cache         size %s, line size %s\n"
+        "  physical RAM     size %s",
+        pretty_uint(get_logical_cpu_core_count()).c_str(),
+        pretty_size(get_l1_data_cache_size()).c_str(),
+        pretty_size(get_l1_data_cache_line_size()).c_str(),
+        pretty_size(get_l2_cache_size()).c_str(),
+        pretty_size(get_l2_cache_line_size()).c_str(),
+        pretty_size(get_l3_cache_size()).c_str(),
+        pretty_size(get_l3_cache_line_size()).c_str(),
+        pretty_size(get_total_physical_ram_size()).c_str());
+}
 
 size_t System::get_logical_cpu_core_count()
 {
@@ -172,6 +202,17 @@ size_t System::get_l3_cache_line_size()
     return get_cache_descriptor(3, cache) ? cache.LineSize : 0;
 }
 
+uint64 System::get_total_physical_ram_size()
+{
+    // Reference: http://stackoverflow.com/questions/63166/how-to-determine-cpu-and-memory-consumption-from-inside-a-process
+
+    MEMORYSTATUSEX mem_info;
+    mem_info.dwLength = sizeof(MEMORYSTATUSEX);
+    GlobalMemoryStatusEx(&mem_info);
+
+    return static_cast<uint64>(mem_info.ullTotalPhys);
+}
+
 // ------------------------------------------------------------------------------------------------
 // Mac OS X.
 // ------------------------------------------------------------------------------------------------
@@ -218,6 +259,18 @@ size_t System::get_l3_cache_line_size()
     return get_l3_cache_size() > 0 ? get_system_value("hw.cachelinesize") : 0;
 }
 
+uint64 System::get_total_physical_ram_size()
+{
+    // Reference: http://stackoverflow.com/questions/63166/how-to-determine-cpu-and-memory-consumption-from-inside-a-process
+
+    int name[2] = { CTL_HW, HW_MEMSIZE };
+    uint64_t result;
+    size_t result_length = sizeof(uint64_t);
+    sysctl(name, 2, &result, &result_length, 0, 0);
+
+    return static_cast<uint64>(result);
+}
+
 // ------------------------------------------------------------------------------------------------
 // Linux.
 // ------------------------------------------------------------------------------------------------
@@ -252,6 +305,16 @@ size_t System::get_l3_cache_size()
 size_t System::get_l3_cache_line_size()
 {
     return sysconf(_SC_LEVEL3_CACHE_LINESIZE);
+}
+
+uint64 System::get_total_physical_ram_size()
+{
+    // Reference: http://stackoverflow.com/questions/63166/how-to-determine-cpu-and-memory-consumption-from-inside-a-process
+
+    struct sysinfo mem_info;
+    sysinfo(&mem_info);
+
+    return static_cast<uint64>(mem_info.totalram) * mem_info.mem_unit;
 }
 
 #endif

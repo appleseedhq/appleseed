@@ -34,6 +34,7 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/lighting/lightsampler.h"
 #include "renderer/kernel/lighting/pathtracer.h"
+#include "renderer/kernel/lighting/pathvertex.h"
 #include "renderer/kernel/lighting/tracer.h"
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/rendering/globalsampleaccumulationbuffer.h"
@@ -108,8 +109,8 @@ namespace
             const size_t    m_max_iterations;
             const bool      m_report_self_intersections;
 
-            const size_t    m_max_path_length;              // maximum path length, 0 for unlimited
-            const size_t    m_rr_min_path_length;           // minimum path length before Russian Roulette is used, 0 for unlimited
+            const size_t    m_max_path_length;              // maximum path length, ~0 for unlimited
+            const size_t    m_rr_min_path_length;           // minimum path length before Russian Roulette kicks in, ~0 for unlimited
 
             explicit Parameters(const ParamArray& params)
               : m_enable_ibl(params.get_optional<bool>("enable_ibl", true))
@@ -117,9 +118,14 @@ namespace
               , m_transparency_threshold(params.get_optional<float>("transparency_threshold", 0.001f))
               , m_max_iterations(params.get_optional<size_t>("max_iterations", 1000))
               , m_report_self_intersections(params.get_optional<bool>("report_self_intersections", false))
-              , m_rr_min_path_length(params.get_optional<size_t>("rr_min_path_length", 3))
-              , m_max_path_length(params.get_optional<size_t>("max_path_length", 0))
+              , m_max_path_length(nz(params.get_optional<size_t>("max_path_length", 0)))
+              , m_rr_min_path_length(nz(params.get_optional<size_t>("rr_min_path_length", 3)))
             {
+            }
+
+            static size_t nz(const size_t x)
+            {
+                return x == 0 ? ~0 : x;
             }
 
             void print() const
@@ -132,8 +138,8 @@ namespace
                     "  rr min path len. %s",
                     m_enable_ibl ? "on" : "off",
                     m_enable_caustics ? "on" : "off",
-                    m_max_path_length == 0 ? "infinite" : pretty_uint(m_max_path_length).c_str(),
-                    m_rr_min_path_length == 0 ? "infinite" : pretty_uint(m_rr_min_path_length).c_str());
+                    m_max_path_length == ~0 ? "infinite" : pretty_uint(m_max_path_length).c_str(),
+                    m_rr_min_path_length == ~0 ? "infinite" : pretty_uint(m_rr_min_path_length).c_str());
             }
         };
 
@@ -195,23 +201,36 @@ namespace
         }
 
       private:
-        class PathVisitor
+        struct PathVisitor
         {
-          public:
+            const Parameters&               m_params;
+            const Camera&                   m_camera;
+            const LightingConditions&       m_lighting_conditions;
+            const ShadingContext&           m_shading_context;
+
+            const Spectrum                  m_initial_flux;         // initial particle flux (in W)
+            Transformd                      m_camera_transform;     // camera transform at selected time
+            Vector3d                        m_camera_position;      // camera position in world space
+            Vector3d                        m_camera_direction;     // camera direction (gaze) in world space
+            double                          m_rcp_pixel_area;       // reciprocal of the area of a single pixel (in m^-2)
+            double                          m_focal_length;         // camera's focal length (in m)
+            SampleVector&                   m_samples;
+            size_t                          m_sample_count;         // the number of samples added to m_samples
+
             PathVisitor(
                 const Parameters&           params,
                 const Scene&                scene,
                 const Frame&                frame,
                 const ShadingContext&       shading_context,
                 SampleVector&               samples,
-                const Spectrum&             initial_alpha)
+                const Spectrum&             initial_flux)
               : m_params(params)
               , m_camera(*scene.get_camera())
               , m_lighting_conditions(frame.get_lighting_conditions())
               , m_shading_context(shading_context)
               , m_samples(samples)
               , m_sample_count(0)
-              , m_initial_alpha(initial_alpha)
+              , m_initial_flux(initial_flux)
             {
                 // Compute the world space position and direction of the camera.
                 // todo: add support for camera motion blur.
@@ -240,7 +259,6 @@ namespace
                 const BSDF::Mode            bsdf_mode) const
             {
                 assert(bsdf_mode != BSDF::Absorption);
-
                 return true;
             }
 
@@ -325,34 +343,25 @@ namespace
                 emit_sample(sample_position_ndc, radiance);
             }
 
-            bool visit_vertex(
-                SamplingContext&            sampling_context,
-                const ShadingPoint&         shading_point,
-                const Vector3d&             outgoing,       // in this context, toward the light
-                const BSDF*                 bsdf,
-                const void*                 bsdf_data,
-                const size_t                path_length,
-                const BSDF::Mode            prev_bsdf_mode,
-                const double                prev_bsdf_prob,
-                const Spectrum&             throughput)
+            bool visit_vertex(const PathVertex& vertex)
             {
                 if (!m_params.m_enable_caustics &&
-                    path_length > 1 &&
-                    (prev_bsdf_mode & (BSDF::Glossy | BSDF::Specular)) != 0)
+                    vertex.m_path_length > 1 &&
+                    (vertex.m_prev_bsdf_mode & (BSDF::Glossy | BSDF::Specular)) != 0)
                 {
                     // This is a caustics path but caustics are disabled.
                     return false;
                 }
 
                 // Terminate the path if there is no BSDF.
-                if (bsdf == 0)
+                if (vertex.m_bsdf == 0)
                     return false;
 
                 // Start computing the vertex-to-camera direction vector.
-                Vector3d vertex_to_camera = m_camera_position - shading_point.get_point();
+                Vector3d vertex_to_camera = m_camera_position - vertex.get_point();
 
                 // Reject vertices on the back side of the shading surface.
-                const Vector3d& shading_normal = shading_point.get_shading_normal();
+                const Vector3d& shading_normal = vertex.get_shading_normal();
                 if (dot(vertex_to_camera, shading_normal) <= 0.0)
                     return true;            // proceed with this path
 
@@ -360,8 +369,8 @@ namespace
                 Vector2d sample_position_ndc;
                 const double transmission =
                     vertex_visible_to_camera(
-                        shading_point.get_point(),
-                        shading_point.get_time(),
+                        vertex.get_point(),
+                        vertex.get_time(),
                         sample_position_ndc);
 
                 // Ignore occluded vertices.
@@ -375,19 +384,19 @@ namespace
                 // Retrieve the geometric normal at the vertex.
                 const Vector3d geometric_normal =
                     flip_to_same_hemisphere(
-                        shading_point.get_geometric_normal(),
+                        vertex.get_geometric_normal(),
                         shading_normal);
 
                 // Evaluate the BSDF at the vertex position.
                 Spectrum bsdf_value;
                 const double bsdf_prob =
-                    bsdf->evaluate(
-                        bsdf_data,
+                    vertex.m_bsdf->evaluate(
+                        vertex.m_bsdf_data,
                         true,                               // adjoint
                         true,                               // multiply by |cos(incoming, normal)|
                         geometric_normal,
-                        shading_point.get_shading_basis(),
-                        outgoing,                           // outgoing
+                        vertex.get_shading_basis(),
+                        vertex.m_outgoing,                  // outgoing (toward the light in this context)
                         vertex_to_camera,                   // incoming
                         BSDF::AllScatteringModes,           // todo: likely incorrect
                         bsdf_value);
@@ -406,8 +415,8 @@ namespace
                 assert(g >= 0.0);
 
                 // Store the contribution of this vertex.
-                Spectrum radiance = m_initial_alpha;
-                radiance *= throughput;
+                Spectrum radiance = m_initial_flux;
+                radiance *= vertex.m_throughput;
                 radiance *= bsdf_value;
                 radiance *= static_cast<float>(g * flux_to_radiance);
                 emit_sample(sample_position_ndc, radiance);
@@ -415,31 +424,6 @@ namespace
                 // Proceed with this path.
                 return true;
             }
-
-            void visit_environment(
-                const ShadingPoint&         shading_point,
-                const Vector3d&             outgoing,
-                const BSDF::Mode            prev_bsdf_mode,
-                const double                prev_bsdf_prob,
-                const Spectrum&             throughput)
-            {
-                // The particle escapes.
-            }
-
-          private:
-            const Parameters&               m_params;
-            const Camera&                   m_camera;
-            const LightingConditions&       m_lighting_conditions;
-            const ShadingContext&           m_shading_context;
-
-            const Spectrum                  m_initial_alpha;        // initial particle flux (in W)
-            Transformd                      m_camera_transform;     // camera transform at selected time
-            Vector3d                        m_camera_position;      // camera position in world space
-            Vector3d                        m_camera_direction;     // camera direction (gaze) in world space
-            double                          m_rcp_pixel_area;       // reciprocal of the area of a single pixel (in m^-2)
-            double                          m_focal_length;         // camera's focal length (in m)
-            SampleVector&                   m_samples;
-            size_t                          m_sample_count;         // the number of samples added to m_samples
 
             double vertex_visible_to_camera(
                 const Vector3d&             vertex_position_world,
@@ -483,6 +467,16 @@ namespace
                 sample.m_color[3] = 1.0f;
                 m_samples.push_back(sample);
                 ++m_sample_count;
+            }
+
+            void visit_environment(
+                const ShadingPoint&         shading_point,
+                const Vector3d&             outgoing,
+                const BSDF::Mode            prev_bsdf_mode,
+                const double                prev_bsdf_prob,
+                const Spectrum&             throughput)
+            {
+                // The particle escapes.
             }
         };
 
@@ -546,10 +540,9 @@ namespace
             SampleVector&               samples)
         {
             // Sample the light sources.
-            sampling_context.split_in_place(4, 1);
-            const Vector4d s = sampling_context.next_vector2<4>();
             LightSample light_sample;
-            m_light_sampler.sample(s[0], Vector3d(s[1], s[2], s[3]), light_sample);
+            sampling_context.split_in_place(4, 1);
+            m_light_sampler.sample(sampling_context.next_vector2<4>(), light_sample);
 
             return
                 light_sample.m_triangle
@@ -590,24 +583,18 @@ namespace
                 edf_prob);
 
             // Compute the initial particle weight.
-            Spectrum initial_alpha = edf_value;
-            initial_alpha *=
+            Spectrum initial_flux = edf_value;
+            initial_flux *=
                 static_cast<float>(
                     dot(emission_direction, light_sample.m_shading_normal)
                         / (light_sample.m_probability * edf_prob));
 
-            // Manufacture a shading point at the position of the light sample.
-            // It will be used to avoid self-intersections.
+            // Make a shading point that will be used to avoid self-intersections with the light sample.
             ShadingPoint parent_shading_point;
-            m_intersector.manufacture_hit(
+            light_sample.make_shading_point(
                 parent_shading_point,
-                ShadingRay(light_sample.m_point, emission_direction, 0.0, 0.0, 0.0f, ~0),
-                light_sample.m_triangle->m_assembly_instance,
-                light_sample.m_triangle->m_assembly_instance->transform_sequence().get_earliest_transform(),
-                light_sample.m_triangle->m_object_instance_index,
-                light_sample.m_triangle->m_region_index,
-                light_sample.m_triangle->m_triangle_index,
-                light_sample.m_triangle->m_triangle_support_plane);
+                emission_direction,
+                m_intersector);
 
             // Build the light ray.
             sampling_context.split_in_place(1, 1);
@@ -624,7 +611,7 @@ namespace
                 m_frame,
                 m_shading_context,
                 samples,
-                initial_alpha);
+                initial_flux);
             PathTracerType path_tracer(
                 path_visitor,
                 m_params.m_rr_min_path_length,
@@ -680,8 +667,8 @@ namespace
             emission_direction = normalize(light_sample.m_light_transform.vector_to_parent(emission_direction));
 
             // Compute the initial particle weight.
-            Spectrum initial_alpha = light_value;
-            initial_alpha /= static_cast<float>(light_sample.m_probability * light_prob);
+            Spectrum initial_flux = light_value;
+            initial_flux /= static_cast<float>(light_sample.m_probability * light_prob);
 
             // Build the light ray.
             sampling_context.split_in_place(1, 1);
@@ -698,7 +685,7 @@ namespace
                 m_frame,
                 m_shading_context,
                 samples,
-                initial_alpha);
+                initial_flux);
             PathTracerType path_tracer(
                 path_visitor,
                 m_params.m_rr_min_path_length,
@@ -736,12 +723,12 @@ namespace
         {
             // Sample the environment.
             sampling_context.split_in_place(2, 1);
-            InputEvaluator env_edf_input_evaluator(m_texture_cache);
+            InputEvaluator input_evaluator(m_texture_cache);
             Vector3d outgoing;
             Spectrum env_edf_value;
             double env_edf_prob;
             env_edf->sample(
-                env_edf_input_evaluator,
+                input_evaluator,
                 sampling_context.next_vector2<2>(),
                 outgoing,               // points toward the environment
                 env_edf_value,
@@ -764,11 +751,16 @@ namespace
                 disk_point[1] * basis.get_tangent_v();
 
             // Compute the initial particle weight.
-            Spectrum initial_alpha = env_edf_value;
-            initial_alpha /= static_cast<float>(m_disk_point_prob * env_edf_prob);
+            Spectrum initial_flux = env_edf_value;
+            initial_flux /= static_cast<float>(m_disk_point_prob * env_edf_prob);
 
             // Build the light ray.
-            const ShadingRay light_ray(ray_origin, -outgoing, 0.0f, ~0);
+            sampling_context.split_in_place(1, 1);
+            const ShadingRay light_ray(
+                ray_origin,
+                -outgoing,
+                sampling_context.next_double2(),
+                ~0);
 
             // Build the path tracer.
             PathVisitor path_visitor(
@@ -777,7 +769,7 @@ namespace
                 m_frame,
                 m_shading_context,
                 samples,
-                initial_alpha);
+                initial_flux);
             PathTracerType path_tracer(
                 path_visitor,
                 m_params.m_rr_min_path_length,

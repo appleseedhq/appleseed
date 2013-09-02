@@ -56,6 +56,7 @@
 
 // Forward declarations.
 namespace renderer  { class Assembly; }
+namespace renderer  { class PixelContext; }
 namespace renderer  { class Project; }
 
 using namespace foundation;
@@ -122,6 +123,7 @@ namespace
 
         virtual void evaluate(
             SamplingContext&        sampling_context,
+            const PixelContext&     pixel_context,
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
             ShadingResult&          shading_result) const OVERRIDE
@@ -139,6 +141,7 @@ namespace
             compute_front_lighting(
                 values,
                 sampling_context,
+                pixel_context,
                 shading_context,
                 shading_point,
                 shading_result);
@@ -149,6 +152,7 @@ namespace
                 add_back_lighting(
                     values,
                     sampling_context,
+                    pixel_context,
                     shading_context,
                     shading_point,
                     shading_result);
@@ -197,6 +201,7 @@ namespace
         void compute_front_lighting(
             const InputValues&      values,
             SamplingContext&        sampling_context,
+            const PixelContext&     pixel_context,
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
             ShadingResult&          shading_result) const
@@ -208,6 +213,7 @@ namespace
             {
                 shading_context.get_lighting_engine()->compute_lighting(
                     sampling_context,
+                    pixel_context,
                     shading_context,
                     shading_point,
                     shading_result.m_color,
@@ -225,6 +231,7 @@ namespace
         void add_back_lighting(
             const InputValues&      values,
             SamplingContext&        sampling_context,
+            const PixelContext&     pixel_context,
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
             ShadingResult&          shading_result) const
@@ -252,6 +259,7 @@ namespace
             {
                 shading_context.get_lighting_engine()->compute_lighting(
                     sampling_context,
+                    pixel_context,
                     shading_context,
                     back_shading_point,
                     back_shading_result.m_color,

@@ -31,21 +31,14 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/kernel/aov/imagestack.h"
 #include "renderer/kernel/shading/shadingresult.h"
-#include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/input/inputarray.h"
-#include "renderer/modeling/project/project.h"
+#include "renderer/modeling/input/inputformat.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
-#include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
-#include "foundation/image/canvasproperties.h"
-#include "foundation/image/colorspace.h"
-#include "foundation/image/image.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
-#include "foundation/utility/otherwise.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
@@ -54,6 +47,9 @@
 #include <string>
 
 // Forward declarations.
+namespace renderer  { class Assembly; }
+namespace renderer  { class PixelContext; }
+namespace renderer  { class Project; }
 namespace renderer  { class ShadingContext; }
 namespace renderer  { class ShadingPoint; }
 
@@ -91,7 +87,6 @@ namespace
             const char*             name,
             const ParamArray&       params)
           : SurfaceShader(name, params)
-          , m_lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg)
         {
             for (size_t i = 0; i < MaxShaderCount; ++i)
             {
@@ -116,109 +111,58 @@ namespace
             const Project&          project,
             const Assembly&         assembly)
         {
-            const Frame* frame = project.get_frame();
-            const ColorSpace frame_color_space = frame->get_color_space();
-            const PixelFormat frame_pixel_format = frame->image().properties().m_pixel_format;
-
-            if (frame_color_space != ColorSpaceLinearRGB &&
-                frame->aov_images().empty() &&
-                get_surface_shader_count() > 1)
-            {
-                RENDERER_LOG_WARNING(
-                    "since AOVs are never color-corrected (only the primary output is), "
-                    "the first output of the \"%s\" surface shader will be expressed in the "
-                    "%s color space while all others will be expressed in linear RGB.",
-                    get_name(),
-                    color_space_name(frame->get_color_space()));
-            }
-
-            m_surface_shaders[0] =
-                static_cast<SurfaceShader*>(
-                    m_inputs.get_entity(get_shader_name(0).c_str()));
-
-            assert(m_surface_shaders[0]);
-
-            for (size_t i = 1; i < MaxShaderCount; ++i)
+            for (size_t i = 0; i < MaxShaderCount; ++i)
             {
                 m_surface_shaders[i] =
                     static_cast<SurfaceShader*>(
                         m_inputs.get_entity(get_shader_name(i).c_str()));
-
-                if (m_surface_shaders[i])
-                {
-                    m_surface_shader_aov_index[i] =
-                        frame->aov_images().append(
-                            m_surface_shaders[i]->get_name(),
-                            frame_pixel_format);
-                }
             }
+
+            assert(m_surface_shaders[0]);
 
             return true;
         }
 
         virtual void evaluate(
             SamplingContext&        sampling_context,
+            const PixelContext&     pixel_context,
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
             ShadingResult&          shading_result) const OVERRIDE
         {
             m_surface_shaders[0]->evaluate(
                 sampling_context,
+                pixel_context,
                 shading_context,
                 shading_point,
                 shading_result);
+
+            shading_result.m_aovs.set(
+                m_surface_shaders[0]->get_render_layer_index(),
+                shading_result.m_color);
 
             for (size_t i = 1; i < MaxShaderCount; ++i)
             {
                 if (m_surface_shaders[i])
                 {
                     ShadingResult local_result;
+
                     m_surface_shaders[i]->evaluate(
                         sampling_context,
+                        pixel_context,
                         shading_context,
                         shading_point,
                         local_result);
 
-                    if (local_result.m_color_space != shading_result.m_color_space)
-                    {
-                        switch (shading_result.m_color_space)
-                        {
-                          case ColorSpaceLinearRGB:
-                            local_result.transform_to_linear_rgb(m_lighting_conditions);
-                            break;
-
-                          case ColorSpaceSpectral:
-                            local_result.transform_to_spectrum(m_lighting_conditions);
-                            break;
-
-                          assert_otherwise;
-                        }
-                    }
-
                     shading_result.m_aovs.set(
-                        m_surface_shader_aov_index[i],
+                        m_surface_shaders[i]->get_render_layer_index(),
                         local_result.m_color);
                 }
             }
         }
 
       private:
-        const LightingConditions    m_lighting_conditions;
-        const SurfaceShader*        m_surface_shaders[MaxShaderCount];
-        size_t                      m_surface_shader_aov_index[MaxShaderCount];
-
-        size_t get_surface_shader_count() const
-        {
-            size_t count = 0;
-
-            for (size_t i = 0; i < MaxShaderCount; ++i)
-            {
-                if (m_inputs.get_entity(get_shader_name(i).c_str()))
-                    ++count;
-            }
-
-            return count;
-        }
+        const SurfaceShader* m_surface_shaders[MaxShaderCount];
     };
 }
 

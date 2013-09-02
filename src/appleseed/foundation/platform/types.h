@@ -29,80 +29,119 @@
 #ifndef APPLESEED_FOUNDATION_PLATFORM_TYPES_H
 #define APPLESEED_FOUNDATION_PLATFORM_TYPES_H
 
-//
-// Visual C++.
-//
+// boost headers.
+#include "boost/static_assert.hpp"
 
+// Make sure that uintptr_t is defined on all platforms.
 #if defined _MSC_VER
-
-// Define uintptr_t.
 #include <cstddef>
-
-namespace foundation
-{
-    // Signed integral types.
-    typedef char                int8;
-    typedef short               int16;
-    typedef int                 int32;
-    typedef long long           int64;
-
-    // Unsigned integral types.
-    typedef unsigned char       uint8;
-    typedef unsigned short      uint16;
-    typedef unsigned int        uint32;
-    typedef unsigned long long  uint64;
-}
-
-
-//
-// gcc.
-//
-
-#elif defined __GNUC__
-
-// Define uintptr_t.
+#endif
+#if defined __GNUC__
 #include <stdint.h>
-
-namespace foundation
-{
-    // Signed integral types.
-    typedef char                int8;
-    typedef short               int16;
-    typedef int                 int32;
-    typedef long long           int64;
-
-    // Unsigned integral types.
-    typedef unsigned char       uint8;
-    typedef unsigned short      uint16;
-    typedef unsigned int        uint32;
-    typedef unsigned long long  uint64;
-}
-
-
-//
-// Unsupported platform.
-//
-
-#else
-#error Integral types are not defined on this platform.
 #endif
 
+namespace foundation
+{
 
 //
-// Format string to print size_t values using std::printf() variants.
+// Define fixed-size integral types.
 //
 
 // Visual C++.
 #if defined _MSC_VER
+
+    typedef signed char                 int8;
+    typedef unsigned char               uint8;
+
+    typedef signed short int            int16;
+    typedef unsigned short int          uint16;
+
+    typedef signed int                  int32;
+    typedef unsigned int                uint32;
+
+    typedef signed long long int        int64;
+    typedef unsigned long long int      uint64;
+
+// gcc.
+#elif defined __GNUC__
+
+    typedef signed char                 int8;
+    typedef unsigned char               uint8;
+
+    typedef signed short int            int16;
+    typedef unsigned short int          uint16;
+
+    typedef signed int                  int32;
+    typedef unsigned int                uint32;
+
+    #if defined ARCH32
+        typedef signed long long int    int64;
+        typedef unsigned long long int  uint64;
+    #elif defined ARCH64
+        typedef signed long int         int64;
+        typedef unsigned long int       uint64;
+    #else
+        #error Cannot determine machine architecture.
+    #endif
+
+// Other platform: abort compilation.
+#else
+    #error Fixed-size integral types are not defined on this platform.
+#endif
+
+BOOST_STATIC_ASSERT(sizeof(int8)   == 1);
+BOOST_STATIC_ASSERT(sizeof(int16)  == 2);
+BOOST_STATIC_ASSERT(sizeof(int32)  == 4);
+BOOST_STATIC_ASSERT(sizeof(int64)  == 8);
+BOOST_STATIC_ASSERT(sizeof(uint8)  == 1);
+BOOST_STATIC_ASSERT(sizeof(uint16) == 2);
+BOOST_STATIC_ASSERT(sizeof(uint32) == 4);
+BOOST_STATIC_ASSERT(sizeof(uint64) == 8);
+
+
+//
+// Define a signed counterpart to std::size_t, i.e. a synonym for the non-standard ssize_t type.
+//
+
+#if defined ARCH32
+    typedef int32 isize_t;
+#elif defined ARCH64
+    typedef int64 isize_t;
+#else
+    #error Cannot determine machine architecture.
+#endif
+
+BOOST_STATIC_ASSERT(sizeof(isize_t) == sizeof(size_t));
+
+
+//
+// Format strings to use with std::printf() variants.
+//
+
+// Visual C++.
+#if defined _MSC_VER
+
+    #define FMT_UINT64 "%llu"
     #define FMT_SIZE_T "%Iu"
 
 // gcc.
 #elif defined __GNUC__
+
+    #if defined ARCH32
+        #define FMT_UINT64 "%llu"
+    #elif defined ARCH64
+        #define FMT_UINT64 "%lu"
+    #else
+        #error Cannot determine machine architecture.
+    #endif
+
     #define FMT_SIZE_T "%zu"
 
-// Other compilers: choose something sensible.
+// Other platform: abort compilation.
 #else
-    #define FMT_SIZE_T "%lu"
+    #error Format strings are not defined on this platform.
 #endif
+
+}       // namespace foundation
 
 #endif  // !APPLESEED_FOUNDATION_PLATFORM_TYPES_H

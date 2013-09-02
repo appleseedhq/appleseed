@@ -29,13 +29,17 @@
 // Interface header.
 #include "tilejobfactory.h"
 
+// appleseed.renderer headers.
+#include "renderer/modeling/frame/frame.h"
+
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
 #include "foundation/math/ordering.h"
+#include "foundation/utility/otherwise.h"
 
-// appleseed.renderer headers.
-#include "renderer/modeling/frame/frame.h"
+// Standard headers.
+#include <cassert>
 
 using namespace foundation;
 using namespace std;
@@ -52,6 +56,7 @@ void TileJobFactory::create(
     const TileOrdering                  tile_ordering,
     const TileJob::TileRendererVector&  tile_renderers,
     const TileJob::TileCallbackVector&  tile_callbacks,
+    const size_t                        pass_hash,
     TileJobVector&                      tile_jobs,
     AbortSwitch&                        abort_switch)
 {
@@ -83,6 +88,7 @@ void TileJobFactory::create(
                 frame,
                 tile_x,
                 tile_y,
+                pass_hash,
                 abort_switch));
     }
 }

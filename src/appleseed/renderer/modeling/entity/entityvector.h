@@ -213,6 +213,9 @@ class TypedEntityVector
   : public EntityVector
 {
   public:
+    // Value type.
+    typedef T value_type;
+
     // Mutable iterator.
     class iterator
       : public EntityVector::iterator

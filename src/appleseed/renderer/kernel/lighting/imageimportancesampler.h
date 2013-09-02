@@ -77,15 +77,15 @@ class ImageImportanceSampler
     template <typename ImageSampler>
     void rebuild(ImageSampler& sampler);
 
-    // Sample the image and return the coordinates of the chosen pixel,
-    // and the probability with which it was chosen.
+    // Sample the image and return the coordinates of the chosen pixel
+    // as well as its probability density.
     void sample(
         const Vector2Type&  s,
         Payload&            payload,
         size_t&             y,
         Importance&         probability) const;
 
-    // Return the probability density function of a given pixel.
+    // Return the probability density of a given pixel.
     Importance get_pdf(
         const size_t        x,
         const size_t        y) const;

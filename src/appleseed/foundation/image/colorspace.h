@@ -285,6 +285,9 @@ Color<T, 3> srgb_to_linear_rgb(const Color<T, 3>& srgb);
 // Variants of the above functions using a fast approximation of the power function.
 float fast_linear_rgb_to_srgb(const float c);
 float fast_srgb_to_linear_rgb(const float c);
+#ifdef APPLESEED_FOUNDATION_USE_SSE
+inline __m128 fast_linear_rgb_to_srgb(const __m128 linear_rgb);
+#endif
 Color3f fast_linear_rgb_to_srgb(const Color3f& linear_rgb);
 Color3f fast_srgb_to_linear_rgb(const Color3f& srgb);
 
@@ -636,17 +639,31 @@ inline float fast_linear_rgb_to_srgb(const float c)
 {
     return c <= 0.0031308f
         ? 12.92f * c
-        : 1.055f * fast_pow_refined(c, 1.0f / 2.4f) - 0.055f;
+        : 1.055f * fast_pow(c, 1.0f / 2.4f) - 0.055f;
 }
 
 inline float fast_srgb_to_linear_rgb(const float c)
 {
     return c <= 0.04045f
         ? (1.0f / 12.92f) * c
-        : fast_pow_refined((c + 0.055f) * (1.0f / 1.055f), 2.4f);
+        : fast_pow((c + 0.055f) * (1.0f / 1.055f), 2.4f);
 }
 
 #ifdef APPLESEED_FOUNDATION_USE_SSE
+
+inline __m128 fast_linear_rgb_to_srgb(const __m128 linear_rgb)
+{
+    // Apply 2.4 gamma correction.
+    const __m128 y = fast_pow(linear_rgb, _mm_set1_ps(1.0f / 2.4f));
+
+    // Compute both outcomes of the branch.
+    const __m128 a = _mm_mul_ps(_mm_set1_ps(12.92f), linear_rgb);
+    const __m128 b = _mm_sub_ps(_mm_mul_ps(_mm_set1_ps(1.055f), y), _mm_set1_ps(0.055f));
+
+    // Interleave them based on the actual comparison.
+    const __m128 mask = _mm_cmple_ps(linear_rgb, _mm_set1_ps(0.0031308f));
+    return _mm_add_ps(_mm_and_ps(mask, a), _mm_andnot_ps(mask, b));
+}
 
 inline Color3f fast_linear_rgb_to_srgb(const Color3f& linear_rgb)
 {
@@ -658,38 +675,7 @@ inline Color3f fast_linear_rgb_to_srgb(const Color3f& linear_rgb)
         linear_rgb[2]
     };
 
-    __m128 c = _mm_load_ps(transfer);
-    __m128 x = _mm_cvtepi32_ps(_mm_castps_si128(c));
-
-    const __m128 K = _mm_set1_ps(127.0f);
-    x = _mm_mul_ps(x, _mm_set1_ps(0.1192092896e-6f));     // x *= pow(2.0f, -23)
-    x = _mm_sub_ps(x, K);
-
-    // One Newton-Raphson refinement step.
-    __m128 z = _mm_sub_ps(x, floorps(x));
-    z = _mm_sub_ps(z, _mm_mul_ps(z, z));
-    z = _mm_mul_ps(z, _mm_set1_ps(0.346607f));
-    x = _mm_add_ps(x, z);
-
-    x = _mm_mul_ps(x, _mm_set1_ps(1.0f / 2.4f));
-
-    __m128 y = _mm_sub_ps(x, floorps(x));
-    y = _mm_sub_ps(y, _mm_mul_ps(y, y));
-    y = _mm_mul_ps(y, _mm_set1_ps(0.33971f));
-    y = _mm_sub_ps(_mm_add_ps(x, K), y);
-    y = _mm_mul_ps(y, _mm_set1_ps(8388608.0f));           // y *= pow(2.0f, 23)
-
-    y = _mm_castsi128_ps(_mm_cvtps_epi32(y));
-
-    // Compute both outcomes of the branch.
-    const __m128 a = _mm_mul_ps(_mm_set1_ps(12.92f), c);
-    const __m128 b = _mm_sub_ps(_mm_mul_ps(_mm_set1_ps(1.055f), y), _mm_set1_ps(0.055f));
-
-    // Interleave them based on the actual comparison.
-    const __m128 mask = _mm_cmple_ps(c, _mm_set1_ps(0.0031308f));
-    c = _mm_add_ps(_mm_and_ps(mask, a), _mm_andnot_ps(mask, b));
-
-    _mm_store_ps(transfer, c);
+    _mm_store_ps(transfer, fast_linear_rgb_to_srgb(_mm_load_ps(transfer)));
 
     return Color3f(transfer[0], transfer[1], transfer[2]);
 }
@@ -813,21 +799,25 @@ void ciexyz_illuminance_to_spectrum(
 // Convert the CIE xy chromaticity of a D series (daylight) illuminant to a spectrum.
 //
 
-template <typename T, typename Spectrum>
-void daylight_ciexy_to_spectrum(
-    const T                     x,
-    const T                     y,
-    Spectrum&                   spectrum)
+template <>
+inline void daylight_ciexy_to_spectrum<float, Spectrum31f>(
+    const float                 x,
+    const float                 y,
+    Spectrum31f&                spectrum)
 {
-    const T rcp_m = T(1.0) / (T(0.0241) + T(0.2562) * x - T(0.7341) * y);
-    const T m1 = (T(-1.3515) - T(1.7703) * x +  T(5.9114) * y) * rcp_m;
-    const T m2 = (T( 0.0300) - T(31.4424) * x + T(30.0717) * y) * rcp_m;
+    const float rcp_m = 1.0f / (0.0241f + 0.2562f * x - 0.7341f * y);
+    const float m1 = (-1.3515f - 1.7703f * x + 5.9114f * y) * rcp_m;
+    const float m2 = (0.0300f - 31.4424f * x + 30.0717f * y) * rcp_m;
 
-    spectrum =
-        Spectrum(
-            DaylightS0 +
-            DaylightS1 * static_cast<float>(m1) +
-            DaylightS2 * static_cast<float>(m2));
+    spectrum = DaylightS0;
+
+    Spectrum31f s1 = DaylightS1;
+    s1 *= m1;
+    spectrum += s1;
+
+    Spectrum31f s2 = DaylightS2;
+    s2 *= m2;
+    spectrum += s2;
 }
 
 

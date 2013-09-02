@@ -87,7 +87,7 @@ namespace
         KelemenBRDFImpl(
             const char*         name,
             const ParamArray&   params)
-          : BSDF(name, Reflective, params)
+          : BSDF(name, Reflective, Diffuse | Glossy, params)
         {
             m_inputs.declare("matte_reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("matte_reflectance_multiplier", InputFormatScalar, "1.0");
@@ -271,12 +271,12 @@ namespace
             // The final value of the BRDF is the sum of the specular and matte components.
             value += fr_spec;
 
-            // Compute the PDF of the incoming direction for the specular component.
+            // Evaluate the PDF of the incoming direction for the specular component.
             const double pdf_H = m_mdf->evaluate_pdf(dot_HN);
             const double pdf_specular = pdf_H / (4.0 * dot_HV);
             assert(pdf_specular >= 0.0);
 
-            // Compute the PDF of the incoming direction for the matte component.
+            // Evaluate the PDF of the incoming direction for the matte component.
             const double pdf_matte = dot_LN * RcpPi;
             assert(pdf_matte >= 0.0);
 
@@ -343,7 +343,7 @@ namespace
                 // Compute the probability of a matte bounce.
                 const double matte_prob = average_value(matte_albedo);
 
-                // Compute the PDF of the incoming direction for the matte component.
+                // Evaluate the PDF of the incoming direction for the matte component.
                 const double pdf_matte = dot_LN * RcpPi;
                 assert(pdf_matte >= 0.0);
                 probability += matte_prob * pdf_matte;
@@ -361,7 +361,7 @@ namespace
                 // Compute the probability of a specular bounce.
                 const double specular_prob = average_value(specular_albedo_V);
 
-                // Compute the PDF of the incoming direction for the specular component.
+                // Evaluate the PDF of the incoming direction for the specular component.
                 const double pdf_H = m_mdf->evaluate_pdf(dot_HN);
                 const double pdf_specular = pdf_H / (4.0 * dot_HL);
                 assert(pdf_specular >= 0.0);
@@ -414,7 +414,7 @@ namespace
                 // Compute the probability of a matte bounce.
                 const double matte_prob = average_value(matte_albedo);
 
-                // Compute the PDF of the incoming direction for the matte component.
+                // Evaluate the PDF of the incoming direction for the matte component.
                 const double pdf_matte = dot_LN * RcpPi;
                 assert(pdf_matte >= 0.0);
                 probability += matte_prob * pdf_matte;
@@ -425,7 +425,7 @@ namespace
                 // Compute the probability of a specular bounce.
                 const double specular_prob = average_value(specular_albedo_V);
 
-                // Compute the PDF of the incoming direction for the specular component.
+                // Evaluate the PDF of the incoming direction for the specular component.
                 const double pdf_H = m_mdf->evaluate_pdf(dot_HN);
                 const double pdf_specular = pdf_H / (4.0 * dot_HL);
                 assert(pdf_specular >= 0.0);
@@ -521,7 +521,7 @@ namespace
                 if (L.y <= 0.0)
                     continue;
 
-                // Compute the PDF of L.
+                // Evaluate the PDF of L.
                 const double dot_HN = H.y;
                 const double pdf_H = mdf.evaluate_pdf(dot_HN);
                 const double pdf_L = pdf_H / (4.0 * dot_HV);

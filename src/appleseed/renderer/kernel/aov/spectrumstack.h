@@ -34,6 +34,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/platform/compiler.h"
 
 // Standard headers.
 #include <cassert>
@@ -54,6 +55,7 @@ class SpectrumStack
 
     SpectrumStack();
     explicit SpectrumStack(const size_t size);
+    SpectrumStack(const size_t size, const float val);
 
     void set_size(const size_t size);
     size_t size() const;
@@ -90,6 +92,13 @@ inline SpectrumStack::SpectrumStack(const size_t size)
   : m_size(size)
 {
     assert(size <= MaxSize);
+}
+
+inline SpectrumStack::SpectrumStack(const size_t size, const float val)
+  : m_size(size)
+{
+    assert(size <= MaxSize);
+    set(val);
 }
 
 inline void SpectrumStack::set_size(const size_t size)
@@ -157,13 +166,13 @@ inline SpectrumStack& SpectrumStack::operator/=(const float rhs)
     return *this;
 }
 
-inline void SpectrumStack::set(const size_t index, const Spectrum& rhs)
+FORCE_INLINE void SpectrumStack::set(const size_t index, const Spectrum& rhs)
 {
     if (index < m_size)
         m_aovs[index] = rhs;
 }
 
-inline void SpectrumStack::add(const size_t index, const Spectrum& rhs)
+FORCE_INLINE void SpectrumStack::add(const size_t index, const Spectrum& rhs)
 {
     if (index < m_size)
         m_aovs[index] += rhs;

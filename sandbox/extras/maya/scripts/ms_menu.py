@@ -49,8 +49,12 @@ def buildMenu():
 
     # Add/Select Environment Node
     cmds.menuItem(divider=True, parent='ms_menu')
+    cmds.menuItem(label='Add Physical Environment Node', parent='ms_menu', command='import maya.cmds\nmaya.cmds.createNode("ms_physical_environment")')
     cmds.menuItem(label='Add Environment Node', parent='ms_menu', command='import maya.cmds\nmaya.cmds.createNode("ms_environment")')
     cmds.menuItem('menu_select_environment', subMenu=True, label='Select Environment Node', to=True, parent='ms_menu')
+    for environment in cmds.ls(type='ms_physical_environment'):
+        cmds.menuItem(label=environment, parent='menu_select_environment', command=('import maya.cmds as cmds\ncmds.select("{0}")'.format(environment)))
+    cmds.menuItem(divider=True, parent='menu_select_environment')
     for environment in cmds.ls(type='ms_environment'):
         cmds.menuItem(label=environment, parent='menu_select_environment', command=('import maya.cmds as cmds\ncmds.select("{0}")'.format(environment)))
 

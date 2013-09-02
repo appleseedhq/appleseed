@@ -92,6 +92,7 @@ class DLLSYMBOL BSDF
     static bool has_diffuse(const Mode mode);
     static bool has_glossy(const Mode mode);
     static bool has_specular(const Mode mode);
+    static bool has_diffuse_or_glossy(const Mode mode);
     static bool has_glossy_or_specular(const Mode mode);
 
     // Use a particular (negative) value as the probability density
@@ -102,6 +103,7 @@ class DLLSYMBOL BSDF
     BSDF(
         const char*                 name,
         const Type                  type,
+        const int                   modes,
         const ParamArray&           params);
 
     // Return a string identifying the model of this entity.
@@ -109,6 +111,16 @@ class DLLSYMBOL BSDF
 
     // Return the type of the BSDF.
     Type get_type() const;
+
+    // Return the possible scattering modes of the BSDF.
+    int get_modes() const;
+
+    // Convenient functions to check the possible scattering modes of the BSDF.
+    bool is_purely_diffuse() const;
+    bool is_purely_glossy() const;
+    bool is_purely_specular() const;
+    bool is_purely_diffuse_or_glossy() const;
+    bool is_purely_glossy_or_specular() const;
 
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
@@ -135,9 +147,9 @@ class DLLSYMBOL BSDF
         const size_t                offset = 0) const;
 
     // Given an outgoing direction, sample the BSDF and compute the incoming
-    // direction, the probability density with which it was chosen and the value
-    // of the BSDF for this pair of directions. Return the scattering mode.
-    // If the scattering mode is Absorption, the BSDF and PDF values are undefined.
+    // direction, its probability density and the value of the BSDF for this
+    // pair of directions. Return the scattering mode. If the scattering mode
+    // is Absorption, the BSDF and PDF values are undefined.
     virtual Mode sample(
         SamplingContext&            sampling_context,
         const void*                 data,                       // input values
@@ -180,7 +192,8 @@ class DLLSYMBOL BSDF
         const foundation::Vector3d& normal);
 
   private:
-    const Type m_type;
+    const Type  m_type;
+    const int   m_modes;
 };
 
 
@@ -203,6 +216,11 @@ inline bool BSDF::has_specular(const Mode mode)
     return (mode & Specular) != 0;
 }
 
+inline bool BSDF::has_diffuse_or_glossy(const Mode mode)
+{
+    return (mode & (Diffuse | Glossy)) != 0;
+}
+
 inline bool BSDF::has_glossy_or_specular(const Mode mode)
 {
     return (mode & (Glossy | Specular)) != 0;
@@ -211,6 +229,36 @@ inline bool BSDF::has_glossy_or_specular(const Mode mode)
 inline BSDF::Type BSDF::get_type() const
 {
     return m_type;
+}
+
+inline int BSDF::get_modes() const
+{
+    return m_modes;
+}
+
+inline bool BSDF::is_purely_diffuse() const
+{
+    return m_modes == Diffuse;
+}
+
+inline bool BSDF::is_purely_glossy() const
+{
+    return m_modes == Glossy;
+}
+
+inline bool BSDF::is_purely_specular() const
+{
+    return m_modes == Specular;
+}
+
+inline bool BSDF::is_purely_diffuse_or_glossy() const
+{
+    return m_modes == (Diffuse | Glossy);
+}
+
+inline bool BSDF::is_purely_glossy_or_specular() const
+{
+    return m_modes == (Glossy | Specular);
 }
 
 inline foundation::Vector3d BSDF::force_above_surface(

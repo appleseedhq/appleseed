@@ -29,6 +29,9 @@
 // Interface header.
 #include "messagecontext.h"
 
+// appleseed.renderer headers.
+#include "renderer/modeling/entity/entity.h"
+
 using namespace std;
 
 namespace renderer
@@ -84,9 +87,9 @@ void MessageContext::set_message(const char* message)
 
 EntityDefMessageContext::EntityDefMessageContext(
     const char*     entity_type,
-    const char*     entity_name)
+    const Entity*   entity)
 {
-    set_message("while defining " + string(entity_type) + " \"" + string(entity_name) + "\"");
+    set_message("while defining " + string(entity_type) + " \"" + entity->get_path() + "\"");
 }
 
 }   // namespace renderer

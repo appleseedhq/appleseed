@@ -1,0 +1,113 @@
+
+//
+// Copyright (c) 2012-2013 Jonathan Topf
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+
+global proc AEms_physical_environmentTemplate(string $nodeName) {
+   editorTemplate -beginScrollLayout;
+      editorTemplate -beginLayout "environment settings" -collapse false;
+         editorTemplate -addControl "model";
+         editorTemplate -addSeparator;
+         editorTemplate -addControl "sun_phi";
+         editorTemplate -addControl "sun_theta";
+         editorTemplate -addSeparator;
+         editorTemplate -addControl "turbidity";
+         editorTemplate -addControl "turbidity_multiplier";
+         editorTemplate -addSeparator;
+         editorTemplate -addControl "luminance_multiplier";
+         editorTemplate -addControl "luminance_gamma";
+         editorTemplate -addControl "saturation_multiplier";
+         editorTemplate -addSeparator;
+         editorTemplate -addControl "horizon_shift";
+         editorTemplate -addControl "ground_albedo";
+      editorTemplate -endLayout;
+
+      AEdependNodeTemplate $nodeName;
+
+      editorTemplate -addExtraControls;
+      editorTemplate -suppress "renderInfo";
+      editorTemplate -suppress "renderLayerInfo";
+      editorTemplate -suppress "drawOverride";
+      editorTemplate -suppress "compInstObjGroups";
+      editorTemplate -suppress "instObjGroups";
+      editorTemplate -suppress "instObjGroups";
+      editorTemplate -suppress "instObjGroups";
+      editorTemplate -suppress "instObjGroups";
+      editorTemplate -suppress "instObjGroups";
+      editorTemplate -suppress "instObjGroups";
+      editorTemplate -suppress "instObjGroups";
+
+      editorTemplate -suppress blackBox;
+      editorTemplate -suppress rmbCommand;
+      editorTemplate -suppress templateName;
+      editorTemplate -suppress templatePath;
+      editorTemplate -suppress viewName;
+      editorTemplate -suppress iconName;
+      editorTemplate -suppress viewMode;
+      editorTemplate -suppress templateVersion;
+      editorTemplate -suppress uiTreatment;
+      editorTemplate -suppress customTreatment;
+      editorTemplate -suppress creator;
+      editorTemplate -suppress creationDate;
+      editorTemplate -suppress containerType;
+      editorTemplate -suppress localScale;
+
+      editorTemplate -suppress version;
+      editorTemplate -suppress caching;
+      editorTemplate -suppress nodeState;
+      editorTemplate -suppress visibility;
+      editorTemplate -suppress intermediateObject;
+      editorTemplate -suppress template;
+      editorTemplate -suppress ghosting;
+      editorTemplate -suppress instObjGroups;
+      editorTemplate -suppress useObjectColor;
+      editorTemplate -suppress objectColor;
+      editorTemplate -suppress drawOverride;
+      editorTemplate -suppress lodVisibility;
+      editorTemplate -suppress renderInfo;
+      editorTemplate -suppress ghostingControl;
+      editorTemplate -suppress ghostCustomSteps;
+      editorTemplate -suppress ghostFrames;
+      editorTemplate -suppress ghostRangeStart;
+      editorTemplate -suppress ghostRangeEnd;
+      editorTemplate -suppress ghostDriver;
+      editorTemplate -suppress motionBlur;
+      editorTemplate -suppress visibleInReflections;
+      editorTemplate -suppress visibleInRefractions;
+      editorTemplate -suppress castsShadows;
+      editorTemplate -suppress receiveShadows;
+      editorTemplate -suppress maxVisibilitySamplesOverride;
+      editorTemplate -suppress maxVisibilitySamples;
+      editorTemplate -suppress geometryAntialiasingOverride;
+      editorTemplate -suppress antialiasingLevel;
+      editorTemplate -suppress shadingSamplesOverride;
+      editorTemplate -suppress shadingSamples;
+      editorTemplate -suppress maxShadingSamples;
+      editorTemplate -suppress volumeSamplesOverride;
+      editorTemplate -suppress volumeSamples;
+      editorTemplate -suppress depthJitter;
+      editorTemplate -suppress ignoreSelfShadowing;
+      editorTemplate -suppress primaryVisibility;
+      editorTemplate -suppress compInstObjGroups;
+      editorTemplate -suppress localPosition;
+   editorTemplate -endScrollLayout;
+}

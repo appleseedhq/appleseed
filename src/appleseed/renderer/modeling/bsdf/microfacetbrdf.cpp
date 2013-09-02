@@ -81,7 +81,7 @@ namespace
         MicrofacetBRDFImpl(
             const char*         name,
             const ParamArray&   params)
-          : BSDF(name, Reflective, params)
+          : BSDF(name, Reflective, Glossy, params)
         {
             m_inputs.declare("glossiness", InputFormatScalar);
             m_inputs.declare("glossiness_multiplier", InputFormatScalar, "1.0");
@@ -107,7 +107,7 @@ namespace
             if (!BSDF::on_frame_begin(project, assembly))
                 return false;
 
-            const EntityDefMessageContext context("bsdf", get_name());
+            const EntityDefMessageContext context("bsdf", this);
             const string mdf =
                 m_params.get_required<string>(
                     "mdf",
@@ -173,7 +173,7 @@ namespace
             // Compute the PDF value.
             probability = mdf_pdf / (4.0 * cos_oh);
 
-            return Diffuse;
+            return Glossy;
         }
 
         FORCE_INLINE virtual double evaluate(
@@ -187,7 +187,7 @@ namespace
             const int           modes,
             Spectrum&           value) const
         {
-            if (!(modes & Diffuse))
+            if (!(modes & Glossy))
                 return 0.0;
 
             // No reflection below the shading surface.
@@ -226,7 +226,7 @@ namespace
             const Vector3d&     incoming,
             const int           modes) const
         {
-            if (!(modes & Diffuse))
+            if (!(modes & Glossy))
                 return 0.0;
 
             // No reflection below the shading surface.

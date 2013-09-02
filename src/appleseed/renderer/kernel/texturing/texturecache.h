@@ -161,10 +161,11 @@ inline foundation::uint64 TextureCache::get_miss_count() const
 
 inline size_t TextureCache::TileKeyHasher::operator()(const TileKey& key) const
 {
-    return foundation::mix32(
-        static_cast<foundation::uint32>(key.m_assembly_uid),
-        static_cast<foundation::uint32>(key.m_texture_uid),
-        static_cast<foundation::uint32>(key.m_tile_xy));
+    return
+        foundation::mix_uint32(
+            static_cast<foundation::uint32>(key.m_assembly_uid),
+            static_cast<foundation::uint32>(key.m_texture_uid),
+            static_cast<foundation::uint32>(key.m_tile_xy));
 }
 
 

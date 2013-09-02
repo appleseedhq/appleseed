@@ -95,7 +95,7 @@ ObjectInstance::ObjectInstance(
     m_object = 0;
 
     // Retrieve ray bias method.
-    const EntityDefMessageContext message_context("object instance", get_name());
+    const EntityDefMessageContext message_context("object instance", this);
     const string ray_bias_method =
         params.get_optional<string>(
             "ray_bias_method",
@@ -230,7 +230,7 @@ void ObjectInstance::bind_object(const ObjectContainer& objects)
 void ObjectInstance::check_object() const
 {
     if (m_object == 0)
-        throw ExceptionUnknownEntity(impl->m_object_name.c_str());
+        throw ExceptionUnknownEntity(impl->m_object_name.c_str(), this);
 }
 
 namespace
@@ -265,8 +265,9 @@ namespace
     }
 
     void do_check_materials(
-        const MaterialArray&        material_array,
+        const ObjectInstance*       object_instance,
         const Object&               object,
+        const MaterialArray&        material_array,
         const StringDictionary&     material_mappings)
     {
         for (size_t i = 0; i < material_array.size(); ++i)
@@ -281,12 +282,12 @@ namespace
                         continue;
 
                     const char* material_name = material_mappings.get(slot_name);
-                    throw ExceptionUnknownEntity(material_name);
+                    throw ExceptionUnknownEntity(material_name, object_instance);
                 }
                 else if (!material_mappings.empty())
                 {
                     const char* material_name = material_mappings.begin().value();
-                    throw ExceptionUnknownEntity(material_name);
+                    throw ExceptionUnknownEntity(material_name, object_instance);
                 }
             }
         }
@@ -321,8 +322,8 @@ void ObjectInstance::check_materials() const
 {
     assert(m_object);
 
-    do_check_materials(m_front_materials, *m_object, impl->m_front_material_mappings);
-    do_check_materials(m_back_materials, *m_object, impl->m_back_material_mappings);
+    do_check_materials(this, *m_object, m_front_materials, impl->m_front_material_mappings);
+    do_check_materials(this, *m_object, m_back_materials, impl->m_back_material_mappings);
 }
 
 

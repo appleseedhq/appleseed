@@ -40,6 +40,7 @@
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
+#include "foundation/math/fastmath.h"
 #include "foundation/math/sampling.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
@@ -81,6 +82,9 @@ namespace
 
     const char* Model = "hosek_environment_edf";
 
+    // The smallest valid turbidity value.
+    const double BaseTurbidity = 2.0;
+
     class HosekEnvironmentEDF
       : public EnvironmentEDF
     {
@@ -94,10 +98,10 @@ namespace
             m_inputs.declare("sun_theta", InputFormatScalar);
             m_inputs.declare("sun_phi", InputFormatScalar);
             m_inputs.declare("turbidity", InputFormatScalar);
-            m_inputs.declare("turbidity_min", InputFormatScalar, "2.0");
-            m_inputs.declare("turbidity_max", InputFormatScalar, "6.0");
+            m_inputs.declare("turbidity_multiplier", InputFormatScalar, "2.0");
             m_inputs.declare("ground_albedo", InputFormatScalar, "0.3");
             m_inputs.declare("luminance_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("luminance_gamma", InputFormatScalar, "1.0");
             m_inputs.declare("saturation_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("horizon_shift", InputFormatScalar, "0.0");
         }
@@ -130,6 +134,10 @@ namespace
             m_uniform_turbidity = m_inputs.source("turbidity")->is_uniform();
             if (m_uniform_turbidity)
             {
+                // Apply turbidity multiplier and bias.
+                m_uniform_values.m_turbidity *= m_uniform_values.m_turbidity_multiplier;
+                m_uniform_values.m_turbidity += BaseTurbidity;
+
                 compute_coefficients(
                     m_uniform_values.m_turbidity,
                     m_uniform_values.m_ground_albedo,
@@ -202,10 +210,10 @@ namespace
             double  m_sun_theta;                    // sun zenith angle in degrees, 0=zenith
             double  m_sun_phi;                      // degrees
             double  m_turbidity;                    // atmosphere turbidity
-            double  m_turbidity_min;
-            double  m_turbidity_max;
+            double  m_turbidity_multiplier;
             double  m_ground_albedo;
             double  m_luminance_multiplier;
+            double  m_luminance_gamma;
             double  m_saturation_multiplier;
             double  m_horizon_shift;
         };
@@ -313,7 +321,8 @@ namespace
             const double        g,
             const double        cos_alpha)
         {
-            return (1.0 + cos_alpha * cos_alpha) / pow(1.0 + g * g - 2.0 * g * cos_alpha, (3.0 / 2.0));
+            const double k = 1.0 + g * g - 2.0 * g * cos_alpha;
+            return (1.0 + cos_alpha * cos_alpha) / sqrt(k * k * k);
         }
 
         // Extended Perez formula.
@@ -360,13 +369,11 @@ namespace
                 double u, v;
                 unit_vector_to_angles(outgoing, theta, phi);
                 angles_to_unit_square(theta, phi, u, v);
-                const double turbidity =
-                    fit(
-                        input_evaluator.evaluate<InputValues>(m_inputs, Vector2d(u, v))->m_turbidity,
-                        0.0,
-                        1.0,
-                        m_uniform_values.m_turbidity_min,
-                        m_uniform_values.m_turbidity_max);
+                double turbidity = input_evaluator.evaluate<InputValues>(m_inputs, Vector2d(u, v))->m_turbidity;
+
+                // Apply turbidity multiplier and bias.
+                turbidity *= m_uniform_values.m_turbidity_multiplier;
+                turbidity += BaseTurbidity;
 
                 // Compute the coefficients of the radiance distribution function and the master luminance value.
                 double coeffs[3 * 9], master_Y[3];
@@ -398,20 +405,22 @@ namespace
                 ciexyz = linear_rgb_to_ciexyz(linear_rgb);
             }
 
-            // Convert the sky color to the CIE xyY color space.
-            const Color3f xyY = ciexyz_to_ciexyy(ciexyz);
-
-            // Convert the sky chromaticity to a spectrum.
+            // Split sky color into luminance and chromaticity.
+            Color3f xyY = ciexyz_to_ciexyy(ciexyz);
+            float luminance = xyY[2];
             daylight_ciexy_to_spectrum(xyY[0], xyY[1], value);
+
+            // Apply luminance gamma and multiplier.
+            if (m_uniform_values.m_luminance_gamma != 1.0)
+                luminance = fast_pow(luminance, static_cast<float>(m_uniform_values.m_luminance_gamma));
+            luminance *= static_cast<float>(m_uniform_values.m_luminance_multiplier);
 
             // Compute the final sky radiance.
             value *=
-                static_cast<float>(
-                      m_uniform_values.m_luminance_multiplier   // luminance multiplier
-                    / sum_value(value * XYZCMFCIE19312Deg[1])   // normalize to unit luminance
-                    * xyY[2]                                    // apply computed luminance
-                    / 683.0                                     // convert lumens to Watts
-                    * RcpPi);                                   // convert irradiance to radiance
+                  luminance                                 // start with computed luminance
+                / sum_value(value * XYZCMFCIE19312Deg[1])   // normalize to unit luminance
+                * (1.0f / 683.0f)                           // convert lumens to Watts
+                * static_cast<float>(RcpPi);                // convert irradiance to radiance
         }
 
         Vector3d shift(Vector3d v) const
@@ -469,27 +478,17 @@ DictionaryArray HosekEnvironmentEDFFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "required")
-            .insert("default", "4.0"));
+            .insert("default", "1.0"));
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "turbidity_min")
-            .insert("label", "Turbidity Min")
+            .insert("name", "turbidity_multiplier")
+            .insert("label", "Turbidity Multiplier")
             .insert("type", "numeric")
-            .insert("min_value", "1.0")
-            .insert("max_value", "10.0")
+            .insert("min_value", "0.0")
+            .insert("max_value", "8.0")
             .insert("use", "optional")
             .insert("default", "2.0"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "turbidity_max")
-            .insert("label", "Turbidity Max")
-            .insert("type", "numeric")
-            .insert("min_value", "1.0")
-            .insert("max_value", "10.0")
-            .insert("use", "optional")
-            .insert("default", "6.0"));
 
     metadata.push_back(
         Dictionary()
@@ -508,6 +507,16 @@ DictionaryArray HosekEnvironmentEDFFactory::get_input_metadata() const
             .insert("type", "numeric")
             .insert("min_value", "0.0")
             .insert("max_value", "10.0")
+            .insert("use", "optional")
+            .insert("default", "1.0"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "luminance_gamma")
+            .insert("label", "Luminance Gamma")
+            .insert("type", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "3.0")
             .insert("use", "optional")
             .insert("default", "1.0"));
 

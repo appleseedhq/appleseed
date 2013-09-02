@@ -441,10 +441,10 @@ namespace
         }
 
       private:
-        class ExponentFunction
+        class BlinnExponentFunction
         {
           public:
-            explicit ExponentFunction(const double e)
+            explicit BlinnExponentFunction(const double e)
               : m_e(e)
             {
             }
@@ -478,26 +478,22 @@ namespace
 
                 ParamArray& params = bsdf.get_parameters();
 
-                move_if_exist(params, "glossiness", "mdf_parameter");
-
-                if (params.get_optional<string>("mdf", "") != "blinn")
-                    continue;
-
-                const string mdf_param = params.get_optional<string>("glossiness", "");
+                const string mdf = params.get_optional<string>("mdf", "");
+                const string mdf_param = params.get_optional<string>("mdf_parameter", "");
 
                 if (mdf_param.empty())
                     continue;
 
-                double exponent;
-                if (try_parse_scalar(mdf_param, exponent))
+                double mdf_param_value;
+                if (try_parse_scalar(mdf_param, mdf_param_value))
                 {
                     double glossiness;
-                    if (!exponent_to_glossiness(exponent, glossiness))
+                    if (!mdf_param_to_glossiness(mdf, mdf_param_value, glossiness))
                     {
                         RENDERER_LOG_ERROR(
-                            "while updating BSDF \"%s\", failed to normalize Blinn exponent %f.",
+                            "while updating bsdf \"%s\", failed to convert mdf parameter %f.",
                             bsdf.get_name(),
-                            exponent);
+                            mdf_param_value);
                         continue;
                     }
 
@@ -511,19 +507,22 @@ namespace
                     {
                         const ColorSource source(*color, InputFormatScalar);
 
-                        double exponent;
-                        source.evaluate_uniform(exponent);
+                        double mdf_param_value;
+                        source.evaluate_uniform(mdf_param_value);
 
                         double glossiness;
-                        if (!exponent_to_glossiness(exponent, glossiness))
+                        if (!mdf_param_to_glossiness(mdf, mdf_param_value, glossiness))
                         {
                             RENDERER_LOG_ERROR(
-                                "while updating BSDF \"%s\", failed to normalize Blinn exponent %f in color entity \"%s\".",
+                                "while updating bsdf \"%s\", failed to convert mdf parameter %f in color entity \"%s\".",
                                 bsdf.get_name(),
-                                exponent,
+                                mdf_param_value,
                                 color->get_name());
                             continue;
                         }
+
+                        ParamArray new_color_params = color->get_parameters();
+                        new_color_params.remove_path("multiplier");
 
                         ColorValueArray new_color_values;
                         new_color_values.push_back(static_cast<float>(glossiness));
@@ -531,7 +530,7 @@ namespace
                         auto_release_ptr<ColorEntity> new_color_entity(
                             ColorEntityFactory::create(
                                 color->get_name(),
-                                color->get_parameters(),
+                                new_color_params,
                                 new_color_values));
 
                         Assembly* parent_assembly = dynamic_cast<Assembly*>(color->get_parent());
@@ -550,6 +549,8 @@ namespace
                             parent_scene->colors().insert(new_color_entity);
                         }
                     }
+
+                    move_if_exist(params, "glossiness", "mdf_parameter");
                 }
             }
         }
@@ -597,10 +598,18 @@ namespace
             return 0;
         }
 
-        static bool exponent_to_glossiness(const double exponent, double& glossiness)
+        static bool mdf_param_to_glossiness(const string& mdf, const double mdf_param, double& glossiness)
         {
-            const ExponentFunction f(exponent);
-            return find_root_bisection(f, 0.0, 1.0, 1.0e-6, 100, glossiness);
+            if (mdf == "blinn")
+            {
+                const BlinnExponentFunction f(mdf_param);
+                return find_root_bisection(f, 0.0, 1.0, 1.0e-6, 100, glossiness);
+            }
+            else
+            {
+                glossiness = saturate(1.0 - mdf_param);
+                return true;
+            }
         }
     };
 }

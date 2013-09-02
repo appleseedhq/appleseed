@@ -268,7 +268,7 @@ T ParamArray::get_helper(
         if (is_required)
         {
             RENDERER_LOG_ERROR(
-                "%s%sparameter \"%s\" not found, using default value \"%s\".",
+                "%s%srequired parameter \"%s\" not found; continuing using value \"%s\".",
                 message_context.get(),
                 message_context.empty() ? "" : ": ",
                 name,
@@ -282,7 +282,7 @@ T ParamArray::get_helper(
     }
 
     RENDERER_LOG_ERROR(
-        "%s%sinvalid value \"%s\" for parameter \"%s\", using default value \"%s\".",
+        "%s%sinvalid value \"%s\" for parameter \"%s\"; continuing using value \"%s\".",
         message_context.get(),
         message_context.empty() ? "" : ": ",
         is_path ? get_path(name) : get(name),

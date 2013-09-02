@@ -70,12 +70,12 @@ namespace
     {
       public:
         EDFEnvironmentShader(
-            const char*             name,
-            const ParamArray&       params)
+            const char*         name,
+            const ParamArray&   params)
           : EnvironmentShader(name, params)
-          , m_env_edf_name(m_params.get_required<string>("environment_edf", ""))
           , m_env_edf(0)
         {
+            m_inputs.declare("alpha_value", InputFormatScalar, "1.0");
         }
 
         virtual void release() OVERRIDE
@@ -93,54 +93,52 @@ namespace
             if (!EnvironmentShader::on_frame_begin(project))
                 return false;
 
-            m_env_edf = 0;
+            // Bind the environment EDF to this environment shader.
+            const string name = m_params.get_required<string>("environment_edf", "");
+            m_env_edf = project.get_scene()->environment_edfs().get_by_name(name.c_str());
 
-            if (!m_env_edf_name.empty())
+            if (m_env_edf == 0)
             {
-                m_env_edf =
-                    project.get_scene()->environment_edfs().get_by_name(m_env_edf_name.c_str());
+                RENDERER_LOG_ERROR(
+                    "while preparing environment shader \"%s\": "
+                    "cannot find environment edf \"%s\".",
+                    get_path().c_str(),
+                    name.c_str());
 
-                if (m_env_edf == 0)
-                {
-                    RENDERER_LOG_ERROR(
-                        "while preparing environment shader \"%s\": "
-                        "cannot find environment EDF \"%s\".",
-                        get_name(),
-                        m_env_edf_name.c_str());
-
-                    return false;
-                }
+                return false;
             }
+
+            // Evaluate and store alpha value.
+            InputValues uniform_values;
+            m_inputs.evaluate_uniforms(&uniform_values);
+            m_alpha_value = static_cast<float>(uniform_values.m_alpha_value);
 
             return true;
         }
 
         virtual void evaluate(
-            InputEvaluator&         input_evaluator,
-            const Vector3d&         direction,
-            ShadingResult&          shading_result) const OVERRIDE
+            InputEvaluator&     input_evaluator,
+            const Vector3d&     direction,
+            ShadingResult&      shading_result) const OVERRIDE
         {
-            if (m_env_edf)
-            {
-                // Evaluate the environment EDF.
-                shading_result.m_color_space = ColorSpaceSpectral;
-                shading_result.m_aovs.set(0.0f);
-                shading_result.m_alpha.set(1.0f);
-                m_env_edf->evaluate(
-                    input_evaluator,
-                    direction,
-                    shading_result.m_color);
-            }
-            else
-            {
-                // Environment shader not properly initialized: return transparent black.
-                shading_result.set_to_transparent_black();
-            }
+            shading_result.m_color_space = ColorSpaceSpectral;
+            shading_result.m_aovs.set(0.0f);
+            shading_result.m_alpha.set(m_alpha_value);
+
+            m_env_edf->evaluate(
+                input_evaluator,
+                direction,
+                shading_result.m_color);
         }
 
       private:
-        const string        m_env_edf_name;
+        DECLARE_INPUT_VALUES(InputValues)
+        {
+            double m_alpha_value;
+        };
+
         EnvironmentEDF*     m_env_edf;
+        float               m_alpha_value;
     };
 }
 
@@ -167,12 +165,22 @@ DictionaryArray EDFEnvironmentShaderFactory::get_input_metadata() const
         Dictionary()
             .insert("name", "environment_edf")
             .insert("label", "Environment EDF")
-            .insert("type", "colormap")
+            .insert("type", "entity")
             .insert("entity_types",
                 Dictionary()
                     .insert("environment_edf", "Environment EDFs"))
             .insert("use", "required")
             .insert("default", ""));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "alpha_value")
+            .insert("label", "Alpha Value")
+            .insert("type", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "1.0")
+            .insert("use", "optional")
+            .insert("default", "1.0"));
 
     return metadata;
 }

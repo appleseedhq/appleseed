@@ -31,7 +31,10 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/drt/drtlightingengine.h"
+#include "renderer/kernel/lighting/lighttracing/lighttracingsamplegenerator.h"
 #include "renderer/kernel/lighting/pt/ptlightingengine.h"
+#include "renderer/kernel/lighting/sppm/sppmlightingengine.h"
+#include "renderer/kernel/lighting/sppm/sppmpasscallback.h"
 #include "renderer/kernel/lighting/ilightingengine.h"
 #include "renderer/kernel/lighting/lightsampler.h"
 #include "renderer/kernel/rendering/debug/blanksamplerenderer.h"
@@ -45,14 +48,17 @@
 #include "renderer/kernel/rendering/generic/genericsamplegenerator.h"
 #include "renderer/kernel/rendering/generic/genericsamplerenderer.h"
 #include "renderer/kernel/rendering/generic/generictilerenderer.h"
-#include "renderer/kernel/rendering/lighttracing/lighttracingsamplegenerator.h"
 #include "renderer/kernel/rendering/progressive/progressiveframerenderer.h"
+#include "renderer/kernel/rendering/ephemeralshadingresultframebufferfactory.h"
 #include "renderer/kernel/rendering/iframerenderer.h"
+#include "renderer/kernel/rendering/ipasscallback.h"
 #include "renderer/kernel/rendering/ipixelrenderer.h"
 #include "renderer/kernel/rendering/isamplegenerator.h"
 #include "renderer/kernel/rendering/isamplerenderer.h"
+#include "renderer/kernel/rendering/ishadingresultframebufferfactory.h"
 #include "renderer/kernel/rendering/itilecallback.h"
 #include "renderer/kernel/rendering/itilerenderer.h"
+#include "renderer/kernel/rendering/permanentshadingresultframebufferfactory.h"
 #ifdef WITH_OSL
 #include "renderer/kernel/rendering/rendererservices.h"
 #endif
@@ -282,6 +288,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
 
     const Scene& scene = *m_project.get_scene();
     Frame& frame = *m_project.get_frame();
+    const TraceContext& trace_context = m_project.get_trace_context();
 
     // Create the texture store.
     TextureStore texture_store(scene, m_params.child("texture_store"));
@@ -296,30 +303,47 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     // Create a lighting engine factory.
     //
 
+    auto_ptr<IPassCallback> pass_callback;
     auto_ptr<ILightingEngineFactory> lighting_engine_factory;
     {
-        const string lighting_engine_param =
-            m_params.get_required<string>("lighting_engine", "pt");
+        const string value = m_params.get_required<string>("lighting_engine", "pt");
 
-        if (lighting_engine_param == "drt")
+        if (value == "drt")
         {
             lighting_engine_factory.reset(
                 new DRTLightingEngineFactory(
                     light_sampler,
-                    m_params.child("drt")));
+                    m_params.child("drt")));    // todo: change to "drt_lighting_engine"
         }
-        else if (lighting_engine_param == "pt")
+        else if (value == "pt")
         {
             lighting_engine_factory.reset(
                 new PTLightingEngineFactory(
                     light_sampler,
-                    m_params.child("pt")));
+                    m_params.child("pt")));     // todo: change to "pt_lighting_engine"
+        }
+        else if (value == "sppm")
+        {
+            SPPMPassCallback* sppm_pass_callback =
+                new SPPMPassCallback(
+                    scene,
+                    light_sampler,
+                    trace_context,
+                    texture_store,
+                    m_params.child("sppm_pass_callback"));
+            pass_callback.reset(sppm_pass_callback);
+
+            lighting_engine_factory.reset(
+                new SPPMLightingEngineFactory(
+                    *sppm_pass_callback,
+                    light_sampler,
+                    m_params.child("sppm_lighting_engine")));
         }
         else
         {
             RENDERER_LOG_ERROR(
                 "invalid value for \"lighting_engine\" parameter: \"%s\".",
-                lighting_engine_param.c_str());
+                value.c_str());
 
             return IRendererController::AbortRendering;
         }
@@ -331,26 +355,25 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
 
     auto_ptr<ISampleRendererFactory> sample_renderer_factory;
     {
-        const string sample_renderer_param =
-            m_params.get_required<string>("sample_renderer", "generic");
+        const string value = m_params.get_required<string>("sample_renderer", "generic");
 
-        if (sample_renderer_param == "generic")
+        if (value == "generic")
         {
             sample_renderer_factory.reset(
                 new GenericSampleRendererFactory(
                     scene,
                     frame,
-                    m_project.get_trace_context(),
+                    trace_context,
                     texture_store,
                     lighting_engine_factory.get(),
                     shading_engine,
                     m_params.child("generic_sample_renderer")));
         }
-        else if (sample_renderer_param == "blank")
+        else if (value == "blank")
         {
             sample_renderer_factory.reset(new BlankSampleRendererFactory());
         }
-        else if (sample_renderer_param == "debug")
+        else if (value == "debug")
         {
             sample_renderer_factory.reset(new DebugSampleRendererFactory());
         }
@@ -358,85 +381,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
         {
             RENDERER_LOG_ERROR(
                 "invalid value for \"sample_renderer\" parameter: \"%s\".",
-                sample_renderer_param.c_str());
-
-            return IRendererController::AbortRendering;
-        }
-    }
-
-    //
-    // Create a pixel renderer factory.
-    //
-
-    auto_ptr<IPixelRendererFactory> pixel_renderer_factory;
-    {
-        const string pixel_renderer_param =
-            m_params.get_optional<string>("pixel_renderer", "");
-
-        if (pixel_renderer_param == "uniform")
-        {
-            pixel_renderer_factory.reset(
-                new UniformPixelRendererFactory(
-                    sample_renderer_factory.get(),
-                    m_params.child("uniform_pixel_renderer")));
-        }
-        else if (pixel_renderer_param == "adaptive")
-        {
-            pixel_renderer_factory.reset(
-                new AdaptivePixelRendererFactory(
-                    frame,
-                    sample_renderer_factory.get(),
-                    m_params.child("adaptive_pixel_renderer")));
-        }
-        else if (!pixel_renderer_param.empty())
-        {
-            RENDERER_LOG_ERROR(
-                "invalid value for \"pixel_renderer\" parameter: \"%s\".",
-                pixel_renderer_param.c_str());
-
-            return IRendererController::AbortRendering;
-        }
-    }
-
-    //
-    // Create a tile renderer factory.
-    //
-
-    auto_ptr<ITileRendererFactory> tile_renderer_factory;
-    {
-        const string tile_renderer_param =
-            m_params.get_optional<string>("tile_renderer", "");
-
-        if (tile_renderer_param == "generic")
-        {
-            tile_renderer_factory.reset(
-                new GenericTileRendererFactory(
-                    frame,
-                    pixel_renderer_factory.get(),
-                    m_params.child("generic_tile_renderer")));
-        }
-        else if (tile_renderer_param == "blank")
-        {
-            tile_renderer_factory.reset(new BlankTileRendererFactory());
-        }
-        else if (tile_renderer_param == "debug")
-        {
-            tile_renderer_factory.reset(new DebugTileRendererFactory());
-        }
-        else if (tile_renderer_param == "ewatest")
-        {
-            tile_renderer_factory.reset(
-                new EWATestTileRendererFactory(
-                    scene,
-                    m_project.get_trace_context(),
-                    texture_store,
-                    m_params.child("ewatest_tile_renderer")));
-        }
-        else if (!tile_renderer_param.empty())
-        {
-            RENDERER_LOG_ERROR(
-                "invalid value for \"tile_renderer\" parameter: \"%s\".",
-                tile_renderer_param.c_str());
+                value.c_str());
 
             return IRendererController::AbortRendering;
         }
@@ -448,32 +393,137 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
 
     auto_ptr<ISampleGeneratorFactory> sample_generator_factory;
     {
-        const string sample_generator_param =
-            m_params.get_optional<string>("sample_generator", "");
+        const string value = m_params.get_optional<string>("sample_generator", "");
 
-        if (sample_generator_param == "generic")
+        if (value == "generic")
         {
             sample_generator_factory.reset(
                 new GenericSampleGeneratorFactory(
                     frame,
                     sample_renderer_factory.get()));
         }
-        else if (sample_generator_param == "lighttracing")
+        else if (value == "lighttracing")
         {
             sample_generator_factory.reset(
                 new LightTracingSampleGeneratorFactory(
                     scene,
                     frame,
-                    m_project.get_trace_context(),
+                    trace_context,
                     texture_store,
                     light_sampler,
                     m_params.child("lighttracing_sample_generator")));
         }
-        else if (!sample_generator_param.empty())
+        else if (!value.empty())
         {
             RENDERER_LOG_ERROR(
                 "invalid value for \"sample_generator\" parameter: \"%s\".",
-                sample_generator_param.c_str());
+                value.c_str());
+
+            return IRendererController::AbortRendering;
+        }
+    }
+
+    //
+    // Create a pixel renderer factory.
+    //
+
+    auto_ptr<IPixelRendererFactory> pixel_renderer_factory;
+    {
+        const string value = m_params.get_optional<string>("pixel_renderer", "");
+
+        if (value == "uniform")
+        {
+            pixel_renderer_factory.reset(
+                new UniformPixelRendererFactory(
+                    sample_renderer_factory.get(),
+                    m_params.child("uniform_pixel_renderer")));
+        }
+        else if (value == "adaptive")
+        {
+            pixel_renderer_factory.reset(
+                new AdaptivePixelRendererFactory(
+                    frame,
+                    sample_renderer_factory.get(),
+                    m_params.child("adaptive_pixel_renderer")));
+        }
+        else if (!value.empty())
+        {
+            RENDERER_LOG_ERROR(
+                "invalid value for \"pixel_renderer\" parameter: \"%s\".",
+                value.c_str());
+
+            return IRendererController::AbortRendering;
+        }
+    }
+
+    //
+    // Create a shading result framebuffer factory.
+    //
+
+    auto_ptr<IShadingResultFrameBufferFactory> shading_result_framebuffer_factory;
+    {
+        const string value =
+            m_params.get_optional<string>("shading_result_framebuffer", "ephemeral");
+
+        if (value == "ephemeral")
+        {
+            shading_result_framebuffer_factory.reset(
+                new EphemeralShadingResultFrameBufferFactory());
+        }
+        else if (value == "permanent")
+        {
+            shading_result_framebuffer_factory.reset(
+                new PermanentShadingResultFrameBufferFactory(frame));
+        }
+        else if (!value.empty())
+        {
+            RENDERER_LOG_ERROR(
+                "invalid value for \"shading_result_framebuffer\" parameter: \"%s\".",
+                value.c_str());
+
+            return IRendererController::AbortRendering;
+        }
+    }
+
+    //
+    // Create a tile renderer factory.
+    //
+
+    auto_ptr<ITileRendererFactory> tile_renderer_factory;
+    {
+        const string value = m_params.get_optional<string>("tile_renderer", "");
+
+        if (value == "generic")
+        {
+            tile_renderer_factory.reset(
+                new GenericTileRendererFactory(
+                    frame,
+                    pixel_renderer_factory.get(),
+                    shading_result_framebuffer_factory.get(),
+                    m_params.child("generic_tile_renderer")));
+        }
+        else if (value == "blank")
+        {
+            tile_renderer_factory.reset(new BlankTileRendererFactory());
+        }
+        else if (value == "debug")
+        {
+            tile_renderer_factory.reset(new DebugTileRendererFactory());
+        }
+        else if (value == "ewatest")
+        {
+            tile_renderer_factory.reset(
+                new EWATestTileRendererFactory(
+                    scene,
+                    trace_context,
+                    texture_store,
+                    m_params.child("ewatest_tile_renderer")));
+        }
+        else if (!value.empty())
+        {
+            RENDERER_LOG_ERROR(
+                "invalid value for \"tile_renderer\" parameter: \"%s\".",
+                value.c_str());
 
             return IRendererController::AbortRendering;
         }
@@ -485,10 +535,9 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
 
     auto_release_ptr<IFrameRenderer> frame_renderer;
     {
-        const string frame_renderer_param =
-            m_params.get_required<string>("frame_renderer", "generic");
+        const string value = m_params.get_required<string>("frame_renderer", "generic");
 
-        if (frame_renderer_param == "generic")
+        if (value == "generic")
         {
             ParamArray params = m_params.child("generic_frame_renderer");
             copy_param(params, m_params, "rendering_threads");
@@ -498,9 +547,10 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
                     frame,
                     tile_renderer_factory.get(),
                     m_tile_callback_factory,
+                    pass_callback.get(),
                     params));
         }
-        else if (frame_renderer_param == "progressive")
+        else if (value == "progressive")
         {
             ParamArray params = m_params.child("progressive_frame_renderer");
             copy_param(params, m_params, "rendering_threads");
@@ -516,7 +566,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
         {
             RENDERER_LOG_ERROR(
                 "invalid value for \"frame_renderer\" parameter: \"%s\".",
-                frame_renderer_param.c_str());
+                value.c_str());
 
             return IRendererController::AbortRendering;
         }
@@ -550,7 +600,7 @@ IRendererController::Status MasterRenderer::render_frame_sequence(IFrameRenderer
 
         frame_renderer->start_rendering();
 
-        const IRendererController::Status status = render_frame(frame_renderer);
+        const IRendererController::Status status = wait_for_event(frame_renderer);
 
         switch (status)
         {
@@ -578,7 +628,7 @@ IRendererController::Status MasterRenderer::render_frame_sequence(IFrameRenderer
     }
 }
 
-IRendererController::Status MasterRenderer::render_frame(IFrameRenderer* frame_renderer) const
+IRendererController::Status MasterRenderer::wait_for_event(IFrameRenderer* frame_renderer) const
 {
     while (frame_renderer->is_rendering())
     {

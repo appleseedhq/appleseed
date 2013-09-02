@@ -80,7 +80,7 @@ namespace
         AshikhminBRDFImpl(
             const char*         name,
             const ParamArray&   params)
-          : BSDF(name, Reflective, params)
+          : BSDF(name, Reflective, Diffuse | Glossy, params)
           , m_uniform_reflectance(false)
           , m_uniform_shininess(false)
         {

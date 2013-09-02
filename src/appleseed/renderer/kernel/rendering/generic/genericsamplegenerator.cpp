@@ -33,6 +33,7 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/rendering/isamplerenderer.h"
 #include "renderer/kernel/rendering/localsampleaccumulationbuffer.h"
+#include "renderer/kernel/rendering/pixelcontext.h"
 #include "renderer/kernel/rendering/sample.h"
 #include "renderer/kernel/rendering/samplegeneratorbase.h"
 #include "renderer/kernel/shading/shadingresult.h"
@@ -79,10 +80,10 @@ namespace
           , m_frame(frame)
           , m_canvas_width(frame.image().properties().m_canvas_width)
           , m_canvas_height(frame.image().properties().m_canvas_height)
-          , m_window_origin_x(frame.get_crop_window().min.x)
-          , m_window_origin_y(frame.get_crop_window().min.y)
-          , m_window_width(frame.get_crop_window().extent()[0] + 1)
-          , m_window_height(frame.get_crop_window().extent()[1] + 1)
+          , m_window_origin_x(static_cast<int>(frame.get_crop_window().min.x))
+          , m_window_origin_y(static_cast<int>(frame.get_crop_window().min.y))
+          , m_window_width(static_cast<int>(frame.get_crop_window().extent()[0] + 1))
+          , m_window_height(static_cast<int>(frame.get_crop_window().extent()[1] + 1))
           , m_lighting_conditions(frame.get_lighting_conditions())
           , m_sample_renderer(sample_renderer_factory->create(primary))
           , m_window_width_next_pow2(next_power(static_cast<double>(m_window_width), 2.0))
@@ -118,10 +119,10 @@ namespace
         const Frame&                        m_frame;
         const size_t                        m_canvas_width;
         const size_t                        m_canvas_height;
-        const size_t                        m_window_origin_x;
-        const size_t                        m_window_origin_y;
-        const size_t                        m_window_width;
-        const size_t                        m_window_height;
+        const int                           m_window_origin_x;
+        const int                           m_window_origin_y;
+        const int                           m_window_width;
+        const int                           m_window_height;
         const LightingConditions&           m_lighting_conditions;
         auto_release_ptr<ISampleRenderer>   m_sample_renderer;
         MersenneTwister                     m_rng;
@@ -142,12 +143,17 @@ namespace
 
             // Compute the coordinates of the pixel in the padded crop window.
             const Vector2d t(s[0] * m_window_width_next_pow2, s[1] * m_window_height_next_pow3);
-            const size_t x = truncate<size_t>(t[0]);
-            const size_t y = truncate<size_t>(t[1]);
+            const int x = truncate<int>(t[0]);
+            const int y = truncate<int>(t[1]);
 
             // Reject samples that fall outside the actual frame.
             if (x >= m_window_width || y >= m_window_height)
                 return 0;
+
+            // Create a pixel context that identifies the pixel currently being rendered.
+            const PixelContext pixel_context(
+                m_window_origin_x + x,
+                m_window_origin_y + y);
 
             // Transform the sample position back to NDC. Full precision divisions are required
             // to ensure that the sample position indeed lies in the [0,1)^2 interval.
@@ -167,6 +173,7 @@ namespace
             ShadingResult shading_result;
             m_sample_renderer->render_sample(
                 sampling_context,
+                pixel_context,
                 sample_position,
                 shading_result);
 

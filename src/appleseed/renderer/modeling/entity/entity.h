@@ -42,6 +42,7 @@
 
 // Standard headers.
 #include <cstddef>
+#include <string>
 
 namespace renderer
 {
@@ -80,6 +81,9 @@ class DLLSYMBOL Entity
     // Set/get the name of this entity.
     void set_name(const char* name);
     const char* get_name() const;
+
+    // Get the full path from the scene entity to this entity in a human-readable format.
+    std::string get_path() const;
 
     // Return the parameters of this entity.
     ParamArray& get_parameters();
@@ -125,6 +129,25 @@ inline void Entity::set_parent(Entity* parent)
 inline Entity* Entity::get_parent() const
 {
     return m_parent;
+}
+
+inline std::string Entity::get_path() const
+{
+    std::string path;
+
+    const Entity* entity = this;
+
+    while (entity)
+    {
+        if (!path.empty())
+            path.insert(0, " > ");
+
+        path.insert(0, entity->get_name());
+
+        entity = entity->get_parent();
+    }
+
+    return path;
 }
 
 inline ParamArray& Entity::get_parameters()

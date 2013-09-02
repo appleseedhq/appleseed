@@ -49,42 +49,42 @@ namespace foundation
 //
 // Reference:
 //
-//   http://www.concentric.net/~Ttwang/tech/inthash.htm
+//   https://gist.github.com/badboy/6267743
 //
 
 // Hash a 32-bit integer into a 32-bit integer.
-uint32 hashint32(uint32 key);
-uint32 hashint32alt(uint32 key);                // same as hashint32(), alternative algorithm
+uint32 hash_uint32(uint32 key);
+uint32 hash_uint32_alt(uint32 key);             // same as hash_uint32(), alternative algorithm
 
 // Hash a 64-bit integer into a 64-bit integer.
-uint64 hashint64(uint64 key);
+uint64 hash_uint64(uint64 key);
 
 // Hash a 64-bit integer into a 32-bit integer.
-uint32 hashint64to32(uint64 key);
+uint32 hash_uint64_to_uint32(uint64 key);
 
 // Mix multiple 32-bit integers into one 32-bit integer.
-uint32 mix32(
+uint32 mix_uint32(
     const uint32 a,
     const uint32 b);
-uint32 mix32(
+uint32 mix_uint32(
     const uint32 a,
     const uint32 b,
     const uint32 c);
-uint32 mix32(
+uint32 mix_uint32(
     const uint32 a,
     const uint32 b,
     const uint32 c,
     const uint32 d);
 
 // Mix multiple 64-bit integers into one 64-bit integer.
-uint64 mix64(
+uint64 mix_uint64(
     const uint64 a,
     const uint64 b);
-uint64 mix64(
+uint64 mix_uint64(
     const uint64 a,
     const uint64 b,
     const uint64 c);
-uint64 mix64(
+uint64 mix_uint64(
     const uint64 a,
     const uint64 b,
     const uint64 c,
@@ -95,7 +95,7 @@ uint64 mix64(
 // Integer hash functions implementation.
 //
 
-inline uint32 hashint32(uint32 key)
+inline uint32 hash_uint32(uint32 key)
 {
     key = ~key + (key << 15);                   // key = (key << 15) - key - 1;
     key = key ^ (key >> 12);
@@ -106,7 +106,7 @@ inline uint32 hashint32(uint32 key)
     return key;
 }
 
-inline uint32 hashint32alt(uint32 key)
+inline uint32 hash_uint32_alt(uint32 key)
 {
     key = (key ^ 61) ^ (key >> 16);
     key = key + (key << 3);
@@ -116,7 +116,7 @@ inline uint32 hashint32alt(uint32 key)
     return key;
 }
 
-inline uint64 hashint64(uint64 key)
+inline uint64 hash_uint64(uint64 key)
 {
     key = (~key) + (key << 21);                 // key = (key << 21) - key - 1;
     key = key ^ (key >> 24);
@@ -128,7 +128,7 @@ inline uint64 hashint64(uint64 key)
     return key;
 }
 
-inline uint32 hashint64to32(uint64 key)
+inline uint32 hash_uint64_to_uint32(uint64 key)
 {
     key = (~key) + (key << 18);                 // key = (key << 18) - key - 1;
     key = key ^ (key >> 31);
@@ -139,69 +139,69 @@ inline uint32 hashint64to32(uint64 key)
     return static_cast<uint32>(key);
 }
 
-inline uint32 mix32(
+inline uint32 mix_uint32(
     const uint32 a,
     const uint32 b)
 {
-    const uint32 h0 = hashint32(     a);        // h0 =    h( a )
-    const uint32 h1 = hashint32(h0 + b);        // h1 = h( h( a ) + b )
+    const uint32 h0 = hash_uint32(     a);      // h0 =    h( a )
+    const uint32 h1 = hash_uint32(h0 + b);      // h1 = h( h( a ) + b )
     return h1;
 }
 
-inline uint32 mix32(
+inline uint32 mix_uint32(
     const uint32 a,
     const uint32 b,
     const uint32 c)
 {
-    const uint32 h0 = hashint32(     a);        // h0 =       h( a )
-    const uint32 h1 = hashint32(h0 + b);        // h1 =    h( h( a ) + b )
-    const uint32 h2 = hashint32(h1 + c);        // h2 = h( h( h( a ) + b ) + c )
+    const uint32 h0 = hash_uint32(     a);      // h0 =       h( a )
+    const uint32 h1 = hash_uint32(h0 + b);      // h1 =    h( h( a ) + b )
+    const uint32 h2 = hash_uint32(h1 + c);      // h2 = h( h( h( a ) + b ) + c )
     return h2;
 }
 
-inline uint32 mix32(
+inline uint32 mix_uint32(
     const uint32 a,
     const uint32 b,
     const uint32 c,
     const uint32 d)
 {
-    const uint32 h0 = hashint32(     a);        // h0 =          h( a )
-    const uint32 h1 = hashint32(h0 + b);        // h1 =       h( h( a ) + b )
-    const uint32 h2 = hashint32(h1 + c);        // h2 =    h( h( h( a ) + b ) + c )
-    const uint32 h3 = hashint32(h2 + d);        // h3 = h( h( h( h( a ) + b ) + c ) + d )
+    const uint32 h0 = hash_uint32(     a);      // h0 =          h( a )
+    const uint32 h1 = hash_uint32(h0 + b);      // h1 =       h( h( a ) + b )
+    const uint32 h2 = hash_uint32(h1 + c);      // h2 =    h( h( h( a ) + b ) + c )
+    const uint32 h3 = hash_uint32(h2 + d);      // h3 = h( h( h( h( a ) + b ) + c ) + d )
     return h3;
 }
 
-inline uint64 mix64(
+inline uint64 mix_uint64(
     const uint64 a,
     const uint64 b)
 {
-    const uint64 h0 = hashint64(     a);        // h0 =    h( a )
-    const uint64 h1 = hashint64(h0 + b);        // h1 = h( h( a ) + b )
+    const uint64 h0 = hash_uint64(     a);      // h0 =    h( a )
+    const uint64 h1 = hash_uint64(h0 + b);      // h1 = h( h( a ) + b )
     return h1;
 }
 
-inline uint64 mix64(
+inline uint64 mix_uint64(
     const uint64 a,
     const uint64 b,
     const uint64 c)
 {
-    const uint64 h0 = hashint64(     a);        // h0 =       h( a )
-    const uint64 h1 = hashint64(h0 + b);        // h1 =    h( h( a ) + b )
-    const uint64 h2 = hashint64(h1 + c);        // h2 = h( h( h( a ) + b ) + c )
+    const uint64 h0 = hash_uint64(     a);      // h0 =       h( a )
+    const uint64 h1 = hash_uint64(h0 + b);      // h1 =    h( h( a ) + b )
+    const uint64 h2 = hash_uint64(h1 + c);      // h2 = h( h( h( a ) + b ) + c )
     return h2;
 }
 
-inline uint64 mix64(
+inline uint64 mix_uint64(
     const uint64 a,
     const uint64 b,
     const uint64 c,
     const uint64 d)
 {
-    const uint64 h0 = hashint64(     a);        // h0 =          h( a )
-    const uint64 h1 = hashint64(h0 + b);        // h1 =       h( h( a ) + b )
-    const uint64 h2 = hashint64(h1 + c);        // h2 =    h( h( h( a ) + b ) + c )
-    const uint64 h3 = hashint64(h2 + d);        // h3 = h( h( h( h( a ) + b ) + c ) + d )
+    const uint64 h0 = hash_uint64(     a);      // h0 =          h( a )
+    const uint64 h1 = hash_uint64(h0 + b);      // h1 =       h( h( a ) + b )
+    const uint64 h2 = hash_uint64(h1 + c);      // h2 =    h( h( h( a ) + b ) + c )
+    const uint64 h3 = hash_uint64(h2 + d);      // h3 = h( h( h( h( a ) + b ) + c ) + d )
     return h3;
 }
 

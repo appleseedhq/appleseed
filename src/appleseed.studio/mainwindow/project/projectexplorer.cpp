@@ -159,6 +159,8 @@ void ProjectExplorer::highlight_entity(const UniqueID uid) const
 
         while ((item = item->parent()))
             item->setExpanded(true);
+
+        m_tree_widget->setFocus();
     }
 }
 

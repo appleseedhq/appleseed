@@ -47,6 +47,7 @@
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
 namespace renderer      { class ParamArray; }
+namespace renderer      { class PixelContext; }
 namespace renderer      { class ShadingContext; }
 namespace renderer      { class ShadingPoint; }
 namespace renderer      { class ShadingResult; }
@@ -102,6 +103,7 @@ class DLLSYMBOL DiagnosticSurfaceShader
     // Evaluate the shading at a given point.
     virtual void evaluate(
         SamplingContext&        sampling_context,
+        const PixelContext&     pixel_context,
         const ShadingContext&   shading_context,
         const ShadingPoint&     shading_point,
         ShadingResult&          shading_result) const OVERRIDE;

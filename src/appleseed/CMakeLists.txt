@@ -239,7 +239,6 @@ set (foundation_math_sources
     foundation/math/area.h
     foundation/math/basis.h
     foundation/math/bestcandidate.h
-    foundation/math/bih.h
     foundation/math/bsp.h
     foundation/math/bvh.h
     foundation/math/cdf.h
@@ -360,6 +359,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_attributeset.cpp
     foundation/meta/tests/test_autoreleaseptr.cpp
     foundation/meta/tests/test_benchmarkaggregator.cpp
+    foundation/meta/tests/test_bitmask.cpp
     foundation/meta/tests/test_boost_datetime.cpp
     foundation/meta/tests/test_boost_path.cpp
     foundation/meta/tests/test_boost_regex.cpp
@@ -534,6 +534,7 @@ set (foundation_utility_containers_sources
     foundation/utility/containers/array.h
     foundation/utility/containers/dictionary.cpp
     foundation/utility/containers/dictionary.h
+    foundation/utility/containers/hashtable.h
     foundation/utility/containers/specializedarrays.cpp
     foundation/utility/containers/specializedarrays.h
 )
@@ -653,6 +654,7 @@ set (foundation_utility_sources
     foundation/utility/attributeset.h
     foundation/utility/autoreleaseptr.h
     foundation/utility/benchmark.h
+    foundation/utility/bitmask.h
     foundation/utility/bufferedfile.cpp
     foundation/utility/bufferedfile.h
     foundation/utility/cache.cpp
@@ -849,6 +851,17 @@ source_group ("renderer\\kernel\\lighting\\drt" FILES
     ${renderer_kernel_lighting_drt_sources}
 )
 
+set (renderer_kernel_lighting_lighttracing_sources
+    renderer/kernel/lighting/lighttracing/lighttracingsamplegenerator.cpp
+    renderer/kernel/lighting/lighttracing/lighttracingsamplegenerator.h
+)
+list (APPEND appleseed_sources
+    ${renderer_kernel_lighting_lighttracing_sources}
+)
+source_group ("renderer\\kernel\\lighting\\lighttracing" FILES
+    ${renderer_kernel_lighting_lighttracing_sources}
+)
+
 set (renderer_kernel_lighting_null_sources
     renderer/kernel/lighting/null/nulllightingengine.h
 )
@@ -870,6 +883,25 @@ source_group ("renderer\\kernel\\lighting\\pt" FILES
     ${renderer_kernel_lighting_pt_sources}
 )
 
+set (renderer_kernel_lighting_sppm_sources
+    renderer/kernel/lighting/sppm/sppmlightingengine.cpp
+    renderer/kernel/lighting/sppm/sppmlightingengine.h
+    renderer/kernel/lighting/sppm/sppmpasscallback.cpp
+    renderer/kernel/lighting/sppm/sppmpasscallback.h
+    renderer/kernel/lighting/sppm/sppmphoton.cpp
+    renderer/kernel/lighting/sppm/sppmphoton.h
+    renderer/kernel/lighting/sppm/sppmphotonmap.cpp
+    renderer/kernel/lighting/sppm/sppmphotonmap.h
+    renderer/kernel/lighting/sppm/sppmphotontracer.cpp
+    renderer/kernel/lighting/sppm/sppmphotontracer.h
+)
+list (APPEND appleseed_sources
+    ${renderer_kernel_lighting_sppm_sources}
+)
+source_group ("renderer\\kernel\\lighting\\sppm" FILES
+    ${renderer_kernel_lighting_sppm_sources}
+)
+
 set (renderer_kernel_lighting_sources
     renderer/kernel/lighting/directlightingintegrator.cpp
     renderer/kernel/lighting/directlightingintegrator.h
@@ -880,6 +912,8 @@ set (renderer_kernel_lighting_sources
     renderer/kernel/lighting/lightsampler.cpp
     renderer/kernel/lighting/lightsampler.h
     renderer/kernel/lighting/pathtracer.h
+    renderer/kernel/lighting/pathvertex.cpp
+    renderer/kernel/lighting/pathvertex.h
     renderer/kernel/lighting/tracer.cpp
     renderer/kernel/lighting/tracer.h
 )
@@ -946,17 +980,6 @@ source_group ("renderer\\kernel\\rendering\\generic" FILES
     ${renderer_kernel_rendering_generic_sources}
 )
 
-set (renderer_kernel_rendering_lighttracing_sources
-    renderer/kernel/rendering/lighttracing/lighttracingsamplegenerator.cpp
-    renderer/kernel/rendering/lighttracing/lighttracingsamplegenerator.h
-)
-list (APPEND appleseed_sources
-    ${renderer_kernel_rendering_lighttracing_sources}
-)
-source_group ("renderer\\kernel\\rendering\\lighttracing" FILES
-    ${renderer_kernel_rendering_lighttracing_sources}
-)
-
 set (renderer_kernel_rendering_progressive_sources
     renderer/kernel/rendering/progressive/progressiveframerenderer.cpp
     renderer/kernel/rendering/progressive/progressiveframerenderer.h
@@ -975,21 +998,28 @@ source_group ("renderer\\kernel\\rendering\\progressive" FILES
 set (renderer_kernel_rendering_sources
     renderer/kernel/rendering/defaultrenderercontroller.cpp
     renderer/kernel/rendering/defaultrenderercontroller.h
+    renderer/kernel/rendering/ephemeralshadingresultframebufferfactory.cpp
+    renderer/kernel/rendering/ephemeralshadingresultframebufferfactory.h
     renderer/kernel/rendering/framerendererbase.cpp
     renderer/kernel/rendering/framerendererbase.h
     renderer/kernel/rendering/globalsampleaccumulationbuffer.cpp
     renderer/kernel/rendering/globalsampleaccumulationbuffer.h
     renderer/kernel/rendering/iframerenderer.h
+    renderer/kernel/rendering/ipasscallback.h
     renderer/kernel/rendering/ipixelrenderer.h
     renderer/kernel/rendering/irenderercontroller.h
     renderer/kernel/rendering/isamplegenerator.h
     renderer/kernel/rendering/isamplerenderer.h
+    renderer/kernel/rendering/ishadingresultframebufferfactory.h
     renderer/kernel/rendering/itilecallback.h
     renderer/kernel/rendering/itilerenderer.h
     renderer/kernel/rendering/localsampleaccumulationbuffer.cpp
     renderer/kernel/rendering/localsampleaccumulationbuffer.h
     renderer/kernel/rendering/masterrenderer.cpp
     renderer/kernel/rendering/masterrenderer.h
+    renderer/kernel/rendering/permanentshadingresultframebufferfactory.cpp
+    renderer/kernel/rendering/permanentshadingresultframebufferfactory.h
+    renderer/kernel/rendering/pixelcontext.h
     renderer/kernel/rendering/pixelrendererbase.cpp
     renderer/kernel/rendering/pixelrendererbase.h
     renderer/kernel/rendering/sample.h
@@ -1128,6 +1158,8 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/ashikhminbrdf.h
     renderer/modeling/bsdf/bsdf.cpp
     renderer/modeling/bsdf/bsdf.h
+    renderer/modeling/bsdf/bsdfblend.cpp
+    renderer/modeling/bsdf/bsdfblend.h
     renderer/modeling/bsdf/bsdffactoryregistrar.cpp
     renderer/modeling/bsdf/bsdffactoryregistrar.h
     renderer/modeling/bsdf/bsdfmix.cpp
@@ -1431,6 +1463,7 @@ set (renderer_modeling_scene_sources
     renderer/modeling/scene/assemblyinstancetraits.h
     renderer/modeling/scene/basegroup.cpp
     renderer/modeling/scene/basegroup.h
+    renderer/modeling/scene/containers.cpp
     renderer/modeling/scene/containers.h
     renderer/modeling/scene/objectinstance.cpp
     renderer/modeling/scene/objectinstance.h
@@ -1525,6 +1558,7 @@ set (renderer_utility_sources
     renderer/utility/messagecontext.h
     renderer/utility/paramarray.cpp
     renderer/utility/paramarray.h
+    renderer/utility/stochasticcast.h
     renderer/utility/testutils.cpp
     renderer/utility/testutils.h
     renderer/utility/transformsequence.cpp

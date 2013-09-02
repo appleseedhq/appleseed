@@ -111,17 +111,17 @@ TEST_SUITE(Foundation_Utility_String)
     }
 
 #if defined ARCH32
-#define ZERO_PTR            0x00000000
-#define ZERO_PTR_STR        "0x00000000"
-#define DEADBEEF_PTR        0xDEADBEEF
-#define DEADBEEF_PTR_STR    "0xDEADBEEF"
+    #define ZERO_PTR            0x00000000
+    #define ZERO_PTR_STR        "0x00000000"
+    #define DEADBEEF_PTR        0xDEADBEEF
+    #define DEADBEEF_PTR_STR    "0xDEADBEEF"
 #elif defined ARCH64
-#define ZERO_PTR            0x0000000000000000
-#define ZERO_PTR_STR        "0x0000000000000000"
-#define DEADBEEF_PTR        0xDEADBEEFDEAFBABE
-#define DEADBEEF_PTR_STR    "0xDEADBEEFDEAFBABE"
+    #define ZERO_PTR            0x0000000000000000
+    #define ZERO_PTR_STR        "0x0000000000000000"
+    #define DEADBEEF_PTR        0xDEADBEEFDEAFBABE
+    #define DEADBEEF_PTR_STR    "0xDEADBEEFDEAFBABE"
 #else
-#error Cannot determine machine architecture.
+    #error Cannot determine machine architecture.
 #endif
 
     TEST_CASE(ToString_GivenNonNullVoidPointer_ReturnsCorrespondingString)

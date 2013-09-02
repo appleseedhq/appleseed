@@ -160,7 +160,7 @@ TEST_SUITE(Foundation_Image_ColorSpace)
         const Color3f srgb = fast_linear_rgb_to_srgb(linear_rgb);
 
         EXPECT_FEQ_EPS(
-            Color3f(0.736652f, 0.856132f, 0.484787f),
+            Color3f(0.735361f, 0.854277f, 0.484509f),
             srgb,
             1.0e-5f);
     }
@@ -171,7 +171,7 @@ TEST_SUITE(Foundation_Image_ColorSpace)
         const Color3f linear_rgb = fast_srgb_to_linear_rgb(srgb);
 
         EXPECT_FEQ_EPS(
-            Color3f(0.501289f, 0.709248f, 0.199818f),
+            Color3f(0.499996f, 0.69986f, 0.199976f),
             linear_rgb,
             1.0e-5f);
     }

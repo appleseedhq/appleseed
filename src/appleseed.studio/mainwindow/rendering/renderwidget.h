@@ -29,9 +29,6 @@
 #ifndef APPLESEED_STUDIO_MAINWINDOW_RENDERING_RENDERWIDGET_H
 #define APPLESEED_STUDIO_MAINWINDOW_RENDERING_RENDERWIDGET_H
 
-// appleseed.studio headers.
-#include "mainwindow/rendering/irenderwidget.h"
-
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
 #include "foundation/platform/compiler.h"
@@ -61,7 +58,6 @@ namespace studio {
 
 class RenderWidget
   : public QWidget
-  , public IRenderWidget
 {
   public:
     // Constructor.
@@ -71,37 +67,40 @@ class RenderWidget
         QWidget*                    parent = 0);
 
     // Thread-safe.
-    virtual void resize(
+    QImage get_image() const;
+
+    // Thread-safe.
+    void resize(
         const size_t                width,
-        const size_t                height) OVERRIDE;
+        const size_t                height);
 
     // Thread-safe.
-    virtual void clear(const foundation::Color4f& color) OVERRIDE;
+    void clear(const foundation::Color4f& color);
 
     // Thread-safe.
-    virtual void multiply(const float multiplier) OVERRIDE;
+    void multiply(const float multiplier);
 
     // Thread-safe.
-    virtual void highlight_region(
+    void highlight_region(
         const size_t                x,
         const size_t                y,
         const size_t                width,
-        const size_t                height) OVERRIDE;
+        const size_t                height);
 
     // Thread-safe.
-    virtual void blit_tile(
+    void blit_tile(
         const renderer::Frame&      frame,
         const size_t                tile_x,
-        const size_t                tile_y) OVERRIDE;
+        const size_t                tile_y);
 
     // Thread-safe.
-    virtual void blit_frame(
-        const renderer::Frame&      frame) OVERRIDE;
+    void blit_frame(
+        const renderer::Frame&      frame);
 
   private:
-    QMutex      m_mutex;
-    QImage      m_image;
-    QPainter    m_painter;
+    mutable QMutex  m_mutex;
+    QImage          m_image;
+    QPainter        m_painter;
 
     std::auto_ptr<foundation::Tile> m_float_tile_storage;
     std::auto_ptr<foundation::Tile> m_uint8_tile_storage;
@@ -113,7 +112,7 @@ class RenderWidget
         const size_t                tile_x,
         const size_t                tile_y);
 
-    virtual void paintEvent(QPaintEvent* event);
+    virtual void paintEvent(QPaintEvent* event) OVERRIDE;
 };
 
 }       // namespace studio

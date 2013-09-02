@@ -77,7 +77,7 @@ class DLLSYMBOL Light
     int get_flags() const;
 
     // Retrieve the importance multiplier.
-    double get_importance_multiplier() const;
+    double get_uncached_importance_multiplier() const;
 
     // Set the light transformation.
     void set_transform(const foundation::Transformd& transform);
@@ -97,8 +97,7 @@ class DLLSYMBOL Light
         const Assembly&                 assembly);
 
     // Sample the light and compute the emission position, the emission direction,
-    // the probability density with which this direction was chosen and the value
-    // of the light for this direction.
+    // its probability density and the value of the light for this direction.
     virtual void sample(
         InputEvaluator&                 input_evaluator,
         const foundation::Vector2d&     s,                          // sample in [0,1)^2
@@ -124,8 +123,7 @@ class DLLSYMBOL Light
     struct Impl;
     Impl* impl;
 
-    int     m_flags;
-    double  m_importance_multiplier;
+    int m_flags;
 };
 
 
@@ -136,11 +134,6 @@ class DLLSYMBOL Light
 inline int Light::get_flags() const
 {
     return m_flags;
-}
-
-inline double Light::get_importance_multiplier() const
-{
-    return m_importance_multiplier;
 }
 
 }       // namespace renderer

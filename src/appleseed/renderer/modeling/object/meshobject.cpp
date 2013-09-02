@@ -146,7 +146,7 @@ size_t MeshObject::get_vertex_count() const
     return impl->m_tess.m_vertices.size();
 }
 
-GVector3 MeshObject::get_vertex(const size_t index) const
+const GVector3& MeshObject::get_vertex(const size_t index) const
 {
     return impl->m_tess.m_vertices[index];
 }
@@ -168,7 +168,7 @@ size_t MeshObject::get_vertex_normal_count() const
     return impl->m_tess.m_vertex_normals.size();
 }
 
-GVector3 MeshObject::get_vertex_normal(const size_t index) const
+const GVector3& MeshObject::get_vertex_normal(const size_t index) const
 {
     return impl->m_tess.m_vertex_normals[index];
 }
@@ -205,7 +205,7 @@ size_t MeshObject::get_triangle_count() const
     return impl->m_tess.m_primitives.size();
 }
 
-Triangle MeshObject::get_triangle(const size_t index) const
+const Triangle& MeshObject::get_triangle(const size_t index) const
 {
     return impl->m_tess.m_primitives[index];
 }
@@ -233,6 +233,11 @@ GVector3 MeshObject::get_vertex_pose(
     const size_t        motion_segment_index) const
 {
     return impl->m_tess.get_vertex_pose(vertex_index, motion_segment_index);
+}
+
+void MeshObject::clear_vertex_poses()
+{
+    impl->m_tess.clear_vertex_poses();
 }
 
 void MeshObject::reserve_material_slots(const size_t count)

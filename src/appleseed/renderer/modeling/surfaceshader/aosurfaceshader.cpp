@@ -42,6 +42,9 @@
 #include "foundation/image/colorspace.h"
 #include "foundation/utility/containers/specializedarrays.h"
 
+// Forward declarations.
+namespace renderer  { class PixelContext; }
+
 using namespace foundation;
 using namespace std;
 
@@ -95,6 +98,7 @@ namespace
 
         virtual void evaluate(
             SamplingContext&        sampling_context,
+            const PixelContext&     pixel_context,
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
             ShadingResult&          shading_result) const OVERRIDE

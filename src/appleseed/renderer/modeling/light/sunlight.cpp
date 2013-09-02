@@ -74,6 +74,9 @@ namespace
 
     const char* Model = "sun_light";
 
+    // The smallest valid turbidity value.
+    const double BaseTurbidity = 2.0;
+
     class SunLight
       : public Light
     {
@@ -105,13 +108,19 @@ namespace
             if (!Light::on_frame_begin(project, assembly))
                 return false;
 
+            // Evaluate uniform inputs.
             m_inputs.evaluate_uniforms(&m_values);
+
+            // Compute outgoing sun direction.
             m_outgoing = normalize(get_transform().vector_to_parent(Vector3d(0.0, 0.0, -1.0)));
 
             // If the sun light is bound to an environment EDF, let it override the sun direction and turbidity.
-            const EnvironmentEDF* env_edf = static_cast<EnvironmentEDF*>(m_inputs.get_entity("environment_edf"));
+            const EnvironmentEDF* env_edf = dynamic_cast<EnvironmentEDF*>(m_inputs.get_entity("environment_edf"));
             if (env_edf)
                 apply_env_edf_overrides(env_edf, m_outgoing, m_values.m_turbidity);
+
+            // Apply turbidity bias.
+            m_values.m_turbidity += BaseTurbidity;
 
             m_basis.build(m_outgoing);
 
@@ -176,7 +185,8 @@ namespace
             // Use the sun direction from the EDF if it has one.
             const Source* sun_theta_src = env_edf->get_inputs().source("sun_theta");
             const Source* sun_phi_src = env_edf->get_inputs().source("sun_phi");
-            if (sun_theta_src->is_uniform() && sun_phi_src->is_uniform())
+            if (sun_theta_src && sun_theta_src->is_uniform() &&
+                sun_phi_src && sun_phi_src->is_uniform())
             {
                 double sun_theta, sun_phi;
                 sun_theta_src->evaluate_uniform(sun_theta);
@@ -186,8 +196,15 @@ namespace
 
             // Use the sun turbidity from the EDF if it has one.
             const Source* turbidity_src = env_edf->get_inputs().source("turbidity");
-            if (turbidity_src->is_uniform())
+            const Source* turbidity_multiplier_src = env_edf->get_inputs().source("turbidity_multiplier");
+            if (turbidity_src && turbidity_src->is_uniform() &&
+                turbidity_multiplier_src && turbidity_multiplier_src->is_uniform())
+            {
+                double turbidity_multiplier;
+                turbidity_multiplier_src->evaluate_uniform(turbidity_multiplier);
                 turbidity_src->evaluate_uniform(turbidity);
+                turbidity *= turbidity_multiplier;
+            }
         }
 
         static void compute_sun_radiance(

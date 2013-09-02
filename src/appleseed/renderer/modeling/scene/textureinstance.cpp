@@ -240,7 +240,7 @@ void TextureInstance::bind_texture(const TextureContainer& textures)
 void TextureInstance::check_texture() const
 {
     if (m_texture == 0)
-        throw ExceptionUnknownEntity(impl->m_texture_name.c_str());
+        throw ExceptionUnknownEntity(impl->m_texture_name.c_str(), this);
 }
 
 

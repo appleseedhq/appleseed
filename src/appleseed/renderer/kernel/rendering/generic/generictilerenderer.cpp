@@ -35,6 +35,8 @@
 #include "renderer/kernel/aov/imagestack.h"
 #include "renderer/kernel/aov/tilestack.h"
 #include "renderer/kernel/rendering/ipixelrenderer.h"
+#include "renderer/kernel/rendering/ishadingresultframebufferfactory.h"
+#include "renderer/kernel/rendering/pixelcontext.h"
 #include "renderer/kernel/rendering/shadingresultframebuffer.h"
 #include "renderer/modeling/frame/frame.h"
 
@@ -79,7 +81,7 @@ namespace
 
     // Define this symbol to break execution into the debugger
     // when a specific pixel is about to be rendered.
-    // #define DEBUG_BREAK_AT_PIXEL Vector2u(0, 0)
+    // #define DEBUG_BREAK_AT_PIXEL Vector2i(0, 0)
 
 #endif
 
@@ -88,11 +90,13 @@ namespace
     {
       public:
         GenericTileRenderer(
-            const Frame&                frame,
-            IPixelRendererFactory*      factory,
-            const ParamArray&           params,
-            const bool                  primary)
-          : m_pixel_renderer(factory->create(primary))
+            const Frame&                        frame,
+            IPixelRendererFactory*              pixel_renderer_factory,
+            IShadingResultFrameBufferFactory*   framebuffer_factory, 
+            const ParamArray&                   params,
+            const bool                          primary)
+          : m_pixel_renderer(pixel_renderer_factory->create(primary))
+          , m_framebuffer_factory(framebuffer_factory)
         {
             compute_tile_margins(frame, primary);
             compute_pixel_ordering(frame);
@@ -104,10 +108,11 @@ namespace
         }
 
         virtual void render_tile(
-            const Frame&                frame,
-            const size_t                tile_x,
-            const size_t                tile_y,
-            AbortSwitch&                abort_switch) OVERRIDE
+            const Frame&    frame,
+            const size_t    tile_x,
+            const size_t    tile_y,
+            const size_t    pass_hash,
+            AbortSwitch&    abort_switch) OVERRIDE
         {
             // Retrieve frame properties.
             const CanvasProperties& frame_properties = frame.image().properties();
@@ -117,24 +122,20 @@ namespace
             // Retrieve tile properties.
             Tile& tile = frame.image().tile(tile_x, tile_y);
             TileStack aov_tiles = frame.aov_images().tiles(tile_x, tile_y);
-            const size_t aov_count = frame.aov_images().size();
             const size_t tile_origin_x = frame_properties.m_tile_width * tile_x;
             const size_t tile_origin_y = frame_properties.m_tile_height * tile_y;
-            const size_t tile_width = tile.get_width();
-            const size_t tile_height = tile.get_height();
 
             // Compute the image space bounding box of the pixels to render.
-            const AABB2u& crop_window = frame.get_crop_window();
             AABB2u tile_bbox;
             tile_bbox.min.x = tile_origin_x;
             tile_bbox.min.y = tile_origin_y;
-            tile_bbox.max.x = tile_origin_x + tile_width - 1;
-            tile_bbox.max.y = tile_origin_y + tile_height - 1;
-            tile_bbox = AABB2u::intersect(tile_bbox, crop_window);
+            tile_bbox.max.x = tile_origin_x + tile.get_width() - 1;
+            tile_bbox.max.y = tile_origin_y + tile.get_height() - 1;
+            tile_bbox = AABB2u::intersect(tile_bbox, frame.get_crop_window());
             if (!tile_bbox.is_valid())
                 return;
 
-            // Transform the bounding box to tile space.
+            // Transform the bounding box to local (tile) space.
             tile_bbox.min.x -= tile_origin_x;
             tile_bbox.min.y -= tile_origin_y;
             tile_bbox.max.x -= tile_origin_x;
@@ -143,14 +144,14 @@ namespace
             // Inform the pixel renderer that we are about to render a tile.
             m_pixel_renderer->on_tile_begin(frame, tile, aov_tiles);
 
-            // Allocate the framebuffer into which we will accumulate the samples.
-            ShadingResultFrameBuffer framebuffer(
-                tile_width,
-                tile_height,
-                aov_count,
-                tile_bbox,
-                frame.get_filter());
-            framebuffer.clear();
+            // Create the framebuffer into which we will accumulate the samples.
+            ShadingResultFrameBuffer* framebuffer =
+                m_framebuffer_factory->create(
+                    frame,
+                    tile_x,
+                    tile_y,
+                    tile_bbox);
+            assert(framebuffer);
 
             // Seed the RNG with the tile index.
             m_rng = SamplingContext::RNGType(
@@ -169,43 +170,46 @@ namespace
                 const int tx = m_pixel_ordering[i].x;
                 const int ty = m_pixel_ordering[i].y;
 
-                // Skip pixels outside of the padded tile.
-                if (tx >= static_cast<int>(tile_width + m_margin_width) ||
-                    ty >= static_cast<int>(tile_height + m_margin_height))
+                // Skip pixels outside the intersection of the padded tile and the crop window.
+                if (tx < static_cast<int>(tile_bbox.min.x) - m_margin_width  ||
+                    ty < static_cast<int>(tile_bbox.min.y) - m_margin_height ||
+                    tx > static_cast<int>(tile_bbox.max.x) + m_margin_width  ||
+                    ty > static_cast<int>(tile_bbox.max.y) + m_margin_height)
                     continue;
 
-                // Compute the coordinates of the pixel in the padded image.
-                const int ix = static_cast<int>(tile_origin_x) + tx;
-                const int iy = static_cast<int>(tile_origin_y) + ty;
+                // Create a pixel context that identifies the pixel currently being rendered.
+                const PixelContext pixel_context(
+                    static_cast<int>(tile_origin_x) + tx,
+                    static_cast<int>(tile_origin_y) + ty);
 
 #ifdef DEBUG_BREAK_AT_PIXEL
 
                 // Break in the debugger when this pixel is reached.
-                if (Vector2u(ix, iy) == DEBUG_BREAK_AT_PIXEL)
+                if (pixel_context.get_pixel_coordinates() == DEBUG_BREAK_AT_PIXEL)
                     BREAKPOINT();
 
 #endif
-
-                // Skip pixels outside the crop window.
-                if (!crop_window.contains(Vector2u(ix, iy)))
-                    continue;
 
                 // Render this pixel.
                 m_pixel_renderer->render_pixel(
                     frame,
                     tile,
                     aov_tiles,
-                    tile_bbox,
-                    ix, iy,
+                    AABB2i(tile_bbox),
+                    pixel_context,
+                    pass_hash,
                     tx, ty,
                     m_rng,
-                    framebuffer);
+                    *framebuffer);
             }
 
             // Develop the framebuffer to the tile.
             if (frame.is_premultiplied_alpha())
-                framebuffer.develop_to_tile_premult_alpha(tile, aov_tiles);
-            else framebuffer.develop_to_tile_straight_alpha(tile, aov_tiles);
+                framebuffer->develop_to_tile_premult_alpha(tile, aov_tiles);
+            else framebuffer->develop_to_tile_straight_alpha(tile, aov_tiles);
+
+            // Release the framebuffer.
+            m_framebuffer_factory->destroy(framebuffer);
 
             // Inform the pixel renderer that we are done rendering the tile.
             m_pixel_renderer->on_tile_end(frame, tile, aov_tiles);
@@ -218,6 +222,7 @@ namespace
 
       protected:
         auto_release_ptr<IPixelRenderer>    m_pixel_renderer;
+        IShadingResultFrameBufferFactory*   m_framebuffer_factory;
         int                                 m_margin_width;
         int                                 m_margin_height;
         vector<Vector<int16, 2> >           m_pixel_ordering;
@@ -264,7 +269,7 @@ namespace
             hilbert_ordering(ordering, padded_tile_width, padded_tile_height);
             assert(ordering.size() == pixel_count);
 
-            // Convert the pixel ordering to (x, y) representation.
+            // Convert the pixel ordering to a 2D representation.
             m_pixel_ordering.resize(pixel_count);
             for (size_t i = 0; i < pixel_count; ++i)
             {
@@ -285,11 +290,13 @@ namespace
 //
 
 GenericTileRendererFactory::GenericTileRendererFactory(
-    const Frame&                frame,
-    IPixelRendererFactory*      factory,
-    const ParamArray&           params)
+    const Frame&                        frame,
+    IPixelRendererFactory*              pixel_renderer_factory,
+    IShadingResultFrameBufferFactory*   framebuffer_factory, 
+    const ParamArray&                   params)
   : m_frame(frame)
-  , m_factory(factory)
+  , m_pixel_renderer_factory(pixel_renderer_factory)
+  , m_framebuffer_factory(framebuffer_factory)
   , m_params(params)
 {
 }
@@ -301,7 +308,13 @@ void GenericTileRendererFactory::release()
 
 ITileRenderer* GenericTileRendererFactory::create(const bool primary)
 {
-    return new GenericTileRenderer(m_frame, m_factory, m_params, primary);
+    return
+        new GenericTileRenderer(
+            m_frame,
+            m_pixel_renderer_factory,
+            m_framebuffer_factory,
+            m_params,
+            primary);
 }
 
 }   // namespace renderer

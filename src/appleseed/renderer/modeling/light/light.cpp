@@ -29,8 +29,14 @@
 // Interface header.
 #include "light.h"
 
+// appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
+
 // appleseed.foundation headers.
 #include "foundation/math/distance.h"
+
+// Standard headers.
+#include <string>
 
 using namespace foundation;
 
@@ -62,7 +68,6 @@ Light::Light(
   : ConnectableEntity(g_class_uid, params)
   , impl(new Impl())
   , m_flags(0)
-  , m_importance_multiplier(1.0)
 {
     set_name(name);
 }
@@ -70,6 +75,11 @@ Light::Light(
 Light::~Light()
 {
     delete impl;
+}
+
+double Light::get_uncached_importance_multiplier() const
+{
+    return m_params.get_optional<double>("importance_multiplier", 1.0);
 }
 
 void Light::set_transform(const Transformd& transform)
@@ -92,8 +102,12 @@ bool Light::on_frame_begin(
     if (m_params.get_optional<bool>("cast_indirect_light", true))
         m_flags |= CastIndirectLight;
 
-    m_importance_multiplier =
-        m_params.get_optional<double>("importance_multiplier", 1.0);
+    if (get_uncached_importance_multiplier() <= 0.0)
+    {
+        RENDERER_LOG_WARNING(
+            "light \"%s\" has negative or zero importance; expect artifacts and/or slowdowns.",
+            get_path().c_str());
+    }
 
     return true;
 }

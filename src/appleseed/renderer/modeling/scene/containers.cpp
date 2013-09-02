@@ -26,52 +26,48 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_RENDERING_IRENDERWIDGET_H
-#define APPLESEED_STUDIO_MAINWINDOW_RENDERING_IRENDERWIDGET_H
+// Interface header.
+#include "containers.h"
 
-// appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
-#include "foundation/image/color.h"
+// appleseed.renderer headers.
+#include "renderer/modeling/entity/entity.h"
 
-// Standard headers.
-#include <cstddef>
+using namespace foundation;
+using namespace std;
 
-// Forward declarations.
-namespace renderer      { class Frame; }
-
-namespace appleseed {
-namespace studio {
-
-class IRenderWidget
-  : public foundation::NonCopyable
+namespace renderer
 {
-  public:
-    virtual ~IRenderWidget() {}
 
-    virtual void resize(
-        const size_t                width,
-        const size_t                height) = 0;
+//
+// ExceptionUnknownEntity class implementation.
+//
 
-    virtual void clear(const foundation::Color4f& color) = 0;
+namespace
+{
+    string build_message(
+        const char*     entity_name,
+        const Entity*   context)
+    {
+        return
+            context
+                ? "while defining \"" + context->get_path() + "\": unknown entity"
+                : "unknown entity";
+    }
+}
 
-    virtual void multiply(const float multiplier) = 0;
+ExceptionUnknownEntity::ExceptionUnknownEntity(
+    const char*         entity_name,
+    const Entity*       context)
+  : StringException(
+        build_message(entity_name, context).c_str(),
+        entity_name)
+  , m_context_path(context->get_path())
+{
+}
 
-    virtual void highlight_region(
-        const size_t                x,
-        const size_t                y,
-        const size_t                width,
-        const size_t                height) = 0;
+const string& ExceptionUnknownEntity::get_context_path() const
+{
+    return m_context_path;
+}
 
-    virtual void blit_tile(
-        const renderer::Frame&      frame,
-        const size_t                tile_x,
-        const size_t                tile_y) = 0;
-
-    virtual void blit_frame(
-        const renderer::Frame&      frame) = 0;
-};
-
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_RENDERING_IRENDERWIDGET_H
+}   // namespace renderer

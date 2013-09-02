@@ -33,7 +33,13 @@
 #include "renderer/kernel/rendering/ipixelrenderer.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
+
+// Forward declarations.
+namespace foundation    { class Tile; }
+namespace renderer      { class Frame; }
+namespace renderer      { class TileStack; }
 
 namespace renderer
 {
@@ -51,6 +57,18 @@ class PixelRendererBase
 
     // Destructor.
     virtual ~PixelRendererBase();
+
+    // This method is called before a tile gets rendered.
+    virtual void on_tile_begin(
+        const Frame&                frame,
+        foundation::Tile&           tile,
+        TileStack&                  aov_tiles) OVERRIDE;
+
+    // This method is called after a tile has been rendered.
+    virtual void on_tile_end(
+        const Frame&                frame,
+        foundation::Tile&           tile,
+        TileStack&                  aov_tiles) OVERRIDE;
 
   protected:
     void signal_invalid_sample();

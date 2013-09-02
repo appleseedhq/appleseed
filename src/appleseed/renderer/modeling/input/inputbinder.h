@@ -39,6 +39,7 @@
 
 // Forward declarations.
 namespace renderer      { class Assembly; }
+namespace renderer      { class ConnectableEntity; }
 namespace renderer      { class Scene; }
 namespace renderer      { class SymbolTable; }
 
@@ -101,18 +102,14 @@ class InputBinder
         const Scene&                    scene,
         const SymbolTable&              scene_symbols,
         const char*                     entity_type,
-        const char*                     entity_name,
-        const ParamArray&               entity_params,
-        InputArray&                     entity_inputs);
+        ConnectableEntity&              entity);
 
     // Bind all inputs of a given entity of a given assembly.
     void bind_assembly_entity_inputs(
         const Scene&                    scene,
         const SymbolTable&              scene_symbols,
         const char*                     entity_type,
-        const char*                     entity_name,
-        const ParamArray&               entity_params,
-        InputArray&                     entity_inputs);
+        ConnectableEntity&              entity);
 
     // Try to bind a scene entity to a given input.
     bool try_bind_scene_entity_to_input(

@@ -44,7 +44,7 @@ TraversalStatistics::TraversalStatistics()
 Statistics TraversalStatistics::get_statistics() const
 {
     Statistics stats;
-    stats.insert<uint64>("traversals", m_traversal_count);
+    stats.insert("traversals", m_traversal_count);
     stats.insert("visited nodes", m_visited_nodes);
     stats.insert("visited leaves", m_visited_leaves);
     stats.insert("inter. bboxes", m_intersected_bboxes);

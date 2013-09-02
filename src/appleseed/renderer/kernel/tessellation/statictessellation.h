@@ -106,6 +106,9 @@ class StaticTessellation
         const size_t    vertex_index,
         const size_t    motion_segment_index) const;
 
+    // Remove all vertex poses.
+    void clear_vertex_poses();
+
     // Compute the local space bounding box of the tessellation over the shutter interval.
     GAABB3 compute_local_bbox() const;
 
@@ -243,6 +246,16 @@ inline GVector3 StaticTessellation<Primitive>::get_vertex_pose(
         &v);
 
     return v;
+}
+
+template <typename Primitive>
+void StaticTessellation<Primitive>::clear_vertex_poses()
+{
+    if (m_vp_cid != foundation::AttributeSet::InvalidChannelID)
+    {
+        m_vertex_attributes.delete_channel(m_vp_cid);
+        m_vp_cid = foundation::AttributeSet::InvalidChannelID;
+    }
 }
 
 template <typename Primitive>

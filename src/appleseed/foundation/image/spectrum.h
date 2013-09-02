@@ -57,12 +57,8 @@ class RegularSpectrum
     typedef T ValueType;
     static const size_t Samples = N;
 
-#ifdef APPLESEED_FOUNDATION_USE_SSE
     // Number of stored samples such that the size of the sample array is a multiple of 16 bytes.
     static const size_t StoredSamples = (((N * sizeof(T)) + 15) & ~15) / sizeof(T);
-#else
-    static const size_t StoredSamples = N;
-#endif
 
     // Constructors.
     RegularSpectrum();                                      // leave all components uninitialized

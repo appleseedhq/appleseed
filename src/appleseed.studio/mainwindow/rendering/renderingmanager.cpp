@@ -282,17 +282,12 @@ void RenderingManager::timerEvent(QTimerEvent* event)
 
 void RenderingManager::print_final_rendering_time()
 {
-    if (m_rendering_timer.is_running())
-    {
-        m_rendering_timer.measure();
+    const double rendering_time = m_rendering_timer.get_seconds();
+    const string rendering_time_string = pretty_time(rendering_time, 3);
 
-        const double rendering_time = m_rendering_timer.get_seconds();
-        const string rendering_time_string = pretty_time(rendering_time, 3);
+    RENDERER_LOG_INFO("rendering finished in %s.", rendering_time_string.c_str());
 
-        RENDERER_LOG_INFO("rendering finished in %s.", rendering_time_string.c_str());
-
-        m_status_bar.set_text("Rendering finished in " + rendering_time_string);
-    }
+    m_status_bar.set_text("Rendering finished in " + rendering_time_string);
 }
 
 void RenderingManager::print_average_luminance()
@@ -346,6 +341,8 @@ void RenderingManager::slot_rendering_begin()
     apply_permanent_states();
     consume_delayed_actions();
 
+    m_rendering_timer.clear();
+
     const int IdleUpdateRate = 15;  // hertz
     m_render_widget_update_timer.start(1000 / IdleUpdateRate, this);
 }
@@ -376,13 +373,13 @@ void RenderingManager::slot_frame_begin()
         m_camera_changed = false;
     }
 
-    m_rendering_timer.start();
     m_status_bar.start_rendering_time_display(&m_rendering_timer);
+    m_rendering_timer.start();
 }
 
 void RenderingManager::slot_frame_end()
 {
-    m_rendering_timer.stop();
+    m_rendering_timer.measure();
     m_status_bar.stop_rendering_time_display();
 
     m_render_widget->update();

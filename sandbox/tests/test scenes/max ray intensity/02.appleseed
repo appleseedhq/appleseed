@@ -145,7 +145,6 @@
             </bsdf>
             <edf name="surfaceShader1_edf" model="diffuse_edf">
                 <parameter name="radiance" value="surfaceShader1.outColor_edf" />
-                <parameter name="render_layer" value="surfaceShader1_layer" />
             </edf>
             <surface_shader name="as_default_surface_shader" model="constant_surface_shader">
                 <parameter name="alpha_multiplier" value="0" />

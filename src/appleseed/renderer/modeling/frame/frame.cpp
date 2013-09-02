@@ -46,6 +46,7 @@
 #include "foundation/image/imageattributes.h"
 #include "foundation/image/pixel.h"
 #include "foundation/image/tile.h"
+#include "foundation/math/fastmath.h"
 #include "foundation/math/scalar.h"
 #ifdef APPLESEED_FOUNDATION_USE_SSE
 #include "foundation/platform/sse.h"
@@ -231,7 +232,7 @@ namespace
             if (GammaCorrect)
             {
                 const float old_alpha = color[3];
-                fast_pow_refined(&color[0], rcp_target_gamma);
+                fast_pow(&color[0], rcp_target_gamma);
                 color[3] = old_alpha;
             }
 
@@ -249,6 +250,7 @@ namespace
     >
     void transform_float_tile(Tile& tile, const float rcp_target_gamma)
     {
+        assert(ColorSpace == ColorSpaceLinearRGB || ColorSpace == ColorSpaceSRGB);
         assert(tile.get_channel_count() == 4);
 
         float* pixel_ptr = reinterpret_cast<float*>(tile.pixel(0));
@@ -262,37 +264,7 @@ namespace
 
             // Apply color space conversion.
             if (ColorSpace == ColorSpaceSRGB)
-            {
-                __m128 x = _mm_cvtepi32_ps(_mm_castps_si128(color));
-
-                const __m128 K = _mm_set1_ps(127.0f);
-                x = _mm_mul_ps(x, _mm_set1_ps(0.1192092896e-6f));     // x *= pow(2.0f, -23)
-                x = _mm_sub_ps(x, K);
-
-                // One Newton-Raphson refinement step.
-                __m128 z = _mm_sub_ps(x, floorps(x));
-                z = _mm_sub_ps(z, _mm_mul_ps(z, z));
-                z = _mm_mul_ps(z, _mm_set1_ps(0.346607f));
-                x = _mm_add_ps(x, z);
-
-                x = _mm_mul_ps(x, _mm_set1_ps(1.0f / 2.4f));
-
-                __m128 y = _mm_sub_ps(x, floorps(x));
-                y = _mm_sub_ps(y, _mm_mul_ps(y, y));
-                y = _mm_mul_ps(y, _mm_set1_ps(0.33971f));
-                y = _mm_sub_ps(_mm_add_ps(x, K), y);
-                y = _mm_mul_ps(y, _mm_set1_ps(8388608.0f));           // y *= pow(2.0f, 23)
-
-                y = _mm_castsi128_ps(_mm_cvtps_epi32(y));
-
-                // Compute both outcomes of the branch.
-                const __m128 a = _mm_mul_ps(_mm_set1_ps(12.92f), color);
-                const __m128 b = _mm_sub_ps(_mm_mul_ps(_mm_set1_ps(1.055f), y), _mm_set1_ps(0.055f));
-
-                // Interleave them based on the actual comparison.
-                const __m128 mask = _mm_cmple_ps(color, _mm_set1_ps(0.0031308f));
-                color = _mm_add_ps(_mm_and_ps(mask, a), _mm_andnot_ps(mask, b));
-            }
+                color = fast_linear_rgb_to_srgb(color);
 
             // Apply clamping.
             // todo: mark clamped pixels in the diagnostic map.
@@ -302,29 +274,7 @@ namespace
 
             // Apply gamma correction.
             if (GammaCorrect)
-            {
-                __m128 x = _mm_cvtepi32_ps(_mm_castps_si128(color));
-
-                const __m128 K = _mm_set1_ps(127.0f);
-                x = _mm_mul_ps(x, _mm_set1_ps(0.1192092896e-6f));     // x *= pow(2.0f, -23)
-                x = _mm_sub_ps(x, K);
-
-                // One Newton-Raphson refinement step.
-                __m128 z = _mm_sub_ps(x, floorps(x));
-                z = _mm_sub_ps(z, _mm_mul_ps(z, z));
-                z = _mm_mul_ps(z, _mm_set1_ps(0.346607f));
-                x = _mm_add_ps(x, z);
-
-                x = _mm_mul_ps(x, _mm_set1_ps(rcp_target_gamma));
-
-                __m128 y = _mm_sub_ps(x, floorps(x));
-                y = _mm_sub_ps(y, _mm_mul_ps(y, y));
-                y = _mm_mul_ps(y, _mm_set1_ps(0.33971f));
-                y = _mm_sub_ps(_mm_add_ps(x, K), y);
-                y = _mm_mul_ps(y, _mm_set1_ps(8388608.0f));           // y *= pow(2.0f, 23)
-
-                color = _mm_castsi128_ps(_mm_cvtps_epi32(y));
-            }
+                color = fast_pow(color, _mm_set1_ps(rcp_target_gamma));
 
             // Store the pixel color (leave the alpha channel unmodified).
             _mm_store_ps(pixel_ptr, _mm_shuffle_ps(color, _mm_unpackhi_ps(color, original_color), _MM_SHUFFLE(3, 0, 1, 0)));
@@ -340,6 +290,7 @@ namespace
     >
     void transform_float_tile(Tile& tile, const float rcp_target_gamma)
     {
+        assert(ColorSpace == ColorSpaceLinearRGB || ColorSpace == ColorSpaceSRGB);
         assert(tile.get_channel_count() == 4);
 
         Color4f* pixel_ptr = reinterpret_cast<Color4f*>(tile.pixel(0));
@@ -356,13 +307,13 @@ namespace
 
             // Apply clamping.
             // todo: mark clamped pixels in the diagnostic map.
-            color = Clamp ? saturate(color) : clamp_to_zero(color);
+            color = Clamp ? saturate(color) : clamp_low(color, 0.0f);
 
             // Apply gamma correction.
             if (GammaCorrect)
             {
                 const float old_alpha = color[3];
-                fast_pow_refined(&color[0], rcp_target_gamma);
+                fast_pow(&color[0], rcp_target_gamma);
                 color[3] = old_alpha;
             }
 

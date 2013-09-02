@@ -458,11 +458,11 @@ namespace
             "loaded mesh file %s (%s %s, %s %s, %s %s) in %s.",
             filename,
             pretty_int(builder.get_objects().size()).c_str(),
-            plural(builder.get_objects().size(), "object").c_str(),
+            builder.get_objects().size() > 1 ? "objects" : "object",
             pretty_int(builder.get_total_vertex_count()).c_str(),
-            plural(builder.get_total_vertex_count(), "vertex", "vertices").c_str(),
+            builder.get_total_vertex_count() > 1 ? "vertices" : "vertex",
             pretty_int(builder.get_total_triangle_count()).c_str(),
-            plural(builder.get_total_triangle_count(), "triangle").c_str(),
+            builder.get_total_triangle_count() > 1 ? "triangles" : "triangle",
             pretty_time(stopwatch.get_seconds()).c_str());
 
         objects = array_vector<MeshObjectArray>(builder.get_objects());
@@ -471,13 +471,13 @@ namespace
     }
 
     bool set_vertex_poses(
-        const MeshObjectArray&  objects,
-        const MeshObjectArray&  objects_next,
+        MeshObjectArray&        objects,
+        const MeshObjectArray&  poses,
         const size_t            motion_segment_index,
         const char*             filename,
         const char*             base_object_name)
     {
-        if (objects.size() != objects_next.size())
+        if (objects.size() != poses.size())
         {
             RENDERER_LOG_ERROR(
                 "while reading key frame for object \"%s\" from mesh file %s: "
@@ -486,7 +486,7 @@ namespace
                 filename,
                 objects.size(),
                 objects.size() > 1 ? "s" : "",
-                objects_next.size());
+                poses.size());
 
             return false;
         }
@@ -494,9 +494,9 @@ namespace
         for (size_t i = 0; i < objects.size(); ++i)
         {
             MeshObject* object = objects[i];
-            const MeshObject* object_next = objects_next[i];
+            const MeshObject* pose = poses[i];
 
-            if (object->get_vertex_count() != object_next->get_vertex_count())
+            if (object->get_vertex_count() != pose->get_vertex_count())
             {
                 RENDERER_LOG_ERROR(
                     "while reading key frame for object \"%s\" from mesh file %s: "
@@ -505,12 +505,12 @@ namespace
                     filename,
                     object->get_vertex_count(),
                     object->get_vertex_count() > 1 ? "vertices" : "vertex",
-                    object_next->get_vertex_count());
+                    pose->get_vertex_count());
 
                 return false;
             }
 
-            if (object->get_triangle_count() != object_next->get_triangle_count())
+            if (object->get_triangle_count() != pose->get_triangle_count())
             {
                 RENDERER_LOG_WARNING(
                     "while reading key frame for object \"%s\" from mesh file %s: "
@@ -519,13 +519,13 @@ namespace
                     filename,
                     object->get_triangle_count(),
                     object->get_triangle_count() > 1 ? "triangles" : "triangle",
-                    object_next->get_triangle_count());
+                    pose->get_triangle_count());
             }
 
-            const size_t vertex_count = object_next->get_vertex_count();
+            const size_t vertex_count = pose->get_vertex_count();
 
             for (size_t j = 0; j < vertex_count; ++j)
-                object->set_vertex_pose(j, motion_segment_index, object_next->get_vertex(j));
+                object->set_vertex_pose(j, motion_segment_index, pose->get_vertex(j));
         }
 
         return true;
@@ -550,6 +550,48 @@ namespace
         }
     };
 
+    bool has_actual_motion(const MeshObject& object)
+    {
+        const size_t motion_segment_count = object.get_motion_segment_count();
+        const size_t vertex_count = object.get_vertex_count();
+
+        for (size_t i = 0; i < vertex_count; ++i)
+        {
+            if (object.get_vertex_pose(i, 0) != object.get_vertex(i))
+                return true;
+
+            for (size_t j = 1; j < motion_segment_count; ++j)
+            {
+                if (object.get_vertex_pose(i, j) != object.get_vertex_pose(i, j - 1))
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    void collapse_to_static_object(MeshObject& object)
+    {
+        if (object.get_motion_segment_count() == 0)
+            return;
+
+        if (has_actual_motion(object))
+            return;
+
+        RENDERER_LOG_INFO(
+            "collapsing mesh object \"%s\" (%s %s, %s %s, %s %s) to static mesh.",
+            object.get_path().c_str(),
+            pretty_int(object.get_vertex_count()).c_str(),
+            object.get_vertex_count() > 1 ? "vertices" : "vertex",
+            pretty_int(object.get_triangle_count()).c_str(),
+            object.get_triangle_count() > 1 ? "triangles" : "triangle",
+            pretty_int(object.get_motion_segment_count()).c_str(),
+            object.get_motion_segment_count() > 1 ? "motion segments" : "motion segment");
+
+        object.clear_vertex_poses();
+        object.set_motion_segment_count(0);
+    }
+
     bool read_key_framed_mesh_object(
         const SearchPaths&      search_paths,
         const StringDictionary& filenames,
@@ -558,6 +600,7 @@ namespace
         MeshObjectArray&        objects)
     {
         vector<MeshObjectKeyFrame> key_frames;
+        key_frames.reserve(filenames.size());
 
         for (const_each<StringDictionary> i = filenames; i; ++i)
             key_frames.push_back(MeshObjectKeyFrame(from_string<double>(i->name()), i->value<string>()));
@@ -578,18 +621,26 @@ namespace
         {
             const string& filename = key_frames[i].m_filename;
 
-            MeshObjectArray key_frame;
+            MeshObjectArray poses;
 
             if (!read_mesh_object(
                     search_paths.qualify(filename).c_str(),
                     base_object_name,
                     params,
-                    key_frame))
+                    poses))
                 return false;
 
-            if (!set_vertex_poses(objects, key_frame, i - 1, filename.c_str(), base_object_name))
+            if (!set_vertex_poses(
+                    objects,
+                    poses,
+                    i - 1,
+                    filename.c_str(),
+                    base_object_name))
                 return false;
         }
+
+        for (size_t i = 0; i < objects.size(); ++i)
+            collapse_to_static_object(*objects[i]);
 
         return true;
     }

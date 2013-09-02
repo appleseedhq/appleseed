@@ -30,33 +30,57 @@
 #include "foundation/math/filter.h"
 #include "foundation/utility/benchmark.h"
 
-// Standard headers.
-#include <memory>
-
 using namespace foundation;
-using namespace std;
 
 BENCHMARK_SUITE(Foundation_Math_Filter_BoxFilter2)
 {
     struct Fixture
     {
-        auto_ptr<Filter2f>  m_filter;
-        float               m_dummy;
+        BoxFilter2<float>       m_filter;
+        float                   m_dummy;
 
         Fixture()
-          : m_filter(new BoxFilter2<float>(2.0f, 2.0f))
-          , m_dummy(0.0f)
+          : m_filter(2.0f, 2.0f)
         {
         }
     };
 
     BENCHMARK_CASE_F(Evaluate, Fixture)
     {
+        m_dummy = 0.0f;
+
         for (int y = -2; y <= +2; ++y)
         {
             for (int x = -2; x <= +2; ++x)
             {
-                m_dummy += m_filter->evaluate(static_cast<float>(x), static_cast<float>(y));
+                m_dummy += m_filter.evaluate(static_cast<float>(x), static_cast<float>(y));
+            }
+        }
+    }
+}
+
+BENCHMARK_SUITE(Foundation_Math_Filter_GaussianFilter2)
+{
+    struct Fixture
+    {
+        GaussianFilter2<float>  m_filter;
+        float                   m_dummy;
+
+        Fixture()
+          : m_filter(2.0f, 2.0f, 8.0f)
+        {
+        }
+    };
+
+    BENCHMARK_CASE_F(Evaluate, Fixture)
+    {
+        m_dummy = 0.0f;
+
+        for (int y = -2; y <= +2; ++y)
+        {
+            for (int x = -2; x <= +2; ++x)
+            {
+                m_dummy += m_filter.evaluate(static_cast<float>(x), static_cast<float>(y));
             }
         }
     }
@@ -66,23 +90,24 @@ BENCHMARK_SUITE(Foundation_Math_Filter_MitchellFilter2)
 {
     struct Fixture
     {
-        auto_ptr<Filter2f>  m_filter;
-        float               m_dummy;
+        MitchellFilter2<float>  m_filter;
+        float                   m_dummy;
 
         Fixture()
-          : m_filter(new MitchellFilter2<float>(2.0f, 2.0f, 1.0f / 3, 1.0f / 3))
-          , m_dummy(0.0f)
+          : m_filter(2.0f, 2.0f, 1.0f / 3, 1.0f / 3)
         {
         }
     };
 
     BENCHMARK_CASE_F(Evaluate, Fixture)
     {
+        m_dummy = 0.0f;
+
         for (int y = -2; y <= +2; ++y)
         {
             for (int x = -2; x <= +2; ++x)
             {
-                m_dummy += m_filter->evaluate(static_cast<float>(x), static_cast<float>(y));
+                m_dummy += m_filter.evaluate(static_cast<float>(x), static_cast<float>(y));
             }
         }
     }

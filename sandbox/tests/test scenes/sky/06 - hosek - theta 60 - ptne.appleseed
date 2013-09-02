@@ -24,9 +24,8 @@
             <parameter name="saturation_multiplier" value="1.0" />
             <parameter name="sun_phi" value="0.0" />
             <parameter name="sun_theta" value="60.0" />
-            <parameter name="turbidity" value="3.0" />
-            <parameter name="turbidity_max" value="3.0" />
-            <parameter name="turbidity_min" value="3.0" />
+            <parameter name="turbidity" value="1.0" />
+            <parameter name="turbidity_multiplier" value="1.0" />
         </environment_edf>
         <environment_shader name="environment_shader" model="edf_environment_shader">
             <parameter name="environment_edf" value="environment_edf" />

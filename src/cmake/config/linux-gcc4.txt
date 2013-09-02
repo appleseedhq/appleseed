@@ -80,6 +80,7 @@ set (c_compiler_flags_release
 macro (link_against_platform target)
     target_link_libraries (${target}
         -lpthread
+        -lrt
     )
 endmacro ()
 

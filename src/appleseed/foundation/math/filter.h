@@ -30,6 +30,7 @@
 #define APPLESEED_FOUNDATION_MATH_FILTER_H
 
 // appleseed.foundation headers.
+#include "foundation/math/fastmath.h"
 #include "foundation/math/qmc.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
@@ -280,15 +281,20 @@ inline T GaussianFilter2<T>::evaluate(const T x, const T y) const
 {
     const T nx = x * Filter2<T>::m_rcp_xradius;
     const T ny = y * Filter2<T>::m_rcp_yradius;
+
     const T fx = gaussian(nx, m_alpha) - m_shift;
     const T fy = gaussian(ny, m_alpha) - m_shift;
+
     return fx * fy;
 }
 
 template <typename T>
 FORCE_INLINE T GaussianFilter2<T>::gaussian(const T x, const T alpha)
 {
-    return std::exp(-alpha * x * x);
+    return
+        static_cast<T>(
+            fast_exp(
+                static_cast<float>(-alpha * x * x)));
 }
 
 

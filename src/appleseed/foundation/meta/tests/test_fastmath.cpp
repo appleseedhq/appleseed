@@ -32,12 +32,15 @@
 #ifdef APPLESEED_FOUNDATION_USE_SSE
 #include "foundation/platform/sse.h"
 #endif
+#include "foundation/utility/countof.h"
+#include "foundation/utility/maplefile.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <string>
 
 using namespace foundation;
 using namespace std;
@@ -45,23 +48,23 @@ using namespace std;
 TEST_SUITE(Foundation_Math_FastMath)
 {
     template <typename T>
-    T compute_error(const T ref_value, const T value)
+    T compute_relative_error(const T ref, const T value)
     {
         return
-            ref_value == T(0.0)
-                ? abs(ref_value - value)
-                : abs(ref_value - value) / ref_value;
+            ref == T(0.0)
+                ? abs(ref - value)
+                : abs((ref - value) / ref);
     }
 
     template <typename T, typename Function>
-    T compute_max_relative_error(
-        Function&       func,
-        const T         exponent,
+    T compute_avg_relative_error_scalar(
+        const Function& ref,
+        const Function& func,
         const T         low,
         const T         high,
         const size_t    step_count)
     {
-        T max_error = 0.0;
+        double sum_error = 0.0;
 
         for (size_t i = 0; i < step_count; ++i)
         {
@@ -73,79 +76,25 @@ TEST_SUITE(Foundation_Math_FastMath)
                     low,
                     high);
 
-            const T ref_value = pow(x, exponent);
-            const T value = func(x, exponent);
+            const T ref_value = ref(x);
+            const T value = func(x);
+            const T error = compute_relative_error(ref_value, value);
 
-            const T error = compute_error(ref_value, value);
-            max_error = max(error, max_error);
+            sum_error += static_cast<double>(error);
         }
 
-        return max_error;
-    }
-
-    float std_pow(const float x, const float y)
-    {
-        return pow(x, y);
-    }
-
-    float scalar_fast_pow(const float x, const float y)
-    {
-        return fast_pow(x, y);
-    }
-
-    float scalar_fast_pow_refined(const float x, const float y)
-    {
-        return fast_pow_refined(x, y);
-    }
-
-    TEST_CASE(ComputeMaxRelativeError_GivenStdPowFunction_ReturnsZero)
-    {
-        const float error =
-            compute_max_relative_error(
-                std_pow,
-                2.4f,
-                0.0f,
-                1.0f,
-                1000);
-
-        EXPECT_EQ(0.0f, error);
-    }
-
-    TEST_CASE(FastPow)
-    {
-        const float error =
-            compute_max_relative_error(
-                scalar_fast_pow,
-                2.4f,
-                0.0f,
-                1.0f,
-                1000);
-
-        EXPECT_LT(0.14f, error);
-    }
-
-    TEST_CASE(FastPowRefined)
-    {
-        const float error =
-            compute_max_relative_error(
-                scalar_fast_pow_refined,
-                2.4f,
-                0.0f,
-                1.0f,
-                1000);
-
-        EXPECT_LT(0.016f, error);
+        return static_cast<T>(sum_error / step_count);
     }
 
     template <typename T, typename Function>
-    T compute_max_relative_error_sse(
-        Function&       func,
-        const T         exponent,
+    T compute_avg_relative_error_vector(
+        const Function& ref,
+        const Function& func,
         const T         low,
         const T         high,
         const size_t    step_count)
     {
-        T max_error = T(0.0);
+        double sum_error = 0.0;
 
         for (size_t i = 0; i < step_count; i += 4)
         {
@@ -162,56 +111,501 @@ TEST_SUITE(Foundation_Math_FastMath)
                         high);
             }
 
-            T ref_values[4];
+            SSE_ALIGN T ref_values[4] = { x[0], x[1], x[2], x[3] };
+            ref(ref_values);
 
-            for (size_t j = 0; j < 4; ++j)
-                ref_values[j] = pow(x[j], exponent);
-
-            func(x, exponent);
+            SSE_ALIGN T values[4] = { x[0], x[1], x[2], x[3] };
+            func(values);
 
             for (size_t j = 0; j < 4; ++j)
             {
-                const T error = compute_error(ref_values[j], x[j]);
-                max_error = max(error, max_error);
+                const T error = compute_relative_error(ref_values[j], values[j]);
+                sum_error += static_cast<double>(error);
             }
         }
 
-        return max_error;
+        return static_cast<T>(sum_error / step_count);
     }
 
-    void vector_fast_pow(float x[4], const float y)
+    template <typename Function>
+    struct FuncDef
     {
-        fast_pow(x, y);
-    }
+        string      m_name;
+        string      m_legend;
+        string      m_color;
+        Function    m_function;
+    };
 
-    void vector_fast_pow_refined(float x[4], const float y)
+    template <typename T, typename Function>
+    void plot_functions(
+        const string&           filename,
+        const FuncDef<Function> functions[],
+        const size_t            function_count,
+        const T                 low,
+        const T                 high,
+        const size_t            step_count)
     {
-        fast_pow_refined(x, y);
+        MapleFile file(filename);
+
+        vector<MaplePlotDef> plot_defs;
+        plot_defs.reserve(function_count);
+
+        for (size_t f = 0; f < function_count; ++f)
+        {
+            vector<float> xs, ys;
+
+            xs.reserve(step_count);
+            ys.reserve(step_count);
+
+            for (size_t i = 0; i < step_count; ++i)
+            {
+                const T x =
+                    fit<T>(
+                        static_cast<T>(i),
+                        static_cast<T>(0),
+                        static_cast<T>(step_count - 1),
+                        low,
+                        high);
+
+                xs.push_back(x);
+                ys.push_back(functions[f].m_function(x));
+            }
+
+            file.define(functions[f].m_name, xs, ys);
+
+            MaplePlotDef plot_def(functions[f].m_name);
+            plot_def.set_legend(functions[f].m_legend);
+            plot_def.set_color(functions[f].m_color);
+            plot_defs.push_back(plot_def);
+        }
+
+        file.plot(plot_defs);
     }
 
-    TEST_CASE(FastPowSSE)
+    // Pow2(x).
+
+    float scalar_std_pow2(const float x)
+    {
+        return pow(2.0f, x);
+    }
+
+    void vector_std_pow2(float x[4])
+    {
+        for (size_t i = 0; i < 4; ++i)
+            x[i] = pow(2.0f, x[i]);
+    }
+
+    TEST_CASE(ScalarFastPow2)
     {
         const float error =
-            compute_max_relative_error_sse(
+            compute_avg_relative_error_scalar(
+                scalar_std_pow2,
+                fast_pow2,
+                0.0f,
+                1.0f,
+                1000);
+
+        EXPECT_LT(0.0000235f, error);
+    }
+
+    TEST_CASE(ScalarFasterPow2)
+    {
+        const float error =
+            compute_avg_relative_error_scalar(
+                scalar_std_pow2,
+                faster_pow2,
+                0.0f,
+                1.0f,
+                1000);
+
+        EXPECT_LT(0.0154f, error);
+    }
+
+    TEST_CASE(VectorFastPow2)
+    {
+        const float error =
+            compute_avg_relative_error_vector(
+                vector_std_pow2,
+                fast_pow2,
+                0.0f,
+                1.0f,
+                1000);
+
+        EXPECT_LT(0.0000235f, error);
+    }
+
+    TEST_CASE(VectorFasterPow2)
+    {
+        const float error =
+            compute_avg_relative_error_vector(
+                vector_std_pow2,
+                faster_pow2,
+                0.0f,
+                1.0f,
+                1000);
+
+        EXPECT_LT(0.0154f, error);
+    }
+
+    TEST_CASE(PlotPow2Functions)
+    {
+        const FuncDef<float (*)(float)> functions[] =
+        {
+            { "scalar_std_pow2", "std::pow[2]", "black", scalar_std_pow2 },
+            { "scalar_fast_pow2", "foundation::fast_pow2", "green", fast_pow2 },
+            { "scalar_faster_pow2", "foundation::faster_pow2", "red", faster_pow2 }
+        };
+
+        plot_functions(
+            "unit tests/outputs/test_fastmath_pow2.mpl",
+            functions,
+            countof(functions),
+            0.0f,
+            1.0f,
+            1000);
+    }
+
+    // Log2(x).
+
+    float scalar_std_log2(const float x)
+    {
+        return log(x) / log(2.0f);
+    }
+
+    void vector_std_log2(float x[4])
+    {
+        for (size_t i = 0; i < 4; ++i)
+            x[i] = log(x[i]) / log(2.0f);
+    }
+
+    TEST_CASE(ScalarFastLog2)
+    {
+        const float error =
+            compute_avg_relative_error_scalar(
+                scalar_std_log2,
+                fast_log2,
+                1.0e-2f,
+                1.0f,
+                1000);
+
+        EXPECT_LT(0.000262f, error);
+    }
+
+    TEST_CASE(ScalarFasterLog2)
+    {
+        const float error =
+            compute_avg_relative_error_scalar(
+                scalar_std_log2,
+                faster_log2,
+                1.0e-2f,
+                1.0f,
+                1000);
+
+        EXPECT_LT(0.193f, error);
+    }
+
+    TEST_CASE(VectorFastLog2)
+    {
+        const float error =
+            compute_avg_relative_error_vector(
+                vector_std_log2,
+                fast_log2,
+                1.0e-2f,
+                1.0f,
+                1000);
+
+        EXPECT_LT(0.000262f, error);
+    }
+
+    TEST_CASE(VectorFasterLog2)
+    {
+        const float error =
+            compute_avg_relative_error_vector(
+                vector_std_log2,
+                faster_log2,
+                1.0e-2f,
+                1.0f,
+                1000);
+
+        EXPECT_LT(0.193f, error);
+    }
+
+    TEST_CASE(PlotLog2Functions)
+    {
+        const FuncDef<float (*)(float)> functions[] =
+        {
+            { "scalar_std_log2", "std::log[2]", "black", scalar_std_log2 },
+            { "scalar_fast_log2", "foundation::fast_log2", "green", fast_log2 },
+            { "scalar_faster_log2", "foundation::faster_log2", "red", faster_log2 }
+        };
+
+        plot_functions(
+            "unit tests/outputs/test_fastmath_log2.mpl",
+            functions,
+            countof(functions),
+            1.0e-2f,
+            1.0f,
+            1000);
+    }
+
+    // Pow(x).
+
+    const float Exponent = 2.4f;
+
+    float scalar_std_pow(const float x)
+    {
+        return pow(x, Exponent);
+    }
+
+    float scalar_fast_pow(const float x)
+    {
+        return fast_pow(x, Exponent);
+    }
+
+    float scalar_faster_pow(const float x)
+    {
+        return faster_pow(x, Exponent);
+    }
+
+    void vector_std_pow(float x[4])
+    {
+        for (size_t i = 0; i < 4; ++i)
+            x[i] = pow(x[i], Exponent);
+    }
+
+    void vector_fast_pow(float x[4])
+    {
+        fast_pow(x, Exponent);
+    }
+
+    void vector_faster_pow(float x[4])
+    {
+        faster_pow(x, Exponent);
+    }
+
+    TEST_CASE(ScalarFastPow)
+    {
+        const float error =
+            compute_avg_relative_error_scalar(
+                scalar_std_pow,
+                scalar_fast_pow,
+                1.0e-2f,
+                1.0f,
+                1000);
+
+        EXPECT_LT(0.000147f, error);
+    }
+
+    TEST_CASE(ScalarFasterPow)
+    {
+        const float error =
+            compute_avg_relative_error_scalar(
+                scalar_std_pow,
+                scalar_faster_pow,
+                1.0e-2f,
+                1.0f,
+                1000);
+
+        EXPECT_LT(0.0376f, error);
+    }
+
+    TEST_CASE(VectorFastPow)
+    {
+        const float error =
+            compute_avg_relative_error_vector(
+                vector_std_pow,
                 vector_fast_pow,
-                2.4f,
-                0.0f,
+                1.0e-2f,
                 1.0f,
                 1000);
 
-        EXPECT_LT(0.14f, error);
+        EXPECT_LT(0.000147f, error);
     }
 
-    TEST_CASE(FastPowRefinedSSE)
+    TEST_CASE(VectorFasterPow)
     {
         const float error =
-            compute_max_relative_error_sse(
-                vector_fast_pow_refined,
-                2.4f,
+            compute_avg_relative_error_vector(
+                vector_std_pow,
+                vector_faster_pow,
+                1.0e-2f,
+                1.0f,
+                1000);
+
+        EXPECT_LT(0.0376f, error);
+    }
+
+    TEST_CASE(PlotPowFunctions)
+    {
+        const FuncDef<float (*)(float)> functions[] =
+        {
+            { "scalar_std_pow", "std::pow", "black", scalar_std_pow },
+            { "scalar_fast_pow", "foundation::fast_pow", "green", scalar_fast_pow },
+            { "scalar_faster_pow", "foundation::faster_pow", "red", scalar_faster_pow }
+        };
+
+        plot_functions(
+            "unit tests/outputs/test_fastmath_pow.mpl",
+            functions,
+            countof(functions),
+            1.0e-2f,
+            1.0f,
+            1000);
+    }
+
+    // Log(x).
+
+    void vector_std_log(float x[4])
+    {
+        for (size_t i = 0; i < 4; ++i)
+            x[i] = log(x[i]);
+    }
+
+    TEST_CASE(ScalarFastLog)
+    {
+        const float error =
+            compute_avg_relative_error_scalar<float, float (*)(float)>(
+                log,
+                fast_log,
+                1.0e-2f,
+                1.0f,
+                1000);
+
+        EXPECT_LT(0.000262f, error);
+    }
+
+    TEST_CASE(ScalarFasterLog)
+    {
+        const float error =
+            compute_avg_relative_error_scalar<float, float (*)(float)>(
+                log,
+                faster_log,
+                1.0e-2f,
+                1.0f,
+                1000);
+
+        EXPECT_LT(0.193f, error);
+    }
+
+    TEST_CASE(VectorFastLog)
+    {
+        const float error =
+            compute_avg_relative_error_vector(
+                vector_std_log,
+                fast_log,
+                1.0e-2f,
+                1.0f,
+                1000);
+
+        EXPECT_LT(0.000262f, error);
+    }
+
+    TEST_CASE(VectorFasterLog)
+    {
+        const float error =
+            compute_avg_relative_error_vector(
+                vector_std_log,
+                faster_log,
+                1.0e-2f,
+                1.0f,
+                1000);
+
+        EXPECT_LT(0.193f, error);
+    }
+
+    TEST_CASE(PlotLogFunctions)
+    {
+        const FuncDef<float (*)(float)> functions[] =
+        {
+            { "scalar_std_log", "std::log", "black", log },
+            { "scalar_fast_log", "foundation::fast_log", "green", fast_log },
+            { "scalar_faster_log", "foundation::faster_log", "red", faster_log }
+        };
+
+        plot_functions(
+            "unit tests/outputs/test_fastmath_log.mpl",
+            functions,
+            countof(functions),
+            1.0e-2f,
+            1.0f,
+            1000);
+    }
+
+    // Exp(x).
+
+    void vector_std_exp(float x[4])
+    {
+        for (size_t i = 0; i < 4; ++i)
+            x[i] = exp(x[i]);
+    }
+
+    TEST_CASE(ScalarFastExp)
+    {
+        const float error =
+            compute_avg_relative_error_scalar<float, float (*)(float)>(
+                exp,
+                fast_exp,
                 0.0f,
                 1.0f,
                 1000);
 
-        EXPECT_LT(0.016f, error);
+        EXPECT_LT(0.0000253f, error);
+    }
+
+    TEST_CASE(ScalarFasterExp)
+    {
+        const float error =
+            compute_avg_relative_error_scalar<float, float (*)(float)>(
+                exp,
+                faster_exp,
+                0.0f,
+                1.0f,
+                1000);
+
+        EXPECT_LT(0.0159f, error);
+    }
+
+    TEST_CASE(VectorFastExp)
+    {
+        const float error =
+            compute_avg_relative_error_vector(
+                vector_std_exp,
+                fast_exp,
+                0.0f,
+                1.0f,
+                1000);
+
+        EXPECT_LT(0.0000253f, error);
+    }
+
+    TEST_CASE(VectorFasterExp)
+    {
+        const float error =
+            compute_avg_relative_error_vector(
+                vector_std_exp,
+                faster_exp,
+                0.0f,
+                1.0f,
+                1000);
+
+        EXPECT_LT(0.0159f, error);
+    }
+
+    TEST_CASE(PlotExpFunctions)
+    {
+        const FuncDef<float (*)(float)> functions[] =
+        {
+            { "scalar_std_exp", "std::exp", "black", exp },
+            { "scalar_fast_exp", "foundation::fast_exp", "green", fast_exp },
+            { "scalar_faster_exp", "foundation::faster_exp", "red", faster_exp }
+        };
+
+        plot_functions(
+            "unit tests/outputs/test_fastmath_exp.mpl",
+            functions,
+            countof(functions),
+            0.0f,
+            1.0f,
+            1000);
     }
 }

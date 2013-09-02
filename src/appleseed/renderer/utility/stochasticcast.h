@@ -26,9 +26,45 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_BIH_H
-#define APPLESEED_FOUNDATION_MATH_BIH_H
+#ifndef APPLESEED_RENDERER_UTILITY_STOCHASTICCAST_H
+#define APPLESEED_RENDERER_UTILITY_STOCHASTICCAST_H
 
-// Interface headers.
+// appleseed.renderer headers.
+#include "renderer/global/globaltypes.h"
 
-#endif  // !APPLESEED_FOUNDATION_MATH_BIH_H
+// appleseed.foundation headers.
+#include "foundation/math/scalar.h"
+
+// Standard headers.
+#include <cassert>
+
+namespace renderer
+{
+
+//
+// Cast a non-negative scalar n to an integer such that the expected value of that integer is n.
+//
+
+template <typename Int>
+inline Int stochastic_cast(SamplingContext& sampling_context, const double n)
+{
+    assert(n >= 0.0);
+
+    Int i = foundation::truncate<Int>(n);
+
+    const double r = n - i;
+
+    if (r > 0.0)
+    {
+        sampling_context.split_in_place(1, 1);
+
+        if (sampling_context.next_double2() < n - i)
+            ++i;
+    }
+
+    return i;
+}
+
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_UTILITY_STOCHASTICCAST_H

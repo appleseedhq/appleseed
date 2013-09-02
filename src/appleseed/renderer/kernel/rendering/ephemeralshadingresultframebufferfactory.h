@@ -26,14 +26,14 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_LIGHTTRACING_LIGHTTRACINGSAMPLEGENERATOR_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_LIGHTTRACING_LIGHTTRACINGSAMPLEGENERATOR_H
+#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_EPHEMERALSHADINGRESULTFRAMEBUFFERFACTORY_H
+#define APPLESEED_RENDERER_KERNEL_RENDERING_EPHEMERALSHADINGRESULTFRAMEBUFFERFACTORY_H
 
 // appleseed.renderer headers.
-#include "renderer/kernel/rendering/isamplegenerator.h"
-#include "renderer/utility/paramarray.h"
+#include "renderer/kernel/rendering/ishadingresultframebufferfactory.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/aabb.h"
 #include "foundation/platform/compiler.h"
 
 // Standard headers.
@@ -41,49 +41,28 @@
 
 // Forward declarations.
 namespace renderer  { class Frame; }
-namespace renderer  { class LightSampler; }
-namespace renderer  { class SampleAccumulationBuffer; }
-namespace renderer  { class Scene; }
-namespace renderer  { class TextureStore; }
-namespace renderer  { class TraceContext; }
+namespace renderer  { class ShadingResultFrameBuffer; }
 
 namespace renderer
 {
 
-class LightTracingSampleGeneratorFactory
-  : public ISampleGeneratorFactory
+class EphemeralShadingResultFrameBufferFactory
+  : public IShadingResultFrameBufferFactory
 {
   public:
-    // Constructor.
-    LightTracingSampleGeneratorFactory(
-        const Scene&            scene,
-        const Frame&            frame,
-        const TraceContext&     trace_context,
-        TextureStore&           texture_store,
-        const LightSampler&     light_sampler,
-        const ParamArray&       params);
-
     // Delete this instance.
     virtual void release() OVERRIDE;
 
-    // Return a new sample generator instance.
-    virtual ISampleGenerator* create(
-        const size_t            generator_index,
-        const size_t            generator_count,
-        const bool              primary) OVERRIDE;
+    virtual ShadingResultFrameBuffer* create(
+        const Frame&                frame,
+        const size_t                tile_x,
+        const size_t                tile_y,
+        const foundation::AABB2u&   tile_bbox) OVERRIDE;
 
-    // Create an accumulation buffer for this sample generator.
-    virtual SampleAccumulationBuffer* create_sample_accumulation_buffer() OVERRIDE;
-
-  private:
-    const Scene&                m_scene;
-    const Frame&                m_frame;
-    const TraceContext&         m_trace_context;
-    TextureStore&               m_texture_store;
-    const LightSampler&         m_light_sampler;
-    const ParamArray            m_params;
+    virtual void destroy(
+        ShadingResultFrameBuffer*   framebuffer) OVERRIDE;
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_LIGHTTRACING_LIGHTTRACINGSAMPLEGENERATOR_H
+#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_EPHEMERALSHADINGRESULTFRAMEBUFFERFACTORY_H

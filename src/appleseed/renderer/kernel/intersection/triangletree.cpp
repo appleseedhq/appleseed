@@ -494,7 +494,7 @@ void TriangleTree::build_bvh(
 
     // Collect triangles intersecting the bounding box of this tree.
     RENDERER_LOG_INFO(
-        "collecting geometry for triangle tree #" FMT_UNIQUE_ID " from assembly %s (%s %s)...",
+        "collecting geometry for triangle tree #" FMT_UNIQUE_ID " from assembly \"%s\" (%s %s)...",
         m_arguments.m_triangle_tree_uid,
         m_arguments.m_assembly.get_name(),
         pretty_uint(m_arguments.m_regions.size()).c_str(),
@@ -593,7 +593,7 @@ void TriangleTree::build_sbvh(
 
     // Collect triangles intersecting the bounding box of this tree.
     RENDERER_LOG_INFO(
-        "collecting geometry for triangle tree #" FMT_UNIQUE_ID " from assembly %s (%s %s)...",
+        "collecting geometry for triangle tree #" FMT_UNIQUE_ID " from assembly \"%s\" (%s %s)...",
         m_arguments.m_triangle_tree_uid,
         m_arguments.m_assembly.get_name(),
         pretty_uint(m_arguments.m_regions.size()).c_str(),

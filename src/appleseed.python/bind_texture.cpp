@@ -59,12 +59,12 @@ namespace detail
 
             for (bpy::ssize_t i = 0, e = bpy::len(search_paths); i < e; ++i)
             {
-                bpy::extract<const char*> extractor(search_paths[i] );
+                bpy::extract<const char*> extractor(search_paths[i]);
                 if (extractor.check())
                     paths.push_back(extractor());
                 else
                 {
-                    PyErr_SetString(PyExc_TypeError, "Incompatible type. Only strings accepted." );
+                    PyErr_SetString(PyExc_TypeError, "Incompatible type. Only strings accepted.");
                     bpy::throw_error_already_set();
                 }
             }

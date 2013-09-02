@@ -37,6 +37,7 @@
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
+#include "renderer/modeling/environmentshader/environmentshader.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/material/material.h"
@@ -49,6 +50,7 @@
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
+#include "renderer/modeling/surfaceshader/surfaceshader.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
@@ -247,6 +249,7 @@ namespace
         assign_entities_to_render_layers(aov_images, mapping, format, assembly.materials());
         assign_entities_to_render_layers(aov_images, mapping, format, assembly.objects());
         assign_entities_to_render_layers(aov_images, mapping, format, assembly.object_instances());
+        assign_entities_to_render_layers(aov_images, mapping, format, assembly.surface_shaders());
     }
 
     void assign_base_group_entities_to_render_layer(
@@ -275,10 +278,13 @@ namespace
             format,
             scene);
 
-        EnvironmentEDF* env_edf = scene.get_environment()->get_environment_edf();
-
+        EnvironmentEDF* env_edf = scene.get_environment()->get_uncached_environment_edf();
         if (env_edf)
             assign_entity_to_render_layer(aov_images, mapping, format, *env_edf);
+
+        EnvironmentShader* env_shader = scene.get_environment()->get_uncached_environment_shader();
+        if (env_shader)
+            assign_entity_to_render_layer(aov_images, mapping, format, *env_shader);
     }
 }
 

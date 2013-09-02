@@ -155,6 +155,7 @@ void RenderSettingsWindow::create_panels()
     create_lighting_panel(root);
     create_drt_panel(root);
     create_pt_panel(root);
+    create_sppm_panel(root);
     create_system_panel(root);
 }
 
@@ -189,14 +190,19 @@ void RenderSettingsWindow::create_image_plane_sampling_general_settings(QVBoxLay
     QVBoxLayout* layout = new QVBoxLayout();
     groupbox->setLayout(layout);
 
+    QFormLayout* sublayout = create_form_layout();
+    layout->addLayout(sublayout);
+
     m_image_planer_sampler_combo = create_combobox("image_plane_sampling.general.sampler");
     m_image_planer_sampler_combo->addItem("Uniform", "uniform");
     m_image_planer_sampler_combo->addItem("Adaptive", "adaptive");
     m_image_planer_sampler_combo->setCurrentIndex(-1);
-    layout->addLayout(create_form_layout("Sampler:", m_image_planer_sampler_combo));
+    sublayout->addRow("Sampler:", m_image_planer_sampler_combo);
     connect(
         m_image_planer_sampler_combo, SIGNAL(currentIndexChanged(int)),
         this, SLOT(slot_changed_image_plane_sampler(int)));
+
+    sublayout->addRow("Passes:", create_integer_input("image_plane_sampling.general.passes", 1, 1000000));
 }
 
 void RenderSettingsWindow::slot_changed_image_plane_sampler(int index)
@@ -262,6 +268,7 @@ void RenderSettingsWindow::create_lighting_panel(QLayout* parent)
     QComboBox* engine = create_combobox("lighting.engine");
     engine->addItem("Distribution Ray Tracer", "drt");
     engine->addItem("Unidirectional Path Tracer", "pt");
+    engine->addItem("Stochastic Progressive Photon Mapping", "sppm");
     layout->addRow("Engine:", engine);
 }
 
@@ -315,7 +322,7 @@ void RenderSettingsWindow::create_drt_advanced_dl_settings(QVBoxLayout* parent)
     QHBoxLayout* sublayout = create_horizontal_layout();
     layout->addLayout(sublayout);
 
-    sublayout->addLayout(create_form_layout("Light Samples:", create_integer_input("drt.advanced.dl.light_samples", 0, 1000000)));
+    sublayout->addLayout(create_form_layout("Light Samples:", create_double_input("drt.advanced.dl.light_samples", 0.0, 1000000.0, 3, 1.0)));
 }
 
 void RenderSettingsWindow::create_drt_advanced_ibl_settings(QVBoxLayout* parent)
@@ -329,7 +336,7 @@ void RenderSettingsWindow::create_drt_advanced_ibl_settings(QVBoxLayout* parent)
     QHBoxLayout* sublayout = create_horizontal_layout();
     layout->addLayout(sublayout);
 
-    sublayout->addLayout(create_form_layout("Environment Samples:", create_integer_input("drt.advanced.ibl.env_samples", 0, 1000000)));
+    sublayout->addLayout(create_form_layout("Environment Samples:", create_double_input("drt.advanced.ibl.env_samples", 0.0, 1000000.0, 3, 1.0)));
 }
 
 //---------------------------------------------------------------------------------------------
@@ -391,7 +398,7 @@ void RenderSettingsWindow::create_pt_advanced_dl_settings(QVBoxLayout* parent)
     QHBoxLayout* sublayout = create_horizontal_layout();
     layout->addLayout(sublayout);
 
-    sublayout->addLayout(create_form_layout("Light Samples:", create_integer_input("pt.advanced.dl.light_samples", 0, 1000000)));
+    sublayout->addLayout(create_form_layout("Light Samples:", create_double_input("pt.advanced.dl.light_samples", 0.0, 1000000.0, 3, 1.0)));
 }
 
 void RenderSettingsWindow::create_pt_advanced_ibl_settings(QVBoxLayout* parent)
@@ -405,7 +412,7 @@ void RenderSettingsWindow::create_pt_advanced_ibl_settings(QVBoxLayout* parent)
     QHBoxLayout* sublayout = create_horizontal_layout();
     layout->addLayout(sublayout);
 
-    sublayout->addLayout(create_form_layout("Environment Samples:", create_integer_input("pt.advanced.ibl.env_samples", 0, 1000000)));
+    sublayout->addLayout(create_form_layout("Environment Samples:", create_double_input("pt.advanced.ibl.env_samples", 0.0, 1000000.0, 3, 1.0)));
 }
 
 void RenderSettingsWindow::create_pt_advanced_max_ray_intensity_settings(QVBoxLayout* parent)
@@ -414,6 +421,53 @@ void RenderSettingsWindow::create_pt_advanced_max_ray_intensity_settings(QVBoxLa
     QCheckBox* unlimited_ray_intensity = create_checkbox("pt.advanced.unlimited_ray_intensity", "Unlimited");
     parent->addLayout(create_form_layout("Max Ray Intensity:", create_horizontal_group(max_ray_intensity, unlimited_ray_intensity)));
     connect(unlimited_ray_intensity, SIGNAL(toggled(bool)), max_ray_intensity, SLOT(setDisabled(bool)));
+}
+
+//---------------------------------------------------------------------------------------------
+// Stochastic Progressive Photon Mapping panel.
+//---------------------------------------------------------------------------------------------
+
+void RenderSettingsWindow::create_sppm_panel(QLayout* parent)
+{
+    FoldablePanelWidget* panel = new FoldablePanelWidget("Stochastic Progressive Photon Mapping");
+    parent->addWidget(panel);
+    m_panels.push_back(panel);
+
+    panel->fold();
+
+    QVBoxLayout* layout = new QVBoxLayout();
+    panel->container()->setLayout(layout);
+
+    QGroupBox* groupbox = new QGroupBox("Components");
+    layout->addWidget(groupbox);
+
+    QVBoxLayout* sublayout = new QVBoxLayout();
+    groupbox->setLayout(sublayout);
+
+    sublayout->addWidget(create_checkbox("sppm.lighting_components.dl", "Direct Lighting"));
+    sublayout->addWidget(create_checkbox("sppm.lighting_components.ibl", "Image-Based Lighting"));
+    sublayout->addWidget(create_checkbox("sppm.lighting_components.caustics", "Caustics"));
+
+    create_bounce_settings(layout, "sppm");
+    create_sppm_advanced_settings(layout);
+}
+
+void RenderSettingsWindow::create_sppm_advanced_settings(QVBoxLayout* parent)
+{
+    QGroupBox* groupbox = new QGroupBox("Advanced");
+    parent->addWidget(groupbox);
+
+    QVBoxLayout* layout = new QVBoxLayout();
+    groupbox->setLayout(layout);
+
+    QFormLayout* sublayout = create_form_layout();
+    layout->addLayout(sublayout);
+
+    sublayout->addRow("Initial Radius:", create_double_input("sppm.advanced.initial_radius", 0.001, 100.0, 3, 1.0, "%"));
+    sublayout->addRow("Alpha:", create_double_input("sppm.advanced.alpha", 0.0, 1.0, 1, 0.1));
+    sublayout->addRow("Light Photons Per Pass:", create_integer_input("sppm.advanced.light_photons_per_pass", 0, 1000000000));
+    sublayout->addRow("Environment Photons Per Pass:", create_integer_input("sppm.advanced.env_photons_per_pass", 0, 1000000000));
+    sublayout->addRow("Max Photons in Radiance Estimation:", create_integer_input("sppm.advanced.max_photons_per_estimate", 8, 1000000000));
 }
 
 //---------------------------------------------------------------------------------------------
@@ -551,10 +605,7 @@ namespace
         const int           margin = 0,
         const int           min_width = 0)
     {
-        QString text;
-        text.setNum(value);
-
-        set_widget_width_for_text(widget, text, margin, min_width);
+        set_widget_width_for_text(widget, QString::number(value), margin, min_width);
     }
 
     const int SpinBoxMargin = 28;
@@ -591,10 +642,7 @@ QSpinBox* RenderSettingsWindow::create_integer_input(
     QString text;
     text.setNum(max);
     text.append(suffix);
-
     set_widget_width_for_text(spinbox, text, SpinBoxMargin, SpinBoxMinWidth);
-
-    new MouseWheelFocusEventFilter(spinbox);
 
     return spinbox;
 }
@@ -615,6 +663,33 @@ QDoubleSpinBox* RenderSettingsWindow::create_double_input(
     spinbox->setSingleStep(step);
 
     new MouseWheelFocusEventFilter(spinbox);
+
+    return spinbox;
+}
+
+QDoubleSpinBox* RenderSettingsWindow::create_double_input(
+    const string&           widget_key,
+    const double            min,
+    const double            max,
+    const int               decimals,
+    const double            step,
+    const QString&          label)
+{
+    QDoubleSpinBox* spinbox =
+        create_double_input(
+            widget_key,
+            min,
+            max,
+            decimals,
+            step);
+
+    const QString suffix = " " + label;
+    spinbox->setSuffix(suffix);
+
+    QString text;
+    text.setNum(max, 'f', decimals);
+    text.append(suffix);
+    set_widget_width_for_text(spinbox, text, SpinBoxMargin, SpinBoxMinWidth);
 
     return spinbox;
 }
@@ -660,6 +735,7 @@ void RenderSettingsWindow::create_direct_links()
 {
     // Image Plane Sampling.
     create_direct_link("image_plane_sampling.general.sampler", "pixel_renderer", "uniform");
+    create_direct_link("image_plane_sampling.general.passes", "generic_frame_renderer.passes", 1);
     create_direct_link("image_plane_sampling.uniform_sampler.samples", "uniform_pixel_renderer.samples", 64);
     create_direct_link("image_plane_sampling.uniform_sampler.decorrelate_pixels", "uniform_pixel_renderer.decorrelate_pixels", true);
     create_direct_link("image_plane_sampling.adaptive_sampler.min_samples", "adaptive_pixel_renderer.min_samples", 16);
@@ -684,6 +760,17 @@ void RenderSettingsWindow::create_direct_links()
     create_direct_link("pt.advanced.next_event_estimation", "pt.next_event_estimation", true);
     create_direct_link("pt.advanced.dl.light_samples", "pt.dl_light_samples", 1);
     create_direct_link("pt.advanced.ibl.env_samples", "pt.ibl_env_samples", 1);
+
+    // Stochastic Progressive Photon Mapping.
+    create_direct_link("sppm.lighting_components.dl", "sppm_pass_callback.enable_dl", true);
+    create_direct_link("sppm.lighting_components.ibl", "sppm_lighting_engine.enable_ibl", true);
+    create_direct_link("sppm.lighting_components.caustics", "sppm_pass_callback.enable_caustics", true);
+    create_direct_link("sppm.bounces.rr_start_bounce", "sppm_lighting_engine.rr_min_path_length", 3);
+    create_direct_link("sppm.advanced.alpha", "sppm_pass_callback.alpha", 0.7);
+    create_direct_link("sppm.advanced.initial_radius", "sppm_pass_callback.initial_radius", 1.0);
+    create_direct_link("sppm.advanced.light_photons_per_pass", "sppm_pass_callback.light_photons_per_pass", 100000);
+    create_direct_link("sppm.advanced.env_photons_per_pass", "sppm_pass_callback.env_photons_per_pass", 100000);
+    create_direct_link("sppm.advanced.max_photons_per_estimate", "sppm_lighting_engine.max_photons_per_estimate", 100);
 }
 
 template <typename T>
@@ -741,24 +828,18 @@ void RenderSettingsWindow::do_load_configuration(const Configuration& config)
     load_directly_linked_values(config);
 
     // Distribution Ray Tracer.
-    {
-        const size_t DefaultMaxBounces = 8;
-        const size_t max_path_length = get_config<size_t>(config, "drt.max_path_length", 0);
-        set_widget("drt.bounces.unlimited_bounces", max_path_length == 0);
-        set_widget("drt.bounces.max_bounces", max_path_length == 0 ? DefaultMaxBounces : max_path_length - 1);
-    }
+    load_bounce_settings(config, "drt");
 
     // Unidirectional Path Tracer.
     {
-        const size_t DefaultMaxBounces = 3;
-        const size_t max_path_length = get_config<size_t>(config, "pt.max_path_length", 0);
-        set_widget("pt.bounces.unlimited_bounces", max_path_length == 0);
-        set_widget("pt.bounces.max_bounces", max_path_length == 0 ? DefaultMaxBounces : max_path_length - 1);
-    }
-    {
+        load_bounce_settings(config, "pt");
+
         set_widget("pt.advanced.unlimited_ray_intensity", !config.get_parameters().exist_path("pt.max_ray_intensity"));
         set_widget("pt.advanced.max_ray_intensity", get_config<double>(config, "pt.max_ray_intensity", 1.0));
     }
+
+    // Stochastic Progressive Photon Mapping.
+    load_bounce_settings(config, "sppm");
 
     // System / Rendering Threads.
     {
@@ -779,16 +860,25 @@ void RenderSettingsWindow::do_save_configuration(Configuration& config)
 {
     save_directly_linked_values(config);
 
+    // Image Plane Sampling.
+    set_config(
+        config,
+        "shading_result_framebuffer",
+        get_widget<size_t>("image_plane_sampling.general.passes") > 1
+            ? "permanent"
+            : "ephemeral");
+
     // Distribution Ray Tracer.
-    set_config(config, "drt.max_path_length",
-        get_widget<bool>("drt.bounces.unlimited_bounces") ? 0 : get_widget<size_t>("drt.bounces.max_bounces") + 1);
+    save_bounce_settings(config, "drt");
 
     // Unidirectional Path Tracer.
-    set_config(config, "pt.max_path_length",
-        get_widget<bool>("pt.bounces.unlimited_bounces") ? 0 : get_widget<size_t>("pt.bounces.max_bounces") + 1);
+    save_bounce_settings(config, "pt");
     if (get_widget<bool>("pt.advanced.unlimited_ray_intensity"))
         config.get_parameters().remove_path("pt.max_ray_intensity");
     else set_config(config, "pt.max_ray_intensity", get_widget<double>("pt.advanced.max_ray_intensity"));
+
+    // Stochastic Progressive Photon Mapping.
+    save_bounce_settings(config, "sppm");
 
     // System / Rendering Threads.
     if (get_widget<bool>("system.rendering_threads.override"))
@@ -814,6 +904,24 @@ void RenderSettingsWindow::save_directly_linked_values(Configuration& config)
 {
     for (const_each<DirectLinkCollection> i = m_direct_links; i; ++i)
         set_config(config, i->m_param_path, get_widget<string>(i->m_widget_key));
+}
+
+void RenderSettingsWindow::load_bounce_settings(const Configuration& config, const string& lighting_engine)
+{
+    const size_t DefaultMaxBounces = 8;
+    const size_t max_path_length = get_config<size_t>(config, lighting_engine + ".max_path_length", 0);
+    set_widget(lighting_engine + ".bounces.unlimited_bounces", max_path_length == 0);
+    set_widget(lighting_engine + ".bounces.max_bounces", max_path_length == 0 ? DefaultMaxBounces : max_path_length - 1);
+}
+
+void RenderSettingsWindow::save_bounce_settings(Configuration& config, const string& lighting_engine)
+{
+    const size_t max_path_length =
+        !get_widget<bool>(lighting_engine + ".bounces.unlimited_bounces")
+            ? get_widget<size_t>(lighting_engine + ".bounces.max_bounces") + 1
+            : 0;
+
+    set_config(config, lighting_engine + ".max_path_length", max_path_length);
 }
 
 template <typename T>

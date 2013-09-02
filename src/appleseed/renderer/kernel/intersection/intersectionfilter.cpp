@@ -134,10 +134,15 @@ IntersectionFilter::IntersectionFilter(
             continue;
 
         // Build the alpha mask.
-        auto_ptr<Bitmap> alpha_mask(create_alpha_mask(alpha_map, texture_cache));
+        double transparency;
+        auto_ptr<AlphaMask> alpha_mask(
+            create_alpha_mask(
+                alpha_map,
+                texture_cache,
+                transparency));
 
         // Discard the alpha mask if it's mostly opaque.
-        if (alpha_mask->m_transparency < 5.0 / 100)
+        if (transparency < 5.0 / 100)
             continue;
 
         // Store the alpha mask.
@@ -177,9 +182,10 @@ bool IntersectionFilter::has_alpha_masks() const
     return false;
 }
 
-IntersectionFilter::Bitmap* IntersectionFilter::create_alpha_mask(
+IntersectionFilter::AlphaMask* IntersectionFilter::create_alpha_mask(
     const Source*           alpha_map,
-    TextureCache&           texture_cache)
+    TextureCache&           texture_cache,
+    double&                 transparency)
 {
     assert(alpha_map);
 
@@ -199,7 +205,7 @@ IntersectionFilter::Bitmap* IntersectionFilter::create_alpha_mask(
     }
 
     // Create and initialize the alpha mask.
-    Bitmap* alpha_mask = new Bitmap(width, height);
+    AlphaMask* alpha_mask = new AlphaMask(width, height);
 
     const double rcp_width = 1.0 / width;
     const double rcp_height = 1.0 / height;
@@ -218,17 +224,16 @@ IntersectionFilter::Bitmap* IntersectionFilter::create_alpha_mask(
             alpha_map->evaluate(texture_cache, uv, alpha);
 
             // Mark this texel as opaque or transparent in the alpha mask.
-            const size_t index = y * alpha_mask->m_width + x / 8;
-            const uint8 opaque = alpha[0] > 0.0f ? 1 : 0;
-            alpha_mask->set(x, y, opaque);
+            const bool opaque = alpha[0] > 0.0f;
+            alpha_mask->set_opaque(x, y, opaque);
 
-            // Keep track of the number of opaque texels.
-            transparent_texel_count += (~opaque) & 1;
+            // Keep track of the number of transparent texels.
+            transparent_texel_count += opaque ? 0 : 1;
         }
     }
 
     // Compute the ratio of transparent texels to the total number of texels.
-    alpha_mask->m_transparency = static_cast<double>(transparent_texel_count) / (width * height);
+    transparency = static_cast<double>(transparent_texel_count) / (width * height);
 
     return alpha_mask;
 }

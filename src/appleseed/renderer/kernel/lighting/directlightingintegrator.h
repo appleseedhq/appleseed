@@ -51,6 +51,9 @@
 #include <cmath>
 #include <cstddef>
 
+// Forward declarations.
+namespace renderer  { class PathVertex; }
+
 namespace renderer
 {
 
@@ -93,7 +96,7 @@ class DirectLightingIntegrator
         const double    q1,
         const double    q2);
 
-    // Constructor.
+    // Constructors.
     DirectLightingIntegrator(
         const ShadingContext&           shading_context,
         const LightSampler&             light_sampler,
@@ -101,6 +104,14 @@ class DirectLightingIntegrator
         const foundation::Vector3d&     outgoing,                   // world space outgoing direction, unit-length
         const BSDF&                     bsdf,
         const void*                     bsdf_data,
+        const int                       bsdf_sampling_modes,        // permitted scattering modes during BSDF sampling
+        const int                       light_sampling_modes,       // permitted scattering modes during environment sampling
+        const size_t                    bsdf_sample_count,          // number of samples in BSDF sampling
+        const size_t                    light_sample_count);        // number of samples in light sampling
+    DirectLightingIntegrator(
+        const ShadingContext&           shading_context,
+        const LightSampler&             light_sampler,
+        const PathVertex&               vertex,
         const int                       bsdf_sampling_modes,        // permitted scattering modes during BSDF sampling
         const int                       light_sampling_modes,       // permitted scattering modes during environment sampling
         const size_t                    bsdf_sample_count,          // number of samples in BSDF sampling
@@ -146,6 +157,13 @@ class DirectLightingIntegrator
         Spectrum&                       radiance,
         SpectrumStack&                  aovs);
 
+    // Sample the BSDF or the lights using a single sample.
+    void take_single_bsdf_or_light_sample(
+        const bool                      indirect,
+        SamplingContext&                sampling_context,
+        Spectrum&                       radiance,
+        SpectrumStack&                  aovs);
+
   private:
     const ShadingContext&               m_shading_context;
     const LightSampler&                 m_light_sampler;
@@ -161,12 +179,6 @@ class DirectLightingIntegrator
     const int                           m_light_sampling_modes;
     const size_t                        m_bsdf_sample_count;
     const size_t                        m_light_sample_count;
-
-    void take_single_bsdf_or_light_sample(
-        const bool                      indirect,
-        SamplingContext&                sampling_context,
-        Spectrum&                       radiance,
-        SpectrumStack&                  aovs);
 
     template <typename WeightingFunction>
     void take_single_bsdf_sample(

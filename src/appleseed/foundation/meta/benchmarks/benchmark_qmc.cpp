@@ -30,6 +30,7 @@
 #include "foundation/math/permutation.h"
 #include "foundation/math/primes.h"
 #include "foundation/math/qmc.h"
+#include "foundation/math/vector.h"
 #include "foundation/utility/benchmark.h"
 
 // Standard headers.
@@ -68,6 +69,22 @@ BENCHMARK_SUITE(Foundation_Math_QMC)
             }
         }
 
+        void fast_radical_inverse_payload()
+        {
+            m_x = T(0.0);
+
+            for (size_t s = 0, d = 1; d <= 32; ++d)
+            {
+                for (size_t i = 0; i < 4; ++i, ++s)
+                {
+                    m_x +=
+                        fast_radical_inverse<T>(
+                            d,
+                            s);
+                }
+            }
+        }
+
         void permuted_radical_inverse_payload()
         {
             m_x = T(0.0);
@@ -79,6 +96,23 @@ BENCHMARK_SUITE(Foundation_Math_QMC)
                     m_x +=
                         permuted_radical_inverse<T>(
                             Primes[d],
+                            FaurePermutations[d],
+                            s);
+                }
+            }
+        }
+
+        void fast_permuted_radical_inverse_payload()
+        {
+            m_x = T(0.0);
+
+            for (size_t s = 0, d = 1; d <= 32; ++d)
+            {
+                for (size_t i = 0; i < 4; ++i, ++s)
+                {
+                    m_x +=
+                        fast_permuted_radical_inverse<T>(
+                            d,
                             FaurePermutations[d],
                             s);
                 }
@@ -112,6 +146,8 @@ BENCHMARK_SUITE(Foundation_Math_QMC)
         }
     };
 
+    // Radical inverse, single precision.
+
     BENCHMARK_CASE_F(RadicalInverseBase2_SinglePrecision, ScalarFixture<float>)
     {
         radical_inverse_base2_payload();
@@ -122,10 +158,22 @@ BENCHMARK_SUITE(Foundation_Math_QMC)
         radical_inverse_payload();
     }
 
+    BENCHMARK_CASE_F(FastRadicalInverse_SinglePrecision, ScalarFixture<float>)
+    {
+        fast_radical_inverse_payload();
+    }
+
     BENCHMARK_CASE_F(PermutedRadicalInverse_SinglePrecision, ScalarFixture<float>)
     {
         permuted_radical_inverse_payload();
     }
+
+    BENCHMARK_CASE_F(FastPermutedRadicalInverse_SinglePrecision, ScalarFixture<float>)
+    {
+        fast_permuted_radical_inverse_payload();
+    }
+
+    // Radical inverse, double precision.
 
     BENCHMARK_CASE_F(RadicalInverseBase2_DoublePrecision, ScalarFixture<double>)
     {
@@ -137,10 +185,22 @@ BENCHMARK_SUITE(Foundation_Math_QMC)
         radical_inverse_payload();
     }
 
+    BENCHMARK_CASE_F(FastRadicalInverse_DoublePrecision, ScalarFixture<double>)
+    {
+        fast_radical_inverse_payload();
+    }
+
     BENCHMARK_CASE_F(PermutedRadicalInverse_DoublePrecision, ScalarFixture<double>)
     {
         permuted_radical_inverse_payload();
     }
+
+    BENCHMARK_CASE_F(FastPermutedRadicalInverse_DoublePrecision, ScalarFixture<double>)
+    {
+        fast_permuted_radical_inverse_payload();
+    }
+
+    // Halton sequence.
 
     BENCHMARK_CASE_F(HaltonSequence_Bases2And3_SinglePrecision, Vector2Fixture<float>)
     {
@@ -151,6 +211,8 @@ BENCHMARK_SUITE(Foundation_Math_QMC)
     {
         halton_payload();
     }
+
+    // Hammersley sequence.
 
     BENCHMARK_CASE_F(HammersleySequence_Base2_SinglePrecision, Vector2Fixture<float>)
     {

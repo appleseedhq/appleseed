@@ -44,6 +44,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstring>
+#include <vector>
 
 namespace foundation {
 namespace knn {
@@ -65,8 +66,13 @@ class Builder
     // Build a tree for a given set of points.
     template <typename Timer>
     void build(
-        const VectorType        points[],
-        const size_t            count);
+        const VectorType            points[],
+        const size_t                count);
+
+    // Like build() but the points will be moved into the tree rather than copied.
+    template <typename Timer>
+    void build_move_points(
+        std::vector<VectorType>&    points);
 
     // Return the construction time.
     double get_build_time() const;
@@ -80,28 +86,28 @@ class Builder
     {
         typedef std::vector<VectorType> PointVector;
 
-        const PointVector&      m_points;
-        const SplitType         m_split;
+        const PointVector&          m_points;
+        const SplitType             m_split;
 
         PartitionPredicate(
-            const PointVector&  points,
-            const SplitType&    split);
+            const PointVector&      points,
+            const SplitType&        split);
 
         bool operator()(
-            const size_t        index) const;
+            const size_t            index) const;
     };
 
     TreeType&   m_tree;
     double      m_build_time;
 
     void partition(
-        const size_t            parent_node_index,
-        const size_t            begin,
-        const size_t            end) const;
+        const size_t                parent_node_index,
+        const size_t                begin,
+        const size_t                end) const;
 
     BboxType compute_bbox(
-        const size_t            begin,
-        const size_t            end) const;
+        const size_t                begin,
+        const size_t                end) const;
 };
 
 typedef Builder<float, 2>  Builder2f;
@@ -127,17 +133,33 @@ void Builder<T, N>::build(
     const VectorType            points[],
     const size_t                count)
 {
-    Stopwatch<Timer> stopwatch;
-    stopwatch.start();
+    std::vector<VectorType> vec(count);
 
     if (count > 0)
     {
         assert(points);
+        std::memcpy(&vec[0], points, count * sizeof(VectorType));
+    }
 
-        m_tree.m_points.resize(count);
-        std::memcpy(&m_tree.m_points[0], points, count * sizeof(VectorType));
+    build_move_points<Timer>(vec);
+}
+
+template <typename T, size_t N>
+template <typename Timer>
+void Builder<T, N>::build_move_points(
+    std::vector<VectorType>&    points)
+{
+    Stopwatch<Timer> stopwatch;
+    stopwatch.start();
+
+    const size_t count = points.size();
+
+    if (count > 0)
+    {
+        m_tree.m_points.swap(points);
 
         m_tree.m_indices.resize(count);
+
         for (size_t i = 0; i < count; ++i)
             m_tree.m_indices[i] = i;
     }

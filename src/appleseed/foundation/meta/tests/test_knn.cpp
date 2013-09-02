@@ -42,6 +42,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/knn.h"
 #include "foundation/math/rng.h"
+#include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/timer.h"
 #include "foundation/utility/iostreamop.h"
@@ -214,8 +215,8 @@ TEST_SUITE(Foundation_Math_Knn_Answer)
         {
             const size_t left = 2 * i + 1;
             const size_t right = left + 1;
-            EXPECT_LT(answer.get(i).m_distance, answer.get(left).m_distance);
-            EXPECT_LT(answer.get(i).m_distance, answer.get(right).m_distance);
+            EXPECT_LT(answer.get(i).m_square_dist, answer.get(left).m_square_dist);
+            EXPECT_LT(answer.get(i).m_square_dist, answer.get(right).m_square_dist);
         }
     }
 
@@ -230,6 +231,7 @@ TEST_SUITE(Foundation_Math_Knn_Answer)
         answer.heap_insert(2, 2.0);
 
         answer.sort();
+
         EXPECT_EQ(1, answer.get(0).m_index);
         EXPECT_EQ(2, answer.get(1).m_index);
         EXPECT_EQ(3, answer.get(2).m_index);
@@ -258,17 +260,37 @@ TEST_SUITE(Foundation_Math_Knn_Query)
         EXPECT_EQ(4, answer.size());
     }
 
-    TEST_CASE(Run_ReturnsSameResultsAsSTANN)
+    TEST_CASE(Run_GivenEightPointsAndMaxSearchDistance_ReturnsFourNearestNeighbors)
     {
-        const size_t PointCount = 1000;
-        const size_t QueryCount = 1000;
-        const size_t AnswerSize = 100;
+        const size_t PointCount = 8;
+        const size_t AnswerSize = PointCount;
+        const double QueryMaxSquareDistance = square(0.5);
 
-        vector<Vector3d> points;
-        points.reserve(PointCount);
-
-        MersenneTwister rng;
+        Vector3d points[PointCount];
         for (size_t i = 0; i < PointCount; ++i)
+            points[i] = Vector3d(static_cast<double>(PointCount - i), 0.0, 0.0);
+
+        knn::Tree3d tree;
+        knn::Builder3d builder(tree);
+        builder.build<DefaultWallclockTimer>(points, PointCount);
+
+        knn::Answer<double> answer(AnswerSize);
+        knn::Query3d query(tree, answer);
+        query.run(Vector3d(4.75, 0.0, 0.0), QueryMaxSquareDistance);
+
+        EXPECT_EQ(1, answer.size());
+    }
+
+    void generate_random_points(
+        MersenneTwister&    rng,
+        vector<Vector3d>&   points,
+        const size_t        count)
+    {
+        assert(points.empty());
+
+        points.reserve(count);
+
+        for (size_t i = 0; i < count; ++i)
         {
             Vector3d p;
             p.x = rand_double1(rng);
@@ -276,6 +298,18 @@ TEST_SUITE(Foundation_Math_Knn_Query)
             p.z = rand_double1(rng);
             points.push_back(p);
         }
+    }
+
+    TEST_CASE(Run_ReturnsSameResultsAsSTANN)
+    {
+        const size_t PointCount = 1000;
+        const size_t QueryCount = 1000;
+        const size_t AnswerSize = 100;
+
+        MersenneTwister rng;
+
+        vector<Vector3d> points;
+        generate_random_points(rng, points, PointCount);
 
         knn::Tree3d tree;
         knn::Builder3d builder(tree);
@@ -308,6 +342,57 @@ TEST_SUITE(Foundation_Math_Knn_Query)
                 our_answer[j] = answer.get(j).m_index;
 
             EXPECT_SEQUENCE_EQ(AnswerSize, &stann_answer[0], &our_answer[0]);
+        }
+    }
+
+    TEST_CASE(Run_GivenMaxSearchDistance_ReturnsCorrectResults)
+    {
+        const size_t PointCount = 1000;
+        const size_t QueryCount = 1000;
+        const size_t AnswerSize = 100;
+        const double QueryMaxSquareDistance = square(0.1);
+
+        MersenneTwister rng;
+
+        vector<Vector3d> points;
+        generate_random_points(rng, points, PointCount);
+
+        knn::Tree3d tree;
+        knn::Builder3d builder(tree);
+        builder.build<DefaultWallclockTimer>(&points[0], PointCount);
+
+        knn::Answer<double> full_answer(AnswerSize);
+        knn::Query3d full_query(tree, full_answer);
+
+        knn::Answer<double> limited_answer(AnswerSize);
+        knn::Query3d limited_query(tree, limited_answer);
+
+        for (size_t i = 0; i < QueryCount; ++i)
+        {
+            Vector3d q;
+            q.x = rand_double1(rng);
+            q.y = rand_double1(rng);
+            q.z = rand_double1(rng);
+
+            full_query.run(q);
+            full_answer.sort();
+
+            limited_query.run(q, QueryMaxSquareDistance);
+            limited_answer.sort();
+
+            for (size_t j = 0; j < AnswerSize; ++j)
+            {
+                if (full_answer.get(j).m_square_dist > QueryMaxSquareDistance)
+                {
+                    EXPECT_EQ(j, limited_answer.size());
+                    break;
+                }
+
+                const knn::Answer<double>::Entry& ref_entry = full_answer.get(j);
+                const knn::Answer<double>::Entry& entry = limited_answer.get(j);
+
+                EXPECT_EQ(ref_entry.m_index, entry.m_index);
+            }
         }
     }
 }

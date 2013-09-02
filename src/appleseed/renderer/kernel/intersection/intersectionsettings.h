@@ -106,7 +106,7 @@ const size_t TriangleTreeDefaultBinCount = 256;
 #undef RENDERER_TRIANGLE_TREE_REORDER_NODES
 
 // Depth of a subtree in the van Emde Boas node layout.
-const size_t TriangleTreeSubtreeDepth = 2;
+const size_t TriangleTreeSubtreeDepth = 3;
 
 // Size of the triangle tree access cache.
 const size_t TriangleTreeAccessCacheLines = 128;

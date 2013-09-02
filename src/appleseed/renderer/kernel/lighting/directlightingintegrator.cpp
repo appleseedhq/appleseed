@@ -30,6 +30,7 @@
 #include "directlightingintegrator.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/lighting/pathvertex.h"
 #include "renderer/modeling/light/light.h"
 
 using namespace foundation;
@@ -67,41 +68,56 @@ DirectLightingIntegrator::DirectLightingIntegrator(
     assert(is_normalized(outgoing));
 }
 
+DirectLightingIntegrator::DirectLightingIntegrator(
+    const ShadingContext&       shading_context,
+    const LightSampler&         light_sampler,
+    const PathVertex&           vertex,
+    const int                   bsdf_sampling_modes,
+    const int                   light_sampling_modes,
+    const size_t                bsdf_sample_count,
+    const size_t                light_sample_count)
+  : m_shading_context(shading_context)
+  , m_light_sampler(light_sampler)
+  , m_shading_point(*vertex.m_shading_point)
+  , m_point(vertex.get_point())
+  , m_geometric_normal(vertex.get_geometric_normal())
+  , m_shading_basis(vertex.get_shading_basis())
+  , m_time(vertex.get_time())
+  , m_outgoing(vertex.m_outgoing)
+  , m_bsdf(*vertex.m_bsdf)
+  , m_bsdf_data(vertex.m_bsdf_data)
+  , m_bsdf_sampling_modes(bsdf_sampling_modes)
+  , m_light_sampling_modes(light_sampling_modes)
+  , m_bsdf_sample_count(bsdf_sample_count)
+  , m_light_sample_count(light_sample_count)
+{
+    assert(is_normalized(vertex.m_outgoing));
+}
+
 void DirectLightingIntegrator::sample_bsdf_and_lights(
     const bool                  indirect,
     SamplingContext&            sampling_context,
     Spectrum&                   radiance,
     SpectrumStack&              aovs)
 {
-    if (m_bsdf_sample_count + m_light_sample_count == 0)
-    {
-        take_single_bsdf_or_light_sample(
-            indirect,
-            sampling_context,
-            radiance,
-            aovs);
-    }
-    else
-    {
-        sample_bsdf(
-            sampling_context,
-            DirectLightingIntegrator::mis_power2,
-            radiance,
-            aovs);
+    sample_bsdf(
+        sampling_context,
+        DirectLightingIntegrator::mis_power2,
+        radiance,
+        aovs);
 
-        Spectrum radiance_light_sampling;
-        SpectrumStack aovs_light_sampling(aovs.size());
+    Spectrum radiance_light_sampling;
+    SpectrumStack aovs_light_sampling(aovs.size());
 
-        sample_lights(
-            indirect,
-            sampling_context,
-            DirectLightingIntegrator::mis_power2,
-            radiance_light_sampling,
-            aovs_light_sampling);
+    sample_lights(
+        indirect,
+        sampling_context,
+        DirectLightingIntegrator::mis_power2,
+        radiance_light_sampling,
+        aovs_light_sampling);
 
-        radiance += radiance_light_sampling;
-        aovs += aovs_light_sampling;
-    }
+    radiance += radiance_light_sampling;
+    aovs += aovs_light_sampling;
 }
 
 void DirectLightingIntegrator::sample_bsdf_and_lights_low_variance(
@@ -110,35 +126,24 @@ void DirectLightingIntegrator::sample_bsdf_and_lights_low_variance(
     Spectrum&                   radiance,
     SpectrumStack&              aovs)
 {
-    if (m_bsdf_sample_count + m_light_sample_count == 0)
-    {
-        take_single_bsdf_or_light_sample(
-            indirect,
-            sampling_context,
-            radiance,
-            aovs);
-    }
-    else
-    {
-        sample_bsdf(
-            sampling_context,
-            DirectLightingIntegrator::mis_power2,
-            radiance,
-            aovs);
+    sample_bsdf(
+        sampling_context,
+        DirectLightingIntegrator::mis_power2,
+        radiance,
+        aovs);
 
-        Spectrum radiance_light_sampling;
-        SpectrumStack aovs_light_sampling(aovs.size());
+    Spectrum radiance_light_sampling;
+    SpectrumStack aovs_light_sampling(aovs.size());
 
-        sample_lights_low_variance(
-            indirect,
-            sampling_context,
-            DirectLightingIntegrator::mis_power2,
-            radiance_light_sampling,
-            aovs_light_sampling);
+    sample_lights_low_variance(
+        indirect,
+        sampling_context,
+        DirectLightingIntegrator::mis_power2,
+        radiance_light_sampling,
+        aovs_light_sampling);
 
-        radiance += radiance_light_sampling;
-        aovs += aovs_light_sampling;
-    }
+    radiance += radiance_light_sampling;
+    aovs += aovs_light_sampling;
 }
 
 void DirectLightingIntegrator::take_single_bsdf_or_light_sample(

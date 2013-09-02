@@ -285,6 +285,7 @@ void Statistics::insert(
     const std::string&                  name,
     const T&                            value)
 {
+    // Simply defer to the three arguments version.
     insert(name, value, std::string());
 }
 

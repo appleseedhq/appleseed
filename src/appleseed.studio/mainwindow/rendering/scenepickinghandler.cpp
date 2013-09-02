@@ -132,7 +132,7 @@ namespace
         sstr << label;
 
         if (entity)
-            sstr << entity->get_name() << " (#" << entity->get_uid() << ")";
+            sstr << "\"" << entity->get_name() << "\" (#" << entity->get_uid() << ")";
         else sstr << "n/a";
 
         sstr << endl;

@@ -30,13 +30,13 @@
 #define APPLESEED_RENDERER_KERNEL_RENDERING_GENERIC_TILEJOBFACTORY_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
 #include "renderer/kernel/rendering/generic/tilejob.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/rng.h"
 
 // Standard headers.
+#include <cstddef>
 #include <vector>
 
 // Forward declarations.
@@ -72,6 +72,7 @@ class TileJobFactory
         const TileOrdering                  tile_ordering,
         const TileJob::TileRendererVector&  tile_renderers,
         const TileJob::TileCallbackVector&  tile_callbacks,
+        const size_t                        pass_hash,
         TileJobVector&                      tile_jobs,
         foundation::AbortSwitch&            abort_switch);
 
