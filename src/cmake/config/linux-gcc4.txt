@@ -84,28 +84,8 @@ macro (link_against_platform target)
     )
 endmacro ()
 
-macro (link_against_openexr target)
-    if (USE_EXTERNAL_ALEMBIC)
-        target_link_libraries (${target}
-            ${ILMBASE_IEX_LIBRARY}
-            ${ILMBASE_HALF_LIBRARY}
-            ${ILMBASE_MATH_LIBRARY}
-            ${OPENEXR_IMF_LIBRARY}
-            ${OPENEXR_THREADS_LIBRARY}
-        )
-    else ()
-        target_link_libraries (${target}
-            ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/libHalf.a
-            ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/libIex.a
-            ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/libIlmImf.a
-            ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/libIlmThread.a
-            ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/libImath.a
-        )
-    endif ()
-endmacro ()
-
 macro (link_against_zlib target)
-    if (USE_EXTERNAL_ALEMBIC)
+    if (USE_EXTERNAL_ZLIB)
         target_link_libraries (${target} ${ZLIB_LIBRARIES})
     else ()
         target_link_libraries (${target}
@@ -124,12 +104,22 @@ macro (link_against_libpng target)
     endif ()
 endmacro ()
 
-macro (link_against_xercesc target)
-    if (USE_EXTERNAL_XERCES)
-        target_link_libraries (${target} ${XERCES_LIBRARIES})
+macro (link_against_openexr target)
+    if (USE_EXTERNAL_ALEMBIC)
+        target_link_libraries (${target}
+            ${ILMBASE_IEX_LIBRARY}
+            ${ILMBASE_HALF_LIBRARY}
+            ${ILMBASE_MATH_LIBRARY}
+            ${OPENEXR_IMF_LIBRARY}
+            ${OPENEXR_THREADS_LIBRARY}
+        )
     else ()
         target_link_libraries (${target}
-            ${CMAKE_SOURCE_DIR}/../build/${platform}/xerces-c/libxerces-c.a
+            ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/libHalf.a
+            ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/libIex.a
+            ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/libIlmImf.a
+            ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/libIlmThread.a
+            ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/libImath.a
         )
     endif ()
 endmacro ()
@@ -151,6 +141,16 @@ macro (link_against_alembic target)
     else ()
         target_link_libraries (${target}
             ${CMAKE_SOURCE_DIR}/../build/${platform}/alembic/libalembic.a
+        )
+    endif ()
+endmacro ()
+
+macro (link_against_xercesc target)
+    if (USE_EXTERNAL_XERCES)
+        target_link_libraries (${target} ${XERCES_LIBRARIES})
+    else ()
+        target_link_libraries (${target}
+            ${CMAKE_SOURCE_DIR}/../build/${platform}/xerces-c/libxerces-c.a
         )
     endif ()
 endmacro ()
