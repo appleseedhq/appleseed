@@ -72,11 +72,6 @@ namespace renderer
 // SPPMPhotonTracer class implementation.
 //
 
-namespace
-{
-    const size_t rr_min_path_length = 5;
-}
-
 SPPMPhotonTracer::SPPMPhotonTracer(
     const Scene&            scene,
     const LightSampler&     light_sampler,
@@ -290,9 +285,9 @@ void SPPMPhotonTracer::trace_emitting_triangle_photon(
         photons);
     PathTracer<PathVisitor, true> path_tracer(      // true = adjoint
         path_visitor,
-        rr_min_path_length,
-        ~0,                                         // m_params.m_max_path_length
-        1000);                                      // m_params.m_max_iterations
+        m_params.m_rr_min_path_length,
+        m_params.m_max_path_length,
+        m_params.m_max_iterations);
 
     // Trace the photon path.
     path_tracer.trace(
@@ -346,9 +341,9 @@ void SPPMPhotonTracer::trace_non_physical_light_photon(
         photons);
     PathTracer<PathVisitor, true> path_tracer(      // true = adjoint
         path_visitor,
-        rr_min_path_length,
-        ~0,                                         // m_params.m_max_path_length
-        1000);                                      // m_params.m_max_iterations
+        m_params.m_rr_min_path_length,
+        m_params.m_max_path_length,
+        m_params.m_max_iterations);
 
     // Trace the photon path.
     path_tracer.trace(
@@ -411,9 +406,9 @@ void SPPMPhotonTracer::trace_env_photon(
         photons);
     PathTracer<PathVisitor, true> path_tracer(      // true = adjoint
         path_visitor,
-        rr_min_path_length,
-        ~0,                                         // m_params.m_max_path_length
-        1000);                                      // m_params.m_max_iterations
+        m_params.m_rr_min_path_length,
+        m_params.m_max_path_length,
+        m_params.m_max_iterations);
 
     // Trace the photon path.
     path_tracer.trace(
@@ -428,9 +423,20 @@ void SPPMPhotonTracer::trace_env_photon(
 // SPPMPhotonTracer::Parameters class implementation.
 //
 
+namespace
+{
+    static size_t nz(const size_t x)
+    {
+        return x == 0 ? ~0 : x;
+    }
+}
+
 SPPMPhotonTracer::Parameters::Parameters(const ParamArray& params)
   : m_light_photon_count(params.get_optional<size_t>("light_photons_per_pass", 100000))
   , m_env_photon_count(params.get_optional<size_t>("env_photons_per_pass", 100000))
+  , m_max_path_length(nz(params.get_optional<size_t>("max_path_length", 0)))
+  , m_rr_min_path_length(nz(params.get_optional<size_t>("rr_min_path_length", 3)))
+  , m_max_iterations(params.get_optional<size_t>("max_iterations", 1000))
 {
 }
 

@@ -94,8 +94,11 @@ class SPPMPhotonTracer
   private:
     struct Parameters
     {
-        size_t  m_light_photon_count;
-        size_t  m_env_photon_count;
+        const size_t    m_light_photon_count;   // number of photons emitted from the lights
+        const size_t    m_env_photon_count;     // number of photons emitted from the environment
+        const size_t    m_max_path_length;      // maximum path length, ~0 for unlimited
+        const size_t    m_rr_min_path_length;   // minimum path length before Russian Roulette kicks in, ~0 for unlimited
+        const size_t    m_max_iterations;       // maximum number of iteration during path tracing
 
         explicit Parameters(const ParamArray& params);
     };

@@ -100,8 +100,8 @@ class SPPMPassCallback
   private:
     struct Parameters
     {
-        float   m_initial_radius_percents;
-        float   m_alpha;
+        const float m_initial_radius_percents;      // initial lookup radius as a percentage of the scene diameter
+        const float m_alpha;                        // radius shrinking control
 
         explicit Parameters(const ParamArray& params);
     };
