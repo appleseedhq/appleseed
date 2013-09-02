@@ -102,8 +102,6 @@ class SPPMPassCallback
     {
         float   m_initial_radius_percents;
         float   m_alpha;
-        size_t  m_light_photon_count_per_pass;
-        size_t  m_env_photon_count_per_pass;
 
         explicit Parameters(const ParamArray& params);
     };

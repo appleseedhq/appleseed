@@ -65,7 +65,8 @@ SPPMPassCallback::SPPMPassCallback(
         scene,
         light_sampler,
         trace_context,
-        texture_store)
+        texture_store,
+        params)
   , m_pass_number(0)
   , m_emitted_photon_count(0)
 {
@@ -95,8 +96,6 @@ void SPPMPassCallback::pre_render(
         m_photon_tracer.trace_photons(
             m_photons,
             hash_uint32(m_pass_number),
-            m_params.m_light_photon_count_per_pass,
-            m_params.m_env_photon_count_per_pass,
             abort_switch);
 
     // Stop there if rendering was aborted.
@@ -132,8 +131,6 @@ void SPPMPassCallback::post_render(
 SPPMPassCallback::Parameters::Parameters(const ParamArray& params)
   : m_initial_radius_percents(params.get_required<float>("initial_radius", 0.1f))
   , m_alpha(params.get_optional<float>("alpha", 0.7f))
-  , m_light_photon_count_per_pass(params.get_optional<size_t>("light_photons_per_pass", 100000))
-  , m_env_photon_count_per_pass(params.get_optional<size_t>("env_photons_per_pass", 100000))
 {
 }
 

@@ -42,6 +42,7 @@ namespace foundation    { class AbortSwitch; }
 namespace renderer      { class EnvironmentEDF; }
 namespace renderer      { class LightSample; }
 namespace renderer      { class LightSampler; }
+namespace renderer      { class ParamArray; }
 namespace renderer      { class Scene; }
 namespace renderer      { class SPPMPhotonVector; }
 namespace renderer      { class TextureStore; }
@@ -61,14 +62,13 @@ class SPPMPhotonTracer
         const Scene&                scene,
         const LightSampler&         light_sampler,
         const TraceContext&         trace_context,
-        TextureStore&               texture_store);
+        TextureStore&               texture_store,
+        const ParamArray&           params);
 
     // Returns the total number of emitted photons.
     size_t trace_photons(
         SPPMPhotonVector&           photons,
         const size_t                pass_hash,
-        const size_t                light_photon_count,
-        const size_t                env_photon_count,
         foundation::AbortSwitch&    abort_switch);
 
   private:
@@ -92,6 +92,15 @@ class SPPMPhotonTracer
         const EnvironmentEDF*       env_edf);
 
   private:
+    struct Parameters
+    {
+        size_t  m_light_photon_count;
+        size_t  m_env_photon_count;
+
+        explicit Parameters(const ParamArray& params);
+    };
+
+    const Parameters                m_params;
     const Scene&                    m_scene;
     const LightSampler&             m_light_sampler;
     TextureCache                    m_texture_cache;

@@ -45,6 +45,7 @@
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/scene.h"
+#include "renderer/utility/paramarray.h"
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
@@ -67,6 +68,10 @@ using namespace foundation;
 namespace renderer
 {
 
+//
+// SPPMPhotonTracer class implementation.
+//
+
 namespace
 {
     const size_t rr_min_path_length = 5;
@@ -76,8 +81,10 @@ SPPMPhotonTracer::SPPMPhotonTracer(
     const Scene&            scene,
     const LightSampler&     light_sampler,
     const TraceContext&     trace_context,
-    TextureStore&           texture_store)
-  : m_scene(scene)
+    TextureStore&           texture_store,
+    const ParamArray&       params)
+  : m_params(params)
+  , m_scene(scene)
   , m_light_sampler(light_sampler)
   , m_texture_cache(texture_store)
   , m_intersector(trace_context, m_texture_cache /*, m_params.m_report_self_intersections*/)
@@ -89,8 +96,6 @@ SPPMPhotonTracer::SPPMPhotonTracer(
 size_t SPPMPhotonTracer::trace_photons(
     SPPMPhotonVector&       photons,
     const size_t            pass_hash,
-    const size_t            light_photon_count,
-    const size_t            env_photon_count,
     AbortSwitch&            abort_switch)
 {
     size_t emitted_photon_count = 0;
@@ -106,12 +111,12 @@ size_t SPPMPhotonTracer::trace_photons(
     {
         RENDERER_LOG_INFO(
             "tracing %s sppm light %s...",
-            pretty_uint(light_photon_count).c_str(),
-            light_photon_count > 1 ? "photons" : "photon");
+            pretty_uint(m_params.m_light_photon_count).c_str(),
+            m_params.m_light_photon_count > 1 ? "photons" : "photon");
 
-        sampling_context.split_in_place(4, light_photon_count);
+        sampling_context.split_in_place(4, m_params.m_light_photon_count);
 
-        for (size_t i = 0; i < light_photon_count && !abort_switch.is_aborted(); ++i)
+        for (size_t i = 0; i < m_params.m_light_photon_count && !abort_switch.is_aborted(); ++i)
         {
             trace_light_photon(photons, sampling_context);
             ++emitted_photon_count;
@@ -124,12 +129,12 @@ size_t SPPMPhotonTracer::trace_photons(
     {
         RENDERER_LOG_INFO(
             "tracing %s sppm environment %s...",
-            pretty_uint(env_photon_count).c_str(),
-            env_photon_count > 1 ? "photons" : "photon");
+            pretty_uint(m_params.m_env_photon_count).c_str(),
+            m_params.m_env_photon_count > 1 ? "photons" : "photon");
 
-        sampling_context.split_in_place(2, env_photon_count);
+        sampling_context.split_in_place(2, m_params.m_env_photon_count);
 
-        for (size_t i = 0; i < env_photon_count && !abort_switch.is_aborted(); ++i)
+        for (size_t i = 0; i < m_params.m_env_photon_count && !abort_switch.is_aborted(); ++i)
         {
             trace_env_photon(photons, sampling_context, env_edf);
             ++emitted_photon_count;
@@ -416,6 +421,17 @@ void SPPMPhotonTracer::trace_env_photon(
         m_intersector,
         m_texture_cache,
         ray);
+}
+
+
+//
+// SPPMPhotonTracer::Parameters class implementation.
+//
+
+SPPMPhotonTracer::Parameters::Parameters(const ParamArray& params)
+  : m_light_photon_count(params.get_optional<size_t>("light_photons_per_pass", 100000))
+  , m_env_photon_count(params.get_optional<size_t>("env_photons_per_pass", 100000))
+{
 }
 
 }   // namespace renderer
