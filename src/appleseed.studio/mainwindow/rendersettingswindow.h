@@ -135,13 +135,15 @@ class RenderSettingsWindow
     void create_pt_advanced_max_ray_intensity_settings(QVBoxLayout* parent);
 
     void create_sppm_panel(QLayout* parent);
-    void create_sppm_advanced_settings(QVBoxLayout* parent);
+    void create_sppm_photon_tracing_settings(QVBoxLayout* parent);
+    void create_sppm_radiance_estimation_settings(QVBoxLayout* parent);
 
     void create_system_panel(QLayout* parent);
     void create_system_override_rendering_threads_settings(QVBoxLayout* parent);
     void create_system_override_texture_store_max_size_settings(QVBoxLayout* parent);
 
-    void create_bounce_settings(QVBoxLayout* parent, const std::string& lighting_engine);
+    void create_bounce_settings_group(QVBoxLayout* parent, const std::string& prefix);
+    void create_bounce_settings(QFormLayout* parent, const std::string& prefix);
 
     static QHBoxLayout* create_horizontal_layout();
     static QVBoxLayout* create_vertical_layout();
@@ -206,11 +208,13 @@ class RenderSettingsWindow
 
     void load_bounce_settings(
         const renderer::Configuration&  config,
-        const std::string&              lighting_engine);
+        const std::string&              widget_key_prefix,
+        const std::string&              param_path_prefix);
 
     void save_bounce_settings(
         renderer::Configuration&        config,
-        const std::string&              lighting_engine);
+        const std::string&              widget_key_prefix,
+        const std::string&              param_path_prefix);
 
     template <typename T>
     void set_widget(

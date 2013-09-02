@@ -295,7 +295,7 @@ void RenderSettingsWindow::create_drt_panel(QLayout* parent)
 
     sublayout->addWidget(create_checkbox("drt.lighting_components.ibl", "Image-Based Lighting"));
 
-    create_bounce_settings(layout, "drt");
+    create_bounce_settings_group(layout, "drt");
     create_drt_advanced_settings(layout);
 }
 
@@ -364,7 +364,7 @@ void RenderSettingsWindow::create_pt_panel(QLayout* parent)
     sublayout->addWidget(create_checkbox("pt.lighting_components.ibl", "Image-Based Lighting"));
     sublayout->addWidget(create_checkbox("pt.lighting_components.caustics", "Caustics"));
 
-    create_bounce_settings(layout, "pt");
+    create_bounce_settings_group(layout, "pt");
     create_pt_advanced_settings(layout);
 }
 
@@ -448,13 +448,13 @@ void RenderSettingsWindow::create_sppm_panel(QLayout* parent)
     sublayout->addWidget(create_checkbox("sppm.lighting_components.ibl", "Image-Based Lighting"));
     sublayout->addWidget(create_checkbox("sppm.lighting_components.caustics", "Caustics"));
 
-    create_bounce_settings(layout, "sppm");
-    create_sppm_advanced_settings(layout);
+    create_sppm_photon_tracing_settings(layout);
+    create_sppm_radiance_estimation_settings(layout);
 }
 
-void RenderSettingsWindow::create_sppm_advanced_settings(QVBoxLayout* parent)
+void RenderSettingsWindow::create_sppm_photon_tracing_settings(QVBoxLayout* parent)
 {
-    QGroupBox* groupbox = new QGroupBox("Advanced");
+    QGroupBox* groupbox = new QGroupBox("Photon Tracing");
     parent->addWidget(groupbox);
 
     QVBoxLayout* layout = new QVBoxLayout();
@@ -463,11 +463,26 @@ void RenderSettingsWindow::create_sppm_advanced_settings(QVBoxLayout* parent)
     QFormLayout* sublayout = create_form_layout();
     layout->addLayout(sublayout);
 
-    sublayout->addRow("Initial Radius:", create_double_input("sppm.advanced.initial_radius", 0.001, 100.0, 3, 1.0, "%"));
-    sublayout->addRow("Alpha:", create_double_input("sppm.advanced.alpha", 0.0, 1.0, 1, 0.1));
-    sublayout->addRow("Light Photons Per Pass:", create_integer_input("sppm.advanced.light_photons_per_pass", 0, 1000000000));
-    sublayout->addRow("Environment Photons Per Pass:", create_integer_input("sppm.advanced.env_photons_per_pass", 0, 1000000000));
-    sublayout->addRow("Max Photons in Radiance Estimation:", create_integer_input("sppm.advanced.max_photons_per_estimate", 8, 1000000000));
+    create_bounce_settings(sublayout, "sppm.photon_tracing");
+    sublayout->addRow("Light Photons:", create_integer_input("sppm.photon_tracing.light_photons", 0, 1000000000));
+    sublayout->addRow("Environment Photons:", create_integer_input("sppm.photon_tracing.env_photons", 0, 1000000000));
+}
+
+void RenderSettingsWindow::create_sppm_radiance_estimation_settings(QVBoxLayout* parent)
+{
+    QGroupBox* groupbox = new QGroupBox("Radiance Estimation");
+    parent->addWidget(groupbox);
+
+    QVBoxLayout* layout = new QVBoxLayout();
+    groupbox->setLayout(layout);
+
+    QFormLayout* sublayout = create_form_layout();
+    layout->addLayout(sublayout);
+
+    create_bounce_settings(sublayout, "sppm.radiance_estimation");
+    sublayout->addRow("Initial Radius:", create_double_input("sppm.radiance_estimation.initial_radius", 0.001, 100.0, 3, 1.0, "%"));
+    sublayout->addRow("Max Photons:", create_integer_input("sppm.radiance_estimation.max_photons", 8, 1000000000));
+    sublayout->addRow("Alpha:", create_double_input("sppm.radiance_estimation.alpha", 0.0, 1.0, 1, 0.1));
 }
 
 //---------------------------------------------------------------------------------------------
@@ -515,15 +530,20 @@ void RenderSettingsWindow::create_system_override_texture_store_max_size_setting
 // Reusable settings.
 //---------------------------------------------------------------------------------------------
 
-void RenderSettingsWindow::create_bounce_settings(QVBoxLayout* parent, const string& lighting_engine)
+void RenderSettingsWindow::create_bounce_settings_group(QVBoxLayout* parent, const string& prefix)
 {
-    const string widget_base_key = lighting_engine + ".bounces.";
-
     QGroupBox* groupbox = new QGroupBox("Bounces");
     parent->addWidget(groupbox);
 
     QFormLayout* layout = create_form_layout();
     groupbox->setLayout(layout);
+
+    create_bounce_settings(layout, prefix);
+}
+
+void RenderSettingsWindow::create_bounce_settings(QFormLayout* layout, const string& prefix)
+{
+    const string widget_base_key = prefix + ".bounces.";
 
     QSpinBox* max_bounces = create_integer_input(widget_base_key + "max_bounces", 0, 10000);
     QCheckBox* unlimited_bounces = create_checkbox(widget_base_key + "unlimited_bounces", "Unlimited");
@@ -765,19 +785,20 @@ void RenderSettingsWindow::create_direct_links()
     create_direct_link("sppm.lighting_components.dl", "sppm_pass_callback.enable_dl", true);
     create_direct_link("sppm.lighting_components.ibl", "sppm_lighting_engine.enable_ibl", true);
     create_direct_link("sppm.lighting_components.caustics", "sppm_pass_callback.enable_caustics", true);
-    create_direct_link("sppm.bounces.rr_start_bounce", "sppm_lighting_engine.rr_min_path_length", 3);
-    create_direct_link("sppm.advanced.alpha", "sppm_pass_callback.alpha", 0.7);
-    create_direct_link("sppm.advanced.initial_radius", "sppm_pass_callback.initial_radius", 1.0);
-    create_direct_link("sppm.advanced.light_photons_per_pass", "sppm_pass_callback.light_photons_per_pass", 100000);
-    create_direct_link("sppm.advanced.env_photons_per_pass", "sppm_pass_callback.env_photons_per_pass", 100000);
-    create_direct_link("sppm.advanced.max_photons_per_estimate", "sppm_lighting_engine.max_photons_per_estimate", 100);
+    create_direct_link("sppm.photon_tracing.bounces.rr_start_bounce", "sppm_pass_callback.rr_min_path_length", 3);
+    create_direct_link("sppm.photon_tracing.light_photons", "sppm_pass_callback.light_photons_per_pass", 100000);
+    create_direct_link("sppm.photon_tracing.env_photons", "sppm_pass_callback.env_photons_per_pass", 100000);
+    create_direct_link("sppm.radiance_estimation.bounces.rr_start_bounce", "sppm_lighting_engine.rr_min_path_length", 3);
+    create_direct_link("sppm.radiance_estimation.initial_radius", "sppm_pass_callback.initial_radius", 1.0);
+    create_direct_link("sppm.radiance_estimation.max_photons", "sppm_lighting_engine.max_photons_per_estimate", 100);
+    create_direct_link("sppm.radiance_estimation.alpha", "sppm_pass_callback.alpha", 0.7);
 }
 
 template <typename T>
 void RenderSettingsWindow::create_direct_link(
-    const string&   widget_key,
-    const string&   param_path,
-    const T&        default_value)
+    const string&           widget_key,
+    const string&           param_path,
+    const T&                default_value)
 {
     DirectLink direct_link;
     direct_link.m_widget_key = widget_key;
@@ -828,18 +849,19 @@ void RenderSettingsWindow::do_load_configuration(const Configuration& config)
     load_directly_linked_values(config);
 
     // Distribution Ray Tracer.
-    load_bounce_settings(config, "drt");
+    load_bounce_settings(config, "drt", "drt");
 
     // Unidirectional Path Tracer.
     {
-        load_bounce_settings(config, "pt");
+        load_bounce_settings(config, "pt", "pt");
 
         set_widget("pt.advanced.unlimited_ray_intensity", !config.get_parameters().exist_path("pt.max_ray_intensity"));
         set_widget("pt.advanced.max_ray_intensity", get_config<double>(config, "pt.max_ray_intensity", 1.0));
     }
 
     // Stochastic Progressive Photon Mapping.
-    load_bounce_settings(config, "sppm");
+    load_bounce_settings(config, "sppm.photon_tracing", "sppm_pass_callback");
+    load_bounce_settings(config, "sppm.radiance_estimation", "sppm_lighting_engine");
 
     // System / Rendering Threads.
     {
@@ -869,16 +891,17 @@ void RenderSettingsWindow::do_save_configuration(Configuration& config)
             : "ephemeral");
 
     // Distribution Ray Tracer.
-    save_bounce_settings(config, "drt");
+    save_bounce_settings(config, "drt", "drt");
 
     // Unidirectional Path Tracer.
-    save_bounce_settings(config, "pt");
+    save_bounce_settings(config, "pt", "pt");
     if (get_widget<bool>("pt.advanced.unlimited_ray_intensity"))
         config.get_parameters().remove_path("pt.max_ray_intensity");
     else set_config(config, "pt.max_ray_intensity", get_widget<double>("pt.advanced.max_ray_intensity"));
 
     // Stochastic Progressive Photon Mapping.
-    save_bounce_settings(config, "sppm");
+    save_bounce_settings(config, "sppm.photon_tracing", "sppm_pass_callback");
+    save_bounce_settings(config, "sppm.radiance_estimation", "sppm_lighting_engine");
 
     // System / Rendering Threads.
     if (get_widget<bool>("system.rendering_threads.override"))
@@ -906,22 +929,31 @@ void RenderSettingsWindow::save_directly_linked_values(Configuration& config)
         set_config(config, i->m_param_path, get_widget<string>(i->m_widget_key));
 }
 
-void RenderSettingsWindow::load_bounce_settings(const Configuration& config, const string& lighting_engine)
+void RenderSettingsWindow::load_bounce_settings(
+    const Configuration&    config,
+    const string&           widget_key_prefix,
+    const string&           param_path_prefix)
 {
     const size_t DefaultMaxBounces = 8;
-    const size_t max_path_length = get_config<size_t>(config, lighting_engine + ".max_path_length", 0);
-    set_widget(lighting_engine + ".bounces.unlimited_bounces", max_path_length == 0);
-    set_widget(lighting_engine + ".bounces.max_bounces", max_path_length == 0 ? DefaultMaxBounces : max_path_length - 1);
+
+    const size_t max_path_length =
+        get_config<size_t>(config, param_path_prefix + ".max_path_length", 0);
+
+    set_widget(widget_key_prefix + ".bounces.unlimited_bounces", max_path_length == 0);
+    set_widget(widget_key_prefix + ".bounces.max_bounces", max_path_length == 0 ? DefaultMaxBounces : max_path_length - 1);
 }
 
-void RenderSettingsWindow::save_bounce_settings(Configuration& config, const string& lighting_engine)
+void RenderSettingsWindow::save_bounce_settings(
+    Configuration&          config,
+    const string&           widget_key_prefix,
+    const string&           param_path_prefix)
 {
     const size_t max_path_length =
-        !get_widget<bool>(lighting_engine + ".bounces.unlimited_bounces")
-            ? get_widget<size_t>(lighting_engine + ".bounces.max_bounces") + 1
+        !get_widget<bool>(widget_key_prefix + ".bounces.unlimited_bounces")
+            ? get_widget<size_t>(widget_key_prefix + ".bounces.max_bounces") + 1
             : 0;
 
-    set_config(config, lighting_engine + ".max_path_length", max_path_length);
+    set_config(config, param_path_prefix + ".max_path_length", max_path_length);
 }
 
 template <typename T>
