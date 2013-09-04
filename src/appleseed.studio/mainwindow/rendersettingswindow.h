@@ -111,6 +111,7 @@ class RenderSettingsWindow
     QComboBox*                  m_image_planer_sampler_combo;
     QGroupBox*                  m_uniform_image_plane_sampler;
     QGroupBox*                  m_adaptive_image_plane_sampler;
+    QCheckBox*                  m_force_aa_checkbox;
 
     void create_panels();
     void set_panels_enabled(const bool enabled);
@@ -245,6 +246,7 @@ class RenderSettingsWindow
     void slot_restore_configuration_and_close();
 
     void slot_changed_image_plane_sampler(int index);
+    void slot_changed_uniform_sampler_samples(const int samples);
 };
 
 }       // namespace studio

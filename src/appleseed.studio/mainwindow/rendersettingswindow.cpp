@@ -198,9 +198,10 @@ void RenderSettingsWindow::create_image_plane_sampling_general_settings(QVBoxLay
     m_image_planer_sampler_combo->addItem("Adaptive", "adaptive");
     m_image_planer_sampler_combo->setCurrentIndex(-1);
     sublayout->addRow("Sampler:", m_image_planer_sampler_combo);
+
     connect(
         m_image_planer_sampler_combo, SIGNAL(currentIndexChanged(int)),
-        this, SLOT(slot_changed_image_plane_sampler(int)));
+        SLOT(slot_changed_image_plane_sampler(int)));
 
     sublayout->addRow("Passes:", create_integer_input("image_plane_sampling.general.passes", 1, 1000000));
 }
@@ -211,6 +212,11 @@ void RenderSettingsWindow::slot_changed_image_plane_sampler(int index)
 
     m_uniform_image_plane_sampler->setEnabled(sampler == "uniform");
     m_adaptive_image_plane_sampler->setEnabled(sampler == "adaptive");
+}
+
+void RenderSettingsWindow::slot_changed_uniform_sampler_samples(const int samples)
+{
+    m_force_aa_checkbox->setDisabled(samples > 1);
 }
 
 void RenderSettingsWindow::create_image_plane_sampling_sampler_settings(QVBoxLayout* parent)
@@ -230,7 +236,16 @@ void RenderSettingsWindow::create_image_plane_sampling_uniform_sampler_settings(
     QVBoxLayout* layout = create_vertical_layout();
     m_uniform_image_plane_sampler->setLayout(layout);
 
-    layout->addLayout(create_form_layout("Samples:", create_integer_input("image_plane_sampling.uniform_sampler.samples", 1, 1000000)));
+    QSpinBox* samples_spinbox = create_integer_input("image_plane_sampling.uniform_sampler.samples", 1, 1000000);
+    layout->addLayout(create_form_layout("Samples:", samples_spinbox));
+
+    m_force_aa_checkbox = create_checkbox("image_plane_sampling.uniform_sampler.force_antialiasing", "Force Antialiasing");
+    layout->addWidget(m_force_aa_checkbox);
+
+    connect(
+        samples_spinbox, SIGNAL(valueChanged(const int)),
+        SLOT(slot_changed_uniform_sampler_samples(const int)));
+
     layout->addWidget(create_checkbox("image_plane_sampling.uniform_sampler.decorrelate_pixels", "Decorrelate Pixels"));
 }
 
@@ -757,6 +772,7 @@ void RenderSettingsWindow::create_direct_links()
     create_direct_link("image_plane_sampling.general.sampler", "pixel_renderer", "uniform");
     create_direct_link("image_plane_sampling.general.passes", "generic_frame_renderer.passes", 1);
     create_direct_link("image_plane_sampling.uniform_sampler.samples", "uniform_pixel_renderer.samples", 64);
+    create_direct_link("image_plane_sampling.uniform_sampler.force_antialiasing", "uniform_pixel_renderer.force_antialiasing", false);
     create_direct_link("image_plane_sampling.uniform_sampler.decorrelate_pixels", "uniform_pixel_renderer.decorrelate_pixels", true);
     create_direct_link("image_plane_sampling.adaptive_sampler.min_samples", "adaptive_pixel_renderer.min_samples", 16);
     create_direct_link("image_plane_sampling.adaptive_sampler.max_samples", "adaptive_pixel_renderer.max_samples", 64);
