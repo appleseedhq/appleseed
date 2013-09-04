@@ -99,11 +99,10 @@ namespace
           , m_vertex_count(0)
           , m_face_material(0)
           , m_triangulator(Triangulator<double>::KeepDegenerateTriangles)
-          , m_face_count(0)
-          , m_triangulation_error_count(0)
           , m_total_vertex_count(0)
           , m_total_triangle_count(0)
         {
+            reset_mesh_stats();
         }
 
         const MeshObjectVector& get_objects() const
@@ -133,21 +132,31 @@ namespace
                     m_params).release());
 
             // Reset mesh statistics.
-            m_face_count = 0;
-            m_triangulation_error_count = 0;
+            reset_mesh_stats();
         }
 
         virtual void end_mesh() OVERRIDE
         {
-            // Print the number of faces that could not be triangulated (if any).
+            // Print the number of faces that could not be triangulated, if any.
             if (m_triangulation_error_count > 0)
             {
                 RENDERER_LOG_WARNING(
-                    "while loading mesh object \"%s\": %s polygonal %s (out of %s) could not be triangulated.",
+                    "while loading mesh object \"%s\": %s polygonal %s (out of %s) could not be triangulated and have been replaced by zero-area triangles.",
                     m_objects.back()->get_name(),
-                    pretty_int(m_triangulation_error_count).c_str(),
-                    plural(m_triangulation_error_count, "face").c_str(),
-                    pretty_int(m_face_count).c_str());
+                    pretty_uint(m_triangulation_error_count).c_str(),
+                    m_triangulation_error_count > 1 ? "faces" : "face",
+                    pretty_uint(m_face_count).c_str());
+            }
+
+            // Print the number of null normal vectors, if any.
+            if (m_null_normal_vector_count > 0)
+            {
+                RENDERER_LOG_WARNING(
+                    "while loading mesh object \"%s\": %s normal %s (out of %s) were null and have been replaced by arbitrary unit-length vectors.",
+                    m_objects.back()->get_name(),
+                    pretty_uint(m_null_normal_vector_count).c_str(),
+                    m_null_normal_vector_count > 1 ? "vectors" : "vector",
+                    pretty_uint(m_normal_count).c_str());
             }
 
             // Keep track of the total number of vertices and triangles that were loaded.
@@ -162,7 +171,21 @@ namespace
 
         virtual size_t push_vertex_normal(const Vector3d& v) OVERRIDE
         {
-            return m_objects.back()->push_vertex_normal(GVector3(v));
+            GVector3 n(v);
+
+            const GScalar norm_n = norm(n);
+
+            if (norm_n > GScalar(0.0))
+                n /= norm_n;
+            else
+            {
+                ++m_null_normal_vector_count;
+                n = GVector3(GScalar(1.0), GScalar(0.0), GScalar(0.0));
+            }
+
+            ++m_normal_count;
+
+            return m_objects.back()->push_vertex_normal(n);
         }
 
         virtual size_t push_tex_coords(const Vector2d& v) OVERRIDE
@@ -292,12 +315,22 @@ namespace
         vector<size_t>          m_triangles;
 
         // Mesh statistics.
+        size_t                  m_normal_count;
         size_t                  m_face_count;
         size_t                  m_triangulation_error_count;
+        size_t                  m_null_normal_vector_count;
 
         // Global statistics.
         size_t                  m_total_vertex_count;
         size_t                  m_total_triangle_count;
+
+        void reset_mesh_stats()
+        {
+            m_normal_count = 0;
+            m_face_count = 0;
+            m_triangulation_error_count = 0;
+            m_null_normal_vector_count = 0;
+        }
 
         string make_unique_mesh_name(string mesh_name)
         {
