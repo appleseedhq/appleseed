@@ -114,6 +114,7 @@ template <typename T, size_t N> T dot(const Vector<T, N>& lhs, const Vector<T, N
 template <typename T, size_t N> T square_norm(const Vector<T, N>& v);
 template <typename T, size_t N> T norm(const Vector<T, N>& v);
 template <typename T, size_t N> Vector<T, N> normalize(const Vector<T, N>& v);
+template <typename T, size_t N> Vector<T, N> safe_normalize(const Vector<T, N>& v);
 
 // Return true if a vector is normalized (unit-length), false otherwise.
 template <typename T, size_t N> bool is_normalized(const Vector<T, N>& v);
@@ -682,6 +683,22 @@ inline Vector<T, N> normalize(const Vector<T, N>& v)
     const T n = norm(v);
     assert(n > T(0.0));
     return v / n;
+}
+
+template <typename T, size_t N>
+inline Vector<T, N> safe_normalize(const Vector<T, N>& v)
+{
+    Vector<T, N> result = v;
+
+    const T n = norm(result);
+
+    if (n > 0.0)
+        result /= n;
+    else result[0] = T(1.0);
+
+    assert(is_normalized(result));
+
+    return result;
 }
 
 template <typename T, size_t N>
