@@ -679,7 +679,9 @@ inline T norm(const Vector<T, N>& v)
 template <typename T, size_t N>
 inline Vector<T, N> normalize(const Vector<T, N>& v)
 {
-    return v / norm(v);
+    const T n = norm(v);
+    assert(n > T(0.0));
+    return v / n;
 }
 
 template <typename T, size_t N>
