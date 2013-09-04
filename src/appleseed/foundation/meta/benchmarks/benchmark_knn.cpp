@@ -231,7 +231,7 @@ BENCHMARK_SUITE(Foundation_Math_Knn_Query)
                 // Let the barycenter of these points be a query point.
                 Vector3f query_point(0.0f);
                 for (size_t j = 0; j < answer.size(); ++j)
-                    query_point += m_points[answer.get(j).m_index];
+                    query_point += m_points[m_tree.remap(answer.get(j).m_index)];
                 query_point /= static_cast<float>(answer.size());
                 m_query_points.push_back(query_point);
             }

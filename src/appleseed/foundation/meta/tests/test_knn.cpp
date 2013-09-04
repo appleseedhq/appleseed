@@ -339,7 +339,7 @@ TEST_SUITE(Foundation_Math_Knn_Query)
 
             size_t our_answer[AnswerSize];
             for (size_t j = 0; j < AnswerSize; ++j)
-                our_answer[j] = answer.get(j).m_index;
+                our_answer[j] = tree.remap(answer.get(j).m_index);
 
             EXPECT_SEQUENCE_EQ(AnswerSize, &stann_answer[0], &our_answer[0]);
         }
