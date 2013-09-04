@@ -60,7 +60,7 @@ class DLLSYMBOL IMeshBuilder
     // Return the index of the vertex within the mesh.
     virtual size_t push_vertex(const Vector3d& v) = 0;
 
-    // Append a vertex normal to the mesh. The normal is unit-length.
+    // Append a vertex normal to the mesh. The normal is NOT necessarily unit-length.
     // Return the index of the normal within the mesh.
     virtual size_t push_vertex_normal(const Vector3d& v) = 0;
 

@@ -82,7 +82,7 @@ class DLLSYMBOL MeshObject
 
     // Insert and access vertex normals.
     void reserve_vertex_normals(const size_t count);
-    size_t push_vertex_normal(const GVector3& normal);
+    size_t push_vertex_normal(const GVector3& normal);      // the normal must be unit-length
     size_t get_vertex_normal_count() const;
     const GVector3& get_vertex_normal(const size_t index) const;
 

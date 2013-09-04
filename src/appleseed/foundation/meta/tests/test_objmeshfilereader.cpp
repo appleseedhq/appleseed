@@ -73,7 +73,7 @@ TEST_SUITE(Foundation_Mesh_OBJMeshFileReader)
 
         virtual size_t push_vertex_normal(const Vector3d& v) OVERRIDE
         {
-            m_meshes.back().m_vertex_normals.push_back(v);
+            m_meshes.back().m_vertex_normals.push_back(safe_normalize(v));
             return m_meshes.back().m_vertex_normals.size() - 1;
         }
 

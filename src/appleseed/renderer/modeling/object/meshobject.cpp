@@ -35,6 +35,7 @@
 #include "renderer/modeling/object/triangle.h"
 
 // Standard headers.
+#include <cassert>
 #include <string>
 #include <vector>
 
@@ -158,6 +159,8 @@ void MeshObject::reserve_vertex_normals(const size_t count)
 
 size_t MeshObject::push_vertex_normal(const GVector3& normal)
 {
+    assert(is_normalized(normal));
+
     const size_t index = impl->m_tess.m_vertex_normals.size();
     impl->m_tess.m_vertex_normals.push_back(normal);
     return index;
