@@ -42,6 +42,7 @@
 #include <list>
 
 // Forward declarations.
+namespace foundation    { class AbortSwitch; }
 namespace foundation    { class IJob; }
 
 // Unit test case declarations.
@@ -134,8 +135,17 @@ class DLLSYMBOL JobQueue
     // Acquire a scheduled job and change its state from 'scheduled' to 'running'.
     RunningJobInfo acquire_scheduled_job();
 
+    // Wait for a scheduled job to be available.
+    RunningJobInfo wait_for_scheduled_job(AbortSwitch& abort_switch);
+
+    // Acquire a scheduled job without any locking.
+    RunningJobInfo acquire_scheduled_job_unlocked();
+
     // Retire a running job. The job is deleted if it is owned by the queue.
     void retire_running_job(const RunningJobInfo& running_job_info);
+
+    // Signal a queue event.
+    void signal_event();
 };
 
 }       // namespace foundation
