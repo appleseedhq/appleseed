@@ -294,7 +294,7 @@ namespace
                     for (const_each<TileJobFactory::TileJobVector> i = tile_jobs; i; ++i)
                         m_job_queue.schedule(*i);
 
-                    // Wait until rendering jobs have effectively stopped.
+                    // Wait until tile jobs have effectively stopped.
                     m_job_queue.wait_until_completion();
 
                     // Invoke the post-pass callback if there is one.
