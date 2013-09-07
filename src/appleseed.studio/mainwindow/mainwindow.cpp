@@ -1297,7 +1297,7 @@ void MainWindow::slot_save_frame()
         return;
 
     if (QFileInfo(filepath).suffix().isEmpty())
-        filepath += ".png";
+        filepath += ".exr";
 
     filepath = QDir::toNativeSeparators(filepath);
 
@@ -1325,7 +1325,7 @@ void MainWindow::slot_save_all_aovs()
         return;
 
     if (QFileInfo(filepath).suffix().isEmpty())
-        filepath += ".png";
+        filepath += ".exr";
 
     filepath = QDir::toNativeSeparators(filepath);
 
