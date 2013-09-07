@@ -86,7 +86,7 @@ const char* Path::get_executable_path()
 // Linux.
 #elif defined __linux__
 
-        ssize_t result = readlink("/proc/self/exe", path, sizeof(path));
+        ssize_t result = readlink("/proc/self/exe", path, sizeof(path) - 1);
         assert(result > 0);
         path[result] = '\0';
 
