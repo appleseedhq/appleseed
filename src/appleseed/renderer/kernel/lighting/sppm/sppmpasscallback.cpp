@@ -83,11 +83,12 @@ void SPPMPassCallback::release()
 
 void SPPMPassCallback::pre_render(
     const Frame&            frame,
+    JobQueue&               job_queue,
     AbortSwitch&            abort_switch)
 {
     RENDERER_LOG_INFO(
         "beginning sppm pass %s, lookup radius is %f.",
-        pretty_uint(m_pass_number).c_str(),
+        pretty_uint(m_pass_number + 1).c_str(),
         m_lookup_radius);
 
     // Create a new set of photons.
@@ -96,6 +97,7 @@ void SPPMPassCallback::pre_render(
         m_photon_tracer.trace_photons(
             m_photons,
             hash_uint32(m_pass_number),
+            job_queue,
             abort_switch);
 
     // Stop there if rendering was aborted.
@@ -108,6 +110,7 @@ void SPPMPassCallback::pre_render(
 
 void SPPMPassCallback::post_render(
     const Frame&            frame,
+    JobQueue&               job_queue,
     AbortSwitch&            abort_switch)
 {
     // Shrink the lookup radius for the next pass.
@@ -117,7 +120,7 @@ void SPPMPassCallback::post_render(
 
     RENDERER_LOG_INFO(
         "ending sppm pass %s, new radius is %f.",
-        pretty_uint(m_pass_number).c_str(),
+        pretty_uint(m_pass_number + 1).c_str(),
         m_lookup_radius);
 
     ++m_pass_number;
