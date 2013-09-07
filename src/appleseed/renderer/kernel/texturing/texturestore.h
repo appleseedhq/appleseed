@@ -39,6 +39,9 @@
 #include "foundation/utility/cache.h"
 #include "foundation/utility/uid.h"
 
+// boost headers.
+#include "boost/cstdint.hpp"
+
 // Standard headers.
 #include <cassert>
 #include <cstddef>
