@@ -27,10 +27,6 @@
 # THE SOFTWARE.
 #
 
-# Settings.
-VersionString = "1.0"
-
-# Imports.
 import datetime
 import os
 import re
@@ -38,18 +34,25 @@ import subprocess
 import sys
 
 
-#
+#--------------------------------------------------------------------------------------------------
+# Constants.
+#--------------------------------------------------------------------------------------------------
+
+VERSION = "1.0"
+
+
+#--------------------------------------------------------------------------------------------------
 # Utility functions.
-#
+#--------------------------------------------------------------------------------------------------
 
 def safe_make_directory(path):
     if not os.path.isdir(path):
         os.makedirs(path)
 
 
-#
+#--------------------------------------------------------------------------------------------------
 # Logger.
-#
+#--------------------------------------------------------------------------------------------------
 
 class Logger:
     def __init__(self, directory):
@@ -66,9 +69,9 @@ class Logger:
         print(s)
 
 
-#
+#--------------------------------------------------------------------------------------------------
 # Benchmarking and reporting code.
-#
+#--------------------------------------------------------------------------------------------------
 
 def benchmark_projects(appleseed_path, appleseed_args, logger):
     for dirpath, dirnames, filenames in os.walk("."):
@@ -114,9 +117,9 @@ def get_value(output, key):
     return match.group(1) if match else None
 
 
-#
+#--------------------------------------------------------------------------------------------------
 # Entry point.
-#
+#--------------------------------------------------------------------------------------------------
 
 def print_configuration(appleseed_path, appleseed_args, logger):
     logger.write("Configuration:")
@@ -126,7 +129,7 @@ def print_configuration(appleseed_path, appleseed_args, logger):
     logger.write()
 
 def main():
-    print("appleseed.benchmark version " + VersionString)
+    print("appleseed.benchmark version " + VERSION)
     print
 
     if len(sys.argv) < 2:
@@ -149,4 +152,5 @@ def main():
 
     logger.write("\nTotal suite time: {0}\n".format(elapsed_time))
 
-main()
+if __name__ == '__main__':
+    main()
