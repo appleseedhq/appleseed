@@ -157,7 +157,7 @@ void JobQueue::wait_until_completion()
 {
     mutex::scoped_lock lock(impl->m_mutex);
 
-    // Wait until for all scheduled and running jobs.
+    // Wait until there is no more scheduled or running jobs.
     while (!impl->m_scheduled_jobs.empty() || !impl->m_running_jobs.empty())
         impl->m_event.wait(lock);
 }
