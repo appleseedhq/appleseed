@@ -174,7 +174,7 @@ JobQueue::RunningJobInfo JobQueue::wait_for_scheduled_job(AbortSwitch& abort_swi
     mutex::scoped_lock lock(impl->m_mutex);
 
     // Wait for a scheduled job to be available.
-    while (impl->m_scheduled_jobs.empty() && !abort_switch.is_aborted())
+    while (!abort_switch.is_aborted() && impl->m_scheduled_jobs.empty())    // order matters
         impl->m_event.wait(lock);
 
     return acquire_scheduled_job_unlocked();
