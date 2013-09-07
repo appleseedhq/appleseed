@@ -29,11 +29,21 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_JOB_ABORTSWITCH_H
 #define APPLESEED_FOUNDATION_UTILITY_JOB_ABORTSWITCH_H
 
+// appleseed.foundation headers.
+#include "foundation/platform/thread.h"
+
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
+// boost headers.
+#include "boost/cstdint.hpp"
+
 namespace foundation
 {
+
+//
+// A thread-safe switch to instruct threads to abort their computations.
+//
 
 class DLLSYMBOL AbortSwitch
 {
@@ -51,7 +61,7 @@ class DLLSYMBOL AbortSwitch
     bool is_aborted() const;
 
   private:
-    volatile bool m_aborted;
+    mutable volatile boost::uint32_t m_aborted;
 };
 
 
@@ -60,23 +70,23 @@ class DLLSYMBOL AbortSwitch
 //
 
 inline AbortSwitch::AbortSwitch()
-  : m_aborted(false)
 {
+    clear();
 }
 
 inline void AbortSwitch::clear()
 {
-    m_aborted = false;
+    boost_atomic::atomic_write32(&m_aborted, 0);
 }
 
 inline void AbortSwitch::abort()
 {
-    m_aborted = true;
+    boost_atomic::atomic_write32(&m_aborted, 1);
 }
 
 inline bool AbortSwitch::is_aborted() const
 {
-    return m_aborted;
+    return boost_atomic::atomic_read32(&m_aborted) == 1;
 }
 
 }       // namespace foundation
