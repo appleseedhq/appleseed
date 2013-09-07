@@ -111,7 +111,8 @@ const char* Path::get_executable_directory()
         executable_path.remove_filename();
 
         assert(executable_path.string().size() <= FOUNDATION_MAX_PATH_LENGTH);
-        strcpy(path, executable_path.string().c_str());
+        strncpy(path, executable_path.string().c_str(), sizeof(path) - 1);
+        path[sizeof(path) - 1] = '\0';
 
         path_initialized = true;
     }
