@@ -214,6 +214,8 @@ void JobQueue::retire_running_job(const RunningJobInfo& running_job_info)
 
 void JobQueue::signal_event()
 {
+    mutex::scoped_lock lock(impl->m_mutex);
+
     impl->m_event.notify_all();
 }
 
