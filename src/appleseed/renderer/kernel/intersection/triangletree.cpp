@@ -698,9 +698,11 @@ void TriangleTree::build_sbvh(
 
 namespace
 {
+#ifdef APPLESEED_FOUNDATION_USE_SSE
+
     //
-    // If the bounding box is seen as a flat array of scalars, the swizzle() function converts
-    // the bounding box from
+    // If the bounding box is seen as a flat array of scalars, the swizzle()
+    // function converts the bounding box from
     //
     //   min.x  min.y  min.z  max.x  max.y  max.z
     //
@@ -723,6 +725,20 @@ namespace
 
         return result;
     }
+
+#else
+
+    //
+    // The swizzle() function has no effect when SSE is disabled.
+    //
+
+    template <typename T, size_t N>
+    AABB<T, N> swizzle(const AABB<T, N>& bbox)
+    {
+        return bbox;
+    }
+
+#endif
 }
 
 vector<GAABB3> TriangleTree::compute_motion_bboxes(
