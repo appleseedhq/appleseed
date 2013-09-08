@@ -1289,7 +1289,7 @@ void MainWindow::slot_save_frame()
             this,
             "Save Frame As...",
             m_settings.get_path_optional<QString>(LAST_DIRECTORY_SETTINGS_KEY),
-            "Image Files (*.png;*.exr);;All Files (*.*)",
+            "Image Files (*.exr;*.png);;All Files (*.*)",
             &selected_filter,
             options);
 
@@ -1317,7 +1317,7 @@ void MainWindow::slot_save_all_aovs()
             this,
             "Save All AOVs As...",
             m_settings.get_path_optional<QString>(LAST_DIRECTORY_SETTINGS_KEY),
-            "Image Files (*.png;*.exr);;All Files (*.*)",
+            "Image Files (*.exr;*.png);;All Files (*.*)",
             &selected_filter,
             options);
 
