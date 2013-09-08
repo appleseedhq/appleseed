@@ -32,10 +32,6 @@
 namespace foundation
 {
 
-//
-// MersenneTwister class implementation.
-//
-
 /* 
    Copyright (C) 1997 - 2002, Makoto Matsumoto and Takuji Nishimura,
    All rights reserved.                          
@@ -151,26 +147,5 @@ void MersenneTwister::update_state()
     y = (mt[N-1]&UPPER_MASK)|(mt[0]&LOWER_MASK);
     mt[N-1] = mt[M-1] ^ (y >> 1) ^ mag01[y & 0x1UL];
 }
-
-/*
-// todo: move to test_rng.cpp
-int main(void)
-{
-    int i;
-    unsigned long init[4]={0x123, 0x234, 0x345, 0x456}, length=4;
-    init_by_array(init, length);
-    printf("1000 outputs of genrand_int32()\n");
-    for (i=0; i<1000; i++) {
-      printf("%10lu ", genrand_int32());
-      if (i%5==4) printf("\n");
-    }
-    printf("\n1000 outputs of genrand_real2()\n");
-    for (i=0; i<1000; i++) {
-      printf("%10.8f ", genrand_real2());
-      if (i%5==4) printf("\n");
-    }
-    return 0;
-}
-*/
 
 }   // namespace foundation
