@@ -74,6 +74,8 @@ class SPPMPhotonTracer
     const TraceContext&             m_trace_context;
     TextureStore&                   m_texture_store;
     const ParamArray                m_params;
+    size_t                          m_total_emitted_photon_count;
+    size_t                          m_total_stored_photon_count;
 };
 
 }       // namespace renderer

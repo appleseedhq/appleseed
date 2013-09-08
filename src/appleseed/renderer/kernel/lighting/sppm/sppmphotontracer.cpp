@@ -58,8 +58,11 @@
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
+#include "foundation/platform/timer.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/job.h"
+#include "foundation/utility/statistics.h"
+#include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
@@ -524,6 +527,8 @@ SPPMPhotonTracer::SPPMPhotonTracer(
   , m_trace_context(trace_context)
   , m_texture_store(texture_store)
   , m_params(params)
+  , m_total_emitted_photon_count(0)
+  , m_total_stored_photon_count(0)
 {
 }
 
@@ -536,6 +541,10 @@ size_t SPPMPhotonTracer::trace_photons(
     size_t emitted_photon_count = 0;
 
     const Parameters params(m_params);
+
+    // Start stopwatch.
+    Stopwatch<DefaultWallclockTimer> stopwatch;
+    stopwatch.start();
 
     if (m_light_sampler.has_lights_or_emitting_triangles())
     {
@@ -595,7 +604,22 @@ size_t SPPMPhotonTracer::trace_photons(
         }
     }
 
+    // Wait until the photon tracing jobs have completed.
     job_queue.wait_until_completion();
+
+    // Update photon tracing statistics.
+    m_total_emitted_photon_count += emitted_photon_count;
+    m_total_stored_photon_count += photons.size();
+
+    // Print photon tracing statistics.
+    Statistics statistics;
+    statistics.insert_time("tracing time", stopwatch.measure().get_seconds());
+    statistics.insert("total emitted", m_total_emitted_photon_count);
+    statistics.insert("total stored", m_total_stored_photon_count);
+    RENDERER_LOG_DEBUG("%s",
+        StatisticsVector::make(
+            "sppm photon tracing statistics",
+            statistics).to_string().c_str());
 
     return emitted_photon_count;
 }

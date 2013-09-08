@@ -87,6 +87,7 @@ void SPPMPassCallback::pre_render(
     AbortSwitch&            abort_switch)
 {
     RENDERER_LOG_INFO(
+        "----------------------------------------------------\n"
         "beginning sppm pass %s, lookup radius is %f.",
         pretty_uint(m_pass_number + 1).c_str(),
         m_lookup_radius);
