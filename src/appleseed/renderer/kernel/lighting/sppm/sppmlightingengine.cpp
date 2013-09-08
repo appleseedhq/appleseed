@@ -384,7 +384,7 @@ namespace
                         vertex.m_bsdf->evaluate(
                             vertex.m_bsdf_data,
                             false,                                  // not adjoint
-                            false,                                  // don't multiply by |cos(incoming, normal)|
+                            true,                                   // multiply by |cos(incoming, normal)|
                             vertex.get_geometric_normal(),
                             vertex.get_shading_basis(),
                             vertex.m_outgoing,                      // toward the camera
@@ -394,9 +394,14 @@ namespace
                     if (bsdf_prob == 0.0)
                         continue;
 
+                    // The photons store flux but we are computing reflected radiance.
+                    // The first step of the flux -> radiance conversion is done here.
+                    // The conversion will be completed when doing density estimation.
+                    bsdf_value /= abs(dot(data.m_incoming, data.m_geometric_normal));
+                    bsdf_value *= data.m_flux;
+
                     // Accumulate reflected flux.
                     ++included_photon_count;
-                    bsdf_value *= data.m_flux;
                     indirect_radiance += bsdf_value;
                 }
 
