@@ -92,6 +92,8 @@ void SPPMPassCallback::pre_render(
         pretty_uint(m_pass_number + 1).c_str(),
         m_lookup_radius);
 
+    m_stopwatch.start();
+
     // Create a new set of photons.
     m_photons.clear_keep_memory();
     m_emitted_photon_count =
@@ -119,10 +121,12 @@ void SPPMPassCallback::post_render(
     assert(k <= 1.0);
     m_lookup_radius *= sqrt(k);
 
+    m_stopwatch.measure();
+
     RENDERER_LOG_INFO(
-        "ending sppm pass %s, new radius is %f.",
+        "sppm pass %s completed in %s.",
         pretty_uint(m_pass_number + 1).c_str(),
-        m_lookup_radius);
+        pretty_time(m_stopwatch.get_seconds()).c_str());
 
     ++m_pass_number;
 }

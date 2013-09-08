@@ -615,7 +615,11 @@ size_t SPPMPhotonTracer::trace_photons(
     Statistics statistics;
     statistics.insert_time("tracing time", stopwatch.measure().get_seconds());
     statistics.insert("total emitted", m_total_emitted_photon_count);
-    statistics.insert("total stored", m_total_stored_photon_count);
+    statistics.insert(
+        "total stored",
+        pretty_uint(m_total_stored_photon_count) + " (" +
+        pretty_percent(m_total_stored_photon_count, m_total_emitted_photon_count) +
+        ")");
     RENDERER_LOG_DEBUG("%s",
         StatisticsVector::make(
             "sppm photon tracing statistics",

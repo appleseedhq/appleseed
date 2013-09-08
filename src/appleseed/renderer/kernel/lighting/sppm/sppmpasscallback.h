@@ -37,7 +37,9 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
+#include "foundation/platform/timer.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/stopwatch.h"
 
 // Standard headers.
 #include <cstddef>
@@ -116,6 +118,8 @@ class SPPMPassCallback
     SPPMPhotonVector                m_photons;
     std::auto_ptr<SPPMPhotonMap>    m_photon_map;
     float                           m_lookup_radius;
+    foundation::Stopwatch<foundation::DefaultWallclockTimer>
+                                    m_stopwatch;
 };
 
 
