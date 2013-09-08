@@ -114,15 +114,18 @@ namespace
     struct PathVisitor
     {
         const Spectrum              m_initial_flux;     // initial particle flux (in W)
-        const bool                  m_cast_indirect_light;
+        const bool                  m_store_direct;
+        const bool                  m_store_indirect;
         SPPMPhotonVector&           m_photons;
 
         PathVisitor(
             const Spectrum&         initial_flux,
-            const bool              cast_indirect_light,
+            const bool              store_direct,
+            const bool              store_indirect,
             SPPMPhotonVector&       photons)
           : m_initial_flux(initial_flux)
-          , m_cast_indirect_light(cast_indirect_light)
+          , m_store_direct(store_direct)
+          , m_store_indirect(store_indirect)
           , m_photons(photons)
         {
         }
@@ -137,25 +140,27 @@ namespace
 
         bool visit_vertex(const PathVertex& vertex)
         {
-            assert(vertex.m_path_length == 1 || m_cast_indirect_light);
+            if (vertex.m_path_length > 1 || m_store_direct)
+            {
+                // Don't store photons on surfaces without a BSDF.
+                if (vertex.m_bsdf == 0)
+                    return m_store_indirect;
 
-            // Don't store photons on surfaces without a BSDF.
-            if (vertex.m_bsdf == 0)
-                return true;
+                // Don't store photons on purely specular surfaces.
+                if (vertex.m_bsdf->is_purely_specular())
+                    return m_store_indirect;
 
-            // Don't store photons on purely specular surfaces.
-            if (vertex.m_bsdf->is_purely_specular())
-                return true;
+                // Create and store a new photon.
+                SPPMPhoton photon;
+                photon.m_position = vertex.get_point();
+                photon.m_data.m_incoming = Vector3f(vertex.m_outgoing);
+                photon.m_data.m_geometric_normal = Vector3f(vertex.get_geometric_normal());
+                photon.m_data.m_flux = m_initial_flux;
+                photon.m_data.m_flux *= vertex.m_throughput;
+                m_photons.push_back(photon);
+            }
 
-            SPPMPhoton photon;
-            photon.m_position = vertex.get_point();
-            photon.m_data.m_incoming = Vector3f(vertex.m_outgoing);
-            photon.m_data.m_geometric_normal = Vector3f(vertex.get_geometric_normal());
-            photon.m_data.m_flux = m_initial_flux;
-            photon.m_data.m_flux *= vertex.m_throughput;
-            m_photons.push_back(photon);
-
-            return m_cast_indirect_light;
+            return m_store_indirect;
         }
 
         void visit_environment(
@@ -307,6 +312,7 @@ namespace
             const bool cast_indirect_light = (edf->get_flags() & EDF::CastIndirectLight) != 0;
             PathVisitor path_visitor(
                 initial_flux,
+                true,                                       // do store direct lighting photons
                 cast_indirect_light,
                 m_local_photons);
             PathTracer<PathVisitor, true> path_tracer(      // true = adjoint
@@ -362,6 +368,7 @@ namespace
             const bool cast_indirect_light = (light_sample.m_light->get_flags() & EDF::CastIndirectLight) != 0;
             PathVisitor path_visitor(
                 initial_flux,
+                true,                                       // do store direct lighting photons
                 cast_indirect_light,
                 m_local_photons);
             PathTracer<PathVisitor, true> path_tracer(      // true = adjoint
@@ -493,6 +500,7 @@ namespace
             const bool cast_indirect_light = true;          // right now environments always cast indirect light
             PathVisitor path_visitor(
                 initial_flux,
+                true,                                       // do store IBL photons
                 cast_indirect_light,
                 m_local_photons);
             PathTracer<PathVisitor, true> path_tracer(      // true = adjoint
