@@ -39,7 +39,9 @@
 #include "renderer/kernel/rendering/itilerenderer.h"
 
 // appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/hash.h"
+#include "foundation/platform/thread.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/job.h"
@@ -52,6 +54,7 @@
 #include <string>
 #include <vector>
 
+using namespace boost;
 using namespace foundation;
 using namespace std;
 
@@ -77,6 +80,7 @@ namespace
           : m_frame(frame)
           , m_params(params)
           , m_pass_callback(pass_callback)
+          , m_is_rendering(false)
         {
             // We must have a renderer factory, but it's OK not to have a callback factory.
             assert(tile_renderer_factory);
@@ -107,6 +111,13 @@ namespace
 
         virtual ~GenericFrameRenderer()
         {
+            // Tell the pass manager thread to stop.
+            m_abort_switch.abort();
+
+            // Wait until the pass manager thread is terminated.
+            if (m_pass_manager_thread.get() && m_pass_manager_thread->joinable())
+                m_pass_manager_thread->join();
+
             // Delete tile callbacks.
             for (size_t i = 0; i < m_tile_callbacks.size(); ++i)
                 m_tile_callbacks[i]->release();
@@ -134,9 +145,13 @@ namespace
 
             m_abort_switch.clear();
 
-            // Create and schedule the initial (and possibly only) pass job.
-            m_job_queue.schedule(
-                new PassJob(
+            // Start job execution.
+            m_job_manager->start();
+
+            // Create and start the pass manager thread.
+            m_is_rendering = true;
+            m_pass_manager_func.reset(
+                new PassManagerFunc(
                     m_frame,
                     m_params.m_tile_ordering,
                     m_params.m_pass_count,
@@ -144,22 +159,25 @@ namespace
                     m_tile_callbacks,
                     m_pass_callback,
                     m_job_queue,
-                    m_abort_switch));
-
-            // Start job execution.
-            m_job_manager->start();
+                    m_abort_switch,
+                    m_is_rendering));
+            ThreadFunctionWrapper<PassManagerFunc> wrapper(m_pass_manager_func.get());
+            m_pass_manager_thread.reset(new thread(wrapper));
         }
 
         virtual void stop_rendering() OVERRIDE
         {
-            // Tell rendering jobs to stop.
+            // First, delete scheduled jobs to prevent worker threads from picking them up.
+            m_job_queue.clear_scheduled_jobs();
+
+            // Tell rendering jobs and the pass manager thread to stop.
             m_abort_switch.abort();
+
+            // Wait until the pass manager thread has stopped.
+            m_pass_manager_thread->join();
 
             // Stop job execution.
             m_job_manager->stop();
-
-            // Delete all non-executed tile jobs.
-            m_job_queue.clear_scheduled_jobs();
         }
 
         virtual void terminate_rendering() OVERRIDE
@@ -171,7 +189,7 @@ namespace
 
         virtual bool is_rendering() const OVERRIDE
         {
-            return m_job_queue.has_scheduled_or_running_jobs();
+            return m_is_rendering;
         }
 
       private:
@@ -222,11 +240,11 @@ namespace
             }
         };
 
-        class PassJob
-          : public IJob
+        class PassManagerFunc
+          : public NonCopyable
         {
           public:
-            PassJob(
+            PassManagerFunc(
                 const Frame&                        frame,
                 const TileJobFactory::TileOrdering  tile_ordering,
                 const size_t                        pass_count,
@@ -235,7 +253,7 @@ namespace
                 IPassCallback*                      pass_callback,
                 JobQueue&                           job_queue,
                 AbortSwitch&                        abort_switch,
-                const size_t                        pass = 0)
+                bool&                               is_rendering)
               : m_frame(frame)
               , m_tile_ordering(tile_ordering)
               , m_pass_count(pass_count)
@@ -244,72 +262,63 @@ namespace
               , m_pass_callback(pass_callback)
               , m_job_queue(job_queue)
               , m_abort_switch(abort_switch)
-              , m_pass(pass)
+              , m_is_rendering(is_rendering)
             {
             }
 
-            virtual void execute(const size_t thread_index) OVERRIDE
+            void operator()()
             {
-                // Poor man's fence: wait until all tile jobs are done before starting a new pass.
-                while (m_job_queue.get_total_job_count() != 1)
-                    yield();
+                for (size_t pass = 0; pass < m_pass_count && !m_abort_switch.is_aborted(); ++pass)
+                {
+                    // Invoke the pre-pass callback if there is one.
+                    if (m_pass_callback)
+                    {
+                        assert(!m_job_queue.has_scheduled_or_running_jobs());
+                        m_pass_callback->pre_render(m_frame, m_job_queue, m_abort_switch);
+                        assert(!m_job_queue.has_scheduled_or_running_jobs());
+                    }
 
-                // Invoke the post-pass callback (of the previous pass) if there is one.
-                if (m_pass_callback && m_pass > 0)
-                    m_pass_callback->post_render(m_frame, m_abort_switch);
-
-                // Stop when all passes have been rendered.
-                if (m_pass == m_pass_count)
-                    return;
-
-                // Handle aborts between passes.
-                if (m_abort_switch.is_aborted())
-                    return;
-
-                // Invoke the pre-pass callback if there is one.
-                if (m_pass_callback)
-                    m_pass_callback->pre_render(m_frame, m_abort_switch);
-
-                // Create tile jobs.
-                const uint32 pass_hash = hash_uint32(static_cast<uint32>(m_pass));
-                TileJobFactory::TileJobVector tile_jobs;
-                m_tile_job_factory.create(
-                    m_frame,
-                    m_tile_ordering,
-                    m_tile_renderers,
-                    m_tile_callbacks,
-                    pass_hash,
-                    tile_jobs,
-                    m_abort_switch);
-
-                // Schedule tile jobs.
-                for (const_each<TileJobFactory::TileJobVector> i = tile_jobs; i; ++i)
-                    m_job_queue.schedule(*i);
-
-                // This job reschedules itself automatically.
-                m_job_queue.schedule(
-                    new PassJob(
+                    // Create tile jobs.
+                    const uint32 pass_hash = hash_uint32(static_cast<uint32>(pass));
+                    TileJobFactory::TileJobVector tile_jobs;
+                    m_tile_job_factory.create(
                         m_frame,
                         m_tile_ordering,
-                        m_pass_count,
                         m_tile_renderers,
                         m_tile_callbacks,
-                        m_pass_callback,
-                        m_job_queue,
-                        m_abort_switch,
-                        m_pass + 1));
+                        pass_hash,
+                        tile_jobs,
+                        m_abort_switch);
+
+                    // Schedule tile jobs.
+                    for (const_each<TileJobFactory::TileJobVector> i = tile_jobs; i; ++i)
+                        m_job_queue.schedule(*i);
+
+                    // Wait until tile jobs have effectively stopped.
+                    m_job_queue.wait_until_completion();
+
+                    // Invoke the post-pass callback if there is one.
+                    if (m_pass_callback)
+                    {
+                        assert(!m_job_queue.has_scheduled_or_running_jobs());
+                        m_pass_callback->post_render(m_frame, m_job_queue, m_abort_switch);
+                        assert(!m_job_queue.has_scheduled_or_running_jobs());
+                    }
+                }
+
+                m_is_rendering = false;
             }
 
           private:
             const Frame&                            m_frame;
             const TileJobFactory::TileOrdering      m_tile_ordering;
-            const size_t                            m_pass;
             vector<ITileRenderer*>&                 m_tile_renderers;
             vector<ITileCallback*>&                 m_tile_callbacks;
             IPassCallback*                          m_pass_callback;
             const size_t                            m_pass_count;
             JobQueue&                               m_job_queue;
             AbortSwitch&                            m_abort_switch;
+            bool&                                   m_is_rendering;
             TileJobFactory                          m_tile_job_factory;
         };
 
@@ -325,6 +334,10 @@ namespace
         IPassCallback*              m_pass_callback;
 
         TileJobFactory              m_tile_job_factory;
+
+        bool                        m_is_rendering;
+        auto_ptr<PassManagerFunc>   m_pass_manager_func;
+        auto_ptr<thread>            m_pass_manager_thread;
 
         void print_tile_renderers_stats() const
         {

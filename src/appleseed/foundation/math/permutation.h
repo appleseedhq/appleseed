@@ -111,23 +111,23 @@ bool is_permutation(
 // Shuffle items in a vector according to a given permutation.
 // Use small_item_reorder() if items are 32 bytes wide or less.
 // To reorder larger items, use large_item_reorder().
-template <typename T>
+template <typename Item, typename Index>
 void small_item_reorder(
-    T               items[],
-    T               temp[],
-    const size_t    order[],
-    const size_t    count);
-template <typename T>
+    Item            items[],
+    Item            temp[],
+    const Index     order[],
+    const Index     count);
+template <typename Item, typename Index>
 void large_item_reorder(
-    T               items[],
-    size_t          tags[],
-    const size_t    order[],
-    const size_t    count);
-template <typename T>
+    Item            items[],
+    Index           tags[],
+    const Index     order[],
+    const Index     count);
+template <typename Item, typename Index>
 void large_item_reorder(
-    T               items[],
-    size_t          order[],
-    const size_t    count);
+    Item            items[],
+    Index           order[],
+    const Index     count);
 
 
 //
@@ -214,46 +214,46 @@ inline bool is_permutation(
 // Reordering functions implementation.
 //
 
-template <typename T>
+template <typename Item, typename Index>
 inline void small_item_reorder(
-    T               items[],
-    T               temp[],
-    const size_t    order[],
-    const size_t    count)
+    Item            items[],
+    Item            temp[],
+    const Index     order[],
+    const Index     count)
 {
     assert(items);
     assert(temp);
     assert(order);
 
-    for (size_t i = 0; i < count; ++i)
+    for (Index i = 0; i < count; ++i)
         temp[i] = items[order[i]];
 
-    for (size_t i = 0; i < count; ++i)
+    for (Index i = 0; i < count; ++i)
         items[i] = temp[i];
 }
 
-template <typename T>
+template <typename Item, typename Index>
 inline void large_item_reorder(
-    T               items[],
-    size_t          tags[],
-    const size_t    order[],
-    const size_t    count)
+    Item            items[],
+    Index           tags[],
+    const Index     order[],
+    const Index     count)
 {
     assert(items);
     assert(tags);
     assert(order);
 
-    for (size_t i = 0; i < count; ++i)
+    for (Index i = 0; i < count; ++i)
         tags[i] = 0;
 
-    for (size_t i = 0; i < count; ++i)
+    for (Index i = 0; i < count; ++i)
     {
         if (tags[i])
             continue;
 
-        const T temp = items[i];
-        size_t next = order[i];
-        size_t j = i;
+        const Item temp = items[i];
+        Index next = order[i];
+        Index j = i;
 
         while (next != i)
         {
@@ -267,23 +267,23 @@ inline void large_item_reorder(
     }
 }
 
-template <typename T>
+template <typename Item, typename Index>
 inline void large_item_reorder(
-    T               items[],
-    size_t          order[],
-    const size_t    count)
+    Item            items[],
+    Index           order[],
+    const Index     count)
 {
     assert(items);
     assert(order);
 
-    for (size_t i = 0; i < count; ++i)
+    for (Index i = 0; i < count; ++i)
     {
         if (order[i] == ~0)
             continue;
 
-        const T temp = items[i];
-        size_t next = order[i];
-        size_t j = i;
+        const Item temp = items[i];
+        Index next = order[i];
+        Index j = i;
 
         while (next != i)
         {

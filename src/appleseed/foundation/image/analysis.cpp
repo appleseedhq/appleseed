@@ -152,14 +152,13 @@ double compute_rms_deviation(const Image& image1, const Image& image2)
     if (!are_images_compatible(image1, image2))
         throw ExceptionIncompatibleImages();
 
-    const CanvasProperties& props1 = image1.properties();
-    const CanvasProperties& props2 = image2.properties();
+    const CanvasProperties& props = image1.properties();
 
     double mse = 0.0;   // mean square error
 
-    for (size_t ty = 0; ty < props1.m_tile_count_y; ++ty)
+    for (size_t ty = 0; ty < props.m_tile_count_y; ++ty)
     {
-        for (size_t tx = 0; tx < props1.m_tile_count_x; ++tx)
+        for (size_t tx = 0; tx < props.m_tile_count_x; ++tx)
         {
             const Tile& tile1 = image1.tile(tx, ty);
             const size_t tile_width = tile1.get_width();
@@ -178,7 +177,7 @@ double compute_rms_deviation(const Image& image1, const Image& image2)
         }
     }
 
-    mse /= props1.m_pixel_count * square(props1.m_channel_count);
+    mse /= props.m_pixel_count * square(props.m_channel_count);
 
     return sqrt(mse);
 }

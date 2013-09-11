@@ -37,6 +37,7 @@
 
 // Forward declarations.
 namespace foundation    { class AbortSwitch; }
+namespace foundation    { class JobQueue; }
 namespace renderer      { class Frame; }
 
 namespace renderer
@@ -55,11 +56,13 @@ class DLLSYMBOL IPassCallback
     // This method is called at the beginning of a pass.
     virtual void pre_render(
         const Frame&                frame,
+        foundation::JobQueue&       job_queue,
         foundation::AbortSwitch&    abort_switch) = 0;
 
     // This method is called at the end of a pass.
     virtual void post_render(
         const Frame&                frame,
+        foundation::JobQueue&       job_queue,
         foundation::AbortSwitch&    abort_switch) = 0;
 };
 

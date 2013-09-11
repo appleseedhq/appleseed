@@ -35,6 +35,9 @@
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
 
+// boost headers.
+#include "foundation/platform/thread.h"
+
 // Standard headers.
 #include <cstddef>
 #include <vector>
@@ -71,6 +74,7 @@ class SPPMPhotonVector
   public:
     std::vector<foundation::Vector3f>   m_positions;
     std::vector<SPPMPhotonData>         m_data;
+    boost::mutex                        m_mutex;
 
     bool empty() const;
     size_t size() const;
@@ -82,6 +86,9 @@ class SPPMPhotonVector
     void clear_keep_memory();
     void reserve(const size_t capacity);
     void push_back(const SPPMPhoton& photon);
+
+    // Thread-safe.
+    void append(const SPPMPhotonVector& rhs);
 };
 
 }       // namespace renderer

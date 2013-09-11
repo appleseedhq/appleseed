@@ -51,66 +51,54 @@ class DLLSYMBOL MeshBuilderBase
   : public IMeshBuilder
 {
   public:
-    // Begin the definition of a mesh.
     virtual void begin_mesh(const char* name) OVERRIDE
     {
     }
 
-    // Append a vertex to the mesh.
     virtual size_t push_vertex(const Vector3d& v) OVERRIDE
     {
         return 0;
     }
 
-    // Append a vertex normal to the mesh. The normal is unit-length.
     virtual size_t push_vertex_normal(const Vector3d& v) OVERRIDE
     {
         return 0;
     }
 
-    // Append a texture coordinate to the mesh.
     virtual size_t push_tex_coords(const Vector2d& v) OVERRIDE
     {
         return 0;
     }
 
-    // Append a material slot to the mesh.
     virtual size_t push_material_slot(const char* name) OVERRIDE
     {
         return 0;
     }
 
-    // Begin the definition of a face.
     virtual void begin_face(const size_t vertex_count) OVERRIDE
     {
     }
 
-    // Assign vertices to the face.
     virtual void set_face_vertices(const size_t vertices[]) OVERRIDE
     {
     }
 
-    // Assign vertex normals to the face.
     virtual void set_face_vertex_normals(const size_t vertex_normals[]) OVERRIDE
     {
     }
 
-    // Assign texture coordinates to the face.
     virtual void set_face_vertex_tex_coords(const size_t tex_coords[]) OVERRIDE
     {
     }
 
-    // Assign a material to the face.
     virtual void set_face_material(const size_t material) OVERRIDE
     {
     }
 
-    // End the definition of the face.
     virtual void end_face() OVERRIDE
     {
     }
 
-    // End the definition of the mesh.
     virtual void end_mesh() OVERRIDE
     {
     }

@@ -275,22 +275,6 @@ namespace
             }
         };
 
-        Frame&                              m_frame;
-        const Parameters                    m_params;
-        SampleCounter                       m_sample_counter;
-
-        auto_ptr<SampleAccumulationBuffer>  m_buffer;
-
-        JobQueue                            m_job_queue;
-        auto_ptr<JobManager>                m_job_manager;
-        AbortSwitch                         m_abort_switch;
-
-        SampleGeneratorVector               m_sample_generators;
-        TileCallbackVector                  m_tile_callbacks;
-
-        auto_ptr<Image>                     m_ref_image;
-        double                              m_ref_image_avg_lum;
-
         class StatisticsFunc
           : public NonCopyable
         {
@@ -430,6 +414,22 @@ namespace
                 RENDERER_LOG_DEBUG("%s", output.c_str());
             }
         };
+
+        Frame&                              m_frame;
+        const Parameters                    m_params;
+        SampleCounter                       m_sample_counter;
+
+        auto_ptr<SampleAccumulationBuffer>  m_buffer;
+
+        JobQueue                            m_job_queue;
+        auto_ptr<JobManager>                m_job_manager;
+        AbortSwitch                         m_abort_switch;
+
+        SampleGeneratorVector               m_sample_generators;
+        TileCallbackVector                  m_tile_callbacks;
+
+        auto_ptr<Image>                     m_ref_image;
+        double                              m_ref_image_avg_lum;
 
         auto_ptr<StatisticsFunc>            m_statistics_func;
         auto_ptr<thread>                    m_statistics_thread;

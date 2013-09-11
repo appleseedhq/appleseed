@@ -82,8 +82,8 @@ class Answer
     void make_heap();
 
     void heap_insert(
-        const size_t    index, const
-        ValueType       square_dist);
+        const size_t    index,
+        const ValueType square_dist);
 
     void sort();
 

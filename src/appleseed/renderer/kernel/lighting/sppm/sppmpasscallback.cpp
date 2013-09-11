@@ -83,12 +83,16 @@ void SPPMPassCallback::release()
 
 void SPPMPassCallback::pre_render(
     const Frame&            frame,
+    JobQueue&               job_queue,
     AbortSwitch&            abort_switch)
 {
     RENDERER_LOG_INFO(
+        "----------------------------------------------------\n"
         "beginning sppm pass %s, lookup radius is %f.",
-        pretty_uint(m_pass_number).c_str(),
+        pretty_uint(m_pass_number + 1).c_str(),
         m_lookup_radius);
+
+    m_stopwatch.start();
 
     // Create a new set of photons.
     m_photons.clear_keep_memory();
@@ -96,6 +100,7 @@ void SPPMPassCallback::pre_render(
         m_photon_tracer.trace_photons(
             m_photons,
             hash_uint32(m_pass_number),
+            job_queue,
             abort_switch);
 
     // Stop there if rendering was aborted.
@@ -108,6 +113,7 @@ void SPPMPassCallback::pre_render(
 
 void SPPMPassCallback::post_render(
     const Frame&            frame,
+    JobQueue&               job_queue,
     AbortSwitch&            abort_switch)
 {
     // Shrink the lookup radius for the next pass.
@@ -115,10 +121,12 @@ void SPPMPassCallback::post_render(
     assert(k <= 1.0);
     m_lookup_radius *= sqrt(k);
 
+    m_stopwatch.measure();
+
     RENDERER_LOG_INFO(
-        "ending sppm pass %s, new radius is %f.",
-        pretty_uint(m_pass_number).c_str(),
-        m_lookup_radius);
+        "sppm pass %s completed in %s.",
+        pretty_uint(m_pass_number + 1).c_str(),
+        pretty_time(m_stopwatch.get_seconds()).c_str());
 
     ++m_pass_number;
 }

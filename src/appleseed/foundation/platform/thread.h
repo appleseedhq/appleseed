@@ -49,7 +49,8 @@
 // Forward declarations.
 namespace foundation    { class Logger; }
 
-// Starting with Boost 1.48, the atomic primitives are defined in boost::interprocess::ipcdetail.
+// Starting with Boost 1.48.0, the atomic primitives are defined in boost::interprocess::ipcdetail.
+// Starting with Boost 1.53.0, we could simply use Boost.Atomic.
 #if BOOST_VERSION >= 104800
 namespace boost_atomic = boost::interprocess::ipcdetail;
 #else

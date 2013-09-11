@@ -105,7 +105,6 @@ void ShadingPoint::fetch_source_geometry() const
     assert(triangle.m_v0 != Triangle::None);
     assert(triangle.m_v1 != Triangle::None);
     assert(triangle.m_v2 != Triangle::None);
-
     if (motion_segment_count > 0)
     {
         // Fetch triangle vertices from the previous pose.
@@ -149,6 +148,9 @@ void ShadingPoint::fetch_source_geometry() const
     m_n0 = tess.m_vertex_normals[triangle.m_n0];
     m_n1 = tess.m_vertex_normals[triangle.m_n1];
     m_n2 = tess.m_vertex_normals[triangle.m_n2];
+    assert(is_normalized(m_n0));
+    assert(is_normalized(m_n1));
+    assert(is_normalized(m_n2));
 }
 
 void ShadingPoint::refine_and_offset() const

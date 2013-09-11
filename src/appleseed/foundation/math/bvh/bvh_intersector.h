@@ -170,18 +170,14 @@ void Intersector<Tree, Visitor, Ray, StackSize, N>::intersect_no_motion(
             FOUNDATION_BVH_TRAVERSAL_STATS(intersected_bboxes += 2);
 
             ValueType tmin[2];
-            int hits = 0;
 
             // Intersect the left bounding box.
-            if (foundation::intersect(ray, ray_info, node_ptr->get_left_bbox(), tmin[0]) && tmin[0] < ray_tmax)
-                hits |= 1;
+            const size_t hit_left =
+                (foundation::intersect(ray, ray_info, node_ptr->get_left_bbox(), tmin[0]) && tmin[0] < ray_tmax) ? 1 : 0;
 
             // Intersect the right bounding box.
-            if (foundation::intersect(ray, ray_info, node_ptr->get_right_bbox(), tmin[1]) && tmin[1] < ray_tmax)
-                hits |= 2;
-
-            const size_t hit_left = hits & 1;
-            const size_t hit_right = hits >> 1;
+            const size_t hit_right =
+                (foundation::intersect(ray, ray_info, node_ptr->get_right_bbox(), tmin[1]) && tmin[1] < ray_tmax) ? 1 : 0;
 
             node_ptr = &tree.m_nodes[node_ptr->get_child_node_index()];
             node_ptr += hit_right;
@@ -193,7 +189,7 @@ void Intersector<Tree, Visitor, Ray, StackSize, N>::intersect_no_motion(
                 continue;
             }
 
-            if (hits)
+            if (hit_left | hit_right)
             {
                 // Push the far child node to the stack, continue with the near child node.
                 const int far = tmin[0] < tmin[1] ? 1 : 0;
@@ -303,9 +299,9 @@ void Intersector<Tree, Visitor, Ray, StackSize, N>::intersect_motion(
             FOUNDATION_BVH_TRAVERSAL_STATS(intersected_bboxes += 2);
 
             ValueType tmin[2];
-            int hits = 0;
 
             // Intersect the left bounding box.
+            size_t hit_left;
             const size_t left_motion_segment_count = node_ptr->get_left_bbox_count() - 1;
             if (left_motion_segment_count > 0)
             {
@@ -318,16 +314,15 @@ void Intersector<Tree, Visitor, Ray, StackSize, N>::intersect_motion(
                         tree.m_node_bboxes[base_index + 1],
                         static_cast<ValueType>(ray_time * left_motion_segment_count - prev_index));
 
-                if (foundation::intersect(ray, ray_info, left_bbox, tmin[0]) && tmin[0] < ray_tmax)
-                    hits |= 1;
+                hit_left = (foundation::intersect(ray, ray_info, left_bbox, tmin[0]) && tmin[0] < ray_tmax) ? 1 : 0;
             }
             else
             {
-                if (foundation::intersect(ray, ray_info, node_ptr->get_left_bbox(), tmin[0]) && tmin[0] < ray_tmax)
-                    hits |= 1;
+                hit_left = (foundation::intersect(ray, ray_info, node_ptr->get_left_bbox(), tmin[0]) && tmin[0] < ray_tmax) ? 1 : 0;
             }
 
             // Intersect the right bounding box.
+            size_t hit_right;
             const size_t right_motion_segment_count = node_ptr->get_right_bbox_count() - 1;
             if (right_motion_segment_count > 0)
             {
@@ -340,17 +335,12 @@ void Intersector<Tree, Visitor, Ray, StackSize, N>::intersect_motion(
                         tree.m_node_bboxes[base_index + 1],
                         static_cast<ValueType>(ray_time * right_motion_segment_count - prev_index));
 
-                if (foundation::intersect(ray, ray_info, right_bbox, tmin[1]) && tmin[1] < ray_tmax)
-                    hits |= 2;
+                hit_right = (foundation::intersect(ray, ray_info, right_bbox, tmin[1]) && tmin[1] < ray_tmax) ? 1 : 0;
             }
             else
             {
-                if (foundation::intersect(ray, ray_info, node_ptr->get_right_bbox(), tmin[1]) && tmin[1] < ray_tmax)
-                    hits |= 2;
+                hit_right = (foundation::intersect(ray, ray_info, node_ptr->get_right_bbox(), tmin[1]) && tmin[1] < ray_tmax) ? 1 : 0;
             }
-
-            const size_t hit_left = hits & 1;
-            const size_t hit_right = hits >> 1;
 
             node_ptr = &tree.m_nodes[node_ptr->get_child_node_index()];
             node_ptr += hit_right;
@@ -362,7 +352,7 @@ void Intersector<Tree, Visitor, Ray, StackSize, N>::intersect_motion(
                 continue;
             }
 
-            if (hits)
+            if (hit_left | hit_right)
             {
                 // Push the far child node to the stack, continue with the near child node.
                 const int far = tmin[0] < tmin[1] ? 1 : 0;
@@ -893,7 +883,7 @@ void Intersector<Tree, Visitor, Ray, StackSize, 3>::intersect_motion(
     FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_discarded_nodes.insert(discarded_nodes));
 }
 
-#endif
+#endif  // APPLESEED_FOUNDATION_USE_SSE
 
 }       // namespace bvh
 }       // namespace foundation

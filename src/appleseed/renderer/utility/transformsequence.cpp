@@ -40,7 +40,6 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
-#include <cstring>
 #include <vector>
 
 using namespace foundation;
@@ -232,14 +231,18 @@ void TransformSequence::copy_from(const TransformSequence& rhs)
     if (rhs.m_keys)
     {
         m_keys = new TransformKey[m_size];
-        memcpy(m_keys, rhs.m_keys, m_size * sizeof(TransformKey));
+
+        for (size_t i = 0; i < m_size; ++i)
+            m_keys[i] = rhs.m_keys[i];
     }
     else m_keys = 0;
 
     if (rhs.m_interpolators)
     {
         m_interpolators = new TransformInterpolatord[m_size - 1];
-        memcpy(m_interpolators, rhs.m_interpolators, (m_size - 1) * sizeof(TransformInterpolatord));
+
+        for (size_t i = 0; i < m_size - 1; ++i)
+            m_interpolators[i] = rhs.m_interpolators[i];
     }
     else m_interpolators = 0;
 }

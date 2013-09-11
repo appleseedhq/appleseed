@@ -163,6 +163,7 @@ namespace
           , m_intersector(trace_context, m_texture_cache, m_params.m_report_self_intersections)
           , m_tracer(m_scene, m_intersector, m_texture_cache, m_params.m_transparency_threshold, m_params.m_max_iterations)
           , m_shading_context(m_intersector, m_tracer, m_texture_cache, 0, m_params.m_transparency_threshold, m_params.m_max_iterations)
+          , m_light_sample_count(0)
           , m_path_count(0)
         {
         }

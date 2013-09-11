@@ -81,13 +81,17 @@ namespace
     //   Claude Knaus, Matthias Zwicker
     //   http://www.cgg.unibe.ch/publications/2011/progressive-photon-mapping-a-probabilistic-approach
     //
+    //   Stochastic Progressive Photon Mapping
+    //   Toshiya Hachisuka, Henrik Wann Jensen
+    //   http://cs.au.dk/~toshiya/sppm.pdf
+    //
     //   Progressive Photon Mapping
     //   Toshiya Hachisuka, Shinji Ogaki, Henrik Wann Jensen
     //   http://cs.au.dk/~toshiya/ppm.pdf
     //
-    //   Stochastic Progressive Photon Mapping
-    //   Toshiya Hachisuka, Henrik Wann Jensen
-    //   http://cs.au.dk/~toshiya/sppm.pdf
+    //   Extended Photon Map Implementation
+    //   Matt Pharr
+    //   http://www.pbrt.org/plugins/exphotonmap.pdf
     //
 
     class SPPMLightingEngine
@@ -311,21 +315,27 @@ namespace
                 Spectrum&               vertex_radiance,
                 SpectrumStack&          vertex_aovs)
             {
+                const SPPMPhotonMap& photon_map = m_pass_callback.get_photon_map();
+
                 // No indirect lighting if the photon map is empty.
-                if (m_pass_callback.get_photon_map().empty())
+                if (photon_map.empty())
                     return;
+
+                const float radius = m_pass_callback.get_lookup_radius();
+                const Vector3f point(vertex.get_point());
+                const Vector3f normal(vertex.get_geometric_normal());
 
                 // Find the nearby photons around the path vertex.
-                const knn::Query3f query(m_pass_callback.get_photon_map(), m_answer);
-                query.run(
-                    Vector3f(vertex.get_point()),
-                    square(m_pass_callback.get_lookup_radius()));
+                const knn::Query3f query(photon_map, m_answer);
+                query.run(point, radius * radius);
+                const size_t photon_count = m_answer.size();
 
+#if 0
                 // Cannot do proper density estimation if too few photons are found.
                 const size_t MinPhotonCount = 8;
-                const size_t photon_count = m_answer.size();
                 if (photon_count < MinPhotonCount)
                     return;
+#endif
 
                 size_t included_photon_count = 0;
                 float max_square_dist = 0.0f;
@@ -336,15 +346,33 @@ namespace
                 {
                     // Retrieve the i'th photon.
                     const knn::Answer<float>::Entry& photon = m_answer.get(i);
-                    const SPPMPhotonData& data = m_pass_callback.get_photon_data(photon.m_index);
+                    const SPPMPhotonData& data = m_pass_callback.get_photon_data(photon_map.remap(photon.m_index));
 
-                    // Reject photons that are facing away.
-                    if (dot(vertex.get_geometric_normal(), Vector3d(data.m_geometric_normal)) < 0.0)
+                    // Reject photons from the opposite hemisphere as they won't contribute.
+                    if (dot(normal, data.m_incoming) <= 0.0f)
                         continue;
 
+#if 1
+                    // Reject photons on a surface with too different an orientation.
+                    const float NormalThreshold = 1.0e-3f;
+                    if (dot(normal, data.m_geometric_normal) < NormalThreshold)
+                        continue;
+#endif
+
+#if 0
                     // Reject photons on the wrong side of the surface.
-                    if (dot(vertex.m_outgoing, Vector3d(data.m_geometric_normal)) < 0.0)
+                    if (dot(vertex.m_outgoing, Vector3d(data.m_geometric_normal)) <= 0.0)
                         continue;
+#endif
+
+#if 0
+                    // Reject photons too far away along the surface's normal.
+                    const Vector3f& photon_position = photon_map.get_point(photon.m_index);
+                    const Vector3f point_to_photon = photon_position - point;
+                    const float vdist = abs(dot(normal, point_to_photon));
+                    if (vdist > 0.1f * radius)
+                        continue;
+#endif
 
                     // Keep track of the farthest photon.
                     if (max_square_dist < photon.m_square_dist)
@@ -355,7 +383,7 @@ namespace
                     const double bsdf_prob =
                         vertex.m_bsdf->evaluate(
                             vertex.m_bsdf_data,
-                            true,                                   // adjoint
+                            false,                                  // not adjoint
                             true,                                   // multiply by |cos(incoming, normal)|
                             vertex.get_geometric_normal(),
                             vertex.get_shading_basis(),
@@ -366,20 +394,42 @@ namespace
                     if (bsdf_prob == 0.0)
                         continue;
 
+                    // The photons store flux but we are computing reflected radiance.
+                    // The first step of the flux -> radiance conversion is done here.
+                    // The conversion will be completed when doing density estimation.
+                    bsdf_value /= abs(dot(data.m_incoming, data.m_geometric_normal));
+                    bsdf_value *= data.m_flux;
+
                     // Accumulate reflected flux.
                     ++included_photon_count;
-                    bsdf_value *= data.m_flux;
                     indirect_radiance += bsdf_value;
                 }
 
+#if 0
                 // Unreliable density estimation if too few photons were actually included.
                 if (included_photon_count < MinPhotonCount)
                     return;
+#else
+                // Can't do density estimation without any photon.
+                if (included_photon_count == 0)
+                    return;
+#endif
 
                 // Density estimation.
+#if 0
                 indirect_radiance /=
                     static_cast<float>(
                         Pi * max_square_dist * m_pass_callback.get_emitted_photon_count());
+#else
+                const float r2 =
+                    m_answer.size() == m_params.m_max_photons_per_estimate
+                        ? max_square_dist
+                        : radius * radius;
+
+                indirect_radiance /=
+                    static_cast<float>(
+                        Pi * r2 * m_pass_callback.get_emitted_photon_count());
+#endif
 
                 // Add the indirect lighting contribution.
                 vertex_radiance += indirect_radiance;
@@ -437,9 +487,8 @@ namespace
             const ShadingPoint&     shading_point,
             Spectrum&               radiance)
         {
-            const knn::Query3f query(
-                m_pass_callback.get_photon_map(),
-                m_answer);
+            const SPPMPhotonMap& photon_map = m_pass_callback.get_photon_map();
+            const knn::Query3f query(photon_map, m_answer);
 
             query.run(
                 Vector3f(shading_point.get_point()),
@@ -452,7 +501,7 @@ namespace
             for (size_t i = 0; i < photon_count; ++i)
             {
                 const knn::Answer<float>::Entry& photon = m_answer.get(i);
-                radiance += m_pass_callback.get_photon_data(photon.m_index).m_flux;
+                radiance += m_pass_callback.get_photon_data(photon_map.remap(photon.m_index)).m_flux;
             }
 
             if (photon_count > 1)

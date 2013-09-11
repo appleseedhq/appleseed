@@ -236,6 +236,14 @@ TEST_SUITE(Foundation_Math_Vector)
         EXPECT_FEQ(Vector3d(0.0, 0.0, 1.0), normalize(Vector3d(0.0, 0.0, 4.0)));
     }
 
+    TEST_CASE(TestSafeNormalize)
+    {
+        EXPECT_FEQ(Vector3d(1.0, 0.0, 0.0), safe_normalize(Vector3d(4.0, 0.0, 0.0)));
+        EXPECT_FEQ(Vector3d(0.0, 1.0, 0.0), safe_normalize(Vector3d(0.0, 4.0, 0.0)));
+        EXPECT_FEQ(Vector3d(0.0, 0.0, 1.0), safe_normalize(Vector3d(0.0, 0.0, 4.0)));
+        EXPECT_FEQ(Vector3d(1.0, 0.0, 0.0), safe_normalize(Vector3d(0.0, 0.0, 0.0)));
+    }
+
     TEST_CASE(TestIsNormalized)
     {
         const Vector3d v(3.0, -5.0, 7.0);

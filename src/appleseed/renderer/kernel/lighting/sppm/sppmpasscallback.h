@@ -37,7 +37,9 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
+#include "foundation/platform/timer.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/stopwatch.h"
 
 // Standard headers.
 #include <cstddef>
@@ -45,6 +47,7 @@
 
 // Forward declarations.
 namespace foundation    { class AbortSwitch; }
+namespace foundation    { class JobQueue; }
 namespace renderer      { class Frame; }
 namespace renderer      { class LightSampler; }
 namespace renderer      { class ParamArray; }
@@ -78,11 +81,13 @@ class SPPMPassCallback
     // This method is called at the beginning of a pass.
     virtual void pre_render(
         const Frame&                frame,
+        foundation::JobQueue&       job_queue,
         foundation::AbortSwitch&    abort_switch) OVERRIDE;
 
     // This method is called at the end of a pass.
     virtual void post_render(
         const Frame&                frame,
+        foundation::JobQueue&       job_queue,
         foundation::AbortSwitch&    abort_switch) OVERRIDE;
 
     // Return the number of photons emitted for this pass.
@@ -113,6 +118,8 @@ class SPPMPassCallback
     SPPMPhotonVector                m_photons;
     std::auto_ptr<SPPMPhotonMap>    m_photon_map;
     float                           m_lookup_radius;
+    foundation::Stopwatch<foundation::DefaultWallclockTimer>
+                                    m_stopwatch;
 };
 
 

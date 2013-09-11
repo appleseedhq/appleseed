@@ -516,7 +516,6 @@ struct OBJMeshFileReader::Impl
         m_lexer.eat_blanks();
         n.z = m_lexer.accept_double();
 
-        n = normalize(n);
         m_normals.push_back(n);
     }
 

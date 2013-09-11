@@ -55,16 +55,24 @@ namespace renderer
 //
 // Bidirectional Scattering Distribution Function (BSDF).
 //
-// Conventions:
+// Conventions (Veach, 3.7.5, figure 3.3 on page 93):
+//
+//   * All direction vectors are expressed in world space.
 //
 //   * All direction vectors are unit-length and pointing outward.
-//   * All vectors are expressed in world space.
+//
 //   * All probability densities are measured with respect to solid angle.
-//   * When the adjoint flag is false, the BSDF characterizes the light flow.
-//     When the adjoint flag is true, the BSDF characterizes the importance flow.
-//   * Regardless of the adjoint flag, light and importance always flow from the
-//     incoming direction to the outgoing direction.
-//   * The incoming direction is always the "sampled" direction.
+//
+//   * When the adjoint flag is false, such as in path tracing, the BSDF
+//     characterizes the light flow.
+//
+//   * When the adjoint flag is true, such as in photon tracing, the BSDF
+//     characterizes the importance flow.
+//
+//   * Regardless of the adjoint flag, light and importance always flow
+//     from the incoming direction to the outgoing direction.
+//
+//   * The incoming direction is always the sampled direction.
 //
 
 class DLLSYMBOL BSDF

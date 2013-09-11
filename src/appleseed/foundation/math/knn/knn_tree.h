@@ -36,6 +36,7 @@
 #include "foundation/utility/test.h"
 
 // Standard headers.
+#include <cassert>
 #include <cstddef>
 #include <vector>
 
@@ -57,7 +58,14 @@ class Tree
     typedef Vector<T, N> VectorType;
     typedef Node<T> NodeType;
 
+    // Return true if the tree does not contain any point.
     bool empty() const;
+
+    // Transform an internal index to a user-data index.
+    size_t remap(const size_t i) const;
+
+    // Return the i'th point, where i is an internal index.
+    const VectorType& get_point(const size_t i) const;
 
     // Return the size (in bytes) of this object in memory.
     size_t get_memory_size() const;
@@ -90,6 +98,20 @@ template <typename T, size_t N>
 inline bool Tree<T, N>::empty() const
 {
     return m_points.empty();
+}
+
+template <typename T, size_t N>
+inline size_t Tree<T, N>::remap(const size_t i) const
+{
+    assert(i < m_indices.size());
+    return m_indices[i];
+}
+
+template <typename T, size_t N>
+inline const Vector<T, N>& Tree<T, N>::get_point(const size_t i) const
+{
+    assert(i < m_points.size());
+    return m_points[i];
 }
 
 template <typename T, size_t N>

@@ -63,6 +63,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/Modules)
 #--------------------------------------------------------------------------------------------------
 
 option (USE_STATIC_BOOST        "Use static Boost libs"         ON)
+option (USE_EXTERNAL_ZLIB       "Use external ZLIB lib"         OFF)
 option (USE_EXTERNAL_PNG        "Use external PNG lib"          OFF)
 option (USE_EXTERNAL_ALEMBIC    "Use external Alembic lib"      OFF)
 option (USE_EXTERNAL_XERCES     "Use external Xerces lib"       OFF)
@@ -133,10 +134,9 @@ link_directories (${Boost_LIBRARY_DIRS})
 # Find external packages.
 #--------------------------------------------------------------------------------------------------
 
-if (WITH_OSL)
-    find_package (OpenImageIO REQUIRED)
-    find_package (OSL REQUIRED)
-    add_definitions (-DWITH_OSL)
+if (USE_EXTERNAL_ZLIB)
+    find_package (ZLIB REQUIRED)
+    add_definitions (-DWITH_EXTERNAL_ZLIB)
 endif ()
 
 if (USE_EXTERNAL_PNG)
@@ -145,7 +145,6 @@ if (USE_EXTERNAL_PNG)
 endif ()
 
 if (USE_EXTERNAL_ALEMBIC)
-    find_package (ZLIB REQUIRED)
     find_package (Imath REQUIRED)
     find_package (OpenEXR REQUIRED)
     find_package (HDF5 REQUIRED COMPONENTS C HL)
@@ -156,6 +155,12 @@ endif ()
 if (USE_EXTERNAL_XERCES)
     find_package (Xerces REQUIRED)
     add_definitions (-DWITH_EXTERNAL_XERCES)
+endif ()
+
+if (WITH_OSL)
+    find_package (OpenImageIO REQUIRED)
+    find_package (OSL REQUIRED)
+    add_definitions (-DWITH_OSL)
 endif ()
 
 
@@ -169,16 +174,13 @@ include_directories (
     lz4
     minilzo
     STANN/include
-    ${OPENIMAGEIO_INCLUDE_DIRS}
-    ${OSL_INCLUDE_DIRS}
     ${PYTHON_INCLUDE_DIRS}
 )
 
-if (WITH_OSL)
-    include_directories (
-        ${OPENIMAGEIO_INCLUDE_DIRS}
-        ${OSL_INCLUDE_DIRS}
-    )
+if (USE_EXTERNAL_ZLIB)
+    include_directories (${ZLIB_INCLUDE_DIRS})
+else ()
+    include_directories (zlib)
 endif ()
 
 if (USE_EXTERNAL_PNG)
@@ -189,7 +191,6 @@ endif ()
 
 if (USE_EXTERNAL_ALEMBIC)
     include_directories (
-        ${ZLIB_INCLUDE_DIRS}
         ${OPENEXR_INCLUDE_DIR}
         ${OPENEXR_INCLUDE_DIR}/OpenEXR/
         ${ILMBASE_INCLUDE_DIR}
@@ -202,7 +203,6 @@ else ()
         alembic/lib
         openexr/include
         openexr/include/OpenEXR
-        zlib
     )
 endif ()
 
@@ -210,6 +210,13 @@ if (USE_EXTERNAL_XERCES)
     include_directories (${XERCES_INCLUDE_DIRS})
 else ()
     include_directories (xerces-c/src)
+endif ()
+
+if (WITH_OSL)
+    include_directories (
+        ${OPENIMAGEIO_INCLUDE_DIRS}
+        ${OSL_INCLUDE_DIRS}
+    )
 endif ()
 
 

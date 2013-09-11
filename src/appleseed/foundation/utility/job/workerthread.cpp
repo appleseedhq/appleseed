@@ -76,6 +76,8 @@ void WorkerThread::start()
         return;
 
     m_abort_switch.clear();
+
+    // Start the thread.
     m_thread = new thread(m_thread_func);
 }
 
@@ -85,9 +87,12 @@ void WorkerThread::stop()
     if (!m_thread)
         return;
 
+    // Ask for the thread to stop, and wait until it has.
     m_abort_switch.abort();
+    m_job_queue.signal_event();
     m_thread->join();
 
+    // Delete the thread object.
     delete m_thread;
     m_thread = 0;
 }
@@ -98,17 +103,14 @@ void WorkerThread::run()
     {
         // Acquire a job.
         const JobQueue::RunningJobInfo running_job_info =
-            m_job_queue.acquire_scheduled_job();
+            m_job_queue.wait_for_scheduled_job(m_abort_switch);
 
         // Handle the case where the job queue is empty.
         if (running_job_info.first.m_job == 0)
         {
             if (m_flags & JobManager::KeepRunningOnEmptyQueue)
             {
-                // Give up time slice.
-                yield();
-
-                // Keep the thread running and checking for new jobs.
+                // Keep the thread running and waiting for new jobs.
                 continue;
             }
             else

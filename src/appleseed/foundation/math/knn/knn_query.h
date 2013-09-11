@@ -549,23 +549,6 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
 
 #undef ORDER_NODE_ENTRIES
 
-    //
-    // Step 5:
-    //
-    //   Transform the indices of the k nearest neighbors so they match the
-    //   ordering of the points as they were supplied by the user.
-    //
-
-    typename AnswerType::Entry* RESTRICT entry_ptr = m_answer.m_entries;
-    const typename AnswerType::Entry* RESTRICT entry_end = entry_ptr + m_answer.m_size;
-    const size_t* RESTRICT indices = &m_tree.m_indices.front();
-
-    while (entry_ptr < entry_end)
-    {
-        entry_ptr->m_index = indices[entry_ptr->m_index];
-        ++entry_ptr;
-    }
-
     FOUNDATION_KNN_QUERY_STATS(stats.m_fetched_nodes.insert(fetched_node_count));
     FOUNDATION_KNN_QUERY_STATS(stats.m_visited_leaves.insert(visited_leaf_count));
     FOUNDATION_KNN_QUERY_STATS(stats.m_tested_points.insert(tested_point_count));

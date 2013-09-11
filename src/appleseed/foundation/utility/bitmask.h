@@ -33,6 +33,7 @@
 #include "foundation/platform/types.h"
 
 // Standard headers.
+#include <cassert>
 #include <cstddef>
 #include <cstring>
 
@@ -131,6 +132,9 @@ inline void BitMask2::clear(
     const size_t        x,
     const size_t        y)
 {
+    assert(x < m_width);
+    assert(y < m_height);
+
     m_bits[y * m_block_width + x / 8] &= ~(1u << (x & 7));
 }
 
@@ -138,6 +142,9 @@ inline void BitMask2::set(
     const size_t        x,
     const size_t        y)
 {
+    assert(x < m_width);
+    assert(y < m_height);
+
     m_bits[y * m_block_width + x / 8] |= 1u << (x & 7);
 }
 
@@ -153,6 +160,9 @@ inline bool BitMask2::get(
     const size_t        x,
     const size_t        y) const
 {
+    assert(x < m_width);
+    assert(y < m_height);
+
     return (m_bits[y * m_block_width + x / 8] & (1u << (x & 7))) != 0;
 }
 

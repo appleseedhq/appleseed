@@ -100,7 +100,7 @@ namespace
 
         virtual size_t push_vertex_normal(const Vector3d& v) OVERRIDE
         {
-            m_current_mesh.m_vertex_normals.push_back(v);
+            m_current_mesh.m_vertex_normals.push_back(safe_normalize(v));
             return m_current_mesh.m_vertex_normals.size() - 1;
         }
 

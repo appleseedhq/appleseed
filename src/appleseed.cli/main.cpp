@@ -152,15 +152,17 @@ namespace
 
     bool run_unit_tests()
     {
+        // Configure our logger.
         SaveLogFormatterConfig save_g_logger_config(g_logger);
-        g_logger.set_all_formats("{datetime-utc} | {category}: {message}");
+        g_logger.reset_all_formats();
         g_logger.set_format(LogMessage::Info, "{datetime-utc} | {message}");
 
+        // Configure the renderer's logger: mute all log messages except warnings and errors.
         SaveLogFormatterConfig save_global_logger_config(global_logger());
         global_logger().set_all_formats(string());
-        global_logger().set_format(LogMessage::Warning, "{datetime-utc} | {category}: {message}");
-        global_logger().set_format(LogMessage::Error, "{datetime-utc} | {category}: {message}");
-        global_logger().set_format(LogMessage::Fatal, "{datetime-utc} | {category}: {message}");
+        global_logger().reset_format(LogMessage::Warning);
+        global_logger().reset_format(LogMessage::Error);
+        global_logger().reset_format(LogMessage::Fatal);
 
         // Create a test listener that outputs to the logger.
         auto_release_ptr<ITestListener> listener(
@@ -203,15 +205,17 @@ namespace
 
     void run_unit_benchmarks()
     {
+        // Configure our logger.
         SaveLogFormatterConfig save_g_logger_config(g_logger);
-        g_logger.set_all_formats("{datetime-utc} | {category}: {message}");
+        g_logger.reset_all_formats();
         g_logger.set_format(LogMessage::Info, "{datetime-utc} | {message}");
 
+        // Configure the renderer's logger: mute all log messages except warnings and errors.
         SaveLogFormatterConfig save_global_logger_config(global_logger());
         global_logger().set_all_formats(string());
-        global_logger().set_format(LogMessage::Warning, "{datetime-utc} | {category}: {message}");
-        global_logger().set_format(LogMessage::Error, "{datetime-utc} | {category}: {message}");
-        global_logger().set_format(LogMessage::Fatal, "{datetime-utc} | {category}: {message}");
+        global_logger().reset_format(LogMessage::Warning);
+        global_logger().reset_format(LogMessage::Error);
+        global_logger().reset_format(LogMessage::Fatal);
 
         BenchmarkResult result;
 
@@ -695,9 +699,15 @@ namespace
 
     void benchmark_render(const string& project_filename)
     {
-        // Only display error messages.
-        SaveLogFormatterConfig save_config(global_logger());
+        // Configure our logger.
+        SaveLogFormatterConfig save_g_logger_config(g_logger);
+        g_logger.reset_all_formats();
+        g_logger.set_format(LogMessage::Info, "{message}");
+
+        // Configure the renderer's logger: mute all log messages except warnings and errors.
+        SaveLogFormatterConfig save_global_logger_config(global_logger());
         global_logger().set_all_formats(string());
+        global_logger().reset_format(LogMessage::Warning);
         global_logger().reset_format(LogMessage::Error);
         global_logger().reset_format(LogMessage::Fatal);
 
@@ -746,7 +756,6 @@ namespace
         project.reset();
 
         // Print benchmark results.
-        global_logger().set_format(LogMessage::Info, "{message}");
         LOG_INFO(g_logger, "result=success");
         LOG_INFO(g_logger, "setup_time=%.6f", total_time_seconds - render_time_seconds);
         LOG_INFO(g_logger, "render_time=%.6f", render_time_seconds);

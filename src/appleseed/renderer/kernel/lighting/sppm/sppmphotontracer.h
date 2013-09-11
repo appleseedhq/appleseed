@@ -30,19 +30,15 @@
 #define APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMPHOTONTRACER_H
 
 // appleseed.renderer headers.
-#include "renderer/global/globaltypes.h"
-#include "renderer/kernel/intersection/intersector.h"
-#include "renderer/kernel/texturing/texturecache.h"
+#include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 
 // Forward declarations.
 namespace foundation    { class AbortSwitch; }
-namespace renderer      { class EnvironmentEDF; }
-namespace renderer      { class LightSample; }
+namespace foundation    { class JobQueue; }
 namespace renderer      { class LightSampler; }
-namespace renderer      { class ParamArray; }
 namespace renderer      { class Scene; }
 namespace renderer      { class SPPMPhotonVector; }
 namespace renderer      { class TextureStore; }
@@ -69,47 +65,17 @@ class SPPMPhotonTracer
     size_t trace_photons(
         SPPMPhotonVector&           photons,
         const size_t                pass_hash,
+        foundation::JobQueue&       job_queue,
         foundation::AbortSwitch&    abort_switch);
 
   private:
-    void trace_light_photon(
-        SPPMPhotonVector&           photons,
-        SamplingContext&            sampling_context);
-
-    void trace_emitting_triangle_photon(
-        SPPMPhotonVector&           photons,
-        SamplingContext&            sampling_context,
-        LightSample&                light_sample);
-
-    void trace_non_physical_light_photon(
-        SPPMPhotonVector&           photons,
-        SamplingContext&            sampling_context,
-        const LightSample&          light_sample);
-
-    void trace_env_photon(
-        SPPMPhotonVector&           photons,
-        SamplingContext&            sampling_context,
-        const EnvironmentEDF*       env_edf);
-
-  private:
-    struct Parameters
-    {
-        const size_t    m_light_photon_count;   // number of photons emitted from the lights
-        const size_t    m_env_photon_count;     // number of photons emitted from the environment
-        const size_t    m_max_path_length;      // maximum path length, ~0 for unlimited
-        const size_t    m_rr_min_path_length;   // minimum path length before Russian Roulette kicks in, ~0 for unlimited
-        const size_t    m_max_iterations;       // maximum number of iteration during path tracing
-
-        explicit Parameters(const ParamArray& params);
-    };
-
-    const Parameters                m_params;
     const Scene&                    m_scene;
     const LightSampler&             m_light_sampler;
-    TextureCache                    m_texture_cache;
-    Intersector                     m_intersector;
-    const double                    m_safe_scene_radius;
-    const double                    m_disk_point_prob;
+    const TraceContext&             m_trace_context;
+    TextureStore&                   m_texture_store;
+    const ParamArray                m_params;
+    size_t                          m_total_emitted_photon_count;
+    size_t                          m_total_stored_photon_count;
 };
 
 }       // namespace renderer

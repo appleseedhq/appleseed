@@ -32,6 +32,7 @@
 // appleseed.foundation headers.
 #include "foundation/utility/memory.h"
 
+using namespace boost;
 using namespace foundation;
 
 namespace renderer
@@ -82,6 +83,14 @@ void SPPMPhotonVector::push_back(const SPPMPhoton& photon)
 {
     m_positions.push_back(photon.m_position);
     m_data.push_back(photon.m_data);
+}
+
+void SPPMPhotonVector::append(const SPPMPhotonVector& rhs)
+{
+    mutex::scoped_lock lock(m_mutex);
+
+    m_positions.insert(m_positions.end(), rhs.m_positions.begin(), rhs.m_positions.end());
+    m_data.insert(m_data.end(), rhs.m_data.begin(), rhs.m_data.end());
 }
 
 }   // namespace renderer

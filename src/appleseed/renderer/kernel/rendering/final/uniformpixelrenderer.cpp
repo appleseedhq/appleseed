@@ -140,9 +140,9 @@ namespace
                 {
                     // Generate a uniform sample in [0,1)^2.
                     const Vector2d s =
-                        m_sample_count == 1
-                            ? Vector2d(0.5)
-                            : sampling_context.next_vector2<2>();
+                        m_sample_count > 1 || m_params.m_force_aa
+                            ? sampling_context.next_vector2<2>()
+                            : Vector2d(0.5);
 
                     // Compute the sample position in NDC.
                     const Vector2d sample_position = frame.get_sample_position(ix + s.x, iy + s.y);
@@ -216,10 +216,12 @@ namespace
         struct Parameters
         {
             const size_t    m_samples;
+            const bool      m_force_aa;
             const bool      m_decorrelate;
 
             explicit Parameters(const ParamArray& params)
               : m_samples(params.get_required<size_t>("samples", 1))
+              , m_force_aa(params.get_optional<bool>("force_antialiasing", false))
               , m_decorrelate(params.get_optional<bool>("decorrelate_pixels", true))
             {
             }
