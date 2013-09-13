@@ -27,7 +27,7 @@
 //
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
@@ -40,7 +40,7 @@ using namespace foundation;
 using namespace renderer;
 using namespace std;
 
-TEST_SUITE(Renderer_Global_ParamArray)
+TEST_SUITE(Renderer_Utility_ParamArray)
 {
     TEST_CASE(InsertPath_GivenItemName_InsertsItem)
     {
@@ -276,5 +276,13 @@ TEST_SUITE(Renderer_Global_ParamArray)
 
         ASSERT_EQ(1, dic.strings().size());
         EXPECT_EQ(42, dic.get<int>("x"));
+    }
+
+    TEST_CASE(GetOptional_GivenNonExistingParameter_IsNotOverlySlow)
+    {
+        const ParamArray params;
+
+        for (size_t i = 0; i < 10000; ++i)
+            params.get_optional<int>("x", 0);
     }
 }
