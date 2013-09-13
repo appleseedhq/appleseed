@@ -306,11 +306,11 @@ namespace
                     BSDF::Diffuse,
                     BSDF::AllScatteringModes,
                     bsdf_sample_count,
-                    light_sample_count);
+                    light_sample_count,
+                    false);             // not computing indirect lighting
 
                 // Always sample both the lights and the BSDF.
                 integrator.sample_bsdf_and_lights_low_variance(
-                    false,              // never in an indirect lighting situation
                     vertex.m_sampling_context,
                     dl_radiance,
                     dl_aovs);

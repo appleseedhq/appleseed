@@ -503,13 +503,13 @@ namespace
                     scattering_modes,
                     scattering_modes,
                     bsdf_sample_count,
-                    light_sample_count);
+                    light_sample_count,
+                    m_is_indirect_lighting);
 
                 if (last_vertex)
                 {
                     // This path won't be extended: sample both the lights and the BSDF.
                     integrator.sample_bsdf_and_lights_low_variance(
-                        m_is_indirect_lighting,
                         vertex.m_sampling_context,
                         dl_radiance,
                         dl_aovs);
@@ -518,7 +518,6 @@ namespace
                 {
                     // This path will be extended via BSDF sampling: sample the lights only.
                     integrator.sample_lights_low_variance(
-                        m_is_indirect_lighting,
                         vertex.m_sampling_context,
                         DirectLightingIntegrator::mis_power2,
                         dl_radiance,
