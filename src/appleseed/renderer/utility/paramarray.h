@@ -326,7 +326,7 @@ template <typename T>
 inline T ParamArray::get_path_required(
     const char*                 path,
     const T&                    default_value,
-    const StringVec&            allowed_valuest) const
+    const StringVec&            allowed_values) const
 {
     return get_helper(path, true, true, default_value, allowed_values);
 }
