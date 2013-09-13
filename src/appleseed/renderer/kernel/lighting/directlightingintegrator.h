@@ -445,7 +445,7 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
         return;
 
     // No contribution if we are computing indirect lighting but this light does not cast indirect light.
-    if (m_indirect && !(edf->get_flags() & Light::CastIndirectLight))
+    if (m_indirect && !(edf->get_flags() & EDF::CastIndirectLight))
         return;
 
     // Cull the samples on the back side of the lights' shading surface.
