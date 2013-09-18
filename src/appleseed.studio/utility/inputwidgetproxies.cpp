@@ -45,6 +45,7 @@
 #include <QDoubleSpinBox>
 #include <QGroupBox>
 #include <QLineEdit>
+#include <QRadioButton>
 #include <QSpinBox>
 #include <QString>
 #include <QToolButton>
@@ -163,6 +164,27 @@ void GroupBoxProxy::set(const string& value)
 string GroupBoxProxy::get() const
 {
     return to_string(m_groupbox->isChecked());
+}
+
+
+//
+// RadioButtonProxy class implementation.
+//
+
+RadioButtonProxy::RadioButtonProxy(QRadioButton* radio_button)
+  : m_radio_button(radio_button)
+{
+    connect(m_radio_button, SIGNAL(stateChanged(int)), SIGNAL(signal_changed()));
+}
+
+void RadioButtonProxy::set(const string& value)
+{
+    m_radio_button->setChecked(from_string<bool>(value));
+}
+
+string RadioButtonProxy::get() const
+{
+    return to_string(m_radio_button->isChecked());
 }
 
 
