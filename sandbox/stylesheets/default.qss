@@ -698,6 +698,31 @@ QGroupBox::indicator:indeterminate:disabled
 
 
 /*
+ * QRadioButton.
+ */
+
+QRadioButton::indicator:checked:enabled
+{
+    image: url(":/widgets/radiobutton_checked_enabled.png");
+}
+
+QRadioButton::indicator:unchecked:enabled
+{
+    image: url(":/widgets/radiobutton_unchecked_enabled.png");
+}
+
+QRadioButton::indicator:checked:disabled
+{
+    image: url(":/widgets/radiobutton_checked_disabled.png");
+}
+
+QRadioButton::indicator:unchecked:disabled
+{
+    image: url(":/widgets/radiobutton_unchecked_disabled.png");
+}
+
+
+/*
  * QLineEdit.
  * QAbstractSpinBox.
  * QComboBox.
