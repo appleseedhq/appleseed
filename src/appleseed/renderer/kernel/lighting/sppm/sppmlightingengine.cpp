@@ -231,7 +231,7 @@ namespace
                 if (vertex.m_bsdf)
                 {
                     // Direct lighting.
-                    if (vertex.m_path_length == 1 && m_params.m_dl_mode == SPPMParameters::RayTraced)
+                    if (m_params.m_dl_mode == SPPMParameters::RayTraced)
                     {
                         add_direct_lighting_contribution(
                             vertex,
