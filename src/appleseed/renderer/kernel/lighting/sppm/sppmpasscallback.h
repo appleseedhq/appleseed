@@ -30,6 +30,7 @@
 #define APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMPASSCALLBACK_H
 
 // appleseed.renderer headers.
+#include "renderer/kernel/lighting/sppm/sppmparameters.h"
 #include "renderer/kernel/lighting/sppm/sppmphoton.h"
 #include "renderer/kernel/lighting/sppm/sppmphotonmap.h"
 #include "renderer/kernel/lighting/sppm/sppmphotontracer.h"
@@ -50,7 +51,6 @@ namespace foundation    { class AbortSwitch; }
 namespace foundation    { class JobQueue; }
 namespace renderer      { class Frame; }
 namespace renderer      { class LightSampler; }
-namespace renderer      { class ParamArray; }
 namespace renderer      { class Scene; }
 namespace renderer      { class SPPMPhotonData; }
 namespace renderer      { class TextureStore; }
@@ -60,7 +60,7 @@ namespace renderer
 {
 
 //
-// This class is responsible for generating a new photon the backbone of the SPPM implementation.
+// This class is responsible for building a new photon map before a pass begins.
 //
 
 class SPPMPassCallback
@@ -73,7 +73,7 @@ class SPPMPassCallback
         const LightSampler&         light_sampler,
         const TraceContext&         trace_context,
         TextureStore&               texture_store,
-        const ParamArray&           params);
+        const SPPMParameters&       params);
 
     // Delete this instance.
     virtual void release() OVERRIDE;
@@ -103,15 +103,7 @@ class SPPMPassCallback
     float get_lookup_radius() const;
 
   private:
-    struct Parameters
-    {
-        const float m_initial_radius_percents;      // initial lookup radius as a percentage of the scene diameter
-        const float m_alpha;                        // radius shrinking control
-
-        explicit Parameters(const ParamArray& params);
-    };
-
-    const Parameters                m_params;
+    const SPPMParameters            m_params;
     SPPMPhotonTracer                m_photon_tracer;
     foundation::uint32              m_pass_number;
     size_t                          m_emitted_photon_count;

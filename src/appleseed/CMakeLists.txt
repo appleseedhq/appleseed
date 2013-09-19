@@ -886,6 +886,8 @@ source_group ("renderer\\kernel\\lighting\\pt" FILES
 set (renderer_kernel_lighting_sppm_sources
     renderer/kernel/lighting/sppm/sppmlightingengine.cpp
     renderer/kernel/lighting/sppm/sppmlightingengine.h
+    renderer/kernel/lighting/sppm/sppmparameters.cpp
+    renderer/kernel/lighting/sppm/sppmparameters.h
     renderer/kernel/lighting/sppm/sppmpasscallback.cpp
     renderer/kernel/lighting/sppm/sppmpasscallback.h
     renderer/kernel/lighting/sppm/sppmphoton.cpp

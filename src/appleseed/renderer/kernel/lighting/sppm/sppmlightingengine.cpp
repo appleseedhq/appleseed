@@ -55,7 +55,6 @@
 #include "foundation/math/scalar.h"
 #include "foundation/utility/memory.h"
 #include "foundation/utility/statistics.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <algorithm>
@@ -98,63 +97,10 @@ namespace
       : public ILightingEngine
     {
       public:
-        struct Parameters
-        {
-            const bool      m_enable_ibl;                   // image-based lighting enabled?
-
-            const size_t    m_max_path_length;              // maximum path length, ~0 for unlimited
-            const size_t    m_rr_min_path_length;           // minimum path length before Russian Roulette kicks in, ~0 for unlimited
-
-            const double    m_ibl_env_sample_count;         // number of environment samples used to estimate IBL
-            float           m_rcp_ibl_env_sample_count;
-
-            const size_t    m_max_photons_per_estimate;     // maximum number of photons per density estimation
-
-            const bool      m_view_photons;                 // debug mode to visualize the photons
-            const float     m_view_photons_radius;          // lookup radius when visualizing photons
-
-            explicit Parameters(const ParamArray& params)
-              : m_enable_ibl(params.get_optional<bool>("enable_ibl", true))
-              , m_max_path_length(nz(params.get_optional<size_t>("max_path_length", 0)))
-              , m_rr_min_path_length(nz(params.get_optional<size_t>("rr_min_path_length", 3)))
-              , m_ibl_env_sample_count(params.get_optional<double>("ibl_env_samples", 1.0))
-              , m_max_photons_per_estimate(params.get_optional<size_t>("max_photons_per_estimate", 100))
-              , m_view_photons(params.get_optional<bool>("view_photons", false))
-              , m_view_photons_radius(params.get_optional<float>("view_photons_radius", 1.0e-3f))
-            {
-                // Precompute the reciprocal of the number of environment samples.
-                m_rcp_ibl_env_sample_count =
-                    m_ibl_env_sample_count > 0.0 && m_ibl_env_sample_count < 1.0
-                        ? static_cast<float>(1.0 / m_ibl_env_sample_count)
-                        : 0.0f;
-            }
-
-            static size_t nz(const size_t x)
-            {
-                return x == 0 ? ~0 : x;
-            }
-
-            void print() const
-            {
-                RENDERER_LOG_INFO(
-                    "sppm settings:\n"
-                    "  ibl              %s\n"
-                    "  max path length  %s\n"
-                    "  rr min path len. %s\n"
-                    "  ibl env samples  %s\n"
-                    "  max photons/est  %s",
-                    m_enable_ibl ? "on" : "off",
-                    m_max_path_length == ~0 ? "infinite" : pretty_uint(m_max_path_length).c_str(),
-                    m_rr_min_path_length == ~0 ? "infinite" : pretty_uint(m_rr_min_path_length).c_str(),
-                    pretty_scalar(m_ibl_env_sample_count).c_str(),
-                    pretty_uint(m_max_photons_per_estimate).c_str());
-            }
-        };
-
         SPPMLightingEngine(
             const SPPMPassCallback& pass_callback,
             const LightSampler&     light_sampler,
-            const ParamArray&       params)
+            const SPPMParameters&   params)
           : m_params(params)
           , m_pass_callback(pass_callback)
           , m_light_sampler(light_sampler)
@@ -221,7 +167,7 @@ namespace
         }
 
       private:
-        const Parameters                m_params;
+        const SPPMParameters            m_params;
         const SPPMPassCallback&         m_pass_callback;
         const LightSampler&             m_light_sampler;
         uint64                          m_path_count;
@@ -230,7 +176,7 @@ namespace
 
         struct PathVisitor
         {
-            const Parameters&           m_params;
+            const SPPMParameters&       m_params;
             const SPPMPassCallback&     m_pass_callback;
             const LightSampler&         m_light_sampler;
             SamplingContext&            m_sampling_context;
@@ -242,7 +188,7 @@ namespace
             SpectrumStack&              m_path_aovs;
 
             PathVisitor(
-                const Parameters&       params,
+                const SPPMParameters&   params,
                 const SPPMPassCallback& pass_callback,
                 const LightSampler&     light_sampler,
                 SamplingContext&        sampling_context,
@@ -282,13 +228,25 @@ namespace
                 Spectrum vertex_radiance(0.0f);
                 SpectrumStack vertex_aovs(m_path_aovs.size(), 0.0f);
 
-                if (vertex.m_bsdf && !vertex.m_bsdf->is_purely_specular())
+                if (vertex.m_bsdf)
                 {
-                    // Lighting from photon map.
-                    add_photon_map_lighting_contribution(
-                        vertex,
-                        vertex_radiance,
-                        vertex_aovs);
+                    // Direct lighting.
+                    if (vertex.m_path_length == 1 && m_params.m_dl_mode == SPPMParameters::RayTraced)
+                    {
+                        add_direct_lighting_contribution(
+                            vertex,
+                            vertex_radiance,
+                            vertex_aovs);
+                    }
+
+                    if (!vertex.m_bsdf->is_purely_specular())
+                    {
+                        // Lighting from photon map.
+                        add_photon_map_lighting_contribution(
+                            vertex,
+                            vertex_radiance,
+                            vertex_aovs);
+                    }
                 }
 
                 // Emitted light.
@@ -308,6 +266,51 @@ namespace
 
                 // Proceed with this path.
                 return true;
+            }
+
+            void add_direct_lighting_contribution(
+                const PathVertex&       vertex,
+                Spectrum&               vertex_radiance,
+                SpectrumStack&          vertex_aovs)
+            {
+                Spectrum dl_radiance;
+                SpectrumStack dl_aovs(vertex_aovs.size());
+
+                const size_t light_sample_count =
+                    stochastic_cast<size_t>(
+                        m_sampling_context,
+                        m_params.m_dl_light_sample_count);
+
+                const size_t bsdf_sample_count = light_sample_count;
+
+                // Unlike in the path tracer, we need to sample the diffuse components
+                // of the BSDF because we won't extend the path after a diffuse bounce.
+                DirectLightingIntegrator integrator(
+                    m_shading_context,
+                    m_light_sampler,
+                    vertex,
+                    BSDF::Diffuse,
+                    BSDF::AllScatteringModes,
+                    bsdf_sample_count,
+                    light_sample_count,
+                    false);             // not computing indirect lighting
+
+                // Always sample both the lights and the BSDF.
+                integrator.sample_bsdf_and_lights_low_variance(
+                    vertex.m_sampling_context,
+                    dl_radiance,
+                    dl_aovs);
+
+                // Divide by the sample count when this number is less than 1.
+                if (m_params.m_rcp_dl_light_sample_count > 0.0f)
+                {
+                    dl_radiance *= m_params.m_rcp_dl_light_sample_count;
+                    dl_aovs *= m_params.m_rcp_dl_light_sample_count;
+                }
+
+                // Add the direct lighting contributions.
+                vertex_radiance += dl_radiance;
+                vertex_aovs += dl_aovs;
             }
 
             void add_photon_map_lighting_contribution(
@@ -518,12 +521,12 @@ namespace
 SPPMLightingEngineFactory::SPPMLightingEngineFactory(
     const SPPMPassCallback&     pass_callback,
     const LightSampler&         light_sampler,
-    const ParamArray&           params)
+    const SPPMParameters&       params)
   : m_pass_callback(pass_callback)
   , m_light_sampler(light_sampler)
   , m_params(params)
 {
-    SPPMLightingEngine::Parameters(params).print();
+    m_params.print();
 }
 
 void SPPMLightingEngineFactory::release()

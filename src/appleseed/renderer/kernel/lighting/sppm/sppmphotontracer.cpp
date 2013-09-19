@@ -78,36 +78,6 @@ namespace renderer
 namespace
 {
     //
-    // Photon tracing parameters.
-    //
-
-    static size_t nz(const size_t x)
-    {
-        return x == 0 ? ~0 : x;
-    }
-
-    struct Parameters
-    {
-        const size_t    m_light_photon_count;           // number of photons emitted from the lights
-        const size_t    m_env_photon_count;             // number of photons emitted from the environment
-        const size_t    m_photon_packet_size;           // number of photons per tracing job
-        const size_t    m_max_path_length;              // maximum path length, ~0 for unlimited
-        const size_t    m_rr_min_path_length;           // minimum path length before Russian Roulette kicks in, ~0 for unlimited
-        const size_t    m_max_iterations;               // maximum number of iteration during path tracing
-
-        explicit Parameters(const ParamArray& params)
-          : m_light_photon_count(params.get_optional<size_t>("light_photons_per_pass", 100000))
-          , m_env_photon_count(params.get_optional<size_t>("env_photons_per_pass", 100000))
-          , m_photon_packet_size(params.get_optional<size_t>("photon_packet_size", 100000))
-          , m_max_path_length(nz(params.get_optional<size_t>("max_path_length", 0)))
-          , m_rr_min_path_length(nz(params.get_optional<size_t>("rr_min_path_length", 3)))
-          , m_max_iterations(params.get_optional<size_t>("max_iterations", 1000))
-        {
-        }
-    };
-
-
-    //
     // A path visitor that creates photons at each non-specular bounces.
     //
 
@@ -188,7 +158,7 @@ namespace
             const LightSampler&     light_sampler,
             const TraceContext&     trace_context,
             TextureStore&           texture_store,
-            const Parameters&       params,
+            const SPPMParameters&   params,
             SPPMPhotonVector&       global_photons,
             const size_t            photon_begin,
             const size_t            photon_end,
@@ -227,7 +197,7 @@ namespace
         const LightSampler&         m_light_sampler;
         TextureCache                m_texture_cache;
         Intersector                 m_intersector;
-        const Parameters            m_params;
+        const SPPMParameters        m_params;
         SPPMPhotonVector&           m_global_photons;
         const size_t                m_photon_begin;
         const size_t                m_photon_end;
@@ -312,7 +282,7 @@ namespace
             const bool cast_indirect_light = (edf->get_flags() & EDF::CastIndirectLight) != 0;
             PathVisitor path_visitor(
                 initial_flux,
-                true,                                       // do store direct lighting photons
+                m_params.m_dl_mode == SPPMParameters::SPPM, // store direct lighting photons?
                 cast_indirect_light,
                 m_local_photons);
             PathTracer<PathVisitor, true> path_tracer(      // true = adjoint
@@ -368,7 +338,7 @@ namespace
             const bool cast_indirect_light = (light_sample.m_light->get_flags() & EDF::CastIndirectLight) != 0;
             PathVisitor path_visitor(
                 initial_flux,
-                true,                                       // do store direct lighting photons
+                m_params.m_dl_mode == SPPMParameters::SPPM, // store direct lighting photons?
                 cast_indirect_light,
                 m_local_photons);
             PathTracer<PathVisitor, true> path_tracer(      // true = adjoint
@@ -400,7 +370,7 @@ namespace
             const LightSampler&     light_sampler,
             const TraceContext&     trace_context,
             TextureStore&           texture_store,
-            const Parameters&       params,
+            const SPPMParameters&   params,
             SPPMPhotonVector&       global_photons,
             const size_t            photon_begin,
             const size_t            photon_end,
@@ -443,7 +413,7 @@ namespace
         const LightSampler&         m_light_sampler;
         TextureCache                m_texture_cache;
         Intersector                 m_intersector;
-        const Parameters            m_params;
+        const SPPMParameters        m_params;
         SPPMPhotonVector&           m_global_photons;
         const size_t                m_photon_begin;
         const size_t                m_photon_end;
@@ -529,12 +499,12 @@ SPPMPhotonTracer::SPPMPhotonTracer(
     const LightSampler&     light_sampler,
     const TraceContext&     trace_context,
     TextureStore&           texture_store,
-    const ParamArray&       params)
-  : m_scene(scene)
+    const SPPMParameters&   params)
+  : m_params(params)
+  , m_scene(scene)
   , m_light_sampler(light_sampler)
   , m_trace_context(trace_context)
   , m_texture_store(texture_store)
-  , m_params(params)
   , m_total_emitted_photon_count(0)
   , m_total_stored_photon_count(0)
 {
@@ -548,8 +518,6 @@ size_t SPPMPhotonTracer::trace_photons(
 {
     size_t emitted_photon_count = 0;
 
-    const Parameters params(m_params);
-
     // Start stopwatch.
     Stopwatch<DefaultWallclockTimer> stopwatch;
     stopwatch.start();
@@ -558,13 +526,13 @@ size_t SPPMPhotonTracer::trace_photons(
     {
         RENDERER_LOG_INFO(
             "tracing %s sppm light %s...",
-            pretty_uint(params.m_light_photon_count).c_str(),
-            params.m_light_photon_count > 1 ? "photons" : "photon");
+            pretty_uint(m_params.m_light_photon_count).c_str(),
+            m_params.m_light_photon_count > 1 ? "photons" : "photon");
 
-        for (size_t i = 0; i < params.m_light_photon_count; i += params.m_photon_packet_size)
+        for (size_t i = 0; i < m_params.m_light_photon_count; i += m_params.m_photon_packet_size)
         {
             const size_t photon_begin = i;
-            const size_t photon_end = min(i + params.m_photon_packet_size, params.m_light_photon_count);
+            const size_t photon_end = min(i + m_params.m_photon_packet_size, m_params.m_light_photon_count);
 
             job_queue.schedule(
                 new LightPhotonTracingJob(
@@ -572,7 +540,7 @@ size_t SPPMPhotonTracer::trace_photons(
                     m_light_sampler,
                     m_trace_context,
                     m_texture_store,
-                    params,
+                    m_params,
                     photons,
                     photon_begin,
                     photon_end,
@@ -583,17 +551,19 @@ size_t SPPMPhotonTracer::trace_photons(
         }
     }
 
-    if (m_scene.get_environment()->get_environment_edf() && !abort_switch.is_aborted())
+    if (m_params.m_enable_ibl &&
+        m_scene.get_environment()->get_environment_edf() &&
+        !abort_switch.is_aborted())
     {
         RENDERER_LOG_INFO(
             "tracing %s sppm environment %s...",
-            pretty_uint(params.m_env_photon_count).c_str(),
-            params.m_env_photon_count > 1 ? "photons" : "photon");
+            pretty_uint(m_params.m_env_photon_count).c_str(),
+            m_params.m_env_photon_count > 1 ? "photons" : "photon");
 
-        for (size_t i = 0; i < params.m_env_photon_count; i += params.m_photon_packet_size)
+        for (size_t i = 0; i < m_params.m_env_photon_count; i += m_params.m_photon_packet_size)
         {
             const size_t photon_begin = i;
-            const size_t photon_end = min(i + params.m_photon_packet_size, params.m_env_photon_count);
+            const size_t photon_end = min(i + m_params.m_photon_packet_size, m_params.m_env_photon_count);
 
             job_queue.schedule(
                 new EnvironmentPhotonTracingJob(
@@ -601,7 +571,7 @@ size_t SPPMPhotonTracer::trace_photons(
                     m_light_sampler,
                     m_trace_context,
                     m_texture_store,
-                    params,
+                    m_params,
                     photons,
                     photon_begin,
                     photon_end,

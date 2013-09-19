@@ -30,8 +30,8 @@
 #define APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMLIGHTINGENGINE_H
 
 // appleseed.renderer headers.
+#include "renderer/kernel/lighting/sppm/sppmparameters.h"
 #include "renderer/kernel/lighting/ilightingengine.h"
-#include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -55,7 +55,7 @@ class SPPMLightingEngineFactory
     SPPMLightingEngineFactory(
         const SPPMPassCallback&     pass_callback,
         const LightSampler&         light_sampler,
-        const ParamArray&           params);
+        const SPPMParameters&       params);
 
     // Delete this instance.
     virtual void release() OVERRIDE;
@@ -64,9 +64,9 @@ class SPPMLightingEngineFactory
     virtual ILightingEngine* create() OVERRIDE;
 
   private:
+    const SPPMParameters            m_params;
     const SPPMPassCallback&         m_pass_callback;
     const LightSampler&             m_light_sampler;
-    ParamArray                      m_params;
 };
 
 }       // namespace renderer

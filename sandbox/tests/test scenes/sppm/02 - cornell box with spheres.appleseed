@@ -306,22 +306,15 @@
                 <parameter name="rr_min_path_length" value="3" />
             </parameters>
             <parameters name="sppm">
-                <parameter name="max_path_length" value="0" />
-            </parameters>
-            <parameters name="sppm_lighting_engine">
-                <parameter name="enable_ibl" value="true" />
-                <parameter name="max_path_length" value="0" />
-                <parameter name="max_photons_per_estimate" value="100" />
-                <parameter name="rr_min_path_length" value="3" />
-            </parameters>
-            <parameters name="sppm_pass_callback">
                 <parameter name="alpha" value="0.800000" />
+                <parameter name="dl_mode" value="sppm" />
                 <parameter name="enable_caustics" value="true" />
-                <parameter name="enable_dl" value="true" />
+                <parameter name="enable_ibl" value="true" />
                 <parameter name="env_photons_per_pass" value="100000" />
                 <parameter name="initial_radius" value="0.500000" />
                 <parameter name="light_photons_per_pass" value="100000" />
                 <parameter name="max_path_length" value="0" />
+                <parameter name="max_photons_per_estimate" value="100" />
                 <parameter name="photons_per_pass" value="100000" />
                 <parameter name="rr_min_path_length" value="3" />
             </parameters>

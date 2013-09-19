@@ -49,6 +49,7 @@
 #include "foundation/utility/string.h"
 
 // Qt headers.
+#include <QButtonGroup>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDoubleSpinBox>
@@ -59,6 +60,7 @@
 #include <QLabel>
 #include <QLayout>
 #include <QMessageBox>
+#include <QRadioButton>
 #include <QShortcut>
 #include <QSpinBox>
 #include <Qt>
@@ -459,7 +461,21 @@ void RenderSettingsWindow::create_sppm_panel(QLayout* parent)
     QVBoxLayout* sublayout = new QVBoxLayout();
     groupbox->setLayout(sublayout);
 
-    sublayout->addWidget(create_checkbox("sppm.lighting_components.dl", "Direct Lighting"));
+    QRadioButton* dl_buttons_sppm = create_radio_button("sppm.lighting_components.dl.sppm", "SPPM Direct Lighting");
+    QRadioButton* dl_buttons_rt = create_radio_button("sppm.lighting_components.dl.rt", "RT Direct Lighting");
+    QRadioButton* dl_buttons_off = create_radio_button("sppm.lighting_components.dl.off", "No Direct Lighting");
+
+    QButtonGroup* dl_buttons = new QButtonGroup(groupbox);
+    dl_buttons->addButton(dl_buttons_sppm);
+    dl_buttons->addButton(dl_buttons_rt);
+    dl_buttons->addButton(dl_buttons_off);
+
+    QHBoxLayout* button_layout = new QHBoxLayout();
+    button_layout->addWidget(dl_buttons_sppm);
+    button_layout->addWidget(dl_buttons_rt);
+    button_layout->addWidget(dl_buttons_off);
+    sublayout->addLayout(button_layout);
+
     sublayout->addWidget(create_checkbox("sppm.lighting_components.ibl", "Image-Based Lighting"));
     sublayout->addWidget(create_checkbox("sppm.lighting_components.caustics", "Caustics"));
 
@@ -601,7 +617,7 @@ QFormLayout* RenderSettingsWindow::create_form_layout(const QString& label, QWid
     return layout;
 }
 
-QWidget* RenderSettingsWindow::create_horizontal_group(QWidget* widget1, QWidget* widget2)
+QWidget* RenderSettingsWindow::create_horizontal_group(QWidget* widget1, QWidget* widget2, QWidget* widget3)
 {
     QWidget* group = new QWidget();
 
@@ -613,7 +629,12 @@ QWidget* RenderSettingsWindow::create_horizontal_group(QWidget* widget1, QWidget
     layout->setSizeConstraint(QLayout::SetFixedSize);
 
     layout->addWidget(widget1);
-    layout->addWidget(widget2);
+
+    if (widget2)
+        layout->addWidget(widget2);
+
+    if (widget3)
+        layout->addWidget(widget3);
 
     return group;
 }
@@ -751,6 +772,16 @@ QGroupBox* RenderSettingsWindow::create_checkable_groupbox(
     return groupbox;
 }
 
+QRadioButton* RenderSettingsWindow::create_radio_button(
+    const string&           widget_key,
+    const QString&          label)
+{
+    QRadioButton* radio_button = new QRadioButton(label);
+    m_widget_proxies[widget_key] = new RadioButtonProxy(radio_button);
+
+    return radio_button;
+}
+
 QComboBox* RenderSettingsWindow::create_combobox(
     const string&           widget_key)
 {
@@ -798,16 +829,15 @@ void RenderSettingsWindow::create_direct_links()
     create_direct_link("pt.advanced.ibl.env_samples", "pt.ibl_env_samples", 1);
 
     // Stochastic Progressive Photon Mapping.
-    create_direct_link("sppm.lighting_components.dl", "sppm_pass_callback.enable_dl", true);
-    create_direct_link("sppm.lighting_components.ibl", "sppm_lighting_engine.enable_ibl", true);
-    create_direct_link("sppm.lighting_components.caustics", "sppm_pass_callback.enable_caustics", true);
-    create_direct_link("sppm.photon_tracing.bounces.rr_start_bounce", "sppm_pass_callback.rr_min_path_length", 3);
-    create_direct_link("sppm.photon_tracing.light_photons", "sppm_pass_callback.light_photons_per_pass", 100000);
-    create_direct_link("sppm.photon_tracing.env_photons", "sppm_pass_callback.env_photons_per_pass", 100000);
-    create_direct_link("sppm.radiance_estimation.bounces.rr_start_bounce", "sppm_lighting_engine.rr_min_path_length", 3);
-    create_direct_link("sppm.radiance_estimation.initial_radius", "sppm_pass_callback.initial_radius", 1.0);
-    create_direct_link("sppm.radiance_estimation.max_photons", "sppm_lighting_engine.max_photons_per_estimate", 100);
-    create_direct_link("sppm.radiance_estimation.alpha", "sppm_pass_callback.alpha", 0.7);
+    create_direct_link("sppm.lighting_components.ibl", "sppm.enable_ibl", true);
+    create_direct_link("sppm.lighting_components.caustics", "sppm.enable_caustics", true);
+    create_direct_link("sppm.photon_tracing.bounces.rr_start_bounce", "sppm.rr_min_path_length", 3);
+    create_direct_link("sppm.photon_tracing.light_photons", "sppm.light_photons_per_pass", 100000);
+    create_direct_link("sppm.photon_tracing.env_photons", "sppm.env_photons_per_pass", 100000);
+    create_direct_link("sppm.radiance_estimation.bounces.rr_start_bounce", "sppm.rr_min_path_length", 3);
+    create_direct_link("sppm.radiance_estimation.initial_radius", "sppm.initial_radius", 1.0);
+    create_direct_link("sppm.radiance_estimation.max_photons", "sppm.max_photons_per_estimate", 100);
+    create_direct_link("sppm.radiance_estimation.alpha", "sppm.alpha", 0.7);
 }
 
 template <typename T>
@@ -868,21 +898,25 @@ void RenderSettingsWindow::do_load_configuration(const Configuration& config)
     load_bounce_settings(config, "drt", "drt");
 
     // Unidirectional Path Tracer.
-    {
-        load_bounce_settings(config, "pt", "pt");
-
-        set_widget("pt.advanced.unlimited_ray_intensity", !config.get_parameters().exist_path("pt.max_ray_intensity"));
-        set_widget("pt.advanced.max_ray_intensity", get_config<double>(config, "pt.max_ray_intensity", 1.0));
-    }
+    load_bounce_settings(config, "pt", "pt");
+    set_widget("pt.advanced.unlimited_ray_intensity", !config.get_parameters().exist_path("pt.max_ray_intensity"));
+    set_widget("pt.advanced.max_ray_intensity", get_config<double>(config, "pt.max_ray_intensity", 1.0));
 
     // Stochastic Progressive Photon Mapping.
-    load_bounce_settings(config, "sppm.photon_tracing", "sppm_pass_callback");
-    load_bounce_settings(config, "sppm.radiance_estimation", "sppm_lighting_engine");
+    load_bounce_settings(config, "sppm.photon_tracing", "sppm");
+    load_bounce_settings(config, "sppm.radiance_estimation", "sppm");
+    {
+        const string dl_mode = get_config<string>(config, "sppm.dl_mode", "sppm");
+        if (dl_mode == "sppm")
+            set_widget("sppm.lighting_components.dl.sppm", true);
+        else if (dl_mode == "rt")
+            set_widget("sppm.lighting_components.dl.rt", true);
+        else set_widget("sppm.lighting_components.dl.off", true);
+    }
 
     // System / Rendering Threads.
+    set_widget("system.rendering_threads.override", config.get_parameters().strings().exist("rendering_threads"));
     {
-        set_widget("system.rendering_threads.override", config.get_parameters().strings().exist("rendering_threads"));
-        
         const string default_rendering_threads = to_string(System::get_logical_cpu_core_count());
         const string rendering_threads = get_config<string>(config, "rendering_threads", "auto");
         set_widget("system.rendering_threads.value", rendering_threads == "auto" ? default_rendering_threads : rendering_threads);
@@ -916,8 +950,11 @@ void RenderSettingsWindow::do_save_configuration(Configuration& config)
     else set_config(config, "pt.max_ray_intensity", get_widget<double>("pt.advanced.max_ray_intensity"));
 
     // Stochastic Progressive Photon Mapping.
-    save_bounce_settings(config, "sppm.photon_tracing", "sppm_pass_callback");
-    save_bounce_settings(config, "sppm.radiance_estimation", "sppm_lighting_engine");
+    save_bounce_settings(config, "sppm.photon_tracing", "sppm");
+    save_bounce_settings(config, "sppm.radiance_estimation", "sppm");
+    set_config(config, "sppm.dl_mode",
+        get_widget<bool>("sppm.lighting_components.dl.sppm") ? "sppm" :
+        get_widget<bool>("sppm.lighting_components.dl.rt") ? "rt" : "off");
 
     // System / Rendering Threads.
     if (get_widget<bool>("system.rendering_threads.override"))
