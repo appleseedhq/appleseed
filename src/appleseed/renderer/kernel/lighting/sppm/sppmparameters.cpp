@@ -83,6 +83,7 @@ namespace
 SPPMParameters::SPPMParameters(const ParamArray& params)
   : m_dl_mode(get_mode(params, "dl_mode", SPPM))
   , m_enable_ibl(params.get_optional<bool>("enable_ibl", true))
+  , m_enable_caustics(params.get_optional<bool>("enable_caustics", true))
   , m_max_path_length(nz(params.get_optional<size_t>("max_path_length", 0)))
   , m_rr_min_path_length(nz(params.get_optional<size_t>("rr_min_path_length", 3)))
   , m_max_iterations(params.get_optional<size_t>("max_iterations", 1000))

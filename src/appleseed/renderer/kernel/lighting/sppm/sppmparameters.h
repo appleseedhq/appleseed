@@ -43,7 +43,9 @@ struct SPPMParameters
     enum Mode { SPPM, RayTraced, Off };
 
     const Mode      m_dl_mode;                      // direct lighting mode
-    const bool      m_enable_ibl;                   // image-based lighting enabled?
+    const bool      m_enable_ibl;                   // is image-based lighting enabled?
+    const bool      m_enable_caustics;              // are caustics enabled?
+
     const size_t    m_max_path_length;              // maximum path length, ~0 for unlimited
     const size_t    m_rr_min_path_length;           // minimum path length before Russian Roulette kicks in, ~0 for unlimited
     const size_t    m_max_iterations;               // maximum number of iteration during path tracing

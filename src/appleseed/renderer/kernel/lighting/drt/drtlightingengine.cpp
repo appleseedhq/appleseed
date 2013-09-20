@@ -79,7 +79,7 @@ namespace
       public:
         struct Parameters
         {
-            const bool      m_enable_ibl;                   // image-based lighting enabled?
+            const bool      m_enable_ibl;                   // is image-based lighting enabled?
 
             const size_t    m_max_path_length;              // maximum path length, ~0 for unlimited
             const size_t    m_rr_min_path_length;           // minimum path length before Russian Roulette kicks in, ~0 for unlimited

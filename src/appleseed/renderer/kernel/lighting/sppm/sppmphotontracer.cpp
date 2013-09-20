@@ -86,16 +86,19 @@ namespace
         const Spectrum              m_initial_flux;     // initial particle flux (in W)
         const bool                  m_store_direct;
         const bool                  m_store_indirect;
+        const bool                  m_store_caustics;
         SPPMPhotonVector&           m_photons;
 
         PathVisitor(
             const Spectrum&         initial_flux,
             const bool              store_direct,
             const bool              store_indirect,
+            const bool              store_caustics,
             SPPMPhotonVector&       photons)
           : m_initial_flux(initial_flux)
           , m_store_direct(store_direct)
           , m_store_indirect(store_indirect)
+          , m_store_caustics(store_caustics)
           , m_photons(photons)
         {
         }
@@ -110,6 +113,13 @@ namespace
 
         bool visit_vertex(const PathVertex& vertex)
         {
+            if (!m_store_caustics)
+            {
+                // No caustics.
+                if (vertex.m_path_length > 1 && BSDF::has_glossy_or_specular(vertex.m_prev_bsdf_mode))
+                    return false;
+            }
+
             if (vertex.m_path_length > 1 || m_store_direct)
             {
                 // Don't store photons on surfaces without a BSDF.
@@ -284,6 +294,7 @@ namespace
                 initial_flux,
                 m_params.m_dl_mode == SPPMParameters::SPPM, // store direct lighting photons?
                 cast_indirect_light,
+                m_params.m_enable_caustics,
                 m_local_photons);
             PathTracer<PathVisitor, true> path_tracer(      // true = adjoint
                 path_visitor,
@@ -340,6 +351,7 @@ namespace
                 initial_flux,
                 m_params.m_dl_mode == SPPMParameters::SPPM, // store direct lighting photons?
                 cast_indirect_light,
+                m_params.m_enable_caustics,
                 m_local_photons);
             PathTracer<PathVisitor, true> path_tracer(      // true = adjoint
                 path_visitor,
@@ -472,6 +484,7 @@ namespace
                 initial_flux,
                 true,                                       // do store IBL photons
                 cast_indirect_light,
+                m_params.m_enable_caustics,
                 m_local_photons);
             PathTracer<PathVisitor, true> path_tracer(      // true = adjoint
                 path_visitor,
