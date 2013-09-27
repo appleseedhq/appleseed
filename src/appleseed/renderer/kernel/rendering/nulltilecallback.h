@@ -26,25 +26,42 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_RENDERING_H
-#define APPLESEED_RENDERER_API_RENDERING_H
+#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_NULLTILECALLBACK_H
+#define APPLESEED_RENDERER_KERNEL_RENDERING_NULLTILECALLBACK_H
 
-// API headers.
-#include "renderer/kernel/rendering/debug/blanktilerenderer.h"
-#include "renderer/kernel/rendering/debug/debugtilerenderer.h"
-#include "renderer/kernel/rendering/generic/genericframerenderer.h"
-#include "renderer/kernel/rendering/generic/genericsamplerenderer.h"
-#include "renderer/kernel/rendering/generic/generictilerenderer.h"
-#include "renderer/kernel/rendering/progressive/progressiveframerenderer.h"
-#include "renderer/kernel/rendering/defaultrenderercontroller.h"
-#include "renderer/kernel/rendering/iframerenderer.h"
-#include "renderer/kernel/rendering/irenderercontroller.h"
-#include "renderer/kernel/rendering/isamplerenderer.h"
+// appleseed.renderer headers.
 #include "renderer/kernel/rendering/itilecallback.h"
-#include "renderer/kernel/rendering/itilerenderer.h"
-#include "renderer/kernel/rendering/masterrenderer.h"
-#include "renderer/kernel/rendering/nulltilecallback.h"
-#include "renderer/kernel/rendering/scenepicker.h"
 #include "renderer/kernel/rendering/tilecallbackbase.h"
 
-#endif  // !APPLESEED_RENDERER_API_RENDERING_H
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+namespace renderer
+{
+
+//
+// A tile callback that does nothing.
+//
+
+class NullTileCallback
+  : public TileCallbackBase
+{
+  public:
+    virtual void release() OVERRIDE;
+};
+
+class DLLSYMBOL NullTileCallbackFactory
+  : public ITileCallbackFactory
+{
+  public:
+    virtual void release() OVERRIDE;
+
+    virtual ITileCallback* create() OVERRIDE;
+};
+
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_NULLTILECALLBACK_H

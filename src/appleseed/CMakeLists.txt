@@ -1019,6 +1019,8 @@ set (renderer_kernel_rendering_sources
     renderer/kernel/rendering/localsampleaccumulationbuffer.h
     renderer/kernel/rendering/masterrenderer.cpp
     renderer/kernel/rendering/masterrenderer.h
+    renderer/kernel/rendering/nulltilecallback.cpp
+    renderer/kernel/rendering/nulltilecallback.h
     renderer/kernel/rendering/permanentshadingresultframebufferfactory.cpp
     renderer/kernel/rendering/permanentshadingresultframebufferfactory.h
     renderer/kernel/rendering/pixelcontext.h

@@ -26,25 +26,34 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_RENDERING_H
-#define APPLESEED_RENDERER_API_RENDERING_H
+// Interface header.
+#include "nulltilecallback.h"
 
-// API headers.
-#include "renderer/kernel/rendering/debug/blanktilerenderer.h"
-#include "renderer/kernel/rendering/debug/debugtilerenderer.h"
-#include "renderer/kernel/rendering/generic/genericframerenderer.h"
-#include "renderer/kernel/rendering/generic/genericsamplerenderer.h"
-#include "renderer/kernel/rendering/generic/generictilerenderer.h"
-#include "renderer/kernel/rendering/progressive/progressiveframerenderer.h"
-#include "renderer/kernel/rendering/defaultrenderercontroller.h"
-#include "renderer/kernel/rendering/iframerenderer.h"
-#include "renderer/kernel/rendering/irenderercontroller.h"
-#include "renderer/kernel/rendering/isamplerenderer.h"
-#include "renderer/kernel/rendering/itilecallback.h"
-#include "renderer/kernel/rendering/itilerenderer.h"
-#include "renderer/kernel/rendering/masterrenderer.h"
-#include "renderer/kernel/rendering/nulltilecallback.h"
-#include "renderer/kernel/rendering/scenepicker.h"
-#include "renderer/kernel/rendering/tilecallbackbase.h"
+namespace renderer
+{
 
-#endif  // !APPLESEED_RENDERER_API_RENDERING_H
+//
+// NullTileCallback class implementation.
+//
+
+void NullTileCallback::release()
+{
+    delete this;
+}
+
+
+//
+// NullTileCallbackFactory class implementation.
+//
+
+void NullTileCallbackFactory::release()
+{
+    delete this;
+}
+
+ITileCallback* NullTileCallbackFactory::create()
+{
+    return new NullTileCallback();
+}
+
+}   // namespace renderer
