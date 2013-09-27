@@ -203,7 +203,7 @@ namespace
                         *m_buffer.get(),
                         m_sample_generators[i],
                         m_sample_counter,
-                        m_tile_callbacks[i],
+                        m_tile_callbacks.empty() ? 0 : m_tile_callbacks[i],
                         m_job_queue,
                         i,                              // job index
                         m_sample_generators.size(),     // job count
