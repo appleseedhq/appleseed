@@ -26,26 +26,56 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_RENDERING_H
-#define APPLESEED_RENDERER_API_RENDERING_H
+// Interface header.
+#include "timedrenderercontroller.h"
 
-// API headers.
-#include "renderer/kernel/rendering/debug/blanktilerenderer.h"
-#include "renderer/kernel/rendering/debug/debugtilerenderer.h"
-#include "renderer/kernel/rendering/generic/genericframerenderer.h"
-#include "renderer/kernel/rendering/generic/genericsamplerenderer.h"
-#include "renderer/kernel/rendering/generic/generictilerenderer.h"
-#include "renderer/kernel/rendering/progressive/progressiveframerenderer.h"
-#include "renderer/kernel/rendering/defaultrenderercontroller.h"
-#include "renderer/kernel/rendering/iframerenderer.h"
-#include "renderer/kernel/rendering/irenderercontroller.h"
-#include "renderer/kernel/rendering/isamplerenderer.h"
-#include "renderer/kernel/rendering/itilecallback.h"
-#include "renderer/kernel/rendering/itilerenderer.h"
-#include "renderer/kernel/rendering/masterrenderer.h"
-#include "renderer/kernel/rendering/nulltilecallback.h"
-#include "renderer/kernel/rendering/scenepicker.h"
-#include "renderer/kernel/rendering/tilecallbackbase.h"
-#include "renderer/kernel/rendering/timedrenderercontroller.h"
+// appleseed.foundation headers.
+#include "foundation/platform/defaulttimers.h"
+#include "foundation/utility/stopwatch.h"
 
-#endif  // !APPLESEED_RENDERER_API_RENDERING_H
+using namespace foundation;
+
+namespace renderer
+{
+
+//
+// TimedRendererController class implementation.
+//
+
+struct TimedRendererController::Impl
+{
+    const double                        m_seconds;
+    Stopwatch<DefaultWallclockTimer>    m_stopwatch;
+
+    explicit Impl(const double seconds)
+      : m_seconds(seconds)
+    {
+    }
+};
+
+TimedRendererController::TimedRendererController(const double seconds)
+  : impl(new Impl(seconds))
+{
+}
+
+TimedRendererController::~TimedRendererController()
+{
+    delete impl;
+}
+
+void TimedRendererController::on_frame_begin()
+{
+    impl->m_stopwatch.start(); 
+}
+
+TimedRendererController::Status TimedRendererController::on_progress()
+{
+    DefaultRendererController::on_progress();
+
+    return
+        impl->m_stopwatch.measure().get_seconds() > impl->m_seconds
+            ? TerminateRendering
+            : ContinueRendering;
+}
+
+}   // namespace renderer

@@ -26,26 +26,46 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_RENDERING_H
-#define APPLESEED_RENDERER_API_RENDERING_H
+#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_TIMEDRENDERERCONTROLLER_H
+#define APPLESEED_RENDERER_KERNEL_RENDERING_TIMEDRENDERERCONTROLLER_H
 
-// API headers.
-#include "renderer/kernel/rendering/debug/blanktilerenderer.h"
-#include "renderer/kernel/rendering/debug/debugtilerenderer.h"
-#include "renderer/kernel/rendering/generic/genericframerenderer.h"
-#include "renderer/kernel/rendering/generic/genericsamplerenderer.h"
-#include "renderer/kernel/rendering/generic/generictilerenderer.h"
-#include "renderer/kernel/rendering/progressive/progressiveframerenderer.h"
+// appleseed.renderer headers.
 #include "renderer/kernel/rendering/defaultrenderercontroller.h"
-#include "renderer/kernel/rendering/iframerenderer.h"
-#include "renderer/kernel/rendering/irenderercontroller.h"
-#include "renderer/kernel/rendering/isamplerenderer.h"
-#include "renderer/kernel/rendering/itilecallback.h"
-#include "renderer/kernel/rendering/itilerenderer.h"
-#include "renderer/kernel/rendering/masterrenderer.h"
-#include "renderer/kernel/rendering/nulltilecallback.h"
-#include "renderer/kernel/rendering/scenepicker.h"
-#include "renderer/kernel/rendering/tilecallbackbase.h"
-#include "renderer/kernel/rendering/timedrenderercontroller.h"
 
-#endif  // !APPLESEED_RENDERER_API_RENDERING_H
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+namespace renderer
+{
+
+//
+// A renderer controller with a time limit.
+//
+
+class DLLSYMBOL TimedRendererController
+  : public DefaultRendererController
+{
+  public:
+    // Constructor.
+    explicit TimedRendererController(const double seconds);
+
+    // Destructor.
+    ~TimedRendererController();
+
+    // This method is called before rendering a single frame.
+    virtual void on_frame_begin() OVERRIDE;
+
+    // This method is called continuously during rendering.
+    virtual Status on_progress() OVERRIDE;
+
+  private:
+    struct Impl;
+    Impl* impl;
+};
+
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_TIMEDRENDERERCONTROLLER_H

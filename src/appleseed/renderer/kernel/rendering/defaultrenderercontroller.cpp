@@ -31,6 +31,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/thread.h"
+#include "foundation/platform/types.h"
 
 using namespace foundation;
 
