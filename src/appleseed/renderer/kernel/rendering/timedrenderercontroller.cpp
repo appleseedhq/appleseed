@@ -26,49 +26,56 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMLIGHTINGENGINE_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMLIGHTINGENGINE_H
-
-// appleseed.renderer headers.
-#include "renderer/kernel/lighting/sppm/sppmparameters.h"
-#include "renderer/kernel/lighting/ilightingengine.h"
+// Interface header.
+#include "timedrenderercontroller.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
+#include "foundation/platform/defaulttimers.h"
+#include "foundation/utility/stopwatch.h"
 
-// Forward declarations.
-namespace renderer  { class LightSampler; }
-namespace renderer  { class SPPMPassCallback; }
+using namespace foundation;
 
 namespace renderer
 {
 
 //
-// Stochastic Progressive Photon Mapping (SPPM) lighting engine factory.
+// TimedRendererController class implementation.
 //
 
-class SPPMLightingEngineFactory
-  : public ILightingEngineFactory
+struct TimedRendererController::Impl
 {
-  public:
-    // Constructor.
-    SPPMLightingEngineFactory(
-        const SPPMPassCallback&     pass_callback,
-        const LightSampler&         light_sampler,
-        const SPPMParameters&       params);
+    const double                        m_seconds;
+    Stopwatch<DefaultWallclockTimer>    m_stopwatch;
 
-    // Delete this instance.
-    virtual void release() OVERRIDE;
-
-    // Return a new SPPM lighting engine instance.
-    virtual ILightingEngine* create() OVERRIDE;
-
-  private:
-    const SPPMParameters            m_params;
-    const SPPMPassCallback&         m_pass_callback;
-    const LightSampler&             m_light_sampler;
+    explicit Impl(const double seconds)
+      : m_seconds(seconds)
+    {
+    }
 };
 
-}       // namespace renderer
+TimedRendererController::TimedRendererController(const double seconds)
+  : impl(new Impl(seconds))
+{
+}
 
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMLIGHTINGENGINE_H
+TimedRendererController::~TimedRendererController()
+{
+    delete impl;
+}
+
+void TimedRendererController::on_frame_begin()
+{
+    impl->m_stopwatch.start(); 
+}
+
+TimedRendererController::Status TimedRendererController::on_progress()
+{
+    DefaultRendererController::on_progress();
+
+    return
+        impl->m_stopwatch.measure().get_seconds() > impl->m_seconds
+            ? TerminateRendering
+            : ContinueRendering;
+}
+
+}   // namespace renderer

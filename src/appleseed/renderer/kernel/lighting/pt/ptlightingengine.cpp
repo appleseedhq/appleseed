@@ -86,9 +86,9 @@ namespace
       public:
         struct Parameters
         {
-            const bool      m_enable_dl;                    // direct lighting enabled?
-            const bool      m_enable_ibl;                   // image-based lighting enabled?
-            const bool      m_enable_caustics;              // caustics enabled?
+            const bool      m_enable_dl;                    // is direct lighting enabled?
+            const bool      m_enable_ibl;                   // is image-based lighting enabled?
+            const bool      m_enable_caustics;              // are caustics enabled?
 
             const size_t    m_max_path_length;              // maximum path length, ~0 for unlimited
             const size_t    m_rr_min_path_length;           // minimum path length before Russian Roulette kicks in, ~0 for unlimited
@@ -503,13 +503,13 @@ namespace
                     scattering_modes,
                     scattering_modes,
                     bsdf_sample_count,
-                    light_sample_count);
+                    light_sample_count,
+                    m_is_indirect_lighting);
 
                 if (last_vertex)
                 {
                     // This path won't be extended: sample both the lights and the BSDF.
                     integrator.sample_bsdf_and_lights_low_variance(
-                        m_is_indirect_lighting,
                         vertex.m_sampling_context,
                         dl_radiance,
                         dl_aovs);
@@ -518,7 +518,6 @@ namespace
                 {
                     // This path will be extended via BSDF sampling: sample the lights only.
                     integrator.sample_lights_low_variance(
-                        m_is_indirect_lighting,
                         vertex.m_sampling_context,
                         DirectLightingIntegrator::mis_power2,
                         dl_radiance,

@@ -32,7 +32,6 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/modeling/scene/scene.h"
-#include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/hash.h"
@@ -59,7 +58,7 @@ SPPMPassCallback::SPPMPassCallback(
     const LightSampler&     light_sampler,
     const TraceContext&     trace_context,
     TextureStore&           texture_store,
-    const ParamArray&       params)
+    const SPPMParameters&   params)
   : m_params(params)
   , m_photon_tracer(
         scene,
@@ -87,8 +86,7 @@ void SPPMPassCallback::pre_render(
     AbortSwitch&            abort_switch)
 {
     RENDERER_LOG_INFO(
-        "----------------------------------------------------\n"
-        "beginning sppm pass %s, lookup radius is %f.",
+        "--- beginning sppm pass %s, lookup radius is %f ---",
         pretty_uint(m_pass_number + 1).c_str(),
         m_lookup_radius);
 
@@ -129,17 +127,6 @@ void SPPMPassCallback::post_render(
         pretty_time(m_stopwatch.get_seconds()).c_str());
 
     ++m_pass_number;
-}
-
-
-//
-// SPPMPassCallback::Parameters class implementation.
-//
-
-SPPMPassCallback::Parameters::Parameters(const ParamArray& params)
-  : m_initial_radius_percents(params.get_required<float>("initial_radius", 0.1f))
-  , m_alpha(params.get_optional<float>("alpha", 0.7f))
-{
 }
 
 }   // namespace renderer

@@ -49,7 +49,8 @@ DirectLightingIntegrator::DirectLightingIntegrator(
     const int                   bsdf_sampling_modes,
     const int                   light_sampling_modes,
     const size_t                bsdf_sample_count,
-    const size_t                light_sample_count)
+    const size_t                light_sample_count,
+    const bool                  indirect)
   : m_shading_context(shading_context)
   , m_light_sampler(light_sampler)
   , m_shading_point(shading_point)
@@ -64,6 +65,7 @@ DirectLightingIntegrator::DirectLightingIntegrator(
   , m_light_sampling_modes(light_sampling_modes)
   , m_bsdf_sample_count(bsdf_sample_count)
   , m_light_sample_count(light_sample_count)
+  , m_indirect(indirect)
 {
     assert(is_normalized(outgoing));
 }
@@ -75,7 +77,8 @@ DirectLightingIntegrator::DirectLightingIntegrator(
     const int                   bsdf_sampling_modes,
     const int                   light_sampling_modes,
     const size_t                bsdf_sample_count,
-    const size_t                light_sample_count)
+    const size_t                light_sample_count,
+    const bool                  indirect)
   : m_shading_context(shading_context)
   , m_light_sampler(light_sampler)
   , m_shading_point(*vertex.m_shading_point)
@@ -90,12 +93,12 @@ DirectLightingIntegrator::DirectLightingIntegrator(
   , m_light_sampling_modes(light_sampling_modes)
   , m_bsdf_sample_count(bsdf_sample_count)
   , m_light_sample_count(light_sample_count)
+  , m_indirect(indirect)
 {
     assert(is_normalized(vertex.m_outgoing));
 }
 
 void DirectLightingIntegrator::sample_bsdf_and_lights(
-    const bool                  indirect,
     SamplingContext&            sampling_context,
     Spectrum&                   radiance,
     SpectrumStack&              aovs)
@@ -110,7 +113,6 @@ void DirectLightingIntegrator::sample_bsdf_and_lights(
     SpectrumStack aovs_light_sampling(aovs.size());
 
     sample_lights(
-        indirect,
         sampling_context,
         DirectLightingIntegrator::mis_power2,
         radiance_light_sampling,
@@ -121,7 +123,6 @@ void DirectLightingIntegrator::sample_bsdf_and_lights(
 }
 
 void DirectLightingIntegrator::sample_bsdf_and_lights_low_variance(
-    const bool                  indirect,
     SamplingContext&            sampling_context,
     Spectrum&                   radiance,
     SpectrumStack&              aovs)
@@ -136,7 +137,6 @@ void DirectLightingIntegrator::sample_bsdf_and_lights_low_variance(
     SpectrumStack aovs_light_sampling(aovs.size());
 
     sample_lights_low_variance(
-        indirect,
         sampling_context,
         DirectLightingIntegrator::mis_power2,
         radiance_light_sampling,
@@ -147,7 +147,6 @@ void DirectLightingIntegrator::sample_bsdf_and_lights_low_variance(
 }
 
 void DirectLightingIntegrator::take_single_bsdf_or_light_sample(
-    const bool                  indirect,
     SamplingContext&            sampling_context,
     Spectrum&                   radiance,
     SpectrumStack&              aovs)
@@ -163,7 +162,6 @@ void DirectLightingIntegrator::take_single_bsdf_or_light_sample(
         {
             sampling_context.split_in_place(3, m_light_sample_count);
             take_single_light_sample(
-                indirect,
                 sampling_context,
                 DirectLightingIntegrator::mis_balance,
                 radiance,
@@ -184,7 +182,6 @@ void DirectLightingIntegrator::take_single_bsdf_or_light_sample(
     else
     {
         take_single_light_sample(
-            indirect,
             sampling_context,
             DirectLightingIntegrator::mis_none,
             radiance,
@@ -194,14 +191,13 @@ void DirectLightingIntegrator::take_single_bsdf_or_light_sample(
 
 void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     const LightSample&          sample,
-    const bool                  indirect,
     Spectrum&                   radiance,
     SpectrumStack&              aovs)
 {
     const Light* light = sample.m_light;
 
-    // No contribution if we are in an indirect lighting situation but this light does not cast indirect light.
-    if (indirect && !(light->get_flags() & Light::CastIndirectLight))
+    // No contribution if we are computing indirect lighting but this light does not cast indirect light.
+    if (m_indirect && !(light->get_flags() & Light::CastIndirectLight))
         return;
 
     // Evaluate the light.

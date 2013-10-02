@@ -52,6 +52,7 @@ class QFormLayout;
 class QHBoxLayout;
 class QGroupBox;
 class QLayout;
+class QRadioButton;
 class QSpinBox;
 class QVBoxLayout;
 
@@ -150,7 +151,7 @@ class RenderSettingsWindow
     static QVBoxLayout* create_vertical_layout();
     static QFormLayout* create_form_layout();
     static QFormLayout* create_form_layout(const QString& label, QWidget* widget);
-    static QWidget* create_horizontal_group(QWidget* widget1, QWidget* widget2);
+    static QWidget* create_horizontal_group(QWidget* widget1, QWidget* widget2 = 0, QWidget* widget3 = 0);
 
     QSpinBox* create_integer_input(
         const std::string&              widget_key,
@@ -183,6 +184,10 @@ class RenderSettingsWindow
         const QString&                  label);
 
     QGroupBox* create_checkable_groupbox(
+        const std::string&              widget_key,
+        const QString&                  label);
+
+    QRadioButton* create_radio_button(
         const std::string&              widget_key,
         const QString&                  label);
 

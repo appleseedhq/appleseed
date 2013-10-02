@@ -43,7 +43,9 @@
 #include "renderer/kernel/rendering/itilecallback.h"
 #include "renderer/kernel/rendering/itilerenderer.h"
 #include "renderer/kernel/rendering/masterrenderer.h"
+#include "renderer/kernel/rendering/nulltilecallback.h"
 #include "renderer/kernel/rendering/scenepicker.h"
 #include "renderer/kernel/rendering/tilecallbackbase.h"
+#include "renderer/kernel/rendering/timedrenderercontroller.h"
 
 #endif  // !APPLESEED_RENDERER_API_RENDERING_H

@@ -886,6 +886,8 @@ source_group ("renderer\\kernel\\lighting\\pt" FILES
 set (renderer_kernel_lighting_sppm_sources
     renderer/kernel/lighting/sppm/sppmlightingengine.cpp
     renderer/kernel/lighting/sppm/sppmlightingengine.h
+    renderer/kernel/lighting/sppm/sppmparameters.cpp
+    renderer/kernel/lighting/sppm/sppmparameters.h
     renderer/kernel/lighting/sppm/sppmpasscallback.cpp
     renderer/kernel/lighting/sppm/sppmpasscallback.h
     renderer/kernel/lighting/sppm/sppmphoton.cpp
@@ -1017,6 +1019,8 @@ set (renderer_kernel_rendering_sources
     renderer/kernel/rendering/localsampleaccumulationbuffer.h
     renderer/kernel/rendering/masterrenderer.cpp
     renderer/kernel/rendering/masterrenderer.h
+    renderer/kernel/rendering/nulltilecallback.cpp
+    renderer/kernel/rendering/nulltilecallback.h
     renderer/kernel/rendering/permanentshadingresultframebufferfactory.cpp
     renderer/kernel/rendering/permanentshadingresultframebufferfactory.h
     renderer/kernel/rendering/pixelcontext.h
@@ -1035,6 +1039,8 @@ set (renderer_kernel_rendering_sources
     renderer/kernel/rendering/shadingresultframebuffer.cpp
     renderer/kernel/rendering/shadingresultframebuffer.h
     renderer/kernel/rendering/tilecallbackbase.h
+    renderer/kernel/rendering/timedrenderercontroller.cpp
+    renderer/kernel/rendering/timedrenderercontroller.h
 )
 if (WITH_OSL)
     list (APPEND renderer_kernel_rendering_sources

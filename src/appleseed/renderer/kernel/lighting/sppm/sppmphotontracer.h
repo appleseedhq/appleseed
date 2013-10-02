@@ -30,7 +30,7 @@
 #define APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMPHOTONTRACER_H
 
 // appleseed.renderer headers.
-#include "renderer/utility/paramarray.h"
+#include "renderer/kernel/lighting/sppm/sppmparameters.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -59,7 +59,7 @@ class SPPMPhotonTracer
         const LightSampler&         light_sampler,
         const TraceContext&         trace_context,
         TextureStore&               texture_store,
-        const ParamArray&           params);
+        const SPPMParameters&       params);
 
     // Returns the total number of emitted photons.
     size_t trace_photons(
@@ -69,11 +69,11 @@ class SPPMPhotonTracer
         foundation::AbortSwitch&    abort_switch);
 
   private:
+    const SPPMParameters            m_params;
     const Scene&                    m_scene;
     const LightSampler&             m_light_sampler;
     const TraceContext&             m_trace_context;
     TextureStore&                   m_texture_store;
-    const ParamArray                m_params;
     size_t                          m_total_emitted_photon_count;
     size_t                          m_total_stored_photon_count;
 };

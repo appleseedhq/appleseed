@@ -34,6 +34,7 @@
 #include "renderer/kernel/lighting/lighttracing/lighttracingsamplegenerator.h"
 #include "renderer/kernel/lighting/pt/ptlightingengine.h"
 #include "renderer/kernel/lighting/sppm/sppmlightingengine.h"
+#include "renderer/kernel/lighting/sppm/sppmparameters.h"
 #include "renderer/kernel/lighting/sppm/sppmpasscallback.h"
 #include "renderer/kernel/lighting/ilightingengine.h"
 #include "renderer/kernel/lighting/lightsampler.h"
@@ -313,31 +314,33 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
             lighting_engine_factory.reset(
                 new DRTLightingEngineFactory(
                     light_sampler,
-                    m_params.child("drt")));    // todo: change to "drt_lighting_engine"
+                    m_params.child("drt")));    // todo: change to "drt_lighting_engine" -- or?
         }
         else if (value == "pt")
         {
             lighting_engine_factory.reset(
                 new PTLightingEngineFactory(
                     light_sampler,
-                    m_params.child("pt")));     // todo: change to "pt_lighting_engine"
+                    m_params.child("pt")));     // todo: change to "pt_lighting_engine" -- or?
         }
         else if (value == "sppm")
         {
+            const SPPMParameters params(m_params.child("sppm"));
+
             SPPMPassCallback* sppm_pass_callback =
                 new SPPMPassCallback(
                     scene,
                     light_sampler,
                     trace_context,
                     texture_store,
-                    m_params.child("sppm_pass_callback"));
+                    params);
             pass_callback.reset(sppm_pass_callback);
 
             lighting_engine_factory.reset(
                 new SPPMLightingEngineFactory(
                     *sppm_pass_callback,
                     light_sampler,
-                    m_params.child("sppm_lighting_engine")));
+                    params));
         }
         else
         {

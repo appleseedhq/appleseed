@@ -26,49 +26,34 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMLIGHTINGENGINE_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMLIGHTINGENGINE_H
-
-// appleseed.renderer headers.
-#include "renderer/kernel/lighting/sppm/sppmparameters.h"
-#include "renderer/kernel/lighting/ilightingengine.h"
-
-// appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
-
-// Forward declarations.
-namespace renderer  { class LightSampler; }
-namespace renderer  { class SPPMPassCallback; }
+// Interface header.
+#include "nulltilecallback.h"
 
 namespace renderer
 {
 
 //
-// Stochastic Progressive Photon Mapping (SPPM) lighting engine factory.
+// NullTileCallback class implementation.
 //
 
-class SPPMLightingEngineFactory
-  : public ILightingEngineFactory
+void NullTileCallback::release()
 {
-  public:
-    // Constructor.
-    SPPMLightingEngineFactory(
-        const SPPMPassCallback&     pass_callback,
-        const LightSampler&         light_sampler,
-        const SPPMParameters&       params);
+    delete this;
+}
 
-    // Delete this instance.
-    virtual void release() OVERRIDE;
 
-    // Return a new SPPM lighting engine instance.
-    virtual ILightingEngine* create() OVERRIDE;
+//
+// NullTileCallbackFactory class implementation.
+//
 
-  private:
-    const SPPMParameters            m_params;
-    const SPPMPassCallback&         m_pass_callback;
-    const LightSampler&             m_light_sampler;
-};
+void NullTileCallbackFactory::release()
+{
+    delete this;
+}
 
-}       // namespace renderer
+ITileCallback* NullTileCallbackFactory::create()
+{
+    return new NullTileCallback();
+}
 
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMLIGHTINGENGINE_H
+}   // namespace renderer

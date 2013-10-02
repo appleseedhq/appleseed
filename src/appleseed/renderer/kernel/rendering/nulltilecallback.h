@@ -26,49 +26,42 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMLIGHTINGENGINE_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMLIGHTINGENGINE_H
+#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_NULLTILECALLBACK_H
+#define APPLESEED_RENDERER_KERNEL_RENDERING_NULLTILECALLBACK_H
 
 // appleseed.renderer headers.
-#include "renderer/kernel/lighting/sppm/sppmparameters.h"
-#include "renderer/kernel/lighting/ilightingengine.h"
+#include "renderer/kernel/rendering/itilecallback.h"
+#include "renderer/kernel/rendering/tilecallbackbase.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 
-// Forward declarations.
-namespace renderer  { class LightSampler; }
-namespace renderer  { class SPPMPassCallback; }
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 namespace renderer
 {
 
 //
-// Stochastic Progressive Photon Mapping (SPPM) lighting engine factory.
+// A tile callback that does nothing.
 //
 
-class SPPMLightingEngineFactory
-  : public ILightingEngineFactory
+class NullTileCallback
+  : public TileCallbackBase
 {
   public:
-    // Constructor.
-    SPPMLightingEngineFactory(
-        const SPPMPassCallback&     pass_callback,
-        const LightSampler&         light_sampler,
-        const SPPMParameters&       params);
+    virtual void release() OVERRIDE;
+};
 
-    // Delete this instance.
+class DLLSYMBOL NullTileCallbackFactory
+  : public ITileCallbackFactory
+{
+  public:
     virtual void release() OVERRIDE;
 
-    // Return a new SPPM lighting engine instance.
-    virtual ILightingEngine* create() OVERRIDE;
-
-  private:
-    const SPPMParameters            m_params;
-    const SPPMPassCallback&         m_pass_callback;
-    const LightSampler&             m_light_sampler;
+    virtual ITileCallback* create() OVERRIDE;
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_SPPM_SPPMLIGHTINGENGINE_H
+#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_NULLTILECALLBACK_H

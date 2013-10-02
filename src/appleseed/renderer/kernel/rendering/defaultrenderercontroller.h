@@ -30,8 +30,10 @@
 #define APPLESEED_RENDERER_KERNEL_RENDERING_DEFAULTRENDERERCONTROLLER_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
 #include "renderer/kernel/rendering/irenderercontroller.h"
+
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -48,22 +50,22 @@ class DLLSYMBOL DefaultRendererController
 {
   public:
     // This method is called before rendering begins.
-    virtual void on_rendering_begin();
+    virtual void on_rendering_begin() OVERRIDE;
 
     // This method is called after rendering has succeeded.
-    virtual void on_rendering_success();
+    virtual void on_rendering_success() OVERRIDE;
 
     // This method is called after rendering was aborted.
-    virtual void on_rendering_abort();
+    virtual void on_rendering_abort() OVERRIDE;
 
     // This method is called before rendering a single frame.
-    virtual void on_frame_begin();
+    virtual void on_frame_begin() OVERRIDE;
 
     // This method is called after rendering a single frame.
-    virtual void on_frame_end();
+    virtual void on_frame_end() OVERRIDE;
 
     // This method is called continuously during rendering.
-    virtual Status on_progress();
+    virtual Status on_progress() OVERRIDE;
 };
 
 }       // namespace renderer

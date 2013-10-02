@@ -102,8 +102,8 @@ namespace
       public:
         struct Parameters
         {
-            const bool      m_enable_ibl;                   // image-based lighting enabled?
-            const bool      m_enable_caustics;              // caustics enabled?
+            const bool      m_enable_ibl;                   // is image-based lighting enabled?
+            const bool      m_enable_caustics;              // are caustics enabled?
 
             const float     m_transparency_threshold;
             const size_t    m_max_iterations;

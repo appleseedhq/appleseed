@@ -48,6 +48,7 @@ class QComboBox;
 class QDoubleSpinBox;
 class QGroupBox;
 class QLineEdit;
+class QRadioButton;
 class QSpinBox;
 class QToolButton;
 
@@ -162,6 +163,24 @@ class GroupBoxProxy
 
   private:
     QGroupBox* m_groupbox;
+};
+
+
+//
+// QRadioButton proxy.
+//
+
+class RadioButtonProxy
+  : public IInputWidgetProxy
+{
+  public:
+    explicit RadioButtonProxy(QRadioButton* radio_button);
+
+    virtual void set(const std::string& value);
+    virtual std::string get() const;
+
+  private:
+    QRadioButton* m_radio_button;
 };
 
 
