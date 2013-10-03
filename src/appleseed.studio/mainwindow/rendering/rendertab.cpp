@@ -143,6 +143,8 @@ void RenderTab::create_render_widget()
     connect(
         m_render_widget, SIGNAL(customContextMenuRequested(const QPoint&)),
         SLOT(slot_render_widget_context_menu(const QPoint&)));
+
+    m_render_widget->setMouseTracking(true);
 }
 
 void RenderTab::create_toolbar()

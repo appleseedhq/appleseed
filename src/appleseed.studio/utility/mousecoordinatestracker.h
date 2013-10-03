@@ -64,7 +64,6 @@ class MouseCoordinatesTracker
     QLabel*         m_label;
     const int       m_content_width;
     const int       m_content_height;
-    const bool      m_was_mouse_tracked;
 
     virtual bool eventFilter(QObject* object, QEvent* event);
 

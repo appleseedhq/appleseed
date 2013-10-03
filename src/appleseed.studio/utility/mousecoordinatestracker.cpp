@@ -53,16 +53,13 @@ MouseCoordinatesTracker::MouseCoordinatesTracker(
   , m_label(label)
   , m_content_width(widget->width())
   , m_content_height(widget->height())
-  , m_was_mouse_tracked(widget->hasMouseTracking())
 {
-    m_widget->setMouseTracking(true);
     m_widget->installEventFilter(this);
 }
 
 MouseCoordinatesTracker::~MouseCoordinatesTracker()
 {
     m_widget->removeEventFilter(this);
-    m_widget->setMouseTracking(m_was_mouse_tracked);
 }
 
 Vector2d MouseCoordinatesTracker::widget_to_ndc(const QPoint& point) const
