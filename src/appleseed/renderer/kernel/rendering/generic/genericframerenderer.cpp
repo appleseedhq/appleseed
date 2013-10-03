@@ -270,6 +270,9 @@ namespace
             {
                 for (size_t pass = 0; pass < m_pass_count && !m_abort_switch.is_aborted(); ++pass)
                 {
+                    if (m_pass_count > 1)
+                        RENDERER_LOG_INFO("--- beginning pass %s ---", pretty_uint(pass + 1).c_str());
+
                     // Invoke the pre-pass callback if there is one.
                     if (m_pass_callback)
                     {
