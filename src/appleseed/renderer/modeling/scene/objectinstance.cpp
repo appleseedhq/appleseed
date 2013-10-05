@@ -216,6 +216,29 @@ const StringDictionary& ObjectInstance::get_back_material_mappings() const
     return impl->m_back_material_mappings;
 }
 
+const char* ObjectInstance::get_material_name(const size_t pa_index, const Side side) const
+{
+    const Object* object = find_object();
+
+    if (object == 0)
+        return 0;
+
+    const StringDictionary& material_mappings =
+        side == FrontSide
+            ? impl->m_front_material_mappings
+            : impl->m_back_material_mappings;
+
+    if (object->get_material_slot_count() > 1)
+    {
+        const char* slot_name = object->get_material_slot(pa_index);
+        return material_mappings.exist(slot_name) ? material_mappings.get(slot_name) : 0;
+    }
+    else
+    {
+        return material_mappings.begin().value();
+    }
+}
+
 void ObjectInstance::unbind_object()
 {
     m_object = 0;

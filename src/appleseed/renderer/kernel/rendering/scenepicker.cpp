@@ -37,10 +37,21 @@
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/kernel/texturing/texturestore.h"
+#include "renderer/modeling/bsdf/bsdf.h"
+#include "renderer/modeling/bsdf/bsdftraits.h"
+#include "renderer/modeling/edf/edf.h"
+#include "renderer/modeling/edf/edftraits.h"
 #include "renderer/modeling/camera/camera.h"
+#include "renderer/modeling/input/inputbinder.h"
+#include "renderer/modeling/material/material.h"
+#include "renderer/modeling/material/materialtraits.h"
+#include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
+#include "renderer/modeling/surfaceshader/surfaceshader.h"
+#include "renderer/modeling/surfaceshader/surfaceshadertraits.h"
 
 using namespace foundation;
+using namespace std;
 
 namespace renderer
 {
@@ -51,6 +62,7 @@ struct ScenePicker::Impl
     TextureStore        m_texture_store;
     TextureCache        m_texture_cache;
     Intersector         m_intersector;
+    InputBinder         m_input_binder;
 
     explicit Impl(const TraceContext& trace_context)
       : m_trace_context(trace_context)
@@ -97,10 +109,33 @@ ScenePicker::PickingResult ScenePicker::pick(const Vector2d& ndc) const
     result.m_assembly = hit ? &shading_point.get_assembly() : 0;
     result.m_object_instance = hit ? &shading_point.get_object_instance() : 0;
     result.m_object = hit ? &shading_point.get_object() : 0;
-    result.m_material = hit ? shading_point.get_material() : 0;
-    result.m_surface_shader = result.m_material ? result.m_material->get_uncached_surface_shader() : 0;
-    result.m_bsdf = result.m_material ? result.m_material->get_uncached_bsdf() : 0;
-    result.m_edf = result.m_material ? result.m_material->get_uncached_edf() : 0;
+    result.m_material = 0;
+    result.m_surface_shader = 0;
+    result.m_bsdf = 0;
+    result.m_edf = 0;
+
+    if (hit)
+    {
+        const size_t pa_index = shading_point.get_primitive_attribute_index();
+
+        if (pa_index != Triangle::None)
+        {
+            const char* material_name = result.m_object_instance->get_material_name(pa_index, shading_point.get_side());
+            result.m_material = impl->m_input_binder.find_entity<Material>(material_name, result.m_object_instance->get_parent());
+        }
+    }
+
+    if (result.m_material)
+    {
+        const string surface_shader_name = result.m_material->get_parameters().get_optional<string>("surface_shader", "");
+        result.m_surface_shader = impl->m_input_binder.find_entity<SurfaceShader>(surface_shader_name.c_str(), result.m_material->get_parent());
+
+        const string bsdf_name = result.m_material->get_parameters().get_optional<string>("bsdf", "");
+        result.m_bsdf = impl->m_input_binder.find_entity<BSDF>(bsdf_name.c_str(), result.m_material->get_parent());
+
+        const string edf_name = result.m_material->get_parameters().get_optional<string>("edf", "");
+        result.m_edf = impl->m_input_binder.find_entity<EDF>(edf_name.c_str(), result.m_material->get_parent());
+    }
 
     return result;
 }

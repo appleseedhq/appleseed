@@ -112,6 +112,9 @@ class DLLSYMBOL ObjectInstance
     const foundation::StringDictionary& get_front_material_mappings() const;
     const foundation::StringDictionary& get_back_material_mappings() const;
 
+    // Get the name of the material bound to a given primitive of this instance.
+    const char* get_material_name(const size_t pa_index, const Side side) const;
+
     // Object binding.
     void unbind_object();
     void bind_object(const ObjectContainer& objects);
