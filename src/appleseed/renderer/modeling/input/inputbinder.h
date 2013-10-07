@@ -178,6 +178,8 @@ EntityType* InputBinder::find_entity(
     const char*                         name,
     const Entity*                       parent) const
 {
+    assert(name);
+
     while (parent)
     {
         const Assembly* assembly = dynamic_cast<const Assembly*>(parent);
