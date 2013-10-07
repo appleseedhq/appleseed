@@ -31,14 +31,15 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/global.h"
+#include "renderer/modeling/entity/entitytraits.h"
 #include "renderer/modeling/input/inputarray.h"
+#include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/containers.h"
 
 // Standard headers.
 #include <vector>
 
 // Forward declarations.
-namespace renderer      { class Assembly; }
 namespace renderer      { class ConnectableEntity; }
 namespace renderer      { class Scene; }
 namespace renderer      { class SymbolTable; }
@@ -62,6 +63,12 @@ class InputBinder
 
     // Return the number of reported binding errors.
     size_t get_error_count() const;
+
+    // Find an entity with a given name using the input binding logic.
+    template <typename EntityType>
+    EntityType* find_entity(
+        const char*                     name,
+        const Entity*                   parent) const;
 
   private:
     struct AssemblyInfo
@@ -160,6 +167,35 @@ class InputBinder
         const char*                     param_value,
         InputArray::iterator&           input);
 };
+
+
+//
+// InputBinder class implementation.
+//
+
+template <typename EntityType>
+EntityType* InputBinder::find_entity(
+    const char*                         name,
+    const Entity*                       parent) const
+{
+    while (parent)
+    {
+        const Assembly* assembly = dynamic_cast<const Assembly*>(parent);
+
+        if (assembly == 0)
+            break;
+
+        EntityType* entity =
+            EntityTraits<EntityType>::get_entity_container(*assembly).get_by_name(name);
+
+        if (entity)
+            return entity;
+
+        parent = parent->get_parent();
+    }
+
+    return 0;
+}
 
 }       // namespace renderer
 

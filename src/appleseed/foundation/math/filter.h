@@ -97,7 +97,7 @@ class BoxFilter2
 
 
 //
-// Triangle filter.
+// 2D triangle filter.
 //
 
 template <typename T>
@@ -185,6 +185,28 @@ class LanczosFilter2
 
     static T lanczos(const T x, const T rcp_tau);
     static T sinc(const T x);
+};
+
+
+//
+// 2D Blackman-Harris filter.
+//
+// Reference:
+//
+//   http://en.wikipedia.org/wiki/Window_function#Higher-order_generalized_cosine_windows
+//
+
+template <typename T>
+class BlackmanHarrisFilter2
+  : public Filter2<T>
+{
+  public:
+    BlackmanHarrisFilter2(const T xradius, const T yradius);
+
+    virtual T evaluate(const T x, const T y) const OVERRIDE;
+
+  private:
+    static T blackman(const T x);
 };
 
 
@@ -402,6 +424,35 @@ template <typename T>
 FORCE_INLINE T LanczosFilter2<T>::sinc(const T x)
 {
     return std::sin(x) / x;
+}
+
+
+//
+// BlackmanHarrisFilter2 class implementation.
+//
+
+template <typename T>
+inline BlackmanHarrisFilter2<T>::BlackmanHarrisFilter2(const T xradius, const T yradius)
+  : Filter2<T>(xradius, yradius)
+{
+}
+
+template <typename T>
+inline T BlackmanHarrisFilter2<T>::evaluate(const T x, const T y) const
+{
+    const T nx = T(0.5) * (T(1.0) + x * Filter2<T>::m_rcp_xradius);
+    const T ny = T(0.5) * (T(1.0) + y * Filter2<T>::m_rcp_yradius);
+    return blackman(nx) * blackman(ny);
+}
+
+template <typename T>
+FORCE_INLINE T BlackmanHarrisFilter2<T>::blackman(const T x)
+{
+    return
+          T(0.35875)
+        - T(0.48829) * cos(T(2.0 * Pi) * x)
+        + T(0.14128) * cos(T(4.0 * Pi) * x)
+        - T(0.01174) * cos(T(6.0 * Pi) * x);    // original coefficient is 0.01168, modified to ensure 0 at borders
 }
 
 

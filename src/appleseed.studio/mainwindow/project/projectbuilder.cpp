@@ -37,6 +37,8 @@
 #include "renderer/api/frame.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/canvasproperties.h"
+#include "foundation/image/image.h"
 #include "foundation/utility/string.h"
 
 using namespace foundation;
@@ -87,7 +89,16 @@ Frame* ProjectBuilder::edit_frame(
     Dictionary clean_values(values);
     clean_values.strings().remove(EntityEditorFormFactoryBase::NameParameter);
 
+    const size_t old_canvas_width = m_project.get_frame()->image().properties().m_canvas_width;
+    const size_t old_canvas_height = m_project.get_frame()->image().properties().m_canvas_height;
+
     m_project.set_frame(FrameFactory::create(name.c_str(), clean_values));
+
+    const size_t new_canvas_width = m_project.get_frame()->image().properties().m_canvas_width;
+    const size_t new_canvas_height = m_project.get_frame()->image().properties().m_canvas_height;
+
+    if (new_canvas_width != old_canvas_width || new_canvas_height != old_canvas_height)
+        m_project.get_frame()->clear_crop_window();
 
     notify_project_modification();
     emit signal_frame_modified();

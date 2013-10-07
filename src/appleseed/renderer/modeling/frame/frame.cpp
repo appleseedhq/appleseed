@@ -577,6 +577,8 @@ void Frame::extract_parameters()
             impl->m_filter.reset(new MitchellFilter2<double>(radius, radius, 0.0, 0.5));
         else if (filter_str == "lanczos")
             impl->m_filter.reset(new LanczosFilter2<double>(radius, radius, 3.0));
+        else if (filter_str == "blackman-harris")
+            impl->m_filter.reset(new BlackmanHarrisFilter2<double>(radius, radius));
         else
         {
             RENDERER_LOG_ERROR(
@@ -753,7 +755,8 @@ DictionaryArray FrameFactory::get_input_metadata()
                     .insert("Mitchell-Netravali", "mitchell")
                     .insert("Cubic B-spline", "bspline")
                     .insert("Catmull-Rom Spline", "catmull")
-                    .insert("Lanczos", "lanczos"))
+                    .insert("Lanczos", "lanczos")
+                    .insert("Blackman-Harris", "blackman-harris"))
             .insert("use", "optional")
             .insert("default", "gaussian"));
 

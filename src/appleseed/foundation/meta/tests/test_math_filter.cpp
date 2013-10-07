@@ -128,16 +128,17 @@ TEST_SUITE(Foundation_Math_Filter_TriangleFilter2)
 
 TEST_SUITE(Foundation_Math_Filter_GaussianFilter2)
 {
+    const double Alpha = 4.0;
+
     TEST_CASE(Evaluate_PointsOnDomainBorder_ReturnsZero)
     {
-        const GaussianFilter2<double> filter(2.0, 3.0, 4.0);
+        const GaussianFilter2<double> filter(2.0, 3.0, Alpha);
 
         EXPECT_TRUE(is_zero_on_domain_border(filter));
     }
 
     TEST_CASE(Plot)
     {
-        const double Alpha = 4.0;
         const GaussianFilter2<double> filter(2.0, 3.0, Alpha);
 
         plot(
@@ -149,10 +150,11 @@ TEST_SUITE(Foundation_Math_Filter_GaussianFilter2)
 
 TEST_SUITE(Foundation_Math_Filter_MitchellFilter2)
 {
+    const double B = 1.0 / 3;
+    const double C = (1.0 - B) / 2.0;
+
     TEST_CASE(Evaluate_PointsOnDomainBorder_ReturnsZero)
     {
-        const double B = 1.0 / 3;
-        const double C = (1.0 - B) / 2.0;
         const MitchellFilter2<double> filter(2.0, 3.0, B, C);
 
         EXPECT_TRUE(is_zero_on_domain_border(filter));
@@ -160,8 +162,6 @@ TEST_SUITE(Foundation_Math_Filter_MitchellFilter2)
 
     TEST_CASE(Plot)
     {
-        const double B = 1.0 / 3;
-        const double C = (1.0 - B) / 2.0;
         const MitchellFilter2<double> filter(2.0, 3.0, B, C);
 
         plot(
@@ -173,21 +173,42 @@ TEST_SUITE(Foundation_Math_Filter_MitchellFilter2)
 
 TEST_SUITE(Foundation_Math_Filter_LanczosFilter2)
 {
+    const double Tau = 3.0;
+
     TEST_CASE(Evaluate_PointsOnDomainBorder_ReturnsZero)
     {
-        const LanczosFilter2<double> filter(2.0, 3.0, 3.0);
+        const LanczosFilter2<double> filter(2.0, 3.0, Tau);
 
         EXPECT_TRUE(is_zero_on_domain_border(filter));
     }
 
     TEST_CASE(Plot)
     {
-        const double Tau = 3.0;
         const LanczosFilter2<double> filter(2.0, 3.0, Tau);
 
         plot(
             "unit tests/outputs/test_math_filter_lanczosfilter2.mpl",
             "Lanczos Filter, tau=" + to_string(Tau),
+            filter);
+    }
+}
+
+TEST_SUITE(Foundation_Math_Filter_BlackmanHarrisFilter2)
+{
+    TEST_CASE(Evaluate_PointsOnDomainBorder_ReturnsZero)
+    {
+        const BlackmanHarrisFilter2<double> filter(2.0, 3.0);
+
+        EXPECT_TRUE(is_zero_on_domain_border(filter));
+    }
+
+    TEST_CASE(Plot)
+    {
+        const BlackmanHarrisFilter2<double> filter(2.0, 3.0);
+
+        plot(
+            "unit tests/outputs/test_math_filter_blackmanharrisfilter2.mpl",
+            "Blackman-Harris Filter",
             filter);
     }
 }

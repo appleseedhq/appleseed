@@ -991,8 +991,6 @@ void MainWindow::slot_frame_modified()
 {
     for (each<RenderTabCollection> i = m_render_tabs; i; ++i)
         i->second->update_size();
-
-    m_project_manager.get_project()->get_frame()->clear_crop_window();
 }
 
 void MainWindow::slot_start_interactive_rendering()
