@@ -195,30 +195,26 @@ void RenderSettingsWindow::create_image_plane_sampling_general_settings(QVBoxLay
     QFormLayout* sublayout = create_form_layout();
     layout->addLayout(sublayout);
 
-    m_image_planer_sampler_combo = create_combobox("image_plane_sampling.general.sampler");
-    m_image_planer_sampler_combo->addItem("Uniform", "uniform");
-    m_image_planer_sampler_combo->addItem("Adaptive", "adaptive");
-    m_image_planer_sampler_combo->setCurrentIndex(-1);
-    sublayout->addRow("Sampler:", m_image_planer_sampler_combo);
+    m_image_plane_sampler_combo = create_combobox("image_plane_sampling.general.sampler");
+    m_image_plane_sampler_combo->addItem("Uniform", "uniform");
+    m_image_plane_sampler_combo->addItem("Adaptive", "adaptive");
+    m_image_plane_sampler_combo->setCurrentIndex(-1);
+    sublayout->addRow("Sampler:", m_image_plane_sampler_combo);
 
     connect(
-        m_image_planer_sampler_combo, SIGNAL(currentIndexChanged(int)),
+        m_image_plane_sampler_combo, SIGNAL(currentIndexChanged(int)),
         SLOT(slot_changed_image_plane_sampler(int)));
 
-    sublayout->addRow("Passes:", create_integer_input("image_plane_sampling.general.passes", 1, 1000000));
+    m_image_plane_sampler_passes = create_integer_input("image_plane_sampling.general.passes", 1, 1000000);
+    sublayout->addRow("Passes:", m_image_plane_sampler_passes);
 }
 
 void RenderSettingsWindow::slot_changed_image_plane_sampler(int index)
 {
-    const QString sampler = m_image_planer_sampler_combo->itemData(index).value<QString>();
+    const QString sampler = m_image_plane_sampler_combo->itemData(index).value<QString>();
 
     m_uniform_image_plane_sampler->setEnabled(sampler == "uniform");
     m_adaptive_image_plane_sampler->setEnabled(sampler == "adaptive");
-}
-
-void RenderSettingsWindow::slot_changed_uniform_sampler_samples(const int samples)
-{
-    m_force_aa_checkbox->setDisabled(samples > 1);
 }
 
 void RenderSettingsWindow::create_image_plane_sampling_sampler_settings(QVBoxLayout* parent)
@@ -241,14 +237,38 @@ void RenderSettingsWindow::create_image_plane_sampling_uniform_sampler_settings(
     QSpinBox* samples_spinbox = create_integer_input("image_plane_sampling.uniform_sampler.samples", 1, 1000000);
     layout->addLayout(create_form_layout("Samples:", samples_spinbox));
 
-    m_force_aa_checkbox = create_checkbox("image_plane_sampling.uniform_sampler.force_antialiasing", "Force Antialiasing");
-    layout->addWidget(m_force_aa_checkbox);
+    m_uniform_sampler_force_aa = create_checkbox("image_plane_sampling.uniform_sampler.force_antialiasing", "Force Antialiasing");
+    layout->addWidget(m_uniform_sampler_force_aa);
 
     connect(
         samples_spinbox, SIGNAL(valueChanged(const int)),
         SLOT(slot_changed_uniform_sampler_samples(const int)));
 
-    layout->addWidget(create_checkbox("image_plane_sampling.uniform_sampler.decorrelate_pixels", "Decorrelate Pixels"));
+    m_uniform_sampler_decorrelate_pixels =
+        create_checkbox("image_plane_sampling.uniform_sampler.decorrelate_pixels", "Decorrelate Pixels");
+    layout->addWidget(m_uniform_sampler_decorrelate_pixels);
+
+    connect(
+        m_image_plane_sampler_passes, SIGNAL(valueChanged(const int)),
+        SLOT(slot_changed_image_plane_sampler_passes(const int)));
+}
+
+void RenderSettingsWindow::slot_changed_image_plane_sampler_passes(const int passes)
+{
+    if (passes > 1)
+    {
+        m_uniform_sampler_decorrelate_pixels->setChecked(true);
+        m_uniform_sampler_decorrelate_pixels->setDisabled(true);
+    }
+    else
+    {
+        m_uniform_sampler_decorrelate_pixels->setDisabled(false);
+    }
+}
+
+void RenderSettingsWindow::slot_changed_uniform_sampler_samples(const int samples)
+{
+    m_uniform_sampler_force_aa->setDisabled(samples > 1);
 }
 
 void RenderSettingsWindow::create_image_plane_sampling_adaptive_sampler_settings(QHBoxLayout* parent)
