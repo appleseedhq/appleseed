@@ -109,6 +109,7 @@ class SPPMPassCallback
     size_t                          m_emitted_photon_count;
     SPPMPhotonVector                m_photons;
     std::auto_ptr<SPPMPhotonMap>    m_photon_map;
+    float                           m_initial_lookup_radius;
     float                           m_lookup_radius;
     foundation::Stopwatch<foundation::DefaultWallclockTimer>
                                     m_stopwatch;
