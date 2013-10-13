@@ -529,6 +529,7 @@ size_t SPPMPhotonTracer::trace_photons(
     JobQueue&               job_queue,
     AbortSwitch&            abort_switch)
 {
+    size_t job_count = 0;
     size_t emitted_photon_count = 0;
 
     // Start stopwatch.
@@ -560,6 +561,7 @@ size_t SPPMPhotonTracer::trace_photons(
                     pass_hash,
                     abort_switch));
 
+            ++job_count;
             emitted_photon_count += photon_end - photon_begin;
         }
     }
@@ -591,6 +593,7 @@ size_t SPPMPhotonTracer::trace_photons(
                     pass_hash,
                     abort_switch));
 
+            ++job_count;
             emitted_photon_count += photon_end - photon_begin;
         }
     }
@@ -604,6 +607,7 @@ size_t SPPMPhotonTracer::trace_photons(
 
     // Print photon tracing statistics.
     Statistics statistics;
+    statistics.insert("tracing jobs", job_count);
     statistics.insert_time("tracing time", stopwatch.measure().get_seconds());
     statistics.insert("total emitted", m_total_emitted_photon_count);
     statistics.insert(
