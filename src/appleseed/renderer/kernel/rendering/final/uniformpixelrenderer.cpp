@@ -126,10 +126,7 @@ namespace
             {
                 // Create a sampling context.
                 const size_t frame_width = frame.image().properties().m_canvas_width;
-                const size_t instance =
-                    mix_uint32(
-                        static_cast<uint32>(pass_hash),
-                        static_cast<uint32>(iy * frame_width + ix));
+                const size_t instance = hash_uint32(static_cast<uint32>(pass_hash + iy * frame_width + ix));
                 SamplingContext sampling_context(
                     rng,
                     2,                  // number of dimensions

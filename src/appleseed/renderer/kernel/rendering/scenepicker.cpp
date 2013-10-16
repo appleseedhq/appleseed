@@ -120,21 +120,25 @@ ScenePicker::PickingResult ScenePicker::pick(const Vector2d& ndc) const
 
         if (pa_index != Triangle::None)
         {
-            const char* material_name = result.m_object_instance->get_material_name(pa_index, shading_point.get_side());
-            result.m_material = impl->m_input_binder.find_entity<Material>(material_name, result.m_object_instance->get_parent());
+            result.m_material =
+                impl->m_input_binder.find_entity<Material>(
+                    result.m_object_instance->get_material_name(pa_index, shading_point.get_side()),
+                    result.m_object_instance->get_parent());
         }
     }
 
     if (result.m_material)
     {
-        const string surface_shader_name = result.m_material->get_parameters().get_optional<string>("surface_shader", "");
-        result.m_surface_shader = impl->m_input_binder.find_entity<SurfaceShader>(surface_shader_name.c_str(), result.m_material->get_parent());
+        const Entity* parent = result.m_material->get_parent();
 
-        const string bsdf_name = result.m_material->get_parameters().get_optional<string>("bsdf", "");
-        result.m_bsdf = impl->m_input_binder.find_entity<BSDF>(bsdf_name.c_str(), result.m_material->get_parent());
+        const char* ss_name = result.m_material->get_surface_shader_name();
+        result.m_surface_shader = ss_name ? impl->m_input_binder.find_entity<SurfaceShader>(ss_name, parent) : 0;
 
-        const string edf_name = result.m_material->get_parameters().get_optional<string>("edf", "");
-        result.m_edf = impl->m_input_binder.find_entity<EDF>(edf_name.c_str(), result.m_material->get_parent());
+        const char* bsdf_name = result.m_material->get_bsdf_name();
+        result.m_bsdf = bsdf_name ? impl->m_input_binder.find_entity<BSDF>(bsdf_name, parent) : 0;
+
+        const char* edf = result.m_material->get_edf_name();
+        result.m_edf = edf ? impl->m_input_binder.find_entity<EDF>(edf, parent) : 0;
     }
 
     return result;

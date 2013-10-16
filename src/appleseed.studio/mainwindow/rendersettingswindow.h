@@ -109,10 +109,12 @@ class RenderSettingsWindow
     QString                     m_current_configuration_name;
     WidgetValueCollection       m_initial_values;
 
-    QComboBox*                  m_image_planer_sampler_combo;
+    QComboBox*                  m_image_plane_sampler_combo;
+    QSpinBox*                   m_image_plane_sampler_passes;
     QGroupBox*                  m_uniform_image_plane_sampler;
     QGroupBox*                  m_adaptive_image_plane_sampler;
-    QCheckBox*                  m_force_aa_checkbox;
+    QCheckBox*                  m_uniform_sampler_decorrelate_pixels;
+    QCheckBox*                  m_uniform_sampler_force_aa;
 
     void create_panels();
     void set_panels_enabled(const bool enabled);
@@ -251,6 +253,7 @@ class RenderSettingsWindow
     void slot_restore_configuration_and_close();
 
     void slot_changed_image_plane_sampler(int index);
+    void slot_changed_image_plane_sampler_passes(const int passes);
     void slot_changed_uniform_sampler_samples(const int samples);
 };
 

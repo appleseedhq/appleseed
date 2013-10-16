@@ -72,6 +72,15 @@ class DLLSYMBOL Material
     // Return true if this material has an alpha map.
     bool has_alpha_map() const;
 
+    // Return the name the surface shader bound to this material, or 0 if the material doesn't have one.
+    const char* get_surface_shader_name() const;
+
+    // Return the name the BSDF bound to this material, or 0 if the material doesn't have one.
+    const char* get_bsdf_name() const;
+
+    // Return the name the EDF bound to this material, or 0 if the material doesn't have one.
+    const char* get_edf_name() const;
+
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
     bool on_frame_begin(

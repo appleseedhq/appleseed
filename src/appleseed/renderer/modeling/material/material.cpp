@@ -51,6 +51,10 @@
 #include "foundation/utility/makevector.h"
 #include "foundation/utility/uid.h"
 
+// Standard headers.
+#include <cassert>
+#include <cstring>
+
 using namespace foundation;
 using namespace std;
 
@@ -78,9 +82,9 @@ Material::Material(
 {
     set_name(name);
 
+    m_inputs.declare("surface_shader", InputFormatEntity);
     m_inputs.declare("bsdf", InputFormatEntity, "");
     m_inputs.declare("edf", InputFormatEntity, "");
-    m_inputs.declare("surface_shader", InputFormatEntity);
     m_inputs.declare("alpha_map", InputFormatScalar, "");
     m_inputs.declare("displacement_map", InputFormatSpectralReflectance, "");
 }
@@ -95,12 +99,37 @@ const char* Material::get_model() const
     return MaterialFactory::get_model();
 }
 
+namespace
+{
+    const char* get_non_empty(const ParamArray& params, const char* name)
+    {
+        if (!params.strings().exist(name))
+            return 0;
+
+        const char* value = params.strings().get(name);
+
+        return strlen(value) > 0 ? value : 0;
+    }
+}
+
 bool Material::has_alpha_map() const
 {
-    if (!m_params.strings().exist("alpha_map"))
-        return false;
+    return get_non_empty(m_params, "alpha_map") != 0;
+}
 
-    return !m_params.get<string>("alpha_map").empty();
+const char* Material::get_surface_shader_name() const
+{
+    return get_non_empty(m_params, "surface_shader");
+}
+
+const char* Material::get_bsdf_name() const
+{
+    return get_non_empty(m_params, "bsdf");
+}
+
+const char* Material::get_edf_name() const
+{
+    return get_non_empty(m_params, "edf");
 }
 
 bool Material::on_frame_begin(
