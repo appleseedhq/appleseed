@@ -46,6 +46,7 @@
 #include "foundation/image/tile.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/filter.h"
+#include "foundation/math/hash.h"
 #include "foundation/math/ordering.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
@@ -155,8 +156,8 @@ namespace
 
             // Seed the RNG with the tile index.
             m_rng = SamplingContext::RNGType(
-                static_cast<uint32>(
-                    tile_y * frame_properties.m_tile_count_x + tile_x));
+                hash_uint32(
+                    static_cast<uint32>(pass_hash + tile_y * frame_properties.m_tile_count_x + tile_x)));
 
             // Loop over tile pixels.
             const size_t tile_pixel_count = m_pixel_ordering.size();
