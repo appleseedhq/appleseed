@@ -298,8 +298,8 @@ namespace
                 m_local_photons);
             PathTracer<PathVisitor, true> path_tracer(      // true = adjoint
                 path_visitor,
-                m_params.m_rr_min_path_length,
-                m_params.m_max_path_length,
+                m_params.m_photon_tracing_rr_min_path_length,
+                m_params.m_photon_tracing_max_path_length,
                 m_params.m_max_iterations);
 
             // Trace the photon path.
@@ -355,8 +355,8 @@ namespace
                 m_local_photons);
             PathTracer<PathVisitor, true> path_tracer(      // true = adjoint
                 path_visitor,
-                m_params.m_rr_min_path_length,
-                m_params.m_max_path_length,
+                m_params.m_photon_tracing_rr_min_path_length,
+                m_params.m_photon_tracing_max_path_length,
                 m_params.m_max_iterations);
 
             // Trace the photon path.
@@ -488,8 +488,8 @@ namespace
                 m_local_photons);
             PathTracer<PathVisitor, true> path_tracer(      // true = adjoint
                 path_visitor,
-                m_params.m_rr_min_path_length,
-                m_params.m_max_path_length,
+                m_params.m_photon_tracing_rr_min_path_length,
+                m_params.m_photon_tracing_max_path_length,
                 m_params.m_max_iterations);
 
             // Trace the photon path.

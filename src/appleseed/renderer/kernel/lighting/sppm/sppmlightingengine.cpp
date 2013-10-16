@@ -164,8 +164,8 @@ namespace
 
             PathTracer<PathVisitor, false> path_tracer(     // false = not adjoint
                 path_visitor,
-                m_params.m_rr_min_path_length,
-                m_params.m_max_path_length,
+                m_params.m_path_tracing_rr_min_path_length,
+                m_params.m_path_tracing_max_path_length,
                 shading_context.get_max_iterations());
 
             const size_t path_length =

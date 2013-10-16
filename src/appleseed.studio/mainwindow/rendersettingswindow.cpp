@@ -851,10 +851,10 @@ void RenderSettingsWindow::create_direct_links()
     // Stochastic Progressive Photon Mapping.
     create_direct_link("sppm.lighting_components.ibl", "sppm.enable_ibl", true);
     create_direct_link("sppm.lighting_components.caustics", "sppm.enable_caustics", true);
-    create_direct_link("sppm.photon_tracing.bounces.rr_start_bounce", "sppm.rr_min_path_length", 3);
+    create_direct_link("sppm.photon_tracing.bounces.rr_start_bounce", "sppm.photon_tracing_rr_min_path_length", 3);
     create_direct_link("sppm.photon_tracing.light_photons", "sppm.light_photons_per_pass", 100000);
     create_direct_link("sppm.photon_tracing.env_photons", "sppm.env_photons_per_pass", 100000);
-    create_direct_link("sppm.radiance_estimation.bounces.rr_start_bounce", "sppm.rr_min_path_length", 3);
+    create_direct_link("sppm.radiance_estimation.bounces.rr_start_bounce", "sppm.path_tracing_rr_min_path_length", 3);
     create_direct_link("sppm.radiance_estimation.initial_radius", "sppm.initial_radius", 1.0);
     create_direct_link("sppm.radiance_estimation.max_photons", "sppm.max_photons_per_estimate", 100);
     create_direct_link("sppm.radiance_estimation.alpha", "sppm.alpha", 0.7);
@@ -915,16 +915,16 @@ void RenderSettingsWindow::do_load_configuration(const Configuration& config)
     load_directly_linked_values(config);
 
     // Distribution Ray Tracer.
-    load_bounce_settings(config, "drt", "drt");
+    load_bounce_settings(config, "drt", "drt.max_path_length");
 
     // Unidirectional Path Tracer.
-    load_bounce_settings(config, "pt", "pt");
+    load_bounce_settings(config, "pt", "pt.max_path_length");
     set_widget("pt.advanced.unlimited_ray_intensity", !config.get_parameters().exist_path("pt.max_ray_intensity"));
     set_widget("pt.advanced.max_ray_intensity", get_config<double>(config, "pt.max_ray_intensity", 1.0));
 
     // Stochastic Progressive Photon Mapping.
-    load_bounce_settings(config, "sppm.photon_tracing", "sppm");
-    load_bounce_settings(config, "sppm.radiance_estimation", "sppm");
+    load_bounce_settings(config, "sppm.photon_tracing", "sppm.photon_tracing_max_path_length");
+    load_bounce_settings(config, "sppm.radiance_estimation", "sppm.path_tracing_max_path_length");
     {
         const string dl_mode = get_config<string>(config, "sppm.dl_mode", "sppm");
         if (dl_mode == "sppm")
@@ -961,17 +961,17 @@ void RenderSettingsWindow::do_save_configuration(Configuration& config)
             : "ephemeral");
 
     // Distribution Ray Tracer.
-    save_bounce_settings(config, "drt", "drt");
+    save_bounce_settings(config, "drt", "drt.max_path_length");
 
     // Unidirectional Path Tracer.
-    save_bounce_settings(config, "pt", "pt");
+    save_bounce_settings(config, "pt", "pt.max_path_length");
     if (get_widget<bool>("pt.advanced.unlimited_ray_intensity"))
         config.get_parameters().remove_path("pt.max_ray_intensity");
     else set_config(config, "pt.max_ray_intensity", get_widget<double>("pt.advanced.max_ray_intensity"));
 
     // Stochastic Progressive Photon Mapping.
-    save_bounce_settings(config, "sppm.photon_tracing", "sppm");
-    save_bounce_settings(config, "sppm.radiance_estimation", "sppm");
+    save_bounce_settings(config, "sppm.photon_tracing", "sppm.photon_tracing_max_path_length");
+    save_bounce_settings(config, "sppm.radiance_estimation", "sppm.path_tracing_max_path_length");
     set_config(config, "sppm.dl_mode",
         get_widget<bool>("sppm.lighting_components.dl.sppm") ? "sppm" :
         get_widget<bool>("sppm.lighting_components.dl.rt") ? "rt" : "off");
@@ -1005,12 +1005,12 @@ void RenderSettingsWindow::save_directly_linked_values(Configuration& config)
 void RenderSettingsWindow::load_bounce_settings(
     const Configuration&    config,
     const string&           widget_key_prefix,
-    const string&           param_path_prefix)
+    const string&           param_path)
 {
     const size_t DefaultMaxBounces = 8;
 
     const size_t max_path_length =
-        get_config<size_t>(config, param_path_prefix + ".max_path_length", 0);
+        get_config<size_t>(config, param_path, 0);
 
     set_widget(widget_key_prefix + ".bounces.unlimited_bounces", max_path_length == 0);
     set_widget(widget_key_prefix + ".bounces.max_bounces", max_path_length == 0 ? DefaultMaxBounces : max_path_length - 1);
@@ -1019,14 +1019,14 @@ void RenderSettingsWindow::load_bounce_settings(
 void RenderSettingsWindow::save_bounce_settings(
     Configuration&          config,
     const string&           widget_key_prefix,
-    const string&           param_path_prefix)
+    const string&           param_path)
 {
     const size_t max_path_length =
         !get_widget<bool>(widget_key_prefix + ".bounces.unlimited_bounces")
             ? get_widget<size_t>(widget_key_prefix + ".bounces.max_bounces") + 1
             : 0;
 
-    set_config(config, param_path_prefix + ".max_path_length", max_path_length);
+    set_config(config, param_path, max_path_length);
 }
 
 template <typename T>
