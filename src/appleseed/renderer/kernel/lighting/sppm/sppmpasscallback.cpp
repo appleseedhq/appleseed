@@ -72,7 +72,7 @@ SPPMPassCallback::SPPMPassCallback(
     // Compute the initial lookup radius.
     const float scene_diameter = static_cast<float>(2.0 * scene.compute_radius());
     const float diameter_factor = m_params.m_initial_radius_percents / 100.0f;
-    m_lookup_radius = scene_diameter * diameter_factor;
+    m_initial_lookup_radius = m_lookup_radius = scene_diameter * diameter_factor;
 }
 
 void SPPMPassCallback::release()
@@ -85,7 +85,10 @@ void SPPMPassCallback::pre_render(
     JobQueue&               job_queue,
     AbortSwitch&            abort_switch)
 {
-    RENDERER_LOG_INFO("sppm lookup radius is %f.", m_lookup_radius);
+    RENDERER_LOG_INFO(
+        "sppm lookup radius is %f (%s of initial radius).",
+        m_lookup_radius,
+        pretty_percent(m_lookup_radius, m_initial_lookup_radius, 3).c_str());
 
     m_stopwatch.start();
 

@@ -72,6 +72,29 @@ namespace renderer
 namespace
 {
     //
+    // 2D density estimation kernels.
+    //
+    // References:
+    //
+    //   http://en.wikipedia.org/wiki/Kernel_(statistics)
+    //
+    //   http://graphics.cs.kuleuven.be/publications/phdSuykens/suykens_8.pdf p. 154
+    //
+
+    template <typename T>
+    static T box2d(const T r2)
+    {
+        return static_cast<T>(RcpPi);
+    }
+
+    template <typename T>
+    static T epanechnikov2d(const T r2)
+    {
+        return static_cast<T>(2.0 / Pi) * (T(1.0) - r2);
+    }
+
+
+    //
     // Stochastic Progressive Photon Mapping (SPPM) lighting engine.
     //
     // References:
@@ -141,8 +164,8 @@ namespace
 
             PathTracer<PathVisitor, false> path_tracer(     // false = not adjoint
                 path_visitor,
-                m_params.m_rr_min_path_length,
-                m_params.m_max_path_length,
+                m_params.m_path_tracing_rr_min_path_length,
+                m_params.m_path_tracing_max_path_length,
                 shading_context.get_max_iterations());
 
             const size_t path_length =
@@ -333,6 +356,16 @@ namespace
                 query.run(point, radius * radius);
                 const size_t photon_count = m_answer.size();
 
+                // Compute the square radius of the lookup disk.
+                float max_square_dist;
+                if (photon_count == m_params.m_max_photons_per_estimate)
+                {
+                    m_answer.sort();
+                    max_square_dist = m_answer.get(photon_count - 1).m_square_dist;
+                }
+                else max_square_dist = radius * radius;
+                const float rcp_max_square_dist = 1.0f / max_square_dist;
+
 #if 0
                 // Cannot do proper density estimation if too few photons are found.
                 const size_t MinPhotonCount = 8;
@@ -341,7 +374,6 @@ namespace
 #endif
 
                 size_t included_photon_count = 0;
-                float max_square_dist = 0.0f;
                 Spectrum indirect_radiance(0.0f);
 
                 // Loop over the nearby photons.
@@ -377,10 +409,6 @@ namespace
                         continue;
 #endif
 
-                    // Keep track of the farthest photon.
-                    if (max_square_dist < photon.m_square_dist)
-                        max_square_dist = photon.m_square_dist;
-
                     // Evaluate the BSDF for this photon.
                     Spectrum bsdf_value;
                     const double bsdf_prob =
@@ -403,6 +431,13 @@ namespace
                     bsdf_value /= abs(dot(data.m_incoming, data.m_geometric_normal));
                     bsdf_value *= data.m_flux;
 
+                    // Apply kernel weight.
+#if 0
+                    bsdf_value *= box2d(photon.m_square_dist * rcp_max_square_dist);
+#else
+                    bsdf_value *= epanechnikov2d(photon.m_square_dist * rcp_max_square_dist);
+#endif
+
                     // Accumulate reflected flux.
                     ++included_photon_count;
                     indirect_radiance += bsdf_value;
@@ -419,20 +454,7 @@ namespace
 #endif
 
                 // Density estimation.
-#if 0
-                indirect_radiance /=
-                    static_cast<float>(
-                        Pi * max_square_dist * m_pass_callback.get_emitted_photon_count());
-#else
-                const float r2 =
-                    m_answer.size() == m_params.m_max_photons_per_estimate
-                        ? max_square_dist
-                        : radius * radius;
-
-                indirect_radiance /=
-                    static_cast<float>(
-                        Pi * r2 * m_pass_callback.get_emitted_photon_count());
-#endif
+                indirect_radiance /= max_square_dist * m_pass_callback.get_emitted_photon_count();
 
                 // Add the indirect lighting contribution.
                 vertex_radiance += indirect_radiance;

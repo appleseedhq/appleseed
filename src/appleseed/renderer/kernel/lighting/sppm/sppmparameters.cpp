@@ -84,12 +84,14 @@ SPPMParameters::SPPMParameters(const ParamArray& params)
   : m_dl_mode(get_mode(params, "dl_mode", SPPM))
   , m_enable_ibl(params.get_optional<bool>("enable_ibl", true))
   , m_enable_caustics(params.get_optional<bool>("enable_caustics", true))
-  , m_max_path_length(nz(params.get_optional<size_t>("max_path_length", 0)))
-  , m_rr_min_path_length(nz(params.get_optional<size_t>("rr_min_path_length", 3)))
-  , m_max_iterations(params.get_optional<size_t>("max_iterations", 1000))
   , m_light_photon_count(params.get_optional<size_t>("light_photons_per_pass", 100000))
   , m_env_photon_count(params.get_optional<size_t>("env_photons_per_pass", 100000))
   , m_photon_packet_size(params.get_optional<size_t>("photon_packet_size", 100000))
+  , m_photon_tracing_max_path_length(nz(params.get_optional<size_t>("photon_tracing_max_path_length", 0)))
+  , m_photon_tracing_rr_min_path_length(nz(params.get_optional<size_t>("photon_tracing_rr_min_path_length", 3)))
+  , m_path_tracing_max_path_length(nz(params.get_optional<size_t>("path_tracing_max_path_length", 0)))
+  , m_path_tracing_rr_min_path_length(nz(params.get_optional<size_t>("path_tracing_rr_min_path_length", 3)))
+  , m_max_iterations(params.get_optional<size_t>("max_iterations", 1000))
   , m_initial_radius_percents(params.get_required<float>("initial_radius", 0.1f))
   , m_alpha(params.get_optional<float>("alpha", 0.7f))
   , m_max_photons_per_estimate(params.get_optional<size_t>("max_photons_per_estimate", 100))
@@ -109,21 +111,31 @@ void SPPMParameters::print() const
     RENDERER_LOG_INFO(
         "sppm settings:\n"
         "  dl               %s\n"
-        "  ibl              %s\n"
-        "  max path length  %s\n"
-        "  rr min path len. %s\n"
+        "  ibl              %s\n",
+        m_dl_mode == SPPM ? "sppm" : m_dl_mode == RayTraced ? "ray traced" : "off",
+        m_enable_ibl ? "on" : "off");
+
+    RENDERER_LOG_INFO(
+        "sppm photon tracing settings:\n"
         "  light photons    %s\n"
         "  env. photons     %s\n"
+        "  max path length  %s\n"
+        "  rr min path len. %s\n",
+        pretty_uint(m_light_photon_count).c_str(),
+        pretty_uint(m_env_photon_count).c_str(),
+        m_photon_tracing_max_path_length == ~0 ? "infinite" : pretty_uint(m_photon_tracing_max_path_length).c_str(),
+        m_photon_tracing_rr_min_path_length == ~0 ? "infinite" : pretty_uint(m_photon_tracing_rr_min_path_length).c_str());
+
+    RENDERER_LOG_INFO(
+        "sppm path tracing settings:\n"
+        "  max path length  %s\n"
+        "  rr min path len. %s\n"
         "  initial radius   %s%%\n"
         "  alpha            %s\n"
         "  max photons/est. %s\n"
         "  dl light samples %s",
-        m_dl_mode == SPPM ? "sppm" : m_dl_mode == RayTraced ? "ray traced" : "off",
-        m_enable_ibl ? "on" : "off",
-        m_max_path_length == ~0 ? "infinite" : pretty_uint(m_max_path_length).c_str(),
-        m_rr_min_path_length == ~0 ? "infinite" : pretty_uint(m_rr_min_path_length).c_str(),
-        pretty_uint(m_light_photon_count).c_str(),
-        pretty_uint(m_env_photon_count).c_str(),
+        m_path_tracing_max_path_length == ~0 ? "infinite" : pretty_uint(m_path_tracing_max_path_length).c_str(),
+        m_path_tracing_rr_min_path_length == ~0 ? "infinite" : pretty_uint(m_path_tracing_rr_min_path_length).c_str(),
         pretty_scalar(m_initial_radius_percents, 3).c_str(),
         pretty_scalar(m_alpha, 1).c_str(),
         pretty_uint(m_max_photons_per_estimate).c_str(),

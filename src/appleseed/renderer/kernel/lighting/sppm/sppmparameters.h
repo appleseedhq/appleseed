@@ -42,26 +42,30 @@ struct SPPMParameters
 {
     enum Mode { SPPM, RayTraced, Off };
 
-    const Mode      m_dl_mode;                      // direct lighting mode
-    const bool      m_enable_ibl;                   // is image-based lighting enabled?
-    const bool      m_enable_caustics;              // are caustics enabled?
+    const Mode      m_dl_mode;                              // direct lighting mode
+    const bool      m_enable_ibl;                           // is image-based lighting enabled?
+    const bool      m_enable_caustics;                      // are caustics enabled?
 
-    const size_t    m_max_path_length;              // maximum path length, ~0 for unlimited
-    const size_t    m_rr_min_path_length;           // minimum path length before Russian Roulette kicks in, ~0 for unlimited
-    const size_t    m_max_iterations;               // maximum number of iteration during path tracing
+    const size_t    m_light_photon_count;                   // number of photons emitted from the lights
+    const size_t    m_env_photon_count;                     // number of photons emitted from the environment
+    const size_t    m_photon_packet_size;                   // number of photons per tracing job
 
-    const size_t    m_light_photon_count;           // number of photons emitted from the lights
-    const size_t    m_env_photon_count;             // number of photons emitted from the environment
-    const size_t    m_photon_packet_size;           // number of photons per tracing job
+    const size_t    m_photon_tracing_max_path_length;       // maximum photon tracing path length, ~0 for unlimited
+    const size_t    m_photon_tracing_rr_min_path_length;    // minimum photon tracing path length before Russian Roulette kicks in, ~0 for unlimited
 
-    const float     m_initial_radius_percents;      // initial lookup radius as a percentage of the scene diameter
-    const float     m_alpha;                        // radius shrinking control
-    const size_t    m_max_photons_per_estimate;     // maximum number of photons per density estimation
-    const double    m_dl_light_sample_count;        // number of light samples used to estimate direct illumination in ray traced mode
+    const size_t    m_path_tracing_max_path_length;         // maximum path tracing path length, ~0 for unlimited
+    const size_t    m_path_tracing_rr_min_path_length;      // minimum path tracing path length before Russian Roulette kicks in, ~0 for unlimited
+
+    const size_t    m_max_iterations;                       // maximum number of iteration during path tracing
+
+    const float     m_initial_radius_percents;              // initial lookup radius as a percentage of the scene diameter
+    const float     m_alpha;                                // radius shrinking control
+    const size_t    m_max_photons_per_estimate;             // maximum number of photons per density estimation
+    const double    m_dl_light_sample_count;                // number of light samples used to estimate direct illumination in ray traced mode
     float           m_rcp_dl_light_sample_count;
 
-    const bool      m_view_photons;                 // debug mode to visualize the photons
-    const float     m_view_photons_radius;          // lookup radius when visualizing photons
+    const bool      m_view_photons;                         // debug mode to visualize the photons
+    const float     m_view_photons_radius;                  // lookup radius when visualizing photons
 
     explicit SPPMParameters(const ParamArray& params);
 

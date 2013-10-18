@@ -298,8 +298,8 @@ namespace
                 m_local_photons);
             PathTracer<PathVisitor, true> path_tracer(      // true = adjoint
                 path_visitor,
-                m_params.m_rr_min_path_length,
-                m_params.m_max_path_length,
+                m_params.m_photon_tracing_rr_min_path_length,
+                m_params.m_photon_tracing_max_path_length,
                 m_params.m_max_iterations);
 
             // Trace the photon path.
@@ -355,8 +355,8 @@ namespace
                 m_local_photons);
             PathTracer<PathVisitor, true> path_tracer(      // true = adjoint
                 path_visitor,
-                m_params.m_rr_min_path_length,
-                m_params.m_max_path_length,
+                m_params.m_photon_tracing_rr_min_path_length,
+                m_params.m_photon_tracing_max_path_length,
                 m_params.m_max_iterations);
 
             // Trace the photon path.
@@ -488,8 +488,8 @@ namespace
                 m_local_photons);
             PathTracer<PathVisitor, true> path_tracer(      // true = adjoint
                 path_visitor,
-                m_params.m_rr_min_path_length,
-                m_params.m_max_path_length,
+                m_params.m_photon_tracing_rr_min_path_length,
+                m_params.m_photon_tracing_max_path_length,
                 m_params.m_max_iterations);
 
             // Trace the photon path.
@@ -529,6 +529,7 @@ size_t SPPMPhotonTracer::trace_photons(
     JobQueue&               job_queue,
     AbortSwitch&            abort_switch)
 {
+    size_t job_count = 0;
     size_t emitted_photon_count = 0;
 
     // Start stopwatch.
@@ -560,6 +561,7 @@ size_t SPPMPhotonTracer::trace_photons(
                     pass_hash,
                     abort_switch));
 
+            ++job_count;
             emitted_photon_count += photon_end - photon_begin;
         }
     }
@@ -591,6 +593,7 @@ size_t SPPMPhotonTracer::trace_photons(
                     pass_hash,
                     abort_switch));
 
+            ++job_count;
             emitted_photon_count += photon_end - photon_begin;
         }
     }
@@ -604,6 +607,7 @@ size_t SPPMPhotonTracer::trace_photons(
 
     // Print photon tracing statistics.
     Statistics statistics;
+    statistics.insert("tracing jobs", job_count);
     statistics.insert_time("tracing time", stopwatch.measure().get_seconds());
     statistics.insert("total emitted", m_total_emitted_photon_count);
     statistics.insert(
