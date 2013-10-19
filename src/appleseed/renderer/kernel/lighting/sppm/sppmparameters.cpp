@@ -73,6 +73,7 @@ namespace
         {
             RENDERER_LOG_ERROR(
                 "invalid value \"%s\" for parameter \"%s\", using default value \"%s\"",
+                value.c_str(),
                 name,
                 default_mode_str.c_str());
             return default_mode;
