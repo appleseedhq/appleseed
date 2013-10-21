@@ -175,8 +175,9 @@ class LightingConditions
 //
 // HSV <-> linear RGB transformations.
 //
-// Reference:
+// References:
 //
+//   http://en.literateprograms.org/RGB_to_HSV_color_space_conversion_%28C%29
 //   http://en.wikipedia.org/wiki/HLS_color_space
 //
 // Note:
@@ -468,25 +469,29 @@ inline Color<T, 3> hsv_to_linear_rgb(const Color<T, 3>& hsv)
 template <typename T>
 inline Color<T, 3> linear_rgb_to_hsv(const Color<T, 3>& linear_rgb)
 {
+    // Compute value.
+    const T value = max_value(linear_rgb);
+
+    // Value is zero: return black.
+    if (value == T(0.0))
+        return Color<T, 3>(0.0, 0.0, 0.0);
+
     // Compute chroma.
-    const T max_val = max_value(linear_rgb);
-    const T min_val = min_value(linear_rgb);
-    const T c = max_val - min_val;
-    
-    // Special case for zero chroma.
-    if (c == T(0.0))
-        return Color<T, 3>(0.0);
+    const T chroma = value - min_value(linear_rgb);
+
+    // Chroma is zero: return gray.
+    if (chroma == T(0.0))
+        return Color<T, 3>(0.0, 0.0, value);
 
     // Compute hue.
-    const T hprime =
-        max_val == linear_rgb[0] ? mod((linear_rgb[1] - linear_rgb[2]) / c, T(6.0)) :
-        max_val == linear_rgb[1] ? (linear_rgb[2] - linear_rgb[0]) / c + T(2.0) :
-                                   (linear_rgb[0] - linear_rgb[1]) / c + T(4.0);
-    const T hue = hprime * T(60.0);
+    const T h =
+        value == linear_rgb[0] ? (linear_rgb[1] - linear_rgb[2]) / chroma :
+        value == linear_rgb[1] ? (linear_rgb[2] - linear_rgb[0]) / chroma + T(2.0) :
+                                 (linear_rgb[0] - linear_rgb[1]) / chroma + T(4.0);
+    const T hue = mod(h * T(60.0), T(360.0));
 
-    // Compute saturation and value.
-    const T saturation = c / max_val;
-    const T value = max_val;
+    // Compute saturation.
+    const T saturation = chroma / value;
 
     return Color<T, 3>(hue, saturation, value);
 }
