@@ -112,6 +112,7 @@ class MainWindow
     ProjectManager                      m_project_manager;
     ProjectExplorer*                    m_project_explorer;
     RenderingManager                    m_rendering_manager;
+    bool                                m_was_rendering_before_open;
 
     typedef std::map<std::string, RenderTab*> RenderTabCollection;
 

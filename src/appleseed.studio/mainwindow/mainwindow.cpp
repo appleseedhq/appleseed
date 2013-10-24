@@ -109,6 +109,7 @@ MainWindow::MainWindow(QWidget* parent)
   , m_ui(new Ui::MainWindow())
   , m_rendering_manager(m_status_bar)
   , m_project_explorer(0)
+  , m_was_rendering_before_open(false)
 {
     m_ui->setupUi(this);
 
@@ -139,6 +140,14 @@ MainWindow::~MainWindow()
 
 void MainWindow::open_project(const QString& filepath)
 {
+    m_was_rendering_before_open = m_rendering_manager.is_rendering();
+
+    if (m_was_rendering_before_open)
+    {
+        m_rendering_manager.abort_rendering();
+        m_rendering_manager.wait_until_rendering_end();
+    }
+
     set_project_widgets_enabled(false);
     set_rendering_widgets_enabled(false, false);
 
@@ -776,7 +785,11 @@ void MainWindow::start_rendering(const bool interactive)
 {
     assert(m_project_manager.is_project_open());
 
+    // Enable/disable widgets appropriately. File -> Reload is enabled during interactive rendering.
+    set_project_widgets_enabled(false);
     set_rendering_widgets_enabled(true, true);
+    if (interactive)
+        m_ui->action_file_reload_project->setEnabled(true);
 
     // Internally, clear the main image to transparent black and delete all AOV images.
     Project* project = m_project_manager.get_project();
@@ -922,7 +935,12 @@ void MainWindow::slot_reload_project()
 void MainWindow::slot_open_project_complete(const QString& filepath, const bool successful)
 {
     if (successful)
+    {
         on_project_change();
+
+        if (m_was_rendering_before_open)
+            start_rendering(true);
+    }
     else
     {
         show_project_file_loading_failed_message_box(this, filepath);
