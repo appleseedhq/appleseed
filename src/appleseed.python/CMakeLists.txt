@@ -45,7 +45,11 @@ list (GET PYTHON_VERSION_LIST 1 PYTHON_MINOR_VERSION)
 #--------------------------------------------------------------------------------------------------
 
 if (PYTHON_MAJOR_VERSION STREQUAL "3")
-    find_package (Boost 1.46 REQUIRED ${BOOST_NEEDED_LIBS} "python-py${PYTHON_MAJOR_VERSION}${PYTHON_MINOR_VERSION}")
+    if (UNIX)
+        find_package (Boost 1.46 REQUIRED ${BOOST_NEEDED_LIBS} "python-py${PYTHON_MAJOR_VERSION}${PYTHON_MINOR_VERSION}")
+    else ()
+        find_package (Boost 1.46 REQUIRED ${BOOST_NEEDED_LIBS} "python3")
+    endif ()
 else ()
     find_package (Boost 1.46 REQUIRED ${BOOST_NEEDED_LIBS} python)
 endif ()
