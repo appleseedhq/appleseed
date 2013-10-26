@@ -110,7 +110,7 @@ namespace
 
             if (cos_theta_t2 < 0.0)
             {
-                // Total internal reflection.
+                // Total internal reflection: compute the reflected direction and radiance.
                 incoming = reflect(outgoing, shading_normal);
                 value = values->m_transmittance;
                 value *= static_cast<float>(values->m_transmittance_multiplier);
@@ -132,10 +132,8 @@ namespace
 
                 if (s < reflection_prob)
                 {
-                    // Compute the reflected direction.
+                    // Fresnel reflection: compute the reflected direction and radiance.
                     incoming = reflect(outgoing, shading_normal);
-
-                    // Compute the reflected radiance.
                     value = values->m_reflectance;
                     value *= static_cast<float>(fresnel_reflection * values->m_reflectance_multiplier / reflection_prob);
                 }

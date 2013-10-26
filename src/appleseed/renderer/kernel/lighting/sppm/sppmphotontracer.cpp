@@ -189,12 +189,13 @@ namespace
 
         virtual void execute(const size_t thread_index) OVERRIDE
         {
-            MersenneTwister rng(static_cast<uint32>(m_pass_hash + m_photon_begin));
+            const uint32 instance = hash_uint32(static_cast<uint32>(m_pass_hash + m_photon_begin));
+            MersenneTwister rng(instance);
             SamplingContext sampling_context(
                 rng,
-                4,                                  // number of dimensions
-                0,                                  // number of samples
-                m_pass_hash + m_photon_begin);      // initial instance number
+                4,                  // number of dimensions
+                0,                  // number of samples -- unknown
+                instance);          // initial instance number
 
             for (size_t i = m_photon_begin; i < m_photon_end && !m_abort_switch.is_aborted(); ++i)
                 trace_light_photon(sampling_context);
@@ -406,12 +407,13 @@ namespace
 
         virtual void execute(const size_t thread_index) OVERRIDE
         {
-            MersenneTwister rng(static_cast<uint32>(m_pass_hash + m_photon_begin));
+            const uint32 instance = hash_uint32(static_cast<uint32>(m_pass_hash + m_photon_begin));
+            MersenneTwister rng(instance);
             SamplingContext sampling_context(
                 rng,
-                2,                                  // number of dimensions
-                0,                                  // number of samples
-                m_pass_hash + m_photon_begin);      // initial instance number
+                2,                  // number of dimensions
+                0,                  // number of samples -- unknown
+                instance);          // initial instance number
 
             for (size_t i = m_photon_begin; i < m_photon_end && !m_abort_switch.is_aborted(); ++i)
                 trace_env_photon(sampling_context);

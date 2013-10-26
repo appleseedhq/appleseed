@@ -140,7 +140,6 @@ void compute_ibl_bsdf_sampling(
         // Filter scattering modes.
         if (!(bsdf_sampling_modes & bsdf_mode))
             return;
-        assert(bsdf_prob != BSDF::DiracDelta);
 
         // Discard occluded samples.
         const double transmission =
@@ -160,14 +159,19 @@ void compute_ibl_bsdf_sampling(
             env_value,
             env_prob);
 
-        // Compute MIS weight.
-        const double mis_weight =
-            mis_power2(
-                bsdf_sample_count * bsdf_prob,
-                env_sample_count * env_prob);
+        // Apply all weights, including MIS weight.
+        if (bsdf_mode == BSDF::Specular)
+            env_value *= static_cast<float>(transmission);
+        else
+        {
+            const double mis_weight =
+                mis_power2(
+                    bsdf_sample_count * bsdf_prob,
+                    env_sample_count * env_prob);
+            env_value *= static_cast<float>(transmission / bsdf_prob * mis_weight);
+        }
 
         // Add the contribution of this sample to the illumination.
-        env_value *= static_cast<float>(transmission / bsdf_prob * mis_weight);
         env_value *= bsdf_value;
         radiance += env_value;
     }

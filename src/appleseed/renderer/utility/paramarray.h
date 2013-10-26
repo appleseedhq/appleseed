@@ -70,6 +70,7 @@ class DLLSYMBOL ParamArray
 
     // Insert an item into the dictionary.
     template <typename T> ParamArray& insert(const char* key, const T& value);
+    template <typename T> ParamArray& insert(const std::string& key, const T& value);
 
     //
     // Retrieve the value of a required parameter.
@@ -241,6 +242,20 @@ inline ParamArray& ParamArray::insert(const char* key, const T& value)
 
 template <>
 inline ParamArray& ParamArray::insert(const char* key, const ParamArray& value)
+{
+    dictionaries().insert(key, value);
+    return *this;
+}
+
+template <typename T>
+inline ParamArray& ParamArray::insert(const std::string& key, const T& value)
+{
+    foundation::Dictionary::insert(key, value);
+    return *this;
+}
+
+template <>
+inline ParamArray& ParamArray::insert(const std::string& key, const ParamArray& value)
 {
     dictionaries().insert(key, value);
     return *this;

@@ -348,6 +348,19 @@ namespace
         dump_metadata<TextureFactoryRegistrar>("texture", file, indenter);
     }
 
+    void set_frame_parameter(Project& project, const string& key, const string& value)
+    {
+        const Frame* frame = project.get_frame();
+        assert(frame);
+
+        ParamArray params = frame->get_parameters();
+        params.insert(key, value);
+
+        auto_release_ptr<Frame> new_frame(FrameFactory::create(frame->get_name(), params));
+
+        project.set_frame(new_frame);
+    }
+
     void apply_resolution_command_line_option(Project& project)
     {
         if (g_cl.m_resolution.is_set())
@@ -356,16 +369,21 @@ namespace
                   g_cl.m_resolution.string_values()[0] + ' ' +
                   g_cl.m_resolution.string_values()[1];
 
-            const Frame* frame = project.get_frame();
-            assert(frame);
+            set_frame_parameter(project, "resolution", resolution);
+        }
+    }
 
-            ParamArray new_frame_params = frame->get_parameters();
-            new_frame_params.insert("resolution", resolution);
+    void apply_crop_window_command_line_option(Project& project)
+    {
+        if (g_cl.m_window.is_set())
+        {
+            const string crop_window =
+                  g_cl.m_window.string_values()[0] + ' ' +
+                  g_cl.m_window.string_values()[1] + ' ' +
+                  g_cl.m_window.string_values()[2] + ' ' +
+                  g_cl.m_window.string_values()[3];
 
-            auto_release_ptr<Frame> new_frame(
-                FrameFactory::create(frame->get_name(), new_frame_params));
-
-            project.set_frame(new_frame);
+            set_frame_parameter(project, "crop_window", crop_window);
         }
     }
 
@@ -380,6 +398,7 @@ namespace
             params.insert_path(
                 "adaptive_pixel_renderer.min_samples",
                 g_cl.m_samples.string_values()[0]);
+
             params.insert_path(
                 "adaptive_pixel_renderer.max_samples",
                 g_cl.m_samples.string_values()[1]);
@@ -479,15 +498,7 @@ namespace
         apply_resolution_command_line_option(project);
 
         // Apply --window option.
-        if (g_cl.m_window.is_set())
-        {
-            const string window =
-                  g_cl.m_window.string_values()[0] + ' ' +
-                  g_cl.m_window.string_values()[1] + ' ' +
-                  g_cl.m_window.string_values()[2] + ' ' +
-                  g_cl.m_window.string_values()[3];
-            params.insert_path("generic_tile_renderer.crop_window", window);
-        }
+        apply_crop_window_command_line_option(project);
 
         // Apply --samples option.
         apply_samples_command_line_option(params);
