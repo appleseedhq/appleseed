@@ -49,7 +49,6 @@
 #include <map>
 #include <vector>
 
-using namespace boost;
 using namespace boost::posix_time;
 using namespace std;
 
@@ -176,7 +175,7 @@ namespace
         {
         }
 
-        size_t thread_id_to_int(const thread::id id)
+        size_t thread_id_to_int(const boost::thread::id id)
         {
             const ThreadIdToIntMap::const_iterator i = m_thread_id_to_int.find(id);
 
@@ -189,7 +188,7 @@ namespace
         }
 
       private:
-        typedef map<thread::id, size_t> ThreadIdToIntMap;
+        typedef map<boost::thread::id, size_t> ThreadIdToIntMap;
 
         size_t              m_thread_count;
         ThreadIdToIntMap    m_thread_id_to_int;
@@ -205,7 +204,7 @@ struct Logger::Impl
 {
     typedef list<ILogTarget*> LogTargetContainer;
 
-    mutex               m_mutex;
+    boost::mutex        m_mutex;
     bool                m_enabled;
     LogTargetContainer  m_targets;
     vector<char>        m_message_buffer;
@@ -233,43 +232,43 @@ Logger::~Logger()
 
 void Logger::set_enabled(const bool enabled)
 {
-    mutex::scoped_lock lock(impl->m_mutex);
+    boost::mutex::scoped_lock lock(impl->m_mutex);
     impl->m_enabled = enabled;
 }
 
 void Logger::reset_all_formats()
 {
-    mutex::scoped_lock lock(impl->m_mutex);
+    boost::mutex::scoped_lock lock(impl->m_mutex);
     impl->m_formatter.reset_all_formats();
 }
 
 void Logger::reset_format(const LogMessage::Category category)
 {
-    mutex::scoped_lock lock(impl->m_mutex);
+    boost::mutex::scoped_lock lock(impl->m_mutex);
     impl->m_formatter.reset_format(category);
 }
 
 void Logger::set_all_formats(const char* format)
 {
-    mutex::scoped_lock lock(impl->m_mutex);
+    boost::mutex::scoped_lock lock(impl->m_mutex);
     impl->m_formatter.set_all_formats(format);
 }
 
 void Logger::set_format(const LogMessage::Category category, const char* format)
 {
-    mutex::scoped_lock lock(impl->m_mutex);
+    boost::mutex::scoped_lock lock(impl->m_mutex);
     impl->m_formatter.set_format(category, format);
 }
 
 const char* Logger::get_format(const LogMessage::Category category) const
 {
-    mutex::scoped_lock lock(impl->m_mutex);
+    boost::mutex::scoped_lock lock(impl->m_mutex);
     return impl->m_formatter.get_format(category).c_str();
 }
 
 void Logger::add_target(ILogTarget* target)
 {
-    mutex::scoped_lock lock(impl->m_mutex);
+    boost::mutex::scoped_lock lock(impl->m_mutex);
 
     assert(target);
     impl->m_targets.push_back(target);
@@ -277,7 +276,7 @@ void Logger::add_target(ILogTarget* target)
 
 void Logger::remove_target(ILogTarget* target)
 {
-    mutex::scoped_lock lock(impl->m_mutex);
+    boost::mutex::scoped_lock lock(impl->m_mutex);
 
     assert(target);
     impl->m_targets.remove(target);
@@ -330,7 +329,7 @@ void Logger::write(
     const size_t                line,
     PRINTF_FMT const char*      format, ...)
 {
-    mutex::scoped_lock lock(impl->m_mutex);
+    boost::mutex::scoped_lock lock(impl->m_mutex);
 
     if (impl->m_enabled)
     {
@@ -343,7 +342,7 @@ void Logger::write(
         const ptime datetime(microsec_clock::universal_time());
 
         // Format the header and message.
-        const size_t thread = impl->m_thread_map.thread_id_to_int(this_thread::get_id());
+        const size_t thread = impl->m_thread_map.thread_id_to_int(boost::this_thread::get_id());
         const FormatEvaluator format_evaluator(category, datetime, thread, &impl->m_message_buffer[0]);
         const string header = format_evaluator.evaluate(impl->m_formatter.get_header_format(category));
         const string message = format_evaluator.evaluate(impl->m_formatter.get_message_format(category));

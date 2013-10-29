@@ -42,7 +42,6 @@
 // Standard headers.
 #include <cassert>
 
-using namespace boost;
 using namespace std;
 
 namespace foundation
@@ -54,10 +53,10 @@ namespace foundation
 
 struct JobQueue::Impl
 {
-    mutable mutex           m_mutex;
-    condition_variable_any  m_event;
-    JobList                 m_scheduled_jobs;
-    JobList                 m_running_jobs;
+    mutable boost::mutex            m_mutex;
+    boost::condition_variable_any   m_event;
+    JobList                         m_scheduled_jobs;
+    JobList                         m_running_jobs;
 
     static void delete_jobs(JobList& list)
     {
@@ -91,7 +90,7 @@ JobQueue::~JobQueue()
 
 void JobQueue::clear_scheduled_jobs()
 {
-    mutex::scoped_lock lock(impl->m_mutex);
+    boost::mutex::scoped_lock lock(impl->m_mutex);
 
     impl->delete_jobs(impl->m_scheduled_jobs);
 
@@ -101,42 +100,42 @@ void JobQueue::clear_scheduled_jobs()
 
 bool JobQueue::has_scheduled_jobs() const
 {
-    mutex::scoped_lock lock(impl->m_mutex);
+    boost::mutex::scoped_lock lock(impl->m_mutex);
 
     return !impl->m_scheduled_jobs.empty();
 }
 
 bool JobQueue::has_running_jobs() const
 {
-    mutex::scoped_lock lock(impl->m_mutex);
+    boost::mutex::scoped_lock lock(impl->m_mutex);
 
     return !impl->m_running_jobs.empty();
 }
 
 bool JobQueue::has_scheduled_or_running_jobs() const
 {
-    mutex::scoped_lock lock(impl->m_mutex);
+    boost::mutex::scoped_lock lock(impl->m_mutex);
 
     return !impl->m_scheduled_jobs.empty() || !impl->m_running_jobs.empty();
 }
 
 size_t JobQueue::get_scheduled_job_count() const
 {
-    mutex::scoped_lock lock(impl->m_mutex);
+    boost::mutex::scoped_lock lock(impl->m_mutex);
 
     return impl->m_scheduled_jobs.size();
 }
 
 size_t JobQueue::get_running_job_count() const
 {
-    mutex::scoped_lock lock(impl->m_mutex);
+    boost::mutex::scoped_lock lock(impl->m_mutex);
 
     return impl->m_running_jobs.size();
 }
 
 size_t JobQueue::get_total_job_count() const
 {
-    mutex::scoped_lock lock(impl->m_mutex);
+    boost::mutex::scoped_lock lock(impl->m_mutex);
 
     return impl->m_scheduled_jobs.size() + impl->m_running_jobs.size();
 }
@@ -145,7 +144,7 @@ void JobQueue::schedule(IJob* job, const bool transfer_ownership)
 {
     assert(job);
 
-    mutex::scoped_lock lock(impl->m_mutex);
+    boost::mutex::scoped_lock lock(impl->m_mutex);
 
     impl->m_scheduled_jobs.push_back(JobInfo(job, transfer_ownership));
 
@@ -155,7 +154,7 @@ void JobQueue::schedule(IJob* job, const bool transfer_ownership)
 
 void JobQueue::wait_until_completion()
 {
-    mutex::scoped_lock lock(impl->m_mutex);
+    boost::mutex::scoped_lock lock(impl->m_mutex);
 
     // Wait until there is no more scheduled or running jobs.
     while (!impl->m_scheduled_jobs.empty() || !impl->m_running_jobs.empty())
@@ -164,14 +163,14 @@ void JobQueue::wait_until_completion()
 
 JobQueue::RunningJobInfo JobQueue::acquire_scheduled_job()
 {
-    mutex::scoped_lock lock(impl->m_mutex);
+    boost::mutex::scoped_lock lock(impl->m_mutex);
 
     return acquire_scheduled_job_unlocked();
 }
 
 JobQueue::RunningJobInfo JobQueue::wait_for_scheduled_job(AbortSwitch& abort_switch)
 {
-    mutex::scoped_lock lock(impl->m_mutex);
+    boost::mutex::scoped_lock lock(impl->m_mutex);
 
     // Wait for a scheduled job to be available.
     while (!abort_switch.is_aborted() && impl->m_scheduled_jobs.empty())    // order matters
@@ -199,7 +198,7 @@ JobQueue::RunningJobInfo JobQueue::acquire_scheduled_job_unlocked()
 
 void JobQueue::retire_running_job(const RunningJobInfo& running_job_info)
 {
-    mutex::scoped_lock lock(impl->m_mutex);
+    boost::mutex::scoped_lock lock(impl->m_mutex);
 
     // Remove the job from the running list.
     impl->m_running_jobs.erase(running_job_info.second);
@@ -214,7 +213,7 @@ void JobQueue::retire_running_job(const RunningJobInfo& running_job_info)
 
 void JobQueue::signal_event()
 {
-    mutex::scoped_lock lock(impl->m_mutex);
+    boost::mutex::scoped_lock lock(impl->m_mutex);
 
     impl->m_event.notify_all();
 }

@@ -29,7 +29,6 @@
 // Interface header.
 #include "xercesc.h"
 
-using namespace boost;
 using namespace std;
 using namespace xercesc;
 
@@ -40,11 +39,11 @@ namespace foundation
 // XercesCManager class implementation.
 //
 
-mutex XercesCManager::s_mutex;
+boost::mutex XercesCManager::s_mutex;
 
 bool XercesCManager::initialize()
 {
-    mutex::scoped_lock lock(s_mutex);
+    boost::mutex::scoped_lock lock(s_mutex);
 
     try
     {
@@ -60,7 +59,7 @@ bool XercesCManager::initialize()
 
 bool XercesCManager::initialize(Logger& logger)
 {
-    mutex::scoped_lock lock(s_mutex);
+    boost::mutex::scoped_lock lock(s_mutex);
 
     try
     {
@@ -81,7 +80,7 @@ bool XercesCManager::initialize(Logger& logger)
 
 void XercesCManager::terminate()
 {
-    mutex::scoped_lock lock(s_mutex);
+    boost::mutex::scoped_lock lock(s_mutex);
 
     XMLPlatformUtils::Terminate();
 }

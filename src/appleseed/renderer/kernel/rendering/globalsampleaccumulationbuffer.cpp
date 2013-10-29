@@ -41,7 +41,6 @@
 #include "foundation/image/tile.h"
 #include "foundation/platform/thread.h"
 
-using namespace boost;
 using namespace foundation;
 using namespace std;
 
@@ -59,7 +58,7 @@ GlobalSampleAccumulationBuffer::GlobalSampleAccumulationBuffer(
 
 void GlobalSampleAccumulationBuffer::clear()
 {
-    mutex::scoped_lock lock(m_mutex);
+    boost::mutex::scoped_lock lock(m_mutex);
 
     SampleAccumulationBuffer::clear_no_lock();
 
@@ -70,7 +69,7 @@ void GlobalSampleAccumulationBuffer::store_samples(
     const size_t    sample_count,
     const Sample    samples[])
 {
-    mutex::scoped_lock lock(m_mutex);
+    boost::mutex::scoped_lock lock(m_mutex);
 
     const double fw = static_cast<double>(m_fb.get_width());
     const double fh = static_cast<double>(m_fb.get_height());
@@ -90,7 +89,7 @@ void GlobalSampleAccumulationBuffer::store_samples(
 
 void GlobalSampleAccumulationBuffer::develop_to_frame(Frame& frame)
 {
-    mutex::scoped_lock lock(m_mutex);
+    boost::mutex::scoped_lock lock(m_mutex);
 
     Image& image = frame.image();
     const CanvasProperties& frame_props = image.properties();
@@ -117,7 +116,7 @@ void GlobalSampleAccumulationBuffer::develop_to_frame(Frame& frame)
 
 void GlobalSampleAccumulationBuffer::increment_sample_count(const uint64 delta_sample_count)
 {
-    mutex::scoped_lock lock(m_mutex);
+    boost::mutex::scoped_lock lock(m_mutex);
 
     m_sample_count += delta_sample_count;
 }

@@ -32,15 +32,13 @@
 // appleseed.foundation headers.
 #include "foundation/platform/thread.h"
 
-using namespace boost;
-
 namespace foundation
 {
 
 UniqueID new_guid()
 {
-    static mutex mutex;
-    mutex::scoped_lock lock(mutex);
+    static boost::mutex mutex;
+    boost::mutex::scoped_lock lock(mutex);
 
     static UniqueID next_uid = 0;
 
