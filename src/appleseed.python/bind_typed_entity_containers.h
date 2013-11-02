@@ -30,7 +30,7 @@
 #define APPLESEED_PYTHON_BIND_TYPED_ENTITY_CONTAINERS_H
 
 // Has to be first, to avoid redefinition warnings.
-#include "Python.h"
+#include "boost/python/detail/wrap_python.hpp"
 
 // appleseed.python headers.
 #include "dict2dict.h"
