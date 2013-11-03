@@ -146,7 +146,8 @@ class MainWindow
     void update_project_explorer();
     void update_window_title();
 
-    void set_project_widgets_enabled(const bool is_enabled);
+    void set_file_widgets_enabled(const bool is_enabled);
+    void set_project_explorer_enabled(const bool is_enabled);
     void set_rendering_widgets_enabled(const bool is_enabled, const bool is_rendering);
 
     void recreate_render_widgets();
