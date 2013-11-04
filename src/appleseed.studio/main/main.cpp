@@ -49,6 +49,7 @@
 #include <QMessageBox>
 #include <QString>
 #include <QTextStream>
+#include <QPalette>
 
 // boost headers.
 #include "boost/filesystem/operations.hpp"
@@ -186,10 +187,59 @@ namespace
         return true;
     }
 
-    void set_default_stylesheet(QApplication& application)
+    void set_style(QApplication& application)
     {
         if (Application::is_correctly_installed())
         {
+
+            application.setStyle("plastique");
+
+            QPalette palette;
+            QColor backGround(50, 50, 50);
+            QColor light = QColor(70,70,70);
+            QColor base = QColor(40,40,40);
+            QColor dark = QColor(20,20,20);
+            QColor text = QColor(220, 220, 220);
+
+            palette.setBrush(QPalette::Active,   QPalette::Highlight, backGround);
+            palette.setBrush(QPalette::Inactive, QPalette::Highlight, backGround);
+            palette.setBrush(QPalette::Disabled, QPalette::Highlight, backGround);
+
+            // Find the correct disabled text color
+            palette.setBrush(QPalette::Disabled, QPalette::Text, text);
+
+            palette.setBrush(QPalette::Window, backGround);
+            // NOTE: on some version of Qt the WinowText attribute may not be honored
+            // an equivalent qss rule is necissary as a workaround
+            palette.setBrush(QPalette::WindowText, text);
+            palette.setBrush(QPalette::ButtonText, text);
+            palette.setBrush(QPalette::BrightText, text);
+            palette.setBrush(QPalette::Text, text);
+            palette.setBrush(QPalette::HighlightedText, text);
+
+            palette.setBrush(QPalette::Mid, base);
+            palette.setBrush(QPalette::Light, light);
+
+            palette.setBrush(QPalette::Active, QPalette::Base, base);
+            palette.setBrush(QPalette::Inactive, QPalette::Base, base);
+            palette.setBrush(QPalette::Disabled, QPalette::Base, base);
+
+            palette.setBrush(QPalette::Midlight, base);
+
+            palette.setBrush(QPalette::All, QPalette::Dark, dark);
+            palette.setBrush(QPalette::Disabled, QPalette::Dark, base);
+
+            QColor button = backGround;
+
+            palette.setBrush(QPalette::Button, button);
+
+            QColor shadow = dark.darker(135);
+            palette.setBrush(QPalette::Shadow, shadow);
+            palette.setBrush(QPalette::Disabled, QPalette::Shadow, shadow.lighter(150));
+            palette.setBrush(QPalette::HighlightedText, QColor(QRgb(0xffffffff)));
+
+            application.setPalette(palette);
+
             // Build the path to the default stylesheet file.
             const filesystem::path stylesheet_path =
                   filesystem::path(Application::get_root_path())
@@ -206,8 +256,7 @@ namespace
     void configure_application(QApplication& application)
     {
         application.setAttribute(Qt::AA_DontUseNativeMenuBar, true);
-
-        set_default_stylesheet(application);
+        set_style(application);
     }
 }
 
