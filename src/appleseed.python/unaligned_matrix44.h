@@ -29,7 +29,8 @@
 #ifndef APPLESEED_PYTHON_UNALIGNED_MATRIX44_H
 #define APPLESEED_PYTHON_UNALIGNED_MATRIX44_H
 
-#include "Python.h"
+// Has to be first, to avoid redefinition warnings.
+#include "boost/python/detail/wrap_python.hpp"
 
 // appleseed.foundation headers.
 #include "foundation/math/matrix.h"

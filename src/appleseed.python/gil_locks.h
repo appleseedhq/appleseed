@@ -29,8 +29,8 @@
 #ifndef APPLESEED_PYTHON_GIL_LOCKS_H
 #define APPLESEED_PYTHON_GIL_LOCKS_H
 
-// Has to be first.
-#include "Python.h"
+// Has to be first, to avoid redefinition warnings.
+#include "boost/python/detail/wrap_python.hpp"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"

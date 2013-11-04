@@ -26,9 +26,8 @@
 // THE SOFTWARE.
 //
 
-#include "bind_auto_release_ptr.h"
-
 // appleseed.python headers.
+#include "bind_auto_release_ptr.h"
 #include "bind_typed_entity_containers.h"
 #include "dict2dict.h"
 
