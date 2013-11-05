@@ -72,6 +72,8 @@ void EXRImageFileWriter::write(
     const ICanvas&          image,
     const ImageAttributes&  image_attributes)
 {
+    initialize_openexr();
+
     try
     {
         // Retrieve canvas properties.

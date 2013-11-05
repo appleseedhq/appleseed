@@ -116,6 +116,21 @@ RenderWidget* RenderTab::get_render_widget() const
     return m_render_widget;
 }
 
+RenderTab::State RenderTab::save_state() const
+{
+    State state;
+    state.m_zoom_handler_state = m_zoom_handler->save_state();
+    state.m_pan_handler_state = m_pan_handler->save_state();
+    return state;
+}
+
+void RenderTab::load_state(const State& state)
+{
+    // The order matters here.
+    m_zoom_handler->load_state(state.m_zoom_handler_state);
+    m_pan_handler->load_state(state.m_pan_handler_state);
+}
+
 void RenderTab::slot_render_widget_context_menu(const QPoint& point)
 {
     emit signal_render_widget_context_menu(m_render_widget->mapToGlobal(point));

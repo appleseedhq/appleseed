@@ -79,6 +79,15 @@ class RenderTab
 
     RenderWidget* get_render_widget() const;
 
+    struct State
+    {
+        WidgetZoomHandler::State            m_zoom_handler_state;
+        ScrollAreaPanHandler::State         m_pan_handler_state;
+    };
+
+    State save_state() const;
+    void load_state(const State& state);
+
   signals:
     void signal_save_aovs();
     void signal_quick_save_aovs();

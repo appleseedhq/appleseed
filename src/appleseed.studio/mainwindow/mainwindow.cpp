@@ -35,7 +35,6 @@
 // appleseed.studio headers.
 #include "help/about/aboutwindow.h"
 #include "mainwindow/project/projectexplorer.h"
-#include "mainwindow/rendering/rendertab.h"
 #include "mainwindow/logwidget.h"
 #include "utility/interop.h"
 #include "utility/settingskeys.h"
@@ -109,7 +108,6 @@ MainWindow::MainWindow(QWidget* parent)
   , m_ui(new Ui::MainWindow())
   , m_rendering_manager(m_status_bar)
   , m_project_explorer(0)
-  , m_was_rendering_before_open(false)
 {
     m_ui->setupUi(this);
 
@@ -140,9 +138,9 @@ MainWindow::~MainWindow()
 
 void MainWindow::open_project(const QString& filepath)
 {
-    m_was_rendering_before_open = m_rendering_manager.is_rendering();
+    save_state_before_project_open();
 
-    if (m_was_rendering_before_open)
+    if (m_rendering_manager.is_rendering())
     {
         m_rendering_manager.abort_rendering();
         m_rendering_manager.wait_until_rendering_end();
@@ -584,6 +582,33 @@ namespace
     }
 }
 
+void MainWindow::save_state_before_project_open()
+{
+    m_state_before_project_open.reset(new StateBeforeProjectOpen());
+
+    m_state_before_project_open->m_is_rendering = m_rendering_manager.is_rendering();
+
+    for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
+        m_state_before_project_open->m_render_tab_states[i->first] = i->second->save_state();
+}
+
+void MainWindow::restore_state_after_project_open()
+{
+    assert(m_state_before_project_open.get());
+
+    for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
+    {
+        const RenderTabStateCollection& tab_states = m_state_before_project_open->m_render_tab_states;
+        const RenderTabStateCollection::const_iterator tab_state_it = tab_states.find(i->first);
+
+        if (tab_state_it != tab_states.end())
+            i->second->load_state(tab_state_it->second);
+    }
+
+    if (m_state_before_project_open->m_is_rendering)
+        start_rendering(true);
+}
+
 bool MainWindow::can_close_project()
 {
     // No project open: no problem.
@@ -625,6 +650,8 @@ void MainWindow::on_project_change()
     m_status_bar.clear();
 
     update_workspace();
+
+    restore_state_after_project_open();
 }
 
 void MainWindow::update_workspace()
@@ -948,9 +975,6 @@ void MainWindow::slot_open_project_complete(const QString& filepath, const bool 
     if (successful)
     {
         on_project_change();
-
-        if (m_was_rendering_before_open)
-            start_rendering(true);
     }
     else
     {

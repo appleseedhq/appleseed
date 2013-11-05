@@ -55,6 +55,14 @@ class WidgetZoomHandler
 
     ~WidgetZoomHandler();
 
+    struct State
+    {
+        double          m_scale_factor;
+    };
+
+    State save_state() const;
+    void load_state(const State& state);
+
   private:
     QScrollArea*        m_scroll_area;
     QWidget*            m_content_widget;
@@ -62,7 +70,7 @@ class WidgetZoomHandler
     const int           m_content_height;
     double              m_min_scale_factor;
     double              m_max_scale_factor;
-    double              m_scale_factor;
+    State               m_state;
 
     virtual bool eventFilter(QObject* object, QEvent* event);
 

@@ -68,9 +68,10 @@ WidgetZoomHandler::WidgetZoomHandler(
   , m_content_widget(content_widget)
   , m_content_width(content_widget->width())
   , m_content_height(content_widget->height())
-  , m_scale_factor(1.0)
 {
     compute_min_max_scale_factors();
+
+    m_state.m_scale_factor = 1.0;
 
     m_scroll_area->installEventFilter(this);
     m_scroll_area->viewport()->installEventFilter(this);
@@ -80,6 +81,18 @@ WidgetZoomHandler::~WidgetZoomHandler()
 {
     m_scroll_area->viewport()->removeEventFilter(this);
     m_scroll_area->removeEventFilter(this);
+}
+
+WidgetZoomHandler::State WidgetZoomHandler::save_state() const
+{
+    return m_state;
+}
+
+void WidgetZoomHandler::load_state(const State& state)
+{
+    m_state = state;
+
+    apply_scale_factor();
 }
 
 bool WidgetZoomHandler::eventFilter(QObject* object, QEvent* event)
@@ -156,7 +169,7 @@ void WidgetZoomHandler::zoom_out()
 
 void WidgetZoomHandler::reset_zoom()
 {
-    m_scale_factor = 1.0;
+    m_state.m_scale_factor = 1.0;
     apply_scale_factor();
 }
 
@@ -179,9 +192,9 @@ void WidgetZoomHandler::compute_min_max_scale_factors()
 
 void WidgetZoomHandler::multiply_scale_factor(const double multiplier)
 {
-    m_scale_factor =
+    m_state.m_scale_factor =
         clamp(
-            m_scale_factor * multiplier,
+            m_state.m_scale_factor * multiplier,
             m_min_scale_factor,
             m_max_scale_factor);
 
@@ -210,8 +223,8 @@ void WidgetZoomHandler::apply_scale_factor()
     const int old_widget_height = m_scroll_area->widget()->height();
 
     m_content_widget->setFixedSize(
-        static_cast<int>(m_content_width * m_scale_factor),
-        static_cast<int>(m_content_height * m_scale_factor));
+        static_cast<int>(m_content_width * m_state.m_scale_factor),
+        static_cast<int>(m_content_height * m_state.m_scale_factor));
 
     // Make sure the size of the scrollarea widget is up-to-date.
     if (m_scroll_area->widget()->layout())

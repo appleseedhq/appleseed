@@ -75,19 +75,20 @@ struct ProgressiveEXRImageFileWriter::Impl
     PixelType                       m_pixel_type;
 };
 
-// Constructors.
 ProgressiveEXRImageFileWriter::ProgressiveEXRImageFileWriter(Logger* logger)
   : impl(new Impl())
 {
     impl->m_logger = logger;
     impl->m_thread_count = 1;
 }
+
 ProgressiveEXRImageFileWriter::ProgressiveEXRImageFileWriter(const size_t thread_count)
   : impl(new Impl())
 {
     impl->m_logger = 0;
     impl->m_thread_count = static_cast<int>(thread_count);
 }
+
 ProgressiveEXRImageFileWriter::ProgressiveEXRImageFileWriter(
     Logger*                 logger,
     const size_t            thread_count)
@@ -97,7 +98,6 @@ ProgressiveEXRImageFileWriter::ProgressiveEXRImageFileWriter(
     impl->m_thread_count = static_cast<int>(thread_count);
 }
 
-// Destructor.
 ProgressiveEXRImageFileWriter::~ProgressiveEXRImageFileWriter()
 {
     if (is_open())
@@ -106,7 +106,6 @@ ProgressiveEXRImageFileWriter::~ProgressiveEXRImageFileWriter()
     delete impl;
 }
 
-// Open an image file for writing.
 void ProgressiveEXRImageFileWriter::open(
     const char*             filename,
     const CanvasProperties& props,
@@ -114,6 +113,8 @@ void ProgressiveEXRImageFileWriter::open(
 {
     assert(filename);
     assert(!is_open());
+
+    initialize_openexr();
 
     try
     {
@@ -169,20 +170,17 @@ void ProgressiveEXRImageFileWriter::open(
     }
 }
 
-// Close the image file.
 void ProgressiveEXRImageFileWriter::close()
 {
     assert(is_open());
     impl->m_file.reset();
 }
 
-// Return true if an image file is currently open.
 bool ProgressiveEXRImageFileWriter::is_open() const
 {
     return impl->m_file.get() != 0;
 }
 
-// Write a tile to the image file.
 void ProgressiveEXRImageFileWriter::write_tile(
     const Tile&             tile,
     const size_t            tile_x,

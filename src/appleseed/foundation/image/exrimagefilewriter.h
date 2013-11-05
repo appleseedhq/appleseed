@@ -64,7 +64,6 @@ class DLLSYMBOL EXRImageFileWriter
   : public IImageFileWriter
 {
   public:
-
     // Write an OpenEXR image file.
     virtual void write(
         const char*             filename,
