@@ -65,3 +65,36 @@ QWidget:disabled
 }
 
 
+/*
+ * QTreeView
+ */
+
+QTreeView::item
+{
+    padding-top: 5px;
+}
+
+
+/*
+ * Specific styles.
+ */
+
+QLabel#picking_mode_label
+{
+    margin-left: 5px;
+    margin-right: 5px;
+}
+
+QComboBox#picking_mode_combo
+{
+    margin-right: 10px;
+}
+
+QLabel#info_label
+{
+    color: INFO_TEXT_COLOR;
+    min-width: 240px;
+    max-width: 240px;
+    margin-left: 5px;
+    margin-right: 5px;
+}
