@@ -54,8 +54,12 @@
 #include <QToolBar>
 #include <QToolButton>
 
+// boost headers.
+#include "boost/filesystem/path.hpp"
+
 using namespace foundation;
 using namespace renderer;
+using namespace boost;
 
 namespace appleseed {
 namespace studio {
@@ -129,6 +133,16 @@ void RenderTab::slot_set_render_region(const QRect& rect)
     emit signal_set_render_region(rect);
 }
 
+void RenderTab::slot_quick_save_aovs()
+{
+    const filesystem::path project_path(m_project.get_path());
+    const filesystem::path image_path = project_path.parent_path() / "_renders" / "quicksave.exr";
+
+    const Frame* frame = m_project.get_frame();
+    frame->write_main_image(image_path.string().c_str());
+    frame->write_aov_images(image_path.string().c_str());
+}
+
 void RenderTab::create_render_widget()
 {
     const CanvasProperties& props = m_project.get_frame()->image().properties();
@@ -154,16 +168,24 @@ void RenderTab::create_toolbar()
     m_toolbar->setObjectName(QString::fromUtf8("render_toolbar"));
     m_toolbar->setIconSize(QSize(18, 18));
 
-    // Create the label preceding the picking mode combobox.
-    QLabel* picking_mode_label = new QLabel("Picking Mode:");
-    picking_mode_label->setObjectName(QString::fromUtf8("picking_mode_label"));
-    m_toolbar->addWidget(picking_mode_label);
+    //Create the Save Image button in the render toolbar.
+    m_save_aovs_button = new QToolButton();
+    m_save_aovs_button->setIcon(QIcon(":/icons/save_image.png"));
+    m_save_aovs_button->setToolTip("Save all AOV's");
+    connect(
+        m_save_aovs_button, SIGNAL(clicked()),
+        SIGNAL(signal_save_aovs()));
+    m_toolbar->addWidget(m_save_aovs_button);
 
-    // Create the picking mode combobox.
-    // The combo will be populated by the ScenePickingHandler instantiated below.
-    m_picking_mode_combo = new QComboBox();
-    m_picking_mode_combo->setObjectName(QString::fromUtf8("picking_mode_combo"));
-    m_toolbar->addWidget(m_picking_mode_combo);
+    //Create the Quick Save Image button in the render toolbar.
+    m_quick_save_aovs_button = new QToolButton();
+    m_quick_save_aovs_button->setIcon(QIcon(":/icons/quick_save_aovs.png"));
+    m_quick_save_aovs_button->setToolTip("Quicksave all AOV's");
+    connect(
+        m_quick_save_aovs_button, SIGNAL(clicked()),
+        this,
+        SLOT(slot_quick_save_aovs()));
+    m_toolbar->addWidget(m_quick_save_aovs_button);
 
     m_toolbar->addSeparator();
 
@@ -187,6 +209,19 @@ void RenderTab::create_toolbar()
         m_clear_render_region_button, SIGNAL(clicked()),
         SIGNAL(signal_clear_render_region()));
     m_toolbar->addWidget(m_clear_render_region_button);
+
+    m_toolbar->addSeparator();
+
+    // Create the label preceding the picking mode combobox.
+    QLabel* picking_mode_label = new QLabel("Picking Mode:");
+    picking_mode_label->setObjectName(QString::fromUtf8("picking_mode_label"));
+    m_toolbar->addWidget(picking_mode_label);
+
+    // Create the picking mode combobox.
+    // The combo will be populated by the ScenePickingHandler instantiated below.
+    m_picking_mode_combo = new QComboBox();
+    m_picking_mode_combo->setObjectName(QString::fromUtf8("picking_mode_combo"));
+    m_toolbar->addWidget(m_picking_mode_combo);
 
     m_toolbar->addSeparator();
 

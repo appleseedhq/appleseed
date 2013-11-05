@@ -780,6 +780,9 @@ void MainWindow::add_render_widget(const QString& label)
     connect(
         render_tab, SIGNAL(signal_clear_render_region()),
         SLOT(slot_clear_render_region()));
+    connect(
+        render_tab, SIGNAL(signal_save_aovs()),
+        SLOT(slot_save_all_aovs()));
 
     // Add the render tab to the tab bar.
     m_ui->tab_render_channels->addTab(render_tab, label);

@@ -37,6 +37,7 @@
 
 // boost headers.
 #include "boost/filesystem/path.hpp"
+#include "boost/filesystem/operations.hpp"
 
 // Standard headers.
 #include <memory>
@@ -59,6 +60,9 @@ void GenericImageFileWriter::write(
 {
     const filesystem::path filepath(filename);
     const string extension = lower_case(filepath.extension().string());
+
+    const filesystem::path file_dir(filepath.parent_path());
+    filesystem::create_directory(file_dir);
 
     if (extension == ".exr")
     {
