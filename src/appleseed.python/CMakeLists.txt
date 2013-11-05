@@ -37,21 +37,30 @@ string (REGEX MATCHALL "[0123456789]+" PYTHON_VERSION_LIST
 
 # Accessing Major and Minor version number with the version list we got.
 list (GET PYTHON_VERSION_LIST 0 PYTHON_MAJOR_VERSION)
-list (GET PYTHON_VERSION_LIST 1 PYTHON_MINOR_VERSION)
+#list (GET PYTHON_VERSION_LIST 1 PYTHON_MINOR_VERSION)
 
 
 #--------------------------------------------------------------------------------------------------
 # Boost libraries.
 #--------------------------------------------------------------------------------------------------
 
-if (PYTHON_MAJOR_VERSION STREQUAL "3")
-    if (UNIX)
-        find_package (Boost 1.46 REQUIRED ${BOOST_NEEDED_LIBS} "python-py${PYTHON_MAJOR_VERSION}${PYTHON_MINOR_VERSION}")
-    else ()
-        find_package (Boost 1.46 REQUIRED ${BOOST_NEEDED_LIBS} "python3")
-    endif ()
+option(BOOST_CUSTOM_PYTHON 
+	"Use custom name of Boost python library" 
+	OFF)
+set(BOOST_PYTHON CACHE STRING "Enter name of boost python library here.")
+
+
+if (BOOST_CUSTOM_PYTHON)
+    find_package (
+	    Boost 1.46 REQUIRED 
+	    ${BOOST_NEEDED_LIBS} 
+	    ${BOOST_PYTHON})
 else ()
-    find_package (Boost 1.46 REQUIRED ${BOOST_NEEDED_LIBS} python)
+    if (PYTHON_MAJOR_VERSION STREQUAL "3")
+	    find_package (Boost 1.46 REQUIRED ${BOOST_NEEDED_LIBS} "python3")
+    else ()
+	    find_package (Boost 1.46 REQUIRED ${BOOST_NEEDED_LIBS} python)
+    endif ()
 endif ()
 
 
