@@ -38,10 +38,10 @@ namespace foundation    { class ImageAttributes; }
 namespace foundation
 {
 
-//
-// Add image attributes to an OpenEXR Header object.
-//
+// Configure the OpenEXR library on first use.
+void initialize_openexr();
 
+// Add image attributes to an OpenEXR Header object.
 void add_attributes(
     const ImageAttributes&  image_attributes,
     Imf::Header&            header);
