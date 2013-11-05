@@ -34,6 +34,7 @@
 #include "debug/tests/testwindow.h"
 #include "mainwindow/project/projectmanager.h"
 #include "mainwindow/rendering/renderingmanager.h"
+#include "mainwindow/rendering/rendertab.h"
 #include "mainwindow/qtlogtarget.h"
 #include "mainwindow/rendersettingswindow.h"
 #include "mainwindow/statusbar.h"
@@ -54,7 +55,6 @@
 // Forward declarations.
 namespace appleseed { namespace studio { class LogWidget; } }
 namespace appleseed { namespace studio { class ProjectExplorer; } }
-namespace appleseed { namespace studio { class RenderTab; } }
 namespace Ui        { class MainWindow; }
 class QAction;
 class QCloseEvent;
@@ -88,35 +88,43 @@ class MainWindow
 
   private:
     // Not wrapped in std::auto_ptr<> to avoid pulling in the UI definition code.
-    Ui::MainWindow*                     m_ui;
+    Ui::MainWindow*                         m_ui;
 
-    QAction*                            m_action_new_project;
-    QAction*                            m_action_open_project;
-    QAction*                            m_clear_open_recent_menu;
-    QAction*                            m_action_save_project;
-    QAction*                            m_action_start_interactive_rendering;
-    QAction*                            m_action_start_final_rendering;
-    QAction*                            m_action_stop_rendering;
+    QAction*                                m_action_new_project;
+    QAction*                                m_action_open_project;
+    QAction*                                m_clear_open_recent_menu;
+    QAction*                                m_action_save_project;
+    QAction*                                m_action_start_interactive_rendering;
+    QAction*                                m_action_start_final_rendering;
+    QAction*                                m_action_stop_rendering;
 
-    std::vector<QAction*>               m_recently_opened;
+    std::vector<QAction*>                   m_recently_opened;
 
-    StatusBar                           m_status_bar;
-    std::auto_ptr<QtLogTarget>          m_log_target;
+    StatusBar                               m_status_bar;
+    std::auto_ptr<QtLogTarget>              m_log_target;
 
-    renderer::ParamArray                m_settings;
+    renderer::ParamArray                    m_settings;
 
-    std::auto_ptr<RenderSettingsWindow> m_render_settings_window;
-    std::auto_ptr<TestWindow>           m_test_window;
-    std::auto_ptr<BenchmarkWindow>      m_benchmark_window;
+    std::auto_ptr<RenderSettingsWindow>     m_render_settings_window;
+    std::auto_ptr<TestWindow>               m_test_window;
+    std::auto_ptr<BenchmarkWindow>          m_benchmark_window;
 
-    ProjectManager                      m_project_manager;
-    ProjectExplorer*                    m_project_explorer;
-    RenderingManager                    m_rendering_manager;
-    bool                                m_was_rendering_before_open;
+    ProjectManager                          m_project_manager;
+    ProjectExplorer*                        m_project_explorer;
+    RenderingManager                        m_rendering_manager;
 
     typedef std::map<std::string, RenderTab*> RenderTabCollection;
+    typedef std::map<std::string, RenderTab::State> RenderTabStateCollection;
 
-    RenderTabCollection                 m_render_tabs;
+    RenderTabCollection                     m_render_tabs;
+
+    struct StateBeforeProjectOpen
+    {
+        bool                                m_is_rendering;
+        RenderTabStateCollection            m_render_tab_states;
+    };
+
+    std::auto_ptr<StateBeforeProjectOpen>   m_state_before_project_open;
 
     void build_menus();
     void build_override_shading_menu_item();
@@ -138,6 +146,9 @@ class MainWindow
     void print_startup_information();
 
     renderer::ParamArray get_project_params(const char* configuration_name) const;
+
+    void save_state_before_project_open();
+    void restore_state_after_project_open();
 
     bool can_close_project();
     void on_project_change();

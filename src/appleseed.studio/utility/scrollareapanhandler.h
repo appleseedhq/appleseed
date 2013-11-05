@@ -51,12 +51,22 @@ class ScrollAreaPanHandler
 
     ~ScrollAreaPanHandler();
 
+    struct State
+    {
+        int         m_hbar_value;
+        int         m_vbar_value;
+    };
+
+    State save_state() const;
+    void load_state(const State& state);
+
   private:
     QScrollArea*    m_scroll_area;
     bool            m_is_dragging;
     QPoint          m_initial_mouse_position;
     int             m_initial_hbar_value;
     int             m_initial_vbar_value;
+    State           m_state;
 
     virtual bool eventFilter(QObject* object, QEvent* event);
 

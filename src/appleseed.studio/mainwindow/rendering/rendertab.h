@@ -79,6 +79,15 @@ class RenderTab
 
     RenderWidget* get_render_widget() const;
 
+    struct State
+    {
+        WidgetZoomHandler::State            m_zoom_handler_state;
+        ScrollAreaPanHandler::State         m_pan_handler_state;
+    };
+
+    State save_state() const;
+    void load_state(const State& state);
+
   signals:
     void signal_render_widget_context_menu(const QPoint& point);
     void signal_set_render_region(const QRect& rect);
