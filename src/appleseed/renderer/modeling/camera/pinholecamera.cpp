@@ -160,9 +160,7 @@ const char* PinholeCameraFactory::get_human_readable_model() const
 
 DictionaryArray PinholeCameraFactory::get_input_metadata() const
 {
-    DictionaryArray metadata = CameraFactory::get_input_metadata();
-
-    return metadata;
+    return CameraFactory::get_input_metadata();
 }
 
 auto_release_ptr<Camera> PinholeCameraFactory::create(
