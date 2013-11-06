@@ -1621,13 +1621,14 @@ append_custom_preprocessor_definitions (appleseed
 # Static libraries.
 #--------------------------------------------------------------------------------------------------
 
+# Static libraries must be specified in order of reverse-dependency.
 link_against_platform (appleseed)
-link_against_zlib (appleseed)
 link_against_libpng (appleseed)
-link_against_openexr (appleseed)
 link_against_xercesc (appleseed)
-link_against_hdf5 (appleseed)
 link_against_alembic (appleseed)
+link_against_hdf5 (appleseed)
+link_against_openexr (appleseed)
+link_against_zlib (appleseed)
 
 if (WITH_OSL)
     link_against_oiio (appleseed)
