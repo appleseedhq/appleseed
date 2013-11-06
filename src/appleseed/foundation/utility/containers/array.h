@@ -92,6 +92,9 @@ namespace foundation
         /* Adds an element to the end of the vector. */                 \
         void push_back(const value_type& val);                          \
                                                                         \
+        /* Append a vector to the end of the vector. */                 \
+        void append(const ArrayName& rhs);                              \
+                                                                        \
         /* Returns the vector element at a specified position. */       \
         reference operator[](const size_type pos);                      \
         const_reference operator[](const size_type pos) const;          \
@@ -181,6 +184,11 @@ namespace foundation
     void ArrayName::push_back(const value_type& val)                    \
     {                                                                   \
         impl->push_back(val);                                           \
+    }                                                                   \
+                                                                        \
+    void ArrayName::append(const ArrayName& rhs)                        \
+    {                                                                   \
+        impl->insert(impl->end(), rhs.impl->begin(), rhs.impl->end());  \
     }                                                                   \
                                                                         \
     ArrayName::reference                                                \
