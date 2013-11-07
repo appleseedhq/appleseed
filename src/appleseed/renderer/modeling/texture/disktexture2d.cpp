@@ -48,7 +48,6 @@
 #include <cstddef>
 #include <string>
 
-using namespace boost;
 using namespace foundation;
 using namespace std;
 
@@ -94,7 +93,7 @@ namespace
 
         virtual const CanvasProperties& properties() OVERRIDE
         {
-            mutex::scoped_lock lock(m_mutex);
+            boost::mutex::scoped_lock lock(m_mutex);
             open_image_file();
             return m_props;
         }
@@ -103,7 +102,7 @@ namespace
             const size_t        tile_x,
             const size_t        tile_y) OVERRIDE
         {
-            mutex::scoped_lock lock(m_mutex);
+            boost::mutex::scoped_lock lock(m_mutex);
             open_image_file();
             return m_reader.read_tile(tile_x, tile_y);
         }
@@ -120,7 +119,7 @@ namespace
         string                              m_filepath;
         ColorSpace                          m_color_space;
 
-        mutable mutex                       m_mutex;
+        mutable boost::mutex                m_mutex;
         GenericProgressiveImageFileReader   m_reader;
         CanvasProperties                    m_props;
 

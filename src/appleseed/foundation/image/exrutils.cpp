@@ -31,12 +31,14 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/imageattributes.h"
+#include "foundation/platform/system.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/string.h"
 
 // OpenEXR headers.
 #include "OpenEXR/ImfStandardAttributes.h"
 #include "OpenEXR/ImfStringAttribute.h"
+#include "OpenEXR/ImfThreading.h"
 
 // Standard headers.
 #include <string>
@@ -47,9 +49,22 @@ using namespace std;
 namespace foundation
 {
 
-//
-// Add image attributes to an OpenEXR Header object.
-//
+namespace
+{
+    struct OpenEXRInitializer
+    {
+        OpenEXRInitializer()
+        {
+            setGlobalThreadCount(
+                static_cast<int>(System::get_logical_cpu_core_count()));
+        }
+    };
+}
+
+void initialize_openexr()
+{
+    static OpenEXRInitializer initializer;
+}
 
 void add_attributes(
     const ImageAttributes&  image_attributes,

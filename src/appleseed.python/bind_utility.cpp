@@ -27,7 +27,7 @@
 //
 
 // Has to be first, to avoid redefinition warnings.
-#include "Python.h"
+#include "boost/python/detail/wrap_python.hpp"
 
 // appleseed.renderer headers.
 #include "renderer/api/log.h"

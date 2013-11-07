@@ -33,6 +33,7 @@
 #include "foundation/core/exceptions/exceptionioerror.h"
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/exceptionunsupportedimageformat.h"
+#include "foundation/image/exrutils.h"
 #include "foundation/image/pixel.h"
 #include "foundation/image/tile.h"
 #include "foundation/platform/types.h"
@@ -127,6 +128,8 @@ void ProgressiveEXRImageFileReader::open(const char* filename)
 {
     assert(filename);
     assert(!is_open());
+
+    initialize_openexr();
 
     try
     {
@@ -272,9 +275,10 @@ void ProgressiveEXRImageFileReader::close()
 
 bool ProgressiveEXRImageFileReader::is_open() const
 {
-    return impl->m_is_tiled
-        ? impl->m_tiled_file.get() != 0
-        : impl->m_scanline_file.get() != 0;
+    return
+        impl->m_is_tiled
+            ? impl->m_tiled_file.get() != 0
+            : impl->m_scanline_file.get() != 0;
 }
 
 void ProgressiveEXRImageFileReader::read_canvas_properties(

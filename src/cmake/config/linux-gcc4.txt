@@ -115,11 +115,12 @@ macro (link_against_openexr target)
         )
     else ()
         target_link_libraries (${target}
+            # Static libraries must be specified in order of reverse-dependency.
             ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/libHalf.a
-            ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/libIex.a
             ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/libIlmImf.a
             ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/libIlmThread.a
             ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/libImath.a
+            ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/libIex.a
         )
     endif ()
 endmacro ()
@@ -129,8 +130,9 @@ macro (link_against_hdf5 target)
         target_link_libraries (${target} ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
     else ()
         target_link_libraries (${target}
-            ${CMAKE_SOURCE_DIR}/../build/${platform}/hdf5/libhdf5.a
+            # Static libraries must be specified in order of reverse-dependency.
             ${CMAKE_SOURCE_DIR}/../build/${platform}/hdf5/libhdf5_hl.a
+            ${CMAKE_SOURCE_DIR}/../build/${platform}/hdf5/libhdf5.a
         )
     endif ()
 endmacro ()

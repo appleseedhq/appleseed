@@ -42,7 +42,6 @@
 // Standard headers.
 #include <string>
 
-using namespace boost;
 using namespace foundation;
 using namespace renderer;
 using namespace std;
@@ -70,7 +69,7 @@ void ProgressTileCallback::post_render_tile(
     const size_t    tile_x,
     const size_t    tile_y)
 {
-    mutex::scoped_lock lock(m_mutex);
+    boost::mutex::scoped_lock lock(m_mutex);
     do_post_render_tile(frame, tile_x, tile_y);
 }
 

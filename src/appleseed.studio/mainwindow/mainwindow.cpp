@@ -35,7 +35,6 @@
 // appleseed.studio headers.
 #include "help/about/aboutwindow.h"
 #include "mainwindow/project/projectexplorer.h"
-#include "mainwindow/rendering/rendertab.h"
 #include "mainwindow/logwidget.h"
 #include "utility/interop.h"
 #include "utility/settingskeys.h"
@@ -109,7 +108,6 @@ MainWindow::MainWindow(QWidget* parent)
   , m_ui(new Ui::MainWindow())
   , m_rendering_manager(m_status_bar)
   , m_project_explorer(0)
-  , m_was_rendering_before_open(false)
 {
     m_ui->setupUi(this);
 
@@ -140,15 +138,16 @@ MainWindow::~MainWindow()
 
 void MainWindow::open_project(const QString& filepath)
 {
-    m_was_rendering_before_open = m_rendering_manager.is_rendering();
+    save_state_before_project_open();
 
-    if (m_was_rendering_before_open)
+    if (m_rendering_manager.is_rendering())
     {
         m_rendering_manager.abort_rendering();
         m_rendering_manager.wait_until_rendering_end();
     }
 
-    set_project_widgets_enabled(false);
+    set_file_widgets_enabled(false);
+    set_project_explorer_enabled(false);
     set_rendering_widgets_enabled(false, false);
 
     const filesystem::path path(filepath.toStdString());
@@ -583,6 +582,34 @@ namespace
     }
 }
 
+void MainWindow::save_state_before_project_open()
+{
+    m_state_before_project_open.reset(new StateBeforeProjectOpen());
+
+    m_state_before_project_open->m_is_rendering = m_rendering_manager.is_rendering();
+
+    for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
+        m_state_before_project_open->m_render_tab_states[i->first] = i->second->save_state();
+}
+
+void MainWindow::restore_state_after_project_open()
+{
+    if (m_state_before_project_open.get())
+    {
+        for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
+        {
+            const RenderTabStateCollection& tab_states = m_state_before_project_open->m_render_tab_states;
+            const RenderTabStateCollection::const_iterator tab_state_it = tab_states.find(i->first);
+
+            if (tab_state_it != tab_states.end())
+                i->second->load_state(tab_state_it->second);
+        }
+
+        if (m_state_before_project_open->m_is_rendering)
+            start_rendering(true);
+    }
+}
+
 bool MainWindow::can_close_project()
 {
     // No project open: no problem.
@@ -624,12 +651,15 @@ void MainWindow::on_project_change()
     m_status_bar.clear();
 
     update_workspace();
+
+    restore_state_after_project_open();
 }
 
 void MainWindow::update_workspace()
 {
     update_window_title();
-    set_project_widgets_enabled(true);
+    set_file_widgets_enabled(true);
+    set_project_explorer_enabled(true);
     set_rendering_widgets_enabled(true, false);
 }
 
@@ -676,9 +706,9 @@ void MainWindow::update_window_title()
     setWindowTitle(title);
 }
 
-void MainWindow::set_project_widgets_enabled(const bool is_enabled)
+void MainWindow::set_file_widgets_enabled(const bool is_enabled)
 {
-    const bool is_project_open = is_enabled && m_project_manager.is_project_open();
+    const bool is_project_open = m_project_manager.is_project_open();
 
     // File -> New Project.
     m_ui->action_file_new_project->setEnabled(is_enabled);
@@ -696,19 +726,24 @@ void MainWindow::set_project_widgets_enabled(const bool is_enabled)
 
     // File -> Reload Project.
     m_ui->action_file_reload_project->setEnabled(
+        is_enabled &&
         is_project_open &&
         m_project_manager.get_project()->has_path());
 
     // File -> Save Project and Save Project As.
-    m_ui->action_file_save_project->setEnabled(is_project_open);
-    m_action_save_project->setEnabled(is_project_open);
-    m_ui->action_file_save_project_as->setEnabled(is_project_open);
+    m_ui->action_file_save_project->setEnabled(is_enabled && is_project_open);
+    m_action_save_project->setEnabled(is_enabled && is_project_open);
+    m_ui->action_file_save_project_as->setEnabled(is_enabled && is_project_open);
+}
 
-    // Project Explorer.
-    m_ui->label_filter->setEnabled(is_project_open);
-    m_ui->lineedit_filter->setEnabled(is_project_open);
-    m_ui->pushbutton_clear_filter->setEnabled(is_project_open);
-    m_ui->treewidget_project_explorer_scene->setEnabled(is_project_open);
+void MainWindow::set_project_explorer_enabled(const bool is_enabled)
+{
+    const bool is_project_open = m_project_manager.is_project_open();
+
+    m_ui->label_filter->setEnabled(is_enabled && is_project_open);
+    m_ui->lineedit_filter->setEnabled(is_enabled && is_project_open);
+    m_ui->pushbutton_clear_filter->setEnabled(is_enabled && is_project_open);
+    m_ui->treewidget_project_explorer_scene->setEnabled(is_enabled && is_project_open);
 }
 
 void MainWindow::set_rendering_widgets_enabled(const bool is_enabled, const bool is_rendering)
@@ -786,10 +821,11 @@ void MainWindow::start_rendering(const bool interactive)
     assert(m_project_manager.is_project_open());
 
     // Enable/disable widgets appropriately. File -> Reload is enabled during interactive rendering.
-    set_project_widgets_enabled(false);
-    set_rendering_widgets_enabled(true, true);
+    set_file_widgets_enabled(false);
     if (interactive)
         m_ui->action_file_reload_project->setEnabled(true);
+    set_project_explorer_enabled(true);
+    set_rendering_widgets_enabled(true, true);
 
     // Internally, clear the main image to transparent black and delete all AOV images.
     Project* project = m_project_manager.get_project();
@@ -937,9 +973,6 @@ void MainWindow::slot_open_project_complete(const QString& filepath, const bool 
     if (successful)
     {
         on_project_change();
-
-        if (m_was_rendering_before_open)
-            start_rendering(true);
     }
     else
     {

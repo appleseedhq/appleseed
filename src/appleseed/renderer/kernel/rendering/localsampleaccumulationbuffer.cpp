@@ -48,7 +48,6 @@
 #include <algorithm>
 #include <cassert>
 
-using namespace boost;
 using namespace foundation;
 using namespace std;
 
@@ -113,7 +112,7 @@ LocalSampleAccumulationBuffer::~LocalSampleAccumulationBuffer()
 
 void LocalSampleAccumulationBuffer::clear()
 {
-    mutex::scoped_lock lock(m_mutex);
+    boost::mutex::scoped_lock lock(m_mutex);
 
     SampleAccumulationBuffer::clear_no_lock();
 
@@ -130,7 +129,7 @@ void LocalSampleAccumulationBuffer::store_samples(
     const size_t    sample_count,
     const Sample    samples[])
 {
-    mutex::scoped_lock lock(m_mutex);
+    boost::mutex::scoped_lock lock(m_mutex);
 
     const Sample* sample_end = samples + sample_count;
 
@@ -236,7 +235,7 @@ namespace
 
 void LocalSampleAccumulationBuffer::develop_to_frame(Frame& frame)
 {
-    mutex::scoped_lock lock(m_mutex);
+    boost::mutex::scoped_lock lock(m_mutex);
 
     Image& image = frame.image();
     const CanvasProperties& frame_props = image.properties();

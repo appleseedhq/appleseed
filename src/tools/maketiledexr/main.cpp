@@ -41,18 +41,9 @@
 #include "foundation/image/pixel.h"
 #include "foundation/image/progressiveexrimagefilewriter.h"
 #include "foundation/image/tile.h"
-#include "foundation/platform/system.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/log.h"
-
-// OpenEXR headers.
-#include "OpenEXR/ImfChannelList.h"
-#include "OpenEXR/ImfFrameBuffer.h"
-#include "OpenEXR/ImfHeader.h"
-#include "OpenEXR/ImfPixelType.h"
-#include "OpenEXR/ImfThreading.h"
-#include "OpenEXR/ImfTileDescription.h"
 
 // Standard headers.
 #include <cstddef>
@@ -63,7 +54,6 @@
 using namespace appleseed::maketiledexr;
 using namespace appleseed::shared;
 using namespace foundation;
-using namespace Imf;
 using namespace std;
 
 
@@ -75,10 +65,6 @@ int main(int argc, const char* argv[])
 {
     SuperLogger logger;
     Application::check_installation(logger);
-
-    // OpenEXR threading.
-    setGlobalThreadCount(
-        static_cast<int>(System::get_logical_cpu_core_count()));
 
     CommandLineHandler cl;
     cl.parse(argc, argv, logger);

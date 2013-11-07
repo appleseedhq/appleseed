@@ -41,7 +41,6 @@
 #include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/searchpaths.h"
 
-using namespace boost;
 using namespace foundation;
 using namespace std;
 
@@ -87,7 +86,7 @@ namespace
 
         virtual const CanvasProperties& properties() OVERRIDE
         {
-            mutex::scoped_lock lock(m_mutex);
+            boost::mutex::scoped_lock lock(m_mutex);
 
             if (!m_props_defined)
             {
@@ -102,7 +101,7 @@ namespace
             const size_t        tile_x,
             const size_t        tile_y) OVERRIDE
         {
-            mutex::scoped_lock lock(m_mutex);
+            boost::mutex::scoped_lock lock(m_mutex);
 
             // todo: create a blank tile, or get the tile from the texture.
             throw ExceptionNotImplemented();
@@ -115,16 +114,16 @@ namespace
             const size_t        tile_y,
             const Tile*         tile) OVERRIDE
         {
-            mutex::scoped_lock lock(m_mutex);
+            boost::mutex::scoped_lock lock(m_mutex);
 
             // todo: store the tile into the texture.
             throw ExceptionNotImplemented();
         }
 
       private:
-        mutable mutex       m_mutex;
-        bool                m_props_defined;
-        CanvasProperties    m_props;
+        mutable boost::mutex    m_mutex;
+        bool                    m_props_defined;
+        CanvasProperties        m_props;
 
         // Set canvas properties.
         void set_canvas_properties()

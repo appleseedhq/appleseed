@@ -56,6 +56,22 @@ ScrollAreaPanHandler::~ScrollAreaPanHandler()
     m_scroll_area->removeEventFilter(this);
 }
 
+ScrollAreaPanHandler::State ScrollAreaPanHandler::save_state() const
+{
+    State state;
+    state.m_hbar_value = m_scroll_area->horizontalScrollBar()->value();
+    state.m_vbar_value = m_scroll_area->verticalScrollBar()->value();
+    return state;
+}
+
+void ScrollAreaPanHandler::load_state(const State& state)
+{
+    m_state = state;
+
+    m_scroll_area->horizontalScrollBar()->setValue(m_state.m_hbar_value);
+    m_scroll_area->verticalScrollBar()->setValue(m_state.m_vbar_value);
+}
+
 bool ScrollAreaPanHandler::eventFilter(QObject* object, QEvent* event)
 {
     assert(object == m_scroll_area);

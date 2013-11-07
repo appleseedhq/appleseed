@@ -30,7 +30,7 @@
 #define APPLESEED_PYTHON_BIND_AUTO_RELEASE_PTR_H
 
 // Has to be first, to avoid redefinition warnings.
-#include <Python.h>
+#include "boost/python/detail/wrap_python.hpp"
 
 // appleseed.foundation headers.
 #include "foundation/platform/python.h"
