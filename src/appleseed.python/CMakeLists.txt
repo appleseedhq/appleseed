@@ -44,13 +44,10 @@ list (GET PYTHON_VERSION_LIST 0 PYTHON_MAJOR_VERSION)
 # Boost libraries.
 #--------------------------------------------------------------------------------------------------
 
-option(BOOST_CUSTOM_PYTHON 
-	"Use custom name of Boost python library" 
-	OFF)
 set(BOOST_PYTHON CACHE STRING "Enter name of boost python library here.")
 
-
-if (BOOST_CUSTOM_PYTHON)
+if (BOOST_PYTHON MATCHES "[a-zA-Z0-9]+")
+    # Try BOOST_PYTHON
     find_package (
 	    Boost 1.46 REQUIRED 
 	    ${BOOST_NEEDED_LIBS} 
