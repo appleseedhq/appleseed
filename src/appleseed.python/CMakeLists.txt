@@ -30,17 +30,34 @@
 #--------------------------------------------------------------------------------------------------
 
 find_package (PythonLibs REQUIRED)
-string (SUBSTRING "${PYTHONLIBS_VERSION_STRING}" 0 1 PYTHON_MAJOR_VERSION)
+
+# Splitting version string into list.
+string (REGEX MATCHALL "[0123456789]+" PYTHON_VERSION_LIST 
+	"${PYTHONLIBS_VERSION_STRING}")
+
+# Accessing Major and Minor version number with the version list we got.
+list (GET PYTHON_VERSION_LIST 0 PYTHON_MAJOR_VERSION)
+#list (GET PYTHON_VERSION_LIST 1 PYTHON_MINOR_VERSION)
 
 
 #--------------------------------------------------------------------------------------------------
 # Boost libraries.
 #--------------------------------------------------------------------------------------------------
 
-if (PYTHON_MAJOR_VERSION STREQUAL "3")
-    find_package (Boost 1.46 REQUIRED ${BOOST_NEEDED_LIBS} python3)
+set(BOOST_PYTHON CACHE STRING "Enter name of boost python library here.")
+
+if (BOOST_PYTHON MATCHES "[a-zA-Z0-9]+")
+    # Try BOOST_PYTHON
+    find_package (
+	    Boost 1.46 REQUIRED 
+	    ${BOOST_NEEDED_LIBS} 
+	    ${BOOST_PYTHON})
 else ()
-    find_package (Boost 1.46 REQUIRED ${BOOST_NEEDED_LIBS} python)
+    if (PYTHON_MAJOR_VERSION STREQUAL "3")
+	    find_package (Boost 1.46 REQUIRED ${BOOST_NEEDED_LIBS} "python3")
+    else ()
+	    find_package (Boost 1.46 REQUIRED ${BOOST_NEEDED_LIBS} python)
+    endif ()
 endif ()
 
 
