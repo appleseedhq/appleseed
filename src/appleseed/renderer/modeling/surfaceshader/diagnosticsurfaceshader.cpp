@@ -43,7 +43,6 @@
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
 #include "foundation/math/distance.h"
-#include "foundation/math/frustum.h"
 #include "foundation/math/hash.h"
 #include "foundation/math/minmax.h"
 #include "foundation/math/scalar.h"
@@ -59,6 +58,8 @@ using namespace std;
 
 namespace renderer
 {
+
+#undef SHADE_VECTORS_USING_3DSMAX_CONVENTIONS
 
 namespace
 {
@@ -78,7 +79,8 @@ const KeyValuePair<const char*, DiagnosticSurfaceShader::ShadingMode>
     { "original_shading_normal",    OriginalShadingNormal },
     { "sides",                      Sides },
     { "depth",                      Depth },
-    { "wireframe" ,                 Wireframe },
+    { "screen_space_wireframe" ,    ScreenSpaceWireframe },
+    { "world_space_wireframe" ,     WorldSpaceWireframe },
     { "ambient_occlusion",          AmbientOcclusion },
     { "assembly_instances",         AssemblyInstances },
     { "object_instances",           ObjectInstances },
@@ -99,7 +101,8 @@ const KeyValuePair<const char*, const char*> DiagnosticSurfaceShader::ShadingMod
     { "original_shading_normal",    "Original Shading Normals" },
     { "sides",                      "Sides" },
     { "depth",                      "Depth" },
-    { "wireframe" ,                 "Wireframe" },
+    { "screen_space_wireframe" ,    "Screen-space Wireframe" },
+    { "world_space_wireframe" ,     "World-space Wireframe" },
     { "ambient_occlusion",          "Ambient Occlusion" },
     { "assembly_instances",         "Assembly Instances" },
     { "object_instances",           "Object Instances" },
@@ -154,10 +157,17 @@ namespace
     {
         assert(is_normalized(vec));
 
+#ifdef SHADE_VECTORS_USING_3DSMAX_CONVENTIONS
+        return Color3f(
+            static_cast<float>((vec[0] + 1.0) * 0.5),
+            static_cast<float>((-vec[2] + 1.0) * 0.5),
+            static_cast<float>((vec[1] + 1.0) * 0.5));
+#else
         return Color3f(
             static_cast<float>((vec[0] + 1.0) * 0.5),
             static_cast<float>((vec[1] + 1.0) * 0.5),
             static_cast<float>((vec[2] + 1.0) * 0.5));
+#endif
     }
 
     // Compute a color from a given integer.
@@ -237,7 +247,7 @@ void DiagnosticSurfaceShader::evaluate(
             Color3f(static_cast<float>(shading_point.get_distance())));
         break;
 
-      case Wireframe:
+      case ScreenSpaceWireframe:
         {
             // Film space thickness of the wires.
             const double SquareWireThickness = square(0.0005);
@@ -245,46 +255,68 @@ void DiagnosticSurfaceShader::evaluate(
             // Initialize the shading result to the background color.
             shading_result.set_to_linear_rgba(Color4f(0.0f, 0.0f, 0.8f, 0.5f));
 
-            // Retrieve the camera and the view frustum.
+            // Retrieve the time, the scene and the camera.
+            const double time = shading_point.get_time();
             const Scene& scene = shading_point.get_scene();
             const Camera& camera = *scene.get_camera();
-            const Pyramid3d& view_pyramid = camera.get_view_pyramid();
-
-            // Retrieve the camera transform.
-            Transformd tmp;
-            const double time = shading_point.get_time();
-            const Transformd& camera_transform = camera.transform_sequence().evaluate(time, tmp);
 
             // Compute the film space coordinates of the intersection point.
-            const Vector3d& point = shading_point.get_point();
-            const Vector3d point_cs = camera_transform.point_to_local(point);
-            const Vector2d point_fs = camera.project(point_cs);
-
-            // Compute the camera space coordinates of the triangle vertices.
-            Vector3d v_cs[3];
-            v_cs[0] = camera_transform.point_to_local(shading_point.get_vertex(0));
-            v_cs[1] = camera_transform.point_to_local(shading_point.get_vertex(1));
-            v_cs[2] = camera_transform.point_to_local(shading_point.get_vertex(2));
+            Vector2d point_fs;
+            camera.project_point(time, shading_point.get_point(), point_fs);
 
             // Loop over the triangle edges.
             for (size_t i = 0; i < 3; ++i)
             {
-                // Compute the end points of this edge.
+                // Retrieve the end points of this edge.
                 const size_t j = (i + 1) % 3;
-                Vector3d vi_cs = v_cs[i];
-                Vector3d vj_cs = v_cs[j];
+                Vector3d vi = shading_point.get_vertex(i);
+                Vector3d vj = shading_point.get_vertex(j);
 
-                // Clip the edge against the view pyramid.
-                if (!view_pyramid.clip(vi_cs, vj_cs))
+                // Clip the edge against the view frustum.
+                if (!camera.clip_segment(time, vi, vj))
                     continue;
 
                 // Transform the edge to film space.
-                const Vector2d vi_fs = camera.project(vi_cs);
-                const Vector2d vj_fs = camera.project(vj_cs);
+                Vector2d vi_fs, vj_fs;
+                camera.project_point(time, vi, vi_fs);
+                camera.project_point(time, vj, vj_fs);
 
                 // Compute the film space distance from the intersection point to the edge.
                 const double d = square_distance_point_segment(point_fs, vi_fs, vj_fs);
 
+                // Shade with the wire's color if the hit point is close enough to the edge.
+                if (d < SquareWireThickness)
+                {
+                    shading_result.set_to_linear_rgba(Color4f(1.0f));
+                    break;
+                }
+            }
+        }
+        break;
+
+      case WorldSpaceWireframe:
+        {
+            // World space thickness of the wires.
+            const double SquareWireThickness = square(0.0015);
+
+            // Initialize the shading result to the background color.
+            shading_result.set_to_linear_rgba(Color4f(0.0f, 0.0f, 0.8f, 0.5f));
+
+            // Retrieve the world space intersection point.
+            const Vector3d& point = shading_point.get_point();
+
+            // Loop over the triangle edges.
+            for (size_t i = 0; i < 3; ++i)
+            {
+                // Retrieve the end points of this edge.
+                const size_t j = (i + 1) % 3;
+                const Vector3d& vi = shading_point.get_vertex(i);
+                const Vector3d& vj = shading_point.get_vertex(j);
+
+                // Compute the world space distance from the intersection point to the edge.
+                const double d = square_distance_point_segment(point, vi, vj);
+
+                // Shade with the wire's color if the hit point is close enough to the edge.
                 if (d < SquareWireThickness)
                 {
                     shading_result.set_to_linear_rgba(Color4f(1.0f));

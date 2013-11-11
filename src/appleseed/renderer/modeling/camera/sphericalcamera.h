@@ -26,16 +26,50 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_CAMERA_H
-#define APPLESEED_RENDERER_API_CAMERA_H
+#ifndef APPLESEED_RENDERER_MODELING_CAMERA_SPHERICALCAMERA_H
+#define APPLESEED_RENDERER_MODELING_CAMERA_SPHERICALCAMERA_H
 
-// API headers.
-#include "renderer/modeling/camera/camera.h"
-#include "renderer/modeling/camera/camerafactoryregistrar.h"
-#include "renderer/modeling/camera/cameratraits.h"
+// appleseed.renderer headers.
 #include "renderer/modeling/camera/icamerafactory.h"
-#include "renderer/modeling/camera/pinholecamera.h"
-#include "renderer/modeling/camera/sphericalcamera.h"
-#include "renderer/modeling/camera/thinlenscamera.h"
 
-#endif  // !APPLESEED_RENDERER_API_CAMERA_H
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
+#include "foundation/utility/autoreleaseptr.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+// Forward declarations.
+namespace foundation    { class DictionaryArray; }
+namespace renderer      { class Camera; }
+namespace renderer      { class ParamArray; }
+
+namespace renderer
+{
+
+//
+// Spherical camera factory.
+//
+
+class DLLSYMBOL SphericalCameraFactory
+  : public ICameraFactory
+{
+  public:
+    // Return a string identifying this camera model.
+    virtual const char* get_model() const OVERRIDE;
+
+    // Return a human-readable string identifying this camera model.
+    virtual const char* get_human_readable_model() const OVERRIDE;
+
+    // Return a set of input metadata for this camera model.
+    virtual foundation::DictionaryArray get_input_metadata() const OVERRIDE;
+
+    // Create a new camera instance.
+    virtual foundation::auto_release_ptr<Camera> create(
+        const char*         name,
+        const ParamArray&   params) const OVERRIDE;
+};
+
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_MODELING_CAMERA_SPHERICALCAMERA_H

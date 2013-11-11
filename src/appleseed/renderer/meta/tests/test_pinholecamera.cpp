@@ -29,6 +29,7 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/camera/pinholecamera.h"
+#include "renderer/modeling/project/project.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
@@ -42,8 +43,10 @@ using namespace renderer;
 
 TEST_SUITE(Renderer_Modeling_Camera_PinholeCamera)
 {
-    TEST_CASE(Project_GivenIdentityCameraAndPointArgumentIsOnZAxis_ReturnsCenterOfImagePlane)
+    TEST_CASE(ProjectPoint_GivenIdentityCameraAndPointArgumentIsOnZAxis_ReturnsCenterOfImagePlane)
     {
+        auto_release_ptr<Project> project(ProjectFactory::create("test"));
+
         PinholeCameraFactory factory;
         auto_release_ptr<Camera> camera(
             factory.create(
@@ -52,8 +55,14 @@ TEST_SUITE(Renderer_Modeling_Camera_PinholeCamera)
                             .insert("film_height", "0.025")
                             .insert("focal_length", "0.035")));
 
-        const Vector2d projected = camera->project(Vector3d(0.0, 0.0, -1.0));
+        camera->on_frame_begin(project.ref());
 
+        Vector2d projected;
+        const bool success = camera->project_point(0.0, Vector3d(0.0, 0.0, -1.0), projected);
+
+        ASSERT_TRUE(success);
         EXPECT_FEQ(Vector2d(0.5, 0.5), projected);
+
+        camera->on_frame_end(project.ref());
     }
 }

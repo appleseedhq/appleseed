@@ -38,11 +38,15 @@
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/camera/camera.h"
+#include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/utility/paramarray.h"
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/canvasproperties.h"
+#include "foundation/image/image.h"
+#include "foundation/math/frustum.h"
 #include "foundation/math/matrix.h"
 #include "foundation/math/sampling.h"
 #include "foundation/math/scalar.h"
@@ -109,20 +113,31 @@ namespace
             if (!Camera::on_frame_begin(project))
                 return false;
 
+            // Extract the film dimensions from the camera parameters.
+            m_film_dimensions = extract_film_dimensions();
+
+            // Extract the focal length from the camera parameters.
+            m_focal_length = extract_focal_length(m_film_dimensions[0]);
+
+            // Extract the focal distance from the camera parameters.
             extract_focal_distance(
                 m_autofocus_enabled,
                 m_autofocus_target,
                 m_focal_distance);
 
+            // Extract the diaphragm configuration from the camera parameters.
             extract_diaphragm_blade_count();
             extract_diaphragm_tilt_angle();
 
-            // Precompute some values.
-            const Vector2d& film_dimensions = get_film_dimensions();
-            const double f_stop = extract_f_stop();
-            m_lens_radius = 0.5 * m_focal_length / f_stop;
-            m_rcp_film_width = 1.0 / film_dimensions[0];
-            m_rcp_film_height = 1.0 / film_dimensions[1];
+            // Compute the view frustum of the camera.
+            m_view_frustum = compute_view_frustum(m_film_dimensions, m_focal_length);
+
+            // Precompute reciprocals of film dimensions.
+            m_rcp_film_width = 1.0 / m_film_dimensions[0];
+            m_rcp_film_height = 1.0 / m_film_dimensions[1];
+
+            // Precompute lens radius.
+            m_lens_radius = 0.5 * m_focal_length / extract_f_stop();
 
             // Perform autofocus, if enabled.
             if (m_autofocus_enabled)
@@ -135,8 +150,8 @@ namespace
 
             // Precompute some more values.
             const double t = m_focal_distance / m_focal_length;
-            m_kx = film_dimensions[0] * t;
-            m_ky = film_dimensions[1] * t;
+            m_kx = m_film_dimensions[0] * t;
+            m_ky = m_film_dimensions[1] * t;
 
             // Build the diaphragm polygon.
             if (m_diaphragm_blade_count > 0)
@@ -179,11 +194,11 @@ namespace
                         &m_diaphragm_vertices.front());
             }
 
-            // Retrieve the camera transformation.
+            // Retrieve the camera transform.
             Transformd tmp;
             const Transformd& transform = m_transform_sequence.evaluate(ray.m_time, tmp);
 
-            // Compute the ray origin.
+            // Compute the origin of the ray.
             const Transformd::MatrixType& mat = transform.get_local_to_parent();
             ray.m_org.x =    mat[ 0] * lens_point.x +
                              mat[ 1] * lens_point.y +
@@ -201,33 +216,90 @@ namespace
             if (w != 1.0)
                 ray.m_org /= w;
 
-            // Compute the ray direction.
+            // Compute the direction of the ray.
             ray.m_dir.x = (point.x - 0.5) * m_kx - lens_point.x;
             ray.m_dir.y = (0.5 - point.y) * m_ky - lens_point.y;
             ray.m_dir.z = -m_focal_distance;
             ray.m_dir = transform.vector_to_parent(ray.m_dir);
         }
 
-        virtual Vector2d project(const Vector3d& point) const OVERRIDE
+        virtual bool project_point(
+            const double            time,
+            const Vector3d&         point,
+            Vector2d&               ndc) const OVERRIDE
         {
-            const double k = -m_focal_length / point.z;
-            const double x = 0.5 + (point.x * k * m_rcp_film_width);
-            const double y = 0.5 - (point.y * k * m_rcp_film_height);
-            return Vector2d(x, y);
+            // Retrieve the camera transform.
+            Transformd tmp;
+            const Transformd& transform = m_transform_sequence.evaluate(time, tmp);
+
+            // Transform the point from world space to camera space.
+            const Vector3d point_camera = transform.point_to_local(point);
+
+            // Cannot project the point if it is behind the film plane.
+            if (point_camera.z > -m_focal_length)
+                return false;
+
+            // Project the point onto the film plane.
+            const double k = -m_focal_length / point_camera.z;
+            ndc.x = 0.5 + (point_camera.x * k * m_rcp_film_width);
+            ndc.y = 0.5 - (point_camera.y * k * m_rcp_film_height);
+
+            // Projection was successful.
+            return true;
+        }
+
+        virtual bool clip_segment(
+            const double            time,
+            Vector3d&               v0,
+            Vector3d&               v1) const OVERRIDE
+        {
+            // Retrieve the camera transform.
+            Transformd tmp;
+            const Transformd& transform = m_transform_sequence.evaluate(time, tmp);
+
+            // Transform the segment from world space to camera space.
+            Vector3d v0_camera = transform.point_to_local(v0);
+            Vector3d v1_camera = transform.point_to_local(v1);
+
+            // Clip the segment against the view frustum.
+            if (m_view_frustum.clip(v0_camera, v1_camera))
+            {
+                v0 = transform.point_to_parent(v0_camera);
+                v1 = transform.point_to_parent(v1_camera);
+                return true;
+            }
+            else return false;
+        }
+
+        virtual double get_pixel_solid_angle(
+            const Frame&            frame,
+            const Vector2d&         point) const OVERRIDE
+        {
+            const size_t pixel_count = frame.image().properties().m_pixel_count;
+            const double pixel_area = m_film_dimensions[0] * m_film_dimensions[1] / pixel_count;
+
+            const Vector3d film_point = ndc_to_camera(point);
+            const double d = norm(film_point);
+            const double cos_theta = m_focal_length / d;
+
+            return pixel_area * cos_theta / (d * d);
         }
 
       private:
         // Parameters.
+        Vector2d            m_film_dimensions;          // film dimensions in camera space, in meters
+        double              m_focal_length;             // focal length in camera space, in meters
         bool                m_autofocus_enabled;        // is autofocus enabled?
-        Vector2d            m_autofocus_target;         // autofocus target on film plane in NDC
+        Vector2d            m_autofocus_target;         // autofocus target on film plane, in NDC
         double              m_focal_distance;           // focal distance in camera space
         size_t              m_diaphragm_blade_count;    // number of blades of the diaphragm, 0 for round aperture
         double              m_diaphragm_tilt_angle;     // tilt angle of the diaphragm in radians
 
         // Precomputed values.
-        double              m_lens_radius;              // radius of the lens in camera space
+        Pyramid3d           m_view_frustum;             // view frustum in world space
         double              m_rcp_film_width;           // film width reciprocal in camera space
         double              m_rcp_film_height;          // film height reciprocal in camera space
+        double              m_lens_radius;              // radius of the lens in camera space
         double              m_kx, m_ky;
 
         vector<Vector2d>    m_diaphragm_vertices;
@@ -264,16 +336,12 @@ namespace
             const Transformd transform = m_transform_sequence.evaluate(time);
 
             // Compute the camera space coordinates of the focus point.
-            const Vector2d& film_dimensions = get_film_dimensions();
-            const Vector3d target(
-                (m_autofocus_target[0] - 0.5) * film_dimensions[0],
-                (0.5 - m_autofocus_target[1]) * film_dimensions[1],
-                -m_focal_length);
+            const Vector3d film_point = ndc_to_camera(m_autofocus_target);
 
             // Create a ray in world space.
             ShadingRay ray;
             ray.m_org = transform.point_to_parent(Vector3d(0.0));
-            ray.m_dir = transform.point_to_parent(target) - ray.m_org;
+            ray.m_dir = transform.point_to_parent(film_point) - ray.m_org;
             ray.m_tmin = 0.0;
             ray.m_tmax = numeric_limits<double>::max();
             ray.m_time = time;
@@ -308,6 +376,15 @@ namespace
                 return 1.0e38;
             }
         }
+
+        Vector3d ndc_to_camera(const Vector2d& point) const
+        {
+            return
+                Vector3d(
+                    (point.x - 0.5) * m_film_dimensions[0],
+                    (0.5 - point.y) * m_film_dimensions[1],
+                    -m_focal_length);
+        }
     };
 }
 
@@ -329,6 +406,48 @@ const char* ThinLensCameraFactory::get_human_readable_model() const
 DictionaryArray ThinLensCameraFactory::get_input_metadata() const
 {
     DictionaryArray metadata = CameraFactory::get_input_metadata();
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "film_dimensions")
+            .insert("label", "Film Dimensions")
+            .insert("type", "text")
+            .insert("use", "required"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "film_width")
+            .insert("label", "Film Width")
+            .insert("type", "text")
+            .insert("use", "required"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "film_height")
+            .insert("label", "Film Height")
+            .insert("type", "text")
+            .insert("use", "required"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "aspect_ratio")
+            .insert("label", "Aspect Ratio")
+            .insert("type", "text")
+            .insert("use", "required"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "focal_length")
+            .insert("label", "Focal Length")
+            .insert("type", "text")
+            .insert("use", "required"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "horizontal_fov")
+            .insert("label", "Horizontal FOV")
+            .insert("type", "text")
+            .insert("use", "required"));
 
     metadata.push_back(
         Dictionary()

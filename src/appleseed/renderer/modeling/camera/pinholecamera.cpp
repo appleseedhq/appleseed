@@ -33,9 +33,13 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/camera/camera.h"
+#include "renderer/modeling/frame/frame.h"
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/canvasproperties.h"
+#include "foundation/image/image.h"
+#include "foundation/math/frustum.h"
 #include "foundation/math/matrix.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
@@ -44,7 +48,7 @@
 #include "foundation/utility/autoreleaseptr.h"
 
 // Standard headers.
-#include <cassert>
+#include <cstddef>
 
 // Forward declarations.
 namespace renderer  { class Project; }
@@ -89,7 +93,16 @@ namespace
             if (!Camera::on_frame_begin(project))
                 return false;
 
-            m_film_dimensions = get_film_dimensions();
+            // Extract the film dimensions from the camera parameters.
+            m_film_dimensions = extract_film_dimensions();
+
+            // Extract the focal length from the camera parameters.
+            m_focal_length = extract_focal_length(m_film_dimensions[0]);
+
+            // Compute the view frustum of the camera.
+            m_view_frustum = compute_view_frustum(m_film_dimensions, m_focal_length);
+
+            // Precompute reciprocals of film dimensions.
             m_rcp_film_width = 1.0 / m_film_dimensions[0];
             m_rcp_film_height = 1.0 / m_film_dimensions[1];
 
@@ -108,38 +121,101 @@ namespace
             // Initialize the ray.
             initialize_ray(sampling_context, ray);
 
-            // Transform the film point from NDC to camera space.
-            const Vector3d target(
-                (point.x - 0.5) * m_film_dimensions[0],
-                (0.5 - point.y) * m_film_dimensions[1],
-                -m_focal_length);
-
-            // Compute the origin and direction of the ray.
+            // Retrieve the camera transform.
             Transformd tmp;
             const Transformd& transform = m_transform_sequence.evaluate(ray.m_time, tmp);
+
+            // Compute the origin of the ray.
             ray.m_org =
                 m_transform_sequence.size() <= 1
                     ? m_ray_org
                     : transform.get_local_to_parent().extract_translation();
-            ray.m_dir = transform.vector_to_parent(target);
+
+            // Compute the direction of the ray.
+            ray.m_dir = transform.vector_to_parent(ndc_to_camera(point));
         }
 
-        virtual Vector2d project(const Vector3d& point) const OVERRIDE
+        virtual bool project_point(
+            const double            time,
+            const Vector3d&         point,
+            Vector2d&               ndc) const OVERRIDE
         {
-            const double k = -m_focal_length / point.z;
-            const double x = 0.5 + (point.x * k * m_rcp_film_width);
-            const double y = 0.5 - (point.y * k * m_rcp_film_height);
-            return Vector2d(x, y);
+            // Retrieve the camera transform.
+            Transformd tmp;
+            const Transformd& transform = m_transform_sequence.evaluate(time, tmp);
+
+            // Transform the point from world space to camera space.
+            const Vector3d point_camera = transform.point_to_local(point);
+
+            // Cannot project the point if it is behind the film plane.
+            if (point_camera.z > -m_focal_length)
+                return false;
+
+            // Project the point onto the film plane.
+            const double k = -m_focal_length / point_camera.z;
+            ndc.x = 0.5 + (point_camera.x * k * m_rcp_film_width);
+            ndc.y = 0.5 - (point_camera.y * k * m_rcp_film_height);
+
+            // Projection was successful.
+            return true;
+        }
+
+        virtual bool clip_segment(
+            const double            time,
+            Vector3d&               v0,
+            Vector3d&               v1) const OVERRIDE
+        {
+            // Retrieve the camera transform.
+            Transformd tmp;
+            const Transformd& transform = m_transform_sequence.evaluate(time, tmp);
+
+            // Transform the segment from world space to camera space.
+            Vector3d v0_camera = transform.point_to_local(v0);
+            Vector3d v1_camera = transform.point_to_local(v1);
+
+            // Clip the segment against the view frustum.
+            if (m_view_frustum.clip(v0_camera, v1_camera))
+            {
+                v0 = transform.point_to_parent(v0_camera);
+                v1 = transform.point_to_parent(v1_camera);
+                return true;
+            }
+            else return false;
+        }
+
+        virtual double get_pixel_solid_angle(
+            const Frame&            frame,
+            const Vector2d&         point) const OVERRIDE
+        {
+            const size_t pixel_count = frame.image().properties().m_pixel_count;
+            const double pixel_area = m_film_dimensions[0] * m_film_dimensions[1] / pixel_count;
+
+            const Vector3d film_point = ndc_to_camera(point);
+            const double d = norm(film_point);
+            const double cos_theta = m_focal_length / d;
+
+            return pixel_area * cos_theta / (d * d);
         }
 
       private:
         // Parameters.
-        Vector2d    m_film_dimensions;      // film dimensions, in meters
+        Vector2d    m_film_dimensions;      // film dimensions in camera space, in meters
+        double      m_focal_length;         // focal length in camera space, in meters
 
         // Precomputed values.
+        Pyramid3d   m_view_frustum;         // view frustum in world space
         double      m_rcp_film_width;       // film width reciprocal in camera space
         double      m_rcp_film_height;      // film height reciprocal in camera space
         Vector3d    m_ray_org;              // origin of the rays in world space
+
+        Vector3d ndc_to_camera(const Vector2d& point) const
+        {
+            return
+                Vector3d(
+                    (point.x - 0.5) * m_film_dimensions[0],
+                    (0.5 - point.y) * m_film_dimensions[1],
+                    -m_focal_length);
+        }
     };
 }
 
@@ -160,7 +236,51 @@ const char* PinholeCameraFactory::get_human_readable_model() const
 
 DictionaryArray PinholeCameraFactory::get_input_metadata() const
 {
-    return CameraFactory::get_input_metadata();
+    DictionaryArray metadata = CameraFactory::get_input_metadata();
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "film_dimensions")
+            .insert("label", "Film Dimensions")
+            .insert("type", "text")
+            .insert("use", "required"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "film_width")
+            .insert("label", "Film Width")
+            .insert("type", "text")
+            .insert("use", "required"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "film_height")
+            .insert("label", "Film Height")
+            .insert("type", "text")
+            .insert("use", "required"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "aspect_ratio")
+            .insert("label", "Aspect Ratio")
+            .insert("type", "text")
+            .insert("use", "required"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "focal_length")
+            .insert("label", "Focal Length")
+            .insert("type", "text")
+            .insert("use", "required"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "horizontal_fov")
+            .insert("label", "Horizontal FOV")
+            .insert("type", "text")
+            .insert("use", "required"));
+
+    return metadata;
 }
 
 auto_release_ptr<Camera> PinholeCameraFactory::create(

@@ -18,7 +18,7 @@
         <environment name="environment" model="generic_environment" />
         <assembly name="assembly">
             <surface_shader name="diagnostic_surface_shader" model="diagnostic_surface_shader">
-                <parameter name="mode" value="wireframe" />
+                <parameter name="mode" value="screen_space_wireframe" />
             </surface_shader>
             <material name="diagnostic_material" model="generic_material">
                 <parameter name="surface_shader" value="diagnostic_surface_shader" />

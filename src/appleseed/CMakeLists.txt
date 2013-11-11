@@ -1147,6 +1147,7 @@ set (renderer_meta_tests_sources
     renderer/meta/tests/test_samplecounter.cpp
     renderer/meta/tests/test_scene.cpp
     renderer/meta/tests/test_shadingresult.cpp
+    renderer/meta/tests/test_sphericalcamera.cpp
     renderer/meta/tests/test_texturestore.cpp
     renderer/meta/tests/test_tracer.cpp
     renderer/meta/tests/test_transformsequence.cpp
@@ -1209,6 +1210,8 @@ set (renderer_modeling_camera_sources
     renderer/modeling/camera/icamerafactory.h
     renderer/modeling/camera/pinholecamera.cpp
     renderer/modeling/camera/pinholecamera.h
+    renderer/modeling/camera/sphericalcamera.cpp
+    renderer/modeling/camera/sphericalcamera.h
     renderer/modeling/camera/thinlenscamera.cpp
     renderer/modeling/camera/thinlenscamera.h
 )

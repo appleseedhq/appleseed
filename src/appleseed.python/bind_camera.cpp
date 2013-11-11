@@ -70,10 +70,7 @@ void bind_camera()
         .def("__init__", bpy::make_constructor(detail::create_camera))
         .def("get_model", &Camera::get_model)
         .def("transform_sequence", detail::camera_get_transform_sequence, bpy::return_value_policy<bpy::reference_existing_object>())
-        .def("get_film_dimensions", &Camera::get_film_dimensions, bpy::return_value_policy<bpy::copy_const_reference>())
-        .def("get_focal_length", &Camera::get_focal_length)
         .def("get_shutter_open_time", &Camera::get_shutter_open_time)
         .def("get_shutter_close_time", &Camera::get_shutter_close_time)
-        .def("get_shutter_middle_time", &Camera::get_shutter_middle_time)
-        ;
+        .def("get_shutter_middle_time", &Camera::get_shutter_middle_time);
 }

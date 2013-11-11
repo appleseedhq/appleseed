@@ -206,15 +206,12 @@ namespace
         {
             const Parameters&               m_params;
             const Camera&                   m_camera;
+            const Frame&                    m_frame;
             const LightingConditions&       m_lighting_conditions;
             const ShadingContext&           m_shading_context;
 
             const Spectrum                  m_initial_flux;         // initial particle flux (in W)
-            Transformd                      m_camera_transform;     // camera transform at selected time
             Vector3d                        m_camera_position;      // camera position in world space
-            Vector3d                        m_camera_direction;     // camera direction (gaze) in world space
-            double                          m_rcp_pixel_area;       // reciprocal of the area of a single pixel (in m^-2)
-            double                          m_focal_length;         // camera's focal length (in m)
             SampleVector&                   m_samples;
             size_t                          m_sample_count;         // the number of samples added to m_samples
 
@@ -227,27 +224,17 @@ namespace
                 const Spectrum&             initial_flux)
               : m_params(params)
               , m_camera(*scene.get_camera())
+              , m_frame(frame)
               , m_lighting_conditions(frame.get_lighting_conditions())
               , m_shading_context(shading_context)
               , m_samples(samples)
               , m_sample_count(0)
               , m_initial_flux(initial_flux)
             {
-                // Compute the world space position and direction of the camera.
+                // Compute the world space position of the camera.
                 // todo: add support for camera motion blur.
                 // todo: do this outside the performance-sensitive code path.
-                m_camera_transform = m_camera.transform_sequence().evaluate(0.0);
-                m_camera_position = m_camera_transform.point_to_parent(Vector3d(0.0));
-                m_camera_direction = normalize(m_camera_transform.vector_to_parent(Vector3d(0.0, 0.0, -1.0)));
-
-                // Compute the reciprocal of the area of a single pixel.
-                const size_t pixel_count = frame.image().properties().m_pixel_count;
-                const Vector2d& film_dimensions = m_camera.get_film_dimensions();
-                const double film_area = film_dimensions[0] * film_dimensions[1];
-                m_rcp_pixel_area = pixel_count / film_area;
-
-                // Cache the focal length.
-                m_focal_length = m_camera.get_focal_length();
+                m_camera_position = m_camera.transform_sequence().evaluate(0.0).point_to_parent(Vector3d(0.0));
             }
 
             size_t get_sample_count() const
@@ -269,79 +256,65 @@ namespace
                 const double                time)
             {
                 // Compute the vertex-to-camera direction vector.
-                Vector3d vertex_to_camera = m_camera_position - light_sample.m_point;
-                const double square_distance = square_norm(vertex_to_camera);
-                vertex_to_camera /= sqrt(square_distance);
+                const Vector3d vertex_to_camera = m_camera_position - light_sample.m_point;
 
                 // Reject vertices on the back side of the area light.
-                const double cos_alpha = dot(vertex_to_camera, light_sample.m_shading_normal);
+                double cos_alpha = dot(vertex_to_camera, light_sample.m_shading_normal);
                 if (cos_alpha <= 0.0)
                     return;
 
                 // Compute the transmission factor between the vertex and the camera.
-                Vector2d sample_position_ndc;
+                Vector2d sample_position;
                 const double transmission =
                     vertex_visible_to_camera(
                         light_sample.m_point,
                         time,
-                        sample_position_ndc);
+                        sample_position);
 
                 // Ignore occluded vertices.
                 if (transmission == 0.0)
                     return;
 
-                // Compute the flux-to-radiance conversion factor.
-                const double cos_theta = abs(dot(vertex_to_camera, m_camera_direction));
-                const double rcp_cos_theta = 1.0 / cos_theta;
-                const double dist_pixel_to_camera = m_focal_length * rcp_cos_theta;
-                const double flux_to_radiance = square(dist_pixel_to_camera * rcp_cos_theta) * m_rcp_pixel_area;
+                // Adjust cos(alpha).
+                const double square_distance = square_norm(vertex_to_camera);
+                cos_alpha /= sqrt(square_distance);
 
-                // Compute the geometric term.
-                const double g = transmission * cos_alpha * cos_theta / square_distance;
-                assert(g >= 0.0);
+                // Compute the solid angle sustained by the pixel.
+                const double solid_angle = m_camera.get_pixel_solid_angle(m_frame, sample_position);
 
                 // Store the contribution of this vertex.
                 Spectrum radiance = light_particle_flux;
-                radiance *= static_cast<float>(g * flux_to_radiance);
-                emit_sample(sample_position_ndc, radiance);
+                radiance *= static_cast<float>(transmission * cos_alpha / (square_distance * solid_angle));
+                emit_sample(sample_position, radiance);
             }
 
             void visit_non_physical_light_vertex(
-                const Vector3d&             sample_position,
+                const Vector3d&             light_vertex,
                 const Spectrum&             light_particle_flux,
                 const double                time)
             {
                 // Compute the transmission factor between the vertex and the camera.
-                Vector2d sample_position_ndc;
+                Vector2d sample_position;
                 const double transmission =
                     vertex_visible_to_camera(
-                        sample_position,
+                        light_vertex,
                         time,
-                        sample_position_ndc);
+                        sample_position);
 
                 // Ignore occluded vertices.
                 if (transmission == 0.0)
                     return;
 
-                // Compute the vertex-to-camera direction vector.
-                Vector3d vertex_to_camera = m_camera_position - sample_position;
-                const double square_distance = square_norm(vertex_to_camera);
-                vertex_to_camera /= sqrt(square_distance);
+                // Compute the square distance from the camera to the vertex.
+                const double square_distance = square_norm(m_camera_position - light_vertex);
 
-                // Compute the flux-to-radiance conversion factor.
-                const double cos_theta = abs(dot(vertex_to_camera, m_camera_direction));
-                const double rcp_cos_theta = 1.0 / cos_theta;
-                const double dist_pixel_to_camera = m_focal_length * rcp_cos_theta;
-                const double flux_to_radiance = square(dist_pixel_to_camera * rcp_cos_theta) * m_rcp_pixel_area;
-
-                // Compute the geometric term.
-                const double g = transmission * cos_theta / square_distance;
-                assert(g >= 0.0);
+                // Compute the solid angle sustained by the pixel.
+                const double solid_angle = m_camera.get_pixel_solid_angle(m_frame, sample_position);
 
                 // Store the contribution of this vertex.
                 Spectrum radiance = light_particle_flux;
-                radiance *= static_cast<float>(g * flux_to_radiance);
-                emit_sample(sample_position_ndc, radiance);
+                radiance *= static_cast<float>(transmission / (square_distance * solid_angle));
+                emit_sample(sample_position, radiance);
             }
 
             bool visit_vertex(const PathVertex& vertex)
@@ -364,19 +337,19 @@ namespace
                 // Reject vertices on the back side of the shading surface.
                 const Vector3d& shading_normal = vertex.get_shading_normal();
                 if (dot(vertex_to_camera, shading_normal) <= 0.0)
-                    return true;            // proceed with this path
+                    return true;                        // proceed with this path
 
                 // Compute the transmission factor between the vertex and the camera.
-                Vector2d sample_position_ndc;
+                Vector2d sample_position;
                 const double transmission =
                     vertex_visible_to_camera(
                         vertex.get_point(),
                         vertex.get_time(),
-                        sample_position_ndc);
+                        sample_position);
 
                 // Ignore occluded vertices.
                 if (transmission == 0.0)
-                    return true;            // proceed with this path
+                    return true;                        // proceed with this path
 
                 // Normalize the vertex-to-camera vector.
                 const double square_distance = square_norm(vertex_to_camera);
@@ -393,58 +366,43 @@ namespace
                 const double bsdf_prob =
                     vertex.m_bsdf->evaluate(
                         vertex.m_bsdf_data,
-                        true,                               // adjoint
-                        true,                               // multiply by |cos(incoming, normal)|
+                        true,                           // adjoint
+                        true,                           // multiply by |cos(incoming, normal)|
                         geometric_normal,
                         vertex.get_shading_basis(),
-                        vertex.m_outgoing,                  // outgoing (toward the light in this context)
-                        vertex_to_camera,                   // incoming
-                        BSDF::AllScatteringModes,           // todo: likely incorrect
+                        vertex.m_outgoing,              // outgoing (toward the light in this context)
+                        vertex_to_camera,               // incoming
+                        BSDF::AllScatteringModes,       // todo: likely incorrect
                         bsdf_value);
                 if (bsdf_prob == 0.0)
-                    return true;                            // proceed with this path
+                    return true;                        // proceed with this path
 
-                // Compute the flux-to-radiance conversion factor.
-                const double cos_theta = abs(dot(vertex_to_camera, m_camera_direction));
-                const double rcp_cos_theta = 1.0 / cos_theta;
-                const double dist_pixel_to_camera = m_focal_length * rcp_cos_theta;
-                const double flux_to_radiance = square(dist_pixel_to_camera * rcp_cos_theta) * m_rcp_pixel_area;
-
-                // Compute the geometric term.
-                // cos(vertex_to_camera, shading_normal) is already accounted for in bsdf_value.
-                const double g = transmission * cos_theta / square_distance;
-                assert(g >= 0.0);
+                // Compute the solid angle sustained by the pixel.
+                const double solid_angle = m_camera.get_pixel_solid_angle(m_frame, sample_position);
 
                 // Store the contribution of this vertex.
                 Spectrum radiance = m_initial_flux;
                 radiance *= vertex.m_throughput;
                 radiance *= bsdf_value;
-                radiance *= static_cast<float>(g * flux_to_radiance);
-                emit_sample(sample_position_ndc, radiance);
+                radiance *= static_cast<float>(transmission / (square_distance * solid_angle));
+                emit_sample(sample_position, radiance);
 
                 // Proceed with this path.
                 return true;
             }
 
             double vertex_visible_to_camera(
-                const Vector3d&             vertex_position_world,
+                const Vector3d&             vertex_position,
                 const double                time,
-                Vector2d&                   sample_position_ndc) const
+                Vector2d&                   sample_position) const
             {
-                // Transform the vertex position to camera space.
-                const Vector3d vertex_position_camera =
-                    m_camera_transform.point_to_local(vertex_position_world);
-
-                // Reject vertices behind the image plane.
-                if (vertex_position_camera.z > -m_camera.get_focal_length())
+                // Compute the position of the vertex on the image plane.
+                if (!m_camera.project_point(time, vertex_position, sample_position))
                     return 0.0;
 
-                // Compute the position of the vertex on the image plane.
-                sample_position_ndc = m_camera.project(vertex_position_camera);
-
                 // Reject vertices that don't belong on the image plane of the camera.
-                if (sample_position_ndc[0] < 0.0 || sample_position_ndc[0] >= 1.0 ||
-                    sample_position_ndc[1] < 0.0 || sample_position_ndc[1] >= 1.0)
+                if (sample_position[0] < 0.0 || sample_position[0] >= 1.0 ||
+                    sample_position[1] < 0.0 || sample_position[1] >= 1.0)
                     return 0.0;
 
                 // Compute and return the transmission factor between the vertex and the camera.
@@ -452,7 +410,7 @@ namespace
                 return
                     m_shading_context.get_tracer().trace_between(
                         m_camera_position,
-                        vertex_position_world,
+                        vertex_position,
                         time);
             }
 

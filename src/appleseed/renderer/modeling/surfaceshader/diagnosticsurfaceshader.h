@@ -76,7 +76,8 @@ class DLLSYMBOL DiagnosticSurfaceShader
         OriginalShadingNormal,      // shade according to the original shading normal
         Sides,                      // shade according to the surface side
         Depth,                      // shade according to distance from camera
-        Wireframe,                  // wireframe
+        ScreenSpaceWireframe,       // screen-space wireframe
+        WorldSpaceWireframe,        // world-space wireframe
         AmbientOcclusion,           // ambient occlusion
         AssemblyInstances,          // assign a unique color to each assembly instance
         ObjectInstances,            // assign a unique color to each object instance

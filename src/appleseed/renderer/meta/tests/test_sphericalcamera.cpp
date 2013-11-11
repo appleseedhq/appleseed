@@ -26,16 +26,49 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_CAMERA_H
-#define APPLESEED_RENDERER_API_CAMERA_H
-
-// API headers.
+// appleseed.renderer headers.
+#include "renderer/global/globaltypes.h"
+#include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/camera/camera.h"
-#include "renderer/modeling/camera/camerafactoryregistrar.h"
-#include "renderer/modeling/camera/cameratraits.h"
-#include "renderer/modeling/camera/icamerafactory.h"
-#include "renderer/modeling/camera/pinholecamera.h"
 #include "renderer/modeling/camera/sphericalcamera.h"
-#include "renderer/modeling/camera/thinlenscamera.h"
+#include "renderer/modeling/project/project.h"
+#include "renderer/utility/paramarray.h"
 
-#endif  // !APPLESEED_RENDERER_API_CAMERA_H
+// appleseed.foundation headers.
+#include "foundation/math/rng.h"
+#include "foundation/math/vector.h"
+#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/utility/iostreamop.h"
+#include "foundation/utility/test.h"
+
+using namespace foundation;
+using namespace renderer;
+
+TEST_SUITE(Renderer_Modeling_Camera_SphericalCamera)
+{
+    TEST_CASE(ProjectPoint)
+    {
+        auto_release_ptr<Project> project(ProjectFactory::create("test"));
+
+        SphericalCameraFactory factory;
+        auto_release_ptr<Camera> camera(factory.create("camera", ParamArray()));
+
+        camera->on_frame_begin(project.ref());
+
+        MersenneTwister rng;
+        SamplingContext sampling_context(rng);
+
+        ShadingRay ray;
+        camera->generate_ray(sampling_context, Vector2d(1.0, 1.0), ray);
+
+        const Vector3d hit_point = ray.m_org + 3.0 * normalize(ray.m_dir);
+
+        Vector2d projected;
+        const bool success = camera->project_point(0.0, hit_point, projected);
+
+        ASSERT_TRUE(success);
+        EXPECT_FEQ(Vector2d(1.0, 1.0), projected);
+
+        camera->on_frame_end(project.ref());
+    }
+}

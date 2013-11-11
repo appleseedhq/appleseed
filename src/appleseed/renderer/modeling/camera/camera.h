@@ -43,6 +43,7 @@
 
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
+namespace renderer      { class Frame; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 namespace renderer      { class ShadingRay; }
@@ -70,12 +71,6 @@ class DLLSYMBOL Camera
     TransformSequence& transform_sequence();
     const TransformSequence& transform_sequence() const;
 
-    // Get the film dimensions (in meters).
-    const foundation::Vector2d& get_film_dimensions() const;
-
-    // Get the focal length (in meters).
-    double get_focal_length() const;
-
     // Get the shutter open time.
     double get_shutter_open_time() const;
 
@@ -84,9 +79,6 @@ class DLLSYMBOL Camera
 
     // Get the time at the middle of the shutter interval.
     double get_shutter_middle_time() const;
-
-    // Get the view pyramid of the camera.
-    const foundation::Pyramid3d& get_view_pyramid() const;
 
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
@@ -104,36 +96,50 @@ class DLLSYMBOL Camera
         ShadingRay&                     ray) const = 0;
 
     // Project a 3D point back to the film plane. The input point is expressed in
-    // camera space. The returned point is expressed in normalized device coordinates.
-    virtual foundation::Vector2d project(
-        const foundation::Vector3d&     point) const = 0;
+    // world space. The returned point is expressed in normalized device coordinates.
+    // Returns true if the projection was successful, false otherwise.
+    virtual bool project_point(
+        const double                    time,
+        const foundation::Vector3d&     point,
+        foundation::Vector2d&           ndc) const = 0;
+
+    // Clip a 3D segment against the camera frustum. The input segment is expressed
+    // in world space. Returns true if the segment intersects the frustum, false otherwise.
+    virtual bool clip_segment(
+        const double                    time,
+        foundation::Vector3d&           v0,
+        foundation::Vector3d&           v1) const = 0;
+
+    // Compute the solid angle of a pixel whose center is at 'point' in normalized
+    // device coordinates.
+    virtual double get_pixel_solid_angle(
+        const Frame&                    frame,
+        const foundation::Vector2d&     point) const = 0;
 
   protected:
-    struct Impl;
-    Impl* impl;
-
     TransformSequence   m_transform_sequence;
-    double              m_focal_length;         // focal length in camera space
     double              m_shutter_open_time;
     double              m_shutter_close_time;
 
-    // Destructor.
-    ~Camera();
-
-    // Utility function to retrieve the film dimensions from the entity parameters.
+    // Utility function to retrieve the film dimensions (in meters) from the camera parameters.
     foundation::Vector2d extract_film_dimensions() const;
 
-    // Utility function to retrieve the focal length from the entity parameters.
+    // Utility function to retrieve the focal length (in meters) from the camera parameters.
     double extract_focal_length(const double film_width) const;
 
-    // Utility function to retrieve the f-stop value from the entity parameters.
+    // Utility function to retrieve the f-stop value from the camera parameters.
     double extract_f_stop() const;
 
-    // Utility function to retrieve the focal distance from the entity parameters.
+    // Utility function to retrieve the focal distance (in meters) from the camera parameters.
     void extract_focal_distance(
         bool&                           autofocus_enabled,
         foundation::Vector2d&           autofocus_target,
         double&                         focal_distance) const;
+
+    // Utility function to compute the view frustum of a camera in camera space.
+    static foundation::Pyramid3d compute_view_frustum(
+        const foundation::Vector2d&     film_dimensions,
+        const double                    focal_length);
 
     // Initialize a ray but does not set its origin or direction.
     void initialize_ray(
@@ -147,8 +153,6 @@ class DLLSYMBOL Camera
     double get_greater_than_zero(
         const char*                     name,
         const double                    default_value) const;
-
-    void compute_view_pyramid();
 };
 
 
@@ -177,11 +181,6 @@ inline TransformSequence& Camera::transform_sequence()
 inline const TransformSequence& Camera::transform_sequence() const
 {
     return m_transform_sequence;
-}
-
-inline double Camera::get_focal_length() const
-{
-    return m_focal_length;
 }
 
 inline double Camera::get_shutter_open_time() const

@@ -36,7 +36,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
-#include "foundation/math/transform.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/iostreamop.h"
@@ -61,34 +60,12 @@ namespace
     const UniqueID g_class_uid = new_guid();
 }
 
-struct Camera::Impl
-{
-    Vector2d            m_film_dimensions;      // film dimensions, in meters
-    Pyramid3d           m_view_pyramid;
-};
-
 Camera::Camera(
     const char*         name,
     const ParamArray&   params)
   : Entity(g_class_uid, params)
-  , impl(new Impl())
 {
     set_name(name);
-}
-
-Camera::~Camera()
-{
-    delete impl;
-}
-
-const Vector2d& Camera::get_film_dimensions() const
-{
-    return impl->m_film_dimensions;
-}
-
-const Pyramid3d& Camera::get_view_pyramid() const
-{
-    return impl->m_view_pyramid;
 }
 
 bool Camera::on_frame_begin(const Project& project)
@@ -96,12 +73,8 @@ bool Camera::on_frame_begin(const Project& project)
     if (!m_transform_sequence.prepare())
         RENDERER_LOG_WARNING("camera \"%s\" has one or more invalid transforms.", get_name());
 
-    impl->m_film_dimensions = extract_film_dimensions();
-    m_focal_length = extract_focal_length(impl->m_film_dimensions[0]);
     m_shutter_open_time = m_params.get_optional<double>("shutter_open_time", 0.0);
     m_shutter_close_time = m_params.get_optional<double>("shutter_close_time", 1.0);
-
-    compute_view_pyramid();
 
     return true;
 }
@@ -262,6 +235,34 @@ void Camera::extract_focal_distance(
     }
 }
 
+Pyramid3d Camera::compute_view_frustum(
+    const Vector2d&     film_dimensions,
+    const double        focal_length)
+{
+    const double half_film_width = 0.5 * film_dimensions[0];
+    const double half_film_height = 0.5 * film_dimensions[1];
+
+    Pyramid3d pyramid;
+
+    pyramid.set_plane(
+        Pyramid3d::TopPlane,
+        normalize(Vector3d(0.0, focal_length, half_film_height)));
+
+    pyramid.set_plane(
+        Pyramid3d::BottomPlane,
+        normalize(Vector3d(0.0, -focal_length, half_film_height)));
+
+    pyramid.set_plane(
+        Pyramid3d::LeftPlane,
+        normalize(Vector3d(-focal_length, 0.0, half_film_width)));
+
+    pyramid.set_plane(
+        Pyramid3d::RightPlane,
+        normalize(Vector3d(focal_length, 0.0, half_film_width)));
+
+    return pyramid;
+}
+
 void Camera::initialize_ray(
     SamplingContext&    sampling_context,
     ShadingRay&         ray) const
@@ -316,31 +317,6 @@ double Camera::get_greater_than_zero(
     return value;
 }
 
-void Camera::compute_view_pyramid()
-{
-    const double focal_length = m_focal_length;
-    const double half_fw = impl->m_film_dimensions[0] / 2.0;
-    const double half_fh = impl->m_film_dimensions[1] / 2.0;
-
-    Pyramid3d& pyramid = impl->m_view_pyramid;
-
-    pyramid.set_plane(
-        Pyramid3d::TopPlane,
-        normalize(Vector3d(0.0, focal_length, half_fh)));
-
-    pyramid.set_plane(
-        Pyramid3d::BottomPlane,
-        normalize(Vector3d(0.0, -focal_length, half_fh)));
-
-    pyramid.set_plane(
-        Pyramid3d::LeftPlane,
-        normalize(Vector3d(-focal_length, 0.0, half_fw)));
-
-    pyramid.set_plane(
-        Pyramid3d::RightPlane,
-        normalize(Vector3d(focal_length, 0.0, half_fw)));
-}
-
 
 //
 // CameraFactory class implementation.
@@ -349,48 +325,6 @@ void Camera::compute_view_pyramid()
 DictionaryArray CameraFactory::get_input_metadata()
 {
     DictionaryArray metadata;
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "film_dimensions")
-            .insert("label", "Film Dimensions")
-            .insert("type", "text")
-            .insert("use", "required"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "film_width")
-            .insert("label", "Film Width")
-            .insert("type", "text")
-            .insert("use", "required"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "film_height")
-            .insert("label", "Film Height")
-            .insert("type", "text")
-            .insert("use", "required"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "aspect_ratio")
-            .insert("label", "Aspect Ratio")
-            .insert("type", "text")
-            .insert("use", "required"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "focal_length")
-            .insert("label", "Focal Length")
-            .insert("type", "text")
-            .insert("use", "required"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "horizontal_fov")
-            .insert("label", "Horizontal FOV")
-            .insert("type", "text")
-            .insert("use", "required"));
 
     metadata.push_back(
         Dictionary()
