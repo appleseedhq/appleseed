@@ -1,4 +1,3 @@
-
 //
 // This source file is part of appleseed.
 // Visit http://appleseedhq.net/ for additional information and resources.
@@ -58,7 +57,7 @@ typedef foundation::RegularSpectrum<float, 31> Spectrum;
 typedef foundation::Color<float, 1> Alpha;
 
 // Sampling context.
-#if (WITH_QMC_SAMPLER)
+#ifdef WITH_QMC_SAMPLER
     typedef foundation::QMCSamplingContext<
         foundation::MersenneTwister
     > SamplingContext;
