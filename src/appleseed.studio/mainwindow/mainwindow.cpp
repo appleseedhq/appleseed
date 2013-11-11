@@ -594,19 +594,20 @@ void MainWindow::save_state_before_project_open()
 
 void MainWindow::restore_state_after_project_open()
 {
-    assert(m_state_before_project_open.get());
-
-    for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
+    if (m_state_before_project_open.get())
     {
-        const RenderTabStateCollection& tab_states = m_state_before_project_open->m_render_tab_states;
-        const RenderTabStateCollection::const_iterator tab_state_it = tab_states.find(i->first);
+        for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
+        {
+            const RenderTabStateCollection& tab_states = m_state_before_project_open->m_render_tab_states;
+            const RenderTabStateCollection::const_iterator tab_state_it = tab_states.find(i->first);
 
-        if (tab_state_it != tab_states.end())
-            i->second->load_state(tab_state_it->second);
+            if (tab_state_it != tab_states.end())
+                i->second->load_state(tab_state_it->second);
+        }
+
+        if (m_state_before_project_open->m_is_rendering)
+            start_rendering(true);
     }
-
-    if (m_state_before_project_open->m_is_rendering)
-        start_rendering(true);
 }
 
 bool MainWindow::can_close_project()
