@@ -73,6 +73,8 @@ option (WITH_TOOLS              "Build appleseed tools"         ON)
 option (WITH_PYTHON             "Build Python module"           ON)
 option (WITH_OSL                "Build OSL support"             OFF)
 
+option (WITH_QMC_SAMPLER        "Use QMC sampler (possible software patent issues)" OFF)
+
 
 #--------------------------------------------------------------------------------------------------
 # Enable testing with CTest.
@@ -309,6 +311,9 @@ macro (append_custom_preprocessor_definitions target first_definition)
     )
 endmacro ()
 
+if (WITH_QMC_SAMPLER)
+    add_definitions (-DWITH_QMC_SAMPLER)
+endif ()
 
 #--------------------------------------------------------------------------------------------------
 # Compilation/linking flags.
