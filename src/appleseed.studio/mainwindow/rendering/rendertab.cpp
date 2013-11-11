@@ -187,7 +187,7 @@ void RenderTab::create_toolbar()
     m_toolbar->setObjectName(QString::fromUtf8("render_toolbar"));
     m_toolbar->setIconSize(QSize(18, 18));
 
-    //Create the Save Image button in the render toolbar.
+    // Create the Save Image button in the render toolbar.
     m_save_aovs_button = new QToolButton();
     m_save_aovs_button->setIcon(QIcon(":/icons/save_image.png"));
     m_save_aovs_button->setToolTip("Save all AOV's");
@@ -196,7 +196,7 @@ void RenderTab::create_toolbar()
         SIGNAL(signal_save_aovs()));
     m_toolbar->addWidget(m_save_aovs_button);
 
-    //Create the Quick Save Image button in the render toolbar.
+    // Create the Quick Save Image button in the render toolbar.
     m_quick_save_aovs_button = new QToolButton();
     m_quick_save_aovs_button->setIcon(QIcon(":/icons/quick_save_aovs.png"));
     m_quick_save_aovs_button->setToolTip("Quicksave all AOV's");
