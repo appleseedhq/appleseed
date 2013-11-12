@@ -60,6 +60,7 @@
 #include "foundation/platform/types.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
+#include "foundation/utility/path.h"
 #include "foundation/utility/settings.h"
 
 // Qt headers.
@@ -1408,10 +1409,14 @@ void MainWindow::slot_quicksave_all_aovs()
     const Project* project = m_project_manager.get_project();
 
     const filesystem::path project_path(project->get_path());
-    const filesystem::path image_path = project_path.parent_path() / "_renders" / "quicksave.exr";
+    const filesystem::path image_path =
+        filesystem::absolute(
+            find_next_available_path(
+                  project_path.parent_path()
+                / "quicksaves"
+                / "quicksave####.exr"));
 
-    const filesystem::path file_dir(image_path.parent_path());
-    filesystem::create_directories(file_dir);
+    filesystem::create_directories(image_path.parent_path());
 
     const Frame* frame = project->get_frame();
     frame->write_main_image(image_path.string().c_str());
