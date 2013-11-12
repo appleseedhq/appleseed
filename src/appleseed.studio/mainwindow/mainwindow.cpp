@@ -1332,29 +1332,50 @@ void MainWindow::slot_render_widget_context_menu(const QPoint& point)
     menu->exec(point);
 }
 
+namespace
+{
+    QString ask_image_save_file_path(
+        QWidget*        parent,
+        const QString&  caption,
+        const QString&  dir)
+    {
+        QFileDialog::Options options;
+        QString selected_filter;
+
+        QString filepath =
+            QFileDialog::getSaveFileName(
+                parent,
+                caption,
+                dir,
+                "Image Files (*.exr;*.png);;All Files (*.*)",
+                &selected_filter,
+                options);
+
+        if (!filepath.isEmpty())
+        {
+            if (QFileInfo(filepath).suffix().isEmpty())
+                filepath += ".exr";
+
+            filepath = QDir::toNativeSeparators(filepath);
+        }
+
+        return filepath;
+    }
+}
+
 void MainWindow::slot_save_frame()
 {
+    assert(m_project_manager.is_project_open());
     assert(!m_rendering_manager.is_rendering());
 
-    QFileDialog::Options options;
-    QString selected_filter;
-
-    QString filepath =
-        QFileDialog::getSaveFileName(
+    const QString filepath =
+        ask_image_save_file_path(
             this,
             "Save Frame As...",
-            m_settings.get_path_optional<QString>(LAST_DIRECTORY_SETTINGS_KEY),
-            "Image Files (*.exr;*.png);;All Files (*.*)",
-            &selected_filter,
-            options);
+            m_settings.get_path_optional<QString>(LAST_DIRECTORY_SETTINGS_KEY));
 
     if (filepath.isEmpty())
         return;
-
-    if (QFileInfo(filepath).suffix().isEmpty())
-        filepath += ".exr";
-
-    filepath = QDir::toNativeSeparators(filepath);
 
     const Frame* frame = m_project_manager.get_project()->get_frame();
     frame->write_main_image(filepath.toAscii().constData());
@@ -1362,27 +1383,17 @@ void MainWindow::slot_save_frame()
 
 void MainWindow::slot_save_all_aovs()
 {
+    assert(m_project_manager.is_project_open());
     assert(!m_rendering_manager.is_rendering());
 
-    QFileDialog::Options options;
-    QString selected_filter;
-
-    QString filepath =
-        QFileDialog::getSaveFileName(
+    const QString filepath =
+        ask_image_save_file_path(
             this,
             "Save All AOVs As...",
-            m_settings.get_path_optional<QString>(LAST_DIRECTORY_SETTINGS_KEY),
-            "Image Files (*.exr;*.png);;All Files (*.*)",
-            &selected_filter,
-            options);
+            m_settings.get_path_optional<QString>(LAST_DIRECTORY_SETTINGS_KEY));
 
     if (filepath.isEmpty())
         return;
-
-    if (QFileInfo(filepath).suffix().isEmpty())
-        filepath += ".exr";
-
-    filepath = QDir::toNativeSeparators(filepath);
 
     const Frame* frame = m_project_manager.get_project()->get_frame();
     frame->write_main_image(filepath.toAscii().constData());
@@ -1391,6 +1402,9 @@ void MainWindow::slot_save_all_aovs()
 
 void MainWindow::slot_quicksave_all_aovs()
 {
+    assert(m_project_manager.is_project_open());
+    assert(!m_rendering_manager.is_rendering());
+
     const Project* project = m_project_manager.get_project();
 
     const filesystem::path project_path(project->get_path());
