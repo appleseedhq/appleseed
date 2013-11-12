@@ -169,6 +169,16 @@ std::string replace(
     const std::string&          old_string,
     const std::string&          new_string);
 
+// Return a copy of the input pattern where consecutive '#' characters have
+// been replaced by 'value', with leading zeroes added as necessary.
+std::string get_numbered_string(
+    const std::string&          pattern,
+    const size_t                value);
+
+// Return the maximum value that can be return by get_numbered_string() for
+// a given pattern.
+size_t get_numbered_string_max_value(const std::string& pattern);
+
 // Replace all special characters of a string by the corresponding XML entities.
 std::string replace_special_xml_characters(const std::string& s);
 
@@ -659,6 +669,8 @@ inline std::string replace(
     const std::string&          old_string,
     const std::string&          new_string)
 {
+    assert(!old_string.empty());
+
     std::string::size_type pos = s.find(old_string);
 
     if (pos == std::string::npos)
@@ -673,6 +685,49 @@ inline std::string replace(
     } while ((pos = result.find(old_string, pos)) != std::string::npos);
 
     return result;
+}
+
+inline std::string get_numbered_string(
+    const std::string&          pattern,
+    const size_t                value)
+{
+    const size_t b = pattern.find_first_of('#');
+
+    if (b == std::string::npos)
+        return pattern;
+
+    size_t e = pattern.find_first_not_of('#', b);
+
+    if (e == std::string::npos)
+        e = pattern.size();
+
+    const size_t n = e - b;
+
+    std::stringstream sstr;
+    sstr << std::setw(n) << std::setfill('0');
+    sstr << value;
+
+    std::string value_string;
+    sstr >> value_string;
+
+    return replace(pattern, std::string(n, '#'), value_string);
+}
+
+inline size_t get_numbered_string_max_value(const std::string& pattern)
+{
+    const size_t b = pattern.find_first_of('#');
+
+    if (b == std::string::npos)
+        return 0;
+
+    size_t e = pattern.find_first_not_of('#', b);
+
+    if (e == std::string::npos)
+        e = pattern.size();
+
+    const size_t n = e - b;
+
+    return pow_int<size_t>(10, n) - 1;
 }
 
 namespace impl

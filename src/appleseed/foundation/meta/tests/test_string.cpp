@@ -471,6 +471,97 @@ TEST_SUITE(Foundation_Utility_String)
         EXPECT_EQ("xyzbbb", result);
     }
 
+    TEST_CASE(GetNumberedStringMaxValue_GivenEmptyPattern_ReturnsZero)
+    {
+        const size_t max_value = get_numbered_string_max_value("");
+
+        EXPECT_EQ(0, max_value);
+    }
+
+    TEST_CASE(GetNumberedStringMaxValue_GivenPatternWithoutHashes_ReturnsZero)
+    {
+        const size_t max_value = get_numbered_string_max_value("hello");
+
+        EXPECT_EQ(0, max_value);
+    }
+
+    TEST_CASE(GetNumberedStringMaxValue_GivenPatternWithThreeHashesAtTheBeginning_Returns999)
+    {
+        const size_t max_value = get_numbered_string_max_value("###hello");
+
+        EXPECT_EQ(999, max_value);
+    }
+
+    TEST_CASE(GetNumberedStringMaxValue_GivenPatternWithThreeHashesInTheMiddle_Returns999)
+    {
+        const size_t max_value = get_numbered_string_max_value("he###llo");
+
+        EXPECT_EQ(999, max_value);
+    }
+
+    TEST_CASE(GetNumberedStringMaxValue_GivenPatternWithThreeHashesAtTheEnd_Returns999)
+    {
+        const size_t max_value = get_numbered_string_max_value("hello###");
+
+        EXPECT_EQ(999, max_value);
+    }
+
+    TEST_CASE(GetNumberedString_GivenEmptyPattern_ReturnsEmptyString)
+    {
+        const string result = get_numbered_string("", 12);
+
+        EXPECT_EQ("", result);
+    }
+
+    TEST_CASE(GetNumberedString_GivenPatternWithoutHashes_ReturnsPatternUnmodified)
+    {
+        const string result = get_numbered_string("hello", 12);
+
+        EXPECT_EQ("hello", result);
+    }
+
+    TEST_CASE(GetNumberedString_GivenPatternWithSingleHashAtTheBeginning_GivenSingleDigitValue_ReplacesHashByValue)
+    {
+        const string result = get_numbered_string("#hello", 5);
+
+        EXPECT_EQ("5hello", result);
+    }
+
+    TEST_CASE(GetNumberedString_GivenPatternWithSingleHashInTheMiddle_GivenSingleDigitValue_ReplacesHashByValue)
+    {
+        const string result = get_numbered_string("he#llo", 5);
+
+        EXPECT_EQ("he5llo", result);
+    }
+
+    TEST_CASE(GetNumberedString_GivenPatternWithSingleHashAtTheEnd_GivenSingleDigitValue_ReplacesHashByValue)
+    {
+        const string result = get_numbered_string("hello#", 5);
+
+        EXPECT_EQ("hello5", result);
+    }
+
+    TEST_CASE(GetNumberedString_GivenPatternWithThreeHashes_GivenSingleDigitValue_ReplacesHashesByValue)
+    {
+        const string result = get_numbered_string("hel###lo", 5);
+
+        EXPECT_EQ("hel005lo", result);
+    }
+
+    TEST_CASE(GetNumberedString_GivenPatternWithThreeHashes_GivenTwoDigitsValue_ReplacesHashesByValue)
+    {
+        const string result = get_numbered_string("hello###", 12);
+
+        EXPECT_EQ("hello012", result);
+    }
+
+    TEST_CASE(GetNumberedString_GivenPatternWithThreeHashes_GivenFourDigitsValue_ReplacesHashesByValue)
+    {
+        const string result = get_numbered_string("hello###", 1234);
+
+        EXPECT_EQ("hello1234", result);
+    }
+
     TEST_CASE(ReplaceSpecialXMLCharacters_GivenEmptyString_ReturnsEmptyString)
     {
         const string result = replace_special_xml_characters("");
