@@ -266,13 +266,13 @@ namespace
                     back_shading_result.m_aovs);
             }
 
-            // Combine front and back lighting based on the translucency value.
+            // Divide by the number of samples and scale back lighting by translucency value.
             const float translucency = static_cast<float>(values.m_translucency);
             const float rcp_sample_count = 1.0f / static_cast<float>(m_back_lighting_samples);
             back_shading_result.m_color *= translucency * rcp_sample_count;
             back_shading_result.m_aovs *= translucency * rcp_sample_count;
-            shading_result.m_color *= 1.0f - translucency;
-            shading_result.m_aovs *= 1.0f - translucency;
+
+            // Add back lighting contribution.
             shading_result.m_color += back_shading_result.m_color;
             shading_result.m_aovs += back_shading_result.m_aovs;
         }
