@@ -680,6 +680,7 @@ set (foundation_utility_sources
     foundation/utility/memory.h
     foundation/utility/numerictype.h
     foundation/utility/otherwise.h
+    foundation/utility/path.h
     foundation/utility/poolallocator.h
     foundation/utility/preprocessor.cpp
     foundation/utility/preprocessor.h
