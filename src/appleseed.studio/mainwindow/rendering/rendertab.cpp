@@ -54,13 +54,8 @@
 #include <QToolBar>
 #include <QToolButton>
 
-// boost headers.
-#include "boost/filesystem/path.hpp"
-#include "boost/filesystem/operations.hpp"
-
 using namespace foundation;
 using namespace renderer;
-using namespace boost;
 
 namespace appleseed {
 namespace studio {
@@ -149,19 +144,6 @@ void RenderTab::slot_set_render_region(const QRect& rect)
     emit signal_set_render_region(rect);
 }
 
-void RenderTab::slot_quick_save_aovs()
-{
-    const filesystem::path project_path(m_project.get_path());
-    const filesystem::path image_path = project_path.parent_path() / "_renders" / "quicksave.exr";
-
-    const filesystem::path file_dir(image_path.parent_path());
-    filesystem::create_directories(file_dir);
-
-    const Frame* frame = m_project.get_frame();
-    frame->write_main_image(image_path.string().c_str());
-    frame->write_aov_images(image_path.string().c_str());
-}
-
 void RenderTab::create_render_widget()
 {
     const CanvasProperties& props = m_project.get_frame()->image().properties();
@@ -190,20 +172,19 @@ void RenderTab::create_toolbar()
     // Create the Save Image button in the render toolbar.
     m_save_aovs_button = new QToolButton();
     m_save_aovs_button->setIcon(QIcon(":/icons/save_image.png"));
-    m_save_aovs_button->setToolTip("Save all AOVs");
+    m_save_aovs_button->setToolTip("Save All AOVs...");
     connect(
         m_save_aovs_button, SIGNAL(clicked()),
-        SIGNAL(signal_save_aovs()));
+        SIGNAL(signal_save_all_aovs()));
     m_toolbar->addWidget(m_save_aovs_button);
 
     // Create the Quick Save Image button in the render toolbar.
     m_quick_save_aovs_button = new QToolButton();
     m_quick_save_aovs_button->setIcon(QIcon(":/icons/quick_save_aovs.png"));
-    m_quick_save_aovs_button->setToolTip("Quicksave all AOVs");
+    m_quick_save_aovs_button->setToolTip("Quicksave All AOVs");
     connect(
         m_quick_save_aovs_button, SIGNAL(clicked()),
-        this,
-        SLOT(slot_quick_save_aovs()));
+        SIGNAL(signal_quicksave_all_aovs()));
     m_toolbar->addWidget(m_quick_save_aovs_button);
 
     m_toolbar->addSeparator();

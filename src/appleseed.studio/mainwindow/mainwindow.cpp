@@ -809,8 +809,11 @@ void MainWindow::add_render_widget(const QString& label)
         render_tab, SIGNAL(signal_clear_render_region()),
         SLOT(slot_clear_render_region()));
     connect(
-        render_tab, SIGNAL(signal_save_aovs()),
+        render_tab, SIGNAL(signal_save_all_aovs()),
         SLOT(slot_save_all_aovs()));
+    connect(
+        render_tab, SIGNAL(signal_quicksave_all_aovs()),
+        SLOT(slot_quicksave_all_aovs()));
 
     // Add the render tab to the tab bar.
     m_ui->tab_render_channels->addTab(render_tab, label);
@@ -1384,6 +1387,21 @@ void MainWindow::slot_save_all_aovs()
     const Frame* frame = m_project_manager.get_project()->get_frame();
     frame->write_main_image(filepath.toAscii().constData());
     frame->write_aov_images(filepath.toAscii().constData());
+}
+
+void MainWindow::slot_quicksave_all_aovs()
+{
+    const Project* project = m_project_manager.get_project();
+
+    const filesystem::path project_path(project->get_path());
+    const filesystem::path image_path = project_path.parent_path() / "_renders" / "quicksave.exr";
+
+    const filesystem::path file_dir(image_path.parent_path());
+    filesystem::create_directories(file_dir);
+
+    const Frame* frame = project->get_frame();
+    frame->write_main_image(image_path.string().c_str());
+    frame->write_aov_images(image_path.string().c_str());
 }
 
 void MainWindow::slot_clear_frame()
