@@ -34,9 +34,10 @@ find_package (PythonLibs REQUIRED)
 # Splitting version string into list.
 string (REGEX MATCHALL "[0123456789]+" PYTHON_VERSION_LIST "${PYTHONLIBS_VERSION_STRING}")
 
-# Accessing Major and Minor version number with the version list we got.
+# Accessing major and minor version numbers with the version list we got.
 list (GET PYTHON_VERSION_LIST 0 PYTHON_MAJOR_VERSION)
 list (GET PYTHON_VERSION_LIST 1 PYTHON_MINOR_VERSION)
+
 
 #--------------------------------------------------------------------------------------------------
 # Boost libraries.
@@ -48,27 +49,24 @@ else ()
     find_package (Boost 1.46 COMPONENTS ${BOOST_NEEDED_LIBS} python)
 endif ()
 
-#fallback for Ubuntu
+# Fallback for Ubuntu.
 if ("${CMAKE_SYSTEM}" MATCHES "Linux")
-    # try liboost-python-pyX first
+    # Try liboost-python-pyX.
     if (NOT Boost_FOUND)
-        find_package (Boost 1.46 COMPONENTS ${BOOST_NEEDED_LIBS} 
-                                            python-py${PYTHON_MAJOR_VERSION}
-                     )
+        find_package (Boost 1.46 COMPONENTS ${BOOST_NEEDED_LIBS} python-py${PYTHON_MAJOR_VERSION})
     endif ()
 
-    # try liboost-python-pyXX first
+    # Try liboost-python-pyXX.
     if (NOT Boost_FOUND)
-        find_package (Boost 1.46 REQUIRED COMPONENTS ${BOOST_NEEDED_LIBS} 
-                                                     python-py${PYTHON_MAJOR_VERSION}${PYTHON_MINOR_VERSION}
-                     )
+        find_package (Boost 1.46 REQUIRED COMPONENTS ${BOOST_NEEDED_LIBS} python-py${PYTHON_MAJOR_VERSION}${PYTHON_MINOR_VERSION})
     endif ()
 endif ()
 
-# abort if we couldn't find libboostpython
+# Abort if we couldn't find libboostpython.
 if (NOT Boost_FOUND)
-    message (FATAL_ERROR "Boost python library not found")
+    message (FATAL_ERROR "Boost.Python library not found")
 endif ()
+
 
 #--------------------------------------------------------------------------------------------------
 # Source files.

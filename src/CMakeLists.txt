@@ -62,18 +62,19 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/Modules)
 # Build options.
 #--------------------------------------------------------------------------------------------------
 
-option (USE_STATIC_BOOST        "Use static Boost libs"         ON)
-option (USE_EXTERNAL_ZLIB       "Use external ZLIB lib"         OFF)
-option (USE_EXTERNAL_PNG        "Use external PNG lib"          OFF)
-option (USE_EXTERNAL_ALEMBIC    "Use external Alembic lib"      OFF)
-option (USE_EXTERNAL_XERCES     "Use external Xerces lib"       OFF)
-option (WITH_CLI                "Build appleseed.cli"           ON)
-option (WITH_STUDIO             "Build appleseed.studio"        ON)
-option (WITH_TOOLS              "Build appleseed tools"         ON)
-option (WITH_PYTHON             "Build Python module"           ON)
-option (WITH_OSL                "Build OSL support"             OFF)
+option (USE_STATIC_BOOST        "Use static Boost libs"                                 ON)
+option (USE_EXTERNAL_ZLIB       "Use external ZLIB lib"                                 OFF)
+option (USE_EXTERNAL_PNG        "Use external PNG lib"                                  OFF)
+option (USE_EXTERNAL_ALEMBIC    "Use external Alembic lib"                              OFF)
+option (USE_EXTERNAL_XERCES     "Use external Xerces lib"                               OFF)
 
-option (WITH_QMC_SAMPLER        "Use QMC sampler (possible software patent issues)" OFF)
+option (WITH_CLI                "Build appleseed.cli"                                   ON)
+option (WITH_STUDIO             "Build appleseed.studio"                                ON)
+option (WITH_TOOLS              "Build appleseed tools"                                 ON)
+option (WITH_PYTHON             "Build Python module"                                   ON)
+option (WITH_OSL                "Build OSL support"                                     OFF)
+
+option (WITH_QMC_SAMPLER        "Use QMC sampler (possible software patent issues)"     OFF)
 
 
 #--------------------------------------------------------------------------------------------------
@@ -314,6 +315,7 @@ endmacro ()
 if (WITH_QMC_SAMPLER)
     add_definitions (-DWITH_QMC_SAMPLER)
 endif ()
+
 
 #--------------------------------------------------------------------------------------------------
 # Compilation/linking flags.
