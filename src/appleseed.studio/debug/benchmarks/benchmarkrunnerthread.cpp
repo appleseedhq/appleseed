@@ -65,7 +65,8 @@ void BenchmarkRunnerThread::run()
     const string xmlfile_name = "benchmark." + get_time_stamp_string() + ".xml";
     const filesystem::path xmlfile_path =
           filesystem::path(Application::get_tests_root_path())
-        / "unit benchmarks/results/"
+        / "unit benchmarks"
+        / "results"
         / xmlfile_name;
 
     if (!xmlfile_listener->open(xmlfile_path.string().c_str()))
