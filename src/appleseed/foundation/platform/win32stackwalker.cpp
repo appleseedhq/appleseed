@@ -47,10 +47,13 @@
  *  2010-04-15   v12     Added support for VS2010 RTM
  *  2010-05-25   v13     Now using secure MyStrcCpy. Thanks to luke.simon:
  *                       http://www.codeproject.com/KB/applications/leakfinder.aspx?msg=3477467#xx3477467xx
+ *  2013-01-07   v14     Runtime Check Error VS2010 Debug Builds fixed:
+ *                       http://stackwalker.codeplex.com/workitem/10511
+ *
  *
  * LICENSE (http://www.opensource.org/licenses/bsd-license.php)
  *
- *   Copyright (c) 2005-2011, Jochen Kalmbach
+ *   Copyright (c) 2005-2013, Jochen Kalmbach
  *   All rights reserved.
  *
  *   Redistribution and use in source and binary forms, with or without modification, 
@@ -230,8 +233,8 @@ DWORD64
 
 // secure-CRT_functions are only available starting with VC8
 #if _MSC_VER < 1400
-#define strcpy_s strcpy
-#define strncpy_s strncpy
+#define strcpy_s(dst, len, src) strcpy(dst, src)
+#define strncpy_s(dst, len, src, maxLen) strncpy(dst, len, src)
 #define strcat_s(dst, len, src) strcat(dst, src)
 #define _snprintf_s _snprintf
 #define _tcscat_s _tcscat
@@ -1276,10 +1279,10 @@ void StackWalker::OnLoadModule(LPCSTR img, LPCSTR mod, DWORD64 baseAddr, DWORD s
     _snprintf_s(buffer, STACKWALK_MAX_NAMELEN, "%s:%s (%p), size: %d (result: %d), SymType: '%s', PDB: '%s'\n", img, mod, (LPVOID) baseAddr, size, result, symType, pdbName);
   else
   {
-    DWORD v4 = (DWORD) fileVersion & 0xFFFF;
-    DWORD v3 = (DWORD) (fileVersion>>16) & 0xFFFF;
-    DWORD v2 = (DWORD) (fileVersion>>32) & 0xFFFF;
-    DWORD v1 = (DWORD) (fileVersion>>48) & 0xFFFF;
+    DWORD v4 = (DWORD) (fileVersion & 0xFFFF);
+    DWORD v3 = (DWORD) ((fileVersion>>16) & 0xFFFF);
+    DWORD v2 = (DWORD) ((fileVersion>>32) & 0xFFFF);
+    DWORD v1 = (DWORD) ((fileVersion>>48) & 0xFFFF);
     _snprintf_s(buffer, STACKWALK_MAX_NAMELEN, "%s:%s (%p), size: %d (result: %d), SymType: '%s', PDB: '%s', fileVersion: %d.%d.%d.%d\n", img, mod, (LPVOID) baseAddr, size, result, symType, pdbName, v1, v2, v3, v4);
   }
   OnOutput(buffer);
