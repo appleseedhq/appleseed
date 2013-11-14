@@ -88,6 +88,7 @@
 #include <stdlib.h>
 #pragma comment(lib, "version.lib")  // for "VerQueryValue"
 #pragma warning(disable:4826)
+#pragma warning(disable:4996)        // 'GetVersionExA': was declared deprecated
 
 #include "win32stackwalker.h"
 
