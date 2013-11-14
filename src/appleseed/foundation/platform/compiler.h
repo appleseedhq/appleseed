@@ -32,6 +32,7 @@
 //
 // Quick reminder about Visual Studio versions:
 //
+//   Visual Studio 2013   MSVC++ 12.0   _MSC_VER == 1800
 //   Visual Studio 2012   MSVC++ 11.0   _MSC_VER == 1700
 //   Visual Studio 2010   MSVC++ 10.0   _MSC_VER == 1600
 //   Visual Studio 2008   MSVC++ 9.0    _MSC_VER == 1500
@@ -192,12 +193,13 @@ class DLLSYMBOL Compiler
 
 
 //
-// As of version 2010, Visual C++ doesn't provide the va_copy() macro
+// Up to version 2012, Visual C++ doesn't provide the va_copy() macro
 // introduced in C99. On Windows (32-bit and 64-bit) it is sufficient
 // to use assignment between va_list variables.
+// Starting with Visual C++ 2013, va_copy() is natively available.
 //
 
-#ifdef _MSC_VER
+#if defined _MSC_VER && _MSC_VER < 1800
 #ifndef va_copy
 #define va_copy(dst, src) ((dst) = (src))
 #endif
