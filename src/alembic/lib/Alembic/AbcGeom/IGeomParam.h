@@ -77,7 +77,7 @@ public:
         }
 
         bool valid()
-        { return m_vals; }
+        { return m_vals.get() != 0; }
 
         ALEMBIC_OPERATOR_BOOL( valid() );
 

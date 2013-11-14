@@ -80,7 +80,7 @@ public:
 
         bool valid() const
         {
-            return m_positions;
+            return m_positions.get() != 0;
         }
 
         void reset()
