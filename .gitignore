@@ -1,3 +1,6 @@
 build/
 __pycache__
 *.pyc
+sandbox/settings/appleseed.studio.xml
+src/CMakeLists.txt.user
+c
