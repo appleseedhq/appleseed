@@ -156,6 +156,9 @@ size_t tokenize(
     const size_t                max_tokens);
 
 // Like tokenize(), but consider that there are empty tokens between delimiters.
+// This function has the same semantics as Python's string.split() function:
+//   http://docs.python.org/2/library/string.html#string.split
+//   http://codepad.org/MCL9GcKH
 template <typename Vec>
 void split(
     const std::string&          s,
@@ -620,47 +623,32 @@ void split(
 {
     std::string::size_type pos = 0;
 
-    while (pos < s.size())
+    while (true)
     {
         // Find the next delimiter.
-        std::string::size_type delimiter_pos =
+        const std::string::size_type delimiter_pos =
             s.find_first_of(delimiters, pos);
 
-        // Append the token to the vector.
-        tokens.push_back(
-            from_string<typename Vec::value_type>(
-                s.substr(pos, delimiter_pos - pos)));
+        if (delimiter_pos == std::string::npos)
+        {
+            // No delimiter found: the rest of the text constitutes the last token.
+            tokens.push_back(
+                from_string<typename Vec::value_type>(
+                    s.substr(pos)));
 
-        // Move past the token and the delimiter.
-        pos =
-            delimiter_pos == std::string::npos
-                ? std::string::npos
-                : delimiter_pos + 1;
-    }
-}
+            // Done.
+            break;
+        }
+        else
+        {
+            // Found a delimiter: the text up to this delimiter constitutes the next token.
+            tokens.push_back(
+                from_string<typename Vec::value_type>(
+                    s.substr(pos, delimiter_pos - pos)));
 
-template <>
-inline void split(
-    const std::string&          s,
-    const std::string&          delimiters,
-    std::vector<std::string>&   tokens)
-{
-    std::string::size_type pos = 0;
-
-    while (pos < s.size())
-    {
-        // Find the next delimiter.
-        std::string::size_type delimiter_pos =
-            s.find_first_of(delimiters, pos);
-
-        // Append the token to the vector.
-        tokens.push_back(s.substr(pos, delimiter_pos - pos));
-
-        // Move past the token and the delimiter.
-        pos =
-            delimiter_pos == std::string::npos
-                ? std::string::npos
-                : delimiter_pos + 1;
+            // Move past the delimiter.
+            pos = delimiter_pos + 1;
+        }
     }
 }
 

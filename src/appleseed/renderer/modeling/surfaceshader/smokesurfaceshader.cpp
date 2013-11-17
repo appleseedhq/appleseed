@@ -362,7 +362,7 @@ namespace
                     "  falloff          %s\n"
                     "  pressure         %s\n"
                     "  coordinates      %s\n"
-                    "  velocity         %s\n",
+                    "  velocity         %s",
                     m_channels.m_color_index == FluidChannels::NotPresent ? "no" : "yes",
                     m_channels.m_density_index == FluidChannels::NotPresent ? "no" : "yes",
                     m_channels.m_temperature_index == FluidChannels::NotPresent ? "no" : "yes",

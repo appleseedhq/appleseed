@@ -206,7 +206,7 @@ TEST_SUITE(Foundation_Utility_Preprocessor)
 
         ASSERT_FALSE(preprocessor.succeeded());
         EXPECT_EQ(string("Expected directive: #endif"), preprocessor.get_error_message());
-        EXPECT_EQ(2, preprocessor.get_error_location());
+        EXPECT_EQ(3, preprocessor.get_error_location());
     }
 
     TEST_CASE(Process_GivenSymbolsDefinitions_SubstitutesSymbolsWithValues)

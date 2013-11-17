@@ -119,7 +119,7 @@ namespace
         LOG_INFO(
             g_logger,
             "  suites      : %s executed, %s failed (%s)\n"
-            "  cases       : %s executed, %s failed (%s)\n",
+            "  cases       : %s executed, %s failed (%s)",
             pretty_uint(suite_exec).c_str(),
             pretty_uint(suite_fail).c_str(),
             pretty_percent(suite_fail, suite_exec).c_str(),
@@ -130,7 +130,7 @@ namespace
 
     void print_unit_test_result(const TestResult& result)
     {
-        LOG_INFO(g_logger, "unit testing summary:\n");
+        LOG_INFO(g_logger, "unit testing summary:");
         print_suite_case_result(result);
 
         const size_t assert_exec = result.get_assertion_execution_count();
@@ -138,7 +138,7 @@ namespace
 
         LOG_INFO(
             g_logger,
-            "  assertions  : %s executed, %s failed (%s)\n",
+            "  assertions  : %s executed, %s failed (%s)",
             pretty_uint(assert_exec).c_str(),
             pretty_uint(assert_fail).c_str(),
             pretty_percent(assert_fail, assert_exec).c_str());
@@ -146,7 +146,7 @@ namespace
 
     void print_unit_benchmark_result(const BenchmarkResult& result)
     {
-        LOG_INFO(g_logger, "unit benchmarking summary:\n");
+        LOG_INFO(g_logger, "unit benchmarking summary:");
         print_suite_case_result(result);
     }
 

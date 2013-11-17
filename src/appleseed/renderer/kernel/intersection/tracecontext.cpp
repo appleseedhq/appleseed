@@ -64,7 +64,7 @@ TraceContext::TraceContext(const Scene& scene)
         "  ShadingPoint     %s\n"
         "  ShadingRay       %s\n"
         "  ShadingResult    %s\n"
-        "  TriangleKey      %s\n",
+        "  TriangleKey      %s",
         pretty_size(sizeof(TriangleTree::NodeType)).c_str(),
         pretty_size(sizeof(GTriangleType)).c_str(),
         pretty_size(sizeof(RegionInfo)).c_str(),

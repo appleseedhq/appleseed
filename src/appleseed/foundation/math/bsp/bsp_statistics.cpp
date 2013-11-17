@@ -48,7 +48,7 @@ void TraversalStatistics::print(Logger& logger)
         "  traversals       %s\n"
         "  visited interior avg %.1f  min %s  max %s  dev %.1f\n"
         "  visited leaves   avg %.1f  min %s  max %s  dev %.1f\n"
-        "  tested items     avg %.1f  min %s  max %s  dev %.1f\n",
+        "  tested items     avg %.1f  min %s  max %s  dev %.1f",
         pretty_uint(m_traversal_count).c_str(),
         m_visited_interior.get_mean(),
         pretty_uint(m_visited_interior.get_min()).c_str(),

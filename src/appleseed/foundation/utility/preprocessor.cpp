@@ -270,9 +270,6 @@ struct Preprocessor::Impl
         split(text, "\n", m_input_lines);
 
         parse();
-
-        if (!text.empty() && text[text.size() - 1] == '\n')
-            m_result += '\n';
     }
 
     void parse()
