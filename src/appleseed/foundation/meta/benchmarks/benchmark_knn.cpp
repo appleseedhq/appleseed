@@ -83,10 +83,10 @@ BENCHMARK_SUITE(Foundation_Math_Knn_Answer)
     BENCHMARK_CASE_F(InsertIntoHeap_K100, Fixture<100>)     { insert_into_heap(); }
     BENCHMARK_CASE_F(InsertIntoHeap_K500, Fixture<500>)     { insert_into_heap(); }
 
-    BENCHMARK_CASE_F(Sort_K5, Fixture<5>)                   { m_answer.make_heap(); m_answer.sort(); }
-    BENCHMARK_CASE_F(Sort_K20, Fixture<20>)                 { m_answer.make_heap(); m_answer.sort(); }
-    BENCHMARK_CASE_F(Sort_K100, Fixture<100>)               { m_answer.make_heap(); m_answer.sort(); }
-    BENCHMARK_CASE_F(Sort_K500, Fixture<500>)               { m_answer.make_heap(); m_answer.sort(); }
+    BENCHMARK_CASE_F(Sort_K5, Fixture<5>)                   { m_answer.sort(); }
+    BENCHMARK_CASE_F(Sort_K20, Fixture<20>)                 { m_answer.sort(); }
+    BENCHMARK_CASE_F(Sort_K100, Fixture<100>)               { m_answer.sort(); }
+    BENCHMARK_CASE_F(Sort_K500, Fixture<500>)               { m_answer.sort(); }
 }
 
 BENCHMARK_SUITE(Foundation_Math_Knn_Query)
