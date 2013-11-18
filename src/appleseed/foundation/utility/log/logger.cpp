@@ -347,16 +347,19 @@ void Logger::write(
         const string header = format_evaluator.evaluate(impl->m_formatter.get_header_format(category));
         const string message = format_evaluator.evaluate(impl->m_formatter.get_message_format(category));
 
-        // Send the header and message to all log targets.
-        for (const_each<Impl::LogTargetContainer> i = impl->m_targets; i; ++i)
+        if (!message.empty())
         {
-            ILogTarget* target = *i;
-            target->write(
-                category,
-                file,
-                line,
-                header.c_str(),
-                message.c_str());
+            // Send the header and message to all log targets.
+            for (const_each<Impl::LogTargetContainer> i = impl->m_targets; i; ++i)
+            {
+                ILogTarget* target = *i;
+                target->write(
+                    category,
+                    file,
+                    line,
+                    header.c_str(),
+                    message.c_str());
+            }
         }
     }
 

@@ -151,7 +151,7 @@ namespace
             // Print the message header.
             LOG_ERROR(
                 m_logger,
-                "while benchmarking %s::%s: error in %s at line " FMT_SIZE_T ":\n",
+                "while benchmarking %s::%s: error in %s at line " FMT_SIZE_T ":",
                 benchmark_suite.get_name(),
                 benchmark_case.get_name(),
                 file,
@@ -187,7 +187,7 @@ namespace
 
             LOG_INFO(
                 m_logger,
-                "  %s: %s %s %s\n",
+                "  %s: %s %s %s",
                 benchmark_case.get_name(),
                 timing_result.m_ticks >= 1000.0
                     ? pretty_uint(static_cast<uint64>(timing_result.m_ticks)).c_str()
@@ -204,7 +204,7 @@ namespace
         {
             if (!m_suite_name_printed)
             {
-                LOG_INFO(m_logger, "%s:\n", benchmark_suite.get_name());
+                LOG_INFO(m_logger, "%s:", benchmark_suite.get_name());
                 m_suite_name_printed = true;
             }
         }

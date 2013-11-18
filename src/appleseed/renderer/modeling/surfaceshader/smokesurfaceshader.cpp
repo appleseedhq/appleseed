@@ -355,14 +355,14 @@ namespace
             {
                 RENDERER_LOG_INFO(
                     "fluid channels:\n"
-                    "  color        %s\n"
-                    "  density      %s\n"
-                    "  temperature  %s\n"
-                    "  fuel         %s\n"
-                    "  falloff      %s\n"
-                    "  pressure     %s\n"
-                    "  coordinates  %s\n"
-                    "  velocity     %s\n",
+                    "  color            %s\n"
+                    "  density          %s\n"
+                    "  temperature      %s\n"
+                    "  fuel             %s\n"
+                    "  falloff          %s\n"
+                    "  pressure         %s\n"
+                    "  coordinates      %s\n"
+                    "  velocity         %s",
                     m_channels.m_color_index == FluidChannels::NotPresent ? "no" : "yes",
                     m_channels.m_density_index == FluidChannels::NotPresent ? "no" : "yes",
                     m_channels.m_temperature_index == FluidChannels::NotPresent ? "no" : "yes",

@@ -112,7 +112,7 @@ void SPPMParameters::print() const
     RENDERER_LOG_INFO(
         "sppm settings:\n"
         "  dl               %s\n"
-        "  ibl              %s\n",
+        "  ibl              %s",
         m_dl_mode == SPPM ? "sppm" : m_dl_mode == RayTraced ? "ray traced" : "off",
         m_enable_ibl ? "on" : "off");
 
@@ -121,7 +121,7 @@ void SPPMParameters::print() const
         "  light photons    %s\n"
         "  env. photons     %s\n"
         "  max path length  %s\n"
-        "  rr min path len. %s\n",
+        "  rr min path len. %s",
         pretty_uint(m_light_photon_count).c_str(),
         pretty_uint(m_env_photon_count).c_str(),
         m_photon_tracing_max_path_length == ~0 ? "infinite" : pretty_uint(m_photon_tracing_max_path_length).c_str(),
