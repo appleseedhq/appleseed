@@ -174,7 +174,7 @@ string GroupBoxProxy::get() const
 RadioButtonProxy::RadioButtonProxy(QRadioButton* radio_button)
   : m_radio_button(radio_button)
 {
-    connect(m_radio_button, SIGNAL(stateChanged(int)), SIGNAL(signal_changed()));
+    connect(m_radio_button, SIGNAL(toggled(bool)), SIGNAL(signal_changed()));
 }
 
 void RadioButtonProxy::set(const string& value)
