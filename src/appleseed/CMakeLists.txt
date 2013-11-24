@@ -1189,12 +1189,6 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/specularbtdf.cpp
     renderer/modeling/bsdf/specularbtdf.h
 )
-if (WITH_OSL)
-    list (APPEND renderer_modeling_bsdf_sources
-        renderer/modeling/bsdf/oslbsdf.cpp
-        renderer/modeling/bsdf/oslbsdf.h
-    )
-endif ()
 list (APPEND appleseed_sources
     ${renderer_modeling_bsdf_sources}
 )
@@ -1515,12 +1509,6 @@ set (renderer_modeling_surfaceshader_sources
     renderer/modeling/surfaceshader/voxelaosurfaceshader.cpp
     renderer/modeling/surfaceshader/voxelaosurfaceshader.h
 )
-if (WITH_OSL)
-    list (APPEND renderer_modeling_surfaceshader_sources
-        renderer/modeling/surfaceshader/oslsurfaceshader.cpp
-        renderer/modeling/surfaceshader/oslsurfaceshader.h
-    )
-endif ()
 list (APPEND appleseed_sources
     ${renderer_modeling_surfaceshader_sources}
 )
