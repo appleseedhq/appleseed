@@ -141,18 +141,15 @@ link_directories (${Boost_LIBRARY_DIRS})
 
 if (USE_EXTERNAL_ZLIB)
     find_package (ZLIB REQUIRED)
-    add_definitions (-DWITH_EXTERNAL_ZLIB)
 endif ()
 
 if (USE_EXTERNAL_PNG)
     find_package (PNG REQUIRED)
-    add_definitions (-DWITH_EXTERNAL_PNG)
 endif ()
 
 if (USE_EXTERNAL_EXR)
     find_package (Imath REQUIRED)
     find_package (OpenEXR REQUIRED)
-    add_definitions (-DWITH_EXTERNAL_EXR)
 endif ()
 
 if (WITH_ALEMBIC)
@@ -161,7 +158,6 @@ if (WITH_ALEMBIC)
     if (USE_EXTERNAL_ALEMBIC)
         find_package (HDF5 REQUIRED COMPONENTS C HL)
         find_package (Alembic REQUIRED)
-        add_definitions (-DWITH_EXTERNAL_ALEMBIC)
     endif ()
 endif ()
 
