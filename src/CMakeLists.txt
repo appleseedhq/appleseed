@@ -65,6 +65,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/Modules)
 option (USE_STATIC_BOOST        "Use static Boost libs"                                 ON)
 option (USE_EXTERNAL_ZLIB       "Use external ZLIB lib"                                 OFF)
 option (USE_EXTERNAL_PNG        "Use external PNG lib"                                  OFF)
+option (USE_EXTERNAL_EXR        "Use external OpenEXR lib"                              OFF)
 option (USE_EXTERNAL_ALEMBIC    "Use external Alembic lib"                              OFF)
 option (USE_EXTERNAL_XERCES     "Use external Xerces lib"                               OFF)
 
@@ -148,10 +149,16 @@ if (USE_EXTERNAL_PNG)
     add_definitions (-DWITH_EXTERNAL_PNG)
 endif ()
 
+if (USE_EXTERNAL_EXR)
+    find_package (Imath REQUIRED)
+    find_package (OpenEXR REQUIRED)
+    add_definitions (-DWITH_EXTERNAL_EXR)
+endif ()
+
 if (WITH_ALEMBIC)
+    add_definitions (-DWITH_ALEMBIC)
+
     if (USE_EXTERNAL_ALEMBIC)
-        find_package (Imath REQUIRED)
-        find_package (OpenEXR REQUIRED)
         find_package (HDF5 REQUIRED COMPONENTS C HL)
         find_package (Alembic REQUIRED)
         add_definitions (-DWITH_EXTERNAL_ALEMBIC)
@@ -195,21 +202,29 @@ else ()
     include_directories (libpng)
 endif ()
 
+if (USE_EXTERNAL_EXR)
+    include_directories (
+        ${OPENEXR_INCLUDE_DIR}
+        ${OPENEXR_INCLUDE_DIR}/OpenEXR/
+        ${ILMBASE_INCLUDE_DIR}
+        ${ILMBASE_INCLUDE_DIR}/OpenEXR/
+    )
+else ()
+    include_directories (
+        openexr/include
+        openexr/include/OpenEXR
+    )
+endif ()
+
 if (WITH_ALEMBIC)
     if (USE_EXTERNAL_ALEMBIC)
         include_directories (
-            ${OPENEXR_INCLUDE_DIR}
-            ${OPENEXR_INCLUDE_DIR}/OpenEXR/
-            ${ILMBASE_INCLUDE_DIR}
-            ${ILMBASE_INCLUDE_DIR}/OpenEXR/
             ${HDF5_INCLUDE_DIRS}
             ${ALEMBIC_INCLUDE_DIRS}
         )
     else ()
         include_directories (
             alembic/lib
-            openexr/include
-            openexr/include/OpenEXR
         )
     endif ()
 endif ()
