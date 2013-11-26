@@ -72,6 +72,7 @@ option (WITH_CLI                "Build appleseed.cli"                           
 option (WITH_STUDIO             "Build appleseed.studio"                                ON)
 option (WITH_TOOLS              "Build appleseed tools"                                 ON)
 option (WITH_PYTHON             "Build Python module"                                   ON)
+option (WITH_ALEMBIC            "Build Alembic support"                                 ON)
 option (WITH_OSL                "Build OSL support"                                     OFF)
 
 option (WITH_QMC_SAMPLER        "Use QMC sampler (possible software patent issues)"     OFF)
@@ -147,12 +148,14 @@ if (USE_EXTERNAL_PNG)
     add_definitions (-DWITH_EXTERNAL_PNG)
 endif ()
 
-if (USE_EXTERNAL_ALEMBIC)
-    find_package (Imath REQUIRED)
-    find_package (OpenEXR REQUIRED)
-    find_package (HDF5 REQUIRED COMPONENTS C HL)
-    find_package (Alembic REQUIRED)
-    add_definitions (-DWITH_EXTERNAL_ALEMBIC)
+if (WITH_ALEMBIC)
+    if (USE_EXTERNAL_ALEMBIC)
+        find_package (Imath REQUIRED)
+        find_package (OpenEXR REQUIRED)
+        find_package (HDF5 REQUIRED COMPONENTS C HL)
+        find_package (Alembic REQUIRED)
+        add_definitions (-DWITH_EXTERNAL_ALEMBIC)
+    endif ()
 endif ()
 
 if (USE_EXTERNAL_XERCES)
@@ -192,21 +195,23 @@ else ()
     include_directories (libpng)
 endif ()
 
-if (USE_EXTERNAL_ALEMBIC)
-    include_directories (
-        ${OPENEXR_INCLUDE_DIR}
-        ${OPENEXR_INCLUDE_DIR}/OpenEXR/
-        ${ILMBASE_INCLUDE_DIR}
-        ${ILMBASE_INCLUDE_DIR}/OpenEXR/
-        ${HDF5_INCLUDE_DIRS}
-        ${ALEMBIC_INCLUDE_DIRS}
-    )
-else ()
-    include_directories (
-        alembic/lib
-        openexr/include
-        openexr/include/OpenEXR
-    )
+if (WITH_ALEMBIC)
+    if (USE_EXTERNAL_ALEMBIC)
+        include_directories (
+            ${OPENEXR_INCLUDE_DIR}
+            ${OPENEXR_INCLUDE_DIR}/OpenEXR/
+            ${ILMBASE_INCLUDE_DIR}
+            ${ILMBASE_INCLUDE_DIR}/OpenEXR/
+            ${HDF5_INCLUDE_DIRS}
+            ${ALEMBIC_INCLUDE_DIRS}
+        )
+    else ()
+        include_directories (
+            alembic/lib
+            openexr/include
+            openexr/include/OpenEXR
+        )
+    endif ()
 endif ()
 
 if (USE_EXTERNAL_XERCES)
