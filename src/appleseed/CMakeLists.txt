@@ -294,8 +294,6 @@ source_group ("foundation\\math" FILES
 )
 
 set (foundation_mesh_sources
-    foundation/mesh/alembicmeshfilereader.cpp
-    foundation/mesh/alembicmeshfilereader.h
     foundation/mesh/binarymeshfilereader.cpp
     foundation/mesh/binarymeshfilereader.h
     foundation/mesh/binarymeshfilewriter.cpp
@@ -315,6 +313,12 @@ set (foundation_mesh_sources
     foundation/mesh/objmeshfilewriter.cpp
     foundation/mesh/objmeshfilewriter.h
 )
+if (WITH_ALEMBIC)
+    list (APPEND foundation_mesh_sources
+        foundation/mesh/alembicmeshfilereader.cpp
+        foundation/mesh/alembicmeshfilereader.h
+    )
+endif ()
 list (APPEND appleseed_sources
     ${foundation_mesh_sources}
 )
@@ -1617,8 +1621,12 @@ append_custom_preprocessor_definitions (appleseed
 link_against_platform (appleseed)
 link_against_libpng (appleseed)
 link_against_xercesc (appleseed)
-link_against_alembic (appleseed)
-link_against_hdf5 (appleseed)
+
+if (WITH_ALEMBIC)
+    link_against_alembic (appleseed)
+    link_against_hdf5 (appleseed)
+endif ()
+
 link_against_openexr (appleseed)
 link_against_zlib (appleseed)
 

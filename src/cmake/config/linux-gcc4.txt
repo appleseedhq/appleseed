@@ -105,7 +105,7 @@ macro (link_against_libpng target)
 endmacro ()
 
 macro (link_against_openexr target)
-    if (USE_EXTERNAL_ALEMBIC)
+    if (USE_EXTERNAL_EXR)
         target_link_libraries (${target}
             ${ILMBASE_IEX_LIBRARY}
             ${ILMBASE_HALF_LIBRARY}
