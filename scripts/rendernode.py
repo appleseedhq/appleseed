@@ -45,7 +45,7 @@ import xml.dom.minidom as xml
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "1.14"
+VERSION = "1.15"
 RENDERS_DIR = "_renders"
 ARCHIVE_DIR = "_archives"
 LOGS_DIR = "_logs"
@@ -70,7 +70,9 @@ def convert_path_to_local(path):
 def format_message(severity, msg):
     now = datetime.datetime.now()
     padded_severity = severity.ljust(7)
-    return "\n".join("{0} watch {1} | {2}".format(now, padded_severity, line) \
+    return "\n".join("{0} watch {1} | {2}".format(now.strftime("%Y-%m-%d %H:%M:%S.%f"),
+                                                  padded_severity,
+                                                  line) \
         for line in msg.splitlines())
 
 VALID_USER_NAME_CHARS = frozenset("%s%s_-" % (string.ascii_letters, string.digits))
@@ -459,16 +461,15 @@ def main():
         while True:
             try:
                 while watch(args, log): pass
-                time.sleep(PAUSE_BETWEEN_CHECKS)
             except KeyboardInterrupt, SystemExit:
                 raise
             except ProcessFailedException:
-                time.sleep(PAUSE_BETWEEN_CHECKS)
+                pass
             except:
                 exc_type, exc_value, exc_traceback = sys.exc_info()
                 lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
                 log.error("".join(line for line in lines))
-                time.sleep(PAUSE_BETWEEN_CHECKS)
+            time.sleep(PAUSE_BETWEEN_CHECKS)
     except KeyboardInterrupt, SystemExit:
         pass
 
