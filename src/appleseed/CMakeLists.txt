@@ -294,8 +294,6 @@ source_group ("foundation\\math" FILES
 )
 
 set (foundation_mesh_sources
-    foundation/mesh/alembicmeshfilereader.cpp
-    foundation/mesh/alembicmeshfilereader.h
     foundation/mesh/binarymeshfilereader.cpp
     foundation/mesh/binarymeshfilereader.h
     foundation/mesh/binarymeshfilewriter.cpp
@@ -315,6 +313,12 @@ set (foundation_mesh_sources
     foundation/mesh/objmeshfilewriter.cpp
     foundation/mesh/objmeshfilewriter.h
 )
+if (WITH_ALEMBIC)
+    list (APPEND foundation_mesh_sources
+        foundation/mesh/alembicmeshfilereader.cpp
+        foundation/mesh/alembicmeshfilereader.h
+    )
+endif ()
 list (APPEND appleseed_sources
     ${foundation_mesh_sources}
 )
@@ -1189,12 +1193,6 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/specularbtdf.cpp
     renderer/modeling/bsdf/specularbtdf.h
 )
-if (WITH_OSL)
-    list (APPEND renderer_modeling_bsdf_sources
-        renderer/modeling/bsdf/oslbsdf.cpp
-        renderer/modeling/bsdf/oslbsdf.h
-    )
-endif ()
 list (APPEND appleseed_sources
     ${renderer_modeling_bsdf_sources}
 )
@@ -1515,12 +1513,6 @@ set (renderer_modeling_surfaceshader_sources
     renderer/modeling/surfaceshader/voxelaosurfaceshader.cpp
     renderer/modeling/surfaceshader/voxelaosurfaceshader.h
 )
-if (WITH_OSL)
-    list (APPEND renderer_modeling_surfaceshader_sources
-        renderer/modeling/surfaceshader/oslsurfaceshader.cpp
-        renderer/modeling/surfaceshader/oslsurfaceshader.h
-    )
-endif ()
 list (APPEND appleseed_sources
     ${renderer_modeling_surfaceshader_sources}
 )
@@ -1629,8 +1621,12 @@ append_custom_preprocessor_definitions (appleseed
 link_against_platform (appleseed)
 link_against_libpng (appleseed)
 link_against_xercesc (appleseed)
-link_against_alembic (appleseed)
-link_against_hdf5 (appleseed)
+
+if (WITH_ALEMBIC)
+    link_against_alembic (appleseed)
+    link_against_hdf5 (appleseed)
+endif ()
+
 link_against_openexr (appleseed)
 link_against_zlib (appleseed)
 

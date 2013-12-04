@@ -65,6 +65,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/Modules)
 option (USE_STATIC_BOOST        "Use static Boost libs"                                 ON)
 option (USE_EXTERNAL_ZLIB       "Use external ZLIB lib"                                 OFF)
 option (USE_EXTERNAL_PNG        "Use external PNG lib"                                  OFF)
+option (USE_EXTERNAL_EXR        "Use external OpenEXR lib"                              OFF)
 option (USE_EXTERNAL_ALEMBIC    "Use external Alembic lib"                              OFF)
 option (USE_EXTERNAL_XERCES     "Use external Xerces lib"                               OFF)
 
@@ -72,6 +73,7 @@ option (WITH_CLI                "Build appleseed.cli"                           
 option (WITH_STUDIO             "Build appleseed.studio"                                ON)
 option (WITH_TOOLS              "Build appleseed tools"                                 ON)
 option (WITH_PYTHON             "Build Python module"                                   ON)
+option (WITH_ALEMBIC            "Build Alembic support"                                 ON)
 option (WITH_OSL                "Build OSL support"                                     OFF)
 
 option (WITH_QMC_SAMPLER        "Use QMC sampler (possible software patent issues)"     OFF)
@@ -139,20 +141,24 @@ link_directories (${Boost_LIBRARY_DIRS})
 
 if (USE_EXTERNAL_ZLIB)
     find_package (ZLIB REQUIRED)
-    add_definitions (-DWITH_EXTERNAL_ZLIB)
 endif ()
 
 if (USE_EXTERNAL_PNG)
     find_package (PNG REQUIRED)
-    add_definitions (-DWITH_EXTERNAL_PNG)
 endif ()
 
-if (USE_EXTERNAL_ALEMBIC)
+if (USE_EXTERNAL_EXR)
     find_package (Imath REQUIRED)
     find_package (OpenEXR REQUIRED)
-    find_package (HDF5 REQUIRED COMPONENTS C HL)
-    find_package (Alembic REQUIRED)
-    add_definitions (-DWITH_EXTERNAL_ALEMBIC)
+endif ()
+
+if (WITH_ALEMBIC)
+    add_definitions (-DWITH_ALEMBIC)
+
+    if (USE_EXTERNAL_ALEMBIC)
+        find_package (HDF5 REQUIRED COMPONENTS C HL)
+        find_package (Alembic REQUIRED)
+    endif ()
 endif ()
 
 if (USE_EXTERNAL_XERCES)
@@ -192,21 +198,31 @@ else ()
     include_directories (libpng)
 endif ()
 
-if (USE_EXTERNAL_ALEMBIC)
+if (USE_EXTERNAL_EXR)
     include_directories (
         ${OPENEXR_INCLUDE_DIR}
         ${OPENEXR_INCLUDE_DIR}/OpenEXR/
         ${ILMBASE_INCLUDE_DIR}
         ${ILMBASE_INCLUDE_DIR}/OpenEXR/
-        ${HDF5_INCLUDE_DIRS}
-        ${ALEMBIC_INCLUDE_DIRS}
     )
 else ()
     include_directories (
-        alembic/lib
         openexr/include
         openexr/include/OpenEXR
     )
+endif ()
+
+if (WITH_ALEMBIC)
+    if (USE_EXTERNAL_ALEMBIC)
+        include_directories (
+            ${HDF5_INCLUDE_DIRS}
+            ${ALEMBIC_INCLUDE_DIRS}
+        )
+    else ()
+        include_directories (
+            alembic/lib
+        )
+    endif ()
 endif ()
 
 if (USE_EXTERNAL_XERCES)
