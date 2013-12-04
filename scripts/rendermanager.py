@@ -44,7 +44,7 @@ import xml.dom.minidom as xml
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "1.2"
+VERSION = "1.3"
 RENDERS_DIR = "_renders"
 ARCHIVE_DIR = "_archives"
 LOGS_DIR = "_logs"
@@ -79,7 +79,9 @@ def convert_path_to_local(path):
 def format_message(severity, msg):
     now = datetime.datetime.now()
     padded_severity = severity.ljust(7)
-    return "\n".join("{0} watch {1} | {2}".format(now, padded_severity, line) \
+    return "\n".join("{0} watch {1} | {2}".format(now.strftime("%Y-%m-%d %H:%M:%S.%f"),
+                                                  padded_severity,
+                                                  line) \
         for line in msg.splitlines())
 
 
@@ -166,16 +168,17 @@ class Log:
 # Dependencies handling.
 #--------------------------------------------------------------------------------------------------
 
-def get_project_files(directory):
-    project_files = []
+def get_files(directory, pattern):
+    files = []
+    for file in glob.glob(os.path.join(directory, pattern)):
+        files.append(file)
+    return files
 
-    for entry in os.listdir(directory):
-        filepath = os.path.join(directory, entry)
-        if os.path.isfile(filepath):
-            if os.path.splitext(filepath)[1] == '.appleseed':
-                project_files.append(entry)
+def get_pending_project_files(directory):
+    return get_files(directory, "*.appleseed")
 
-    return project_files
+def get_pending_and_rendering_project_files(directory):
+    return get_files(directory, "*.appleseed*")
 
 def extract_project_deps(directory, project_filepath):
     try:
@@ -231,11 +234,12 @@ def remove_orphan_project_file_deps(watched_directory, archive_directory, projec
 
     removed_deps = 0
 
-    # Delete orphan dependencies.
+    # Remove orphan dependencies.
     for dep in deps:
         if dep not in deps_refcounts or deps_refcounts[dep] == 0:
             dep_filepath = os.path.join(watched_directory, dep)
             if os.path.isfile(dep_filepath):
+                log.info("removing orphan dependency: {0}".format(dep_filepath))
                 os.remove(dep_filepath)
                 removed_deps += 1
 
@@ -248,7 +252,7 @@ def remove_orphan_dependencies(watched_directory, archive_directory, deps_refcou
 
     removed_deps = 0
 
-    for project_file in get_project_files(archive_directory):
+    for project_file in get_pending_and_rendering_project_files(archive_directory):
         removed_deps += remove_orphan_project_file_deps(watched_directory, archive_directory, project_file, deps_refcounts, log)
 
     if removed_deps > 0:
@@ -364,6 +368,40 @@ def move_files(source_dir, dest_dir, log):
 
 
 #--------------------------------------------------------------------------------------------------
+# High level management logic.
+#--------------------------------------------------------------------------------------------------
+
+def manage(args, log):
+    # Compute and print the size of the watched directory.
+    watched_dir_size = get_directory_size(args.watched_directory)
+    watched_dir_size_mb = watched_dir_size / (1024 * 1024)
+    log.info("size of watched directory is {0:.2f} MB ({1} bytes).".format(watched_dir_size_mb, watched_dir_size))
+    
+    # Retrieve the list of pending project files in the watched directory.
+    pending_project_files = get_pending_project_files(args.watched_directory)
+    log.info("found {0} pending project file(s) in {1}.".format(len(pending_project_files),
+                                                                os.path.abspath(args.watched_directory)))
+
+    # Gather all the dependencies of these project files.
+    deps_refcounts = gather_dependencies_refcounts(args.watched_directory, pending_project_files)
+
+    # Remove orphan dependencies.
+    remove_orphan_dependencies(args.watched_directory,
+                               os.path.join(args.watched_directory, ARCHIVE_DIR),
+                               deps_refcounts, log)
+
+    # Submit new project files.
+    submit_project_files(args.shot_directory,
+                         args.watched_directory,
+                         os.path.join(args.watched_directory, ARCHIVE_DIR),
+                         args.max_size, log)
+
+    # Move rendered frames to the shot directory.
+    move_files(os.path.join(args.watched_directory, RENDERS_DIR),
+               args.frames_directory, log)
+
+
+#--------------------------------------------------------------------------------------------------
 # Entry point.
 #--------------------------------------------------------------------------------------------------
 
@@ -372,9 +410,14 @@ def main():
     parser = argparse.ArgumentParser(description="send a shot to a folder being watched by " \
                                      "appleseed render nodes.")
     parser.add_argument("-s", "--max-size", metavar="MB",
-                        help="set the maximum allowed size in MB of the directory being watched (default is unlimited)")
-    parser.add_argument("shot_directory", help="directory containing the original shot data")
-    parser.add_argument("watched_directory", help="directory being watched by render nodes")
+                        help="set the maximum allowed size in MB of the directory being watched " \
+                        "(default is unlimited)")
+    parser.add_argument("--shot", metavar="shot-directory", dest="shot_directory",
+                        help="directory containing the original shot data")
+    parser.add_argument("--watched", metavar="watched-directory", dest="watched_directory",
+                        help="directory being watched by render nodes")
+    parser.add_argument("--frames", metavar="frames-directory", dest="frames_directory",
+                        help="directory where the rendered frames should be stored")
     args = parser.parse_args()
 
     if args.max_size is not None:
@@ -390,35 +433,14 @@ def main():
     # Main management loop.
     try:
         while True:
-            # Compute and print the size of the watched directory.
-            watched_dir_size = get_directory_size(args.watched_directory)
-            watched_dir_size_mb = watched_dir_size / (1024 * 1024)
-            log.info("size of watched directory is {0:.2f} MB ({1} bytes).".format(watched_dir_size_mb, watched_dir_size))
-            
-            # Retrieve the list of pending project files in the watched directory.
-            pending_project_files = get_project_files(args.watched_directory)
-            log.info("found {0} pending project file(s) in {1}.".format(len(pending_project_files),
-                                                                        os.path.abspath(args.watched_directory)))
-
-            # Gather all the dependencies of these project files.
-            deps_refcounts = gather_dependencies_refcounts(args.watched_directory, pending_project_files)
-
-            # Remove orphan dependencies.
-            remove_orphan_dependencies(args.watched_directory,
-                                       os.path.join(args.watched_directory, ARCHIVE_DIR),
-                                       deps_refcounts, log)
-
-            # Submit new project files.
-            submit_project_files(args.shot_directory,
-                                 args.watched_directory,
-                                 os.path.join(args.watched_directory, ARCHIVE_DIR),
-                                 args.max_size, log)
-
-            # Move rendered frames to the shot directory.
-            move_files(os.path.join(args.watched_directory, RENDERS_DIR),
-                       os.path.join(args.shot_directory, RENDERS_DIR),
-                       log)
-
+            try:
+                manage(args, log)
+            except KeyboardInterrupt, SystemExit:
+                raise
+            except:
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
+                log.error("".join(line for line in lines))
             time.sleep(PAUSE_BETWEEN_CHECKS)
     except KeyboardInterrupt, SystemExit:
         pass
