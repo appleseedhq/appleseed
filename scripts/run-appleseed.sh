@@ -9,4 +9,3 @@ if [ -n "." ] ; then
 fi
 
 exec ./appleseed.studio
-
