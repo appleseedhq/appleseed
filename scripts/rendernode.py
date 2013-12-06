@@ -45,7 +45,7 @@ import xml.dom.minidom as xml
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "1.15"
+VERSION = "1.16"
 RENDERS_DIR = "_renders"
 ARCHIVE_DIR = "_archives"
 LOGS_DIR = "_logs"
@@ -361,12 +361,12 @@ def extract_project_deps(project_filepath, log):
 
     return True, deps
 
-def count_missing_project_deps(deps):
-    missing_deps = 0
+def gather_missing_project_deps(deps):
+    missing_deps = []
 
     for filepath in deps:
         if not os.path.exists(filepath):
-            missing_deps += 1
+            missing_deps.append(filepath)
 
     return missing_deps
 
@@ -385,13 +385,21 @@ def watch(args, log):
     # Render the first project file that has no missing dependencies.
     for project_filepath in project_files:
         deps_success, deps = extract_project_deps(project_filepath, log)
+
         if not deps_success:
             continue
 
-        missing_deps = count_missing_project_deps(deps)
-        if missing_deps > 0:
-            Log.info_no_log("{0} missing dependencies for {1}.".format(missing_deps,
-                                                                       project_filepath))
+        missing_deps = gather_missing_project_deps(deps)
+
+        if len(missing_deps) > 0:
+            if args.print_missing_deps:
+                Log.info_no_log("{0} missing dependencies for {1}:".format(len(missing_deps),
+                                                                           project_filepath))
+                for dep in missing_deps:
+                    Log.info_no_log("  {0}".format(dep))
+            else:
+                Log.info_no_log("{0} missing dependencies for {1}.".format(len(missing_deps),
+                                                                           project_filepath))
             continue
 
         return render_project(args, project_filepath, log)
@@ -416,6 +424,8 @@ def main():
                         help="set user name (by default the host name is used)")
     parser.add_argument("-p", "--parameter", dest="args", metavar="ARG", nargs="*",
                         help="forward additional arguments to appleseed")
+    parser.add_argument("--print-missing-deps", action='store_true',
+                        help="print missing dependencies")
     parser.add_argument("directory", help="directory to watch")
     args = parser.parse_args()
 
