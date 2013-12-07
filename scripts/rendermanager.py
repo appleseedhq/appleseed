@@ -44,7 +44,7 @@ import xml.dom.minidom as xml
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "1.4"
+VERSION = "1.5"
 RENDERS_DIR = "_renders"
 ARCHIVE_DIR = "_archives"
 LOGS_DIR = "_logs"
@@ -268,7 +268,7 @@ def print_rendering_status(shot_directory, watched_directory, archive_directory,
             continue
 
     total_count = completed_count + rendering_count + pending_count
-    completed_percent = 100.0 * completed_count / total_count
+    completed_percent = 0 if total_count == 0 else 100.0 * completed_count / total_count
 
     log.info("project files: {0}/{1} completed ({2} %), {3} rendering, {4} pending." \
         .format(completed_count, total_count, completed_percent, rendering_count, pending_count))
