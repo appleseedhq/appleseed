@@ -44,7 +44,7 @@ import xml.dom.minidom as xml
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "1.5"
+VERSION = "1.6"
 RENDERS_DIR = "_renders"
 ARCHIVE_DIR = "_archives"
 LOGS_DIR = "_logs"
@@ -80,7 +80,7 @@ def format_message(severity, msg):
     now = datetime.datetime.now()
     timestamp = now.strftime("%Y-%m-%d %H:%M:%S.%f")
     padded_severity = severity.ljust(7)
-    return "\n".join("{0} watch {1} | {2}".format(timestamp, padded_severity, line) \
+    return "\n".join("{0} mgr   {1} | {2}".format(timestamp, padded_severity, line) \
         for line in msg.splitlines())
 
 
