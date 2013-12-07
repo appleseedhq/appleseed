@@ -78,10 +78,9 @@ def convert_path_to_local(path):
 
 def format_message(severity, msg):
     now = datetime.datetime.now()
+    timestamp = now.strftime("%Y-%m-%d %H:%M:%S.%f")
     padded_severity = severity.ljust(7)
-    return "\n".join("{0} watch {1} | {2}".format(now.strftime("%Y-%m-%d %H:%M:%S.%f"),
-                                                  padded_severity,
-                                                  line) \
+    return "\n".join("{0} watch {1} | {2}".format(timestamp, padded_severity, line) \
         for line in msg.splitlines())
 
 
