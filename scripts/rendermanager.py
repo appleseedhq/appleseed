@@ -44,11 +44,11 @@ import xml.dom.minidom as xml
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "1.6"
+VERSION = "1.7"
 RENDERS_DIR = "_renders"
 ARCHIVE_DIR = "_archives"
 LOGS_DIR = "_logs"
-PAUSE_BETWEEN_CHECKS = 15   # in seconds
+PAUSE_BETWEEN_CHECKS = 30   # in seconds
 
 
 #--------------------------------------------------------------------------------------------------
@@ -65,6 +65,12 @@ def get_directory_size(directory):
             except:
                 pass
     return size
+
+def get_files(directory, pattern):
+    files = []
+    for file in glob.glob(os.path.join(directory, pattern)):
+        files.append(file)
+    return files
 
 def safe_mkdir(dir):
     if not os.path.exists(dir):
@@ -164,17 +170,8 @@ class Log:
 
 
 #--------------------------------------------------------------------------------------------------
-# Dependencies handling.
+# Code to extract dependencies from project files.
 #--------------------------------------------------------------------------------------------------
-
-def get_files(directory, pattern):
-    files = []
-    for file in glob.glob(os.path.join(directory, pattern)):
-        files.append(file)
-    return files
-
-def get_pending_and_rendering_project_files(directory):
-    return get_files(directory, "*.appleseed*")
 
 def extract_project_deps(directory, project_filepath):
     try:
@@ -201,87 +198,26 @@ def extract_project_deps(directory, project_filepath):
 
     return True, deps
 
-def gather_dependencies_refcounts(directory, log):
+def compute_deps_refcount(directory, project_files):
     refcounts = {}
 
-    project_files = get_pending_and_rendering_project_files(directory)
+    for project_filepath in project_files:
+        deps_success, deps = extract_project_deps(directory, project_filepath)
 
-    if len(project_files) > 0:
-        log.info_no_log("computing dependencies of {0} project file(s)...".format(len(project_files)))
-
-        for project_filepath in project_files:
-            deps_success, deps = extract_project_deps(directory, project_filepath)
-            if not deps_success:
-                continue
-
-            for dep in deps:
-                if dep in refcounts:
-                    refcounts[dep] += 1
-                else:
-                    refcounts[dep] = 1
-
-        log.info_no_log("done.")
+        for dep in deps:
+            if dep in refcounts:
+                refcounts[dep] += 1
+            else:
+                refcounts[dep] = 1
 
     return refcounts
 
 
 #--------------------------------------------------------------------------------------------------
-# Project files handling.
+# Code to remove orphan dependencies.
 #--------------------------------------------------------------------------------------------------
 
-def is_project_file_being_rendered(watched_directory, project_filepath):
-    for file in glob.glob(os.path.join(watched_directory, "*.appleseed.*")):
-        if os.path.splitext(file)[0] == os.path.join(watched_directory, project_filepath):
-            return True, os.path.splitext(file)[1][1:]
-
-    return False, ""
-
-def print_rendering_status(shot_directory, watched_directory, archive_directory, log):
-    rendering_count = 0
-    pending_count = 0
-    completed_count = 0
-    usernames = {}
-
-    for entry in os.listdir(shot_directory):
-        # Only consider appleseed project files.
-        src_filepath = os.path.join(shot_directory, entry)
-        if not os.path.isfile(src_filepath):
-            continue
-        if os.path.splitext(src_filepath)[1] != '.appleseed':
-            continue
-
-        # Count pending project files.
-        if os.path.isfile(os.path.join(watched_directory, entry)):
-            pending_count += 1
-            continue
-
-        # Count project files being rendered.
-        being_rendered, username = is_project_file_being_rendered(watched_directory, entry)
-        if being_rendered:
-            rendering_count += 1
-            usernames[username] = entry
-            continue
-
-        # Count completed project files.
-        if os.path.isfile(os.path.join(archive_directory, entry)):
-            completed_count += 1
-            continue
-
-    total_count = completed_count + rendering_count + pending_count
-    completed_percent = 0 if total_count == 0 else 100.0 * completed_count / total_count
-
-    log.info("project files: {0}/{1} completed ({2} %), {3} rendering, {4} pending." \
-        .format(completed_count, total_count, completed_percent, rendering_count, pending_count))
-
-    if len(usernames) > 0:
-        log.info_no_log("assignments:")
-        for username in usernames.keys():
-            filename = usernames[username]
-            log.info_no_log("  {0}    {1}".format(filename, username))
-    else:
-        log.info_no_log("no project file assigned.")
-
-def remove_orphan_project_file_deps(watched_directory, archive_directory, project_filepath, deps_refcounts, log):
+def remove_orphan_project_file_deps(watched_directory, archive_directory, project_filepath, deps_refcounts):
     # Extract the dependencies from this project file.
     deps_success, deps = extract_project_deps(archive_directory, project_filepath)
     if not deps_success:
@@ -299,7 +235,7 @@ def remove_orphan_project_file_deps(watched_directory, archive_directory, projec
 
     return removed_deps
 
-def remove_orphan_dependencies(watched_directory, archive_directory, deps_refcounts, log):
+def remove_orphan_dependencies(watched_directory, archive_directory, deps_refcounts):
     # No dependencies to remove if the archive directory doesn't exist.
     if not os.path.isdir(archive_directory):
         return
@@ -307,10 +243,14 @@ def remove_orphan_dependencies(watched_directory, archive_directory, deps_refcou
     removed_deps = 0
 
     for project_file in get_files(archive_directory, "*.appleseed"):
-        removed_deps += remove_orphan_project_file_deps(watched_directory, archive_directory, project_file, deps_refcounts, log)
+        removed_deps += remove_orphan_project_file_deps(watched_directory, archive_directory, project_file, deps_refcounts)
 
-    if removed_deps > 0:
-        log.info("removed {0} orphan dependency(ies).".format(removed_deps))
+    return removed_deps
+
+
+#--------------------------------------------------------------------------------------------------
+# Code to submit new project files to be rendered.
+#--------------------------------------------------------------------------------------------------
 
 def try_submitting_project_file(shot_directory, watched_directory, max_size, project_filepath, log):
     # Extract the dependencies from this project file.
@@ -382,7 +322,12 @@ def submit_project_files(shot_directory, watched_directory, archive_directory, m
             log.info("no longer submitting project files in this round.")
             break
 
-def move_files(source_dir, dest_dir, log):
+
+#--------------------------------------------------------------------------------------------------
+# Code to move rendered frames.
+#--------------------------------------------------------------------------------------------------
+
+def move_files(source_dir, dest_dir):
     # No files to move if the source directory doesn't exist.
     if not os.path.isdir(source_dir):
         return
@@ -400,13 +345,68 @@ def move_files(source_dir, dest_dir, log):
             shutil.move(source_filepath, dest_dir)
             moved_files += 1
 
-    if moved_files > 0:
-        log.info("moved {0} file(s) to {1}.".format(moved_files,
-                                                    os.path.abspath(dest_dir)))
+    return moved_files
 
 
 #--------------------------------------------------------------------------------------------------
-# High level management logic.
+# Code to print the rendering status.
+#--------------------------------------------------------------------------------------------------
+
+def is_project_file_being_rendered(watched_directory, project_filepath):
+    for file in glob.glob(os.path.join(watched_directory, "*.appleseed.*")):
+        if os.path.splitext(file)[0] == os.path.join(watched_directory, project_filepath):
+            return True, os.path.splitext(file)[1][1:]
+
+    return False, ""
+
+def print_rendering_status(shot_directory, watched_directory, archive_directory, log):
+    rendering_count = 0
+    pending_count = 0
+    completed_count = 0
+    usernames = {}
+
+    for entry in os.listdir(shot_directory):
+        # Only consider appleseed project files.
+        src_filepath = os.path.join(shot_directory, entry)
+        if not os.path.isfile(src_filepath):
+            continue
+        if os.path.splitext(src_filepath)[1] != '.appleseed':
+            continue
+
+        # Count pending project files.
+        if os.path.isfile(os.path.join(watched_directory, entry)):
+            pending_count += 1
+            continue
+
+        # Count project files being rendered.
+        being_rendered, username = is_project_file_being_rendered(watched_directory, entry)
+        if being_rendered:
+            rendering_count += 1
+            usernames[username] = entry
+            continue
+
+        # Count completed project files.
+        if os.path.isfile(os.path.join(archive_directory, entry)):
+            completed_count += 1
+            continue
+
+    total_count = completed_count + rendering_count + pending_count
+    completed_percent = 0 if total_count == 0 else 100.0 * completed_count / total_count
+
+    log.info("project files: {0}/{1} completed ({2:.2f} %), {3} rendering, {4} pending." \
+        .format(completed_count, total_count, completed_percent, rendering_count, pending_count))
+
+    if len(usernames) > 0:
+        log.info_no_log("assignments:")
+        for username in usernames.keys():
+            filename = usernames[username]
+            log.info_no_log("  {0}    {1}".format(filename, username))
+    else:
+        log.info_no_log("no project file assigned.")
+
+
+#--------------------------------------------------------------------------------------------------
+# Top-level logic.
 #--------------------------------------------------------------------------------------------------
 
 def manage(args, log):
@@ -421,22 +421,31 @@ def manage(args, log):
                            log)
 
     # Gather all the dependencies of pending and rendering project files.
-    deps_refcounts = gather_dependencies_refcounts(args.watched_directory, log)
+    project_files = get_files(args.watched_directory, "*.appleseed*")
+    log.info_no_log("computing dependencies of {0} project file(s)...".format(len(project_files)))
+    deps_refcounts = compute_deps_refcount(args.watched_directory, project_files)
 
     # Remove orphan dependencies.
-    remove_orphan_dependencies(args.watched_directory,
-                               os.path.join(args.watched_directory, ARCHIVE_DIR),
-                               deps_refcounts, log)
+    log.info_no_log("removing orphan dependencies...")
+    removed_deps = remove_orphan_dependencies(args.watched_directory,
+                                              os.path.join(args.watched_directory, ARCHIVE_DIR),
+                                              deps_refcounts)
+    if removed_deps > 0:
+        log.info("removed {0} orphan dependency(ies).".format(removed_deps))
 
     # Submit new project files.
+    log.info_no_log("submitting project files...")
     submit_project_files(args.shot_directory,
                          args.watched_directory,
                          os.path.join(args.watched_directory, ARCHIVE_DIR),
                          args.max_size, log)
 
     # Move rendered frames to the shot directory.
-    move_files(os.path.join(args.watched_directory, RENDERS_DIR),
-               args.frames_directory, log)
+    log.info_no_log("moving rendered frames...")
+    moved_files = move_files(os.path.join(args.watched_directory, RENDERS_DIR),
+                             args.frames_directory)
+    if moved_files > 0:
+        log.info("moved {0} file(s) to {1}.".format(moved_files, os.path.abspath(args.frames_directory)))
 
 
 #--------------------------------------------------------------------------------------------------
@@ -479,7 +488,10 @@ def main():
                 exc_type, exc_value, exc_traceback = sys.exc_info()
                 lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
                 log.error("".join(line for line in lines))
+
+            log.info_no_log("waiting...")
             time.sleep(PAUSE_BETWEEN_CHECKS)
+
     except KeyboardInterrupt, SystemExit:
         pass
 
