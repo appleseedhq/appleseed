@@ -44,7 +44,7 @@ import xml.dom.minidom as xml
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "1.7"
+VERSION = "1.8"
 RENDERS_DIR = "_renders"
 ARCHIVE_DIR = "_archives"
 LOGS_DIR = "_logs"
@@ -252,6 +252,13 @@ def remove_orphan_dependencies(watched_directory, archive_directory, deps_refcou
 # Code to submit new project files to be rendered.
 #--------------------------------------------------------------------------------------------------
 
+def is_project_file_being_rendered(watched_directory, project_filepath):
+    for file in glob.glob(os.path.join(watched_directory, "*.appleseed.*")):
+        if os.path.splitext(file)[0] == os.path.join(watched_directory, project_filepath):
+            return True
+
+    return False
+
 def try_submitting_project_file(shot_directory, watched_directory, max_size, project_filepath, log):
     # Extract the dependencies from this project file.
     deps_success, deps = extract_project_deps(shot_directory, project_filepath)
@@ -309,8 +316,7 @@ def submit_project_files(shot_directory, watched_directory, archive_directory, m
             continue
 
         # Don't submit the project file if it is currently being rendered.
-        being_rendered, username = is_project_file_being_rendered(watched_directory, entry)
-        if being_rendered:
+        if is_project_file_being_rendered(watched_directory, entry):
             continue
 
         # Don't submit the project file if it was already rendered.
@@ -352,49 +358,40 @@ def move_files(source_dir, dest_dir):
 # Code to print the rendering status.
 #--------------------------------------------------------------------------------------------------
 
-def is_project_file_being_rendered(watched_directory, project_filepath):
-    for file in glob.glob(os.path.join(watched_directory, "*.appleseed.*")):
-        if os.path.splitext(file)[0] == os.path.join(watched_directory, project_filepath):
-            return True, os.path.splitext(file)[1][1:]
-
-    return False, ""
-
 def print_rendering_status(shot_directory, watched_directory, archive_directory, log):
-    rendering_count = 0
     pending_count = 0
     completed_count = 0
+    inprogress_count = 0
     usernames = {}
 
-    for entry in os.listdir(shot_directory):
-        # Only consider appleseed project files.
-        src_filepath = os.path.join(shot_directory, entry)
-        if not os.path.isfile(src_filepath):
-            continue
-        if os.path.splitext(src_filepath)[1] != '.appleseed':
-            continue
+    # Count pending and completed project files.
+    for filepath in get_files(shot_directory, "*.appleseed"):
+        filename = os.path.basename(filepath)
 
-        # Count pending project files.
-        if os.path.isfile(os.path.join(watched_directory, entry)):
+        # Look for this project file in the watched directory.
+        if os.path.isfile(os.path.join(watched_directory, filename)):
             pending_count += 1
             continue
 
-        # Count project files being rendered.
-        being_rendered, username = is_project_file_being_rendered(watched_directory, entry)
-        if being_rendered:
-            rendering_count += 1
-            usernames[username] = entry
-            continue
-
         # Count completed project files.
-        if os.path.isfile(os.path.join(archive_directory, entry)):
+        if os.path.isfile(os.path.join(archive_directory, filename)):
             completed_count += 1
             continue
 
-    total_count = completed_count + rendering_count + pending_count
+    # Count in-progress project files.
+    for filepath in get_files(watched_directory, "*.appleseed.*"):
+        filename = os.path.basename(filepath)
+        parts = os.path.splitext(filename)
+        if os.path.splitext(parts[0])[1] == ".appleseed":
+            inprogress_count += 1
+            username = parts[1][1:]
+            usernames[username] = parts[0]
+
+    total_count = completed_count + inprogress_count + pending_count
     completed_percent = 0 if total_count == 0 else 100.0 * completed_count / total_count
 
     log.info("project files: {0}/{1} completed ({2:.2f} %), {3} rendering, {4} pending." \
-        .format(completed_count, total_count, completed_percent, rendering_count, pending_count))
+        .format(completed_count, total_count, completed_percent, inprogress_count, pending_count))
 
     if len(usernames) > 0:
         log.info_no_log("assignments:")
