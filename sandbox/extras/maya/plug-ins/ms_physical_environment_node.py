@@ -299,6 +299,18 @@ def ms_physical_environment_nodeInitializer():
     horizon_shift_AttrFloat.setKeyable(True)
     ms_physical_environment.addAttribute(ms_physical_environment.horizon_shift)
 
+    # create_physical_sun
+    create_physical_sun_nAttr = OpenMaya.MFnNumericAttribute()
+    ms_physical_environment.create_physical_sun = create_physical_sun_nAttr.create("create_physical_sun", "create_physical_sun", OpenMaya.MFnNumericData.kBoolean, True)
+    ms_physical_environment.addAttribute(ms_physical_environment.create_physical_sun)
+
+    # physical_sun_multiplier
+    physical_sun_multiplier_AttrFloat = OpenMaya.MFnNumericAttribute()
+    ms_physical_environment.physical_sun_multiplier = physical_sun_multiplier_AttrFloat.create("physical_sun_multiplier", "physical_sun_multiplier", OpenMaya.MFnNumericData.kFloat, 1.0)
+    physical_sun_multiplier_AttrFloat.setHidden(False)
+    physical_sun_multiplier_AttrFloat.setKeyable(True)
+    ms_physical_environment.addAttribute(ms_physical_environment.physical_sun_multiplier)
+
 
 #--------------------------------------------------------------------------------------------------
 # node initialization .

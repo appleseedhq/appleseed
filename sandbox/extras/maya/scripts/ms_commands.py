@@ -38,11 +38,34 @@ import math
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-MAYASEED_VERSION = '0.5.0'
-MAYASEED_URL = 'https://github.com/jupiter-jazz/Mayaseed'
+MAYASEED_VERSION = '0.6.2'
+MAYASEED_URL = 'https://github.com/jupiter-jazz/mayaseed'
 APPLESEED_URL = 'http://appleseedhq.net/'
 ROOT_DIRECTORY = os.path.split((os.path.dirname(inspect.getfile(inspect.currentframe()))))[0]
 
+
+#--------------------------------------------------------------------------------------------------
+# Export modifiers.
+#--------------------------------------------------------------------------------------------------
+
+# attr name, data type, attribute type, default_value
+
+LIGHT_EXPORT_MODIFIERS = [
+['ms_area_light_visibility', None, 'bool', False],
+['ms_cast_indirect_light', None, 'bool', False],
+['ms_importance_multiplier', None, 'float', 1],
+]
+
+MATERIAL_EXPORT_MODIFIERS = [
+['ms_cast_indirect_light', None, 'bool', False],
+['ms_importance_multiplier', None, 'float', 1],
+['ms_front_lighting_samples', None, 'float', 1],
+['ms_back_lighting_samples', None, 'float', 1],
+['ms_double_sided_material', None, 'bool', True],
+['ms_transparency_is_material_alpha', None, 'bool', False],
+['ms_secondary_surface_shader', None, 'message', True],
+['ms_emit_light', None, 'bool', True],
+]
 
 #--------------------------------------------------------------------------------------------------
 # Show About dialog.
@@ -241,9 +264,16 @@ def transform_is_visible(node_name):
     if not cmds.getAttr(node_name + '.visibility'):
         return False
 
+    return True
+
+
+def mesh_is_renderable(mesh_name):
+
+    """ Returns the renderability state of a mesh, this value will not change over time """
+
     # check to see if it's an intermediate mesh
-    if cmds.attributeQuery('intermediateObject', node=node_name, exists=True):
-        if cmds.getAttr(node_name + '.intermediateObject'):
+    if cmds.attributeQuery('intermediateObject', node=mesh_name, exists=True):
+        if cmds.getAttr(mesh_name + '.intermediateObject'):
             return False
 
     return True
@@ -270,7 +300,7 @@ def transform_is_renderable(node_name):
 #--------------------------------------------------------------------------------------------------
 
 def visible_in_hierarchy(parent):
-    parents = cmds.listRelatives(parent, ap=True)
+    parents = cmds.listRelatives(parent, ap=True, f=True)
     if parents is not None:
         if cmds.getAttr(parents[0] + '.visibility') == False:
             return False
@@ -438,9 +468,10 @@ def create_shading_node(model, name=None, entity_defs_obj=False):
         if entity_key == model:
             for attr_key in entity_defs[entity_key].attributes.keys():
                 attr = entity_defs[entity_key].attributes[attr_key]
-                if attr.type == 'text' or attr.type == 'enumeration' or attr.type == 'boolean':
+                if attr.type == 'text' or attr.type == 'enumeration' or attr.type == 'boolean' or attr.type == 'numeric':
                      cmds.addAttr(shading_node_name, longName=attr_key, dt="string")
                      cmds.setAttr(shading_node_name + '.' + attr_key, attr.default_value, type="string")
+
                 elif (attr.type == 'colormap') or (attr.type == 'entity'):
                     # if there is a default value, use it
                     if attr.default_value:
@@ -663,13 +694,22 @@ def convert_phong_blinn_material(material):
 
     # glossy component
     glossy_brdf = create_shading_node('microfacet_brdf', name=(material + '_blinn_brdf'))
-    cmds.setAttr(glossy_brdf + '.glossiness', 'blinn', type='string')
+    cmds.setAttr(glossy_brdf + '.mdf', 'blinn', type='string')
     if cmds.nodeType(material) == 'phong':
         glossy_param = ((cmds.getAttr(material + '.cosinePower') - 2) / 98) * -1 + 1
     else:
         glossy_param = 0.5
-    cmds.setAttr(glossy_brdf + '.mdf_parameter', glossy_param, glossy_param, glossy_param, type='float3')
+    cmds.setAttr(glossy_brdf + '.glossiness', glossy_param, glossy_param, glossy_param, type='float3')
     assign_connection_or_color(glossy_brdf + '.reflectance', material + '.specularColor', material + '.specularColor')
+
+    # bump component
+    bump_node = cmds.listConnections( material + '.normalCamera')
+    if bump_node is not None and len(bump_node) > 0:
+        bump_tex = cmds.listConnections(bump_node[0] + '.bumpValue')
+        cmds.setAttr(converted_material + '.bump_amplitude', cmds.getAttr(bump_node[0] + '.bumpDepth'))
+        if bump_tex is not None:
+            cmds.connectAttr(bump_tex[0] + '.outColor', converted_material + '.displacement_map_front')
+            cmds.connectAttr(bump_tex[0] + '.outColor', converted_material + '.displacement_map_back')
 
     # mix diffuse and glossy
     mix_brdf = create_shading_node('bsdf_mix', name=(material + '_bsdf_mix'))
@@ -793,3 +833,107 @@ def matrix_remove_scale(m):
 
 def normalize_path(path):
     return path.replace('\\', '/') if os.name == "nt" else path
+
+
+#--------------------------------------------------------------------------------------------------
+# Add/remove export modifier.
+#--------------------------------------------------------------------------------------------------
+
+def add_export_modifier(node, attr):
+    attr_signature = None
+
+    for item in LIGHT_EXPORT_MODIFIERS + MATERIAL_EXPORT_MODIFIERS:
+        if item[0] == attr:
+            attr_signature = item
+
+    if attr_signature is None:
+        warning('attribute: {0} not found'.format(attr))
+        return 
+
+    if cmds.attributeQuery(attr, n=node, ex=True):
+        warning('attribute exists: {0}.{1}'.format(node, attr))
+        return
+
+    if attr_signature[1] is None:
+        cmds.addAttr(node, longName=attr, at=attr_signature[2])
+    else:
+        cmds.addAttr(node, longName=attr, dt=attr_signature[1])
+
+
+def remove_export_modifier(node, attr):
+    cmds.deleteAttr(node, at=attr)
+
+
+#--------------------------------------------------------------------------------------------------
+# Add/remove custom attributes to selection.
+#--------------------------------------------------------------------------------------------------
+
+
+def is_light(node):
+    node_type = cmds.nodeType(node, i=True)
+    if len(node_type) > 5:
+        if node_type[4] == 'light':
+            return True
+    return False
+
+def is_transform(node):
+    return cmds.nodeType(node) == 'transform'
+
+def is_material(node):
+    node_type = cmds.nodeType(node, i=True)
+    return node_type[0] == 'shadingDependNode'
+
+def shape_from_transform(transform):
+    selection = cmds.ls(sl=True)
+    for i in range(len(selection)):
+            relatives = cmds.listRelatives(selection[i])
+            if relatives is not None:
+                return relatives[0]
+    return None
+
+
+def selection_add_light_export_modifier(attr):
+    for item in cmds.ls(sl=True):
+        if is_light(item):
+            add_export_modifier(item, attr)
+        elif is_transform(item):
+            shape = shape_from_transform(item)
+            if is_light(shape):
+                add_export_modifier(shape, attr)
+
+def selection_remove_light_export_modifier(attr):
+    for item in cmds.ls(sl=True):
+        if is_light(item):
+            remove_export_modifier(item, attr)
+        elif is_transform(item):
+            shape = shape_from_transform(item)
+            if is_light(shape):
+                remove_export_modifier(shape, attr)
+
+
+def selection_add_material_export_modifier(attr):
+    for item in cmds.ls(sl=True):
+        if is_material(item):
+            add_export_modifier(item, attr)
+        elif is_transform(item):
+            shape = shape_from_transform(item)
+            if shape:
+                material = has_shader_connected(shape)
+                if material:
+                    add_export_modifier(material, attr)
+
+
+def selection_remove_material_export_modifier(attr):
+    for item in cmds.ls(sl=True):
+        if is_material(item):
+            remove_export_modifier(item, attr)
+        elif is_transform(item):
+            shape = shape_from_transform(item)
+            if shape:
+                material = has_shader_connected(shape)
+                if material:
+                    remove_export_modifier(material, attr)
+
+
+
+

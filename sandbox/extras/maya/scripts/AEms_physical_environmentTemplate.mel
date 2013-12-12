@@ -39,6 +39,9 @@ global proc AEms_physical_environmentTemplate(string $nodeName) {
          editorTemplate -addSeparator;
          editorTemplate -addControl "horizon_shift";
          editorTemplate -addControl "ground_albedo";
+         editorTemplate -addSeparator;
+         editorTemplate -addControl "create_physical_sun";
+         editorTemplate -addControl "physical_sun_multiplier";
       editorTemplate -endLayout;
 
       AEdependNodeTemplate $nodeName;

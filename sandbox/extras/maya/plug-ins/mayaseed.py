@@ -161,6 +161,13 @@ def ms_renderSettings_nodeInitializer():
     ms_renderSettings.render_sky = render_skynAttr.create("render_sky", "render_sky", OpenMaya.MFnNumericData.kBoolean, True)
     ms_renderSettings.addAttribute(ms_renderSettings.render_sky)
 
+    # scene index of refraction
+    scene_ior_AttrFloat = OpenMaya.MFnNumericAttribute()
+    ms_renderSettings.scene_ior = scene_ior_AttrFloat.create("scene_index_of_refraction", "scene_ior", OpenMaya.MFnNumericData.kFloat, 1)
+    scene_ior_AttrFloat.setHidden(False)
+    scene_ior_AttrFloat.setKeyable(True)
+    ms_renderSettings.addAttribute(ms_renderSettings.scene_ior)
+
     # cameras --------------------------------------------------
     # export all cameras as thin lens bool attribute
     export_all_cameras_as_thin_lens_nAttr = OpenMaya.MFnNumericAttribute()
@@ -201,6 +208,7 @@ def ms_renderSettings_nodeInitializer():
     ms_renderSettings.export_straight_alpha = export_straight_alpha_nAttr.create("export_straight_alpha", "export_straight", OpenMaya.MFnNumericData.kBoolean, True)
     ms_renderSettings.addAttribute(ms_renderSettings.export_straight_alpha)
 
+    # config ---------------------------------------------------
     # sampler
     sampler_enumAttr = OpenMaya.MFnEnumAttribute()
     ms_renderSettings.sampler = sampler_enumAttr.create("sampler", "sampler")
@@ -243,7 +251,6 @@ def ms_renderSettings_nodeInitializer():
     adaptive_quality_AttrFloat.setKeyable(True)
     ms_renderSettings.addAttribute(ms_renderSettings.adaptive_quality)
 
-
     # enable_ibl
     pt_iblnAttr = OpenMaya.MFnNumericAttribute()
     ms_renderSettings.pt_ibl = pt_iblnAttr.create("pt_ibl", "pt_ibl", OpenMaya.MFnNumericData.kBoolean, True)
@@ -273,14 +280,14 @@ def ms_renderSettings_nodeInitializer():
 
     # pt_light_samples
     pt_light_samples_AttrFloat = OpenMaya.MFnNumericAttribute()
-    ms_renderSettings.pt_light_samples = pt_light_samples_AttrFloat.create("pt_light_samples", "pt_light_samples", OpenMaya.MFnNumericData.kInt, 1)
+    ms_renderSettings.pt_light_samples = pt_light_samples_AttrFloat.create("pt_light_samples", "pt_light_samples", OpenMaya.MFnNumericData.kFloat, 1)
     pt_light_samples_AttrFloat.setHidden(False)
     pt_light_samples_AttrFloat.setKeyable(True)
     ms_renderSettings.addAttribute(ms_renderSettings.pt_light_samples)
 
     # pt_environment_samples
     pt_environment_samples_AttrFloat = OpenMaya.MFnNumericAttribute()
-    ms_renderSettings.pt_environment_samples = pt_environment_samples_AttrFloat.create("pt_environment_samples", "pt_environment_samples", OpenMaya.MFnNumericData.kInt, 1)
+    ms_renderSettings.pt_environment_samples = pt_environment_samples_AttrFloat.create("pt_environment_samples", "pt_environment_samples", OpenMaya.MFnNumericData.kFloat, 1)
     pt_environment_samples_AttrFloat.setHidden(False)
     pt_environment_samples_AttrFloat.setKeyable(True)
     ms_renderSettings.addAttribute(ms_renderSettings.pt_environment_samples)
@@ -292,6 +299,12 @@ def ms_renderSettings_nodeInitializer():
     pt_max_ray_intensity_AttrFloat.setKeyable(True)
     ms_renderSettings.addAttribute(ms_renderSettings.pt_max_ray_intensity)
 
+    # enable_importance_sampling
+    enable_importance_samplingnAttr = OpenMaya.MFnNumericAttribute()
+    ms_renderSettings.enable_importance_sampling = enable_importance_samplingnAttr.create("enable_importance_sampling", "enable_importance_sampling", OpenMaya.MFnNumericData.kBoolean, True)
+    ms_renderSettings.addAttribute(ms_renderSettings.enable_importance_sampling)
+
+    # advanced ---------------------------------------------------
     # profile export
     profile_export_nAttr = OpenMaya.MFnNumericAttribute()
     ms_renderSettings.profile_export = profile_export_nAttr.create("profile_export", "profile_export", OpenMaya.MFnNumericData.kBoolean, False)

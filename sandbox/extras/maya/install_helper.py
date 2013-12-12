@@ -21,41 +21,62 @@
 # THE SOFTWARE.
 #
 
-import sys
-import os
 import maya.cmds as cmds
+import maya.mel as mel
+import os
+import sys
 
-def append_env(variable, path):
-    separator = ';' if sys.platform == 'win32' or sys.platform == 'win64' else ':'
-    return 'putenv "{0}" (`getenv "{0}"` + \"{1}{2}\");'.format(variable, separator, path.replace('\\', '/'))
+def install():
 
-def install(userSetup_file, install_dir):
-    installation_name = 'mayaseed'
+    cmds.confirmDialog(m='After clicking \'OK\' a file dialogue will open. Please navigate to and select the mayaseed directory and click \'select\'.', button=['ok'])
 
-    print 'adding paths for {0} to {1}'.format(installation_name, install_dir)
+    maya_app_dir = mel.eval('getenv MAYA_APP_DIR')
+    mayaseed_dir = cmds.fileDialog2(fm=2, okc='Select', cap='Select mayaseed directory')
+    
+    if mayaseed_dir is not None:
+        
+        mayaseed_dir = mayaseed_dir[0]
+        
+        try:
+            sys.path.append(os.path.join(mayaseed_dir, 'scripts'))
+            import ms_commands
+        except:
+            print 'No valid mayaseed directory found.'
+            return False
+        
+        
+        modules_path = os.path.join(maya_app_dir, 'modules')
+        
+        if not os.path.exists(modules_path):
+            print '{0} does not exist, creating...'.format(modules_path)
+            os.makedirs(modules_path)
+            
+            if not os.path.exists(modules_path):
+                print 'Failed to create module directory.'
+                return False
+                    
+        module_file_path = os.path.join(modules_path, 'mayaseed.module')
+        
+        if os.path.exists(module_file_path):
+            continue_return_value = cmds.confirmDialog(m='A mayaseed module file already exists from a previous installation, would you like to overwrite it?', button=['yes','no'])
+            if continue_return_value == 'no':
+                return False
+        
+        try:
+            module_file_contents = "+ mayaseed {0} {1} \n\nicons: graphics \nscripts: scripts".format(ms_commands.MAYASEED_VERSION, mayaseed_dir)
+            file = open(module_file_path, 'w')
+            file.write(module_file_contents)
+            file.close()
+            
+        except:
+            print 'Error creating the mayaseed module file'
+            return False
+                
+    return True
 
-    file = open(userSetup_file, 'r')
-    file_contents = file.read()
-    file.close()
+def install_mayaseed(): 
 
-    file = open(userSetup_file, 'w')
-
-    inside_block = False
-    for line in file_contents.split('\n'):
-      is_block_delimiter = line[:len(installation_name) + 3] == '// ' + installation_name
-      if is_block_delimiter:
-        inside_block = not inside_block
-      if not inside_block and not is_block_delimiter:
-        file.write(line + '\n')
-
-    file.write('// ' + installation_name + '  -------------------------------------------------------------------------------\n')
-    file.write('\n')
-    file.write(append_env("MAYA_SCRIPT_PATH", os.path.join(install_dir, 'scripts')) + '\n')
-    file.write(append_env("MAYA_SCRIPT_PATH", os.path.join(install_dir, 'graphics')) + '\n')
-    file.write(append_env("MAYA_PLUG_IN_PATH", os.path.join(install_dir, 'plugins')) + '\n')
-    file.write('\n')
-    file.write('// ' + installation_name + '  -------------------------------------------------------------------------------\n')
-
-    file.close()
-
-    cmds.confirmDialog(title=installation_name + ' installation', message='All done! Just restart Maya and enable any plugins not already enabled in the plugin manager.', button='OK')
+    if not install():
+        cmds.confirmDialog(m='mayaseed was not installed. See the script editor for details.', button=['ok'])
+    else:
+        cmds.confirmDialog(m='mayaseed has been successfully installed. Please restart maya and enable mayaseed.py from the plugin manager.', button=['ok'])

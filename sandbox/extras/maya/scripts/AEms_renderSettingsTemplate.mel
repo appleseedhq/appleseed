@@ -220,6 +220,7 @@ global proc AEms_renderSettingsTemplate(string $nodeName) {
         editorTemplate -beginLayout "Environment Settings" -collapse true;
             editorTemplate -callCustom "AEcustomEnvironmentMenuCreate" "AEcustomEnvironmentMenuEdit" "environment";
             editorTemplate -addControl "render_sky";
+            editorTemplate -addControl "scene_ior";
         editorTemplate -endLayout;
 
         editorTemplate -beginLayout "Camera Settings" -collapse true;;
@@ -249,6 +250,8 @@ global proc AEms_renderSettingsTemplate(string $nodeName) {
             editorTemplate -addControl "pt_light_samples";
             editorTemplate -addControl "pt_environment_samples";
             editorTemplate -addControl "pt_max_ray_intensity";
+            editorTemplate -addSeparator;
+            editorTemplate -addControl "enable_importance_sampling";
         editorTemplate -endLayout;
 
         editorTemplate -beginLayout "Advanced Settings" -collapse true;

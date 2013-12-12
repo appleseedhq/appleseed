@@ -23,7 +23,6 @@
 
 import maya.cmds as cmds
 import maya.OpenMaya as OpenMaya
-import ms_commands
 import os
 
 SCRIPT_VERSION = '0.1.3'

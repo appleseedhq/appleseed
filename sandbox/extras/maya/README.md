@@ -1,6 +1,9 @@
-Mayaseed is a Maya plugin for exporting camera, material and geometry data to the appleseed renderer.
+Introduction
+============
 
-Mayaseed documentation is available here: http://appleseedhq.net/documentation/mayaseed.
+mayaseed is a Maya plugin for exporting camera, material and geometry data to the appleseed renderer.
+
+mayaseed documentation is available here: http://appleseedhq.net/documentation/mayaseed.
 
 Features
 ========
@@ -13,4 +16,4 @@ Features
 + auto-convert textures to .exr
 + transformation, deformation and camera blur export
 
-Mayaseed is released under the MIT licence.
+mayaseed is released under the MIT licence.
