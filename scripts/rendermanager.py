@@ -44,7 +44,7 @@ import xml.dom.minidom as xml
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "1.8"
+VERSION = "1.9"
 RENDERS_DIR = "_renders"
 ARCHIVE_DIR = "_archives"
 LOGS_DIR = "_logs"
@@ -364,8 +364,11 @@ def print_rendering_status(shot_directory, watched_directory, archive_directory,
     inprogress_count = 0
     usernames = {}
 
+    shot_files = get_files(shot_directory, "*.appleseed")
+    total_count = len(shot_files)
+
     # Count pending and completed project files.
-    for filepath in get_files(shot_directory, "*.appleseed"):
+    for filepath in shot_files:
         filename = os.path.basename(filepath)
 
         # Look for this project file in the watched directory.
@@ -387,7 +390,7 @@ def print_rendering_status(shot_directory, watched_directory, archive_directory,
             username = parts[1][1:]
             usernames[username] = parts[0]
 
-    total_count = completed_count + inprogress_count + pending_count
+    # Compute progress in percents.
     completed_percent = 0 if total_count == 0 else 100.0 * completed_count / total_count
 
     log.info("project files: {0}/{1} completed ({2:.2f} %), {3} rendering, {4} pending." \
