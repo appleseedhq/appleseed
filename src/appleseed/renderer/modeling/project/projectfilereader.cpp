@@ -1981,7 +1981,7 @@ namespace
     //
 
     class SceneElementHandler
-      : public ElementHandlerBase
+      : public ParametrizedElementHandler
     {
       public:
         explicit SceneElementHandler(ParseContext& context)
@@ -1991,11 +1991,17 @@ namespace
 
         virtual void start_element(const Attributes& attrs) OVERRIDE
         {
+            ParametrizedElementHandler::start_element(attrs);
+
             m_scene = SceneFactory::create();
         }
 
         virtual void end_element() OVERRIDE
         {
+            ParametrizedElementHandler::end_element();
+
+            m_scene->get_parameters() = m_params;
+
             const GAABB3 scene_bbox = m_scene->compute_bbox();
 
             if (scene_bbox.is_valid())
@@ -2129,7 +2135,9 @@ namespace
                 }
                 break;
 
-              assert_otherwise;
+              default:
+                ParametrizedElementHandler::end_child_element(element, handler);
+                break;
             }
         }
 

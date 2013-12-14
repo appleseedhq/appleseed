@@ -687,6 +687,8 @@ namespace
                 !scene.assemblies().empty() ||
                 !scene.assembly_instances().empty());
 
+            write_params(scene.get_parameters());
+
             if (scene.get_camera())
                 write(*scene.get_camera());
 

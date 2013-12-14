@@ -5,7 +5,7 @@
 
     This software is released under the MIT license.
 
-    Copyright (c) 2010-2012 Francois Beaune, Jupiter Jazz Limited
+    Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to deal
@@ -191,56 +191,60 @@
             <xsd:all>
                 <xsd:element name="scene">
                     <xsd:complexType>
-                        <xsd:choice minOccurs="0" maxOccurs="unbounded">
-                            <xsd:element name="assembly" type="assembly"/>
-                            <xsd:element name="assembly_instance" type="assembly_instance"/>
-                            <xsd:element name="camera">
-                                <xsd:complexType>
-                                    <xsd:complexContent>
-                                        <xsd:extension base="parameterSet">
-                                            <xsd:sequence maxOccurs="unbounded">
-                                                <xsd:element name="transform" type="transform" minOccurs="0"/>
-                                            </xsd:sequence>
-                                            <xsd:attribute name="name" type="xsd:string" use="required"/>
-                                            <xsd:attribute name="model" type="xsd:string" use="required"/>
-                                        </xsd:extension>
-                                    </xsd:complexContent>
-                                </xsd:complexType>
-                            </xsd:element>
-                            <xsd:element ref="color"/>
-                            <xsd:element name="environment">
-                                <xsd:complexType>
-                                    <xsd:complexContent>
-                                        <xsd:extension base="parameterSet">
-                                            <xsd:attribute name="name" type="xsd:string" use="required"/>
-                                            <xsd:attribute name="model" type="xsd:string" use="required"/>
-                                        </xsd:extension>
-                                    </xsd:complexContent>
-                                </xsd:complexType>
-                            </xsd:element>
-                            <xsd:element name="environment_edf">
-                                <xsd:complexType>
-                                    <xsd:complexContent>
-                                        <xsd:extension base="parameterSet">
-                                            <xsd:attribute name="name" type="xsd:string" use="required"/>
-                                            <xsd:attribute name="model" type="xsd:string" use="required"/>
-                                        </xsd:extension>
-                                    </xsd:complexContent>
-                                </xsd:complexType>
-                            </xsd:element>
-                            <xsd:element name="environment_shader">
-                                <xsd:complexType>
-                                    <xsd:complexContent>
-                                        <xsd:extension base="parameterSet">
-                                            <xsd:attribute name="name" type="xsd:string" use="required"/>
-                                            <xsd:attribute name="model" type="xsd:string" use="required"/>
-                                        </xsd:extension>
-                                    </xsd:complexContent>
-                                </xsd:complexType>
-                            </xsd:element>
-                            <xsd:element ref="texture"/>
-                            <xsd:element ref="texture_instance"/>
-                        </xsd:choice>
+                        <xsd:complexContent>
+                            <xsd:extension base="parameterSet">
+                                <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                                    <xsd:element name="assembly" type="assembly"/>
+                                    <xsd:element name="assembly_instance" type="assembly_instance"/>
+                                    <xsd:element name="camera">
+                                        <xsd:complexType>
+                                            <xsd:complexContent>
+                                                <xsd:extension base="parameterSet">
+                                                    <xsd:sequence maxOccurs="unbounded">
+                                                        <xsd:element name="transform" type="transform" minOccurs="0"/>
+                                                    </xsd:sequence>
+                                                    <xsd:attribute name="name" type="xsd:string" use="required"/>
+                                                    <xsd:attribute name="model" type="xsd:string" use="required"/>
+                                                </xsd:extension>
+                                            </xsd:complexContent>
+                                        </xsd:complexType>
+                                    </xsd:element>
+                                    <xsd:element ref="color"/>
+                                    <xsd:element name="environment">
+                                        <xsd:complexType>
+                                            <xsd:complexContent>
+                                                <xsd:extension base="parameterSet">
+                                                    <xsd:attribute name="name" type="xsd:string" use="required"/>
+                                                    <xsd:attribute name="model" type="xsd:string" use="required"/>
+                                                </xsd:extension>
+                                            </xsd:complexContent>
+                                        </xsd:complexType>
+                                    </xsd:element>
+                                    <xsd:element name="environment_edf">
+                                        <xsd:complexType>
+                                            <xsd:complexContent>
+                                                <xsd:extension base="parameterSet">
+                                                    <xsd:attribute name="name" type="xsd:string" use="required"/>
+                                                    <xsd:attribute name="model" type="xsd:string" use="required"/>
+                                                </xsd:extension>
+                                            </xsd:complexContent>
+                                        </xsd:complexType>
+                                    </xsd:element>
+                                    <xsd:element name="environment_shader">
+                                        <xsd:complexType>
+                                            <xsd:complexContent>
+                                                <xsd:extension base="parameterSet">
+                                                    <xsd:attribute name="name" type="xsd:string" use="required"/>
+                                                    <xsd:attribute name="model" type="xsd:string" use="required"/>
+                                                </xsd:extension>
+                                            </xsd:complexContent>
+                                        </xsd:complexType>
+                                    </xsd:element>
+                                    <xsd:element ref="texture"/>
+                                    <xsd:element ref="texture_instance"/>
+                                </xsd:choice>
+                            </xsd:extension>
+                        </xsd:complexContent>
                     </xsd:complexType>
                 </xsd:element>
                 <xsd:element name="output">
