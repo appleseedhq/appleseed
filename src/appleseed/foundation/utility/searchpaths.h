@@ -91,6 +91,9 @@ class DLLSYMBOL SearchPaths
     ConstIterator begin() const;
     ConstIterator end() const;
 
+    ConstIterator abs_paths_begin() const;
+    ConstIterator abs_paths_end() const;
+    
   private:
     struct Impl;
     Impl* impl;

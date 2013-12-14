@@ -54,7 +54,37 @@ struct SearchPaths::Impl
 {
     typedef vector<string> PathCollection;
 
+    void push_back(const char *path)
+    {
+        filesystem::path p(path);
+        
+        if (m_paths.empty())
+        {
+            assert(p.is_absolute());
+            
+            m_root = p;
+            m_paths.push_back(path);
+            m_absolute_paths.push_back(path);
+        }
+        else
+        {
+            if (p.is_absolute())
+            {
+                m_paths.push_back(path);
+                m_absolute_paths.push_back(path);
+            }
+            else
+            {
+                filesystem::path abs_path = m_root / p;
+                m_paths.push_back(path);
+                m_absolute_paths.push_back(abs_path.string());
+            }
+        }
+    }
+    
+    filesystem::path m_root;
     PathCollection m_paths;
+    PathCollection m_absolute_paths;
 };
 
 SearchPaths::SearchPaths()
@@ -69,7 +99,9 @@ SearchPaths::~SearchPaths()
 
 void SearchPaths::clear()
 {
+    impl->m_root.clear();
     impl->m_paths.clear();
+    impl->m_absolute_paths.clear();
 }
 
 bool SearchPaths::empty()
@@ -92,7 +124,7 @@ void SearchPaths::push_back(const char* path)
 {
     assert(path);
 
-    impl->m_paths.push_back(path);
+    impl->push_back(path);
 }
 
 bool SearchPaths::exist(const char* filepath) const
@@ -104,7 +136,7 @@ bool SearchPaths::exist(const char* filepath) const
     if (fp.is_absolute())
         return filesystem::exists(fp);
 
-    for (const_each<Impl::PathCollection> i = impl->m_paths; i; ++i)
+    for (const_each<Impl::PathCollection> i = impl->m_absolute_paths; i; ++i)
     {
         const filesystem::path qualified_fp = filesystem::path(*i) / fp;
 
@@ -125,7 +157,7 @@ char* SearchPaths::qualify(const char* filepath) const
 
     if (!fp.is_absolute())
     {
-        for (const_each<Impl::PathCollection> i = impl->m_paths; i; ++i)
+        for (const_each<Impl::PathCollection> i = impl->m_absolute_paths; i; ++i)
         {
             filesystem::path qualified_fp = filesystem::path(*i) / fp;
 
@@ -148,6 +180,16 @@ SearchPaths::ConstIterator SearchPaths::begin() const
 SearchPaths::ConstIterator SearchPaths::end() const
 {
     return impl->m_paths.end();
+}
+
+SearchPaths::ConstIterator SearchPaths::abs_paths_begin() const
+{
+    return impl->m_absolute_paths.begin();    
+}
+
+SearchPaths::ConstIterator SearchPaths::abs_paths_end() const
+{
+    return impl->m_absolute_paths.end();    
 }
 
 }   // namespace foundation

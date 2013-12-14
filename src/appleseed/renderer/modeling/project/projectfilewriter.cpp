@@ -761,6 +761,23 @@ namespace
                 write_frame(*project.get_frame());
         }
 
+        // Write a <searchpaths> element.
+        void write_searchpaths(const Project& project)
+        {
+            /*
+            SearchPaths& searchpaths = project.get_search_paths();
+            if (searchpaths.size() != 1)
+            {
+                XMLElement element("searchpaths", m_file, m_indenter);                
+                
+                for (SearchPaths::ConstIterator it(searchpaths.begin()), e(searchpaths.end()); it != e; ++it)
+                {
+                    
+                }
+            }
+            */
+        }
+        
         // Write a <project> element.
         void write_project(const Project& project)
         {
@@ -768,6 +785,8 @@ namespace
             element.add_attribute("format_revision", project.get_format_revision());
             element.write(true);
 
+            write_searchpaths(project);
+            
             if (project.get_scene())
                 write_scene(*project.get_scene());
 
