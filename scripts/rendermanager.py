@@ -44,7 +44,7 @@ import xml.dom.minidom as xml
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "1.9"
+VERSION = "1.10"
 RENDERS_DIR = "_renders"
 ARCHIVE_DIR = "_archives"
 LOGS_DIR = "_logs"
@@ -459,10 +459,10 @@ def main():
     parser.add_argument("-s", "--max-size", metavar="MB",
                         help="set the maximum allowed size in MB of the directory being watched " \
                         "(default is unlimited)")
-    parser.add_argument("--shot", metavar="shot-directory", dest="shot_directory",
+    parser.add_argument("--shot", metavar="shot-directory", dest="shot_directory", required=True,
                         help="directory containing the original shot data")
     parser.add_argument("--watched", metavar="watched-directory", dest="watched_directory",
-                        help="directory being watched by render nodes")
+                        required=True, help="directory being watched by render nodes")
     parser.add_argument("--frames", metavar="frames-directory", dest="frames_directory",
                         help="directory where the rendered frames should be stored")
     args = parser.parse_args()

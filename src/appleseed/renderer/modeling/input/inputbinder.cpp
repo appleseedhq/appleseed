@@ -249,10 +249,10 @@ void InputBinder::bind_assembly_entities_inputs(
     {
         i->unbind_texture();
 
-        i->bind_texture(scene.textures());
-
         for (AssemblyInfoIt j = m_assembly_info.rbegin(); j != m_assembly_info.rend(); ++j)
             i->bind_texture(j->m_assembly->textures());
+
+        i->bind_texture(scene.textures());
 
         i->check_texture();
     }
@@ -334,10 +334,10 @@ void InputBinder::bind_assembly_entities_inputs(
     {
         i->unbind_assembly();
 
-        i->bind_assembly(scene.assemblies());
-
         for (AssemblyInfoIt j = m_assembly_info.rbegin(); j != m_assembly_info.rend(); ++j)
             i->bind_assembly(j->m_assembly->assemblies());
+
+        i->bind_assembly(scene.assemblies());
 
         i->check_assembly();
     }
