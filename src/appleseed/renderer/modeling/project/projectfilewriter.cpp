@@ -765,7 +765,8 @@ namespace
         void write_searchpaths(const Project& project)
         {
             const SearchPaths& searchpaths = project.get_search_paths();
-            
+            assert(searchpaths.has_root_path());
+
             if (searchpaths.size() != 1)
             {
                 std::fprintf(m_file, "%s<searchpaths>\n", m_indenter.c_str());
@@ -783,7 +784,7 @@ namespace
                 std::fprintf(m_file, "%s</searchpaths>\n", m_indenter.c_str());
             }
         }
-        
+
         // Write a <project> element.
         void write_project(const Project& project)
         {
@@ -791,7 +792,7 @@ namespace
             element.add_attribute("format_revision", project.get_format_revision());
             element.write(true);
 
-            if (!(m_options & ProjectFileWriter::OmitSearchPaths))            
+            if (!(m_options & ProjectFileWriter::OmitSearchPaths))
                 write_searchpaths(project);
 
             if (project.get_scene())

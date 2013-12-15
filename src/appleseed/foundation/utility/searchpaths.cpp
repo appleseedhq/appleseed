@@ -78,11 +78,6 @@ SearchPaths::SearchPaths()
 {
 }
 
-SearchPaths::SearchPaths(const SearchPaths& other)
-  : impl(new Impl(*other.impl))
-{
-}
-
 SearchPaths::~SearchPaths()
 {
     delete impl;
@@ -116,6 +111,11 @@ void SearchPaths::set_root_path(const char* path)
     impl->m_root = p;
     impl->m_paths.push_back(path);
     impl->m_absolute_paths.push_back(path);    
+}
+
+bool SearchPaths::has_root_path() const
+{
+    return !impl->m_root.empty();
 }
 
 const char* SearchPaths::operator[](const size_t i) const

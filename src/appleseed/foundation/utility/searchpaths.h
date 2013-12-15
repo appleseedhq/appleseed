@@ -30,6 +30,7 @@
 #define APPLESEED_FOUNDATION_UTILITY_SEARCHPATHS_H
 
 // appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/utility/string.h"
 
 // appleseed.main headers.
@@ -48,14 +49,12 @@ namespace foundation
 // over those inserted earlier).
 //
 
-class DLLSYMBOL SearchPaths
+class DLLSYMBOL SearchPaths 
+    : public NonCopyable
 {
   public:
     // Constructor.
     SearchPaths();
-
-    // Copy Constructor.
-    SearchPaths(const SearchPaths& other);
     
     // Destructor.
     ~SearchPaths();
@@ -73,6 +72,9 @@ class DLLSYMBOL SearchPaths
     // This path is automatically added to the searchpaths.
     void set_root_path(const char* path);
     template<typename T> void set_root_path(const std::basic_string<T>& path);
+
+    // Returns true if the root path has been set.
+    bool has_root_path() const;
     
     // Returns the ith path.
     const char* operator[](const size_t i) const;
