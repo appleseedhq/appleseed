@@ -114,7 +114,7 @@ namespace
           , m_indenter(4)
         {
             assert(m_file);
-            
+
             // Write the file header.
             fprintf(m_file, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
 
@@ -132,7 +132,7 @@ namespace
         }
 
       private:
-        SearchPaths             m_project_search_paths;
+        const SearchPaths&      m_project_search_paths;
         const filesystem::path  m_project_old_root_path;
         const filesystem::path  m_project_new_root_path;
         FILE*                   m_file;

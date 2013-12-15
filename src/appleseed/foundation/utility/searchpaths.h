@@ -50,12 +50,12 @@ namespace foundation
 //
 
 class DLLSYMBOL SearchPaths 
-    : public NonCopyable
+  : public NonCopyable
 {
   public:
     // Constructor.
     SearchPaths();
-    
+
     // Destructor.
     ~SearchPaths();
 
