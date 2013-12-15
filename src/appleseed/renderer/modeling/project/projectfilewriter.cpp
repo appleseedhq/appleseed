@@ -114,7 +114,7 @@ namespace
           , m_indenter(4)
         {
             assert(m_file);
-
+            
             // Write the file header.
             fprintf(m_file, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
 
@@ -132,7 +132,7 @@ namespace
         }
 
       private:
-        const SearchPaths&      m_project_search_paths;
+        SearchPaths             m_project_search_paths;
         const filesystem::path  m_project_old_root_path;
         const filesystem::path  m_project_new_root_path;
         FILE*                   m_file;
@@ -764,18 +764,24 @@ namespace
         // Write a <searchpaths> element.
         void write_searchpaths(const Project& project)
         {
-            /*
-            SearchPaths& searchpaths = project.get_search_paths();
+            const SearchPaths& searchpaths = project.get_search_paths();
+            
             if (searchpaths.size() != 1)
             {
-                XMLElement element("searchpaths", m_file, m_indenter);                
-                
-                for (SearchPaths::ConstIterator it(searchpaths.begin()), e(searchpaths.end()); it != e; ++it)
-                {
-                    
-                }
+                std::fprintf(m_file, "%s<searchpaths>\n", m_indenter.c_str());
+                ++m_indenter;
+
+                // Skip the first searchpath. In appleseed this is the location 
+                // of the project file and it's automatically set by the project file reader.
+                SearchPaths::ConstIterator it(searchpaths.begin());
+                ++it;
+
+                for (SearchPaths::ConstIterator e(searchpaths.end()); it != e; ++it)
+                    std::fprintf(m_file, "%s<searchpath> %s </searchpath>\n", m_indenter.c_str(), it->c_str());
+
+                --m_indenter;
+                std::fprintf(m_file, "%s</searchpaths>\n", m_indenter.c_str());
             }
-            */
         }
         
         // Write a <project> element.
@@ -785,8 +791,9 @@ namespace
             element.add_attribute("format_revision", project.get_format_revision());
             element.write(true);
 
-            write_searchpaths(project);
-            
+            if (!(m_options & ProjectFileWriter::OmitSearchPaths))            
+                write_searchpaths(project);
+
             if (project.get_scene())
                 write_scene(*project.get_scene());
 

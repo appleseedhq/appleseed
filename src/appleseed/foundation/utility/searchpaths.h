@@ -30,7 +30,6 @@
 #define APPLESEED_FOUNDATION_UTILITY_SEARCHPATHS_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/utility/string.h"
 
 // appleseed.main headers.
@@ -45,17 +44,19 @@ namespace foundation
 //
 // An ordered collection of search paths.
 //
-// The paths are ordered by descending priority: paths inserted earlier have precedence
-// over those inserted later).
+// The paths are ordered by ascending priority: paths inserted later have precedence
+// over those inserted earlier).
 //
 
 class DLLSYMBOL SearchPaths
-  : public NonCopyable
 {
   public:
     // Constructor.
     SearchPaths();
 
+    // Copy Constructor.
+    SearchPaths(const SearchPaths& other);
+    
     // Destructor.
     ~SearchPaths();
 
@@ -68,6 +69,11 @@ class DLLSYMBOL SearchPaths
     // Returns the number of paths.
     size_t size() const;
 
+    // Sets the root path, the path used to resolve relative paths in the searchpaths.
+    // This path is automatically added to the searchpaths.
+    void set_root_path(const char* path);
+    template<typename T> void set_root_path(const std::basic_string<T>& path);
+    
     // Returns the ith path.
     const char* operator[](const size_t i) const;
 
@@ -90,9 +96,18 @@ class DLLSYMBOL SearchPaths
 
     ConstIterator begin() const;
     ConstIterator end() const;
-
+    
     ConstIterator abs_paths_begin() const;
     ConstIterator abs_paths_end() const;
+
+    // Const reverse iterator.
+    typedef std::vector<std::string>::const_reverse_iterator ConstReverseIterator;
+
+    ConstReverseIterator rbegin() const;
+    ConstReverseIterator rend() const;
+    
+    ConstReverseIterator abs_paths_rbegin() const;
+    ConstReverseIterator abs_paths_rend() const;
     
   private:
     struct Impl;
@@ -105,6 +120,12 @@ class DLLSYMBOL SearchPaths
 //
 // SearchPaths class implementation.
 //
+
+template<typename T> 
+inline void SearchPaths::set_root_path(const std::basic_string<T>& path)
+{
+    set_root_path(path.c_str());
+}
 
 template <typename T>
 inline void SearchPaths::push_back(const std::basic_string<T>& path)

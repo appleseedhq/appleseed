@@ -29,9 +29,6 @@
 // Interface header.
 #include "searchpaths.h"
 
-// appleseed.foundation headers.
-#include "foundation/utility/foreach.h"
-
 // boost headers.
 #include "boost/filesystem/operations.hpp"
 #include "boost/filesystem/path.hpp"
@@ -56,29 +53,18 @@ struct SearchPaths::Impl
 
     void push_back(const char *path)
     {
-        filesystem::path p(path);
-        
-        if (m_paths.empty())
+        filesystem::path p(path);        
+        if (p.is_absolute())
         {
-            assert(p.is_absolute());
-            
-            m_root = p;
             m_paths.push_back(path);
             m_absolute_paths.push_back(path);
         }
         else
         {
-            if (p.is_absolute())
-            {
-                m_paths.push_back(path);
-                m_absolute_paths.push_back(path);
-            }
-            else
-            {
-                filesystem::path abs_path = m_root / p;
-                m_paths.push_back(path);
-                m_absolute_paths.push_back(abs_path.string());
-            }
+            assert(!m_root.empty());
+            filesystem::path abs_path = m_root / p;
+            m_paths.push_back(path);
+            m_absolute_paths.push_back(abs_path.string());
         }
     }
     
@@ -89,6 +75,11 @@ struct SearchPaths::Impl
 
 SearchPaths::SearchPaths()
   : impl(new Impl())
+{
+}
+
+SearchPaths::SearchPaths(const SearchPaths& other)
+  : impl(new Impl(*other.impl))
 {
 }
 
@@ -114,6 +105,19 @@ size_t SearchPaths::size() const
     return impl->m_paths.size();
 }
 
+void SearchPaths::set_root_path(const char* path)
+{
+    assert(impl->m_root.empty());
+    assert(impl->m_paths.empty());
+    
+    filesystem::path p(path);
+    assert(p.is_absolute());
+    
+    impl->m_root = p;
+    impl->m_paths.push_back(path);
+    impl->m_absolute_paths.push_back(path);    
+}
+
 const char* SearchPaths::operator[](const size_t i) const
 {
     assert(i < size());
@@ -136,7 +140,7 @@ bool SearchPaths::exist(const char* filepath) const
     if (fp.is_absolute())
         return filesystem::exists(fp);
 
-    for (const_each<Impl::PathCollection> i = impl->m_absolute_paths; i; ++i)
+    for (ConstReverseIterator i(abs_paths_rbegin()), e(abs_paths_rend()); i != e; ++i)
     {
         const filesystem::path qualified_fp = filesystem::path(*i) / fp;
 
@@ -157,7 +161,7 @@ char* SearchPaths::qualify(const char* filepath) const
 
     if (!fp.is_absolute())
     {
-        for (const_each<Impl::PathCollection> i = impl->m_absolute_paths; i; ++i)
+        for (ConstReverseIterator i(abs_paths_rbegin()), e(abs_paths_rend()); i != e; ++i)
         {
             filesystem::path qualified_fp = filesystem::path(*i) / fp;
 
@@ -190,6 +194,26 @@ SearchPaths::ConstIterator SearchPaths::abs_paths_begin() const
 SearchPaths::ConstIterator SearchPaths::abs_paths_end() const
 {
     return impl->m_absolute_paths.end();    
+}
+
+SearchPaths::ConstReverseIterator SearchPaths::rbegin() const
+{
+    return impl->m_paths.rbegin();
+}
+
+SearchPaths::ConstReverseIterator SearchPaths::rend() const
+{
+    return impl->m_paths.rend();
+}
+
+SearchPaths::ConstReverseIterator SearchPaths::abs_paths_rbegin() const
+{
+    return impl->m_absolute_paths.rbegin();    
+}
+
+SearchPaths::ConstReverseIterator SearchPaths::abs_paths_rend() const
+{
+    return impl->m_absolute_paths.rend();    
 }
 
 }   // namespace foundation

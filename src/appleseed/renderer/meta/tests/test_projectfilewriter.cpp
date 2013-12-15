@@ -83,7 +83,7 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
             m_project->set_scene(SceneFactory::create());
 
             m_project->set_path((m_base_output / "input.appleseed").string().c_str());
-            m_project->get_search_paths().push_back(filesystem::absolute(m_base_output).string());
+            m_project->get_search_paths().set_root_path(filesystem::absolute(m_base_output).string());
         }
 
         void create_texture_entity(const string& filepath)

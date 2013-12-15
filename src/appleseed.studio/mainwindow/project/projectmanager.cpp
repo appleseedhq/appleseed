@@ -87,14 +87,24 @@ bool ProjectManager::save_project()
 {
     assert(m_project.get());
 
-    return save_project_as(m_project->get_path());
+    if (!ProjectFileWriter::write(m_project.ref(), 
+                                  m_project->get_path()))
+        return false;
+
+    m_project->set_path(m_project->get_path());
+
+    m_dirty_flag = false;
+
+    return true;    
 }
 
 bool ProjectManager::save_project_as(const string& filepath)
 {
     assert(m_project.get());
 
-    if (!ProjectFileWriter::write(m_project.ref(), filepath.c_str()))
+    if (!ProjectFileWriter::write(m_project.ref(), 
+                                  filepath.c_str(), 
+                                  ProjectFileWriter::OmitSearchPaths))
         return false;
 
     m_project->set_path(filepath.c_str());

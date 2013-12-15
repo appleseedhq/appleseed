@@ -185,7 +185,6 @@ size_t get_numbered_string_max_value(const std::string& pattern);
 // Replace all special characters of a string by the corresponding XML entities.
 std::string replace_special_xml_characters(const std::string& s);
 
-
 //
 // Fast alternative to std::strtol().
 //

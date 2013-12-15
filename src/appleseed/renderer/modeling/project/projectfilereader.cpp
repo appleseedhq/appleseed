@@ -187,7 +187,7 @@ namespace
                 boost::filesystem::path(project.get_path()).parent_path();
 
             // Add the root path of the project to the search path collection.
-            m_project.get_search_paths().push_back(project_root_path.string());
+            m_project.get_search_paths().set_root_path(project_root_path.string());
         }
 
         Project& get_project()
@@ -2383,14 +2383,13 @@ namespace
         explicit SearchPathElementHandler(ParseContext& context)
           : m_context(context)
         {
-            m_path = "";
         }
                 
         virtual void characters(
             const XMLCh* const  chars,
             const XMLSize_t     length) OVERRIDE
         {
-            m_path = trim_both(transcode(chars).c_str());
+            m_path = trim_both(transcode(chars));
         }
         
         const string& path() const
@@ -2503,7 +2502,7 @@ namespace
                     output_handler->set_project(m_project);
                 }
                 break;
-                
+
               case ElementScene:
                 break;
 
