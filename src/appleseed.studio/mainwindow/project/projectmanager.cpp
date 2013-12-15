@@ -107,7 +107,7 @@ bool ProjectManager::do_save_project_as(const string& filepath,
 
     m_dirty_flag = false;
 
-    return true;    
+    return true;
 }
 
 void ProjectManager::close_project()
