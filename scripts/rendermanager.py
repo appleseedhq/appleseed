@@ -44,29 +44,33 @@ import xml.dom.minidom as xml
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "1.10"
+VERSION = "2.0"
 RENDERS_DIR = "_renders"
-ARCHIVE_DIR = "_archives"
+ARCHIVES_DIR = "_archives"
 LOGS_DIR = "_logs"
 PAUSE_BETWEEN_CHECKS = 30   # in seconds
+MB = 1024 * 1024
 
 
 #--------------------------------------------------------------------------------------------------
 # Utility functions.
 #--------------------------------------------------------------------------------------------------
 
+def safe_get_file_size(filepath):
+    try:
+        return os.path.getsize(filepath)
+    except:
+        return 0
+
 def get_directory_size(directory):
     size = 0
     for dirpath, dirnames, filenames in os.walk(directory):
         for filename in filenames:
-            fp = os.path.join(dirpath, filename)
-            try:
-                size += os.path.getsize(fp)
-            except:
-                pass
+            filepath = os.path.join(dirpath, filename)
+            size += safe_get_file_size(filepath)
     return size
 
-def get_files(directory, pattern):
+def get_files(directory, pattern = "*"):
     files = []
     for file in glob.glob(os.path.join(directory, pattern)):
         files.append(file)
@@ -170,282 +174,250 @@ class Log:
 
 
 #--------------------------------------------------------------------------------------------------
-# Code to extract dependencies from project files.
+# Dependency database.
 #--------------------------------------------------------------------------------------------------
 
-def extract_project_deps(directory, project_filepath):
-    try:
-        with open(os.path.join(directory, project_filepath), 'r') as file:
-            contents = file.read()
-    except:
-        return False, set()
+class DependencyDB:
+    def __init__(self, args, log):
+        self.args = args
+        self.log = log
+        self.roots = {}
 
-    deps = set()
+    def update(self, new_roots):
+        for root in new_roots:
+            if not root in self.roots:
+                success, deps = self.__extract_dependencies(root)
+                if success:
+                    self.roots[root] = deps
+                    self.log.info("  added {0}".format(root))
 
-    for node in xml.parseString(contents).getElementsByTagName('parameter'):
-        if node.getAttribute('name') == 'filename':
-            filepath = node.getAttribute('value')
-            filepath = convert_path_to_local(filepath)
-            deps.add(filepath)
+        updated_roots = {}
 
-    for node in xml.parseString(contents).getElementsByTagName('parameters'):
-        if node.getAttribute('name') == 'filename':
-            for child in node.childNodes:
-                if child.nodeType == xml.Node.ELEMENT_NODE:
-                    filepath = child.getAttribute('value')
-                    filepath = convert_path_to_local(filepath)
-                    deps.add(filepath)
-
-    return True, deps
-
-def compute_deps_refcount(directory, project_files):
-    refcounts = {}
-
-    for project_filepath in project_files:
-        deps_success, deps = extract_project_deps(directory, project_filepath)
-
-        for dep in deps:
-            if dep in refcounts:
-                refcounts[dep] += 1
+        for root in self.roots:
+            if root in new_roots:
+                updated_roots[root] = self.roots[root]
             else:
-                refcounts[dep] = 1
+                self.log.info("  removed {0}".format(root))
 
-    return refcounts
+        self.roots = updated_roots
 
+    def get_all_dependencies(self):
+        deps = set()
+        for root in self.roots:
+            deps = deps.union(self.roots[root])
+        return deps
 
-#--------------------------------------------------------------------------------------------------
-# Code to remove orphan dependencies.
-#--------------------------------------------------------------------------------------------------
+    def __extract_dependencies(self, filename):
+        try:
+            filepath = os.path.join(self.args.source_directory, filename)
 
-def remove_orphan_project_file_deps(watched_directory, archive_directory, project_filepath, deps_refcounts):
-    # Extract the dependencies from this project file.
-    deps_success, deps = extract_project_deps(archive_directory, project_filepath)
-    if not deps_success:
-        return 0
+            with open(filepath, 'r') as file:
+                contents = file.read()
 
-    removed_deps = 0
+            xmldoc = xml.parseString(contents)
+            deps = set()
 
-    # Remove orphan dependencies.
-    for dep in deps:
-        if dep not in deps_refcounts or deps_refcounts[dep] == 0:
-            dep_filepath = os.path.join(watched_directory, dep)
-            if os.path.isfile(dep_filepath):
-                os.remove(dep_filepath)
-                removed_deps += 1
+            for node in xmldoc.getElementsByTagName('parameter'):
+                if node.getAttribute('name') == 'filename':
+                    deps.add(convert_path_to_local(node.getAttribute('value')))
 
-    return removed_deps
+            for node in xmldoc.getElementsByTagName('parameters'):
+                if node.getAttribute('name') == 'filename':
+                    for child in node.childNodes:
+                        if child.nodeType == xml.Node.ELEMENT_NODE:
+                            deps.add(convert_path_to_local(child.getAttribute('value')))
 
-def remove_orphan_dependencies(watched_directory, archive_directory, deps_refcounts):
-    # No dependencies to remove if the archive directory doesn't exist.
-    if not os.path.isdir(archive_directory):
-        return
+            return True, deps
 
-    removed_deps = 0
-
-    for project_file in get_files(archive_directory, "*.appleseed"):
-        removed_deps += remove_orphan_project_file_deps(watched_directory, archive_directory, project_file, deps_refcounts)
-
-    return removed_deps
+        except:
+            return False, set()
 
 
 #--------------------------------------------------------------------------------------------------
-# Code to submit new project files to be rendered.
+# Management logic.
 #--------------------------------------------------------------------------------------------------
 
-def is_project_file_being_rendered(watched_directory, project_filepath):
-    for file in glob.glob(os.path.join(watched_directory, "*.appleseed.*")):
-        if os.path.splitext(file)[0] == os.path.join(watched_directory, project_filepath):
-            return True
+class Manager:
+    def __init__(self, args, log):
+        self.args = args
+        self.log = log
+        self.frames_directory = os.path.join(self.args.target_directory, RENDERS_DIR)
+        self.archives_directory = os.path.join(self.args.target_directory, ARCHIVES_DIR)
+        self.uploaded_dependency_db = DependencyDB(args, log)
+        self.completed_dependency_db = DependencyDB(args, log)
 
-    return False
+    def manage(self):
+        self.compute_target_directory_size()
+        self.gather_files()
+        self.print_status()
+        if self.args.frames_directory is not None:
+            self.move_frames()
+        self.update_dependency_dbs()
+        self.remove_orphan_dependencies()
+        self.upload_project_files()
+        self.upload_missing_dependencies()
 
-def try_submitting_project_file(shot_directory, watched_directory, max_size, project_filepath, log):
-    # Extract the dependencies from this project file.
-    deps_success, deps = extract_project_deps(shot_directory, project_filepath)
-    if not deps_success:
-        return True     # continue to submit files
+    def compute_target_directory_size(self):
+        self.target_directory_size = get_directory_size(self.args.target_directory)
 
-    # Compute the total size of the project with all its missing dependencies.
-    project_size = os.path.getsize(os.path.join(shot_directory, project_filepath))
-    for dep in deps:
-        dep_filepath = os.path.join(shot_directory, dep)
-        if not os.path.isfile(dep_filepath):
-            project_size += os.path.getsize(dep_filepath)
-    project_size_mb = project_size / (1024 * 1024)
+    def gather_files(self):
+        self.log.info_no_log("gathering files...")
+        self.source_files = map(os.path.basename, get_files(self.args.source_directory, "*.appleseed"))
+        self.completed_files = map(os.path.basename, get_files(self.archives_directory, "*.appleseed"))
+        self.uploaded_files = self.gather_uploaded_files()
+        self.inprogress_files = self.gather_inprogress_files()
 
-    # Compute the current total size of the watched directory.
-    watched_dir_size = get_directory_size(watched_directory)
-    watched_dir_size_mb = watched_dir_size / (1024 * 1024)
+    def gather_uploaded_files(self):
+        return map(os.path.basename, get_files(self.args.target_directory, "*.appleseed"))
 
-    # Don't submit this project if it doesn't fit in the remaining available space.
-    if max_size is not None and watched_dir_size_mb + project_size_mb >= max_size:
-        log.info("watched directory is full at {0:.2f} MB ({1} bytes), " \
-                 "max allowed size is {2:.2f} MB.".format(watched_dir_size_mb, watched_dir_size, max_size))
-        return False    # don't try to submit new files in this round
+    def gather_inprogress_files(self):
+        inprogress = {}
+        for filename in map(os.path.basename, get_files(self.args.target_directory, "*.appleseed.*")):
+            parts = filename.split(".")
+            assert len(parts) >= 3
+            if parts[-2] == "appleseed":
+                owner = parts[-1]
+                stripped_filename = filename[:-(1 + len(owner))]
+                inprogress.setdefault(stripped_filename, []).append(owner)
+        return inprogress
 
-    log.info("submitting project file {0}, size {1:.2f} MB ({2} bytes)...".format(project_filepath, project_size_mb, project_size))
+    def print_status(self):
+        self.log.info_no_log("-------------------------------------------------------------------")
+        self.print_progress()
+        self.print_assignments()
+        self.print_target_directory_size()
+        self.log.info_no_log("-------------------------------------------------------------------")
 
-    # Submit the project file.
-    shutil.copyfile(os.path.join(shot_directory, project_filepath), os.path.join(watched_directory, project_filepath))
+    def print_progress(self):
+        total = len(self.source_files)
+        completed = self.count_completed_frames()
+        rendering = self.count_inprogress_frames()
+        pending = self.count_pending_frames()
+        progress = 100.0 * completed / total if total > 0 else 0.0
+        self.log.info_no_log("PROGRESS: {0}/{1} completed ({2:.2f} %), {3} rendering, {4} pending" \
+            .format(completed, total, progress, rendering, pending))
 
-    # Copy the missing dependencies.
-    copied_deps = 0
-    for dep in deps:
-        if not os.path.isfile(os.path.join(watched_directory, dep)):
-            src_path = os.path.join(shot_directory, dep)
-            dest_path = os.path.join(watched_directory, dep)
-            safe_mkdir(os.path.dirname(dest_path))
-            shutil.copyfile(src_path, dest_path)
-            copied_deps += 1
-    if copied_deps > 0:
-        log.info("copied {0} dependency(ies).".format(copied_deps))
+    def print_assignments(self):
+        assignments = {}
+        for filename in self.source_files:
+            if filename in self.inprogress_files.keys():
+                assignments[filename] = ", ".join(self.inprogress_files[filename])
+        if len(assignments) > 0:
+            self.log.info_no_log("frame assignments:")
+            for filename in assignments.keys():
+                self.log.info_no_log("  {0}: {1}".format(filename, assignments[filename]))
+        else:
+            self.log.info_no_log("no frame assigned.")
 
-    return True         # continue to submit files
+    def print_target_directory_size(self):
+        size_mb = self.target_directory_size / MB
+        max_size_mb = self.args.max_size / MB
+        full = 100.0 * size_mb / max_size_mb if max_size_mb > 0 else 100.0
+        self.log.info("size of target directory: {0:.2f}/{1} mb ({2:.2f} % full)" \
+            .format(size_mb, max_size_mb, full))
 
-def submit_project_files(shot_directory, watched_directory, archive_directory, max_size, log):
-    for entry in os.listdir(shot_directory):
-        # Only consider appleseed project files.
-        src_filepath = os.path.join(shot_directory, entry)
-        if not os.path.isfile(src_filepath):
-            continue
-        if os.path.splitext(src_filepath)[1] != '.appleseed':
-            continue
+    def count_completed_frames(self):
+        return sum(1 for filename in self.source_files if filename in self.completed_files)
 
-        # Don't submit the project file if it is pending.
-        if os.path.isfile(os.path.join(watched_directory, entry)):
-            continue
+    def count_inprogress_frames(self):
+        return sum(1 for filename in self.source_files if filename in self.inprogress_files)
 
-        # Don't submit the project file if it is currently being rendered.
-        if is_project_file_being_rendered(watched_directory, entry):
-            continue
+    def count_pending_frames(self):
+        return sum(1 for filename in self.source_files \
+                   if not filename in self.completed_files and not filename in self.inprogress_files)
 
-        # Don't submit the project file if it was already rendered.
-        if os.path.isfile(os.path.join(archive_directory, entry)):
-            continue
+    def move_frames(self):
+        self.log.info("moving frames...")
+        for filepath in get_files(self.frames_directory):
+            self.move_frame(filepath)
 
-        # Try submitting the project file; stop submitting files if that failed.
-        if not try_submitting_project_file(shot_directory, watched_directory, max_size, entry, log):
-            log.info("no longer submitting project files in this round.")
-            break
+    def move_frame(self, source_filepath):
+        filename = os.path.basename(source_filepath)
+        dest_filepath = os.path.join(self.args.frames_directory, filename)
+        self.log.info("  moving {0} to {1}".format(filename, self.args.frames_directory))
+        safe_mkdir(self.args.frames_directory)
+        shutil.move(source_filepath, dest_filepath)
 
+    def update_dependency_dbs(self):
+        self.update_uploaded_dependency_db()
+        self.update_completed_dependency_db()
 
-#--------------------------------------------------------------------------------------------------
-# Code to move rendered frames.
-#--------------------------------------------------------------------------------------------------
+    def update_uploaded_dependency_db(self):
+        self.log.info("updating dependency database of uploaded files...")
+        roots = [ filename for filename in self.source_files \
+                  if filename in self.inprogress_files or filename in self.uploaded_files ]
+        self.uploaded_dependency_db.update(roots)
 
-def move_files(source_dir, dest_dir):
-    # No files to move if the source directory doesn't exist.
-    if not os.path.isdir(source_dir):
-        return
+    def update_completed_dependency_db(self):
+        self.log.info("updating dependency database of completed files...")
+        roots = [ filename for filename in self.source_files if filename in self.completed_files ]
+        self.completed_dependency_db.update(roots)
 
-    safe_mkdir(dest_dir)
+    def remove_orphan_dependencies(self):
+        self.log.info("removing orphan dependencies...")
+        removed = 0
+        uploaded_files_dependencies = self.uploaded_dependency_db.get_all_dependencies()
+        for dep in self.completed_dependency_db.get_all_dependencies():
+            if not dep in uploaded_files_dependencies:
+                count = self.remove_file(dep)
+                if count > 0:
+                    self.log.info("  removed {0}".format(dep))
+                removed += count
+        if removed > 0:
+            self.log.info("  removed {0} dependencies".format(removed))
 
-    moved_files = 0
+    def upload_project_files(self):
+        self.log.info("uploading project files...")
+        for filename in self.source_files:
+            if not filename in self.inprogress_files and not filename in self.completed_files:
+                if self.upload_file(filename) > 0:
+                    self.log.info("  uploaded {0}".format(filename))
+                    self.uploaded_files = self.gather_uploaded_files()
+                    self.update_uploaded_dependency_db()
+                    self.upload_missing_dependencies()
 
-    for entry in os.listdir(source_dir):
-        source_filepath = os.path.join(source_dir, entry)
-        if os.path.isfile(source_filepath):
-            dest_filepath = os.path.join(dest_dir, entry)
-            if os.path.isfile(dest_filepath):
-                os.remove(dest_filepath)
-            shutil.move(source_filepath, dest_dir)
-            moved_files += 1
+    def upload_missing_dependencies(self):
+        self.log.info("uploading missing dependencies...")
+        uploaded = 0
+        for dep in self.uploaded_dependency_db.get_all_dependencies():
+            count = self.upload_file(dep)
+            if count > 0:
+                self.log.info("  uploaded {0}".format(dep))
+            uploaded += count
+        if uploaded > 0:
+            self.log.info("  uploaded {0} dependencies".format(uploaded))
 
-    return moved_files
+    def remove_file(self, filename):
+        filepath = os.path.join(self.args.target_directory, filename)
+        if not os.path.isfile(filepath):
+            return 0
 
+        try:
+            filesize = safe_get_file_size(filepath)
+            os.remove(filepath)
+            self.target_directory_size = max(self.target_directory_size - filesize, 0)
+            return 1
+        except IOError as ex:
+            self.log.error("  could not remove {0}: {1}".format(filepath, ex.strerror))
+            return 0
 
-#--------------------------------------------------------------------------------------------------
-# Code to print the rendering status.
-#--------------------------------------------------------------------------------------------------
+    def upload_file(self, filename):
+        dest_filepath = os.path.join(self.args.target_directory, filename)
+        if os.path.isfile(dest_filepath):
+            return 0
 
-def print_rendering_status(shot_directory, watched_directory, archive_directory, log):
-    pending_count = 0
-    completed_count = 0
-    inprogress_count = 0
-    usernames = {}
+        source_filepath = os.path.join(self.args.source_directory, filename)
+        filesize = safe_get_file_size(source_filepath)
+        if self.target_directory_size + filesize > self.args.max_size:
+            return 0
 
-    shot_files = get_files(shot_directory, "*.appleseed")
-    total_count = len(shot_files)
-
-    # Count pending and completed project files.
-    for filepath in shot_files:
-        filename = os.path.basename(filepath)
-
-        # Look for this project file in the watched directory.
-        if os.path.isfile(os.path.join(watched_directory, filename)):
-            pending_count += 1
-            continue
-
-        # Count completed project files.
-        if os.path.isfile(os.path.join(archive_directory, filename)):
-            completed_count += 1
-            continue
-
-    # Count in-progress project files.
-    for filepath in get_files(watched_directory, "*.appleseed.*"):
-        filename = os.path.basename(filepath)
-        parts = os.path.splitext(filename)
-        if os.path.splitext(parts[0])[1] == ".appleseed":
-            inprogress_count += 1
-            username = parts[1][1:]
-            usernames[username] = parts[0]
-
-    # Compute progress in percents.
-    completed_percent = 0 if total_count == 0 else 100.0 * completed_count / total_count
-
-    log.info("project files: {0}/{1} completed ({2:.2f} %), {3} rendering, {4} pending." \
-        .format(completed_count, total_count, completed_percent, inprogress_count, pending_count))
-
-    if len(usernames) > 0:
-        log.info_no_log("assignments:")
-        for username in usernames.keys():
-            filename = usernames[username]
-            log.info_no_log("  {0}    {1}".format(filename, username))
-    else:
-        log.info_no_log("no project file assigned.")
-
-
-#--------------------------------------------------------------------------------------------------
-# Top-level logic.
-#--------------------------------------------------------------------------------------------------
-
-def manage(args, log):
-    # Compute and print the size of the watched directory.
-    watched_dir_size = get_directory_size(args.watched_directory)
-    watched_dir_size_mb = watched_dir_size / (1024 * 1024)
-    log.info("size of watched directory is {0:.2f} MB.".format(watched_dir_size_mb))
-
-    print_rendering_status(args.shot_directory,
-                           args.watched_directory,
-                           os.path.join(args.watched_directory, ARCHIVE_DIR),
-                           log)
-
-    # Gather all the dependencies of pending and rendering project files.
-    project_files = get_files(args.watched_directory, "*.appleseed*")
-    log.info_no_log("computing dependencies of {0} project file(s)...".format(len(project_files)))
-    deps_refcounts = compute_deps_refcount(args.watched_directory, project_files)
-
-    # Remove orphan dependencies.
-    log.info_no_log("removing orphan dependencies...")
-    removed_deps = remove_orphan_dependencies(args.watched_directory,
-                                              os.path.join(args.watched_directory, ARCHIVE_DIR),
-                                              deps_refcounts)
-    if removed_deps > 0:
-        log.info("removed {0} orphan dependency(ies).".format(removed_deps))
-
-    # Submit new project files.
-    log.info_no_log("submitting project files...")
-    submit_project_files(args.shot_directory,
-                         args.watched_directory,
-                         os.path.join(args.watched_directory, ARCHIVE_DIR),
-                         args.max_size, log)
-
-    # Move rendered frames to the shot directory.
-    log.info_no_log("moving rendered frames...")
-    moved_files = move_files(os.path.join(args.watched_directory, RENDERS_DIR),
-                             args.frames_directory)
-    if moved_files > 0:
-        log.info("moved {0} file(s) to {1}.".format(moved_files, os.path.abspath(args.frames_directory)))
+        try:
+            shutil.copyfile(source_filepath, dest_filepath)
+            self.target_directory_size += filesize
+            return 1
+        except IOError as ex:
+            self.log.error("  could not upload {0}: {1}".format(source_filepath, ex.strerror))
+            return 0
 
 
 #--------------------------------------------------------------------------------------------------
@@ -457,31 +429,34 @@ def main():
     parser = argparse.ArgumentParser(description="send a shot to a folder being watched by " \
                                      "appleseed render nodes.")
     parser.add_argument("-s", "--max-size", metavar="MB",
-                        help="set the maximum allowed size in MB of the directory being watched " \
-                        "(default is unlimited)")
-    parser.add_argument("--shot", metavar="shot-directory", dest="shot_directory", required=True,
-                        help="directory containing the original shot data")
-    parser.add_argument("--watched", metavar="watched-directory", dest="watched_directory",
+                        help="set the maximum allowed size in mb of the target directory " \
+                        "(default is 1 terabyte)")
+    parser.add_argument("--source", metavar="source-directory", dest="source_directory",
+                        required=True, help="directory containing the source shot data")
+    parser.add_argument("--target", metavar="target-directory", dest="target_directory",
                         required=True, help="directory being watched by render nodes")
     parser.add_argument("--frames", metavar="frames-directory", dest="frames_directory",
                         help="directory where the rendered frames should be stored")
     args = parser.parse_args()
 
-    if args.max_size is not None:
-        args.max_size = float(args.max_size)
+    if args.max_size is None:
+        args.max_size = 2 ** 40                 # default to 1 terabyte
+    else:
+        args.max_size = long(args.max_size)
+        args.max_size *= MB                     # convert to bytes
 
     # Start the log.
-    log = Log(os.path.join(args.watched_directory, LOGS_DIR, "rendermanager.log"))
+    log = Log(os.path.join(args.target_directory, LOGS_DIR, "rendermanager.log"))
     log.info("--- starting logging ---")
-
-    # Print version information.
     log.info("running rendermanager.py version {0}.".format(VERSION))
+
+    manager = Manager(args, log)
 
     # Main management loop.
     try:
         while True:
             try:
-                manage(args, log)
+                manager.manage()
             except KeyboardInterrupt, SystemExit:
                 raise
             except:
