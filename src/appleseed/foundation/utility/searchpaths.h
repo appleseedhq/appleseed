@@ -63,13 +63,15 @@ class DLLSYMBOL SearchPaths
     void clear();
 
     // Returns true if empty.
-    bool empty();
+    bool empty() const;
 
     // Returns the number of paths.
     size_t size() const;
 
+    // Gets the root path, the path used to resolve relative paths in the searchpaths
+    std::string get_root_path() const;
+
     // Sets the root path, the path used to resolve relative paths in the searchpaths.
-    // This path is automatically added to the searchpaths.
     void set_root_path(const char* path);
     template<typename T> void set_root_path(const std::basic_string<T>& path);
 

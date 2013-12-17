@@ -90,7 +90,7 @@ void SearchPaths::clear()
     impl->m_absolute_paths.clear();
 }
 
-bool SearchPaths::empty()
+bool SearchPaths::empty() const
 {
     return impl->m_paths.empty();
 }
@@ -98,6 +98,14 @@ bool SearchPaths::empty()
 size_t SearchPaths::size() const
 {
     return impl->m_paths.size();
+}
+
+std::string SearchPaths::get_root_path() const
+{
+    if (impl->m_root.empty())
+        return std::string();
+    
+    return impl->m_root.make_preferred().string();
 }
 
 void SearchPaths::set_root_path(const char* path)
@@ -109,8 +117,6 @@ void SearchPaths::set_root_path(const char* path)
     assert(p.is_absolute());
     
     impl->m_root = p;
-    impl->m_paths.push_back(path);
-    impl->m_absolute_paths.push_back(path);    
 }
 
 bool SearchPaths::has_root_path() const
@@ -140,6 +146,14 @@ bool SearchPaths::exist(const char* filepath) const
     if (fp.is_absolute())
         return filesystem::exists(fp);
 
+    // first, test the root path, if it has been set.
+    if (has_root_path())
+    {
+        if (filesystem::exists(impl->m_root / fp))
+            return true;
+    }
+    
+    // check all other paths.
     for (ConstReverseIterator i(abs_paths_rbegin()), e(abs_paths_rend()); i != e; ++i)
     {
         const filesystem::path qualified_fp = filesystem::path(*i) / fp;
@@ -156,11 +170,22 @@ char* SearchPaths::qualify(const char* filepath) const
     assert(filepath);
 
     const filesystem::path fp(filepath);
-
     string result = fp.string();
 
     if (!fp.is_absolute())
     {
+        // first, test the root path, if it has been set.
+        if (has_root_path())
+        {
+            filesystem::path qualified_fp = impl->m_root / fp;
+            if (filesystem::exists(qualified_fp))
+            {
+                result = qualified_fp.make_preferred().string();
+                return duplicate_string(result.c_str());
+            }
+        }
+        
+        // check all other paths.
         for (ConstReverseIterator i(abs_paths_rbegin()), e(abs_paths_rend()); i != e; ++i)
         {
             filesystem::path qualified_fp = filesystem::path(*i) / fp;

@@ -767,9 +767,8 @@ namespace
         void write_searchpaths(const Project& project)
         {
             const SearchPaths& searchpaths = project.get_search_paths();
-            assert(searchpaths.has_root_path());
 
-            if (searchpaths.size() != 1)
+            if (!searchpaths.empty())
             {
                 std::fprintf(m_file, "%s<searchpaths>\n", m_indenter.c_str());
                 ++m_indenter;
