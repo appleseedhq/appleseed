@@ -44,7 +44,7 @@ import xml.dom.minidom as xml
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "2.0"
+VERSION = "2.1"
 RENDERS_DIR = "_renders"
 ARCHIVES_DIR = "_archives"
 LOGS_DIR = "_logs"
@@ -261,11 +261,15 @@ class Manager:
         self.target_directory_size = get_directory_size(self.args.target_directory)
 
     def gather_files(self):
-        self.log.info_no_log("gathering files...")
+        self.log.info("gathering files...")
         self.source_files = map(os.path.basename, get_files(self.args.source_directory, "*.appleseed"))
         self.completed_files = map(os.path.basename, get_files(self.archives_directory, "*.appleseed"))
         self.uploaded_files = self.gather_uploaded_files()
         self.inprogress_files = self.gather_inprogress_files()
+        self.log.info("  found {0} source files in {1}".format(len(self.source_files), self.args.source_directory))
+        self.log.info("  found {0} completed files in {1}".format(len(self.completed_files), self.archives_directory))
+        self.log.info("  found {0} in-progress files in {1}".format(len(self.inprogress_files), self.args.target_directory))
+        self.log.info("  found {0} uploaded files in {1}".format(len(self.uploaded_files), self.args.target_directory))
 
     def gather_uploaded_files(self):
         return map(os.path.basename, get_files(self.args.target_directory, "*.appleseed"))
@@ -282,11 +286,11 @@ class Manager:
         return inprogress
 
     def print_status(self):
-        self.log.info_no_log("-------------------------------------------------------------------")
+        self.log.info("-------------------------------------------------------------------")
         self.print_progress()
         self.print_assignments()
         self.print_target_directory_size()
-        self.log.info_no_log("-------------------------------------------------------------------")
+        self.log.info("-------------------------------------------------------------------")
 
     def print_progress(self):
         total = len(self.source_files)
@@ -294,7 +298,7 @@ class Manager:
         rendering = self.count_inprogress_frames()
         pending = self.count_pending_frames()
         progress = 100.0 * completed / total if total > 0 else 0.0
-        self.log.info_no_log("PROGRESS: {0}/{1} completed ({2:.2f} %), {3} rendering, {4} pending" \
+        self.log.info("PROGRESS: {0}/{1} completed ({2:.2f} %), {3} rendering, {4} pending" \
             .format(completed, total, progress, rendering, pending))
 
     def print_assignments(self):
@@ -303,11 +307,11 @@ class Manager:
             if filename in self.inprogress_files.keys():
                 assignments[filename] = ", ".join(self.inprogress_files[filename])
         if len(assignments) > 0:
-            self.log.info_no_log("frame assignments:")
+            self.log.info("frame assignments:")
             for filename in assignments.keys():
-                self.log.info_no_log("  {0}: {1}".format(filename, assignments[filename]))
+                self.log.info("  {0}: {1}".format(filename, assignments[filename]))
         else:
-            self.log.info_no_log("no frame assigned.")
+            self.log.info("no frame assigned.")
 
     def print_target_directory_size(self):
         size_mb = self.target_directory_size / MB
@@ -334,7 +338,7 @@ class Manager:
     def move_frame(self, source_filepath):
         filename = os.path.basename(source_filepath)
         dest_filepath = os.path.join(self.args.frames_directory, filename)
-        self.log.info("  moving {0} to {1}".format(filename, self.args.frames_directory))
+        self.log.info("  moving {0}".format(filename))
         safe_mkdir(self.args.frames_directory)
         shutil.move(source_filepath, dest_filepath)
 
