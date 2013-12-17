@@ -60,6 +60,13 @@ def walk(directory, recursive):
 def should_skip(path):
     return path.startswith("skip - ")
 
+def format_duration(duration):
+    total_seconds = duration.total_seconds()
+    hours = int(total_seconds / 3600)
+    minutes = int((total_seconds % 3600) / 60)
+    seconds = total_seconds % 60
+    return "{0:02}:{1:02}:{2:09.6f}".format(hours, minutes, seconds)
+
 
 #--------------------------------------------------------------------------------------------------
 # Render a given project file.
@@ -87,7 +94,7 @@ def render_project_file(project_directory, project_filename, tool_path):
         end_time = datetime.datetime.now()
 
         if result == 0:
-            print("{0} [ok]".format(end_time - start_time))
+            print("{0} [ok]".format(format_duration(end_time - start_time)))
         else:
             print("[failed]")
 
@@ -140,7 +147,8 @@ def main():
     rendered_file_count = render_project_files(args.tool_path, args.directory, args.recursive)
     end_time = datetime.datetime.now()
 
-    print("rendered {0} project file(s) in {1}.".format(rendered_file_count, end_time - start_time))
+    print("rendered {0} project file(s) in {1}." \
+        .format(rendered_file_count, format_duration(end_time - start_time)))
 
 if __name__ == '__main__':
     main()
