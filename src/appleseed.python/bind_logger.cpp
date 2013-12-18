@@ -29,6 +29,9 @@
 // Has to be first, to avoid redefinition warnings.
 #include "bind_auto_release_ptr.h"
 
+// appleseed.python headers.
+#include "gil_locks.h"
+
 // appleseed.foundation headers.
 #include "foundation/platform/python.h"
 #include "foundation/utility/log.h"
@@ -62,9 +65,8 @@ namespace detail
             {
                 // because this can be called from multiple threads
                 // we need to lock python here.
-                PyGILState_STATE state = PyGILState_Ensure();
+                ScopedGILLock lock;
                 this->get_override("write")(category, file, line, header, message);
-                PyGILState_Release(state);
             }
             catch (bpy::error_already_set)
             {
