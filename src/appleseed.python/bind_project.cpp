@@ -79,15 +79,15 @@ namespace detail
         return paths;
     }
 
-    void project_set_search_paths(Project* proj, const bpy::list& paths)
+    void project_set_search_paths(Project* project, const bpy::list& paths)
     {
-        proj->get_search_paths().clear();
+        project->get_search_paths().clear();
 
         for (bpy::ssize_t i = 0, e = bpy::len(paths); i < e; ++i)
         {
             const bpy::extract<const char*> extractor(paths[i]);
             if (extractor.check())
-                proj->get_search_paths().push_back(extractor());
+                project->get_search_paths().push_back(extractor());
             else
             {
                 PyErr_SetString(PyExc_TypeError, "Incompatible type. Only strings accepted.");
@@ -96,18 +96,24 @@ namespace detail
         }
     }
 
-    ConfigurationContainer* project_get_configs(Project* proj)
+    ConfigurationContainer* project_get_configs(Project* project)
     {
-        return &(proj->configurations());
+        return &(project->configurations());
     }
 
-    bool write_project_default_opts(const ProjectFileWriter* writer, const Project* project, const char* filepath)
+    bool write_project_default_opts(
+        const ProjectFileWriter*            writer,
+        const Project*                      project,
+        const char*                         filepath)
     {
         return ProjectFileWriter::write(*project, filepath);
     }
 
-    bool write_project_with_opts(const ProjectFileWriter* writer, const Project* project,
-                                 const char* filepath, ProjectFileWriter::Options opts)
+    bool write_project_with_opts(
+        const ProjectFileWriter*            writer,
+        const Project*                      project,
+        const char*                         filepath,
+        const ProjectFileWriter::Options    opts)
     {
         return ProjectFileWriter::write(*project, filepath, opts);
     }
@@ -117,7 +123,9 @@ namespace detail
         return ConfigurationFactory::create(name.c_str());
     }
 
-    auto_release_ptr<Configuration> create_config_with_params(const std::string& name, const bpy::dict& params)
+    auto_release_ptr<Configuration> create_config_with_params(
+        const std::string&                  name,
+        const bpy::dict&                    params)
     {
         return ConfigurationFactory::create(name.c_str(), bpy_dict_to_param_array(params));
     }
@@ -140,9 +148,10 @@ namespace detail
         return param_array_to_bpy_dict(params);
     }
 
-    bpy::object project_file_reader_read(ProjectFileReader* reader,
-                                         const char* project_filename,
-                                         const char* schema_filename)
+    bpy::object project_file_reader_read(
+        ProjectFileReader*                  reader,
+        const char*                         project_filename,
+        const char*                         schema_filename)
     {
         auto_release_ptr<Project> project(reader->read(project_filename, schema_filename));
         return bpy::object(project);
@@ -166,8 +175,7 @@ void bind_project()
 
         .def("set_base", &Configuration::set_base)
         .def("get_base", &Configuration::get_base, bpy::return_value_policy<bpy::reference_existing_object>())
-        .def("get_inherited_parameters", detail::config_get_inherited_parameters)
-        ;
+        .def("get_inherited_parameters", detail::config_get_inherited_parameters);
 
     bind_typed_entity_map<Configuration>("ConfigurationContainer");
 
@@ -194,8 +202,7 @@ void bind_project()
         .def("get_search_paths", detail::project_get_search_paths)
         .def("set_search_paths", detail::project_set_search_paths)
 
-        .def("configurations", detail::project_get_configs, bpy::return_value_policy<bpy::reference_existing_object>())
-        ;
+        .def("configurations", detail::project_get_configs, bpy::return_value_policy<bpy::reference_existing_object>());
 
     bpy::class_<ProjectFileReader>("ProjectFileReader")
         .def("read", &detail::project_file_reader_read)
@@ -207,13 +214,11 @@ void bind_project()
         .value("OmitHeaderComment", ProjectFileWriter::OmitHeaderComment)
         .value("OmitWritingMeshFiles", ProjectFileWriter::OmitWritingMeshFiles)
         .value("OmitCopyingAssets", ProjectFileWriter::OmitCopyingAssets)
-        .value("OmitSearchPaths", ProjectFileWriter::OmitSearchPaths)
-        ;
+        .value("OmitSearchPaths", ProjectFileWriter::OmitSearchPaths);
 
     bpy::class_<ProjectFileWriter>("ProjectFileWriter")
         // These methods are static, but for symmetry with
         // ProjectFileReader, I'm wrapping them non-static.
         .def("write", detail::write_project_default_opts)
-        .def("write", detail::write_project_with_opts)
-        ;
+        .def("write", detail::write_project_with_opts);
 }
