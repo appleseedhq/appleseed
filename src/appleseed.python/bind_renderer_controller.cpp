@@ -52,6 +52,8 @@ namespace detail
       public:
         virtual void on_rendering_begin()
         {
+            m_base_controller.on_rendering_begin();
+            
             // Lock Python's global interpreter lock (GIL),
             // was released in MasterRenderer.render.
             ScopedGILLock lock;
@@ -68,6 +70,8 @@ namespace detail
 
         virtual void on_rendering_success()
         {
+            m_base_controller.on_rendering_success();
+            
             // Lock Python's global interpreter lock (GIL),
             // was released in MasterRenderer.render.
             ScopedGILLock lock;
@@ -84,6 +88,8 @@ namespace detail
 
         virtual void on_rendering_abort()
         {
+            m_base_controller.on_rendering_abort();
+            
             // Lock Python's global interpreter lock (GIL),
             // was released in MasterRenderer.render.
             ScopedGILLock lock;
@@ -100,6 +106,8 @@ namespace detail
 
         virtual void on_frame_begin()
         {
+            m_base_controller.on_frame_begin();
+            
             // Lock Python's global interpreter lock (GIL),
             // was released in MasterRenderer.render.
             ScopedGILLock lock;
@@ -116,6 +124,8 @@ namespace detail
 
         virtual void on_frame_end()
         {
+            m_base_controller.on_frame_end();
+            
             // Lock Python's global interpreter lock (GIL),
             // was released in MasterRenderer.render.
             ScopedGILLock lock;
@@ -132,6 +142,8 @@ namespace detail
 
         virtual Status on_progress()
         {
+            m_base_controller.on_progress();
+
             // Lock Python's global interpreter lock (GIL),
             // was released in MasterRenderer.render.
             ScopedGILLock lock;
@@ -146,6 +158,9 @@ namespace detail
                 return AbortRendering;
             }
         }
+        
+      private:
+        renderer::DefaultRendererController m_base_controller;
     };
 }
 
