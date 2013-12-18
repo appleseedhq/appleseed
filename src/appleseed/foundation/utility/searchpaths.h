@@ -59,7 +59,7 @@ class DLLSYMBOL SearchPaths
     // Destructor.
     ~SearchPaths();
 
-    // Remove all search paths.
+    // Remove all search paths and clears the root path.
     void clear();
 
     // Return true if empty.
@@ -94,20 +94,6 @@ class DLLSYMBOL SearchPaths
     // Find a file in the search paths. If the file was found, the qualified path to
     // this file is returned. Otherwise the input path is returned.
     std::string qualify(const std::string& filepath) const;
-
-    // Forward iteration.
-    typedef std::vector<std::string>::const_iterator const_iterator;
-    const_iterator begin() const;
-    const_iterator end() const;
-    const_iterator abs_paths_begin() const;
-    const_iterator abs_paths_end() const;
-
-    // Backward iteration.
-    typedef std::vector<std::string>::const_reverse_iterator const_reverse_iterator;
-    const_reverse_iterator rbegin() const;
-    const_reverse_iterator rend() const;
-    const_reverse_iterator abs_paths_rbegin() const;
-    const_reverse_iterator abs_paths_rend() const;
 
   private:
     struct Impl;

@@ -40,10 +40,10 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/autoreleaseptr.h"
-#include "foundation/utility/foreach.h"
 #include "foundation/utility/searchpaths.h"
 
 // Standard headers.
+#include <cstddef>
 #include <string>
 
 namespace bpy = boost::python;
@@ -73,8 +73,10 @@ namespace detail
     {
         bpy::list paths;
 
-        for (const_each<SearchPaths> i = project->get_search_paths(); i; ++i)
-            paths.append(*i);
+        const SearchPaths& search_paths = project->get_search_paths();
+
+        for (size_t i = 0; i < search_paths.size(); ++i)
+            paths.append(search_paths[i]);
 
         return paths;
     }

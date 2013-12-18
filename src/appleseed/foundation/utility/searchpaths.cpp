@@ -53,7 +53,6 @@ struct SearchPaths::Impl
 
     filesystem::path    m_root_path;
     PathCollection      m_paths;
-    PathCollection      m_absolute_paths;
 };
 
 SearchPaths::SearchPaths()
@@ -70,7 +69,6 @@ void SearchPaths::clear()
 {
     impl->m_root_path.clear();
     impl->m_paths.clear();
-    impl->m_absolute_paths.clear();
 }
 
 bool SearchPaths::empty() const
@@ -85,9 +83,6 @@ size_t SearchPaths::size() const
 
 void SearchPaths::set_root_path(const char* path)
 {
-    assert(impl->m_root_path.empty());
-    assert(impl->m_paths.empty());
-
     impl->m_root_path = filesystem::path(path).make_preferred();
 }
 
@@ -110,20 +105,7 @@ const char* SearchPaths::operator[](const size_t i) const
 void SearchPaths::push_back(const char* path)
 {
     assert(path);
-
-    const filesystem::path fp(path);
-
-    if (fp.is_absolute())
-    {
-        impl->m_paths.push_back(path);
-        impl->m_absolute_paths.push_back(path);
-    }
-    else
-    {
-        assert(!impl->m_root_path.empty());
-        impl->m_paths.push_back(path);
-        impl->m_absolute_paths.push_back((impl->m_root_path / fp).string());
-    }
+    impl->m_paths.push_back(path);
 }
 
 bool SearchPaths::exist(const char* filepath) const
@@ -134,9 +116,15 @@ bool SearchPaths::exist(const char* filepath) const
 
     if (!fp.is_absolute())
     {
-        for (const_reverse_iterator i(abs_paths_rbegin()), e(abs_paths_rend()); i != e; ++i)
+        for (Impl::PathCollection::const_reverse_iterator
+                i = impl->m_paths.rbegin(), e = impl->m_paths.rend(); i != e; ++i)
         {
-            if (filesystem::exists(filesystem::path(*i) / fp))
+            filesystem::path search_path(*i);
+
+            if (has_root_path() && search_path.is_relative())
+                search_path = impl->m_root_path / search_path;
+
+            if (filesystem::exists(search_path / fp))
                 return true;
         }
 
@@ -158,64 +146,36 @@ char* SearchPaths::do_qualify(const char* filepath) const
 
     if (!fp.is_absolute())
     {
-        for (const_reverse_iterator i(abs_paths_rbegin()), e(abs_paths_rend()); i != e; ++i)
+        for (Impl::PathCollection::const_reverse_iterator
+                i = impl->m_paths.rbegin(), e = impl->m_paths.rend(); i != e; ++i)
         {
-            const filesystem::path qualified_fp = (filesystem::path(*i) / fp).make_preferred();
+            filesystem::path search_path(*i);
+
+            if (has_root_path() && search_path.is_relative())
+                search_path = impl->m_root_path / search_path;
+
+            filesystem::path qualified_fp = search_path / fp;
 
             if (filesystem::exists(qualified_fp))
+            {
+                qualified_fp.make_preferred();
                 return duplicate_string(qualified_fp.string().c_str());
+            }
         }
 
         if (has_root_path())
         {
-            const filesystem::path qualified_fp = (impl->m_root_path / fp).make_preferred();
+            filesystem::path qualified_fp = impl->m_root_path / fp;
 
             if (filesystem::exists(qualified_fp))
+            {
+                qualified_fp.make_preferred();
                 return duplicate_string(qualified_fp.string().c_str());
+            }
         }
     }
 
     return duplicate_string(fp.string().c_str());
-}
-
-SearchPaths::const_iterator SearchPaths::begin() const
-{
-    return impl->m_paths.begin();
-}
-
-SearchPaths::const_iterator SearchPaths::end() const
-{
-    return impl->m_paths.end();
-}
-
-SearchPaths::const_iterator SearchPaths::abs_paths_begin() const
-{
-    return impl->m_absolute_paths.begin();    
-}
-
-SearchPaths::const_iterator SearchPaths::abs_paths_end() const
-{
-    return impl->m_absolute_paths.end();    
-}
-
-SearchPaths::const_reverse_iterator SearchPaths::rbegin() const
-{
-    return impl->m_paths.rbegin();
-}
-
-SearchPaths::const_reverse_iterator SearchPaths::rend() const
-{
-    return impl->m_paths.rend();
-}
-
-SearchPaths::const_reverse_iterator SearchPaths::abs_paths_rbegin() const
-{
-    return impl->m_absolute_paths.rbegin();    
-}
-
-SearchPaths::const_reverse_iterator SearchPaths::abs_paths_rend() const
-{
-    return impl->m_absolute_paths.rend();    
 }
 
 }   // namespace foundation
