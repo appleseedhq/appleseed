@@ -187,7 +187,7 @@ namespace
                 boost::filesystem::path(project.get_path()).parent_path();
 
             // Add the root path of the project to the search path collection.
-            m_project.get_search_paths().push_back(project_root_path.string());
+            m_project.get_search_paths().set_root_path(project_root_path.string());
         }
 
         Project& get_project()
@@ -369,6 +369,8 @@ namespace
         ElementRotation,
         ElementScaling,
         ElementScene,
+        ElementSearchpath,
+        ElementSearchpaths,
         ElementSurfaceShader,
         ElementTexture,
         ElementTextureInstance,
@@ -2378,7 +2380,80 @@ namespace
         Project*        m_project;
     };
 
+    //
+    // <search_path> element handler.
+    //
+    
+    class SearchPathElementHandler
+      : public ElementHandlerBase
+    {
+      public:
+        explicit SearchPathElementHandler(ParseContext& context)
+          : m_context(context)
+        {
+        }
+                
+        virtual void characters(
+            const XMLCh* const  chars,
+            const XMLSize_t     length) OVERRIDE
+        {
+            m_path = trim_both(transcode(chars));
+        }
+        
+        const string& path() const
+        {
+            return m_path;
+        }
+        
+      private:
+        ParseContext&   m_context;
+        string          m_path;
+    };
+    
+    //
+    // <search_paths> element handler.
+    //
 
+    class SearchPathsElementHandler
+      : public ElementHandlerBase
+    {
+      public:
+        explicit SearchPathsElementHandler(ParseContext& context)
+          : m_context(context)
+          , m_project(0)
+        {
+        }
+
+        virtual void end_child_element(
+            const ProjectElementID      element,
+            ElementHandlerType*         handler) OVERRIDE
+        {
+            assert(m_project);
+
+            switch (element)
+            {
+              case ElementSearchpath:
+                {
+                    SearchPathElementHandler* path_handler =
+                        static_cast<SearchPathElementHandler*>(handler);
+                    m_project->get_search_paths().push_back(path_handler->path());
+                }
+                break;
+
+              assert_otherwise;
+            }
+        }
+        
+        void set_project(Project* project)
+        {
+            m_project = project;
+        }
+        
+      private:
+        ParseContext&   m_context;
+        Project*        m_project;
+    };
+    
     //
     // <project> element handler.
     //
@@ -2412,6 +2487,14 @@ namespace
 
             switch (element)
             {
+              case ElementSearchpaths:
+                {
+                    SearchPathsElementHandler* paths_handler =
+                        static_cast<SearchPathsElementHandler*>(handler);
+                    paths_handler->set_project(m_project);
+                }
+                break;
+            
               case ElementConfigurations:
                 {
                     ConfigurationsElementHandler* configs_handler =
@@ -2443,6 +2526,10 @@ namespace
 
             switch (element)
             {
+              case ElementSearchpaths:
+                // Nothing to do, searchpaths were directly inserted into the project.
+                break;        
+
               case ElementConfigurations:
                 // Nothing to do, configurations were directly inserted into the project.
                 break;
@@ -2508,6 +2595,8 @@ namespace
             register_factory_helper<RotationElementHandler>("rotation", ElementRotation);
             register_factory_helper<ScalingElementHandler>("scaling", ElementScaling);
             register_factory_helper<SceneElementHandler>("scene", ElementScene);
+            register_factory_helper<SearchPathElementHandler>("searchpath", ElementSearchpath);
+            register_factory_helper<SearchPathsElementHandler>("searchpaths", ElementSearchpaths);
             register_factory_helper<SurfaceShaderElementHandler>("surface_shader", ElementSurfaceShader);
             register_factory_helper<TextureElementHandler>("texture", ElementTexture);
             register_factory_helper<TextureInstanceElementHandler>("texture_instance", ElementTextureInstance);

@@ -85,16 +85,22 @@ bool ProjectManager::load_builtin_project(const string& name)
 
 bool ProjectManager::save_project()
 {
-    assert(m_project.get());
-
-    return save_project_as(m_project->get_path());
+    return do_save_project_as(m_project->get_path());
 }
 
 bool ProjectManager::save_project_as(const string& filepath)
 {
+    return do_save_project_as(filepath, ProjectFileWriter::OmitSearchPaths);
+}
+
+bool ProjectManager::do_save_project_as(const string& filepath,
+                                        ProjectFileWriter::Options options)
+{
     assert(m_project.get());
 
-    if (!ProjectFileWriter::write(m_project.ref(), filepath.c_str()))
+    if (!ProjectFileWriter::write(m_project.ref(), 
+                                  filepath.c_str(), 
+                                  options))
         return false;
 
     m_project->set_path(filepath.c_str());

@@ -45,11 +45,11 @@ namespace foundation
 //
 // An ordered collection of search paths.
 //
-// The paths are ordered by descending priority: paths inserted earlier have precedence
-// over those inserted later).
+// The paths are ordered by ascending priority: paths inserted later have precedence
+// over those inserted earlier).
 //
 
-class DLLSYMBOL SearchPaths
+class DLLSYMBOL SearchPaths 
   : public NonCopyable
 {
   public:
@@ -63,11 +63,21 @@ class DLLSYMBOL SearchPaths
     void clear();
 
     // Returns true if empty.
-    bool empty();
+    bool empty() const;
 
     // Returns the number of paths.
     size_t size() const;
 
+    // Gets the root path, the path used to resolve relative paths in the searchpaths
+    std::string get_root_path() const;
+
+    // Sets the root path, the path used to resolve relative paths in the searchpaths.
+    void set_root_path(const char* path);
+    template<typename T> void set_root_path(const std::basic_string<T>& path);
+
+    // Returns true if the root path has been set.
+    bool has_root_path() const;
+    
     // Returns the ith path.
     const char* operator[](const size_t i) const;
 
@@ -90,7 +100,19 @@ class DLLSYMBOL SearchPaths
 
     ConstIterator begin() const;
     ConstIterator end() const;
+    
+    ConstIterator abs_paths_begin() const;
+    ConstIterator abs_paths_end() const;
 
+    // Const reverse iterator.
+    typedef std::vector<std::string>::const_reverse_iterator ConstReverseIterator;
+
+    ConstReverseIterator rbegin() const;
+    ConstReverseIterator rend() const;
+    
+    ConstReverseIterator abs_paths_rbegin() const;
+    ConstReverseIterator abs_paths_rend() const;
+    
   private:
     struct Impl;
     Impl* impl;
@@ -102,6 +124,12 @@ class DLLSYMBOL SearchPaths
 //
 // SearchPaths class implementation.
 //
+
+template<typename T> 
+inline void SearchPaths::set_root_path(const std::basic_string<T>& path)
+{
+    set_root_path(path.c_str());
+}
 
 template <typename T>
 inline void SearchPaths::push_back(const std::basic_string<T>& path)

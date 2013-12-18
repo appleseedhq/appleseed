@@ -763,12 +763,38 @@ namespace
                 write_frame(*project.get_frame());
         }
 
+        // Write a <searchpaths> element.
+        void write_searchpaths(const Project& project)
+        {
+            const SearchPaths& searchpaths = project.get_search_paths();
+
+            if (!searchpaths.empty())
+            {
+                std::fprintf(m_file, "%s<searchpaths>\n", m_indenter.c_str());
+                ++m_indenter;
+
+                // Skip the first searchpath. In appleseed this is the location 
+                // of the project file and it's automatically set by the project file reader.
+                SearchPaths::ConstIterator it(searchpaths.begin());
+                ++it;
+
+                for (SearchPaths::ConstIterator e(searchpaths.end()); it != e; ++it)
+                    std::fprintf(m_file, "%s<searchpath> %s </searchpath>\n", m_indenter.c_str(), it->c_str());
+
+                --m_indenter;
+                std::fprintf(m_file, "%s</searchpaths>\n", m_indenter.c_str());
+            }
+        }
+
         // Write a <project> element.
         void write_project(const Project& project)
         {
             XMLElement element("project", m_file, m_indenter);
             element.add_attribute("format_revision", project.get_format_revision());
             element.write(true);
+
+            if (!(m_options & ProjectFileWriter::OmitSearchPaths))
+                write_searchpaths(project);
 
             if (project.get_scene())
                 write_scene(*project.get_scene());

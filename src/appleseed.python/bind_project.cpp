@@ -206,6 +206,7 @@ void bind_project()
         .value("OmitHeaderComment", ProjectFileWriter::OmitHeaderComment)
         .value("OmitWritingMeshFiles", ProjectFileWriter::OmitWritingMeshFiles)
         .value("OmitCopyingAssets", ProjectFileWriter::OmitCopyingAssets)
+        .value("OmitSearchPaths", ProjectFileWriter::OmitSearchPaths)
         ;
 
     bpy::class_<ProjectFileWriter>("ProjectFileWriter")

@@ -189,6 +189,13 @@
     <xsd:element name="project">
         <xsd:complexType>
             <xsd:all>
+                <xsd:element name="searchpaths" minOccurs="0" maxOccurs="1">
+                    <xsd:complexType>
+                        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                            <xsd:element name="searchpath"/>
+                        </xsd:choice>
+                    </xsd:complexType>
+                </xsd:element>
                 <xsd:element name="scene">
                     <xsd:complexType>
                         <xsd:complexContent>
