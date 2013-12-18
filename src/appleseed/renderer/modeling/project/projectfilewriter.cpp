@@ -766,24 +766,25 @@ namespace
         // Write a <searchpaths> element.
         void write_searchpaths(const Project& project)
         {
-            const SearchPaths& searchpaths = project.get_search_paths();
+            const SearchPaths& search_paths = project.get_search_paths();
 
-            if (!searchpaths.empty())
+            if (!search_paths.empty())
             {
-                std::fprintf(m_file, "%s<searchpaths>\n", m_indenter.c_str());
-                ++m_indenter;
+                XMLElement element("searchpaths", m_file, m_indenter);
+                element.write(true);
 
-                // Skip the first searchpath. In appleseed this is the location 
-                // of the project file and it's automatically set by the project file reader.
-                SearchPaths::ConstIterator it(searchpaths.begin());
-                ++it;
-
-                for (SearchPaths::ConstIterator e(searchpaths.end()); it != e; ++it)
-                    std::fprintf(m_file, "%s<searchpath> %s </searchpath>\n", m_indenter.c_str(), it->c_str());
-
-                --m_indenter;
-                std::fprintf(m_file, "%s</searchpaths>\n", m_indenter.c_str());
+                for (size_t i = 0; i < search_paths.size(); ++i)
+                    write_searchpath(search_paths[i]);
             }
+        }
+
+        // Write a <searchpath> element.
+        void write_searchpath(const char* search_path)
+        {
+            XMLElement element("searchpath", m_file, m_indenter);
+            element.write(true);
+
+            std::fprintf(m_file, "%s%s\n", m_indenter.c_str(), search_path);
         }
 
         // Write a <project> element.

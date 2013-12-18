@@ -62,62 +62,61 @@ class DLLSYMBOL SearchPaths
     // Remove all search paths.
     void clear();
 
-    // Returns true if empty.
+    // Return true if empty.
     bool empty() const;
 
-    // Returns the number of paths.
+    // Return the number of paths.
     size_t size() const;
 
-    // Gets the root path, the path used to resolve relative paths in the searchpaths
+    // Set the root path that is used to resolve relative paths.
+    void set_root_path(const char* path);
+    void set_root_path(const std::string& path);
+
+    // Get the root path.
     std::string get_root_path() const;
 
-    // Sets the root path, the path used to resolve relative paths in the searchpaths.
-    void set_root_path(const char* path);
-    template<typename T> void set_root_path(const std::basic_string<T>& path);
-
-    // Returns true if the root path has been set.
+    // Return true if the root path has been set.
     bool has_root_path() const;
-    
-    // Returns the ith path.
+
+    // Return the i'th path.
     const char* operator[](const size_t i) const;
 
     // Insert a search path at the end of the collection.
     void push_back(const char* path);
-    template <typename T> void push_back(const std::basic_string<T>& path);
+    void push_back(const std::string& path);
 
     // Return true if a given file exists, that is, if the argument is the absolute
     // path to a file that exists, or it is the name of a file that exists in one of
     // the search paths.
     bool exist(const char* filepath) const;
-    template <typename T> bool exist(const std::basic_string<T>& filepath) const;
+    bool exist(const std::string& filepath) const;
 
     // Find a file in the search paths. If the file was found, the qualified path to
     // this file is returned. Otherwise the input path is returned.
-    template <typename T> std::basic_string<T> qualify(const std::basic_string<T>& filepath) const;
+    std::string qualify(const std::string& filepath) const;
 
-    // Const iterator.
-    typedef std::vector<std::string>::const_iterator ConstIterator;
+    // Forward iteration.
+    typedef std::vector<std::string>::const_iterator const_iterator;
+    const_iterator begin() const;
+    const_iterator end() const;
+    const_iterator abs_paths_begin() const;
+    const_iterator abs_paths_end() const;
 
-    ConstIterator begin() const;
-    ConstIterator end() const;
-    
-    ConstIterator abs_paths_begin() const;
-    ConstIterator abs_paths_end() const;
+    // Backward iteration.
+    typedef std::vector<std::string>::const_reverse_iterator const_reverse_iterator;
+    const_reverse_iterator rbegin() const;
+    const_reverse_iterator rend() const;
+    const_reverse_iterator abs_paths_rbegin() const;
+    const_reverse_iterator abs_paths_rend() const;
 
-    // Const reverse iterator.
-    typedef std::vector<std::string>::const_reverse_iterator ConstReverseIterator;
-
-    ConstReverseIterator rbegin() const;
-    ConstReverseIterator rend() const;
-    
-    ConstReverseIterator abs_paths_rbegin() const;
-    ConstReverseIterator abs_paths_rend() const;
-    
   private:
     struct Impl;
     Impl* impl;
 
-    char* qualify(const char* filepath) const;
+    static std::string make_string(const char* s);
+
+    char* do_get_root_path() const;
+    char* do_qualify(const char* filepath) const;
 };
 
 
@@ -125,31 +124,36 @@ class DLLSYMBOL SearchPaths
 // SearchPaths class implementation.
 //
 
-template<typename T> 
-inline void SearchPaths::set_root_path(const std::basic_string<T>& path)
+inline std::string SearchPaths::make_string(const char* s)
+{
+    const std::string result = s;
+    free_string(s);
+    return result;
+}
+
+inline void SearchPaths::set_root_path(const std::string& path)
 {
     set_root_path(path.c_str());
 }
 
-template <typename T>
-inline void SearchPaths::push_back(const std::basic_string<T>& path)
+inline void SearchPaths::push_back(const std::string& path)
 {
     return push_back(path.c_str());
 }
 
-template <typename T>
-inline bool SearchPaths::exist(const std::basic_string<T>& filepath) const
+inline std::string SearchPaths::get_root_path() const
+{
+    return make_string(do_get_root_path());
+}
+
+inline bool SearchPaths::exist(const std::string& filepath) const
 {
     return exist(filepath.c_str());
 }
 
-template <typename T>
-inline std::basic_string<T> SearchPaths::qualify(const std::basic_string<T>& filepath) const
+inline std::string SearchPaths::qualify(const std::string& filepath) const
 {
-    const char* tmp = qualify(filepath.c_str());
-    const std::basic_string<T> result = tmp;
-    free_string(tmp);
-    return result;
+    return make_string(do_qualify(filepath.c_str()));
 }
 
 }       // namespace foundation

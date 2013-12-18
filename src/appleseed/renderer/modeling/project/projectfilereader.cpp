@@ -186,7 +186,7 @@ namespace
             const boost::filesystem::path project_root_path =
                 boost::filesystem::path(project.get_path()).parent_path();
 
-            // Add the root path of the project to the search path collection.
+            // Set the root path in the search path collection.
             m_project.get_search_paths().set_root_path(project_root_path.string());
         }
 

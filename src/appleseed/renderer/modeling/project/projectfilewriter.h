@@ -54,7 +54,7 @@ class DLLSYMBOL ProjectFileWriter
         OmitHeaderComment       = 1 << 0,   // do not write the header comment
         OmitWritingMeshFiles    = 1 << 1,   // do not write mesh files to disk
         OmitCopyingAssets       = 1 << 2,   // do not copy asset files (such as texture files) to reside alongside the project file
-        OmitSearchPaths         = 1 << 3    // do not write searchpaths
+        OmitSearchPaths         = 1 << 3    // do not write search paths
     };
 
     // Write a project to disk. Return true on success, false otherwise.

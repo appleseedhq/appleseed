@@ -40,6 +40,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/autoreleaseptr.h"
+#include "foundation/utility/foreach.h"
 #include "foundation/utility/searchpaths.h"
 
 // Standard headers.
@@ -68,12 +69,12 @@ namespace detail
         return bpy::object(project);
     }
 
-    bpy::list project_get_search_paths(const Project* proj)
+    bpy::list project_get_search_paths(const Project* project)
     {
         bpy::list paths;
 
-        for (SearchPaths::ConstIterator it(proj->get_search_paths().begin()), e(proj->get_search_paths().end()); it != e; ++it)
-            paths.append(*it);
+        for (const_each<SearchPaths> i = project->get_search_paths(); i; ++i)
+            paths.append(*i);
 
         return paths;
     }
