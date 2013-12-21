@@ -171,8 +171,7 @@ void bind_renderer_controller()
         .value("TerminateRendering", IRendererController::TerminateRendering)
         .value("AbortRendering", IRendererController::AbortRendering)
         .value("RestartRendering", IRendererController::RestartRendering)
-        .value("ReinitializeRendering", IRendererController::ReinitializeRendering)
-        ;
+        .value("ReinitializeRendering", IRendererController::ReinitializeRendering);
 
     bpy::class_<detail::IRendererControllerWrapper, boost::noncopyable>("IRendererController")
         .def("on_rendering_begin", bpy::pure_virtual(&IRendererController::on_rendering_begin))
@@ -180,9 +179,7 @@ void bind_renderer_controller()
         .def("on_rendering_abort", bpy::pure_virtual(&IRendererController::on_rendering_abort))
         .def("on_frame_begin", bpy::pure_virtual(&IRendererController::on_frame_begin))
         .def("on_frame_end", bpy::pure_virtual(&IRendererController::on_frame_end))
-        .def("on_progress", bpy::pure_virtual(&IRendererController::on_progress))
-        ;
+        .def("on_progress", bpy::pure_virtual(&IRendererController::on_progress));
 
-    bpy::class_<DefaultRendererController, boost::noncopyable>("DefaultRendererController")
-        ;
+    bpy::class_<DefaultRendererController, boost::noncopyable>("DefaultRendererController");
 }

@@ -30,27 +30,27 @@
 #include "gil_locks.h"
 
 ScopedGILLock::ScopedGILLock()
-  : m_threadsInitialised(PyEval_ThreadsInitialized() ? true : false)
+  : m_threads_initialized(PyEval_ThreadsInitialized() ? true : false)
 {
-    if (m_threadsInitialised)
+    if (m_threads_initialized)
         m_state = PyGILState_Ensure();
 }
 
 ScopedGILLock::~ScopedGILLock()
 {
-    if (m_threadsInitialised)
+    if (m_threads_initialized)
         PyGILState_Release(m_state);
 }
 
 ScopedGILUnlock::ScopedGILUnlock()
-  : m_threadsInitialised(PyEval_ThreadsInitialized() ? true : false)
+  : m_threads_initialized(PyEval_ThreadsInitialized() ? true : false)
 {
-    if (m_threadsInitialised)
+    if (m_threads_initialized)
         m_state = PyEval_SaveThread();
 }
 
 ScopedGILUnlock::~ScopedGILUnlock()
 {
-    if (m_threadsInitialised)
+    if (m_threads_initialized)
         PyEval_RestoreThread(m_state);
 }

@@ -44,15 +44,21 @@ using namespace renderer;
 
 namespace detail
 {
-    void transform_seq_set_transform(TransformSequence* seq, const double time, const UnalignedTransformd44& transform)
+    void transform_seq_set_transform(
+        TransformSequence*              seq,
+        const double                    time,
+        const UnalignedTransformd44&    transform)
     {
-        Transformd xform(transform.get_local_to_parent().as_foundation_matrix(),
-                         transform.get_parent_to_local().as_foundation_matrix());
+        const Transformd xform(
+            transform.get_local_to_parent().as_foundation_matrix(),
+            transform.get_parent_to_local().as_foundation_matrix());
 
         seq->set_transform(time, xform);
     }
 
-    bpy::tuple transform_seq_get_transform(const TransformSequence* seq, std::size_t index)
+    bpy::tuple transform_seq_get_transform(
+        const TransformSequence*        seq,
+        const std::size_t               index)
     {
         double time;
         Transformd xform;
@@ -62,7 +68,7 @@ namespace detail
 
     UnalignedTransformd44 transform_seq_get_earliest(const TransformSequence* seq)
     {
-        Transformd xform(seq->get_earliest_transform());
+        const Transformd xform(seq->get_earliest_transform());
         return UnalignedTransformd44(xform);
     }
 }
@@ -87,7 +93,7 @@ void bind_transform()
     Vector<float, 3> (UnalignedTransformd44::*normal_to_parentf)(const Vector<float, 3>&) const = &UnalignedTransformd44::normal_to_parent;
     Vector<double, 3> (UnalignedTransformd44::*normal_to_parentd)(const Vector<double, 3>&) const = &UnalignedTransformd44::normal_to_parent;
 
-    bpy::class_<UnalignedTransformd44 >("Transformd")
+    bpy::class_<UnalignedTransformd44>("Transformd")
         .def(bpy::init<const UnalignedMatrix44<double>&>())
         .def(bpy::init<const UnalignedMatrix44<double>&, const UnalignedMatrix44<double>&>())
 
@@ -121,8 +127,7 @@ void bind_transform()
 
         // the extra self_ns qualification
         .def(bpy::self_ns::str(bpy::self))
-        .def(bpy::self_ns::repr(bpy::self))
-        ;
+        .def(bpy::self_ns::repr(bpy::self));
 
     bpy::class_<TransformSequence, boost::noncopyable>("TransformSequence", bpy::no_init)
         .def("set_transform", &detail::transform_seq_set_transform)
@@ -131,6 +136,5 @@ void bind_transform()
 
         .def("empty", &TransformSequence::empty)
         .def("size", &TransformSequence::size)
-        .def("clear", &TransformSequence::clear)
-        ;
+        .def("clear", &TransformSequence::clear);
 }

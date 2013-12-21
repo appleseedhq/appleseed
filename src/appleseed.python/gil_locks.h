@@ -37,28 +37,30 @@
 
 // This class locks Python's Global interpreter lock on construction
 // and unlocks it on destructions. A classic lock.
-class ScopedGILLock : foundation::NonCopyable
+class ScopedGILLock
+  : foundation::NonCopyable
 {
   public:
     ScopedGILLock();
     ~ScopedGILLock();
 
   private:
-    bool m_threadsInitialised;
-    PyGILState_STATE m_state;
+    bool                m_threads_initialized;
+    PyGILState_STATE    m_state;
 };
 
 // This class unlocks Python's Global interpreter lock on construction
 // and locks it on destructions. An inverted lock -> unlock.
-class ScopedGILUnlock : foundation::NonCopyable
+class ScopedGILUnlock
+  : foundation::NonCopyable
 {
   public:
     ScopedGILUnlock();
     ~ScopedGILUnlock();
 
   private:
-    bool m_threadsInitialised;
-    PyThreadState* m_state;
+    bool                m_threads_initialized;
+    PyThreadState*      m_state;
 };
 
 #endif  // !APPLESEED_PYTHON_GIL_LOCKS_H
