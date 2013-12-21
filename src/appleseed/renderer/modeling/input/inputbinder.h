@@ -66,9 +66,9 @@ class InputBinder
 
     // Find an entity with a given name using the input binding logic.
     template <typename EntityType>
-    EntityType* find_entity(
+    static EntityType* find_entity(
         const char*                     name,
-        const Entity*                   parent) const;
+        const Entity*                   parent);
 
   private:
     struct AssemblyInfo
@@ -176,7 +176,7 @@ class InputBinder
 template <typename EntityType>
 EntityType* InputBinder::find_entity(
     const char*                         name,
-    const Entity*                       parent) const
+    const Entity*                       parent)
 {
     assert(name);
 

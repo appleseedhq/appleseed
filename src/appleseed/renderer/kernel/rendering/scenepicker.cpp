@@ -62,7 +62,6 @@ struct ScenePicker::Impl
     TextureStore        m_texture_store;
     TextureCache        m_texture_cache;
     Intersector         m_intersector;
-    InputBinder         m_input_binder;
 
     explicit Impl(const TraceContext& trace_context)
       : m_trace_context(trace_context)
@@ -121,7 +120,7 @@ ScenePicker::PickingResult ScenePicker::pick(const Vector2d& ndc) const
         if (pa_index != Triangle::None)
         {
             result.m_material =
-                impl->m_input_binder.find_entity<Material>(
+                InputBinder::find_entity<Material>(
                     result.m_object_instance->get_material_name(pa_index, shading_point.get_side()),
                     result.m_object_instance->get_parent());
         }
@@ -132,13 +131,13 @@ ScenePicker::PickingResult ScenePicker::pick(const Vector2d& ndc) const
         const Entity* parent = result.m_material->get_parent();
 
         const char* ss_name = result.m_material->get_surface_shader_name();
-        result.m_surface_shader = ss_name ? impl->m_input_binder.find_entity<SurfaceShader>(ss_name, parent) : 0;
+        result.m_surface_shader = ss_name ? InputBinder::find_entity<SurfaceShader>(ss_name, parent) : 0;
 
         const char* bsdf_name = result.m_material->get_bsdf_name();
-        result.m_bsdf = bsdf_name ? impl->m_input_binder.find_entity<BSDF>(bsdf_name, parent) : 0;
+        result.m_bsdf = bsdf_name ? InputBinder::find_entity<BSDF>(bsdf_name, parent) : 0;
 
         const char* edf = result.m_material->get_edf_name();
-        result.m_edf = edf ? impl->m_input_binder.find_entity<EDF>(edf, parent) : 0;
+        result.m_edf = edf ? InputBinder::find_entity<EDF>(edf, parent) : 0;
     }
 
     return result;
