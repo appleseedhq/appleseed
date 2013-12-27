@@ -76,6 +76,18 @@ TEST_SUITE(Foundation_Math_Quaternion)
         EXPECT_FEQ(ExpectedAngle, angle);
     }
 
+    TEST_CASE(ExtractAxisAngle_GivenAxisIsZero_ReturnsXAxis)
+    {
+        const Quaterniond q(1.0, Vector3d(0.0));
+
+        Vector3d axis;
+        double angle;
+        q.extract_axis_angle(axis, angle);
+
+        EXPECT_EQ(Vector3d(1.0, 0.0, 0.0), axis);
+        EXPECT_EQ(0.0, angle);
+    }
+
     TEST_CASE(ExtractAxisAngle_GivenAngleIsZero_ReturnsXAxis)
     {
         const Quaterniond q = Quaterniond::rotation(Vector3d(0.0, 1.0, 0.0), 0.0);

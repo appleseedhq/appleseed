@@ -242,12 +242,16 @@ inline void Quaternion<T>::extract_axis_angle(
 {
     assert(is_normalized(*this, make_eps<T>(1.0e-4f, 1.0e-6)));
 
-    angle = T(2.0) * std::acos(clamp(s, T(-1.0), T(1.0)));
-
-    axis =
-        angle == ValueType(0.0)
-            ? VectorType(ValueType(1.0), ValueType(0.0), ValueType(0.0))
-            : normalize(v);
+    if (s < T(-1.0) || s > T(1.0))
+    {
+        angle = T(0.0);
+        axis = VectorType(T(1.0), T(0.0), T(0.0));
+    }
+    else
+    {
+        angle = T(2.0) * std::acos(s);
+        axis = safe_normalize(v);
+    }
 }
 
 template <typename T>
