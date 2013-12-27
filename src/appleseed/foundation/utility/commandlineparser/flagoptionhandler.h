@@ -85,7 +85,7 @@ inline void FlagOptionHandler::parse(
         // Error: option already specified.
         messages.add(
             LogMessage::Error,
-            "flag '%s' already specified, ignoring all extra occurrences.\n",
+            "flag '%s' already specified, ignoring all extra occurrences.",
             name.c_str());
         ++m_occurrence_count;
         return;

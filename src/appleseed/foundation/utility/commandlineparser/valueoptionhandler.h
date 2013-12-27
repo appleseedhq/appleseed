@@ -202,7 +202,7 @@ void ValueOptionHandler<T>::parse(
         // Error: option already specified.
         messages.add(
             LogMessage::Error,
-            "option '%s' already specified, ignoring all extra occurrences.\n",
+            "option '%s' already specified, ignoring all extra occurrences.",
             name.c_str());
         ++m_occurrence_count;
         return;
@@ -222,7 +222,7 @@ void ValueOptionHandler<T>::parse(
         if (!m_syntax.empty())
             error += " (syntax: " + name + " " + m_syntax + ")";
         error += ".";
-        messages.add(LogMessage::Error, "%s\n", error.c_str());
+        messages.add(LogMessage::Error, "%s", error.c_str());
         return;
     }
 
@@ -244,7 +244,7 @@ void ValueOptionHandler<T>::parse(
             error += "type mismatch.";
             if (!m_syntax.empty())
                 error += " syntax: " + name + " " + m_syntax + ".";
-            messages.add(LogMessage::Error, "%s\n", error.c_str());
+            messages.add(LogMessage::Error, "%s", error.c_str());
             return;
         }
     }

@@ -296,7 +296,7 @@ inline void CommandLineParser::collect_options(
                     m_default_option.m_values.size() >= m_default_option.m_handler->get_max_value_count())
                 {
                     // Error: unknown option.
-                    m_messages.add(LogMessage::Error, "unknown option '%s'.\n", arg.c_str());
+                    m_messages.add(LogMessage::Error, "unknown option '%s'.", arg.c_str());
                 }
                 else
                 {
