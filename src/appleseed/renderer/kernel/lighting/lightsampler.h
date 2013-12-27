@@ -251,10 +251,16 @@ class LightSampler
         const Assembly&                     assembly,
         const TransformSequence&            transform_sequence);
 
-    // Collect emitting triangles from a given assembly instance.
+    // Recursively collect emitting triangles from a given set of assembly instances.
+    void collect_emitting_triangles(
+        const AssemblyInstanceContainer&    assembly_instances,
+        const TransformSequence&            parent_transform_seq);
+
+    // Collect emitting triangles from a given assembly.
     void collect_emitting_triangles(
         const Assembly&                     assembly,
-        const AssemblyInstance&             assembly_instance);
+        const AssemblyInstance&             assembly_instance,
+        const TransformSequence&            transform_sequence);
 
     // Build a hash table that allows to find the emitting triangle at a given shading point.
     void build_emitting_triangle_hash_table();

@@ -117,7 +117,7 @@ void AssemblyTree::collect_assembly_instances(
             assembly_instance.transform_sequence() * parent_transform_seq;
         cumulated_transform_seq.prepare();
 
-        // Collect child assembly instances.
+        // Recurse into child assembly instances.
         collect_assembly_instances(
             assembly.assembly_instances(),
             cumulated_transform_seq,

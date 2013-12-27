@@ -95,18 +95,6 @@ void LightSample::make_shading_point(
 
 namespace
 {
-    // Return true if a given assembly references at least one light-emitting material.
-    bool has_emitting_materials(const Assembly& assembly)
-    {
-        for (const_each<MaterialContainer> i = assembly.materials(); i; ++i)
-        {
-            if (i->get_uncached_edf())
-                return true;
-        }
-
-        return false;
-    }
-
     // Return true if at least one material emits light.
     bool has_emitting_materials(const MaterialArray& materials)
     {
@@ -131,15 +119,9 @@ LightSampler::LightSampler(const Scene& scene, const ParamArray& params)
     m_non_physical_light_count = m_non_physical_lights.size();
 
     // Collect all light-emitting triangles.
-    // todo: update to support nested assemblies.
-    for (const_each<AssemblyInstanceContainer> i = scene.assembly_instances(); i; ++i)
-    {
-        const AssemblyInstance& assembly_instance = *i;
-        const Assembly& assembly = assembly_instance.get_assembly();
-
-        if (has_emitting_materials(assembly))
-            collect_emitting_triangles(assembly, assembly_instance);
-    }
+    collect_emitting_triangles(
+        scene.assembly_instances(),
+        TransformSequence());
 
     // Build the hash table of emitting triangles.
     build_emitting_triangle_hash_table();
@@ -185,7 +167,7 @@ void LightSampler::collect_non_physical_lights(
             assembly.assembly_instances(),
             cumulated_transform_seq);
 
-        // Collect lights from this assembly instance.
+        // Collect lights from this assembly.
         collect_non_physical_lights(
             assembly,
             cumulated_transform_seq);
@@ -217,8 +199,39 @@ void LightSampler::collect_non_physical_lights(
 }
 
 void LightSampler::collect_emitting_triangles(
+    const AssemblyInstanceContainer&    assembly_instances,
+    const TransformSequence&            parent_transform_seq)
+{
+    for (const_each<AssemblyInstanceContainer> i = assembly_instances; i; ++i)
+    {
+        // Retrieve the assembly instance.
+        const AssemblyInstance& assembly_instance = *i;
+
+        // Retrieve the assembly.
+        const Assembly& assembly = assembly_instance.get_assembly();
+
+        // Compute the cumulated transform sequence of this assembly instance.
+        TransformSequence cumulated_transform_seq =
+            assembly_instance.transform_sequence() * parent_transform_seq;
+        cumulated_transform_seq.prepare();
+
+        // Recurse into child assembly instances.
+        collect_emitting_triangles(
+            assembly.assembly_instances(),
+            cumulated_transform_seq);
+
+        // Collect emitting triangles from this assembly instance.
+        collect_emitting_triangles(
+            assembly,
+            assembly_instance,
+            cumulated_transform_seq);
+    }
+}
+
+void LightSampler::collect_emitting_triangles(
     const Assembly&                     assembly,
-    const AssemblyInstance&             assembly_instance)
+    const AssemblyInstance&             assembly_instance,
+    const TransformSequence&            transform_sequence)
 {
     // Loop over the object instances of the assembly.
     const size_t object_instance_count = assembly.object_instances().size();
@@ -238,8 +251,7 @@ void LightSampler::collect_emitting_triangles(
         // Compute the object space to world space transformation.
         // todo: add support for moving light-emitters.
         const Transformd& object_instance_transform = object_instance->get_transform();
-        const Transformd& assembly_instance_transform =
-            assembly_instance.transform_sequence().get_earliest_transform();
+        const Transformd& assembly_instance_transform = transform_sequence.get_earliest_transform();
         const Transformd global_transform = assembly_instance_transform * object_instance_transform;
 
         // Retrieve the object.
