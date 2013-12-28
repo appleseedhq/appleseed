@@ -38,6 +38,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/image.h"
+#include "foundation/image/tile.h"
 
 namespace bpy = boost::python;
 using namespace foundation;
@@ -50,18 +51,28 @@ namespace detail
         return FrameFactory::create(name.c_str(), bpy_dict_to_param_array(params));
     }
 
-    bpy::object archive_frame(const Frame* f, const char* directory)
+    void transform_tile_to_output_color_space(const Frame* frame, Tile* tile)
+    {
+        frame->transform_to_output_color_space(*tile);
+    }
+
+    void transform_image_to_output_color_space(const Frame* frame, Image* image)
+    {
+        frame->transform_to_output_color_space(*image);
+    }
+
+    bpy::object archive_frame(const Frame* frame, const char* directory)
     {
         char* output = 0;
 
-        if (f->archive(directory, &output))
+        if (frame->archive(directory, &output))
         {
-            bpy::str path(output);
+            const bpy::str path(output);
             foundation::free_string(output);
             return path;
         }
 
-        // return None
+        // Return None.
         return bpy::object();
     }
 }
@@ -74,9 +85,11 @@ void bind_frame()
         .def("image", &Frame::image, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("aov_images", &Frame::aov_images, bpy::return_value_policy<bpy::reference_existing_object>())
 
+        .def("transform_tile_to_output_color_space", detail::transform_tile_to_output_color_space)
+        .def("transform_image_to_output_color_space", detail::transform_image_to_output_color_space)
+
         .def("clear_main_image", &Frame::clear_main_image)
         .def("write_main_image", &Frame::write_main_image)
         .def("write_aov_images", &Frame::write_aov_images)
-        .def("archive", detail::archive_frame)
-        ;
+        .def("archive", detail::archive_frame);
 }
