@@ -103,11 +103,9 @@ void bind_entity()
         .def("set_render_layer_name", &Entity::set_render_layer_name)
 
         .def("set_render_layer_index", &Entity::set_render_layer_index)
-        .def("get_render_layer_index", &Entity::get_render_layer_index)
-        ;
+        .def("get_render_layer_index", &Entity::get_render_layer_index);
 
-    bpy::class_<ConnectableEntity, auto_release_ptr<ConnectableEntity>, bpy::bases<Entity>, boost::noncopyable>("ConnectableEntity", bpy::no_init)
-        ;
+    bpy::class_<ConnectableEntity, auto_release_ptr<ConnectableEntity>, bpy::bases<Entity>, boost::noncopyable>("ConnectableEntity", bpy::no_init);
 
     bpy::class_<EntityVector, boost::noncopyable>("EntityVector")
         .def("clear", &EntityVector::clear)
@@ -117,8 +115,7 @@ void bind_entity()
         .def("insert", &EntityVector::insert)
         .def("remove", &EntityVector::remove)
 
-        .def("__iter__", bpy::iterator<EntityVector>())
-        ;
+        .def("__iter__", bpy::iterator<EntityVector>());
 
     bpy::class_<EntityMap, boost::noncopyable>("EntityMap")
         .def("clear", &EntityMap::clear)
