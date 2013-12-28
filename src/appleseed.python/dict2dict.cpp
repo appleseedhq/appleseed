@@ -164,48 +164,28 @@ namespace
 
     bpy::object obj_from_string(const std::string& str)
     {
-        // guess the type of the value represented by str.
-        try
+        // try to guess the type of the value represented by str.
+        
+        try // Vector2
         {
-            // bool
-            bool b = from_string<bool>(str);
-            return bpy::object(b);
-        }
-        catch (ExceptionStringConversionError&) {}
-
-        try
-        {
-            // int / double
-            double d = from_string<double>(str);
-            return bpy::object(d);
-        }
-        catch (ExceptionStringConversionError&) {}
-
-        try
-        {
-            // Vector2i
-            Vector2i v = from_string<Vector2i>(str);
-            return bpy::object(v);
-        }
-        catch (ExceptionStringConversionError&) {}
-
-        try
-        {
-            // Vector2f
-            Vector2f v = from_string<Vector2f>(str);
-            return bpy::object(v);
-        }
-        catch (ExceptionStringConversionError&) {}
-
-        try
-        {
-            // Vector2d
             Vector2d v = from_string<Vector2d>(str);
             return bpy::object(v);
         }
         catch (ExceptionStringConversionError&) {}
 
-        // TODO: add conversions from bpy::tuple to Vector<T, N>.
+        try // int / double
+        {
+            double d = from_string<double>(str);
+            return bpy::object(d);
+        }
+        catch (ExceptionStringConversionError&) {}
+        
+        try // bool
+        {
+            bool b = from_string<bool>(str);
+            return bpy::object(b);
+        }
+        catch (ExceptionStringConversionError&) {}
 
         // TODO: check more types here if needed... (est.)
 
