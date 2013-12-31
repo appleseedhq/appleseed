@@ -675,7 +675,7 @@ void InputBinder::bind_texture_instance_to_input(
     catch (const exception& e)
     {
         RENDERER_LOG_ERROR(
-            "while defining %s \"%s\", while binding \"%s\" to parameter \"%s\" (%s).",
+            "while defining %s \"%s\", failed to bind \"%s\" to input \"%s\" (%s).",
             entity_type,
             entity_name,
             param_value,

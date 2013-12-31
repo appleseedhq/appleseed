@@ -309,7 +309,7 @@ void BenchmarkSuite::run(
                 *benchmark.get(),
                 __FILE__,
                 __LINE__,
-                "An unexpected exception was caught: %s.",
+                "an unexpected exception was caught: %s.",
                 e.what());
 
             suite_result.signal_case_failure();
@@ -321,7 +321,7 @@ void BenchmarkSuite::run(
                 *benchmark.get(),
                 __FILE__,
                 __LINE__,
-                "An unexpected exception was caught.");
+                "an unexpected exception was caught (no details available).");
 
             suite_result.signal_case_failure();
         }

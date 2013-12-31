@@ -210,7 +210,7 @@ void TestSuite::run_case(
             __FILE__,
             __LINE__,
             TestMessage::TestCaseFailure,
-            "An unexpected exception was caught: %s.",
+            "an unexpected exception was caught: %s.",
             e.what());
 
         test_case_result.signal_case_failure();
@@ -224,7 +224,7 @@ void TestSuite::run_case(
             __FILE__,
             __LINE__,
             TestMessage::TestCaseFailure,
-            "An unexpected exception was caught (no details available).");
+            "an unexpected exception was caught (no details available).");
 
         test_case_result.signal_case_failure();
     }
