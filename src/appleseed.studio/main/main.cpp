@@ -72,7 +72,7 @@ namespace
     void display_incorrect_installation_error()
     {
         // We need the path to the application's executable to construct the error message.
-        const filesystem::path executable_path(Path::get_executable_path());
+        const filesystem::path executable_path(get_executable_path());
 
         // Construct the error message.
         const string informative_text =

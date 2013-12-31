@@ -40,14 +40,14 @@ TEST_SUITE(Foundation_Platform_Path)
 {
     TEST_CASE(GetExecutablePath_GivenRunningApplication_ReturnsNonEmptyString)
     {
-        const string executable_path = Path::get_executable_path();
+        const string executable_path = get_executable_path();
 
         EXPECT_FALSE(executable_path.empty());
     }
 
     TEST_CASE(GetExecutableDirectory_GivenRunningApplication_ReturnsNonEmptyString)
     {
-        const string executable_dir = Path::get_executable_directory();
+        const string executable_dir = get_executable_directory();
 
         EXPECT_FALSE(executable_dir.empty());
     }

@@ -55,11 +55,7 @@ using namespace std;
 namespace foundation
 {
 
-//
-// Path class implementation.
-//
-
-const char* Path::get_executable_path()
+const char* get_executable_path()
 {
     static char path[FOUNDATION_MAX_PATH_LENGTH + 1];
     static bool path_initialized = false;
@@ -98,7 +94,7 @@ const char* Path::get_executable_path()
     return path;
 }
 
-const char* Path::get_executable_directory()
+const char* get_executable_directory()
 {
     static char path[FOUNDATION_MAX_PATH_LENGTH + 1];
     static bool path_initialized = false;

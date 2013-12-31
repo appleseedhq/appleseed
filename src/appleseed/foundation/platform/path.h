@@ -70,18 +70,14 @@ namespace foundation
 
 
 //
-// Path handling.
+// Common paths.
 //
 
-class DLLSYMBOL Path
-{
-  public:
-    // Return the path to the application's executable. NOT thread-safe.
-    static const char* get_executable_path();
+// Return the path to the application's executable. NOT thread-safe.
+DLLSYMBOL const char* get_executable_path();
 
-    // Return the path to the directory containing the application's executable. NOT thread-safe.
-    static const char* get_executable_directory();
-};
+// Return the path to the directory containing the application's executable. NOT thread-safe.
+DLLSYMBOL const char* get_executable_directory();
 
 }       // namespace foundation
 

@@ -58,7 +58,7 @@ void Application::check_installation(Logger& logger)
     if (!is_correctly_installed())
     {
         // We need the path to the application's executable to construct the error message.
-        const filesystem::path executable_path(Path::get_executable_path());
+        const filesystem::path executable_path(get_executable_path());
 
         // Issue a fatal error message.
         LOG_FATAL(
@@ -83,7 +83,7 @@ namespace
     bool compute_root_path(filesystem::path& root_path)
     {
         // Retrieve the full path to the application's executable.
-        const filesystem::path executable_path(Path::get_executable_path());
+        const filesystem::path executable_path(get_executable_path());
 
         // Remove the end of the path until /bin is reached.
         filesystem::path path = executable_path;
