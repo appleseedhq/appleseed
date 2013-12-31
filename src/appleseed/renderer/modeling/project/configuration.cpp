@@ -29,7 +29,14 @@
 // Interface header.
 #include "configuration.h"
 
+// appleseed.renderer headers.
+#include "renderer/utility/paramarray.h"
+
+// appleseed.foundation headers.
+#include "foundation/utility/uid.h"
+
 // Standard headers.
+#include <cassert>
 #include <cstring>
 
 using namespace foundation;

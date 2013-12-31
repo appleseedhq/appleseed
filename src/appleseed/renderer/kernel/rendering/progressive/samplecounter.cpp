@@ -31,6 +31,7 @@
 
 // Standard headers.
 #include <algorithm>
+#include <cassert>
 
 using namespace boost;
 using namespace foundation;

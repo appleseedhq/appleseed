@@ -30,11 +30,17 @@
 #define APPLESEED_RENDERER_MODELING_PROJECT_CONFIGURATION_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
 #include "renderer/modeling/entity/entity.h"
+
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
+#include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
+
+// Forward declarations.
+namespace renderer  { class ParamArray; }
 
 namespace renderer
 {
@@ -49,7 +55,7 @@ class DLLSYMBOL Configuration
 {
   public:
     // Delete this instance.
-    virtual void release();
+    virtual void release() OVERRIDE;
 
     // Set the base configuration.
     // A null pointer is a valid value.

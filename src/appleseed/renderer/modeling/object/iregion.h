@@ -30,11 +30,12 @@
 #define APPLESEED_RENDERER_MODELING_OBJECT_IREGION_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/tessellation/statictessellation.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/lazy.h"
+#include "foundation/utility/uid.h"
 
 namespace renderer
 {

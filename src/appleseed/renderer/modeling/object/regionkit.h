@@ -29,9 +29,6 @@
 #ifndef APPLESEED_RENDERER_MODELING_OBJECT_REGIONKIT_H
 #define APPLESEED_RENDERER_MODELING_OBJECT_REGIONKIT_H
 
-// appleseed.renderer headers.
-#include "renderer/global/global.h"
-
 // appleseed.foundation headers.
 #include "foundation/utility/lazy.h"
 #include "foundation/utility/poolallocator.h"

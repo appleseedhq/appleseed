@@ -29,11 +29,13 @@
 #ifndef APPLESEED_RENDERER_KERNEL_RENDERING_PROGRESSIVE_SAMPLECOUNTER_H
 #define APPLESEED_RENDERER_KERNEL_RENDERING_PROGRESSIVE_SAMPLECOUNTER_H
 
-// appleseed.renderer headers.
-#include "renderer/global/global.h"
-
 // appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/platform/thread.h"
+#include "foundation/platform/types.h"
+
+// Standard headers.
+#include <cstddef>
 
 namespace renderer
 {

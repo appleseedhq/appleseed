@@ -42,7 +42,12 @@
 #include "renderer/modeling/bsdf/specularbtdf.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/foreach.h"
 #include "foundation/utility/registrar.h"
+
+// Standard headers.
+#include <cassert>
+#include <string>
 
 using namespace foundation;
 using namespace std;

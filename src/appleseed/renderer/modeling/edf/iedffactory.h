@@ -29,8 +29,9 @@
 #ifndef APPLESEED_RENDERER_MODELING_EDF_IEDFFACTORY_H
 #define APPLESEED_RENDERER_MODELING_EDF_IEDFFACTORY_H
 
-// appleseed.renderer headers.
-#include "renderer/global/global.h"
+// appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
+#include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -38,6 +39,7 @@
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
 namespace renderer      { class EDF; }
+namespace renderer      { class ParamArray; }
 
 namespace renderer
 {

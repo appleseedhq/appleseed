@@ -29,17 +29,18 @@
 #ifndef APPLESEED_RENDERER_MODELING_ENVIRONMENTSHADER_ENVIRONMENTSHADERFACTORYREGISTRAR_H
 #define APPLESEED_RENDERER_MODELING_ENVIRONMENTSHADER_ENVIRONMENTSHADERFACTORYREGISTRAR_H
 
-// appleseed.renderer headers.
-#include "renderer/global/global.h"
-
 // appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/utility/containers/array.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
+// Standard headers.
+#include <memory>
+
 // Forward declarations.
-namespace renderer      { class IEnvironmentShaderFactory; }
+namespace renderer  { class IEnvironmentShaderFactory; }
 
 namespace renderer
 {

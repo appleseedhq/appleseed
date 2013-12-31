@@ -27,12 +27,15 @@
 //
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/scalarsource.h"
+#include "renderer/modeling/input/source.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/test.h"
+
+// Standard headers.
+#include <string>
 
 using namespace renderer;
 using namespace std;

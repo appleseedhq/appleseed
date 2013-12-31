@@ -29,15 +29,14 @@
 #ifndef APPLESEED_RENDERER_MODELING_INPUT_SYMBOL_H
 #define APPLESEED_RENDERER_MODELING_INPUT_SYMBOL_H
 
-// appleseed.renderer headers.
-#include "renderer/global/global.h"
-
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/stringexception.h"
 #include "foundation/utility/kvpair.h"
 
 // Standard headers.
+#include <cassert>
 #include <map>
+#include <string>
 #include <utility>
 
 namespace renderer

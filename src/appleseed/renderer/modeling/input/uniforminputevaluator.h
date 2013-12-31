@@ -30,8 +30,14 @@
 #define APPLESEED_RENDERER_MODELING_INPUT_UNIFORMINPUTEVALUATOR_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
 #include "renderer/modeling/input/inputarray.h"
+
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
+#include "foundation/platform/types.h"
+
+// Standard headers.
+#include <cstddef>
 
 namespace renderer
 {

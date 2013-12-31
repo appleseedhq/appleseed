@@ -30,8 +30,13 @@
 #define APPLESEED_RENDERER_MODELING_BSDF_NULLBSDF_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/bsdf/bsdf.h"
+
+// appleseed.foundation headers.
+#include "foundation/math/basis.h"
+#include "foundation/math/vector.h"
+#include "foundation/platform/compiler.h"
 
 namespace renderer
 {

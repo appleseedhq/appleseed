@@ -30,7 +30,6 @@
 #define APPLESEED_RENDERER_MODELING_PROJECT_CONFIGURATIONCONTAINER_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
 #include "renderer/modeling/entity/entitymap.h"
 
 // Forward declarations.

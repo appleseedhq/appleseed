@@ -27,16 +27,18 @@
 //
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/modeling/entity/entity.h"
 #include "renderer/modeling/entity/entityvector.h"
 #include "renderer/utility/testutils.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
+#include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/test.h"
+#include "foundation/utility/uid.h"
 
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 TEST_SUITE(Renderer_Modeling_Entity_EntityVector)
 {
@@ -107,7 +109,7 @@ TEST_SUITE(Renderer_Modeling_Entity_EntityVector)
             set_name(name);
         }
 
-        virtual void release()
+        virtual void release() OVERRIDE
         {
             m_release_was_called = true;
             delete this;

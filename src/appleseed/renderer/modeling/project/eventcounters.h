@@ -29,8 +29,11 @@
 #ifndef APPLESEED_RENDERER_MODELING_PROJECT_EVENTCOUNTERS_H
 #define APPLESEED_RENDERER_MODELING_PROJECT_EVENTCOUNTERS_H
 
-// appleseed.renderer headers.
-#include "renderer/global/global.h"
+// appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
+
+// Standard headers.
+#include <cstddef>
 
 namespace renderer
 {

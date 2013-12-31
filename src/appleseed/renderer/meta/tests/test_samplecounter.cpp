@@ -27,7 +27,6 @@
 //
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
 #include "renderer/kernel/rendering/progressive/samplecounter.h"
 
 // appleseed.foundation headers.

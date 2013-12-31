@@ -30,17 +30,17 @@
 #include "defaultproject.h"
 
 // appleseed.renderer headers.
-// todo: include the required individual renderer headers rather than API headers.
-#include "renderer/api/camera.h"
-#include "renderer/api/frame.h"
-#include "renderer/api/project.h"
-#include "renderer/api/scene.h"
-
-// appleseed.foundation headers.
-#include "foundation/math/transform.h"
+#include "renderer/modeling/camera/camera.h"
+#include "renderer/modeling/camera/pinholecamera.h"
+#include "renderer/modeling/frame/frame.h"
+#include "renderer/modeling/project/project.h"
+#include "renderer/modeling/scene/assembly.h"
+#include "renderer/modeling/scene/assemblyinstance.h"
+#include "renderer/modeling/scene/containers.h"
+#include "renderer/modeling/scene/scene.h"
+#include "renderer/utility/paramarray.h"
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -49,7 +49,6 @@ namespace renderer
 // DefaultProjectFactory class implementation.
 //
 
-// Create a new instance of the default project.
 auto_release_ptr<Project> DefaultProjectFactory::create()
 {
     // Create a project.
@@ -62,8 +61,7 @@ auto_release_ptr<Project> DefaultProjectFactory::create()
     auto_release_ptr<Scene> scene(SceneFactory::create());
 
     // Create an assembly.
-    auto_release_ptr<Assembly> assembly(
-        AssemblyFactory::create("assembly", ParamArray()));
+    auto_release_ptr<Assembly> assembly(AssemblyFactory::create("assembly", ParamArray()));
 
     // Create an instance of the assembly and insert it into the scene.
     scene->assembly_instances().insert(
@@ -86,8 +84,7 @@ auto_release_ptr<Project> DefaultProjectFactory::create()
         ParamArray params;
         params.insert("film_dimensions", "0.024892 0.018669");
         params.insert("focal_length", "0.035");
-        auto_release_ptr<Camera> camera(
-            PinholeCameraFactory().create("camera", params));
+        auto_release_ptr<Camera> camera(PinholeCameraFactory().create("camera", params));
 
         // Attach the camera to the scene.
         scene->set_camera(camera);

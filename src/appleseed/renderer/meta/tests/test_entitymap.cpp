@@ -27,12 +27,14 @@
 //
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/modeling/entity/entity.h"
 #include "renderer/modeling/entity/entitymap.h"
 #include "renderer/utility/testutils.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/test.h"
+#include "foundation/utility/uid.h"
 
 using namespace foundation;
 using namespace renderer;
