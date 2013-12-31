@@ -30,9 +30,13 @@
 #include "foundation/platform/path.h"
 #include "foundation/utility/test.h"
 
+// boost headers.
+#include "boost/filesystem/path.hpp"
+
 // Standard headers.
 #include <string>
 
+using namespace boost;
 using namespace foundation;
 using namespace std;
 
@@ -51,4 +55,151 @@ TEST_SUITE(Foundation_Platform_Path)
 
         EXPECT_FALSE(executable_dir.empty());
     }
+
+#ifdef _WIN32
+
+    TEST_CASE(SplitPaths_GivenTwoEmptyPathes_ReturnsEmptyPath)
+    {
+        const filesystem::path p1("");
+        const filesystem::path p2("");
+
+        filesystem::path common, r1, r2;
+        split_paths(p1, p2, common, r1, r2);
+
+        EXPECT_EQ("", common.make_preferred().string());
+        EXPECT_EQ("", r1.make_preferred().string());
+        EXPECT_EQ("", r2.make_preferred().string());
+    }
+
+    TEST_CASE(SplitPaths_GivenOneNonEmptyPathAndOneEmptyPath_ReturnsEmptyPath)
+    {
+        const filesystem::path p1("C:\\foo");
+        const filesystem::path p2("");
+
+        filesystem::path common, r1, r2;
+        split_paths(p1, p2, common, r1, r2);
+
+        EXPECT_EQ("", common.make_preferred().string());
+        EXPECT_EQ("C:\\foo", r1.make_preferred().string());
+        EXPECT_EQ("", r2.make_preferred().string());
+    }
+
+    TEST_CASE(SplitPaths_GivenOneEmptyPathAndOneNonEmptyPath_ReturnsEmptyPath)
+    {
+        const filesystem::path p1("");
+        const filesystem::path p2("C:\\foo");
+
+        filesystem::path common, r1, r2;
+        split_paths(p1, p2, common, r1, r2);
+
+        EXPECT_EQ("", common.make_preferred().string());
+        EXPECT_EQ("", r1.make_preferred().string());
+        EXPECT_EQ("C:\\foo", r2.make_preferred().string());
+    }
+
+    TEST_CASE(SplitPaths_GivenIdenticalPathsButDifferentFilenames_ReturnsCommonPath)
+    {
+        const filesystem::path p1("C:\\foo\\bar\\file1.ext");
+        const filesystem::path p2("C:\\foo\\bar\\file2.ext");
+
+        filesystem::path common, r1, r2;
+        split_paths(p1, p2, common, r1, r2);
+
+        EXPECT_EQ("C:\\foo\\bar", common.make_preferred().string());
+        EXPECT_EQ("file1.ext", r1.make_preferred().string());
+        EXPECT_EQ("file2.ext", r2.make_preferred().string());
+    }
+
+    TEST_CASE(SplitPaths_GivenIdenticalPathsAndFilenamesWithExtensions_ReturnsCommonPath)
+    {
+        const filesystem::path p1("C:\\foo\\bar\\file.ext");
+        const filesystem::path p2("C:\\foo\\bar\\file.ext");
+
+        filesystem::path common, r1, r2;
+        split_paths(p1, p2, common, r1, r2);
+
+        EXPECT_EQ("C:\\foo\\bar", common.make_preferred().string());
+        EXPECT_EQ("file.ext", r1.make_preferred().string());
+        EXPECT_EQ("file.ext", r2.make_preferred().string());
+    }
+
+    TEST_CASE(SplitPaths_GivenIdenticalPathsAndFilenamesWithoutExtensions_ReturnsCommonPath)
+    {
+        const filesystem::path p1("C:\\foo\\bar\\file");
+        const filesystem::path p2("C:\\foo\\bar\\file");
+
+        filesystem::path common, r1, r2;
+        split_paths(p1, p2, common, r1, r2);
+
+        EXPECT_EQ("C:\\foo\\bar", common.make_preferred().string());
+        EXPECT_EQ("file", r1.make_preferred().string());
+        EXPECT_EQ("file", r2.make_preferred().string());
+    }
+
+    TEST_CASE(SplitPaths_GivenDifferentDriveLetters_ReturnsEmptyPath)
+    {
+        const filesystem::path p1("C:\\foo\\bar\\file.ext");
+        const filesystem::path p2("D:\\foo\\bar\\file.ext");
+
+        filesystem::path common, r1, r2;
+        split_paths(p1, p2, common, r1, r2);
+
+        EXPECT_EQ("", common.make_preferred().string());
+        EXPECT_EQ("C:\\foo\\bar\\file.ext", r1.make_preferred().string());
+        EXPECT_EQ("D:\\foo\\bar\\file.ext", r2.make_preferred().string());
+    }
+
+    TEST_CASE(SplitPaths_GivenPathsWithCommonPrefix_ReturnsCommonPath)
+    {
+        const filesystem::path p1("C:\\foo\\bar\\file.ext");
+        const filesystem::path p2("C:\\foo\\bob\\file.ext");
+
+        filesystem::path common, r1, r2;
+        split_paths(p1, p2, common, r1, r2);
+
+        EXPECT_EQ("C:\\foo", common.make_preferred().string());
+        EXPECT_EQ("bar\\file.ext", r1.make_preferred().string());
+        EXPECT_EQ("bob\\file.ext", r2.make_preferred().string());
+    }
+
+    TEST_CASE(SplitPaths_GivenPathsWithCommonPrefixWithExtensionsInDirectoryNames_ReturnsCommonPath)
+    {
+        const filesystem::path p1("C:\\foo\\bar.baz\\file.txt");
+        const filesystem::path p2("C:\\foo\\bar.qux\\file.txt");
+
+        filesystem::path common, r1, r2;
+        split_paths(p1, p2, common, r1, r2);
+
+        EXPECT_EQ("C:\\foo", common.make_preferred().string());
+        EXPECT_EQ("bar.baz\\file.txt", r1.make_preferred().string());
+        EXPECT_EQ("bar.qux\\file.txt", r2.make_preferred().string());
+    }
+
+    TEST_CASE(SplitPaths_GivenPathsOfDifferentLengthWithCommonPrefix1_ReturnsCommonPath)
+    {
+        const filesystem::path p1("C:\\foo\\bar\\file.ext");
+        const filesystem::path p2("C:\\foo\\file.ext");
+
+        filesystem::path common, r1, r2;
+        split_paths(p1, p2, common, r1, r2);
+
+        EXPECT_EQ("C:\\foo", common.make_preferred().string());
+        EXPECT_EQ("bar\\file.ext", r1.make_preferred().string());
+        EXPECT_EQ("file.ext", r2.make_preferred().string());
+    }
+
+    TEST_CASE(SplitPaths_GivenPathsOfDifferentLengthWithCommonPrefix2)
+    {
+        const filesystem::path p1("C:\\foo\\file.ext");
+        const filesystem::path p2("C:\\foo\\bar\\file.ext");
+
+        filesystem::path common, r1, r2;
+        split_paths(p1, p2, common, r1, r2);
+
+        EXPECT_EQ("C:\\foo", common.make_preferred().string());
+        EXPECT_EQ("file.ext", r1.make_preferred().string());
+        EXPECT_EQ("bar\\file.ext", r2.make_preferred().string());
+    }
+
+#endif  // _WIN32
 }

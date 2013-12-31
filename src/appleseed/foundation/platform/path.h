@@ -37,6 +37,9 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
+// boost headers.
+#include "boost/filesystem/path.hpp"
+
 // Platform headers.
 #if defined __APPLE__
 #include <sys/param.h>
@@ -78,6 +81,19 @@ DLLSYMBOL const char* get_executable_path();
 
 // Return the path to the directory containing the application's executable. NOT thread-safe.
 DLLSYMBOL const char* get_executable_directory();
+
+
+//
+// Operations on boost::filesystem::path objects.
+//
+
+// Split two paths into a common base path and two relative paths.
+void split_paths(
+    const boost::filesystem::path&  p1,
+    const boost::filesystem::path&  p2,
+    boost::filesystem::path&        common,
+    boost::filesystem::path&        r1,
+    boost::filesystem::path&        r2);
 
 }       // namespace foundation
 
