@@ -26,6 +26,7 @@
 // THE SOFTWARE.
 //
 
+// Has to be first, to avoid redefinition warnings.
 #include "bind_auto_release_ptr.h"
 
 // appleseed.python headers.
@@ -33,11 +34,16 @@
 #include "dict2dict.h"
 
 // appleseed.renderer headers.
-#include "renderer/api/color.h"
+#include "renderer/modeling/color/colorentity.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
+#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/autoreleaseptr.h"
+
+// Standard headers.
+#include <cstddef>
+#include <string>
 
 namespace bpy = boost::python;
 using namespace foundation;
@@ -59,7 +65,7 @@ namespace detail
                 result.push_back(ex());
             else
             {
-                PyErr_SetString(PyExc_TypeError, "Incompatible type type. Only floats.");
+                PyErr_SetString(PyExc_TypeError, "Incompatible type. Only floats.");
                 bpy::throw_error_already_set();
             }
         }
@@ -82,32 +88,40 @@ namespace detail
         return ColorEntityFactory::create(name.c_str(), bpy_dict_to_param_array(params));
     }
 
-    auto_release_ptr<ColorEntity> create_color_entity_vals(const std::string& name,
-                                                           const bpy::dict& params,
-                                                           const bpy::list& values)
+    auto_release_ptr<ColorEntity> create_color_entity_vals(
+        const std::string&  name,
+        const bpy::dict&    params,
+        const bpy::list&    values)
     {
-        return ColorEntityFactory::create(name.c_str(), bpy_dict_to_param_array(params),
-                                            color_value_array_from_bpy_list(values));
+        return
+            ColorEntityFactory::create(
+                name.c_str(),
+                bpy_dict_to_param_array(params),
+                color_value_array_from_bpy_list(values));
     }
 
-    auto_release_ptr<ColorEntity> create_color_entity_vals_alpha(const std::string& name,
-                                                                 const bpy::dict& params,
-                                                                 const bpy::list& values,
-                                                                 const bpy::list& alpha)
+    auto_release_ptr<ColorEntity> create_color_entity_vals_alpha(
+        const std::string&  name,
+        const bpy::dict&    params,
+        const bpy::list&    values,
+        const bpy::list&    alpha)
     {
-        return ColorEntityFactory::create(name.c_str(), bpy_dict_to_param_array(params),
-                                          color_value_array_from_bpy_list(values),
-                                          color_value_array_from_bpy_list(alpha));
+        return
+            ColorEntityFactory::create(
+                name.c_str(),
+                bpy_dict_to_param_array(params),
+                color_value_array_from_bpy_list(values),
+                color_value_array_from_bpy_list(alpha));
     }
 
-    bpy::list color_entity_get_vals(const ColorEntity* col)
+    bpy::list color_entity_get_vals(const ColorEntity* color)
     {
-        return bpy_list_from_color_value_array(col->get_values());
+        return bpy_list_from_color_value_array(color->get_values());
     }
 
-    bpy::list color_entity_get_alpha(const ColorEntity* col)
+    bpy::list color_entity_get_alpha(const ColorEntity* color)
     {
-        return bpy_list_from_color_value_array(col->get_alpha());
+        return bpy_list_from_color_value_array(color->get_alpha());
     }
 }
 
@@ -117,8 +131,7 @@ void bind_color()
         .value("ColorSpaceLinearRGB", ColorSpaceLinearRGB)
         .value("ColorSpaceSRGB", ColorSpaceSRGB)
         .value("ColorSpaceCIEXYZ", ColorSpaceCIEXYZ)
-        .value("ColorSpaceSpectral", ColorSpaceSpectral)
-        ;
+        .value("ColorSpaceSpectral", ColorSpaceSpectral);
 
     bpy::class_<ColorEntity, auto_release_ptr<ColorEntity>, bpy::bases<Entity>, boost::noncopyable>("ColorEntity", bpy::no_init)
         .def("__init__", bpy::make_constructor(detail::create_color_entity))
@@ -128,8 +141,7 @@ void bind_color()
         .def("get_alpha", detail::color_entity_get_alpha)
         .def("get_color_space", &ColorEntity::get_color_space)
         .def("get_wavelength_range", &ColorEntity::get_wavelength_range, bpy::return_value_policy<bpy::copy_const_reference>())
-        .def("get_multiplier", &ColorEntity::get_multiplier)
-        ;
+        .def("get_multiplier", &ColorEntity::get_multiplier);
 
     bind_typed_entity_vector<ColorEntity>("ColorContainer");
 }

@@ -30,9 +30,11 @@
 #include "volume.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/types.h"
 #include "foundation/utility/cc.h"
 
 // Standard headers.
+#include <cassert>
 #include <cstdio>
 
 using namespace foundation;
@@ -99,11 +101,12 @@ namespace
                 for (size_t x = 0; x < grid->get_xres(); ++x)
                 {
                     float* voxel = grid->voxel(x, y, z);
-                    read += fread(
-                        &voxel[channel_index],
-                        sizeof(float),
-                        channel_count,
-                        file);
+                    read +=
+                        fread(
+                            &voxel[channel_index],
+                            sizeof(float),
+                            channel_count,
+                            file);
                 }
             }
         }

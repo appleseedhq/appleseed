@@ -30,18 +30,25 @@
 #include "meshobjectwriter.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
 #include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/triangle.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
 #include "foundation/core/exceptions/exceptionioerror.h"
-#include "foundation/mesh/imeshfilewriter.h"
+#include "foundation/math/vector.h"
 #include "foundation/mesh/imeshwalker.h"
 #include "foundation/mesh/objmeshfilewriter.h"
 #include "foundation/platform/compiler.h"
+#include "foundation/platform/defaulttimers.h"
 #include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
+
+// Standard headers.
+#include <cassert>
+#include <cstddef>
+#include <string>
 
 using namespace foundation;
 using namespace std;

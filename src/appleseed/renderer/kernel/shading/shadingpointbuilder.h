@@ -29,11 +29,10 @@
 #ifndef APPLESEED_RENDERER_KERNEL_SHADING_SHADINGPOINTBUILDER_H
 #define APPLESEED_RENDERER_KERNEL_SHADING_SHADINGPOINTBUILDER_H
 
-// appleseed.renderer headers.
-#include "renderer/global/global.h"
-
 // appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/basis.h"
+#include "foundation/math/vector.h"
 
 // Forward declarations.
 namespace renderer  { class Scene; }

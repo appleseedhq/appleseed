@@ -31,6 +31,8 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/shadingcontext.h"
+#include "renderer/kernel/shading/shadingray.h"
+#include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentshader/environmentshader.h"
 #include "renderer/modeling/input/inputevaluator.h"
@@ -41,11 +43,12 @@
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
-#include "renderer/modeling/surfaceshader/constantsurfaceshader.h"
 #include "renderer/modeling/surfaceshader/diagnosticsurfaceshader.h"
+#include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
-#include "foundation/image/colorspace.h"
+#include "foundation/math/vector.h"
+#include "foundation/utility/containers/dictionary.h"
 
 using namespace foundation;
 using namespace std;

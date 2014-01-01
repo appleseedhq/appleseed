@@ -26,15 +26,17 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_SPECTRUM_COLORENTITY_H
-#define APPLESEED_RENDERER_MODELING_SPECTRUM_COLORENTITY_H
+#ifndef APPLESEED_RENDERER_MODELING_COLOR_COLORENTITY_H
+#define APPLESEED_RENDERER_MODELING_COLOR_COLORENTITY_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
 #include "renderer/modeling/entity/entity.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
+#include "foundation/math/vector.h"
+#include "foundation/platform/compiler.h"
+#include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -42,6 +44,7 @@
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
 namespace foundation    { class FloatArray; }
+namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
@@ -64,7 +67,7 @@ class DLLSYMBOL ColorEntity
 {
   public:
     // Delete this instance.
-    virtual void release();
+    virtual void release() OVERRIDE;
 
     // Return the color values.
     const ColorValueArray& get_values() const;
@@ -137,4 +140,4 @@ class DLLSYMBOL ColorEntityFactory
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_SPECTRUM_COLORENTITY_H
+#endif  // !APPLESEED_RENDERER_MODELING_COLOR_COLORENTITY_H

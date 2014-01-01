@@ -37,6 +37,7 @@
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/autoreleaseptr.h"
+#include "foundation/utility/iostreamop.h"
 
 namespace renderer
 {

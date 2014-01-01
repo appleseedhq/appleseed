@@ -30,14 +30,19 @@
 #define APPLESEED_RENDERER_KERNEL_SHADING_SHADINGENGINE_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 
+// appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
+#include "foundation/utility/autoreleaseptr.h"
+
 // Forward declarations.
+namespace renderer  { class ParamArray; }
 namespace renderer  { class PixelContext; }
 namespace renderer  { class ShadingContext; }
+namespace renderer  { class ShadingResult; }
 
 namespace renderer
 {

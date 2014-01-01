@@ -29,14 +29,11 @@
 #ifndef APPLESEED_RENDERER_MODELING_OBJECT_MESHOBJECTWRITER_H
 #define APPLESEED_RENDERER_MODELING_OBJECT_MESHOBJECTWRITER_H
 
-// appleseed.renderer headers.
-#include "renderer/global/global.h"
-
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
 // Forward declarations.
-namespace renderer      { class MeshObject; }
+namespace renderer  { class MeshObject; }
 
 namespace renderer
 {

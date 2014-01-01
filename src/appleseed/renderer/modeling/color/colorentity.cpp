@@ -30,11 +30,19 @@
 #include "colorentity.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
 #include "renderer/modeling/color/wavelengths.h"
+#include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/iostreamop.h"
+#include "foundation/utility/uid.h"
+
+// Standard headers.
+#include <cassert>
+#include <string>
 
 using namespace foundation;
 using namespace std;

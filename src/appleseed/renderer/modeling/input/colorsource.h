@@ -39,7 +39,7 @@
 #include "foundation/platform/compiler.h"
 
 // Forward declarations.
-namespace renderer      { class ColorEntity; }
+namespace renderer  { class ColorEntity; }
 
 namespace renderer
 {

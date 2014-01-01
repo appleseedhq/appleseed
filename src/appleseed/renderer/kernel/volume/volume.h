@@ -29,11 +29,12 @@
 #ifndef APPLESEED_RENDERER_KERNEL_VOLUME_VOLUME_H
 #define APPLESEED_RENDERER_KERNEL_VOLUME_VOLUME_H
 
-// appleseed.renderer headers.
-#include "renderer/global/global.h"
-
 // appleseed.foundation headers.
 #include "foundation/math/voxelgrid.h"
+
+// Standard headers.
+#include <cstddef>
+#include <memory>
 
 namespace renderer
 {
