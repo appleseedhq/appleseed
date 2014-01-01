@@ -47,6 +47,7 @@
 namespace foundation    { class DictionaryArray; }
 namespace foundation    { class LightingConditions; }
 namespace renderer      { class ParamArray; }
+namespace renderer      { class Project; }
 namespace renderer      { class Texture; }
 
 namespace renderer
@@ -114,8 +115,16 @@ class DLLSYMBOL TextureInstance
     // Return the texture bound to this instance.
     Texture& get_texture() const;
 
-    // Return the effective (detected) alpha mode. A texture must be bound to this instance.
+    // Return the effective (detected) alpha mode.
+    // A texture must be bound to this instance.
     TextureAlphaMode get_effective_alpha_mode() const;
+
+    // This method is called once before rendering each frame.
+    // Returns true on success, false otherwise.
+    bool on_frame_begin(const Project& project);
+
+    // This method is called once after rendering each frame.
+    void on_frame_end(const Project& project);
 
   private:
     friend class TextureInstanceFactory;

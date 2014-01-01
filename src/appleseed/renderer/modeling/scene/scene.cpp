@@ -34,6 +34,7 @@
 #include "renderer/modeling/environmentshader/environmentshader.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
+#include "renderer/modeling/scene/textureinstance.h"
 #include "renderer/utility/bbox.h"
 
 // appleseed.foundation headers.
@@ -187,6 +188,7 @@ bool Scene::on_frame_begin(const Project& project)
     if (impl->m_camera.get())
         success = success && impl->m_camera->on_frame_begin(project);
 
+    success = success && invoke_on_frame_begin(project, texture_instances());
     success = success && invoke_on_frame_begin(project, environment_edfs());
     success = success && invoke_on_frame_begin(project, environment_shaders());
 
@@ -209,6 +211,7 @@ void Scene::on_frame_end(const Project& project)
 
     invoke_on_frame_end(project, environment_shaders());
     invoke_on_frame_end(project, environment_edfs());
+    invoke_on_frame_end(project, texture_instances());
 
     if (impl->m_camera.get())
         impl->m_camera->on_frame_end(project);

@@ -36,6 +36,7 @@
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/objectinstance.h"
+#include "renderer/modeling/scene/textureinstance.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/utility/bbox.h"
 #include "renderer/utility/paramarray.h"
@@ -211,6 +212,7 @@ bool Assembly::on_frame_begin(const Project& project)
 {
     bool success = true;
 
+    success = success && invoke_on_frame_begin(project, texture_instances());
     success = success && invoke_on_frame_begin(project, *this, surface_shaders());
     success = success && invoke_on_frame_begin(project, *this, bsdfs());
     success = success && invoke_on_frame_begin(project, *this, edfs());
@@ -231,6 +233,7 @@ void Assembly::on_frame_end(const Project& project)
     invoke_on_frame_end(project, *this, edfs());
     invoke_on_frame_end(project, *this, bsdfs());
     invoke_on_frame_end(project, *this, surface_shaders());
+    invoke_on_frame_end(project, texture_instances());
 }
 
 

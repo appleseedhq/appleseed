@@ -216,31 +216,39 @@ namespace
 void TextureInstance::unbind_texture()
 {
     m_texture = 0;
-    m_effective_alpha_mode = m_alpha_mode;
 }
 
 void TextureInstance::bind_texture(const TextureContainer& textures)
 {
     if (m_texture == 0)
-    {
         m_texture = textures.get_by_name(impl->m_texture_name.c_str());
-
-        if (m_texture && m_alpha_mode == TextureAlphaModeDetect)
-        {
-            m_effective_alpha_mode = detect_alpha_mode(*m_texture);
-
-            RENDERER_LOG_DEBUG(
-                "texture instance \"%s\" was detected to use the \"%s\" alpha mode.",
-                get_name(),
-                m_effective_alpha_mode == TextureAlphaModeAlphaChannel ? "alpha_channel" : "luminance");
-        }
-    }
 }
 
 void TextureInstance::check_texture() const
 {
     if (m_texture == 0)
         throw ExceptionUnknownEntity(impl->m_texture_name.c_str(), this);
+}
+
+bool TextureInstance::on_frame_begin(const Project& project)
+{
+    assert(m_texture);
+
+    if (m_effective_alpha_mode == TextureAlphaModeDetect)
+    {
+        m_effective_alpha_mode = detect_alpha_mode(*m_texture);
+
+        RENDERER_LOG_DEBUG(
+            "texture instance \"%s\" was detected to use the \"%s\" alpha mode.",
+            get_name(),
+            m_effective_alpha_mode == TextureAlphaModeAlphaChannel ? "alpha_channel" : "luminance");
+    }
+
+    return true;
+}
+
+void TextureInstance::on_frame_end(const Project& project)
+{
 }
 
 
