@@ -581,9 +581,9 @@ IRendererController::Status MasterRenderer::render_frame_sequence(IFrameRenderer
     {
         assert(!frame_renderer->is_rendering());
 
-        // The renderer controller might alter the scene (like the transform of the camera).
-        // It needs to be called before renderer::Scene::on_frame_begin() which assumes the
-        // scene is up-to-date and ready to be rendered.
+        // The on_frame_begin() method of the renderer controller might alter the scene
+        // (e.g. transform the camera), thus it needs to be called before the on_frame_begin()
+        // of the scene which assumes the scene is up-to-date and ready to be rendered.
         m_renderer_controller->on_frame_begin();
 
         if (!m_project.get_scene()->on_frame_begin(m_project))
