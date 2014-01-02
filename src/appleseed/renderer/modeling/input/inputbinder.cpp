@@ -89,11 +89,7 @@ void InputBinder::bind(const Scene& scene)
         for (const_each<AssemblyContainer> i = scene.assemblies(); i; ++i)
         {
             assert(m_assembly_info.empty());
-
-            bind_assembly_entities_inputs(
-                scene,
-                scene_symbols,
-                *i);
+            bind_assembly_entities_inputs(scene, scene_symbols, *i);
         }
     }
     catch (const ExceptionUnknownEntity& e)
@@ -234,9 +230,7 @@ void InputBinder::bind_assembly_entities_inputs(
 {
     // Build the symbol table of the assembly.
     SymbolTable assembly_symbols;
-    build_assembly_symbol_table(
-        assembly,
-        assembly_symbols);
+    build_assembly_symbol_table(assembly, assembly_symbols);
 
     // Push the assembly and its symbol table to the stack.
     AssemblyInfo info;
@@ -344,12 +338,7 @@ void InputBinder::bind_assembly_entities_inputs(
 
     // Recurse into child assemblies.
     for (const_each<AssemblyContainer> i = assembly.assemblies(); i; ++i)
-    {
-        bind_assembly_entities_inputs(
-            scene,
-            scene_symbols,
-            *i);
-    }
+        bind_assembly_entities_inputs(scene, scene_symbols, *i);
 
     // Pop the information about this assembly from the stack.
     m_assembly_info.pop_back();
