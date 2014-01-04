@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <settings>
     <parameter name="autosave" value="true" />
+    <parameter name="print_final_average_luminance" value="false" />
     <parameter name="rendering_threads" value="auto" />
     <parameters name="ui">
         <parameters name="render_region">
