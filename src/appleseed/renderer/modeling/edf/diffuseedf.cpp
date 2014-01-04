@@ -45,8 +45,9 @@
 #include <cassert>
 
 // Forward declarations.
-namespace renderer  { class Assembly; }
-namespace renderer  { class Project; }
+namespace foundation    { class AbortSwitch; }
+namespace renderer      { class Assembly; }
+namespace renderer      { class Project; }
 
 using namespace foundation;
 
@@ -86,9 +87,10 @@ namespace
 
         virtual bool on_frame_begin(
             const Project&      project,
-            const Assembly&     assembly) OVERRIDE
+            const Assembly&     assembly,
+            AbortSwitch*        abort_switch) OVERRIDE
         {
-            if (!EDF::on_frame_begin(project, assembly))
+            if (!EDF::on_frame_begin(project, assembly, abort_switch))
                 return false;
 
             check_non_zero_radiance("radiance", "radiance_multiplier");

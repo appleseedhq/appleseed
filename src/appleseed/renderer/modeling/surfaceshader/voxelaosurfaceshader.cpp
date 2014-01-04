@@ -50,8 +50,9 @@
 #include "boost/filesystem/path.hpp"
 
 // Forward declarations.
-namespace renderer  { class Assembly; }
-namespace renderer  { class PixelContext; }
+namespace foundation    { class AbortSwitch; }
+namespace renderer      { class Assembly; }
+namespace renderer      { class PixelContext; }
 
 using namespace foundation;
 using namespace std;
@@ -92,9 +93,10 @@ namespace
 
         virtual bool on_frame_begin(
             const Project&          project,
-            const Assembly&         assembly) OVERRIDE
+            const Assembly&         assembly,
+            AbortSwitch*            abort_switch) OVERRIDE
         {
-            if (!SurfaceShader::on_frame_begin(project, assembly))
+            if (!SurfaceShader::on_frame_begin(project, assembly, abort_switch))
                 return false;
 
             const Scene& scene = *project.get_scene();

@@ -47,11 +47,12 @@
 #include <string>
 
 // Forward declarations.
-namespace renderer  { class Assembly; }
-namespace renderer  { class PixelContext; }
-namespace renderer  { class Project; }
-namespace renderer  { class ShadingContext; }
-namespace renderer  { class ShadingPoint; }
+namespace foundation    { class AbortSwitch; }
+namespace renderer      { class Assembly; }
+namespace renderer      { class PixelContext; }
+namespace renderer      { class Project; }
+namespace renderer      { class ShadingContext; }
+namespace renderer      { class ShadingPoint; }
 
 using namespace foundation;
 using namespace std;
@@ -109,8 +110,12 @@ namespace
 
         virtual bool on_frame_begin(
             const Project&          project,
-            const Assembly&         assembly)
+            const Assembly&         assembly,
+            AbortSwitch*            abort_switch) OVERRIDE
         {
+            if (!SurfaceShader::on_frame_begin(project, assembly, abort_switch))
+                return false;
+
             for (size_t i = 0; i < MaxShaderCount; ++i)
             {
                 m_surface_shaders[i] =

@@ -48,7 +48,8 @@
 #include "foundation/utility/autoreleaseptr.h"
 
 // Forward declarations.
-namespace renderer  { class Project; }
+namespace foundation    { class AbortSwitch; }
+namespace renderer      { class Project; }
 
 using namespace foundation;
 using namespace std;
@@ -85,9 +86,11 @@ namespace
             return Model;
         }
 
-        virtual bool on_frame_begin(const Project& project) OVERRIDE
+        virtual bool on_frame_begin(
+            const Project&          project,
+            AbortSwitch*            abort_switch) OVERRIDE
         {
-            if (!Camera::on_frame_begin(project))
+            if (!Camera::on_frame_begin(project, abort_switch))
                 return false;
 
             // Precompute the rays origin in world space if the camera is static.

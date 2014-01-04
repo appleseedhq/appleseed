@@ -54,7 +54,9 @@ EnvironmentEDF::EnvironmentEDF(
     set_name(name);
 }
 
-bool EnvironmentEDF::on_frame_begin(const Project& project)
+bool EnvironmentEDF::on_frame_begin(
+    const Project&      project,
+    AbortSwitch*        abort_switch)
 {
     return true;
 }

@@ -76,6 +76,7 @@
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/thread.h"
+#include "foundation/utility/job/abortswitch.h"
 #include "foundation/utility/searchpaths.h"
 
 // OIIO headers.
@@ -105,11 +106,13 @@ MasterRenderer::MasterRenderer(
     Project&                project,
     const ParamArray&       params,
     IRendererController*    renderer_controller,
-    ITileCallbackFactory*   tile_callback_factory)
+    ITileCallbackFactory*   tile_callback_factory,
+    AbortSwitch*            abort_switch)
   : m_project(project)
   , m_params(params)
   , m_renderer_controller(renderer_controller)
   , m_tile_callback_factory(tile_callback_factory)
+  , m_abort_switch(abort_switch)
   , m_serial_renderer_controller(0)
   , m_serial_tile_callback_factory(0)
 {
@@ -119,9 +122,11 @@ MasterRenderer::MasterRenderer(
     Project&                project,
     const ParamArray&       params,
     IRendererController*    renderer_controller,
-    ITileCallback*          tile_callback)
+    ITileCallback*          tile_callback,
+    AbortSwitch*            abort_switch)
   : m_project(project)
   , m_params(params)
+  , m_abort_switch(abort_switch)
   , m_serial_renderer_controller(new SerialRendererController(renderer_controller, tile_callback))
   , m_serial_tile_callback_factory(new SerialTileCallbackFactory(m_serial_renderer_controller))
 {
@@ -216,6 +221,10 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
 {
     assert(m_project.get_scene());
     assert(m_project.get_frame());
+
+    // Reset the abort switch.
+    if (m_abort_switch)
+        m_abort_switch->clear();
 
 #ifdef WITH_OSL
 
@@ -586,10 +595,18 @@ IRendererController::Status MasterRenderer::render_frame_sequence(IFrameRenderer
         // of the scene which assumes the scene is up-to-date and ready to be rendered.
         m_renderer_controller->on_frame_begin();
 
-        if (!m_project.get_scene()->on_frame_begin(m_project))
+        // Prepare the scene for rendering. Don't proceed if that failed.
+        if (!m_project.get_scene()->on_frame_begin(m_project, m_abort_switch))
         {
             m_renderer_controller->on_frame_end();
             return IRendererController::AbortRendering;
+        }
+
+        // Don't proceed with rendering if scene preparation was aborted.
+        if (is_aborted(m_abort_switch))
+        {
+            m_renderer_controller->on_frame_end();
+            return m_renderer_controller->on_progress();
         }
 
         frame_renderer->start_rendering();
@@ -617,8 +634,18 @@ IRendererController::Status MasterRenderer::render_frame_sequence(IFrameRenderer
 
         m_renderer_controller->on_frame_end();
 
-        if (status != IRendererController::RestartRendering)
+        switch (status)
+        {
+          case IRendererController::TerminateRendering:
+          case IRendererController::AbortRendering:
+          case IRendererController::ReinitializeRendering:
             return status;
+
+          case IRendererController::RestartRendering:
+            break;
+
+          assert_otherwise;
+        }
     }
 }
 
@@ -626,9 +653,13 @@ IRendererController::Status MasterRenderer::wait_for_event(IFrameRenderer* frame
 {
     while (frame_renderer->is_rendering())
     {
+        // Make sure to retrieve the status *after* having checked the abort switch.
+        // Clients are required to configure their renderer controller such that it
+        // reports the desired status before they trigger the abort switch.
+        const bool aborted = is_aborted(m_abort_switch);
         const IRendererController::Status status = m_renderer_controller->on_progress();
 
-        if (status != IRendererController::ContinueRendering)
+        if (aborted || status != IRendererController::ContinueRendering)
             return status;
     }
 

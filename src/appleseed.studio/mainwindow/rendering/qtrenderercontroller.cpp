@@ -50,6 +50,8 @@ void QtRendererController::on_rendering_begin()
 {
     DefaultRendererController::on_rendering_begin();
 
+    m_status = ContinueRendering;
+
     emit signal_rendering_begin();
 }
 
@@ -70,6 +72,9 @@ void QtRendererController::on_rendering_abort()
 void QtRendererController::on_frame_begin()
 {
     DefaultRendererController::on_frame_begin();
+
+    if (m_status == RestartRendering || m_status == ReinitializeRendering)
+        m_status = ContinueRendering;
 
     emit signal_frame_begin();
 }

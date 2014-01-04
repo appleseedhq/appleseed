@@ -40,6 +40,7 @@
 #include "main/dllsymbol.h"
 
 // Forward declarations.
+namespace foundation    { class AbortSwitch; }
 namespace foundation    { class DictionaryArray; }
 namespace renderer      { class EnvironmentEDF; }
 namespace renderer      { class EnvironmentShader; }
@@ -65,7 +66,9 @@ class DLLSYMBOL Environment
 
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
-    bool on_frame_begin(const Project& project);
+    bool on_frame_begin(
+        const Project&              project,
+        foundation::AbortSwitch*    abort_switch = 0);
 
     // This method is called once after rendering each frame.
     void on_frame_end(const Project& project);
@@ -87,13 +90,13 @@ class DLLSYMBOL Environment
   private:
     friend class EnvironmentFactory;
 
-    EnvironmentEDF*         m_environment_edf;
-    EnvironmentShader*      m_environment_shader;
+    EnvironmentEDF*     m_environment_edf;
+    EnvironmentShader*  m_environment_shader;
 
     // Constructor.
     Environment(
-        const char*         name,
-        const ParamArray&   params);
+        const char*                 name,
+        const ParamArray&           params);
 };
 
 

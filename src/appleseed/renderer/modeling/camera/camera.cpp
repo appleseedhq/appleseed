@@ -68,7 +68,9 @@ Camera::Camera(
     set_name(name);
 }
 
-bool Camera::on_frame_begin(const Project& project)
+bool Camera::on_frame_begin(
+    const Project&      project,
+    AbortSwitch*        abort_switch)
 {
     if (!m_transform_sequence.prepare())
         RENDERER_LOG_WARNING("camera \"%s\" has one or more invalid transforms.", get_name());

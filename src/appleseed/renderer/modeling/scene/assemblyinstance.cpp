@@ -136,7 +136,9 @@ void AssemblyInstance::check_assembly() const
         throw ExceptionUnknownEntity(impl->m_assembly_name.c_str(), this);
 }
 
-bool AssemblyInstance::on_frame_begin(const Project& project)
+bool AssemblyInstance::on_frame_begin(
+    const Project&      project,
+    AbortSwitch*        abort_switch)
 {
     if (!m_transform_sequence.prepare())
         RENDERER_LOG_WARNING("assembly instance \"%s\" has one or more invalid transforms.", get_name());

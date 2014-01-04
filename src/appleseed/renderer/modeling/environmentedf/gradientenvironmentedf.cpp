@@ -47,7 +47,8 @@
 #include <cmath>
 
 // Forward declarations.
-namespace renderer  { class Project; }
+namespace foundation    { class AbortSwitch; }
+namespace renderer      { class Project; }
 
 using namespace foundation;
 using namespace std;
@@ -86,9 +87,11 @@ namespace
             return Model;
         }
 
-        virtual bool on_frame_begin(const Project& project) OVERRIDE
+        virtual bool on_frame_begin(
+            const Project&      project,
+            AbortSwitch*        abort_switch) OVERRIDE
         {
-            if (!EnvironmentEDF::on_frame_begin(project))
+            if (!EnvironmentEDF::on_frame_begin(project, abort_switch))
                 return false;
 
             if (!check_uniform("horizon_radiance") || !check_uniform("zenith_radiance"))

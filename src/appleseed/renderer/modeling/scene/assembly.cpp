@@ -42,6 +42,7 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/job/abortswitch.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/uid.h"
 
@@ -164,12 +165,18 @@ namespace
     template <typename EntityCollection>
     bool invoke_on_frame_begin(
         const Project&          project,
-        EntityCollection&       entities)
+        EntityCollection&       entities,
+        AbortSwitch*            abort_switch)
     {
         bool success = true;
 
         for (each<EntityCollection> i = entities; i; ++i)
-            success = success && i->on_frame_begin(project);
+        {
+            if (is_aborted(abort_switch))
+                break;
+
+            success = success && i->on_frame_begin(project, abort_switch);
+        }
 
         return success;
     }
@@ -178,12 +185,18 @@ namespace
     bool invoke_on_frame_begin(
         const Project&          project,
         const Assembly&         assembly,
-        EntityCollection&       entities)
+        EntityCollection&       entities,
+        AbortSwitch*            abort_switch)
     {
         bool success = true;
 
         for (each<EntityCollection> i = entities; i; ++i)
-            success = success && i->on_frame_begin(project, assembly);
+        {
+            if (is_aborted(abort_switch))
+                break;
+
+            success = success && i->on_frame_begin(project, assembly, abort_switch);
+        }
 
         return success;
     }
@@ -208,18 +221,20 @@ namespace
     }
 }
 
-bool Assembly::on_frame_begin(const Project& project)
+bool Assembly::on_frame_begin(
+    const Project&      project,
+    AbortSwitch*        abort_switch)
 {
     bool success = true;
 
-    success = success && invoke_on_frame_begin(project, texture_instances());
-    success = success && invoke_on_frame_begin(project, *this, surface_shaders());
-    success = success && invoke_on_frame_begin(project, *this, bsdfs());
-    success = success && invoke_on_frame_begin(project, *this, edfs());
-    success = success && invoke_on_frame_begin(project, *this, materials());
-    success = success && invoke_on_frame_begin(project, *this, lights());
-    success = success && invoke_on_frame_begin(project, assemblies());
-    success = success && invoke_on_frame_begin(project, assembly_instances());
+    success = success && invoke_on_frame_begin(project, texture_instances(), abort_switch);
+    success = success && invoke_on_frame_begin(project, *this, surface_shaders(), abort_switch);
+    success = success && invoke_on_frame_begin(project, *this, bsdfs(), abort_switch);
+    success = success && invoke_on_frame_begin(project, *this, edfs(), abort_switch);
+    success = success && invoke_on_frame_begin(project, *this, materials(), abort_switch);
+    success = success && invoke_on_frame_begin(project, *this, lights(), abort_switch);
+    success = success && invoke_on_frame_begin(project, assemblies(), abort_switch);
+    success = success && invoke_on_frame_begin(project, assembly_instances(), abort_switch);
 
     return success;
 }

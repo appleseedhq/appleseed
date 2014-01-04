@@ -46,9 +46,10 @@
 #include <cassert>
 
 // Forward declarations.
-namespace renderer  { class Assembly; }
-namespace renderer  { class ParamArray; }
-namespace renderer  { class Project; }
+namespace foundation    { class AbortSwitch; }
+namespace renderer      { class Assembly; }
+namespace renderer      { class ParamArray; }
+namespace renderer      { class Project; }
 
 namespace renderer
 {
@@ -87,7 +88,9 @@ class DLLSYMBOL AssemblyInstance
 
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
-    bool on_frame_begin(const Project& project);
+    bool on_frame_begin(
+        const Project&              project,
+        foundation::AbortSwitch*    abort_switch);
 
     // This method is called once after rendering each frame.
     void on_frame_end(const Project& project);
@@ -98,14 +101,14 @@ class DLLSYMBOL AssemblyInstance
     struct Impl;
     Impl* impl;
 
-    Assembly*               m_assembly;
-    TransformSequence       m_transform_sequence;
+    Assembly*                       m_assembly;
+    TransformSequence               m_transform_sequence;
 
     // Constructor.
     AssemblyInstance(
-        const char*         name,
-        const ParamArray&   params,
-        const char*         assembly_name);
+        const char*                 name,
+        const ParamArray&           params,
+        const char*                 assembly_name);
 
     // Destructor.
     ~AssemblyInstance();
@@ -121,9 +124,9 @@ class DLLSYMBOL AssemblyInstanceFactory
   public:
     // Create a new assembly instance.
     static foundation::auto_release_ptr<AssemblyInstance> create(
-        const char*         name,
-        const ParamArray&   params,
-        const char*         assembly_name);
+        const char*                 name,
+        const ParamArray&           params,
+        const char*                 assembly_name);
 };
 
 

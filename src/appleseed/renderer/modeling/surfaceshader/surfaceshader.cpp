@@ -53,7 +53,8 @@ SurfaceShader::SurfaceShader(
 
 bool SurfaceShader::on_frame_begin(
     const Project&      project,
-    const Assembly&     assembly)
+    const Assembly&     assembly,
+    AbortSwitch*        abort_switch)
 {
     return true;
 }

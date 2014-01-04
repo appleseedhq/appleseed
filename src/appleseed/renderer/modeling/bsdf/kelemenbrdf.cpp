@@ -59,6 +59,9 @@
 #include <sstream>
 #include <string>
 
+// Forward declarations.
+namespace foundation    { class AbortSwitch; }
+
 using namespace foundation;
 using namespace std;
 
@@ -113,9 +116,10 @@ namespace
 
         virtual bool on_frame_begin(
             const Project&      project,
-            const Assembly&     assembly) OVERRIDE
+            const Assembly&     assembly,
+            AbortSwitch*        abort_switch) OVERRIDE
         {
-            if (!BSDF::on_frame_begin(project, assembly))
+            if (!BSDF::on_frame_begin(project, assembly, abort_switch))
                 return false;
 
             // todo: implement proper error handling.

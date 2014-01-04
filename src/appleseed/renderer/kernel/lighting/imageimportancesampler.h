@@ -34,6 +34,7 @@
 #include "foundation/math/cdf.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
+#include "foundation/utility/job/abortswitch.h"
 
 // Standard headers.
 #include <cstddef>
@@ -64,42 +65,42 @@ class ImageImportanceSampler
     typedef foundation::Vector<Importance, 2> Vector2Type;
 
     // Constructor.
-    template <typename ImageSampler>
     ImageImportanceSampler(
-        const size_t        width,
-        const size_t        height,
-        ImageSampler&       sampler);
+        const size_t                width,
+        const size_t                height);
 
     // Destructor.
     ~ImageImportanceSampler();
 
     // Resample the image and rebuild the CDFs.
     template <typename ImageSampler>
-    void rebuild(ImageSampler& sampler);
+    void rebuild(
+        ImageSampler&               sampler,
+        foundation::AbortSwitch*    abort_switch = 0);
 
     // Sample the image and return the coordinates of the chosen pixel
     // as well as its probability density.
     void sample(
-        const Vector2Type&  s,
-        Payload&            payload,
-        size_t&             y,
-        Importance&         probability) const;
+        const Vector2Type&          s,
+        Payload&                    payload,
+        size_t&                     y,
+        Importance&                 probability) const;
 
     // Return the probability density of a given pixel.
     Importance get_pdf(
-        const size_t        x,
-        const size_t        y) const;
+        const size_t                x,
+        const size_t                y) const;
 
   private:
     typedef foundation::CDF<size_t, Importance> YCDF;
     typedef foundation::CDF<Payload, Importance> XCDF;
 
-    const size_t            m_width;
-    const size_t            m_height;
-    const Importance        m_rcp_pixel_count;
+    const size_t                    m_width;
+    const size_t                    m_height;
+    const Importance                m_rcp_pixel_count;
 
-    XCDF*                   m_cdf_x;
-    YCDF                    m_cdf_y;
+    XCDF*                           m_cdf_x;
+    YCDF                            m_cdf_y;
 };
 
 
@@ -108,18 +109,14 @@ class ImageImportanceSampler
 //
 
 template <typename Payload, typename Importance>
-template <typename ImageSampler>
 ImageImportanceSampler<Payload, Importance>::ImageImportanceSampler(
-    const size_t            width,
-    const size_t            height,
-    ImageSampler&           sampler)
+    const size_t                    width,
+    const size_t                    height)
   : m_width(width)
   , m_height(height)
   , m_rcp_pixel_count(Importance(1.0) / (width * height))
 {
     m_cdf_x = new XCDF[m_height];
-
-    rebuild(sampler);
 }
 
 template <typename Payload, typename Importance>
@@ -130,12 +127,20 @@ ImageImportanceSampler<Payload, Importance>::~ImageImportanceSampler()
 
 template <typename Payload, typename Importance>
 template <typename ImageSampler>
-void ImageImportanceSampler<Payload, Importance>::rebuild(ImageSampler& sampler)
+void ImageImportanceSampler<Payload, Importance>::rebuild(
+    ImageSampler&                   sampler,
+    foundation::AbortSwitch*        abort_switch)
 {
     m_cdf_y.clear();
 
     for (size_t y = 0; y < m_height; ++y)
     {
+        if (foundation::is_aborted(abort_switch))
+        {
+            m_cdf_y.clear();
+            break;
+        }
+
         m_cdf_x[y].clear();
 
         for (size_t x = 0; x < m_width; ++x)

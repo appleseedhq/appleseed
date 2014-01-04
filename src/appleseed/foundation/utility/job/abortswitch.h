@@ -66,6 +66,16 @@ class DLLSYMBOL AbortSwitch
 
 
 //
+// An utility method to check if a nullable abort switch was triggered.
+//
+
+inline bool is_aborted(AbortSwitch* abort_switch)
+{
+    return abort_switch && abort_switch->is_aborted();
+}
+
+
+//
 // AbortSwitch class implementation.
 //
 

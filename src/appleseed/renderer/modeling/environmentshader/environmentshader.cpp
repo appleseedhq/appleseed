@@ -51,7 +51,9 @@ EnvironmentShader::EnvironmentShader(
     set_name(name);
 }
 
-bool EnvironmentShader::on_frame_begin(const Project& project)
+bool EnvironmentShader::on_frame_begin(
+    const Project&      project,
+    AbortSwitch*        abort_switch)
 {
     return true;
 }

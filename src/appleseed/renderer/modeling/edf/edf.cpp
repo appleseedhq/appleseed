@@ -68,7 +68,8 @@ double EDF::get_uncached_importance_multiplier() const
 
 bool EDF::on_frame_begin(
     const Project&      project,
-    const Assembly&     assembly)
+    const Assembly&     assembly,
+    AbortSwitch*        abort_switch)
 {
     m_flags = 0;
 

@@ -57,6 +57,7 @@
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/job/abortswitch.h"
 
 // Standard headers.
 #include <cassert>
@@ -179,15 +180,17 @@ namespace
             return Model;
         }
 
-        virtual bool on_frame_begin(const Project& project) OVERRIDE
+        virtual bool on_frame_begin(
+            const Project&      project,
+            AbortSwitch*        abort_switch) OVERRIDE
         {
-            if (!EnvironmentEDF::on_frame_begin(project))
+            if (!EnvironmentEDF::on_frame_begin(project, abort_switch))
                 return false;
 
             check_non_zero_radiance("radiance", "radiance_multiplier");
 
             if (m_importance_sampler.get() == 0)
-                build_importance_map(*project.get_scene());
+                build_importance_map(*project.get_scene(), abort_switch);
 
             return true;
         }
@@ -291,7 +294,7 @@ namespace
 
         auto_ptr<ImageImportanceSamplerType>    m_importance_sampler;
 
-        void build_importance_map(const Scene& scene)
+        void build_importance_map(const Scene& scene, AbortSwitch* abort_switch)
         {
             const Source* radiance_source = m_inputs.source("radiance");
             assert(radiance_source);
@@ -333,6 +336,11 @@ namespace
                 m_u_shift,
                 m_v_shift);
 
+            m_importance_sampler.reset(
+                new ImageImportanceSamplerType(
+                    m_importance_map_width,
+                    m_importance_map_height));
+
             RENDERER_LOG_INFO(
                 "building " FMT_SIZE_T "x" FMT_SIZE_T " importance map "
                 "for environment edf \"%s\"...",
@@ -340,15 +348,16 @@ namespace
                 m_importance_map_height,
                 get_name());
 
-            m_importance_sampler.reset(
-                new ImageImportanceSamplerType(
-                    m_importance_map_width,
-                    m_importance_map_height,
-                    sampler));
+            m_importance_sampler->rebuild(sampler, abort_switch);
 
-            RENDERER_LOG_INFO(
-                "built importance map for environment edf \"%s\".",
-                get_name());
+            if (is_aborted(abort_switch))
+                m_importance_sampler.reset();
+            else
+            {
+                RENDERER_LOG_INFO(
+                    "built importance map for environment edf \"%s\".",
+                    get_name());
+            }
         }
 
         void lookup_environment_map(

@@ -41,8 +41,8 @@
 #include "main/dllsymbol.h"
 
 // Forward declarations.
-namespace renderer      { class EnvironmentEDF; }
-namespace renderer      { class ParamArray; }
+namespace renderer  { class EnvironmentEDF; }
+namespace renderer  { class ParamArray; }
 
 namespace renderer
 {

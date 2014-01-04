@@ -40,6 +40,7 @@
 #include "main/dllsymbol.h"
 
 // Forward declarations.
+namespace foundation    { class AbortSwitch; }
 namespace renderer      { class InputEvaluator; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
@@ -69,7 +70,9 @@ class DLLSYMBOL EnvironmentEDF
 
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
-    virtual bool on_frame_begin(const Project& project);
+    virtual bool on_frame_begin(
+        const Project&              project,
+        foundation::AbortSwitch*    abort_switch = 0);
 
     // This method is called once after rendering each frame.
     virtual void on_frame_end(const Project& project);

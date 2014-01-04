@@ -78,12 +78,9 @@ TEST_SUITE(Renderer_Kernel_Lighting_ImageImportanceSampler)
         const size_t Width = 5;
         const size_t Height = 5;
 
+        ImageImportanceSampler<size_t, double> importance_sampler(Width, Height);
         HorizontalGradientSampler sampler(Width, Height);
-        ImageImportanceSampler<size_t, double>
-            importance_sampler(
-                Width,
-                Height,
-                sampler);
+        importance_sampler.rebuild(sampler);
 
         size_t x, y;
         double prob_xy;
@@ -126,8 +123,9 @@ TEST_SUITE(Renderer_Kernel_Lighting_ImageImportanceSampler)
         const size_t width = image->properties().m_canvas_width;
         const size_t height = image->properties().m_canvas_height;
 
+        ImageImportanceSampler<size_t, float> importance_sampler(width, height);
         ImageSampler sampler(*image.get());
-        ImageImportanceSampler<size_t, float> importance_sampler(width, height, sampler);
+        importance_sampler.rebuild(sampler);
 
         for (size_t i = 0; i < sample_count; ++i)
         {
@@ -207,8 +205,9 @@ TEST_SUITE(Renderer_Kernel_Lighting_ImageImportanceSampler)
 
     TEST_CASE(Sample_GivenUniformBlackImage)
     {
+        ImageImportanceSampler<size_t, double> importance_sampler(2, 2);
         UniformBlackSampler sampler;
-        ImageImportanceSampler<size_t, double> importance_sampler(2, 2, sampler);
+        importance_sampler.rebuild(sampler);
 
         size_t x, y;
         double prob_xy;
@@ -221,8 +220,9 @@ TEST_SUITE(Renderer_Kernel_Lighting_ImageImportanceSampler)
 
     TEST_CASE(GetPDF_GivenUniformBlackImage)
     {
+        ImageImportanceSampler<size_t, double> importance_sampler(2, 2);
         UniformBlackSampler sampler;
-        ImageImportanceSampler<size_t, double> importance_sampler(2, 2, sampler);
+        importance_sampler.rebuild(sampler);
 
         const double pdf = importance_sampler.get_pdf(0, 1);
 

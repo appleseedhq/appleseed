@@ -134,7 +134,8 @@ const char* Material::get_edf_name() const
 
 bool Material::on_frame_begin(
     const Project&      project,
-    const Assembly&     assembly)
+    const Assembly&     assembly,
+    AbortSwitch*        abort_switch)
 {
     const EntityDefMessageContext context("material", this);
 

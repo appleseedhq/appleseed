@@ -77,7 +77,9 @@ const char* Environment::get_model() const
     return EnvironmentFactory::get_model();
 }
 
-bool Environment::on_frame_begin(const Project& project)
+bool Environment::on_frame_begin(
+    const Project&      project,
+    AbortSwitch*        abort_switch)
 {
     m_environment_edf = get_uncached_environment_edf();
     m_environment_shader = get_uncached_environment_shader();

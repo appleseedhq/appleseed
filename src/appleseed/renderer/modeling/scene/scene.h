@@ -45,7 +45,8 @@
 #include "main/dllsymbol.h"
 
 // Forward declarations.
-namespace renderer  { class Project; }
+namespace foundation    { class AbortSwitch; }
+namespace renderer      { class Project; }
 
 namespace renderer
 {
@@ -90,7 +91,9 @@ class DLLSYMBOL Scene
 
     // Perform pre-frame rendering actions.
     // Returns true on success, false otherwise.
-    bool on_frame_begin(const Project& project);
+    bool on_frame_begin(
+        const Project&              project,
+        foundation::AbortSwitch*    abort_switch = 0);
 
     // Perform post-frame rendering actions.
     void on_frame_end(const Project& project);

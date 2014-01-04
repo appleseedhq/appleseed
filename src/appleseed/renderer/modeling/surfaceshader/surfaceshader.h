@@ -37,6 +37,7 @@
 #include "main/dllsymbol.h"
 
 // Forward declarations.
+namespace foundation    { class AbortSwitch; }
 namespace renderer      { class Assembly; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class PixelContext; }
@@ -58,8 +59,8 @@ class DLLSYMBOL SurfaceShader
   public:
     // Constructor.
     SurfaceShader(
-        const char*             name,
-        const ParamArray&       params);
+        const char*                 name,
+        const ParamArray&           params);
 
     // Return a string identifying the model of this entity.
     virtual const char* get_model() const = 0;
@@ -67,21 +68,22 @@ class DLLSYMBOL SurfaceShader
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
     virtual bool on_frame_begin(
-        const Project&          project,
-        const Assembly&         assembly);
+        const Project&              project,
+        const Assembly&             assembly,
+        foundation::AbortSwitch*    abort_switch = 0);
 
     // This method is called once after rendering each frame.
     virtual void on_frame_end(
-        const Project&          project,
-        const Assembly&         assembly);
+        const Project&              project,
+        const Assembly&             assembly);
 
     // Evaluate the shading at a given point.
     virtual void evaluate(
-        SamplingContext&        sampling_context,
-        const PixelContext&     pixel_context,
-        const ShadingContext&   shading_context,
-        const ShadingPoint&     shading_point,
-        ShadingResult&          shading_result) const = 0;
+        SamplingContext&            sampling_context,
+        const PixelContext&         pixel_context,
+        const ShadingContext&       shading_context,
+        const ShadingPoint&         shading_point,
+        ShadingResult&              shading_result) const = 0;
 };
 
 }       // namespace renderer

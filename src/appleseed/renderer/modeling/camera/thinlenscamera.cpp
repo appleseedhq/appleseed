@@ -65,6 +65,9 @@
 #include <limits>
 #include <vector>
 
+// Forward declarations.
+namespace foundation    { class AbortSwitch; }
+
 using namespace foundation;
 using namespace std;
 
@@ -108,9 +111,11 @@ namespace
             return Model;
         }
 
-        virtual bool on_frame_begin(const Project& project) OVERRIDE
+        virtual bool on_frame_begin(
+            const Project&      project,
+            AbortSwitch*        abort_switch) OVERRIDE
         {
-            if (!Camera::on_frame_begin(project))
+            if (!Camera::on_frame_begin(project, abort_switch))
                 return false;
 
             // Extract the film dimensions from the camera parameters.

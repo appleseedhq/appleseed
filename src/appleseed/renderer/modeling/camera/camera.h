@@ -42,6 +42,7 @@
 #include "main/dllsymbol.h"
 
 // Forward declarations.
+namespace foundation    { class AbortSwitch; }
 namespace foundation    { class DictionaryArray; }
 namespace renderer      { class Frame; }
 namespace renderer      { class ParamArray; }
@@ -82,7 +83,9 @@ class DLLSYMBOL Camera
 
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
-    virtual bool on_frame_begin(const Project& project);
+    virtual bool on_frame_begin(
+        const Project&                  project,
+        foundation::AbortSwitch*        abort_switch = 0);
 
     // This method is called once after rendering each frame.
     virtual void on_frame_end(const Project& project);

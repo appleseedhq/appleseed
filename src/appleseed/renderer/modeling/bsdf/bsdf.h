@@ -44,10 +44,11 @@
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer  { class Assembly; }
-namespace renderer  { class InputEvaluator; }
-namespace renderer  { class ParamArray; }
-namespace renderer  { class Project; }
+namespace foundation    { class AbortSwitch; }
+namespace renderer      { class Assembly; }
+namespace renderer      { class InputEvaluator; }
+namespace renderer      { class ParamArray; }
+namespace renderer      { class Project; }
 
 namespace renderer
 {
@@ -134,7 +135,8 @@ class DLLSYMBOL BSDF
     // Returns true on success, false otherwise.
     virtual bool on_frame_begin(
         const Project&              project,
-        const Assembly&             assembly);
+        const Assembly&             assembly,
+        foundation::AbortSwitch*    abort_switch = 0);
 
     // This method is called once after rendering each frame.
     virtual void on_frame_end(

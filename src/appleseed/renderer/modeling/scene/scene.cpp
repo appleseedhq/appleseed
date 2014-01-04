@@ -39,6 +39,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
+#include "foundation/utility/job/abortswitch.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/uid.h"
 
@@ -161,12 +162,18 @@ namespace
     template <typename EntityCollection>
     bool invoke_on_frame_begin(
         const Project&          project,
-        EntityCollection&       entities)
+        EntityCollection&       entities,
+        AbortSwitch*            abort_switch)
     {
         bool success = true;
 
         for (each<EntityCollection> i = entities; i; ++i)
-            success = success && i->on_frame_begin(project);
+        {
+            if (is_aborted(abort_switch))
+                break;
+
+            success = success && i->on_frame_begin(project, abort_switch);
+        }
 
         return success;
     }
@@ -181,22 +188,25 @@ namespace
     }
 }
 
-bool Scene::on_frame_begin(const Project& project)
+bool Scene::on_frame_begin(const Project& project, AbortSwitch* abort_switch)
 {
     bool success = true;
 
     if (impl->m_camera.get())
-        success = success && impl->m_camera->on_frame_begin(project);
+        success = success && impl->m_camera->on_frame_begin(project, abort_switch);
 
-    success = success && invoke_on_frame_begin(project, texture_instances());
-    success = success && invoke_on_frame_begin(project, environment_edfs());
-    success = success && invoke_on_frame_begin(project, environment_shaders());
+    success = success && invoke_on_frame_begin(project, texture_instances(), abort_switch);
+    success = success && invoke_on_frame_begin(project, environment_edfs(), abort_switch);
+    success = success && invoke_on_frame_begin(project, environment_shaders(), abort_switch);
+
+    if (is_aborted(abort_switch))
+        return success;
 
     if (impl->m_environment.get())
-        success = success && impl->m_environment->on_frame_begin(project);
+        success = success && impl->m_environment->on_frame_begin(project, abort_switch);
 
-    success = success && invoke_on_frame_begin(project, assemblies());
-    success = success && invoke_on_frame_begin(project, assembly_instances());
+    success = success && invoke_on_frame_begin(project, assemblies(), abort_switch);
+    success = success && invoke_on_frame_begin(project, assembly_instances(), abort_switch);
 
     return success;
 }

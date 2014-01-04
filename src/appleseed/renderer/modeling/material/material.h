@@ -40,6 +40,7 @@
 #include "main/dllsymbol.h"
 
 // Forward declarations.
+namespace foundation    { class AbortSwitch; }
 namespace foundation    { class DictionaryArray; }
 namespace renderer      { class Assembly; }
 namespace renderer      { class BSDF; }
@@ -84,13 +85,14 @@ class DLLSYMBOL Material
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
     bool on_frame_begin(
-        const Project&      project,
-        const Assembly&     assembly);
+        const Project&              project,
+        const Assembly&             assembly,
+        foundation::AbortSwitch*    abort_switch = 0);
 
     // This method is called once after rendering each frame.
     void on_frame_end(
-        const Project&      project,
-        const Assembly&     assembly);
+        const Project&              project,
+        const Assembly&             assembly);
 
     //
     // The get_*() methods below retrieve entities that were cached by on_frame_begin().
@@ -120,16 +122,16 @@ class DLLSYMBOL Material
   private:
     friend class MaterialFactory;
 
-    const SurfaceShader*    m_surface_shader;
-    const BSDF*             m_bsdf;
-    const EDF*              m_edf;
-    const Source*           m_alpha_map;
-    const INormalModifier*  m_normal_modifier;
+    const SurfaceShader*            m_surface_shader;
+    const BSDF*                     m_bsdf;
+    const EDF*                      m_edf;
+    const Source*                   m_alpha_map;
+    const INormalModifier*          m_normal_modifier;
 
     // Constructor.
     Material(
-        const char*         name,
-        const ParamArray&   params);
+        const char*                 name,
+        const ParamArray&           params);
 
     bool create_normal_modifier(const MessageContext& context);
 };

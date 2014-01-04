@@ -95,7 +95,8 @@ const Transformd& Light::get_transform() const
 
 bool Light::on_frame_begin(
     const Project&      project,
-    const Assembly&     assembly)
+    const Assembly&     assembly,
+    AbortSwitch*        abort_switch)
 {
     m_flags = 0;
 

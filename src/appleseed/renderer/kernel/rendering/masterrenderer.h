@@ -42,6 +42,7 @@
 #endif
 
 // Forward declarations.
+namespace foundation    { class AbortSwitch; }
 namespace renderer      { class IFrameRenderer; }
 namespace renderer      { class ITileCallbackFactory; }
 namespace renderer      { class ITileCallback; }
@@ -61,17 +62,19 @@ class DLLSYMBOL MasterRenderer
   public:
     // Constructor.
     MasterRenderer(
-        Project&                project,
-        const ParamArray&       params,
-        IRendererController*    renderer_controller,
-        ITileCallbackFactory*   tile_callback_factory = 0);
+        Project&                    project,
+        const ParamArray&           params,
+        IRendererController*        renderer_controller,
+        ITileCallbackFactory*       tile_callback_factory = 0,
+        foundation::AbortSwitch*    abort_switch = 0);
 
     // Constructor for serial tile callbacks.
     MasterRenderer(
-        Project&                project,
-        const ParamArray&       params,
-        IRendererController*    renderer_controller,
-        ITileCallback*          tile_callback);
+        Project&                    project,
+        const ParamArray&           params,
+        IRendererController*        renderer_controller,
+        ITileCallback*              tile_callback,
+        foundation::AbortSwitch*    abort_switch = 0);
 
     // Destructor.
     ~MasterRenderer();
@@ -84,14 +87,15 @@ class DLLSYMBOL MasterRenderer
     bool render() const;
 
   private:
-    Project&                    m_project;
-    ParamArray                  m_params;
-    IRendererController*        m_renderer_controller;
-    ITileCallbackFactory*       m_tile_callback_factory;
+    Project&                        m_project;
+    ParamArray                      m_params;
+    IRendererController*            m_renderer_controller;
+    ITileCallbackFactory*           m_tile_callback_factory;
+    foundation::AbortSwitch*        m_abort_switch;
 
     // Storage for serial tile callbacks.
-    SerialRendererController*   m_serial_renderer_controller;
-    ITileCallbackFactory*       m_serial_tile_callback_factory;
+    SerialRendererController*       m_serial_renderer_controller;
+    ITileCallbackFactory*           m_serial_tile_callback_factory;
 
     // Render frame sequences, each time reinitializing the rendering components.
     void do_render() const;
