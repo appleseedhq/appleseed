@@ -85,6 +85,11 @@ class DLLSYMBOL TransformSequence
     // Return the identity transform if the sequence is empty.
     const foundation::Transformd& get_earliest_transform() const;
 
+    // Optimize the sequence by removing redundant transforms.
+    // If called, this method must be called after new transforms
+    // have been set and before the call to prepare().
+    void optimize();
+
     // Prepare the sequence for quick evaluation.
     // This method must be called after new transforms have been set and
     // before any call to evaluate(). It may be called multiple times.

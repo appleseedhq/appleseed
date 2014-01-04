@@ -40,6 +40,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <cstring>
 #include <vector>
 
 using namespace foundation;
@@ -149,6 +150,29 @@ const Transformd& TransformSequence::get_earliest_transform() const
     }
 
     return m_keys[earliest_index].m_transform;
+}
+
+void TransformSequence::optimize()
+{
+    if (m_size > 1)
+    {
+        for (size_t i = 0; i < m_size; ++i)
+        {
+            const bool same_left =
+                i == 0 ||
+                feq(m_keys[i - 1].m_transform, m_keys[i].m_transform);
+
+            const bool same_right =
+                i == m_size - 1 ||
+                feq(m_keys[i + 1].m_transform, m_keys[i].m_transform);
+
+            if (same_left && same_right)
+            {
+                memcpy(&m_keys[i], &m_keys[i + 1], (m_size - 1 - i) * sizeof(TransformKey));
+                --m_size;
+            }
+        }
+    }
 }
 
 bool TransformSequence::prepare()

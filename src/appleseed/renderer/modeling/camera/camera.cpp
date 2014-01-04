@@ -72,6 +72,8 @@ bool Camera::on_frame_begin(
     const Project&      project,
     AbortSwitch*        abort_switch)
 {
+    m_transform_sequence.optimize();
+
     if (!m_transform_sequence.prepare())
         RENDERER_LOG_WARNING("camera \"%s\" has one or more invalid transforms.", get_name());
 

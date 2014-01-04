@@ -179,6 +179,122 @@ TEST_SUITE(Renderer_Utility_TransformSequence)
         EXPECT_EQ(1, sequence.size());
     }
 
+    static const Transformd A = Transformd::identity();
+    static const Transformd B =
+        Transformd::from_local_to_parent(
+            Matrix4d::translation(Vector3d(1.0, 2.0, 3.0)));
+
+    double get_time(const TransformSequence& sequence, const size_t index)
+    {
+        double time;
+        Transformd transform;
+        sequence.get_transform(index, time, transform);
+        return time;
+    }
+
+    Transformd get_transform(const TransformSequence& sequence, const size_t index)
+    {
+        double time;
+        Transformd transform;
+        sequence.get_transform(index, time, transform);
+        return transform;
+    }
+
+    TEST_CASE(Optimize_GivenEmptySequence_DoesNothing)
+    {
+        TransformSequence sequence;
+
+        sequence.optimize();
+
+        EXPECT_TRUE(sequence.empty());
+    }
+
+    TEST_CASE(Optimize_GivenA_DoesNothing)
+    {
+        TransformSequence sequence;
+        sequence.set_transform(1.0, A);
+
+        sequence.optimize();
+
+        ASSERT_EQ(1, sequence.size());
+        EXPECT_EQ(A, get_transform(sequence, 0));
+    }
+
+    TEST_CASE(Optimize_GivenAB_DoesNothing)
+    {
+        TransformSequence sequence;
+        sequence.set_transform(1.0, A);
+        sequence.set_transform(2.0, B);
+
+        sequence.optimize();
+
+        ASSERT_EQ(2, sequence.size());
+        EXPECT_EQ(A, get_transform(sequence, 0));
+        EXPECT_EQ(B, get_transform(sequence, 1));
+    }
+
+    TEST_CASE(Optimize_GivenAA_CollapsesToA)
+    {
+        TransformSequence sequence;
+        sequence.set_transform(1.0, A);
+        sequence.set_transform(2.0, A);
+
+        sequence.optimize();
+
+        ASSERT_EQ(1, sequence.size());
+        EXPECT_EQ(A, get_transform(sequence, 0));
+        EXPECT_EQ(2.0, get_time(sequence, 0));
+    }
+
+    TEST_CASE(Optimize_GivenAAB_CollapsesToAB)
+    {
+        TransformSequence sequence;
+        sequence.set_transform(1.0, A);
+        sequence.set_transform(2.0, A);
+        sequence.set_transform(3.0, B);
+
+        sequence.optimize();
+
+        ASSERT_EQ(2, sequence.size());
+        EXPECT_EQ(A, get_transform(sequence, 0));
+        EXPECT_EQ(2.0, get_time(sequence, 0));
+        EXPECT_EQ(B, get_transform(sequence, 1));
+        EXPECT_EQ(3.0, get_time(sequence, 1));
+    }
+
+    TEST_CASE(Optimize_GivenBAA_CollapsesToBA)
+    {
+        TransformSequence sequence;
+        sequence.set_transform(1.0, B);
+        sequence.set_transform(2.0, A);
+        sequence.set_transform(3.0, A);
+
+        sequence.optimize();
+
+        ASSERT_EQ(2, sequence.size());
+        EXPECT_EQ(B, get_transform(sequence, 0));
+        EXPECT_EQ(1.0, get_time(sequence, 0));
+        EXPECT_EQ(A, get_transform(sequence, 1));
+        EXPECT_EQ(2.0, get_time(sequence, 1));
+    }
+
+    TEST_CASE(Optimize_GivenABBA_DoesNothing)
+    {
+        TransformSequence sequence;
+        sequence.set_transform(1.0, A);
+        sequence.set_transform(2.0, B);
+        sequence.set_transform(3.0, B);
+        sequence.set_transform(4.0, A);
+
+        sequence.optimize();
+
+        ASSERT_EQ(4, sequence.size());
+        EXPECT_EQ(A, get_transform(sequence, 0));
+        EXPECT_EQ(B, get_transform(sequence, 1));
+        EXPECT_EQ(B, get_transform(sequence, 2));
+        EXPECT_EQ(A, get_transform(sequence, 3));
+    }
+
     TEST_CASE(Prepare_GivenEmptySequence_ReturnsTrue)
     {
         TransformSequence sequence;
