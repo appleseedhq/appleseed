@@ -357,7 +357,9 @@ void RenderingManager::slot_rendering_end()
     m_render_widget_update_timer.stop();
 
     print_final_rendering_time();
-    print_average_luminance();
+
+    if (m_params.get_optional<bool>("print_final_average_luminance", false))
+        print_average_luminance();
 
     if (m_params.get_optional<bool>("autosave", true))
         archive_frame_to_disk();
