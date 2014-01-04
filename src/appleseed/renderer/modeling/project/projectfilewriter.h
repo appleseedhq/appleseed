@@ -29,9 +29,6 @@
 #ifndef APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFILEWRITER_H
 #define APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFILEWRITER_H
 
-// appleseed.renderer headers.
-#include "renderer/global/global.h"
-
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 

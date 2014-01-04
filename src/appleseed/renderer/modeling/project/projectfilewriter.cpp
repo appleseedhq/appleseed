@@ -59,7 +59,9 @@
 // appleseed.foundation headers.
 #include "foundation/core/appleseed.h"
 #include "foundation/math/transform.h"
+#include "foundation/platform/path.h"
 #include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/indenter.h"
 #include "foundation/utility/searchpaths.h"
@@ -72,11 +74,13 @@
 
 // Standard headers.
 #include <algorithm>
+#include <cassert>
 #include <cstdio>
 #include <cstring>
 #include <exception>
 #include <map>
 #include <set>
+#include <string>
 #include <vector>
 
 using namespace boost;
@@ -107,8 +111,10 @@ namespace
             FILE*               file,
             const int           options)
           : m_project_search_paths(project.get_search_paths())
-          , m_project_old_root_path(filesystem::path(project.get_path()).parent_path())
-          , m_project_new_root_path(filesystem::path(filepath).parent_path())
+          , m_project_old_root_path(project.get_path())
+          , m_project_new_root_path(filepath)
+          , m_project_old_root_dir(m_project_old_root_path.parent_path())
+          , m_project_new_root_dir(m_project_new_root_path.parent_path())
           , m_file(file)
           , m_options(options)
           , m_indenter(4)
@@ -135,6 +141,8 @@ namespace
         const SearchPaths&      m_project_search_paths;
         const filesystem::path  m_project_old_root_path;
         const filesystem::path  m_project_new_root_path;
+        const filesystem::path  m_project_old_root_dir;
+        const filesystem::path  m_project_new_root_dir;
         FILE*                   m_file;
         const int               m_options;
         Indenter                m_indenter;
@@ -165,60 +173,92 @@ namespace
         }
 
         //
-        //  Project Directory   Old Parameter Value         Target Directory    Copy Assets?    New Parameter Value                 Changes
-        //  -------------------------------------------------------------------------------------------------------------------------------------
+        //  Project Directory   Old Parameter Value                 Target Directory    Copy Assets?    New Parameter Value                 Changes
+        //  -------------------------------------------------------------------------------------------------------------------------------------------
         //
-        //  c:\appleseed        bunny.exr                   c:\appleseed        yes             bunny.exr                           none
-        //  c:\appleseed        textures/bunny.exr          c:\appleseed        yes             textures/bunny.exr                  none
-        //  c:\appleseed        c:\textures\bunny.exr       c:\appleseed        yes             bunny.exr                           copy, param
+        //  c:\appleseed        bunny.exr                           c:\appleseed        yes             bunny.exr                           none
+        //  c:\appleseed        textures/bunny.exr                  c:\appleseed        yes             textures/bunny.exr                  none
+        //  c:\appleseed        c:\textures\bunny.exr               c:\appleseed        yes             bunny.exr                           copy, param
+        //  c:\appleseed        c:\appleseed\textures\bunny.exr     c:\appleseed        yes             textures/bunny.exr                  param
         //
-        //  c:\appleseed        bunny.exr                   c:\temp             yes             bunny.exr                           copy
-        //  c:\appleseed        textures/bunny.exr          c:\temp             yes             textures/bunny.exr                  copy
-        //  c:\appleseed        c:\textures\bunny.exr       c:\temp             yes             bunny.exr                           copy, param
+        //  c:\appleseed        bunny.exr                           c:\temp             yes             bunny.exr                           copy
+        //  c:\appleseed        textures/bunny.exr                  c:\temp             yes             textures/bunny.exr                  copy
+        //  c:\appleseed        c:\textures\bunny.exr               c:\temp             yes             bunny.exr                           copy, param
         //
-        //  c:\appleseed        bunny.exr                   c:\appleseed        no              bunny.exr                           none
-        //  c:\appleseed        textures/bunny.exr          c:\appleseed        no              textures/bunny.exr                  none
-        //  c:\appleseed        c:\textures\bunny.exr       c:\appleseed        no              c:\textures\bunny.exr               none
-        //  
-        //  c:\appleseed        bunny.exr                   c:\temp             no              c:\appleseed\bunny.exr              param
-        //  c:\appleseed        textures/bunny.exr          c:\temp             no              c:\appleseed\textures\bunny.exr     param
-        //  c:\appleseed        c:\textures\bunny.exr       c:\temp             no              c:\textures\bunny.exr               none
+        //  c:\appleseed        bunny.exr                           c:\appleseed        no              bunny.exr                           none
+        //  c:\appleseed        textures/bunny.exr                  c:\appleseed        no              textures/bunny.exr                  none
+        //  c:\appleseed        c:\textures\bunny.exr               c:\appleseed        no              c:\textures\bunny.exr               none
+        //  c:\appleseed        c:\appleseed\textures\bunny.exr     c:\appleseed        no              textures/bunny.exr                  param
         //
+        //  c:\appleseed        bunny.exr                           c:\temp             no              c:\appleseed\bunny.exr              param
+        //  c:\appleseed        textures/bunny.exr                  c:\temp             no              c:\appleseed\textures\bunny.exr     param
+        //  c:\appleseed        c:\textures\bunny.exr               c:\temp             no              c:\textures\bunny.exr               none
+        //
+
+        static string convert_to_posix(string path)
+        {
+            replace(path.begin(), path.end(), '\\', '/');
+            return path;
+        }
 
         void handle_link_to_asset(Dictionary& params, const char* param_name) const
         {
-            const filesystem::path original_filepath = params.get<string>(param_name);
-            const filesystem::path qualified_filepath = m_project_search_paths.qualify(original_filepath.string());
+            const filesystem::path original_asset_path = params.get<string>(param_name);
 
-            if (m_options & ProjectFileWriter::OmitCopyingAssets)
+            if (original_asset_path.is_absolute())
             {
-                if (m_project_old_root_path == m_project_new_root_path)
-                    return;
+                // See if there is a common base between the old project path and the asset path (e.g. c:\appleseed)
+                filesystem::path common_path, discard, relative_asset_path;
+                split_paths(
+                    m_project_old_root_path,
+                    original_asset_path,
+                    common_path,
+                    discard,
+                    relative_asset_path);
 
-                if (original_filepath.is_absolute())
-                    return;
-
-                const filesystem::path new_filepath = absolute(qualified_filepath, m_project_old_root_path);
-
-                params.insert(param_name, new_filepath.string());
-            }
-            else
-            {
-                if (original_filepath.is_absolute())
+                if (m_options & ProjectFileWriter::OmitCopyingAssets)
                 {
-                    const filesystem::path filename = original_filepath.filename();
-
-                    copy_file_if_not_exists(
-                        qualified_filepath,
-                        m_project_new_root_path / filename);
-
-                    params.insert(param_name, filename.string());
+                    // If there is, then keep the relative path of the asset with respect to the old project path
+                    // (e.g. textures\bunny.exr), otherwise keep the original absolute asset path unmodified.
+                    if (!common_path.empty() && !discard.has_parent_path())
+                        params.insert(param_name, convert_to_posix(relative_asset_path.string()));
                 }
                 else
                 {
+                    // If there is, then keep the relative path of the asset with respect to the old project path
+                    // (e.g. textures\bunny.exr), otherwise simply use the file name (e.g. bunny.exr)
+                    const filesystem::path new_asset_path =
+                        common_path.empty() || discard.has_parent_path()
+                            ? original_asset_path.filename()
+                            : relative_asset_path;
+
+                    // Copy the file to the new project location.
                     copy_file_if_not_exists(
-                        qualified_filepath,
-                        m_project_new_root_path / original_filepath);
+                        original_asset_path,
+                        m_project_new_root_dir / new_asset_path);
+
+                    params.insert(param_name, convert_to_posix(new_asset_path.string()));
+                }
+            }
+            else
+            {
+                // Find the asset in the search paths, leading to e.g. textures/bunny.exr.
+                const filesystem::path qualified_asset_path = m_project_search_paths.qualify(original_asset_path.string());
+
+                if (m_options & ProjectFileWriter::OmitCopyingAssets)
+                {
+                    // Make the asset path absolute according to the old project path.
+                    const filesystem::path new_asset_path = absolute(qualified_asset_path, m_project_old_root_dir);
+                    params.insert(param_name, new_asset_path.string());
+                }
+                else
+                {
+                    // Copy the file to the new location.
+                    copy_file_if_not_exists(
+                        qualified_asset_path,
+                        m_project_new_root_dir / original_asset_path);
+
+                    // The path in the parameter is left unmodified, e.g. bunny.exr.
                 }
             }
         }
@@ -560,7 +600,7 @@ namespace
             // Generate the mesh file on disk.
             if (!(m_options & ProjectFileWriter::OmitWritingMeshFiles))
             {
-                const string filepath = (m_project_new_root_path / filename).string();
+                const string filepath = (m_project_new_root_dir / filename).string();
                 MeshObjectWriter::write(
                     static_cast<const MeshObject&>(object),
                     name.c_str(),
