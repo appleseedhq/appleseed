@@ -34,10 +34,14 @@
 #include "renderer/kernel/aov/tilestack.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
+#include "foundation/image/tile.h"
 
 // Standard headers.
 #include <algorithm>
+#include <cstddef>
+#include <string>
 
 namespace bpy = boost::python;
 using namespace foundation;
