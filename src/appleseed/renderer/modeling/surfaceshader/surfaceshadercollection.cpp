@@ -151,6 +151,7 @@ namespace
                 if (m_surface_shaders[i])
                 {
                     ShadingResult local_result;
+                    local_result.m_alpha = Alpha(1.0);
 
                     m_surface_shaders[i]->evaluate(
                         sampling_context,
