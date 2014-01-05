@@ -30,7 +30,6 @@
 #define APPLESEED_FOUNDATION_IMAGE_TILE_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/image/pixel.h"
 #include "foundation/platform/types.h"
 
@@ -50,7 +49,6 @@ namespace foundation
 //
 
 class DLLSYMBOL Tile
-  : public NonCopyable
 {
   public:
     // Construct a new tile. The content of the tile is left undefined.
