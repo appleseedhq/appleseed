@@ -136,8 +136,8 @@ void split_paths(
         if (*i1 != *i2)
             break;
 
-        if (p1.has_filename() && succ(i1) == p1.end() ||
-            p2.has_filename() && succ(i2) == p2.end())
+        if ((p1.has_filename() && succ(i1) == p1.end()) ||
+            (p2.has_filename() && succ(i2) == p2.end()))
             break;
 
         common /= *i1;
