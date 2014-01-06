@@ -30,7 +30,7 @@
 #include "entitycreatorbase.h"
 
 // appleseed.studio headers.
-#include "utility/tweaks.h"
+#include "utility/miscellaneous.h"
 
 // Qt headers.
 #include <QMessageBox>

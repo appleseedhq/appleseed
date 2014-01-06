@@ -38,8 +38,8 @@
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/rendering/renderingmanager.h"
 #include "utility/interop.h"
+#include "utility/miscellaneous.h"
 #include "utility/mousewheelfocuseventfilter.h"
-#include "utility/tweaks.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/object.h"

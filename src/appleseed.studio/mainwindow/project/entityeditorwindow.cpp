@@ -36,8 +36,8 @@
 #include "mainwindow/project/entitybrowserwindow.h"
 #include "utility/doubleslider.h"
 #include "utility/interop.h"
+#include "utility/miscellaneous.h"
 #include "utility/mousewheelfocuseventfilter.h"
-#include "utility/tweaks.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/project.h"
@@ -138,26 +138,9 @@ EntityEditorWindow::~EntityEditorWindow()
     delete m_ui;
 }
 
-namespace
-{
-    void delete_layout_items(QLayout* layout)
-    {
-        while (!layout->isEmpty())
-        {
-            QLayoutItem* item = layout->takeAt(0);
-
-            if (item->layout())
-                delete_layout_items(item->layout());
-            else item->widget()->deleteLater();
-
-            delete item;
-        }
-    }
-}
-
 void EntityEditorWindow::rebuild_form(const Dictionary& values)
 {
-    delete_layout_items(m_form_layout);
+    clear_layout(m_form_layout);
 
     m_widget_proxies.clear();
 

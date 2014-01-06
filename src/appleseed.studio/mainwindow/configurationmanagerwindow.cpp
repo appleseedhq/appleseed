@@ -33,7 +33,7 @@
 #include "ui_configurationmanagerwindow.h"
 
 // appleseed.studio headers.
-#include "utility/tweaks.h"
+#include "utility/miscellaneous.h"
 
 // Qt headers.
 #include <QShortcut>
@@ -54,7 +54,7 @@ ConfigurationManagerWindow::ConfigurationManagerWindow(QWidget* parent)
 
     setWindowFlags(Qt::Window);
 
-    disable_mac_focus_rect(m_ui->treewidget_configurations);
+    disable_osx_focus_rect(m_ui->treewidget_configurations);
 
     connect(m_ui->buttonbox, SIGNAL(accepted()), this, SLOT(close()));
     connect(m_ui->buttonbox, SIGNAL(rejected()), this, SLOT(close()));

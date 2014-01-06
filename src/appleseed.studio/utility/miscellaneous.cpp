@@ -27,11 +27,13 @@
 //
 
 // Interface header.
-#include "tweaks.h"
+#include "miscellaneous.h"
 
 // Qt headers.
 #include <QGridLayout>
 #include <QKeySequence>
+#include <QLayout>
+#include <QLayoutItem>
 #include <QMessageBox>
 #include <QShortcut>
 #include <QSpacerItem>
@@ -40,7 +42,7 @@
 namespace appleseed {
 namespace studio {
 
-void disable_mac_focus_rect(QWidget* widget)
+void disable_osx_focus_rect(QWidget* widget)
 {
     widget->setAttribute(Qt::WA_MacShowFocusRect, false);
 }
@@ -73,6 +75,17 @@ QShortcut* create_window_local_shortcut(QWidget* parent, const Qt::Key key)
             0,
             0,
             Qt::WidgetWithChildrenShortcut);
+}
+
+void clear_layout(QLayout* layout)
+{
+    while (QLayoutItem* item = layout->takeAt(0))
+    {
+        if (item->layout())
+            clear_layout(item->layout());
+        else item->widget()->deleteLater();
+        delete item;
+    }
 }
 
 }   // namespace studio

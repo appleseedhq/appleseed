@@ -26,13 +26,14 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_UTILITY_TWEAKS_H
-#define APPLESEED_STUDIO_UTILITY_TWEAKS_H
+#ifndef APPLESEED_STUDIO_UTILITY_MISCELLANEOUS_H
+#define APPLESEED_STUDIO_UTILITY_MISCELLANEOUS_H
 
 // Qt headers.
 #include <Qt>
 
 // Forward declarations.
+class QLayout;
 class QMessageBox;
 class QShortcut;
 class QWidget;
@@ -41,7 +42,7 @@ namespace appleseed {
 namespace studio {
 
 // Disable the blue focus rectangle of certain widgets. Mac OS X only.
-void disable_mac_focus_rect(QWidget* widget);
+void disable_osx_focus_rect(QWidget* widget);
 
 // Set the minimum width of a QMessageBox.
 void set_minimum_width(QMessageBox& msgbox, const int minimum_width);
@@ -50,7 +51,10 @@ void set_minimum_width(QMessageBox& msgbox, const int minimum_width);
 // child widgets, but not for its top-level children like subwindows.
 QShortcut* create_window_local_shortcut(QWidget* parent, const Qt::Key key);
 
+// Remove all widgets and sub-layouts from a layout.
+void clear_layout(QLayout* layout);
+
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_UTILITY_TWEAKS_H
+#endif  // !APPLESEED_STUDIO_UTILITY_MISCELLANEOUS_H

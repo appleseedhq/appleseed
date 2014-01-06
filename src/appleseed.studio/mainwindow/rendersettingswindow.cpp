@@ -37,8 +37,8 @@
 #include "mainwindow/configurationmanagerwindow.h"
 #include "utility/foldablepanelwidget.h"
 #include "utility/inputwidgetproxies.h"
+#include "utility/miscellaneous.h"
 #include "utility/mousewheelfocuseventfilter.h"
-#include "utility/tweaks.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/project.h"

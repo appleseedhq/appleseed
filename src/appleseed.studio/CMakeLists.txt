@@ -254,6 +254,8 @@ set (utility_sources
     utility/inputwidgetproxies.cpp
     utility/inputwidgetproxies.h
     utility/interop.h
+    utility/miscellaneous.cpp
+    utility/miscellaneous.h
     utility/mousecoordinatestracker.cpp
     utility/mousecoordinatestracker.h
     utility/mousewheelfocuseventfilter.cpp
@@ -263,8 +265,6 @@ set (utility_sources
     utility/settingskeys.h
     utility/treewidget.cpp
     utility/treewidget.h
-    utility/tweaks.cpp
-    utility/tweaks.h
     utility/widgetzoomhandler.cpp
     utility/widgetzoomhandler.h
 )

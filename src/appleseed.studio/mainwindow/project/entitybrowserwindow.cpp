@@ -34,7 +34,7 @@
 
 // appleseed.studio headers.
 #include "utility/interop.h"
-#include "utility/tweaks.h"
+#include "utility/miscellaneous.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
@@ -122,7 +122,7 @@ void EntityBrowserWindow::add_items_page(
     QListWidget* list_widget = new QListWidget(tab);
     layout->addWidget(list_widget, 0, 0, 1, 1);
 
-    disable_mac_focus_rect(list_widget);
+    disable_osx_focus_rect(list_widget);
 
     add_items_to_list_widget(list_widget, items);
 
