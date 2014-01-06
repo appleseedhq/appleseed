@@ -64,7 +64,7 @@ class UnalignedTransformd44
         Matrix<T, 4, 4> aligned_local_to_parent = local_to_parent.as_foundation_matrix();
         Matrix<T, 4, 4> aligned_parent_to_local = parent_to_local.as_foundation_matrix();
 
-        // check that local_to_parent * aligned_parent_to_local == identity, if not, throw an exception before the assert fires.
+        // Check that local_to_parent * aligned_parent_to_local == identity, if not, throw an exception before the assert fires.
         if (feq(aligned_local_to_parent * aligned_parent_to_local, Matrix<T, 4, 4>::identity(), make_eps<T>(1.0e-6f, 1.0e-9)))
         {
             m_local_to_parent = UnalignedMatrix44<double>(local_to_parent);
@@ -72,7 +72,7 @@ class UnalignedTransformd44
         }
         else
         {
-            PyErr_SetString(PyExc_RuntimeError, "Matrices passed to appleseed.Transform are not inverses");
+            PyErr_SetString(PyExc_RuntimeError, "Matrices passed to appleseed.Transform are not inverses of each other");
             boost::python::throw_error_already_set();
         }
     }

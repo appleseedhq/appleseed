@@ -50,13 +50,17 @@ using namespace renderer;
 
 namespace detail
 {
-    auto_release_ptr<MeshObject> create_mesh_obj(const std::string& name, const bpy::dict& params)
+    auto_release_ptr<MeshObject> create_mesh_obj(
+        const std::string&  name,
+        const bpy::dict&    params)
     {
         return MeshObjectFactory::create(name.c_str(), bpy_dict_to_param_array(params));
     }
 
-    bpy::list read_mesh_objects(const bpy::list& search_paths, const std::string& base_object_name,
-                                const bpy::dict& params)
+    bpy::list read_mesh_objects(
+        const bpy::list&    search_paths,
+        const std::string&  base_object_name,
+        const bpy::dict&    params)
     {
         SearchPaths paths;
 
@@ -85,7 +89,7 @@ namespace detail
         }
         else
         {
-            PyErr_SetString(PyExc_RuntimeError, "MeshObjectReader failed");
+            PyErr_SetString(PyExc_RuntimeError, "appleseed.MeshObjectReader failed");
             bpy::throw_error_already_set();
             return py_objects;
         }
@@ -93,24 +97,22 @@ namespace detail
         return py_objects;
     }
 
-    bool write_mesh_object(MeshObject* obj, const std::string& obj_name, const std::string& filename)
+    bool write_mesh_object(
+        const MeshObject*   object,
+        const std::string&  object_name,
+        const std::string&  filename)
     {
-        return MeshObjectWriter::write(*obj, obj_name.c_str(), filename.c_str());
+        return MeshObjectWriter::write(*object, object_name.c_str(), filename.c_str());
     }
 }
 
 void bind_mesh_object()
 {
     bpy::class_<Triangle>("Triangle")
-        .def(bpy::init<const size_t, const size_t, const size_t>())
-        .def(bpy::init<const size_t, const size_t, const size_t, const size_t>())
-
-        .def(bpy::init<const size_t, const size_t, const size_t, const size_t,
-                       const size_t, const size_t, const size_t>())
-
-        .def(bpy::init<const size_t, const size_t, const size_t, const size_t,
-                       const size_t, const size_t, const size_t, const size_t,
-                       const size_t, const size_t>())
+        .def(bpy::init<size_t, size_t, size_t>())
+        .def(bpy::init<size_t, size_t, size_t, size_t>())
+        .def(bpy::init<size_t, size_t, size_t, size_t, size_t, size_t, size_t>())
+        .def(bpy::init<size_t, size_t, size_t, size_t, size_t, size_t, size_t, size_t, size_t, size_t>())
 
         .def("has_vertex_attributes", &Triangle::has_vertex_attributes)
 
