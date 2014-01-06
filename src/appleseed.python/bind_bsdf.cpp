@@ -68,8 +68,7 @@ namespace detail
 void bind_bsdf()
 {
     bpy::class_<BSDF, auto_release_ptr<BSDF>, bpy::bases<ConnectableEntity>, boost::noncopyable>("BSDF", bpy::no_init)
-        .def("__init__", bpy::make_constructor(detail::create_bsdf))
-        ;
+        .def("__init__", bpy::make_constructor(detail::create_bsdf));
 
     bind_typed_entity_vector<BSDF>("BSDFContainer");
 }

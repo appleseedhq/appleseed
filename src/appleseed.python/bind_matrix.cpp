@@ -210,7 +210,7 @@ namespace detail
          .def(bpy::self * bpy::self)
          .def(bpy::self * Vector<T,4>())
 
-         // a bug in boost::python, this needs the extra self_ns qualification
+         // Because of a bug in Boost.Python, this needs the extra self_ns qualification.
          .def(bpy::self_ns::str(bpy::self))
          .def(bpy::self_ns::repr(bpy::self))
 

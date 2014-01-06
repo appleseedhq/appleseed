@@ -36,7 +36,9 @@
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
+#include "foundation/image/pixel.h"
 #include "foundation/image/tile.h"
+#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <algorithm>
@@ -103,7 +105,6 @@ void bind_image()
         .def_readonly("tile_height", &CanvasProperties::m_tile_height)
         .def_readonly("channel_count", &CanvasProperties::m_channel_count)
         .def_readonly("pixel_format", &CanvasProperties::m_pixel_format)
-
         .def_readonly("rcp_canvas_width", &CanvasProperties::m_rcp_canvas_width)
         .def_readonly("rcp_canvas_height", &CanvasProperties::m_rcp_canvas_height)
         .def_readonly("rcp_tile_width", &CanvasProperties::m_rcp_tile_width)
@@ -113,7 +114,6 @@ void bind_image()
         .def_readonly("tile_count", &CanvasProperties::m_tile_count)
         .def_readonly("pixel_count", &CanvasProperties::m_pixel_count)
         .def_readonly("pixel_size", &CanvasProperties::m_pixel_size)
-
         .def("get_tile_width", &CanvasProperties::get_tile_width)
         .def("get_tile_height", &CanvasProperties::get_tile_height);
 

@@ -125,7 +125,7 @@ void bind_transform()
         .def("normal_to_parent", normal_to_parentf)
         .def("normal_to_parent", normal_to_parentd)
 
-        // the extra self_ns qualification
+        // Because of a bug in Boost.Python, this needs the extra self_ns qualification.
         .def(bpy::self_ns::str(bpy::self))
         .def(bpy::self_ns::repr(bpy::self));
 

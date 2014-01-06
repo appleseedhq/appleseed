@@ -44,23 +44,22 @@ namespace detail
     auto_release_ptr<Camera> create_camera(const std::string& camera_type, const std::string& name, const bpy::dict& params)
     {
         CameraFactoryRegistrar factories;
-        const ICameraFactory* f = factories.lookup(camera_type.c_str());
+        const ICameraFactory* factory = factories.lookup(camera_type.c_str());
 
-        if (!f)
+        if (factory)
+            return factory->create(name.c_str(), bpy_dict_to_param_array(params));
+        else
         {
-            std::string error = "Camera type ";
-            error += camera_type;
-            error += " not found";
-            PyErr_SetString(PyExc_RuntimeError, error.c_str());
+            PyErr_SetString(PyExc_RuntimeError, "Camera type not found");
             bpy::throw_error_already_set();
         }
 
-        return f->create(name.c_str(), bpy_dict_to_param_array(params));
+        return auto_release_ptr<Camera>();
     }
 
-    TransformSequence* camera_get_transform_sequence(Camera* cam)
+    TransformSequence* camera_get_transform_sequence(Camera* camera)
     {
-        return &(cam->transform_sequence());
+        return &(camera->transform_sequence());
     }
 }
 

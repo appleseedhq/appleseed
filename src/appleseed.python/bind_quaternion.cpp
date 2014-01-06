@@ -133,8 +133,7 @@ namespace detail
             .def(bpy::self * bpy::self)
             .def(bpy::self *= bpy::self)
 
-            // a bug in boost::python, this needs
-            // the extra self_ns qualification
+            // Because of a bug in Boost.Python, this needs the extra self_ns qualification.
             .def(bpy::self_ns::str(bpy::self))
             .def(bpy::self_ns::repr(bpy::self))
 
@@ -148,8 +147,7 @@ namespace detail
             .def("normalize", &quat_normalize<T>)
             .def("is_normalized", &quat_is_normalized<T>)
             .def("is_normalized", &quat_is_normalized_with_eps<T>)
-            .def("slerp", &quat_slerp<T>)
-            ;
+            .def("slerp", &quat_slerp<T>);
     }
 }
 

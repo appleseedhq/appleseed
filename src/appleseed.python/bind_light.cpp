@@ -77,8 +77,7 @@ void bind_light()
     bpy::class_<Light, auto_release_ptr<Light>, bpy::bases<ConnectableEntity>, boost::noncopyable>("Light", bpy::no_init)
         .def("__init__", bpy::make_constructor(detail::create_light))
         .def("set_transform", &detail::light_set_transform)
-        .def("get_transform", &detail::light_get_transform)
-        ;
+        .def("get_transform", &detail::light_get_transform);
 
     bind_typed_entity_vector<Light>("LightContainer");
 }

@@ -34,6 +34,9 @@
 #include "foundation/platform/python.h"
 #include "foundation/utility/iostreamop.h"
 
+// Standard headers.
+#include <cstddef>
+
 namespace bpy = boost::python;
 using namespace foundation;
 
@@ -171,8 +174,7 @@ namespace detail
             .def(bpy::self == bpy::self)
             .def(bpy::self != bpy::self)
 
-            // a bug in boost::python, this needs
-            // the extra self_ns qualification
+            // Because of a bug in Boost.Python, this needs the extra self_ns qualification.
             .def(bpy::self_ns::str(bpy::self))
             .def(bpy::self_ns::repr(bpy::self))
             ;
