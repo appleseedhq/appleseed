@@ -135,6 +135,12 @@ set_target_properties (appleseed.python PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/appleseed.python
 )
 
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    set_target_properties (appleseed.python PROPERTIES
+        SUFFIX ".pyd"
+    )
+endif()
+
 
 #--------------------------------------------------------------------------------------------------
 # Include paths.
