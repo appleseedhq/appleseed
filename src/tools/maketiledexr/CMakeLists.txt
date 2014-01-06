@@ -85,6 +85,7 @@ link_against_platform (maketiledexr)
 target_link_libraries (maketiledexr
     appleseed
     appleseed.shared
+    ${Boost_LIBRARIES}
 )
 
 
