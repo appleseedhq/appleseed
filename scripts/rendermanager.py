@@ -44,7 +44,7 @@ import xml.dom.minidom as xml
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "2.1"
+VERSION = "2.2"
 RENDERS_DIR = "_renders"
 ARCHIVES_DIR = "_archives"
 LOGS_DIR = "_logs"
@@ -416,6 +416,7 @@ class Manager:
             return 0
 
         try:
+            safe_mkdir(os.path.dirname(dest_filepath))
             shutil.copyfile(source_filepath, dest_filepath)
             self.target_directory_size += filesize
             return 1
