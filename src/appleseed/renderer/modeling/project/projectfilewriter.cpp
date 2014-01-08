@@ -173,7 +173,7 @@ namespace
         }
 
         //
-        //  Project Directory   Old Parameter Value                 Target Directory    Copy Assets?    New Parameter Value                 Changes
+        //  Project Directory   Old Parameter Value                 Target Directory    Bring Assets?   New Parameter Value                 Changes
         //  -------------------------------------------------------------------------------------------------------------------------------------------
         //
         //  c:\appleseed        bunny.exr                           c:\appleseed        yes             bunny.exr                           none
@@ -201,66 +201,82 @@ namespace
             return path;
         }
 
+        void handle_absolute_link_to_asset(
+            Dictionary&                 params,
+            const char*                 param_name,
+            const filesystem::path&     original_asset_path) const
+        {
+            // See if there is a common base (e.g. c:\appleseed) between the old project path and the asset path.
+            filesystem::path common_path, discard, relative_asset_path;
+            split_paths(
+                m_project_old_root_path,
+                original_asset_path,
+                common_path,
+                discard,
+                relative_asset_path);
+
+            if (m_options & ProjectFileWriter::OmitBringingAssets)
+            {
+                // If there is, then keep the relative path of the asset with respect to the old project path
+                // (e.g. textures\bunny.exr), otherwise keep the original absolute asset path unmodified.
+                if (!common_path.empty() && !discard.has_parent_path())
+                    params.insert(param_name, convert_to_posix(relative_asset_path.string()));
+            }
+            else
+            {
+                // If there is, then keep the relative path of the asset with respect to the old project path
+                // (e.g. textures\bunny.exr), otherwise simply use the file name (e.g. bunny.exr)
+                const filesystem::path new_asset_path =
+                    common_path.empty() || discard.has_parent_path()
+                        ? original_asset_path.filename()
+                        : relative_asset_path;
+
+                // Copy the asset file to the new project location.
+                copy_file_if_not_exists(
+                    original_asset_path,
+                    m_project_new_root_dir / new_asset_path);
+
+                // Update the asset path parameter.
+                params.insert(param_name, convert_to_posix(new_asset_path.string()));
+            }
+        }
+
+        void handle_relative_link_to_asset(
+            Dictionary&                 params,
+            const char*                 param_name,
+            const filesystem::path&     original_asset_path) const
+        {
+            if (m_project_old_root_dir == m_project_new_root_dir)
+                return;
+
+            // Find the asset in the search paths, leading to e.g. textures/bunny.exr.
+            const filesystem::path qualified_asset_path = m_project_search_paths.qualify(original_asset_path.string());
+
+            if (m_options & ProjectFileWriter::OmitBringingAssets)
+            {
+                // Make the asset path absolute according to the old project path.
+                filesystem::path new_asset_path = absolute(qualified_asset_path, m_project_old_root_dir);
+                new_asset_path.make_preferred();
+                params.insert(param_name, new_asset_path.string());
+            }
+            else
+            {
+                // The asset path parameter is left unmodified, e.g. bunny.exr or textures/bunny.exr.
+
+                // Copy the asset file to the new project location.
+                copy_file_if_not_exists(
+                    qualified_asset_path,
+                    m_project_new_root_dir / original_asset_path);
+            }
+        }
+
         void handle_link_to_asset(Dictionary& params, const char* param_name) const
         {
             const filesystem::path original_asset_path = params.get<string>(param_name);
 
             if (original_asset_path.is_absolute())
-            {
-                // See if there is a common base between the old project path and the asset path (e.g. c:\appleseed)
-                filesystem::path common_path, discard, relative_asset_path;
-                split_paths(
-                    m_project_old_root_path,
-                    original_asset_path,
-                    common_path,
-                    discard,
-                    relative_asset_path);
-
-                if (m_options & ProjectFileWriter::OmitCopyingAssets)
-                {
-                    // If there is, then keep the relative path of the asset with respect to the old project path
-                    // (e.g. textures\bunny.exr), otherwise keep the original absolute asset path unmodified.
-                    if (!common_path.empty() && !discard.has_parent_path())
-                        params.insert(param_name, convert_to_posix(relative_asset_path.string()));
-                }
-                else
-                {
-                    // If there is, then keep the relative path of the asset with respect to the old project path
-                    // (e.g. textures\bunny.exr), otherwise simply use the file name (e.g. bunny.exr)
-                    const filesystem::path new_asset_path =
-                        common_path.empty() || discard.has_parent_path()
-                            ? original_asset_path.filename()
-                            : relative_asset_path;
-
-                    // Copy the file to the new project location.
-                    copy_file_if_not_exists(
-                        original_asset_path,
-                        m_project_new_root_dir / new_asset_path);
-
-                    params.insert(param_name, convert_to_posix(new_asset_path.string()));
-                }
-            }
-            else
-            {
-                // Find the asset in the search paths, leading to e.g. textures/bunny.exr.
-                const filesystem::path qualified_asset_path = m_project_search_paths.qualify(original_asset_path.string());
-
-                if (m_options & ProjectFileWriter::OmitCopyingAssets)
-                {
-                    // Make the asset path absolute according to the old project path.
-                    const filesystem::path new_asset_path = absolute(qualified_asset_path, m_project_old_root_dir);
-                    params.insert(param_name, new_asset_path.string());
-                }
-                else
-                {
-                    // Copy the file to the new location.
-                    copy_file_if_not_exists(
-                        qualified_asset_path,
-                        m_project_new_root_dir / original_asset_path);
-
-                    // The path in the parameter is left unmodified, e.g. bunny.exr.
-                }
-            }
+                handle_absolute_link_to_asset(params, param_name, original_asset_path);
+            else handle_relative_link_to_asset(params, param_name, original_asset_path);
         }
 
         // Write a vector of scalars.

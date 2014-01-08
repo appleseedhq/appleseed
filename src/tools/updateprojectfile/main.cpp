@@ -99,7 +99,7 @@ int main(int argc, const char* argv[])
         ProjectFileWriter::write(
             project.ref(),
             project->get_path(),
-            ProjectFileWriter::OmitWritingMeshFiles | ProjectFileWriter::OmitCopyingAssets);
+            ProjectFileWriter::OmitWritingMeshFiles | ProjectFileWriter::OmitBringingAssets);
 
     return success ? 0 : 1;
 }
