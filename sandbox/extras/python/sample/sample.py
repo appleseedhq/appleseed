@@ -26,9 +26,9 @@
 # THE SOFTWARE.
 #
 
-import sys
-import signal
 import math
+import signal
+import sys
 import threading
 
 import appleseed as asr
@@ -81,15 +81,15 @@ def build_project():
     objects = asr.MeshObjectReader.read(project.get_search_paths(), "cube", { 'filename' : 'scene.obj' })
 
     # Insert all the objects into the assembly.
-    for obj in objects:
+    for object in objects:
         # Create an instance of this object and insert it into the assembly.
-        instance_name = obj.get_name() + "_inst"
+        instance_name = object.get_name() + "_inst"
         material_names = { "default" : "gray_material", "default2" : "gray_material" }
-        instance = asr.ObjectInstance(instance_name, {}, obj.get_name(), asr.Transformd(asr.Matrix4d.identity()), material_names)
+        instance = asr.ObjectInstance(instance_name, {}, object.get_name(), asr.Transformd(asr.Matrix4d.identity()), material_names)
         assembly.object_instances().insert(instance)
 
         # Insert this object into the scene.
-        assembly.objects().insert(obj)
+        assembly.objects().insert(object)
 
     #------------------------------------------------------------------------
     # Light
@@ -120,9 +120,13 @@ def build_project():
     SkyRadiance = [ 0.75, 0.80, 1.0 ]
     scene.colors().insert(asr.ColorEntity("sky_radiance", { 'color_space' : 'srgb', 'multiplier' : 0.5 }, SkyRadiance))
 
+    # Create an environment EDF called "sky_edf" and insert it into the scene.
     scene.environment_edfs().insert(asr.EnvironmentEDF("constant_environment_edf", "sky_edf", { 'radiance' : 'sky_radiance' }))
+
+    # Create an environment shader called "sky_shader" and insert it into the scene.
     scene.environment_shaders().insert(asr.EnvironmentShader("edf_environment_shader", "sky_shader", { 'environment_edf' : 'sky_edf' }))
 
+    # Create an environment called "sky" and bind it to the scene.
     scene.set_environment(asr.Environment("sky", { "environment_edf" : "sky_edf", "environment_shader" : "sky_shader" }))
 
     #------------------------------------------------------------------------
@@ -146,6 +150,7 @@ def build_project():
     # Frame
     #------------------------------------------------------------------------
 
+    # Create a frame and bind it to the project.
     params = { 'camera' : scene.get_camera().get_name(),
                'resolution' : asr.Vector2i(640, 480),
                'color_space' : 'srgb' }
@@ -160,13 +165,12 @@ class RendererController(asr.IRendererController):
     def __init__(self):
         super(RendererController, self).__init__()
 
-        # catch Control-C
-        signal.signal(signal.SIGINT, lambda signal, frame: self.__signal_handler(signal, frame))
+        # Catch Control-C.
         self.__abort = False
-        self.__count = 0
+        signal.signal(signal.SIGINT, lambda signal, frame: self.__signal_handler(signal, frame))
 
     def __signal_handler(self, signal, frame):
-        print "Ctrl+C, aborting."
+        print("Ctrl+C, aborting.")
         self.__abort = True
 
     # This method is called before rendering begins.
@@ -189,32 +193,30 @@ class RendererController(asr.IRendererController):
     def on_frame_end(self):
         pass
 
+    # This method is called continuously during rendering.
     def on_progress(self):
-        self.__count += 1
-
-        if self.__count == 1000:
-            sys.stdout.write('.')
-            self.__count = 0
-
-        if self.__abort:
-            return asr.IRenderControllerStatus.AbortRendering
-
-        return asr.IRenderControllerStatus.ContinueRendering
+        return asr.IRenderControllerStatus.AbortRendering if self.__abort else asr.IRenderControllerStatus.ContinueRendering
 
 class TileCallback(asr.ITileCallback):
     def __init__(self):
         super(TileCallback, self).__init__()
 
+    # This method is called before a region is rendered.
     def pre_render(self, x, y, width, height):
         pass
 
+    # This method is called after a tile is rendered.
     def post_render_tile(self, frame, tile_x, tile_y):
-        pass
+        sys.stdout.write('.')
 
+    # This method is called after a whole frame is rendered.
     def post_render(self, frame):
         pass
 
 def main():
+    # Create a log target that outputs to stderr, and binds it to the renderer's global logger.
+    # Eventually you will probably want to redirect log messages to your own target. For this
+    # you will need to implement appleseed.ILogTarget.
     log_target = asr.ConsoleLogTarget(sys.stderr)
     asr.global_logger().add_target(log_target)
 
