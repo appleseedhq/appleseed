@@ -212,7 +212,7 @@ class RenderThread(threading.Thread):
     def run(self):
         self.__renderer.render()
 
-RENDER_ON_THREAD = False
+RENDER_ON_THREAD = True
 
 def main():
     # Create a log target that outputs to stderr, and binds it to the renderer's global logger.
@@ -250,7 +250,7 @@ def main():
     # Save the project to disk.
     asr.ProjectFileWriter().write(project, "output/test.appleseed")
 
-    # it is important to 
+    # Remove the log target we added previosly.
     asr.global_logger().remove_target(log_target)
 
 if __name__ == "__main__":
