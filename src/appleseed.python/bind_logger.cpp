@@ -32,16 +32,19 @@
 // appleseed.python headers.
 #include "gil_locks.h"
 
-// appleseed.foundation headers.
-#include "foundation/platform/python.h"
-#include "foundation/utility/log.h"
-
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
+#include "foundation/platform/python.h"
+#include "foundation/utility/log.h"
+
 // Standard headers.
-#include <map>
+#include <cstddef>
 #include <cstdio>
+#include <map>
+#include <string>
 
 namespace bpy = boost::python;
 using namespace foundation;
@@ -49,17 +52,24 @@ using namespace renderer;
 
 namespace detail
 {
-    struct ILogTargetWrap : ILogTarget, bpy::wrapper<ILogTarget>
+    struct ILogTargetWrap
+      : public ILogTarget
+      , public bpy::wrapper<ILogTarget>
     {
         ILogTargetWrap() {}
         ~ILogTargetWrap() {}
+
+        virtual void release() OVERRIDE
+        {
+            delete this;
+        }
 
         virtual void write(
             const LogMessage::Category  category,
             const char*                 file,
             const size_t                line,
             const char*                 header,
-            const char*                 message)
+            const char*                 message) OVERRIDE
         {
             try
             {
@@ -72,11 +82,6 @@ namespace detail
             {
                 PyErr_Print();
             }
-        }
-
-        virtual void release()
-        {
-            delete this;
         }
     };
 
@@ -95,9 +100,8 @@ namespace detail
         logger->set_format(category, format);
     }
 
-    // because the logger does not take ownership of the target objects
-    // itself, we need to manually keep them alive,
-    // so that python does not delete them and cause a crash.
+    // Because the logger does not take ownership of the target objects itself, we need to manually
+    // keep them alive so that Python does not delete them and causes a crash.
     std::map<ILogTargetWrap*, bpy::object> g_targets;
 
     void logger_add_target(Logger* logger, bpy::object target)
@@ -122,16 +126,14 @@ namespace detail
 void bind_logger()
 {
     bpy::class_<detail::ILogTargetWrap, boost::shared_ptr<detail::ILogTargetWrap> ,boost::noncopyable>("ILogTarget")
-        .def("write", bpy::pure_virtual(&ILogTarget::write))
-        ;
+        .def("write", bpy::pure_virtual(&ILogTarget::write));
 
     bpy::enum_<LogMessage::Category>( "LogMessageCategory")
         .value("Info", LogMessage::Info)
         .value("Debug", LogMessage::Debug)
         .value("Warning", LogMessage::Warning)
         .value("Error", LogMessage::Error)
-        .value("Fatal", LogMessage::Fatal)
-        ;
+        .value("Fatal", LogMessage::Fatal);
 
     bpy::class_<Logger, boost::noncopyable>("Logger", bpy::no_init)
         .def("set_enabled", &Logger::set_enabled)
@@ -141,8 +143,7 @@ void bind_logger()
         .def("set_format", detail::logger_set_format)
         .def("get_format", &Logger::get_format)
         .def("add_target", detail::logger_add_target)
-        .def("remove_target", detail::logger_remove_target)
-        ;
+        .def("remove_target", detail::logger_remove_target);
 
     bpy::def("global_logger", &detail::get_global_logger, bpy::return_value_policy<bpy::reference_existing_object>());
 }
