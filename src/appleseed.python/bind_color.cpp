@@ -128,10 +128,10 @@ namespace detail
 void bind_color()
 {
     bpy::enum_<ColorSpace>("ColorSpace")
-        .value("ColorSpaceLinearRGB", ColorSpaceLinearRGB)
-        .value("ColorSpaceSRGB", ColorSpaceSRGB)
-        .value("ColorSpaceCIEXYZ", ColorSpaceCIEXYZ)
-        .value("ColorSpaceSpectral", ColorSpaceSpectral);
+        .value("LinearRGB", ColorSpaceLinearRGB)
+        .value("SRGB", ColorSpaceSRGB)
+        .value("CIEXYZ", ColorSpaceCIEXYZ)
+        .value("Spectral", ColorSpaceSpectral);
 
     bpy::class_<ColorEntity, auto_release_ptr<ColorEntity>, bpy::bases<Entity>, boost::noncopyable>("ColorEntity", bpy::no_init)
         .def("__init__", bpy::make_constructor(detail::create_color_entity))

@@ -51,12 +51,18 @@ using namespace renderer;
 
 namespace detail
 {
-    std::string image_stack_get_name(const ImageStack* img, const size_t index)
+    Tile* copy_tile(const Tile* source)
     {
-        return img->get_name(index);
+        return new Tile(*source);
     }
 
-    void tile_data_to_py_array(const Tile& tile, bpy::object& buffer)
+    Tile* deepcopy_tile(const Tile* source, bpy::dict& memo)
+    {
+        // todo: not sure what to store in memo...
+        return new Tile(*source);
+    }
+
+    void copy_tile_data_to_py_array(const Tile& tile, bpy::object& buffer)
     {
         void* array = 0;
         Py_ssize_t len;
@@ -77,26 +83,33 @@ namespace detail
             tile.get_storage() + tile.get_size(),
             reinterpret_cast<uint8*>(array));
     }
+
+    Image* copy_image(const Image* source)
+    {
+        return new Image(*source);
+    }
+
+    Image* deepcopy_image(const Image* source, bpy::dict& memo)
+    {
+        // todo: not sure what to store in memo...
+        return new Image(*source);
+    }
+
+    std::string image_stack_get_name(const ImageStack* image_stack, const size_t index)
+    {
+        return image_stack->get_name(index);
+    }
 }
 
 void bind_image()
 {
     bpy::enum_<PixelFormat>("PixelFormat")
-        .value("PixelFormatUInt8",  PixelFormatUInt8)
-        .value("PixelFormatUInt16", PixelFormatUInt16)
-        .value("PixelFormatUInt32", PixelFormatUInt32)
-        .value("PixelFormatHalf",   PixelFormatHalf)
-        .value("PixelFormatFloat",  PixelFormatFloat)
-        .value("PixelFormatDouble", PixelFormatDouble);
-
-    bpy::class_<Tile, boost::noncopyable>("Tile", bpy::no_init)
-        .def("get_pixel_format", &Tile::get_pixel_format)
-        .def("get_width", &Tile::get_width)
-        .def("get_height", &Tile::get_height)
-        .def("get_channel_count", &Tile::get_channel_count)
-        .def("get_pixel_count", &Tile::get_pixel_count)
-        .def("get_size", &Tile::get_size)
-        .def("copy_data_to", detail::tile_data_to_py_array);    // todo: maybe this needs a better name
+        .value("UInt8",  PixelFormatUInt8)
+        .value("UInt16", PixelFormatUInt16)
+        .value("UInt32", PixelFormatUInt32)
+        .value("Half",   PixelFormatHalf)
+        .value("Float",  PixelFormatFloat)
+        .value("Double", PixelFormatDouble);
 
     bpy::class_<CanvasProperties, boost::noncopyable>("CanvasProperties", bpy::no_init)
         .def_readonly("canvas_width", &CanvasProperties::m_canvas_width)
@@ -117,9 +130,22 @@ void bind_image()
         .def("get_tile_width", &CanvasProperties::get_tile_width)
         .def("get_tile_height", &CanvasProperties::get_tile_height);
 
-    const Tile& (Image::* image_get_tile)(const size_t, const size_t) const = &Image::tile;
+    bpy::class_<Tile, boost::noncopyable>("Tile", bpy::init<size_t, size_t, size_t, PixelFormat>())
+        .def("__copy__", detail::copy_tile, bpy::return_value_policy<bpy::manage_new_object>())
+        .def("__deepcopy__", detail::deepcopy_tile, bpy::return_value_policy<bpy::manage_new_object>())
+        .def("get_pixel_format", &Tile::get_pixel_format)
+        .def("get_width", &Tile::get_width)
+        .def("get_height", &Tile::get_height)
+        .def("get_channel_count", &Tile::get_channel_count)
+        .def("get_pixel_count", &Tile::get_pixel_count)
+        .def("get_size", &Tile::get_size)
+        .def("copy_data_to", detail::copy_tile_data_to_py_array);   // todo: maybe this needs a better name
+
+    const Tile& (Image::*image_get_tile)(const size_t, const size_t) const = &Image::tile;
 
     bpy::class_<Image, boost::noncopyable>("Image", bpy::no_init)
+        .def("__copy__", detail::copy_image, bpy::return_value_policy<bpy::manage_new_object>())
+        .def("__deepcopy__", detail::copy_image, bpy::return_value_policy<bpy::manage_new_object>())
         .def("properties", &Image::properties, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("tile", image_get_tile, bpy::return_value_policy<bpy::reference_existing_object>());
 
