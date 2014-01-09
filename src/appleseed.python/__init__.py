@@ -26,15 +26,13 @@
 # THE SOFTWARE.
 #
 
-from sys import hexversion as python_hexversion
+from sys import hexversion as appleseed_python_hexversion
 
-if python_hexversion < 0x030000F0:
+if appleseed_python_hexversion < 0x030000F0:
     # Python 2.X
     from _appleseedpython import *
     from logging import *
-    from util import *
 else:
     # Python 3.X
     from ._appleseedpython import *
     from .logging import *
-    from .util import *

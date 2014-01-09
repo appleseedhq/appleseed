@@ -43,7 +43,6 @@
 // Standard headers.
 #include <cstddef>
 #include <cstdio>
-#include <map>
 #include <string>
 
 namespace bpy = boost::python;
@@ -71,11 +70,12 @@ namespace detail
             const char*                 header,
             const char*                 message) OVERRIDE
         {
+            // because this can be called from multiple threads
+            // we need to lock python here.
+            ScopedGILLock lock;
+            
             try
             {
-                // because this can be called from multiple threads
-                // we need to lock python here.
-                ScopedGILLock lock;
                 this->get_override("write")(category, file, line, header, message);
             }
             catch (bpy::error_already_set)
@@ -102,14 +102,13 @@ namespace detail
 
     // Because the logger does not take ownership of the target objects itself, we need to manually
     // keep them alive so that Python does not delete them and causes a crash.
-    std::map<ILogTargetWrap*, bpy::object> g_targets;
+    //std::map<ILogTargetWrap*, bpy::object> g_targets;
 
     void logger_add_target(Logger* logger, bpy::object target)
     {
         ILogTargetWrap* p = bpy::extract<ILogTargetWrap*>(target);
         assert(p);
 
-        g_targets[p] = target;
         logger->add_target(p);
     }
 
@@ -119,7 +118,6 @@ namespace detail
         assert(p);
 
         logger->remove_target(p);
-        g_targets.erase(p);
     }
 }
 

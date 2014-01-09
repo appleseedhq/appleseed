@@ -55,7 +55,7 @@ namespace detail
             m_base_controller.on_rendering_begin();
             
             // Lock Python's global interpreter lock (GIL),
-            // was released in MasterRenderer.render.
+            // it was released in MasterRenderer.render.
             ScopedGILLock lock;
 
             try
@@ -73,7 +73,7 @@ namespace detail
             m_base_controller.on_rendering_success();
             
             // Lock Python's global interpreter lock (GIL),
-            // was released in MasterRenderer.render.
+            // it was released in MasterRenderer.render.
             ScopedGILLock lock;
 
             try
@@ -91,7 +91,7 @@ namespace detail
             m_base_controller.on_rendering_abort();
             
             // Lock Python's global interpreter lock (GIL),
-            // was released in MasterRenderer.render.
+            // it was released in MasterRenderer.render.
             ScopedGILLock lock;
 
             try
@@ -109,7 +109,7 @@ namespace detail
             m_base_controller.on_frame_begin();
             
             // Lock Python's global interpreter lock (GIL),
-            // was released in MasterRenderer.render.
+            // it was released in MasterRenderer.render.
             ScopedGILLock lock;
 
             try
@@ -127,7 +127,7 @@ namespace detail
             m_base_controller.on_frame_end();
             
             // Lock Python's global interpreter lock (GIL),
-            // was released in MasterRenderer.render.
+            // it was released in MasterRenderer.render.
             ScopedGILLock lock;
 
             try
@@ -145,7 +145,7 @@ namespace detail
             m_base_controller.on_progress();
 
             // Lock Python's global interpreter lock (GIL),
-            // was released in MasterRenderer.render.
+            // it was released in MasterRenderer.render.
             ScopedGILLock lock;
 
             try
