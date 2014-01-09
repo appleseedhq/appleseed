@@ -44,7 +44,7 @@ import xml.dom.minidom as xml
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "2.2"
+VERSION = "2.3"
 RENDERS_DIR = "_renders"
 ARCHIVES_DIR = "_archives"
 LOGS_DIR = "_logs"
@@ -267,9 +267,9 @@ class Manager:
         self.uploaded_files = self.gather_uploaded_files()
         self.inprogress_files = self.gather_inprogress_files()
         self.log.info("  found {0} source files in {1}".format(len(self.source_files), self.args.source_directory))
-        self.log.info("  found {0} completed files in {1}".format(len(self.completed_files), self.archives_directory))
-        self.log.info("  found {0} in-progress files in {1}".format(len(self.inprogress_files), self.args.target_directory))
-        self.log.info("  found {0} uploaded files in {1}".format(len(self.uploaded_files), self.args.target_directory))
+        self.log.info("  found {0} completed files (all shots) in {1}".format(len(self.completed_files), self.archives_directory))
+        self.log.info("  found {0} in-progress files (all shots) in {1}".format(len(self.inprogress_files), self.args.target_directory))
+        self.log.info("  found {0} uploaded files (all shots) in {1}".format(len(self.uploaded_files), self.args.target_directory))
 
     def gather_uploaded_files(self):
         return map(os.path.basename, get_files(self.args.target_directory, "*.appleseed"))
