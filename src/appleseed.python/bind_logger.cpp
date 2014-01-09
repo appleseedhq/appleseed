@@ -100,10 +100,6 @@ namespace detail
         logger->set_format(category, format);
     }
 
-    // Because the logger does not take ownership of the target objects itself, we need to manually
-    // keep them alive so that Python does not delete them and causes a crash.
-    //std::map<ILogTargetWrap*, bpy::object> g_targets;
-
     void logger_add_target(Logger* logger, bpy::object target)
     {
         ILogTargetWrap* p = bpy::extract<ILogTargetWrap*>(target);
