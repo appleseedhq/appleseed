@@ -48,7 +48,7 @@ def build_project():
     # of samples, the smoother the image but the longer the rendering time.
     # todo: fix.
     conf = project.configurations()['final']
-    params = {'uniform_pixel_renderer' : {'samples' : 4 }} # Est: Fix!
+    params = {'uniform_pixel_renderer' : {'samples' :  25}}
 
     # Create a scene.
     scene = asr.Scene()
@@ -153,7 +153,7 @@ def build_project():
 
     # Create a frame and bind it to the project.
     params = { 'camera' : scene.get_camera().get_name(),
-               'resolution' : asr.Vector2i(160, 120), # small resolution to keep this sample script fast.
+               'resolution' : asr.Vector2i(640, 480),
                'color_space' : 'srgb' }
     project.set_frame(asr.Frame("beauty", params))
 
