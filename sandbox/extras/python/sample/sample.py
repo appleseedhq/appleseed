@@ -227,11 +227,11 @@ RENDER_ON_THREAD = False
 
 def main():
     # Create a log target that outputs to stderr, and binds it to the renderer's global logger.
-    # Eventually you will want to redirect log messages to your own target. 
+    # Eventually you will want to redirect log messages to your own target.
     # For this you will need to subclass appleseed.ILogTarget.
     log_target = asr.ConsoleLogTarget(sys.stderr)
-    
-    # It is important to keep log_target alive, as the global logger does not 
+
+    # It is important to keep log_target alive, as the global logger does not
     # take ownership of it. In this example, we do that by removing the log target
     # when no longer needed, at the end of this function.
     asr.global_logger().add_target(log_target)
@@ -241,10 +241,10 @@ def main():
 
     # Create the master renderer.
     renderer_controller = RendererController()
-    
+
     # Catch Control-C.
     signal.signal(signal.SIGINT, lambda signal, frame: renderer_controller.abort_rendering())
-    
+
     tile_callback = TileCallback()
     renderer = asr.MasterRenderer(project,
                                   project.configurations()['final'].get_inherited_parameters(),
