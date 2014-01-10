@@ -168,27 +168,29 @@ class RendererController(asr.IRendererController):
         self.__abort = False
 
     def abort_rendering(self):
+        sys.stdout.write("Aborting rendering\n")
+        sys.stdout.flush()
         self.__abort = True
 
     # This method is called before rendering begins.
     def on_rendering_begin(self):
-        print("rendering begin")
+        pass
 
     # This method is called after rendering has succeeded.
     def on_rendering_success(self):
-        print("rendering successful")
+        pass
 
     # This method is called after rendering was aborted.
     def on_rendering_abort(self):
-        print("rendering aborted")
+        pass
 
     # This method is called before rendering a single frame.
     def on_frame_begin(self):
-        print("frame begin")
+        pass
 
     # This method is called after rendering a single frame.
     def on_frame_end(self):
-        print("frame end")
+        pass
 
     # This method is called continuously during rendering.
     def on_progress(self):
@@ -221,10 +223,7 @@ class RenderThread(threading.Thread):
     def run(self):
         self.__renderer.render()
 
-RENDER_ON_THREAD = True
-
-def abort_render(render_controller):
-   render_controller.abort_rendering()
+RENDER_ON_THREAD = False
 
 def main():
     # Create a log target that outputs to stderr, and binds it to the renderer's global logger.
@@ -244,7 +243,7 @@ def main():
     renderer_controller = RendererController()
     
     # Catch Control-C.
-    signal.signal(signal.SIGINT, lambda signal, frame: abort_render(renderer_controller))
+    signal.signal(signal.SIGINT, lambda signal, frame: renderer_controller.abort_rendering())
     
     tile_callback = TileCallback()
     renderer = asr.MasterRenderer(project,
@@ -254,7 +253,7 @@ def main():
 
     # Render the frame.
     if RENDER_ON_THREAD:
-        render_thread = RenderThread(renderer)           
+        render_thread = RenderThread(renderer)
         render_thread.start()
 
         while render_thread.isAlive():
@@ -263,10 +262,10 @@ def main():
         renderer.render()
 
     # Save the frame to disk.
-    #project.get_frame().write_main_image("output/test.png")
+    project.get_frame().write_main_image("output/test.png")
 
     # Save the project to disk.
-    #asr.ProjectFileWriter().write(project, "output/test.appleseed")
+    asr.ProjectFileWriter().write(project, "output/test.appleseed")
 
     # Remove the log target we added previosly.
     asr.global_logger().remove_target(log_target)
