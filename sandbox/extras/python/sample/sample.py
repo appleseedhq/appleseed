@@ -29,6 +29,7 @@
 import math
 import signal
 import sys
+import time
 import threading
 
 import appleseed as asr
@@ -47,7 +48,7 @@ def build_project():
     # of samples, the smoother the image but the longer the rendering time.
     # todo: fix.
     conf = project.configurations()['final']
-    params = { 'uniform_pixel_renderer' : { 'samples' : 25 } }
+    params = {'uniform_pixel_renderer' : {'samples' :  25}}
 
     # Create a scene.
     scene = asr.Scene()
@@ -60,7 +61,7 @@ def build_project():
     #------------------------------------------------------------------------
 
     # Create a color called "gray" and insert it into the assembly.
-    GrayReflectance = [ 0.5, 0.5, 0.5 ]
+    GrayReflectance = [0.5, 0.5, 0.5]
     assembly.colors().insert(asr.ColorEntity("gray", { 'color_space' : 'srgb' }, GrayReflectance))
 
     # Create a BRDF called "diffuse_gray_brdf" and insert it into the assembly.
@@ -96,7 +97,7 @@ def build_project():
     #------------------------------------------------------------------------
 
     # Create a color called "light_radiance" and insert it into the assembly.
-    LightRadiance = [ 1.0, 1.0, 1.0 ]
+    LightRadiance = [1.0, 1.0, 1.0]
     assembly.colors().insert(asr.ColorEntity("light_radiance", { 'color_space' : 'srgb', 'multiplier' : 30.0 }, LightRadiance))
 
     # Create a point light called "light" and insert it into the assembly.
@@ -117,7 +118,7 @@ def build_project():
     #------------------------------------------------------------------------
 
     # Create a color called "sky_radiance" and insert it into the scene.
-    SkyRadiance = [ 0.75, 0.80, 1.0 ]
+    SkyRadiance = [0.75, 0.80, 1.0]
     scene.colors().insert(asr.ColorEntity("sky_radiance", { 'color_space' : 'srgb', 'multiplier' : 0.5 }, SkyRadiance))
 
     # Create an environment EDF called "sky_edf" and insert it into the scene.
@@ -164,13 +165,11 @@ def build_project():
 class RendererController(asr.IRendererController):
     def __init__(self):
         super(RendererController, self).__init__()
-
-        # Catch Control-C.
         self.__abort = False
-        signal.signal(signal.SIGINT, lambda signal, frame: self.__signal_handler(signal, frame))
 
-    def __signal_handler(self, signal, frame):
-        print("Ctrl+C, aborting.")
+    def abort_rendering(self):
+        sys.stdout.write("Aborting rendering\n")
+        sys.stdout.flush()
         self.__abort = True
 
     # This method is called before rendering begins.
@@ -195,7 +194,10 @@ class RendererController(asr.IRendererController):
 
     # This method is called continuously during rendering.
     def on_progress(self):
-        return asr.IRenderControllerStatus.AbortRendering if self.__abort else asr.IRenderControllerStatus.ContinueRendering
+        if self.__abort:
+            return asr.IRenderControllerStatus.AbortRendering
+        else:
+            return asr.IRenderControllerStatus.ContinueRendering
 
 class TileCallback(asr.ITileCallback):
     def __init__(self):
@@ -213,11 +215,25 @@ class TileCallback(asr.ITileCallback):
     def post_render(self, frame):
         pass
 
+class RenderThread(threading.Thread):
+    def __init__(self, renderer):
+        super(RenderThread, self).__init__()
+        self.__renderer = renderer
+
+    def run(self):
+        self.__renderer.render()
+
+RENDER_ON_THREAD = False
+
 def main():
     # Create a log target that outputs to stderr, and binds it to the renderer's global logger.
-    # Eventually you will probably want to redirect log messages to your own target. For this
-    # you will need to implement appleseed.ILogTarget.
+    # Eventually you will want to redirect log messages to your own target. 
+    # For this you will need to subclass appleseed.ILogTarget.
     log_target = asr.ConsoleLogTarget(sys.stderr)
+    
+    # It is important to keep log_target alive, as the global logger does not 
+    # take ownership of it. In this example, we do that by removing the log target
+    # when no longer needed, at the end of this function.
     asr.global_logger().add_target(log_target)
 
     # Build the project.
@@ -225,6 +241,10 @@ def main():
 
     # Create the master renderer.
     renderer_controller = RendererController()
+    
+    # Catch Control-C.
+    signal.signal(signal.SIGINT, lambda signal, frame: renderer_controller.abort_rendering())
+    
     tile_callback = TileCallback()
     renderer = asr.MasterRenderer(project,
                                   project.configurations()['final'].get_inherited_parameters(),
@@ -232,15 +252,23 @@ def main():
                                   tile_callback)
 
     # Render the frame.
-    render_thread = asr.RenderThread(renderer)
-    render_thread.start()
-    render_thread.join()
+    if RENDER_ON_THREAD:
+        render_thread = RenderThread(renderer)
+        render_thread.start()
+
+        while render_thread.isAlive():
+            render_thread.join( 0.5) # seconds
+    else:
+        renderer.render()
 
     # Save the frame to disk.
     project.get_frame().write_main_image("output/test.png")
 
     # Save the project to disk.
     asr.ProjectFileWriter().write(project, "output/test.appleseed")
+
+    # Remove the log target we added previosly.
+    asr.global_logger().remove_target(log_target)
 
 if __name__ == "__main__":
     main()

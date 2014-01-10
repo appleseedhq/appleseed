@@ -107,6 +107,7 @@ set (sources
     dict2dict.h
     gil_locks.h
     gil_locks.cpp
+    logging.py
     module.cpp
     unaligned_matrix44.h
     unaligned_transformd44.h
@@ -180,7 +181,6 @@ target_link_libraries (appleseed.python
 add_copy_target_to_sandbox_py_module_command (appleseed.python)
 add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/appleseed.python/__init__.py)
 add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/appleseed.python/logging.py)
-add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/appleseed.python/util.py)
 
 
 #--------------------------------------------------------------------------------------------------
