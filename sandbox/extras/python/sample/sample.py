@@ -257,7 +257,7 @@ def main():
         render_thread.start()
 
         while render_thread.isAlive():
-            render_thread.join( 0.5) # seconds
+            render_thread.join(0.5) # seconds
     else:
         renderer.render()
 
