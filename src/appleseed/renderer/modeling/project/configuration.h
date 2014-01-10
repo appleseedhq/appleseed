@@ -70,8 +70,8 @@ class DLLSYMBOL Configuration
     ParamArray get_inherited_parameters() const;
 
   private:
-    friend class ConfigurationFactory;
     friend class BaseConfigurationFactory;
+    friend class ConfigurationFactory;
 
     const Configuration* m_base;
 
@@ -102,13 +102,15 @@ class DLLSYMBOL ConfigurationFactory
 class DLLSYMBOL BaseConfigurationFactory
 {
   public:
-    // Create a new "base_final" configuration.
+    // Instantiate the built-in "base_final" configuration.
     static foundation::auto_release_ptr<Configuration> create_base_final();
 
-    // Create a new "base_interactive" configuration.
+    // Instantiate the built-in "base_interactive" configuration.
     static foundation::auto_release_ptr<Configuration> create_base_interactive();
 
     // Return true if the string passed in argument is the name of a base configuration.
+    static bool is_base_final_configuration(const char* name);
+    static bool is_base_interactive_configuration(const char* name);
     static bool is_base_configuration(const char* name);
 };
 

@@ -161,11 +161,21 @@ auto_release_ptr<Configuration> BaseConfigurationFactory::create_base_interactiv
     return configuration;
 }
 
-bool BaseConfigurationFactory::is_base_configuration(const char* name)
+bool BaseConfigurationFactory::is_base_final_configuration(const char* name)
 {
     assert(name);
+    return strcmp(name, "base_final") == 0;
+}
 
-    return strcmp(name, "base_final") == 0 || strcmp(name, "base_interactive") == 0;
+bool BaseConfigurationFactory::is_base_interactive_configuration(const char* name)
+{
+    assert(name);
+    return strcmp(name, "base_interactive") == 0;
+}
+
+bool BaseConfigurationFactory::is_base_configuration(const char* name)
+{
+    return is_base_final_configuration(name) || is_base_interactive_configuration(name);
 }
 
 }   // namespace renderer

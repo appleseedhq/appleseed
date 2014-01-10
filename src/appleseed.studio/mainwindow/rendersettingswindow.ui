@@ -77,19 +77,6 @@
        <property name="sizeConstraint">
         <enum>QLayout::SetFixedSize</enum>
        </property>
-       <item>
-        <spacer name="horizontalspacer">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>470</width>
-           <height>0</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
       </layout>
      </widget>
     </widget>

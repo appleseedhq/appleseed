@@ -40,21 +40,10 @@
 #include <vector>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class FoldablePanelWidget; } }
-namespace appleseed { namespace studio { class IInputWidgetProxy; } }
 namespace appleseed { namespace studio { class ProjectManager; } }
+namespace appleseed { namespace studio { class RenderSettingsPanel; } }
 namespace renderer  { class Configuration; }
 namespace Ui        { class RenderSettingsWindow; }
-class QCheckBox;
-class QComboBox;
-class QDoubleSpinBox;
-class QFormLayout;
-class QHBoxLayout;
-class QGroupBox;
-class QLayout;
-class QRadioButton;
-class QSpinBox;
-class QVBoxLayout;
 
 namespace appleseed {
 namespace studio {
@@ -84,177 +73,33 @@ class RenderSettingsWindow
     void signal_settings_modified() const;
 
   private:
-    typedef std::vector<FoldablePanelWidget*> PanelCollection;
-    typedef std::map<std::string, IInputWidgetProxy*> WidgetProxyCollection;
-    typedef std::map<std::string, std::string> WidgetValueCollection;
-
-    struct DirectLink
-    {
-        std::string     m_widget_key;
-        std::string     m_param_path;
-        std::string     m_default_value;
-    };
-
-    typedef std::vector<DirectLink> DirectLinkCollection;
+    typedef std::vector<RenderSettingsPanel*> PanelCollection;
 
     // Not wrapped in std::auto_ptr<> to avoid pulling in the UI definition code.
-    Ui::RenderSettingsWindow*   m_ui;
+    Ui::RenderSettingsWindow*           m_ui;
 
-    ProjectManager&             m_project_manager;
+    ProjectManager&                     m_project_manager;
+    PanelCollection                     m_panels;
+    QString                             m_current_configuration_name;
+    std::map<std::string, std::string>  m_initial_values;
 
-    PanelCollection             m_panels;
-    WidgetProxyCollection       m_widget_proxies;
-    DirectLinkCollection        m_direct_links;
+    void create_connections();
 
-    QString                     m_current_configuration_name;
-    WidgetValueCollection       m_initial_values;
-
-    QComboBox*                  m_image_plane_sampler_combo;
-    QSpinBox*                   m_image_plane_sampler_passes;
-    QGroupBox*                  m_uniform_image_plane_sampler;
-    QGroupBox*                  m_adaptive_image_plane_sampler;
-    QCheckBox*                  m_uniform_sampler_decorrelate_pixels;
-    QCheckBox*                  m_uniform_sampler_force_aa;
-
-    void create_panels();
+    void create_panels(const renderer::Configuration& config);
+    void create_layout();
     void set_panels_enabled(const bool enabled);
-
-    void create_image_plane_sampling_panel(QLayout* parent);
-    void create_image_plane_sampling_general_settings(QVBoxLayout* parent);
-    void create_image_plane_sampling_sampler_settings(QVBoxLayout* parent);
-    void create_image_plane_sampling_uniform_sampler_settings(QHBoxLayout* parent);
-    void create_image_plane_sampling_adaptive_sampler_settings(QHBoxLayout* parent);
-
-    void create_lighting_panel(QLayout* parent);
-
-    void create_drt_panel(QLayout* parent);
-    void create_drt_advanced_settings(QVBoxLayout* parent);
-    void create_drt_advanced_dl_settings(QVBoxLayout* parent);
-    void create_drt_advanced_ibl_settings(QVBoxLayout* parent);
-
-    void create_pt_panel(QLayout* parent);
-    void create_pt_advanced_settings(QVBoxLayout* parent);
-    void create_pt_advanced_dl_settings(QVBoxLayout* parent);
-    void create_pt_advanced_ibl_settings(QVBoxLayout* parent);
-    void create_pt_advanced_max_ray_intensity_settings(QVBoxLayout* parent);
-
-    void create_sppm_panel(QLayout* parent);
-    void create_sppm_photon_tracing_settings(QVBoxLayout* parent);
-    void create_sppm_radiance_estimation_settings(QVBoxLayout* parent);
-
-    void create_system_panel(QLayout* parent);
-    void create_system_override_rendering_threads_settings(QVBoxLayout* parent);
-    void create_system_override_texture_store_max_size_settings(QVBoxLayout* parent);
-
-    void create_bounce_settings_group(QVBoxLayout* parent, const std::string& prefix);
-    void create_bounce_settings(QFormLayout* parent, const std::string& prefix);
-
-    static QHBoxLayout* create_horizontal_layout();
-    static QVBoxLayout* create_vertical_layout();
-    static QFormLayout* create_form_layout();
-    static QFormLayout* create_form_layout(const QString& label, QWidget* widget);
-    static QWidget* create_horizontal_group(QWidget* widget1, QWidget* widget2 = 0, QWidget* widget3 = 0);
-
-    QSpinBox* create_integer_input(
-        const std::string&              widget_key,
-        const int                       min,
-        const int                       max);
-
-    QSpinBox* create_integer_input(
-        const std::string&              widget_key,
-        const int                       min,
-        const int                       max,
-        const QString&                  label);
-
-    QDoubleSpinBox* create_double_input(
-        const std::string&              widget_key,
-        const double                    min,
-        const double                    max,
-        const int                       decimals,
-        const double                    step);
-
-    QDoubleSpinBox* create_double_input(
-        const std::string&              widget_key,
-        const double                    min,
-        const double                    max,
-        const int                       decimals,
-        const double                    step,
-        const QString&                  label);
-
-    QCheckBox* create_checkbox(
-        const std::string&              widget_key,
-        const QString&                  label);
-
-    QGroupBox* create_checkable_groupbox(
-        const std::string&              widget_key,
-        const QString&                  label);
-
-    QRadioButton* create_radio_button(
-        const std::string&              widget_key,
-        const QString&                  label);
-
-    QComboBox* create_combobox(
-        const std::string&              widget_key);
-
-    void create_direct_links();
-
-    template <typename T>
-    void create_direct_link(
-        const std::string&              widget_key,
-        const std::string&              param_path,
-        const T&                        default_value);
 
     void load_configuration(const QString& name);
     void save_current_configuration();
-
-    void do_load_configuration(const renderer::Configuration& config);
-    void do_save_configuration(renderer::Configuration& config);
     renderer::Configuration& get_configuration(const QString& name) const;
 
-    void load_directly_linked_values(const renderer::Configuration& config);
-    void save_directly_linked_values(renderer::Configuration& config);
-
-    void load_bounce_settings(
-        const renderer::Configuration&  config,
-        const std::string&              widget_key_prefix,
-        const std::string&              param_path_prefix);
-
-    void save_bounce_settings(
-        renderer::Configuration&        config,
-        const std::string&              widget_key_prefix,
-        const std::string&              param_path_prefix);
-
-    template <typename T>
-    void set_widget(
-        const std::string&              widget_key,
-        const T&                        value);
-
-    template <typename T>
-    T get_widget(const std::string& widget_key);
-
-    template <typename T>
-    void set_config(
-        renderer::Configuration&        configuration,
-        const std::string&              param_path,
-        const T&                        value);
-
-    template <typename T>
-    T get_config(
-        const renderer::Configuration&  configuration,
-        const std::string&              param_path,
-        const T&                        default_value);
-
-    WidgetValueCollection get_widget_values() const;
+    std::map<std::string, std::string> get_widget_values() const;
 
   private slots:
     void slot_open_configuration_manager_window();
     void slot_change_active_configuration(const QString& configuration_name);
     void slot_save_configuration_and_close();
     void slot_restore_configuration_and_close();
-
-    void slot_changed_image_plane_sampler(int index);
-    void slot_changed_image_plane_sampler_passes(const int passes);
-    void slot_changed_uniform_sampler_samples(const int samples);
 };
 
 }       // namespace studio
