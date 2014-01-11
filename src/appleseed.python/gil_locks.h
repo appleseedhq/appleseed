@@ -36,9 +36,9 @@
 #include "foundation/core/concepts/noncopyable.h"
 
 // This class locks Python's Global interpreter lock on construction
-// and unlocks it on destructions. A classic lock.
+// and unlocks it on destruction. A classic lock.
 class ScopedGILLock
-  : foundation::NonCopyable
+  : public foundation::NonCopyable
 {
   public:
     ScopedGILLock();
@@ -50,9 +50,9 @@ class ScopedGILLock
 };
 
 // This class unlocks Python's Global interpreter lock on construction
-// and locks it on destructions. An inverted lock -> unlock.
+// and locks it on destruction. An inverted lock -> unlock.
 class ScopedGILUnlock
-  : foundation::NonCopyable
+  : public foundation::NonCopyable
 {
   public:
     ScopedGILUnlock();

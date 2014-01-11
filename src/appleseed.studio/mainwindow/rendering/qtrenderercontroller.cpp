@@ -41,9 +41,9 @@ QtRendererController::QtRendererController()
 {
 }
 
-void QtRendererController::set_status(const Status status)
+void QtRendererController::release()
 {
-    m_status = status;
+    delete this;
 }
 
 void QtRendererController::on_rendering_begin()
@@ -84,6 +84,11 @@ void QtRendererController::on_frame_end()
     DefaultRendererController::on_frame_end();
 
     emit signal_frame_end();
+}
+
+void QtRendererController::set_status(const Status status)
+{
+    m_status = status;
 }
 
 QtRendererController::Status QtRendererController::on_progress()

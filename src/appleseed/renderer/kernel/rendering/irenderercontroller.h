@@ -30,7 +30,7 @@
 #define APPLESEED_RENDERER_KERNEL_RENDERING_IRENDERERCONTROLLER_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
+#include "foundation/core/concepts/iunknown.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -43,12 +43,9 @@ namespace renderer
 //
 
 class DLLSYMBOL IRendererController
-  : public foundation::NonCopyable
+  : public foundation::IUnknown
 {
   public:
-    // Destructor.
-    virtual ~IRendererController() {}
-
     // This method is called before rendering begins.
     virtual void on_rendering_begin() = 0;
 

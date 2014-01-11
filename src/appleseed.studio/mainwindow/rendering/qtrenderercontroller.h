@@ -32,6 +32,9 @@
 // appleseed.renderer headers.
 #include "renderer/api/rendering.h"
 
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
+
 // Qt headers.
 #include <QObject>
 
@@ -48,26 +51,29 @@ class QtRendererController
     // Constructor.
     QtRendererController();
 
+    // Delete this instance.
+    virtual void release() OVERRIDE;
+
+    // This method is called before rendering begins.
+    virtual void on_rendering_begin() OVERRIDE;
+
+    // This method is called after rendering has succeeded.
+    virtual void on_rendering_success() OVERRIDE;
+
+    // This method is called after rendering was aborted.
+    virtual void on_rendering_abort() OVERRIDE;
+
+    // This method is called before rendering a single frame.
+    virtual void on_frame_begin() OVERRIDE;
+
+    // This method is called after rendering a single frame.
+    virtual void on_frame_end() OVERRIDE;
+
     // Set the status that will be returned by on_progress().
     void set_status(const Status status);
 
-    // This method is called before rendering begins.
-    virtual void on_rendering_begin();
-
-    // This method is called after rendering has succeeded.
-    virtual void on_rendering_success();
-
-    // This method is called after rendering was aborted.
-    virtual void on_rendering_abort();
-
-    // This method is called before rendering a single frame.
-    virtual void on_frame_begin();
-
-    // This method is called after rendering a single frame.
-    virtual void on_frame_end();
-
     // This method is called continuously during rendering.
-    virtual Status on_progress();
+    virtual Status on_progress() OVERRIDE;
 
   signals:
     void signal_rendering_begin();

@@ -42,6 +42,11 @@ namespace renderer
 // DefaultRendererController class implementation.
 //
 
+void DefaultRendererController::release()
+{
+    delete this;
+}
+
 void DefaultRendererController::on_rendering_begin()
 {
 }

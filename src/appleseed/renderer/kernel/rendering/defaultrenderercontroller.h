@@ -49,6 +49,9 @@ class DLLSYMBOL DefaultRendererController
   : public IRendererController
 {
   public:
+    // Delete this instance.
+    virtual void release() OVERRIDE;
+
     // This method is called before rendering begins.
     virtual void on_rendering_begin() OVERRIDE;
 

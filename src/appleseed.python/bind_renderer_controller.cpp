@@ -51,6 +51,11 @@ namespace detail
       , public bpy::wrapper<IRendererController>
     {
       public:
+        virtual void release() OVERRIDE
+        {
+            delete this;
+        }
+
         virtual void on_rendering_begin() OVERRIDE
         {
             m_base_controller.on_rendering_begin();

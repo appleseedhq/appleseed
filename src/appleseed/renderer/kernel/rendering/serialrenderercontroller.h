@@ -60,6 +60,8 @@ class SerialRendererController
         IRendererController*    controller,
         ITileCallback*          tile_callback);
 
+    virtual void release() OVERRIDE;
+
     virtual void on_rendering_begin() OVERRIDE;
     virtual void on_rendering_success() OVERRIDE;
     virtual void on_rendering_abort() OVERRIDE;
