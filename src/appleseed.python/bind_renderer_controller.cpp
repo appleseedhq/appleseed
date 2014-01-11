@@ -37,6 +37,7 @@
 #include "renderer/kernel/rendering/irenderercontroller.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 #include "foundation/platform/python.h"
 
 namespace bpy = boost::python;
@@ -50,7 +51,7 @@ namespace detail
       , public bpy::wrapper<IRendererController>
     {
       public:
-        virtual void on_rendering_begin()
+        virtual void on_rendering_begin() OVERRIDE
         {
             m_base_controller.on_rendering_begin();
             
@@ -68,7 +69,7 @@ namespace detail
             }
         }
 
-        virtual void on_rendering_success()
+        virtual void on_rendering_success() OVERRIDE
         {
             m_base_controller.on_rendering_success();
             
@@ -86,7 +87,7 @@ namespace detail
             }
         }
 
-        virtual void on_rendering_abort()
+        virtual void on_rendering_abort() OVERRIDE
         {
             m_base_controller.on_rendering_abort();
             
@@ -104,7 +105,7 @@ namespace detail
             }
         }
 
-        virtual void on_frame_begin()
+        virtual void on_frame_begin() OVERRIDE
         {
             m_base_controller.on_frame_begin();
             
@@ -122,7 +123,7 @@ namespace detail
             }
         }
 
-        virtual void on_frame_end()
+        virtual void on_frame_end() OVERRIDE
         {
             m_base_controller.on_frame_end();
             
@@ -140,7 +141,7 @@ namespace detail
             }
         }
 
-        virtual Status on_progress()
+        virtual Status on_progress() OVERRIDE
         {
             m_base_controller.on_progress();
 
