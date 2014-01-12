@@ -156,6 +156,36 @@
                             </xsd:complexContent>
                         </xsd:complexType>
                     </xsd:element>
+                    <xsd:element name="shader_group">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                                    <xsd:element name="shader" minOccurs="0">
+                                        <xsd:complexType>
+                                            <xsd:complexContent>
+                                                <xsd:extension base="parameterSet">
+                                                    <xsd:attribute name="type" type="xsd:string" use="required"/>
+                                                    <xsd:attribute name="name" type="xsd:string" use="required"/>
+                                                    <xsd:attribute name="layer" type="xsd:string" use="required"/>
+                                                </xsd:extension>
+                                            </xsd:complexContent>
+                                        </xsd:complexType>
+                                    </xsd:element>
+                                </xsd:choice>
+                                <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                                    <xsd:element name="connect_shaders" minOccurs="0">
+                                        <xsd:complexType>
+                                            <xsd:attribute name="src_layer" type="xsd:string" use="required"/>
+                                            <xsd:attribute name="src_param" type="xsd:string" use="required"/>
+                                            <xsd:attribute name="dst_layer" type="xsd:string" use="required"/>
+                                            <xsd:attribute name="dst_param" type="xsd:string" use="required"/>
+                                        </xsd:complexType>
+                                    </xsd:element>
+                                </xsd:choice>
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required"/>
+                        </xsd:complexType>
+                    </xsd:element>                    
                     <xsd:element name="surface_shader">
                         <xsd:complexType>
                             <xsd:complexContent>
