@@ -33,6 +33,9 @@
 // appleseed.studio headers.
 #include "mainwindow/rendering/renderwidget.h"
 
+// appleseed.renderer headers.
+#include "renderer/api/log.h"
+
 // Qt headers.
 #include <QApplication>
 #include <QClipboard>
@@ -63,6 +66,7 @@ bool RenderClipboardHandler::eventFilter(QObject* object, QEvent* event)
         if (key_event->modifiers() == Qt::ControlModifier && key_event->key() == Qt::Key_C)
         {
             QApplication::clipboard()->setImage(m_widget->get_image());
+            RENDERER_LOG_INFO("copied render to the clipboard.");
             return true;
         }
     }
