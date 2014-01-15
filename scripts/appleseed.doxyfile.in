@@ -4,11 +4,10 @@
 # Project related configuration options
 #---------------------------------------------------------------------------
 PROJECT_NAME           = appleseed
-PROJECT_NUMBER         = 1.1.0
-OUTPUT_DIRECTORY       = ../documentation/apireference
+PROJECT_NUMBER         = @APPLESEED_VERSION_MAJOR@.@APPLESEED_VERSION_MINOR@.@APPLESEED_VERSION_PATCH@
+OUTPUT_DIRECTORY       = @PROJECT_SOURCE_DIR@/../sandbox/documentation/apireference
 CREATE_SUBDIRS         = NO
 OUTPUT_LANGUAGE        = English
-USE_WINDOWS_ENCODING   = YES
 BRIEF_MEMBER_DESC      = YES
 REPEAT_BRIEF           = YES
 ABBREVIATE_BRIEF       = "The $name class" \
@@ -44,7 +43,7 @@ SUBGROUPING            = YES
 # Build related configuration options
 #---------------------------------------------------------------------------
 EXTRACT_ALL            = YES
-EXTRACT_PRIVATE        = YES
+EXTRACT_PRIVATE        = NO
 EXTRACT_STATIC         = YES
 EXTRACT_LOCAL_CLASSES  = YES
 EXTRACT_LOCAL_METHODS  = NO
@@ -82,7 +81,7 @@ WARN_LOGFILE           =
 #---------------------------------------------------------------------------
 # configuration options related to the input files
 #---------------------------------------------------------------------------
-INPUT                  = ../src/appleseed
+INPUT                  = @PROJECT_SOURCE_DIR@/appleseed
 FILE_PATTERNS          = *.c \
                          *.cc \
                          *.cxx \
