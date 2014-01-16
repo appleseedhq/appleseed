@@ -130,16 +130,16 @@ namespace
             const GVector3 v1 = transform.point_to_parent(v1_os);
             const GVector3 v2 = transform.point_to_parent(v2_os);
 
+            // Ignore degenerate triangles.
+            if (square_area(v0, v1, v2) == GScalar(0.0))
+                continue;
+
             // Compute the bounding box of the triangle.
             GAABB3 triangle_bbox;
             triangle_bbox.invalidate();
             triangle_bbox.insert(v0);
             triangle_bbox.insert(v1);
             triangle_bbox.insert(v2);
-
-            // Ignore degenerate triangles.
-            if (square_area(v0, v1, v2) == GScalar(0.0))
-                continue;
 
             // Ignore triangles that don't intersect the tree.
             if (!intersect(tree_bbox, v0, v1, v2))
@@ -246,6 +246,14 @@ namespace
             if (!GAABB3::overlap(tree_bbox, triangle_motion_bbox))
                 continue;
 
+            // Compute the bounding box of the triangle for the time value passed in argument.
+            const GAABB3 triangle_midtime_bbox =
+                interpolate<GAABB3>(tri_pose_bboxes.begin(), tri_pose_bboxes.end(), time);
+
+            // Ignore triangles with an empty bounding box.
+            if (triangle_midtime_bbox.rank() < 2)
+                continue;
+
             // Store the triangle key.
             if (triangle_keys)
             {
@@ -281,13 +289,9 @@ namespace
             }
             triangle_vertex_count += (motion_segment_count + 1) * 3;
 
-            // Compute and store the bounding box of the triangle for the time value passed in argument.
+            // Store the bounding box of the triangle for the time value passed in argument.
             if (triangle_bboxes)
-            {
-                const GAABB3 triangle_midtime_bbox =
-                    interpolate<GAABB3>(tri_pose_bboxes.begin(), tri_pose_bboxes.end(), time);
                 triangle_bboxes->push_back(AABBType(triangle_midtime_bbox));
-            }
         }
     }
 
