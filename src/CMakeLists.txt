@@ -462,16 +462,18 @@ endif()
 
 
 #--------------------------------------------------------------------------------------------------
-# Documentation
+# Documentation.
 #--------------------------------------------------------------------------------------------------
 
 find_package (Doxygen)
 
 if (DOXYGEN_FOUND)
-	configure_file (${PROJECT_SOURCE_DIR}/../scripts/appleseed.doxyfile.in ${PROJECT_BINARY_DIR}/appleseed.doxyfile @ONLY)
-        add_custom_target (doc ${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/appleseed.doxyfile
-                          WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-                          COMMENT "Generating documentation with Doxygen" VERBATIM)
+    configure_file (${PROJECT_SOURCE_DIR}/../scripts/appleseed.doxyfile.in ${PROJECT_BINARY_DIR}/appleseed.doxyfile @ONLY)
+    add_custom_target (
+        doc ${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/appleseed.doxyfile
+        WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+        COMMENT "Generating documentation with Doxygen" VERBATIM
+    )
 endif ()
 
 
