@@ -91,8 +91,8 @@
 #include <deque>
 #include <exception>
 
-using namespace foundation;
 using namespace boost;
+using namespace foundation;
 using namespace std;
 
 namespace renderer
@@ -258,7 +258,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     }
 
     // Setup texture / shader search paths. 
-    // In OIIO / OSL, the path priorities are the oposite of Appleseed,
+    // In OIIO / OSL, the path priorities are the oposite of appleseed,
     // so we copy the paths in reverse order.
     std::string search_paths;
     {

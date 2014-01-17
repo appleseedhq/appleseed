@@ -63,22 +63,18 @@ bool RendererServices::texture(OSL::ustring filename,
                                float dtdy, 
                                float *result)
 {
-    bool status =  m_texture_sys.texture(filename, 
-                                         options, 
-                                         s, 
-                                         t,
-                                         dsdx, 
-                                         dtdx, 
-                                         dsdy, 
-                                         dtdy, 
-                                         result);
+    const bool status =  m_texture_sys.texture(filename, 
+                                               options, 
+                                               s, 
+                                               t,
+                                               dsdx, 
+                                               dtdx, 
+                                               dsdy, 
+                                               dtdy, 
+                                               result);
     if (!status)
-    {
-        std::string err = m_texture_sys.geterror();
-        if (err.size())
-            RENDERER_LOG_ERROR(err.c_str());
-    }
-    
+        log_error(m_texture_sys.geterror());
+
     return status;
 }
 
@@ -91,15 +87,11 @@ bool RendererServices::texture3d(OSL::ustring filename,
                                  const OSL::Vec3& dPdz, 
                                  float *result)
 {
-    bool status = m_texture_sys.texture3d(filename, options, P, dPdx, dPdy, dPdz,result);
-    
+    const bool status = m_texture_sys.texture3d(filename, options, P, dPdx, dPdy, dPdz, result);
+
     if (!status)
-    {
-        std::string err = m_texture_sys.geterror();
-        if (err.size())
-            RENDERER_LOG_ERROR(err.c_str());
-    }
-    
+        log_error(m_texture_sys.geterror());
+
     return status;    
 }
 
@@ -111,14 +103,10 @@ bool RendererServices::environment(OSL::ustring filename,
                                    const OSL::Vec3& dRdy, 
                                    float *result)
 {
-    bool status = m_texture_sys.environment(filename, options, R, dRdx, dRdy, result);
-    
+    const bool status = m_texture_sys.environment(filename, options, R, dRdx, dRdy, result);
+
     if (!status)
-    {
-        std::string err = m_texture_sys.geterror();
-        if (err.size())
-            RENDERER_LOG_ERROR(err.c_str());
-    }
+        log_error(m_texture_sys.geterror());
 
     return status;
 }
@@ -129,14 +117,10 @@ bool RendererServices::get_texture_info(OSL::ustring filename,
                                         OSL::TypeDesc datatype,
                                         void *data)
 {
-	bool status = m_texture_sys.get_texture_info(filename, subimage, dataname, datatype, data);
+	const bool status = m_texture_sys.get_texture_info(filename, subimage, dataname, datatype, data);
 
     if (!status)
-    {
-        std::string err = m_texture_sys.geterror();
-        if (err.size())
-            RENDERER_LOG_ERROR(err.c_str());
-    }
+        log_error(m_texture_sys.geterror());
 
     return status;
 }
@@ -202,6 +186,12 @@ bool RendererServices::has_userdata(OIIO::ustring name,
                                     void *renderstate)
 {
     return false;
+}
+
+void RendererServices::log_error(const std::string& err) const
+{
+    if (!err.empty())
+        RENDERER_LOG_ERROR(err.c_str());    
 }
 
 }   // namespace renderer

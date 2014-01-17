@@ -42,7 +42,6 @@
 
 // Forward declarations.
 namespace renderer      { class Project; }
-namespace renderer      { class Camera; }
 
 namespace renderer
 {
@@ -187,6 +186,8 @@ class RendererServices
                               void *renderstate) OVERRIDE;
 
   private:
+    void log_error(const std::string& err) const;
+    
     const Project&          m_project;
     OIIO::TextureSystem&    m_texture_sys;
 };

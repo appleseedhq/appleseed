@@ -29,8 +29,14 @@
 #ifndef APPLESEED_RENDERER_KERNEL_RENDERING_OIIOERRORHANDLER_H
 #define APPLESEED_RENDERER_KERNEL_RENDERING_OIIOERRORHANDLER_H
 
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
+
 // OIIO headers.
 #include "OpenImageIO/errorhandler.h"
+
+// Standard headers.
+#include <string>
 
 namespace renderer
 {
@@ -43,10 +49,8 @@ class OIIOErrorHandler
   : public OIIO::ErrorHandler
 {
   public:
-
-    virtual void operator()(int errcode, const std::string &msg);
+    virtual void operator()(int errcode, const std::string &msg) OVERRIDE;
 };
-
 
 }       // namespace renderer
 
