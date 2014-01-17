@@ -115,8 +115,12 @@ class DLLSYMBOL MasterRenderer
     IRendererController::Status initialize_and_render_frame_sequence() const;
 
     // Render a frame sequence until the sequence is completed or rendering is aborted.
-    IRendererController::Status render_frame_sequence(IFrameRenderer* frame_renderer) const;
-
+    IRendererController::Status render_frame_sequence(IFrameRenderer* frame_renderer
+                                                      #ifdef WITH_OSL
+                                                        , OSL::ShadingSystem& shading_system
+                                                      #endif
+                                                      ) const;
+    
     // Wait until the the frame is completed or rendering is aborted.
     IRendererController::Status wait_for_event(IFrameRenderer* frame_renderer) const;
 

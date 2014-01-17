@@ -645,15 +645,24 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     }
 
     // Execute the main rendering loop.
-    const IRendererController::Status status = render_frame_sequence(frame_renderer.get());
-
+    const IRendererController::Status status = render_frame_sequence(
+                                                   frame_renderer.get()
+                                                   #ifdef WITH_OSL
+                                                       , *shading_system
+                                                   #endif
+                                                   );
+    
     // Print texture store performance statistics.
     RENDERER_LOG_DEBUG("%s", texture_store.get_statistics().to_string().c_str());
 
     return status;
 }
 
-IRendererController::Status MasterRenderer::render_frame_sequence(IFrameRenderer* frame_renderer) const
+IRendererController::Status MasterRenderer::render_frame_sequence(IFrameRenderer* frame_renderer
+                                                                  #ifdef WITH_OSL
+                                                                    , OSL::ShadingSystem& shading_system
+                                                                  #endif                                                                  
+                                                                  ) const
 {
     while (true) 
     {
@@ -665,7 +674,11 @@ IRendererController::Status MasterRenderer::render_frame_sequence(IFrameRenderer
         m_renderer_controller->on_frame_begin();
 
         // Prepare the scene for rendering. Don't proceed if that failed.
-        if (!m_project.get_scene()->on_frame_begin(m_project, m_abort_switch))
+        #ifdef WITH_OSL
+            if (!m_project.get_scene()->on_frame_begin(m_project, &shading_system, m_abort_switch))
+        #else
+            if (!m_project.get_scene()->on_frame_begin(m_project, m_abort_switch))
+        #endif
         {
             m_renderer_controller->on_frame_end();
             return IRendererController::AbortRendering;
@@ -699,8 +712,12 @@ IRendererController::Status MasterRenderer::render_frame_sequence(IFrameRenderer
 
         assert(!frame_renderer->is_rendering());
 
-        m_project.get_scene()->on_frame_end(m_project);
-
+        #ifdef WITH_OSL
+            m_project.get_scene()->on_frame_end(m_project, &shading_system);
+        #else
+            m_project.get_scene()->on_frame_end(m_project);
+        #endif
+        
         m_renderer_controller->on_frame_end();
 
         switch (status)

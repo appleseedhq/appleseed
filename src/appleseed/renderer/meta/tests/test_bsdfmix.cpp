@@ -48,6 +48,11 @@
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/test.h"
 
+// OSL headers
+#ifdef WITH_OSL
+    #include <OSL/oslexec.h>
+#endif
+
 // Standard headers.
 #include <cassert>
 #include <cstddef>
@@ -120,7 +125,7 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
         input_binder.bind(scene);
         assert(input_binder.get_error_count() == 0);
 
-        scene.on_frame_begin(project.ref());
+        scene.on_frame_begin(project.ref(), 0);
 
         TextureStore texture_store(scene);
         TextureCache texture_cache(texture_store);
@@ -146,6 +151,6 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
         // child1_bsdf reflectance.
         EXPECT_EQ(Spectrum(1.0f), get_value<Spectrum>(input_evaluator, 320));
 
-        scene.on_frame_end(project.ref());
+        scene.on_frame_end(project.ref(), 0);
     }
 }
