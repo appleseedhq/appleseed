@@ -72,8 +72,8 @@
 #include "renderer/modeling/scene/scene.h"
 
 #ifdef WITH_OSL
-    #include "renderer/kernel/rendering/oiioerrorhandler.h"
-    #include "renderer/kernel/rendering/rendererservices.h"
+#include "renderer/kernel/rendering/oiioerrorhandler.h"
+#include "renderer/kernel/rendering/rendererservices.h"
 #endif
 
 // appleseed.foundation headers.
@@ -116,9 +116,9 @@ MasterRenderer::MasterRenderer(
   , m_serial_renderer_controller(0)
   , m_serial_tile_callback_factory(0)
 {
-    #ifdef WITH_OSL
-        m_texture_cache_size = 0;
-    #endif
+#ifdef WITH_OSL
+    m_texture_cache_size = 0;
+#endif
 }
 
 MasterRenderer::MasterRenderer(
@@ -338,13 +338,13 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     */
 
     // while debugging, we want all possible output.
-    #ifndef NDEBUG
-        shading_system->attribute("debug", 1);
-        shading_system->attribute("statistics:level", 1);
-        shading_system->attribute("compile_report", 1);
-        shading_system->attribute("countlayerexecs", 1);
-        shading_system->attribute("clearmemory", 1);
-    #endif
+#ifndef NDEBUG
+    shading_system->attribute("debug", 1);
+    shading_system->attribute("statistics:level", 1);
+    shading_system->attribute("compile_report", 1);
+    shading_system->attribute("countlayerexecs", 1);
+    shading_system->attribute("clearmemory", 1);
+#endif
 
     // TODO: register closures here.
 #endif
@@ -647,9 +647,9 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     // Execute the main rendering loop.
     const IRendererController::Status status = render_frame_sequence(
                                                    frame_renderer.get()
-                                                   #ifdef WITH_OSL
-                                                       , *shading_system
-                                                   #endif
+#ifdef WITH_OSL
+                                                 , *shading_system
+#endif
                                                    );
     
     // Print texture store performance statistics.
@@ -659,9 +659,9 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
 }
 
 IRendererController::Status MasterRenderer::render_frame_sequence(IFrameRenderer* frame_renderer
-                                                                  #ifdef WITH_OSL
+#ifdef WITH_OSL
                                                                     , OSL::ShadingSystem& shading_system
-                                                                  #endif                                                                  
+#endif
                                                                   ) const
 {
     while (true) 
@@ -674,11 +674,11 @@ IRendererController::Status MasterRenderer::render_frame_sequence(IFrameRenderer
         m_renderer_controller->on_frame_begin();
 
         // Prepare the scene for rendering. Don't proceed if that failed.
-        #ifdef WITH_OSL
-            if (!m_project.get_scene()->on_frame_begin(m_project, &shading_system, m_abort_switch))
-        #else
-            if (!m_project.get_scene()->on_frame_begin(m_project, m_abort_switch))
-        #endif
+#ifdef WITH_OSL
+        if (!m_project.get_scene()->on_frame_begin(m_project, &shading_system, m_abort_switch))
+#else
+        if (!m_project.get_scene()->on_frame_begin(m_project, m_abort_switch))
+#endif
         {
             m_renderer_controller->on_frame_end();
             return IRendererController::AbortRendering;
@@ -712,12 +712,12 @@ IRendererController::Status MasterRenderer::render_frame_sequence(IFrameRenderer
 
         assert(!frame_renderer->is_rendering());
 
-        #ifdef WITH_OSL
-            m_project.get_scene()->on_frame_end(m_project, &shading_system);
-        #else
-            m_project.get_scene()->on_frame_end(m_project);
-        #endif
-        
+#ifdef WITH_OSL
+        m_project.get_scene()->on_frame_end(m_project, &shading_system);
+#else
+        m_project.get_scene()->on_frame_end(m_project);
+#endif
+
         m_renderer_controller->on_frame_end();
 
         switch (status)

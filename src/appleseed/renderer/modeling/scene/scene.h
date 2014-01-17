@@ -47,7 +47,7 @@
 
 // OSL headers.
 #ifdef WITH_OSL
-    #include <OSL/oslexec.h>
+#include <OSL/oslexec.h>
 #endif
 
 // Forward declarations.
@@ -99,17 +99,17 @@ class DLLSYMBOL Scene
     // Returns true on success, false otherwise.
     bool on_frame_begin(
         const Project&              project,
-        #ifdef WITH_OSL
+#ifdef WITH_OSL
             OSL::ShadingSystem* shading_system,
-        #endif            
+#endif            
         foundation::AbortSwitch*    abort_switch = 0);
 
     // Perform post-frame rendering actions.
     void on_frame_end(
         const Project& project
-        #ifdef WITH_OSL
+#ifdef WITH_OSL
           , OSL::ShadingSystem* shading_system
-        #endif
+#endif
         );
 
   private:
