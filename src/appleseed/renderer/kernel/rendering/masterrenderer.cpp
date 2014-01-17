@@ -167,7 +167,7 @@ bool MasterRenderer::render() const
         return false;
     }
 #ifdef NDEBUG
-    catch (const exception& e)
+    catch (const std::exception& e)
     {
         m_renderer_controller->on_rendering_abort();
         RENDERER_LOG_ERROR("rendering failed (%s).", e.what());

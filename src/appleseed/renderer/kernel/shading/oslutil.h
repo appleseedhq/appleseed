@@ -1,3 +1,4 @@
+
 // This file is part of OpenShadingLanguage.
 // Modified by Esteban Tovagliari, The appleseedhq Organization.
 // Original license follows.

@@ -128,12 +128,7 @@ auto_release_ptr<Configuration> BaseConfigurationFactory::create_base_final()
     ParamArray& parameters = configuration->get_parameters();
 
     parameters.insert("frame_renderer", "generic");
-
     parameters.insert("tile_renderer", "generic");
-    parameters.dictionaries().insert(
-        "generic_tile_renderer",
-        ParamArray()
-            .insert("sampler", "uniform"));
 
     parameters.insert("pixel_renderer", "uniform");
     parameters.dictionaries().insert(
@@ -142,7 +137,6 @@ auto_release_ptr<Configuration> BaseConfigurationFactory::create_base_final()
             .insert("samples", "64"));
 
     parameters.insert("sample_renderer", "generic");
-
     parameters.insert("lighting_engine", "pt");
 
     return configuration;
