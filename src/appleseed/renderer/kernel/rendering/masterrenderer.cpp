@@ -220,8 +220,9 @@ namespace
     }
     
 #ifdef WITH_OSL
-    void destroy_osl_shading_system(OSL::ShadingSystem* s,
-                                    OIIO::TextureSystem* tx)
+    void destroy_osl_shading_system(
+        OSL::ShadingSystem* s,
+        OIIO::TextureSystem* tx)
     {
         string tx_stats = tx->getstats();
         RENDERER_LOG_INFO(tx_stats.c_str());
@@ -251,8 +252,9 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
         error_handler.verbosity(OIIO::ErrorHandler::VERBOSE);
     #endif
     
-    const size_t texture_cache_size = m_params.get_optional<size_t>("texture_cache_size", 
-                                                                    256 * 1024 * 1024);
+    const size_t texture_cache_size = m_params.get_optional<size_t>(
+                                          "texture_cache_size", 
+                                          256 * 1024 * 1024);
 
     // If the texture cache size changes, we have to
     // re-create the texture system.
@@ -265,8 +267,9 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     // Create the OIIO texture system, if needed.
     if( !m_texture_system)
     {
-        m_texture_system.reset(OIIO::TextureSystem::create(false),
-                        bind(&OIIO::TextureSystem::destroy, _1));
+        m_texture_system.reset(
+            OIIO::TextureSystem::create(false),
+            bind(&OIIO::TextureSystem::destroy, _1));
     }
 
     // Set the texture system mem limit.
@@ -304,11 +307,11 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     RendererServices services(m_project, *m_texture_system);
 
     // Create our OSL shading system.
-    shared_ptr<OSL::ShadingSystem> shading_system(OSL::ShadingSystem::create(&services,
-                                                                             m_texture_system.get(),
-                                                                             &error_handler),
-                                                                             bind(&destroy_osl_shading_system, 
-                                                                                  _1, m_texture_system.get()));
+    shared_ptr<OSL::ShadingSystem> shading_system(OSL::ShadingSystem::create(
+        &services,
+        m_texture_system.get(),
+        &error_handler),
+        bind(&destroy_osl_shading_system, _1, m_texture_system.get()));
 
     shading_system->attribute("searchpath:shader", search_paths);
     shading_system->attribute("lockgeom", 1);
@@ -326,10 +329,12 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
         "subsurface"
     };
 
-    shading_system->attribute("raytypes", 
-                              OSL::TypeDesc(OSL::TypeDesc::STRING, 
-                                            sizeof(ray_type_labels)/sizeof(ray_type_labels[0])),
-                              ray_type_labels);
+    shading_system->attribute(
+        "raytypes", 
+        OSL::TypeDesc(
+            OSL::TypeDesc::STRING, 
+            sizeof(ray_type_labels)/sizeof(ray_type_labels[0])),
+        ray_type_labels);
     */
 
     // while debugging, we want all possible output.
