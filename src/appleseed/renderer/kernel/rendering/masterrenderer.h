@@ -103,10 +103,10 @@ class DLLSYMBOL MasterRenderer
     SerialRendererController*       m_serial_renderer_controller;
     ITileCallbackFactory*           m_serial_tile_callback_factory;
 
-    #ifdef WITH_OSL
+#ifdef WITH_OSL
     mutable boost::shared_ptr<OIIO::TextureSystem>  m_texture_system;
     mutable std::size_t                             m_texture_cache_size;
-    #endif
+#endif
 
     // Render frame sequences, each time reinitializing the rendering components.
     void do_render() const;
@@ -115,11 +115,12 @@ class DLLSYMBOL MasterRenderer
     IRendererController::Status initialize_and_render_frame_sequence() const;
 
     // Render a frame sequence until the sequence is completed or rendering is aborted.
-    IRendererController::Status render_frame_sequence(IFrameRenderer* frame_renderer
+    IRendererController::Status render_frame_sequence(
+        IFrameRenderer*             frame_renderer
 #ifdef WITH_OSL
-                                                      , OSL::ShadingSystem& shading_system
+        , OSL::ShadingSystem&       shading_system
 #endif
-                                                      ) const;
+        ) const;
 
     // Wait until the the frame is completed or rendering is aborted.
     IRendererController::Status wait_for_event(IFrameRenderer* frame_renderer) const;

@@ -190,11 +190,11 @@ namespace
 }
 
 bool Scene::on_frame_begin(
-    const Project& project, 
+    const Project&          project, 
 #ifdef WITH_OSL
-    OSL::ShadingSystem* shading_system,
+    OSL::ShadingSystem*     shading_system,
 #endif            
-    AbortSwitch* abort_switch)
+    AbortSwitch*            abort_switch)
 {
     bool success = true;
 
@@ -218,9 +218,9 @@ bool Scene::on_frame_begin(
 }
 
 void Scene::on_frame_end(
-    const Project& project,
+    const Project&          project
 #ifdef WITH_OSL
-    OSL::ShadingSystem* shading_system
+    , OSL::ShadingSystem*   shading_system
 #endif            
     )
 {

@@ -187,12 +187,20 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
           , m_texture_cache(m_texture_store)
           , m_intersector(m_trace_context, m_texture_cache)
         {
+#ifdef WITH_OSL
             Base::m_scene->on_frame_begin(Base::m_project.ref(), 0);
+#else
+            Base::m_scene->on_frame_begin(Base::m_project.ref());
+#endif
         }
 
         ~Fixture()
         {
+#ifdef WITH_OSL
             Base::m_scene->on_frame_end(Base::m_project.ref(), 0);
+#else
+            Base::m_scene->on_frame_end(Base::m_project.ref());
+#endif
         }
     };
 
