@@ -189,7 +189,12 @@ namespace
     }
 }
 
-bool Scene::on_frame_begin(const Project& project, AbortSwitch* abort_switch)
+bool Scene::on_frame_begin(
+    const Project& project, 
+#ifdef WITH_OSL
+    OSL::ShadingSystem* shading_system,
+#endif            
+    AbortSwitch* abort_switch)
 {
     bool success = true;
 
@@ -212,7 +217,12 @@ bool Scene::on_frame_begin(const Project& project, AbortSwitch* abort_switch)
     return success;
 }
 
-void Scene::on_frame_end(const Project& project)
+void Scene::on_frame_end(
+    const Project& project,
+#ifdef WITH_OSL
+    OSL::ShadingSystem* shading_system
+#endif            
+    )
 {
     invoke_on_frame_end(project, assembly_instances());
     invoke_on_frame_end(project, assemblies());

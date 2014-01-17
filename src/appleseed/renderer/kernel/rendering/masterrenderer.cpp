@@ -72,8 +72,8 @@
 #include "renderer/modeling/scene/scene.h"
 
 #ifdef WITH_OSL
-    #include "renderer/kernel/rendering/oiioerrorhandler.h"
-    #include "renderer/kernel/rendering/rendererservices.h"
+#include "renderer/kernel/rendering/oiioerrorhandler.h"
+#include "renderer/kernel/rendering/rendererservices.h"
 #endif
 
 // appleseed.foundation headers.
@@ -116,6 +116,9 @@ MasterRenderer::MasterRenderer(
   , m_serial_renderer_controller(0)
   , m_serial_tile_callback_factory(0)
 {
+#ifdef WITH_OSL
+    m_texture_cache_size = 0;
+#endif
 }
 
 MasterRenderer::MasterRenderer(
@@ -217,12 +220,15 @@ namespace
     }
     
 #ifdef WITH_OSL
-    void destroy_oiio_texture_system(OIIO::TextureSystem* tx)
+    void destroy_osl_shading_system(
+        OSL::ShadingSystem* s,
+        OIIO::TextureSystem* tx)
     {
         string tx_stats = tx->getstats();
         RENDERER_LOG_INFO(tx_stats.c_str());
-        OIIO::TextureSystem::destroy(tx);
-    }
+        tx->reset_stats();
+        OSL::ShadingSystem::destroy(s);
+    }    
 #endif
     
 }
@@ -246,16 +252,28 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
         error_handler.verbosity(OIIO::ErrorHandler::VERBOSE);
     #endif
     
-    // Create the OIIO texture system.
-    shared_ptr<OIIO::TextureSystem> texture_system(
-        OIIO::TextureSystem::create(false),
-        bind(&destroy_oiio_texture_system, _1));
+    const size_t texture_cache_size = m_params.get_optional<size_t>(
+                                          "texture_cache_size", 
+                                          256 * 1024 * 1024);
+
+    // If the texture cache size changes, we have to
+    // re-create the texture system.
+    if ( texture_cache_size != m_texture_cache_size)
+    {
+        m_texture_cache_size = texture_cache_size;
+        m_texture_system.reset();
+    }
+        
+    // Create the OIIO texture system, if needed.
+    if( !m_texture_system)
+    {
+        m_texture_system.reset(
+            OIIO::TextureSystem::create(false),
+            bind(&OIIO::TextureSystem::destroy, _1));
+    }
 
     // Set the texture system mem limit.
-    {
-        const size_t max_size = m_params.get_optional<size_t>("texture_cache_size", 256 * 1024 * 1024);
-        texture_system->attribute("max_memory_MB", static_cast<float>(max_size / 1024));
-    }
+    m_texture_system->attribute("max_memory_MB", static_cast<float>(m_texture_cache_size / 1024));
 
     // Setup texture / shader search paths. 
     // In OIIO / OSL, the path priorities are the oposite of appleseed,
@@ -282,18 +300,18 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
         search_paths.append(root_path.string());
     }
     
-    texture_system->attribute("searchpath", search_paths);
+    m_texture_system->attribute("searchpath", search_paths);
     // TODO: set other texture system options here...
     
     // Create our renderer services.
-    RendererServices services(m_project, *texture_system);
+    RendererServices services(m_project, *m_texture_system);
 
     // Create our OSL shading system.
-    shared_ptr<OSL::ShadingSystem> shading_system(OSL::ShadingSystem::create(&services,
-                                                                             texture_system.get(),
-                                                                             &error_handler),
-                                                                             bind(&OSL::ShadingSystem::destroy, 
-                                                                                  _1));
+    shared_ptr<OSL::ShadingSystem> shading_system(OSL::ShadingSystem::create(
+        &services,
+        m_texture_system.get(),
+        &error_handler),
+        bind(&destroy_osl_shading_system, _1, m_texture_system.get()));
 
     shading_system->attribute("searchpath:shader", search_paths);
     shading_system->attribute("lockgeom", 1);
@@ -311,20 +329,22 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
         "subsurface"
     };
 
-    shading_system->attribute("raytypes", 
-                              OSL::TypeDesc(OSL::TypeDesc::STRING, 
-                                            sizeof(ray_type_labels)/sizeof(ray_type_labels[0])),
-                              ray_type_labels);
+    shading_system->attribute(
+        "raytypes", 
+        OSL::TypeDesc(
+            OSL::TypeDesc::STRING, 
+            sizeof(ray_type_labels)/sizeof(ray_type_labels[0])),
+        ray_type_labels);
     */
 
     // while debugging, we want all possible output.
-    #ifndef NDEBUG
-        shading_system->attribute("debug", 1);
-        shading_system->attribute("statistics:level", 1);
-        shading_system->attribute("compile_report", 1);
-        shading_system->attribute("countlayerexecs", 1);
-        shading_system->attribute("clearmemory", 1);
-    #endif
+#ifndef NDEBUG
+    shading_system->attribute("debug", 1);
+    shading_system->attribute("statistics:level", 1);
+    shading_system->attribute("compile_report", 1);
+    shading_system->attribute("countlayerexecs", 1);
+    shading_system->attribute("clearmemory", 1);
+#endif
 
     // TODO: register closures here.
 #endif
@@ -625,7 +645,13 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     }
 
     // Execute the main rendering loop.
-    const IRendererController::Status status = render_frame_sequence(frame_renderer.get());
+    const IRendererController::Status status = 
+        render_frame_sequence(
+            frame_renderer.get()
+#ifdef WITH_OSL
+            , *shading_system
+#endif
+            );
 
     // Print texture store performance statistics.
     RENDERER_LOG_DEBUG("%s", texture_store.get_statistics().to_string().c_str());
@@ -633,7 +659,11 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     return status;
 }
 
-IRendererController::Status MasterRenderer::render_frame_sequence(IFrameRenderer* frame_renderer) const
+IRendererController::Status MasterRenderer::render_frame_sequence(IFrameRenderer* frame_renderer
+#ifdef WITH_OSL
+                                                                    , OSL::ShadingSystem& shading_system
+#endif
+                                                                  ) const
 {
     while (true) 
     {
@@ -645,7 +675,11 @@ IRendererController::Status MasterRenderer::render_frame_sequence(IFrameRenderer
         m_renderer_controller->on_frame_begin();
 
         // Prepare the scene for rendering. Don't proceed if that failed.
+#ifdef WITH_OSL
+        if (!m_project.get_scene()->on_frame_begin(m_project, &shading_system, m_abort_switch))
+#else
         if (!m_project.get_scene()->on_frame_begin(m_project, m_abort_switch))
+#endif
         {
             m_renderer_controller->on_frame_end();
             return IRendererController::AbortRendering;
@@ -679,7 +713,11 @@ IRendererController::Status MasterRenderer::render_frame_sequence(IFrameRenderer
 
         assert(!frame_renderer->is_rendering());
 
+#ifdef WITH_OSL
+        m_project.get_scene()->on_frame_end(m_project, &shading_system);
+#else
         m_project.get_scene()->on_frame_end(m_project);
+#endif
 
         m_renderer_controller->on_frame_end();
 
