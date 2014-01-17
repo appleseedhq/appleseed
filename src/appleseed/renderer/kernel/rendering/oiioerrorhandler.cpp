@@ -41,24 +41,21 @@ namespace renderer
 
 void OIIOErrorHandler::operator()(int errcode, const std::string& msg)
 {
-    if (errcode & EH_WARNING)
+    switch (errcode)
     {
+      case EH_WARNING:
         RENDERER_LOG_WARNING(msg.c_str());
-    }
-    else if (errcode & EH_ERROR)
-    {
+
+      case EH_ERROR:
         RENDERER_LOG_ERROR(msg.c_str());
-    }
-    else if (errcode & EH_SEVERE)
-    {
+
+      case EH_SEVERE:
         RENDERER_LOG_FATAL(msg.c_str());
-    }
-    else if (errcode & EH_DEBUG)
-    {
+
+      case EH_DEBUG:
         RENDERER_LOG_DEBUG(msg.c_str());
-    }
-    else
-    {
+
+      default:
         RENDERER_LOG_INFO(msg.c_str());
     }
 }

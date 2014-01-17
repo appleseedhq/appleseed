@@ -257,8 +257,9 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
         texture_system->attribute("max_memory_MB", static_cast<float>(max_size / 1024));
     }
 
-    // Setup search paths. In OIIO / OSL, the path priorities is the oposite of Appleseed.
-    // We copy the paths in reverse order, to solve it.
+    // Setup texture / shader search paths. 
+    // In OIIO / OSL, the path priorities are the oposite of Appleseed,
+    // so we copy the paths in reverse order.
     std::string search_paths;
     {
         assert(m_project.get_search_paths().has_root_path());
@@ -299,6 +300,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     shading_system->attribute("colorspace", "Linear");
     shading_system->attribute("commonspace", "world");
 
+    /*
     static const char *ray_type_labels[] =
     {
         "camera",
@@ -313,8 +315,9 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
                               OSL::TypeDesc(OSL::TypeDesc::STRING, 
                                             sizeof(ray_type_labels)/sizeof(ray_type_labels[0])),
                               ray_type_labels);
+    */
 
-    // while debugging, we want all possible output...
+    // while debugging, we want all possible output.
     #ifndef NDEBUG
         shading_system->attribute("debug", 1);
         shading_system->attribute("statistics:level", 1);
@@ -323,7 +326,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
         shading_system->attribute("clearmemory", 1);
     #endif
 
-    // TODO: register closures here...
+    // TODO: register closures here.
 #endif
 
     // We start by binding entities inputs. This must be done before creating/updating the trace context.
