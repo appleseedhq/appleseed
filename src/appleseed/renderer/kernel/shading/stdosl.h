@@ -1,3 +1,4 @@
+
 // This file is part of OpenShadingLanguage.
 // Modified by Esteban Tovagliari, The appleseedhq Organization.
 // Original license follows.
@@ -475,7 +476,7 @@ string concat (string a, string b, string c, string d, string e, string f) {
 // Closures
 
 // TODO: we need to modify the prototypes here, 
-// to match the closures we plan to expose to shader writers
+// to match the closures we plan to expose to shader writers.
 
 closure color diffuse(normal N) BUILTIN;
 closure color translucent(normal N) BUILTIN;
