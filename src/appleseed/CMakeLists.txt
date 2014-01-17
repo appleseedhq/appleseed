@@ -1050,6 +1050,8 @@ set (renderer_kernel_rendering_sources
 )
 if (WITH_OSL)
     list (APPEND renderer_kernel_rendering_sources
+        renderer/kernel/rendering/oiioerrorhandler.cpp
+        renderer/kernel/rendering/oiioerrorhandler.h
         renderer/kernel/rendering/rendererservices.cpp
         renderer/kernel/rendering/rendererservices.h
     )
@@ -1076,6 +1078,12 @@ set (renderer_kernel_shading_sources
     renderer/kernel/shading/shadingresult.cpp
     renderer/kernel/shading/shadingresult.h
 )
+if (WITH_OSL)
+    list (APPEND renderer_kernel_shading_sources
+        renderer/kernel/shading/oslutil.h
+        renderer/kernel/shading/stdosl.h
+    )
+endif ()
 list (APPEND appleseed_sources
     ${renderer_kernel_shading_sources}
 )
@@ -1586,6 +1594,14 @@ set_source_files_properties (${appleseed_schema_files} PROPERTIES
     HEADER_FILE_ONLY TRUE
 )
 
+# Collect all OSL headers
+
+if (WITH_OSL)
+    set (appleseed_osl_headers
+        renderer/kernel/shading/oslutil.h
+        renderer/kernel/shading/stdosl.h
+    )
+endif ()
 
 #--------------------------------------------------------------------------------------------------
 # Target.
@@ -1652,6 +1668,15 @@ foreach (schema_file ${appleseed_schema_files})
         COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/${schema_file} ${PROJECT_SOURCE_DIR}/../sandbox/schemas/
     )
 endforeach ()
+
+# Copy all OSL headers to the sandbox.
+if (WITH_OSL)
+    foreach (osl_header ${appleseed_osl_headers})
+        add_custom_command (TARGET appleseed POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/${osl_header} ${PROJECT_SOURCE_DIR}/../sandbox/shaders/
+        )
+    endforeach ()
+endif ()
 
 
 #--------------------------------------------------------------------------------------------------
