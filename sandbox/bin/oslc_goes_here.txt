@@ -1,0 +1,5 @@
+Put the OSL shader compiler (oslc) here, so that our modified 
+OSL headers can be automatically found.
+
+Unfortunately, oslc looks for headers automatically in ../shaders/ 
+relative to the path oslc is in.
