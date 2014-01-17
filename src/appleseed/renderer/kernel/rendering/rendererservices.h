@@ -37,6 +37,13 @@
 // OSL headers
 #include "OSL/oslexec.h"
 
+// OpenImageIO headers
+#include "OpenImageIO/texture.h"
+
+// Forward declarations.
+namespace renderer      { class Project; }
+namespace renderer      { class Camera; }
+
 namespace renderer
 {
 
@@ -49,11 +56,65 @@ class RendererServices
 {
   public:
     // Constructor
-    RendererServices();
+    RendererServices(const Project& project,
+                     OIIO::TextureSystem& texture_sys);
 
-    // Destructor
-    ~RendererServices();
+    // Filtered 2D texture lookup for a single point.    
+    virtual bool texture(OSL::ustring filename, 
+                         OSL::TextureOpt& options,
+                         OSL::ShaderGlobals* sg,
+                         float s, 
+                         float t, 
+                         float dsdx, 
+                         float dtdx,
+                         float dsdy, 
+                         float dtdy, 
+                         float* result);
+    
+    // Filtered 3D texture lookup for a single point.
+    //
+    // P is the volumetric texture coordinate; dPd{x,y,z} are the
+    // differentials of P in some canonical directions x, y, and z.
+    // The choice of x,y,z are not important to the implementation; it
+    // can be any imposed 3D coordinates, such as pixels in screen
+    // space and depth along the ray, etc.
+    //
+    // Return true if the file is found and could be opened, otherwise
+    // return false.
+    virtual bool texture3d(OSL::ustring filename, 
+                           OSL::TextureOpt& options,
+                           OSL::ShaderGlobals* sg, 
+                           const OSL::Vec3& P,
+                           const OSL::Vec3& dPdx, 
+                           const OSL::Vec3& dPdy,
+                           const OSL::Vec3& dPdz, 
+                           float* result);
 
+    // Filtered environment lookup for a single point.
+    //
+    // R is the directional texture coordinate; dRd[xy] are the
+    // differentials of R in canonical directions x, y.
+    //
+    // Return true if the file is found and could be opened, otherwise
+    // return false.
+    virtual bool environment(OSL::ustring filename, 
+                             OSL::TextureOpt& options,
+                             OSL::ShaderGlobals* sg, 
+                             const OSL::Vec3& R,
+                             const OSL::Vec3& dRdx, 
+                             const OSL::Vec3& dRdy, 
+                             float* result);
+    
+    // Get information about the given texture.  Return true if found
+    // and the data has been put in* data.  Return false if the texture
+    // doesn't exist, doesn't have the requested data, if the data
+    // doesn't match the type requested. or some other failure.
+    virtual bool get_texture_info(OSL::ustring filename,
+                                  int subimage,
+                                  OSL::ustring dataname,
+                                  OSL::TypeDesc datatype,
+                                  void* data);
+    
     // Get the 4x4 matrix that transforms by the specified
     // transformation at the given time.  Return true if ok, false
     // on error.
@@ -124,6 +185,10 @@ class RendererServices
     virtual bool has_userdata(OIIO::ustring name,
                               OIIO::TypeDesc type,
                               void *renderstate) OVERRIDE;
+
+  private:
+    const Project&          m_project;
+    OIIO::TextureSystem&    m_texture_sys;
 };
 
 }       // namespace renderer

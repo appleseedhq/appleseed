@@ -37,9 +37,9 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-#if (WITH_OSL)
-    // appleseed.renderer headers.
-    #include "renderer/kernel/rendering/rendererservices.h"
+// OSL headers.
+#ifdef WITH_OSL
+    #include <OSL/oslexec.h>
 #endif
 
 // Forward declarations.
@@ -112,10 +112,6 @@ class DLLSYMBOL MasterRenderer
 
     // Bind all scene entities inputs. Return true on success, false otherwise.
     bool bind_scene_entities_inputs() const;
-
-    #ifdef WITH_OSL
-        void register_closures(OSL::ShadingSystem& shading_sys) const;
-    #endif
 };
 
 }       // namespace renderer

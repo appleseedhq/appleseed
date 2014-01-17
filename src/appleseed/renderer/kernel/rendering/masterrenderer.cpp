@@ -61,9 +61,6 @@
 #include "renderer/kernel/rendering/itilecallback.h"
 #include "renderer/kernel/rendering/itilerenderer.h"
 #include "renderer/kernel/rendering/permanentshadingresultframebufferfactory.h"
-#ifdef WITH_OSL
-#include "renderer/kernel/rendering/rendererservices.h"
-#endif
 #include "renderer/kernel/rendering/serialrenderercontroller.h"
 #include "renderer/kernel/rendering/serialtilecallback.h"
 #include "renderer/kernel/shading/shadingcontext.h"
@@ -74,18 +71,19 @@
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/scene.h"
 
+#ifdef WITH_OSL
+    #include "renderer/kernel/rendering/oiioerrorhandler.h"
+    #include "renderer/kernel/rendering/rendererservices.h"
+#endif
+
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/thread.h"
 #include "foundation/utility/job/abortswitch.h"
 #include "foundation/utility/searchpaths.h"
 
-// OIIO headers.
-#ifdef WITH_OSL
-#include "OpenImageIO/texture.h"
-#endif
-
 // boost headers.
+#include "boost/filesystem/path.hpp"
 #include "boost/shared_ptr.hpp"
 #include "boost/bind.hpp"
 
@@ -94,6 +92,7 @@
 #include <exception>
 
 using namespace foundation;
+using namespace boost;
 using namespace std;
 
 namespace renderer
@@ -216,6 +215,16 @@ namespace
         if (source.strings().exist(param_name))
             dest.strings().insert(param_name, source.strings().get(param_name));
     }
+    
+#ifdef WITH_OSL
+    void destroy_oiio_texture_system(OIIO::TextureSystem* tx)
+    {
+        string tx_stats = tx->getstats();
+        RENDERER_LOG_INFO(tx_stats.c_str());
+        OIIO::TextureSystem::destroy(tx);
+    }
+#endif
+    
 }
 
 IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence() const
@@ -229,56 +238,92 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
 
 #ifdef WITH_OSL
 
-    // Create our renderer services.
-    RendererServices services;
-
     // Create the error handler
-    // TODO: replace this by an appropiate error handler...
-    OIIO::ErrorHandler error_handler;
+    OIIOErrorHandler error_handler;
 
+    // while debugging, we want all possible output...
+    #ifndef NDEBUG
+        error_handler.verbosity(OIIO::ErrorHandler::VERBOSE);
+    #endif
+    
     // Create the OIIO texture system.
-    boost::shared_ptr<OIIO::TextureSystem> texture_system(
+    shared_ptr<OIIO::TextureSystem> texture_system(
         OIIO::TextureSystem::create(false),
-        boost::bind(&OIIO::TextureSystem::destroy, _1));
+        bind(&destroy_oiio_texture_system, _1));
 
-    // Set texture system mem limit.
+    // Set the texture system mem limit.
     {
         const size_t max_size = m_params.get_optional<size_t>("texture_cache_size", 256 * 1024 * 1024);
         texture_system->attribute("max_memory_MB", static_cast<float>(max_size / 1024));
     }
 
-    std::string osl_search_path;
-    for (size_t i = 0, e = m_project.get_search_paths().size(); i < e; ++i)
+    // Setup search paths. In OIIO / OSL, the path priorities is the oposite of Appleseed.
+    // We copy the paths in reverse order, to solve it.
+    std::string search_paths;
     {
-        osl_search_path.append(m_project.get_search_paths()[i]);
-
-        // Do not append a colon after the last path.
-        if (i != e - 1)
-            osl_search_path.append(";");
+        assert(m_project.get_search_paths().has_root_path());
+        filesystem::path root_path = m_project.get_search_paths().get_root_path();
+        
+        if (!m_project.get_search_paths().empty())
+        {
+            for (size_t i = 0, e = m_project.get_search_paths().size(); i != e; ++i)
+            {
+                filesystem::path p(m_project.get_search_paths()[e - 1 - i]);
+                
+                if (p.is_relative())
+                   p = root_path / p;
+                
+                search_paths.append(p.string());
+                search_paths.append(";");
+            }
+        }
+    
+        search_paths.append(root_path.string());
     }
-
-    // Setup search paths.
-    texture_system->attribute("searchpath", osl_search_path);
-
+    
+    texture_system->attribute("searchpath", search_paths);
     // TODO: set other texture system options here...
+    
+    // Create our renderer services.
+    RendererServices services(m_project, *texture_system);
 
     // Create our OSL shading system.
-    boost::shared_ptr<OSL::ShadingSystem> shading_system(
-        OSL::ShadingSystem::create(
-            &services,
-            texture_system.get(),
-            &error_handler),
-        boost::bind(&OSL::ShadingSystem::destroy, _1));
-    shading_system->attribute("searchpath:shader", osl_search_path);
+    shared_ptr<OSL::ShadingSystem> shading_system(OSL::ShadingSystem::create(&services,
+                                                                             texture_system.get(),
+                                                                             &error_handler),
+                                                                             bind(&OSL::ShadingSystem::destroy, 
+                                                                                  _1));
+
+    shading_system->attribute("searchpath:shader", search_paths);
     shading_system->attribute("lockgeom", 1);
     shading_system->attribute("colorspace", "Linear");
     shading_system->attribute("commonspace", "world");
-    // TODO: set more shading system options here...
-    // string[] raytypes      Array of ray type names
-    // ...
 
-    register_closures(*shading_system);
+    static const char *ray_type_labels[] =
+    {
+        "camera",
+        "light",
+        "transmission",
+        "diffuse",
+        "specular",
+        "subsurface"
+    };
 
+    shading_system->attribute("raytypes", 
+                              OSL::TypeDesc(OSL::TypeDesc::STRING, 
+                                            sizeof(ray_type_labels)/sizeof(ray_type_labels[0])),
+                              ray_type_labels);
+
+    // while debugging, we want all possible output...
+    #ifndef NDEBUG
+        shading_system->attribute("debug", 1);
+        shading_system->attribute("statistics:level", 1);
+        shading_system->attribute("compile_report", 1);
+        shading_system->attribute("countlayerexecs", 1);
+        shading_system->attribute("clearmemory", 1);
+    #endif
+
+    // TODO: register closures here...
 #endif
 
     // We start by binding entities inputs. This must be done before creating/updating the trace context.
@@ -673,14 +718,5 @@ bool MasterRenderer::bind_scene_entities_inputs() const
     input_binder.bind(*m_project.get_scene());
     return input_binder.get_error_count() == 0;
 }
-
-#ifdef WITH_OSL
-
-void MasterRenderer::register_closures(OSL::ShadingSystem& shading_sys) const
-{
-    // OSL TODO: implement this...
-}
-
-#endif
 
 }   // namespace renderer

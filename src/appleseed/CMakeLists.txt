@@ -1050,6 +1050,8 @@ set (renderer_kernel_rendering_sources
 )
 if (WITH_OSL)
     list (APPEND renderer_kernel_rendering_sources
+        renderer/kernel/rendering/oiioerrorhandler.cpp
+        renderer/kernel/rendering/oiioerrorhandler.h
         renderer/kernel/rendering/rendererservices.cpp
         renderer/kernel/rendering/rendererservices.h
     )
