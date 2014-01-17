@@ -241,6 +241,16 @@ endif ()
 
 
 #--------------------------------------------------------------------------------------------------
+# Extract version from git.
+#--------------------------------------------------------------------------------------------------
+
+string (REGEX MATCHALL "[0-9]+" APPLESEED_VERSION_COMPONENTS ${git_tag})
+list (GET APPLESEED_VERSION_COMPONENTS 0 APPLESEED_VERSION_MAJOR)
+list (GET APPLESEED_VERSION_COMPONENTS 1 APPLESEED_VERSION_MINOR)
+list (GET APPLESEED_VERSION_COMPONENTS 2 APPLESEED_VERSION_PATCH)
+
+
+#--------------------------------------------------------------------------------------------------
 # Preprocessor definitions.
 #--------------------------------------------------------------------------------------------------
 
@@ -452,27 +462,43 @@ endif()
 
 
 #--------------------------------------------------------------------------------------------------
+# Documentation.
+#--------------------------------------------------------------------------------------------------
+
+find_package (Doxygen)
+
+if (DOXYGEN_FOUND)
+    configure_file (${PROJECT_SOURCE_DIR}/../scripts/appleseed.doxyfile.in ${PROJECT_BINARY_DIR}/appleseed.doxyfile @ONLY)
+    add_custom_target (
+        doc ${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/appleseed.doxyfile
+        WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+        COMMENT "Generating documentation with Doxygen" VERBATIM
+    )
+endif ()
+
+
+#--------------------------------------------------------------------------------------------------
 # Devkit preparation (for installation).
 #--------------------------------------------------------------------------------------------------
 
-FILE (GLOB_RECURSE DEVKIT_APPLESEED_INCLUDE RELATIVE ${PROJECT_SOURCE_DIR} "appleseed/*.h")
-FILE (GLOB_RECURSE DEVKIT_APPLESEED_SHARED_INCLUDE RELATIVE ${PROJECT_SOURCE_DIR} "appleseed.shared/*.h")
+file (GLOB_RECURSE DEVKIT_APPLESEED_INCLUDE RELATIVE ${PROJECT_SOURCE_DIR} "appleseed/*.h")
+file (GLOB_RECURSE DEVKIT_APPLESEED_SHARED_INCLUDE RELATIVE ${PROJECT_SOURCE_DIR} "appleseed.shared/*.h")
 
 # Archives creation.
-EXECUTE_PROCESS (
+execute_process (
     COMMAND ${CMAKE_COMMAND} -E tar cf ${CMAKE_BINARY_DIR}/appleseed_include.tar ${DEVKIT_APPLESEED_INCLUDE}
     COMMAND ${CMAKE_COMMAND} -E tar cf ${CMAKE_BINARY_DIR}/appleseed_shared_include.tar ${DEVKIT_APPLESEED_SHARED_INCLUDE}
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
 )
 
 # Create devkit staging area.
-EXECUTE_PROCESS (
+execute_process (
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/extras/devkit/include
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/extras/devkit/lib/${CMAKE_BUILD_TYPE}
 )
 
 # Archive extraction in preparation for installation commands.
-EXECUTE_PROCESS (
+execute_process (
     COMMAND ${CMAKE_COMMAND} -E tar xf ${CMAKE_BINARY_DIR}/appleseed_include.tar
     COMMAND ${CMAKE_COMMAND} -E tar xf ${CMAKE_BINARY_DIR}/appleseed_shared_include.tar
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/extras/devkit/include
@@ -547,12 +573,7 @@ install (
 # Packaging.
 #--------------------------------------------------------------------------------------------------
 
-string (REGEX MATCHALL "[0-9]+" APPLESEED_VERSION_COMPONENTS ${git_tag})
-list (GET APPLESEED_VERSION_COMPONENTS 0 APPLESEED_VERSION_MAJOR)
-list (GET APPLESEED_VERSION_COMPONENTS 1 APPLESEED_VERSION_MINOR)
-list (GET APPLESEED_VERSION_COMPONENTS 2 APPLESEED_VERSION_PATCH)
-
-set (CPACK_PACKAGE_VENDOR "JupiterJazzLimited")
+set (CPACK_PACKAGE_VENDOR "appleseedhq")
 set (CPACK_PACKAGE_VERSION_MAJOR ${APPLESEED_VERSION_MAJOR})
 set (CPACK_PACKAGE_VERSION_MINOR ${APPLESEED_VERSION_MINOR})
 set (CPACK_PACKAGE_VERSION_PATCH ${APPLESEED_VERSION_PATCH})

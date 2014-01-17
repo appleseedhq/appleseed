@@ -45,11 +45,11 @@ import xml.dom.minidom as xml
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "2.3"
+VERSION = "2.4"
 RENDERS_DIR = "_renders"
 ARCHIVES_DIR = "_archives"
 LOGS_DIR = "_logs"
-PAUSE_BETWEEN_CHECKS = 30   # in seconds
+PAUSE_BETWEEN_UPDATES = 60   # in seconds
 MB = 1024 * 1024
 
 
@@ -86,6 +86,40 @@ def convert_path_to_local(path):
         return path.replace('/', '\\')
     else:
         return path.replace('\\', '/')
+
+def tail_file(f, window = 20):
+    """
+    Returns the last `window` lines of file `f` as a list.
+    Based on code from http://stackoverflow.com/a/7047765/393756.
+    """
+
+    BUFFER_SIZE = 1024
+
+    f.seek(0, 2)
+    bytes = f.tell()
+
+    size = window + 1
+    block = -1
+    data = []
+
+    while size > 0 and bytes > 0:
+        if bytes > BUFFER_SIZE:
+            # Seek back one whole block of size BUFFER_SIZE.
+            f.seek(block * BUFFER_SIZE, 2)
+            # Read one block.
+            data.insert(0, f.read(BUFFER_SIZE))
+        else:
+            # File too small, start from begining.
+            f.seek(0, 0)
+            # Only read what was not read.
+            data.insert(0, f.read(bytes))
+
+        lines_found = data[0].count('\n')
+        size -= lines_found
+        bytes -= BUFFER_SIZE
+        block -= 1
+
+    return "".join(data).splitlines()[-window:]
 
 def format_message(severity, msg):
     now = datetime.datetime.now()
@@ -290,6 +324,7 @@ class Manager:
         self.log.info("-------------------------------------------------------------------")
         self.print_progress()
         self.print_assignments()
+        self.print_pings()
         self.print_target_directory_size()
         self.log.info("-------------------------------------------------------------------")
 
@@ -313,6 +348,34 @@ class Manager:
                 self.log.info("  {0}: {1}".format(filename, assignments[filename]))
         else:
             self.log.info("no frame assigned.")
+
+    def print_pings(self):
+        owners = set()
+        for filename in self.inprogress_files.keys():
+            for ow in self.inprogress_files[filename]:
+                owners.add(ow)
+        max_owner_length = max([ len(ow) for ow in owners ])
+        if len(owners) > 0:
+            self.log.info("pings:")
+            for owner in owners:
+                ping = self.read_ping(owner)
+                padding = " " * (max_owner_length + 1 - len(owner))
+                self.log.info("  {0}:{1}{2}".format(owner, padding, self.format_ping(ping)))
+        else:
+            self.log.info("no pings.")
+
+    def read_ping(self, owner):
+        TIMESTAMP_LENGTH = 26
+        with open(os.path.join(self.args.target_directory, LOGS_DIR, owner + ".log")) as file:
+            last_line = tail_file(file, 1)[0]
+            return datetime.datetime.strptime(last_line[:TIMESTAMP_LENGTH], "%Y-%m-%d %H:%M:%S.%f")
+
+    def format_ping(self, ping):
+        elapsed = datetime.datetime.now() - ping
+        hours = int(elapsed.seconds / 3600)
+        minutes = int((elapsed.seconds % 3600) / 60)
+        seconds = int(elapsed.seconds % 60)
+        return "{0} h {1} m {2} s ago (at {3})".format(hours, minutes, seconds, ping)
 
     def print_target_directory_size(self):
         size_mb = self.target_directory_size / MB
@@ -470,8 +533,8 @@ def main():
                 lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
                 log.error("".join(line for line in lines))
 
-            log.info_no_log("waiting...")
-            time.sleep(PAUSE_BETWEEN_CHECKS)
+            log.info_no_log("waiting {0} seconds...".format(PAUSE_BETWEEN_UPDATES))
+            time.sleep(PAUSE_BETWEEN_UPDATES)
 
     except KeyboardInterrupt, SystemExit:
         pass

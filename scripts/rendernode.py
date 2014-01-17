@@ -46,7 +46,7 @@ import xml.dom.minidom as xml
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "1.17"
+VERSION = "1.18"
 RENDERS_DIR = "_renders"
 ARCHIVE_DIR = "_archives"
 LOGS_DIR = "_logs"
@@ -262,10 +262,10 @@ class ProcessFailedException(Exception):
     pass
 
 def render_project(args, project_filepath, log):
-    # Rename the project file so others don't try to render it.
-    user_project_filepath = project_filepath + "." + args.user_name
+    # Assign the project file to ourselves.
+    assigned_project_filepath = project_filepath + "." + args.user_name
     try:
-        os.rename(project_filepath, user_project_filepath)
+        os.rename(project_filepath, assigned_project_filepath)
     except:
         # log.warning("failed to acquire {0}.".format(project_filepath))
         return False
@@ -278,8 +278,7 @@ def render_project(args, project_filepath, log):
         project_filename = os.path.split(project_filepath)[1]
         output_filename = os.path.splitext(project_filename)[0] + '.' + args.output_format
         output_filepath = os.path.join(args.directory, RENDERS_DIR, output_filename)
-        command = '"{0}" -o "{1}" "{2}"'.format(args.tool_path, output_filepath,
-                                                user_project_filepath)
+        command = '"{0}" -o "{1}" "{2}"'.format(args.tool_path, output_filepath, assigned_project_filepath)
         if args.args:
             command += ' {0}'.format(" ".join(args.args))
 
@@ -291,28 +290,30 @@ def render_project(args, project_filepath, log):
         if result != 0:
             raise ProcessFailedException()
     except:
-        # Something failed, rename the project file back to its original name.
+        # Rendering failed.
         log.error("failed to render {0}.".format(project_filepath))
-        os.rename(user_project_filepath, project_filepath)
+
+        # Unassign the project file.
+        try:
+            os.rename(assigned_project_filepath, project_filepath)
+        except:
+            pass
+
+        # Propagate the exception.
         raise
 
-    # Create the archive directory if necessary.
-    try:
-        archive_dir = os.path.join(args.directory, ARCHIVE_DIR)
-        safe_mkdir(archive_dir)
-    except:
-        pass
-
-    try:
-        # Rename the file and move it into the archive directory.
-        shutil.move(user_project_filepath, os.path.join(archive_dir, project_filename))
-    except:
-        # For some reason we couldn't rename and move the file, try moving it without renaming it.
-        user_project_filename = os.path.split(user_project_filepath)[1]
-        shutil.move(user_project_filepath, os.path.join(archive_dir, user_project_filename))
-
+    # Rendering succeeded.
     rendering_time = datetime.datetime.now() - start_time
     log.info("successfully rendered {0} in {1}.".format(project_filepath, rendering_time))
+
+    # Move the project file to the archive directory.
+    archive_dir = os.path.join(args.directory, ARCHIVE_DIR)
+    archived_project_filepath = os.path.join(archive_dir, project_filename)
+    try:
+        safe_mkdir(archive_dir)
+        shutil.move(assigned_project_filepath, archived_project_filepath)
+    except:
+        log.error("failed to move {0} to {1}.".format(assigned_project_filepath, archived_project_filepath))
 
     return True
 
