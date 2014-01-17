@@ -80,12 +80,12 @@ bool RendererServices::texture(OSL::ustring filename,
 
 bool RendererServices::texture3d(OSL::ustring filename, 
                                  OSL::TextureOpt& options,
-                                 OSL::ShaderGlobals *sg, 
+                                 OSL::ShaderGlobals* sg, 
                                  const OSL::Vec3& P,
                                  const OSL::Vec3& dPdx, 
                                  const OSL::Vec3& dPdy,
                                  const OSL::Vec3& dPdz, 
-                                 float *result)
+                                 float* result)
 {
     const bool status = m_texture_sys.texture3d(filename, options, P, dPdx, dPdy, dPdz, result);
 
@@ -97,11 +97,11 @@ bool RendererServices::texture3d(OSL::ustring filename,
 
 bool RendererServices::environment(OSL::ustring filename, 
                                    OSL::TextureOpt& options,
-                                   OSL::ShaderGlobals *sg, 
+                                   OSL::ShaderGlobals* sg, 
                                    const OSL::Vec3& R,
                                    const OSL::Vec3& dRdx, 
                                    const OSL::Vec3& dRdy, 
-                                   float *result)
+                                   float* result)
 {
     const bool status = m_texture_sys.environment(filename, options, R, dRdx, dRdy, result);
 
@@ -115,9 +115,9 @@ bool RendererServices::get_texture_info(OSL::ustring filename,
                                         int subimage,
                                         OSL::ustring dataname,
                                         OSL::TypeDesc datatype,
-                                        void *data)
+                                        void* data)
 {
-	const bool status = m_texture_sys.get_texture_info(filename, subimage, dataname, datatype, data);
+    const bool status = m_texture_sys.get_texture_info(filename, subimage, dataname, datatype, data);
 
     if (!status)
         log_error(m_texture_sys.geterror());
@@ -125,49 +125,49 @@ bool RendererServices::get_texture_info(OSL::ustring filename,
     return status;
 }
 
-bool RendererServices::get_matrix(OSL::Matrix44 &result,
+bool RendererServices::get_matrix(OSL::Matrix44& result,
                                   OSL::TransformationPtr xform,
                                   float time)
 {
     return false;
 }
 
-bool RendererServices::get_matrix(OSL::Matrix44 &result,
+bool RendererServices::get_matrix(OSL::Matrix44& result,
                                   OSL::TransformationPtr xform)
 {
     return false;
 }
 
-bool RendererServices::get_matrix(OSL::Matrix44 &result,
+bool RendererServices::get_matrix(OSL::Matrix44& result,
                                   OIIO::ustring from,
                                   float time)
 {
     return false;
 }
 
-bool RendererServices::get_matrix(OSL::Matrix44 &result,
+bool RendererServices::get_matrix(OSL::Matrix44& result,
                                   OIIO::ustring from)
 {
     return false;
 }
 
-bool RendererServices::get_attribute(void *renderstate,
+bool RendererServices::get_attribute(void* renderstate,
                                      bool derivatives,
                                      OIIO::ustring object,
                                      OIIO::TypeDesc type,
                                      OIIO::ustring name,
-                                     void *val)
+                                     void* val)
 {
     return false;
 }
 
-bool RendererServices::get_array_attribute(void *renderstate,
+bool RendererServices::get_array_attribute(void* renderstate,
                                            bool derivatives,
                                            OIIO::ustring object,
                                            OIIO::TypeDesc type,
                                            OIIO::ustring name,
                                            int index,
-                                           void *val)
+                                           void* val)
 {
     return false;
 }
@@ -175,23 +175,23 @@ bool RendererServices::get_array_attribute(void *renderstate,
 bool RendererServices::get_userdata(bool derivatives,
                                     OIIO::ustring name,
                                     OIIO::TypeDesc type,
-                                    void *renderstate,
-                                    void *val)
+                                    void* renderstate,
+                                    void* val)
 {
     return false;
 }
 
 bool RendererServices::has_userdata(OIIO::ustring name,
                                     OIIO::TypeDesc type,
-                                    void *renderstate)
+                                    void* renderstate)
 {
     return false;
 }
 
-void RendererServices::log_error(const std::string& err) const
+void RendererServices::log_error(const std::string& message)
 {
-    if (!err.empty())
-        RENDERER_LOG_ERROR(err.c_str());    
+    if (!message.empty())
+        RENDERER_LOG_ERROR(message.c_str());    
 }
 
 }   // namespace renderer
