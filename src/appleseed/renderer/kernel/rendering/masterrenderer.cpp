@@ -43,7 +43,6 @@
 #include "renderer/kernel/rendering/debug/blanktilerenderer.h"
 #include "renderer/kernel/rendering/debug/debugsamplerenderer.h"
 #include "renderer/kernel/rendering/debug/debugtilerenderer.h"
-#include "renderer/kernel/rendering/debug/ewatesttilerenderer.h"
 #include "renderer/kernel/rendering/final/adaptivepixelrenderer.h"
 #include "renderer/kernel/rendering/final/uniformpixelrenderer.h"
 #include "renderer/kernel/rendering/generic/genericframerenderer.h"
@@ -586,15 +585,6 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
         else if (value == "debug")
         {
             tile_renderer_factory.reset(new DebugTileRendererFactory());
-        }
-        else if (value == "ewatest")
-        {
-            tile_renderer_factory.reset(
-                new EWATestTileRendererFactory(
-                    scene,
-                    trace_context,
-                    texture_store,
-                    m_params.child("ewatest_tile_renderer")));
         }
         else if (!value.empty())
         {

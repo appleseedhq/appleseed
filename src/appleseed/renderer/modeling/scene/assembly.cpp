@@ -38,12 +38,12 @@
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/textureinstance.h"
-#include "renderer/modeling/surfaceshader/surfaceshader.h"
-#include "renderer/utility/bbox.h"
-#include "renderer/utility/paramarray.h"
 #ifdef WITH_OSL
 #include "renderer/modeling/shadergroup/shadergroup.h"
 #endif
+#include "renderer/modeling/surfaceshader/surfaceshader.h"
+#include "renderer/utility/bbox.h"
+#include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/job/abortswitch.h"
@@ -152,10 +152,12 @@ ObjectInstanceContainer& Assembly::object_instances() const
 }
 
 #ifdef WITH_OSL
+
 ShaderGroupContainer& Assembly::shader_groups() const
 {
     return impl->m_shader_groups;
 }
+
 #endif
 
 GAABB3 Assembly::compute_local_bbox() const
@@ -220,6 +222,7 @@ namespace
     }
 
 #ifdef WITH_OSL
+
     template <typename EntityCollection>
     bool invoke_on_frame_begin(
         const Project&          project,
@@ -239,6 +242,7 @@ namespace
 
         return success;
     }
+
 #endif
     
     template <typename EntityCollection>
@@ -263,9 +267,9 @@ namespace
 
 bool Assembly::on_frame_begin(
     const Project&      project,
-    #ifdef WITH_OSL
+#ifdef WITH_OSL
     OSL::ShadingSystem* shading_system,
-    #endif
+#endif
     AbortSwitch*        abort_switch)
 {
     bool success = true;
