@@ -413,7 +413,6 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_poolallocator.cpp
     foundation/meta/tests/test_population.cpp
     foundation/meta/tests/test_preprocessor.cpp
-    foundation/meta/tests/test_privateaccess.cpp
     foundation/meta/tests/test_qmc.cpp
     foundation/meta/tests/test_quaternion.cpp
     foundation/meta/tests/test_ray.cpp
@@ -436,7 +435,6 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_typetraits.cpp
     foundation/meta/tests/test_utility_filter.cpp
     foundation/meta/tests/test_vector.cpp
-    foundation/meta/tests/test_viewport.cpp
     foundation/meta/tests/test_voxelgrid.cpp
 )
 list (APPEND appleseed_sources
@@ -689,7 +687,6 @@ set (foundation_utility_sources
     foundation/utility/poolallocator.h
     foundation/utility/preprocessor.cpp
     foundation/utility/preprocessor.h
-    foundation/utility/privateaccess.h
     foundation/utility/registrar.h
     foundation/utility/searchpaths.cpp
     foundation/utility/searchpaths.h
@@ -722,7 +719,6 @@ source_group ("foundation\\utility" FILES
 
 set (foundation_ui_sources
     foundation/ui/cameracontroller.h
-    foundation/ui/viewport.h
 )
 list (APPEND appleseed_sources
     ${foundation_ui_sources}
@@ -800,20 +796,6 @@ list (APPEND appleseed_sources
 )
 source_group ("renderer\\kernel\\aov" FILES
     ${renderer_kernel_aov_sources}
-)
-
-set (renderer_kernel_atomkraft_sources
-    renderer/kernel/atomkraft/common.h
-    renderer/kernel/atomkraft/ewa.h
-    renderer/kernel/atomkraft/mipmap.h
-    renderer/kernel/atomkraft/textureobject.cpp
-    renderer/kernel/atomkraft/textureobject.h
-)
-list (APPEND appleseed_sources
-    ${renderer_kernel_atomkraft_sources}
-)
-source_group ("renderer\\kernel\\atomkraft" FILES
-    ${renderer_kernel_atomkraft_sources}
 )
 
 set (renderer_kernel_intersection_sources
@@ -941,8 +923,6 @@ set (renderer_kernel_rendering_debug_sources
     renderer/kernel/rendering/debug/debugsamplerenderer.h
     renderer/kernel/rendering/debug/debugtilerenderer.cpp
     renderer/kernel/rendering/debug/debugtilerenderer.h
-    renderer/kernel/rendering/debug/ewatesttilerenderer.cpp
-    renderer/kernel/rendering/debug/ewatesttilerenderer.h
 )
 list (APPEND appleseed_sources
     ${renderer_kernel_rendering_debug_sources}
@@ -1127,9 +1107,7 @@ source_group ("renderer\\kernel\\volume" FILES
 )
 
 set (renderer_meta_benchmarks_sources
-    renderer/meta/benchmarks/benchmark_ewa.cpp
     renderer/meta/benchmarks/benchmark_frame.cpp
-    renderer/meta/benchmarks/benchmark_mipmap.cpp
     renderer/meta/benchmarks/benchmark_transformsequence.cpp
 )
 list (APPEND appleseed_sources
@@ -1145,14 +1123,12 @@ set (renderer_meta_tests_sources
     renderer/meta/tests/test_entitymap.cpp
     renderer/meta/tests/test_entityvector.cpp
     renderer/meta/tests/test_environmentedf.cpp
-    renderer/meta/tests/test_ewa.cpp
     renderer/meta/tests/test_frame.cpp
     renderer/meta/tests/test_imageimportancesampler.cpp
     renderer/meta/tests/test_imagetools.cpp
     renderer/meta/tests/test_inputarray.cpp
     renderer/meta/tests/test_intersector.cpp
     renderer/meta/tests/test_lightsampler.cpp
-    renderer/meta/tests/test_mipmap.cpp
     renderer/meta/tests/test_paramarray.cpp
     renderer/meta/tests/test_pinholecamera.cpp
     renderer/meta/tests/test_pixelsampler.cpp
