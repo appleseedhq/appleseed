@@ -153,7 +153,7 @@ const ParamArray& MasterRenderer::get_parameters() const
     return m_params;
 }
 
-bool MasterRenderer::render() const
+bool MasterRenderer::render()
 {
     try
     {
@@ -182,7 +182,7 @@ bool MasterRenderer::render() const
 #endif
 }
 
-void MasterRenderer::do_render() const
+void MasterRenderer::do_render()
 {
     while (true)
     {
@@ -231,7 +231,7 @@ namespace
 #endif
 }
 
-IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence() const
+IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence()
 {
     assert(m_project.get_scene());
     assert(m_project.get_frame());
@@ -660,7 +660,7 @@ IRendererController::Status MasterRenderer::render_frame_sequence(
 #ifdef WITH_OSL
     , OSL::ShadingSystem&   shading_system
 #endif
-    ) const
+    )
 {
     while (true) 
     {

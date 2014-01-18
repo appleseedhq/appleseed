@@ -90,7 +90,7 @@ class DLLSYMBOL MasterRenderer
     const ParamArray& get_parameters() const;
 
     // Render the project. Return true on success, false otherwise.
-    bool render() const;
+    bool render();
 
   private:
     Project&                        m_project;
@@ -104,15 +104,15 @@ class DLLSYMBOL MasterRenderer
     ITileCallbackFactory*           m_serial_tile_callback_factory;
 
 #ifdef WITH_OSL
-    mutable boost::shared_ptr<OIIO::TextureSystem>  m_texture_system;
-    mutable std::size_t                             m_texture_cache_size;
+    boost::shared_ptr<OIIO::TextureSystem>  m_texture_system;
+    std::size_t                             m_texture_cache_size;
 #endif
 
     // Render frame sequences, each time reinitializing the rendering components.
-    void do_render() const;
+    void do_render();
 
     // Initialize the rendering components and render a frame sequence.
-    IRendererController::Status initialize_and_render_frame_sequence() const;
+    IRendererController::Status initialize_and_render_frame_sequence();
 
     // Render a frame sequence until the sequence is completed or rendering is aborted.
     IRendererController::Status render_frame_sequence(
@@ -120,7 +120,7 @@ class DLLSYMBOL MasterRenderer
 #ifdef WITH_OSL
         , OSL::ShadingSystem&       shading_system
 #endif
-        ) const;
+        );
 
     // Wait until the the frame is completed or rendering is aborted.
     IRendererController::Status wait_for_event(IFrameRenderer* frame_renderer) const;
