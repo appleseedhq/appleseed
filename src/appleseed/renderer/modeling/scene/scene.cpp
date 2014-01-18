@@ -233,7 +233,12 @@ bool Scene::on_frame_begin(
     if (impl->m_environment.get())
         success = success && impl->m_environment->on_frame_begin(project, abort_switch);
 
+#ifdef WITH_OSL
     success = success && invoke_on_frame_begin(project, assemblies(), shading_system, abort_switch);
+#else
+    success = success && invoke_on_frame_begin(project, assemblies(), abort_switch);
+#endif
+
     success = success && invoke_on_frame_begin(project, assembly_instances(), abort_switch);
 
     return success;
