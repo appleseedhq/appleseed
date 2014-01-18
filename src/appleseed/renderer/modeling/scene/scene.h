@@ -105,12 +105,7 @@ class DLLSYMBOL Scene
         foundation::AbortSwitch*    abort_switch = 0);
 
     // Perform post-frame rendering actions.
-    void on_frame_end(
-        const Project&              project
-#ifdef WITH_OSL
-        , OSL::ShadingSystem*       shading_system
-#endif
-        );
+    void on_frame_end(const Project& project);
 
   private:
     friend class SceneFactory;

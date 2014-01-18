@@ -57,6 +57,10 @@ namespace renderer  { class SurfaceShader; }
 namespace renderer  { class Texture; }
 namespace renderer  { class TextureInstance; }
 
+#ifdef WITH_OSL
+namespace renderer  { class ShaderGroup; }
+#endif
+
 namespace renderer
 {
 
@@ -79,6 +83,9 @@ typedef TypedEntityVector<SurfaceShader>        SurfaceShaderContainer;
 typedef TypedEntityVector<Texture>              TextureContainer;
 typedef TypedEntityVector<TextureInstance>      TextureInstanceContainer;
 
+#ifdef WITH_OSL
+typedef TypedEntityVector<ShaderGroup>          ShaderGroupContainer;
+#endif
 
 //
 // Exception thrown when an entity is not found.
