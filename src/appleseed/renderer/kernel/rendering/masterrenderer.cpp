@@ -710,12 +710,7 @@ IRendererController::Status MasterRenderer::render_frame_sequence(
 
         assert(!frame_renderer->is_rendering());
 
-#ifdef WITH_OSL
-        m_project.get_scene()->on_frame_end(m_project, &shading_system);
-#else
         m_project.get_scene()->on_frame_end(m_project);
-#endif
-
         m_renderer_controller->on_frame_end();
 
         switch (status)

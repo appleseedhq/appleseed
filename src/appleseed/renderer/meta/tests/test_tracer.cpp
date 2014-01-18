@@ -196,11 +196,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 
         ~Fixture()
         {
-#ifdef WITH_OSL
-            Base::m_scene->on_frame_end(Base::m_project.ref(), 0);
-#else
             Base::m_scene->on_frame_end(Base::m_project.ref());
-#endif
         }
     };
 
