@@ -41,6 +41,9 @@
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/utility/bbox.h"
 #include "renderer/utility/paramarray.h"
+#ifdef WITH_OSL
+#include "renderer/modeling/shadergroup/shadergroup.h"
+#endif
 
 // appleseed.foundation headers.
 #include "foundation/utility/job/abortswitch.h"
@@ -67,6 +70,10 @@ struct Assembly::Impl
     ObjectContainer             m_objects;
     ObjectInstanceContainer     m_object_instances;
 
+#ifdef WITH_OSL
+    ShaderGroupContainer        m_shader_groups;
+#endif
+    
     explicit Impl(Entity* parent)
       : m_bsdfs(parent)
       , m_edfs(parent)
@@ -75,6 +82,9 @@ struct Assembly::Impl
       , m_lights(parent)
       , m_objects(parent)
       , m_object_instances(parent)
+      #ifdef WITH_OSL
+      , m_shader_groups(parent)
+      #endif
     {
     }
 };
@@ -141,6 +151,13 @@ ObjectInstanceContainer& Assembly::object_instances() const
     return impl->m_object_instances;
 }
 
+#ifdef WITH_OSL
+ShaderGroupContainer& Assembly::shader_groups() const
+{
+    return impl->m_shader_groups;
+}
+#endif
+
 GAABB3 Assembly::compute_local_bbox() const
 {
     GAABB3 bbox = compute_non_hierarchical_local_bbox();
@@ -202,6 +219,28 @@ namespace
         return success;
     }
 
+#ifdef WITH_OSL
+    template <typename EntityCollection>
+    bool invoke_on_frame_begin(
+        const Project&          project,
+        EntityCollection&       entities,
+        OSL::ShadingSystem*     shading_system,
+        AbortSwitch*            abort_switch)
+    {
+        bool success = true;
+
+        for (each<EntityCollection> i = entities; i; ++i)
+        {
+            if (is_aborted(abort_switch))
+                break;
+
+            success = success && i->on_frame_begin(project, shading_system, abort_switch);
+        }
+
+        return success;
+    }
+#endif
+    
     template <typename EntityCollection>
     void invoke_on_frame_end(
         const Project&          project,
@@ -224,6 +263,9 @@ namespace
 
 bool Assembly::on_frame_begin(
     const Project&      project,
+    #ifdef WITH_OSL
+    OSL::ShadingSystem* shading_system,
+    #endif
     AbortSwitch*        abort_switch)
 {
     bool success = true;
@@ -232,9 +274,20 @@ bool Assembly::on_frame_begin(
     success = success && invoke_on_frame_begin(project, *this, surface_shaders(), abort_switch);
     success = success && invoke_on_frame_begin(project, *this, bsdfs(), abort_switch);
     success = success && invoke_on_frame_begin(project, *this, edfs(), abort_switch);
+    
+#ifdef WITH_OSL
+    //success = invoke_on_frame_begin(project, *this, shading_system, shader_groups());
+#endif
+    
     success = success && invoke_on_frame_begin(project, *this, materials(), abort_switch);
     success = success && invoke_on_frame_begin(project, *this, lights(), abort_switch);
+
+#ifdef WITH_OSL
+    success = success && invoke_on_frame_begin(project, assemblies(), shading_system, abort_switch);
+#else
     success = success && invoke_on_frame_begin(project, assemblies(), abort_switch);
+#endif
+    
     success = success && invoke_on_frame_begin(project, assembly_instances(), abort_switch);
 
     return success;
