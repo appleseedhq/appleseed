@@ -45,7 +45,7 @@ import xml.dom.minidom as xml
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "2.4"
+VERSION = "2.5"
 RENDERS_DIR = "_renders"
 ARCHIVES_DIR = "_archives"
 LOGS_DIR = "_logs"
@@ -352,13 +352,13 @@ class Manager:
     def print_pings(self):
         owners = set()
         for filename in self.inprogress_files.keys():
-            for ow in self.inprogress_files[filename]:
-                owners.add(ow)
-        max_owner_length = max([ len(ow) for ow in owners ])
-        if len(owners) > 0:
+            for owner in self.inprogress_files[filename]:
+                owners.add(owner)
+        max_owner_length = max([ len(owner) for owner in owners ])
+        pings = sorted([ (owner, self.read_ping(owner)) for owner in owners ], key=lambda x: x[1])
+        if len(pings) > 0:
             self.log.info("pings:")
-            for owner in owners:
-                ping = self.read_ping(owner)
+            for (owner, ping) in pings:
                 padding = " " * (max_owner_length + 1 - len(owner))
                 self.log.info("  {0}:{1}{2}".format(owner, padding, self.format_ping(ping)))
         else:
