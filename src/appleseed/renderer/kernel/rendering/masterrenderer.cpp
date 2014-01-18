@@ -271,11 +271,15 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     // Set the texture system mem limit.
     m_texture_system->attribute("max_memory_MB", static_cast<float>(m_texture_cache_size / 1024));
 
-    // Setup texture / shader search paths.
-    // In OIIO / OSL, the path priorities are the opposite of appleseed, so we copy the paths in reverse order.
     std::string search_paths;
+
+    // Skip search paths for builtin projects.
+    if (m_project.get_search_paths().has_root_path())
     {
-        assert(m_project.get_search_paths().has_root_path());
+        // Setup texture / shader search paths.
+        // In OIIO / OSL, the path priorities are the opposite of appleseed, 
+        // so we copy the paths in reverse order.
+        
         filesystem::path root_path = m_project.get_search_paths().get_root_path();
 
         if (!m_project.get_search_paths().empty())
@@ -295,7 +299,9 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
         search_paths.append(root_path.string());
     }
 
-    m_texture_system->attribute("searchpath", search_paths);
+    if (!search_paths.empty())
+        m_texture_system->attribute("searchpath", search_paths);
+    
     // TODO: set other texture system options here.
 
     // Create our renderer services.
@@ -308,7 +314,10 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
             m_texture_system.get(),
             &error_handler),
             bind(&destroy_osl_shading_system, _1, m_texture_system.get()));
-    shading_system->attribute("searchpath:shader", search_paths);
+
+    if (!search_paths.empty())
+        shading_system->attribute("searchpath:shader", search_paths);
+
     shading_system->attribute("lockgeom", 1);
     shading_system->attribute("colorspace", "Linear");
     shading_system->attribute("commonspace", "world");
