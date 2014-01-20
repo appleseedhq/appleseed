@@ -45,7 +45,7 @@ namespace renderer
 enum ClosureID
 {
     LambertID,
-    NumClosuresID
+    NumClosureIDs
 };
 
 // Register appleseed's closures.
