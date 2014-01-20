@@ -45,7 +45,7 @@ import xml.dom.minidom as xml
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "2.5"
+VERSION = "2.7"
 RENDERS_DIR = "_renders"
 ARCHIVES_DIR = "_archives"
 LOGS_DIR = "_logs"
@@ -354,9 +354,9 @@ class Manager:
         for filename in self.inprogress_files.keys():
             for owner in self.inprogress_files[filename]:
                 owners.add(owner)
-        max_owner_length = max([ len(owner) for owner in owners ])
         pings = sorted([ (owner, self.read_ping(owner)) for owner in owners ], key=lambda x: x[1])
         if len(pings) > 0:
+            max_owner_length = max([ len(owner) for owner in owners ])
             self.log.info("pings:")
             for (owner, ping) in pings:
                 padding = " " * (max_owner_length + 1 - len(owner))
@@ -372,10 +372,7 @@ class Manager:
 
     def format_ping(self, ping):
         elapsed = datetime.datetime.now() - ping
-        hours = int(elapsed.seconds / 3600)
-        minutes = int((elapsed.seconds % 3600) / 60)
-        seconds = int(elapsed.seconds % 60)
-        return "{0} h {1} m {2} s ago (at {3})".format(hours, minutes, seconds, ping)
+        return "{0} ago (at {1})".format(elapsed, ping)
 
     def print_target_directory_size(self):
         size_mb = self.target_directory_size / MB
