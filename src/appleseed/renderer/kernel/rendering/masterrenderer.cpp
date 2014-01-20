@@ -73,6 +73,7 @@
 #ifdef WITH_OSL
 #include "renderer/kernel/rendering/oiioerrorhandler.h"
 #include "renderer/kernel/rendering/rendererservices.h"
+#include "renderer/kernel/shading/closures.h"
 #endif
 
 // appleseed.foundation headers.
@@ -349,7 +350,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     shading_system->attribute("clearmemory", 1);
 #endif
 
-    // TODO: register closures here.
+    register_closures(*shading_system);
 
 #endif
 

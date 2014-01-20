@@ -1060,6 +1060,8 @@ set (renderer_kernel_shading_sources
 )
 if (WITH_OSL)
     list (APPEND renderer_kernel_shading_sources
+        renderer/kernel/shading/closures.h
+        renderer/kernel/shading/closures.cpp
         renderer/kernel/shading/oslutil.h
         renderer/kernel/shading/stdosl.h
     )
