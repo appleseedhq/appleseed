@@ -34,7 +34,6 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
-#include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/input/uniforminputevaluator.h"
 
@@ -75,7 +74,6 @@ namespace
             const char*         name,
             const ParamArray&   params)
           : BSDF(name, Reflective, Diffuse, params)
-          , m_uniform_reflectance(false)
         {
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
@@ -89,30 +87,6 @@ namespace
         virtual const char* get_model() const OVERRIDE
         {
             return Model;
-        }
-
-        virtual bool on_frame_begin(
-            const Project&      project,
-            const Assembly&     assembly,
-            AbortSwitch*        abort_switch) OVERRIDE
-        {
-            if (!BSDF::on_frame_begin(project, assembly, abort_switch))
-                return false;
-
-            if (m_inputs.source("reflectance")->is_uniform() &&
-                m_inputs.source("reflectance_multiplier")->is_uniform())
-            {
-                m_uniform_reflectance = true;
-
-                UniformInputEvaluator input_evaluator;
-                const InputValues* values =
-                    static_cast<const InputValues*>(input_evaluator.evaluate(m_inputs));
-
-                m_brdf_value = values->m_reflectance;
-                m_brdf_value *= static_cast<float>(values->m_reflectance_multiplier * RcpPi);
-            }
-
-            return true;
         }
 
         FORCE_INLINE virtual Mode sample(
@@ -134,17 +108,10 @@ namespace
 
             // Transform the incoming direction to parent space.
             incoming = shading_basis.transform_to_parent(wi);
-
-            // Compute the BRDF value.
-            if (m_uniform_reflectance)
-                value = m_brdf_value;
-            else
-            {
-                const InputValues* values = static_cast<const InputValues*>(data);
-                value = values->m_reflectance;
-                value *= static_cast<float>(values->m_reflectance_multiplier * RcpPi);
-            }
-
+            const InputValues* values = static_cast<const InputValues*>(data);
+            value = values->m_reflectance;
+            value *= static_cast<float>(values->m_reflectance_multiplier * RcpPi);
+            
             // Compute the probability density of the sampled direction.
             probability = wi.y * RcpPi;
             assert(probability > 0.0);
@@ -173,16 +140,10 @@ namespace
             if (cos_in < 0.0)
                 return 0.0;
 
-            // Compute the BRDF value.
-            if (m_uniform_reflectance)
-                value = m_brdf_value;
-            else
-            {
-                const InputValues* values = static_cast<const InputValues*>(data);
-                value = values->m_reflectance;
-                value *= static_cast<float>(values->m_reflectance_multiplier * RcpPi);
-            }
-
+            const InputValues* values = static_cast<const InputValues*>(data);
+            value = values->m_reflectance;
+            value *= static_cast<float>(values->m_reflectance_multiplier * RcpPi);
+            
             // Return the probability density of the sampled direction.
             return cos_in * RcpPi;
         }
@@ -208,15 +169,7 @@ namespace
         }
 
       private:
-        DECLARE_INPUT_VALUES(InputValues)
-        {
-            Spectrum    m_reflectance;              // diffuse reflectance (albedo, technically)
-            Alpha       m_reflectance_alpha;        // unused
-            double      m_reflectance_multiplier;
-        };
-
-        bool            m_uniform_reflectance;
-        Spectrum        m_brdf_value;               // precomputed value of the BRDF (albedo/Pi)
+        typedef LambertianBRDFInputValues InputValues;
     };
 
     typedef BSDFWrapper<LambertianBRDFImpl> LambertianBRDF;
