@@ -26,13 +26,10 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_SHADING_CLOSURES_H
-#define APPLESEED_RENDERER_SHADING_CLOSURES_H
+#ifndef APPLESEED_RENDERER_KERNEL_SHADING_CLOSURES_H
+#define APPLESEED_RENDERER_KERNEL_SHADING_CLOSURES_H
 
-// appleseed.renderer headers.
-#include "renderer/modeling/bsdf/lambertianbrdf.h"
-
-// OSL headers
+// OSL headers.
 #include "OSL/oslexec.h"
 
 namespace renderer
@@ -53,4 +50,4 @@ void register_closures(OSL::ShadingSystem& shading_system);
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_KERNEL_CLOSURES_H
+#endif  // !APPLESEED_RENDERER_KERNEL_SHADING_CLOSURES_H

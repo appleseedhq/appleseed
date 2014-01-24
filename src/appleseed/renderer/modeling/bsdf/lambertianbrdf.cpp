@@ -31,11 +31,8 @@
 #include "lambertianbrdf.h"
 
 // appleseed.renderer headers.
-#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
-#include "renderer/modeling/input/source.h"
-#include "renderer/modeling/input/uniforminputevaluator.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
@@ -108,6 +105,8 @@ namespace
 
             // Transform the incoming direction to parent space.
             incoming = shading_basis.transform_to_parent(wi);
+
+            // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
             value = values->m_reflectance;
             value *= static_cast<float>(values->m_reflectance_multiplier * RcpPi);
@@ -140,10 +139,11 @@ namespace
             if (cos_in < 0.0)
                 return 0.0;
 
+            // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
             value = values->m_reflectance;
             value *= static_cast<float>(values->m_reflectance_multiplier * RcpPi);
-            
+
             // Return the probability density of the sampled direction.
             return cos_in * RcpPi;
         }

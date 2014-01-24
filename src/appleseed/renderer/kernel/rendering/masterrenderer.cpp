@@ -280,7 +280,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
         // In OIIO / OSL, the path priorities are the opposite of appleseed, 
         // so we copy the paths in reverse order.
         
-        filesystem::path root_path = m_project.get_search_paths().get_root_path();
+        const filesystem::path root_path = m_project.get_search_paths().get_root_path();
 
         if (!m_project.get_search_paths().empty())
         {

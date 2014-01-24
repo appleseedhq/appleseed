@@ -29,77 +29,65 @@
 // Interface header.
 #include "closures.h"
 
-// appleseed.renderer headers
-#include "renderer/global/globaltypes.h"
+// appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 
-// appleseed.foundation headers.
-#include "foundation/math/scalar.h"
-#include "foundation/image/color.h"
-#include "foundation/image/colorspace.h"
-
-// OSL headers
+// OSL headers.
 #include <OSL/genclosure.h>
 #include <OSL/oslclosure.h>
 
-// standard headers
-#include <algorithm>
+// Standard headers.
+#include <cstddef>
 
 using namespace foundation;
 using namespace renderer;
 
-namespace renderer
-{
 namespace
 {
+    //
+    // Closure Parameters.
+    //
 
-//
-// Closure Parameters.
-//
+    struct EmptyClosureParams {};
 
-struct EmptyClosureParams {};
-
-struct LambertClosureParams
-{
-    OSL::Vec3 N;
-};
-
-} // unnamed
-
-}   // namespace renderer
+    struct LambertClosureParams
+    {
+        OSL::Vec3 N;
+    };
+}
 
 // We probably want to reuse OSL macros to declare closure params 
-// and register the closures. We can use them only inside the OSL namespace
+// and register the closures. We can use them only inside the OSL namespace.
 OSL_NAMESPACE_ENTER
 
 void register_appleseed_closures(OSL::ShadingSystem& shading_system)
 {    
-    // Describe the memory layout of each closure type to the OSL runtime
-    enum {MaxParams = 32};
+    // Describe the memory layout of each closure type to the OSL runtime.
+    const size_t MaxParams = 32;
     struct BuiltinClosures
     {
-        const char* name;
-        int id;
-        ClosureParam params[MaxParams];
+        const char*     name;
+        int             id;
+        ClosureParam    params[MaxParams];
     };
 
-    BuiltinClosures builtins[] =
+    static const BuiltinClosures builtins[] =
     {
-        {"diffuse"                    , LambertID,          {CLOSURE_VECTOR_PARAM(LambertClosureParams, N),
-                                                             CLOSURE_FINISH_PARAM(LambertClosureParams)}},
-
-        {NULL, 0, {}} // mark end of the array
+        { "diffuse", LambertID, { CLOSURE_VECTOR_PARAM(LambertClosureParams, N),
+                                  CLOSURE_FINISH_PARAM(LambertClosureParams) } },
+        { 0, 0, {} }    // mark end of the array
     };
 
-    for (int i = 0; builtins[i].name != 0; ++i)
+    for (size_t i = 0; builtins[i].name != 0; ++i)
     {
-        shading_system.register_closure(builtins[i].name,
-                                        builtins[i].id,
-                                        builtins[i].params,
-                                        0,
-                                        0);
+        shading_system.register_closure(
+            builtins[i].name,
+            builtins[i].id,
+            builtins[i].params,
+            0,
+            0);
 
-        RENDERER_LOG_INFO("registered OSL closure %s", builtins[i].name);
+        RENDERER_LOG_INFO("registered OSL closure %s.", builtins[i].name);
     }
 }
 
