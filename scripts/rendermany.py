@@ -73,22 +73,26 @@ def format_duration(duration):
 # Render a given project file.
 #--------------------------------------------------------------------------------------------------
 
-def render_project_file(project_directory, project_filename, tool_path):
+def render_project_file(args, project_directory, project_filename):
     project_filepath = os.path.join(project_directory, project_filename)
 
     output_directory = os.path.join(project_directory, 'renders')
     safe_mkdir(output_directory)
 
-    output_filename = os.path.splitext(project_filename)[0] + '.png'
+    output_filename = os.path.splitext(project_filename)[0] + '.' + args.output_format
     output_filepath = os.path.join(output_directory, output_filename)
 
     log_filename = os.path.splitext(project_filename)[0] + '.txt'
     log_filepath = os.path.join(output_directory, log_filename)
 
-    with open(log_filepath, "w") as log_file:
+    with open(log_filepath, "w", 0) as log_file:
         print("rendering: {0}: ".format(project_filepath), end='')
 
-        command = '"{0}" -o "{1}" "{2}"'.format(tool_path, output_filepath, project_filepath)
+        command = '"{0}" -o "{1}" "{2}"'.format(args.tool_path, output_filepath, project_filepath)
+        if args.args:
+            command += ' {0}'.format(" ".join(args.args))
+
+        log_file.write("Command line:\n    {0}\n\n".format(command))
 
         start_time = datetime.datetime.now()
         result = subprocess.call(command, stderr=log_file, shell=True)
@@ -105,10 +109,10 @@ def render_project_file(project_directory, project_filename, tool_path):
 # Returns the number of rendered project files.
 #--------------------------------------------------------------------------------------------------
 
-def render_project_files(tool_path, directory, recursive):
+def render_project_files(args):
     rendered_file_count = 0
 
-    for dirpath, dirnames, filenames in walk(directory, recursive):
+    for dirpath, dirnames, filenames in walk(args.directory, args.recursive):
         if should_skip(os.path.basename(dirpath)):
             print("skipping:  {0}...".format(dirpath))
             continue
@@ -119,7 +123,7 @@ def render_project_files(tool_path, directory, recursive):
                     print("skipping:  {0}...".format(os.path.join(dirpath, filename)))
                     continue
 
-                render_project_file(dirpath, filename, tool_path)
+                render_project_file(args, dirpath, filename)
                 rendered_file_count += 1
 
     return rendered_file_count
@@ -133,8 +137,12 @@ def main():
     parser = argparse.ArgumentParser(description="render multiple project files.")
     parser.add_argument("-t", "--tool-path", metavar="tool-path",
                         help="set the path to the appleseed.cli tool")
+    parser.add_argument("-f", "--format", dest="output_format", metavar="FORMAT", default="exr",
+                        help="set output format (e.g. png, exr)")
     parser.add_argument("-r", "--recursive", action='store_true', dest="recursive",
                         help="scan the specified directory and all its subdirectories")
+    parser.add_argument("-p", "--parameter", dest="args", metavar="ARG", nargs="*",
+                        help="forward additional arguments to appleseed")
     parser.add_argument("directory", help="directory to scan")
     args = parser.parse_args()
 
@@ -145,7 +153,7 @@ def main():
         print("setting tool path to {0}.".format(args.tool_path))
 
     start_time = datetime.datetime.now()
-    rendered_file_count = render_project_files(args.tool_path, args.directory, args.recursive)
+    rendered_file_count = render_project_files(args)
     end_time = datetime.datetime.now()
 
     print("rendered {0} project file(s) in {1}." \
