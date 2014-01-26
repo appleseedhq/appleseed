@@ -104,7 +104,7 @@ CommandLineHandler::CommandLineHandler()
 
     m_window.add_name("--window");
     m_window.add_name("-w");
-    m_window.set_description("restrict rendering to a given rectangle");
+    m_window.set_description("restrict rendering to a given rectangle (expressed in pixels)");
     m_window.set_syntax("x0 y0 x1 y1");
     m_window.set_exact_value_count(4);
     parser().add_option_handler(&m_window);
