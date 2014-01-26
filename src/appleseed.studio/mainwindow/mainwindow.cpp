@@ -1402,26 +1402,40 @@ void MainWindow::slot_save_all_aovs()
     frame->write_aov_images(filepath.toAscii().constData());
 }
 
+namespace
+{
+    void write_all_aovs(
+        const Project&          project,
+        const filesystem::path& image_path)
+    {
+        filesystem::create_directories(image_path.parent_path());
+
+        const Frame* frame = project.get_frame();
+
+        frame->write_main_image(image_path.string().c_str());
+        frame->write_aov_images(image_path.string().c_str());
+    }
+}
+
 void MainWindow::slot_quicksave_all_aovs()
 {
     assert(m_project_manager.is_project_open());
     assert(!m_rendering_manager.is_rendering());
 
-    const Project* project = m_project_manager.get_project();
+    const Project& project = *m_project_manager.get_project();
 
-    const filesystem::path project_path(project->get_path());
-    const filesystem::path image_path =
+    const filesystem::path project_path(project.get_path());
+    const filesystem::path quicksave_dir = project_path.parent_path() / "quicksaves";
+
+    write_all_aovs(
+        project,
         filesystem::absolute(
-            find_next_available_path(
-                  project_path.parent_path()
-                / "quicksaves"
-                / "quicksave####.exr"));
+            quicksave_dir / "quicksave.exr"));
 
-    filesystem::create_directories(image_path.parent_path());
-
-    const Frame* frame = project->get_frame();
-    frame->write_main_image(image_path.string().c_str());
-    frame->write_aov_images(image_path.string().c_str());
+    write_all_aovs(
+        project,
+        filesystem::absolute(
+            find_next_available_path(quicksave_dir / "quicksave####.exr")));
 }
 
 void MainWindow::slot_clear_frame()
