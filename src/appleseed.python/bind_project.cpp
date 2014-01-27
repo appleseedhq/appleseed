@@ -194,6 +194,9 @@ void bind_project()
         .def("set_path", &Project::set_path)
         .def("get_path", &Project::get_path)
 
+        .def("get_search_paths", detail::project_get_search_paths)
+        .def("set_search_paths", detail::project_set_search_paths)
+
         .def("set_scene", &Project::set_scene)
         .def("get_scene", &Project::get_scene, bpy::return_value_policy<bpy::reference_existing_object>())
 
@@ -201,9 +204,6 @@ void bind_project()
         .def("get_frame", &Project::get_frame, bpy::return_value_policy<bpy::reference_existing_object>())
 
         .def("create_aov_images", &Project::create_aov_images)
-
-        .def("get_search_paths", detail::project_get_search_paths)
-        .def("set_search_paths", detail::project_set_search_paths)
 
         .def("configurations", detail::project_get_configs, bpy::return_value_policy<bpy::reference_existing_object>());
 

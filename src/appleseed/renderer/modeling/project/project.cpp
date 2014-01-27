@@ -150,6 +150,16 @@ const char* Project::get_path() const
     return impl->m_path.c_str();
 }
 
+SearchPaths& Project::get_search_paths()
+{
+    return impl->m_search_paths;
+}
+
+const SearchPaths& Project::get_search_paths() const
+{
+    return impl->m_search_paths;
+}
+
 void Project::set_scene(auto_release_ptr<Scene> scene)
 {
     impl->m_scene = scene;
@@ -318,16 +328,6 @@ void Project::add_default_configurations()
 {
     add_default_configuration("final", "base_final");
     add_default_configuration("interactive", "base_interactive");
-}
-
-SearchPaths& Project::get_search_paths()
-{
-    return impl->m_search_paths;
-}
-
-const SearchPaths& Project::get_search_paths() const
-{
-    return impl->m_search_paths;
 }
 
 bool Project::has_trace_context() const

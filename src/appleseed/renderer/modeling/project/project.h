@@ -74,6 +74,10 @@ class DLLSYMBOL Project
     void set_path(const char* path);
     const char* get_path() const;
 
+    // Get the search paths.
+    foundation::SearchPaths& get_search_paths();
+    const foundation::SearchPaths& get_search_paths() const;
+
     // Set the scene, replacing the existing scene.
     void set_scene(foundation::auto_release_ptr<Scene> scene);
 
@@ -97,10 +101,6 @@ class DLLSYMBOL Project
 
     // Add the default configurations to the project.
     void add_default_configurations();
-
-    // Get the search paths.
-    foundation::SearchPaths& get_search_paths();
-    const foundation::SearchPaths& get_search_paths() const;
 
     // Return true if the trace context has already been built.
     bool has_trace_context() const;
