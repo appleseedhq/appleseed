@@ -420,7 +420,7 @@ namespace
             create_direct_link("uniform_sampler.decorrelate_pixels", "uniform_pixel_renderer.decorrelate_pixels", true);
             create_direct_link("adaptive_sampler.min_samples", "adaptive_pixel_renderer.min_samples", 16);
             create_direct_link("adaptive_sampler.max_samples", "adaptive_pixel_renderer.max_samples", 64);
-            create_direct_link("adaptive_sampler.quality", "adaptive_pixel_renderer.quality", 3.0);
+            create_direct_link("adaptive_sampler.quality", "adaptive_pixel_renderer.quality", 2.0);
             create_direct_link("adaptive_sampler.enable_diagnostics", "adaptive_pixel_renderer.enable_diagnostics", false);
 
             load_directly_linked_values(config);
@@ -520,7 +520,7 @@ namespace
             sublayout->addRow("Max Samples:", create_integer_input("adaptive_sampler.max_samples", 1, 1000000));
             sublayout->addRow("Quality:", create_double_input("adaptive_sampler.quality", -20.0, +20.0, 2, 0.5));
 
-            layout->addWidget(create_checkbox("adaptive_sampler.enable_diagnostics", "Enable Diagnostics"));
+            layout->addWidget(create_checkbox("adaptive_sampler.enable_diagnostics", "Enable Diagnostic AOVs"));
         }
 
       private slots:

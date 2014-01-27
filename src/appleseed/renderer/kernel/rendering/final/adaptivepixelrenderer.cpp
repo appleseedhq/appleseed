@@ -50,6 +50,7 @@
 #include "foundation/image/tile.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/hash.h"
+#include "foundation/math/minmax.h"
 #include "foundation/math/rng.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
@@ -130,7 +131,7 @@ namespace
                     frame.get_filter()));
 
             if (m_params.m_diagnostics)
-                m_diagnostics.reset(new Tile(tile.get_width(), tile.get_height(), 4, PixelFormatFloat));
+                m_diagnostics.reset(new Tile(tile.get_width(), tile.get_height(), 2, PixelFormatFloat));
         }
 
         virtual void on_tile_end(
@@ -147,11 +148,11 @@ namespace
                 {
                     for (size_t x = 0; x < width; ++x)
                     {
-                        Color4f values;
+                        Color<float, 2> values;
                         m_diagnostics->get_pixel(x, y, values);
 
                         if (m_variation_aov_index < ~0)
-                            aov_tiles.set_pixel(x, y, m_variation_aov_index, Color4f(values[0], values[1], values[2], 1.0f));
+                            aov_tiles.set_pixel(x, y, m_variation_aov_index, scalar_to_color(values[0]));
 
                         if (m_samples_aov_index != ~0)
                             aov_tiles.set_pixel(x, y, m_samples_aov_index, scalar_to_color(values[1]));
@@ -194,18 +195,18 @@ namespace
 
             while (true)
             {
+                trackers[0].reset_variation();
+                trackers[1].reset_variation();
+                trackers[2].reset_variation();
+
                 // Don't exceed 'max' samples in total.
                 assert(trackers[0].get_size() <= m_params.m_max_samples);
                 const size_t remaining_samples = m_params.m_max_samples - trackers[0].get_size();
                 if (remaining_samples == 0)
                     break;
 
-                // The first batch contains 'min' samples, each subsequent batch contains half that.
-                const size_t samples_per_batch =
-                    trackers[0].get_size() == 0
-                        ? m_params.m_min_samples
-                        : max<size_t>(m_params.m_min_samples / 2, 1);
-                const size_t batch_size = min(samples_per_batch, remaining_samples);
+                // Each batch contains 'min' samples.
+                const size_t batch_size = min(m_params.m_min_samples, remaining_samples);
 
                 for (size_t i = 0; i < batch_size; ++i)
                 {
@@ -239,13 +240,14 @@ namespace
                         shading_result);
 
                     // Update statistics for this pixel.
+                    // todo: variation should be computed in a user-selectable color space, typically the target color space.
                     // todo: one tracker per AOV?
                     trackers[0].insert(shading_result.m_color[0]);
                     trackers[1].insert(shading_result.m_color[1]);
                     trackers[2].insert(shading_result.m_color[2]);
                 }
 
-                // Stop if the variation criterion are met.
+                // Stop if the variation criterion is met.
                 if (trackers[0].get_variation() <= m_params.m_max_variation &&
                     trackers[1].get_variation() <= m_params.m_max_variation &&
                     trackers[2].get_variation() <= m_params.m_max_variation)
@@ -276,13 +278,17 @@ namespace
             // Store diagnostics values in the diagnostics tile.
             if (m_params.m_diagnostics && tile_bbox.contains(Vector2i(tx, ty)))
             {
-                Color4f values;
+                Color<float, 2> values;
 
-                values[0] = saturate(trackers[0].get_variation() / m_params.m_max_variation);
-                values[1] = saturate(trackers[1].get_variation() / m_params.m_max_variation);
-                values[2] = saturate(trackers[2].get_variation() / m_params.m_max_variation);
+                values[0] =
+                    saturate(
+                        max(
+                            trackers[0].get_variation(),
+                            trackers[1].get_variation(),
+                            trackers[2].get_variation())
+                        / m_params.m_max_variation);
 
-                values[3] =
+                values[1] =
                     m_params.m_min_samples == m_params.m_max_samples
                         ? 1.0f
                         : fit(
@@ -311,7 +317,7 @@ namespace
             explicit Parameters(const ParamArray& params)
               : m_min_samples(params.get_required<size_t>("min_samples", 1))
               , m_max_samples(params.get_required<size_t>("max_samples", 1))
-              , m_max_variation(pow(10.0f, -params.get_optional<float>("quality", 3.0f)))
+              , m_max_variation(pow(10.0f, -params.get_optional<float>("quality", 2.0f)))
               , m_diagnostics(params.get_optional<bool>("enable_diagnostics"))
             {
             }

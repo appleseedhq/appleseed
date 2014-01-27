@@ -99,24 +99,28 @@ TEST_SUITE(Renderer_Kernel_Rendering_Final_VariationTracker)
         EXPECT_EQ(3.0f, tracker.get_mean());
     }
 
-    TEST_CASE(GetVariation_GivenTwoValues_ReturnsRelativeMeanChange)
+    TEST_CASE(GetVariation_GivenTwoValues_ReturnsNormalizedMeanSpread)
     {
         VariationTracker tracker;
-        tracker.insert(2.0f);       // mean is now 2.0f
-        tracker.insert(4.0f);       // mean is now 3.0f
+        tracker.insert(2.0f);       // spread is now 0, mean is now 2
+        tracker.insert(4.0f);       // spread is now 1, mean is now 3
 
         EXPECT_FEQ(1.0f / 3.0f, tracker.get_variation());
     }
 
     TEST_CASE(Visualize)
     {
-        VariationTracker tracker;
         MersenneTwister rng;
+        VariationTracker tracker;
         vector<float> samples, mean, variation;
 
-        for (size_t i = 0; i < 256; ++i)
+        for (size_t i = 0; i < 1024; ++i)
         {
+            if (i % 64 == 0)
+                tracker.reset_variation();
+
             tracker.insert(rand_float1(rng));
+
             samples.push_back(static_cast<float>(i));
             mean.push_back(tracker.get_mean());
             variation.push_back(tracker.get_variation());

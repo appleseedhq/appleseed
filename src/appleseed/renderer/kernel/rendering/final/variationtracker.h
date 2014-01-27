@@ -31,6 +31,7 @@
 #define APPLESEED_RENDERER_KERNEL_RENDERING_FINAL_VARIATIONTRACKER_H
 
 // Standard headers.
+#include <algorithm>
 #include <cmath>
 #include <cstddef>
 
@@ -43,22 +44,24 @@ class VariationTracker
     VariationTracker()
       : m_size(0)
       , m_mean(0.0f)
-      , m_relative_mean_change(0.0f)
     {
+        reset_variation();
+    }
+
+    void reset_variation()
+    {
+        m_min = +1.0e38f;
+        m_max = -1.0e38f;
     }
 
     void insert(const float value)
     {
-        const float old_mean = m_mean;
-
         ++m_size;
 
         m_mean += (value - m_mean) / m_size;
 
-        m_relative_mean_change =
-            m_size == 1 ? 0.0f :
-            m_mean == 0.0f ? 0.0f :
-            std::abs(m_mean - old_mean) / m_mean;
+        m_min = std::min(m_min, m_mean);
+        m_max = std::max(m_max, m_mean);
     }
 
     size_t get_size() const
@@ -73,13 +76,18 @@ class VariationTracker
 
     float get_variation() const
     {
-        return m_relative_mean_change;
+        if (m_size == 0)
+            return 0.0;
+
+        const float spread = m_max - m_min;
+        return std::abs(m_mean != 0.0f ? spread / m_mean : spread);
     }
 
   private:
     size_t  m_size;
     float   m_mean;
-    float   m_relative_mean_change;
+    float   m_min;
+    float   m_max;
 };
 
 }       // namespace renderer
