@@ -44,6 +44,11 @@ namespace
     const UniqueID g_class_uid = new_guid();
 }
 
+UniqueID EnvironmentShader::get_class_uid()
+{
+    return g_class_uid;
+}
+
 EnvironmentShader::EnvironmentShader(
     const char*         name,
     const ParamArray&   params)

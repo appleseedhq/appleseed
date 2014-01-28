@@ -59,7 +59,6 @@
 #include "foundation/utility/otherwise.h"
 #include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
-#include "foundation/utility/uid.h"
 
 // boost headers.
 #include "boost/filesystem/path.hpp"
@@ -79,6 +78,16 @@ namespace renderer
 //
 // Frame class implementation.
 //
+
+namespace
+{
+    const UniqueID g_class_uid = new_guid();
+}
+
+UniqueID Frame::get_class_uid()
+{
+    return g_class_uid;
+}
 
 struct Frame::Impl
 {
@@ -102,11 +111,6 @@ struct Frame::Impl
     {
     }
 };
-
-namespace
-{
-    const UniqueID g_class_uid = new_guid();
-}
 
 Frame::Frame(
     const char*         name,

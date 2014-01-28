@@ -40,7 +40,6 @@
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/iostreamop.h"
-#include "foundation/utility/uid.h"
 
 // Standard headers.
 #include <cmath>
@@ -59,6 +58,11 @@ namespace renderer
 namespace
 {
     const UniqueID g_class_uid = new_guid();
+}
+
+UniqueID Camera::get_class_uid()
+{
+    return g_class_uid;
 }
 
 Camera::Camera(

@@ -35,6 +35,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
+#include "foundation/utility/uid.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -58,6 +59,9 @@ class DLLSYMBOL Texture
   : public Entity
 {
   public:
+    // Return the unique ID of this class of entities.
+    static foundation::UniqueID get_class_uid();
+
     // Constructor.
     Texture(
         const char*             name,

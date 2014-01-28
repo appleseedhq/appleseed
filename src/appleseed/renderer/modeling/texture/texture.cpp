@@ -44,6 +44,11 @@ namespace
     const UniqueID g_class_uid = new_guid();
 }
 
+UniqueID Texture::get_class_uid()
+{
+    return g_class_uid;
+}
+
 Texture::Texture(
     const char*         name,
     const ParamArray&   params)

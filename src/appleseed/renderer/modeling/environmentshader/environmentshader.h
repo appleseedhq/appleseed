@@ -35,6 +35,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
+#include "foundation/utility/uid.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -57,6 +58,9 @@ class DLLSYMBOL EnvironmentShader
   : public ConnectableEntity
 {
   public:
+    // Return the unique ID of this class of entities.
+    static foundation::UniqueID get_class_uid();
+
     // Constructor.
     EnvironmentShader(
         const char*                 name,

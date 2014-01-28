@@ -42,7 +42,6 @@
 #include "foundation/image/tile.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
-#include "foundation/utility/uid.h"
 
 // Standard headers.
 #include <cstddef>
@@ -61,6 +60,11 @@ namespace renderer
 namespace
 {
     const UniqueID g_class_uid = new_guid();
+}
+
+UniqueID TextureInstance::get_class_uid()
+{
+    return g_class_uid;
 }
 
 struct TextureInstance::Impl

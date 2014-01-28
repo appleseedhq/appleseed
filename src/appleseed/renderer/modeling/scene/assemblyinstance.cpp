@@ -47,15 +47,20 @@ namespace renderer
 // AssemblyInstance class implementation.
 //
 
-struct AssemblyInstance::Impl
-{
-    string m_assembly_name;
-};
-
 namespace
 {
     const UniqueID g_class_uid = new_guid();
 }
+
+UniqueID AssemblyInstance::get_class_uid()
+{
+    return g_class_uid;
+}
+
+struct AssemblyInstance::Impl
+{
+    string m_assembly_name;
+};
 
 AssemblyInstance::AssemblyInstance(
     const char*         name,

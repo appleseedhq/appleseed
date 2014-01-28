@@ -48,6 +48,16 @@ namespace renderer
 // Light class implementation.
 //
 
+namespace
+{
+    const UniqueID g_class_uid = new_guid();
+}
+
+UniqueID Light::get_class_uid()
+{
+    return g_class_uid;
+}
+
 struct Light::Impl
 {
     Transformd m_transform;
@@ -57,11 +67,6 @@ struct Light::Impl
     {
     }
 };
-
-namespace
-{
-    const UniqueID g_class_uid = new_guid();
-}
 
 Light::Light(
     const char*         name,

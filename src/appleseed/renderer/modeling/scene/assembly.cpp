@@ -48,7 +48,6 @@
 // appleseed.foundation headers.
 #include "foundation/utility/job/abortswitch.h"
 #include "foundation/utility/foreach.h"
-#include "foundation/utility/uid.h"
 
 using namespace foundation;
 using namespace std;
@@ -59,6 +58,16 @@ namespace renderer
 //
 // Assembly class implementation.
 //
+
+namespace
+{
+    const UniqueID g_class_uid = new_guid();
+}
+
+UniqueID Assembly::get_class_uid()
+{
+    return g_class_uid;
+}
 
 struct Assembly::Impl
 {
@@ -88,11 +97,6 @@ struct Assembly::Impl
     {
     }
 };
-
-namespace
-{
-    const UniqueID g_class_uid = new_guid();
-}
 
 Assembly::Assembly(
     const char*         name,

@@ -37,6 +37,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
 #include "foundation/math/vector.h"
+#include "foundation/utility/uid.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -66,6 +67,9 @@ class DLLSYMBOL EDF
   : public ConnectableEntity
 {
   public:
+    // Return the unique ID of this class of entities.
+    static foundation::UniqueID get_class_uid();
+
     // Constructor.
     EDF(
         const char*                 name,

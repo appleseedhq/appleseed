@@ -33,9 +33,6 @@
 // appleseed.renderer headers.
 #include "renderer/utility/paramarray.h"
 
-// appleseed.foundation headers.
-#include "foundation/utility/uid.h"
-
 // Standard headers.
 #include <cassert>
 #include <cstring>
@@ -53,6 +50,11 @@ namespace renderer
 namespace
 {
     const UniqueID g_class_uid = new_guid();
+}
+
+UniqueID Configuration::get_class_uid()
+{
+    return g_class_uid;
 }
 
 Configuration::Configuration(const char* name)

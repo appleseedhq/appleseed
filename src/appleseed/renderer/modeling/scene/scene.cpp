@@ -42,7 +42,6 @@
 #include "foundation/math/vector.h"
 #include "foundation/utility/job/abortswitch.h"
 #include "foundation/utility/foreach.h"
-#include "foundation/utility/uid.h"
 
 // Standard headers.
 #include <algorithm>
@@ -59,6 +58,16 @@ namespace renderer
 // Scene class implementation.
 //
 
+namespace
+{
+    const UniqueID g_class_uid = new_guid();
+}
+
+UniqueID Scene::get_class_uid()
+{
+    return g_class_uid;
+}
+
 struct Scene::Impl
 {
     UniqueID                        m_uid;
@@ -73,11 +82,6 @@ struct Scene::Impl
     {
     }
 };
-
-namespace
-{
-    const UniqueID g_class_uid = new_guid();
-}
 
 Scene::Scene()
   : Entity(g_class_uid)

@@ -30,9 +30,6 @@
 // Interface header.
 #include "environmentedf.h"
 
-// appleseed.foundation headers.
-#include "foundation/utility/uid.h"
-
 using namespace foundation;
 
 namespace renderer
@@ -45,6 +42,11 @@ namespace renderer
 namespace
 {
     const UniqueID g_class_uid = new_guid();
+}
+
+UniqueID EnvironmentEDF::get_class_uid()
+{
+    return g_class_uid;
 }
 
 EnvironmentEDF::EnvironmentEDF(

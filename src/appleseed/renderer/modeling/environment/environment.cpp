@@ -38,7 +38,6 @@
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
-#include "foundation/utility/uid.h"
 
 using namespace foundation;
 using namespace std;
@@ -53,6 +52,11 @@ namespace renderer
 namespace
 {
     const UniqueID g_class_uid = new_guid();
+}
+
+UniqueID Environment::get_class_uid()
+{
+    return g_class_uid;
 }
 
 Environment::Environment(

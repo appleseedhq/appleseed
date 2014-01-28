@@ -44,6 +44,11 @@ namespace
     const UniqueID g_class_uid = new_guid();
 }
 
+UniqueID Object::get_class_uid()
+{
+    return g_class_uid;
+}
+
 Object::Object(
     const char*         name,
     const ParamArray&   params)

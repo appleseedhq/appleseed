@@ -60,7 +60,6 @@
 #include "foundation/platform/types.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/searchpaths.h"
-#include "foundation/utility/uid.h"
 
 // Standard headers.
 #include <cassert>
@@ -78,6 +77,16 @@ namespace renderer
 //
 // Project class implementation.
 //
+
+namespace
+{
+    const UniqueID g_class_uid = new_guid();
+}
+
+UniqueID Project::get_class_uid()
+{
+    return g_class_uid;
+}
 
 namespace
 {
@@ -100,11 +109,6 @@ struct Project::Impl
     {
     }
 };
-
-namespace
-{
-    const UniqueID g_class_uid = new_guid();
-}
 
 Project::Project(const char* name)
   : Entity(g_class_uid)

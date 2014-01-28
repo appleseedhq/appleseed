@@ -37,6 +37,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/lazy.h"
+#include "foundation/utility/uid.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -58,6 +59,9 @@ class DLLSYMBOL Object
   : public Entity
 {
   public:
+    // Return the unique ID of this class of entities.
+    static foundation::UniqueID get_class_uid();
+
     // Constructor.
     Object(
         const char*         name,

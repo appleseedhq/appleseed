@@ -40,7 +40,6 @@
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/makevector.h"
-#include "foundation/utility/uid.h"
 
 // Standard headers.
 #include <string>
@@ -62,6 +61,16 @@ DEFINE_ARRAY(MaterialArray);
 // ObjectInstance class implementation.
 //
 
+namespace
+{
+    const UniqueID g_class_uid = new_guid();
+}
+
+UniqueID ObjectInstance::get_class_uid()
+{
+    return g_class_uid;
+}
+
 struct ObjectInstance::Impl
 {
     // Order of data members impacts performance, preserve it.
@@ -70,11 +79,6 @@ struct ObjectInstance::Impl
     StringDictionary        m_front_material_mappings;
     StringDictionary        m_back_material_mappings;
 };
-
-namespace
-{
-    const UniqueID g_class_uid = new_guid();
-}
 
 ObjectInstance::ObjectInstance(
     const char*             name,

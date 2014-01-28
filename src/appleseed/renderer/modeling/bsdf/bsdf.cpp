@@ -33,9 +33,6 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/input/inputevaluator.h"
 
-// appleseed.foundation headers.
-#include "foundation/utility/uid.h"
-
 using namespace foundation;
 
 namespace renderer
@@ -45,12 +42,17 @@ namespace renderer
 // BSDF class implementation.
 //
 
-const double BSDF::DiracDelta = -1.0;
-
 namespace
 {
     const UniqueID g_class_uid = new_guid();
 }
+
+UniqueID BSDF::get_class_uid()
+{
+    return g_class_uid;
+}
+
+const double BSDF::DiracDelta = -1.0;
 
 BSDF::BSDF(
     const char*         name,

@@ -37,6 +37,7 @@
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
+#include "foundation/utility/uid.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -92,6 +93,9 @@ class DLLSYMBOL TextureInstance
   : public Entity
 {
   public:
+    // Return the unique ID of this class of entities.
+    static foundation::UniqueID get_class_uid();
+
     // Delete this instance.
     virtual void release() OVERRIDE;
 

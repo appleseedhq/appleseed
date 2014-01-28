@@ -33,9 +33,6 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 
-// appleseed.foundation headers.
-#include "foundation/utility/uid.h"
-
 // Standard headers.
 #include <string>
 
@@ -51,6 +48,11 @@ namespace renderer
 namespace
 {
     const UniqueID g_class_uid = new_guid();
+}
+
+UniqueID EDF::get_class_uid()
+{
+    return g_class_uid;
 }
 
 EDF::EDF(
