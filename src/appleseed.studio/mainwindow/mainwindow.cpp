@@ -842,7 +842,10 @@ void MainWindow::start_rendering(const bool interactive)
 
     // In the UI, darken all render widgets.
     for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
+    {
         i->second->darken();
+        i->second->update();
+    }
 
     const char* configuration_name = interactive ? "interactive" : "final";
     const ParamArray params = get_project_params(configuration_name);

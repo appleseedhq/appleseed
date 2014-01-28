@@ -95,6 +95,11 @@ void RenderTab::darken()
     m_render_widget->multiply(0.2f);
 }
 
+void RenderTab::update()
+{
+    m_render_widget->update();
+}
+
 void RenderTab::update_size()
 {
     m_set_render_region_button->setChecked(false);

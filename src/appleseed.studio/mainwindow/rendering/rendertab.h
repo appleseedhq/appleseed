@@ -76,6 +76,8 @@ class RenderTab
 
     void clear();
     void darken();
+
+    void update();
     void update_size();
 
     RenderWidget* get_render_widget() const;
