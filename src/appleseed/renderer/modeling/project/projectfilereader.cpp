@@ -2381,6 +2381,7 @@ namespace
         Project*        m_project;
     };
 
+
     //
     // <search_path> element handler.
     //
@@ -2393,24 +2394,25 @@ namespace
           : m_context(context)
         {
         }
-                
+
         virtual void characters(
             const XMLCh* const  chars,
             const XMLSize_t     length) OVERRIDE
         {
             m_path = trim_both(transcode(chars));
         }
-        
-        const string& path() const
+
+        const string& get_path() const
         {
             return m_path;
         }
-        
+
       private:
         ParseContext&   m_context;
         string          m_path;
     };
-    
+
+
     //
     // <search_paths> element handler.
     //
@@ -2437,24 +2439,25 @@ namespace
                 {
                     SearchPathElementHandler* path_handler =
                         static_cast<SearchPathElementHandler*>(handler);
-                    m_project->get_search_paths().push_back(path_handler->path());
+                    m_project->get_search_paths().push_back(path_handler->get_path());
                 }
                 break;
 
               assert_otherwise;
             }
         }
-        
+
         void set_project(Project* project)
         {
             m_project = project;
         }
-        
+
       private:
         ParseContext&   m_context;
         Project*        m_project;
     };
-    
+
+
     //
     // <project> element handler.
     //
