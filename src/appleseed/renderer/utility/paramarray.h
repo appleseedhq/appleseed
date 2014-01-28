@@ -103,6 +103,12 @@ class DLLSYMBOL ParamArray
     template <typename T>
     T get_required(
         const char*             name,
+        const T&                default_value,
+        const MessageContext&   message_context) const;
+
+    template <typename T>
+    T get_required(
+        const char*             name,
         const T&                default_value) const;
 
     //
@@ -130,6 +136,12 @@ class DLLSYMBOL ParamArray
         const char*             name,
         const T&                default_value,
         const StringVec&        allowed_values) const;
+
+    template <typename T>
+    T get_optional(
+        const char*             name,
+        const T&                default_value,
+        const MessageContext&   message_context) const;
 
     template <typename T>
     T get_optional(
@@ -209,6 +221,7 @@ class DLLSYMBOL ParamArray
         const T&                default_value,
         const StringVec&        allowed_values,
         const MessageContext&   message_context) const;
+
     template <typename T>
     T get_helper(
         const char*             name,
@@ -216,6 +229,15 @@ class DLLSYMBOL ParamArray
         const bool              is_required,
         const T&                default_value,
         const StringVec&        allowed_values) const;
+
+    template <typename T>
+    T get_helper(
+        const char*             name,
+        const bool              is_path,
+        const bool              is_required,
+        const T&                default_value,
+        const MessageContext&   message_context) const;
+
     template <typename T>
     T get_helper(
         const char*             name,
@@ -284,6 +306,15 @@ inline T ParamArray::get_required(
 template <typename T>
 inline T ParamArray::get_required(
     const char*                 name,
+    const T&                    default_value,
+    const MessageContext&       message_context) const
+{
+    return get_helper(name, false, true, default_value, message_context);
+}
+
+template <typename T>
+inline T ParamArray::get_required(
+    const char*                 name,
     const T&                    default_value) const
 {
     return get_helper(name, false, true, default_value);
@@ -306,6 +337,15 @@ inline T ParamArray::get_optional(
     const StringVec&            allowed_values) const
 {
     return get_helper(name, false, false, default_value, allowed_values);
+}
+
+template <typename T>
+inline T ParamArray::get_optional(
+    const char*                 name,
+    const T&                    default_value,
+    const MessageContext&       message_context) const
+{
+    return get_helper(name, false, false, default_value, message_context);
 }
 
 template <typename T>
@@ -470,6 +510,52 @@ T ParamArray::get_helper(
 
     RENDERER_LOG_ERROR(
         "invalid value \"%s\" for parameter \"%s\"; continuing using value \"%s\".",
+        is_path ? get_path(name) : get(name),
+        name,
+        foundation::to_string(default_value).c_str());
+
+    return default_value;
+}
+
+template <typename T>
+T ParamArray::get_helper(
+    const char*                 name,
+    const bool                  is_path,
+    const bool                  is_required,
+    const T&                    default_value,
+    const MessageContext&       message_context) const
+{
+    assert(name);
+
+    try
+    {
+        if (is_path ? exist_path(name) : strings().exist(name))
+        {
+            return is_path ? foundation::from_string<T>(get_path(name)) : get<T>(name);
+        }
+        else
+        {
+            if (is_required)
+            {
+                RENDERER_LOG_ERROR(
+                    "%s%srequired parameter \"%s\" not found; continuing using value \"%s\".",
+                    message_context.get(),
+                    message_context.empty() ? "" : ": ",
+                    name,
+                    foundation::to_string(default_value).c_str());
+            }
+
+            return default_value;
+        }
+    }
+    catch (const foundation::ExceptionStringConversionError&)
+    {
+    }
+
+    RENDERER_LOG_ERROR(
+        "%s%sinvalid value \"%s\" for parameter \"%s\"; continuing using value \"%s\".",
+        message_context.get(),
+        message_context.empty() ? "" : ": ",
         is_path ? get_path(name) : get(name),
         name,
         foundation::to_string(default_value).c_str());
