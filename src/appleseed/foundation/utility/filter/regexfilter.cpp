@@ -47,16 +47,32 @@ struct RegExFilter::Impl
     bool    m_valid;
 };
 
-RegExFilter::RegExFilter(const char* regex, const CaseSensivity case_sensivity)
+RegExFilter::RegExFilter()
   : impl(new Impl())
 {
-    assert(regex);
+    impl->m_valid = false;
+}
+
+RegExFilter::RegExFilter(const char* pattern, const CaseSensivity case_sensivity)
+  : impl(new Impl())
+{
+    set_pattern(pattern, case_sensivity);
+}
+
+RegExFilter::~RegExFilter()
+{
+    delete impl;
+}
+
+void RegExFilter::set_pattern(const char* pattern, const CaseSensivity case_sensivity)
+{
+    assert(pattern);
 
     try
     {
         if (case_sensivity == CaseSensitive)
-            impl->m_expression.assign(regex);
-        else impl->m_expression.assign(regex, regex_constants::icase);
+            impl->m_expression.assign(pattern);
+        else impl->m_expression.assign(pattern, regex_constants::icase);
 
         impl->m_valid = !impl->m_expression.empty();
     }
@@ -64,11 +80,6 @@ RegExFilter::RegExFilter(const char* regex, const CaseSensivity case_sensivity)
     {
         impl->m_valid = false;
     }
-}
-
-RegExFilter::~RegExFilter()
-{
-    delete impl;
 }
 
 bool RegExFilter::is_valid() const

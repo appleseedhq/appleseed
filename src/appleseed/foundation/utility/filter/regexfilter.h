@@ -53,11 +53,16 @@ class DLLSYMBOL RegExFilter
         CaseInsensitive
     };
 
+    RegExFilter();
     RegExFilter(
-        const char*         regex,
+        const char*         pattern,
         const CaseSensivity case_sensivity = CaseSensitive);
 
     ~RegExFilter();
+
+    void set_pattern(
+        const char*         pattern,
+        const CaseSensivity case_sensivity = CaseSensitive);
 
     bool is_valid() const;
 
