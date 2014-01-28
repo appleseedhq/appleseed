@@ -180,6 +180,22 @@ Frame* Project::get_frame() const
     return impl->m_frame.get();
 }
 
+ConfigurationContainer& Project::configurations()
+{
+    return impl->m_configurations;
+}
+
+const ConfigurationContainer& Project::configurations() const
+{
+    return impl->m_configurations;
+}
+
+void Project::add_default_configurations()
+{
+    add_default_configuration("final", "base_final");
+    add_default_configuration("interactive", "base_interactive");
+}
+
 namespace
 {
     typedef map<string, size_t> RenderLayerMapping;
@@ -312,22 +328,6 @@ void Project::create_aov_images()
         aov_images,
         format,
         impl->m_scene.ref());
-}
-
-ConfigurationContainer& Project::configurations()
-{
-    return impl->m_configurations;
-}
-
-const ConfigurationContainer& Project::configurations() const
-{
-    return impl->m_configurations;
-}
-
-void Project::add_default_configurations()
-{
-    add_default_configuration("final", "base_final");
-    add_default_configuration("interactive", "base_interactive");
 }
 
 bool Project::has_trace_context() const

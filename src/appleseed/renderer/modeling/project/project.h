@@ -92,15 +92,15 @@ class DLLSYMBOL Project
     // Return 0 if the project does not contain a frame.
     Frame* get_frame() const;
 
-    // Create the AOV images in the frame.
-    void create_aov_images();
-
     // Access the configurations.
     ConfigurationContainer& configurations();
     const ConfigurationContainer& configurations() const;
 
     // Add the default configurations to the project.
     void add_default_configurations();
+
+    // Create the AOV images in the frame.
+    void create_aov_images();
 
     // Return true if the trace context has already been built.
     bool has_trace_context() const;
