@@ -370,8 +370,8 @@ namespace
         ElementRotation,
         ElementScaling,
         ElementScene,
-        ElementSearchpath,
-        ElementSearchpaths,
+        ElementSearchPath,
+        ElementSearchPaths,
         ElementSurfaceShader,
         ElementTexture,
         ElementTextureInstance,
@@ -2435,7 +2435,7 @@ namespace
 
             switch (element)
             {
-              case ElementSearchpath:
+              case ElementSearchPath:
                 {
                     SearchPathElementHandler* path_handler =
                         static_cast<SearchPathElementHandler*>(handler);
@@ -2491,14 +2491,6 @@ namespace
 
             switch (element)
             {
-              case ElementSearchpaths:
-                {
-                    SearchPathsElementHandler* paths_handler =
-                        static_cast<SearchPathsElementHandler*>(handler);
-                    paths_handler->set_project(m_project);
-                }
-                break;
-            
               case ElementConfigurations:
                 {
                     ConfigurationsElementHandler* configs_handler =
@@ -2518,6 +2510,14 @@ namespace
               case ElementScene:
                 break;
 
+              case ElementSearchPaths:
+                {
+                    SearchPathsElementHandler* paths_handler =
+                        static_cast<SearchPathsElementHandler*>(handler);
+                    paths_handler->set_project(m_project);
+                }
+                break;
+
               assert_otherwise;
             }
         }
@@ -2530,10 +2530,6 @@ namespace
 
             switch (element)
             {
-              case ElementSearchpaths:
-                // Nothing to do, searchpaths were directly inserted into the project.
-                break;        
-
               case ElementConfigurations:
                 // Nothing to do, configurations were directly inserted into the project.
                 break;
@@ -2551,6 +2547,10 @@ namespace
                         m_project->set_scene(scene);
                 }
                 break;
+
+              case ElementSearchPaths:
+                // Nothing to do, search paths were directly inserted into the project.
+                break;        
 
               assert_otherwise;
             }
@@ -2599,8 +2599,8 @@ namespace
             register_factory_helper<RotationElementHandler>("rotation", ElementRotation);
             register_factory_helper<ScalingElementHandler>("scaling", ElementScaling);
             register_factory_helper<SceneElementHandler>("scene", ElementScene);
-            register_factory_helper<SearchPathElementHandler>("searchpath", ElementSearchpath);
-            register_factory_helper<SearchPathsElementHandler>("searchpaths", ElementSearchpaths);
+            register_factory_helper<SearchPathElementHandler>("search_path", ElementSearchPath);
+            register_factory_helper<SearchPathsElementHandler>("search_paths", ElementSearchPaths);
             register_factory_helper<SurfaceShaderElementHandler>("surface_shader", ElementSurfaceShader);
             register_factory_helper<TextureElementHandler>("texture", ElementTexture);
             register_factory_helper<TextureInstanceElementHandler>("texture_instance", ElementTextureInstance);

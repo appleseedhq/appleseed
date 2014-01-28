@@ -219,10 +219,10 @@
     <xsd:element name="project">
         <xsd:complexType>
             <xsd:all>
-                <xsd:element name="searchpaths" minOccurs="0" maxOccurs="1">
+                <xsd:element name="search_paths" minOccurs="0" maxOccurs="1">
                     <xsd:complexType>
                         <xsd:choice minOccurs="0" maxOccurs="unbounded">
-                            <xsd:element name="searchpath"/>
+                            <xsd:element name="search_path"/>
                         </xsd:choice>
                     </xsd:complexType>
                 </xsd:element>

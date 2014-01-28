@@ -820,25 +820,25 @@ namespace
                 write_frame(*project.get_frame());
         }
 
-        // Write a <searchpaths> element.
-        void write_searchpaths(const Project& project)
+        // Write a <search_paths> element.
+        void write_search_paths(const Project& project)
         {
             const SearchPaths& search_paths = project.get_search_paths();
 
             if (!search_paths.empty())
             {
-                XMLElement element("searchpaths", m_file, m_indenter);
+                XMLElement element("search_paths", m_file, m_indenter);
                 element.write(true);
 
                 for (size_t i = 0; i < search_paths.size(); ++i)
-                    write_searchpath(search_paths[i]);
+                    write_search_path(search_paths[i]);
             }
         }
 
-        // Write a <searchpath> element.
-        void write_searchpath(const char* search_path)
+        // Write a <search_path> element.
+        void write_search_path(const char* search_path)
         {
-            XMLElement element("searchpath", m_file, m_indenter);
+            XMLElement element("search_path", m_file, m_indenter);
             element.write(true);
 
             std::fprintf(m_file, "%s%s\n", m_indenter.c_str(), search_path);
@@ -852,7 +852,7 @@ namespace
             element.write(true);
 
             if (!(m_options & ProjectFileWriter::OmitSearchPaths))
-                write_searchpaths(project);
+                write_search_paths(project);
 
             if (project.get_scene())
                 write_scene(*project.get_scene());
