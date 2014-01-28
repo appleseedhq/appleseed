@@ -209,8 +209,7 @@ void bind_project()
 
     bpy::class_<ProjectFileReader>("ProjectFileReader")
         .def("read", &detail::project_file_reader_read)
-        .def("load_builtin", &detail::project_file_reader_load_builtin)
-        ;
+        .def("load_builtin", &detail::project_file_reader_load_builtin);
 
     bpy::enum_<ProjectFileWriter::Options>("ProjectFileWriterOptions")
         .value("Defaults", ProjectFileWriter::Defaults)
@@ -221,7 +220,7 @@ void bind_project()
 
     bpy::class_<ProjectFileWriter>("ProjectFileWriter")
         // These methods are static, but for symmetry with
-        // ProjectFileReader, I'm wrapping them non-static.
+        // ProjectFileReader we're wrapping them non-static.
         .def("write", detail::write_project_default_opts)
         .def("write", detail::write_project_with_opts);
 }
