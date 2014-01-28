@@ -418,6 +418,93 @@ namespace
                 write(**i);
         }
 
+        // Write an <assembly> element.
+        void write(const Assembly& assembly)
+        {
+            XMLElement element("assembly", m_file, m_indenter);
+            element.add_attribute("name", assembly.get_name());
+            element.write(
+                !assembly.get_parameters().empty() ||
+                !assembly.colors().empty() ||
+                !assembly.textures().empty() ||
+                !assembly.texture_instances().empty() ||
+                !assembly.bsdfs().empty() ||
+                !assembly.edfs().empty() ||
+                !assembly.surface_shaders().empty() ||
+                !assembly.materials().empty() ||
+                !assembly.lights().empty() ||
+                !assembly.objects().empty() ||
+                !assembly.object_instances().empty() ||
+                !assembly.assemblies().empty() ||
+                !assembly.assembly_instances().empty());
+
+            write_params(assembly.get_parameters());
+
+            write_collection(assembly.colors());
+            write_collection(assembly.textures());
+            write_collection(assembly.texture_instances());
+            write_collection(assembly.bsdfs());
+            write_collection(assembly.edfs());
+            write_collection(assembly.surface_shaders());
+            write_collection(assembly.materials());
+            write_collection(assembly.lights());
+            write_object_collection(assembly.objects());
+            write_collection(assembly.object_instances());
+            write_collection(assembly.assemblies());
+            write_collection(assembly.assembly_instances());
+        }
+
+        // Write an <assembly_instance> element.
+        void write(const AssemblyInstance& assembly_instance)
+        {
+            XMLElement element("assembly_instance", m_file, m_indenter);
+            element.add_attribute("name", assembly_instance.get_name());
+            element.add_attribute("assembly", assembly_instance.get_assembly_name());
+            element.write(!assembly_instance.transform_sequence().empty());
+
+            write_transform_sequence(assembly_instance.transform_sequence());
+        }
+
+        // Write an <assign_material> element.
+        void write_assign_material(
+            const string&               slot,
+            const ObjectInstance::Side  side,
+            const string&               name)
+        {
+            XMLElement element("assign_material", m_file, m_indenter);
+            element.add_attribute("slot", slot);
+            element.add_attribute("side", side == ObjectInstance::FrontSide ? "front" : "back");
+            element.add_attribute("material", name);
+            element.write(false);
+        }
+
+        // Write a series of <assign_material> elements.
+        void write_assign_materials(
+            const ObjectInstance::Side  side,
+            const StringDictionary&     material_mappings)
+        {
+            for (const_each<StringDictionary> i = material_mappings; i; ++i)
+                write_assign_material(i->name(), side, i->value<string>());
+        }
+
+        // Write a <bsdf> element.
+        void write(const BSDF& bsdf)
+        {
+            write_entity("bsdf", bsdf);
+        }
+
+        // Write a <camera> element.
+        void write(const Camera& camera)
+        {
+            XMLElement element("camera", m_file, m_indenter);
+            element.add_attribute("name", camera.get_name());
+            element.add_attribute("model", camera.get_model());
+            element.write(true);
+
+            write_params(camera.get_parameters());
+            write_transform_sequence(camera.transform_sequence());
+        }
+
         // Write a <color> element.
         void write(const ColorEntity& color_entity)
         {
@@ -431,49 +518,49 @@ namespace
             write_value_array("alpha", color_entity.get_alpha());
         }
 
-        // Write a <texture> element.
-        void write(Texture& texture)
+        // Write a <configuration> element.
+        void write_configuration(const Configuration& configuration)
         {
-            XMLElement element("texture", m_file, m_indenter);
-            element.add_attribute("name", texture.get_name());
-            element.add_attribute("model", texture.get_model());
-            element.write(!texture.get_parameters().empty());
-
-            ParamArray& params = texture.get_parameters();
-
-            if (params.strings().exist("filename"))
-                handle_link_to_asset(params, "filename");
-
-            write_params(params);
+            XMLElement element("configuration", m_file, m_indenter);
+            element.add_attribute("name", configuration.get_name());
+            if (configuration.get_base())
+                element.add_attribute("base", configuration.get_base()->get_name());
+            element.write(!configuration.get_parameters().empty());
+            write_params(configuration.get_parameters());
         }
 
-        // Write a <texture_instance> element.
-        void write(const TextureInstance& texture_instance)
+        size_t count_non_base_configurations(const ConfigurationContainer& configurations)
         {
-            XMLElement element("texture_instance", m_file, m_indenter);
-            element.add_attribute("name", texture_instance.get_name());
-            element.add_attribute("texture", texture_instance.get_texture_name());
-            element.write(!texture_instance.get_parameters().empty());
+            size_t count = 0;
 
-            write_params(texture_instance.get_parameters());
+            for (const_each<ConfigurationContainer> i = configurations; i; ++i)
+            {
+                if (!BaseConfigurationFactory::is_base_configuration(i->get_name()))
+                    ++count;
+            }
+
+            return count;
         }
 
-        // Write a <bsdf> element.
-        void write(const BSDF& bsdf)
+        // Write a <configurations> element.
+        void write_configurations(const Project& project)
         {
-            write_entity("bsdf", bsdf);
+            XMLElement element("configurations", m_file, m_indenter);
+            element.write(count_non_base_configurations(project.configurations()) > 0);
+
+            // Write configurations.
+            for (const_each<ConfigurationContainer> i = project.configurations(); i; ++i)
+            {
+                const Configuration& configuration = *i;
+                if (!BaseConfigurationFactory::is_base_configuration(configuration.get_name()))
+                    write_configuration(configuration);
+            }
         }
 
         // Write an <edf> element.
         void write(const EDF& edf)
         {
             write_entity("edf", edf);
-        }
-
-        // Write a <surface_shader> element.
-        void write(const SurfaceShader& surface_shader)
-        {
-            write_entity("surface_shader", surface_shader);
         }
 
         // Write an <environment> element.
@@ -494,10 +581,13 @@ namespace
             write_entity("environment_shader", env_shader);
         }
 
-        // Write a <material> element.
-        void write(const Material& material)
+        // Write a <frame> element.
+        void write_frame(const Frame& frame)
         {
-            write_entity("material", material);
+            XMLElement element("frame", m_file, m_indenter);
+            element.add_attribute("name", frame.get_name());
+            element.write(!frame.get_parameters().empty());
+            write_params(frame.get_parameters());
         }
 
         // Write a <light> element.
@@ -512,16 +602,10 @@ namespace
             write_transform(light.get_transform());
         }
 
-        // Write a <camera> element.
-        void write(const Camera& camera)
+        // Write a <material> element.
+        void write(const Material& material)
         {
-            XMLElement element("camera", m_file, m_indenter);
-            element.add_attribute("name", camera.get_name());
-            element.add_attribute("model", camera.get_model());
-            element.write(true);
-
-            write_params(camera.get_parameters());
-            write_transform_sequence(camera.transform_sequence());
+            write_entity("material", material);
         }
 
         // Write a collection of <object> elements.
@@ -645,28 +729,6 @@ namespace
             write_entity("object", object);
         }
 
-        // Write an <assign_material> element.
-        void write_assign_material(
-            const string&               slot,
-            const ObjectInstance::Side  side,
-            const string&               name)
-        {
-            XMLElement element("assign_material", m_file, m_indenter);
-            element.add_attribute("slot", slot);
-            element.add_attribute("side", side == ObjectInstance::FrontSide ? "front" : "back");
-            element.add_attribute("material", name);
-            element.write(false);
-        }
-
-        // Write a series of <assign_material> elements.
-        void write_assign_materials(
-            const ObjectInstance::Side  side,
-            const StringDictionary&     material_mappings)
-        {
-            for (const_each<StringDictionary> i = material_mappings; i; ++i)
-                write_assign_material(i->name(), side, i->value<string>());
-        }
-
         // Write an <object_instance> element.
         void write(const ObjectInstance& object_instance)
         {
@@ -682,51 +744,31 @@ namespace
             write_assign_materials(ObjectInstance::BackSide, object_instance.get_back_material_mappings());
         }
 
-        // Write an <assembly> element.
-        void write(const Assembly& assembly)
+        // Write an <output> element.
+        void write_output(const Project& project)
         {
-            XMLElement element("assembly", m_file, m_indenter);
-            element.add_attribute("name", assembly.get_name());
-            element.write(
-                !assembly.get_parameters().empty() ||
-                !assembly.colors().empty() ||
-                !assembly.textures().empty() ||
-                !assembly.texture_instances().empty() ||
-                !assembly.bsdfs().empty() ||
-                !assembly.edfs().empty() ||
-                !assembly.surface_shaders().empty() ||
-                !assembly.materials().empty() ||
-                !assembly.lights().empty() ||
-                !assembly.objects().empty() ||
-                !assembly.object_instances().empty() ||
-                !assembly.assemblies().empty() ||
-                !assembly.assembly_instances().empty());
+            XMLElement element("output", m_file, m_indenter);
+            element.write(project.get_frame() != 0);
 
-            write_params(assembly.get_parameters());
-
-            write_collection(assembly.colors());
-            write_collection(assembly.textures());
-            write_collection(assembly.texture_instances());
-            write_collection(assembly.bsdfs());
-            write_collection(assembly.edfs());
-            write_collection(assembly.surface_shaders());
-            write_collection(assembly.materials());
-            write_collection(assembly.lights());
-            write_object_collection(assembly.objects());
-            write_collection(assembly.object_instances());
-            write_collection(assembly.assemblies());
-            write_collection(assembly.assembly_instances());
+            if (project.get_frame())
+                write_frame(*project.get_frame());
         }
 
-        // Write an <assembly_instance> element.
-        void write(const AssemblyInstance& assembly_instance)
+        // Write a <project> element.
+        void write_project(const Project& project)
         {
-            XMLElement element("assembly_instance", m_file, m_indenter);
-            element.add_attribute("name", assembly_instance.get_name());
-            element.add_attribute("assembly", assembly_instance.get_assembly_name());
-            element.write(!assembly_instance.transform_sequence().empty());
+            XMLElement element("project", m_file, m_indenter);
+            element.add_attribute("format_revision", project.get_format_revision());
+            element.write(true);
 
-            write_transform_sequence(assembly_instance.transform_sequence());
+            if (!(m_options & ProjectFileWriter::OmitSearchPaths))
+                write_search_paths(project);
+
+            if (project.get_scene())
+                write_scene(*project.get_scene());
+
+            write_output(project);
+            write_configurations(project);
         }
 
         // Write a <scene> element.
@@ -762,62 +804,13 @@ namespace
             write_collection(scene.assembly_instances());
         }
 
-        // Write a <frame> element.
-        void write_frame(const Frame& frame)
+        // Write a <search_path> element.
+        void write_search_path(const char* search_path)
         {
-            XMLElement element("frame", m_file, m_indenter);
-            element.add_attribute("name", frame.get_name());
-            element.write(!frame.get_parameters().empty());
-            write_params(frame.get_parameters());
-        }
+            XMLElement element("search_path", m_file, m_indenter);
+            element.write(true);
 
-        // Write a <configuration> element.
-        void write_configuration(const Configuration& configuration)
-        {
-            XMLElement element("configuration", m_file, m_indenter);
-            element.add_attribute("name", configuration.get_name());
-            if (configuration.get_base())
-                element.add_attribute("base", configuration.get_base()->get_name());
-            element.write(!configuration.get_parameters().empty());
-            write_params(configuration.get_parameters());
-        }
-
-        size_t count_non_base_configurations(const ConfigurationContainer& configurations)
-        {
-            size_t count = 0;
-
-            for (const_each<ConfigurationContainer> i = configurations; i; ++i)
-            {
-                if (!BaseConfigurationFactory::is_base_configuration(i->get_name()))
-                    ++count;
-            }
-
-            return count;
-        }
-
-        // Write a <configurations> element.
-        void write_configurations(const Project& project)
-        {
-            XMLElement element("configurations", m_file, m_indenter);
-            element.write(count_non_base_configurations(project.configurations()) > 0);
-
-            // Write configurations.
-            for (const_each<ConfigurationContainer> i = project.configurations(); i; ++i)
-            {
-                const Configuration& configuration = *i;
-                if (!BaseConfigurationFactory::is_base_configuration(configuration.get_name()))
-                    write_configuration(configuration);
-            }
-        }
-
-        // Write an <output> element.
-        void write_output(const Project& project)
-        {
-            XMLElement element("output", m_file, m_indenter);
-            element.write(project.get_frame() != 0);
-
-            if (project.get_frame())
-                write_frame(*project.get_frame());
+            std::fprintf(m_file, "%s%s\n", m_indenter.c_str(), search_path);
         }
 
         // Write a <search_paths> element.
@@ -835,30 +828,37 @@ namespace
             }
         }
 
-        // Write a <search_path> element.
-        void write_search_path(const char* search_path)
+        // Write a <surface_shader> element.
+        void write(const SurfaceShader& surface_shader)
         {
-            XMLElement element("search_path", m_file, m_indenter);
-            element.write(true);
-
-            std::fprintf(m_file, "%s%s\n", m_indenter.c_str(), search_path);
+            write_entity("surface_shader", surface_shader);
         }
 
-        // Write a <project> element.
-        void write_project(const Project& project)
+        // Write a <texture> element.
+        void write(Texture& texture)
         {
-            XMLElement element("project", m_file, m_indenter);
-            element.add_attribute("format_revision", project.get_format_revision());
-            element.write(true);
+            XMLElement element("texture", m_file, m_indenter);
+            element.add_attribute("name", texture.get_name());
+            element.add_attribute("model", texture.get_model());
+            element.write(!texture.get_parameters().empty());
 
-            if (!(m_options & ProjectFileWriter::OmitSearchPaths))
-                write_search_paths(project);
+            ParamArray& params = texture.get_parameters();
 
-            if (project.get_scene())
-                write_scene(*project.get_scene());
+            if (params.strings().exist("filename"))
+                handle_link_to_asset(params, "filename");
 
-            write_output(project);
-            write_configurations(project);
+            write_params(params);
+        }
+
+        // Write a <texture_instance> element.
+        void write(const TextureInstance& texture_instance)
+        {
+            XMLElement element("texture_instance", m_file, m_indenter);
+            element.add_attribute("name", texture_instance.get_name());
+            element.add_attribute("texture", texture_instance.get_texture_name());
+            element.write(!texture_instance.get_parameters().empty());
+
+            write_params(texture_instance.get_parameters());
         }
     };
 }
