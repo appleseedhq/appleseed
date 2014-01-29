@@ -88,7 +88,10 @@ namespace
 
         virtual bool applies(const Entity& entity) const OVERRIDE
         {
-            return m_filter.is_valid() ? m_filter.accepts(entity.get_name()) : false;
+            return
+                m_filter.is_valid()
+                    ? m_filter.accepts(entity.get_path().c_str())
+                    : false;
         }
 
       private:
