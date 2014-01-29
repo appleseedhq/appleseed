@@ -43,6 +43,7 @@
 #include "renderer/modeling/environmentedf/gradientenvironmentedf.h"
 #include "renderer/modeling/environmentedf/latlongmapenvironmentedf.h"
 #include "renderer/modeling/environmentedf/mirrorballmapenvironmentedf.h"
+#include "renderer/modeling/environmentshader/environmentshader.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/input/colorsource.h"
 #include "renderer/modeling/input/inputformat.h"
@@ -51,11 +52,17 @@
 #include "renderer/modeling/light/pointlight.h"
 #include "renderer/modeling/light/spotlight.h"
 #include "renderer/modeling/light/sunlight.h"
+#include "renderer/modeling/material/material.h"
+#include "renderer/modeling/object/object.h"
 #include "renderer/modeling/project/configuration.h"
 #include "renderer/modeling/project/project.h"
+#include "renderer/modeling/project/regexrenderlayerrule.h"
 #include "renderer/modeling/scene/assembly.h"
+#include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/containers.h"
+#include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
+#include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
@@ -70,6 +77,7 @@
 #include "foundation/utility/string.h"
 
 // Standard headers.
+#include <algorithm>
 #include <cassert>
 #include <cstring>
 #include <string>
@@ -435,7 +443,7 @@ namespace
 
         virtual void update() OVERRIDE
         {
-            Scene* scene = m_project.get_scene();
+            const Scene* scene = m_project.get_scene();
 
             if (scene)
                 update_assemblies(scene->assemblies());
@@ -613,6 +621,79 @@ namespace
             }
         }
     };
+
+
+    //
+    // Update from revision 6 to revision 7.
+    //
+
+    class Updater_6_to_7
+      : public Updater
+    {
+      public:
+        explicit Updater_6_to_7(Project& project)
+          : Updater(project, 6)
+        {
+        }
+
+        virtual void update() OVERRIDE
+        {
+            const Scene* scene = m_project.get_scene();
+
+            if (scene)
+            {
+                update_collection(scene->environment_edfs());
+                update_collection(scene->environment_shaders());
+                update_collection(scene->assemblies());
+                update_collection(scene->assembly_instances());
+            }
+        }
+
+      private:
+        template <typename Collection>
+        void update_collection(Collection& collection)
+        {
+            for (each<Collection> i = collection; i; ++i)
+                update_entity(*i);
+        }
+
+        template <typename Entity>
+        void update_entity(Entity& entity)
+        {
+            const string render_layer_name = entity.get_render_layer_name();
+
+            if (!render_layer_name.empty())
+            {
+                const string entity_path = entity.get_path();
+
+                string rule_name = entity_path;
+                replace(rule_name.begin(), rule_name.end(), '/', '_');
+
+                m_project.add_render_layer_rule(
+                    RegExRenderLayerRuleFactory().create(
+                        rule_name.c_str(),
+                        ParamArray()
+                            .insert("render_layer", render_layer_name)
+                            .insert("order", "1")
+                            .insert("pattern", "^" + entity_path + "$")));
+
+                entity.get_parameters().strings().remove("render_layer");
+            }
+        }
+
+        template <>
+        void update_entity(Assembly& assembly)
+        {
+            update_collection(assembly.edfs());
+            update_collection(assembly.lights());
+            update_collection(assembly.materials());
+            update_collection(assembly.objects());
+            update_collection(assembly.object_instances());
+            update_collection(assembly.surface_shaders());
+            update_collection(assembly.assemblies());
+            update_collection(assembly.assembly_instances());
+        }
+    };
 }
 
 bool ProjectFileUpdater::update(Project& project, const size_t to_revision)
@@ -641,8 +722,9 @@ bool ProjectFileUpdater::update(Project& project, const size_t to_revision)
       case 3: UPDATE(3, 4);
       case 4: UPDATE(4, 5);
       case 5: UPDATE(5, 6);
+      case 6: UPDATE(6, 7);
 
-      case 6:
+      case 7:
         // Project is up-to-date.
         break;
 
