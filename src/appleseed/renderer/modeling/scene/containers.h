@@ -87,6 +87,7 @@ typedef TypedEntityVector<TextureInstance>      TextureInstanceContainer;
 typedef TypedEntityVector<ShaderGroup>          ShaderGroupContainer;
 #endif
 
+
 //
 // Exception thrown when an entity is not found.
 //
