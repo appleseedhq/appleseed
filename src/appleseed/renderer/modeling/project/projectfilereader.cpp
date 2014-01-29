@@ -188,7 +188,7 @@ namespace
                 boost::filesystem::path(project.get_path()).parent_path();
 
             // Set the root path in the search path collection.
-            m_project.get_search_paths().set_root_path(project_root_path.string());
+            m_project.search_paths().set_root_path(project_root_path.string());
         }
 
         Project& get_project()
@@ -1127,7 +1127,7 @@ namespace
                         factory->create(
                             m_name.c_str(),
                             m_params,
-                            m_context.get_project().get_search_paths());
+                            m_context.get_project().search_paths());
                 }
                 else
                 {
@@ -1534,7 +1534,7 @@ namespace
                     {
                         MeshObjectArray object_array;
                         if (MeshObjectReader::read(
-                                m_context.get_project().get_search_paths(),
+                                m_context.get_project().search_paths(),
                                 m_name.c_str(),
                                 m_params,
                                 object_array))
@@ -2439,7 +2439,7 @@ namespace
                 {
                     SearchPathElementHandler* path_handler =
                         static_cast<SearchPathElementHandler*>(handler);
-                    m_project->get_search_paths().push_back(path_handler->get_path());
+                    m_project->search_paths().push_back(path_handler->get_path());
                 }
                 break;
 

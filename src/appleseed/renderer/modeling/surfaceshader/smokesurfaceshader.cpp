@@ -114,7 +114,7 @@ namespace
 
             if (m_first_frame)
             {
-                create_voxel_grid(project.get_search_paths());
+                create_voxel_grid(project.search_paths());
                 print_channel_availability();
 
                 if (m_voxel_grid.get())

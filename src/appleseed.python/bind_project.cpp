@@ -74,7 +74,7 @@ namespace detail
     {
         bpy::list paths;
 
-        const SearchPaths& search_paths = project->get_search_paths();
+        const SearchPaths& search_paths = project->search_paths();
 
         for (size_t i = 0; i < search_paths.size(); ++i)
             paths.append(search_paths[i]);
@@ -84,13 +84,13 @@ namespace detail
 
     void project_set_search_paths(Project* project, const bpy::list& paths)
     {
-        project->get_search_paths().clear();
+        project->search_paths().clear();
 
         for (bpy::ssize_t i = 0, e = bpy::len(paths); i < e; ++i)
         {
             const bpy::extract<const char*> extractor(paths[i]);
             if (extractor.check())
-                project->get_search_paths().push_back(extractor());
+                project->search_paths().push_back(extractor());
             else
             {
                 PyErr_SetString(PyExc_TypeError, "Incompatible type. Only strings accepted.");

@@ -274,19 +274,19 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     std::string search_paths;
 
     // Skip search paths for builtin projects.
-    if (m_project.get_search_paths().has_root_path())
+    if (m_project.search_paths().has_root_path())
     {
         // Setup texture / shader search paths.
         // In OIIO / OSL, the path priorities are the opposite of appleseed, 
         // so we copy the paths in reverse order.
         
-        const filesystem::path root_path = m_project.get_search_paths().get_root_path();
+        const filesystem::path root_path = m_project.search_paths().get_root_path();
 
-        if (!m_project.get_search_paths().empty())
+        if (!m_project.search_paths().empty())
         {
-            for (size_t i = 0, e = m_project.get_search_paths().size(); i != e; ++i)
+            for (size_t i = 0, e = m_project.search_paths().size(); i != e; ++i)
             {
-                filesystem::path p(m_project.get_search_paths()[e - 1 - i]);
+                filesystem::path p(m_project.search_paths()[e - 1 - i]);
 
                 if (p.is_relative())
                    p = root_path / p;

@@ -424,7 +424,7 @@ inline foundation::auto_release_ptr<renderer::Texture> ProjectBuilder::create_en
     const FactoryType* factory = factory_registrar.lookup(model.c_str());
     assert(factory);
 
-    return factory->create(name.c_str(), clean_values, m_project.get_search_paths());
+    return factory->create(name.c_str(), clean_values, m_project.search_paths());
 }
 
 template <>

@@ -154,12 +154,7 @@ const char* Project::get_path() const
     return impl->m_path.c_str();
 }
 
-SearchPaths& Project::get_search_paths()
-{
-    return impl->m_search_paths;
-}
-
-const SearchPaths& Project::get_search_paths() const
+SearchPaths& Project::search_paths() const
 {
     return impl->m_search_paths;
 }

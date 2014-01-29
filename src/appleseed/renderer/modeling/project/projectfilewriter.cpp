@@ -111,7 +111,7 @@ namespace
             const char*         filepath,
             FILE*               file,
             const int           options)
-          : m_project_search_paths(project.get_search_paths())
+          : m_project_search_paths(project.search_paths())
           , m_project_old_root_path(project.get_path())
           , m_project_new_root_path(filepath)
           , m_project_old_root_dir(m_project_old_root_path.parent_path())
@@ -816,7 +816,7 @@ namespace
         // Write a <search_paths> element.
         void write_search_paths(const Project& project)
         {
-            const SearchPaths& search_paths = project.get_search_paths();
+            const SearchPaths& search_paths = project.search_paths();
 
             if (!search_paths.empty())
             {

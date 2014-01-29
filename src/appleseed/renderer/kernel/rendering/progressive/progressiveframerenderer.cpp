@@ -124,7 +124,7 @@ namespace
             if (!m_params.m_ref_image_path.empty())
             {
                 const string ref_image_path =
-                    project.get_search_paths().qualify(m_params.m_ref_image_path);
+                    project.search_paths().qualify(m_params.m_ref_image_path);
 
                 RENDERER_LOG_DEBUG("loading reference image %s...", ref_image_path.c_str());
 

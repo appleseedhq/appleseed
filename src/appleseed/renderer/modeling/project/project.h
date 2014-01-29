@@ -78,9 +78,8 @@ class DLLSYMBOL Project
     void set_path(const char* path);
     const char* get_path() const;
 
-    // Get the search paths.
-    foundation::SearchPaths& get_search_paths();
-    const foundation::SearchPaths& get_search_paths() const;
+    // Access the search paths.
+    foundation::SearchPaths& search_paths() const;
 
     // Set the scene, replacing the existing scene.
     void set_scene(foundation::auto_release_ptr<Scene> scene);
