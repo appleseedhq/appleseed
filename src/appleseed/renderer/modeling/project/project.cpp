@@ -179,12 +179,7 @@ Frame* Project::get_frame() const
     return impl->m_frame.get();
 }
 
-ConfigurationContainer& Project::configurations()
-{
-    return impl->m_configurations;
-}
-
-const ConfigurationContainer& Project::configurations() const
+ConfigurationContainer& Project::configurations() const
 {
     return impl->m_configurations;
 }

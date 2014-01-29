@@ -96,8 +96,7 @@ class DLLSYMBOL Project
     Frame* get_frame() const;
 
     // Access the configurations.
-    ConfigurationContainer& configurations();
-    const ConfigurationContainer& configurations() const;
+    ConfigurationContainer& configurations() const;
 
     // Add the default configurations to the project.
     void add_default_configurations();
