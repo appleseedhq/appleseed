@@ -100,9 +100,6 @@ void bind_entity()
         .def("get_parameters", detail::entity_get_parameters)
         .def("set_parameters", detail::entity_set_parameters)
 
-        .def("get_render_layer_name", &Entity::get_render_layer_name)
-        .def("set_render_layer_name", &Entity::set_render_layer_name)
-
         .def("set_render_layer_index", &Entity::set_render_layer_index)
         .def("get_render_layer_index", &Entity::get_render_layer_index);
 

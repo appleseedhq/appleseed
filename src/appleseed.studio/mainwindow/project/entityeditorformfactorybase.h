@@ -58,10 +58,6 @@ class EntityEditorFormFactoryBase
         const foundation::Dictionary&       values,
         InputMetadataCollection&            metadata) const;
 
-    void add_render_layer_input_metadata(
-        const foundation::Dictionary&       values,
-        InputMetadataCollection&            metadata) const;
-
     void add_input_metadata(
         const foundation::DictionaryArray&  widgets,
         const foundation::Dictionary&       values,

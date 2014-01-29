@@ -54,7 +54,6 @@ void SingleModelEntityEditorFormFactory::update(
     metadata.clear();
 
     add_name_input_metadata(values, metadata);
-    add_render_layer_input_metadata(values, metadata);
 
     add_input_metadata(m_entity_widgets, values, metadata);
 }

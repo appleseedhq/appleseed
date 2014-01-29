@@ -660,7 +660,12 @@ namespace
         template <typename Entity>
         void update_entity(Entity& entity)
         {
-            const string render_layer_name = entity.get_render_layer_name();
+            StringDictionary& string_params = entity.get_parameters().strings();
+
+            const string render_layer_name =
+                string_params.exist("render_layer")
+                    ? string_params.get<string>("render_layer")
+                    : string();
 
             if (!render_layer_name.empty())
             {
@@ -677,7 +682,7 @@ namespace
                             .insert("order", "1")
                             .insert("pattern", "^" + entity_path + "$")));
 
-                entity.get_parameters().strings().remove("render_layer");
+                string_params.remove("render_layer");
             }
         }
 

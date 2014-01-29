@@ -96,7 +96,6 @@ AssemblyItem::AssemblyItem(
   , m_project_builder(project_builder)
 {
     set_title(QString::fromAscii(assembly.get_name()));
-    set_render_layer(QString::fromAscii(assembly.get_render_layer_name()));
 
     set_allow_edition(false);
 

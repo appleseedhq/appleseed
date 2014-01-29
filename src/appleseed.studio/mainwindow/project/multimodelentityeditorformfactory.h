@@ -91,7 +91,6 @@ void MultiModelEntityEditorFormFactory<FactoryRegistrar>::update(
     metadata.clear();
 
     add_name_input_metadata(values, metadata);
-    add_render_layer_input_metadata(values, metadata);
 
     const std::string model =
         add_model_widget_definition(values, metadata);

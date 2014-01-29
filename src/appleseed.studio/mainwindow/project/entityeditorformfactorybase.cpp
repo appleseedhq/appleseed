@@ -66,21 +66,6 @@ void EntityEditorFormFactoryBase::add_name_input_metadata(
             .insert("focus", "true"));
 }
 
-void EntityEditorFormFactoryBase::add_render_layer_input_metadata(
-    const Dictionary&                   values,
-    InputMetadataCollection&            metadata) const
-{
-    const string render_layer = get_value(values, "render_layer", "");
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "render_layer")
-            .insert("label", "Render Layer")
-            .insert("type", "text")
-            .insert("use", "optional")
-            .insert("default", render_layer));
-}
-
 void EntityEditorFormFactoryBase::add_input_metadata(
     const DictionaryArray&              widgets,
     const Dictionary&                   values,

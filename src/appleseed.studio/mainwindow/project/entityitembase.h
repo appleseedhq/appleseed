@@ -91,7 +91,6 @@ template <typename Entity>
 void EntityItemBase<Entity>::update()
 {
     set_title(QString::fromAscii(m_entity->get_name()));
-    set_render_layer(QString::fromAscii(m_entity->get_render_layer_name()));
 }
 
 }       // namespace studio
