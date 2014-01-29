@@ -141,7 +141,7 @@ inline std::string Entity::get_path() const
     while (entity)
     {
         if (!path.empty())
-            path.insert(0, " > ");
+            path.insert(0, ">");
 
         path.insert(0, entity->get_name());
 
