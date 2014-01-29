@@ -33,6 +33,8 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entity.h"
 #include "renderer/modeling/project/configurationcontainer.h"
+#include "renderer/modeling/project/renderlayerrule.h"
+#include "renderer/modeling/project/renderlayerrulecontainer.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -94,6 +96,12 @@ class DLLSYMBOL Project
     // Access the frame.
     // Return 0 if the project does not contain a frame.
     Frame* get_frame() const;
+
+    // Add a render layer rule.
+    void add_render_layer_rule(foundation::auto_release_ptr<RenderLayerRule> rule);
+
+    // Access the render layer rules.
+    RenderLayerRuleContainer& render_layer_rules() const;
 
     // Access the configurations.
     ConfigurationContainer& configurations() const;

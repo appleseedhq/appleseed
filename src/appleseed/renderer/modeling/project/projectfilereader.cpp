@@ -58,8 +58,11 @@
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/project/configuration.h"
 #include "renderer/modeling/project/configurationcontainer.h"
+#include "renderer/modeling/project/irenderlayerrulefactory.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/project/projectfileupdater.h"
+#include "renderer/modeling/project/renderlayerrule.h"
+#include "renderer/modeling/project/renderlayerrulefactoryregistrar.h"
 #include "renderer/modeling/project-builtin/cornellboxproject.h"
 #include "renderer/modeling/project-builtin/defaultproject.h"
 #include "renderer/modeling/scene/assembly.h"
@@ -367,6 +370,8 @@ namespace
         ElementParameter,
         ElementParameters,
         ElementProject,
+        ElementRenderLayerRule,
+        ElementRenderLayers,
         ElementRotation,
         ElementScaling,
         ElementScene,
@@ -2156,6 +2161,72 @@ namespace
 
 
     //
+    // <render_layer_rule> element handler.
+    //
+
+    class RenderLayerRuleElementHandler
+      : public EntityElementHandler<
+                   RenderLayerRule,
+                   RenderLayerRuleFactoryRegistrar,
+                   ParametrizedElementHandler>
+    {
+      public:
+        explicit RenderLayerRuleElementHandler(ParseContext& context)
+          : EntityElementHandler<
+                RenderLayerRule,
+                RenderLayerRuleFactoryRegistrar,
+                ParametrizedElementHandler>("render layer rule", context)
+        {
+        }
+    };
+
+
+    //
+    // <render_layers> element handler.
+    //
+
+    class RenderLayersElementHandler
+      : public ElementHandlerBase
+    {
+      public:
+        explicit RenderLayersElementHandler(ParseContext& context)
+          : m_context(context)
+          , m_project(0)
+        {
+        }
+
+        void set_project(Project* project)
+        {
+            m_project = project;
+        }
+
+        virtual void end_child_element(
+            const ProjectElementID      element,
+            ElementHandlerType*         handler) OVERRIDE
+        {
+            assert(m_project);
+
+            switch (element)
+            {
+              case ElementRenderLayerRule:
+                {
+                    RenderLayerRuleElementHandler* rule_handler =
+                        static_cast<RenderLayerRuleElementHandler*>(handler);
+                    m_project->add_render_layer_rule(rule_handler->get_entity());
+                }
+                break;
+
+              assert_otherwise;
+            }
+        }
+
+      private:
+        ParseContext&   m_context;
+        Project*        m_project;
+    };
+
+
+    //
     // <frame> element handler.
     //
 
@@ -2507,6 +2578,14 @@ namespace
                 }
                 break;
 
+              case ElementRenderLayers:
+                {
+                    RenderLayersElementHandler* render_layers_handler =
+                        static_cast<RenderLayersElementHandler*>(handler);
+                    render_layers_handler->set_project(m_project);
+                }
+                break;
+
               case ElementScene:
                 break;
 
@@ -2536,6 +2615,10 @@ namespace
 
               case ElementOutput:
                 // Nothing to do, frames were directly inserted into the project.
+                break;
+
+              case ElementRenderLayers:
+                // Nothing to do, render layer rules were directly inserted into the project.
                 break;
 
               case ElementScene:
@@ -2596,6 +2679,8 @@ namespace
             register_factory_helper<OutputElementHandler>("output", ElementOutput);
             register_factory_helper<ParameterElementHandler>("parameter", ElementParameter);
             register_factory_helper<ParametersElementHandler>("parameters", ElementParameters);
+            register_factory_helper<RenderLayerRuleElementHandler>("render_layer_rule", ElementRenderLayerRule);
+            register_factory_helper<RenderLayersElementHandler>("render_layers", ElementRenderLayers);
             register_factory_helper<RotationElementHandler>("rotation", ElementRotation);
             register_factory_helper<ScalingElementHandler>("scaling", ElementScaling);
             register_factory_helper<SceneElementHandler>("scene", ElementScene);

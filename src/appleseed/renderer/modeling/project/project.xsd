@@ -284,6 +284,22 @@
                         </xsd:complexContent>
                     </xsd:complexType>
                 </xsd:element>
+                <xsd:element name="render_layers" minOccurs="0">
+                    <xsd:complexType>
+                        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                            <xsd:element name="render_layer_rule">
+                                <xsd:complexType>
+                                    <xsd:complexContent>
+                                        <xsd:extension base="parameterSet">
+                                            <xsd:attribute name="name" type="xsd:string" use="required"/>
+                                            <xsd:attribute name="model" type="xsd:string" use="required"/>
+                                        </xsd:extension>
+                                    </xsd:complexContent>
+                                </xsd:complexType>
+                            </xsd:element>
+                        </xsd:choice>
+                    </xsd:complexType>
+                </xsd:element>
                 <xsd:element name="output">
                     <xsd:complexType>
                         <xsd:choice minOccurs="0" maxOccurs="unbounded">

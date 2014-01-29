@@ -40,12 +40,40 @@
 namespace foundation    { class StringDictionary; }
 namespace renderer      { class Assembly; }
 namespace renderer      { class BaseGroup; }
+namespace renderer      { class Project; }
 namespace renderer      { class Scene; }
 
 namespace appleseed {
 namespace studio {
 
+//
+// Browse the entities from a parent entity.
+//
+
 template <typename ParentEntity> class EntityBrowser;
+
+
+//
+// Browse the entities in a project.
+//
+
+template <>
+class EntityBrowser<renderer::Project>
+  : public EntityEditorWindow::IEntityBrowser
+{
+  public:
+    explicit EntityBrowser(const renderer::Project& scene);
+
+    virtual foundation::StringDictionary get_entities(const std::string& type) const;
+
+  private:
+    const renderer::Project& m_project;
+};
+
+
+//
+// Browse the entities in a base group (the common denominator between a scene and an assembly).
+//
 
 template <>
 class EntityBrowser<renderer::BaseGroup>
@@ -60,6 +88,11 @@ class EntityBrowser<renderer::BaseGroup>
     const renderer::BaseGroup& m_base_group;
 };
 
+
+//
+// Browse the entities in a scene.
+//
+
 template <>
 class EntityBrowser<renderer::Scene>
   : public EntityBrowser<renderer::BaseGroup>
@@ -72,6 +105,11 @@ class EntityBrowser<renderer::Scene>
   private:
     const renderer::Scene& m_scene;
 };
+
+
+//
+// Browse the entities in an assembly.
+//
 
 template <>
 class EntityBrowser<renderer::Assembly>

@@ -131,12 +131,13 @@ class ProjectBuilder
     renderer::Project&                              m_project;
     RenderingManager&                               m_rendering_manager;
 
-    renderer::CameraFactoryRegistrar                m_camera_factory_registrar;
     renderer::BSDFFactoryRegistrar                  m_bsdf_factory_registrar;
+    renderer::CameraFactoryRegistrar                m_camera_factory_registrar;
     renderer::EDFFactoryRegistrar                   m_edf_factory_registrar;
     renderer::EnvironmentEDFFactoryRegistrar        m_environment_edf_factory_registrar;
     renderer::EnvironmentShaderFactoryRegistrar     m_environment_shader_factory_registrar;
     renderer::LightFactoryRegistrar                 m_light_factory_registrar;
+    renderer::RenderLayerRuleFactoryRegistrar       m_render_layuer_rule_factory_registrar;
     renderer::SurfaceShaderFactoryRegistrar         m_surface_shader_factory_registrar;
     renderer::TextureFactoryRegistrar               m_texture_factory_registrar;
 
@@ -157,17 +158,17 @@ class ProjectBuilder
 //
 
 template <>
-inline const renderer::EntityTraits<renderer::Camera>::FactoryRegistrarType&
-ProjectBuilder::get_factory_registrar<renderer::Camera>() const
-{
-    return m_camera_factory_registrar;
-}
-
-template <>
 inline const renderer::EntityTraits<renderer::BSDF>::FactoryRegistrarType&
 ProjectBuilder::get_factory_registrar<renderer::BSDF>() const
 {
     return m_bsdf_factory_registrar;
+}
+
+template <>
+inline const renderer::EntityTraits<renderer::Camera>::FactoryRegistrarType&
+ProjectBuilder::get_factory_registrar<renderer::Camera>() const
+{
+    return m_camera_factory_registrar;
 }
 
 template <>
@@ -196,6 +197,13 @@ inline const renderer::EntityTraits<renderer::Light>::FactoryRegistrarType&
 ProjectBuilder::get_factory_registrar<renderer::Light>() const
 {
     return m_light_factory_registrar;
+}
+
+template <>
+inline const renderer::EntityTraits<renderer::RenderLayerRule>::FactoryRegistrarType&
+ProjectBuilder::get_factory_registrar<renderer::RenderLayerRule>() const
+{
+    return m_render_layuer_rule_factory_registrar;
 }
 
 template <>

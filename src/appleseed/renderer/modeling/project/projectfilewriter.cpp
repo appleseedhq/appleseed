@@ -47,6 +47,8 @@
 #include "renderer/modeling/project/configuration.h"
 #include "renderer/modeling/project/configurationcontainer.h"
 #include "renderer/modeling/project/project.h"
+#include "renderer/modeling/project/renderlayerrule.h"
+#include "renderer/modeling/project/renderlayerrulecontainer.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/containers.h"
@@ -383,38 +385,38 @@ namespace
             write_params(entity.get_parameters());
         }
 
-        // An alphabetically-sorted vector of entities.
+        struct EntityOrderingPredicate
+        {
+            bool operator()(const Entity* lhs, const Entity* rhs) const
+            {
+                return strcmp(lhs->get_name(), rhs->get_name()) < 0;
+            }
+        };
+
+        // An alphabetically-sorted vector of mutable entities.
         template <typename Collection>
-        struct SortedEntityVector
+        struct SortedMutableEntityVector
           : public vector<typename Collection::value_type*>
         {
             typedef vector<typename Collection::value_type*> Base;
 
-            struct EntitySortingPredicate
-            {
-                bool operator()(const Entity* lhs, const Entity* rhs) const
-                {
-                    return strcmp(lhs->get_name(), rhs->get_name()) < 0;
-                }
-            };
-
-            explicit SortedEntityVector(Collection& collection)
+            explicit SortedMutableEntityVector(Collection& collection)
             {
                 Base::reserve(collection.size());
 
                 for (each<Collection> i = collection; i; ++i)
                     Base::push_back(&*i);
 
-                sort(Base::begin(), Base::end(), EntitySortingPredicate());
+                sort(Base::begin(), Base::end(), EntityOrderingPredicate());
             }
         };
 
         template <typename Collection>
         void write_collection(Collection& collection)
         {
-            const SortedEntityVector<Collection> sorted(collection);
+            const SortedMutableEntityVector<Collection> sorted(collection);
 
-            for (const_each<SortedEntityVector<Collection> > i = sorted; i; ++i)
+            for (const_each<SortedMutableEntityVector<Collection> > i = sorted; i; ++i)
                 write(**i);
         }
 
@@ -611,10 +613,10 @@ namespace
         // Write a collection of <object> elements.
         void write_object_collection(ObjectContainer& objects)
         {
-            const SortedEntityVector<ObjectContainer> sorted(objects);
+            const SortedMutableEntityVector<ObjectContainer> sorted(objects);
             set<string> groups;
 
-            for (const_each<SortedEntityVector<ObjectContainer> > i = sorted; i; ++i)
+            for (const_each<SortedMutableEntityVector<ObjectContainer> > i = sorted; i; ++i)
             {
                 Object& object = **i;
 
@@ -767,8 +769,27 @@ namespace
             if (project.get_scene())
                 write_scene(*project.get_scene());
 
+            write_render_layers(project);
             write_output(project);
             write_configurations(project);
+        }
+
+        // Write a <render_layers> element.
+        void write_render_layers(const Project& project)
+        {
+            if (!project.render_layer_rules().empty())
+            {
+                XMLElement element("render_layers", m_file, m_indenter);
+                element.write(true);
+
+                write_collection(project.render_layer_rules());
+            }
+        }
+
+        // Write a <render_layer_rule> element.
+        void write(const RenderLayerRule& rule)
+        {
+            write_entity("render_layer_rule", rule);
         }
 
         // Write a <scene> element.

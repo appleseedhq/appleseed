@@ -62,6 +62,7 @@
 #include "foundation/utility/searchpaths.h"
 
 // Standard headers.
+#include <algorithm>
 #include <cassert>
 #include <map>
 #include <memory>
@@ -100,6 +101,7 @@ struct Project::Impl
     string                      m_path;
     auto_release_ptr<Scene>     m_scene;
     auto_release_ptr<Frame>     m_frame;
+    RenderLayerRuleContainer    m_render_layer_rules;
     ConfigurationContainer      m_configurations;
     SearchPaths                 m_search_paths;
     auto_ptr<TraceContext>      m_trace_context;
@@ -179,6 +181,16 @@ Frame* Project::get_frame() const
     return impl->m_frame.get();
 }
 
+void Project::add_render_layer_rule(foundation::auto_release_ptr<RenderLayerRule> rule)
+{
+    impl->m_render_layer_rules.insert(rule);
+}
+
+RenderLayerRuleContainer& Project::render_layer_rules() const
+{
+    return impl->m_render_layer_rules;
+}
+
 ConfigurationContainer& Project::configurations() const
 {
     return impl->m_configurations;
@@ -192,15 +204,25 @@ void Project::add_default_configurations()
 
 namespace
 {
+    struct RuleOrderingPredicate
+    {
+        bool operator()(const RenderLayerRule* lhs, const RenderLayerRule* rhs) const
+        {
+            return lhs->get_order() < rhs->get_order();
+        }
+    };
+
+    typedef vector<const RenderLayerRule*> RenderLayerRuleVector;
     typedef map<string, size_t> RenderLayerMapping;
 
-    void assign_entity_to_render_layer(
-        ImageStack&             aov_images,
-        RenderLayerMapping&     mapping,
-        const PixelFormat       format,
-        Entity&                 entity)
+    void apply_render_layer_rule_to_entity(
+        const RenderLayerRule&          rule,
+        RenderLayerMapping&             mapping,
+        ImageStack&                     images,
+        const PixelFormat               format,
+        Entity&                         entity)
     {
-        const string render_layer_name = entity.get_render_layer_name();
+        const string render_layer_name = rule.get_render_layer();
 
         if (render_layer_name.empty())
         {
@@ -230,97 +252,133 @@ namespace
             return;
         }
 
-        const size_t aov_image_index = aov_images.append(render_layer_name.c_str(), format);
-        
-        mapping[render_layer_name] = aov_image_index;
-        entity.set_render_layer_index(aov_image_index);
+        const size_t image_index = images.append(render_layer_name.c_str(), format);
+
+        mapping[render_layer_name] = image_index;
+        entity.set_render_layer_index(image_index);
+    }
+
+    void apply_render_layer_rules_to_entity(
+        const RenderLayerRuleVector&    rules,
+        RenderLayerMapping&             mapping,
+        ImageStack&                     images,
+        const PixelFormat               format,
+        Entity&                         entity)
+    {
+        for (const_each<RenderLayerRuleVector> r = rules; r; ++r)
+        {
+            const RenderLayerRule* rule = *r;
+
+            if (rule->get_entity_type_uid() == ~0 ||
+                rule->get_entity_type_uid() == entity.get_class_uid())
+            {
+                if (rule->applies(entity))
+                {
+                    RENDERER_LOG_DEBUG(
+                        "assigning entity \"%s\" to render layer \"%s\" (via rule \"%s\").",
+                        entity.get_name(),
+                        rule->get_render_layer(),
+                        rule->get_name());
+
+                    apply_render_layer_rule_to_entity(*rule, mapping, images, format, entity);
+
+                    break;
+                }
+            }
+        }
     }
 
     template <typename EntityCollection>
-    void assign_entities_to_render_layers(
-        ImageStack&             aov_images,
-        RenderLayerMapping&     mapping,
-        const PixelFormat       format,
-        EntityCollection&       entities)
+    void apply_render_layer_rules_to_entities(
+        const RenderLayerRuleVector&    rules,
+        RenderLayerMapping&             mapping,
+        ImageStack&                     images,
+        const PixelFormat               format,
+        EntityCollection&               entities)
     {
         for (each<EntityCollection> i = entities; i; ++i)
-            assign_entity_to_render_layer(aov_images, mapping, format, *i);
+            apply_render_layer_rules_to_entity(rules, mapping, images, format, *i);
     }
 
-    void assign_base_group_entities_to_render_layer(
-        ImageStack&             aov_images,
-        RenderLayerMapping&     mapping,
-        const PixelFormat       format,
-        BaseGroup&              base_group);
+    void apply_render_layer_rules_to_base_group(
+        const RenderLayerRuleVector&    rules,
+        RenderLayerMapping&             mapping,
+        ImageStack&                     images,
+        const PixelFormat               format,
+        BaseGroup&                      base_group);
 
-    void assign_assembly_entities_to_render_layers(
-        ImageStack&             aov_images,
-        RenderLayerMapping&     mapping,
-        const PixelFormat       format,
-        Assembly&               assembly)
+    void apply_render_layer_rules_to_assembly(
+        const RenderLayerRuleVector&    rules,
+        RenderLayerMapping&             mapping,
+        ImageStack&                     images,
+        const PixelFormat               format,
+        Assembly&                       assembly)
     {
-        assign_base_group_entities_to_render_layer(
-            aov_images,
-            mapping,
-            format,
-            assembly);
-
-        assign_entities_to_render_layers(aov_images, mapping, format, assembly.edfs());
-        assign_entities_to_render_layers(aov_images, mapping, format, assembly.lights());
-        assign_entities_to_render_layers(aov_images, mapping, format, assembly.materials());
-        assign_entities_to_render_layers(aov_images, mapping, format, assembly.objects());
-        assign_entities_to_render_layers(aov_images, mapping, format, assembly.object_instances());
-        assign_entities_to_render_layers(aov_images, mapping, format, assembly.surface_shaders());
+        apply_render_layer_rules_to_base_group(rules, mapping, images, format, assembly);
+        apply_render_layer_rules_to_entities(rules, mapping, images, format, assembly.edfs());
+        apply_render_layer_rules_to_entities(rules, mapping, images, format, assembly.lights());
+        apply_render_layer_rules_to_entities(rules, mapping, images, format, assembly.materials());
+        apply_render_layer_rules_to_entities(rules, mapping, images, format, assembly.objects());
+        apply_render_layer_rules_to_entities(rules, mapping, images, format, assembly.object_instances());
+        apply_render_layer_rules_to_entities(rules, mapping, images, format, assembly.surface_shaders());
     }
 
-    void assign_base_group_entities_to_render_layer(
-        ImageStack&             aov_images,
-        RenderLayerMapping&     mapping,
-        const PixelFormat       format,
-        BaseGroup&              base_group)
+    void apply_render_layer_rules_to_base_group(
+        const RenderLayerRuleVector&    rules,
+        RenderLayerMapping&             mapping,
+        ImageStack&                     images,
+        const PixelFormat               format,
+        BaseGroup&                      base_group)
     {
-        assign_entities_to_render_layers(aov_images, mapping, format, base_group.assemblies());
-        assign_entities_to_render_layers(aov_images, mapping, format, base_group.assembly_instances());
+        apply_render_layer_rules_to_entities(rules, mapping, images, format, base_group.assemblies());
+        apply_render_layer_rules_to_entities(rules, mapping, images, format, base_group.assembly_instances());
 
         for (each<AssemblyContainer> i = base_group.assemblies(); i; ++i)
-            assign_assembly_entities_to_render_layers(aov_images, mapping, format, *i);
+            apply_render_layer_rules_to_assembly(rules, mapping, images, format, *i);
     }
 
-    void assign_scene_entities_to_render_layers(
-        ImageStack&             aov_images,
-        const PixelFormat       format,
-        Scene&                  scene)
+    void apply_render_layer_rules_to_scene(
+        const RenderLayerRuleVector&    rules,
+        ImageStack&                     images,
+        const PixelFormat               format,
+        Scene&                          scene)
     {
         RenderLayerMapping mapping;
 
-        assign_base_group_entities_to_render_layer(
-            aov_images,
-            mapping,
-            format,
-            scene);
+        apply_render_layer_rules_to_base_group(rules, mapping, images, format, scene);
 
         EnvironmentEDF* env_edf = scene.get_environment()->get_uncached_environment_edf();
+
         if (env_edf)
-            assign_entity_to_render_layer(aov_images, mapping, format, *env_edf);
+            apply_render_layer_rules_to_entity(rules, mapping, images, format, *env_edf);
 
         EnvironmentShader* env_shader = scene.get_environment()->get_uncached_environment_shader();
+
         if (env_shader)
-            assign_entity_to_render_layer(aov_images, mapping, format, *env_shader);
+            apply_render_layer_rules_to_entity(rules, mapping, images, format, *env_shader);
     }
 }
 
 void Project::create_aov_images()
 {
+    RenderLayerRuleVector rules;
+
+    for (const_each<RenderLayerRuleContainer> i = impl->m_render_layer_rules; i; ++i)
+        rules.push_back(&*i);
+
+    sort(rules.begin(), rules.end(), RuleOrderingPredicate());
+
     assert(impl->m_frame.get());
 
-    const PixelFormat format = impl->m_frame->image().properties().m_pixel_format;
     ImageStack& aov_images = impl->m_frame->aov_images();
+    const PixelFormat aov_format = impl->m_frame->image().properties().m_pixel_format;
 
     aov_images.clear();
 
-    assign_scene_entities_to_render_layers(
+    apply_render_layer_rules_to_scene(
+        rules,
         aov_images,
-        format,
+        aov_format,
         impl->m_scene.ref());
 }
 

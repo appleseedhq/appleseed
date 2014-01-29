@@ -1420,6 +1420,7 @@ set (renderer_modeling_project_sources
     renderer/modeling/project/configuration.h
     renderer/modeling/project/configurationcontainer.h
     renderer/modeling/project/eventcounters.h
+    renderer/modeling/project/irenderlayerrulefactory.h
     renderer/modeling/project/project.cpp
     renderer/modeling/project/project.h
     renderer/modeling/project/project.xsd
@@ -1429,6 +1430,14 @@ set (renderer_modeling_project_sources
     renderer/modeling/project/projectfileupdater.h
     renderer/modeling/project/projectfilewriter.cpp
     renderer/modeling/project/projectfilewriter.h
+    renderer/modeling/project/regexrenderlayerrule.cpp
+    renderer/modeling/project/regexrenderlayerrule.h
+    renderer/modeling/project/renderlayerrule.cpp
+    renderer/modeling/project/renderlayerrule.h
+    renderer/modeling/project/renderlayerrulecontainer.h
+    renderer/modeling/project/renderlayerrulefactoryregistrar.cpp
+    renderer/modeling/project/renderlayerrulefactoryregistrar.h
+    renderer/modeling/project/renderlayerruletraits.h
 )
 list (APPEND appleseed_sources
     ${renderer_modeling_project_sources}

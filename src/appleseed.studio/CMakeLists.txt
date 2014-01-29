@@ -157,6 +157,8 @@ set (mainwindow_project_sources
     mainwindow/project/projectbuilder.h
     mainwindow/project/projectexplorer.cpp
     mainwindow/project/projectexplorer.h
+    mainwindow/project/projectitem.cpp
+    mainwindow/project/projectitem.h
     mainwindow/project/projectmanager.cpp
     mainwindow/project/projectmanager.h
     mainwindow/project/sceneitem.cpp

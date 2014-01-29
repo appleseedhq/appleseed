@@ -27,22 +27,45 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_PROJECT_H
-#define APPLESEED_RENDERER_API_PROJECT_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTITEM_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTITEM_H
 
-// API headers.
-#include "renderer/modeling/project/configuration.h"
-#include "renderer/modeling/project/configurationcontainer.h"
-#include "renderer/modeling/project/irenderlayerrulefactory.h"
-#include "renderer/modeling/project/project.h"
-#include "renderer/modeling/project/projectfilereader.h"
-#include "renderer/modeling/project/projectfileupdater.h"
-#include "renderer/modeling/project/projectfilewriter.h"
-#include "renderer/modeling/project/renderlayerrule.h"
-#include "renderer/modeling/project/renderlayerrulecontainer.h"
-#include "renderer/modeling/project/renderlayerrulefactoryregistrar.h"
-#include "renderer/modeling/project/renderlayerruletraits.h"
-#include "renderer/modeling/project-builtin/cornellboxproject.h"
-#include "renderer/modeling/project-builtin/defaultproject.h"
+// appleseed.studio headers.
+#include "mainwindow/project/itembase.h"
 
-#endif  // !APPLESEED_RENDERER_API_PROJECT_H
+// Forward declarations.
+namespace appleseed { namespace studio { template <typename Entity, typename ParentEntity, typename ParentItem> class CollectionItem; } }
+namespace appleseed { namespace studio { class OutputItem; } }
+namespace appleseed { namespace studio { class ProjectBuilder; } }
+namespace appleseed { namespace studio { class SceneItem; } }
+namespace renderer  { class ParamArray; }
+namespace renderer  { class Project; }
+namespace renderer  { class RenderLayerRule; }
+
+namespace appleseed {
+namespace studio {
+
+class ProjectItem
+  : public ItemBase
+{
+  public:
+    ProjectItem(
+        ProjectBuilder&             project_builder,
+        renderer::ParamArray&       settings);
+
+    void expand();
+
+    void add_item(renderer::RenderLayerRule* rule);
+
+  private:
+    typedef CollectionItem<renderer::RenderLayerRule, renderer::Project, ProjectItem> RenderLayerRuleCollectionItem;
+
+    SceneItem*                      m_scene_item;
+    RenderLayerRuleCollectionItem*  m_render_layer_collection_item;
+    OutputItem*                     m_output_item;
+};
+
+}       // namespace studio
+}       // namespace appleseed
+
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTITEM_H

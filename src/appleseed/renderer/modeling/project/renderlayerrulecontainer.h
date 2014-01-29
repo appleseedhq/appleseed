@@ -27,22 +27,24 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_PROJECT_H
-#define APPLESEED_RENDERER_API_PROJECT_H
+#ifndef APPLESEED_RENDERER_MODELING_PROJECT_RENDERLAYERRULECONTAINER_H
+#define APPLESEED_RENDERER_MODELING_PROJECT_RENDERLAYERRULECONTAINER_H
 
-// API headers.
-#include "renderer/modeling/project/configuration.h"
-#include "renderer/modeling/project/configurationcontainer.h"
-#include "renderer/modeling/project/irenderlayerrulefactory.h"
-#include "renderer/modeling/project/project.h"
-#include "renderer/modeling/project/projectfilereader.h"
-#include "renderer/modeling/project/projectfileupdater.h"
-#include "renderer/modeling/project/projectfilewriter.h"
-#include "renderer/modeling/project/renderlayerrule.h"
-#include "renderer/modeling/project/renderlayerrulecontainer.h"
-#include "renderer/modeling/project/renderlayerrulefactoryregistrar.h"
-#include "renderer/modeling/project/renderlayerruletraits.h"
-#include "renderer/modeling/project-builtin/cornellboxproject.h"
-#include "renderer/modeling/project-builtin/defaultproject.h"
+// appleseed.renderer headers.
+#include "renderer/modeling/entity/entityvector.h"
 
-#endif  // !APPLESEED_RENDERER_API_PROJECT_H
+// Forward declarations.
+namespace renderer  { class RenderLayerRule; }
+
+namespace renderer
+{
+
+//
+// A render layer rule container.
+//
+
+typedef TypedEntityVector<RenderLayerRule> RenderLayerRuleContainer;
+
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_MODELING_PROJECT_RENDERLAYERRULECONTAINER_H

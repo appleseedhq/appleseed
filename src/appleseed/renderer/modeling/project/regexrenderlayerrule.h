@@ -27,22 +27,50 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_PROJECT_H
-#define APPLESEED_RENDERER_API_PROJECT_H
+#ifndef APPLESEED_RENDERER_MODELING_PROJECT_REGEXRENDERLAYERRULE_H
+#define APPLESEED_RENDERER_MODELING_PROJECT_REGEXRENDERLAYERRULE_H
 
-// API headers.
-#include "renderer/modeling/project/configuration.h"
-#include "renderer/modeling/project/configurationcontainer.h"
+// appleseed.renderer headers.
 #include "renderer/modeling/project/irenderlayerrulefactory.h"
-#include "renderer/modeling/project/project.h"
-#include "renderer/modeling/project/projectfilereader.h"
-#include "renderer/modeling/project/projectfileupdater.h"
-#include "renderer/modeling/project/projectfilewriter.h"
-#include "renderer/modeling/project/renderlayerrule.h"
-#include "renderer/modeling/project/renderlayerrulecontainer.h"
-#include "renderer/modeling/project/renderlayerrulefactoryregistrar.h"
-#include "renderer/modeling/project/renderlayerruletraits.h"
-#include "renderer/modeling/project-builtin/cornellboxproject.h"
-#include "renderer/modeling/project-builtin/defaultproject.h"
 
-#endif  // !APPLESEED_RENDERER_API_PROJECT_H
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
+#include "foundation/utility/autoreleaseptr.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+// Forward declarations.
+namespace foundation    { class DictionaryArray; }
+namespace renderer      { class ParamArray; }
+namespace renderer      { class RenderLayerRule; }
+
+namespace renderer
+{
+
+//
+// A factory for render layer rules based on regular expressions.
+//
+
+class DLLSYMBOL RegExRenderLayerRuleFactory
+  : public IRenderLayerRuleFactory
+{
+  public:
+    // Return a string identifying this render layer rule model.
+    virtual const char* get_model() const OVERRIDE;
+
+    // Return a human-readable string identifying this render layer rule model.
+    virtual const char* get_human_readable_model() const OVERRIDE;
+
+    // Return a set of input metadata for this render layer rule model.
+    virtual foundation::DictionaryArray get_input_metadata() const OVERRIDE;
+
+    // Create a new render layer rule instance.
+    virtual foundation::auto_release_ptr<RenderLayerRule> create(
+        const char*         name,
+        const ParamArray&   params) const OVERRIDE;
+};
+
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_MODELING_PROJECT_REGEXRENDERLAYERRULE_H

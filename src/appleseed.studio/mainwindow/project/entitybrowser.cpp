@@ -84,6 +84,21 @@ namespace
 
 
 //
+// EntityBrowser<Project> class implementation.
+//
+
+EntityBrowser<Project>::EntityBrowser(const Project& project)
+  : m_project(project)
+{
+}
+
+StringDictionary EntityBrowser<Project>::get_entities(const string& type) const
+{
+    return StringDictionary();
+}
+
+
+//
 // EntityBrowser<BaseGroup> class implementation.
 //
 
