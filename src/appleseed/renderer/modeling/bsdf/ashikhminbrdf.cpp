@@ -262,7 +262,7 @@ namespace
 
             // Compute shininess-related values.
             SVal sval;
-            compute_sval(sval, values->m_nu, values->m_nv);            
+            compute_sval(sval, values->m_nu, values->m_nv);
 
             value.set(0.0f);
             double probability = 0.0;
