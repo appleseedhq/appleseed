@@ -75,7 +75,7 @@ class SpectrumStack
     void add(const size_t index, const Spectrum& rhs);
 
   private:
-    Spectrum    m_aovs[MaxSize];
+    Spectrum    m_spectra[MaxSize];
     size_t      m_size;
 };
 
@@ -116,19 +116,19 @@ inline size_t SpectrumStack::size() const
 inline void SpectrumStack::set(const float val)
 {
     for (size_t i = 0; i < m_size; ++i)
-        m_aovs[i].set(val);
+        m_spectra[i].set(val);
 }
 
 inline Spectrum& SpectrumStack::operator[](const size_t index)
 {
     assert(index < m_size);
-    return m_aovs[index];
+    return m_spectra[index];
 }
 
 inline const Spectrum& SpectrumStack::operator[](const size_t index) const
 {
     assert(index < m_size);
-    return m_aovs[index];
+    return m_spectra[index];
 }
 
 inline SpectrumStack& SpectrumStack::operator+=(const SpectrumStack& rhs)
@@ -136,7 +136,7 @@ inline SpectrumStack& SpectrumStack::operator+=(const SpectrumStack& rhs)
     assert(m_size == rhs.m_size);
 
     for (size_t i = 0; i < m_size; ++i)
-        m_aovs[i] += rhs.m_aovs[i];
+        m_spectra[i] += rhs.m_spectra[i];
 
     return *this;
 }
@@ -144,7 +144,7 @@ inline SpectrumStack& SpectrumStack::operator+=(const SpectrumStack& rhs)
 inline SpectrumStack& SpectrumStack::operator*=(const Spectrum& rhs)
 {
     for (size_t i = 0; i < m_size; ++i)
-        m_aovs[i] *= rhs;
+        m_spectra[i] *= rhs;
 
     return *this;
 }
@@ -152,7 +152,7 @@ inline SpectrumStack& SpectrumStack::operator*=(const Spectrum& rhs)
 inline SpectrumStack& SpectrumStack::operator*=(const float rhs)
 {
     for (size_t i = 0; i < m_size; ++i)
-        m_aovs[i] *= rhs;
+        m_spectra[i] *= rhs;
 
     return *this;
 }
@@ -162,7 +162,7 @@ inline SpectrumStack& SpectrumStack::operator/=(const float rhs)
     const float rcp_rhs = 1.0f / rhs;
 
     for (size_t i = 0; i < m_size; ++i)
-        m_aovs[i] *= rcp_rhs;
+        m_spectra[i] *= rcp_rhs;
 
     return *this;
 }
@@ -170,13 +170,13 @@ inline SpectrumStack& SpectrumStack::operator/=(const float rhs)
 FORCE_INLINE void SpectrumStack::set(const size_t index, const Spectrum& rhs)
 {
     if (index < m_size)
-        m_aovs[index] = rhs;
+        m_spectra[index] = rhs;
 }
 
 FORCE_INLINE void SpectrumStack::add(const size_t index, const Spectrum& rhs)
 {
     if (index < m_size)
-        m_aovs[index] += rhs;
+        m_spectra[index] += rhs;
 }
 
 }       // namespace renderer
