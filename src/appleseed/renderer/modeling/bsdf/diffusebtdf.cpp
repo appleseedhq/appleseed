@@ -31,11 +31,8 @@
 #include "diffusebtdf.h"
 
 // appleseed.renderer headers.
-#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
-#include "renderer/modeling/input/inputarray.h"
-#include "renderer/modeling/input/source.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
@@ -162,12 +159,7 @@ namespace
         }
 
       private:
-        DECLARE_INPUT_VALUES(InputValues)
-        {
-            Spectrum    m_transmittance;                // diffuse transmittance
-            Alpha       m_transmittance_alpha;          // unused
-            double      m_transmittance_multiplier;     // diffuse transmittance multiplier
-        };
+        typedef DiffuseBTDFInputValues InputValues;
     };
 
     typedef BSDFWrapper<DiffuseBTDFImpl> DiffuseBTDF;

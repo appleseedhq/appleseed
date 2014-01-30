@@ -31,12 +31,8 @@
 #include "ashikhminbrdf.h"
 
 // appleseed.renderer headers.
-#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
-#include "renderer/modeling/input/inputarray.h"
-#include "renderer/modeling/input/source.h"
-#include "renderer/modeling/input/uniforminputevaluator.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
@@ -83,8 +79,6 @@ namespace
             const char*         name,
             const ParamArray&   params)
           : BSDF(name, Reflective, Diffuse | Glossy, params)
-          , m_uniform_reflectance(false)
-          , m_uniform_shininess(false)
         {
             m_inputs.declare("diffuse_reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("diffuse_reflectance_multiplier", InputFormatScalar, "1.0");
@@ -103,37 +97,6 @@ namespace
         virtual const char* get_model() const OVERRIDE
         {
             return Model;
-        }
-
-        virtual bool on_frame_begin(
-            const Project&      project,
-            const Assembly&     assembly,
-            AbortSwitch*        abort_switch) OVERRIDE
-        {
-            if (!BSDF::on_frame_begin(project, assembly, abort_switch))
-                return false;
-
-            m_uniform_reflectance =
-                m_inputs.source("diffuse_reflectance")->is_uniform() &&
-                m_inputs.source("diffuse_reflectance_multiplier")->is_uniform() &&
-                m_inputs.source("glossy_reflectance")->is_uniform() &&
-                m_inputs.source("glossy_reflectance_multiplier")->is_uniform();
-
-            m_uniform_shininess =
-                m_inputs.source("shininess_u")->is_uniform() &&
-                m_inputs.source("shininess_v")->is_uniform();
-
-            UniformInputEvaluator input_evaluator;
-            const InputValues* values =
-                static_cast<const InputValues*>(input_evaluator.evaluate(m_inputs));
-
-            if (m_uniform_reflectance)
-                m_compute_rval_return_value = compute_rval(m_uniform_rval, values);
-
-            if (m_uniform_shininess)
-                compute_sval(m_uniform_sval, values->m_nu, values->m_nv);
-
-            return true;
         }
 
         FORCE_INLINE virtual Mode sample(
@@ -156,15 +119,15 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
-            // Compute (or retrieve precomputed) reflectance-related values.
+            // Compute reflectance-related values.
             RVal rval;
-            if (!get_rval(rval, values))
+            if (!compute_rval(rval, values))
                 return Absorption;
 
-            // Compute (or retrieve precomputed) shininess-related values.
+            // Compute shininess-related values.
             SVal sval;
-            get_sval(sval, values);
-
+            compute_sval(sval, values->m_nu, values->m_nv);
+            
             // Generate a uniform sample in [0,1)^3.
             sampling_context.split_in_place(3, 1);
             const Vector3d s = sampling_context.next_vector2<3>();
@@ -292,14 +255,14 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
-            // Compute (or retrieve precomputed) reflectance-related values.
+            // Compute reflectance-related values.
             RVal rval;
-            if (!get_rval(rval, values))
+            if (!compute_rval(rval, values))
                 return 0.0;
 
-            // Compute (or retrieve precomputed) shininess-related values.
+            // Compute shininess-related values.
             SVal sval;
-            get_sval(sval, values);
+            compute_sval(sval, values->m_nu, values->m_nv);            
 
             value.set(0.0f);
             double probability = 0.0;
@@ -369,12 +332,12 @@ namespace
 
             // Compute (or retrieve precomputed) reflectance-related values.
             RVal rval;
-            if (!get_rval(rval, values))
+            if (!compute_rval(rval, values))
                 return 0.0;
 
-            // Compute (or retrieve precomputed) shininess-related values.
+            // Compute shininess-related values.
             SVal sval;
-            get_sval(sval, values);
+            compute_sval(sval, values->m_nu, values->m_nv);
 
             double probability = 0.0;
 
@@ -414,18 +377,7 @@ namespace
         }
 
       private:
-        DECLARE_INPUT_VALUES(InputValues)
-        {
-            Spectrum    m_rd;               // diffuse reflectance of the substrate
-            Alpha       m_rd_alpha;         // unused
-            double      m_rd_multiplier;    // diffuse reflectance multiplier
-            Spectrum    m_rg;               // glossy reflectance at normal incidence
-            Alpha       m_rg_alpha;         // unused
-            double      m_rg_multiplier;    // glossy reflectance multiplier
-            double      m_fr_multiplier;    // Fresnel multiplier
-            double      m_nu;               // Phong-like exponent in first tangent direction
-            double      m_nv;               // Phong-like exponent in second tangent direction
-        };
+        typedef AshikminBRDFInputValues InputValues;
 
         // Precomputed reflectance-related values.
         struct RVal
@@ -443,12 +395,6 @@ namespace
             double      m_k;                // constant factor needed during hemisphere (isotropic case only)
             bool        m_isotropic;        // true if the U and V shininess values are the same
         };
-
-        bool            m_uniform_reflectance;
-        bool            m_uniform_shininess;
-        RVal            m_uniform_rval;
-        SVal            m_uniform_sval;
-        bool            m_compute_rval_return_value;
 
         static double pow5(const double x)
         {
@@ -503,23 +449,6 @@ namespace
                 // Precompute constant factor needed during hemisphere sampling.
                 sval.m_k = sqrt((nu + 1.0) / (nv + 1.0));
             }
-        }
-
-        bool get_rval(RVal& rval, const InputValues* values) const
-        {
-            if (m_uniform_reflectance)
-            {
-                rval = m_uniform_rval;
-                return m_compute_rval_return_value;
-            }
-            else return compute_rval(rval, values);
-        }
-
-        void get_sval(SVal& sval, const InputValues* values) const
-        {
-            if (m_uniform_shininess)
-                sval = m_uniform_sval;
-            else compute_sval(sval, values->m_nu, values->m_nv);
         }
 
         static double sample_anisotropic_glossy(const double k, const double s)

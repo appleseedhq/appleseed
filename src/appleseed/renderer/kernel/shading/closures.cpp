@@ -50,7 +50,40 @@ namespace
 
     struct EmptyClosureParams {};
 
+    struct AshikhminShirleyClosureParams
+    {
+        OSL::Vec3 N;
+        OSL::Vec3 T;
+        OSL::Color3 kd;
+        OSL::Color3 ks;
+        float nu;
+        float nv;
+    };
+
     struct LambertClosureParams
+    {
+        OSL::Vec3 N;
+    };
+
+    struct MicrofacetBRDFClosureParams
+    {
+        OSL::Vec3 N;
+        float glossiness;
+    };
+
+    struct RefractionClosureParams
+    {
+        OSL::Vec3 N;
+        float from_ior;
+        float to_ior;
+    };
+
+    struct ReflectionClosureParams
+    {
+        OSL::Vec3 N;
+    };
+
+    struct TranslucentClosureParams
     {
         OSL::Vec3 N;
     };
@@ -61,7 +94,7 @@ namespace
 OSL_NAMESPACE_ENTER
 
 void register_appleseed_closures(OSL::ShadingSystem& shading_system)
-{    
+{
     // Describe the memory layout of each closure type to the OSL runtime.
     const size_t MaxParams = 32;
     struct BuiltinClosures
@@ -73,8 +106,49 @@ void register_appleseed_closures(OSL::ShadingSystem& shading_system)
 
     static const BuiltinClosures builtins[] =
     {
+        { "ashikhmin_shirley", AshikhminShirleyID, { CLOSURE_VECTOR_PARAM(AshikhminShirleyClosureParams, N),
+                                                     CLOSURE_VECTOR_PARAM(AshikhminShirleyClosureParams, T),
+                                                     CLOSURE_COLOR_PARAM(AshikhminShirleyClosureParams, kd),
+                                                     CLOSURE_COLOR_PARAM(AshikhminShirleyClosureParams, ks),
+                                                     CLOSURE_FLOAT_PARAM(AshikhminShirleyClosureParams, nu),
+                                                     CLOSURE_FLOAT_PARAM(AshikhminShirleyClosureParams, nv),
+                                                     CLOSURE_FINISH_PARAM(AshikhminShirleyClosureParams) } },
+
         { "diffuse", LambertID, { CLOSURE_VECTOR_PARAM(LambertClosureParams, N),
                                   CLOSURE_FINISH_PARAM(LambertClosureParams) } },
+
+        { "emission", EmissionID, { CLOSURE_FINISH_PARAM(EmptyClosureParams) } },
+
+        { "holdout", HoldoutID, { CLOSURE_FINISH_PARAM(EmptyClosureParams) } },
+        
+        { "microfacet_beckmann", MicrofacetBeckmannID, { CLOSURE_VECTOR_PARAM(MicrofacetBRDFClosureParams, N),
+                                                         CLOSURE_FLOAT_PARAM(MicrofacetBRDFClosureParams, glossiness),
+                                                         CLOSURE_FINISH_PARAM(MicrofacetBRDFClosureParams) } },
+
+        { "microfacet_blinn", MicrofacetBlinnID, { CLOSURE_VECTOR_PARAM(MicrofacetBRDFClosureParams, N),
+                                                   CLOSURE_FLOAT_PARAM(MicrofacetBRDFClosureParams, glossiness),
+                                                   CLOSURE_FINISH_PARAM(MicrofacetBRDFClosureParams) } },
+
+        { "microfacet_ggx", MicrofacetGGXID, { CLOSURE_VECTOR_PARAM(MicrofacetBRDFClosureParams, N),
+                                               CLOSURE_FLOAT_PARAM(MicrofacetBRDFClosureParams, glossiness),
+                                               CLOSURE_FINISH_PARAM(MicrofacetBRDFClosureParams) } },
+
+        { "microfacet_ward", MicrofacetWardID, { CLOSURE_VECTOR_PARAM(MicrofacetBRDFClosureParams, N),
+                                                 CLOSURE_FLOAT_PARAM(MicrofacetBRDFClosureParams, glossiness),
+                                                 CLOSURE_FINISH_PARAM(MicrofacetBRDFClosureParams) } },
+
+        { "reflection", ReflectionID, { CLOSURE_VECTOR_PARAM(ReflectionClosureParams, N),
+                                        CLOSURE_FINISH_PARAM(ReflectionClosureParams) } },
+
+        { "refraction", RefractionID, { CLOSURE_VECTOR_PARAM(RefractionClosureParams, N),
+                                        CLOSURE_FLOAT_PARAM(RefractionClosureParams, from_ior),
+                                        CLOSURE_FLOAT_PARAM(RefractionClosureParams, to_ior),
+                                        CLOSURE_FINISH_PARAM(RefractionClosureParams) } },
+
+        { "translucent", TranslucentID, { CLOSURE_VECTOR_PARAM(LambertClosureParams, N),
+                                          CLOSURE_FINISH_PARAM(LambertClosureParams) } },
+
+        { "transparency", TransparentID, { CLOSURE_FINISH_PARAM(EmptyClosureParams) } },
         { 0, 0, {} }    // mark end of the array
     };
 
