@@ -45,16 +45,16 @@
 #include "OSL/oslexec.h"
 
 // boost headers
-#include<boost/mpl/vector.hpp>
-#include<boost/mpl/max_element.hpp>
-#include<boost/mpl/transform_view.hpp>
-#include<boost/mpl/sizeof.hpp>
-#include<boost/mpl/deref.hpp>
-#include<boost/mpl/copy.hpp>
-#include<boost/mpl/back_inserter.hpp>
 #include<boost/mpl/assert.hpp>
-#include<boost/mpl/size.hpp>
+#include<boost/mpl/back_inserter.hpp>
+#include<boost/mpl/copy.hpp>
+#include<boost/mpl/deref.hpp>
 #include<boost/mpl/equal.hpp>
+#include<boost/mpl/max_element.hpp>
+#include<boost/mpl/size.hpp>
+#include<boost/mpl/sizeof.hpp>
+#include<boost/mpl/transform_view.hpp>
+#include<boost/mpl/vector.hpp>
 
 namespace renderer
 {
