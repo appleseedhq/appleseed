@@ -473,18 +473,27 @@ string concat (string a, string b, string c, string d, string e, string f) {
 // Texture
 
 
-// Closures
+// Appleseed closures
 
-// TODO: we need to modify the prototypes here, 
-// to match the closures we plan to expose to shader writers.
-
+closure color ashikhmin_shirley(normal N, vector T, color kd, color ks, float nu, float nv) BUILTIN;
 closure color diffuse(normal N) BUILTIN;
+closure color emission() BUILTIN;
+closure color holdout() BUILTIN;
+closure color microfacet_beckmann(normal N, float glossiness) BUILTIN;
+closure color microfacet_blinn(normal N, float glossiness) BUILTIN;
+closure color microfacet_ggx(normal N, float glossiness) BUILTIN;
+closure color microfacet_ward(normal N, float glossiness) BUILTIN;
+closure color reflection(normal N) BUILTIN;
+closure color refraction(normal N, float from_ior, float to_ior) BUILTIN;
 closure color translucent(normal N) BUILTIN;
+closure color transparent() BUILTIN;
+
+// Closures in OSL spec that are different or are not supported in appleseed.
+/*
 closure color reflection(normal N, float eta) BUILTIN;
 closure color reflection(normal N) { return reflection (N, 0.0); }
 closure color refraction(normal N, float eta) BUILTIN;
 closure color dielectric(normal N, float eta) BUILTIN;
-closure color transparent() BUILTIN;
 closure color microfacet_ggx(normal N, float ag, float eta) BUILTIN;
 closure color microfacet_ggx_refraction(normal N, float ag, float eta) BUILTIN;
 closure color microfacet_beckmann(normal N, float ab, float eta) BUILTIN;
@@ -500,10 +509,8 @@ closure color westin_sheen(normal N, float edginess) BUILTIN;
 closure color bssrdf_cubic(color radius) BUILTIN;
 closure color emission(float inner_angle, float outer_angle) BUILTIN;
 closure color emission(float outer_angle) BUILTIN;
-closure color emission() BUILTIN;
 closure color debug(string tag) BUILTIN;
 closure color background() BUILTIN;
-closure color holdout() BUILTIN;
 closure color subsurface(float eta, float g, color mfp, color albedo) BUILTIN;
 
 closure color cloth(normal N, float s, float t, float dsdx, float dtdx, float dsdy, float dtdy,
@@ -553,7 +560,7 @@ closure color cloth(normal N, float s, float t, color diff_warp, color diff_weft
                  fresnel_warp, fresnel_weft, spread_x_mult, spread_y_mult, pattern, pattern_angle, 
                  warp_width_scale, weft_width_scale, thread_count_mult_u, thread_count_mult_v, tok, val);
 }
-
+*/
 
 
 // Renderer state

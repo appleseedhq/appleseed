@@ -29,8 +29,32 @@
 #ifndef APPLESEED_RENDERER_KERNEL_SHADING_CLOSURES_H
 #define APPLESEED_RENDERER_KERNEL_SHADING_CLOSURES_H
 
+// appleseed.renderer headers.
+#include "renderer/modeling/bsdf/ashikhminbrdf.h"
+#include "renderer/modeling/bsdf/diffusebtdf.h"
+#include "renderer/modeling/bsdf/lambertianbrdf.h"
+#include "renderer/modeling/bsdf/microfacetbrdf.h"
+#include "renderer/modeling/bsdf/specularbrdf.h"
+#include "renderer/modeling/bsdf/specularbtdf.h"
+
+// appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
+
 // OSL headers.
+#include "OSL/dual.h"
 #include "OSL/oslexec.h"
+
+// boost headers
+#include<boost/mpl/assert.hpp>
+#include<boost/mpl/back_inserter.hpp>
+#include<boost/mpl/copy.hpp>
+#include<boost/mpl/deref.hpp>
+#include<boost/mpl/equal.hpp>
+#include<boost/mpl/max_element.hpp>
+#include<boost/mpl/size.hpp>
+#include<boost/mpl/sizeof.hpp>
+#include<boost/mpl/transform_view.hpp>
+#include<boost/mpl/vector.hpp>
 
 namespace renderer
 {
@@ -41,8 +65,50 @@ namespace renderer
 
 enum ClosureID
 {
+    EmissionID = 1,
+
+    AshikhminShirleyID,
     LambertID,
-    NumClosureIDs
+    MicrofacetBeckmannID,
+    MicrofacetBlinnID,
+    MicrofacetGGXID,
+    MicrofacetWardID,
+    ReflectionID,
+    RefractionID,
+    TranslucentID,
+    
+    // special closures
+    TransparentID,
+    HoldoutID,
+    NumClosuresID
+};
+
+//
+// Composite OSL Closure.
+//
+
+class FOUNDATION_ALIGN(16) CompositeClosure 
+  : public foundation::NonCopyable
+{
+  private:
+    typedef boost::mpl::vector< 
+        AshikminBRDFInputValues,
+        DiffuseBTDFInputValues,
+        LambertianBRDFInputValues,
+        MicrofacetBRDFInputValues,
+        SpecularBRDFInputValues,
+        SpecularBTDFInputValues> InputValuesTypeList;
+
+    // find the biggest InputValues type.
+    typedef boost::mpl::max_element<
+        boost::mpl::transform_view<
+            InputValuesTypeList,
+            boost::mpl::sizeof_<boost::mpl::_1> > >::type BiggestInputValueType;
+
+    enum { MaxClosureEntries = 8 };
+    enum { MaxPoolSize = MaxClosureEntries * sizeof(boost::mpl::deref<BiggestInputValueType::base>::type) };
+
+    char m_pool[MaxPoolSize];
 };
 
 // Register appleseed's closures.

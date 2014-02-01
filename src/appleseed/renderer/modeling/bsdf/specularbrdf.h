@@ -31,7 +31,9 @@
 #define APPLESEED_RENDERER_MODELING_BSDF_SPECULARBRDF_H
 
 // appleseed.renderer headers.
+#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/bsdf/ibsdffactory.h"
+#include "renderer/modeling/input/inputarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -47,6 +49,17 @@ namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
+
+//
+// Specular BRDF input values.
+//
+
+DECLARE_INPUT_VALUES(SpecularBRDFInputValues)
+{
+    Spectrum    m_reflectance;              // specular reflectance
+    Alpha       m_reflectance_alpha;        // unused
+    double      m_reflectance_multiplier;   // specular reflectance multiplier
+};
 
 //
 // Specular BRDF factory.

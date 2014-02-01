@@ -31,12 +31,8 @@
 #include "microfacetbrdf.h"
 
 // appleseed.renderer headers.
-#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
-#include "renderer/modeling/input/inputarray.h"
-#include "renderer/modeling/input/source.h"
-#include "renderer/modeling/input/uniforminputevaluator.h"
 #include "renderer/utility/messagecontext.h"
 #include "renderer/utility/paramarray.h"
 
@@ -252,15 +248,7 @@ namespace
         }
 
       private:
-        DECLARE_INPUT_VALUES(InputValues)
-        {
-            double      m_glossiness;
-            double      m_glossiness_multiplier;
-            Spectrum    m_reflectance;
-            Alpha       m_reflectance_alpha;        // unused
-            double      m_reflectance_multiplier;
-            double      m_fr_multiplier;            // Fresnel multiplier
-        };
+        typedef MicrofacetBRDFInputValues InputValues;
 
         enum MDF
         {

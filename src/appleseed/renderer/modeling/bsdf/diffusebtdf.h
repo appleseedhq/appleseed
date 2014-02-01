@@ -31,7 +31,9 @@
 #define APPLESEED_RENDERER_MODELING_BSDF_DIFFUSEBTDF_H
 
 // appleseed.renderer headers.
+#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/bsdf/ibsdffactory.h"
+#include "renderer/modeling/input/inputarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -47,6 +49,17 @@ namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
+
+//
+// Diffuse BTDF input values.
+//
+
+DECLARE_INPUT_VALUES(DiffuseBTDFInputValues)
+{
+    Spectrum    m_transmittance;                // diffuse transmittance
+    Alpha       m_transmittance_alpha;          // unused
+    double      m_transmittance_multiplier;     // diffuse transmittance multiplier
+};
 
 //
 // Diffuse BTDF factory.
