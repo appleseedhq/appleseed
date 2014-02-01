@@ -473,7 +473,7 @@ string concat (string a, string b, string c, string d, string e, string f) {
 // Texture
 
 
-// Appleseed closures
+// appleseed closures
 
 closure color ashikhmin_shirley(normal N, vector T, color kd, color ks, float nu, float nv) BUILTIN;
 closure color diffuse(normal N) BUILTIN;
