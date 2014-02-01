@@ -28,13 +28,6 @@
 # THE SOFTWARE.
 #
 
-# Settings.
-VersionString = "1.5"
-Verbose = False
-DumpStrippedInputFiles = False
-StrippedInputFilesDirectory = "stripped/"
-
-# Imports.
 import glob
 import os
 import re
@@ -43,9 +36,19 @@ import sys
 from xml.etree.ElementTree import ElementTree
 
 
-#
+#--------------------------------------------------------------------------------------------------
+# Constants.
+#--------------------------------------------------------------------------------------------------
+
+VERSION = "1.5"
+VERBOSE = False
+DUMP_STRIPPED_INPUT_FILES = False
+STRIPPED_INPUT_FILES_DIRECTORY = "stripped/"
+
+
+#--------------------------------------------------------------------------------------------------
 # Utility functions.
-#
+#--------------------------------------------------------------------------------------------------
 
 NEWLINE_REGEX = r"[\r\n]+"
 
@@ -104,9 +107,9 @@ def write_file(file_path, text):
        fatal("failed to write file '" + file_path + "'")
 
 
-#
+#--------------------------------------------------------------------------------------------------
 # Manifest class.
-#
+#--------------------------------------------------------------------------------------------------
 
 class Manifest:
     def __init__(self, manifest_path):
@@ -170,16 +173,16 @@ class Manifest:
         return text
 
 
-#
+#--------------------------------------------------------------------------------------------------
 # DependencyFinder class.
-#
+#--------------------------------------------------------------------------------------------------
 
 class DependencyFinder:
     def __init__(self, manifest):
         self.manifest = manifest
 
-        if DumpStrippedInputFiles:
-            safe_make_directory(StrippedInputFilesDirectory)
+        if DUMP_STRIPPED_INPUT_FILES:
+            safe_make_directory(STRIPPED_INPUT_FILES_DIRECTORY)
 
     def gather_all_user_header_files(self):
         files = []
@@ -210,7 +213,7 @@ class DependencyFinder:
         return stable_unique(files)
 
     def __gather_all_deps(self, file_path, opening_marker, closing_marker, level):
-        if Verbose:
+        if VERBOSE:
             print("{0}Including {1}".format(" " * level * 2, file_path))
 
         files = []
@@ -229,8 +232,8 @@ class DependencyFinder:
         text = load_file(file_path)
         text = self.manifest.strip(text)
 
-        if DumpStrippedInputFiles:
-            write_file(os.path.join(StrippedInputFilesDirectory, os.path.basename(file_path) + ".stripped"), text)
+        if DUMP_STRIPPED_INPUT_FILES:
+            write_file(os.path.join(STRIPPED_INPUT_FILES_DIRECTORY, os.path.basename(file_path) + ".stripped"), text)
 
         deps = []
         pattern = re.compile(r"^#include " + opening_marker +
@@ -245,9 +248,9 @@ class DependencyFinder:
         return deps
 
 
-#
+#--------------------------------------------------------------------------------------------------
 # FileGenerator class.
-#
+#--------------------------------------------------------------------------------------------------
 
 class FileGenerator:
     def __init__(self, manifest, depfinder):
@@ -365,9 +368,9 @@ class FileGenerator:
                       closing_marker + ".*" + NEWLINE_REGEX, "", text, 0, re.MULTILINE)
 
 
-#
+#--------------------------------------------------------------------------------------------------
 # Tester class.
-#
+#--------------------------------------------------------------------------------------------------
 
 class Tester:
     def __init__(self, manifest):
@@ -382,12 +385,12 @@ class Tester:
             call(command_line, shell=True)
 
 
-#
+#--------------------------------------------------------------------------------------------------
 # Entry point.
-#
+#--------------------------------------------------------------------------------------------------
 
 def main():
-    print("appleseed.gather version " + VersionString)
+    print("appleseed.gather version " + VERSION)
 
     if len(sys.argv) < 2:
         print("Usage: " + sys.argv[0] + " manifest.xml")
@@ -404,4 +407,5 @@ def main():
         tester = Tester(manifest)
         tester.compile()
 
-main()
+if __name__ == '__main__':
+    main()
