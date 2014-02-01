@@ -32,7 +32,9 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/kernel/aov/spectrumstack.h"
+#include "renderer/kernel/aov/shadingfragmentstack.h"
+#include "renderer/kernel/shading/shadingfragment.h"
+#include "renderer/modeling/entity/entity.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -52,40 +54,46 @@ class ShadingResult
   public:
     // Public members.
     foundation::ColorSpace  m_color_space;
-    Spectrum                m_color;
-    Alpha                   m_alpha;
-    SpectrumStack           m_aovs;
+    ShadingFragment         m_main;
+    ShadingFragmentStack    m_aovs;
+
+    // Constructor.
+    explicit ShadingResult(const size_t aov_count = 0);
 
     // Return true if this shading result contains valid linear RGB values;
     // false if the color, alpha or any AOV contains NaN or negative values.
     bool is_valid_linear_rgb() const;
 
-    // Set the main color and all AOVs to transparent black in linear RGBA.
-    void set_to_transparent_black();
+    // Set the main color and all AOVs to transparent black in linear RGB.
+    void set_to_transparent_black_linear_rgb();
 
-    // Set the main color to solid pink in linear RGBA (used for debugging).
-    // All AOVs are set to black.
-    void set_to_solid_pink();
+    // Set the main color to solid pink in linear RGB (used for debugging).
+    // All AOVs are set to transparent black.
+    void set_to_solid_pink_linear_rgb();
 
     // Set the main color to a given fully opaque linear RGB value.
-    // All AOVs are set to black.
+    // All AOVs are set to transparent black.
     void set_to_linear_rgb(const foundation::Color3f& linear_rgb);
 
     // Set the main color to a given linear RGBA value.
-    // All AOVs are set to black.
+    // All AOVs are set to transparent black.
     void set_to_linear_rgba(const foundation::Color4f& linear_rgba);
 
+    // Copy the main output to the AOV of a given entity.
+    void set_aov_for_entity(const Entity& entity);
+
     // Transform the shading result to the linear RGB color space.
-    void transform_to_linear_rgb(
-        const foundation::LightingConditions&   lighting);
+    void transform_to_linear_rgb(const foundation::LightingConditions& lighting);
 
     // Transform the shading result to the spectral color space.
-    void transform_to_spectrum(
-        const foundation::LightingConditions&   lighting);
+    void transform_to_spectrum(const foundation::LightingConditions& lighting);
 
     // Composite this shading result over 'background'.
     // Both shading results must be expressed in linear RGB.
     void composite_over_linear_rgb(const ShadingResult& background);
+
+    // Multiply main and AOV colors by their respective alpha channels.
+    void apply_alpha_premult_linear_rgb();
 };
 
 
@@ -93,12 +101,17 @@ class ShadingResult
 // ShadingResult class implementation.
 //
 
-inline void ShadingResult::set_to_transparent_black()
+inline ShadingResult::ShadingResult(const size_t aov_count)
+  : m_aovs(aov_count)
+{
+}
+
+inline void ShadingResult::set_to_transparent_black_linear_rgb()
 {
     set_to_linear_rgba(foundation::Color4f(0.0f));
 }
 
-inline void ShadingResult::set_to_solid_pink()
+inline void ShadingResult::set_to_solid_pink_linear_rgb()
 {
     set_to_linear_rgba(foundation::Color4f(1.0f, 0.0f, 1.0f, 1.0f));
 }
@@ -108,23 +121,9 @@ inline void ShadingResult::set_to_linear_rgb(const foundation::Color3f& linear_r
     set_to_linear_rgba(foundation::Color4f(linear_rgb[0], linear_rgb[1], linear_rgb[2], 1.0f));
 }
 
-inline void ShadingResult::set_to_linear_rgba(const foundation::Color4f& linear_rgba)
+inline void ShadingResult::set_aov_for_entity(const Entity& entity)
 {
-    m_color_space = foundation::ColorSpaceLinearRGB;
-
-    m_color[0] = linear_rgba[0];
-    m_color[1] = linear_rgba[1];
-    m_color[2] = linear_rgba[2];
-
-    m_alpha.set(linear_rgba[3]);
-
-    const size_t aov_count = m_aovs.size();
-
-    for (size_t i = 0; i < aov_count; ++i)
-    {
-        Spectrum& aov = m_aovs[i];
-        aov[0] = aov[1] = aov[2] = 0.0f;
-    }
+    m_aovs.set(entity.get_render_layer_index(), m_main);
 }
 
 }       // namespace renderer

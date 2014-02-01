@@ -32,7 +32,10 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/aov/shadingfragmentstack.h"
+#include "renderer/kernel/aov/spectrumstack.h"
 #include "renderer/kernel/shading/shadingcontext.h"
+#include "renderer/kernel/shading/shadingfragment.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/input/inputarray.h"
@@ -113,17 +116,19 @@ namespace
                 shading_point.get_uv(0),
                 &values);
 
+            // Initialize the shading result.
             shading_result.m_color_space = ColorSpaceSpectral;
-            shading_result.m_color = values.m_color;
-            shading_result.m_aovs.set(0.0f);
+            shading_result.m_main.m_color = values.m_color;
+            shading_result.m_aovs.m_color.set(0.0f);
+            shading_result.m_aovs.m_alpha.set(0.0f);
 
             // This surface shader can override alpha.
             if (m_alpha_source == AlphaSourceColor)
-                shading_result.m_alpha = values.m_alpha;
+                shading_result.m_main.m_alpha = values.m_alpha;
 
             // Apply multipliers.
-            shading_result.m_color *= static_cast<float>(values.m_color_multiplier);
-            shading_result.m_alpha *= static_cast<float>(values.m_alpha_multiplier);
+            shading_result.m_main.m_color *= static_cast<float>(values.m_color_multiplier);
+            shading_result.m_main.m_alpha *= static_cast<float>(values.m_alpha_multiplier);
         }
 
       private:

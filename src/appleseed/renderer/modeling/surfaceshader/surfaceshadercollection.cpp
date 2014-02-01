@@ -32,6 +32,8 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/aov/shadingfragmentstack.h"
+#include "renderer/kernel/shading/shadingfragment.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/inputformat.h"
@@ -143,16 +145,14 @@ namespace
                 shading_point,
                 shading_result);
 
-            shading_result.m_aovs.set(
-                m_surface_shaders[0]->get_render_layer_index(),
-                shading_result.m_color);
+            shading_result.set_aov_for_entity(*m_surface_shaders[0]);
 
             for (size_t i = 1; i < MaxShaderCount; ++i)
             {
                 if (m_surface_shaders[i])
                 {
                     ShadingResult local_result;
-                    local_result.m_alpha = Alpha(1.0);
+                    local_result.m_main.m_alpha = Alpha(1.0);
 
                     m_surface_shaders[i]->evaluate(
                         sampling_context,
@@ -161,9 +161,7 @@ namespace
                         shading_point,
                         local_result);
 
-                    shading_result.m_aovs.set(
-                        m_surface_shaders[i]->get_render_layer_index(),
-                        local_result.m_color);
+                    shading_result.set_aov_for_entity(*m_surface_shaders[i]);
                 }
             }
         }

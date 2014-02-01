@@ -37,6 +37,7 @@
 #include "renderer/kernel/rendering/pixelcontext.h"
 #include "renderer/kernel/rendering/sample.h"
 #include "renderer/kernel/rendering/samplegeneratorbase.h"
+#include "renderer/kernel/shading/shadingfragment.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/frame/frame.h"
 
@@ -185,10 +186,10 @@ namespace
             // Create a single sample.
             Sample sample;
             sample.m_position = sample_position;
-            sample.m_color[0] = shading_result.m_color[0];
-            sample.m_color[1] = shading_result.m_color[1];
-            sample.m_color[2] = shading_result.m_color[2];
-            sample.m_color[3] = shading_result.m_alpha[0];
+            sample.m_color[0] = shading_result.m_main.m_color[0];
+            sample.m_color[1] = shading_result.m_main.m_color[1];
+            sample.m_color[2] = shading_result.m_main.m_color[2];
+            sample.m_color[3] = shading_result.m_main.m_alpha[0];
             samples.push_back(sample);
 
             m_total_sampling_dim.insert(sampling_context.get_total_dimension());

@@ -58,6 +58,7 @@ struct ImageStack::Impl
     struct NamedImage
     {
         string              m_name;
+        ImageStack::Type    m_type;
         Image*              m_image;
     };
 
@@ -110,6 +111,12 @@ const char* ImageStack::get_name(const size_t index) const
     return impl->m_images[index].m_name.c_str();
 }
 
+ImageStack::Type ImageStack::get_type(const size_t index) const
+{
+    assert(index < impl->m_images.size());
+    return impl->m_images[index].m_type;
+}
+
 const Image& ImageStack::get_image(const size_t index) const
 {
     assert(index < impl->m_images.size());
@@ -131,11 +138,13 @@ size_t ImageStack::get(const char* name) const
 
 size_t ImageStack::append(
     const char*             name,
-    const PixelFormat       format)
+    const Type              type,
+    const PixelFormat       pixel_format)
 {
     Impl::NamedImage named_image;
 
     named_image.m_name = name;
+    named_image.m_type = type;
     named_image.m_image =
         new Image(
             impl->m_canvas_width,
@@ -143,7 +152,7 @@ size_t ImageStack::append(
             impl->m_tile_width,
             impl->m_tile_height,
             4,
-            format);
+            pixel_format);
 
     const size_t aov_index = impl->m_images.size();
 

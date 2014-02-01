@@ -32,9 +32,12 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/aov/shadingfragmentstack.h"
+#include "renderer/kernel/aov/spectrumstack.h"
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/lighting/lightsampler.h"
 #include "renderer/kernel/shading/shadingcontext.h"
+#include "renderer/kernel/shading/shadingfragment.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/kernel/shading/shadingresult.h"
@@ -141,9 +144,10 @@ namespace
         {
             // Initialize the shading result to opaque black.
             shading_result.m_color_space = ColorSpaceSpectral;
-            shading_result.m_color.set(0.0f);
-            shading_result.m_aovs.set(0.0f);
-            shading_result.m_alpha.set(1.0f);
+            shading_result.m_main.m_color.set(0.0f);
+            shading_result.m_main.m_alpha.set(1.0f);
+            shading_result.m_aovs.m_color.set(0.0f);
+            shading_result.m_aovs.m_alpha.set(0.0f);
 
             // Return black if there is no light in the scene.
             if (!m_light_sampler->has_lights_or_emitting_triangles())
@@ -243,12 +247,12 @@ namespace
                 Spectrum result = values.m_albedo;
                 result *= radiance;
                 result *= static_cast<float>(sample_contrib);
-                shading_result.m_color += result;
+                shading_result.m_main.m_color += result;
             }
 
             // Normalize the result.
             if (m_light_samples > 1)
-                shading_result.m_color /= static_cast<float>(m_light_samples);
+                shading_result.m_main.m_color /= static_cast<float>(m_light_samples);
         }
 
       private:

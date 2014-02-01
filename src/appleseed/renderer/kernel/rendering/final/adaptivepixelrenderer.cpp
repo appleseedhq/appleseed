@@ -33,14 +33,15 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/aov/aovsettings.h"
 #include "renderer/kernel/aov/imagestack.h"
-#include "renderer/kernel/aov/spectrumstack.h"
 #include "renderer/kernel/aov/tilestack.h"
 #include "renderer/kernel/rendering/final/variationtracker.h"
 #include "renderer/kernel/rendering/isamplerenderer.h"
 #include "renderer/kernel/rendering/pixelcontext.h"
 #include "renderer/kernel/rendering/pixelrendererbase.h"
 #include "renderer/kernel/rendering/shadingresultframebuffer.h"
+#include "renderer/kernel/shading/shadingfragment.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/frame/frame.h"
 
@@ -94,18 +95,18 @@ namespace
                 ImageStack& images = frame.aov_images();
 
                 m_variation_aov_index = images.get("variation");
-                if (m_variation_aov_index == ~0 && images.size() < SpectrumStack::MaxSize)
-                    m_variation_aov_index = images.append("variation", PixelFormatFloat);
+                if (m_variation_aov_index == ~0 && images.size() < MaxAOVCount)
+                    m_variation_aov_index = images.append("variation", ImageStack::IdentificationType, PixelFormatFloat);
 
                 m_samples_aov_index = images.get("samples");
-                if (m_samples_aov_index == ~0 && images.size() < SpectrumStack::MaxSize)
-                    m_samples_aov_index = images.append("samples", PixelFormatFloat);
+                if (m_samples_aov_index == ~0 && images.size() < MaxAOVCount)
+                    m_samples_aov_index = images.append("samples", ImageStack::IdentificationType, PixelFormatFloat);
 
                 if (primary && (m_variation_aov_index == ~0 || m_samples_aov_index == ~0))
                 {
                     RENDERER_LOG_WARNING(
                         "could not create some of the diagnostic AOVs, maximum number of AOVs (" FMT_SIZE_T ") reached.",
-                        SpectrumStack::MaxSize);
+                        MaxAOVCount);
                 }
             }
         }
@@ -218,8 +219,7 @@ namespace
 
                     // Render the sample.
                     SamplingContext child_sampling_context(sampling_context);
-                    ShadingResult shading_result;
-                    shading_result.m_aovs.set_size(aov_count);
+                    ShadingResult shading_result(aov_count);
                     m_sample_renderer->render_sample(
                         child_sampling_context,
                         pixel_context,
@@ -242,9 +242,9 @@ namespace
                     // Update statistics for this pixel.
                     // todo: variation should be computed in a user-selectable color space, typically the target color space.
                     // todo: one tracker per AOV?
-                    trackers[0].insert(shading_result.m_color[0]);
-                    trackers[1].insert(shading_result.m_color[1]);
-                    trackers[2].insert(shading_result.m_color[2]);
+                    trackers[0].insert(shading_result.m_main.m_color[0]);
+                    trackers[1].insert(shading_result.m_main.m_color[1]);
+                    trackers[2].insert(shading_result.m_main.m_color[2]);
                 }
 
                 // Stop if the variation criterion is met.
@@ -334,11 +334,9 @@ namespace
 
         static Color4f scalar_to_color(const float value)
         {
-            return
-                lerp(
-                    Color4f(0.0f, 0.0f, 1.0f, 1.0f),
-                    Color4f(1.0f, 0.0f, 0.0f, 1.0f),
-                    saturate(value));
+            static const Color4f Blue(0.0f, 0.0f, 1.0f, 1.0f);
+            static const Color4f Red(1.0f, 0.0f, 0.0f, 1.0f);
+            return lerp(Blue, Red, saturate(value));
         }
     };
 }

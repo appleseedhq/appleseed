@@ -40,6 +40,7 @@
 #include "renderer/kernel/lighting/tracer.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingengine.h"
+#include "renderer/kernel/shading/shadingfragment.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/kernel/shading/shadingresult.h"
@@ -191,16 +192,12 @@ namespace
 
                     // Apply alpha premultiplication.
                     if (shading_point_ptr->hit())
-                    {
-                        shading_result.m_color *= shading_result.m_alpha[0];
-                        shading_result.m_aovs *= shading_result.m_alpha[0];
-                    }
+                        shading_result.apply_alpha_premult_linear_rgb();
                 }
                 else
                 {
                     // Shade the intersection point.
-                    ShadingResult local_result;
-                    local_result.m_aovs.set_size(shading_result.m_aovs.size());
+                    ShadingResult local_result(shading_result.m_aovs.size());
                     m_shading_engine.shade(
                         sampling_context,
                         pixel_context,
@@ -213,10 +210,7 @@ namespace
 
                     // Apply alpha premultiplication.
                     if (shading_point_ptr->hit())
-                    {
-                        local_result.m_color *= local_result.m_alpha[0];
-                        local_result.m_aovs *= local_result.m_alpha[0];
-                    }
+                        local_result.apply_alpha_premult_linear_rgb();
 
                     // Compositing.
                     shading_result.composite_over_linear_rgb(local_result);
@@ -227,7 +221,7 @@ namespace
                     break;
 
                 // Stop once we hit full opacity.
-                if (max_value(shading_result.m_alpha) > m_opacity_threshold)
+                if (max_value(shading_result.m_main.m_alpha) > m_opacity_threshold)
                     break;
 
                 // Move the ray origin to the intersection point.

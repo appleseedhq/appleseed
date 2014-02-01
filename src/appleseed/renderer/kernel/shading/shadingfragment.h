@@ -27,69 +27,48 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "blanksamplerenderer.h"
+#ifndef APPLESEED_RENDERER_KERNEL_SHADING_SHADINGFRAGMENT_H
+#define APPLESEED_RENDERER_KERNEL_SHADING_SHADINGFRAGMENT_H
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/kernel/shading/shadingresult.h"
-
-// appleseed.foundation headers.
-#include "foundation/math/vector.h"
-#include "foundation/utility/statistics.h"
-
-// Forward declarations.
-namespace renderer  { class PixelContext; }
-
-using namespace foundation;
 
 namespace renderer
 {
 
-namespace
+//
+// Shading fragment.
+//
+
+class ShadingFragment
 {
-    //
-    // Blank sample renderer.
-    //
+  public:
+    Spectrum    m_color;
+    Alpha       m_alpha;
 
-    class BlankSampleRenderer
-      : public ISampleRenderer
-    {
-      public:
-        virtual void release() OVERRIDE
-        {
-            delete this;
-        }
-
-        virtual void render_sample(
-            SamplingContext&    sampling_context,
-            const PixelContext& pixel_context,
-            const Vector2d&     image_point,
-            ShadingResult&      shading_result) OVERRIDE
-        {
-            shading_result.set_to_transparent_black_linear_rgb();
-        }
-
-        virtual StatisticsVector get_statistics() const OVERRIDE
-        {
-            return StatisticsVector();
-        }
-    };
-}
+    ShadingFragment& operator+=(const ShadingFragment& rhs);
+    ShadingFragment& operator*=(const float rhs);
+};
 
 
 //
-// BlankSampleRendererFactory class implementation.
+// ShadingFragment class implementation.
 //
 
-void BlankSampleRendererFactory::release()
+inline ShadingFragment& ShadingFragment::operator+=(const ShadingFragment& rhs)
 {
-    delete this;
+    m_color += rhs.m_color;
+    m_alpha += rhs.m_alpha;
+    return *this;
 }
 
-ISampleRenderer* BlankSampleRendererFactory::create(const bool primary)
+inline ShadingFragment& ShadingFragment::operator*=(const float rhs)
 {
-    return new BlankSampleRenderer();
+    m_color *= rhs;
+    m_alpha *= rhs;
+    return *this;
 }
 
-}   // namespace renderer
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_KERNEL_SHADING_SHADINGFRAGMENT_H

@@ -147,8 +147,7 @@ namespace
 
                     // Render the sample.
                     SamplingContext child_sampling_context(sampling_context);
-                    ShadingResult shading_result;
-                    shading_result.m_aovs.set_size(aov_count);
+                    ShadingResult shading_result(aov_count);
                     m_sample_renderer->render_sample(
                         child_sampling_context,
                         pixel_context,
@@ -188,8 +187,7 @@ namespace
                             instance);      // initial instance number -- end of sequence
 
                         // Render the sample.
-                        ShadingResult shading_result;
-                        shading_result.m_aovs.set_size(aov_count);
+                        ShadingResult shading_result(aov_count);
                         m_sample_renderer->render_sample(
                             sampling_context,
                             pixel_context,
