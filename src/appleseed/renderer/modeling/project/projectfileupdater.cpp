@@ -686,7 +686,6 @@ namespace
             }
         }
 
-        template <>
         void update_entity(Assembly& assembly)
         {
             update_collection(assembly.edfs());

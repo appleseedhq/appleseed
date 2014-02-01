@@ -58,7 +58,7 @@ PixelRendererBase::~PixelRendererBase()
     if (m_invalid_sample_count > 0)
     {
         RENDERER_LOG_WARNING(
-            "found %s pixel sample%s with NaN or negative values",
+            "found %s pixel sample%s with NaN or negative values.",
             pretty_uint(m_invalid_sample_count).c_str(),
             m_invalid_sample_count > 1 ? "s" : "");
     }
