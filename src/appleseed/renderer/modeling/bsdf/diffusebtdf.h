@@ -61,6 +61,7 @@ DECLARE_INPUT_VALUES(DiffuseBTDFInputValues)
     double      m_transmittance_multiplier;     // diffuse transmittance multiplier
 };
 
+
 //
 // Diffuse BTDF factory.
 //

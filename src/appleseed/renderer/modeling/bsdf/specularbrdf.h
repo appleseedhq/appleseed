@@ -61,6 +61,7 @@ DECLARE_INPUT_VALUES(SpecularBRDFInputValues)
     double      m_reflectance_multiplier;   // specular reflectance multiplier
 };
 
+
 //
 // Specular BRDF factory.
 //

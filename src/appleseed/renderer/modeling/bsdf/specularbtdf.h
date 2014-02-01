@@ -66,6 +66,7 @@ DECLARE_INPUT_VALUES(SpecularBTDFInputValues)
     double      m_to_ior;                       // to this index of refraction
 };
 
+
 //
 // Specular BTDF factory.
 //

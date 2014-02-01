@@ -67,6 +67,7 @@ DECLARE_INPUT_VALUES(AshikminBRDFInputValues)
     double      m_nv;               // Phong-like exponent in second tangent direction
 };
 
+
 //
 // Ashikhmin-Shirley BRDF factory.
 //
