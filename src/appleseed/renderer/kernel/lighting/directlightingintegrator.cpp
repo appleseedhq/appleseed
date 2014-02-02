@@ -230,7 +230,8 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     const double transmission =
         m_shading_context.get_tracer().trace_between(
             m_shading_point,
-            emission_position);
+            emission_position,
+            ShadingRay::ShadowRay);
 
     // Discard occluded samples.
     if (transmission == 0.0)

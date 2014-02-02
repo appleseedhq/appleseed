@@ -289,7 +289,7 @@ namespace
             ray.m_tmin = 0.0;
             ray.m_tmax = numeric_limits<double>::max();
             ray.m_time = 0.0;
-            ray.m_flags = ~0;
+            ray.m_type = ShadingRay::ProbeRay;
 
             size_t computed_samples = 0;
             double average_distance = 0.0;

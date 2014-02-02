@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/kernel/shading/shadingray.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/kernel/volume/occupancygrid.h"
 #include "renderer/kernel/volume/volume.h"
@@ -650,6 +651,8 @@ namespace
                 ShadingRay ray;
                 ray.m_org = point;
                 ray.m_dir = -m_light_direction;
+                ray.m_time = 0.0;
+                ray.m_type = ShadingRay::ShadowRay;
 
                 // Find the ray segment that lies inside the bounding box of the volume.
                 double tmax;

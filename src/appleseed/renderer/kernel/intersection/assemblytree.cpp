@@ -452,7 +452,7 @@ namespace
         output_ray.m_tmin = input_ray.m_tmin;
         output_ray.m_tmax = input_ray.m_tmax;
         output_ray.m_time = input_ray.m_time;
-        output_ray.m_flags = input_ray.m_flags;
+        output_ray.m_type = input_ray.m_type;
     }
 }
 

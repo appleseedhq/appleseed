@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/tracer.h"
 #include "renderer/kernel/shading/shadingcontext.h"
+#include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/input/inputevaluator.h"
@@ -146,7 +147,8 @@ void compute_ibl_bsdf_sampling(
         const double transmission =
             shading_context.get_tracer().trace(
                 shading_point,
-                incoming);
+                incoming,
+                ShadingRay::ShadowRay);
         if (transmission == 0.0)
             continue;
 
@@ -234,7 +236,8 @@ void compute_ibl_environment_sampling(
         const double transmission =
             shading_context.get_tracer().trace(
                 shading_point,
-                incoming);
+                incoming,
+                ShadingRay::ShadowRay);
         if (transmission == 0.0)
             continue;
 

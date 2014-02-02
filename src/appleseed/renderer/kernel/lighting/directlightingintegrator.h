@@ -37,6 +37,7 @@
 #include "renderer/kernel/lighting/tracer.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/input/inputevaluator.h"
@@ -429,6 +430,7 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
         m_shading_context.get_tracer().trace(
             m_shading_point,
             incoming,
+            ShadingRay::ShadowRay,
             weight);
 
     // todo: wouldn't it be more efficient to look the environment up at this point?
@@ -568,7 +570,8 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     const double transmission =
         m_shading_context.get_tracer().trace_between(
             m_shading_point,
-            sample.m_point);
+            sample.m_point,
+            ShadingRay::ShadowRay);
 
     // Discard occluded samples.
     if (transmission == 0.0)

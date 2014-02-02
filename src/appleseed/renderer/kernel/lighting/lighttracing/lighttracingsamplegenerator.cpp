@@ -412,7 +412,8 @@ namespace
                     m_shading_context.get_tracer().trace_between(
                         m_camera_position,
                         vertex_position,
-                        time);
+                        time,
+                        ShadingRay::CameraRay);
             }
 
             void emit_sample(const Vector2d& position_ndc, const Spectrum& radiance)
@@ -562,7 +563,7 @@ namespace
                 light_sample.m_point,
                 emission_direction,
                 sampling_context.next_double2(),
-                ~0);
+                ShadingRay::LightRay);
 
             // Build the path tracer.
             PathVisitor path_visitor(
@@ -636,7 +637,7 @@ namespace
                 emission_position,
                 emission_direction,
                 sampling_context.next_double2(),
-                ~0);
+                ShadingRay::LightRay);
 
             // Build the path tracer.
             PathVisitor path_visitor(
@@ -720,7 +721,7 @@ namespace
                 ray_origin,
                 -outgoing,
                 sampling_context.next_double2(),
-                ~0);
+                ShadingRay::LightRay);
 
             // Build the path tracer.
             PathVisitor path_visitor(

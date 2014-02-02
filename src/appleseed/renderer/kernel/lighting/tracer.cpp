@@ -137,6 +137,7 @@ const ShadingPoint& Tracer::do_trace(
     const Vector3d&         origin,
     const Vector3d&         direction,
     const double            time,
+    const ShadingRay::Type  type,
     double&                 transmission,
     const ShadingPoint*     parent_shading_point)
 {
@@ -163,7 +164,7 @@ const ShadingPoint& Tracer::do_trace(
             point,
             direction,
             time,
-            ~0);            // ray flags
+            type);
 
         // Trace the ray.
         m_shading_points[shading_point_index].clear();
@@ -219,6 +220,7 @@ const ShadingPoint& Tracer::do_trace_between(
     const Vector3d&         origin,
     const Vector3d&         target,
     const double            time,
+    const ShadingRay::Type  type,
     double&                 transmission,
     const ShadingPoint*     parent_shading_point)
 {
@@ -247,7 +249,7 @@ const ShadingPoint& Tracer::do_trace_between(
             0.0,            // ray tmin
             1.0 - 1.0e-6,   // ray tmax
             time,
-            ~0);            // ray flags
+            type);
 
         // Trace the ray.
         m_shading_points[shading_point_index].clear();
