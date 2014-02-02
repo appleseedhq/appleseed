@@ -45,7 +45,7 @@ import xml.dom.minidom as xml
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-VERSION = "2.7"
+VERSION = "2.8"
 RENDERS_DIR = "_renders"
 ARCHIVES_DIR = "_archives"
 LOGS_DIR = "_logs"
@@ -213,8 +213,8 @@ class Log:
 #--------------------------------------------------------------------------------------------------
 
 class DependencyDB:
-    def __init__(self, args, log):
-        self.args = args
+    def __init__(self, source_directory, log):
+        self.source_directory = source_directory
         self.log = log
         self.roots = {}
 
@@ -244,7 +244,7 @@ class DependencyDB:
 
     def __extract_dependencies(self, filename):
         try:
-            filepath = os.path.join(self.args.source_directory, filename)
+            filepath = os.path.join(self.source_directory, filename)
 
             with open(filepath, 'r') as file:
                 contents = file.read()
@@ -264,6 +264,9 @@ class DependencyDB:
 
             return True, deps
 
+        except KeyboardInterrupt, SystemExit:
+            raise
+
         except:
             return False, set()
 
@@ -278,8 +281,9 @@ class Manager:
         self.log = log
         self.frames_directory = os.path.join(self.args.target_directory, RENDERS_DIR)
         self.archives_directory = os.path.join(self.args.target_directory, ARCHIVES_DIR)
-        self.uploaded_dependency_db = DependencyDB(args, log)
-        self.completed_dependency_db = DependencyDB(args, log)
+        self.all_uploaded_dependency_db = DependencyDB(self.args.target_directory, log)
+        self.own_uploaded_dependency_db = DependencyDB(self.args.source_directory, log)
+        self.completed_dependency_db = DependencyDB(self.args.source_directory, log)
 
     def manage(self):
         self.compute_target_directory_size()
@@ -298,13 +302,13 @@ class Manager:
     def gather_files(self):
         self.log.info("gathering files...")
         self.source_files = map(os.path.basename, get_files(self.args.source_directory, "*.appleseed"))
-        self.completed_files = map(os.path.basename, get_files(self.archives_directory, "*.appleseed"))
         self.uploaded_files = self.gather_uploaded_files()
         self.inprogress_files = self.gather_inprogress_files()
-        self.log.info("  found {0} source files in {1}".format(len(self.source_files), self.args.source_directory))
-        self.log.info("  found {0} completed files (all shots) in {1}".format(len(self.completed_files), self.archives_directory))
-        self.log.info("  found {0} in-progress files (all shots) in {1}".format(len(self.inprogress_files), self.args.target_directory))
+        self.completed_files = map(os.path.basename, get_files(self.archives_directory, "*.appleseed"))
+        self.log.info("  found {0} source files (this shot) in {1}".format(len(self.source_files), self.args.source_directory))
         self.log.info("  found {0} uploaded files (all shots) in {1}".format(len(self.uploaded_files), self.args.target_directory))
+        self.log.info("  found {0} in-progress files (all shots) in {1}".format(len(self.inprogress_files), self.args.target_directory))
+        self.log.info("  found {0} completed files (all shots) in {1}".format(len(self.completed_files), self.archives_directory))
 
     def gather_uploaded_files(self):
         return map(os.path.basename, get_files(self.args.target_directory, "*.appleseed"))
@@ -351,24 +355,28 @@ class Manager:
 
     def print_pings(self):
         owners = set()
-        for filename in self.inprogress_files.keys():
-            for owner in self.inprogress_files[filename]:
-                owners.add(owner)
+        for filename in self.source_files:
+            if filename in self.inprogress_files.keys():
+                for owner in self.inprogress_files[filename]:
+                    owners.add(owner)
         pings = sorted([ (owner, self.read_ping(owner)) for owner in owners ], key=lambda x: x[1])
         if len(pings) > 0:
             max_owner_length = max([ len(owner) for owner in owners ])
             self.log.info("pings:")
             for (owner, ping) in pings:
                 padding = " " * (max_owner_length + 1 - len(owner))
-                self.log.info("  {0}:{1}{2}".format(owner, padding, self.format_ping(ping)))
+                self.log.info("  {0}:{1}{2}".format(owner, padding, self.format_ping(ping) if ping is not None else "n/a"))
         else:
             self.log.info("no pings.")
 
     def read_ping(self, owner):
         TIMESTAMP_LENGTH = 26
-        with open(os.path.join(self.args.target_directory, LOGS_DIR, owner + ".log")) as file:
-            last_line = tail_file(file, 1)[0]
-            return datetime.datetime.strptime(last_line[:TIMESTAMP_LENGTH], "%Y-%m-%d %H:%M:%S.%f")
+        try:
+            with open(os.path.join(self.args.target_directory, LOGS_DIR, owner + ".log")) as file:
+                last_line = tail_file(file, 1)[0]
+                return datetime.datetime.strptime(last_line[:TIMESTAMP_LENGTH], "%Y-%m-%d %H:%M:%S.%f")
+        except IOError as ex:
+            return None
 
     def format_ping(self, ping):
         elapsed = datetime.datetime.now() - ping
@@ -408,22 +416,26 @@ class Manager:
         self.update_completed_dependency_db()
 
     def update_uploaded_dependency_db(self):
-        self.log.info("updating dependency database of uploaded files...")
-        roots = [ filename for filename in self.source_files \
-                  if filename in self.inprogress_files or filename in self.uploaded_files ]
-        self.uploaded_dependency_db.update(roots)
+        self.log.info("updating dependency database of uploaded and in-progress files (all shots)...")
+        all_roots = map(os.path.basename, get_files(self.args.target_directory, "*.appleseed*"))
+        self.all_uploaded_dependency_db.update(all_roots)
+
+        self.log.info("updating dependency database of uploaded files (this shot)...")
+        own_roots = [ filename for filename in self.source_files \
+                      if filename in self.inprogress_files or filename in self.uploaded_files ]
+        self.own_uploaded_dependency_db.update(own_roots)
 
     def update_completed_dependency_db(self):
-        self.log.info("updating dependency database of completed files...")
+        self.log.info("updating dependency database of completed files (this shot)...")
         roots = [ filename for filename in self.source_files if filename in self.completed_files ]
         self.completed_dependency_db.update(roots)
 
     def remove_orphan_dependencies(self):
         self.log.info("removing orphan dependencies...")
         removed = 0
-        uploaded_files_dependencies = self.uploaded_dependency_db.get_all_dependencies()
+        all_uploaded_files_dependencies = self.all_uploaded_dependency_db.get_all_dependencies()
         for dep in self.completed_dependency_db.get_all_dependencies():
-            if not dep in uploaded_files_dependencies:
+            if not dep in all_uploaded_files_dependencies:
                 count = self.remove_file(dep)
                 if count > 0:
                     self.log.info("  removed {0}".format(dep))
@@ -444,7 +456,7 @@ class Manager:
     def upload_missing_dependencies(self):
         self.log.info("uploading missing dependencies...")
         uploaded = 0
-        for dep in self.uploaded_dependency_db.get_all_dependencies():
+        for dep in self.own_uploaded_dependency_db.get_all_dependencies():
             count = self.upload_file(dep)
             if count > 0:
                 self.log.info("  uploaded {0}".format(dep))
