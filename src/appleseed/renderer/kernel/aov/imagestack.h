@@ -48,13 +48,19 @@ namespace renderer
 {
 
 //
-// A stack of named images.
+// An array of named images.
 //
 
 class DLLSYMBOL ImageStack
   : public foundation::NonCopyable
 {
   public:
+    enum Type
+    {
+        ContributionType,
+        IdentificationType
+    };
+
     ImageStack(
         const size_t                    canvas_width,
         const size_t                    canvas_height,
@@ -71,6 +77,8 @@ class DLLSYMBOL ImageStack
 
     const char* get_name(const size_t index) const;
 
+    Type get_type(const size_t index) const;
+
     const foundation::Image& get_image(const size_t index) const;
 
     // Returns ~0 if the requested image cannot be found.
@@ -78,7 +86,8 @@ class DLLSYMBOL ImageStack
 
     size_t append(
         const char*                     name,
-        const foundation::PixelFormat   format);
+        const Type                      type,
+        const foundation::PixelFormat   pixel_format);
 
     TileStack tiles(
         const size_t                    tile_x,

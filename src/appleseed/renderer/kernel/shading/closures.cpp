@@ -52,40 +52,40 @@ namespace
 
     struct AshikhminShirleyClosureParams
     {
-        OSL::Vec3 N;
-        OSL::Vec3 T;
+        OSL::Vec3   N;
+        OSL::Vec3   T;
         OSL::Color3 kd;
         OSL::Color3 ks;
-        float nu;
-        float nv;
+        float       nu;
+        float       nv;
     };
 
     struct LambertClosureParams
     {
-        OSL::Vec3 N;
+        OSL::Vec3   N;
     };
 
     struct MicrofacetBRDFClosureParams
     {
-        OSL::Vec3 N;
-        float glossiness;
+        OSL::Vec3   N;
+        float       glossiness;
     };
 
     struct RefractionClosureParams
     {
-        OSL::Vec3 N;
-        float from_ior;
-        float to_ior;
+        OSL::Vec3   N;
+        float       from_ior;
+        float       to_ior;
     };
 
     struct ReflectionClosureParams
     {
-        OSL::Vec3 N;
+        OSL::Vec3   N;
     };
 
     struct TranslucentClosureParams
     {
-        OSL::Vec3 N;
+        OSL::Vec3   N;
     };
 }
 
@@ -149,6 +149,7 @@ void register_appleseed_closures(OSL::ShadingSystem& shading_system)
                                           CLOSURE_FINISH_PARAM(LambertClosureParams) } },
 
         { "transparency", TransparentID, { CLOSURE_FINISH_PARAM(EmptyClosureParams) } },
+
         { 0, 0, {} }    // mark end of the array
     };
 

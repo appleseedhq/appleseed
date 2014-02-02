@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/aov/tilestack.h"
+#include "renderer/kernel/shading/shadingfragment.h"
 #include "renderer/kernel/shading/shadingresult.h"
 
 // appleseed.foundation headers.
@@ -49,6 +50,15 @@ using namespace std;
 namespace renderer
 {
 
+namespace
+{
+    size_t get_total_channel_count(const size_t aov_count)
+    {
+        // The main image plus a number of AOVs, all RGBA.
+        return (1 + aov_count) * 4;
+    }
+}
+
 ShadingResultFrameBuffer::ShadingResultFrameBuffer(
     const size_t                    width,
     const size_t                    height,
@@ -57,10 +67,10 @@ ShadingResultFrameBuffer::ShadingResultFrameBuffer(
   : FilteredTile(
         width,
         height,
-        4 + aov_count * 3,
+        get_total_channel_count(aov_count),
         filter)
   , m_aov_count(aov_count)
-  , m_scratch(4 + aov_count * 3)
+  , m_scratch(get_total_channel_count(aov_count))
 {
 }
 
@@ -73,11 +83,11 @@ ShadingResultFrameBuffer::ShadingResultFrameBuffer(
   : FilteredTile(
         width,
         height,
-        4 + aov_count * 3,
+        get_total_channel_count(aov_count),
         crop_window,
         filter)
   , m_aov_count(aov_count)
-  , m_scratch(4 + aov_count * 3)
+  , m_scratch(get_total_channel_count(aov_count))
 {
 }
 
@@ -90,16 +100,19 @@ void ShadingResultFrameBuffer::add(
 
     float* ptr = &m_scratch[0];
 
-    *ptr++ = sample.m_alpha[0];
-    *ptr++ = sample.m_color[0];
-    *ptr++ = sample.m_color[1];
-    *ptr++ = sample.m_color[2];
+    *ptr++ = sample.m_main.m_color[0];
+    *ptr++ = sample.m_main.m_color[1];
+    *ptr++ = sample.m_main.m_color[2];
+    *ptr++ = sample.m_main.m_alpha[0];
 
     for (size_t i = 0; i < m_aov_count; ++i)
     {
-        *ptr++ = sample.m_aovs[i][0];
-        *ptr++ = sample.m_aovs[i][1];
-        *ptr++ = sample.m_aovs[i][2];
+        const ShadingFragment& aov = sample.m_aovs[i];
+
+        *ptr++ = aov.m_color[0];
+        *ptr++ = aov.m_color[1];
+        *ptr++ = aov.m_color[2];
+        *ptr++ = aov.m_alpha[0];
     }
 
     FilteredTile::add(x, y, &m_scratch[0]);
@@ -135,17 +148,15 @@ void ShadingResultFrameBuffer::develop_to_tile_premult_alpha(
             const float weight = *ptr++;
             const float rcp_weight = weight == 0.0f ? 0.0f : 1.0f / weight;
 
-            const float alpha = *ptr++;
-
-            const Color4f color(ptr[0], ptr[1], ptr[2], alpha);
+            const Color4f color(ptr[0], ptr[1], ptr[2], ptr[3]);
             tile.set_pixel(x, y, color * rcp_weight);
-            ptr += 3;
+            ptr += 4;
 
             for (size_t i = 0; i < m_aov_count; ++i)
             {
-                const Color4f aov(ptr[0], ptr[1], ptr[2], alpha);
+                const Color4f aov(ptr[0], ptr[1], ptr[2], ptr[3]);
                 aov_tiles.set_pixel(x, y, i, aov * rcp_weight);
-                ptr += 3;
+                ptr += 4;
             }
         }
     }
@@ -164,22 +175,21 @@ void ShadingResultFrameBuffer::develop_to_tile_straight_alpha(
             const float weight = *ptr++;
             const float rcp_weight = weight == 0.0f ? 0.0f : 1.0f / weight;
 
-            const float alpha = *ptr++;
-            const float rcp_weight_alpha = alpha == 0.0f ? 0.0f : 1.0f / alpha;
-
-            Color4f color(ptr[0], ptr[1], ptr[2], alpha);
+            Color4f color(ptr[0], ptr[1], ptr[2], ptr[3]);
+            const float rcp_weight_alpha = ptr[3] == 0.0f ? 0.0f : 1.0f / ptr[3];
             color.rgb() *= rcp_weight_alpha;
             color.a *= rcp_weight;
             tile.set_pixel(x, y, color);
-            ptr += 3;
+            ptr += 4;
 
             for (size_t i = 0; i < m_aov_count; ++i)
             {
-                Color4f aov(ptr[0], ptr[1], ptr[2], alpha);
+                Color4f aov(ptr[0], ptr[1], ptr[2], ptr[3]);
+                const float rcp_weight_alpha = ptr[3] == 0.0f ? 0.0f : 1.0f / ptr[3];
                 aov.rgb() *= rcp_weight_alpha;
                 aov.a *= rcp_weight;
                 aov_tiles.set_pixel(x, y, i, aov);
-                ptr += 3;
+                ptr += 4;
             }
         }
     }

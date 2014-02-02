@@ -110,7 +110,7 @@ void ObjectCollectionItem::slot_import_objects()
             treeWidget(),
             "Import Objects...",
             m_settings.get_path_optional<QString>(LAST_DIRECTORY_SETTINGS_KEY),
-            "Geometry Files (*.abc; *.obj);;All Files (*.*)",
+            "Geometry Files (*.abc; *.binarymesh; *.obj);;All Files (*.*)",
             &selected_filter,
             options);
 

@@ -28,6 +28,7 @@
 //
 
 // appleseed.renderer headers.
+#include "renderer/kernel/shading/shadingfragment.h"
 #include "renderer/kernel/shading/shadingresult.h"
 
 // appleseed.foundation headers.
@@ -54,139 +55,151 @@ TEST_SUITE(Renderer_Kernel_Shading_ShadingResult)
     {
         ShadingResult result;
         result.m_color_space = ColorSpaceLinearRGB;
-        result.m_color[0] = result.m_color[1] = result.m_color[2] = 0.0f;
+        result.m_main.m_color[0] = 0.0f;
+        result.m_main.m_color[1] = 0.0f;
+        result.m_main.m_color[2] = 0.0f;
 
         result.transform_to_linear_rgb(m_lighting_conditions);
 
         EXPECT_EQ(ColorSpaceLinearRGB, result.m_color_space);
-        EXPECT_EQ(0.0f, result.m_color[0]);
-        EXPECT_EQ(0.0f, result.m_color[1]);
-        EXPECT_EQ(0.0f, result.m_color[2]);
+        EXPECT_EQ(0.0f, result.m_main.m_color[0]);
+        EXPECT_EQ(0.0f, result.m_main.m_color[1]);
+        EXPECT_EQ(0.0f, result.m_main.m_color[2]);
     }
 
     TEST_CASE_F(TransformToLinearRGB_FromSRGB, Fixture)
     {
         ShadingResult result;
         result.m_color_space = ColorSpaceSRGB;
-        result.m_color[0] = result.m_color[1] = result.m_color[2] = 0.0f;
+        result.m_main.m_color[0] = 0.0f;
+        result.m_main.m_color[1] = 0.0f;
+        result.m_main.m_color[2] = 0.0f;
 
         result.transform_to_linear_rgb(m_lighting_conditions);
 
         EXPECT_EQ(ColorSpaceLinearRGB, result.m_color_space);
-        EXPECT_EQ(0.0f, result.m_color[0]);
-        EXPECT_EQ(0.0f, result.m_color[1]);
-        EXPECT_EQ(0.0f, result.m_color[2]);
+        EXPECT_EQ(0.0f, result.m_main.m_color[0]);
+        EXPECT_EQ(0.0f, result.m_main.m_color[1]);
+        EXPECT_EQ(0.0f, result.m_main.m_color[2]);
     }
 
     TEST_CASE_F(TransformToLinearRGB_FromCIEXYZ, Fixture)
     {
         ShadingResult result;
         result.m_color_space = ColorSpaceCIEXYZ;
-        result.m_color[0] = result.m_color[1] = result.m_color[2] = 0.0f;
+        result.m_main.m_color[0] = 0.0f;
+        result.m_main.m_color[1] = 0.0f;
+        result.m_main.m_color[2] = 0.0f;
 
         result.transform_to_linear_rgb(m_lighting_conditions);
 
         EXPECT_EQ(ColorSpaceLinearRGB, result.m_color_space);
-        EXPECT_EQ(0.0f, result.m_color[0]);
-        EXPECT_EQ(0.0f, result.m_color[1]);
-        EXPECT_EQ(0.0f, result.m_color[2]);
+        EXPECT_EQ(0.0f, result.m_main.m_color[0]);
+        EXPECT_EQ(0.0f, result.m_main.m_color[1]);
+        EXPECT_EQ(0.0f, result.m_main.m_color[2]);
     }
 
     TEST_CASE_F(TransformToLinearRGB_FromSpectrum, Fixture)
     {
         ShadingResult result;
         result.m_color_space = ColorSpaceSpectral;
-        result.m_color.set(0.0f);
+        result.m_main.m_color.set(0.0f);
 
         result.transform_to_linear_rgb(m_lighting_conditions);
 
         EXPECT_EQ(ColorSpaceLinearRGB, result.m_color_space);
-        EXPECT_EQ(0.0f, result.m_color[0]);
-        EXPECT_EQ(0.0f, result.m_color[1]);
-        EXPECT_EQ(0.0f, result.m_color[2]);
+        EXPECT_EQ(0.0f, result.m_main.m_color[0]);
+        EXPECT_EQ(0.0f, result.m_main.m_color[1]);
+        EXPECT_EQ(0.0f, result.m_main.m_color[2]);
     }
 
     TEST_CASE_F(TransformToSpectrum_FromLinearRGB, Fixture)
     {
         ShadingResult result;
         result.m_color_space = ColorSpaceLinearRGB;
-        result.m_color[0] = result.m_color[1] = result.m_color[2] = 0.0f;
+        result.m_main.m_color[0] = 0.0f;
+        result.m_main.m_color[1] = 0.0f;
+        result.m_main.m_color[2] = 0.0f;
 
         result.transform_to_spectrum(m_lighting_conditions);
 
         EXPECT_EQ(ColorSpaceSpectral, result.m_color_space);
-        EXPECT_EQ(Spectrum(0.0f), result.m_color);
+        EXPECT_EQ(Spectrum(0.0f), result.m_main.m_color);
     }
 
     TEST_CASE_F(TransformToSpectrum_FromSRGB, Fixture)
     {
         ShadingResult result;
         result.m_color_space = ColorSpaceSRGB;
-        result.m_color[0] = result.m_color[1] = result.m_color[2] = 0.0f;
+        result.m_main.m_color[0] = 0.0f;
+        result.m_main.m_color[1] = 0.0f;
+        result.m_main.m_color[2] = 0.0f;
 
         result.transform_to_spectrum(m_lighting_conditions);
 
         EXPECT_EQ(ColorSpaceSpectral, result.m_color_space);
-        EXPECT_EQ(Spectrum(0.0f), result.m_color);
+        EXPECT_EQ(Spectrum(0.0f), result.m_main.m_color);
     }
 
     TEST_CASE_F(TransformToSpectrum_FromCIEXYZ, Fixture)
     {
         ShadingResult result;
         result.m_color_space = ColorSpaceCIEXYZ;
-        result.m_color[0] = result.m_color[1] = result.m_color[2] = 0.0f;
+        result.m_main.m_color[0] = 0.0f;
+        result.m_main.m_color[1] = 0.0f;
+        result.m_main.m_color[2] = 0.0f;
 
         result.transform_to_spectrum(m_lighting_conditions);
 
         EXPECT_EQ(ColorSpaceSpectral, result.m_color_space);
-        EXPECT_EQ(Spectrum(0.0f), result.m_color);
+        EXPECT_EQ(Spectrum(0.0f), result.m_main.m_color);
     }
 
     TEST_CASE_F(TransformToSpectrum_GivenSpectrum_DoesNothing, Fixture)
     {
         ShadingResult result;
         result.m_color_space = ColorSpaceSpectral;
-        result.m_color.set(0.0f);
+        result.m_main.m_color.set(0.0f);
 
         result.transform_to_spectrum(m_lighting_conditions);
 
         EXPECT_EQ(ColorSpaceSpectral, result.m_color_space);
-        EXPECT_EQ(Spectrum(0.0f), result.m_color);
+        EXPECT_EQ(Spectrum(0.0f), result.m_main.m_color);
     }
 
     TEST_CASE(CompositeOverLinearRGB_TenPercentOpaqueWhiteOverFullyTransparentBlack)
     {
         ShadingResult a;
         a.m_color_space = ColorSpaceLinearRGB;
-        a.m_color.set(0.1f);
-        a.m_alpha.set(0.1f);
+        a.m_main.m_color.set(0.1f);
+        a.m_main.m_alpha.set(0.1f);
 
         ShadingResult b;
         b.m_color_space = ColorSpaceLinearRGB;
-        b.m_color.set(0.0f);
-        b.m_alpha.set(0.0f);
+        b.m_main.m_color.set(0.0f);
+        b.m_main.m_alpha.set(0.0f);
 
         a.composite_over_linear_rgb(b);
 
-        EXPECT_FEQ(0.1f, a.m_color[0]);
-        EXPECT_FEQ(0.1f, a.m_alpha[0]);
+        EXPECT_FEQ(0.1f, a.m_main.m_color[0]);
+        EXPECT_FEQ(0.1f, a.m_main.m_alpha[0]);
     }
 
     TEST_CASE(CompositeOverLinearRGB_FullyTransparentBlackOverTenPercentOpaqueWhite)
     {
         ShadingResult a;
         a.m_color_space = ColorSpaceLinearRGB;
-        a.m_color.set(0.0f);
-        a.m_alpha.set(0.0f);
+        a.m_main.m_color.set(0.0f);
+        a.m_main.m_alpha.set(0.0f);
 
         ShadingResult b;
         b.m_color_space = ColorSpaceLinearRGB;
-        b.m_color.set(0.1f);
-        b.m_alpha.set(0.1f);
+        b.m_main.m_color.set(0.1f);
+        b.m_main.m_alpha.set(0.1f);
 
         a.composite_over_linear_rgb(b);
 
-        EXPECT_FEQ(0.1f, a.m_color[0]);
-        EXPECT_FEQ(0.1f, a.m_alpha[0]);
+        EXPECT_FEQ(0.1f, a.m_main.m_color[0]);
+        EXPECT_FEQ(0.1f, a.m_main.m_alpha[0]);
     }
 }

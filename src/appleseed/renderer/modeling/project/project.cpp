@@ -32,8 +32,8 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/kernel/aov/aovsettings.h"
 #include "renderer/kernel/aov/imagestack.h"
-#include "renderer/kernel/aov/spectrumstack.h"
 #include "renderer/kernel/intersection/tracecontext.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/environment/environment.h"
@@ -204,182 +204,201 @@ void Project::add_default_configurations()
 
 namespace
 {
-    struct RuleOrderingPredicate
+    class ApplyRenderLayer
     {
-        bool operator()(const RenderLayerRule* lhs, const RenderLayerRule* rhs) const
+      public:
+        ApplyRenderLayer(Scene& scene, Frame& frame)
+          : m_scene(scene)
+          , m_aov_images(frame.aov_images())
+          , m_pixel_format(frame.image().properties().m_pixel_format)
         {
-            return lhs->get_order() < rhs->get_order();
-        }
-    };
-
-    typedef vector<const RenderLayerRule*> RenderLayerRuleVector;
-    typedef map<string, size_t> RenderLayerMapping;
-
-    void apply_render_layer_rule_to_entity(
-        const RenderLayerRule&          rule,
-        RenderLayerMapping&             mapping,
-        ImageStack&                     images,
-        const PixelFormat               format,
-        Entity&                         entity)
-    {
-        const string render_layer_name = rule.get_render_layer();
-
-        if (render_layer_name.empty())
-        {
-            entity.set_render_layer_index(~0);
-            return;
         }
 
-        const RenderLayerMapping::const_iterator i = mapping.find(render_layer_name);
-
-        if (i != mapping.end())
+        void apply(const RenderLayerRuleContainer& rules)
         {
-            entity.set_render_layer_index(i->second);
-            return;
+            RenderLayerRuleVector sorted_rules;
+
+            for (const_each<RenderLayerRuleContainer> i = rules; i; ++i)
+                sorted_rules.push_back(&*i);
+
+            sort(sorted_rules.begin(), sorted_rules.end(), RuleOrderingPredicate());
+
+            apply_rules_to_scene(sorted_rules);
         }
 
-        assert(mapping.size() <= SpectrumStack::MaxSize);
+      private:
+        typedef vector<const RenderLayerRule*> RenderLayerRuleVector;
 
-        if (mapping.size() == SpectrumStack::MaxSize)
+        struct RuleOrderingPredicate
         {
-            RENDERER_LOG_ERROR(
-                "while assigning entity \"%s\" to render layer \"%s\": "
-                "could not create render layer, maximum number of AOVs (" FMT_SIZE_T ") reached.",
-                entity.get_name(),
-                render_layer_name.c_str(),
-                SpectrumStack::MaxSize);
-            entity.set_render_layer_index(~0);
-            return;
-        }
-
-        const size_t image_index = images.append(render_layer_name.c_str(), format);
-
-        mapping[render_layer_name] = image_index;
-        entity.set_render_layer_index(image_index);
-    }
-
-    void apply_render_layer_rules_to_entity(
-        const RenderLayerRuleVector&    rules,
-        RenderLayerMapping&             mapping,
-        ImageStack&                     images,
-        const PixelFormat               format,
-        Entity&                         entity)
-    {
-        for (const_each<RenderLayerRuleVector> r = rules; r; ++r)
-        {
-            const RenderLayerRule* rule = *r;
-
-            if (rule->get_entity_type_uid() == ~0 ||
-                rule->get_entity_type_uid() == entity.get_class_uid())
+            bool operator()(const RenderLayerRule* lhs, const RenderLayerRule* rhs) const
             {
-                if (rule->applies(entity))
+                return lhs->get_order() < rhs->get_order();
+            }
+        };
+
+        struct RenderLayer
+        {
+            ImageStack::Type    m_type;
+            size_t              m_index;
+        };
+
+        typedef map<string, RenderLayer> RenderLayerMapping;
+
+        Scene&                  m_scene;
+        ImageStack&             m_aov_images;
+        const PixelFormat       m_pixel_format;
+        RenderLayerMapping      m_mapping;
+
+        void apply_rules_to_scene(
+            const RenderLayerRuleVector&    rules)
+        {
+            apply_rules_to_base_group(rules, m_scene);
+
+            EnvironmentEDF* env_edf = m_scene.get_environment()->get_uncached_environment_edf();
+
+            if (env_edf)
+                apply_rules_to_entity(rules, ImageStack::ContributionType, *env_edf);
+
+            EnvironmentShader* env_shader = m_scene.get_environment()->get_uncached_environment_shader();
+
+            if (env_shader)
+                apply_rules_to_entity(rules, ImageStack::IdentificationType, *env_shader);
+        }
+
+        void apply_rules_to_assembly(
+            const RenderLayerRuleVector&    rules,
+            Assembly&                       assembly)
+        {
+            apply_rules_to_base_group(rules, assembly);
+            apply_rules_to_entities(rules, ImageStack::ContributionType, assembly.edfs());
+            apply_rules_to_entities(rules, ImageStack::ContributionType, assembly.lights());
+            apply_rules_to_entities(rules, ImageStack::IdentificationType, assembly.materials());
+            apply_rules_to_entities(rules, ImageStack::IdentificationType, assembly.objects());
+            apply_rules_to_entities(rules, ImageStack::IdentificationType, assembly.object_instances());
+            apply_rules_to_entities(rules, ImageStack::IdentificationType, assembly.surface_shaders());
+        }
+
+        void apply_rules_to_base_group(
+            const RenderLayerRuleVector&    rules,
+            BaseGroup&                      base_group)
+        {
+            apply_rules_to_entities(rules, ImageStack::IdentificationType, base_group.assemblies());
+            apply_rules_to_entities(rules, ImageStack::IdentificationType, base_group.assembly_instances());
+
+            for (each<AssemblyContainer> i = base_group.assemblies(); i; ++i)
+                apply_rules_to_assembly(rules, *i);
+        }
+
+        template <typename EntityCollection>
+        void apply_rules_to_entities(
+            const RenderLayerRuleVector&    rules,
+            const ImageStack::Type          type,
+            EntityCollection&               entities)
+        {
+            for (each<EntityCollection> i = entities; i; ++i)
+                apply_rules_to_entity(rules, type, *i);
+        }
+
+        void apply_rules_to_entity(
+            const RenderLayerRuleVector&    rules,
+            const ImageStack::Type          type,
+            Entity&                         entity)
+        {
+            for (const_each<RenderLayerRuleVector> r = rules; r; ++r)
+            {
+                const RenderLayerRule* rule = *r;
+
+                if (rule->get_entity_type_uid() == ~0 ||
+                    rule->get_entity_type_uid() == entity.get_class_uid())
                 {
-                    RENDERER_LOG_DEBUG(
-                        "assigning entity \"%s\" to render layer \"%s\" (via rule \"%s\").",
-                        entity.get_name(),
-                        rule->get_render_layer(),
-                        rule->get_name());
+                    if (rule->applies(entity))
+                    {
+                        RENDERER_LOG_DEBUG(
+                            "assigning entity \"%s\" to render layer \"%s\" (via rule \"%s\").",
+                            entity.get_name(),
+                            rule->get_render_layer(),
+                            rule->get_name());
 
-                    apply_render_layer_rule_to_entity(*rule, mapping, images, format, entity);
+                        apply_rule_to_entity(*rule, type, entity);
 
-                    break;
+                        break;
+                    }
                 }
             }
         }
-    }
 
-    template <typename EntityCollection>
-    void apply_render_layer_rules_to_entities(
-        const RenderLayerRuleVector&    rules,
-        RenderLayerMapping&             mapping,
-        ImageStack&                     images,
-        const PixelFormat               format,
-        EntityCollection&               entities)
-    {
-        for (each<EntityCollection> i = entities; i; ++i)
-            apply_render_layer_rules_to_entity(rules, mapping, images, format, *i);
-    }
+        void apply_rule_to_entity(
+            const RenderLayerRule&          rule,
+            const ImageStack::Type          type,
+            Entity&                         entity)
+        {
+            entity.set_render_layer_index(~0);
 
-    void apply_render_layer_rules_to_base_group(
-        const RenderLayerRuleVector&    rules,
-        RenderLayerMapping&             mapping,
-        ImageStack&                     images,
-        const PixelFormat               format,
-        BaseGroup&                      base_group);
+            const string render_layer_name = rule.get_render_layer();
 
-    void apply_render_layer_rules_to_assembly(
-        const RenderLayerRuleVector&    rules,
-        RenderLayerMapping&             mapping,
-        ImageStack&                     images,
-        const PixelFormat               format,
-        Assembly&                       assembly)
-    {
-        apply_render_layer_rules_to_base_group(rules, mapping, images, format, assembly);
-        apply_render_layer_rules_to_entities(rules, mapping, images, format, assembly.edfs());
-        apply_render_layer_rules_to_entities(rules, mapping, images, format, assembly.lights());
-        apply_render_layer_rules_to_entities(rules, mapping, images, format, assembly.materials());
-        apply_render_layer_rules_to_entities(rules, mapping, images, format, assembly.objects());
-        apply_render_layer_rules_to_entities(rules, mapping, images, format, assembly.object_instances());
-        apply_render_layer_rules_to_entities(rules, mapping, images, format, assembly.surface_shaders());
-    }
+            if (render_layer_name.empty())
+                return;
 
-    void apply_render_layer_rules_to_base_group(
-        const RenderLayerRuleVector&    rules,
-        RenderLayerMapping&             mapping,
-        ImageStack&                     images,
-        const PixelFormat               format,
-        BaseGroup&                      base_group)
-    {
-        apply_render_layer_rules_to_entities(rules, mapping, images, format, base_group.assemblies());
-        apply_render_layer_rules_to_entities(rules, mapping, images, format, base_group.assembly_instances());
+            const RenderLayerMapping::const_iterator i = m_mapping.find(render_layer_name);
 
-        for (each<AssemblyContainer> i = base_group.assemblies(); i; ++i)
-            apply_render_layer_rules_to_assembly(rules, mapping, images, format, *i);
-    }
+            if (i == m_mapping.end())
+            {
+                assert(m_mapping.size() <= MaxAOVCount);
 
-    void apply_render_layer_rules_to_scene(
-        const RenderLayerRuleVector&    rules,
-        ImageStack&                     images,
-        const PixelFormat               format,
-        Scene&                          scene)
-    {
-        RenderLayerMapping mapping;
+                if (m_mapping.size() == MaxAOVCount)
+                {
+                    RENDERER_LOG_ERROR(
+                        "while assigning entity \"%s\" to render layer \"%s\": "
+                        "could not create render layer, maximum number of AOVs (" FMT_SIZE_T ") reached.",
+                        entity.get_name(),
+                        render_layer_name.c_str(),
+                        MaxAOVCount);
+                    return;
+                }
 
-        apply_render_layer_rules_to_base_group(rules, mapping, images, format, scene);
+                const size_t image_index =
+                    m_aov_images.append(
+                        render_layer_name.c_str(),
+                        type,
+                        m_pixel_format);
 
-        EnvironmentEDF* env_edf = scene.get_environment()->get_uncached_environment_edf();
+                RenderLayer& render_layer = m_mapping[render_layer_name];
+                render_layer.m_type = type;
+                render_layer.m_index = image_index;
 
-        if (env_edf)
-            apply_render_layer_rules_to_entity(rules, mapping, images, format, *env_edf);
+                entity.set_render_layer_index(image_index);
+            }
+            else
+            {
+                if (i->second.m_type != type)
+                {
+                    RENDERER_LOG_ERROR(
+                        "while assigning entity \"%s\" to render layer \"%s\": "
+                        "lights/edfs and objects/materials/instances cannot be assigned to the same render layer.",
+                        entity.get_name(),
+                        render_layer_name.c_str());
+                    return;
+                }
 
-        EnvironmentShader* env_shader = scene.get_environment()->get_uncached_environment_shader();
-
-        if (env_shader)
-            apply_render_layer_rules_to_entity(rules, mapping, images, format, *env_shader);
-    }
+                entity.set_render_layer_index(i->second.m_index);
+            }
+        }
+    };
 }
 
 void Project::create_aov_images()
 {
-    RenderLayerRuleVector rules;
-
-    for (const_each<RenderLayerRuleContainer> i = impl->m_render_layer_rules; i; ++i)
-        rules.push_back(&*i);
-
-    sort(rules.begin(), rules.end(), RuleOrderingPredicate());
-
+    assert(impl->m_scene.get());
     assert(impl->m_frame.get());
 
-    ImageStack& aov_images = impl->m_frame->aov_images();
-    const PixelFormat aov_format = impl->m_frame->image().properties().m_pixel_format;
+    impl->m_frame->aov_images().clear();
 
-    aov_images.clear();
+    ApplyRenderLayer apply_render_layers(
+        impl->m_scene.ref(),
+        impl->m_frame.ref());
 
-    apply_render_layer_rules_to_scene(
-        rules,
-        aov_images,
-        aov_format,
-        impl->m_scene.ref());
+    apply_render_layers.apply(impl->m_render_layer_rules);
 }
 
 bool Project::has_trace_context() const

@@ -64,6 +64,7 @@ DECLARE_INPUT_VALUES(MicrofacetBRDFInputValues)
     double      m_fr_multiplier;            // Fresnel multiplier
 };
 
+
 //
 // Microfacet BRDF factory.
 //

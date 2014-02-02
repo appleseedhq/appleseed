@@ -27,69 +27,18 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "blanksamplerenderer.h"
+#ifndef APPLESEED_RENDERER_KERNEL_AOV_AOVSETTINGS_H
+#define APPLESEED_RENDERER_KERNEL_AOV_AOVSETTINGS_H
 
-// appleseed.renderer headers.
-#include "renderer/global/globaltypes.h"
-#include "renderer/kernel/shading/shadingresult.h"
-
-// appleseed.foundation headers.
-#include "foundation/math/vector.h"
-#include "foundation/utility/statistics.h"
-
-// Forward declarations.
-namespace renderer  { class PixelContext; }
-
-using namespace foundation;
+// Standard headers.
+#include <cstddef>
 
 namespace renderer
 {
 
-namespace
-{
-    //
-    // Blank sample renderer.
-    //
+// The maximum number of AOVs that can be handled at once.
+const size_t MaxAOVCount = 16;
 
-    class BlankSampleRenderer
-      : public ISampleRenderer
-    {
-      public:
-        virtual void release() OVERRIDE
-        {
-            delete this;
-        }
+}       // namespace renderer
 
-        virtual void render_sample(
-            SamplingContext&    sampling_context,
-            const PixelContext& pixel_context,
-            const Vector2d&     image_point,
-            ShadingResult&      shading_result) OVERRIDE
-        {
-            shading_result.set_to_transparent_black_linear_rgb();
-        }
-
-        virtual StatisticsVector get_statistics() const OVERRIDE
-        {
-            return StatisticsVector();
-        }
-    };
-}
-
-
-//
-// BlankSampleRendererFactory class implementation.
-//
-
-void BlankSampleRendererFactory::release()
-{
-    delete this;
-}
-
-ISampleRenderer* BlankSampleRendererFactory::create(const bool primary)
-{
-    return new BlankSampleRenderer();
-}
-
-}   // namespace renderer
+#endif  // !APPLESEED_RENDERER_KERNEL_AOV_AOVSETTINGS_H

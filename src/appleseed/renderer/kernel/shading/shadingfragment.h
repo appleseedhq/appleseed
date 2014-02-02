@@ -27,64 +27,48 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSDF_SPECULARBRDF_H
-#define APPLESEED_RENDERER_MODELING_BSDF_SPECULARBRDF_H
+#ifndef APPLESEED_RENDERER_KERNEL_SHADING_SHADINGFRAGMENT_H
+#define APPLESEED_RENDERER_KERNEL_SHADING_SHADINGFRAGMENT_H
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/modeling/bsdf/ibsdffactory.h"
-#include "renderer/modeling/input/inputarray.h"
-
-// appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
-#include "foundation/utility/autoreleaseptr.h"
-
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
-// Forward declarations.
-namespace foundation    { class DictionaryArray; }
-namespace renderer      { class BSDF; }
-namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
 
 //
-// Specular BRDF input values.
+// Shading fragment.
 //
 
-DECLARE_INPUT_VALUES(SpecularBRDFInputValues)
-{
-    Spectrum    m_reflectance;              // specular reflectance
-    Alpha       m_reflectance_alpha;        // unused
-    double      m_reflectance_multiplier;   // specular reflectance multiplier
-};
-
-
-//
-// Specular BRDF factory.
-//
-
-class DLLSYMBOL SpecularBRDFFactory
-  : public IBSDFFactory
+class ShadingFragment
 {
   public:
-    // Return a string identifying this BSDF model.
-    virtual const char* get_model() const OVERRIDE;
+    Spectrum    m_color;
+    Alpha       m_alpha;
 
-    // Return a human-readable string identifying this BSDF model.
-    virtual const char* get_human_readable_model() const OVERRIDE;
-
-    // Return a set of input metadata for this BSDF model.
-    virtual foundation::DictionaryArray get_input_metadata() const OVERRIDE;
-
-    // Create a new BSDF instance.
-    virtual foundation::auto_release_ptr<BSDF> create(
-        const char*         name,
-        const ParamArray&   params) const OVERRIDE;
+    ShadingFragment& operator+=(const ShadingFragment& rhs);
+    ShadingFragment& operator*=(const float rhs);
 };
+
+
+//
+// ShadingFragment class implementation.
+//
+
+inline ShadingFragment& ShadingFragment::operator+=(const ShadingFragment& rhs)
+{
+    m_color += rhs.m_color;
+    m_alpha += rhs.m_alpha;
+    return *this;
+}
+
+inline ShadingFragment& ShadingFragment::operator*=(const float rhs)
+{
+    m_color *= rhs;
+    m_alpha *= rhs;
+    return *this;
+}
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_BSDF_SPECULARBRDF_H
+#endif  // !APPLESEED_RENDERER_KERNEL_SHADING_SHADINGFRAGMENT_H

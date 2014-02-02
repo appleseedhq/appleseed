@@ -32,6 +32,8 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/kernel/aov/shadingfragmentstack.h"
+#include "renderer/kernel/shading/shadingfragment.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/environmentshader/environmentshader.h"
@@ -125,14 +127,17 @@ namespace
             const Vector3d&     direction,
             ShadingResult&      shading_result) const OVERRIDE
         {
+            // Initialize the shading result.
             shading_result.m_color_space = ColorSpaceSpectral;
-            shading_result.m_aovs.set(0.0f);
-            shading_result.m_alpha.set(m_alpha_value);
+            shading_result.m_main.m_alpha.set(m_alpha_value);
+            shading_result.m_aovs.m_color.set(0.0f);
+            shading_result.m_aovs.m_alpha.set(0.0f);
 
+            // Evaluate the environment EDF and store the radiance into the shading result.
             m_env_edf->evaluate(
                 input_evaluator,
                 direction,
-                shading_result.m_color);
+                shading_result.m_main.m_color);
         }
 
       private:

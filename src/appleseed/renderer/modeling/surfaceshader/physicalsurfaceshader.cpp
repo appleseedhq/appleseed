@@ -32,20 +32,28 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/aov/aovsettings.h"
+#include "renderer/kernel/aov/imagestack.h"
+#include "renderer/kernel/aov/shadingfragmentstack.h"
+#include "renderer/kernel/aov/spectrumstack.h"
 #include "renderer/kernel/lighting/ilightingengine.h"
 #include "renderer/kernel/shading/shadingcontext.h"
+#include "renderer/kernel/shading/shadingfragment.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentshader/environmentshader.h"
+#include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/inputevaluator.h"
+#include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/canvasproperties.h"
 #include "foundation/image/colorspace.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/containers/dictionary.h"
@@ -54,11 +62,11 @@
 // Standard headers.
 #include <algorithm>
 #include <cmath>
+#include <cstddef>
 
 // Forward declarations.
 namespace renderer  { class Assembly; }
 namespace renderer  { class PixelContext; }
-namespace renderer  { class Project; }
 
 using namespace foundation;
 using namespace std;
@@ -122,6 +130,19 @@ namespace
             return Model;
         }
 
+        virtual bool on_frame_begin(
+            const Project&          project,
+            const Assembly&         assembly,
+            AbortSwitch*            abort_switch) OVERRIDE
+        {
+            const ImageStack& aov_images = project.get_frame()->aov_images();
+
+            for (size_t i = 0; i < aov_images.size(); ++i)
+                m_is_contribution_aov[i] = aov_images.get_type(i) == ImageStack::ContributionType;
+
+            return true;
+        }
+
         virtual void evaluate(
             SamplingContext&        sampling_context,
             const PixelContext&     pixel_context,
@@ -129,14 +150,15 @@ namespace
             const ShadingPoint&     shading_point,
             ShadingResult&          shading_result) const OVERRIDE
         {
-            shading_result.m_color_space = ColorSpaceSpectral;
-
             // Evaluate the shader inputs.
             InputValues values;
             m_inputs.evaluate(
                 shading_context.get_texture_cache(),
                 shading_point.get_uv(0),
                 &values);
+
+            Spectrum radiance;
+            SpectrumStack aovs(shading_result.m_aovs.size());
 
             // Compute front lighting.
             compute_front_lighting(
@@ -145,7 +167,8 @@ namespace
                 pixel_context,
                 shading_context,
                 shading_point,
-                shading_result);
+                radiance,
+                aovs);
 
             // Optionally simulate translucency by adding back lighting.
             if (values.m_translucency > 0.0)
@@ -156,13 +179,29 @@ namespace
                     pixel_context,
                     shading_context,
                     shading_point,
-                    shading_result);
+                    radiance,
+                    aovs);
+            }
+
+            // Initialize the shading result.
+            shading_result.m_color_space = ColorSpaceSpectral;
+            shading_result.m_main.m_color = radiance;
+            shading_result.m_aovs.m_color = aovs;
+
+            // Set alpha channel of AOVs.
+            for (size_t i = 0; i < aovs.size(); ++i)
+            {
+                shading_result.m_aovs[i].m_alpha =
+                    m_is_contribution_aov[i]
+                        ? shading_result.m_main.m_alpha
+                        : Alpha(0.0f);
             }
 
             // Apply multipliers.
-            shading_result.m_color *= static_cast<float>(values.m_color_multiplier);
-            shading_result.m_aovs *= static_cast<float>(values.m_color_multiplier);
-            shading_result.m_alpha *= static_cast<float>(values.m_alpha_multiplier);
+            shading_result.m_main.m_color *= static_cast<float>(values.m_color_multiplier);
+            shading_result.m_main.m_alpha *= static_cast<float>(values.m_alpha_multiplier);
+            shading_result.m_aovs.m_color *= static_cast<float>(values.m_color_multiplier);
+            shading_result.m_aovs.m_alpha *= static_cast<float>(values.m_alpha_multiplier);
 
             // Optionally apply fake aerial perspective.
             if (m_aerial_persp_mode != AerialPerspNone)
@@ -198,6 +237,7 @@ namespace
         double                      m_aerial_persp_intensity;
         size_t                      m_front_lighting_samples;
         size_t                      m_back_lighting_samples;
+        bool                        m_is_contribution_aov[MaxAOVCount];
 
         void compute_front_lighting(
             const InputValues&      values,
@@ -205,10 +245,11 @@ namespace
             const PixelContext&     pixel_context,
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
-            ShadingResult&          shading_result) const
+            Spectrum&               radiance,
+            SpectrumStack&          aovs) const
         {
-            shading_result.m_color.set(0.0f);
-            shading_result.m_aovs.set(0.0f);
+            radiance.set(0.0f);
+            aovs.set(0.0f);
 
             for (size_t i = 0; i < m_front_lighting_samples; ++i)
             {
@@ -217,15 +258,15 @@ namespace
                     pixel_context,
                     shading_context,
                     shading_point,
-                    shading_result.m_color,
-                    shading_result.m_aovs);
+                    radiance,
+                    aovs);
             }
 
             if (m_front_lighting_samples > 1)
             {
                 const float rcp_sample_count = 1.0f / static_cast<float>(m_front_lighting_samples);
-                shading_result.m_color *= rcp_sample_count;
-                shading_result.m_aovs *= rcp_sample_count;
+                radiance *= rcp_sample_count;
+                aovs *= rcp_sample_count;
             }
         }
 
@@ -235,7 +276,8 @@ namespace
             const PixelContext&     pixel_context,
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
-            ShadingResult&          shading_result) const
+            Spectrum&               radiance,
+            SpectrumStack&          aovs) const
         {
             const Vector3d& p = shading_point.get_point();
             const Vector3d& n = shading_point.get_original_shading_normal();
@@ -250,10 +292,8 @@ namespace
             ShadingPoint back_shading_point(shading_point);
             back_shading_point.set_ray(back_ray);
 
-            ShadingResult back_shading_result;
-            back_shading_result.m_aovs.set_size(shading_result.m_aovs.size());
-            back_shading_result.m_color.set(0.0f);
-            back_shading_result.m_aovs.set(0.0f);
+            Spectrum back_radiance(0.0f);
+            SpectrumStack back_aovs(aovs.size(), 0.0f);
 
             // Compute back lighting.
             for (size_t i = 0; i < m_back_lighting_samples; ++i)
@@ -263,19 +303,19 @@ namespace
                     pixel_context,
                     shading_context,
                     back_shading_point,
-                    back_shading_result.m_color,
-                    back_shading_result.m_aovs);
+                    back_radiance,
+                    back_aovs);
             }
 
             // Divide by the number of samples and scale back lighting by translucency value.
             const float translucency = static_cast<float>(values.m_translucency);
             const float rcp_sample_count = 1.0f / static_cast<float>(m_back_lighting_samples);
-            back_shading_result.m_color *= translucency * rcp_sample_count;
-            back_shading_result.m_aovs *= translucency * rcp_sample_count;
+            back_radiance *= translucency * rcp_sample_count;
+            back_aovs *= translucency * rcp_sample_count;
 
             // Add back lighting contribution.
-            shading_result.m_color += back_shading_result.m_color;
-            shading_result.m_aovs += back_shading_result.m_aovs;
+            radiance += back_radiance;
+            aovs += back_aovs;
         }
 
         void apply_aerial_perspective(
@@ -304,7 +344,7 @@ namespace
                     ShadingResult sky;
                     environment_shader->evaluate(input_evaluator, direction, sky);
                     sky.transform_to_spectrum(m_lighting_conditions);
-                    sky_color = sky.m_color;
+                    sky_color = sky.m_main.m_color;
                 }
                 else sky_color.set(0.0f);
             }
@@ -316,8 +356,8 @@ namespace
 
             // Blend the shading result and the sky color.
             sky_color *= static_cast<float>(blend);
-            shading_result.m_color *= static_cast<float>(1.0 - blend);
-            shading_result.m_color += sky_color;
+            shading_result.m_main.m_color *= static_cast<float>(1.0 - blend);
+            shading_result.m_main.m_color += sky_color;
         }
     };
 }

@@ -44,17 +44,17 @@
 #include "OSL/dual.h"
 #include "OSL/oslexec.h"
 
-// boost headers
-#include<boost/mpl/assert.hpp>
-#include<boost/mpl/back_inserter.hpp>
-#include<boost/mpl/copy.hpp>
-#include<boost/mpl/deref.hpp>
-#include<boost/mpl/equal.hpp>
-#include<boost/mpl/max_element.hpp>
-#include<boost/mpl/size.hpp>
-#include<boost/mpl/sizeof.hpp>
-#include<boost/mpl/transform_view.hpp>
-#include<boost/mpl/vector.hpp>
+// boost headers.
+#include <boost/mpl/assert.hpp>
+#include <boost/mpl/back_inserter.hpp>
+#include <boost/mpl/copy.hpp>
+#include <boost/mpl/deref.hpp>
+#include <boost/mpl/equal.hpp>
+#include <boost/mpl/max_element.hpp>
+#include <boost/mpl/size.hpp>
+#include <boost/mpl/sizeof.hpp>
+#include <boost/mpl/transform_view.hpp>
+#include <boost/mpl/vector.hpp>
 
 namespace renderer
 {
@@ -76,15 +76,16 @@ enum ClosureID
     ReflectionID,
     RefractionID,
     TranslucentID,
-    
-    // special closures
+
+    // Special closures.
     TransparentID,
     HoldoutID,
     NumClosuresID
 };
 
+
 //
-// Composite OSL Closure.
+// Composite OSL closure.
 //
 
 class FOUNDATION_ALIGN(16) CompositeClosure 
@@ -99,7 +100,7 @@ class FOUNDATION_ALIGN(16) CompositeClosure
         SpecularBRDFInputValues,
         SpecularBTDFInputValues> InputValuesTypeList;
 
-    // find the biggest InputValues type.
+    // Find the biggest InputValues type.
     typedef boost::mpl::max_element<
         boost::mpl::transform_view<
             InputValuesTypeList,

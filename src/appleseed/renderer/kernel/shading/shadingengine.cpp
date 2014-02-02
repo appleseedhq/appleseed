@@ -31,7 +31,9 @@
 #include "shadingengine.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/aov/shadingfragmentstack.h"
 #include "renderer/kernel/shading/shadingcontext.h"
+#include "renderer/kernel/shading/shadingfragment.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/environment/environment.h"
@@ -87,22 +89,22 @@ void ShadingEngine::shade_hit_point(
     // Retrieve the material of the intersected surface.
     const Material* material = shading_point.get_material();
 
-    // Compute the alpha channel.
+    // Compute the alpha channel of the main output.
     if (material && material->get_alpha_map())
     {
         // There is an alpha map: evaluate it.
         material->get_alpha_map()->evaluate(
             shading_context.get_texture_cache(),
             shading_point.get_uv(0),
-            shading_result.m_alpha);
+            shading_result.m_main.m_alpha);
     }
     else
     {
         // No alpha map: solid sample.
-        shading_result.m_alpha = Alpha(1.0);
+        shading_result.m_main.m_alpha = Alpha(1.0);
     }
 
-    if (shading_result.m_alpha[0] > 0.0f)
+    if (shading_result.m_main.m_alpha[0] > 0.0f)
     {
         // Use the diagnostic surface shader if there is one.
         const SurfaceShader* surface_shader = m_diagnostic_surface_shader.get();
@@ -112,7 +114,7 @@ void ShadingEngine::shade_hit_point(
             if (material == 0)
             {
                 // The intersected surface has no material: return solid pink.
-                shading_result.set_to_solid_pink();
+                shading_result.set_to_solid_pink_linear_rgb();
                 return;
             }
 
@@ -122,7 +124,7 @@ void ShadingEngine::shade_hit_point(
             if (surface_shader == 0)
             {
                 // The intersected surface has no surface shader: return solid pink.
-                shading_result.set_to_solid_pink();
+                shading_result.set_to_solid_pink_linear_rgb();
                 return;
             }
         }
@@ -136,21 +138,21 @@ void ShadingEngine::shade_hit_point(
             shading_result);
 
         // Set the surface shader AOV.
-        shading_result.m_aovs.set(surface_shader->get_render_layer_index(), shading_result.m_color);
+        shading_result.set_aov_for_entity(*surface_shader);
     }
     else
     {
         // Alpha is zero: shade as transparent black.
-        shading_result.set_to_transparent_black();
+        shading_result.set_to_transparent_black_linear_rgb();
     }
 
     // Set AOVs.
-    shading_result.m_aovs.set(shading_point.get_assembly().get_render_layer_index(), shading_result.m_color);
-    shading_result.m_aovs.set(shading_point.get_assembly_instance().get_render_layer_index(), shading_result.m_color);
-    shading_result.m_aovs.set(shading_point.get_object().get_render_layer_index(), shading_result.m_color);
-    shading_result.m_aovs.set(shading_point.get_object_instance().get_render_layer_index(), shading_result.m_color);
+    shading_result.set_aov_for_entity(shading_point.get_assembly());
+    shading_result.set_aov_for_entity(shading_point.get_assembly_instance());
+    shading_result.set_aov_for_entity(shading_point.get_object());
+    shading_result.set_aov_for_entity(shading_point.get_object_instance());
     if (material)
-        shading_result.m_aovs.set(material->get_render_layer_index(), shading_result.m_color);
+        shading_result.set_aov_for_entity(*material);
 }
 
 void ShadingEngine::shade_environment(
@@ -175,12 +177,12 @@ void ShadingEngine::shade_environment(
             shading_result);
 
         // Set environment shader AOV.
-        shading_result.m_aovs.set(environment_shader->get_render_layer_index(), shading_result.m_color);
+        shading_result.set_aov_for_entity(*environment_shader);
     }
     else
     {
         // No environment shader: return transparent black.
-        shading_result.set_to_transparent_black();
+        shading_result.set_to_transparent_black_linear_rgb();
     }
 }
 

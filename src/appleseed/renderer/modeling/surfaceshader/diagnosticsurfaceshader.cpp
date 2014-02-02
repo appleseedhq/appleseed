@@ -381,13 +381,13 @@ void DiagnosticSurfaceShader::evaluate(
             const Material* material = shading_point.get_material();
             if (material)
                 shading_result.set_to_linear_rgb(integer_to_color(material->get_uid()));
-            else shading_result.set_to_solid_pink();
+            else shading_result.set_to_solid_pink_linear_rgb();
         }
         break;
 
       default:
         assert(false);
-        shading_result.set_to_transparent_black();
+        shading_result.set_to_transparent_black_linear_rgb();
         break;
     }
 }

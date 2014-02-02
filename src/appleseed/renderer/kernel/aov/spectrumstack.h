@@ -32,10 +32,10 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/aov/aovsettings.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/platform/compiler.h"
 
 // Standard headers.
 #include <cassert>
@@ -45,20 +45,16 @@ namespace renderer
 {
 
 //
-// A small stack of spectra.
+// A small array of spectra.
 //
 
 class SpectrumStack
   : public foundation::NonCopyable
 {
   public:
-    static const size_t MaxSize = 16;
-
-    SpectrumStack();
     explicit SpectrumStack(const size_t size);
     SpectrumStack(const size_t size, const float val);
 
-    void set_size(const size_t size);
     size_t size() const;
 
     void set(const float val);
@@ -69,14 +65,12 @@ class SpectrumStack
     SpectrumStack& operator+=(const SpectrumStack& rhs);
     SpectrumStack& operator*=(const Spectrum& rhs);
     SpectrumStack& operator*=(const float rhs);
-    SpectrumStack& operator/=(const float rhs);
 
-    void set(const size_t index, const Spectrum& rhs);
     void add(const size_t index, const Spectrum& rhs);
 
   private:
-    Spectrum    m_spectra[MaxSize];
-    size_t      m_size;
+    const size_t    m_size;
+    Spectrum        m_spectra[MaxAOVCount];
 };
 
 
@@ -84,28 +78,17 @@ class SpectrumStack
 // SpectrumStack class implementation.
 //
 
-inline SpectrumStack::SpectrumStack()
-  : m_size(0)
-{
-}
-
 inline SpectrumStack::SpectrumStack(const size_t size)
   : m_size(size)
 {
-    assert(size <= MaxSize);
+    assert(size <= MaxAOVCount);
 }
 
 inline SpectrumStack::SpectrumStack(const size_t size, const float val)
   : m_size(size)
 {
-    assert(size <= MaxSize);
+    assert(size <= MaxAOVCount);
     set(val);
-}
-
-inline void SpectrumStack::set_size(const size_t size)
-{
-    assert(size <= MaxSize);
-    m_size = size;
 }
 
 inline size_t SpectrumStack::size() const
@@ -157,23 +140,7 @@ inline SpectrumStack& SpectrumStack::operator*=(const float rhs)
     return *this;
 }
 
-inline SpectrumStack& SpectrumStack::operator/=(const float rhs)
-{
-    const float rcp_rhs = 1.0f / rhs;
-
-    for (size_t i = 0; i < m_size; ++i)
-        m_spectra[i] *= rcp_rhs;
-
-    return *this;
-}
-
-FORCE_INLINE void SpectrumStack::set(const size_t index, const Spectrum& rhs)
-{
-    if (index < m_size)
-        m_spectra[index] = rhs;
-}
-
-FORCE_INLINE void SpectrumStack::add(const size_t index, const Spectrum& rhs)
+inline void SpectrumStack::add(const size_t index, const Spectrum& rhs)
 {
     if (index < m_size)
         m_spectra[index] += rhs;

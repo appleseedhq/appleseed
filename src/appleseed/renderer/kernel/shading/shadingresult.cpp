@@ -76,21 +76,47 @@ bool ShadingResult::is_valid_linear_rgb() const
 {
     assert(m_color_space == ColorSpaceLinearRGB);
 
-    if (!is_valid_color(spectrum_as_color3f(m_color)))
+    if (!is_valid_color(spectrum_as_color3f(m_main.m_color)))
         return false;
 
-    if (!is_valid_color(m_alpha))
+    if (!is_valid_color(m_main.m_alpha))
         return false;
 
     const size_t aov_count = m_aovs.size();
 
     for (size_t i = 0; i < aov_count; ++i)
     {
-        if (!is_valid_color(spectrum_as_color3f(m_aovs[i])))
+        const ShadingFragment& aov = m_aovs[i];
+
+        if (!is_valid_color(spectrum_as_color3f(aov.m_color)))
+            return false;
+
+        if (!is_valid_color(aov.m_alpha))
             return false;
     }
 
     return true;
+}
+
+void ShadingResult::set_to_linear_rgba(const Color4f& linear_rgba)
+{
+    m_color_space = ColorSpaceLinearRGB;
+
+    m_main.m_color[0] = linear_rgba[0];
+    m_main.m_color[1] = linear_rgba[1];
+    m_main.m_color[2] = linear_rgba[2];
+    m_main.m_alpha.set(linear_rgba[3]);
+
+    const size_t aov_count = m_aovs.size();
+
+    for (size_t i = 0; i < aov_count; ++i)
+    {
+        ShadingFragment& aov = m_aovs[i];
+        aov.m_color[0] = 0.0f;
+        aov.m_color[1] = 0.0f;
+        aov.m_color[2] = 0.0f;
+        aov.m_alpha.set(0.0f);
+    }
 }
 
 namespace
@@ -124,21 +150,21 @@ void ShadingResult::transform_to_linear_rgb(const LightingConditions& lighting)
         break;
 
       case ColorSpaceSRGB:
-        transform_srgb_to_linear_rgb(m_color);
+        transform_srgb_to_linear_rgb(m_main.m_color);
         for (size_t i = 0; i < aov_count; ++i)
-            transform_srgb_to_linear_rgb(m_aovs[i]);
+            transform_srgb_to_linear_rgb(m_aovs[i].m_color);
         break;
 
       case ColorSpaceCIEXYZ:
-        transform_ciexyz_to_linear_rgb(m_color);
+        transform_ciexyz_to_linear_rgb(m_main.m_color);
         for (size_t i = 0; i < aov_count; ++i)
-            transform_ciexyz_to_linear_rgb(m_aovs[i]);
+            transform_ciexyz_to_linear_rgb(m_aovs[i].m_color);
         break;
 
       case ColorSpaceSpectral:
-        transform_spectrum_to_linear_rgb(lighting, m_color);
+        transform_spectrum_to_linear_rgb(lighting, m_main.m_color);
         for (size_t i = 0; i < aov_count; ++i)
-            transform_spectrum_to_linear_rgb(lighting, m_aovs[i]);
+            transform_spectrum_to_linear_rgb(lighting, m_aovs[i].m_color);
         break;
 
       assert_otherwise;
@@ -172,21 +198,21 @@ void ShadingResult::transform_to_spectrum(const LightingConditions& lighting)
     switch (m_color_space)
     {
       case ColorSpaceLinearRGB:
-        transform_linear_rgb_to_spectrum(m_color);
+        transform_linear_rgb_to_spectrum(m_main.m_color);
         for (size_t i = 0; i < aov_count; ++i)
-            transform_linear_rgb_to_spectrum(m_aovs[i]);
+            transform_linear_rgb_to_spectrum(m_aovs[i].m_color);
         break;
 
       case ColorSpaceSRGB:
-        transform_srgb_to_spectrum(m_color);
+        transform_srgb_to_spectrum(m_main.m_color);
         for (size_t i = 0; i < aov_count; ++i)
-            transform_srgb_to_spectrum(m_aovs[i]);
+            transform_srgb_to_spectrum(m_aovs[i].m_color);
         break;
 
       case ColorSpaceCIEXYZ:
-        transform_ciexyz_to_spectrum(m_color);
+        transform_ciexyz_to_spectrum(m_main.m_color);
         for (size_t i = 0; i < aov_count; ++i)
-            transform_ciexyz_to_spectrum(m_aovs[i]);
+            transform_ciexyz_to_spectrum(m_aovs[i].m_color);
         break;
 
       case ColorSpaceSpectral:
@@ -214,25 +240,44 @@ void ShadingResult::composite_over_linear_rgb(const ShadingResult& background)
     assert(m_color_space == ColorSpaceLinearRGB);
     assert(background.m_color_space == ColorSpaceLinearRGB);
 
-    const Alpha contrib = Alpha(1.0f) - m_alpha;
-
-    m_color[0] += contrib[0] * background.m_color[0];
-    m_color[1] += contrib[0] * background.m_color[1];
-    m_color[2] += contrib[0] * background.m_color[2];
+    const Alpha contrib = Alpha(1.0f) - m_main.m_alpha;
+    m_main.m_color[0] += contrib[0] * background.m_main.m_color[0];
+    m_main.m_color[1] += contrib[0] * background.m_main.m_color[1];
+    m_main.m_color[2] += contrib[0] * background.m_main.m_color[2];
+    m_main.m_alpha += contrib * background.m_main.m_alpha;
 
     const size_t aov_count = m_aovs.size();
 
     for (size_t i = 0; i < aov_count; ++i)
     {
-        const Spectrum& background_aov_color = background.m_aovs[i];
-        Spectrum& aov_color = m_aovs[i];
+        const ShadingFragment& background_aov = background.m_aovs[i];
+        ShadingFragment& aov = m_aovs[i];
 
-        aov_color[0] += contrib[0] * background_aov_color[0];
-        aov_color[1] += contrib[0] * background_aov_color[1];
-        aov_color[2] += contrib[0] * background_aov_color[2];
+        const Alpha contrib = Alpha(1.0f) - aov.m_alpha;
+        aov.m_color[0] += contrib[0] * background_aov.m_color[0];
+        aov.m_color[1] += contrib[0] * background_aov.m_color[1];
+        aov.m_color[2] += contrib[0] * background_aov.m_color[2];
+        aov.m_alpha += contrib * background_aov.m_alpha;
     }
+}
 
-    m_alpha += contrib * background.m_alpha;
+void ShadingResult::apply_alpha_premult_linear_rgb()
+{
+    assert(m_color_space == ColorSpaceLinearRGB);
+
+    m_main.m_color[0] *= m_main.m_alpha[0];
+    m_main.m_color[1] *= m_main.m_alpha[0];
+    m_main.m_color[2] *= m_main.m_alpha[0];
+
+    const size_t aov_count = m_aovs.size();
+
+    for (size_t i = 0; i < aov_count; ++i)
+    {
+        ShadingFragment& aov = m_aovs[i];
+        aov.m_color[0] *= aov.m_alpha[0];
+        aov.m_color[1] *= aov.m_alpha[0];
+        aov.m_color[2] *= aov.m_alpha[0];
+    }
 }
 
 }   // namespace renderer
