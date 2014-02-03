@@ -116,8 +116,8 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
             Vector3d(0.0, 0.0, -1.0),
             0.0,
             2.0,
-            0.0f,
-            ~0);
+            0.0,
+            ShadingRay::CameraRay);
 
         ShadingPoint shading_point;
         const bool hit = m_intersector.trace(ray, shading_point);
@@ -132,8 +132,8 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
             Vector3d(0.0, 0.0, -1.0),
             0.0,
             2.0,
-            0.0f,
-            ~0);
+            0.0,
+            ShadingRay::CameraRay);
 
         const bool hit = m_intersector.trace_probe(ray);
 

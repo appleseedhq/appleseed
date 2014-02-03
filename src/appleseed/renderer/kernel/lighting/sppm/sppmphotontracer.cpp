@@ -288,7 +288,7 @@ namespace
                 light_sample.m_point,
                 emission_direction,
                 child_sampling_context.next_double2(),
-                ~0);
+                ShadingRay::LightRay);
 
             // Build the path tracer.
             const bool cast_indirect_light = (edf->get_flags() & EDF::CastIndirectLight) != 0;
@@ -345,7 +345,7 @@ namespace
                 emission_position,
                 emission_direction,
                 child_sampling_context.next_double2(),
-                ~0);
+                ShadingRay::LightRay);
 
             // Build the path tracer.
             const bool cast_indirect_light = (light_sample.m_light->get_flags() & EDF::CastIndirectLight) != 0;
@@ -479,7 +479,7 @@ namespace
                 ray_origin,
                 -outgoing,
                 child_sampling_context.next_double2(),
-                ~0);
+                ShadingRay::LightRay);
 
             // Build the path tracer.
             const bool cast_indirect_light = true;          // right now environments always cast indirect light

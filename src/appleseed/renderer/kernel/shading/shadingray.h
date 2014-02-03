@@ -40,7 +40,7 @@ namespace renderer
 {
 
 //
-// ShadingRay class, adding time and flags to foundation::Ray3d.
+// A ray as it is used throughout the renderer.
 //
 // todo: add importance/contribution?
 // todo: replace ray by ray differential.
@@ -55,30 +55,45 @@ class ShadingRay
     typedef foundation::Vector3d    VectorType;
     typedef foundation::Ray3d       RayType;
     typedef foundation::RayInfo3d   RayInfoType;
-    typedef foundation::uint32      RayFlagsType;
+
+    // Ray types.
+    enum Type
+    {
+        CameraRay                   = 1 << 0,
+        LightRay                    = 1 << 1,
+        ShadowRay                   = 1 << 2,
+        ProbeRay                    = 1 << 3,
+        DiffuseRay                  = 1 << 4,
+        GlossyRay                   = 1 << 5,
+        SpecularRay                 = 1 << 6,
+    };
 
     // Public members.
-    double          m_time;
-    RayFlagsType    m_flags;
+    double                          m_time;
+    foundation::uint16              m_type;
+    foundation::uint16              m_depth;
 
     // Constructors.
     ShadingRay();                               // leave all fields uninitialized
     ShadingRay(
         const RayType&              ray,
         const double                time,
-        const RayFlagsType          flags);
+        const foundation::uint16    type,
+        const foundation::uint16    depth = 0);
     ShadingRay(
         const VectorType&           org,
         const VectorType&           dir,
         const double                time,
-        const RayFlagsType          flags);
+        const foundation::uint16    type,
+        const foundation::uint16    depth = 0);
     ShadingRay(
         const VectorType&           org,
         const VectorType&           dir,
         const ValueType             tmin,
         const ValueType             tmax,
         const double                time,
-        const RayFlagsType          flags);
+        const foundation::uint16    type,
+        const foundation::uint16    depth = 0);
 };
 
 // Transform a ShadingRay.
@@ -103,10 +118,12 @@ inline ShadingRay::ShadingRay()
 inline ShadingRay::ShadingRay(
     const RayType&                  ray,
     const double                    time,
-    const RayFlagsType              flags)
+    const foundation::uint16        type,
+    const foundation::uint16        depth)
   : RayType(ray)
   , m_time(time)
-  , m_flags(flags)
+  , m_type(type)
+  , m_depth(depth)
 {
 }
 
@@ -114,10 +131,12 @@ inline ShadingRay::ShadingRay(
     const VectorType&               org,
     const VectorType&               dir,
     const double                    time,
-    const RayFlagsType              flags)
+    const foundation::uint16        type,
+    const foundation::uint16        depth)
   : RayType(org, dir)
   , m_time(time)
-  , m_flags(flags)
+  , m_type(type)
+  , m_depth(depth)
 {
 }
 
@@ -127,10 +146,12 @@ inline ShadingRay::ShadingRay(
     const ValueType                 tmin,
     const ValueType                 tmax,
     const double                    time,
-    const RayFlagsType              flags)
+    const foundation::uint16        type,
+    const foundation::uint16        depth)
   : RayType(org, dir, tmin, tmax)
   , m_time(time)
-  , m_flags(flags)
+  , m_type(type)
+  , m_depth(depth)
 {
 }
 
@@ -139,10 +160,12 @@ inline ShadingRay transform_to_local(
     const foundation::Transform<U>& transform,
     const ShadingRay&               ray)
 {
-    return ShadingRay(
-        transform.transform_to_local(ray),
-        ray.m_time,
-        ray.m_flags);
+    return
+        ShadingRay(
+            transform.transform_to_local(ray),
+            ray.m_time,
+            ray.m_type,
+            ray.m_depth);
 }
 
 template <typename U>
@@ -150,10 +173,12 @@ inline ShadingRay transform_to_parent(
     const foundation::Transform<U>& transform,
     const ShadingRay&               ray)
 {
-    return ShadingRay(
-        transform.transform_to_parent(ray),
-        ray.m_time,
-        ray.m_flags);
+    return
+        ShadingRay(
+            transform.transform_to_parent(ray),
+            ray.m_time,
+            ray.m_type,
+            ray.m_depth);
 }
 
 }       // namespace renderer

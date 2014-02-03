@@ -351,7 +351,7 @@ namespace
             ray.m_tmin = 0.0;
             ray.m_tmax = numeric_limits<double>::max();
             ray.m_time = time;
-            ray.m_flags = ~0;
+            ray.m_type = ShadingRay::ProbeRay;
 
             // Trace the ray.
             ShadingPoint shading_point;

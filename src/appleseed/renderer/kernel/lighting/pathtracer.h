@@ -95,6 +95,10 @@ class PathTracer
     const size_t                m_max_path_length;
     const size_t                m_max_iterations;
 
+    // Determine the appropriate ray type for a given scattering mode.
+    static ShadingRay::Type bsdf_mode_to_ray_type(
+        const BSDF::Mode        mode);
+
     // Determine whether a ray can pass through a surface with a given alpha value.
     static bool pass_through(
         SamplingContext&        sampling_context,
@@ -207,7 +211,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                     vertex.get_point(),
                     ray.m_dir,
                     ray.m_time,
-                    ~0);            // ray flags
+                    ray.m_type);
 
                 // Trace the ray.
                 shading_points[shading_point_index].clear();
@@ -314,7 +318,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             vertex.m_shading_point->get_biased_point(incoming),
             incoming,
             ray.m_time,
-            ~0);            // ray flags
+            bsdf_mode_to_ray_type(bsdf_mode));
 
         // Trace the ray.
         shading_points[shading_point_index].clear();
@@ -329,6 +333,21 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
     }
 
     return vertex.m_path_length;
+}
+
+template <typename PathVisitor, bool Adjoint>
+inline ShadingRay::Type PathTracer<PathVisitor, Adjoint>::bsdf_mode_to_ray_type(
+    const BSDF::Mode            mode)
+{
+    switch (mode)
+    {
+      case BSDF::Diffuse:   return ShadingRay::DiffuseRay;
+      case BSDF::Glossy:    return ShadingRay::GlossyRay;
+      case BSDF::Specular:  return ShadingRay::SpecularRay;
+      default:
+        assert(!"Invalid scattering mode.");
+        return ShadingRay::DiffuseRay;
+    }
 }
 
 template <typename PathVisitor, bool Adjoint>

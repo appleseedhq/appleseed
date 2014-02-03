@@ -291,7 +291,7 @@ void Camera::initialize_ray(
                 m_shutter_open_time, m_shutter_close_time);
     }
 
-    ray.m_flags = ~0;
+    ray.m_type = ShadingRay::CameraRay;
 }
 
 bool Camera::has_param(const char* name) const

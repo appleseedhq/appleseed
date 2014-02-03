@@ -33,6 +33,7 @@
 #include "renderer/kernel/intersection/tracecontext.h"
 #include "renderer/kernel/lighting/tracer.h"
 #include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/kernel/shading/shadingray.h"
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/color/colorentity.h"
@@ -215,6 +216,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 Vector3d(0.0),
                 Vector3d(1.0, 0.0, 0.0),
                 0.0,
+                ShadingRay::ShadowRay,
                 transmission);
 
         EXPECT_FALSE(shading_point.hit());
@@ -229,7 +231,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             tracer.trace(
                 Vector3d(0.0),
                 Vector3d(1.0, 0.0, 0.0),
-                0.0);
+                0.0,
+                ShadingRay::ShadowRay);
 
         EXPECT_EQ(1.0, transmission);
     }
@@ -244,6 +247,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
                 0.0,
+                ShadingRay::ShadowRay,
                 transmission);
 
         EXPECT_FALSE(shading_point.hit());
@@ -258,7 +262,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             tracer.trace_between(
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
-                0.0);
+                0.0,
+                ShadingRay::ShadowRay);
 
         EXPECT_EQ(1.0, transmission);
     }
@@ -282,6 +287,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(1.0, 0.0, 0.0),
                 0.0,
+                ShadingRay::ShadowRay,
                 transmission);
 
         ASSERT_TRUE(shading_point.hit());
@@ -297,7 +303,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             tracer.trace(
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(1.0, 0.0, 0.0),
-                0.0);
+                0.0,
+                ShadingRay::ShadowRay);
 
         EXPECT_EQ(0.0, transmission);
     }
@@ -312,6 +319,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
                 0.0,
+                ShadingRay::ShadowRay,
                 transmission);
 
         ASSERT_TRUE(shading_point.hit());
@@ -327,7 +335,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             tracer.trace_between(
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
-                0.0);
+                0.0,
+                ShadingRay::ShadowRay);
 
         EXPECT_EQ(0.0, transmission);
     }
@@ -351,6 +360,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(1.0, 0.0, 0.0),
                 0.0,
+                ShadingRay::ShadowRay,
                 transmission);
 
         ASSERT_FALSE(shading_point.hit());
@@ -365,7 +375,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             tracer.trace(
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(1.0, 0.0, 0.0),
-                0.0);
+                0.0,
+                ShadingRay::ShadowRay);
 
         EXPECT_FEQ(0.5, transmission);
     }
@@ -380,6 +391,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
                 0.0,
+                ShadingRay::ShadowRay,
                 transmission);
 
         ASSERT_FALSE(shading_point.hit());
@@ -394,7 +406,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             tracer.trace_between(
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
-                0.0);
+                0.0,
+                ShadingRay::ShadowRay);
 
         EXPECT_FEQ(0.5, transmission);
     }
@@ -419,6 +432,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(1.0, 0.0, 0.0),
                 0.0,
+                ShadingRay::ShadowRay,
                 transmission);
 
         ASSERT_TRUE(shading_point.hit());
@@ -434,7 +448,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             tracer.trace(
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(1.0, 0.0, 0.0),
-                0.0);
+                0.0,
+                ShadingRay::ShadowRay);
 
         EXPECT_FEQ(0.0, transmission);
     }
@@ -449,6 +464,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
                 0.0,
+                ShadingRay::ShadowRay,
                 transmission);
 
         ASSERT_TRUE(shading_point.hit());
@@ -464,7 +480,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             tracer.trace_between(
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
-                0.0);
+                0.0,
+                ShadingRay::ShadowRay);
 
         EXPECT_FEQ(0.0, transmission);
     }
@@ -479,6 +496,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(4.0, 0.0, 0.0),
                 0.0,
+                ShadingRay::ShadowRay,
                 transmission);
 
         ASSERT_FALSE(shading_point.hit());
@@ -493,7 +511,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             tracer.trace_between(
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(4.0, 0.0, 0.0),
-                0.0);
+                0.0,
+                ShadingRay::ShadowRay);
 
         EXPECT_FEQ(0.5, transmission);
     }
@@ -517,6 +536,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(1.0, 0.0, 0.0),
                 0.0,
+                ShadingRay::ShadowRay,
                 parent_transmission);
 
         ASSERT_TRUE(parent_shading_point.hit());
@@ -526,7 +546,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         const double transmission =
             tracer.trace_between(
                 parent_shading_point,
-                Vector3d(4.0, 0.0, 0.0));
+                Vector3d(4.0, 0.0, 0.0),
+                ShadingRay::ShadowRay);
 
         EXPECT_EQ(1.0, transmission);
     }
@@ -550,6 +571,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(1.0, 0.0, 0.0),
                 0.0,
+                ShadingRay::ShadowRay,
                 parent_transmission);
 
         ASSERT_TRUE(parent_shading_point.hit());
@@ -559,7 +581,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         const double transmission =
             tracer.trace_between(
                 parent_shading_point,
-                Vector3d(2.0, 0.0, 0.0));
+                Vector3d(2.0, 0.0, 0.0),
+                ShadingRay::ShadowRay);
 
         EXPECT_EQ(1.0, transmission);
     }
