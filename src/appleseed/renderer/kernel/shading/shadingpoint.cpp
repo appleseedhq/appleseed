@@ -244,4 +244,77 @@ Vector3d ShadingPoint::get_biased_point(const Vector3d& direction) const
     return m_biased_point;
 }
 
+#ifdef WITH_OSL
+OSL::ShaderGlobals& ShadingPoint::get_osl_shader_globals() const
+{
+    assert(hit());
+
+    if (!(m_members & HasOSLShaderGlobals))
+    {
+        const ShadingRay& ray(get_ray());
+
+        Vector3d v(get_point());
+        m_shader_globals.P = OSL::Vec3(v.x, v.y, v.z);
+        m_shader_globals.dPdx = OSL::Vec3(0, 0, 0);
+        m_shader_globals.dPdy = OSL::Vec3(0, 0, 0);
+        m_shader_globals.dPdz = OSL::Vec3(0, 0, 0);
+        
+        m_shader_globals.I = -OSL::Vec3(ray.m_dir.x, ray.m_dir.y, ray.m_dir.z);
+        m_shader_globals.dIdx = OSL::Vec3(0, 0, 0);
+        m_shader_globals.dIdy = OSL::Vec3(0, 0, 0);
+
+        v = get_shading_normal();
+        m_shader_globals.N = OSL::Vec3(v.x, v.y, v.z);
+        v = get_geometric_normal();
+        m_shader_globals.Ng = OSL::Vec3(v.x, v.y, v.z);
+
+        m_shader_globals.u = get_uv(0).x;
+        m_shader_globals.dudx = 0;
+        m_shader_globals.dudy = 0;
+
+        m_shader_globals.v = get_uv(0).y;
+        m_shader_globals.dvdx = 0;
+        m_shader_globals.dvdy = 0;
+
+        v = get_dpdu(0);
+        m_shader_globals.dPdu = OSL::Vec3(v.x, v.y, v.z);
+        v = get_dpdv(0);
+        m_shader_globals.dPdv = OSL::Vec3(v.x, v.y, v.z);
+
+        m_shader_globals.time = ray.m_time;
+        m_shader_globals.dtime = 0;
+        m_shader_globals.dPdtime = OSL::Vec3(0, 0, 0);
+        
+        m_shader_globals.Ps = OSL::Vec3(0, 0, 0);
+        m_shader_globals.dPsdx = OSL::Vec3(0, 0, 0);
+        m_shader_globals.dPsdy = OSL::Vec3(0, 0, 0);
+        
+        m_shader_globals.renderstate = 0;
+        m_shader_globals.tracedata = 0;
+        m_shader_globals.objdata = 0;
+
+        m_shader_globals.object2common = 0;
+        m_shader_globals.shader2common = 0;
+        m_shader_globals.surfacearea = 0;
+
+        // TODO: not sure this is correct... (est.)
+        m_shader_globals.raytype = static_cast<int>(ray.m_type);
+
+        m_shader_globals.flipHandedness = 0;
+        
+        if(get_side() == ObjectInstance::FrontSide)
+            m_shader_globals.backfacing = 0;
+        else
+            m_shader_globals.backfacing = 1;
+        
+        m_shader_globals.context = 0;
+        m_shader_globals.Ci = 0;
+        
+        m_members |= HasOSLShaderGlobals;
+    }
+    
+    return m_shader_globals;
+}
+#endif
+
 }   // namespace renderer

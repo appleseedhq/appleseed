@@ -322,15 +322,15 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     shading_system->attribute("colorspace", "Linear");
     shading_system->attribute("commonspace", "world");
 
-    /*
     static const char* ray_type_labels[] =
     {
         "camera",
         "light",
-        "transmission",
+        "shadow",
+        "probe",
         "diffuse",
-        "specular",
-        "subsurface"
+        "glossy",
+        "specular"
     };
 
     shading_system->attribute(
@@ -339,7 +339,6 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
             OSL::TypeDesc::STRING, 
             sizeof(ray_type_labels)/sizeof(ray_type_labels[0])),
         ray_type_labels);
-    */
 
     // While debugging, we want all possible outputs.
 #ifndef NDEBUG

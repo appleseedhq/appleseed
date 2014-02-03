@@ -58,6 +58,7 @@ class ShadingPointBuilder
     void set_geometric_normal(const foundation::Vector3d& n);
     void set_shading_normal(const foundation::Vector3d& n);
     void set_shading_basis(const foundation::Basis3d& basis);
+    void set_uvs(const foundation::Vector2d& uv);
 
   private:
     ShadingPoint& m_shading_point;

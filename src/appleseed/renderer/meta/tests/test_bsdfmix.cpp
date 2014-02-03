@@ -29,6 +29,8 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/kernel/shading/shadingpointbuilder.h"
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/bsdf/bsdf.h"
@@ -131,7 +133,10 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
         InputEvaluator input_evaluator(texture_cache);
 
         BSDF& parent_bsdf = *assembly.bsdfs().get_by_name("parent_bsdf");
-        parent_bsdf.evaluate_inputs(input_evaluator, Vector2d(0.0));
+        ShadingPoint shading_point;
+        ShadingPointBuilder builder( shading_point);
+        builder.set_uvs(Vector2d(0.0));
+        parent_bsdf.evaluate_inputs(input_evaluator, shading_point);
 
         // parent_bsdf mixing weights.
         EXPECT_EQ(0.6, get_value<double>(input_evaluator, 0));

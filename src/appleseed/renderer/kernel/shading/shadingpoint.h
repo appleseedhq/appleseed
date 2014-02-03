@@ -55,6 +55,11 @@
 #include <cassert>
 #include <cstddef>
 
+// OSL headers.
+#ifdef WITH_OSL
+#include <OSL/shaderglobals.h>
+#endif
+
 // Forward declarations.
 namespace renderer  { class Object; }
 namespace renderer  { class Scene; }
@@ -167,6 +172,10 @@ class ShadingPoint
     // Return the index, within the region, of the primitive attribute of the hit triangle.
     size_t get_primitive_attribute_index() const;
 
+#ifdef WITH_OSL
+    OSL::ShaderGlobals& get_osl_shader_globals() const;
+#endif
+    
   private:
     friend class AssemblyLeafProbeVisitor;
     friend class AssemblyLeafVisitor;
@@ -207,7 +216,11 @@ class ShadingPoint
         HasShadingBasis                 = 1 << 9,
         HasWorldSpaceVertices           = 1 << 10,
         HasWorldSpaceVertexNormals      = 1 << 11,
-        HasMaterial                     = 1 << 12
+        HasMaterial                     = 1 << 12,
+
+#ifdef WITH_OSL
+        HasOSLShaderGlobals             = 1 << 13
+#endif
     };
     mutable foundation::uint32          m_members;                      // which members have already been computed
     mutable const Assembly*             m_assembly;                     // hit assembly
@@ -235,6 +248,10 @@ class ShadingPoint
     mutable foundation::Vector3d        m_asm_geo_normal;               // assembly instance space geometric normal to hit triangle
     mutable foundation::Vector3d        m_front_point;                  // hit point refined to front, in assembly instance space
     mutable foundation::Vector3d        m_back_point;                   // hit point refined to back, in assembly instance space
+
+#ifdef WITH_OSL
+    mutable OSL::ShaderGlobals          m_shader_globals;
+#endif
 
     // Cache the source geometry, fetching it if necessary.
     void cache_source_geometry() const;

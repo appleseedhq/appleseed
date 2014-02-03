@@ -31,6 +31,7 @@
 #include "bsdf.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/input/inputevaluator.h"
 
 using namespace foundation;
@@ -88,10 +89,10 @@ size_t BSDF::compute_input_data_size(
 
 void BSDF::evaluate_inputs(
     InputEvaluator&     input_evaluator,
-    const Vector2d&     uv,
+    const ShadingPoint& shading_point,
     const size_t        offset) const
 {
-    input_evaluator.evaluate(get_inputs(), uv, offset);
+    input_evaluator.evaluate(get_inputs(), shading_point.get_uv(0), offset);
 }
 
 }   // namespace renderer
