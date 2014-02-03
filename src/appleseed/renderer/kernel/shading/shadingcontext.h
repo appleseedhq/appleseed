@@ -64,7 +64,7 @@ class ShadingContext
         Tracer&                 tracer,
         TextureCache&           texture_cache,
 #ifdef WITH_OSL
-        OSL::ShadingSystem& shading_system,
+        OSL::ShadingSystem&     shading_system,
 #endif            
         ILightingEngine*        lighting_engine = 0,
         const float             transparency_threshold = 0.001f,

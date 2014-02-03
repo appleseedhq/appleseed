@@ -779,7 +779,7 @@ LightTracingSampleGeneratorFactory::LightTracingSampleGeneratorFactory(
     TextureStore&           texture_store,
     const LightSampler&     light_sampler,
 #ifdef WITH_OSL
-    OSL::ShadingSystem& shading_system,
+    OSL::ShadingSystem&     shading_system,
 #endif
     const ParamArray&       params)
   : m_scene(scene)
