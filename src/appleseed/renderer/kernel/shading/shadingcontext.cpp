@@ -59,7 +59,7 @@ ShadingContext::ShadingContext(
 {
 #ifdef WITH_OSL
     m_osl_thread_info = m_osl_shading_system.create_thread_info();
-    m_osl_shading_context = m_osl_shading_system.get_context( m_osl_thread_info);
+    m_osl_shading_context = m_osl_shading_system.get_context(m_osl_thread_info);
 #endif
 }
 

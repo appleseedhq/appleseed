@@ -216,10 +216,10 @@ class ShadingPoint
         HasShadingBasis                 = 1 << 9,
         HasWorldSpaceVertices           = 1 << 10,
         HasWorldSpaceVertexNormals      = 1 << 11,
-        HasMaterial                     = 1 << 12,
+        HasMaterial                     = 1 << 12
 
 #ifdef WITH_OSL
-        HasOSLShaderGlobals             = 1 << 13
+        ,HasOSLShaderGlobals             = 1 << 13
 #endif
     };
     mutable foundation::uint32          m_members;                      // which members have already been computed

@@ -787,10 +787,10 @@ LightTracingSampleGeneratorFactory::LightTracingSampleGeneratorFactory(
   , m_trace_context(trace_context)
   , m_texture_store(texture_store)
   , m_light_sampler(light_sampler)
-  , m_params(params)
 #ifdef WITH_OSL
   , m_shading_system(shading_system)
 #endif
+  , m_params(params)
 {
     LightTracingSampleGenerator::Parameters(params).print();
 }

@@ -52,6 +52,7 @@
 // Forward declarations.
 namespace foundation    { class AbortSwitch; }
 namespace renderer      { class InputEvaluator; }
+namespace renderer      { class ShadingPoint; }
 
 using namespace foundation;
 using namespace std;

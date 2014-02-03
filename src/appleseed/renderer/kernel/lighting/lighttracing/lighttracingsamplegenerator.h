@@ -90,10 +90,10 @@ class LightTracingSampleGeneratorFactory
     const TraceContext&         m_trace_context;
     TextureStore&               m_texture_store;
     const LightSampler&         m_light_sampler;
-    const ParamArray            m_params;
 #ifdef WITH_OSL
     OSL::ShadingSystem&         m_shading_system;
 #endif
+    const ParamArray            m_params;
 };
 
 }       // namespace renderer

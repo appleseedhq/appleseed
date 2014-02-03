@@ -79,6 +79,7 @@
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/thread.h"
+#include "foundation/utility/countof.h"
 #include "foundation/utility/job/abortswitch.h"
 #include "foundation/utility/searchpaths.h"
 
@@ -332,12 +333,12 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
         "glossy",
         "specular"
     };
-
+    
     shading_system->attribute(
         "raytypes",
         OSL::TypeDesc(
-            OSL::TypeDesc::STRING, 
-            sizeof(ray_type_labels)/sizeof(ray_type_labels[0])),
+            OSL::TypeDesc::STRING,
+            sizeof(ray_type_labels) / sizeof(ray_type_labels[0])),
         ray_type_labels);
 
     // While debugging, we want all possible outputs.

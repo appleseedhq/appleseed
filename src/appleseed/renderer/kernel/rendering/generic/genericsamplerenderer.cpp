@@ -322,10 +322,10 @@ GenericSampleRendererFactory::GenericSampleRendererFactory(
   , m_texture_store(texture_store)
   , m_lighting_engine_factory(lighting_engine_factory)
   , m_shading_engine(shading_engine)
-  , m_params(params)
 #ifdef WITH_OSL
   , m_shading_system(shading_system)
 #endif
+  , m_params(params)
 {
 }
 

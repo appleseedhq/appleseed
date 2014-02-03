@@ -87,10 +87,10 @@ class GenericSampleRendererFactory
     TextureStore&               m_texture_store;
     ILightingEngineFactory*     m_lighting_engine_factory;
     ShadingEngine&              m_shading_engine;
-    const ParamArray            m_params;
 #ifdef WITH_OSL
     OSL::ShadingSystem&         m_shading_system;
 #endif
+    const ParamArray            m_params;
 };
 
 }       // namespace renderer

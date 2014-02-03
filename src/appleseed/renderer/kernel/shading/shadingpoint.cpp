@@ -245,6 +245,17 @@ Vector3d ShadingPoint::get_biased_point(const Vector3d& direction) const
 }
 
 #ifdef WITH_OSL
+
+namespace
+{
+
+inline OSL::Vec3 to_osl_vec3(const Vector3d& v)
+{
+    return OSL::Vec3(v.x, v.y, v.z);
+}
+
+}
+
 OSL::ShaderGlobals& ShadingPoint::get_osl_shader_globals() const
 {
     assert(hit());
@@ -253,20 +264,17 @@ OSL::ShaderGlobals& ShadingPoint::get_osl_shader_globals() const
     {
         const ShadingRay& ray(get_ray());
 
-        Vector3d v(get_point());
-        m_shader_globals.P = OSL::Vec3(v.x, v.y, v.z);
+        m_shader_globals.P = to_osl_vec3(get_point());
         m_shader_globals.dPdx = OSL::Vec3(0, 0, 0);
         m_shader_globals.dPdy = OSL::Vec3(0, 0, 0);
         m_shader_globals.dPdz = OSL::Vec3(0, 0, 0);
-        
-        m_shader_globals.I = -OSL::Vec3(ray.m_dir.x, ray.m_dir.y, ray.m_dir.z);
+
+        m_shader_globals.I = -to_osl_vec3(ray.m_dir);
         m_shader_globals.dIdx = OSL::Vec3(0, 0, 0);
         m_shader_globals.dIdy = OSL::Vec3(0, 0, 0);
 
-        v = get_shading_normal();
-        m_shader_globals.N = OSL::Vec3(v.x, v.y, v.z);
-        v = get_geometric_normal();
-        m_shader_globals.Ng = OSL::Vec3(v.x, v.y, v.z);
+        m_shader_globals.N = to_osl_vec3(get_shading_normal());
+        m_shader_globals.Ng = to_osl_vec3(get_geometric_normal());
 
         m_shader_globals.u = get_uv(0).x;
         m_shader_globals.dudx = 0;
@@ -276,10 +284,8 @@ OSL::ShaderGlobals& ShadingPoint::get_osl_shader_globals() const
         m_shader_globals.dvdx = 0;
         m_shader_globals.dvdy = 0;
 
-        v = get_dpdu(0);
-        m_shader_globals.dPdu = OSL::Vec3(v.x, v.y, v.z);
-        v = get_dpdv(0);
-        m_shader_globals.dPdv = OSL::Vec3(v.x, v.y, v.z);
+        m_shader_globals.dPdu = to_osl_vec3(get_dpdu(0));
+        m_shader_globals.dPdv = to_osl_vec3(get_dpdv(0));
 
         m_shader_globals.time = ray.m_time;
         m_shader_globals.dtime = 0;
@@ -301,12 +307,8 @@ OSL::ShaderGlobals& ShadingPoint::get_osl_shader_globals() const
         m_shader_globals.raytype = static_cast<int>(ray.m_type);
 
         m_shader_globals.flipHandedness = 0;
-        
-        if(get_side() == ObjectInstance::FrontSide)
-            m_shader_globals.backfacing = 0;
-        else
-            m_shader_globals.backfacing = 1;
-        
+        m_shader_globals.backfacing = get_side() == ObjectInstance::FrontSide ? 0 : 1;
+
         m_shader_globals.context = 0;
         m_shader_globals.Ci = 0;
         
