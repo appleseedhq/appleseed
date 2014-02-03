@@ -1049,6 +1049,7 @@ set (renderer_kernel_shading_sources
     renderer/kernel/shading/ambientocclusion.h
     renderer/kernel/shading/fastambientocclusion.cpp
     renderer/kernel/shading/fastambientocclusion.h
+    renderer/kernel/shading/shadingcontext.cpp
     renderer/kernel/shading/shadingcontext.h
     renderer/kernel/shading/shadingengine.cpp
     renderer/kernel/shading/shadingengine.h
@@ -1183,6 +1184,12 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/specularbtdf.cpp
     renderer/modeling/bsdf/specularbtdf.h
 )
+#if (WITH_OSL)
+#    list (APPEND renderer_modeling_bsdf_sources
+#        renderer/modeling/bsdf/oslbsdf.cpp
+#        renderer/modeling/bsdf/oslbsdf.h
+#    )
+#endif ()
 list (APPEND appleseed_sources
     ${renderer_modeling_bsdf_sources}
 )

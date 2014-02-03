@@ -93,6 +93,9 @@ namespace
             TextureStore&           texture_store,
             ILightingEngineFactory* lighting_engine_factory,
             ShadingEngine&          shading_engine,
+#ifdef WITH_OSL
+            OSL::ShadingSystem& shading_system,
+#endif
             const ParamArray&       params,
             const bool              primary)
           : m_params(params)
@@ -113,6 +116,9 @@ namespace
                 m_intersector,
                 m_tracer,
                 m_texture_cache,
+#ifdef WITH_OSL
+                shading_system,
+#endif
                 m_lighting_engine,
                 m_params.m_transparency_threshold,
                 m_params.m_max_iterations)
@@ -306,6 +312,9 @@ GenericSampleRendererFactory::GenericSampleRendererFactory(
     TextureStore&           texture_store,
     ILightingEngineFactory* lighting_engine_factory,
     ShadingEngine&          shading_engine,
+#ifdef WITH_OSL
+    OSL::ShadingSystem& shading_system,
+#endif
     const ParamArray&       params)
   : m_scene(scene)
   , m_frame(frame)
@@ -314,6 +323,9 @@ GenericSampleRendererFactory::GenericSampleRendererFactory(
   , m_lighting_engine_factory(lighting_engine_factory)
   , m_shading_engine(shading_engine)
   , m_params(params)
+#ifdef WITH_OSL
+  , m_shading_system(shading_system)
+#endif
 {
 }
 
@@ -332,6 +344,9 @@ ISampleRenderer* GenericSampleRendererFactory::create(const bool primary)
             m_texture_store,
             m_lighting_engine_factory,
             m_shading_engine,
+#ifdef WITH_OSL
+            m_shading_system,
+#endif
             m_params,
             primary);
 }

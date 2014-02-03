@@ -40,6 +40,11 @@
 // Standard headers.
 #include <cstddef>
 
+// OSL headers.
+#ifdef WITH_OSL
+#include <OSL/oslexec.h>
+#endif
+
 // Forward declarations.
 namespace renderer  { class Frame; }
 namespace renderer  { class LightSampler; }
@@ -62,6 +67,9 @@ class LightTracingSampleGeneratorFactory
         const TraceContext&     trace_context,
         TextureStore&           texture_store,
         const LightSampler&     light_sampler,
+#ifdef WITH_OSL
+        OSL::ShadingSystem& shading_system,
+#endif
         const ParamArray&       params);
 
     // Delete this instance.
@@ -83,6 +91,9 @@ class LightTracingSampleGeneratorFactory
     TextureStore&               m_texture_store;
     const LightSampler&         m_light_sampler;
     const ParamArray            m_params;
+#ifdef WITH_OSL
+    OSL::ShadingSystem&         m_shading_system;
+#endif
 };
 
 }       // namespace renderer

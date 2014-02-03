@@ -4,6 +4,9 @@
     <parameter name="print_final_average_luminance" value="false" />
     <parameter name="rendering_threads" value="auto" />
     <parameters name="ui">
+        <parameters name="filedialog">
+            <parameter name="lastdirectory" value="/home/est/Devel/appleseedhq/appleseed/sandbox/tests/test scenes/bsdf/showdown" />
+        </parameters>
         <parameters name="render_region">
             <parameter name="triggers_rendering" value="true" />
         </parameters>

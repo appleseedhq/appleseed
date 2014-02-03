@@ -152,6 +152,9 @@ namespace
             const LightSampler&         light_sampler,
             const size_t                generator_index,
             const size_t                generator_count,
+#ifdef WITH_OSL
+            OSL::ShadingSystem&         shading_system,
+#endif
             const ParamArray&           params)
           : SampleGeneratorBase(generator_index, generator_count)
           , m_params(params)
@@ -163,7 +166,16 @@ namespace
           , m_texture_cache(texture_store)
           , m_intersector(trace_context, m_texture_cache, m_params.m_report_self_intersections)
           , m_tracer(m_scene, m_intersector, m_texture_cache, m_params.m_transparency_threshold, m_params.m_max_iterations)
-          , m_shading_context(m_intersector, m_tracer, m_texture_cache, 0, m_params.m_transparency_threshold, m_params.m_max_iterations)
+          , m_shading_context(
+                m_intersector,
+                m_tracer,
+                m_texture_cache,
+#ifdef WITH_OSL
+                shading_system,
+#endif
+                0,
+                m_params.m_transparency_threshold,
+                m_params.m_max_iterations)
           , m_light_sample_count(0)
           , m_path_count(0)
         {
@@ -765,6 +777,9 @@ LightTracingSampleGeneratorFactory::LightTracingSampleGeneratorFactory(
     const TraceContext&     trace_context,
     TextureStore&           texture_store,
     const LightSampler&     light_sampler,
+#ifdef WITH_OSL
+    OSL::ShadingSystem& shading_system,
+#endif
     const ParamArray&       params)
   : m_scene(scene)
   , m_frame(frame)
@@ -772,6 +787,9 @@ LightTracingSampleGeneratorFactory::LightTracingSampleGeneratorFactory(
   , m_texture_store(texture_store)
   , m_light_sampler(light_sampler)
   , m_params(params)
+#ifdef WITH_OSL
+  , m_shading_system(shading_system)
+#endif
 {
     LightTracingSampleGenerator::Parameters(params).print();
 }
@@ -795,6 +813,9 @@ ISampleGenerator* LightTracingSampleGeneratorFactory::create(
             m_light_sampler,
             generator_index,
             generator_count,
+#ifdef WITH_OSL
+            m_shading_system,
+#endif
             m_params);
 }
 

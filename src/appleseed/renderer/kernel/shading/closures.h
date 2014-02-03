@@ -65,9 +65,8 @@ namespace renderer
 
 enum ClosureID
 {
-    EmissionID = 1,
-
-    AshikhminShirleyID,
+    FirstBSDFClosure = 1,
+    AshikhminShirleyID = FirstBSDFClosure,
     LambertID,
     MicrofacetBeckmannID,
     MicrofacetBlinnID,
@@ -76,11 +75,12 @@ enum ClosureID
     ReflectionID,
     RefractionID,
     TranslucentID,
+    NumBSDFClosures = TranslucentID,
 
-    // Special closures.
-    TransparentID,
+    // special closures.
+    EmissionID = NumBSDFClosures,
     HoldoutID,
-    NumClosuresID
+    TransparentID
 };
 
 

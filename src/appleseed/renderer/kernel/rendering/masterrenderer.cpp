@@ -444,6 +444,9 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
                     texture_store,
                     lighting_engine_factory.get(),
                     shading_engine,
+#ifdef WITH_OSL
+                    *shading_system,
+#endif
                     m_params.child("generic_sample_renderer")));
         }
         else if (value == "blank")
@@ -488,6 +491,9 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
                     trace_context,
                     texture_store,
                     light_sampler,
+#ifdef WITH_OSL
+                    *shading_system,
+#endif
                     m_params.child("lighttracing_sample_generator")));
         }
         else if (!value.empty())
