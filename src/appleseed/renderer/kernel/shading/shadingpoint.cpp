@@ -248,12 +248,10 @@ Vector3d ShadingPoint::get_biased_point(const Vector3d& direction) const
 
 namespace
 {
-
-inline OSL::Vec3 to_osl_vec3(const Vector3d& v)
-{
-    return OSL::Vec3(v.x, v.y, v.z);
-}
-
+    inline OSL::Vec3 to_osl_vec3(const Vector3d& v)
+    {
+        return OSL::Vec3(v.x, v.y, v.z);
+    }
 }
 
 OSL::ShaderGlobals& ShadingPoint::get_osl_shader_globals() const
@@ -314,9 +312,10 @@ OSL::ShaderGlobals& ShadingPoint::get_osl_shader_globals() const
         
         m_members |= HasOSLShaderGlobals;
     }
-    
+
     return m_shader_globals;
 }
+
 #endif
 
 }   // namespace renderer

@@ -219,7 +219,7 @@ class ShadingPoint
         HasMaterial                     = 1 << 12
 
 #ifdef WITH_OSL
-        ,HasOSLShaderGlobals             = 1 << 13
+        , HasOSLShaderGlobals           = 1 << 13
 #endif
     };
     mutable foundation::uint32          m_members;                      // which members have already been computed

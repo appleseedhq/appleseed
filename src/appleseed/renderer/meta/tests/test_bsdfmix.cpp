@@ -132,10 +132,11 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
         TextureCache texture_cache(texture_store);
         InputEvaluator input_evaluator(texture_cache);
 
-        BSDF& parent_bsdf = *assembly.bsdfs().get_by_name("parent_bsdf");
         ShadingPoint shading_point;
         ShadingPointBuilder builder(shading_point);
         builder.set_uvs(Vector2d(0.0));
+
+        BSDF& parent_bsdf = *assembly.bsdfs().get_by_name("parent_bsdf");
         parent_bsdf.evaluate_inputs(input_evaluator, shading_point);
 
         // parent_bsdf mixing weights.

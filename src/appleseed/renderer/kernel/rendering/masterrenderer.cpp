@@ -69,7 +69,6 @@
 #include "renderer/modeling/input/inputbinder.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/scene.h"
-
 #ifdef WITH_OSL
 #include "renderer/kernel/rendering/oiioerrorhandler.h"
 #include "renderer/kernel/rendering/rendererservices.h"
@@ -79,7 +78,6 @@
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/thread.h"
-#include "foundation/utility/countof.h"
 #include "foundation/utility/job/abortswitch.h"
 #include "foundation/utility/searchpaths.h"
 
@@ -221,6 +219,7 @@ namespace
     }
 
 #ifdef WITH_OSL
+
     void destroy_osl_shading_system(
         OSL::ShadingSystem*     s,
         OIIO::TextureSystem*    tx)
@@ -229,6 +228,7 @@ namespace
         tx->reset_stats();
         OSL::ShadingSystem::destroy(s);
     }
+
 #endif
 }
 
@@ -278,9 +278,9 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     if (m_project.search_paths().has_root_path())
     {
         // Setup texture / shader search paths.
-        // In OIIO / OSL, the path priorities are the opposite of appleseed, 
+        // In OIIO / OSL, the path priorities are the opposite of appleseed,
         // so we copy the paths in reverse order.
-        
+
         const filesystem::path root_path = m_project.search_paths().get_root_path();
 
         if (!m_project.search_paths().empty())
@@ -302,7 +302,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
 
     if (!search_paths.empty())
         m_texture_system->attribute("searchpath", search_paths);
-    
+
     // TODO: set other texture system options here.
 
     // Create our renderer services.
@@ -323,6 +323,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     shading_system->attribute("colorspace", "Linear");
     shading_system->attribute("commonspace", "world");
 
+    // This array needs to be kept in sync with the ShadingRay::Type enumeration.
     static const char* ray_type_labels[] =
     {
         "camera",
@@ -333,7 +334,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
         "glossy",
         "specular"
     };
-    
+
     shading_system->attribute(
         "raytypes",
         OSL::TypeDesc(
@@ -341,8 +342,8 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
             sizeof(ray_type_labels) / sizeof(ray_type_labels[0])),
         ray_type_labels);
 
-    // While debugging, we want all possible outputs.
 #ifndef NDEBUG
+    // While debugging, we want all possible outputs.
     shading_system->attribute("debug", 1);
     shading_system->attribute("statistics:level", 1);
     shading_system->attribute("compile_report", 1);
@@ -647,7 +648,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     }
 
     // Execute the main rendering loop.
-    const IRendererController::Status status = 
+    const IRendererController::Status status =
         render_frame_sequence(
             frame_renderer.get()
 #ifdef WITH_OSL
@@ -668,7 +669,7 @@ IRendererController::Status MasterRenderer::render_frame_sequence(
 #endif
     )
 {
-    while (true) 
+    while (true)
     {
         assert(!frame_renderer->is_rendering());
 

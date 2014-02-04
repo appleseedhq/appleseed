@@ -55,12 +55,10 @@ ShadingContext::ShadingContext(
   , m_max_iterations(max_iterations)
 #ifdef WITH_OSL
   , m_osl_shading_system(shading_system)
+  , m_osl_thread_info(shading_system.create_thread_info())
+  , m_osl_shading_context(shading_system.get_context(m_osl_thread_info))
 #endif
 {
-#ifdef WITH_OSL
-    m_osl_thread_info = m_osl_shading_system.create_thread_info();
-    m_osl_shading_context = m_osl_shading_system.get_context(m_osl_thread_info);
-#endif
 }
 
 ShadingContext::~ShadingContext()
@@ -74,4 +72,4 @@ ShadingContext::~ShadingContext()
 #endif
 }
 
-}       // namespace renderer
+}   // namespace renderer

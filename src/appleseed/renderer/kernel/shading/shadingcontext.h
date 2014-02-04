@@ -42,10 +42,10 @@
 #endif
 
 // Forward declarations.
-namespace renderer      { class ILightingEngine; }
-namespace renderer      { class Intersector; }
-namespace renderer      { class TextureCache; }
-namespace renderer      { class Tracer; }
+namespace renderer  { class ILightingEngine; }
+namespace renderer  { class Intersector; }
+namespace renderer  { class TextureCache; }
+namespace renderer  { class Tracer; }
 
 namespace renderer
 {
@@ -72,7 +72,7 @@ class ShadingContext
 
     // Destructor.
     ~ShadingContext();
-    
+
     const Intersector& get_intersector() const;
 
     Tracer& get_tracer() const;
@@ -94,7 +94,7 @@ class ShadingContext
     ILightingEngine*            m_lighting_engine;
     const float                 m_transparency_threshold;
     const size_t                m_max_iterations;
-    
+
 #ifdef WITH_OSL
     OSL::ShadingSystem&         m_osl_shading_system;
     OSL::PerThreadInfo*         m_osl_thread_info;
