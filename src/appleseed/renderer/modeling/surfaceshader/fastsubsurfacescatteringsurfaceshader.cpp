@@ -175,11 +175,10 @@ namespace
                 compute_average_distance(
                     sampling_context,
                     shading_context.get_intersector(),
-                    point,
                     -shading_point.get_geometric_normal(),
                     Basis3d(inv_shading_normal),
                     m_occlusion_samples,
-                    &shading_point);
+                    shading_point);
             assert(avg_distance >= 0.0);
 
             // Compute the total SSS contribution.
@@ -275,11 +274,10 @@ namespace
         static double compute_average_distance(
             const SamplingContext&  sampling_context,
             const Intersector&      intersector,
-            const Vector3d&         point,
             const Vector3d&         geometric_normal,
             const Basis3d&          shading_basis,
             const size_t            sample_count,
-            const ShadingPoint*     parent_shading_point)
+            const ShadingPoint&     parent_shading_point)
         {
             // Create a sampling context.
             SamplingContext child_sampling_context = sampling_context.split(2, sample_count);
@@ -288,8 +286,9 @@ namespace
             ShadingRay ray;
             ray.m_tmin = 0.0;
             ray.m_tmax = numeric_limits<double>::max();
-            ray.m_time = 0.0;
+            ray.m_time = parent_shading_point.get_ray().m_time;
             ray.m_type = ShadingRay::ProbeRay;
+            ray.m_depth = parent_shading_point.get_ray().m_depth + 1;
 
             size_t computed_samples = 0;
             double average_distance = 0.0;
@@ -308,14 +307,14 @@ namespace
                     continue;
 
                 // Compute the ray origin.
-                ray.m_org = parent_shading_point->get_biased_point(ray.m_dir);
+                ray.m_org = parent_shading_point.get_biased_point(ray.m_dir);
 
                 // Count the number of computed samples.
                 ++computed_samples;
 
                 // Trace the ambient occlusion ray and update the accumulated hit distance.
                 ShadingPoint shading_point;
-                if (intersector.trace(ray, shading_point, parent_shading_point))
+                if (intersector.trace(ray, shading_point, &parent_shading_point))
                     average_distance += shading_point.get_distance();
             }
 

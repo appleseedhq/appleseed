@@ -78,12 +78,13 @@ class Tracer
         const foundation::Vector3d&     origin,
         const foundation::Vector3d&     direction,
         const double                    time,
-        const ShadingRay::Type          type,
+        const ShadingRay::Type          ray_type,
+        const ShadingRay::DepthType     ray_depth,
         double&                         transmission);
     const ShadingPoint& trace(
         const ShadingPoint&             origin,
         const foundation::Vector3d&     direction,
-        const ShadingRay::Type          type,
+        const ShadingRay::Type          ray_type,
         double&                         transmission);
 
     // Compute the transmission in a given direction. This variant may take
@@ -93,11 +94,12 @@ class Tracer
         const foundation::Vector3d&     origin,
         const foundation::Vector3d&     direction,
         const double                    time,
-        const ShadingRay::Type          type);
+        const ShadingRay::Type          ray_type,
+        const ShadingRay::DepthType     ray_depth);
     double trace(
         const ShadingPoint&             origin,
         const foundation::Vector3d&     direction,
-        const ShadingRay::Type          type);
+        const ShadingRay::Type          ray_type);
 
     // Compute the transmission between two points. Returns the intersection
     // with the closest fully opaque occluder and the transmission factor up
@@ -107,12 +109,13 @@ class Tracer
         const foundation::Vector3d&     origin,
         const foundation::Vector3d&     target,
         const double                    time,
-        const ShadingRay::Type          type,
+        const ShadingRay::Type          ray_type,
+        const ShadingRay::DepthType     ray_depth,
         double&                         transmission);
     const ShadingPoint& trace_between(
         const ShadingPoint&             origin,
         const foundation::Vector3d&     target,
-        const ShadingRay::Type          type,
+        const ShadingRay::Type          ray_type,
         double&                         transmission);
 
     // Compute the transmission between two points. This variant may take
@@ -122,11 +125,12 @@ class Tracer
         const foundation::Vector3d&     origin,
         const foundation::Vector3d&     target,
         const double                    time,
-        const ShadingRay::Type          type);
+        const ShadingRay::Type          ray_type,
+        const ShadingRay::DepthType     ray_depth);
     double trace_between(
         const ShadingPoint&             origin,
         const foundation::Vector3d&     target,
-        const ShadingRay::Type          type);
+        const ShadingRay::Type          ray_type);
 
   private:
     const Intersector&                  m_intersector;
@@ -140,7 +144,8 @@ class Tracer
         const foundation::Vector3d&     origin,
         const foundation::Vector3d&     direction,
         const double                    time,
-        const ShadingRay::Type          type,
+        const ShadingRay::Type          ray_type,
+        const ShadingRay::DepthType     ray_depth,
         double&                         transmission,
         const ShadingPoint*             parent_shading_point);
 
@@ -148,7 +153,8 @@ class Tracer
         const foundation::Vector3d&     origin,
         const foundation::Vector3d&     target,
         const double                    time,
-        const ShadingRay::Type          type,
+        const ShadingRay::Type          ray_type,
+        const ShadingRay::DepthType     ray_depth,
         double&                         transmission,
         const ShadingPoint*             parent_shading_point);
 };
@@ -162,7 +168,8 @@ inline const ShadingPoint& Tracer::trace(
     const foundation::Vector3d&         origin,
     const foundation::Vector3d&         direction,
     const double                        time,
-    const ShadingRay::Type              type,
+    const ShadingRay::Type              ray_type,
+    const ShadingRay::DepthType         ray_depth,
     double&                             transmission)
 {
     return
@@ -170,7 +177,8 @@ inline const ShadingPoint& Tracer::trace(
             origin,
             direction,
             time,
-            type,
+            ray_type,
+            ray_depth,
             transmission,
             0);
 }
@@ -178,7 +186,7 @@ inline const ShadingPoint& Tracer::trace(
 inline const ShadingPoint& Tracer::trace(
     const ShadingPoint&                 origin,
     const foundation::Vector3d&         direction,
-    const ShadingRay::Type              type,
+    const ShadingRay::Type              ray_type,
     double&                             transmission)
 {
     return
@@ -186,7 +194,8 @@ inline const ShadingPoint& Tracer::trace(
             origin.get_biased_point(direction),
             direction,
             origin.get_time(),
-            type,
+            ray_type,
+            origin.get_ray().m_depth + 1,
             transmission,
             &origin);
 }
@@ -195,7 +204,8 @@ inline double Tracer::trace(
     const foundation::Vector3d&         origin,
     const foundation::Vector3d&         direction,
     const double                        time,
-    const ShadingRay::Type              type)
+    const ShadingRay::Type              ray_type,
+    const ShadingRay::DepthType         ray_depth)
 {
     if (m_assume_no_alpha_mapping)
     {
@@ -203,7 +213,8 @@ inline double Tracer::trace(
             origin,
             direction,
             time,
-            type);
+            ray_type,
+            ray_depth);
 
         return m_intersector.trace_probe(ray) ? 0.0 : 1.0;
     }
@@ -215,7 +226,8 @@ inline double Tracer::trace(
                 origin,
                 direction,
                 time,
-                type,
+                ray_type,
+                ray_depth,
                 transmission);
 
         return shading_point.hit() ? 0.0 : transmission;
@@ -233,7 +245,8 @@ inline double Tracer::trace(
             origin.get_biased_point(direction),
             direction,
             origin.get_time(),
-            type);
+            type,
+            origin.get_ray().m_depth + 1);
 
         return m_intersector.trace_probe(ray, &origin) ? 0.0 : 1.0;
     }
@@ -255,7 +268,8 @@ inline const ShadingPoint& Tracer::trace_between(
     const foundation::Vector3d&         origin,
     const foundation::Vector3d&         target,
     const double                        time,
-    const ShadingRay::Type              type,
+    const ShadingRay::Type              ray_type,
+    const ShadingRay::DepthType         ray_depth,
     double&                             transmission)
 {
     return
@@ -263,7 +277,8 @@ inline const ShadingPoint& Tracer::trace_between(
             origin,
             target,
             time,
-            type,
+            ray_type,
+            ray_depth,
             transmission,
             0);
 }
@@ -280,6 +295,7 @@ inline const ShadingPoint& Tracer::trace_between(
             target,
             origin.get_time(),
             type,
+            origin.get_ray().m_depth + 1,
             transmission,
             &origin);
 }
@@ -288,17 +304,19 @@ inline double Tracer::trace_between(
     const foundation::Vector3d&         origin,
     const foundation::Vector3d&         target,
     const double                        time,
-    const ShadingRay::Type              type)
+    const ShadingRay::Type              ray_type,
+    const ShadingRay::DepthType         ray_depth)
 {
     if (m_assume_no_alpha_mapping)
     {
         const ShadingRay ray(
             origin,
             target - origin,
-            0.0,                // ray tmin
-            1.0 - 1.0e-6,       // ray tmax
+            0.0,                        // ray tmin
+            1.0 - 1.0e-6,               // ray tmax
             time,
-            type);
+            ray_type,
+            ray_depth);
 
         return m_intersector.trace_probe(ray) ? 0.0 : 1.0;
     }
@@ -310,7 +328,8 @@ inline double Tracer::trace_between(
                 origin,
                 target,
                 time,
-                type,
+                ray_type,
+                ray_depth,
                 transmission);
 
         return shading_point.hit() ? 0.0 : transmission;
@@ -325,13 +344,15 @@ inline double Tracer::trace_between(
     if (m_assume_no_alpha_mapping)
     {
         const foundation::Vector3d direction = target - origin.get_point();
+
         const ShadingRay ray(
             origin.get_biased_point(direction),
             direction,
-            0.0,                // ray tmin
-            1.0 - 1.0e-6,       // ray tmax
+            0.0,                        // ray tmin
+            1.0 - 1.0e-6,               // ray tmax
             origin.get_time(),
-            type);
+            type,
+            origin.get_ray().m_depth + 1);
 
         return m_intersector.trace_probe(ray, &origin) ? 0.0 : 1.0;
     }

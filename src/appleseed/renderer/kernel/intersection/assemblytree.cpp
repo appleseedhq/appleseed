@@ -453,6 +453,7 @@ namespace
         output_ray.m_tmax = input_ray.m_tmax;
         output_ray.m_time = input_ray.m_time;
         output_ray.m_type = input_ray.m_type;
+        output_ray.m_depth = input_ray.m_depth;
     }
 }
 

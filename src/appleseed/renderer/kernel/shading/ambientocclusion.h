@@ -74,6 +74,7 @@ double compute_ambient_occlusion(
     ray.m_tmax = max_distance;
     ray.m_time = shading_point.get_time();
     ray.m_type = ShadingRay::ProbeRay;
+    ray.m_depth = shading_point.get_ray().m_depth + 1;
 
     size_t computed_samples = 0;
     size_t occluded_samples = 0;

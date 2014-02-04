@@ -270,6 +270,7 @@ namespace
                     vertex_visible_to_camera(
                         light_sample.m_point,
                         time,
+                        0,
                         sample_position);
 
                 // Ignore occluded vertices.
@@ -300,6 +301,7 @@ namespace
                     vertex_visible_to_camera(
                         light_vertex,
                         time,
+                        0,
                         sample_position);
 
                 // Ignore occluded vertices.
@@ -346,6 +348,7 @@ namespace
                     vertex_visible_to_camera(
                         vertex.get_point(),
                         vertex.get_time(),
+                        static_cast<ShadingRay::DepthType>(vertex.m_path_length),   // ray depth = (path length - 1) + 1
                         sample_position);
 
                 // Ignore occluded vertices.
@@ -395,6 +398,7 @@ namespace
             double vertex_visible_to_camera(
                 const Vector3d&             vertex_position,
                 const double                time,
+                const ShadingRay::DepthType ray_depth,
                 Vector2d&                   sample_position) const
             {
                 // Compute the position of the vertex on the image plane.
@@ -413,7 +417,8 @@ namespace
                         m_camera_position,
                         vertex_position,
                         time,
-                        ShadingRay::CameraRay);
+                        ShadingRay::CameraRay,
+                        ray_depth);
             }
 
             void emit_sample(const Vector2d& position_ndc, const Spectrum& radiance)

@@ -55,6 +55,8 @@ class ShadingRay
     typedef foundation::Vector3d    VectorType;
     typedef foundation::Ray3d       RayType;
     typedef foundation::RayInfo3d   RayInfoType;
+    typedef foundation::uint16      TypeType;
+    typedef foundation::uint16      DepthType;
 
     // Ray types.
     enum Type
@@ -70,30 +72,30 @@ class ShadingRay
 
     // Public members.
     double                          m_time;
-    foundation::uint16              m_type;
-    foundation::uint16              m_depth;
+    TypeType                        m_type;
+    DepthType                       m_depth;
 
     // Constructors.
     ShadingRay();                               // leave all fields uninitialized
     ShadingRay(
         const RayType&              ray,
         const double                time,
-        const foundation::uint16    type,
-        const foundation::uint16    depth = 0);
+        const TypeType              type,
+        const DepthType             depth = 0);
     ShadingRay(
         const VectorType&           org,
         const VectorType&           dir,
         const double                time,
-        const foundation::uint16    type,
-        const foundation::uint16    depth = 0);
+        const TypeType              type,
+        const DepthType             depth = 0);
     ShadingRay(
         const VectorType&           org,
         const VectorType&           dir,
         const ValueType             tmin,
         const ValueType             tmax,
         const double                time,
-        const foundation::uint16    type,
-        const foundation::uint16    depth = 0);
+        const TypeType              type,
+        const DepthType             depth = 0);
 };
 
 // Transform a ShadingRay.
@@ -118,8 +120,8 @@ inline ShadingRay::ShadingRay()
 inline ShadingRay::ShadingRay(
     const RayType&                  ray,
     const double                    time,
-    const foundation::uint16        type,
-    const foundation::uint16        depth)
+    const TypeType                  type,
+    const DepthType                 depth)
   : RayType(ray)
   , m_time(time)
   , m_type(type)
@@ -131,8 +133,8 @@ inline ShadingRay::ShadingRay(
     const VectorType&               org,
     const VectorType&               dir,
     const double                    time,
-    const foundation::uint16        type,
-    const foundation::uint16        depth)
+    const TypeType                  type,
+    const DepthType                 depth)
   : RayType(org, dir)
   , m_time(time)
   , m_type(type)
@@ -146,8 +148,8 @@ inline ShadingRay::ShadingRay(
     const ValueType                 tmin,
     const ValueType                 tmax,
     const double                    time,
-    const foundation::uint16        type,
-    const foundation::uint16        depth)
+    const TypeType                  type,
+    const DepthType                 depth)
   : RayType(org, dir, tmin, tmax)
   , m_time(time)
   , m_type(type)
