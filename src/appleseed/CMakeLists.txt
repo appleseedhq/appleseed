@@ -1495,13 +1495,9 @@ set (renderer_modeling_surfaceshader_sources
     renderer/modeling/surfaceshader/constantsurfaceshader.h
     renderer/modeling/surfaceshader/diagnosticsurfaceshader.cpp
     renderer/modeling/surfaceshader/diagnosticsurfaceshader.h
-    renderer/modeling/surfaceshader/fastsubsurfacescatteringsurfaceshader.cpp
-    renderer/modeling/surfaceshader/fastsubsurfacescatteringsurfaceshader.h
     renderer/modeling/surfaceshader/isurfaceshaderfactory.h
     renderer/modeling/surfaceshader/physicalsurfaceshader.cpp
     renderer/modeling/surfaceshader/physicalsurfaceshader.h
-    renderer/modeling/surfaceshader/smokesurfaceshader.cpp
-    renderer/modeling/surfaceshader/smokesurfaceshader.h
     renderer/modeling/surfaceshader/surfaceshader.cpp
     renderer/modeling/surfaceshader/surfaceshader.h
     renderer/modeling/surfaceshader/surfaceshadercollection.cpp
@@ -1509,8 +1505,6 @@ set (renderer_modeling_surfaceshader_sources
     renderer/modeling/surfaceshader/surfaceshaderfactoryregistrar.cpp
     renderer/modeling/surfaceshader/surfaceshaderfactoryregistrar.h
     renderer/modeling/surfaceshader/surfaceshadertraits.h
-    renderer/modeling/surfaceshader/voxelaosurfaceshader.cpp
-    renderer/modeling/surfaceshader/voxelaosurfaceshader.h
 )
 list (APPEND appleseed_sources
     ${renderer_modeling_surfaceshader_sources}
