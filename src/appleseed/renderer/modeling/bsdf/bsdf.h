@@ -51,6 +51,7 @@ namespace renderer      { class Assembly; }
 namespace renderer      { class InputEvaluator; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
+namespace renderer      { class ShadingPoint; }
 
 namespace renderer
 {
@@ -158,7 +159,7 @@ class DLLSYMBOL BSDF
     // once per shading point and pair of incoming/outgoing directions.
     virtual void evaluate_inputs(
         InputEvaluator&             input_evaluator,
-        const foundation::Vector2d& uv,
+        const ShadingPoint&         shading_point,
         const size_t                offset = 0) const;
 
     // Given an outgoing direction, sample the BSDF and compute the incoming

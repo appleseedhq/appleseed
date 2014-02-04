@@ -244,4 +244,79 @@ Vector3d ShadingPoint::get_biased_point(const Vector3d& direction) const
     return m_biased_point;
 }
 
+#ifdef WITH_OSL
+
+namespace
+{
+
+inline OSL::Vec3 to_osl_vec3(const Vector3d& v)
+{
+    return OSL::Vec3(v.x, v.y, v.z);
+}
+
+}
+
+OSL::ShaderGlobals& ShadingPoint::get_osl_shader_globals() const
+{
+    assert(hit());
+
+    if (!(m_members & HasOSLShaderGlobals))
+    {
+        const ShadingRay& ray(get_ray());
+
+        m_shader_globals.P = to_osl_vec3(get_point());
+        m_shader_globals.dPdx = OSL::Vec3(0, 0, 0);
+        m_shader_globals.dPdy = OSL::Vec3(0, 0, 0);
+        m_shader_globals.dPdz = OSL::Vec3(0, 0, 0);
+
+        m_shader_globals.I = -to_osl_vec3(ray.m_dir);
+        m_shader_globals.dIdx = OSL::Vec3(0, 0, 0);
+        m_shader_globals.dIdy = OSL::Vec3(0, 0, 0);
+
+        m_shader_globals.N = to_osl_vec3(get_shading_normal());
+        m_shader_globals.Ng = to_osl_vec3(get_geometric_normal());
+
+        m_shader_globals.u = get_uv(0).x;
+        m_shader_globals.dudx = 0;
+        m_shader_globals.dudy = 0;
+
+        m_shader_globals.v = get_uv(0).y;
+        m_shader_globals.dvdx = 0;
+        m_shader_globals.dvdy = 0;
+
+        m_shader_globals.dPdu = to_osl_vec3(get_dpdu(0));
+        m_shader_globals.dPdv = to_osl_vec3(get_dpdv(0));
+
+        m_shader_globals.time = ray.m_time;
+        m_shader_globals.dtime = 0;
+        m_shader_globals.dPdtime = OSL::Vec3(0, 0, 0);
+        
+        m_shader_globals.Ps = OSL::Vec3(0, 0, 0);
+        m_shader_globals.dPsdx = OSL::Vec3(0, 0, 0);
+        m_shader_globals.dPsdy = OSL::Vec3(0, 0, 0);
+        
+        m_shader_globals.renderstate = 0;
+        m_shader_globals.tracedata = 0;
+        m_shader_globals.objdata = 0;
+
+        m_shader_globals.object2common = 0;
+        m_shader_globals.shader2common = 0;
+        m_shader_globals.surfacearea = 0;
+
+        // TODO: not sure this is correct... (est.)
+        m_shader_globals.raytype = static_cast<int>(ray.m_type);
+
+        m_shader_globals.flipHandedness = 0;
+        m_shader_globals.backfacing = get_side() == ObjectInstance::FrontSide ? 0 : 1;
+
+        m_shader_globals.context = 0;
+        m_shader_globals.Ci = 0;
+        
+        m_members |= HasOSLShaderGlobals;
+    }
+    
+    return m_shader_globals;
+}
+#endif
+
 }   // namespace renderer

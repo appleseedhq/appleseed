@@ -28,71 +28,50 @@
 //
 
 // Interface header.
-#include "bsdf.h"
-
-// appleseed.renderer headers.
-#include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/modeling/input/inputevaluator.h"
-
-using namespace foundation;
+#include "shadingcontext.h"
 
 namespace renderer
 {
 
 //
-// BSDF class implementation.
+// ShadingContext class implementation.
 //
 
-namespace
+ShadingContext::ShadingContext(
+    const Intersector&          intersector,
+    Tracer&                     tracer,
+    TextureCache&               texture_cache,
+#ifdef WITH_OSL
+    OSL::ShadingSystem&         shading_system,
+#endif
+    ILightingEngine*            lighting_engine,
+    const float                 transparency_threshold,
+    const size_t                max_iterations)
+  : m_intersector(intersector)
+  , m_tracer(tracer)
+  , m_texture_cache(texture_cache)
+  , m_lighting_engine(lighting_engine)
+  , m_transparency_threshold(transparency_threshold)
+  , m_max_iterations(max_iterations)
+#ifdef WITH_OSL
+  , m_osl_shading_system(shading_system)
+#endif
 {
-    const UniqueID g_class_uid = new_guid();
+#ifdef WITH_OSL
+    m_osl_thread_info = m_osl_shading_system.create_thread_info();
+    m_osl_shading_context = m_osl_shading_system.get_context(m_osl_thread_info);
+#endif
 }
 
-UniqueID BSDF::get_class_uid()
+ShadingContext::~ShadingContext()
 {
-    return g_class_uid;
+#ifdef WITH_OSL
+    if (m_osl_shading_context)
+        m_osl_shading_system.release_context(m_osl_shading_context);
+
+    if (m_osl_thread_info)
+        m_osl_shading_system.destroy_thread_info(m_osl_thread_info);
+#endif
 }
 
-const double BSDF::DiracDelta = -1.0;
-
-BSDF::BSDF(
-    const char*         name,
-    const Type          type,
-    const int           modes,
-    const ParamArray&   params)
-  : ConnectableEntity(g_class_uid, params)
-  , m_type(type)
-  , m_modes(modes)
-{
-    set_name(name);
-}
-
-bool BSDF::on_frame_begin(
-    const Project&      project,
-    const Assembly&     assembly,
-    AbortSwitch*        abort_switch)
-{
-    return true;
-}
-
-void BSDF::on_frame_end(
-    const Project&      project,
-    const Assembly&     assembly)
-{
-}
-
-size_t BSDF::compute_input_data_size(
-    const Assembly&     assembly) const
-{
-    return get_inputs().compute_data_size();
-}
-
-void BSDF::evaluate_inputs(
-    InputEvaluator&     input_evaluator,
-    const ShadingPoint& shading_point,
-    const size_t        offset) const
-{
-    input_evaluator.evaluate(get_inputs(), shading_point.get_uv(0), offset);
-}
-
-}   // namespace renderer
+}       // namespace renderer

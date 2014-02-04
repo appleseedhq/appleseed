@@ -36,6 +36,11 @@
 // Standard headers.
 #include <cstddef>
 
+// OSL headers.
+#ifdef WITH_OSL
+#include <OSL/oslexec.h>
+#endif
+
 // Forward declarations.
 namespace renderer      { class ILightingEngine; }
 namespace renderer      { class Intersector; }
@@ -58,10 +63,16 @@ class ShadingContext
         const Intersector&      intersector,
         Tracer&                 tracer,
         TextureCache&           texture_cache,
+#ifdef WITH_OSL
+        OSL::ShadingSystem&     shading_system,
+#endif            
         ILightingEngine*        lighting_engine = 0,
         const float             transparency_threshold = 0.001f,
         const size_t            max_iterations = 1000);
 
+    // Destructor.
+    ~ShadingContext();
+    
     const Intersector& get_intersector() const;
 
     Tracer& get_tracer() const;
@@ -83,28 +94,13 @@ class ShadingContext
     ILightingEngine*            m_lighting_engine;
     const float                 m_transparency_threshold;
     const size_t                m_max_iterations;
+    
+#ifdef WITH_OSL
+    OSL::ShadingSystem&         m_osl_shading_system;
+    OSL::PerThreadInfo*         m_osl_thread_info;
+    OSL::ShadingContext*        m_osl_shading_context;
+#endif
 };
-
-
-//
-// ShadingContext class implementation.
-//
-
-inline ShadingContext::ShadingContext(
-    const Intersector&          intersector,
-    Tracer&                     tracer,
-    TextureCache&               texture_cache,
-    ILightingEngine*            lighting_engine,
-    const float                 transparency_threshold,
-    const size_t                max_iterations)
-  : m_intersector(intersector)
-  , m_tracer(tracer)
-  , m_texture_cache(texture_cache)
-  , m_lighting_engine(lighting_engine)
-  , m_transparency_threshold(transparency_threshold)
-  , m_max_iterations(max_iterations)
-{
-}
 
 inline const Intersector& ShadingContext::get_intersector() const
 {

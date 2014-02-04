@@ -41,6 +41,7 @@ namespace renderer
 ShadingPointBuilder::ShadingPointBuilder(ShadingPoint& shading_point)
   : m_shading_point(shading_point)
 {
+    m_shading_point.m_hit = true;
 }
 
 void ShadingPointBuilder::set_scene(const Scene* scene)
@@ -70,6 +71,12 @@ void ShadingPointBuilder::set_shading_basis(const Basis3d& basis)
 {
     m_shading_point.m_shading_basis = basis;
     m_shading_point.m_members |= ShadingPoint::HasShadingBasis;
+}
+
+void ShadingPointBuilder::set_uvs(const foundation::Vector2d& uv)
+{
+    m_shading_point.m_uv = uv;
+    m_shading_point.m_members |= ShadingPoint::HasUV0;
 }
 
 }   // namespace renderer

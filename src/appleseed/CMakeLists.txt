@@ -1049,6 +1049,7 @@ set (renderer_kernel_shading_sources
     renderer/kernel/shading/ambientocclusion.h
     renderer/kernel/shading/fastambientocclusion.cpp
     renderer/kernel/shading/fastambientocclusion.h
+    renderer/kernel/shading/shadingcontext.cpp
     renderer/kernel/shading/shadingcontext.h
     renderer/kernel/shading/shadingengine.cpp
     renderer/kernel/shading/shadingengine.h
