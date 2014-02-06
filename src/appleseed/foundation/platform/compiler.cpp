@@ -37,47 +37,37 @@ namespace foundation
 // Compiler class implementation.
 //
 
-// Return the name of the compiler.
 const char* Compiler::get_compiler_name()
 {
 // Visual C++.
 #if defined _MSC_VER
-
     return "Microsoft Visual C++";
 
 // gcc.
 #elif defined __GNUC__
-
     return "gcc";
 
-// Unknown compiler.
+// Other compilers.
 #else
-
     return "(Unknown Compiler)";
-
 #endif
 }
 
-// Return the version of the compiler.
 const char* Compiler::get_compiler_version()
 {
 // Visual C++.
 #if defined _MSC_VER
-
-    return FOUNDATION_TO_STRING_EVAL(_MSC_VER);
+    return TO_STRING_EVAL(_MSC_VER);
 
 // gcc.
 #elif defined __GNUC__
+    return TO_STRING_EVAL(__GNUC__) "."
+           TO_STRING_EVAL(__GNUC_MINOR__) "."
+           TO_STRING_EVAL(__GNUC_PATCHLEVEL__);
 
-    return FOUNDATION_TO_STRING_EVAL(__GNUC__) "."
-           FOUNDATION_TO_STRING_EVAL(__GNUC_MINOR__) "."
-           FOUNDATION_TO_STRING_EVAL(__GNUC_PATCHLEVEL__);
-
-// Unknown compiler.
+// Other compilers.
 #else
-
     return "(Unknown Compiler Version)";
-
 #endif
 }
 

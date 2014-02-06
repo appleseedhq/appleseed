@@ -36,7 +36,7 @@
 #include "foundation/math/intersection.h"
 #include "foundation/math/ray.h"
 #include "foundation/math/scalar.h"
-#ifdef APPLESEED_FOUNDATION_USE_SSE
+#ifdef APPLESEED_USE_SSE
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/sse.h"
 #endif
@@ -416,7 +416,7 @@ void Intersector<Tree, Visitor, Ray, StackSize, N>::intersect_motion(
     FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_discarded_nodes.insert(discarded_nodes));
 }
 
-#ifdef APPLESEED_FOUNDATION_USE_SSE
+#ifdef APPLESEED_USE_SSE
 
 template <
     typename Tree,
@@ -884,7 +884,7 @@ void Intersector<Tree, Visitor, Ray, StackSize, 3>::intersect_motion(
     FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_discarded_nodes.insert(discarded_nodes));
 }
 
-#endif  // APPLESEED_FOUNDATION_USE_SSE
+#endif  // APPLESEED_USE_SSE
 
 }       // namespace bvh
 }       // namespace foundation

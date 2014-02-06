@@ -217,7 +217,7 @@ class DLLSYMBOL InputArray
 //     };
 //
 
-#define DECLARE_INPUT_VALUES(name) struct FOUNDATION_ALIGN(16) name
+#define DECLARE_INPUT_VALUES(name) struct APPLESEED_ALIGN(16) name
 
 }       // namespace renderer
 

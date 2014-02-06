@@ -35,7 +35,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/intersection.h"
-#ifdef APPLESEED_FOUNDATION_USE_SSE
+#ifdef APPLESEED_USE_SSE
 #include "foundation/platform/sse.h"
 #endif
 
@@ -85,7 +85,7 @@ AABB3d TriangleItemHandler::clip(
         return triangle_bbox;
     }
 
-#ifdef APPLESEED_FOUNDATION_USE_SSE
+#ifdef APPLESEED_USE_SSE
 
     SSE_ALIGN const Vector3d v0(m_triangle_vertices[vertex_info.m_vertex_index + 0]);
     SSE_ALIGN const Vector3d v1(m_triangle_vertices[vertex_info.m_vertex_index + 1]);

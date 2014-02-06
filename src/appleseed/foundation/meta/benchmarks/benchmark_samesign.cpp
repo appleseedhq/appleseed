@@ -30,7 +30,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/rng.h"
 #include "foundation/platform/compiler.h"
-#ifdef APPLESEED_FOUNDATION_USE_SSE
+#ifdef APPLESEED_USE_SSE
 #include "foundation/platform/sse.h"
 #endif
 #include "foundation/utility/benchmark.h"
@@ -135,7 +135,7 @@ BENCHMARK_SUITE(SameSign)
         return a * b >= 0.0f && a * c >= 0.0f && b * c >= 0.0f;
     }
 
-#ifdef APPLESEED_FOUNDATION_USE_SSE
+#ifdef APPLESEED_USE_SSE
 
     //
     // SSE implementation of the 3-component multiplication-based variant.
@@ -232,7 +232,7 @@ BENCHMARK_SUITE(SameSign)
             m_result ^= same_sign_multiplication(m_values[i], m_values[i + 1], m_values[i + 2]);
     }
 
-#ifdef APPLESEED_FOUNDATION_USE_SSE
+#ifdef APPLESEED_USE_SSE
 
     BENCHMARK_CASE_F(SameSignMultiplicationSSE3, Fixture)
     {

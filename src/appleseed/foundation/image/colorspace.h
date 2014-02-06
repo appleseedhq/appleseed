@@ -37,7 +37,7 @@
 #include "foundation/math/scalar.h"
 #include "foundation/math/spline.h"
 #include "foundation/platform/compiler.h"
-#ifdef APPLESEED_FOUNDATION_USE_SSE
+#ifdef APPLESEED_USE_SSE
 #include "foundation/platform/sse.h"
 #endif
 #include "foundation/utility/otherwise.h"
@@ -287,7 +287,7 @@ Color<T, 3> srgb_to_linear_rgb(const Color<T, 3>& srgb);
 // Variants of the above functions using a fast approximation of the power function.
 float fast_linear_rgb_to_srgb(const float c);
 float fast_srgb_to_linear_rgb(const float c);
-#ifdef APPLESEED_FOUNDATION_USE_SSE
+#ifdef APPLESEED_USE_SSE
 inline __m128 fast_linear_rgb_to_srgb(const __m128 linear_rgb);
 #endif
 Color3f fast_linear_rgb_to_srgb(const Color3f& linear_rgb);
@@ -655,7 +655,7 @@ inline float fast_srgb_to_linear_rgb(const float c)
         : fast_pow((c + 0.055f) * (1.0f / 1.055f), 2.4f);
 }
 
-#ifdef APPLESEED_FOUNDATION_USE_SSE
+#ifdef APPLESEED_USE_SSE
 
 inline __m128 fast_linear_rgb_to_srgb(const __m128 linear_rgb)
 {
@@ -696,7 +696,7 @@ inline Color3f fast_linear_rgb_to_srgb(const Color3f& linear_rgb)
         fast_linear_rgb_to_srgb(linear_rgb[2]));
 }
 
-#endif  // APPLESEED_FOUNDATION_USE_SSE
+#endif  // APPLESEED_USE_SSE
 
 inline Color3f fast_srgb_to_linear_rgb(const Color3f& srgb)
 {
@@ -748,7 +748,7 @@ Color<T, 3> spectrum_to_ciexyz(
     return Color<T, 3>(x, y, z);
 }
 
-#ifdef APPLESEED_FOUNDATION_USE_SSE
+#ifdef APPLESEED_USE_SSE
 
 template <>
 inline Color3f spectrum_to_ciexyz<float, Spectrum31f>(
@@ -778,7 +778,7 @@ inline Color3f spectrum_to_ciexyz<float, Spectrum31f>(
     return Color3f(transfer[0], transfer[1], transfer[2]);
 }
 
-#endif  // APPLESEED_FOUNDATION_USE_SSE
+#endif  // APPLESEED_USE_SSE
 
 template <typename T, typename Spectrum>
 void ciexyz_reflectance_to_spectrum(

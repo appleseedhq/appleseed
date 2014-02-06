@@ -34,7 +34,7 @@
 #include "foundation/math/ray.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
-#ifdef APPLESEED_FOUNDATION_USE_SSE
+#ifdef APPLESEED_USE_SSE
 #include "foundation/platform/sse.h"
 #endif
 #include "foundation/platform/types.h"
@@ -221,7 +221,7 @@ FORCE_INLINE bool TriangleSSK<float>::intersect(
     const ValueType wprime = det - uprime - vprime;
 
     // Check that the intersection point lies inside the triangle.
-#ifdef APPLESEED_FOUNDATION_USE_SSE
+#ifdef APPLESEED_USE_SSE
     SSE_ALIGN float detarray[4] = { uprime, uprime, vprime, wprime };
     const __m128 mu = _mm_load_ps(detarray);
     const __m128 mv = _mm_shuffle_ps(mu, mu, _MM_SHUFFLE(2, 3, 3, 2));
@@ -281,7 +281,7 @@ FORCE_INLINE bool TriangleSSK<double>::intersect(
     const ValueType wprime = det - uprime - vprime;
 
     // Check that the intersection point lies inside the triangle.
-#ifdef APPLESEED_FOUNDATION_USE_SSE
+#ifdef APPLESEED_USE_SSE
     const __m128d zero = _mm_set1_pd(0.0);
     const __m128d mdetu = _mm_set1_pd(uprime);
     const __m128d mdetv = _mm_set1_pd(vprime);
@@ -337,7 +337,7 @@ FORCE_INLINE bool TriangleSSK<float>::intersect(const RayType& ray) const
     const ValueType wprime = det - uprime - vprime;
 
     // Check that the intersection point lies inside the triangle.
-#ifdef APPLESEED_FOUNDATION_USE_SSE
+#ifdef APPLESEED_USE_SSE
     SSE_ALIGN float detarray[4] = { uprime, uprime, vprime, wprime };
     const __m128 mu = _mm_load_ps(detarray);
     const __m128 mv = _mm_shuffle_ps(mu, mu, _MM_SHUFFLE(2, 3, 3, 2));
@@ -385,7 +385,7 @@ FORCE_INLINE bool TriangleSSK<double>::intersect(const RayType& ray) const
     const ValueType wprime = det - uprime - vprime;
 
     // Check that the intersection point lies inside the triangle.
-#ifdef APPLESEED_FOUNDATION_USE_SSE
+#ifdef APPLESEED_USE_SSE
     const __m128d zero = _mm_set1_pd(0.0);
     const __m128d mdetu = _mm_set1_pd(uprime);
     const __m128d mdetv = _mm_set1_pd(vprime);

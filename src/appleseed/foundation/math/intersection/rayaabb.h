@@ -35,7 +35,7 @@
 #include "foundation/math/minmax.h"
 #include "foundation/math/ray.h"
 #include "foundation/math/vector.h"
-#ifdef APPLESEED_FOUNDATION_USE_SSE
+#ifdef APPLESEED_USE_SSE
 #include "foundation/platform/sse.h"
 #endif
 
@@ -136,7 +136,7 @@ inline bool intersect(
     return !(tmin > tmax || tmax < ray.m_tmin || tmin >= ray.m_tmax);
 }
 
-#ifdef APPLESEED_FOUNDATION_USE_SSE
+#ifdef APPLESEED_USE_SSE
 
 template <>
 inline bool intersect<float>(
@@ -212,7 +212,7 @@ inline bool intersect<double>(
                     _mm_cmpge_pd(tmin, _mm_set1_pd(ray.m_tmax))))) == 0;
 }
 
-#endif  // APPLESEED_FOUNDATION_USE_SSE
+#endif  // APPLESEED_USE_SSE
 
 template <typename T>
 inline bool intersect(
@@ -294,7 +294,7 @@ inline bool clip(
     return true;
 }
 
-#ifdef APPLESEED_FOUNDATION_USE_SSE
+#ifdef APPLESEED_USE_SSE
 
 template <>
 inline bool clip<float>(
@@ -386,7 +386,7 @@ inline bool clip<double>(
     return hit;
 }
 
-#endif  // APPLESEED_FOUNDATION_USE_SSE
+#endif  // APPLESEED_USE_SSE
 
 }       // namespace foundation
 

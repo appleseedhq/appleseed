@@ -109,25 +109,25 @@ class DLLSYMBOL Compiler
 
 //
 // A qualifier to specify the alignment of a variable, a structure member or a structure.
-// Named FOUNDATION_ALIGN instead of simply ALIGN to prevent a collision with the ALIGN
+// Named APPLESEED_ALIGN instead of simply ALIGN to prevent a collision with the ALIGN
 // macro defined in /usr/include/i386/param.h on Mac OS X (and possibly other platforms).
 //
 
 // Visual C++.
 #if defined _MSC_VER
-    #define FOUNDATION_ALIGN(n) __declspec(align(n))
+    #define APPLESEED_ALIGN(n) __declspec(align(n))
 
 // gcc.
 #elif defined __GNUC__
-    #define FOUNDATION_ALIGN(n) __attribute__((aligned(n)))
+    #define APPLESEED_ALIGN(n) __attribute__((aligned(n)))
 
 // Other compilers: ignore the qualifier.
 #else
-    #define FOUNDATION_ALIGN(n)
+    #define APPLESEED_ALIGN(n)
 #endif
 
 // Specify an alignment compatible with SSE.
-#define SSE_ALIGN FOUNDATION_ALIGN(16)
+#define SSE_ALIGN APPLESEED_ALIGN(16)
 
 
 //
@@ -194,21 +194,23 @@ class DLLSYMBOL Compiler
 
 //
 // Utility macros converting their argument to a string literal:
-// FOUNDATION_TO_STRING_EVAL first expands the argument definition.
-// FOUNDATION_TO_STRING_NOEVAL does not expand the argument definition.
+//   TO_STRING_EVAL first expands the argument definition.
+//   TO_STRING_NOEVAL does not expand the argument definition.
 //
 
-#define FOUNDATION_TO_STRING_EVAL(x) FOUNDATION_TO_STRING_NOEVAL(x)
-#define FOUNDATION_TO_STRING_NOEVAL(x) #x
+#define TO_STRING_EVAL(x) TO_STRING_NOEVAL(x)
+#define TO_STRING_NOEVAL(x) #x
 
 
 //
 // Utility macro representing an empty parameter to another macro.
-// Omitting macro parameters is supported in C99, but not yet in C++ 98;
-// using a macro expanding to nothing is a way to workaround this limitation.
+// Omitting macro parameters is supported in C99, but not yet in C++98;
+// using a macro expanding to nothing is a way to work around this limitation.
+// Named APPLESEED_EMPTY instead of simply EMPTY to prevent possible name
+// collisions.
 //
 
-#define FOUNDATION_EMPTY
+#define APPLESEED_EMPTY
 
 
 //
@@ -219,9 +221,9 @@ class DLLSYMBOL Compiler
 //
 
 #if defined _MSC_VER && _MSC_VER < 1800
-#ifndef va_copy
-#define va_copy(dst, src) ((dst) = (src))
-#endif
+    #ifndef va_copy
+    #define va_copy(dst, src) ((dst) = (src))
+    #endif
 #endif
 
 

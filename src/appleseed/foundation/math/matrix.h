@@ -37,7 +37,7 @@
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
-#ifdef APPLESEED_FOUNDATION_USE_SSE
+#ifdef APPLESEED_USE_SSE
 #include "foundation/platform/sse.h"
 #endif
 
@@ -1903,7 +1903,7 @@ inline Matrix<T, 4, 4> operator*(
     return res;
 }
 
-#ifdef APPLESEED_FOUNDATION_USE_SSE
+#ifdef APPLESEED_USE_SSE
 
 // SSE2-optimized double precision 4x4 matrix multiplication.
 template <>
@@ -1995,7 +1995,7 @@ inline Matrix<double, 4, 4> operator*(
     return res;
 }
 
-#endif  // APPLESEED_FOUNDATION_USE_SSE
+#endif  // APPLESEED_USE_SSE
 
 template <typename T>
 inline Vector<T, 4> operator*(
@@ -2012,7 +2012,7 @@ inline Vector<T, 4> operator*(
     return res;
 }
 
-#ifdef APPLESEED_FOUNDATION_USE_SSE
+#ifdef APPLESEED_USE_SSE
 
 // SSE2-optimized double precision 4x4 matrix-vector multiplication.
 template <>
@@ -2045,7 +2045,7 @@ inline Vector<double, 4> operator*(
     return res;
 }
 
-#endif  // APPLESEED_FOUNDATION_USE_SSE
+#endif  // APPLESEED_USE_SSE
 
 template <typename T>
 inline Vector<T, 4> operator*(

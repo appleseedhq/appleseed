@@ -1610,7 +1610,7 @@ set_target_properties (appleseed PROPERTIES
 apply_preprocessor_definitions (appleseed)
 
 append_custom_preprocessor_definitions (appleseed
-    APPLESEED_FOUNDATION_USE_SSE
+    APPLESEED_USE_SSE
     APPLESEED_ENABLE_IMATH_INTEROP
 )
 

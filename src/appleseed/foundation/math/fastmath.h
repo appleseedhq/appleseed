@@ -32,7 +32,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
-#ifdef APPLESEED_FOUNDATION_USE_SSE
+#ifdef APPLESEED_USE_SSE
 #include "foundation/platform/sse.h"
 #endif
 #include "foundation/platform/types.h"
@@ -144,7 +144,7 @@ float fast_exp(const float p);
 float faster_exp(const float p);
 
 // SSE variants of the functions above.
-#ifdef APPLESEED_FOUNDATION_USE_SSE
+#ifdef APPLESEED_USE_SSE
 __m128 fast_pow2(const __m128 p);
 __m128 faster_pow2(const __m128 p);
 __m128 fast_log2(const __m128 x);
@@ -158,7 +158,7 @@ __m128 faster_exp(const __m128 x);
 #endif
 
 // Vectorized variants of the functions above.
-// When APPLESEED_FOUNDATION_USE_SSE is defined, all array arguments must be 16-byte aligned.
+// When APPLESEED_USE_SSE is defined, all array arguments must be 16-byte aligned.
 void fast_pow2(float p[4]);
 void faster_pow2(float p[4]);
 void fast_log2(float x[4]);
@@ -271,7 +271,7 @@ inline float faster_exp(const float p)
     return faster_pow2(1.442695040f * p);
 }
 
-#ifdef APPLESEED_FOUNDATION_USE_SSE
+#ifdef APPLESEED_USE_SSE
 
 inline __m128 fast_pow2(const __m128 p)
 {
@@ -532,7 +532,7 @@ inline void faster_exp(float x[4])
         x[i] = faster_exp(x[i]);
 }
 
-#endif  // APPLESEED_FOUNDATION_USE_SSE
+#endif  // APPLESEED_USE_SSE
 
 inline float fast_sqrt(const float x)
 {

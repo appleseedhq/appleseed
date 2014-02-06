@@ -719,7 +719,7 @@ Statistics make_dual_stage_cache_stats(const Cache& cache);
         Ways_                                           \
     >::
 
-FOUNDATION_SACACHE_TEMPLATE_DEF(FOUNDATION_EMPTY)
+FOUNDATION_SACACHE_TEMPLATE_DEF(APPLESEED_EMPTY)
 SACache(
     KeyHasherType&      key_hasher,
     ElementSwapperType& element_swapper,
@@ -732,7 +732,7 @@ SACache(
     clear();
 }
 
-FOUNDATION_SACACHE_TEMPLATE_DEF(FOUNDATION_EMPTY)
+FOUNDATION_SACACHE_TEMPLATE_DEF(APPLESEED_EMPTY)
 ~SACache()
 {
     for (size_t i = 0; i < Lines; ++i)
@@ -853,7 +853,7 @@ check_integrity(IntegrityChecker& checker) const
         Allocator                                       \
     >::
 
-FOUNDATION_LRUCACHE_TEMPLATE_DEF(FOUNDATION_EMPTY)
+FOUNDATION_LRUCACHE_TEMPLATE_DEF(APPLESEED_EMPTY)
 LRUCache(
     ElementSwapperType& element_swapper,
     AllocatorType       allocator)
@@ -864,7 +864,7 @@ LRUCache(
 {
 }
 
-FOUNDATION_LRUCACHE_TEMPLATE_DEF(FOUNDATION_EMPTY)
+FOUNDATION_LRUCACHE_TEMPLATE_DEF(APPLESEED_EMPTY)
 ~LRUCache()
 {
     clear();
@@ -1001,7 +1001,7 @@ check_integrity(IntegrityChecker& checker) const
         Allocator                                       \
     >::
 
-FOUNDATION_DSCACHE_TEMPLATE_DEF(FOUNDATION_EMPTY)
+FOUNDATION_DSCACHE_TEMPLATE_DEF(APPLESEED_EMPTY)
 DualStageCache(
     KeyHasherType&      key_hasher,
     ElementSwapperType& element_swapper,

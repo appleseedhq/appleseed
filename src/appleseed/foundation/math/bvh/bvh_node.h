@@ -49,7 +49,7 @@ namespace bvh {
 //
 
 template <typename AABB>
-class FOUNDATION_ALIGN(64) Node
+class APPLESEED_ALIGN(64) Node
 {
   public:
     typedef AABB AABBType;

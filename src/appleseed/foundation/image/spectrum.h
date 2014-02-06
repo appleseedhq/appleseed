@@ -33,7 +33,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
 #include "foundation/platform/compiler.h"
-#ifdef APPLESEED_FOUNDATION_USE_SSE
+#ifdef APPLESEED_USE_SSE
 #include "foundation/platform/sse.h"
 #endif
 
@@ -198,7 +198,7 @@ inline void RegularSpectrum<T, N>::set(const ValueType val)
         m_samples[i] = val;
 }
 
-#ifdef APPLESEED_FOUNDATION_USE_SSE
+#ifdef APPLESEED_USE_SSE
 
 template <>
 FORCE_INLINE void RegularSpectrum<float, 31>::set(const float val)
@@ -215,7 +215,7 @@ FORCE_INLINE void RegularSpectrum<float, 31>::set(const float val)
     _mm_store_ps(&m_samples[28], mval);
 }
 
-#endif  // APPLESEED_FOUNDATION_USE_SSE
+#endif  // APPLESEED_USE_SSE
 
 template <typename T, size_t N>
 inline T& RegularSpectrum<T, N>::operator[](const size_t i)
@@ -407,7 +407,7 @@ inline RegularSpectrum<T, N>& operator+=(RegularSpectrum<T, N>& lhs, const Regul
     return lhs;
 }
 
-#ifdef APPLESEED_FOUNDATION_USE_SSE
+#ifdef APPLESEED_USE_SSE
 
 template <>
 FORCE_INLINE RegularSpectrum<float, 31>& operator+=(RegularSpectrum<float, 31>& lhs, const RegularSpectrum<float, 31>& rhs)
@@ -424,7 +424,7 @@ FORCE_INLINE RegularSpectrum<float, 31>& operator+=(RegularSpectrum<float, 31>& 
     return lhs;
 }
 
-#endif  // APPLESEED_FOUNDATION_USE_SSE
+#endif  // APPLESEED_USE_SSE
 
 template <typename T, size_t N>
 inline RegularSpectrum<T, N>& operator-=(RegularSpectrum<T, N>& lhs, const RegularSpectrum<T, N>& rhs)
@@ -444,7 +444,7 @@ inline RegularSpectrum<T, N>& operator*=(RegularSpectrum<T, N>& lhs, const T rhs
     return lhs;
 }
 
-#ifdef APPLESEED_FOUNDATION_USE_SSE
+#ifdef APPLESEED_USE_SSE
 
 template <>
 FORCE_INLINE RegularSpectrum<float, 31>& operator*=(RegularSpectrum<float, 31>& lhs, const float rhs)
@@ -463,7 +463,7 @@ FORCE_INLINE RegularSpectrum<float, 31>& operator*=(RegularSpectrum<float, 31>& 
     return lhs;
 }
 
-#endif  // APPLESEED_FOUNDATION_USE_SSE
+#endif  // APPLESEED_USE_SSE
 
 template <typename T, size_t N>
 inline RegularSpectrum<T, N>& operator*=(RegularSpectrum<T, N>& lhs, const RegularSpectrum<T, N>& rhs)
@@ -474,7 +474,7 @@ inline RegularSpectrum<T, N>& operator*=(RegularSpectrum<T, N>& lhs, const Regul
     return lhs;
 }
 
-#ifdef APPLESEED_FOUNDATION_USE_SSE
+#ifdef APPLESEED_USE_SSE
 
 template <>
 FORCE_INLINE RegularSpectrum<float, 31>& operator*=(RegularSpectrum<float, 31>& lhs, const RegularSpectrum<float, 31>& rhs)
@@ -491,7 +491,7 @@ FORCE_INLINE RegularSpectrum<float, 31>& operator*=(RegularSpectrum<float, 31>& 
     return lhs;
 }
 
-#endif  // APPLESEED_FOUNDATION_USE_SSE
+#endif  // APPLESEED_USE_SSE
 
 template <typename T, size_t N>
 inline RegularSpectrum<T, N>& operator/=(RegularSpectrum<T, N>& lhs, const T rhs)

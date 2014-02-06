@@ -133,7 +133,7 @@ class RayInfo
     explicit RayInfo(const RayType& ray);   // initialize with a ray
 };
 
-#ifdef APPLESEED_FOUNDATION_USE_SSE
+#ifdef APPLESEED_USE_SSE
 
 template <>
 class RayInfo<double, 3>
@@ -261,7 +261,7 @@ inline RayInfo<T, N>::RayInfo(const RayType& ray)
     }
 }
 
-#ifdef APPLESEED_FOUNDATION_USE_SSE
+#ifdef APPLESEED_USE_SSE
 
 inline RayInfo<double, 3>::RayInfo()
 {

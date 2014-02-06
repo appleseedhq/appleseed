@@ -92,7 +92,7 @@ struct PrimePermutationPair
     const size_t*   m_perm;
 };
 
-DLLSYMBOL extern const PrimePermutationPair FOUNDATION_ALIGN(16) PrimesFaurePermutations[FaurePermutationTableSize];
+DLLSYMBOL extern const PrimePermutationPair APPLESEED_ALIGN(16) PrimesFaurePermutations[FaurePermutationTableSize];
 
 
 //

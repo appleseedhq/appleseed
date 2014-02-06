@@ -31,7 +31,7 @@
 #define APPLESEED_FOUNDATION_MATH_SCALAR_H
 
 // appleseed.foundation headers.
-#ifdef APPLESEED_FOUNDATION_USE_SSE
+#ifdef APPLESEED_USE_SSE
 #include "foundation/platform/sse.h"
 #endif
 #include "foundation/platform/types.h"
@@ -467,7 +467,7 @@ inline Int truncate(const float x)
     return static_cast<Int>(x);
 }
 
-#ifdef APPLESEED_FOUNDATION_USE_SSE
+#ifdef APPLESEED_USE_SSE
 
 template <>
 inline int8 truncate<int8>(const float x)
@@ -501,7 +501,7 @@ inline Int truncate(const double x)
     return static_cast<Int>(x);
 }
 
-#ifdef APPLESEED_FOUNDATION_USE_SSE
+#ifdef APPLESEED_USE_SSE
 
 template <>
 inline int8 truncate<int8>(const double x)

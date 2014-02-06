@@ -31,7 +31,7 @@
 #include "foundation/math/combination.h"
 #include "foundation/math/fp.h"
 #include "foundation/math/minmax.h"
-#ifdef APPLESEED_FOUNDATION_USE_SSE
+#ifdef APPLESEED_USE_SSE
 #include "foundation/platform/sse.h"
 #endif
 #include "foundation/utility/casts.h"
@@ -89,7 +89,7 @@ TEST_SUITE(Foundation_Math_MinMax)
         EXPECT_EQ(2, minmax_pair(2, 1, 0).second);
     }
 
-#ifdef APPLESEED_FOUNDATION_USE_SSE
+#ifdef APPLESEED_USE_SSE
 
     float ssemin_reference(const float a, const float b)
     {
@@ -157,5 +157,5 @@ TEST_SUITE(Foundation_Math_MinMax)
         EXPECT_EQ(ExpectedPermutationCount, permutation_count);
     }
 
-#endif  // APPLESEED_FOUNDATION_USE_SSE
+#endif  // APPLESEED_USE_SSE
 }

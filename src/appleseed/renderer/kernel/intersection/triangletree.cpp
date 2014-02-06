@@ -703,7 +703,7 @@ void TriangleTree::build_sbvh(
 
 namespace
 {
-#ifdef APPLESEED_FOUNDATION_USE_SSE
+#ifdef APPLESEED_USE_SSE
 
     //
     // If the bounding box is seen as a flat array of scalars, the swizzle()

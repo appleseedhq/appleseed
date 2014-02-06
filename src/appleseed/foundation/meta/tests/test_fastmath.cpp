@@ -30,7 +30,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/fastmath.h"
 #include "foundation/math/scalar.h"
-#ifdef APPLESEED_FOUNDATION_USE_SSE
+#ifdef APPLESEED_USE_SSE
 #include "foundation/platform/sse.h"
 #endif
 #include "foundation/utility/countof.h"
