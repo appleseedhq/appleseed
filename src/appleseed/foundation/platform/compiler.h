@@ -156,6 +156,24 @@ class DLLSYMBOL Compiler
 
 
 //
+// A qualifier to inform the compiler that code is unreachable.
+//
+
+// Visual C++.
+#if defined _MSC_VER
+    #define UNREACHABLE __assume(0)
+
+// gcc.
+#elif defined __GNUC__
+    #define UNREACHABLE __builtin_unreachable()
+
+// Other compilers: assert in debug, ignore in release.
+#else
+    #define UNREACHABLE assert(!"This code was assumed to be unreachable.")
+#endif
+
+
+//
 // Define the OVERRIDE qualifer as a synonym for the 'override' keyword in C++11.
 //
 

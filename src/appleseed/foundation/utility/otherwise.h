@@ -32,6 +32,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
+#include "foundation/platform/compiler.h"
 
 // Standard headers.
 #include <cassert>
@@ -46,9 +47,10 @@ namespace foundation
 //
 
 // Exception thrown by the 'throw_otherwise' macro.
-struct SwitchException
+class SwitchException
   : public Exception
 {
+  public:
     SwitchException(const char* file, const size_t line)
       : Exception("unhandled case in switch statement")
       , m_line(line)
@@ -66,10 +68,11 @@ struct SwitchException
 };
 
 // Call assert() when reaching an unhandled case.
-#if defined NDEBUG && defined _MSC_VER
+#ifdef NDEBUG
     #define assert_otherwise                                    \
         default:                                                \
-           __assume(0)
+          UNREACHABLE;                                          \
+          break
 #else
     #define assert_otherwise                                    \
         default:                                                \
