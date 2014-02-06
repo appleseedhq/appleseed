@@ -1,4 +1,3 @@
-
 //
 // This source file is part of appleseed.
 // Visit http://appleseedhq.net/ for additional information and resources.
@@ -87,7 +86,7 @@ enum ClosureID
 // Composite OSL closure.
 //
 
-class FOUNDATION_ALIGN(16) CompositeClosure 
+class APPLESEED_ALIGN(16) CompositeClosure 
   : public foundation::NonCopyable
 {
   private:
