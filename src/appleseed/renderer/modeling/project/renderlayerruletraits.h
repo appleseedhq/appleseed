@@ -55,9 +55,9 @@ struct EntityTraits<RenderLayerRule>
     typedef RenderLayerRuleContainer ContainerType;
     typedef RenderLayerRuleFactoryRegistrar FactoryRegistrarType;
 
-    static const char* get_entity_type_name()                           { return "render_layer_rule"; }
-    static const char* get_human_readable_entity_type_name()            { return "Render Layer Rule"; }
-    static const char* get_human_readable_collection_type_name()        { return "Render Layer Rules"; }
+    static const char* get_entity_type_name()                           { return "render_layer_assignment"; }
+    static const char* get_human_readable_entity_type_name()            { return "Render Layer Assignment"; }
+    static const char* get_human_readable_collection_type_name()        { return "Render Layer Assignments"; }
 
     template <typename ParentEntity>
     static ContainerType& get_entity_container(ParentEntity& parent)    { return parent.render_layer_rules(); }

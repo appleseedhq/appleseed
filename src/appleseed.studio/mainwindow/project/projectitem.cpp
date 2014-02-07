@@ -50,13 +50,14 @@ namespace studio {
 
 namespace
 {
-    const UniqueID g_class_uid = new_guid();
+    const UniqueID g_project_class_uid = new_guid();
+    const UniqueID g_rules_class_uid = new_guid();
 }
 
 ProjectItem::ProjectItem(
     ProjectBuilder& project_builder,
     ParamArray&     settings)
-  : ItemBase(g_class_uid, "Project")
+  : ItemBase(g_project_class_uid, "Project")
 {
     set_allow_deletion(false);
     set_allow_edition(false);
@@ -66,6 +67,9 @@ ProjectItem::ProjectItem(
     m_scene_item = new SceneItem(*project.get_scene(), project_builder, settings);
     addChild(m_scene_item);
 
+    ItemBase* rules_item = new ItemBase(g_rules_class_uid, "Rules");
+    addChild(rules_item);
+
     m_render_layer_collection_item =
         new MultiModelCollectionItem<RenderLayerRule, Project, ProjectItem>(
             new_guid(),
@@ -74,7 +78,7 @@ ProjectItem::ProjectItem(
             this,
             project_builder);
     m_render_layer_collection_item->add_items(project.render_layer_rules());
-    addChild(m_render_layer_collection_item);
+    rules_item->addChild(m_render_layer_collection_item);
 
     m_output_item = new OutputItem(project, project_builder);
     addChild(m_output_item);
@@ -85,7 +89,6 @@ void ProjectItem::expand()
     setExpanded(true);
 
     m_scene_item->setExpanded(true);
-    m_render_layer_collection_item->setExpanded(true);
     m_output_item->setExpanded(true);
 }
 

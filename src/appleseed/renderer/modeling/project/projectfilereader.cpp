@@ -370,9 +370,9 @@ namespace
         ElementParameter,
         ElementParameters,
         ElementProject,
-        ElementRenderLayerRule,
-        ElementRenderLayers,
+        ElementRenderLayerAssignment,
         ElementRotation,
+        ElementRules,
         ElementScaling,
         ElementScene,
         ElementSearchPath,
@@ -2161,35 +2161,35 @@ namespace
 
 
     //
-    // <render_layer_rule> element handler.
+    // <render_layer_assignment> element handler.
     //
 
-    class RenderLayerRuleElementHandler
+    class RenderLayerAssignmentElementHandler
       : public EntityElementHandler<
                    RenderLayerRule,
                    RenderLayerRuleFactoryRegistrar,
                    ParametrizedElementHandler>
     {
       public:
-        explicit RenderLayerRuleElementHandler(ParseContext& context)
+        explicit RenderLayerAssignmentElementHandler(ParseContext& context)
           : EntityElementHandler<
                 RenderLayerRule,
                 RenderLayerRuleFactoryRegistrar,
-                ParametrizedElementHandler>("render layer rule", context)
+                ParametrizedElementHandler>("render layer assignment rule", context)
         {
         }
     };
 
 
     //
-    // <render_layers> element handler.
+    // <rules> element handler.
     //
 
-    class RenderLayersElementHandler
+    class RulesElementHandler
       : public ElementHandlerBase
     {
       public:
-        explicit RenderLayersElementHandler(ParseContext& context)
+        explicit RulesElementHandler(ParseContext& context)
           : m_context(context)
           , m_project(0)
         {
@@ -2208,11 +2208,11 @@ namespace
 
             switch (element)
             {
-              case ElementRenderLayerRule:
+              case ElementRenderLayerAssignment:
                 {
-                    RenderLayerRuleElementHandler* rule_handler =
-                        static_cast<RenderLayerRuleElementHandler*>(handler);
-                    m_project->add_render_layer_rule(rule_handler->get_entity());
+                    RenderLayerAssignmentElementHandler* assignment_handler =
+                        static_cast<RenderLayerAssignmentElementHandler*>(handler);
+                    m_project->add_render_layer_rule(assignment_handler->get_entity());
                 }
                 break;
 
@@ -2578,11 +2578,11 @@ namespace
                 }
                 break;
 
-              case ElementRenderLayers:
+              case ElementRules:
                 {
-                    RenderLayersElementHandler* render_layers_handler =
-                        static_cast<RenderLayersElementHandler*>(handler);
-                    render_layers_handler->set_project(m_project);
+                    RulesElementHandler* rules_handler =
+                        static_cast<RulesElementHandler*>(handler);
+                    rules_handler->set_project(m_project);
                 }
                 break;
 
@@ -2617,8 +2617,8 @@ namespace
                 // Nothing to do, frames were directly inserted into the project.
                 break;
 
-              case ElementRenderLayers:
-                // Nothing to do, render layer rules were directly inserted into the project.
+              case ElementRules:
+                // Nothing to do, rules were directly inserted into the project.
                 break;
 
               case ElementScene:
@@ -2679,9 +2679,9 @@ namespace
             register_factory_helper<OutputElementHandler>("output", ElementOutput);
             register_factory_helper<ParameterElementHandler>("parameter", ElementParameter);
             register_factory_helper<ParametersElementHandler>("parameters", ElementParameters);
-            register_factory_helper<RenderLayerRuleElementHandler>("render_layer_rule", ElementRenderLayerRule);
-            register_factory_helper<RenderLayersElementHandler>("render_layers", ElementRenderLayers);
+            register_factory_helper<RenderLayerAssignmentElementHandler>("render_layer_assignment", ElementRenderLayerAssignment);
             register_factory_helper<RotationElementHandler>("rotation", ElementRotation);
+            register_factory_helper<RulesElementHandler>("rules", ElementRules);
             register_factory_helper<ScalingElementHandler>("scaling", ElementScaling);
             register_factory_helper<SceneElementHandler>("scene", ElementScene);
             register_factory_helper<SearchPathElementHandler>("search_path", ElementSearchPath);

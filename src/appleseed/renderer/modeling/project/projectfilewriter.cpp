@@ -769,27 +769,27 @@ namespace
             if (project.get_scene())
                 write_scene(*project.get_scene());
 
-            write_render_layers(project);
+            write_rules(project);
             write_output(project);
             write_configurations(project);
         }
 
-        // Write a <render_layers> element.
-        void write_render_layers(const Project& project)
+        // Write a <rules> element.
+        void write_rules(const Project& project)
         {
             if (!project.render_layer_rules().empty())
             {
-                XMLElement element("render_layers", m_file, m_indenter);
+                XMLElement element("rules", m_file, m_indenter);
                 element.write(true);
 
                 write_collection(project.render_layer_rules());
             }
         }
 
-        // Write a <render_layer_rule> element.
+        // Write an <render_layer_assignment> element.
         void write(const RenderLayerRule& rule)
         {
-            write_entity("render_layer_rule", rule);
+            write_entity("render_layer_assignment", rule);
         }
 
         // Write a <scene> element.
