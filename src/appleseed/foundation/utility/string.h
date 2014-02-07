@@ -90,6 +90,8 @@ std::string to_string(
 // Convert a string to a value.
 template <typename T>
 T from_string(const std::string& s);
+template <typename T>
+T from_string(const char* s);
 
 
 //
@@ -400,6 +402,12 @@ std::string to_string(
 template <typename T>
 T from_string(const std::string& s)
 {
+    return from_string<T>(s.c_str());
+}
+
+template <typename T>
+T from_string(const char* s)
+{
     std::stringstream sstr;
     sstr << s;
 
@@ -413,13 +421,13 @@ T from_string(const std::string& s)
 }
 
 template <>
-inline std::string from_string(const std::string& s)
+inline std::string from_string(const char* s)
 {
     return s;
 }
 
 template <>
-inline bool from_string(const std::string& s)
+inline bool from_string(const char* s)
 {
     const std::string t = lower_case(s);
 
@@ -431,7 +439,7 @@ inline bool from_string(const std::string& s)
 }
 
 template <>
-inline int8 from_string(const std::string& s)
+inline int8 from_string(const char* s)
 {
     std::stringstream sstr;
     sstr << s;
@@ -446,7 +454,7 @@ inline int8 from_string(const std::string& s)
 }
 
 template <>
-inline uint8 from_string(const std::string& s)
+inline uint8 from_string(const char* s)
 {
     std::stringstream sstr;
     sstr << s;

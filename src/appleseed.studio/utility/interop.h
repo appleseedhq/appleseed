@@ -43,7 +43,6 @@
 #include <algorithm>
 #include <cstddef>
 #include <iostream>
-#include <string>
 
 namespace appleseed {
 namespace studio {
@@ -143,7 +142,7 @@ namespace foundation
 {
 
 template <>
-inline QString from_string(const std::string& s)
+inline QString from_string(const char* s)
 {
     return QString::fromStdString(s);
 }
