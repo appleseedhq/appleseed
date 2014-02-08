@@ -68,7 +68,7 @@ asf::auto_release_ptr<asr::Project> build_project()
 {
     // Create an empty project.
     asf::auto_release_ptr<asr::Project> project(asr::ProjectFactory::create("test project"));
-    project->get_search_paths().push_back("data");
+    project->search_paths().push_back("data");
 
     // Add default configurations to the project.
     project->add_default_configurations();
@@ -129,7 +129,7 @@ asf::auto_release_ptr<asr::Project> build_project()
     // Load the scene geometry from disk.
     asr::MeshObjectArray objects;
     asr::MeshObjectReader::read(
-        project->get_search_paths(),
+        project->search_paths(),
         "cube",
         asr::ParamArray()
             .insert("filename", "scene.obj"),
