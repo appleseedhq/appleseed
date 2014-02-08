@@ -73,8 +73,8 @@ asf::auto_release_ptr<asr::Project> build_project()
     // Add default configurations to the project.
     project->add_default_configurations();
 
-    // Set the number of samples. This is basically the quality parameter: the higher the number
-    // of samples, the smoother the image but the longer the rendering time.
+    // Set the number of samples. This is the main quality parameter: the higher the
+    // number of samples, the smoother the image but the longer the rendering time.
     project->configurations()
         .get_by_name("final")->get_parameters()
             .insert_path("uniform_pixel_renderer.samples", "25");
