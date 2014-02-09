@@ -57,9 +57,10 @@ class DLLSYMBOL ShaderGroup
   : public Entity
 {
   public:
+    // Delete this instance.
     virtual void release() OVERRIDE;
 
-    // Return a string identifying the model of this shadergroup.
+    // Return a string identifying the model of this shader group.
     const char* get_model() const;
 
     // Adds a new shader to the group.
@@ -77,8 +78,11 @@ class DLLSYMBOL ShaderGroup
     void add_string_parameter(const char* name, const char* value);
 
     // Adds a connection between two parameters of two shaders.
-    void add_connection(const char* src_layer, const char* src_param,
-                        const char* dst_layer, const char* dst_param);
+    void add_connection(
+        const char*         src_layer,
+        const char*         src_param,
+        const char*         dst_layer,
+        const char*         dst_param);
 
   private:
     friend class ShaderGroupFactory;
@@ -88,12 +92,13 @@ class DLLSYMBOL ShaderGroup
 
     // Constructor.
     ShaderGroup(
-        const char*             name,
-        const ParamArray&       params);
+        const char*         name,
+        const ParamArray&   params);
 
-    // Destructor
+    // Destructor.
     ~ShaderGroup();
 };
+
 
 //
 // ShaderGroup factory.

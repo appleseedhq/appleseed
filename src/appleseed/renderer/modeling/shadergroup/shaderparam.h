@@ -47,22 +47,19 @@
 #include <OSL/oslexec.h>
 
 // Forward declarations.
-namespace renderer { class Shader; }
+namespace renderer  { class Shader; }
 
 namespace renderer
 {
 
 //
-// OSL ShaderParam.
+// A parameter in an OSL shader.
 //
 
 class DLLSYMBOL ShaderParam
   : public Entity
 {
   public:
-    // Destructor
-    ~ShaderParam();
-
     // Delete this instance.
     virtual void release() OVERRIDE;
 
@@ -78,10 +75,13 @@ class DLLSYMBOL ShaderParam
     // Constructor.
     explicit ShaderParam(const char *name);
 
+    // Destructor.
+    ~ShaderParam();
+
     // Create an int param.
     static foundation::auto_release_ptr<ShaderParam> create_int_param(
         const char* name, 
-        const int value);
+        const int   value);
 
     // Create a float param.
     static foundation::auto_release_ptr<ShaderParam> create_float_param(

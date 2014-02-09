@@ -29,14 +29,17 @@
 // Interface header.
 #include "shaderconnection.h"
 
+// appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
+
 // appleseed.foundation headers.
 #include "foundation/utility/uid.h"
 
 // Standard headers.
 #include <string>
 
-using namespace std;
 using namespace foundation;
+using namespace std;
 
 namespace renderer
 {
@@ -63,8 +66,8 @@ ShaderConnection::ShaderConnection(
     const char* src_param,
     const char* dst_layer,
     const char* dst_param)
-      : Entity(g_class_uid, ParamArray())
-      , impl(new Impl)
+  : Entity(g_class_uid, ParamArray())
+  , impl(new Impl)
 {
     impl->m_src_layer = src_layer;
     impl->m_src_param = src_param;
@@ -73,6 +76,7 @@ ShaderConnection::ShaderConnection(
 
     const string entity_name = 
         string(get_src_layer()) + ":" + get_src_param() + "->" + get_dst_layer() + ":" + get_dst_param();
+
     set_name(entity_name.c_str());
 }
 
@@ -115,7 +119,7 @@ bool ShaderConnection::add(OSL::ShadingSystem& shading_system)
             get_dst_param()))
     {
         RENDERER_LOG_ERROR(
-            "error connecting shaders %s::%s -> %s::%s", 
+            "error connecting shaders %s::%s -> %s::%s.",
             get_src_layer(),
             get_src_param(),
             get_dst_layer(),

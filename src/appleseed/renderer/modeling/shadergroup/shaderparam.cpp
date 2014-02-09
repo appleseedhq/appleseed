@@ -34,11 +34,11 @@
 #include "foundation/utility/uid.h"
 
 // Standard headers.
+#include <cassert>
 #include <sstream>
-#include <string>
 
-using namespace std;
 using namespace foundation;
+using namespace std;
 
 namespace renderer
 {
@@ -95,7 +95,7 @@ const void* ShaderParam::get_value() const
     if (impl->m_type_desc == OSL::TypeDesc::TypeString)
         return &impl->m_string_value;
 
-    assert(false);
+    assert(!"Invalid parameter type.");
     return 0;
 }
 
@@ -118,14 +118,14 @@ string ShaderParam::get_value_as_string() const
     else if (impl->m_type_desc == OSL::TypeDesc::TypeString)
         ss << "string " << impl->m_string_value;
     else
-        assert(false);
+        assert(!"Invalid parameter type.");
 
     return ss.str();
 }
 
 auto_release_ptr<ShaderParam> ShaderParam::create_int_param(
     const char* name, 
-    const int value)
+    const int   value)
 {
     auto_release_ptr<ShaderParam> p(new ShaderParam(name));
     p->impl->m_type_desc = OSL::TypeDesc::TypeInt;
@@ -214,11 +214,11 @@ bool ShaderParam::add(OSL::ShadingSystem& shading_system)
 {
     if (!shading_system.Parameter(get_name(), impl->m_type_desc, get_value()))
     {
-        RENDERER_LOG_ERROR("error adding parameter %s", get_name());
+        RENDERER_LOG_ERROR("error adding parameter %s.", get_name());
         return false;
     }
 
-    RENDERER_LOG_INFO("added parameter %s", get_name());
+    RENDERER_LOG_INFO("added parameter %s.", get_name());
     return true;
 }
 

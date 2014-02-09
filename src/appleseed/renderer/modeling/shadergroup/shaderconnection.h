@@ -42,7 +42,7 @@
 #include <OSL/oslexec.h>
 
 // Forward declarations.
-namespace renderer { class ShaderGroup; }
+namespace renderer  { class ShaderGroup; }
 
 namespace renderer
 {
@@ -55,9 +55,6 @@ class DLLSYMBOL ShaderConnection
   : public Entity
 {
   public:
-    // Destructor
-    ~ShaderConnection();
-    
     // Delete this instance.
     virtual void release() OVERRIDE;
 
@@ -85,6 +82,9 @@ class DLLSYMBOL ShaderConnection
         const char* src_param,
         const char* dst_layer,
         const char* dst_param);
+
+    // Destructor.
+    ~ShaderConnection();
 
     // Add this connection to OSL's shading system.
     bool add(OSL::ShadingSystem& shading_system);

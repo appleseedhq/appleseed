@@ -35,19 +35,22 @@
 #include <boost/range/algorithm/for_each.hpp>
 
 // Standard headers.
+#include <cassert>
 #include <cstring>
 #include <string>
 #include <vector>
 
 using namespace foundation;
+using namespace std;
 
 namespace renderer
 {
 
 namespace
 {
-    struct Parameter
+    class Parameter
     {
+      public:
         static Parameter int_parameter(const char* name, int value)
         {
             Parameter p;
@@ -145,88 +148,77 @@ namespace
                 return const_cast<char*>(m_string_value.c_str());
             }
 
-            assert(false);
-            return 0; // for dumb compilers.
+            assert(!"Invalid parameter type.");
+            return 0;
         }
 
-        std::string m_name;
-        OSL::TypeDesc m_type_desc;
-        int m_int_value;
-        float m_float_value[3];
-        std::string m_string_value;
+        string              m_name;
+        OSL::TypeDesc       m_type_desc;
+        int                 m_int_value;
+        float               m_float_value[3];
+        string              m_string_value;
 
-        private:
-            Parameter() {}
+      private:
+        Parameter() {}
     };
 
     struct Shader
     {
-        Shader(const char* type, const char* name,
-                const char* layer, std::vector<Parameter>& params) : m_type(type),
-                                                                    m_name(name),
-                                                                    m_layer(layer),
-                                                                    m_params()
+        vector<Parameter>       m_params;
+        const string            m_type;
+        const string            m_name;
+        const string            m_layer;
+
+        Shader(
+            const char*         type,
+            const char*         name,
+            const char*         layer,
+            vector<Parameter>&  params)
+          : m_type(type)
+          , m_name(name)
+          , m_layer(layer)
+          , m_params()
         {
             m_params.swap(params);
         }
 
         void add(OSL::ShadingSystem& shading_system)
         {
-            boost::range::for_each(m_params, boost::bind( &Parameter::add, _1, boost::ref(shading_system)));
+            boost::range::for_each(m_params, boost::bind(&Parameter::add, _1, boost::ref(shading_system)));
             shading_system.Shader(m_type.c_str(), m_name.c_str(), m_layer.c_str());
         }
-
-        std::vector<Parameter> m_params;
-        std::string m_type;
-        std::string m_name;
-        std::string m_layer;
     };
 
     struct Connection
     {
-        Connection(const char* src_layer, const char* src_param,
-                    const char* dst_layer, const char* dst_param) : m_src_layer(src_layer),
-                                                                    m_src_param(src_param),
-                                                                    m_dst_layer(dst_layer),
-                                                                    m_dst_param(dst_param)
+        const string    m_src_layer;
+        const string    m_src_param;
+        const string    m_dst_layer;
+        const string    m_dst_param;
+
+        Connection(
+            const char* src_layer,
+            const char* src_param,
+            const char* dst_layer,
+            const char* dst_param)
+          : m_src_layer(src_layer)
+          , m_src_param(src_param)
+          , m_dst_layer(dst_layer)
+          , m_dst_param(dst_param)
         {
         }
 
         void add(OSL::ShadingSystem& shading_system)
         {
-            shading_system.ConnectShaders( m_src_layer.c_str(), m_src_param.c_str(),
-                                            m_dst_layer.c_str(), m_dst_param.c_str());
+            shading_system.ConnectShaders(
+                m_src_layer.c_str(),
+                m_src_param.c_str(),
+                m_dst_layer.c_str(),
+                m_dst_param.c_str());
         }
-
-        std::string m_src_layer;
-        std::string m_src_param;
-        std::string m_dst_layer;
-        std::string m_dst_param;
     };
-} // unnamed
+}
 
-struct ShaderGroup::Impl
-{
-    Impl() {}
-
-    void clear()
-    {
-        m_params_to_assign.clear();
-        m_shaders.clear();
-        m_connections.clear();
-    }
-
-    void add_shader(const char* type, const char* name, const char* layer)
-    {
-        m_shaders.push_back(Shader(type, name, layer, m_params_to_assign));
-
-        assert(m_params_to_assign.empty());
-    }
-
-    std::vector<Parameter> m_params_to_assign;
-    std::vector<Shader> m_shaders;
-    std::vector<Connection> m_connections;
-};
 
 //
 // ShaderGroup class implementation.
@@ -236,6 +228,27 @@ namespace
 {
     const UniqueID g_class_uid = new_guid();
 }
+
+struct ShaderGroup::Impl
+{
+    void clear()
+    {
+        m_params_to_assign.clear();
+        m_shaders.clear();
+        m_connections.clear();
+    }
+
+    void add_shader(const char* type, const char* name, const char* layer)
+    {
+        assert(m_params_to_assign.empty());
+
+        m_shaders.push_back(Shader(type, name, layer, m_params_to_assign));
+    }
+
+    vector<Parameter>   m_params_to_assign;
+    vector<Shader>      m_shaders;
+    vector<Connection>  m_connections;
+};
 
 ShaderGroup::ShaderGroup(
     const char*         name,
@@ -301,11 +314,15 @@ void ShaderGroup::add_shader(const char* name, const char* layer)
     add_shader("surface", name, layer);
 }
 
-void ShaderGroup::add_connection(const char* src_layer, const char* src_param,
-                                const char* dst_layer, const char* dst_param)
+void ShaderGroup::add_connection(
+    const char*         src_layer,
+    const char*         src_param,
+    const char*         dst_layer,
+    const char*         dst_param)
 {
     impl->m_connections.push_back(Connection(src_layer, src_param, dst_layer, dst_param));
 }
+
 
 //
 // ShaderGroupFactory class implementation.
@@ -317,10 +334,10 @@ const char* ShaderGroupFactory::get_model()
 }
 
 auto_release_ptr<ShaderGroup> ShaderGroupFactory::create(
-        const char*         name,
-        const ParamArray&   params)
+    const char*         name,
+    const ParamArray&   params)
 {
-    return auto_release_ptr<ShaderGroup>(new ShaderGroup(name,params));
+    return auto_release_ptr<ShaderGroup>(new ShaderGroup(name, params));
 }
 
 }   // namespace renderer
