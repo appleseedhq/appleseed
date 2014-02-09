@@ -41,6 +41,7 @@
 
 // Standard headers.
 #include <cstddef>
+#include <string>
 
 // OSL headers.
 #include <OSL/oslexec.h>
@@ -65,10 +66,14 @@ class DLLSYMBOL ShaderParam
     // Delete this instance.
     virtual void release() OVERRIDE;
 
+    // Fix me: std classes cannot be used in dllexported classes. (est.)
     std::string get_value_as_string() const;
 
   private:
     friend class Shader;
+
+    struct Impl;
+    Impl *impl;
 
     // Constructor.
     explicit ShaderParam(const char *name);
@@ -76,40 +81,40 @@ class DLLSYMBOL ShaderParam
     // Create an int param.
     static foundation::auto_release_ptr<ShaderParam> create_int_param(
         const char* name, 
-        int value);
+        const int value);
 
     // Create a float param.
     static foundation::auto_release_ptr<ShaderParam> create_float_param(
         const char* name,
-        float value);
+        const float value);
 
     // Create a vector param.
     static foundation::auto_release_ptr<ShaderParam> create_vector_param(
         const char* name,
-        float vx,
-        float vy,
-        float vz);
+        const float vx,
+        const float vy,
+        const float vz);
 
     // Create a normal param.
     static foundation::auto_release_ptr<ShaderParam> create_normal_param(
         const char* name,
-        float nx,
-        float ny,
-        float nz);
+        const float nx,
+        const float ny,
+        const float nz);
 
     // Create a point param.
     static foundation::auto_release_ptr<ShaderParam> create_point_param(
         const char* name,
-        float vx,
-        float vy,
-        float vz);
+        const float vx,
+        const float vy,
+        const float vz);
 
     // Create a color param.
     static foundation::auto_release_ptr<ShaderParam> create_color_param(
         const char* name,
-        float vx,
-        float vy,
-        float vz);
+        const float vx,
+        const float vy,
+        const float vz);
 
     // Create a string param.
     static foundation::auto_release_ptr<ShaderParam> create_string_param(
@@ -121,9 +126,6 @@ class DLLSYMBOL ShaderParam
 
     // Add this param to OSL's shading system.
     bool add(OSL::ShadingSystem& shading_system);
-
-    struct Impl;
-    Impl *impl;
 };
 
 }       // namespace renderer

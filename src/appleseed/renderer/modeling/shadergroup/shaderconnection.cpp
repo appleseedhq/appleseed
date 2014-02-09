@@ -29,6 +29,12 @@
 // Interface header.
 #include "shaderconnection.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/uid.h"
+
+// Standard headers.
+#include <string>
+
 using namespace std;
 using namespace foundation;
 
@@ -46,10 +52,10 @@ namespace
 
 struct ShaderConnection::Impl
 {
-    std::string m_src_layer;
-    std::string m_src_param;
-    std::string m_dst_layer;
-    std::string m_dst_param;
+    string m_src_layer;
+    string m_src_param;
+    string m_dst_layer;
+    string m_dst_param;
 };
 
 ShaderConnection::ShaderConnection(
@@ -57,16 +63,15 @@ ShaderConnection::ShaderConnection(
     const char* src_param,
     const char* dst_layer,
     const char* dst_param)
-    : Entity(g_class_uid, ParamArray())
-    , impl(new Impl)
-
+      : Entity(g_class_uid, ParamArray())
+      , impl(new Impl)
 {
     impl->m_src_layer = src_layer;
     impl->m_src_param = src_param;
     impl->m_dst_layer = dst_layer;
     impl->m_dst_param = dst_param;
 
-    string entity_name = 
+    const string entity_name = 
         string(get_src_layer()) + ":" + get_src_param() + "->" + get_dst_layer() + ":" + get_dst_param();
     set_name(entity_name.c_str());
 }

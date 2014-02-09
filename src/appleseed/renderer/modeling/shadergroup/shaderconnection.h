@@ -76,6 +76,9 @@ class DLLSYMBOL ShaderConnection
   private:
     friend class ShaderGroup;
 
+    struct Impl;
+    Impl* impl;
+
     // Constructor.
     ShaderConnection(
         const char* src_layer,
@@ -85,9 +88,6 @@ class DLLSYMBOL ShaderConnection
 
     // Add this connection to OSL's shading system.
     bool add(OSL::ShadingSystem& shading_system);
-
-    struct Impl;
-    Impl* impl;
 };
 
 }       // namespace renderer

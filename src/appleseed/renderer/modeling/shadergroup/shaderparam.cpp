@@ -29,8 +29,13 @@
 // Interface header.
 #include "shaderparam.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/otherwise.h"
+#include "foundation/utility/uid.h"
+
 // Standard headers.
 #include <sstream>
+#include <string>
 
 using namespace std;
 using namespace foundation;
@@ -52,13 +57,13 @@ struct ShaderParam::Impl
     OSL::TypeDesc   m_type_desc;
     int             m_int_value;
     float           m_float_value[3];
-    std::string     m_string_storage;
+    string          m_string_storage;
     const char*     m_string_value;
 };
 
 ShaderParam::ShaderParam(const char* name)
-    : Entity(g_class_uid, ParamArray())
-    , impl(new Impl)
+  : Entity(g_class_uid)
+  , impl(new Impl)
 {
     set_name(name);
 }
@@ -120,7 +125,7 @@ string ShaderParam::get_value_as_string() const
 
 auto_release_ptr<ShaderParam> ShaderParam::create_int_param(
     const char* name, 
-    int value)
+    const int value)
 {
     auto_release_ptr<ShaderParam> p(new ShaderParam(name));
     p->impl->m_type_desc = OSL::TypeDesc::TypeInt;
@@ -130,7 +135,7 @@ auto_release_ptr<ShaderParam> ShaderParam::create_int_param(
 
 auto_release_ptr<ShaderParam> ShaderParam::create_float_param(
     const char* name,
-    float value)
+    const float value)
 {
     auto_release_ptr<ShaderParam> p(new ShaderParam(name));
     p->impl->m_type_desc = OSL::TypeDesc::TypeFloat;
@@ -140,9 +145,9 @@ auto_release_ptr<ShaderParam> ShaderParam::create_float_param(
 
 auto_release_ptr<ShaderParam> ShaderParam::create_vector_param(
     const char* name, 
-    float vx, 
-    float vy, 
-    float vz)
+    const float vx, 
+    const float vy, 
+    const float vz)
 {
     auto_release_ptr<ShaderParam> p(new ShaderParam(name));
     p->impl->m_type_desc = OSL::TypeDesc::TypeVector;
@@ -154,9 +159,9 @@ auto_release_ptr<ShaderParam> ShaderParam::create_vector_param(
 
 auto_release_ptr<ShaderParam> ShaderParam::create_normal_param(
     const char* name, 
-    float nx, 
-    float ny, 
-    float nz)
+    const float nx, 
+    const float ny, 
+    const float nz)
 {
     auto_release_ptr<ShaderParam> p(new ShaderParam(name));
     p->impl->m_type_desc = OSL::TypeDesc::TypeNormal;
@@ -168,9 +173,9 @@ auto_release_ptr<ShaderParam> ShaderParam::create_normal_param(
 
 auto_release_ptr<ShaderParam> ShaderParam::create_point_param(
     const char* name, 
-    float vx, 
-    float vy, 
-    float vz)
+    const float vx, 
+    const float vy, 
+    const float vz)
 {
     auto_release_ptr<ShaderParam> p(new ShaderParam(name));
     p->impl->m_type_desc = OSL::TypeDesc::TypePoint;
@@ -182,9 +187,9 @@ auto_release_ptr<ShaderParam> ShaderParam::create_point_param(
 
 auto_release_ptr<ShaderParam> ShaderParam::create_color_param(
     const char* name, 
-    float vx, 
-    float vy, 
-    float vz)
+    const float vx, 
+    const float vy, 
+    const float vz)
 {
     auto_release_ptr<ShaderParam> p(new ShaderParam(name));
     p->impl->m_type_desc = OSL::TypeDesc::TypeColor;
