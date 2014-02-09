@@ -1535,8 +1535,12 @@ source_group ("renderer\\modeling\\texture" FILES
 
 if (WITH_OSL)
     set (renderer_modeling_shadergroup
+        renderer/modeling/shadergroup/shaderconnection.cpp
+        renderer/modeling/shadergroup/shaderconnection.h
         renderer/modeling/shadergroup/shadergroup.cpp
         renderer/modeling/shadergroup/shadergroup.h
+        renderer/modeling/shadergroup/shaderparam.cpp
+        renderer/modeling/shadergroup/shaderparam.h
     )
     list (APPEND appleseed_sources
         ${renderer_modeling_shadergroup}
