@@ -8,9 +8,12 @@ appleseed is available under the [MIT license](http://opensource.org/licenses/MI
 
 More information at http://appleseedhq.net/.
 
-### Build Instructions
+### Documentation
 
-Detailed build instructions are available in the [wiki](https://github.com/appleseedhq/appleseed/wiki).
+Check out our [detailed build instructions](https://github.com/appleseedhq/appleseed/wiki/Building-appleseed) to build appleseed from source.
+
+More developer documentation can be found in the [wiki](https://github.com/appleseedhq/appleseed/wiki).
+
 
 ### On The Web
 
