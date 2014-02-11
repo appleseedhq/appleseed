@@ -15,7 +15,7 @@ Check out our [detailed build instructions](https://github.com/appleseedhq/apple
 More developer documentation can be found in the [wiki](https://github.com/appleseedhq/appleseed/wiki).
 
 
-### On The Web
+### On the Web
 
 * [appleseed Website](http://appleseedhq.net/)
 * [appleseed-dev Google Group](http://groups.google.com/group/appleseed-dev)
