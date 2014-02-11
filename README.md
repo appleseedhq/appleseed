@@ -23,3 +23,11 @@ More developer documentation can be found in the [wiki](https://github.com/apple
 * [appleseed on Vimeo](https://vimeo.com/appleseedhq)
 * [appleseed on Ohloh](https://www.ohloh.net/p/appleseedhq)
 * [appleseed on Woboq](http://code.woboq.org/appleseed/appleseed/)
+
+### Sample Works
+
+##### Light And Dark (BBC 4)
+![https://vimeo.com/81199785](https://raw.github.com/appleseedhq/appleseed-wiki/master/images/light-and-dark.png)
+
+##### Fetch (2013 Preview)
+![https://vimeo.com/66799467](https://raw.github.com/appleseedhq/appleseed-wiki/master/images/fetch.png)
