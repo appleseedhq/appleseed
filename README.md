@@ -1,14 +1,18 @@
-appleseed
-=========
+![logo](resources/logo/appleseed-logo-gray-256.png)
 
-appleseed is a modern, physically-based production renderer developed by visual effects professionals. It is released as open source under the [MIT license](http://opensource.org/licenses/MIT).
+### About
 
-Build instructions and documentation are available in the wiki:<br/>
-https://github.com/appleseedhq/appleseed/wiki
+appleseed is a modern, physically-based open source final frame renderer. Started in 2009, it has grown into a robust production rendering toolset and has been battle-tested on several projects such as TV documentaries, ads, promotional videos and animation shorts. appleseed is the successor to toxic, an early open source global illumination renderer first released in 2003.
+
+appleseed is available under the [MIT license](http://opensource.org/licenses/MIT).
 
 More information at http://appleseedhq.net/.
 
-### External Links
+### Build Instructions
+
+Detailed build instructions are available in the [wiki](https://github.com/appleseedhq/appleseed/wiki).
+
+### On The Web
 
 * [appleseed Website](http://appleseedhq.net/)
 * [appleseed-dev Google Group](http://groups.google.com/group/appleseed-dev)
