@@ -64,6 +64,7 @@ class SHAREDDLL CommandLineHandlerBase
     void add_help_option();
     void add_version_option();
     void add_system_option();
+    void add_message_verbosity_option();
     void add_message_coloring_option();
     void add_display_options_option();
 

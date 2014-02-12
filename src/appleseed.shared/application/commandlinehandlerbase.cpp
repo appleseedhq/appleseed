@@ -56,13 +56,14 @@ namespace shared {
 
 struct CommandLineHandlerBase::Impl
 {
-    const string        m_application_name;
-    CommandLineParser   m_parser;
-    FlagOptionHandler   m_help;
-    FlagOptionHandler   m_version;
-    FlagOptionHandler   m_system;
-    FlagOptionHandler   m_message_coloring;
-    FlagOptionHandler   m_display_options;
+    const string                m_application_name;
+    CommandLineParser           m_parser;
+    FlagOptionHandler           m_help;
+    FlagOptionHandler           m_version;
+    FlagOptionHandler           m_system;
+    ValueOptionHandler<string>  m_message_verbosity;
+    FlagOptionHandler           m_message_coloring;
+    FlagOptionHandler           m_display_options;
 
     explicit Impl(const char* application_name)
       : m_application_name(application_name)
@@ -80,6 +81,7 @@ void CommandLineHandlerBase::add_default_options()
     add_help_option();
     add_version_option();
     add_system_option();
+    add_message_verbosity_option();
     add_message_coloring_option();
     add_display_options_option();
 }
@@ -107,6 +109,15 @@ void CommandLineHandlerBase::add_system_option()
     impl->m_parser.add_option_handler(&impl->m_system);
 }
 
+void CommandLineHandlerBase::add_message_verbosity_option()
+{
+    impl->m_message_verbosity.add_name("--message-verbosity");
+    impl->m_message_verbosity.set_description("set message verbosity");
+    impl->m_message_verbosity.set_syntax("level");
+    impl->m_message_verbosity.set_exact_value_count(1);
+    impl->m_parser.add_option_handler(&impl->m_message_verbosity);
+}
+
 void CommandLineHandlerBase::add_message_coloring_option()
 {
     impl->m_message_coloring.add_name("--message-coloring");
@@ -126,6 +137,32 @@ CommandLineHandlerBase::~CommandLineHandlerBase()
     delete impl;
 }
 
+namespace
+{
+    void set_verbosity(Logger& logger, const string level)
+    {
+        logger.set_all_formats(string());
+
+        switch (LogMessage::get_category_value(level.c_str()))
+        {
+          case LogMessage::Debug:   logger.reset_format(LogMessage::Debug);     // pass through
+          case LogMessage::Info:    logger.reset_format(LogMessage::Info);      // pass through
+          case LogMessage::Warning: logger.reset_format(LogMessage::Warning);   // pass through
+          case LogMessage::Error:   logger.reset_format(LogMessage::Error);     // pass through
+          case LogMessage::Fatal:   logger.reset_format(LogMessage::Fatal);     // pass through
+            break;
+
+          default:
+            logger.reset_all_formats();
+            LOG_ERROR(
+                logger,
+                "invalid message verbosity level \"%s\", using default message verbosity settings.",
+                level.c_str());
+            break;
+        }
+    }
+}
+
 void CommandLineHandlerBase::parse(
     const int       argc,
     const char*     argv[],
@@ -135,6 +172,9 @@ void CommandLineHandlerBase::parse(
 
     if (impl->m_message_coloring.is_set())
         logger.enable_message_coloring();
+
+    if (impl->m_message_verbosity.is_set())
+        set_verbosity(logger, impl->m_message_verbosity.values()[0]);
 
     if (impl->m_version.is_set())
         print_version_information(logger);

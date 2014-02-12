@@ -32,6 +32,9 @@
 
 // Standard headers.
 #include <cassert>
+#include <cstring>
+
+using namespace std;
 
 namespace foundation
 {
@@ -39,6 +42,26 @@ namespace foundation
 //
 // LogMessage class implementation.
 //
+
+LogMessage::Category LogMessage::get_category_value(const char* name)
+{
+    if (strcmp(name, "info") == 0)
+        return Info;
+
+    if (strcmp(name, "debug") == 0)
+        return Debug;
+
+    if (strcmp(name, "warning") == 0)
+        return Warning;
+
+    if (strcmp(name, "error") == 0)
+        return Error;
+
+    if (strcmp(name, "fatal") == 0)
+        return Fatal;
+
+    return NumMessageCategories;
+}
 
 const char* LogMessage::get_category_name(const Category c)
 {

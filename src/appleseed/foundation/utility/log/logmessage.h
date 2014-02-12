@@ -54,6 +54,21 @@ class DLLSYMBOL LogMessage
         NumMessageCategories        // number of message categories (keep at the end)
     };
 
+    //
+    // Return the category matching a given name:
+    //
+    //   Name       Value
+    //   ------------------
+    //   "info"     Info
+    //   "debug"    Debug
+    //   "warning"  Warning
+    //   "error"    Error
+    //   "fatal"    Fatal
+    //   Otherwise  NumMessageCategories
+    //
+
+    static Category get_category_value(const char* name);
+
     // Return a string identifying a given message category.
     static const char* get_category_name(const Category c);
 

@@ -109,6 +109,23 @@ namespace
             g_settings);
     }
 
+    void apply_settings()
+    {
+        if (g_settings.get_optional<bool>("message_coloring", false))
+            g_logger.enable_message_coloring();
+    }
+
+    void configure_renderer_logger()
+    {
+        global_logger().add_target(&g_logger.get_log_target());
+
+        for (size_t i = 0; i < LogMessage::NumMessageCategories; ++i)
+        {
+            const LogMessage::Category category = static_cast<LogMessage::Category>(i);
+            global_logger().set_format(category, g_logger.get_format(category));
+        }
+    }
+
     template <typename Result>
     void print_suite_case_result(const Result& result)
     {
@@ -786,15 +803,15 @@ int main(int argc, const char* argv[])
 
     Application::check_installation(g_logger);
 
+    // Load and apply settings from the settings file.
+    load_settings();
+    apply_settings();
+
+    // Parse the command line.
     g_cl.parse(argc, argv, g_logger);
 
-    // Read the application's settings from disk.
-    load_settings();
-    if (g_settings.get_optional<bool>("message_coloring", false))
-        g_logger.enable_message_coloring();
-
-    // Now that the log target is fully configured, bind it to the renderer's logger.
-    global_logger().add_target(&g_logger.get_log_target());
+    // Configure the renderer's global logger.
+    configure_renderer_logger();
 
     bool success = true;
 
