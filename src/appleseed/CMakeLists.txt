@@ -1535,6 +1535,8 @@ source_group ("renderer\\modeling\\texture" FILES
 
 if (WITH_OSL)
     set (renderer_modeling_shadergroup
+        renderer/modeling/shadergroup/shader.cpp
+        renderer/modeling/shadergroup/shader.h
         renderer/modeling/shadergroup/shaderconnection.cpp
         renderer/modeling/shadergroup/shaderconnection.h
         renderer/modeling/shadergroup/shadergroup.cpp
