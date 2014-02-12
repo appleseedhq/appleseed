@@ -54,6 +54,7 @@ CommandLineHandler::CommandLineHandler()
     m_configuration.add_name("--configuration");
     m_configuration.add_name("-c");
     m_configuration.set_description("select the configuration");
+    m_configuration.set_syntax("name");
     m_configuration.set_exact_value_count(1);
     parser().add_option_handler(&m_configuration);
 
