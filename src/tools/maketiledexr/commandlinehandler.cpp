@@ -36,9 +36,6 @@
 // appleseed.foundation headers.
 #include "foundation/utility/log.h"
 
-// Standard headers.
-#include <cstdlib>
-
 using namespace appleseed::shared;
 using namespace foundation;
 using namespace std;
@@ -65,17 +62,6 @@ CommandLineHandler::CommandLineHandler()
     m_tile_size.set_syntax("width height");
     m_tile_size.set_exact_value_count(2);
     parser().add_option_handler(&m_tile_size);
-}
-
-void CommandLineHandler::parse(
-    const int       argc,
-    const char*     argv[],
-    SuperLogger&    logger)
-{
-    CommandLineHandlerBase::parse(argc, argv, logger);
-
-    if (!m_filenames.is_set())
-        exit(0);
 }
 
 void CommandLineHandler::print_program_usage(

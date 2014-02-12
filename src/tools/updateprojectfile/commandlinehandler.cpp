@@ -37,9 +37,6 @@
 #include "foundation/utility/log.h"
 #include "foundation/utility/string.h"
 
-// Standard headers.
-#include <cstdlib>
-
 using namespace appleseed::shared;
 using namespace foundation;
 using namespace std;
@@ -61,17 +58,6 @@ CommandLineHandler::CommandLineHandler()
     m_to_revision.set_syntax("revision");
     m_to_revision.set_exact_value_count(1);
     parser().add_option_handler(&m_to_revision);
-}
-
-void CommandLineHandler::parse(
-    const int       argc,
-    const char*     argv[],
-    SuperLogger&    logger)
-{
-    CommandLineHandlerBase::parse(argc, argv, logger);
-
-    if (!m_filename.is_set())
-        exit(0);
 }
 
 void CommandLineHandler::print_program_usage(

@@ -31,7 +31,6 @@
 #define APPLESEED_CONVERTMESHFILE_COMMANDLINEHANDLER_H
 
 // appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
 #include "foundation/utility/commandlineparser.h"
 
 // appleseed.shared headers.
@@ -59,12 +58,6 @@ class CommandLineHandler
 
     // Constructor.
     CommandLineHandler();
-
-    // Parse the application's command line.
-    virtual void parse(
-        const int               argc,
-        const char*             argv[],
-        shared::SuperLogger&    logger) OVERRIDE;
 
   private:
     // Emit usage instructions to the logger.

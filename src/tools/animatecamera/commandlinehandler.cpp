@@ -37,9 +37,6 @@
 #include "foundation/utility/log.h"
 #include "foundation/utility/makevector.h"
 
-// Standard headers.
-#include <cstdlib>
-
 using namespace appleseed::shared;
 using namespace foundation;
 using namespace std;
@@ -113,17 +110,6 @@ CommandLineHandler::CommandLineHandler()
     m_camera_elevation.set_exact_value_count(1);
     m_camera_elevation.set_default_values(make_vector(2.0));
     parser().add_option_handler(&m_camera_elevation);
-}
-
-void CommandLineHandler::parse(
-    const int       argc,
-    const char*     argv[],
-    SuperLogger&    logger)
-{
-    CommandLineHandlerBase::parse(argc, argv, logger);
-
-    if (!m_filenames.is_set())
-        exit(0);
 }
 
 void CommandLineHandler::print_program_usage(

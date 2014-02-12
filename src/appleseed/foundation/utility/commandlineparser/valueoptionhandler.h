@@ -223,7 +223,7 @@ void ValueOptionHandler<T>::parse(
         if (!m_syntax.empty())
             error += " (syntax: " + name + " " + m_syntax + ")";
         error += ".";
-        messages.add(LogMessage::Error, "%s", error.c_str());
+        messages.add(LogMessage::Fatal, "%s", error.c_str());
         return;
     }
 
