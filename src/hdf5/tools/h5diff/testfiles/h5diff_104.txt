@@ -1,8 +1,0 @@
-dataset: </g1/fp1> and </g1/fp2>
-size:           [3x2]           [3x2]
-position        fp1             fp2             difference          
-------------------------------------------------------------
-[ 1 0 ]          1e-07           3e-07           2e-07          
-[ 1 1 ]          2.2e-07         1e-07           1.2e-07        
-2 differences found
-EXIT CODE: 1

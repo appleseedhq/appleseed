@@ -1,2 +1,0 @@
-Object </nono_obj> could not be found in <h5diff_basic1.h5>
-EXIT CODE: 2

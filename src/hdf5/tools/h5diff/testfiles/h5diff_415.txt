@@ -1,9 +1,0 @@
-
-group1   group2
----------------------------------------
-    x      x                   
-           x    /dset          
-
-group  : </softlink3_to_slink2> and </target_group>
-0 differences found
-EXIT CODE: 1

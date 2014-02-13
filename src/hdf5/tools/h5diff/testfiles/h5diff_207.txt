@@ -1,3 +1,0 @@
-Not comparable: </g2/dset8> or </g2/dset9> is an empty dataset
-Not comparable: </g2/dset8> has 2 members </g2/dset9> has 1 members 
-EXIT CODE: 0

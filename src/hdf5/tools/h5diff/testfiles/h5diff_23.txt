@@ -1,8 +1,0 @@
-
-group1   group2
----------------------------------------
-    x      x                   
-
-group  : </g1> and </g1>
-0 differences found
-EXIT CODE: 0

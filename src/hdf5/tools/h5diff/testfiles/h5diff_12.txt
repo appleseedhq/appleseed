@@ -1,3 +1,0 @@
-dataset: </g1/dset1> and </g1/dset2>
-5 differences found
-EXIT CODE: 1

@@ -1,8 +1,0 @@
-
-group1   group2
----------------------------------------
-    x      x                   
-
-group  : </softlink3_to_slink2> and </softlink4_to_slink2>
-0 differences found
-EXIT CODE: 0

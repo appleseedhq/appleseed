@@ -1,3 +1,0 @@
-obj2 </ext_link_noexist1> is a dangling link.
-1 differences found
-EXIT CODE: 1
