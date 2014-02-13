@@ -29,7 +29,7 @@
 #
 
 # Package builder settings.
-VersionString = "2.3.5"
+VersionString = "2.3.6"
 SettingsFileName = "appleseed.package.configuration.xml"
 
 # Imports.
@@ -205,6 +205,9 @@ class PackageBuilder:
 
     def cleanup_stage(self):
         progress("Cleaning up staging directory")
+
+        # Remove API reference documentation.
+        safe_delete_directory("appleseed/documentation/apireference")
 
         # Remove the test suite.
         safe_delete_directory("appleseed/tests/test scenes")
