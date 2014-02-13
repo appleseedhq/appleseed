@@ -29,7 +29,7 @@
 #
 
 # Package builder settings.
-VersionString = "2.3.4"
+VersionString = "2.3.5"
 SettingsFileName = "appleseed.package.configuration.xml"
 
 # Imports.
@@ -205,13 +205,6 @@ class PackageBuilder:
 
     def cleanup_stage(self):
         progress("Cleaning up staging directory")
-
-        # Remove some demo scenes.
-        safe_delete_directory("appleseed/scenes/cyberdemon")
-        safe_delete_directory("appleseed/scenes/smoke")
-        safe_delete_file("appleseed/scenes/killeroo/killeroo ao.appleseed")
-        safe_delete_file("appleseed/scenes/killeroo/killeroo ao close up.appleseed")
-        safe_delete_directory("appleseed/scenes/winosi/renders")
 
         # Remove the test suite.
         safe_delete_directory("appleseed/tests/test scenes")
