@@ -545,7 +545,6 @@ install (
     DIRECTORY
         ../sandbox/extras
         ../sandbox/images
-        ../sandbox/scenes
         ../sandbox/tests
     DESTINATION .
 )
