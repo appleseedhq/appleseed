@@ -1,8 +1,0 @@
-dataset: </g1/d1> and </g1/d2>
-size:           [3x2]           [3x2]
-position        d1              d2              difference          
-------------------------------------------------------------
-[ 0 1 ]          1e-16           4e-16           3e-16          
-[ 2 0 ]          3.3e-16         1e-16           2.3e-16        
-2 differences found
-EXIT CODE: 1

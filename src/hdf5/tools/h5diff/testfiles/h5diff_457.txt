@@ -1,2 +1,0 @@
-Warning: </ext_link_noexist1> is a dangling link.
-EXIT CODE: 2

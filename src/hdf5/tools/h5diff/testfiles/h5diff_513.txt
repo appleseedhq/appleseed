@@ -1,3 +1,0 @@
-link   : </slink_grp10> and </slink_grp11>
-1 differences found
-EXIT CODE: 1

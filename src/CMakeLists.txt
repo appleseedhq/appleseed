@@ -190,13 +190,13 @@ include_directories (
 if (USE_EXTERNAL_ZLIB)
     include_directories (${ZLIB_INCLUDE_DIRS})
 else ()
-    include_directories (zlib)
+    include_directories (../3rdparty/zlib)
 endif ()
 
 if (USE_EXTERNAL_PNG)
     include_directories (${PNG_INCLUDE_DIR})
 else ()
-    include_directories (libpng)
+    include_directories (../3rdparty/libpng)
 endif ()
 
 if (USE_EXTERNAL_EXR)
@@ -208,8 +208,8 @@ if (USE_EXTERNAL_EXR)
     )
 else ()
     include_directories (
-        openexr/include
-        openexr/include/OpenEXR
+        ../3rdparty/openexr/include
+        ../3rdparty/openexr/include/OpenEXR
     )
 endif ()
 
@@ -220,16 +220,14 @@ if (WITH_ALEMBIC)
             ${ALEMBIC_INCLUDE_DIRS}
         )
     else ()
-        include_directories (
-            alembic/lib
-        )
+        include_directories (../3rdparty/alembic/lib)
     endif ()
 endif ()
 
 if (USE_EXTERNAL_XERCES)
     include_directories (${XERCES_INCLUDE_DIRS})
 else ()
-    include_directories (xerces-c/src)
+    include_directories (../3rdparty/xerces-c/src)
 endif ()
 
 if (WITH_OSL)
@@ -545,7 +543,6 @@ install (
     DIRECTORY
         ../sandbox/extras
         ../sandbox/images
-        ../sandbox/scenes
         ../sandbox/tests
     DESTINATION .
 )

@@ -1,3 +1,0 @@
-link   : </l1> and </l1>
-0 differences found
-EXIT CODE: 0

@@ -1,3 +1,4 @@
+3rdparty/
 build/
 __pycache__
 *.pyc
