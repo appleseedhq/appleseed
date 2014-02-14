@@ -87,10 +87,10 @@ typedef TypedEntityVector<Texture>              TextureContainer;
 typedef TypedEntityVector<TextureInstance>      TextureInstanceContainer;
 
 #ifdef WITH_OSL
-typedef TypedEntityVector<Shader>           ShaderContainer;
-typedef TypedEntityVector<ShaderConnection> ShaderConnectionContainer;
-typedef TypedEntityVector<ShaderGroup>      ShaderGroupContainer;
-typedef TypedEntityVector<ShaderParam>      ShaderParamContainer;
+typedef TypedEntityVector<Shader>               ShaderContainer;
+typedef TypedEntityVector<ShaderConnection>     ShaderConnectionContainer;
+typedef TypedEntityVector<ShaderGroup>          ShaderGroupContainer;
+typedef TypedEntityVector<ShaderParam>          ShaderParamContainer;
 #endif
 
 //

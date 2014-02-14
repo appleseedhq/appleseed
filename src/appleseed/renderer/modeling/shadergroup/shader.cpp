@@ -59,102 +59,73 @@ namespace
 struct Shader::Impl
 {
     Impl(
-        const char* type, 
-        const char* shader,
-        const char* layer,
-        const ParamArray& params)
+        const char*         type, 
+        const char*         shader,
+        const char*         layer,
+        const ParamArray&   params)
     {
-        for (StringDictionary::const_iterator it(params.strings().begin()), e(params.strings().end()); it != e; ++it)
+        for (const_each<StringDictionary> i = params.strings(); i; ++i)
         {
             vector<string> tokens;
-            tokenize(string(it.value()), Blanks, tokens);
+            tokenize(string(i.it().value()), Blanks, tokens);
             vector<string>::const_iterator tok_it(tokens.begin());
             vector<string>::const_iterator tok_end(tokens.end());
-                    
-            if (tok_it == tok_end)
-                assert(false);
+            const string tok(*tok_it);
 
-            string tok(*tok_it);
             if (tok == "float")
             {
                 ++tok_it;
-                float val = parse_param1<float>(tok_it, tok_end);
-                m_params.insert(ShaderParam::create_float_param(it.name(), val));
+                float val = parse_param1<float>(i.it().name(), i.it().value(), tok_it, tok_end);
+                m_params.insert(ShaderParam::create_float_param(i.it().name(), val));
             }
             else if (tok == "int")
             {
                 ++tok_it;
-                int val = parse_param1<int>(tok_it, tok_end);
-                m_params.insert(ShaderParam::create_int_param(it.name(), val));
+                int val = parse_param1<int>(i.it().name(), i.it().value(), tok_it, tok_end);
+                m_params.insert(ShaderParam::create_int_param(i.it().name(), val));
             }
             else if (tok == "color")
             {
                 ++tok_it;
-                assert(tok_it != tokens.end());
-
-                string s = *tok_it;
-                s = trim_both(s);
-                if (s[0] == '\0')
-                    s.erase(0, 1);
-                float rval = from_string<float>(s);
-                float gval = rval;
-                float bval = rval;
-                ++tok_it;
-
-                if (tok_it != tok_end)
-                {
-                    s = *tok_it;
-                    s = trim_both(s);
-                    if (s[0] == '\0')
-                        s.erase(0, 1);
-                    gval = from_string<float>(s);
-                    ++tok_it;
-                    assert(tok_it != tok_end);
-
-                    s = *tok_it;
-                    s = trim_both(s);
-                    if (s[0] == '\0')
-                        s.erase(0, 1);
-                    bval = from_string<float>(s);
-                    ++tok_it;
-                    assert(tok_it == tok_end);
-                }
-
-                m_params.insert(ShaderParam::create_color_param(it.name(), rval, gval, bval));
+                float r, g, b;
+                parse_param3<float>(i.it().name(), i.it().value(), tok_it, tok_end, true, r, g, b);
+                m_params.insert(ShaderParam::create_color_param(i.it().name(), r, g, b));
             }
             else if (tok == "normal")
             {
                 ++tok_it;
                 float x, y, z;
-                parse_param3<float>(tok_it, tok_end, x, y, z);
-                m_params.insert(ShaderParam::create_normal_param(it.name(), x, y, z));
+                parse_param3<float>(i.it().name(), i.it().value(), tok_it, tok_end, false, x, y, z);
+                m_params.insert(ShaderParam::create_normal_param(i.it().name(), x, y, z));
             }
             else if (tok == "point")
             {
                 ++tok_it;
                 float x, y, z;
-                parse_param3<float>(tok_it, tok_end, x, y, z);
-                m_params.insert(ShaderParam::create_point_param(it.name(), x, y, z));
+                parse_param3<float>(i.it().name(), i.it().value(), tok_it, tok_end, false, x, y, z);
+                m_params.insert(ShaderParam::create_point_param(i.it().name(), x, y, z));
             }
             else if (tok == "vector")
             {
                 ++tok_it;
                 float x, y, z;
-                parse_param3<float>(tok_it, tok_end, x, y, z);
-                m_params.insert(ShaderParam::create_vector_param(it.name(), x, y, z));
+                parse_param3<float>(i.it().name(), i.it().value(), tok_it, tok_end, false, x, y, z);
+                m_params.insert(ShaderParam::create_vector_param(i.it().name(), x, y, z));
             }
             else if (tok == "string")
             {
                 ++tok_it;
-                m_params.insert(ShaderParam::create_string_param(it.name(), tok_it->c_str()));
+                m_params.insert(ShaderParam::create_string_param(i.it().name(), tok_it->c_str()));
             }
             else
             {
-                RENDERER_LOG_ERROR("error adding osl param %s, with unknown type %s", it.name(), tok.c_str());
-                assert(false);
+                RENDERER_LOG_FATAL(
+                    "error adding osl param %s, of unknown type %s",
+                    i.it().name(),
+                    tok.c_str());
             }
 
-            RENDERER_LOG_INFO("added osl param %s", it.name());
+            RENDERER_LOG_DEBUG("added osl param %s", i.it().name());
         }
     }
 
@@ -163,67 +134,102 @@ struct Shader::Impl
     ShaderParamContainer    m_params;
 
   private:
-    template<class T>
-    T parse_param1(
-        vector<string>::const_iterator& it,
-        vector<string>::const_iterator& end)
+    void report_param_value_parse_error(const char* param_name,
+                                        const char* param_value_string)
     {
-        assert(it != end);
+        RENDERER_LOG_FATAL(
+            "error parsing osl param value. param = %s, value = %s", 
+            param_name, 
+            param_value_string);
+    }
+    
+    template<class T>
+    T do_parse_param1(
+        const char*                             param_name,
+        const char*                             param_value_string,
+        vector<string>::const_iterator&         it,
+        const vector<string>::const_iterator&   end)
+    {
+        if (it == end)
+            report_param_value_parse_error(param_name, param_value_string);
+        
         string s(*it);
         s = trim_both(s);
 
         if (s[0] == '\0')
             s.erase(0, 1);
 
-        T val = from_string<T>(s);
+        T value = from_string<T>(s);
         ++it;
-        assert(it == end);
-        return val;
+        return value;
     }
 
     template<class T>
-    void parse_param3(
-        vector<string>::const_iterator& it,
-        vector<string>::const_iterator& end,
-        T& a,
-        T& b,
-        T&c)
+    T parse_param1(
+        const char*                             param_name,
+        const char*                             param_value_string,
+        vector<string>::const_iterator&         it,
+        const vector<string>::const_iterator&   end)
     {
-        string s(*it);
-        s = trim_both(s);
-        if (s[0] == '\0')
-            s.erase(0, 1);
-        a = from_string<T>(s);
-        ++it;
-        assert(it != end);
+        T val = do_parse_param1<T>(param_name, param_value_string, it, end);
+        
+        if (it != end)
+            report_param_value_parse_error(param_name, param_value_string);
+        
+        return val;
+    }
+    
+    template<class T>
+    void parse_param3(
+        const char*                             param_name,
+        const char*                             param_value_string,
+        vector<string>::const_iterator&         it,
+        const vector<string>::const_iterator&   end,
+        bool                                    parse_as_color,
+        T&                                      a,
+        T&                                      b,
+        T&                                      c)
+    {
+        a = do_parse_param1<T>(param_name, param_value_string, it, end);
+        
+        if (it == end)
+        {
+            if (parse_as_color)
+            {
+                b = c = a;
+                return;
+            }
+            
+            report_param_value_parse_error(param_name, param_value_string);
+        }
 
-        s = *it;
-        s = trim_both(s);
-        if (s[0] == '\0')
-            s.erase(0, 1);
-        b = from_string<T>(s);
-        ++it;
-        assert(it != end);
+        b = do_parse_param1<T>(param_name, param_value_string, it, end);
 
-        s = *it;
-        s = trim_both(s);
-        if (s[0] == '\0')
-            s.erase(0, 1);
-        c = from_string<T>(s);
-        ++it;
-        assert(it == end);
+        if (it == end)
+            report_param_value_parse_error(param_name, param_value_string);
+
+        c = do_parse_param1<T>(param_name, param_value_string, it, end);
+
+        if (it != end)
+            report_param_value_parse_error(param_name, param_value_string);
     }
 };
 
-Shader::Shader(const char* type,
-               const char* shader,
-               const char* layer,
-               const ParamArray& params)
-    : Entity(g_class_uid, params)
-    , impl(new Impl(type, shader, layer, params))
+Shader::Shader(
+    const char*          type,
+    const char*          shader,
+    const char*          layer,
+    const ParamArray&    params)
+  : Entity(g_class_uid, params)
+  , impl(new Impl(type, shader, layer, params))
 {
     // We use the layer name as the Entity name, as it's unique.
     set_name(layer);
+}
+
+Shader::~Shader()
+{
+    delete impl;
 }
 
 void Shader::release()
@@ -253,9 +259,9 @@ const ShaderParamContainer& Shader::shader_params() const
 
 bool Shader::add(OSL::ShadingSystem& shading_system)
 {
-    for (ShaderParamContainer::iterator it(impl->m_params.begin()), e(impl->m_params.end()); it != e; ++it)
+    for (each<ShaderParamContainer> i = impl->m_params; i; ++i)
     {
-        if (!it->add(shading_system))
+        if (!i->add(shading_system))
             return false;
     }
 

@@ -33,16 +33,19 @@
 #include "renderer/global/globallogger.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/foreach.h"
 #include "foundation/utility/job/abortswitch.h"
 #include "foundation/utility/uid.h"
 
+/*
 // Standard headers.
 #include <cstring>
 #include <string>
 #include <vector>
+*/
 
-using namespace std;
 using namespace foundation;
+using namespace std;
 
 namespace renderer
 {
@@ -56,7 +59,7 @@ namespace
     const UniqueID g_class_uid = new_guid();
 }
 
-ShaderGroup::ShaderGroup( const char* name)
+ShaderGroup::ShaderGroup(const char* name)
   : ConnectableEntity(g_class_uid, ParamArray())
 {
     set_name(name);
@@ -73,10 +76,10 @@ const char* ShaderGroup::get_model() const
 }
 
 void ShaderGroup::add_shader(
-    const char* type,
-    const char* name,
-    const char* layer,
-    const ParamArray& params)
+    const char*         type,
+    const char*         name,
+    const char*         layer,
+    const ParamArray&   params)
 {
     auto_release_ptr<Shader> s(
         new Shader(
@@ -87,7 +90,7 @@ void ShaderGroup::add_shader(
 
     m_shaders.insert(s);
 
-    RENDERER_LOG_INFO("created osl shader %s, layer = %s", name, layer);
+    RENDERER_LOG_DEBUG("created osl shader %s, layer = %s", name, layer);
 }
 
 void ShaderGroup::add_connection(
@@ -104,7 +107,7 @@ void ShaderGroup::add_connection(
             dst_param));
     m_connections.insert(c);
 
-    RENDERER_LOG_INFO("created osl connection: src = %s, src_param = %s, dst = %s, dst_param = %s",
+    RENDERER_LOG_DEBUG("created osl connection: src = %s, src_param = %s, dst = %s, dst_param = %s",
         src_layer,
         src_param,
         dst_layer,
@@ -117,13 +120,13 @@ bool ShaderGroup::on_frame_begin(
     OSL::ShadingSystem*         shading_system,
     foundation::AbortSwitch*    abort_switch)
 {
-    RENDERER_LOG_INFO("setup shader group %s", get_name());
+    RENDERER_LOG_DEBUG("setup shader group %s", get_name());
 
     try
     {
         m_shadergroup_ref = shading_system->ShaderGroupBegin(get_name());
 
-        if (!valid())
+        if (!is_valid())
         {
             RENDERER_LOG_ERROR("shader group begin error: shader = %s", get_name());
             return false;
@@ -131,20 +134,20 @@ bool ShaderGroup::on_frame_begin(
 
         bool success = true;
 
-        for(ShaderContainer::iterator it(m_shaders.begin()), e(m_shaders.end()); it != e; ++it)
+        for (each<ShaderContainer> i = m_shaders; i; ++i)
         {
             if (is_aborted(abort_switch))
                 return success;
 
-            success = success && it->add(*shading_system);
+            success = success && i->add(*shading_system);
         }
 
-        for(ShaderConnectionContainer::iterator it(m_connections.begin()), e(m_connections.end()); it != e; ++it)
+        for (each<ShaderConnectionContainer> i = m_connections; i; ++i)
         {
             if (is_aborted(abort_switch))
                 return success;
 
-            success = success && it->add(*shading_system);
+            success = success && i->add(*shading_system);
         }
 
         if (!shading_system->ShaderGroupEnd())
@@ -155,7 +158,7 @@ bool ShaderGroup::on_frame_begin(
 
         return success;
     }
-    catch( std::exception& e)
+    catch(const exception& e)
     {
         RENDERER_LOG_ERROR("shader group exception: what = %s", e.what());
         return false;

@@ -226,6 +226,7 @@ namespace
     }
 
 #ifdef WITH_OSL
+    
     template <typename EntityCollection>
     bool invoke_on_frame_begin(
         const Project&          project,
@@ -303,7 +304,7 @@ bool Assembly::on_frame_begin(
     success = success && invoke_on_frame_begin(project, *this, edfs(), abort_switch);
     
 #ifdef WITH_OSL
-    success = invoke_on_frame_begin(project, *this, shading_system, shader_groups(), abort_switch);
+    success = success && invoke_on_frame_begin(project, *this, shading_system, shader_groups(), abort_switch);
 #endif
     
     success = success && invoke_on_frame_begin(project, *this, materials(), abort_switch);

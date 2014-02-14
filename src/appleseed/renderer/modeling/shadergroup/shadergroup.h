@@ -70,10 +70,10 @@ class DLLSYMBOL ShaderGroup
 
     // Adds a new shader to the group.
     void add_shader(
-        const char* type,
-        const char* name,
-        const char* layer,
-        const ParamArray& params);
+        const char*         type,
+        const char*         name,
+        const char*         layer,
+        const ParamArray&   params);
 
     // Adds a connection between two parameters of two shaders.
     void add_connection(
@@ -102,20 +102,20 @@ class DLLSYMBOL ShaderGroup
     const ShaderConnectionContainer& shader_connections() const;
 
     // Returns true if the shader group was setup correctly.
-    bool valid() const;
+    bool is_valid() const;
 
     // Return a reference-counted (but opaque) reference to the OSL shader.
-    OSL::ShaderGroupRef& get_shadergroup_ref() const;
+    OSL::ShaderGroupRef& shadergroup_ref();
 
   private:
     friend class ShaderGroupFactory;
 
     ShaderContainer              m_shaders;
     ShaderConnectionContainer    m_connections;
-    mutable OSL::ShaderGroupRef  m_shadergroup_ref;
+    OSL::ShaderGroupRef          m_shadergroup_ref;
 
     // Constructor.
-    ShaderGroup(const char* name);
+    explicit ShaderGroup(const char* name);
 };
 
 //
@@ -132,12 +132,12 @@ inline const ShaderConnectionContainer& ShaderGroup::shader_connections() const
     return m_connections;
 }
 
-inline OSL::ShaderGroupRef& ShaderGroup::get_shadergroup_ref() const
+inline OSL::ShaderGroupRef& ShaderGroup::shadergroup_ref()
 {
     return m_shadergroup_ref;
 }
 
-inline bool ShaderGroup::valid() const
+inline bool ShaderGroup::is_valid() const
 {
     return m_shadergroup_ref.get() != 0;
 }
