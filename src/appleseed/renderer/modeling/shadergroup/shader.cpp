@@ -45,6 +45,8 @@
 using namespace std;
 using namespace foundation;
 
+#include<map>
+
 namespace renderer
 {
 
@@ -65,6 +67,9 @@ struct Shader::Impl
         const char*         layer,
         const ParamArray&   params)
     {
+        std::map<int,int> m;
+        std::map<int,int>::iterator it;
+        
         for (const_each<StringDictionary> i = params.strings(); i; ++i)
         {
             try
@@ -127,16 +132,16 @@ struct Shader::Impl
                   break;
 
                   default:
-                    RENDERER_LOG_FATAL(
-                        "error adding osl param %s, of unknown type %s",
+                    RENDERER_LOG_ERROR(
+                        "error adding osl param %s, of unknown type %s. will use the default value.",
                         i.it().name(),
                         i.it().value());
                 }
             }
             catch(const ExceptionOSLParamParseError&)
             {
-                RENDERER_LOG_FATAL(
-                    "error parsing osl param value. param = %s, value = %s",
+                RENDERER_LOG_ERROR(
+                    "error parsing osl param value. param = %s, value = %s. will use the default value.",
                     i.it().name(),
                     i.it().value());
             }
