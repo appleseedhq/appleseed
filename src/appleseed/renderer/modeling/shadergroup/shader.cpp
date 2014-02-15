@@ -84,21 +84,21 @@ struct Shader::Impl
                         parser.parse_three_values<float>(r, g, b, true);
                         m_params.insert(ShaderParam::create_color_param(i.it().name(), r, g, b));
                     }
-                  break;
+                    break;
 
                   case OSLParamTypeFloat:
                     {
                         float val = parser.parse_one_value<float>();
                         m_params.insert(ShaderParam::create_float_param(i.it().name(), val));
                     }
-                  break;
+                    break;
                     
                   case OSLParamTypeInt:
                     {
                         int val = parser.parse_one_value<int>();
                         m_params.insert(ShaderParam::create_int_param(i.it().name(), val));
                     }
-                  break;
+                    break;
 
                   case OSLParamTypeNormal:
                     {
@@ -106,7 +106,7 @@ struct Shader::Impl
                         parser.parse_three_values<float>(x, y, z);
                         m_params.insert(ShaderParam::create_normal_param(i.it().name(), x, y, z));
                     }
-                  break;
+                    break;
                     
                   case OSLParamTypePoint:
                     {
@@ -114,14 +114,16 @@ struct Shader::Impl
                         parser.parse_three_values<float>(x, y, z);
                         m_params.insert(ShaderParam::create_point_param(i.it().name(), x, y, z));
                     }
-                  break;
+                    break;
 
                   case OSLParamTypeString:
-                    m_params.insert(
-                        ShaderParam::create_string_param(
-                            i.it().name(),
-                            parser.parse_string_value().c_str()));
-                  break;
+                    {
+                        m_params.insert(
+                            ShaderParam::create_string_param(
+                                i.it().name(),
+                                parser.parse_string_value().c_str()));
+                    }
+                    break;
 
                   case OSLParamTypeVector:
                     {
@@ -129,7 +131,7 @@ struct Shader::Impl
                         parser.parse_three_values<float>(x, y, z);
                         m_params.insert(ShaderParam::create_vector_param(i.it().name(), x, y, z));
                     }
-                  break;
+                    break;
 
                   default:
                     RENDERER_LOG_ERROR(

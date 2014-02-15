@@ -79,7 +79,7 @@ class DLLSYMBOL ShaderParam
     virtual void release() OVERRIDE;
 
     // Fix me: std classes cannot be used in dllexported classes. (est.)
-    std::string value_as_string() const;
+    std::string get_value_as_string() const;
 
   private:
     friend class Shader;

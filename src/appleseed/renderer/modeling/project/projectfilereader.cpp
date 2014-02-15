@@ -378,13 +378,13 @@ namespace
         ElementRules,
         ElementScaling,
         ElementScene,
+        ElementSearchPath,
+        ElementSearchPaths,
 #ifdef WITH_OSL
         ElementShader,
         ElementShaderConnection,
         ElementShaderGroup,
 #endif
-        ElementSearchPath,
-        ElementSearchPaths,
         ElementSurfaceShader,
         ElementTexture,
         ElementTextureInstance,
@@ -1798,9 +1798,9 @@ namespace
         virtual void start_element(const Attributes& attrs) OVERRIDE
         {
             ParametrizedElementHandler::start_element(attrs);
-            m_type = get_value( attrs, "type");
-            m_name = get_value( attrs, "name");
-            m_layer = get_value( attrs, "layer");
+            m_type = get_value(attrs, "type");
+            m_name = get_value(attrs, "name");
+            m_layer = get_value(attrs, "layer");
         }
 
         const string& type() const
@@ -1899,8 +1899,8 @@ namespace
         }
 
         virtual void end_child_element(
-                const ProjectElementID      element,
-                ElementHandlerType*         handler) OVERRIDE
+            const ProjectElementID      element,
+            ElementHandlerType*         handler) OVERRIDE
         {
             switch (element)
             {
@@ -1998,9 +1998,9 @@ namespace
             m_assembly->textures().swap(m_textures);
             m_assembly->texture_instances().swap(m_texture_instances);
 
-            #ifdef WITH_OSL
+#ifdef WITH_OSL
             m_assembly->shader_groups().swap(m_shader_groups);
-            #endif
+#endif
         }
 
         virtual void end_child_element(
@@ -2108,8 +2108,8 @@ namespace
                     auto_release_ptr<ShaderGroup> sg = shader_group_handler->get_shader_group();
                     if (sg.get())
                         m_shader_groups.insert(sg);
-                  }
-                  break;
+                }
+                break;
 #endif
               case ElementSurfaceShader:
                 {

@@ -102,7 +102,7 @@ const void* ShaderParam::get_value() const
     return 0;
 }
 
-string ShaderParam::value_as_string() const
+string ShaderParam::get_value_as_string() const
 {
     stringstream ss;
 

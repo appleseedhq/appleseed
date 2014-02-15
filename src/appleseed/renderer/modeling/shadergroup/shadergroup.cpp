@@ -37,13 +37,6 @@
 #include "foundation/utility/job/abortswitch.h"
 #include "foundation/utility/uid.h"
 
-/*
-// Standard headers.
-#include <cstring>
-#include <string>
-#include <vector>
-*/
-
 using namespace foundation;
 using namespace std;
 

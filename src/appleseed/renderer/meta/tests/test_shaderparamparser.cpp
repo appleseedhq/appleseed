@@ -42,35 +42,35 @@ TEST_SUITE(Renderer_Modeling_ShaderParamParser)
     {
         {
             ShaderParamParser parser("color 1.0");
-            EXPECT_EQ(parser.param_type(), OSLParamTypeColor);
+            EXPECT_EQ(OSLParamTypeColor, parser.param_type());
             float r, g, b;
             parser.parse_three_values<float>(r, g, b, true);
-            EXPECT_EQ(r, 1.0f);
-            EXPECT_EQ(g, 1.0f);
-            EXPECT_EQ(b, 1.0f);
+            EXPECT_EQ(1.0f, r);
+            EXPECT_EQ(1.0f, g);
+            EXPECT_EQ(1.0f, b);
         }
         {
             ShaderParamParser parser("color 1.0 0.5 0.0");
-            EXPECT_EQ(parser.param_type(), OSLParamTypeColor);
+            EXPECT_EQ(OSLParamTypeColor, parser.param_type());
             float r, g, b;
             parser.parse_three_values<float>(r, g, b, true);
-            EXPECT_EQ(r, 1.0f);
-            EXPECT_EQ(g, 0.5f);
-            EXPECT_EQ(b, 0.0f);
+            EXPECT_EQ(1.0f, r);
+            EXPECT_EQ(0.5f, g);
+            EXPECT_EQ(0.0f, b);
         }
     }
 
     TEST_CASE(ShaderParamParser1Value)
     {
         ShaderParamParser parser("float 1.0");
-        EXPECT_EQ(parser.param_type(), OSLParamTypeFloat);
-        EXPECT_EQ(parser.parse_one_value<float>(), 1.0f);
+        EXPECT_EQ(OSLParamTypeFloat, parser.param_type());
+        EXPECT_EQ(1.0f, parser.parse_one_value<float>());
     }
 
     TEST_CASE(ShaderParamParserString)
     {
         ShaderParamParser parser("string test_string");
-        EXPECT_EQ(parser.parse_string_value(), "test_string");
+        EXPECT_EQ("test_string", parser.parse_string_value());
     }
 
     TEST_CASE(ShaderParamParserUnknownType)

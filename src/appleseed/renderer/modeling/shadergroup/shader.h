@@ -62,9 +62,6 @@ class DLLSYMBOL Shader
   : public Entity
 {
   public:
-    // Destructor.
-    ~Shader();
-
     virtual void release() OVERRIDE;
 
     const char *get_type() const;
@@ -86,6 +83,9 @@ class DLLSYMBOL Shader
         const char*         layer,
         const ParamArray&   params);
 
+    // Destructor.
+    ~Shader();
+    
     bool add(OSL::ShadingSystem& shading_system);
 };
 

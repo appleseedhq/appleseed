@@ -45,7 +45,7 @@ namespace renderer
 {
 
 //
-// An utility class to parse OSL shader parameter value strings.
+// Exception class thrown in case of an OSL param string parse error.
 //
 
 struct ExceptionOSLParamParseError
@@ -64,15 +64,15 @@ class ShaderParamParser
 
     OSLParamType param_type() const;
 
-    template<class T>
-    T parse_one_value(bool expect_end = true);
+    template <typename T>
+    T parse_one_value(const bool expect_end = true);
 
-    template<class T>
+    template <typename T>
     void parse_three_values(
         T& a, 
         T& b,
         T& c,
-        bool parse_as_color = false);
+        const bool parse_as_color = false);
 
     std::string parse_string_value();
 
@@ -82,7 +82,7 @@ class ShaderParamParser
     std::vector<std::string>::const_iterator    m_tok_it;
     std::vector<std::string>::const_iterator    m_tok_end;
 
-    template<class T>
+    template <typename T>
     T convert_from_string(const std::string& s) const;    
 };
 
@@ -95,7 +95,7 @@ inline OSLParamType ShaderParamParser::param_type() const
     return m_param_type;
 }
 
-template<class T>
+template <typename T>
 T ShaderParamParser::convert_from_string(const std::string& s) const
 {
     try
@@ -108,8 +108,8 @@ T ShaderParamParser::convert_from_string(const std::string& s) const
     }
 }
 
-template<class T>
-T ShaderParamParser::parse_one_value(bool expect_end)
+template <typename T>
+T ShaderParamParser::parse_one_value(const bool expect_end)
 {
     if (m_tok_it == m_tok_end)
         throw ExceptionOSLParamParseError();
@@ -132,7 +132,7 @@ T ShaderParamParser::parse_one_value(bool expect_end)
     return value;
 }
 
-template<class T>
+template <typename T>
 void ShaderParamParser::parse_three_values(
     T& a,
     T& b,
