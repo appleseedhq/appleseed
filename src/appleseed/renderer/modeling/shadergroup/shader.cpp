@@ -45,8 +45,6 @@
 using namespace std;
 using namespace foundation;
 
-#include<map>
-
 namespace renderer
 {
 
@@ -67,9 +65,6 @@ struct Shader::Impl
         const char*         layer,
         const ParamArray&   params)
     {
-        std::map<int,int> m;
-        std::map<int,int>::iterator it;
-        
         for (const_each<StringDictionary> i = params.strings(); i; ++i)
         {
             try
