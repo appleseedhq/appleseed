@@ -1780,6 +1780,7 @@ namespace
         string                              m_assembly;
     };
 
+
 #ifdef WITH_OSL
 
     //
@@ -1830,6 +1831,7 @@ namespace
         string          m_layer;
     };
 
+
     //
     // <connect_shaders> element handler.
     //
@@ -1878,6 +1880,7 @@ namespace
         string          m_dst_layer;
         string          m_dst_param;
     };
+
 
     //
     // <shader_group> element handler.
@@ -1940,7 +1943,9 @@ namespace
         string                          m_name;
         auto_release_ptr<ShaderGroup>   m_shader_group;
     };
+
 #endif
+
 
     //
     // <assembly> element handler.
@@ -1976,6 +1981,7 @@ namespace
 #ifdef WITH_OSL
             m_shader_groups.clear();
 #endif
+
             m_name = get_value(attrs, "name");
         }
 
@@ -1997,7 +2003,6 @@ namespace
             m_assembly->surface_shaders().swap(m_surface_shaders);
             m_assembly->textures().swap(m_textures);
             m_assembly->texture_instances().swap(m_texture_instances);
-
 #ifdef WITH_OSL
             m_assembly->shader_groups().swap(m_shader_groups);
 #endif
@@ -2111,6 +2116,7 @@ namespace
                 }
                 break;
 #endif
+
               case ElementSurfaceShader:
                 {
                     SurfaceShaderElementHandler* surface_shader_handler =
