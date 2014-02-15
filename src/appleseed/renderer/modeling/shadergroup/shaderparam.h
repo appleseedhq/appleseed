@@ -53,6 +53,21 @@ namespace renderer
 {
 
 //
+// Enumeration of all supported OSL parameter types.
+//
+
+enum OSLParamType
+{
+    OSLParamTypeColor,
+    OSLParamTypeFloat,
+    OSLParamTypeInt,
+    OSLParamTypeNormal,
+    OSLParamTypePoint,
+    OSLParamTypeString,
+    OSLParamTypeVector
+};
+
+//
 // A parameter in an OSL shader.
 //
 

@@ -1149,6 +1149,11 @@ set (renderer_meta_tests_sources
     renderer/meta/tests/test_transformsequence.cpp
     renderer/meta/tests/test_variationtracker.cpp
 )
+if (WITH_OSL)
+    list (APPEND renderer_meta_tests_sources
+        renderer/meta/tests/test_shaderparamparser.cpp
+    )
+endif ()
 list (APPEND appleseed_sources
     ${renderer_meta_tests_sources}
 )
@@ -1543,6 +1548,8 @@ if (WITH_OSL)
         renderer/modeling/shadergroup/shadergroup.h
         renderer/modeling/shadergroup/shaderparam.cpp
         renderer/modeling/shadergroup/shaderparam.h
+        renderer/modeling/shadergroup/shaderparamparser.cpp
+        renderer/modeling/shadergroup/shaderparamparser.h
     )
     list (APPEND appleseed_sources
         ${renderer_modeling_shadergroup}

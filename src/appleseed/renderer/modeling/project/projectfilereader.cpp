@@ -71,6 +71,9 @@
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/scene/textureinstance.h"
+#ifdef WITH_OSL
+#include "renderer/modeling/shadergroup/shadergroup.h"
+#endif
 #include "renderer/modeling/surfaceshader/isurfaceshaderfactory.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/modeling/surfaceshader/surfaceshaderfactoryregistrar.h"
@@ -375,6 +378,11 @@ namespace
         ElementRules,
         ElementScaling,
         ElementScene,
+#ifdef WITH_OSL
+        ElementShader,
+        ElementShaderConnection,
+        ElementShaderGroup,
+#endif
         ElementSearchPath,
         ElementSearchPaths,
         ElementSurfaceShader,
@@ -1772,6 +1780,167 @@ namespace
         string                              m_assembly;
     };
 
+#ifdef WITH_OSL
+
+    //
+    // <shader> element handler.
+    //
+
+    class ShaderElementHandler
+      : public ParametrizedElementHandler
+    {
+      public:
+        explicit ShaderElementHandler(ParseContext& context)
+          : m_context(context)
+        {
+        }
+
+        virtual void start_element(const Attributes& attrs) OVERRIDE
+        {
+            ParametrizedElementHandler::start_element(attrs);
+            m_type = get_value( attrs, "type");
+            m_name = get_value( attrs, "name");
+            m_layer = get_value( attrs, "layer");
+        }
+
+        const string& type() const
+        {
+            return m_type;
+        }
+
+        const string& name() const
+        {
+            return m_name;
+        }
+
+        const string& layer() const
+        {
+            return m_layer;
+        }
+
+        const ParamArray& params() const
+        {
+            return m_params;
+        }
+
+      private:
+        ParseContext&   m_context;
+        string          m_type;
+        string          m_name;
+        string          m_layer;
+    };
+
+    //
+    // <connect_shaders> element handler.
+    //
+
+    class ShaderConnectionElementHandler
+      : public ElementHandlerBase
+    {
+      public:
+        explicit ShaderConnectionElementHandler(ParseContext& context)
+          : m_context(context)
+        {
+        }
+
+        virtual void start_element(const Attributes& attrs) OVERRIDE
+        {
+            m_src_layer = get_value(attrs, "src_layer");
+            m_src_param = get_value(attrs, "src_param");
+            m_dst_layer = get_value(attrs, "dst_layer");
+            m_dst_param = get_value(attrs, "dst_param");
+        }
+
+        const string& src_layer()
+        {
+            return m_src_layer;
+        }
+
+        const string& src_param()
+        {
+            return m_src_param;
+        }
+
+        const string& dst_layer()
+        {
+            return m_dst_layer;
+        }
+
+        const string& dst_param()
+        {
+            return m_dst_param;
+        }
+
+      private:
+        ParseContext&   m_context;
+        string          m_src_layer;
+        string          m_src_param;
+        string          m_dst_layer;
+        string          m_dst_param;
+    };
+
+    //
+    // <shader_group> element handler.
+    //
+
+    class ShaderGroupElementHandler
+      : public ElementHandlerBase
+    {
+      public:
+        explicit ShaderGroupElementHandler(ParseContext& context)
+          : m_context(context)
+        {
+        }
+
+        virtual void start_element(const Attributes& attrs) OVERRIDE
+        {
+            m_name = get_value(attrs, "name");
+            m_shader_group = ShaderGroupFactory::create(m_name.c_str());
+        }
+
+        virtual void end_child_element(
+                const ProjectElementID      element,
+                ElementHandlerType*         handler) OVERRIDE
+        {
+            switch (element)
+            {
+              case ElementShader:
+                {
+                    ShaderElementHandler* shader_handler =
+                        static_cast<ShaderElementHandler*>(handler);
+                    m_shader_group->add_shader(
+                        shader_handler->type().c_str(),
+                        shader_handler->name().c_str(),
+                        shader_handler->layer().c_str(),
+                        shader_handler->params());
+                }
+                break;
+
+              case ElementShaderConnection:
+                {
+                    ShaderConnectionElementHandler* shader_handler =
+                        static_cast<ShaderConnectionElementHandler*>(handler);
+                    m_shader_group->add_connection(
+                        shader_handler->src_layer().c_str(),
+                        shader_handler->src_param().c_str(),
+                        shader_handler->dst_layer().c_str(),
+                        shader_handler->dst_param().c_str());
+                }
+                break;
+            }
+        }
+
+        auto_release_ptr<ShaderGroup> get_shader_group()
+        {
+            return m_shader_group;
+        }
+
+      private:
+        ParseContext&                   m_context;
+        string                          m_name;
+        auto_release_ptr<ShaderGroup>   m_shader_group;
+    };
+#endif
 
     //
     // <assembly> element handler.
@@ -1804,7 +1973,9 @@ namespace
             m_surface_shaders.clear();
             m_textures.clear();
             m_texture_instances.clear();
-
+#ifdef WITH_OSL
+            m_shader_groups.clear();
+#endif
             m_name = get_value(attrs, "name");
         }
 
@@ -1826,6 +1997,10 @@ namespace
             m_assembly->surface_shaders().swap(m_surface_shaders);
             m_assembly->textures().swap(m_textures);
             m_assembly->texture_instances().swap(m_texture_instances);
+
+            #ifdef WITH_OSL
+            m_assembly->shader_groups().swap(m_shader_groups);
+            #endif
         }
 
         virtual void end_child_element(
@@ -1924,6 +2099,18 @@ namespace
                 }
                 break;
 
+#ifdef WITH_OSL
+              case ElementShaderGroup:
+                {
+                    ShaderGroupElementHandler* shader_group_handler =
+                        static_cast<ShaderGroupElementHandler*>(handler);
+
+                    auto_release_ptr<ShaderGroup> sg = shader_group_handler->get_shader_group();
+                    if (sg.get())
+                        m_shader_groups.insert(sg);
+                  }
+                  break;
+#endif
               case ElementSurfaceShader:
                 {
                     SurfaceShaderElementHandler* surface_shader_handler =
@@ -1978,6 +2165,9 @@ namespace
         MaterialContainer           m_materials;
         ObjectContainer             m_objects;
         ObjectInstanceContainer     m_object_instances;
+#ifdef WITH_OSL
+        ShaderGroupContainer        m_shader_groups;
+#endif
         SurfaceShaderContainer      m_surface_shaders;
         TextureContainer            m_textures;
         TextureInstanceContainer    m_texture_instances;
@@ -2249,7 +2439,7 @@ namespace
         }
 
         virtual void end_element() OVERRIDE
-        {    
+        {
             ParametrizedElementHandler::end_element();
 
             m_frame = FrameFactory::create(m_name.c_str(), m_params);
@@ -2342,7 +2532,7 @@ namespace
         }
 
         virtual void end_element() OVERRIDE
-        {    
+        {
             ParametrizedElementHandler::end_element();
 
             m_configuration =
@@ -2456,7 +2646,7 @@ namespace
     //
     // <search_path> element handler.
     //
-    
+
     class SearchPathElementHandler
       : public ElementHandlerBase
     {
@@ -2633,7 +2823,7 @@ namespace
 
               case ElementSearchPaths:
                 // Nothing to do, search paths were directly inserted into the project.
-                break;        
+                break;
 
               assert_otherwise;
             }
@@ -2665,6 +2855,9 @@ namespace
             register_factory_helper<ColorElementHandler>("color", ElementColor);
             register_factory_helper<ConfigurationElementHandler>("configuration", ElementConfiguration);
             register_factory_helper<ConfigurationsElementHandler>("configurations", ElementConfigurations);
+#ifdef WITH_OSL
+            register_factory_helper<ShaderConnectionElementHandler>("connect_shaders", ElementShaderConnection);
+#endif
             register_factory_helper<EDFElementHandler>("edf", ElementEDF);
             register_factory_helper<EnvironmentElementHandler>("environment", ElementEnvironment);
             register_factory_helper<EnvironmentEDFElementHandler>("environment_edf", ElementEnvironmentEDF);
@@ -2686,6 +2879,10 @@ namespace
             register_factory_helper<SceneElementHandler>("scene", ElementScene);
             register_factory_helper<SearchPathElementHandler>("search_path", ElementSearchPath);
             register_factory_helper<SearchPathsElementHandler>("search_paths", ElementSearchPaths);
+#ifdef WITH_OSL
+            register_factory_helper<ShaderElementHandler>("shader", ElementShader);
+            register_factory_helper<ShaderGroupElementHandler>("shader_group", ElementShaderGroup);
+#endif
             register_factory_helper<SurfaceShaderElementHandler>("surface_shader", ElementSurfaceShader);
             register_factory_helper<TextureElementHandler>("texture", ElementTexture);
             register_factory_helper<TextureInstanceElementHandler>("texture_instance", ElementTextureInstance);

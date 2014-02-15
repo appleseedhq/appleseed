@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/modeling/shadergroup/shaderparamparser.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
@@ -66,6 +67,53 @@ struct Shader::Impl
     {
         for (const_each<StringDictionary> i = params.strings(); i; ++i)
         {
+            try
+            {
+                ShaderParamParser parser(i.it().value());
+                
+                switch (parser.param_type())
+                {
+                  case OSLParamTypeColor:
+                    assert(false);
+                  break;
+
+                  case OSLParamTypeFloat:
+                    {
+                        float val = parser.float_value();
+                        m_params.insert(ShaderParam::create_float_param(i.it().name(), val));
+                    }
+                  break;
+                    
+                  case OSLParamTypeInt:
+                    {
+                        int val = parser.int_value();
+                        m_params.insert(ShaderParam::create_int_param(i.it().name(), val));
+                    }
+                  break;
+
+                  case OSLParamTypeNormal:
+                  case OSLParamTypePoint:
+                  case OSLParamTypeString:
+                  case OSLParamTypeVector:
+                    assert(false);
+                  break;
+
+                  default:
+                    RENDERER_LOG_FATAL(
+                        "error adding osl param %s, of unknown type %s",
+                        i.it().name(),
+                        i.it().value());
+                }
+            }
+            catch(const ExceptionOSLParamParseError&)
+            {
+                RENDERER_LOG_FATAL(
+                    "error parsing osl param value. param = %s, value = %s",
+                    i.it().name(),
+                    i.it().value());
+            }
+
+            /*
             vector<string> tokens;
             tokenize(string(i.it().value()), Blanks, tokens);
             vector<string>::const_iterator tok_it(tokens.begin());
@@ -74,15 +122,9 @@ struct Shader::Impl
 
             if (tok == "float")
             {
-                ++tok_it;
-                float val = parse_param1<float>(i.it().name(), i.it().value(), tok_it, tok_end);
-                m_params.insert(ShaderParam::create_float_param(i.it().name(), val));
             }
             else if (tok == "int")
             {
-                ++tok_it;
-                int val = parse_param1<int>(i.it().name(), i.it().value(), tok_it, tok_end);
-                m_params.insert(ShaderParam::create_int_param(i.it().name(), val));
             }
             else if (tok == "color")
             {
@@ -119,11 +161,8 @@ struct Shader::Impl
             }
             else
             {
-                RENDERER_LOG_FATAL(
-                    "error adding osl param %s, of unknown type %s",
-                    i.it().name(),
-                    tok.c_str());
             }
+            */
 
             RENDERER_LOG_DEBUG("added osl param %s", i.it().name());
         }
@@ -134,17 +173,9 @@ struct Shader::Impl
     ShaderParamContainer    m_params;
 
   private:
-    void report_param_value_parse_error(const char* param_name,
-                                        const char* param_value_string)
-    {
-        RENDERER_LOG_FATAL(
-            "error parsing osl param value. param = %s, value = %s", 
-            param_name, 
-            param_value_string);
-    }
-    
+    /*
     template<class T>
-    T do_parse_param1(
+    T parse_one_value(
         const char*                             param_name,
         const char*                             param_value_string,
         vector<string>::const_iterator&         it,
@@ -152,7 +183,7 @@ struct Shader::Impl
     {
         if (it == end)
             report_param_value_parse_error(param_name, param_value_string);
-        
+
         string s(*it);
         s = trim_both(s);
 
@@ -171,14 +202,14 @@ struct Shader::Impl
         vector<string>::const_iterator&         it,
         const vector<string>::const_iterator&   end)
     {
-        T val = do_parse_param1<T>(param_name, param_value_string, it, end);
-        
+        T val = parse_one_value<T>(param_name, param_value_string, it, end);
+
         if (it != end)
             report_param_value_parse_error(param_name, param_value_string);
-        
+
         return val;
     }
-    
+
     template<class T>
     void parse_param3(
         const char*                             param_name,
@@ -190,8 +221,8 @@ struct Shader::Impl
         T&                                      b,
         T&                                      c)
     {
-        a = do_parse_param1<T>(param_name, param_value_string, it, end);
-        
+        a = parse_one_value<T>(param_name, param_value_string, it, end);
+
         if (it == end)
         {
             if (parse_as_color)
@@ -199,20 +230,21 @@ struct Shader::Impl
                 b = c = a;
                 return;
             }
-            
+
             report_param_value_parse_error(param_name, param_value_string);
         }
 
-        b = do_parse_param1<T>(param_name, param_value_string, it, end);
+        b = parse_one_value<T>(param_name, param_value_string, it, end);
 
         if (it == end)
             report_param_value_parse_error(param_name, param_value_string);
 
-        c = do_parse_param1<T>(param_name, param_value_string, it, end);
+        c = parse_one_value<T>(param_name, param_value_string, it, end);
 
         if (it != end)
             report_param_value_parse_error(param_name, param_value_string);
     }
+    */
 };
 
 Shader::Shader(
