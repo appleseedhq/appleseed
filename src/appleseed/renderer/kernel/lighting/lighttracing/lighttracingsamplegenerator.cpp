@@ -255,11 +255,19 @@ namespace
                 return m_sample_count;
             }
 
-            bool accept_scattering_mode(
+            bool accept_scattering(
                 const BSDF::Mode            prev_bsdf_mode,
                 const BSDF::Mode            bsdf_mode) const
             {
                 assert(bsdf_mode != BSDF::Absorption);
+
+                if (!m_params.m_enable_caustics)
+                {
+                    // Don't follow paths leading to caustics.
+                    if (BSDF::has_glossy_or_specular(bsdf_mode))
+                        return false;
+                }
+
                 return true;
             }
 
@@ -332,19 +340,11 @@ namespace
                 emit_sample(sample_position, radiance);
             }
 
-            bool visit_vertex(const PathVertex& vertex)
+            void visit_vertex(const PathVertex& vertex)
             {
-                if (!m_params.m_enable_caustics &&
-                    vertex.m_path_length > 1 &&
-                    (vertex.m_prev_bsdf_mode & (BSDF::Glossy | BSDF::Specular)) != 0)
-                {
-                    // This is a caustics path but caustics are disabled.
-                    return false;
-                }
-
-                // Terminate the path if there is no BSDF.
+                // Don't process this vertex if there is no BSDF.
                 if (vertex.m_bsdf == 0)
-                    return false;
+                    return;
 
                 // Start computing the vertex-to-camera direction vector.
                 Vector3d vertex_to_camera = m_camera_position - vertex.get_point();
@@ -352,7 +352,7 @@ namespace
                 // Reject vertices on the back side of the shading surface.
                 const Vector3d& shading_normal = vertex.get_shading_normal();
                 if (dot(vertex_to_camera, shading_normal) <= 0.0)
-                    return true;                        // proceed with this path
+                    return;
 
                 // Compute the transmission factor between the vertex and the camera.
                 Vector2d sample_position;
@@ -365,7 +365,7 @@ namespace
 
                 // Ignore occluded vertices.
                 if (transmission == 0.0)
-                    return true;                        // proceed with this path
+                    return;
 
                 // Normalize the vertex-to-camera vector.
                 const double square_distance = square_norm(vertex_to_camera);
@@ -391,7 +391,7 @@ namespace
                         BSDF::AllScatteringModes,       // todo: likely incorrect
                         bsdf_value);
                 if (bsdf_prob == 0.0)
-                    return true;                        // proceed with this path
+                    return;
 
                 // Compute the solid angle sustained by the pixel.
                 const double solid_angle = m_camera.get_pixel_solid_angle(m_frame, sample_position);
@@ -402,9 +402,6 @@ namespace
                 radiance *= bsdf_value;
                 radiance *= static_cast<float>(transmission / (square_distance * solid_angle));
                 emit_sample(sample_position, radiance);
-
-                // Proceed with this path.
-                return true;
             }
 
             double vertex_visible_to_camera(

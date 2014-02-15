@@ -104,32 +104,37 @@ namespace
         {
         }
 
-        bool accept_scattering_mode(
+        bool accept_scattering(
             const BSDF::Mode        prev_bsdf_mode,
             const BSDF::Mode        bsdf_mode) const
         {
             assert(bsdf_mode != BSDF::Absorption);
-            return true;
-        }
 
-        bool visit_vertex(const PathVertex& vertex)
-        {
+            // Terminate the path at the first vertex if we aren't interested in indirect photons.
+            if (!m_store_indirect)
+                return false;
+
             if (!m_store_caustics)
             {
-                // No caustics.
-                if (vertex.m_path_length > 1 && BSDF::has_glossy_or_specular(vertex.m_prev_bsdf_mode))
+                // Don't follow paths leading to caustics.
+                if (BSDF::has_glossy_or_specular(bsdf_mode))
                     return false;
             }
 
+            return true;
+        }
+
+        void visit_vertex(const PathVertex& vertex)
+        {
             if (vertex.m_path_length > 1 || m_store_direct)
             {
                 // Don't store photons on surfaces without a BSDF.
                 if (vertex.m_bsdf == 0)
-                    return m_store_indirect;
+                    return;
 
                 // Don't store photons on purely specular surfaces.
                 if (vertex.m_bsdf->is_purely_specular())
-                    return m_store_indirect;
+                    return;
 
                 // Create and store a new photon.
                 SPPMPhoton photon;
@@ -140,8 +145,6 @@ namespace
                 photon.m_data.m_flux *= vertex.m_throughput;
                 m_photons.push_back(photon);
             }
-
-            return m_store_indirect;
         }
 
         void visit_environment(

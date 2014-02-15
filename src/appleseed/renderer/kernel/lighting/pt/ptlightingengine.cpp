@@ -286,7 +286,7 @@ namespace
             {
             }
 
-            bool accept_scattering_mode(
+            bool accept_scattering(
                 const BSDF::Mode        prev_bsdf_mode,
                 const BSDF::Mode        bsdf_mode) const
             {
@@ -294,7 +294,7 @@ namespace
 
                 if (!m_params.m_enable_caustics)
                 {
-                    // No caustics.
+                    // Don't follow paths leading to caustics.
                     if (BSDF::has_diffuse(prev_bsdf_mode) && BSDF::has_glossy_or_specular(bsdf_mode))
                         return false;
                 }
@@ -329,7 +329,7 @@ namespace
             {
             }
 
-            bool visit_vertex(const PathVertex& vertex)
+            void visit_vertex(const PathVertex& vertex)
             {
                 if (vertex.m_edf &&
                     vertex.m_cos_on > 0.0 &&
@@ -345,9 +345,6 @@ namespace
                     m_path_radiance += emitted_radiance;
                     m_path_aovs.add(vertex.m_edf->get_render_layer_index(), emitted_radiance);
                 }
-
-                // Proceed with this path.
-                return true;
             }
 
             void visit_environment(
@@ -413,7 +410,7 @@ namespace
             {
             }
 
-            bool visit_vertex(const PathVertex& vertex)
+            void visit_vertex(const PathVertex& vertex)
             {
                 // Any light contribution after a diffuse or glossy bounce is considered indirect.
                 if (vertex.m_prev_bsdf_mode & (BSDF::Diffuse | BSDF::Glossy))
@@ -425,7 +422,7 @@ namespace
                 if (vertex.m_bsdf)
                 {
                     const int scattering_modes =
-                        vertex.m_prev_bsdf_mode == BSDF::Diffuse && !m_params.m_enable_caustics
+                        !m_params.m_enable_caustics && vertex.m_prev_bsdf_mode == BSDF::Diffuse
                             ? BSDF::Diffuse
                             : BSDF::AllScatteringModes;
 
@@ -474,9 +471,6 @@ namespace
                 m_path_radiance += vertex_radiance;
                 vertex_aovs *= vertex.m_throughput;
                 m_path_aovs += vertex_aovs;
-
-                // Proceed with this path.
-                return true;
             }
 
             void add_direct_lighting_contribution(

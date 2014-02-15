@@ -228,7 +228,7 @@ namespace
             {
             }
 
-            bool accept_scattering_mode(
+            bool accept_scattering(
                 const BSDF::Mode        prev_bsdf_mode,
                 const BSDF::Mode        bsdf_mode) const
             {
@@ -241,7 +241,7 @@ namespace
                 return true;
             }
 
-            bool visit_vertex(const PathVertex& vertex)
+            void visit_vertex(const PathVertex& vertex)
             {
                 Spectrum vertex_radiance(0.0f);
                 SpectrumStack vertex_aovs(m_path_aovs.size(), 0.0f);
@@ -278,9 +278,6 @@ namespace
                 m_path_radiance += vertex_radiance;
                 vertex_aovs *= vertex.m_throughput;
                 m_path_aovs += vertex_aovs;
-
-                // Proceed with this path.
-                return true;
             }
 
             void add_direct_lighting_contribution(

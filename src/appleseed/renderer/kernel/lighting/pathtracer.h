@@ -246,8 +246,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         vertex.m_cos_on = foundation::dot(vertex.m_outgoing, vertex.get_shading_normal());
 
         // Compute radiance contribution at this vertex.
-        if (!m_path_visitor.visit_vertex(vertex))
-            break;
+        m_path_visitor.visit_vertex(vertex);
 
         // Terminate the path if the material doesn't have a BSDF.
         if (vertex.m_bsdf == 0)
@@ -272,8 +271,8 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         if (bsdf_mode == BSDF::Absorption)
             break;
 
-        // Terminate the path if this scattering mode is not accepted.
-        if (!m_path_visitor.accept_scattering_mode(vertex.m_prev_bsdf_mode, bsdf_mode))
+        // Terminate the path if this scattering event is not accepted.
+        if (!m_path_visitor.accept_scattering(vertex.m_prev_bsdf_mode, bsdf_mode))
             break;
 
         vertex.m_prev_bsdf_prob = bsdf_prob;
