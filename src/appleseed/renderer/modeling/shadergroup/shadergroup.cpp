@@ -5,7 +5,6 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2012-2013 Esteban Tovagliari, Jupiter Jazz Limited
 // Copyright (c) 2014 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -30,195 +29,19 @@
 // Interface header.
 #include "shadergroup.h"
 
-// boost headers.
-#include <boost/bind.hpp>
-#include <boost/range/algorithm/for_each.hpp>
+// appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
 
-// Standard headers.
-#include <cassert>
-#include <cstring>
-#include <string>
-#include <vector>
+// appleseed.foundation headers.
+#include "foundation/utility/foreach.h"
+#include "foundation/utility/job/abortswitch.h"
+#include "foundation/utility/uid.h"
 
 using namespace foundation;
 using namespace std;
 
 namespace renderer
 {
-
-namespace
-{
-    class Parameter
-    {
-      public:
-        static Parameter int_parameter(const char* name, int value)
-        {
-            Parameter p;
-            p.m_name = name;
-            p.m_type_desc = OSL::TypeDesc::TypeInt;
-            p.m_int_value = value;
-            return p;
-        }
-
-        static Parameter float_parameter(const char* name, float value)
-        {
-            Parameter p;
-            p.m_name = name;
-            p.m_type_desc = OSL::TypeDesc::TypeFloat;
-            p.m_float_value[0] = value;
-            return p;
-        }
-
-        static Parameter vector_parameter(const char* name, float vx, float vy, float vz)
-        {
-            Parameter p;
-            p.m_name = name;
-            p.m_type_desc = OSL::TypeDesc::TypeVector;
-            p.m_float_value[0] = vx;
-            p.m_float_value[1] = vy;
-            p.m_float_value[2] = vz;
-            return p;
-        }
-
-        static Parameter point_parameter(const char* name, float vx, float vy, float vz)
-        {
-            Parameter p;
-            p.m_name = name;
-            p.m_type_desc = OSL::TypeDesc::TypePoint;
-            p.m_float_value[0] = vx;
-            p.m_float_value[1] = vy;
-            p.m_float_value[2] = vz;
-            return p;
-        }
-
-        static Parameter color_parameter(const char* name, float vx, float vy, float vz)
-        {
-            Parameter p;
-            p.m_name = name;
-            p.m_type_desc = OSL::TypeDesc::TypeColor;
-            p.m_float_value[0] = vx;
-            p.m_float_value[1] = vy;
-            p.m_float_value[2] = vz;
-            return p;
-        }
-
-        static Parameter string_parameter(const char* name, const char* value)
-        {
-            Parameter p;
-            p.m_name = name;
-            p.m_type_desc = OSL::TypeDesc::TypeString;
-            p.m_string_value = value;
-            return p;
-        }
-
-        void add(OSL::ShadingSystem& shading_system)
-        {
-            shading_system.Parameter("name", m_type_desc, value());
-        }
-
-        void* value()
-        {
-            if (m_type_desc == OSL::TypeDesc::TypeInt)
-            {
-                return &m_int_value;
-            }
-
-            if (m_type_desc == OSL::TypeDesc::TypeFloat)
-            {
-                return &m_float_value;
-            }
-
-            if (m_type_desc == OSL::TypeDesc::TypeVector)
-            {
-                return &m_float_value;
-            }
-
-            if (m_type_desc == OSL::TypeDesc::TypePoint)
-            {
-                return &m_float_value;
-            }
-
-            if (m_type_desc == OSL::TypeDesc::TypeColor)
-            {
-                return &m_float_value;
-            }
-
-            if (m_type_desc == OSL::TypeDesc::TypeString)
-            {
-                return const_cast<char*>(m_string_value.c_str());
-            }
-
-            assert(!"Invalid parameter type.");
-            return 0;
-        }
-
-        string              m_name;
-        OSL::TypeDesc       m_type_desc;
-        int                 m_int_value;
-        float               m_float_value[3];
-        string              m_string_value;
-
-      private:
-        Parameter() {}
-    };
-
-    struct Shader
-    {
-        vector<Parameter>       m_params;
-        const string            m_type;
-        const string            m_name;
-        const string            m_layer;
-
-        Shader(
-            const char*         type,
-            const char*         name,
-            const char*         layer,
-            vector<Parameter>&  params)
-          : m_type(type)
-          , m_name(name)
-          , m_layer(layer)
-          , m_params()
-        {
-            m_params.swap(params);
-        }
-
-        void add(OSL::ShadingSystem& shading_system)
-        {
-            boost::range::for_each(m_params, boost::bind(&Parameter::add, _1, boost::ref(shading_system)));
-            shading_system.Shader(m_type.c_str(), m_name.c_str(), m_layer.c_str());
-        }
-    };
-
-    struct Connection
-    {
-        const string    m_src_layer;
-        const string    m_src_param;
-        const string    m_dst_layer;
-        const string    m_dst_param;
-
-        Connection(
-            const char* src_layer,
-            const char* src_param,
-            const char* dst_layer,
-            const char* dst_param)
-          : m_src_layer(src_layer)
-          , m_src_param(src_param)
-          , m_dst_layer(dst_layer)
-          , m_dst_param(dst_param)
-        {
-        }
-
-        void add(OSL::ShadingSystem& shading_system)
-        {
-            shading_system.ConnectShaders(
-                m_src_layer.c_str(),
-                m_src_param.c_str(),
-                m_dst_layer.c_str(),
-                m_dst_param.c_str());
-        }
-    };
-}
-
 
 //
 // ShaderGroup class implementation.
@@ -229,39 +52,10 @@ namespace
     const UniqueID g_class_uid = new_guid();
 }
 
-struct ShaderGroup::Impl
-{
-    void clear()
-    {
-        m_params_to_assign.clear();
-        m_shaders.clear();
-        m_connections.clear();
-    }
-
-    void add_shader(const char* type, const char* name, const char* layer)
-    {
-        assert(m_params_to_assign.empty());
-
-        m_shaders.push_back(Shader(type, name, layer, m_params_to_assign));
-    }
-
-    vector<Parameter>   m_params_to_assign;
-    vector<Shader>      m_shaders;
-    vector<Connection>  m_connections;
-};
-
-ShaderGroup::ShaderGroup(
-    const char*         name,
-    const ParamArray&   params)
-  : Entity(g_class_uid, params)
-  , impl(new Impl())
+ShaderGroup::ShaderGroup(const char* name)
+  : ConnectableEntity(g_class_uid, ParamArray())
 {
     set_name(name);
-}
-
-ShaderGroup::~ShaderGroup()
-{
-    delete impl;
 }
 
 void ShaderGroup::release()
@@ -274,55 +68,102 @@ const char* ShaderGroup::get_model() const
     return ShaderGroupFactory::get_model();
 }
 
-void ShaderGroup::add_int_parameter(const char*name, int value)
+void ShaderGroup::add_shader(
+    const char*         type,
+    const char*         name,
+    const char*         layer,
+    const ParamArray&   params)
 {
-    impl->m_params_to_assign.push_back(Parameter::int_parameter(name, value));
-}
+    auto_release_ptr<Shader> s(
+        new Shader(
+            type,
+            name,
+            layer,
+            params));
 
-void ShaderGroup::add_float_parameter(const char*name, float value)
-{
-    impl->m_params_to_assign.push_back(Parameter::float_parameter(name, value));
-}
+    m_shaders.insert(s);
 
-void ShaderGroup::add_vector_parameter(const char* name, float vx, float vy, float vz)
-{
-    impl->m_params_to_assign.push_back(Parameter::vector_parameter(name, vx, vy, vz));
-}
-
-void ShaderGroup::add_point_parameter(const char* name, float vx, float vy, float vz)
-{
-    impl->m_params_to_assign.push_back(Parameter::point_parameter(name, vx, vy, vz));
-}
-
-void ShaderGroup::add_color_parameter(const char* name, float vx, float vy, float vz)
-{
-    impl->m_params_to_assign.push_back(Parameter::color_parameter(name, vx, vy, vz));
-}
-
-void ShaderGroup::add_string_parameter(const char* name, const char* value)
-{
-    impl->m_params_to_assign.push_back(Parameter::string_parameter(name, value));
-}
-
-void ShaderGroup::add_shader(const char* type, const char* name, const char* layer)
-{
-    impl->add_shader(type, name, layer);
-}
-
-void ShaderGroup::add_shader(const char* name, const char* layer)
-{
-    add_shader("surface", name, layer);
+    RENDERER_LOG_DEBUG("created osl shader %s, layer = %s", name, layer);
 }
 
 void ShaderGroup::add_connection(
-    const char*         src_layer,
-    const char*         src_param,
-    const char*         dst_layer,
-    const char*         dst_param)
+    const char* src_layer,
+    const char* src_param,
+    const char* dst_layer,
+    const char* dst_param)
 {
-    impl->m_connections.push_back(Connection(src_layer, src_param, dst_layer, dst_param));
+    auto_release_ptr<ShaderConnection> c(
+        new ShaderConnection(
+            src_layer,
+            src_param,
+            dst_layer,
+            dst_param));
+    m_connections.insert(c);
+
+    RENDERER_LOG_DEBUG("created osl connection: src = %s, src_param = %s, dst = %s, dst_param = %s",
+        src_layer,
+        src_param,
+        dst_layer,
+        dst_param);
 }
 
+bool ShaderGroup::on_frame_begin(
+    const Project&              project,
+    const Assembly&             assembly,
+    OSL::ShadingSystem*         shading_system,
+    foundation::AbortSwitch*    abort_switch)
+{
+    RENDERER_LOG_DEBUG("setup shader group %s", get_name());
+
+    try
+    {
+        m_shadergroup_ref = shading_system->ShaderGroupBegin(get_name());
+
+        if (!is_valid())
+        {
+            RENDERER_LOG_ERROR("shader group begin error: shader = %s", get_name());
+            return false;
+        }
+
+        bool success = true;
+
+        for (each<ShaderContainer> i = m_shaders; i; ++i)
+        {
+            if (is_aborted(abort_switch))
+                return success;
+
+            success = success && i->add(*shading_system);
+        }
+
+        for (each<ShaderConnectionContainer> i = m_connections; i; ++i)
+        {
+            if (is_aborted(abort_switch))
+                return success;
+
+            success = success && i->add(*shading_system);
+        }
+
+        if (!shading_system->ShaderGroupEnd())
+        {
+            RENDERER_LOG_ERROR("shader group end error: shader = %s", get_name());
+            return false;
+        }
+
+        return success;
+    }
+    catch(const exception& e)
+    {
+        RENDERER_LOG_ERROR("shader group exception: what = %s", e.what());
+        return false;
+    }
+}
+
+void ShaderGroup::on_frame_end(
+    const Project&      project,
+    const Assembly&     assembly)
+{
+    m_shadergroup_ref.reset();
+}
 
 //
 // ShaderGroupFactory class implementation.
@@ -330,14 +171,12 @@ void ShaderGroup::add_connection(
 
 const char* ShaderGroupFactory::get_model()
 {
-    return "osl_shadergroup";
+    return "shadergroup";
 }
 
-auto_release_ptr<ShaderGroup> ShaderGroupFactory::create(
-    const char*         name,
-    const ParamArray&   params)
+auto_release_ptr<ShaderGroup> ShaderGroupFactory::create(const char* name)
 {
-    return auto_release_ptr<ShaderGroup>(new ShaderGroup(name, params));
+    return auto_release_ptr<ShaderGroup>(new ShaderGroup(name));
 }
 
 }   // namespace renderer

@@ -1149,6 +1149,11 @@ set (renderer_meta_tests_sources
     renderer/meta/tests/test_transformsequence.cpp
     renderer/meta/tests/test_variationtracker.cpp
 )
+if (WITH_OSL)
+    list (APPEND renderer_meta_tests_sources
+        renderer/meta/tests/test_shaderparamparser.cpp
+    )
+endif ()
 list (APPEND appleseed_sources
     ${renderer_meta_tests_sources}
 )
@@ -1535,12 +1540,16 @@ source_group ("renderer\\modeling\\texture" FILES
 
 if (WITH_OSL)
     set (renderer_modeling_shadergroup
+        renderer/modeling/shadergroup/shader.cpp
+        renderer/modeling/shadergroup/shader.h
         renderer/modeling/shadergroup/shaderconnection.cpp
         renderer/modeling/shadergroup/shaderconnection.h
         renderer/modeling/shadergroup/shadergroup.cpp
         renderer/modeling/shadergroup/shadergroup.h
         renderer/modeling/shadergroup/shaderparam.cpp
         renderer/modeling/shadergroup/shaderparam.h
+        renderer/modeling/shadergroup/shaderparamparser.cpp
+        renderer/modeling/shadergroup/shaderparamparser.h
     )
     list (APPEND appleseed_sources
         ${renderer_modeling_shadergroup}
