@@ -29,6 +29,9 @@
 // Interface header.
 #include "shaderparam.h"
 
+// appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
+
 // appleseed.foundation headers.
 #include "foundation/utility/otherwise.h"
 #include "foundation/utility/uid.h"

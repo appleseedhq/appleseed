@@ -5,7 +5,6 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2012-2013 Esteban Tovagliari, Jupiter Jazz Limited
 // Copyright (c) 2014 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -31,11 +30,13 @@
 #define APPLESEED_RENDERER_MODELING_SHADERGROUP_SHADERGROUP_H
 
 // appleseed.renderer headers.
-#include "renderer/modeling/entity/entity.h"
+#include "renderer/modeling/entity/connectableentity.h"
+#include "renderer/modeling/scene/containers.h"
+#include "renderer/modeling/shadergroup/shader.h"
+#include "renderer/modeling/shadergroup/shaderconnection.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
-#include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -46,6 +47,11 @@
 // OSL headers.
 #include <OSL/oslexec.h>
 
+// Forward declarations.
+namespace foundation    { class AbortSwitch; }
+namespace renderer      { class Assembly; }
+namespace renderer      { class Project; }
+
 namespace renderer
 {
 
@@ -54,51 +60,87 @@ namespace renderer
 //
 
 class DLLSYMBOL ShaderGroup
-  : public Entity
+  : public ConnectableEntity
 {
   public:
-    // Delete this instance.
     virtual void release() OVERRIDE;
 
-    // Return a string identifying the model of this shader group.
+    // Return a string identifying the model of this shadergroup.
     const char* get_model() const;
 
     // Adds a new shader to the group.
-    void add_shader(const char* type, const char* name, const char* layer);
-
-    // Adds a new shader to the group.
-    void add_shader(const char* name, const char* layer);
-
-    // Sets a parameter value for the last added shader.
-    void add_int_parameter(const char*name, int value);
-    void add_float_parameter(const char*name, float value);
-    void add_vector_parameter(const char* name, float vx, float vy, float vz);
-    void add_point_parameter(const char* name, float vx, float vy, float vz);
-    void add_color_parameter(const char* name, float vx, float vy, float vz);
-    void add_string_parameter(const char* name, const char* value);
+    void add_shader(
+        const char*         type,
+        const char*         name,
+        const char*         layer,
+        const ParamArray&   params);
 
     // Adds a connection between two parameters of two shaders.
     void add_connection(
-        const char*         src_layer,
-        const char*         src_param,
-        const char*         dst_layer,
-        const char*         dst_param);
+        const char* src_layer,
+        const char* src_param,
+        const char* dst_layer,
+        const char* dst_param);
+
+    // This method is called once before rendering each frame.
+    // Returns true on success, false otherwise.
+    bool on_frame_begin(
+        const Project&              project,
+        const Assembly&             assembly,
+        OSL::ShadingSystem*         shading_system,
+        foundation::AbortSwitch*    abort_switch = 0);
+
+    // This method is called once after rendering each frame.
+    void on_frame_end(
+        const Project&      project,
+        const Assembly&     assembly);
+
+    // Access the Shaders.
+    const ShaderContainer& shaders() const;
+
+    // Access the ShaderConnections.
+    const ShaderConnectionContainer& shader_connections() const;
+
+    // Returns true if the shader group was setup correctly.
+    bool is_valid() const;
+
+    // Return a reference-counted (but opaque) reference to the OSL shader.
+    OSL::ShaderGroupRef& shadergroup_ref();
 
   private:
     friend class ShaderGroupFactory;
 
-    struct Impl;
-    Impl* impl;
+    ShaderContainer              m_shaders;
+    ShaderConnectionContainer    m_connections;
+    OSL::ShaderGroupRef          m_shadergroup_ref;
 
     // Constructor.
-    ShaderGroup(
-        const char*         name,
-        const ParamArray&   params);
-
-    // Destructor.
-    ~ShaderGroup();
+    explicit ShaderGroup(const char* name);
 };
 
+//
+// ShaderGroup class implementation.
+//
+
+inline const ShaderContainer& ShaderGroup::shaders() const
+{
+    return m_shaders;
+}
+
+inline const ShaderConnectionContainer& ShaderGroup::shader_connections() const
+{
+    return m_connections;
+}
+
+inline OSL::ShaderGroupRef& ShaderGroup::shadergroup_ref()
+{
+    return m_shadergroup_ref;
+}
+
+inline bool ShaderGroup::is_valid() const
+{
+    return m_shadergroup_ref.get() != 0;
+}
 
 //
 // ShaderGroup factory.
@@ -111,9 +153,7 @@ class DLLSYMBOL ShaderGroupFactory
     static const char* get_model();
 
     // Create a new ShaderGroup.
-    static foundation::auto_release_ptr<ShaderGroup> create(
-        const char*         name,
-        const ParamArray&   params);
+    static foundation::auto_release_ptr<ShaderGroup> create(const char* name);
 };
 
 }       // namespace renderer
