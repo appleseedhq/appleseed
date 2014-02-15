@@ -51,7 +51,7 @@ ShaderParamParser::ShaderParamParser(const std::string& string)
     tokenize(string, Blanks, m_tokens);
     m_tok_it = m_tokens.begin();
     m_tok_end = m_tokens.end();
-    
+
     const std::string tok(*m_tok_it);
 
     if (tok == "color")
@@ -74,77 +74,15 @@ ShaderParamParser::ShaderParamParser(const std::string& string)
     ++m_tok_it;
 }
 
-template<class T>
-T ShaderParamParser::parse_one_value(bool expect_end)
+std::string ShaderParamParser::parse_string_value()
 {
-    if (m_tok_it == m_tok_end)
-        throw ExceptionOSLParamParseError();
-
-    string s(*m_tok_it);
-    s = foundation::trim_both(s);
-
-    if (s[0] == '\0')
-        s.erase(0, 1);
-
-    T value = convert_from_string<T>(s);
-    ++m_tok_it;
-    
-    if (expect_end)
-    {
-        if (m_tok_it != m_tok_end)
-            throw ExceptionOSLParamParseError();
-    }
-
-    return value;
-}
-
-template<class T>
-void ShaderParamParser::parse_three_values(
-    T& a, 
-    T& b,
-    T& c,
-    bool parse_as_color)
-{
-    a = parse_one_value<T>();
-
-    if (m_tok_it == m_tok_end)
-    {
-        if (parse_as_color)
-        {
-            b = c = a;
-            return;
-        }
-
-        throw ExceptionOSLParamParseError();
-    }
-
-    b = parse_one_value<T>();
-
-    if (m_tok_it == m_tok_end)
-        throw ExceptionOSLParamParseError();
-
-    c = parse_one_value<T>();
+    assert(param_type() == OSLParamTypeString);
+    std::string val(*m_tok_it++);
 
     if (m_tok_it != m_tok_end)
         throw ExceptionOSLParamParseError();
-}
 
-float ShaderParamParser::float_value()
-{
-    assert(param_type() == OSLParamTypeFloat);
-    return parse_one_value<float>(true);
-}
-
-int ShaderParamParser::int_value()
-{
-    assert(param_type() == OSLParamTypeInt);
-    return parse_one_value<int>(true);
-}
-
-void ShaderParamParser::color_value(float& r, float& g, float& b)
-{
-    assert(param_type() == OSLParamTypeColor);
-    parse_three_values(r, g, b, true);
+    return val;
 }
 
 }   // namespace renderer

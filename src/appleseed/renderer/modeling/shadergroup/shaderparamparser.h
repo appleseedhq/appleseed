@@ -64,11 +64,18 @@ class ShaderParamParser
 
     OSLParamType param_type() const;
 
-    float float_value();
-    int int_value();
-    
-    void color_value(float& r, float& g, float& b);
-    
+    template<class T>
+    T parse_one_value(bool expect_end = true);
+
+    template<class T>
+    void parse_three_values(
+        T& a, 
+        T& b,
+        T& c,
+        bool parse_as_color = false);
+
+    std::string parse_string_value();
+
   private:
     std::vector<std::string>                    m_tokens;
     OSLParamType                                m_param_type;
@@ -76,17 +83,7 @@ class ShaderParamParser
     std::vector<std::string>::const_iterator    m_tok_end;
 
     template<class T>
-    T convert_from_string(const std::string& s) const;
-    
-    template<class T>
-    T parse_one_value(bool expect_end = false);
-    
-    template<class T>
-    void parse_three_values(
-        T& a, 
-        T& b,
-        T& c,
-        bool parse_as_color = false);
+    T convert_from_string(const std::string& s) const;    
 };
 
 //
@@ -109,6 +106,58 @@ T ShaderParamParser::convert_from_string(const std::string& s) const
     {
         throw ExceptionOSLParamParseError();
     }
+}
+
+template<class T>
+T ShaderParamParser::parse_one_value(bool expect_end)
+{
+    if (m_tok_it == m_tok_end)
+        throw ExceptionOSLParamParseError();
+
+    std::string s(*m_tok_it);
+    s = foundation::trim_both(s);
+
+    if (s[0] == '\0')
+        s.erase(0, 1);
+
+    T value = convert_from_string<T>(s);
+    ++m_tok_it;
+
+    if (expect_end)
+    {
+        if (m_tok_it != m_tok_end)
+            throw ExceptionOSLParamParseError();
+    }
+
+    return value;
+}
+
+template<class T>
+void ShaderParamParser::parse_three_values(
+    T& a,
+    T& b,
+    T& c,
+    bool parse_as_color)
+{
+    a = parse_one_value<T>(false);
+
+    if (m_tok_it == m_tok_end)
+    {
+        if (parse_as_color)
+        {
+            b = c = a;
+            return;
+        }
+
+        throw ExceptionOSLParamParseError();
+    }
+
+    b = parse_one_value<T>(false);
+
+    if (m_tok_it == m_tok_end)
+        throw ExceptionOSLParamParseError();
+
+    c = parse_one_value<T>(true);
 }
 
 }       // namespace renderer

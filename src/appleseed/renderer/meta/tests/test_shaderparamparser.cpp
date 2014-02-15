@@ -38,17 +38,88 @@ using namespace renderer;
 
 TEST_SUITE(Renderer_Modeling_ShaderParamParser)
 {
-    TEST_CASE(ShaderParamParserFloat)
+    TEST_CASE(ShaderParamParser3Values)
+    {
+        {
+            ShaderParamParser parser("color 1.0");
+            EXPECT_EQ(parser.param_type(), OSLParamTypeColor);
+            float r, g, b;
+            parser.parse_three_values<float>(r, g, b, true);
+            EXPECT_EQ(r, 1.0f);
+            EXPECT_EQ(g, 1.0f);
+            EXPECT_EQ(b, 1.0f);
+        }
+        {
+            ShaderParamParser parser("color 1.0 0.5 0.0");
+            EXPECT_EQ(parser.param_type(), OSLParamTypeColor);
+            float r, g, b;
+            parser.parse_three_values<float>(r, g, b, true);
+            EXPECT_EQ(r, 1.0f);
+            EXPECT_EQ(g, 0.5f);
+            EXPECT_EQ(b, 0.0f);
+        }
+    }
+
+    TEST_CASE(ShaderParamParser1Value)
     {
         ShaderParamParser parser("float 1.0");
         EXPECT_EQ(parser.param_type(), OSLParamTypeFloat);
-        EXPECT_EQ(parser.float_value(), 1.0f);
+        EXPECT_EQ(parser.parse_one_value<float>(), 1.0f);
     }
 
-    TEST_CASE(ShaderParamParserInt)
+    TEST_CASE(ShaderParamParserString)
     {
-        ShaderParamParser parser("int 7");
-        EXPECT_EQ(parser.param_type(), OSLParamTypeInt);
-        EXPECT_EQ(parser.int_value(), 7);
+        ShaderParamParser parser("string test_string");
+        EXPECT_EQ(parser.parse_string_value(), "test_string");
+    }
+
+    TEST_CASE(ShaderParamParserUnknownType)
+    {
+        EXPECT_EXCEPTION(ExceptionOSLParamParseError,
+        {
+            ShaderParamParser( "unknown-type 77");
+        });
+    }
+
+    TEST_CASE(ShaderParamParserInvalidSyntax)
+    {
+        {
+            ShaderParamParser parser("color 1.0 0.5");
+            float r, g, b;
+
+            EXPECT_EXCEPTION(ExceptionOSLParamParseError,
+            {
+                parser.parse_three_values<float>(r, g, b, true);
+            });
+        }
+
+        {
+            ShaderParamParser parser("vector 77.0 33.2");
+            float x, y, z;
+
+            EXPECT_EXCEPTION(ExceptionOSLParamParseError,
+            {
+                parser.parse_three_values<float>(x, y, z);
+            });
+        }
+
+        {
+            ShaderParamParser parser("float 1.0 0.5");
+            float r, g, b;
+
+            EXPECT_EXCEPTION(ExceptionOSLParamParseError,
+            {
+                parser.parse_one_value<float>();
+            });
+        }
+
+        {
+            ShaderParamParser parser( "string a b");
+
+            EXPECT_EXCEPTION(ExceptionOSLParamParseError,
+            {
+                parser.parse_string_value();
+            });
+        }
     }
 }

@@ -64,7 +64,7 @@ class DLLSYMBOL Shader
   public:
     // Destructor.
     ~Shader();
-    
+
     virtual void release() OVERRIDE;
 
     const char *get_type() const;
