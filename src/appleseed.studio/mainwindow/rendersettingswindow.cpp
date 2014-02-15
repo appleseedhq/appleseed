@@ -1155,7 +1155,8 @@ void RenderSettingsWindow::create_panels(const Configuration& config)
 
     m_panels.clear();
 
-    m_panels.push_back(new ImagePlaneSamplingPanel(config));
+    if (!interactive)
+        m_panels.push_back(new ImagePlaneSamplingPanel(config));
 
     if (interactive)
         m_panels.push_back(new InteractiveConfigurationLightingPanel(config));
