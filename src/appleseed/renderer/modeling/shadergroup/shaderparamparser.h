@@ -53,6 +53,7 @@ struct ExceptionOSLParamParseError
 {
 };
 
+
 //
 // An utility class to parse OSL shader parameter value strings.
 //
@@ -60,7 +61,7 @@ struct ExceptionOSLParamParseError
 class ShaderParamParser
 {
   public:
-    explicit ShaderParamParser(const std::string& string);
+    explicit ShaderParamParser(const std::string& s);
 
     OSLParamType param_type() const;
 
@@ -69,10 +70,10 @@ class ShaderParamParser
 
     template <typename T>
     void parse_three_values(
-        T& a, 
-        T& b,
-        T& c,
-        const bool parse_as_color = false);
+        T&          a, 
+        T&          b,
+        T&          c,
+        const bool  parse_as_color = false);
 
     std::string parse_string_value();
 
@@ -83,7 +84,7 @@ class ShaderParamParser
     std::vector<std::string>::const_iterator    m_tok_end;
 
     template <typename T>
-    T convert_from_string(const std::string& s) const;    
+    T convert_from_string(const std::string& s) const;
 };
 
 //
@@ -102,7 +103,7 @@ T ShaderParamParser::convert_from_string(const std::string& s) const
     {
         return foundation::from_string<T>(s);
     }
-    catch(const foundation::ExceptionStringConversionError&)
+    catch (const foundation::ExceptionStringConversionError&)
     {
         throw ExceptionOSLParamParseError();
     }
@@ -120,7 +121,7 @@ T ShaderParamParser::parse_one_value(const bool expect_end)
     if (s[0] == '\0')
         s.erase(0, 1);
 
-    T value = convert_from_string<T>(s);
+    const T value = convert_from_string<T>(s);
     ++m_tok_it;
 
     if (expect_end)
@@ -134,10 +135,10 @@ T ShaderParamParser::parse_one_value(const bool expect_end)
 
 template <typename T>
 void ShaderParamParser::parse_three_values(
-    T& a,
-    T& b,
-    T& c,
-    bool parse_as_color)
+    T&          a,
+    T&          b,
+    T&          c,
+    const bool  parse_as_color)
 {
     a = parse_one_value<T>(false);
 
@@ -162,4 +163,4 @@ void ShaderParamParser::parse_three_values(
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_SHADERGROUP_SHADERPARAM_H
+#endif  // !APPLESEED_RENDERER_MODELING_SHADERGROUP_SHADERPARAMPARSER_H

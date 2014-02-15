@@ -31,11 +31,15 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/foreach.h"
 #include "foundation/utility/job/abortswitch.h"
+#include "foundation/utility/foreach.h"
 #include "foundation/utility/uid.h"
+
+// Standard headers.
+#include <exception>
 
 using namespace foundation;
 using namespace std;
@@ -74,33 +78,34 @@ void ShaderGroup::add_shader(
     const char*         layer,
     const ParamArray&   params)
 {
-    auto_release_ptr<Shader> s(
+    auto_release_ptr<Shader> shader(
         new Shader(
             type,
             name,
             layer,
             params));
 
-    m_shaders.insert(s);
+    m_shaders.insert(shader);
 
-    RENDERER_LOG_DEBUG("created osl shader %s, layer = %s", name, layer);
+    RENDERER_LOG_DEBUG("created osl shader %s, layer = %s.", name, layer);
 }
 
 void ShaderGroup::add_connection(
-    const char* src_layer,
-    const char* src_param,
-    const char* dst_layer,
-    const char* dst_param)
+    const char*         src_layer,
+    const char*         src_param,
+    const char*         dst_layer,
+    const char*         dst_param)
 {
-    auto_release_ptr<ShaderConnection> c(
+    auto_release_ptr<ShaderConnection> connection(
         new ShaderConnection(
             src_layer,
             src_param,
             dst_layer,
             dst_param));
-    m_connections.insert(c);
 
-    RENDERER_LOG_DEBUG("created osl connection: src = %s, src_param = %s, dst = %s, dst_param = %s",
+    m_connections.insert(connection);
+
+    RENDERER_LOG_DEBUG("created osl connection: src = %s, src_param = %s, dst = %s, dst_param = %s.",
         src_layer,
         src_param,
         dst_layer,
@@ -108,12 +113,12 @@ void ShaderGroup::add_connection(
 }
 
 bool ShaderGroup::on_frame_begin(
-    const Project&              project,
-    const Assembly&             assembly,
-    OSL::ShadingSystem*         shading_system,
-    foundation::AbortSwitch*    abort_switch)
+    const Project&      project,
+    const Assembly&     assembly,
+    OSL::ShadingSystem* shading_system,
+    AbortSwitch*        abort_switch)
 {
-    RENDERER_LOG_DEBUG("setup shader group %s", get_name());
+    RENDERER_LOG_DEBUG("setup shader group %s.", get_name());
 
     try
     {
@@ -121,7 +126,7 @@ bool ShaderGroup::on_frame_begin(
 
         if (!is_valid())
         {
-            RENDERER_LOG_ERROR("shader group begin error: shader = %s", get_name());
+            RENDERER_LOG_ERROR("shader group begin error: shader = %s.", get_name());
             return false;
         }
 
@@ -145,15 +150,15 @@ bool ShaderGroup::on_frame_begin(
 
         if (!shading_system->ShaderGroupEnd())
         {
-            RENDERER_LOG_ERROR("shader group end error: shader = %s", get_name());
+            RENDERER_LOG_ERROR("shader group end error: shader = %s.", get_name());
             return false;
         }
 
         return success;
     }
-    catch(const exception& e)
+    catch (const exception& e)
     {
-        RENDERER_LOG_ERROR("shader group exception: what = %s", e.what());
+        RENDERER_LOG_ERROR("shader group exception: what = %s.", e.what());
         return false;
     }
 }
@@ -164,6 +169,7 @@ void ShaderGroup::on_frame_end(
 {
     m_shadergroup_ref.reset();
 }
+
 
 //
 // ShaderGroupFactory class implementation.

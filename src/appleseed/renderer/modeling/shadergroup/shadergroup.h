@@ -37,6 +37,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
+#include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -50,6 +51,7 @@
 // Forward declarations.
 namespace foundation    { class AbortSwitch; }
 namespace renderer      { class Assembly; }
+namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 
 namespace renderer
@@ -63,24 +65,25 @@ class DLLSYMBOL ShaderGroup
   : public ConnectableEntity
 {
   public:
+    // Delete this instance.
     virtual void release() OVERRIDE;
 
-    // Return a string identifying the model of this shadergroup.
+    // Return a string identifying the model of this shader group.
     const char* get_model() const;
 
     // Adds a new shader to the group.
     void add_shader(
-        const char*         type,
-        const char*         name,
-        const char*         layer,
-        const ParamArray&   params);
+        const char*                 type,
+        const char*                 name,
+        const char*                 layer,
+        const ParamArray&           params);
 
     // Adds a connection between two parameters of two shaders.
     void add_connection(
-        const char* src_layer,
-        const char* src_param,
-        const char* dst_layer,
-        const char* dst_param);
+        const char*                 src_layer,
+        const char*                 src_param,
+        const char*                 dst_layer,
+        const char*                 dst_param);
 
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
@@ -92,13 +95,13 @@ class DLLSYMBOL ShaderGroup
 
     // This method is called once after rendering each frame.
     void on_frame_end(
-        const Project&      project,
-        const Assembly&     assembly);
+        const Project&              project,
+        const Assembly&             assembly);
 
-    // Access the Shaders.
+    // Access the shaders.
     const ShaderContainer& shaders() const;
 
-    // Access the ShaderConnections.
+    // Access the shader connections.
     const ShaderConnectionContainer& shader_connections() const;
 
     // Returns true if the shader group was setup correctly.
@@ -117,6 +120,22 @@ class DLLSYMBOL ShaderGroup
     // Constructor.
     explicit ShaderGroup(const char* name);
 };
+
+
+//
+// ShaderGroup factory.
+//
+
+class DLLSYMBOL ShaderGroupFactory
+{
+  public:
+    // Return a string identifying this ShaderGroup model.
+    static const char* get_model();
+
+    // Create a new ShaderGroup.
+    static foundation::auto_release_ptr<ShaderGroup> create(const char* name);
+};
+
 
 //
 // ShaderGroup class implementation.
@@ -141,20 +160,6 @@ inline bool ShaderGroup::is_valid() const
 {
     return m_shadergroup_ref.get() != 0;
 }
-
-//
-// ShaderGroup factory.
-//
-
-class DLLSYMBOL ShaderGroupFactory
-{
-  public:
-    // Return a string identifying this ShaderGroup model.
-    static const char* get_model();
-
-    // Create a new ShaderGroup.
-    static foundation::auto_release_ptr<ShaderGroup> create(const char* name);
-};
 
 }       // namespace renderer
 

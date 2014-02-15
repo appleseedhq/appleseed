@@ -32,6 +32,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/modeling/shadergroup/shaderparamparser.h"
+#include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
@@ -42,8 +43,8 @@
 #include <cassert>
 #include <string>
 
-using namespace std;
 using namespace foundation;
+using namespace std;
 
 namespace renderer
 {
@@ -83,14 +84,14 @@ struct Shader::Impl
 
                   case OSLParamTypeFloat:
                     {
-                        float val = parser.parse_one_value<float>();
+                        const float val = parser.parse_one_value<float>();
                         m_params.insert(ShaderParam::create_float_param(i.it().name(), val));
                     }
                     break;
 
                   case OSLParamTypeInt:
                     {
-                        int val = parser.parse_one_value<int>();
+                        const int val = parser.parse_one_value<int>();
                         m_params.insert(ShaderParam::create_int_param(i.it().name(), val));
                     }
                     break;
@@ -130,20 +131,20 @@ struct Shader::Impl
 
                   default:
                     RENDERER_LOG_ERROR(
-                        "error adding osl param %s, of unknown type %s. will use the default value.",
+                        "error adding osl param %s, of unknown type %s; will use the default value.",
                         i.it().name(),
                         i.it().value());
                 }
             }
-            catch(const ExceptionOSLParamParseError&)
+            catch (const ExceptionOSLParamParseError&)
             {
                 RENDERER_LOG_ERROR(
-                    "error parsing osl param value. param = %s, value = %s. will use the default value.",
+                    "error parsing osl param value, param = %s, value = %s; will use the default value.",
                     i.it().name(),
                     i.it().value());
             }
 
-            RENDERER_LOG_DEBUG("added osl param %s", i.it().name());
+            RENDERER_LOG_DEBUG("added osl param %s.", i.it().name());
         }
     }
 

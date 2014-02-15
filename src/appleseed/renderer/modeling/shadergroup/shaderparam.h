@@ -67,6 +67,7 @@ enum OSLParamType
     OSLParamTypeVector
 };
 
+
 //
 // A parameter in an OSL shader.
 //
@@ -78,7 +79,7 @@ class DLLSYMBOL ShaderParam
     // Delete this instance.
     virtual void release() OVERRIDE;
 
-    // Fix me: std classes cannot be used in dllexported classes. (est.)
+    // Fix me: std classes cannot be used in DLL-exported classes. (est.)
     std::string get_value_as_string() const;
 
   private:

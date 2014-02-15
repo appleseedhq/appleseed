@@ -48,7 +48,7 @@ namespace renderer
 {
 
 //
-// OSL ShaderConnection.
+// A connection between two OSL shaders.
 //
 
 class DLLSYMBOL ShaderConnection

@@ -127,7 +127,7 @@ string ShaderParam::get_value_as_string() const
 }
 
 auto_release_ptr<ShaderParam> ShaderParam::create_int_param(
-    const char* name, 
+    const char* name,
     const int   value)
 {
     auto_release_ptr<ShaderParam> p(new ShaderParam(name));
@@ -147,9 +147,9 @@ auto_release_ptr<ShaderParam> ShaderParam::create_float_param(
 }
 
 auto_release_ptr<ShaderParam> ShaderParam::create_vector_param(
-    const char* name, 
-    const float vx, 
-    const float vy, 
+    const char* name,
+    const float vx,
+    const float vy,
     const float vz)
 {
     auto_release_ptr<ShaderParam> p(new ShaderParam(name));
@@ -161,9 +161,9 @@ auto_release_ptr<ShaderParam> ShaderParam::create_vector_param(
 }
 
 auto_release_ptr<ShaderParam> ShaderParam::create_normal_param(
-    const char* name, 
-    const float nx, 
-    const float ny, 
+    const char* name,
+    const float nx,
+    const float ny,
     const float nz)
 {
     auto_release_ptr<ShaderParam> p(new ShaderParam(name));
@@ -175,9 +175,9 @@ auto_release_ptr<ShaderParam> ShaderParam::create_normal_param(
 }
 
 auto_release_ptr<ShaderParam> ShaderParam::create_point_param(
-    const char* name, 
-    const float vx, 
-    const float vy, 
+    const char* name,
+    const float vx,
+    const float vy,
     const float vz)
 {
     auto_release_ptr<ShaderParam> p(new ShaderParam(name));
@@ -189,9 +189,9 @@ auto_release_ptr<ShaderParam> ShaderParam::create_point_param(
 }
 
 auto_release_ptr<ShaderParam> ShaderParam::create_color_param(
-    const char* name, 
-    const float vx, 
-    const float vy, 
+    const char* name,
+    const float vx,
+    const float vy,
     const float vz)
 {
     auto_release_ptr<ShaderParam> p(new ShaderParam(name));
@@ -203,7 +203,7 @@ auto_release_ptr<ShaderParam> ShaderParam::create_color_param(
 }
 
 auto_release_ptr<ShaderParam> ShaderParam::create_string_param(
-    const char* name, 
+    const char* name,
     const char* value)
 {
     auto_release_ptr<ShaderParam> p(new ShaderParam(name));
@@ -221,7 +221,7 @@ bool ShaderParam::add(OSL::ShadingSystem& shading_system)
         return false;
     }
 
-    RENDERER_LOG_INFO("added parameter %s.", get_name());
+    RENDERER_LOG_DEBUG("added parameter %s.", get_name());
     return true;
 }
 

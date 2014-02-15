@@ -47,9 +47,10 @@
 #include <OSL/oslexec.h>
 
 // Forward declarations.
-namespace renderer      { class Project; }
-namespace renderer      { class Assembly; }
-namespace renderer      { class ShaderGroup; }
+namespace renderer  { class Assembly; }
+namespace renderer  { class ParamArray; }
+namespace renderer  { class Project; }
+namespace renderer  { class ShaderGroup; }
 
 namespace renderer
 {
@@ -62,6 +63,7 @@ class DLLSYMBOL Shader
   : public Entity
 {
   public:
+    // Delete this instance.
     virtual void release() OVERRIDE;
 
     const char *get_type() const;

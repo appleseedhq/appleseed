@@ -29,11 +29,8 @@
 // Interface header.
 #include "shaderparamparser.h"
 
-// appleseed.renderer headers.
-
-// appleseed.foundation headers.
-
 // Standard headers.
+#include <cassert>
 
 using namespace foundation;
 using namespace std;
@@ -45,13 +42,14 @@ namespace renderer
 // ShaderParamParser class implementation.
 //
 
-ShaderParamParser::ShaderParamParser(const std::string& string)
+ShaderParamParser::ShaderParamParser(const string& s)
 {
-    tokenize(string, Blanks, m_tokens);
+    tokenize(s, Blanks, m_tokens);
+
     m_tok_it = m_tokens.begin();
     m_tok_end = m_tokens.end();
 
-    const std::string tok(*m_tok_it);
+    const string tok(*m_tok_it);
 
     if (tok == "color")
         m_param_type = OSLParamTypeColor;
@@ -73,10 +71,11 @@ ShaderParamParser::ShaderParamParser(const std::string& string)
     ++m_tok_it;
 }
 
-std::string ShaderParamParser::parse_string_value()
+string ShaderParamParser::parse_string_value()
 {
     assert(param_type() == OSLParamTypeString);
-    std::string val(*m_tok_it++);
+
+    const string val(*m_tok_it++);
 
     if (m_tok_it != m_tok_end)
         throw ExceptionOSLParamParseError();
