@@ -67,7 +67,7 @@ namespace detail
             {
                 this->get_override("pre_render")(x, y, width, height);
             }
-            catch( bpy::error_already_set)
+            catch (bpy::error_already_set)
             {
                 PyErr_Print();
             }
@@ -83,7 +83,7 @@ namespace detail
             {
                 this->get_override("post_render_tile")(bpy::ptr(frame), tile_x, tile_y);
             }
-            catch( bpy::error_already_set)
+            catch (bpy::error_already_set)
             {
                 PyErr_Print();
             }
@@ -99,7 +99,7 @@ namespace detail
             {
                 this->get_override("post_render")(bpy::ptr(frame));
             }
-            catch( bpy::error_already_set)
+            catch (bpy::error_already_set)
             {
                 PyErr_Print();
             }

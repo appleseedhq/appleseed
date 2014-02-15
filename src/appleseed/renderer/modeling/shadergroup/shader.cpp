@@ -60,7 +60,7 @@ namespace
 struct Shader::Impl
 {
     Impl(
-        const char*         type, 
+        const char*         type,
         const char*         shader,
         const char*         layer,
         const ParamArray&   params)
@@ -70,7 +70,7 @@ struct Shader::Impl
             try
             {
                 ShaderParamParser parser(i.it().value());
-                
+
                 switch (parser.param_type())
                 {
                   case OSLParamTypeColor:
@@ -87,7 +87,7 @@ struct Shader::Impl
                         m_params.insert(ShaderParam::create_float_param(i.it().name(), val));
                     }
                     break;
-                    
+
                   case OSLParamTypeInt:
                     {
                         int val = parser.parse_one_value<int>();
@@ -102,7 +102,7 @@ struct Shader::Impl
                         m_params.insert(ShaderParam::create_normal_param(i.it().name(), x, y, z));
                     }
                     break;
-                    
+
                   case OSLParamTypePoint:
                     {
                         float x, y, z;
@@ -174,17 +174,17 @@ void Shader::release()
     delete this;
 }
 
-const char *Shader::get_type() const
+const char* Shader::get_type() const
 {
     return impl->m_type.c_str();
 }
 
-const char *Shader::get_shader() const
+const char* Shader::get_shader() const
 {
     return impl->m_shader.c_str();
 }
 
-const char *Shader::get_layer() const
+const char* Shader::get_layer() const
 {
     return get_name();
 }
@@ -204,7 +204,7 @@ bool Shader::add(OSL::ShadingSystem& shading_system)
 
     if (!shading_system.Shader(get_type(), get_shader(), get_layer()))
     {
-        RENDERER_LOG_ERROR("error adding shader %s, %s", get_shader(), get_layer());
+        RENDERER_LOG_ERROR("error adding shader %s, %s.", get_shader(), get_layer());
         return false;
     }
 
