@@ -291,6 +291,28 @@ void Statistics::insert(
 }
 
 template <>
+inline void Statistics::insert<int32>(
+    const std::string&                  name,
+    const int32&                        value,
+    const std::string&                  unit)
+{
+    insert(
+        std::auto_ptr<IntegerEntry>(
+            new IntegerEntry(name, unit, value)));
+}
+
+template <>
+inline void Statistics::insert<uint32>(
+    const std::string&                  name,
+    const uint32&                       value,
+    const std::string&                  unit)
+{
+    insert(
+        std::auto_ptr<UnsignedIntegerEntry>(
+            new UnsignedIntegerEntry(name, unit, value)));
+}
+
+template <>
 inline void Statistics::insert<int64>(
     const std::string&                  name,
     const int64&                        value,
