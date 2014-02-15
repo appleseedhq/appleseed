@@ -644,14 +644,16 @@ bool LZOCompressedReaderAdapter::fill_buffer()
     ensure_minimum_size(m_compressed_buffer, compressed_buffer_size);
     m_file.read(&m_compressed_buffer[0], compressed_buffer_size);
 
+    lzo_uint new_buffer_end;
     lzo1x_decompress(
         &m_compressed_buffer[0],
         compressed_buffer_size,
         &m_buffer[0],
-        &m_buffer_end,
+        &new_buffer_end,
         &m_working_memory[0]);
 
     m_buffer_index = 0;
+    m_buffer_end = static_cast<size_t>(new_buffer_end);
 
     return true;
 }
