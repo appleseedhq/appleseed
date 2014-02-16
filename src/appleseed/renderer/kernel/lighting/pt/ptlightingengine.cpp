@@ -388,8 +388,7 @@ namespace
         struct PathVisitorNextEventEstimation
           : public PathVisitorBase
         {
-            bool    m_is_indirect_lighting;
-            bool    m_ignore_emitted_light;
+            bool m_is_indirect_lighting;
 
             PathVisitorNextEventEstimation(
                 const Parameters&       params,
@@ -408,21 +407,14 @@ namespace
                     path_radiance,
                     path_aovs)
               , m_is_indirect_lighting(false)
-              , m_ignore_emitted_light(false)
             {
             }
 
             void visit_vertex(const PathVertex& vertex)
             {
+                // Any light contribution after a diffuse or glossy bounce is considered indirect.
                 if (BSDF::has_diffuse_or_glossy(vertex.m_prev_bsdf_mode))
-                {
-                    // Any light contribution after a diffuse or glossy bounce is considered indirect.
                     m_is_indirect_lighting = true;
-
-                    // When caustics are disabled, ignore emitted light after a diffuse or glossy bounce.
-                    if (!m_params.m_enable_caustics)
-                        m_ignore_emitted_light = true;
-                }
 
                 Spectrum vertex_radiance(0.0f);
                 SpectrumStack vertex_aovs(m_path_aovs.size(), 0.0f);
@@ -456,7 +448,7 @@ namespace
                 }
 
                 // Emitted light.
-                if (!m_ignore_emitted_light &&
+                if ((!m_is_indirect_lighting || m_params.m_enable_caustics) &&
                     vertex.m_edf &&
                     vertex.m_cos_on > 0.0 &&
                     (vertex.m_path_length > 2 || m_params.m_enable_dl) &&
