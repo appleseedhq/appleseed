@@ -53,9 +53,9 @@ class ShadingResult
 {
   public:
     // Public members.
-    foundation::ColorSpace  m_color_space;
-    ShadingFragment         m_main;
-    ShadingFragmentStack    m_aovs;
+    foundation::ColorSpace      m_color_space;
+    ShadingFragment             m_main;
+    ShadingFragmentStack        m_aovs;
 
     // Constructor.
     explicit ShadingResult(const size_t aov_count = 0);
@@ -80,7 +80,12 @@ class ShadingResult
     void set_to_linear_rgba(const foundation::Color4f& linear_rgba);
 
     // Copy the main output to the AOV of a given entity.
-    void set_aov_for_entity(const Entity& entity);
+    void set_entity_aov(const Entity& entity);
+
+    // Store a shading fragment to the AOV of a given entity.
+    void set_entity_aov(
+        const Entity&           entity,
+        const ShadingFragment&  fragment);
 
     // Transform the shading result to the linear RGB color space.
     void transform_to_linear_rgb(const foundation::LightingConditions& lighting);
@@ -121,9 +126,16 @@ inline void ShadingResult::set_to_linear_rgb(const foundation::Color3f& linear_r
     set_to_linear_rgba(foundation::Color4f(linear_rgb[0], linear_rgb[1], linear_rgb[2], 1.0f));
 }
 
-inline void ShadingResult::set_aov_for_entity(const Entity& entity)
+inline void ShadingResult::set_entity_aov(const Entity& entity)
 {
     m_aovs.set(entity.get_render_layer_index(), m_main);
+}
+
+inline void ShadingResult::set_entity_aov(
+    const Entity&               entity,
+    const ShadingFragment&      fragment)
+{
+    m_aovs.set(entity.get_render_layer_index(), fragment);
 }
 
 }       // namespace renderer
