@@ -38,6 +38,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/image/color.h"
 
 // OSL headers.
 #include "OSL/dual.h"
@@ -65,7 +66,7 @@ namespace renderer
 enum ClosureID
 {
     // BSDF closures.
-    AshikhminShirleyID = 1,
+    AshikhminShirleyID,
     LambertID,
     MicrofacetBeckmannID,
     MicrofacetBlinnID,
@@ -78,7 +79,8 @@ enum ClosureID
     // Special closures.
     EmissionID,
     HoldoutID,
-    TransparentID
+    TransparentID,
+    NumClosuresIDs
 };
 
 
@@ -89,6 +91,19 @@ enum ClosureID
 class APPLESEED_ALIGN(16) CompositeClosure 
   : public foundation::NonCopyable
 {
+  public:
+    explicit CompositeClosure(const OSL::ClosureColor *Ci);
+
+    size_t num_closures() const;
+    ClosureID closure_type(size_t index) const;
+    double weight(size_t index) const;
+    const foundation::Vector3d& normal(size_t index) const;
+    bool has_tangent(size_t index) const;
+    const foundation::Vector3d& tangent(size_t index) const;
+    void* input_values(size_t index) const;
+    
+    size_t choose_closure(double w) const;
+    
   private:
     typedef boost::mpl::vector< 
         AshikminBRDFInputValues,
@@ -107,8 +122,90 @@ class APPLESEED_ALIGN(16) CompositeClosure
     enum { MaxClosureEntries = 8 };
     enum { MaxPoolSize = MaxClosureEntries * sizeof(boost::mpl::deref<BiggestInputValueType::base>::type) };
 
-    char m_pool[MaxPoolSize];
+    double                      m_weights[MaxClosureEntries];
+    void*                       m_input_values[MaxClosureEntries];
+    ClosureID                   m_closure_types[MaxClosureEntries];
+    foundation::Vector3d        m_normals[MaxClosureEntries];
+    bool                        m_has_tangent[MaxClosureEntries];
+    foundation::Vector3d        m_tangents[MaxClosureEntries];
+    char                        m_pool[MaxPoolSize];
+    int                         m_num_closures;
+    int                         m_num_bytes;
+
+    void process_closure_tree(
+        const OSL::ClosureColor* closure, 
+        const foundation::Color3f& weight);
+
+    template<class InputValues>
+    void add_closure(
+        const ClosureID             closure_type,
+        const foundation::Color3f&  weight,
+        const foundation::Vector3d& normal,
+        const InputValues&          values);
+
+    template<class InputValues>
+    void add_closure(
+        const ClosureID             closure_type,
+        const foundation::Color3f&  weight,
+        const foundation::Vector3d& normal,
+        const foundation::Vector3d& tangent,
+        const InputValues&          values);
+    
+    template<class InputValues>
+    void do_add_closure(
+        const ClosureID             closure_type,
+        const foundation::Color3f&  weight,
+        const foundation::Vector3d& normal,
+        const bool                  has_tangent,
+        const foundation::Vector3d& tangent,
+        const InputValues&          values);
 };
+
+//
+// Composite Closure implementation
+// 
+
+inline size_t CompositeClosure::num_closures() const
+{
+    return m_num_closures;
+}
+
+inline ClosureID CompositeClosure::closure_type(size_t index) const
+{
+    assert(index < num_closures());
+    return m_closure_types[index];
+}
+
+inline double CompositeClosure::weight(size_t index) const
+{
+    assert(index < num_closures());
+    return m_weights[index];
+}
+
+inline const foundation::Vector3d& CompositeClosure::normal(size_t index) const
+{
+    assert(index < num_closures());
+    return m_normals[index];    
+}
+
+inline bool CompositeClosure::has_tangent(size_t index) const
+{
+    assert(index < num_closures());
+    return m_has_tangent[index];    
+}
+
+inline const foundation::Vector3d& CompositeClosure::tangent(size_t index) const
+{
+    assert(index < num_closures());
+    assert(has_tangent(index));
+    return m_tangents[index];
+}
+
+inline void* CompositeClosure::input_values(size_t index) const
+{
+    assert(index < num_closures());
+    return m_input_values[index];
+}
 
 // Register appleseed's closures.
 void register_closures(OSL::ShadingSystem& shading_system);
