@@ -117,7 +117,6 @@ typedef Frustum3<double> Frustum3d;
 template <typename T>
 inline void Pyramid3<T>::set_plane(const Plane plane, const VectorType& n)
 {
-    assert(plane < 4);
     assert(is_normalized(n));
     m_planes[plane] = n;
 }
@@ -125,7 +124,6 @@ inline void Pyramid3<T>::set_plane(const Plane plane, const VectorType& n)
 template <typename T>
 inline const Vector<T, 3>& Pyramid3<T>::get_plane(const Plane plane) const
 {
-    assert(plane < 4);
     return m_planes[plane];
 }
 
