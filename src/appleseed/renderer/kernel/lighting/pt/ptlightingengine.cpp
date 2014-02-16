@@ -413,7 +413,7 @@ namespace
             void visit_vertex(const PathVertex& vertex)
             {
                 // Any light contribution after a diffuse or glossy bounce is considered indirect.
-                if (vertex.m_prev_bsdf_mode & (BSDF::Diffuse | BSDF::Glossy))
+                if (BSDF::has_diffuse_or_glossy(vertex.m_prev_bsdf_mode))
                     m_is_indirect_lighting = true;
 
                 Spectrum vertex_radiance(0.0f);
@@ -448,7 +448,8 @@ namespace
                 }
 
                 // Emitted light.
-                if (vertex.m_edf &&
+                if ((!m_is_indirect_lighting || m_params.m_enable_caustics) &&
+                    vertex.m_edf &&
                     vertex.m_cos_on > 0.0 &&
                     (vertex.m_path_length > 2 || m_params.m_enable_dl) &&
                     (vertex.m_path_length < 2 || (vertex.m_edf->get_flags() & EDF::CastIndirectLight)))
