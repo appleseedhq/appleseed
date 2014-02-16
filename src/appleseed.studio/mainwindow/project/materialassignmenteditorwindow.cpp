@@ -110,39 +110,53 @@ MaterialAssignmentEditorWindow::~MaterialAssignmentEditorWindow()
     delete m_ui;
 }
 
+namespace
+{
+    set<string> get_slot_names_from_material_mappings(const ObjectInstance& object_instance)
+    {
+        set<string> slot_names;
+
+        for (const_each<StringDictionary> i = object_instance.get_front_material_mappings(); i; ++i)
+            slot_names.insert(i->name());
+
+        for (const_each<StringDictionary> i = object_instance.get_back_material_mappings(); i; ++i)
+            slot_names.insert(i->name());
+
+        return slot_names;
+    }
+}
+
 void MaterialAssignmentEditorWindow::create_widgets()
 {
     QVBoxLayout* layout = new QVBoxLayout(m_ui->scrollarea_contents);
     layout->setAlignment(Qt::AlignTop);
     layout->setSpacing(20);
 
-    if (m_object)
-    {
-        if (m_object->get_material_slot_count() > 0)
-        {
-            for (size_t i = 0; i < m_object->get_material_slot_count(); ++i)
-                create_widgets_for_slot(layout, m_object->get_material_slot(i));
-        }
-        else
-        {
-            set<string> slot_names;
-
-            for (const_each<StringDictionary> i = m_object_instance.get_front_material_mappings(); i; ++i)
-                slot_names.insert(i->name());
-
-            for (const_each<StringDictionary> i = m_object_instance.get_back_material_mappings(); i; ++i)
-                slot_names.insert(i->name());
-
-            for (const_each<set<string> > i = slot_names; i; ++i)
-                create_widgets_for_slot(layout, i->c_str());
-        }
-    }
-    else
+    if (m_object == 0)
     {
         QHBoxLayout* row_layout = new QHBoxLayout();
         row_layout->addWidget(new QLabel(QString("Object \"%1\" not found.").arg(m_object_instance.get_object_name())));
         append_row(layout, row_layout);
+        return;
     }
+
+    if (m_object->get_material_slot_count() > 0)
+    {
+        for (size_t i = 0; i < m_object->get_material_slot_count(); ++i)
+            create_widgets_for_slot(layout, m_object->get_material_slot(i));
+        return;
+    }
+
+    const set<string> slot_names = get_slot_names_from_material_mappings(m_object_instance);
+
+    if (!slot_names.empty())
+    {
+        for (const_each<set<string> > i = slot_names; i; ++i)
+            create_widgets_for_slot(layout, i->c_str());
+        return;
+    }
+
+    create_widgets_for_slot(layout, "default");
 }
 
 void MaterialAssignmentEditorWindow::create_widgets_for_slot(
