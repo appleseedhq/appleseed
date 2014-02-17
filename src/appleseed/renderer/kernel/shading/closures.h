@@ -123,6 +123,7 @@ class APPLESEED_ALIGN(16) CompositeClosure
     enum { MaxPoolSize = MaxClosureEntries * sizeof(boost::mpl::deref<BiggestInputValueType::base>::type) };
 
     double                      m_weights[MaxClosureEntries];
+    double                      m_accumulated_weights[MaxClosureEntries];
     void*                       m_input_values[MaxClosureEntries];
     ClosureID                   m_closure_types[MaxClosureEntries];
     foundation::Vector3d        m_normals[MaxClosureEntries];

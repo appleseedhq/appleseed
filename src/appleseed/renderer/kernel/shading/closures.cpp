@@ -70,7 +70,7 @@ namespace
 
     struct LambertClosureParams
     {
-        OSL::Vec3   N;
+        OSL::Vec3 N;        
     };
 
     struct MicrofacetBRDFClosureParams
@@ -88,12 +88,12 @@ namespace
 
     struct ReflectionClosureParams
     {
-        OSL::Vec3   N;
+        OSL::Vec3 N;
     };
 
     struct TranslucentClosureParams
     {
-        OSL::Vec3   N;
+        OSL::Vec3 N;
     };
 }
 
@@ -113,12 +113,31 @@ CompositeClosure::CompositeClosure(const OSL::ClosureColor *Ci)
     // normalize weights.
     for (int i = 0, e = num_closures(); i != e; ++i)
         m_weights[i] /= total_weight;
+
+    // accumulate weights.
+    double w = 0.0;
+    for (int i = 0, e = num_closures(); i != e; ++i)
+    {
+        w = m_weights[i] + w;
+        m_accumulated_weights[i] = w;
+    }
+
+    if (num_closures())
+        m_accumulated_weights[num_closures()-1] = 1.0;
 }
 
 size_t CompositeClosure::choose_closure(double w) const
 {
     assert(num_closures());
-    assert(false);
+    assert(w >= 0.0);
+    assert(w <= 1.0);
+
+    const double* i = std::upper_bound(
+        m_accumulated_weights, 
+        m_accumulated_weights + num_closures(), 
+        w);
+
+    return i - m_accumulated_weights;
 }
 
 void CompositeClosure::process_closure_tree(
@@ -155,15 +174,58 @@ void CompositeClosure::process_closure_tree(
             {
               case AshikhminShirleyID:
               case LambertID:
+                {
+                    const LambertClosureParams *p = reinterpret_cast<const LambertClosureParams*>(c->data());
+                    LambertianBRDFInputValues values;
+                    linear_rgb_reflectance_to_spectrum(w, values.m_reflectance);
+                    values.m_reflectance_alpha = Alpha(1.0);
+                    values.m_reflectance_multiplier = 1.0;
+                    add_closure<LambertianBRDFInputValues>(
+                        static_cast<ClosureID>(c->id),
+                        w,
+                        Vector3d(p->N.x, p->N.y, p->N.z),
+                        values);
+                }
+                break;
+
               case MicrofacetBeckmannID:
               case MicrofacetBlinnID:
               case MicrofacetGGXID:
               case MicrofacetWardID:
               case ReflectionID:
               case RefractionID:
+                {
+                    assert(false);
+                }
+                break;
+
               case TranslucentID:
+                {
+                    const TranslucentClosureParams *p = reinterpret_cast<const TranslucentClosureParams*>(c->data());
+                    DiffuseBTDFInputValues values;
+                    linear_rgb_reflectance_to_spectrum(w,values.m_transmittance);
+                    values.m_transmittance_alpha = Alpha(1.0);
+                    values.m_transmittance_multiplier = 1.0;
+                    add_closure<DiffuseBTDFInputValues>(
+                        static_cast<ClosureID>(c->id),
+                        w,
+                        Vector3d(p->N.x, p->N.y, p->N.z),
+                        values);
+                }
+                break;
+
               case EmissionID:
+                {
+                    assert(false);
+                }
+                break;
+              
               case HoldoutID:
+                {
+                    assert(false);
+                }
+                break;
+                
               case TransparentID:
                 {
                     assert(false);
