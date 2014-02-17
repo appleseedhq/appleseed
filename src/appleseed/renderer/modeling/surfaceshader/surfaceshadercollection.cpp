@@ -145,7 +145,7 @@ namespace
                 shading_point,
                 shading_result);
 
-            shading_result.set_aov_for_entity(*m_surface_shaders[0]);
+            shading_result.set_entity_aov(*m_surface_shaders[0]);
 
             for (size_t i = 1; i < MaxShaderCount; ++i)
             {
@@ -161,7 +161,7 @@ namespace
                         shading_point,
                         local_result);
 
-                    shading_result.set_aov_for_entity(*m_surface_shaders[i]);
+                    shading_result.set_entity_aov(*m_surface_shaders[i], local_result.m_main);
                 }
             }
         }
