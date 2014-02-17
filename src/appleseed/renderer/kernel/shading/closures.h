@@ -96,11 +96,11 @@ class APPLESEED_ALIGN(16) CompositeClosure
 
     size_t num_closures() const;
     ClosureID closure_type(size_t index) const;
-    double weight(size_t index) const;
-    const foundation::Vector3d& normal(size_t index) const;
-    bool has_tangent(size_t index) const;
-    const foundation::Vector3d& tangent(size_t index) const;
-    void* input_values(size_t index) const;
+    double closure_weight(size_t index) const;
+    const foundation::Vector3d& closure_normal(size_t index) const;
+    bool closure_has_tangent(size_t index) const;
+    const foundation::Vector3d& closure_tangent(size_t index) const;
+    void* closure_input_values(size_t index) const;
     
     size_t choose_closure(double w) const;
     
@@ -177,32 +177,32 @@ inline ClosureID CompositeClosure::closure_type(size_t index) const
     return m_closure_types[index];
 }
 
-inline double CompositeClosure::weight(size_t index) const
+inline double CompositeClosure::closure_weight(size_t index) const
 {
     assert(index < num_closures());
     return m_weights[index];
 }
 
-inline const foundation::Vector3d& CompositeClosure::normal(size_t index) const
+inline const foundation::Vector3d& CompositeClosure::closure_normal(size_t index) const
 {
     assert(index < num_closures());
     return m_normals[index];    
 }
 
-inline bool CompositeClosure::has_tangent(size_t index) const
+inline bool CompositeClosure::closure_has_tangent(size_t index) const
 {
     assert(index < num_closures());
     return m_has_tangent[index];    
 }
 
-inline const foundation::Vector3d& CompositeClosure::tangent(size_t index) const
+inline const foundation::Vector3d& CompositeClosure::closure_tangent(size_t index) const
 {
     assert(index < num_closures());
-    assert(has_tangent(index));
+    assert(closure_has_tangent(index));
     return m_tangents[index];
 }
 
-inline void* CompositeClosure::input_values(size_t index) const
+inline void* CompositeClosure::closure_input_values(size_t index) const
 {
     assert(index < num_closures());
     return m_input_values[index];
