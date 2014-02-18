@@ -57,7 +57,7 @@ TEST_SUITE(Foundation_Image_Analysis)
 
         const double average_luminance = compute_average_luminance(image);
 
-        EXPECT_FEQ(1.0, average_luminance);
+        EXPECT_FEQ_EPS(1.0, average_luminance, 1.0e-6);
     }
 
     TEST_CASE(ComputeAverageLuminance_GivenImageFilledWithMinusOnes_ReturnsZero)
@@ -74,11 +74,11 @@ TEST_SUITE(Foundation_Image_Analysis)
     {
         Image image(4, 4, 2, 2, 4, PixelFormatFloat);
         image.clear(Color4f(1.0f));
-        image.tile(0, 0).set_pixel(0, 0, Color4f(FP<float>::snan()));
+        image.tile(0, 0).set_pixel(1, 1, Color4f(FP<float>::snan()));
 
         const double average_luminance = compute_average_luminance(image);
 
-        EXPECT_EQ(1.0, average_luminance);
+        EXPECT_FEQ_EPS(1.0, average_luminance, 1.0e-6);
     }
 
     TEST_CASE(ComputeRMSDeviation_GivenBothImagesFilledWithZeroes_ReturnsZero)

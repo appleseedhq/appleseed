@@ -46,6 +46,7 @@
 #include "renderer/api/utility.h"
 
 // appleseed.foundation headers.
+#include "foundation/core/appleseed.h"
 #include "foundation/math/matrix.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
@@ -281,6 +282,9 @@ int main()
     // you will need to implement foundation::ILogTarget (foundation/utility/log/ilogtarget.h).
     std::auto_ptr<asf::ILogTarget> log_target(asf::create_console_log_target(stderr));
     asr::global_logger().add_target(log_target.get());
+
+    // Print appleseed's version string.
+    RENDERER_LOG_INFO("%s", asf::Appleseed::get_synthetic_version_string());
 
     // Build the project.
     asf::auto_release_ptr<asr::Project> project(build_project());

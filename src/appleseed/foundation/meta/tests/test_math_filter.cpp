@@ -47,15 +47,17 @@ namespace
 {
     bool is_zero_on_domain_border(const Filter2d& filter)
     {
+        const double Eps = 1.0e-6;
+
         return
-            fz(filter.evaluate(-filter.get_xradius(), -filter.get_yradius())) &&
-            fz(filter.evaluate(0.0,                   -filter.get_yradius())) &&
-            fz(filter.evaluate(+filter.get_xradius(), -filter.get_yradius())) &&
-            fz(filter.evaluate(+filter.get_xradius(), 0.0))                   &&
-            fz(filter.evaluate(+filter.get_xradius(), +filter.get_yradius())) &&
-            fz(filter.evaluate(0.0,                   +filter.get_yradius())) &&
-            fz(filter.evaluate(-filter.get_xradius(), +filter.get_yradius())) &&
-            fz(filter.evaluate(-filter.get_xradius(), 0.0));
+            fz(filter.evaluate(-filter.get_xradius(), -filter.get_yradius()), Eps) &&
+            fz(filter.evaluate(                  0.0, -filter.get_yradius()), Eps) &&
+            fz(filter.evaluate(+filter.get_xradius(), -filter.get_yradius()), Eps) &&
+            fz(filter.evaluate(+filter.get_xradius(),                   0.0), Eps) &&
+            fz(filter.evaluate(+filter.get_xradius(), +filter.get_yradius()), Eps) &&
+            fz(filter.evaluate(                  0.0, +filter.get_yradius()), Eps) &&
+            fz(filter.evaluate(-filter.get_xradius(), +filter.get_yradius()), Eps) &&
+            fz(filter.evaluate(-filter.get_xradius(),                   0.0), Eps);
     }
 
     void plot(
