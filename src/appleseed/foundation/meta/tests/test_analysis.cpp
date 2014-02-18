@@ -57,7 +57,7 @@ TEST_SUITE(Foundation_Image_Analysis)
 
         const double average_luminance = compute_average_luminance(image);
 
-        EXPECT_FEQ(1.0, average_luminance);
+        EXPECT_FEQ_EPS(1.0, average_luminance, 1.0e-6);
     }
 
     TEST_CASE(ComputeAverageLuminance_GivenImageFilledWithMinusOnes_ReturnsZero)
@@ -78,7 +78,7 @@ TEST_SUITE(Foundation_Image_Analysis)
 
         const double average_luminance = compute_average_luminance(image);
 
-        EXPECT_EQ(1.0, average_luminance);
+        EXPECT_FEQ_EPS(1.0, average_luminance, 1.0e-6);
     }
 
     TEST_CASE(ComputeRMSDeviation_GivenBothImagesFilledWithZeroes_ReturnsZero)
