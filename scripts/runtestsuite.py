@@ -191,7 +191,7 @@ class ReportWriter:
 
             .result
             {{
-                margin-bottom: 40px;
+                margin-bottom: 60px;
             }}
 
             .result .title
@@ -202,10 +202,17 @@ class ReportWriter:
                 padding-bottom: 15px;
             }}
 
+            .result .reference,
+            .result .output
+            {{
+                width: 510px;
+            }}
+
             .result .reference img,
             .result .output img
             {{
                 max-width: 500px;
+                border: 1px solid #ddd;
             }}
         </style>
     </head>
