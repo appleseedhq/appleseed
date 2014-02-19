@@ -55,7 +55,6 @@ T square_area(
 // Area functions implementation.
 //
 
-// Compute the square of the area of a triangle defined by three points.
 template <typename T, size_t N>
 inline T square_area(
     const Vector<T, N>& v0,
