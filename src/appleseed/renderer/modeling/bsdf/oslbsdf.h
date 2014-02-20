@@ -36,7 +36,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/autoreleaseptr.h"
-#include "foundation/utility/otherwise.h"
 
 // Forward declarations.
 namespace renderer  { class Material; }
@@ -45,7 +44,7 @@ namespace renderer
 {
 
 //
-// OSL closure tree -> appleseed BSDF adapter.
+// OSL closure tree -> appleseed BSDFs adapter.
 //
 
 class OSLBSDF
@@ -149,9 +148,9 @@ inline const BSDF* OSLBSDF::BSDF_for_closureID(ClosureID cid) const
 
 inline BSDF *OSLBSDF::BSDF_for_closureID(ClosureID cid)
 {
-    typedef const BSDF*(OSLBSDF::*BSDF_for_closure_const_fun)(ClosureID) const;
-    BSDF_for_closure_const_fun f = &OSLBSDF::BSDF_for_closureID;
-    return const_cast<BSDF*>((this->*f)(cid));
+    BSDF* bsdf = m_all_bsdfs[cid];
+    assert(bsdf);
+    return bsdf;
 }
 
 }       // namespace renderer

@@ -56,6 +56,9 @@
 #include <boost/mpl/transform_view.hpp>
 #include <boost/mpl/vector.hpp>
 
+// Forward declarations.
+namespace renderer  { class OSLBSDF; }
+
 namespace renderer
 {
 
@@ -92,19 +95,19 @@ class APPLESEED_ALIGN(16) CompositeClosure
   : public foundation::NonCopyable
 {
   public:
-    explicit CompositeClosure(const OSL::ClosureColor *Ci);
-
     size_t num_closures() const;
-    ClosureID closure_type(size_t index) const;
-    double closure_weight(size_t index) const;
-    const foundation::Vector3d& closure_normal(size_t index) const;
-    bool closure_has_tangent(size_t index) const;
-    const foundation::Vector3d& closure_tangent(size_t index) const;
-    void* closure_input_values(size_t index) const;
+    ClosureID closure_type(const size_t index) const;
+    double closure_weight(const size_t index) const;
+    const foundation::Vector3d& closure_normal(const size_t index) const;
+    bool closure_has_tangent(const size_t index) const;
+    const foundation::Vector3d& closure_tangent(const size_t index) const;
+    void* closure_input_values(const size_t index) const;
     
-    size_t choose_closure(double w) const;
+    size_t choose_closure(const double w) const;
     
   private:
+    friend class OSLBSDF;
+
     typedef boost::mpl::vector< 
         AshikminBRDFInputValues,
         DiffuseBTDFInputValues,
@@ -133,6 +136,8 @@ class APPLESEED_ALIGN(16) CompositeClosure
     int                         m_num_closures;
     int                         m_num_bytes;
 
+    explicit CompositeClosure(const OSL::ClosureColor *Ci);
+    
     void process_closure_tree(
         const OSL::ClosureColor* closure, 
         const foundation::Color3f& weight);
@@ -171,38 +176,38 @@ inline size_t CompositeClosure::num_closures() const
     return m_num_closures;
 }
 
-inline ClosureID CompositeClosure::closure_type(size_t index) const
+inline ClosureID CompositeClosure::closure_type(const size_t index) const
 {
     assert(index < num_closures());
     return m_closure_types[index];
 }
 
-inline double CompositeClosure::closure_weight(size_t index) const
+inline double CompositeClosure::closure_weight(const size_t index) const
 {
     assert(index < num_closures());
     return m_weights[index];
 }
 
-inline const foundation::Vector3d& CompositeClosure::closure_normal(size_t index) const
+inline const foundation::Vector3d& CompositeClosure::closure_normal(const size_t index) const
 {
     assert(index < num_closures());
     return m_normals[index];    
 }
 
-inline bool CompositeClosure::closure_has_tangent(size_t index) const
+inline bool CompositeClosure::closure_has_tangent(const size_t index) const
 {
     assert(index < num_closures());
     return m_has_tangent[index];    
 }
 
-inline const foundation::Vector3d& CompositeClosure::closure_tangent(size_t index) const
+inline const foundation::Vector3d& CompositeClosure::closure_tangent(const size_t index) const
 {
     assert(index < num_closures());
     assert(closure_has_tangent(index));
     return m_tangents[index];
 }
 
-inline void* CompositeClosure::closure_input_values(size_t index) const
+inline void* CompositeClosure::closure_input_values(const size_t index) const
 {
     assert(index < num_closures());
     return m_input_values[index];

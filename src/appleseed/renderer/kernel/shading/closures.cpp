@@ -33,9 +33,7 @@
 #include "renderer/global/globallogger.h"
 
 // appleseed.foundation headers.
-#include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
-#include "foundation/math/scalar.h"
 #include "foundation/utility/otherwise.h"
 
 // OSL headers.
@@ -126,7 +124,7 @@ CompositeClosure::CompositeClosure(const OSL::ClosureColor *Ci)
         m_accumulated_weights[num_closures()-1] = 1.0;
 }
 
-size_t CompositeClosure::choose_closure(double w) const
+size_t CompositeClosure::choose_closure(const double w) const
 {
     assert(num_closures());
     assert(w >= 0.0);
@@ -194,40 +192,18 @@ void CompositeClosure::process_closure_tree(
               case MicrofacetWardID:
               case ReflectionID:
               case RefractionID:
-                {
-                    assert(false);
-                }
-                break;
-
               case TranslucentID:
                 {
-                    const TranslucentClosureParams *p = reinterpret_cast<const TranslucentClosureParams*>(c->data());
-                    DiffuseBTDFInputValues values;
-                    linear_rgb_reflectance_to_spectrum(w,values.m_transmittance);
-                    values.m_transmittance_alpha = Alpha(1.0);
-                    values.m_transmittance_multiplier = 1.0;
-                    add_closure<DiffuseBTDFInputValues>(
-                        static_cast<ClosureID>(c->id),
-                        w,
-                        Vector3d(p->N.x, p->N.y, p->N.z),
-                        values);
+                    // Not implemented yet.
+                    assert(false);
                 }
                 break;
 
               case EmissionID:
-                {
-                    assert(false);
-                }
-                break;
-              
               case HoldoutID:
-                {
-                    assert(false);
-                }
-                break;
-                
               case TransparentID:
                 {
+                    // Not implemented yet.
                     assert(false);
                 }
                 break;

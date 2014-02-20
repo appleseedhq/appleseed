@@ -251,18 +251,6 @@ namespace
             radiance.set(0.0f);
             aovs.set(0.0f);
 
-            // Execute the OSL shader, if we have one.
-            #ifdef WITH_OSL
-                /*
-                const Material *material = shading_point.get_material();
-                
-                if (material && material->get_osl_surface_shader())
-                    shading_context.execute_osl_shadergroup(
-                        *(material->get_osl_surface_shader()),
-                        shading_point);
-                */
-            #endif
-
             for (size_t i = 0; i < m_front_lighting_samples; ++i)
             {
                 shading_context.get_lighting_engine()->compute_lighting(

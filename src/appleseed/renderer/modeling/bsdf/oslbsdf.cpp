@@ -35,13 +35,6 @@
 #include "renderer/modeling/bsdf/ibsdffactory.h"
 #include "renderer/modeling/bsdf/bsdffactoryregistrar.h"
 
-// foundation.renderer headers.
-#include "foundation/image/color.h"
-#include "foundation/image/colorspace.h"
-
-// Standard headers.
-#include <cmath>
-
 // Forward declarations.
 namespace renderer  { class Assembly; }
 namespace renderer  { class Project; }
@@ -182,11 +175,15 @@ void OSLBSDF::evaluate_inputs(
 namespace
 {
 
-Basis3d make_osl_basis(const CompositeClosure* c, size_t index, const Basis3d& original_basis)
+Basis3d make_osl_basis(
+    const CompositeClosure* c, 
+    const size_t index,
+    const Basis3d& original_basis)
 {
     return Basis3d(c->closure_normal(index),
                    c->closure_has_tangent(index) ?
-                       c->closure_tangent(index) : original_basis.get_tangent_u());
+                       c->closure_tangent(index) : 
+                       original_basis.get_tangent_u());
 }
 
 }
