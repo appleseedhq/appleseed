@@ -125,6 +125,10 @@ namespace
             const GVector3& v1_os = tess.m_vertices[triangle.m_v1];
             const GVector3& v2_os = tess.m_vertices[triangle.m_v2];
 
+            // Ignore degenerate triangles.
+            if (square_area(v0_os, v1_os, v2_os) == GScalar(0.0))
+                continue;
+
             // Transform triangle vertices to assembly space.
             const GVector3 v0 = transform.point_to_parent(v0_os);
             const GVector3 v1 = transform.point_to_parent(v1_os);
