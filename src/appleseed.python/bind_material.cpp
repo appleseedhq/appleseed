@@ -27,32 +27,34 @@
 // THE SOFTWARE.
 //
 
-#include "bind_auto_release_ptr.h"
-
 // appleseed.python headers.
+#include "bind_auto_release_ptr.h"
 #include "bind_typed_entity_containers.h"
 #include "dict2dict.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/material.h"
 
+// Standard headers.
+#include <string>
+
 namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
+using namespace std;
 
 namespace detail
 {
-    auto_release_ptr<Material> create_material(const std::string& name, const bpy::dict& params)
+    auto_release_ptr<Material> create_material(const string& name, const bpy::dict& params)
     {
-        return MaterialFactory::create(name.c_str(), bpy_dict_to_param_array(params));
+        return GenericMaterialFactory().create(name.c_str(), bpy_dict_to_param_array(params));
     }
 }
 
 void bind_material()
 {
     bpy::class_<Material, auto_release_ptr<Material>, bpy::bases<ConnectableEntity>, boost::noncopyable>("Material", bpy::no_init)
-        .def("__init__", bpy::make_constructor(detail::create_material))
-        ;
+        .def("__init__", bpy::make_constructor(detail::create_material));
 
     bind_typed_entity_vector<Material>("MaterialContainer");
 }

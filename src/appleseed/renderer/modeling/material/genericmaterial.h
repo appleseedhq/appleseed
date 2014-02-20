@@ -27,14 +27,50 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_MATERIAL_H
-#define APPLESEED_RENDERER_API_MATERIAL_H
+#ifndef APPLESEED_RENDERER_MODELING_MATERIAL_GENERICMATERIAL_H
+#define APPLESEED_RENDERER_MODELING_MATERIAL_GENERICMATERIAL_H
 
-// API headers.
-#include "renderer/modeling/material/genericmaterial.h"
+// appleseed.renderer headers.
 #include "renderer/modeling/material/imaterialfactory.h"
 #include "renderer/modeling/material/material.h"
-#include "renderer/modeling/material/materialfactoryregistrar.h"
-#include "renderer/modeling/material/materialtraits.h"
 
-#endif  // !APPLESEED_RENDERER_API_MATERIAL_H
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
+#include "foundation/utility/autoreleaseptr.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+// Forward declarations.
+namespace foundation    { class DictionaryArray; }
+namespace renderer      { class ParamArray; }
+
+namespace renderer
+{
+
+//
+// Generic material factory.
+//
+
+class DLLSYMBOL GenericMaterialFactory
+  : public IMaterialFactory
+{
+  public:
+    // Return a string identifying this material model.
+    virtual const char* get_model() const OVERRIDE;
+
+    // Return a human-readable string identifying this material model.
+    virtual const char* get_human_readable_model() const OVERRIDE;
+
+    // Return a set of input metadata for this material model.
+    virtual foundation::DictionaryArray get_input_metadata() const OVERRIDE;
+
+    // Create a new material instance.
+    virtual foundation::auto_release_ptr<Material> create(
+        const char*         name,
+        const ParamArray&   params) const OVERRIDE;
+};
+
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_MODELING_MATERIAL_GENERICMATERIAL_H

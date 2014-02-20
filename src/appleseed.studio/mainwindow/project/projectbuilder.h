@@ -137,7 +137,8 @@ class ProjectBuilder
     renderer::EnvironmentEDFFactoryRegistrar        m_environment_edf_factory_registrar;
     renderer::EnvironmentShaderFactoryRegistrar     m_environment_shader_factory_registrar;
     renderer::LightFactoryRegistrar                 m_light_factory_registrar;
-    renderer::RenderLayerRuleFactoryRegistrar       m_render_layuer_rule_factory_registrar;
+    renderer::MaterialFactoryRegistrar              m_material_factory_registrar;
+    renderer::RenderLayerRuleFactoryRegistrar       m_render_layer_rule_factory_registrar;
     renderer::SurfaceShaderFactoryRegistrar         m_surface_shader_factory_registrar;
     renderer::TextureFactoryRegistrar               m_texture_factory_registrar;
 
@@ -200,10 +201,17 @@ ProjectBuilder::get_factory_registrar<renderer::Light>() const
 }
 
 template <>
+inline const renderer::EntityTraits<renderer::Material>::FactoryRegistrarType&
+ProjectBuilder::get_factory_registrar<renderer::Material>() const
+{
+    return m_material_factory_registrar;
+}
+
+template <>
 inline const renderer::EntityTraits<renderer::RenderLayerRule>::FactoryRegistrarType&
 ProjectBuilder::get_factory_registrar<renderer::RenderLayerRule>() const
 {
-    return m_render_layuer_rule_factory_registrar;
+    return m_render_layer_rule_factory_registrar;
 }
 
 template <>
@@ -445,18 +453,6 @@ inline foundation::auto_release_ptr<renderer::Environment> ProjectBuilder::creat
     clean_values.strings().remove(EntityEditorFormFactoryBase::NameParameter);
 
     return renderer::EnvironmentFactory::create(name.c_str(), clean_values);
-}
-
-template <>
-inline foundation::auto_release_ptr<renderer::Material> ProjectBuilder::create_entity(
-    const foundation::Dictionary&       values) const
-{
-    const std::string name = get_entity_name(values);
-
-    foundation::Dictionary clean_values(values);
-    clean_values.strings().remove(EntityEditorFormFactoryBase::NameParameter);
-
-    return renderer::MaterialFactory::create(name.c_str(), clean_values);
 }
 
 }       // namespace studio

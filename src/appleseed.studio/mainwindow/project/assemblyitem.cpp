@@ -113,7 +113,7 @@ AssemblyItem::AssemblyItem(
 
     insertChild(
         6,
-        m_material_collection_item = add_single_model_collection_item<Material>(assembly.materials()));
+        m_material_collection_item = add_multi_model_collection_item<Material>(assembly.materials()));
 
     insertChild(
         7,

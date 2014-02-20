@@ -117,7 +117,7 @@ asf::auto_release_ptr<asr::Project> build_project()
 
     // Create a material called "gray_material" and insert it into the assembly.
     assembly->materials().insert(
-        asr::MaterialFactory::create(
+        asr::GenericMaterialFactory().create(
             "gray_material",
             asr::ParamArray()
                 .insert("surface_shader", "physical_surface_shader")

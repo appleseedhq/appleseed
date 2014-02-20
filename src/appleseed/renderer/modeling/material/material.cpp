@@ -47,13 +47,12 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
-#include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/makevector.h"
 
 // Standard headers.
 #include <cassert>
 #include <cstring>
+#include <string>
 
 using namespace foundation;
 using namespace std;
@@ -75,10 +74,17 @@ UniqueID Material::get_class_uid()
     return g_class_uid;
 }
 
+struct Material::Impl
+{
+    string m_model;
+};
+
 Material::Material(
     const char*         name,
+    const char*         model,
     const ParamArray&   params)
   : ConnectableEntity(g_class_uid, params)
+  , impl(new Impl())
   , m_surface_shader(0)
   , m_bsdf(0)
   , m_edf(0)
@@ -87,11 +93,18 @@ Material::Material(
 {
     set_name(name);
 
+    impl->m_model = model;
+
     m_inputs.declare("surface_shader", InputFormatEntity);
     m_inputs.declare("bsdf", InputFormatEntity, "");
     m_inputs.declare("edf", InputFormatEntity, "");
     m_inputs.declare("alpha_map", InputFormatScalar, "");
     m_inputs.declare("displacement_map", InputFormatSpectralReflectance, "");
+}
+
+Material::~Material()
+{
+    delete impl;
 }
 
 void Material::release()
@@ -101,7 +114,7 @@ void Material::release()
 
 const char* Material::get_model() const
 {
-    return MaterialFactory::get_model();
+    return impl->m_model.c_str();
 }
 
 namespace
@@ -255,107 +268,6 @@ bool Material::create_normal_modifier(const MessageContext& context)
     }
 
     return true;
-}
-
-
-//
-// MaterialFactory class implementation.
-//
-
-const char* MaterialFactory::get_model()
-{
-    return "generic_material";
-}
-
-DictionaryArray MaterialFactory::get_input_metadata()
-{
-    DictionaryArray metadata;
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "bsdf")
-            .insert("label", "BSDF")
-            .insert("type", "entity")
-            .insert("entity_types", Dictionary().insert("bsdf", "BSDF"))
-            .insert("use", "optional"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "edf")
-            .insert("label", "EDF")
-            .insert("type", "entity")
-            .insert("entity_types", Dictionary().insert("edf", "EDF"))
-            .insert("use", "optional"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "surface_shader")
-            .insert("label", "Surface Shader")
-            .insert("type", "entity")
-            .insert("entity_types",
-                Dictionary().insert("surface_shader", "Surface Shaders"))
-            .insert("use", "required"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "alpha_map")
-            .insert("label", "Alpha Map")
-            .insert("type", "colormap")
-            .insert("entity_types",
-                Dictionary()
-                    .insert("color", "Colors")
-                    .insert("texture_instance", "Textures"))
-            .insert("use", "optional"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "displacement_map")
-            .insert("label", "Displacement Map")
-            .insert("type", "colormap")
-            .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
-            .insert("use", "optional"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "displacement_method")
-            .insert("label", "Displacement Method")
-            .insert("type", "enumeration")
-            .insert("items",
-                Dictionary()
-                    .insert("Bump Mapping", "bump")
-                    .insert("Normal Mapping", "normal"))
-            .insert("use", "required")
-            .insert("default", "bump"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "bump_amplitude")
-            .insert("label", "Bump Amplitude")
-            .insert("type", "text")
-            .insert("use", "optional")
-            .insert("default", "1.0"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "normal_map_up")
-            .insert("label", "Normal Map Up Vector")
-            .insert("type", "enumeration")
-            .insert("items",
-                Dictionary()
-                    .insert("Green Channel (Y)", "y")
-                    .insert("Blue Channel (Z)", "z"))
-            .insert("use", "optional")
-            .insert("default", "z"));
-
-    return metadata;
-}
-
-auto_release_ptr<Material> MaterialFactory::create(
-    const char*         name,
-    const ParamArray&   params)
-{
-    return auto_release_ptr<Material>(new Material(name, params));
 }
 
 }   // namespace renderer

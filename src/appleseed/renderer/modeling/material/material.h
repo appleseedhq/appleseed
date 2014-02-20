@@ -43,7 +43,6 @@
 
 // Forward declarations.
 namespace foundation    { class AbortSwitch; }
-namespace foundation    { class DictionaryArray; }
 namespace renderer      { class Assembly; }
 namespace renderer      { class BSDF; }
 namespace renderer      { class EDF; }
@@ -125,7 +124,10 @@ class DLLSYMBOL Material
     const INormalModifier* get_normal_modifier() const;
 
   private:
-    friend class MaterialFactory;
+    friend class GenericMaterialFactory;
+
+    struct Impl;
+    Impl* impl;
 
     const SurfaceShader*            m_surface_shader;
     const BSDF*                     m_bsdf;
@@ -136,29 +138,13 @@ class DLLSYMBOL Material
     // Constructor.
     Material(
         const char*                 name,
+        const char*                 model,
         const ParamArray&           params);
 
+    // Destructor.
+    ~Material();
+
     bool create_normal_modifier(const MessageContext& context);
-};
-
-
-//
-// Material factory.
-//
-
-class DLLSYMBOL MaterialFactory
-{
-  public:
-    // Return a string identifying this material model.
-    static const char* get_model();
-
-    // Return a set of input metadata for this material model.
-    static foundation::DictionaryArray get_input_metadata();
-
-    // Create a new material.
-    static foundation::auto_release_ptr<Material> create(
-        const char*         name,
-        const ParamArray&   params);
 };
 
 
