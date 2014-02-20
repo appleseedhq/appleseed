@@ -44,6 +44,6 @@ copy /Y %build%\appleseed.shared\Ship\appleseed.shared.lib  lib\Release\
 
 REM Copy Headers.
 
-xcopy /E ..\..\..\src\appleseed\*.h         include\appleseed\
-xcopy /E ..\..\..\src\appleseed.shared\*.h  include\appleseed.shared\
-xcopy /E ..\..\..\src\openexr\include\*.h   include\openexr\
+xcopy /E ..\..\..\src\appleseed\*.h            include\appleseed\
+xcopy /E ..\..\..\src\appleseed.shared\*.h     include\appleseed.shared\
+xcopy /E ..\..\..\3rdparty\openexr\include\*.h include\openexr\
