@@ -102,9 +102,9 @@ class APPLESEED_ALIGN(16) CompositeClosure
     bool closure_has_tangent(const size_t index) const;
     const foundation::Vector3d& closure_tangent(const size_t index) const;
     void* closure_input_values(const size_t index) const;
-    
+
     size_t choose_closure(const double w) const;
-    
+
   private:
     friend class OSLBSDF;
 
@@ -137,7 +137,7 @@ class APPLESEED_ALIGN(16) CompositeClosure
     int                         m_num_bytes;
 
     explicit CompositeClosure(const OSL::ClosureColor *Ci);
-    
+
     void process_closure_tree(
         const OSL::ClosureColor* closure, 
         const foundation::Color3f& weight);
@@ -156,7 +156,7 @@ class APPLESEED_ALIGN(16) CompositeClosure
         const foundation::Vector3d& normal,
         const foundation::Vector3d& tangent,
         const InputValues&          values);
-    
+
     template<class InputValues>
     void do_add_closure(
         const ClosureID             closure_type,

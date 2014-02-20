@@ -68,7 +68,7 @@ namespace
 
     struct LambertClosureParams
     {
-        OSL::Vec3 N;        
+        OSL::Vec3 N;
     };
 
     struct MicrofacetBRDFClosureParams
@@ -102,7 +102,7 @@ namespace
 CompositeClosure::CompositeClosure(const OSL::ClosureColor *Ci)
 {
     process_closure_tree(Ci, Color3f(1, 1, 1));
-    
+
     // compute sum of weights.
     double total_weight = 0.0;
     for (int i = 0, e = num_closures(); i != e; ++i)
@@ -167,10 +167,16 @@ void CompositeClosure::process_closure_tree(
         {
             const OSL::ClosureComponent* c = reinterpret_cast<const OSL::ClosureComponent*>(closure);
             Color3f w = weight * Color3f(c->w.x, c->w.y, c->w.z);
-            
+
             switch (c->id)
             {
               case AshikhminShirleyID:
+                {
+                    // Not implemented yet.
+                    assert(false);
+                }
+                break;
+
               case LambertID:
                 {
                     const LambertClosureParams *p = reinterpret_cast<const LambertClosureParams*>(c->data());
@@ -264,7 +270,6 @@ void CompositeClosure::do_add_closure(
         return;
     }
 
-    // This should never happen
     assert(m_num_bytes + sizeof(InputValues) <= MaxPoolSize);
 
     // we use the luminance of the weight as the BSDF weight.
@@ -279,7 +284,7 @@ void CompositeClosure::do_add_closure(
     m_weights[m_num_closures] = w;
     m_normals[m_num_closures] = normalize(normal);
     m_has_tangent[m_num_closures] = has_tangent;
-    
+
     if (has_tangent)
         m_tangents[m_num_closures] = normalize(tangent);
 

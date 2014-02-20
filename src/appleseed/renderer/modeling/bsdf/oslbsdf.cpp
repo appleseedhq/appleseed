@@ -83,7 +83,7 @@ OSLBSDF::OSLBSDF()
         "specular_btdf",
         RefractionID,
         "osl_refraction");
-    
+
     create_bsdf(
         m_microfacet_beckmann_brdf,
         "microfacet_brdf",
@@ -97,7 +97,7 @@ OSLBSDF::OSLBSDF()
         MicrofacetBlinnID,
         "osl_blinn",
         ParamArray().insert("mdf", "blinn"));
-    
+
     create_bsdf(
         m_microfacet_ggx_brdf,
         "microfacet_brdf",
@@ -153,7 +153,6 @@ void OSLBSDF::on_frame_end(
     {
         if (BSDF* bsdf = m_all_bsdfs[i])
             bsdf->on_frame_end(project, assembly);
-        
     }
 }
 
@@ -218,7 +217,7 @@ BSDF::Mode OSLBSDF::sample(
             outgoing,
             incoming,
             value,
-            probability);        
+            probability);
     }
 
     // no closures case.
@@ -259,7 +258,7 @@ double OSLBSDF::evaluate(
 
         if (bsdf_prob > 0.0)
             value += s * static_cast<float>(c->closure_weight(i));
-        
+
         prob += bsdf_prob * c->closure_weight(i);
     }
 
