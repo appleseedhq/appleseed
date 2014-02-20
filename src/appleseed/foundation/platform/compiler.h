@@ -112,22 +112,23 @@ class DLLSYMBOL Compiler
 // Named APPLESEED_ALIGN instead of simply ALIGN to prevent a collision with the ALIGN
 // macro defined in /usr/include/i386/param.h on Mac OS X (and possibly other platforms).
 //
+// SSE_ALIGN aligns on a 16-byte boundary as required by SSE load/store instructions.
+//
 
 // Visual C++.
 #if defined _MSC_VER
     #define APPLESEED_ALIGN(n) __declspec(align(n))
+    #define SSE_ALIGN APPLESEED_ALIGN(16)
 
 // gcc.
 #elif defined __GNUC__
     #define APPLESEED_ALIGN(n) __attribute__((aligned(n)))
+    #define SSE_ALIGN APPLESEED_ALIGN(16)
 
-// Other compilers: ignore the qualifier.
+// Other compilers: ignore the qualifier, and leave SSE_ALIGN undefined.
 #else
     #define APPLESEED_ALIGN(n)
 #endif
-
-// Specify an alignment compatible with SSE.
-#define SSE_ALIGN APPLESEED_ALIGN(16)
 
 
 //
