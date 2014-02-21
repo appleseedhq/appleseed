@@ -64,8 +64,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/Modules)
 #--------------------------------------------------------------------------------------------------
 
 option (USE_STATIC_BOOST        "Use static Boost libs"                                 ON)
-option (USE_EXTERNAL_ZLIB       "Use external ZLIB lib"                                 OFF)
-option (USE_EXTERNAL_PNG        "Use external PNG lib"                                  OFF)
+option (USE_EXTERNAL_ZLIB       "Use external zlib lib"                                 OFF)
+option (USE_EXTERNAL_PNG        "Use external png lib"                                  OFF)
 option (USE_EXTERNAL_EXR        "Use external OpenEXR lib"                              OFF)
 option (USE_EXTERNAL_ALEMBIC    "Use external Alembic lib"                              OFF)
 option (USE_EXTERNAL_XERCES     "Use external Xerces lib"                               OFF)
@@ -73,11 +73,12 @@ option (USE_EXTERNAL_XERCES     "Use external Xerces lib"                       
 option (WITH_CLI                "Build appleseed.cli"                                   ON)
 option (WITH_STUDIO             "Build appleseed.studio"                                ON)
 option (WITH_TOOLS              "Build appleseed tools"                                 ON)
-option (WITH_PYTHON             "Build Python module"                                   ON)
+option (WITH_PYTHON             "Build Python bindings"                                 ON)
 option (WITH_ALEMBIC            "Build Alembic support"                                 ON)
 option (WITH_OSL                "Build OSL support"                                     OFF)
 
-option (WITH_QMC_SAMPLER        "Use QMC sampler (possible software patent issues)"     OFF)
+option (USE_SSE                 "Use SSE and SSE 2 instruction sets"                    ON)
+option (USE_QMC_SAMPLER         "Use QMC sampler (possible software patent issues)"     OFF)
 
 
 #--------------------------------------------------------------------------------------------------
@@ -163,14 +164,16 @@ if (WITH_ALEMBIC)
 endif ()
 
 if (USE_EXTERNAL_XERCES)
-    find_package (Xerces REQUIRED)
     add_definitions (-DWITH_EXTERNAL_XERCES)
+
+    find_package (Xerces REQUIRED)
 endif ()
 
 if (WITH_OSL)
+    add_definitions (-DWITH_OSL)
+
     find_package (OpenImageIO REQUIRED)
     find_package (OSL REQUIRED)
-    add_definitions (-DWITH_OSL)
 endif ()
 
 
@@ -270,6 +273,18 @@ elseif (CMAKE_SIZEOF_VOID_P MATCHES 8)
 else ()
     message (FATAL_ERROR "Cannot determine pointer size")
 endif ()
+if (USE_QMC_SAMPLER)
+    set (preprocessor_definitions_common
+        ${preprocessor_definitions_common}
+        USE_QMC_SAMPLER
+    )
+endif ()
+if (USE_SSE)
+    set (preprocessor_definitions_common
+        ${preprocessor_definitions_common}
+        APPLESEED_USE_SSE
+    )
+endif ()
 
 # Debug configuration.
 set (preprocessor_definitions_debug
@@ -336,10 +351,6 @@ macro (append_custom_preprocessor_definitions target first_definition)
         COMPILE_DEFINITIONS_PROFILE ${definitions}
     )
 endmacro ()
-
-if (WITH_QMC_SAMPLER)
-    add_definitions (-DWITH_QMC_SAMPLER)
-endif ()
 
 
 #--------------------------------------------------------------------------------------------------
@@ -431,8 +442,10 @@ endmacro ()
 #--------------------------------------------------------------------------------------------------
 
 add_subdirectory (appleseed)
+add_subdirectory (lz4)
+add_subdirectory (minilzo)
 
-if (WITH_CLI OR WITH_STUDIO)
+if (WITH_CLI OR WITH_STUDIO OR WITH_TOOLS)
     add_subdirectory (appleseed.shared)
 endif ()
 
@@ -447,9 +460,6 @@ endif ()
 if (WITH_PYTHON)
     add_subdirectory (appleseed.python)
 endif ()
-
-add_subdirectory (lz4)
-add_subdirectory (minilzo)
 
 if (WITH_TOOLS)
     add_subdirectory (tools/animatecamera)
@@ -576,3 +586,4 @@ set (CPACK_PACKAGE_VERSION_MINOR ${APPLESEED_VERSION_MINOR})
 set (CPACK_PACKAGE_VERSION_PATCH ${APPLESEED_VERSION_PATCH})
 
 include (CPack)
+

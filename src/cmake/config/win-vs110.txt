@@ -119,9 +119,14 @@ set (c_compiler_flags_release
 if (CMAKE_SIZEOF_VOID_P EQUAL 4)
     set (c_compiler_flags_release
         ${c_compiler_flags_release}
-        /arch:SSE2                          # Streaming SIMD Extensions 2 (always enabled in 64-bit builds)
         /fp:fast                            # set Floating Point Model to Fast, in 32-bit builds only because of a bug in VS 2010:
     )                                       # http://connect.microsoft.com/VisualStudio/feedback/details/518015/nan-comparison-under-the-64-bit-compiler-is-incorrect
+    if (USE_SSE)
+        set (c_compiler_flags_release
+            ${c_compiler_flags_release}
+            /arch:SSE2                      # Streaming SIMD Extensions 2 (always enabled in 64-bit builds)
+        )
+    endif ()
 endif ()
 set (exe_linker_flags_release
     /OPT:REF                                # Eliminate Unreferenced Data

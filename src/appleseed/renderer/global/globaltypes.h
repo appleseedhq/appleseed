@@ -58,7 +58,7 @@ typedef foundation::RegularSpectrum<float, 31> Spectrum;
 typedef foundation::Color<float, 1> Alpha;
 
 // Sampling context.
-#ifdef WITH_QMC_SAMPLER
+#ifdef USE_QMC_SAMPLER
     typedef foundation::QMCSamplingContext<
         foundation::MersenneTwister
     > SamplingContext;
