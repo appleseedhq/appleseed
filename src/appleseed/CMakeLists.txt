@@ -1604,14 +1604,14 @@ set_source_files_properties (${appleseed_schema_files} PROPERTIES
     HEADER_FILE_ONLY TRUE
 )
 
-# Collect all OSL headers
-
+# Collect all OSL headers.
 if (WITH_OSL)
     set (appleseed_osl_headers
         renderer/kernel/shading/oslutil.h
         renderer/kernel/shading/stdosl.h
     )
 endif ()
+
 
 #--------------------------------------------------------------------------------------------------
 # Target.
@@ -1635,7 +1635,6 @@ set_target_properties (appleseed PROPERTIES
 apply_preprocessor_definitions (appleseed)
 
 append_custom_preprocessor_definitions (appleseed
-    APPLESEED_USE_SSE
     APPLESEED_ENABLE_IMATH_INTEROP
 )
 
