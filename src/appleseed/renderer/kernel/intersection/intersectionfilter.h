@@ -143,6 +143,15 @@ inline bool IntersectionFilter::accept(
     if (alpha_mask == 0)
         return true;
 
+    // Don't use the alpha mask if the UV coordinates are indefinite.
+    // This can happen in rare circumstances, when hitting degenerate
+    // or nearly degenerate geometry. Since we cannot guarantee to
+    // catch all instances of degenerate geometry before rendering, and
+    // because using the alpha mask in this case would lead to a crash,
+    // we decide in this case to simply revert to the normal code path.
+    if (u != u || v != v)
+        return true;
+
     const size_t triangle_index = triangle_key.get_triangle_index();
 
     const float fu = static_cast<float>(u);

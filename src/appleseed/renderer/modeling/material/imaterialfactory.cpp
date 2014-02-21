@@ -27,14 +27,28 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_MATERIAL_H
-#define APPLESEED_RENDERER_API_MATERIAL_H
+// Interface header.
+#include "imaterialfactory.h"
 
-// API headers.
-#include "renderer/modeling/material/genericmaterial.h"
-#include "renderer/modeling/material/imaterialfactory.h"
-#include "renderer/modeling/material/material.h"
-#include "renderer/modeling/material/materialfactoryregistrar.h"
-#include "renderer/modeling/material/materialtraits.h"
+// appleseed.foundation headers.
+#include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/containers/specializedarrays.h"
 
-#endif  // !APPLESEED_RENDERER_API_MATERIAL_H
+using namespace foundation;
+
+namespace renderer
+{
+
+void IMaterialFactory::add_common_input_metadata(DictionaryArray& metadata)
+{
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "surface_shader")
+            .insert("label", "Surface Shader")
+            .insert("type", "entity")
+            .insert("entity_types",
+                Dictionary().insert("surface_shader", "Surface Shaders"))
+            .insert("use", "required"));
+}
+
+}   // namespace renderer

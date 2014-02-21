@@ -53,7 +53,11 @@ set (git_command "git")
 # Flags common to all configurations.
 set (c_compiler_flags_common
     -Werror                                             # Treat Warnings As Errors
+    -Wno-switch                                         # Don't complain about unhandled enumeration values in switch
     -fPIC                                               # Emit position-independent code
+    -march=native                                       # Use the instruction set of this machine
+    -msse                                               # Always enable the SSE instruction set
+    -msse2                                              # Always enable the SSE 2 instruction set
 )
 set (cxx_compiler_flags_common
     -fvisibility=hidden -fvisibility-inlines-hidden     # Hide all non-exported symbols

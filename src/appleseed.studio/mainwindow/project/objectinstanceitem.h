@@ -69,6 +69,9 @@ class ObjectInstanceItem
     Q_OBJECT
 
   public:
+    // The name of the default material slot, when the object does not have any slot.
+    static const char* DefaultSlotName;
+
     ObjectInstanceItem(
         renderer::ObjectInstance*       object_instance,
         renderer::Assembly&             parent,
@@ -113,6 +116,11 @@ class ObjectInstanceItem
     void add_material_assignment_menu_actions(
         QMenu*                          menu,
         const QList<ItemBase*>&         items = QList<ItemBase*>()) const;
+
+    void add_material_assignment_menu_actions(
+        QMenu*                          menu,
+        const char*                     slot,
+        const QList<ItemBase*>&         items) const;
 
     void do_assign_material(
         const char*                     slot_name,

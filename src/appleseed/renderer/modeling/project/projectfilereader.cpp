@@ -52,7 +52,9 @@
 #include "renderer/modeling/light/ilightfactory.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/light/lightfactoryregistrar.h"
+#include "renderer/modeling/material/imaterialfactory.h"
 #include "renderer/modeling/material/material.h"
+#include "renderer/modeling/material/materialfactoryregistrar.h"
 #include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/meshobjectreader.h"
 #include "renderer/modeling/object/object.h"
@@ -1428,50 +1430,19 @@ namespace
     //
 
     class MaterialElementHandler
-      : public ParametrizedElementHandler
+      : public EntityElementHandler<
+                   Material,
+                   MaterialFactoryRegistrar,
+                   ParametrizedElementHandler>
     {
       public:
         explicit MaterialElementHandler(ParseContext& context)
-          : m_context(context)
+          : EntityElementHandler<
+                Material,
+                MaterialFactoryRegistrar,
+                ParametrizedElementHandler>("material", context)
         {
         }
-
-        virtual void start_element(const Attributes& attrs) OVERRIDE
-        {
-            ParametrizedElementHandler::start_element(attrs);
-
-            m_material.reset();
-
-            m_name = get_value(attrs, "name");
-            m_model = get_value(attrs, "model");
-        }
-
-        virtual void end_element() OVERRIDE
-        {    
-            ParametrizedElementHandler::end_element();
-
-            if (m_model == MaterialFactory::get_model())
-                m_material = MaterialFactory::create(m_name.c_str(), m_params);
-            else
-            {
-                RENDERER_LOG_ERROR(
-                    "while defining material \"%s\": invalid model \"%s\".",
-                    m_name.c_str(),
-                    m_model.c_str());
-                m_context.get_event_counters().signal_error();
-            }
-        }
-
-        auto_release_ptr<Material> get_material()
-        {
-            return m_material;
-        }
-
-      private:
-        ParseContext&                       m_context;
-        auto_release_ptr<Material>          m_material;
-        string                              m_name;
-        string                              m_model;
     };
 
 
@@ -2078,7 +2049,7 @@ namespace
                 {
                     MaterialElementHandler* material_handler =
                         static_cast<MaterialElementHandler*>(handler);
-                    auto_release_ptr<Material> material = material_handler->get_material();
+                    auto_release_ptr<Material> material = material_handler->get_entity();
                     if (material.get())
                         m_materials.insert(material);
                 }

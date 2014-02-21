@@ -39,6 +39,9 @@
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/autoreleaseptr.h"
 
+// Forward declarations.
+namespace renderer  { class MaterialFactoryRegistrar; }
+
 namespace renderer
 {
 
@@ -50,7 +53,7 @@ template <>
 struct EntityTraits<Material>
 {
     typedef MaterialContainer ContainerType;
-    typedef MaterialFactory FactoryType;
+    typedef MaterialFactoryRegistrar FactoryRegistrarType;
 
     static const char* get_entity_type_name()                           { return "material"; }
     static const char* get_human_readable_entity_type_name()            { return "Material"; }

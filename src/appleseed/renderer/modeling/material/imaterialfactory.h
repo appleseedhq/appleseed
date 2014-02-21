@@ -27,45 +27,54 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_AREA_H
-#define APPLESEED_FOUNDATION_MATH_AREA_H
+#ifndef APPLESEED_RENDERER_MODELING_MATERIAL_IMATERIALFACTORY_H
+#define APPLESEED_RENDERER_MODELING_MATERIAL_IMATERIALFACTORY_H
 
 // appleseed.foundation headers.
-#include "foundation/math/vector.h"
+#include "foundation/core/concepts/noncopyable.h"
+#include "foundation/utility/autoreleaseptr.h"
 
-// Standard headers.
-#include <cstddef>
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
-namespace foundation
+// Forward declarations.
+namespace foundation    { class DictionaryArray; }
+namespace renderer      { class Material; }
+namespace renderer      { class ParamArray; }
+
+namespace renderer
 {
 
 //
-// Area functions.
+// Material factory interface.
 //
 
-// Compute the square of the area of a triangle defined by three points.
-template <typename T, size_t N>
-T square_area(
-    const Vector<T, N>& v0,
-    const Vector<T, N>& v1,
-    const Vector<T, N>& v2);
-
-
-//
-// Area functions implementation.
-//
-
-template <typename T, size_t N>
-inline T square_area(
-    const Vector<T, N>& v0,
-    const Vector<T, N>& v1,
-    const Vector<T, N>& v2)
+class DLLSYMBOL IMaterialFactory
+  : public foundation::NonCopyable
 {
-    const Vector<T, N> e0 = v1 - v0;
-    const Vector<T, N> e1 = v2 - v0;
-    return T(0.25) * square_norm(cross(e0, e1));
-}
+  public:
+    // Destructor.
+    virtual ~IMaterialFactory() {}
 
-}       // namespace foundation
+    // Return a string identifying this material model.
+    virtual const char* get_model() const = 0;
 
-#endif  // !APPLESEED_FOUNDATION_MATH_AREA_H
+    // Return a human-readable string identifying this material model.
+    virtual const char* get_human_readable_model() const = 0;
+
+    // Return a set of input metadata for this material model.
+    virtual foundation::DictionaryArray get_input_metadata() const = 0;
+
+    // Create a new material instance.
+    virtual foundation::auto_release_ptr<Material> create(
+        const char*         name,
+        const ParamArray&   params) const = 0;
+
+  protected:
+    // Add the input metadata common to all material models.
+    static void add_common_input_metadata(foundation::DictionaryArray& metadata);
+};
+
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_MODELING_MATERIAL_IMATERIALFACTORY_H

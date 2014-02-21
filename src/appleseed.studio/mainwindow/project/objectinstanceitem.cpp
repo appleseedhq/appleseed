@@ -100,6 +100,8 @@ Q_DECLARE_METATYPE(MaterialAssignmentData);
 namespace appleseed {
 namespace studio {
 
+const char* ObjectInstanceItem::DefaultSlotName = "default";
+
 ObjectInstanceItem::ObjectInstanceItem(
     ObjectInstance*                 object_instance,
     Assembly&                       parent,
@@ -441,31 +443,46 @@ void ObjectInstanceItem::add_material_assignment_menu_actions(
 
     const size_t slot_count = object->get_material_slot_count();
 
-    for (size_t i = 0; i < slot_count; ++i)
+    if (slot_count > 0)
     {
-        const char* slot = object->get_material_slot(i);
-        QMenu* slot_menu = slots_menu->addMenu(slot);
-
-        slot_menu->addAction("Assign Material To Front Side...", this, SLOT(slot_assign_material()))
-            ->setData(QVariant::fromValue(MaterialAssignmentData(slot, FrontSide, items)));
-
-        slot_menu->addAction("Assign Material To Back Side...", this, SLOT(slot_assign_material()))
-            ->setData(QVariant::fromValue(MaterialAssignmentData(slot, BackSide, items)));
-
-        slot_menu->addAction("Assign Material To Both Sides...", this, SLOT(slot_assign_material()))
-            ->setData(QVariant::fromValue(MaterialAssignmentData(slot, FrontAndBackSides, items)));
-
-        slot_menu->addSeparator();
-
-        slot_menu->addAction("Clear Front Side Material", this, SLOT(slot_clear_material()))
-            ->setData(QVariant::fromValue(MaterialAssignmentData(slot, FrontSide, items)));
-
-        slot_menu->addAction("Clear Back Side Material", this, SLOT(slot_clear_material()))
-            ->setData(QVariant::fromValue(MaterialAssignmentData(slot, BackSide, items)));
-
-        slot_menu->addAction("Clear Both Sides Materials", this, SLOT(slot_clear_material()))
-            ->setData(QVariant::fromValue(MaterialAssignmentData(slot, FrontAndBackSides, items)));
+        for (size_t i = 0; i < slot_count; ++i)
+        {
+            const char* slot = object->get_material_slot(i);
+            QMenu* slot_menu = slots_menu->addMenu(slot);
+            add_material_assignment_menu_actions(slot_menu, slot, items);
+        }
     }
+    else
+    {
+        QMenu* slot_menu = slots_menu->addMenu(DefaultSlotName);
+        add_material_assignment_menu_actions(slot_menu, DefaultSlotName, items);
+    }
+}
+
+void ObjectInstanceItem::add_material_assignment_menu_actions(
+    QMenu*                          menu,
+    const char*                     slot,
+    const QList<ItemBase*>&         items) const
+{
+    menu->addAction("Assign Material To Front Side...", this, SLOT(slot_assign_material()))
+        ->setData(QVariant::fromValue(MaterialAssignmentData(slot, FrontSide, items)));
+
+    menu->addAction("Assign Material To Back Side...", this, SLOT(slot_assign_material()))
+        ->setData(QVariant::fromValue(MaterialAssignmentData(slot, BackSide, items)));
+
+    menu->addAction("Assign Material To Both Sides...", this, SLOT(slot_assign_material()))
+        ->setData(QVariant::fromValue(MaterialAssignmentData(slot, FrontAndBackSides, items)));
+
+    menu->addSeparator();
+
+    menu->addAction("Clear Front Side Material", this, SLOT(slot_clear_material()))
+        ->setData(QVariant::fromValue(MaterialAssignmentData(slot, FrontSide, items)));
+
+    menu->addAction("Clear Back Side Material", this, SLOT(slot_clear_material()))
+        ->setData(QVariant::fromValue(MaterialAssignmentData(slot, BackSide, items)));
+
+    menu->addAction("Clear Both Sides Materials", this, SLOT(slot_clear_material()))
+        ->setData(QVariant::fromValue(MaterialAssignmentData(slot, FrontAndBackSides, items)));
 }
 
 void ObjectInstanceItem::do_assign_material(

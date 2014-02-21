@@ -446,7 +446,7 @@ namespace
                     .insert("color", ColorName)));
 
         assembly.materials().insert(
-            MaterialFactory::create(
+            GenericMaterialFactory().create(
                 BlackMaterialName,
                 ParamArray()
                     .insert("surface_shader", BlackSurfaceShaderName)));

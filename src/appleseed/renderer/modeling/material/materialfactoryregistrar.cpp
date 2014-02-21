@@ -27,14 +27,66 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_MATERIAL_H
-#define APPLESEED_RENDERER_API_MATERIAL_H
+// Interface header.
+#include "materialfactoryregistrar.h"
 
-// API headers.
+// appleseed.renderer headers.
 #include "renderer/modeling/material/genericmaterial.h"
-#include "renderer/modeling/material/imaterialfactory.h"
 #include "renderer/modeling/material/material.h"
-#include "renderer/modeling/material/materialfactoryregistrar.h"
-#include "renderer/modeling/material/materialtraits.h"
 
-#endif  // !APPLESEED_RENDERER_API_MATERIAL_H
+// appleseed.foundation headers.
+#include "foundation/utility/foreach.h"
+#include "foundation/utility/registrar.h"
+
+// Standard headers.
+#include <cassert>
+#include <string>
+
+using namespace foundation;
+using namespace std;
+
+namespace renderer
+{
+
+DEFINE_ARRAY(MaterialFactoryArray);
+
+struct MaterialFactoryRegistrar::Impl
+{
+    Registrar<IMaterialFactory> m_registrar;
+};
+
+MaterialFactoryRegistrar::MaterialFactoryRegistrar()
+  : impl(new Impl())
+{
+    register_factory(auto_ptr<FactoryType>(new GenericMaterialFactory()));
+}
+
+MaterialFactoryRegistrar::~MaterialFactoryRegistrar()
+{
+    delete impl;
+}
+
+void MaterialFactoryRegistrar::register_factory(auto_ptr<FactoryType> factory)
+{
+    const string model = factory->get_model();
+    impl->m_registrar.insert(model, factory);
+}
+
+MaterialFactoryArray MaterialFactoryRegistrar::get_factories() const
+{
+    FactoryArrayType factories;
+
+    for (const_each<Registrar<FactoryType>::Items> i = impl->m_registrar.items(); i; ++i)
+        factories.push_back(i->second);
+
+    return factories;
+}
+
+const MaterialFactoryRegistrar::FactoryType* MaterialFactoryRegistrar::lookup(const char* name) const
+{
+    assert(name);
+
+    return impl->m_registrar.lookup(name);
+}
+
+}   // namespace renderer

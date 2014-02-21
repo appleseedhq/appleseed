@@ -793,7 +793,7 @@ namespace
 
             create_direct_link("lighting_components.dl", "pt.enable_dl", true);
             create_direct_link("lighting_components.ibl", "pt.enable_ibl", true);
-            create_direct_link("lighting_components.caustics", "pt.enable_caustics", true);
+            create_direct_link("lighting_components.caustics", "pt.enable_caustics", false);
             create_direct_link("pt.bounces.rr_start_bounce", "pt.rr_min_path_length", 3);
             create_direct_link("advanced.next_event_estimation", "pt.next_event_estimation", true);
             create_direct_link("advanced.dl.light_samples", "pt.dl_light_samples", 1);

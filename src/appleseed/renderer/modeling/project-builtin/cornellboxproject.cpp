@@ -530,7 +530,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         ParamArray params;
         params.insert("surface_shader", "physical_shader");
         params.insert("bsdf", "white_material_brdf");
-        assembly->materials().insert(MaterialFactory::create("white_material", params));
+        assembly->materials().insert(GenericMaterialFactory().create("white_material", params));
     }
 
     //
@@ -549,7 +549,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         ParamArray params;
         params.insert("surface_shader", "physical_shader");
         params.insert("bsdf", "red_material_brdf");
-        assembly->materials().insert(MaterialFactory::create("red_material", params));
+        assembly->materials().insert(GenericMaterialFactory().create("red_material", params));
     }
 
     //
@@ -568,7 +568,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         ParamArray params;
         params.insert("surface_shader", "physical_shader");
         params.insert("bsdf", "green_material_brdf");
-        assembly->materials().insert(MaterialFactory::create("green_material", params));
+        assembly->materials().insert(GenericMaterialFactory().create("green_material", params));
     }
 
     //
@@ -595,7 +595,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
         params.insert("surface_shader", "physical_shader");
         params.insert("bsdf", "light_material_brdf");
         params.insert("edf", "light_material_edf");
-        assembly->materials().insert(MaterialFactory::create("light_material", params));
+        assembly->materials().insert(GenericMaterialFactory().create("light_material", params));
     }
 
     //

@@ -107,7 +107,7 @@ namespace
             explicit Parameters(const ParamArray& params)
               : m_enable_dl(params.get_optional<bool>("enable_dl", true))
               , m_enable_ibl(params.get_optional<bool>("enable_ibl", true))
-              , m_enable_caustics(params.get_optional<bool>("enable_caustics", true))
+              , m_enable_caustics(params.get_optional<bool>("enable_caustics", false))
               , m_max_path_length(nz(params.get_optional<size_t>("max_path_length", 0)))
               , m_rr_min_path_length(nz(params.get_optional<size_t>("rr_min_path_length", 3)))
               , m_next_event_estimation(params.get_optional<bool>("next_event_estimation", true))
@@ -266,6 +266,7 @@ namespace
             const EnvironmentEDF*       m_env_edf;
             Spectrum&                   m_path_radiance;
             SpectrumStack&              m_path_aovs;
+            bool                        m_omit_emitted_light;
 
             PathVisitorBase(
                 const Parameters&       params,
@@ -283,12 +284,13 @@ namespace
               , m_env_edf(scene.get_environment()->get_environment_edf())
               , m_path_radiance(path_radiance)
               , m_path_aovs(path_aovs)
+              , m_omit_emitted_light(false)
             {
             }
 
             bool accept_scattering(
                 const BSDF::Mode        prev_bsdf_mode,
-                const BSDF::Mode        bsdf_mode) const
+                const BSDF::Mode        bsdf_mode)
             {
                 assert(bsdf_mode != BSDF::Absorption);
 
@@ -297,6 +299,10 @@ namespace
                     // Don't follow paths leading to caustics.
                     if (BSDF::has_diffuse(prev_bsdf_mode) && BSDF::has_glossy_or_specular(bsdf_mode))
                         return false;
+
+                    // Ignore light emission after glossy-to-specular bounces to prevent another class of fireflies.
+                    if (BSDF::has_glossy(prev_bsdf_mode) && BSDF::has_specular(bsdf_mode))
+                        m_omit_emitted_light = true;
                 }
 
                 return true;
@@ -331,7 +337,8 @@ namespace
 
             void visit_vertex(const PathVertex& vertex)
             {
-                if (vertex.m_edf &&
+                if ((!m_omit_emitted_light || m_params.m_enable_caustics) &&
+                    vertex.m_edf &&
                     vertex.m_cos_on > 0.0 &&
                     (vertex.m_path_length > 2 || m_params.m_enable_dl) &&
                     (vertex.m_path_length < 2 || (vertex.m_edf->get_flags() & EDF::CastIndirectLight)))
@@ -448,7 +455,7 @@ namespace
                 }
 
                 // Emitted light.
-                if ((!m_is_indirect_lighting || m_params.m_enable_caustics) &&
+                if ((!m_omit_emitted_light || m_params.m_enable_caustics) &&
                     vertex.m_edf &&
                     vertex.m_cos_on > 0.0 &&
                     (vertex.m_path_length > 2 || m_params.m_enable_dl) &&

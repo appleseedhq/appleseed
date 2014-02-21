@@ -37,7 +37,7 @@
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/color/colorentity.h"
-#include "renderer/modeling/material/material.h"
+#include "renderer/modeling/material/genericmaterial.h"
 #include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/triangle.h"
 #include "renderer/modeling/project/project.h"
@@ -131,7 +131,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             params.insert("alpha_map", alpha);
 
             m_assembly->materials().insert(
-                MaterialFactory::create(material_name, params));
+                GenericMaterialFactory().create(material_name, params));
         }
 
         void create_plane_object()

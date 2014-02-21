@@ -27,14 +27,63 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_MATERIAL_H
-#define APPLESEED_RENDERER_API_MATERIAL_H
+#ifndef APPLESEED_RENDERER_MODELING_MATERIAL_MATERIALFACTORYREGISTRAR_H
+#define APPLESEED_RENDERER_MODELING_MATERIAL_MATERIALFACTORYREGISTRAR_H
 
-// API headers.
-#include "renderer/modeling/material/genericmaterial.h"
-#include "renderer/modeling/material/imaterialfactory.h"
-#include "renderer/modeling/material/material.h"
-#include "renderer/modeling/material/materialfactoryregistrar.h"
-#include "renderer/modeling/material/materialtraits.h"
+// appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
+#include "foundation/utility/containers/array.h"
 
-#endif  // !APPLESEED_RENDERER_API_MATERIAL_H
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+// Standard headers.
+#include <memory>
+
+// Forward declarations.
+namespace renderer  { class IMaterialFactory; }
+
+namespace renderer
+{
+
+//
+// An array of material factories.
+//
+
+DECLARE_ARRAY(MaterialFactoryArray, IMaterialFactory*);
+
+
+//
+// Material factory registrar.
+//
+
+class DLLSYMBOL MaterialFactoryRegistrar
+  : public foundation::NonCopyable
+{
+  public:
+    typedef IMaterialFactory FactoryType;
+    typedef MaterialFactoryArray FactoryArrayType;
+
+    // Constructor.
+    MaterialFactoryRegistrar();
+
+    // Destructor.
+    ~MaterialFactoryRegistrar();
+
+    // Register a material factory.
+    void register_factory(std::auto_ptr<FactoryType> factory);
+
+    // Retrieve the registered factories.
+    FactoryArrayType get_factories() const;
+
+    // Lookup a factory by name.
+    const FactoryType* lookup(const char* name) const;
+
+  private:
+    struct Impl;
+    Impl* impl;
+};
+
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_MODELING_MATERIAL_MATERIALFACTORYREGISTRAR_H

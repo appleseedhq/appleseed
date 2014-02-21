@@ -36,6 +36,7 @@
 // appleseed.studio headers.
 #include "mainwindow/project/entitybrowser.h"
 #include "mainwindow/project/entitybrowserwindow.h"
+#include "mainwindow/project/objectinstanceitem.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/rendering/renderingmanager.h"
 #include "utility/interop.h"
@@ -156,7 +157,7 @@ void MaterialAssignmentEditorWindow::create_widgets()
         return;
     }
 
-    create_widgets_for_slot(layout, "default");
+    create_widgets_for_slot(layout, ObjectInstanceItem::DefaultSlotName);
 }
 
 void MaterialAssignmentEditorWindow::create_widgets_for_slot(
