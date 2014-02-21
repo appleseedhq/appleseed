@@ -32,6 +32,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/snprintf.h"
+#include "foundation/platform/system.h"
 #include "foundation/platform/thread.h"
 #include "foundation/utility/log/ilogtarget.h"
 #include "foundation/utility/foreach.h"
@@ -71,11 +72,10 @@ namespace
             const ptime&                datetime,
             const size_t                thread,
             const string&               message)
-          : m_category(LogMessage::get_category_name(category))
-          , m_padded_category(LogMessage::get_padded_category_name(category))
+          : m_category(LogMessage::get_padded_category_name(category))
           , m_datetime(to_iso_extended_string(datetime) + 'Z')
-          , m_thread(to_string(thread))
-          , m_padded_thread(pad_left(m_thread, '0', 2))
+          , m_thread(pad_left(to_string(thread), '0', 3))
+          , m_process_size(pad_left(to_string(System::get_process_virtual_memory_size() / (1024 * 1024)) + " MB", ' ', 8))
           , m_message(message)
         {
         }
@@ -84,20 +84,18 @@ namespace
         {
             string result = format;
             result = replace(result, "{category}", m_category);
-            result = replace(result, "{padded-category}", m_padded_category);
             result = replace(result, "{datetime-utc}", m_datetime);
             result = replace(result, "{thread}", m_thread);
-            result = replace(result, "{padded-thread}", m_padded_thread);
+            result = replace(result, "{process-size}", m_process_size);
             result = replace(result, "{message}", m_message);
             return result;
         }
 
       private:
         const string    m_category;
-        const string    m_padded_category;
         const string    m_datetime;
         const string    m_thread;
-        const string    m_padded_thread;
+        const string    m_process_size;
         const string    m_message;
     };
 
@@ -118,7 +116,7 @@ namespace
 
         void reset_format(const LogMessage::Category category)
         {
-            set_format(category, "{datetime-utc} <{padded-thread}> {padded-category} | {message}");
+            set_format(category, "{datetime-utc} <{thread}> {process-size} {category} | {message}");
         }
 
         void set_all_formats(const string& format)

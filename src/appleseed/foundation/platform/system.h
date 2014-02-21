@@ -90,11 +90,21 @@ class DLLSYMBOL System
     static size_t get_l3_cache_line_size();
 
     //
-    // Physical RAM.
+    // Physical memory.
     //
 
-    // Return the total size in bytes of the physical RAM.
-    static uint64 get_total_physical_ram_size();
+    // Return the total size in bytes of the physical memory.
+    static uint64 get_total_physical_memory_size();
+
+    //
+    // Virtual memory.
+    //
+
+    // Return the total size in bytes of the virtual memory.
+    static uint64 get_total_virtual_memory_size();
+
+    // Return the amount in bytes of virtual memory used by the current process.
+    static uint64 get_process_virtual_memory_size();
 };
 
 }       // namespace foundation
