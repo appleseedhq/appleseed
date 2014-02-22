@@ -33,14 +33,14 @@
 // appleseed.foundation headers.
 #include "foundation/utility/uid.h"
 
-// Forward declarations.
-namespace appleseed { namespace studio { class ItemBase; } }
-
 // Qt headers.
 #include <QMutex>
 
 // Standard headers.
 #include <map>
+
+// Forward declarations.
+namespace appleseed { namespace studio { class ItemBase; } }
 
 namespace appleseed {
 namespace studio {

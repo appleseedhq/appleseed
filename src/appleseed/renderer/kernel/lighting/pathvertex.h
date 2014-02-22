@@ -76,8 +76,6 @@ class PathVertex
 
     // Constructor.
     explicit PathVertex(SamplingContext& sampling_context);
-
-    const ShadingPoint& get_shading_point() const;
     
     // Forward the most useful methods to the shading point.
     const ShadingRay& get_ray() const;
@@ -109,11 +107,6 @@ class PathVertex
 inline PathVertex::PathVertex(SamplingContext& sampling_context)
   : m_sampling_context(sampling_context)
 {
-}
-
-inline const ShadingPoint& PathVertex::get_shading_point() const
-{
-    return *m_shading_point;
 }
 
 inline const ShadingRay& PathVertex::get_ray() const

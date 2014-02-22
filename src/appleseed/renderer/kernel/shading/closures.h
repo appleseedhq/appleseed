@@ -39,6 +39,7 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/cdf.h"
+#include "foundation/platform/compiler.h"
 #include "foundation/image/color.h"
 
 // OSL headers.
@@ -56,6 +57,10 @@
 #include <boost/mpl/sizeof.hpp>
 #include <boost/mpl/transform_view.hpp>
 #include <boost/mpl/vector.hpp>
+
+// Standard headers.
+#include <cassert>
+#include <cstddef>
 
 // Forward declarations.
 namespace renderer  { class OSLBSDF; }
@@ -137,20 +142,20 @@ class APPLESEED_ALIGN(16) CompositeClosure
     int                                     m_num_bytes;
     foundation::CDF<size_t,double>          m_cdf;
 
-    explicit CompositeClosure(const OSL::ClosureColor* Ci);
+    explicit CompositeClosure(const OSL::ClosureColor* ci);
 
     void process_closure_tree(
         const OSL::ClosureColor*    closure, 
         const foundation::Color3f&  weight);
 
-    template<typename InputValues>
+    template <typename InputValues>
     void add_closure(
         const ClosureID             closure_type,
         const foundation::Color3f&  weight,
         const foundation::Vector3d& normal,
         const InputValues&          values);
 
-    template<typename InputValues>
+    template <typename InputValues>
     void add_closure(
         const ClosureID             closure_type,
         const foundation::Color3f&  weight,
@@ -158,7 +163,7 @@ class APPLESEED_ALIGN(16) CompositeClosure
         const foundation::Vector3d& tangent,
         const InputValues&          values);
 
-    template<typename InputValues>
+    template <typename InputValues>
     void do_add_closure(
         const ClosureID             closure_type,
         const foundation::Color3f&  weight,
@@ -168,8 +173,12 @@ class APPLESEED_ALIGN(16) CompositeClosure
         const InputValues&          values);
 };
 
+// Register appleseed's closures.
+void register_closures(OSL::ShadingSystem& shading_system);
+
+
 //
-// Composite Closure implementation
+// CompositeClosure class implementation.
 // 
 
 inline size_t CompositeClosure::num_closures() const
@@ -213,9 +222,6 @@ inline void* CompositeClosure::closure_input_values(const size_t index) const
     assert(index < num_closures());
     return m_input_values[index];
 }
-
-// Register appleseed's closures.
-void register_closures(OSL::ShadingSystem& shading_system);
 
 }       // namespace renderer
 

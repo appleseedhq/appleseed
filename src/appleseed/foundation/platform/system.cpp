@@ -57,6 +57,8 @@
 
     // Platform headers.
     #include <mach/mach.h>
+    #include <sys/mount.h>
+    #include <sys/param.h>
     #include <sys/sysctl.h>
     #include <sys/types.h>
 
@@ -314,19 +316,19 @@ uint64 System::get_total_virtual_memory_size()
 
 uint64 System::get_process_virtual_memory_size()
 {
-    // Reference: http://stackoverflow.com/questions/63166/how-to-determine-cpu-and-memory-consumption-from-inside-a-process
+    // Reference: http://nadeausoftware.com/articles/2012/07/c_c_tip_how_get_process_resident_set_size_physical_memory_use
 
-    struct task_basic_info t_info;
-    mach_msg_type_number_t t_info_count = TASK_BASIC_INFO_COUNT;
+    struct mach_task_basic_info info;
+    mach_msg_type_number_t info_count = MACH_TASK_BASIC_INFO_COUNT;
 
     if (task_info(
             mach_task_self(),
-            TASK_BASIC_INFO,
-            (task_info_t)&t_info, 
-            &t_info_count) != KERN_SUCCESS)
+            MACH_TASK_BASIC_INFO,
+            (task_info_t)&info,
+            &info_count) != KERN_SUCCESS)
         return 0;
 
-    return t_info.virtual_size;
+    return info.resident_size;
 }
 
 // ------------------------------------------------------------------------------------------------

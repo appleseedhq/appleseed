@@ -53,7 +53,6 @@ namespace renderer      { class Project; }
 namespace renderer      { class Source; }
 namespace renderer      { class SurfaceShader; }
 namespace renderer      { class TextureCache; }
-
 #ifdef WITH_OSL
 namespace renderer      { class OSLBSDF; }
 namespace renderer      { class ShaderGroup; }

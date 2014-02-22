@@ -51,14 +51,14 @@
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
 
-// Standard headers.
-#include <cassert>
-#include <cstddef>
-
 // OSL headers.
 #ifdef WITH_OSL
 #include <OSL/shaderglobals.h>
 #endif
+
+// Standard headers.
+#include <cassert>
+#include <cstddef>
 
 // Forward declarations.
 namespace renderer  { class Object; }

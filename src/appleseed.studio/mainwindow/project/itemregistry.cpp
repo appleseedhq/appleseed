@@ -34,6 +34,9 @@
 #include <cassert>
 #include <utility>
 
+// Qt headers.
+#include <QMutexLocker>
+
 using namespace foundation;
 using namespace std;
 
@@ -44,7 +47,7 @@ void ItemRegistry::insert(
     const UniqueID  uid,
     ItemBase*       item)
 {
-    m_mutex.lock();
+    QMutexLocker locker(&m_mutex);
 
 #ifndef NDEBUG
     const pair<RegistryType::iterator, bool> result =
@@ -52,13 +55,11 @@ void ItemRegistry::insert(
     m_registry.insert(make_pair(uid, item));
 
     assert(result.second);
-
-    m_mutex.unlock();
 }
 
 void ItemRegistry::remove(const UniqueID uid)
 {
-    m_mutex.lock();
+    QMutexLocker locker(&m_mutex);
 
 #ifndef NDEBUG
     const RegistryType::size_type result =
@@ -66,20 +67,15 @@ void ItemRegistry::remove(const UniqueID uid)
     m_registry.erase(uid);
 
     assert(result == 1);
-
-    m_mutex.unlock();
 }
 
 ItemBase* ItemRegistry::get_item(const UniqueID uid) const
 {
-    m_mutex.lock();
+    QMutexLocker locker(&m_mutex);
 
     const RegistryType::const_iterator i = m_registry.find(uid);
-    ItemBase* result = i == m_registry.end() ? 0 : i->second;
 
-    m_mutex.unlock();
-
-    return result;
+    return i == m_registry.end() ? 0 : i->second;
 }
 
 }   // namespace studio

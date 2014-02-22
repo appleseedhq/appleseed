@@ -79,18 +79,20 @@ ShadingContext::~ShadingContext()
 }
 
 #ifdef WITH_OSL
+
 void ShadingContext::execute_osl_shadergroup(
-    const ShaderGroup&  shader_group,
-    const ShadingPoint& shading_point) const
+    const ShaderGroup&          shader_group,
+    const ShadingPoint&         shading_point) const
 {
     assert(m_osl_shading_context);
     assert(m_osl_thread_info);
-        
+
     m_osl_shading_system.execute(
         *m_osl_shading_context,
         *shader_group.shadergroup_ref(),
         shading_point.get_osl_shader_globals());
 }
+
 #endif
 
 }   // namespace renderer

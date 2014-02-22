@@ -116,11 +116,13 @@ Material::Material(
     }
 #ifdef WITH_OSL
     else if (strcmp(get_model(), "osl_material") == 0)
+    {
         m_inputs.declare("osl_surface", InputFormatEntity, "");
+    }
 #endif
     else
     {
-        assert(false);
+        assert(!"Invalid material model.");
     }
 }
 
@@ -204,15 +206,12 @@ bool Material::on_frame_begin(
         m_shader_group = get_uncached_osl_surface();
         
         if (m_shader_group)
-        {
-            m_osl_bsdf = new OSLBSDF;
-            m_bsdf = m_osl_bsdf;
-        }
+            m_bsdf = m_osl_bsdf = new OSLBSDF();
     }
 #endif
     else
     {
-        assert(false);
+        assert(!"Invalid material model.");
     }
 
     return true;
