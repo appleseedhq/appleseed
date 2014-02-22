@@ -95,7 +95,7 @@ namespace
                 if (primary)
                 {
                     RENDERER_LOG_INFO(
-                        "effective max subpixel grid size: %dx%d",
+                        "effective max subpixel grid size: %d x %d",
                         m_sqrt_sample_count,
                         m_sqrt_sample_count);
                 }

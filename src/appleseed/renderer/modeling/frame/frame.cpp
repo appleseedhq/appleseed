@@ -160,8 +160,8 @@ void Frame::print_settings()
 {
     RENDERER_LOG_INFO(
         "frame settings:\n"
-        "  resolution       %sx%s\n"
-        "  tile size        %sx%s\n"
+        "  resolution       %s x %s\n"
+        "  tile size        %s x %s\n"
         "  pixel format     %s\n"
         "  filter           %s\n"
         "  filter size      %f\n"
