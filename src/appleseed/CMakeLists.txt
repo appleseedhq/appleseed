@@ -1411,8 +1411,8 @@ set (renderer_modeling_material_sources
 )
 if (WITH_OSL)
     list (APPEND renderer_modeling_material_sources
-    renderer/modeling/material/oslmaterial.cpp
-    renderer/modeling/material/oslmaterial.h
+        renderer/modeling/material/oslmaterial.cpp
+        renderer/modeling/material/oslmaterial.h
     )
 endif ()
 list (APPEND appleseed_sources
@@ -1512,6 +1512,27 @@ source_group ("renderer\\modeling\\scene" FILES
     ${renderer_modeling_scene_sources}
 )
 
+if (WITH_OSL)
+    set (renderer_modeling_shadergroup
+        renderer/modeling/shadergroup/shader.cpp
+        renderer/modeling/shadergroup/shader.h
+        renderer/modeling/shadergroup/shaderconnection.cpp
+        renderer/modeling/shadergroup/shaderconnection.h
+        renderer/modeling/shadergroup/shadergroup.cpp
+        renderer/modeling/shadergroup/shadergroup.h
+        renderer/modeling/shadergroup/shaderparam.cpp
+        renderer/modeling/shadergroup/shaderparam.h
+        renderer/modeling/shadergroup/shaderparamparser.cpp
+        renderer/modeling/shadergroup/shaderparamparser.h
+    )
+    list (APPEND appleseed_sources
+        ${renderer_modeling_shadergroup}
+    )
+    source_group ("renderer\\modeling\\shadergroup" FILES
+        ${renderer_modeling_shadergroup}
+    )
+endif ()
+
 set (renderer_modeling_surfaceshader_sources
     renderer/modeling/surfaceshader/aosurfaceshader.cpp
     renderer/modeling/surfaceshader/aosurfaceshader.h
@@ -1555,29 +1576,6 @@ list (APPEND appleseed_sources
 source_group ("renderer\\modeling\\texture" FILES
     ${renderer_modeling_texture_sources}
 )
-
-if (WITH_OSL)
-    set (renderer_modeling_shadergroup
-        renderer/modeling/shadergroup/shader.cpp
-        renderer/modeling/shadergroup/shader.h
-        renderer/modeling/shadergroup/shaderconnection.cpp
-        renderer/modeling/shadergroup/shaderconnection.h
-        renderer/modeling/shadergroup/shadergroup.cpp
-        renderer/modeling/shadergroup/shadergroup.h
-        renderer/modeling/shadergroup/shaderparam.cpp
-        renderer/modeling/shadergroup/shaderparam.h
-        renderer/modeling/shadergroup/shaderparamparser.cpp
-        renderer/modeling/shadergroup/shaderparamparser.h
-    )
-    list (APPEND appleseed_sources
-        ${renderer_modeling_shadergroup}
-    )
-    source_group ("renderer\\modeling\\shadergroup" FILES
-        ${renderer_modeling_shadergroup}
-    )
-
-    # TODO: add closures here...
-endif ()
 
 set (renderer_utility_sources
     renderer/utility/bbox.h

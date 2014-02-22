@@ -226,15 +226,15 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         }
 
         // Execute the OSL shader, if we have one.
-        #ifdef WITH_OSL
-            if(material && material->get_osl_surface())
-            {
-                shading_context.execute_osl_shadergroup(
-                    *material->get_osl_surface(),
-                    vertex.get_shading_point());
-            }
-        #endif
-        
+#ifdef WITH_OSL
+        if (material && material->get_osl_surface())
+        {
+            shading_context.execute_osl_shadergroup(
+                *material->get_osl_surface(),
+                vertex.m_shading_point);
+        }
+#endif
+
         // Retrieve the EDF and the BSDF.
         vertex.m_edf = material->get_edf();
         vertex.m_bsdf = material->get_bsdf();
