@@ -98,7 +98,7 @@ namespace
 // 
 
 CompositeClosure::CompositeClosure(
-    const OSL::ClosureColor* Ci)
+    const OSL::ClosureColor* ci)
   : m_num_closures(0)
   , m_num_bytes(0)
 {

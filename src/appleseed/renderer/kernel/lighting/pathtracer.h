@@ -232,7 +232,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         {
             shading_context.execute_osl_shadergroup(
                 *material->get_osl_surface(),
-                vertex.m_shading_point);
+                *vertex.m_shading_point);
         }
 
 #endif
