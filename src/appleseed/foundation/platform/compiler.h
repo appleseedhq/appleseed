@@ -182,10 +182,9 @@ class DLLSYMBOL Compiler
 #if _MSC_VER >= 1600
     #define OVERRIDE override
 
-// gcc: supported since gcc 4.7.
-// Note: only if C++11 mode is enabled! Disabling support for now.
-// #elif __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7)
-//     #define OVERRIDE override
+// gcc: supported since gcc 4.7 when C++11 mode is enabled.
+#elif defined __GNUC__ && __cplusplus >= 201103
+    #define OVERRIDE override
 
 // Other compilers: the OVERRIDE qualifier has no effect.
 #else
