@@ -38,7 +38,6 @@
 #include "foundation/utility/string.h"
 
 // Standard headers.
-#include <cassert>
 #include <string>
 #include <vector>
 
@@ -66,8 +65,7 @@ void QtLogTarget::release()
 
 namespace
 {
-    QColor get_text_color_for_category(
-        const LogMessage::Category  category)
+    QColor get_text_color_for_category(const LogMessage::Category category)
     {
         switch (category)
         {
