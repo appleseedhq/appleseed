@@ -51,7 +51,7 @@ namespace renderer
 namespace
 {
     //
-    // Closure Parameters.
+    // Closure parameters.
     //
 
     struct EmptyClosureParams {};
@@ -95,27 +95,28 @@ namespace
     };
 }
 
+
 //
-// Composite Closure implementation
+// CompositeClosure class implementation.
 // 
 
-CompositeClosure::CompositeClosure(const OSL::ClosureColor* Ci)
+CompositeClosure::CompositeClosure(const OSL::ClosureColor* ci)
 {
-    process_closure_tree(Ci, Color3f(1, 1, 1));
+    process_closure_tree(ci, Color3f(1.0f));
 
-    // compute sum of weights.
+    // Compute sum of weights.
     double total_weight = 0.0;
-    for (int i = 0, e = num_closures(); i != e; ++i)
+    for (size_t i = 0, e = num_closures(); i != e; ++i)
         total_weight += m_weights[i];
 
-    // normalize weights.
-    for (int i = 0, e = num_closures(); i != e; ++i)
+    // Normalize weights.
+    for (size_t i = 0, e = num_closures(); i != e; ++i)
         m_weights[i] /= total_weight;
 
+    // Build CDF.
     m_cdf.reserve(num_closures());
-    for (int i = 0, e = num_closures(); i != e; ++i)
+    for (size_t i = 0, e = num_closures(); i != e; ++i)
         m_cdf.insert(i, closure_weight(i));
-
     m_cdf.prepare();
 }
 
@@ -158,14 +159,13 @@ void CompositeClosure::process_closure_tree(
             {
               case AshikhminShirleyID:
                 {
-                    // Not implemented yet.
-                    assert(false);
+                    assert(!"Not implemented yet.");
                 }
                 break;
 
               case LambertID:
                 {
-                    const LambertClosureParams *p = reinterpret_cast<const LambertClosureParams*>(c->data());
+                    const LambertClosureParams* p = reinterpret_cast<const LambertClosureParams*>(c->data());
                     LambertianBRDFInputValues values;
                     linear_rgb_reflectance_to_spectrum(w, values.m_reflectance);
                     values.m_reflectance_alpha = Alpha(1.0);
@@ -186,8 +186,7 @@ void CompositeClosure::process_closure_tree(
               case RefractionID:
               case TranslucentID:
                 {
-                    // Not implemented yet.
-                    assert(false);
+                    assert(!"Not implemented yet.");
                 }
                 break;
 
@@ -195,8 +194,7 @@ void CompositeClosure::process_closure_tree(
               case HoldoutID:
               case TransparentID:
                 {
-                    // Not implemented yet.
-                    assert(false);
+                    assert(!"Not implemented yet.");
                 }
                 break;
 
@@ -207,12 +205,12 @@ void CompositeClosure::process_closure_tree(
     }
 }
 
-template<typename InputValues>
+template <typename InputValues>
 void CompositeClosure::add_closure(
     const ClosureID     closure_type,
     const Color3f&      weight,
     const Vector3d&     normal,
-    const InputValues& params)
+    const InputValues&  params)
 {
     do_add_closure<InputValues>(
         closure_type,
@@ -223,7 +221,7 @@ void CompositeClosure::add_closure(
         params);
 }
 
-template<typename InputValues>
+template <typename InputValues>
 void CompositeClosure::add_closure(
     const ClosureID     closure_type,
     const Color3f&      weight,
@@ -240,7 +238,7 @@ void CompositeClosure::add_closure(
         params);
 }
 
-template<typename InputValues>
+template <typename InputValues>
 void CompositeClosure::do_add_closure(
     const ClosureID     closure_type,
     const Color3f&      weight,
