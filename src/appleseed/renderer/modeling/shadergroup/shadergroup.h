@@ -105,17 +105,17 @@ class DLLSYMBOL ShaderGroup
     const ShaderConnectionContainer& shader_connections() const;
 
     // Returns true if the shader group was setup correctly.
-    bool is_valid() const;
+    bool valid() const;
 
     // Return a reference-counted (but opaque) reference to the OSL shader.
-    OSL::ShaderGroupRef& shadergroup_ref();
+    OSL::ShaderGroupRef& shadergroup_ref() const;
 
   private:
     friend class ShaderGroupFactory;
 
     ShaderContainer              m_shaders;
     ShaderConnectionContainer    m_connections;
-    OSL::ShaderGroupRef          m_shadergroup_ref;
+    mutable OSL::ShaderGroupRef  m_shadergroup_ref;
 
     // Constructor.
     explicit ShaderGroup(const char* name);
@@ -151,12 +151,12 @@ inline const ShaderConnectionContainer& ShaderGroup::shader_connections() const
     return m_connections;
 }
 
-inline OSL::ShaderGroupRef& ShaderGroup::shadergroup_ref()
+inline OSL::ShaderGroupRef& ShaderGroup::shadergroup_ref() const
 {
     return m_shadergroup_ref;
 }
 
-inline bool ShaderGroup::is_valid() const
+inline bool ShaderGroup::valid() const
 {
     return m_shadergroup_ref.get() != 0;
 }

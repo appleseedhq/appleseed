@@ -34,6 +34,10 @@
 #ifndef STDOSL_H
 #define STDOSL_H
 
+// appleseed specific
+#ifndef __APPLESEED_OSL__
+#define __APPLESEED_OSL__
+#endif
 
 #ifndef M_PI
 #define M_PI       3.1415926535897932        /* pi */
@@ -477,8 +481,6 @@ string concat (string a, string b, string c, string d, string e, string f) {
 
 closure color ashikhmin_shirley(normal N, vector T, color kd, color ks, float nu, float nv) BUILTIN;
 closure color diffuse(normal N) BUILTIN;
-closure color emission() BUILTIN;
-closure color holdout() BUILTIN;
 closure color microfacet_beckmann(normal N, float glossiness) BUILTIN;
 closure color microfacet_blinn(normal N, float glossiness) BUILTIN;
 closure color microfacet_ggx(normal N, float glossiness) BUILTIN;
@@ -486,6 +488,9 @@ closure color microfacet_ward(normal N, float glossiness) BUILTIN;
 closure color reflection(normal N) BUILTIN;
 closure color refraction(normal N, float from_ior, float to_ior) BUILTIN;
 closure color translucent(normal N) BUILTIN;
+
+closure color emission() BUILTIN;
+closure color holdout() BUILTIN;
 closure color transparent() BUILTIN;
 
 // Closures in OSL spec that are different or are not supported in appleseed.

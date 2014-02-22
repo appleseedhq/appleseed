@@ -69,6 +69,7 @@ class InputEvaluator
 
     // Access the values stored by the evaluate() methods.
     const void* data() const;
+    void* data();
 
   private:
     static const size_t DataSize = 4 * 1024;    // bytes
@@ -107,6 +108,11 @@ inline const T* InputEvaluator::evaluate(
 }
 
 inline const void* InputEvaluator::data() const
+{
+    return m_data;
+}
+
+inline void* InputEvaluator::data()
 {
     return m_data;
 }

@@ -33,6 +33,9 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/modeling/bsdf/bsdf.h"
+#ifdef WITH_OSL
+#include "renderer/modeling/bsdf/oslbsdf.h"
+#endif
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/source.h"
@@ -40,6 +43,9 @@
 #include "renderer/modeling/material/bumpmappingmodifier.h"
 #include "renderer/modeling/material/normalmappingmodifier.h"
 #include "renderer/modeling/scene/textureinstance.h"
+#ifdef WITH_OSL
+#include "renderer/modeling/shadergroup/shadergroup.h"
+#endif
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/modeling/texture/texture.h"
 #include "renderer/utility/messagecontext.h"
@@ -90,16 +96,32 @@ Material::Material(
   , m_edf(0)
   , m_alpha_map(0)
   , m_normal_modifier(0)
+#ifdef WITH_OSL
+  , m_osl_bsdf(0)
+  , m_shader_group(0)
+#endif
 {
     set_name(name);
 
     impl->m_model = model;
 
     m_inputs.declare("surface_shader", InputFormatEntity);
-    m_inputs.declare("bsdf", InputFormatEntity, "");
-    m_inputs.declare("edf", InputFormatEntity, "");
-    m_inputs.declare("alpha_map", InputFormatScalar, "");
-    m_inputs.declare("displacement_map", InputFormatSpectralReflectance, "");
+    
+    if (strcmp(get_model(), "generic_material") == 0)
+    {
+        m_inputs.declare("bsdf", InputFormatEntity, "");
+        m_inputs.declare("edf", InputFormatEntity, "");
+        m_inputs.declare("alpha_map", InputFormatScalar, "");
+        m_inputs.declare("displacement_map", InputFormatSpectralReflectance, "");
+    }
+#ifdef WITH_OSL
+    else if (strcmp(get_model(), "osl_material") == 0)
+        m_inputs.declare("osl_surface", InputFormatEntity, "");
+#endif
+    else
+    {
+        assert(false);
+    }
 }
 
 Material::~Material()
@@ -158,18 +180,39 @@ bool Material::on_frame_begin(
     const EntityDefMessageContext context("material", this);
 
     m_surface_shader = get_uncached_surface_shader();
-    m_bsdf = get_uncached_bsdf();
-    m_edf = get_uncached_edf();
-    m_alpha_map = get_uncached_alpha_map();
-
-    if (!create_normal_modifier(context))
-        return false;
-
-    if (m_edf && m_alpha_map)
+    
+    if (strcmp(get_model(), "generic_material") == 0)
     {
-        RENDERER_LOG_WARNING(
-            "%s: material is emitting light but may be partially or entirely transparent; this may lead to unexpected or unphysical results.",
-            context.get());
+        m_bsdf = get_uncached_bsdf();
+        m_edf = get_uncached_edf();
+        m_alpha_map = get_uncached_alpha_map();
+    
+        if (!create_normal_modifier(context))
+            return false;
+    
+        if (m_edf && m_alpha_map)
+        {
+            RENDERER_LOG_WARNING(
+                "%s: material is emitting light but may be partially or entirely transparent;"
+                "this may lead to unexpected or unphysical results.",
+                context.get());
+        }
+    }
+#ifdef WITH_OSL
+    else if (strcmp(get_model(), "osl_material") == 0)
+    {
+        m_shader_group = get_uncached_osl_surface();
+        
+        if (m_shader_group)
+        {
+            m_osl_bsdf = new OSLBSDF;
+            m_bsdf = m_osl_bsdf;
+        }
+    }
+#endif
+    else
+    {
+        assert(false);
     }
 
     return true;
@@ -186,6 +229,12 @@ void Material::on_frame_end(
 
     delete m_normal_modifier;
     m_normal_modifier = 0;
+    
+#ifdef WITH_OSL
+    delete m_osl_bsdf;
+    m_osl_bsdf = 0;
+    m_shader_group = 0;
+#endif
 }
 
 const SurfaceShader* Material::get_uncached_surface_shader() const
@@ -207,6 +256,13 @@ const Source* Material::get_uncached_alpha_map() const
 {
     return m_inputs.source("alpha_map");
 }
+
+#ifdef WITH_OSL
+const ShaderGroup* Material::get_uncached_osl_surface() const
+{
+    return static_cast<const ShaderGroup*>(m_inputs.get_entity("osl_surface"));
+}
+#endif
 
 bool Material::create_normal_modifier(const MessageContext& context)
 {

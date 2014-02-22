@@ -30,6 +30,12 @@
 // Interface header.
 #include "shadingcontext.h"
 
+// appleseed.renderer headers.
+#include "renderer/kernel/shading/shadingpoint.h"
+#ifdef WITH_OSL
+#include "renderer/modeling/shadergroup/shadergroup.h"
+#endif
+
 namespace renderer
 {
 
@@ -71,5 +77,20 @@ ShadingContext::~ShadingContext()
         m_osl_shading_system.destroy_thread_info(m_osl_thread_info);
 #endif
 }
+
+#ifdef WITH_OSL
+void ShadingContext::execute_osl_shadergroup(
+    const ShaderGroup&  shader_group,
+    const ShadingPoint& shading_point) const
+{
+    assert(m_osl_shading_context);
+    assert(m_osl_thread_info);
+        
+    m_osl_shading_system.execute(
+        *m_osl_shading_context,
+        *shader_group.shadergroup_ref(),
+        shading_point.get_osl_shader_globals());
+}
+#endif
 
 }   // namespace renderer

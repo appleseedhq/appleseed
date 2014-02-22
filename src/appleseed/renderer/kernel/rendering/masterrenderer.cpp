@@ -411,6 +411,9 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
                     light_sampler,
                     trace_context,
                     texture_store,
+#ifdef WITH_OSL
+                    *shading_system,
+#endif
                     params);
             pass_callback.reset(sppm_pass_callback);
 

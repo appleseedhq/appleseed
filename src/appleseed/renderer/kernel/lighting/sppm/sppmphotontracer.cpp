@@ -38,6 +38,7 @@
 #include "renderer/kernel/lighting/lightsampler.h"
 #include "renderer/kernel/lighting/pathtracer.h"
 #include "renderer/kernel/lighting/pathvertex.h"
+#include "renderer/kernel/lighting/tracer.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/kernel/texturing/texturecache.h"
@@ -177,6 +178,9 @@ namespace
             const size_t            photon_begin,
             const size_t            photon_end,
             const size_t            pass_hash,
+#ifdef WITH_OSL
+            OSL::ShadingSystem&     shading_system,
+#endif
             AbortSwitch&            abort_switch)
           : m_scene(scene)
           , m_light_sampler(light_sampler)
@@ -187,6 +191,14 @@ namespace
           , m_photon_begin(photon_begin)
           , m_photon_end(photon_end)
           , m_pass_hash(pass_hash)
+          , m_tracer(m_scene, m_intersector, m_texture_cache)
+          , m_shading_context(m_intersector,
+                              m_tracer,
+                              m_texture_cache
+#ifdef WITH_OSL
+                             ,shading_system
+#endif
+                              )
           , m_abort_switch(abort_switch)
         {
         }
@@ -219,6 +231,8 @@ namespace
         const size_t                m_pass_hash;
         AbortSwitch&                m_abort_switch;
         SPPMPhotonVector            m_local_photons;
+        Tracer                      m_tracer;
+        ShadingContext              m_shading_context;
 
         void trace_light_photon(
             SamplingContext&        sampling_context)
@@ -310,8 +324,7 @@ namespace
             // Trace the photon path.
             path_tracer.trace(
                 child_sampling_context,
-                m_intersector,
-                m_texture_cache,
+                m_shading_context,
                 ray,
                 &parent_shading_point);
         }
@@ -367,8 +380,7 @@ namespace
             // Trace the photon path.
             path_tracer.trace(
                 child_sampling_context,
-                m_intersector,
-                m_texture_cache,
+                m_shading_context,
                 ray);
         }
     };
@@ -392,6 +404,9 @@ namespace
             const size_t            photon_begin,
             const size_t            photon_end,
             const size_t            pass_hash,
+#ifdef WITH_OSL
+            OSL::ShadingSystem&     shading_system,
+#endif
             AbortSwitch&            abort_switch)
           : m_scene(scene)
           , m_env_edf(*scene.get_environment()->get_environment_edf())
@@ -406,6 +421,14 @@ namespace
           , m_abort_switch(abort_switch)
           , m_safe_scene_radius(scene.compute_radius() * (1.0 + 1.0e-3))
           , m_disk_point_prob(1.0 / (Pi * square(m_safe_scene_radius)))
+          , m_tracer(m_scene, m_intersector, m_texture_cache)
+          , m_shading_context(m_intersector, 
+                              m_tracer, 
+                              m_texture_cache
+#ifdef WITH_OSL
+                             ,shading_system
+#endif
+                              )
         {
         }
 
@@ -440,6 +463,8 @@ namespace
         const double                m_safe_scene_radius;
         const double                m_disk_point_prob;
         SPPMPhotonVector            m_local_photons;
+        Tracer                      m_tracer;
+        ShadingContext              m_shading_context;
 
         void trace_env_photon(
             SamplingContext&        sampling_context)
@@ -501,8 +526,7 @@ namespace
             // Trace the photon path.
             path_tracer.trace(
                 child_sampling_context,
-                m_intersector,
-                m_texture_cache,
+                m_shading_context,
                 ray);
         }
     };
@@ -518,6 +542,9 @@ SPPMPhotonTracer::SPPMPhotonTracer(
     const LightSampler&     light_sampler,
     const TraceContext&     trace_context,
     TextureStore&           texture_store,
+#ifdef WITH_OSL
+    OSL::ShadingSystem&     shading_system,
+#endif
     const SPPMParameters&   params)
   : m_params(params)
   , m_scene(scene)
@@ -526,6 +553,9 @@ SPPMPhotonTracer::SPPMPhotonTracer(
   , m_texture_store(texture_store)
   , m_total_emitted_photon_count(0)
   , m_total_stored_photon_count(0)
+#ifdef WITH_OSL
+  , m_shading_system(shading_system)
+#endif
 {
 }
 
@@ -565,6 +595,9 @@ size_t SPPMPhotonTracer::trace_photons(
                     photon_begin,
                     photon_end,
                     pass_hash,
+#ifdef WITH_OSL
+                    m_shading_system,
+#endif
                     abort_switch));
 
             ++job_count;
@@ -597,6 +630,9 @@ size_t SPPMPhotonTracer::trace_photons(
                     photon_begin,
                     photon_end,
                     pass_hash,
+#ifdef WITH_OSL
+                    m_shading_system,
+#endif
                     abort_switch));
 
             ++job_count;

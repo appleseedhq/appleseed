@@ -1189,6 +1189,12 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/specularbtdf.cpp
     renderer/modeling/bsdf/specularbtdf.h
 )
+if (WITH_OSL)
+    list (APPEND renderer_modeling_bsdf_sources
+        renderer/modeling/bsdf/oslbsdf.cpp
+        renderer/modeling/bsdf/oslbsdf.h
+    )
+endif ()
 list (APPEND appleseed_sources
     ${renderer_modeling_bsdf_sources}
 )
@@ -1403,6 +1409,12 @@ set (renderer_modeling_material_sources
     renderer/modeling/material/normalmappingmodifier.cpp
     renderer/modeling/material/normalmappingmodifier.h
 )
+if (WITH_OSL)
+    list (APPEND renderer_modeling_material_sources
+    renderer/modeling/material/oslmaterial.cpp
+    renderer/modeling/material/oslmaterial.h
+    )
+endif ()
 list (APPEND appleseed_sources
     ${renderer_modeling_material_sources}
 )
