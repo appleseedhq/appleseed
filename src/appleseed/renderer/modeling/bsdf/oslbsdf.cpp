@@ -35,9 +35,8 @@
 #include "renderer/modeling/bsdf/ibsdffactory.h"
 #include "renderer/modeling/bsdf/bsdffactoryregistrar.h"
 
-// Forward declarations.
-namespace renderer  { class Assembly; }
-namespace renderer  { class Project; }
+// Standard headers.
+#include <cstring>
 
 using namespace foundation;
 using namespace std;
@@ -113,20 +112,20 @@ OSLBSDF::OSLBSDF()
         ParamArray().insert("mdf", "ward"));
 }
 
-void OSLBSDF::create_bsdf(
-    auto_release_ptr<BSDF>& ptr,
-    const char*             model,
-    ClosureID               cid,
-    const char*             name,
-    const ParamArray&       params)
+void OSLBSDF::release()
 {
-    ptr.reset(BSDFFactoryRegistrar().lookup(model)->create(name, params).release());
-    m_all_bsdfs[cid] = ptr.get();
+    delete this;
+}
+
+const char* OSLBSDF::get_model() const
+{
+    return "osl_bsdf";
 }
 
 bool OSLBSDF::on_frame_begin(
-    const Project&              project,
-    const Assembly&             assembly)
+    const Project&          project,
+    const Assembly&         assembly,
+    AbortSwitch&            abort_switch)
 {
     if (!BSDF::on_frame_begin(project, assembly))
         return false;
@@ -144,8 +143,8 @@ bool OSLBSDF::on_frame_begin(
 }
 
 void OSLBSDF::on_frame_end(
-    const Project&  project,
-    const Assembly& assembly)
+    const Project&          project,
+    const Assembly&         assembly)
 {
     BSDF::on_frame_end(project, assembly);
 
@@ -156,105 +155,111 @@ void OSLBSDF::on_frame_end(
     }
 }
 
-size_t OSLBSDF::compute_input_data_size(
-    const Assembly& assembly) const
+size_t OSLBSDF::compute_input_data_size(const Assembly& assembly) const
 {
     return sizeof(CompositeClosure);
 }
 
 void OSLBSDF::evaluate_inputs(
-    InputEvaluator&     input_evaluator,
-    const ShadingPoint& shading_point,
-    const size_t        offset) const
+    InputEvaluator&         input_evaluator,
+    const ShadingPoint&     shading_point,
+    const size_t            offset) const
 {
-    CompositeClosure *c = reinterpret_cast<CompositeClosure*>(input_evaluator.data());
+    CompositeClosure* c = reinterpret_cast<CompositeClosure*>(input_evaluator.data());
     new (c) CompositeClosure(shading_point.get_osl_shader_globals().Ci);
 }
 
 namespace
 {
-
-Basis3d make_osl_basis(
-    const CompositeClosure* c, 
-    const size_t            index,
-    const Basis3d&          original_basis)
-{
-    return Basis3d(c->closure_normal(index),
-                   c->closure_has_tangent(index) ?
-                       c->closure_tangent(index) : 
-                       original_basis.get_tangent_u());
-}
-
+    Basis3d make_osl_basis(
+        const CompositeClosure* c, 
+        const size_t            index,
+        const Basis3d&          original_basis)
+    {
+        return
+            Basis3d(
+                c->closure_normal(index),
+                c->closure_has_tangent(index)
+                    ? c->closure_tangent(index)
+                    : original_basis.get_tangent_u());
+    }
 }
 
 BSDF::Mode OSLBSDF::sample(
-    SamplingContext&    sampling_context,
-    const void*         data,
-    const bool          adjoint,
-    const bool          cosine_mult,
-    const Vector3d&     geometric_normal,
-    const Basis3d&      shading_basis,
-    const Vector3d&     outgoing,
-    Vector3d&           incoming,
-    Spectrum&           value,
-    double&             probability) const
+    SamplingContext&        sampling_context,
+    const void*             data,
+    const bool              adjoint,
+    const bool              cosine_mult,
+    const Vector3d&         geometric_normal,
+    const Basis3d&          shading_basis,
+    const Vector3d&         outgoing,
+    Vector3d&               incoming,
+    Spectrum&               value,
+    double&                 probability) const
 {
-    const CompositeClosure *c = reinterpret_cast<const CompositeClosure*>(data);
-    
-    if(c->num_closures())
+    const CompositeClosure* c = reinterpret_cast<const CompositeClosure*>(data);
+
+    if (c->num_closures() > 0)
     {
         sampling_context.split_in_place(1, 1);
         const double s = sampling_context.next_double2();
-        int closure_index = c->choose_closure(s);
-        Basis3d new_shading_basis = make_osl_basis(c, closure_index, shading_basis);
-        return bsdf_to_closure_id(c->closure_type(closure_index))->sample(
-            sampling_context,
-            c->closure_input_values(closure_index),
-            adjoint,
-            false,
-            geometric_normal,
-            new_shading_basis,
-            outgoing,
-            incoming,
-            value,
-            probability);
-    }
 
-    // no closures case.
-    value.set(0.0f);
-    probability = 0.0;
-    return Absorption;
+        const int closure_index = c->choose_closure(s);
+        const Basis3d new_shading_basis = make_osl_basis(c, closure_index, shading_basis);
+
+        return
+            bsdf_to_closure_id(c->closure_type(closure_index))->sample(
+                sampling_context,
+                c->closure_input_values(closure_index),
+                adjoint,
+                false,
+                geometric_normal,
+                new_shading_basis,
+                outgoing,
+                incoming,
+                value,
+                probability);
+    }
+    else
+    {
+        value.set(0.0f);
+        probability = 0.0;
+        return Absorption;
+    }
 }
 
 double OSLBSDF::evaluate(
-    const void*         data,
-    const bool          adjoint,
-    const bool          cosine_mult,
-    const Vector3d&     geometric_normal,
-    const Basis3d&      shading_basis,
-    const Vector3d&     outgoing,
-    const Vector3d&     incoming,
-    const int           modes,
-    Spectrum&           value) const
+    const void*             data,
+    const bool              adjoint,
+    const bool              cosine_mult,
+    const Vector3d&         geometric_normal,
+    const Basis3d&          shading_basis,
+    const Vector3d&         outgoing,
+    const Vector3d&         incoming,
+    const int               modes,
+    Spectrum&               value) const
 {
-    const CompositeClosure *c = reinterpret_cast<const CompositeClosure*>(data);
     double prob = 0.0;
     value.set(0.0f);
+
+    const CompositeClosure* c = reinterpret_cast<const CompositeClosure*>(data);
 
     for (size_t i = 0, e = c->num_closures(); i < e; ++i)
     {
         Spectrum s;
-        Basis3d new_shading_basis = make_osl_basis(c, i, shading_basis);
-        double bsdf_prob = bsdf_to_closure_id(c->closure_type(i))->evaluate(
-            c->closure_input_values(i),
-            adjoint,
-            false,
-            geometric_normal,
-            new_shading_basis,
-            outgoing,
-            incoming,
-            modes,
-            s);
+        const Basis3d new_shading_basis = make_osl_basis(c, i, shading_basis);
+
+        const double bsdf_prob =
+            bsdf_to_closure_id(c->closure_type(i))->evaluate(
+                c->closure_input_values(i),
+                adjoint,
+                false,
+                geometric_normal,
+                new_shading_basis,
+                outgoing,
+                incoming,
+                modes,
+                s);
 
         if (bsdf_prob > 0.0)
         {
@@ -269,31 +274,44 @@ double OSLBSDF::evaluate(
 }
 
 double OSLBSDF::evaluate_pdf(
-    const void*         data,
-    const Vector3d&     geometric_normal,
-    const Basis3d&      shading_basis,
-    const Vector3d&     outgoing,
-    const Vector3d&     incoming,
-    const int           modes) const
+    const void*             data,
+    const Vector3d&         geometric_normal,
+    const Basis3d&          shading_basis,
+    const Vector3d&         outgoing,
+    const Vector3d&         incoming,
+    const int               modes) const
 {
-    const CompositeClosure *c = reinterpret_cast<const CompositeClosure*>(data);
+    const CompositeClosure* c = reinterpret_cast<const CompositeClosure*>(data);
     double prob = 0.0;
 
     for (size_t i = 0, e = c->num_closures(); i < e; ++i)
     {
-        Basis3d new_shading_basis = make_osl_basis(c, i, shading_basis);
-        double bsdf_prob = bsdf_to_closure_id(c->closure_type(i))->evaluate_pdf(
-            c->closure_input_values(i),
-            geometric_normal,
-            new_shading_basis,
-            outgoing,
-            incoming,
-            modes);
+        const Basis3d new_shading_basis = make_osl_basis(c, i, shading_basis);
+
+        const double bsdf_prob =
+            bsdf_to_closure_id(c->closure_type(i))->evaluate_pdf(
+                c->closure_input_values(i),
+                geometric_normal,
+                new_shading_basis,
+                outgoing,
+                incoming,
+                modes);
 
         prob += bsdf_prob * c->closure_weight(i); 
     }
 
     return prob;
+}
+
+void OSLBSDF::create_bsdf(
+    auto_release_ptr<BSDF>& ptr,
+    const char*             model,
+    ClosureID               cid,
+    const char*             name,
+    const ParamArray&       params)
+{
+    ptr.reset(BSDFFactoryRegistrar().lookup(model)->create(name, params).release());
+    m_all_bsdfs[cid] = ptr.get();
 }
 
 }   // namespace renderer

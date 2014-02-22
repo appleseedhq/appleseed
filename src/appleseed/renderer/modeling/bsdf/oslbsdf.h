@@ -37,8 +37,18 @@
 // appleseed.foundation headers.
 #include "foundation/utility/autoreleaseptr.h"
 
+// Standard headers.
+#include <cassert>
+#include <cstddef>
+
 // Forward declarations.
-namespace renderer  { class Material; }
+namespace foundation    { class AbortSwitch; }
+namespace renderer      { class Assembly; }
+namespace renderer      { class InputEvaluator; }
+namespace renderer      { class Material; }
+namespace renderer      { class ParamArray; }
+namespace renderer      { class Project; }
+namespace renderer      { class ShadingPoint; }
 
 namespace renderer
 {
@@ -51,19 +61,14 @@ class OSLBSDF
   : public BSDF
 {
   public:
-    virtual void release() OVERRIDE
-    {
-        delete this;
-    }
+    virtual void release() OVERRIDE;
 
-    virtual const char* get_model() const OVERRIDE
-    {
-        return "osl_bsdf";
-    }
+    virtual const char* get_model() const OVERRIDE;
 
     virtual bool on_frame_begin(
         const Project&                      project,
-        const Assembly&                     assembly) OVERRIDE;
+        const Assembly&                     assembly,
+        foundation::AbortSwitch&            abort_switch) OVERRIDE;
 
     virtual void on_frame_end(
         const Project&                      project,
@@ -147,7 +152,7 @@ inline const BSDF* OSLBSDF::bsdf_to_closure_id(const ClosureID cid) const
     return bsdf;
 }
 
-inline BSDF *OSLBSDF::bsdf_to_closure_id(const ClosureID cid)
+inline BSDF* OSLBSDF::bsdf_to_closure_id(const ClosureID cid)
 {
     BSDF* bsdf = m_all_bsdfs[cid];
     assert(bsdf);
