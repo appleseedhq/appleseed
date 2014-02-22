@@ -33,6 +33,23 @@
 namespace foundation
 {
 
+const char* pixel_format_name(const PixelFormat pixel_format)
+{
+    switch (pixel_format)
+    {
+      case PixelFormatUInt8:    return "uint8";
+      case PixelFormatUInt16:   return "uint16";
+      case PixelFormatUInt32:   return "uint32";
+      case PixelFormatHalf:     return "half";
+      case PixelFormatFloat:    return "float";
+      case PixelFormatDouble:   return "double";
+      assert_otherwise;
+    }
+
+    // Keep the compiler happy.
+    return "";
+}
+
 void Pixel::convert_and_shuffle(
     const PixelFormat   src_format,
     const size_t        src_channels,
