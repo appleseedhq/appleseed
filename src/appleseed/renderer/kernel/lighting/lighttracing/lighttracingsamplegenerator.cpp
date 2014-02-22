@@ -605,8 +605,7 @@ namespace
             const size_t path_length =
                 path_tracer.trace(
                     sampling_context,
-                    m_intersector,
-                    m_texture_cache,
+                    m_shading_context,
                     light_ray,
                     &parent_shading_point);
 
@@ -679,8 +678,7 @@ namespace
             const size_t path_length =
                 path_tracer.trace(
                     sampling_context,
-                    m_intersector,
-                    m_texture_cache,
+                    m_shading_context,
                     light_ray);
 
             // Update path statistics.
@@ -755,8 +753,7 @@ namespace
             const size_t path_length =
                 path_tracer.trace(
                     sampling_context,
-                    m_intersector,
-                    m_texture_cache,
+                    m_shading_context,
                     light_ray);
 
             // Update path statistics.

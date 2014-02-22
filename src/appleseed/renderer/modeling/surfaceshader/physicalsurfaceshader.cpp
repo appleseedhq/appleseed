@@ -255,16 +255,14 @@ namespace
             aovs.set(0.0f);
 
             // Execute the OSL shader, if we have one.
-            /*
             #ifdef WITH_OSL
                 const Material *material = shading_point.get_material();
                 
-                if (material && material->get_osl_surface_shader())
+                if (material && material->get_osl_surface())
                     shading_context.execute_osl_shadergroup(
-                        *(material->get_osl_surface_shader()),
+                        *(material->get_osl_surface()),
                         shading_point);
             #endif
-            */
             
             for (size_t i = 0; i < m_front_lighting_samples; ++i)
             {

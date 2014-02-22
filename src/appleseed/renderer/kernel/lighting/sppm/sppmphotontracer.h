@@ -36,6 +36,14 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 
+// Standard headers.
+#include <cstddef>
+
+// OSL headers
+#ifdef WITH_OSL
+#include <OSL/oslexec.h>
+#endif
+
 // Forward declarations.
 namespace foundation    { class AbortSwitch; }
 namespace foundation    { class JobQueue; }
@@ -44,9 +52,6 @@ namespace renderer      { class Scene; }
 namespace renderer      { class SPPMPhotonVector; }
 namespace renderer      { class TextureStore; }
 namespace renderer      { class TraceContext; }
-
-// Standard headers.
-#include <cstddef>
 
 namespace renderer
 {
@@ -60,6 +65,9 @@ class SPPMPhotonTracer
         const LightSampler&         light_sampler,
         const TraceContext&         trace_context,
         TextureStore&               texture_store,
+#ifdef WITH_OSL
+        OSL::ShadingSystem&         shading_system,
+#endif
         const SPPMParameters&       params);
 
     // Returns the total number of emitted photons.
@@ -77,6 +85,9 @@ class SPPMPhotonTracer
     TextureStore&                   m_texture_store;
     size_t                          m_total_emitted_photon_count;
     size_t                          m_total_stored_photon_count;
+#ifdef WITH_OSL
+    OSL::ShadingSystem&             m_shading_system;
+#endif
 };
 
 }       // namespace renderer

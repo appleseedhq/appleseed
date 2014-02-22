@@ -173,8 +173,7 @@ namespace
             const size_t path_length =
                 path_tracer.trace(
                     sampling_context,
-                    shading_context.get_intersector(),
-                    shading_context.get_texture_cache(),
+                    shading_context,
                     shading_point);
 
             // Update statistics.

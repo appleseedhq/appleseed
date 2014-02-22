@@ -79,15 +79,13 @@ class PathTracer
 
     size_t trace(
         SamplingContext&        sampling_context,
-        const Intersector&      intersector,
-        TextureCache&           texture_cache,
+        const ShadingContext&   shading_context,
         const ShadingRay&       ray,
         const ShadingPoint*     parent_shading_point = 0);
 
     size_t trace(
         SamplingContext&        sampling_context,
-        const Intersector&      intersector,
-        TextureCache&           texture_cache,
+        const ShadingContext&   shading_context,
         const ShadingPoint&     shading_point);
 
   private:
@@ -127,27 +125,24 @@ inline PathTracer<PathVisitor, Adjoint>::PathTracer(
 template <typename PathVisitor, bool Adjoint>
 inline size_t PathTracer<PathVisitor, Adjoint>::trace(
     SamplingContext&            sampling_context,
-    const Intersector&          intersector,
-    TextureCache&               texture_cache,
+    const ShadingContext&       shading_context,
     const ShadingRay&           ray,
     const ShadingPoint*         parent_shading_point)
 {
     ShadingPoint shading_point;
-    intersector.trace(ray, shading_point, parent_shading_point);
+    shading_context.get_intersector().trace(ray, shading_point, parent_shading_point);
 
     return
         trace(
             sampling_context,
-            intersector,
-            texture_cache,
+            shading_context,
             shading_point);
 }
 
 template <typename PathVisitor, bool Adjoint>
 size_t PathTracer<PathVisitor, Adjoint>::trace(
     SamplingContext&            sampling_context,
-    const Intersector&          intersector,
-    TextureCache&               texture_cache,
+    const ShadingContext&       shading_context,
     const ShadingPoint&         shading_point)
 {
     ShadingPoint shading_points[2];
@@ -201,7 +196,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             // Evaluate the alpha map at the shading point.
             Alpha alpha;
             material->get_alpha_map()->evaluate(
-                texture_cache, 
+                shading_context.get_texture_cache(),
                 vertex.get_uv(0),
                 alpha);
 
@@ -217,7 +212,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
 
                 // Trace the ray.
                 shading_points[shading_point_index].clear();
-                intersector.trace(
+                shading_context.get_intersector().trace(
                     cutoff_ray,
                     shading_points[shading_point_index],
                     vertex.m_shading_point);
@@ -231,7 +226,6 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         }
 
         // Execute the OSL shader, if we have one.
-        /*
         #ifdef WITH_OSL
             if(material && material->get_osl_surface())
             {
@@ -240,14 +234,13 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                     vertex.get_shading_point());
             }
         #endif
-        */
         
         // Retrieve the EDF and the BSDF.
         vertex.m_edf = material->get_edf();
         vertex.m_bsdf = material->get_bsdf();
 
         // Evaluate the input values of the BSDF.
-        InputEvaluator bsdf_input_evaluator(texture_cache);
+        InputEvaluator bsdf_input_evaluator(shading_context.get_texture_cache());
         if (vertex.m_bsdf)
         {
             vertex.m_bsdf->evaluate_inputs(bsdf_input_evaluator, *vertex.m_shading_point);
@@ -336,7 +329,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
 
         // Trace the ray.
         shading_points[shading_point_index].clear();
-        intersector.trace(
+        shading_context.get_intersector().trace(
             scattered_ray,
             shading_points[shading_point_index],
             vertex.m_shading_point);
