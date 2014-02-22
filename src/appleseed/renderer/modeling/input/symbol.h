@@ -69,6 +69,9 @@ class SymbolTable
         SymbolSurfaceShader,
         SymbolTexture,
         SymbolTextureInstance
+#ifdef WITH_OSL
+        ,SymbolShaderGroup
+#endif
     };
 
     // Exception thrown when attempting to insert a symbol
@@ -124,7 +127,10 @@ inline const char* SymbolTable::symbol_name(const SymbolID symbol_id)
         { SymbolObjectInstance,     "object instance" },
         { SymbolSurfaceShader,      "surface shader" },
         { SymbolTexture,            "texture" },
-        { SymbolTextureInstance,    "texture instance" }
+        { SymbolTextureInstance,    "texture instance" },
+#ifdef WITH_OSL
+        { SymbolShaderGroup,        "shader group" }
+#endif
     };
 
     const SymbolNameEntry* symbol = LOOKUP_KVPAIR_ARRAY(SymbolNames, symbol_id);

@@ -99,7 +99,10 @@ namespace
 // Composite Closure implementation
 // 
 
-CompositeClosure::CompositeClosure(const OSL::ClosureColor* Ci)
+CompositeClosure::CompositeClosure(
+    const OSL::ClosureColor* Ci)
+  : m_num_closures(0)
+  , m_num_bytes(0)
 {
     process_closure_tree(Ci, Color3f(1, 1, 1));
 

@@ -65,6 +65,8 @@ struct Shader::Impl
         const char*         shader,
         const char*         layer,
         const ParamArray&   params)
+      : m_type(type)
+      , m_shader(shader)
     {
         for (const_each<StringDictionary> i = params.strings(); i; ++i)
         {
