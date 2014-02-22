@@ -113,7 +113,7 @@ class OSLBSDF
         const foundation::Vector3d&         incoming,
         const int                           modes) const OVERRIDE;
 
-private:
+  private:
     friend class Material;
 
     foundation::auto_release_ptr<BSDF>      m_ashikhmin_shirley_brdf;
@@ -132,12 +132,12 @@ private:
     void create_bsdf(
         foundation::auto_release_ptr<BSDF>& ptr,
         const char*                         model,
-        ClosureID                           cid,
+        const ClosureID                     cid,
         const char*                         name,
         const ParamArray&                   params = ParamArray());
 
-    const BSDF* bsdf_to_closure_id(const ClosureID cid) const;
-    BSDF* bsdf_to_closure_id(const ClosureID cid);
+    const BSDF& bsdf_to_closure_id(const ClosureID cid) const;
+    BSDF& bsdf_to_closure_id(const ClosureID cid);
 };
 
 
@@ -145,18 +145,18 @@ private:
 // OSLBSDF class implementation.
 //
 
-inline const BSDF* OSLBSDF::bsdf_to_closure_id(const ClosureID cid) const
+inline const BSDF& OSLBSDF::bsdf_to_closure_id(const ClosureID cid) const
 {
     const BSDF* bsdf = m_all_bsdfs[cid];
     assert(bsdf);
-    return bsdf;
+    return *bsdf;
 }
 
-inline BSDF* OSLBSDF::bsdf_to_closure_id(const ClosureID cid)
+inline BSDF& OSLBSDF::bsdf_to_closure_id(const ClosureID cid)
 {
     BSDF* bsdf = m_all_bsdfs[cid];
     assert(bsdf);
-    return bsdf;
+    return *bsdf;
 }
 
 }       // namespace renderer

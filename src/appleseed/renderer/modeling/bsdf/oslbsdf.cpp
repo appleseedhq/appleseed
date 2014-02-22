@@ -208,7 +208,7 @@ BSDF::Mode OSLBSDF::sample(
         const Basis3d new_shading_basis = make_osl_basis(c, closure_index, shading_basis);
 
         return
-            bsdf_to_closure_id(c->closure_type(closure_index))->sample(
+            bsdf_to_closure_id(c->closure_type(closure_index)).sample(
                 sampling_context,
                 c->closure_input_values(closure_index),
                 adjoint,
@@ -250,7 +250,7 @@ double OSLBSDF::evaluate(
         const Basis3d new_shading_basis = make_osl_basis(c, i, shading_basis);
 
         const double bsdf_prob =
-            bsdf_to_closure_id(c->closure_type(i))->evaluate(
+            bsdf_to_closure_id(c->closure_type(i)).evaluate(
                 c->closure_input_values(i),
                 adjoint,
                 false,
@@ -289,7 +289,7 @@ double OSLBSDF::evaluate_pdf(
         const Basis3d new_shading_basis = make_osl_basis(c, i, shading_basis);
 
         const double bsdf_prob =
-            bsdf_to_closure_id(c->closure_type(i))->evaluate_pdf(
+            bsdf_to_closure_id(c->closure_type(i)).evaluate_pdf(
                 c->closure_input_values(i),
                 geometric_normal,
                 new_shading_basis,
@@ -306,7 +306,7 @@ double OSLBSDF::evaluate_pdf(
 void OSLBSDF::create_bsdf(
     auto_release_ptr<BSDF>& ptr,
     const char*             model,
-    ClosureID               cid,
+    const ClosureID         cid,
     const char*             name,
     const ParamArray&       params)
 {
