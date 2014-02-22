@@ -207,7 +207,7 @@ BSDF::Mode OSLBSDF::sample(
         const double s = sampling_context.next_double2();
         int closure_index = c->choose_closure(s);
         Basis3d new_shading_basis = make_osl_basis(c, closure_index, shading_basis);
-        return BSDF_for_closureID(c->closure_type(closure_index))->sample(
+        return bsdf_to_closure_id(c->closure_type(closure_index))->sample(
             sampling_context,
             c->closure_input_values(closure_index),
             adjoint,
@@ -245,7 +245,7 @@ double OSLBSDF::evaluate(
     {
         Spectrum s;
         Basis3d new_shading_basis = make_osl_basis(c, i, shading_basis);
-        double bsdf_prob = BSDF_for_closureID(c->closure_type(i))->evaluate(
+        double bsdf_prob = bsdf_to_closure_id(c->closure_type(i))->evaluate(
             c->closure_input_values(i),
             adjoint,
             false,
@@ -282,7 +282,7 @@ double OSLBSDF::evaluate_pdf(
     for (size_t i = 0, e = c->num_closures(); i < e; ++i)
     {
         Basis3d new_shading_basis = make_osl_basis(c, i, shading_basis);
-        double bsdf_prob = BSDF_for_closureID(c->closure_type(i))->evaluate_pdf(
+        double bsdf_prob = bsdf_to_closure_id(c->closure_type(i))->evaluate_pdf(
             c->closure_input_values(i),
             geometric_normal,
             new_shading_basis,

@@ -62,65 +62,65 @@ class OSLBSDF
     }
 
     virtual bool on_frame_begin(
-        const Project&              project,
-        const Assembly&             assembly) OVERRIDE;
+        const Project&                      project,
+        const Assembly&                     assembly) OVERRIDE;
 
     virtual void on_frame_end(
-        const Project&              project,
-        const Assembly&             assembly) OVERRIDE;
+        const Project&                      project,
+        const Assembly&                     assembly) OVERRIDE;
 
     virtual size_t compute_input_data_size(
-        const Assembly&             assembly) const OVERRIDE;
+        const Assembly&                     assembly) const OVERRIDE;
 
     virtual void evaluate_inputs(
-        InputEvaluator&     input_evaluator,
-        const ShadingPoint& shading_point,
-        const size_t        offset = 0) const OVERRIDE;
+        InputEvaluator&                     input_evaluator,
+        const ShadingPoint&                 shading_point,
+        const size_t                        offset = 0) const OVERRIDE;
 
     virtual Mode sample(
-        SamplingContext&                sampling_context,
-        const void*                     data,
-        const bool                      adjoint,
-        const bool                      cosine_mult,
-        const foundation::Vector3d&     geometric_normal,
-        const foundation::Basis3d&      shading_basis,
-        const foundation::Vector3d&     outgoing,
-        foundation::Vector3d&           incoming,
-        Spectrum&                       value,
-        double&                         probability) const OVERRIDE;
+        SamplingContext&                    sampling_context,
+        const void*                         data,
+        const bool                          adjoint,
+        const bool                          cosine_mult,
+        const foundation::Vector3d&         geometric_normal,
+        const foundation::Basis3d&          shading_basis,
+        const foundation::Vector3d&         outgoing,
+        foundation::Vector3d&               incoming,
+        Spectrum&                           value,
+        double&                             probability) const OVERRIDE;
 
     virtual double evaluate(
-        const void*                     data,
-        const bool                      adjoint,
-        const bool                      cosine_mult,
-        const foundation::Vector3d&     geometric_normal,
-        const foundation::Basis3d&      shading_basis,
-        const foundation::Vector3d&     outgoing,
-        const foundation::Vector3d&     incoming,
-        const int                       modes,
-        Spectrum&                       value) const OVERRIDE;
+        const void*                         data,
+        const bool                          adjoint,
+        const bool                          cosine_mult,
+        const foundation::Vector3d&         geometric_normal,
+        const foundation::Basis3d&          shading_basis,
+        const foundation::Vector3d&         outgoing,
+        const foundation::Vector3d&         incoming,
+        const int                           modes,
+        Spectrum&                           value) const OVERRIDE;
 
     virtual double evaluate_pdf(
-        const void*                     data,
-        const foundation::Vector3d&     geometric_normal,
-        const foundation::Basis3d&      shading_basis,
-        const foundation::Vector3d&     outgoing,
-        const foundation::Vector3d&     incoming,
-        const int                       modes) const OVERRIDE;
+        const void*                         data,
+        const foundation::Vector3d&         geometric_normal,
+        const foundation::Basis3d&          shading_basis,
+        const foundation::Vector3d&         outgoing,
+        const foundation::Vector3d&         incoming,
+        const int                           modes) const OVERRIDE;
 
 private:
     friend class Material;
 
-    foundation::auto_release_ptr<BSDF>  m_ashikhmin_shirley_brdf;
-    foundation::auto_release_ptr<BSDF>  m_diffuse_btdf;
-    foundation::auto_release_ptr<BSDF>  m_lambertian_brdf;
-    foundation::auto_release_ptr<BSDF>  m_microfacet_beckmann_brdf;
-    foundation::auto_release_ptr<BSDF>  m_microfacet_blinn_brdf;
-    foundation::auto_release_ptr<BSDF>  m_microfacet_ggx_brdf;
-    foundation::auto_release_ptr<BSDF>  m_microfacet_ward_brdf;
-    foundation::auto_release_ptr<BSDF>  m_specular_brdf;
-    foundation::auto_release_ptr<BSDF>  m_specular_btdf;
-    BSDF*                               m_all_bsdfs[NumClosuresIDs];
+    foundation::auto_release_ptr<BSDF>      m_ashikhmin_shirley_brdf;
+    foundation::auto_release_ptr<BSDF>      m_diffuse_btdf;
+    foundation::auto_release_ptr<BSDF>      m_lambertian_brdf;
+    foundation::auto_release_ptr<BSDF>      m_microfacet_beckmann_brdf;
+    foundation::auto_release_ptr<BSDF>      m_microfacet_blinn_brdf;
+    foundation::auto_release_ptr<BSDF>      m_microfacet_ggx_brdf;
+    foundation::auto_release_ptr<BSDF>      m_microfacet_ward_brdf;
+    foundation::auto_release_ptr<BSDF>      m_specular_brdf;
+    foundation::auto_release_ptr<BSDF>      m_specular_btdf;
+    BSDF*                                   m_all_bsdfs[NumClosuresIDs];
 
     OSLBSDF();
 
@@ -131,22 +131,23 @@ private:
         const char*                         name,
         const ParamArray&                   params = ParamArray());
 
-    const BSDF* BSDF_for_closureID(const ClosureID cid) const;
-    BSDF* BSDF_for_closureID(const ClosureID cid);
+    const BSDF* bsdf_to_closure_id(const ClosureID cid) const;
+    BSDF* bsdf_to_closure_id(const ClosureID cid);
 };
+
 
 //
 // OSLBSDF class implementation.
 //
 
-inline const BSDF* OSLBSDF::BSDF_for_closureID(const ClosureID cid) const
+inline const BSDF* OSLBSDF::bsdf_to_closure_id(const ClosureID cid) const
 {
     const BSDF* bsdf = m_all_bsdfs[cid];
     assert(bsdf);
     return bsdf;
 }
 
-inline BSDF *OSLBSDF::BSDF_for_closureID(const ClosureID cid)
+inline BSDF *OSLBSDF::bsdf_to_closure_id(const ClosureID cid)
 {
     BSDF* bsdf = m_all_bsdfs[cid];
     assert(bsdf);
