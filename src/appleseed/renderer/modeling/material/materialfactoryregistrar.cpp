@@ -33,6 +33,9 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/material/genericmaterial.h"
 #include "renderer/modeling/material/material.h"
+#ifdef WITH_OSL
+#include "renderer/modeling/material/oslmaterial.h"
+#endif
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
@@ -59,6 +62,10 @@ MaterialFactoryRegistrar::MaterialFactoryRegistrar()
   : impl(new Impl())
 {
     register_factory(auto_ptr<FactoryType>(new GenericMaterialFactory()));
+    
+#ifdef WITH_OSL
+    register_factory(auto_ptr<FactoryType>(new OSLMaterialFactory()));
+#endif
 }
 
 MaterialFactoryRegistrar::~MaterialFactoryRegistrar()

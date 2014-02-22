@@ -59,6 +59,9 @@ SPPMPassCallback::SPPMPassCallback(
     const LightSampler&     light_sampler,
     const TraceContext&     trace_context,
     TextureStore&           texture_store,
+#ifdef WITH_OSL
+    OSL::ShadingSystem&     shading_system,
+#endif
     const SPPMParameters&   params)
   : m_params(params)
   , m_photon_tracer(
@@ -66,6 +69,9 @@ SPPMPassCallback::SPPMPassCallback(
         light_sampler,
         trace_context,
         texture_store,
+#ifdef WITH_OSL
+        shading_system,
+#endif
         params)
   , m_pass_number(0)
   , m_emitted_photon_count(0)

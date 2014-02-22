@@ -124,7 +124,7 @@ bool ShaderGroup::on_frame_begin(
     {
         m_shadergroup_ref = shading_system->ShaderGroupBegin(get_name());
 
-        if (!is_valid())
+        if (!valid())
         {
             RENDERER_LOG_ERROR("shader group begin error: shader = %s.", get_name());
             return false;

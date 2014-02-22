@@ -32,6 +32,10 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 
+// appleseed.foundation headers.
+#include "foundation/image/colorspace.h"
+#include "foundation/utility/otherwise.h"
+
 // OSL headers.
 #include <OSL/genclosure.h>
 #include <OSL/oslclosure.h>
@@ -42,6 +46,8 @@
 using namespace foundation;
 using namespace renderer;
 
+namespace renderer
+{
 namespace
 {
     //
@@ -62,7 +68,7 @@ namespace
 
     struct LambertClosureParams
     {
-        OSL::Vec3   N;
+        OSL::Vec3 N;
     };
 
     struct MicrofacetBRDFClosureParams
@@ -80,13 +86,201 @@ namespace
 
     struct ReflectionClosureParams
     {
-        OSL::Vec3   N;
+        OSL::Vec3 N;
     };
 
     struct TranslucentClosureParams
     {
-        OSL::Vec3   N;
+        OSL::Vec3 N;
     };
+}
+
+//
+// Composite Closure implementation
+// 
+
+CompositeClosure::CompositeClosure(const OSL::ClosureColor* Ci)
+{
+    process_closure_tree(Ci, Color3f(1, 1, 1));
+
+    // compute sum of weights.
+    double total_weight = 0.0;
+    for (int i = 0, e = num_closures(); i != e; ++i)
+        total_weight += m_weights[i];
+
+    // normalize weights.
+    for (int i = 0, e = num_closures(); i != e; ++i)
+        m_weights[i] /= total_weight;
+
+    m_cdf.reserve(num_closures());
+    for (int i = 0, e = num_closures(); i != e; ++i)
+        m_cdf.insert(i, closure_weight(i));
+
+    m_cdf.prepare();
+}
+
+size_t CompositeClosure::choose_closure(const double w) const
+{
+    return m_cdf.sample(w).first;
+}
+
+void CompositeClosure::process_closure_tree(
+    const OSL::ClosureColor*    closure, 
+    const Color3f&              weight)
+{
+    if (!closure)
+        return;
+
+    switch (closure->type)
+    {
+      case OSL::ClosureColor::MUL:
+        {
+            const OSL::ClosureMul* c = reinterpret_cast<const OSL::ClosureMul*>(closure);
+            const Color3f w = weight * Color3f(c->weight.x, c->weight.y, c->weight.z);
+            process_closure_tree(c->closure, w);
+        }
+        break;
+
+      case OSL::ClosureColor::ADD:
+        {
+            const OSL::ClosureAdd* c = reinterpret_cast<const OSL::ClosureAdd*>(closure);
+            process_closure_tree(c->closureA, weight);
+            process_closure_tree(c->closureB, weight);
+        }
+        break;
+
+      case OSL::ClosureColor::COMPONENT:
+        {
+            const OSL::ClosureComponent* c = reinterpret_cast<const OSL::ClosureComponent*>(closure);
+            const Color3f w = weight * Color3f(c->w.x, c->w.y, c->w.z);
+
+            switch (c->id)
+            {
+              case AshikhminShirleyID:
+                {
+                    // Not implemented yet.
+                    assert(false);
+                }
+                break;
+
+              case LambertID:
+                {
+                    const LambertClosureParams *p = reinterpret_cast<const LambertClosureParams*>(c->data());
+                    LambertianBRDFInputValues values;
+                    linear_rgb_reflectance_to_spectrum(w, values.m_reflectance);
+                    values.m_reflectance_alpha = Alpha(1.0);
+                    values.m_reflectance_multiplier = 1.0;
+                    add_closure<LambertianBRDFInputValues>(
+                        static_cast<ClosureID>(c->id),
+                        w,
+                        Vector3d(p->N.x, p->N.y, p->N.z),
+                        values);
+                }
+                break;
+
+              case MicrofacetBeckmannID:
+              case MicrofacetBlinnID:
+              case MicrofacetGGXID:
+              case MicrofacetWardID:
+              case ReflectionID:
+              case RefractionID:
+              case TranslucentID:
+                {
+                    // Not implemented yet.
+                    assert(false);
+                }
+                break;
+
+              case EmissionID:
+              case HoldoutID:
+              case TransparentID:
+                {
+                    // Not implemented yet.
+                    assert(false);
+                }
+                break;
+
+              assert_otherwise;
+            }
+        }
+        break;
+    }
+}
+
+template<typename InputValues>
+void CompositeClosure::add_closure(
+    const ClosureID     closure_type,
+    const Color3f&      weight,
+    const Vector3d&     normal,
+    const InputValues& params)
+{
+    do_add_closure<InputValues>(
+        closure_type,
+        weight,
+        normal,
+        false,
+        Vector3d(0, 0, 0),
+        params);
+}
+
+template<typename InputValues>
+void CompositeClosure::add_closure(
+    const ClosureID     closure_type,
+    const Color3f&      weight,
+    const Vector3d&     normal,
+    const Vector3d&     tangent,
+    const InputValues&  params)
+{
+    do_add_closure<InputValues>(
+        closure_type,
+        weight,
+        normal,
+        true,
+        tangent,
+        params);
+}
+
+template<typename InputValues>
+void CompositeClosure::do_add_closure(
+    const ClosureID     closure_type,
+    const Color3f&      weight,
+    const Vector3d&     normal,
+    const bool          has_tangent,
+    const Vector3d&     tangent,
+    const InputValues&  params)
+{
+    // make sure we have enough space
+    if (num_closures() >= MaxClosureEntries)
+    {
+        RENDERER_LOG_WARNING("Max number of closures in OSL shadergroup exceeded. Ignoring closure.");
+        return;
+    }
+
+    assert(m_num_bytes + sizeof(InputValues) <= MaxPoolSize);
+
+    // we use the luminance of the weight as the BSDF weight.
+    double w = luminance(weight);
+
+    if (w <= 0.0)
+    {
+        RENDERER_LOG_WARNING("Closure with negative or zero weight found. Ignoring closure");
+        return;
+    }
+
+    m_weights[m_num_closures] = w;
+    m_normals[m_num_closures] = normalize(normal);
+    m_has_tangent[m_num_closures] = has_tangent;
+
+    if (has_tangent)
+        m_tangents[m_num_closures] = normalize(tangent);
+
+    m_closure_types[m_num_closures] = closure_type;
+    new (m_pool + m_num_bytes) InputValues(params);
+    m_input_values[m_num_closures] = m_pool + m_num_bytes;
+    m_num_bytes += sizeof(InputValues);
+    ++m_num_closures;
+}
+
 }
 
 // We probably want to reuse OSL macros to declare closure params 

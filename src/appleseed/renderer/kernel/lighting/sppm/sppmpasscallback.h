@@ -47,6 +47,11 @@
 #include <cstddef>
 #include <memory>
 
+// OSL headers.
+#ifdef WITH_OSL
+#include <OSL/oslexec.h>
+#endif
+
 // Forward declarations.
 namespace foundation    { class AbortSwitch; }
 namespace foundation    { class JobQueue; }
@@ -74,6 +79,9 @@ class SPPMPassCallback
         const LightSampler&         light_sampler,
         const TraceContext&         trace_context,
         TextureStore&               texture_store,
+#ifdef WITH_OSL
+        OSL::ShadingSystem&         shading_system,
+#endif
         const SPPMParameters&       params);
 
     // Delete this instance.
