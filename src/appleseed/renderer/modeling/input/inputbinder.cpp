@@ -60,6 +60,11 @@
 // Standard headers.
 #include <exception>
 
+// OSL headers
+#ifdef WITH_OSL
+#include "renderer/modeling/shadergroup/shadergroup.h"
+#endif
+
 using namespace foundation;
 using namespace std;
 
@@ -160,6 +165,9 @@ void InputBinder::build_assembly_symbol_table(
         insert_entities(symbols, assembly.texture_instances(), SymbolTable::SymbolTextureInstance);
         insert_entities(symbols, assembly.bsdfs(), SymbolTable::SymbolBSDF);
         insert_entities(symbols, assembly.edfs(), SymbolTable::SymbolEDF);
+#ifdef WITH_OSL
+        insert_entities(symbols, assembly.shader_groups(), SymbolTable::SymbolShaderGroup);
+#endif
         insert_entities(symbols, assembly.surface_shaders(), SymbolTable::SymbolSurfaceShader);
         insert_entities(symbols, assembly.materials(), SymbolTable::SymbolMaterial);
         insert_entities(symbols, assembly.lights(), SymbolTable::SymbolLight);
@@ -271,6 +279,18 @@ void InputBinder::bind_assembly_entities_inputs(
             SymbolTable::symbol_name(SymbolTable::SymbolEDF),
             *i);
     }
+
+#ifdef WITH_OSL
+    // Bind ShaderGroups inputs.
+    for (each<ShaderGroupContainer> i = assembly.shader_groups(); i; ++i)
+    {
+        bind_assembly_entity_inputs(
+            scene,
+            scene_symbols,
+            SymbolTable::symbol_name(SymbolTable::SymbolShaderGroup),
+            *i);
+    }
+#endif
 
     // Bind surface shaders inputs.
     for (each<SurfaceShaderContainer> i = assembly.surface_shaders(); i; ++i)
@@ -577,6 +597,9 @@ bool InputBinder::try_bind_assembly_entity_to_input(
           BIND(SymbolTable::SymbolTextureInstance, assembly.texture_instances());
           BIND(SymbolTable::SymbolBSDF, assembly.bsdfs());
           BIND(SymbolTable::SymbolEDF, assembly.edfs());
+#ifdef WITH_OSL
+          BIND(SymbolTable::SymbolShaderGroup, assembly.shader_groups());
+#endif
           BIND(SymbolTable::SymbolSurfaceShader, assembly.surface_shaders());
           BIND(SymbolTable::SymbolMaterial, assembly.materials());
           BIND(SymbolTable::SymbolLight, assembly.lights());
