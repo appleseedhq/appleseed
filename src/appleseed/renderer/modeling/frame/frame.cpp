@@ -96,6 +96,8 @@ struct Frame::Impl
     size_t                  m_tile_width;
     size_t                  m_tile_height;
     PixelFormat             m_pixel_format;
+    string                  m_filter_name;
+    double                  m_filter_radius;
     auto_ptr<Filter2d>      m_filter;
     bool                    m_clamp;
     float                   m_target_gamma;
@@ -152,6 +154,37 @@ Frame::~Frame()
 void Frame::release()
 {
     delete this;
+}
+
+void Frame::print_settings()
+{
+    RENDERER_LOG_INFO(
+        "frame settings:\n"
+        "  resolution       %sx%s\n"
+        "  tile size        %sx%s\n"
+        "  pixel format     %s\n"
+        "  filter           %s\n"
+        "  filter size      %f\n"
+        "  color space      %s\n"
+        "  premult. alpha   %s\n"
+        "  clamping         %s\n"
+        "  gamma correction %f\n"
+        "  crop window      (%s, %s)-(%s, %s)",
+        pretty_uint(impl->m_frame_width).c_str(),
+        pretty_uint(impl->m_frame_height).c_str(),
+        pretty_uint(impl->m_tile_width).c_str(),
+        pretty_uint(impl->m_tile_height).c_str(),
+        pixel_format_name(impl->m_pixel_format),
+        impl->m_filter_name.c_str(),
+        impl->m_filter_radius,
+        color_space_name(m_color_space),
+        m_is_premultiplied_alpha ? "on" : "off",
+        impl->m_clamp ? "on" : "off",
+        impl->m_target_gamma,
+        pretty_uint(impl->m_crop_window.min[0]).c_str(),
+        pretty_uint(impl->m_crop_window.min[1]).c_str(),
+        pretty_uint(impl->m_crop_window.max[0]).c_str(),
+        pretty_uint(impl->m_crop_window.max[1]).c_str());
 }
 
 Image& Frame::image() const
@@ -564,34 +597,36 @@ void Frame::extract_parameters()
 
     // Retrieve reconstruction filter parameter.
     {
-        const double radius = m_params.get_optional<double>("filter_size", 2.0);
+        const char* DefaultFilterName = "gaussian";
 
-        const char* DefaultFilterString = "gaussian";
-        const string filter_str = m_params.get_optional<string>("filter", DefaultFilterString);
-        if (filter_str == "box")
-            impl->m_filter.reset(new BoxFilter2<double>(radius, radius));
-        else if (filter_str == "triangle")
-            impl->m_filter.reset(new TriangleFilter2<double>(radius, radius));
-        else if (filter_str == "gaussian")
-            impl->m_filter.reset(new GaussianFilter2<double>(radius, radius, 8.0));
-        else if (filter_str == "mitchell")
-            impl->m_filter.reset(new MitchellFilter2<double>(radius, radius, 1.0/3, 1.0/3));
-        else if (filter_str == "bspline")
-            impl->m_filter.reset(new MitchellFilter2<double>(radius, radius, 1.0, 0.0));
-        else if (filter_str == "catmull")
-            impl->m_filter.reset(new MitchellFilter2<double>(radius, radius, 0.0, 0.5));
-        else if (filter_str == "lanczos")
-            impl->m_filter.reset(new LanczosFilter2<double>(radius, radius, 3.0));
-        else if (filter_str == "blackman-harris")
-            impl->m_filter.reset(new BlackmanHarrisFilter2<double>(radius, radius));
+        impl->m_filter_name = m_params.get_optional<string>("filter", DefaultFilterName);
+        impl->m_filter_radius = m_params.get_optional<double>("filter_size", 2.0);
+
+        if (impl->m_filter_name == "box")
+            impl->m_filter.reset(new BoxFilter2<double>(impl->m_filter_radius, impl->m_filter_radius));
+        else if (impl->m_filter_name == "triangle")
+            impl->m_filter.reset(new TriangleFilter2<double>(impl->m_filter_radius, impl->m_filter_radius));
+        else if (impl->m_filter_name == "gaussian")
+            impl->m_filter.reset(new GaussianFilter2<double>(impl->m_filter_radius, impl->m_filter_radius, 8.0));
+        else if (impl->m_filter_name == "mitchell")
+            impl->m_filter.reset(new MitchellFilter2<double>(impl->m_filter_radius, impl->m_filter_radius, 1.0/3, 1.0/3));
+        else if (impl->m_filter_name == "bspline")
+            impl->m_filter.reset(new MitchellFilter2<double>(impl->m_filter_radius, impl->m_filter_radius, 1.0, 0.0));
+        else if (impl->m_filter_name == "catmull")
+            impl->m_filter.reset(new MitchellFilter2<double>(impl->m_filter_radius, impl->m_filter_radius, 0.0, 0.5));
+        else if (impl->m_filter_name == "lanczos")
+            impl->m_filter.reset(new LanczosFilter2<double>(impl->m_filter_radius, impl->m_filter_radius, 3.0));
+        else if (impl->m_filter_name == "blackman-harris")
+            impl->m_filter.reset(new BlackmanHarrisFilter2<double>(impl->m_filter_radius, impl->m_filter_radius));
         else
         {
             RENDERER_LOG_ERROR(
                 "invalid value \"%s\" for parameter \"%s\", using default value \"%s\".",
-                filter_str.c_str(),
+                impl->m_filter_name.c_str(),
                 "filter",
-                DefaultFilterString);
-            impl->m_filter.reset(new GaussianFilter2<double>(radius, radius, 8.0));
+                DefaultFilterName);
+            impl->m_filter_name = DefaultFilterName;
+            impl->m_filter.reset(new GaussianFilter2<double>(impl->m_filter_radius, impl->m_filter_radius, 8.0));
         }
     }
 

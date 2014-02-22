@@ -31,6 +31,7 @@
 #include "pinholecamera.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/camera/camera.h"
@@ -113,6 +114,8 @@ namespace
             // Precompute the rays origin in world space if the camera is static.
             if (m_transform_sequence.size() <= 1)
                 m_ray_org = m_transform_sequence.evaluate(0.0).point_to_parent(Vector3d(0.0));
+
+            print_settings();
 
             return true;
         }
@@ -211,6 +214,24 @@ namespace
         double      m_rcp_film_width;       // film width reciprocal in camera space
         double      m_rcp_film_height;      // film height reciprocal in camera space
         Vector3d    m_ray_org;              // origin of the rays in world space
+
+        void print_settings() const
+        {
+            RENDERER_LOG_INFO(
+                "camera settings:\n"
+                "  model            %s\n"
+                "  film width       %f\n"
+                "  film height      %f\n"
+                "  focal length     %f\n"
+                "  shutter open     %f\n"
+                "  shutter close    %f",
+                Model,
+                m_film_dimensions[0],
+                m_film_dimensions[1],
+                m_focal_length,
+                m_shutter_open_time,
+                m_shutter_close_time);
+        }
 
         Vector3d ndc_to_camera(const Vector2d& point) const
         {

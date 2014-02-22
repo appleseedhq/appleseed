@@ -353,7 +353,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
 
     register_closures(*shading_system);
 
-#endif
+#endif  // WITH_OSL
 
     // We start by binding entities inputs. This must be done before creating/updating the trace context.
     if (!bind_scene_entities_inputs())
@@ -363,7 +363,10 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     m_project.update_trace_context();
 
     const Scene& scene = *m_project.get_scene();
+
     Frame& frame = *m_project.get_frame();
+    frame.print_settings();
+
     const TraceContext& trace_context = m_project.get_trace_context();
 
     // Create the texture store.
