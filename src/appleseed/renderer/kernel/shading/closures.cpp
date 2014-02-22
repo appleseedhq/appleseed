@@ -65,7 +65,7 @@ namespace
 
     struct LambertClosureParams
     {
-        OSL::Vec3 N;
+        OSL::Vec3   N;
     };
 
     struct MicrofacetBRDFClosureParams
@@ -83,12 +83,12 @@ namespace
 
     struct ReflectionClosureParams
     {
-        OSL::Vec3 N;
+        OSL::Vec3   N;
     };
 
     struct TranslucentClosureParams
     {
-        OSL::Vec3 N;
+        OSL::Vec3   N;
     };
 }
 
@@ -126,7 +126,7 @@ void CompositeClosure::process_closure_tree(
     const OSL::ClosureColor*    closure, 
     const Color3f&              weight)
 {
-    if (!closure)
+    if (closure == 0)
         return;
 
     switch (closure->type)
@@ -204,10 +204,10 @@ void CompositeClosure::process_closure_tree(
 
 template <typename InputValues>
 void CompositeClosure::add_closure(
-    const ClosureID     closure_type,
-    const Color3f&      weight,
-    const Vector3d&     normal,
-    const InputValues&  params)
+    const ClosureID             closure_type,
+    const Color3f&              weight,
+    const Vector3d&             normal,
+    const InputValues&          params)
 {
     do_add_closure<InputValues>(
         closure_type,
@@ -220,11 +220,11 @@ void CompositeClosure::add_closure(
 
 template <typename InputValues>
 void CompositeClosure::add_closure(
-    const ClosureID     closure_type,
-    const Color3f&      weight,
-    const Vector3d&     normal,
-    const Vector3d&     tangent,
-    const InputValues&  params)
+    const ClosureID             closure_type,
+    const Color3f&              weight,
+    const Vector3d&             normal,
+    const Vector3d&             tangent,
+    const InputValues&          params)
 {
     do_add_closure<InputValues>(
         closure_type,
@@ -237,28 +237,27 @@ void CompositeClosure::add_closure(
 
 template <typename InputValues>
 void CompositeClosure::do_add_closure(
-    const ClosureID     closure_type,
-    const Color3f&      weight,
-    const Vector3d&     normal,
-    const bool          has_tangent,
-    const Vector3d&     tangent,
-    const InputValues&  params)
+    const ClosureID             closure_type,
+    const Color3f&              weight,
+    const Vector3d&             normal,
+    const bool                  has_tangent,
+    const Vector3d&             tangent,
+    const InputValues&          params)
 {
-    // make sure we have enough space
+    // make sure we have enough space;
     if (num_closures() >= MaxClosureEntries)
     {
-        RENDERER_LOG_WARNING("Max number of closures in OSL shadergroup exceeded. Ignoring closure.");
+        RENDERER_LOG_WARNING("maximum number of closures in OSL shadergroup exceeded; ignoring closure.");
         return;
     }
 
     assert(m_num_bytes + sizeof(InputValues) <= MaxPoolSize);
 
-    // we use the luminance of the weight as the BSDF weight.
-    double w = luminance(weight);
-
+    // We use the luminance of the weight as the BSDF weight.
+    const double w = luminance(weight);
     if (w <= 0.0)
     {
-        RENDERER_LOG_WARNING("Closure with negative or zero weight found. Ignoring closure");
+        RENDERER_LOG_WARNING("closure with negative or zero weight found; ignoring closure.");
         return;
     }
 
@@ -276,7 +275,7 @@ void CompositeClosure::do_add_closure(
     ++m_num_closures;
 }
 
-}
+}   // namespace renderer
 
 // We probably want to reuse OSL macros to declare closure params 
 // and register the closures. We can use them only inside the OSL namespace.
