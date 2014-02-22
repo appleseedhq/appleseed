@@ -193,6 +193,7 @@ namespace
     }
     
 #ifdef WITH_OSL
+
     template <typename EntityCollection>
     bool invoke_on_frame_begin(
         const Project&          project,
@@ -212,6 +213,7 @@ namespace
 
         return success;
     }
+
 #endif
 }
 

@@ -192,13 +192,14 @@ namespace
           , m_photon_end(photon_end)
           , m_pass_hash(pass_hash)
           , m_tracer(m_scene, m_intersector, m_texture_cache)
-          , m_shading_context(m_intersector,
-                              m_tracer,
-                              m_texture_cache
+          , m_shading_context(
+                m_intersector,
+                m_tracer,
+                m_texture_cache
 #ifdef WITH_OSL
-                             ,shading_system
+                , shading_system
 #endif
-                              )
+                )
           , m_abort_switch(abort_switch)
         {
         }
@@ -422,13 +423,14 @@ namespace
           , m_safe_scene_radius(scene.compute_radius() * (1.0 + 1.0e-3))
           , m_disk_point_prob(1.0 / (Pi * square(m_safe_scene_radius)))
           , m_tracer(m_scene, m_intersector, m_texture_cache)
-          , m_shading_context(m_intersector, 
-                              m_tracer, 
-                              m_texture_cache
+          , m_shading_context(
+                m_intersector, 
+                m_tracer, 
+                m_texture_cache
 #ifdef WITH_OSL
-                             ,shading_system
+                , shading_system
 #endif
-                              )
+                )
         {
         }
 

@@ -43,14 +43,14 @@
 #include "foundation/platform/types.h"
 #include "foundation/utility/stopwatch.h"
 
-// Standard headers.
-#include <cstddef>
-#include <memory>
-
 // OSL headers.
 #ifdef WITH_OSL
 #include <OSL/oslexec.h>
 #endif
+
+// Standard headers.
+#include <cstddef>
+#include <memory>
 
 // Forward declarations.
 namespace foundation    { class AbortSwitch; }

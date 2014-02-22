@@ -44,13 +44,12 @@
 // Forward declarations.
 namespace renderer  { class ILightingEngine; }
 namespace renderer  { class Intersector; }
-namespace renderer  { class ShadingPoint; }
-namespace renderer  { class TextureCache; }
-namespace renderer  { class Tracer; }
-
 #ifdef WITH_OSL
 namespace renderer  { class ShaderGroup; }
 #endif
+namespace renderer  { class ShadingPoint; }
+namespace renderer  { class TextureCache; }
+namespace renderer  { class Tracer; }
 
 namespace renderer
 {
@@ -94,8 +93,8 @@ class ShadingContext
 
 #ifdef WITH_OSL
     void execute_osl_shadergroup(
-        const ShaderGroup&  shader_group, 
-        const ShadingPoint& shading_point) const;
+        const ShaderGroup&      shader_group, 
+        const ShadingPoint&     shading_point) const;
 #endif
     
   private:

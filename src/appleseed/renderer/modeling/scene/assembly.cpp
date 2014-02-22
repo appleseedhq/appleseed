@@ -91,9 +91,9 @@ struct Assembly::Impl
       , m_lights(parent)
       , m_objects(parent)
       , m_object_instances(parent)
-      #ifdef WITH_OSL
+#ifdef WITH_OSL
       , m_shader_groups(parent)
-      #endif
+#endif
     {
     }
 };

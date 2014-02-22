@@ -58,6 +58,10 @@
 #include <boost/mpl/transform_view.hpp>
 #include <boost/mpl/vector.hpp>
 
+// Standard headers.
+#include <cassert>
+#include <cstddef>
+
 // Forward declarations.
 namespace renderer  { class OSLBSDF; }
 
@@ -169,6 +173,9 @@ class APPLESEED_ALIGN(16) CompositeClosure
         const InputValues&          values);
 };
 
+// Register appleseed's closures.
+void register_closures(OSL::ShadingSystem& shading_system);
+
 
 //
 // CompositeClosure class implementation.
@@ -215,9 +222,6 @@ inline void* CompositeClosure::closure_input_values(const size_t index) const
     assert(index < num_closures());
     return m_input_values[index];
 }
-
-// Register appleseed's closures.
-void register_closures(OSL::ShadingSystem& shading_system);
 
 }       // namespace renderer
 

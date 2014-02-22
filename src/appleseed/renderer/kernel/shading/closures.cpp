@@ -40,9 +40,6 @@
 #include <OSL/genclosure.h>
 #include <OSL/oslclosure.h>
 
-// Standard headers.
-#include <cstddef>
-
 using namespace foundation;
 using namespace renderer;
 

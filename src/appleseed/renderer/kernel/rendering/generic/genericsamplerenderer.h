@@ -70,7 +70,7 @@ class GenericSampleRendererFactory
         ILightingEngineFactory* lighting_engine_factory,
         ShadingEngine&          shading_engine,
 #ifdef WITH_OSL
-        OSL::ShadingSystem& shading_system,
+        OSL::ShadingSystem&     shading_system,
 #endif
         const ParamArray&       params);
 

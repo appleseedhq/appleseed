@@ -36,13 +36,13 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 
-// Standard headers.
-#include <cstddef>
-
-// OSL headers
+// OSL headers.
 #ifdef WITH_OSL
 #include <OSL/oslexec.h>
 #endif
+
+// Standard headers.
+#include <cstddef>
 
 // Forward declarations.
 namespace foundation    { class AbortSwitch; }

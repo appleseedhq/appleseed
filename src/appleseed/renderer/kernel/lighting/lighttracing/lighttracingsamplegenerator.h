@@ -37,13 +37,13 @@
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 
-// Standard headers.
-#include <cstddef>
-
 // OSL headers.
 #ifdef WITH_OSL
 #include <OSL/oslexec.h>
 #endif
+
+// Standard headers.
+#include <cstddef>
 
 // Forward declarations.
 namespace renderer  { class Frame; }
