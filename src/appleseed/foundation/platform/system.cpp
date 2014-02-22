@@ -57,6 +57,8 @@
 
     // Platform headers.
     #include <mach/mach.h>
+    #include <sys/mount.h>
+    #include <sys/param.h>
     #include <sys/sysctl.h>
     #include <sys/types.h>
 
