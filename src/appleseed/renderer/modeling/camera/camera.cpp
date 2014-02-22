@@ -201,7 +201,7 @@ void Camera::extract_focal_distance(
     Vector2d&           autofocus_target,
     double&             focal_distance) const
 {
-    const Vector2d DefaultAFTarget(0.0);        // in NDC
+    const Vector2d DefaultAFTarget(0.5);        // in NDC
     const double DefaultFocalDistance = 1.0;    // in meters
 
     if (has_param("focal_distance"))
@@ -239,7 +239,7 @@ void Camera::extract_focal_distance(
             DefaultFocalDistance);
 
         autofocus_enabled = false;
-        autofocus_target = Vector2d(0.5);
+        autofocus_target = DefaultAFTarget;
         focal_distance = DefaultFocalDistance;
     }
 }
