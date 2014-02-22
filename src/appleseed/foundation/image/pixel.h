@@ -35,6 +35,9 @@
 #include "foundation/platform/types.h"
 #include "foundation/utility/otherwise.h"
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // OpenEXR headers.
 #include "OpenEXR/half.h"
 
@@ -62,6 +65,9 @@ enum PixelFormat
     PixelFormatFloat,
     PixelFormatDouble
 };
+
+// Return a string identifying a pixel format.
+DLLSYMBOL const char* pixel_format_name(const PixelFormat pixel_format);
 
 
 //

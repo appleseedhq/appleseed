@@ -831,7 +831,10 @@ void MainWindow::start_rendering(const bool interactive)
     // Enable/disable widgets appropriately. File -> Reload is enabled during interactive rendering.
     set_file_widgets_enabled(false);
     if (interactive)
-        m_ui->action_file_reload_project->setEnabled(true);
+    {
+        m_ui->action_file_reload_project->setEnabled(
+            m_project_manager.get_project()->has_path());
+    }
     set_project_explorer_enabled(true);
     set_rendering_widgets_enabled(true, true);
 

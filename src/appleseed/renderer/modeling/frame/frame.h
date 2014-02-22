@@ -78,6 +78,9 @@ class DLLSYMBOL Frame
     // Delete this instance.
     virtual void release() OVERRIDE;
 
+    // Print frame settings to the renderer's global logger.
+    void print_settings();
+
     // Access the main underlying image.
     foundation::Image& image() const;
 

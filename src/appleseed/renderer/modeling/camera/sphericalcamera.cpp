@@ -31,6 +31,7 @@
 #include "sphericalcamera.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/camera/camera.h"
@@ -97,6 +98,8 @@ namespace
             // Precompute the rays origin in world space if the camera is static.
             if (m_transform_sequence.size() <= 1)
                 m_ray_org = m_transform_sequence.evaluate(0.0).point_to_parent(Vector3d(0.0));
+
+            print_settings();
 
             return true;
         }
@@ -179,6 +182,18 @@ namespace
 
       private:
         Vector3d m_ray_org;         // origin of the rays in world space
+
+        void print_settings() const
+        {
+            RENDERER_LOG_INFO(
+                "camera settings:\n"
+                "  model            %s\n"
+                "  shutter open     %f\n"
+                "  shutter close    %f",
+                Model,
+                m_shutter_open_time,
+                m_shutter_close_time);
+        }
 
         static Vector3d ndc_to_camera(const Vector2d& point)
         {

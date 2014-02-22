@@ -248,7 +248,7 @@ namespace
             {
                 RENDERER_LOG(
                     wasted_effort > MaxWastedEffort ? LogMessage::Warning : LogMessage::Info,
-                    "rendering effort wasted by tile borders: %s (tile dimensions: %sx%s, tile margins: %sx%s)",
+                    "rendering effort wasted by tile borders: %s (tile dimensions: %s x %s, tile margins: %s x %s)",
                     pretty_percent(overhead_pixel_count, pixel_count).c_str(),
                     pretty_uint(properties.m_tile_width).c_str(),
                     pretty_uint(properties.m_tile_height).c_str(),
