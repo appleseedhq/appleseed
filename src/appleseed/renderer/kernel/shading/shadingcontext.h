@@ -44,8 +44,13 @@
 // Forward declarations.
 namespace renderer  { class ILightingEngine; }
 namespace renderer  { class Intersector; }
+namespace renderer  { class ShadingPoint; }
 namespace renderer  { class TextureCache; }
 namespace renderer  { class Tracer; }
+
+#ifdef WITH_OSL
+namespace renderer  { class ShaderGroup; }
+#endif
 
 namespace renderer
 {
@@ -87,6 +92,12 @@ class ShadingContext
     // Return the maximum number of iterations in ray/path tracing loops.
     size_t get_max_iterations() const;
 
+#ifdef WITH_OSL
+    void execute_osl_shadergroup(
+        const ShaderGroup&  shader_group, 
+        const ShadingPoint& shading_point) const;
+#endif
+    
   private:
     const Intersector&          m_intersector;
     Tracer&                     m_tracer;

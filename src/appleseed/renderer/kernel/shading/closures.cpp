@@ -99,7 +99,7 @@ namespace
 // Composite Closure implementation
 // 
 
-CompositeClosure::CompositeClosure(const OSL::ClosureColor *Ci)
+CompositeClosure::CompositeClosure(const OSL::ClosureColor* Ci)
 {
     process_closure_tree(Ci, Color3f(1, 1, 1));
 
@@ -112,35 +112,21 @@ CompositeClosure::CompositeClosure(const OSL::ClosureColor *Ci)
     for (int i = 0, e = num_closures(); i != e; ++i)
         m_weights[i] /= total_weight;
 
-    // accumulate weights.
-    double w = 0.0;
+    m_cdf.reserve(num_closures());
     for (int i = 0, e = num_closures(); i != e; ++i)
-    {
-        w = m_weights[i] + w;
-        m_accumulated_weights[i] = w;
-    }
+        m_cdf.insert(i, closure_weight(i));
 
-    if (num_closures())
-        m_accumulated_weights[num_closures()-1] = 1.0;
+    m_cdf.prepare();
 }
 
 size_t CompositeClosure::choose_closure(const double w) const
 {
-    assert(num_closures());
-    assert(w >= 0.0);
-    assert(w <= 1.0);
-
-    const double* i = std::upper_bound(
-        m_accumulated_weights, 
-        m_accumulated_weights + num_closures(), 
-        w);
-
-    return i - m_accumulated_weights;
+    return m_cdf.sample(w).first;
 }
 
 void CompositeClosure::process_closure_tree(
-    const OSL::ClosureColor* closure, 
-    const Color3f& weight)
+    const OSL::ClosureColor*    closure, 
+    const Color3f&              weight)
 {
     if (!closure)
         return;
@@ -150,7 +136,7 @@ void CompositeClosure::process_closure_tree(
       case OSL::ClosureColor::MUL:
         {
             const OSL::ClosureMul* c = reinterpret_cast<const OSL::ClosureMul*>(closure);
-            Color3f w = weight * Color3f(c->weight.x, c->weight.y, c->weight.z);
+            const Color3f w = weight * Color3f(c->weight.x, c->weight.y, c->weight.z);
             process_closure_tree(c->closure, w);
         }
         break;
@@ -166,7 +152,7 @@ void CompositeClosure::process_closure_tree(
       case OSL::ClosureColor::COMPONENT:
         {
             const OSL::ClosureComponent* c = reinterpret_cast<const OSL::ClosureComponent*>(closure);
-            Color3f w = weight * Color3f(c->w.x, c->w.y, c->w.z);
+            const Color3f w = weight * Color3f(c->w.x, c->w.y, c->w.z);
 
             switch (c->id)
             {
@@ -221,7 +207,7 @@ void CompositeClosure::process_closure_tree(
     }
 }
 
-template<class InputValues>
+template<typename InputValues>
 void CompositeClosure::add_closure(
     const ClosureID     closure_type,
     const Color3f&      weight,
@@ -237,7 +223,7 @@ void CompositeClosure::add_closure(
         params);
 }
 
-template<class InputValues>
+template<typename InputValues>
 void CompositeClosure::add_closure(
     const ClosureID     closure_type,
     const Color3f&      weight,
@@ -254,7 +240,7 @@ void CompositeClosure::add_closure(
         params);
 }
 
-template<class InputValues>
+template<typename InputValues>
 void CompositeClosure::do_add_closure(
     const ClosureID     closure_type,
     const Color3f&      weight,
@@ -277,7 +263,7 @@ void CompositeClosure::do_add_closure(
 
     if (w <= 0.0)
     {
-        RENDERER_LOG_WARNING("Closure with negative weight found. Ignoring closure");
+        RENDERER_LOG_WARNING("Closure with negative or zero weight found. Ignoring closure");
         return;
     }
 

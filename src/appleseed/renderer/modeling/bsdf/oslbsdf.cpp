@@ -167,7 +167,7 @@ void OSLBSDF::evaluate_inputs(
     const ShadingPoint& shading_point,
     const size_t        offset) const
 {
-    CompositeClosure *c = reinterpret_cast<CompositeClosure*>(const_cast<void*>(input_evaluator.data()));
+    CompositeClosure *c = reinterpret_cast<CompositeClosure*>(input_evaluator.data());
     new (c) CompositeClosure(shading_point.get_osl_shader_globals().Ci);
 }
 
@@ -176,8 +176,8 @@ namespace
 
 Basis3d make_osl_basis(
     const CompositeClosure* c, 
-    const size_t index,
-    const Basis3d& original_basis)
+    const size_t            index,
+    const Basis3d&          original_basis)
 {
     return Basis3d(c->closure_normal(index),
                    c->closure_has_tangent(index) ?
@@ -241,7 +241,7 @@ double OSLBSDF::evaluate(
     double prob = 0.0;
     value.set(0.0f);
 
-    for(int i = 0, e = c->num_closures(); i < e; ++i)
+    for (size_t i = 0, e = c->num_closures(); i < e; ++i)
     {
         Spectrum s;
         Basis3d new_shading_basis = make_osl_basis(c, i, shading_basis);
@@ -257,7 +257,10 @@ double OSLBSDF::evaluate(
             s);
 
         if (bsdf_prob > 0.0)
-            value += s * static_cast<float>(c->closure_weight(i));
+        {
+            s *= static_cast<float>(c->closure_weight(i));
+            value += s;
+        }
 
         prob += bsdf_prob * c->closure_weight(i);
     }
@@ -276,7 +279,7 @@ double OSLBSDF::evaluate_pdf(
     const CompositeClosure *c = reinterpret_cast<const CompositeClosure*>(data);
     double prob = 0.0;
 
-    for(int i = 0, e = c->num_closures(); i < e; ++i)
+    for (size_t i = 0, e = c->num_closures(); i < e; ++i)
     {
         Basis3d new_shading_basis = make_osl_basis(c, i, shading_basis);
         double bsdf_prob = BSDF_for_closureID(c->closure_type(i))->evaluate_pdf(

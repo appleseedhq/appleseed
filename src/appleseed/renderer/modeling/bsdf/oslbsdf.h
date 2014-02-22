@@ -31,8 +31,8 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/kernel/shading/closures.h"
+#include "renderer/modeling/bsdf/bsdf.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/autoreleaseptr.h"
@@ -131,22 +131,22 @@ private:
         const char*                         name,
         const ParamArray&                   params = ParamArray());
 
-    const BSDF* BSDF_for_closureID(ClosureID cid) const;
-    BSDF* BSDF_for_closureID(ClosureID cid);
+    const BSDF* BSDF_for_closureID(const ClosureID cid) const;
+    BSDF* BSDF_for_closureID(const ClosureID cid);
 };
 
 //
 // OSLBSDF class implementation.
 //
 
-inline const BSDF* OSLBSDF::BSDF_for_closureID(ClosureID cid) const
+inline const BSDF* OSLBSDF::BSDF_for_closureID(const ClosureID cid) const
 {
     const BSDF* bsdf = m_all_bsdfs[cid];
     assert(bsdf);
     return bsdf;
 }
 
-inline BSDF *OSLBSDF::BSDF_for_closureID(ClosureID cid)
+inline BSDF *OSLBSDF::BSDF_for_closureID(const ClosureID cid)
 {
     BSDF* bsdf = m_all_bsdfs[cid];
     assert(bsdf);

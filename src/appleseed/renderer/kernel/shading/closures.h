@@ -38,6 +38,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/math/cdf.h"
 #include "foundation/image/color.h"
 
 // OSL headers.
@@ -125,31 +126,31 @@ class APPLESEED_ALIGN(16) CompositeClosure
     enum { MaxClosureEntries = 8 };
     enum { MaxPoolSize = MaxClosureEntries * sizeof(boost::mpl::deref<BiggestInputValueType::base>::type) };
 
-    double                      m_weights[MaxClosureEntries];
-    double                      m_accumulated_weights[MaxClosureEntries];
-    void*                       m_input_values[MaxClosureEntries];
-    ClosureID                   m_closure_types[MaxClosureEntries];
-    foundation::Vector3d        m_normals[MaxClosureEntries];
-    bool                        m_has_tangent[MaxClosureEntries];
-    foundation::Vector3d        m_tangents[MaxClosureEntries];
-    char                        m_pool[MaxPoolSize];
-    int                         m_num_closures;
-    int                         m_num_bytes;
+    double                                  m_weights[MaxClosureEntries];
+    void*                                   m_input_values[MaxClosureEntries];
+    ClosureID                               m_closure_types[MaxClosureEntries];
+    foundation::Vector3d                    m_normals[MaxClosureEntries];
+    bool                                    m_has_tangent[MaxClosureEntries];
+    foundation::Vector3d                    m_tangents[MaxClosureEntries];
+    char                                    m_pool[MaxPoolSize];
+    int                                     m_num_closures;
+    int                                     m_num_bytes;
+    foundation::CDF<size_t,double>          m_cdf;
 
-    explicit CompositeClosure(const OSL::ClosureColor *Ci);
+    explicit CompositeClosure(const OSL::ClosureColor* Ci);
 
     void process_closure_tree(
-        const OSL::ClosureColor* closure, 
-        const foundation::Color3f& weight);
+        const OSL::ClosureColor*    closure, 
+        const foundation::Color3f&  weight);
 
-    template<class InputValues>
+    template<typename InputValues>
     void add_closure(
         const ClosureID             closure_type,
         const foundation::Color3f&  weight,
         const foundation::Vector3d& normal,
         const InputValues&          values);
 
-    template<class InputValues>
+    template<typename InputValues>
     void add_closure(
         const ClosureID             closure_type,
         const foundation::Color3f&  weight,
@@ -157,7 +158,7 @@ class APPLESEED_ALIGN(16) CompositeClosure
         const foundation::Vector3d& tangent,
         const InputValues&          values);
 
-    template<class InputValues>
+    template<typename InputValues>
     void do_add_closure(
         const ClosureID             closure_type,
         const foundation::Color3f&  weight,

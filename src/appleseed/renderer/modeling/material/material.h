@@ -54,6 +54,11 @@ namespace renderer      { class Source; }
 namespace renderer      { class SurfaceShader; }
 namespace renderer      { class TextureCache; }
 
+#ifdef WITH_OSL
+namespace renderer      { class OSLBSDF; }
+namespace renderer      { class ShaderGroup; }
+#endif
+
 namespace renderer
 {
 
@@ -123,17 +128,30 @@ class DLLSYMBOL Material
     // Return the normal modifier of the material, or 0 if the material doesn't have one.
     const INormalModifier* get_normal_modifier() const;
 
+#ifdef WITH_OSL
+    const ShaderGroup* get_osl_surface() const;
+    const ShaderGroup* get_uncached_osl_surface() const;
+#endif
+    
   private:
     friend class GenericMaterialFactory;
 
+#ifdef WITH_OSL
+    friend class OSLMaterialFactory;
+#endif
+    
     struct Impl;
     Impl* impl;
 
-    const SurfaceShader*            m_surface_shader;
-    const BSDF*                     m_bsdf;
-    const EDF*                      m_edf;
-    const Source*                   m_alpha_map;
-    const INormalModifier*          m_normal_modifier;
+    const SurfaceShader*    m_surface_shader;
+    const BSDF*             m_bsdf;
+    const EDF*              m_edf;
+    const Source*           m_alpha_map;
+    const INormalModifier*  m_normal_modifier;
+#ifdef WITH_OSL
+    const OSLBSDF*          m_osl_bsdf;
+    const ShaderGroup*      m_shader_group;
+#endif
 
     // Constructor.
     Material(
@@ -176,6 +194,13 @@ inline const INormalModifier* Material::get_normal_modifier() const
 {
     return m_normal_modifier;
 }
+
+#ifdef WITH_OSL
+inline const ShaderGroup* Material::get_osl_surface() const
+{
+    return m_shader_group;
+}
+#endif
 
 }       // namespace renderer
 
