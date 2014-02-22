@@ -53,63 +53,63 @@ OSLBSDF::OSLBSDF()
 {
     memset(m_all_bsdfs, 0, sizeof(BSDF*) * NumClosuresIDs);
 
-    create_bsdf(
-        m_ashikhmin_shirley_brdf,
-        "ashikhmin_brdf",
-        AshikhminShirleyID,
-        "osl_ashikhmin_shirley");
+    m_ashikhmin_shirley_brdf =
+        create_and_register_bsdf(
+            AshikhminShirleyID,
+            "ashikhmin_brdf",
+            "osl_ashikhmin_shirley");
 
-    create_bsdf(
-        m_diffuse_btdf,
-        "diffuse_btdf",
-        TranslucentID,
-        "osl_translucent");
+    m_diffuse_btdf =
+        create_and_register_bsdf(
+            TranslucentID,
+            "diffuse_btdf",
+            "osl_translucent");
 
-    create_bsdf(
-        m_lambertian_brdf,
-        "lambertian_brdf",
-        LambertID,
-        "osl_lambert");
+    m_lambertian_brdf =
+        create_and_register_bsdf(
+            LambertID,
+            "lambertian_brdf",
+            "osl_lambert");
 
-    create_bsdf(
-        m_specular_brdf,
-        "specular_brdf",
-        ReflectionID,
-        "osl_reflection");
+    m_specular_brdf =
+        create_and_register_bsdf(
+            ReflectionID,
+            "specular_brdf",
+            "osl_reflection");
 
-    create_bsdf(
-        m_specular_btdf,
-        "specular_btdf",
-        RefractionID,
-        "osl_refraction");
+    m_specular_btdf =
+        create_and_register_bsdf(
+            RefractionID,
+            "specular_btdf",
+            "osl_refraction");
 
-    create_bsdf(
-        m_microfacet_beckmann_brdf,
-        "microfacet_brdf",
-        MicrofacetBeckmannID,
-        "osl_beckmann",
-        ParamArray().insert("mdf", "beckmann"));
+    m_microfacet_beckmann_brdf =
+        create_and_register_bsdf(
+            MicrofacetBeckmannID,
+            "microfacet_brdf",
+            "osl_beckmann",
+            ParamArray().insert("mdf", "beckmann"));
 
-    create_bsdf(
-        m_microfacet_blinn_brdf,
-        "microfacet_brdf",
-        MicrofacetBlinnID,
-        "osl_blinn",
-        ParamArray().insert("mdf", "blinn"));
+    m_microfacet_blinn_brdf =
+        create_and_register_bsdf(
+            MicrofacetBlinnID,
+            "microfacet_brdf",
+            "osl_blinn",
+            ParamArray().insert("mdf", "blinn"));
 
-    create_bsdf(
-        m_microfacet_ggx_brdf,
-        "microfacet_brdf",
-        MicrofacetGGXID,
-        "osl_ggx",
-        ParamArray().insert("mdf", "ggx"));
+    m_microfacet_ggx_brdf =
+        create_and_register_bsdf(
+            MicrofacetGGXID,
+            "microfacet_brdf",
+            "osl_ggx",
+            ParamArray().insert("mdf", "ggx"));
 
-    create_bsdf(
-        m_microfacet_ward_brdf,
-        "microfacet_brdf",
-        MicrofacetWardID,
-        "osl_ward",
-        ParamArray().insert("mdf", "ward"));
+    m_microfacet_ward_brdf =
+        create_and_register_bsdf(
+            MicrofacetWardID,
+            "microfacet_brdf",
+            "osl_ward",
+            ParamArray().insert("mdf", "ward"));
 }
 
 void OSLBSDF::release()
@@ -303,15 +303,18 @@ double OSLBSDF::evaluate_pdf(
     return prob;
 }
 
-void OSLBSDF::create_bsdf(
-    auto_release_ptr<BSDF>& ptr,
-    const char*             model,
+auto_release_ptr<BSDF> OSLBSDF::create_and_register_bsdf(
     const ClosureID         cid,
+    const char*             model,
     const char*             name,
     const ParamArray&       params)
 {
-    ptr.reset(BSDFFactoryRegistrar().lookup(model)->create(name, params).release());
-    m_all_bsdfs[cid] = ptr.get();
+    auto_release_ptr<BSDF> bsdf =
+        BSDFFactoryRegistrar().lookup(model)->create(name, params);
+
+    m_all_bsdfs[cid] = bsdf.get();
+
+    return bsdf;
 }
 
 }   // namespace renderer

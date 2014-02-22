@@ -129,10 +129,9 @@ class OSLBSDF
 
     OSLBSDF();
 
-    void create_bsdf(
-        foundation::auto_release_ptr<BSDF>& ptr,
-        const char*                         model,
+    foundation::auto_release_ptr<BSDF> create_and_register_bsdf(
         const ClosureID                     cid,
+        const char*                         model,
         const char*                         name,
         const ParamArray&                   params = ParamArray());
 
