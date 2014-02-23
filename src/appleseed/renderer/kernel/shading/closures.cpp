@@ -140,7 +140,7 @@ void CompositeClosure::process_closure_tree(
       case OSL::ClosureColor::MUL:
         {
             const OSL::ClosureMul* c = reinterpret_cast<const OSL::ClosureMul*>(closure);
-            const Color3f w = weight * Color3f(c->weight.x, c->weight.y, c->weight.z);
+            const Color3f w = weight * Color3f(c->weight);
             process_closure_tree(c->closure, w);
         }
         break;
@@ -156,7 +156,7 @@ void CompositeClosure::process_closure_tree(
       case OSL::ClosureColor::COMPONENT:
         {
             const OSL::ClosureComponent* c = reinterpret_cast<const OSL::ClosureComponent*>(closure);
-            const Color3f w = weight * Color3f(c->w.x, c->w.y, c->w.z);
+            const Color3f w = weight * Color3f(c->w);
 
             switch (c->id)
             {
@@ -167,12 +167,12 @@ void CompositeClosure::process_closure_tree(
 
                     AshikminBRDFInputValues values;
 
-                    const Color3f wd = w * Color3f(p->kd.x, p->kd.y, p->kd.z);
+                    const Color3f wd = w * Color3f(p->kd);
                     linear_rgb_reflectance_to_spectrum(wd, values.m_rd);
                     values.m_rd_alpha = Alpha(1.0f);
                     values.m_rd_multiplier = 1.0;
 
-                    const Color3f wg = w * Color3f(p->ks.x, p->ks.y, p->ks.z);
+                    const Color3f wg = w * Color3f(p->ks);
                     linear_rgb_reflectance_to_spectrum(wg, values.m_rg);
                     values.m_rg_alpha = Alpha(1.0f);
                     values.m_rg_multiplier = 1.0;
@@ -183,8 +183,8 @@ void CompositeClosure::process_closure_tree(
                     add_closure<AshikminBRDFInputValues>(
                         static_cast<ClosureID>(c->id), 
                         w,
-                        Vector3d(p->N.x, p->N.y, p->N.z),
-                        Vector3d(p->T.x, p->T.y, p->T.z),
+                        Vector3d(p->N),
+                        Vector3d(p->T),
                         values);
                 }
                 break;
@@ -202,7 +202,7 @@ void CompositeClosure::process_closure_tree(
                     add_closure<LambertianBRDFInputValues>(
                         static_cast<ClosureID>(c->id),
                         w,
-                        Vector3d(p->N.x, p->N.y, p->N.z),
+                        Vector3d(p->N),
                         values);
                 }
                 break;
@@ -226,7 +226,7 @@ void CompositeClosure::process_closure_tree(
                     add_closure<MicrofacetBRDFInputValues>(
                         static_cast<ClosureID>(c->id), 
                         w,
-                        Vector3d(p->N.x, p->N.y, p->N.z),
+                        Vector3d(p->N),
                         values);
                 }
                 break;
@@ -244,7 +244,7 @@ void CompositeClosure::process_closure_tree(
                     add_closure<SpecularBRDFInputValues>(
                         static_cast<ClosureID>(c->id), 
                         w, 
-                        Vector3d(p->N.x, p->N.y, p->N.z),
+                        Vector3d(p->N),
                         values);
                 }
                 break;
@@ -264,7 +264,7 @@ void CompositeClosure::process_closure_tree(
                     add_closure<SpecularBTDFInputValues>(
                         static_cast<ClosureID>(c->id), 
                         w, 
-                        Vector3d(p->N.x, p->N.y, p->N.z),
+                        Vector3d(p->N),
                         values);
                 }
                 break;
@@ -282,7 +282,7 @@ void CompositeClosure::process_closure_tree(
                     add_closure<DiffuseBTDFInputValues>(
                         static_cast<ClosureID>(c->id), 
                         w, 
-                        Vector3d(p->N.x, p->N.y, p->N.z),
+                        Vector3d(p->N),
                         values);
                 }
                 break;
