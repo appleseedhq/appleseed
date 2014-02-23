@@ -1919,15 +1919,51 @@ namespace
 
 
     //
+    // Base class for assembly and scene element handlers.
+    //
+
+    class BaseGroupElementHandler
+      : public ParametrizedElementHandler
+    {
+      public:
+        explicit BaseGroupElementHandler(ParseContext& context)
+          : m_context(context)
+        {
+        }
+
+      protected:
+        ParseContext& m_context;
+
+        template <typename Container, typename Entity>
+        void insert(Container& container, auto_release_ptr<Entity> entity)
+        {
+            if (entity.get() == 0)
+                return;
+
+            if (container.get_by_name(entity->get_name()) != 0)
+            {
+                RENDERER_LOG_ERROR(
+                    "an entity with the name \"%s\" already exists.",
+                    entity->get_name());
+                m_context.get_event_counters().signal_error();
+                return;
+            }
+
+            container.insert(entity);
+        }
+    };
+
+
+    //
     // <assembly> element handler.
     //
 
     class AssemblyElementHandler
-      : public ParametrizedElementHandler
+      : public BaseGroupElementHandler
     {
       public:
         explicit AssemblyElementHandler(ParseContext& context)
-          : m_context(context)
+          : BaseGroupElementHandler(context)
         {
         }
 
@@ -1986,136 +2022,83 @@ namespace
             switch (element)
             {
               case ElementAssembly:
-                {
-                    AssemblyElementHandler* assembly_handler =
-                        static_cast<AssemblyElementHandler*>(handler);
-                    auto_release_ptr<Assembly> assembly = assembly_handler->get_assembly();
-                    if (assembly.get())
-                        m_assemblies.insert(assembly);
-                }
+                insert(
+                    m_assemblies,
+                    static_cast<AssemblyElementHandler*>(handler)->get_assembly());
                 break;
 
               case ElementAssemblyInstance:
-                {
-                    AssemblyInstanceElementHandler* asm_inst_handler =
-                        static_cast<AssemblyInstanceElementHandler*>(handler);
-                    auto_release_ptr<AssemblyInstance> instance = asm_inst_handler->get_assembly_instance();
-                    if (instance.get())
-                        m_assembly_instances.insert(instance);
-                }
+                insert(
+                    m_assembly_instances,
+                    static_cast<AssemblyInstanceElementHandler*>(handler)->get_assembly_instance());
                 break;
 
               case ElementBSDF:
-                {
-                    BSDFElementHandler* bsdf_handler =
-                        static_cast<BSDFElementHandler*>(handler);
-                    auto_release_ptr<BSDF> bsdf = bsdf_handler->get_entity();
-                    if (bsdf.get())
-                        m_bsdfs.insert(bsdf);
-                }
+                insert(
+                    m_bsdfs,
+                    static_cast<BSDFElementHandler*>(handler)->get_entity());
                 break;
 
               case ElementColor:
-                {
-                    ColorElementHandler* color_handler =
-                        static_cast<ColorElementHandler*>(handler);
-                    auto_release_ptr<ColorEntity> color_entity = color_handler->get_color_entity();
-                    if (color_entity.get())
-                        m_colors.insert(color_entity);
-                }
+                insert(
+                    m_colors,
+                    static_cast<ColorElementHandler*>(handler)->get_color_entity());
                 break;
 
               case ElementEDF:
-                {
-                    EDFElementHandler* edf_handler =
-                        static_cast<EDFElementHandler*>(handler);
-                    auto_release_ptr<EDF> edf = edf_handler->get_entity();
-                    if (edf.get())
-                        m_edfs.insert(edf);
-                }
+                insert(
+                    m_edfs,
+                    static_cast<EDFElementHandler*>(handler)->get_entity());
                 break;
 
               case ElementLight:
-                {
-                    LightElementHandler* light_handler =
-                        static_cast<LightElementHandler*>(handler);
-                    auto_release_ptr<Light> light = light_handler->get_entity();
-                    if (light.get())
-                        m_lights.insert(light);
-                }
+                insert(
+                    m_lights,
+                    static_cast<LightElementHandler*>(handler)->get_entity());
                 break;
 
               case ElementMaterial:
-                {
-                    MaterialElementHandler* material_handler =
-                        static_cast<MaterialElementHandler*>(handler);
-                    auto_release_ptr<Material> material = material_handler->get_entity();
-                    if (material.get())
-                        m_materials.insert(material);
-                }
+                insert(
+                    m_materials,
+                    static_cast<MaterialElementHandler*>(handler)->get_entity());
                 break;
 
               case ElementObject:
-                {
-                    ObjectElementHandler* object_handler =
-                        static_cast<ObjectElementHandler*>(handler);
-                    for (const_each<ObjectElementHandler::ObjectVector> i =
-                         object_handler->get_objects(); i; ++i)
-                        m_objects.insert(auto_release_ptr<Object>(*i));
-                }
+                for (const_each<ObjectElementHandler::ObjectVector> i =
+                        static_cast<ObjectElementHandler*>(handler)->get_objects(); i; ++i)
+                    insert(m_objects, auto_release_ptr<Object>(*i));
                 break;
 
               case ElementObjectInstance:
-                {
-                    ObjectInstanceElementHandler* object_inst_handler =
-                        static_cast<ObjectInstanceElementHandler*>(handler);
-                    auto_release_ptr<ObjectInstance> instance = object_inst_handler->get_object_instance();
-                    if (instance.get())
-                        m_object_instances.insert(instance);
-                }
+                insert(
+                    m_object_instances,
+                    static_cast<ObjectInstanceElementHandler*>(handler)->get_object_instance());
                 break;
 
 #ifdef WITH_OSL
               case ElementShaderGroup:
-                {
-                    ShaderGroupElementHandler* shader_group_handler =
-                        static_cast<ShaderGroupElementHandler*>(handler);
-
-                    auto_release_ptr<ShaderGroup> sg = shader_group_handler->get_shader_group();
-                    if (sg.get())
-                        m_shader_groups.insert(sg);
-                }
+                insert(
+                    m_shader_groups,
+                    static_cast<ShaderGroupElementHandler*>(handler)->get_shader_group());
                 break;
 #endif
 
               case ElementSurfaceShader:
-                {
-                    SurfaceShaderElementHandler* surface_shader_handler =
-                        static_cast<SurfaceShaderElementHandler*>(handler);
-                    auto_release_ptr<SurfaceShader> surface_shader = surface_shader_handler->get_entity();
-                    if (surface_shader.get())
-                        m_surface_shaders.insert(surface_shader);
-                }
+                insert(
+                    m_surface_shaders,
+                    static_cast<SurfaceShaderElementHandler*>(handler)->get_entity());
                 break;
 
               case ElementTexture:
-                {
-                    TextureElementHandler* texture_handler =
-                        static_cast<TextureElementHandler*>(handler);
-                    auto_release_ptr<Texture> texture = texture_handler->get_texture();
-                    if (texture.get())
-                        m_textures.insert(texture);
-                }
+                insert(
+                    m_textures,
+                    static_cast<TextureElementHandler*>(handler)->get_texture());
                 break;
 
               case ElementTextureInstance:
-                {
-                    TextureInstanceElementHandler* texture_inst_handler =
-                        static_cast<TextureInstanceElementHandler*>(handler);
-                    auto_release_ptr<TextureInstance> instance = texture_inst_handler->get_texture_instance();
-                    if (instance.get())
-                        m_texture_instances.insert(instance);
-                }
+                insert(
+                    m_texture_instances,
+                    static_cast<TextureInstanceElementHandler*>(handler)->get_texture_instance());
                 break;
 
               default:
@@ -2130,7 +2113,6 @@ namespace
         }
 
       private:
-        ParseContext&               m_context;
         auto_release_ptr<Assembly>  m_assembly;
         string                      m_name;
         AssemblyContainer           m_assemblies;
@@ -2156,11 +2138,11 @@ namespace
     //
 
     class SceneElementHandler
-      : public ParametrizedElementHandler
+      : public BaseGroupElementHandler
     {
       public:
         explicit SceneElementHandler(ParseContext& context)
-          : m_context(context)
+          : BaseGroupElementHandler(context)
         {
         }
 
@@ -2203,43 +2185,27 @@ namespace
             switch (element)
             {
               case ElementAssembly:
-                {
-                    AssemblyElementHandler* assembly_handler =
-                        static_cast<AssemblyElementHandler*>(handler);
-                    auto_release_ptr<Assembly> assembly =
-                        assembly_handler->get_assembly();
-                    if (assembly.get())
-                        m_scene->assemblies().insert(assembly);
-                }
+                insert(
+                    m_scene->assemblies(),
+                    static_cast<AssemblyElementHandler*>(handler)->get_assembly());
                 break;
 
               case ElementAssemblyInstance:
-                {
-                    AssemblyInstanceElementHandler* asm_inst_handler =
-                        static_cast<AssemblyInstanceElementHandler*>(handler);
-                    auto_release_ptr<AssemblyInstance> instance =
-                        asm_inst_handler->get_assembly_instance();
-                    if (instance.get())
-                        m_scene->assembly_instances().insert(instance);
-                }
+                insert(
+                    m_scene->assembly_instances(),
+                    static_cast<AssemblyInstanceElementHandler*>(handler)->get_assembly_instance());
                 break;
 
               case ElementColor:
-                {
-                    ColorElementHandler* color_handler =
-                        static_cast<ColorElementHandler*>(handler);
-                    auto_release_ptr<ColorEntity> color_entity =
-                        color_handler->get_color_entity();
-                    if (color_entity.get())
-                        m_scene->colors().insert(color_entity);
-                }
+                insert(
+                    m_scene->colors(),
+                    static_cast<ColorElementHandler*>(handler)->get_color_entity());
                 break;
 
               case ElementCamera:
                 {
-                    CameraElementHandler* camera_handler =
-                        static_cast<CameraElementHandler*>(handler);
-                    auto_release_ptr<Camera> camera = camera_handler->get_entity();
+                    auto_release_ptr<Camera> camera =
+                        static_cast<CameraElementHandler*>(handler)->get_entity();
                     if (camera.get())
                     {
                         if (m_scene->get_camera())
@@ -2254,9 +2220,8 @@ namespace
 
               case ElementEnvironment:
                 {
-                    EnvironmentElementHandler* env_handler =
-                        static_cast<EnvironmentElementHandler*>(handler);
-                    auto_release_ptr<Environment> environment = env_handler->get_environment();
+                    auto_release_ptr<Environment> environment =
+                        static_cast<EnvironmentElementHandler*>(handler)->get_environment();
                     if (environment.get())
                     {
                         if (m_scene->get_environment())
@@ -2270,44 +2235,27 @@ namespace
                 break;
 
               case ElementEnvironmentEDF:
-                {
-                    EnvironmentEDFElementHandler* env_edf_handler =
-                        static_cast<EnvironmentEDFElementHandler*>(handler);
-                    auto_release_ptr<EnvironmentEDF> env_edf = env_edf_handler->get_entity();
-                    if (env_edf.get())
-                        m_scene->environment_edfs().insert(env_edf);
-                }
+                insert(
+                    m_scene->environment_edfs(),
+                    static_cast<EnvironmentEDFElementHandler*>(handler)->get_entity());
                 break;
 
               case ElementEnvironmentShader:
-                {
-                    EnvironmentShaderElementHandler* env_shader_handler =
-                        static_cast<EnvironmentShaderElementHandler*>(handler);
-                    auto_release_ptr<EnvironmentShader> env_shader =
-                        env_shader_handler->get_entity();
-                    if (env_shader.get())
-                        m_scene->environment_shaders().insert(env_shader);
-                }
+                insert(
+                    m_scene->environment_shaders(),
+                    static_cast<EnvironmentShaderElementHandler*>(handler)->get_entity());
                 break;
 
               case ElementTexture:
-                {
-                    TextureElementHandler* texture_handler =
-                        static_cast<TextureElementHandler*>(handler);
-                    auto_release_ptr<Texture> texture = texture_handler->get_texture();
-                    if (texture.get())
-                        m_scene->textures().insert(texture);
-                }
+                insert(
+                    m_scene->textures(),
+                    static_cast<TextureElementHandler*>(handler)->get_texture());
                 break;
 
               case ElementTextureInstance:
-                {
-                    TextureInstanceElementHandler* texture_inst_handler =
-                        static_cast<TextureInstanceElementHandler*>(handler);
-                    auto_release_ptr<TextureInstance> instance = texture_inst_handler->get_texture_instance();
-                    if (instance.get())
-                        m_scene->texture_instances().insert(instance);
-                }
+                insert(
+                    m_scene->texture_instances(),
+                    static_cast<TextureInstanceElementHandler*>(handler)->get_texture_instance());
                 break;
 
               default:
@@ -2322,7 +2270,6 @@ namespace
         }
 
       private:
-        ParseContext&           m_context;
         auto_release_ptr<Scene> m_scene;
     };
 
