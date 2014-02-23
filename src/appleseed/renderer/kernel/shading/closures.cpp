@@ -162,21 +162,24 @@ void CompositeClosure::process_closure_tree(
             {
               case AshikhminShirleyID:
                 {
-                    const AshikhminShirleyClosureParams *p = 
+                    const AshikhminShirleyClosureParams* p = 
                         reinterpret_cast<const AshikhminShirleyClosureParams*>(c->data());
 
                     AshikminBRDFInputValues values;
-                    Color3f total_w = w * Color3f(p->kd.x, p->kd.y, p->kd.z);
-                    linear_rgb_reflectance_to_spectrum(total_w, values.m_rd);
-                    values.m_rd_alpha = Alpha(1.0);
+
+                    const Color3f wd = w * Color3f(p->kd.x, p->kd.y, p->kd.z);
+                    linear_rgb_reflectance_to_spectrum(wd, values.m_rd);
+                    values.m_rd_alpha = Alpha(1.0f);
                     values.m_rd_multiplier = 1.0;
-                    total_w = w * Color3f(p->ks.x, p->ks.y, p->ks.z);
-                    linear_rgb_reflectance_to_spectrum(total_w, values.m_rg);
-                    values.m_rg_alpha = Alpha(1.0);
+
+                    const Color3f wg = w * Color3f(p->ks.x, p->ks.y, p->ks.z);
+                    linear_rgb_reflectance_to_spectrum(wg, values.m_rg);
+                    values.m_rg_alpha = Alpha(1.0f);
                     values.m_rg_multiplier = 1.0;
                     values.m_fr_multiplier = 1.0;
                     values.m_nu = p->nu;
                     values.m_nv = p->nv;
+
                     add_closure<AshikminBRDFInputValues>(
                         static_cast<ClosureID>(c->id), 
                         w,
@@ -193,8 +196,9 @@ void CompositeClosure::process_closure_tree(
 
                     LambertianBRDFInputValues values;
                     linear_rgb_reflectance_to_spectrum(w, values.m_reflectance);
-                    values.m_reflectance_alpha = Alpha(1.0);
+                    values.m_reflectance_alpha = Alpha(1.0f);
                     values.m_reflectance_multiplier = 1.0;
+
                     add_closure<LambertianBRDFInputValues>(
                         static_cast<ClosureID>(c->id),
                         w,
@@ -208,16 +212,17 @@ void CompositeClosure::process_closure_tree(
               case MicrofacetGGXID:
               case MicrofacetWardID:
                 {
-                    const MicrofacetBRDFClosureParams *p = 
+                    const MicrofacetBRDFClosureParams* p = 
                         reinterpret_cast<const MicrofacetBRDFClosureParams*>(c->data());
 
                     MicrofacetBRDFInputValues values;
-                    linear_rgb_reflectance_to_spectrum(w,values.m_reflectance);
-                    values.m_reflectance_alpha = Alpha(1.0);
+                    linear_rgb_reflectance_to_spectrum(w, values.m_reflectance);
+                    values.m_reflectance_alpha = Alpha(1.0f);
                     values.m_reflectance_multiplier = 1.0;
                     values.m_glossiness = p->glossiness;
                     values.m_glossiness_multiplier = 1.0;
                     values.m_fr_multiplier = 1.0;
+
                     add_closure<MicrofacetBRDFInputValues>(
                         static_cast<ClosureID>(c->id), 
                         w,
@@ -228,13 +233,14 @@ void CompositeClosure::process_closure_tree(
 
               case ReflectionID:
                 {
-                    const ReflectionClosureParams *p = 
+                    const ReflectionClosureParams* p = 
                         reinterpret_cast<const ReflectionClosureParams*>(c->data());
 
                     SpecularBRDFInputValues values;
-                    linear_rgb_reflectance_to_spectrum(w,values.m_reflectance);
-                    values.m_reflectance_alpha = Alpha(1.0);
+                    linear_rgb_reflectance_to_spectrum(w, values.m_reflectance);
+                    values.m_reflectance_alpha = Alpha(1.0f);
                     values.m_reflectance_multiplier = 1.0;
+
                     add_closure<SpecularBRDFInputValues>(
                         static_cast<ClosureID>(c->id), 
                         w, 
@@ -245,15 +251,16 @@ void CompositeClosure::process_closure_tree(
 
               case RefractionID:
                 {
-                    const RefractionClosureParams *p = 
+                    const RefractionClosureParams* p = 
                         reinterpret_cast<const RefractionClosureParams*>(c->data());
 
                     SpecularBTDFInputValues values;
-                    linear_rgb_reflectance_to_spectrum(w,values.m_reflectance);
+                    linear_rgb_reflectance_to_spectrum(w, values.m_reflectance);
                     values.m_from_ior = p->from_ior;
                     values.m_to_ior = p->to_ior;
                     values.m_reflectance_alpha = Alpha(1.0);
                     values.m_reflectance_multiplier = 1.0;
+
                     add_closure<SpecularBTDFInputValues>(
                         static_cast<ClosureID>(c->id), 
                         w, 
@@ -264,13 +271,14 @@ void CompositeClosure::process_closure_tree(
 
               case TranslucentID:
                 {
-                    const TranslucentClosureParams *p = 
+                    const TranslucentClosureParams* p = 
                         reinterpret_cast<const TranslucentClosureParams*>(c->data());
 
                     DiffuseBTDFInputValues values;
-                    linear_rgb_reflectance_to_spectrum(w,values.m_transmittance);
+                    linear_rgb_reflectance_to_spectrum(w, values.m_transmittance);
                     values.m_transmittance_alpha = Alpha(1.0);
                     values.m_transmittance_multiplier = 1.0;
+
                     add_closure<DiffuseBTDFInputValues>(
                         static_cast<ClosureID>(c->id), 
                         w, 
@@ -306,7 +314,7 @@ void CompositeClosure::add_closure(
         weight,
         normal,
         false,
-        Vector3d(0, 0, 0),
+        Vector3d(0.0),
         params);
 }
 
@@ -336,7 +344,7 @@ void CompositeClosure::do_add_closure(
     const Vector3d&             tangent,
     const InputValues&          params)
 {
-    // make sure we have enough space;
+    // Make sure we have enough space.
     if (num_closures() >= MaxClosureEntries)
     {
         RENDERER_LOG_WARNING("maximum number of closures in OSL shadergroup exceeded; ignoring closure.");
@@ -362,8 +370,10 @@ void CompositeClosure::do_add_closure(
         m_tangents[m_num_closures] = normalize(tangent);
 
     m_closure_types[m_num_closures] = closure_type;
-    new (m_pool + m_num_bytes) InputValues(params);
+
     m_input_values[m_num_closures] = m_pool + m_num_bytes;
+    new (m_input_values[m_num_closures]) InputValues(params);
+
     m_num_bytes += sizeof(InputValues);
     ++m_num_closures;
 }

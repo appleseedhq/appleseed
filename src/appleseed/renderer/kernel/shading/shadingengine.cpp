@@ -101,7 +101,7 @@ void ShadingEngine::shade_hit_point(
     else
     {
         // No alpha map: solid sample.
-        shading_result.m_main.m_alpha = Alpha(1.0);
+        shading_result.m_main.m_alpha = Alpha(1.0f);
     }
 
     if (shading_result.m_main.m_alpha[0] > 0.0f)
