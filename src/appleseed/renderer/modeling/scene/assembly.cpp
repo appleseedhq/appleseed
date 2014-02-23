@@ -327,6 +327,9 @@ void Assembly::on_frame_end(const Project& project)
     invoke_on_frame_end(project, assemblies());
     invoke_on_frame_end(project, *this, lights());
     invoke_on_frame_end(project, *this, materials());
+#ifdef WITH_OSL
+    invoke_on_frame_end(project, *this, shader_groups());
+#endif
     invoke_on_frame_end(project, *this, edfs());
     invoke_on_frame_end(project, *this, bsdfs());
     invoke_on_frame_end(project, *this, surface_shaders());

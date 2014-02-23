@@ -206,7 +206,10 @@ bool Material::on_frame_begin(
         m_shader_group = get_uncached_osl_surface();
         
         if (m_shader_group)
+        {
             m_bsdf = m_osl_bsdf = new OSLBSDF();
+            m_osl_bsdf->on_frame_begin(project, assembly, abort_switch);
+        }
     }
 #endif
     else
@@ -230,8 +233,13 @@ void Material::on_frame_end(
     m_normal_modifier = 0;
     
 #ifdef WITH_OSL
-    delete m_osl_bsdf;
-    m_osl_bsdf = 0;
+    if (m_osl_bsdf)
+    {
+        m_osl_bsdf->on_frame_end(project, assembly);
+        delete m_osl_bsdf;
+        m_osl_bsdf = 0;
+    }
+
     m_shader_group = 0;
 #endif
 }

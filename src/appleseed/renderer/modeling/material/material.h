@@ -148,7 +148,7 @@ class DLLSYMBOL Material
     const Source*           m_alpha_map;
     const INormalModifier*  m_normal_modifier;
 #ifdef WITH_OSL
-    const OSLBSDF*          m_osl_bsdf;
+    OSLBSDF*                m_osl_bsdf;
     const ShaderGroup*      m_shader_group;
 #endif
 

@@ -125,7 +125,7 @@ const char* OSLBSDF::get_model() const
 bool OSLBSDF::on_frame_begin(
     const Project&          project,
     const Assembly&         assembly,
-    AbortSwitch&            abort_switch)
+    AbortSwitch*            abort_switch)
 {
     if (!BSDF::on_frame_begin(project, assembly))
         return false;
