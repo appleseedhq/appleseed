@@ -164,8 +164,8 @@ class DLLSYMBOL Compiler
 #if defined _MSC_VER
     #define UNREACHABLE __assume(0)
 
-// gcc.
-#elif defined __GNUC__
+// gcc: supported since gcc 4.5.
+#elif __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 5)
     #define UNREACHABLE __builtin_unreachable()
 
 // Other compilers: assert in debug, ignore in release.
