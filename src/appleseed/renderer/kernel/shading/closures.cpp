@@ -114,10 +114,13 @@ CompositeClosure::CompositeClosure(
         m_weights[i] /= total_weight;
 
     // Build CDF.
-    m_cdf.reserve(num_closures());
-    for (size_t i = 0, e = num_closures(); i != e; ++i)
-        m_cdf.insert(i, closure_weight(i));
-    m_cdf.prepare();
+    if (num_closures() != 0)
+    {
+        m_cdf.reserve(num_closures());
+        for (size_t i = 0, e = num_closures(); i != e; ++i)
+            m_cdf.insert(i, closure_weight(i));
+        m_cdf.prepare();
+    }
 }
 
 size_t CompositeClosure::choose_closure(const double w) const
@@ -346,7 +349,8 @@ void CompositeClosure::do_add_closure(
     const double w = luminance(weight);
     if (w <= 0.0)
     {
-        RENDERER_LOG_WARNING("closure with negative or zero weight found; ignoring closure.");
+        // This can generate millions of warnings. It's better to disable it.
+        //RENDERER_LOG_WARNING("closure with negative or zero weight found; ignoring closure.");
         return;
     }
 
