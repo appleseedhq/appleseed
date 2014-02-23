@@ -122,8 +122,14 @@ IntersectionFilter::IntersectionFilter(
     // Create one alpha mask per material.
     for (size_t i = 0; i < materials.size(); ++i)
     {
+        // Retrieve the material.
         const Material* material = materials[i];
         if (material == 0)
+            continue;
+
+        // Intersection filters would prevent shading fully transparent shading points,
+        // so don't create one if shading fully transparent shading points is enabled.
+        if (material->shade_alpha_cutouts())
             continue;
 
         // Use the uncached version of get_alpha_map() since at this point

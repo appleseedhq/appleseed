@@ -91,6 +91,7 @@ Material::Material(
     const ParamArray&   params)
   : ConnectableEntity(g_class_uid, params)
   , impl(new Impl())
+  , m_shade_alpha_cutouts(false)
   , m_surface_shader(0)
   , m_bsdf(0)
   , m_edf(0)
@@ -180,6 +181,8 @@ bool Material::on_frame_begin(
     AbortSwitch*        abort_switch)
 {
     const EntityDefMessageContext context("material", this);
+
+    m_shade_alpha_cutouts = m_params.get_optional<bool>("shade_alpha_cutouts", false);
 
     m_surface_shader = get_uncached_surface_shader();
     

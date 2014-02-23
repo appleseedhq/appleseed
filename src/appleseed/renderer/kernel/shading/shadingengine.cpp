@@ -104,7 +104,7 @@ void ShadingEngine::shade_hit_point(
         shading_result.m_main.m_alpha = Alpha(1.0f);
     }
 
-    if (shading_result.m_main.m_alpha[0] > 0.0f)
+    if (shading_result.m_main.m_alpha[0] > 0.0f || material->shade_alpha_cutouts())
     {
         // Use the diagnostic surface shader if there is one.
         const SurfaceShader* surface_shader = m_diagnostic_surface_shader.get();

@@ -102,6 +102,9 @@ class DLLSYMBOL Material
         const Project&              project,
         const Assembly&             assembly);
 
+    // Return whether surface shaders should be invoked for fully transparent shading points.
+    bool shade_alpha_cutouts() const;
+
     //
     // The get_*() methods below retrieve entities that were cached by on_frame_begin().
     // To retrieve the entities before on_frame_begin() or after on_frame_end() is called,
@@ -142,6 +145,7 @@ class DLLSYMBOL Material
     struct Impl;
     Impl* impl;
 
+    bool                    m_shade_alpha_cutouts;
     const SurfaceShader*    m_surface_shader;
     const BSDF*             m_bsdf;
     const EDF*              m_edf;
@@ -168,6 +172,11 @@ class DLLSYMBOL Material
 //
 // Material class implementation.
 //
+
+inline bool Material::shade_alpha_cutouts() const
+{
+    return m_shade_alpha_cutouts;
+}
 
 inline const SurfaceShader* Material::get_surface_shader() const
 {
