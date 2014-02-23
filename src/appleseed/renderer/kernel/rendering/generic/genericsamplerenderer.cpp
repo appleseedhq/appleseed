@@ -243,20 +243,17 @@ namespace
             if (delta_hit_count + delta_miss_count == 0)
             {
                 // In black: no access to the texture cache.
-                shading_result.set_to_linear_rgb(Color3f(0.0f, 0.0f, 0.0f));
+                shading_result.set_main_to_linear_rgba(Color4f(0.0f, 0.0f, 0.0f, 1.0f));
+            }
+            else if (delta_hit_count > delta_miss_count)
+            {
+                // In green: a majority of cache hits.
+                shading_result.set_main_to_linear_rgba(Color4f(0.0f, 1.0f, 0.0f, 1.0f));
             }
             else
             {
-                if (delta_hit_count > delta_miss_count)
-                {
-                    // In green: a majority of cache hits.
-                    shading_result.set_to_linear_rgb(Color3f(0.0f, 1.0f, 0.0f));
-                }
-                else
-                {
-                    // In red: a majority of cache misses.
-                    shading_result.set_to_linear_rgb(Color3f(1.0f, 0.0f, 0.0f));
-                }
+                // In red: a majority of cache misses.
+                shading_result.set_main_to_linear_rgba(Color4f(1.0f, 0.0f, 0.0f, 1.0f));
             }
 
 #endif

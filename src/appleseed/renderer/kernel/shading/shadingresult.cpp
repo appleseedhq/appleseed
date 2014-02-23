@@ -98,15 +98,8 @@ bool ShadingResult::is_valid_linear_rgb() const
     return true;
 }
 
-void ShadingResult::set_to_linear_rgba(const Color4f& linear_rgba)
+void ShadingResult::set_aovs_to_transparent_black_linear_rgba()
 {
-    m_color_space = ColorSpaceLinearRGB;
-
-    m_main.m_color[0] = linear_rgba[0];
-    m_main.m_color[1] = linear_rgba[1];
-    m_main.m_color[2] = linear_rgba[2];
-    m_main.m_alpha.set(linear_rgba[3]);
-
     const size_t aov_count = m_aovs.size();
 
     for (size_t i = 0; i < aov_count; ++i)

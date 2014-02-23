@@ -64,20 +64,20 @@ class ShadingResult
     // false if the color, alpha or any AOV contains NaN or negative values.
     bool is_valid_linear_rgb() const;
 
-    // Set the main color and all AOVs to transparent black in linear RGB.
-    void set_to_transparent_black_linear_rgb();
+    // Set the main color to a given linear RGB value. Leaves the alpha channel intact.
+    void set_main_to_linear_rgb(const foundation::Color3f& linear_rgb);
 
-    // Set the main color to solid pink in linear RGB (used for debugging).
-    // All AOVs are set to transparent black.
-    void set_to_solid_pink_linear_rgb();
+    // Set the main color and alpha channel to a given linear RGBA value.
+    void set_main_to_linear_rgba(const foundation::Color4f& linear_rgba);
 
-    // Set the main color to a given fully opaque linear RGB value.
-    // All AOVs are set to transparent black.
-    void set_to_linear_rgb(const foundation::Color3f& linear_rgb);
+    // Set the main color and alpha channel to transparent black in linear RGB.
+    void set_main_to_transparent_black_linear_rgba();
 
-    // Set the main color to a given linear RGBA value.
-    // All AOVs are set to transparent black.
-    void set_to_linear_rgba(const foundation::Color4f& linear_rgba);
+    // Set the main color and alpha channel to opaque pink in linear RGB (useful for debugging).
+    void set_main_to_opaque_pink_linear_rgba();
+
+    // Set all AOV colors and alpha channels to transparent black in linear RGB.
+    void set_aovs_to_transparent_black_linear_rgba();
 
     // Copy the main output to the AOV of a given entity.
     void set_entity_aov(const Entity& entity);
@@ -87,10 +87,10 @@ class ShadingResult
         const Entity&           entity,
         const ShadingFragment&  fragment);
 
-    // Transform the shading result to the linear RGB color space.
+    // Transform main and AOV colors to the linear RGB color space.
     void transform_to_linear_rgb(const foundation::LightingConditions& lighting);
 
-    // Transform the shading result to the spectral color space.
+    // Transform main and AOV colors to the spectral color space.
     void transform_to_spectrum(const foundation::LightingConditions& lighting);
 
     // Composite this shading result over 'background'.
@@ -111,19 +111,28 @@ inline ShadingResult::ShadingResult(const size_t aov_count)
 {
 }
 
-inline void ShadingResult::set_to_transparent_black_linear_rgb()
+inline void ShadingResult::set_main_to_linear_rgb(const foundation::Color3f& linear_rgb)
 {
-    set_to_linear_rgba(foundation::Color4f(0.0f));
+    m_color_space = foundation::ColorSpaceLinearRGB;
+    m_main.m_color[0] = linear_rgb[0];
+    m_main.m_color[1] = linear_rgb[1];
+    m_main.m_color[2] = linear_rgb[2];
 }
 
-inline void ShadingResult::set_to_solid_pink_linear_rgb()
+inline void ShadingResult::set_main_to_linear_rgba(const foundation::Color4f& linear_rgba)
 {
-    set_to_linear_rgba(foundation::Color4f(1.0f, 0.0f, 1.0f, 1.0f));
+    set_main_to_linear_rgb(linear_rgba.rgb());
+    m_main.m_alpha.set(linear_rgba[3]);
 }
 
-inline void ShadingResult::set_to_linear_rgb(const foundation::Color3f& linear_rgb)
+inline void ShadingResult::set_main_to_transparent_black_linear_rgba()
 {
-    set_to_linear_rgba(foundation::Color4f(linear_rgb[0], linear_rgb[1], linear_rgb[2], 1.0f));
+    set_main_to_linear_rgba(foundation::Color4f(0.0f));
+}
+
+inline void ShadingResult::set_main_to_opaque_pink_linear_rgba()
+{
+    set_main_to_linear_rgba(foundation::Color4f(1.0f, 0.0f, 1.0f, 1.0f));
 }
 
 inline void ShadingResult::set_entity_aov(const Entity& entity)

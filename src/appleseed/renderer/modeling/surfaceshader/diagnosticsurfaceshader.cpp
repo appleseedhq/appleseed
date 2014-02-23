@@ -198,53 +198,53 @@ void DiagnosticSurfaceShader::evaluate(
     switch (m_shading_mode)
     {
       case Coverage:
-        shading_result.set_to_linear_rgb(Color3f(1.0f));
+        shading_result.set_main_to_linear_rgb(Color3f(1.0f));
         break;
 
       case Barycentric:
-        shading_result.set_to_linear_rgb(
+        shading_result.set_main_to_linear_rgb(
             vector2_to_color(shading_point.get_bary()));
         break;
 
       case UV:
-        shading_result.set_to_linear_rgb(
+        shading_result.set_main_to_linear_rgb(
             vector2_to_color(shading_point.get_uv(0)));
         break;
 
       case Tangent:
-        shading_result.set_to_linear_rgb(
+        shading_result.set_main_to_linear_rgb(
             vector3_to_color(normalize(shading_point.get_dpdu(0))));
         break;
 
       case Bitangent:
-        shading_result.set_to_linear_rgb(
+        shading_result.set_main_to_linear_rgb(
             vector3_to_color(normalize(shading_point.get_dpdv(0))));
         break;
 
       case GeometricNormal:
-        shading_result.set_to_linear_rgb(
+        shading_result.set_main_to_linear_rgb(
             vector3_to_color(shading_point.get_geometric_normal()));
         break;
 
       case ShadingNormal:
-        shading_result.set_to_linear_rgb(
+        shading_result.set_main_to_linear_rgb(
             vector3_to_color(shading_point.get_shading_normal()));
         break;
 
       case OriginalShadingNormal:
-        shading_result.set_to_linear_rgb(
+        shading_result.set_main_to_linear_rgb(
             vector3_to_color(shading_point.get_original_shading_normal()));
         break;
 
       case Sides:
-        shading_result.set_to_linear_rgb(
+        shading_result.set_main_to_linear_rgb(
             shading_point.get_side() == ObjectInstance::FrontSide
                 ? Color3f(0.0f, 0.0f, 1.0f)
                 : Color3f(1.0f, 0.0f, 0.0f));
         break;
 
       case Depth:
-        shading_result.set_to_linear_rgb(
+        shading_result.set_main_to_linear_rgb(
             Color3f(static_cast<float>(shading_point.get_distance())));
         break;
 
@@ -254,7 +254,7 @@ void DiagnosticSurfaceShader::evaluate(
             const double SquareWireThickness = square(0.0005);
 
             // Initialize the shading result to the background color.
-            shading_result.set_to_linear_rgba(Color4f(0.0f, 0.0f, 0.8f, 0.5f));
+            shading_result.set_main_to_linear_rgba(Color4f(0.0f, 0.0f, 0.8f, 0.5f));
 
             // Retrieve the time, the scene and the camera.
             const double time = shading_point.get_time();
@@ -288,7 +288,7 @@ void DiagnosticSurfaceShader::evaluate(
                 // Shade with the wire's color if the hit point is close enough to the edge.
                 if (d < SquareWireThickness)
                 {
-                    shading_result.set_to_linear_rgba(Color4f(1.0f));
+                    shading_result.set_main_to_linear_rgba(Color4f(1.0f));
                     break;
                 }
             }
@@ -301,7 +301,7 @@ void DiagnosticSurfaceShader::evaluate(
             const double SquareWireThickness = square(0.0015);
 
             // Initialize the shading result to the background color.
-            shading_result.set_to_linear_rgba(Color4f(0.0f, 0.0f, 0.8f, 0.5f));
+            shading_result.set_main_to_linear_rgba(Color4f(0.0f, 0.0f, 0.8f, 0.5f));
 
             // Retrieve the world space intersection point.
             const Vector3d& point = shading_point.get_point();
@@ -320,7 +320,7 @@ void DiagnosticSurfaceShader::evaluate(
                 // Shade with the wire's color if the hit point is close enough to the edge.
                 if (d < SquareWireThickness)
                 {
-                    shading_result.set_to_linear_rgba(Color4f(1.0f));
+                    shading_result.set_main_to_linear_rgba(Color4f(1.0f));
                     break;
                 }
             }
@@ -341,17 +341,17 @@ void DiagnosticSurfaceShader::evaluate(
 
             // Return a gray scale value proportional to the accessibility.
             const float accessibility = static_cast<float>(1.0 - occlusion);
-            shading_result.set_to_linear_rgb(Color3f(accessibility));
+            shading_result.set_main_to_linear_rgb(Color3f(accessibility));
         }
         break;
 
       case AssemblyInstances:
-        shading_result.set_to_linear_rgb(
+        shading_result.set_main_to_linear_rgb(
             integer_to_color(shading_point.get_assembly_instance().get_uid()));
         break;
 
       case ObjectInstances:
-        shading_result.set_to_linear_rgb(
+        shading_result.set_main_to_linear_rgb(
             integer_to_color(shading_point.get_object_instance().get_uid()));
         break;
 
@@ -361,7 +361,7 @@ void DiagnosticSurfaceShader::evaluate(
                 mix_uint32(
                     static_cast<uint32>(shading_point.get_object_instance().get_uid()),
                     static_cast<uint32>(shading_point.get_region_index()));
-            shading_result.set_to_linear_rgb(integer_to_color(h));
+            shading_result.set_main_to_linear_rgb(integer_to_color(h));
         }
         break;
 
@@ -372,7 +372,7 @@ void DiagnosticSurfaceShader::evaluate(
                     static_cast<uint32>(shading_point.get_object_instance().get_uid()),
                     static_cast<uint32>(shading_point.get_region_index()),
                     static_cast<uint32>(shading_point.get_triangle_index()));
-            shading_result.set_to_linear_rgb(integer_to_color(h));
+            shading_result.set_main_to_linear_rgb(integer_to_color(h));
         }
         break;
 
@@ -380,14 +380,14 @@ void DiagnosticSurfaceShader::evaluate(
         {
             const Material* material = shading_point.get_material();
             if (material)
-                shading_result.set_to_linear_rgb(integer_to_color(material->get_uid()));
-            else shading_result.set_to_solid_pink_linear_rgb();
+                shading_result.set_main_to_linear_rgb(integer_to_color(material->get_uid()));
+            else shading_result.set_main_to_opaque_pink_linear_rgba();
         }
         break;
 
       default:
         assert(false);
-        shading_result.set_to_transparent_black_linear_rgb();
+        shading_result.set_main_to_transparent_black_linear_rgba();
         break;
     }
 }

@@ -35,6 +35,7 @@
 #include "renderer/kernel/shading/shadingresult.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/color.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/statistics.h"
 
@@ -78,7 +79,8 @@ namespace
                 abs(0.5 - image_point.x) < M / 2 ||
                 abs(0.5 - image_point.y) < M / 2 ||
                 abs(1.0 - M / 2 - d) < M ? 0.0f : 1.0f;
-            shading_result.set_to_linear_rgb(Color3f(c));
+            shading_result.set_main_to_linear_rgba(Color4f(c, c, c, 1.0f));
+            shading_result.set_aovs_to_transparent_black_linear_rgba();
         }
 
         virtual StatisticsVector get_statistics() const OVERRIDE

@@ -114,7 +114,8 @@ void ShadingEngine::shade_hit_point(
             if (material == 0)
             {
                 // The intersected surface has no material: return solid pink.
-                shading_result.set_to_solid_pink_linear_rgb();
+                shading_result.set_main_to_opaque_pink_linear_rgba();
+                shading_result.set_aovs_to_transparent_black_linear_rgba();
                 return;
             }
 
@@ -124,7 +125,8 @@ void ShadingEngine::shade_hit_point(
             if (surface_shader == 0)
             {
                 // The intersected surface has no surface shader: return solid pink.
-                shading_result.set_to_solid_pink_linear_rgb();
+                shading_result.set_main_to_opaque_pink_linear_rgba();
+                shading_result.set_aovs_to_transparent_black_linear_rgba();
                 return;
             }
         }
@@ -137,22 +139,21 @@ void ShadingEngine::shade_hit_point(
             shading_point,
             shading_result);
 
-        // Set the surface shader AOV.
+        // Set AOVs.
+        shading_result.set_entity_aov(shading_point.get_assembly());
+        shading_result.set_entity_aov(shading_point.get_assembly_instance());
+        shading_result.set_entity_aov(shading_point.get_object());
+        shading_result.set_entity_aov(shading_point.get_object_instance());
+        if (material)
+            shading_result.set_entity_aov(*material);
         shading_result.set_entity_aov(*surface_shader);
     }
     else
     {
         // Alpha is zero: shade as transparent black.
-        shading_result.set_to_transparent_black_linear_rgb();
+        shading_result.set_main_to_transparent_black_linear_rgba();
+        shading_result.set_aovs_to_transparent_black_linear_rgba();
     }
-
-    // Set AOVs.
-    shading_result.set_entity_aov(shading_point.get_assembly());
-    shading_result.set_entity_aov(shading_point.get_assembly_instance());
-    shading_result.set_entity_aov(shading_point.get_object());
-    shading_result.set_entity_aov(shading_point.get_object_instance());
-    if (material)
-        shading_result.set_entity_aov(*material);
 }
 
 void ShadingEngine::shade_environment(
@@ -181,8 +182,9 @@ void ShadingEngine::shade_environment(
     }
     else
     {
-        // No environment shader: return transparent black.
-        shading_result.set_to_transparent_black_linear_rgb();
+        // No environment shader: shade as transparent black.
+        shading_result.set_main_to_transparent_black_linear_rgba();
+        shading_result.set_aovs_to_transparent_black_linear_rgba();
     }
 }
 
