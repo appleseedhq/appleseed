@@ -56,6 +56,12 @@ def safe_mkdir(dir):
     if not os.path.exists(dir):
         os.mkdir(dir)
 
+def safe_remove(filepath):
+    try:
+        os.remove(filepath)
+    except OSError:
+        pass
+
 def walk(directory, recursive):
     if recursive:
         for dirpath, dirnames, filenames in os.walk(directory):
@@ -74,7 +80,11 @@ def format_duration(duration):
     return "{0:02}:{1:02}:{2:09.6f}".format(hours, minutes, seconds)
 
 def read_png_file(filepath):
-    return png.Reader(filename=filepath).asRGBA8()[2]
+    data = png.Reader(filename=filepath).asRGBA8()
+    width = data[0]
+    height = data[1]
+    rows = data[2]
+    return width, height, rows
 
 
 #--------------------------------------------------------------------------------------------------
@@ -115,12 +125,14 @@ class ReportWriter:
         self.args = args
         self.file = open(filepath, 'w')
         self.__write_header(args)
+        self.failures = 0
 
     def close(self):
         self.__write_footer()
         self.file.close()
 
-    def report_failure(self, scene, reference_filepath, output_filepath, max_diff=None, diff_comps=None, total_comps=None):
+    def report_failure(self, scene, reference_filepath, output_filepath, log_filepath, error_message, max_diff=None, num_diff=None, num_comps=None):
+        self.failures += 1
         self.file.write("""            <div class="result">
                 <table>
                     <tr>
@@ -138,16 +150,27 @@ class ReportWriter:
                             </a>
                         </td>
                     </tr>
-""".format(scene,
-           urllib.quote(reference_filepath),
-           urllib.quote(output_filepath)))
-
-        if max_diff is not None and diff_comps is not None:
-            diff_percents = 100.0 * diff_comps / total_comps
-            self.file.write("""                    <tr>
+                    <tr>
                         <td colspan="2">
                             <table class="details">
                                 <tr>
+                                    <td>Reason</td>
+                                    <td>{3}</td>
+                                </tr>
+                                <tr>
+                                    <td>Log File</td>
+                                    <td><a href="{4}">{5}</a></td>
+                                </tr>
+""".format(scene,
+           urllib.quote(reference_filepath),
+           urllib.quote(output_filepath),
+           error_message,
+           urllib.quote(log_filepath),
+           os.path.basename(log_filepath)))
+
+        if max_diff is not None and num_diff is not None:
+            diff_percents = 100.0 * num_diff / num_comps
+            self.file.write("""                                <tr>
                                     <td>Maximum Absolute Component Difference</td>
                                     <td>{0}</td>
                                 </tr>
@@ -155,10 +178,12 @@ class ReportWriter:
                                     <td>Number of Differing Components</td>
                                     <td>{1} ({2:.2f} %)</td>
                                 </tr>
-                            </table>
+""".format(max_diff, num_diff, diff_percents))
+
+        self.file.write("""                            </table>
                         </td>
                     </tr>
-""".format(max_diff, diff_comps, diff_percents))
+""")
 
         self.file.write("""                </table>
             </div>
@@ -239,7 +264,7 @@ class ReportWriter:
             </table>
         </div>
         <div>
-            <h1>Results</h1>
+            <h1>Failures</h1>
 """.format(datetime.datetime.now(),
            args.tool_path,
            VALUE_THRESHOLD,
@@ -247,6 +272,8 @@ class ReportWriter:
         self.file.flush()
         
     def __write_footer(self):
+        if self.failures == 0:
+            self.file.write("            <p>None.</p>")
         self.file.write("""        </div>
     </body>
 </html>
@@ -273,32 +300,22 @@ def render_project_file(args, project_filepath, output_filepath, log_filepath):
 
 
 #--------------------------------------------------------------------------------------------------
-# Compare two PNG images.
-# Returns a triplet max_diff, diff_comps, total_comps where:
+# Compare two images.
+# Returns a pair num_diff, max_diff where:
+#   num_diff is the number of components whose absolute difference is larger than value_threshold
 #   max_diff is the maximum absolute difference between two components
-#   diff_comps is the number of components whose absolute difference is larger than value_threshold
-#   total_comps is the total number of components in the image
 #--------------------------------------------------------------------------------------------------
 
-def compare_png_images(filepath1, filepath2, value_threshold):
+def compare_images(rows1, rows2, value_threshold):
+    num_diff = 0
     max_diff = 0
-    diff_comps = 0
-    total_comps = 0
 
-    image1 = read_png_file(filepath1)
-    image2 = read_png_file(filepath2)
+    for row1, row2 in zip(rows1, rows2):
+        diff = [ abs(val1 - val2) for val1, val2 in zip(row1, row2) ]
+        num_diff += sum(d > value_threshold for d in diff)
+        max_diff = max(max_diff, max(diff))
 
-    for row1, row2 in zip(image1, image2):
-        for val1, val2 in zip(row1, row2):
-            diff = abs(val1 - val2)
-            max_diff = max(max_diff, diff)
-
-            if diff > value_threshold:
-                diff_comps += 1
-
-            total_comps += 1
-
-    return max_diff, diff_comps, total_comps
+    return num_diff, max_diff
 
 
 #--------------------------------------------------------------------------------------------------
@@ -325,14 +342,20 @@ def render_test_scene(args, logger, report_writer, project_directory, project_fi
 
     logger.start_rendering(project_filepath)
 
-    rendering_success, rendering_time = render_project_file(args,
-                                                            project_filepath,
-                                                            output_filepath,
-                                                            log_filepath)
+    if not args.skip_rendering:
+        safe_remove(output_filepath)
+        safe_remove(log_filepath)
+        rendering_success, rendering_time = render_project_file(args,
+                                                                project_filepath,
+                                                                output_filepath,
+                                                                log_filepath)
+    else:
+        rendering_success = True
+        rendering_time = datetime.timedelta(0)
 
     if not rendering_success:
         logger.fail_rendering(rendering_time, "FAILED")
-        report_writer.report_failure(project_filepath, ref_filepath, output_filepath)
+        report_writer.report_failure(project_filepath, ref_filepath, output_filepath, log_filepath, "Rendering failed")
         return False
 
     if not os.path.exists(output_filepath):
@@ -341,22 +364,35 @@ def render_test_scene(args, logger, report_writer, project_directory, project_fi
             return True
         else:
             logger.fail_rendering(rendering_time, "MISSING OUTPUT")
-            report_writer.report_failure(project_filepath, ref_filepath, output_filepath)
+            report_writer.report_failure(project_filepath, ref_filepath, output_filepath, log_filepath, "Output image is missing")
             return False
     else:
         if not os.path.exists(ref_filepath):
             logger.fail_rendering(rendering_time, "MISSING REFERENCE")
-            report_writer.report_failure(project_filepath, ref_filepath, output_filepath)
+            report_writer.report_failure(project_filepath, ref_filepath, output_filepath, log_filepath, "Reference image is missing")
             return False
 
-    max_diff, diff_comps, total_comps = compare_png_images(output_filepath, ref_filepath, VALUE_THRESHOLD)
+    out_width, out_height, out_rows = read_png_file(output_filepath)
+    ref_width, ref_height, ref_rows = read_png_file(ref_filepath)
 
-    if diff_comps > MAX_DIFFERING_COMPONENTS:
-        logger.fail_rendering(rendering_time, "OUTPUT/REFERENCE MISMATCH")
-        report_writer.report_failure(project_filepath, ref_filepath, output_filepath, max_diff, diff_comps, total_comps)
+    if out_width != ref_width or out_height != ref_height:
+        logger.fail_rendering(rendering_time, "OUTPUT/REFERENCE SIZE MISMATCH")
+        report_writer.report_failure(project_filepath, ref_filepath, output_filepath, log_filepath,
+                                     "Output and reference images have different sizes")
+        return False
+
+    num_diff, max_diff = compare_images(out_rows, ref_rows, VALUE_THRESHOLD)
+
+    if num_diff > MAX_DIFFERING_COMPONENTS:
+        num_comps = ref_width * ref_height * 4
+        logger.fail_rendering(rendering_time, "OUTPUT/REFERENCE DIFFERENCES")
+        report_writer.report_failure(project_filepath, ref_filepath, output_filepath, log_filepath,
+                                     "Output and reference images are significantly different",
+                                     max_diff, num_diff, num_comps)
         return False
 
     logger.pass_rendering(rendering_time)
+
     return True
 
 
@@ -407,6 +443,8 @@ def main():
                         help="set the path to the appleseed.cli tool")
     parser.add_argument("-r", "--recursive", action='store_true', dest="recursive",
                         help="scan the specified directory and all its subdirectories")
+    parser.add_argument("-s", "--skip-rendering", action='store_true', dest="skip_rendering",
+                        help="skip actual rendering, only generate the HTML report")
     parser.add_argument("-a", "--verbose", action='store_true', dest="verbose",
                         help="show skipped and passing test scenes")
     parser.add_argument("-p", "--parameter", dest="args", metavar="ARG", nargs="*",
