@@ -32,9 +32,13 @@
 
 // Qt headers.
 #include <QAction>
+#include <QBrush>
 #include <QContextMenuEvent>
 #include <QKeySequence>
 #include <QMenu>
+#include <QScrollBar>
+#include <QTextCharFormat>
+#include <QTextCursor>
 
 namespace appleseed {
 namespace studio {
@@ -54,8 +58,33 @@ LogWidget::LogWidget(QWidget* parent)
 
 void LogWidget::slot_append_item(const QColor& color, const QString& text)
 {
-    setTextColor(color);
-    append(text);
+    const QTextCursor old_cursor = textCursor();
+    const int old_scrollbar_value = verticalScrollBar()->value();
+    const bool is_scrolled_down = old_scrollbar_value == verticalScrollBar()->maximum();
+
+    // Move the cursor to the end of the document.
+    moveCursor(QTextCursor::End);
+
+    QTextCharFormat format;
+    format.setForeground(QBrush(color));
+
+    // Insert the text at the position of the cursor (which is the end of the document).
+    QTextCursor cursor(textCursor());
+    cursor.setCharFormat(format);
+    cursor.insertText(text);
+
+    if (old_cursor.hasSelection() || !is_scrolled_down)
+    {
+        // The user has selected text or scrolled away from the bottom: maintain position.
+        setTextCursor(old_cursor);
+        verticalScrollBar()->setValue(old_scrollbar_value);
+    }
+    else
+    {
+        // The user hasn't selected any text and the scrollbar is at the bottom: scroll to the bottom.
+        moveCursor(QTextCursor::End);
+        verticalScrollBar()->setValue(verticalScrollBar()->maximum());
+    }
 }
 
 void LogWidget::slot_clear_all()

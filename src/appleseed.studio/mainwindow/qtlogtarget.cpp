@@ -32,13 +32,13 @@
 
 // appleseed.studio headers.
 #include "mainwindow/logwidget.h"
+#include "utility/interop.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
-#include <string>
 #include <vector>
 
 using namespace foundation;
@@ -94,13 +94,14 @@ void QtLogTarget::write(
     const char*                 message)
 {
     const QColor color = get_text_color_for_category(category);
+    const QString header_string(header);
 
-    vector<string> lines;
+    vector<QString> lines;
     split(message, "\n", lines);
 
-    for (const_each<vector<string> > i = lines; i; ++i)
+    for (const_each<vector<QString> > i = lines; i; ++i)
     {
-        const QString line = QString(header) + QString::fromStdString(*i);
+        const QString line = header_string + *i + "\n";
         emit signal_append_item(color, line);
     }
 }
