@@ -246,14 +246,6 @@ Vector3d ShadingPoint::get_biased_point(const Vector3d& direction) const
 
 #ifdef WITH_OSL
 
-namespace
-{
-    inline OSL::Vec3 to_osl_vec3(const Vector3d& v)
-    {
-        return OSL::Vec3(v.x, v.y, v.z);
-    }
-}
-
 OSL::ShaderGlobals& ShadingPoint::get_osl_shader_globals() const
 {
     assert(hit());
@@ -262,17 +254,17 @@ OSL::ShaderGlobals& ShadingPoint::get_osl_shader_globals() const
     {
         const ShadingRay& ray(get_ray());
 
-        m_shader_globals.P = to_osl_vec3(get_point());
+        m_shader_globals.P = Vector3f(get_point());
         m_shader_globals.dPdx = OSL::Vec3(0, 0, 0);
         m_shader_globals.dPdy = OSL::Vec3(0, 0, 0);
         m_shader_globals.dPdz = OSL::Vec3(0, 0, 0);
 
-        m_shader_globals.I = -to_osl_vec3(ray.m_dir);
+        m_shader_globals.I = -Vector3f(ray.m_dir);
         m_shader_globals.dIdx = OSL::Vec3(0, 0, 0);
         m_shader_globals.dIdy = OSL::Vec3(0, 0, 0);
 
-        m_shader_globals.N = to_osl_vec3(get_shading_normal());
-        m_shader_globals.Ng = to_osl_vec3(get_geometric_normal());
+        m_shader_globals.N = Vector3f(get_shading_normal());
+        m_shader_globals.Ng = Vector3f(get_geometric_normal());
 
         m_shader_globals.u = get_uv(0).x;
         m_shader_globals.dudx = 0;
@@ -282,8 +274,8 @@ OSL::ShaderGlobals& ShadingPoint::get_osl_shader_globals() const
         m_shader_globals.dvdx = 0;
         m_shader_globals.dvdy = 0;
 
-        m_shader_globals.dPdu = to_osl_vec3(get_dpdu(0));
-        m_shader_globals.dPdv = to_osl_vec3(get_dpdv(0));
+        m_shader_globals.dPdu = Vector3f(get_dpdu(0));
+        m_shader_globals.dPdv = Vector3f(get_dpdv(0));
 
         m_shader_globals.time = ray.m_time;
         m_shader_globals.dtime = 0;
