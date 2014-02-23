@@ -92,10 +92,16 @@
                 <parameter name="specular_reflectance" value="specular_reflectance" />
             </bsdf>
 
-
             <shader_group name="matte">
-                <shader type="surface" name="matte" layer="matte1">
+                <shader type="shader" name="gabor_noise" layer="gabor_noise1">
+                    <parameter name="frequency" value="float 41.0" />
                 </shader>
+
+                <shader type="surface" name="matte" layer="matte1">
+                    <parameter name="Kd" value="float 0.77" />
+                </shader>
+
+                <connect_shaders src_layer="gabor_noise1" src_param="Noise" dst_layer="matte1" dst_param="Cs" />
             </shader_group>
 
             <surface_shader name="physical_surface_shader" model="physical_surface_shader" />

@@ -205,7 +205,11 @@ bool Shader::add(OSL::ShadingSystem& shading_system)
             return false;
     }
 
-    if (!shading_system.Shader(get_type(), get_shader(), get_layer()))
+    // For some reason, OSL only supports the surface shader usage.
+    // So, we ignore the user shader type specified in the XML file, 
+    // and hardcode "surface" here. TODO: research this...
+    //if (!shading_system.Shader(get_type(), get_shader(), get_layer()))
+    if (!shading_system.Shader("surface", get_shader(), get_layer()))
     {
         RENDERER_LOG_ERROR("error adding shader %s, %s.", get_shader(), get_layer());
         return false;

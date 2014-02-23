@@ -114,10 +114,13 @@ CompositeClosure::CompositeClosure(
         m_weights[i] /= total_weight;
 
     // Build CDF.
-    m_cdf.reserve(num_closures());
-    for (size_t i = 0, e = num_closures(); i != e; ++i)
-        m_cdf.insert(i, closure_weight(i));
-    m_cdf.prepare();
+    if (num_closures() != 0)
+    {
+        m_cdf.reserve(num_closures());
+        for (size_t i = 0, e = num_closures(); i != e; ++i)
+            m_cdf.insert(i, closure_weight(i));
+        m_cdf.prepare();
+    }
 }
 
 size_t CompositeClosure::choose_closure(const double w) const
@@ -159,13 +162,35 @@ void CompositeClosure::process_closure_tree(
             {
               case AshikhminShirleyID:
                 {
-                    assert(!"Not implemented yet.");
+                    const AshikhminShirleyClosureParams *p = 
+                        reinterpret_cast<const AshikhminShirleyClosureParams*>(c->data());
+
+                    AshikminBRDFInputValues values;
+                    Color3f total_w = w * Color3f(p->kd.x, p->kd.y, p->kd.z);
+                    linear_rgb_reflectance_to_spectrum(total_w, values.m_rd);
+                    values.m_rd_alpha = Alpha(1.0);
+                    values.m_rd_multiplier = 1.0;
+                    total_w = w * Color3f(p->ks.x, p->ks.y, p->ks.z);
+                    linear_rgb_reflectance_to_spectrum(total_w, values.m_rg);
+                    values.m_rg_alpha = Alpha(1.0);
+                    values.m_rg_multiplier = 1.0;
+                    values.m_fr_multiplier = 1.0;
+                    values.m_nu = p->nu;
+                    values.m_nv = p->nv;
+                    add_closure<AshikminBRDFInputValues>(
+                        static_cast<ClosureID>(c->id), 
+                        w,
+                        Vector3d(p->N.x, p->N.y, p->N.z),
+                        Vector3d(p->T.x, p->T.y, p->T.z),
+                        values);
                 }
                 break;
 
               case LambertID:
                 {
-                    const LambertClosureParams* p = reinterpret_cast<const LambertClosureParams*>(c->data());
+                    const LambertClosureParams* p = 
+                        reinterpret_cast<const LambertClosureParams*>(c->data());
+
                     LambertianBRDFInputValues values;
                     linear_rgb_reflectance_to_spectrum(w, values.m_reflectance);
                     values.m_reflectance_alpha = Alpha(1.0);
@@ -182,11 +207,75 @@ void CompositeClosure::process_closure_tree(
               case MicrofacetBlinnID:
               case MicrofacetGGXID:
               case MicrofacetWardID:
+                {
+                    const MicrofacetBRDFClosureParams *p = 
+                        reinterpret_cast<const MicrofacetBRDFClosureParams*>(c->data());
+
+                    MicrofacetBRDFInputValues values;
+                    linear_rgb_reflectance_to_spectrum(w,values.m_reflectance);
+                    values.m_reflectance_alpha = Alpha(1.0);
+                    values.m_reflectance_multiplier = 1.0;
+                    values.m_glossiness = p->glossiness;
+                    values.m_glossiness_multiplier = 1.0;
+                    values.m_fr_multiplier = 1.0;
+                    add_closure<MicrofacetBRDFInputValues>(
+                        static_cast<ClosureID>(c->id), 
+                        w,
+                        Vector3d(p->N.x, p->N.y, p->N.z),
+                        values);
+                }
+                break;
+
               case ReflectionID:
+                {
+                    const ReflectionClosureParams *p = 
+                        reinterpret_cast<const ReflectionClosureParams*>(c->data());
+
+                    SpecularBRDFInputValues values;
+                    linear_rgb_reflectance_to_spectrum(w,values.m_reflectance);
+                    values.m_reflectance_alpha = Alpha(1.0);
+                    values.m_reflectance_multiplier = 1.0;
+                    add_closure<SpecularBRDFInputValues>(
+                        static_cast<ClosureID>(c->id), 
+                        w, 
+                        Vector3d(p->N.x, p->N.y, p->N.z),
+                        values);
+                }
+                break;
+
               case RefractionID:
+                {
+                    const RefractionClosureParams *p = 
+                        reinterpret_cast<const RefractionClosureParams*>(c->data());
+
+                    SpecularBTDFInputValues values;
+                    linear_rgb_reflectance_to_spectrum(w,values.m_reflectance);
+                    values.m_from_ior = p->from_ior;
+                    values.m_to_ior = p->to_ior;
+                    values.m_reflectance_alpha = Alpha(1.0);
+                    values.m_reflectance_multiplier = 1.0;
+                    add_closure<SpecularBTDFInputValues>(
+                        static_cast<ClosureID>(c->id), 
+                        w, 
+                        Vector3d(p->N.x, p->N.y, p->N.z),
+                        values);
+                }
+                break;
+
               case TranslucentID:
                 {
-                    assert(!"Not implemented yet.");
+                    const TranslucentClosureParams *p = 
+                        reinterpret_cast<const TranslucentClosureParams*>(c->data());
+
+                    DiffuseBTDFInputValues values;
+                    linear_rgb_reflectance_to_spectrum(w,values.m_transmittance);
+                    values.m_transmittance_alpha = Alpha(1.0);
+                    values.m_transmittance_multiplier = 1.0;
+                    add_closure<DiffuseBTDFInputValues>(
+                        static_cast<ClosureID>(c->id), 
+                        w, 
+                        Vector3d(p->N.x, p->N.y, p->N.z),
+                        values);
                 }
                 break;
 
@@ -260,7 +349,8 @@ void CompositeClosure::do_add_closure(
     const double w = luminance(weight);
     if (w <= 0.0)
     {
-        RENDERER_LOG_WARNING("closure with negative or zero weight found; ignoring closure.");
+        // This can generate millions of warnings. It's better to disable it.
+        //RENDERER_LOG_WARNING("closure with negative or zero weight found; ignoring closure.");
         return;
     }
 

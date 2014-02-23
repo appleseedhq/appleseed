@@ -68,7 +68,7 @@ class OSLBSDF
     virtual bool on_frame_begin(
         const Project&                      project,
         const Assembly&                     assembly,
-        foundation::AbortSwitch&            abort_switch) OVERRIDE;
+        foundation::AbortSwitch*            abort_switch = 0) OVERRIDE;
 
     virtual void on_frame_end(
         const Project&                      project,
