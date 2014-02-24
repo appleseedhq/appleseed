@@ -33,7 +33,7 @@
 #include "foundation/utility/autoreleaseptr.h"
 
 // Forward declarations.
-namespace renderer { class BSDF; }
+namespace renderer  { class BSDF; }
 
 namespace renderer
 {
@@ -45,7 +45,6 @@ namespace renderer
 class OSLBSDFFactory
 {
   public:
-
     // Create a new OSLBSDF instance.
     foundation::auto_release_ptr<BSDF> create() const;
 };

@@ -50,12 +50,12 @@ namespace renderer      { class INormalModifier; }
 namespace renderer      { class MessageContext; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
-namespace renderer      { class Source; }
-namespace renderer      { class SurfaceShader; }
-namespace renderer      { class TextureCache; }
 #ifdef WITH_OSL
 namespace renderer      { class ShaderGroup; }
 #endif
+namespace renderer      { class Source; }
+namespace renderer      { class SurfaceShader; }
+namespace renderer      { class TextureCache; }
 
 namespace renderer
 {
@@ -203,10 +203,12 @@ inline const INormalModifier* Material::get_normal_modifier() const
 }
 
 #ifdef WITH_OSL
+
 inline const ShaderGroup* Material::get_osl_surface() const
 {
     return m_shader_group;
 }
+
 #endif
 
 }       // namespace renderer

@@ -267,10 +267,12 @@ const Source* Material::get_uncached_alpha_map() const
 }
 
 #ifdef WITH_OSL
+
 const ShaderGroup* Material::get_uncached_osl_surface() const
 {
     return static_cast<const ShaderGroup*>(m_inputs.get_entity("osl_surface"));
 }
+
 #endif
 
 bool Material::create_normal_modifier(const MessageContext& context)

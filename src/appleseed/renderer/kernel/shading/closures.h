@@ -38,9 +38,10 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/math/cdf.h"
-#include "foundation/platform/compiler.h"
 #include "foundation/image/color.h"
+#include "foundation/math/cdf.h"
+#include "foundation/math/vector.h"
+#include "foundation/platform/compiler.h"
 
 // OSL headers.
 #include "OSL/dual.h"
@@ -128,16 +129,16 @@ class APPLESEED_ALIGN(16) CompositeClosure
     enum { MaxClosureEntries = 8 };
     enum { MaxPoolSize = MaxClosureEntries * sizeof(boost::mpl::deref<BiggestInputValueType::base>::type) };
 
-    double                                  m_weights[MaxClosureEntries];
-    void*                                   m_input_values[MaxClosureEntries];
-    ClosureID                               m_closure_types[MaxClosureEntries];
-    foundation::Vector3d                    m_normals[MaxClosureEntries];
-    bool                                    m_has_tangent[MaxClosureEntries];
-    foundation::Vector3d                    m_tangents[MaxClosureEntries];
-    char                                    m_pool[MaxPoolSize];
-    int                                     m_num_closures;
-    int                                     m_num_bytes;
-    foundation::CDF<size_t,double>          m_cdf;
+    double                          m_weights[MaxClosureEntries];
+    void*                           m_input_values[MaxClosureEntries];
+    ClosureID                       m_closure_types[MaxClosureEntries];
+    foundation::Vector3d            m_normals[MaxClosureEntries];
+    bool                            m_has_tangent[MaxClosureEntries];
+    foundation::Vector3d            m_tangents[MaxClosureEntries];
+    char                            m_pool[MaxPoolSize];
+    int                             m_num_closures;
+    int                             m_num_bytes;
+    foundation::CDF<size_t, double> m_cdf;
 
     void process_closure_tree(
         const OSL::ClosureColor*    closure, 
