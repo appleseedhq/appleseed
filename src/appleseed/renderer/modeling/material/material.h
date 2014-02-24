@@ -54,7 +54,6 @@ namespace renderer      { class Source; }
 namespace renderer      { class SurfaceShader; }
 namespace renderer      { class TextureCache; }
 #ifdef WITH_OSL
-namespace renderer      { class OSLBSDF; }
 namespace renderer      { class ShaderGroup; }
 #endif
 
@@ -145,15 +144,15 @@ class DLLSYMBOL Material
     struct Impl;
     Impl* impl;
 
-    bool                    m_shade_alpha_cutouts;
-    const SurfaceShader*    m_surface_shader;
-    const BSDF*             m_bsdf;
-    const EDF*              m_edf;
-    const Source*           m_alpha_map;
-    const INormalModifier*  m_normal_modifier;
+    bool                                m_shade_alpha_cutouts;
+    const SurfaceShader*                m_surface_shader;
+    const BSDF*                         m_bsdf;
+    const EDF*                          m_edf;
+    const Source*                       m_alpha_map;
+    const INormalModifier*              m_normal_modifier;
 #ifdef WITH_OSL
-    OSLBSDF*                m_osl_bsdf;
-    const ShaderGroup*      m_shader_group;
+    foundation::auto_release_ptr<BSDF>  m_osl_bsdf;
+    const ShaderGroup*                  m_shader_group;
 #endif
 
     // Constructor.

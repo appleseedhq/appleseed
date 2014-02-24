@@ -29,14 +29,36 @@
 // Interface header.
 #include "oslbsdf.h"
 
+
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
+#include "renderer/global/globaltypes.h"
+#include "renderer/kernel/shading/closures.h"
 #include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/modeling/input/inputevaluator.h"
-#include "renderer/modeling/bsdf/ibsdffactory.h"
+#include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdffactoryregistrar.h"
+#include "renderer/modeling/bsdf/bsdfwrapper.h"
+#include "renderer/modeling/bsdf/ibsdffactory.h"
+#include "renderer/modeling/input/inputevaluator.h"
+#include "renderer/modeling/scene/assembly.h"
+
+// appleseed.foundation headers.
+#include "foundation/math/basis.h"
+#include "foundation/math/vector.h"
+#include "foundation/platform/types.h"
+#include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/containers/specializedarrays.h"
 
 // Standard headers.
+#include <cassert>
+#include <cstddef>
 #include <cstring>
+#include <string>
+
+// Forward declarations.
+namespace foundation    { class AbortSwitch; }
+namespace renderer      { class InputEvaluator; }
+namespace renderer      { class ShadingPoint; }
 
 using namespace foundation;
 using namespace std;
@@ -44,277 +66,323 @@ using namespace std;
 namespace renderer
 {
 
-//
-// OSLBSDF class implementation.
-//
-
-OSLBSDF::OSLBSDF()
-  : BSDF("osl_bsdf", Reflective, Absorption, ParamArray())
-{
-    memset(m_all_bsdfs, 0, sizeof(BSDF*) * NumClosuresIDs);
-
-    m_ashikhmin_shirley_brdf =
-        create_and_register_bsdf(
-            AshikhminShirleyID,
-            "ashikhmin_brdf",
-            "osl_ashikhmin_shirley");
-
-    m_diffuse_btdf =
-        create_and_register_bsdf(
-            TranslucentID,
-            "diffuse_btdf",
-            "osl_translucent");
-
-    m_lambertian_brdf =
-        create_and_register_bsdf(
-            LambertID,
-            "lambertian_brdf",
-            "osl_lambert");
-
-    m_specular_brdf =
-        create_and_register_bsdf(
-            ReflectionID,
-            "specular_brdf",
-            "osl_reflection");
-
-    m_specular_btdf =
-        create_and_register_bsdf(
-            RefractionID,
-            "specular_btdf",
-            "osl_refraction");
-
-    m_microfacet_beckmann_brdf =
-        create_and_register_bsdf(
-            MicrofacetBeckmannID,
-            "microfacet_brdf",
-            "osl_beckmann",
-            ParamArray().insert("mdf", "beckmann"));
-
-    m_microfacet_blinn_brdf =
-        create_and_register_bsdf(
-            MicrofacetBlinnID,
-            "microfacet_brdf",
-            "osl_blinn",
-            ParamArray().insert("mdf", "blinn"));
-
-    m_microfacet_ggx_brdf =
-        create_and_register_bsdf(
-            MicrofacetGGXID,
-            "microfacet_brdf",
-            "osl_ggx",
-            ParamArray().insert("mdf", "ggx"));
-
-    m_microfacet_ward_brdf =
-        create_and_register_bsdf(
-            MicrofacetWardID,
-            "microfacet_brdf",
-            "osl_ward",
-            ParamArray().insert("mdf", "ward"));
-}
-
-void OSLBSDF::release()
-{
-    delete this;
-}
-
-const char* OSLBSDF::get_model() const
-{
-    return "osl_bsdf";
-}
-
-bool OSLBSDF::on_frame_begin(
-    const Project&          project,
-    const Assembly&         assembly,
-    AbortSwitch*            abort_switch)
-{
-    if (!BSDF::on_frame_begin(project, assembly))
-        return false;
-
-    for (int i = 0; i < NumClosuresIDs; ++i)
-    {
-        if (BSDF* bsdf = m_all_bsdfs[i])
-        {
-            if (!bsdf->on_frame_begin(project, assembly))
-                return false;
-        }
-    }
-
-    return true;
-}
-
-void OSLBSDF::on_frame_end(
-    const Project&          project,
-    const Assembly&         assembly)
-{
-    BSDF::on_frame_end(project, assembly);
-
-    for (int i = 0; i < NumClosuresIDs; ++i)
-    {
-        if (BSDF* bsdf = m_all_bsdfs[i])
-            bsdf->on_frame_end(project, assembly);
-    }
-}
-
-size_t OSLBSDF::compute_input_data_size(const Assembly& assembly) const
-{
-    return sizeof(CompositeClosure);
-}
-
-void OSLBSDF::evaluate_inputs(
-    InputEvaluator&         input_evaluator,
-    const ShadingPoint&     shading_point,
-    const size_t            offset) const
-{
-    CompositeClosure* c = reinterpret_cast<CompositeClosure*>(input_evaluator.data());
-    new (c) CompositeClosure(shading_point.get_osl_shader_globals().Ci);
-}
-
 namespace
 {
-    Basis3d make_osl_basis(
-        const CompositeClosure* c, 
-        const size_t            index,
-        const Basis3d&          original_basis)
+    //
+    // OSL closure tree -> appleseed BSDFs adapter.
+    //
+
+    class OSLBSDFImpl
+      : public BSDF
     {
-        return
-            Basis3d(
-                c->closure_normal(index),
-                c->closure_has_tangent(index)
-                    ? c->closure_tangent(index)
-                    : original_basis.get_tangent_u());
-    }
-}
-
-BSDF::Mode OSLBSDF::sample(
-    SamplingContext&        sampling_context,
-    const void*             data,
-    const bool              adjoint,
-    const bool              cosine_mult,
-    const Vector3d&         geometric_normal,
-    const Basis3d&          shading_basis,
-    const Vector3d&         outgoing,
-    Vector3d&               incoming,
-    Spectrum&               value,
-    double&                 probability) const
-{
-    const CompositeClosure* c = reinterpret_cast<const CompositeClosure*>(data);
-
-    if (c->num_closures() > 0)
-    {
-        sampling_context.split_in_place(1, 1);
-        const double s = sampling_context.next_double2();
-
-        const int closure_index = c->choose_closure(s);
-        const Basis3d new_shading_basis = make_osl_basis(c, closure_index, shading_basis);
-
-        return
-            bsdf_to_closure_id(c->closure_type(closure_index)).sample(
-                sampling_context,
-                c->closure_input_values(closure_index),
-                adjoint,
-                false,
-                geometric_normal,
-                new_shading_basis,
-                outgoing,
-                incoming,
-                value,
-                probability);
-    }
-    else
-    {
-        value.set(0.0f);
-        probability = 0.0;
-        return Absorption;
-    }
-}
-
-double OSLBSDF::evaluate(
-    const void*             data,
-    const bool              adjoint,
-    const bool              cosine_mult,
-    const Vector3d&         geometric_normal,
-    const Basis3d&          shading_basis,
-    const Vector3d&         outgoing,
-    const Vector3d&         incoming,
-    const int               modes,
-    Spectrum&               value) const
-{
-    double prob = 0.0;
-    value.set(0.0f);
-
-    const CompositeClosure* c = reinterpret_cast<const CompositeClosure*>(data);
-
-    for (size_t i = 0, e = c->num_closures(); i < e; ++i)
-    {
-        Spectrum s;
-        const Basis3d new_shading_basis = make_osl_basis(c, i, shading_basis);
-
-        const double bsdf_prob =
-            bsdf_to_closure_id(c->closure_type(i)).evaluate(
-                c->closure_input_values(i),
-                adjoint,
-                false,
-                geometric_normal,
-                new_shading_basis,
-                outgoing,
-                incoming,
-                modes,
-                s);
-
-        if (bsdf_prob > 0.0)
+      public:
+        OSLBSDFImpl(
+            const char*         name,
+            const ParamArray&   params)
+          : BSDF(name, Reflective, AllScatteringModes, params)
         {
-            s *= static_cast<float>(c->closure_weight(i));
-            value += s;
+            memset(m_all_bsdfs, 0, sizeof(BSDF*) * NumClosuresIDs);
+        
+            m_ashikhmin_shirley_brdf =
+                create_and_register_bsdf(
+                    AshikhminShirleyID,
+                    "ashikhmin_brdf",
+                    "osl_ashikhmin_shirley");
+        
+            m_diffuse_btdf =
+                create_and_register_bsdf(
+                    TranslucentID,
+                    "diffuse_btdf",
+                    "osl_translucent");
+        
+            m_lambertian_brdf =
+                create_and_register_bsdf(
+                    LambertID,
+                    "lambertian_brdf",
+                    "osl_lambert");
+        
+            m_specular_brdf =
+                create_and_register_bsdf(
+                    ReflectionID,
+                    "specular_brdf",
+                    "osl_reflection");
+        
+            m_specular_btdf =
+                create_and_register_bsdf(
+                    RefractionID,
+                    "specular_btdf",
+                    "osl_refraction");
+        
+            m_microfacet_beckmann_brdf =
+                create_and_register_bsdf(
+                    MicrofacetBeckmannID,
+                    "microfacet_brdf",
+                    "osl_beckmann",
+                    ParamArray().insert("mdf", "beckmann"));
+        
+            m_microfacet_blinn_brdf =
+                create_and_register_bsdf(
+                    MicrofacetBlinnID,
+                    "microfacet_brdf",
+                    "osl_blinn",
+                    ParamArray().insert("mdf", "blinn"));
+        
+            m_microfacet_ggx_brdf =
+                create_and_register_bsdf(
+                    MicrofacetGGXID,
+                    "microfacet_brdf",
+                    "osl_ggx",
+                    ParamArray().insert("mdf", "ggx"));
+        
+            m_microfacet_ward_brdf =
+                create_and_register_bsdf(
+                    MicrofacetWardID,
+                    "microfacet_brdf",
+                    "osl_ward",
+                    ParamArray().insert("mdf", "ward"));
         }
 
-        prob += bsdf_prob * c->closure_weight(i);
-    }
+        virtual void release() OVERRIDE
+        {
+            delete this;
+        }
 
-    return prob;
+        virtual const char* get_model() const OVERRIDE
+        {
+            return "osl_bsdf";
+        }
+
+        virtual bool on_frame_begin(
+            const Project&      project,
+            const Assembly&     assembly,
+            AbortSwitch*        abort_switch) OVERRIDE
+        {
+            if (!BSDF::on_frame_begin(project, assembly))
+                return false;
+        
+            for (int i = 0; i < NumClosuresIDs; ++i)
+            {
+                if (BSDF* bsdf = m_all_bsdfs[i])
+                {
+                    if (!bsdf->on_frame_begin(project, assembly))
+                        return false;
+                }
+            }
+        
+            return true;
+        }
+
+        virtual void on_frame_end(
+            const Project&      project,
+            const Assembly&     assembly) OVERRIDE
+        {
+            BSDF::on_frame_end(project, assembly);
+        
+            for (int i = 0; i < NumClosuresIDs; ++i)
+            {
+                if (BSDF* bsdf = m_all_bsdfs[i])
+                    bsdf->on_frame_end(project, assembly);
+            }
+        }
+        
+        virtual size_t compute_input_data_size(
+            const Assembly&     assembly) const OVERRIDE
+        {
+            return sizeof(CompositeClosure);
+        }
+
+        virtual void evaluate_inputs(
+            InputEvaluator&     input_evaluator,
+            const ShadingPoint& shading_point,
+            const size_t        offset) const OVERRIDE
+        {
+            CompositeClosure* c = reinterpret_cast<CompositeClosure*>(input_evaluator.data());
+            new (c) CompositeClosure(shading_point.get_osl_shader_globals().Ci);
+        }
+
+        FORCE_INLINE virtual Mode sample(
+            SamplingContext&    sampling_context,
+            const void*         data,
+            const bool          adjoint,
+            const bool          cosine_mult,
+            const Vector3d&     geometric_normal,
+            const Basis3d&      shading_basis,
+            const Vector3d&     outgoing,
+            Vector3d&           incoming,
+            Spectrum&           value,
+            double&             probability) const
+        {
+            const CompositeClosure* c = reinterpret_cast<const CompositeClosure*>(data);
+        
+            if (c->num_closures() > 0)
+            {
+                sampling_context.split_in_place(1, 1);
+                const double s = sampling_context.next_double2();
+        
+                const int closure_index = c->choose_closure(s);
+                const Basis3d new_shading_basis = make_osl_basis(c, closure_index, shading_basis);
+        
+                return
+                    bsdf_to_closure_id(c->closure_type(closure_index)).sample(
+                        sampling_context,
+                        c->closure_input_values(closure_index),
+                        adjoint,
+                        false,
+                        geometric_normal,
+                        new_shading_basis,
+                        outgoing,
+                        incoming,
+                        value,
+                        probability);
+            }
+            else
+            {
+                value.set(0.0f);
+                probability = 0.0;
+                return Absorption;
+            }
+        }
+
+        FORCE_INLINE virtual double evaluate(
+            const void*         data,
+            const bool          adjoint,
+            const bool          cosine_mult,
+            const Vector3d&     geometric_normal,
+            const Basis3d&      shading_basis,
+            const Vector3d&     outgoing,
+            const Vector3d&     incoming,
+            const int           modes,
+            Spectrum&           value) const
+        {
+            double prob = 0.0;
+            value.set(0.0f);
+        
+            const CompositeClosure* c = reinterpret_cast<const CompositeClosure*>(data);
+        
+            for (size_t i = 0, e = c->num_closures(); i < e; ++i)
+            {
+                Spectrum s;
+                const Basis3d new_shading_basis = make_osl_basis(c, i, shading_basis);
+        
+                const double bsdf_prob =
+                    bsdf_to_closure_id(c->closure_type(i)).evaluate(
+                        c->closure_input_values(i),
+                        adjoint,
+                        false,
+                        geometric_normal,
+                        new_shading_basis,
+                        outgoing,
+                        incoming,
+                        modes,
+                        s);
+        
+                if (bsdf_prob > 0.0)
+                {
+                    s *= static_cast<float>(c->closure_weight(i));
+                    value += s;
+                }
+        
+                prob += bsdf_prob * c->closure_weight(i);
+            }
+        
+            return prob;
+        }
+
+        FORCE_INLINE virtual double evaluate_pdf(
+            const void*         data,
+            const Vector3d&     geometric_normal,
+            const Basis3d&      shading_basis,
+            const Vector3d&     outgoing,
+            const Vector3d&     incoming,
+            const int           modes) const
+        {
+            const CompositeClosure* c = reinterpret_cast<const CompositeClosure*>(data);
+            double prob = 0.0;
+        
+            for (size_t i = 0, e = c->num_closures(); i < e; ++i)
+            {
+                const Basis3d new_shading_basis = make_osl_basis(c, i, shading_basis);
+        
+                const double bsdf_prob =
+                    bsdf_to_closure_id(c->closure_type(i)).evaluate_pdf(
+                        c->closure_input_values(i),
+                        geometric_normal,
+                        new_shading_basis,
+                        outgoing,
+                        incoming,
+                        modes);
+        
+                prob += bsdf_prob * c->closure_weight(i); 
+            }
+        
+            return prob;
+        }
+
+      private:
+        foundation::auto_release_ptr<BSDF>      m_ashikhmin_shirley_brdf;
+        foundation::auto_release_ptr<BSDF>      m_diffuse_btdf;
+        foundation::auto_release_ptr<BSDF>      m_lambertian_brdf;
+        foundation::auto_release_ptr<BSDF>      m_microfacet_beckmann_brdf;
+        foundation::auto_release_ptr<BSDF>      m_microfacet_blinn_brdf;
+        foundation::auto_release_ptr<BSDF>      m_microfacet_ggx_brdf;
+        foundation::auto_release_ptr<BSDF>      m_microfacet_ward_brdf;
+        foundation::auto_release_ptr<BSDF>      m_specular_brdf;
+        foundation::auto_release_ptr<BSDF>      m_specular_btdf;
+        BSDF*                                   m_all_bsdfs[NumClosuresIDs];
+    
+        foundation::auto_release_ptr<BSDF> create_and_register_bsdf(
+            const ClosureID                     cid,
+            const char*                         model,
+            const char*                         name,
+            const ParamArray&                   params = ParamArray())
+        {
+            auto_release_ptr<BSDF> bsdf =
+                BSDFFactoryRegistrar().lookup(model)->create(name, params);
+        
+            m_all_bsdfs[cid] = bsdf.get();
+
+            return bsdf;
+        }
+    
+        const BSDF& bsdf_to_closure_id(const ClosureID cid) const
+        {
+            const BSDF* bsdf = m_all_bsdfs[cid];
+            assert(bsdf);
+            return *bsdf;            
+        }
+        
+        BSDF& bsdf_to_closure_id(const ClosureID cid)
+        {
+            BSDF* bsdf = m_all_bsdfs[cid];
+            assert(bsdf);
+            return *bsdf;            
+        }
+
+        Basis3d make_osl_basis(
+            const CompositeClosure* c, 
+            const size_t            index,
+            const Basis3d&          original_basis) const
+        {
+            return
+                Basis3d(
+                    c->closure_normal(index),
+                    c->closure_has_tangent(index)
+                        ? c->closure_tangent(index)
+                        : original_basis.get_tangent_u());
+        }
+    };
+
+    typedef BSDFWrapper<OSLBSDFImpl> OSLBSDF;
 }
 
-double OSLBSDF::evaluate_pdf(
-    const void*             data,
-    const Vector3d&         geometric_normal,
-    const Basis3d&          shading_basis,
-    const Vector3d&         outgoing,
-    const Vector3d&         incoming,
-    const int               modes) const
+
+//
+// OSLBSDFFactory class implementation.
+//
+
+auto_release_ptr<BSDF> OSLBSDFFactory::create() const
 {
-    const CompositeClosure* c = reinterpret_cast<const CompositeClosure*>(data);
-    double prob = 0.0;
-
-    for (size_t i = 0, e = c->num_closures(); i < e; ++i)
-    {
-        const Basis3d new_shading_basis = make_osl_basis(c, i, shading_basis);
-
-        const double bsdf_prob =
-            bsdf_to_closure_id(c->closure_type(i)).evaluate_pdf(
-                c->closure_input_values(i),
-                geometric_normal,
-                new_shading_basis,
-                outgoing,
-                incoming,
-                modes);
-
-        prob += bsdf_prob * c->closure_weight(i); 
-    }
-
-    return prob;
-}
-
-auto_release_ptr<BSDF> OSLBSDF::create_and_register_bsdf(
-    const ClosureID         cid,
-    const char*             model,
-    const char*             name,
-    const ParamArray&       params)
-{
-    auto_release_ptr<BSDF> bsdf =
-        BSDFFactoryRegistrar().lookup(model)->create(name, params);
-
-    m_all_bsdfs[cid] = bsdf.get();
-
-    return bsdf;
+    return auto_release_ptr<BSDF>(new OSLBSDF("osl_bsdf", ParamArray()));
 }
 
 }   // namespace renderer
