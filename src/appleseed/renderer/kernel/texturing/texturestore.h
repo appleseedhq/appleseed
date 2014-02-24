@@ -148,7 +148,7 @@ class TextureStore
             const size_t    m_memory_limit;
             const bool      m_track_tile_loading;
             const bool      m_track_tile_unloading;
-            const bool      m_track_tile_cache_size;
+            const bool      m_track_store_size;
 
             explicit Parameters(const ParamArray& params);
         };

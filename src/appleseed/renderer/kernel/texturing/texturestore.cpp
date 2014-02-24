@@ -200,7 +200,7 @@ void TextureStore::TileSwapper::load(const TileKey& key, TileRecord& record)
     m_memory_size += record.m_tile->get_memory_size();
     m_peak_memory_size = max(m_peak_memory_size, m_memory_size);
 
-    if (m_params.m_track_tile_cache_size)
+    if (m_params.m_track_store_size)
     {
         if (m_memory_size > m_params.m_memory_limit)
         {
@@ -276,7 +276,7 @@ TextureStore::TileSwapper::Parameters::Parameters(const ParamArray& params)
   : m_memory_limit(params.get_optional<size_t>("max_size", 256 * 1024 * 1024))
   , m_track_tile_loading(params.get_optional<bool>("track_tile_loading", false))
   , m_track_tile_unloading(params.get_optional<bool>("track_tile_unloading", false))
-  , m_track_tile_cache_size(params.get_optional<bool>("track_tile_cache_size", false))
+  , m_track_store_size(params.get_optional<bool>("track_store_size", false))
 {
     assert(m_memory_limit > 0);
 }
