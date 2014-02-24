@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/modeling/texture/texture.h"
+#include "renderer/utility/messagecontext.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
@@ -43,6 +44,7 @@
 #include "foundation/platform/thread.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/makevector.h"
 #include "foundation/utility/searchpaths.h"
 
 // Standard headers.
@@ -126,34 +128,31 @@ namespace
 
         void extract_parameters(const SearchPaths& search_paths)
         {
+            const EntityDefMessageContext message_context("texture", this);
+
             // Establish and store the qualified path to the texture file.
             m_filepath = search_paths.qualify(m_params.get_required<string>("filename", ""));
 
             // Retrieve the color space.
-            const string color_space = m_params.get_required<string>("color_space", "linear_rgb");
+            const string color_space =
+                m_params.get_required<string>(
+                    "color_space",
+                    "linear_rgb",
+                    make_vector("linear_rgb", "srgb", "ciexyz"),
+                    message_context);
             if (color_space == "linear_rgb")
                 m_color_space = ColorSpaceLinearRGB;
             else if (color_space == "srgb")
                 m_color_space = ColorSpaceSRGB;
-            else if (color_space == "ciexyz")
-                m_color_space = ColorSpaceCIEXYZ;
-            else
-            {
-                RENDERER_LOG_ERROR(
-                    "invalid value \"%s\" for parameter \"color_space\", "
-                    "using default value \"linear_rgb\".",
-                    color_space.c_str());
-                m_color_space = ColorSpaceLinearRGB;
-            }
+            else m_color_space = ColorSpaceCIEXYZ;
         }
 
-        // Open the image file.
         void open_image_file()
         {
             if (!m_reader.is_open())
             {
                 RENDERER_LOG_INFO(
-                    "opening texture file %s for reading...",
+                    "opening texture file %s and reading metadata...",
                     m_filepath.c_str());
 
                 m_reader.open(m_filepath.c_str());
