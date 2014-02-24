@@ -62,9 +62,6 @@
 #include <cassert>
 #include <cstddef>
 
-// Forward declarations.
-namespace renderer  { class OSLBSDF; }
-
 namespace renderer
 {
 
@@ -101,6 +98,8 @@ class APPLESEED_ALIGN(16) CompositeClosure
   : public foundation::NonCopyable
 {
   public:
+    explicit CompositeClosure(const OSL::ClosureColor* ci);
+           
     size_t num_closures() const;
     ClosureID closure_type(const size_t index) const;
     double closure_weight(const size_t index) const;
@@ -112,8 +111,6 @@ class APPLESEED_ALIGN(16) CompositeClosure
     size_t choose_closure(const double w) const;
 
   private:
-    friend class OSLBSDF;
-
     typedef boost::mpl::vector< 
         AshikminBRDFInputValues,
         DiffuseBTDFInputValues,
@@ -141,8 +138,6 @@ class APPLESEED_ALIGN(16) CompositeClosure
     int                                     m_num_closures;
     int                                     m_num_bytes;
     foundation::CDF<size_t,double>          m_cdf;
-
-    explicit CompositeClosure(const OSL::ClosureColor* ci);
 
     void process_closure_tree(
         const OSL::ClosureColor*    closure, 
