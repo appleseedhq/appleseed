@@ -33,6 +33,11 @@
 // Standard headers.
 #include <cstdio>
 
+// Platform headers.
+#if defined __APPLE__ || defined __linux__
+#include <unistd.h>
+#endif
+
 using namespace foundation;
 using namespace std;
 
@@ -69,6 +74,12 @@ ILogTarget& SuperLogger::get_log_target() const
 
 void SuperLogger::enable_message_coloring()
 {
+#if defined __APPLE__ || defined __linux__
+    const int StdErrFileDesc = 2;
+    if (!isatty(StdErrFileDesc))
+        return;
+#endif
+
     set_log_target(create_console_log_target(stderr));
 }
 
