@@ -66,11 +66,12 @@ class TextureStore
   : public foundation::NonCopyable
 {
   public:
+    // This structure uniquely identifies a texture tile in a scene.
     struct TileKey
     {
-        foundation::UniqueID            m_assembly_uid;
-        foundation::UniqueID            m_texture_uid;
-        foundation::uint32              m_tile_xy;
+        foundation::UniqueID    m_assembly_uid;
+        foundation::UniqueID    m_texture_uid;
+        foundation::uint32      m_tile_xy;
 
         TileKey();
 
@@ -120,21 +121,14 @@ class TextureStore
     foundation::StatisticsVector get_statistics() const;
 
   private:
-    struct Parameters
-    {
-        const size_t m_memory_limit;
-
-        explicit Parameters(const ParamArray& params);
-    };
-
     class TileSwapper
       : public foundation::NonCopyable
     {
       public:
         // Constructor.
         TileSwapper(
-            const Scene&    scene,
-            const size_t    memory_limit);
+            const Scene&        scene,
+            const ParamArray&   params);
 
         // Load a cache line.
         void load(const TileKey& key, TileRecord& record);
@@ -149,10 +143,20 @@ class TextureStore
         size_t get_peak_memory_size() const;
 
       private:
+        struct Parameters
+        {
+            const size_t    m_memory_limit;
+            const bool      m_track_tile_loading;
+            const bool      m_track_tile_unloading;
+            const bool      m_track_tile_cache_size;
+
+            explicit Parameters(const ParamArray& params);
+        };
+
         typedef std::map<foundation::UniqueID, const Assembly*> AssemblyMap;
 
         const Scene&        m_scene;
-        const size_t        m_memory_limit;
+        const Parameters    m_params;
         size_t              m_memory_size;
         size_t              m_peak_memory_size;
         AssemblyMap         m_assemblies;
@@ -166,10 +170,9 @@ class TextureStore
         TileSwapper
     > TileCache;
 
-    const Parameters        m_params;
-    boost::mutex            m_mutex;
-    TileSwapper             m_tile_swapper;
-    TileCache               m_tile_cache;
+    boost::mutex    m_mutex;
+    TileSwapper     m_tile_swapper;
+    TileCache       m_tile_cache;
 };
 
 
@@ -279,7 +282,7 @@ inline bool TextureStore::TileKey::operator<(const TileKey& rhs) const
 
 inline bool TextureStore::TileSwapper::is_full(const size_t element_count) const
 {
-    return m_memory_size >= m_memory_limit;
+    return m_memory_size >= m_params.m_memory_limit;
 }
 
 inline size_t TextureStore::TileSwapper::get_peak_memory_size() const

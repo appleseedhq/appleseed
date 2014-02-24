@@ -54,10 +54,6 @@
 using namespace foundation;
 using namespace std;
 
-#undef TRACK_TILE_LOADING
-#undef TRACK_TILE_UNLOADING
-#undef TRACK_CACHE_SIZE
-
 namespace renderer
 {
 
@@ -68,8 +64,7 @@ namespace renderer
 TextureStore::TextureStore(
     const Scene&        scene,
     const ParamArray&   params)
-  : m_params(params)
-  , m_tile_swapper(scene, m_params.m_memory_limit)
+  : m_tile_swapper(scene, params)
   , m_tile_cache(m_tile_swapper)
 {
 }
@@ -80,16 +75,6 @@ StatisticsVector TextureStore::get_statistics() const
     stats.insert_size("peak size", m_tile_swapper.get_peak_memory_size());
 
     return StatisticsVector::make("texture store statistics", stats);
-}
-
-
-//
-// TextureStore::Parameters class implementation.
-//
-
-TextureStore::Parameters::Parameters(const ParamArray& params)
-  : m_memory_limit(params.get_optional<size_t>("max_size", 256 * 1024 * 1024))
-{
 }
 
 
@@ -159,15 +144,13 @@ namespace
 }
 
 TextureStore::TileSwapper::TileSwapper(
-    const Scene&    scene,
-    const size_t    memory_limit)
+    const Scene&        scene,
+    const ParamArray&   params)
   : m_scene(scene)
-  , m_memory_limit(memory_limit)
+  , m_params(params)
   , m_memory_size(0)
   , m_peak_memory_size(0)
 {
-    assert(m_memory_limit > 0);
-
     gather_assemblies(scene.assemblies());
 }
 
@@ -182,14 +165,15 @@ void TextureStore::TileSwapper::load(const TileKey& key, TileRecord& record)
     // Fetch the texture.
     Texture* texture = textures.get_by_uid(key.m_texture_uid);
 
-#ifdef TRACK_TILE_LOADING
-    RENDERER_LOG_DEBUG(
-        "loading tile (" FMT_SIZE_T ", " FMT_SIZE_T ") "
-        "from texture \"%s\"...",
-        key.get_tile_x(),
-        key.get_tile_y(),
-        texture->get_name());
-#endif
+    if (m_params.m_track_tile_loading)
+    {
+        RENDERER_LOG_DEBUG(
+            "loading tile (" FMT_SIZE_T ", " FMT_SIZE_T ") "
+            "from texture \"%s\"...",
+            key.get_tile_x(),
+            key.get_tile_y(),
+            texture->get_name());
+    }
 
     // Load the tile.
     record.m_tile = texture->load_tile(key.get_tile_x(), key.get_tile_y());
@@ -216,24 +200,25 @@ void TextureStore::TileSwapper::load(const TileKey& key, TileRecord& record)
     m_memory_size += record.m_tile->get_memory_size();
     m_peak_memory_size = max(m_peak_memory_size, m_memory_size);
 
-#ifdef TRACK_CACHE_SIZE
-    if (m_memory_size > m_memory_limit)
+    if (m_params.m_track_tile_cache_size)
     {
-        RENDERER_LOG_DEBUG(
-            "texture store size is %s, exceeding capacity %s by %s",
-            pretty_size(m_memory_size).c_str(),
-            pretty_size(m_memory_limit).c_str(),
-            pretty_size(m_memory_size - m_memory_limit).c_str());
+        if (m_memory_size > m_params.m_memory_limit)
+        {
+            RENDERER_LOG_DEBUG(
+                "texture store size is %s, exceeding capacity %s by %s",
+                pretty_size(m_memory_size).c_str(),
+                pretty_size(m_params.m_memory_limit).c_str(),
+                pretty_size(m_memory_size - m_params.m_memory_limit).c_str());
+        }
+        else
+        {
+            RENDERER_LOG_DEBUG(
+                "texture store size is %s, below capacity %s by %s",
+                pretty_size(m_memory_size).c_str(),
+                pretty_size(m_params.m_memory_limit).c_str(),
+                pretty_size(m_params.m_memory_limit - m_memory_size).c_str());
+        }
     }
-    else
-    {
-        RENDERER_LOG_DEBUG(
-            "texture store size is %s, below capacity %s by %s",
-            pretty_size(m_memory_size).c_str(),
-            pretty_size(m_memory_limit).c_str(),
-            pretty_size(m_memory_size - m_memory_limit).c_str());
-    }
-#endif
 }
 
 bool TextureStore::TileSwapper::unload(const TileKey& key, TileRecord& record)
@@ -256,14 +241,15 @@ bool TextureStore::TileSwapper::unload(const TileKey& key, TileRecord& record)
     // Fetch the texture.
     Texture* texture = textures.get_by_uid(key.m_texture_uid);
 
-#ifdef TRACK_TILE_UNLOADING
-    RENDERER_LOG_DEBUG(
-        "unloading tile (" FMT_SIZE_T ", " FMT_SIZE_T ") "
-        "from texture \"%s\"...",
-        key.get_tile_x(),
-        key.get_tile_y(),
-        texture->get_name());
-#endif
+    if (m_params.m_track_tile_unloading)
+    {
+        RENDERER_LOG_DEBUG(
+            "unloading tile (" FMT_SIZE_T ", " FMT_SIZE_T ") "
+            "from texture \"%s\"...",
+            key.get_tile_x(),
+            key.get_tile_y(),
+            texture->get_name());
+    }
 
     // Unload the tile.
     texture->unload_tile(key.get_tile_x(), key.get_tile_y(), record.m_tile);
@@ -279,6 +265,20 @@ void TextureStore::TileSwapper::gather_assemblies(const AssemblyContainer& assem
         m_assemblies[i->get_uid()] = &*i;
         gather_assemblies(i->assemblies());
     }
+}
+
+
+//
+// TextureStore::TileSwapper::Parameters class implementation.
+//
+
+TextureStore::TileSwapper::Parameters::Parameters(const ParamArray& params)
+  : m_memory_limit(params.get_optional<size_t>("max_size", 256 * 1024 * 1024))
+  , m_track_tile_loading(params.get_optional<bool>("track_tile_loading", false))
+  , m_track_tile_unloading(params.get_optional<bool>("track_tile_unloading", false))
+  , m_track_tile_cache_size(params.get_optional<bool>("track_tile_cache_size", false))
+{
+    assert(m_memory_limit > 0);
 }
 
 }   // namespace renderer
