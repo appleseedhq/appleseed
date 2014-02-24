@@ -1,23 +1,23 @@
 
-shader gabor_noise(  
-	point 			Pos 		= P,
-	float			frequency	= 1.0,
-	int 			anisotropic	= 0,
-	vector			direction 	= vector(1,0,0),
-	int 			do_filter 	= 1,
-	float 			bandwidth 	= 1.0,
-	float 			impulses 	= 16,
-	int				do_abs		= 0,
-	output float 	Noise 		= 0)
+shader gabor_noise(
+    point           Pos         = P,
+    float           frequency   = 1.0,
+    int             anisotropic = 0,
+    vector          direction   = vector(1,0,0),
+    int             do_filter   = 1,
+    float           bandwidth   = 1.0,
+    float           impulses    = 16,
+    int             do_abs      = 0,
+    output float    Noise       = 0)
 {
-	Noise = noise(
-		"gabor",Pos * frequency,
- 		"anisotropic", anisotropic,
- 		"direction", direction,
- 		"do_filter", do_filter,
- 		"bandwidth", bandwidth,
- 		"impulses", impulses);
+    Noise = noise(
+        "gabor", Pos * frequency,
+        "anisotropic", anisotropic,
+        "direction", direction,
+        "do_filter", do_filter,
+        "bandwidth", bandwidth,
+        "impulses", impulses);
 
- 	if (do_abs)
-	 	Noise = abs(Noise);
+    if (do_abs)
+        Noise = abs(Noise);
 }
