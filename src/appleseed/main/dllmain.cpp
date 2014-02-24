@@ -27,10 +27,6 @@
 // THE SOFTWARE.
 //
 
-//
-// Defines the entry point for the DLL application (Windows only).
-//
-
 #ifdef _WIN32
 
 // appleseed.foundation headers.
@@ -46,47 +42,52 @@
 
 using namespace std;
 
-// Open a console.
-void open_console()
+namespace
 {
-    // Allocate a console.
-    AllocConsole();
+    void open_console()
+    {
+        AllocConsole();
 
 #pragma warning (push)
 #pragma warning (disable : 4311)    // 'variable' : pointer truncation from 'type' to 'type'
 
-    int hConHandle;
-    long lStdHandle;
-    FILE* fp;
+        int hConHandle;
+        long lStdHandle;
+        FILE* fp;
 
-    // Redirect stdout to the console.
-    lStdHandle = (long)GetStdHandle(STD_OUTPUT_HANDLE);
-    hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
-    fp = _fdopen(hConHandle, "w");
-    *stdout = *fp;
-    setvbuf(stdout, NULL, _IONBF, 0);
+        // Redirect stdout to the console.
+        lStdHandle = (long)GetStdHandle(STD_OUTPUT_HANDLE);
+        hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
+        fp = _fdopen(hConHandle, "w");
+        *stdout = *fp;
+        setvbuf(stdout, NULL, _IONBF, 0);
 
-    // Redirect stdin to the console.
-    lStdHandle = (long)GetStdHandle(STD_INPUT_HANDLE);
-    hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
-    fp = _fdopen(hConHandle, "r");
-    *stdin = *fp;
-    setvbuf(stdin, NULL, _IONBF, 0);
+        // Redirect stdin to the console.
+        lStdHandle = (long)GetStdHandle(STD_INPUT_HANDLE);
+        hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
+        fp = _fdopen(hConHandle, "r");
+        *stdin = *fp;
+        setvbuf(stdin, NULL, _IONBF, 0);
 
-    // Redirect stderr to the console.
-    lStdHandle = (long)GetStdHandle(STD_ERROR_HANDLE);
-    hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
-    fp = _fdopen(hConHandle, "w");
-    *stderr = *fp;
-    setvbuf(stderr, NULL, _IONBF, 0);
+        // Redirect stderr to the console.
+        lStdHandle = (long)GetStdHandle(STD_ERROR_HANDLE);
+        hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
+        fp = _fdopen(hConHandle, "w");
+        *stderr = *fp;
+        setvbuf(stderr, NULL, _IONBF, 0);
 
 #pragma warning (pop)
 
-    // Make cout, wcout, cin, wcin, wcerr, cerr, wclog and clog point to the console as well.
-    ios::sync_with_stdio();
+        // Make cout, wcout, cin, wcin, wcerr, cerr, wclog and clog point to the console as well.
+        ios::sync_with_stdio();
+    }
 }
 
+
+//
 // DLL entry point.
+//
+
 BOOL APIENTRY DllMain(
     HANDLE  /*module*/, 
     DWORD   reason_for_call, 

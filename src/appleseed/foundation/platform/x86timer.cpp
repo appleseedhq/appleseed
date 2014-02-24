@@ -33,13 +33,13 @@
 // appleseed.foundation headers.
 #include "foundation/platform/thread.h"
 
+// Standard headers.
+#include <cassert>
+
 // Platform headers.
 #if defined _MSC_VER && defined _WIN64
 #include <intrin.h>
 #endif
-
-// Standard headers.
-#include <cassert>
 
 namespace foundation
 {

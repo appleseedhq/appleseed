@@ -39,17 +39,17 @@
 // boost headers.
 #include "boost/filesystem/operations.hpp"
 
+// Standard headers.
+#include <cassert>
+#include <cstddef>
+#include <cstring>
+
 // Platform headers.
 #if defined __APPLE__
 #include <mach-o/dyld.h>
 #elif defined __linux__
 #include <unistd.h>
 #endif
-
-// Standard headers.
-#include <cassert>
-#include <cstddef>
-#include <cstring>
 
 using namespace boost;
 using namespace std;
