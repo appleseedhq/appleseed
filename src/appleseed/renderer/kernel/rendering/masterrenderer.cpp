@@ -223,7 +223,7 @@ namespace
         OSL::ShadingSystem*     s,
         OIIO::TextureSystem*    tx)
     {
-        RENDERER_LOG_INFO(tx->getstats().c_str());
+        RENDERER_LOG_INFO("%s", tx->getstats().c_str());
         tx->reset_stats();
         OSL::ShadingSystem::destroy(s);
     }
