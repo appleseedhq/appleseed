@@ -1,4 +1,3 @@
-
 //
 // This source file is part of appleseed.
 // Visit http://appleseedhq.net/ for additional information and resources.
@@ -309,7 +308,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     RendererServices services(m_project, *m_texture_system);
 
     // Create our OSL shading system.
-    shared_ptr<OSL::ShadingSystem> shading_system(
+    boost::shared_ptr<OSL::ShadingSystem> shading_system(
         OSL::ShadingSystem::create(
             &services,
             m_texture_system.get(),
