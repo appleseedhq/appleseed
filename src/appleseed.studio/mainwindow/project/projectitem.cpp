@@ -68,6 +68,8 @@ ProjectItem::ProjectItem(
     addChild(m_scene_item);
 
     ItemBase* rules_item = new ItemBase(g_rules_class_uid, "Rules");
+    rules_item->set_allow_deletion(false);
+    rules_item->set_allow_edition(false);
     addChild(rules_item);
 
     m_render_layer_collection_item =
