@@ -184,6 +184,7 @@ DictionaryArray RenderLayerRuleFactory::get_input_metadata()
             .insert("name", "order")
             .insert("label", "Order")
             .insert("type", "text")
+            .insert("default", "1")
             .insert("use", "required"));
 
     return metadata;
