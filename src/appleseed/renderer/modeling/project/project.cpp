@@ -335,7 +335,7 @@ namespace
         {
             entity.set_render_layer_index(~0);
 
-            const string render_layer_name = rule.get_render_layer();
+            const string render_layer_name = substitute_variables(rule.get_render_layer(), entity);
 
             if (render_layer_name.empty())
                 return;
@@ -383,6 +383,16 @@ namespace
 
                 entity.set_render_layer_index(i->second.m_index);
             }
+        }
+
+        static string substitute_variables(
+            const string&                   render_layer_name,
+            const Entity&                   entity)
+        {
+            string result = render_layer_name;
+            result = replace(result, "{entity-name}", entity.get_name());
+            result = replace(result, "{entity-path}", entity.get_path());
+            return result;
         }
     };
 }
