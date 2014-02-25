@@ -591,6 +591,140 @@ TEST_SUITE(Foundation_Utility_String)
         EXPECT_EQ("aa&amp;amp;bb", result);
     }
 
+    bool fast_strtod_ok(const char* str)
+    {
+        const double ref = strtod(str, 0);
+        const double val = fast_strtod(str, 0);
+
+        return feq(ref, val, 1.0e-14);
+    }
+
+    TEST_CASE(FastStrtod)
+    {
+        EXPECT_TRUE(fast_strtod_ok("1"));
+        EXPECT_TRUE(fast_strtod_ok("+1"));
+        EXPECT_TRUE(fast_strtod_ok("-1"));
+
+        EXPECT_TRUE(fast_strtod_ok("1."));
+        EXPECT_TRUE(fast_strtod_ok("+1."));
+        EXPECT_TRUE(fast_strtod_ok("-1."));
+
+        EXPECT_TRUE(fast_strtod_ok(".1"));
+        EXPECT_TRUE(fast_strtod_ok("+.1"));
+        EXPECT_TRUE(fast_strtod_ok("-.1"));
+
+        EXPECT_TRUE(fast_strtod_ok("1.0"));
+        EXPECT_TRUE(fast_strtod_ok("+1.0"));
+        EXPECT_TRUE(fast_strtod_ok("-1.0"));
+
+        EXPECT_TRUE(fast_strtod_ok("1e8"));
+        EXPECT_TRUE(fast_strtod_ok("1e-8"));
+        EXPECT_TRUE(fast_strtod_ok("1e+8"));
+        EXPECT_TRUE(fast_strtod_ok("1E8"));
+        EXPECT_TRUE(fast_strtod_ok("1E-8"));
+        EXPECT_TRUE(fast_strtod_ok("1E+8"));
+        EXPECT_TRUE(fast_strtod_ok("+1e8"));
+        EXPECT_TRUE(fast_strtod_ok("+1e-8"));
+        EXPECT_TRUE(fast_strtod_ok("+1e+8"));
+        EXPECT_TRUE(fast_strtod_ok("+1E8"));
+        EXPECT_TRUE(fast_strtod_ok("+1E-8"));
+        EXPECT_TRUE(fast_strtod_ok("+1E+8"));
+        EXPECT_TRUE(fast_strtod_ok("-1e8"));
+        EXPECT_TRUE(fast_strtod_ok("-1e-8"));
+        EXPECT_TRUE(fast_strtod_ok("-1e+8"));
+        EXPECT_TRUE(fast_strtod_ok("-1E8"));
+        EXPECT_TRUE(fast_strtod_ok("-1E-8"));
+        EXPECT_TRUE(fast_strtod_ok("-1E+8"));
+
+        EXPECT_TRUE(fast_strtod_ok("1.e8"));
+        EXPECT_TRUE(fast_strtod_ok("1.e-8"));
+        EXPECT_TRUE(fast_strtod_ok("1.e+8"));
+        EXPECT_TRUE(fast_strtod_ok("1.E8"));
+        EXPECT_TRUE(fast_strtod_ok("1.E-8"));
+        EXPECT_TRUE(fast_strtod_ok("1.E+8"));
+        EXPECT_TRUE(fast_strtod_ok("+1.e8"));
+        EXPECT_TRUE(fast_strtod_ok("+1.e-8"));
+        EXPECT_TRUE(fast_strtod_ok("+1.e+8"));
+        EXPECT_TRUE(fast_strtod_ok("+1.E8"));
+        EXPECT_TRUE(fast_strtod_ok("+1.E-8"));
+        EXPECT_TRUE(fast_strtod_ok("+1.E+8"));
+        EXPECT_TRUE(fast_strtod_ok("-1.e8"));
+        EXPECT_TRUE(fast_strtod_ok("-1.e-8"));
+        EXPECT_TRUE(fast_strtod_ok("-1.e+8"));
+        EXPECT_TRUE(fast_strtod_ok("-1.E8"));
+        EXPECT_TRUE(fast_strtod_ok("-1.E-8"));
+        EXPECT_TRUE(fast_strtod_ok("-1.E+8"));
+
+        EXPECT_TRUE(fast_strtod_ok(".1e8"));
+        EXPECT_TRUE(fast_strtod_ok(".1e-8"));
+        EXPECT_TRUE(fast_strtod_ok(".1e+8"));
+        EXPECT_TRUE(fast_strtod_ok(".1E8"));
+        EXPECT_TRUE(fast_strtod_ok(".1E-8"));
+        EXPECT_TRUE(fast_strtod_ok(".1E+8"));
+        EXPECT_TRUE(fast_strtod_ok("+.1e8"));
+        EXPECT_TRUE(fast_strtod_ok("+.1e-8"));
+        EXPECT_TRUE(fast_strtod_ok("+.1e+8"));
+        EXPECT_TRUE(fast_strtod_ok("+.1E8"));
+        EXPECT_TRUE(fast_strtod_ok("+.1E-8"));
+        EXPECT_TRUE(fast_strtod_ok("+.1E+8"));
+        EXPECT_TRUE(fast_strtod_ok("-.1e8"));
+        EXPECT_TRUE(fast_strtod_ok("-.1e-8"));
+        EXPECT_TRUE(fast_strtod_ok("-.1e+8"));
+        EXPECT_TRUE(fast_strtod_ok("-.1E8"));
+        EXPECT_TRUE(fast_strtod_ok("-.1E-8"));
+        EXPECT_TRUE(fast_strtod_ok("-.1E+8"));
+
+        EXPECT_TRUE(fast_strtod_ok("1.2e8"));
+        EXPECT_TRUE(fast_strtod_ok("1.2e-8"));
+        EXPECT_TRUE(fast_strtod_ok("1.2e+8"));
+        EXPECT_TRUE(fast_strtod_ok("1.2E8"));
+        EXPECT_TRUE(fast_strtod_ok("1.2E-8"));
+        EXPECT_TRUE(fast_strtod_ok("1.2E+8"));
+        EXPECT_TRUE(fast_strtod_ok("+1.2e8"));
+        EXPECT_TRUE(fast_strtod_ok("+1.2e-8"));
+        EXPECT_TRUE(fast_strtod_ok("+1.2e+8"));
+        EXPECT_TRUE(fast_strtod_ok("+1.2E8"));
+        EXPECT_TRUE(fast_strtod_ok("+1.2E-8"));
+        EXPECT_TRUE(fast_strtod_ok("+1.2E+8"));
+        EXPECT_TRUE(fast_strtod_ok("-1.2e8"));
+        EXPECT_TRUE(fast_strtod_ok("-1.2e-8"));
+        EXPECT_TRUE(fast_strtod_ok("-1.2e+8"));
+        EXPECT_TRUE(fast_strtod_ok("-1.2E8"));
+        EXPECT_TRUE(fast_strtod_ok("-1.2E-8"));
+        EXPECT_TRUE(fast_strtod_ok("-1.2E+8"));
+    }
+
+    TEST_CASE(TestFastStrtodPrecision)
+    {
+        MersenneTwister rng;
+
+        for (size_t i = 0; i < 1000; ++i)
+        {
+            const double mantissa = rand_double1(rng, -1.0, 1.0);
+            const int exponent = rand_int1(rng, -300, 300);
+            const double value = ldexp(mantissa, exponent);
+
+            char str[1000];
+            sprintf(str, "%.16e", value);
+
+            EXPECT_TRUE(fast_strtod_ok(str));
+        }
+    }
+
+    TEST_CASE(MakeSafeFilename_GivenSafeFilename_ReturnsFilenameUnchanged)
+    {
+        const string result = make_safe_filename("hello-world_42.txt");
+
+        EXPECT_EQ("hello-world_42.txt", result);
+    }
+
+    TEST_CASE(MakeSafeFilename_GivenUnsafeFilename_ReturnsSafeFilename)
+    {
+        const string result = make_safe_filename("hello/world !.txt");
+
+        EXPECT_EQ("hello_world__.txt", result);
+    }
+
     TEST_CASE(Capitalize_GivenEmptyString_ReturnsEmptyString)
     {
         const string result = capitalize("");
@@ -745,125 +879,5 @@ TEST_SUITE(Foundation_Utility_String)
         EXPECT_EQ("10 ms", pretty_time(0.01, 0));
         EXPECT_EQ("10 ms", pretty_time(0.01, 3));
         EXPECT_EQ("10.0 ms", pretty_time(0.01, 4));
-    }
-
-    bool fast_strtod_ok(const char* str)
-    {
-        const double ref = strtod(str, 0);
-        const double val = fast_strtod(str, 0);
-
-        return feq(ref, val, 1.0e-14);
-    }
-
-    TEST_CASE(FastStrtod)
-    {
-        EXPECT_TRUE(fast_strtod_ok("1"));
-        EXPECT_TRUE(fast_strtod_ok("+1"));
-        EXPECT_TRUE(fast_strtod_ok("-1"));
-
-        EXPECT_TRUE(fast_strtod_ok("1."));
-        EXPECT_TRUE(fast_strtod_ok("+1."));
-        EXPECT_TRUE(fast_strtod_ok("-1."));
-
-        EXPECT_TRUE(fast_strtod_ok(".1"));
-        EXPECT_TRUE(fast_strtod_ok("+.1"));
-        EXPECT_TRUE(fast_strtod_ok("-.1"));
-
-        EXPECT_TRUE(fast_strtod_ok("1.0"));
-        EXPECT_TRUE(fast_strtod_ok("+1.0"));
-        EXPECT_TRUE(fast_strtod_ok("-1.0"));
-
-        EXPECT_TRUE(fast_strtod_ok("1e8"));
-        EXPECT_TRUE(fast_strtod_ok("1e-8"));
-        EXPECT_TRUE(fast_strtod_ok("1e+8"));
-        EXPECT_TRUE(fast_strtod_ok("1E8"));
-        EXPECT_TRUE(fast_strtod_ok("1E-8"));
-        EXPECT_TRUE(fast_strtod_ok("1E+8"));
-        EXPECT_TRUE(fast_strtod_ok("+1e8"));
-        EXPECT_TRUE(fast_strtod_ok("+1e-8"));
-        EXPECT_TRUE(fast_strtod_ok("+1e+8"));
-        EXPECT_TRUE(fast_strtod_ok("+1E8"));
-        EXPECT_TRUE(fast_strtod_ok("+1E-8"));
-        EXPECT_TRUE(fast_strtod_ok("+1E+8"));
-        EXPECT_TRUE(fast_strtod_ok("-1e8"));
-        EXPECT_TRUE(fast_strtod_ok("-1e-8"));
-        EXPECT_TRUE(fast_strtod_ok("-1e+8"));
-        EXPECT_TRUE(fast_strtod_ok("-1E8"));
-        EXPECT_TRUE(fast_strtod_ok("-1E-8"));
-        EXPECT_TRUE(fast_strtod_ok("-1E+8"));
-
-        EXPECT_TRUE(fast_strtod_ok("1.e8"));
-        EXPECT_TRUE(fast_strtod_ok("1.e-8"));
-        EXPECT_TRUE(fast_strtod_ok("1.e+8"));
-        EXPECT_TRUE(fast_strtod_ok("1.E8"));
-        EXPECT_TRUE(fast_strtod_ok("1.E-8"));
-        EXPECT_TRUE(fast_strtod_ok("1.E+8"));
-        EXPECT_TRUE(fast_strtod_ok("+1.e8"));
-        EXPECT_TRUE(fast_strtod_ok("+1.e-8"));
-        EXPECT_TRUE(fast_strtod_ok("+1.e+8"));
-        EXPECT_TRUE(fast_strtod_ok("+1.E8"));
-        EXPECT_TRUE(fast_strtod_ok("+1.E-8"));
-        EXPECT_TRUE(fast_strtod_ok("+1.E+8"));
-        EXPECT_TRUE(fast_strtod_ok("-1.e8"));
-        EXPECT_TRUE(fast_strtod_ok("-1.e-8"));
-        EXPECT_TRUE(fast_strtod_ok("-1.e+8"));
-        EXPECT_TRUE(fast_strtod_ok("-1.E8"));
-        EXPECT_TRUE(fast_strtod_ok("-1.E-8"));
-        EXPECT_TRUE(fast_strtod_ok("-1.E+8"));
-
-        EXPECT_TRUE(fast_strtod_ok(".1e8"));
-        EXPECT_TRUE(fast_strtod_ok(".1e-8"));
-        EXPECT_TRUE(fast_strtod_ok(".1e+8"));
-        EXPECT_TRUE(fast_strtod_ok(".1E8"));
-        EXPECT_TRUE(fast_strtod_ok(".1E-8"));
-        EXPECT_TRUE(fast_strtod_ok(".1E+8"));
-        EXPECT_TRUE(fast_strtod_ok("+.1e8"));
-        EXPECT_TRUE(fast_strtod_ok("+.1e-8"));
-        EXPECT_TRUE(fast_strtod_ok("+.1e+8"));
-        EXPECT_TRUE(fast_strtod_ok("+.1E8"));
-        EXPECT_TRUE(fast_strtod_ok("+.1E-8"));
-        EXPECT_TRUE(fast_strtod_ok("+.1E+8"));
-        EXPECT_TRUE(fast_strtod_ok("-.1e8"));
-        EXPECT_TRUE(fast_strtod_ok("-.1e-8"));
-        EXPECT_TRUE(fast_strtod_ok("-.1e+8"));
-        EXPECT_TRUE(fast_strtod_ok("-.1E8"));
-        EXPECT_TRUE(fast_strtod_ok("-.1E-8"));
-        EXPECT_TRUE(fast_strtod_ok("-.1E+8"));
-
-        EXPECT_TRUE(fast_strtod_ok("1.2e8"));
-        EXPECT_TRUE(fast_strtod_ok("1.2e-8"));
-        EXPECT_TRUE(fast_strtod_ok("1.2e+8"));
-        EXPECT_TRUE(fast_strtod_ok("1.2E8"));
-        EXPECT_TRUE(fast_strtod_ok("1.2E-8"));
-        EXPECT_TRUE(fast_strtod_ok("1.2E+8"));
-        EXPECT_TRUE(fast_strtod_ok("+1.2e8"));
-        EXPECT_TRUE(fast_strtod_ok("+1.2e-8"));
-        EXPECT_TRUE(fast_strtod_ok("+1.2e+8"));
-        EXPECT_TRUE(fast_strtod_ok("+1.2E8"));
-        EXPECT_TRUE(fast_strtod_ok("+1.2E-8"));
-        EXPECT_TRUE(fast_strtod_ok("+1.2E+8"));
-        EXPECT_TRUE(fast_strtod_ok("-1.2e8"));
-        EXPECT_TRUE(fast_strtod_ok("-1.2e-8"));
-        EXPECT_TRUE(fast_strtod_ok("-1.2e+8"));
-        EXPECT_TRUE(fast_strtod_ok("-1.2E8"));
-        EXPECT_TRUE(fast_strtod_ok("-1.2E-8"));
-        EXPECT_TRUE(fast_strtod_ok("-1.2E+8"));
-    }
-
-    TEST_CASE(TestFastStrtodPrecision)
-    {
-        MersenneTwister rng;
-
-        for (size_t i = 0; i < 1000; ++i)
-        {
-            const double mantissa = rand_double1(rng, -1.0, 1.0);
-            const int exponent = rand_int1(rng, -300, 300);
-            const double value = ldexp(mantissa, exponent);
-
-            char str[1000];
-            sprintf(str, "%.16e", value);
-
-            EXPECT_TRUE(fast_strtod_ok(str));
-        }
     }
 }

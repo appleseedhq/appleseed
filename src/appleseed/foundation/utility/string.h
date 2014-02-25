@@ -83,9 +83,9 @@ std::string to_string(const T& value);
 // Convert an array of values to a string.
 template <typename T>
 std::string to_string(
-    const T             array[],
-    const size_t        n,
-    const std::string&  separator = " ");
+    const T                 array[],
+    const size_t            n,
+    const std::string&      separator = " ");
 
 // Convert a string to a value.
 template <typename T>
@@ -113,50 +113,50 @@ std::string upper_case(const std::string& s);
 // Compare two strings lexicographically, regardless of their case.
 // Returns -1 if lhs < rhs, +1 if lhs > rhs, and 0 if lhs == rhs.
 int strcmp_nocase(
-    const std::string&          lhs,
-    const std::string&          rhs);
+    const std::string&      lhs,
+    const std::string&      rhs);
 
 // Return a given string left- or right-padded to a given length.
 // The string 's' is returned unchanged if it is already longer than
 // the specified length.
 std::string pad_left(
-    const std::string&          s,
-    const char                  padding,
-    const size_t                length);
+    const std::string&      s,
+    const char              padding,
+    const size_t            length);
 std::string pad_right(
-    const std::string&          s,
-    const char                  padding,
-    const size_t                length);
+    const std::string&      s,
+    const char              padding,
+    const size_t            length);
 
 // Remove leading, trailing or leading and trailing characters from
 // a given string. Typically used to remove blanks around a string.
 std::string trim_left(
-    const std::string&          s,
-    const std::string&          delimiters = Blanks);
+    const std::string&      s,
+    const std::string&      delimiters = Blanks);
 std::string trim_right(
-    const std::string&          s,
-    const std::string&          delimiters = Blanks);
+    const std::string&      s,
+    const std::string&      delimiters = Blanks);
 std::string trim_both(
-    const std::string&          s,
-    const std::string&          delimiters = Blanks);
+    const std::string&      s,
+    const std::string&      delimiters = Blanks);
 
 // Split a given string into multiple individual tokens of a given
 // type, according to a set of delimiting characters.
 template <typename Vec>
 void tokenize(
-    const std::string&          s,
-    const std::string&          delimiters,
-    Vec&                        tokens);
+    const std::string&      s,
+    const std::string&      delimiters,
+    Vec&                    tokens);
 
 // A variant of tokenize() that stores the tokens into a C array of
 // a given maximum size. Returns the number of tokens stored in the
 // array. 'max_tokens' must be greater than 0.
 template <typename T>
 size_t tokenize(
-    const std::string&          s,
-    const std::string&          delimiters,
-    T                           tokens[],
-    const size_t                max_tokens);
+    const std::string&      s,
+    const std::string&      delimiters,
+    T                       tokens[],
+    const size_t            max_tokens);
 
 // Like tokenize(), but consider that there are empty tokens between delimiters.
 // This function has the same semantics as Python's string.split() function:
@@ -164,26 +164,33 @@ size_t tokenize(
 //   http://codepad.org/MCL9GcKH
 template <typename Vec>
 void split(
-    const std::string&          s,
-    const std::string&          delimiters,
-    Vec&                        tokens);
+    const std::string&      s,
+    const std::string&      delimiters,
+    Vec&                    tokens);
 
 // Return a copy of the input string 's' where all occurrences of 'old_string'
 // were replaced by 'new_string'.
 std::string replace(
-    const std::string&          s,
-    const std::string&          old_string,
-    const std::string&          new_string);
+    const std::string&      s,
+    const std::string&      old_string,
+    const std::string&      new_string);
 
 // Return a copy of the input pattern where consecutive '#' characters have
 // been replaced by 'value', with leading zeroes added as necessary.
 std::string get_numbered_string(
-    const std::string&          pattern,
-    const size_t                value);
+    const std::string&      pattern,
+    const size_t            value);
 
 // Return the maximum value that can be return by get_numbered_string() for
 // a given pattern.
 size_t get_numbered_string_max_value(const std::string& pattern);
+
+// Return a time stamp string based on the current date and time.
+// The returned string has the form YYYYMMDD.HHmmSS.XXX, where:
+//   Y = year, M = month, D = day
+//   H = hour, m = minute, s = second
+//   X is implementation defined
+std::string get_time_stamp_string();
 
 // Replace all special characters of a string by the corresponding XML entities.
 std::string replace_special_xml_characters(const std::string& s);
@@ -230,12 +237,12 @@ double fast_strtod(char* str, char** end_ptr);
 // Filename manipulation functions.
 //
 
-// Return a time stamp string based on the current date and time.
-// The returned string has the form YYYYMMDD.HHmmSS.XXX, where:
-//   Y = year, M = month, D = day
-//   H = hour, m = minute, s = second
-//   X is implementation defined
-std::string get_time_stamp_string();
+// Replace all unsafe characters in a filename by a given substitute character.
+// The set of safe characters is defined in the Open Group Base Specification:
+// http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap03.html#tag_03_278
+std::string make_safe_filename(
+    const std::string&      filename,
+    const char              substitute = '_');
 
 
 //
@@ -249,13 +256,13 @@ std::string capitalize(const std::string& s);
 // Return the plural of a unit, depending on a value.
 template <typename T>
 std::string plural(
-    const T                     value,
-    const std::string&          unit);
+    const T                 value,
+    const std::string&      unit);
 template <typename T>
 std::string plural(
-    const T                     value,
-    const std::string&          unit_singular,
-    const std::string&          unit_plural);
+    const T                 value,
+    const std::string&      unit_singular,
+    const std::string&      unit_plural);
 
 // Pretty-print an unsigned integer value.
 std::string pretty_uint(const uint64 value);
@@ -265,8 +272,8 @@ std::string pretty_int(const int64 value);
 
 // Pretty-print a floating-point value.
 std::string pretty_scalar(
-    const double                value,
-    const std::streamsize       precision = 1);
+    const double            value,
+    const std::streamsize   precision = 1);
 
 // Pretty-print the ratio numerator/denominator.
 // Returns the string "infinite" if the numerator is greater than zero
@@ -274,9 +281,9 @@ std::string pretty_scalar(
 // Returns the string "n/a" if both the numerator and the denominator are zero.
 template <typename T>
 std::string pretty_ratio(
-    const T                     numerator,
-    const T                     denominator,
-    const std::streamsize       precision = 1);
+    const T                 numerator,
+    const T                 denominator,
+    const std::streamsize   precision = 1);
 
 // Pretty-print the ratio numerator/denominator as a percentage.
 // Returns the string "infinite" if the numerator is greater than zero
@@ -284,19 +291,19 @@ std::string pretty_ratio(
 // Returns the string "n/a" if both the numerator and the denominator are zero.
 template <typename T>
 std::string pretty_percent(
-    const T                     numerator,
-    const T                     denominator,
-    const std::streamsize       precision = 1);
+    const T                 numerator,
+    const T                 denominator,
+    const std::streamsize   precision = 1);
 
 // Pretty-print a time value, given in seconds.
 std::string pretty_time(
-    const double                seconds,
-    const std::streamsize       precision = 1);
+    const double            seconds,
+    const std::streamsize   precision = 1);
 
 // Pretty-print a size, given in bytes.
 std::string pretty_size(
-    const uint64                bytes,
-    const std::streamsize       precision = 1);
+    const uint64            bytes,
+    const std::streamsize   precision = 1);
 
 
 //
@@ -496,8 +503,8 @@ inline std::string upper_case(const std::string& s)
 }
 
 inline int strcmp_nocase(
-    const std::string&          lhs,
-    const std::string&          rhs)
+    const std::string&      lhs,
+    const std::string&      rhs)
 {
     std::string::const_iterator lhs_it = lhs.begin();
     std::string::const_iterator rhs_it = rhs.begin();
@@ -516,9 +523,9 @@ inline int strcmp_nocase(
 }
 
 inline std::string pad_left(
-    const std::string&          s,
-    const char                  padding,
-    const size_t                length)
+    const std::string&      s,
+    const char              padding,
+    const size_t            length)
 {
     if (s.size() >= length)
          return s;
@@ -526,9 +533,9 @@ inline std::string pad_left(
 }
 
 inline std::string pad_right(
-    const std::string&          s,
-    const char                  padding,
-    const size_t                length)
+    const std::string&      s,
+    const char              padding,
+    const size_t            length)
 {
     if (s.size() >= length)
          return s;
@@ -536,24 +543,24 @@ inline std::string pad_right(
 }
 
 inline std::string trim_left(
-    const std::string&          s,
-    const std::string&          delimiters)
+    const std::string&      s,
+    const std::string&      delimiters)
 {
     const std::string::size_type begin = s.find_first_not_of(delimiters);
     return begin == std::string::npos ? "" : s.substr(begin);
 }
 
 inline std::string trim_right(
-    const std::string&          s,
-    const std::string&          delimiters)
+    const std::string&      s,
+    const std::string&      delimiters)
 {
     const std::string::size_type end = s.find_last_not_of(delimiters);
     return end == std::string::npos ? "" : s.substr(0, end + 1);
 }
 
 inline std::string trim_both(
-    const std::string&          s,
-    const std::string&          delimiters)
+    const std::string&      s,
+    const std::string&      delimiters)
 {
     const std::string::size_type begin = s.find_first_not_of(delimiters);
     const std::string::size_type end = s.find_last_not_of(delimiters);
@@ -562,9 +569,9 @@ inline std::string trim_both(
 
 template <typename Vec>
 void tokenize(
-    const std::string&          s,
-    const std::string&          delimiters,
-    Vec&                        tokens)
+    const std::string&      s,
+    const std::string&      delimiters,
+    Vec&                    tokens)
 {
     // Skip delimiters at the beginning.
     std::string::size_type last_pos = s.find_first_not_of(delimiters, 0);
@@ -589,10 +596,10 @@ void tokenize(
 
 template <typename T>
 size_t tokenize(
-    const std::string&          s,
-    const std::string&          delimiters,
-    T                           tokens[],
-    const size_t                max_tokens)
+    const std::string&      s,
+    const std::string&      delimiters,
+    T                       tokens[],
+    const size_t            max_tokens)
 {
     assert(tokens);
     assert(max_tokens > 0);
@@ -626,9 +633,9 @@ size_t tokenize(
 
 template <typename Vec>
 void split(
-    const std::string&          s,
-    const std::string&          delimiters,
-    Vec&                        tokens)
+    const std::string&      s,
+    const std::string&      delimiters,
+    Vec&                    tokens)
 {
     std::string::size_type pos = 0;
 
@@ -662,9 +669,9 @@ void split(
 }
 
 inline std::string replace(
-    const std::string&          s,
-    const std::string&          old_string,
-    const std::string&          new_string)
+    const std::string&      s,
+    const std::string&      old_string,
+    const std::string&      new_string)
 {
     assert(!old_string.empty());
 
@@ -685,8 +692,8 @@ inline std::string replace(
 }
 
 inline std::string get_numbered_string(
-    const std::string&          pattern,
-    const size_t                value)
+    const std::string&      pattern,
+    const size_t            value)
 {
     const size_t b = pattern.find_first_of('#');
 
@@ -727,6 +734,29 @@ inline size_t get_numbered_string_max_value(const std::string& pattern)
     return pow_int<size_t>(10, n) - 1;
 }
 
+inline std::string get_time_stamp_string()
+{
+    // Retrieve the current date and time.
+    std::time_t t;
+    std::time(&t);
+    const std::tm* local_time = std::localtime(&t);
+
+    // Build the time stamp string.
+    std::stringstream sstr;
+    sstr << std::setfill('0');
+    sstr << std::setw(4) << local_time->tm_year + 1900;
+    sstr << std::setw(2) << local_time->tm_mon + 1;
+    sstr << std::setw(2) << local_time->tm_mday;
+    sstr << ".";
+    sstr << std::setw(2) << local_time->tm_hour;
+    sstr << std::setw(2) << local_time->tm_min;
+    sstr << std::setw(2) << local_time->tm_sec;
+    sstr << ".";
+    sstr << std::setw(3) << 0;  // milliseconds not available, set field to 000
+
+    return sstr.str();
+}
+
 namespace impl
 {
     struct XMLEntity
@@ -738,9 +768,7 @@ namespace impl
 
 inline std::string replace_special_xml_characters(const std::string& s)
 {
-    //
     // Reference: http://en.wikipedia.org/wiki/List_of_XML_and_HTML_character_entity_references
-    //
 
     static const impl::XMLEntity XMLEntities[] =
     {
@@ -788,27 +816,27 @@ inline double fast_strtod(char* str, char** end_ptr)
 // Filename manipulation functions implementation.
 //
 
-inline std::string get_time_stamp_string()
+inline std::string make_safe_filename(
+    const std::string&      filename,
+    const char              substitute)
 {
-    // Retrieve the current date and time.
-    std::time_t t;
-    std::time(&t);
-    const std::tm* local_time = std::localtime(&t);
+    std::string result = filename;
 
-    // Build the time stamp string.
-    std::stringstream sstr;
-    sstr << std::setfill('0');
-    sstr << std::setw(4) << local_time->tm_year + 1900;
-    sstr << std::setw(2) << local_time->tm_mon + 1;
-    sstr << std::setw(2) << local_time->tm_mday;
-    sstr << ".";
-    sstr << std::setw(2) << local_time->tm_hour;
-    sstr << std::setw(2) << local_time->tm_min;
-    sstr << std::setw(2) << local_time->tm_sec;
-    sstr << ".";
-    sstr << std::setw(3) << 0;  // milliseconds not available, set field to 000
+    for (std::string::iterator i = result.begin(); i != result.end(); ++i)
+    {
+        const char c = *i;
+        const bool is_safe =
+            (c >= 'A' && c <= 'Z') ||
+            (c >= 'a' && c <= 'z') ||
+            (c >= '0' && c <= '9') ||
+            c == '.' ||
+            c == '_' ||
+            c == '-';
+        if (!is_safe)
+            *i = substitute;
+    }
 
-    return sstr.str();
+    return result;
 }
 
 
@@ -837,17 +865,17 @@ inline std::string capitalize(const std::string& s)
 
 template <typename T>
 std::string plural(
-    const T                     value,
-    const std::string&          unit)
+    const T                 value,
+    const std::string&      unit)
 {
     return unit + (value > T(1) ? "s" : "");
 }
 
 template <typename T>
 std::string plural(
-    const T                     value,
-    const std::string&          unit_singular,
-    const std::string&          unit_plural)
+    const T                 value,
+    const std::string&      unit_singular,
+    const std::string&      unit_plural)
 {
     return value > T(1) ? unit_plural : unit_singular;
 }
@@ -882,8 +910,8 @@ inline std::string pretty_int(const int64 value)
 }
 
 inline std::string pretty_scalar(
-    const double                value,
-    const std::streamsize       precision)
+    const double            value,
+    const std::streamsize   precision)
 {
     assert(precision >= 0);
 
@@ -897,9 +925,9 @@ inline std::string pretty_scalar(
 
 template <typename T>
 inline std::string pretty_ratio(
-    const T                     numerator,
-    const T                     denominator,
-    const std::streamsize       precision)
+    const T                 numerator,
+    const T                 denominator,
+    const std::streamsize   precision)
 {
     assert(numerator >= 0);
     assert(denominator >= 0);
@@ -913,9 +941,9 @@ inline std::string pretty_ratio(
 
 template <typename T>
 inline std::string pretty_percent(
-    const T                     numerator,
-    const T                     denominator,
-    const std::streamsize       precision)
+    const T                 numerator,
+    const T                 denominator,
+    const std::streamsize   precision)
 {
     assert(numerator >= 0);
     assert(denominator >= 0);
@@ -932,8 +960,8 @@ inline std::string pretty_percent(
 }
 
 inline std::string pretty_time(
-    const double                seconds,
-    const std::streamsize       precision)
+    const double            seconds,
+    const std::streamsize   precision)
 {
     assert(seconds >= 0.0);
     assert(precision >= 0);
@@ -1007,8 +1035,8 @@ inline std::string pretty_time(
 }
 
 inline std::string pretty_size(
-    const uint64                bytes,
-    const std::streamsize       precision)
+    const uint64            bytes,
+    const std::streamsize   precision)
 {
     assert(precision >= 0);
 
