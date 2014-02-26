@@ -215,7 +215,7 @@ namespace
         {
             const CompositeClosure* c = reinterpret_cast<const CompositeClosure*>(data);
 
-            if (c->num_closures() > 0)
+            if (c->get_num_closures() > 0)
             {
                 sampling_context.split_in_place(1, 1);
                 const double s = sampling_context.next_double2();
@@ -223,10 +223,10 @@ namespace
                 const int closure_index = c->choose_closure(s);
                 const Basis3d new_shading_basis = make_osl_basis(c, closure_index, shading_basis);
 
-                Mode result =
-                    bsdf_to_closure_id(c->closure_type(closure_index)).sample(
+                const Mode result =
+                    bsdf_to_closure_id(c->get_closure_type(closure_index)).sample(
                         sampling_context,
-                        c->closure_input_values(closure_index),
+                        c->get_closure_input_values(closure_index),
                         adjoint,
                         false,
                         geometric_normal,
@@ -236,7 +236,7 @@ namespace
                         value,
                         probability);
 
-                value *= c->closure_spectrum_multiplier(closure_index);
+                value *= c->get_closure_spectrum_multiplier(closure_index);
                 return result;
             }
             else
@@ -263,14 +263,14 @@ namespace
 
             const CompositeClosure* c = reinterpret_cast<const CompositeClosure*>(data);
 
-            for (size_t i = 0, e = c->num_closures(); i < e; ++i)
+            for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
             {
                 Spectrum s;
                 const Basis3d new_shading_basis = make_osl_basis(c, i, shading_basis);
 
                 const double bsdf_prob =
-                    bsdf_to_closure_id(c->closure_type(i)).evaluate(
-                        c->closure_input_values(i),
+                    bsdf_to_closure_id(c->get_closure_type(i)).evaluate(
+                        c->get_closure_input_values(i),
                         adjoint,
                         false,
                         geometric_normal,
@@ -282,11 +282,11 @@ namespace
 
                 if (bsdf_prob > 0.0)
                 {
-                    s *= c->closure_spectrum_multiplier(i);
+                    s *= c->get_closure_spectrum_multiplier(i);
                     value += s;
                 }
 
-                prob += bsdf_prob * c->closure_cdf_weight(i);
+                prob += bsdf_prob * c->get_closure_cdf_weight(i);
             }
 
             return prob;
@@ -303,20 +303,20 @@ namespace
             const CompositeClosure* c = reinterpret_cast<const CompositeClosure*>(data);
             double prob = 0.0;
 
-            for (size_t i = 0, e = c->num_closures(); i < e; ++i)
+            for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
             {
                 const Basis3d new_shading_basis = make_osl_basis(c, i, shading_basis);
 
                 const double bsdf_prob =
-                    bsdf_to_closure_id(c->closure_type(i)).evaluate_pdf(
-                        c->closure_input_values(i),
+                    bsdf_to_closure_id(c->get_closure_type(i)).evaluate_pdf(
+                        c->get_closure_input_values(i),
                         geometric_normal,
                         new_shading_basis,
                         outgoing,
                         incoming,
                         modes);
 
-                prob += bsdf_prob * c->closure_cdf_weight(i);
+                prob += bsdf_prob * c->get_closure_cdf_weight(i);
             }
 
             return prob;
@@ -368,9 +368,9 @@ namespace
         {
             return
                 Basis3d(
-                    c->closure_normal(index),
+                    c->get_closure_normal(index),
                     c->closure_has_tangent(index)
-                        ? c->closure_tangent(index)
+                        ? c->get_closure_tangent(index)
                         : original_basis.get_tangent_u());
         }
     };

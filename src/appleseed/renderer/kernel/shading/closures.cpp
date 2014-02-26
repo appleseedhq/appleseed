@@ -108,7 +108,7 @@ CompositeClosure::CompositeClosure(
 {
     process_closure_tree(ci, Color3f(1.0f));
 
-    if (num_closures())
+    if (get_num_closures())
         m_cdf.prepare();
 }
 
@@ -336,7 +336,7 @@ void CompositeClosure::do_add_closure(
     BOOST_STATIC_ASSERT( value_in_list::value);
     
     // Make sure we have enough space.
-    if (num_closures() >= MaxClosureEntries)
+    if (get_num_closures() >= MaxClosureEntries)
     {
         RENDERER_LOG_WARNING("maximum number of closures in OSL shadergroup exceeded; ignoring closure.");
         return;
@@ -351,7 +351,7 @@ void CompositeClosure::do_add_closure(
     if (w <= 0.0)
         return;
 
-    m_cdf.insert(num_closures(), w);
+    m_cdf.insert(get_num_closures(), w);
     linear_rgb_reflectance_to_spectrum(weight, m_spectrum_multipliers[m_num_closures]);
     m_normals[m_num_closures] = normalize(normal);
     m_has_tangent[m_num_closures] = has_tangent;
