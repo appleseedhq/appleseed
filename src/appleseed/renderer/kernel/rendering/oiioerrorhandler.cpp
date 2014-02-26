@@ -44,23 +44,23 @@ void OIIOErrorHandler::operator()(int errcode, const std::string& msg)
     switch (errcode)
     {
       case EH_WARNING:
-        RENDERER_LOG_WARNING(msg.c_str());
+        RENDERER_LOG_WARNING("%s", msg.c_str());
         break;
 
       case EH_ERROR:
-        RENDERER_LOG_ERROR(msg.c_str());
+        RENDERER_LOG_ERROR("%s", msg.c_str());
         break;
 
       case EH_SEVERE:
-        RENDERER_LOG_FATAL(msg.c_str());
+        RENDERER_LOG_FATAL("%s", msg.c_str());
         break;
 
       case EH_DEBUG:
-        RENDERER_LOG_DEBUG(msg.c_str());
+        RENDERER_LOG_DEBUG("%s", msg.c_str());
         break;
 
       default:
-        RENDERER_LOG_INFO(msg.c_str());
+        RENDERER_LOG_INFO("%s", msg.c_str());
     }
 }
 

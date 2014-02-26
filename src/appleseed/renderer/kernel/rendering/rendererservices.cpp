@@ -191,7 +191,7 @@ bool RendererServices::has_userdata(OIIO::ustring name,
 void RendererServices::log_error(const std::string& message)
 {
     if (!message.empty())
-        RENDERER_LOG_ERROR(message.c_str());    
+        RENDERER_LOG_ERROR("%s", message.c_str());
 }
 
 }   // namespace renderer
