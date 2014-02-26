@@ -101,14 +101,15 @@ class APPLESEED_ALIGN(16) CompositeClosure
 {
   public:
     explicit CompositeClosure(const OSL::ClosureColor* ci);
-           
-    size_t num_closures() const;
-    ClosureID closure_type(const size_t index) const;
-    double closure_weight(const size_t index) const;
-    const foundation::Vector3d& closure_normal(const size_t index) const;
+
+    size_t get_num_closures() const;
+    ClosureID get_closure_type(const size_t index) const;
+    double get_closure_cdf_weight(const size_t index) const;
+    const Spectrum& get_closure_spectrum_multiplier(const size_t index) const;
+    const foundation::Vector3d& get_closure_normal(const size_t index) const;
     bool closure_has_tangent(const size_t index) const;
-    const foundation::Vector3d& closure_tangent(const size_t index) const;
-    void* closure_input_values(const size_t index) const;
+    const foundation::Vector3d& get_closure_tangent(const size_t index) const;
+    void* get_closure_input_values(const size_t index) const;
 
     size_t choose_closure(const double w) const;
 
@@ -130,16 +131,16 @@ class APPLESEED_ALIGN(16) CompositeClosure
     enum { MaxClosureEntries = 8 };
     enum { MaxPoolSize = MaxClosureEntries * sizeof(boost::mpl::deref<BiggestInputValueType::base>::type) };
 
-    double                          m_weights[MaxClosureEntries];
     void*                           m_input_values[MaxClosureEntries];
     ClosureID                       m_closure_types[MaxClosureEntries];
     foundation::Vector3d            m_normals[MaxClosureEntries];
     bool                            m_has_tangent[MaxClosureEntries];
     foundation::Vector3d            m_tangents[MaxClosureEntries];
-    char                            m_pool[MaxPoolSize];
     int                             m_num_closures;
     int                             m_num_bytes;
     foundation::CDF<size_t, double> m_cdf;
+    Spectrum                        m_spectrum_multipliers[MaxClosureEntries];
+    char                            m_pool[MaxPoolSize];
 
     void process_closure_tree(
         const OSL::ClosureColor*    closure, 
@@ -178,24 +179,30 @@ void register_closures(OSL::ShadingSystem& shading_system);
 // CompositeClosure class implementation.
 // 
 
-inline size_t CompositeClosure::num_closures() const
+inline size_t CompositeClosure::get_num_closures() const
 {
     return m_num_closures;
 }
 
-inline ClosureID CompositeClosure::closure_type(const size_t index) const
+inline ClosureID CompositeClosure::get_closure_type(const size_t index) const
 {
     assert(index < num_closures());
     return m_closure_types[index];
 }
 
-inline double CompositeClosure::closure_weight(const size_t index) const
+inline double CompositeClosure::get_closure_cdf_weight(const size_t index) const
 {
     assert(index < num_closures());
-    return m_weights[index];
+    return m_cdf[index].second;
 }
 
-inline const foundation::Vector3d& CompositeClosure::closure_normal(const size_t index) const
+inline const Spectrum& CompositeClosure::get_closure_spectrum_multiplier(const size_t index) const
+{
+    assert(index < num_closures());
+    return m_spectrum_multipliers[index];
+}
+
+inline const foundation::Vector3d& CompositeClosure::get_closure_normal(const size_t index) const
 {
     assert(index < num_closures());
     return m_normals[index];    
@@ -207,14 +214,14 @@ inline bool CompositeClosure::closure_has_tangent(const size_t index) const
     return m_has_tangent[index];    
 }
 
-inline const foundation::Vector3d& CompositeClosure::closure_tangent(const size_t index) const
+inline const foundation::Vector3d& CompositeClosure::get_closure_tangent(const size_t index) const
 {
     assert(index < num_closures());
     assert(closure_has_tangent(index));
     return m_tangents[index];
 }
 
-inline void* CompositeClosure::closure_input_values(const size_t index) const
+inline void* CompositeClosure::get_closure_input_values(const size_t index) const
 {
     assert(index < num_closures());
     return m_input_values[index];

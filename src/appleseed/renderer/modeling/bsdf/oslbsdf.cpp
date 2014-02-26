@@ -83,19 +83,19 @@ namespace
           : BSDF(name, Reflective, AllScatteringModes, params)
         {
             memset(m_all_bsdfs, 0, sizeof(BSDF*) * NumClosuresIDs);
-        
+
             m_ashikhmin_shirley_brdf =
                 create_and_register_bsdf(
                     AshikhminShirleyID,
                     "ashikhmin_brdf",
                     "osl_ashikhmin_shirley");
-        
+
             m_diffuse_btdf =
                 create_and_register_bsdf(
                     TranslucentID,
                     "diffuse_btdf",
                     "osl_translucent");
-        
+
             m_lambertian_brdf =
                 create_and_register_bsdf(
                     LambertID,
@@ -107,34 +107,34 @@ namespace
                     ReflectionID,
                     "specular_brdf",
                     "osl_reflection");
-        
+
             m_specular_btdf =
                 create_and_register_bsdf(
                     RefractionID,
                     "specular_btdf",
                     "osl_refraction");
-        
+
             m_microfacet_beckmann_brdf =
                 create_and_register_bsdf(
                     MicrofacetBeckmannID,
                     "microfacet_brdf",
                     "osl_beckmann",
                     ParamArray().insert("mdf", "beckmann"));
-        
+
             m_microfacet_blinn_brdf =
                 create_and_register_bsdf(
                     MicrofacetBlinnID,
                     "microfacet_brdf",
                     "osl_blinn",
                     ParamArray().insert("mdf", "blinn"));
-        
+
             m_microfacet_ggx_brdf =
                 create_and_register_bsdf(
                     MicrofacetGGXID,
                     "microfacet_brdf",
                     "osl_ggx",
                     ParamArray().insert("mdf", "ggx"));
-        
+
             m_microfacet_ward_brdf =
                 create_and_register_bsdf(
                     MicrofacetWardID,
@@ -160,7 +160,7 @@ namespace
         {
             if (!BSDF::on_frame_begin(project, assembly))
                 return false;
-        
+
             for (int i = 0; i < NumClosuresIDs; ++i)
             {
                 if (BSDF* bsdf = m_all_bsdfs[i])
@@ -169,7 +169,7 @@ namespace
                         return false;
                 }
             }
-        
+
             return true;
         }
 
@@ -178,7 +178,7 @@ namespace
             const Assembly&     assembly) OVERRIDE
         {
             BSDF::on_frame_end(project, assembly);
-        
+
             for (int i = 0; i < NumClosuresIDs; ++i)
             {
                 if (BSDF* bsdf = m_all_bsdfs[i])
@@ -214,19 +214,19 @@ namespace
             double&             probability) const
         {
             const CompositeClosure* c = reinterpret_cast<const CompositeClosure*>(data);
-        
-            if (c->num_closures() > 0)
+
+            if (c->get_num_closures() > 0)
             {
                 sampling_context.split_in_place(1, 1);
                 const double s = sampling_context.next_double2();
-        
+
                 const int closure_index = c->choose_closure(s);
                 const Basis3d new_shading_basis = make_osl_basis(c, closure_index, shading_basis);
-        
-                return
-                    bsdf_to_closure_id(c->closure_type(closure_index)).sample(
+
+                const Mode result =
+                    bsdf_to_closure_id(c->get_closure_type(closure_index)).sample(
                         sampling_context,
-                        c->closure_input_values(closure_index),
+                        c->get_closure_input_values(closure_index),
                         adjoint,
                         false,
                         geometric_normal,
@@ -235,6 +235,9 @@ namespace
                         incoming,
                         value,
                         probability);
+
+                value *= c->get_closure_spectrum_multiplier(closure_index);
+                return result;
             }
             else
             {
@@ -257,17 +260,17 @@ namespace
         {
             double prob = 0.0;
             value.set(0.0f);
-        
+
             const CompositeClosure* c = reinterpret_cast<const CompositeClosure*>(data);
-        
-            for (size_t i = 0, e = c->num_closures(); i < e; ++i)
+
+            for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
             {
                 Spectrum s;
                 const Basis3d new_shading_basis = make_osl_basis(c, i, shading_basis);
-        
+
                 const double bsdf_prob =
-                    bsdf_to_closure_id(c->closure_type(i)).evaluate(
-                        c->closure_input_values(i),
+                    bsdf_to_closure_id(c->get_closure_type(i)).evaluate(
+                        c->get_closure_input_values(i),
                         adjoint,
                         false,
                         geometric_normal,
@@ -276,16 +279,16 @@ namespace
                         incoming,
                         modes,
                         s);
-        
+
                 if (bsdf_prob > 0.0)
                 {
-                    s *= static_cast<float>(c->closure_weight(i));
+                    s *= c->get_closure_spectrum_multiplier(i);
                     value += s;
                 }
-        
-                prob += bsdf_prob * c->closure_weight(i);
+
+                prob += bsdf_prob * c->get_closure_cdf_weight(i);
             }
-        
+
             return prob;
         }
 
@@ -299,23 +302,23 @@ namespace
         {
             const CompositeClosure* c = reinterpret_cast<const CompositeClosure*>(data);
             double prob = 0.0;
-        
-            for (size_t i = 0, e = c->num_closures(); i < e; ++i)
+
+            for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
             {
                 const Basis3d new_shading_basis = make_osl_basis(c, i, shading_basis);
-        
+
                 const double bsdf_prob =
-                    bsdf_to_closure_id(c->closure_type(i)).evaluate_pdf(
-                        c->closure_input_values(i),
+                    bsdf_to_closure_id(c->get_closure_type(i)).evaluate_pdf(
+                        c->get_closure_input_values(i),
                         geometric_normal,
                         new_shading_basis,
                         outgoing,
                         incoming,
                         modes);
-        
-                prob += bsdf_prob * c->closure_weight(i); 
+
+                prob += bsdf_prob * c->get_closure_cdf_weight(i);
             }
-        
+
             return prob;
         }
 
@@ -330,7 +333,7 @@ namespace
         foundation::auto_release_ptr<BSDF>      m_specular_brdf;
         foundation::auto_release_ptr<BSDF>      m_specular_btdf;
         BSDF*                                   m_all_bsdfs[NumClosuresIDs];
-    
+
         foundation::auto_release_ptr<BSDF> create_and_register_bsdf(
             const ClosureID                     cid,
             const char*                         model,
@@ -339,36 +342,35 @@ namespace
         {
             auto_release_ptr<BSDF> bsdf =
                 BSDFFactoryRegistrar().lookup(model)->create(name, params);
-        
-            m_all_bsdfs[cid] = bsdf.get();
 
+            m_all_bsdfs[cid] = bsdf.get();
             return bsdf;
         }
-    
+
         const BSDF& bsdf_to_closure_id(const ClosureID cid) const
         {
             const BSDF* bsdf = m_all_bsdfs[cid];
             assert(bsdf);
-            return *bsdf;            
+            return *bsdf;
         }
-        
+
         BSDF& bsdf_to_closure_id(const ClosureID cid)
         {
             BSDF* bsdf = m_all_bsdfs[cid];
             assert(bsdf);
-            return *bsdf;            
+            return *bsdf;
         }
 
         Basis3d make_osl_basis(
-            const CompositeClosure* c, 
+            const CompositeClosure* c,
             const size_t            index,
             const Basis3d&          original_basis) const
         {
             return
                 Basis3d(
-                    c->closure_normal(index),
+                    c->get_closure_normal(index),
                     c->closure_has_tangent(index)
-                        ? c->closure_tangent(index)
+                        ? c->get_closure_tangent(index)
                         : original_basis.get_tangent_u());
         }
     };
