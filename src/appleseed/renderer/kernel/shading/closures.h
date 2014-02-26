@@ -1,4 +1,3 @@
-
 //
 // This source file is part of appleseed.
 // Visit http://appleseedhq.net/ for additional information and resources.
@@ -186,44 +185,44 @@ inline size_t CompositeClosure::get_num_closures() const
 
 inline ClosureID CompositeClosure::get_closure_type(const size_t index) const
 {
-    assert(index < num_closures());
+    assert(index < get_num_closures());
     return m_closure_types[index];
 }
 
 inline double CompositeClosure::get_closure_cdf_weight(const size_t index) const
 {
-    assert(index < num_closures());
+    assert(index < get_num_closures());
     return m_cdf[index].second;
 }
 
 inline const Spectrum& CompositeClosure::get_closure_spectrum_multiplier(const size_t index) const
 {
-    assert(index < num_closures());
+    assert(index < get_num_closures());
     return m_spectrum_multipliers[index];
 }
 
 inline const foundation::Vector3d& CompositeClosure::get_closure_normal(const size_t index) const
 {
-    assert(index < num_closures());
+    assert(index < get_num_closures());
     return m_normals[index];    
 }
 
 inline bool CompositeClosure::closure_has_tangent(const size_t index) const
 {
-    assert(index < num_closures());
+    assert(index < get_num_closures());
     return m_has_tangent[index];    
 }
 
 inline const foundation::Vector3d& CompositeClosure::get_closure_tangent(const size_t index) const
 {
-    assert(index < num_closures());
+    assert(index < get_num_closures());
     assert(closure_has_tangent(index));
     return m_tangents[index];
 }
 
 inline void* CompositeClosure::get_closure_input_values(const size_t index) const
 {
-    assert(index < num_closures());
+    assert(index < get_num_closures());
     return m_input_values[index];
 }
 
