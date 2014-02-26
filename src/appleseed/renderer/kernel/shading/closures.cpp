@@ -37,8 +37,12 @@
 #include "foundation/utility/otherwise.h"
 
 // OSL headers.
-#include <OSL/genclosure.h>
-#include <OSL/oslclosure.h>
+#include "OSL/genclosure.h"
+#include "OSL/oslclosure.h"
+
+// boost headers.
+#include <boost/mpl/contains.hpp>
+#include <boost/static_assert.hpp>
 
 using namespace foundation;
 using namespace renderer;
@@ -104,23 +108,8 @@ CompositeClosure::CompositeClosure(
 {
     process_closure_tree(ci, Color3f(1.0f));
 
-    // Compute sum of weights.
-    double total_weight = 0.0;
-    for (size_t i = 0, e = num_closures(); i != e; ++i)
-        total_weight += m_weights[i];
-
-    // Normalize weights.
-    for (size_t i = 0, e = num_closures(); i != e; ++i)
-        m_weights[i] /= total_weight;
-
-    // Build CDF.
-    if (num_closures() != 0)
-    {
-        m_cdf.reserve(num_closures());
-        for (size_t i = 0, e = num_closures(); i != e; ++i)
-            m_cdf.insert(i, closure_weight(i));
+    if (num_closures())
         m_cdf.prepare();
-    }
 }
 
 size_t CompositeClosure::choose_closure(const double w) const
@@ -167,13 +156,11 @@ void CompositeClosure::process_closure_tree(
 
                     AshikminBRDFInputValues values;
 
-                    const Color3f wd = w * Color3f(p->kd);
-                    linear_rgb_reflectance_to_spectrum(wd, values.m_rd);
+                    linear_rgb_reflectance_to_spectrum(Color3f(p->kd), values.m_rd);
                     values.m_rd_alpha = Alpha(1.0f);
                     values.m_rd_multiplier = 1.0;
 
-                    const Color3f wg = w * Color3f(p->ks);
-                    linear_rgb_reflectance_to_spectrum(wg, values.m_rg);
+                    linear_rgb_reflectance_to_spectrum(Color3f(p->ks), values.m_rg);
                     values.m_rg_alpha = Alpha(1.0f);
                     values.m_rg_multiplier = 1.0;
                     values.m_fr_multiplier = 1.0;
@@ -195,7 +182,7 @@ void CompositeClosure::process_closure_tree(
                         reinterpret_cast<const LambertClosureParams*>(c->data());
 
                     LambertianBRDFInputValues values;
-                    linear_rgb_reflectance_to_spectrum(w, values.m_reflectance);
+                    values.m_reflectance = RGBToSpectrumWhiteReflectance;
                     values.m_reflectance_alpha = Alpha(1.0f);
                     values.m_reflectance_multiplier = 1.0;
 
@@ -216,7 +203,7 @@ void CompositeClosure::process_closure_tree(
                         reinterpret_cast<const MicrofacetBRDFClosureParams*>(c->data());
 
                     MicrofacetBRDFInputValues values;
-                    linear_rgb_reflectance_to_spectrum(w, values.m_reflectance);
+                    values.m_reflectance = RGBToSpectrumWhiteReflectance;
                     values.m_reflectance_alpha = Alpha(1.0f);
                     values.m_reflectance_multiplier = 1.0;
                     values.m_glossiness = p->glossiness;
@@ -237,7 +224,7 @@ void CompositeClosure::process_closure_tree(
                         reinterpret_cast<const ReflectionClosureParams*>(c->data());
 
                     SpecularBRDFInputValues values;
-                    linear_rgb_reflectance_to_spectrum(w, values.m_reflectance);
+                    values.m_reflectance = RGBToSpectrumWhiteReflectance;
                     values.m_reflectance_alpha = Alpha(1.0f);
                     values.m_reflectance_multiplier = 1.0;
 
@@ -255,7 +242,7 @@ void CompositeClosure::process_closure_tree(
                         reinterpret_cast<const RefractionClosureParams*>(c->data());
 
                     SpecularBTDFInputValues values;
-                    linear_rgb_reflectance_to_spectrum(w, values.m_reflectance);
+                    values.m_reflectance = RGBToSpectrumWhiteReflectance;
                     values.m_from_ior = p->from_ior;
                     values.m_to_ior = p->to_ior;
                     values.m_reflectance_alpha = Alpha(1.0);
@@ -275,7 +262,7 @@ void CompositeClosure::process_closure_tree(
                         reinterpret_cast<const TranslucentClosureParams*>(c->data());
 
                     DiffuseBTDFInputValues values;
-                    linear_rgb_reflectance_to_spectrum(w, values.m_transmittance);
+                    values.m_transmittance = RGBToSpectrumWhiteReflectance;
                     values.m_transmittance_alpha = Alpha(1.0);
                     values.m_transmittance_multiplier = 1.0;
 
@@ -344,6 +331,10 @@ void CompositeClosure::do_add_closure(
     const Vector3d&             tangent,
     const InputValues&          params)
 {
+    // Check that InputValues is included in our type list.
+    typedef typename boost::mpl::contains<InputValuesTypeList,InputValues>::type value_in_list;
+    BOOST_STATIC_ASSERT( value_in_list::value);
+    
     // Make sure we have enough space.
     if (num_closures() >= MaxClosureEntries)
     {
@@ -355,14 +346,13 @@ void CompositeClosure::do_add_closure(
 
     // We use the luminance of the weight as the BSDF weight.
     const double w = luminance(weight);
-    if (w <= 0.0)
-    {
-        // This can generate millions of warnings. It's better to disable it.
-        //RENDERER_LOG_WARNING("closure with negative or zero weight found; ignoring closure.");
-        return;
-    }
 
-    m_weights[m_num_closures] = w;
+    // Ignore zero or negative weights.
+    if (w <= 0.0)
+        return;
+
+    m_cdf.insert(num_closures(), w);
+    linear_rgb_reflectance_to_spectrum(weight, m_spectrum_multipliers[m_num_closures]);
     m_normals[m_num_closures] = normalize(normal);
     m_has_tangent[m_num_closures] = has_tangent;
 
