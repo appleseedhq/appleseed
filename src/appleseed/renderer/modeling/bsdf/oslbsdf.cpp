@@ -344,7 +344,6 @@ namespace
                 BSDFFactoryRegistrar().lookup(model)->create(name, params);
 
             m_all_bsdfs[cid] = bsdf.get();
-
             return bsdf;
         }
 

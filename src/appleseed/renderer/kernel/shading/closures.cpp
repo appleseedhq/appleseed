@@ -157,11 +157,11 @@ void CompositeClosure::process_closure_tree(
                     AshikminBRDFInputValues values;
 
                     linear_rgb_reflectance_to_spectrum(Color3f(p->kd), values.m_rd);
-                    values.m_rd_alpha = Alpha(1.0f);
+                    values.m_rd_alpha.set(1.0f);
                     values.m_rd_multiplier = 1.0;
 
                     linear_rgb_reflectance_to_spectrum(Color3f(p->ks), values.m_rg);
-                    values.m_rg_alpha = Alpha(1.0f);
+                    values.m_rg_alpha.set(1.0f);
                     values.m_rg_multiplier = 1.0;
                     values.m_fr_multiplier = 1.0;
                     values.m_nu = p->nu;
@@ -182,8 +182,8 @@ void CompositeClosure::process_closure_tree(
                         reinterpret_cast<const LambertClosureParams*>(c->data());
 
                     LambertianBRDFInputValues values;
-                    values.m_reflectance = RGBToSpectrumWhiteReflectance;
-                    values.m_reflectance_alpha = Alpha(1.0f);
+                    values.m_reflectance.set(1.0f);
+                    values.m_reflectance_alpha.set(1.0f);
                     values.m_reflectance_multiplier = 1.0;
 
                     add_closure<LambertianBRDFInputValues>(
@@ -203,8 +203,8 @@ void CompositeClosure::process_closure_tree(
                         reinterpret_cast<const MicrofacetBRDFClosureParams*>(c->data());
 
                     MicrofacetBRDFInputValues values;
-                    values.m_reflectance = RGBToSpectrumWhiteReflectance;
-                    values.m_reflectance_alpha = Alpha(1.0f);
+                    values.m_reflectance.set(1.0f);
+                    values.m_reflectance_alpha.set(1.0f);
                     values.m_reflectance_multiplier = 1.0;
                     values.m_glossiness = p->glossiness;
                     values.m_glossiness_multiplier = 1.0;
@@ -224,8 +224,8 @@ void CompositeClosure::process_closure_tree(
                         reinterpret_cast<const ReflectionClosureParams*>(c->data());
 
                     SpecularBRDFInputValues values;
-                    values.m_reflectance = RGBToSpectrumWhiteReflectance;
-                    values.m_reflectance_alpha = Alpha(1.0f);
+                    values.m_reflectance.set(1.0f);
+                    values.m_reflectance_alpha.set(1.0f);
                     values.m_reflectance_multiplier = 1.0;
 
                     add_closure<SpecularBRDFInputValues>(
@@ -242,7 +242,7 @@ void CompositeClosure::process_closure_tree(
                         reinterpret_cast<const RefractionClosureParams*>(c->data());
 
                     SpecularBTDFInputValues values;
-                    values.m_reflectance = RGBToSpectrumWhiteReflectance;
+                    values.m_reflectance.set(1.0f);
                     values.m_from_ior = p->from_ior;
                     values.m_to_ior = p->to_ior;
                     values.m_reflectance_alpha = Alpha(1.0);
@@ -262,7 +262,7 @@ void CompositeClosure::process_closure_tree(
                         reinterpret_cast<const TranslucentClosureParams*>(c->data());
 
                     DiffuseBTDFInputValues values;
-                    values.m_transmittance = RGBToSpectrumWhiteReflectance;
+                    values.m_transmittance.set(1.0f);
                     values.m_transmittance_alpha = Alpha(1.0);
                     values.m_transmittance_multiplier = 1.0;
 
