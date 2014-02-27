@@ -180,8 +180,8 @@ target_link_libraries (appleseed.python
 #--------------------------------------------------------------------------------------------------
 
 add_copy_target_to_sandbox_py_module_command (appleseed.python)
-add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/appleseed.python/__init__.py)
-add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/appleseed.python/logging.py)
+add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/__init__.py)
+add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/appleseed.python/logging.py)
 
 
 #--------------------------------------------------------------------------------------------------

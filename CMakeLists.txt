@@ -36,7 +36,7 @@ cmake_minimum_required (VERSION 2.8.12 FATAL_ERROR)
 
 cmake_policy (SET CMP0008 NEW)  # libraries linked by full-path must have a valid library file name
 
-include (cmake/utilities.txt)
+include (src/cmake/utilities.txt)
 
 
 #--------------------------------------------------------------------------------------------------
@@ -56,7 +56,7 @@ endif ()
 project (appleseed)
 
 # Setup the path for our FindPackage modules.
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/Modules)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/src/cmake/Modules)
 
 
 #--------------------------------------------------------------------------------------------------
@@ -94,11 +94,11 @@ enable_testing ()
 
 # This must come after project () otherwise CMAKE_SYSTEM_NAME is undefined.
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    include (cmake/config/win-vs110.txt)
+    include (src/cmake/config/win-vs110.txt)
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-    include (cmake/config/mac-gcc4.txt)
+    include (src/cmake/config/mac-gcc4.txt)
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    include (cmake/config/linux-gcc4.txt)
+    include (src/cmake/config/linux-gcc4.txt)
 else ()
     message (FATAL_ERROR "Unsupported platform or compiler (CMAKE_SYSTEM_NAME is \"${CMAKE_SYSTEM_NAME}\"). "
                          "Edit ${CMAKE_CURRENT_LIST_FILE} to add support for it.")
@@ -183,23 +183,23 @@ endif ()
 
 # Common include paths.
 include_directories (
-    appleseed
-    lz4
-    minilzo
-    STANN/include
+    src/appleseed
+    src/lz4
+    src/minilzo
+    src/STANN/include
     ${PYTHON_INCLUDE_DIRS}
 )
 
 if (USE_EXTERNAL_ZLIB)
     include_directories (${ZLIB_INCLUDE_DIRS})
 else ()
-    include_directories (../3rdparty/zlib)
+    include_directories (3rdparty/zlib)
 endif ()
 
 if (USE_EXTERNAL_PNG)
     include_directories (${PNG_INCLUDE_DIR})
 else ()
-    include_directories (../3rdparty/libpng)
+    include_directories (3rdparty/libpng)
 endif ()
 
 if (USE_EXTERNAL_EXR)
@@ -211,8 +211,8 @@ if (USE_EXTERNAL_EXR)
     )
 else ()
     include_directories (
-        ../3rdparty/openexr/include
-        ../3rdparty/openexr/include/OpenEXR
+        3rdparty/openexr/include
+        3rdparty/openexr/include/OpenEXR
     )
 endif ()
 
@@ -223,14 +223,14 @@ if (WITH_ALEMBIC)
             ${ALEMBIC_INCLUDE_DIRS}
         )
     else ()
-        include_directories (../3rdparty/alembic/lib)
+        include_directories (3rdparty/alembic/lib)
     endif ()
 endif ()
 
 if (USE_EXTERNAL_XERCES)
     include_directories (${XERCES_INCLUDE_DIRS})
 else ()
-    include_directories (../3rdparty/xerces-c/src)
+    include_directories (3rdparty/xerces-c/src)
 endif ()
 
 if (WITH_OSL)
@@ -441,31 +441,31 @@ endmacro ()
 # Products.
 #--------------------------------------------------------------------------------------------------
 
-add_subdirectory (appleseed)
-add_subdirectory (lz4)
-add_subdirectory (minilzo)
+add_subdirectory (src/appleseed)
+add_subdirectory (src/lz4)
+add_subdirectory (src/minilzo)
 
 if (WITH_CLI OR WITH_STUDIO OR WITH_TOOLS)
-    add_subdirectory (appleseed.shared)
+    add_subdirectory (src/appleseed.shared)
 endif ()
 
 if (WITH_CLI)
-    add_subdirectory (appleseed.cli)
+    add_subdirectory (src/appleseed.cli)
 endif ()
 
 if (WITH_STUDIO)
-    add_subdirectory (appleseed.studio)
+    add_subdirectory (src/appleseed.studio)
 endif ()
 
 if (WITH_PYTHON)
-    add_subdirectory (appleseed.python)
+    add_subdirectory (src/appleseed.python)
 endif ()
 
 if (WITH_TOOLS)
-    add_subdirectory (tools/animatecamera)
-    add_subdirectory (tools/convertmeshfile)
-    add_subdirectory (tools/maketiledexr)
-    add_subdirectory (tools/updateprojectfile)
+    add_subdirectory (src/tools/animatecamera)
+    add_subdirectory (src/tools/convertmeshfile)
+    add_subdirectory (src/tools/maketiledexr)
+    add_subdirectory (src/tools/updateprojectfile)
 endif()
 
 
@@ -476,7 +476,7 @@ endif()
 find_package (Doxygen)
 
 if (DOXYGEN_FOUND)
-    configure_file (${PROJECT_SOURCE_DIR}/../scripts/appleseed.doxyfile.in ${PROJECT_BINARY_DIR}/appleseed.doxyfile @ONLY)
+    configure_file (${PROJECT_SOURCE_DIR}/scripts/appleseed.doxyfile.in ${PROJECT_BINARY_DIR}/appleseed.doxyfile @ONLY)
     add_custom_target (
         doc ${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/appleseed.doxyfile
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
@@ -519,41 +519,41 @@ execute_process (
 
 install (
     PROGRAMS
-        ../scripts/run-appleseed.sh
+        scripts/run-appleseed.sh
     DESTINATION bin
 )
 
 install (
     FILES
-        ../scripts/convertmany.py
-        ../scripts/rendermanager.py
-        ../scripts/rendermany.py
-        ../scripts/rendernode.py
-        ../scripts/updatemany.py
+        scripts/convertmany.py
+        scripts/rendermanager.py
+        scripts/rendermany.py
+        scripts/rendernode.py
+        scripts/updatemany.py
     DESTINATION bin
 )
 
 install (
     FILES
-        ../sandbox/schemas/settings.xsd
-        ../sandbox/schemas/project.xsd
+        sandbox/schemas/settings.xsd
+        sandbox/schemas/project.xsd
     DESTINATION schemas
 )
 
 if (WITH_OSL)
     install (
         FILES
-            ../sandbox/shaders/oslutil.h
-            ../sandbox/shaders/stdosl.h
+            sandbox/shaders/oslutil.h
+            sandbox/shaders/stdosl.h
         DESTINATION shaders
     )
 endif ()
 
 install (
     DIRECTORY
-        ../sandbox/extras
-        ../sandbox/images
-        ../sandbox/tests
+        sandbox/extras
+        sandbox/images
+        sandbox/tests
     DESTINATION .
 )
 
@@ -565,13 +565,13 @@ install (
 
 install (
     DIRECTORY
-        ${CMAKE_SOURCE_DIR}/../sandbox/extras/devkit/cmake
+        ${CMAKE_SOURCE_DIR}/sandbox/extras/devkit/cmake
     DESTINATION extras/devkit
 )
 
 install (
     DIRECTORY
-        ${CMAKE_SOURCE_DIR}/../sandbox/extras/devkit/sample
+        ${CMAKE_SOURCE_DIR}/sandbox/extras/devkit/sample
     DESTINATION extras/devkit
 )
 
@@ -586,4 +586,3 @@ set (CPACK_PACKAGE_VERSION_MINOR ${APPLESEED_VERSION_MINOR})
 set (CPACK_PACKAGE_VERSION_PATCH ${APPLESEED_VERSION_PATCH})
 
 include (CPack)
-
