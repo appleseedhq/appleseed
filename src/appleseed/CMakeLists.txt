@@ -1678,7 +1678,7 @@ add_copy_target_to_sandbox_command (appleseed)
 # Copy all XML schema files to the sandbox.
 foreach (schema_file ${appleseed_schema_files})
     add_custom_command (TARGET appleseed POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/${schema_file} ${PROJECT_SOURCE_DIR}/../sandbox/schemas/
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/${schema_file} ${PROJECT_SOURCE_DIR}/sandbox/schemas/
     )
 endforeach ()
 
@@ -1686,7 +1686,7 @@ endforeach ()
 if (WITH_OSL)
     foreach (osl_header ${appleseed_osl_headers})
         add_custom_command (TARGET appleseed POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/${osl_header} ${PROJECT_SOURCE_DIR}/../sandbox/shaders/
+            COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/${osl_header} ${PROJECT_SOURCE_DIR}/sandbox/shaders/
         )
     endforeach ()
 endif ()
