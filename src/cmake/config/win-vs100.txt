@@ -172,8 +172,8 @@ macro (link_against_zlib target)
         target_link_libraries (${target} ${ZLIB_LIBRARIES})
     else ()
         target_link_libraries (${target}
-            debug       ${CMAKE_SOURCE_DIR}/../build/${platform}/zlib/Debug/zlib.lib
-            optimized   ${CMAKE_SOURCE_DIR}/../build/${platform}/zlib/Release/zlib.lib
+            debug       ${CMAKE_SOURCE_DIR}/build/${platform}/zlib/Debug/zlib.lib
+            optimized   ${CMAKE_SOURCE_DIR}/build/${platform}/zlib/Release/zlib.lib
         )
     endif ()
 endmacro ()
@@ -183,8 +183,8 @@ macro (link_against_libpng target)
         target_link_libraries (${target} ${PNG_LIBRARIES})
     else ()
         target_link_libraries (${target}
-            debug       ${CMAKE_SOURCE_DIR}/../build/${platform}/libpng/Debug/libpng.lib
-            optimized   ${CMAKE_SOURCE_DIR}/../build/${platform}/libpng/Release/libpng.lib
+            debug       ${CMAKE_SOURCE_DIR}/build/${platform}/libpng/Debug/libpng.lib
+            optimized   ${CMAKE_SOURCE_DIR}/build/${platform}/libpng/Release/libpng.lib
         )
     endif ()
 endmacro ()
@@ -194,16 +194,16 @@ macro (link_against_openexr target)
         target_link_libraries (${target} ${IMATH_LIBRARIES} ${OPENEXR_LIBRARIES})
     else ()
         target_link_libraries (${target}
-            debug       ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/Half/Debug/Half.lib
-            debug       ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/Iex/Debug/Iex.lib
-            debug       ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/IlmImf/Debug/IlmImf.lib
-            debug       ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/IlmThread/Debug/IlmThread.lib
-            debug       ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/Imath/Debug/Imath.lib
-            optimized   ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/Half/Release/Half.lib
-            optimized   ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/Iex/Release/Iex.lib
-            optimized   ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/IlmImf/Release/IlmImf.lib
-            optimized   ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/IlmThread/Release/IlmThread.lib
-            optimized   ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/Imath/Release/Imath.lib
+            debug       ${CMAKE_SOURCE_DIR}/build/${platform}/openexr/Half/Debug/Half.lib
+            debug       ${CMAKE_SOURCE_DIR}/build/${platform}/openexr/Iex/Debug/Iex.lib
+            debug       ${CMAKE_SOURCE_DIR}/build/${platform}/openexr/IlmImf/Debug/IlmImf.lib
+            debug       ${CMAKE_SOURCE_DIR}/build/${platform}/openexr/IlmThread/Debug/IlmThread.lib
+            debug       ${CMAKE_SOURCE_DIR}/build/${platform}/openexr/Imath/Debug/Imath.lib
+            optimized   ${CMAKE_SOURCE_DIR}/build/${platform}/openexr/Half/Release/Half.lib
+            optimized   ${CMAKE_SOURCE_DIR}/build/${platform}/openexr/Iex/Release/Iex.lib
+            optimized   ${CMAKE_SOURCE_DIR}/build/${platform}/openexr/IlmImf/Release/IlmImf.lib
+            optimized   ${CMAKE_SOURCE_DIR}/build/${platform}/openexr/IlmThread/Release/IlmThread.lib
+            optimized   ${CMAKE_SOURCE_DIR}/build/${platform}/openexr/Imath/Release/Imath.lib
         )
     endif ()
 endmacro ()
@@ -213,10 +213,10 @@ macro (link_against_hdf5 target)
         target_link_libraries (${target} ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
     else ()
         target_link_libraries (${target}
-            debug       ${CMAKE_SOURCE_DIR}/../build/${platform}/hdf5/Debug/hdf5d.lib
-            debug       ${CMAKE_SOURCE_DIR}/../build/${platform}/hdf5/Debug/hdf5_hld.lib
-            optimized   ${CMAKE_SOURCE_DIR}/../build/${platform}/hdf5/Release/hdf5.lib
-            optimized   ${CMAKE_SOURCE_DIR}/../build/${platform}/hdf5/Release/hdf5_hl.lib
+            debug       ${CMAKE_SOURCE_DIR}/build/${platform}/hdf5/Debug/hdf5d.lib
+            debug       ${CMAKE_SOURCE_DIR}/build/${platform}/hdf5/Debug/hdf5_hld.lib
+            optimized   ${CMAKE_SOURCE_DIR}/build/${platform}/hdf5/Release/hdf5.lib
+            optimized   ${CMAKE_SOURCE_DIR}/build/${platform}/hdf5/Release/hdf5_hl.lib
         )
     endif ()
 endmacro ()
@@ -226,8 +226,8 @@ macro (link_against_alembic target)
         target_link_libraries (${target} ${ALEMBIC_LIBRARIES})
     else ()
         target_link_libraries (${target}
-            debug       ${CMAKE_SOURCE_DIR}/../build/${platform}/alembic/Debug/alembic.lib
-            optimized   ${CMAKE_SOURCE_DIR}/../build/${platform}/alembic/Release/alembic.lib
+            debug       ${CMAKE_SOURCE_DIR}/build/${platform}/alembic/Debug/alembic.lib
+            optimized   ${CMAKE_SOURCE_DIR}/build/${platform}/alembic/Release/alembic.lib
         )
     endif ()
 endmacro ()
@@ -237,8 +237,8 @@ macro (link_against_xercesc target)
         target_link_libraries (${target} ${XERCES_LIBRARIES})
     else ()
         target_link_libraries (${target}
-            debug       ${CMAKE_SOURCE_DIR}/../build/${platform}/xerces-c/Static\ Debug/xerces-c_static_3D.lib
-            optimized   ${CMAKE_SOURCE_DIR}/../build/${platform}/xerces-c/Static\ Release/xerces-c_static_3.lib
+            debug       ${CMAKE_SOURCE_DIR}/build/${platform}/xerces-c/Static\ Debug/xerces-c_static_3D.lib
+            optimized   ${CMAKE_SOURCE_DIR}/build/${platform}/xerces-c/Static\ Release/xerces-c_static_3.lib
         )
     endif ()
 endmacro ()

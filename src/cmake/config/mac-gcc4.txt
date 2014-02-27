@@ -91,7 +91,7 @@ macro (link_against_zlib target)
         target_link_libraries (${target} ${ZLIB_LIBRARIES})
     else ()
         target_link_libraries (${target}
-            ${CMAKE_SOURCE_DIR}/../build/${platform}/zlib/libz.a
+            ${CMAKE_SOURCE_DIR}/build/${platform}/zlib/libz.a
         )
     endif ()
 endmacro ()
@@ -101,7 +101,7 @@ macro (link_against_libpng target)
         target_link_libraries (${target} ${PNG_LIBRARIES})
     else ()
         target_link_libraries (${target}
-            ${CMAKE_SOURCE_DIR}/../build/${platform}/libpng/libpng.a
+            ${CMAKE_SOURCE_DIR}/build/${platform}/libpng/libpng.a
         )
     endif ()
 endmacro ()
@@ -117,11 +117,11 @@ macro (link_against_openexr target)
         )
     else ()
         target_link_libraries (${target}
-            ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/libHalf.a
-            ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/libIex.a
-            ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/libIlmImf.a
-            ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/libIlmThread.a
-            ${CMAKE_SOURCE_DIR}/../build/${platform}/openexr/libImath.a
+            ${CMAKE_SOURCE_DIR}/build/${platform}/openexr/libHalf.a
+            ${CMAKE_SOURCE_DIR}/build/${platform}/openexr/libIex.a
+            ${CMAKE_SOURCE_DIR}/build/${platform}/openexr/libIlmImf.a
+            ${CMAKE_SOURCE_DIR}/build/${platform}/openexr/libIlmThread.a
+            ${CMAKE_SOURCE_DIR}/build/${platform}/openexr/libImath.a
         )
     endif ()
 endmacro ()
@@ -131,8 +131,8 @@ macro (link_against_hdf5 target)
         target_link_libraries (${target} ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
     else ()
         target_link_libraries (${target}
-            ${CMAKE_SOURCE_DIR}/../build/${platform}/hdf5/libhdf5.a
-            ${CMAKE_SOURCE_DIR}/../build/${platform}/hdf5/libhdf5_hl.a
+            ${CMAKE_SOURCE_DIR}/build/${platform}/hdf5/libhdf5.a
+            ${CMAKE_SOURCE_DIR}/build/${platform}/hdf5/libhdf5_hl.a
         )
     endif ()
 endmacro ()
@@ -142,7 +142,7 @@ macro (link_against_alembic target)
         target_link_libraries (${target} ${ALEMBIC_LIBRARIES})
     else ()
         target_link_libraries (${target}
-            ${CMAKE_SOURCE_DIR}/../build/${platform}/alembic/libalembic.a
+            ${CMAKE_SOURCE_DIR}/build/${platform}/alembic/libalembic.a
         )
     endif ()
 endmacro ()
@@ -152,7 +152,7 @@ macro (link_against_xercesc target)
         target_link_libraries (${target} ${XERCES_LIBRARIES})
     else ()
         target_link_libraries (${target}
-            ${CMAKE_SOURCE_DIR}/../build/${platform}/xerces-c/libxerces-c.a
+            ${CMAKE_SOURCE_DIR}/build/${platform}/xerces-c/libxerces-c.a
         )
     endif ()
 endmacro ()
