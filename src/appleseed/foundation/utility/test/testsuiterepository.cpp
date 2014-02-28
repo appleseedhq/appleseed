@@ -53,45 +53,38 @@ struct TestSuiteRepository::Impl
     vector<TestSuite*> m_suites;
 };
 
-// Constructor.
 TestSuiteRepository::TestSuiteRepository()
   : impl(new Impl())
 {
 }
 
-// Destructor.
 TestSuiteRepository::~TestSuiteRepository()
 {
     delete impl;
 }
 
-// Remove all test suites.
 void TestSuiteRepository::clear()
 {
     impl->m_suites.clear();
 }
 
-// Register a test suite.
 void TestSuiteRepository::register_suite(TestSuite* suite)
 {
     assert(suite);
     impl->m_suites.push_back(suite);
 }
 
-// Retrieve the number of registered test suites.
 size_t TestSuiteRepository::get_suite_count() const
 {
     return impl->m_suites.size();
 }
 
-// Retrieve a given registered test suite.
 TestSuite* TestSuiteRepository::get_suite(const size_t index) const
 {
     assert(index < impl->m_suites.size());
     return impl->m_suites[index];
 }
 
-// Run all the registered test suites.
 void TestSuiteRepository::run(
     ITestListener&  test_listener,
     TestResult&     cumulated_result) const
@@ -100,7 +93,6 @@ void TestSuiteRepository::run(
     run(filter, test_listener, cumulated_result);
 }
 
-// Run those test suites whose name pass a given filter.
 void TestSuiteRepository::run(
     const IFilter&  filter,
     ITestListener&  test_listener,
