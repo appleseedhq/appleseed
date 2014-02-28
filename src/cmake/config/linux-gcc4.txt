@@ -179,7 +179,7 @@ endmacro ()
 #--------------------------------------------------------------------------------------------------
 
 macro (get_sandbox_bin_path path)
-    set (${path} ${PROJECT_SOURCE_DIR}/../sandbox/bin/${CMAKE_BUILD_TYPE}/)
+    set (${path} ${PROJECT_SOURCE_DIR}/sandbox/bin/${CMAKE_BUILD_TYPE}/)
 endmacro ()
 
 macro (add_copy_target_to_sandbox_command target)

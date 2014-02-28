@@ -258,7 +258,7 @@ endmacro ()
 
 macro (get_sandbox_bin_path path)
     slashes_to_backslashes (${path} ${PROJECT_SOURCE_DIR})
-    set (${path} ${${path}}\\..\\sandbox\\bin\\$(ConfigurationName)\\)
+    set (${path} ${${path}}\\sandbox\\bin\\$(ConfigurationName)\\)
 endmacro ()
 
 macro (add_copy_target_to_sandbox_command target)
