@@ -240,7 +240,7 @@ const char* ObjectInstance::get_material_name(const size_t pa_index, const Side 
     }
     else
     {
-        return material_mappings.begin().value();
+        return material_mappings.empty() ? 0 : material_mappings.begin().value();
     }
 }
 

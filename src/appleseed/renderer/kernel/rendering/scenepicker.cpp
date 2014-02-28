@@ -120,10 +120,16 @@ ScenePicker::PickingResult ScenePicker::pick(const Vector2d& ndc) const
 
         if (pa_index != Triangle::None)
         {
-            result.m_material =
-                InputBinder::find_entity<Material>(
-                    result.m_object_instance->get_material_name(pa_index, shading_point.get_side()),
-                    result.m_object_instance->get_parent());
+            const char* material_name =
+                result.m_object_instance->get_material_name(pa_index, shading_point.get_side());
+
+            if (material_name)
+            {
+                result.m_material =
+                    InputBinder::find_entity<Material>(
+                        material_name,
+                        result.m_object_instance->get_parent());
+            }
         }
     }
 
