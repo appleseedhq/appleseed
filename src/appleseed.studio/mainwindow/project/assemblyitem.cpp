@@ -224,6 +224,8 @@ void AssemblyItem::slot_instantiate()
 
     if (!instance_name.empty())
     {
+        // todo: if we are currently rendering, we should schedule the instantiation, not do it right away.
+
         auto_release_ptr<AssemblyInstance> assembly_instance(
             AssemblyInstanceFactory::create(
                 instance_name.c_str(),
@@ -231,7 +233,6 @@ void AssemblyItem::slot_instantiate()
                 m_assembly.get_name()));
 
         m_parent_item->get_assembly_instance_collection_item().add_item(assembly_instance.get());
-
         m_parent.assembly_instances().insert(assembly_instance);
 
         m_project_builder.get_project().get_scene()->bump_version_id();

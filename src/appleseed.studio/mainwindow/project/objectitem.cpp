@@ -148,6 +148,8 @@ void ObjectItem::slot_instantiate()
 
     if (!instance_name.empty())
     {
+        // todo: if we are currently rendering, we should schedule the instantiation, not do it right away.
+
         auto_release_ptr<ObjectInstance> object_instance(
             ObjectInstanceFactory::create(
                 instance_name.c_str(),
