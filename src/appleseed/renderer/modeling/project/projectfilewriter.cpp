@@ -55,6 +55,9 @@
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/scene/textureinstance.h"
+#ifdef WITH_OSL
+#include "renderer/modeling/shadergroup/shadergroup.h"
+#endif
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/modeling/texture/texture.h"
 #include "renderer/utility/transformsequence.h"
@@ -85,11 +88,6 @@
 #include <set>
 #include <string>
 #include <vector>
-
-// OSL headers
-#ifdef WITH_OSL
-#include "renderer/modeling/shadergroup/shadergroup.h"
-#endif
 
 using namespace boost;
 using namespace foundation;
@@ -861,7 +859,8 @@ namespace
         }
 
 #ifdef WITH_OSL
-        // Write a <shader> parameter
+
+        // Write a <shader> parameter.
         void write(const ShaderParam& param)
         {
             XMLElement element("parameter", m_file, m_indenter);
@@ -873,7 +872,6 @@ namespace
         // Write a <shader> element.
         void write(const Shader& shader)
         {
-            // TODO: implement...
             XMLElement element("shader", m_file, m_indenter);
             element.add_attribute("type", shader.get_type());
             element.add_attribute("name", shader.get_shader());
@@ -908,6 +906,7 @@ namespace
             for (const_each<ShaderConnectionContainer> i = shader_group.shader_connections(); i; ++i)
                 write(*i);
         }
+
 #endif
 
         // Write a <surface_shader> element.
