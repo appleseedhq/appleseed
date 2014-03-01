@@ -271,7 +271,7 @@ elseif (CMAKE_SIZEOF_VOID_P MATCHES 8)
         ARCH64
 )
 else ()
-    message (FATAL_ERROR "Cannot determine pointer size")
+    message (FATAL_ERROR "Cannot determine pointer size.")
 endif ()
 if (USE_QMC_SAMPLER)
     set (preprocessor_definitions_common
@@ -280,10 +280,14 @@ if (USE_QMC_SAMPLER)
     )
 endif ()
 if (USE_SSE)
-    set (preprocessor_definitions_common
-        ${preprocessor_definitions_common}
-        APPLESEED_USE_SSE
-    )
+    if (CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_SIZEOF_VOID_P MATCHES 4)
+        message (WARNING "Building appleseed with SSE/SSE2 instruction sets on 32-bit Linux is not supported; continuing without SSE/SSE2.")
+    else ()
+        set (preprocessor_definitions_common
+            ${preprocessor_definitions_common}
+            APPLESEED_USE_SSE
+        )
+    endif ()
 endif ()
 
 # Debug configuration.
