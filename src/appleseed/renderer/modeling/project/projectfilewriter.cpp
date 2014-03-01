@@ -86,6 +86,11 @@
 #include <string>
 #include <vector>
 
+// OSL headers
+#ifdef WITH_OSL
+#include "renderer/modeling/shadergroup/shadergroup.h"
+#endif
+
 using namespace boost;
 using namespace foundation;
 using namespace std;
@@ -432,6 +437,9 @@ namespace
                 !assembly.texture_instances().empty() ||
                 !assembly.bsdfs().empty() ||
                 !assembly.edfs().empty() ||
+#ifdef WITH_OSL
+                !assembly.shader_groups().empty() ||
+#endif
                 !assembly.surface_shaders().empty() ||
                 !assembly.materials().empty() ||
                 !assembly.lights().empty() ||
@@ -447,6 +455,9 @@ namespace
             write_collection(assembly.texture_instances());
             write_collection(assembly.bsdfs());
             write_collection(assembly.edfs());
+#ifdef WITH_OSL
+            write_collection(assembly.shader_groups());
+#endif
             write_collection(assembly.surface_shaders());
             write_collection(assembly.materials());
             write_collection(assembly.lights());
@@ -848,6 +859,57 @@ namespace
                     write_search_path(search_paths[i]);
             }
         }
+
+#ifdef WITH_OSL
+        // Write a <shader> parameter
+        void write(const ShaderParam& param)
+        {
+            XMLElement element("parameter", m_file, m_indenter);
+            element.add_attribute("name", param.get_name());
+            element.add_attribute("value", param.get_value_as_string());
+            element.write(false);
+        }
+
+        // Write a <shader> element.
+        void write(const Shader& shader)
+        {
+            // TODO: implement...
+            XMLElement element("shader", m_file, m_indenter);
+            element.add_attribute("type", shader.get_type());
+            element.add_attribute("name", shader.get_shader());
+            element.add_attribute("layer", shader.get_layer());
+            element.write(true);
+
+            for (const_each<ShaderParamContainer> i = shader.shader_params(); i; ++i)
+                write(*i);
+        }
+
+        // Write a <shader_connection> element.
+        void write(const ShaderConnection& connection)
+        {
+            XMLElement element("connect_shaders", m_file, m_indenter);
+            element.add_attribute("src_layer", connection.get_src_layer());
+            element.add_attribute("src_param", connection.get_src_param());
+            element.add_attribute("dst_layer", connection.get_dst_layer());
+            element.add_attribute("dst_param", connection.get_dst_param());
+            element.write(false);
+        }
+
+        // Write a <shader_group> element.
+        void write(const ShaderGroup& shader_group)
+        {
+            // TODO: implement...
+            XMLElement element("shader_group", m_file, m_indenter);
+            element.add_attribute("name", shader_group.get_name());
+            element.write(true);
+
+            for (const_each<ShaderContainer> i = shader_group.shaders(); i; ++i)
+                write(*i);
+
+            for (const_each<ShaderConnectionContainer> i = shader_group.shader_connections(); i; ++i)
+                write(*i);
+        }
+#endif
 
         // Write a <surface_shader> element.
         void write(const SurfaceShader& surface_shader)
