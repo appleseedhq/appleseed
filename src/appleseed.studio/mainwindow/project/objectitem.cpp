@@ -48,6 +48,9 @@
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/uid.h"
 
+// Qt headers.
+#include <QMenu>
+
 // Standard headers.
 #include <memory>
 #include <vector>
@@ -116,6 +119,48 @@ namespace
         // Recurse into child assemblies.
         for (each<AssemblyContainer> i = assembly.assemblies(); i; ++i)
             remove_object_instances(item_registry, *i, object_uid);
+    }
+}
+
+QMenu* ObjectItem::get_single_item_context_menu() const
+{
+    QMenu* menu = ItemBase::get_single_item_context_menu();
+
+    menu->addSeparator();
+    menu->addAction("Instantiate...", this, SLOT(slot_instantiate()));
+
+    return menu;
+}
+
+void ObjectItem::slot_instantiate()
+{
+    const string instance_name_suggestion =
+        get_name_suggestion(
+            string(m_entity->get_name()) + "_inst",
+            m_parent.object_instances());
+
+    const string instance_name =
+        get_entity_name_dialog(
+            treeWidget(),
+            "Instantiate Object",
+            "Object Instance Name:",
+            instance_name_suggestion);
+
+    if (!instance_name.empty())
+    {
+        auto_release_ptr<ObjectInstance> object_instance(
+            ObjectInstanceFactory::create(
+                instance_name.c_str(),
+                ParamArray(),
+                m_entity->get_name(),
+                Transformd::identity(),
+                StringDictionary()));
+
+        m_parent_item->add_item(object_instance.get());
+        m_parent.object_instances().insert(object_instance);
+
+        m_parent.bump_version_id();
+        m_project_builder.notify_project_modification();
     }
 }
 
