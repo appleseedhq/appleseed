@@ -50,7 +50,6 @@
 
 // Qt headers.
 #include <QMenu>
-#include <QString>
 
 // Standard headers.
 #include <memory>
@@ -135,18 +134,17 @@ QMenu* ObjectItem::get_single_item_context_menu() const
 
 void ObjectItem::slot_instantiate()
 {
-    // Code goes here
-	const string instance_name_suggestion =
-		get_name_suggestion(
-			string(m_entity->get_name()) + "_inst",
-			m_parent.object_instances());
+    const string instance_name_suggestion =
+        get_name_suggestion(
+            string(m_entity->get_name()) + "_inst",
+            m_parent.object_instances());
 
-	const string instance_name =
-		get_entity_name_dialog(
-			treeWidget(),
-			"Instantiate Object",
-			"Object Instance Name:",
-			instance_name_suggestion);
+    const string instance_name =
+        get_entity_name_dialog(
+            treeWidget(),
+            "Instantiate Object",
+            "Object Instance Name:",
+            instance_name_suggestion);
 
     if (!instance_name.empty())
     {

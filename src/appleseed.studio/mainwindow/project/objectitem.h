@@ -50,7 +50,7 @@ namespace studio {
 class ObjectItem
   : public EntityItemBase<renderer::Object>
 {
-	Q_OBJECT
+    Q_OBJECT
 
   public:
     ObjectItem(
