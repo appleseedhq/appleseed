@@ -42,6 +42,7 @@ namespace appleseed { namespace studio { class AssemblyItem; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace renderer  { class Assembly; }
 namespace renderer  { class Object; }
+class QMenu;
 
 namespace appleseed {
 namespace studio {
@@ -49,12 +50,19 @@ namespace studio {
 class ObjectItem
   : public EntityItemBase<renderer::Object>
 {
+	Q_OBJECT
+
   public:
     ObjectItem(
         renderer::Object*   object,
         renderer::Assembly& parent,
         AssemblyItem*       parent_item,
         ProjectBuilder&     project_builder);
+
+    virtual QMenu* get_single_item_context_menu() const OVERRIDE;
+
+  private slots:
+    void slot_instantiate();
 
   private:
     friend class EntityDeletionDelayedAction<ObjectItem>;
