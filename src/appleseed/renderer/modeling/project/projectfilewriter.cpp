@@ -898,7 +898,6 @@ namespace
         // Write a <shader_group> element.
         void write(const ShaderGroup& shader_group)
         {
-            // TODO: implement...
             XMLElement element("shader_group", m_file, m_indenter);
             element.add_attribute("name", shader_group.get_name());
             element.write(true);
