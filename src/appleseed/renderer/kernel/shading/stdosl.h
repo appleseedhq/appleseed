@@ -521,7 +521,16 @@ closure color refraction(normal N, float from_ior, float to_ior) BUILTIN;
 /********************************/
 // appleseed specific closures
 
-closure color as_ashikhmin_shirley(normal N, vector T, color kd, color ks, float nu, float nv) BUILTIN;
+closure color as_ashikhmin_shirley(
+    normal N, 
+    vector T, 
+    float kd, 
+    color Cd,
+    float ks,
+    color Cs, 
+    float nu, 
+    float nv) BUILTIN;
+
 closure color as_microfacet_blinn(normal N, float glossiness) BUILTIN;
 closure color as_microfacet_ward(normal N, float glossiness) BUILTIN;
 

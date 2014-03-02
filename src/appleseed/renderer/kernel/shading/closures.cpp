@@ -61,8 +61,10 @@ namespace
     {
         OSL::Vec3   N;
         OSL::Vec3   T;
-        OSL::Color3 kd;
-        OSL::Color3 ks;
+        float       kd;
+        OSL::Color3 Cd;
+        float       ks;
+        OSL::Color3 Cs;
         float       nu;
         float       nv;
     };
@@ -167,13 +169,13 @@ void CompositeClosure::process_closure_tree(
 
                     AshikminBRDFInputValues values;
 
-                    linear_rgb_reflectance_to_spectrum(Color3f(p->kd), values.m_rd);
+                    linear_rgb_reflectance_to_spectrum(Color3f(p->Cd), values.m_rd);
                     values.m_rd_alpha.set(1.0f);
-                    values.m_rd_multiplier = 1.0;
+                    values.m_rd_multiplier = p->kd;
 
-                    linear_rgb_reflectance_to_spectrum(Color3f(p->ks), values.m_rg);
+                    linear_rgb_reflectance_to_spectrum(Color3f(p->Cs), values.m_rg);
                     values.m_rg_alpha.set(1.0f);
-                    values.m_rg_multiplier = 1.0;
+                    values.m_rg_multiplier = p->ks;
                     values.m_fr_multiplier = 1.0;
                     values.m_nu = p->nu;
                     values.m_nv = p->nv;
@@ -422,8 +424,10 @@ void register_appleseed_closures(OSL::ShadingSystem& shading_system)
     {
         { "as_ashikhmin_shirley", AshikhminShirleyID, { CLOSURE_VECTOR_PARAM(AshikhminShirleyClosureParams, N),
                                                         CLOSURE_VECTOR_PARAM(AshikhminShirleyClosureParams, T),
-                                                        CLOSURE_COLOR_PARAM(AshikhminShirleyClosureParams, kd),
-                                                        CLOSURE_COLOR_PARAM(AshikhminShirleyClosureParams, ks),
+                                                        CLOSURE_FLOAT_PARAM(AshikhminShirleyClosureParams, kd),
+                                                        CLOSURE_COLOR_PARAM(AshikhminShirleyClosureParams, Cd),
+                                                        CLOSURE_FLOAT_PARAM(AshikhminShirleyClosureParams, ks),
+                                                        CLOSURE_COLOR_PARAM(AshikhminShirleyClosureParams, Cs),
                                                         CLOSURE_FLOAT_PARAM(AshikhminShirleyClosureParams, nu),
                                                         CLOSURE_FLOAT_PARAM(AshikhminShirleyClosureParams, nv),
                                                         CLOSURE_FINISH_PARAM(AshikhminShirleyClosureParams) } },
