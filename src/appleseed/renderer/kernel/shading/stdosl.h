@@ -1,4 +1,3 @@
-
 // This file is part of OpenShadingLanguage.
 // Modified by Esteban Tovagliari, The appleseedhq Organization.
 // Original license follows.
@@ -526,6 +525,7 @@ closure color as_ashikhmin_shirley(normal N, vector T, color kd, color ks, float
 closure color as_microfacet_blinn(normal N, float glossiness) BUILTIN;
 closure color as_microfacet_ward(normal N, float glossiness) BUILTIN;
 
+/********************************/
 // closures in OSL spec that are not supported in appleseed.
 /*
 closure color dielectric(normal N, float eta) BUILTIN;
