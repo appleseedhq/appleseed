@@ -73,6 +73,9 @@ class RegularSpectrum
     // Set all components to a given value.
     void set(const ValueType val);
 
+    // Test if it is black
+    bool is_zero();
+
     // Unchecked array subscripting.
     ValueType& operator[](const size_t i);
     const ValueType& operator[](const size_t i) const;
@@ -84,9 +87,6 @@ class RegularSpectrum
 // Exact inequality and equality tests.
 template <typename T, size_t N> bool operator!=(const RegularSpectrum<T, N>& lhs, const RegularSpectrum<T, N>& rhs);
 template <typename T, size_t N> bool operator==(const RegularSpectrum<T, N>& lhs, const RegularSpectrum<T, N>& rhs);
-
-// Compare each component against a constant
-template <typename T, size_t N> bool operator!=(const RegularSpectrum<T, N>& lhs, const float k );
 
 // Approximate equality tests.
 template <typename T, size_t N> bool feq(const RegularSpectrum<T, N>& lhs, const RegularSpectrum<T, N>& rhs);
@@ -201,6 +201,18 @@ inline void RegularSpectrum<T, N>::set(const ValueType val)
         m_samples[i] = val;
 }
 
+template <typename T, size_t N>
+inline bool RegularSpectrum<T, N>::is_zero()
+{
+	for (size_t i = 0; i < N; ++i)
+	{
+		if (m_samples[i] != 0.0f)
+            return false;
+	}
+
+	return true;
+}
+
 #ifdef APPLESEED_USE_SSE
 
 template <>
@@ -240,18 +252,6 @@ inline bool operator!=(const RegularSpectrum<T, N>& lhs, const RegularSpectrum<T
     for (size_t i = 0; i < N; ++i)
     {
         if (lhs[i] != rhs[i])
-            return true;
-    }
-
-    return false;
-}
-
-template <typename T, size_t N>
-inline bool operator!=(const RegularSpectrum<T, N>& lhs, const float k )
-{
-    for (size_t i = 0; i < N; ++i)
-    {
-        if (lhs[i] != k)
             return true;
     }
 

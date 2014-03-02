@@ -174,7 +174,7 @@ namespace
                 aovs);
 
             // Optionally simulate translucency by adding back lighting.
-            if (values.m_translucency != 0.0f)
+            if (!values.m_translucency.is_zero())
             {
                 add_back_lighting(
                     values,
@@ -222,7 +222,7 @@ namespace
         {
             double      m_color_multiplier;
             double      m_alpha_multiplier;
-            Spectrum    m_translucency;			// translucency should be a color
+            Spectrum    m_translucency;
             Spectrum    m_aerial_persp_sky_color;
             Alpha       m_aerial_persp_sky_alpha;       // unused
         };
@@ -339,11 +339,14 @@ namespace
                     back_aovs);
             }
 
-            // Divide by the number of samples and scale back lighting by translucency value.
-            const float translucency = static_cast<float>(values.m_translucency[0]);
+            // Apply translucency factor.
+            back_radiance *= values.m_translucency;
+            back_aovs *= values.m_translucency;
+
+            // Divide by the number of samples.
             const float rcp_sample_count = 1.0f / static_cast<float>(m_back_lighting_samples);
-            back_radiance *= translucency * rcp_sample_count;
-            back_aovs *= translucency * rcp_sample_count;
+            back_radiance *= rcp_sample_count;
+            back_aovs *= rcp_sample_count;
 
             // Add back lighting contribution.
             radiance += back_radiance;

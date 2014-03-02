@@ -1,4 +1,3 @@
-
 // This file is part of OpenShadingLanguage.
 // Modified by Esteban Tovagliari, The appleseedhq Organization.
 // Original license follows.
@@ -476,32 +475,70 @@ string concat (string a, string b, string c, string d, string e, string f) {
 
 // Texture
 
+/*************************************************************/
+// Closures
+/*************************************************************/
 
-// appleseed closures
+/********************************/
+// standard OSL closures
 
-closure color ashikhmin_shirley(normal N, vector T, color kd, color ks, float nu, float nv) BUILTIN;
+closure color background() BUILTIN;
+closure color debug(string tag) BUILTIN;
+
+closure color emission(float inner_angle, float outer_angle) BUILTIN;
+closure color emission(float outer_angle) { return emission(outer_angle, outer_angle); }
+closure color emission() { return emission(M_PI_2, M_PI_2); }
+
 closure color diffuse(normal N) BUILTIN;
-closure color microfacet_beckmann(normal N, float glossiness) BUILTIN;
-closure color microfacet_blinn(normal N, float glossiness) BUILTIN;
-closure color microfacet_ggx(normal N, float glossiness) BUILTIN;
-closure color microfacet_ward(normal N, float glossiness) BUILTIN;
-closure color reflection(normal N) BUILTIN;
-closure color refraction(normal N, float from_ior, float to_ior) BUILTIN;
-closure color translucent(normal N) BUILTIN;
-
-closure color emission() BUILTIN;
 closure color holdout() BUILTIN;
+closure color translucent(normal N) BUILTIN;
 closure color transparent() BUILTIN;
 
-// Closures in OSL spec that are different or are not supported in appleseed.
+/********************************/
+// closures that are in the standard but are different in appleseed
+
+// original:
+//closure color microfacet_beckmann(normal N, float roughness, float eta) BUILTIN;
+// appleseed:
+closure color microfacet_beckmann(normal N, float glossiness) BUILTIN;
+
+// original:
+//closure color microfacet_ggx(normal N, float roughness, float eta) BUILTIN;
+// appleseed:
+closure color microfacet_ggx(normal N, float glossiness) BUILTIN;
+
+// original:
+//closure color reflection(normal N, float eta) BUILTIN;
+//closure color reflection(normal N) { return reflection (N, 0.0); }
+// appleseed:
+closure color reflection(normal N) BUILTIN;
+
+// original:
+//closure color refraction(normal N, float eta) BUILTIN;
+// appleseed:
+closure color refraction(normal N, float from_ior, float to_ior) BUILTIN;
+
+/********************************/
+// appleseed specific closures
+
+closure color as_ashikhmin_shirley(
+    normal N, 
+    vector T, 
+    float kd, 
+    color Cd,
+    float ks,
+    color Cs, 
+    float nu, 
+    float nv) BUILTIN;
+
+closure color as_microfacet_blinn(normal N, float glossiness) BUILTIN;
+closure color as_microfacet_ward(normal N, float glossiness) BUILTIN;
+
+/********************************/
+// closures in OSL spec that are not supported in appleseed.
 /*
-closure color reflection(normal N, float eta) BUILTIN;
-closure color reflection(normal N) { return reflection (N, 0.0); }
-closure color refraction(normal N, float eta) BUILTIN;
 closure color dielectric(normal N, float eta) BUILTIN;
-closure color microfacet_ggx(normal N, float ag, float eta) BUILTIN;
 closure color microfacet_ggx_refraction(normal N, float ag, float eta) BUILTIN;
-closure color microfacet_beckmann(normal N, float ab, float eta) BUILTIN;
 closure color microfacet_beckmann_refraction(normal N, float ab, float eta) BUILTIN;
 closure color ward(normal N, vector T,float ax, float ay) BUILTIN;
 closure color phong(normal N, float exponent) BUILTIN;
@@ -512,10 +549,6 @@ closure color ashikhmin_velvet(normal N, float sigma, float eta) BUILTIN;
 closure color westin_backscatter(normal N, float roughness) BUILTIN;
 closure color westin_sheen(normal N, float edginess) BUILTIN;
 closure color bssrdf_cubic(color radius) BUILTIN;
-closure color emission(float inner_angle, float outer_angle) BUILTIN;
-closure color emission(float outer_angle) BUILTIN;
-closure color debug(string tag) BUILTIN;
-closure color background() BUILTIN;
 closure color subsurface(float eta, float g, color mfp, color albedo) BUILTIN;
 
 closure color cloth(normal N, float s, float t, float dsdx, float dtdx, float dsdy, float dtdy,

@@ -1,0 +1,19 @@
+
+surface ashikhmin(
+	float kd = 1, 
+	color Cd = 1,
+	float ks = 1,
+	float nu = 1000,
+	float nv = 1000,
+	color Cs = 1)
+{
+	Ci = as_ashikhmin_shirley(
+		N,
+		dPdu,
+		kd,
+		Cd,
+		ks,
+		Cs,
+		nu,
+		nv);
+}

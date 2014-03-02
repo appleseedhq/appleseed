@@ -40,6 +40,7 @@
 #include <QTreeWidgetItem>
 
 // Forward declarations.
+namespace appleseed { namespace studio { class AttributeEditor; } }
 class QMenu;
 class QString;
 
@@ -73,7 +74,7 @@ class ItemBase
     virtual QMenu* get_multiple_items_context_menu(const QList<ItemBase*>& items) const;
 
   public slots:
-    virtual void slot_edit();
+    virtual void slot_edit(AttributeEditor* attribute_editor = 0);
     virtual void slot_delete();
     virtual void slot_delete_multiple(QList<ItemBase*> items = QList<ItemBase*>());
 

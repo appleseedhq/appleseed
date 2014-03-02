@@ -130,7 +130,7 @@ TEST_SUITE(Foundation_Image_ColorSpace)
         EXPECT_FEQ_EPS(
             Color3d(0.5, 0.7, 0.2),
             ciexyz,
-            1.0e-6);
+            1.0e-5);
     }
 
     TEST_CASE(TestLinearRGBTosRGBConversion)

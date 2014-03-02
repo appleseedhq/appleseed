@@ -80,13 +80,13 @@ QShortcut* create_window_local_shortcut(QWidget* parent, const Qt::Key key)
 
 void clear_layout(QLayout* layout)
 {
-    while (!layout->isEmpty())
+    for (int i = layout->count(); i > 0; --i)
     {
         QLayoutItem* item = layout->takeAt(0);
 
         if (item->layout())
             clear_layout(item->layout());
-        else item->widget()->deleteLater();
+        else delete item->widget();
 
         delete item;
     }

@@ -313,7 +313,10 @@ void InputArray::evaluate(
     assert(values);
 
     uint8* ptr = static_cast<uint8*>(values) + offset;
+
+#ifdef APPLESEED_USE_SSE
     assert(is_aligned(ptr, 16));
+#endif
 
     for (const_each<InputVector> i = impl->m_inputs; i; ++i)
         ptr = i->evaluate(texture_cache, uv, ptr);
@@ -326,7 +329,10 @@ void InputArray::evaluate_uniforms(
     assert(values);
 
     uint8* ptr = static_cast<uint8*>(values) + offset;
+
+#ifdef APPLESEED_USE_SSE
     assert(is_aligned(ptr, 16));
+#endif
 
     for (const_each<InputVector> i = impl->m_inputs; i; ++i)
         ptr = i->evaluate_uniform(ptr);

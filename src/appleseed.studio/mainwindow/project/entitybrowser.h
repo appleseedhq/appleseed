@@ -31,7 +31,7 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYBROWSER_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/entityeditorwindow.h"
+#include "mainwindow/project/entityeditor.h"
 
 // Standard headers.
 #include <string>
@@ -59,7 +59,7 @@ template <typename ParentEntity> class EntityBrowser;
 
 template <>
 class EntityBrowser<renderer::Project>
-  : public EntityEditorWindow::IEntityBrowser
+  : public EntityEditor::IEntityBrowser
 {
   public:
     explicit EntityBrowser(const renderer::Project& scene);
@@ -77,7 +77,7 @@ class EntityBrowser<renderer::Project>
 
 template <>
 class EntityBrowser<renderer::BaseGroup>
-  : public EntityEditorWindow::IEntityBrowser
+  : public EntityEditor::IEntityBrowser
 {
   public:
     explicit EntityBrowser(const renderer::BaseGroup& base_group);

@@ -31,7 +31,7 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYEDITORFORMFACTORYBASE_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/entityeditorwindow.h"
+#include "mainwindow/project/entityeditor.h"
 
 // Standard headers.
 #include <string>
@@ -44,13 +44,13 @@ namespace appleseed {
 namespace studio {
 
 class EntityEditorFormFactoryBase
-  : public EntityEditorWindow::IFormFactory
+  : public EntityEditor::IFormFactory
 {
   public:
     static const std::string NameParameter;
 
   protected:
-    typedef EntityEditorWindow::InputMetadataCollection InputMetadataCollection;
+    typedef EntityEditor::InputMetadataCollection InputMetadataCollection;
 
     explicit EntityEditorFormFactoryBase(const std::string& entity_name);
 

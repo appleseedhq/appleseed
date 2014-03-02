@@ -54,7 +54,7 @@
 #include <vector>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class LogWidget; } }
+namespace appleseed { namespace studio { class AttributeEditor; } }
 namespace appleseed { namespace studio { class ProjectExplorer; } }
 namespace Ui        { class MainWindow; }
 class QAction;
@@ -112,6 +112,7 @@ class MainWindow
 
     ProjectManager                          m_project_manager;
     ProjectExplorer*                        m_project_explorer;
+    AttributeEditor*                        m_attribute_editor;
     RenderingManager                        m_rendering_manager;
 
     typedef std::map<std::string, RenderTab*> RenderTabCollection;
@@ -136,10 +137,7 @@ class MainWindow
     void update_recent_files_menu(const QStringList& files);
 
     void build_toolbar();
-
-    LogWidget* create_log_widget() const;
-    void build_log();
-
+    void build_log_panel();
     void build_project_explorer();
 
     void build_connections();

@@ -33,7 +33,7 @@
 // appleseed.studio headers.
 #include "mainwindow/project/collectionitem.h"
 #include "mainwindow/project/entitybrowser.h"
-#include "mainwindow/project/entityeditorwindow.h"
+#include "mainwindow/project/entityeditor.h"
 #include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/multimodelentityeditorformfactory.h"
 #include "mainwindow/project/multimodelentityitem.h"
@@ -134,12 +134,12 @@ void MultiModelCollectionItem<Entity, ParentEntity, ParentItem>::slot_create()
 
     typedef typename EntityTraits::FactoryRegistrarType FactoryRegistrarType;
 
-    std::auto_ptr<EntityEditorWindow::IFormFactory> form_factory(
+    std::auto_ptr<EntityEditor::IFormFactory> form_factory(
         new MultiModelEntityEditorFormFactory<FactoryRegistrarType>(
             Base::m_project_builder.template get_factory_registrar<Entity>(),
             name_suggestion));
 
-    std::auto_ptr<EntityEditorWindow::IEntityBrowser> entity_browser(
+    std::auto_ptr<EntityEditor::IEntityBrowser> entity_browser(
         new EntityBrowser<ParentEntity>(Base::m_parent));
 
     open_entity_editor(

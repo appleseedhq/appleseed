@@ -1,0 +1,46 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.5.5dev
+shader texmap
+param	string	txfile	"" 		 %read{0,11} %write{2147483647,-1}
+oparam	color	out	0 0 0 		 %read{2147483647,-1} %write{10,12}
+global	float	u	 %read{9,11} %write{2147483647,-1} %derivs
+global	float	v	 %read{9,11} %write{2147483647,-1} %derivs
+local	int	nchannels	 %read{7,7} %write{3,3}
+local	float	___296_val	 %read{10,10} %write{9,9}
+const	string	$const1	""		 %read{0,0} %write{2147483647,-1}
+temp	int	$tmp1	 %read{1,1} %write{0,0}
+temp	int	$tmp2	 %read{2,6} %write{1,5}
+const	int	$const2	0		 %read{1,4} %write{2147483647,-1}
+temp	int	$tmp3	 %read{4,4} %write{3,3}
+const	string	$const3	"channels"		 %read{3,3} %write{2147483647,-1}
+temp	int	$tmp4	 %read{5,5} %write{4,4}
+const	int	$const4	1		 %read{7,7} %write{2147483647,-1}
+temp	int	$tmp5	 %read{8,8} %write{7,7}
+const	color	$const5	0.5 0 1.5		 %read{12,12} %write{2147483647,-1}
+code ___main___
+# texmap.osl:9
+# 	if (txfile != "" && gettextureinfo(txfile, "channels", nchannels))
+	neq		$tmp1 txfile $const1 	%filename{"texmap.osl"} %line{9} %argrw{"wrr"}
+	neq		$tmp2 $tmp1 $const2 	%argrw{"wrr"}
+	if		$tmp2 6 6 	%argrw{"r"}
+	gettextureinfo	$tmp3 txfile $const3 nchannels 	%argrw{"wrrw"}
+	neq		$tmp4 $tmp3 $const2 	%argrw{"wrr"}
+	assign		$tmp2 $tmp4 	%argrw{"wr"}
+	if		$tmp2 12 13 	%argrw{"r"}
+# texmap.osl:11
+# 		if (nchannels == 1)
+	eq		$tmp5 nchannels $const4 	%line{11} %argrw{"wrr"}
+	if		$tmp5 11 12 	%argrw{"r"}
+# texmap.osl:13
+# 			float val = texture(txfile, u, v);
+	texture		___296_val txfile u v 	%line{13} %argrw{"wrrr"} %argderivs{2,3}
+# texmap.osl:14
+# 			out = color( val, val, val);
+	color		out ___296_val ___296_val ___296_val 	%line{14} %argrw{"wrrr"}
+# texmap.osl:17
+# 			out = texture(txfile, u, v);
+	texture		out txfile u v 	%line{17} %argrw{"wrrr"} %argderivs{2,3}
+# texmap.osl:20
+# 		out = color(0.5, 0.0, 1.5);
+	assign		out $const5 	%line{20} %argrw{"wr"}
+	end

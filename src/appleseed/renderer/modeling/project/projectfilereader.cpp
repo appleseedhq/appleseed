@@ -1580,11 +1580,12 @@ namespace
                 m_side = ObjectInstance::FrontSide;
             else if (side_string == "back")
                 m_side = ObjectInstance::BackSide;
+            else if (side_string == "both")
+                m_side = ObjectInstance::BothSide;
             else
             {
                 RENDERER_LOG_ERROR(
-                    "while assigning material: side must be \"front\" or \"back\", got \"%s\".",
-                    side_string.c_str());
+                    "while assigning material: side must be \"front\", \"back\" or \"both\", got \"%s\".", side_string.c_str());
                 m_context.get_event_counters().signal_error();
                 m_side = ObjectInstance::FrontSide;
             }
@@ -1669,12 +1670,27 @@ namespace
                     const ObjectInstance::Side material_side = assign_mat_handler->get_material_side();
                     const string& material_name = assign_mat_handler->get_material_name();
 
-                    StringDictionary& material_mappings =
-                        material_side == ObjectInstance::FrontSide
-                            ? m_front_material_mappings
-                            : m_back_material_mappings;
+                    switch (material_side)
+                    {
+                      case ObjectInstance::FrontSide:
+                        m_front_material_mappings.insert(material_slot, material_name);
+                        break;
 
-                    material_mappings.insert(material_slot, material_name);
+                      case ObjectInstance::BackSide:
+                        m_back_material_mappings.insert(material_slot, material_name);
+                        break;
+
+                      case ObjectInstance::BothSide:
+                        {
+                            m_front_material_mappings.insert(material_slot, material_name);
+                            m_back_material_mappings.insert(material_slot, material_name);
+                        }
+                        break;
+
+                      default:
+                          RENDERER_LOG_ERROR("logical error");
+                          break;
+                    }
                 }
                 break;
 
