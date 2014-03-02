@@ -527,7 +527,7 @@ closure color as_ashikhmin_shirley(
     float kd, 
     color Cd,
     float ks,
-    Color Cs, 
+    color Cs, 
     float nu, 
     float nv) BUILTIN;
 

@@ -169,13 +169,13 @@ void CompositeClosure::process_closure_tree(
 
                     AshikminBRDFInputValues values;
 
-                    linear_rgb_reflectance_to_spectrum(Color3f(p->kd * p->Cd), values.m_rd);
+                    linear_rgb_reflectance_to_spectrum(Color3f(p->Cd), values.m_rd);
                     values.m_rd_alpha.set(1.0f);
-                    values.m_rd_multiplier = 1.0;
+                    values.m_rd_multiplier = p->kd;
 
-                    linear_rgb_reflectance_to_spectrum(Color3f(p->ks * p->Cs), values.m_rg);
+                    linear_rgb_reflectance_to_spectrum(Color3f(p->Cs), values.m_rg);
                     values.m_rg_alpha.set(1.0f);
-                    values.m_rg_multiplier = 1.0;
+                    values.m_rg_multiplier = p->ks;
                     values.m_fr_multiplier = 1.0;
                     values.m_nu = p->nu;
                     values.m_nv = p->nv;
