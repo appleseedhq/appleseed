@@ -67,6 +67,17 @@ namespace
         float       nv;
     };
 
+    struct DebugClosureParams
+    {
+        OSL::ustring tag;
+    };
+
+    struct EmissionClosureParams
+    {
+        float inner_angle;
+        float outer_angle;
+    };
+
     struct LambertClosureParams
     {
         OSL::Vec3   N;
@@ -176,6 +187,30 @@ void CompositeClosure::process_closure_tree(
                 }
                 break;
 
+              case BackgroundID:
+                {
+                    // ignored for now.
+                }
+                break;
+
+              case DebugID:
+                {
+                    // ignored for now.
+                }
+                break;
+
+              case EmissionID:
+                {
+                    // TODO: implement...
+                }
+                break;
+
+              case HoldoutID:
+                {
+                    // ignored for now.
+                }
+                break;
+                
               case LambertID:
                 {
                     const LambertClosureParams* p = 
@@ -274,11 +309,9 @@ void CompositeClosure::process_closure_tree(
                 }
                 break;
 
-              case EmissionID:
-              case HoldoutID:
               case TransparentID:
                 {
-                    assert(!"Not implemented yet.");
+                    // TODO: implement.
                 }
                 break;
 
@@ -387,18 +420,33 @@ void register_appleseed_closures(OSL::ShadingSystem& shading_system)
 
     static const BuiltinClosures builtins[] =
     {
-        { "ashikhmin_shirley", AshikhminShirleyID, { CLOSURE_VECTOR_PARAM(AshikhminShirleyClosureParams, N),
-                                                     CLOSURE_VECTOR_PARAM(AshikhminShirleyClosureParams, T),
-                                                     CLOSURE_COLOR_PARAM(AshikhminShirleyClosureParams, kd),
-                                                     CLOSURE_COLOR_PARAM(AshikhminShirleyClosureParams, ks),
-                                                     CLOSURE_FLOAT_PARAM(AshikhminShirleyClosureParams, nu),
-                                                     CLOSURE_FLOAT_PARAM(AshikhminShirleyClosureParams, nv),
-                                                     CLOSURE_FINISH_PARAM(AshikhminShirleyClosureParams) } },
+        { "as_ashikhmin_shirley", AshikhminShirleyID, { CLOSURE_VECTOR_PARAM(AshikhminShirleyClosureParams, N),
+                                                        CLOSURE_VECTOR_PARAM(AshikhminShirleyClosureParams, T),
+                                                        CLOSURE_COLOR_PARAM(AshikhminShirleyClosureParams, kd),
+                                                        CLOSURE_COLOR_PARAM(AshikhminShirleyClosureParams, ks),
+                                                        CLOSURE_FLOAT_PARAM(AshikhminShirleyClosureParams, nu),
+                                                        CLOSURE_FLOAT_PARAM(AshikhminShirleyClosureParams, nv),
+                                                        CLOSURE_FINISH_PARAM(AshikhminShirleyClosureParams) } },
+
+        { "as_microfacet_blinn", MicrofacetBlinnID, { CLOSURE_VECTOR_PARAM(MicrofacetBRDFClosureParams, N),
+                                                      CLOSURE_FLOAT_PARAM(MicrofacetBRDFClosureParams, glossiness),
+                                                      CLOSURE_FINISH_PARAM(MicrofacetBRDFClosureParams) } },
+
+        { "as_microfacet_ward", MicrofacetWardID, { CLOSURE_VECTOR_PARAM(MicrofacetBRDFClosureParams, N),
+                                                    CLOSURE_FLOAT_PARAM(MicrofacetBRDFClosureParams, glossiness),
+                                                    CLOSURE_FINISH_PARAM(MicrofacetBRDFClosureParams) } },
+
+        { "background", BackgroundID, { CLOSURE_FINISH_PARAM(EmptyClosureParams) } },
+
+        { "debug", DebugID, { CLOSURE_STRING_PARAM(DebugClosureParams, tag),
+                              CLOSURE_FINISH_PARAM(DebugClosureParams) } },
 
         { "diffuse", LambertID, { CLOSURE_VECTOR_PARAM(LambertClosureParams, N),
                                   CLOSURE_FINISH_PARAM(LambertClosureParams) } },
 
-        { "emission", EmissionID, { CLOSURE_FINISH_PARAM(EmptyClosureParams) } },
+        { "emission", EmissionID, { CLOSURE_FLOAT_PARAM(EmissionClosureParams, inner_angle),
+                                    CLOSURE_FLOAT_PARAM(EmissionClosureParams, outer_angle),
+                                    CLOSURE_FINISH_PARAM(EmissionClosureParams) } },
 
         { "holdout", HoldoutID, { CLOSURE_FINISH_PARAM(EmptyClosureParams) } },
         
@@ -406,17 +454,9 @@ void register_appleseed_closures(OSL::ShadingSystem& shading_system)
                                                          CLOSURE_FLOAT_PARAM(MicrofacetBRDFClosureParams, glossiness),
                                                          CLOSURE_FINISH_PARAM(MicrofacetBRDFClosureParams) } },
 
-        { "microfacet_blinn", MicrofacetBlinnID, { CLOSURE_VECTOR_PARAM(MicrofacetBRDFClosureParams, N),
-                                                   CLOSURE_FLOAT_PARAM(MicrofacetBRDFClosureParams, glossiness),
-                                                   CLOSURE_FINISH_PARAM(MicrofacetBRDFClosureParams) } },
-
         { "microfacet_ggx", MicrofacetGGXID, { CLOSURE_VECTOR_PARAM(MicrofacetBRDFClosureParams, N),
                                                CLOSURE_FLOAT_PARAM(MicrofacetBRDFClosureParams, glossiness),
                                                CLOSURE_FINISH_PARAM(MicrofacetBRDFClosureParams) } },
-
-        { "microfacet_ward", MicrofacetWardID, { CLOSURE_VECTOR_PARAM(MicrofacetBRDFClosureParams, N),
-                                                 CLOSURE_FLOAT_PARAM(MicrofacetBRDFClosureParams, glossiness),
-                                                 CLOSURE_FINISH_PARAM(MicrofacetBRDFClosureParams) } },
 
         { "reflection", ReflectionID, { CLOSURE_VECTOR_PARAM(ReflectionClosureParams, N),
                                         CLOSURE_FINISH_PARAM(ReflectionClosureParams) } },
