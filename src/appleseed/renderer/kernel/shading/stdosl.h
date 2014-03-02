@@ -528,7 +528,8 @@ closure color as_ashikhmin_shirley(
     color Cd,
     float ks,
     Color Cs, 
-    float nu, float nv) BUILTIN;
+    float nu, 
+    float nv) BUILTIN;
 
 closure color as_microfacet_blinn(normal N, float glossiness) BUILTIN;
 closure color as_microfacet_ward(normal N, float glossiness) BUILTIN;
