@@ -85,6 +85,9 @@ class RegularSpectrum
 template <typename T, size_t N> bool operator!=(const RegularSpectrum<T, N>& lhs, const RegularSpectrum<T, N>& rhs);
 template <typename T, size_t N> bool operator==(const RegularSpectrum<T, N>& lhs, const RegularSpectrum<T, N>& rhs);
 
+// Compare each component against a constant
+template <typename T, size_t N> bool operator!=(const RegularSpectrum<T, N>& lhs, const float k );
+
 // Approximate equality tests.
 template <typename T, size_t N> bool feq(const RegularSpectrum<T, N>& lhs, const RegularSpectrum<T, N>& rhs);
 template <typename T, size_t N> bool feq(const RegularSpectrum<T, N>& lhs, const RegularSpectrum<T, N>& rhs, const T eps);
@@ -239,7 +242,19 @@ inline bool operator!=(const RegularSpectrum<T, N>& lhs, const RegularSpectrum<T
         if (lhs[i] != rhs[i])
             return true;
     }
- 
+
+    return false;
+}
+
+template <typename T, size_t N>
+inline bool operator!=(const RegularSpectrum<T, N>& lhs, const float k )
+{
+    for (size_t i = 0; i < N; ++i)
+    {
+        if (lhs[i] != k)
+            return true;
+    }
+
     return false;
 }
 
