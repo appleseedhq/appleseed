@@ -37,7 +37,7 @@
 #include "utility/miscellaneous.h"
 
 // Qt headers.
-#include <QShortCut>
+#include <QShortcut>
 #include <QString>
 #include <Qt>
 
