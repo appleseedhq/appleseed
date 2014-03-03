@@ -97,7 +97,7 @@ namespace
         {
             m_inputs.declare("color_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("alpha_multiplier", InputFormatScalar, "1.0");
-            m_inputs.declare("translucency", InputFormatScalar, "0.0");
+            m_inputs.declare("translucency", InputFormatSpectralReflectance, "");
             m_inputs.declare("aerial_persp_sky_color", InputFormatSpectralIlluminance, "");
 
             const string aerial_persp_mode = m_params.get_optional<string>("aerial_persp_mode", "none");
@@ -107,7 +107,7 @@ namespace
                 m_aerial_persp_mode = AerialPerspEnvironmentShader;
             else if (aerial_persp_mode == "sky_color")
                 m_aerial_persp_mode = AerialPerspSkyColor;
-            else 
+            else
             {
                 RENDERER_LOG_ERROR(
                     "invalid value \"%s\" for parameter \"aerial_persp_mode\", "
@@ -174,7 +174,7 @@ namespace
                 aovs);
 
             // Optionally simulate translucency by adding back lighting.
-            if (values.m_translucency > 0.0)
+            if (!values.m_translucency.is_zero())
             {
                 add_back_lighting(
                     values,
@@ -222,7 +222,7 @@ namespace
         {
             double      m_color_multiplier;
             double      m_alpha_multiplier;
-            double      m_translucency;
+            Spectrum    m_translucency;
             Spectrum    m_aerial_persp_sky_color;
             Alpha       m_aerial_persp_sky_alpha;       // unused
         };
@@ -316,7 +316,7 @@ namespace
 
             // Execute the OSL shader, if we have one.
             const Material* material = back_shading_point.get_material();
-                
+
             if (material && material->get_osl_surface_shader())
             {
                 shading_context.execute_osl_shadergroup(
@@ -326,7 +326,7 @@ namespace
 
 #endif
             */
-            
+
             // Compute back lighting.
             for (size_t i = 0; i < m_back_lighting_samples; ++i)
             {
@@ -339,11 +339,14 @@ namespace
                     back_aovs);
             }
 
-            // Divide by the number of samples and scale back lighting by translucency value.
-            const float translucency = static_cast<float>(values.m_translucency);
+            // Apply translucency factor.
+            back_radiance *= values.m_translucency;
+            back_aovs *= values.m_translucency;
+
+            // Divide by the number of samples.
             const float rcp_sample_count = 1.0f / static_cast<float>(m_back_lighting_samples);
-            back_radiance *= translucency * rcp_sample_count;
-            back_aovs *= translucency * rcp_sample_count;
+            back_radiance *= rcp_sample_count;
+            back_aovs *= rcp_sample_count;
 
             // Add back lighting contribution.
             radiance += back_radiance;

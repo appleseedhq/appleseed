@@ -73,6 +73,9 @@ class RegularSpectrum
     // Set all components to a given value.
     void set(const ValueType val);
 
+    // Test if it is black
+    bool is_zero();
+
     // Unchecked array subscripting.
     ValueType& operator[](const size_t i);
     const ValueType& operator[](const size_t i) const;
@@ -198,6 +201,18 @@ inline void RegularSpectrum<T, N>::set(const ValueType val)
         m_samples[i] = val;
 }
 
+template <typename T, size_t N>
+inline bool RegularSpectrum<T, N>::is_zero()
+{
+	for (size_t i = 0; i < N; ++i)
+	{
+		if (m_samples[i] != 0.0f)
+            return false;
+	}
+
+	return true;
+}
+
 #ifdef APPLESEED_USE_SSE
 
 template <>
@@ -239,7 +254,7 @@ inline bool operator!=(const RegularSpectrum<T, N>& lhs, const RegularSpectrum<T
         if (lhs[i] != rhs[i])
             return true;
     }
- 
+
     return false;
 }
 
