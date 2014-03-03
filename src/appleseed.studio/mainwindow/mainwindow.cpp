@@ -237,6 +237,7 @@ void MainWindow::build_menus()
     //
 
     m_ui->menu_view->addAction(m_ui->project_explorer->toggleViewAction());
+    m_ui->menu_view->addAction(m_ui->attribute_editor->toggleViewAction());
     m_ui->menu_view->addAction(m_ui->log->toggleViewAction());
 
     //
