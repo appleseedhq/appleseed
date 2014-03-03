@@ -84,6 +84,8 @@ enum ClosureID
     TranslucentID,
 
     // Special closures.
+    BackgroundID,
+    DebugID,
     EmissionID,
     HoldoutID,
     TransparentID,

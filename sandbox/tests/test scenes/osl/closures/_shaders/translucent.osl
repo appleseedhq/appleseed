@@ -1,0 +1,5 @@
+
+surface translucent(float Kd = 1, color Cs = 1)
+{
+    Ci = Kd * Cs * translucent(N);
+}

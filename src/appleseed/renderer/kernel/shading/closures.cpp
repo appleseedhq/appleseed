@@ -61,10 +61,23 @@ namespace
     {
         OSL::Vec3   N;
         OSL::Vec3   T;
-        OSL::Color3 kd;
-        OSL::Color3 ks;
+        float       kd;
+        OSL::Color3 Cd;
+        float       ks;
+        OSL::Color3 Cs;
         float       nu;
         float       nv;
+    };
+
+    struct DebugClosureParams
+    {
+        OSL::ustring tag;
+    };
+
+    struct EmissionClosureParams
+    {
+        float inner_angle;
+        float outer_angle;
     };
 
     struct LambertClosureParams
@@ -156,13 +169,13 @@ void CompositeClosure::process_closure_tree(
 
                     AshikminBRDFInputValues values;
 
-                    linear_rgb_reflectance_to_spectrum(Color3f(p->kd), values.m_rd);
+                    linear_rgb_reflectance_to_spectrum(Color3f(p->Cd), values.m_rd);
                     values.m_rd_alpha.set(1.0f);
-                    values.m_rd_multiplier = 1.0;
+                    values.m_rd_multiplier = p->kd;
 
-                    linear_rgb_reflectance_to_spectrum(Color3f(p->ks), values.m_rg);
+                    linear_rgb_reflectance_to_spectrum(Color3f(p->Cs), values.m_rg);
                     values.m_rg_alpha.set(1.0f);
-                    values.m_rg_multiplier = 1.0;
+                    values.m_rg_multiplier = p->ks;
                     values.m_fr_multiplier = 1.0;
                     values.m_nu = p->nu;
                     values.m_nv = p->nv;
@@ -176,6 +189,30 @@ void CompositeClosure::process_closure_tree(
                 }
                 break;
 
+              case BackgroundID:
+                {
+                    // ignored for now.
+                }
+                break;
+
+              case DebugID:
+                {
+                    // ignored for now.
+                }
+                break;
+
+              case EmissionID:
+                {
+                    // TODO: implement...
+                }
+                break;
+
+              case HoldoutID:
+                {
+                    // ignored for now.
+                }
+                break;
+                
               case LambertID:
                 {
                     const LambertClosureParams* p = 
@@ -274,11 +311,9 @@ void CompositeClosure::process_closure_tree(
                 }
                 break;
 
-              case EmissionID:
-              case HoldoutID:
               case TransparentID:
                 {
-                    assert(!"Not implemented yet.");
+                    // TODO: implement.
                 }
                 break;
 
@@ -387,18 +422,35 @@ void register_appleseed_closures(OSL::ShadingSystem& shading_system)
 
     static const BuiltinClosures builtins[] =
     {
-        { "ashikhmin_shirley", AshikhminShirleyID, { CLOSURE_VECTOR_PARAM(AshikhminShirleyClosureParams, N),
-                                                     CLOSURE_VECTOR_PARAM(AshikhminShirleyClosureParams, T),
-                                                     CLOSURE_COLOR_PARAM(AshikhminShirleyClosureParams, kd),
-                                                     CLOSURE_COLOR_PARAM(AshikhminShirleyClosureParams, ks),
-                                                     CLOSURE_FLOAT_PARAM(AshikhminShirleyClosureParams, nu),
-                                                     CLOSURE_FLOAT_PARAM(AshikhminShirleyClosureParams, nv),
-                                                     CLOSURE_FINISH_PARAM(AshikhminShirleyClosureParams) } },
+        { "as_ashikhmin_shirley", AshikhminShirleyID, { CLOSURE_VECTOR_PARAM(AshikhminShirleyClosureParams, N),
+                                                        CLOSURE_VECTOR_PARAM(AshikhminShirleyClosureParams, T),
+                                                        CLOSURE_FLOAT_PARAM(AshikhminShirleyClosureParams, kd),
+                                                        CLOSURE_COLOR_PARAM(AshikhminShirleyClosureParams, Cd),
+                                                        CLOSURE_FLOAT_PARAM(AshikhminShirleyClosureParams, ks),
+                                                        CLOSURE_COLOR_PARAM(AshikhminShirleyClosureParams, Cs),
+                                                        CLOSURE_FLOAT_PARAM(AshikhminShirleyClosureParams, nu),
+                                                        CLOSURE_FLOAT_PARAM(AshikhminShirleyClosureParams, nv),
+                                                        CLOSURE_FINISH_PARAM(AshikhminShirleyClosureParams) } },
+
+        { "as_microfacet_blinn", MicrofacetBlinnID, { CLOSURE_VECTOR_PARAM(MicrofacetBRDFClosureParams, N),
+                                                      CLOSURE_FLOAT_PARAM(MicrofacetBRDFClosureParams, glossiness),
+                                                      CLOSURE_FINISH_PARAM(MicrofacetBRDFClosureParams) } },
+
+        { "as_microfacet_ward", MicrofacetWardID, { CLOSURE_VECTOR_PARAM(MicrofacetBRDFClosureParams, N),
+                                                    CLOSURE_FLOAT_PARAM(MicrofacetBRDFClosureParams, glossiness),
+                                                    CLOSURE_FINISH_PARAM(MicrofacetBRDFClosureParams) } },
+
+        { "background", BackgroundID, { CLOSURE_FINISH_PARAM(EmptyClosureParams) } },
+
+        { "debug", DebugID, { CLOSURE_STRING_PARAM(DebugClosureParams, tag),
+                              CLOSURE_FINISH_PARAM(DebugClosureParams) } },
 
         { "diffuse", LambertID, { CLOSURE_VECTOR_PARAM(LambertClosureParams, N),
                                   CLOSURE_FINISH_PARAM(LambertClosureParams) } },
 
-        { "emission", EmissionID, { CLOSURE_FINISH_PARAM(EmptyClosureParams) } },
+        { "emission", EmissionID, { CLOSURE_FLOAT_PARAM(EmissionClosureParams, inner_angle),
+                                    CLOSURE_FLOAT_PARAM(EmissionClosureParams, outer_angle),
+                                    CLOSURE_FINISH_PARAM(EmissionClosureParams) } },
 
         { "holdout", HoldoutID, { CLOSURE_FINISH_PARAM(EmptyClosureParams) } },
         
@@ -406,17 +458,9 @@ void register_appleseed_closures(OSL::ShadingSystem& shading_system)
                                                          CLOSURE_FLOAT_PARAM(MicrofacetBRDFClosureParams, glossiness),
                                                          CLOSURE_FINISH_PARAM(MicrofacetBRDFClosureParams) } },
 
-        { "microfacet_blinn", MicrofacetBlinnID, { CLOSURE_VECTOR_PARAM(MicrofacetBRDFClosureParams, N),
-                                                   CLOSURE_FLOAT_PARAM(MicrofacetBRDFClosureParams, glossiness),
-                                                   CLOSURE_FINISH_PARAM(MicrofacetBRDFClosureParams) } },
-
         { "microfacet_ggx", MicrofacetGGXID, { CLOSURE_VECTOR_PARAM(MicrofacetBRDFClosureParams, N),
                                                CLOSURE_FLOAT_PARAM(MicrofacetBRDFClosureParams, glossiness),
                                                CLOSURE_FINISH_PARAM(MicrofacetBRDFClosureParams) } },
-
-        { "microfacet_ward", MicrofacetWardID, { CLOSURE_VECTOR_PARAM(MicrofacetBRDFClosureParams, N),
-                                                 CLOSURE_FLOAT_PARAM(MicrofacetBRDFClosureParams, glossiness),
-                                                 CLOSURE_FINISH_PARAM(MicrofacetBRDFClosureParams) } },
 
         { "reflection", ReflectionID, { CLOSURE_VECTOR_PARAM(ReflectionClosureParams, N),
                                         CLOSURE_FINISH_PARAM(ReflectionClosureParams) } },
