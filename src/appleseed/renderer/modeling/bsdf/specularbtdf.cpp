@@ -258,7 +258,9 @@ DictionaryArray SpecularBTDFFactory::get_input_metadata() const
         Dictionary()
             .insert("name", "from_ior")
             .insert("label", "From Index of Refraction")
-            .insert("type", "text")
+            .insert("type", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "5.0")
             .insert("use", "required")
             .insert("default", "1.0"));
 
@@ -266,7 +268,9 @@ DictionaryArray SpecularBTDFFactory::get_input_metadata() const
         Dictionary()
             .insert("name", "to_ior")
             .insert("label", "To Index of Refraction")
-            .insert("type", "text")
+            .insert("type", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "5.0")
             .insert("use", "required")
             .insert("default", "1.5"));
 
