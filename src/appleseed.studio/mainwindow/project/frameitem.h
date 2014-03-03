@@ -42,6 +42,7 @@
 #include <QObject>
 
 // Forward declarations.
+namespace appleseed     { namespace studio { class AttributeEditor; } }
 namespace appleseed     { namespace studio { class ProjectBuilder; } }
 namespace foundation    { class Dictionary; }
 namespace renderer      { class Frame; }
@@ -69,7 +70,7 @@ class FrameItem
     renderer::Frame*        m_frame;
     ProjectBuilder&         m_project_builder;
 
-    virtual void slot_edit() OVERRIDE;
+    virtual void slot_edit(AttributeEditor* attribute_editor) OVERRIDE;
 
     void schedule_edit(const foundation::Dictionary& values);
     void edit(const foundation::Dictionary& values);

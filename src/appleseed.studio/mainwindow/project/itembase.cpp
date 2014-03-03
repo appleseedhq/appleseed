@@ -130,7 +130,7 @@ QMenu* ItemBase::get_multiple_items_context_menu(const QList<ItemBase*>& items) 
     return menu;
 }
 
-void ItemBase::slot_edit()
+void ItemBase::slot_edit(AttributeEditor* attribute_editor)
 {
 }
 

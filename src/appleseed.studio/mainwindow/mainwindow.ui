@@ -306,6 +306,32 @@
     <layout class="QGridLayout" name="gridLayout_9"/>
    </widget>
   </widget>
+  <widget class="QDockWidget" name="attribute_editor">
+   <property name="floating">
+    <bool>false</bool>
+   </property>
+   <property name="windowTitle">
+    <string>Attribute Editor</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QScrollArea" name="attribute_editor_scrollarea">
+    <property name="widgetResizable">
+     <bool>true</bool>
+    </property>
+    <widget class="QWidget" name="attribute_editor_scrollarea_contents">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>0</y>
+       <width>116</width>
+       <height>903</height>
+      </rect>
+     </property>
+    </widget>
+   </widget>
+  </widget>
   <action name="action_file_new_project">
    <property name="text">
     <string>&amp;New Project</string>

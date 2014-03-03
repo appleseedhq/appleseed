@@ -3,14 +3,14 @@
  <class>EntityEditorWindow</class>
  <widget class="QWidget" name="EntityEditorWindow">
   <property name="windowModality">
-   <enum>Qt::ApplicationModal</enum>
+   <enum>Qt::NonModal</enum>
   </property>
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>500</width>
+    <height>400</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -34,8 +34,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>380</width>
-        <height>251</height>
+        <width>480</width>
+        <height>351</height>
        </rect>
       </property>
      </widget>

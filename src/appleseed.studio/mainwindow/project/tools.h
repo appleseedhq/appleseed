@@ -31,7 +31,7 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_TOOLS_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/entityeditorwindow.h"
+#include "mainwindow/project/entityeditor.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/entity.h"
@@ -55,37 +55,37 @@ namespace studio {
 
 template <typename EntityContainer>
 std::string get_name_suggestion(
-    const std::string&      prefix,
-    const EntityContainer&  entities);
+    const std::string&                          prefix,
+    const EntityContainer&                      entities);
 
 std::string get_entity_name_dialog(
-    QWidget*                parent,
-    const std::string&      title,
-    const std::string&      label,
-    const std::string&      text);
+    QWidget*                                    parent,
+    const std::string&                          title,
+    const std::string&                          label,
+    const std::string&                          text);
 
 void open_entity_editor(
-    QWidget*                                            parent,
-    const std::string&                                  window_title,
-    const renderer::Project&                            project,
-    std::auto_ptr<EntityEditorWindow::IFormFactory>     form_factory,
-    std::auto_ptr<EntityEditorWindow::IEntityBrowser>   entity_browser,
-    const foundation::Dictionary&                       values,
-    QObject*                                            receiver,
-    const char*                                         slot_apply,
-    const char*                                         slot_accept,
-    const char*                                         slot_cancel);
+    QWidget*                                    parent,
+    const std::string&                          window_title,
+    const renderer::Project&                    project,
+    std::auto_ptr<EntityEditor::IFormFactory>   form_factory,
+    std::auto_ptr<EntityEditor::IEntityBrowser> entity_browser,
+    const foundation::Dictionary&               values,
+    QObject*                                    receiver,
+    const char*                                 slot_apply,
+    const char*                                 slot_accept,
+    const char*                                 slot_cancel);
 
 void open_entity_editor(
-    QWidget*                                            parent,
-    const std::string&                                  window_title,
-    const renderer::Project&                            project,
-    std::auto_ptr<EntityEditorWindow::IFormFactory>     form_factory,
-    std::auto_ptr<EntityEditorWindow::IEntityBrowser>   entity_browser,
-    QObject*                                            receiver,
-    const char*                                         slot_apply,
-    const char*                                         slot_accept,
-    const char*                                         slot_cancel);
+    QWidget*                                    parent,
+    const std::string&                          window_title,
+    const renderer::Project&                    project,
+    std::auto_ptr<EntityEditor::IFormFactory>   form_factory,
+    std::auto_ptr<EntityEditor::IEntityBrowser> entity_browser,
+    QObject*                                    receiver,
+    const char*                                 slot_apply,
+    const char*                                 slot_accept,
+    const char*                                 slot_cancel);
 
 
 //

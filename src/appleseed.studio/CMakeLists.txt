@@ -112,6 +112,8 @@ set (mainwindow_project_sources
     mainwindow/project/assemblyinstanceitem.h
     mainwindow/project/assemblyitem.cpp
     mainwindow/project/assemblyitem.h
+    mainwindow/project/attributeeditor.cpp
+    mainwindow/project/attributeeditor.h
     mainwindow/project/basegroupitem.cpp
     mainwindow/project/basegroupitem.h
     mainwindow/project/collectionitem.h
@@ -124,6 +126,8 @@ set (mainwindow_project_sources
     mainwindow/project/entitycreatorbase.cpp
     mainwindow/project/entitycreatorbase.h
     mainwindow/project/entitydelayedactions.h
+    mainwindow/project/entityeditor.cpp
+    mainwindow/project/entityeditor.h
     mainwindow/project/entityeditorformfactorybase.cpp
     mainwindow/project/entityeditorformfactorybase.h
     mainwindow/project/entityeditorwindow.cpp

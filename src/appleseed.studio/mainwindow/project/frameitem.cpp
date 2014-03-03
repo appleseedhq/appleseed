@@ -31,7 +31,8 @@
 #include "frameitem.h"
 
 // appleseed.studio headers.
-#include "mainwindow/project/entityeditorwindow.h"
+#include "mainwindow/project/attributeeditor.h"
+#include "mainwindow/project/entityeditor.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/singlemodelentityeditorformfactory.h"
 #include "mainwindow/project/tools.h"
@@ -72,24 +73,36 @@ FrameItem::FrameItem(
     set_allow_deletion(false);
 }
 
-void FrameItem::slot_edit()
+void FrameItem::slot_edit(AttributeEditor* attribute_editor)
 {
-    auto_ptr<EntityEditorWindow::IFormFactory> form_factory(
+    auto_ptr<EntityEditor::IFormFactory> form_factory(
         new SingleModelEntityEditorFormFactory(
             m_frame->get_name(),
             FrameFactory::get_input_metadata()));
 
-    open_entity_editor(
-        treeWidget(),
-        "Edit Frame",
-        m_project_builder.get_project(),
-        form_factory,
-        auto_ptr<EntityEditorWindow::IEntityBrowser>(0),
-        m_frame->get_parameters(),
-        this,
-        SLOT(slot_edit_accepted(foundation::Dictionary)),
-        SLOT(slot_edit_accepted(foundation::Dictionary)),
-        SLOT(slot_edit_accepted(foundation::Dictionary)));
+    if (attribute_editor)
+    {
+        attribute_editor->edit(
+            form_factory,
+            auto_ptr<EntityEditor::IEntityBrowser>(0),
+            m_frame->get_parameters(),
+            this,
+            SLOT(slot_edit_accepted(foundation::Dictionary)));
+    }
+    else
+    {
+        open_entity_editor(
+            treeWidget(),
+            "Edit Frame",
+            m_project_builder.get_project(),
+            form_factory,
+            auto_ptr<EntityEditor::IEntityBrowser>(0),
+            m_frame->get_parameters(),
+            this,
+            SLOT(slot_edit_accepted(foundation::Dictionary)),
+            SLOT(slot_edit_accepted(foundation::Dictionary)),
+            SLOT(slot_edit_accepted(foundation::Dictionary)));
+    }
 }
 
 void FrameItem::slot_edit_accepted(Dictionary values)

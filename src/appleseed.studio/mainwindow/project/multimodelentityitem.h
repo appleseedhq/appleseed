@@ -31,8 +31,9 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_MULTIMODELENTITYITEM_H
 
 // appleseed.studio headers.
+#include "mainwindow/project/attributeeditor.h"
 #include "mainwindow/project/entitybrowser.h"
-#include "mainwindow/project/entityeditorwindow.h"
+#include "mainwindow/project/entityeditor.h"
 #include "mainwindow/project/entityitem.h"
 #include "mainwindow/project/multimodelentityeditorformfactory.h"
 #include "mainwindow/project/projectbuilder.h"
@@ -43,6 +44,7 @@
 #include "renderer/api/utility.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/containers/dictionary.h"
 
 // Standard headers.
@@ -71,7 +73,7 @@ class MultiModelEntityItem
         typename EntityTraitsType::FactoryRegistrarType
     > MultiModelEntityEditorFormFactoryType;
 
-    virtual void slot_edit();
+    virtual void slot_edit(AttributeEditor* attribute_editor) OVERRIDE;
 };
 
 
@@ -90,21 +92,17 @@ MultiModelEntityItem<Entity, ParentEntity, CollectionItem>::MultiModelEntityItem
 }
 
 template <typename Entity, typename ParentEntity, typename CollectionItem>
-void MultiModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit()
+void MultiModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit(AttributeEditor* attribute_editor)
 {
     if (!Base::allows_edition())
         return;
 
-    const std::string window_title =
-        std::string("Edit ") +
-        EntityTraitsType::get_human_readable_entity_type_name();
-
-    std::auto_ptr<EntityEditorWindow::IFormFactory> form_factory(
+    std::auto_ptr<EntityEditor::IFormFactory> form_factory(
         new MultiModelEntityEditorFormFactoryType(
             Base::m_project_builder.template get_factory_registrar<Entity>(),
             Base::m_entity->get_name()));
 
-    std::auto_ptr<EntityEditorWindow::IEntityBrowser> entity_browser(
+    std::auto_ptr<EntityEditor::IEntityBrowser> entity_browser(
         new EntityBrowser<ParentEntity>(Base::m_parent));
 
     foundation::Dictionary values =
@@ -114,17 +112,33 @@ void MultiModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit()
         MultiModelEntityEditorFormFactoryType::ModelParameter,
         Base::m_entity->get_model());
 
-    open_entity_editor(
-        QTreeWidgetItem::treeWidget(),
-        window_title,
-        Base::m_project_builder.get_project(),
-        form_factory,
-        entity_browser,
-        values,
-        this,
-        SLOT(slot_edit_accepted(foundation::Dictionary)),
-        SLOT(slot_edit_accepted(foundation::Dictionary)),
-        SLOT(slot_edit_accepted(foundation::Dictionary)));
+    if (attribute_editor)
+    {
+        attribute_editor->edit(
+            form_factory,
+            entity_browser,
+            values,
+            this,
+            SLOT(slot_edit_accepted(foundation::Dictionary)));
+    }
+    else
+    {
+        const std::string window_title =
+            std::string("Edit ") +
+            EntityTraitsType::get_human_readable_entity_type_name();
+
+        open_entity_editor(
+            QTreeWidgetItem::treeWidget(),
+            window_title,
+            Base::m_project_builder.get_project(),
+            form_factory,
+            entity_browser,
+            values,
+            this,
+            SLOT(slot_edit_accepted(foundation::Dictionary)),
+            SLOT(slot_edit_accepted(foundation::Dictionary)),
+            SLOT(slot_edit_accepted(foundation::Dictionary)));
+    }
 }
 
 }       // namespace studio

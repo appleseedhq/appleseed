@@ -35,6 +35,7 @@
 
 // appleseed.studio headers.
 #include "help/about/aboutwindow.h"
+#include "mainwindow/project/attributeeditor.h"
 #include "mainwindow/project/projectexplorer.h"
 #include "mainwindow/logwidget.h"
 #include "utility/interop.h"
@@ -110,6 +111,7 @@ MainWindow::MainWindow(QWidget* parent)
   , m_ui(new Ui::MainWindow())
   , m_rendering_manager(m_status_bar)
   , m_project_explorer(0)
+  , m_attribute_editor(0)
 {
     m_ui->setupUi(this);
 
@@ -117,7 +119,7 @@ MainWindow::MainWindow(QWidget* parent)
 
     build_menus();
     build_toolbar();
-    build_log();
+    build_log_panel();
     build_project_explorer();
 
     build_connections();
@@ -451,7 +453,7 @@ void MainWindow::build_toolbar()
     m_ui->main_toolbar->addAction(m_action_stop_rendering);
 }
 
-LogWidget* MainWindow::create_log_widget() const
+void MainWindow::build_log_panel()
 {
     LogWidget* log_widget = new LogWidget(m_ui->log_contents);
     m_ui->log_contents->layout()->addWidget(log_widget);
@@ -474,13 +476,6 @@ LogWidget* MainWindow::create_log_widget() const
 #endif
     font.setPixelSize(11);
     log_widget->setFont(font);
-
-    return log_widget;
-}
-
-void MainWindow::build_log()
-{
-    LogWidget* log_widget = create_log_widget();
 
     m_log_target.reset(new QtLogTarget(log_widget));
 
@@ -668,12 +663,22 @@ void MainWindow::update_workspace()
 void MainWindow::update_project_explorer()
 {
     delete m_project_explorer;
+    m_project_explorer = 0;
+
+    delete m_attribute_editor;
+    m_attribute_editor = 0;
 
     if (m_project_manager.is_project_open())
     {
+        m_attribute_editor =
+            new AttributeEditor(
+                m_ui->attribute_editor_scrollarea_contents,
+                *m_project_manager.get_project());
+
         m_project_explorer =
             new ProjectExplorer(
-                m_ui->treewidget_project_explorer_scene,    
+                m_ui->treewidget_project_explorer_scene,
+                m_attribute_editor,
                 *m_project_manager.get_project(),
                 m_rendering_manager,
                 m_settings);

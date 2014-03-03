@@ -27,66 +27,51 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ITEMBASE_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ITEMBASE_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ATTRIBUTEEDITOR_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ATTRIBUTEEDITOR_H
+
+// appleseed.studio headers.
+#include "mainwindow/project/entityeditor.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/uid.h"
+#include "foundation/core/concepts/noncopyable.h"
 
-// Qt headers.
-#include <QList>
-#include <QMetaType>
-#include <QObject>
-#include <QTreeWidgetItem>
+// Standard headers.
+#include <memory>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class AttributeEditor; } }
-class QMenu;
-class QString;
+namespace foundation    { class Dictionary; }
+namespace renderer      { class Project; }
+class QObject;
+class QWidget;
 
 namespace appleseed {
 namespace studio {
 
-class ItemBase
-  : public QObject
-  , public QTreeWidgetItem
+class AttributeEditor
+  : public foundation::NonCopyable
 {
-    Q_OBJECT
-
   public:
-    explicit ItemBase(const foundation::UniqueID class_uid);
-    ItemBase(const foundation::UniqueID class_uid, const QString& title);
+    AttributeEditor(
+        QWidget*                parent,
+        renderer::Project&      project);
 
-    virtual ~ItemBase() {}
+    void clear();
 
-    foundation::UniqueID get_class_uid() const;
-
-    void set_allow_edition(const bool allow);
-    bool allows_edition() const;
-
-    void set_allow_deletion(const bool allow);
-    bool allows_deletion() const;
-
-    void set_title(const QString& title);
-    void set_render_layer(const QString& name);
-
-    virtual QMenu* get_single_item_context_menu() const;
-    virtual QMenu* get_multiple_items_context_menu(const QList<ItemBase*>& items) const;
-
-  public slots:
-    virtual void slot_edit(AttributeEditor* attribute_editor = 0);
-    virtual void slot_delete();
-    virtual void slot_delete_multiple(QList<ItemBase*> items = QList<ItemBase*>());
+    void edit(
+        std::auto_ptr<EntityEditor::IFormFactory>   form_factory,
+        std::auto_ptr<EntityEditor::IEntityBrowser> entity_browser,
+        const foundation::Dictionary&               values,
+        QObject*                                    receiver,
+        const char*                                 slot_apply);
 
   private:
-    const foundation::UniqueID  m_class_uid;
-    bool                        m_allow_edition;
-    bool                        m_allow_deletion;
+    QWidget*                    m_parent;
+    renderer::Project&          m_project;
+    std::auto_ptr<EntityEditor> m_entity_editor;
 };
 
 }       // namespace studio
 }       // namespace appleseed
 
-Q_DECLARE_METATYPE(QList<appleseed::studio::ItemBase*>);
-
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ITEMBASE_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ATTRIBUTEEDITOR_H

@@ -31,10 +31,9 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYEDITORWINDOW_H
 
 // appleseed.studio headers.
-#include "utility/inputwidgetproxies.h"
+#include "mainwindow/project/entityeditor.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/utility/containers/dictionary.h"
 
 // Qt headers.
@@ -44,15 +43,10 @@
 // Standard headers.
 #include <memory>
 #include <string>
-#include <vector>
 
 // Forward declarations.
 namespace renderer  { class Project; }
 namespace Ui        { class EntityEditorWindow; }
-class QColor;
-class QFormLayout;
-class QSignalMapper;
-class QString;
 
 namespace appleseed {
 namespace studio {
@@ -63,51 +57,15 @@ class EntityEditorWindow
     Q_OBJECT
 
   public:
-    typedef std::vector<foundation::Dictionary> InputMetadataCollection;
-
-    class IFormFactory
-      : public foundation::NonCopyable
-    {
-      public:
-        virtual ~IFormFactory() {}
-
-        virtual void update(
-            const foundation::Dictionary&   values,
-            InputMetadataCollection&        metadata) const = 0;
-
-      protected:
-        static std::string get_value(
-            const foundation::Dictionary&   values,
-            const std::string&              name,
-            const std::string&              default_value)
-        {
-            return values.strings().exist(name)
-                ? values.strings().get<std::string>(name)
-                : default_value;
-        }
-    };
-
-    class IEntityBrowser
-      : public foundation::NonCopyable
-    {
-      public:
-        virtual ~IEntityBrowser() {}
-
-        virtual foundation::StringDictionary get_entities(
-            const std::string&              type) const = 0;
-    };
-
     EntityEditorWindow(
-        QWidget*                            parent,
-        const std::string&                  window_title,
-        const renderer::Project&            project,
-        std::auto_ptr<IFormFactory>         form_factory,
-        std::auto_ptr<IEntityBrowser>       entity_browser,
-        const foundation::Dictionary&       values = foundation::Dictionary());
+        QWidget*                                    parent,
+        const std::string&                          window_title,
+        const renderer::Project&                    project,
+        std::auto_ptr<EntityEditor::IFormFactory>   form_factory,
+        std::auto_ptr<EntityEditor::IEntityBrowser> entity_browser,
+        const foundation::Dictionary&               values = foundation::Dictionary());
 
     ~EntityEditorWindow();
-
-    void rebuild_form(const foundation::Dictionary& values);
 
   signals:
     void signal_applied(foundation::Dictionary values);
@@ -116,49 +74,15 @@ class EntityEditorWindow
 
   private:
     // Not wrapped in std::auto_ptr<> to avoid pulling in the UI definition code.
-    Ui::EntityEditorWindow*             m_ui;
+    Ui::EntityEditorWindow*     m_ui;
 
-    const renderer::Project&            m_project;
+    std::auto_ptr<EntityEditor> m_entity_editor;
+    foundation::Dictionary      m_initial_values;
 
-    std::auto_ptr<IFormFactory>         m_form_factory;
-    std::auto_ptr<IEntityBrowser>       m_entity_browser;
-
-    QFormLayout*                        m_form_layout;
-    InputMetadataCollection             m_input_metadata;
-    InputWidgetProxyCollection          m_widget_proxies;
-
-    QSignalMapper*                      m_entity_picker_bind_signal_mapper;
-    QSignalMapper*                      m_color_picker_signal_mapper;
-    QSignalMapper*                      m_file_picker_signal_mapper;
-
-    foundation::Dictionary              m_initial_values;
-
-    void create_form_layout();
-
-    foundation::Dictionary get_input_metadata(const std::string& name) const;
-
-    void create_input_widgets(const foundation::Dictionary& definition);
-    void create_text_input_widgets(const foundation::Dictionary& definition);
-    void create_numeric_input_widgets(const foundation::Dictionary& definition);
-    void create_colormap_input_widgets(const foundation::Dictionary& definition);
-    void create_boolean_input_widgets(const foundation::Dictionary& definition);
-    void create_enumeration_input_widgets(const foundation::Dictionary& definition);
-    void create_entity_input_widgets(const foundation::Dictionary& definition);
-    void create_color_input_widgets(const foundation::Dictionary& definition);
-    void create_file_input_widgets(const foundation::Dictionary& definition);
+    void create_connections();
 
   private slots:
-    void slot_rebuild_form();
-
-    void slot_open_entity_browser(const QString& widget_name);
-    void slot_entity_browser_accept(QString widget_name, QString page_name, QString entity_name);
-
-    void slot_open_color_picker(const QString& widget_name);
-    void slot_color_changed(const QString& widget_name, const QColor& color);
-
-    void slot_open_file_picker(const QString& widget_name);
-
-    void slot_apply();
+    void slot_apply(foundation::Dictionary values);
     void slot_accept();
     void slot_cancel();
 };

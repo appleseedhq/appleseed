@@ -33,7 +33,7 @@
 // appleseed.studio headers.
 #include "mainwindow/project/collectionitem.h"
 #include "mainwindow/project/entitybrowser.h"
-#include "mainwindow/project/entityeditorwindow.h"
+#include "mainwindow/project/entityeditor.h"
 #include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/singlemodelentityeditorformfactory.h"
@@ -134,12 +134,12 @@ void SingleModelCollectionItem<Entity, ParentEntity, ParentItem>::slot_create()
 
     typedef typename EntityTraits::FactoryType FactoryType;
 
-    std::auto_ptr<EntityEditorWindow::IFormFactory> form_factory(
+    std::auto_ptr<EntityEditor::IFormFactory> form_factory(
         new SingleModelEntityEditorFormFactory(
             name_suggestion,
             FactoryType::get_input_metadata()));
 
-    std::auto_ptr<EntityEditorWindow::IEntityBrowser> entity_browser(
+    std::auto_ptr<EntityEditor::IEntityBrowser> entity_browser(
         new EntityBrowser<ParentEntity>(Base::m_parent));
 
     open_entity_editor(

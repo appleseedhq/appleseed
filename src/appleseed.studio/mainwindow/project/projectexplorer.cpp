@@ -31,6 +31,7 @@
 #include "projectexplorer.h"
 
 // appleseed.studio headers.
+#include "mainwindow/project/attributeeditor.h"
 #include "mainwindow/project/itembase.h"
 #include "mainwindow/project/projectitem.h"
 
@@ -57,10 +58,12 @@ namespace studio {
 
 ProjectExplorer::ProjectExplorer(
     QTreeWidget*        tree_widget,
+    AttributeEditor*    attribute_editor,
     Project&            project,
     RenderingManager&   rendering_manager,
     ParamArray&         settings)
   : m_tree_widget(tree_widget)
+  , m_attribute_editor(attribute_editor)
   , m_project_builder(project, rendering_manager)
 {
     m_tree_widget->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -71,26 +74,30 @@ ProjectExplorer::ProjectExplorer(
 
     connect(
         m_tree_widget, SIGNAL(customContextMenuRequested(const QPoint&)),
-        this, SLOT(slot_context_menu(const QPoint&)));
+        SLOT(slot_context_menu(const QPoint&)));
+
+    connect(
+        m_tree_widget, SIGNAL(itemSelectionChanged()),
+        SLOT(slot_item_selection_changed()));
 
     connect(
         m_tree_widget, SIGNAL(itemActivated(QTreeWidgetItem*, int)),
-        this, SLOT(slot_edit_item(QTreeWidgetItem*, int)));
+        SLOT(slot_edit_item(QTreeWidgetItem*, int)));
 
     m_delete_shortcut.reset(
         new QShortcut(QKeySequence(Qt::Key_Delete), m_tree_widget));
 
     connect(
         m_delete_shortcut.get(), SIGNAL(activated()),
-        this, SLOT(slot_delete_item()));
+        SLOT(slot_delete_item()));
 
     connect(
         &m_project_builder, SIGNAL(signal_project_modified()),
-        this, SIGNAL(signal_project_modified()));
+        SIGNAL(signal_project_modified()));
 
     connect(
         &m_project_builder, SIGNAL(signal_frame_modified()),
-        this, SIGNAL(signal_frame_modified()));
+        SIGNAL(signal_frame_modified()));
 }
 
 ProjectExplorer::~ProjectExplorer()
@@ -212,6 +219,19 @@ void ProjectExplorer::slot_context_menu(const QPoint& point)
 
     if (menu)
         menu->exec(m_tree_widget->mapToGlobal(point));
+}
+
+void ProjectExplorer::slot_item_selection_changed()
+{
+    m_attribute_editor->clear();
+
+    const QList<QTreeWidgetItem*> selected_items = m_tree_widget->selectedItems();
+
+    if (!selected_items.isEmpty())
+    {
+        static_cast<ItemBase*>(selected_items.first())->slot_edit(m_attribute_editor);
+        m_tree_widget->setFocus();
+    }
 }
 
 void ProjectExplorer::slot_edit_item(QTreeWidgetItem* item, int column)

@@ -28,17 +28,14 @@
 //
 
 // Interface header.
-#include "entityeditorwindow.h"
-
-// UI definition header.
-#include "ui_entityeditorwindow.h"
+#include "attributeeditor.h"
 
 // appleseed.studio headers.
 #include "utility/miscellaneous.h"
 
 // Qt headers.
-#include <QShortCut>
-#include <QString>
+#include <QLayout>
+#include <QObject>
 #include <Qt>
 
 using namespace foundation;
@@ -48,72 +45,41 @@ using namespace std;
 namespace appleseed {
 namespace studio {
 
-EntityEditorWindow::EntityEditorWindow(
-    QWidget*                                parent,
-    const string&                           window_title,
-    const Project&                          project,
+AttributeEditor::AttributeEditor(
+    QWidget*    parent,
+    Project&    project)
+  : m_parent(parent)
+  , m_project(project)
+{
+}
+
+void AttributeEditor::clear()
+{
+    if (m_parent->layout())
+    {
+        clear_layout(m_parent->layout());
+        delete m_parent->layout();
+    }
+}
+
+void AttributeEditor::edit(
     auto_ptr<EntityEditor::IFormFactory>    form_factory,
     auto_ptr<EntityEditor::IEntityBrowser>  entity_browser,
-    const Dictionary&                       values)
-  : QWidget(parent)
-  , m_ui(new Ui::EntityEditorWindow())
+    const Dictionary&                       values,
+    QObject*                                receiver,
+    const char*                             slot_apply)
 {
-    m_ui->setupUi(this);
-
-    setWindowTitle(QString::fromStdString(window_title));
-    setWindowFlags(Qt::Tool);
-    setAttribute(Qt::WA_DeleteOnClose);
-
     m_entity_editor.reset(
         new EntityEditor(
-            m_ui->scrollarea_contents,
-            project,
+            m_parent,
+            m_project,
             form_factory,
             entity_browser,
             values));
 
-    m_initial_values = m_entity_editor->get_values();
-
-    create_connections();
-}
-
-EntityEditorWindow::~EntityEditorWindow()
-{
-    delete m_ui;
-}
-
-void EntityEditorWindow::create_connections()
-{
-    connect(
+    QObject::connect(
         m_entity_editor.get(), SIGNAL(signal_applied(foundation::Dictionary)),
-        SIGNAL(signal_applied(foundation::Dictionary)));
-
-    connect(m_ui->buttonbox, SIGNAL(accepted()), SLOT(slot_accept()));
-    connect(m_ui->buttonbox, SIGNAL(rejected()), SLOT(slot_cancel()));
-
-    connect(
-        create_window_local_shortcut(this, Qt::Key_Escape), SIGNAL(activated()),
-        SLOT(slot_cancel()));
-}
-
-void EntityEditorWindow::slot_apply(Dictionary values)
-{
-    emit signal_applied(values);
-}
-
-void EntityEditorWindow::slot_accept()
-{
-    emit signal_accepted(m_entity_editor->get_values());
-
-    close();
-}
-
-void EntityEditorWindow::slot_cancel()
-{
-    if (m_initial_values != m_entity_editor->get_values())
-        emit signal_canceled(m_initial_values);
-
-    close();
+        receiver, slot_apply);
 }
 
 }   // namespace studio
