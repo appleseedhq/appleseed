@@ -38,6 +38,7 @@
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/string.h"
+#include "foundation/image/colorspace.h"
 
 // Qt headers.
 #include <QCheckBox>
@@ -253,7 +254,47 @@ Color3d ColorPickerProxy::get_color_from_string(const string& s)
             return Color3d(values[0]);
         else if (values.size() == 3)
             return Color3d(values[0], values[1], values[2]);
-        else return Color3d(0.0);
+		// handle spectral colors that arrive as a vector of values
+		else 
+		{
+			// required wavelengths
+			double output_wavelength[31] = 
+			{
+				400.0, 410.0, 420.0, 430.0, 440.0, 450.0, 460.0, 470.0, 480.0, 490.0,
+				500.0, 510.0, 520.0, 530.0, 540.0, 550.0, 560.0, 570.0, 580.0, 590.0,
+				600.0, 610.0, 620.0, 630.0, 640.0, 650.0, 660.0, 670.0, 680.0, 690.0,
+				700.0
+			};	
+
+			double output_spectrum[31];
+			
+			// if input data contains 31 values, use it directly in conversion function. Else we convert the range of values to 31
+			// todo: How do we handle less than 31 values?
+			if(values.size() > 31) {
+				// generate the possible corresponding wavelengths for input values
+				// visible color is of range [400nm - 700nm]
+				double offset = 300.0/values.size();
+				double *input_wavelengths = new double[values.size()];
+				
+				for(int i = 0; i < values.size(); i++) {
+					input_wavelengths[i] = 400.0 + i * offset;
+				}
+
+				spectrum_to_spectrum(values.size(), input_wavelengths, values.data(), 31, output_wavelength, output_spectrum);
+				delete[] input_wavelengths;
+			} else if(values.size() == 31) { 
+				for(int i = 0; i < 31; i++)
+					output_spectrum[i] = values[i];
+			}
+
+			// We will use day light illuminance
+			// and XYZ color matching function
+			LightingConditions lc(IlluminantCIED65, XYZCMFCIE196410Deg); 
+			Color3d xyz = spectrum_to_ciexyz<double, Spectrum31d>(lc, Spectrum31d(output_spectrum));
+			
+			// from xyz we convert back to srgb space and output the data
+			return transform_color(xyz, ColorSpaceCIEXYZ, ColorSpaceSRGB);
+		}        
     }
     catch (const ExceptionStringConversionError&)
     {
