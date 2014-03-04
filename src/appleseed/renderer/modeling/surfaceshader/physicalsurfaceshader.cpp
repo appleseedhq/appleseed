@@ -174,7 +174,7 @@ namespace
                 aovs);
 
             // Optionally simulate translucency by adding back lighting.
-            if (!foundation::is_zero(values.m_translucency))
+            if (!is_zero(values.m_translucency))
             {
                 add_back_lighting(
                     values,
@@ -341,7 +341,7 @@ namespace
 
             // Apply translucency factor.
             back_radiance *= values.m_translucency;
-            aovs *= values.m_translucency;
+            back_aovs *= values.m_translucency;
 
             // Divide by the number of samples.
             const float rcp_sample_count = 1.0f / static_cast<float>(m_back_lighting_samples);
