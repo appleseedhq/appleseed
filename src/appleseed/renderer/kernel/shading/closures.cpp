@@ -34,6 +34,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/otherwise.h"
 
 // OSL headers.
@@ -109,6 +110,26 @@ namespace
     };
 }
 
+namespace
+{
+
+template<typename T>
+bool is_power_of_2(T v, unsigned int pow2)
+{
+    assert((( pow2 - 1) & pow2) == 0);
+    return (reinterpret_cast<uintptr_t>(v) & (pow2 - 1)) == 0;
+}
+
+template<typename T>
+T round_up_power_of_2( T v, unsigned int pow2)
+{
+    assert((( pow2 - 1) & pow2) == 0);
+    unsigned int mask = pow2 - 1;
+    uintptr_t value = reinterpret_cast<uintptr_t>(v);
+    return reinterpret_cast<T>((value + mask + 1) & ~mask);
+}
+
+}
 
 //
 // CompositeClosure class implementation.
@@ -119,6 +140,8 @@ CompositeClosure::CompositeClosure(
   : m_num_closures(0)
   , m_num_bytes(0)
 {
+    assert(is_power_of_2(m_pool.data, 16));
+
     process_closure_tree(ci, Color3f(1.0f));
 
     if (get_num_closures())
@@ -396,10 +419,11 @@ void CompositeClosure::do_add_closure(
 
     m_closure_types[m_num_closures] = closure_type;
 
-    m_input_values[m_num_closures] = m_pool + m_num_bytes;
-    new (m_input_values[m_num_closures]) InputValues(params);
-
-    m_num_bytes += sizeof(InputValues);
+    char* values_ptr = m_pool.data + m_num_bytes;
+    assert(is_power_of_2(values_ptr, 16));
+    new (values_ptr) InputValues(params);
+    m_input_values[m_num_closures] = values_ptr;
+    m_num_bytes += round_up_power_of_2(sizeof(InputValues), 16);
     ++m_num_closures;
 }
 
