@@ -34,10 +34,13 @@
 #include "utility/interop.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/colorspace.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/string.h"
+#include "renderer/modeling/color/wavelengths.h"
+#include "renderer/modeling/input/colorsource.h"
 
 // Qt headers.
 #include <QCheckBox>
@@ -253,7 +256,25 @@ Color3d ColorPickerProxy::get_color_from_string(const string& s)
             return Color3d(values[0]);
         else if (values.size() == 3)
             return Color3d(values[0], values[1], values[2]);
-        else return Color3d(0.0);
+		else
+		{
+			// Convert Spectral values to visible color to be shown on widget
+			std::vector<float> fvalues(values.size());
+			for (size_t i = 0; i < values.size(); i++) 
+			{
+				// Convert all double to floating values
+				fvalues[i] = static_cast<float>(values[i]);
+			}
+
+			renderer::Spectrum output_spectrum = renderer::spectral_values_to_spectrum(
+				Vector2f(renderer::LowWavelength, renderer::HighWavelength),
+				renderer::ColorValueArray(values.size(), &fvalues[0]));
+				
+			return transform_color(
+				renderer::spectrum_to_xyz_standard(output_spectrum), 
+				ColorSpaceCIEXYZ, 
+				ColorSpaceSRGB);
+		}
     }
     catch (const ExceptionStringConversionError&)
     {

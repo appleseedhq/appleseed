@@ -31,13 +31,11 @@
 #include "colorsource.h"
 
 // appleseed.renderer headers.
-#include "renderer/modeling/color/colorentity.h"
 #include "renderer/modeling/color/wavelengths.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
 #include "foundation/math/scalar.h"
-#include "foundation/math/vector.h"
 #include "foundation/utility/containers/specializedarrays.h"
 
 // Standard headers.
@@ -55,79 +53,85 @@ namespace renderer
 // ColorSource class implementation.
 //
 
-namespace
+// Generate a set of regularly spaced wavelengths.
+void generate_wavelengths(
+    const Vector2f&         range,
+    const size_t            count,
+    vector<float>&          wavelengths)
 {
-    // Generate a set of regularly spaced wavelengths.
-    void generate_wavelengths(
-        const Vector2f&         range,
-        const size_t            count,
-        vector<float>&          wavelengths)
+    if (count == 1)
+        wavelengths.push_back(0.5f * (range[0] + range[1]));
+    else
     {
-        if (count == 1)
-            wavelengths.push_back(0.5f * (range[0] + range[1]));
-        else
+        for (size_t i = 0; i < count; ++i)
         {
-            for (size_t i = 0; i < count; ++i)
-            {
-                wavelengths.push_back(
-                    fit(
-                        static_cast<float>(i),
-                        0.0f,
-                        static_cast<float>(count - 1),
-                        range[0],
-                        range[1]));
-            }
-        }
-    }
-
-    // Convert a set of regularly spaced spectral values to the internal spectrum format.
-    Spectrum spectral_values_to_spectrum(
-        const Vector2f&         wavelength_range,
-        const ColorValueArray&  values)
-    {
-        assert(wavelength_range[0] <= wavelength_range[1]);
-        assert(!values.empty());
-
-        // Generate the wavelengths for which this spectrum is defined.
-        vector<float> wavelengths;
-        generate_wavelengths(
-            wavelength_range,
-            values.size(),
-            wavelengths);
-
-        // Resample the spectrum to the internal wavelength range.
-        Spectrum spectrum;
-        spectrum_to_spectrum(
-            values.size(),
-            &wavelengths[0],
-            &values[0],
-            Spectrum::Samples,
-            &g_light_wavelengths[0],
-            &spectrum[0]);
-
-        return spectrum;
-    }
-
-    void linear_rgb_to_spectrum(
-        const InputFormat       input_format,
-        const Color3f&          linear_rgb,
-        Spectrum&               spectrum)
-    {
-        if (input_format == InputFormatSpectralReflectance)
-        {
-            linear_rgb_reflectance_to_spectrum(
-                linear_rgb,
-                spectrum);
-        }
-        else
-        {
-            assert(input_format == InputFormatSpectralIlluminance);
-            linear_rgb_illuminance_to_spectrum(
-                linear_rgb,
-                spectrum);
+            wavelengths.push_back(
+                fit(
+                    static_cast<float>(i),
+                    0.0f,
+                    static_cast<float>(count - 1),
+                    range[0],
+                    range[1]));
         }
     }
 }
+
+// Convert a set of regularly spaced spectral values to the internal spectrum format.
+Spectrum spectral_values_to_spectrum(
+    const Vector2f&         wavelength_range,
+    const ColorValueArray&  values)
+{
+    assert(wavelength_range[0] <= wavelength_range[1]);
+    assert(!values.empty());
+
+    // Generate the wavelengths for which this spectrum is defined.
+    vector<float> wavelengths;
+    generate_wavelengths(
+        wavelength_range,
+        values.size(),
+        wavelengths);
+
+    // Resample the spectrum to the internal wavelength range.
+    Spectrum spectrum;
+    spectrum_to_spectrum(
+        values.size(),
+        &wavelengths[0],
+        &values[0],
+        Spectrum::Samples,
+        &g_light_wavelengths[0],
+        &spectrum[0]);
+
+    return spectrum;
+}
+
+void linear_rgb_to_spectrum(
+    const InputFormat       input_format,
+    const Color3f&          linear_rgb,
+    Spectrum&               spectrum)
+{
+    if (input_format == InputFormatSpectralReflectance)
+    {
+        linear_rgb_reflectance_to_spectrum(
+            linear_rgb,
+            spectrum);
+    }
+    else
+    {
+        assert(input_format == InputFormatSpectralIlluminance);
+        linear_rgb_illuminance_to_spectrum(
+            linear_rgb,
+            spectrum);
+    }
+}
+
+// Converts a given spectrum to CIEXYZ using the IlluminantCIED65 illuminant and XYZCMFCIE196410Deg matching function
+Color3f spectrum_to_xyz_standard(
+	const Spectrum& spectrum)
+{
+	LightingConditions lc(IlluminantCIED65, XYZCMFCIE196410Deg);
+	return spectrum_to_ciexyz<float, Spectrum31f>(lc, spectrum);
+}
+
 
 ColorSource::ColorSource(
     const ColorEntity&      color_entity,
