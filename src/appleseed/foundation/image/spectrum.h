@@ -112,6 +112,9 @@ template <typename T, size_t N> RegularSpectrum<T, N>& operator/=(RegularSpectru
 // Return whether all components of a spectrum are in [0,1].
 template <typename T, size_t N> bool is_saturated(const RegularSpectrum<T, N>& s);
 
+// Return whether all components of a spectrum are zero.
+template <typename T, size_t N> bool is_zero(const RegularSpectrum<T, N>& s);
+
 // Clamp the argument to [0,1].
 template <typename T, size_t N> RegularSpectrum<T, N> saturate(const RegularSpectrum<T, N>& s);
 
@@ -239,7 +242,7 @@ inline bool operator!=(const RegularSpectrum<T, N>& lhs, const RegularSpectrum<T
         if (lhs[i] != rhs[i])
             return true;
     }
- 
+
     return false;
 }
 
@@ -535,6 +538,18 @@ inline bool is_saturated(const RegularSpectrum<T, N>& s)
     for (size_t i = 0; i < N; ++i)
     {
         if (s[i] < T(0.0) || s[i] > T(1.0))
+            return false;
+    }
+
+    return true;
+}
+
+template <typename T, size_t N>
+inline bool is_zero(const RegularSpectrum<T, N>& s)
+{
+    for (size_t i = 0; i < N; ++i)
+    {
+        if (s[i] != T(0.0))
             return false;
     }
 
