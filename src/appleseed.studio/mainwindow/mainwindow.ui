@@ -171,6 +171,12 @@
   </widget>
   <widget class="QStatusBar" name="main_statusbar"/>
   <widget class="QDockWidget" name="project_explorer">
+   <property name="minimumSize">
+    <size>
+     <width>200</width>
+     <height>187</height>
+    </size>
+   </property>
    <property name="accessibleName">
     <string/>
    </property>
@@ -307,6 +313,12 @@
    </widget>
   </widget>
   <widget class="QDockWidget" name="attribute_editor">
+   <property name="minimumSize">
+    <size>
+     <width>200</width>
+     <height>93</height>
+    </size>
+   </property>
    <property name="floating">
     <bool>false</bool>
    </property>
@@ -325,7 +337,7 @@
       <rect>
        <x>0</x>
        <y>0</y>
-       <width>116</width>
+       <width>198</width>
        <height>903</height>
       </rect>
      </property>
