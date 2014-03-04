@@ -107,7 +107,7 @@ extern const Spectrum31f DaylightS2;                        // second characteri
 //
 
 // Daylight illuminants.
-extern const Spectrum31f IlluminantCIED65;                  // CIE D65
+DLLSYMBOL extern const Spectrum31f IlluminantCIED65;        // CIE D65
 
 // Incandescent lighting illuminants.
 extern const Spectrum31f IlluminantCIEA;                    // CIE A (black body radiator at 2856 K)
@@ -126,7 +126,7 @@ extern const Spectrum31f IlluminantCIEA;                    // CIE A (black body
 extern const Spectrum31f XYZCMFCIE19312Deg[3];              // CIE 1931 2-deg
 extern const Spectrum31f XYZCMFCIE1931Judd2Deg[3];          // CIE 1931 2-deg, modified by Judd (1951)
 extern const Spectrum31f XYZCMFCIE1931JuddVos2Deg[3];       // CIE 1931 2-deg, modified by Judd (1951) and Vos (1978)
-extern const Spectrum31f XYZCMFCIE196410Deg[3];             // CIE 1964 10-deg (recommended)
+DLLSYMBOL extern const Spectrum31f XYZCMFCIE196410Deg[3];   // CIE 1964 10-deg (recommended)
 
 // RGB color matching functions.
 extern const Spectrum31f RGBCMFStilesBurch19552Deg[3];      // Stiles and Burch (1955) 2-deg
@@ -165,9 +165,9 @@ class LightingConditions
   public:
     SSE_ALIGN Color4f           m_cmf[32];                  // precomputed values of (cmf[0], cmf[1], cmf[2]) * illuminant
 
-    LightingConditions();                                   // leaves the object uninitialized
+    DLLSYMBOL LightingConditions();                                   // leaves the object uninitialized
 
-    LightingConditions(
+    DLLSYMBOL LightingConditions(
         const Spectrum31f&      illuminant,                 // illuminant
         const Spectrum31f       cmf[3]);                    // color matching functions
 };

@@ -31,13 +31,11 @@
 #include "colorsource.h"
 
 // appleseed.renderer headers.
-#include "renderer/modeling/color/colorentity.h"
 #include "renderer/modeling/color/wavelengths.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
 #include "foundation/math/scalar.h"
-#include "foundation/math/vector.h"
 #include "foundation/utility/containers/specializedarrays.h"
 
 // Standard headers.
@@ -55,8 +53,8 @@ namespace renderer
 // ColorSource class implementation.
 //
 
-namespace
-{
+//namespace
+//{
     // Generate a set of regularly spaced wavelengths.
     void generate_wavelengths(
         const Vector2f&         range,
@@ -127,7 +125,7 @@ namespace
                 spectrum);
         }
     }
-}
+//}
 
 ColorSource::ColorSource(
     const ColorEntity&      color_entity,
