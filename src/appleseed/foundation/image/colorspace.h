@@ -165,9 +165,9 @@ class LightingConditions
   public:
     SSE_ALIGN Color4f           m_cmf[32];                  // precomputed values of (cmf[0], cmf[1], cmf[2]) * illuminant
 
-    DLLSYMBOL LightingConditions();                                   // leaves the object uninitialized
+    LightingConditions();                                   // leaves the object uninitialized
 
-    DLLSYMBOL LightingConditions(
+    LightingConditions(
         const Spectrum31f&      illuminant,                 // illuminant
         const Spectrum31f       cmf[3]);                    // color matching functions
 };

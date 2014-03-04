@@ -270,10 +270,10 @@ Color3d ColorPickerProxy::get_color_from_string(const string& s)
 				Vector2f(renderer::LowWavelength, renderer::HighWavelength),
 				renderer::ColorValueArray(values.size(), &fvalues[0]));
 				
-			LightingConditions lc(IlluminantCIED65, XYZCMFCIE196410Deg);
-			Color3f xyz = spectrum_to_ciexyz<float, Spectrum31f>(lc, output_spectrum);
-
-			return transform_color(xyz, ColorSpaceCIEXYZ, ColorSpaceSRGB);
+			return transform_color(
+				renderer::spectrum_to_xyz_standard(output_spectrum), 
+				ColorSpaceCIEXYZ, 
+				ColorSpaceSRGB);
 		}
     }
     catch (const ExceptionStringConversionError&)
