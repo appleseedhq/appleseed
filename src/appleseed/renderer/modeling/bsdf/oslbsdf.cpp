@@ -58,8 +58,6 @@
 
 // Forward declarations.
 namespace foundation    { class AbortSwitch; }
-namespace renderer      { class InputEvaluator; }
-namespace renderer      { class ShadingPoint; }
 
 using namespace foundation;
 using namespace std;
@@ -78,8 +76,8 @@ namespace
     {
       public:
         OSLBSDFImpl(
-            const char*         name,
-            const ParamArray&   params)
+            const char*             name,
+            const ParamArray&       params)
           : BSDF(name, Reflective, AllScatteringModes, params)
         {
             memset(m_all_bsdfs, 0, sizeof(BSDF*) * NumClosuresIDs);
@@ -154,9 +152,9 @@ namespace
         }
 
         virtual bool on_frame_begin(
-            const Project&      project,
-            const Assembly&     assembly,
-            AbortSwitch*        abort_switch) OVERRIDE
+            const Project&          project,
+            const Assembly&         assembly,
+            AbortSwitch*            abort_switch) OVERRIDE
         {
             if (!BSDF::on_frame_begin(project, assembly))
                 return false;
@@ -174,8 +172,8 @@ namespace
         }
 
         virtual void on_frame_end(
-            const Project&      project,
-            const Assembly&     assembly) OVERRIDE
+            const Project&          project,
+            const Assembly&         assembly) OVERRIDE
         {
             BSDF::on_frame_end(project, assembly);
 
@@ -187,31 +185,31 @@ namespace
         }
         
         virtual size_t compute_input_data_size(
-            const Assembly&     assembly) const OVERRIDE
+            const Assembly&         assembly) const OVERRIDE
         {
             return sizeof(CompositeClosure);
         }
 
         virtual void evaluate_inputs(
-            InputEvaluator&     input_evaluator,
-            const ShadingPoint& shading_point,
-            const size_t        offset) const OVERRIDE
+            InputEvaluator&         input_evaluator,
+            const ShadingPoint&     shading_point,
+            const size_t            offset) const OVERRIDE
         {
             CompositeClosure* c = reinterpret_cast<CompositeClosure*>(input_evaluator.data());
             new (c) CompositeClosure(shading_point.get_osl_shader_globals().Ci);
         }
 
         FORCE_INLINE virtual Mode sample(
-            SamplingContext&    sampling_context,
-            const void*         data,
-            const bool          adjoint,
-            const bool          cosine_mult,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            Vector3d&           incoming,
-            Spectrum&           value,
-            double&             probability) const
+            SamplingContext&        sampling_context,
+            const void*             data,
+            const bool              adjoint,
+            const bool              cosine_mult,
+            const Vector3d&         geometric_normal,
+            const Basis3d&          shading_basis,
+            const Vector3d&         outgoing,
+            Vector3d&               incoming,
+            Spectrum&               value,
+            double&                 probability) const
         {
             const CompositeClosure* c = reinterpret_cast<const CompositeClosure*>(data);
 
@@ -248,15 +246,15 @@ namespace
         }
 
         FORCE_INLINE virtual double evaluate(
-            const void*         data,
-            const bool          adjoint,
-            const bool          cosine_mult,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            const Vector3d&     incoming,
-            const int           modes,
-            Spectrum&           value) const
+            const void*             data,
+            const bool              adjoint,
+            const bool              cosine_mult,
+            const Vector3d&         geometric_normal,
+            const Basis3d&          shading_basis,
+            const Vector3d&         outgoing,
+            const Vector3d&         incoming,
+            const int               modes,
+            Spectrum&               value) const
         {
             double prob = 0.0;
             value.set(0.0f);
@@ -293,12 +291,12 @@ namespace
         }
 
         FORCE_INLINE virtual double evaluate_pdf(
-            const void*         data,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            const Vector3d&     incoming,
-            const int           modes) const
+            const void*             data,
+            const Vector3d&         geometric_normal,
+            const Basis3d&          shading_basis,
+            const Vector3d&         outgoing,
+            const Vector3d&         incoming,
+            const int               modes) const
         {
             const CompositeClosure* c = reinterpret_cast<const CompositeClosure*>(data);
             double prob = 0.0;
@@ -323,27 +321,28 @@ namespace
         }
 
       private:
-        foundation::auto_release_ptr<BSDF>      m_ashikhmin_shirley_brdf;
-        foundation::auto_release_ptr<BSDF>      m_diffuse_btdf;
-        foundation::auto_release_ptr<BSDF>      m_lambertian_brdf;
-        foundation::auto_release_ptr<BSDF>      m_microfacet_beckmann_brdf;
-        foundation::auto_release_ptr<BSDF>      m_microfacet_blinn_brdf;
-        foundation::auto_release_ptr<BSDF>      m_microfacet_ggx_brdf;
-        foundation::auto_release_ptr<BSDF>      m_microfacet_ward_brdf;
-        foundation::auto_release_ptr<BSDF>      m_specular_brdf;
-        foundation::auto_release_ptr<BSDF>      m_specular_btdf;
-        BSDF*                                   m_all_bsdfs[NumClosuresIDs];
+        auto_release_ptr<BSDF>      m_ashikhmin_shirley_brdf;
+        auto_release_ptr<BSDF>      m_diffuse_btdf;
+        auto_release_ptr<BSDF>      m_lambertian_brdf;
+        auto_release_ptr<BSDF>      m_microfacet_beckmann_brdf;
+        auto_release_ptr<BSDF>      m_microfacet_blinn_brdf;
+        auto_release_ptr<BSDF>      m_microfacet_ggx_brdf;
+        auto_release_ptr<BSDF>      m_microfacet_ward_brdf;
+        auto_release_ptr<BSDF>      m_specular_brdf;
+        auto_release_ptr<BSDF>      m_specular_btdf;
+        BSDF*                       m_all_bsdfs[NumClosuresIDs];
 
-        foundation::auto_release_ptr<BSDF> create_and_register_bsdf(
-            const ClosureID                     cid,
-            const char*                         model,
-            const char*                         name,
-            const ParamArray&                   params = ParamArray())
+        auto_release_ptr<BSDF> create_and_register_bsdf(
+            const ClosureID         cid,
+            const char*             model,
+            const char*             name,
+            const ParamArray&       params = ParamArray())
         {
             auto_release_ptr<BSDF> bsdf =
                 BSDFFactoryRegistrar().lookup(model)->create(name, params);
 
             m_all_bsdfs[cid] = bsdf.get();
+
             return bsdf;
         }
 
