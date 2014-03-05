@@ -34,10 +34,13 @@
 #include "utility/interop.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/colorspace.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/string.h"
+#include "renderer/modeling/color/wavelengths.h"
+#include "renderer/modeling/input/colorsource.h"
 
 // Qt headers.
 #include <QCheckBox>
@@ -56,6 +59,7 @@
 #include <vector>
 
 using namespace foundation;
+using namespace renderer;
 using namespace std;
 
 namespace appleseed {
@@ -237,11 +241,27 @@ void ColorPickerProxy::set(const string& value)
     emit signal_changed();
 }
 
+void ColorPickerProxy::set(const string& value, const string& wavelength_range)
+{
+    m_line_edit->setText(QString::fromStdString(value));
+
+    const QColor color = color_to_qcolor(get_color_from_string(value, wavelength_range));
+
+    m_picker_button->setStyleSheet(
+        QString("background-color: rgb(%1, %2, %3)")
+            .arg(color.red())
+            .arg(color.green())
+            .arg(color.blue()));
+
+    emit signal_changed();
+}
+
 string ColorPickerProxy::get() const
 {
     return m_line_edit->text().toStdString();
 }
 
+// This method uses the default wavelength range of [400-700] nm for spectrum to color conversion.
 Color3d ColorPickerProxy::get_color_from_string(const string& s)
 {
     try
@@ -253,7 +273,26 @@ Color3d ColorPickerProxy::get_color_from_string(const string& s)
             return Color3d(values[0]);
         else if (values.size() == 3)
             return Color3d(values[0], values[1], values[2]);
-        else return Color3d(0.0);
+        else
+        {
+            // Convert Spectral values to visible color to be shown on widget
+            vector<float> fvalues(values.size());
+            for (size_t i = 0; i < values.size(); i++) 
+            {
+                // Convert all double to floating values
+                fvalues[i] = static_cast<float>(values[i]);
+            }
+
+            Spectrum output_spectrum = spectral_values_to_spectrum(
+                LowWavelength, 
+                HighWavelength,
+                ColorValueArray(values.size(), &fvalues[0]));
+                
+            return transform_color(
+                spectrum_to_xyz_standard(output_spectrum), 
+                ColorSpaceCIEXYZ, 
+                ColorSpaceSRGB);
+        }
     }
     catch (const ExceptionStringConversionError&)
     {
@@ -261,6 +300,45 @@ Color3d ColorPickerProxy::get_color_from_string(const string& s)
     }
 }
 
+// This method uses custom wavelength range provided as input to convert spectrum to color conversion.
+Color3d ColorPickerProxy::get_color_from_string(const string& s, const string& wavelength_range) {
+    try
+    {
+        vector<double> values;
+        vector<double> wavelengths;
+        tokenize(s, Blanks, values);
+        tokenize(wavelength_range, Blanks, wavelengths);
+
+        if (values.size() == 1)
+            return Color3d(values[0]);
+        else if (values.size() == 3)
+            return Color3d(values[0], values[1], values[2]);
+        else
+        {
+            // Convert Spectral values to visible color to be shown on widget
+            vector<float> fvalues(values.size());
+            for (size_t i = 0; i < values.size(); i++) 
+            {
+                // Convert all double to floating values
+                fvalues[i] = static_cast<float>(values[i]);
+            }
+
+            Spectrum output_spectrum = spectral_values_to_spectrum(
+                wavelengths[0],
+                wavelengths[1],
+                ColorValueArray(values.size(), &fvalues[0]));
+                
+            return transform_color(
+                spectrum_to_xyz_standard(output_spectrum), 
+                ColorSpaceCIEXYZ, 
+                ColorSpaceSRGB);
+        }
+    }
+    catch (const ExceptionStringConversionError&)
+    {
+        return Color3d(0.0);
+    }
+}
 
 //
 // InputWidgetProxyCollection class implementation.

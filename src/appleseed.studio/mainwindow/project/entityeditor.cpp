@@ -481,8 +481,17 @@ void EntityEditor::create_color_input_widgets(const Dictionary& metadata)
 
     auto_ptr<IInputWidgetProxy> widget_proxy(new ColorPickerProxy(line_edit, picker_button));
 
+    // Find the wavelength widget proxy and get its values
+    // todo: Should we check the existence of such a proxy? Are we guaranteed to get a wavelength_range proxy?
+    const string wavelength_range = m_widget_proxies.get("wavelength_range")->get();
+    
     if (metadata.strings().exist("default"))
-        widget_proxy->set(metadata.strings().get<string>("default"));
+    {
+        widget_proxy->set(
+            metadata.strings().get<string>("default"),
+            wavelength_range
+        );
+    }
     else widget_proxy->set("0.0 0.0 0.0");
 
     connect(widget_proxy.get(), SIGNAL(signal_changed()), SLOT(slot_apply()));
@@ -647,7 +656,9 @@ void EntityEditor::slot_open_color_picker(const QString& widget_name)
 {
     IInputWidgetProxy* widget_proxy = m_widget_proxies.get(widget_name.toStdString());
 
-    const Color3d initial_color = ColorPickerProxy::get_color_from_string(widget_proxy->get());
+    const string wavelength_range = m_widget_proxies.get("wavelength_range")->get();
+
+    const Color3d initial_color = ColorPickerProxy::get_color_from_string(widget_proxy->get(), wavelength_range);
 
     QColorDialog* dialog =
         new QColorDialog(
