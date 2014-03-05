@@ -92,7 +92,6 @@ enum ClosureID
     NumClosuresIDs
 };
 
-
 //
 // Composite OSL closure.
 //
@@ -129,9 +128,12 @@ class APPLESEED_ALIGN(16) CompositeClosure
             InputValuesTypeList,
             boost::mpl::sizeof_<boost::mpl::_1> > >::type BiggestInputValueType;
 
+    enum { InputValuesAlignment = 16 };
     enum { MaxClosureEntries = 8 };
-    enum { MaxPoolSize = MaxClosureEntries * sizeof(boost::mpl::deref<BiggestInputValueType::base>::type) };
+    enum { MaxPoolSize = MaxClosureEntries * (sizeof(boost::mpl::deref<BiggestInputValueType::base>::type) + 16) };
 
+    // m_pool has to be first, because it has to be aligned.
+    char                            m_pool[MaxPoolSize];
     void*                           m_input_values[MaxClosureEntries];
     ClosureID                       m_closure_types[MaxClosureEntries];
     foundation::Vector3d            m_normals[MaxClosureEntries];
@@ -141,7 +143,6 @@ class APPLESEED_ALIGN(16) CompositeClosure
     int                             m_num_bytes;
     foundation::CDF<size_t, double> m_cdf;
     Spectrum                        m_spectrum_multipliers[MaxClosureEntries];
-    char                            m_pool[MaxPoolSize];
 
     void process_closure_tree(
         const OSL::ClosureColor*    closure, 

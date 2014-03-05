@@ -34,6 +34,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
+#include "foundation/utility/memory.h"
 #include "foundation/utility/otherwise.h"
 
 // OSL headers.
@@ -109,7 +110,6 @@ namespace
     };
 }
 
-
 //
 // CompositeClosure class implementation.
 // 
@@ -119,6 +119,8 @@ CompositeClosure::CompositeClosure(
   : m_num_closures(0)
   , m_num_bytes(0)
 {
+    assert(is_aligned(m_pool, InputValuesAlignment));
+
     process_closure_tree(ci, Color3f(1.0f));
 
     if (get_num_closures())
@@ -396,10 +398,11 @@ void CompositeClosure::do_add_closure(
 
     m_closure_types[m_num_closures] = closure_type;
 
-    m_input_values[m_num_closures] = m_pool + m_num_bytes;
-    new (m_input_values[m_num_closures]) InputValues(params);
-
-    m_num_bytes += sizeof(InputValues);
+    char* values_ptr = m_pool + m_num_bytes;
+    assert(is_aligned(values_ptr, InputValuesAlignment));
+    new (values_ptr) InputValues(params);
+    m_input_values[m_num_closures] = values_ptr;
+    m_num_bytes += align(sizeof(InputValues), InputValuesAlignment);
     ++m_num_closures;
 }
 
