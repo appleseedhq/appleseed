@@ -137,12 +137,13 @@ inline void ColorSource::evaluate_uniform(
 
 // Convert a set of regularly spaced spectral values to the internal spectrum format.
 DLLSYMBOL Spectrum spectral_values_to_spectrum(
-	const foundation::Vector2f&  wavelength_range,
-	const ColorValueArray&       values);
+    const float               wavelength_start,
+    const float               wavelength_end,
+    const ColorValueArray&    values);
 
 // Converts a given spectrum to CIEXYZ using the IlluminantCIED65 illuminant and XYZCMFCIE196410Deg matching function
 DLLSYMBOL foundation::Color3f spectrum_to_xyz_standard(
-	const Spectrum& spectrum);
+    const Spectrum& spectrum);
 
 }       // namespace renderer
 

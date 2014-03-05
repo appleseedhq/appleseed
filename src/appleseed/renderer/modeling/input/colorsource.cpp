@@ -76,6 +76,7 @@ void generate_wavelengths(
     }
 }
 
+
 // Convert a set of regularly spaced spectral values to the internal spectrum format.
 Spectrum spectral_values_to_spectrum(
     const Vector2f&         wavelength_range,
@@ -104,6 +105,18 @@ Spectrum spectral_values_to_spectrum(
     return spectrum;
 }
 
+Spectrum spectral_values_to_spectrum(
+    const float               wavelength_start,
+    const float               wavelength_end,
+    const ColorValueArray&    values)
+{
+    // We call the existing method.
+    return spectral_values_to_spectrum(
+        Vector2f(wavelength_start, wavelength_end),
+        values);
+}
+
+
 void linear_rgb_to_spectrum(
     const InputFormat       input_format,
     const Color3f&          linear_rgb,
@@ -126,10 +139,10 @@ void linear_rgb_to_spectrum(
 
 // Converts a given spectrum to CIEXYZ using the IlluminantCIED65 illuminant and XYZCMFCIE196410Deg matching function
 Color3f spectrum_to_xyz_standard(
-	const Spectrum& spectrum)
+    const Spectrum& spectrum)
 {
-	LightingConditions lc(IlluminantCIED65, XYZCMFCIE196410Deg);
-	return spectrum_to_ciexyz<float, Spectrum31f>(lc, spectrum);
+    LightingConditions lc(IlluminantCIED65, XYZCMFCIE196410Deg);
+    return spectrum_to_ciexyz<float, Spectrum31f>(lc, spectrum);
 }
 
 
