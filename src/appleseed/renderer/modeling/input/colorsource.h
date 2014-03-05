@@ -32,11 +32,13 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/modeling/color/colorentity.h"
 #include "renderer/modeling/input/inputformat.h"
 #include "renderer/modeling/input/source.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
+#include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 
 // Forward declarations.
@@ -132,6 +134,16 @@ inline void ColorSource::evaluate_uniform(
     spectrum = m_spectrum;
     alpha = m_alpha;
 }
+
+// Convert a set of regularly spaced spectral values to the internal spectrum format.
+DLLSYMBOL Spectrum spectral_values_to_spectrum(
+    const float               wavelength_start,
+    const float               wavelength_end,
+    const ColorValueArray&    values);
+
+// Converts a given spectrum to CIEXYZ using the IlluminantCIED65 illuminant and XYZCMFCIE196410Deg matching function
+DLLSYMBOL foundation::Color3f spectrum_to_xyz_standard(
+    const Spectrum& spectrum);
 
 }       // namespace renderer
 
