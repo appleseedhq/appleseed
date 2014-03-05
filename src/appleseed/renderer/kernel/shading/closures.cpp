@@ -34,8 +34,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
-#include "foundation/math/scalar.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/memory.h"
 #include "foundation/utility/otherwise.h"
 
@@ -121,7 +119,7 @@ CompositeClosure::CompositeClosure(
   : m_num_closures(0)
   , m_num_bytes(0)
 {
-    assert(is_aligned(m_pool.data, 16));
+    assert(is_aligned(m_pool, InputValuesAlignment));
 
     process_closure_tree(ci, Color3f(1.0f));
 
@@ -400,11 +398,11 @@ void CompositeClosure::do_add_closure(
 
     m_closure_types[m_num_closures] = closure_type;
 
-    char* values_ptr = m_pool.data + m_num_bytes;
-    assert(is_aligned(values_ptr, 16));
+    char* values_ptr = m_pool + m_num_bytes;
+    assert(is_aligned(values_ptr, InputValuesAlignment));
     new (values_ptr) InputValues(params);
     m_input_values[m_num_closures] = values_ptr;
-    m_num_bytes += align(sizeof(InputValues), 16);
+    m_num_bytes += align(sizeof(InputValues), InputValuesAlignment);
     ++m_num_closures;
 }
 
