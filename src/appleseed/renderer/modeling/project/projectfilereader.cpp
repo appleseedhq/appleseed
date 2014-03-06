@@ -1574,24 +1574,17 @@ namespace
         virtual void start_element(const Attributes& attrs) OVERRIDE
         {
             m_slot = get_value(attrs, "slot");
+            m_side = get_value(attrs, "side", "front");
+            m_material = get_value(attrs, "material");
 
-            const string side_string = get_value(attrs, "side", "front");
-            if (side_string == "front")
-                m_side_string = "front";
-            else if (side_string == "back")
-                m_side_string = "back";
-            else if (side_string == "both")
-                m_side_string = "both";
-            else
+            if (m_side != "front" && m_side != "back" && m_side != "both")
             {
                 RENDERER_LOG_ERROR(
                     "while assigning material: side must be \"front\", \"back\" or \"both\", got \"%s\".",
-                    side_string.c_str());
+                    m_side.c_str());
                 m_context.get_event_counters().signal_error();
-                m_side_string = "front";
+                m_side = "front";
             }
-
-            m_material = get_value(attrs, "material");
         }
 
         const string& get_material_slot() const
@@ -1599,9 +1592,9 @@ namespace
             return m_slot;
         }
 
-        const string& get_material_side_string() const
+        const string& get_material_side() const
         {
-            return m_side_string;
+            return m_side;
         }
 
         const string& get_material_name() const
@@ -1612,7 +1605,7 @@ namespace
       private:
         ParseContext&           m_context;
         string                  m_slot;
-        string                  m_side_string;
+        string                  m_side;
         string                  m_material;
     };
 
@@ -1668,14 +1661,14 @@ namespace
                         static_cast<AssignMaterialElementHandler*>(handler);
 
                     const string& material_slot = assign_mat_handler->get_material_slot();
-                    const string& material_side = assign_mat_handler->get_material_side_string();
+                    const string& material_side = assign_mat_handler->get_material_side();
                     const string& material_name = assign_mat_handler->get_material_name();
 
-                    if ( material_side == "front" )
+                    if (material_side == "front")
                         m_front_material_mappings.insert(material_slot, material_name);
-                    else if ( material_side == "back" )
+                    else if (material_side == "back")
                         m_back_material_mappings.insert(material_slot, material_name);
-                    else if ( material_side == "both" )
+                    else if (material_side == "both")
                     {
                         m_front_material_mappings.insert(material_slot, material_name);
                         m_back_material_mappings.insert(material_slot, material_name);
