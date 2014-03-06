@@ -95,8 +95,7 @@ class DLLSYMBOL ObjectInstance
     enum Side
     {
         FrontSide,
-        BackSide,
-        BothSide
+        BackSide
     };
 
     // Clear all material assignments.

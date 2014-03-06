@@ -1577,18 +1577,18 @@ namespace
 
             const string side_string = get_value(attrs, "side", "front");
             if (side_string == "front")
-                m_side = ObjectInstance::FrontSide;
+                m_side_string = "front";
             else if (side_string == "back")
-                m_side = ObjectInstance::BackSide;
+                m_side_string = "back";
             else if (side_string == "both")
-                m_side = ObjectInstance::BothSide;
+                m_side_string = "both";
             else
             {
                 RENDERER_LOG_ERROR(
                     "while assigning material: side must be \"front\", \"back\" or \"both\", got \"%s\".",
                     side_string.c_str());
                 m_context.get_event_counters().signal_error();
-                m_side = ObjectInstance::FrontSide;
+                m_side_string = "front";
             }
 
             m_material = get_value(attrs, "material");
@@ -1599,9 +1599,9 @@ namespace
             return m_slot;
         }
 
-        ObjectInstance::Side get_material_side() const
+        const string& get_material_side_string() const
         {
-            return m_side;
+            return m_side_string;
         }
 
         const string& get_material_name() const
@@ -1612,7 +1612,7 @@ namespace
       private:
         ParseContext&           m_context;
         string                  m_slot;
-        ObjectInstance::Side    m_side;
+        string                  m_side_string;
         string                  m_material;
     };
 
@@ -1668,28 +1668,17 @@ namespace
                         static_cast<AssignMaterialElementHandler*>(handler);
 
                     const string& material_slot = assign_mat_handler->get_material_slot();
-                    const ObjectInstance::Side material_side = assign_mat_handler->get_material_side();
+                    const string& material_side = assign_mat_handler->get_material_side_string();
                     const string& material_name = assign_mat_handler->get_material_name();
 
-                    switch (material_side)
-                    {
-                      case ObjectInstance::FrontSide:
+                    if ( material_side == "front" )
                         m_front_material_mappings.insert(material_slot, material_name);
-                        break;
-
-                      case ObjectInstance::BackSide:
+                    else if ( material_side == "back" )
                         m_back_material_mappings.insert(material_slot, material_name);
-                        break;
-
-                      case ObjectInstance::BothSide:
-                        {
-                            m_front_material_mappings.insert(material_slot, material_name);
-                            m_back_material_mappings.insert(material_slot, material_name);
-                        }
-                        break;
-
-                      default:
-                          break;
+                    else if ( material_side == "both" )
+                    {
+                        m_front_material_mappings.insert(material_slot, material_name);
+                        m_back_material_mappings.insert(material_slot, material_name);
                     }
                 }
                 break;
