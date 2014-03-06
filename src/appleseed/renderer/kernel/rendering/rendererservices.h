@@ -58,21 +58,23 @@ class RendererServices
 {
   public:
     // Constructor.
-    RendererServices(const Project& project,
-                     OIIO::TextureSystem& texture_sys);
+    RendererServices(
+        const Project&          project,
+        OIIO::TextureSystem&    texture_sys);
 
-    // Filtered 2D texture lookup for a single point.    
-    virtual bool texture(OSL::ustring filename, 
-                         OSL::TextureOpt& options,
-                         OSL::ShaderGlobals* sg,
-                         float s, 
-                         float t, 
-                         float dsdx, 
-                         float dtdx,
-                         float dsdy, 
-                         float dtdy, 
-                         float* result);
-    
+    // Filtered 2D texture lookup for a single point.
+    virtual bool texture(
+        OSL::ustring            filename,
+        OSL::TextureOpt&        options,
+        OSL::ShaderGlobals*     sg,
+        float                   s,
+        float                   t,
+        float                   dsdx,
+        float                   dtdx,
+        float                   dsdy,
+        float                   dtdy,
+        float*                  result) OVERRIDE;
+
     // Filtered 3D texture lookup for a single point.
     //
     // P is the volumetric texture coordinate; dPd{x,y,z} are the
@@ -83,14 +85,15 @@ class RendererServices
     //
     // Return true if the file is found and could be opened, otherwise
     // return false.
-    virtual bool texture3d(OSL::ustring filename, 
-                           OSL::TextureOpt& options,
-                           OSL::ShaderGlobals* sg, 
-                           const OSL::Vec3& P,
-                           const OSL::Vec3& dPdx, 
-                           const OSL::Vec3& dPdy,
-                           const OSL::Vec3& dPdz, 
-                           float* result);
+    virtual bool texture3d(
+        OSL::ustring            filename,
+        OSL::TextureOpt&        options,
+        OSL::ShaderGlobals*     sg,
+        const OSL::Vec3&        P,
+        const OSL::Vec3&        dPdx,
+        const OSL::Vec3&        dPdy,
+        const OSL::Vec3&        dPdz,
+        float*                  result) OVERRIDE;
 
     // Filtered environment lookup for a single point.
     //
@@ -99,51 +102,57 @@ class RendererServices
     //
     // Return true if the file is found and could be opened, otherwise
     // return false.
-    virtual bool environment(OSL::ustring filename, 
-                             OSL::TextureOpt& options,
-                             OSL::ShaderGlobals* sg, 
-                             const OSL::Vec3& R,
-                             const OSL::Vec3& dRdx, 
-                             const OSL::Vec3& dRdy, 
-                             float* result);
-    
+    virtual bool environment(
+        OSL::ustring            filename,
+        OSL::TextureOpt&        options,
+        OSL::ShaderGlobals*     sg,
+        const OSL::Vec3&        R,
+        const OSL::Vec3&        dRdx,
+        const OSL::Vec3&        dRdy,
+        float*                  result) OVERRIDE;
+
     // Get information about the given texture.  Return true if found
     // and the data has been put in* data.  Return false if the texture
     // doesn't exist, doesn't have the requested data, if the data
     // doesn't match the type requested. or some other failure.
-    virtual bool get_texture_info(OSL::ustring filename,
-                                  int subimage,
-                                  OSL::ustring dataname,
-                                  OSL::TypeDesc datatype,
-                                  void* data);
-    
+    virtual bool get_texture_info(
+        OSL::ustring            filename,
+        int                     subimage,
+        OSL::ustring            dataname,
+        OSL::TypeDesc           datatype,
+        void*                   data) OVERRIDE;
+
     // Get the 4x4 matrix that transforms by the specified
     // transformation at the given time.  Return true if ok, false
     // on error.
-    virtual bool get_matrix(OSL::Matrix44& result,
-                            OSL::TransformationPtr xform,
-                            float time) OVERRIDE;
+    virtual bool get_matrix(
+        OSL::Matrix44&          result,
+        OSL::TransformationPtr  xform,
+        float                   time) OVERRIDE;
 
     // Get the 4x4 matrix that transforms by the specified
     // transformation.  Return true if ok, false on error.  Since no
     // time value is given, also return false if the transformation may
     // be time-varying.
-    virtual bool get_matrix(OSL::Matrix44& result,
-                            OSL::TransformationPtr xform) OVERRIDE;
+    virtual bool get_matrix(
+        OSL::Matrix44&          result,
+        OSL::TransformationPtr  xform) OVERRIDE;
 
     // Get the 4x4 matrix that transforms points from the named
     // 'from' coordinate system to "common" space at the given time.
     // Returns true if ok, false if the named matrix is not known.
-    virtual bool get_matrix(OSL::Matrix44& result,
-                            OIIO::ustring from,
-                            float time) OVERRIDE;
+    virtual bool get_matrix(
+        OSL::Matrix44&          result,
+        OIIO::ustring           from,
+        float                   time) OVERRIDE;
 
     // Get the 4x4 matrix that transforms 'from' to "common" space.
     // Since there is no time value passed, return false if the
     // transformation may be time-varying(as well as if it's not found
     // at all).
-    virtual bool get_matrix(OSL::Matrix44& result,
-                            OIIO::ustring from) OVERRIDE;
+    virtual bool get_matrix(
+        OSL::Matrix44&          result,
+        OIIO::ustring           from) OVERRIDE;
 
     // Get the named attribute from the renderer and if found then
     // write it into 'val'.  Otherwise, return false.  If no object is
@@ -157,42 +166,46 @@ class RendererServices
     // run on. Be robust to this situation, return 'true' (retrieve the
     // attribute) if you can (known object and attribute name), but
     // otherwise just fail by returning 'false'.
-    virtual bool get_attribute(void* renderstate,
-                               bool derivatives,
-                               OIIO::ustring object,
-                               OIIO::TypeDesc type,
-                               OIIO::ustring name,
-                               void* val) OVERRIDE;
+    virtual bool get_attribute(
+        void*                   renderstate,
+        bool                    derivatives,
+        OIIO::ustring           object,
+        OIIO::TypeDesc          type,
+        OIIO::ustring           name,
+        void*                   val) OVERRIDE;
 
     // Similar to get_attribute();  this method will return the 'index'
     // element of an attribute array.
-    virtual bool get_array_attribute(void* renderstate,
-                                     bool derivatives,
-                                     OIIO::ustring object,
-                                     OIIO::TypeDesc type,
-                                     OIIO::ustring name,
-                                     int index,
-                                     void* val) OVERRIDE;
+    virtual bool get_array_attribute(
+        void*                   renderstate,
+        bool                    derivatives,
+        OIIO::ustring           object,
+        OIIO::TypeDesc          type,
+        OIIO::ustring           name,
+        int                     index,
+        void*                   val) OVERRIDE;
 
     // Get the named user-data from the current object and write it into
     // 'val'. If derivatives is true, the derivatives should be written into val
     // as well. Return false if no user-data with the given name and type was found.
-    virtual bool get_userdata(bool derivatives,
-                              OIIO::ustring name,
-                              OIIO::TypeDesc type,
-                              void* renderstate,
-                              void* val) OVERRIDE;
+    virtual bool get_userdata(
+        bool                    derivatives,
+        OIIO::ustring           name,
+        OIIO::TypeDesc          type,
+        void*                   renderstate,
+        void*                   val) OVERRIDE;
 
     // Does the current object have the named user-data associated with it?
-    virtual bool has_userdata(OIIO::ustring name,
-                              OIIO::TypeDesc type,
-                              void* renderstate) OVERRIDE;
+    virtual bool has_userdata(
+        OIIO::ustring           name,
+        OIIO::TypeDesc          type,
+        void*                   renderstate) OVERRIDE;
 
   private:
     static void log_error(const std::string& message);
 
-    const Project&          m_project;
-    OIIO::TextureSystem&    m_texture_sys;
+    const Project&              m_project;
+    OIIO::TextureSystem&        m_texture_sys;
 };
 
 }       // namespace renderer

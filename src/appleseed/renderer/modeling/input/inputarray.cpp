@@ -115,30 +115,36 @@ namespace
             switch (m_format)
             {
               case InputFormatScalar:
-                ptr = align_to<double>(ptr);
-                if (m_source)
                 {
-                    m_source->evaluate(
-                        texture_cache,
-                        uv,
-                        *reinterpret_cast<double*>(ptr));
+                    ptr = align_to<double>(ptr);
+                    double* out_scalar = reinterpret_cast<double*>(ptr);
+
+                    if (m_source)
+                        m_source->evaluate(texture_cache, uv, *out_scalar);
+                    else *out_scalar = 0.0;
+
+                    ptr += sizeof(double);
                 }
-                ptr += sizeof(double);
                 break;
 
               case InputFormatSpectralReflectance:
               case InputFormatSpectralIlluminance:
-                ptr = align_to<Spectrum>(ptr);
-                if (m_source)
                 {
-                    m_source->evaluate(
-                        texture_cache,
-                        uv,
-                        *reinterpret_cast<Spectrum*>(ptr),
-                        *reinterpret_cast<Alpha*>(ptr + sizeof(Spectrum)));
+                    ptr = align_to<Spectrum>(ptr);
+                    Spectrum* out_spectrum = reinterpret_cast<Spectrum*>(ptr);
+                    Alpha* out_alpha = reinterpret_cast<Alpha*>(ptr + sizeof(Spectrum));
+
+                    if (m_source)
+                        m_source->evaluate(texture_cache, uv, *out_spectrum, *out_alpha);
+                    else
+                    {
+                        out_spectrum->set(0.0f);
+                        out_alpha->set(0.0f);
+                    }
+
+                    ptr += sizeof(Spectrum);
+                    ptr += sizeof(Alpha);
                 }
-                ptr += sizeof(Spectrum);
-                ptr += sizeof(Alpha);
                 break;
             }
 
@@ -150,23 +156,36 @@ namespace
             switch (m_format)
             {
               case InputFormatScalar:
-                ptr = align_to<double>(ptr);
-                if (m_source && m_source->is_uniform())
-                    m_source->evaluate_uniform(*reinterpret_cast<double*>(ptr));
-                ptr += sizeof(double);
+                {
+                    ptr = align_to<double>(ptr);
+                    double* out_scalar = reinterpret_cast<double*>(ptr);
+
+                    if (m_source && m_source->is_uniform())
+                        m_source->evaluate_uniform(*out_scalar);
+                    else *out_scalar = 0.0;
+
+                    ptr += sizeof(double);
+                }
                 break;
 
               case InputFormatSpectralReflectance:
               case InputFormatSpectralIlluminance:
-                ptr = align_to<Spectrum>(ptr);
-                if (m_source && m_source->is_uniform())
                 {
-                    m_source->evaluate_uniform(
-                        *reinterpret_cast<Spectrum*>(ptr),
-                        *reinterpret_cast<Alpha*>(ptr + sizeof(Spectrum)));
+                    ptr = align_to<Spectrum>(ptr);
+                    Spectrum* out_spectrum = reinterpret_cast<Spectrum*>(ptr);
+                    Alpha* out_alpha = reinterpret_cast<Alpha*>(ptr + sizeof(Spectrum));
+
+                    if (m_source && m_source->is_uniform())
+                        m_source->evaluate_uniform(*out_spectrum, *out_alpha);
+                    else
+                    {
+                        out_spectrum->set(0.0f);
+                        out_alpha->set(0.0f);
+                    }
+
+                    ptr += sizeof(Spectrum);
+                    ptr += sizeof(Alpha);
                 }
-                ptr += sizeof(Spectrum);
-                ptr += sizeof(Alpha);
                 break;
             }
 
