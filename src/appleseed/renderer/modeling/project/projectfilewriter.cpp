@@ -479,12 +479,12 @@ namespace
         // Write an <assign_material> element.
         void write_assign_material(
             const string&               slot,
-            const ObjectInstance::Side  side,
+            const string&               side_string,
             const string&               name)
         {
             XMLElement element("assign_material", m_file, m_indenter);
             element.add_attribute("slot", slot);
-            element.add_attribute("side", side == ObjectInstance::FrontSide ? "front" : "back");
+            element.add_attribute("side", side_string);
             element.add_attribute("material", name);
             element.write(false);
         }
@@ -494,8 +494,46 @@ namespace
             const ObjectInstance::Side  side,
             const StringDictionary&     material_mappings)
         {
-            for (const_each<StringDictionary> i = material_mappings; i; ++i)
-                write_assign_material(i->name(), side, i->value<string>());
+            switch (side)
+            {
+                case ObjectInstance::FrontSide:
+                {
+                    for (const_each<StringDictionary> i = material_mappings; i; ++i)
+                        write_assign_material(i->name(), "front", i->value<string>());
+                }
+                break;
+
+                case ObjectInstance::BackSide: {
+                    for (const_each<StringDictionary> i = material_mappings; i; ++i)
+                        write_assign_material(i->name(), "back", i->value<string>());
+                }
+                break;
+            }
+
+        }
+
+        // Write a series of <assign_material> elements
+        // With processing both side at the same time.
+        void write_assign_materials_both_side(
+            const StringDictionary&     front_material_mappings,
+            const StringDictionary&     back_material_mappings)
+        {
+            for (const_each<StringDictionary> i = front_material_mappings; i; ++i)
+            {
+                if (back_material_mappings.exist(i->name()))
+                    write_assign_material(
+                        i->name(), "both", i->value<string>());
+                else
+                    write_assign_material(
+                        i->name(), "front", i->value<string>());
+            }
+
+            for (const_each<StringDictionary> i = back_material_mappings; i; ++i)
+            {
+                if (!front_material_mappings.exist(i->name()))
+                    write_assign_material(
+                        i->name(), "back", i->value<string>());
+            }
         }
 
         // Write a <bsdf> element.
@@ -751,8 +789,11 @@ namespace
             write_params(object_instance.get_parameters());
             write_transform(object_instance.get_transform());
 
-            write_assign_materials(ObjectInstance::FrontSide, object_instance.get_front_material_mappings());
-            write_assign_materials(ObjectInstance::BackSide, object_instance.get_back_material_mappings());
+            write_assign_materials_both_side(
+                object_instance.get_front_material_mappings(),
+                object_instance.get_back_material_mappings());
+/*            write_assign_materials(ObjectInstance::FrontSide, object_instance.get_front_material_mappings());
+            write_assign_materials(ObjectInstance::BackSide, object_instance.get_back_material_mappings()); */
         }
 
         // Write an <output> element.
