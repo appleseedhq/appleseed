@@ -38,6 +38,9 @@
 #include "renderer/kernel/intersection/tracecontext.h"
 #include "renderer/kernel/lighting/ilightingengine.h"
 #include "renderer/kernel/lighting/tracer.h"
+#ifdef WITH_OSL
+#include "renderer/kernel/shading/oslshadergroupexec.h"
+#endif
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingengine.h"
 #include "renderer/kernel/shading/shadingfragment.h"
@@ -104,6 +107,9 @@ namespace
           , m_opacity_threshold(1.0f - m_params.m_transparency_threshold)
           , m_texture_cache(texture_store)
           , m_intersector(trace_context, m_texture_cache, m_params.m_report_self_intersections)
+  #ifdef WITH_OSL
+          , m_shadergroup_exec(shading_system)
+  #endif
           , m_tracer(
                 m_scene,
                 m_intersector,
@@ -117,7 +123,7 @@ namespace
                 m_tracer,
                 m_texture_cache,
 #ifdef WITH_OSL
-                shading_system,
+                m_shadergroup_exec,
 #endif
                 m_lighting_engine,
                 m_params.m_transparency_threshold,
@@ -290,6 +296,9 @@ namespace
 
         TextureCache                m_texture_cache;
         Intersector                 m_intersector;
+#ifdef WITH_OSL
+        OSLShaderGroupExec          m_shadergroup_exec;
+#endif
         Tracer                      m_tracer;
         ILightingEngine*            m_lighting_engine;
         const ShadingContext        m_shading_context;

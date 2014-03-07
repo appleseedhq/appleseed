@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,54 +27,46 @@
 //
 
 // Interface header.
-#include "shadingcontext.h"
+#include "oslshadergroupexec.h"
 
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/shadingpoint.h"
-#ifdef WITH_OSL
 #include "renderer/modeling/shadergroup/shadergroup.h"
-#endif
 
 namespace renderer
 {
 
 //
-// ShadingContext class implementation.
+// OSLShaderGroupExec class implementation.
 //
 
-ShadingContext::ShadingContext(
-    const Intersector&          intersector,
-    Tracer&                     tracer,
-    TextureCache&               texture_cache,
-#ifdef WITH_OSL
-    OSLShaderGroupExec&         osl_shadergroup_exec,
-#endif
-    ILightingEngine*            lighting_engine,
-    const float                 transparency_threshold,
-    const size_t                max_iterations)
-  : m_intersector(intersector)
-  , m_tracer(tracer)
-  , m_texture_cache(texture_cache)
-  , m_lighting_engine(lighting_engine)
-  , m_transparency_threshold(transparency_threshold)
-  , m_max_iterations(max_iterations)
-#ifdef WITH_OSL
-  , m_shadergroup_exec(osl_shadergroup_exec)
-#endif
+OSLShaderGroupExec::OSLShaderGroupExec(OSL::ShadingSystem& shading_system)
+  : m_osl_shading_system(shading_system)
+  , m_osl_thread_info(shading_system.create_thread_info())
+  , m_osl_shading_context(shading_system.get_context(m_osl_thread_info))
 {
 }
 
-#ifdef WITH_OSL
+OSLShaderGroupExec::~OSLShaderGroupExec()
+{
+    if (m_osl_shading_context)
+        m_osl_shading_system.release_context(m_osl_shading_context);
 
-void ShadingContext::execute_osl_shadergroup(
+    if (m_osl_thread_info)
+        m_osl_shading_system.destroy_thread_info(m_osl_thread_info);
+}
+
+void OSLShaderGroupExec::execute(
     const ShaderGroup&          shader_group,
     const ShadingPoint&         shading_point) const
 {
-    m_shadergroup_exec.execute(
-        shader_group,
-        shading_point);
-}
+    assert(m_osl_shading_context);
+    assert(m_osl_thread_info);
 
-#endif
+    m_osl_shading_system.execute(
+        *m_osl_shading_context,
+        *shader_group.shadergroup_ref(),
+        shading_point.get_osl_shader_globals());
+}
 
 }   // namespace renderer

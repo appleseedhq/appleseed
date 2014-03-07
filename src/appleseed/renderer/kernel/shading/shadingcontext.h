@@ -33,20 +33,17 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 
+// appleseed.renderer headers.
+#ifdef WITH_OSL
+#include "renderer/kernel/shading/oslshadergroupexec.h"
+#endif
+
 // Standard headers.
 #include <cstddef>
-
-// OSL headers.
-#ifdef WITH_OSL
-#include <OSL/oslexec.h>
-#endif
 
 // Forward declarations.
 namespace renderer  { class ILightingEngine; }
 namespace renderer  { class Intersector; }
-#ifdef WITH_OSL
-namespace renderer  { class ShaderGroup; }
-#endif
 namespace renderer  { class ShadingPoint; }
 namespace renderer  { class TextureCache; }
 namespace renderer  { class Tracer; }
@@ -68,14 +65,11 @@ class ShadingContext
         Tracer&                 tracer,
         TextureCache&           texture_cache,
 #ifdef WITH_OSL
-        OSL::ShadingSystem&     shading_system,
+        OSLShaderGroupExec&     osl_shadergroup_exec,
 #endif            
         ILightingEngine*        lighting_engine = 0,
         const float             transparency_threshold = 0.001f,
         const size_t            max_iterations = 1000);
-
-    // Destructor.
-    ~ShadingContext();
 
     const Intersector& get_intersector() const;
 
@@ -106,9 +100,7 @@ class ShadingContext
     const size_t                m_max_iterations;
 
 #ifdef WITH_OSL
-    OSL::ShadingSystem&         m_osl_shading_system;
-    OSL::PerThreadInfo*         m_osl_thread_info;
-    OSL::ShadingContext*        m_osl_shading_context;
+    OSLShaderGroupExec&         m_shadergroup_exec;
 #endif
 };
 
