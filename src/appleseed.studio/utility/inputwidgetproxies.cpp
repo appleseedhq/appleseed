@@ -276,9 +276,9 @@ Color3d ColorPickerProxy::get_color_from_string(const string& s)
         else
         {
             // Convert Spectral values to visible color to be shown on widget
-			ColorValueArray input_spectrum, output_spectrum, ciexyz;
+			ColorValueArray input_spectrum, ciexyz;
+			float output_spectrum[31];						// The standard spectral data is composed of 31 elements
 			input_spectrum.resize(values.size());
-			output_spectrum.resize(31);										// The standard spectral data is composed of 31 elements
 			ciexyz.resize(3);														
             
 			for (size_t i = 0; i < values.size(); i++) 
@@ -324,8 +324,10 @@ Color3d ColorPickerProxy::get_color_from_string(const string& s, const string& w
         else
         {
             // Convert Spectral values to visible color to be shown on widget
-			ColorValueArray input_spectrum, output_spectrum, ciexyz;
+			ColorValueArray input_spectrum, ciexyz;
+			float output_spectrum[31];
 			input_spectrum.resize(values.size());
+			
 			ciexyz.resize(3);														
             
 			for (size_t i = 0; i < values.size(); i++) 

@@ -139,11 +139,11 @@ DLLSYMBOL void spectral_values_to_spectrum(
     const float                     wavelength_start,
     const float                     wavelength_end,
     const ColorValueArray&          input_spectrum,
-	ColorValueArray&                output_spectrum);
+	float                           output_spectrum[31]);
 
 // Converts a given spectrum to CIEXYZ using the IlluminantCIED65 illuminant and XYZCMFCIE196410Deg matching function
 DLLSYMBOL void spectrum_to_ciexyz_standard(
-    const float                     spectrum[],
+    const float                     spectrum[31],
     ColorValueArray&                ciexyz
     );
 

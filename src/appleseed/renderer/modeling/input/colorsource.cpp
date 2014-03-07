@@ -131,7 +131,7 @@ void spectral_values_to_spectrum(
     const float					wavelength_start,
     const float                 wavelength_end,
     const ColorValueArray&      input_spectrum,
-    ColorValueArray&            output_spectrum)
+    float                       output_spectrum[31])
 {
     // We call the existing method.
     Spectrum ret = spectral_values_to_spectrum(
@@ -146,7 +146,7 @@ void spectral_values_to_spectrum(
 }
 
 void spectrum_to_ciexyz_standard(
-    const float					spectrum[],
+    const float					spectrum[31],
     ColorValueArray&            ciexyz)
 {
     LightingConditions lc(IlluminantCIED65, XYZCMFCIE196410Deg);
