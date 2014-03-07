@@ -70,6 +70,8 @@ class IInputWidgetProxy
     virtual ~IInputWidgetProxy() {}
 
     virtual void set(const std::string& value) = 0;
+	virtual void set(const std::string& value, const std::string& value2) {}
+
     virtual std::string get() const = 0;
 
   signals:
@@ -214,9 +216,11 @@ class ColorPickerProxy
     explicit ColorPickerProxy(QLineEdit* line_edit, QToolButton* picker_button);
 
     virtual void set(const std::string& value);
+    virtual void set(const std::string& value, const std::string& wavelength_range);
     virtual std::string get() const;
 
     static foundation::Color3d get_color_from_string(const std::string& s);
+    static foundation::Color3d get_color_from_string(const std::string& s, const std::string& wavelength_range);
 
   private:
     QLineEdit*      m_line_edit;
