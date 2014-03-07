@@ -233,7 +233,7 @@ const char* ObjectInstance::get_material_name(const size_t pa_index, const Side 
             ? impl->m_front_material_mappings
             : impl->m_back_material_mappings;
 
-    if (object->get_material_slot_count() > 1)
+    if (object->get_material_slot_count() > 0)
     {
         const char* slot_name = object->get_material_slot(pa_index);
         return material_mappings.exist(slot_name) ? material_mappings.get(slot_name) : 0;
@@ -273,7 +273,7 @@ namespace
         {
             if (material_array[i] == 0)
             {
-                if (object.get_material_slot_count() > 1)
+                if (object.get_material_slot_count() > 0)
                 {
                     const char* slot_name = object.get_material_slot(i);
 
@@ -302,7 +302,7 @@ namespace
         {
             if (material_array[i] == 0)
             {
-                if (object.get_material_slot_count() > 1)
+                if (object.get_material_slot_count() > 0)
                 {
                     const char* slot_name = object.get_material_slot(i);
 

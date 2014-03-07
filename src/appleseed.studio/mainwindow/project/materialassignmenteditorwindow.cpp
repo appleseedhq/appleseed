@@ -239,7 +239,7 @@ void MaterialAssignmentEditorWindow::create_widgets_for_side(
             ? m_object_instance.get_front_material_mappings()
             : m_object_instance.get_back_material_mappings();
 
-    if (m_object->get_material_slot_count() > 1)
+    if (m_object->get_material_slot_count() > 0)
     {
         if (mappings.exist(slot_name))
             line_edit->setText(mappings.get<QString>(slot_name));

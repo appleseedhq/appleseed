@@ -182,11 +182,11 @@ namespace
     // Update from revision 0 to revision 1.
     //
 
-    class Updater_0_to_1
+    class UpdateFromRevision_0
       : public Updater
     {
       public:
-        explicit Updater_0_to_1(Project& project)
+        explicit UpdateFromRevision_0(Project& project)
           : Updater(project, 0)
         {
         }
@@ -202,11 +202,11 @@ namespace
     // Update from revision 1 to revision 2.
     //
 
-    class Updater_1_to_2
+    class UpdateFromRevision_1
       : public Updater
     {
       public:
-        explicit Updater_1_to_2(Project& project)
+        explicit UpdateFromRevision_1(Project& project)
           : Updater(project, 1)
         {
         }
@@ -222,11 +222,11 @@ namespace
     // Update from revision 2 to revision 3.
     //
 
-    class Updater_2_to_3
+    class UpdateFromRevision_2
       : public Updater
     {
       public:
-        explicit Updater_2_to_3(Project& project)
+        explicit UpdateFromRevision_2(Project& project)
           : Updater(project, 2)
         {
         }
@@ -313,11 +313,11 @@ namespace
     // Update from revision 3 to revision 4.
     //
 
-    class Updater_3_to_4
+    class UpdateFromRevision_3
       : public Updater
     {
       public:
-        explicit Updater_3_to_4(Project& project)
+        explicit UpdateFromRevision_3(Project& project)
           : Updater(project, 3)
         {
         }
@@ -408,11 +408,11 @@ namespace
     // Update from revision 4 to revision 5.
     //
 
-    class Updater_4_to_5
+    class UpdateFromRevision_4
       : public Updater
     {
       public:
-        explicit Updater_4_to_5(Project& project)
+        explicit UpdateFromRevision_4(Project& project)
           : Updater(project, 4)
         {
         }
@@ -432,11 +432,11 @@ namespace
     // Update from revision 5 to revision 6.
     //
 
-    class Updater_5_to_6
+    class UpdateFromRevision_5
       : public Updater
     {
       public:
-        explicit Updater_5_to_6(Project& project)
+        explicit UpdateFromRevision_5(Project& project)
           : Updater(project, 5)
         {
         }
@@ -627,11 +627,11 @@ namespace
     // Update from revision 6 to revision 7.
     //
 
-    class Updater_6_to_7
+    class UpdateFromRevision_6
       : public Updater
     {
       public:
-        explicit Updater_6_to_7(Project& project)
+        explicit UpdateFromRevision_6(Project& project)
           : Updater(project, 6)
         {
         }
@@ -698,6 +698,67 @@ namespace
             update_collection(assembly.assembly_instances());
         }
     };
+
+
+    //
+    // Update from revision 7 to revision 8.
+    //
+
+    class UpdateFromRevision_7
+      : public Updater
+    {
+      public:
+        explicit UpdateFromRevision_7(Project& project)
+          : Updater(project, 7)
+        {
+        }
+
+        virtual void update() OVERRIDE
+        {
+            const Scene* scene = m_project.get_scene();
+
+            if (scene)
+                update_collection(scene->assemblies());
+        }
+
+      private:
+        template <typename Collection>
+        void update_collection(Collection& collection)
+        {
+            for (each<Collection> i = collection; i; ++i)
+                update_entity(*i);
+        }
+
+        void update_entity(Assembly& assembly)
+        {
+            update_collection(assembly.object_instances());
+            update_collection(assembly.assemblies());
+        }
+
+        void update_entity(ObjectInstance& object_instance)
+        {
+            const Object* object = object_instance.find_object();
+
+            if (object && object->get_material_slot_count() == 1)
+            {
+                const string slot_name = object->get_material_slot(0);
+
+                rebuild_material_mappings(object_instance.get_front_material_mappings(), slot_name);
+                rebuild_material_mappings(object_instance.get_back_material_mappings(), slot_name);
+            }
+        }
+
+        void rebuild_material_mappings(StringDictionary& mappings, const string& slot_name)
+        {
+            if (!mappings.empty())
+            {
+                const string material_name = mappings.begin().value();
+
+                mappings.clear();
+                mappings.insert(slot_name, material_name);
+            }
+        }
+    };
 }
 
 bool ProjectFileUpdater::update(Project& project, const size_t to_revision)
@@ -706,29 +767,31 @@ bool ProjectFileUpdater::update(Project& project, const size_t to_revision)
 
     size_t format_revision = project.get_format_revision();
 
-#define UPDATE(from, to)                            \
+#define CASE_UPDATE_FROM_REVISION(from)             \
+    case from:                                      \
     {                                               \
         if (format_revision >= to_revision)         \
             break;                                  \
                                                     \
-        Updater_##from##_to_##to updater(project);  \
+        UpdateFromRevision_##from updater(project); \
         updater.update();                           \
                                                     \
-        format_revision = to;                       \
+        format_revision = from + 1;                 \
         modified = true;                            \
     }
 
     switch (format_revision)
     {
-      case 0: UPDATE(0, 1);
-      case 1: UPDATE(1, 2);
-      case 2: UPDATE(2, 3);
-      case 3: UPDATE(3, 4);
-      case 4: UPDATE(4, 5);
-      case 5: UPDATE(5, 6);
-      case 6: UPDATE(6, 7);
+      CASE_UPDATE_FROM_REVISION(0);
+      CASE_UPDATE_FROM_REVISION(1);
+      CASE_UPDATE_FROM_REVISION(2);
+      CASE_UPDATE_FROM_REVISION(3);
+      CASE_UPDATE_FROM_REVISION(4);
+      CASE_UPDATE_FROM_REVISION(5);
+      CASE_UPDATE_FROM_REVISION(6);
+      CASE_UPDATE_FROM_REVISION(7);
 
-      case 7:
+      case 8:
         // Project is up-to-date.
         break;
 
@@ -737,7 +800,7 @@ bool ProjectFileUpdater::update(Project& project, const size_t to_revision)
         break;
     }
 
-#undef UPDATE
+#undef CASE_UPDATE_FROM_REVISION
 
     return modified;
 }
