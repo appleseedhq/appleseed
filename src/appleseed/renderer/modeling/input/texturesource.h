@@ -135,6 +135,10 @@ class TextureSource
     void evaluate_alpha(
         const foundation::Color4f&          color,
         Alpha&                              alpha) const;
+
+    // Apply transforms from the texture instance transform sequence
+    foundation::Vector2d apply_transforms(
+        const foundation::Vector2d& uv) const;
 };
 
 

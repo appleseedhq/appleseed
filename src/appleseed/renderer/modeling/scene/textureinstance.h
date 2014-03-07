@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entity.h"
 #include "renderer/modeling/scene/containers.h"
+#include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -102,6 +103,10 @@ class DLLSYMBOL TextureInstance
     // Return the name of the instantiated texture.
     const char* get_texture_name() const;
 
+    // Access the transform sequence of the instance.
+    TransformSequence& transform_sequence();
+    const TransformSequence& transform_sequence() const;
+
     // Return the modes.
     TextureAddressingMode get_addressing_mode() const;
     TextureFilteringMode get_filtering_mode() const;
@@ -145,6 +150,7 @@ class DLLSYMBOL TextureInstance
     TextureAlphaMode                m_alpha_mode;
     TextureAlphaMode                m_effective_alpha_mode;
     Texture*                        m_texture;
+    TransformSequence               m_transform_sequence;
 
     // Constructor.
     TextureInstance(
@@ -178,6 +184,16 @@ class DLLSYMBOL TextureInstanceFactory
 //
 // TextureInstance class implementation.
 //
+
+inline TransformSequence& TextureInstance::transform_sequence()
+{
+    return m_transform_sequence;
+}
+
+inline const TransformSequence& TextureInstance::transform_sequence() const
+{
+    return m_transform_sequence;
+}
 
 inline TextureAddressingMode TextureInstance::get_addressing_mode() const
 {
