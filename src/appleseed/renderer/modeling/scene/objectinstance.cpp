@@ -211,12 +211,12 @@ void ObjectInstance::unassign_material(
     material_mappings.remove(slot);
 }
 
-const StringDictionary& ObjectInstance::get_front_material_mappings() const
+StringDictionary& ObjectInstance::get_front_material_mappings() const
 {
     return impl->m_front_material_mappings;
 }
 
-const StringDictionary& ObjectInstance::get_back_material_mappings() const
+StringDictionary& ObjectInstance::get_back_material_mappings() const
 {
     return impl->m_back_material_mappings;
 }
