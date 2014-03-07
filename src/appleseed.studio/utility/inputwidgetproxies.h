@@ -70,9 +70,7 @@ class IInputWidgetProxy
     virtual ~IInputWidgetProxy() {}
 
     virtual void set(const std::string& value) = 0;
-
-    // If not implementation exists, we fall back to noop kind of functionality.
-    virtual void set(const std::string& value, const std::string& value2) {}
+	virtual void set(const std::string& value, const std::string& value2) {}
 
     virtual std::string get() const = 0;
 

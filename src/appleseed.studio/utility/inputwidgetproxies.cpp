@@ -276,20 +276,27 @@ Color3d ColorPickerProxy::get_color_from_string(const string& s)
         else
         {
             // Convert Spectral values to visible color to be shown on widget
-            vector<float> fvalues(values.size());
-            for (size_t i = 0; i < values.size(); i++) 
+			ColorValueArray input_spectrum, output_spectrum, ciexyz;
+			input_spectrum.resize(values.size());
+			output_spectrum.resize(31);										// The standard spectral data is composed of 31 elements
+			ciexyz.resize(3);														
+            
+			for (size_t i = 0; i < values.size(); i++) 
             {
                 // Convert all double to floating values
-                fvalues[i] = static_cast<float>(values[i]);
+				input_spectrum[i] = static_cast<float>(values[i]);
             }
 
-            Spectrum output_spectrum = spectral_values_to_spectrum(
-                LowWavelength, 
-                HighWavelength,
-                ColorValueArray(values.size(), &fvalues[0]));
-                
+            spectral_values_to_spectrum(
+				LowWavelength,
+				HighWavelength,
+				input_spectrum,
+				output_spectrum);
+
+            spectrum_to_ciexyz_standard(output_spectrum, ciexyz);
+
             return transform_color(
-                spectrum_to_xyz_standard(output_spectrum), 
+                Color3f(ciexyz[0], ciexyz[1], ciexyz[2]),
                 ColorSpaceCIEXYZ, 
                 ColorSpaceSRGB);
         }
@@ -301,7 +308,8 @@ Color3d ColorPickerProxy::get_color_from_string(const string& s)
 }
 
 // This method uses custom wavelength range provided as input to convert spectrum to color conversion.
-Color3d ColorPickerProxy::get_color_from_string(const string& s, const string& wavelength_range) {
+Color3d ColorPickerProxy::get_color_from_string(const string& s, const string& wavelength_range) 
+{
     try
     {
         vector<double> values;
@@ -316,20 +324,26 @@ Color3d ColorPickerProxy::get_color_from_string(const string& s, const string& w
         else
         {
             // Convert Spectral values to visible color to be shown on widget
-            vector<float> fvalues(values.size());
-            for (size_t i = 0; i < values.size(); i++) 
+			ColorValueArray input_spectrum, output_spectrum, ciexyz;
+			input_spectrum.resize(values.size());
+			ciexyz.resize(3);														
+            
+			for (size_t i = 0; i < values.size(); i++) 
             {
                 // Convert all double to floating values
-                fvalues[i] = static_cast<float>(values[i]);
+				input_spectrum[i] = static_cast<float>(values[i]);
             }
 
-            Spectrum output_spectrum = spectral_values_to_spectrum(
-                wavelengths[0],
+            spectral_values_to_spectrum(
+				wavelengths[0],
                 wavelengths[1],
-                ColorValueArray(values.size(), &fvalues[0]));
-                
+				input_spectrum,
+				output_spectrum);
+
+            spectrum_to_ciexyz_standard(output_spectrum, ciexyz);
+
             return transform_color(
-                spectrum_to_xyz_standard(output_spectrum), 
+                Color3f(ciexyz[0], ciexyz[1], ciexyz[2]),
                 ColorSpaceCIEXYZ, 
                 ColorSpaceSRGB);
         }
