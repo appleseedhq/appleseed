@@ -39,6 +39,9 @@
 #include "renderer/kernel/lighting/pathtracer.h"
 #include "renderer/kernel/lighting/pathvertex.h"
 #include "renderer/kernel/lighting/tracer.h"
+#ifdef WITH_OSL
+#include "renderer/kernel/shading/oslshadergroupexec.h"
+#endif
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/kernel/texturing/texturecache.h"
@@ -191,13 +194,16 @@ namespace
           , m_photon_begin(photon_begin)
           , m_photon_end(photon_end)
           , m_pass_hash(pass_hash)
+  #ifdef WITH_OSL
+          , m_shadergroup_exec(shading_system)
+  #endif
           , m_tracer(m_scene, m_intersector, m_texture_cache)
           , m_shading_context(
                 m_intersector,
                 m_tracer,
                 m_texture_cache
 #ifdef WITH_OSL
-                , shading_system
+              , m_shadergroup_exec
 #endif
                 )
           , m_abort_switch(abort_switch)
@@ -232,6 +238,9 @@ namespace
         const size_t                m_pass_hash;
         AbortSwitch&                m_abort_switch;
         SPPMPhotonVector            m_local_photons;
+#ifdef WITH_OSL
+        OSLShaderGroupExec          m_shadergroup_exec;
+#endif
         Tracer                      m_tracer;
         ShadingContext              m_shading_context;
 
@@ -422,13 +431,16 @@ namespace
           , m_abort_switch(abort_switch)
           , m_safe_scene_radius(scene.compute_radius() * (1.0 + 1.0e-3))
           , m_disk_point_prob(1.0 / (Pi * square(m_safe_scene_radius)))
+#ifdef WITH_OSL
+          , m_shadergroup_exec(shading_system)
+#endif
           , m_tracer(m_scene, m_intersector, m_texture_cache)
           , m_shading_context(
                 m_intersector, 
                 m_tracer, 
                 m_texture_cache
 #ifdef WITH_OSL
-                , shading_system
+              , m_shadergroup_exec
 #endif
                 )
         {
@@ -465,6 +477,9 @@ namespace
         const double                m_safe_scene_radius;
         const double                m_disk_point_prob;
         SPPMPhotonVector            m_local_photons;
+#ifdef WITH_OSL
+        OSLShaderGroupExec          m_shadergroup_exec;
+#endif
         Tracer                      m_tracer;
         ShadingContext              m_shading_context;
 
