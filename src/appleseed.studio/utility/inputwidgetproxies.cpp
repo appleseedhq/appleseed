@@ -276,22 +276,22 @@ Color3d ColorPickerProxy::get_color_from_string(const string& s)
         else
         {
             // Convert Spectral values to visible color to be shown on widget
-			ColorValueArray input_spectrum, ciexyz;
-			float output_spectrum[31];						// The standard spectral data is composed of 31 elements
-			input_spectrum.resize(values.size());
-			ciexyz.resize(3);														
+            ColorValueArray input_spectrum, ciexyz;
+            float output_spectrum[31];                        // The standard spectral data is composed of 31 elements
+            input_spectrum.resize(values.size());
+            ciexyz.resize(3);                                                        
             
-			for (size_t i = 0; i < values.size(); i++) 
+            for (size_t i = 0; i < values.size(); i++) 
             {
                 // Convert all double to floating values
-				input_spectrum[i] = static_cast<float>(values[i]);
+                input_spectrum[i] = static_cast<float>(values[i]);
             }
 
             spectral_values_to_spectrum(
-				LowWavelength,
-				HighWavelength,
-				input_spectrum,
-				output_spectrum);
+                LowWavelength,
+                HighWavelength,
+                input_spectrum,
+                output_spectrum);
 
             spectrum_to_ciexyz_standard(output_spectrum, ciexyz);
 
@@ -324,23 +324,23 @@ Color3d ColorPickerProxy::get_color_from_string(const string& s, const string& w
         else
         {
             // Convert Spectral values to visible color to be shown on widget
-			ColorValueArray input_spectrum, ciexyz;
-			float output_spectrum[31];
-			input_spectrum.resize(values.size());
-			
-			ciexyz.resize(3);														
+            ColorValueArray input_spectrum, ciexyz;
+            float output_spectrum[31];
+            input_spectrum.resize(values.size());
             
-			for (size_t i = 0; i < values.size(); i++) 
+            ciexyz.resize(3);                                                        
+            
+            for (size_t i = 0; i < values.size(); i++) 
             {
                 // Convert all double to floating values
-				input_spectrum[i] = static_cast<float>(values[i]);
+                input_spectrum[i] = static_cast<float>(values[i]);
             }
 
             spectral_values_to_spectrum(
-				wavelengths[0],
+                wavelengths[0],
                 wavelengths[1],
-				input_spectrum,
-				output_spectrum);
+                input_spectrum,
+                output_spectrum);
 
             spectrum_to_ciexyz_standard(output_spectrum, ciexyz);
 
