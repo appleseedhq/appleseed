@@ -128,23 +128,32 @@ namespace
 }
 
 void spectral_values_to_spectrum(
-    const float               wavelength_start,
-    const float               wavelength_end,
-    const ColorValueArray&    input_spectrum,
-    ColorValueArray&          output_spectrum)
+    const float					wavelength_start,
+    const float                 wavelength_end,
+    const ColorValueArray&      input_spectrum,
+    ColorValueArray&            output_spectrum)
 {
     // We call the existing method.
     Spectrum ret = spectral_values_to_spectrum(
 		Vector2f(wavelength_start, wavelength_end),
-        values);
+		input_spectrum);
+
+	// We have to manually fill output spectral data as there are no explicit conversions possible as of now
+	for (size_t i = 0; i < ret.Samples; i++)
+	{
+		output_spectrum[i] = ret[i];
+	}
 }
 
 void spectrum_to_ciexyz_standard(
-    const ColorValueArray& spectrum,
-    ColorValueArray&       ciexyz)
+    const float					spectrum[],
+    ColorValueArray&            ciexyz)
 {
     LightingConditions lc(IlluminantCIED65, XYZCMFCIE196410Deg);
-	spectrum_to_ciexyz<float, Spectrum31f>(lc, spectrum);
+	Color3f ret = spectrum_to_ciexyz<float, Spectrum31f>(lc, Spectrum(spectrum));
+	ciexyz[0] = ret.r;
+	ciexyz[1] = ret.g;
+	ciexyz[2] = ret.b;
 }
 
 ColorSource::ColorSource(
