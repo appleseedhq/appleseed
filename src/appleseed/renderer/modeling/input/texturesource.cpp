@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/modeling/texture/texture.h"
+#include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/tile.h"
@@ -380,8 +381,8 @@ Color4f TextureSource::sample_texture(
     TextureCache&               texture_cache,
     const Vector2d&             uv) const
 {
-    // Start with the input texture coordinates.
-    Vector2d p = uv;
+    // Start with the transformed input texture coordinates.
+    Vector2d p = apply_transforms(uv);
     p.y = 1.0 - p.y;
 
     // Apply the texture addressing mode.
@@ -439,6 +440,19 @@ Color4f TextureSource::sample_texture(
         assert(!"Wrong texture filtering mode.");
         return Color4f(0.0f);
     }
+}
+
+Vector2d TextureSource::apply_transforms(
+    const Vector2d& uv) const
+{
+    Vector3d p(uv.x, uv.y, 0);  // Required by Transformd method
+
+    // Apply transform
+    const Transformd& transform = m_texture_instance.get_transform();
+    p = transform.point_to_local(p);
+
+    // Get it back to 2D coordinates
+    return Vector2d(p.x, p.y);
 }
 
 }   // namespace renderer
