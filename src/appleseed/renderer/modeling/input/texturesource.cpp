@@ -442,19 +442,17 @@ Color4f TextureSource::sample_texture(
     }
 }
 
-foundation::Vector2d TextureSource::apply_transforms(
-    const foundation::Vector2d& uv) const
+Vector2d TextureSource::apply_transforms(
+    const Vector2d& uv) const
 {
-    foundation::Vector3d p(uv.x, uv.y, 0);  // Required by Transformd method
-    foundation::Vector2d q;                 // Will hold the result
+    Vector3d p(uv.x, uv.y, 0);  // Required by Transformd method
 
     // Apply transform
-    const foundation::Transformd& transform = m_texture_instance.get_transform();
+    const Transformd& transform = m_texture_instance.get_transform();
     p = transform.point_to_local(p);
 
     // Get it back to 2D coordinates
-    q = Vector2d(p.x, p.y);
-    return q;
+    return Vector2d(p.x, p.y);
 }
 
 }   // namespace renderer

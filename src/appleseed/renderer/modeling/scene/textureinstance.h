@@ -35,10 +35,10 @@
 #include "renderer/modeling/scene/containers.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/transform.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/uid.h"
-#include "foundation/math/transform.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -104,7 +104,6 @@ class DLLSYMBOL TextureInstance
     const char* get_texture_name() const;
 
     // Return the transform
-    foundation::Transformd& get_transform();
     const foundation::Transformd& get_transform() const;
 
     // Change the transform
@@ -187,11 +186,6 @@ class DLLSYMBOL TextureInstanceFactory
 //
 // TextureInstance class implementation.
 //
-
-inline foundation::Transformd& TextureInstance::get_transform()
-{
-    return m_transform;
-}
 
 inline const foundation::Transformd& TextureInstance::get_transform() const
 {
