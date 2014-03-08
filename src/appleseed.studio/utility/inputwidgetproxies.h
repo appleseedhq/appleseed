@@ -33,6 +33,7 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/image/color.h"
+#include "foundation/platform/compiler.h"
 
 // Qt headers.
 #include <QObject>
@@ -70,9 +71,9 @@ class IInputWidgetProxy
     virtual ~IInputWidgetProxy() {}
 
     virtual void set(const std::string& value) = 0;
-	virtual void set(const std::string& value, const std::string& value2) {}
-
     virtual std::string get() const = 0;
+
+    void emit_signal_changed();
 
   signals:
     void signal_changed();
@@ -89,8 +90,8 @@ class LineEditProxy
   public:
     explicit LineEditProxy(QLineEdit* line_edit);
 
-    virtual void set(const std::string& value);
-    virtual std::string get() const;
+    virtual void set(const std::string& value) OVERRIDE;
+    virtual std::string get() const OVERRIDE;
 
   private:
     QLineEdit* m_line_edit;
@@ -107,8 +108,8 @@ class SpinBoxProxy
   public:
     explicit SpinBoxProxy(QSpinBox* spinbox);
 
-    virtual void set(const std::string& value);
-    virtual std::string get() const;
+    virtual void set(const std::string& value) OVERRIDE;
+    virtual std::string get() const OVERRIDE;
 
   private:
     QSpinBox* m_spinbox;
@@ -125,8 +126,8 @@ class DoubleSpinBoxProxy
   public:
     explicit DoubleSpinBoxProxy(QDoubleSpinBox* spinbox);
 
-    virtual void set(const std::string& value);
-    virtual std::string get() const;
+    virtual void set(const std::string& value) OVERRIDE;
+    virtual std::string get() const OVERRIDE;
 
   private:
     QDoubleSpinBox* m_spinbox;
@@ -143,8 +144,8 @@ class CheckBoxProxy
   public:
     explicit CheckBoxProxy(QCheckBox* checkbox);
 
-    virtual void set(const std::string& value);
-    virtual std::string get() const;
+    virtual void set(const std::string& value) OVERRIDE;
+    virtual std::string get() const OVERRIDE;
 
   private:
     QCheckBox* m_checkbox;
@@ -161,8 +162,8 @@ class GroupBoxProxy
   public:
     explicit GroupBoxProxy(QGroupBox* groupbox);
 
-    virtual void set(const std::string& value);
-    virtual std::string get() const;
+    virtual void set(const std::string& value) OVERRIDE;
+    virtual std::string get() const OVERRIDE;
 
   private:
     QGroupBox* m_groupbox;
@@ -179,8 +180,8 @@ class RadioButtonProxy
   public:
     explicit RadioButtonProxy(QRadioButton* radio_button);
 
-    virtual void set(const std::string& value);
-    virtual std::string get() const;
+    virtual void set(const std::string& value) OVERRIDE;
+    virtual std::string get() const OVERRIDE;
 
   private:
     QRadioButton* m_radio_button;
@@ -197,8 +198,8 @@ class ComboBoxProxy
   public:
     explicit ComboBoxProxy(QComboBox* combobox);
 
-    virtual void set(const std::string& value);
-    virtual std::string get() const;
+    virtual void set(const std::string& value) OVERRIDE;
+    virtual std::string get() const OVERRIDE;
 
   private:
     QComboBox* m_combobox;
@@ -215,9 +216,10 @@ class ColorPickerProxy
   public:
     explicit ColorPickerProxy(QLineEdit* line_edit, QToolButton* picker_button);
 
-    virtual void set(const std::string& value);
-    virtual void set(const std::string& value, const std::string& wavelength_range);
-    virtual std::string get() const;
+    virtual void set(const std::string& value) OVERRIDE;
+    void set(const std::string& value, const std::string& wavelength_range);
+
+    virtual std::string get() const OVERRIDE;
 
     static foundation::Color3d get_color_from_string(const std::string& s);
     static foundation::Color3d get_color_from_string(const std::string& s, const std::string& wavelength_range);

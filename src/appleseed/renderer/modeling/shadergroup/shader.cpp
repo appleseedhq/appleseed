@@ -36,11 +36,13 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
+#include "foundation/utility/searchpaths.h"
 #include "foundation/utility/string.h"
 #include "foundation/utility/uid.h"
 
 // Standard headers.
 #include <cassert>
+#include <fstream>
 #include <string>
 
 using namespace foundation;
@@ -216,6 +218,43 @@ bool Shader::add(OSL::ShadingSystem& shading_system)
     }
 
     return true;
+}
+
+void Shader::get_shader_info(
+    const SearchPaths&  searchpaths,
+    bool&               has_emission,
+    bool&               has_transparency) const
+{
+    has_emission = false;
+    has_transparency = false;
+    
+    string filename = get_shader();
+    filename += ".oso";
+    filename = searchpaths.qualify(filename);
+
+    ifstream file;
+    file.open(filename.c_str());
+
+    if (!file.is_open())
+    {
+        RENDERER_LOG_ERROR("couldn't open shader %s.", filename.c_str());
+        return;
+    }
+    
+    // search for the emission and transparent closures.
+    string line;
+    while (!file.eof())
+    {
+        getline(file, line);
+        if (line.find("\"emission\"", 0) != string::npos)
+            has_emission = true;
+        
+        if (line.find("\"transparent\"", 0) != string::npos)
+            has_transparency = true;
+        
+        if (has_emission && has_transparency)
+            break;
+    }
 }
 
 }   // namespace renderer

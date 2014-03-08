@@ -1473,4 +1473,25 @@ LightingConditions::LightingConditions(
         m_cmf[w] *= rcp_n;
 }
 
+
+//
+// Spectrum <-> CIE XYZ transformations implementation.
+//
+
+void spectrum_to_ciexyz_standard(
+    const float         spectrum[],
+    float               ciexyz[3])
+{
+    const LightingConditions lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg);
+
+    const Color3f c =
+        spectrum_to_ciexyz<float, Spectrum31f>(
+            lighting_conditions,
+            Spectrum31f(spectrum));
+
+    ciexyz[0] = c[0];
+    ciexyz[1] = c[1];
+    ciexyz[2] = c[2];
+}
+
 }   // namespace foundation

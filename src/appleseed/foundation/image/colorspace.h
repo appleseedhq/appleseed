@@ -45,9 +45,11 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
+// boost headers.
+#include "boost/static_assert.hpp"
+
 // Standard headers.
 #include <algorithm>
-#include <cassert>
 #include <cmath>
 #include <cstddef>
 
@@ -322,6 +324,12 @@ template <typename T, typename Spectrum>
 Color<T, 3> spectrum_to_ciexyz(
     const LightingConditions&   lighting,
     const Spectrum&             spectrum);
+
+// Converts a spectrum to a color in the CIE XYZ color space using the CIE D65 illuminant
+// and the CIE 1964 10-deg color matching functions.
+DLLSYMBOL void spectrum_to_ciexyz_standard(
+    const float                 spectrum[],
+    float                       ciexyz[3]);
 
 // Convert a reflectance in the CIE XYZ color space to a spectrum.
 template <typename T, typename Spectrum>
@@ -730,8 +738,7 @@ Color<T, 3> spectrum_to_ciexyz(
     const LightingConditions&   lighting,
     const Spectrum&             spectrum)
 {
-    // todo: handle arbitrary numbers of samples.
-    assert(Spectrum::Samples == 31);
+    BOOST_STATIC_ASSERT(Spectrum::Samples == 31);
 
     T x = T(0.0);
     T y = T(0.0);

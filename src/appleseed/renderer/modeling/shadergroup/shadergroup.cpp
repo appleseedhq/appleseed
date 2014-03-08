@@ -31,11 +31,13 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/modeling/project/project.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/job/abortswitch.h"
 #include "foundation/utility/foreach.h"
+#include "foundation/utility/searchpaths.h"
 #include "foundation/utility/uid.h"
 
 // Standard headers.
@@ -58,6 +60,8 @@ namespace
 
 ShaderGroup::ShaderGroup(const char* name)
   : ConnectableEntity(g_class_uid, ParamArray())
+  , m_has_emission(false)
+  , m_has_transparency(false)
 {
     set_name(name);
 }
@@ -138,6 +142,25 @@ bool ShaderGroup::on_frame_begin(
                 return success;
 
             success = success && i->add(*shading_system);
+
+            if (success)
+            {
+                if (!m_has_emission || !m_has_transparency)
+                {
+                    bool has_emission, has_transparency;
+
+                    i->get_shader_info(
+                        project.search_paths(),
+                        has_emission,
+                        has_transparency);
+
+                    if (has_emission)
+                        m_has_emission = true;
+
+                    if (has_transparency)
+                        m_has_transparency = true;
+                }
+            }
         }
 
         for (each<ShaderConnectionContainer> i = m_connections; i; ++i)
@@ -148,10 +171,23 @@ bool ShaderGroup::on_frame_begin(
             success = success && i->add(*shading_system);
         }
 
-        if (!shading_system->ShaderGroupEnd())
+        if (success)
         {
-            RENDERER_LOG_ERROR("shader group end error: shader = %s.", get_name());
-            return false;
+            if (!shading_system->ShaderGroupEnd())
+            {
+                RENDERER_LOG_ERROR("shader group end error: shader = %s.", get_name());
+                return false;
+            }
+
+            if (m_has_emission)
+                RENDERER_LOG_INFO("shader group %s has emission closures.", get_name());
+            else
+                RENDERER_LOG_INFO("shader group %s does not have emission closures.", get_name());
+
+            if (m_has_transparency)
+                RENDERER_LOG_INFO("shader group %s has transparency closures.", get_name());
+            else
+                RENDERER_LOG_INFO("shader group %s does not have transparency closures.", get_name());
         }
 
         return success;
