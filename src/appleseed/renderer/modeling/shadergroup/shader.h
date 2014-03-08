@@ -40,17 +40,18 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
+// OSL headers.
+#include "OSL/oslexec.h"
+
 // Standard headers.
 #include <cstddef>
 
-// OSL headers.
-#include <OSL/oslexec.h>
-
 // Forward declarations.
-namespace renderer  { class Assembly; }
-namespace renderer  { class ParamArray; }
-namespace renderer  { class Project; }
-namespace renderer  { class ShaderGroup; }
+namespace foundation    { class SearchPaths; }
+namespace renderer      { class Assembly; }
+namespace renderer      { class ParamArray; }
+namespace renderer      { class Project; }
+namespace renderer      { class ShaderGroup; }
 
 namespace renderer
 {
@@ -89,6 +90,11 @@ class DLLSYMBOL Shader
     ~Shader();
     
     bool add(OSL::ShadingSystem& shading_system);
+
+    void get_shader_info(
+        const foundation::SearchPaths& searchpaths,
+        bool& has_emission,
+        bool& has_transparency) const;
 };
 
 }       // namespace renderer

@@ -107,6 +107,12 @@ class DLLSYMBOL ShaderGroup
     // Returns true if the shader group was setup correctly.
     bool valid() const;
 
+    // Returns true if the shader group contains at least one emission closure.
+    bool has_emission() const;
+
+    // Returns true if the shader group contains at least one transparency closure.
+    bool has_transparency() const;
+    
     // Return a reference-counted (but opaque) reference to the OSL shader.
     OSL::ShaderGroupRef& shadergroup_ref() const;
 
@@ -116,6 +122,8 @@ class DLLSYMBOL ShaderGroup
     ShaderContainer              m_shaders;
     ShaderConnectionContainer    m_connections;
     mutable OSL::ShaderGroupRef  m_shadergroup_ref;
+    bool                         m_has_emission;
+    bool                         m_has_transparency;
 
     // Constructor.
     explicit ShaderGroup(const char* name);
@@ -159,6 +167,16 @@ inline OSL::ShaderGroupRef& ShaderGroup::shadergroup_ref() const
 inline bool ShaderGroup::valid() const
 {
     return m_shadergroup_ref.get() != 0;
+}
+
+inline bool ShaderGroup::has_emission() const
+{
+    return m_has_emission;
+}
+
+inline bool ShaderGroup::has_transparency() const
+{
+    return m_has_transparency;
 }
 
 }       // namespace renderer
