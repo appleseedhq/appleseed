@@ -251,11 +251,6 @@ bool TextureInstance::on_frame_begin(
             m_effective_alpha_mode == TextureAlphaModeAlphaChannel ? "alpha_channel" : "luminance");
     }
 
-    m_transform_sequence.optimize();
-
-    if (!m_transform_sequence.prepare())
-        RENDERER_LOG_WARNING("assembly instance \"%s\" has one or more invalid transforms.", get_name());
-
     return true;
 }
 

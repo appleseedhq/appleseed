@@ -33,12 +33,12 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entity.h"
 #include "renderer/modeling/scene/containers.h"
-#include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/uid.h"
+#include "foundation/math/transform.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -103,9 +103,12 @@ class DLLSYMBOL TextureInstance
     // Return the name of the instantiated texture.
     const char* get_texture_name() const;
 
-    // Access the transform sequence of the instance.
-    TransformSequence& transform_sequence();
-    const TransformSequence& transform_sequence() const;
+    // Return the transform
+    foundation::Transformd& get_transform();
+    const foundation::Transformd& get_transform() const;
+
+    // Change the transform
+    void set_transform(const foundation::Transformd& transform);
 
     // Return the modes.
     TextureAddressingMode get_addressing_mode() const;
@@ -150,7 +153,7 @@ class DLLSYMBOL TextureInstance
     TextureAlphaMode                m_alpha_mode;
     TextureAlphaMode                m_effective_alpha_mode;
     Texture*                        m_texture;
-    TransformSequence               m_transform_sequence;
+    foundation::Transformd          m_transform;
 
     // Constructor.
     TextureInstance(
@@ -185,14 +188,19 @@ class DLLSYMBOL TextureInstanceFactory
 // TextureInstance class implementation.
 //
 
-inline TransformSequence& TextureInstance::transform_sequence()
+inline foundation::Transformd& TextureInstance::get_transform()
 {
-    return m_transform_sequence;
+    return m_transform;
 }
 
-inline const TransformSequence& TextureInstance::transform_sequence() const
+inline const foundation::Transformd& TextureInstance::get_transform() const
 {
-    return m_transform_sequence;
+    return m_transform;
+}
+
+inline void TextureInstance::set_transform(const foundation::Transformd& transform)
+{
+    m_transform = transform;
 }
 
 inline TextureAddressingMode TextureInstance::get_addressing_mode() const

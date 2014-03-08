@@ -447,17 +447,12 @@ foundation::Vector2d TextureSource::apply_transforms(
 {
     foundation::Vector3d p(uv.x, uv.y, 0);  // Required by Transformd method
     foundation::Vector2d q;                 // Will hold the result
-    const TransformSequence& transform_sequence = m_texture_instance.transform_sequence();
 
-    // Apply in order every transform from the transform sequence
-    for (size_t i = 0; i < transform_sequence.size(); ++i)
-    {
-        foundation::Transformd transform;
-        double time = 0;
-        transform_sequence.get_transform(i, time, transform);
-        p = transform.point_to_local(p);
-    }
+    // Apply transform
+    const foundation::Transformd& transform = m_texture_instance.get_transform();
+    p = transform.point_to_local(p);
 
+    // Get it back to 2D coordinates
     q = Vector2d(p.x, p.y);
     return q;
 }

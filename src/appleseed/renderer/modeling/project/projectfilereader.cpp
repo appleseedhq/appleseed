@@ -1212,7 +1212,7 @@ namespace
                         m_params,
                         m_texture.c_str());
 
-                copy_transform_sequence_to(m_texture_instance->transform_sequence());
+                m_texture_instance->set_transform(get_earliest_transform());
             }
             catch (const ExceptionDictionaryItemNotFound& e)
             {
