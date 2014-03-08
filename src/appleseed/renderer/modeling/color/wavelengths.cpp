@@ -31,12 +31,15 @@
 #include "wavelengths.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/colorspace.h"
 #include "foundation/math/scalar.h"
 
 // Standard headers.
-#include <cstddef>
+#include <cassert>
+#include <vector>
 
 using namespace foundation;
+using namespace std;
 
 namespace renderer
 {
@@ -53,20 +56,71 @@ namespace
     {
         InitializeLightWavelengths()
         {
-            for (size_t i = 0; i < Spectrum::Samples; ++i)
-            {
-                g_light_wavelengths[i] =
-                    fit(
-                        static_cast<float>(i),
-                        0.0f,
-                        static_cast<float>(Spectrum::Samples - 1),
-                        LowWavelength,
-                        HighWavelength);
-            }
+            generate_wavelengths(
+                LowWavelength,
+                HighWavelength,
+                Spectrum::Samples,
+                &g_light_wavelengths[0]);
         }
     };
 
     InitializeLightWavelengths initialize_light_wavelengths;
+}
+
+
+//
+// Utility functions implementation.
+//
+
+void generate_wavelengths(
+    const float             low_wavelength,
+    const float             high_wavelength,
+    const size_t            count,
+    float                   wavelengths[])
+{
+    if (count == 1)
+        wavelengths[0] = 0.5f * (low_wavelength + high_wavelength);
+    else
+    {
+        for (size_t i = 0; i < count; ++i)
+        {
+            wavelengths[i] =
+                fit(
+                    static_cast<float>(i),
+                    0.0f,
+                    static_cast<float>(count - 1),
+                    low_wavelength,
+                    high_wavelength);
+        }
+    }
+}
+
+void spectral_values_to_spectrum(
+    const float             low_wavelength,
+    const float             high_wavelength,
+    const size_t            input_spectrum_count,
+    const float             input_spectrum[],
+    float                   output_spectrum[])
+{
+    assert(low_wavelength < high_wavelength);
+
+    // Generate the wavelengths for which this spectrum is defined.
+    vector<float> wavelengths(input_spectrum_count);
+    generate_wavelengths(
+        low_wavelength,
+        high_wavelength,
+        input_spectrum_count,
+        &wavelengths[0]);
+
+    // Resample the spectrum to the internal wavelength range.
+    Spectrum spectrum;
+    spectrum_to_spectrum(
+        input_spectrum_count,
+        &wavelengths[0],
+        input_spectrum,
+        Spectrum::Samples,
+        &g_light_wavelengths[0],
+        output_spectrum);
 }
 
 }   // namespace renderer

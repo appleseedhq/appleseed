@@ -162,7 +162,7 @@ void ColorEntity::extract_parameters()
 
         if (impl->m_wavelength_range[0] < 0.0 ||
             impl->m_wavelength_range[1] < 0.0 ||
-            impl->m_wavelength_range[0] > impl->m_wavelength_range[1])
+            impl->m_wavelength_range[0] >= impl->m_wavelength_range[1])
         {
             RENDERER_LOG_ERROR(
                 "invalid value \"%f %f\" for parameter \"%s\", "
@@ -272,9 +272,9 @@ DictionaryArray ColorEntityFactory::get_input_metadata()
                     .insert("sRGB", "srgb")
                     .insert("CIE XYZ", "ciexyz")
                     .insert("Spectral", "spectral"))
-            .insert("use", "required")
             .insert("default", "srgb")
-/*          .insert("on_change", "rebuild_form")*/);
+            .insert("use", "required")
+            .insert("on_change", "rebuild_form"));
 
     metadata.push_back(
         Dictionary()
@@ -282,13 +282,15 @@ DictionaryArray ColorEntityFactory::get_input_metadata()
             .insert("label", "Wavelength Range")
             .insert("type", "text")
             .insert("default", "400.0 700.0")
-            .insert("use", "optional"));
+            .insert("use", "optional")
+            .insert("on_change", "rebuild_form"));
 
     metadata.push_back(
         Dictionary()
             .insert("name", "color")
             .insert("label", "Color")
             .insert("type", "color")
+            .insert("wavelength_range_widget", "wavelength_range")
             .insert("default", "0.0 0.0 0.0")
             .insert("use", "required"));
 

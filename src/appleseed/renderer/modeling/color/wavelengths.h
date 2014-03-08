@@ -33,16 +33,42 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+// Standard headers.
+#include <cstddef>
+
 namespace renderer
 {
 
 //
-// Wavelengths used throughout the light simulation.
+// Wavelengths used throughout the spectral light simulation.
 //
 
 const float LowWavelength = 400.0f;         // low wavelength, in nm
 const float HighWavelength = 700.0f;        // high wavelength, in nm
 extern Spectrum g_light_wavelengths;        // wavelengths, in nm
+
+
+//
+// Utility functions.
+//
+
+// Generate a set of regularly spaced wavelengths.
+DLLSYMBOL void generate_wavelengths(
+    const float             low_wavelength,
+    const float             high_wavelength,
+    const size_t            count,
+    float                   wavelengths[]);
+
+// Convert a set of regularly spaced spectral values to the internal spectrum format.
+DLLSYMBOL void spectral_values_to_spectrum(
+    const float             low_wavelength,
+    const float             high_wavelength,
+    const size_t            input_spectrum_count,
+    const float             input_spectrum[],
+    float                   output_spectrum[]);
 
 }       // namespace renderer
 
