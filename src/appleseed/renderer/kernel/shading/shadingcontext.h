@@ -30,13 +30,13 @@
 #ifndef APPLESEED_RENDERER_KERNEL_SHADING_SHADINGCONTEXT_H
 #define APPLESEED_RENDERER_KERNEL_SHADING_SHADINGCONTEXT_H
 
-// appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
-
 // appleseed.renderer headers.
 #ifdef WITH_OSL
 #include "renderer/kernel/shading/oslshadergroupexec.h"
 #endif
+
+// appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
 
 // Standard headers.
 #include <cstddef>
