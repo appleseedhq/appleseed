@@ -40,6 +40,7 @@
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
+#include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/uid.h"
@@ -65,7 +66,6 @@ class TextureSource
     TextureSource(
         const foundation::UniqueID          assembly_uid,
         const TextureInstance&              texture_instance,
-        const foundation::CanvasProperties& texture_props,
         const InputFormat                   input_format);
 
     // Retrieve the texture instance used by this source.
@@ -104,11 +104,16 @@ class TextureSource
     const TextureInstance&                  m_texture_instance;
     const foundation::UniqueID              m_texture_uid;
     const foundation::CanvasProperties      m_texture_props;
+    const foundation::Transformd            m_texture_transform;
     const InputFormat                       m_input_format;
     const double                            m_scalar_canvas_width;
     const double                            m_scalar_canvas_height;
     const double                            m_max_x;
     const double                            m_max_y;
+
+    // Apply the texture instance transform to UV coordinates.
+    foundation::Vector2d apply_transform(
+        const foundation::Vector2d&         uv) const;
 
     // Retrieve a given texel. Return a color in the linear RGB color space.
     foundation::Color4f get_texel(
@@ -135,10 +140,6 @@ class TextureSource
     void evaluate_alpha(
         const foundation::Color4f&          color,
         Alpha&                              alpha) const;
-
-    // Apply transforms from the texture instance transform sequence
-    foundation::Vector2d apply_transforms(
-        const foundation::Vector2d& uv) const;
 };
 
 

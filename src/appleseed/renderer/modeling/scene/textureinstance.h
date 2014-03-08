@@ -103,11 +103,9 @@ class DLLSYMBOL TextureInstance
     // Return the name of the instantiated texture.
     const char* get_texture_name() const;
 
-    // Return the transform
-    const foundation::Transformd& get_transform() const;
-
-    // Change the transform
+    // Set/get the texture transform.
     void set_transform(const foundation::Transformd& transform);
+    const foundation::Transformd& get_transform() const;
 
     // Return the modes.
     TextureAddressingMode get_addressing_mode() const;
@@ -152,7 +150,6 @@ class DLLSYMBOL TextureInstance
     TextureAlphaMode                m_alpha_mode;
     TextureAlphaMode                m_effective_alpha_mode;
     Texture*                        m_texture;
-    foundation::Transformd          m_transform;
 
     // Constructor.
     TextureInstance(
@@ -186,16 +183,6 @@ class DLLSYMBOL TextureInstanceFactory
 //
 // TextureInstance class implementation.
 //
-
-inline const foundation::Transformd& TextureInstance::get_transform() const
-{
-    return m_transform;
-}
-
-inline void TextureInstance::set_transform(const foundation::Transformd& transform)
-{
-    m_transform = transform;
-}
 
 inline TextureAddressingMode TextureInstance::get_addressing_mode() const
 {
