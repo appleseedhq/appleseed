@@ -42,6 +42,9 @@
 #include "renderer/kernel/rendering/sample.h"
 #include "renderer/kernel/rendering/sampleaccumulationbuffer.h"
 #include "renderer/kernel/rendering/samplegeneratorbase.h"
+#ifdef WITH_OSL
+#include "renderer/kernel/shading/oslshadergroupexec.h"
+#endif
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
@@ -165,13 +168,21 @@ namespace
           , m_light_sampler(light_sampler)
           , m_texture_cache(texture_store)
           , m_intersector(trace_context, m_texture_cache, m_params.m_report_self_intersections)
-          , m_tracer(m_scene, m_intersector, m_texture_cache, m_params.m_transparency_threshold, m_params.m_max_iterations)
+#ifdef WITH_OSL
+          , m_shadergroup_exec(shading_system)
+#endif
+          , m_tracer(
+                m_scene, 
+                m_intersector, 
+                m_texture_cache, 
+                m_params.m_transparency_threshold, 
+                m_params.m_max_iterations)
           , m_shading_context(
                 m_intersector,
                 m_tracer,
                 m_texture_cache,
 #ifdef WITH_OSL
-                shading_system,
+                m_shadergroup_exec,
 #endif
                 0,
                 m_params.m_transparency_threshold,
@@ -469,6 +480,9 @@ namespace
         const LightSampler&             m_light_sampler;
         TextureCache                    m_texture_cache;
         Intersector                     m_intersector;
+#ifdef WITH_OSL
+        OSLShaderGroupExec              m_shadergroup_exec;
+#endif
         Tracer                          m_tracer;
         const ShadingContext            m_shading_context;
 

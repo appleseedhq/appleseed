@@ -1067,6 +1067,8 @@ if (WITH_OSL)
         renderer/kernel/shading/closures.cpp
         renderer/kernel/shading/closures.h
         renderer/kernel/shading/oslutil.h
+        renderer/kernel/shading/oslshadergroupexec.cpp
+        renderer/kernel/shading/oslshadergroupexec.h
         renderer/kernel/shading/stdosl.h
     )
 endif ()
