@@ -92,9 +92,9 @@ class DLLSYMBOL Shader
     bool add(OSL::ShadingSystem& shading_system);
 
     void get_shader_info(
-        const foundation::SearchPaths& searchpaths,
-        bool& has_emission,
-        bool& has_transparency) const;
+        const foundation::SearchPaths&  searchpaths,
+        bool&                           has_emission,
+        bool&                           has_transparency) const;
 };
 
 }       // namespace renderer

@@ -221,9 +221,9 @@ bool Shader::add(OSL::ShadingSystem& shading_system)
 }
 
 void Shader::get_shader_info(
-    const SearchPaths& searchpaths,
-    bool& has_emission,
-    bool& has_transparency) const
+    const SearchPaths&  searchpaths,
+    bool&               has_emission,
+    bool&               has_transparency) const
 {
     has_emission = false;
     has_transparency = false;
@@ -235,14 +235,15 @@ void Shader::get_shader_info(
     ifstream file;
     file.open(filename.c_str());
 
-    // this cannot fail, as it's being called afer the 
-    // shader is added to the shading system and that 
-    // would fail if the file was not found / cannot be opened.
-    assert(file.is_open());
+    if (!file.is_open())
+    {
+        RENDERER_LOG_ERROR("couldn't open shader %s.", filename.c_str());
+        return;
+    }
     
     // search for the emission and transparent closures.
     string line;
-    while(!file.eof())
+    while (!file.eof())
     {
         getline(file, line);
         if (line.find("\"emission\"", 0) != string::npos)
