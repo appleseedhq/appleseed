@@ -24,7 +24,7 @@
             <texture_instance name="apple_inst" texture="apple">
                 <parameter name="addressing_mode" value="wrap" />
                 <parameter name="filtering_mode" value="bilinear" />
-                <transform time="0">
+                <transform>
                     <scaling value="0.25" />
                     <rotation axis="0 0 1" angle="180" />
                     <translation value="0.25 0 0" />
