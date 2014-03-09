@@ -541,6 +541,10 @@ void register_appleseed_closures(OSL::ShadingSystem& shading_system)
                                                CLOSURE_FLOAT_PARAM(MicrofacetBRDFClosureParams, glossiness),
                                                CLOSURE_FINISH_PARAM(MicrofacetBRDFClosureParams) } },
 
+        { "as_oren_nayar", OrenNayarID, { CLOSURE_VECTOR_PARAM(MicrofacetBRDFClosureParams, N),
+                                          CLOSURE_FLOAT_PARAM(MicrofacetBRDFClosureParams, roughness),
+                                          CLOSURE_FINISH_PARAM(MicrofacetBRDFClosureParams) } },
+
         { "reflection", ReflectionID, { CLOSURE_VECTOR_PARAM(ReflectionClosureParams, N),
                                         CLOSURE_FINISH_PARAM(ReflectionClosureParams) } },
 
