@@ -72,6 +72,7 @@ static const double HalfPi      = 1.5707963267948966;
 static const double RcpPi       = 0.3183098861837907;
 static const double RcpTwoPi    = 0.1591549430918953;
 static const double RcpHalfPi   = 0.6366197723675813;
+static const double RcpPiSq     = 0.1013211836423377;
 
 
 //
