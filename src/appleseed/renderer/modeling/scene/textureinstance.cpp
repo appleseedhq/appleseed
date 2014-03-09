@@ -70,6 +70,7 @@ UniqueID TextureInstance::get_class_uid()
 struct TextureInstance::Impl
 {
     string                  m_texture_name;
+    Transformd              m_transform;
     LightingConditions      m_lighting_conditions;
 };
 
@@ -83,6 +84,10 @@ TextureInstance::TextureInstance(
     set_name(name);
 
     impl->m_texture_name = texture_name;
+    impl->m_transform = Transformd::identity();
+
+    // todo: retrieve the lighting conditions.
+    impl->m_lighting_conditions = LightingConditions(IlluminantCIED65, XYZCMFCIE196410Deg);
 
     // Retrieve the texture addressing mode.
     const string addressing_mode = m_params.get_required<string>("addressing_mode", "wrap");
@@ -134,9 +139,6 @@ TextureInstance::TextureInstance(
     // Until a texture is bound, the effective alpha mode is simply the user-selected alpha mode.
     m_effective_alpha_mode = m_alpha_mode;
 
-    // todo: retrieve the lighting conditions.
-    impl->m_lighting_conditions = LightingConditions(IlluminantCIED65, XYZCMFCIE196410Deg);
-
     m_texture = 0;
 }
 
@@ -153,6 +155,16 @@ void TextureInstance::release()
 const char* TextureInstance::get_texture_name() const
 {
     return impl->m_texture_name.c_str();
+}
+
+void TextureInstance::set_transform(const foundation::Transformd& transform)
+{
+    impl->m_transform = transform;
+}
+
+const foundation::Transformd& TextureInstance::get_transform() const
+{
+    return impl->m_transform;
 }
 
 const LightingConditions& TextureInstance::get_lighting_conditions() const

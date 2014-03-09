@@ -939,9 +939,10 @@ namespace
             XMLElement element("texture_instance", m_file, m_indenter);
             element.add_attribute("name", texture_instance.get_name());
             element.add_attribute("texture", texture_instance.get_texture_name());
-            element.write(!texture_instance.get_parameters().empty());
+            element.write(true);
 
             write_params(texture_instance.get_parameters());
+            write_transform(texture_instance.get_transform());
         }
     };
 }

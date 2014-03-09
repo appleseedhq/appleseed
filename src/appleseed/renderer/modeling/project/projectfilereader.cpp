@@ -1182,7 +1182,7 @@ namespace
     //
 
     class TextureInstanceElementHandler
-      : public ParametrizedElementHandler
+      : public TransformSequenceElementHandler<ParametrizedElementHandler>
     {
       public:
         explicit TextureInstanceElementHandler(ParseContext& context)
@@ -1192,7 +1192,7 @@ namespace
 
         virtual void start_element(const Attributes& attrs) OVERRIDE
         {
-            ParametrizedElementHandler::start_element(attrs);
+            Base::start_element(attrs);
 
             m_texture_instance.reset();
 
@@ -1202,7 +1202,7 @@ namespace
 
         virtual void end_element() OVERRIDE
         {
-            ParametrizedElementHandler::end_element();
+            Base::end_element();
 
             try
             {
@@ -1211,6 +1211,8 @@ namespace
                         m_name.c_str(),
                         m_params,
                         m_texture.c_str());
+
+                m_texture_instance->set_transform(get_earliest_transform());
             }
             catch (const ExceptionDictionaryItemNotFound& e)
             {
@@ -1228,6 +1230,8 @@ namespace
         }
 
       private:
+        typedef TransformSequenceElementHandler<ParametrizedElementHandler> Base;
+
         ParseContext&                       m_context;
         auto_release_ptr<TextureInstance>   m_texture_instance;
         string                              m_name;

@@ -353,6 +353,9 @@
         <xsd:complexType>
             <xsd:complexContent>
                 <xsd:extension base="parameterSet">
+                    <xsd:sequence maxOccurs="1">
+                        <xsd:element name="transform" type="transform" minOccurs="0"/>
+                    </xsd:sequence>
                     <xsd:attribute name="name" type="xsd:string" use="required"/>
                     <xsd:attribute name="texture" type="xsd:string" use="required"/>
                 </xsd:extension>

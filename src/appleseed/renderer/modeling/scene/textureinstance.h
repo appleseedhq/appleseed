@@ -35,6 +35,7 @@
 #include "renderer/modeling/scene/containers.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/transform.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/uid.h"
@@ -101,6 +102,10 @@ class DLLSYMBOL TextureInstance
 
     // Return the name of the instantiated texture.
     const char* get_texture_name() const;
+
+    // Set/get the texture transform.
+    void set_transform(const foundation::Transformd& transform);
+    const foundation::Transformd& get_transform() const;
 
     // Return the modes.
     TextureAddressingMode get_addressing_mode() const;
