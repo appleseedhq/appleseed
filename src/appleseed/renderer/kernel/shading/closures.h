@@ -229,6 +229,8 @@ inline void* CompositeClosure::get_closure_input_values(const size_t index) cons
     return m_input_values[index];
 }
 
+double process_transparency_tree(const OSL::ClosureColor* ci);
+
 }       // namespace renderer
 
 #endif  // !APPLESEED_RENDERER_KERNEL_SHADING_CLOSURES_H
