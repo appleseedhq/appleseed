@@ -137,14 +137,14 @@ namespace
 
     // Utility function to sample a tile.
     inline void sample_tile(
-        TextureCache&           texture_cache,
-        const UniqueID          assembly_uid,
-        const UniqueID          texture_uid,
-        const size_t            tile_x,
-        const size_t            tile_y,
-        const size_t            pixel_x,
-        const size_t            pixel_y,
-        Color4f&                sample)
+        TextureCache&               texture_cache,
+        const UniqueID              assembly_uid,
+        const UniqueID              texture_uid,
+        const size_t                tile_x,
+        const size_t                tile_y,
+        const size_t                pixel_x,
+        const size_t                pixel_y,
+        Color4f&                    sample)
     {
         // Retrieve the tile.
         const Tile& tile =
@@ -171,19 +171,31 @@ namespace
 TextureSource::TextureSource(
     const UniqueID              assembly_uid,
     const TextureInstance&      texture_instance,
-    const CanvasProperties&     texture_props,
     const InputFormat           input_format)
   : Source(false)
   , m_assembly_uid(assembly_uid)
   , m_texture_instance(texture_instance)
   , m_texture_uid(texture_instance.get_texture().get_uid())
-  , m_texture_props(texture_props)
+  , m_texture_props(texture_instance.get_texture().properties())
+  , m_texture_transform(texture_instance.get_transform())
   , m_input_format(input_format)
-  , m_scalar_canvas_width(static_cast<double>(texture_props.m_canvas_width))
-  , m_scalar_canvas_height(static_cast<double>(texture_props.m_canvas_height))
-  , m_max_x(static_cast<double>(texture_props.m_canvas_width - 1))
-  , m_max_y(static_cast<double>(texture_props.m_canvas_height - 1))
+  , m_scalar_canvas_width(static_cast<double>(m_texture_props.m_canvas_width))
+  , m_scalar_canvas_height(static_cast<double>(m_texture_props.m_canvas_height))
+  , m_max_x(static_cast<double>(m_texture_props.m_canvas_width - 1))
+  , m_max_y(static_cast<double>(m_texture_props.m_canvas_height - 1))
 {
+}
+
+Vector2d TextureSource::apply_transform(const Vector2d& uv) const
+{
+    // Convert to 3D coordinates.
+    Vector3d p(uv.x, uv.y, 0.0);
+
+    // Apply transform.
+    p = m_texture_transform.point_to_local(p);
+
+    // Convert back to 2D coordinates.
+    return Vector2d(p.x, p.y);
 }
 
 Color4f TextureSource::get_texel(
@@ -380,8 +392,8 @@ Color4f TextureSource::sample_texture(
     TextureCache&               texture_cache,
     const Vector2d&             uv) const
 {
-    // Start with the input texture coordinates.
-    Vector2d p = uv;
+    // Start with the transformed input texture coordinates.
+    Vector2d p = apply_transform(uv);
     p.y = 1.0 - p.y;
 
     // Apply the texture addressing mode.
