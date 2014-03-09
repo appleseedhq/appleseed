@@ -2,7 +2,7 @@ OpenShadingLanguage 1.00
 # Compiled by oslc 1.5.5dev
 surface orennayar
 param	float	Kd	1 		 %read{1,1} %write{2147483647,-1}
-param	float	roughness	0 		 %read{0,0} %write{2147483647,-1}
+param	float	roughness	1 		 %read{0,0} %write{2147483647,-1}
 param	color	Cs	1 1 1 		 %read{1,1} %write{2147483647,-1}
 global	normal	N	 %read{0,0} %write{2147483647,-1}
 global	closure color	Ci	 %read{2147483647,-1} %write{2,2}

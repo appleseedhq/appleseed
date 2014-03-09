@@ -1,5 +1,5 @@
 
-surface orennayar(float Kd = 1, float roughness = 0, color Cs = 1)
+surface orennayar(float Kd = 1, float roughness = 1, color Cs = 1)
 {
     Ci = Kd * Cs * as_oren_nayar(N, roughness);
 }
