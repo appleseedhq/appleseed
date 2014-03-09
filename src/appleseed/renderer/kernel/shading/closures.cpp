@@ -519,6 +519,10 @@ void register_appleseed_closures(OSL::ShadingSystem& shading_system)
                                                     CLOSURE_FLOAT_PARAM(MicrofacetBRDFClosureParams, glossiness),
                                                     CLOSURE_FINISH_PARAM(MicrofacetBRDFClosureParams) } },
 
+        { "as_oren_nayar", OrenNayarID, { CLOSURE_VECTOR_PARAM(OrenNayarBRDFClosureParams, N),
+                                          CLOSURE_FLOAT_PARAM(OrenNayarBRDFClosureParams, roughness),
+                                          CLOSURE_FINISH_PARAM(OrenNayarBRDFClosureParams) } },
+
         { "background", BackgroundID, { CLOSURE_FINISH_PARAM(EmptyClosureParams) } },
 
         { "debug", DebugID, { CLOSURE_STRING_PARAM(DebugClosureParams, tag),
@@ -540,10 +544,6 @@ void register_appleseed_closures(OSL::ShadingSystem& shading_system)
         { "microfacet_ggx", MicrofacetGGXID, { CLOSURE_VECTOR_PARAM(MicrofacetBRDFClosureParams, N),
                                                CLOSURE_FLOAT_PARAM(MicrofacetBRDFClosureParams, glossiness),
                                                CLOSURE_FINISH_PARAM(MicrofacetBRDFClosureParams) } },
-
-        { "as_oren_nayar", OrenNayarID, { CLOSURE_VECTOR_PARAM(MicrofacetBRDFClosureParams, N),
-                                          CLOSURE_FLOAT_PARAM(MicrofacetBRDFClosureParams, roughness),
-                                          CLOSURE_FINISH_PARAM(MicrofacetBRDFClosureParams) } },
 
         { "reflection", ReflectionID, { CLOSURE_VECTOR_PARAM(ReflectionClosureParams, N),
                                         CLOSURE_FINISH_PARAM(ReflectionClosureParams) } },
