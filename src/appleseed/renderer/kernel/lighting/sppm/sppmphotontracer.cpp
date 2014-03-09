@@ -194,16 +194,23 @@ namespace
           , m_photon_begin(photon_begin)
           , m_photon_end(photon_end)
           , m_pass_hash(pass_hash)
-  #ifdef WITH_OSL
+#ifdef WITH_OSL
           , m_shadergroup_exec(shading_system)
-  #endif
-          , m_tracer(m_scene, m_intersector, m_texture_cache)
+#endif
+          , m_tracer(
+                m_scene,
+                m_intersector,
+                m_texture_cache
+#ifdef WITH_OSL
+                , &m_shadergroup_exec
+#endif
+                )
           , m_shading_context(
                 m_intersector,
                 m_tracer,
                 m_texture_cache
 #ifdef WITH_OSL
-              , m_shadergroup_exec
+                , m_shadergroup_exec
 #endif
                 )
           , m_abort_switch(abort_switch)
@@ -434,13 +441,20 @@ namespace
 #ifdef WITH_OSL
           , m_shadergroup_exec(shading_system)
 #endif
-          , m_tracer(m_scene, m_intersector, m_texture_cache)
+          , m_tracer(
+                m_scene, 
+                m_intersector, 
+                m_texture_cache
+#ifdef WITH_OSL
+                , &m_shadergroup_exec
+#endif
+                )
           , m_shading_context(
                 m_intersector, 
                 m_tracer, 
                 m_texture_cache
 #ifdef WITH_OSL
-              , m_shadergroup_exec
+                , m_shadergroup_exec
 #endif
                 )
         {
