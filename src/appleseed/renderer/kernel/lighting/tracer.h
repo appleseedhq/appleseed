@@ -44,6 +44,9 @@
 
 // Forward declarations.
 namespace renderer  { class Intersector; }
+#ifdef WITH_OSL
+namespace renderer  { class OSLShaderGroupExec; }
+#endif
 namespace renderer  { class Scene; }
 namespace renderer  { class TextureCache; }
 
@@ -66,6 +69,9 @@ class Tracer
         const Scene&                    scene,
         const Intersector&              intersector,
         TextureCache&                   texture_cache,
+#ifdef WITH_OSL
+        OSLShaderGroupExec*             shadergroup_exec,
+#endif
         const float                     transparency_threshold = 0.001f,
         const size_t                    max_iterations = 1000,
         const bool                      print_details = true);
@@ -135,6 +141,12 @@ class Tracer
   private:
     const Intersector&                  m_intersector;
     TextureCache&                       m_texture_cache;
+#ifdef WITH_OSL
+    // TODO: it would be better if Tracer had a reference to the OSLShaderGroupExec 
+    // instance instead of a pointer, but that'd mess with the unit tests.
+    // It's probably better to change it when OSL support is an integral part of appleseed.
+    OSLShaderGroupExec*                 m_shadergroup_exec;
+#endif
     const bool                          m_assume_no_alpha_mapping;
     const double                        m_transmission_threshold;
     const size_t                        m_max_iterations;

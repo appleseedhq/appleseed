@@ -208,7 +208,14 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 
     TEST_CASE_F(Trace_GivenNoOccluder, Fixture<EmptyScene>)
     {
-        Tracer tracer(*m_scene, m_intersector, m_texture_cache);
+        Tracer tracer(
+            *m_scene, 
+            m_intersector, 
+            m_texture_cache
+#ifdef WITH_OSL
+            , 0
+#endif
+            );
 
         double transmission;
         const ShadingPoint& shading_point =
@@ -226,7 +233,14 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 
     TEST_CASE_F(Trace_QuickVariant_GivenNoOccluder, Fixture<EmptyScene>)
     {
-        Tracer tracer(*m_scene, m_intersector, m_texture_cache);
+        Tracer tracer(
+            *m_scene, 
+            m_intersector, 
+            m_texture_cache
+#ifdef WITH_OSL
+            , 0
+#endif
+            );
 
         const double transmission =
             tracer.trace(
@@ -241,7 +255,14 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 
     TEST_CASE_F(TraceBetween_GivenNoOccluder, Fixture<EmptyScene>)
     {
-        Tracer tracer(*m_scene, m_intersector, m_texture_cache);
+        Tracer tracer(
+            *m_scene, 
+            m_intersector, 
+            m_texture_cache
+#ifdef WITH_OSL
+            , 0
+#endif
+            );
 
         double transmission;
         const ShadingPoint& shading_point =
@@ -259,7 +280,14 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 
     TEST_CASE_F(TraceBetween_QuickVariant_GivenNoOccluder, Fixture<EmptyScene>)
     {
-        Tracer tracer(*m_scene, m_intersector, m_texture_cache);
+        Tracer tracer(
+            *m_scene, 
+            m_intersector, 
+            m_texture_cache
+#ifdef WITH_OSL
+            , 0
+#endif
+            );
 
         const double transmission =
             tracer.trace_between(
@@ -283,7 +311,14 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 
     TEST_CASE_F(Trace_GivenSingleOpaqueOccluder, Fixture<SceneWithSingleOpaqueOccluder>)
     {
-        Tracer tracer(*m_scene, m_intersector, m_texture_cache);
+        Tracer tracer(
+            *m_scene, 
+            m_intersector, 
+            m_texture_cache
+#ifdef WITH_OSL
+            , 0
+#endif
+            );
 
         double transmission;
         const ShadingPoint& shading_point =
@@ -302,7 +337,14 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 
     TEST_CASE_F(Trace_QuickVariant_GivenSingleOpaqueOccluder, Fixture<SceneWithSingleOpaqueOccluder>)
     {
-        Tracer tracer(*m_scene, m_intersector, m_texture_cache);
+        Tracer tracer(
+            *m_scene, 
+            m_intersector, 
+            m_texture_cache
+#ifdef WITH_OSL
+            , 0
+#endif
+            );
 
         const double transmission =
             tracer.trace(
@@ -317,7 +359,14 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 
     TEST_CASE_F(TraceBetween_GivenSingleOpaqueOccluder, Fixture<SceneWithSingleOpaqueOccluder>)
     {
-        Tracer tracer(*m_scene, m_intersector, m_texture_cache);
+        Tracer tracer(
+            *m_scene, 
+            m_intersector, 
+            m_texture_cache
+#ifdef WITH_OSL
+            , 0
+#endif
+            );
 
         double transmission;
         const ShadingPoint& shading_point =
@@ -336,7 +385,14 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 
     TEST_CASE_F(TraceBetween_QuickVariant_GivenSingleOpaqueOccluder, Fixture<SceneWithSingleOpaqueOccluder>)
     {
-        Tracer tracer(*m_scene, m_intersector, m_texture_cache);
+        Tracer tracer(
+            *m_scene, 
+            m_intersector, 
+            m_texture_cache
+#ifdef WITH_OSL
+            , 0
+#endif
+            );
 
         const double transmission =
             tracer.trace_between(
@@ -360,7 +416,14 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 
     TEST_CASE_F(Trace_GivenSingleTransparentOccluder, Fixture<SceneWithSingleTransparentOccluder>)
     {
-        Tracer tracer(*m_scene, m_intersector, m_texture_cache);
+        Tracer tracer(
+            *m_scene, 
+            m_intersector, 
+            m_texture_cache
+#ifdef WITH_OSL
+            , 0
+#endif
+            );
 
         double transmission;
         const ShadingPoint& shading_point =
@@ -378,7 +441,14 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 
     TEST_CASE_F(Trace_QuickVariant_GivenSingleTransparentOccluder, Fixture<SceneWithSingleTransparentOccluder>)
     {
-        Tracer tracer(*m_scene, m_intersector, m_texture_cache);
+        Tracer tracer(
+            *m_scene, 
+            m_intersector, 
+            m_texture_cache
+#ifdef WITH_OSL
+            , 0
+#endif
+            );
 
         const double transmission =
             tracer.trace(
@@ -393,7 +463,14 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 
     TEST_CASE_F(TraceBetween_GivenSingleTransparentOccluder, Fixture<SceneWithSingleTransparentOccluder>)
     {
-        Tracer tracer(*m_scene, m_intersector, m_texture_cache);
+        Tracer tracer(
+            *m_scene, 
+            m_intersector, 
+            m_texture_cache
+#ifdef WITH_OSL
+            , 0
+#endif
+            );
 
         double transmission;
         const ShadingPoint& shading_point =
@@ -411,7 +488,14 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 
     TEST_CASE_F(TraceBetween_QuickVariant_GivenSingleTransparentOccluder, Fixture<SceneWithSingleTransparentOccluder>)
     {
-        Tracer tracer(*m_scene, m_intersector, m_texture_cache);
+        Tracer tracer(
+            *m_scene, 
+            m_intersector, 
+            m_texture_cache
+#ifdef WITH_OSL
+            , 0
+#endif
+            );
 
         const double transmission =
             tracer.trace_between(
@@ -436,7 +520,14 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 
     TEST_CASE_F(Trace_GivenTransparentThenOpaqueOccluders, Fixture<SceneWithTransparentThenOpaqueOccluders>)
     {
-        Tracer tracer(*m_scene, m_intersector, m_texture_cache);
+        Tracer tracer(
+            *m_scene, 
+            m_intersector, 
+            m_texture_cache
+#ifdef WITH_OSL
+            , 0
+#endif
+            );
 
         double transmission;
         const ShadingPoint& shading_point =
@@ -455,7 +546,14 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 
     TEST_CASE_F(Trace_QuickVariant_GivenTransparentThenOpaqueOccluders, Fixture<SceneWithTransparentThenOpaqueOccluders>)
     {
-        Tracer tracer(*m_scene, m_intersector, m_texture_cache);
+        Tracer tracer(
+            *m_scene, 
+            m_intersector, 
+            m_texture_cache
+#ifdef WITH_OSL
+            , 0
+#endif
+            );
 
         const double transmission =
             tracer.trace(
@@ -470,7 +568,14 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 
     TEST_CASE_F(TraceBetween_GivenTransparentThenOpaqueOccluders_GivenTargetPastOpaqueOccluder, Fixture<SceneWithTransparentThenOpaqueOccluders>)
     {
-        Tracer tracer(*m_scene, m_intersector, m_texture_cache);
+        Tracer tracer(
+            *m_scene, 
+            m_intersector, 
+            m_texture_cache
+#ifdef WITH_OSL
+            , 0
+#endif
+            );
 
         double transmission;
         const ShadingPoint& shading_point =
@@ -489,7 +594,14 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 
     TEST_CASE_F(TraceBetween_QuickVariant_GivenTransparentThenOpaqueOccluders_GivenTargetPastOpaqueOccluder, Fixture<SceneWithTransparentThenOpaqueOccluders>)
     {
-        Tracer tracer(*m_scene, m_intersector, m_texture_cache);
+        Tracer tracer(
+            *m_scene, 
+            m_intersector, 
+            m_texture_cache
+#ifdef WITH_OSL
+            , 0
+#endif
+            );
 
         const double transmission =
             tracer.trace_between(
@@ -504,7 +616,14 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 
     TEST_CASE_F(TraceBetween_GivenTransparentThenOpaqueOccluders_GivenTargetOnOpaqueOccluder, Fixture<SceneWithTransparentThenOpaqueOccluders>)
     {
-        Tracer tracer(*m_scene, m_intersector, m_texture_cache);
+        Tracer tracer(
+            *m_scene, 
+            m_intersector, 
+            m_texture_cache
+#ifdef WITH_OSL
+            , 0
+#endif
+            );
 
         double transmission;
         const ShadingPoint& shading_point =
@@ -522,7 +641,14 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 
     TEST_CASE_F(TraceBetween_QuickVariant_GivenTransparentThenOpaqueOccluders_GivenTargetOnOpaqueOccluder, Fixture<SceneWithTransparentThenOpaqueOccluders>)
     {
-        Tracer tracer(*m_scene, m_intersector, m_texture_cache);
+        Tracer tracer(
+            *m_scene, 
+            m_intersector, 
+            m_texture_cache
+#ifdef WITH_OSL
+            , 0
+#endif
+            );
 
         const double transmission =
             tracer.trace_between(
@@ -547,7 +673,15 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 
     TEST_CASE_F(TraceBetween_ComputeVisibilityBetweenTwoOpaqueOccluders_ReturnsOne, Fixture<SceneWithTwoOpaqueOccluders>)
     {
-        Tracer parent_tracer(*m_scene, m_intersector, m_texture_cache);
+        Tracer parent_tracer(
+            *m_scene, 
+            m_intersector, 
+            m_texture_cache
+#ifdef WITH_OSL
+            , 0
+#endif
+            );
+
         double parent_transmission;
         const ShadingPoint& parent_shading_point =
             parent_tracer.trace(
@@ -561,7 +695,14 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         ASSERT_TRUE(parent_shading_point.hit());
         ASSERT_FEQ(2.0, parent_shading_point.get_distance());
 
-        Tracer tracer(*m_scene, m_intersector, m_texture_cache);
+        Tracer tracer(
+            *m_scene, 
+            m_intersector, 
+            m_texture_cache
+#ifdef WITH_OSL
+            , 0
+#endif
+            );
         const double transmission =
             tracer.trace_between(
                 parent_shading_point,
@@ -583,7 +724,15 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 
     TEST_CASE_F(TraceBetween_ComputeVisibilityBetweenTwoOpaqueOccludersAndScaledAssemblyInstance_ReturnsOne, Fixture<SceneWithTwoOpaqueOccludersAndScaledAssemblyInstance>)
     {
-        Tracer parent_tracer(*m_scene, m_intersector, m_texture_cache);
+        Tracer parent_tracer(
+            *m_scene, 
+            m_intersector, 
+            m_texture_cache
+#ifdef WITH_OSL
+            , 0
+#endif
+            );
+
         double parent_transmission;
         const ShadingPoint& parent_shading_point =
             parent_tracer.trace(
@@ -597,7 +746,14 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         ASSERT_TRUE(parent_shading_point.hit());
         ASSERT_FEQ(1.0, parent_shading_point.get_distance());
 
-        Tracer tracer(*m_scene, m_intersector, m_texture_cache);
+        Tracer tracer(
+            *m_scene, 
+            m_intersector, 
+            m_texture_cache
+#ifdef WITH_OSL
+            , 0
+#endif
+            );
         const double transmission =
             tracer.trace_between(
                 parent_shading_point,

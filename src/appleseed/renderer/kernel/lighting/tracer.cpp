@@ -32,6 +32,10 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#ifdef WITH_OSL
+#include "renderer/kernel/shading/oslshadergroupexec.h"
+#include "renderer/modeling/shadergroup/shadergroup.h"
+#endif
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/scene/assembly.h"
@@ -62,8 +66,18 @@ namespace
     {
         for (size_t i = 0; i < materials.size(); ++i)
         {
-            if (materials[i] && materials[i]->has_alpha_map())
-                return true;
+            if (materials[i])
+            {
+                if (materials[i]->has_alpha_map())
+                    return true;
+#ifdef WITH_OSL
+                if (const ShaderGroup* sg = materials[i]->get_osl_surface())
+                {
+                    if (sg->has_transparency())
+                        return true;
+                }
+#endif
+            }
         }
 
         return false;
@@ -116,11 +130,17 @@ Tracer::Tracer(
     const Scene&                scene,
     const Intersector&          intersector,
     TextureCache&               texture_cache,
+#ifdef WITH_OSL
+    OSLShaderGroupExec*         shadergroup_exec,
+#endif
     const float                 transparency_threshold,
     const size_t                max_iterations,
     const bool                  print_details)
   : m_intersector(intersector)
   , m_texture_cache(texture_cache)
+#ifdef WITH_OSL
+  , m_shadergroup_exec(shadergroup_exec)
+#endif
   , m_assume_no_alpha_mapping(!uses_alpha_mapping(scene))
   , m_transmission_threshold(static_cast<double>(transparency_threshold))
   , m_max_iterations(max_iterations)
