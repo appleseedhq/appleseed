@@ -409,44 +409,44 @@ void CompositeClosure::do_add_closure(
 namespace
 {
 
-Color3f do_process_closure_id_tree(
-    const OSL::ClosureColor*    closure,
-    const int                   closure_id)
-{
-    if (closure == 0)
-        return Color3f(0.0f);
-
-    switch (closure->type)
+    Color3f do_process_closure_id_tree(
+        const OSL::ClosureColor*    closure,
+        const int                   closure_id)
     {
-      case OSL::ClosureColor::MUL:
-        {
-            const OSL::ClosureMul* c = reinterpret_cast<const OSL::ClosureMul*>(closure);
-            return Color3f(c->weight) * do_process_closure_id_tree(c->closure, closure_id);
-        }
-        break;
-
-      case OSL::ClosureColor::ADD:
-        {
-            const OSL::ClosureAdd* c = reinterpret_cast<const OSL::ClosureAdd*>(closure);
-            return do_process_closure_id_tree(c->closureA, closure_id) + 
-                   do_process_closure_id_tree(c->closureB, closure_id);
-        }
-        break;
-
-      case OSL::ClosureColor::COMPONENT:
-        {
-            const OSL::ClosureComponent* c = reinterpret_cast<const OSL::ClosureComponent*>(closure);
-
-            if (c->id == closure_id)
-                return Color3f(c->w);
-
+        if (closure == 0)
             return Color3f(0.0f);
+    
+        switch (closure->type)
+        {
+          case OSL::ClosureColor::MUL:
+            {
+                const OSL::ClosureMul* c = reinterpret_cast<const OSL::ClosureMul*>(closure);
+                return Color3f(c->weight) * do_process_closure_id_tree(c->closure, closure_id);
+            }
+            break;
+    
+          case OSL::ClosureColor::ADD:
+            {
+                const OSL::ClosureAdd* c = reinterpret_cast<const OSL::ClosureAdd*>(closure);
+                return do_process_closure_id_tree(c->closureA, closure_id) + 
+                       do_process_closure_id_tree(c->closureB, closure_id);
+            }
+            break;
+    
+          case OSL::ClosureColor::COMPONENT:
+            {
+                const OSL::ClosureComponent* c = reinterpret_cast<const OSL::ClosureComponent*>(closure);
+    
+                if (c->id == closure_id)
+                    return Color3f(c->w);
+    
+                return Color3f(0.0f);
+            }
+            break;
+            
+          assert_otherwise;
         }
-        break;
-        
-      assert_otherwise;
     }
-}
 
 }
 
