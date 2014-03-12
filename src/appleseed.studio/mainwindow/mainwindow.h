@@ -56,6 +56,7 @@
 // Forward declarations.
 namespace appleseed { namespace studio { class AttributeEditor; } }
 namespace appleseed { namespace studio { class ProjectExplorer; } }
+namespace appleseed { namespace studio { class VerticalButton; } }
 namespace Ui        { class MainWindow; }
 class QAction;
 class QCloseEvent;
@@ -102,6 +103,7 @@ class MainWindow
     QAction*                                m_action_stop_rendering;
 
     std::vector<QAction*>                   m_recently_opened;
+    std::vector<VerticalButton*>            m_minimize_buttons;
 
     StatusBar                               m_status_bar;
     std::auto_ptr<QtLogTarget>              m_log_target;
@@ -130,6 +132,8 @@ class MainWindow
 
     std::auto_ptr<StateBeforeProjectOpen>   m_state_before_project_open;
 
+    bool                                    m_fullscreen;
+
     void build_menus();
     void build_override_shading_menu_item();
     void update_override_shading_menu_item();
@@ -141,6 +145,8 @@ class MainWindow
     void build_toolbar();
     void build_log_panel();
     void build_project_explorer();
+    void build_minimize_buttons();
+    void build_minimize_toolbar();
 
     void build_connections();
 
@@ -186,6 +192,8 @@ class MainWindow
     void slot_save_project();
     void slot_save_project_as();
 
+    void slot_fullscreen();
+
     void slot_project_modified();
     void slot_frame_modified();
 
@@ -221,6 +229,7 @@ class MainWindow
     void slot_save_all_aovs();
     void slot_quicksave_all_aovs();
     void slot_clear_frame();
+
 };
 
 }       // namespace studio
