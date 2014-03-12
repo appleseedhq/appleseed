@@ -134,6 +134,7 @@ MainWindow::MainWindow(QWidget* parent)
     remove_render_widgets();
     update_workspace();
 
+    build_minimize_buttons();
     showMaximized();
 
     setAcceptDrops(true);
@@ -244,6 +245,10 @@ void MainWindow::build_menus()
     m_ui->menu_view->addAction(m_ui->project_explorer->toggleViewAction());
     m_ui->menu_view->addAction(m_ui->attribute_editor->toggleViewAction());
     m_ui->menu_view->addAction(m_ui->log->toggleViewAction());
+    m_ui->menu_view->addSeparator();
+    QAction* fullscreen_action = m_ui->menu_view->addAction("Fullscreen");
+    fullscreen_action->setShortcut(Qt::Key_F11);
+    connect(fullscreen_action, SIGNAL(triggered()), SLOT(slot_fullscreen()));
 
     //
     // Rendering menu.
@@ -473,6 +478,7 @@ void MainWindow::build_log_panel()
     log_widget->setReadOnly(true);
     log_widget->setTextInteractionFlags(Qt::TextSelectableByMouse);
 
+
     m_log_target.reset(new QtLogTarget(log_widget));
 
     global_logger().add_target(m_log_target.get());
@@ -494,6 +500,90 @@ void MainWindow::build_project_explorer()
         SLOT(slot_clear_filter()));
 
     m_ui->pushbutton_clear_filter->setEnabled(false);
+}
+
+class MinimizeButton : public QPushButton {
+    Q_OBJECT
+public:
+    MinimizeButton(QDockWidget* dock_widget, QWidget* parent = 0) :
+        QPushButton(dock_widget->windowTitle(), parent),
+        m_dock_widget(dock_widget),
+        m_on(true),
+        m_minimized(false)
+    {
+        setObjectName(QString::fromUtf8("ToggleButtonOn"));
+        connect_dock_widget();
+    }
+
+    bool is_on()
+    {
+        return m_on;
+    }
+
+    void toggle()
+    {
+        m_on = !m_on;
+        if (m_on)
+            setObjectName(QString::fromUtf8("ToggleButtonOn"));
+        else
+            setObjectName(QString::fromUtf8("ToggleButtonOff"));
+        // Force stylesheet reloading for this widget
+        style()->unpolish(this);
+        style()->polish(this);
+    }
+
+    void set_fullscreen(bool on)
+    {
+        if (on)
+        {
+            // Setting fullscreen on
+            m_minimized = m_on;
+            if (!m_on)
+                m_dock_widget->toggleViewAction()->activate(QAction::Trigger);
+        }
+        else
+        {
+            // Deactivating fullscreen
+            // Keep state before fullscreen
+            if (!m_minimized)
+                m_dock_widget->toggleViewAction()->activate(QAction::Trigger);
+        }
+    }
+
+protected:
+    void mousePressEvent(QMouseEvent *event)
+    {
+        if (event->buttons() & Qt::LeftButton)
+        {
+            m_dock_widget->toggleViewAction()->activate(QAction::Trigger);
+        }
+    }
+
+private:
+    void connect_dock_widget()
+    {
+        connect(
+            m_dock_widget->toggleViewAction(), SIGNAL(toggled(bool)),
+            SLOT(slot_minimize()));
+    }
+
+    QDockWidget* m_dock_widget;
+    QString m_text;
+    bool m_on, m_mouse_pressed, m_minimized, started;
+
+private slots:
+    void slot_minimize() {
+        toggle();
+    }
+};
+
+void MainWindow::build_minimize_buttons()
+{
+    m_minimize_buttons.push_back(new MinimizeButton(m_ui->project_explorer));
+    m_minimize_buttons.push_back(new MinimizeButton(m_ui->attribute_editor));
+    m_minimize_buttons.push_back(new MinimizeButton(m_ui->log));
+    for (int index = 0; index < m_minimize_buttons.size(); ++index)
+        statusBar()->insertPermanentWidget(index+1, m_minimize_buttons[index]);
 }
 
 void MainWindow::build_connections()
@@ -1087,6 +1177,28 @@ void MainWindow::slot_save_project_as()
 
         update_recent_files_menu(filepath);
         update_workspace();
+    }
+}
+
+void MainWindow::slot_fullscreen()
+{
+    m_fullscreen = !m_fullscreen;
+
+    bool all_minimized = true;
+    for (each<vector<MinimizeButton*> > button = m_minimize_buttons; button; ++button)
+    {
+        all_minimized &= (*button)->is_on();
+    }
+
+    // All were manualy minimized so exit full screen mode
+    if (all_minimized)
+    {
+        m_fullscreen = false;
+    }
+
+    for (each<vector<MinimizeButton*> > button = m_minimize_buttons; button; ++button)
+    {
+        (*button)->set_fullscreen(m_fullscreen);
     }
 }
 
