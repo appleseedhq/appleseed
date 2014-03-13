@@ -368,7 +368,7 @@ namespace
     const char* SettingsRecentFilesEntryString = "appleseed.studio Recent Files";
     const char* SettingsRecentFileListString = "recent_file_list";
     const char* SettingsUiStateEntryString = "appleseed.studio UI State";
-    const char* SettingsUiStateSavedString = "saved_ui_state";
+    const char* SettingsUiStateSavedString = "ui_state";
 }
 
 void MainWindow::build_recent_files_menu()
@@ -583,18 +583,6 @@ namespace
         msgbox.setStandardButtons(QMessageBox::Ok);
         msgbox.exec();
     }
-}
-
-void MainWindow::save_ui_state()
-{
-    QSettings settings(SettingsOrgString, SettingsUiStateEntryString);
-    settings.setValue(SettingsUiStateSavedString, saveState(UserInterfaceVersion));
-}
-
-void MainWindow::restore_ui_state()
-{
-    QSettings settings(SettingsOrgString, SettingsUiStateEntryString);
-    restoreState(settings.value(SettingsUiStateSavedString).toByteArray(), UserInterfaceVersion);
 }
 
 void MainWindow::save_state_before_project_open()
@@ -881,6 +869,18 @@ void MainWindow::start_rendering(const bool interactive)
         params,
         interactive,
         m_render_tabs["RGB"]->get_render_widget());
+}
+
+void MainWindow::save_ui_state()
+{
+    QSettings settings(SettingsOrgString, SettingsUiStateEntryString);
+    settings.setValue(SettingsUiStateSavedString, saveState(UserInterfaceVersion));
+}
+
+void MainWindow::restore_ui_state()
+{
+    const QSettings settings(SettingsOrgString, SettingsUiStateEntryString);
+    restoreState(settings.value(SettingsUiStateSavedString).toByteArray(), UserInterfaceVersion);
 }
 
 namespace
