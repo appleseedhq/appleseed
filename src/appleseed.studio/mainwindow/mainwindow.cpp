@@ -362,7 +362,7 @@ void MainWindow::update_override_shading_menu_item()
 
 namespace
 {
-    const int QtVersion = QT_VERSION;
+    const int UserInterfaceVersion = 1;
     const int MaxRecentlyOpenedFiles = 5;
     const char* SettingsOrgString = "com.appleseed.studio";
     const char* SettingsRecentFilesEntryString = "appleseed.studio Recent Files";
@@ -588,13 +588,13 @@ namespace
 void MainWindow::save_ui_state()
 {
     QSettings settings(SettingsOrgString, SettingsUiStateEntryString);
-    settings.setValue(SettingsUiStateSavedString, saveState(QtVersion));
+    settings.setValue(SettingsUiStateSavedString, saveState(UserInterfaceVersion));
 }
 
 void MainWindow::restore_ui_state()
 {
     QSettings settings(SettingsOrgString, SettingsUiStateEntryString);
-    restoreState(settings.value(SettingsUiStateSavedString).toByteArray(), QtVersion);
+    restoreState(settings.value(SettingsUiStateSavedString).toByteArray(), UserInterfaceVersion);
 }
 
 void MainWindow::save_state_before_project_open()
