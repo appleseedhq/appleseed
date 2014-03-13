@@ -149,6 +149,9 @@ class MainWindow
     void save_state_before_project_open();
     void restore_state_after_project_open();
 
+    void save_ui_state();
+    void restore_ui_state();
+
     bool can_close_project();
     void on_project_change();
 

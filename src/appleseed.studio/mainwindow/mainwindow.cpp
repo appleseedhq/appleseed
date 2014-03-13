@@ -127,6 +127,8 @@ MainWindow::MainWindow(QWidget* parent)
     print_startup_information();
     slot_load_settings();
 
+    restore_ui_state();
+
     update_project_explorer();
     remove_render_widgets();
     update_workspace();
@@ -364,6 +366,8 @@ namespace
     const char* SettingsOrgString = "com.appleseed.studio";
     const char* SettingsRecentFilesEntryString = "appleseed.studio Recent Files";
     const char* SettingsRecentFileListString = "recent_file_list";
+    const char* SettingsUiStateEntryString = "appleseed.studio Ui State";
+    const char* SettingsUiStateSavedString = "saved_ui_state";
 }
 
 void MainWindow::build_recent_files_menu()
@@ -578,6 +582,18 @@ namespace
         msgbox.setStandardButtons(QMessageBox::Ok);
         msgbox.exec();
     }
+}
+
+void MainWindow::save_ui_state()
+{
+    QSettings settings(SettingsOrgString, SettingsUiStateEntryString);
+    settings.setValue(SettingsUiStateSavedString, saveState());
+}
+
+void MainWindow::restore_ui_state()
+{
+    QSettings settings(SettingsOrgString, SettingsUiStateEntryString);
+    restoreState(settings.value(SettingsUiStateSavedString).toByteArray());
 }
 
 void MainWindow::save_state_before_project_open()
@@ -900,6 +916,8 @@ void MainWindow::closeEvent(QCloseEvent* event)
         event->ignore();
         return;
     }
+
+    save_ui_state();
 
     m_project_manager.close_project();
 
