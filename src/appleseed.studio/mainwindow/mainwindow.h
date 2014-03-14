@@ -166,6 +166,9 @@ class MainWindow
 
     void start_rendering(const bool interactive);
 
+    void save_ui_state();
+    void restore_ui_state();
+
     virtual void closeEvent(QCloseEvent* event);
 
   private slots:

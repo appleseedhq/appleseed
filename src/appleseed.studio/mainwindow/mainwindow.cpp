@@ -127,6 +127,8 @@ MainWindow::MainWindow(QWidget* parent)
     print_startup_information();
     slot_load_settings();
 
+    restore_ui_state();
+
     update_project_explorer();
     remove_render_widgets();
     update_workspace();
@@ -360,10 +362,13 @@ void MainWindow::update_override_shading_menu_item()
 
 namespace
 {
+    const int UserInterfaceVersion = 1;
     const int MaxRecentlyOpenedFiles = 5;
     const char* SettingsOrgString = "com.appleseed.studio";
     const char* SettingsRecentFilesEntryString = "appleseed.studio Recent Files";
     const char* SettingsRecentFileListString = "recent_file_list";
+    const char* SettingsUiStateEntryString = "appleseed.studio UI State";
+    const char* SettingsUiStateSavedString = "ui_state";
 }
 
 void MainWindow::build_recent_files_menu()
@@ -866,6 +871,18 @@ void MainWindow::start_rendering(const bool interactive)
         m_render_tabs["RGB"]->get_render_widget());
 }
 
+void MainWindow::save_ui_state()
+{
+    QSettings settings(SettingsOrgString, SettingsUiStateEntryString);
+    settings.setValue(SettingsUiStateSavedString, saveState(UserInterfaceVersion));
+}
+
+void MainWindow::restore_ui_state()
+{
+    const QSettings settings(SettingsOrgString, SettingsUiStateEntryString);
+    restoreState(settings.value(SettingsUiStateSavedString).toByteArray(), UserInterfaceVersion);
+}
+
 namespace
 {
     int ask_abort_rendering_confirmation(QWidget* parent)
@@ -900,6 +917,8 @@ void MainWindow::closeEvent(QCloseEvent* event)
         event->ignore();
         return;
     }
+
+    save_ui_state();
 
     m_project_manager.close_project();
 
