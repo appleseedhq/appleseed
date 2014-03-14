@@ -46,6 +46,7 @@
 // Qt headers.
 #include <QMainWindow>
 #include <QObject>
+#include <QUrl>
 
 // Standard headers.
 #include <map>
@@ -163,6 +164,8 @@ class MainWindow
     void recreate_render_widgets();
     void remove_render_widgets();
     void add_render_widget(const QString& label);
+    void dragEnterEvent(QDragEnterEvent* event);
+    void dropEvent(QDropEvent* event);
 
     void start_rendering(const bool interactive);
 
