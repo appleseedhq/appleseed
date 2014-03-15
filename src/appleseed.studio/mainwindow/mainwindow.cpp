@@ -85,6 +85,7 @@
 #include <QString>
 #include <QStringList>
 #include <Qt>
+#include <QUrl>
 
 // boost headers.
 #include "boost/filesystem/path.hpp"
@@ -900,24 +901,24 @@ namespace
     }
 }
 
-void MainWindow::dragEnterEvent(QDragEnterEvent *event)
+void MainWindow::dragEnterEvent(QDragEnterEvent* event)
  {
      if (event->mimeData()->hasFormat("text/plain") || event->mimeData()->hasFormat("text/uri-list"))
          event->acceptProposedAction();
  }
 
-void MainWindow::dropEvent(QDropEvent *event)
+void MainWindow::dropEvent(QDropEvent* event)
  {
      if (event->mimeData()->hasFormat("text/uri-list"))
      {
-        QList<QUrl> urls = event->mimeData()->urls();
-        QApplication::sendEvent(this,new QCloseEvent());
+        const QList<QUrl> urls = event->mimeData()->urls();
+        QApplication::sendEvent(this, new QCloseEvent());
         open_project(urls[0].toLocalFile());   
      }
      else
      {
-        QString text = event->mimeData()->text();
-        QApplication::sendEvent(this,new QCloseEvent());
+        const QString text = event->mimeData()->text();
+        QApplication::sendEvent(this, new QCloseEvent());
         open_project(text);
      }
      

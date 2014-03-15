@@ -46,7 +46,6 @@
 // Qt headers.
 #include <QMainWindow>
 #include <QObject>
-#include <QUrl>
 
 // Standard headers.
 #include <map>
@@ -65,6 +64,8 @@ class QRect;
 class QString;
 class QStringList;
 class QWidget;
+class QDragEnterEvent;
+class QDropEvent;
 
 namespace appleseed {
 namespace studio {
