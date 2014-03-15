@@ -85,6 +85,7 @@
 #include <QString>
 #include <QStringList>
 #include <Qt>
+#include <QUrl>
 
 // boost headers.
 #include "boost/filesystem/path.hpp"
@@ -134,6 +135,8 @@ MainWindow::MainWindow(QWidget* parent)
     update_workspace();
 
     showMaximized();
+
+    setAcceptDrops(true);
 }
 
 MainWindow::~MainWindow()
@@ -897,6 +900,30 @@ namespace
         return msgbox.exec();
     }
 }
+
+void MainWindow::dragEnterEvent(QDragEnterEvent* event)
+ {
+     if (event->mimeData()->hasFormat("text/plain") || event->mimeData()->hasFormat("text/uri-list"))
+         event->acceptProposedAction();
+ }
+
+void MainWindow::dropEvent(QDropEvent* event)
+ {
+     if (event->mimeData()->hasFormat("text/uri-list"))
+     {
+        const QList<QUrl> urls = event->mimeData()->urls();
+        QApplication::sendEvent(this, new QCloseEvent());
+        open_project(urls[0].toLocalFile());   
+     }
+     else
+     {
+        const QString text = event->mimeData()->text();
+        QApplication::sendEvent(this, new QCloseEvent());
+        open_project(text);
+     }
+     
+     event->accept();
+ }
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
