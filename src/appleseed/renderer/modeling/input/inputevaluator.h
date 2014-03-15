@@ -71,9 +71,9 @@ class InputEvaluator
     const void* data() const;
     void* data();
 
-  private:
-    static const size_t DataSize = 4 * 1024;    // bytes
+    enum { DataSize = 8 * 1024 }; // bytes
 
+  private:
     SSE_ALIGN foundation::uint8     m_data[DataSize];
     TextureCache&                   m_texture_cache;
 };
