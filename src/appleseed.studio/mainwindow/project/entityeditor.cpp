@@ -241,7 +241,29 @@ namespace
         void slot_set_slider_value(const QString& value)
         {
             m_slider->blockSignals(true);
+            double dbl = value.toDouble();
+            if(m_slider->maximum() < dbl)
+            {
+                double min = m_slider->minimum();
+                m_slider->setRange(min, dbl);
+                m_slider->setPageStep((dbl - min) / 10.0);
+            }
             m_slider->setValue(value.toDouble());
+            m_slider->blockSignals(false);
+        }
+
+        void slot_apply_slider_value()
+        {
+            // Only lower slider max when the user has finished typing
+            m_slider->blockSignals(true);
+            double dbl = m_line_edit->text().toDouble();
+            if(m_slider->maximum() < dbl || m_slider->maximum() >= dbl*3.f)
+            {
+                double min = m_slider->minimum();
+                m_slider->setRange(min, dbl);
+                m_slider->setPageStep((dbl - min) / 10.0);
+            }
+            m_slider->setValue(dbl);
             m_slider->blockSignals(false);
         }
 
@@ -274,6 +296,9 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_numeric_input_widgets(const Dic
     connect(
         line_edit, SIGNAL(textChanged(const QString&)),
         adaptor, SLOT(slot_set_slider_value(const QString&)));
+    connect(
+        line_edit, SIGNAL(editingFinished()),
+        adaptor, SLOT(slot_apply_slider_value()));
 
     connect(slider, SIGNAL(valueChanged(int)), SLOT(slot_apply()));
 
@@ -320,6 +345,9 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_colormap_input_widgets(const Di
     connect(
         line_edit, SIGNAL(textChanged(const QString&)),
         adaptor, SLOT(slot_set_slider_value(const QString&)));
+    connect(
+        line_edit, SIGNAL(editingFinished()),
+        adaptor, SLOT(slot_apply_slider_value()));
 
     const string name = metadata.get<string>("name");
 
