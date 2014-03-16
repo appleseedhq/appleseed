@@ -151,7 +151,6 @@ namespace
                 return 0.0;
 
             // No reflection below the shading surface.
-            // No reflection below the shading surface.
             const Vector3d& n = shading_basis.get_normal();
             const double cos_in = dot(incoming, n);
             const double cos_on = min(dot(outgoing, n), 1.0);
@@ -167,7 +166,6 @@ namespace
                 value = values->m_reflectance;
 
             value *= static_cast<float>(values->m_reflectance_multiplier * RcpPi );
-
 
             // Return the probability density of the sampled direction.
             return cos_in * RcpPi;
