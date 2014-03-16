@@ -241,12 +241,12 @@ namespace
         void slot_set_slider_value(const QString& value)
         {
             m_slider->blockSignals(true);
-            double dbl = value.toDouble();
-            if(m_slider->maximum() < dbl)
+            const double new_value = value.toDouble();
+            if (m_slider->maximum() < new_value)
             {
-                double min = m_slider->minimum();
-                m_slider->setRange(min, dbl);
-                m_slider->setPageStep((dbl - min) / 10.0);
+                const double min = m_slider->minimum();
+                m_slider->setRange(min, new_value);
+                m_slider->setPageStep((new_value - min) / 10.0);
             }
             m_slider->setValue(value.toDouble());
             m_slider->blockSignals(false);
@@ -254,16 +254,16 @@ namespace
 
         void slot_apply_slider_value()
         {
-            // Only lower slider max when the user has finished typing
+            // Only lower slider max when the user has finished typing.
             m_slider->blockSignals(true);
-            double dbl = m_line_edit->text().toDouble();
-            if(m_slider->maximum() < dbl || m_slider->maximum() >= dbl*3.f)
+            const double new_value = m_line_edit->text().toDouble();
+            if (m_slider->maximum() < new_value || m_slider->maximum() >= new_value * 3.0)
             {
-                double min = m_slider->minimum();
-                m_slider->setRange(min, dbl);
-                m_slider->setPageStep((dbl - min) / 10.0);
+                const double min = m_slider->minimum();
+                m_slider->setRange(min, new_value);
+                m_slider->setPageStep((new_value - min) / 10.0);
             }
-            m_slider->setValue(dbl);
+            m_slider->setValue(new_value);
             m_slider->blockSignals(false);
         }
 
