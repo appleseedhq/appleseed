@@ -30,7 +30,7 @@
 // appleseed.cli headers.
 #include "commandlinehandler.h"
 #include "continuoussavingtilecallback.h"
-#include "houtilecallbacks.h"
+#include "houdinitilecallbacks.h"
 #include "progresstilecallback.h"
 
 // appleseed.shared headers.

@@ -36,6 +36,7 @@
 #include "renderer/modeling/frame/frame.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
 #include "foundation/image/pixel.h"
@@ -86,8 +87,8 @@ namespace
             cmd += scene_name;
 
             LOG_DEBUG(m_logger, "executing imdisplay: command = %s", cmd.c_str());
-            
-            m_fp = popen(cmd.c_str(), "w");
+
+            m_fp = open_pipe(cmd.c_str());
             if (!m_fp)
                 LOG_FATAL(m_logger, "Unable to open mplay");
         }
@@ -97,8 +98,7 @@ namespace
             const int   socket_number,
             const bool  progresive_mode,
             Logger&     logger)
-          : ITileCallback()
-          , m_logger(logger)
+          : m_logger(logger)
           , m_fp(0)
           , m_header_sent(false)
           , m_single_plane(true)
@@ -112,7 +112,7 @@ namespace
 
             LOG_DEBUG(m_logger, "executing hrmanpipe: command = %s", cmd.c_str());
 
-            m_fp = popen(cmd.c_str(), "w");
+            m_fp = open_pipe(cmd.c_str());
             if (!m_fp)
                 LOG_FATAL(m_logger, "Unable to open hrmanpipe");
         }
@@ -153,6 +153,15 @@ namespace
 
       private:
 
+        FILE* open_pipe(const char *command)
+        {
+#ifdef _WIN32
+            return _popen(command, "wb");
+#else
+            return popen(command, "wb");
+#endif
+        }
+        
         void send_header(const Frame& frame)
         {
             if (!m_header_sent)
