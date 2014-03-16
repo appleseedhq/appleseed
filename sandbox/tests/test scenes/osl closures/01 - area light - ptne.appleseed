@@ -93,7 +93,7 @@
                 </shader>
             </shader_group>
             <shader_group name="orennayar_shadergroup">
-                <shader type="surface" name="orennayar" layer="orennayar1">
+                <shader type="surface" name="oren_nayar" layer="orennayar1">
                     <parameter name="Cs" value="color 0.8 0.8 0.8" />
                     <parameter name="roughness" value="float 1.0" />
                 </shader>

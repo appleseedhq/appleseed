@@ -104,9 +104,6 @@ namespace
             if (cos_on < 0.0)
                 return Absorption;
 
-            const InputValues* values = static_cast<const InputValues*>(data);
-
-
             // Compute the incoming direction in local space.
             sampling_context.split_in_place(2, 1);
             const Vector2d s = sampling_context.next_vector2<2>();
@@ -121,9 +118,9 @@ namespace
                 return Absorption;
 
             // Compute the BRDF value.
-            const double roughness = values->m_roughness;
+            const InputValues* values = static_cast<const InputValues*>(data);
 
-            if (roughness != 0)
+            if (values->m_roughness != 0)
                 oren_nayar_qualitative(cos_on, cos_in, values->m_roughness, values->m_reflectance, outgoing, incoming, n, value);
             else
                 value = values->m_reflectance;
@@ -164,9 +161,7 @@ namespace
             // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
 
-            const double roughness = values->m_roughness * 100.0 ;
-
-            if (roughness != 0)
+            if (values->m_roughness != 0)
                 oren_nayar_qualitative(cos_on, cos_in, values->m_roughness, values->m_reflectance, outgoing, incoming, n, value);
             else
                 value = values->m_reflectance;
