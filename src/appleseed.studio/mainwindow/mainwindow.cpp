@@ -85,6 +85,7 @@
 #include <QString>
 #include <QStringList>
 #include <Qt>
+#include <QUrl>
 
 // boost headers.
 #include "boost/filesystem/path.hpp"
@@ -127,11 +128,15 @@ MainWindow::MainWindow(QWidget* parent)
     print_startup_information();
     slot_load_settings();
 
+    restore_ui_state();
+
     update_project_explorer();
     remove_render_widgets();
     update_workspace();
 
     showMaximized();
+
+    setAcceptDrops(true);
 }
 
 MainWindow::~MainWindow()
@@ -360,10 +365,13 @@ void MainWindow::update_override_shading_menu_item()
 
 namespace
 {
+    const int UserInterfaceVersion = 1;
     const int MaxRecentlyOpenedFiles = 5;
     const char* SettingsOrgString = "com.appleseed.studio";
     const char* SettingsRecentFilesEntryString = "appleseed.studio Recent Files";
     const char* SettingsRecentFileListString = "recent_file_list";
+    const char* SettingsUiStateEntryString = "appleseed.studio UI State";
+    const char* SettingsUiStateSavedString = "ui_state";
 }
 
 void MainWindow::build_recent_files_menu()
@@ -866,6 +874,18 @@ void MainWindow::start_rendering(const bool interactive)
         m_render_tabs["RGB"]->get_render_widget());
 }
 
+void MainWindow::save_ui_state()
+{
+    QSettings settings(SettingsOrgString, SettingsUiStateEntryString);
+    settings.setValue(SettingsUiStateSavedString, saveState(UserInterfaceVersion));
+}
+
+void MainWindow::restore_ui_state()
+{
+    const QSettings settings(SettingsOrgString, SettingsUiStateEntryString);
+    restoreState(settings.value(SettingsUiStateSavedString).toByteArray(), UserInterfaceVersion);
+}
+
 namespace
 {
     int ask_abort_rendering_confirmation(QWidget* parent)
@@ -880,6 +900,30 @@ namespace
         return msgbox.exec();
     }
 }
+
+void MainWindow::dragEnterEvent(QDragEnterEvent* event)
+ {
+     if (event->mimeData()->hasFormat("text/plain") || event->mimeData()->hasFormat("text/uri-list"))
+         event->acceptProposedAction();
+ }
+
+void MainWindow::dropEvent(QDropEvent* event)
+ {
+     if (event->mimeData()->hasFormat("text/uri-list"))
+     {
+        const QList<QUrl> urls = event->mimeData()->urls();
+        QApplication::sendEvent(this, new QCloseEvent());
+        open_project(urls[0].toLocalFile());   
+     }
+     else
+     {
+        const QString text = event->mimeData()->text();
+        QApplication::sendEvent(this, new QCloseEvent());
+        open_project(text);
+     }
+     
+     event->accept();
+ }
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
@@ -900,6 +944,8 @@ void MainWindow::closeEvent(QCloseEvent* event)
         event->ignore();
         return;
     }
+
+    save_ui_state();
 
     m_project_manager.close_project();
 

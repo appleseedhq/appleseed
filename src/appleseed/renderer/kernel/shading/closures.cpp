@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/modeling/input/inputevaluator.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
@@ -115,6 +116,8 @@ namespace
         OSL::Vec3   N;
     };
 }
+
+BOOST_STATIC_ASSERT(sizeof(CompositeClosure) <= InputEvaluator::DataSize);
 
 //
 // CompositeClosure class implementation.
