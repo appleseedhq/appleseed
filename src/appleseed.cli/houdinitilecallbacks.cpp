@@ -156,6 +156,8 @@ namespace
         {
 #ifdef _WIN32
             return _popen(command, "wb");
+#elif defined __APPLE__
+            return popen(command, "w");
 #else
             return popen(command, "wb");
 #endif
