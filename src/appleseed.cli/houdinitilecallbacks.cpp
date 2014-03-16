@@ -36,11 +36,11 @@
 #include "renderer/modeling/frame/frame.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
 #include "foundation/image/pixel.h"
 #include "foundation/utility/log.h"
+#include "foundation/utility/otherwise.h"
 
 // Boost headers
 #include <boost/lexical_cast.hpp>
@@ -70,9 +70,9 @@ namespace
       public:
         // mplay constructor.
         HoudiniTileCallback(
-            const char*   scene_name,
-            const bool    progresive_mode,
-            Logger&       logger)
+            const char*             scene_name,
+            const bool              progressive_mode,
+            Logger&                 logger)
           : m_logger(logger)
           , m_fp(0)
           , m_header_sent(false)
@@ -80,7 +80,7 @@ namespace
         {
             string cmd("imdisplay -p -f ");
 
-            if (progresive_mode)
+            if (progressive_mode)
                 cmd += "-k ";
 
             cmd += "-n ";
@@ -95,9 +95,9 @@ namespace
 
         // hrmanpipe constructor.
         HoudiniTileCallback(
-            const int   socket_number,
-            const bool  progresive_mode,
-            Logger&     logger)
+            const int               socket_number,
+            const bool              progressive_mode,
+            Logger&                 logger)
           : m_logger(logger)
           , m_fp(0)
           , m_header_sent(false)
@@ -105,7 +105,7 @@ namespace
         {
             string cmd("hrmanpipe -f ");
 
-            if (progresive_mode)
+            if (progressive_mode)
                 cmd += "-m ";
 
             cmd += boost::lexical_cast<string>(socket_number);
@@ -113,14 +113,15 @@ namespace
             LOG_DEBUG(m_logger, "executing hrmanpipe: command = %s", cmd.c_str());
 
             m_fp = open_pipe(cmd.c_str());
-            if (!m_fp)
+
+            if (m_fp == 0)
                 LOG_FATAL(m_logger, "Unable to open hrmanpipe");
         }
         
         ~HoudiniTileCallback()
         {
             if (m_fp)
-                pclose(m_fp);
+                close_pipe(m_fp);
         }
 
         virtual void release() OVERRIDE
@@ -129,17 +130,16 @@ namespace
         }
 
         virtual void post_render_tile(
-            const Frame*    frame,
-            const size_t    tile_x,
-            const size_t    tile_y) OVERRIDE
+            const Frame*            frame,
+            const size_t            tile_x,
+            const size_t            tile_y) OVERRIDE
         {
             boost::mutex::scoped_lock lock(m_mutex);
             send_header(*frame);
             send_tile(*frame, tile_x, tile_y);
         }
 
-        virtual void post_render(
-            const Frame*    frame) OVERRIDE
+        virtual void post_render(const Frame* frame) OVERRIDE
         {
             boost::mutex::scoped_lock lock(m_mutex);
             send_header(*frame);
@@ -152,8 +152,7 @@ namespace
         }
 
       private:
-
-        FILE* open_pipe(const char *command)
+        static FILE* open_pipe(const char* command)
         {
 #ifdef _WIN32
             return _popen(command, "wb");
@@ -161,7 +160,16 @@ namespace
             return popen(command, "wb");
 #endif
         }
-        
+
+        static void close_pipe(FILE* pipe)
+        {
+#ifdef _WIN32
+            _pclose(pipe);
+#else
+            pclose(pipe);
+#endif
+        }
+
         void send_header(const Frame& frame)
         {
             if (!m_header_sent)
@@ -169,17 +177,20 @@ namespace
                 {
                     int header[8];
                     memset(header, 0, sizeof(header));
-                    header[0] = (('h' << 24) + ('M' << 16) + ('P'<< 8) + ('0')); // Magic ID
-                    header[1] = frame.image().properties().m_canvas_width;
-                    header[2] = frame.image().properties().m_canvas_height;
-                    
+
+                    header[0] = (('h' << 24) + ('M' << 16) + ('P'<< 8) + ('0'));
+                    header[1] = static_cast<int>(frame.image().properties().m_canvas_width);
+                    header[2] = static_cast<int>(frame.image().properties().m_canvas_height);
+
                     if (m_single_plane)
                     {
                         header[3] = map_pixel_format(frame.image().properties().m_pixel_format);
-                        header[4] = frame.image().properties().m_channel_count;
+                        header[4] = static_cast<int>(frame.image().properties().m_channel_count);
                     }
                     else
-                        header[5] = 1 + frame.aov_images().size();
+                    {
+                        header[5] = static_cast<int>(1 + frame.aov_images().size());
+                    }
 
                     if (fwrite(header, sizeof(int), 8, m_fp) != 8)
                         LOG_FATAL(m_logger, "Unable to write header");
@@ -190,10 +201,12 @@ namespace
                 if (!m_single_plane)
                 {
                     for (size_t i = 0, e = frame.aov_images().size(); i != e; ++i)
+                    {
                         send_plane_definition(
                             frame.aov_images().get_image(i),
                             frame.aov_images().get_name(i),
                             i + 1);
+                    }
                 }
 
                 m_header_sent = true;
@@ -201,21 +214,21 @@ namespace
         }
 
         void send_plane_definition(
-            const foundation::Image&    img,
-            const char*                 name,
-            const size_t                index) const
+            const Image&            img,
+            const char*             name,
+            const size_t            index) const
         {
             int plane_def[8];
             memset(plane_def, 0, sizeof(plane_def));
 
-            plane_def[0] = index;
-            plane_def[1] = strlen(name);
+            plane_def[0] = static_cast<int>(index);
+            plane_def[1] = static_cast<int>(strlen(name));
             plane_def[2] = map_pixel_format(img.properties().m_pixel_format);
             
             if (img.properties().m_pixel_format == PixelFormatDouble)
                 LOG_WARNING(m_logger, "Houdini does not support double pixels, converting to float");
 
-            plane_def[3] = img.properties().m_channel_count;
+            plane_def[3] = static_cast<int>(img.properties().m_channel_count);
         
             if (fwrite(plane_def, sizeof(int), 8, m_fp) != 8)
                 LOG_FATAL(m_logger, "Error sending plane definition");
@@ -225,11 +238,11 @@ namespace
         }
 
         void send_tile(
-            const renderer::Frame&  frame,
+            const Frame&            frame,
             const size_t            tile_x,
             const size_t            tile_y) const
         {
-            // We assume all aov images have the same properties as the main img.
+            // We assume all AOV images have the same properties as the main image.
             const CanvasProperties& props = frame.image().properties();
         
             // Send beauty tile.
@@ -243,7 +256,7 @@ namespace
             if (!m_single_plane)
             {
                 // Send AOV tiles.
-                for (int i = 0, e = frame.aov_images().size(); i < e; ++i)
+                for (size_t i = 0, e = frame.aov_images().size(); i < e; ++i)
                 {
                     do_send_tile(
                         props,
@@ -256,11 +269,11 @@ namespace
         }
 
         void do_send_tile(
-            const foundation::CanvasProperties& properties,
-            const foundation::Tile&             tile,
-            const size_t                        tile_x,
-            const size_t                        tile_y,
-            const size_t                        plane_index) const
+            const CanvasProperties& properties,
+            const Tile&             tile,
+            const size_t            tile_x,
+            const size_t            tile_y,
+            const size_t            plane_index) const
         {
             int tile_head[4];
 
@@ -270,27 +283,27 @@ namespace
             // coordinate is set to the plane index.  The Y coordinates must be
             // zero.
             tile_head[0] = -1;
-            tile_head[1] = plane_index;
+            tile_head[1] = static_cast<int>(plane_index);
             tile_head[2] = 0;
             tile_head[3] = 0;
 
             if (fwrite(tile_head, sizeof(int), 4, m_fp) != 4)
                 LOG_FATAL(m_logger, "Error sending tile index");
 
-            // send tile header
-            tile_head[0] = tile_x * properties.m_tile_width;
-            tile_head[1] = tile_head[0] + tile.get_width() - 1;
-            tile_head[2] = tile_y * properties.m_tile_height;
-            tile_head[3] = tile_head[2] + tile.get_height() - 1;
+            // Send tile header.
+            tile_head[0] = static_cast<int>(tile_x * properties.m_tile_width);
+            tile_head[1] = static_cast<int>(tile_head[0] + tile.get_width() - 1);
+            tile_head[2] = static_cast<int>(tile_y * properties.m_tile_height);
+            tile_head[3] = static_cast<int>(tile_head[2] + tile.get_height() - 1);
 
             if (fwrite(tile_head, sizeof(int), 4, m_fp) != 4)
                 LOG_FATAL(m_logger, "Error sending tile header");
 
-            // send tile pixels.
+            // Send tile pixels.
             if (properties.m_pixel_format == PixelFormatHalf ||
                 properties.m_pixel_format == PixelFormatDouble)
             {
-                Tile tmp(tile, PixelFormatFloat);
+                const Tile tmp(tile, PixelFormatFloat);
                 if (fwrite(tmp.get_storage(), 1, tmp.get_size(), m_fp) != tmp.get_size())
                     LOG_FATAL(m_logger, "Error sending tile pixels");
             }
@@ -320,20 +333,21 @@ namespace
               case PixelFormatFloat:
               case PixelFormatDouble:
                   return 0;
-                  
-                assert_otherwise;
+
+              assert_otherwise;
             }
-            
+
             return -1;
         }
         
-        foundation::Logger& m_logger;
-        boost::mutex        m_mutex;
-        FILE*               m_fp;
-        bool                m_header_sent;
-        bool                m_single_plane;
+        Logger&         m_logger;
+        boost::mutex    m_mutex;
+        FILE*           m_fp;
+        bool            m_header_sent;
+        bool            m_single_plane;
     };
 }
+
 
 //
 // MPlayTileCallbackFactory class implementation.
@@ -341,12 +355,13 @@ namespace
 
 MPlayTileCallbackFactory::MPlayTileCallbackFactory(
     const char*   scene_name,
-    const bool    progresive_mode,
+    const bool    progressive_mode,
     Logger&       logger)
-  : m_callback(new HoudiniTileCallback(
-                       scene_name,
-                       progresive_mode,
-                       logger))
+  : m_callback(
+        new HoudiniTileCallback(
+            scene_name,
+            progressive_mode,
+            logger))
 {
 }
 
@@ -359,6 +374,7 @@ ITileCallback* MPlayTileCallbackFactory::create()
 {
     return m_callback.get();
 }
+
 
 //
 // HRmanPipeTileCallbackFactory class implementation.
