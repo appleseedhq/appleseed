@@ -26,14 +26,17 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_CLI_HOUTILECALLBACKS_H
-#define APPLESEED_CLI_HOUTILECALLBACKS_H
+#ifndef APPLESEED_CLI_HOUDINITILECALLBACKS_H
+#define APPLESEED_CLI_HOUDINITILECALLBACKS_H
 
 // appleseed.renderer headers.
 #include "renderer/api/rendering.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
+
+// Standard headers.
+#include <memory>
 
 // Forward declarations.
 namespace foundation    { class Logger; }
@@ -78,4 +81,4 @@ class HRmanPipeTileCallbackFactory
 }       // namespace cli
 }       // namespace appleseed
 
-#endif  // !APPLESEED_CLI_HOUTILECALLBACKS_H
+#endif  // !APPLESEED_CLI_HOUDINITILECALLBACKS_H

@@ -624,7 +624,7 @@ namespace
         return true;
     }
 
-    bool render_is_progressive(const ParamArray& params)
+    bool is_progressive_render(const ParamArray& params)
     {
         const string value = params.get_required<string>("frame_renderer", "generic");
         return value == "progressive";        
@@ -649,7 +649,7 @@ namespace
             tile_callback_factory.reset(
                 new MPlayTileCallbackFactory(
                     project_filename.c_str(),
-                    render_is_progressive(params),
+                    is_progressive_render(params),
                     g_logger));
         }
         else if (g_cl.m_hrmanpipe_display.is_set())
@@ -657,7 +657,7 @@ namespace
             tile_callback_factory.reset(
                 new HRmanPipeTileCallbackFactory(
                     g_cl.m_hrmanpipe_display.values()[0],
-                    render_is_progressive(params),
+                    is_progressive_render(params),
                     g_logger));
         }
         else if (g_cl.m_output.is_set() && g_cl.m_continuous_saving.is_set())

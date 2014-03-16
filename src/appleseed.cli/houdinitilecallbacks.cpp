@@ -29,17 +29,26 @@
 // This code is based on SideFX's tomdisplay and deepmplay examples distributed with Houdini.
 
 // Interface header.
-#include "houtilecallbacks.h"
-
-// appleseed.foundation headers.
-#include "foundation/image/image.h"
+#include "houdinitilecallbacks.h"
 
 // appleseed.renderer headers.
 #include "renderer/kernel/aov/imagestack.h"
 #include "renderer/modeling/frame/frame.h"
 
+// appleseed.foundation headers.
+#include "foundation/image/canvasproperties.h"
+#include "foundation/image/image.h"
+#include "foundation/image/pixel.h"
+#include "foundation/utility/log.h"
+
 // Boost headers
 #include <boost/lexical_cast.hpp>
+#include <boost/thread/mutex.hpp>
+
+// Standard headers.
+#include <cstdio>
+#include <cstring>
+#include <string>
 
 using namespace foundation;
 using namespace renderer;
@@ -49,23 +58,23 @@ namespace appleseed {
 namespace cli {
 
 //
-// HouTileCallback.
+// HoudiniTileCallback.
 //
 
 namespace
 {
-    class HouTileCallback
-      : public renderer::TileCallbackBase
+    class HoudiniTileCallback
+      : public TileCallbackBase
     {
       public:
         // mplay constructor.
-        HouTileCallback(
-          const char*   scene_name,
-          bool          progresive_mode,
-          Logger&       logger)
+        HoudiniTileCallback(
+            const char*   scene_name,
+            const bool    progresive_mode,
+            Logger&       logger)
           : m_logger(logger)
           , m_fp(0)
-          , m_header_sent(0)
+          , m_header_sent(false)
           , m_single_plane(false)
         {
             string cmd("imdisplay -p -f ");
@@ -84,14 +93,14 @@ namespace
         }
 
         // hrmanpipe constructor.
-        HouTileCallback(
-          int           socket_number,
-          bool          progresive_mode,
-          Logger&       logger)
+        HoudiniTileCallback(
+            const int   socket_number,
+            const bool  progresive_mode,
+            Logger&     logger)
           : ITileCallback()
           , m_logger(logger)
           , m_fp(0)
-          , m_header_sent(0)
+          , m_header_sent(false)
           , m_single_plane(true)
         {
             string cmd("hrmanpipe -f ");
@@ -108,7 +117,7 @@ namespace
                 LOG_FATAL(m_logger, "Unable to open hrmanpipe");
         }
         
-        ~HouTileCallback()
+        ~HoudiniTileCallback()
         {
             if (m_fp)
                 pclose(m_fp);
@@ -144,11 +153,10 @@ namespace
 
       private:
 
-        void send_header(const renderer::Frame& frame)
+        void send_header(const Frame& frame)
         {
             if (!m_header_sent)
             {
-                // header
                 {
                     int header[8];
                     memset(header, 0, sizeof(header));
@@ -168,12 +176,11 @@ namespace
                         LOG_FATAL(m_logger, "Unable to write header");
                 }
 
-                // plane definitions
                 send_plane_definition(frame.image(), "beauty", 0);
 
                 if (!m_single_plane)
                 {
-                    for (int i = 0, e = frame.aov_images().size(); i != e; ++i)
+                    for (size_t i = 0, e = frame.aov_images().size(); i != e; ++i)
                         send_plane_definition(
                             frame.aov_images().get_image(i),
                             frame.aov_images().get_name(i),
@@ -324,10 +331,10 @@ namespace
 //
 
 MPlayTileCallbackFactory::MPlayTileCallbackFactory(
-  const char*   scene_name,
-  bool          progresive_mode,
-  Logger&       logger)
-  : m_callback(new HouTileCallback(
+    const char*   scene_name,
+    const bool    progresive_mode,
+    Logger&       logger)
+  : m_callback(new HoudiniTileCallback(
                        scene_name,
                        progresive_mode,
                        logger))
@@ -349,13 +356,14 @@ ITileCallback* MPlayTileCallbackFactory::create()
 //
 
 HRmanPipeTileCallbackFactory::HRmanPipeTileCallbackFactory(
-  int                 socket_number,
-  bool                progressive_mode,
-  foundation::Logger& logger)
-  : m_callback(new HouTileCallback(
-                      socket_number,
-                      progressive_mode,
-                      logger))
+    const int   socket_number,
+    const bool  progressive_mode,
+    Logger&     logger)
+  : m_callback(
+        new HoudiniTileCallback(
+            socket_number,
+            progressive_mode,
+            logger))
 {
 }
 

@@ -74,7 +74,7 @@ class CommandLineHandler
     foundation::ValueOptionHandler<std::string>     m_override_shading;
     foundation::ValueOptionHandler<std::string>     m_select_object_instances;
 
-    // Houdini related options
+    // Houdini related options.
     foundation::FlagOptionHandler                   m_mplay_display;
     foundation::ValueOptionHandler<int>             m_hrmanpipe_display;
     
