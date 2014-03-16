@@ -75,6 +75,7 @@ class ItemBase
 
   public slots:
     virtual void slot_edit(AttributeEditor* attribute_editor = 0);
+    virtual void slot_instantiate();
     virtual void slot_delete();
     virtual void slot_delete_multiple(QList<ItemBase*> items = QList<ItemBase*>());
 

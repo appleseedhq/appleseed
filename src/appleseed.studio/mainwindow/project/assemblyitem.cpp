@@ -224,20 +224,36 @@ void AssemblyItem::slot_instantiate()
 
     if (!instance_name.empty())
     {
-        // todo: if we are currently rendering, we should schedule the instantiation, not do it right away.
-
-        auto_release_ptr<AssemblyInstance> assembly_instance(
-            AssemblyInstanceFactory::create(
-                instance_name.c_str(),
-                ParamArray(),
-                m_assembly.get_name()));
-
-        m_parent_item->get_assembly_instance_collection_item().add_item(assembly_instance.get());
-        m_parent.assembly_instances().insert(assembly_instance);
-
-        m_project_builder.get_project().get_scene()->bump_version_id();
-        m_project_builder.notify_project_modification();
+        // If render running schedule instantiation else do it right away
+        if (m_project_builder.get_rendering_manager().is_rendering())
+            schedule_instantiate(instance_name);
+        else
+            do_instantiate(instance_name);
     }
+}
+
+void AssemblyItem::do_instantiate(const std::string name)
+{
+    auto_release_ptr<AssemblyInstance> assembly_instance(
+        AssemblyInstanceFactory::create(
+            name.c_str(),
+            ParamArray(),
+            m_assembly.get_name()));
+
+    m_parent_item->get_assembly_instance_collection_item().add_item(assembly_instance.get());
+    m_parent.assembly_instances().insert(assembly_instance);
+
+    m_project_builder.get_project().get_scene()->bump_version_id();
+    m_project_builder.notify_project_modification();
+}
+
+void AssemblyItem::schedule_instantiate(const std::string name)
+{
+    m_project_builder.get_rendering_manager().push_delayed_action(
+            std::auto_ptr<RenderingManager::IDelayedAction>(
+                new EntityInstantiationDelayedAction<AssemblyItem>(this, name)));
+
+    m_project_builder.get_rendering_manager().reinitialize_rendering();
 }
 
 template <typename Entity, typename EntityContainer>

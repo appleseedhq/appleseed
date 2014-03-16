@@ -148,22 +148,38 @@ void ObjectItem::slot_instantiate()
 
     if (!instance_name.empty())
     {
-        // todo: if we are currently rendering, we should schedule the instantiation, not do it right away.
-
-        auto_release_ptr<ObjectInstance> object_instance(
-            ObjectInstanceFactory::create(
-                instance_name.c_str(),
-                ParamArray(),
-                m_entity->get_name(),
-                Transformd::identity(),
-                StringDictionary()));
-
-        m_parent_item->add_item(object_instance.get());
-        m_parent.object_instances().insert(object_instance);
-
-        m_parent.bump_version_id();
-        m_project_builder.notify_project_modification();
+        // If render running schedule instantiation else do it right away
+        if (m_project_builder.get_rendering_manager().is_rendering())
+            schedule_instantiate(instance_name);
+        else
+            do_instantiate(instance_name);
     }
+}
+
+void ObjectItem::do_instantiate(const std::string name)
+{
+    auto_release_ptr<ObjectInstance> object_instance(
+        ObjectInstanceFactory::create(
+            name.c_str(),
+            ParamArray(),
+            m_entity->get_name(),
+            Transformd::identity(),
+            StringDictionary()));
+
+    m_parent_item->add_item(object_instance.get());
+    m_parent.object_instances().insert(object_instance);
+
+    m_parent.bump_version_id();
+    m_project_builder.notify_project_modification();
+}
+
+void ObjectItem::schedule_instantiate(const std::string name)
+{
+    m_project_builder.get_rendering_manager().push_delayed_action(
+        auto_ptr<RenderingManager::IDelayedAction>(
+            new EntityInstantiationDelayedAction<ObjectItem>(this, name)));
+
+    m_project_builder.get_rendering_manager().reinitialize_rendering();
 }
 
 void ObjectItem::slot_delete()

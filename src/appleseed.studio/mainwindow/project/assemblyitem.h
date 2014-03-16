@@ -89,10 +89,8 @@ class AssemblyItem
     ObjectCollectionItem& get_object_collection_item() const;
     ObjectInstanceCollectionItem& get_object_instance_collection_item() const;
 
-  private slots:
-    void slot_instantiate();
-
   private:
+    friend class EntityInstantiationDelayedAction<AssemblyItem>;
     friend class EntityDeletionDelayedAction<AssemblyItem>;
 
     renderer::Assembly&             m_assembly;
@@ -113,6 +111,11 @@ class AssemblyItem
     LightCollectionItem*            m_light_collection_item;
     ObjectCollectionItem*           m_object_collection_item;
     ObjectInstanceCollectionItem*   m_object_instance_collection_item;
+
+    virtual void slot_instantiate() OVERRIDE;
+
+    void schedule_instantiate(const std::string name);
+    void do_instantiate(const std::string name);
 
     virtual void slot_delete() OVERRIDE;
 

@@ -61,15 +61,18 @@ class ObjectItem
 
     virtual QMenu* get_single_item_context_menu() const OVERRIDE;
 
-  private slots:
-    void slot_instantiate();
-
   private:
+    friend class EntityInstantiationDelayedAction<ObjectItem>;
     friend class EntityDeletionDelayedAction<ObjectItem>;
 
     renderer::Assembly&     m_parent;
     AssemblyItem*           m_parent_item;
     ProjectBuilder&         m_project_builder;
+
+    virtual void slot_instantiate() OVERRIDE;
+
+    void schedule_instantiate(const std::string name);
+    void do_instantiate(const std::string name);
 
     virtual void slot_delete() OVERRIDE;
 
