@@ -115,7 +115,7 @@ class MainWindow
     ProjectExplorer*                        m_project_explorer;
     AttributeEditor*                        m_attribute_editor;
     RenderingManager                        m_rendering_manager;
-	QFileSystemWatcher*                     m_watcher;
+    QFileSystemWatcher*                     m_watcher;
 
     typedef std::map<std::string, RenderTab*> RenderTabCollection;
     typedef std::map<std::string, RenderTab::State> RenderTabStateCollection;
