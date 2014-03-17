@@ -838,8 +838,18 @@ void MainWindow::add_render_widget(const QString& label)
     m_render_tabs[label.toStdString()] = render_tab;
 }
 
+
+
+void MainWindow::slot_file_changed(const QString & path)
+{
+	m_watcher->removePath(path);
+	slot_reload_project();
+	RENDERER_LOG_INFO("file changed.");
+}
+
 void MainWindow::start_rendering(const bool interactive)
 {
+	m_watcher->addPath(m_project_manager.get_project()->get_path());
     assert(m_project_manager.is_project_open());
 
     // Enable/disable widgets appropriately. File -> Reload is enabled during interactive rendering.
@@ -1122,6 +1132,7 @@ void MainWindow::slot_start_final_rendering()
 
 void MainWindow::slot_start_rendering_once(const QString& filepath, const QString& configuration, const bool successful)
 {
+
     sender()->deleteLater();
 
     if (successful)
@@ -1320,6 +1331,17 @@ void MainWindow::slot_show_about_window()
     about_window->activateWindow();
 }
 
+void MainWindow::file_change_watcher()
+{
+	string watch_file_change = m_settings.get("watch_file_changes");
+	if(strcmp(watch_file_change.c_str(),"false"))
+	{
+		m_watcher = new QFileSystemWatcher;
+		connect(m_watcher, SIGNAL(fileChanged(const QString &)), this, SLOT(slot_file_changed(const QString &)));
+		RENDERER_LOG_INFO("file watcher initiated.");
+	}
+}
+
 void MainWindow::slot_load_settings()
 {
     const filesystem::path root_path(Application::get_root_path());
@@ -1340,6 +1362,7 @@ void MainWindow::slot_load_settings()
     {
         RENDERER_LOG_INFO("successfully loaded settings from %s.", settings_file_path.c_str());
         m_settings = settings;
+		file_change_watcher();
     }
     else
     {
