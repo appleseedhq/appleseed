@@ -651,6 +651,7 @@ void MainWindow::on_project_change()
     update_workspace();
 
     restore_state_after_project_open();
+    m_watcher->addPath(m_project_manager.get_project()->get_path());
 }
 
 void MainWindow::update_workspace()
@@ -836,12 +837,11 @@ void MainWindow::slot_file_changed(const QString& path)
 {
     m_watcher->removePath(path);
     slot_reload_project();
-    RENDERER_LOG_INFO("file changed.");
+    RENDERER_LOG_INFO("Project file changes detected on disk, reloading it.");
 }
 
 void MainWindow::start_rendering(const bool interactive)
 {
-    m_watcher->addPath(m_project_manager.get_project()->get_path());
     assert(m_project_manager.is_project_open());
 
     // Enable/disable widgets appropriately. File -> Reload is enabled during interactive rendering.
@@ -1287,10 +1287,9 @@ void MainWindow::slot_show_about_window()
 
 void MainWindow::file_change_watcher()
 {
-    bool watch_file_change = m_settings.get_optional<bool>("watch_file_changes");
-    if(watch_file_change)
+    if (m_settings.get_optional<bool>("watch_file_changes"))
     {
-        m_watcher = new QFileSystemWatcher;
+        m_watcher = new QFileSystemWatcher(this);
         connect(m_watcher, SIGNAL(fileChanged(const QString &)), this, SLOT(slot_file_changed(const QString &)));
         RENDERER_LOG_INFO("file watcher initiated.");
     }
