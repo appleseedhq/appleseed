@@ -46,6 +46,7 @@
 // Qt headers.
 #include <QMainWindow>
 #include <QObject>
+#include <QFileSystemWatcher>
 
 // Standard headers.
 #include <map>
@@ -115,6 +116,8 @@ class MainWindow
     AttributeEditor*                        m_attribute_editor;
     RenderingManager                        m_rendering_manager;
 
+	QFileSystemWatcher *watcher;
+
     typedef std::map<std::string, RenderTab*> RenderTabCollection;
     typedef std::map<std::string, RenderTab::State> RenderTabStateCollection;
 
@@ -164,6 +167,8 @@ class MainWindow
     void remove_render_widgets();
     void add_render_widget(const QString& label);
 
+	void file_change_watcher();
+
     void start_rendering(const bool interactive);
 
     virtual void closeEvent(QCloseEvent* event);
@@ -205,6 +210,8 @@ class MainWindow
 
     void slot_load_settings();
     void slot_save_settings();
+
+	void slot_file_changed(const QString& path);
 
     void slot_filter_text_changed(const QString& pattern);
     void slot_clear_filter();
