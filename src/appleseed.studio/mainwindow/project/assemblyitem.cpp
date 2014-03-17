@@ -224,7 +224,6 @@ void AssemblyItem::slot_instantiate()
 
     if (!instance_name.empty())
     {
-        // If render running schedule instantiation else do it right away
         if (m_project_builder.get_rendering_manager().is_rendering())
             schedule_instantiate(instance_name);
         else
@@ -232,7 +231,7 @@ void AssemblyItem::slot_instantiate()
     }
 }
 
-void AssemblyItem::do_instantiate(const std::string name)
+void AssemblyItem::do_instantiate(const std::string& name)
 {
     auto_release_ptr<AssemblyInstance> assembly_instance(
         AssemblyInstanceFactory::create(
@@ -247,7 +246,7 @@ void AssemblyItem::do_instantiate(const std::string name)
     m_project_builder.notify_project_modification();
 }
 
-void AssemblyItem::schedule_instantiate(const std::string name)
+void AssemblyItem::schedule_instantiate(const std::string& name)
 {
     m_project_builder.get_rendering_manager().push_delayed_action(
             std::auto_ptr<RenderingManager::IDelayedAction>(

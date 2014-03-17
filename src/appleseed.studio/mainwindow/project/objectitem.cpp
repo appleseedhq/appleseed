@@ -148,7 +148,6 @@ void ObjectItem::slot_instantiate()
 
     if (!instance_name.empty())
     {
-        // If render running schedule instantiation else do it right away
         if (m_project_builder.get_rendering_manager().is_rendering())
             schedule_instantiate(instance_name);
         else
@@ -156,7 +155,7 @@ void ObjectItem::slot_instantiate()
     }
 }
 
-void ObjectItem::do_instantiate(const std::string name)
+void ObjectItem::do_instantiate(const std::string& name)
 {
     auto_release_ptr<ObjectInstance> object_instance(
         ObjectInstanceFactory::create(
@@ -173,7 +172,7 @@ void ObjectItem::do_instantiate(const std::string name)
     m_project_builder.notify_project_modification();
 }
 
-void ObjectItem::schedule_instantiate(const std::string name)
+void ObjectItem::schedule_instantiate(const std::string& name)
 {
     m_project_builder.get_rendering_manager().push_delayed_action(
         auto_ptr<RenderingManager::IDelayedAction>(

@@ -114,8 +114,8 @@ class AssemblyItem
 
     virtual void slot_instantiate() OVERRIDE;
 
-    void schedule_instantiate(const std::string name);
-    void do_instantiate(const std::string name);
+    void schedule_instantiate(const std::string& name);
+    void do_instantiate(const std::string& name);
 
     virtual void slot_delete() OVERRIDE;
 

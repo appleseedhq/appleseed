@@ -87,8 +87,8 @@ class EntityItem
     void schedule_edit(const foundation::Dictionary& values);
     void edit(const foundation::Dictionary& values);
 
-    void schedule_instantiate(const std::string name);
-    void do_instantiate(const std::string name);
+    void schedule_instantiate(const std::string& name);
+    void do_instantiate(const std::string& name);
 
     virtual void slot_delete() OVERRIDE;
 
@@ -100,6 +100,7 @@ class EntityItem
     friend class EntityEditionDelayedAction<EntityItem>;
     friend class EntityInstantiationDelayedAction<EntityItem>;
     friend class EntityDeletionDelayedAction<EntityItem>;
+
     foundation::UniqueID    m_entity_uid;
     bool                    m_fixed_position;
 };
@@ -184,7 +185,7 @@ void EntityItem<Entity, ParentEntity, CollectionItem>::edit(const foundation::Di
 
 
 template <typename Entity, typename ParentEntity, typename CollectionItem>
-void EntityItem<Entity, ParentEntity, CollectionItem>::schedule_instantiate(const std::string name)
+void EntityItem<Entity, ParentEntity, CollectionItem>::schedule_instantiate(const std::string& name)
 {
     m_project_builder.get_rendering_manager().push_delayed_action(
             std::auto_ptr<RenderingManager::IDelayedAction>(
@@ -194,7 +195,7 @@ void EntityItem<Entity, ParentEntity, CollectionItem>::schedule_instantiate(cons
 }
 
 template <typename Entity, typename ParentEntity, typename CollectionItem>
-void EntityItem<Entity, ParentEntity, CollectionItem>::do_instantiate(const std::string name)
+void EntityItem<Entity, ParentEntity, CollectionItem>::do_instantiate(const std::string& name)
 {
 }
 
