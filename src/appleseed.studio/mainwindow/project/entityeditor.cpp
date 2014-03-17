@@ -242,7 +242,7 @@ namespace
         {
             m_slider->blockSignals(true);
             const double new_value = value.toDouble();
-            if (m_slider->maximum() < new_value)
+            if (m_slider->maximum() < new_value && m_slider->minimum() < new_value)
             {
                 const double min = m_slider->minimum();
                 m_slider->setRange(min, new_value);
@@ -257,7 +257,7 @@ namespace
             // Only lower slider max when the user has finished typing.
             m_slider->blockSignals(true);
             const double new_value = m_line_edit->text().toDouble();
-            if (m_slider->maximum() < new_value || m_slider->maximum() >= new_value * 3.0)
+            if ((m_slider->maximum() < new_value || m_slider->maximum() >= new_value * 3.0) && m_slider->minimum() < new_value)
             {
                 const double min = m_slider->minimum();
                 m_slider->setRange(min, new_value);
