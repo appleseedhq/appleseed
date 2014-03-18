@@ -31,10 +31,13 @@
 #include "foundation/utility/alignedallocator.h"
 #include "foundation/utility/memory.h"
 #include "foundation/utility/test.h"
+#include "foundation/math/transform.h"
 
 // Standard headers.
 #include <cstddef>
 #include <vector>
+#include <ctime>
+#include <cstdlib>
 
 using namespace foundation;
 using namespace std;
@@ -130,6 +133,34 @@ TEST_SUITE(Foundation_Utility_Memory)
     {
         EXPECT_FALSE(is_aligned((void*)65, 32));
     }
+#ifdef APPLESEED_USE_SSE
+    TEST_CASE(Malloc_ReturnedPointerIsNotAligned)
+    {
+	srand((unsigned)time(0));
+	bool aligned = true;
+	void *pointers[100];
+	for (int i=0; i < 100; ++i)
+	{
+	    long int alloc_size = rand() % 1001;
+	    pointers[i] = malloc(alloc_size);
+            if (!is_aligned(pointers[i],16))
+		aligned = false;
+	}
+	for (int i=0; i < 100; ++i)
+	{
+	    free(pointers[i]);
+	}
+        Transformd *mat_d = new Transformd();
+        if (!is_aligned(mat_d->get_local_to_parent()[0],16))
+            aligned = false;
+	free(mat_d);
+	Transformf *mat_f = new Transformf();
+        if (!is_aligned(mat_f->get_local_to_parent()[0],16))
+            aligned = false;
+	free(mat_f);
+        EXPECT_FALSE(aligned);
+    }
+#endif
 
     TEST_CASE(EnsureMinimumSize_GivenEmptyVector_ResizesVectorByInsertingDefaultValue)
     {
