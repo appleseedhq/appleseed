@@ -830,9 +830,6 @@ void MainWindow::add_render_widget(const QString& label)
     connect(
         render_tab, SIGNAL(signal_quicksave_all_aovs()),
         SLOT(slot_quicksave_all_aovs()));
-    connect(
-        render_tab, SIGNAL(signal_reset_zoom()),
-        SLOT(slot_reset_zoom()));
 
     // Add the render tab to the tab bar.
     m_ui->tab_render_channels->addTab(render_tab, label);
@@ -1278,7 +1275,10 @@ void MainWindow::slot_set_render_region(const QRect& rect)
 
 void MainWindow::slot_reset_zoom()
 {
-   m_render_tabs[(m_ui->tab_render_channels->tabText(m_ui->tab_render_channels->currentIndex())).toStdString()]->reset_zoom();
+    m_render_tabs[
+        (m_ui->tab_render_channels->
+            tabText(m_ui->tab_render_channels->
+                currentIndex())).toStdString()]->reset_zoom();
 }
 
 void MainWindow::slot_camera_changed()

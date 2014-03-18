@@ -100,7 +100,6 @@ void RenderTab::reset_zoom()
     m_zoom_handler->reset_zoom();
 }
 
-
 void RenderTab::update()
 {
     m_render_widget->update();

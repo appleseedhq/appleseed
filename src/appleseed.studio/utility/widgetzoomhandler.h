@@ -82,7 +82,6 @@ class WidgetZoomHandler
     void zoom_in();
     void zoom_out();
     
-
     void compute_min_max_scale_factors();
     void multiply_scale_factor(const double multiplier);
     void apply_scale_factor();
