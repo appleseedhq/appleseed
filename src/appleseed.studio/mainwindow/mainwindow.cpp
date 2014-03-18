@@ -73,18 +73,22 @@
 #include <QDir>
 #include <QFileDialog>
 #include <QFont>
+#include <QFontMetrics>
 #include <QIcon>
 #include <QLabel>
 #include <QLayout>
 #include <QLineEdit>
 #include <QMenu>
 #include <QMessageBox>
+#include <QPainter>
 #include <QRect>
 #include <QSettings>
+#include <QSignalMapper>
 #include <QStatusBar>
 #include <QString>
 #include <QStringList>
 #include <Qt>
+#include <QToolButton>
 #include <QUrl>
 
 // boost headers.
@@ -134,6 +138,7 @@ MainWindow::MainWindow(QWidget* parent)
     remove_render_widgets();
     update_workspace();
 
+    build_minimize_toolbar();
     showMaximized();
 
     setAcceptDrops(true);
@@ -244,6 +249,10 @@ void MainWindow::build_menus()
     m_ui->menu_view->addAction(m_ui->project_explorer->toggleViewAction());
     m_ui->menu_view->addAction(m_ui->attribute_editor->toggleViewAction());
     m_ui->menu_view->addAction(m_ui->log->toggleViewAction());
+    m_ui->menu_view->addSeparator();
+    QAction* fullscreen_action = m_ui->menu_view->addAction("Fullscreen");
+    fullscreen_action->setShortcut(Qt::Key_F11);
+    connect(fullscreen_action, SIGNAL(triggered()), SLOT(slot_fullscreen()));
 
     //
     // Rendering menu.
@@ -508,6 +517,130 @@ void MainWindow::build_project_explorer()
         SLOT(slot_clear_filter()));
 
     m_ui->pushbutton_clear_filter->setEnabled(false);
+}
+
+class VerticalButton : public QWidget {
+    Q_OBJECT
+public:
+    VerticalButton(QWidget* parent, QDockWidget* dock_widget) :
+        QWidget(parent), m_dock_widget(dock_widget),
+        m_on(true), m_minimized(false)
+    {
+        // Add front and end character for additional spacing
+        m_text = QString("  ") + dock_widget->windowTitle() + QString("  ");
+        // Set font
+        QFont font;
+        font.setPixelSize(12);
+        setFont(font);
+        // Get font width and height
+        QFontMetrics font_metrics(font);
+        m_width = font_metrics.width(m_text);
+        m_height = font_metrics.height();
+
+        // Set widget size
+        setMinimumHeight(m_width);
+        setMinimumWidth(m_height+2);
+
+        setObjectName(QString::fromUtf8("VerticalButtonOn"));
+        connect_dock_widget();
+    }
+
+    void paintEvent(QPaintEvent *)
+    {
+        QStyleOption opt;
+        opt.init(this);
+        QPainter painter(this);
+        style()->drawPrimitive(QStyle::PE_Widget, &opt, &painter, this);
+        painter.translate(5, 0);
+        painter.rotate(90);
+        painter.drawText(QPoint(0, 0), m_text);
+    }
+
+    bool is_on()
+    {
+        return m_on;
+    }
+
+    void toggle()
+    {
+        m_on = !m_on;
+        if (m_on)
+            setObjectName(QString::fromUtf8("VerticalButtonOn"));
+        else
+            setObjectName(QString::fromUtf8("VerticalButtonOff"));
+        // Force stylesheet reloading for this widget
+        style()->unpolish(this);
+        style()->polish(this);
+    }
+
+    void set_fullscreen(bool on)
+    {
+        if (on)
+        {
+            // Setting fullscreen
+            m_minimized = m_on;
+            if (!m_on)
+                m_dock_widget->toggleViewAction()->activate(QAction::Trigger);
+        }
+        else
+        {
+            // Deactivating fullscreen
+            // Keep state before fullscreen
+            if (!m_minimized)
+                m_dock_widget->toggleViewAction()->activate(QAction::Trigger);
+        }
+    }
+
+protected:
+    void mousePressEvent(QMouseEvent *event)
+    {
+        if (event->buttons() & Qt::LeftButton)
+        {
+            m_dock_widget->toggleViewAction()->activate(QAction::Trigger);
+        }
+    }
+
+private:
+    void connect_dock_widget()
+    {
+        connect(
+            m_dock_widget->toggleViewAction(), SIGNAL(toggled(bool)),
+            SLOT(slot_minimize()));
+    }
+
+    QDockWidget* m_dock_widget;
+    QString m_text;
+    int m_width, m_height;
+    bool m_on, m_mouse_pressed, m_minimized, started;
+
+private slots:
+    void slot_minimize() {
+        toggle();
+    }
+};
+
+
+void MainWindow::build_minimize_buttons()
+{
+    m_minimize_buttons.push_back(new VerticalButton(this, m_ui->project_explorer));
+    m_minimize_buttons.push_back(new VerticalButton(this, m_ui->attribute_editor));
+    m_minimize_buttons.push_back(new VerticalButton(this, m_ui->log));
+}
+
+void MainWindow::build_minimize_toolbar()
+{
+    QToolBar *minimize_toolbar = new QToolBar();
+    minimize_toolbar->setObjectName(QString::fromUtf8("minimize_toolbar"));
+    minimize_toolbar->setMinimumWidth(30);
+    minimize_toolbar->setMovable(false);
+    build_minimize_buttons();
+    m_fullscreen = true;
+    for (each<vector<VerticalButton*> > button = m_minimize_buttons; button; ++button)
+    {
+        m_fullscreen &= !(*button)->is_on();
+        minimize_toolbar->addWidget(*button);
+    }
+    addToolBar(Qt::RightToolBarArea, minimize_toolbar);
 }
 
 void MainWindow::build_connections()
@@ -1092,6 +1225,26 @@ void MainWindow::slot_save_project_as()
 
         update_recent_files_menu(filepath);
         update_workspace();
+    }
+}
+
+void MainWindow::slot_fullscreen()
+{
+    m_fullscreen = !m_fullscreen;
+
+    bool all_minimized = true;
+    for (each<vector<VerticalButton*> > button = m_minimize_buttons; button; ++button)
+    {
+        all_minimized &= (*button)->is_on();
+    }
+
+    // All where manualy minimized so exit full screen mode
+    if (all_minimized)
+        m_fullscreen = false;
+
+    for (each<vector<VerticalButton*> > button = m_minimize_buttons; button; ++button)
+    {
+        (*button)->set_fullscreen(m_fullscreen);
     }
 }
 
