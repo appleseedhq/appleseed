@@ -167,7 +167,7 @@
   <widget class="QDockWidget" name="project_explorer">
    <property name="minimumSize">
     <size>
-     <width>213</width>
+     <width>200</width>
      <height>187</height>
     </size>
    </property>

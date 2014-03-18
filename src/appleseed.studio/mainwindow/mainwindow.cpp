@@ -498,7 +498,6 @@ void MainWindow::build_project_explorer()
 
     disable_osx_focus_rect(m_ui->treewidget_project_explorer_scene);
 
-
     connect(
         m_ui->lineedit_filter, SIGNAL(textChanged(const QString&)),
         SLOT(slot_filter_text_changed(const QString&)));
