@@ -497,7 +497,7 @@ void MainWindow::build_project_explorer()
     m_ui->treewidget_project_explorer_scene->setColumnWidth(1, 75);     // render layer
 
     disable_osx_focus_rect(m_ui->treewidget_project_explorer_scene);
-    disable_osx_focus_rect(m_ui->treewidget_project_explorer_renders);
+
 
     connect(
         m_ui->lineedit_filter, SIGNAL(textChanged(const QString&)),
@@ -791,9 +791,6 @@ void MainWindow::recreate_render_widgets()
     if (m_project_manager.is_project_open())
     {
         add_render_widget("RGB");
-        add_render_widget("Alpha");
-        add_render_widget("Depth");
-        add_render_widget("Anomalies");
     }
 }
 
