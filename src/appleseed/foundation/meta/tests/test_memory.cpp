@@ -138,7 +138,7 @@ TEST_SUITE(Foundation_Utility_Memory)
         const int test_times = 100;
         srand((unsigned)time(0));
         bool aligned = true;
-        void *pointers[test_times];
+        void* pointers[test_times];
         for (int i=0; i < test_times; ++i)
         {
             size_t alloc_size = rand() % 1001;
@@ -146,7 +146,7 @@ TEST_SUITE(Foundation_Utility_Memory)
             if (!is_aligned(pointers[i],16))
                 aligned = false;
         }
-        for (int i=0; i < test_times; ++i)
+        for (int i = 0; i < test_times; ++i)
         {
             free(pointers[i]);
         }
