@@ -44,6 +44,8 @@
 #include <Qt>
 #include <QWidget>
 
+#include <QScrollArea>
+
 using namespace foundation;
 using namespace renderer;
 
@@ -134,8 +136,27 @@ void CameraController::configure_controller(const Scene* scene)
 
 Vector2d CameraController::get_mouse_position(const QMouseEvent* event) const
 {
-    const int width = m_render_widget->width();
-    const int height = m_render_widget->height();
+
+    int width = m_render_widget->width();
+    int height = m_render_widget->height();
+
+    // check with the size of the scroll area that handles the zoom. If the render widget is very small
+    // a small mouse movement causes a huge camera movement.
+
+    // the wrapper isn't enough, since it is scaled by the ScrollArea also.
+    const QWidget *render_widget_wrapper = static_cast<QWidget*>(m_render_widget->parent());
+    if (render_widget_wrapper != NULL)
+    {
+        const QWidget *ScrollArea = static_cast<QWidget*>(render_widget_wrapper->parent());
+        if (ScrollArea != NULL)
+        {
+            if (ScrollArea->size().height() > height || ScrollArea->size().width() > width)
+            {
+                width = ScrollArea->size().width();
+                height = ScrollArea->size().height();
+            }
+        }
+    }
 
     const double x =  static_cast<double>(event->x()) / width;
     const double y = -static_cast<double>(event->y()) / height;
