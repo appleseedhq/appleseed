@@ -216,7 +216,7 @@ void CameraController<T>::update_drag(const Vector<T, 2>& point)
     const T drag_length = norm(point - m_drag_origin);
     speed *= std::pow(T(0.7) + drag_length, T(1.8));
 
-    // also modulate speed based on the distance to the target.
+    // Also modulate speed based on the distance to the target.
     const T target_distance = norm(m_view.m_target - m_view.m_position);
     if (m_drag_movement == Tumble)
     {
@@ -224,8 +224,7 @@ void CameraController<T>::update_drag(const Vector<T, 2>& point)
     }
     else
     {
-        // the distance has slightly more effect for tracking and 
-        // dollying.
+        // The distance has slightly more effect for tracking and dollying.
         speed *= std::pow(T(1.0) + target_distance, T(1.2));
     }
         
@@ -347,17 +346,17 @@ void CameraController<T>::dolly(const Vector<T, 2>& delta)
 {
     T length = norm(delta);
 
-    if (delta.y < 0)
+    if (delta.y < T(0.0))
     {
         // Mouse movement downwards (left or right).
-        length *= -1;
+        length = -length;
     }
-    else if (delta.y == 0)
+    else if (delta.y == T(0.0))
     {
-        if (delta.x > 0)
+        if (delta.x > T(0.0))
         {
             // Mouse movement only to the right.
-            length *= -1;
+            length = -length;
         }
     }
 
