@@ -85,6 +85,8 @@ class EntityBrowserWindow
     void slot_item_selection_changed();
     void slot_item_activated(QListWidgetItem* current);
     void slot_accept();
+    void slot_clear_filter();
+    void slot_filter_text_changed(const QString& pattern);
 };
 
 }       // namespace studio

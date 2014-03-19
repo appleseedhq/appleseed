@@ -71,6 +71,7 @@ EntityBrowserWindow::EntityBrowserWindow(
     resize(400, 300);
 
     m_ui->buttonbox->button(QDialogButtonBox::Ok)->setEnabled(false);
+    m_ui->pushbutton_clear_filter->setEnabled(false);
 
     connect(
         m_ui->tab_widget, SIGNAL(currentChanged(int)),
@@ -78,6 +79,11 @@ EntityBrowserWindow::EntityBrowserWindow(
 
     connect(m_ui->buttonbox, SIGNAL(accepted()), this, SLOT(slot_accept()));
     connect(m_ui->buttonbox, SIGNAL(rejected()), this, SLOT(close()));
+    connect(m_ui->pushbutton_clear_filter, SIGNAL(clicked()), this, SLOT(slot_clear_filter()));
+
+    connect(
+        m_ui->lineedit_filter, SIGNAL(textChanged(const QString&)),
+        SLOT(slot_filter_text_changed(const QString&)));
 
     connect(
         create_window_local_shortcut(this, Qt::Key_Return), SIGNAL(activated()),
@@ -109,6 +115,15 @@ namespace
             QListWidgetItem* item = new QListWidgetItem(item_label, list_widget);
             item->setData(0, item_value);
         }
+    }
+}
+
+namespace
+{
+    void filter_item(QListWidgetItem *item, const QRegExp& regexp)
+    {
+        const bool visible = regexp.indexIn(item->text()) >= 0;
+        item->setHidden(!visible);
     }
 }
 
@@ -172,6 +187,26 @@ void EntityBrowserWindow::slot_accept()
 
     if (selected_items.size() == 1)
         slot_item_activated(selected_items.first());
+}
+
+void EntityBrowserWindow::slot_filter_text_changed(const QString& pattern)
+{
+    m_ui->pushbutton_clear_filter->setEnabled(!pattern.isEmpty());
+
+    const QRegExp regexp(pattern);
+    const Page& page = m_pages[m_ui->tab_widget->currentIndex()];
+
+    for(int i = 0; i < page.m_list_widget->count() ; ++i)
+    {
+        filter_item(page.m_list_widget->item(i), regexp);
+    }
+        
+
+}
+void EntityBrowserWindow::slot_clear_filter()
+{
+    m_ui->lineedit_filter->clear();
+    m_ui->pushbutton_clear_filter->setEnabled(false);
 }
 
 }   // namespace studio
