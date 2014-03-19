@@ -651,6 +651,7 @@ void MainWindow::on_project_change()
     update_workspace();
 
     restore_state_after_project_open();
+    m_watcher->addPath(m_project_manager.get_project()->get_path());
 }
 
 void MainWindow::update_workspace()
@@ -828,6 +829,13 @@ void MainWindow::add_render_widget(const QString& label)
 
     // Update the label -> render tab mapping.
     m_render_tabs[label.toStdString()] = render_tab;
+}
+
+void MainWindow::slot_file_changed(const QString& path)
+{
+    m_watcher->removePath(path);
+    slot_reload_project();
+    RENDERER_LOG_INFO("Project file changes detected on disk, reloading it.");
 }
 
 void MainWindow::start_rendering(const bool interactive)
@@ -1274,6 +1282,16 @@ void MainWindow::slot_show_about_window()
     about_window->activateWindow();
 }
 
+void MainWindow::file_change_watcher()
+{
+    if (m_settings.get_optional<bool>("watch_file_changes"))
+    {
+        m_watcher = new QFileSystemWatcher(this);
+        connect(m_watcher, SIGNAL(fileChanged(const QString &)), this, SLOT(slot_file_changed(const QString &)));
+        RENDERER_LOG_INFO("file watcher initiated.");
+    }
+}
+
 void MainWindow::slot_load_settings()
 {
     const filesystem::path root_path(Application::get_root_path());
@@ -1294,6 +1312,7 @@ void MainWindow::slot_load_settings()
     {
         RENDERER_LOG_INFO("successfully loaded settings from %s.", settings_file_path.c_str());
         m_settings = settings;
+        file_change_watcher();
     }
     else
     {
