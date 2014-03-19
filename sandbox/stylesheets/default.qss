@@ -1016,12 +1016,22 @@ QComboBox#picking_mode_combo
 QLabel#info_label
 {
     color: INFO_TEXT_COLOR;
-    min-width: 350px;
-    max-width: 350px;
-    margin-left: 4px;
-    margin-right: 4px;
+    min-width: 250px;
+    max-width: 250px;
+    margin-left: 3px;
+    margin-right: 3px;
     font-family: FIXED_WIDTH_FONT_FAMILY;
-    font-size: 12px;
+    font-size: 11px;
+}
+QTextEdit#rgb_text
+{
+    color: INFO_TEXT_COLOR;
+    min-width: 100px;
+    max-width: 150px;
+    margin-left: 3px;
+    margin-right: 3px;
+    font-family: FIXED_WIDTH_FONT_FAMILY;
+    font-size: 11px;
 }
 
 QWidget#textedit_log

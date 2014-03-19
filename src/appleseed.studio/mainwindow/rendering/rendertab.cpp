@@ -245,7 +245,7 @@ void RenderTab::create_toolbar()
 
 
 	m_rgb_text = new QTextEdit();
-    m_rgb_text ->setObjectName(QString::fromUtf8("rgb_text"));
+    m_rgb_text->setObjectName(QString::fromUtf8("rgb_text"));
 	m_rgb_text->setReadOnly(true);
 	m_rgb_text->setMaximumHeight(18);
     m_toolbar->addWidget(m_rgb_text );

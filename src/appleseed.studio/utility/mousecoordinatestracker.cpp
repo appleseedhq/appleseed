@@ -120,6 +120,8 @@ void MouseCoordinatesTracker::set_label_text(const QPoint& point) const
 			.arg(QString::number(ndc.y, 'f', 5)));
 
 
+
+
 }
 
 void MouseCoordinatesTracker::set_rgb_text(const QPoint& point) const 
@@ -135,7 +137,7 @@ void MouseCoordinatesTracker::set_rgb_text(const QPoint& point) const
 	format.setForeground(QColor(255,0,0));
 	cursor.setCharFormat(format);
 	// Insert the text at the position of the cursor.
-	cursor.insertText(QString(" %1").arg(QString::number(qRed(pixel_rgb)), 3, '0'));
+	cursor.insertText(QString("%1").arg(QString::number(qRed(pixel_rgb)), 3, '0'));
 
 	//Move cursor to the end of the text. 
 	m_rgb_text->moveCursor(QTextCursor::End);
