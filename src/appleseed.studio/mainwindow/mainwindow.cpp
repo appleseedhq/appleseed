@@ -72,7 +72,6 @@
 #include <QCloseEvent>
 #include <QDir>
 #include <QFileDialog>
-#include <QFont>
 #include <QIcon>
 #include <QLabel>
 #include <QLayout>
@@ -472,19 +471,6 @@ void MainWindow::build_log_panel()
     log_widget->setLineWrapMode(QTextEdit::NoWrap);
     log_widget->setReadOnly(true);
     log_widget->setTextInteractionFlags(Qt::TextSelectableByMouse);
-    log_widget->setStyleSheet("QTextEdit { border: 0px; }");
-
-    QFont font;
-    font.setStyleHint(QFont::TypeWriter);
-#if defined _WIN32
-    font.setFamily(QString::fromUtf8("Consolas"));
-#elif defined __APPLE__
-    font.setFamily(QString::fromUtf8("Monaco"));
-#else
-    font.setFamily(QString::fromUtf8("Courier New"));
-#endif
-    font.setPixelSize(11);
-    log_widget->setFont(font);
 
     m_log_target.reset(new QtLogTarget(log_widget));
 
