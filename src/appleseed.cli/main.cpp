@@ -30,6 +30,7 @@
 // appleseed.cli headers.
 #include "commandlinehandler.h"
 #include "continuoussavingtilecallback.h"
+#include "houdinitilecallbacks.h"
 #include "progresstilecallback.h"
 
 // appleseed.shared headers.
@@ -623,6 +624,12 @@ namespace
         return true;
     }
 
+    bool is_progressive_render(const ParamArray& params)
+    {
+        const string value = params.get_required<string>("frame_renderer", "generic");
+        return value == "progressive";        
+    }
+    
     void render(const string& project_filename)
     {
         // Load the project.
@@ -637,7 +644,23 @@ namespace
 
         // Create the tile callback factory.
         auto_ptr<ITileCallbackFactory> tile_callback_factory;
-        if (g_cl.m_output.is_set() && g_cl.m_continuous_saving.is_set())
+        if (g_cl.m_mplay_display.is_set())
+        {
+            tile_callback_factory.reset(
+                new MPlayTileCallbackFactory(
+                    project_filename.c_str(),
+                    is_progressive_render(params),
+                    g_logger));
+        }
+        else if (g_cl.m_hrmanpipe_display.is_set())
+        {
+            tile_callback_factory.reset(
+                new HRmanPipeTileCallbackFactory(
+                    g_cl.m_hrmanpipe_display.values()[0],
+                    is_progressive_render(params),
+                    g_logger));
+        }
+        else if (g_cl.m_output.is_set() && g_cl.m_continuous_saving.is_set())
         {
             tile_callback_factory.reset(
                 new ContinuousSavingTileCallbackFactory(

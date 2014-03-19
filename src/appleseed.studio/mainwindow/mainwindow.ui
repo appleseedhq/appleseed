@@ -132,18 +132,12 @@
     </property>
     <addaction name="action_help_about"/>
    </widget>
-   <widget class="QMenu" name="menu_edit">
-    <property name="title">
-     <string>&amp;Edit</string>
-    </property>
-   </widget>
    <widget class="QMenu" name="menu_view">
     <property name="title">
      <string>&amp;View</string>
     </property>
    </widget>
    <addaction name="menu_file"/>
-   <addaction name="menu_edit"/>
    <addaction name="menu_view"/>
    <addaction name="menu_navigation"/>
    <addaction name="menu_rendering"/>
@@ -265,34 +259,6 @@
             </widget>
            </item>
           </layout>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="tab_project_explorer_renders">
-        <attribute name="title">
-         <string>Renders</string>
-        </attribute>
-        <layout class="QGridLayout" name="gridLayout_4">
-         <item row="0" column="0">
-          <widget class="QTreeWidget" name="treewidget_project_explorer_renders">
-           <property name="selectionMode">
-            <enum>QAbstractItemView::ExtendedSelection</enum>
-           </property>
-           <property name="uniformRowHeights">
-            <bool>true</bool>
-           </property>
-           <property name="allColumnsShowFocus">
-            <bool>true</bool>
-           </property>
-           <attribute name="headerVisible">
-            <bool>false</bool>
-           </attribute>
-           <column>
-            <property name="text">
-             <string notr="true">1</string>
-            </property>
-           </column>
-          </widget>
          </item>
         </layout>
        </widget>
