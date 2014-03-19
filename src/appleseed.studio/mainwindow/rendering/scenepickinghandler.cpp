@@ -180,7 +180,8 @@ void ScenePickingHandler::pick(const QPoint& point)
 
     const ScenePicker scene_picker(m_project.get_trace_context());
     const ScenePicker::PickingResult result = scene_picker.pick(ndc);
-
+	
+	
     stringstream sstr;
 
     sstr << "picking details:" << endl;
@@ -196,6 +197,7 @@ void ScenePickingHandler::pick(const QPoint& point)
     print_entity(sstr, "  surface shader   ", result.m_surface_shader);
     print_entity(sstr, "  bsdf             ", result.m_bsdf);
     print_entity(sstr, "  edf              ", result.m_edf);
+	
 
     RENDERER_LOG_INFO("%s", sstr.str().c_str());
 
