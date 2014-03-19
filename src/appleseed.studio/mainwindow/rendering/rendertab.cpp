@@ -232,7 +232,19 @@ void RenderTab::create_toolbar()
     m_toolbar->addSeparator();
 
     // Create a label to display various information such as mouse coordinates, etc.
+    QFont font;
+    font.setStyleHint(QFont::TypeWriter);
+#if defined _WIN32
+    font.setFamily(QString::fromUtf8("Consolas"));
+#elif defined __APPLE__
+    font.setFamily(QString::fromUtf8("Monaco"));
+#else
+    font.setFamily(QString::fromUtf8("Courier New"));
+#endif
+    font.setPixelSize(12);
     m_info_label = new QLabel();
+    m_info_label->setFont(font);
+    m_info_label->setScaledContents(true);
     m_info_label->setObjectName(QString::fromUtf8("info_label"));
     m_toolbar->addWidget(m_info_label);
 }
