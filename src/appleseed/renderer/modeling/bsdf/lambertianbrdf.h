@@ -57,7 +57,6 @@ namespace renderer
 DECLARE_INPUT_VALUES(LambertianBRDFInputValues)
 {
     Spectrum    m_reflectance;              // diffuse reflectance (albedo, technically)
-    Alpha       m_reflectance_alpha;        // unused
     double      m_reflectance_multiplier;
 };
 

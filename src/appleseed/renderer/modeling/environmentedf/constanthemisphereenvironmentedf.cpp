@@ -158,9 +158,7 @@ namespace
         DECLARE_INPUT_VALUES(InputValues)
         {
             Spectrum    m_upper_hemi_radiance;              // radiance emitted by the upper hemisphere, in W.m^-2.sr^-1
-            Alpha       m_upper_hemi_radiance_alpha;        // unused
             Spectrum    m_lower_hemi_radiance;              // radiance emitted by the lower hemisphere, in W.m^-2.sr^-1
-            Alpha       m_lower_hemi_radiance_alpha;        // unused
         };
 
         InputValues     m_values;

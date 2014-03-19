@@ -42,6 +42,8 @@ enum InputFormat
     InputFormatScalar,
     InputFormatSpectralReflectance,
     InputFormatSpectralIlluminance,
+    InputFormatSpectralReflectanceWithAlpha,
+    InputFormatSpectralIlluminanceWithAlpha,
     InputFormatEntity
 };
 

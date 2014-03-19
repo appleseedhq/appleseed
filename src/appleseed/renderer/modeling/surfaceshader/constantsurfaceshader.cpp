@@ -73,7 +73,7 @@ namespace
             const ParamArray&       params)
           : SurfaceShader(name, params)
         {
-            m_inputs.declare("color", InputFormatSpectralIlluminance);
+            m_inputs.declare("color", InputFormatSpectralIlluminanceWithAlpha);
             m_inputs.declare("color_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("alpha_multiplier", InputFormatScalar, "1.0");
 
@@ -82,7 +82,7 @@ namespace
                 m_alpha_source = AlphaSourceColor;
             else if (alpha_source == "material")
                 m_alpha_source = AlphaSourceMaterial;
-            else 
+            else
             {
                 RENDERER_LOG_ERROR(
                     "invalid value \"%s\" for parameter \"alpha_source\", "

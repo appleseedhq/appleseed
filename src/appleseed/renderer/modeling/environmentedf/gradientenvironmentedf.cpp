@@ -150,9 +150,7 @@ namespace
         DECLARE_INPUT_VALUES(InputValues)
         {
             Spectrum    m_horizon_radiance;             // radiance emitted at horizon, in W.m^-2.sr^-1
-            Alpha       m_horizon_radiance_alpha;       // unused
             Spectrum    m_zenith_radiance;              // radiance emitted at zenith, in W.m^-2.sr^-1
-            Alpha       m_zenith_radiance_alpha;        // unused
         };
 
         InputValues     m_values;

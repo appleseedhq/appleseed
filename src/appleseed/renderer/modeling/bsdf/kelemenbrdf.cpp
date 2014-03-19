@@ -445,10 +445,8 @@ namespace
         DECLARE_INPUT_VALUES(InputValues)
         {
             Spectrum            m_rm;                           // matte reflectance of the substrate
-            Alpha               m_rm_alpha;                     // unused
             double              m_rm_multiplier;                // matte reflectance multiplier
             Spectrum            m_rs;                           // specular reflectance at normal incidence
-            Alpha               m_rs_alpha;                     // unused
             double              m_rs_multiplier;                // specular reflectance multiplier
             double              m_roughness;                    // technically, root-mean-square of the microfacets slopes
         };

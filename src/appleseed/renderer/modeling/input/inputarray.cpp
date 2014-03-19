@@ -100,6 +100,12 @@ namespace
               case InputFormatSpectralIlluminance:
                 size = align_to<Spectrum>(size);
                 size += sizeof(Spectrum);
+                break;
+
+              case InputFormatSpectralReflectanceWithAlpha:
+              case InputFormatSpectralIlluminanceWithAlpha:
+                size = align_to<Spectrum>(size);
+                size += sizeof(Spectrum);
                 size += sizeof(Alpha);
                 break;
             }
@@ -129,6 +135,21 @@ namespace
 
               case InputFormatSpectralReflectance:
               case InputFormatSpectralIlluminance:
+                {
+                    ptr = align_to<Spectrum>(ptr);
+                    Spectrum* out_spectrum = reinterpret_cast<Spectrum*>(ptr);
+
+                    if (m_source)
+                        m_source->evaluate(texture_cache, uv, *out_spectrum);
+                    else
+                        out_spectrum->set(0.0f);
+
+                    ptr += sizeof(Spectrum);
+                }
+                break;
+
+              case InputFormatSpectralReflectanceWithAlpha:
+              case InputFormatSpectralIlluminanceWithAlpha:
                 {
                     ptr = align_to<Spectrum>(ptr);
                     Spectrum* out_spectrum = reinterpret_cast<Spectrum*>(ptr);
@@ -170,6 +191,21 @@ namespace
 
               case InputFormatSpectralReflectance:
               case InputFormatSpectralIlluminance:
+                {
+                    ptr = align_to<Spectrum>(ptr);
+                    Spectrum* out_spectrum = reinterpret_cast<Spectrum*>(ptr);
+
+                    if (m_source && m_source->is_uniform())
+                        m_source->evaluate_uniform(*out_spectrum);
+                    else
+                        out_spectrum->set(0.0f);
+
+                    ptr += sizeof(Spectrum);
+                }
+                break;
+
+              case InputFormatSpectralReflectanceWithAlpha:
+              case InputFormatSpectralIlluminanceWithAlpha:
                 {
                     ptr = align_to<Spectrum>(ptr);
                     Spectrum* out_spectrum = reinterpret_cast<Spectrum*>(ptr);
