@@ -1006,8 +1006,8 @@ QComboBox#picking_mode_combo
 QLabel#info_label
 {
     color: INFO_TEXT_COLOR;
-    min-width: 240px;
-    max-width: 240px;
+    min-width: 350px;
+    max-width: 350px;
     margin-left: 4px;
     margin-right: 4px;
 }
