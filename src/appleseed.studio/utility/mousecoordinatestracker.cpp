@@ -104,12 +104,16 @@ void MouseCoordinatesTracker::set_label_text(const QPoint& point) const
     const Vector2i pix = widget_to_pixel(point);
     const Vector2d ndc = widget_to_ndc(point);
 
-    m_label->setText(
-        QString("Pixel: %1, %2  -  NDC: %3, %4")
+    QString info_text = QString("Pixel: %1, %2  -  NDC: %3, %4")
             .arg(QString::number(pix.x))
             .arg(QString::number(pix.y))
             .arg(QString::number(ndc.x, 'f', 5))
-            .arg(QString::number(ndc.y, 'f', 5)));
+            .arg(QString::number(ndc.y, 'f', 5));
+
+    QFontMetrics fm(m_label->font());
+    QSize text_size = fm.size(Qt::TextSingleLine, info_text);
+    m_label->setMaximumSize(text_size.width() + 20, text_size.height());
+    m_label->setText(info_text);
 }
 
 }   // namespace studio
