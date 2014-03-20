@@ -30,7 +30,6 @@
 // Interface header.
 #include "mousecoordinatestracker.h"
 
-
 // Qt headers.
 #include <QEvent>
 #include <QLabel>
@@ -39,13 +38,11 @@
 #include <QString>
 #include <QWidget>
 
-
 // Standard headers.
 #include <cassert>
 
 using namespace foundation;
 using namespace std;
-
 
 namespace appleseed {
 namespace studio {
@@ -132,21 +129,21 @@ void MouseCoordinatesTracker::set_rgb_text(const QPoint& point) const
 	m_rgb_text->clear();
 	QTextCursor cursor(m_rgb_text->textCursor());
 
-	//Set text color to red.
+	// Set text color to red.
 	QTextCharFormat format;
-	format.setForeground(QColor(255,0,0));
+	format.setForeground(QColor(255, 0, 0));
 	cursor.setCharFormat(format);
 	// Insert the text at the position of the cursor.
 	cursor.insertText(QString("%1").arg(QString::number(qRed(pixel_rgb)), 3, '0'));
 
-	//Move cursor to the end of the text. 
+	// Move cursor to the end of the text. 
 	m_rgb_text->moveCursor(QTextCursor::End);
-	format.setForeground(QColor(0,255,0)); //green
+	format.setForeground(QColor(0, 255, 0)); //green
 	cursor.setCharFormat(format);
 	cursor.insertText(QString(" %1").arg(QString::number(qGreen(pixel_rgb)), 3, '0'));
 
 	m_rgb_text->moveCursor(QTextCursor::End);
-	format.setForeground(QColor(0,0,255)); //blue
+	format.setForeground(QColor(0, 0, 255)); //blue
 	cursor.setCharFormat(format);
 	cursor.insertText(QString(" %1").arg(QString::number(qBlue(pixel_rgb)), 3, '0'));
 

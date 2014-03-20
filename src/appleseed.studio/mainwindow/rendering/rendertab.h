@@ -40,8 +40,8 @@
 
 // Qt headers.
 #include <QObject>
-#include <QWidget>
 #include <QTextEdit>
+#include <QWidget>
 
 // Standard headers.
 #include <memory>

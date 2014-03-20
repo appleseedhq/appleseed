@@ -55,7 +55,6 @@
 #include <QToolBar>
 #include <QToolButton>
 
-
 using namespace foundation;
 using namespace renderer;
 
@@ -175,7 +174,6 @@ void RenderTab::create_toolbar()
     m_toolbar = new QToolBar();
     m_toolbar->setObjectName(QString::fromUtf8("render_toolbar"));
     m_toolbar->setIconSize(QSize(18, 18));
-	
 
     // Create the Save Image button in the render toolbar.
     m_save_aovs_button = new QToolButton();
@@ -194,7 +192,6 @@ void RenderTab::create_toolbar()
         m_quick_save_aovs_button, SIGNAL(clicked()),
         SIGNAL(signal_quicksave_all_aovs()));
     m_toolbar->addWidget(m_quick_save_aovs_button);
-
     m_toolbar->addSeparator();
 
     // Create the Set Render Region button in the render toolbar.
@@ -231,8 +228,7 @@ void RenderTab::create_toolbar()
     m_picking_mode_combo->setObjectName(QString::fromUtf8("picking_mode_combo"));
     m_toolbar->addWidget(m_picking_mode_combo);
 
-
-	m_toolbar->addSeparator();
+    m_toolbar->addSeparator();
 
     // Create a label to display various information such as mouse coordinates, etc.
     m_info_label = new QLabel();
@@ -240,19 +236,14 @@ void RenderTab::create_toolbar()
     m_info_label->setObjectName(QString::fromUtf8("info_label"));
     m_toolbar->addWidget(m_info_label);
 
-
 	m_toolbar->addSeparator();
-
 
 	m_rgb_text = new QTextEdit();
     m_rgb_text->setObjectName(QString::fromUtf8("rgb_text"));
 	m_rgb_text->setReadOnly(true);
 	m_rgb_text->setMaximumHeight(18);
-    m_toolbar->addWidget(m_rgb_text );
+    m_toolbar->addWidget(m_rgb_text);
 	
-
-
-
 	
 }
 
@@ -291,9 +282,7 @@ void RenderTab::recreate_handlers()
         new MouseCoordinatesTracker(
             m_render_widget,
             m_info_label,
-			m_rgb_text
-			));
-
+			m_rgb_text));
 
     // Handler for picking scene entities in the render widget.
     m_picking_handler.reset(
@@ -303,7 +292,6 @@ void RenderTab::recreate_handlers()
             *m_mouse_tracker.get(),
             m_project_explorer,
             m_project));
-	
     // Handler for defining render regions with the mouse.
     m_render_region_handler.reset(
         new RenderRegionHandler(
