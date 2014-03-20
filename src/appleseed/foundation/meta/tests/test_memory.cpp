@@ -132,26 +132,32 @@ TEST_SUITE(Foundation_Utility_Memory)
     {
         EXPECT_FALSE(is_aligned((void*)65, 32));
     }
+
 #ifdef APPLESEED_USE_SSE
-    TEST_CASE(Malloc_ReturnedPointerIsAligned)
+
+    TEST_CASE(Malloc_AlwaysReturns16ByteAlignedPointer)
     {
-        const int test_times = 100;
+        const size_t AllocationCount = 100;
+
         srand((unsigned)time(0));
+
         bool aligned = true;
-        void* pointers[test_times];
-        for (int i = 0; i < test_times; ++i)
+        void* pointers[AllocationCount];
+
+        for (size_t i = 0; i < AllocationCount; ++i)
         {
-            size_t alloc_size = rand() % 1001;
+            const size_t alloc_size = rand() % 1001;
             pointers[i] = malloc(alloc_size);
             if (!is_aligned(pointers[i], 16))
                 aligned = false;
         }
-        for (int i = 0; i < test_times; ++i)
-        {
+
+        for (size_t i = 0; i < AllocationCount; ++i)
             free(pointers[i]);
-        }
+
         EXPECT_TRUE(aligned);
     }
+
 #endif
 
     TEST_CASE(EnsureMinimumSize_GivenEmptyVector_ResizesVectorByInsertingDefaultValue)
