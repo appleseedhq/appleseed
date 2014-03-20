@@ -72,7 +72,6 @@
 #include <QCloseEvent>
 #include <QDir>
 #include <QFileDialog>
-#include <QFont>
 #include <QIcon>
 #include <QLabel>
 #include <QLayout>
@@ -85,6 +84,7 @@
 #include <QString>
 #include <QStringList>
 #include <Qt>
+#include <QUrl>
 
 // boost headers.
 #include "boost/filesystem/path.hpp"
@@ -127,11 +127,15 @@ MainWindow::MainWindow(QWidget* parent)
     print_startup_information();
     slot_load_settings();
 
+    restore_ui_state();
+
     update_project_explorer();
     remove_render_widgets();
     update_workspace();
 
     showMaximized();
+
+    setAcceptDrops(true);
 }
 
 MainWindow::~MainWindow()
@@ -360,10 +364,13 @@ void MainWindow::update_override_shading_menu_item()
 
 namespace
 {
+    const int UserInterfaceVersion = 1;
     const int MaxRecentlyOpenedFiles = 5;
     const char* SettingsOrgString = "com.appleseed.studio";
     const char* SettingsRecentFilesEntryString = "appleseed.studio Recent Files";
     const char* SettingsRecentFileListString = "recent_file_list";
+    const char* SettingsUiStateEntryString = "appleseed.studio UI State";
+    const char* SettingsUiStateSavedString = "ui_state";
 }
 
 void MainWindow::build_recent_files_menu()
@@ -464,19 +471,6 @@ void MainWindow::build_log_panel()
     log_widget->setLineWrapMode(QTextEdit::NoWrap);
     log_widget->setReadOnly(true);
     log_widget->setTextInteractionFlags(Qt::TextSelectableByMouse);
-    log_widget->setStyleSheet("QTextEdit { border: 0px; }");
-
-    QFont font;
-    font.setStyleHint(QFont::TypeWriter);
-#if defined _WIN32
-    font.setFamily(QString::fromUtf8("Consolas"));
-#elif defined __APPLE__
-    font.setFamily(QString::fromUtf8("Monaco"));
-#else
-    font.setFamily(QString::fromUtf8("Courier New"));
-#endif
-    font.setPixelSize(11);
-    log_widget->setFont(font);
 
     m_log_target.reset(new QtLogTarget(log_widget));
 
@@ -489,7 +483,6 @@ void MainWindow::build_project_explorer()
     m_ui->treewidget_project_explorer_scene->setColumnWidth(1, 75);     // render layer
 
     disable_osx_focus_rect(m_ui->treewidget_project_explorer_scene);
-    disable_osx_focus_rect(m_ui->treewidget_project_explorer_renders);
 
     connect(
         m_ui->lineedit_filter, SIGNAL(textChanged(const QString&)),
@@ -784,9 +777,6 @@ void MainWindow::recreate_render_widgets()
     if (m_project_manager.is_project_open())
     {
         add_render_widget("RGB");
-        add_render_widget("Alpha");
-        add_render_widget("Depth");
-        add_render_widget("Anomalies");
     }
 }
 
@@ -874,6 +864,18 @@ void MainWindow::start_rendering(const bool interactive)
         m_render_tabs["RGB"]->get_render_widget());
 }
 
+void MainWindow::save_ui_state()
+{
+    QSettings settings(SettingsOrgString, SettingsUiStateEntryString);
+    settings.setValue(SettingsUiStateSavedString, saveState(UserInterfaceVersion));
+}
+
+void MainWindow::restore_ui_state()
+{
+    const QSettings settings(SettingsOrgString, SettingsUiStateEntryString);
+    restoreState(settings.value(SettingsUiStateSavedString).toByteArray(), UserInterfaceVersion);
+}
+
 namespace
 {
     int ask_abort_rendering_confirmation(QWidget* parent)
@@ -888,6 +890,30 @@ namespace
         return msgbox.exec();
     }
 }
+
+void MainWindow::dragEnterEvent(QDragEnterEvent* event)
+ {
+     if (event->mimeData()->hasFormat("text/plain") || event->mimeData()->hasFormat("text/uri-list"))
+         event->acceptProposedAction();
+ }
+
+void MainWindow::dropEvent(QDropEvent* event)
+ {
+     if (event->mimeData()->hasFormat("text/uri-list"))
+     {
+        const QList<QUrl> urls = event->mimeData()->urls();
+        QApplication::sendEvent(this, new QCloseEvent());
+        open_project(urls[0].toLocalFile());   
+     }
+     else
+     {
+        const QString text = event->mimeData()->text();
+        QApplication::sendEvent(this, new QCloseEvent());
+        open_project(text);
+     }
+     
+     event->accept();
+ }
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
@@ -908,6 +934,8 @@ void MainWindow::closeEvent(QCloseEvent* event)
         event->ignore();
         return;
     }
+
+    save_ui_state();
 
     m_project_manager.close_project();
 

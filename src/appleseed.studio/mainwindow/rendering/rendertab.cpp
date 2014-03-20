@@ -233,6 +233,7 @@ void RenderTab::create_toolbar()
 
     // Create a label to display various information such as mouse coordinates, etc.
     m_info_label = new QLabel();
+    m_info_label->setScaledContents(true);
     m_info_label->setObjectName(QString::fromUtf8("info_label"));
     m_toolbar->addWidget(m_info_label);
 }

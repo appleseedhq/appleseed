@@ -100,6 +100,31 @@ class EntityEditionDelayedAction
 };
 
 template <typename EntityItem>
+class EntityInstantiationDelayedAction
+  : public RenderingManager::IDelayedAction
+{
+  public:
+    explicit EntityInstantiationDelayedAction(
+        EntityItem*                     parent,
+        const std::string               name)
+      : m_parent(parent)
+      , m_name(name)
+    {
+    }
+
+    virtual void operator()(
+        renderer::MasterRenderer&       master_renderer,
+        renderer::Project&              project) OVERRIDE
+    {
+        m_parent->do_instantiate(m_name);
+    }
+
+  private:
+    EntityItem*                         m_parent;
+    const std::string                   m_name;
+};
+
+template <typename EntityItem>
 class EntityDeletionDelayedAction
   : public RenderingManager::IDelayedAction
 {

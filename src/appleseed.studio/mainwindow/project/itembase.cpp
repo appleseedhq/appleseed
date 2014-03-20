@@ -134,6 +134,10 @@ void ItemBase::slot_edit(AttributeEditor* attribute_editor)
 {
 }
 
+void ItemBase::slot_instantiate()
+{
+}
+
 void ItemBase::slot_delete()
 {
 }

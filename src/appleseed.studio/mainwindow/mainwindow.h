@@ -65,6 +65,8 @@ class QRect;
 class QString;
 class QStringList;
 class QWidget;
+class QDragEnterEvent;
+class QDropEvent;
 
 namespace appleseed {
 namespace studio {
@@ -165,9 +167,15 @@ class MainWindow
     void recreate_render_widgets();
     void remove_render_widgets();
     void add_render_widget(const QString& label);
-    void file_change_watcher();
+
+    void dragEnterEvent(QDragEnterEvent* event);
+    void dropEvent(QDropEvent* event);
+	void file_change_watcher();
 
     void start_rendering(const bool interactive);
+
+    void save_ui_state();
+    void restore_ui_state();
 
     virtual void closeEvent(QCloseEvent* event);
 

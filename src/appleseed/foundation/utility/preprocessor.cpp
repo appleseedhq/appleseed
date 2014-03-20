@@ -339,7 +339,9 @@ struct Preprocessor::Impl
 
                 if (keyword == "endif")
                     break;
-                else parse_directive(keyword, arguments);
+
+                if (condition_value)
+                    parse_directive(keyword, arguments);
             }
             else
             {

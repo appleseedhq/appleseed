@@ -49,6 +49,16 @@
 #define HOVER_TEXT_COLOR                    rgb(255, 255, 255)
 #define SELECTED_TEXT_COLOR                 rgb(255, 255, 255)
 
+#ifdef _WIN32
+    #define FIXED_WIDTH_FONT_FAMILY         "Consolas"
+#endif
+#ifdef __APPLE__
+    #define FIXED_WIDTH_FONT_FAMILY         "Monaco"
+#endif
+#ifdef __linux__
+    #define FIXED_WIDTH_FONT_FAMILY         "Courier New"
+#endif
+
 
 /*
  * QWidget.
@@ -1006,10 +1016,18 @@ QComboBox#picking_mode_combo
 QLabel#info_label
 {
     color: INFO_TEXT_COLOR;
-    min-width: 240px;
-    max-width: 240px;
+    min-width: 350px;
+    max-width: 350px;
     margin-left: 4px;
     margin-right: 4px;
+    font-family: FIXED_WIDTH_FONT_FAMILY;
+    font-size: 12px;
+}
+
+QWidget#textedit_log
+{
+    font-family: FIXED_WIDTH_FONT_FAMILY;
+    font-size: 11px;
 }
 
 QPushButton#bind_entity_button
