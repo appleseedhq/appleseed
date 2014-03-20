@@ -47,6 +47,7 @@
 #include <QListWidget>
 #include <QListWidgetItem>
 #include <QPushButton>
+#include <QRegExp>
 #include <QShortcut>
 #include <Qt>
 
@@ -120,7 +121,7 @@ namespace
 
 namespace
 {
-    void filter_item(QListWidgetItem *item, const QRegExp& regexp)
+    void filter_item(QListWidgetItem* item, const QRegExp& regexp)
     {
         const bool visible = regexp.indexIn(item->text()) >= 0;
         item->setHidden(!visible);
@@ -196,13 +197,12 @@ void EntityBrowserWindow::slot_filter_text_changed(const QString& pattern)
     const QRegExp regexp(pattern);
     const Page& page = m_pages[m_ui->tab_widget->currentIndex()];
 
-    for(int i = 0; i < page.m_list_widget->count() ; ++i)
+    for (int i = 0; i < page.m_list_widget->count(); ++i)
     {
         filter_item(page.m_list_widget->item(i), regexp);
     }
-        
-
 }
+
 void EntityBrowserWindow::slot_clear_filter()
 {
     m_ui->lineedit_filter->clear();
