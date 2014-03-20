@@ -57,8 +57,8 @@ class MouseCoordinatesTracker
   public:
     MouseCoordinatesTracker(
 	   RenderWidget*   widget,
-	   QLabel*   label,
-	   QTextEdit*   m_rgb_text);
+	   QLabel*         label,
+	   QTextEdit*      m_rgb_text);
 
     ~MouseCoordinatesTracker();
 
