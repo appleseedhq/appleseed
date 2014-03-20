@@ -59,13 +59,14 @@ namespace appleseed { namespace studio { class ProjectExplorer; } }
 namespace Ui        { class MainWindow; }
 class QAction;
 class QCloseEvent;
+class QDragEnterEvent;
+class QDropEvent;
+class QFileSystemWatcher;
 class QPoint;
 class QRect;
 class QString;
 class QStringList;
 class QWidget;
-class QDragEnterEvent;
-class QDropEvent;
 
 namespace appleseed {
 namespace studio {
@@ -116,6 +117,7 @@ class MainWindow
     ProjectExplorer*                        m_project_explorer;
     AttributeEditor*                        m_attribute_editor;
     RenderingManager                        m_rendering_manager;
+    QFileSystemWatcher*                     m_project_file_watcher;
 
     typedef std::map<std::string, RenderTab*> RenderTabCollection;
     typedef std::map<std::string, RenderTab::State> RenderTabStateCollection;
@@ -165,8 +167,10 @@ class MainWindow
     void recreate_render_widgets();
     void remove_render_widgets();
     void add_render_widget(const QString& label);
+
     void dragEnterEvent(QDragEnterEvent* event);
     void dropEvent(QDropEvent* event);
+	void file_change_watcher();
 
     void start_rendering(const bool interactive);
 
@@ -203,6 +207,7 @@ class MainWindow
     void slot_clear_render_region();
     void slot_set_render_region(const QRect& rect);
 
+    void slot_reset_zoom();
     void slot_camera_changed();
 
     void slot_show_render_settings_window();
@@ -212,6 +217,7 @@ class MainWindow
 
     void slot_load_settings();
     void slot_save_settings();
+    void slot_file_changed(const QString& path);
 
     void slot_filter_text_changed(const QString& pattern);
     void slot_clear_filter();

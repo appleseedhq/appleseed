@@ -10,6 +10,7 @@
         <file>icons/selection-crossed.png</file>
         <file>icons/quick_save_aovs.png</file>
         <file>icons/save_image.png</file>
+        <file>icons/reset_zoom.png</file>
         <file>images/appleseed-logo-gray-256.png</file>
         <file>patterns/texture.png</file>
         <file>widgets/checkbox_checked_disabled.png</file>

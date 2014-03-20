@@ -72,6 +72,7 @@
 #include <QCloseEvent>
 #include <QDir>
 #include <QFileDialog>
+#include <QFileSystemWatcher>
 #include <QIcon>
 #include <QLabel>
 #include <QLayout>
@@ -644,6 +645,8 @@ void MainWindow::on_project_change()
     update_workspace();
 
     restore_state_after_project_open();
+
+    m_project_file_watcher->addPath(m_project_manager.get_project()->get_path());
 }
 
 void MainWindow::update_workspace()
@@ -812,12 +815,22 @@ void MainWindow::add_render_widget(const QString& label)
     connect(
         render_tab, SIGNAL(signal_quicksave_all_aovs()),
         SLOT(slot_quicksave_all_aovs()));
+    connect(
+        render_tab, SIGNAL(signal_reset_zoom()),
+        SLOT(slot_reset_zoom()));
 
     // Add the render tab to the tab bar.
     m_ui->tab_render_channels->addTab(render_tab, label);
 
     // Update the label -> render tab mapping.
     m_render_tabs[label.toStdString()] = render_tab;
+}
+
+void MainWindow::slot_file_changed(const QString& path)
+{
+    RENDERER_LOG_INFO("project file changed on disk, reloading it.");
+    m_project_file_watcher->removePath(path);
+    slot_reload_project();
 }
 
 void MainWindow::start_rendering(const bool interactive)
@@ -884,28 +897,28 @@ namespace
 }
 
 void MainWindow::dragEnterEvent(QDragEnterEvent* event)
- {
-     if (event->mimeData()->hasFormat("text/plain") || event->mimeData()->hasFormat("text/uri-list"))
+{
+    if (event->mimeData()->hasFormat("text/plain") || event->mimeData()->hasFormat("text/uri-list"))
          event->acceptProposedAction();
- }
+} 
 
 void MainWindow::dropEvent(QDropEvent* event)
- {
-     if (event->mimeData()->hasFormat("text/uri-list"))
-     {
+{
+    if (event->mimeData()->hasFormat("text/uri-list"))
+    {
         const QList<QUrl> urls = event->mimeData()->urls();
         QApplication::sendEvent(this, new QCloseEvent());
         open_project(urls[0].toLocalFile());   
-     }
-     else
-     {
+    }
+    else
+    {
         const QString text = event->mimeData()->text();
         QApplication::sendEvent(this, new QCloseEvent());
         open_project(text);
-     }
+    }
      
      event->accept();
- }
+}
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
@@ -1255,6 +1268,14 @@ void MainWindow::slot_set_render_region(const QRect& rect)
     else m_rendering_manager.reinitialize_rendering();
 }
 
+void MainWindow::slot_reset_zoom()
+{
+    m_render_tabs[
+        (m_ui->tab_render_channels->
+            tabText(m_ui->tab_render_channels->
+                currentIndex())).toStdString()]->reset_zoom();
+}
+
 void MainWindow::slot_camera_changed()
 {
     m_project_manager.set_project_dirty_flag();
@@ -1302,6 +1323,19 @@ void MainWindow::slot_show_about_window()
     about_window->activateWindow();
 }
 
+void MainWindow::file_change_watcher()
+{
+    if (m_settings.get_optional<bool>("watch_file_changes"))
+    {
+        m_project_file_watcher = new QFileSystemWatcher(this);
+
+        connect(
+            m_project_file_watcher,
+            SIGNAL(fileChanged(const QString&)),
+            SLOT(slot_file_changed(const QString&)));
+    }
+}
+
 void MainWindow::slot_load_settings()
 {
     const filesystem::path root_path(Application::get_root_path());
@@ -1322,6 +1356,7 @@ void MainWindow::slot_load_settings()
     {
         RENDERER_LOG_INFO("successfully loaded settings from %s.", settings_file_path.c_str());
         m_settings = settings;
+        file_change_watcher();
     }
     else
     {
