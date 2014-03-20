@@ -35,13 +35,13 @@
 
 // Qt headers.
 #include <QObject>
-#include <QTextEdit>
 
 // Forward declarations.
 namespace appleseed { namespace studio { class RenderWidget; } }
 class QEvent;
 class QLabel;
 class QPoint;
+class QTextEdit;
 class QWidget;
 
 namespace appleseed {

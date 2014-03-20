@@ -39,6 +39,7 @@
 #include <QMouseEvent>
 #include <QPoint>
 #include <QString>
+#include <QTextEdit>
 #include <QWidget>
 
 // Standard headers.
