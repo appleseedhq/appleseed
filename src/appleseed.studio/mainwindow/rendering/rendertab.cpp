@@ -221,6 +221,21 @@ void RenderTab::create_toolbar()
         SIGNAL(signal_clear_render_region()));
     m_toolbar->addWidget(m_clear_render_region_button);
 
+    // Create the black render region button in the render toolbar
+    m_clear_frame_button = new QToolButton();
+    m_clear_frame_button->setObjectName(QString::fromUtf8("clear_frame_button"));
+    m_clear_frame_button->setIcon(QIcon(":/icons/cross.png"));
+    m_clear_frame_button->setToolTip("Clear Frame");
+    m_clear_frame_button->setShortcut(Qt::Key_X);
+        
+    // We require the button to be enabled only when we are not rendering anything.
+    m_clear_frame_button->setEnabled(false);
+    connect(
+        m_clear_frame_button, SIGNAL(clicked()),
+        SIGNAL(signal_clear_frame()));
+    m_toolbar->addWidget(m_clear_frame_button);
+
+
     m_toolbar->addSeparator();
 
     // Create the Reset Zoom button in the render toolbar.
