@@ -40,6 +40,7 @@
 
 // Qt headers.
 #include <QObject>
+#include <QTextEdit>
 #include <QWidget>
 
 // Standard headers.
@@ -116,6 +117,7 @@ class RenderTab
     QToolButton*                            m_reset_zoom_button;
     QComboBox*                              m_picking_mode_combo;
     QLabel*                                 m_info_label;
+    QTextEdit*                              m_rgb_text;
 
     ProjectExplorer&                        m_project_explorer;
     renderer::Project&                      m_project;
