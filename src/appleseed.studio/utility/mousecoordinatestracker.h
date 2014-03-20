@@ -33,14 +33,12 @@
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
 
-// appleseed.studio headers.
-#include "mainwindow/rendering/renderwidget.h"
-
 // Qt headers.
 #include <QObject>
 #include <QTextEdit>
 
 // Forward declarations.
+namespace appleseed { namespace studio { class RenderWidget; } }
 class QEvent;
 class QLabel;
 class QPoint;
