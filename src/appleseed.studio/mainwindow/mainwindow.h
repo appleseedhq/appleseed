@@ -44,7 +44,6 @@
 #include "renderer/api/utility.h"
 
 // Qt headers.
-#include <QFileSystemWatcher>
 #include <QMainWindow>
 #include <QObject>
 
@@ -60,13 +59,14 @@ namespace appleseed { namespace studio { class ProjectExplorer; } }
 namespace Ui        { class MainWindow; }
 class QAction;
 class QCloseEvent;
+class QDragEnterEvent;
+class QDropEvent;
+class QFileSystemWatcher;
 class QPoint;
 class QRect;
 class QString;
 class QStringList;
 class QWidget;
-class QDragEnterEvent;
-class QDropEvent;
 
 namespace appleseed {
 namespace studio {
@@ -117,7 +117,7 @@ class MainWindow
     ProjectExplorer*                        m_project_explorer;
     AttributeEditor*                        m_attribute_editor;
     RenderingManager                        m_rendering_manager;
-    QFileSystemWatcher*                     m_watcher;
+    QFileSystemWatcher*                     m_project_file_watcher;
 
     typedef std::map<std::string, RenderTab*> RenderTabCollection;
     typedef std::map<std::string, RenderTab::State> RenderTabStateCollection;

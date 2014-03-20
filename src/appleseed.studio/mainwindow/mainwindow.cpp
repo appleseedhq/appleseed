@@ -72,6 +72,7 @@
 #include <QCloseEvent>
 #include <QDir>
 #include <QFileDialog>
+#include <QFileSystemWatcher>
 #include <QIcon>
 #include <QLabel>
 #include <QLayout>
@@ -644,7 +645,8 @@ void MainWindow::on_project_change()
     update_workspace();
 
     restore_state_after_project_open();
-    m_watcher->addPath(m_project_manager.get_project()->get_path());
+
+    m_project_file_watcher->addPath(m_project_manager.get_project()->get_path());
 }
 
 void MainWindow::update_workspace()
@@ -823,9 +825,9 @@ void MainWindow::add_render_widget(const QString& label)
 
 void MainWindow::slot_file_changed(const QString& path)
 {
-    m_watcher->removePath(path);
+    RENDERER_LOG_INFO("project file changed on disk, reloading it.");
+    m_project_file_watcher->removePath(path);
     slot_reload_project();
-    RENDERER_LOG_INFO("Project file changes detected on disk, reloading it.");
 }
 
 void MainWindow::start_rendering(const bool interactive)
@@ -1314,9 +1316,12 @@ void MainWindow::file_change_watcher()
 {
     if (m_settings.get_optional<bool>("watch_file_changes"))
     {
-        m_watcher = new QFileSystemWatcher(this);
-        connect(m_watcher, SIGNAL(fileChanged(const QString &)), this, SLOT(slot_file_changed(const QString &)));
-        RENDERER_LOG_INFO("file watcher initiated.");
+        m_project_file_watcher = new QFileSystemWatcher(this);
+
+        connect(
+            m_project_file_watcher,
+            SIGNAL(fileChanged(const QString&)),
+            SLOT(slot_file_changed(const QString&)));
     }
 }
 
