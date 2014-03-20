@@ -1029,7 +1029,7 @@ QTextEdit#rgb_text
     color: INFO_TEXT_COLOR;
     min-width: 100px;
     max-width: 150px;
-	max-height: 16px;
+    max-height: 16px;
     margin-left: 3px;
     margin-right: 3px;
     font-family: FIXED_WIDTH_FONT_FAMILY;
