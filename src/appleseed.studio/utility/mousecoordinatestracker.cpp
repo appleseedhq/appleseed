@@ -121,7 +121,7 @@ void MouseCoordinatesTracker::set_rgb_text(const QPoint& point) const
 {
     const Vector2i pix = widget_to_pixel(point);
     QRgb pixel_rgb = m_widget->get_image().pixel(pix.x, pix.y);
-					
+
     m_rgb_text->clear();
     QTextCursor cursor(m_rgb_text->textCursor());
 
@@ -147,7 +147,7 @@ void MouseCoordinatesTracker::set_rgb_text(const QPoint& point) const
     format.clearForeground();
     cursor.setCharFormat(format);
     cursor.insertText(QString(" %1").arg(QString::number(qAlpha(pixel_rgb)), 3, '0'));
-	
+
 }
 
 }   // namespace studio
