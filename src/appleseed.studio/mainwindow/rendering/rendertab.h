@@ -41,6 +41,7 @@
 // Qt headers.
 #include <QObject>
 #include <QWidget>
+#include <QTextEdit>
 
 // Standard headers.
 #include <memory>
@@ -113,6 +114,7 @@ class RenderTab
     QToolButton*                            m_clear_render_region_button;
     QComboBox*                              m_picking_mode_combo;
     QLabel*                                 m_info_label;
+    QTextEdit*                              m_rgb_text;
 
     ProjectExplorer&                        m_project_explorer;
     renderer::Project&                      m_project;
@@ -123,6 +125,7 @@ class RenderTab
     std::auto_ptr<ScenePickingHandler>      m_picking_handler;
     std::auto_ptr<RenderRegionHandler>      m_render_region_handler;
     std::auto_ptr<RenderClipboardHandler>   m_clipboard_handler;
+
 
     void create_render_widget();
     void create_toolbar();

@@ -30,11 +30,18 @@
 #ifndef APPLESEED_STUDIO_UTILITY_MOUSECOORDINATESTRACKER_H
 #define APPLESEED_STUDIO_UTILITY_MOUSECOORDINATESTRACKER_H
 
+// appleseed.renderer headers.
+#include "renderer/api/project.h"
+
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
 
+// appleseed.studio headers.
+#include "mainwindow/rendering/renderwidget.h"
+
 // Qt headers.
 #include <QObject>
+#include <QTextEdit>
 
 // Forward declarations.
 class QEvent;
@@ -52,8 +59,9 @@ class MouseCoordinatesTracker
 
   public:
     MouseCoordinatesTracker(
-        QWidget*    widget,
-        QLabel*     label);
+		RenderWidget*    widget,
+        QLabel*			label,
+		QTextEdit*		m_rgb_text);
 
     ~MouseCoordinatesTracker();
 
@@ -61,14 +69,19 @@ class MouseCoordinatesTracker
     foundation::Vector2i widget_to_pixel(const QPoint& point) const;
 
   private:
-    QWidget*        m_widget;
-    QLabel*         m_label;
-    const int       m_content_width;
-    const int       m_content_height;
+    RenderWidget*					m_widget;
+    QLabel*							m_label;
+	QTextEdit*						m_rgb_text;
+
+	
+    const int						m_content_width;
+    const int						m_content_height;
 
     virtual bool eventFilter(QObject* object, QEvent* event);
 
     void set_label_text(const QPoint& point) const;
+
+	void set_rgb_text(const QPoint& point) const;
 };
 
 }       // namespace studio
