@@ -97,7 +97,7 @@ bool MouseCoordinatesTracker::eventFilter(QObject* object, QEvent* event)
 
       case QEvent::Leave:
         m_label->clear();
-			m_rgb_text->clear();
+        m_rgb_text->clear();
         break;
     }
 
