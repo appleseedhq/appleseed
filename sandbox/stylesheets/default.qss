@@ -1023,6 +1023,7 @@ QLabel#info_label
     font-family: FIXED_WIDTH_FONT_FAMILY;
     font-size: 11px;
 }
+
 QTextEdit#rgb_text
 {
     color: INFO_TEXT_COLOR;
