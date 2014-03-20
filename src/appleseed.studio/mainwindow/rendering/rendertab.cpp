@@ -95,6 +95,11 @@ void RenderTab::darken()
     m_render_widget->multiply(0.2f);
 }
 
+void RenderTab::reset_zoom()
+{
+    m_zoom_handler->reset_zoom();
+}
+
 void RenderTab::update()
 {
     m_render_widget->update();
@@ -215,6 +220,18 @@ void RenderTab::create_toolbar()
         m_clear_render_region_button, SIGNAL(clicked()),
         SIGNAL(signal_clear_render_region()));
     m_toolbar->addWidget(m_clear_render_region_button);
+
+    m_toolbar->addSeparator();
+
+    // Create the Reset Zoom button in the render toolbar.
+    m_reset_zoom_button = new QToolButton();
+    m_reset_zoom_button->setIcon(QIcon(":/icons/reset_zoom.png"));
+    m_reset_zoom_button->setToolTip("Reset Zoom");
+    m_reset_zoom_button->setShortcut(Qt::Key_Asterisk);
+    connect(
+        m_reset_zoom_button, SIGNAL(clicked()),
+        SIGNAL(signal_reset_zoom()));
+    m_toolbar->addWidget(m_reset_zoom_button);
 
     m_toolbar->addSeparator();
 

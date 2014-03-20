@@ -207,6 +207,7 @@ class MainWindow
     void slot_clear_render_region();
     void slot_set_render_region(const QRect& rect);
 
+    void slot_reset_zoom();
     void slot_camera_changed();
 
     void slot_show_render_settings_window();
