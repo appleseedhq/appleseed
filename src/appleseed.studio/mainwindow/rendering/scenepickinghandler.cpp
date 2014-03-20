@@ -180,7 +180,7 @@ void ScenePickingHandler::pick(const QPoint& point)
 
     const ScenePicker scene_picker(m_project.get_trace_context());
     const ScenePicker::PickingResult result = scene_picker.pick(ndc);
-	
+
     stringstream sstr;
 
     sstr << "picking details:" << endl;

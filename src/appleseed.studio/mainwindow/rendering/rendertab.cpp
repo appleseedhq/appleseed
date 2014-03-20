@@ -299,7 +299,7 @@ void RenderTab::recreate_handlers()
         new MouseCoordinatesTracker(
             m_render_widget,
             m_info_label,
-	        m_rgb_text));
+			m_rgb_text));
 
     // Handler for picking scene entities in the render widget.
     m_picking_handler.reset(

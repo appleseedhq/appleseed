@@ -41,6 +41,7 @@
 // Standard headers.
 #include <cassert>
 
+
 using namespace foundation;
 using namespace std;
 
@@ -49,8 +50,8 @@ namespace studio {
 
 MouseCoordinatesTracker::MouseCoordinatesTracker(
     RenderWidget*	widget,
-    QLabel*			label,
-    QTextEdit*		rgb_text) 
+    QLabel*   label,
+    QTextEdit*   rgb_text) 
   : m_widget(widget)
   , m_label(label)
   , m_rgb_text(rgb_text)
