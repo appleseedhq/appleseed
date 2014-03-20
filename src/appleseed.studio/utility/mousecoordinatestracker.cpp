@@ -49,9 +49,9 @@ namespace appleseed {
 namespace studio {
 
 MouseCoordinatesTracker::MouseCoordinatesTracker(
-    RenderWidget*	widget,
-    QLabel*   label,
-    QTextEdit*   rgb_text) 
+    RenderWidget*    widget,
+    QLabel*          label,
+    QTextEdit*       rgb_text) 
   : m_widget(widget)
   , m_label(label)
   , m_rgb_text(rgb_text)
@@ -92,12 +92,12 @@ bool MouseCoordinatesTracker::eventFilter(QObject* object, QEvent* event)
     {
       case QEvent::MouseMove:
         set_label_text(static_cast<QMouseEvent*>(event)->pos());
-		set_rgb_text(static_cast<QMouseEvent*>(event)->pos());
+        set_rgb_text(static_cast<QMouseEvent*>(event)->pos());
         break;
 
       case QEvent::Leave:
         m_label->clear();
-		m_rgb_text->clear();
+			m_rgb_text->clear();
         break;
     }
 

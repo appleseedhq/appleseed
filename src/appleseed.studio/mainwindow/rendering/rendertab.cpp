@@ -256,10 +256,10 @@ void RenderTab::create_toolbar()
 	m_toolbar->addSeparator();
 
 	m_rgb_text = new QTextEdit();
-    m_rgb_text->setObjectName(QString::fromUtf8("rgb_text"));
+	m_rgb_text->setObjectName(QString::fromUtf8("rgb_text"));
 	m_rgb_text->setReadOnly(true);
 	m_rgb_text->setMaximumHeight(18);
-    m_toolbar->addWidget(m_rgb_text);
+	m_toolbar->addWidget(m_rgb_text);
 	
 	
 }
@@ -299,7 +299,7 @@ void RenderTab::recreate_handlers()
         new MouseCoordinatesTracker(
             m_render_widget,
             m_info_label,
-			m_rgb_text));
+            m_rgb_text));
 
     // Handler for picking scene entities in the render widget.
     m_picking_handler.reset(

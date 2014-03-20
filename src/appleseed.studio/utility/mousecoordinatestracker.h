@@ -67,18 +67,18 @@ class MouseCoordinatesTracker
 
   private:
     RenderWidget*    m_widget;
-    QLabel*   m_label;
-    QTextEdit*    m_rgb_text;
+    QLabel*          m_label;
+    QTextEdit*       m_rgb_text;
 
 	
-    const int   m_content_width;
-    const int   m_content_height;
+    const int        m_content_width;
+    const int        m_content_height;
 
     virtual bool eventFilter(QObject* object, QEvent* event);
 
     void set_label_text(const QPoint& point) const;
 
-	void set_rgb_text(const QPoint& point) const;
+    void set_rgb_text(const QPoint& point) const;
 };
 
 }       // namespace studio
