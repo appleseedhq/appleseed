@@ -76,6 +76,7 @@ class RenderTab
 
     void clear();
     void darken();
+    void reset_zoom();
 
     void update();
     void update_size();
@@ -97,6 +98,7 @@ class RenderTab
     void signal_set_render_region(const QRect& rect);
     void signal_clear_render_region();
     void signal_render_widget_context_menu(const QPoint& point);
+    void signal_reset_zoom();
 
   private slots:
     void slot_render_widget_context_menu(const QPoint& point);
@@ -111,6 +113,7 @@ class RenderTab
     QToolButton*                            m_quick_save_aovs_button;
     QToolButton*                            m_set_render_region_button;
     QToolButton*                            m_clear_render_region_button;
+    QToolButton*                            m_reset_zoom_button;
     QComboBox*                              m_picking_mode_combo;
     QLabel*                                 m_info_label;
 
