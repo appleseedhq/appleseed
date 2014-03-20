@@ -129,7 +129,6 @@ class RenderTab
     std::auto_ptr<RenderRegionHandler>      m_render_region_handler;
     std::auto_ptr<RenderClipboardHandler>   m_clipboard_handler;
 
-
     void create_render_widget();
     void create_toolbar();
     void create_scrollarea();

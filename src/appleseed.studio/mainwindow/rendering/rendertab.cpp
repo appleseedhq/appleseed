@@ -197,6 +197,7 @@ void RenderTab::create_toolbar()
         m_quick_save_aovs_button, SIGNAL(clicked()),
         SIGNAL(signal_quicksave_all_aovs()));
     m_toolbar->addWidget(m_quick_save_aovs_button);
+
     m_toolbar->addSeparator();
 
     // Create the Set Render Region button in the render toolbar.
@@ -309,6 +310,7 @@ void RenderTab::recreate_handlers()
             *m_mouse_tracker.get(),
             m_project_explorer,
             m_project));
+
     // Handler for defining render regions with the mouse.
     m_render_region_handler.reset(
         new RenderRegionHandler(
