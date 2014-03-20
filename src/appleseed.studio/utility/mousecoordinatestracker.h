@@ -68,7 +68,7 @@ class MouseCoordinatesTracker
   private:
     RenderWidget*                   m_widget;
     QLabel*                         m_label;
-	QTextEdit*                      m_rgb_text;
+    QTextEdit*                      m_rgb_text;
 
 	
     const int						m_content_width;
