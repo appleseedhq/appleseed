@@ -85,6 +85,7 @@
 #include <QString>
 #include <QStringList>
 #include <Qt>
+#include <QToolButton>
 #include <QUrl>
 
 // boost headers.
@@ -781,6 +782,20 @@ void MainWindow::set_rendering_widgets_enabled(const bool is_enabled, const bool
 
     // Rendering -> Render Settings.
     m_ui->action_rendering_render_settings->setEnabled(allow_starting_rendering);
+
+    // Rendering -> Enable button to black out the render region
+    if(is_project_open)
+    {
+        QToolButton* clear_frame_button = m_ui->tab_render_channels->currentWidget()->findChild<QToolBar*>(QString::fromUtf8("render_toolbar"))->findChild<QToolButton*>("clear_frame_button");
+        if(!is_rendering) 
+        {
+            clear_frame_button->setEnabled(true);
+        }
+        else if(is_rendering)
+        {
+            clear_frame_button->setEnabled(false);
+        }        
+    }
 }
 
 void MainWindow::recreate_render_widgets()
@@ -826,6 +841,9 @@ void MainWindow::add_render_widget(const QString& label)
     connect(
         render_tab, SIGNAL(signal_quicksave_all_aovs()),
         SLOT(slot_quicksave_all_aovs()));
+    connect(
+        render_tab, SIGNAL(signal_clear_frame()),
+        SLOT(slot_clear_frame()));
 
     // Add the render tab to the tab bar.
     m_ui->tab_render_channels->addTab(render_tab, label);

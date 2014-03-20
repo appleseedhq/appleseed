@@ -103,7 +103,7 @@ void MouseCoordinatesTracker::set_label_text(const QPoint& point) const
 {
     const Vector2i pix = widget_to_pixel(point);
     const Vector2d ndc = widget_to_ndc(point);
-
+	
     m_label->setText(
         QString("Pixel: %1, %2  -  NDC: %3, %4")
             .arg(QString::number(pix.x))

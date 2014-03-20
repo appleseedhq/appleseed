@@ -97,12 +97,13 @@ class RenderTab
     void signal_set_render_region(const QRect& rect);
     void signal_clear_render_region();
     void signal_render_widget_context_menu(const QPoint& point);
+    void signal_clear_frame();
 
   private slots:
     void slot_render_widget_context_menu(const QPoint& point);
     void slot_toggle_render_region(const bool checked);
     void slot_set_render_region(const QRect& rect);
-
+        
   private:
     RenderWidget*                           m_render_widget;
     QScrollArea*                            m_scroll_area;
@@ -111,6 +112,7 @@ class RenderTab
     QToolButton*                            m_quick_save_aovs_button;
     QToolButton*                            m_set_render_region_button;
     QToolButton*                            m_clear_render_region_button;
+    QToolButton*                            m_clear_frame_button;
     QComboBox*                              m_picking_mode_combo;
     QLabel*                                 m_info_label;
 
