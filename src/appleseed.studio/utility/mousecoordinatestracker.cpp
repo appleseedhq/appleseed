@@ -114,7 +114,6 @@ void MouseCoordinatesTracker::set_label_text(const QPoint& point) const
             .arg(QString::number(pix.y), 4, '0')
             .arg(QString::number(ndc.x, 'f', 5))
             .arg(QString::number(ndc.y, 'f', 5)));
-
 }
 
 void MouseCoordinatesTracker::set_rgb_text(const QPoint& point) const 
@@ -147,7 +146,6 @@ void MouseCoordinatesTracker::set_rgb_text(const QPoint& point) const
     format.clearForeground();
     cursor.setCharFormat(format);
     cursor.insertText(QString(" %1").arg(QString::number(qAlpha(pixel_rgb)), 3, '0'));
-
 }
 
 }   // namespace studio
