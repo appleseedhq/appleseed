@@ -222,7 +222,7 @@ void RenderTab::create_toolbar()
         SIGNAL(signal_clear_render_region()));
     m_toolbar->addWidget(m_clear_render_region_button);
 
-    // Create the Clear Frame button in the render toolbar
+    // Create the Clear Frame button in the render toolbar.
     m_clear_frame_button = new QToolButton();
     m_clear_frame_button->setObjectName(QString::fromUtf8("clear_frame_button"));
     m_clear_frame_button->setIcon(QIcon(":/icons/cross.png"));

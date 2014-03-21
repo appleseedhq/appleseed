@@ -772,8 +772,8 @@ void MainWindow::set_rendering_widgets_enabled(const bool is_enabled, const bool
     // Rendering -> Render Settings.
     m_ui->action_rendering_render_settings->setEnabled(allow_starting_rendering);
 
-    // Rendering -> Clear Frame
-    if(is_project_open)
+    // Rendering -> Clear Frame.
+    if (is_project_open)
     {
         const QToolBar* render_toolbar = m_ui->tab_render_channels->currentWidget()->findChild<QToolBar*>(QString::fromUtf8("render_toolbar"));
         QToolButton* clear_frame_button = render_toolbar->findChild<QToolButton*>("clear_frame_button");
