@@ -575,8 +575,13 @@ void MainWindow::build_minimize_buttons()
     m_minimize_buttons.push_back(new MinimizeButton(m_ui->project_explorer));
     m_minimize_buttons.push_back(new MinimizeButton(m_ui->attribute_editor));
     m_minimize_buttons.push_back(new MinimizeButton(m_ui->log));
+
     for (size_t index = 0; index < m_minimize_buttons.size(); ++index)
-        statusBar()->insertPermanentWidget(index + 1, m_minimize_buttons[index]);
+    {
+        statusBar()->insertPermanentWidget(
+            static_cast<int>(index + 1),
+            m_minimize_buttons[index]);
+    }
 }
 
 void MainWindow::build_connections()
