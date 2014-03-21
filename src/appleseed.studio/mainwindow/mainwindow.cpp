@@ -114,6 +114,7 @@ MainWindow::MainWindow(QWidget* parent)
   , m_rendering_manager(m_status_bar)
   , m_project_explorer(0)
   , m_attribute_editor(0)
+  , m_project_file_watcher(0)
 {
     m_ui->setupUi(this);
 
@@ -734,7 +735,8 @@ void MainWindow::on_project_change()
 
     restore_state_after_project_open();
 
-    m_project_file_watcher->addPath(m_project_manager.get_project()->get_path());
+    if (m_project_file_watcher)
+        m_project_file_watcher->addPath(m_project_manager.get_project()->get_path());
 }
 
 void MainWindow::update_workspace()
@@ -930,7 +932,8 @@ void MainWindow::add_render_widget(const QString& label)
 void MainWindow::slot_file_changed(const QString& path)
 {
     RENDERER_LOG_INFO("project file changed on disk, reloading it.");
-    m_project_file_watcher->removePath(path);
+    if (m_project_file_watcher)
+        m_project_file_watcher->removePath(path);
     slot_reload_project();
 }
 
