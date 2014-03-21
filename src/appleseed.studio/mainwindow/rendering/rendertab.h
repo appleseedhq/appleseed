@@ -100,6 +100,7 @@ class RenderTab
     void signal_clear_render_region();
     void signal_render_widget_context_menu(const QPoint& point);
     void signal_reset_zoom();
+    void signal_clear_frame();
 
   private slots:
     void slot_render_widget_context_menu(const QPoint& point);
@@ -115,6 +116,7 @@ class RenderTab
     QToolButton*                            m_set_render_region_button;
     QToolButton*                            m_clear_render_region_button;
     QToolButton*                            m_reset_zoom_button;
+    QToolButton*                            m_clear_frame_button;
     QComboBox*                              m_picking_mode_combo;
     QLabel*                                 m_info_label;
     QTextEdit*                              m_rgb_text;
