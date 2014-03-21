@@ -35,14 +35,14 @@
 
 #define BORDER_COLOR                        rgb(40, 40, 40)
 #define BORDER_STYLE                        1px solid BORDER_COLOR
-    
+
 #define DEFAULT_BACKGROUND_COLOR            rgb(50, 50, 50)
 #define INPUT_BACKGROUND_COLOR              rgb(43, 43, 43)
 #define DISABLED_INPUT_BACKGROUND_COLOR     rgb(45, 45, 45)
 #define ACTIVE_BACKGROUND_COLOR             rgb(60, 60, 60)
 #define HOVER_BACKGROUND_COLOR              rgb(190, 140, 50)
 #define SELECTED_BACKGROUND_COLOR           rgb(80, 80, 80)
-    
+
 #define DEFAULT_TEXT_COLOR                  rgb(210, 210, 210)
 #define DISABLED_TEXT_COLOR                 rgb(100, 100, 100)
 #define INFO_TEXT_COLOR                     rgb(100, 100, 100)
@@ -738,7 +738,7 @@ QRadioButton::indicator:unchecked:disabled
  * QAbstractSpinBox.
  * QComboBox.
  */
- 
+
 QLineEdit,
 QAbstractSpinBox,
 QComboBox
@@ -1044,4 +1044,16 @@ QWidget#textedit_log
 QPushButton#bind_entity_button
 {
     min-width: 30px;
+}
+
+QWidget#ToggleButtonOn
+{
+    background-color: SELECTED_BACKGROUND_COLOR;
+    border: BORDER_STYLE;
+}
+
+QWidget#ToggleButtonOff
+{
+    background-color: ACTIVE_BACKGROUND_COLOR;
+    border: BORDER_STYLE;
 }
