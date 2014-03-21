@@ -224,11 +224,9 @@ void RenderTab::create_toolbar()
 
     // Create the Clear Frame button in the render toolbar.
     m_clear_frame_button = new QToolButton();
-    m_clear_frame_button->setObjectName(QString::fromUtf8("clear_frame_button"));
-    m_clear_frame_button->setIcon(QIcon(":/icons/cross.png"));
+    m_clear_frame_button->setIcon(QIcon(":/icons/picture_empty.png"));
     m_clear_frame_button->setToolTip("Clear Frame");
     m_clear_frame_button->setShortcut(Qt::Key_X);
-    m_clear_frame_button->setEnabled(false);
     connect(
         m_clear_frame_button, SIGNAL(clicked()),
         SIGNAL(signal_clear_frame()));
@@ -338,6 +336,11 @@ void RenderTab::recreate_handlers()
     // Initially, the picking handler is active and the render region is inactive.
     m_picking_handler->set_enabled(true);
     m_render_region_handler->set_enabled(false);
+}
+
+void RenderTab::set_clear_frame_button_enabled(const bool enabled)
+{
+    m_clear_frame_button->setEnabled(enabled);
 }
 
 }   // namespace studio
