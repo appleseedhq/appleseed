@@ -64,15 +64,14 @@ void MinimizeButton::set_fullscreen(const bool on)
 {
     if (on)
     {
-        // Setting fullscreen on
+        // Setting fullscreen on.
         m_minimized = m_on;
         if (!m_on)
             m_dock_widget->toggleViewAction()->activate(QAction::Trigger);
     }
     else
     {
-        // Deactivating fullscreen
-        // Keep state before fullscreen
+        // Deactivating fullscreen. Keep state before fullscreen.
         if (!m_minimized)
             m_dock_widget->toggleViewAction()->activate(QAction::Trigger);
     }
@@ -87,12 +86,10 @@ void MinimizeButton::mousePressEvent(QMouseEvent* event)
 void MinimizeButton::slot_minimize()
 {
     m_on = !m_on;
-    if (m_on)
-        setObjectName(QString::fromUtf8("ToggleButtonOn"));
-    else
-        setObjectName(QString::fromUtf8("ToggleButtonOff"));
 
-    // Force stylesheet reloading for this widget
+    setObjectName(QString::fromUtf8(m_on ? "ToggleButtonOn" : "ToggleButtonOff"));
+
+    // Force stylesheet reloading for this widget.
     style()->unpolish(this);
     style()->polish(this);
 }
