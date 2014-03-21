@@ -38,6 +38,7 @@
 #include "mainwindow/project/attributeeditor.h"
 #include "mainwindow/project/projectexplorer.h"
 #include "mainwindow/logwidget.h"
+#include "mainwindow/minimizebutton.h"
 #include "utility/interop.h"
 #include "utility/miscellaneous.h"
 #include "utility/settingskeys.h"
@@ -503,73 +504,6 @@ void MainWindow::build_project_explorer()
 
     m_ui->pushbutton_clear_filter->setEnabled(false);
 }
-
-class MinimizeButton
-  : public QPushButton
-{
-    Q_OBJECT
-
-  public:
-    MinimizeButton(QDockWidget* dock_widget, QWidget* parent = 0) :
-        QPushButton(dock_widget->windowTitle(), parent),
-        m_dock_widget(dock_widget),
-        m_on(true),
-        m_minimized(false)
-    {
-        setObjectName(QString::fromUtf8("ToggleButtonOn"));
-        connect(
-            m_dock_widget->toggleViewAction(), SIGNAL(toggled(bool)),
-            SLOT(slot_minimize()));
-    }
-
-    const bool is_on()
-    {
-        return m_on;
-    }
-
-    void set_fullscreen(const bool on)
-    {
-        if (on)
-        {
-            // Setting fullscreen on
-            m_minimized = m_on;
-            if (!m_on)
-                m_dock_widget->toggleViewAction()->activate(QAction::Trigger);
-        }
-        else
-        {
-            // Deactivating fullscreen
-            // Keep state before fullscreen
-            if (!m_minimized)
-                m_dock_widget->toggleViewAction()->activate(QAction::Trigger);
-        }
-    }
-
-  protected:
-    void mousePressEvent(QMouseEvent* event)
-    {
-        if (event->buttons() & Qt::LeftButton)
-            m_dock_widget->toggleViewAction()->activate(QAction::Trigger);
-    }
-
-    QDockWidget*    m_dock_widget;
-    bool            m_on;
-    bool            m_minimized;
-
-  private slots:
-    void slot_minimize()
-    {
-        m_on = !m_on;
-        if (m_on)
-            setObjectName(QString::fromUtf8("ToggleButtonOn"));
-        else
-            setObjectName(QString::fromUtf8("ToggleButtonOff"));
-
-        // Force stylesheet reloading for this widget
-        style()->unpolish(this);
-        style()->polish(this);
-    }
-};
 
 void MainWindow::build_minimize_buttons()
 {
