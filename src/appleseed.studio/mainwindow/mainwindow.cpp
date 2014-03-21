@@ -865,9 +865,11 @@ void MainWindow::add_render_widget(const QString& label)
 
 void MainWindow::slot_file_changed(const QString& path)
 {
+    assert(m_project_file_watcher);
+
     RENDERER_LOG_INFO("project file changed on disk, reloading it.");
-    if (m_project_file_watcher)
-        m_project_file_watcher->removePath(path);
+
+    m_project_file_watcher->removePath(path);
     slot_reload_project();
 }
 
