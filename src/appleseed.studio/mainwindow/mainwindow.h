@@ -123,6 +123,7 @@ class MainWindow
     typedef std::map<std::string, RenderTab::State> RenderTabStateCollection;
 
     RenderTabCollection                     m_render_tabs;
+    std::map<int, RenderTab*>               m_tab_index_to_render_tab;
 
     struct StateBeforeProjectOpen
     {

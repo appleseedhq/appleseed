@@ -788,6 +788,7 @@ void MainWindow::remove_render_widgets()
         delete i->second;
 
     m_render_tabs.clear();
+    m_tab_index_to_render_tab.clear();
 
     while (m_ui->tab_render_channels->count() > 0)
         m_ui->tab_render_channels->removeTab(0);
@@ -820,10 +821,11 @@ void MainWindow::add_render_widget(const QString& label)
         SLOT(slot_reset_zoom()));
 
     // Add the render tab to the tab bar.
-    m_ui->tab_render_channels->addTab(render_tab, label);
+    const int tab_index = m_ui->tab_render_channels->addTab(render_tab, label);
 
-    // Update the label -> render tab mapping.
+    // Update the mappings.
     m_render_tabs[label.toStdString()] = render_tab;
+    m_tab_index_to_render_tab[tab_index] = render_tab;
 }
 
 void MainWindow::slot_file_changed(const QString& path)
@@ -1270,10 +1272,8 @@ void MainWindow::slot_set_render_region(const QRect& rect)
 
 void MainWindow::slot_reset_zoom()
 {
-    m_render_tabs[
-        (m_ui->tab_render_channels->
-            tabText(m_ui->tab_render_channels->
-                currentIndex())).toStdString()]->reset_zoom();
+    const int current_tab_index = m_ui->tab_render_channels->currentIndex();
+    m_tab_index_to_render_tab[current_tab_index]->reset_zoom();
 }
 
 void MainWindow::slot_camera_changed()
