@@ -78,6 +78,7 @@ class RenderTab
     void clear();
     void darken();
     void reset_zoom();
+    void set_clear_frame_button_enabled(bool);
 
     void update();
     void update_size();

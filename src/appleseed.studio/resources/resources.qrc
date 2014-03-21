@@ -11,6 +11,7 @@
         <file>icons/quick_save_aovs.png</file>
         <file>icons/save_image.png</file>
         <file>icons/reset_zoom.png</file>
+        <file>icons/picture_empty.png</file>
         <file>images/appleseed-logo-gray-256.png</file>
         <file>patterns/texture.png</file>
         <file>widgets/checkbox_checked_disabled.png</file>
