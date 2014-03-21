@@ -337,10 +337,11 @@ void RenderTab::recreate_handlers()
     m_render_region_handler->set_enabled(false);
 }
 
-void RenderTab::set_clear_frame_button_enabled(bool enabled)
+void RenderTab::set_clear_frame_button_enabled(const bool enabled)
 {
     m_clear_frame_button->setEnabled(enabled);
 }
+
 }   // namespace studio
 }   // namespace appleseed
 
