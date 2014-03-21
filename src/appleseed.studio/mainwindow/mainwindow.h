@@ -234,7 +234,6 @@ class MainWindow
     void slot_save_all_aovs();
     void slot_quicksave_all_aovs();
     void slot_clear_frame();
-
 };
 
 }       // namespace studio
