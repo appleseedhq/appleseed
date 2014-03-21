@@ -88,6 +88,7 @@ RenderTab::RenderTab(
 void RenderTab::clear()
 {
     m_render_widget->clear(Color4f(0.0f));
+    m_render_widget->repaint();
 }
 
 void RenderTab::darken()
@@ -220,6 +221,18 @@ void RenderTab::create_toolbar()
         m_clear_render_region_button, SIGNAL(clicked()),
         SIGNAL(signal_clear_render_region()));
     m_toolbar->addWidget(m_clear_render_region_button);
+
+    // Create the Clear Frame button in the render toolbar
+    m_clear_frame_button = new QToolButton();
+    m_clear_frame_button->setObjectName(QString::fromUtf8("clear_frame_button"));
+    m_clear_frame_button->setIcon(QIcon(":/icons/cross.png"));
+    m_clear_frame_button->setToolTip("Clear Frame");
+    m_clear_frame_button->setShortcut(Qt::Key_X);
+    m_clear_frame_button->setEnabled(false);
+    connect(
+        m_clear_frame_button, SIGNAL(clicked()),
+        SIGNAL(signal_clear_frame()));
+    m_toolbar->addWidget(m_clear_frame_button);
 
     m_toolbar->addSeparator();
 
