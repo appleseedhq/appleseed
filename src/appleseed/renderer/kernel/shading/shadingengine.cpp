@@ -110,13 +110,13 @@ void ShadingEngine::shade_hit_point(
 #ifdef WITH_OSL
     if (material && material->get_osl_surface() && material->get_osl_surface()->has_transparency())
     {
-        Alpha alpha;
+        Alpha a;
         shading_context.execute_osl_transparency(
             *material->get_osl_surface(),
             shading_point,
-            alpha);
+            a);
 
-        shading_result.m_main.m_alpha *= alpha;
+        shading_result.m_main.m_alpha *= a;
     }
 #endif
 
