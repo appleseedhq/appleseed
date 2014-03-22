@@ -1,5 +1,5 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.5.4dev
+# Compiled by oslc 1.5.5dev
 shader gabor_noise
 param	point	Pos	0 0 0 		 %read{1,1} %write{0,0} %derivs
 param	float	frequency	1 		 %read{1,1} %write{2147483647,-1} %derivs
@@ -20,19 +20,19 @@ const	string	$const5	"bandwidth"		 %read{2,2} %write{2147483647,-1}
 const	string	$const6	"impulses"		 %read{2,2} %write{2147483647,-1}
 code Pos
 # gabor_noise.osl:3
-# 	point 			Pos 		= P,
+#     point           Pos         = P,
 	assign		Pos P 	%filename{"gabor_noise.osl"} %line{3} %argrw{"wr"}
 code ___main___
 # gabor_noise.osl:14
-# 		"gabor",Pos * frequency,
+#         "gabor", Pos * frequency,
 	mul		$tmp1 Pos frequency 	%filename{"gabor_noise.osl"} %line{14} %argrw{"wrr"}
 # gabor_noise.osl:19
-#  		"impulses", impulses);
+#         "impulses", impulses);
 	noise		Noise $const1 $tmp1 $const2 anisotropic $const3 direction $const4 do_filter $const5 bandwidth $const6 impulses 	%line{19} %argrw{"wrrrrrrrrrrrr"} %argderivs{2}
 # gabor_noise.osl:21
-#  	if (do_abs)
+#     if (do_abs)
 	if		do_abs 5 5 	%line{21} %argrw{"r"}
 # gabor_noise.osl:22
-# 	 	Noise = abs(Noise);
+#         Noise = abs(Noise);
 	abs		Noise Noise 	%line{22} %argrw{"wr"}
 	end
