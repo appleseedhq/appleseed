@@ -89,6 +89,9 @@ class DLLSYMBOL EDF
     // Retrieve the importance multiplier.
     double get_uncached_importance_multiplier() const;
 
+    // Get the light near start value.
+    double get_light_near_start() const;
+
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
     virtual bool on_frame_begin(
