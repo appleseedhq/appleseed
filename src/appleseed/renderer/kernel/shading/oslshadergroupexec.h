@@ -56,9 +56,14 @@ class OSLShaderGroupExec
     // Destructor.
     ~OSLShaderGroupExec();
 
-    void execute(
+    void execute_shading(
         const ShaderGroup&      shader_group, 
         const ShadingPoint&     shading_point) const;
+
+    double execute_transparency(
+        const ShaderGroup&      shader_group,
+        const ShadingPoint&     shading_point,
+        double*                 holdout = 0) const;
 
   private:
     OSL::ShadingSystem&         m_osl_shading_system;

@@ -460,6 +460,11 @@ double process_transparency_tree(const OSL::ClosureColor* ci)
     return 1.0 - clamp(transp, 0.0, 1.0);
 }
 
+double process_holdout_tree(const OSL::ClosureColor* ci)
+{
+    return clamp(luminance(do_process_closure_id_tree(ci, HoldoutID)), 0.0f, 1.0f);
+}
+
 }   // namespace renderer
 
 // We probably want to reuse OSL macros to declare closure params 

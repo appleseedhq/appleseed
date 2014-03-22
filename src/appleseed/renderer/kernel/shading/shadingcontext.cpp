@@ -71,7 +71,7 @@ void ShadingContext::execute_osl_shadergroup(
     const ShaderGroup&          shader_group,
     const ShadingPoint&         shading_point) const
 {
-    m_shadergroup_exec.execute(
+    m_shadergroup_exec.execute_shading(
         shader_group,
         shading_point);
 }
