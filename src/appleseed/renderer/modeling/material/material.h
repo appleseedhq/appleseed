@@ -130,6 +130,7 @@ class DLLSYMBOL Material
     const INormalModifier* get_normal_modifier() const;
 
 #ifdef WITH_OSL
+    bool has_osl_surface() const;
     const ShaderGroup* get_osl_surface() const;
     const ShaderGroup* get_uncached_osl_surface() const;
 #endif

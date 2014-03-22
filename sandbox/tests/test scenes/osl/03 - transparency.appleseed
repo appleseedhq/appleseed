@@ -169,7 +169,6 @@
         </configuration>
         <configuration name="interactive" base="base_interactive">
             <parameter name="lighting_engine" value="drt" />
-            <parameter name="rendering_threads" value="1" />
             <parameters name="drt">
                 <parameter name="dl_light_samples" value="1" />
                 <parameter name="enable_ibl" value="true" />

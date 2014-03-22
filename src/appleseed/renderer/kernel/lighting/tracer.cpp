@@ -71,11 +71,9 @@ namespace
                 if (materials[i]->has_alpha_map())
                     return true;
 #ifdef WITH_OSL
-                if (const ShaderGroup* sg = materials[i]->get_osl_surface())
-                {
-                    if (sg->has_transparency())
-                        return true;
-                }
+                // TODO: Can we do better than this?
+                if (materials[i]->has_osl_surface())
+                    return true;
 #endif
             }
         }

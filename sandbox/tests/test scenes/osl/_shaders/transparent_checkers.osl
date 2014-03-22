@@ -1,8 +1,9 @@
 
 surface transparent_checkers(
 	float kd = 1, 
-	color Cs = 1, 
-	float scale = 5)
+	color Cs = 1,
+	float scale = 5,
+	float transparency = 0.0)
 {
 	if (raytype("shadow"))
 	{
@@ -15,7 +16,7 @@ surface transparent_checkers(
 		int yi = (int)fabs(floor(q[1]));
 		int zi = (int)fabs(floor(q[2]));
 
-		float transp = 0.0;
+		float transp = transparency;
 
 		if ((xi % 2 == yi % 2) == (zi % 2))
 			transp = 1.0;

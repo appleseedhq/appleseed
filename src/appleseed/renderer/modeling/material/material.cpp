@@ -267,6 +267,14 @@ const Source* Material::get_uncached_alpha_map() const
 
 #ifdef WITH_OSL
 
+bool Material::has_osl_surface() const
+{
+    if (strcmp(get_model(), "osl_material") != 0)
+        return false;
+
+    return get_non_empty(m_params, "osl_surface") != 0;
+}
+
 const ShaderGroup* Material::get_uncached_osl_surface() const
 {
     return static_cast<const ShaderGroup*>(m_inputs.get_entity("osl_surface"));
