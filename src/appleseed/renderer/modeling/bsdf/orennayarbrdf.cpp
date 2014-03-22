@@ -36,11 +36,13 @@
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
 #include "foundation/math/sampling.h"
+#include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
 
 // Standard headers.
+#include <algorithm>
 #include <cmath>
 
 // Forward declarations.
@@ -127,7 +129,6 @@ namespace
 
             value *= static_cast<float>(values->m_reflectance_multiplier * RcpPi);
 
-
             // Compute the probability density of the sampled direction.
             probability = wi.y * RcpPi;
             assert(probability > 0.0);
@@ -192,16 +193,15 @@ namespace
             return cos_in * RcpPi;
         }
 
-
         void oren_nayar_qualitative(
-            const double cos_on,
-            const double cos_in,
-            const double roughness,
-            const Spectrum& reflectance,
-            const Vector3d& outgoing,
-            const Vector3d& incoming,
-            const Vector3d& n,
-            Spectrum& value) const
+            const double        cos_on,
+            const double        cos_in,
+            const double        roughness,
+            const Spectrum&     reflectance,
+            const Vector3d&     outgoing,
+            const Vector3d&     incoming,
+            const Vector3d&     n,
+            Spectrum&           value) const
         {
             const double theta_r = min(HalfPi, acos(cos_on));
             const double theta_i = acos(cos_in);
@@ -220,7 +220,10 @@ namespace
             if (cos_phi_diff >= 0.0)
                 C2 *= sin(alpha);
             else
-                C2 *= sin(alpha) - pow(2.0 * beta * RcpPi, 3.0);
+            {
+                const double temp = 2.0 * beta * RcpPi;
+                C2 *= sin(alpha) - square(temp) * temp;
+            }
 
             const double C3 = 0.125 * (sigma2 / (sigma2 + 0.09) * square(4.0 * alpha * beta * RcpPiSq)) * tan((alpha + beta) * 0.5);
 
