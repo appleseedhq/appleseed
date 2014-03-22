@@ -43,6 +43,9 @@
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/material/material.h"
+#ifdef WITH_OSL
+#include "renderer/modeling/shadergroup/shadergroup.h"
+#endif
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -189,52 +192,81 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         // Terminate the path if the surface has no material.
         if (material == 0)
             break;
-
+        
         // Handle alpha mapping.
-        if (vertex.m_path_length > 1 && material->get_alpha_map())
+        if (vertex.m_path_length > 1)
         {
-            // Evaluate the alpha map at the shading point.
-            Alpha alpha;
-            material->get_alpha_map()->evaluate(
-                shading_context.get_texture_cache(),
-                vertex.get_uv(0),
-                alpha);
+            bool has_transparency = material->get_alpha_map();
 
-            if (pass_through(sampling_context, alpha))
+#ifdef WITH_OSL
+            if (!has_transparency)
             {
-                // Construct a ray that continues in the same direction as the incoming ray.
-                const ShadingRay cutoff_ray(
-                    vertex.get_point(),
-                    ray.m_dir,
-                    ray.m_time,
-                    ray.m_type,
-                    ray.m_depth);   // ray depth does not increase when passing through an alpha-mapped surface
+                has_transparency = 
+                    material->get_osl_surface() && material->get_osl_surface()->has_transparency();
+            }
+#endif
 
-                // Trace the ray.
-                shading_points[shading_point_index].clear();
-                shading_context.get_intersector().trace(
-                    cutoff_ray,
-                    shading_points[shading_point_index],
-                    vertex.m_shading_point);
+            if (has_transparency)
+            {
+                Alpha alpha;
+                
+                if (material->get_alpha_map())
+                {
+                    // Evaluate the alpha map at the shading point.
+                    material->get_alpha_map()->evaluate(
+                        shading_context.get_texture_cache(),
+                        vertex.get_uv(0),
+                        alpha);
+                }
 
-                // Update the pointers to the shading points.
-                vertex.m_shading_point = &shading_points[shading_point_index];
-                shading_point_index = 1 - shading_point_index;
+#ifdef WITH_OSL
+                if (material->get_osl_surface() && material->get_osl_surface()->has_transparency())
+                {
+                    // Evaluate the OSL shader at the shading point.
+                    Alpha a;
+                    shading_context.execute_osl_transparency(
+                        *material->get_osl_surface(),
+                        *vertex.m_shading_point,
+                        a);
 
-                continue;
+                    alpha *= a;
+                }
+#endif
+
+                if (pass_through(sampling_context, alpha))
+                {
+                    // Construct a ray that continues in the same direction as the incoming ray.
+                    const ShadingRay cutoff_ray(
+                        vertex.get_point(),
+                        ray.m_dir,
+                        ray.m_time,
+                        ray.m_type,
+                        ray.m_depth);   // ray depth does not increase when passing through an alpha-mapped surface
+    
+                    // Trace the ray.
+                    shading_points[shading_point_index].clear();
+                    shading_context.get_intersector().trace(
+                        cutoff_ray,
+                        shading_points[shading_point_index],
+                        vertex.m_shading_point);
+    
+                    // Update the pointers to the shading points.
+                    vertex.m_shading_point = &shading_points[shading_point_index];
+                    shading_point_index = 1 - shading_point_index;
+    
+                    continue;
+                }
             }
         }
 
 #ifdef WITH_OSL
-
         // Execute the OSL shader, if we have one.
         if (material && material->get_osl_surface())
         {
-            shading_context.execute_osl_shadergroup(
+            shading_context.execute_osl_shading(
                 *material->get_osl_surface(),
                 *vertex.m_shading_point);
         }
-
 #endif
 
         // Retrieve the EDF and the BSDF.

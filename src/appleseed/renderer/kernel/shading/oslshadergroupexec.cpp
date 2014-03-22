@@ -70,10 +70,11 @@ void OSLShaderGroupExec::execute_shading(
         shading_point.get_osl_shader_globals());
 }
 
-double OSLShaderGroupExec::execute_transparency(
-    const ShaderGroup&      shader_group,
-    const ShadingPoint&     shading_point,
-    double*                 holdout) const
+void OSLShaderGroupExec::execute_transparency(
+    const ShaderGroup&  shader_group,
+    const ShadingPoint& shading_point,
+    Alpha&              alpha,
+    float*              holdout) const
 {
     // Switch temporary the ray type to Shadow.
     ShadingRay::TypeType saved_type = shading_point.m_ray.m_type;
@@ -83,15 +84,14 @@ double OSLShaderGroupExec::execute_transparency(
         *m_osl_shading_context,
         *shader_group.shadergroup_ref(),
         shading_point.get_osl_shader_globals());
-    
-    const double alpha = process_transparency_tree(shading_point.get_osl_shader_globals().Ci);
-    
+
+    process_transparency_tree(shading_point.get_osl_shader_globals().Ci, alpha);
+
     if (holdout)
         *holdout = process_holdout_tree(shading_point.get_osl_shader_globals().Ci);
     
     // Restore the original ray type.
     shading_point.m_ray.m_type = saved_type;
-    return alpha;
 }
 
 }   // namespace renderer

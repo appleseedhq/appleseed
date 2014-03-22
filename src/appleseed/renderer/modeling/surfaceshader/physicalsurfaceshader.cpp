@@ -260,7 +260,7 @@ namespace
             const Material* material = shading_point.get_material();
             if (material && material->get_osl_surface())
             {
-                shading_context.execute_osl_shadergroup(
+                shading_context.execute_osl_shading(
                     *material->get_osl_surface(),
                     shading_point);
             }
@@ -316,7 +316,7 @@ namespace
 
             if (material && material->get_osl_surface())
             {
-                shading_context.execute_osl_shadergroup(
+                shading_context.execute_osl_shading(
                     *material->get_osl_surface(),
                     back_shading_point);
             }

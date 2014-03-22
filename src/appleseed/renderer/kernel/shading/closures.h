@@ -229,8 +229,8 @@ inline void* CompositeClosure::get_closure_input_values(const size_t index) cons
     return m_input_values[index];
 }
 
-double process_transparency_tree(const OSL::ClosureColor* ci);
-double process_holdout_tree(const OSL::ClosureColor* ci);
+void process_transparency_tree(const OSL::ClosureColor* ci, Alpha& alpha);
+float process_holdout_tree(const OSL::ClosureColor* ci);
 
 }       // namespace renderer
 

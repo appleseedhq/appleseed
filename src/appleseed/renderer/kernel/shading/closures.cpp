@@ -453,14 +453,14 @@ namespace
 
 }
 
-double process_transparency_tree(const OSL::ClosureColor* ci)
+void process_transparency_tree(const OSL::ClosureColor* ci, Alpha& alpha)
 {
-    double transp = luminance(do_process_closure_id_tree(ci, TransparentID));
     // Convert from transparency to opacity.
-    return 1.0 - clamp(transp, 0.0, 1.0);
+    float transp = luminance(do_process_closure_id_tree(ci, TransparentID));
+    alpha.set(1.0f - clamp(transp, 0.0f, 1.0f));
 }
 
-double process_holdout_tree(const OSL::ClosureColor* ci)
+float process_holdout_tree(const OSL::ClosureColor* ci)
 {
     return clamp(luminance(do_process_closure_id_tree(ci, HoldoutID)), 0.0f, 1.0f);
 }
@@ -535,7 +535,7 @@ void register_appleseed_closures(OSL::ShadingSystem& shading_system)
         { "translucent", TranslucentID, { CLOSURE_VECTOR_PARAM(LambertClosureParams, N),
                                           CLOSURE_FINISH_PARAM(LambertClosureParams) } },
 
-        { "transparency", TransparentID, { CLOSURE_FINISH_PARAM(EmptyClosureParams) } },
+        { "transparent", TransparentID, { CLOSURE_FINISH_PARAM(EmptyClosureParams) } },
 
         { 0, 0, {} }    // mark end of the array
     };
