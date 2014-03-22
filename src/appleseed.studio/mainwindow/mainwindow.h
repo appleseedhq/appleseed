@@ -44,6 +44,7 @@
 #include "renderer/api/utility.h"
 
 // Qt headers.
+#include <QFileSystemWatcher>
 #include <QMainWindow>
 #include <QObject>
 
@@ -98,6 +99,7 @@ class MainWindow
     QAction*                                m_action_start_interactive_rendering;
     QAction*                                m_action_start_final_rendering;
     QAction*                                m_action_stop_rendering;
+    QAction*                                m_action_toggle_file_watcher;
 
     std::vector<QAction*>                   m_recently_opened;
 
@@ -114,6 +116,8 @@ class MainWindow
     ProjectExplorer*                        m_project_explorer;
     AttributeEditor*                        m_attribute_editor;
     RenderingManager                        m_rendering_manager;
+    QFileSystemWatcher*                     m_watcher;
+    bool                                    m_watcher_disconnected;
 
     typedef std::map<std::string, RenderTab*> RenderTabCollection;
     typedef std::map<std::string, RenderTab::State> RenderTabStateCollection;
@@ -163,6 +167,7 @@ class MainWindow
     void recreate_render_widgets();
     void remove_render_widgets();
     void add_render_widget(const QString& label);
+    void file_change_watcher();
 
     void start_rendering(const bool interactive);
 
@@ -205,6 +210,8 @@ class MainWindow
 
     void slot_load_settings();
     void slot_save_settings();
+    void slot_file_changed(const QString& path);
+    void slot_toggle_file_watcher();
 
     void slot_filter_text_changed(const QString& pattern);
     void slot_clear_filter();

@@ -268,6 +268,7 @@ void MainWindow::build_menus()
 
     connect(m_ui->action_tools_save_settings, SIGNAL(triggered()), SLOT(slot_save_settings()));
     connect(m_ui->action_tools_reload_settings, SIGNAL(triggered()), SLOT(slot_load_settings()));
+    connect(m_ui->action_tools_toggle_file_watcher, SIGNAL(triggered()), SLOT(slot_toggle_file_watcher()));
 
     //
     // Help menu.
@@ -425,6 +426,25 @@ void MainWindow::update_recent_files_menu(const QStringList& files)
         m_recently_opened[i]->setVisible(false);
 }
 
+void MainWindow::slot_toggle_file_watcher()
+{
+    if (!m_watcher_disconnected)
+    {
+        RENDERER_LOG_INFO ("File watcher disconnected.");
+        m_action_toggle_file_watcher->setIcon(QIcon(":/icons/file_toggle_off.png"));
+        m_watcher_disconnected = true;
+        disconnect(m_watcher, SIGNAL(fileChanged(const QString &)), this, SLOT(slot_file_changed(const QString &)));
+    }
+    else
+    {
+        RENDERER_LOG_INFO ("File watcher connected.");
+        m_watcher_disconnected = false;
+        m_action_toggle_file_watcher->setIcon(QIcon(":/icons/file_toggle_on.png"));
+        connect(m_watcher, SIGNAL(fileChanged(const QString &)), this, SLOT(slot_file_changed(const QString &)));
+    }
+        
+}
+
 void MainWindow::build_toolbar()
 {
     m_action_new_project = new QAction(QIcon(":/icons/page_white.png"), "New", this);
@@ -452,6 +472,10 @@ void MainWindow::build_toolbar()
     m_action_stop_rendering = new QAction(QIcon(":/icons/cross.png"), "Stop Rendering", this);
     connect(m_action_stop_rendering, SIGNAL(triggered()), &m_rendering_manager, SLOT(slot_abort_rendering()));
     m_ui->main_toolbar->addAction(m_action_stop_rendering);
+
+    m_action_toggle_file_watcher = new QAction(QIcon(":/icons/file_toggle_off.png"), "File Watcher", this);
+    connect(m_action_toggle_file_watcher, SIGNAL(triggered()), SLOT(slot_toggle_file_watcher()));
+    m_ui->main_toolbar->addAction(m_action_toggle_file_watcher);
 }
 
 void MainWindow::build_log_panel()
@@ -651,6 +675,7 @@ void MainWindow::on_project_change()
     update_workspace();
 
     restore_state_after_project_open();
+    m_watcher->addPath(m_project_manager.get_project()->get_path());
 }
 
 void MainWindow::update_workspace()
@@ -828,6 +853,15 @@ void MainWindow::add_render_widget(const QString& label)
 
     // Update the label -> render tab mapping.
     m_render_tabs[label.toStdString()] = render_tab;
+}
+
+
+
+void MainWindow::slot_file_changed(const QString& path)
+{
+    m_watcher->removePath(path);
+    slot_reload_project();
+    RENDERER_LOG_INFO("Project file changes detected on disk, reloading it.");
 }
 
 void MainWindow::start_rendering(const bool interactive)
@@ -1047,6 +1081,7 @@ void MainWindow::slot_save_project_as()
         update_recent_files_menu(filepath);
         update_workspace();
     }
+    m_watcher->addPath(m_project_manager.get_project()->get_path());
 }
 
 void MainWindow::slot_project_modified()
@@ -1076,6 +1111,7 @@ void MainWindow::slot_start_final_rendering()
 
 void MainWindow::slot_start_rendering_once(const QString& filepath, const QString& configuration, const bool successful)
 {
+
     sender()->deleteLater();
 
     if (successful)
@@ -1274,6 +1310,18 @@ void MainWindow::slot_show_about_window()
     about_window->activateWindow();
 }
 
+void MainWindow::file_change_watcher()
+{
+    if (m_settings.get_optional<bool>("watch_file_changes"))
+    {
+        m_watcher = new QFileSystemWatcher(this);
+        m_watcher_disconnected = false;
+        m_action_toggle_file_watcher->setIcon(QIcon(":/icons/file_toggle_on.png"));
+        connect(m_watcher, SIGNAL(fileChanged(const QString &)), this, SLOT(slot_file_changed(const QString &)));
+        RENDERER_LOG_INFO("file watcher initiated.");
+    }
+}
+
 void MainWindow::slot_load_settings()
 {
     const filesystem::path root_path(Application::get_root_path());
@@ -1294,6 +1342,7 @@ void MainWindow::slot_load_settings()
     {
         RENDERER_LOG_INFO("successfully loaded settings from %s.", settings_file_path.c_str());
         m_settings = settings;
+        file_change_watcher();
     }
     else
     {

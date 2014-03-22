@@ -125,6 +125,7 @@
     <addaction name="action_tools_settings"/>
     <addaction name="action_tools_save_settings"/>
     <addaction name="action_tools_reload_settings"/>
+    <addaction name="action_tools_toggle_file_watcher"/>
    </widget>
    <widget class="QMenu" name="menu_help">
     <property name="title">
@@ -173,7 +174,7 @@
   <widget class="QDockWidget" name="project_explorer">
    <property name="minimumSize">
     <size>
-     <width>200</width>
+     <width>209</width>
      <height>187</height>
     </size>
    </property>
@@ -504,6 +505,11 @@
   <action name="action_clear_open_recent_menu">
    <property name="text">
     <string>Clear Menu</string>
+   </property>
+  </action>
+  <action name="action_tools_toggle_file_watcher">
+   <property name="text">
+    <string>Toggle File Watcher</string>
    </property>
   </action>
  </widget>
