@@ -224,8 +224,8 @@ set (mainwindow_sources
     mainwindow/mainwindow.cpp
     mainwindow/mainwindow.h
     mainwindow/mainwindow.ui
-    mainwindow/minimizebutton.h
     mainwindow/minimizebutton.cpp
+    mainwindow/minimizebutton.h
     mainwindow/qtlogtarget.cpp
     mainwindow/qtlogtarget.h
     mainwindow/rendersettingswindow.cpp
