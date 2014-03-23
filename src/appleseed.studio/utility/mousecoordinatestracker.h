@@ -41,7 +41,6 @@ namespace appleseed { namespace studio { class RenderWidget; } }
 class QEvent;
 class QLabel;
 class QPoint;
-class QTextEdit;
 class QWidget;
 
 namespace appleseed {
@@ -55,8 +54,11 @@ class MouseCoordinatesTracker
   public:
     MouseCoordinatesTracker(
         RenderWidget*   widget,
-        QLabel*         label,
-        QTextEdit*      m_rgb_text);
+        QLabel*         info_label,
+        QLabel*         r_label,
+        QLabel*         g_label,
+        QLabel*         b_label,
+        QLabel*         a_label);
 
     ~MouseCoordinatesTracker();
 
@@ -65,8 +67,11 @@ class MouseCoordinatesTracker
 
   private:
     RenderWidget*    m_widget;
-    QLabel*          m_label;
-    QTextEdit*       m_rgb_text;
+    QLabel*          m_info_label;
+    QLabel*          m_r_label;
+    QLabel*          m_g_label;
+    QLabel*          m_b_label;
+    QLabel*          m_a_label;
     const int        m_content_width;
     const int        m_content_height;
 
