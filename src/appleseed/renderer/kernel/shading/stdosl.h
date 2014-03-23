@@ -221,7 +221,7 @@ void fresnel (vector I, normal N, float eta,
         F *= sqr (beta / (g+c));
         Kr = F;
         Kt = (1.0 - Kr) * eta*eta;
-        // OPT: the following recomputes some of the above values, but it 
+        // OPT: the following recomputes some of the above values, but it
         // gives us the same result as if the shader-writer called refract()
         T = refract(I, N, eta);
     } else {
@@ -409,7 +409,7 @@ color transformc (string from, string to, color x)
     return transformc (to, r);
 }
 
- 
+
 
 // Matrix functions
 
@@ -522,17 +522,19 @@ closure color refraction(normal N, float from_ior, float to_ior) BUILTIN;
 // appleseed specific closures
 
 closure color as_ashikhmin_shirley(
-    normal N, 
-    vector T, 
-    float kd, 
+    normal N,
+    vector T,
+    float kd,
     color Cd,
     float ks,
-    color Cs, 
-    float nu, 
+    color Cs,
+    float nu,
     float nv) BUILTIN;
 
 closure color as_microfacet_blinn(normal N, float glossiness) BUILTIN;
 closure color as_microfacet_ward(normal N, float glossiness) BUILTIN;
+
+closure color as_oren_nayar(normal N, float roughness) BUILTIN;
 
 /********************************/
 // closures in OSL spec that are not supported in appleseed.
@@ -575,7 +577,7 @@ closure color fakefur_skin(vector N, vector T, float fur_reflectivity, float fur
                            float fur_avg_radius, float fur_length) BUILTIN;
 
 
-closure color cloth(normal N, float s, float t, color diff_warp, color diff_weft, 
+closure color cloth(normal N, float s, float t, color diff_warp, color diff_weft,
                     color spec_warp, color spec_weft, float fresnel_warp, float fresnel_weft,
                     float spread_x_mult, float spread_y_mult, int pattern, float pattern_angle,
                     float warp_width_scale, float weft_width_scale, float thread_count_mult_u,
@@ -583,11 +585,11 @@ closure color cloth(normal N, float s, float t, color diff_warp, color diff_weft
 {
 
     return cloth(N, s, t, Dx(s), Dx(t), Dy(s), Dy(t), area(P), dPdu, diff_warp, diff_weft, spec_warp, spec_weft,
-                 fresnel_warp, fresnel_weft, spread_x_mult, spread_y_mult, pattern, pattern_angle, 
+                 fresnel_warp, fresnel_weft, spread_x_mult, spread_y_mult, pattern, pattern_angle,
                  warp_width_scale, weft_width_scale, thread_count_mult_u, thread_count_mult_v);
 }
 
-closure color cloth(normal N, float s, float t, color diff_warp, color diff_weft, 
+closure color cloth(normal N, float s, float t, color diff_warp, color diff_weft,
                     color spec_warp, color spec_weft, float fresnel_warp, float fresnel_weft,
                     float spread_x_mult, float spread_y_mult, int pattern, float pattern_angle,
                     float warp_width_scale, float weft_width_scale, float thread_count_mult_u,
@@ -595,7 +597,7 @@ closure color cloth(normal N, float s, float t, color diff_warp, color diff_weft
 {
 
     return cloth(N, s, t, Dx(s), Dx(t), Dy(s), Dy(t), area(P), dPdu, diff_warp, diff_weft, spec_warp, spec_weft,
-                 fresnel_warp, fresnel_weft, spread_x_mult, spread_y_mult, pattern, pattern_angle, 
+                 fresnel_warp, fresnel_weft, spread_x_mult, spread_y_mult, pattern, pattern_angle,
                  warp_width_scale, weft_width_scale, thread_count_mult_u, thread_count_mult_v, tok, val);
 }
 */
