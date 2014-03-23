@@ -81,16 +81,19 @@ QWidget:disabled
 
 /*
  * QMainWindow.
+ * QSplitter.
  */
 
-QMainWindow::separator
+QMainWindow::separator,
+QSplitter::handle
 {
     background-color: DEFAULT_BACKGROUND_COLOR;
     width: 8px;
     height: 8px;
 }
 
-QMainWindow::separator:hover
+QMainWindow::separator:hover,
+QSplitter::handle:hover
 {
     background-color: HOVER_BACKGROUND_COLOR;
 }
