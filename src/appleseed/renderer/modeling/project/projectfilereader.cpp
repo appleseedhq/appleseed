@@ -1871,7 +1871,9 @@ namespace
         virtual void start_element(const Attributes& attrs) OVERRIDE
         {
             m_name = get_value(attrs, "name");
-            m_shader_group = ShaderGroupFactory::create(m_name.c_str());
+            m_shader_group = ShaderGroupFactory::create(
+                m_name.c_str(), 
+                m_context.get_project().search_paths());
         }
 
         virtual void end_child_element(

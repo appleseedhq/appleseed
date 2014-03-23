@@ -1,7 +1,0 @@
-
-surface printf_test()
-{
-	printf("P = %.3f\n", P);
-	printf("N = %.3f\n", N);
-    Ci = 0.5 * diffuse(N);
-}
