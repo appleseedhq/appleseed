@@ -73,7 +73,7 @@ namespace
 #ifdef WITH_OSL
                 // TODO: Can we do better than this?
                 if (materials[i]->has_osl_surface())
-                    return true;
+                    return materials[i]->get_uncached_osl_surface()->has_transparency();
 #endif
             }
         }
