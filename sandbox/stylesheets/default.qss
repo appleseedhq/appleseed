@@ -366,15 +366,40 @@ QToolBar
 
 QToolBar::separator
 {
-    width: 1px;
     background-color: BORDER_COLOR;
-    margin: 4px;
+}
+
+QToolBar::separator:horizontal
+{
+    width: 1px;
+    margin-left: 4px;
+    margin-right: 4px;
+}
+
+QToolBar::separator:vertical
+{
+    height: 1px;
+    margin-top: 4px;
+    margin-bottom: 4px;
 }
 
 QToolBar::handle
 {
-    width: 5px;
     background-color: SELECTED_BACKGROUND_COLOR;
+}
+
+QToolBar::handle:horizontal
+{
+    width: 5px;
+    margin-left: 4px;
+    margin-right: 4px;
+}
+
+QToolBar::handle:vertical
+{
+    height: 5px;
+    margin-top: 4px;
+    margin-bottom: 4px;
 }
 
 QToolButton
