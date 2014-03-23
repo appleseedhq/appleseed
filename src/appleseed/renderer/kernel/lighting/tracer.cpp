@@ -71,7 +71,6 @@ namespace
                 if (materials[i]->has_alpha_map())
                     return true;
 #ifdef WITH_OSL
-                // TODO: Can we do better than this?
                 if (materials[i]->has_osl_surface())
                     return materials[i]->get_uncached_osl_surface()->has_transparency();
 #endif
@@ -326,7 +325,7 @@ void Tracer::evaluate_alpha(
 #ifdef WITH_OSL
     if (m_shadergroup_exec)
     {
-        if (const ShaderGroup *sg = material.get_osl_surface())
+        if (const ShaderGroup* sg = material.get_osl_surface())
         {
             if (sg->has_transparency())
             {

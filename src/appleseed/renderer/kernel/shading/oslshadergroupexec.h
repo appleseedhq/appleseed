@@ -29,11 +29,11 @@
 #ifndef APPLESEED_RENDERER_KERNEL_SHADING_OSLSHADERGROUPEXEC_H
 #define APPLESEED_RENDERER_KERNEL_SHADING_OSLSHADERGROUPEXEC_H
 
-// appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
-
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+
+// appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
 
 // OSL headers.
 #include "OSL/oslexec.h"
@@ -64,10 +64,10 @@ class OSLShaderGroupExec
         const ShadingPoint&     shading_point) const;
 
     void execute_transparency(
-        const ShaderGroup&  shader_group,
-        const ShadingPoint& shading_point,
-        Alpha&              alpha,
-        float*              holdout = 0) const;
+        const ShaderGroup&      shader_group,
+        const ShadingPoint&     shading_point,
+        Alpha&                  alpha,
+        float*                  holdout = 0) const;
 
   private:
     OSL::ShadingSystem&         m_osl_shading_system;
