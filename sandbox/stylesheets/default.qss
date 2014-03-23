@@ -1053,15 +1053,33 @@ QLabel#info_label
     font-family: FIXED_WIDTH_FONT_FAMILY;
 }
 
-QTextEdit#rgb_text
+QLabel#r_label,
+QLabel#g_label,
+QLabel#b_label,
+QLabel#a_label
+{
+    font-family: FIXED_WIDTH_FONT_FAMILY;
+    font-size: 11px;
+}
+
+QLabel#r_label
+{
+    color: red;
+}
+
+QLabel#g_label
+{
+    color: green;
+}
+
+QLabel#b_label
+{
+    color: blue;
+}
+
+QLabel#a_label
 {
     color: INFO_TEXT_COLOR;
-    min-width: 100px;
-    max-width: 150px;
-    max-height: 16px;
-    margin-left: 3px;
-    margin-right: 3px;
-    font-family: FIXED_WIDTH_FONT_FAMILY;
 }
 
 QWidget#textedit_log
