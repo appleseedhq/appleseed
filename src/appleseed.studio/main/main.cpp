@@ -204,7 +204,10 @@ namespace
             // Load and apply the stylesheet.
             string stylesheet;
             if (load_stylesheet(stylesheet_path.string(), stylesheet))
+            {
+                application.setStyle("plastique");
                 application.setStyleSheet(QString::fromStdString(stylesheet));
+            }
         }
     }
 
