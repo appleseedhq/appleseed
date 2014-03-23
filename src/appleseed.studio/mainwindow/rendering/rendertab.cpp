@@ -267,12 +267,26 @@ void RenderTab::create_toolbar()
 
     m_toolbar->addSeparator();
 
-    m_rgb_text = new QTextEdit();
-    m_rgb_text->setObjectName(QString::fromUtf8("rgb_text"));
-    m_rgb_text->setReadOnly(true);
-    m_rgb_text->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    m_rgb_text->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    m_toolbar->addWidget(m_rgb_text);
+    // Create a labels to display RGBA values
+    m_r_label = new QLabel();
+    m_r_label->setScaledContents(true);
+    m_r_label->setObjectName(QString::fromUtf8("r_label"));
+    m_toolbar->addWidget(m_r_label);
+
+    m_g_label = new QLabel();
+    m_g_label->setScaledContents(true);
+    m_g_label->setObjectName(QString::fromUtf8("g_label"));
+    m_toolbar->addWidget(m_g_label);
+
+    m_b_label = new QLabel();
+    m_b_label->setScaledContents(true);
+    m_b_label->setObjectName(QString::fromUtf8("b_label"));
+    m_toolbar->addWidget(m_b_label);
+
+    m_a_label = new QLabel();
+    m_a_label->setScaledContents(true);
+    m_a_label->setObjectName(QString::fromUtf8("a_label"));
+    m_toolbar->addWidget(m_a_label);
 }
 
 void RenderTab::create_scrollarea()
@@ -310,7 +324,10 @@ void RenderTab::recreate_handlers()
         new MouseCoordinatesTracker(
             m_render_widget,
             m_info_label,
-            m_rgb_text));
+            m_r_label,
+            m_g_label,
+            m_b_label,
+            m_a_label));
 
     // Handler for picking scene entities in the render widget.
     m_picking_handler.reset(
