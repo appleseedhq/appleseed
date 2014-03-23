@@ -59,8 +59,8 @@ namespace
 }
 
 ShaderGroup::ShaderGroup(
-    const char* name,
-    const foundation::SearchPaths& searchpaths)
+    const char*         name,
+    const SearchPaths&  searchpaths)
   : ConnectableEntity(g_class_uid, ParamArray())
   , m_search_paths(searchpaths)
   , m_has_emission(false)
@@ -99,9 +99,9 @@ void ShaderGroup::add_shader(
         bool has_emission, has_transparency;
         
         shader->get_shader_info(
-                    m_search_paths,
-                    has_emission,
-                    has_transparency);
+            m_search_paths,
+            has_emission,
+            has_transparency);
 
         if (has_emission)
             m_has_emission = true;
@@ -217,8 +217,8 @@ const char* ShaderGroupFactory::get_model()
 }
 
 auto_release_ptr<ShaderGroup> ShaderGroupFactory::create(
-    const char* name,
-    const foundation::SearchPaths& searchpaths)
+    const char*         name,
+    const SearchPaths&  searchpaths)
 {
     return auto_release_ptr<ShaderGroup>(new ShaderGroup(name, searchpaths));
 }
