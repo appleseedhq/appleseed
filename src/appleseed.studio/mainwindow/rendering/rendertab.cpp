@@ -267,7 +267,8 @@ void RenderTab::create_toolbar()
 
     m_toolbar->addSeparator();
 
-    // Create a labels to display RGBA values.
+    // Create labels to display RGBA values.
+
     m_r_label = new QLabel();
     m_r_label->setScaledContents(true);
     m_r_label->setObjectName(QString::fromUtf8("r_label"));
