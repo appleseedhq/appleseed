@@ -38,6 +38,7 @@
 #include "mainwindow/project/attributeeditor.h"
 #include "mainwindow/project/projectexplorer.h"
 #include "mainwindow/logwidget.h"
+#include "mainwindow/minimizebutton.h"
 #include "utility/interop.h"
 #include "utility/miscellaneous.h"
 #include "utility/settingskeys.h"
@@ -504,73 +505,6 @@ void MainWindow::build_project_explorer()
     m_ui->pushbutton_clear_filter->setEnabled(false);
 }
 
-class MinimizeButton
-  : public QPushButton
-{
-    Q_OBJECT
-
-  public:
-    MinimizeButton(QDockWidget* dock_widget, QWidget* parent = 0) :
-        QPushButton(dock_widget->windowTitle(), parent),
-        m_dock_widget(dock_widget),
-        m_on(true),
-        m_minimized(false)
-    {
-        setObjectName(QString::fromUtf8("ToggleButtonOn"));
-        connect(
-            m_dock_widget->toggleViewAction(), SIGNAL(toggled(bool)),
-            SLOT(slot_minimize()));
-    }
-
-    const bool is_on()
-    {
-        return m_on;
-    }
-
-    void set_fullscreen(const bool on)
-    {
-        if (on)
-        {
-            // Setting fullscreen on
-            m_minimized = m_on;
-            if (!m_on)
-                m_dock_widget->toggleViewAction()->activate(QAction::Trigger);
-        }
-        else
-        {
-            // Deactivating fullscreen
-            // Keep state before fullscreen
-            if (!m_minimized)
-                m_dock_widget->toggleViewAction()->activate(QAction::Trigger);
-        }
-    }
-
-  protected:
-    void mousePressEvent(QMouseEvent* event)
-    {
-        if (event->buttons() & Qt::LeftButton)
-            m_dock_widget->toggleViewAction()->activate(QAction::Trigger);
-    }
-
-    QDockWidget*    m_dock_widget;
-    bool            m_on;
-    bool            m_minimized;
-
-  private slots:
-    void slot_minimize()
-    {
-        m_on = !m_on;
-        if (m_on)
-            setObjectName(QString::fromUtf8("ToggleButtonOn"));
-        else
-            setObjectName(QString::fromUtf8("ToggleButtonOff"));
-
-        // Force stylesheet reloading for this widget
-        style()->unpolish(this);
-        style()->polish(this);
-    }
-};
-
 void MainWindow::build_minimize_buttons()
 {
     m_minimize_buttons.push_back(new MinimizeButton(m_ui->project_explorer));
@@ -836,7 +770,7 @@ void MainWindow::set_project_explorer_enabled(const bool is_enabled)
 
     m_ui->label_filter->setEnabled(is_enabled && is_project_open);
     m_ui->lineedit_filter->setEnabled(is_enabled && is_project_open);
-    m_ui->pushbutton_clear_filter->setEnabled(is_enabled && is_project_open);
+    m_ui->pushbutton_clear_filter->setEnabled(is_enabled && is_project_open && !m_ui->lineedit_filter->text().isEmpty());
     m_ui->treewidget_project_explorer_scene->setEnabled(is_enabled && is_project_open);
 }
 
@@ -864,9 +798,8 @@ void MainWindow::set_rendering_widgets_enabled(const bool is_enabled, const bool
     // Rendering -> Clear Frame.
     if (is_project_open)
     {
-        const QToolBar* render_toolbar = m_ui->tab_render_channels->currentWidget()->findChild<QToolBar*>(QString::fromUtf8("render_toolbar"));
-        QToolButton* clear_frame_button = render_toolbar->findChild<QToolButton*>("clear_frame_button");
-        clear_frame_button->setEnabled(!is_rendering);
+        const int current_tab_index = m_ui->tab_render_channels->currentIndex();
+        m_tab_index_to_render_tab[current_tab_index]->set_clear_frame_button_enabled(!is_rendering);        
     }
 }
 
@@ -931,9 +864,11 @@ void MainWindow::add_render_widget(const QString& label)
 
 void MainWindow::slot_file_changed(const QString& path)
 {
+    assert(m_project_file_watcher);
+
     RENDERER_LOG_INFO("project file changed on disk, reloading it.");
-    if (m_project_file_watcher)
-        m_project_file_watcher->removePath(path);
+
+    m_project_file_watcher->removePath(path);
     slot_reload_project();
 }
 

@@ -46,6 +46,9 @@
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
+#ifdef WITH_OSL
+#include "renderer/modeling/shadergroup/shadergroup.h"
+#endif
 #include "renderer/modeling/surfaceshader/diagnosticsurfaceshader.h"
 #include "renderer/utility/paramarray.h"
 
@@ -103,6 +106,19 @@ void ShadingEngine::shade_hit_point(
         // No alpha map: solid sample.
         shading_result.m_main.m_alpha = Alpha(1.0f);
     }
+
+#ifdef WITH_OSL
+    if (material && material->get_osl_surface() && material->get_osl_surface()->has_transparency())
+    {
+        Alpha a;
+        shading_context.execute_osl_transparency(
+            *material->get_osl_surface(),
+            shading_point,
+            a);
+
+        shading_result.m_main.m_alpha *= a;
+    }
+#endif
 
     if (shading_result.m_main.m_alpha[0] > 0.0f || material->shade_alpha_cutouts())
     {

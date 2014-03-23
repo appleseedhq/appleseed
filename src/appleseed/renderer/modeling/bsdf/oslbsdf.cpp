@@ -99,7 +99,7 @@ namespace
                     LambertID,
                     "lambertian_brdf",
                     "osl_lambert");
-        
+
             m_specular_brdf =
                 create_and_register_bsdf(
                     ReflectionID,
@@ -139,6 +139,12 @@ namespace
                     "microfacet_brdf",
                     "osl_ward",
                     ParamArray().insert("mdf", "ward"));
+
+            m_orennayar_brdf =
+                create_and_register_bsdf(
+                    OrenNayarID,
+                    "orennayar_brdf",
+                    "osl_orennayar");
         }
 
         virtual void release() OVERRIDE
@@ -183,7 +189,7 @@ namespace
                     bsdf->on_frame_end(project, assembly);
             }
         }
-        
+
         virtual size_t compute_input_data_size(
             const Assembly&         assembly) const OVERRIDE
         {
@@ -328,6 +334,7 @@ namespace
         auto_release_ptr<BSDF>      m_microfacet_blinn_brdf;
         auto_release_ptr<BSDF>      m_microfacet_ggx_brdf;
         auto_release_ptr<BSDF>      m_microfacet_ward_brdf;
+        auto_release_ptr<BSDF>      m_orennayar_brdf;
         auto_release_ptr<BSDF>      m_specular_brdf;
         auto_release_ptr<BSDF>      m_specular_btdf;
         BSDF*                       m_all_bsdfs[NumClosuresIDs];

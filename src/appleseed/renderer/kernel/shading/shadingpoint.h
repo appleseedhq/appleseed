@@ -62,6 +62,9 @@
 
 // Forward declarations.
 namespace renderer  { class Object; }
+#ifdef WITH_OSL
+namespace renderer  { class OSLShaderGroupExec; }
+#endif
 namespace renderer  { class Scene; }
 namespace renderer  { class TextureCache; }
 
@@ -180,6 +183,9 @@ class ShadingPoint
     friend class AssemblyLeafProbeVisitor;
     friend class AssemblyLeafVisitor;
     friend class Intersector;
+#ifdef WITH_OSL
+    friend class OSLShaderGroupExec;
+#endif
     friend class RegionLeafVisitor;
     friend class TriangleLeafVisitor;
     friend class ShadingPointBuilder;
@@ -189,7 +195,7 @@ class ShadingPoint
     TextureCache*                       m_texture_cache;
 
     const Scene*                        m_scene;
-    ShadingRay                          m_ray;                          // world space ray (m_tmax = distance to intersection)
+    mutable ShadingRay                  m_ray;                          // world space ray (m_tmax = distance to intersection)
 
     // Intersection results.
     bool                                m_hit;                          // true if there was a hit, false otherwise

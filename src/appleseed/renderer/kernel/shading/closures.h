@@ -33,6 +33,7 @@
 #include "renderer/modeling/bsdf/diffusebtdf.h"
 #include "renderer/modeling/bsdf/lambertianbrdf.h"
 #include "renderer/modeling/bsdf/microfacetbrdf.h"
+#include "renderer/modeling/bsdf/orennayarbrdf.h"
 #include "renderer/modeling/bsdf/specularbrdf.h"
 #include "renderer/modeling/bsdf/specularbtdf.h"
 
@@ -79,6 +80,7 @@ enum ClosureID
     MicrofacetBlinnID,
     MicrofacetGGXID,
     MicrofacetWardID,
+    OrenNayarID,
     ReflectionID,
     RefractionID,
     TranslucentID,
@@ -96,7 +98,7 @@ enum ClosureID
 // Composite OSL closure.
 //
 
-class APPLESEED_ALIGN(16) CompositeClosure 
+class APPLESEED_ALIGN(16) CompositeClosure
   : public foundation::NonCopyable
 {
   public:
@@ -114,11 +116,12 @@ class APPLESEED_ALIGN(16) CompositeClosure
     size_t choose_closure(const double w) const;
 
   private:
-    typedef boost::mpl::vector< 
+    typedef boost::mpl::vector<
         AshikminBRDFInputValues,
         DiffuseBTDFInputValues,
         LambertianBRDFInputValues,
         MicrofacetBRDFInputValues,
+        OrenNayarBRDFInputValues,
         SpecularBRDFInputValues,
         SpecularBTDFInputValues> InputValuesTypeList;
 
@@ -145,7 +148,7 @@ class APPLESEED_ALIGN(16) CompositeClosure
     Spectrum                        m_spectrum_multipliers[MaxClosureEntries];
 
     void process_closure_tree(
-        const OSL::ClosureColor*    closure, 
+        const OSL::ClosureColor*    closure,
         const foundation::Color3f&  weight);
 
     template <typename InputValues>
@@ -179,7 +182,7 @@ void register_closures(OSL::ShadingSystem& shading_system);
 
 //
 // CompositeClosure class implementation.
-// 
+//
 
 inline size_t CompositeClosure::get_num_closures() const
 {
@@ -207,13 +210,13 @@ inline const Spectrum& CompositeClosure::get_closure_spectrum_multiplier(const s
 inline const foundation::Vector3d& CompositeClosure::get_closure_normal(const size_t index) const
 {
     assert(index < get_num_closures());
-    return m_normals[index];    
+    return m_normals[index];
 }
 
 inline bool CompositeClosure::closure_has_tangent(const size_t index) const
 {
     assert(index < get_num_closures());
-    return m_has_tangent[index];    
+    return m_has_tangent[index];
 }
 
 inline const foundation::Vector3d& CompositeClosure::get_closure_tangent(const size_t index) const
@@ -229,7 +232,8 @@ inline void* CompositeClosure::get_closure_input_values(const size_t index) cons
     return m_input_values[index];
 }
 
-double process_transparency_tree(const OSL::ClosureColor* ci);
+void process_transparency_tree(const OSL::ClosureColor* ci, Alpha& alpha);
+float process_holdout_tree(const OSL::ClosureColor* ci);
 
 }       // namespace renderer
 

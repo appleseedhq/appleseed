@@ -71,11 +71,8 @@ namespace
                 if (materials[i]->has_alpha_map())
                     return true;
 #ifdef WITH_OSL
-                if (const ShaderGroup* sg = materials[i]->get_osl_surface())
-                {
-                    if (sg->has_transparency())
-                        return true;
-                }
+                if (materials[i]->has_osl_surface())
+                    return materials[i]->get_uncached_osl_surface()->has_transparency();
 #endif
             }
         }
@@ -208,17 +205,8 @@ const ShadingPoint& Tracer::do_trace(
         if (material == 0)
             break;
 
-        // Retrieve the alpha map at the shading point.
-        const Source* alpha_map = material->get_alpha_map();
-        if (alpha_map == 0)
-            break;
-
-        // Evaluate the alpha map at the shading point.
         Alpha alpha;
-        alpha_map->evaluate(
-            m_texture_cache,
-            shading_point_ptr->get_uv(0),
-            alpha);
+        evaluate_alpha(*material, *shading_point_ptr, alpha);
 
         // Stop at the first fully opaque occluder.
         if (alpha[0] >= 1.0f)
@@ -295,17 +283,9 @@ const ShadingPoint& Tracer::do_trace_between(
         if (material == 0)
             break;
 
-        // Retrieve the alpha map at the shading point.
-        const Source* alpha_map = material->get_alpha_map();
-        if (alpha_map == 0)
-            break;
-
         // Evaluate the alpha map at the shading point.
         Alpha alpha;
-        alpha_map->evaluate(
-            m_texture_cache,
-            shading_point_ptr->get_uv(0),
-            alpha);
+        evaluate_alpha(*material, *shading_point_ptr, alpha);
 
         // Stop at the first fully opaque occluder.
         if (alpha[0] >= 1.0f)
@@ -323,6 +303,43 @@ const ShadingPoint& Tracer::do_trace_between(
     }
 
     return *shading_point_ptr;
+}
+
+void Tracer::evaluate_alpha(
+    const Material&     material,
+    const ShadingPoint& shading_point,
+    Alpha&              alpha) const
+{
+    // Init to fully opaque.
+    alpha.set(1.0f);
+
+    // Evaluate the alpha map at the shading point.
+    if (const Source* alpha_map = material.get_alpha_map())
+    {
+        alpha_map->evaluate(
+            m_texture_cache,
+            shading_point.get_uv(0),
+            alpha);
+    }
+
+#ifdef WITH_OSL
+    if (m_shadergroup_exec)
+    {
+        if (const ShaderGroup* sg = material.get_osl_surface())
+        {
+            if (sg->has_transparency())
+            {
+                Alpha a;
+                m_shadergroup_exec->execute_transparency(
+                    *sg,
+                    shading_point,
+                    a);
+
+                alpha *= a;
+            }
+        }
+    }
+#endif    
 }
 
 }   // namespace renderer

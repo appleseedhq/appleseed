@@ -1,17 +1,18 @@
 OpenShadingLanguage 1.00
 # Compiled by oslc 1.5.5dev
-surface matte
+surface oren_nayar
 param	float	Kd	1 		 %read{1,1} %write{2147483647,-1}
+param	float	roughness	1 		 %read{0,0} %write{2147483647,-1}
 param	color	Cs	1 1 1 		 %read{1,1} %write{2147483647,-1}
 global	normal	N	 %read{0,0} %write{2147483647,-1}
 global	closure color	Ci	 %read{2147483647,-1} %write{2,2}
 temp	closure color	$tmp1	 %read{2,2} %write{0,0}
-const	string	$const1	"diffuse"		 %read{0,0} %write{2147483647,-1}
+const	string	$const1	"as_oren_nayar"		 %read{0,0} %write{2147483647,-1}
 temp	color	$tmp2	 %read{2,2} %write{1,1}
 code ___main___
-# matte.osl:4
-#     Ci = Kd * Cs * diffuse(N);
-	closure		$tmp1 $const1 N 	%filename{"matte.osl"} %line{4} %argrw{"wrr"}
+# oren_nayar.osl:4
+#     Ci = Kd * Cs * as_oren_nayar(N, roughness);
+	closure		$tmp1 $const1 N roughness 	%filename{"oren_nayar.osl"} %line{4} %argrw{"wrrr"}
 	mul		$tmp2 Kd Cs 	%argrw{"wrr"}
 	mul		Ci $tmp1 $tmp2 	%argrw{"wrr"}
 	end

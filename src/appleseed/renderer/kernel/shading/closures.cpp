@@ -93,6 +93,12 @@ namespace
         float       glossiness;
     };
 
+    struct OrenNayarBRDFClosureParams
+    {
+        OSL::Vec3   N;
+        float       roughness;
+    };
+
     struct RefractionClosureParams
     {
         OSL::Vec3   N;
@@ -115,7 +121,7 @@ BOOST_STATIC_ASSERT(sizeof(CompositeClosure) <= InputEvaluator::DataSize);
 
 //
 // CompositeClosure class implementation.
-// 
+//
 
 CompositeClosure::CompositeClosure(
     const OSL::ClosureColor* ci)
@@ -136,7 +142,7 @@ size_t CompositeClosure::choose_closure(const double w) const
 }
 
 void CompositeClosure::process_closure_tree(
-    const OSL::ClosureColor*    closure, 
+    const OSL::ClosureColor*    closure,
     const Color3f&              weight)
 {
     if (closure == 0)
@@ -169,7 +175,7 @@ void CompositeClosure::process_closure_tree(
             {
               case AshikhminShirleyID:
                 {
-                    const AshikhminShirleyClosureParams* p = 
+                    const AshikhminShirleyClosureParams* p =
                         reinterpret_cast<const AshikhminShirleyClosureParams*>(c->data());
 
                     AshikminBRDFInputValues values;
@@ -186,7 +192,7 @@ void CompositeClosure::process_closure_tree(
                     values.m_nv = p->nv;
 
                     add_closure<AshikminBRDFInputValues>(
-                        static_cast<ClosureID>(c->id), 
+                        static_cast<ClosureID>(c->id),
                         w,
                         Vector3d(p->N),
                         Vector3d(p->T),
@@ -217,10 +223,10 @@ void CompositeClosure::process_closure_tree(
                     // ignored for now.
                 }
                 break;
-                
+
               case LambertID:
                 {
-                    const LambertClosureParams* p = 
+                    const LambertClosureParams* p =
                         reinterpret_cast<const LambertClosureParams*>(c->data());
 
                     LambertianBRDFInputValues values;
@@ -241,7 +247,7 @@ void CompositeClosure::process_closure_tree(
               case MicrofacetGGXID:
               case MicrofacetWardID:
                 {
-                    const MicrofacetBRDFClosureParams* p = 
+                    const MicrofacetBRDFClosureParams* p =
                         reinterpret_cast<const MicrofacetBRDFClosureParams*>(c->data());
 
                     MicrofacetBRDFInputValues values;
@@ -253,7 +259,26 @@ void CompositeClosure::process_closure_tree(
                     values.m_fr_multiplier = 1.0;
 
                     add_closure<MicrofacetBRDFInputValues>(
-                        static_cast<ClosureID>(c->id), 
+                        static_cast<ClosureID>(c->id),
+                        w,
+                        Vector3d(p->N),
+                        values);
+                }
+                break;
+
+              case OrenNayarID:
+                {
+                    const OrenNayarBRDFClosureParams* p =
+                        reinterpret_cast<const OrenNayarBRDFClosureParams*>(c->data());
+
+                    OrenNayarBRDFInputValues values;
+                    values.m_reflectance.set(1.0f);
+                    values.m_reflectance_alpha.set(1.0f);
+                    values.m_reflectance_multiplier = 1.0;
+                    values.m_roughness = p->roughness;
+
+                    add_closure<OrenNayarBRDFInputValues>(
+                        static_cast<ClosureID>(c->id),
                         w,
                         Vector3d(p->N),
                         values);
@@ -262,7 +287,7 @@ void CompositeClosure::process_closure_tree(
 
               case ReflectionID:
                 {
-                    const ReflectionClosureParams* p = 
+                    const ReflectionClosureParams* p =
                         reinterpret_cast<const ReflectionClosureParams*>(c->data());
 
                     SpecularBRDFInputValues values;
@@ -271,8 +296,8 @@ void CompositeClosure::process_closure_tree(
                     values.m_reflectance_multiplier = 1.0;
 
                     add_closure<SpecularBRDFInputValues>(
-                        static_cast<ClosureID>(c->id), 
-                        w, 
+                        static_cast<ClosureID>(c->id),
+                        w,
                         Vector3d(p->N),
                         values);
                 }
@@ -280,7 +305,7 @@ void CompositeClosure::process_closure_tree(
 
               case RefractionID:
                 {
-                    const RefractionClosureParams* p = 
+                    const RefractionClosureParams* p =
                         reinterpret_cast<const RefractionClosureParams*>(c->data());
 
                     SpecularBTDFInputValues values;
@@ -291,8 +316,8 @@ void CompositeClosure::process_closure_tree(
                     values.m_reflectance_multiplier = 1.0;
 
                     add_closure<SpecularBTDFInputValues>(
-                        static_cast<ClosureID>(c->id), 
-                        w, 
+                        static_cast<ClosureID>(c->id),
+                        w,
                         Vector3d(p->N),
                         values);
                 }
@@ -300,7 +325,7 @@ void CompositeClosure::process_closure_tree(
 
               case TranslucentID:
                 {
-                    const TranslucentClosureParams* p = 
+                    const TranslucentClosureParams* p =
                         reinterpret_cast<const TranslucentClosureParams*>(c->data());
 
                     DiffuseBTDFInputValues values;
@@ -309,8 +334,8 @@ void CompositeClosure::process_closure_tree(
                     values.m_transmittance_multiplier = 1.0;
 
                     add_closure<DiffuseBTDFInputValues>(
-                        static_cast<ClosureID>(c->id), 
-                        w, 
+                        static_cast<ClosureID>(c->id),
+                        w,
                         Vector3d(p->N),
                         values);
                 }
@@ -374,7 +399,7 @@ void CompositeClosure::do_add_closure(
     // Check that InputValues is included in our type list.
     typedef typename boost::mpl::contains<InputValuesTypeList,InputValues>::type value_in_list;
     BOOST_STATIC_ASSERT( value_in_list::value);
-    
+
     // Make sure we have enough space.
     if (get_num_closures() >= MaxClosureEntries)
     {
@@ -418,7 +443,7 @@ namespace
     {
         if (closure == 0)
             return Color3f(0.0f);
-    
+
         switch (closure->type)
         {
           case OSL::ClosureColor::MUL:
@@ -427,42 +452,47 @@ namespace
                 return Color3f(c->weight) * do_process_closure_id_tree(c->closure, closure_id);
             }
             break;
-    
+
           case OSL::ClosureColor::ADD:
             {
                 const OSL::ClosureAdd* c = reinterpret_cast<const OSL::ClosureAdd*>(closure);
-                return do_process_closure_id_tree(c->closureA, closure_id) + 
+                return do_process_closure_id_tree(c->closureA, closure_id) +
                        do_process_closure_id_tree(c->closureB, closure_id);
             }
             break;
-    
+
           case OSL::ClosureColor::COMPONENT:
             {
                 const OSL::ClosureComponent* c = reinterpret_cast<const OSL::ClosureComponent*>(closure);
-    
+
                 if (c->id == closure_id)
                     return Color3f(c->w);
-    
+
                 return Color3f(0.0f);
             }
             break;
-            
+
           assert_otherwise;
         }
     }
 
 }
 
-double process_transparency_tree(const OSL::ClosureColor* ci)
+void process_transparency_tree(const OSL::ClosureColor* ci, Alpha& alpha)
 {
-    double transp = luminance(do_process_closure_id_tree(ci, TransparentID));
     // Convert from transparency to opacity.
-    return 1.0 - clamp(transp, 0.0, 1.0);
+    float transp = luminance(do_process_closure_id_tree(ci, TransparentID));
+    alpha.set(1.0f - clamp(transp, 0.0f, 1.0f));
+}
+
+float process_holdout_tree(const OSL::ClosureColor* ci)
+{
+    return clamp(luminance(do_process_closure_id_tree(ci, HoldoutID)), 0.0f, 1.0f);
 }
 
 }   // namespace renderer
 
-// We probably want to reuse OSL macros to declare closure params 
+// We probably want to reuse OSL macros to declare closure params
 // and register the closures. We can use them only inside the OSL namespace.
 OSL_NAMESPACE_ENTER
 
@@ -497,6 +527,10 @@ void register_appleseed_closures(OSL::ShadingSystem& shading_system)
                                                     CLOSURE_FLOAT_PARAM(MicrofacetBRDFClosureParams, glossiness),
                                                     CLOSURE_FINISH_PARAM(MicrofacetBRDFClosureParams) } },
 
+        { "as_oren_nayar", OrenNayarID, { CLOSURE_VECTOR_PARAM(OrenNayarBRDFClosureParams, N),
+                                          CLOSURE_FLOAT_PARAM(OrenNayarBRDFClosureParams, roughness),
+                                          CLOSURE_FINISH_PARAM(OrenNayarBRDFClosureParams) } },
+
         { "background", BackgroundID, { CLOSURE_FINISH_PARAM(EmptyClosureParams) } },
 
         { "debug", DebugID, { CLOSURE_STRING_PARAM(DebugClosureParams, tag),
@@ -510,7 +544,7 @@ void register_appleseed_closures(OSL::ShadingSystem& shading_system)
                                     CLOSURE_FINISH_PARAM(EmissionClosureParams) } },
 
         { "holdout", HoldoutID, { CLOSURE_FINISH_PARAM(EmptyClosureParams) } },
-        
+
         { "microfacet_beckmann", MicrofacetBeckmannID, { CLOSURE_VECTOR_PARAM(MicrofacetBRDFClosureParams, N),
                                                          CLOSURE_FLOAT_PARAM(MicrofacetBRDFClosureParams, glossiness),
                                                          CLOSURE_FINISH_PARAM(MicrofacetBRDFClosureParams) } },
@@ -530,7 +564,7 @@ void register_appleseed_closures(OSL::ShadingSystem& shading_system)
         { "translucent", TranslucentID, { CLOSURE_VECTOR_PARAM(LambertClosureParams, N),
                                           CLOSURE_FINISH_PARAM(LambertClosureParams) } },
 
-        { "transparency", TransparentID, { CLOSURE_FINISH_PARAM(EmptyClosureParams) } },
+        { "transparent", TransparentID, { CLOSURE_FINISH_PARAM(EmptyClosureParams) } },
 
         { 0, 0, {} }    // mark end of the array
     };

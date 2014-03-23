@@ -293,7 +293,6 @@ OSL::ShaderGlobals& ShadingPoint::get_osl_shader_globals() const
         m_shader_globals.shader2common = 0;
         m_shader_globals.surfacearea = 0;
 
-        // TODO: not sure this is correct... (est.)
         m_shader_globals.raytype = static_cast<int>(ray.m_type);
 
         m_shader_globals.flipHandedness = 0;
@@ -303,6 +302,11 @@ OSL::ShaderGlobals& ShadingPoint::get_osl_shader_globals() const
         m_shader_globals.Ci = 0;
         
         m_members |= HasOSLShaderGlobals;
+    }
+    else
+    {
+        // Update always the raytype, as it might have changed from the previous run.
+        m_shader_globals.raytype = static_cast<int>(get_ray().m_type);
     }
 
     return m_shader_globals;
