@@ -1043,6 +1043,15 @@ QComboBox#picking_mode_combo
     margin-right: 1px;
 }
 
+QLabel#info_label,
+QLabel#r_label,
+QLabel#g_label,
+QLabel#b_label,
+QLabel#a_label
+{
+    font-family: FIXED_WIDTH_FONT_FAMILY;
+}
+
 QLabel#info_label
 {
     color: INFO_TEXT_COLOR;
@@ -1050,16 +1059,6 @@ QLabel#info_label
     max-width: 250px;
     margin-left: 3px;
     margin-right: 3px;
-    font-family: FIXED_WIDTH_FONT_FAMILY;
-}
-
-QLabel#r_label,
-QLabel#g_label,
-QLabel#b_label,
-QLabel#a_label
-{
-    font-family: FIXED_WIDTH_FONT_FAMILY;
-    font-size: 11px;
 }
 
 QLabel#r_label
