@@ -770,7 +770,7 @@ void MainWindow::set_project_explorer_enabled(const bool is_enabled)
 
     m_ui->label_filter->setEnabled(is_enabled && is_project_open);
     m_ui->lineedit_filter->setEnabled(is_enabled && is_project_open);
-    m_ui->pushbutton_clear_filter->setEnabled(is_enabled && is_project_open);
+    m_ui->pushbutton_clear_filter->setEnabled(is_enabled && is_project_open && !m_ui->lineedit_filter->text().isEmpty());
     m_ui->treewidget_project_explorer_scene->setEnabled(is_enabled && is_project_open);
 }
 
