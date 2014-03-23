@@ -39,6 +39,7 @@
 #include "renderer/api/camera.h"
 #include "renderer/api/edf.h"
 #include "renderer/api/entity.h"
+#include "renderer/api/frame.h"
 #include "renderer/api/log.h"
 #include "renderer/api/material.h"
 #include "renderer/api/object.h"
@@ -48,11 +49,13 @@
 #include "renderer/api/surfaceshader.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/image.h"
 #include "foundation/math/vector.h"
 
 // Qt headers.
 #include <QComboBox>
 #include <QEvent>
+#include <QLabel>
 #include <QMouseEvent>
 #include <QString>
 #include <Qt>
@@ -72,11 +75,19 @@ namespace studio {
 ScenePickingHandler::ScenePickingHandler(
     QWidget*                        widget,
     QComboBox*                      picking_mode_combo,
+    QLabel*                         r_label,
+    QLabel*                         g_label,
+    QLabel*                         b_label,
+    QLabel*                         a_label,
     const MouseCoordinatesTracker&  mouse_tracker,
     const ProjectExplorer&          project_explorer,
     const Project&                  project)
   : m_widget(widget)
   , m_picking_mode_combo(picking_mode_combo)
+  , m_r_label(r_label)
+  , m_g_label(g_label)
+  , m_b_label(b_label)
+  , m_a_label(a_label)
   , m_mouse_tracker(mouse_tracker)
   , m_project_explorer(project_explorer)
   , m_project(project)
@@ -110,20 +121,54 @@ bool ScenePickingHandler::eventFilter(QObject* object, QEvent* event)
 {
     if (!m_enabled)
         return QObject::eventFilter(object, event);
+    
+    const QMouseEvent* mouse_event = static_cast<QMouseEvent*>(event);
 
-    if (event->type() == QEvent::MouseButtonPress)
+    switch (event->type())
     {
-        const QMouseEvent* mouse_event = static_cast<QMouseEvent*>(event);
+        case QEvent::MouseButtonPress:
+            if (mouse_event->button() == Qt::LeftButton &&
+                !(mouse_event->modifiers() & (Qt::AltModifier | Qt::ShiftModifier | Qt::ControlModifier)))
+            {
+                pick(mouse_event->pos());
+                return true;
+            }
+            break;
 
-        if (mouse_event->button() == Qt::LeftButton &&
-            !(mouse_event->modifiers() & (Qt::AltModifier | Qt::ShiftModifier | Qt::ControlModifier)))
-        {
-            pick(mouse_event->pos());
-            return true;
-        }
+        case QEvent::MouseMove:
+            set_rgb_label(mouse_event->pos());
+            break;
+
+        case QEvent::Leave:
+            m_r_label->clear();
+            m_g_label->clear();
+            m_b_label->clear();
+            m_a_label->clear();
+            break;
     }
-
     return QObject::eventFilter(object, event);
+}
+
+void ScenePickingHandler::set_rgb_label(const QPoint& point) const 
+{
+    Color4f linear_rgba;
+    m_project.get_frame()->image().get_pixel(static_cast<size_t>(point.x()), static_cast<size_t>( point.y()), linear_rgba);
+
+    QString red;
+    red.sprintf(" %4.3f", linear_rgba.r);
+    m_r_label->setText(red);
+
+    QString green;
+    green.sprintf(" %4.3f", linear_rgba.g);
+    m_g_label->setText(green);
+
+    QString blue;
+    blue.sprintf(" %4.3f", linear_rgba.b);
+    m_b_label->setText(blue);
+
+    QString alpha;
+    alpha.sprintf(" %4.3f", linear_rgba.a);
+    m_a_label->setText(alpha);
 }
 
 namespace

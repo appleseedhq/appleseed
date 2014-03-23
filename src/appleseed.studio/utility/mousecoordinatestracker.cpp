@@ -52,17 +52,9 @@ namespace studio {
 
 MouseCoordinatesTracker::MouseCoordinatesTracker(
     RenderWidget*    widget,
-    QLabel*          info_label,
-    QLabel*          r_label,
-    QLabel*          g_label,
-    QLabel*          b_label,
-    QLabel*          a_label) 
+    QLabel*          label) 
   : m_widget(widget)
-  , m_info_label(info_label)
-  , m_r_label(r_label)
-  , m_g_label(g_label)
-  , m_b_label(b_label)
-  , m_a_label(a_label)
+  , m_label(label)
   , m_content_width(widget->width())
   , m_content_height(widget->height())
 {
@@ -100,15 +92,10 @@ bool MouseCoordinatesTracker::eventFilter(QObject* object, QEvent* event)
     {
       case QEvent::MouseMove:
         set_label_text(static_cast<QMouseEvent*>(event)->pos());
-        set_rgb_text(static_cast<QMouseEvent*>(event)->pos());
         break;
 
       case QEvent::Leave:
-        m_info_label->clear();
-        m_r_label->clear();
-        m_g_label->clear();
-        m_b_label->clear();
-        m_a_label->clear();
+        m_label->clear();
         break;
     }
 
@@ -120,34 +107,12 @@ void MouseCoordinatesTracker::set_label_text(const QPoint& point) const
     const Vector2i pix = widget_to_pixel(point);
     const Vector2d ndc = widget_to_ndc(point);
 
-    m_info_label->setText(
+    m_label->setText(
         QString("Pixel: %1, %2 - NDC: %3, %4 ")
             .arg(QString::number(pix.x), 4, '0')
             .arg(QString::number(pix.y), 4, '0')
             .arg(QString::number(ndc.x, 'f', 5))
             .arg(QString::number(ndc.y, 'f', 5)));
-}
-
-void MouseCoordinatesTracker::set_rgb_text(const QPoint& point) const 
-{
-    const Vector2i pix = widget_to_pixel(point);
-    QRgb pixel_rgb = m_widget->get_image().pixel(pix.x, pix.y);
-
-    QString red;
-    red.sprintf(" %03d", qRed(pixel_rgb));
-    m_r_label->setText(red);
-
-    QString green;
-    green.sprintf(" %03d", qGreen(pixel_rgb));
-    m_g_label->setText(green);
-
-    QString blue;
-    blue.sprintf(" %03d", qBlue(pixel_rgb));
-    m_b_label->setText(blue);
-
-    QString alpha;
-    alpha.sprintf(" %03d", qAlpha(pixel_rgb));
-    m_a_label->setText(alpha);
 }
 
 }   // namespace studio

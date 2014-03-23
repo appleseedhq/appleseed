@@ -39,6 +39,7 @@ namespace appleseed { namespace studio { class ProjectExplorer; } }
 namespace renderer  { class Project; }
 class QComboBox;
 class QEvent;
+class QLabel;
 class QPoint;
 class QWidget;
 
@@ -54,6 +55,10 @@ class ScenePickingHandler
     ScenePickingHandler(
         QWidget*                            widget,
         QComboBox*                          picking_mode_combo,
+        QLabel*                             r_label,
+        QLabel*                             g_label,
+        QLabel*                             b_label,
+        QLabel*                             a_label,
         const MouseCoordinatesTracker&      mouse_tracker,
         const ProjectExplorer&              project_explorer,
         const renderer::Project&            project);
@@ -65,6 +70,10 @@ class ScenePickingHandler
   private:
     QWidget*                                m_widget;
     QComboBox*                              m_picking_mode_combo;
+    QLabel*                                 m_r_label;
+    QLabel*                                 m_g_label;
+    QLabel*                                 m_b_label;
+    QLabel*                                 m_a_label;
     const MouseCoordinatesTracker&          m_mouse_tracker;
     const ProjectExplorer&                  m_project_explorer;
     const renderer::Project&                m_project;
@@ -73,6 +82,8 @@ class ScenePickingHandler
     virtual bool eventFilter(QObject* object, QEvent* event);
 
     void pick(const QPoint& point);
+
+    void set_rgb_label(const QPoint& point) const;
 };
 
 }       // namespace studio

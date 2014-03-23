@@ -54,11 +54,7 @@ class MouseCoordinatesTracker
   public:
     MouseCoordinatesTracker(
         RenderWidget*   widget,
-        QLabel*         info_label,
-        QLabel*         r_label,
-        QLabel*         g_label,
-        QLabel*         b_label,
-        QLabel*         a_label);
+        QLabel*         label);
 
     ~MouseCoordinatesTracker();
 
@@ -67,11 +63,7 @@ class MouseCoordinatesTracker
 
   private:
     RenderWidget*    m_widget;
-    QLabel*          m_info_label;
-    QLabel*          m_r_label;
-    QLabel*          m_g_label;
-    QLabel*          m_b_label;
-    QLabel*          m_a_label;
+    QLabel*          m_label;
     const int        m_content_width;
     const int        m_content_height;
 
@@ -79,7 +71,6 @@ class MouseCoordinatesTracker
 
     void set_label_text(const QPoint& point) const;
 
-    void set_rgb_text(const QPoint& point) const;
 };
 
 }       // namespace studio
