@@ -54,10 +54,16 @@ namespace studio {
 MouseCoordinatesTracker::MouseCoordinatesTracker(
     RenderWidget*    widget,
     QLabel*          label,
-    QTextEdit*       rgb_text) 
+    QLabel*          r_label,
+    QLabel*          g_label,
+    QLabel*          b_label,
+    QLabel*          a_label) 
   : m_widget(widget)
   , m_label(label)
-  , m_rgb_text(rgb_text)
+  , m_r_label(r_label)
+  , m_g_label(g_label)
+  , m_b_label(b_label)
+  , m_a_label(a_label)
   , m_content_width(widget->width())
   , m_content_height(widget->height())
 {
@@ -100,7 +106,10 @@ bool MouseCoordinatesTracker::eventFilter(QObject* object, QEvent* event)
 
       case QEvent::Leave:
         m_label->clear();
-        m_rgb_text->clear();
+        m_r_label->clear();
+        m_g_label->clear();
+        m_b_label->clear();
+        m_a_label->clear();
         break;
     }
 
@@ -125,31 +134,21 @@ void MouseCoordinatesTracker::set_rgb_text(const QPoint& point) const
     const Vector2i pix = widget_to_pixel(point);
     QRgb pixel_rgb = m_widget->get_image().pixel(pix.x, pix.y);
 
-    m_rgb_text->clear();
-    QTextCursor cursor(m_rgb_text->textCursor());
+    QString red;
+    red.sprintf(" %03d", qRed(pixel_rgb));
+    m_r_label->setText(red);
 
-    // Set text color to red.
-    QTextCharFormat format;
-    format.setForeground(QColor(255, 0, 0));
-    cursor.setCharFormat(format);
-    // Insert the text at the position of the cursor.
-    cursor.insertText(QString("%1").arg(QString::number(qRed(pixel_rgb)), 3, '0'));
+    QString green;
+    green.sprintf(" %03d", qGreen(pixel_rgb));
+    m_g_label->setText(green);
 
-    // Move cursor to the end of the text. 
-    m_rgb_text->moveCursor(QTextCursor::End);
-    format.setForeground(QColor(0, 255, 0)); //green
-    cursor.setCharFormat(format);
-    cursor.insertText(QString(" %1").arg(QString::number(qGreen(pixel_rgb)), 3, '0'));
+    QString blue;
+    blue.sprintf(" %03d", qBlue(pixel_rgb));
+    m_b_label->setText(blue);
 
-    m_rgb_text->moveCursor(QTextCursor::End);
-    format.setForeground(QColor(0, 0, 255)); //blue
-    cursor.setCharFormat(format);
-    cursor.insertText(QString(" %1").arg(QString::number(qBlue(pixel_rgb)), 3, '0'));
-
-    m_rgb_text->moveCursor(QTextCursor::End);
-    format.clearForeground();
-    cursor.setCharFormat(format);
-    cursor.insertText(QString(" %1").arg(QString::number(qAlpha(pixel_rgb)), 3, '0'));
+    QString alpha;
+    alpha.sprintf(" %03d", qAlpha(pixel_rgb));
+    m_a_label->setText(alpha);
 }
 
 }   // namespace studio

@@ -78,6 +78,7 @@ class RenderTab
     void clear();
     void darken();
     void reset_zoom();
+    void set_clear_frame_button_enabled(const bool enabled);
 
     void update();
     void update_size();
@@ -119,7 +120,10 @@ class RenderTab
     QToolButton*                            m_clear_frame_button;
     QComboBox*                              m_picking_mode_combo;
     QLabel*                                 m_info_label;
-    QTextEdit*                              m_rgb_text;
+    QLabel*                                 m_r_label;
+    QLabel*                                 m_g_label;
+    QLabel*                                 m_b_label;
+    QLabel*                                 m_a_label;
 
     ProjectExplorer&                        m_project_explorer;
     renderer::Project&                      m_project;

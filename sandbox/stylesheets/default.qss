@@ -81,16 +81,19 @@ QWidget:disabled
 
 /*
  * QMainWindow.
+ * QSplitter.
  */
 
-QMainWindow::separator
+QMainWindow::separator,
+QSplitter::handle
 {
     background-color: DEFAULT_BACKGROUND_COLOR;
     width: 8px;
     height: 8px;
 }
 
-QMainWindow::separator:hover
+QMainWindow::separator:hover,
+QSplitter::handle:hover
 {
     background-color: HOVER_BACKGROUND_COLOR;
 }
@@ -1024,18 +1027,33 @@ QLabel#info_label
     font-size: 11px;
 }
 
-QTextEdit#rgb_text
+QLabel#r_label
 {
-    color: INFO_TEXT_COLOR;
-    min-width: 100px;
-    max-width: 150px;
-    max-height: 16px;
-    margin-left: 3px;
-    margin-right: 3px;
+	color: red;
     font-family: FIXED_WIDTH_FONT_FAMILY;
     font-size: 11px;
 }
 
+QLabel#g_label
+{
+	color: green;
+    font-family: FIXED_WIDTH_FONT_FAMILY;
+    font-size: 11px;
+}
+
+QLabel#b_label
+{
+	color: blue;
+    font-family: FIXED_WIDTH_FONT_FAMILY;
+    font-size: 11px;
+}
+
+QLabel#a_label
+{
+	color: INFO_TEXT_COLOR;
+    font-family: FIXED_WIDTH_FONT_FAMILY;
+    font-size: 11px;
+}
 QWidget#textedit_log
 {
     font-family: FIXED_WIDTH_FONT_FAMILY;
