@@ -34,6 +34,7 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/kernel/aov/imagestack.h"
 #include "renderer/utility/paramarray.h"
+#include "renderer/modeling/frame/framearchiver.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
@@ -504,27 +505,8 @@ bool Frame::archive(
     const char*         directory,
     char**              output_path) const
 {
-    assert(directory);
-
-    // Construct the name of the image file.
-    const string filename =
-        "autosave." + get_time_stamp_string() + ".exr";
-
-    // Construct the path to the image file.
-    const string file_path = (filesystem::path(directory) / filename).string();
-
-    // Return the path to the image file.
-    if (output_path)
-        *output_path = duplicate_string(file_path.c_str());
-
-    Image transformed_image(*impl->m_image);
-    transform_to_output_color_space(transformed_image);
-
-    return
-        write_image(
-            file_path.c_str(),
-            transformed_image,
-            ImageAttributes::create_default_attributes());
+    FrameArchiver arch;
+    arch.archive(directory, output_path);
 }
 
 void Frame::extract_parameters()
