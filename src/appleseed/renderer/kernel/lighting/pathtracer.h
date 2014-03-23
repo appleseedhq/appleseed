@@ -196,7 +196,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         // Handle alpha mapping.
         if (vertex.m_path_length > 1)
         {
-            bool has_transparency = material->get_alpha_map();
+            bool has_transparency = material->get_alpha_map() ? true : false;
 
 #ifdef WITH_OSL
             if (!has_transparency)
