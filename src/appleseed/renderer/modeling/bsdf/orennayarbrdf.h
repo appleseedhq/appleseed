@@ -61,6 +61,7 @@ DECLARE_INPUT_VALUES(OrenNayarBRDFInputValues)
     double      m_roughness;
 };
 
+
 //
 // Oren-Nayar BRDF factory.
 //
