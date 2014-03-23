@@ -859,6 +859,12 @@ QGroupBox::title
     padding-right: 3px;
 }
 
+QGroupBox::title:disabled
+{
+    color: DISABLED_TEXT_COLOR;
+    background-color: DEFAULT_BACKGROUND_COLOR;
+}
+
 
 /*
  * QComboBox.
