@@ -986,13 +986,6 @@ appleseed--studio--FoldablePanelWidget > QFrame[hasFrame="true"]
  * Specific styles.
  */
 
-QWidget#main_window_contents,
-QWidget#RenderSettingsWindow QWidget#scrollarea,
-QWidget#MaterialAssignmentEditorWindow QWidget#scrollarea
-{
-    background-image: url(":/patterns/texture.png");
-    background-repeat: repeat-xy;
-}
 
 QWidget#RenderSettingsWindow QWidget#scrollareawidget,
 QWidget#MaterialAssignmentEditorWindow QWidget#scrollarea_contents
