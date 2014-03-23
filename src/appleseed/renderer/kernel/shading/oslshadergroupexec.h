@@ -32,6 +32,9 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 
+// appleseed.renderer headers.
+#include "renderer/global/globaltypes.h"
+
 // OSL headers.
 #include "OSL/oslexec.h"
 
@@ -56,9 +59,15 @@ class OSLShaderGroupExec
     // Destructor.
     ~OSLShaderGroupExec();
 
-    void execute(
+    void execute_shading(
         const ShaderGroup&      shader_group, 
         const ShadingPoint&     shading_point) const;
+
+    void execute_transparency(
+        const ShaderGroup&  shader_group,
+        const ShadingPoint& shading_point,
+        Alpha&              alpha,
+        float*              holdout = 0) const;
 
   private:
     OSL::ShadingSystem&         m_osl_shading_system;

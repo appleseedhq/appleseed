@@ -86,9 +86,15 @@ class ShadingContext
     size_t get_max_iterations() const;
 
 #ifdef WITH_OSL
-    void execute_osl_shadergroup(
-        const ShaderGroup&      shader_group, 
-        const ShadingPoint&     shading_point) const;
+    void execute_osl_shading(
+        const ShaderGroup&  shader_group, 
+        const ShadingPoint& shading_point) const;
+
+    void execute_osl_transparency(
+        const ShaderGroup&  shader_group, 
+        const ShadingPoint& shading_point,
+        Alpha&              alpha,
+        float*              holdout = 0) const;
 #endif
     
   private:
