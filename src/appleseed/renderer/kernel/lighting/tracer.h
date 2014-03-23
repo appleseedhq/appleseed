@@ -173,9 +173,9 @@ class Tracer
         const ShadingPoint*             parent_shading_point);
     
     void evaluate_alpha(
-        const Material&     material,
-        const ShadingPoint& shading_point,
-        Alpha&              alpha) const;
+        const Material&                 material,
+        const ShadingPoint&             shading_point,
+        Alpha&                          alpha) const;
 };
 
 
