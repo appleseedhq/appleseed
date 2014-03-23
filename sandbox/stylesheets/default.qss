@@ -33,17 +33,17 @@
  * Common styles.
  */
 
-#define BORDER_COLOR                        rgb(40, 40, 40)
+#define BORDER_COLOR                        rgb(30, 30, 30)
 #define BORDER_STYLE                        1px solid BORDER_COLOR
 
-#define DEFAULT_BACKGROUND_COLOR            rgb(50, 50, 50)
-#define INPUT_BACKGROUND_COLOR              rgb(43, 43, 43)
-#define DISABLED_INPUT_BACKGROUND_COLOR     rgb(45, 45, 45)
-#define ACTIVE_BACKGROUND_COLOR             rgb(60, 60, 60)
+#define DEFAULT_BACKGROUND_COLOR            rgb(35, 35, 35)
+#define INPUT_BACKGROUND_COLOR              rgb(30, 30, 30)
+#define DISABLED_INPUT_BACKGROUND_COLOR     rgb(32, 32, 32)
+#define ACTIVE_BACKGROUND_COLOR             rgb(44, 44, 44)
 #define HOVER_BACKGROUND_COLOR              rgb(190, 140, 50)
-#define SELECTED_BACKGROUND_COLOR           rgb(80, 80, 80)
+#define SELECTED_BACKGROUND_COLOR           rgb(60, 60, 60)
 
-#define DEFAULT_TEXT_COLOR                  rgb(210, 210, 210)
+#define DEFAULT_TEXT_COLOR                  rgb(160, 160, 160)
 #define DISABLED_TEXT_COLOR                 rgb(100, 100, 100)
 #define INFO_TEXT_COLOR                     rgb(100, 100, 100)
 #define HOVER_TEXT_COLOR                    rgb(255, 255, 255)
@@ -71,6 +71,7 @@ QWidget
     border: 0px;
     selection-color: SELECTED_TEXT_COLOR;
     selection-background-color: SELECTED_BACKGROUND_COLOR;
+    font-size: 11px;
 }
 
 QWidget:disabled
@@ -88,8 +89,8 @@ QMainWindow::separator,
 QSplitter::handle
 {
     background-color: DEFAULT_BACKGROUND_COLOR;
-    width: 8px;
-    height: 8px;
+    width: 5px;
+    height: 5px;
 }
 
 QMainWindow::separator:hover,
@@ -126,6 +127,7 @@ QScrollBar
 QScrollBar::handle
 {
     background-color: SELECTED_BACKGROUND_COLOR;
+    border-radius: 4px;
 }
 
 QScrollBar::handle:hover
@@ -281,7 +283,8 @@ QMenuBar
     background-color: ACTIVE_BACKGROUND_COLOR;
     border: BORDER_STYLE;
     border-top: 0px;
-    padding: 1px;
+    font-size: 12px;
+    padding: 4px;
 }
 
 QMenuBar::item
@@ -362,6 +365,7 @@ QToolBar
 {
     border: BORDER_STYLE;
     padding: 4px;
+    border-width: 0 0 1px 0;
 }
 
 QToolBar::separator
@@ -491,14 +495,13 @@ QDockWidget::title
 QTabWidget::pane
 {
     border: BORDER_STYLE;
+    border-width: 1px 0 0 0;
 }
 
 QTabBar::tab
 {
     background-color: ACTIVE_BACKGROUND_COLOR;
-    border: BORDER_STYLE;
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
+    height: 15px;
     padding: 3px 11px 4px 11px;
 }
 
@@ -1023,7 +1026,7 @@ QTabWidget#tab_render_channels QWidget#render_widget_tab,
 QTabWidget#tab_render_channels QScrollArea#render_widget_scrollarea,
 QTabWidget#tab_render_channels QWidget#render_widget_wrapper
 {
-    background-color: transparent;
+    background-color: rgb(28, 28, 28);
 }
 
 QLabel#picking_mode_label
@@ -1048,7 +1051,6 @@ QLabel#info_label
     margin-left: 3px;
     margin-right: 3px;
     font-family: FIXED_WIDTH_FONT_FAMILY;
-    font-size: 11px;
 }
 
 QTextEdit#rgb_text
@@ -1060,13 +1062,11 @@ QTextEdit#rgb_text
     margin-left: 3px;
     margin-right: 3px;
     font-family: FIXED_WIDTH_FONT_FAMILY;
-    font-size: 11px;
 }
 
 QWidget#textedit_log
 {
     font-family: FIXED_WIDTH_FONT_FAMILY;
-    font-size: 11px;
 }
 
 QPushButton#bind_entity_button
