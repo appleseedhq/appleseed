@@ -1050,6 +1050,7 @@ QLabel#b_label,
 QLabel#a_label
 {
     font-family: FIXED_WIDTH_FONT_FAMILY;
+    margin-left: 3px;
 }
 
 QLabel#info_label
@@ -1057,7 +1058,6 @@ QLabel#info_label
     color: INFO_TEXT_COLOR;
     min-width: 250px;
     max-width: 250px;
-    margin-left: 3px;
     margin-right: 3px;
 }
 
@@ -1079,6 +1079,7 @@ QLabel#b_label
 QLabel#a_label
 {
     color: INFO_TEXT_COLOR;
+    margin-right: 3px;
 }
 
 QWidget#textedit_log

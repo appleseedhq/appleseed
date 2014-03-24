@@ -155,19 +155,19 @@ void ScenePickingHandler::set_rgb_label(const QPoint& point) const
     m_project.get_frame()->image().get_pixel(static_cast<size_t>(point.x()), static_cast<size_t>( point.y()), linear_rgba);
 
     QString red;
-    red.sprintf(" %4.3f", linear_rgba.r);
+    red.sprintf("%4.3f", linear_rgba.r);
     m_r_label->setText(red);
 
     QString green;
-    green.sprintf(" %4.3f", linear_rgba.g);
+    green.sprintf("%4.3f", linear_rgba.g);
     m_g_label->setText(green);
 
     QString blue;
-    blue.sprintf(" %4.3f", linear_rgba.b);
+    blue.sprintf("%4.3f", linear_rgba.b);
     m_b_label->setText(blue);
 
     QString alpha;
-    alpha.sprintf(" %4.3f", linear_rgba.a);
+    alpha.sprintf("%4.3f", linear_rgba.a);
     m_a_label->setText(alpha);
 }
 
