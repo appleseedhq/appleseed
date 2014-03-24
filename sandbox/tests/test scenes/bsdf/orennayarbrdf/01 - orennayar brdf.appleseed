@@ -48,10 +48,9 @@
                 <parameter name="reflectance" value="white" />
                 <parameter name="reflectance_multiplier" value="1.0" />
             </bsdf>
-            <bsdf name="left_sphere_brdf" model="orennayar_brdf">
+            <bsdf name="left_sphere_brdf" model="lambertian_brdf">
                 <parameter name="reflectance" value="blue" />
                 <parameter name="reflectance_multiplier" value="1.0" />
-                <parameter name="roughness" value="0" />
             </bsdf>
             <bsdf name="right_sphere_brdf" model="orennayar_brdf">
                 <parameter name="reflectance" value="blue" />
@@ -267,7 +266,7 @@
             <parameters name="uniform_pixel_renderer">
                 <parameter name="decorrelate_pixels" value="false" />
                 <parameter name="force_antialiasing" value="false" />
-                <parameter name="samples" value="1024" />
+                <parameter name="samples" value="2048" />
             </parameters>
         </configuration>
     </configurations>

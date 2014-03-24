@@ -228,7 +228,7 @@ namespace
             const double C3 = 0.125 * (sigma2 / (sigma2 + 0.09) * square(4.0 * alpha * beta * RcpPiSq)) * tan((alpha + beta) * 0.5);
 
             value = reflectance ;
-            value *= static_cast<float>(cos_in * (C1 + (cos_phi_diff * C2 * tan(beta)) + (1 - abs(cos_phi_diff)) * C3));
+            value *= static_cast<float>(C1 + (cos_phi_diff * C2 * tan(beta)) + (1 - abs(cos_phi_diff)) * C3);
             value += square(reflectance) * static_cast<float>(0.17 * cos_in * (sigma2 / (sigma2 + 0.13)) *
                                                              (1 - cos_phi_diff * square(2 * beta * RcpPi)));
         }
