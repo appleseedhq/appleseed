@@ -121,7 +121,7 @@ namespace
 
             // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
-            if (values->m_roughness != 0)
+            if (values->m_roughness != 0.0)
                 oren_nayar_qualitative(cos_on, cos_in, values->m_roughness, values->m_reflectance, outgoing, incoming, n, value);
             else
                 value = values->m_reflectance;
@@ -158,7 +158,7 @@ namespace
 
             // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
-            if (values->m_roughness != 0)
+            if (values->m_roughness != 0.0)
                 oren_nayar_qualitative(cos_on, cos_in, values->m_roughness, values->m_reflectance, outgoing, incoming, n, value);
             else
                 value = values->m_reflectance;
@@ -223,8 +223,8 @@ namespace
 
             const double C3 = 0.125 * (sigma2 / (sigma2 + 0.09) * square(4.0 * alpha * beta * RcpPiSq)) * tan((alpha + beta) * 0.5);
 
-            value = reflectance ;
-            value *= static_cast<float>(cos_in * (C1 + (cos_phi_diff * C2 * tan(beta)) + (1 - abs(cos_phi_diff)) * C3));
+            value = reflectance;
+            value *= static_cast<float>(C1 + (cos_phi_diff * C2 * tan(beta)) + (1.0 - abs(cos_phi_diff)) * C3);
             value += square(reflectance) * static_cast<float>(0.17 * cos_in * (sigma2 / (sigma2 + 0.13)) *
                                                              (1.0 - cos_phi_diff * square(2.0 * beta * RcpPi)));
         }
