@@ -82,8 +82,7 @@ class ScenePickingHandler
     virtual bool eventFilter(QObject* object, QEvent* event);
 
     void pick(const QPoint& point);
-
-    void set_rgb_label(const QPoint& point) const;
+    void set_rgba_label(const QPoint& point) const;
 };
 
 }       // namespace studio

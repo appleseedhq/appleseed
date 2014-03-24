@@ -1065,6 +1065,15 @@ QLabel#info_label
     margin-right: 3px;
 }
 
+QLabel#r_label,
+QLabel#g_label,
+QLabel#b_label,
+QLabel#a_label
+{
+    margin-left: 2px;
+    margin-right: 2px;
+}
+
 QLabel#r_label
 {
     color: rgb(239, 55, 55);
