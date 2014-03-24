@@ -189,85 +189,56 @@
     <number>1</number>
    </attribute>
    <widget class="QWidget" name="project_explorer_contents">
-    <layout class="QGridLayout" name="gridLayout">
-     <property name="margin">
-      <number>0</number>
-     </property>
-     <item row="0" column="0">
-      <widget class="QTabWidget" name="project_explorer_tabs">
-       <property name="enabled">
+    <layout class="QGridLayout" name="gridLayout_2">
+     <item row="2" column="0">
+      <widget class="QTreeWidget" name="treewidget_project_explorer_scene">
+       <property name="selectionMode">
+        <enum>QAbstractItemView::ExtendedSelection</enum>
+       </property>
+       <property name="uniformRowHeights">
         <bool>true</bool>
        </property>
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
+       <property name="allColumnsShowFocus">
+        <bool>true</bool>
        </property>
-       <property name="autoFillBackground">
-        <bool>false</bool>
+       <property name="columnCount">
+        <number>2</number>
        </property>
-       <property name="currentIndex">
-        <number>0</number>
-       </property>
-       <widget class="QWidget" name="tab_project_explorer_scene">
-        <attribute name="title">
-         <string>Scene</string>
-        </attribute>
-        <layout class="QGridLayout" name="gridLayout_2">
-         <item row="2" column="0">
-          <widget class="QTreeWidget" name="treewidget_project_explorer_scene">
-           <property name="selectionMode">
-            <enum>QAbstractItemView::ExtendedSelection</enum>
-           </property>
-           <property name="uniformRowHeights">
-            <bool>true</bool>
-           </property>
-           <property name="allColumnsShowFocus">
-            <bool>true</bool>
-           </property>
-           <property name="columnCount">
-            <number>2</number>
-           </property>
-           <attribute name="headerVisible">
-            <bool>true</bool>
-           </attribute>
-           <column>
-            <property name="text">
-             <string>Name</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Render Layer</string>
-            </property>
-           </column>
-          </widget>
-         </item>
-         <item row="0" column="0" rowspan="2">
-          <layout class="QHBoxLayout" name="layout_filter">
-           <item>
-            <widget class="QLabel" name="label_filter">
-             <property name="text">
-              <string>Filter:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLineEdit" name="lineedit_filter"/>
-           </item>
-           <item>
-            <widget class="QPushButton" name="pushbutton_clear_filter">
-             <property name="text">
-              <string>Clear</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-        </layout>
-       </widget>
+       <attribute name="headerVisible">
+        <bool>true</bool>
+       </attribute>
+       <column>
+        <property name="text">
+         <string>Name</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
+         <string>Render Layer</string>
+        </property>
+       </column>
       </widget>
+     </item>
+     <item row="0" column="0" rowspan="2">
+      <layout class="QHBoxLayout" name="layout_filter">
+       <item>
+        <widget class="QLabel" name="label_filter">
+         <property name="text">
+          <string>Filter:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="lineedit_filter"/>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushbutton_clear_filter">
+         <property name="text">
+          <string>Clear</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
     </layout>
    </widget>
