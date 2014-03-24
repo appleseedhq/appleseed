@@ -119,6 +119,7 @@ class RenderTab
     QToolButton*                            m_reset_zoom_button;
     QToolButton*                            m_clear_frame_button;
     QComboBox*                              m_picking_mode_combo;
+    QWidget*                                m_spacer;
     QLabel*                                 m_info_label;
     QLabel*                                 m_r_label;
     QLabel*                                 m_g_label;
