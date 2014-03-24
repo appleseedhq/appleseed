@@ -163,6 +163,9 @@ class MainWindow
     bool can_close_project();
     void on_project_change();
 
+    void enable_project_file_watcher();
+    void disable_project_file_watcher();
+
     void update_workspace();
     void update_project_explorer();
     void update_window_title();
@@ -177,7 +180,6 @@ class MainWindow
 
     void dragEnterEvent(QDragEnterEvent* event);
     void dropEvent(QDropEvent* event);
-	void file_change_watcher();
 
     void start_rendering(const bool interactive);
 

@@ -447,20 +447,37 @@ void MainWindow::slot_toggle_file_watcher()
 {
     if (m_project_file_watcher)
     {
-        delete m_project_file_watcher;
-        m_project_file_watcher = 0;
-        RENDERER_LOG_INFO("file watcher disabled.");
-        m_action_toggle_file_watcher->setIcon(QIcon(":/icons/file_toggle_off.png"));
+        disable_project_file_watcher();
+        RENDERER_LOG_INFO("project file watcher is now disabled.");
     }
     else
     {
-        RENDERER_LOG_INFO("file watcher enabled.");
-        m_project_file_watcher = new QFileSystemWatcher(this);
-        m_action_toggle_file_watcher->setIcon(QIcon(":/icons/file_toggle_on.png"));
-        connect(m_project_file_watcher, SIGNAL(fileChanged(const QString &)), this, SLOT(slot_file_changed(const QString&)));
-        if (m_project_manager.is_project_open())
-            m_project_file_watcher->addPath(m_project_manager.get_project()->get_path());
-    }   
+        enable_project_file_watcher();
+        RENDERER_LOG_INFO("project file watcher is now enabled.");
+    }
+}
+
+void MainWindow::enable_project_file_watcher()
+{
+    m_project_file_watcher = new QFileSystemWatcher(this);
+
+    connect(
+        m_project_file_watcher,
+        SIGNAL(fileChanged(const QString&)),
+        SLOT(slot_file_changed(const QString&)));
+
+    if (m_project_manager.is_project_open())
+        m_project_file_watcher->addPath(m_project_manager.get_project()->get_path());
+
+    m_action_toggle_file_watcher->setIcon(QIcon(":/icons/file_toggle_on.png"));
+}
+
+void MainWindow::disable_project_file_watcher()
+{
+    delete m_project_file_watcher;
+    m_project_file_watcher = 0;
+
+    m_action_toggle_file_watcher->setIcon(QIcon(":/icons/file_toggle_off.png"));
 }
 
 void MainWindow::build_toolbar()
@@ -477,6 +494,10 @@ void MainWindow::build_toolbar()
     connect(m_action_save_project, SIGNAL(triggered()), SLOT(slot_save_project()));
     m_ui->main_toolbar->addAction(m_action_save_project);
 
+    m_action_toggle_file_watcher = new QAction(QIcon(":/icons/file_toggle_off.png"), "Toggle File Watcher", this);
+    connect(m_action_toggle_file_watcher, SIGNAL(triggered()), SLOT(slot_toggle_file_watcher()));
+    m_ui->main_toolbar->addAction(m_action_toggle_file_watcher);
+
     m_ui->main_toolbar->addSeparator();
 
     m_action_start_interactive_rendering = new QAction(QIcon(":/icons/film_go.png"), "Start Interactive Rendering", this);
@@ -490,10 +511,6 @@ void MainWindow::build_toolbar()
     m_action_stop_rendering = new QAction(QIcon(":/icons/cross.png"), "Stop Rendering", this);
     connect(m_action_stop_rendering, SIGNAL(triggered()), &m_rendering_manager, SLOT(slot_abort_rendering()));
     m_ui->main_toolbar->addAction(m_action_stop_rendering);
-
-    m_action_toggle_file_watcher = new QAction(QIcon(":/icons/file_toggle_off.png"), "Toggle File Watcher", this);
-    connect(m_action_toggle_file_watcher, SIGNAL(triggered()), SLOT(slot_toggle_file_watcher()));
-    m_ui->main_toolbar->addAction(m_action_toggle_file_watcher);
 }
 
 void MainWindow::build_log_panel()
@@ -889,11 +906,11 @@ void MainWindow::add_render_widget(const QString& label)
 
 void MainWindow::slot_file_changed(const QString& path)
 {
-    assert(m_project_file_watcher);
-
     RENDERER_LOG_INFO("project file changed on disk, reloading it.");
 
+    assert(m_project_file_watcher);
     m_project_file_watcher->removePath(path);
+
     slot_reload_project();
 }
 
@@ -1116,9 +1133,13 @@ void MainWindow::slot_save_project()
         return;
     }
     
-    m_project_file_watcher->removePath(m_project_manager.get_project()->get_path());
+    if (m_project_file_watcher)
+        m_project_file_watcher->removePath(m_project_manager.get_project()->get_path());
+
     m_project_manager.save_project();
-    m_project_file_watcher->addPath(m_project_manager.get_project()->get_path());
+
+    if (m_project_file_watcher)
+        m_project_file_watcher->addPath(m_project_manager.get_project()->get_path());
 
     update_workspace();
 }
@@ -1149,14 +1170,17 @@ void MainWindow::slot_save_project_as()
             LAST_DIRECTORY_SETTINGS_KEY,
             path.parent_path().string());
 
+        if (m_project_file_watcher)
+            m_project_file_watcher->removePath(m_project_manager.get_project()->get_path());
+
         m_project_manager.save_project_as(filepath.toAscii().constData());
+
+        if (m_project_file_watcher)
+            m_project_file_watcher->addPath(m_project_manager.get_project()->get_path());
 
         update_recent_files_menu(filepath);
         update_workspace();
     }
-
-    if (m_project_file_watcher)
-        m_project_file_watcher->addPath(m_project_manager.get_project()->get_path());
 }
 
 void MainWindow::slot_fullscreen()
@@ -1416,20 +1440,6 @@ void MainWindow::slot_show_about_window()
     about_window->activateWindow();
 }
 
-void MainWindow::file_change_watcher()
-{
-    if (m_settings.get_optional<bool>("watch_file_changes"))
-    {
-        m_action_toggle_file_watcher->setIcon(QIcon(":/icons/file_toggle_on.png"));
-        m_project_file_watcher = new QFileSystemWatcher(this);
-
-        connect(
-            m_project_file_watcher,
-            SIGNAL(fileChanged(const QString&)),
-            SLOT(slot_file_changed(const QString&)));
-    }
-}
-
 void MainWindow::slot_load_settings()
 {
     const filesystem::path root_path(Application::get_root_path());
@@ -1450,7 +1460,9 @@ void MainWindow::slot_load_settings()
     {
         RENDERER_LOG_INFO("successfully loaded settings from %s.", settings_file_path.c_str());
         m_settings = settings;
-        file_change_watcher();
+
+        if (m_settings.get_optional<bool>("watch_file_changes"))
+            enable_project_file_watcher();
     }
     else
     {
