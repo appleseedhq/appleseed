@@ -1069,17 +1069,17 @@ QLabel#info_label
 
 QLabel#r_label
 {
-    color: red;
+    color: rgb(239, 55, 55);
 }
 
 QLabel#g_label
 {
-    color: green;
+    color: rgb(107, 239, 55);
 }
 
 QLabel#b_label
 {
-    color: blue;
+    color: rgb(89, 158, 252);
 }
 
 QLabel#a_label
