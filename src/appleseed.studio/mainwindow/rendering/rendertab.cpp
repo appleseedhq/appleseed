@@ -324,17 +324,17 @@ void RenderTab::recreate_handlers()
     m_mouse_tracker.reset(
         new MouseCoordinatesTracker(
             m_render_widget,
-            m_info_label,
-            m_r_label,
-            m_g_label,
-            m_b_label,
-            m_a_label));
+            m_info_label));
 
     // Handler for picking scene entities in the render widget.
     m_picking_handler.reset(
         new ScenePickingHandler(
             m_render_widget,
             m_picking_mode_combo,
+            m_r_label,
+            m_g_label,
+            m_b_label,
+            m_a_label,
             *m_mouse_tracker.get(),
             m_project_explorer,
             m_project));
