@@ -394,7 +394,9 @@ apply_preprocessor_definitions (appleseed.studio)
 # Static libraries.
 #--------------------------------------------------------------------------------------------------
 
+# Static libraries must be specified in order of reverse-dependency.
 link_against_platform (appleseed.studio)
+link_against_openexr (appleseed.studio)
 
 target_link_libraries (appleseed.studio
     appleseed
