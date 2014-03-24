@@ -1,6 +1,8 @@
 <RCC>
     <qresource prefix="/">
         <file>icons/cog_go.png</file>
+        <file>icons/file_toggle_off.png</file>
+        <file>icons/file_toggle_on.png</file>
         <file>icons/cross.png</file>
         <file>icons/disk.png</file>
         <file>icons/film_go.png</file>
