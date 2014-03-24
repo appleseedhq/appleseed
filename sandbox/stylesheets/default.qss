@@ -88,7 +88,7 @@ QWidget:disabled
 QMainWindow::separator,
 QSplitter::handle
 {
-    background-color: DEFAULT_BACKGROUND_COLOR;
+    background-color: BORDER_COLOR;
     width: 5px;
     height: 5px;
 }
@@ -1057,23 +1057,29 @@ QLabel#info_label
     color: INFO_TEXT_COLOR;
     min-width: 250px;
     max-width: 250px;
+
+    #ifdef __APPLE__
+        min-width: 278px;
+        max-width: 278px;
+    #endif
+
     margin-left: 3px;
     margin-right: 3px;
 }
 
 QLabel#r_label
 {
-    color: red;
+    color: rgb(239, 55, 55);
 }
 
 QLabel#g_label
 {
-    color: green;
+    color: rgb(107, 239, 55);
 }
 
 QLabel#b_label
 {
-    color: blue;
+    color: rgb(89, 158, 252);
 }
 
 QLabel#a_label
