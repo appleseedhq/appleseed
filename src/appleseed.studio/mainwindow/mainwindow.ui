@@ -127,6 +127,7 @@
     </property>
     <addaction name="action_tools_save_settings"/>
     <addaction name="action_tools_reload_settings"/>
+    <addaction name="action_tools_toggle_file_watcher"/>
    </widget>
    <widget class="QMenu" name="menu_help">
     <property name="title">
@@ -470,6 +471,11 @@
   <action name="action_clear_open_recent_menu">
    <property name="text">
     <string>Clear Menu</string>
+   </property>
+  </action>
+  <action name="action_tools_toggle_file_watcher">
+   <property name="text">
+    <string>Toggle File Watcher</string>
    </property>
   </action>
  </widget>
