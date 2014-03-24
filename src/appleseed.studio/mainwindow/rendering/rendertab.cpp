@@ -257,7 +257,12 @@ void RenderTab::create_toolbar()
     m_picking_mode_combo->setObjectName(QString::fromUtf8("picking_mode_combo"));
     m_toolbar->addWidget(m_picking_mode_combo);
 
-    m_toolbar->addSeparator();
+
+    // Add stretchy spacer
+    // This places interactive elements on the left and info to the right.
+    m_spacer = new QWidget();
+    m_spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    m_toolbar->addWidget(m_spacer);
 
     // Create a label to display various information such as mouse coordinates, etc.
     m_info_label = new QLabel();
