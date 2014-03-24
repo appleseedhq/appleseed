@@ -121,31 +121,36 @@ bool ScenePickingHandler::eventFilter(QObject* object, QEvent* event)
 {
     if (!m_enabled)
         return QObject::eventFilter(object, event);
-    
-    const QMouseEvent* mouse_event = static_cast<QMouseEvent*>(event);
 
     switch (event->type())
     {
-        case QEvent::MouseButtonPress:
+      case QEvent::MouseButtonPress:
+        {
+            const QMouseEvent* mouse_event = static_cast<QMouseEvent*>(event);
             if (mouse_event->button() == Qt::LeftButton &&
                 !(mouse_event->modifiers() & (Qt::AltModifier | Qt::ShiftModifier | Qt::ControlModifier)))
             {
                 pick(mouse_event->pos());
                 return true;
             }
-            break;
+        }
+        break;
 
-        case QEvent::MouseMove:
+      case QEvent::MouseMove:
+        {
+            const QMouseEvent* mouse_event = static_cast<QMouseEvent*>(event);
             set_rgb_label(mouse_event->pos());
-            break;
+        }
+        break;
 
-        case QEvent::Leave:
-            m_r_label->clear();
-            m_g_label->clear();
-            m_b_label->clear();
-            m_a_label->clear();
-            break;
+      case QEvent::Leave:
+        m_r_label->clear();
+        m_g_label->clear();
+        m_b_label->clear();
+        m_a_label->clear();
+        break;
     }
+
     return QObject::eventFilter(object, event);
 }
 
