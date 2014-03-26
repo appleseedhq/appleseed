@@ -40,6 +40,7 @@
 // appleseed.renderer headers.
 #include "renderer/api/camera.h"
 #include "renderer/api/frame.h"
+#include "renderer/api/framearchiver.h"
 #include "renderer/api/project.h"
 
 // appleseed.foundation headers.
@@ -316,7 +317,8 @@ void RenderingManager::archive_frame_to_disk()
           filesystem::path(Application::get_root_path())
         / "images" / "autosave";
 
-    m_project->get_frame()->archive(autosave_path.string().c_str());
+    FrameArchiver archiver;
+    archiver.archive(m_project->get_frame(), autosave_path.string().c_str());
 }
 
 void RenderingManager::apply_permanent_states()

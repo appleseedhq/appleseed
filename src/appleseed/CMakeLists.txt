@@ -752,6 +752,7 @@ set (renderer_api_sources
     renderer/api/environmentedf.h
     renderer/api/environmentshader.h
     renderer/api/frame.h
+    renderer/api/framearchiver.h
     renderer/api/light.h
     renderer/api/lighting.h
     renderer/api/log.h

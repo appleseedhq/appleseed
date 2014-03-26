@@ -133,14 +133,6 @@ class DLLSYMBOL Frame
     bool write_main_image(const char* file_path) const;
     bool write_aov_images(const char* file_path) const;
 
-    // Archive the frame to a given directory on disk. If output_path is provided,
-    // the full path to the output file will be returned. The returned string must
-    // be freed using foundation::free_string().
-    // Return true if successful, false otherwise.
-    bool archive(
-        const char*     directory,
-        char**          output_path = 0) const;
-
   private:
     friend class FrameFactory;
 

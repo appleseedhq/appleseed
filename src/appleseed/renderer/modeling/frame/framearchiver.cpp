@@ -80,6 +80,7 @@ namespace renderer
 //
 
 bool FrameArchiver::archive(
+    const Frame* frame,
     const char*         directory,
     char**              output_path) const
 {
@@ -96,14 +97,10 @@ bool FrameArchiver::archive(
     if (output_path)
         *output_path = duplicate_string(file_path.c_str());
 
-    Image transformed_image(*impl->m_image);
-    transform_to_output_color_space(transformed_image);
+    Image transformed_image(frame->image());
+    frame->transform_to_output_color_space(transformed_image);
 
-    return
-        write_image(
-            file_path.c_str(),
-            transformed_image,
-            ImageAttributes::create_default_attributes());
+    return frame->write_main_image(file_path.c_str());
 }
 
 }

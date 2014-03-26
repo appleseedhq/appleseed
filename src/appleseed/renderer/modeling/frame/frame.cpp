@@ -500,14 +500,6 @@ bool Frame::write_aov_images(const char* file_path) const
     return result;
 }
 
-bool Frame::archive(
-    const char*         directory,
-    char**              output_path) const
-{
-    FrameArchiver arch;
-    arch.archive(directory, output_path);
-}
-
 void Frame::extract_parameters()
 {
     // Retrieve frame resolution parameter.

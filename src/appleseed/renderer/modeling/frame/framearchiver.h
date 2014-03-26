@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entity.h"
+#include "renderer/modeling/frame/frame.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
@@ -64,7 +65,7 @@ class FrameArchiver
     // the full path to the output file will be returned. The returned string must
     // be freed using foundation::free_string().
     // Return true if successful, false otherwise.
-    bool archive(
+    bool archive(const Frame* frame,
         const char*     directory,
         char**          output_path = 0) const;
 };

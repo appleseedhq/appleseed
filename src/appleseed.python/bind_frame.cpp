@@ -35,6 +35,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/api/frame.h"
+#include "renderer/api/framearchiver.h"
 #include "renderer/kernel/aov/imagestack.h"
 
 // appleseed.foundation headers.
@@ -66,7 +67,8 @@ namespace detail
     {
         char* output = 0;
 
-        if (frame->archive(directory, &output))
+        FrameArchiver archiver;
+        if (archiver.archive(frame, directory, &output))
         {
             const bpy::str path(output);
             foundation::free_string(output);
