@@ -751,7 +751,6 @@ set (renderer_api_sources
     renderer/api/environment.h
     renderer/api/environmentedf.h
     renderer/api/environmentshader.h
-    renderer/api/framearchiver.h
     renderer/api/frame.h
     renderer/api/light.h
     renderer/api/lighting.h
@@ -1341,6 +1340,8 @@ source_group ("renderer\\modeling\\environmentshader" FILES
 set (renderer_modeling_frame_sources
     renderer/modeling/frame/frame.cpp
     renderer/modeling/frame/frame.h
+    renderer/modeling/frame/framearchiver.cpp
+    renderer/modeling/frame/framearchiver.h	
 )
 list (APPEND appleseed_sources
     ${renderer_modeling_frame_sources}

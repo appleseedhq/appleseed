@@ -34,7 +34,6 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/kernel/aov/imagestack.h"
 #include "renderer/utility/paramarray.h"
-#include "renderer/modeling/frame/framearchiver.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
