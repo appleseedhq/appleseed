@@ -89,8 +89,11 @@ class DLLSYMBOL EDF
     // Retrieve the importance multiplier.
     double get_uncached_importance_multiplier() const;
 
-    // Get the light near start value.
+    // Get the cached light near start value.
     double get_light_near_start() const;
+
+    // Retrieve the light near start value.
+    double get_uncached_light_near_start() const;
 
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
@@ -139,6 +142,7 @@ class DLLSYMBOL EDF
 
   private:
     int m_flags;
+    double m_light_near_start;
 };
 
 

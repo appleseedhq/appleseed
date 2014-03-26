@@ -89,7 +89,6 @@ namespace
     struct PathVisitor
     {
         const Spectrum              m_initial_flux;     // initial particle flux (in W)
-        const double                m_light_near_start;
         const bool                  m_store_direct;
         const bool                  m_store_indirect;
         const bool                  m_store_caustics;
@@ -97,13 +96,11 @@ namespace
 
         PathVisitor(
             const Spectrum&         initial_flux,
-            const double            light_near_start,
             const bool              store_direct,
             const bool              store_indirect,
             const bool              store_caustics,
             SPPMPhotonVector&       photons)
           : m_initial_flux(initial_flux)
-          , m_light_near_start(light_near_start)
           , m_store_direct(store_direct)
           , m_store_indirect(store_indirect)
           , m_store_caustics(store_caustics)
@@ -141,10 +138,6 @@ namespace
 
                 // Don't store photons on purely specular surfaces.
                 if (vertex.m_bsdf->is_purely_specular())
-                    return;
-
-                // Don't store photons if we're too close to the light source.
-                if (m_light_near_start > 0.0 && vertex.m_shading_point->get_distance() < m_light_near_start)
                     return;
 
                 // Create and store a new photon.
@@ -333,10 +326,8 @@ namespace
 
             // Build the path tracer.
             const bool cast_indirect_light = (edf->get_flags() & EDF::CastIndirectLight) != 0;
-            const double light_near_start  = edf->get_light_near_start();
             PathVisitor path_visitor(
                 initial_flux,
-                light_near_start,
                 m_params.m_dl_mode == SPPMParameters::SPPM, // store direct lighting photons?
                 cast_indirect_light,
                 m_params.m_enable_caustics,
@@ -345,7 +336,8 @@ namespace
                 path_visitor,
                 m_params.m_photon_tracing_rr_min_path_length,
                 m_params.m_photon_tracing_max_path_length,
-                m_params.m_max_iterations);
+                m_params.m_max_iterations,
+                edf->get_light_near_start());        // dont light points closer than the light near start value
 
             // Trace the photon path.
             path_tracer.trace(
@@ -393,7 +385,6 @@ namespace
             const bool cast_indirect_light = (light_sample.m_light->get_flags() & EDF::CastIndirectLight) != 0;
             PathVisitor path_visitor(
                 initial_flux,
-                0.0,
                 m_params.m_dl_mode == SPPMParameters::SPPM, // store direct lighting photons?
                 cast_indirect_light,
                 m_params.m_enable_caustics,
@@ -554,7 +545,6 @@ namespace
             const bool cast_indirect_light = true;          // right now environments always cast indirect light
             PathVisitor path_visitor(
                 initial_flux,
-                0.0,
                 true,                                       // do store IBL photons
                 cast_indirect_light,
                 m_params.m_enable_caustics,
