@@ -70,11 +70,6 @@ double EDF::get_uncached_importance_multiplier() const
     return m_params.get_optional<double>("importance_multiplier", 1.0);
 }
 
-double EDF::get_light_near_start() const
-{
-    return m_light_near_start;
-}
-
 double EDF::get_uncached_light_near_start() const
 {
     return m_params.get_optional<double>("light_near_start", 0.0);

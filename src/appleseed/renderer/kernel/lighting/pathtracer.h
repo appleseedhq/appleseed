@@ -76,7 +76,7 @@ class PathTracer
         const size_t            rr_min_path_length,
         const size_t            max_path_length,
         const size_t            max_iterations = 1000,
-        const double            near_start=0.0);
+        const double            near_start = 0.0);
 
     size_t trace(
         SamplingContext&        sampling_context,
@@ -161,6 +161,9 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
 
     size_t iterations = 0;
 
+    if( vertex.m_shading_point->get_distance() < m_near_start)
+        return 1;
+
     while (true)
     {
         // Put a hard limit on the number of iterations.
@@ -186,9 +189,6 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                 vertex.m_throughput);
             break;
         }
-
-        if(vertex.m_path_length == 1 && vertex.m_shading_point->get_distance() < m_near_start)
-            break;
 
         // Retrieve the material at the shading point.
         const Material* material = vertex.get_material();

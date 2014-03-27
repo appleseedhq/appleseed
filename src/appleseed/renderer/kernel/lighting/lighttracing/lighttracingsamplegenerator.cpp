@@ -609,7 +609,7 @@ namespace
                 m_params.m_rr_min_path_length,
                 m_params.m_max_path_length,
                 m_params.m_max_iterations,
-                edf->get_light_near_start());        // dont light points closer than the light near start value
+                edf->get_light_near_start());               // don't illuminate points closer than the light near start value
 
             // Handle the light vertex separately.
             Spectrum light_particle_flux = edf_value;       // todo: only works for diffuse EDF? What we need is the light exitance
