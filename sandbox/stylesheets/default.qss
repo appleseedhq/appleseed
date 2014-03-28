@@ -1014,13 +1014,6 @@ appleseed--studio--FoldablePanelWidget > QFrame[hasFrame="true"]
  * Specific styles.
  */
 
-
-QWidget#RenderSettingsWindow QWidget#scrollareawidget,
-QWidget#MaterialAssignmentEditorWindow QWidget#scrollarea_contents
-{
-    background-color: transparent;
-}
-
 QTabWidget#tab_render_channels > QWidget,
 QTabWidget#tab_render_channels QWidget#render_widget_tab,
 QTabWidget#tab_render_channels QScrollArea#render_widget_scrollarea,
