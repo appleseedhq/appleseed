@@ -86,29 +86,12 @@ bool ProjectManager::load_builtin_project(const string& name)
 
 bool ProjectManager::save_project()
 {
-    return do_save_project_as(m_project->get_path());
+    return do_save_project(m_project->get_path(), ProjectFileWriter::Defaults);
 }
 
 bool ProjectManager::save_project_as(const string& filepath)
 {
-    return do_save_project_as(filepath, ProjectFileWriter::OmitSearchPaths);
-}
-
-bool ProjectManager::do_save_project_as(const string& filepath,
-                                        ProjectFileWriter::Options options)
-{
-    assert(m_project.get());
-
-    if (!ProjectFileWriter::write(m_project.ref(), 
-                                  filepath.c_str(), 
-                                  options))
-        return false;
-
-    m_project->set_path(filepath.c_str());
-
-    m_dirty_flag = false;
-
-    return true;
+    return do_save_project(filepath, ProjectFileWriter::OmitSearchPaths);
 }
 
 void ProjectManager::close_project()
@@ -188,6 +171,21 @@ bool ProjectManager::do_load_project(const string& filepath)
         return false;
 
     m_project = loaded_project;
+    m_dirty_flag = false;
+
+    return true;
+}
+
+bool ProjectManager::do_save_project(
+    const string&                       filepath,
+    const ProjectFileWriter::Options    options)
+{
+    assert(m_project.get());
+
+    if (!ProjectFileWriter::write(m_project.ref(), filepath.c_str(), options))
+        return false;
+
+    m_project->set_path(filepath.c_str());
     m_dirty_flag = false;
 
     return true;
