@@ -478,6 +478,11 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
 
     const double square_distance = foundation::square(light_shading_point.get_distance());
 
+    // Don't use this sample if we're closer than the Light near start value.
+    const double light_near_start = edf->get_light_near_start();
+    if (square_distance < foundation::square(light_near_start))
+        return;
+
     if (square_distance > 0.0)
     {
         // Transform bsdf_prob to surface area measure (Veach: 8.2.2.2 eq. 8.10).
@@ -578,8 +583,14 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
         return;
 
     // Compute the square distance between the light sample and the shading point.
-    const double rcp_sample_square_distance = 1.0 / foundation::square_norm(incoming);
+    const double square_distance = foundation::square_norm(incoming);
+    const double rcp_sample_square_distance = 1.0 / square_distance;
     const double rcp_sample_distance = std::sqrt(rcp_sample_square_distance);
+
+    // Don't use this sample if we're closer than the Light near start value.
+    const double light_near_start = edf->get_light_near_start();
+    if (square_distance < foundation::square(light_near_start))
+        return;
 
     // Normalize the incoming direction.
     incoming *= rcp_sample_distance;

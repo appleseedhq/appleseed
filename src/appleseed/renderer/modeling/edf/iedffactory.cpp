@@ -56,6 +56,14 @@ void IEDFFactory::add_common_input_metadata(DictionaryArray& metadata)
             .insert("type", "text")
             .insert("use", "optional")
             .insert("default", "1.0"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "light_near_start")
+            .insert("label", "Light Near Start")
+            .insert("type", "text")
+            .insert("use", "optional")
+            .insert("default", "0.0"));
 }
 
 }   // namespace renderer

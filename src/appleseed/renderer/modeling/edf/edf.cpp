@@ -60,6 +60,7 @@ EDF::EDF(
     const ParamArray&   params)
   : ConnectableEntity(g_class_uid, params)
   , m_flags(0)
+  , m_light_near_start(0.0)
 {
     set_name(name);
 }
@@ -67,6 +68,11 @@ EDF::EDF(
 double EDF::get_uncached_importance_multiplier() const
 {
     return m_params.get_optional<double>("importance_multiplier", 1.0);
+}
+
+double EDF::get_uncached_light_near_start() const
+{
+    return m_params.get_optional<double>("light_near_start", 0.0);
 }
 
 bool EDF::on_frame_begin(
@@ -78,6 +84,8 @@ bool EDF::on_frame_begin(
 
     if (m_params.get_optional<bool>("cast_indirect_light", true))
         m_flags |= CastIndirectLight;
+
+    m_light_near_start = get_uncached_light_near_start();
 
     if (get_uncached_importance_multiplier() <= 0.0)
     {
