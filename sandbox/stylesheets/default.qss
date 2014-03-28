@@ -43,7 +43,7 @@
 #define HOVER_BACKGROUND_COLOR              rgb(190, 140, 50)
 #define SELECTED_BACKGROUND_COLOR           rgb(60, 60, 60)
 
-#define DEFAULT_TEXT_COLOR                  rgb(160, 160, 160)
+#define DEFAULT_TEXT_COLOR                  rgb(170, 170, 170)
 #define DISABLED_TEXT_COLOR                 rgb(100, 100, 100)
 #define INFO_TEXT_COLOR                     rgb(100, 100, 100)
 #define HOVER_TEXT_COLOR                    rgb(255, 255, 255)
@@ -1013,6 +1013,11 @@ appleseed--studio--FoldablePanelWidget > QFrame[hasFrame="true"]
 /*
  * Specific styles.
  */
+
+QWidget#TestWindow QSplitter::handle
+{
+    background-color: transparent;
+}
 
 QTabWidget#tab_render_channels > QWidget,
 QTabWidget#tab_render_channels QWidget#render_widget_tab,

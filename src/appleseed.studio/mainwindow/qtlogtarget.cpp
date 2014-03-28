@@ -71,7 +71,7 @@ namespace
         {
           default:
           case LogMessage::Info:
-            return QColor(160, 160, 160);
+            return QColor(170, 170, 170);
 
           case LogMessage::Debug:
             return QColor(107, 239, 55);
