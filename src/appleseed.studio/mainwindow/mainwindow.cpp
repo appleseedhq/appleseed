@@ -159,6 +159,8 @@ void MainWindow::open_project(const QString& filepath)
         m_rendering_manager.wait_until_rendering_end();
     }
 
+    remove_render_widgets();
+
     set_file_widgets_enabled(false);
     set_project_explorer_enabled(false);
     set_rendering_widgets_enabled(false, false);
@@ -850,9 +852,7 @@ void MainWindow::recreate_render_widgets()
     remove_render_widgets();
 
     if (m_project_manager.is_project_open())
-    {
         add_render_widget("RGB");
-    }
 }
 
 void MainWindow::remove_render_widgets()
