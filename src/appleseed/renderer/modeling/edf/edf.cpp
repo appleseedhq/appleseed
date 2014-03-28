@@ -87,6 +87,13 @@ bool EDF::on_frame_begin(
 
     m_light_near_start = get_uncached_light_near_start();
 
+    if (m_light_near_start < 0.0)
+    {
+        RENDERER_LOG_WARNING(
+            "edf \"%s\" has a negative light near start value; expect artifacts and/or slowdowns.",
+            get_path().c_str());
+    }
+
     if (get_uncached_importance_multiplier() <= 0.0)
     {
         RENDERER_LOG_WARNING(
