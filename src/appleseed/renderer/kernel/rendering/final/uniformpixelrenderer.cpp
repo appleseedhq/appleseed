@@ -94,6 +94,11 @@ namespace
 
                 if (primary)
                 {
+                    const int passes = params.get_optional<int>("passes", 1);
+
+                    if (passes > 1)
+                        RENDERER_LOG_WARNING("doing multipass rendering with pixel decorrelation off.");
+
                     RENDERER_LOG_INFO(
                         "effective max subpixel grid size: %d x %d",
                         m_sqrt_sample_count,
