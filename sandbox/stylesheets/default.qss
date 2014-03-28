@@ -1104,13 +1104,13 @@ QPushButton#bind_entity_button
     min-width: 30px;
 }
 
-QWidget#ToggleButtonOn
+QWidget#toggle_button_on
 {
     background-color: SELECTED_BACKGROUND_COLOR;
     border: BORDER_STYLE;
 }
 
-QWidget#ToggleButtonOff
+QWidget#toggle_button_off
 {
     background-color: ACTIVE_BACKGROUND_COLOR;
     border: BORDER_STYLE;

@@ -48,7 +48,7 @@ MinimizeButton::MinimizeButton(QDockWidget* dock_widget, QWidget* parent)
   , m_on(true)
   , m_minimized(false)
 {
-    setObjectName(QString::fromUtf8("ToggleButtonOn"));
+    setObjectName(QString::fromUtf8("toggle_button_on"));
     connect(
         m_dock_widget->toggleViewAction(), SIGNAL(toggled(bool)),
         SLOT(slot_minimize()));
@@ -86,7 +86,7 @@ void MinimizeButton::slot_minimize()
 {
     m_on = !m_on;
 
-    setObjectName(QString::fromUtf8(m_on ? "ToggleButtonOn" : "ToggleButtonOff"));
+    setObjectName(QString::fromUtf8(m_on ? "toggle_button_on" : "toggle_button_off"));
 
     // Force stylesheet reloading for this widget.
     style()->unpolish(this);
