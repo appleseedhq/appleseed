@@ -79,7 +79,7 @@ class PathTracer
         const size_t            rr_min_path_length,
         const size_t            max_path_length,
         const size_t            max_iterations = 1000,
-        const double            near_start = 0.0);
+        const double            near_start = 0.0);          // abort tracing if the first ray is shorter than this
 
     size_t trace(
         SamplingContext&        sampling_context,
@@ -97,7 +97,7 @@ class PathTracer
     const size_t                m_rr_min_path_length;
     const size_t                m_max_path_length;
     const size_t                m_max_iterations;
-    const double                m_near_start; // abort tracing if the first ray is shorter than this
+    const double                m_near_start;
 
     // Determine the appropriate ray type for a given scattering mode.
     static ShadingRay::Type bsdf_mode_to_ray_type(
@@ -152,6 +152,9 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
     const ShadingContext&       shading_context,
     const ShadingPoint&         shading_point)
 {
+    if (shading_point.get_distance() < m_near_start)
+        return 1;
+
     ShadingPoint shading_points[2];
     size_t shading_point_index = 0;
 
@@ -163,9 +166,6 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
     vertex.m_throughput.set(1.0f);
 
     size_t iterations = 0;
-
-    if( vertex.m_shading_point->get_distance() < m_near_start)
-        return 1;
 
     while (true)
     {

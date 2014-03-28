@@ -44,8 +44,7 @@ void PathVertex::compute_emitted_radiance(
     assert(m_edf);
 
     // No radiance if we're too close to the light.
-    const double light_near_start = m_edf->get_light_near_start();
-    if (light_near_start > 0.0 && m_shading_point->get_distance() < light_near_start)
+    if (m_shading_point->get_distance() < m_edf->get_light_near_start())
     {
         radiance.set(0.0f);
         return;

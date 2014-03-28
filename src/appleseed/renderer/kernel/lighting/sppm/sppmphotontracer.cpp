@@ -337,7 +337,7 @@ namespace
                 m_params.m_photon_tracing_rr_min_path_length,
                 m_params.m_photon_tracing_max_path_length,
                 m_params.m_max_iterations,
-                edf->get_light_near_start());        // dont light points closer than the light near start value
+                edf->get_light_near_start());               // don't light points closer than the light near start value
 
             // Trace the photon path.
             path_tracer.trace(
