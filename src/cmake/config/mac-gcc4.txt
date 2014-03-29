@@ -125,7 +125,10 @@ endmacro ()
 
 macro (link_against_hdf5 target)
     if (USE_EXTERNAL_ALEMBIC)
-        target_link_libraries (${target} ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
+        target_link_libraries (${target}
+            ${HDF5_LIBRARIES}
+            ${HDF5_HL_LIBRARIES}
+        )
     else ()
         target_link_libraries (${target}
             ${CMAKE_SOURCE_DIR}/build/${platform}/hdf5/libhdf5.a

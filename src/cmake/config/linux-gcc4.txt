@@ -132,7 +132,10 @@ endmacro ()
 
 macro (link_against_hdf5 target)
     if (USE_EXTERNAL_ALEMBIC)
-        target_link_libraries (${target} ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
+        target_link_libraries (${target}
+            ${HDF5_LIBRARIES}
+            ${HDF5_HL_LIBRARIES}
+        )
     else ()
         target_link_libraries (${target}
             # Static libraries must be specified in order of reverse-dependency.
