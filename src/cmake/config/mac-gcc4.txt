@@ -109,11 +109,8 @@ endmacro ()
 macro (link_against_openexr target)
     if (USE_EXTERNAL_EXR)
         target_link_libraries (${target}
-            ${IMATH_IEX_LIBRARY}
-            ${IMATH_HALF_LIBRARY}
-            ${IMATH_MATH_LIBRARY}
-            ${OPENEXR_IMF_LIBRARY}
-            ${OPENEXR_THREADS_LIBRARY}
+            ${IMATH_LIBRARIES}
+            ${OPENEXR_LIBRARIES}
         )
     else ()
         target_link_libraries (${target}
