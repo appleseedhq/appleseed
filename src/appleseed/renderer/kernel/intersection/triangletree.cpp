@@ -1131,8 +1131,6 @@ void TriangleTree::create_intersection_filters()
     collect_object_instance_indices(
         m_arguments.m_regions,
         object_instance_indices);
-    if (object_instance_indices.empty())
-        return;
 
     // Create filter keys.
     FilterKeySet filter_keys;
@@ -1159,6 +1157,7 @@ void TriangleTree::create_intersection_filters()
         m_intersection_filters_repository.push_back(i->second);
 
     // Map intersection filters to object instance indices.
+    assert(!object_instance_indices.empty());
     const size_t max_object_instance_index =
         *max_element(object_instance_indices.begin(), object_instance_indices.end());
     m_intersection_filters.assign(max_object_instance_index + 1, 0);
