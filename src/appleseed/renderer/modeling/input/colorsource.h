@@ -58,6 +58,9 @@ class ColorSource
         const ColorEntity&          color_entity,
         const InputFormat           input_format);
 
+    // Retrieve the color entity used by this source.
+    const ColorEntity& get_color_entity() const;
+
     // Evaluate the source.
     virtual void evaluate_uniform(
         double&                     scalar) const OVERRIDE;
@@ -75,6 +78,7 @@ class ColorSource
         Alpha&                      alpha) const OVERRIDE;
 
   private:
+    const ColorEntity&              m_color_entity;
     double                          m_scalar;
     foundation::Color3f             m_linear_rgb;
     Spectrum                        m_spectrum;
@@ -92,6 +96,11 @@ class ColorSource
 //
 // ColorSource class implementation.
 //
+
+inline const ColorEntity& ColorSource::get_color_entity() const
+{
+    return m_color_entity;
+}
 
 inline void ColorSource::evaluate_uniform(
     double&                         scalar) const

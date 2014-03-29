@@ -55,6 +55,7 @@ ColorSource::ColorSource(
     const ColorEntity&      color_entity,
     const InputFormat       input_format)
   : Source(true)
+  , m_color_entity(color_entity)
 {
     // Retrieve the color values.
     if (color_entity.get_color_space() == ColorSpaceSpectral)
