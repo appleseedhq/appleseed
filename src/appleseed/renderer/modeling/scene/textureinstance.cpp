@@ -191,6 +191,23 @@ Texture* TextureInstance::find_texture() const
     return 0;
 }
 
+void TextureInstance::unbind_texture()
+{
+    m_texture = 0;
+}
+
+void TextureInstance::bind_texture(const TextureContainer& textures)
+{
+    if (m_texture == 0)
+        m_texture = textures.get_by_name(impl->m_texture_name.c_str());
+}
+
+void TextureInstance::check_texture() const
+{
+    if (m_texture == 0)
+        throw ExceptionUnknownEntity(impl->m_texture_name.c_str(), this);
+}
+
 namespace
 {
     bool has_transparent_pixels(const Tile& tile)
@@ -228,23 +245,6 @@ namespace
 
         return TextureAlphaModeLuminance;
     }
-}
-
-void TextureInstance::unbind_texture()
-{
-    m_texture = 0;
-}
-
-void TextureInstance::bind_texture(const TextureContainer& textures)
-{
-    if (m_texture == 0)
-        m_texture = textures.get_by_name(impl->m_texture_name.c_str());
-}
-
-void TextureInstance::check_texture() const
-{
-    if (m_texture == 0)
-        throw ExceptionUnknownEntity(impl->m_texture_name.c_str(), this);
 }
 
 bool TextureInstance::on_frame_begin(
