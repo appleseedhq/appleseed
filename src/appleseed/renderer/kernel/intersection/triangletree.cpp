@@ -1092,7 +1092,7 @@ namespace
                         object_instance->get_front_materials())).first;
 
             const FilterKey& filter_key = *filter_key_it;
-            object_instances_to_filter_keys[*i] = &filter_key;
+            object_instances_to_filter_keys[object_instance_index] = &filter_key;
         }
     }
 
