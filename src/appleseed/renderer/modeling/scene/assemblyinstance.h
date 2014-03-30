@@ -154,12 +154,12 @@ inline const TransformSequence& AssemblyInstance::transform_sequence() const
     return m_transform_sequence;
 }
 
-TransformSequence& AssemblyInstance::cumulated_transform_sequence()
+inline TransformSequence& AssemblyInstance::cumulated_transform_sequence()
 {
     return m_cumulated_transform_sequence;
 }
 
-const TransformSequence& AssemblyInstance::cumulated_transform_sequence() const
+inline const TransformSequence& AssemblyInstance::cumulated_transform_sequence() const
 {
     return m_cumulated_transform_sequence;
 }

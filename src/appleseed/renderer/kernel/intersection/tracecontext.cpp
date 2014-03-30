@@ -53,7 +53,7 @@ namespace renderer
 // TraceContext class implementation.
 //
 
-TraceContext::TraceContext(const Scene& scene)
+TraceContext::TraceContext(Scene& scene)
   : m_scene(scene)
   , m_assembly_tree(new AssemblyTree(scene))
 {
