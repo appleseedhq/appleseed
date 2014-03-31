@@ -216,16 +216,25 @@ void CameraController<T>::update_drag(const Vector<T, 2>& point)
     const T drag_length = norm(point - m_drag_origin);
     speed *= std::pow(T(0.7) + drag_length, T(1.8));
 
-    // Also modulate speed based on the distance to the target.
-    const T target_distance = norm(m_view.m_target - m_view.m_position);
-    if (m_drag_movement == Tumble)
+    switch (m_drag_movement)
     {
-        speed *= T(1.0) + target_distance;
-    }
-    else
-    {
-        // The distance has slightly more effect for tracking and dollying.
-        speed *= std::pow(T(1.0) + target_distance, T(1.2));
+      case Tumble:
+        {
+            // Tumble speed is constant.
+            speed *= T(2.0);
+        }
+        break;
+
+      case Track:
+      case Dolly:
+        {
+            // Track/dolly speed is based on the distance to the target.
+            const T target_distance = norm(m_view.m_target - m_view.m_position);
+            speed *= T(2.0) * target_distance;
+        }
+        break;
+
+      default:;
     }
         
     const Vector<T, 2> delta = (point - m_drag_origin) * speed;
