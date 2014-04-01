@@ -43,6 +43,7 @@
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/uid.h"
 
 // Standard headers.
@@ -70,6 +71,9 @@ class TextureSource
 
     // Retrieve the texture instance used by this source.
     const TextureInstance& get_texture_instance() const;
+
+    // Compute a signature unique to this source.
+    virtual foundation::uint64 compute_signature() const OVERRIDE;
 
     // Evaluate the source at a given shading point.
     virtual void evaluate(

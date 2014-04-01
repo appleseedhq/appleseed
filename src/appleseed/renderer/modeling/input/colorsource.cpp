@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/color/colorentity.h"
 #include "renderer/modeling/color/wavelengths.h"
+#include "renderer/modeling/entity/entity.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
@@ -71,6 +72,11 @@ ColorSource::ColorSource(
     // Store the alpha values.
     const ColorValueArray& alpha = color_entity.get_alpha();
     m_alpha[0] = alpha.size() == 1 ? alpha[0] : 0.0f;
+}
+
+uint64 ColorSource::compute_signature() const
+{
+    return renderer::compute_signature(m_color_entity);
 }
 
 void ColorSource::initialize_from_spectrum(
