@@ -30,6 +30,9 @@
 // Interface header.
 #include "entity.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/siphash.h"
+
 using namespace foundation;
 using namespace std;
 
@@ -97,6 +100,12 @@ void Entity::set_name(const char* name)
 const char* Entity::get_name() const
 {
     return impl->m_name.c_str();
+}
+
+uint64 compute_signature(const Entity& entity)
+{
+    const uint64 bytes[2] = { entity.get_uid(), entity.get_version_id() };
+    return siphash24(&bytes, sizeof(bytes));
 }
 
 }   // namespace renderer

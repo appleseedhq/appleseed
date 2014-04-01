@@ -35,6 +35,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/iunknown.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/uid.h"
 #include "foundation/utility/version.h"
 
@@ -107,6 +108,13 @@ class DLLSYMBOL Entity
     // Destructor.
     ~Entity();
 };
+
+
+//
+// Compute the signature of a given entity.
+//
+
+foundation::uint64 compute_signature(const Entity& entity);
 
 
 //
