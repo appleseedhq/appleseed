@@ -191,10 +191,10 @@ bool Material::on_frame_begin(
     {
         m_bsdf = get_uncached_bsdf();
         m_edf = get_uncached_edf();
-    
+
         if (!create_normal_modifier(context))
             return false;
-    
+
         if (m_edf && m_alpha_map)
         {
             RENDERER_LOG_WARNING(
@@ -207,7 +207,7 @@ bool Material::on_frame_begin(
     else if (strcmp(get_model(), "osl_material") == 0)
     {
         m_shader_group = get_uncached_osl_surface();
-        
+
         if (m_shader_group)
         {
             m_osl_bsdf = OSLBSDFFactory().create();
