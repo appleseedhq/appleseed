@@ -196,18 +196,6 @@ void TextureInstance::unbind_texture()
     m_texture = 0;
 }
 
-void TextureInstance::bind_texture(const TextureContainer& textures)
-{
-    if (m_texture == 0)
-        m_texture = textures.get_by_name(impl->m_texture_name.c_str());
-}
-
-void TextureInstance::check_texture() const
-{
-    if (m_texture == 0)
-        throw ExceptionUnknownEntity(impl->m_texture_name.c_str(), this);
-}
-
 namespace
 {
     bool has_transparent_pixels(const Tile& tile)
@@ -247,22 +235,38 @@ namespace
     }
 }
 
+void TextureInstance::bind_texture(const TextureContainer& textures)
+{
+    if (m_texture == 0)
+    {
+        m_texture = textures.get_by_name(impl->m_texture_name.c_str());
+
+        // We need to resolve the alpha mode as soon as a texture is bound to this instance.
+        // We cannot do it in on_frame_begin() because the texture instance might be needed
+        // before it gets called. For instance, updating the trace context implies updating
+        // the intersection filters, and those need to be able to sample texture instances.
+        if (m_effective_alpha_mode == TextureAlphaModeDetect)
+        {
+            m_effective_alpha_mode = detect_alpha_mode(*m_texture);
+
+            RENDERER_LOG_DEBUG(
+                "texture instance \"%s\" was detected to use the \"%s\" alpha mode.",
+                get_name(),
+                m_effective_alpha_mode == TextureAlphaModeAlphaChannel ? "alpha_channel" : "luminance");
+        }
+    }
+}
+
+void TextureInstance::check_texture() const
+{
+    if (m_texture == 0)
+        throw ExceptionUnknownEntity(impl->m_texture_name.c_str(), this);
+}
+
 bool TextureInstance::on_frame_begin(
     const Project&          project,
     AbortSwitch*            abort_switch)
 {
-    assert(m_texture);
-
-    if (m_effective_alpha_mode == TextureAlphaModeDetect)
-    {
-        m_effective_alpha_mode = detect_alpha_mode(*m_texture);
-
-        RENDERER_LOG_DEBUG(
-            "texture instance \"%s\" was detected to use the \"%s\" alpha mode.",
-            get_name(),
-            m_effective_alpha_mode == TextureAlphaModeAlphaChannel ? "alpha_channel" : "luminance");
-    }
-
     return true;
 }
 
