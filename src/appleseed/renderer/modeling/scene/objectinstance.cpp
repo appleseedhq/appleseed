@@ -129,6 +129,14 @@ void ObjectInstance::release()
     delete this;
 }
 
+uint64 ObjectInstance::compute_signature() const
+{
+    return
+        m_object
+            ? combine_signatures(Entity::compute_signature(), m_object->compute_signature())
+            : Entity::compute_signature();
+}
+
 const char* ObjectInstance::get_object_name() const
 {
     return impl->m_object_name.c_str();

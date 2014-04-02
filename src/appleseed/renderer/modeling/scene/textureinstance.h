@@ -37,6 +37,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/transform.h"
 #include "foundation/platform/compiler.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/uid.h"
 
@@ -99,6 +100,9 @@ class DLLSYMBOL TextureInstance
 
     // Delete this instance.
     virtual void release() OVERRIDE;
+
+    // Compute and return the unique signature of this instance.
+    virtual foundation::uint64 compute_signature() const;
 
     // Return the name of the instantiated texture.
     const char* get_texture_name() const;

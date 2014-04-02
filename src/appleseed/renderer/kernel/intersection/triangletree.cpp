@@ -1061,14 +1061,14 @@ namespace
     // Hash a filter key.
     uint64 hash(const FilterKey& key)
     {
-        uint64 h = compute_signature(*key.m_object);
+        uint64 h = key.m_object->compute_signature();
 
         for (size_t i = 0; i < key.m_materials.size(); ++i)
         {
             const Material* material = key.m_materials[i];
 
             if (material)
-                h ^= compute_signature(*material);
+                h = Entity::combine_signatures(h, material->compute_signature());
         }
 
         return h;

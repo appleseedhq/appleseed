@@ -152,6 +152,14 @@ void TextureInstance::release()
     delete this;
 }
 
+uint64 TextureInstance::compute_signature() const
+{
+    return
+        m_texture
+            ? combine_signatures(Entity::compute_signature(), m_texture->compute_signature())
+            : Entity::compute_signature();
+}
+
 const char* TextureInstance::get_texture_name() const
 {
     return impl->m_texture_name.c_str();

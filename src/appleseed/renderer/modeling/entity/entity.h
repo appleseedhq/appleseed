@@ -76,6 +76,14 @@ class DLLSYMBOL Entity
     // Return the unique ID of this class of entities.
     foundation::UniqueID get_class_uid() const;
 
+    // Compute and return the unique signature of this entity instance.
+    virtual foundation::uint64 compute_signature() const;
+
+    // Combine two entity signatures.
+    static foundation::uint64 combine_signatures(
+        const foundation::uint64        s1,
+        const foundation::uint64        s2);
+
     // Set/get the parent of this entity.
     void set_parent(Entity* parent);
     Entity* get_parent() const;
@@ -108,13 +116,6 @@ class DLLSYMBOL Entity
     // Destructor.
     ~Entity();
 };
-
-
-//
-// Compute the signature of a given entity.
-//
-
-foundation::uint64 compute_signature(const Entity& entity);
 
 
 //

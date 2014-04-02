@@ -189,7 +189,7 @@ TextureSource::TextureSource(
 
 uint64 TextureSource::compute_signature() const
 {
-    return renderer::compute_signature(m_texture_instance);
+    return m_texture_instance.compute_signature();
 }
 
 Vector2d TextureSource::apply_transform(const Vector2d& uv) const

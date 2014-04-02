@@ -76,7 +76,7 @@ ColorSource::ColorSource(
 
 uint64 ColorSource::compute_signature() const
 {
-    return renderer::compute_signature(m_color_entity);
+    return m_color_entity.compute_signature();
 }
 
 void ColorSource::initialize_from_spectrum(
