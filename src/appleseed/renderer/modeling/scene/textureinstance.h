@@ -107,8 +107,7 @@ class DLLSYMBOL TextureInstance
     // Return the name of the instantiated texture.
     const char* get_texture_name() const;
 
-    // Set/get the texture transform.
-    void set_transform(const foundation::Transformd& transform);
+    // Return the texture transform.
     const foundation::Transformd& get_transform() const;
 
     // Return the modes.
@@ -137,8 +136,8 @@ class DLLSYMBOL TextureInstance
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
     bool on_frame_begin(
-        const Project&              project,
-        foundation::AbortSwitch*    abort_switch = 0);
+        const Project&                  project,
+        foundation::AbortSwitch*        abort_switch = 0);
 
     // This method is called once after rendering each frame.
     void on_frame_end(const Project& project);
@@ -149,17 +148,18 @@ class DLLSYMBOL TextureInstance
     struct Impl;
     Impl* impl;
 
-    TextureAddressingMode           m_addressing_mode;
-    TextureFilteringMode            m_filtering_mode;
-    TextureAlphaMode                m_alpha_mode;
-    TextureAlphaMode                m_effective_alpha_mode;
-    Texture*                        m_texture;
+    TextureAddressingMode   m_addressing_mode;
+    TextureFilteringMode    m_filtering_mode;
+    TextureAlphaMode        m_alpha_mode;
+    TextureAlphaMode        m_effective_alpha_mode;
+    Texture*                m_texture;
 
     // Constructor.
     TextureInstance(
-        const char*                 name,
-        const ParamArray&           params,
-        const char*                 texture_name);
+        const char*                     name,
+        const ParamArray&               params,
+        const char*                     texture_name,
+        const foundation::Transformd&   transform);
 
     // Destructor.
     ~TextureInstance();
@@ -178,9 +178,10 @@ class DLLSYMBOL TextureInstanceFactory
 
     // Create a new texture instance.
     static foundation::auto_release_ptr<TextureInstance> create(
-        const char*                 name,
-        const ParamArray&           params,
-        const char*                 texture_name);
+        const char*                     name,
+        const ParamArray&               params,
+        const char*                     texture_name,
+        const foundation::Transformd&   transform);
 };
 
 

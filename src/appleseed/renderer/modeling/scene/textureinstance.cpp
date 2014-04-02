@@ -69,25 +69,29 @@ UniqueID TextureInstance::get_class_uid()
 
 struct TextureInstance::Impl
 {
-    string                  m_texture_name;
+    // Order of data members impacts performance, preserve it.
     Transformd              m_transform;
+    string                  m_texture_name;
     LightingConditions      m_lighting_conditions;
 };
 
 TextureInstance::TextureInstance(
     const char*             name,
     const ParamArray&       params,
-    const char*             texture_name)
+    const char*             texture_name,
+    const Transformd&       transform)
   : Entity(g_class_uid, params)
   , impl(new Impl())
 {
     set_name(name);
 
+    impl->m_transform = transform;
     impl->m_texture_name = texture_name;
-    impl->m_transform = Transformd::identity();
 
     // todo: retrieve the lighting conditions.
     impl->m_lighting_conditions = LightingConditions(IlluminantCIED65, XYZCMFCIE196410Deg);
+
+    m_texture = 0;
 
     // Retrieve the texture addressing mode.
     const string addressing_mode = m_params.get_required<string>("addressing_mode", "wrap");
@@ -138,8 +142,6 @@ TextureInstance::TextureInstance(
 
     // Until a texture is bound, the effective alpha mode is simply the user-selected alpha mode.
     m_effective_alpha_mode = m_alpha_mode;
-
-    m_texture = 0;
 }
 
 TextureInstance::~TextureInstance()
@@ -165,12 +167,7 @@ const char* TextureInstance::get_texture_name() const
     return impl->m_texture_name.c_str();
 }
 
-void TextureInstance::set_transform(const foundation::Transformd& transform)
-{
-    impl->m_transform = transform;
-}
-
-const foundation::Transformd& TextureInstance::get_transform() const
+const Transformd& TextureInstance::get_transform() const
 {
     return impl->m_transform;
 }
@@ -334,11 +331,16 @@ DictionaryArray TextureInstanceFactory::get_input_metadata()
 auto_release_ptr<TextureInstance> TextureInstanceFactory::create(
     const char*             name,
     const ParamArray&       params,
-    const char*             texture_name)
+    const char*             texture_name,
+    const Transformd&       transform)
 {
     return
         auto_release_ptr<TextureInstance>(
-            new TextureInstance(name, params, texture_name));
+            new TextureInstance(
+                name,
+                params,
+                texture_name,
+                transform));
 }
 
 }   // namespace renderer

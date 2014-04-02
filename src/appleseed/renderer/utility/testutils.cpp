@@ -39,6 +39,9 @@
 #include "renderer/modeling/scene/textureinstance.h"
 #include "renderer/utility/paramarray.h"
 
+// appleseed.foundation headers.
+#include "foundation/math/transform.h"
+
 using namespace foundation;
 using namespace std;
 
@@ -105,7 +108,11 @@ void TestFixtureBase::create_texture_instance(const char* name, const char* text
     params.insert("filtering_mode", "bilinear");
 
     m_scene.texture_instances().insert(
-        TextureInstanceFactory::create(name, params, texture_name));
+        TextureInstanceFactory::create(
+            name,
+            params,
+            texture_name,
+            Transformd::identity()));
 }
 
 void TestFixtureBase::bind_inputs()

@@ -42,6 +42,7 @@
 #include "renderer/api/utility.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/transform.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/searchpaths.h"
 #include "foundation/utility/uid.h"
@@ -131,7 +132,8 @@ namespace
                 TextureInstanceFactory::create(
                     texture_instance_name.c_str(),
                     texture_instance_params,
-                    texture_name.c_str()));
+                    texture_name.c_str(),
+                    Transformd::identity()));
     }
 }
 
