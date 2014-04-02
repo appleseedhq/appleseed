@@ -69,25 +69,29 @@ UniqueID TextureInstance::get_class_uid()
 
 struct TextureInstance::Impl
 {
-    string                  m_texture_name;
+    // Order of data members impacts performance, preserve it.
     Transformd              m_transform;
+    string                  m_texture_name;
     LightingConditions      m_lighting_conditions;
 };
 
 TextureInstance::TextureInstance(
     const char*             name,
     const ParamArray&       params,
-    const char*             texture_name)
+    const char*             texture_name,
+    const Transformd&       transform)
   : Entity(g_class_uid, params)
   , impl(new Impl())
 {
     set_name(name);
 
+    impl->m_transform = transform;
     impl->m_texture_name = texture_name;
-    impl->m_transform = Transformd::identity();
 
     // todo: retrieve the lighting conditions.
     impl->m_lighting_conditions = LightingConditions(IlluminantCIED65, XYZCMFCIE196410Deg);
+
+    m_texture = 0;
 
     // Retrieve the texture addressing mode.
     const string addressing_mode = m_params.get_required<string>("addressing_mode", "wrap");
@@ -138,8 +142,6 @@ TextureInstance::TextureInstance(
 
     // Until a texture is bound, the effective alpha mode is simply the user-selected alpha mode.
     m_effective_alpha_mode = m_alpha_mode;
-
-    m_texture = 0;
 }
 
 TextureInstance::~TextureInstance()
@@ -152,17 +154,20 @@ void TextureInstance::release()
     delete this;
 }
 
+uint64 TextureInstance::compute_signature() const
+{
+    return
+        m_texture
+            ? combine_signatures(Entity::compute_signature(), m_texture->compute_signature())
+            : Entity::compute_signature();
+}
+
 const char* TextureInstance::get_texture_name() const
 {
     return impl->m_texture_name.c_str();
 }
 
-void TextureInstance::set_transform(const foundation::Transformd& transform)
-{
-    impl->m_transform = transform;
-}
-
-const foundation::Transformd& TextureInstance::get_transform() const
+const Transformd& TextureInstance::get_transform() const
 {
     return impl->m_transform;
 }
@@ -194,18 +199,6 @@ Texture* TextureInstance::find_texture() const
 void TextureInstance::unbind_texture()
 {
     m_texture = 0;
-}
-
-void TextureInstance::bind_texture(const TextureContainer& textures)
-{
-    if (m_texture == 0)
-        m_texture = textures.get_by_name(impl->m_texture_name.c_str());
-}
-
-void TextureInstance::check_texture() const
-{
-    if (m_texture == 0)
-        throw ExceptionUnknownEntity(impl->m_texture_name.c_str(), this);
 }
 
 namespace
@@ -247,22 +240,38 @@ namespace
     }
 }
 
+void TextureInstance::bind_texture(const TextureContainer& textures)
+{
+    if (m_texture == 0)
+    {
+        m_texture = textures.get_by_name(impl->m_texture_name.c_str());
+
+        // We need to resolve the alpha mode as soon as a texture is bound to this instance.
+        // We cannot do it in on_frame_begin() because the texture instance might be needed
+        // before it gets called. For instance, updating the trace context implies updating
+        // the intersection filters, and those need to be able to sample texture instances.
+        if (m_effective_alpha_mode == TextureAlphaModeDetect)
+        {
+            m_effective_alpha_mode = detect_alpha_mode(*m_texture);
+
+            RENDERER_LOG_DEBUG(
+                "texture instance \"%s\" was detected to use the \"%s\" alpha mode.",
+                get_name(),
+                m_effective_alpha_mode == TextureAlphaModeAlphaChannel ? "alpha_channel" : "luminance");
+        }
+    }
+}
+
+void TextureInstance::check_texture() const
+{
+    if (m_texture == 0)
+        throw ExceptionUnknownEntity(impl->m_texture_name.c_str(), this);
+}
+
 bool TextureInstance::on_frame_begin(
     const Project&          project,
     AbortSwitch*            abort_switch)
 {
-    assert(m_texture);
-
-    if (m_effective_alpha_mode == TextureAlphaModeDetect)
-    {
-        m_effective_alpha_mode = detect_alpha_mode(*m_texture);
-
-        RENDERER_LOG_DEBUG(
-            "texture instance \"%s\" was detected to use the \"%s\" alpha mode.",
-            get_name(),
-            m_effective_alpha_mode == TextureAlphaModeAlphaChannel ? "alpha_channel" : "luminance");
-    }
-
     return true;
 }
 
@@ -322,11 +331,16 @@ DictionaryArray TextureInstanceFactory::get_input_metadata()
 auto_release_ptr<TextureInstance> TextureInstanceFactory::create(
     const char*             name,
     const ParamArray&       params,
-    const char*             texture_name)
+    const char*             texture_name,
+    const Transformd&       transform)
 {
     return
         auto_release_ptr<TextureInstance>(
-            new TextureInstance(name, params, texture_name));
+            new TextureInstance(
+                name,
+                params,
+                texture_name,
+                transform));
 }
 
 }   // namespace renderer

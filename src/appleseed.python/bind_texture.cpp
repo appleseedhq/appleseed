@@ -32,6 +32,7 @@
 // appleseed.python headers.
 #include "bind_typed_entity_containers.h"
 #include "dict2dict.h"
+#include "unaligned_transformd44.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/texture.h"
@@ -46,10 +47,11 @@ using namespace renderer;
 
 namespace detail
 {
-    auto_release_ptr<Texture> create_texture(const std::string& texture_type,
-                                             const std::string& name,
-                                             const bpy::dict& params,
-                                             const bpy::list& search_paths)
+    auto_release_ptr<Texture> create_texture(
+        const std::string&              texture_type,
+        const std::string&              name,
+        const bpy::dict&                params,
+        const bpy::list&                search_paths)
     {
         TextureFactoryRegistrar factories;
         const ITextureFactory* factory = factories.lookup(texture_type.c_str());
@@ -81,25 +83,30 @@ namespace detail
         return auto_release_ptr<Texture>();
     }
 
-    auto_release_ptr<TextureInstance> create_texture_instance(const std::string& name,
-                                                              const bpy::dict& params,
-                                                              const std::string& texture_name)
+    auto_release_ptr<TextureInstance> create_texture_instance(
+        const std::string&              name,
+        const bpy::dict&                params,
+        const std::string&              texture_name,
+        const UnalignedTransformd44&    transform)
     {
-        return TextureInstanceFactory::create(name.c_str(), bpy_dict_to_param_array(params), texture_name.c_str());
+        return
+            TextureInstanceFactory::create(
+                name.c_str(),
+                bpy_dict_to_param_array(params),
+                texture_name.c_str(),
+                transform.as_foundation_transform());
     }
 }
 
 void bind_texture()
 {
     bpy::class_<Texture, auto_release_ptr<Texture>, bpy::bases<Entity>, boost::noncopyable>("Texture", bpy::no_init)
-        .def("__init__", bpy::make_constructor(detail::create_texture))
-        ;
+        .def("__init__", bpy::make_constructor(detail::create_texture));
 
     bind_typed_entity_vector<Texture>("TextureContainer");
 
     bpy::class_<TextureInstance, auto_release_ptr<TextureInstance>, bpy::bases<Entity>, boost::noncopyable>("TextureInstance", bpy::no_init)
-        .def("__init__", bpy::make_constructor(detail::create_texture_instance))
-        ;
+        .def("__init__", bpy::make_constructor(detail::create_texture_instance));
 
     bind_typed_entity_vector<TextureInstance>("TextureInstanceContainer");
 }

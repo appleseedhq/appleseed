@@ -421,6 +421,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_sampling.cpp
     foundation/meta/tests/test_scalar.cpp
     foundation/meta/tests/test_settings.cpp
+    foundation/meta/tests/test_siphash.cpp
     foundation/meta/tests/test_snprintf.cpp
     foundation/meta/tests/test_spectrum.cpp
     foundation/meta/tests/test_spline.cpp
@@ -691,6 +692,8 @@ set (foundation_utility_sources
     foundation/utility/searchpaths.cpp
     foundation/utility/searchpaths.h
     foundation/utility/settings.h
+    foundation/utility/siphash.cpp
+    foundation/utility/siphash.h
     foundation/utility/statistics.cpp
     foundation/utility/statistics.h
     foundation/utility/stopwatch.h

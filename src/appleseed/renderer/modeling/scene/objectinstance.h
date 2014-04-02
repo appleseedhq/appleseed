@@ -38,6 +38,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/transform.h"
 #include "foundation/platform/compiler.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/containers/array.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/uid.h"
@@ -79,6 +80,9 @@ class DLLSYMBOL ObjectInstance
 
     // Delete this instance.
     virtual void release() OVERRIDE;
+
+    // Compute and return the unique signature of this instance.
+    virtual foundation::uint64 compute_signature() const;
 
     // Return the name of the instantiated object.
     const char* get_object_name() const;

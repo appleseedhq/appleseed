@@ -1210,9 +1210,8 @@ namespace
                     TextureInstanceFactory::create(
                         m_name.c_str(),
                         m_params,
-                        m_texture.c_str());
-
-                m_texture_instance->set_transform(get_earliest_transform());
+                        m_texture.c_str(),
+                        get_earliest_transform());
             }
             catch (const ExceptionDictionaryItemNotFound& e)
             {

@@ -65,33 +65,39 @@ namespace detail
         }
     }
 
-    auto_release_ptr<ObjectInstance> create_obj_instance_with_back_mat(const std::string& name,
-                                                                       const bpy::dict& params,
-                                                                       const std::string& object_name,
-                                                                       const UnalignedTransformd44& transform,
-                                                                       const bpy::dict& front_material_mappings,
-                                                                       const bpy::dict& back_material_mappings)
+    auto_release_ptr<ObjectInstance> create_obj_instance_with_back_mat(
+        const std::string&              name,
+        const bpy::dict&                params,
+        const std::string&              object_name,
+        const UnalignedTransformd44&    transform,
+        const bpy::dict&                front_material_mappings,
+        const bpy::dict&                back_material_mappings)
     {
-        return ObjectInstanceFactory::create(name.c_str(),
-                                             bpy_dict_to_param_array(params),
-                                             object_name.c_str(),
-                                             transform.as_foundation_transform(),
-                                             bpy_dict_to_dictionary(front_material_mappings).strings(),
-                                             bpy_dict_to_dictionary(back_material_mappings).strings());
+        return
+            ObjectInstanceFactory::create(
+                name.c_str(),
+                bpy_dict_to_param_array(params),
+                object_name.c_str(),
+                transform.as_foundation_transform(),
+                bpy_dict_to_dictionary(front_material_mappings).strings(),
+                bpy_dict_to_dictionary(back_material_mappings).strings());
     }
 
-    auto_release_ptr<ObjectInstance> create_obj_instance(const std::string& name,
-                                                         const bpy::dict& params,
-                                                         const std::string& object_name,
-                                                         const UnalignedTransformd44& transform,
-                                                         const bpy::dict& front_material_mappings)
+    auto_release_ptr<ObjectInstance> create_obj_instance(
+        const std::string&              name,
+        const bpy::dict&                params,
+        const std::string&              object_name,
+        const UnalignedTransformd44&    transform,
+        const bpy::dict&                front_material_mappings)
     {
-        return create_obj_instance_with_back_mat(name,
-                                                 params,
-                                                 object_name,
-                                                 transform,
-                                                 front_material_mappings,
-                                                 bpy::dict());
+        return
+            create_obj_instance_with_back_mat(
+                name,
+                params,
+                object_name,
+                transform,
+                front_material_mappings,
+                bpy::dict());
     }
 
     UnalignedTransformd44 obj_inst_get_transform(const ObjectInstance* obj)

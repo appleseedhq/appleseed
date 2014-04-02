@@ -31,7 +31,6 @@
 #include "intersectionfilter.h"
 
 // appleseed.renderer headers.
-#include "renderer/global/globallogger.h"
 #include "renderer/kernel/tessellation/statictessellation.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/input/texturesource.h"
@@ -117,20 +116,62 @@ IntersectionFilter::IntersectionFilter(
     Object&                 object,
     const MaterialArray&    materials,
     TextureCache&           texture_cache)
-  : m_alpha_masks(materials.size(), 0)
 {
-    // Create one alpha mask per material.
+    // Initialize the material -> alpha mask mapping.
+    m_alpha_map_signatures.assign(materials.size(), 0);
+    m_alpha_masks.assign(materials.size(), 0);
+
+    // Create alpha masks.
+    update(materials, texture_cache);
+
+    if (has_alpha_masks())
+    {
+        // Make a local copy of the object's UV coordinates.
+        m_uv.reserve(get_triangle_count(object) * 3);
+        copy_uv_coordinates(object, m_uv);
+    }
+}
+
+IntersectionFilter::~IntersectionFilter()
+{
+    for (size_t i = 0; i < m_alpha_masks.size(); ++i)
+        delete m_alpha_masks[i];
+}
+
+namespace
+{
+    template <typename T>
+    void delete_and_clear(T*& ptr)
+    {
+        delete ptr;
+        ptr = 0;
+    }
+}
+
+void IntersectionFilter::update(
+    const MaterialArray&    materials,
+    TextureCache&           texture_cache)
+{
+    assert(m_alpha_map_signatures.size() == materials.size());
+    assert(m_alpha_masks.size() == materials.size());
+
     for (size_t i = 0; i < materials.size(); ++i)
     {
         // Retrieve the material.
         const Material* material = materials[i];
         if (material == 0)
+        {
+            delete_and_clear(m_alpha_masks[i]);
             continue;
+        }
 
         // Intersection filters would prevent shading fully transparent shading points,
         // so don't create one if shading fully transparent shading points is enabled.
         if (material->shade_alpha_cutouts())
+        {
+            delete_and_clear(m_alpha_masks[i]);
             continue;
+        }
 
         // Use the uncached version of get_alpha_map() since at this point
         // on_frame_begin() hasn't been called on the materials, when
@@ -138,6 +179,14 @@ IntersectionFilter::IntersectionFilter(
         // prior to rendering.
         const Source* alpha_map = material->get_uncached_alpha_map();
         if (alpha_map == 0)
+        {
+            delete_and_clear(m_alpha_masks[i]);
+            continue;
+        }
+
+        // Don't do anything if there is already an alpha mask and it is up-to-date.
+        const uint64 alpha_map_sig = alpha_map->compute_signature();
+        if (m_alpha_masks[i] != 0 && alpha_map_sig == m_alpha_map_signatures[i])
             continue;
 
         // Build the alpha mask.
@@ -150,32 +199,16 @@ IntersectionFilter::IntersectionFilter(
 
         // Discard the alpha mask if it's mostly opaque.
         if (transparency < 5.0 / 100)
+        {
+            delete_and_clear(m_alpha_masks[i]);
             continue;
+        }
 
         // Store the alpha mask.
-        m_alpha_masks[i] = alpha_mask.release();
-    }
-
-    if (has_alpha_masks())
-    {
-        // Make a local copy of the object's UV coordinates.
-        m_uv.reserve(get_triangle_count(object) * 3);
-        copy_uv_coordinates(object, m_uv);
-
-        RENDERER_LOG_DEBUG(
-            "created intersection filter for object \"%s\" with " FMT_SIZE_T " material%s (masks: %s, uvs: %s).",
-            object.get_name(),
-            materials.size(),
-            materials.size() > 1 ? "s" : "",
-            pretty_size(get_masks_memory_size()).c_str(),
-            pretty_size(m_uv.capacity() * sizeof(Vector2f)).c_str());
-    }
-}
-
-IntersectionFilter::~IntersectionFilter()
-{
-    for (size_t i = 0; i < m_alpha_masks.size(); ++i)
         delete m_alpha_masks[i];
+        m_alpha_masks[i] = alpha_mask.release();
+        m_alpha_map_signatures[i] = alpha_map_sig;
+    }
 }
 
 bool IntersectionFilter::has_alpha_masks() const
@@ -187,6 +220,24 @@ bool IntersectionFilter::has_alpha_masks() const
     }
 
     return false;
+}
+
+size_t IntersectionFilter::get_masks_memory_size() const
+{
+    size_t size = 0;
+
+    for (size_t i = 0; i < m_alpha_masks.size(); ++i)
+    {
+        if (m_alpha_masks[i])
+            size += m_alpha_masks[i]->get_memory_size();
+    }
+
+    return size;
+}
+
+size_t IntersectionFilter::get_uv_memory_size() const
+{
+    return m_uv.capacity() * sizeof(Vector2f);
 }
 
 IntersectionFilter::AlphaMask* IntersectionFilter::create_alpha_mask(
@@ -243,19 +294,6 @@ IntersectionFilter::AlphaMask* IntersectionFilter::create_alpha_mask(
     transparency = static_cast<double>(transparent_texel_count) / (width * height);
 
     return alpha_mask;
-}
-
-size_t IntersectionFilter::get_masks_memory_size() const
-{
-    size_t size = 0;
-
-    for (size_t i = 0; i < m_alpha_masks.size(); ++i)
-    {
-        if (m_alpha_masks[i])
-            size += m_alpha_masks[i]->get_memory_size();
-    }
-
-    return size;
 }
 
 }   // namespace renderer

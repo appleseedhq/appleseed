@@ -37,6 +37,8 @@
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
 #include "foundation/platform/compiler.h"
+#include "foundation/platform/types.h"
+#include "foundation/utility/siphash.h"
 
 namespace renderer
 {
@@ -51,6 +53,9 @@ class ScalarSource
   public:
     // Constructor.
     explicit ScalarSource(const double scalar);
+
+    // Compute a signature unique to this source.
+    virtual foundation::uint64 compute_signature() const OVERRIDE;
 
     // Evaluate the source.
     virtual void evaluate_uniform(
@@ -81,6 +86,11 @@ inline ScalarSource::ScalarSource(const double scalar)
   : Source(true)
   , m_scalar(scalar)
 {
+}
+
+inline foundation::uint64 ScalarSource::compute_signature() const
+{
+    return foundation::siphash24(&m_scalar, sizeof(m_scalar));
 }
 
 inline void ScalarSource::evaluate_uniform(

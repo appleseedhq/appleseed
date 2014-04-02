@@ -428,7 +428,7 @@ TriangleTree::TriangleTree(const Arguments& arguments)
 
     // Create intersection filters.
     if (m_arguments.m_assembly.get_parameters().get_optional<bool>("enable_intersection_filters", true))
-        create_intersection_filters();
+        update_intersection_filters();
 }
 
 TriangleTree::~TriangleTree()
@@ -443,9 +443,9 @@ TriangleTree::~TriangleTree()
 void TriangleTree::update_non_geometry()
 {
     // Update intersection filters.
-    delete_intersection_filters();
     if (m_arguments.m_assembly.get_parameters().get_optional<bool>("enable_intersection_filters", true))
-        create_intersection_filters();
+        update_intersection_filters();
+    else delete_intersection_filters();
 }
 
 size_t TriangleTree::get_memory_size() const
@@ -1058,18 +1058,33 @@ namespace
         }
     };
 
+    // Hash a filter key.
+    uint64 hash(const FilterKey& key)
+    {
+        uint64 h = key.m_object->compute_signature();
+
+        for (size_t i = 0; i < key.m_materials.size(); ++i)
+        {
+            const Material* material = key.m_materials[i];
+
+            if (material)
+                h = Entity::combine_signatures(h, material->compute_signature());
+        }
+
+        return h;
+    }
+
     typedef set<size_t> IndexSet;
     typedef set<FilterKey> FilterKeySet;
     typedef map<size_t, const FilterKey*> IndexToFilterKeyMap;
-    typedef map<const FilterKey*, const IntersectionFilter*> IntersectionFilterMap;
 
     // Collect the set of object instances referenced by a set of regions.
-    void collect_object_instance_indices(
+    void collect_object_instances(
         const RegionInfoVector&             regions,
-        IndexSet&                           object_instance_indices)
+        IndexSet&                           object_instances)
     {
         for (const_each<RegionInfoVector> i = regions; i; ++i)
-            object_instance_indices.insert(i->get_object_instance_index());
+            object_instances.insert(i->get_object_instance_index());
     }
 
     // Create filter keys for a set of object instances, and establish an (object instance) -> (filter key) mapping.
@@ -1096,19 +1111,31 @@ namespace
         }
     }
 
-    // Create intersection filters for a set of filter keys.
-    void do_create_intersection_filters(
+    // Create intersection filters for filter keys that don't already have one.
+    void create_missing_intersection_filters(
         TextureCache&                       texture_cache,
         const FilterKeySet&                 filter_keys,
-        IntersectionFilterMap&              intersection_filters)
+        IntersectionFilterRepository&       filters)
     {
         for (const_each<FilterKeySet> i = filter_keys; i; ++i)
         {
             const FilterKey& filter_key = *i;
 
-            // No intersection filter for this key if it doesn't reference any alpha map.
+            // Don't create intersection filters for keys that don't reference any alpha map.
             if (!filter_key.has_alpha_maps())
                 continue;
+
+            // Update existing intersection filters.
+            const uint64 filter_key_hash = hash(filter_key);
+            const IntersectionFilterRepository::const_iterator it = filters.find(filter_key_hash);
+            if (it != filters.end())
+            {
+                it->second->update(filter_key.m_materials, texture_cache);
+                RENDERER_LOG_DEBUG(
+                    "updated intersection filter with filter key hash 0x%llx.",
+                    filter_key_hash);
+                continue;
+            }
 
             // Create an intersection filter for this key.
             auto_ptr<IntersectionFilter> intersection_filter(
@@ -1117,58 +1144,125 @@ namespace
                     filter_key.m_materials,
                     texture_cache));
 
-            // Store this intersection filter if it's useful.
-            if (intersection_filter->has_alpha_masks())
-                intersection_filters[&filter_key] = intersection_filter.release();
+            // Discard intersection filters that don't have any alpha masks.
+            if (!intersection_filter->has_alpha_masks())
+                continue;
+
+            RENDERER_LOG_DEBUG(
+                "created intersection filter for object \"%s\" with " FMT_SIZE_T " material%s (masks: %s, uvs: %s, filter key hash: 0x%llx).",
+                filter_key.m_object->get_name(),
+                filter_key.m_materials.size(),
+                filter_key.m_materials.size() > 1 ? "s" : "",
+                pretty_size(intersection_filter->get_masks_memory_size()).c_str(),
+                pretty_size(intersection_filter->get_masks_memory_size()).c_str(),
+                filter_key_hash);
+
+            // Store this intersection filter.
+            filters[filter_key_hash] = intersection_filter.release();
+        }
+    }
+
+    // Delete and remove intersection filters that don't correspond to any filter key.
+    void delete_unreferenced_intersection_filters(
+        const FilterKeySet&                 filter_keys,
+        IntersectionFilterRepository&       repository)
+    {
+        if (repository.empty())
+            return;
+
+        set<uint64> hashes;
+
+        for (const_each<FilterKeySet> i = filter_keys; i; ++i)
+            hashes.insert(hash(*i));
+
+        for (IntersectionFilterRepository::iterator i = repository.begin(); i != repository.end(); )
+        {
+            const uint64 filter_key_hash = i->first;
+
+            if (hashes.find(filter_key_hash) == hashes.end())
+            {
+                delete i->second;
+                repository.erase(i++);
+
+                RENDERER_LOG_DEBUG(
+                    "deleted intersection filter with filter key hash 0x%llx.",
+                    filter_key_hash);
+            }
+            else ++i;
+        }
+    }
+
+    void map_object_instances_to_intersection_filters(
+        const IndexSet&                     object_instances,
+        const IndexToFilterKeyMap&          object_instances_to_filter_keys,
+        const IntersectionFilterRepository& repository,
+        vector<const IntersectionFilter*>&  filters)
+    {
+        if (!object_instances.empty())
+        {
+            const size_t max_object_instance_index =
+                *max_element(object_instances.begin(), object_instances.end());
+
+            filters.assign(max_object_instance_index + 1, 0);
+
+            if (!repository.empty())
+            {
+                for (const_each<IndexToFilterKeyMap> i = object_instances_to_filter_keys; i; ++i)
+                {
+                    const size_t object_instance_index = i->first;
+                    const FilterKey* filter_key = i->second;
+
+                    const IntersectionFilterRepository::const_iterator it =
+                        repository.find(hash(*filter_key));
+
+                    if (it != repository.end())
+                        filters[object_instance_index] = it->second;
+                }
+            }
         }
     }
 }
 
-void TriangleTree::create_intersection_filters()
+void TriangleTree::update_intersection_filters()
 {
-    // Collect object instance indices.
-    IndexSet object_instance_indices;
-    collect_object_instance_indices(
-        m_arguments.m_regions,
-        object_instance_indices);
+    // Collect object instances.
+    IndexSet object_instances;
+    collect_object_instances(m_arguments.m_regions, object_instances);
 
-    // Create filter keys.
+    // Create filter keys and map object instances to filter keys.
     FilterKeySet filter_keys;
     IndexToFilterKeyMap object_instances_to_filter_keys;
     create_filter_keys(
         m_arguments.m_assembly.object_instances(),
-        object_instance_indices,
+        object_instances,
         filter_keys,
         object_instances_to_filter_keys);
 
-    // Create intersection filters.
-    IntersectionFilterMap intersection_filters;
+    // Create missing intersection filters and update existing ones.
     TextureStore texture_store(m_arguments.m_scene);
     TextureCache texture_cache(texture_store);
-    do_create_intersection_filters(
+    create_missing_intersection_filters(
         texture_cache,
         filter_keys,
-        intersection_filters);
+        m_intersection_filters_repository);
 
-    // Store the intersection filters in the repository.
-    assert(m_intersection_filters_repository.empty());
-    m_intersection_filters_repository.reserve(intersection_filters.size());
-    for (const_each<IntersectionFilterMap> i = intersection_filters; i; ++i)
-        m_intersection_filters_repository.push_back(i->second);
+    // Delete intersection filters that are no longer referenced.
+    delete_unreferenced_intersection_filters(
+        filter_keys,
+        m_intersection_filters_repository);
 
-    // Map intersection filters to object instance indices.
-    assert(!object_instance_indices.empty());
-    const size_t max_object_instance_index =
-        *max_element(object_instance_indices.begin(), object_instance_indices.end());
-    m_intersection_filters.assign(max_object_instance_index + 1, 0);
-    for (const_each<IndexToFilterKeyMap> i = object_instances_to_filter_keys; i; ++i)
-        m_intersection_filters[i->first] = intersection_filters[i->second];
+    // Map object instances to intersection filters.
+    map_object_instances_to_intersection_filters(
+        object_instances,
+        object_instances_to_filter_keys,
+        m_intersection_filters_repository,
+        m_intersection_filters);
 }
 
 void TriangleTree::delete_intersection_filters()
 {
-    for (size_t i = 0; i < m_intersection_filters_repository.size(); ++i)
-        delete m_intersection_filters_repository[i];
+    for (const_each<IntersectionFilterRepository> i = m_intersection_filters_repository; i; ++i)
+        delete i->second;
 
     m_intersection_filters_repository.clear();
     m_intersection_filters.clear();

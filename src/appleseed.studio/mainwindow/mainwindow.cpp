@@ -843,7 +843,8 @@ void MainWindow::set_rendering_widgets_enabled(const bool is_enabled, const bool
     if (is_project_open)
     {
         const int current_tab_index = m_ui->tab_render_channels->currentIndex();
-        m_tab_index_to_render_tab[current_tab_index]->set_clear_frame_button_enabled(!is_rendering);        
+        if (current_tab_index != -1)
+            m_tab_index_to_render_tab[current_tab_index]->set_clear_frame_button_enabled(!is_rendering);        
     }
 }
 

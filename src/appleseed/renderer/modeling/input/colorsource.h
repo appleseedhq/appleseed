@@ -38,6 +38,7 @@
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
 #include "foundation/platform/compiler.h"
+#include "foundation/platform/types.h"
 
 // Forward declarations.
 namespace renderer  { class ColorEntity; }
@@ -60,6 +61,9 @@ class ColorSource
 
     // Retrieve the color entity used by this source.
     const ColorEntity& get_color_entity() const;
+
+    // Compute a signature unique to this source.
+    virtual foundation::uint64 compute_signature() const OVERRIDE;
 
     // Evaluate the source.
     virtual void evaluate_uniform(

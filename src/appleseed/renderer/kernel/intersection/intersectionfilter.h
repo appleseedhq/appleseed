@@ -37,6 +37,7 @@
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/bitmask.h"
 
 // Standard headers.
@@ -64,7 +65,14 @@ class IntersectionFilter
 
     ~IntersectionFilter();
 
+    void update(
+        const MaterialArray&    materials,
+        TextureCache&           texture_cache);
+
     bool has_alpha_masks() const;
+
+    size_t get_masks_memory_size() const;
+    size_t get_uv_memory_size() const;
 
     bool accept(
         const TriangleKey&      triangle_key,
@@ -115,6 +123,7 @@ class IntersectionFilter
         foundation::BitMask2    m_bitmask;
     };
 
+    std::vector<foundation::uint64>     m_alpha_map_signatures;
     std::vector<AlphaMask*>             m_alpha_masks;
     std::vector<foundation::Vector2f>   m_uv;
 
@@ -122,8 +131,6 @@ class IntersectionFilter
         const Source*           alpha_map,
         TextureCache&           texture_cache,
         double&                 transparency);
-
-    size_t get_masks_memory_size() const;
 };
 
 
