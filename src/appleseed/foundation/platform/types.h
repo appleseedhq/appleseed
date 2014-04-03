@@ -141,7 +141,7 @@ BOOST_STATIC_ASSERT(sizeof(isize_t) == sizeof(size_t));
 
     #define FMT_SIZE_T "%zu"
 
-// Other platform: abort compilation.
+// Other compilers: abort compilation.
 #else
     #error Format strings are not defined on this platform.
 #endif
