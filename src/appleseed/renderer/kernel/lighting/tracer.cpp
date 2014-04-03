@@ -70,6 +70,7 @@ namespace
             {
                 if (materials[i]->has_alpha_map())
                     return true;
+
 #ifdef WITH_OSL
                 if (materials[i]->has_osl_surface())
                     return materials[i]->get_uncached_osl_surface()->has_transparency();
