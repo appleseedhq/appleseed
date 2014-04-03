@@ -198,7 +198,7 @@ bool Material::on_frame_begin(
         if (m_edf && m_alpha_map)
         {
             RENDERER_LOG_WARNING(
-                "%s: material is emitting light but may be partially or entirely transparent;"
+                "%s: material is emitting light but may be partially or entirely transparent; "
                 "this may lead to unexpected or unphysical results.",
                 context.get());
         }
