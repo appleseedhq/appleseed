@@ -188,7 +188,7 @@ namespace
           : m_scene(scene)
           , m_light_sampler(light_sampler)
           , m_texture_cache(texture_store)
-          , m_intersector(trace_context, m_texture_cache /*, m_params.m_report_self_intersections*/)
+          , m_intersector(trace_context, m_texture_cache)
           , m_params(params)
           , m_global_photons(global_photons)
           , m_photon_begin(photon_begin)
@@ -204,6 +204,8 @@ namespace
 #ifdef WITH_OSL
                 &m_shadergroup_exec,
 #endif
+                m_params.m_transparency_threshold,
+                m_params.m_max_iterations,
                 false)
           , m_shading_context(
                 m_intersector,
@@ -430,7 +432,7 @@ namespace
           , m_env_edf(*scene.get_environment()->get_environment_edf())
           , m_light_sampler(light_sampler)
           , m_texture_cache(texture_store)
-          , m_intersector(trace_context, m_texture_cache /*, m_params.m_report_self_intersections*/)
+          , m_intersector(trace_context, m_texture_cache)
           , m_params(params)
           , m_global_photons(global_photons)
           , m_photon_begin(photon_begin)
@@ -449,6 +451,8 @@ namespace
 #ifdef WITH_OSL
                 &m_shadergroup_exec,
 #endif
+                m_params.m_transparency_threshold,
+                m_params.m_max_iterations,
                 false)
           , m_shading_context(
                 m_intersector, 

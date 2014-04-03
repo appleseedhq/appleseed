@@ -57,6 +57,7 @@ struct SPPMParameters
     const size_t    m_path_tracing_max_path_length;         // maximum path tracing path length, ~0 for unlimited
     const size_t    m_path_tracing_rr_min_path_length;      // minimum path tracing path length before Russian Roulette kicks in, ~0 for unlimited
 
+    const float     m_transparency_threshold;
     const size_t    m_max_iterations;                       // maximum number of iteration during path tracing
 
     const float     m_initial_radius_percents;              // initial lookup radius as a percentage of the scene diameter
