@@ -746,7 +746,8 @@ void MainWindow::update_project_explorer()
                 m_attribute_editor,
                 *m_project_manager.get_project(),
                 m_rendering_manager,
-                m_settings);
+                m_settings,
+                m_ui->lineedit_filter);
 
         connect(
             m_project_explorer, SIGNAL(signal_project_modified()),

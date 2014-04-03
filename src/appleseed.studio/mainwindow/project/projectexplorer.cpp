@@ -37,6 +37,7 @@
 
 // Qt headers.
 #include <QKeySequence>
+#include <QLineEdit>
 #include <QMenu>
 #include <QPoint>
 #include <QRect>
@@ -61,10 +62,12 @@ ProjectExplorer::ProjectExplorer(
     AttributeEditor*    attribute_editor,
     Project&            project,
     RenderingManager&   rendering_manager,
-    ParamArray&         settings)
+    ParamArray&         settings,
+    QLineEdit*          lineedit_filter)
   : m_tree_widget(tree_widget)
   , m_attribute_editor(attribute_editor)
   , m_project_builder(project, rendering_manager)
+  , m_lineedit_filter(lineedit_filter)
 {
     m_tree_widget->setContextMenuPolicy(Qt::CustomContextMenu);
 
@@ -231,6 +234,7 @@ void ProjectExplorer::slot_item_selection_changed()
     {
         static_cast<ItemBase*>(selected_items.first())->slot_edit(m_attribute_editor);
         m_tree_widget->setFocus();
+        m_lineedit_filter->clear();
     }
 }
 

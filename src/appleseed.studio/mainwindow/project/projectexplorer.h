@@ -71,7 +71,8 @@ class ProjectExplorer
         AttributeEditor*        attribute_editor,
         renderer::Project&      project,
         RenderingManager&       rendering_manager,
-        renderer::ParamArray&   settings);
+        renderer::ParamArray&   settings,
+        QLineEdit*              lineedit_filter);
 
     ~ProjectExplorer();
 
@@ -89,6 +90,7 @@ class ProjectExplorer
     AttributeEditor*            m_attribute_editor;
     ProjectBuilder              m_project_builder;
     std::auto_ptr<QShortcut>    m_delete_shortcut;
+    QLineEdit*                  m_lineedit_filter;
 
     QMenu* build_single_item_context_menu(QTreeWidgetItem* item) const;
     QMenu* build_multiple_items_context_menu(const QList<QTreeWidgetItem*>& item_widgets) const;
