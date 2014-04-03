@@ -200,11 +200,11 @@ namespace
           , m_tracer(
                 m_scene,
                 m_intersector,
-                m_texture_cache
+                m_texture_cache,
 #ifdef WITH_OSL
-                , &m_shadergroup_exec
+                &m_shadergroup_exec,
 #endif
-                )
+                false)
           , m_shading_context(
                 m_intersector,
                 m_tracer,
@@ -445,11 +445,11 @@ namespace
           , m_tracer(
                 m_scene, 
                 m_intersector, 
-                m_texture_cache
+                m_texture_cache,
 #ifdef WITH_OSL
-                , &m_shadergroup_exec
+                &m_shadergroup_exec,
 #endif
-                )
+                false)
           , m_shading_context(
                 m_intersector, 
                 m_tracer, 
