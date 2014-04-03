@@ -94,9 +94,7 @@ namespace
 
                 if (primary)
                 {
-                    const int passes = params.get_optional<int>("passes", 1);
-
-                    if (passes > 1)
+                    if (params.get_optional<size_t>("passes", 1) > 1)
                         RENDERER_LOG_WARNING("doing multipass rendering with pixel decorrelation off.");
 
                     RENDERER_LOG_INFO(
