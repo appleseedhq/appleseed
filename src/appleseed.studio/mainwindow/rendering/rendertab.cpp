@@ -358,6 +358,9 @@ void RenderTab::recreate_handlers()
     // Initially, the picking handler is active and the render region is inactive.
     m_picking_handler->set_enabled(true);
     m_render_region_handler->set_enabled(false);
+
+    connect(m_picking_handler.get(), SIGNAL(signal_entity_picked()),
+        SIGNAL(signal_entity_picked()));
 }
 
 void RenderTab::set_clear_frame_button_enabled(const bool enabled)

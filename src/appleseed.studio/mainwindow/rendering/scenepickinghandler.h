@@ -67,6 +67,9 @@ class ScenePickingHandler
 
     void set_enabled(const bool enabled);
 
+  signals:
+    void signal_entity_picked();
+
   private:
     QWidget*                                m_widget;
     QComboBox*                              m_picking_mode_combo;
