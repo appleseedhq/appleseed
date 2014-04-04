@@ -264,7 +264,8 @@ namespace
 
             // Apply clamping.
             // todo: mark clamped pixels in the diagnostic map.
-            color = Clamp ? saturate(color) : clamp_low(color, 0.0f);
+            if (Clamp)
+                color = saturate(color);
 
             // Apply gamma correction.
             if (GammaCorrect)
@@ -308,7 +309,6 @@ namespace
             // todo: mark clamped pixels in the diagnostic map.
             if (Clamp)
                 color = _mm_min_ps(_mm_max_ps(color, _mm_set1_ps(0.0f)), _mm_set1_ps(1.0f));
-            else color = _mm_max_ps(color, _mm_set1_ps(0.0f));
 
             // Apply gamma correction.
             if (GammaCorrect)
@@ -345,7 +345,8 @@ namespace
 
             // Apply clamping.
             // todo: mark clamped pixels in the diagnostic map.
-            color = Clamp ? saturate(color) : clamp_low(color, 0.0f);
+            if (Clamp)
+                color = saturate(color);
 
             // Apply gamma correction.
             if (GammaCorrect)
