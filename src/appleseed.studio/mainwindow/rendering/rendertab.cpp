@@ -342,6 +342,9 @@ void RenderTab::recreate_handlers()
             *m_mouse_tracker.get(),
             m_project_explorer,
             m_project));
+    connect(
+        m_picking_handler.get(), SIGNAL(signal_entity_picked()),
+        SIGNAL(signal_entity_picked()));
 
     // Handler for defining render regions with the mouse.
     m_render_region_handler.reset(
@@ -358,9 +361,6 @@ void RenderTab::recreate_handlers()
     // Initially, the picking handler is active and the render region is inactive.
     m_picking_handler->set_enabled(true);
     m_render_region_handler->set_enabled(false);
-
-    connect(m_picking_handler.get(), SIGNAL(signal_entity_picked()),
-        SIGNAL(signal_entity_picked()));
 }
 
 void RenderTab::set_clear_frame_button_enabled(const bool enabled)

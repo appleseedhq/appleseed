@@ -204,7 +204,7 @@ void ScenePickingHandler::pick(const QPoint& point)
         RENDERER_LOG_INFO("the scene must be rendering or must have been rendered at least once for picking to be available.");
         return;
     }
-    emit signal_entity_picked();
+
     const Vector2i pix = m_mouse_tracker.widget_to_pixel(point);
     const Vector2d ndc = m_mouse_tracker.widget_to_ndc(point);
 
@@ -237,6 +237,8 @@ void ScenePickingHandler::pick(const QPoint& point)
     if (picked_entity)
         m_project_explorer.highlight_entity(picked_entity->get_uid());
     else m_project_explorer.clear_highlighting();
+
+    emit signal_entity_picked();
 }
 
 void ScenePickingHandler::set_rgba_label(const QPoint& point) const 
