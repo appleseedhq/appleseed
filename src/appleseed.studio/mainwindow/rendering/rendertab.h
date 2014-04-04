@@ -102,6 +102,7 @@ class RenderTab
     void signal_render_widget_context_menu(const QPoint& point);
     void signal_reset_zoom();
     void signal_clear_frame();
+    void signal_entity_picked();
 
   private slots:
     void slot_render_widget_context_menu(const QPoint& point);
