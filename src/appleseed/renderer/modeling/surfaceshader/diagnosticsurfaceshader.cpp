@@ -78,6 +78,7 @@ const KeyValuePair<const char*, DiagnosticSurfaceShader::ShadingMode>
     { "geometric_normal",           GeometricNormal },
     { "shading_normal",             ShadingNormal },
     { "original_shading_normal",    OriginalShadingNormal },
+    { "world_space_position",       WorldSpacePosition },
     { "sides",                      Sides },
     { "depth",                      Depth },
     { "screen_space_wireframe" ,    ScreenSpaceWireframe },
@@ -100,6 +101,7 @@ const KeyValuePair<const char*, const char*> DiagnosticSurfaceShader::ShadingMod
     { "geometric_normal",           "Geometric Normals" },
     { "shading_normal",             "Shading Normals" },
     { "original_shading_normal",    "Original Shading Normals" },
+    { "world_space_position",       "World Space Position" },
     { "sides",                      "Sides" },
     { "depth",                      "Depth" },
     { "screen_space_wireframe" ,    "Screen-space Wireframe" },
@@ -234,6 +236,14 @@ void DiagnosticSurfaceShader::evaluate(
       case OriginalShadingNormal:
         shading_result.set_main_to_linear_rgb(
             vector3_to_color(shading_point.get_original_shading_normal()));
+        break;
+
+      case WorldSpacePosition:
+        {
+            const Vector3d& p = shading_point.get_point();
+            shading_result.set_main_to_linear_rgb(
+                Color3f(Color3d(p.x, p.y, p.z)));
+        }
         break;
 
       case Sides:
