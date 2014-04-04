@@ -158,15 +158,16 @@ bool ScenePickingHandler::eventFilter(QObject* object, QEvent* event)
 
 namespace
 {
-    void print_entity(stringstream& sstr, const char* label, const Entity* entity)
+    string print_entity(const char* label, const Entity* entity)
     {
+        stringstream sstr;
         sstr << label;
 
         if (entity)
             sstr << "\"" << entity->get_name() << "\" (#" << entity->get_uid() << ")";
         else sstr << "n/a";
 
-        sstr << endl;
+        return sstr.str();
     }
 
     const Entity* get_picked_entity(
@@ -217,15 +218,15 @@ void ScenePickingHandler::pick(const QPoint& point)
     sstr << "  pixel coords     " << pix.x << ", " << pix.y << endl;
     sstr << "  ndc coords       " << ndc.x << ", " << ndc.y << endl;
 
-    print_entity(sstr, "  camera           ", result.m_camera);
-    print_entity(sstr, "  assembly inst.   ", result.m_assembly_instance);
-    print_entity(sstr, "  assembly         ", result.m_assembly);
-    print_entity(sstr, "  object inst.     ", result.m_object_instance);
-    print_entity(sstr, "  object           ", result.m_object);
-    print_entity(sstr, "  material         ", result.m_material);
-    print_entity(sstr, "  surface shader   ", result.m_surface_shader);
-    print_entity(sstr, "  bsdf             ", result.m_bsdf);
-    print_entity(sstr, "  edf              ", result.m_edf);
+    sstr << print_entity("  camera           ", result.m_camera) << endl;
+    sstr << print_entity("  assembly inst.   ", result.m_assembly_instance) << endl;
+    sstr << print_entity("  assembly         ", result.m_assembly) << endl;
+    sstr << print_entity("  object inst.     ", result.m_object_instance) << endl;
+    sstr << print_entity("  object           ", result.m_object) << endl;
+    sstr << print_entity("  material         ", result.m_material) << endl;
+    sstr << print_entity("  surface shader   ", result.m_surface_shader) << endl;
+    sstr << print_entity("  bsdf             ", result.m_bsdf) << endl;
+    sstr << print_entity("  edf              ", result.m_edf);
 
     RENDERER_LOG_INFO("%s", sstr.str().c_str());
 
