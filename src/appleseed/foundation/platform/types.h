@@ -122,23 +122,26 @@ BOOST_STATIC_ASSERT(sizeof(isize_t) == sizeof(size_t));
 // Visual C++.
 #if defined _MSC_VER
 
-    #define FMT_UINT64 "%llu"
-    #define FMT_SIZE_T "%Iu"
+    #define FMT_UINT64          "%llu"
+    #define FMT_UINT64_HEX      "%llx"
+    #define FMT_SIZE_T          "%Iu"
 
 // gcc.
 #elif defined __GNUC__
 
     #if defined ARCH32
-        #define FMT_UINT64 "%llu"
+        #define FMT_UINT64      "%llu"
+        #define FMT_UINT64_HEX  "%llx"
     #elif defined ARCH64
-        #define FMT_UINT64 "%lu"
+        #define FMT_UINT64      "%lu"
+        #define FMT_UINT64_HEX  "%lx"
     #else
         #error Cannot determine machine architecture.
     #endif
 
     #define FMT_SIZE_T "%zu"
 
-// Other platform: abort compilation.
+// Other compilers: abort compilation.
 #else
     #error Format strings are not defined on this platform.
 #endif

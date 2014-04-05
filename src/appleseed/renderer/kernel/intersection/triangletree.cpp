@@ -1132,7 +1132,7 @@ namespace
             {
                 it->second->update(filter_key.m_materials, texture_cache);
                 RENDERER_LOG_DEBUG(
-                    "updated intersection filter with filter key hash 0x%llx.",
+                    "updated intersection filter with filter key hash 0x" FMT_UINT64_HEX ".",
                     filter_key_hash);
                 continue;
             }
@@ -1149,7 +1149,8 @@ namespace
                 continue;
 
             RENDERER_LOG_DEBUG(
-                "created intersection filter for object \"%s\" with " FMT_SIZE_T " material%s (masks: %s, uvs: %s, filter key hash: 0x%llx).",
+                "created intersection filter for object \"%s\" with " FMT_SIZE_T " material%s "
+                "(masks: %s, uvs: %s, filter key hash: 0x" FMT_UINT64_HEX ").",
                 filter_key.m_object->get_name(),
                 filter_key.m_materials.size(),
                 filter_key.m_materials.size() > 1 ? "s" : "",
@@ -1185,7 +1186,7 @@ namespace
                 repository.erase(i++);
 
                 RENDERER_LOG_DEBUG(
-                    "deleted intersection filter with filter key hash 0x%llx.",
+                    "deleted intersection filter with filter key hash 0x" FMT_UINT64_HEX ".",
                     filter_key_hash);
             }
             else ++i;

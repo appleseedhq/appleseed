@@ -342,6 +342,9 @@ void RenderTab::recreate_handlers()
             *m_mouse_tracker.get(),
             m_project_explorer,
             m_project));
+    connect(
+        m_picking_handler.get(), SIGNAL(signal_entity_picked()),
+        SIGNAL(signal_entity_picked()));
 
     // Handler for defining render regions with the mouse.
     m_render_region_handler.reset(

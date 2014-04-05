@@ -75,6 +75,7 @@ class DLLSYMBOL DiagnosticSurfaceShader
         GeometricNormal,            // shade according to the geometric normal
         ShadingNormal,              // shade according to the (possibly modified) shading normal
         OriginalShadingNormal,      // shade according to the original shading normal
+        WorldSpacePosition,         // shade according to the world space position
         Sides,                      // shade according to the surface side
         Depth,                      // shade according to distance from camera
         ScreenSpaceWireframe,       // screen-space wireframe

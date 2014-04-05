@@ -56,7 +56,8 @@ namespace
     template <typename T>
     inline bool is_valid_scalar(const T x)
     {
-        return x >= T(0.0);
+        // Return true if x is a number, i.e. not a NaN.
+        return x == x;
     }
 
     template <typename T, size_t N>

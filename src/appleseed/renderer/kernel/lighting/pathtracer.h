@@ -152,7 +152,8 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
     const ShadingContext&       shading_context,
     const ShadingPoint&         shading_point)
 {
-    if (shading_point.get_distance() < m_near_start)
+    // Terminate the path if the first hit is too close to the origin.
+    if (shading_point.hit() && shading_point.get_distance() < m_near_start)
         return 1;
 
     ShadingPoint shading_points[2];

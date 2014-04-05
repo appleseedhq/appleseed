@@ -115,7 +115,7 @@ uint64 X86Timer::read()
 
 // Unsupported platform.
 #else
-#error The x86 timer is not supported on this platform.
+    #error The x86 timer is not supported on this platform.
 #endif
 }
 

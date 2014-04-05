@@ -85,8 +85,8 @@ namespace
             const bool                  primary)
           : m_params(params)
           , m_sample_renderer(factory->create(primary))
+          , m_sample_count(m_params.m_samples)
           , m_sqrt_sample_count(round<int>(sqrt(static_cast<double>(m_params.m_samples))))
-          , m_sample_count(m_sqrt_sample_count * m_sqrt_sample_count)
         {
             if (!m_params.m_decorrelate)
             {
@@ -94,9 +94,7 @@ namespace
 
                 if (primary)
                 {
-                    const int passes = params.get_optional<int>("passes", 1);
-
-                    if (passes > 1)
+                    if (params.get_optional<size_t>("passes", 1) > 1)
                         RENDERER_LOG_WARNING("doing multipass rendering with pixel decorrelation off.");
 
                     RENDERER_LOG_INFO(
@@ -230,8 +228,8 @@ namespace
 
         const Parameters                    m_params;
         auto_release_ptr<ISampleRenderer>   m_sample_renderer;
-        const int                           m_sqrt_sample_count;
         const size_t                        m_sample_count;
+        const int                           m_sqrt_sample_count;
         PixelSampler                        m_pixel_sampler;
     };
 }

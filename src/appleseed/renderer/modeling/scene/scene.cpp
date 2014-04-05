@@ -183,15 +183,6 @@ namespace
         return success;
     }
 
-    template <typename EntityCollection>
-    void invoke_on_frame_end(
-        const Project&          project,
-        EntityCollection&       entities)
-    {
-        for (each<EntityCollection> i = entities; i; ++i)
-            i->on_frame_end(project);
-    }
-    
 #ifdef WITH_OSL
 
     template <typename EntityCollection>
@@ -215,6 +206,15 @@ namespace
     }
 
 #endif
+
+    template <typename EntityCollection>
+    void invoke_on_frame_end(
+        const Project&          project,
+        EntityCollection&       entities)
+    {
+        for (each<EntityCollection> i = entities; i; ++i)
+            i->on_frame_end(project);
+    }
 }
 
 bool Scene::on_frame_begin(
