@@ -42,6 +42,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
+#include "foundation/math/scalar.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/string.h"
@@ -241,28 +242,29 @@ namespace
         void slot_set_slider_value(const QString& value)
         {
             m_slider->blockSignals(true);
+
             const double new_value = value.toDouble();
-            if (m_slider->maximum() < new_value)
-            {
-                const double min = m_slider->minimum();
-                m_slider->setRange(min, new_value);
-                m_slider->setPageStep((new_value - min) / 10.0);
-            }
-            m_slider->setValue(value.toDouble());
+
+            // Adjust range max if the new value is greater than current range max.
+            if (new_value > m_slider->maximum())
+                adjust_slider(new_value);
+
+            m_slider->setValue(new_value);
             m_slider->blockSignals(false);
         }
 
         void slot_apply_slider_value()
         {
-            // Only lower slider max when the user has finished typing.
             m_slider->blockSignals(true);
+
             const double new_value = m_line_edit->text().toDouble();
-            if (m_slider->maximum() < new_value || m_slider->maximum() >= new_value * 3.0)
-            {
-                const double min = m_slider->minimum();
-                m_slider->setRange(min, new_value);
-                m_slider->setPageStep((new_value - min) / 10.0);
-            }
+
+            // Adjust range max if the new value is greater than current range max
+            // or less than a certain percentage of current range max.
+            if (new_value > m_slider->maximum() ||
+                new_value < lerp(m_slider->minimum(), m_slider->maximum(), 1.0 / 3))
+                adjust_slider(new_value);
+
             m_slider->setValue(new_value);
             m_slider->blockSignals(false);
         }
@@ -270,6 +272,13 @@ namespace
       private:
         QLineEdit*      m_line_edit;
         DoubleSlider*   m_slider;
+
+        void adjust_slider(const double new_value)
+        {
+            const double new_max = 2.0 * new_value;
+            m_slider->setRange(0.0, new_max);
+            m_slider->setPageStep(new_max / 10.0);
+        }
     };
 }
 

@@ -204,10 +204,10 @@ endif ()
 
 if (USE_EXTERNAL_EXR)
     include_directories (
-        ${OPENEXR_INCLUDE_DIR}
-        ${OPENEXR_INCLUDE_DIR}/OpenEXR/
-        ${ILMBASE_INCLUDE_DIR}
-        ${ILMBASE_INCLUDE_DIR}/OpenEXR/
+        ${OPENEXR_INCLUDE_DIRS}
+        ${OPENEXR_INCLUDE_DIRS}/OpenEXR/
+        ${IMATH_INCLUDE_DIRS}
+        ${IMATH_INCLUDE_DIRS}/OpenEXR/
     )
 else ()
     include_directories (

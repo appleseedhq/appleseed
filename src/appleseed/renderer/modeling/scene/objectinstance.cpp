@@ -129,6 +129,14 @@ void ObjectInstance::release()
     delete this;
 }
 
+uint64 ObjectInstance::compute_signature() const
+{
+    return
+        m_object
+            ? combine_signatures(Entity::compute_signature(), m_object->compute_signature())
+            : Entity::compute_signature();
+}
+
 const char* ObjectInstance::get_object_name() const
 {
     return impl->m_object_name.c_str();
@@ -179,11 +187,15 @@ GAABB3 ObjectInstance::compute_parent_bbox() const
 void ObjectInstance::clear_front_materials()
 {
     impl->m_front_material_mappings.clear();
+
+    bump_version_id();
 }
 
 void ObjectInstance::clear_back_materials()
 {
     impl->m_back_material_mappings.clear();
+
+    bump_version_id();
 }
 
 void ObjectInstance::assign_material(
@@ -197,6 +209,8 @@ void ObjectInstance::assign_material(
             : impl->m_back_material_mappings;
 
     material_mappings.insert(slot, name);
+
+    bump_version_id();
 }
 
 void ObjectInstance::unassign_material(
@@ -209,6 +223,8 @@ void ObjectInstance::unassign_material(
             : impl->m_back_material_mappings;
 
     material_mappings.remove(slot);
+
+    bump_version_id();
 }
 
 StringDictionary& ObjectInstance::get_front_material_mappings() const

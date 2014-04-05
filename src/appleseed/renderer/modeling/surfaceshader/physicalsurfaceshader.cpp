@@ -256,16 +256,14 @@ namespace
             aovs.set(0.0f);
 
 #ifdef WITH_OSL
-
             // Execute the OSL shader, if we have one.
             const Material* material = shading_point.get_material();
             if (material && material->get_osl_surface())
             {
-                shading_context.execute_osl_shadergroup(
+                shading_context.execute_osl_shading(
                     *material->get_osl_surface(),
                     shading_point);
             }
-
 #endif
 
             for (size_t i = 0; i < m_front_lighting_samples; ++i)
@@ -312,21 +310,17 @@ namespace
             Spectrum back_radiance(0.0f);
             SpectrumStack back_aovs(aovs.size(), 0.0f);
 
-            /*
 #ifdef WITH_OSL
-
             // Execute the OSL shader, if we have one.
             const Material* material = back_shading_point.get_material();
 
-            if (material && material->get_osl_surface_shader())
+            if (material && material->get_osl_surface())
             {
-                shading_context.execute_osl_shadergroup(
-                    *material->get_osl_surface_shader(),
+                shading_context.execute_osl_shading(
+                    *material->get_osl_surface(),
                     back_shading_point);
             }
-
 #endif
-            */
 
             // Compute back lighting.
             for (size_t i = 0; i < m_back_lighting_samples; ++i)

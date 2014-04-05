@@ -38,6 +38,7 @@
 #include "mainwindow/project/attributeeditor.h"
 #include "mainwindow/project/projectexplorer.h"
 #include "mainwindow/logwidget.h"
+#include "mainwindow/minimizebutton.h"
 #include "utility/interop.h"
 #include "utility/miscellaneous.h"
 #include "utility/settingskeys.h"
@@ -72,7 +73,7 @@
 #include <QCloseEvent>
 #include <QDir>
 #include <QFileDialog>
-#include <QFont>
+#include <QFileSystemWatcher>
 #include <QIcon>
 #include <QLabel>
 #include <QLayout>
@@ -85,6 +86,7 @@
 #include <QString>
 #include <QStringList>
 #include <Qt>
+#include <QToolButton>
 #include <QUrl>
 
 // boost headers.
@@ -113,6 +115,7 @@ MainWindow::MainWindow(QWidget* parent)
   , m_rendering_manager(m_status_bar)
   , m_project_explorer(0)
   , m_attribute_editor(0)
+  , m_project_file_watcher(0)
 {
     m_ui->setupUi(this);
 
@@ -134,6 +137,7 @@ MainWindow::MainWindow(QWidget* parent)
     remove_render_widgets();
     update_workspace();
 
+    build_minimize_buttons();
     showMaximized();
 
     setAcceptDrops(true);
@@ -154,6 +158,8 @@ void MainWindow::open_project(const QString& filepath)
         m_rendering_manager.abort_rendering();
         m_rendering_manager.wait_until_rendering_end();
     }
+
+    remove_render_widgets();
 
     set_file_widgets_enabled(false);
     set_project_explorer_enabled(false);
@@ -244,6 +250,11 @@ void MainWindow::build_menus()
     m_ui->menu_view->addAction(m_ui->project_explorer->toggleViewAction());
     m_ui->menu_view->addAction(m_ui->attribute_editor->toggleViewAction());
     m_ui->menu_view->addAction(m_ui->log->toggleViewAction());
+    m_ui->menu_view->addSeparator();
+
+    QAction* fullscreen_action = m_ui->menu_view->addAction("Fullscreen");
+    fullscreen_action->setShortcut(Qt::Key_F11);
+    connect(fullscreen_action, SIGNAL(triggered()), SLOT(slot_fullscreen()));
 
     //
     // Rendering menu.
@@ -273,6 +284,7 @@ void MainWindow::build_menus()
 
     connect(m_ui->action_tools_save_settings, SIGNAL(triggered()), SLOT(slot_save_settings()));
     connect(m_ui->action_tools_reload_settings, SIGNAL(triggered()), SLOT(slot_load_settings()));
+    connect(m_ui->action_tools_toggle_file_watcher, SIGNAL(triggered()), SLOT(slot_toggle_file_watcher()));
 
     //
     // Help menu.
@@ -433,6 +445,43 @@ void MainWindow::update_recent_files_menu(const QStringList& files)
         m_recently_opened[i]->setVisible(false);
 }
 
+void MainWindow::slot_toggle_file_watcher()
+{
+    if (m_project_file_watcher)
+    {
+        disable_project_file_watcher();
+        RENDERER_LOG_INFO("project file watcher is now disabled.");
+    }
+    else
+    {
+        enable_project_file_watcher();
+        RENDERER_LOG_INFO("project file watcher is now enabled.");
+    }
+}
+
+void MainWindow::enable_project_file_watcher()
+{
+    m_project_file_watcher = new QFileSystemWatcher(this);
+
+    connect(
+        m_project_file_watcher,
+        SIGNAL(fileChanged(const QString&)),
+        SLOT(slot_file_changed(const QString&)));
+
+    if (m_project_manager.is_project_open())
+        m_project_file_watcher->addPath(m_project_manager.get_project()->get_path());
+
+    m_action_toggle_file_watcher->setIcon(QIcon(":/icons/file_toggle_on.png"));
+}
+
+void MainWindow::disable_project_file_watcher()
+{
+    delete m_project_file_watcher;
+    m_project_file_watcher = 0;
+
+    m_action_toggle_file_watcher->setIcon(QIcon(":/icons/file_toggle_off.png"));
+}
+
 void MainWindow::build_toolbar()
 {
     m_action_new_project = new QAction(QIcon(":/icons/page_white.png"), "New", this);
@@ -446,6 +495,10 @@ void MainWindow::build_toolbar()
     m_action_save_project = new QAction(QIcon(":/icons/disk.png"), "Save", this);
     connect(m_action_save_project, SIGNAL(triggered()), SLOT(slot_save_project()));
     m_ui->main_toolbar->addAction(m_action_save_project);
+
+    m_action_toggle_file_watcher = new QAction(QIcon(":/icons/file_toggle_off.png"), "Toggle File Watcher", this);
+    connect(m_action_toggle_file_watcher, SIGNAL(triggered()), SLOT(slot_toggle_file_watcher()));
+    m_ui->main_toolbar->addAction(m_action_toggle_file_watcher);
 
     m_ui->main_toolbar->addSeparator();
 
@@ -472,19 +525,6 @@ void MainWindow::build_log_panel()
     log_widget->setLineWrapMode(QTextEdit::NoWrap);
     log_widget->setReadOnly(true);
     log_widget->setTextInteractionFlags(Qt::TextSelectableByMouse);
-    log_widget->setStyleSheet("QTextEdit { border: 0px; }");
-
-    QFont font;
-    font.setStyleHint(QFont::TypeWriter);
-#if defined _WIN32
-    font.setFamily(QString::fromUtf8("Consolas"));
-#elif defined __APPLE__
-    font.setFamily(QString::fromUtf8("Monaco"));
-#else
-    font.setFamily(QString::fromUtf8("Courier New"));
-#endif
-    font.setPixelSize(11);
-    log_widget->setFont(font);
 
     m_log_target.reset(new QtLogTarget(log_widget));
 
@@ -497,7 +537,6 @@ void MainWindow::build_project_explorer()
     m_ui->treewidget_project_explorer_scene->setColumnWidth(1, 75);     // render layer
 
     disable_osx_focus_rect(m_ui->treewidget_project_explorer_scene);
-    disable_osx_focus_rect(m_ui->treewidget_project_explorer_renders);
 
     connect(
         m_ui->lineedit_filter, SIGNAL(textChanged(const QString&)),
@@ -508,6 +547,20 @@ void MainWindow::build_project_explorer()
         SLOT(slot_clear_filter()));
 
     m_ui->pushbutton_clear_filter->setEnabled(false);
+}
+
+void MainWindow::build_minimize_buttons()
+{
+    m_minimize_buttons.push_back(new MinimizeButton(m_ui->project_explorer));
+    m_minimize_buttons.push_back(new MinimizeButton(m_ui->attribute_editor));
+    m_minimize_buttons.push_back(new MinimizeButton(m_ui->log));
+
+    for (size_t index = 0; index < m_minimize_buttons.size(); ++index)
+    {
+        statusBar()->insertPermanentWidget(
+            static_cast<int>(index + 1),
+            m_minimize_buttons[index]);
+    }
 }
 
 void MainWindow::build_connections()
@@ -659,6 +712,9 @@ void MainWindow::on_project_change()
     update_workspace();
 
     restore_state_after_project_open();
+
+    if (m_project_file_watcher)
+        m_project_file_watcher->addPath(m_project_manager.get_project()->get_path());
 }
 
 void MainWindow::update_workspace()
@@ -758,7 +814,7 @@ void MainWindow::set_project_explorer_enabled(const bool is_enabled)
 
     m_ui->label_filter->setEnabled(is_enabled && is_project_open);
     m_ui->lineedit_filter->setEnabled(is_enabled && is_project_open);
-    m_ui->pushbutton_clear_filter->setEnabled(is_enabled && is_project_open);
+    m_ui->pushbutton_clear_filter->setEnabled(is_enabled && is_project_open && !m_ui->lineedit_filter->text().isEmpty());
     m_ui->treewidget_project_explorer_scene->setEnabled(is_enabled && is_project_open);
 }
 
@@ -782,6 +838,14 @@ void MainWindow::set_rendering_widgets_enabled(const bool is_enabled, const bool
 
     // Rendering -> Render Settings.
     m_ui->action_rendering_render_settings->setEnabled(allow_starting_rendering);
+
+    // Rendering -> Clear Frame.
+    if (is_project_open)
+    {
+        const int current_tab_index = m_ui->tab_render_channels->currentIndex();
+        if (current_tab_index != -1)
+            m_tab_index_to_render_tab[current_tab_index]->set_clear_frame_button_enabled(!is_rendering);        
+    }
 }
 
 void MainWindow::recreate_render_widgets()
@@ -789,12 +853,7 @@ void MainWindow::recreate_render_widgets()
     remove_render_widgets();
 
     if (m_project_manager.is_project_open())
-    {
         add_render_widget("RGB");
-        add_render_widget("Alpha");
-        add_render_widget("Depth");
-        add_render_widget("Anomalies");
-    }
 }
 
 void MainWindow::remove_render_widgets()
@@ -803,6 +862,7 @@ void MainWindow::remove_render_widgets()
         delete i->second;
 
     m_render_tabs.clear();
+    m_tab_index_to_render_tab.clear();
 
     while (m_ui->tab_render_channels->count() > 0)
         m_ui->tab_render_channels->removeTab(0);
@@ -830,12 +890,32 @@ void MainWindow::add_render_widget(const QString& label)
     connect(
         render_tab, SIGNAL(signal_quicksave_all_aovs()),
         SLOT(slot_quicksave_all_aovs()));
+    connect(
+        render_tab, SIGNAL(signal_reset_zoom()),
+        SLOT(slot_reset_zoom()));
+    connect(
+        render_tab, SIGNAL(signal_clear_frame()),
+        SLOT(slot_clear_frame()));
+    connect(
+        render_tab, SIGNAL(signal_entity_picked()),
+        SLOT(slot_clear_filter()));
 
     // Add the render tab to the tab bar.
-    m_ui->tab_render_channels->addTab(render_tab, label);
+    const int tab_index = m_ui->tab_render_channels->addTab(render_tab, label);
 
-    // Update the label -> render tab mapping.
+    // Update the mappings.
     m_render_tabs[label.toStdString()] = render_tab;
+    m_tab_index_to_render_tab[tab_index] = render_tab;
+}
+
+void MainWindow::slot_file_changed(const QString& path)
+{
+    RENDERER_LOG_INFO("project file changed on disk, reloading it.");
+
+    assert(m_project_file_watcher);
+    m_project_file_watcher->removePath(path);
+
+    slot_reload_project();
 }
 
 void MainWindow::start_rendering(const bool interactive)
@@ -902,28 +982,28 @@ namespace
 }
 
 void MainWindow::dragEnterEvent(QDragEnterEvent* event)
- {
-     if (event->mimeData()->hasFormat("text/plain") || event->mimeData()->hasFormat("text/uri-list"))
+{
+    if (event->mimeData()->hasFormat("text/plain") || event->mimeData()->hasFormat("text/uri-list"))
          event->acceptProposedAction();
- }
+} 
 
 void MainWindow::dropEvent(QDropEvent* event)
- {
-     if (event->mimeData()->hasFormat("text/uri-list"))
-     {
+{
+    if (event->mimeData()->hasFormat("text/uri-list"))
+    {
         const QList<QUrl> urls = event->mimeData()->urls();
         QApplication::sendEvent(this, new QCloseEvent());
         open_project(urls[0].toLocalFile());   
-     }
-     else
-     {
+    }
+    else
+    {
         const QString text = event->mimeData()->text();
         QApplication::sendEvent(this, new QCloseEvent());
         open_project(text);
-     }
+    }
      
      event->accept();
- }
+}
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
@@ -1056,8 +1136,14 @@ void MainWindow::slot_save_project()
         slot_save_project_as();
         return;
     }
+    
+    if (m_project_file_watcher)
+        m_project_file_watcher->removePath(m_project_manager.get_project()->get_path());
 
     m_project_manager.save_project();
+
+    if (m_project_file_watcher)
+        m_project_file_watcher->addPath(m_project_manager.get_project()->get_path());
 
     update_workspace();
 }
@@ -1088,10 +1174,42 @@ void MainWindow::slot_save_project_as()
             LAST_DIRECTORY_SETTINGS_KEY,
             path.parent_path().string());
 
+        if (m_project_file_watcher)
+            m_project_file_watcher->removePath(m_project_manager.get_project()->get_path());
+
         m_project_manager.save_project_as(filepath.toAscii().constData());
+
+        if (m_project_file_watcher)
+            m_project_file_watcher->addPath(m_project_manager.get_project()->get_path());
 
         update_recent_files_menu(filepath);
         update_workspace();
+    }
+}
+
+void MainWindow::slot_fullscreen()
+{
+    m_fullscreen = !m_fullscreen;
+
+    bool all_minimized = true;
+    bool not_minimized = false;
+    for (each<vector<MinimizeButton*> > button = m_minimize_buttons; button; ++button)
+    {
+        all_minimized = all_minimized && (*button)->is_on();
+        not_minimized = not_minimized || !(*button)->is_on();
+    }
+
+    // All were manually minimized, exit full screen mode
+    if (all_minimized)
+        m_fullscreen = false;
+
+    // At least one is on screen, enter full screen mode
+    if (not_minimized)
+        m_fullscreen = true;
+
+    for (each<vector<MinimizeButton*> > button = m_minimize_buttons; button; ++button)
+    {
+        (*button)->set_fullscreen(m_fullscreen);
     }
 }
 
@@ -1273,6 +1391,12 @@ void MainWindow::slot_set_render_region(const QRect& rect)
     else m_rendering_manager.reinitialize_rendering();
 }
 
+void MainWindow::slot_reset_zoom()
+{
+    const int current_tab_index = m_ui->tab_render_channels->currentIndex();
+    m_tab_index_to_render_tab[current_tab_index]->reset_zoom();
+}
+
 void MainWindow::slot_camera_changed()
 {
     m_project_manager.set_project_dirty_flag();
@@ -1340,6 +1464,9 @@ void MainWindow::slot_load_settings()
     {
         RENDERER_LOG_INFO("successfully loaded settings from %s.", settings_file_path.c_str());
         m_settings = settings;
+
+        if (m_settings.get_optional<bool>("watch_file_changes"))
+            enable_project_file_watcher();
     }
     else
     {

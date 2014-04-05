@@ -66,6 +66,17 @@ DictionaryArray OSLMaterialFactory::get_input_metadata() const
             .insert("entity_types", Dictionary().insert("shader_group", "ShaderGroup"))
             .insert("use", "optional"));
 
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "alpha_map")
+            .insert("label", "Alpha Map")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary()
+                    .insert("color", "Colors")
+                    .insert("texture_instance", "Textures"))
+            .insert("use", "optional"));
+    
     return metadata;
 }
 

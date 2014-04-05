@@ -210,7 +210,7 @@ void CameraController<T>::update_drag(const Vector<T, 2>& point)
     assert(m_drag_movement != None);
 
     // Initial speed.
-    T speed = 1.0;
+    T speed = T(1.0);
 
     // Modulate speed based on the length of the drag movement.
     const T drag_length = norm(point - m_drag_origin);
@@ -220,23 +220,23 @@ void CameraController<T>::update_drag(const Vector<T, 2>& point)
     {
       case Tumble:
         {
-            // Tumble speed is constant, but higher.
-            speed *= 3.0;
+            // Tumble speed is constant.
+            speed *= T(2.0);
         }
         break;
 
       case Track:
       case Dolly:
         {
-            // Modulate speed based on the distance to the target.
+            // Track/dolly speed is based on the distance to the target.
             const T target_distance = norm(m_view.m_target - m_view.m_position);
-            speed *= std::pow(T(1.0) + target_distance, T(1.2));
+            speed *= T(2.0) * target_distance;
         }
         break;
 
       default:;
     }
-
+        
     const Vector<T, 2> delta = (point - m_drag_origin) * speed;
 
     m_drag_origin = point;
@@ -353,8 +353,24 @@ void CameraController<T>::track(const Vector<T, 2>& delta)
 template <typename T>
 void CameraController<T>::dolly(const Vector<T, 2>& delta)
 {
+    T length = norm(delta);
+
+    if (delta.y < T(0.0))
+    {
+        // Mouse movement downwards (left or right).
+        length = -length;
+    }
+    else if (delta.y == T(0.0))
+    {
+        if (delta.x > T(0.0))
+        {
+            // Mouse movement only to the right.
+            length = -length;
+        }
+    }
+
     // Update camera position.
-    m_view.m_position -= delta.y * m_view.m_z;
+    m_view.m_position -= length * m_view.m_z;
 }
 
 }       // namespace foundation

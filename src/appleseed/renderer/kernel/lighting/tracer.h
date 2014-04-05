@@ -44,10 +44,12 @@
 
 // Forward declarations.
 namespace renderer  { class Intersector; }
+namespace renderer  { class Material;}
 #ifdef WITH_OSL
 namespace renderer  { class OSLShaderGroupExec; }
 #endif
 namespace renderer  { class Scene; }
+namespace renderer  { class ShadingPoint; }
 namespace renderer  { class TextureCache; }
 
 namespace renderer
@@ -169,6 +171,11 @@ class Tracer
         const ShadingRay::DepthType     ray_depth,
         double&                         transmission,
         const ShadingPoint*             parent_shading_point);
+    
+    void evaluate_alpha(
+        const Material&                 material,
+        const ShadingPoint&             shading_point,
+        Alpha&                          alpha) const;
 };
 
 

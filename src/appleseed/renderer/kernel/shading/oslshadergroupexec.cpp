@@ -30,6 +30,7 @@
 #include "oslshadergroupexec.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/shading/closures.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/shadergroup/shadergroup.h"
 
@@ -56,7 +57,7 @@ OSLShaderGroupExec::~OSLShaderGroupExec()
         m_osl_shading_system.destroy_thread_info(m_osl_thread_info);
 }
 
-void OSLShaderGroupExec::execute(
+void OSLShaderGroupExec::execute_shading(
     const ShaderGroup&          shader_group,
     const ShadingPoint&         shading_point) const
 {
@@ -67,6 +68,30 @@ void OSLShaderGroupExec::execute(
         *m_osl_shading_context,
         *shader_group.shadergroup_ref(),
         shading_point.get_osl_shader_globals());
+}
+
+void OSLShaderGroupExec::execute_transparency(
+    const ShaderGroup&  shader_group,
+    const ShadingPoint& shading_point,
+    Alpha&              alpha,
+    float*              holdout) const
+{
+    // Switch temporary the ray type to Shadow.
+    ShadingRay::TypeType saved_type = shading_point.m_ray.m_type;
+    shading_point.m_ray.m_type = ShadingRay::ShadowRay;
+
+    m_osl_shading_system.execute(
+        *m_osl_shading_context,
+        *shader_group.shadergroup_ref(),
+        shading_point.get_osl_shader_globals());
+
+    process_transparency_tree(shading_point.get_osl_shader_globals().Ci, alpha);
+
+    if (holdout)
+        *holdout = process_holdout_tree(shading_point.get_osl_shader_globals().Ci);
+    
+    // Restore the original ray type.
+    shading_point.m_ray.m_type = saved_type;
 }
 
 }   // namespace renderer

@@ -522,10 +522,13 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
 
         if (value == "uniform")
         {
+            ParamArray params = m_params.child("uniform_pixel_renderer");
+            copy_param(params, m_params.child("generic_frame_renderer"), "passes");
+
             pixel_renderer_factory.reset(
                 new UniformPixelRendererFactory(
                     sample_renderer_factory.get(),
-                    m_params.child("uniform_pixel_renderer")));
+                    params));
         }
         else if (value == "adaptive")
         {

@@ -89,6 +89,12 @@ class DLLSYMBOL EDF
     // Retrieve the importance multiplier.
     double get_uncached_importance_multiplier() const;
 
+    // Get the cached light near start value.
+    double get_light_near_start() const;
+
+    // Retrieve the light near start value.
+    double get_uncached_light_near_start() const;
+
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
     virtual bool on_frame_begin(
@@ -135,7 +141,8 @@ class DLLSYMBOL EDF
         const foundation::Vector3d& outgoing) const = 0;        // world space emission direction, unit-length
 
   private:
-    int m_flags;
+    int    m_flags;
+    double m_light_near_start;
 };
 
 
@@ -146,6 +153,11 @@ class DLLSYMBOL EDF
 inline int EDF::get_flags() const
 {
     return m_flags;
+}
+
+inline double EDF::get_light_near_start() const
+{
+    return m_light_near_start;
 }
 
 }       // namespace renderer

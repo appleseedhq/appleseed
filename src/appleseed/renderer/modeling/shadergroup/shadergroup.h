@@ -50,6 +50,7 @@
 
 // Forward declarations.
 namespace foundation    { class AbortSwitch; }
+namespace foundation    { class SearchPaths; }
 namespace renderer      { class Assembly; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
@@ -119,14 +120,15 @@ class DLLSYMBOL ShaderGroup
   private:
     friend class ShaderGroupFactory;
 
-    ShaderContainer              m_shaders;
-    ShaderConnectionContainer    m_connections;
-    mutable OSL::ShaderGroupRef  m_shadergroup_ref;
-    bool                         m_has_emission;
-    bool                         m_has_transparency;
+    ShaderContainer                 m_shaders;
+    ShaderConnectionContainer       m_connections;
+    mutable OSL::ShaderGroupRef     m_shadergroup_ref;
+    const foundation::SearchPaths&  m_search_paths;
+    bool                            m_has_emission;
+    bool                            m_has_transparency;
 
     // Constructor.
-    explicit ShaderGroup(const char* name);
+    ShaderGroup(const char* name, const foundation::SearchPaths& searchpaths);
 };
 
 
@@ -141,7 +143,9 @@ class DLLSYMBOL ShaderGroupFactory
     static const char* get_model();
 
     // Create a new ShaderGroup.
-    static foundation::auto_release_ptr<ShaderGroup> create(const char* name);
+    static foundation::auto_release_ptr<ShaderGroup> create(
+        const char* name, 
+        const foundation::SearchPaths& searchpaths);
 };
 
 

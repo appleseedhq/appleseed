@@ -37,6 +37,7 @@
 #include <QObject>
 
 // Forward declarations.
+namespace appleseed { namespace studio { class RenderWidget; } }
 class QEvent;
 class QLabel;
 class QPoint;
@@ -52,8 +53,8 @@ class MouseCoordinatesTracker
 
   public:
     MouseCoordinatesTracker(
-        QWidget*    widget,
-        QLabel*     label);
+        RenderWidget*   widget,
+        QLabel*         label);
 
     ~MouseCoordinatesTracker();
 
@@ -61,14 +62,15 @@ class MouseCoordinatesTracker
     foundation::Vector2i widget_to_pixel(const QPoint& point) const;
 
   private:
-    QWidget*        m_widget;
-    QLabel*         m_label;
-    const int       m_content_width;
-    const int       m_content_height;
+    RenderWidget*    m_widget;
+    QLabel*          m_label;
+    const int        m_content_width;
+    const int        m_content_height;
 
     virtual bool eventFilter(QObject* object, QEvent* event);
 
     void set_label_text(const QPoint& point) const;
+
 };
 
 }       // namespace studio

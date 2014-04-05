@@ -165,10 +165,14 @@ namespace
 
         Preprocessor preprocessor;
 
-#if defined __APPLE__
-        preprocessor.define_symbol("__APPLE__");
-#elif defined _WIN32
+#ifdef _WIN32
         preprocessor.define_symbol("_WIN32");
+#endif
+#ifdef __APPLE__
+        preprocessor.define_symbol("__APPLE__");
+#endif
+#ifdef __linux__
+        preprocessor.define_symbol("__linux__");
 #endif
 
         preprocessor.process(stylesheet.c_str());
@@ -200,7 +204,10 @@ namespace
             // Load and apply the stylesheet.
             string stylesheet;
             if (load_stylesheet(stylesheet_path.string(), stylesheet))
+            {
+                application.setStyle("plastique");
                 application.setStyleSheet(QString::fromStdString(stylesheet));
+            }
         }
     }
 

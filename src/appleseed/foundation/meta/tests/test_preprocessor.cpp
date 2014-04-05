@@ -184,6 +184,23 @@ TEST_SUITE(Foundation_Utility_Preprocessor)
         EXPECT_EQ(ExpectedText, preprocessor.get_processed_text());
     }
 
+    TEST_CASE(Process_SymbolDefinitionGuardedByIfDefWithFalseCondition_SymbolIsNotDefined)
+    {
+        const string InputText =
+            "#ifdef X\n"
+            "#define Y 42\n"
+            "#endif\n"
+            "Y";
+
+        const string ExpectedText = "Y";
+
+        Preprocessor preprocessor;
+        preprocessor.process(InputText.c_str());
+
+        ASSERT_TRUE(preprocessor.succeeded());
+        EXPECT_EQ(ExpectedText, preprocessor.get_processed_text());
+    }
+
     TEST_CASE(Process_UnknownKeyword_GeneratesError)
     {
         const string InputText = "#stuff X Y";

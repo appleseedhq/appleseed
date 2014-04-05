@@ -124,9 +124,10 @@ class ProjectManager
     static std::string get_project_schema_filepath();
 
     bool do_load_project(const std::string& filepath);
-    
-    bool do_save_project_as(const std::string& filepath,
-                            renderer::ProjectFileWriter::Options options = renderer::ProjectFileWriter::Defaults);
+
+    bool do_save_project(
+        const std::string&                          filepath,
+        const renderer::ProjectFileWriter::Options  options);
 };
 
 }       // namespace studio

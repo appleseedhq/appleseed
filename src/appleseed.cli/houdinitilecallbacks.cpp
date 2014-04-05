@@ -1,4 +1,3 @@
-
 //
 // This source file is part of appleseed.
 // Visit http://appleseedhq.net/ for additional information and resources.
@@ -157,7 +156,7 @@ namespace
 #ifdef _WIN32
             return _popen(command, "wb");
 #else
-            return popen(command, "wb");
+            return popen(command, "w");
 #endif
         }
 

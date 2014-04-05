@@ -30,6 +30,9 @@
 // Interface header.
 #include "mousecoordinatestracker.h"
 
+// appleseed.studio headers.
+#include "mainwindow/rendering/renderwidget.h"
+
 // Qt headers.
 #include <QEvent>
 #include <QLabel>
@@ -48,8 +51,8 @@ namespace appleseed {
 namespace studio {
 
 MouseCoordinatesTracker::MouseCoordinatesTracker(
-    QWidget*    widget,
-    QLabel*     label)
+    RenderWidget*    widget,
+    QLabel*          label) 
   : m_widget(widget)
   , m_label(label)
   , m_content_width(widget->width())
@@ -105,9 +108,9 @@ void MouseCoordinatesTracker::set_label_text(const QPoint& point) const
     const Vector2d ndc = widget_to_ndc(point);
 
     m_label->setText(
-        QString("Pixel: %1, %2  -  NDC: %3, %4")
-            .arg(QString::number(pix.x))
-            .arg(QString::number(pix.y))
+        QString("Pixel: %1, %2 - NDC: %3, %4 ")
+            .arg(QString::number(pix.x), 4, '0')
+            .arg(QString::number(pix.y), 4, '0')
             .arg(QString::number(ndc.x, 'f', 5))
             .arg(QString::number(ndc.y, 'f', 5)));
 }

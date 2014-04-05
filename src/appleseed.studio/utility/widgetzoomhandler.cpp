@@ -133,10 +133,6 @@ bool WidgetZoomHandler::handle_key_press_event(QKeyEvent* event)
             return true;
         }
         break;
-
-      case Qt::Key_Asterisk:
-        reset_zoom();
-        return true;
     }
 
     return false;

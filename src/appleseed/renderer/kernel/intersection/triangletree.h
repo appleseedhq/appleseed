@@ -68,6 +68,9 @@ namespace renderer      { class TriangleVertexInfo; }
 namespace renderer
 {
 
+typedef std::map<foundation::uint64, IntersectionFilter*> IntersectionFilterRepository;
+
+
 //
 // Triangle tree.
 //
@@ -125,7 +128,8 @@ class TriangleTree
 
     std::vector<TriangleKey>                    m_triangle_keys;
     std::vector<foundation::uint8>              m_leaf_data;
-    std::vector<const IntersectionFilter*>      m_intersection_filters_repository;
+
+    IntersectionFilterRepository                m_intersection_filters_repository;
     std::vector<const IntersectionFilter*>      m_intersection_filters;
 
     void build_bvh(
@@ -153,7 +157,7 @@ class TriangleTree
         const std::vector<TriangleKey>&         triangle_keys,
         foundation::Statistics&                 statistics);
 
-    void create_intersection_filters();
+    void update_intersection_filters();
     void delete_intersection_filters();
 };
 

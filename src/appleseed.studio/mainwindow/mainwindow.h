@@ -56,16 +56,18 @@
 // Forward declarations.
 namespace appleseed { namespace studio { class AttributeEditor; } }
 namespace appleseed { namespace studio { class ProjectExplorer; } }
+namespace appleseed { namespace studio { class MinimizeButton; } }
 namespace Ui        { class MainWindow; }
 class QAction;
 class QCloseEvent;
+class QDragEnterEvent;
+class QDropEvent;
+class QFileSystemWatcher;
 class QPoint;
 class QRect;
 class QString;
 class QStringList;
 class QWidget;
-class QDragEnterEvent;
-class QDropEvent;
 
 namespace appleseed {
 namespace studio {
@@ -100,8 +102,10 @@ class MainWindow
     QAction*                                m_action_start_interactive_rendering;
     QAction*                                m_action_start_final_rendering;
     QAction*                                m_action_stop_rendering;
+    QAction*                                m_action_toggle_file_watcher;
 
     std::vector<QAction*>                   m_recently_opened;
+    std::vector<MinimizeButton*>            m_minimize_buttons;
 
     StatusBar                               m_status_bar;
     std::auto_ptr<QtLogTarget>              m_log_target;
@@ -116,11 +120,13 @@ class MainWindow
     ProjectExplorer*                        m_project_explorer;
     AttributeEditor*                        m_attribute_editor;
     RenderingManager                        m_rendering_manager;
+    QFileSystemWatcher*                     m_project_file_watcher;
 
     typedef std::map<std::string, RenderTab*> RenderTabCollection;
     typedef std::map<std::string, RenderTab::State> RenderTabStateCollection;
 
     RenderTabCollection                     m_render_tabs;
+    std::map<int, RenderTab*>               m_tab_index_to_render_tab;
 
     struct StateBeforeProjectOpen
     {
@@ -129,6 +135,8 @@ class MainWindow
     };
 
     std::auto_ptr<StateBeforeProjectOpen>   m_state_before_project_open;
+
+    bool                                    m_fullscreen;
 
     void build_menus();
     void build_override_shading_menu_item();
@@ -141,6 +149,7 @@ class MainWindow
     void build_toolbar();
     void build_log_panel();
     void build_project_explorer();
+    void build_minimize_buttons();
 
     void build_connections();
 
@@ -154,6 +163,9 @@ class MainWindow
     bool can_close_project();
     void on_project_change();
 
+    void enable_project_file_watcher();
+    void disable_project_file_watcher();
+
     void update_workspace();
     void update_project_explorer();
     void update_window_title();
@@ -165,6 +177,7 @@ class MainWindow
     void recreate_render_widgets();
     void remove_render_widgets();
     void add_render_widget(const QString& label);
+
     void dragEnterEvent(QDragEnterEvent* event);
     void dropEvent(QDropEvent* event);
 
@@ -186,6 +199,8 @@ class MainWindow
     void slot_save_project();
     void slot_save_project_as();
 
+    void slot_fullscreen();
+
     void slot_project_modified();
     void slot_frame_modified();
 
@@ -203,6 +218,7 @@ class MainWindow
     void slot_clear_render_region();
     void slot_set_render_region(const QRect& rect);
 
+    void slot_reset_zoom();
     void slot_camera_changed();
 
     void slot_show_render_settings_window();
@@ -212,6 +228,8 @@ class MainWindow
 
     void slot_load_settings();
     void slot_save_settings();
+    void slot_file_changed(const QString& path);
+    void slot_toggle_file_watcher();
 
     void slot_filter_text_changed(const QString& pattern);
     void slot_clear_filter();

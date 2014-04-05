@@ -71,17 +71,17 @@ namespace
         {
           default:
           case LogMessage::Info:
-            return QColor("lightgray");
+            return QColor(170, 170, 170);
 
           case LogMessage::Debug:
-            return QColor("lime");
+            return QColor(107, 239, 55);
 
           case LogMessage::Warning:
-            return QColor("fuchsia");
+            return QColor(242, 59, 205);
 
           case LogMessage::Error:
           case LogMessage::Fatal:
-            return QColor("red");
+            return QColor(239, 55, 55);
         }
     }
 }

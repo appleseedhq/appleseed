@@ -188,7 +188,7 @@ namespace
           : m_scene(scene)
           , m_light_sampler(light_sampler)
           , m_texture_cache(texture_store)
-          , m_intersector(trace_context, m_texture_cache /*, m_params.m_report_self_intersections*/)
+          , m_intersector(trace_context, m_texture_cache)
           , m_params(params)
           , m_global_photons(global_photons)
           , m_photon_begin(photon_begin)
@@ -200,11 +200,13 @@ namespace
           , m_tracer(
                 m_scene,
                 m_intersector,
-                m_texture_cache
+                m_texture_cache,
 #ifdef WITH_OSL
-                , &m_shadergroup_exec
+                &m_shadergroup_exec,
 #endif
-                )
+                m_params.m_transparency_threshold,
+                m_params.m_max_iterations,
+                false)
           , m_shading_context(
                 m_intersector,
                 m_tracer,
@@ -336,7 +338,8 @@ namespace
                 path_visitor,
                 m_params.m_photon_tracing_rr_min_path_length,
                 m_params.m_photon_tracing_max_path_length,
-                m_params.m_max_iterations);
+                m_params.m_max_iterations,
+                edf->get_light_near_start());               // don't light points closer than the light near start value
 
             // Trace the photon path.
             path_tracer.trace(
@@ -429,7 +432,7 @@ namespace
           , m_env_edf(*scene.get_environment()->get_environment_edf())
           , m_light_sampler(light_sampler)
           , m_texture_cache(texture_store)
-          , m_intersector(trace_context, m_texture_cache /*, m_params.m_report_self_intersections*/)
+          , m_intersector(trace_context, m_texture_cache)
           , m_params(params)
           , m_global_photons(global_photons)
           , m_photon_begin(photon_begin)
@@ -444,11 +447,13 @@ namespace
           , m_tracer(
                 m_scene, 
                 m_intersector, 
-                m_texture_cache
+                m_texture_cache,
 #ifdef WITH_OSL
-                , &m_shadergroup_exec
+                &m_shadergroup_exec,
 #endif
-                )
+                m_params.m_transparency_threshold,
+                m_params.m_max_iterations,
+                false)
           , m_shading_context(
                 m_intersector, 
                 m_tracer, 

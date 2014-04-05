@@ -33,21 +33,31 @@
  * Common styles.
  */
 
-#define BORDER_COLOR                        rgb(40, 40, 40)
+#define BORDER_COLOR                        rgb(30, 30, 30)
 #define BORDER_STYLE                        1px solid BORDER_COLOR
-    
-#define DEFAULT_BACKGROUND_COLOR            rgb(50, 50, 50)
-#define INPUT_BACKGROUND_COLOR              rgb(43, 43, 43)
-#define DISABLED_INPUT_BACKGROUND_COLOR     rgb(45, 45, 45)
-#define ACTIVE_BACKGROUND_COLOR             rgb(60, 60, 60)
+
+#define DEFAULT_BACKGROUND_COLOR            rgb(35, 35, 35)
+#define INPUT_BACKGROUND_COLOR              rgb(30, 30, 30)
+#define DISABLED_INPUT_BACKGROUND_COLOR     rgb(32, 32, 32)
+#define ACTIVE_BACKGROUND_COLOR             rgb(44, 44, 44)
 #define HOVER_BACKGROUND_COLOR              rgb(190, 140, 50)
-#define SELECTED_BACKGROUND_COLOR           rgb(80, 80, 80)
-    
-#define DEFAULT_TEXT_COLOR                  rgb(210, 210, 210)
+#define SELECTED_BACKGROUND_COLOR           rgb(60, 60, 60)
+
+#define DEFAULT_TEXT_COLOR                  rgb(170, 170, 170)
 #define DISABLED_TEXT_COLOR                 rgb(100, 100, 100)
 #define INFO_TEXT_COLOR                     rgb(100, 100, 100)
 #define HOVER_TEXT_COLOR                    rgb(255, 255, 255)
 #define SELECTED_TEXT_COLOR                 rgb(255, 255, 255)
+
+#ifdef _WIN32
+    #define FIXED_WIDTH_FONT_FAMILY         "Consolas"
+#endif
+#ifdef __APPLE__
+    #define FIXED_WIDTH_FONT_FAMILY         "Monaco"
+#endif
+#ifdef __linux__
+    #define FIXED_WIDTH_FONT_FAMILY         "Courier New"
+#endif
 
 
 /*
@@ -61,6 +71,7 @@ QWidget
     border: 0px;
     selection-color: SELECTED_TEXT_COLOR;
     selection-background-color: SELECTED_BACKGROUND_COLOR;
+    font-size: 11px;
 }
 
 QWidget:disabled
@@ -71,16 +82,19 @@ QWidget:disabled
 
 /*
  * QMainWindow.
+ * QSplitter.
  */
 
-QMainWindow::separator
+QMainWindow::separator,
+QSplitter::handle
 {
-    background-color: DEFAULT_BACKGROUND_COLOR;
-    width: 8px;
-    height: 8px;
+    background-color: BORDER_COLOR;
+    width: 5px;
+    height: 5px;
 }
 
-QMainWindow::separator:hover
+QMainWindow::separator:hover,
+QSplitter::handle:hover
 {
     background-color: HOVER_BACKGROUND_COLOR;
 }
@@ -113,6 +127,7 @@ QScrollBar
 QScrollBar::handle
 {
     background-color: SELECTED_BACKGROUND_COLOR;
+    border-radius: 4px;
 }
 
 QScrollBar::handle:hover
@@ -268,7 +283,8 @@ QMenuBar
     background-color: ACTIVE_BACKGROUND_COLOR;
     border: BORDER_STYLE;
     border-top: 0px;
-    padding: 1px;
+    font-size: 12px;
+    padding: 4px;
 }
 
 QMenuBar::item
@@ -349,19 +365,45 @@ QToolBar
 {
     border: BORDER_STYLE;
     padding: 4px;
+    border-width: 0 0 1px 0;
 }
 
 QToolBar::separator
 {
-    width: 1px;
     background-color: BORDER_COLOR;
-    margin: 4px;
+}
+
+QToolBar::separator:horizontal
+{
+    width: 1px;
+    margin-left: 4px;
+    margin-right: 4px;
+}
+
+QToolBar::separator:vertical
+{
+    height: 1px;
+    margin-top: 4px;
+    margin-bottom: 4px;
 }
 
 QToolBar::handle
 {
-    width: 5px;
     background-color: SELECTED_BACKGROUND_COLOR;
+}
+
+QToolBar::handle:horizontal
+{
+    width: 5px;
+    margin-left: 4px;
+    margin-right: 4px;
+}
+
+QToolBar::handle:vertical
+{
+    height: 5px;
+    margin-top: 4px;
+    margin-bottom: 4px;
 }
 
 QToolButton
@@ -453,14 +495,13 @@ QDockWidget::title
 QTabWidget::pane
 {
     border: BORDER_STYLE;
+    border-width: 1px 0 0 0;
 }
 
 QTabBar::tab
 {
     background-color: ACTIVE_BACKGROUND_COLOR;
-    border: BORDER_STYLE;
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
+    height: 15px;
     padding: 3px 11px 4px 11px;
 }
 
@@ -728,7 +769,7 @@ QRadioButton::indicator:unchecked:disabled
  * QAbstractSpinBox.
  * QComboBox.
  */
- 
+
 QLineEdit,
 QAbstractSpinBox,
 QComboBox
@@ -844,6 +885,12 @@ QGroupBox::title
     left: 8px;
     padding-left: 3px;
     padding-right: 3px;
+}
+
+QGroupBox::title:disabled
+{
+    color: DISABLED_TEXT_COLOR;
+    background-color: DEFAULT_BACKGROUND_COLOR;
 }
 
 
@@ -967,16 +1014,7 @@ appleseed--studio--FoldablePanelWidget > QFrame[hasFrame="true"]
  * Specific styles.
  */
 
-QWidget#main_window_contents,
-QWidget#RenderSettingsWindow QWidget#scrollarea,
-QWidget#MaterialAssignmentEditorWindow QWidget#scrollarea
-{
-    background-image: url(":/patterns/texture.png");
-    background-repeat: repeat-xy;
-}
-
-QWidget#RenderSettingsWindow QWidget#scrollareawidget,
-QWidget#MaterialAssignmentEditorWindow QWidget#scrollarea_contents
+QWidget#TestWindow QSplitter::handle
 {
     background-color: transparent;
 }
@@ -986,7 +1024,7 @@ QTabWidget#tab_render_channels QWidget#render_widget_tab,
 QTabWidget#tab_render_channels QScrollArea#render_widget_scrollarea,
 QTabWidget#tab_render_channels QWidget#render_widget_wrapper
 {
-    background-color: transparent;
+    background-color: rgb(28, 28, 28);
 }
 
 QLabel#picking_mode_label
@@ -1003,16 +1041,75 @@ QComboBox#picking_mode_combo
     margin-right: 1px;
 }
 
+QLabel#info_label,
+QLabel#r_label,
+QLabel#g_label,
+QLabel#b_label,
+QLabel#a_label
+{
+    font-family: FIXED_WIDTH_FONT_FAMILY;
+}
+
 QLabel#info_label
 {
     color: INFO_TEXT_COLOR;
-    min-width: 240px;
-    max-width: 240px;
-    margin-left: 4px;
-    margin-right: 4px;
+    min-width: 250px;
+    max-width: 250px;
+#ifdef __APPLE__
+    min-width: 278px;
+    max-width: 278px;
+#endif
+    margin-left: 3px;
+    margin-right: 3px;
+}
+
+QLabel#r_label,
+QLabel#g_label,
+QLabel#b_label,
+QLabel#a_label
+{
+    margin-left: 2px;
+    margin-right: 2px;
+}
+
+QLabel#r_label
+{
+    color: rgb(239, 55, 55);
+}
+
+QLabel#g_label
+{
+    color: rgb(107, 239, 55);
+}
+
+QLabel#b_label
+{
+    color: rgb(89, 158, 252);
+}
+
+QLabel#a_label
+{
+    color: INFO_TEXT_COLOR;
+}
+
+QWidget#textedit_log
+{
+    font-family: FIXED_WIDTH_FONT_FAMILY;
 }
 
 QPushButton#bind_entity_button
 {
     min-width: 30px;
+}
+
+QWidget#toggle_button_on
+{
+    background-color: SELECTED_BACKGROUND_COLOR;
+    border: BORDER_STYLE;
+}
+
+QWidget#toggle_button_off
+{
+    background-color: ACTIVE_BACKGROUND_COLOR;
+    border: BORDER_STYLE;
 }

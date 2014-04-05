@@ -58,8 +58,11 @@ namespace
     const UniqueID g_class_uid = new_guid();
 }
 
-ShaderGroup::ShaderGroup(const char* name)
+ShaderGroup::ShaderGroup(
+    const char*         name,
+    const SearchPaths&  searchpaths)
   : ConnectableEntity(g_class_uid, ParamArray())
+  , m_search_paths(searchpaths)
   , m_has_emission(false)
   , m_has_transparency(false)
 {
@@ -89,9 +92,25 @@ void ShaderGroup::add_shader(
             layer,
             params));
 
-    m_shaders.insert(shader);
-
     RENDERER_LOG_DEBUG("created osl shader %s, layer = %s.", name, layer);
+
+    if (!m_has_emission || !m_has_transparency)
+    {
+        bool has_emission, has_transparency;
+        
+        shader->get_shader_info(
+            m_search_paths,
+            has_emission,
+            has_transparency);
+
+        if (has_emission)
+            m_has_emission = true;
+
+        if (has_transparency)
+            m_has_transparency = true;
+    }
+
+    m_shaders.insert(shader);
 }
 
 void ShaderGroup::add_connection(
@@ -142,25 +161,6 @@ bool ShaderGroup::on_frame_begin(
                 return success;
 
             success = success && i->add(*shading_system);
-
-            if (success)
-            {
-                if (!m_has_emission || !m_has_transparency)
-                {
-                    bool has_emission, has_transparency;
-
-                    i->get_shader_info(
-                        project.search_paths(),
-                        has_emission,
-                        has_transparency);
-
-                    if (has_emission)
-                        m_has_emission = true;
-
-                    if (has_transparency)
-                        m_has_transparency = true;
-                }
-            }
         }
 
         for (each<ShaderConnectionContainer> i = m_connections; i; ++i)
@@ -216,9 +216,11 @@ const char* ShaderGroupFactory::get_model()
     return "shadergroup";
 }
 
-auto_release_ptr<ShaderGroup> ShaderGroupFactory::create(const char* name)
+auto_release_ptr<ShaderGroup> ShaderGroupFactory::create(
+    const char*         name,
+    const SearchPaths&  searchpaths)
 {
-    return auto_release_ptr<ShaderGroup>(new ShaderGroup(name));
+    return auto_release_ptr<ShaderGroup>(new ShaderGroup(name, searchpaths));
 }
 
 }   // namespace renderer

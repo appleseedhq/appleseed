@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/texturing/texturecache.h"
+#include "renderer/modeling/entity/entity.h"
 #include "renderer/modeling/texture/texture.h"
 
 // appleseed.foundation headers.
@@ -184,6 +185,11 @@ TextureSource::TextureSource(
   , m_max_x(static_cast<double>(m_texture_props.m_canvas_width - 1))
   , m_max_y(static_cast<double>(m_texture_props.m_canvas_height - 1))
 {
+}
+
+uint64 TextureSource::compute_signature() const
+{
+    return m_texture_instance.compute_signature();
 }
 
 Vector2d TextureSource::apply_transform(const Vector2d& uv) const

@@ -88,11 +88,17 @@ RenderTab::RenderTab(
 void RenderTab::clear()
 {
     m_render_widget->clear(Color4f(0.0f));
+    m_render_widget->repaint();
 }
 
 void RenderTab::darken()
 {
     m_render_widget->multiply(0.2f);
+}
+
+void RenderTab::reset_zoom()
+{
+    m_zoom_handler->reset_zoom();
 }
 
 void RenderTab::update()
@@ -216,6 +222,28 @@ void RenderTab::create_toolbar()
         SIGNAL(signal_clear_render_region()));
     m_toolbar->addWidget(m_clear_render_region_button);
 
+    // Create the Clear Frame button in the render toolbar.
+    m_clear_frame_button = new QToolButton();
+    m_clear_frame_button->setIcon(QIcon(":/icons/picture_empty.png"));
+    m_clear_frame_button->setToolTip("Clear Frame");
+    m_clear_frame_button->setShortcut(Qt::Key_X);
+    connect(
+        m_clear_frame_button, SIGNAL(clicked()),
+        SIGNAL(signal_clear_frame()));
+    m_toolbar->addWidget(m_clear_frame_button);
+
+    m_toolbar->addSeparator();
+
+    // Create the Reset Zoom button in the render toolbar.
+    m_reset_zoom_button = new QToolButton();
+    m_reset_zoom_button->setIcon(QIcon(":/icons/reset_zoom.png"));
+    m_reset_zoom_button->setToolTip("Reset Zoom");
+    m_reset_zoom_button->setShortcut(Qt::Key_Asterisk);
+    connect(
+        m_reset_zoom_button, SIGNAL(clicked()),
+        SIGNAL(signal_reset_zoom()));
+    m_toolbar->addWidget(m_reset_zoom_button);
+
     m_toolbar->addSeparator();
 
     // Create the label preceding the picking mode combobox.
@@ -229,12 +257,41 @@ void RenderTab::create_toolbar()
     m_picking_mode_combo->setObjectName(QString::fromUtf8("picking_mode_combo"));
     m_toolbar->addWidget(m_picking_mode_combo);
 
-    m_toolbar->addSeparator();
+    // Add stretchy spacer.
+    // This places interactive elements on the left and info to the right.
+    m_spacer = new QWidget();
+    m_spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    m_toolbar->addWidget(m_spacer);
 
     // Create a label to display various information such as mouse coordinates, etc.
     m_info_label = new QLabel();
+    m_info_label->setScaledContents(true);
     m_info_label->setObjectName(QString::fromUtf8("info_label"));
     m_toolbar->addWidget(m_info_label);
+
+    m_toolbar->addSeparator();
+
+    // Create labels to display RGBA values.
+
+    m_r_label = new QLabel();
+    m_r_label->setScaledContents(true);
+    m_r_label->setObjectName(QString::fromUtf8("r_label"));
+    m_toolbar->addWidget(m_r_label);
+
+    m_g_label = new QLabel();
+    m_g_label->setScaledContents(true);
+    m_g_label->setObjectName(QString::fromUtf8("g_label"));
+    m_toolbar->addWidget(m_g_label);
+
+    m_b_label = new QLabel();
+    m_b_label->setScaledContents(true);
+    m_b_label->setObjectName(QString::fromUtf8("b_label"));
+    m_toolbar->addWidget(m_b_label);
+
+    m_a_label = new QLabel();
+    m_a_label->setScaledContents(true);
+    m_a_label->setObjectName(QString::fromUtf8("a_label"));
+    m_toolbar->addWidget(m_a_label);
 }
 
 void RenderTab::create_scrollarea()
@@ -278,9 +335,16 @@ void RenderTab::recreate_handlers()
         new ScenePickingHandler(
             m_render_widget,
             m_picking_mode_combo,
+            m_r_label,
+            m_g_label,
+            m_b_label,
+            m_a_label,
             *m_mouse_tracker.get(),
             m_project_explorer,
             m_project));
+    connect(
+        m_picking_handler.get(), SIGNAL(signal_entity_picked()),
+        SIGNAL(signal_entity_picked()));
 
     // Handler for defining render regions with the mouse.
     m_render_region_handler.reset(
@@ -297,6 +361,11 @@ void RenderTab::recreate_handlers()
     // Initially, the picking handler is active and the render region is inactive.
     m_picking_handler->set_enabled(true);
     m_render_region_handler->set_enabled(false);
+}
+
+void RenderTab::set_clear_frame_button_enabled(const bool enabled)
+{
+    m_clear_frame_button->setEnabled(enabled);
 }
 
 }   // namespace studio

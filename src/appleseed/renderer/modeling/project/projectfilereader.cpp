@@ -1210,9 +1210,8 @@ namespace
                     TextureInstanceFactory::create(
                         m_name.c_str(),
                         m_params,
-                        m_texture.c_str());
-
-                m_texture_instance->set_transform(get_earliest_transform());
+                        m_texture.c_str(),
+                        get_earliest_transform());
             }
             catch (const ExceptionDictionaryItemNotFound& e)
             {
@@ -1871,7 +1870,9 @@ namespace
         virtual void start_element(const Attributes& attrs) OVERRIDE
         {
             m_name = get_value(attrs, "name");
-            m_shader_group = ShaderGroupFactory::create(m_name.c_str());
+            m_shader_group = ShaderGroupFactory::create(
+                m_name.c_str(), 
+                m_context.get_project().search_paths());
         }
 
         virtual void end_child_element(

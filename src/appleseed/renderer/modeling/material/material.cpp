@@ -118,6 +118,7 @@ Material::Material(
     else if (strcmp(get_model(), "osl_material") == 0)
     {
         m_inputs.declare("osl_surface", InputFormatEntity, "");
+        m_inputs.declare("alpha_map", InputFormatScalar, "");
     }
 #endif
     else
@@ -184,20 +185,20 @@ bool Material::on_frame_begin(
     m_shade_alpha_cutouts = m_params.get_optional<bool>("shade_alpha_cutouts", false);
 
     m_surface_shader = get_uncached_surface_shader();
+    m_alpha_map = get_uncached_alpha_map();
     
     if (strcmp(get_model(), "generic_material") == 0)
     {
         m_bsdf = get_uncached_bsdf();
         m_edf = get_uncached_edf();
-        m_alpha_map = get_uncached_alpha_map();
-    
+
         if (!create_normal_modifier(context))
             return false;
-    
+
         if (m_edf && m_alpha_map)
         {
             RENDERER_LOG_WARNING(
-                "%s: material is emitting light but may be partially or entirely transparent;"
+                "%s: material is emitting light but may be partially or entirely transparent; "
                 "this may lead to unexpected or unphysical results.",
                 context.get());
         }
@@ -206,7 +207,7 @@ bool Material::on_frame_begin(
     else if (strcmp(get_model(), "osl_material") == 0)
     {
         m_shader_group = get_uncached_osl_surface();
-        
+
         if (m_shader_group)
         {
             m_osl_bsdf = OSLBSDFFactory().create();
@@ -216,9 +217,7 @@ bool Material::on_frame_begin(
     }
 #endif
     else
-    {
         assert(!"Invalid material model.");
-    }
 
     return true;
 }
@@ -267,6 +266,14 @@ const Source* Material::get_uncached_alpha_map() const
 }
 
 #ifdef WITH_OSL
+
+bool Material::has_osl_surface() const
+{
+    if (strcmp(get_model(), "osl_material") != 0)
+        return false;
+
+    return get_non_empty(m_params, "osl_surface") != 0;
+}
 
 const ShaderGroup* Material::get_uncached_osl_surface() const
 {

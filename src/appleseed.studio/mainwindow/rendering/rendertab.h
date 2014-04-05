@@ -40,6 +40,7 @@
 
 // Qt headers.
 #include <QObject>
+#include <QTextEdit>
 #include <QWidget>
 
 // Standard headers.
@@ -76,6 +77,8 @@ class RenderTab
 
     void clear();
     void darken();
+    void reset_zoom();
+    void set_clear_frame_button_enabled(const bool enabled);
 
     void update();
     void update_size();
@@ -97,6 +100,9 @@ class RenderTab
     void signal_set_render_region(const QRect& rect);
     void signal_clear_render_region();
     void signal_render_widget_context_menu(const QPoint& point);
+    void signal_reset_zoom();
+    void signal_clear_frame();
+    void signal_entity_picked();
 
   private slots:
     void slot_render_widget_context_menu(const QPoint& point);
@@ -111,8 +117,15 @@ class RenderTab
     QToolButton*                            m_quick_save_aovs_button;
     QToolButton*                            m_set_render_region_button;
     QToolButton*                            m_clear_render_region_button;
+    QToolButton*                            m_reset_zoom_button;
+    QToolButton*                            m_clear_frame_button;
     QComboBox*                              m_picking_mode_combo;
+    QWidget*                                m_spacer;
     QLabel*                                 m_info_label;
+    QLabel*                                 m_r_label;
+    QLabel*                                 m_g_label;
+    QLabel*                                 m_b_label;
+    QLabel*                                 m_a_label;
 
     ProjectExplorer&                        m_project_explorer;
     renderer::Project&                      m_project;
