@@ -185,7 +185,7 @@ namespace
             // No reflection below the shading surface.
             const Vector3d& n = shading_basis.get_normal();
             const double cos_in = dot(incoming, n);
-            const double cos_on = min(dot(outgoing, n), 1.0);
+            const double cos_on = dot(outgoing, n);
             if (cos_in < 0.0 || cos_on < 0.0)
                 return 0.0;
 
@@ -224,8 +224,10 @@ namespace
                 const double temp = 2.0 * beta * RcpPi;
                 C2 *= sin(alpha) - square(temp) * temp;
             }
+            assert(C2 >= 0.0);
 
             const double C3 = 0.125 * (sigma2 / (sigma2 + 0.09) * square(4.0 * alpha * beta * RcpPiSq)) * tan((alpha + beta) * 0.5);
+            assert(C3 >= 0.0);
 
             value = reflectance ;
             value *= static_cast<float>(C1 + (abs(cos_phi_diff) * C2 * tan(beta)) + (1 - abs(cos_phi_diff)) * C3);
