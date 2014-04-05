@@ -131,6 +131,16 @@ class RendererServices
         float                   time) OVERRIDE;
 
     // Get the 4x4 matrix that transforms by the specified
+    // transformation at the given time.  Return true if ok, false on
+    // error.  The default implementation is to use get_matrix and
+    // invert it, but a particular renderer may have a better technique
+    // and overload the implementation.
+    virtual bool get_inverse_matrix (
+        OSL::Matrix44&          result, 
+        OSL::TransformationPtr  xform,
+        float                   time) OVERRIDE;
+
+    // Get the 4x4 matrix that transforms by the specified
     // transformation.  Return true if ok, false on error.  Since no
     // time value is given, also return false if the transformation may
     // be time-varying.
@@ -138,6 +148,16 @@ class RendererServices
         OSL::Matrix44&          result,
         OSL::TransformationPtr  xform) OVERRIDE;
 
+    // Get the 4x4 matrix that transforms by the specified
+    // transformation.  Return true if ok, false on error.  Since no
+    // time value is given, also return false if the transformation may
+    // be time-varying.  The default implementation is to use
+    // get_matrix and invert it, but a particular renderer may have a
+    // better technique and overload the implementation.
+    virtual bool get_inverse_matrix(
+        OSL::Matrix44&          result, 
+        OSL::TransformationPtr  xform) OVERRIDE;
+    
     // Get the 4x4 matrix that transforms points from the named
     // 'from' coordinate system to "common" space at the given time.
     // Returns true if ok, false if the named matrix is not known.

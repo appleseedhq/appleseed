@@ -246,6 +246,51 @@ Vector3d ShadingPoint::get_biased_point(const Vector3d& direction) const
 
 #ifdef WITH_OSL
 
+bool ShadingPoint::OSLObjectTransformInfo::is_animated() const
+{
+    return !m_assembly_instance_transform->empty();
+}
+
+OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::transform() const
+{
+    assert(!is_animated());
+
+    const Transformd& assembly_xform = m_assembly_instance_transform->get_earliest_transform();
+    const Transformd::MatrixType m(
+        m_object_instance_transform->get_local_to_parent() * assembly_xform.get_local_to_parent());
+
+    return Matrix4f(transpose(m));
+}
+
+OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::transform(float t) const
+{
+    const Transformd assembly_xform = m_assembly_instance_transform->evaluate(t);
+    const Transformd::MatrixType m(
+        m_object_instance_transform->get_local_to_parent() * assembly_xform.get_local_to_parent());
+
+    return Matrix4f(transpose(m));
+}
+
+OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::inverse_transform() const
+{
+    assert(!is_animated());
+
+    const Transformd& assembly_xform = m_assembly_instance_transform->get_earliest_transform();
+    const Transformd::MatrixType m(
+        m_object_instance_transform->get_parent_to_local() * assembly_xform.get_parent_to_local());
+
+    return Matrix4f(transpose(m));
+}
+
+OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::inverse_transform(float t) const
+{
+    const Transformd assembly_xform = m_assembly_instance_transform->evaluate(t);
+    const Transformd::MatrixType m(
+        m_object_instance_transform->get_parent_to_local() * assembly_xform.get_parent_to_local());
+
+    return Matrix4f(transpose(m));
+}
+
 OSL::ShaderGlobals& ShadingPoint::get_osl_shader_globals() const
 {
     assert(hit());
@@ -289,7 +334,13 @@ OSL::ShaderGlobals& ShadingPoint::get_osl_shader_globals() const
         m_shader_globals.tracedata = 0;
         m_shader_globals.objdata = 0;
 
-        m_shader_globals.object2common = 0;
+        m_obj_transform_info.m_assembly_instance_transform = 
+            &get_assembly_instance().cumulated_transform_sequence();
+        m_obj_transform_info.m_object_instance_transform = 
+                &get_object_instance().get_transform();
+        
+        m_shader_globals.object2common = reinterpret_cast<OSL::TransformationPtr>(&m_obj_transform_info);
+
         m_shader_globals.shader2common = 0;
         m_shader_globals.surfacearea = 0;
 

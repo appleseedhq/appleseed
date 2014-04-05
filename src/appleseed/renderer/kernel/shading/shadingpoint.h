@@ -176,6 +176,20 @@ class ShadingPoint
     size_t get_primitive_attribute_index() const;
 
 #ifdef WITH_OSL
+    struct OSLObjectTransformInfo
+    {
+        bool is_animated() const;
+
+        OSL::Matrix44 transform() const;
+        OSL::Matrix44 transform(float t) const;
+
+        OSL::Matrix44 inverse_transform() const;
+        OSL::Matrix44 inverse_transform(float t) const;
+
+        const TransformSequence*        m_assembly_instance_transform;
+        const foundation::Transformd*   m_object_instance_transform;
+    };
+    
     OSL::ShaderGlobals& get_osl_shader_globals() const;
 #endif
     
@@ -256,6 +270,7 @@ class ShadingPoint
     mutable foundation::Vector3d        m_back_point;                   // hit point refined to back, in assembly instance space
 
 #ifdef WITH_OSL
+    mutable OSLObjectTransformInfo      m_obj_transform_info;
     mutable OSL::ShaderGlobals          m_shader_globals;
 #endif
 
