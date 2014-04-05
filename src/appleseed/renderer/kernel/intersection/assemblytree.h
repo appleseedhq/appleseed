@@ -123,10 +123,14 @@ class AssemblyTree
     ItemVector              m_items;
     AssemblyVersionMap      m_assembly_versions;
 
-    void collect_assembly_instances(
+    void compute_cumulated_transforms(
         AssemblyInstanceContainer&              assembly_instances,
-        const TransformSequence&                parent_transform_seq,
+        const TransformSequence&                parent_transform_seq);
+
+    void collect_assembly_instances(
+        const AssemblyInstanceContainer&        assembly_instances,
         AABBVector&                             assembly_instance_bboxes);
+
     void rebuild_assembly_tree();
     void store_items_in_leaves(foundation::Statistics& statistics);
 

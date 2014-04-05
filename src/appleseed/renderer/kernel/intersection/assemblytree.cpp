@@ -100,10 +100,9 @@ size_t AssemblyTree::get_memory_size() const
         + m_assembly_versions.size() * sizeof(pair<UniqueID, VersionID>);
 }
 
-void AssemblyTree::collect_assembly_instances(
-    AssemblyInstanceContainer&          assembly_instances,
-    const TransformSequence&            parent_transform_seq,
-    AABBVector&                         assembly_instance_bboxes)
+void AssemblyTree::compute_cumulated_transforms(
+    AssemblyInstanceContainer&              assembly_instances,
+    const TransformSequence&                parent_transform_seq)
 {
     for (each<AssemblyInstanceContainer> i = assembly_instances; i; ++i)
     {
@@ -119,9 +118,27 @@ void AssemblyTree::collect_assembly_instances(
         assembly_instance.cumulated_transform_sequence().prepare();
 
         // Recurse into child assembly instances.
+        compute_cumulated_transforms(
+            assembly.assembly_instances(),
+            assembly_instance.cumulated_transform_sequence());
+    }
+}
+
+void AssemblyTree::collect_assembly_instances(
+    const AssemblyInstanceContainer&    assembly_instances,
+    AABBVector&                         assembly_instance_bboxes)
+{
+    for (const_each<AssemblyInstanceContainer> i = assembly_instances; i; ++i)
+    {
+        // Retrieve the assembly instance.
+        const AssemblyInstance& assembly_instance = *i;
+
+        // Retrieve the assembly.
+        const Assembly& assembly = assembly_instance.get_assembly();
+
+        // Recurse into child assembly instances.
         collect_assembly_instances(
             assembly.assembly_instances(),
-            assembly_instance.cumulated_transform_sequence(),
             assembly_instance_bboxes);
 
         // Skip empty assemblies.
@@ -151,12 +168,15 @@ void AssemblyTree::rebuild_assembly_tree()
     m_items.clear();
 
     Statistics statistics;
+    
+    compute_cumulated_transforms(
+        m_scene.assembly_instances(),
+        TransformSequence());
 
     // Collect all assembly instances of the scene.
     AABBVector assembly_instance_bboxes;
     collect_assembly_instances(
         m_scene.assembly_instances(),
-        TransformSequence(),
         assembly_instance_bboxes);
 
     RENDERER_LOG_INFO(
