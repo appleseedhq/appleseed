@@ -38,6 +38,7 @@
 #include <QMessageBox>
 #include <QShortcut>
 #include <QSpacerItem>
+#include <Qt>
 #include <QWidget>
 
 namespace appleseed {
@@ -67,7 +68,7 @@ void set_minimum_width(QMessageBox& msgbox, const int minimum_width)
         layout->columnCount());     // column span
 }
 
-QShortcut* create_window_local_shortcut(QWidget* parent, const Qt::Key key)
+QShortcut* create_window_local_shortcut(QWidget* parent, const int key)
 {
     return
         new QShortcut(

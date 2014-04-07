@@ -92,11 +92,15 @@ void EntityEditorWindow::create_connections()
     connect(m_ui->buttonbox, SIGNAL(rejected()), SLOT(slot_cancel()));
 
     connect(
+        create_window_local_shortcut(this, QKeySequence("Ctrl+Return")), SIGNAL(activated()),
+        SLOT(slot_accept()));
+    connect(
+        create_window_local_shortcut(this, QKeySequence("Ctrl+Enter")), SIGNAL(activated()),
+        SLOT(slot_accept()));
+
+    connect(
         create_window_local_shortcut(this, Qt::Key_Escape), SIGNAL(activated()),
         SLOT(slot_cancel()));
-
-    QShortcut *shortcut = new QShortcut(QKeySequence("Ctrl+E"), this);
-    connect(shortcut, SIGNAL(activated()), SLOT(slot_accept()));
 }
 
 void EntityEditorWindow::slot_apply(Dictionary values)
