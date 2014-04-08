@@ -14,6 +14,7 @@
         <file>icons/save_image.png</file>
         <file>icons/selection-blue.png</file>
         <file>icons/selection-crossed.png</file>
+        <file>icons/pixel_inspector.png</file>
         <file>images/appleseed-logo-gray-256.png</file>
         <file>patterns/texture.png</file>
         <file>widgets/checkbox_checked_disabled.png</file>
@@ -48,6 +49,5 @@
         <file>widgets/combobox_arrow_down_disabled.png</file>
         <file>widgets/combobox_arrow_down_enabled.png</file>
         <file>widgets/combobox_arrow_down_selected.png</file>
-        <file>icons/pixel_inspector.png</file>
     </qresource>
 </RCC>
