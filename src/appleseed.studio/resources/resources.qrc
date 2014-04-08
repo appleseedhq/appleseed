@@ -48,5 +48,6 @@
         <file>widgets/combobox_arrow_down_disabled.png</file>
         <file>widgets/combobox_arrow_down_enabled.png</file>
         <file>widgets/combobox_arrow_down_selected.png</file>
+        <file>icons/pixel_inspector.png</file>
     </qresource>
 </RCC>
