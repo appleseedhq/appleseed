@@ -207,6 +207,8 @@ set (mainwindow_rendering_sources
     mainwindow/rendering/renderwidget.h
     mainwindow/rendering/scenepickinghandler.cpp
     mainwindow/rendering/scenepickinghandler.h
+    mainwindow/rendering/pixelinspectorhandler.cpp
+    mainwindow/rendering/pixelinspectorhandler.h
 )
 list (APPEND appleseed.studio_sources
     ${mainwindow_rendering_sources}

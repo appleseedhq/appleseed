@@ -1092,6 +1092,20 @@ QLabel#a_label
     color: INFO_TEXT_COLOR;
 }
 
+QLabel#picking_mode_label
+{
+    margin-left: 4px;
+    margin-right: 4px;
+}
+
+QComboBox#picking_mode_combo
+{
+    min-width: 120px;
+    max-width: 120px;
+    margin-left: 1px;
+    margin-right: 1px;
+}
+
 QWidget#textedit_log
 {
     font-family: FIXED_WIDTH_FONT_FAMILY;
@@ -1112,4 +1126,13 @@ QWidget#toggle_button_off
 {
     background-color: ACTIVE_BACKGROUND_COLOR;
     border: BORDER_STYLE;
+}
+
+QToolTip
+{
+    background-color: rgba(80, 80, 80, 180);
+    color: rgba(255, 255, 255, 180);
+    border: 0px;
+    font-size: 11px;
+    opacity: 200;
 }

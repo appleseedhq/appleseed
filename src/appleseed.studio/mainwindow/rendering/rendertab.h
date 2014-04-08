@@ -31,6 +31,7 @@
 #define APPLESEED_STUDIO_MAINWINDOW_RENDERING_RENDERTAB_H
 
 // appleseed.studio headers.
+#include "mainwindow/rendering/pixelinspectorhandler.h"
 #include "mainwindow/rendering/renderclipboardhandler.h"
 #include "mainwindow/rendering/renderregionhandler.h"
 #include "mainwindow/rendering/scenepickinghandler.h"
@@ -108,6 +109,7 @@ class RenderTab
     void slot_render_widget_context_menu(const QPoint& point);
     void slot_toggle_render_region(const bool checked);
     void slot_set_render_region(const QRect& rect);
+    void slot_toggle_pixel_inspector(const bool checked);
 
   private:
     RenderWidget*                           m_render_widget;
@@ -118,6 +120,7 @@ class RenderTab
     QToolButton*                            m_set_render_region_button;
     QToolButton*                            m_clear_render_region_button;
     QToolButton*                            m_reset_zoom_button;
+    QToolButton*                            m_pixel_inspector_button;
     QToolButton*                            m_clear_frame_button;
     QComboBox*                              m_picking_mode_combo;
     QWidget*                                m_spacer;
@@ -136,6 +139,8 @@ class RenderTab
     std::auto_ptr<ScenePickingHandler>      m_picking_handler;
     std::auto_ptr<RenderRegionHandler>      m_render_region_handler;
     std::auto_ptr<RenderClipboardHandler>   m_clipboard_handler;
+    std::auto_ptr<PixelInspectorHandler>    m_pixel_inspector_handler;
+
 
     void create_render_widget();
     void create_toolbar();

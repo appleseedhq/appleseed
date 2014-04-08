@@ -156,6 +156,11 @@ void RenderTab::slot_set_render_region(const QRect& rect)
     emit signal_set_render_region(rect);
 }
 
+void RenderTab::slot_toggle_pixel_inspector(const bool checked)
+{
+    m_pixel_inspector_handler->set_enabled(checked);
+}
+
 void RenderTab::create_render_widget()
 {
     const CanvasProperties& props = m_project.get_frame()->image().properties();
@@ -243,6 +248,20 @@ void RenderTab::create_toolbar()
         m_reset_zoom_button, SIGNAL(clicked()),
         SIGNAL(signal_reset_zoom()));
     m_toolbar->addWidget(m_reset_zoom_button);
+
+    m_toolbar->addSeparator();
+
+    // Create the Pixel Inspector button in the render toolbar.
+    m_pixel_inspector_button = new QToolButton();
+    m_pixel_inspector_button->setIcon(QIcon(":/icons/pixel_inspector.png"));
+    m_pixel_inspector_button->setToolTip("Pixel Inspector under Mouse");
+    m_pixel_inspector_button->setShortcut(Qt::Key_I);
+    m_pixel_inspector_button->setCheckable(true);
+    m_pixel_inspector_button->setChecked(false);
+    connect(
+        m_pixel_inspector_button, SIGNAL(toggled(bool)),
+        SLOT(slot_toggle_pixel_inspector(const bool)));
+    m_toolbar->addWidget(m_pixel_inspector_button);
 
     m_toolbar->addSeparator();
 
@@ -358,9 +377,18 @@ void RenderTab::recreate_handlers()
     // Clipboard handler.
     m_clipboard_handler.reset(new RenderClipboardHandler(m_render_widget));
 
+    // Handler for pixel inspection in the render widget.
+    m_pixel_inspector_handler.reset(
+        new PixelInspectorHandler(
+            m_render_widget,
+            *m_mouse_tracker.get(),
+            m_project_explorer,
+            m_project));
+
     // Initially, the picking handler is active and the render region is inactive.
     m_picking_handler->set_enabled(true);
     m_render_region_handler->set_enabled(false);
+    m_pixel_inspector_handler->set_enabled(false);
 }
 
 void RenderTab::set_clear_frame_button_enabled(const bool enabled)
