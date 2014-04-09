@@ -61,7 +61,7 @@ namespace renderer
 // AssemblyTree class implementation.
 //
 
-AssemblyTree::AssemblyTree(const Scene& scene)
+AssemblyTree::AssemblyTree(Scene& scene)
   : TreeType(AlignedAllocator<void>(System::get_l1_data_cache_line_size()))
   , m_scene(scene)
 {
@@ -100,9 +100,32 @@ size_t AssemblyTree::get_memory_size() const
         + m_assembly_versions.size() * sizeof(pair<UniqueID, VersionID>);
 }
 
+void AssemblyTree::compute_cumulated_transforms(
+    AssemblyInstanceContainer&              assembly_instances,
+    const TransformSequence&                parent_transform_seq)
+{
+    for (each<AssemblyInstanceContainer> i = assembly_instances; i; ++i)
+    {
+        // Retrieve the assembly instance.
+        AssemblyInstance& assembly_instance = *i;
+
+        // Retrieve the assembly.
+        const Assembly& assembly = assembly_instance.get_assembly();
+
+        // Compute the cumulated transform sequence of this assembly instance.
+        assembly_instance.cumulated_transform_sequence() = 
+            assembly_instance.transform_sequence() * parent_transform_seq;
+        assembly_instance.cumulated_transform_sequence().prepare();
+
+        // Recurse into child assembly instances.
+        compute_cumulated_transforms(
+            assembly.assembly_instances(),
+            assembly_instance.cumulated_transform_sequence());
+    }
+}
+
 void AssemblyTree::collect_assembly_instances(
     const AssemblyInstanceContainer&    assembly_instances,
-    const TransformSequence&            parent_transform_seq,
     AABBVector&                         assembly_instance_bboxes)
 {
     for (const_each<AssemblyInstanceContainer> i = assembly_instances; i; ++i)
@@ -113,15 +136,9 @@ void AssemblyTree::collect_assembly_instances(
         // Retrieve the assembly.
         const Assembly& assembly = assembly_instance.get_assembly();
 
-        // Compute the cumulated transform sequence of this assembly instance.
-        TransformSequence cumulated_transform_seq =
-            assembly_instance.transform_sequence() * parent_transform_seq;
-        cumulated_transform_seq.prepare();
-
         // Recurse into child assembly instances.
         collect_assembly_instances(
             assembly.assembly_instances(),
-            cumulated_transform_seq,
             assembly_instance_bboxes);
 
         // Skip empty assemblies.
@@ -133,11 +150,11 @@ void AssemblyTree::collect_assembly_instances(
             Item(
                 &assembly,
                 &assembly_instance,
-                cumulated_transform_seq));
+                assembly_instance.cumulated_transform_sequence()));
 
         // Compute and store the assembly instance bounding box.
         AABB3d assembly_instance_bbox(
-            cumulated_transform_seq.to_parent(
+            assembly_instance.cumulated_transform_sequence().to_parent(
                 assembly.compute_non_hierarchical_local_bbox()));
         assembly_instance_bbox.robust_grow(1.0e-15);
         assembly_instance_bboxes.push_back(assembly_instance_bbox);
@@ -151,12 +168,15 @@ void AssemblyTree::rebuild_assembly_tree()
     m_items.clear();
 
     Statistics statistics;
+    
+    compute_cumulated_transforms(
+        m_scene.assembly_instances(),
+        TransformSequence());
 
     // Collect all assembly instances of the scene.
     AABBVector assembly_instance_bboxes;
     collect_assembly_instances(
         m_scene.assembly_instances(),
-        TransformSequence(),
         assembly_instance_bboxes);
 
     RENDERER_LOG_INFO(

@@ -55,7 +55,7 @@ class DLLSYMBOL TraceContext
 {
   public:
     // Constructor, initializes the trace context for a given scene.
-    explicit TraceContext(const Scene& scene);
+    explicit TraceContext(Scene& scene);
 
     // Destructor.
     ~TraceContext();
@@ -70,7 +70,7 @@ class DLLSYMBOL TraceContext
     void update();
 
   private:
-    const Scene&    m_scene;
+    Scene&          m_scene;
     AssemblyTree*   m_assembly_tree;
 };
 

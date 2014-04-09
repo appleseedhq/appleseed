@@ -8,11 +8,11 @@ param	float	transparency	0 		 %read{27,27} %write{2147483647,-1}
 global	point	P	 %read{2,2} %write{2147483647,-1}
 global	normal	N	 %read{37,37} %write{2147483647,-1}
 global	closure color	Ci	 %read{2147483647,-1} %write{36,39}
-local	point	___295_q	 %read{3,23} %write{2,14}
-local	int	___295_xi	 %read{28,28} %write{18,18}
-local	int	___295_yi	 %read{29,29} %write{22,22}
-local	int	___295_zi	 %read{31,31} %write{26,26}
-local	float	___295_transp	 %read{36,36} %write{27,34}
+local	point	___296_q	 %read{3,23} %write{2,14}
+local	int	___296_xi	 %read{28,28} %write{18,18}
+local	int	___296_yi	 %read{29,29} %write{22,22}
+local	int	___296_zi	 %read{31,31} %write{26,26}
+local	float	___296_transp	 %read{36,36} %write{27,34}
 temp	int	$tmp1	 %read{1,1} %write{0,0}
 const	string	$const1	"shadow"		 %read{0,0} %write{2147483647,-1}
 const	int	$const2	0		 %read{3,15} %write{2147483647,-1}
@@ -51,68 +51,68 @@ const	string	$const9	"diffuse"		 %read{37,37} %write{2147483647,-1}
 temp	color	$tmp27	 %read{39,39} %write{38,38}
 code ___main___
 # transparent_checkers.osl:8
-# 	if (raytype("shadow"))
+#     if (raytype("shadow"))
 	raytype		$tmp1 $const1 	%filename{"transparent_checkers.osl"} %line{8} %argrw{"wr"}
 	if		$tmp1 37 40 	%argrw{"r"}
 # transparent_checkers.osl:10
-# 		point q = P * scale;
-	mul		___295_q P scale 	%line{10} %argrw{"wrr"}
+#         point q = P * scale;
+	mul		___296_q P scale 	%line{10} %argrw{"wrr"}
 # transparent_checkers.osl:11
-# 		q[0] = (q[0] + 0.00001) * 0.9999;
-	compref		$tmp2 ___295_q $const2 	%line{11} %argrw{"wrr"}
+#         q[0] = (q[0] + 0.00001) * 0.9999;
+	compref		$tmp2 ___296_q $const2 	%line{11} %argrw{"wrr"}
 	add		$tmp3 $tmp2 $const3 	%argrw{"wrr"}
 	mul		$tmp4 $tmp3 $const4 	%argrw{"wrr"}
-	compassign	___295_q $const2 $tmp4 	%argrw{"wrr"}
+	compassign	___296_q $const2 $tmp4 	%argrw{"wrr"}
 # transparent_checkers.osl:12
-# 		q[1] = (q[1] + 0.00001) * 0.9999;
-	compref		$tmp5 ___295_q $const5 	%line{12} %argrw{"wrr"}
+#         q[1] = (q[1] + 0.00001) * 0.9999;
+	compref		$tmp5 ___296_q $const5 	%line{12} %argrw{"wrr"}
 	add		$tmp6 $tmp5 $const3 	%argrw{"wrr"}
 	mul		$tmp7 $tmp6 $const4 	%argrw{"wrr"}
-	compassign	___295_q $const5 $tmp7 	%argrw{"wrr"}
+	compassign	___296_q $const5 $tmp7 	%argrw{"wrr"}
 # transparent_checkers.osl:13
-# 		q[2] = (q[2] + 0.00001) * 0.9999;
-	compref		$tmp8 ___295_q $const6 	%line{13} %argrw{"wrr"}
+#         q[2] = (q[2] + 0.00001) * 0.9999;
+	compref		$tmp8 ___296_q $const6 	%line{13} %argrw{"wrr"}
 	add		$tmp9 $tmp8 $const3 	%argrw{"wrr"}
 	mul		$tmp10 $tmp9 $const4 	%argrw{"wrr"}
-	compassign	___295_q $const6 $tmp10 	%argrw{"wrr"}
+	compassign	___296_q $const6 $tmp10 	%argrw{"wrr"}
 # transparent_checkers.osl:15
-# 		int xi = (int)fabs(floor(q[0]));
-	compref		$tmp13 ___295_q $const2 	%line{15} %argrw{"wrr"}
+#         int xi = (int)fabs(floor(q[0]));
+	compref		$tmp13 ___296_q $const2 	%line{15} %argrw{"wrr"}
 	floor		$tmp12 $tmp13 	%argrw{"wr"}
 	fabs		$tmp11 $tmp12 	%argrw{"wr"}
-	assign		___295_xi $tmp11 	%argrw{"wr"}
+	assign		___296_xi $tmp11 	%argrw{"wr"}
 # transparent_checkers.osl:16
-# 		int yi = (int)fabs(floor(q[1]));
-	compref		$tmp16 ___295_q $const5 	%line{16} %argrw{"wrr"}
+#         int yi = (int)fabs(floor(q[1]));
+	compref		$tmp16 ___296_q $const5 	%line{16} %argrw{"wrr"}
 	floor		$tmp15 $tmp16 	%argrw{"wr"}
 	fabs		$tmp14 $tmp15 	%argrw{"wr"}
-	assign		___295_yi $tmp14 	%argrw{"wr"}
+	assign		___296_yi $tmp14 	%argrw{"wr"}
 # transparent_checkers.osl:17
-# 		int zi = (int)fabs(floor(q[2]));
-	compref		$tmp19 ___295_q $const6 	%line{17} %argrw{"wrr"}
+#         int zi = (int)fabs(floor(q[2]));
+	compref		$tmp19 ___296_q $const6 	%line{17} %argrw{"wrr"}
 	floor		$tmp18 $tmp19 	%argrw{"wr"}
 	fabs		$tmp17 $tmp18 	%argrw{"wr"}
-	assign		___295_zi $tmp17 	%argrw{"wr"}
+	assign		___296_zi $tmp17 	%argrw{"wr"}
 # transparent_checkers.osl:19
-# 		float transp = transparency;
-	assign		___295_transp transparency 	%line{19} %argrw{"wr"}
+#         float transp = transparency;
+	assign		___296_transp transparency 	%line{19} %argrw{"wr"}
 # transparent_checkers.osl:21
-# 		if ((xi % 2 == yi % 2) == (zi % 2))
-	mod		$tmp20 ___295_xi $const6 	%line{21} %argrw{"wrr"}
-	mod		$tmp21 ___295_yi $const6 	%argrw{"wrr"}
+#         if ((xi % 2 == yi % 2) == (zi % 2))
+	mod		$tmp20 ___296_xi $const6 	%line{21} %argrw{"wrr"}
+	mod		$tmp21 ___296_yi $const6 	%argrw{"wrr"}
 	eq		$tmp22 $tmp20 $tmp21 	%argrw{"wrr"}
-	mod		$tmp23 ___295_zi $const6 	%argrw{"wrr"}
+	mod		$tmp23 ___296_zi $const6 	%argrw{"wrr"}
 	eq		$tmp24 $tmp22 $tmp23 	%argrw{"wrr"}
 	if		$tmp24 35 35 	%argrw{"r"}
 # transparent_checkers.osl:22
-# 			transp = 1.0;
-	assign		___295_transp $const7 	%line{22} %argrw{"wr"}
+#             transp = 1.0;
+	assign		___296_transp $const7 	%line{22} %argrw{"wr"}
 # transparent_checkers.osl:24
-# 		Ci = transp * transparent();
+#         Ci = transp * transparent();
 	closure		$tmp25 $const8 	%line{24} %argrw{"wr"}
-	mul		Ci $tmp25 ___295_transp 	%argrw{"wrr"}
+	mul		Ci $tmp25 ___296_transp 	%argrw{"wrr"}
 # transparent_checkers.osl:27
-# 		Ci = kd * Cs * diffuse(N);
+#         Ci = kd * Cs * diffuse(N);
 	closure		$tmp26 $const9 N 	%line{27} %argrw{"wrr"}
 	mul		$tmp27 kd Cs 	%argrw{"wrr"}
 	mul		Ci $tmp26 $tmp27 	%argrw{"wrr"}

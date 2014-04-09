@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/kernel/shading/shadingpoint.h"
 
 namespace renderer
 {
@@ -128,14 +129,63 @@ bool RendererServices::get_matrix(
     OSL::TransformationPtr  xform,
     float                   time)
 {
-    return false;
+    if (!xform)
+        return false;
+
+    const ShadingPoint::OSLObjectTransformInfo* obj_xform = 
+        reinterpret_cast<const ShadingPoint::OSLObjectTransformInfo*>(xform);
+
+    result = obj_xform->transform(time);
+    return true;
+}
+
+bool RendererServices::get_inverse_matrix (
+    OSL::Matrix44&          result, 
+    OSL::TransformationPtr  xform,
+    float                   time)
+{
+    if (!xform)
+        return false;
+
+    const ShadingPoint::OSLObjectTransformInfo* obj_xform = 
+        reinterpret_cast<const ShadingPoint::OSLObjectTransformInfo*>(xform);
+
+    result = obj_xform->inverse_transform(time);
+    return true;
 }
 
 bool RendererServices::get_matrix(
     OSL::Matrix44&          result,
     OSL::TransformationPtr  xform)
 {
-    return false;
+    if (!xform)
+        return false;
+
+    const ShadingPoint::OSLObjectTransformInfo* obj_xform = 
+        reinterpret_cast<const ShadingPoint::OSLObjectTransformInfo*>(xform);
+
+    if (obj_xform->is_animated())
+        return false;
+
+    result = obj_xform->transform();
+    return true;
+}
+
+bool RendererServices::get_inverse_matrix(
+    OSL::Matrix44&          result, 
+    OSL::TransformationPtr  xform)
+{
+    if (!xform)
+        return false;
+
+    const ShadingPoint::OSLObjectTransformInfo* obj_xform = 
+        reinterpret_cast<const ShadingPoint::OSLObjectTransformInfo*>(xform);
+
+    if (obj_xform->is_animated())
+        return false;
+
+    result = obj_xform->inverse_transform();
+    return true;
 }
 
 bool RendererServices::get_matrix(
