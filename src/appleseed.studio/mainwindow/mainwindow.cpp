@@ -165,13 +165,22 @@ void MainWindow::open_project(const QString& filepath)
     set_project_explorer_enabled(false);
     set_rendering_widgets_enabled(false, false);
 
-    const filesystem::path path(filepath.toStdString());
-
-    m_settings.insert_path(
-        LAST_DIRECTORY_SETTINGS_KEY,
-        path.parent_path().string());
-
-    m_project_manager.load_project(filepath.toAscii().constData());
+    // Check if the filepath requested contains the builtin:cornell_box argument. 
+    // If so, call the appropriate function to handle it
+    if(filepath == "builtin:cornell_box")
+    {
+        m_project_manager.load_builtin_project("cornell_box");
+        on_project_change();
+    }
+    else 
+    {
+        const filesystem::path path(filepath.toStdString());
+        
+        m_settings.insert_path(
+            LAST_DIRECTORY_SETTINGS_KEY,
+            path.parent_path().string());
+        m_project_manager.load_project(filepath.toAscii().constData());
+    }
 }
 
 namespace
