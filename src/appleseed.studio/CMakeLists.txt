@@ -190,6 +190,8 @@ source_group ("mainwindow\\project" FILES
 set (mainwindow_rendering_sources
     mainwindow/rendering/cameracontroller.cpp
     mainwindow/rendering/cameracontroller.h
+    mainwindow/rendering/pixelinspectorhandler.cpp
+    mainwindow/rendering/pixelinspectorhandler.h
     mainwindow/rendering/qtrenderercontroller.cpp
     mainwindow/rendering/qtrenderercontroller.h
     mainwindow/rendering/qttilecallbackfactory.cpp
@@ -207,8 +209,6 @@ set (mainwindow_rendering_sources
     mainwindow/rendering/renderwidget.h
     mainwindow/rendering/scenepickinghandler.cpp
     mainwindow/rendering/scenepickinghandler.h
-    mainwindow/rendering/pixelinspectorhandler.cpp
-    mainwindow/rendering/pixelinspectorhandler.h
 )
 list (APPEND appleseed.studio_sources
     ${mainwindow_rendering_sources}

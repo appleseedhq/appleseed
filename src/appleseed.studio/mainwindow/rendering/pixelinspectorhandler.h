@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014 , The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -34,11 +33,9 @@
 #include <QObject>
 
 // Forward declarations.
-
 namespace appleseed { namespace studio { class MouseCoordinatesTracker; } }
 namespace appleseed { namespace studio { class ProjectExplorer; } }
 namespace renderer  { class Project; }
-
 class QEvent;
 class QPoint;
 class QWidget;
@@ -47,7 +44,7 @@ namespace appleseed {
 namespace studio {
 
 class PixelInspectorHandler
-    : public QObject
+  : public QObject
 {
     Q_OBJECT
 
@@ -62,10 +59,6 @@ class PixelInspectorHandler
 
     void set_enabled(const bool enabled);
 
-  signals:
-
-  public slots:
-
   private:
     QWidget*                                m_widget;
     const MouseCoordinatesTracker&          m_mouse_tracker;
@@ -76,7 +69,6 @@ class PixelInspectorHandler
     virtual bool eventFilter(QObject* object, QEvent* event);
 
     void show_tooltip(const QPoint& point, const QPoint& global_point);
-
 };
 
 }       // namespace studio

@@ -141,7 +141,6 @@ class RenderTab
     std::auto_ptr<RenderClipboardHandler>   m_clipboard_handler;
     std::auto_ptr<PixelInspectorHandler>    m_pixel_inspector_handler;
 
-
     void create_render_widget();
     void create_toolbar();
     void create_scrollarea();
