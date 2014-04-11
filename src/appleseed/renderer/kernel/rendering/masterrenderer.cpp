@@ -624,7 +624,6 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
         {
             ParamArray params = m_params.child("generic_frame_renderer");
             copy_param(params, m_params, "rendering_threads");
-            copy_param(params, m_params, "tile_ordering");
 
             frame_renderer.reset(
                 GenericFrameRendererFactory::create(

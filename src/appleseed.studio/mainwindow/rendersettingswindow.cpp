@@ -1008,6 +1008,8 @@ namespace
             create_system_override_texture_store_max_size_settings(layout);
             create_system_override_tile_ordering_settings(layout);
 
+            create_direct_link("tile_ordering", "generic_frame_renderer.tile_ordering", "hilbert");
+
             load_directly_linked_values(config);
 
             set_widget("rendering_threads.override", config.get_parameters().strings().exist("rendering_threads"));
@@ -1041,7 +1043,7 @@ namespace
             if (get_widget<bool>("tile_ordering.override"))
             {
                 set_config(config, "tile_ordering",
-                   get_widget<string>("tile_ordering"));
+                get_widget<string>("tile_ordering"));
             }
             else config.get_parameters().remove_path("tile_ordering");
         }
@@ -1081,7 +1083,7 @@ namespace
             tile_ordering->addItem("Random", "random");
 
             groupbox->setLayout(
-                create_form_layout("Tile Ordering:",tile_ordering));
+                create_form_layout("Tile Ordering:", tile_ordering));
         }
     };
 }
