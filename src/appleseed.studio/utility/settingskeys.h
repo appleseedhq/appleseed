@@ -32,6 +32,8 @@
 
 // Defines are sometimes more convenient than C++ constants...
 
-#define LAST_DIRECTORY_SETTINGS_KEY "ui.filedialog.lastdirectory"
+#define LAST_DIRECTORY_SETTINGS_KEY                     "ui.filedialog.lastdirectory"
+#define RENDER_REGION_TRIGGERS_RENDERING_SETTINGS_KEY   "ui.render_region.triggers_rendering"
+#define WATCH_FILE_CHANGES_SETTINGS_KEY                 "watch_file_changes"
 
 #endif  // !APPLESEED_STUDIO_UTILITY_SETTINGSKEYS_H

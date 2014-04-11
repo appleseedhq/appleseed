@@ -138,57 +138,62 @@ class MainWindow
 
     bool                                    m_fullscreen;
 
+    // Menus.
     void build_menus();
     void build_override_shading_menu_item();
     void update_override_shading_menu_item();
-
     void build_recent_files_menu();
     void update_recent_files_menu(const QString& filepath);
     void update_recent_files_menu(const QStringList& files);
 
+    // Other UI elements.
     void build_toolbar();
     void build_log_panel();
     void build_project_explorer();
     void build_minimize_buttons();
-
     void build_connections();
 
-    void print_startup_information();
-
-    renderer::ParamArray get_project_params(const char* configuration_name) const;
-
-    void save_state_before_project_open();
-    void restore_state_after_project_open();
-
-    bool can_close_project();
-    void on_project_change();
-
-    void enable_project_file_watcher();
-    void disable_project_file_watcher();
-
+    // UI state management.
     void update_workspace();
     void update_project_explorer();
     void update_window_title();
-
     void set_file_widgets_enabled(const bool is_enabled);
     void set_project_explorer_enabled(const bool is_enabled);
     void set_rendering_widgets_enabled(const bool is_enabled, const bool is_rendering);
+    void save_state_before_project_open();
+    void restore_state_after_project_open();
+    void save_ui_state();
+    void restore_ui_state();
 
+    // Render widgets.
     void recreate_render_widgets();
     void remove_render_widgets();
     void add_render_widget(const QString& label);
 
+    // Project file handling.
+    renderer::ParamArray get_project_params(const char* configuration_name) const;
+    bool can_close_project();
+    void on_project_change();
+
+    // Project file watcher.
+    void enable_project_file_watcher();
+    void disable_project_file_watcher();
+    void start_watching_project_file();
+    void stop_watching_project_file();
+
+    // Drag-and-drop.
     void dragEnterEvent(QDragEnterEvent* event);
     void dropEvent(QDropEvent* event);
 
+    // Rendering.
     void start_rendering(const bool interactive);
 
-    void save_ui_state();
-    void restore_ui_state();
-
+    // Miscellaneous.
+    void print_startup_information();
     virtual void closeEvent(QCloseEvent* event);
 
   private slots:
+    // Project I/O.
     void slot_new_project();
     void slot_open_project();
     void slot_open_recent();
@@ -198,12 +203,17 @@ class MainWindow
     void slot_open_project_complete(const QString& filepath, const bool successful);
     void slot_save_project();
     void slot_save_project_as();
-
-    void slot_fullscreen();
-
     void slot_project_modified();
-    void slot_frame_modified();
 
+    // Project file watcher.
+    void slot_toggle_file_watcher();
+    void slot_file_changed(const QString& filepath);
+
+    // Settings I/O.
+    void slot_load_settings();
+    void slot_save_settings();
+
+    // Rendering.
     void slot_start_interactive_rendering();
     void slot_start_final_rendering();
     void slot_start_rendering_once(
@@ -211,34 +221,37 @@ class MainWindow
         const QString&  configuration,
         const bool      successful);
     void slot_rendering_end();
+    void slot_camera_changed();
 
+    // Shading overrides.
     void slot_clear_shading_override();
     void slot_set_shading_override();
 
+    // Render region.
     void slot_clear_render_region();
     void slot_set_render_region(const QRect& rect);
 
-    void slot_reset_zoom();
-    void slot_camera_changed();
-
-    void slot_show_render_settings_window();
-    void slot_show_test_window();
-    void slot_show_benchmark_window();
-    void slot_show_about_window();
-
-    void slot_load_settings();
-    void slot_save_settings();
-    void slot_file_changed(const QString& path);
-    void slot_toggle_file_watcher();
-
-    void slot_filter_text_changed(const QString& pattern);
-    void slot_clear_filter();
-
+    // Render widget actions.
     void slot_render_widget_context_menu(const QPoint& point);
     void slot_save_frame();
     void slot_save_all_aovs();
     void slot_quicksave_all_aovs();
     void slot_clear_frame();
+    void slot_reset_zoom();
+
+    // Project explorer.
+    void slot_filter_text_changed(const QString& pattern);
+    void slot_clear_filter();
+    void slot_frame_modified();
+
+    // General UI actions.
+    void slot_fullscreen();
+
+    // Child windows.
+    void slot_show_render_settings_window();
+    void slot_show_test_window();
+    void slot_show_benchmark_window();
+    void slot_show_about_window();
 };
 
 }       // namespace studio

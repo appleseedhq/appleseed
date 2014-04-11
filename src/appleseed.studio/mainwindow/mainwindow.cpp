@@ -109,6 +109,17 @@ namespace studio {
 // MainWindow class implementation.
 //
 
+namespace
+{
+    const int UserInterfaceVersion = 1;
+    const int MaxRecentlyOpenedFiles = 5;
+    const char* SettingsOrgString = "com.appleseed.studio";
+    const char* SettingsRecentFilesEntryString = "appleseed.studio Recent Files";
+    const char* SettingsRecentFileListString = "recent_file_list";
+    const char* SettingsUiStateEntryString = "appleseed.studio UI State";
+    const char* SettingsUiStateSavedString = "ui_state";
+}
+
 MainWindow::MainWindow(QWidget* parent)
   : QMainWindow(parent)
   , m_ui(new Ui::MainWindow())
@@ -375,17 +386,6 @@ void MainWindow::update_override_shading_menu_item()
     }
 }
 
-namespace
-{
-    const int UserInterfaceVersion = 1;
-    const int MaxRecentlyOpenedFiles = 5;
-    const char* SettingsOrgString = "com.appleseed.studio";
-    const char* SettingsRecentFilesEntryString = "appleseed.studio Recent Files";
-    const char* SettingsRecentFileListString = "recent_file_list";
-    const char* SettingsUiStateEntryString = "appleseed.studio UI State";
-    const char* SettingsUiStateSavedString = "ui_state";
-}
-
 void MainWindow::build_recent_files_menu()
 {
     assert(m_recently_opened.empty());
@@ -443,43 +443,6 @@ void MainWindow::update_recent_files_menu(const QStringList& files)
 
     for (int i = num_recent_files; i < MaxRecentlyOpenedFiles; ++i)
         m_recently_opened[i]->setVisible(false);
-}
-
-void MainWindow::slot_toggle_file_watcher()
-{
-    if (m_project_file_watcher)
-    {
-        disable_project_file_watcher();
-        RENDERER_LOG_INFO("project file watcher is now disabled.");
-    }
-    else
-    {
-        enable_project_file_watcher();
-        RENDERER_LOG_INFO("project file watcher is now enabled.");
-    }
-}
-
-void MainWindow::enable_project_file_watcher()
-{
-    m_project_file_watcher = new QFileSystemWatcher(this);
-
-    connect(
-        m_project_file_watcher,
-        SIGNAL(fileChanged(const QString&)),
-        SLOT(slot_file_changed(const QString&)));
-
-    if (m_project_manager.is_project_open())
-        m_project_file_watcher->addPath(m_project_manager.get_project()->get_path());
-
-    m_action_toggle_file_watcher->setIcon(QIcon(":/icons/file_toggle_on.png"));
-}
-
-void MainWindow::disable_project_file_watcher()
-{
-    delete m_project_file_watcher;
-    m_project_file_watcher = 0;
-
-    m_action_toggle_file_watcher->setIcon(QIcon(":/icons/file_toggle_off.png"));
 }
 
 void MainWindow::build_toolbar()
@@ -555,11 +518,11 @@ void MainWindow::build_minimize_buttons()
     m_minimize_buttons.push_back(new MinimizeButton(m_ui->attribute_editor));
     m_minimize_buttons.push_back(new MinimizeButton(m_ui->log));
 
-    for (size_t index = 0; index < m_minimize_buttons.size(); ++index)
+    for (size_t i = 0; i < m_minimize_buttons.size(); ++i)
     {
         statusBar()->insertPermanentWidget(
-            static_cast<int>(index + 1),
-            m_minimize_buttons[index]);
+            static_cast<int>(i + 1),
+            m_minimize_buttons[i]);
     }
 }
 
@@ -576,145 +539,6 @@ void MainWindow::build_connections()
     connect(
         &m_rendering_manager, SIGNAL(signal_camera_changed()),
         SLOT(slot_camera_changed()));
-}
-
-void MainWindow::print_startup_information()
-{
-    RENDERER_LOG_INFO(
-        "%s, %s configuration\n"
-        "compiled on %s at %s using %s version %s",
-        Appleseed::get_synthetic_version_string(),
-        Appleseed::get_lib_configuration(),
-        Appleseed::get_lib_compilation_date(),
-        Appleseed::get_lib_compilation_time(),
-        Compiler::get_compiler_name(),
-        Compiler::get_compiler_version());
-
-    System::print_information(global_logger());
-}
-
-ParamArray MainWindow::get_project_params(const char* configuration_name) const
-{
-    ParamArray params;
-
-    Configuration* configuration =
-        m_project_manager.is_project_open()
-            ? m_project_manager.get_project()->configurations().get_by_name(configuration_name)
-            : 0;
-
-    if (configuration && configuration->get_base())
-        params = configuration->get_base()->get_parameters();
-
-    params.merge(m_settings);
-
-    if (configuration)
-        params.merge(configuration->get_parameters());
-
-    return params;
-}
-
-namespace
-{
-    int show_modified_project_message_box(QWidget* parent)
-    {
-        QMessageBox msgbox(parent);
-        msgbox.setWindowTitle("Save Changes?");
-        msgbox.setIcon(QMessageBox::Question);
-        msgbox.setText("The project has been modified.");
-        msgbox.setInformativeText("Do you want to save your changes?");
-        msgbox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
-        msgbox.setDefaultButton(QMessageBox::Save);
-        return msgbox.exec();
-    }
-
-    void show_project_file_loading_failed_message_box(QWidget* parent, const QString& filepath)
-    {
-        QMessageBox msgbox(parent);
-        msgbox.setWindowTitle("Loading Error");
-        msgbox.setIcon(QMessageBox::Critical);
-        msgbox.setText("Failed to load the project file " + filepath + ".");
-        msgbox.setInformativeText(
-            "The project file may be invalid, corrupted or missing. "
-            "Please look at the Log window for details.");
-        msgbox.setStandardButtons(QMessageBox::Ok);
-        msgbox.exec();
-    }
-}
-
-void MainWindow::save_state_before_project_open()
-{
-    m_state_before_project_open.reset(new StateBeforeProjectOpen());
-
-    m_state_before_project_open->m_is_rendering = m_rendering_manager.is_rendering();
-
-    for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
-        m_state_before_project_open->m_render_tab_states[i->first] = i->second->save_state();
-}
-
-void MainWindow::restore_state_after_project_open()
-{
-    if (m_state_before_project_open.get())
-    {
-        for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
-        {
-            const RenderTabStateCollection& tab_states = m_state_before_project_open->m_render_tab_states;
-            const RenderTabStateCollection::const_iterator tab_state_it = tab_states.find(i->first);
-
-            if (tab_state_it != tab_states.end())
-                i->second->load_state(tab_state_it->second);
-        }
-
-        if (m_state_before_project_open->m_is_rendering)
-            start_rendering(true);
-    }
-}
-
-bool MainWindow::can_close_project()
-{
-    // No project open: no problem.
-    if (!m_project_manager.is_project_open())
-        return true;
-
-    // Unmodified project: no problem.
-    if (!m_project_manager.is_project_dirty())
-        return true;
-
-    // The current project has been modified, ask the user what to do.
-    switch (show_modified_project_message_box(this))
-    {
-      case QMessageBox::Save:
-        slot_save_project();
-        return true;
-
-      case QMessageBox::Discard:
-        return true;
-
-      case QMessageBox::Cancel:
-        return false;
-    }
-
-    assert(!"Should never be reached.");
-    return false;
-}
-
-void MainWindow::on_project_change()
-{
-    update_project_explorer();
-    recreate_render_widgets();
-
-    update_override_shading_menu_item();
-
-    if (m_render_settings_window.get())
-        m_render_settings_window->reload();
-
-    m_status_bar.clear();
-
-    update_workspace();
-
-    restore_state_after_project_open();
-
-    if (m_project_file_watcher)
-        m_project_file_watcher->addPath(m_project_manager.get_project()->get_path());
 }
 
 void MainWindow::update_workspace()
@@ -806,6 +630,11 @@ void MainWindow::set_file_widgets_enabled(const bool is_enabled)
     m_ui->action_file_save_project->setEnabled(is_enabled && is_project_open);
     m_action_save_project->setEnabled(is_enabled && is_project_open);
     m_ui->action_file_save_project_as->setEnabled(is_enabled && is_project_open);
+
+    // Project File Watcher toolbar button.
+    m_ui->action_tools_toggle_file_watcher->setEnabled(
+        is_project_open &&
+        m_project_manager.get_project()->has_path());
 }
 
 void MainWindow::set_project_explorer_enabled(const bool is_enabled)
@@ -846,6 +675,46 @@ void MainWindow::set_rendering_widgets_enabled(const bool is_enabled, const bool
         if (current_tab_index != -1)
             m_tab_index_to_render_tab[current_tab_index]->set_clear_frame_button_enabled(!is_rendering);        
     }
+}
+
+void MainWindow::save_state_before_project_open()
+{
+    m_state_before_project_open.reset(new StateBeforeProjectOpen());
+
+    m_state_before_project_open->m_is_rendering = m_rendering_manager.is_rendering();
+
+    for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
+        m_state_before_project_open->m_render_tab_states[i->first] = i->second->save_state();
+}
+
+void MainWindow::restore_state_after_project_open()
+{
+    if (m_state_before_project_open.get())
+    {
+        for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
+        {
+            const RenderTabStateCollection& tab_states = m_state_before_project_open->m_render_tab_states;
+            const RenderTabStateCollection::const_iterator tab_state_it = tab_states.find(i->first);
+
+            if (tab_state_it != tab_states.end())
+                i->second->load_state(tab_state_it->second);
+        }
+
+        if (m_state_before_project_open->m_is_rendering)
+            start_rendering(true);
+    }
+}
+
+void MainWindow::save_ui_state()
+{
+    QSettings settings(SettingsOrgString, SettingsUiStateEntryString);
+    settings.setValue(SettingsUiStateSavedString, saveState(UserInterfaceVersion));
+}
+
+void MainWindow::restore_ui_state()
+{
+    const QSettings settings(SettingsOrgString, SettingsUiStateEntryString);
+    restoreState(settings.value(SettingsUiStateSavedString).toByteArray(), UserInterfaceVersion);
 }
 
 void MainWindow::recreate_render_widgets()
@@ -908,14 +777,163 @@ void MainWindow::add_render_widget(const QString& label)
     m_tab_index_to_render_tab[tab_index] = render_tab;
 }
 
-void MainWindow::slot_file_changed(const QString& path)
+ParamArray MainWindow::get_project_params(const char* configuration_name) const
 {
-    RENDERER_LOG_INFO("project file changed on disk, reloading it.");
+    ParamArray params;
 
+    Configuration* configuration =
+        m_project_manager.is_project_open()
+            ? m_project_manager.get_project()->configurations().get_by_name(configuration_name)
+            : 0;
+
+    if (configuration && configuration->get_base())
+        params = configuration->get_base()->get_parameters();
+
+    params.merge(m_settings);
+
+    if (configuration)
+        params.merge(configuration->get_parameters());
+
+    return params;
+}
+
+namespace
+{
+    int show_modified_project_message_box(QWidget* parent)
+    {
+        QMessageBox msgbox(parent);
+        msgbox.setWindowTitle("Save Changes?");
+        msgbox.setIcon(QMessageBox::Question);
+        msgbox.setText("The project has been modified.");
+        msgbox.setInformativeText("Do you want to save your changes?");
+        msgbox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+        msgbox.setDefaultButton(QMessageBox::Save);
+        return msgbox.exec();
+    }
+}
+
+bool MainWindow::can_close_project()
+{
+    // No project open: no problem.
+    if (!m_project_manager.is_project_open())
+        return true;
+
+    // Unmodified project: no problem.
+    if (!m_project_manager.is_project_dirty())
+        return true;
+
+    // The current project has been modified, ask the user what to do.
+    switch (show_modified_project_message_box(this))
+    {
+      case QMessageBox::Save:
+        slot_save_project();
+        return true;
+
+      case QMessageBox::Discard:
+        return true;
+
+      case QMessageBox::Cancel:
+        return false;
+    }
+
+    assert(!"Should never be reached.");
+    return false;
+}
+
+void MainWindow::on_project_change()
+{
+    update_project_explorer();
+    recreate_render_widgets();
+
+    update_override_shading_menu_item();
+
+    if (m_render_settings_window.get())
+        m_render_settings_window->reload();
+
+    m_status_bar.clear();
+
+    update_workspace();
+
+    restore_state_after_project_open();
+
+    if (m_project_file_watcher)
+        start_watching_project_file();
+}
+
+void MainWindow::enable_project_file_watcher()
+{
+    assert(m_project_file_watcher == 0);
+
+    m_project_file_watcher = new QFileSystemWatcher(this);
+
+    connect(
+        m_project_file_watcher,
+        SIGNAL(fileChanged(const QString&)),
+        SLOT(slot_file_changed(const QString&)));
+
+    m_action_toggle_file_watcher->setIcon(QIcon(":/icons/file_toggle_on.png"));
+
+    RENDERER_LOG_INFO("the project file watcher is now enabled.");
+
+    start_watching_project_file();
+}
+
+void MainWindow::disable_project_file_watcher()
+{
     assert(m_project_file_watcher);
-    m_project_file_watcher->removePath(path);
 
-    slot_reload_project();
+    delete m_project_file_watcher;
+    m_project_file_watcher = 0;
+
+    m_action_toggle_file_watcher->setIcon(QIcon(":/icons/file_toggle_off.png"));
+
+    RENDERER_LOG_INFO("the project file watcher is now disabled.");
+}
+
+void MainWindow::start_watching_project_file()
+{
+    assert(m_project_file_watcher);
+
+    if (m_project_manager.is_project_open() &&
+        m_project_manager.get_project()->has_path())
+    {
+        m_project_file_watcher->addPath(m_project_manager.get_project()->get_path());
+    }
+}
+
+void MainWindow::stop_watching_project_file()
+{
+    assert(m_project_file_watcher);
+
+    if (m_project_manager.is_project_open() &&
+        m_project_manager.get_project()->has_path())
+    {
+        m_project_file_watcher->removePath(m_project_manager.get_project()->get_path());
+    }
+}
+
+void MainWindow::dragEnterEvent(QDragEnterEvent* event)
+{
+    if (event->mimeData()->hasFormat("text/plain") || event->mimeData()->hasFormat("text/uri-list"))
+         event->acceptProposedAction();
+} 
+
+void MainWindow::dropEvent(QDropEvent* event)
+{
+    if (event->mimeData()->hasFormat("text/uri-list"))
+    {
+        const QList<QUrl> urls = event->mimeData()->urls();
+        QApplication::sendEvent(this, new QCloseEvent());
+        open_project(urls[0].toLocalFile());   
+    }
+    else
+    {
+        const QString text = event->mimeData()->text();
+        QApplication::sendEvent(this, new QCloseEvent());
+        open_project(text);
+    }
+     
+     event->accept();
 }
 
 void MainWindow::start_rendering(const bool interactive)
@@ -954,16 +972,19 @@ void MainWindow::start_rendering(const bool interactive)
         m_render_tabs["RGB"]->get_render_widget());
 }
 
-void MainWindow::save_ui_state()
+void MainWindow::print_startup_information()
 {
-    QSettings settings(SettingsOrgString, SettingsUiStateEntryString);
-    settings.setValue(SettingsUiStateSavedString, saveState(UserInterfaceVersion));
-}
+    RENDERER_LOG_INFO(
+        "%s, %s configuration\n"
+        "compiled on %s at %s using %s version %s",
+        Appleseed::get_synthetic_version_string(),
+        Appleseed::get_lib_configuration(),
+        Appleseed::get_lib_compilation_date(),
+        Appleseed::get_lib_compilation_time(),
+        Compiler::get_compiler_name(),
+        Compiler::get_compiler_version());
 
-void MainWindow::restore_ui_state()
-{
-    const QSettings settings(SettingsOrgString, SettingsUiStateEntryString);
-    restoreState(settings.value(SettingsUiStateSavedString).toByteArray(), UserInterfaceVersion);
+    System::print_information(global_logger());
 }
 
 namespace
@@ -979,30 +1000,6 @@ namespace
         msgbox.setDefaultButton(QMessageBox::No);
         return msgbox.exec();
     }
-}
-
-void MainWindow::dragEnterEvent(QDragEnterEvent* event)
-{
-    if (event->mimeData()->hasFormat("text/plain") || event->mimeData()->hasFormat("text/uri-list"))
-         event->acceptProposedAction();
-} 
-
-void MainWindow::dropEvent(QDropEvent* event)
-{
-    if (event->mimeData()->hasFormat("text/uri-list"))
-    {
-        const QList<QUrl> urls = event->mimeData()->urls();
-        QApplication::sendEvent(this, new QCloseEvent());
-        open_project(urls[0].toLocalFile());   
-    }
-    else
-    {
-        const QString text = event->mimeData()->text();
-        QApplication::sendEvent(this, new QCloseEvent());
-        open_project(text);
-    }
-     
-     event->accept();
 }
 
 void MainWindow::closeEvent(QCloseEvent* event)
@@ -1114,6 +1111,22 @@ void MainWindow::slot_reload_project()
     open_project(m_project_manager.get_project()->get_path());
 }
 
+namespace
+{
+    void show_project_file_loading_failed_message_box(QWidget* parent, const QString& filepath)
+    {
+        QMessageBox msgbox(parent);
+        msgbox.setWindowTitle("Loading Error");
+        msgbox.setIcon(QMessageBox::Critical);
+        msgbox.setText("Failed to load the project file " + filepath + ".");
+        msgbox.setInformativeText(
+            "The project file may be invalid, corrupted or missing. "
+            "Please look at the Log window for details.");
+        msgbox.setStandardButtons(QMessageBox::Ok);
+        msgbox.exec();
+    }
+}
+
 void MainWindow::slot_open_project_complete(const QString& filepath, const bool successful)
 {
     if (successful)
@@ -1138,12 +1151,12 @@ void MainWindow::slot_save_project()
     }
     
     if (m_project_file_watcher)
-        m_project_file_watcher->removePath(m_project_manager.get_project()->get_path());
+        stop_watching_project_file();
 
     m_project_manager.save_project();
 
     if (m_project_file_watcher)
-        m_project_file_watcher->addPath(m_project_manager.get_project()->get_path());
+        start_watching_project_file();
 
     update_workspace();
 }
@@ -1175,41 +1188,15 @@ void MainWindow::slot_save_project_as()
             path.parent_path().string());
 
         if (m_project_file_watcher)
-            m_project_file_watcher->removePath(m_project_manager.get_project()->get_path());
+            stop_watching_project_file();
 
         m_project_manager.save_project_as(filepath.toAscii().constData());
 
         if (m_project_file_watcher)
-            m_project_file_watcher->addPath(m_project_manager.get_project()->get_path());
+            start_watching_project_file();
 
         update_recent_files_menu(filepath);
         update_workspace();
-    }
-}
-
-void MainWindow::slot_fullscreen()
-{
-    m_fullscreen = !m_fullscreen;
-
-    bool all_minimized = true;
-    bool not_minimized = false;
-    for (each<vector<MinimizeButton*> > button = m_minimize_buttons; button; ++button)
-    {
-        all_minimized = all_minimized && (*button)->is_on();
-        not_minimized = not_minimized || !(*button)->is_on();
-    }
-
-    // All were manually minimized, exit full screen mode
-    if (all_minimized)
-        m_fullscreen = false;
-
-    // At least one is on screen, enter full screen mode
-    if (not_minimized)
-        m_fullscreen = true;
-
-    for (each<vector<MinimizeButton*> > button = m_minimize_buttons; button; ++button)
-    {
-        (*button)->set_fullscreen(m_fullscreen);
     }
 }
 
@@ -1222,10 +1209,80 @@ void MainWindow::slot_project_modified()
     update_window_title();
 }
 
-void MainWindow::slot_frame_modified()
+void MainWindow::slot_toggle_file_watcher()
 {
-    for (each<RenderTabCollection> i = m_render_tabs; i; ++i)
-        i->second->update_size();
+    if (m_project_file_watcher)
+        disable_project_file_watcher();
+    else enable_project_file_watcher();
+
+    m_settings.insert_path(
+        WATCH_FILE_CHANGES_SETTINGS_KEY,
+        m_project_file_watcher != 0);
+}
+
+void MainWindow::slot_file_changed(const QString& filepath)
+{
+    RENDERER_LOG_INFO("project file changed on disk, reloading it.");
+
+    assert(m_project_file_watcher);
+    m_project_file_watcher->removePath(filepath);
+
+    slot_reload_project();
+}
+
+void MainWindow::slot_load_settings()
+{
+    const filesystem::path root_path(Application::get_root_path());
+    const string settings_file_path = (root_path / "settings" / "appleseed.studio.xml").string();
+    const string schema_file_path = (root_path / "schemas" / "settings.xsd").string();
+
+    SettingsFileReader reader(global_logger());
+
+    Dictionary settings;
+
+    const bool success =
+        reader.read(
+            settings_file_path.c_str(),
+            schema_file_path.c_str(),
+            settings);
+
+    if (success)
+    {
+        RENDERER_LOG_INFO("successfully loaded settings from %s.", settings_file_path.c_str());
+        m_settings = settings;
+
+        if (m_settings.get_optional<bool>(WATCH_FILE_CHANGES_SETTINGS_KEY))
+        {
+            if (m_project_file_watcher == 0)
+                enable_project_file_watcher();
+        }
+        else
+        {
+            if (m_project_file_watcher)
+                disable_project_file_watcher();
+        }
+    }
+    else
+    {
+        RENDERER_LOG_ERROR("failed to load settings from %s.", settings_file_path.c_str());
+    }
+}
+
+void MainWindow::slot_save_settings()
+{
+    const filesystem::path root_path(Application::get_root_path());
+    const string settings_file_path = (root_path / "settings" / "appleseed.studio.xml").string();
+
+    SettingsFileWriter writer;
+
+    const bool success =
+        writer.write(
+            settings_file_path.c_str(),
+            m_settings);
+
+    if (success)
+        RENDERER_LOG_INFO("successfully saved settings to %s.", settings_file_path.c_str());
+    else RENDERER_LOG_ERROR("failed to save settings to %s.", settings_file_path.c_str());
 }
 
 void MainWindow::slot_start_interactive_rendering()
@@ -1252,6 +1309,11 @@ void MainWindow::slot_start_rendering_once(const QString& filepath, const QStrin
 void MainWindow::slot_rendering_end()
 {
     update_workspace();
+}
+
+void MainWindow::slot_camera_changed()
+{
+    m_project_manager.set_project_dirty_flag();
 }
 
 namespace
@@ -1382,124 +1444,13 @@ void MainWindow::slot_set_render_region(const QRect& rect)
         auto_ptr<RenderingManager::IDelayedAction>(
             new SetRenderRegionDelayedAction(rect)));
 
-    if (m_settings.get_path_optional<bool>("ui.render_region.triggers_rendering"))
+    if (m_settings.get_path_optional<bool>(RENDER_REGION_TRIGGERS_RENDERING_SETTINGS_KEY))
     {
         if (m_rendering_manager.is_rendering())
             m_rendering_manager.reinitialize_rendering();
         else start_rendering(true);
     }
     else m_rendering_manager.reinitialize_rendering();
-}
-
-void MainWindow::slot_reset_zoom()
-{
-    const int current_tab_index = m_ui->tab_render_channels->currentIndex();
-    m_tab_index_to_render_tab[current_tab_index]->reset_zoom();
-}
-
-void MainWindow::slot_camera_changed()
-{
-    m_project_manager.set_project_dirty_flag();
-}
-
-void MainWindow::slot_show_render_settings_window()
-{
-    assert(m_project_manager.is_project_open());
-
-    if (m_render_settings_window.get() == 0)
-    {
-        m_render_settings_window.reset(new RenderSettingsWindow(m_project_manager, this));
-
-        connect(
-            m_render_settings_window.get(), SIGNAL(signal_settings_modified()),
-            SLOT(slot_project_modified()));
-    }
-
-    m_render_settings_window->showNormal();
-    m_render_settings_window->activateWindow();
-}
-
-void MainWindow::slot_show_test_window()
-{
-    if (m_test_window.get() == 0)
-        m_test_window.reset(new TestWindow(this));
-
-    m_test_window->showNormal();
-    m_test_window->activateWindow();
-}
-
-void MainWindow::slot_show_benchmark_window()
-{
-    if (m_benchmark_window.get() == 0)
-        m_benchmark_window.reset(new BenchmarkWindow(this));
-
-    m_benchmark_window->showNormal();
-    m_benchmark_window->activateWindow();
-}
-
-void MainWindow::slot_show_about_window()
-{
-    AboutWindow* about_window = new AboutWindow(this);
-    about_window->showNormal();
-    about_window->activateWindow();
-}
-
-void MainWindow::slot_load_settings()
-{
-    const filesystem::path root_path(Application::get_root_path());
-    const string settings_file_path = (root_path / "settings" / "appleseed.studio.xml").string();
-    const string schema_file_path = (root_path / "schemas" / "settings.xsd").string();
-
-    SettingsFileReader reader(global_logger());
-
-    Dictionary settings;
-
-    const bool success =
-        reader.read(
-            settings_file_path.c_str(),
-            schema_file_path.c_str(),
-            settings);
-
-    if (success)
-    {
-        RENDERER_LOG_INFO("successfully loaded settings from %s.", settings_file_path.c_str());
-        m_settings = settings;
-
-        if (m_settings.get_optional<bool>("watch_file_changes"))
-            enable_project_file_watcher();
-    }
-    else
-    {
-        RENDERER_LOG_ERROR("failed to load settings from %s.", settings_file_path.c_str());
-    }
-}
-
-void MainWindow::slot_save_settings()
-{
-    const filesystem::path root_path(Application::get_root_path());
-    const string settings_file_path = (root_path / "settings" / "appleseed.studio.xml").string();
-
-    SettingsFileWriter writer;
-
-    const bool success =
-        writer.write(
-            settings_file_path.c_str(),
-            m_settings);
-
-    if (success)
-        RENDERER_LOG_INFO("successfully saved settings to %s.", settings_file_path.c_str());
-    else RENDERER_LOG_ERROR("failed to save settings to %s.", settings_file_path.c_str());
-}
-
-void MainWindow::slot_filter_text_changed(const QString& pattern)
-{
-    m_ui->pushbutton_clear_filter->setEnabled(!pattern.isEmpty());
-    m_project_explorer->filter_items(pattern);
-}
-
-void MainWindow::slot_clear_filter()
-{
-    m_ui->lineedit_filter->clear();
 }
 
 void MainWindow::slot_render_widget_context_menu(const QPoint& point)
@@ -1633,6 +1584,97 @@ void MainWindow::slot_clear_frame()
     // In the UI, clear all render widgets to black.
     for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
         i->second->clear();
+}
+
+void MainWindow::slot_reset_zoom()
+{
+    const int current_tab_index = m_ui->tab_render_channels->currentIndex();
+    m_tab_index_to_render_tab[current_tab_index]->reset_zoom();
+}
+
+void MainWindow::slot_filter_text_changed(const QString& pattern)
+{
+    m_ui->pushbutton_clear_filter->setEnabled(!pattern.isEmpty());
+    m_project_explorer->filter_items(pattern);
+}
+
+void MainWindow::slot_clear_filter()
+{
+    m_ui->lineedit_filter->clear();
+}
+
+void MainWindow::slot_frame_modified()
+{
+    for (each<RenderTabCollection> i = m_render_tabs; i; ++i)
+        i->second->update_size();
+}
+
+void MainWindow::slot_fullscreen()
+{
+    m_fullscreen = !m_fullscreen;
+
+    bool all_minimized = true;
+    bool not_minimized = false;
+    for (each<vector<MinimizeButton*> > button = m_minimize_buttons; button; ++button)
+    {
+        all_minimized = all_minimized && (*button)->is_on();
+        not_minimized = not_minimized || !(*button)->is_on();
+    }
+
+    // All were manually minimized, exit full screen mode
+    if (all_minimized)
+        m_fullscreen = false;
+
+    // At least one is on screen, enter full screen mode
+    if (not_minimized)
+        m_fullscreen = true;
+
+    for (each<vector<MinimizeButton*> > button = m_minimize_buttons; button; ++button)
+    {
+        (*button)->set_fullscreen(m_fullscreen);
+    }
+}
+
+void MainWindow::slot_show_render_settings_window()
+{
+    assert(m_project_manager.is_project_open());
+
+    if (m_render_settings_window.get() == 0)
+    {
+        m_render_settings_window.reset(new RenderSettingsWindow(m_project_manager, this));
+
+        connect(
+            m_render_settings_window.get(), SIGNAL(signal_settings_modified()),
+            SLOT(slot_project_modified()));
+    }
+
+    m_render_settings_window->showNormal();
+    m_render_settings_window->activateWindow();
+}
+
+void MainWindow::slot_show_test_window()
+{
+    if (m_test_window.get() == 0)
+        m_test_window.reset(new TestWindow(this));
+
+    m_test_window->showNormal();
+    m_test_window->activateWindow();
+}
+
+void MainWindow::slot_show_benchmark_window()
+{
+    if (m_benchmark_window.get() == 0)
+        m_benchmark_window.reset(new BenchmarkWindow(this));
+
+    m_benchmark_window->showNormal();
+    m_benchmark_window->activateWindow();
+}
+
+void MainWindow::slot_show_about_window()
+{
+    AboutWindow* about_window = new AboutWindow(this);
+    about_window->showNormal();
+    about_window->activateWindow();
 }
 
 }   // namespace studio
