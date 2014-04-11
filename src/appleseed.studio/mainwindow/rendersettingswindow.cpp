@@ -1006,6 +1006,9 @@ namespace
 
             create_system_override_rendering_threads_settings(layout);
             create_system_override_texture_store_max_size_settings(layout);
+            create_system_override_tile_ordering_settings(layout);
+
+            create_direct_link("tile_ordering", "generic_frame_renderer.tile_ordering", "hilbert");
 
             load_directly_linked_values(config);
 
@@ -1018,6 +1021,8 @@ namespace
 
             set_widget("texture_store_max_size.override", config.get_inherited_parameters().exist_path("texture_store.max_size"));
             set_widget("texture_store_max_size.value", get_config<size_t>(config, "texture_store.max_size", 256 * 1024 * 1024) / (1024 * 1024));
+
+            set_widget("tile_ordering.override", config.get_parameters().strings().exist("tile_ordering"));
         }
 
         virtual void save_config(Configuration& config) const OVERRIDE
@@ -1034,6 +1039,13 @@ namespace
             if (get_widget<bool>("texture_store_max_size.override"))
                 set_config(config, "texture_store.max_size", get_widget<size_t>("texture_store_max_size.value") * 1024 * 1024);
             else config.get_parameters().remove_path("texture_store.max_size");
+
+            if (get_widget<bool>("tile_ordering.override"))
+            {
+                set_config(config, "tile_ordering",
+                get_widget<string>("tile_ordering"));
+            }
+            else config.get_parameters().remove_path("tile_ordering");
         }
 
       private:
@@ -1057,6 +1069,21 @@ namespace
                 create_form_layout(
                     "Texture Store Size:",
                     create_integer_input("texture_store_max_size.value", 1, 1024 * 1024, "MB")));
+        }
+
+        void create_system_override_tile_ordering_settings(QVBoxLayout* parent)
+        {
+            QGroupBox* groupbox = create_checkable_groupbox("tile_ordering.override", "Override");
+            parent->addWidget(groupbox);
+
+            QComboBox* tile_ordering = create_combobox("tile_ordering");
+            tile_ordering->addItem("Linear", "linear");
+            tile_ordering->addItem("Spiral", "spiral");
+            tile_ordering->addItem("Hilbert", "hilbert");
+            tile_ordering->addItem("Random", "random");
+
+            groupbox->setLayout(
+                create_form_layout("Tile Ordering:", tile_ordering));
         }
     };
 }

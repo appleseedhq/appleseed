@@ -65,7 +65,69 @@ void spiral_ordering(
     const size_t        size_x,
     const size_t        size_y)
 {
-    throw ExceptionNotImplemented();
+    assert(ordering.empty());
+
+    ordering.reserve(size_x * size_y);
+
+    const size_t size = size_x * size_y;
+    const int tw = static_cast<int>(size_x);
+    const int th = static_cast<int>(size_y);
+
+    Vector2i point = Vector2i(0, 0);
+
+    for (size_t i = 0; i < size; i++)
+    {
+        const int center = (min(tw, th) - 1) / 2;
+        int tx = tw;
+        int ty = th;
+
+        while (i < (tx * ty))
+        {
+            tx--;
+            ty--;
+        }
+
+        int txty = tx * ty;
+        int mintxty = min(tx, ty);
+        int x;
+        int y;
+
+        if (mintxty % 2)
+        {
+            if (i <= (txty + ty))
+            {    // down right side
+                x = tx - mintxty / 2;
+                y = -mintxty / 2 + i - txty;
+            }
+            else
+            {    // back across bottom
+                x = tx - mintxty / 2 - (i - (txty + ty));
+                y = ty - mintxty / 2;
+            }
+        }
+        else
+        {
+            if (i <= (txty + ty))
+            {   // up left side
+                x = -mintxty / 2;
+                y = ty - mintxty / 2 - (i - txty);
+            }
+            else
+            {   // across top
+                x = -mintxty / 2 + (i - (txty + ty));
+                y = -mintxty / 2;
+            }
+        }
+
+        point.x = x + center;
+        point.y = y + center;
+
+        assert(size > 0);
+        assert(point.x >= 0);
+        assert(point.y >= 0);
+
+        ordering.push_back(size_t(point.y * tw + point.x));
+    }
 }
 
 namespace
