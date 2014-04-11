@@ -110,6 +110,7 @@ void TileJobFactory::generate_tile_ordering(
       case SpiralOrdering:
         spiral_ordering(
             tiles,
+            frame_properties.m_tile_count,
             frame_properties.m_tile_count_x,
             frame_properties.m_tile_count_y);
         break;

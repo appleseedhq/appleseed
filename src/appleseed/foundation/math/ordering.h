@@ -51,8 +51,8 @@ void linear_ordering(
     const size_t            size);
 
 // Generate a spiral ordering.
-void spiral_ordering(
-    std::vector<size_t>&    ordering,
+void spiral_ordering(std::vector<size_t>&    ordering,
+    const size_t            size,
     const size_t            size_x,
     const size_t            size_y);
 
