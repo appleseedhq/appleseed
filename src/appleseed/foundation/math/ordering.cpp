@@ -69,15 +69,13 @@ void spiral_ordering(
 
     ordering.reserve(size_x * size_y);
 
-    const size_t size = size_x * size_y;
+    const int size = static_cast<int>(size_x * size_y);
     const int tw = static_cast<int>(size_x);
     const int th = static_cast<int>(size_y);
+    const int center = (min(tw, th) - 1) / 2;
 
-    Vector2i point = Vector2i(0, 0);
-
-    for (size_t i = 0; i < size; i++)
+    for (int i = 0; i < size; ++i)
     {
-        const int center = (min(tw, th) - 1) / 2;
         int tx = tw;
         int ty = th;
 
@@ -87,46 +85,46 @@ void spiral_ordering(
             ty--;
         }
 
-        int txty = tx * ty;
-        int mintxty = min(tx, ty);
-        int x;
-        int y;
+        const int mintxty = min(tx, ty);
+        const int txty = tx * ty;
+        int x = center;
+        int y = center;
 
         if (mintxty % 2)
         {
             if (i <= (txty + ty))
-            {    // down right side
-                x = tx - mintxty / 2;
-                y = -mintxty / 2 + i - txty;
+            {
+                // Down-right side.
+                x += tx - mintxty / 2;
+                y += -mintxty / 2 + i - txty;
             }
             else
-            {    // back across bottom
-                x = tx - mintxty / 2 - (i - (txty + ty));
-                y = ty - mintxty / 2;
+            {
+                // Back across bottom.
+                x += tx - mintxty / 2 - (i - (txty + ty));
+                y += ty - mintxty / 2;
             }
         }
         else
         {
             if (i <= (txty + ty))
-            {   // up left side
-                x = -mintxty / 2;
-                y = ty - mintxty / 2 - (i - txty);
+            {
+                // Up-left side.
+                x += -mintxty / 2;
+                y += ty - mintxty / 2 - (i - txty);
             }
             else
-            {   // across top
-                x = -mintxty / 2 + (i - (txty + ty));
-                y = -mintxty / 2;
+            {
+                // Across top.
+                x += -mintxty / 2 + (i - (txty + ty));
+                y += -mintxty / 2;
             }
         }
 
-        point.x = x + center;
-        point.y = y + center;
+        assert(x >= 0);
+        assert(y >= 0);
 
-        assert(size > 0);
-        assert(point.x >= 0);
-        assert(point.y >= 0);
-
-        ordering.push_back(size_t(point.y * tw + point.x));
+        ordering.push_back(static_cast<size_t>(y * tw + x));
     }
 }
 
@@ -160,7 +158,7 @@ namespace
             assert(point.x >= 0);
             assert(point.y >= 0);
             if (point.x < size_x && point.y < size_y)
-                ordering.push_back(size_t(point.y * size_x + point.x));
+                ordering.push_back(static_cast<size_t>(point.y * size_x + point.x));
         }
     }
 }
