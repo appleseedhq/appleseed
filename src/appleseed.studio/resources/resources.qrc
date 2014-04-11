@@ -1,20 +1,27 @@
 <RCC>
     <qresource prefix="/">
         <file>icons/cog_go.png</file>
+        <file>icons/cog_go_disable.png</file>
         <file>icons/cross.png</file>
+        <file>icons/cross_disable.png</file>
         <file>icons/disk.png</file>
+        <file>icons/disk_disable.png</file>
         <file>icons/file_toggle_off.png</file>
         <file>icons/file_toggle_on.png</file>
         <file>icons/film_go.png</file>
+        <file>icons/film_go_disable.png</file>
         <file>icons/folder.png</file>
+        <file>icons/folder_disable.png</file>
         <file>icons/page_white.png</file>
+        <file>icons/page_white_disable.png</file>
         <file>icons/picture_empty.png</file>
+        <file>icons/picture_empty_disable.png</file>
+        <file>icons/pixel_inspector.png</file>
         <file>icons/quick_save_aovs.png</file>
         <file>icons/reset_zoom.png</file>
         <file>icons/save_image.png</file>
         <file>icons/selection-blue.png</file>
         <file>icons/selection-crossed.png</file>
-        <file>icons/pixel_inspector.png</file>
         <file>images/appleseed-logo-gray-256.png</file>
         <file>patterns/texture.png</file>
         <file>widgets/checkbox_checked_disabled.png</file>

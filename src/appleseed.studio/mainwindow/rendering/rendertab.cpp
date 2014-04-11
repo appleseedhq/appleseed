@@ -229,7 +229,9 @@ void RenderTab::create_toolbar()
 
     // Create the Clear Frame button in the render toolbar.
     m_clear_frame_button = new QToolButton();
-    m_clear_frame_button->setIcon(QIcon(":/icons/picture_empty.png"));
+    QIcon picture_empty = QIcon(":/icons/picture_empty.png");
+    picture_empty.addPixmap(QPixmap(":/icons/picture_empty_disable.png"), QIcon::Disabled);
+    m_clear_frame_button->setIcon(picture_empty);
     m_clear_frame_button->setToolTip("Clear Frame");
     m_clear_frame_button->setShortcut(Qt::Key_X);
     connect(
