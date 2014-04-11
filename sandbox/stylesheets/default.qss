@@ -1113,3 +1113,12 @@ QWidget#toggle_button_off
     background-color: ACTIVE_BACKGROUND_COLOR;
     border: BORDER_STYLE;
 }
+
+QToolTip
+{
+    background-color: rgba(80, 80, 80, 180);
+    color: rgba(255, 255, 255, 180);
+    border: 0px;
+    font-size: 11px;
+    opacity: 200;
+}

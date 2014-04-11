@@ -1,0 +1,77 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2014 , The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+#ifndef APPLESEED_STUDIO_MAINWINDOW_RENDERING_PIXELINSPECTORHANDLER_H
+#define APPLESEED_STUDIO_MAINWINDOW_RENDERING_PIXELINSPECTORHANDLER_H
+
+// Qt headers.
+#include <QObject>
+
+// Forward declarations.
+namespace appleseed { namespace studio { class MouseCoordinatesTracker; } }
+namespace appleseed { namespace studio { class ProjectExplorer; } }
+namespace renderer  { class Project; }
+class QEvent;
+class QPoint;
+class QWidget;
+
+namespace appleseed {
+namespace studio {
+
+class PixelInspectorHandler
+  : public QObject
+{
+    Q_OBJECT
+
+  public:
+    PixelInspectorHandler(
+           QWidget*                            widget,
+           const MouseCoordinatesTracker&      mouse_tracker,
+           const ProjectExplorer&              project_explorer,
+           const renderer::Project&            project);
+
+    ~PixelInspectorHandler();
+
+    void set_enabled(const bool enabled);
+
+  private:
+    QWidget*                                m_widget;
+    const MouseCoordinatesTracker&          m_mouse_tracker;
+    const ProjectExplorer&                  m_project_explorer;
+    const renderer::Project&                m_project;
+    bool                                    m_enabled;
+
+    virtual bool eventFilter(QObject* object, QEvent* event);
+
+    void show_tooltip(const QPoint& point, const QPoint& global_point);
+};
+
+}       // namespace studio
+}       // namespace appleseed
+
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_RENDERING_PIXELINSPECTORHANDLER_H
