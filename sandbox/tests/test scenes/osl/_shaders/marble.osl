@@ -1,7 +1,7 @@
 /*
-	A slightly modified version of the blue_marble shader by Darwyn Peachey,
-	from the Texturing & Modelling, A procedural approach book.
-	Ported to OSL and removed the blue part of it.
+    A slightly modified version of the blue_marble shader by Darwyn Peachey,
+    from the Texturing & Modelling, A procedural approach book.
+    Ported to OSL and removed the blue part of it.
 */
 
 #define PALE_GRAY 0.55
@@ -12,56 +12,54 @@
 #define NNOISE 4
 
 surface marble(
-	color Cd = color(0.5),
-	float Kd = 0.8,
-	color Cs = color(0.8),
-	float Ks = 0.2,
-	int object_space = 1,
-	float texturescale = 2.5,
-	float exponent = 1000)
+    color Cd = color(0.5),
+    float Kd = 0.8,
+    color Cs = color(0.8),
+    float Ks = 0.2,
+    int object_space = 1,
+    float texturescale = 2.5,
+    float exponent = 1000)
 {
-	point q;
+    point q;
 
-	if (object_space == 1)
-	{
-		q = transform("object", P);
-	}
-	else
-		q = P;
+    if (object_space == 1)
+        q = transform("object", P);
+    else
+        q = P;
 
-	q *= texturescale;
+    q *= texturescale;
 
-	float marble = 0;
-	float f = 1;
-	for (int i = 0; i < NNOISE; i += 1)
-	{
-		marble += snoise(q * f) / f;
-		f *= 2.17;
-	}
+    float marble = 0;
+    float f = 1;
+    for (int i = 0; i < NNOISE; i += 1)
+    {
+        marble += snoise(q * f) / f;
+        f *= 2.17;
+    }
 
-	float marble_ramp[13] = {
-		PALE_GRAY, 
-		PALE_GRAY,
-		MEDIUM_GRAY, 
-		MEDIUM_GRAY, 
-		MEDIUM_GRAY,
-		PALE_GRAY, 
-		PALE_GRAY,
-		DARK_GRAY, 
-		DARK_GRAY,
-		DARKER_GRAY, 
-		DARKER_GRAY,
-		PALE_GRAY, 
-		DARKER_GRAY
-		};
+    float marble_ramp[13] = {
+        PALE_GRAY, 
+        PALE_GRAY,
+        MEDIUM_GRAY, 
+        MEDIUM_GRAY, 
+        MEDIUM_GRAY,
+        PALE_GRAY, 
+        PALE_GRAY,
+        DARK_GRAY, 
+        DARK_GRAY,
+        DARKER_GRAY, 
+        DARKER_GRAY,
+        PALE_GRAY, 
+        DARKER_GRAY
+        };
 
-	Ci = as_ashikhmin_shirley(
-		N,
-		dPdu,
-		Kd,
-		Cd * spline("catmull-rom", clamp(2 * marble + .75, 0, 1), marble_ramp),
-		Ks,
-		Cs,
-		exponent,
-		exponent);
+    Ci = as_ashikhmin_shirley(
+        N,
+        dPdu,
+        Kd,
+        Cd * spline("catmull-rom", clamp(2 * marble + .75, 0, 1), marble_ramp),
+        Ks,
+        Cs,
+        exponent,
+        exponent);
 }
