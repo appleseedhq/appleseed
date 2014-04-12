@@ -251,7 +251,7 @@ bool ShadingPoint::OSLObjectTransformInfo::is_animated() const
     return !m_assembly_instance_transform->empty();
 }
 
-OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::transform() const
+OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::get_transform() const
 {
     assert(!is_animated());
 
@@ -262,7 +262,7 @@ OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::transform() const
     return Matrix4f(transpose(m));
 }
 
-OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::transform(float t) const
+OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::get_transform(float t) const
 {
     const Transformd assembly_xform = m_assembly_instance_transform->evaluate(t);
     const Transformd::MatrixType m(
@@ -271,7 +271,7 @@ OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::transform(float t) const
     return Matrix4f(transpose(m));
 }
 
-OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::inverse_transform() const
+OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::get_inverse_transform() const
 {
     assert(!is_animated());
 
@@ -282,7 +282,7 @@ OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::inverse_transform() const
     return Matrix4f(transpose(m));
 }
 
-OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::inverse_transform(float t) const
+OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::get_inverse_transform(float t) const
 {
     const Transformd assembly_xform = m_assembly_instance_transform->evaluate(t);
     const Transformd::MatrixType m(
@@ -337,8 +337,8 @@ OSL::ShaderGlobals& ShadingPoint::get_osl_shader_globals() const
         m_obj_transform_info.m_assembly_instance_transform = 
             &get_assembly_instance().cumulated_transform_sequence();
         m_obj_transform_info.m_object_instance_transform = 
-                &get_object_instance().get_transform();
-        
+            &get_object_instance().get_transform();
+
         m_shader_globals.object2common = reinterpret_cast<OSL::TransformationPtr>(&m_obj_transform_info);
 
         m_shader_globals.shader2common = 0;

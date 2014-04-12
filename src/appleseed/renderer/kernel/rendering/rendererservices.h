@@ -135,7 +135,7 @@ class RendererServices
     // error.  The default implementation is to use get_matrix and
     // invert it, but a particular renderer may have a better technique
     // and overload the implementation.
-    virtual bool get_inverse_matrix (
+    virtual bool get_inverse_matrix(
         OSL::Matrix44&          result, 
         OSL::TransformationPtr  xform,
         float                   time) OVERRIDE;

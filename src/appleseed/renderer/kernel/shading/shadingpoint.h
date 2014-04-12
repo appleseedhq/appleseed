@@ -180,11 +180,11 @@ class ShadingPoint
     {
         bool is_animated() const;
 
-        OSL::Matrix44 transform() const;
-        OSL::Matrix44 transform(float t) const;
+        OSL::Matrix44 get_transform() const;
+        OSL::Matrix44 get_transform(float t) const;
 
-        OSL::Matrix44 inverse_transform() const;
-        OSL::Matrix44 inverse_transform(float t) const;
+        OSL::Matrix44 get_inverse_transform() const;
+        OSL::Matrix44 get_inverse_transform(float t) const;
 
         const TransformSequence*        m_assembly_instance_transform;
         const foundation::Transformd*   m_object_instance_transform;
