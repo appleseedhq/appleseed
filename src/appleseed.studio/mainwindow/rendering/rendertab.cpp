@@ -159,6 +159,7 @@ void RenderTab::slot_set_render_region(const QRect& rect)
 void RenderTab::slot_toggle_pixel_inspector(const bool checked)
 {
     m_pixel_inspector_handler->set_enabled(checked);
+    m_pixel_inspector_handler->update_tooltip_visibility();
 }
 
 void RenderTab::create_render_widget()

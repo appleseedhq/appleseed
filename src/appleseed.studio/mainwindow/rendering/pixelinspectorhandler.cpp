@@ -47,7 +47,6 @@
 
 // Qt headers.
 #include <QEvent>
-#include <QMouseEvent>
 #include <QPoint>
 #include <QString>
 #include <QToolTip>
@@ -86,7 +85,11 @@ PixelInspectorHandler::~PixelInspectorHandler()
 void PixelInspectorHandler::set_enabled(const bool enabled)
 {
     m_enabled = enabled;
-    if (!m_enabled) QToolTip::hideText();
+}
+
+void PixelInspectorHandler::update_tooltip_visibility()
+{
+    m_enabled ? show_tooltip() : QToolTip::hideText();
 }
 
 bool PixelInspectorHandler::eventFilter(QObject* object, QEvent* event)
@@ -94,53 +97,52 @@ bool PixelInspectorHandler::eventFilter(QObject* object, QEvent* event)
     if (!m_enabled)
         return QObject::eventFilter(object, event);
 
-    const QMouseEvent* mouse_event = static_cast<QMouseEvent*>(event);
-
-    switch (event->type())
-    {
-       case QEvent::MouseMove:
-         show_tooltip(mouse_event->pos(), mouse_event->globalPos());
-         return false;
-    }
+    if (event->type() == QEvent::MouseMove)
+        show_tooltip();
 
     return QObject::eventFilter(object, event);
 }
 
-void PixelInspectorHandler::show_tooltip(const QPoint& point, const QPoint& global_point)
+void PixelInspectorHandler::show_tooltip()
 {
-    const Vector2d pix = m_mouse_tracker.widget_to_pixel(point);
-    const Vector2d ndc = m_mouse_tracker.widget_to_ndc(point);
+    if (m_widget->underMouse())
+    {
+        const QPoint global_point = QCursor::pos();
+        const QPoint local_point = m_widget->mapFromGlobal(global_point);
 
-    Color4f linear_rgba;
-    m_project.get_frame()->image().get_pixel(
-        truncate<size_t>(pix.x),
-        truncate<size_t>(pix.y),
-        linear_rgba);
+        const Vector2d pix = m_mouse_tracker.widget_to_pixel(local_point);
+        const Vector2d ndc = m_mouse_tracker.widget_to_ndc(local_point);
 
-    QToolTip::showText(
-        global_point,
-        QString(
-            "Pixel Inspector\n\n"
-            "Pixel:\n"
-            "X: %1\n"
-            "Y: %2\n\n"
-            "NDC:\n"
-            "X: %3\n"
-            "Y: %4\n\n"
-            "Color:\n"
-            "R: %5\n"
-            "G: %6\n"
-            "B: %7\n"
-            "A: %8")
-        .arg(
-            QString::number(pix.x),
-            QString::number(pix.y),
-            QString::number(ndc.x, 'f', 5),
-            QString::number(ndc.y, 'f', 5),
-            QString::number(linear_rgba.r, 'f', 3),
-            QString::number(linear_rgba.g, 'f', 3),
-            QString::number(linear_rgba.b, 'f', 3),
-            QString::number(linear_rgba.a, 'f', 3)));
+        Color4f linear_rgba;
+        m_project.get_frame()->image().get_pixel(
+            truncate<size_t>(pix.x),
+            truncate<size_t>(pix.y),
+            linear_rgba);
+
+        QToolTip::showText(
+            global_point,
+            QString(
+                "Pixel:\n"
+                "  X: %1\n"
+                "  Y: %2\n\n"
+                "NDC:\n"
+                "  X: %3\n"
+                "  Y: %4\n\n"
+                "Color:\n"
+                "  R: %5\n"
+                "  G: %6\n"
+                "  B: %7\n"
+                "  A: %8")
+            .arg(
+                QString::number(pix.x),
+                QString::number(pix.y),
+                QString::number(ndc.x, 'f', 5),
+                QString::number(ndc.y, 'f', 5),
+                QString::number(linear_rgba.r, 'f', 3),
+                QString::number(linear_rgba.g, 'f', 3),
+                QString::number(linear_rgba.b, 'f', 3),
+                QString::number(linear_rgba.a, 'f', 3)));
+    }
 }
 
 }   // namespace studio

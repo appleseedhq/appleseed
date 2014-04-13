@@ -37,7 +37,6 @@ namespace appleseed { namespace studio { class MouseCoordinatesTracker; } }
 namespace appleseed { namespace studio { class ProjectExplorer; } }
 namespace renderer  { class Project; }
 class QEvent;
-class QPoint;
 class QWidget;
 
 namespace appleseed {
@@ -59,6 +58,8 @@ class PixelInspectorHandler
 
     void set_enabled(const bool enabled);
 
+    void update_tooltip_visibility();
+
   private:
     QWidget*                                m_widget;
     const MouseCoordinatesTracker&          m_mouse_tracker;
@@ -68,7 +69,7 @@ class PixelInspectorHandler
 
     virtual bool eventFilter(QObject* object, QEvent* event);
 
-    void show_tooltip(const QPoint& point, const QPoint& global_point);
+    void show_tooltip();
 };
 
 }       // namespace studio
