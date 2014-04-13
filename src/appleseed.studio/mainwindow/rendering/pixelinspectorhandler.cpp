@@ -86,6 +86,7 @@ PixelInspectorHandler::~PixelInspectorHandler()
 void PixelInspectorHandler::set_enabled(const bool enabled)
 {
     m_enabled = enabled;
+    if (!m_enabled) QToolTip::hideText();
 }
 
 bool PixelInspectorHandler::eventFilter(QObject* object, QEvent* event)
