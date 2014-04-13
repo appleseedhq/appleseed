@@ -257,7 +257,7 @@ void RenderTab::create_toolbar()
     // Create the Pixel Inspector button in the render toolbar.
     m_pixel_inspector_button = new QToolButton();
     m_pixel_inspector_button->setIcon(QIcon(":/icons/pixel_inspector.png"));
-    m_pixel_inspector_button->setToolTip("Pixel Inspector under Mouse");
+    m_pixel_inspector_button->setToolTip("Toggle Pixel Inspector");
     m_pixel_inspector_button->setShortcut(Qt::Key_I);
     m_pixel_inspector_button->setCheckable(true);
     m_pixel_inspector_button->setChecked(false);
