@@ -72,18 +72,12 @@
     <addaction name="menu_file_open_builtin_project"/>
     <addaction name="action_file_reload_project"/>
     <addaction name="separator"/>
+    <addaction name="action_watch_project_changes"/>
+    <addaction name="separator"/>
     <addaction name="action_file_save_project"/>
     <addaction name="action_file_save_project_as"/>
     <addaction name="separator"/>
     <addaction name="action_file_exit"/>
-   </widget>
-   <widget class="QMenu" name="menu_navigation">
-    <property name="title">
-     <string>&amp;Navigation</string>
-    </property>
-    <addaction name="action_navigation_inspect"/>
-    <addaction name="action_navigation_fly"/>
-    <addaction name="action_navigation_freeze"/>
    </widget>
    <widget class="QMenu" name="menu_rendering">
     <property name="title">
@@ -127,7 +121,6 @@
     </property>
     <addaction name="action_tools_save_settings"/>
     <addaction name="action_tools_reload_settings"/>
-    <addaction name="action_tools_toggle_file_watcher"/>
    </widget>
    <widget class="QMenu" name="menu_help">
     <property name="title">
@@ -142,7 +135,6 @@
    </widget>
    <addaction name="menu_file"/>
    <addaction name="menu_view"/>
-   <addaction name="menu_navigation"/>
    <addaction name="menu_rendering"/>
    <addaction name="menu_diagnostics"/>
    <addaction name="menu_debug"/>
@@ -444,9 +436,20 @@
     <string>Clear Menu</string>
    </property>
   </action>
-  <action name="action_tools_toggle_file_watcher">
+  <action name="action_tools_watch_file_changes">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="text">
-    <string>Toggle File Watcher</string>
+    <string>Watch File Changes</string>
+   </property>
+  </action>
+  <action name="action_watch_project_changes">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Watch Project Changes</string>
    </property>
   </action>
  </widget>

@@ -102,7 +102,7 @@ class MainWindow
     QAction*                                m_action_start_interactive_rendering;
     QAction*                                m_action_start_final_rendering;
     QAction*                                m_action_stop_rendering;
-    QAction*                                m_action_toggle_file_watcher;
+    QAction*                                m_action_toggle_project_watcher;
 
     std::vector<QAction*>                   m_recently_opened;
     std::vector<MinimizeButton*>            m_minimize_buttons;
@@ -206,8 +206,8 @@ class MainWindow
     void slot_project_modified();
 
     // Project file watcher.
-    void slot_toggle_file_watcher();
-    void slot_file_changed(const QString& filepath);
+    void slot_toggle_project_file_watcher(const bool checked);
+    void slot_project_file_changed(const QString& filepath);
 
     // Settings I/O.
     void slot_load_settings();
