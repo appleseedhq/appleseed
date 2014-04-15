@@ -57,7 +57,6 @@ namespace renderer
 DECLARE_INPUT_VALUES(SpecularBRDFInputValues)
 {
     Spectrum    m_reflectance;              // specular reflectance
-    Alpha       m_reflectance_alpha;        // unused
     double      m_reflectance_multiplier;   // specular reflectance multiplier
 };
 

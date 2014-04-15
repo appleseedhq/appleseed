@@ -57,7 +57,6 @@ namespace renderer
 DECLARE_INPUT_VALUES(DiffuseBTDFInputValues)
 {
     Spectrum    m_transmittance;                // diffuse transmittance
-    Alpha       m_transmittance_alpha;          // unused
     double      m_transmittance_multiplier;     // diffuse transmittance multiplier
 };
 

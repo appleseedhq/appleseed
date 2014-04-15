@@ -119,7 +119,8 @@ namespace
         const Color3f&      linear_rgb,
         Spectrum&           spectrum)
     {
-        if (input_format == InputFormatSpectralReflectance)
+        if (input_format == InputFormatSpectralReflectance ||
+            input_format == InputFormatSpectralReflectanceWithAlpha)
         {
             linear_rgb_reflectance_to_spectrum(
                 linear_rgb,
@@ -127,7 +128,8 @@ namespace
         }
         else
         {
-            assert(input_format == InputFormatSpectralIlluminance);
+            assert(input_format == InputFormatSpectralIlluminance ||
+                   input_format == InputFormatSpectralIlluminanceWithAlpha);
             linear_rgb_illuminance_to_spectrum(
                 linear_rgb,
                 spectrum);
@@ -149,7 +151,10 @@ void ColorSource::initialize_from_3d_color(
 
     m_scalar = static_cast<double>(m_linear_rgb[0]);
 
-    if (input_format == InputFormatSpectralIlluminance || input_format == InputFormatSpectralReflectance)
+    if (input_format == InputFormatSpectralIlluminance ||
+        input_format == InputFormatSpectralReflectance ||
+        input_format == InputFormatSpectralIlluminanceWithAlpha ||
+        input_format == InputFormatSpectralReflectanceWithAlpha)
     {
         switch (color_entity.get_color_space())
         {

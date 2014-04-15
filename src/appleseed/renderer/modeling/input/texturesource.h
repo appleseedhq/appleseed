@@ -183,7 +183,8 @@ inline void TextureSource::evaluate(
 {
     const foundation::Color4f color = sample_texture(texture_cache, uv);
 
-    if (m_input_format == InputFormatSpectralReflectance)
+    if (m_input_format == InputFormatSpectralReflectance ||
+        m_input_format == InputFormatSpectralReflectanceWithAlpha)
         foundation::linear_rgb_reflectance_to_spectrum(color.rgb(), spectrum);
     else foundation::linear_rgb_illuminance_to_spectrum(color.rgb(), spectrum);
 }
@@ -219,7 +220,8 @@ inline void TextureSource::evaluate(
 {
     const foundation::Color4f color = sample_texture(texture_cache, uv);
 
-    if (m_input_format == InputFormatSpectralReflectance)
+    if (m_input_format == InputFormatSpectralReflectance ||
+        m_input_format == InputFormatSpectralReflectanceWithAlpha)
         foundation::linear_rgb_reflectance_to_spectrum(color.rgb(), spectrum);
     else foundation::linear_rgb_illuminance_to_spectrum(color.rgb(), spectrum);
 

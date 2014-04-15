@@ -223,9 +223,7 @@ namespace
             double      m_color_multiplier;
             double      m_alpha_multiplier;
             Spectrum    m_translucency;
-            Alpha       m_translucency_alpha;           // unused
             Spectrum    m_aerial_persp_sky_color;
-            Alpha       m_aerial_persp_sky_alpha;       // unused
         };
 
         enum AerialPerspMode
