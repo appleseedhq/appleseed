@@ -103,7 +103,7 @@ void ShadingEngine::shade_hit_point(
     }
     else
     {
-        // No alpha map: solid sample.
+        // No material or no alpha map: solid sample.
         shading_result.m_main.m_alpha = Alpha(1.0f);
     }
 
@@ -122,6 +122,10 @@ void ShadingEngine::shade_hit_point(
 
 #endif
 
+    // At this point, we can't have a fully transparent sample and yet have no material.
+    assert(shading_result.m_main.m_alpha[0] > 0.0f || material);
+
+    // Shade the sample if it isn't fully transparent.
     if (shading_result.m_main.m_alpha[0] > 0.0f || material->shade_alpha_cutouts())
     {
         // Use the diagnostic surface shader if there is one.
