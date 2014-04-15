@@ -75,6 +75,8 @@ namespace
 
     const Scene* get_parent_scene(const Entity* entity)
     {
+        assert(entity);
+
         while (dynamic_cast<const Scene*>(entity) == 0)
             entity = entity->get_parent();
 
