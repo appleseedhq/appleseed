@@ -230,26 +230,40 @@ class DLLSYMBOL Compiler
 //
 // Source code annotations.
 //
+// About PRINTF_FMT and PRINTF_FMT_ATTR() usage:
+//
+//   From http://gcc.gnu.org/onlinedocs/gcc/Function-Attributes.html:
+//
+//   The parameter string_index specifies which argument is the format string argument
+//   (starting from 1), while first_to_check is the number of the first argument to
+//   check against the format string. For functions where the arguments are not
+//   available to be checked (such as vprintf), specify the third parameter as zero.
+//   In this case the compiler only checks the format string for consistency. [...]
+//
+//   Since non-static C++ methods have an implicit this argument, the arguments of
+//   such methods should be counted from two, not one, when giving values for
+//   string_index and first_to_check.
+//
 
 // Visual C++: Visual Studio 2008+ annotations.
 #if _MSC_VER >= 1500
     #define PRINTF_FMT _Printf_format_string_
-    #define PRINTF_FMT_ATTR(m, n)
+    #define PRINTF_FMT_ATTR(string_index, first_to_check)
 
 // Visual C++: Visual Studio 2005 annotations.
 #elif _MSC_VER >= 1400
     #define PRINTF_FMT __format_string
-    #define PRINTF_FMT_ATTR(m, n)
+    #define PRINTF_FMT_ATTR(string_index, first_to_check)
 
 // gcc.
 #elif defined __GNUC__
     #define PRINTF_FMT
-    #define PRINTF_FMT_ATTR(m, n) __attribute__((format(printf, m, n)))
+    #define PRINTF_FMT_ATTR(string_index, first_to_check) __attribute__((format(printf, string_index, first_to_check)))
 
 // Other compilers: annotations have no effect.
 #else
     #define PRINTF_FMT
-    #define PRINTF_FMT_ATTR(m, n)
+    #define PRINTF_FMT_ATTR(string_index, first_to_check)
 #endif
 
 }       // namespace foundation
