@@ -53,7 +53,9 @@ void IEDFFactory::add_common_input_metadata(DictionaryArray& metadata)
         Dictionary()
             .insert("name", "importance_multiplier")
             .insert("label", "Importance Multiplier")
-            .insert("type", "text")
+            .insert("type", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "10.0")
             .insert("use", "optional")
             .insert("default", "1.0"));
 
@@ -61,7 +63,9 @@ void IEDFFactory::add_common_input_metadata(DictionaryArray& metadata)
         Dictionary()
             .insert("name", "light_near_start")
             .insert("label", "Light Near Start")
-            .insert("type", "text")
+            .insert("type", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "10.0")
             .insert("use", "optional")
             .insert("default", "0.0"));
 }
