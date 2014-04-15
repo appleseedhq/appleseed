@@ -108,16 +108,18 @@ void ShadingEngine::shade_hit_point(
     }
 
 #ifdef WITH_OSL
+
+    // Apply OSL transparency.
     if (material && material->get_osl_surface() && material->get_osl_surface()->has_transparency())
     {
-        Alpha a;
+        Alpha alpha;
         shading_context.execute_osl_transparency(
             *material->get_osl_surface(),
             shading_point,
-            a);
-
-        shading_result.m_main.m_alpha *= a;
+            alpha);
+        shading_result.m_main.m_alpha *= alpha;
     }
+
 #endif
 
     if (shading_result.m_main.m_alpha[0] > 0.0f || material->shade_alpha_cutouts())
