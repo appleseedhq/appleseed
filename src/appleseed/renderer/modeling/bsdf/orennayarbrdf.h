@@ -56,7 +56,6 @@ namespace renderer
 DECLARE_INPUT_VALUES(OrenNayarBRDFInputValues)
 {
     Spectrum    m_reflectance;              // diffuse reflectance (albedo, technically)
-    Alpha       m_reflectance_alpha;        // unused
     double      m_reflectance_multiplier;
     double      m_roughness;
 };
