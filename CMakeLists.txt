@@ -109,26 +109,24 @@ endif ()
 # Version information.
 #--------------------------------------------------------------------------------------------------
 
-# Extract git tag.
-if ( git_tag )
-  # The presence of this variable is currently used
-  # as an indication that this is not a git checkout repository
-  # and hence git command will fail. This variable should
-  # be set (via CMake command line option) to the following
-  # pattern MAJOR.MINOR.PATCH version numbering to satify
-  # the parsing later on in the file
-  #
-  # This is just an interim solution and should be replaced
-  # by proper version number header file approach as outline
-  # by Esteban
-else()
-  exec_program (
-    ${git_command}
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ARGS "describe --long"
-    OUTPUT_VARIABLE git_tag
+if (git_tag)
+    # The presence of this variable is currently used as an indication that this is not a git
+    # repository and hence the git command will fail. This variable should be set (via CMake
+    # command line option) to the following versioning pattern: MAJOR.MINOR.PATCH to satisfy
+    # the parsing later on in the file.
+    #
+    # This is just an interim solution and should be replaced by a proper version header file
+    # approach as outlined by Esteban.
+else ()
+    # Extract git tag.
+    exec_program (
+        ${git_command}
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ARGS "describe --long"
+        OUTPUT_VARIABLE git_tag
     )
-endif()
+endif ()
+
 
 #--------------------------------------------------------------------------------------------------
 # Boost libraries.
