@@ -173,8 +173,7 @@ namespace
     {
         // Configure our logger.
         SaveLogFormatterConfig save_g_logger_config(g_logger);
-        g_logger.reset_all_formats();
-        g_logger.set_format(LogMessage::Info, "{datetime-utc} | {message}");
+        g_logger.set_all_formats("{datetime-utc} | {message}");
 
         // Configure the renderer's logger: mute all log messages except warnings and errors.
         SaveLogFormatterConfig save_global_logger_config(global_logger());
@@ -226,8 +225,7 @@ namespace
     {
         // Configure our logger.
         SaveLogFormatterConfig save_g_logger_config(g_logger);
-        g_logger.reset_all_formats();
-        g_logger.set_format(LogMessage::Info, "{datetime-utc} | {message}");
+        g_logger.set_all_formats("{datetime-utc} | {message}");
 
         // Configure the renderer's logger: mute all log messages except warnings and errors.
         SaveLogFormatterConfig save_global_logger_config(global_logger());
