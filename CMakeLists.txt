@@ -110,13 +110,25 @@ endif ()
 #--------------------------------------------------------------------------------------------------
 
 # Extract git tag.
-exec_program (
+if ( git_tag )
+  # The presence of this variable is currently used
+  # as an indication that this is not a git checkout repository
+  # and hence git command will fail. This variable should
+  # be set (via CMake command line option) to the following
+  # pattern MAJOR.MINOR.PATCH version numbering to satify
+  # the parsing later on in the file
+  #
+  # This is just an interim solution and should be replaced
+  # by proper version number header file approach as outline
+  # by Esteban
+else()
+  exec_program (
     ${git_command}
     ${CMAKE_CURRENT_SOURCE_DIR}
     ARGS "describe --long"
     OUTPUT_VARIABLE git_tag
-)
-
+    )
+endif()
 
 #--------------------------------------------------------------------------------------------------
 # Boost libraries.
