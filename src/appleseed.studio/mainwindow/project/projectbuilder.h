@@ -358,7 +358,7 @@ inline renderer::TextureInstance* ProjectBuilder::edit_entity(
             name.c_str(),
             clean_values,
             texture_name.c_str(),
-            foundation::Transformd::identity()));
+            old_entity->get_transform()));
     renderer::TextureInstance* new_entity_ptr = new_entity.get();
 
     renderer::EntityTraits<renderer::TextureInstance>::remove_entity(old_entity, parent);
