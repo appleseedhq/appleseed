@@ -1181,6 +1181,8 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/bsdfwrapper.h
     renderer/modeling/bsdf/diffusebtdf.cpp
     renderer/modeling/bsdf/diffusebtdf.h
+    renderer/modeling/bsdf/disneydiffusebdrf.cpp
+    renderer/modeling/bsdf/disneydiffusebdrf.h
     renderer/modeling/bsdf/ibsdffactory.h
     renderer/modeling/bsdf/kelemenbrdf.cpp
     renderer/modeling/bsdf/kelemenbrdf.h
