@@ -27,8 +27,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSDF_DISNEYDIFFUSEBRDF_H
-#define APPLESEED_RENDERER_MODELING_BSDF_DISNEYDIFFUSEBRDF_H
+#ifndef APPLESEED_RENDERER_MODELING_BSDF_DISNEYBRDF_H
+#define APPLESEED_RENDERER_MODELING_BSDF_DISNEYBRDF_H
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -51,24 +51,30 @@ namespace renderer
 {
 
 //
-// DisneyDiffuse BRDF input values.
+// Disney BRDF input values.
 //
 
-DECLARE_INPUT_VALUES(DisneyDiffuseBRDFInputValues)
+DECLARE_INPUT_VALUES(DisneyBRDFInputValues)
 {
     Spectrum    m_base_color;
     double      m_subsurface;
+    double      m_metallic;
+    double      m_specular;
+    double      m_specular_tint;
+    double      m_anisotropic;
     double      m_roughness;
     double      m_sheen;
     double      m_sheen_tint;
+    double      m_clearcoat;
+    double      m_clearcoat_gloss;
 };
 
 
 //
-// DisneyDiffuse BRDF factory.
+// Disney BRDF factory.
 //
 
-class DLLSYMBOL DisneyDiffuseBRDFFactory
+class DLLSYMBOL DisneyBRDFFactory
   : public IBSDFFactory
 {
   public:
@@ -89,4 +95,4 @@ class DLLSYMBOL DisneyDiffuseBRDFFactory
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_BSDF_DisneyDiffuseBRDF_H
+#endif  // !APPLESEED_RENDERER_MODELING_BSDF_DISNEYBRDF_H

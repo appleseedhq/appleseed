@@ -28,7 +28,7 @@
 //
 
 // Interface header.
-#include "disneydiffusebdrf.h"
+#include "disneybdrf.h"
 
 // appleseed.renderer headers.
 #include "renderer/modeling/bsdf/bsdf.h"
@@ -60,25 +60,31 @@ namespace renderer
 namespace
 {
     //
-    // DisneyDiffuse BRDF.
+    // Disney BRDF.
     //
 
-    const char* Model = "disneydiffuse_brdf";
+    const char* Model = "disney_brdf";
 
-    class DisneyDiffuseBRDFImpl
+    class DisneyBRDFImpl
       : public BSDF
     {
       public:
-        DisneyDiffuseBRDFImpl(
+        DisneyBRDFImpl(
             const char*         name,
             const ParamArray&   params)
           : BSDF(name, Reflective, Diffuse, params)
         {
             m_inputs.declare("base_color", InputFormatSpectralReflectance);
             m_inputs.declare("subsurface", InputFormatScalar, "0.0");
+            m_inputs.declare("metallic", InputFormatScalar, "0.0");
+            m_inputs.declare("specular", InputFormatScalar, "0.0");
+            m_inputs.declare("specular_tint", InputFormatScalar, "0.0");
+            m_inputs.declare("anisotropic", InputFormatScalar, "0.0");
             m_inputs.declare("roughness", InputFormatScalar, "0.5");
             m_inputs.declare("sheen", InputFormatScalar, "0.0");
             m_inputs.declare("sheen_tint", InputFormatScalar, "0.0");
+            m_inputs.declare("clearcoat", InputFormatScalar, "0.0");
+            m_inputs.declare("clearcoat_gloss", InputFormatScalar, "0.0");
         }
 
         virtual void release() OVERRIDE
@@ -182,7 +188,7 @@ namespace
         }
 
       private:
-        typedef DisneyDiffuseBRDFInputValues InputValues;
+        typedef DisneyBRDFInputValues InputValues;
         
         template<class T>
         T mix(const T a, const T b, float t) const
@@ -263,25 +269,25 @@ namespace
         }
     };
 
-    typedef BSDFWrapper<DisneyDiffuseBRDFImpl> DisneyDiffuseBRDF;
+    typedef BSDFWrapper<DisneyBRDFImpl> DisneyBRDF;
 }
 
 
 //
-// DisneyDiffuseBRDFFactory class implementation.
+// DisneyBRDFFactory class implementation.
 //
 
-const char* DisneyDiffuseBRDFFactory::get_model() const
+const char* DisneyBRDFFactory::get_model() const
 {
     return Model;
 }
 
-const char* DisneyDiffuseBRDFFactory::get_human_readable_model() const
+const char* DisneyBRDFFactory::get_human_readable_model() const
 {
-    return "DisneyDiffuse BRDF";
+    return "Disney BRDF";
 }
 
-DictionaryArray DisneyDiffuseBRDFFactory::get_input_metadata() const
+DictionaryArray DisneyBRDFFactory::get_input_metadata() const
 {
     DictionaryArray metadata;
 
@@ -307,6 +313,46 @@ DictionaryArray DisneyDiffuseBRDFFactory::get_input_metadata() const
             .insert("use", "optional")
             .insert("default", "0.0"));
 
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "metallic")
+            .insert("label", "Metallic")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "optional")
+            .insert("default", "0.0"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "specular")
+            .insert("label", "Specular")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "optional")
+            .insert("default", "0.0"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "specular_tint")
+            .insert("label", "Specular Tint")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "optional")
+            .insert("default", "0.0"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "anisotropic")
+            .insert("label", "Anisotropic")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "optional")
+            .insert("default", "0.0"));
+    
     metadata.push_back(
         Dictionary()
             .insert("name", "roughness")
@@ -337,14 +383,34 @@ DictionaryArray DisneyDiffuseBRDFFactory::get_input_metadata() const
             .insert("use", "optional")
             .insert("default", "0.0"));
 
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "clearcoat")
+            .insert("label", "Clearcoat")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "optional")
+            .insert("default", "0.0"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "clearcoat_gloss")
+            .insert("label", "Clearcoat Gloss")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "optional")
+            .insert("default", "0.0"));
+    
     return metadata;
 }
 
-auto_release_ptr<BSDF> DisneyDiffuseBRDFFactory::create(
+auto_release_ptr<BSDF> DisneyBRDFFactory::create(
     const char*         name,
     const ParamArray&   params) const
 {
-    return auto_release_ptr<BSDF>(new DisneyDiffuseBRDF(name, params));
+    return auto_release_ptr<BSDF>(new DisneyBRDF(name, params));
 }
 
 }   // namespace renderer
