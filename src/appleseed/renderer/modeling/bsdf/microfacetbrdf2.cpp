@@ -98,6 +98,7 @@ namespace
             if (!BSDF::on_frame_begin(project, assembly, abort_switch))
                 return false;
 
+            /*
             const EntityDefMessageContext context("bsdf", this);
             const string mdf =
                 m_params.get_required<string>(
@@ -105,7 +106,8 @@ namespace
                     "blinn",
                     make_vector("blinn", "beckmann", "ward", "ggx"),
                     context);
-            
+            */
+
             return true;
         }
 
@@ -152,8 +154,8 @@ namespace
       private:
         typedef Microfacet2BRDFInputValues InputValues;
         
-        std::auto_ptr<AnyMDF<double> >                  m_mdf;
-        std::auto_ptr<AnyFresnel<Spectrum, double> >    m_fresnel; 
+        std::auto_ptr<MDF<double> >     m_mdf;
+        std::auto_ptr<Fresnel<double> > m_fresnel;
     };
 
     typedef BSDFWrapper<Microfacet2BRDFImpl> Microfacet2BRDF;

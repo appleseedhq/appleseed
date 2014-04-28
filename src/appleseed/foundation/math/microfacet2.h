@@ -44,170 +44,73 @@
 namespace foundation
 {
 
-// Isotropic Blinn here...
 template <typename T>
-struct BlinnMDF2
+struct MDF : NonCopyable
 {
-  public:
-    // Sample the product of the MDF and |H.n|.
-    Vector<T, 3> sample(
-        const Vector<T,2>& s,
-        const T e,
-        const T unused  = T(0),
-        const T unused2 = T(0)) const
+    virtual ~MDF() {}
+
+    inline Vector<T,3> sample(
+        const Vector<T,2>&  s,
+        const T             ax,
+        const T             ay,
+        const T             e) const
     {
         assert(s[0] >= T(0.0) && s[0] < T(1.0));
         assert(s[1] >= T(0.0) && s[1] < T(1.0));
 
-        return Vector<T,3>();
+        return do_sample(s, ax, ay, e);
     }
 
-    T evaluateD(
-        const T e,
-        const T unused  = T(0),
-        const T unused2 = T(0)) const
-    {
-        return T(0);
-    }
+    virtual T evaluateD(
+        const T ax,
+        const T ay,
+        const T e) const = 0;
 
-    T evaluateG(
-        const T e,
-        const T unused  = T(0),
-        const T unused2 = T(0)) const
-    {
-        return 0.0f;
-    }
+    virtual T evaluateG(
+        const T ax,
+        const T ay,
+        const T e) const = 0;
 
-    T evaluate_pdf(
-        const T e,
-        const T unused  = T(0),
-        const T unused2 = T(0)) const
-    {
-        return 0.0f;
-    }
+    virtual T evaluate_pdf(
+        const T ax,
+        const T ay,
+        const T e) const = 0;
+
+  private:
+
+    virtual Vector<T,3> do_sample(
+        const Vector<T,2>&  s,
+        const T             ax,
+        const T             ay,
+        const T             e) const = 0;
+};
+
+// Isotropic Blinn here...
+template <typename T>
+struct BlinnMDF2
+  : public MDF<T>
+{
 };
 
 // Anisotropic Beckmann here...
-template<typename T>
+template <typename T>
 struct BeckmannMDF2
+  : public MDF<T>
 {
 };
 
 // Anisotropic GTR with exponent == 1 here...
-template<typename T>
+template <typename T>
 struct BerryMDF2
+  : public MDF<T>
 {
 };
 
 // Anisotropic GTR with exponent == 2 here...
-template<typename T>
+template <typename T>
 struct GGXMDF2
+  : public MDF<T>
 {
-};
-
-// AnyMDF, a polymorphic MDF wrapper.
-// It's here, instead of in microfacetbrdf2.cpp 
-// because this will also be used by a future microfacetbtdf.
-template<typename T>
-class AnyMDF : NonCopyable
-{
-  public:
-
-    template<typename MDF>
-    explicit AnyMDF(const MDF& mdf)
-    {
-        m_model = new Model<MDF>(mdf);
-    }
-
-    ~AnyMDF()
-    {
-        delete m_model;
-    }
-
-    inline Vector<T, 3> sample(
-        const Vector<T,2>& s,
-        const T ax,
-        const T ay,
-        const T e) const
-    {
-        return m_model->sample(s, ax, ay, e);
-    }
-
-    inline T evaluate(
-        const T ax,
-        const T ay,
-        const T e) const
-    {
-        return m_model->evaluate(ax, ay, e);
-    }
-
-    inline T evaluate_pdf(
-        const T ax,
-        const T ay,
-        const T e) const
-    {
-        return m_model->evaluate_pdf(ax, ay, e);
-    }
-
-  private:
-
-    struct Interface
-    {
-        virtual ~Interface() {}
-
-        virtual Vector<T, 3> sample(
-            const Vector<T,2>& s,
-            const T ax,
-            const T ay,
-            const T e) const = 0;
-
-        virtual T evaluate(
-            const T ax,
-            const T ay,
-            const T e) const = 0;
-
-        virtual T evaluate_pdf(
-            const T ax,
-            const T ay,
-            const T e) const = 0;
-    };
-
-    template<typename MDF>
-    struct Model : public Interface
-    {
-        explicit Model(const MDF& mdf) : m_mdf(mdf) {}
-
-        virtual Vector<T, 3> sample(
-            const Vector<T,2>& s,
-            const T ax,
-            const T ay,
-            const T e) const OVERRIDE
-        {
-            return m_model->sample(s, ax, ay, e);
-        }
-
-        virtual T evaluate(
-            const T ax,
-            const T ay,
-            const T e) const OVERRIDE
-        {
-            return 
-                m_model->evaluateD(ax, ay, e) *
-                m_model->evaluateG(ax, ay, e);
-        }
-
-        virtual T evaluate_pdf(
-            const T ax,
-            const T ay,
-            const T e) const OVERRIDE
-        {
-            return m_model->evaluate_pdf(ax, ay, e);
-        }
-
-        MDF m_mdf; 
-    };
-
-    Interface *m_model;
 };
 
 }       // namespace foundation
