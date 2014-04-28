@@ -210,6 +210,8 @@ Spectrum fresnel_dielectric_schlick(
     return fr;
 }
 
+// TODO: add Fresnel function object versions here...
+
 //
 // AnyFresnel, a polymorphic Fresnel function wrapper
 //
