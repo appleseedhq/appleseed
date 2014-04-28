@@ -85,6 +85,14 @@ namespace
             m_inputs.declare("sheen_tint", InputFormatScalar, "0.0");
             m_inputs.declare("clearcoat", InputFormatScalar, "0.0");
             m_inputs.declare("clearcoat_gloss", InputFormatScalar, "0.0");
+            
+            m_lighting_conditions = LightingConditions(
+                IlluminantCIED65, 
+                XYZCMFCIE196410Deg);
+
+            linear_rgb_reflectance_to_spectrum(
+                Color3f(1.0f, 1.0f, 1.0f),
+                m_white_spectrum);
         }
 
         virtual void release() OVERRIDE
@@ -118,7 +126,7 @@ namespace
             incoming = shading_basis.transform_to_parent(wi);
 
             // Compute the BRDF value.
-            brdf_value(
+            diffuse_brdf_value(
                 data,
                 shading_basis,
                 outgoing,
@@ -155,7 +163,7 @@ namespace
                 return 0.0;
 
             // Compute the BRDF value.
-            brdf_value(
+            diffuse_brdf_value(
                 data,
                 shading_basis,
                 outgoing,
@@ -198,12 +206,8 @@ namespace
         
         float luminance(const Spectrum& s) const
         {
-            float l = 0.0f;
-            
-            for (int i = 0; i < Spectrum::Samples; ++i)
-                l += s[i];
-            
-            return l / static_cast<float>(Spectrum::Samples);
+            Color3f xyz = spectrum_to_ciexyz<float>(m_lighting_conditions, s);
+            return xyz[1];
         }
         
         void mix_spectrums(
@@ -226,7 +230,7 @@ namespace
             return m2 * m2 * m; // pow(m,5)
         }
         
-        void brdf_value(
+        void diffuse_brdf_value(
             const void*         data,
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
@@ -241,37 +245,50 @@ namespace
             const double ldoth = dot(outgoing, h);
             
             const InputValues* values = static_cast<const InputValues*>(data);
-            
-            const float clum = luminance(values->m_base_color);
-            Spectrum ctint = values->m_base_color;
-            
-            if (clum <= 0.0f)            
-                ctint /= clum;
+            value = values->m_base_color;
 
             float fl = schlick_fresnel(ndotl);
             float fv = schlick_fresnel(ndotv);
             float fd90 = 0.0f + 2.0f * ldoth * ldoth * values->m_roughness;
             float fd = mix(1.0f, fd90, fl) * mix(1.0f, fd90, fv);
-            
-            float fss90 = ldoth * ldoth * values->m_roughness;
-            float fss = mix(1.0f, fss90, fl) * mix(1.0f, fss90, fv);
-            float ss = 1.25f * (fss * (1.0f / (ndotl + ndotv) - 0.5f) + 0.5f);
 
-            float fh = schlick_fresnel(ldoth);
-            const Spectrum one(1.0f);
-            Spectrum csheen;            
-            mix_spectrums(one, ctint, static_cast<float>(values->m_sheen_tint), csheen);
-            csheen *= static_cast<float>(fh * values->m_sheen);
+            if (values->m_subsurface > 0.0)
+            {
+                float fss90 = ldoth * ldoth * values->m_roughness;
+                float fss = mix(1.0f, fss90, fl) * mix(1.0f, fss90, fv);
+                float ss = 1.25f * (fss * (1.0f / (ndotl + ndotv) - 0.5f) + 0.5f);
+                fd = mix(fd, ss, values->m_subsurface);
+            }
+                
+            value *= static_cast<float>(fd * RcpPi);
 
-            value = values->m_base_color;
-            value *= static_cast<float>(mix(fd, ss, values->m_subsurface) * RcpPi);
-            value += csheen;
+            if (values->m_sheen > 0.0)
+            {
+                const float clum = luminance(values->m_base_color);
+                Spectrum ctint = values->m_base_color;
+                
+                // In a spectral color space, this is a bit fishy... 
+                // Review.
+                if (clum <= 0.0f)
+                    ctint /= clum;
+                
+                float fh = schlick_fresnel(ldoth);
+                Spectrum csheen;            
+                mix_spectrums(m_white_spectrum, ctint, static_cast<float>(values->m_sheen_tint), csheen);
+                csheen *= static_cast<float>(fh * values->m_sheen);
+                value += csheen;
+            }
         }
+        
+        static LightingConditions   m_lighting_conditions;
+        static Spectrum             m_white_spectrum;
     };
 
     typedef BSDFWrapper<DisneyBRDFImpl> DisneyBRDF;
 }
 
+LightingConditions DisneyBRDFImpl::m_lighting_conditions;
+Spectrum DisneyBRDFImpl::m_white_spectrum;
 
 //
 // DisneyBRDFFactory class implementation.
