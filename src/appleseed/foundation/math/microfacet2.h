@@ -44,38 +44,33 @@
 namespace foundation
 {
 
-/*
-template<typename T>
-T microfacet_attenuation_function(
-    const T        cos_on,
-    const T        cos_in,
-    const T        cos_hn,
-    const T        cos_oh)
-{
-    const T rcp_cos_oh = 1.0 / cos_oh;
-    const T a = 2.0 * cos_hn * cos_on * rcp_cos_oh;
-    const T b = 2.0 * cos_hn * cos_in * rcp_cos_oh;
-    return std::min(a, b, T(1));
-}
-*/
-
+// Isotropic Blinn here...
 template <typename T>
-class BlinnMDF2
+struct BlinnMDF2
 {
   public:
     // Sample the product of the MDF and |H.n|.
     Vector<T, 3> sample(
-        const Vector<T, 2>& s,
+        const Vector<T,2>& s,
         const T e,
         const T unused  = T(0),
         const T unused2 = T(0)) const
     {
+        assert(s[0] >= T(0.0) && s[0] < T(1.0));
+        assert(s[1] >= T(0.0) && s[1] < T(1.0));
+
         return Vector<T,3>();
     }
 
-    // This would compute D*G (TODO: more params are needed for this).
-    T evaluate(
-        const T cos_alpha,
+    T evaluateD(
+        const T e,
+        const T unused  = T(0),
+        const T unused2 = T(0)) const
+    {
+        return T(0);
+    }
+
+    T evaluateG(
         const T e,
         const T unused  = T(0),
         const T unused2 = T(0)) const
@@ -84,7 +79,6 @@ class BlinnMDF2
     }
 
     T evaluate_pdf(
-        const T cos_alpha,
         const T e,
         const T unused  = T(0),
         const T unused2 = T(0)) const
@@ -93,59 +87,122 @@ class BlinnMDF2
     }
 };
 
+// Anisotropic Beckmann here...
 template<typename T>
-class BeckmannMDF2
+struct BeckmannMDF2
 {
 };
 
+// Anisotropic GTR with exponent == 1 here...
 template<typename T>
-class BerryMDF
+struct BerryMDF2
 {
 };
 
+// Anisotropic GTR with exponent == 2 here...
 template<typename T>
-class GGXMDF2
+struct GGXMDF2
 {
 };
 
-template<typename T>
-class WardMDF2
-{
-};
-
-//
 // AnyMDF, a polymorphic MDF wrapper.
-//
-
+// It's here, instead of in microfacetbrdf2.cpp 
+// because this will also be used by a future microfacetbtdf.
 template<typename T>
 class AnyMDF : NonCopyable
 {
   public:
-    
-    AnyMDF() : m_model(0) {}
-    
+
     template<typename MDF>
     explicit AnyMDF(const MDF& mdf)
     {
         m_model = new Model<MDF>(mdf);
     }
-    
+
     ~AnyMDF()
     {
         delete m_model;
     }
-    
+
+    inline Vector<T, 3> sample(
+        const Vector<T,2>& s,
+        const T ax,
+        const T ay,
+        const T e) const
+    {
+        return m_model->sample(s, ax, ay, e);
+    }
+
+    inline T evaluate(
+        const T ax,
+        const T ay,
+        const T e) const
+    {
+        return m_model->evaluate(ax, ay, e);
+    }
+
+    inline T evaluate_pdf(
+        const T ax,
+        const T ay,
+        const T e) const
+    {
+        return m_model->evaluate_pdf(ax, ay, e);
+    }
+
   private:
-    
+
     struct Interface
     {
         virtual ~Interface() {}
+
+        virtual Vector<T, 3> sample(
+            const Vector<T,2>& s,
+            const T ax,
+            const T ay,
+            const T e) const = 0;
+
+        virtual T evaluate(
+            const T ax,
+            const T ay,
+            const T e) const = 0;
+
+        virtual T evaluate_pdf(
+            const T ax,
+            const T ay,
+            const T e) const = 0;
     };
-    
+
     template<typename MDF>
     struct Model : public Interface
     {
         explicit Model(const MDF& mdf) : m_mdf(mdf) {}
+
+        virtual Vector<T, 3> sample(
+            const Vector<T,2>& s,
+            const T ax,
+            const T ay,
+            const T e) const OVERRIDE
+        {
+            return m_model->sample(s, ax, ay, e);
+        }
+
+        virtual T evaluate(
+            const T ax,
+            const T ay,
+            const T e) const OVERRIDE
+        {
+            return 
+                m_model->evaluateD(ax, ay, e) *
+                m_model->evaluateG(ax, ay, e);
+        }
+
+        virtual T evaluate_pdf(
+            const T ax,
+            const T ay,
+            const T e) const OVERRIDE
+        {
+            return m_model->evaluate_pdf(ax, ay, e);
+        }
 
         MDF m_mdf; 
     };
