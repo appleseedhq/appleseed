@@ -210,6 +210,15 @@ Spectrum fresnel_dielectric_schlick(
     return fr;
 }
 
+//
+// AnyFresnel, a polymorphic Fresnel function wrapper
+//
+
+template<typename Spectrum, typename T>
+class AnyFresnel
+{
+};
+
 }       // namespace foundation
 
 #endif  // !APPLESEED_FOUNDATION_MATH_FRESNEL_H

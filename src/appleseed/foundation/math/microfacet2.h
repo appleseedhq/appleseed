@@ -44,6 +44,7 @@
 namespace foundation
 {
 
+/*
 template<typename T>
 T microfacet_attenuation_function(
     const T        cos_on,
@@ -56,6 +57,7 @@ T microfacet_attenuation_function(
     const T b = 2.0 * cos_hn * cos_in * rcp_cos_oh;
     return std::min(a, b, T(1));
 }
+*/
 
 template <typename T>
 class BlinnMDF2
@@ -63,40 +65,52 @@ class BlinnMDF2
   public:
     // Sample the product of the MDF and |H.n|.
     Vector<T, 3> sample(
-        const T e, 
-        const T unused, 
-        const Vector<T, 2>& s) const
+        const Vector<T, 2>& s,
+        const T e,
+        const T unused  = T(0),
+        const T unused2 = T(0)) const
     {
-        assert(s[0] >= T(0.0) && s[0] < T(1.0));
-        assert(s[1] >= T(0.0) && s[1] < T(1.0));
-
-        const T cos_alpha = std::pow(T(1.0) - s[0], T(1.0) / (e + T(2.0)));
-        const T sin_alpha = std::sqrt(T(1.0) - cos_alpha * cos_alpha);
-        const T phi = TwoPi * s[1];
-
-        return Vector<T, 3>::unit_vector(cos_alpha, sin_alpha, std::cos(phi), std::sin(phi));        
+        return Vector<T,3>();
     }
 
     // This would compute D*G (TODO: more params are needed for this).
     T evaluate(
-        const T e, 
-        const T unused, 
-        const T cos_alpha) const
+        const T cos_alpha,
+        const T e,
+        const T unused  = T(0),
+        const T unused2 = T(0)) const
     {
-        assert(cos_alpha >= T(0.0));
-
-        return (e + T(2.0)) * RcpTwoPi * std::pow(cos_alpha, e);        
+        return 0.0f;
     }
 
     T evaluate_pdf(
-        const T e, 
-        const T unused,
-        const T cos_alpha) const
+        const T cos_alpha,
+        const T e,
+        const T unused  = T(0),
+        const T unused2 = T(0)) const
     {
-        assert(cos_alpha >= T(0.0));
-
-        return (e + T(2.0)) * RcpTwoPi * std::pow(cos_alpha, e + T(1.0));
+        return 0.0f;
     }
+};
+
+template<typename T>
+class BeckmannMDF2
+{
+};
+
+template<typename T>
+class BerryMDF
+{
+};
+
+template<typename T>
+class GGXMDF2
+{
+};
+
+template<typename T>
+class WardMDF2
+{
 };
 
 //
@@ -108,8 +122,10 @@ class AnyMDF : NonCopyable
 {
   public:
     
+    AnyMDF() : m_model(0) {}
+    
     template<typename MDF>
-    AnyMDF(const MDF& mdf)
+    explicit AnyMDF(const MDF& mdf)
     {
         m_model = new Model<MDF>(mdf);
     }
@@ -119,82 +135,19 @@ class AnyMDF : NonCopyable
         delete m_model;
     }
     
-    Vector<T, 3> sample(
-        const T ax, 
-        const T ay, 
-        const Vector<T, 2>& s) const
-    {
-        return m_model->sample(ax, ay, s);
-    }
-
-    T evaluate(
-        const T ax, 
-        const T ay,
-        const T cos_alpha) const
-    {
-        return m_model->evaluate(ax, ay, cos_alpha);
-    }
-
-    T evaluate_pdf(
-        const T ax, 
-        const T ay,
-        const T cos_alpha) const
-    {
-        return m_model->evaluate_pdf(ax, ay, cos_alpha);
-    }
-    
   private:
     
     struct Interface
     {
         virtual ~Interface() {}
-        
-        virtual Vector<T, 3> sample(
-            const T ax, 
-            const T ay,
-            const Vector<T, 2>& s) const = 0;
-        
-        virtual T evaluate(
-            const T ax, 
-            const T ay,
-            const T cos_alpha) const = 0;
-        
-        virtual T evaluate_pdf(
-            const T ax, 
-            const T ay,
-            const T cos_alpha) const = 0;
     };
     
     template<typename MDF>
     struct Model : public Interface
     {
-       Model(const MDF& mdf) : m_mdf(mdf) {}
+        explicit Model(const MDF& mdf) : m_mdf(mdf) {}
 
-       virtual Vector<T, 3> sample(
-            const T ax, 
-            const T ay,
-            const Vector<T, 2>& s) const OVERRIDE
-       {
-           return m_mdf.sample(ax, ay, s);
-       }
-       
-       virtual T evaluate(
-            const T ax, 
-            const T ay,
-            const T cos_alpha) const OVERRIDE
-       {
-           return m_mdf.evaluate(ax, ay, cos_alpha);
-       }
-
-       virtual T evaluate_pdf(
-            const T ax, 
-            const T ay, 
-            const T cos_alpha) const OVERRIDE
-       {
-           return m_mdf.evaluate_pdf(ax, ay, cos_alpha);
-       }
-
-       MDF m_mdf; 
+        MDF m_mdf; 
     };
 
     Interface *m_model;
