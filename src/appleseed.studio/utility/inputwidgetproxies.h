@@ -97,6 +97,22 @@ class LineEditProxy
     QLineEdit* m_line_edit;
 };
 
+//
+// QLineEditScientific proxy.
+//
+
+class LineEditScientificProxy
+  : public IInputWidgetProxy
+{
+  public:
+    explicit LineEditScientificProxy(QLineEdit* line_edit);
+
+    virtual void set(const std::string& value) OVERRIDE;
+    virtual std::string get() const OVERRIDE;
+
+  private:
+    QLineEdit* m_line_edit;
+};
 
 //
 // QSpinBox proxy.

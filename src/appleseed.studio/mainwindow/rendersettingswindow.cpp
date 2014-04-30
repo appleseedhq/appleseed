@@ -61,6 +61,7 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QLayout>
+#include <QLineEdit>
 #include <QMessageBox>
 #include <QRadioButton>
 #include <QShortcut>
@@ -204,6 +205,24 @@ class RenderSettingsPanel
 
     WidgetProxyCollection       m_widget_proxies;
     DirectLinkCollection        m_direct_links;
+
+    QLineEdit* create_lineedit_scientific(
+            const string&           widget_key,
+            const int               min,
+            const int               max)
+    {
+        QDoubleValidator *validate=new QDoubleValidator(this);
+        validate->setBottom(min);
+        validate->setTop(max);
+        validate->setNotation(QDoubleValidator::ScientificNotation);
+
+        QLineEdit* lineedit = new QLineEdit();
+        m_widget_proxies[widget_key] = new LineEditScientificProxy(lineedit);
+
+        lineedit->setValidator(validate);
+
+        return lineedit;
+    }
 
     QSpinBox* create_integer_input(
         const string&           widget_key,
@@ -966,8 +985,8 @@ namespace
             layout->addLayout(sublayout);
 
             create_bounce_settings(sublayout, "photon_tracing");
-            sublayout->addRow("Light Photons:", create_integer_input("photon_tracing.light_photons", 0, 1000000000));
-            sublayout->addRow("Environment Photons:", create_integer_input("photon_tracing.env_photons", 0, 1000000000));
+            sublayout->addRow("Light Photons:", create_lineedit_scientific("photon_tracing.light_photons", 0, 1000000000));
+            sublayout->addRow("Environment Photons:", create_lineedit_scientific("photon_tracing.env_photons", 0, 1000000000));
         }
 
         void create_sppm_radiance_estimation_settings(QVBoxLayout* parent)

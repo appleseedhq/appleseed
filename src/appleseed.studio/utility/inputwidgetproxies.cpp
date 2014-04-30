@@ -96,6 +96,26 @@ string LineEditProxy::get() const
     return m_line_edit->text().toStdString();
 }
 
+//
+// LineEditScientificProxy class implementation.
+//
+
+LineEditScientificProxy::LineEditScientificProxy(QLineEdit* line_edit)
+  : m_line_edit(line_edit)
+{
+    connect(m_line_edit, SIGNAL(returnPressed()), SIGNAL(signal_changed()));
+}
+
+void LineEditScientificProxy::set(const string& value)
+{
+    m_line_edit->setText(QString::fromStdString(value));
+}
+
+string LineEditScientificProxy::get() const
+{
+    return QString::number(m_line_edit->text().toDouble(),'g',10*log(m_line_edit->text().toDouble())).toStdString();
+}
+
 
 //
 // SpinBoxProxy class implementation.
