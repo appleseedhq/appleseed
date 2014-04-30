@@ -208,12 +208,14 @@ class RenderSettingsPanel
     QSpinBox* create_integer_input(
         const string&           widget_key,
         const int               min,
-        const int               max)
+        const int               max,
+        const int               step)
     {
         QSpinBox* spinbox = new QSpinBox();
         m_widget_proxies[widget_key] = new SpinBoxProxy(spinbox);
 
         spinbox->setRange(min, max);
+        spinbox->setSingleStep(step);
         set_widget_width_for_value(spinbox, max, SpinBoxMargin, SpinBoxMinWidth);
 
         new MouseWheelFocusEventFilter(spinbox);
@@ -225,9 +227,10 @@ class RenderSettingsPanel
         const string&           widget_key,
         const int               min,
         const int               max,
+        const int               step,
         const QString&          label)
     {
-        QSpinBox* spinbox = create_integer_input(widget_key, min, max);
+        QSpinBox* spinbox = create_integer_input(widget_key, min, max, step);
 
         const QString suffix = " " + label;
         spinbox->setSuffix(suffix);
@@ -465,7 +468,7 @@ namespace
                 m_image_plane_sampler_combo, SIGNAL(currentIndexChanged(int)),
                 SLOT(slot_changed_image_plane_sampler(const int)));
 
-            m_image_plane_sampler_passes = create_integer_input("general.passes", 1, 1000000);
+            m_image_plane_sampler_passes = create_integer_input("general.passes", 1, 1000000, 1);
             sublayout->addRow("Passes:", m_image_plane_sampler_passes);
         }
 
@@ -486,7 +489,7 @@ namespace
             QVBoxLayout* layout = create_vertical_layout();
             m_uniform_image_plane_sampler->setLayout(layout);
 
-            QSpinBox* samples_spinbox = create_integer_input("uniform_sampler.samples", 1, 1000000);
+            QSpinBox* samples_spinbox = create_integer_input("uniform_sampler.samples", 1, 1000000, 1);
             layout->addLayout(create_form_layout("Samples:", samples_spinbox));
 
             m_uniform_sampler_force_aa = create_checkbox("uniform_sampler.force_antialiasing", "Force Antialiasing");
@@ -516,8 +519,8 @@ namespace
             QFormLayout* sublayout = create_form_layout();
             layout->addLayout(sublayout);
 
-            sublayout->addRow("Min Samples:", create_integer_input("adaptive_sampler.min_samples", 1, 1000000));
-            sublayout->addRow("Max Samples:", create_integer_input("adaptive_sampler.max_samples", 1, 1000000));
+            sublayout->addRow("Min Samples:", create_integer_input("adaptive_sampler.min_samples", 1, 1000000, 1));
+            sublayout->addRow("Max Samples:", create_integer_input("adaptive_sampler.max_samples", 1, 1000000, 1));
             sublayout->addRow("Quality:", create_double_input("adaptive_sampler.quality", -20.0, +20.0, 2, 0.5));
 
             layout->addWidget(create_checkbox("adaptive_sampler.enable_diagnostics", "Enable Diagnostic AOVs"));
@@ -640,12 +643,12 @@ namespace
         {
             const string widget_base_key = prefix + ".bounces.";
 
-            QSpinBox* max_bounces = create_integer_input(widget_base_key + "max_bounces", 0, 10000);
+            QSpinBox* max_bounces = create_integer_input(widget_base_key + "max_bounces", 0, 10000, 1);
             QCheckBox* unlimited_bounces = create_checkbox(widget_base_key + "unlimited_bounces", "Unlimited");
             layout->addRow("Max Bounces:", create_horizontal_group(max_bounces, unlimited_bounces));
             connect(unlimited_bounces, SIGNAL(toggled(bool)), max_bounces, SLOT(setDisabled(bool)));
 
-            layout->addRow("Russian Roulette Start Bounce:", create_integer_input(widget_base_key + "rr_start_bounce", 1, 10000));
+            layout->addRow("Russian Roulette Start Bounce:", create_integer_input(widget_base_key + "rr_start_bounce", 1, 10000, 1));
         }
 
         void load_bounce_settings(
@@ -966,8 +969,8 @@ namespace
             layout->addLayout(sublayout);
 
             create_bounce_settings(sublayout, "photon_tracing");
-            sublayout->addRow("Light Photons:", create_integer_input("photon_tracing.light_photons", 0, 1000000000));
-            sublayout->addRow("Environment Photons:", create_integer_input("photon_tracing.env_photons", 0, 1000000000));
+            sublayout->addRow("Light Photons:", create_integer_input("photon_tracing.light_photons", 0, 1000000000, 100000));
+            sublayout->addRow("Environment Photons:", create_integer_input("photon_tracing.env_photons", 0, 1000000000, 100000));
         }
 
         void create_sppm_radiance_estimation_settings(QVBoxLayout* parent)
@@ -983,7 +986,7 @@ namespace
 
             create_bounce_settings(sublayout, "radiance_estimation");
             sublayout->addRow("Initial Radius:", create_double_input("radiance_estimation.initial_radius", 0.001, 100.0, 3, 0.1, "%"));
-            sublayout->addRow("Max Photons:", create_integer_input("radiance_estimation.max_photons", 8, 1000000000));
+            sublayout->addRow("Max Photons:", create_integer_input("radiance_estimation.max_photons", 8, 1000000000, 50));
             sublayout->addRow("Alpha:", create_double_input("radiance_estimation.alpha", 0.0, 1.0, 1, 0.1));
         }
     };
@@ -1052,7 +1055,7 @@ namespace
             QGroupBox* groupbox = create_checkable_groupbox("rendering_threads.override", "Override");
             parent->addWidget(groupbox);
 
-            QSpinBox* rendering_threads = create_integer_input("rendering_threads.value", 1, 65536);
+            QSpinBox* rendering_threads = create_integer_input("rendering_threads.value", 1, 65536, 1);
             QCheckBox* auto_rendering_threads = create_checkbox("rendering_threads.auto", "Auto");
             groupbox->setLayout(create_form_layout("Rendering Threads:", create_horizontal_group(rendering_threads, auto_rendering_threads)));
             connect(auto_rendering_threads, SIGNAL(toggled(bool)), rendering_threads, SLOT(setDisabled(bool)));
@@ -1066,7 +1069,7 @@ namespace
             groupbox->setLayout(
                 create_form_layout(
                     "Texture Store Size:",
-                    create_integer_input("texture_store_max_size.value", 1, 1024 * 1024, "MB")));
+                    create_integer_input("texture_store_max_size.value", 1, 1024 * 1024, 256, "MB")));
         }
 
         void create_system_override_tile_ordering_settings(QVBoxLayout* parent)
