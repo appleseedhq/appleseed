@@ -42,6 +42,7 @@
 #include "foundation/math/microfacet2.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/makevector.h"
 
 // Standard headers.
 #include <algorithm>
@@ -78,6 +79,10 @@ namespace
             const ParamArray&   params)
           : BSDF(name, Reflective, Glossy, params)
         {
+            m_inputs.declare("ax", InputFormatScalar);
+            m_inputs.declare("ay", InputFormatScalar, "0.0");
+            m_inputs.declare("exponent", InputFormatScalar, "0.0");
+            m_inputs.declare("ior", InputFormatScalar, "1.5");
         }
 
         virtual void release() OVERRIDE
@@ -98,16 +103,19 @@ namespace
             if (!BSDF::on_frame_begin(project, assembly, abort_switch))
                 return false;
 
-            /*
             const EntityDefMessageContext context("bsdf", this);
             const string mdf =
                 m_params.get_required<string>(
                     "mdf",
                     "blinn",
-                    make_vector("blinn", "beckmann", "ward", "ggx"),
+                    make_vector("blinn"),
                     context);
-            */
 
+            if (mdf == "blinn")
+                m_mdf.reset(new BlinnMDF2<double>());
+            else
+                return false;
+            
             return true;
         }
 
@@ -123,7 +131,46 @@ namespace
             Spectrum&           value,
             double&             probability) const
         {
-            return Absorption;
+            // No reflection below the shading surface.
+            const Vector3d& n = shading_basis.get_normal();
+            const double cos_on = min(dot(outgoing, n), 1.0);
+            if (cos_on < 0.0)
+                return Absorption;
+
+            const InputValues* values = static_cast<const InputValues*>(data);
+
+            // Compute the incoming direction by sampling the MDF.
+            sampling_context.split_in_place(2, 1);
+            const Vector2d s = sampling_context.next_vector2<2>();
+            Vector3d h;
+            
+            double mdf_value, mdf_pdf = 0.0;
+            //const double glossiness = values->m_glossiness * values->m_glossiness_multiplier;
+            //sample_mdf(glossiness, s, h, mdf_value, mdf_pdf);
+            
+            m_mdf->sample(s, values->m_ax, values->m_ay, values->m_exponent);
+            
+            if (mdf_pdf == 0.0)
+                return Absorption;
+            h = shading_basis.transform_to_parent(h);
+            incoming = reflect(outgoing, h);
+            const double cos_hn = dot(h, n);
+            const double cos_oh = dot(outgoing, h);
+
+            // No reflection below the shading surface.
+            const double cos_in = dot(incoming, n);
+            if (cos_in < 0.0)
+                return Absorption;
+
+            // Compute the BRDF value.
+            //const double g = evaluate_attenuation(cos_on, cos_in, cos_hn, cos_oh);
+            //value = fresnel_dielectric_schlick(values->m_reflectance, cos_on, values->m_fr_multiplier);
+            //value *= static_cast<float>(mdf_value * g / (4.0 * cos_on * cos_in) * values->m_reflectance_multiplier);
+
+            // Compute the PDF value.
+            probability = mdf_pdf / (4.0 * cos_oh);
+
+            return Glossy;
         }
 
         FORCE_INLINE virtual double evaluate(

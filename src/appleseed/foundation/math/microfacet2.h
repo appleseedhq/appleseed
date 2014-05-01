@@ -51,9 +51,10 @@ struct MDF : NonCopyable
 
     inline Vector<T,3> sample(
         const Vector<T,2>&  s,
+        // more params here...
         const T             ax,
         const T             ay,
-        const T             e) const
+        const T             exponent) const
     {
         assert(s[0] >= T(0.0) && s[0] < T(1.0));
         assert(s[1] >= T(0.0) && s[1] < T(1.0));
@@ -62,27 +63,31 @@ struct MDF : NonCopyable
     }
 
     virtual T evaluateD(
-        const T ax,
-        const T ay,
-        const T e) const = 0;
+        // more params here...
+        const T             ax,
+        const T             ay,
+        const T             exponent) const = 0;
 
     virtual T evaluateG(
-        const T ax,
-        const T ay,
-        const T e) const = 0;
+        // more params here...
+        const T             ax,
+        const T             ay,
+        const T             exponent) const = 0;
 
     virtual T evaluate_pdf(
-        const T ax,
-        const T ay,
-        const T e) const = 0;
+        // more params here...
+        const T             ax,
+        const T             ay,
+        const T             exponent) const = 0;
 
   private:
 
     virtual Vector<T,3> do_sample(
         const Vector<T,2>&  s,
+        // more params here...
         const T             ax,
         const T             ay,
-        const T             e) const = 0;
+        const T             exponent) const = 0;
 };
 
 // Isotropic Blinn here...
@@ -90,6 +95,19 @@ template <typename T>
 struct BlinnMDF2
   : public MDF<T>
 {
+  private:
+    virtual Vector<T,3> do_sample(
+        const Vector<T,2>&  s,
+        // more params here...
+        const T             ax,
+        const T             ay,
+        const T             e) const OVERRIDE
+    {
+        const T cos_alpha = std::pow(T(1.0) - s[0], T(1.0) / (e + T(2.0)));
+        const T sin_alpha = std::sqrt(T(1.0) - cos_alpha * cos_alpha);
+        const T phi = TwoPi * s[1];
+        return Vector<T, 3>::unit_vector(cos_alpha, sin_alpha, std::cos(phi), std::sin(phi));
+    }
 };
 
 // Anisotropic Beckmann here...

@@ -56,8 +56,11 @@ namespace renderer
 
 DECLARE_INPUT_VALUES(Microfacet2BRDFInputValues)
 {
+    double m_ax;
+    double m_ay;
+    double m_exponent;
+    double m_ior;
 };
-
 
 //
 // Microfacet BRDF factory.
