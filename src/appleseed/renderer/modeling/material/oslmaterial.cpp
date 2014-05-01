@@ -63,7 +63,9 @@ DictionaryArray OSLMaterialFactory::get_input_metadata() const
             .insert("name", "osl_surface")
             .insert("label", "OSL Surface")
             .insert("type", "entity")
-            .insert("entity_types", Dictionary().insert("shader_group", "ShaderGroup"))
+            .insert("entity_types",
+                Dictionary()
+                    .insert("shader_group", "Shader Groups"))
             .insert("use", "optional"));
 
     metadata.push_back(
