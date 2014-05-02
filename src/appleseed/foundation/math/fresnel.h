@@ -30,6 +30,9 @@
 #ifndef APPLESEED_FOUNDATION_MATH_FRESNEL_H
 #define APPLESEED_FOUNDATION_MATH_FRESNEL_H
 
+// appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
+
 // Standard headers.
 #include <cassert>
 
@@ -209,6 +212,12 @@ Spectrum fresnel_dielectric_schlick(
 
     return fr;
 }
+
+template <typename T>
+struct Fresnel : NonCopyable
+{
+    virtual ~Fresnel() {}
+};
 
 }       // namespace foundation
 
