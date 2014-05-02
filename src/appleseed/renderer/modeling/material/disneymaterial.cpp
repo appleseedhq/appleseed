@@ -28,7 +28,7 @@
 //
 
 // Interface header.
-#include "genericmaterial.h"
+#include "disneymaterial.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
@@ -39,97 +39,44 @@ using namespace foundation;
 namespace renderer
 {
 
-namespace
+//
+// DisneyMaterialFactory class implementation.
+//
+
+const char* Model = "disney_material";
+
+DisneyMaterial::DisneyMaterial(
+    const char*         name,
+    const ParamArray&   params)
+    : Material(name, params)
 {
-    //
-    // Generic Material.
-    //
-
-    const char* Model = "generic_material";
-
-    class GenericMaterial 
-      : public Material
-    {
-      public:
-        // Constructor.
-        GenericMaterial(
-            const char*                 name,
-            const ParamArray&           params)
-            : Material(name, params)
-        {
-            m_inputs.declare("bsdf", InputFormatEntity, "");
-            m_inputs.declare("edf", InputFormatEntity, "");
-            m_inputs.declare("alpha_map", InputFormatScalar, "");
-            m_inputs.declare("displacement_map", InputFormatSpectralReflectance, "");
-        }
-
-        // Delete this instance.
-        virtual void release() OVERRIDE
-        {
-            delete this;
-        }
-        
-        // Return a string identifying the model of this material.
-        virtual const char* get_model() const OVERRIDE
-        {
-            return Model;
-        }
-        
-        // This method is called once before rendering each frame.
-        // Returns true on success, false otherwise.
-        virtual bool on_frame_begin(
-            const Project&              project,
-            const Assembly&             assembly,
-            foundation::AbortSwitch*    abort_switch = 0) OVERRIDE
-        {
-            if (!Material::on_frame_begin(project, assembly, abort_switch))
-                return false;
-
-            m_bsdf = get_uncached_bsdf();
-            m_edf = get_uncached_edf();
-    
-            const EntityDefMessageContext context("material", this);
-            if (!create_normal_modifier(context))
-                return false;
-    
-            if (m_edf && m_alpha_map)
-            {
-                RENDERER_LOG_WARNING(
-                    "%s: material is emitting light but may be partially or entirely transparent; "
-                    "this may lead to unexpected or unphysical results.",
-                    context.get());
-            }
-            
-            return true;
-        }
-    
-        // This method is called once after rendering each frame.
-        virtual void on_frame_end(
-            const Project&              project,
-            const Assembly&             assembly) OVERRIDE
-        {
-            Material::on_frame_end(project, assembly);
-        }
-
-      private:
-    };
 }
 
-//
-// GenericMaterialFactory class implementation.
-//
+void DisneyMaterial::release()
+{
+    delete this;
+}
 
-const char* GenericMaterialFactory::get_model() const
+const char* DisneyMaterial::get_model() const
 {
     return Model;
 }
 
-const char* GenericMaterialFactory::get_human_readable_model() const
+//
+// DisneyMaterialFactory class implementation.
+//
+
+const char* DisneyMaterialFactory::get_model() const
 {
-    return "Generic Material";
+    return Model;
 }
 
-DictionaryArray GenericMaterialFactory::get_input_metadata() const
+const char* DisneyMaterialFactory::get_human_readable_model() const
+{
+    return "Disney Material";
+}
+
+DictionaryArray DisneyMaterialFactory::get_input_metadata() const
 {
     DictionaryArray metadata;
 
@@ -206,13 +153,13 @@ DictionaryArray GenericMaterialFactory::get_input_metadata() const
     return metadata;
 }
 
-auto_release_ptr<Material> GenericMaterialFactory::create(
+auto_release_ptr<Material> DisneyMaterialFactory::create(
     const char*         name,
     const ParamArray&   params) const
 {
     return
         auto_release_ptr<Material>(
-            new GenericMaterial(name, params));
+            new DisneyMaterial(name, params));
 }
 
 }   // namespace renderer

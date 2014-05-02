@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_MATERIAL_OSLMATERIAL_H
-#define APPLESEED_RENDERER_MODELING_MATERIAL_OSLMATERIAL_H
+#ifndef APPLESEED_RENDERER_MODELING_MATERIAL_DISNEYMATERIAL_H
+#define APPLESEED_RENDERER_MODELING_MATERIAL_DISNEYMATERIAL_H
 
 // appleseed.renderer headers.
 #include "renderer/modeling/material/imaterialfactory.h"
@@ -47,11 +47,27 @@ namespace renderer      { class ParamArray; }
 namespace renderer
 {
 
+class DLLSYMBOL DisneyMaterial
+  : public Material
+{
+  public:
+    // Constructor.
+    DisneyMaterial(
+        const char*                 name,
+        const ParamArray&           params);  
+    
+    // Delete this instance.
+    virtual void release() OVERRIDE;
+    
+    // Return a string identifying the model of this material.
+    virtual const char* get_model() const OVERRIDE;
+};
+
 //
-// OSL material factory.
+// Disney material factory.
 //
 
-class DLLSYMBOL OSLMaterialFactory
+class DLLSYMBOL DisneyMaterialFactory
   : public IMaterialFactory
 {
   public:
@@ -72,4 +88,4 @@ class DLLSYMBOL OSLMaterialFactory
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_MATERIAL_OSLMATERIAL_H
+#endif  // !APPLESEED_RENDERER_MODELING_MATERIAL_DISNEYMATERIAL_H
