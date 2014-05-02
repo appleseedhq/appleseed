@@ -43,9 +43,26 @@
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
 namespace renderer      { class ParamArray; }
+namespace renderer      { class DisneyMaterial; }
 
 namespace renderer
 {
+
+class DLLSYMBOL DisneyMaterialLayer
+{
+  public:
+    // Destructor
+    ~DisneyMaterialLayer();
+    
+  private:
+    friend class DisneyMaterial;
+    
+    // Constructor
+    DisneyMaterialLayer();
+    
+    struct Impl;
+    Impl *impl;
+};
 
 class DLLSYMBOL DisneyMaterial
   : public Material
@@ -61,6 +78,25 @@ class DLLSYMBOL DisneyMaterial
     
     // Return a string identifying the model of this material.
     virtual const char* get_model() const OVERRIDE;
+
+    // This method is called once before rendering each frame.
+    // Returns true on success, false otherwise.
+    virtual bool on_frame_begin(
+        const Project&              project,
+        const Assembly&             assembly,
+        foundation::AbortSwitch*    abort_switch = 0) OVERRIDE;
+    
+    // This method is called once after rendering each frame.
+    virtual void on_frame_end(
+        const Project&              project,
+        const Assembly&             assembly) OVERRIDE;
+    
+  private:
+    // Destructor
+    ~DisneyMaterial();
+    
+    struct Impl;
+    Impl *impl;
 };
 
 //

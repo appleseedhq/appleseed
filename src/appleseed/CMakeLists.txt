@@ -1183,6 +1183,8 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/diffusebtdf.h
     renderer/modeling/bsdf/disneybdrf.cpp
     renderer/modeling/bsdf/disneybdrf.h
+    renderer/modeling/bsdf/disneylayeredbdrf.cpp
+    renderer/modeling/bsdf/disneylayeredbdrf.h
     renderer/modeling/bsdf/ibsdffactory.h
     renderer/modeling/bsdf/kelemenbrdf.cpp
     renderer/modeling/bsdf/kelemenbrdf.h
@@ -1405,6 +1407,8 @@ source_group ("renderer\\modeling\\light" FILES
 set (renderer_modeling_material_sources
     renderer/modeling/material/bumpmappingmodifier.cpp
     renderer/modeling/material/bumpmappingmodifier.h
+    renderer/modeling/material/disneymaterial.cpp
+    renderer/modeling/material/disneymaterial.h
     renderer/modeling/material/genericmaterial.cpp
     renderer/modeling/material/genericmaterial.h
     renderer/modeling/material/imaterialfactory.cpp

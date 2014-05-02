@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -40,16 +39,49 @@ namespace renderer
 {
 
 //
-// DisneyMaterialFactory class implementation.
+// DisneyMaterialLayer class implementation.
 //
 
+struct DisneyMaterialLayer::Impl
+{
+};
+
+DisneyMaterialLayer::DisneyMaterialLayer()
+  : impl(new Impl())
+{
+}
+
+DisneyMaterialLayer::~DisneyMaterialLayer()
+{
+    delete impl;
+}
+
+//
+// DisneyMaterial class implementation.
+//
+
+namespace
+{
+
 const char* Model = "disney_material";
+
+}
+
+struct DisneyMaterial::Impl
+{
+};
 
 DisneyMaterial::DisneyMaterial(
     const char*         name,
     const ParamArray&   params)
     : Material(name, params)
+    , impl(new Impl())
 {
+}
+
+DisneyMaterial::~DisneyMaterial()
+{
+    delete impl;
 }
 
 void DisneyMaterial::release()
@@ -60,6 +92,25 @@ void DisneyMaterial::release()
 const char* DisneyMaterial::get_model() const
 {
     return Model;
+}
+
+bool DisneyMaterial::on_frame_begin(
+    const Project&              project,
+    const Assembly&             assembly,
+    AbortSwitch*                abort_switch)
+{
+    if (!Material::on_frame_begin(project, assembly, abort_switch))
+        return false;
+    
+    return true;
+}
+
+// This method is called once after rendering each frame.
+void DisneyMaterial::on_frame_end(
+    const Project&              project,
+    const Assembly&             assembly) OVERRIDE
+{
+    Material::on_frame_end(project, assembly);
 }
 
 //

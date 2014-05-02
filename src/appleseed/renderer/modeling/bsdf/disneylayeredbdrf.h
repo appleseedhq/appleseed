@@ -26,20 +26,16 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSDF_DISNEYBRDF_H
-#define APPLESEED_RENDERER_MODELING_BSDF_DISNEYBRDF_H
+#ifndef APPLESEED_RENDERER_MODELING_BSDF_DISNEYLAYEREDBRDF_H
+#define APPLESEED_RENDERER_MODELING_BSDF_DISNEYLAYEREDBRDF_H
 
 // Interface header.
 #include "bsdf.h"
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/modeling/bsdf/bsdfwrapper.h"
-#include "renderer/modeling/bsdf/ibsdffactory.h"
-#include "renderer/modeling/input/inputarray.h"
 
 // appleseed.foundation headers.
-#include "foundation/image/colorspace.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
 
@@ -49,46 +45,53 @@
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
 namespace renderer      { class ParamArray; }
+namespace renderer      { class DisneyMaterialLayer; }
 
 namespace renderer
 {
 
 //
-// Disney BRDF input values.
+// Disney Layered BRDF class.
 //
 
-DECLARE_INPUT_VALUES(DisneyBRDFInputValues)
-{
-    Spectrum    m_base_color;
-    double      m_subsurface;
-    double      m_metallic;
-    double      m_specular;
-    double      m_specular_tint;
-    double      m_anisotropic;
-    double      m_roughness;
-    double      m_sheen;
-    double      m_sheen_tint;
-    double      m_clearcoat;
-    double      m_clearcoat_gloss;
-};
-
-//
-// Disney BRDF class.
-//
-
-class DisneyBRDFImpl
+class DisneyLayeredBRDF
   : public BSDF
 {
-public:
-    DisneyBRDFImpl(
+  public:
+    DisneyLayeredBRDF(
             const char*         name,
             const ParamArray&   params);
     
-    // Delete this instance.
+    // Delete this instance.    
     virtual void release() OVERRIDE;
     
     // Return a string identifying the model of this entity.    
     virtual const char* get_model() const OVERRIDE;
+    
+    // This method is called once before rendering each frame.
+    // Returns true on success, false otherwise.
+    virtual bool on_frame_begin(
+        const Project&              project,
+        const Assembly&             assembly,
+        foundation::AbortSwitch*    abort_switch = 0) OVERRIDE;
+
+    // This method is called once after rendering each frame.
+    virtual void on_frame_end(
+        const Project&              project,
+        const Assembly&             assembly) OVERRIDE;
+
+    // Compute the cumulated size in bytes of the values of all inputs of
+    // this BSDF and its child BSDFs, if any.
+    virtual size_t compute_input_data_size(
+        const Assembly&             assembly) const OVERRIDE;
+
+    // Evaluate the inputs of this BSDF and of its child BSDFs, if any.
+    // Input values are stored in the input evaluator. This method is called
+    // once per shading point and pair of incoming/outgoing directions.
+    virtual void evaluate_inputs(
+        InputEvaluator&             input_evaluator,
+        const ShadingPoint&         shading_point,
+        const size_t                offset = 0) const OVERRIDE;
     
     // Given an outgoing direction, sample the BSDF and compute the incoming
     // direction, its probability density and the value of the BSDF for this
@@ -120,7 +123,7 @@ public:
             const int                       modes,
             Spectrum&                       value) const OVERRIDE;
     
-    // Evaluate the PDF for a given pair of directions.
+    // Evaluate the PDF for a given pair of directions.    
     virtual double evaluate_pdf(
             const void*                     data,
             const foundation::Vector3d&     geometric_normal,
@@ -128,37 +131,6 @@ public:
             const foundation::Vector3d&     outgoing,
             const foundation::Vector3d&     incoming,
             const int                       modes) const OVERRIDE;
-    
-private:
-    typedef DisneyBRDFInputValues InputValues;
-    
-    static foundation::LightingConditions   m_lighting_conditions;
-    static Spectrum                         m_white_spectrum;
-};
-
-typedef BSDFWrapper<DisneyBRDFImpl> DisneyBRDF;
-
-//
-// Disney BRDF factory.
-//
-
-class DLLSYMBOL DisneyBRDFFactory
-  : public IBSDFFactory
-{
-  public:
-    // Return a string identifying this BSDF model.
-    virtual const char* get_model() const OVERRIDE;
-
-    // Return a human-readable string identifying this BSDF model.
-    virtual const char* get_human_readable_model() const OVERRIDE;
-
-    // Return a set of input metadata for this BSDF model.
-    virtual foundation::DictionaryArray get_input_metadata() const OVERRIDE;
-
-    // Create a new BSDF instance.
-    virtual foundation::auto_release_ptr<BSDF> create(
-        const char*         name,
-        const ParamArray&   params) const OVERRIDE;
 };
 
 }       // namespace renderer
