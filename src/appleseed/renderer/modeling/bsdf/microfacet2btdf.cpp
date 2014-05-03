@@ -132,11 +132,7 @@ namespace
             Spectrum&           value,
             double&             probability) const
         {
-            // No reflection below the shading surface.
-            const Vector3d& n = shading_basis.get_normal();
-            const double cos_on = min(dot(outgoing, n), 1.0);
-            if (cos_on < 0.0)
-                return Absorption;
+            return Absorption;
         }
 
         FORCE_INLINE virtual double evaluate(

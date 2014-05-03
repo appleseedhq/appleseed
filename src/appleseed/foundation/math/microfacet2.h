@@ -48,54 +48,6 @@ template <typename T>
 struct MDF : NonCopyable
 {
     virtual ~MDF() {}
-
-    //virtual T D() const = 0;
-
-    //virtual T G() const = 0;
-    
-    //virtual Vector<T,3> sample() const = 0;
-    
-    /*
-    inline Vector<T,3> sample(
-        const Vector<T,2>&  s,
-        // more params here...
-        const T             ax,
-        const T             ay,
-        const T             exponent) const
-    {
-        assert(s[0] >= T(0.0) && s[0] < T(1.0));
-        assert(s[1] >= T(0.0) && s[1] < T(1.0));
-
-        return do_sample(s, ax, ay, exponent);
-    }
-
-    virtual T evaluateD(
-        // more params here...
-        const T             ax,
-        const T             ay,
-        const T             exponent) const = 0;
-
-    virtual T evaluateG(
-        // more params here...
-        const T             ax,
-        const T             ay,
-        const T             exponent) const = 0;
-
-    virtual T evaluate_pdf(
-        // more params here...
-        const T             ax,
-        const T             ay,
-        const T             exponent) const = 0;
-
-  private:
-
-    virtual Vector<T,3> do_sample(
-        const Vector<T,2>&  s,
-        // more params here...
-        const T             ax,
-        const T             ay,
-        const T             exponent) const = 0;
-    */
 };
 
 template <typename T>
@@ -108,6 +60,32 @@ template <typename T>
 struct GGXMDF2
   : public MDF<T>
 {
+    virtual T D(
+        const Vector<T,3>& h,
+        const T ax,
+        const T ay) const
+    {
+       const T ax2 = square(ax);
+
+       const T cos_theta_m = h[2];
+       const T cos_theta_m2 = square(cos_theta_m);
+       const T cos_theta_m4 = square(cos_theta_m2);
+       
+       if (ax != ay)
+       {
+           const T ay2 = ay * ay;
+           const T sin_theta_m = std::sqrt(std::max(T(1) - cos_theta_m2, T(0)));
+           const T inv_sin_theta_m = sin_theta_m > T(0) ? T(1) / sin_theta_m : T(0);
+           const T cos_phi2 = square(h.x * inv_sin_theta_m);
+           const T sin_phi2 = square(h.y * inv_sin_theta_m);
+           const T tan_theta_m2 = (sin_theta_m * sin_theta_m) / cos_theta_m2;
+           const T tmp = 1 + tan_theta_m2 * (cos_phi2 / ax2 + sin_phi2 / ay2);
+           return T(1) / (Pi * ax * ay * cos_theta_m4 * square(tmp));
+       }
+
+       float tan_theta_m2 = (1 - cos_theta_m2) / cos_theta_m2;
+       return ax2 / (Pi * cos_theta_m4 * square(ax2 + tan_theta_m2));
+    }
 };
 
 }       // namespace foundation
