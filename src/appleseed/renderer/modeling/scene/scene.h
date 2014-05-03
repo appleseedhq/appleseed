@@ -99,6 +99,9 @@ class DLLSYMBOL Scene
     // Compute and return the radius of the scene.
     double compute_radius() const;
 
+    // Return true if at least one of the object instance references a material with an alpha map set.
+    bool uses_alpha_mapping() const;
+
     // Perform pre-frame rendering actions.
     // Returns true on success, false otherwise.
     bool on_frame_begin(

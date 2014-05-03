@@ -35,6 +35,7 @@
 #include "renderer/modeling/environmentshader/environmentshader.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
+#include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/textureinstance.h"
 #include "renderer/utility/bbox.h"
 
@@ -47,6 +48,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <set>
 
 using namespace foundation;
 using namespace std;
@@ -160,6 +162,44 @@ double Scene::compute_radius() const
     }
 
     return sqrt(square_radius);
+}
+
+namespace
+{
+    bool assembly_uses_alpha_mapping(const Assembly& assembly, set<UniqueID>& visited_assemblies)
+    {
+        if (visited_assemblies.find(assembly.get_uid()) == visited_assemblies.end())
+        {
+            visited_assemblies.insert(assembly.get_uid());
+
+            for (const_each<ObjectInstanceContainer> i = assembly.object_instances(); i; ++i)
+            {
+                if (i->uses_alpha_mapping())
+                    return true;
+            }
+
+            for (const_each<AssemblyContainer> i = assembly.assemblies(); i; ++i)
+            {
+                if (assembly_uses_alpha_mapping(*i, visited_assemblies))
+                    return true;
+            }
+        }
+
+        return false;
+    }
+}
+
+bool Scene::uses_alpha_mapping() const
+{
+    set<UniqueID> visited_assemblies;
+
+    for (const_each<AssemblyContainer> i = assemblies(); i; ++i)
+    {
+        if (assembly_uses_alpha_mapping(*i, visited_assemblies))
+            return true;
+    }
+
+    return false;
 }
 
 namespace
