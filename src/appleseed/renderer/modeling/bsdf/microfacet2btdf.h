@@ -27,8 +27,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSDF_MICROFACET2BRDF_H
-#define APPLESEED_RENDERER_MODELING_BSDF_MICROFACET2BRDF_H
+#ifndef APPLESEED_RENDERER_MODELING_BSDF_MICROFACET2BTDF_H
+#define APPLESEED_RENDERER_MODELING_BSDF_MICROFACET2BTDF_H
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -51,22 +51,21 @@ namespace renderer
 {
 
 //
-// Microfacet BRDF input values.
+// Microfacet BTDF input values.
 //
 
-DECLARE_INPUT_VALUES(Microfacet2BRDFInputValues)
+DECLARE_INPUT_VALUES(Microfacet2BTDFInputValues)
 {
     double m_ax;
     double m_ay;
-    double m_exponent;
-    double m_ior;
+    double m_eta;
 };
 
 //
-// Microfacet BRDF factory.
+// Microfacet BTDF factory.
 //
 
-class DLLSYMBOL Microfacet2BRDFFactory
+class DLLSYMBOL Microfacet2BTDFFactory
   : public IBSDFFactory
 {
   public:
@@ -87,4 +86,4 @@ class DLLSYMBOL Microfacet2BRDFFactory
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_BSDF_MICROFACET2BRDF_H
+#endif  // !APPLESEED_RENDERER_MODELING_BSDF_MICROFACET2BTDF_H

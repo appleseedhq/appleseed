@@ -1,8 +1,3 @@
-
-// This file is part of OpenShadingLanguage.
-// Modified by Esteban Tovagliari, The appleseedhq Organization.
-// Original license follows.
-
 /////////////////////////////////////////////////////////////////////////////
 // Copyright (c) 2009-2010 Sony Pictures Imageworks Inc., et al.  All Rights Reserved.
 //

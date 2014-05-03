@@ -114,31 +114,31 @@ namespace
 
             m_microfacet_beckmann_brdf =
                 create_and_register_bsdf(
-                    MicrofacetBeckmannID,
-                    "microfacet_brdf",
-                    "osl_beckmann",
+                    MicrofacetBeckmannReflectionID,
+                    "microfacet2_brdf",
+                    "osl_beckmann_refl",
                     ParamArray().insert("mdf", "beckmann"));
-
-            m_microfacet_blinn_brdf =
-                create_and_register_bsdf(
-                    MicrofacetBlinnID,
-                    "microfacet_brdf",
-                    "osl_blinn",
-                    ParamArray().insert("mdf", "blinn"));
 
             m_microfacet_ggx_brdf =
                 create_and_register_bsdf(
-                    MicrofacetGGXID,
-                    "microfacet_brdf",
-                    "osl_ggx",
+                    MicrofacetGGXReflectionID,
+                    "microfacet2_brdf",
+                    "osl_ggx_refl",
                     ParamArray().insert("mdf", "ggx"));
 
-            m_microfacet_ward_brdf =
+            m_microfacet_beckmann_btdf =
                 create_and_register_bsdf(
-                    MicrofacetWardID,
-                    "microfacet_brdf",
-                    "osl_ward",
-                    ParamArray().insert("mdf", "ward"));
+                    MicrofacetBeckmannRefractionID,
+                    "microfacet2_btdf",
+                    "osl_beckmann_refr",
+                    ParamArray().insert("mdf", "beckmann"));
+
+            m_microfacet_ggx_btdf =
+                create_and_register_bsdf(
+                    MicrofacetGGXRefractionID,
+                    "microfacet2_btdf",
+                    "osl_ggx_refr",
+                    ParamArray().insert("mdf", "ggx"));
 
             m_orennayar_brdf =
                 create_and_register_bsdf(
@@ -331,9 +331,9 @@ namespace
         auto_release_ptr<BSDF>      m_diffuse_btdf;
         auto_release_ptr<BSDF>      m_lambertian_brdf;
         auto_release_ptr<BSDF>      m_microfacet_beckmann_brdf;
-        auto_release_ptr<BSDF>      m_microfacet_blinn_brdf;
         auto_release_ptr<BSDF>      m_microfacet_ggx_brdf;
-        auto_release_ptr<BSDF>      m_microfacet_ward_brdf;
+        auto_release_ptr<BSDF>      m_microfacet_beckmann_btdf;
+        auto_release_ptr<BSDF>      m_microfacet_ggx_btdf;
         auto_release_ptr<BSDF>      m_orennayar_brdf;
         auto_release_ptr<BSDF>      m_specular_brdf;
         auto_release_ptr<BSDF>      m_specular_btdf;

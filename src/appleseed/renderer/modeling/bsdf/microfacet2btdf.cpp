@@ -28,7 +28,7 @@
 //
 
 // Interface header.
-#include "microfacetbrdf2.h"
+#include "microfacet2btdf.h"
 
 // appleseed.renderer headers.
 #include "renderer/modeling/bsdf/bsdf.h"
@@ -65,24 +65,23 @@ namespace
 {
     
     //
-    // Microfacet2 BRDF.
+    // Microfacet2 BTDF.
     //
 
-    const char* Model = "microfacet2_brdf";
+    const char* Model = "microfacet2_btdf";
 
-    class Microfacet2BRDFImpl
+    class Microfacet2BTDFImpl
       : public BSDF
     {
       public:
-        Microfacet2BRDFImpl(
+        Microfacet2BTDFImpl(
             const char*         name,
             const ParamArray&   params)
-          : BSDF(name, Reflective, Glossy, params)
+          : BSDF(name, Transmissive, Glossy, params)
         {
-            m_inputs.declare("ax", InputFormatScalar);
-            m_inputs.declare("ay", InputFormatScalar, "0.0");
-            m_inputs.declare("exponent", InputFormatScalar, "0.0");
-            m_inputs.declare("ior", InputFormatScalar, "1.5");
+            m_inputs.declare("ax", InputFormatScalar, "0.5");
+            m_inputs.declare("ay", InputFormatScalar, "0.5");
+            m_inputs.declare("eta", InputFormatScalar, "1.5");
         }
 
         virtual void release() OVERRIDE
@@ -107,15 +106,17 @@ namespace
             const string mdf =
                 m_params.get_required<string>(
                     "mdf",
-                    "blinn",
-                    make_vector("blinn"),
+                    "beckmann",
+                    make_vector("beckmann"),
                     context);
 
-            if (mdf == "blinn")
-                m_mdf.reset(new BlinnMDF2<double>());
+            if (mdf == "beckmann")
+                m_mdf.reset(new BeckmannMDF2<double>());
+            else if (mdf == "ggx")
+                m_mdf.reset(new GGXMDF2<double>());
             else
                 return false;
-            
+
             return true;
         }
 
@@ -136,41 +137,6 @@ namespace
             const double cos_on = min(dot(outgoing, n), 1.0);
             if (cos_on < 0.0)
                 return Absorption;
-
-            const InputValues* values = static_cast<const InputValues*>(data);
-
-            // Compute the incoming direction by sampling the MDF.
-            sampling_context.split_in_place(2, 1);
-            const Vector2d s = sampling_context.next_vector2<2>();
-            Vector3d h;
-            
-            double mdf_value, mdf_pdf = 0.0;
-            //const double glossiness = values->m_glossiness * values->m_glossiness_multiplier;
-            //sample_mdf(glossiness, s, h, mdf_value, mdf_pdf);
-            
-            m_mdf->sample(s, values->m_ax, values->m_ay, values->m_exponent);
-            
-            if (mdf_pdf == 0.0)
-                return Absorption;
-            h = shading_basis.transform_to_parent(h);
-            incoming = reflect(outgoing, h);
-            const double cos_hn = dot(h, n);
-            const double cos_oh = dot(outgoing, h);
-
-            // No reflection below the shading surface.
-            const double cos_in = dot(incoming, n);
-            if (cos_in < 0.0)
-                return Absorption;
-
-            // Compute the BRDF value.
-            //const double g = evaluate_attenuation(cos_on, cos_in, cos_hn, cos_oh);
-            //value = fresnel_dielectric_schlick(values->m_reflectance, cos_on, values->m_fr_multiplier);
-            //value *= static_cast<float>(mdf_value * g / (4.0 * cos_on * cos_in) * values->m_reflectance_multiplier);
-
-            // Compute the PDF value.
-            probability = mdf_pdf / (4.0 * cos_oh);
-
-            return Glossy;
         }
 
         FORCE_INLINE virtual double evaluate(
@@ -199,31 +165,30 @@ namespace
         }
 
       private:
-        typedef Microfacet2BRDFInputValues InputValues;
+        typedef Microfacet2BTDFInputValues InputValues;
         
-        std::auto_ptr<MDF<double> >     m_mdf;
-        std::auto_ptr<Fresnel<double> > m_fresnel;
+        std::auto_ptr<MDF<double> > m_mdf;
     };
 
-    typedef BSDFWrapper<Microfacet2BRDFImpl> Microfacet2BRDF;
+    typedef BSDFWrapper<Microfacet2BTDFImpl> Microfacet2BTDF;
 }
 
 
 //
-// Microfacet2BRDFFactory class implementation.
+// Microfacet2BTDFFactory class implementation.
 //
 
-const char* Microfacet2BRDFFactory::get_model() const
+const char* Microfacet2BTDFFactory::get_model() const
 {
     return Model;
 }
 
-const char* Microfacet2BRDFFactory::get_human_readable_model() const
+const char* Microfacet2BTDFFactory::get_human_readable_model() const
 {
-    return "Microfacet2 BRDF";
+    return "Microfacet2 BTDF";
 }
 
-DictionaryArray Microfacet2BRDFFactory::get_input_metadata() const
+DictionaryArray Microfacet2BTDFFactory::get_input_metadata() const
 {
     DictionaryArray metadata;
     
@@ -234,15 +199,10 @@ DictionaryArray Microfacet2BRDFFactory::get_input_metadata() const
             .insert("type", "enumeration")
             .insert("items",
                 Dictionary()
-                    .insert("Blinn", "blinn")
                     .insert("Beckmann", "beckmann")
-                    .insert("Dishwasher", "dishwasher")
-                    .insert("GGX", "ggx")
-                    .insert("GTR", "gtr")
-                    .insert("SGD", "sgd")
-                    .insert("Ward", "ward"))
+                    .insert("GGX", "ggx"))
             .insert("use", "required")
-            .insert("default", "blinn"));
+            .insert("default", "beckmann"));
 
     metadata.push_back(
         Dictionary()
@@ -262,26 +222,26 @@ DictionaryArray Microfacet2BRDFFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "optional")
-            .insert("default", "0.0"));
+            .insert("default", "0.5"));
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "exponent")
-            .insert("label", "Exponent")
+            .insert("name", "eta")
+            .insert("label", "Eta")
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "optional")
-            .insert("default", "0.0"));
+            .insert("default", "1.5"));
     
     return metadata;
 }
 
-auto_release_ptr<BSDF> Microfacet2BRDFFactory::create(
+auto_release_ptr<BSDF> Microfacet2BTDFFactory::create(
     const char*         name,
     const ParamArray&   params) const
 {
-    return auto_release_ptr<BSDF>(new Microfacet2BRDF(name, params));
+    return auto_release_ptr<BSDF>(new Microfacet2BTDF(name, params));
 }
 
 }   // namespace renderer

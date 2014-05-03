@@ -213,12 +213,6 @@ Spectrum fresnel_dielectric_schlick(
     return fr;
 }
 
-template <typename T>
-struct Fresnel : NonCopyable
-{
-    virtual ~Fresnel() {}
-};
-
 }       // namespace foundation
 
 #endif  // !APPLESEED_FOUNDATION_MATH_FRESNEL_H

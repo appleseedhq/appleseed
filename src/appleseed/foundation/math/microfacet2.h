@@ -49,6 +49,13 @@ struct MDF : NonCopyable
 {
     virtual ~MDF() {}
 
+    //virtual T D() const = 0;
+
+    //virtual T G() const = 0;
+    
+    //virtual Vector<T,3> sample() const = 0;
+    
+    /*
     inline Vector<T,3> sample(
         const Vector<T,2>&  s,
         // more params here...
@@ -59,7 +66,7 @@ struct MDF : NonCopyable
         assert(s[0] >= T(0.0) && s[0] < T(1.0));
         assert(s[1] >= T(0.0) && s[1] < T(1.0));
 
-        return do_sample(s, ax, ay, e);
+        return do_sample(s, ax, ay, exponent);
     }
 
     virtual T evaluateD(
@@ -88,43 +95,15 @@ struct MDF : NonCopyable
         const T             ax,
         const T             ay,
         const T             exponent) const = 0;
+    */
 };
 
-// Isotropic Blinn here...
-template <typename T>
-struct BlinnMDF2
-  : public MDF<T>
-{
-  private:
-    virtual Vector<T,3> do_sample(
-        const Vector<T,2>&  s,
-        // more params here...
-        const T             ax,
-        const T             ay,
-        const T             e) const OVERRIDE
-    {
-        const T cos_alpha = std::pow(T(1.0) - s[0], T(1.0) / (e + T(2.0)));
-        const T sin_alpha = std::sqrt(T(1.0) - cos_alpha * cos_alpha);
-        const T phi = TwoPi * s[1];
-        return Vector<T, 3>::unit_vector(cos_alpha, sin_alpha, std::cos(phi), std::sin(phi));
-    }
-};
-
-// Anisotropic Beckmann here...
 template <typename T>
 struct BeckmannMDF2
   : public MDF<T>
 {
 };
 
-// Anisotropic GTR with exponent == 1 here...
-template <typename T>
-struct BerryMDF2
-  : public MDF<T>
-{
-};
-
-// Anisotropic GTR with exponent == 2 here...
 template <typename T>
 struct GGXMDF2
   : public MDF<T>

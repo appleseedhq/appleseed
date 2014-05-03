@@ -1191,8 +1191,10 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/lambertianbrdf.h
     renderer/modeling/bsdf/microfacetbrdf.cpp
     renderer/modeling/bsdf/microfacetbrdf.h
-    renderer/modeling/bsdf/microfacetbrdf2.cpp
-    renderer/modeling/bsdf/microfacetbrdf2.h
+    renderer/modeling/bsdf/microfacet2brdf.cpp
+    renderer/modeling/bsdf/microfacet2brdf.h
+    renderer/modeling/bsdf/microfacet2btdf.cpp
+    renderer/modeling/bsdf/microfacet2btdf.h
     renderer/modeling/bsdf/nullbsdf.h
     renderer/modeling/bsdf/orennayarbrdf.cpp
     renderer/modeling/bsdf/orennayarbrdf.h       
