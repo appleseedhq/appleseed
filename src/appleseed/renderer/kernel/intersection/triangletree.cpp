@@ -1100,6 +1100,12 @@ namespace
             const ObjectInstance* object_instance =
                 object_instances.get_by_index(object_instance_index);
 
+            // We create intersection filters for front materials, assuming materials will be the same on the back
+            // side of the object instance. This assumption is checked in renderer::ObjectInstance::on_frame_begin()
+            // and a warning is issued if it does not appear to hold. The reason is that the direction of shadow
+            // rays is unpredictable: an object with different alpha transparency on its front and back faces would
+            // render differently with different light transport algorithms, or if the direction of shadow rays
+            // (which is an implementation detail) changes.
             const FilterKeySet::const_iterator filter_key_it =
                 filter_keys.insert(
                     FilterKey(
