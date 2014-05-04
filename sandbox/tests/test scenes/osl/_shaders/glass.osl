@@ -1,5 +1,7 @@
 
-surface glass(float ior = 1.5)
+surface glass(
+	float Kr = 0.5,
+	float ior = 1.5)
 {
 	float from_ior, to_ior;
 
@@ -14,8 +16,5 @@ surface glass(float ior = 1.5)
 		to_ior = ior;
 	}
 
-	float Kr,Kt;
- 	fresnel(I, N, from_ior / to_ior, Kr ,Kt);
- 	Ci = color(1, 0, 0) * Kr * reflection(N) + 
- 		 color(0, 0, 1) * Kt * refraction(N, from_ior, to_ior);
+ 	Ci = Kr * reflection(N) + (1.0 - Kr) * refraction(N, from_ior, to_ior);
 }
