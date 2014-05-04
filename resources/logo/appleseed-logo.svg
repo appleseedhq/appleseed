@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.w3.org/2000/svg" height="1052.4" width="744.09" version="1.1" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <metadata>
+        <rdf:RDF>
+            <cc:Work rdf:about="">
+                <dc:format>image/svg+xml</dc:format>
+                <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+                <dc:title/>
+            </cc:Work>
+        </rdf:RDF>
+    </metadata>
+    <text style="word-spacing:0px;letter-spacing:0px;writing-mode:lr-tb;text-anchor:start;text-align:start;" font-family="Ubuntu" xml:space="preserve" font-size="69.24736023px" line-height="125%" font-stretch="normal" font-variant="normal" y="145.33107" x="160.88074" font-weight="normal" font-style="normal" fill="#ff5a11"><tspan y="145.33107" x="160.88074"><tspan style="writing-mode:lr-tb;text-anchor:start;text-align:start;" font-family="Ubuntu" font-size="69.24736023px" line-height="125%" font-stretch="normal" font-variant="normal" font-weight="normal" font-style="normal" fill="#c8c8c8">apple</tspan>seed</tspan></text>
+    <g fill="#c8c8c8" transform="matrix(0.11062055,0,0,0.10180633,-790.27366,-155.99777)">
+        <path fill="#c8c8c8" d="m7996.1,1617.5s-160,301.11-160,480c0,160,80,240,160,240s160-80,160-240-160-480-160-480z"/>
+    </g>
+    <g fill="#c8c8c8" transform="matrix(0.03418363,-0.1052064,0.09682358,0.03145988,-421.93976,861.6918)">
+        <path fill="#c8c8c8" d="m7996.1,1617.5s-160,301.11-160,480c0,160,80,240,160,240s160-80,160-240-160-480-160-480z"/>
+    </g>
+    <g fill="#c8c8c8" transform="matrix(-0.08949391,-0.06502113,0.05984026,-0.08236305,659.76189,825.8687)">
+        <path fill="#c8c8c8" d="m7996.1,1617.5s-160,301.11-160,480c0,160,80,240,160,240s160-80,160-240-160-480-160-480z"/>
+    </g>
+    <g fill="#c8c8c8" transform="matrix(-0.08949391,0.06502113,-0.05984026,-0.08236305,959.95637,-213.96063)">
+        <path fill="#c8c8c8" d="m7996.1,1617.5s-160,301.11-160,480c0,160,80,240,160,240s160-80,160-240-160-480-160-480z"/>
+    </g>
+    <g fill="#ff5a11" transform="matrix(0.03418363,0.1052064,-0.09682358,0.03145989,63.785113,-820.78746)">
+        <path fill="#ff5a11" d="m7996.1,1617.5s-160,301.11-160,480c0,160,80,240,160,240s160-80,160-240-160-480-160-480z"/>
+    </g>
+    <text style="writing-mode:lr-tb;letter-spacing:0px;text-anchor:start;word-spacing:0px;text-align:start;" font-family="Ubuntu" transform="scale(1.0392351,0.96224618)" xml:space="preserve" font-size="18.87368392999999900px" line-height="125%" font-stretch="normal" font-variant="normal" y="179.99413" x="156.96004" font-weight="normal" font-style="normal" fill="#c8c8c8"><tspan y="179.99413" x="156.96004" font-weight="bold" fill="#c8c8c8">open source production rendering</tspan></text>
+</svg>
