@@ -126,6 +126,7 @@ namespace
                     "osl_ggx_refl",
                     ParamArray().insert("mdf", "ggx"));
 
+            /*
             m_microfacet_beckmann_btdf =
                 create_and_register_bsdf(
                     MicrofacetBeckmannRefractionID,
@@ -139,7 +140,8 @@ namespace
                     "microfacet2_btdf",
                     "osl_ggx_refr",
                     ParamArray().insert("mdf", "ggx"));
-
+            */
+            
             m_orennayar_brdf =
                 create_and_register_bsdf(
                     OrenNayarID,

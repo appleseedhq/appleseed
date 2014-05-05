@@ -80,7 +80,7 @@ BSDFFactoryRegistrar::BSDFFactoryRegistrar()
     register_factory(auto_ptr<FactoryType>(new SpecularBRDFFactory()));
     register_factory(auto_ptr<FactoryType>(new SpecularBTDFFactory()));
     register_factory(auto_ptr<FactoryType>(new Microfacet2BRDFFactory()));
-    register_factory(auto_ptr<FactoryType>(new Microfacet2BTDFFactory()));
+    //register_factory(auto_ptr<FactoryType>(new Microfacet2BTDFFactory()));
 }
 
 BSDFFactoryRegistrar::~BSDFFactoryRegistrar()

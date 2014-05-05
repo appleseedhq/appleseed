@@ -107,7 +107,7 @@ namespace
                 m_params.get_required<string>(
                     "mdf",
                     "beckmann",
-                    make_vector("beckmann"),
+                    make_vector("beckmann", "ggx"),
                     context);
 
             if (mdf == "beckmann")

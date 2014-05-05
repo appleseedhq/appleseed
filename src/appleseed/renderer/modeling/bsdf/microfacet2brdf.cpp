@@ -64,6 +64,32 @@ namespace renderer
 namespace
 {
     
+    double fresnel_dielectric(const double cosi, double eta)
+    {
+        // special case: ignore fresnel
+        if (eta == 0)
+            return 1.0;
+    
+        // compute fresnel reflectance without explicitly computing the refracted direction
+        if (cosi < 0.0)
+            eta = 1.0 / eta;
+        
+        const double c = std::fabs(cosi);
+        double g = eta * eta - 1.0 + c * c;
+        
+        if (g > 0)
+        {
+            g = std::sqrt(g);
+            double A = (g - c) / (g + c);
+            double B = (c * (g + c) - 1) / (c * (g - c) + 1);
+            double F = 0.5 * A * A * (1 + B * B);
+            assert(F >= 0.0);
+            return F;
+        }
+        
+        return 1.0; // TIR (no refracted component)
+    }
+
     //
     // Microfacet2 BRDF.
     //
@@ -107,7 +133,7 @@ namespace
                 m_params.get_required<string>(
                     "mdf",
                     "beckmann",
-                    make_vector("beckmann"),
+                    make_vector("beckmann", "ggx"),
                     context);
 
             if (mdf == "beckmann")
@@ -138,7 +164,40 @@ namespace
             if (cos_on < 0.0)
                 return Absorption;
             
-            return Absorption;
+            const InputValues* values = static_cast<const InputValues*>(data);
+
+            // Compute the incoming direction by sampling the MDF.
+            sampling_context.split_in_place(2, 1);
+            const Vector2d s = sampling_context.next_vector2<2>();
+            const Vector3d m = m_mdf->sample(s, values->m_ax, values->m_ay);
+            const Vector3d h = shading_basis.transform_to_parent(m);
+
+            incoming = reflect(outgoing, h);
+            const double cos_oh = dot(outgoing, h);
+
+            // No reflection below the shading surface.
+            const double cos_in = dot(incoming, n);
+            if (cos_in < 0.0)
+                return Absorption;
+            
+            const double D = m_mdf->D(
+                m,
+                values->m_ax,
+                values->m_ay);
+            
+            const double G = m_mdf->G(
+                shading_basis.transform_to_local(incoming),
+                shading_basis.transform_to_local(outgoing),
+                m,
+                values->m_ax,
+                values->m_ay);
+
+            double F = fresnel_dielectric(cos_oh, values->m_eta);
+            value.set(D * G * F / (4.0 * cos_on * cos_in));
+            const double pdf = m_mdf->pdf(m, values->m_ax, values->m_ay);
+            assert(cos_oh >= 0.0);
+            probability = pdf / (4.0 * cos_oh);
+            return Glossy;
         }
 
         FORCE_INLINE virtual double evaluate(
@@ -152,6 +211,9 @@ namespace
             const int           modes,
             Spectrum&           value) const
         {
+            if (!(modes & Glossy))
+                return 0.0;
+
             // No reflection below the shading surface.
             const Vector3d& n = shading_basis.get_normal();
             const double cos_in = dot(incoming, n);
@@ -159,7 +221,30 @@ namespace
             if (cos_in < 0.0 || cos_on < 0.0)
                 return 0.0;
 
-            return 0.0;
+            const InputValues* values = static_cast<const InputValues*>(data);
+            
+            const Vector3d h = normalize(incoming + outgoing);
+            const Vector3d m = shading_basis.transform_to_local(h);
+            const double D = m_mdf->D(
+                m,
+                values->m_ax,
+                values->m_ay);
+
+            const double cos_hn = dot(h, n);
+            const double G = m_mdf->G(
+                shading_basis.transform_to_local(outgoing), 
+                shading_basis.transform_to_local(incoming),
+                m,
+                values->m_ax, 
+                values->m_ay);
+                                
+            const double cos_oh = dot(outgoing, h);
+            double F = fresnel_dielectric(cos_oh, values->m_eta);            
+            value.set(D * G * F / (4.0 * cos_on * cos_in));
+            const double pdf = m_mdf->pdf(m, values->m_ax, values->m_ay);
+            
+            assert(cos_oh >= 0.0);            
+            return pdf / (4.0 * cos_oh);
         }
 
         FORCE_INLINE virtual double evaluate_pdf(
@@ -170,6 +255,9 @@ namespace
             const Vector3d&     incoming,
             const int           modes) const
         {
+            if (!(modes & Glossy))
+                return 0.0;
+
             // No reflection below the shading surface.
             const Vector3d& n = shading_basis.get_normal();
             const double cos_in = dot(incoming, n);
@@ -177,7 +265,17 @@ namespace
             if (cos_in < 0.0 || cos_on < 0.0)
                 return 0.0;
 
-            return 0.0;
+            const InputValues* values = static_cast<const InputValues*>(data);
+            
+            const Vector3d h = normalize(incoming + outgoing);
+            const double pdf = m_mdf->pdf(
+                shading_basis.transform_to_local(h),
+                values->m_ax,
+                values->m_ay);
+
+            const double cos_oh = dot(outgoing, h);
+            assert(cos_oh >= 0.0);
+            return pdf / (4.0 * cos_oh);
         }
 
       private:
@@ -218,7 +316,7 @@ DictionaryArray Microfacet2BRDFFactory::get_input_metadata() const
                     .insert("Beckmann", "beckmann")
                     .insert("GGX", "ggx"))
             .insert("use", "required")
-            .insert("default", "blinn"));
+            .insert("default", "beckmann"));
 
     metadata.push_back(
         Dictionary()
