@@ -51,11 +51,14 @@
 #include <cstddef>
 
 // Forward declarations.
+namespace foundation    { class AbortSwitch; }
 namespace foundation    { class DictionaryArray; }
 namespace foundation    { class StringDictionary; }
+namespace renderer      { class Assembly; }
 namespace renderer      { class Material; }
 namespace renderer      { class Object; }
 namespace renderer      { class ParamArray; }
+namespace renderer      { class Project; }
 
 namespace renderer
 {
@@ -65,6 +68,9 @@ namespace renderer
 //
 
 DECLARE_ARRAY(MaterialArray, const Material*);
+
+// Return true if at least one material in the array has an alpha map set.
+bool uses_alpha_mapping(const MaterialArray& materials);
 
 
 //
@@ -141,6 +147,9 @@ class DLLSYMBOL ObjectInstance
     const MaterialArray& get_front_materials() const;
     const MaterialArray& get_back_materials() const;
 
+    // Return true if at least one of the material referenced by this instance has an alpha map set.
+    bool uses_alpha_mapping() const;
+
     enum RayBiasMethod
     {
         RayBiasMethodNone,                  // no ray bias for this object instance
@@ -152,6 +161,16 @@ class DLLSYMBOL ObjectInstance
     // Per-instance ray bias settings. The bias distance is expressed in world space.
     RayBiasMethod get_ray_bias_method() const;
     double get_ray_bias_distance() const;
+
+    // This method is called once before rendering each frame.
+    // Returns true on success, false otherwise.
+    bool on_frame_begin(
+        const Project&              project,
+        const Assembly&             assembly,
+        foundation::AbortSwitch*    abort_switch);
+
+    // This method is called once after rendering each frame.
+    void on_frame_end(const Project& project);
 
   private:
     friend class ObjectInstanceFactory;

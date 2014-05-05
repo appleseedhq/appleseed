@@ -38,91 +38,15 @@
 #endif
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/material/material.h"
-#include "renderer/modeling/scene/assembly.h"
-#include "renderer/modeling/scene/assemblyinstance.h"
-#include "renderer/modeling/scene/containers.h"
-#include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/foreach.h"
 #include "foundation/utility/string.h"
-#include "foundation/utility/uid.h"
-
-// Standard headers.
-#include <algorithm>
-#include <cassert>
-#include <set>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
-
-namespace
-{
-    bool uses_alpha_mapping(const MaterialArray& materials)
-    {
-        for (size_t i = 0; i < materials.size(); ++i)
-        {
-            if (materials[i])
-            {
-                if (materials[i]->has_alpha_map())
-                    return true;
-
-#ifdef WITH_OSL
-                if (materials[i]->has_osl_surface())
-                    return materials[i]->get_uncached_osl_surface()->has_transparency();
-#endif
-            }
-        }
-
-        return false;
-    }
-
-    bool uses_alpha_mapping(const ObjectInstance& object_instance)
-    {
-        return
-            uses_alpha_mapping(object_instance.get_back_materials()) ||
-            uses_alpha_mapping(object_instance.get_front_materials());
-    }
-
-    bool uses_alpha_mapping(const Assembly& assembly, set<UniqueID>& visited_assemblies)
-    {
-        if (visited_assemblies.find(assembly.get_uid()) == visited_assemblies.end())
-        {
-            visited_assemblies.insert(assembly.get_uid());
-
-            for (const_each<ObjectInstanceContainer> i = assembly.object_instances(); i; ++i)
-            {
-                if (uses_alpha_mapping(*i))
-                    return true;
-            }
-
-            for (const_each<AssemblyContainer> i = assembly.assemblies(); i; ++i)
-            {
-                if (uses_alpha_mapping(*i, visited_assemblies))
-                    return true;
-            }
-        }
-
-        return false;
-    }
-
-    bool uses_alpha_mapping(const Scene& scene)
-    {
-        set<UniqueID> visited_assemblies;
-
-        for (const_each<AssemblyContainer> i = scene.assemblies(); i; ++i)
-        {
-            if (uses_alpha_mapping(*i, visited_assemblies))
-                return true;
-        }
-
-        return false;
-    }
-}
 
 Tracer::Tracer(
     const Scene&                scene,
@@ -139,7 +63,7 @@ Tracer::Tracer(
 #ifdef WITH_OSL
   , m_shadergroup_exec(shadergroup_exec)
 #endif
-  , m_assume_no_alpha_mapping(!uses_alpha_mapping(scene))
+  , m_assume_no_alpha_mapping(!scene.uses_alpha_mapping())
   , m_transmission_threshold(static_cast<double>(transparency_threshold))
   , m_max_iterations(max_iterations)
 {
