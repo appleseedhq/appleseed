@@ -71,16 +71,21 @@ if (USE_SSE)
     )
 endif ()
 if (HIDE_SYMBOLS)
+    set (c_compiler_flags_common
+        ${c_compiler_flags_common}
+        -fvisibility=hidden                             # Hide all non-exported symbols
+    )
     set (cxx_compiler_flags_common
-        -fvisibility=hidden -fvisibility-inlines-hidden     # Hide all non-exported symbols
+        ${cxx_compiler_flags_common}
+        -fvisibility=hidden -fvisibility-inlines-hidden # Hide all non-exported symbols
     )
     set (exe_linker_flags_common
         ${exe_linker_flags_common}
-        -fvisibility=hidden -fvisibility-inlines-hidden     # Hide all non-exported symbols
+        -fvisibility=hidden -fvisibility-inlines-hidden # Hide all non-exported symbols
     )
     set (shared_lib_linker_flags_common
         ${shared_lib_linker_flags_common}
-        -fvisibility=hidden -fvisibility-inlines-hidden     # Hide all non-exported symbols
+        -fvisibility=hidden -fvisibility-inlines-hidden # Hide all non-exported symbols
     )
 endif ()
 
