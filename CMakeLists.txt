@@ -80,6 +80,8 @@ option (WITH_OSL                "Build OSL support"                             
 option (USE_SSE                 "Use SSE and SSE 2 instruction sets"                    ON)
 option (USE_QMC_SAMPLER         "Use QMC sampler (possible software patent issues)"     OFF)
 
+option (HIDE_SYMBOLS            "When using gcc, hide symbols not on the public API"    ON)
+
 
 #--------------------------------------------------------------------------------------------------
 # Enable testing with CTest.
