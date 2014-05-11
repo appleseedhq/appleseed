@@ -47,18 +47,20 @@ using namespace std;
 
 TEST_SUITE(Foundation_Math_Microfacet2)
 {
-    /*
     template <typename MDF>
     bool is_positive(
-        const MDF&      mdf,
-        const size_t    sample_count)
+        const MDF&                      mdf,
+        const typename MDF::ValueType   alpha_x,
+        const typename MDF::ValueType   alpha_y,
+        const size_t                    sample_count)
     {
+        Vector<typename MDF::ValueType,3> h(0);
+        
         for (size_t i = 0; i < sample_count; ++i)
         {
             const double theta = radical_inverse_base2<double>(i) * HalfPi;
-            const double cos_theta = cos(theta);
-
-            const double value = mdf.evaluate(cos_theta);
+            h.y = cos(theta);
+            const double value = mdf.D(h, alpha_x, alpha_y);
 
             if (value < 0.0)
                 return false;
@@ -67,25 +69,31 @@ TEST_SUITE(Foundation_Math_Microfacet2)
         return true;
     }
 
+    
     template <typename MDF>
-    double integrate_quadrature(
-        const MDF&      mdf,
-        const size_t    sample_count)
+    typename MDF::ValueType integrate_quadrature(
+        const MDF&                      mdf,
+        const typename MDF::ValueType   alpha_x,
+        const typename MDF::ValueType   alpha_y,
+        const size_t                    sample_count)
     {
-        double integral = 0.0;
+        typedef typename MDF::ValueType RealType;
+        
+        Vector<RealType,3> h(0);
+        RealType integral = 0.0;
 
         for (size_t i = 0; i < sample_count; ++i)
         {
-            const double theta = radical_inverse_base2<double>(i) * HalfPi;
-            const double cos_theta = cos(theta);
-            const double sin_theta = sin(theta);
+            const RealType theta = radical_inverse_base2<double>(i) * HalfPi;
+            h.y = cos(theta);
+            const RealType sin_theta = sin(theta);
 
-            const double value = mdf.evaluate(cos_theta);
+            const RealType value = mdf.D(h, alpha_x, alpha_y);
 
-            integral += value * cos_theta * sin_theta;
+            integral += value * h.y * sin_theta;
         }
 
-        integral *= HalfPi / sample_count;  // integration over theta
+        integral *= RealType(HalfPi) / sample_count;  // integration over theta
         integral *= TwoPi;                  // integration over phi
 
         return integral;
@@ -119,6 +127,7 @@ TEST_SUITE(Foundation_Math_Microfacet2)
         }
     };
 
+    /*
     template <typename T, typename MDF>
     struct ImportanceSampler
     {
@@ -139,7 +148,8 @@ TEST_SUITE(Foundation_Math_Microfacet2)
             return m_mdf.evaluate_pdf(v.y);
         }
     };
-
+    */
+    /*
     template <typename MDF, typename Sampler>
     double integrate_sampling(
         const MDF&      mdf,
@@ -167,7 +177,8 @@ TEST_SUITE(Foundation_Math_Microfacet2)
 
         return integral;
     }
-
+    */
+    /*
     template <typename MDF>
     void plot(
         MapleFile&      file,
@@ -315,7 +326,9 @@ TEST_SUITE(Foundation_Math_Microfacet2)
         plot(file, "blinn_10", BlinnMDF<double>(10.0), FunctionPlotSampleCount, FunctionSamplingSampleCount);
         plot(file, "blinn_50", BlinnMDF<double>(50.0), FunctionPlotSampleCount, FunctionSamplingSampleCount);
     }
-
+    */
+    
+    /*
     //
     // Beckmann MDF.
     //
@@ -401,7 +414,9 @@ TEST_SUITE(Foundation_Math_Microfacet2)
         plot(file, "beckmann_0_5", BeckmannMDF<double>(0.5), FunctionPlotSampleCount, FunctionSamplingSampleCount);
         plot(file, "beckmann_1_0", BeckmannMDF<double>(1.0), FunctionPlotSampleCount, FunctionSamplingSampleCount);
     }
-
+    */
+    
+    /*
     //
     // Ward MDF.
     //
@@ -439,7 +454,9 @@ TEST_SUITE(Foundation_Math_Microfacet2)
         plot(file, "ward_0_5", WardMDF<double>(0.5), FunctionPlotSampleCount, FunctionSamplingSampleCount);
         plot(file, "ward_1_0", WardMDF<double>(1.0), FunctionPlotSampleCount, FunctionSamplingSampleCount);
     }
-
+    */
+    
+    /*
     //
     // GGX MDF.
     //

@@ -480,6 +480,12 @@ string concat (string a, string b, string c, string d, string e, string f) {
 /*************************************************************/
 
 /********************************/
+// standard OSL closures that are different in appleseed
+
+closure color reflection(normal N) BUILTIN;
+closure color refraction(normal N, float from_ior, float to_ior) BUILTIN;
+
+/********************************/
 // standard OSL closures
 
 closure color background() BUILTIN;
@@ -489,8 +495,19 @@ closure color emission(float inner_angle, float outer_angle) BUILTIN;
 closure color emission(float outer_angle) { return emission(outer_angle, outer_angle); }
 closure color emission() { return emission(M_PI_2, M_PI_2); }
 
-closure color reflection(normal N, float eta) BUILTIN;
-closure color refraction(normal N, float eta) BUILTIN;
+// to keep compatibility with other renderers
+closure color reflection(normal N, float eta)
+{
+    return reflection(N);
+}
+
+closure color refraction(normal N, float eta)
+{
+    if (eta < 1)
+        return refraction(N, 1.0 / eta, 1.0);
+    else
+        return refraction(N, 1.0, eta);
+}
 
 closure color microfacet(string distribution, normal N, vector U, float xalpha,
                          float yalpha, float eta, int refract) BUILTIN;
@@ -505,7 +522,6 @@ closure color diffuse(normal N) BUILTIN;
 closure color holdout() BUILTIN;
 closure color translucent(normal N) BUILTIN;
 closure color transparent() BUILTIN;
-
 
 /********************************/
 // appleseed specific closures

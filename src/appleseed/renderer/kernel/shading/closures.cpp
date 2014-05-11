@@ -96,13 +96,13 @@ namespace
     struct RefractionClosureParams
     {
         OSL::Vec3       N;
-        float           eta;
+        float           from_ior;
+        float           to_ior;
     };
 
     struct ReflectionClosureParams
     {
         OSL::Vec3       N;
-        float           eta;
     };
 
     struct TranslucentClosureParams
@@ -111,6 +111,7 @@ namespace
     };
 
     OSL::ustring beckmann_mdf_name("beckmann");
+    OSL::ustring blinn_mdf_name("blinn");
     OSL::ustring ggx_mdf_name("ggx");
 
     struct MicrofacetBSDFClosureParams
@@ -254,49 +255,37 @@ void CompositeClosure::process_closure_tree(
 
                     if (p->refract)
                     {
-                        Microfacet2BTDFInputValues values;
-                        values.m_ax = p->xalpha;
-                        values.m_ay = p->yalpha;
-                        values.m_eta = p->eta;
-
-                        if (p->dist == ggx_mdf_name)
-                        {
-                            add_closure<Microfacet2BTDFInputValues>(
-                                MicrofacetGGXRefractionID,
-                                w,
-                                Vector3d(p->N),
-                                Vector3d(p->T),
-                                values);                            
-                        }
-                        else // beckmann by default
-                        {
-                            add_closure<Microfacet2BTDFInputValues>(
-                                MicrofacetBeckmannRefractionID,
-                                w,
-                                Vector3d(p->N),
-                                Vector3d(p->T),
-                                values);                            
-                        }
+                        // TODO: implement this
+                        // for now, we ignore Microfacet BTDFs
                     }
                     else
                     {
-                        Microfacet2BRDFInputValues values;
+                        OSLMicrofacetBRDFInputValues values;
                         values.m_ax = p->xalpha;
                         values.m_ay = p->yalpha;
                         values.m_eta = p->eta;
 
-                        if (p->dist == ggx_mdf_name)
+                        if (p->dist == blinn_mdf_name)
                         {
-                            add_closure<Microfacet2BRDFInputValues>(
+                            add_closure<OSLMicrofacetBRDFInputValues>(
+                                MicrofacetBlinnReflectionID,
+                                w,
+                                Vector3d(p->N),
+                                Vector3d(p->T),
+                                values);
+                        }
+                        else if (p->dist == ggx_mdf_name)
+                        {
+                            add_closure<OSLMicrofacetBRDFInputValues>(
                                 MicrofacetGGXReflectionID,
                                 w,
                                 Vector3d(p->N),
                                 Vector3d(p->T),
-                                values);                            
+                                values);
                         }
                         else // beckmann by default
                         {
-                            add_closure<Microfacet2BRDFInputValues>(
+                            add_closure<OSLMicrofacetBRDFInputValues>(
                                 MicrofacetBeckmannReflectionID,
                                 w,
                                 Vector3d(p->N),
@@ -327,7 +316,6 @@ void CompositeClosure::process_closure_tree(
 
               case ReflectionID:
                 {
-                /*
                     const ReflectionClosureParams* p =
                         reinterpret_cast<const ReflectionClosureParams*>(c->data());
 
@@ -340,20 +328,18 @@ void CompositeClosure::process_closure_tree(
                         w,
                         Vector3d(p->N),
                         values);
-                */
                 }
                 break;
 
               case RefractionID:
                 {
-                /*
                     const RefractionClosureParams* p =
                         reinterpret_cast<const RefractionClosureParams*>(c->data());
 
                     SpecularBTDFInputValues values;
                     values.m_reflectance.set(1.0f);
-                    values.m_from_ior = 1.0f;
-                    values.m_to_ior = p->eta;
+                    values.m_from_ior = p->from_ior;
+                    values.m_to_ior = p->to_ior;
                     values.m_reflectance_multiplier = 1.0;
                     values.m_transmittance.set(1.0f);
                     values.m_transmittance_multiplier = 1.0;
@@ -363,7 +349,6 @@ void CompositeClosure::process_closure_tree(
                         w,
                         Vector3d(p->N),
                         values);
-                */
                 }
                 break;
 
@@ -589,11 +574,11 @@ void register_appleseed_closures(OSL::ShadingSystem& shading_system)
                                         CLOSURE_FINISH_PARAM(MicrofacetBSDFClosureParams) } },
         
         { "reflection", ReflectionID, { CLOSURE_VECTOR_PARAM(ReflectionClosureParams, N),
-                                        CLOSURE_FLOAT_PARAM(ReflectionClosureParams, eta),
                                         CLOSURE_FINISH_PARAM(ReflectionClosureParams) } },
 
         { "refraction", RefractionID, { CLOSURE_VECTOR_PARAM(RefractionClosureParams, N),
-                                        CLOSURE_FLOAT_PARAM(RefractionClosureParams, eta),
+                                        CLOSURE_FLOAT_PARAM(RefractionClosureParams, from_ior),
+                                        CLOSURE_FLOAT_PARAM(RefractionClosureParams, to_ior),
                                         CLOSURE_FINISH_PARAM(RefractionClosureParams) } },
 
         { "translucent", TranslucentID, { CLOSURE_VECTOR_PARAM(LambertClosureParams, N),

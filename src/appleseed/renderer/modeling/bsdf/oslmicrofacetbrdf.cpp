@@ -28,7 +28,7 @@
 //
 
 // Interface header.
-#include "microfacet2brdf.h"
+#include "oslmicrofacetbrdf.h"
 
 // appleseed.renderer headers.
 #include "renderer/modeling/bsdf/bsdf.h"
@@ -91,16 +91,16 @@ namespace
     }
 
     //
-    // Microfacet2 BRDF.
+    // OSLMicrofacet BRDF.
     //
 
-    const char* Model = "microfacet2_brdf";
+    const char* Model = "osl_microfacet_brdf";
 
-    class Microfacet2BRDFImpl
+    class OSLMicrofacetBRDFImpl
       : public BSDF
     {
       public:
-        Microfacet2BRDFImpl(
+        OSLMicrofacetBRDFImpl(
             const char*         name,
             const ParamArray&   params)
           : BSDF(name, Reflective, Glossy, params)
@@ -133,13 +133,15 @@ namespace
                 m_params.get_required<string>(
                     "mdf",
                     "beckmann",
-                    make_vector("beckmann", "ggx"),
+                    make_vector("beckmann", "blinn", "ggx"),
                     context);
 
             if (mdf == "beckmann")
                 m_mdf.reset(new BeckmannMDF2<double>());
+            else if (mdf == "blinn")
+                m_mdf.reset(new BlinnMDF2<double>());
             else if (mdf == "ggx")
-                m_mdf.reset(new GGXMDF2<double>());
+                m_mdf.reset(new GGXMDF2<double>());                
             else
                 return false;
             
@@ -195,7 +197,6 @@ namespace
             double F = fresnel_dielectric(cos_oh, values->m_eta);
             value.set(D * G * F / (4.0 * cos_on * cos_in));
             const double pdf = m_mdf->pdf(m, values->m_ax, values->m_ay);
-            assert(cos_oh >= 0.0);
             probability = pdf / (4.0 * cos_oh);
             return Glossy;
         }
@@ -242,8 +243,6 @@ namespace
             double F = fresnel_dielectric(cos_oh, values->m_eta);            
             value.set(D * G * F / (4.0 * cos_on * cos_in));
             const double pdf = m_mdf->pdf(m, values->m_ax, values->m_ay);
-            
-            assert(cos_oh >= 0.0);            
             return pdf / (4.0 * cos_oh);
         }
 
@@ -274,35 +273,34 @@ namespace
                 values->m_ay);
 
             const double cos_oh = dot(outgoing, h);
-            assert(cos_oh >= 0.0);
             return pdf / (4.0 * cos_oh);
         }
 
       private:
-        typedef Microfacet2BRDFInputValues InputValues;
+        typedef OSLMicrofacetBRDFInputValues InputValues;
         
         std::auto_ptr<MDF<double> > m_mdf;
     };
 
-    typedef BSDFWrapper<Microfacet2BRDFImpl> Microfacet2BRDF;
+    typedef BSDFWrapper<OSLMicrofacetBRDFImpl> OSLMicrofacetBRDF;
 }
 
 
 //
-// Microfacet2BRDFFactory class implementation.
+// OSLMicrofacetBRDFFactory class implementation.
 //
 
-const char* Microfacet2BRDFFactory::get_model() const
+const char* OSLMicrofacetBRDFFactory::get_model() const
 {
     return Model;
 }
 
-const char* Microfacet2BRDFFactory::get_human_readable_model() const
+const char* OSLMicrofacetBRDFFactory::get_human_readable_model() const
 {
-    return "Microfacet2 BRDF";
+    return "OSL Microfacet BRDF";
 }
 
-DictionaryArray Microfacet2BRDFFactory::get_input_metadata() const
+DictionaryArray OSLMicrofacetBRDFFactory::get_input_metadata() const
 {
     DictionaryArray metadata;
     
@@ -314,6 +312,7 @@ DictionaryArray Microfacet2BRDFFactory::get_input_metadata() const
             .insert("items",
                 Dictionary()
                     .insert("Beckmann", "beckmann")
+                    .insert("Blinn", "blinn")
                     .insert("GGX", "ggx"))
             .insert("use", "required")
             .insert("default", "beckmann"));
@@ -351,11 +350,11 @@ DictionaryArray Microfacet2BRDFFactory::get_input_metadata() const
     return metadata;
 }
 
-auto_release_ptr<BSDF> Microfacet2BRDFFactory::create(
+auto_release_ptr<BSDF> OSLMicrofacetBRDFFactory::create(
     const char*         name,
     const ParamArray&   params) const
 {
-    return auto_release_ptr<BSDF>(new Microfacet2BRDF(name, params));
+    return auto_release_ptr<BSDF>(new OSLMicrofacetBRDF(name, params));
 }
 
 }   // namespace renderer
