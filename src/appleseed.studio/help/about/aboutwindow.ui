@@ -138,7 +138,7 @@ p, li { white-space: pre-wrap; }
          <string/>
         </property>
         <property name="pixmap">
-         <pixmap resource="../../resources/resources.qrc">:/images/appleseed-logo-gray-256.png</pixmap>
+         <pixmap resource="../../resources/resources.qrc">:/images/appleseed-logo-256.png</pixmap>
         </property>
        </widget>
       </item>
