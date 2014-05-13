@@ -54,7 +54,7 @@ TEST_SUITE(Foundation_Math_Microfacet2)
         const typename MDF::ValueType   alpha_y,
         const size_t                    sample_count)
     {
-        Vector<typename MDF::ValueType,3> h(0);
+        Vector<typename MDF::ValueType,3> h(0.0);
         
         for (size_t i = 0; i < sample_count; ++i)
         {
@@ -79,7 +79,7 @@ TEST_SUITE(Foundation_Math_Microfacet2)
     {
         typedef typename MDF::ValueType RealType;
         
-        Vector<RealType,3> h(0);
+        Vector<RealType,3> h(0.0);
         RealType integral = 0.0;
 
         for (size_t i = 0; i < sample_count; ++i)
@@ -102,12 +102,18 @@ TEST_SUITE(Foundation_Math_Microfacet2)
     template <typename T>
     struct UniformHemisphereSampler
     {
-        static Vector<T, 3> sample(const Vector<T, 2>& s)
+        Vector<T, 3> sample(
+            const Vector<T, 2>& s,
+            const T             alpha_x,
+            const T             alpha_y) const
         {
             return sample_hemisphere_uniform(s);
         }
 
-        static T pdf(const Vector<T, 3>& v)
+        T pdf(
+            const Vector<T, 3>& v,
+            const T             alpha_x,
+            const T             alpha_y) const
         {
             return RcpTwoPi;
         }
@@ -116,43 +122,55 @@ TEST_SUITE(Foundation_Math_Microfacet2)
     template <typename T>
     struct CosineHemisphereSampler
     {
-        static Vector<T, 3> sample(const Vector<T, 2>& s)
+        Vector<T, 3> sample(
+            const Vector<T, 2>& s,
+            const T             alpha_x,
+            const T             alpha_y) const
         {
             return sample_hemisphere_cosine(s);
         }
 
-        static T pdf(const Vector<T, 3>& v)
+        T pdf(
+            const Vector<T, 3>& v,
+            const T             alpha_x,
+            const T             alpha_y) const
         {
             return v.y * RcpPi;
         }
     };
 
-    /*
     template <typename T, typename MDF>
     struct ImportanceSampler
     {
-        const MDF& m_mdf;
+        const MDF&  m_mdf;
 
-        explicit ImportanceSampler(const MDF& mdf)
+        explicit ImportanceSampler(const MDF&  mdf)
           : m_mdf(mdf)
         {
         }
 
-        Vector<T, 3> sample(const Vector<T, 2>& s) const
+        Vector<T, 3> sample(
+            const Vector<T, 2>& s,
+            const T             alpha_x,
+            const T             alpha_y) const
         {
-            return m_mdf.sample(s);
+            return m_mdf.sample(s, alpha_x, alpha_y);
         }
 
-        T pdf(const Vector<T, 3>& v) const
+        T pdf(
+            const Vector<T, 3>& v,
+            const T             alpha_x,
+            const T             alpha_y) const
         {
-            return m_mdf.evaluate_pdf(v.y);
+            return m_mdf.pdf(v, alpha_x, alpha_y);
         }
     };
-    */
-    /*
+
     template <typename MDF, typename Sampler>
     double integrate_sampling(
         const MDF&      mdf,
+        const double    alpha_x,
+        const double    alpha_y,
         const Sampler&  sampler,
         const size_t    sample_count)
     {
@@ -163,73 +181,19 @@ TEST_SUITE(Foundation_Math_Microfacet2)
             static const size_t Bases[] = { 2 };
             const Vector2d s = hammersley_sequence<double, 2>(Bases, i, sample_count);
 
-            const Vector3d w = sampler.sample(s);
-            const double pdf = sampler.pdf(w);
-            const double cos_theta = w.y;
-
-            const double value = mdf.evaluate(cos_theta);
+            const Vector3d w = sampler.sample(s, alpha_x, alpha_y);
+            const double pdf = sampler.pdf(w, alpha_x, alpha_y);
+            const double value = mdf.D(w, alpha_x, alpha_y);
             const double sample = value / pdf;
 
-            integral += sample * cos_theta;
+            integral += sample * w.y;
         }
 
         integral /= static_cast<double>(sample_count);
 
         return integral;
     }
-    */
-    /*
-    template <typename MDF>
-    void plot(
-        MapleFile&      file,
-        const string&   name,
-        const MDF&      mdf,
-        const size_t    point_count,
-        const size_t    sample_count)
-    {
-        vector<double> angles(point_count);
-        vector<double> densities(point_count);
 
-        for (size_t i = 0; i < point_count; ++i)
-        {
-            const double angle =
-                fit(
-                    static_cast<double>(i), 0.0, static_cast<double>(point_count - 1),
-                    -HalfPi, +HalfPi);
-            const double cos_angle = cos(angle);
-
-            angles[i] = rad_to_deg(angle);
-            densities[i] = mdf.evaluate(cos_angle) * cos_angle;
-        }
-
-        vector<double> angle_samples(sample_count);
-        vector<double> density_samples(sample_count);
-
-        for (size_t i = 0; i < sample_count; ++i)
-        {
-            static const size_t Bases[] = { 2 };
-            const Vector2d s = hammersley_sequence<double, 2>(Bases, i, sample_count);
-            const Vector3d w = mdf.sample(s);
-            const double cos_angle = w.y;
-            const double angle = acos(cos_angle) * (w.x < 0.0 ? -1.0 : 1.0);
-
-            angle_samples[i] = rad_to_deg(angle);
-            density_samples[i] = mdf.evaluate(cos_angle) * cos_angle;
-        }
-
-        file.define(name, angles, densities);
-        file.define(name + "_samples", angle_samples, density_samples);
-
-        file.plot(
-            make_vector(
-                MaplePlotDef(name)
-                    .set_legend("Microfacet Distribution Function (" + name + ")"),
-                MaplePlotDef(name + "_samples")
-                    .set_legend("Integration Samples")
-                    .set_style("point")
-                    .set_color("red")));
-    }
-    */
     //
     // Test settings.
     //
@@ -240,309 +204,252 @@ TEST_SUITE(Foundation_Math_Microfacet2)
     const size_t FunctionSamplingSampleCount = 64;
     const double IntegrationEps = 1.0e-3;
 
-    /*
     //
     // Blinn-Phong MDF.
     //
 
-    TEST_CASE(BlinnMDF_Evaluate_ReturnsNonNegativeValues)
+    TEST_CASE(BlinnMDF2_Evaluate_ReturnsNonNegativeValues)
     {
-        const BlinnMDF<double> mdf(10.0);
+        const BlinnMDF2<double> mdf;
 
-        EXPECT_TRUE(is_positive(mdf, PositivityTestSampleCount));
+        EXPECT_TRUE(is_positive(mdf, 10.0, 10.0, PositivityTestSampleCount));
     }
 
-    TEST_CASE(BlinnMDF_Evaluate_GivenCosThetaIsZero_ReturnsZero)
+    TEST_CASE(BlinnMDF2_Evaluate_GivenCosThetaIsZero_ReturnsZero)
     {
-        const BlinnMDF<double> mdf(10.0);
-
-        const double limit = mdf.evaluate(0.0);
+        const BlinnMDF2<double> mdf;
+        const double limit = mdf.D(Vector3d(0.0), 10.0, 10.0);
 
         EXPECT_FEQ(0.0, limit);
     }
 
-    TEST_CASE(BlinnMDF_EvaluatePDF_GivenCosThetaIsZero_ReturnsZero)
+    TEST_CASE(BlinnMDF2_EvaluatePDF_GivenCosThetaIsZero_ReturnsZero)
     {
-        const BlinnMDF<double> mdf(10.0);
-
-        const double limit = mdf.evaluate_pdf(0.0);
+        const BlinnMDF2<double> mdf;
+        const double limit = mdf.pdf(Vector3d(0.0), 10.0, 10.0);
 
         EXPECT_FEQ(0.0, limit);
     }
 
-    TEST_CASE(BlinnMDF_IntegratedViaQuadrature_EqualsOne)
+    TEST_CASE(BlinnMDF2_IntegratedViaQuadrature_EqualsOne)
     {
-        const BlinnMDF<double> mdf(10.0);
+        const BlinnMDF2<double> mdf;
 
-        const double integral = integrate_quadrature(mdf, IntegrationSampleCount);
+        const double integral = integrate_quadrature(mdf, 10.0, 10.0, IntegrationSampleCount);
 
         EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
     }
 
-    TEST_CASE(BlinnMDF_IntegratedViaUniformSampling_EqualsOne)
+    TEST_CASE(BlinnMDF2_IntegratedViaUniformSampling_EqualsOne)
     {
-        const BlinnMDF<double> mdf(10.0);
+        const BlinnMDF2<double> mdf;
 
         const double integral =
             integrate_sampling(
                 mdf,
+                10.0,
+                10.0,
                 UniformHemisphereSampler<double>(),
                 IntegrationSampleCount);
 
         EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
     }
 
-    TEST_CASE(BlinnMDF_IntegratedViaCosineWeightedSampling_EqualsOne)
+    TEST_CASE(BlinnMDF2_IntegratedViaCosineWeightedSampling_EqualsOne)
     {
-        const BlinnMDF<double> mdf(10.0);
+        const BlinnMDF2<double> mdf;
 
         const double integral =
             integrate_sampling(
                 mdf,
+                10.0,
+                10.0,
                 CosineHemisphereSampler<double>(),
                 IntegrationSampleCount);
 
         EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
     }
 
-    TEST_CASE(BlinnMDF_IntegratedViaImportanceSampling_EqualsOne)
+    TEST_CASE(BlinnMDF2_IntegratedViaImportanceSampling_EqualsOne)
     {
-        const BlinnMDF<double> mdf(10.0);
+        const BlinnMDF2<double> mdf;
 
         const double integral =
             integrate_sampling(
                 mdf,
-                ImportanceSampler<double, BlinnMDF<double> >(mdf),
+                10.0,
+                10.0,
+                ImportanceSampler<double, BlinnMDF2<double> >(mdf),
                 IntegrationSampleCount);
 
         EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
     }
-
-    TEST_CASE(BlinnMDF_GeneratePlotFiles)
-    {
-        MapleFile file("unit tests/outputs/test_microfacet_blinn.mpl");
-
-        plot(file, "blinn_1",  BlinnMDF<double>( 1.0), FunctionPlotSampleCount, FunctionSamplingSampleCount);
-        plot(file, "blinn_10", BlinnMDF<double>(10.0), FunctionPlotSampleCount, FunctionSamplingSampleCount);
-        plot(file, "blinn_50", BlinnMDF<double>(50.0), FunctionPlotSampleCount, FunctionSamplingSampleCount);
-    }
-    */
     
-    /*
     //
     // Beckmann MDF.
     //
 
-    TEST_CASE(BeckmannMDF_Evaluate_ReturnsNonNegativeValues)
+    TEST_CASE(BeckmannMDF2_Evaluate_ReturnsNonNegativeValues)
     {
-        const BeckmannMDF<double> mdf(0.5);
+        const BeckmannMDF2<double> mdf;
 
-        EXPECT_TRUE(is_positive(mdf, PositivityTestSampleCount));
+        EXPECT_TRUE(is_positive(mdf, 0.5, 0.5, PositivityTestSampleCount));
     }
 
-    TEST_CASE(BeckmannMDF_Evaluate_GivenCosThetaIsZero_ReturnsZero)
+    TEST_CASE(BeckmannMDF2_Evaluate_GivenCosThetaIsZero_ReturnsZero)
     {
-        const BeckmannMDF<double> mdf(0.5);
+        const BeckmannMDF2<double> mdf;
 
-        const double limit = mdf.evaluate(0.0);
+        const double limit = mdf.D(Vector3d(0.0), 0.5, 0.5);
 
         EXPECT_FEQ(0.0, limit);
     }
 
-    TEST_CASE(BeckmannMDF_EvaluatePDF_GivenCosThetaIsZero_ReturnsZero)
+    TEST_CASE(BeckmannMDF2_EvaluatePDF_GivenCosThetaIsZero_ReturnsZero)
     {
-        const BeckmannMDF<double> mdf(0.5);
+        const BeckmannMDF2<double> mdf;
 
-        const double limit = mdf.evaluate_pdf(0.0);
+        const double limit = mdf.pdf(Vector3d(0.0), 0.5, 0.5);
 
         EXPECT_FEQ(0.0, limit);
     }
 
-    TEST_CASE(BeckmannMDF_IntegratedViaQuadrature_EqualsOne)
+    TEST_CASE(BeckmannMDF2_IntegratedViaQuadrature_EqualsOne)
     {
-        const BeckmannMDF<double> mdf(0.5);
+        const BeckmannMDF2<double> mdf;
 
-        const double integral = integrate_quadrature(mdf, IntegrationSampleCount);
+        const double integral = integrate_quadrature(mdf, 0.5, 0.5, IntegrationSampleCount);
 
         EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
     }
 
-    TEST_CASE(BeckmannMDF_IntegratedViaUniformSampling_EqualsOne)
+    TEST_CASE(BeckmannMDF2_IntegratedViaUniformSampling_EqualsOne)
     {
-        const BeckmannMDF<double> mdf(0.5);
+        const BeckmannMDF2<double> mdf;
 
         const double integral =
             integrate_sampling(
                 mdf,
+                0.5,
+                0.5,
                 UniformHemisphereSampler<double>(),
                 IntegrationSampleCount);
 
         EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
     }
 
-    TEST_CASE(BeckmannMDF_IntegratedViaCosineWeightedSampling_EqualsOne)
+    TEST_CASE(BeckmannMDF2_IntegratedViaCosineWeightedSampling_EqualsOne)
     {
-        const BeckmannMDF<double> mdf(0.5);
+        const BeckmannMDF2<double> mdf;
 
         const double integral =
             integrate_sampling(
                 mdf,
+                0.5,
+                0.5,
                 CosineHemisphereSampler<double>(),
                 IntegrationSampleCount);
 
         EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
     }
 
-    TEST_CASE(BeckmannMDF_IntegratedViaImportanceSampling_EqualsOne)
+    TEST_CASE(BeckmannMDF2_IntegratedViaImportanceSampling_EqualsOne)
     {
-        const BeckmannMDF<double> mdf(0.5);
+        const BeckmannMDF2<double> mdf;
 
         const double integral =
             integrate_sampling(
                 mdf,
-                ImportanceSampler<double, BeckmannMDF<double> >(mdf),
+                0.5,
+                0.5,
+                ImportanceSampler<double, BeckmannMDF2<double> >(mdf),
                 IntegrationSampleCount);
 
         EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
     }
-
-    TEST_CASE(BeckmannMDF_GeneratePlotFiles)
-    {
-        MapleFile file("unit tests/outputs/test_microfacet_beckmann.mpl");
-
-        plot(file, "beckmann_0_1", BeckmannMDF<double>(0.1), FunctionPlotSampleCount, FunctionSamplingSampleCount);
-        plot(file, "beckmann_0_5", BeckmannMDF<double>(0.5), FunctionPlotSampleCount, FunctionSamplingSampleCount);
-        plot(file, "beckmann_1_0", BeckmannMDF<double>(1.0), FunctionPlotSampleCount, FunctionSamplingSampleCount);
-    }
-    */
     
-    /*
-    //
-    // Ward MDF.
-    //
-
-    TEST_CASE(WardMDF_Evaluate_ReturnsNonNegativeValues)
-    {
-        const WardMDF<double> mdf(0.5);
-
-        EXPECT_TRUE(is_positive(mdf, PositivityTestSampleCount));
-    }
-
-    TEST_CASE(WardMDF_Evaluate_GivenCosThetaIsZero_ReturnsZero)
-    {
-        const WardMDF<double> mdf(0.5);
-
-        const double limit = mdf.evaluate(0.0);
-
-        EXPECT_FEQ(0.0, limit);
-    }
-
-    TEST_CASE(WardMDF_EvaluatePDF_GivenCosThetaIsZero_ReturnsZero)
-    {
-        const WardMDF<double> mdf(0.5);
-
-        const double limit = mdf.evaluate_pdf(0.0);
-
-        EXPECT_FEQ(0.0, limit);
-    }
-
-    TEST_CASE(WardMDF_GeneratePlotFiles)
-    {
-        MapleFile file("unit tests/outputs/test_microfacet_ward.mpl");
-
-        plot(file, "ward_0_1", WardMDF<double>(0.1), FunctionPlotSampleCount, FunctionSamplingSampleCount);
-        plot(file, "ward_0_5", WardMDF<double>(0.5), FunctionPlotSampleCount, FunctionSamplingSampleCount);
-        plot(file, "ward_1_0", WardMDF<double>(1.0), FunctionPlotSampleCount, FunctionSamplingSampleCount);
-    }
-    */
-    
-    /*
     //
     // GGX MDF.
     //
 
-    TEST_CASE(GGXMDF_Evaluate_ReturnsNonNegativeValues)
+    TEST_CASE(GGXMDF2_Evaluate_ReturnsNonNegativeValues)
     {
-        const GGXMDF<double> mdf(0.5);
+        const GGXMDF2<double> mdf;
 
-        EXPECT_TRUE(is_positive(mdf, PositivityTestSampleCount));
+        EXPECT_TRUE(is_positive(mdf, 0.5, 0.5, PositivityTestSampleCount));
     }
 
-    TEST_CASE(GGXMDF_Evaluate_GivenCosThetaIsZero_ReturnsLimitValue)
+    TEST_CASE(GGXMDF2_Evaluate_GivenCosThetaIsZero_ReturnsLimitValue)
     {
         const double AlphaG = 0.5;
-        const GGXMDF<double> mdf(AlphaG);
+        const GGXMDF2<double> mdf;
         const double ExpectedLimit = AlphaG * AlphaG * RcpPi;
 
-        const double limit = mdf.evaluate(0.0);
+        const double limit = mdf.D(Vector3d(0.0), AlphaG, AlphaG);
 
         EXPECT_FEQ(ExpectedLimit, limit);
     }
 
-    TEST_CASE(GGXMDF_EvaluatePDF_GivenCosThetaIsZero_ReturnsZero)
+    TEST_CASE(GGXMDF2_EvaluatePDF_GivenCosThetaIsZero_ReturnsZero)
     {
-        const GGXMDF<double> mdf(0.5);
+        const GGXMDF2<double> mdf;
 
-        const double limit = mdf.evaluate_pdf(0.0);
+        const double limit = mdf.pdf(Vector3d(0.0), 0.5, 0.5);
 
         EXPECT_FEQ(0.0, limit);
     }
 
-    TEST_CASE(GGXMDF_IntegratedViaQuadrature_EqualsOne)
+    TEST_CASE(GGXMDF2_IntegratedViaQuadrature_EqualsOne)
     {
-        const GGXMDF<double> mdf(0.5);
+        const GGXMDF2<double> mdf;
 
-        const double integral = integrate_quadrature(mdf, IntegrationSampleCount);
+        const double integral = integrate_quadrature(mdf, 0.5, 0.5, IntegrationSampleCount);
 
         EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
     }
 
-    TEST_CASE(GGXMDF_IntegratedViaUniformSampling_EqualsOne)
+    TEST_CASE(GGXMDF2_IntegratedViaUniformSampling_EqualsOne)
     {
-        const GGXMDF<double> mdf(0.5);
+        const GGXMDF2<double> mdf;
 
         const double integral =
             integrate_sampling(
                 mdf,
+                0.5,
+                0.5,
                 UniformHemisphereSampler<double>(),
                 IntegrationSampleCount);
 
         EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
     }
 
-    TEST_CASE(GGXMDF_IntegratedViaCosineWeightedSampling_EqualsOne)
+    TEST_CASE(GGXMDF2_IntegratedViaCosineWeightedSampling_EqualsOne)
     {
-        const GGXMDF<double> mdf(0.5);
+        const GGXMDF2<double> mdf;
 
         const double integral =
             integrate_sampling(
                 mdf,
+                0.5,
+                0.5,
                 CosineHemisphereSampler<double>(),
                 IntegrationSampleCount);
 
         EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
     }
 
-    TEST_CASE(GGXMDF_IntegratedViaImportanceSampling_EqualsOne)
+    TEST_CASE(GGXMDF2_IntegratedViaImportanceSampling_EqualsOne)
     {
-        const GGXMDF<double> mdf(0.5);
+        const GGXMDF2<double> mdf;
 
         const double integral =
             integrate_sampling(
                 mdf,
-                ImportanceSampler<double, GGXMDF<double> >(mdf),
+                0.5,
+                0.5,
+                ImportanceSampler<double, GGXMDF2<double> >(mdf),
                 IntegrationSampleCount);
 
         EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
     }
-
-    TEST_CASE(GGXMDF_GeneratePlotFiles)
-    {
-        MapleFile file("unit tests/outputs/test_microfacet_ggx.mpl");
-
-        plot(file, "ggx_0_1", GGXMDF<double>(0.1), FunctionPlotSampleCount, FunctionSamplingSampleCount);
-        plot(file, "ggx_0_5", GGXMDF<double>(0.5), FunctionPlotSampleCount, FunctionSamplingSampleCount);
-        plot(file, "ggx_2_0", GGXMDF<double>(2.0), FunctionPlotSampleCount, FunctionSamplingSampleCount);
-    }
-    */
 }

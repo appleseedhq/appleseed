@@ -137,7 +137,7 @@ struct MDF : NonCopyable
         const T rcp_cos_oh = T(1) / cos_oh;
         const T a = T(2) * cos_hn * cos_on * rcp_cos_oh;
         const T b = T(2) * cos_hn * cos_in * rcp_cos_oh;
-        return min(a, b, T(1));
+        return std::min(a, std::min(b, T(1)));
         return 0;
     }
 
