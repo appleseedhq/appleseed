@@ -89,62 +89,15 @@ namespace
         return m2 * m2 * m; // pow(m,5)
     }
 
-    double smithG_GGX(double Ndotv, double alphaG)
-    {
-        double a = alphaG * alphaG;
-        double b = Ndotv * Ndotv;
-        return 1.0 / (Ndotv + std::sqrt(a + b - a * b));
-    }
-    
-    enum Component
-    {
-        DiffuseComponent,
-        SpecularComponent,
-        ClearcoatComponent
-    };
-    
-    double get_component_weights(
-        const DisneyBRDFInputValues&    values,
-        double                          weights[3])
-    {
-        weights[DiffuseComponent] = 1.0 - values.m_metallic;
-        weights[SpecularComponent] = 1.0;
-        weights[ClearcoatComponent] = 0.25 * values.m_clearcoat;
-        double total_weight =
-            weights[DiffuseComponent] +
-            weights[SpecularComponent] +
-            weights[ClearcoatComponent];
-
-        return total_weight;        
-    }
-    
-    Component choose_component(
-        SamplingContext&                sampling_context,
-        const DisneyBRDFInputValues&    values)
-    {
-        double weights[3];
-        double total_weight = get_component_weights(values, weights);
-        
-        // Choose one of the components.
-        sampling_context.split_in_place(1, 1);
-        const double s = sampling_context.next_double2() * total_weight;
-        
-        if (s < weights[DiffuseComponent])
-            return DiffuseComponent;
-        else if ( s < weights[DiffuseComponent] + weights[SpecularComponent])
-            return SpecularComponent;
-        else
-            return ClearcoatComponent;
-    }
-    
-    void diffuse_brdf_value(
+    void evaluate_diffuse(
         const DisneyBRDFInputValues*    values,
+        const LightingConditions&       lighting_conditions,
+        const Spectrum&                 white,
         const Basis3d&                  shading_basis,
         const Vector3d&                 outgoing,
         const Vector3d&                 incoming,
         Spectrum&                       value)
     {
-        /*
         Vector3d h(normalize(incoming + outgoing));
         Vector3d n(shading_basis.get_normal());
         
@@ -171,7 +124,7 @@ namespace
         
         if (values->m_sheen > 0.0)
         {
-            const float clum = luminance(values->m_base_color);
+            const float clum = luminance(lighting_conditions, values->m_base_color);
             Spectrum ctint = values->m_base_color;
             
             // In a spectral color space, this is a bit fishy... 
@@ -181,33 +134,22 @@ namespace
             
             float fh = schlick_fresnel(ldoth);
             Spectrum csheen;            
-            mix_spectrums(m_white_spectrum, ctint, static_cast<float>(values->m_sheen_tint), csheen);
+            mix_spectrums(white, ctint, static_cast<float>(values->m_sheen_tint), csheen);
             csheen *= static_cast<float>(fh * values->m_sheen);
             value += csheen;
         }
 
-        value *= (1.0 - values->m_metallic);
-        */
+        value *= static_cast<float>(1.0 - values->m_metallic);
     }
-
-    void specular_brdf_value(
-        const DisneyBRDFInputValues*    values,
-        const Basis3d&                  shading_basis,
-        const Vector3d&                 outgoing,
-        const Vector3d&                 incoming,
-        Spectrum&                       value)
+    
+    void sample_diffuse()
     {
-        value.set(0.0f);
+        
     }
-
-    void clearcoat_brdf_value(
-        const DisneyBRDFInputValues*    values,
-        const Basis3d&                  shading_basis,
-        const Vector3d&                 outgoing,
-        const Vector3d&                 incoming,
-        Spectrum&                       value)
+    
+    double diffuse_pdf()
     {
-        value.set(0.0f);
+        
     }
 }
 
@@ -273,72 +215,29 @@ BSDF::Mode DisneyBRDFImpl::sample(
     value.set(0.0f);
     
     const InputValues* values = static_cast<const InputValues*>(data);
-    switch (choose_component(sampling_context, *values))
-    {
-        case DiffuseComponent:
-        {
-            // Compute the incoming direction in local space.
-            sampling_context.split_in_place(2, 1);
-            const Vector2d s = sampling_context.next_vector2<2>();
-            const Vector3d wi = sample_hemisphere_cosine(s);
-
-            // Transform the incoming direction to parent space.
-            incoming = shading_basis.transform_to_parent(wi);
-
-            diffuse_brdf_value(
-                        values,
-                        shading_basis,
-                        outgoing,
-                        incoming,
-                        value);
-
-            // Compute the probability density of the sampled direction.
-            probability = wi.y * RcpPi;
-            assert(probability > 0.0);
-
-            // Return the scattering mode.
-            return Diffuse;
-        }
-        break;
-
-        case SpecularComponent:
-        {
-            // Compute the incoming direction in local space.
-            sampling_context.split_in_place(2, 1);
-            const Vector2d s = sampling_context.next_vector2<2>();
-            const Vector3d wi = sample_hemisphere_cosine(s);
-
-            // Transform the incoming direction to parent space.
-            incoming = shading_basis.transform_to_parent(wi);
-
-            // Compute the probability density of the sampled direction.
-            probability = wi.y * RcpPi;
-            assert(probability > 0.0);
-
-            return Glossy;
-        }
-        break;
-
-        case ClearcoatComponent:
-        {
-            // Compute the incoming direction in local space.
-            sampling_context.split_in_place(2, 1);
-            const Vector2d s = sampling_context.next_vector2<2>();
-            const Vector3d wi = sample_hemisphere_cosine(s);
+    // Compute the incoming direction in local space.
+    sampling_context.split_in_place(2, 1);
+    const Vector2d s = sampling_context.next_vector2<2>();
+    const Vector3d wi = sample_hemisphere_cosine(s);
     
-            // Transform the incoming direction to parent space.
-            incoming = shading_basis.transform_to_parent(wi);
+    // Transform the incoming direction to parent space.
+    incoming = shading_basis.transform_to_parent(wi);
     
-            // Compute the probability density of the sampled direction.
-            probability = wi.y * RcpPi;
-            assert(probability > 0.0);
+    evaluate_diffuse(
+                values,
+                m_lighting_conditions,
+                m_white_spectrum,
+                shading_basis,
+                outgoing,
+                incoming,
+                value);
     
-            return Glossy;
-        }
-        break;
-
-        assert_otherwise;
-    }
+    // Compute the probability density of the sampled direction.
+    probability = wi.y * RcpPi;
+    assert(probability > 0.0);
+    
+    // Return the scattering mode.
+    return Diffuse;
 }
 
 double DisneyBRDFImpl::evaluate(
@@ -361,12 +260,11 @@ double DisneyBRDFImpl::evaluate(
     
     const InputValues* values = static_cast<const InputValues*>(data);
     
-    // evaluate diffuse + specular + clearcoat, weighted.
-    
-    /*
     // Compute the BRDF value.
-    diffuse_brdf_value(
+    evaluate_diffuse(
                 values,
+                m_lighting_conditions,
+                m_white_spectrum,
                 shading_basis,
                 outgoing,
                 incoming,
@@ -374,7 +272,6 @@ double DisneyBRDFImpl::evaluate(
     
     // Return the probability density of the sampled direction.
     return cos_in * RcpPi;
-    */
 }
 
 double DisneyBRDFImpl::evaluate_pdf(
@@ -392,9 +289,7 @@ double DisneyBRDFImpl::evaluate_pdf(
     if (cos_in < 0.0 || cos_on < 0.0)
         return 0.0;
     
-    // evaluate pdfs
-    
-    //return cos_in * RcpPi;
+    return cos_in * RcpPi;
 }
 
 LightingConditions DisneyBRDFImpl::m_lighting_conditions;
