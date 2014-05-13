@@ -43,9 +43,9 @@
 #include "renderer/modeling/bsdf/specularbrdf.h"
 #include "renderer/modeling/bsdf/specularbtdf.h"
 
-#ifndef NDEBUG
+//#ifndef NDEBUG
 #include "renderer/modeling/bsdf/oslmicrofacetbrdf.h"
-#endif
+//#endif
 
 //#include "renderer/modeling/bsdf/microfacet2brdf.h"
 
@@ -83,10 +83,10 @@ BSDFFactoryRegistrar::BSDFFactoryRegistrar()
     register_factory(auto_ptr<FactoryType>(new OrenNayarBRDFFactory()));
     register_factory(auto_ptr<FactoryType>(new SpecularBRDFFactory()));
     register_factory(auto_ptr<FactoryType>(new SpecularBTDFFactory()));
-    
-#ifndef NDEBUG
+
+//#ifndef NDEBUG
     register_factory(auto_ptr<FactoryType>(new OSLMicrofacetBRDFFactory()));
-#endif
+//#endif
 }
 
 BSDFFactoryRegistrar::~BSDFFactoryRegistrar()

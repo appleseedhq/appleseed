@@ -203,9 +203,6 @@ Vector<T, Dim> hammersley_zaremba_sequence(
 // Base-2 radical inverse functions implementation.
 //
 
-namespace detail
-{
-
 template <typename T>
 inline T radical_inverse_base2_swap(
     size_t              input)
@@ -218,13 +215,11 @@ inline T radical_inverse_base2_swap(
     return input;
 }
 
-}
-
 template <typename T>
 inline T radical_inverse_base2(
     size_t              input)
 {
-    return static_cast<T>(detail::radical_inverse_base2_swap(input)) / static_cast<T>(0x100000000LL);
+    return static_cast<T>(radical_inverse_base2_swap<T>(input)) / static_cast<T>(0x100000000LL);
 }
 
 template <typename T>
@@ -233,7 +228,7 @@ inline T radical_inverse_base2(
     size_t              input)
 {
     input ^= scrambling;
-    return static_cast<T>(detail::radical_inverse_base2_swap(input)) / static_cast<T>(0x100000000LL);
+    return static_cast<T>(radical_inverse_base2_swap<T>(input)) / static_cast<T>(0x100000000LL);
 }
 
 template <typename T>
