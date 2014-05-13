@@ -233,6 +233,7 @@ int main(int argc, char *argv[])
     QApplication::setOrganizationDomain("appleseedhq.net");
     QApplication::setApplicationName("appleseed.studio");
     QApplication::setApplicationVersion(Appleseed::get_lib_version());
+    QApplication::setWindowIcon(QIcon(":/icons/application_icon.png"));
 
     // The locale must be set after the construction of QApplication.
     QLocale::setDefault(QLocale::C);

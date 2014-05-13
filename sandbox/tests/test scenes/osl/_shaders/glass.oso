@@ -1,0 +1,44 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.5.7dev
+surface glass
+param	float	Kr	0.5 		 %read{7,9} %write{2147483647,-1}
+param	float	ior	1.5 		 %read{2,5} %write{2147483647,-1}
+global	normal	N	 %read{6,8} %write{2147483647,-1}
+global	closure color	Ci	 %read{2147483647,-1} %write{11,11}
+local	float	from_ior	 %read{8,8} %write{2,4}
+local	float	to_ior	 %read{8,8} %write{3,5}
+temp	int	$tmp1	 %read{1,1} %write{0,0}
+const	float	$const1	1		 %read{3,9} %write{2147483647,-1}
+temp	closure color	$tmp2	 %read{7,7} %write{6,6}
+const	string	$const2	"reflection"		 %read{6,6} %write{2147483647,-1}
+temp	closure color	$tmp3	 %read{11,11} %write{7,7}
+temp	closure color	$tmp4	 %read{10,10} %write{8,8}
+const	string	$const3	"refraction"		 %read{8,8} %write{2147483647,-1}
+temp	float	$tmp5	 %read{10,10} %write{9,9}
+temp	closure color	$tmp6	 %read{11,11} %write{10,10}
+code ___main___
+# glass.osl:8
+# 	if (backfacing())
+	backfacing	$tmp1 	%filename{"glass.osl"} %line{8} %argrw{"w"}
+	if		$tmp1 4 6 	%argrw{"r"}
+# glass.osl:10
+# 		from_ior = ior;
+	assign		from_ior ior 	%line{10} %argrw{"wr"}
+# glass.osl:11
+# 		to_ior = 1.0;
+	assign		to_ior $const1 	%line{11} %argrw{"wr"}
+# glass.osl:15
+# 		from_ior = 1.0;
+	assign		from_ior $const1 	%line{15} %argrw{"wr"}
+# glass.osl:16
+# 		to_ior = ior;
+	assign		to_ior ior 	%line{16} %argrw{"wr"}
+# glass.osl:19
+#  	Ci = Kr * reflection(N) + (1.0 - Kr) * refraction(N, from_ior, to_ior);
+	closure		$tmp2 $const2 N 	%line{19} %argrw{"wrr"}
+	mul		$tmp3 $tmp2 Kr 	%argrw{"wrr"}
+	closure		$tmp4 $const3 N from_ior to_ior 	%argrw{"wrrrr"}
+	sub		$tmp5 $const1 Kr 	%argrw{"wrr"}
+	mul		$tmp6 $tmp4 $tmp5 	%argrw{"wrr"}
+	add		Ci $tmp3 $tmp6 	%argrw{"wrr"}
+	end

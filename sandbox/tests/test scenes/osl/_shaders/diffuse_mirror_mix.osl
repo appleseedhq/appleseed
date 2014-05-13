@@ -1,0 +1,16 @@
+
+surface diffuse_mirror_mix(float Kd = 1, color Cs = 1, float Kr = 0)
+{
+    Ci = Cs * Kd * diffuse(N);
+
+    if (P[2] < 0.0)
+    {
+	    if (P[0] < 0.0)
+	    	Ci += Kr * reflection(N);
+	}
+    else
+    {
+	    if (P[0] > 0.0)
+	    	Ci += Kr * reflection(N);
+	}
+}

@@ -31,8 +31,13 @@
 #include "objectinstance.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
+#include "renderer/modeling/material/material.h"
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/scene/assembly.h"
+#ifdef WITH_OSL
+#include "renderer/modeling/shadergroup/shadergroup.h"
+#endif
 #include "renderer/utility/messagecontext.h"
 #include "renderer/utility/paramarray.h"
 
@@ -55,6 +60,25 @@ namespace renderer
 //
 
 DEFINE_ARRAY(MaterialArray);
+
+bool uses_alpha_mapping(const MaterialArray& materials)
+{
+    for (size_t i = 0; i < materials.size(); ++i)
+    {
+        if (materials[i])
+        {
+            if (materials[i]->has_alpha_map())
+                return true;
+
+#ifdef WITH_OSL
+            if (materials[i]->has_osl_surface())
+                return materials[i]->get_uncached_osl_surface()->has_transparency();
+#endif
+        }
+    }
+
+    return false;
+}
 
 
 //
@@ -368,6 +392,38 @@ void ObjectInstance::check_materials() const
 
     do_check_materials(this, *m_object, m_front_materials, impl->m_front_material_mappings);
     do_check_materials(this, *m_object, m_back_materials, impl->m_back_material_mappings);
+}
+
+bool ObjectInstance::uses_alpha_mapping() const
+{
+    return
+        renderer::uses_alpha_mapping(m_back_materials) ||
+        renderer::uses_alpha_mapping(m_front_materials);
+}
+
+bool ObjectInstance::on_frame_begin(
+    const Project&          project,
+    const Assembly&         assembly,
+    AbortSwitch*            abort_switch)
+{
+    const EntityDefMessageContext context("object instance", this);
+
+    if (uses_alpha_mapping())
+    {
+        if (m_front_materials != m_back_materials)
+        {
+            RENDERER_LOG_WARNING(
+                "%s: object instance uses alpha mapping on one side (or both) but materials are different on front and back faces; "
+                "this may lead to unexpected or unphysical results since the direction of shadow rays is unpredictable.",
+                context.get());
+        }
+    }
+
+    return true;
+}
+
+void ObjectInstance::on_frame_end(const Project& project)
+{
 }
 
 

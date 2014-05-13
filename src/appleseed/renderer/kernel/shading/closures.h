@@ -32,8 +32,8 @@
 #include "renderer/modeling/bsdf/ashikhminbrdf.h"
 #include "renderer/modeling/bsdf/diffusebtdf.h"
 #include "renderer/modeling/bsdf/lambertianbrdf.h"
-#include "renderer/modeling/bsdf/microfacetbrdf.h"
 #include "renderer/modeling/bsdf/orennayarbrdf.h"
+#include "renderer/modeling/bsdf/oslmicrofacetbrdf.h"
 #include "renderer/modeling/bsdf/specularbrdf.h"
 #include "renderer/modeling/bsdf/specularbtdf.h"
 
@@ -76,10 +76,6 @@ enum ClosureID
     // BSDF closures.
     AshikhminShirleyID,
     LambertID,
-    MicrofacetBeckmannID,
-    MicrofacetBlinnID,
-    MicrofacetGGXID,
-    MicrofacetWardID,
     OrenNayarID,
     ReflectionID,
     RefractionID,
@@ -91,6 +87,13 @@ enum ClosureID
     EmissionID,
     HoldoutID,
     TransparentID,
+
+    // Microfacets are special.    
+    MicrofacetID,
+    MicrofacetBeckmannReflectionID = MicrofacetID,
+    MicrofacetBlinnReflectionID,
+    MicrofacetGGXReflectionID,
+
     NumClosuresIDs
 };
 
@@ -120,7 +123,7 @@ class APPLESEED_ALIGN(16) CompositeClosure
         AshikminBRDFInputValues,
         DiffuseBTDFInputValues,
         LambertianBRDFInputValues,
-        MicrofacetBRDFInputValues,
+        OSLMicrofacetBRDFInputValues,
         OrenNayarBRDFInputValues,
         SpecularBRDFInputValues,
         SpecularBTDFInputValues> InputValuesTypeList;

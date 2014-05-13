@@ -310,6 +310,8 @@ bool Assembly::on_frame_begin(
     success = success && invoke_on_frame_begin(project, *this, materials(), abort_switch);
     success = success && invoke_on_frame_begin(project, *this, lights(), abort_switch);
 
+    success = success && invoke_on_frame_begin(project, *this, object_instances(), abort_switch);
+
 #ifdef WITH_OSL
     success = success && invoke_on_frame_begin(project, assemblies(), shading_system, abort_switch);
 #else
@@ -325,6 +327,7 @@ void Assembly::on_frame_end(const Project& project)
 {
     invoke_on_frame_end(project, assembly_instances());
     invoke_on_frame_end(project, assemblies());
+    invoke_on_frame_end(project, object_instances());
     invoke_on_frame_end(project, *this, lights());
     invoke_on_frame_end(project, *this, materials());
 #ifdef WITH_OSL

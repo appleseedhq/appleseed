@@ -30,6 +30,9 @@
 #ifndef APPLESEED_FOUNDATION_MATH_FRESNEL_H
 #define APPLESEED_FOUNDATION_MATH_FRESNEL_H
 
+// appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
+
 // Standard headers.
 #include <cassert>
 
