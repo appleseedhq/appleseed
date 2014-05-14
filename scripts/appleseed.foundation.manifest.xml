@@ -9,80 +9,100 @@
         <files>foundation/core/concepts/*</files>
         <files>foundation/core/exceptions/*</files>
 
-        <files>foundation/image/color.h</files>
+        <files>foundation/image/color.*</files>
         <files>foundation/image/colorspace.*</files>
-        <!--<files>foundation/image/pixel.*</files>-->      <!-- requires openexr/half.h -->
-        <files>foundation/image/spectrum.h</files>
+        <!--<files>foundation/image/pixel.*</files>-->              <!-- requires OpenEXR/half.h -->
+        <files>foundation/image/spectrum.*</files>
 
         <files>foundation/math/intersection/*</files>
         <files>foundation/math/knn/*</files>
         <files>foundation/math/rng/*</files>
         <files>foundation/math/sampling/*</files>
-        <files>foundation/math/aabb.h</files>
-        <files>foundation/math/area.h</files>
-        <files>foundation/math/basis.h</files>
-        <files>foundation/math/bestcandidate.h</files>
-        <files>foundation/math/cdf.h</files>
-        <files>foundation/math/combination.h</files>
-        <files>foundation/math/distance.h</files>
-        <files>foundation/math/fastmath.h</files>
-        <files>foundation/math/fp.h</files>
-        <files>foundation/math/frustum.h</files>
-        <files>foundation/math/hash.h</files>
-        <files>foundation/math/matrix.h</files>
-        <files>foundation/math/minmax.h</files>
+        <files>foundation/math/voxel/*</files>
+        <files>foundation/math/aabb.*</files>
+        <files>foundation/math/area.*</files>
+        <files>foundation/math/basis.*</files>
+        <files>foundation/math/bestcandidate.*</files>
+        <files>foundation/math/cdf.*</files>
+        <files>foundation/math/combination.*</files>
+        <files>foundation/math/distance.*</files>
+        <files>foundation/math/fastmath.*</files>
+        <files>foundation/math/filter.*</files>
+        <files>foundation/math/fixedsizehistory.*</files>
+        <files>foundation/math/fp.*</files>
+        <files>foundation/math/fresnel.*</files>
+        <files>foundation/math/frustum.*</files>
+        <files>foundation/math/hash.*</files>
+        <files>foundation/math/matrix.*</files>
+        <files>foundation/math/microfacet.*</files>
+        <files>foundation/math/minmax.*</files>
+        <files>foundation/math/mis.*</files>
         <files>foundation/math/noise.*</files>
         <files>foundation/math/ordering.*</files>
         <files>foundation/math/permutation.*</files>
-        <files>foundation/math/population.h</files>
+        <files>foundation/math/population.*</files>
         <files>foundation/math/primes.*</files>
-        <files>foundation/math/qmc.h</files>
-        <files>foundation/math/quaternion.h</files>
-        <files>foundation/math/ray.h</files>
-        <files>foundation/math/scalar.h</files>
-        <files>foundation/math/spline.h</files>
-        <files>foundation/math/split.h</files>
-        <files>foundation/math/vector.h</files>
-        <files>foundation/math/voxelgrid.h</files>
+        <files>foundation/math/qmc.*</files>
+        <files>foundation/math/quaternion.*</files>
+        <files>foundation/math/ray.*</files>
+        <files>foundation/math/rng.*</files>
+        <files>foundation/math/root.*</files>
+        <files>foundation/math/rr.*</files>
+        <files>foundation/math/sah.*</files>
+        <files>foundation/math/sampling.*</files>
+        <files>foundation/math/scalar.*</files>
+        <files>foundation/math/spline.*</files>
+        <files>foundation/math/split.*</files>
+        <files>foundation/math/transform.*</files>
+        <files>foundation/math/triangulator.*</files>
+        <files>foundation/math/vector.*</files>
+        <files>foundation/math/voxel.*</files>
+        <files>foundation/math/voxelgrid.*</files>
 
-        <files>foundation/platform/breakpoint.h</files>
+        <files>foundation/platform/breakpoint.*</files>
         <files>foundation/platform/compiler.*</files>
-        <files>foundation/platform/sse.h</files>
-        <files>foundation/platform/types.h</files>
+        <files>foundation/platform/defaulttimers.*</files>
+        <files>foundation/platform/sse.*</files>
+        <files>foundation/platform/timer.*</files>
+        <files>foundation/platform/types.*</files>
+        <files>foundation/platform/windows.*</files>
 
         <files>foundation/utility/commandlineparser/*</files>
         <files>foundation/utility/containers/*</files>
-        <files>foundation/utility/filter/ifilter.h</files>
-        <files>foundation/utility/filter/letthroughfilter.h</files>
+        <files>foundation/utility/filter/ifilter.*</files>
+        <files>foundation/utility/filter/passthroughfilter.*</files>
         <files>foundation/utility/log/filelogtarget.*</files>
         <files>foundation/utility/log/filelogtargetbase.*</files>
-        <files>foundation/utility/log/helpers.h</files>
+        <files>foundation/utility/log/helpers.*</files>
+        <files>foundation/utility/log/ilogtarget.*</files>
         <files>foundation/utility/log/logger.h</files>
         <files>foundation/utility/log/logmessage.*</files>
-        <files>foundation/utility/log/logtargetbase.h</files>
         <files>foundation/utility/log/openfilelogtarget.*</files>
         <files>foundation/utility/test/*</files>
-        <files>foundation/utility/bufferedfile.*</files>
+        <!--<files>foundation/utility/bufferedfile.*</files>-->     <!-- requires LZO, LZ4 -->
         <files>foundation/utility/cache.*</files>
-        <files>foundation/utility/cameracontroller.h</files>
-        <files>foundation/utility/casts.h</files>
-        <files>foundation/utility/cc.h</files>
-        <files>foundation/utility/countof.h</files>
-        <files>foundation/utility/foreach.h</files>
-        <files>foundation/utility/implptr.h</files>
-        <files>foundation/utility/indenter.h</files>
-        <files>foundation/utility/iostreamop.h</files>
-        <files>foundation/utility/iterators.h</files>
-        <files>foundation/utility/makevector.h</files>
+        <files>foundation/utility/cameracontroller.*</files>
+        <files>foundation/utility/casts.*</files>
+        <files>foundation/utility/cc.*</files>
+        <files>foundation/utility/countof.*</files>
+        <files>foundation/utility/foreach.*</files>
+        <files>foundation/utility/implptr.*</files>
+        <files>foundation/utility/indenter.*</files>
+        <files>foundation/utility/iostreamop.*</files>
+        <files>foundation/utility/iterators.*</files>
+        <files>foundation/utility/makevector.*</files>
         <files>foundation/utility/memory.*</files>
-        <files>foundation/utility/numerictype.h</files>
-        <files>foundation/utility/otherwise.h</files>
+        <files>foundation/utility/numerictype.*</files>
+        <files>foundation/utility/otherwise.*</files>
+        <files>foundation/utility/statistics.*</files>
+        <files>foundation/utility/stopwatch.*</files>
         <files>foundation/utility/string.*</files>
-        <files>foundation/utility/typetraits.h</files>
+        <files>foundation/utility/typetraits.*</files>
         <files>foundation/utility/vpythonfile.*</files>
+        <!-- TODO: explicitly exclude main/dllsymbol.* -->
     </input>
     <output>
-        <base_path>../archives/releases/appleseed.foundation-1.6/</base_path>
+        <base_path>../archives/releases/appleseed.foundation-1.7/</base_path>
         <base_filename>appleseed.foundation</base_filename>
         <header>
 //
@@ -91,7 +111,8 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2011 Francois Beaune
+// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
+// Copyright (c) 2014 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -113,20 +134,20 @@
 //
 
 //
-// This is appleseed.foundation version 1.6.
+// This is appleseed.foundation version 1.7.
 //
 
 // Enable SSE extensions.
-#ifndef APPLESEED_FOUNDATION_USE_SSE
-#define APPLESEED_FOUNDATION_USE_SSE
+#ifndef APPLESEED_USE_SSE
+#define APPLESEED_USE_SSE
 #endif
 
 // Include Imath headers if Imath / appleseed.foundation interoperability is enabled.
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
-#include "openexr/ImathBox.h"
-#include "openexr/ImathColor.h"
-#include "openexr/ImathMatrix.h"
-#include "openexr/ImathVec.h"
+#include "OpenEXR/ImathBox.h"
+#include "OpenEXR/ImathColor.h"
+#include "OpenEXR/ImathMatrix.h"
+#include "OpenEXR/ImathVec.h"
 #endif
 
 </header>
@@ -137,7 +158,8 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2011 Francois Beaune
+// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
+// Copyright (c) 2014 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -164,6 +186,8 @@
         <strip type="regex">^#endif\s+// !APPLESEED_FOUNDATION_[A-Z0-9_]*_H[\r\n]+</strip>
         <strip type="literal">// appleseed.foundation headers.
 </strip>
+        <strip type="literal">// appleseed.main headers.
+</strip>
         <strip type="literal">// Interface header.
 </strip>
         <strip type="literal">// Interface headers.
@@ -172,37 +196,18 @@
 </strip>
         <strip type="literal">// Platform headers.
 </strip>
-        <strip type="regex">^// Imath headers\.[\r\n]+^#ifdef APPLESEED_ENABLE_IMATH_INTEROP[\r\n]+^#include \"openexr\/[a-zA-Z0-9_]+\.h\"[\r\n]+^#endif[\r\n]+</strip>
-        <strip type="literal">//
-// On Windows, define FOUNDATIONDLL to __declspec(dllexport) when building the DLL
-// and to __declspec(dllimport) when building an application using the DLL.
-// Other platforms don't use this export mechanism and the symbol FOUNDATIONDLL is
-// defined to evaluate to nothing.
-//
-
-#ifndef FOUNDATIONDLL
-#ifdef _WIN32
-#ifdef APPLESEED_FOUNDATION_EXPORTS
-#define FOUNDATIONDLL __declspec(dllexport)
-#else
-#define FOUNDATIONDLL __declspec(dllimport)
-#endif
-#else
-#define FOUNDATIONDLL
-#endif
-#endif
-
+        <strip type="regex">^// Imath headers\.[\r\n]+^#ifdef APPLESEED_ENABLE_IMATH_INTEROP[\r\n]+^#include \"OpenEXR\/[a-zA-Z0-9_]+\.h\"[\r\n]+^#endif[\r\n]+</strip>
+        <strip type="literal">#include "main/dllvisibility.h"
 </strip>
-        <strip type="literal">FOUNDATIONDLL </strip>
+        <strip type="literal">DLLSYMBOL </strip>
         <strip type="literal">#include "foundation/utility/log/consolelogtarget.h"
 </strip>
-        <!--<strip type="literal">#ifdef APPLESEED_FOUNDATION_USE_SSE
-#endif
-</strip>-->
+        <strip type="literal">#include "boost/static_assert.hpp"</strip>
+        <strip type="regex">BOOST_STATIC_ASSERT\(.+\);</strip>
     </output>
     <test>
         <commandline>copy appleseed.foundation.test.cpp "$OutputBasePath"</commandline>
-        <commandline>cl /W3 /wd"4355" /EHsc /D_CRT_SECURE_NO_WARNINGS /I"$OutputBasePath" appleseed.foundation.test.cpp $OutputSourceFilePath</commandline>
+        <commandline>cl /W3 /wd"4355" /EHsc /D_CRT_SECURE_NO_WARNINGS /DARCH64 /I"$OutputBasePath" appleseed.foundation.test.cpp $OutputSourceFilePath</commandline>
         <commandline>appleseed.foundation.test.exe</commandline>
         <commandline>del appleseed.foundation.obj</commandline>
         <commandline>del appleseed.foundation.test.obj</commandline>
