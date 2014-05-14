@@ -4,7 +4,7 @@
 
 appleseed is a modern, physically-based open source final frame renderer. Started in 2009, it has grown into a robust production rendering toolset and has been battle-tested on several projects such as TV documentaries, ads, promotional videos and animation shorts.
 
-appleseed is available under the [MIT license](http://opensource.org/licenses/MIT).
+appleseed is available under the [MIT license](http://en.wikipedia.org/wiki/MIT_License).
 
 More information at http://appleseedhq.net/.
 
