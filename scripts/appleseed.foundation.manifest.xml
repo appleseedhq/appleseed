@@ -4,7 +4,7 @@
 
 <manifest>
     <input root="../src/appleseed/">
-        <files>../../scripts/appleseed.foundation.stubs.*</files>
+        <files>../../scripts/appleseed.foundation.plugs.*</files>
 
         <files>foundation/core/concepts/*</files>
         <files>foundation/core/exceptions/*</files>
