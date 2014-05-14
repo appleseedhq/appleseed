@@ -57,7 +57,7 @@ void test_knn()
     // Build a tree out of these points.
     knn::Tree3d tree;
     knn::Builder3d builder(tree);
-    builder.build(&points[0], PointCount);
+    builder.build<DefaultWallclockTimer>(&points[0], PointCount);
 
     // Construct the knn query objects.
     knn::Answer<double> answer(AnswerSize);
