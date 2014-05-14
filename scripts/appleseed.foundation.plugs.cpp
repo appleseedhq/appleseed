@@ -97,7 +97,7 @@ namespace
 
         void reset_format(const LogMessage::Category category)
         {
-            set_format(category, "{datetime-utc} <{thread}> {process-size} {category} | {message}");
+            set_format(category, "{category} | {message}");
         }
 
         void set_all_formats(const string& format)

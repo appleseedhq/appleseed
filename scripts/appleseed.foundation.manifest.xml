@@ -11,7 +11,6 @@
 
         <files>foundation/image/color.*</files>
         <files>foundation/image/colorspace.*</files>
-        <!--<files>foundation/image/pixel.*</files>-->              <!-- requires OpenEXR/half.h -->
         <files>foundation/image/spectrum.*</files>
 
         <files>foundation/math/intersection/*</files>
@@ -75,11 +74,12 @@
         <files>foundation/utility/log/filelogtargetbase.*</files>
         <files>foundation/utility/log/helpers.*</files>
         <files>foundation/utility/log/ilogtarget.*</files>
+        <files>foundation/utility/log/logformatter.*</files>
         <files>foundation/utility/log/logger.h</files>
         <files>foundation/utility/log/logmessage.*</files>
         <files>foundation/utility/log/openfilelogtarget.*</files>
+        <files>foundation/utility/log/stringlogtarget.*</files>
         <files>foundation/utility/test/*</files>
-        <!--<files>foundation/utility/bufferedfile.*</files>-->     <!-- requires LZO, LZ4 -->
         <files>foundation/utility/cache.*</files>
         <files>foundation/utility/cameracontroller.*</files>
         <files>foundation/utility/casts.*</files>
@@ -99,6 +99,7 @@
         <files>foundation/utility/string.*</files>
         <files>foundation/utility/typetraits.*</files>
         <files>foundation/utility/vpythonfile.*</files>
+
         <!-- TODO: explicitly exclude main/dllsymbol.* -->
     </input>
     <output>

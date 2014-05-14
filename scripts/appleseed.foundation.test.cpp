@@ -83,8 +83,22 @@ void test_knn()
     }
 }
 
+void test_logger()
+{
+    Logger logger;
+
+    StringLogTarget log_target;
+    logger.add_target(&log_target);
+
+    LOG_INFO(logger, "hello world");
+
+    assert(strcmp(log_target.get_string(), "info    | hello world\n") == 0);
+}
+
 int main()
 {
     test_knn();
+    test_logger();
+
     return 0;
 }
