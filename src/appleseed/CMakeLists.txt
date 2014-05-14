@@ -262,7 +262,6 @@ set (foundation_math_sources
     foundation/math/noise.h
     foundation/math/ordering.cpp
     foundation/math/ordering.h
-    foundation/math/particlemap.h
     foundation/math/permutation.cpp
     foundation/math/permutation.h
     foundation/math/population.h
