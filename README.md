@@ -1,4 +1,4 @@
-![](resources/logo/appleseed-logo-256.png)
+![appleseed logo](resources/logo/appleseed-logo-256.png)
 
 ### About
 
