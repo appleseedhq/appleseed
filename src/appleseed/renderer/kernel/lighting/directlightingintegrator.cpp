@@ -220,11 +220,15 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     const Vector3d incoming = -emission_direction;
 
     // Cull light samples behind the shading surface.
-    double cos_in = dot(incoming, m_shading_basis.get_normal());
-    if (m_bsdf.get_type() == BSDF::Transmissive)
-        cos_in = -cos_in;
-    if (cos_in <= 0.0)
-        return;
+    if (m_bsdf.get_type() != BSDF::AllBSDFTypes)
+    {
+        double cos_in = dot(incoming, m_shading_basis.get_normal());
+
+        if (m_bsdf.get_type() == BSDF::Transmissive)
+            cos_in = -cos_in;
+        if (cos_in <= 0.0)
+            return;
+    }
 
     // Compute the transmission factor between the light sample and the shading point.
     const double transmission =

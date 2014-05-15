@@ -43,6 +43,9 @@
 #include "renderer/modeling/bsdf/specularbrdf.h"
 #include "renderer/modeling/bsdf/specularbtdf.h"
 
+#include "renderer/modeling/bsdf/fresnelspecularbrdf.h"
+#include "renderer/modeling/bsdf/oslspecularbtdf.h"
+
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/registrar.h"
@@ -77,6 +80,9 @@ BSDFFactoryRegistrar::BSDFFactoryRegistrar()
     register_factory(auto_ptr<FactoryType>(new OrenNayarBRDFFactory()));
     register_factory(auto_ptr<FactoryType>(new SpecularBRDFFactory()));
     register_factory(auto_ptr<FactoryType>(new SpecularBTDFFactory()));
+    
+    register_factory(auto_ptr<FactoryType>(new FresnelSpecularBRDFFactory()));
+    register_factory(auto_ptr<FactoryType>(new OSLSpecularBTDFFactory()));
 }
 
 BSDFFactoryRegistrar::~BSDFFactoryRegistrar()

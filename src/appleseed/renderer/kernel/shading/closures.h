@@ -31,11 +31,11 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/bsdf/ashikhminbrdf.h"
 #include "renderer/modeling/bsdf/diffusebtdf.h"
+#include "renderer/modeling/bsdf/fresnelspecularbrdf.h"
 #include "renderer/modeling/bsdf/lambertianbrdf.h"
 #include "renderer/modeling/bsdf/microfacetbrdf.h"
 #include "renderer/modeling/bsdf/orennayarbrdf.h"
-#include "renderer/modeling/bsdf/specularbrdf.h"
-#include "renderer/modeling/bsdf/specularbtdf.h"
+#include "renderer/modeling/bsdf/oslspecularbtdf.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -122,8 +122,8 @@ class APPLESEED_ALIGN(16) CompositeClosure
         LambertianBRDFInputValues,
         MicrofacetBRDFInputValues,
         OrenNayarBRDFInputValues,
-        SpecularBRDFInputValues,
-        SpecularBTDFInputValues> InputValuesTypeList;
+        FresnelSpecularBRDFInputValues,
+        OSLSpecularBTDFInputValues> InputValuesTypeList;
 
     // Find the biggest InputValues type.
     typedef boost::mpl::max_element<

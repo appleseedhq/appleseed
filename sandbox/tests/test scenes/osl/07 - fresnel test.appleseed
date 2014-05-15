@@ -71,9 +71,9 @@
                 <parameter name="reflectance" value="uv_grid_mip_inst" />
                 <parameter name="reflectance_multiplier" value="1.0" />
             </bsdf>
-            <shader_group name="glass">
-                <shader type="surface" name="glass" layer="glass1">
-                    <parameter name="ior" value="float 2" />
+            <shader_group name="fresnel_test">
+                <shader type="surface" name="fresnel_test" layer="fresnel_test1">
+                    <parameter name="ior" value="float 1.1" />
                 </shader>
             </shader_group>
             <surface_shader name="physical_surface_shader" model="physical_surface_shader" />
@@ -86,7 +86,7 @@
                 <parameter name="surface_shader" value="physical_surface_shader" />
             </material>
             <material name="sphere_material" model="osl_material">
-                <parameter name="osl_surface" value="glass" />
+                <parameter name="osl_surface" value="fresnel_test" />
                 <parameter name="surface_shader" value="physical_surface_shader" />
             </material>
             <object name="sphere" model="mesh_object">

@@ -304,7 +304,7 @@ OSL::ShaderGlobals& ShadingPoint::get_osl_shader_globals() const
         m_shader_globals.dPdy = OSL::Vec3(0, 0, 0);
         m_shader_globals.dPdz = OSL::Vec3(0, 0, 0);
 
-        m_shader_globals.I = -Vector3f(ray.m_dir);
+        m_shader_globals.I = Vector3f(ray.m_dir);
         m_shader_globals.dIdx = OSL::Vec3(0, 0, 0);
         m_shader_globals.dIdy = OSL::Vec3(0, 0, 0);
 

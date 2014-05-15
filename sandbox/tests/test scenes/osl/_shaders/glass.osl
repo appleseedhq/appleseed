@@ -1,7 +1,5 @@
 
-surface glass(
-	float Kr = 0.5,
-	float ior = 1.5)
+surface glass(float ior = 1.5)
 {
 	float from_ior, to_ior;
 
@@ -16,5 +14,5 @@ surface glass(
 		to_ior = ior;
 	}
 
- 	Ci = Kr * reflection(N) + (1.0 - Kr) * refraction(N, from_ior, to_ior);
+ 	Ci = reflection(N, ior) + refraction(N, from_ior / to_ior);
 }

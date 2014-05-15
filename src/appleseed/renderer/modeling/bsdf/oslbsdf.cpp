@@ -37,7 +37,9 @@
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdffactoryregistrar.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
+#include "renderer/modeling/bsdf/fresnelspecularbrdf.h"
 #include "renderer/modeling/bsdf/ibsdffactory.h"
+#include "renderer/modeling/bsdf/oslspecularbtdf.h"
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/utility/paramarray.h"
@@ -78,7 +80,7 @@ namespace
         OSLBSDFImpl(
             const char*             name,
             const ParamArray&       params)
-          : BSDF(name, Reflective, AllScatteringModes, params)
+          : BSDF(name, AllBSDFTypes, AllScatteringModes, params)
         {
             memset(m_all_bsdfs, 0, sizeof(BSDF*) * NumClosuresIDs);
 
@@ -101,16 +103,12 @@ namespace
                     "osl_lambert");
 
             m_specular_brdf =
-                create_and_register_bsdf(
-                    ReflectionID,
-                    "specular_brdf",
-                    "osl_reflection");
+                FresnelSpecularBRDFFactory().create("osl_reflection", ParamArray());
+            m_all_bsdfs[ReflectionID] = m_specular_brdf.get();
 
             m_specular_btdf =
-                create_and_register_bsdf(
-                    RefractionID,
-                    "specular_btdf",
-                    "osl_refraction");
+                OSLSpecularBTDFFactory().create("osl_refraction", ParamArray());
+            m_all_bsdfs[RefractionID] = m_specular_btdf.get();
 
             m_microfacet_beckmann_brdf =
                 create_and_register_bsdf(

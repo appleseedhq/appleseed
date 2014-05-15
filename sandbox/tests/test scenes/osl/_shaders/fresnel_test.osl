@@ -1,0 +1,7 @@
+
+surface fresnel_test(float ior = 1.5)
+{
+	float Kt, Kr;
+	fresnel(-I, N, ior, Kr, Kt);
+	Ci = color(Kr, 0, 0) * diffuse(N);
+}

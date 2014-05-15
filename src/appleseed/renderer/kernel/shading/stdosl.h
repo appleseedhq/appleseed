@@ -494,6 +494,11 @@ closure color holdout() BUILTIN;
 closure color translucent(normal N) BUILTIN;
 closure color transparent() BUILTIN;
 
+closure color reflection(normal N, float eta) BUILTIN;
+closure color reflection(normal N) { return reflection (N, 0.0); }
+
+closure color refraction(normal N, float eta) BUILTIN;
+
 /********************************/
 // closures that are in the standard but are different in appleseed
 
@@ -506,17 +511,6 @@ closure color microfacet_beckmann(normal N, float glossiness) BUILTIN;
 //closure color microfacet_ggx(normal N, float roughness, float eta) BUILTIN;
 // appleseed:
 closure color microfacet_ggx(normal N, float glossiness) BUILTIN;
-
-// original:
-//closure color reflection(normal N, float eta) BUILTIN;
-//closure color reflection(normal N) { return reflection (N, 0.0); }
-// appleseed:
-closure color reflection(normal N) BUILTIN;
-
-// original:
-//closure color refraction(normal N, float eta) BUILTIN;
-// appleseed:
-closure color refraction(normal N, float from_ior, float to_ior) BUILTIN;
 
 /********************************/
 // appleseed specific closures

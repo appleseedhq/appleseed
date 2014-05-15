@@ -102,13 +102,13 @@ namespace
     struct RefractionClosureParams
     {
         OSL::Vec3   N;
-        float       from_ior;
-        float       to_ior;
+        float       eta;
     };
 
     struct ReflectionClosureParams
     {
         OSL::Vec3   N;
+        float       eta;
     };
 
     struct TranslucentClosureParams
@@ -285,11 +285,10 @@ void CompositeClosure::process_closure_tree(
                     const ReflectionClosureParams* p =
                         reinterpret_cast<const ReflectionClosureParams*>(c->data());
 
-                    SpecularBRDFInputValues values;
-                    values.m_reflectance.set(1.0f);
-                    values.m_reflectance_multiplier = 1.0;
+                    FresnelSpecularBRDFInputValues values;
+                    values.m_eta = p->eta;
 
-                    add_closure<SpecularBRDFInputValues>(
+                    add_closure<FresnelSpecularBRDFInputValues>(
                         static_cast<ClosureID>(c->id),
                         w,
                         Vector3d(p->N),
@@ -302,15 +301,10 @@ void CompositeClosure::process_closure_tree(
                     const RefractionClosureParams* p =
                         reinterpret_cast<const RefractionClosureParams*>(c->data());
 
-                    SpecularBTDFInputValues values;
-                    values.m_reflectance.set(1.0f);
-                    values.m_from_ior = p->from_ior;
-                    values.m_to_ior = p->to_ior;
-                    values.m_reflectance_multiplier = 1.0;
-                    values.m_transmittance.set(1.0f);
-                    values.m_transmittance_multiplier = 1.0;
+                    OSLSpecularBTDFInputValues values;
+                    values.m_eta = p->eta;
 
-                    add_closure<SpecularBTDFInputValues>(
+                    add_closure<OSLSpecularBTDFInputValues>(
                         static_cast<ClosureID>(c->id),
                         w,
                         Vector3d(p->N),
@@ -548,11 +542,11 @@ void register_appleseed_closures(OSL::ShadingSystem& shading_system)
                                                CLOSURE_FINISH_PARAM(MicrofacetBRDFClosureParams) } },
 
         { "reflection", ReflectionID, { CLOSURE_VECTOR_PARAM(ReflectionClosureParams, N),
+                                        CLOSURE_FLOAT_PARAM(ReflectionClosureParams, eta),
                                         CLOSURE_FINISH_PARAM(ReflectionClosureParams) } },
 
         { "refraction", RefractionID, { CLOSURE_VECTOR_PARAM(RefractionClosureParams, N),
-                                        CLOSURE_FLOAT_PARAM(RefractionClosureParams, from_ior),
-                                        CLOSURE_FLOAT_PARAM(RefractionClosureParams, to_ior),
+                                        CLOSURE_FLOAT_PARAM(ReflectionClosureParams, eta),
                                         CLOSURE_FINISH_PARAM(RefractionClosureParams) } },
 
         { "translucent", TranslucentID, { CLOSURE_VECTOR_PARAM(LambertClosureParams, N),

@@ -90,7 +90,8 @@ class DLLSYMBOL BSDF
     enum Type
     {
         Reflective          = 1 << 0,
-        Transmissive        = 1 << 1
+        Transmissive        = 1 << 1,
+        AllBSDFTypes        = Reflective | Transmissive
     };
 
     // Scattering modes.
