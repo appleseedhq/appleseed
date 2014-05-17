@@ -27,8 +27,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_STUBS_H
-#define APPLESEED_FOUNDATION_STUBS_H
+#ifndef APPLESEED_FOUNDATION_PLUGS_H
+#define APPLESEED_FOUNDATION_PLUGS_H
 
 // appleseed.foundation headers.
 #include "foundation/utility/log/logger.h"
@@ -44,5 +44,4 @@
 
 #define portable_vsnprintf ::vsnprintf
 
-
-#endif  // !APPLESEED_FOUNDATION_STUBS_H
+#endif  // !APPLESEED_FOUNDATION_PLUGS_H
