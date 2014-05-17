@@ -1180,8 +1180,6 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/bsdfwrapper.h
     renderer/modeling/bsdf/diffusebtdf.cpp
     renderer/modeling/bsdf/diffusebtdf.h
-    renderer/modeling/bsdf/fresnelspecularbrdf.cpp
-    renderer/modeling/bsdf/fresnelspecularbrdf.h
     renderer/modeling/bsdf/ibsdffactory.h
     renderer/modeling/bsdf/kelemenbrdf.cpp
     renderer/modeling/bsdf/kelemenbrdf.h
@@ -1192,8 +1190,6 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/nullbsdf.h
     renderer/modeling/bsdf/orennayarbrdf.cpp
     renderer/modeling/bsdf/orennayarbrdf.h       
-    renderer/modeling/bsdf/oslspecularbtdf.cpp
-    renderer/modeling/bsdf/oslspecularbtdf.h
     renderer/modeling/bsdf/specularbrdf.cpp
     renderer/modeling/bsdf/specularbrdf.h
     renderer/modeling/bsdf/specularbtdf.cpp

@@ -72,6 +72,7 @@ namespace
             m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("transmittance", InputFormatSpectralReflectance);
             m_inputs.declare("transmittance_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("fresnel_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("from_ior", InputFormatScalar);
             m_inputs.declare("to_ior", InputFormatScalar);
         }
@@ -122,7 +123,7 @@ namespace
                         values->m_from_ior,
                         values->m_to_ior,
                         abs(cos_theta_i),
-                        cos_theta_t);
+                        cos_theta_t) * values->m_fresnel_multiplier;
 
                 sampling_context.split_in_place(1, 1);
                 const double s = sampling_context.next_double2();
@@ -248,6 +249,16 @@ DictionaryArray SpecularBTDFFactory::get_input_metadata() const
         Dictionary()
             .insert("name", "transmittance_multiplier")
             .insert("label", "Transmittance Multiplier")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "optional")
+            .insert("default", "1.0"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "fresnel_multiplier")
+            .insert("label", "Fresnel Multiplier")
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))

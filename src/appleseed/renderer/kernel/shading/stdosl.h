@@ -494,10 +494,17 @@ closure color holdout() BUILTIN;
 closure color translucent(normal N) BUILTIN;
 closure color transparent() BUILTIN;
 
-closure color reflection(normal N, float eta) BUILTIN;
-closure color reflection(normal N) { return reflection (N, 0.0); }
+closure color reflection(normal N) BUILTIN;
+closure color refraction(normal N, float from_ior, float to_ior) BUILTIN;
 
-closure color refraction(normal N, float eta) BUILTIN;
+// assume one of the mediums is air.
+closure color refraction(normal N, float eta)
+{
+    if (eta > 1.0)
+        return refraction(N, 1.0, 1.0 / eta);
+    else
+        return refraction(N, eta, 1.0);
+}
 
 /********************************/
 // closures that are in the standard but are different in appleseed
