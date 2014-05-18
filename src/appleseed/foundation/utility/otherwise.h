@@ -36,14 +36,12 @@
 
 // Standard headers.
 #include <cassert>
-#include <cstddef>
-#include <cstring>
 
 namespace foundation
 {
 
 //
-// Utility macros to catch unhandled cases in switch () statements.
+// Utility macros to catch unhandled cases in switch statements.
 //
 
 // Exception thrown by the 'throw_otherwise' macro.
@@ -51,20 +49,10 @@ class SwitchException
   : public Exception
 {
   public:
-    SwitchException(const char* file, const size_t line)
+    SwitchException()
       : Exception("unhandled case in switch statement")
-      , m_line(line)
     {
-        assert(file);
-        std::strncpy(m_file, file, MaxFileNameLength);
-        m_file[MaxFileNameLength] = '\0';
     }
-
-  private:
-    static const size_t MaxFileNameLength = 256;
-
-    char            m_file[MaxFileNameLength + 1];
-    const size_t    m_line;
 };
 
 // Call assert() when reaching an unhandled case.
@@ -83,7 +71,7 @@ class SwitchException
 // Throw a SwitchException when reaching an unhandled case.
 #define throw_otherwise                                         \
     default:                                                    \
-      throw foundation::SwitchException(__FILE__, __LINE__)
+      throw foundation::SwitchException()
 
 }       // namespace foundation
 

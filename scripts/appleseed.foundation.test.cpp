@@ -57,7 +57,7 @@ void test_knn()
     // Build a tree out of these points.
     knn::Tree3d tree;
     knn::Builder3d builder(tree);
-    builder.build(&points[0], PointCount);
+    builder.build<DefaultWallclockTimer>(&points[0], PointCount);
 
     // Construct the knn query objects.
     knn::Answer<double> answer(AnswerSize);
@@ -83,8 +83,22 @@ void test_knn()
     }
 }
 
+void test_logger()
+{
+    Logger logger;
+
+    StringLogTarget log_target;
+    logger.add_target(&log_target);
+
+    LOG_INFO(logger, "hello world");
+
+    assert(strcmp(log_target.get_string(), "info    | hello world\n") == 0);
+}
+
 int main()
 {
     test_knn();
+    test_logger();
+
     return 0;
 }
