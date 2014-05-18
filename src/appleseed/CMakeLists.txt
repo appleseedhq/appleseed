@@ -1682,6 +1682,8 @@ if (WITH_OSL)
     link_against_oslexec (appleseed)
 endif ()
 
+link_against_seexpr(appleseed)
+
 target_link_libraries (appleseed ${Boost_LIBRARIES})
 target_link_libraries (appleseed lz4 minilzo)
 

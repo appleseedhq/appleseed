@@ -53,13 +53,13 @@ class DLLSYMBOL DisneyMaterialLayer
   public:
     // Destructor
     ~DisneyMaterialLayer();
-    
+
   private:
     friend class DisneyMaterial;
-    
+
     // Constructor
     DisneyMaterialLayer();
-    
+
     struct Impl;
     Impl *impl;
 };

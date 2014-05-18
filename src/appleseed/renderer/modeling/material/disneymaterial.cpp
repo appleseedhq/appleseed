@@ -33,6 +33,9 @@
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
 
+// appleseed.renderer headers.
+#include "renderer/modeling/bsdf/disneylayeredbdrf.h"
+
 using namespace foundation;
 
 namespace renderer
@@ -69,6 +72,7 @@ const char* Model = "disney_material";
 
 struct DisneyMaterial::Impl
 {
+    foundation::auto_release_ptr<DisneyLayeredBRDF> m_brdf;
 };
 
 DisneyMaterial::DisneyMaterial(

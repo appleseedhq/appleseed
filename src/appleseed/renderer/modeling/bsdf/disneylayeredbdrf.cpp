@@ -60,7 +60,7 @@ DisneyLayeredBRDF::DisneyLayeredBRDF(
   : BSDF(name, Reflective, Diffuse | Glossy, params)
 {
 }
-    
+
 void DisneyLayeredBRDF::release()
 {
     delete this;
@@ -79,6 +79,8 @@ bool DisneyLayeredBRDF::on_frame_begin(
     if (!BSDF::on_frame_begin(project, assembly, abort_switch))
         return false;
     
+    m_brdf = DisneyBRDFFactory().create("disney_brdf", ParamArray());
+    m_brdf->on_frame_begin(project, assembly, abort_switch);
     return true;
 }
 
@@ -86,6 +88,8 @@ void DisneyLayeredBRDF::on_frame_end(
     const Project&              project,
     const Assembly&             assembly)
 {
+    m_brdf->on_frame_end(project, assembly);
+    m_brdf.release();
     BSDF::on_frame_end(project, assembly);
 }
 
@@ -100,7 +104,8 @@ void DisneyLayeredBRDF::evaluate_inputs(
     const ShadingPoint&         shading_point,
     const size_t                offset) const
 {
-    return BSDF::evaluate_inputs(input_evaluator, shading_point, offset);
+    // TODO: setup SeExpr for shading point, exec layer expressions, ..., ...
+    // write all to input_evaluator data block.
 }
 
 BSDF::Mode DisneyLayeredBRDF::sample(
@@ -115,9 +120,17 @@ BSDF::Mode DisneyLayeredBRDF::sample(
     Spectrum&           value,
     double&             probability) const
 {
-    value.set(0.0f);
-    probability = 0.0;
-    return Absorption;
+    return m_brdf->sample(
+        sampling_context,
+        data,
+        adjoint,
+        cosine_mult,
+        geometric_normal,
+        shading_basis,
+        outgoing,
+        incoming,
+        value,
+        probability);
 }
 
 double DisneyLayeredBRDF::evaluate(
@@ -131,8 +144,16 @@ double DisneyLayeredBRDF::evaluate(
     const int           modes,
     Spectrum&           value) const
 {
-    value.set(0.0f);
-    return 0.0;    
+    return m_brdf->evaluate(
+        data,
+        adjoint,
+        cosine_mult,
+        geometric_normal,
+        shading_basis,
+        outgoing,
+        incoming,
+        modes,
+        value);
 }
 
 double DisneyLayeredBRDF::evaluate_pdf(
@@ -143,7 +164,13 @@ double DisneyLayeredBRDF::evaluate_pdf(
     const Vector3d&     incoming,
     const int           modes) const
 {
-    return 0.0;
+    return m_brdf->evaluate_pdf(
+        data,
+        geometric_normal,
+        shading_basis,
+        outgoing,
+        incoming,
+        modes);
 }
 
 }   // namespace renderer

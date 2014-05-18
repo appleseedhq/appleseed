@@ -45,7 +45,6 @@
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
 namespace renderer      { class ParamArray; }
-namespace renderer      { class DisneyMaterialLayer; }
 
 namespace renderer
 {
@@ -58,6 +57,7 @@ class DisneyLayeredBRDF
   : public BSDF
 {
   public:
+    // Constructor.
     DisneyLayeredBRDF(
             const char*         name,
             const ParamArray&   params);
@@ -92,7 +92,7 @@ class DisneyLayeredBRDF
         InputEvaluator&             input_evaluator,
         const ShadingPoint&         shading_point,
         const size_t                offset = 0) const OVERRIDE;
-    
+
     // Given an outgoing direction, sample the BSDF and compute the incoming
     // direction, its probability density and the value of the BSDF for this
     // pair of directions. Return the scattering mode. If the scattering mode
@@ -108,7 +108,7 @@ class DisneyLayeredBRDF
             foundation::Vector3d&           incoming,
             Spectrum&                       value,
             double&                         probability) const OVERRIDE;
-    
+
     // Evaluate the BSDF for a given pair of directions. Return the PDF value
     // for this pair of directions. If the returned probability is zero, the
     // BSDF value is undefined.    
@@ -131,6 +131,9 @@ class DisneyLayeredBRDF
             const foundation::Vector3d&     outgoing,
             const foundation::Vector3d&     incoming,
             const int                       modes) const OVERRIDE;
+
+  private:
+    foundation::auto_release_ptr<BSDF> m_brdf;
 };
 
 }       // namespace renderer

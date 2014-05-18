@@ -74,6 +74,7 @@ DECLARE_INPUT_VALUES(DisneyBRDFInputValues)
 
 //
 // Disney BRDF class.
+// (Only diffuse component for now, pending some MDFs refactor work).
 //
 
 class DisneyBRDFImpl
