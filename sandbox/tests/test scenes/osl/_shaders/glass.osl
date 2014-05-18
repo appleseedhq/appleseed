@@ -16,8 +16,5 @@ surface glass(float eta = 1.5)
 
 	float Kr, Kt;
 	fresnel( I, N, from_ior / to_ior, Kr, Kt);
- 	Ci = (Kr * reflection(N)) 
- 	 	 +
- 	     (Kt * refraction(N, from_ior / to_ior))
- 	     ;
+ 	Ci = (Kr * reflection(N)) + (Kt * refraction(N, from_ior, to_ior));
 }

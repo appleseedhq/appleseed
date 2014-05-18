@@ -3,8 +3,8 @@ OpenShadingLanguage 1.00
 surface glass
 param	float	eta	1.5 		 %read{2,5} %write{2147483647,-1}
 global	vector	I	 %read{9,57} %write{2147483647,-1}
-global	normal	N	 %read{9,76} %write{2147483647,-1}
-global	closure color	Ci	 %read{2147483647,-1} %write{79,79}
+global	normal	N	 %read{9,69} %write{2147483647,-1}
+global	closure color	Ci	 %read{2147483647,-1} %write{71,71}
 local	float	___216_IdotN	 %read{50,58} %write{48,48}
 local	float	___216_k	 %read{54,59} %write{53,53}
 local	float	___217_c	 %read{10,38} %write{9,12}
@@ -16,9 +16,9 @@ local	vector	___221_T	 %read{2147483647,-1} %write{56,66}
 local	float	from_ior	 %read{6,69} %write{2,4}
 local	float	to_ior	 %read{6,69} %write{3,5}
 local	float	Kr	 %read{44,68} %write{43,64}
-local	float	Kt	 %read{78,78} %write{46,65}
+local	float	Kt	 %read{70,70} %write{46,65}
 temp	int	$tmp1	 %read{1,1} %write{0,0}
-const	float	$const1	1		 %read{3,76} %write{2147483647,-1}
+const	float	$const1	1		 %read{3,64} %write{2147483647,-1}
 temp	float	$tmp2	 %read{19,58} %write{6,6}
 const	string	$const2	"fresnel"		 %read{7,8} %write{2147483647,-1}
 const	int	$const3	0		 %read{10,54} %write{2147483647,-1}
@@ -62,13 +62,10 @@ temp	float	$tmp32	 %read{61,61} %write{60,60}
 temp	vector	$tmp33	 %read{62,62} %write{61,61}
 temp	closure color	$tmp34	 %read{68,68} %write{67,67}
 const	string	$const13	"reflection"		 %read{67,67} %write{2147483647,-1}
-temp	closure color	$tmp35	 %read{79,79} %write{68,68}
-temp	closure color	$tmp36	 %read{78,78} %write{74,76}
-temp	float	$tmp37	 %read{71,76} %write{69,69}
-const	string	$const14	"refraction"		 %read{70,76} %write{2147483647,-1}
-temp	int	$tmp38	 %read{72,72} %write{71,71}
-temp	float	$tmp39	 %read{74,74} %write{73,73}
-temp	closure color	$tmp40	 %read{79,79} %write{78,78}
+temp	closure color	$tmp35	 %read{71,71} %write{68,68}
+temp	closure color	$tmp36	 %read{70,70} %write{69,69}
+const	string	$const14	"refraction"		 %read{69,69} %write{2147483647,-1}
+temp	closure color	$tmp37	 %read{71,71} %write{70,70}
 code ___main___
 # glass.osl:6
 # 	if (backfacing())
@@ -206,30 +203,10 @@ code ___main___
 #         T = vector (0,0,0);
 	assign		___221_T $const12 	%line{231} %argrw{"wr"}
 # glass.osl:19
-#  	Ci = (Kr * reflection(N)) 
+#  	Ci = (Kr * reflection(N)) + (Kt * refraction(N, from_ior, to_ior));
 	closure		$tmp34 $const13 N 	%filename{"glass.osl"} %line{19} %argrw{"wrr"}
 	mul		$tmp35 $tmp34 Kr 	%argrw{"wrr"}
-# glass.osl:21
-#  	     (Kt * refraction(N, from_ior / to_ior))
-	div		$tmp37 from_ior to_ior 	%line{21} %argrw{"wrr"}
-	functioncall	$const14 78 	%argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:503
-# /********************************/
-	lt		$tmp38 $tmp37 $const1 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{503} %argrw{"wrr"}
-	if		$tmp38 76 78 	%argrw{"r"}
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:504
-# // standard OSL closures
-	div		$tmp39 $const1 $tmp37 	%line{504} %argrw{"wrr"}
-	closure		$tmp36 $const14 N $const1 $tmp39 	%argrw{"wrrrr"}
-	return
-# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:506
-# closure color background() BUILTIN;
-	closure		$tmp36 $const14 N $tmp37 $const1 	%line{506} %argrw{"wrrrr"}
-	return
-# glass.osl:21
-#  	     (Kt * refraction(N, from_ior / to_ior))
-	mul		$tmp40 $tmp36 Kt 	%filename{"glass.osl"} %line{21} %argrw{"wrr"}
-# glass.osl:22
-#  	     ;
-	add		Ci $tmp35 $tmp40 	%line{22} %argrw{"wrr"}
+	closure		$tmp36 $const14 N from_ior to_ior 	%argrw{"wrrrr"}
+	mul		$tmp37 $tmp36 Kt 	%argrw{"wrr"}
+	add		Ci $tmp35 $tmp37 	%argrw{"wrr"}
 	end
