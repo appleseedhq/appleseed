@@ -90,10 +90,6 @@ Spectrum fresnel_dielectric_schlick(
     const T             multiplier = T(1.0));   // reflectance multiplier at tangent incidence
 
 
-// TODO: this probably needs a better name. (est.)
-template <typename T>
-T fresnel_dielectric(const T cosi, T eta);
-
 //
 // Implementation.
 //
@@ -213,26 +209,6 @@ Spectrum fresnel_dielectric_schlick(
     fr += Spectrum(static_cast<ValueType>(k5 * multiplier));
 
     return fr;
-}
-
-template <typename T>
-T fresnel_dielectric_reflection(const T cosi, T eta)
-{
-    // compute fresnel reflectance without explicitly computing the refracted direction
-    if (cosi < T(0)) 
-        eta = T(1) / eta;
-    
-    const T c = std::fabs(cosi);
-    T g = eta * eta - 1 + c * c;
-    if (g > T(0))
-    {
-        g = std::sqrt(g);
-        const T A = (g - c) / (g + c);
-        const T B = (c * (g + c) - 1) / (c * (g - c) + 1);
-        return T(0.5) * A * A * (1 + B * B);
-    }
-
-    return T(1); // TIR (no refracted component)
 }
 
 }       // namespace foundation
