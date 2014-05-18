@@ -219,7 +219,8 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     // Compute the incoming direction in world space.
     const Vector3d incoming = -emission_direction;
 
-    // Cull light samples behind the shading surface.
+    // Cull light samples behind the shading surface
+    // if the BSDF is either Reflective or Transmissive, but not both.
     if (m_bsdf.get_type() != BSDF::AllBSDFTypes)
     {
         double cos_in = dot(incoming, m_shading_basis.get_normal());
