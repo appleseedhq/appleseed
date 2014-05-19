@@ -561,9 +561,10 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
 
     // Cull light samples behind the shading surface
     // if the BSDF is either Reflective or Transmissive, but not both.
-    double cos_in = foundation::dot(incoming, m_shading_basis.get_normal());
     if (m_bsdf.get_type() != BSDF::AllBSDFTypes)
     {
+        double cos_in = foundation::dot(incoming, m_shading_basis.get_normal());
+
         if (m_bsdf.get_type() == BSDF::Transmissive)
             cos_in = -cos_in;
 

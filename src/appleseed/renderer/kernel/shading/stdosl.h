@@ -480,7 +480,7 @@ string concat (string a, string b, string c, string d, string e, string f) {
 /*************************************************************/
 
 /********************************/
-// standard OSL closures
+// Standard OSL closures
 
 closure color background() BUILTIN;
 closure color debug(string tag) BUILTIN;
@@ -497,7 +497,7 @@ closure color transparent() BUILTIN;
 closure color reflection(normal N) BUILTIN;
 closure color refraction(normal N, float from_ior, float to_ior) BUILTIN;
 
-// assume one of the mediums is air.
+// Assume one of the mediums is air.
 closure color refraction(normal N, float eta)
 {
     if (eta > 1.0)
