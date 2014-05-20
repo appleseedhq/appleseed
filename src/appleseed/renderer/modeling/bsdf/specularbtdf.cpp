@@ -268,9 +268,9 @@ DictionaryArray SpecularBTDFFactory::get_input_metadata() const
         Dictionary()
             .insert("name", "fresnel_multiplier")
             .insert("label", "Fresnel Multiplier")
-            .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "1.0")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "optional")
             .insert("default", "1.0"));
 
