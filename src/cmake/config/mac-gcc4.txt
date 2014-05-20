@@ -165,6 +165,9 @@ macro (link_against_oslexec target)
     target_link_libraries (${target} ${OSL_EXEC_LIBRARY})
 endmacro ()
 
+macro (link_against_seexpr target)
+    target_link_libraries (${target} ${SEEXPR_LIBRARIES})
+endmacro ()
 
 #--------------------------------------------------------------------------------------------------
 # Copy a target binary to the sandbox.

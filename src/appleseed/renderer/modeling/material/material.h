@@ -71,11 +71,8 @@ class DLLSYMBOL Material
     // Return the unique ID of this class of entities.
     static foundation::UniqueID get_class_uid();
 
-    // Delete this instance.
-    virtual void release() OVERRIDE;
-
     // Return a string identifying the model of this material.
-    const char* get_model() const;
+    virtual const char* get_model() const = 0;
 
     // Return true if this material has an alpha map.
     bool has_alpha_map() const;
@@ -91,13 +88,13 @@ class DLLSYMBOL Material
 
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
-    bool on_frame_begin(
+    virtual bool on_frame_begin(
         const Project&              project,
         const Assembly&             assembly,
         foundation::AbortSwitch*    abort_switch = 0);
 
     // This method is called once after rendering each frame.
-    void on_frame_end(
+    virtual void on_frame_end(
         const Project&              project,
         const Assembly&             assembly);
 
@@ -130,21 +127,16 @@ class DLLSYMBOL Material
     const INormalModifier* get_normal_modifier() const;
 
 #ifdef WITH_OSL
-    bool has_osl_surface() const;
+    virtual bool has_osl_surface() const;
     const ShaderGroup* get_osl_surface() const;
-    const ShaderGroup* get_uncached_osl_surface() const;
+    virtual const ShaderGroup* get_uncached_osl_surface() const;
 #endif
     
-  private:
-    friend class GenericMaterialFactory;
-
-#ifdef WITH_OSL
-    friend class OSLMaterialFactory;
-#endif
-    
+  private:    
     struct Impl;
     Impl* impl;
 
+  protected:
     bool                                m_shade_alpha_cutouts;
     const SurfaceShader*                m_surface_shader;
     const BSDF*                         m_bsdf;
@@ -152,18 +144,18 @@ class DLLSYMBOL Material
     const Source*                       m_alpha_map;
     const INormalModifier*              m_normal_modifier;
 #ifdef WITH_OSL
-    foundation::auto_release_ptr<BSDF>  m_osl_bsdf;
     const ShaderGroup*                  m_shader_group;
 #endif
 
     // Constructor.
     Material(
         const char*                 name,
-        const char*                 model,
         const ParamArray&           params);
-
+    
     // Destructor.
-    ~Material();
+    virtual ~Material();
+    
+    const char* get_non_empty(const ParamArray& params, const char* name) const;
 
     bool create_normal_modifier(const MessageContext& context);
 };

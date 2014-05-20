@@ -256,6 +256,7 @@ set (foundation_math_sources
     foundation/math/knn.h
     foundation/math/matrix.h
     foundation/math/microfacet.h
+    foundation/math/microfacet2.h
     foundation/math/minmax.h
     foundation/math/mis.h
     foundation/math/noise.cpp
@@ -339,6 +340,7 @@ set (foundation_meta_benchmarks_sources
     foundation/meta/benchmarks/benchmark_math_filter.cpp
     foundation/meta/benchmarks/benchmark_matrix.cpp
     foundation/meta/benchmarks/benchmark_microfacet.cpp
+    foundation/meta/benchmarks/benchmark_microfacet2.cpp
     foundation/meta/benchmarks/benchmark_permutation.cpp
     foundation/meta/benchmarks/benchmark_poolallocator.cpp
     foundation/meta/benchmarks/benchmark_qmc.cpp
@@ -401,6 +403,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_matrix.cpp
     foundation/meta/tests/test_memory.cpp
     foundation/meta/tests/test_microfacet.cpp
+    foundation/meta/tests/test_microfacet2.cpp
     foundation/meta/tests/test_minmax.cpp
     foundation/meta/tests/test_noise.cpp
     foundation/meta/tests/test_objmeshfilereader.cpp
@@ -1180,6 +1183,10 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/bsdfwrapper.h
     renderer/modeling/bsdf/diffusebtdf.cpp
     renderer/modeling/bsdf/diffusebtdf.h
+    renderer/modeling/bsdf/disneybdrf.cpp
+    renderer/modeling/bsdf/disneybdrf.h
+    renderer/modeling/bsdf/disneylayeredbdrf.cpp
+    renderer/modeling/bsdf/disneylayeredbdrf.h
     renderer/modeling/bsdf/ibsdffactory.h
     renderer/modeling/bsdf/kelemenbrdf.cpp
     renderer/modeling/bsdf/kelemenbrdf.h
@@ -1187,6 +1194,8 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/lambertianbrdf.h
     renderer/modeling/bsdf/microfacetbrdf.cpp
     renderer/modeling/bsdf/microfacetbrdf.h
+    renderer/modeling/bsdf/oslmicrofacetbrdf.cpp
+    renderer/modeling/bsdf/oslmicrofacetbrdf.h
     renderer/modeling/bsdf/nullbsdf.h
     renderer/modeling/bsdf/orennayarbrdf.cpp
     renderer/modeling/bsdf/orennayarbrdf.h       
@@ -1402,6 +1411,8 @@ source_group ("renderer\\modeling\\light" FILES
 set (renderer_modeling_material_sources
     renderer/modeling/material/bumpmappingmodifier.cpp
     renderer/modeling/material/bumpmappingmodifier.h
+    renderer/modeling/material/disneymaterial.cpp
+    renderer/modeling/material/disneymaterial.h
     renderer/modeling/material/genericmaterial.cpp
     renderer/modeling/material/genericmaterial.h
     renderer/modeling/material/imaterialfactory.cpp
@@ -1670,6 +1681,8 @@ if (WITH_OSL)
     link_against_oiio (appleseed)
     link_against_oslexec (appleseed)
 endif ()
+
+link_against_seexpr(appleseed)
 
 target_link_libraries (appleseed ${Boost_LIBRARIES})
 target_link_libraries (appleseed lz4 minilzo)

@@ -202,7 +202,7 @@ namespace
             const Vector3d h = normalize(incoming + outgoing);
             const double cos_hn = dot(h, n);
             const double cos_oh = dot(outgoing, h);
-
+            
             // Evaluate the MDF.
             double mdf_value, mdf_pdf;
             const double glossiness = values->m_glossiness * values->m_glossiness_multiplier;

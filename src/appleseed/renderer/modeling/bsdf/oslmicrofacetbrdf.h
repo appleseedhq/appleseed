@@ -26,12 +26,13 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_MATERIAL_OSLMATERIAL_H
-#define APPLESEED_RENDERER_MODELING_MATERIAL_OSLMATERIAL_H
+#ifndef APPLESEED_RENDERER_MODELING_BSDF_OSLMICROFACETBRDF_H
+#define APPLESEED_RENDERER_MODELING_BSDF_OSLMICROFACETBRDF_H
 
 // appleseed.renderer headers.
-#include "renderer/modeling/material/imaterialfactory.h"
-#include "renderer/modeling/material/material.h"
+#include "renderer/global/globaltypes.h"
+#include "renderer/modeling/bsdf/ibsdffactory.h"
+#include "renderer/modeling/input/inputarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -42,34 +43,46 @@
 
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
+namespace renderer      { class BSDF; }
 namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
 
 //
-// OSL material factory.
+// Microfacet BRDF input values.
 //
 
-class DLLSYMBOL OSLMaterialFactory
-  : public IMaterialFactory
+DECLARE_INPUT_VALUES(OSLMicrofacetBRDFInputValues)
+{
+    double m_ax;
+    double m_ay;
+    double m_eta;
+};
+
+//
+// Microfacet BRDF factory.
+//
+
+class DLLSYMBOL OSLMicrofacetBRDFFactory
+  : public IBSDFFactory
 {
   public:
-    // Return a string identifying this material model.
+    // Return a string identifying this BSDF model.
     virtual const char* get_model() const OVERRIDE;
 
-    // Return a human-readable string identifying this material model.
+    // Return a human-readable string identifying this BSDF model.
     virtual const char* get_human_readable_model() const OVERRIDE;
 
-    // Return a set of input metadata for this material model.
+    // Return a set of input metadata for this BSDF model.
     virtual foundation::DictionaryArray get_input_metadata() const OVERRIDE;
 
-    // Create a new material instance.
-    virtual foundation::auto_release_ptr<Material> create(
+    // Create a new BSDF instance.
+    virtual foundation::auto_release_ptr<BSDF> create(
         const char*         name,
         const ParamArray&   params) const OVERRIDE;
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_MATERIAL_OSLMATERIAL_H
+#endif  // !APPLESEED_RENDERER_MODELING_BSDF_OSLMICROFACETBRDF_H
