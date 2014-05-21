@@ -92,13 +92,18 @@ EntityEditor::EntityEditor(
   , m_project(project)
   , m_form_factory(form_factory)
   , m_entity_browser(entity_browser)
+  , m_values(values)
   , m_entity_picker_bind_signal_mapper(new QSignalMapper(this))
   , m_color_picker_signal_mapper(new QSignalMapper(this))
   , m_file_picker_signal_mapper(new QSignalMapper(this))
 {
+}
+
+void EntityEditor::initialize()
+{
     create_form_layout();
     create_connections();
-    rebuild_form(values);
+    rebuild_form(m_values);
 }
 
 Dictionary EntityEditor::get_values() const
