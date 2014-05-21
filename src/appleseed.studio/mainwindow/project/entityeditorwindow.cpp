@@ -29,6 +29,7 @@
 
 // Interface header.
 #include "entityeditorwindow.h"
+#include "disneymaterialentityeditor.h"
 
 // UI definition header.
 #include "ui_entityeditorwindow.h"
@@ -65,12 +66,15 @@ EntityEditorWindow::EntityEditorWindow(
     setAttribute(Qt::WA_DeleteOnClose);
 
     m_entity_editor.reset(
-        new EntityEditor(
+        new DisneyMaterialEntityEditor(
+        //new EntityEditor(
             m_ui->scrollarea_contents,
             project,
             form_factory,
             entity_browser,
             values));
+
+    m_entity_editor->initialize();
 
     m_initial_values = m_entity_editor->get_values();
 
