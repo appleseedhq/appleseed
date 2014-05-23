@@ -35,6 +35,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/autoreleaseptr.h"
 
 // Qt headers.
 #include <QObject>

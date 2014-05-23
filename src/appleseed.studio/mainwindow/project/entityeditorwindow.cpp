@@ -29,7 +29,11 @@
 
 // Interface header.
 #include "entityeditorwindow.h"
-#include "disneymaterialentityeditor.h"
+#include "renderer/api/material.h"
+
+// appleseed.studio headers.
+#include "mainwindow/project/disneymaterialentityeditor.h"
+#include "mainwindow/project/entityeditorfactory.h"
 
 // UI definition header.
 #include "ui_entityeditorwindow.h"
@@ -65,14 +69,13 @@ EntityEditorWindow::EntityEditorWindow(
     setWindowFlags(Qt::Tool);
     setAttribute(Qt::WA_DeleteOnClose);
 
-    m_entity_editor.reset(
-        new DisneyMaterialEntityEditor(
-        //new EntityEditor(
-            m_ui->scrollarea_contents,
-            project,
-            form_factory,
-            entity_browser,
-            values));
+    EntityEditorFactory entity_editor_factory;
+    m_entity_editor = entity_editor_factory.create<DisneyMaterial>(
+        m_ui->scrollarea_contents,
+        project,
+        form_factory,
+        entity_browser,
+        values);
 
     m_entity_editor->initialize();
 
