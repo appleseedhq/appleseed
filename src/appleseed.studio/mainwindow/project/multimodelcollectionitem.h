@@ -34,6 +34,7 @@
 #include "mainwindow/project/collectionitem.h"
 #include "mainwindow/project/entitybrowser.h"
 #include "mainwindow/project/entityeditor.h"
+#include "mainwindow/project/entityeditorfactory.h"
 #include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/multimodelentityeditorformfactory.h"
 #include "mainwindow/project/multimodelentityitem.h"
@@ -142,12 +143,16 @@ void MultiModelCollectionItem<Entity, ParentEntity, ParentItem>::slot_create()
     std::auto_ptr<EntityEditor::IEntityBrowser> entity_browser(
         new EntityBrowser<ParentEntity>(Base::m_parent));
 
+    std::auto_ptr<IEntityEditorFactory> entity_editor_factory(
+        new EntityEditorFactory<Entity>());
+
     open_entity_editor(
         QTreeWidgetItem::treeWidget(),
         window_title,
         Base::m_project_builder.get_project(),
         form_factory,
         entity_browser,
+        entity_editor_factory,
         this,
         SLOT(slot_create_applied(foundation::Dictionary)),
         SLOT(slot_create_accepted(foundation::Dictionary)),

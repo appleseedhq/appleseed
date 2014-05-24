@@ -32,6 +32,7 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/entityeditor.h"
+#include "mainwindow/project/entityeditorfactory.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -61,6 +62,7 @@ class AttributeEditor
     void edit(
         std::auto_ptr<EntityEditor::IFormFactory>   form_factory,
         std::auto_ptr<EntityEditor::IEntityBrowser> entity_browser,
+        std::auto_ptr<IEntityEditorFactory>         entity_editor_factory,
         const foundation::Dictionary&               values,
         QObject*                                    receiver,
         const char*                                 slot_apply);

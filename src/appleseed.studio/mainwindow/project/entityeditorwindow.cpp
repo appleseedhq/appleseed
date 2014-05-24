@@ -59,6 +59,7 @@ EntityEditorWindow::EntityEditorWindow(
     const Project&                          project,
     auto_ptr<EntityEditor::IFormFactory>    form_factory,
     auto_ptr<EntityEditor::IEntityBrowser>  entity_browser,
+    auto_ptr<IEntityEditorFactory>          entity_editor_factory,
     const Dictionary&                       values)
   : QWidget(parent)
   , m_ui(new Ui::EntityEditorWindow())
@@ -69,8 +70,7 @@ EntityEditorWindow::EntityEditorWindow(
     setWindowFlags(Qt::Tool);
     setAttribute(Qt::WA_DeleteOnClose);
 
-    EntityEditorFactory entity_editor_factory;
-    m_entity_editor = entity_editor_factory.create<DisneyMaterial>(
+    m_entity_editor = entity_editor_factory->create(
         m_ui->scrollarea_contents,
         project,
         form_factory,
