@@ -32,6 +32,7 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/entityeditor.h"
+#include "mainwindow/project/entityeditorfactory.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
@@ -64,6 +65,7 @@ class EntityEditorWindow
         const renderer::Project&                    project,
         std::auto_ptr<EntityEditor::IFormFactory>   form_factory,
         std::auto_ptr<EntityEditor::IEntityBrowser> entity_browser,
+        std::auto_ptr<IEntityEditorFactory>         entity_editor_factory,
         const foundation::Dictionary&               values = foundation::Dictionary());
 
     ~EntityEditorWindow();

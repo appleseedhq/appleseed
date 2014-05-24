@@ -65,17 +65,19 @@ void AttributeEditor::clear()
 void AttributeEditor::edit(
     auto_ptr<EntityEditor::IFormFactory>    form_factory,
     auto_ptr<EntityEditor::IEntityBrowser>  entity_browser,
+    auto_ptr<IEntityEditorFactory>			entity_editor_factory,
     const Dictionary&                       values,
     QObject*                                receiver,
     const char*                             slot_apply)
 {
-    m_entity_editor.reset(
-        new EntityEditor(
-            m_parent,
-            m_project,
-            form_factory,
-            entity_browser,
-            values));
+    m_entity_editor = entity_editor_factory->create(
+        m_parent,
+        m_project,
+        form_factory,
+        entity_browser,
+        values);
+
+    m_entity_editor->initialize();
 
     QObject::connect(
         m_entity_editor.get(), SIGNAL(signal_applied(foundation::Dictionary)),

@@ -32,6 +32,7 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/entityeditor.h"
+#include "mainwindow/project/entityeditorfactory.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/entity.h"
@@ -70,6 +71,7 @@ void open_entity_editor(
     const renderer::Project&                    project,
     std::auto_ptr<EntityEditor::IFormFactory>   form_factory,
     std::auto_ptr<EntityEditor::IEntityBrowser> entity_browser,
+    std::auto_ptr<IEntityEditorFactory>         entity_editor_factory,
     const foundation::Dictionary&               values,
     QObject*                                    receiver,
     const char*                                 slot_apply,
@@ -82,6 +84,7 @@ void open_entity_editor(
     const renderer::Project&                    project,
     std::auto_ptr<EntityEditor::IFormFactory>   form_factory,
     std::auto_ptr<EntityEditor::IEntityBrowser> entity_browser,
+    std::auto_ptr<IEntityEditorFactory>         entity_editor_factory,
     QObject*                                    receiver,
     const char*                                 slot_apply,
     const char*                                 slot_accept,

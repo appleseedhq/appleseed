@@ -47,16 +47,26 @@ using namespace renderer;
 namespace appleseed {
 namespace studio {
 
-class EntityEditorFactory
+class IEntityEditorFactory
   : public foundation::NonCopyable
 {
   public:
-    // Destructor.
-    virtual ~EntityEditorFactory() {}
+    // Create a new EntityEditor.
+    virtual std::auto_ptr<EntityEditor> create(
+        QWidget*                                            parent,
+        const renderer::Project&                            project,
+        std::auto_ptr<EntityEditor::IFormFactory>           form_factory,
+        std::auto_ptr<EntityEditor::IEntityBrowser>         entity_browser,
+        const foundation::Dictionary&       values = foundation::Dictionary()) const = 0;
+};
 
-    // Create a new EntityEditor
-    template <typename Entity>
-    std::auto_ptr<EntityEditor> create(
+
+template <typename Entity>
+class EntityEditorFactory
+  : public IEntityEditorFactory
+{
+  public:
+    virtual std::auto_ptr<EntityEditor> create(
         QWidget*                                            parent,
         const renderer::Project&                            project,
         std::auto_ptr<EntityEditor::IFormFactory>           form_factory,
@@ -64,8 +74,20 @@ class EntityEditorFactory
         const foundation::Dictionary&       values = foundation::Dictionary()) const;
 };
 
+template <typename Entity>
+inline std::auto_ptr<EntityEditor> EntityEditorFactory<Entity>::create(
+    QWidget*                                        parent,
+    const renderer::Project&                        project,
+    std::auto_ptr<EntityEditor::IFormFactory>       form_factory,
+    std::auto_ptr<EntityEditor::IEntityBrowser>     entity_browser,
+    const foundation::Dictionary&                   values) const
+{
+    return std::auto_ptr<EntityEditor>(
+        new EntityEditor(parent, project, form_factory, entity_browser, values));
+}
+
 template <>
-inline std::auto_ptr<EntityEditor> EntityEditorFactory::create<Material>(
+inline std::auto_ptr<EntityEditor> EntityEditorFactory<Material>::create(
     QWidget*                                        parent,
     const renderer::Project&                        project,
     std::auto_ptr<EntityEditor::IFormFactory>       form_factory,

@@ -35,6 +35,7 @@
 #include "mainwindow/project/entitybrowser.h"
 #include "mainwindow/project/entityeditor.h"
 #include "mainwindow/project/entityitem.h"
+#include "mainwindow/project/entityeditorfactory.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/singlemodelentityeditorformfactory.h"
 #include "mainwindow/project/tools.h"
@@ -103,6 +104,9 @@ void SingleModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit(Attr
     std::auto_ptr<EntityEditor::IEntityBrowser> entity_browser(
         new EntityBrowser<ParentEntity>(Base::m_parent));
 
+    std::auto_ptr<IEntityEditorFactory> entity_editor_factory(
+        new EntityEditorFactory<Entity>());
+
     const foundation::Dictionary values =
         EntityTraitsType::get_entity_values(Base::m_entity);
 
@@ -111,6 +115,7 @@ void SingleModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit(Attr
         attribute_editor->edit(
             form_factory,
             entity_browser,
+            entity_editor_factory,
             values,
             this,
             SLOT(slot_edit_accepted(foundation::Dictionary)));
@@ -127,6 +132,7 @@ void SingleModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit(Attr
             Base::m_project_builder.get_project(),
             form_factory,
             entity_browser,
+            entity_editor_factory,
             values,
             this,
             SLOT(slot_edit_accepted(foundation::Dictionary)),
