@@ -1,20 +1,20 @@
 
-surface glass(
-	float Kr = 0.5,
-	float ior = 1.5)
+surface glass(float eta = 1.5)
 {
 	float from_ior, to_ior;
 
 	if (backfacing())
 	{
-		from_ior = ior;
+		from_ior = eta;
 		to_ior = 1.0;
 	}
 	else
 	{
 		from_ior = 1.0;
-		to_ior = ior;
+		to_ior = eta;
 	}
 
- 	Ci = Kr * reflection(N) + (1.0 - Kr) * refraction(N, from_ior, to_ior);
+	float Kr, Kt;
+	fresnel( I, N, from_ior / to_ior, Kr, Kt);
+ 	Ci = (Kr * reflection(N)) + (Kt * refraction(N, from_ior, to_ior));
 }

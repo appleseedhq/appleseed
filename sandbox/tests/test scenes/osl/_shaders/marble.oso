@@ -1,5 +1,5 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.5.5dev
+# Compiled by oslc 1.5.7dev
 surface marble
 param	color	Cd	0.5 0.5 0.5 		 %read{26,26} %write{0,0}
 param	float	Kd	0.80000001 		 %read{27,27} %write{2147483647,-1}
@@ -47,69 +47,69 @@ temp	color	$tmp11	 %read{27,27} %write{26,26}
 const	string	$const18	"as_ashikhmin_shirley"		 %read{27,27} %write{2147483647,-1}
 code Cd
 # marble.osl:15
-# 	color Cd = color(0.5),
+#     color Cd = color(0.5),
 	assign		Cd $const1 	%filename{"marble.osl"} %line{15} %argrw{"wr"}
 code Cs
 # marble.osl:17
-# 	color Cs = color(0.8),
+#     color Cs = color(0.8),
 	assign		Cs $const2 	%filename{"marble.osl"} %line{17} %argrw{"wr"}
 code ___main___
 # marble.osl:25
-# 	if (object_space == 1)
+#     if (object_space == 1)
 	eq		$tmp1 object_space $const3 	%filename{"marble.osl"} %line{25} %argrw{"wrr"}
 	if		$tmp1 6 7 	%argrw{"r"}
-# marble.osl:27
-# 		q = transform("object", P);
-	functioncall	$const5 6 	%line{27} %argrw{"r"}
+# marble.osl:26
+#         q = transform("object", P);
+	functioncall	$const5 6 	%line{26} %argrw{"r"}
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:251
-#         // OPT: the following recomputes some of the above values, but it
+#         // gives us the same result as if the shader-writer called refract()
 	transform	q $const6 $const4 P 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{251} %argrw{"wrrr"}
+# marble.osl:28
+#         q = P;
+	assign		q P 	%filename{"marble.osl"} %line{28} %argrw{"wr"}
 # marble.osl:30
-# 		q = P;
-	assign		q P 	%filename{"marble.osl"} %line{30} %argrw{"wr"}
+#     q *= texturescale;
+	mul		q q texturescale 	%line{30} %argrw{"wrr"}
 # marble.osl:32
-# 	q *= texturescale;
-	mul		q q texturescale 	%line{32} %argrw{"wrr"}
+#     float marble = 0;
+	assign		marble $const7 	%line{32} %argrw{"wr"}
+# marble.osl:33
+#     float f = 1;
+	assign		f $const3 	%line{33} %argrw{"wr"}
 # marble.osl:34
-# 	float marble = 0;
-	assign		marble $const7 	%line{34} %argrw{"wr"}
-# marble.osl:35
-# 	float f = 1;
-	assign		f $const3 	%line{35} %argrw{"wr"}
-# marble.osl:36
-# 	for (int i = 0; i < NNOISE; i += 1)
-	for		$tmp2 12 13 18 19 	%line{36} %argrw{"r"}
+#     for (int i = 0; i < NNOISE; i += 1)
+	for		$tmp2 12 13 18 19 	%line{34} %argrw{"r"}
 	assign		___297_i $const7 	%argrw{"wr"}
 	lt		$tmp2 ___297_i $const8 	%argrw{"wrr"}
-# marble.osl:38
-# 		marble += snoise(q * f) / f;
-	mul		$tmp4 q f 	%line{38} %argrw{"wrr"}
+# marble.osl:36
+#         marble += snoise(q * f) / f;
+	mul		$tmp4 q f 	%line{36} %argrw{"wrr"}
 	snoise		$tmp3 $tmp4 	%argrw{"wr"}
 	div		$tmp5 $tmp3 f 	%argrw{"wrr"}
 	add		marble marble $tmp5 	%argrw{"wrr"}
-# marble.osl:39
-# 		f *= 2.17;
-	mul		f f $const9 	%line{39} %argrw{"wrr"}
-# marble.osl:36
-# 	for (int i = 0; i < NNOISE; i += 1)
-	add		___297_i ___297_i $const3 	%line{36} %argrw{"wrr"}
-# marble.osl:56
-# 		};
-	assign		marble_ramp $const10 	%line{56} %argrw{"wr"}
-# marble.osl:62
-# 		Cd * spline("catmull-rom", clamp(2 * marble + .75, 0, 1), marble_ramp),
-	mul		$tmp8 $const13 marble 	%line{62} %argrw{"wrr"}
+# marble.osl:37
+#         f *= 2.17;
+	mul		f f $const9 	%line{37} %argrw{"wrr"}
+# marble.osl:34
+#     for (int i = 0; i < NNOISE; i += 1)
+	add		___297_i ___297_i $const3 	%line{34} %argrw{"wrr"}
+# marble.osl:54
+#         };
+	assign		marble_ramp $const10 	%line{54} %argrw{"wr"}
+# marble.osl:60
+#         Cd * spline("catmull-rom", clamp(2 * marble + .75, 0, 1), marble_ramp),
+	mul		$tmp8 $const13 marble 	%line{60} %argrw{"wrr"}
 	add		$tmp9 $tmp8 $const14 	%argrw{"wrr"}
 	functioncall	$const17 25 	%argrw{"r"}
 # /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:152
-# color  degrees (color x)  { return x*(180.0/M_PI); }
+# normal radians (normal x) { return x*(M_PI/180.0); }
 	min		$tmp10 $tmp9 $const16 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{152} %argrw{"wrr"}
 	max		$tmp7 $tmp10 $const15 	%argrw{"wrr"}
-# marble.osl:62
-# 		Cd * spline("catmull-rom", clamp(2 * marble + .75, 0, 1), marble_ramp),
-	spline		$tmp6 $const11 $tmp7 marble_ramp 	%filename{"marble.osl"} %line{62} %argrw{"wrrr"}
+# marble.osl:60
+#         Cd * spline("catmull-rom", clamp(2 * marble + .75, 0, 1), marble_ramp),
+	spline		$tmp6 $const11 $tmp7 marble_ramp 	%filename{"marble.osl"} %line{60} %argrw{"wrrr"}
 	mul		$tmp11 Cd $tmp6 	%argrw{"wrr"}
-# marble.osl:66
-# 		exponent);
-	closure		Ci $const18 N dPdu Kd $tmp11 Ks Cs exponent exponent 	%line{66} %argrw{"wrrrrrrrrr"}
+# marble.osl:64
+#         exponent);
+	closure		Ci $const18 N dPdu Kd $tmp11 Ks Cs exponent exponent 	%line{64} %argrw{"wrrrrrrrrr"}
 	end

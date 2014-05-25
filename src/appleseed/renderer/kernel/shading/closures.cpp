@@ -337,12 +337,13 @@ void CompositeClosure::process_closure_tree(
                         reinterpret_cast<const RefractionClosureParams*>(c->data());
 
                     SpecularBTDFInputValues values;
-                    values.m_reflectance.set(1.0f);
-                    values.m_from_ior = p->from_ior;
-                    values.m_to_ior = p->to_ior;
-                    values.m_reflectance_multiplier = 1.0;
+                    values.m_reflectance.set(0.0f);
+                    values.m_reflectance_multiplier = 0.0;
                     values.m_transmittance.set(1.0f);
                     values.m_transmittance_multiplier = 1.0;
+                    values.m_fresnel_multiplier = 0.0;
+                    values.m_from_ior = p->from_ior;
+                    values.m_to_ior = p->to_ior;
 
                     add_closure<SpecularBTDFInputValues>(
                         static_cast<ClosureID>(c->id),

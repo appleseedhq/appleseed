@@ -1,5 +1,5 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.5.5dev
+# Compiled by oslc 1.5.7dev
 surface ashikhmin
 param	float	kd	1 		 %read{0,0} %write{2147483647,-1}
 param	color	Cd	1 1 1 		 %read{0,0} %write{2147483647,-1}

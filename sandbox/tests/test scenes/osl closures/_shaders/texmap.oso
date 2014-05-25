@@ -1,12 +1,12 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.5.5dev
+# Compiled by oslc 1.5.7dev
 shader texmap
 param	string	txfile	"" 		 %read{0,11} %write{2147483647,-1}
 oparam	color	out	0 0 0 		 %read{2147483647,-1} %write{10,12}
 global	float	u	 %read{9,11} %write{2147483647,-1} %derivs
 global	float	v	 %read{9,11} %write{2147483647,-1} %derivs
 local	int	nchannels	 %read{7,7} %write{3,3}
-local	float	___296_val	 %read{10,10} %write{9,9}
+local	float	___298_val	 %read{10,10} %write{9,9}
 const	string	$const1	""		 %read{0,0} %write{2147483647,-1}
 temp	int	$tmp1	 %read{1,1} %write{0,0}
 temp	int	$tmp2	 %read{2,6} %write{1,5}
@@ -33,10 +33,10 @@ code ___main___
 	if		$tmp5 11 12 	%argrw{"r"}
 # texmap.osl:13
 # 			float val = texture(txfile, u, v);
-	texture		___296_val txfile u v 	%line{13} %argrw{"wrrr"} %argderivs{2,3}
+	texture		___298_val txfile u v 	%line{13} %argrw{"wrrr"} %argderivs{2,3}
 # texmap.osl:14
 # 			out = color( val, val, val);
-	color		out ___296_val ___296_val ___296_val 	%line{14} %argrw{"wrrr"}
+	color		out ___298_val ___298_val ___298_val 	%line{14} %argrw{"wrrr"}
 # texmap.osl:17
 # 			out = texture(txfile, u, v);
 	texture		out txfile u v 	%line{17} %argrw{"wrrr"} %argderivs{2,3}
