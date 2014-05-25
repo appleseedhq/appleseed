@@ -48,7 +48,7 @@ namespace renderer
 {
 
 //
-// Generic material factory.
+// OSL material factory.
 //
 
 class DLLSYMBOL OSLMaterialFactory
