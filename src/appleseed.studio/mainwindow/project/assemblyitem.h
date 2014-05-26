@@ -45,6 +45,7 @@ namespace appleseed { namespace studio { template <typename Entity, typename Par
 namespace appleseed { namespace studio { template <typename Entity, typename EntityItem, typename ParentEntity> class InstanceCollectionItem; } }
 namespace appleseed { namespace studio { class ObjectCollectionItem; } }
 namespace appleseed { namespace studio { class ObjectInstanceItem; } }
+namespace appleseed { namespace studio { class MaterialCollectionItem; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace renderer  { class Assembly; }
 namespace renderer  { class BaseGroup; }
@@ -88,7 +89,7 @@ class AssemblyItem
 
     ObjectCollectionItem& get_object_collection_item() const;
     ObjectInstanceCollectionItem& get_object_instance_collection_item() const;
-
+    
   private:
     friend class EntityInstantiationDelayedAction<AssemblyItem>;
     friend class EntityDeletionDelayedAction<AssemblyItem>;
@@ -101,9 +102,11 @@ class AssemblyItem
     typedef CollectionItem<renderer::BSDF, renderer::Assembly, AssemblyItem> BSDFCollectionItem;
     typedef CollectionItem<renderer::EDF, renderer::Assembly, AssemblyItem> EDFCollectionItem;
     typedef CollectionItem<renderer::SurfaceShader, renderer::Assembly, AssemblyItem> SurfaceShaderCollectionItem;
-    typedef CollectionItem<renderer::Material, renderer::Assembly, AssemblyItem> MaterialCollectionItem;
     typedef CollectionItem<renderer::Light, renderer::Assembly, AssemblyItem> LightCollectionItem;
 
+    //typedef CollectionItem<renderer::Material, renderer::Assembly, AssemblyItem> MaterialCollectionItem;
+    //typedef InstanceCollectionItem<renderer::Material, MaterialItem, renderer::Assembly> MaterialCollectionItem;
+    
     BSDFCollectionItem*             m_bsdf_collection_item;
     EDFCollectionItem*              m_edf_collection_item;
     SurfaceShaderCollectionItem*    m_surface_shader_collection_item;

@@ -36,6 +36,7 @@
 #include "mainwindow/project/collectionitem.h"
 #include "mainwindow/project/instancecollectionitem.h"
 #include "mainwindow/project/itemregistry.h"
+#include "mainwindow/project/materialcollectionitem.h"
 #include "mainwindow/project/multimodelcollectionitem.h"
 #include "mainwindow/project/objectcollectionitem.h"
 #include "mainwindow/project/objectinstanceitem.h"
@@ -111,9 +112,20 @@ AssemblyItem::AssemblyItem(
         5,
         m_surface_shader_collection_item = add_multi_model_collection_item<SurfaceShader>(assembly.surface_shaders()));
 
+    /*
     insertChild(
         6,
         m_material_collection_item = add_multi_model_collection_item<Material>(assembly.materials()));
+    */
+    insertChild(
+        6,
+        m_material_collection_item = 
+            new MaterialCollectionItem(
+                assembly.materials(),
+                assembly,
+                this,
+                project_builder,
+                settings));
 
     insertChild(
         7,
@@ -157,7 +169,10 @@ QMenu* AssemblyItem::get_single_item_context_menu() const
     menu->addAction("Create Color...", &get_color_collection_item(), SLOT(slot_create()));
     menu->addAction("Create EDF...", m_edf_collection_item, SLOT(slot_create()));
     menu->addAction("Create Light...", m_light_collection_item, SLOT(slot_create()));
-    menu->addAction("Create Material...", m_material_collection_item, SLOT(slot_create()));
+    
+    // TODO: make this a submenu...
+    //menu->addAction("Create Material...", m_material_collection_item, SLOT(slot_create()));
+
     menu->addAction("Create Surface Shader...", m_surface_shader_collection_item, SLOT(slot_create()));
 
     return menu;
