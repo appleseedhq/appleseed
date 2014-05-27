@@ -171,7 +171,7 @@ QMenu* AssemblyItem::get_single_item_context_menu() const
     menu->addAction("Create Light...", m_light_collection_item, SLOT(slot_create()));
     
     // TODO: make this a submenu...
-    //menu->addAction("Create Material...", m_material_collection_item, SLOT(slot_create()));
+    menu->addAction("Create Material...", m_material_collection_item, SLOT(slot_create()));
 
     menu->addAction("Create Surface Shader...", m_surface_shader_collection_item, SLOT(slot_create()));
 

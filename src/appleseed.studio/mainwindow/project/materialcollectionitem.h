@@ -30,7 +30,8 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_MATERIALCOLLECTIONITEM_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/collectionitembase.h"
+#include "mainwindow/project/assemblyitem.h"
+#include "mainwindow/project/collectionitem.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/material.h"
@@ -45,17 +46,16 @@
 #include <string>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class AssemblyItem; } }
 namespace appleseed { namespace studio { class ItemBase; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
-namespace renderer  { class Material; }
+namespace renderer  { class Assembly; }
 namespace renderer  { class ParamArray; }
 
 namespace appleseed {
 namespace studio {
 
 class MaterialCollectionItem
-  : public CollectionItemBase<renderer::Material>
+  : public CollectionItem<renderer::Material, renderer::Assembly, AssemblyItem>
 {
     Q_OBJECT
 
@@ -68,8 +68,15 @@ class MaterialCollectionItem
         renderer::ParamArray&           settings);
 
   protected:
-    ItemBase* create_item(renderer::Material* material) OVERRIDE;
+    virtual ItemBase* create_item(renderer::Material* material) OVERRIDE;
     
+    template <typename Entity> void create_editor();
+
+  protected slots:
+    void slot_create_generic();
+
+    void slot_create_disney();
+
   private:
     renderer::Assembly&             m_parent;
     AssemblyItem*                   m_parent_item;

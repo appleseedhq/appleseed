@@ -103,9 +103,6 @@ class AssemblyItem
     typedef CollectionItem<renderer::EDF, renderer::Assembly, AssemblyItem> EDFCollectionItem;
     typedef CollectionItem<renderer::SurfaceShader, renderer::Assembly, AssemblyItem> SurfaceShaderCollectionItem;
     typedef CollectionItem<renderer::Light, renderer::Assembly, AssemblyItem> LightCollectionItem;
-
-    //typedef CollectionItem<renderer::Material, renderer::Assembly, AssemblyItem> MaterialCollectionItem;
-    //typedef InstanceCollectionItem<renderer::Material, MaterialItem, renderer::Assembly> MaterialCollectionItem;
     
     BSDFCollectionItem*             m_bsdf_collection_item;
     EDFCollectionItem*              m_edf_collection_item;
