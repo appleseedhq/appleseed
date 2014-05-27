@@ -31,6 +31,7 @@
 #define APPLESEED_RENDERER_MODELING_MATERIAL_MATERIALTRAITS_H
 
 // appleseed.renderer headers.
+#include "renderer/modeling/material/disneymaterial.h"
 #include "renderer/modeling/entity/entitytraits.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/scene/containers.h"
@@ -78,6 +79,44 @@ struct EntityTraits<Material>
     template <typename ParentEntity>
     static void remove_entity(
         Material*                               entity,
+        ParentEntity&                           parent)
+    {
+        get_entity_container(parent).remove(entity);
+    }
+};
+
+//
+// Disney Material entity traits.
+//
+template <>
+struct EntityTraits<DisneyMaterial>
+{
+    typedef MaterialContainer ContainerType;
+    typedef MaterialFactoryRegistrar FactoryRegistrarType;
+
+    static const char* get_entity_type_name()                           { return "disney material"; }
+    static const char* get_human_readable_entity_type_name()            { return "Disney Material"; }
+    static const char* get_human_readable_collection_type_name()        { return "Materials"; }
+
+    template <typename ParentEntity>
+    static ContainerType& get_entity_container(ParentEntity& parent)    { return parent.materials(); }
+
+    static foundation::Dictionary get_entity_values(const Material* entity)
+    {
+        return entity->get_parameters();
+    }
+
+    template <typename ParentEntity>
+    static void insert_entity(
+        foundation::auto_release_ptr<Material>  entity,
+        ParentEntity&                           parent)
+    {
+        get_entity_container(parent).insert(entity);
+    }
+
+    template <typename ParentEntity>
+    static void remove_entity(
+        DisneyMaterial*                         entity,
         ParentEntity&                           parent)
     {
         get_entity_container(parent).remove(entity);

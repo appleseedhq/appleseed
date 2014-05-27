@@ -87,7 +87,7 @@ inline std::auto_ptr<EntityEditor> EntityEditorFactory<Entity>::create(
 }
 
 template <>
-inline std::auto_ptr<EntityEditor> EntityEditorFactory<Material>::create(
+inline std::auto_ptr<EntityEditor> EntityEditorFactory<DisneyMaterial>::create(
     QWidget*                                        parent,
     const renderer::Project&                        project,
     std::auto_ptr<EntityEditor::IFormFactory>       form_factory,

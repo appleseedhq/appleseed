@@ -6,6 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2014 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014 Marius Avram, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -97,11 +98,23 @@ ItemBase* MaterialCollectionItem::create_item(Material* material)
     return item;
 }
 
+QMenu* MaterialCollectionItem::get_single_item_context_menu() const
+{
+    QMenu* menu = ItemBase::get_single_item_context_menu();
+    menu->clear();
+
+    menu->addSeparator();
+    menu->addAction("Create Disney Material...", this, SLOT(slot_create_disney()));
+    menu->addAction("Create Generic Material...", this, SLOT(slot_create_generic()));
+    return menu;
+}
+
 template <typename Entity>
 void MaterialCollectionItem::create_editor()
 {
-    typedef CollectionItem<Entity, Assembly, AssemblyItem> Base;
-    typedef typename renderer::EntityTraits<Entity> EntityTraits;
+    // TODO: Replace Material with Entity when needed class are implemented
+    typedef CollectionItem<Material, Assembly, AssemblyItem> Base;
+    typedef typename renderer::EntityTraits<Material> EntityTraits;
 
     const std::string window_title =
         std::string("Create ") +
@@ -116,7 +129,7 @@ void MaterialCollectionItem::create_editor()
 
     std::auto_ptr<EntityEditor::IFormFactory> form_factory(
         new MultiModelEntityEditorFormFactory<FactoryRegistrarType>(
-            Base::m_project_builder.template get_factory_registrar<Entity>(),
+            Base::m_project_builder.template get_factory_registrar<Material>(),
             name_suggestion));
 
     std::auto_ptr<EntityEditor::IEntityBrowser> entity_browser(
@@ -140,11 +153,12 @@ void MaterialCollectionItem::create_editor()
 
 void MaterialCollectionItem::slot_create_generic()
 {
-   create_editor<Material>(); 
+    create_editor<Material>();
 }
 
 void MaterialCollectionItem::slot_create_disney()
 {
+    create_editor<DisneyMaterial>();
 }
 
 }   // namespace studio
