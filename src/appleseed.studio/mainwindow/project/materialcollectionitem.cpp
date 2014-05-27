@@ -31,9 +31,12 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/assemblyitem.h"
+#include "mainwindow/project/entitybrowser.h"
+#include "mainwindow/project/entityeditorfactory.h"
 #include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/materialitem.h"
 #include "mainwindow/project/projectbuilder.h"
+#include "mainwindow/project/tools.h"
 #include "mainwindow/rendering/renderingmanager.h"
 #include "utility/interop.h"
 #include "utility/settingskeys.h"
@@ -70,7 +73,7 @@ MaterialCollectionItem::MaterialCollectionItem(
     AssemblyItem*       parent_item,
     ProjectBuilder&     project_builder,
     ParamArray&         settings)
-  : CollectionItemBase<Material>(g_class_uid, "Materials", project_builder)
+  : CollectionItem<Material, Assembly, AssemblyItem>(g_class_uid, "Materials", parent, parent_item, project_builder)
   , m_parent(parent)
   , m_parent_item(parent_item)
   , m_settings(settings)
@@ -92,6 +95,56 @@ ItemBase* MaterialCollectionItem::create_item(Material* material)
     m_project_builder.get_item_registry().insert(material->get_uid(), item);
 
     return item;
+}
+
+template <typename Entity>
+void MaterialCollectionItem::create_editor()
+{
+    typedef CollectionItem<Entity, Assembly, AssemblyItem> Base;
+    typedef typename renderer::EntityTraits<Entity> EntityTraits;
+
+    const std::string window_title =
+        std::string("Create ") +
+        EntityTraits::get_human_readable_entity_type_name();
+
+    const std::string name_suggestion =
+        get_name_suggestion(
+            EntityTraits::get_entity_type_name(),
+            EntityTraits::get_entity_container(Base::m_parent));
+
+    typedef typename EntityTraits::FactoryRegistrarType FactoryRegistrarType;
+
+    std::auto_ptr<EntityEditor::IFormFactory> form_factory(
+        new MultiModelEntityEditorFormFactory<FactoryRegistrarType>(
+            Base::m_project_builder.template get_factory_registrar<Entity>(),
+            name_suggestion));
+
+    std::auto_ptr<EntityEditor::IEntityBrowser> entity_browser(
+        new EntityBrowser<Assembly>(Base::m_parent));
+
+    std::auto_ptr<IEntityEditorFactory> entity_editor_factory(
+        new EntityEditorFactory<Entity>());
+
+    open_entity_editor(
+        QTreeWidgetItem::treeWidget(),
+        window_title,
+        Base::m_project_builder.get_project(),
+        form_factory,
+        entity_browser,
+        entity_editor_factory,
+        this,
+        SLOT(slot_create_applied(foundation::Dictionary)),
+        SLOT(slot_create_accepted(foundation::Dictionary)),
+        SLOT(slot_create_canceled(foundation::Dictionary)));
+}
+
+void MaterialCollectionItem::slot_create_generic()
+{
+   create_editor<Material>(); 
+}
+
+void MaterialCollectionItem::slot_create_disney()
+{
 }
 
 }   // namespace studio
