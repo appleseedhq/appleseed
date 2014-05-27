@@ -50,6 +50,11 @@ MaterialItem::MaterialItem(
 {
 }
 
+void MaterialItem::slot_edit(AttributeEditor* attribute_editor)
+{
+    // TODO: add implementation here
+}
+
 }   // namespace studio
 }   // namespace appleseed
 

@@ -66,6 +66,8 @@ class MaterialItem
         ProjectBuilder&           project_builder);
     
   private:
+    virtual void slot_edit(AttributeEditor* attribute_editor) OVERRIDE;
+
     renderer::Assembly&     m_parent;
     AssemblyItem*           m_parent_item;
     ProjectBuilder&         m_project_builder;
