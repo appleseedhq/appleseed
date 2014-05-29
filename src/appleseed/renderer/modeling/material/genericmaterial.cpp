@@ -39,80 +39,69 @@ using namespace foundation;
 namespace renderer
 {
 
+//
+// GenericMaterial class implementation
+//
+
 namespace
 {
-    //
-    // Generic Material.
-    //
 
     const char* Model = "generic_material";
 
-    class GenericMaterial 
-      : public Material
+}
+
+GenericMaterial::GenericMaterial(
+    const char*                 name,
+    const ParamArray&           params)
+    : Material(name, params)
+{
+    m_inputs.declare("bsdf", InputFormatEntity, "");
+    m_inputs.declare("edf", InputFormatEntity, "");
+    m_inputs.declare("alpha_map", InputFormatScalar, "");
+    m_inputs.declare("displacement_map", InputFormatSpectralReflectance, "");
+}
+
+void GenericMaterial::release()
+{
+    delete this;
+}
+
+const char* GenericMaterial::get_model() const
+{
+    return Model;
+}
+
+bool GenericMaterial::on_frame_begin(
+    const Project&              project,
+    const Assembly&             assembly,
+    foundation::AbortSwitch*    abort_switch)
+{
+    if (!Material::on_frame_begin(project, assembly, abort_switch))
+        return false;
+
+    m_bsdf = get_uncached_bsdf();
+    m_edf = get_uncached_edf();
+
+    const EntityDefMessageContext context("material", this);
+    if (!create_normal_modifier(context))
+        return false;
+
+    if (m_edf && m_alpha_map)
     {
-      public:
-        // Constructor.
-        GenericMaterial(
-            const char*                 name,
-            const ParamArray&           params)
-            : Material(name, params)
-        {
-            m_inputs.declare("bsdf", InputFormatEntity, "");
-            m_inputs.declare("edf", InputFormatEntity, "");
-            m_inputs.declare("alpha_map", InputFormatScalar, "");
-            m_inputs.declare("displacement_map", InputFormatSpectralReflectance, "");
-        }
-
-        // Delete this instance.
-        virtual void release() OVERRIDE
-        {
-            delete this;
-        }
-        
-        // Return a string identifying the model of this material.
-        virtual const char* get_model() const OVERRIDE
-        {
-            return Model;
-        }
-        
-        // This method is called once before rendering each frame.
-        // Returns true on success, false otherwise.
-        virtual bool on_frame_begin(
-            const Project&              project,
-            const Assembly&             assembly,
-            foundation::AbortSwitch*    abort_switch = 0) OVERRIDE
-        {
-            if (!Material::on_frame_begin(project, assembly, abort_switch))
-                return false;
-
-            m_bsdf = get_uncached_bsdf();
-            m_edf = get_uncached_edf();
+        RENDERER_LOG_WARNING(
+            "%s: material is emitting light but may be partially or entirely transparent; "
+            "this may lead to unexpected or unphysical results.",
+            context.get());
+    }
     
-            const EntityDefMessageContext context("material", this);
-            if (!create_normal_modifier(context))
-                return false;
-    
-            if (m_edf && m_alpha_map)
-            {
-                RENDERER_LOG_WARNING(
-                    "%s: material is emitting light but may be partially or entirely transparent; "
-                    "this may lead to unexpected or unphysical results.",
-                    context.get());
-            }
-            
-            return true;
-        }
-    
-        // This method is called once after rendering each frame.
-        virtual void on_frame_end(
-            const Project&              project,
-            const Assembly&             assembly) OVERRIDE
-        {
-            Material::on_frame_end(project, assembly);
-        }
+    return true;
+}
 
-      private:
-    };
+void GenericMaterial::on_frame_end(
+    const Project&              project,
+    const Assembly&             assembly) OVERRIDE
+{
+    Material::on_frame_end(project, assembly);
 }
 
 //

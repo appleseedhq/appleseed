@@ -48,6 +48,34 @@ namespace renderer      { class ParamArray; }
 namespace renderer
 {
 
+class DLLSYMBOL GenericMaterial
+  : public Material
+{
+  public:
+    // Constructor.
+    GenericMaterial(
+        const char*                 name,
+        const ParamArray&           params);  
+    
+    // Delete this instance.
+    virtual void release() OVERRIDE;
+    
+    // Return a string identifying the model of this material.
+    virtual const char* get_model() const OVERRIDE;
+
+    // This method is called once before rendering each frame.
+    // Returns true on success, false otherwise.
+    virtual bool on_frame_begin(
+        const Project&              project,
+        const Assembly&             assembly,
+        foundation::AbortSwitch*    abort_switch = 0) OVERRIDE;
+    
+    // This method is called once after rendering each frame.
+    virtual void on_frame_end(
+        const Project&              project,
+        const Assembly&             assembly) OVERRIDE;
+};
+
 //
 // Generic material factory.
 //

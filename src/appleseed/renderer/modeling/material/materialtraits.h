@@ -7,6 +7,7 @@
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
 // Copyright (c) 2014 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014 Marius Avram, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -41,6 +42,7 @@
 #include "foundation/utility/autoreleaseptr.h"
 
 // Forward declarations.
+namespace renderer  { class DisneyMaterialFactoryRegistrar; }
 namespace renderer  { class MaterialFactoryRegistrar; }
 
 namespace renderer
@@ -92,7 +94,7 @@ template <>
 struct EntityTraits<DisneyMaterial>
 {
     typedef MaterialContainer ContainerType;
-    typedef MaterialFactoryRegistrar FactoryRegistrarType;
+    typedef DisneyMaterialFactoryRegistrar FactoryRegistrarType;
 
     static const char* get_entity_type_name()                           { return "disney material"; }
     static const char* get_human_readable_entity_type_name()            { return "Disney Material"; }

@@ -133,6 +133,7 @@ class ProjectBuilder
 
     renderer::BSDFFactoryRegistrar                  m_bsdf_factory_registrar;
     renderer::CameraFactoryRegistrar                m_camera_factory_registrar;
+    renderer::DisneyMaterialFactoryRegistrar        m_disney_material_factory_registrar;
     renderer::EDFFactoryRegistrar                   m_edf_factory_registrar;
     renderer::EnvironmentEDFFactoryRegistrar        m_environment_edf_factory_registrar;
     renderer::EnvironmentShaderFactoryRegistrar     m_environment_shader_factory_registrar;
@@ -170,6 +171,13 @@ inline const renderer::EntityTraits<renderer::Camera>::FactoryRegistrarType&
 ProjectBuilder::get_factory_registrar<renderer::Camera>() const
 {
     return m_camera_factory_registrar;
+}
+
+template <>
+inline const renderer::EntityTraits<renderer::DisneyMaterial>::FactoryRegistrarType&
+ProjectBuilder::get_factory_registrar<renderer::DisneyMaterial>() const
+{
+    return m_disney_material_factory_registrar;
 }
 
 template <>
