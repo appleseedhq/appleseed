@@ -114,7 +114,7 @@ AssemblyItem::AssemblyItem(
 
     insertChild(
         6,
-        m_material_collection_item = 
+        m_material_collection_item =
             new MaterialCollectionItem(
                 assembly.materials(),
                 assembly,
