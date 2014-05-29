@@ -55,30 +55,25 @@ namespace
       : public Material
     {
       public:
-        // Constructor.
         OSLMaterial(
             const char*                 name,
             const ParamArray&           params)
-            : Material(name, params)
+          : Material(name, params)
         {
             m_inputs.declare("osl_surface", InputFormatEntity, "");
             m_inputs.declare("alpha_map", InputFormatScalar, "");
         }
 
-        // Delete this instance.
         virtual void release() OVERRIDE
         {
             delete this;
         }
-        
-        // Return a string identifying the model of this material.
+
         virtual const char* get_model() const OVERRIDE
         {
             return Model;
         }
-        
-        // This method is called once before rendering each frame.
-        // Returns true on success, false otherwise.
+
         virtual bool on_frame_begin(
             const Project&              project,
             const Assembly&             assembly,
@@ -86,20 +81,19 @@ namespace
         {
             if (!Material::on_frame_begin(project, assembly, abort_switch))
                 return false;
-            
+
             m_shader_group = get_uncached_osl_surface();
-    
+
             if (m_shader_group)
             {
                 m_osl_bsdf = OSLBSDFFactory().create();
                 m_bsdf = m_osl_bsdf.get();
                 m_osl_bsdf->on_frame_begin(project, assembly, abort_switch);
             }
-            
+
             return true;
         }
-    
-        // This method is called once after rendering each frame.
+
         virtual void on_frame_end(
             const Project&              project,
             const Assembly&             assembly) OVERRIDE
@@ -111,13 +105,13 @@ namespace
                 m_osl_bsdf->on_frame_end(project, assembly);
                 m_osl_bsdf.reset();
             }
-        
+
             m_shader_group = 0;
         }
 
         virtual bool has_osl_surface() const OVERRIDE
         {
-            return get_non_empty(m_params, "osl_surface") != 0;            
+            return get_non_empty(m_params, "osl_surface") != 0;
         }
 
       private:
@@ -129,6 +123,7 @@ namespace
         }
     };
 }
+
 
 //
 // OSLMaterialFactory class implementation.
@@ -170,7 +165,7 @@ DictionaryArray OSLMaterialFactory::get_input_metadata() const
                     .insert("color", "Colors")
                     .insert("texture_instance", "Textures"))
             .insert("use", "optional"));
-    
+
     return metadata;
 }
 
