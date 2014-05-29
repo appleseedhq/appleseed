@@ -81,9 +81,9 @@ class MaterialCollectionItem
   private:
     virtual ItemBase* create_item(renderer::Material* material) OVERRIDE;
 
-    renderer::Assembly&             m_parent;
-    AssemblyItem*                   m_parent_item;
-    renderer::ParamArray&           m_settings;
+    renderer::Assembly&                 m_parent;
+    AssemblyItem*                       m_parent_item;
+    renderer::ParamArray&               m_settings;
 };
 
 }       // namespace studio

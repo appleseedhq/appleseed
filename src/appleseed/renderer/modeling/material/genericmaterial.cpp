@@ -107,7 +107,6 @@ namespace
     };
 }
 
-
 //
 // GenericMaterialFactory class implementation.
 //

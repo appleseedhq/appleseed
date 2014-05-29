@@ -35,7 +35,7 @@
 #include "mainwindow/project/entitybrowser.h"
 #include "mainwindow/project/entityeditorfactory.h"
 #include "mainwindow/project/itemregistry.h"
-#include "mainwindow/project/materialitem.h"
+#include "mainwindow/project/multimodelentityitem.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/tools.h"
 #include "mainwindow/rendering/renderingmanager.h"
@@ -55,6 +55,7 @@
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <string>
 
 using namespace foundation;
 using namespace renderer;
@@ -85,13 +86,14 @@ MaterialCollectionItem::MaterialCollectionItem(
 ItemBase* MaterialCollectionItem::create_item(Material* material)
 {
     assert(material);
+    
+    typedef MultiModelEntityItem<Material, Assembly, MaterialCollectionItem> GenericMaterialItem;
 
-    ItemBase* item =
-        new MaterialItem(
-            material,
-            m_parent,
-            m_parent_item,
-            m_project_builder);
+    ItemBase* item = new GenericMaterialItem(
+        material,
+        m_parent,
+        this,
+        m_project_builder);
 
     m_project_builder.get_item_registry().insert(material->get_uid(), item);
 
@@ -112,9 +114,7 @@ QMenu* MaterialCollectionItem::get_single_item_context_menu() const
 template <typename Entity>
 void MaterialCollectionItem::create_editor()
 {
-    // TODO: Replace Material with Entity when needed class are implemented
-    typedef CollectionItem<Material, Assembly, AssemblyItem> Base;
-    typedef typename renderer::EntityTraits<Material> EntityTraits;
+    typedef typename renderer::EntityTraits<Entity> EntityTraits;
 
     const std::string window_title =
         std::string("Create ") +
@@ -123,17 +123,17 @@ void MaterialCollectionItem::create_editor()
     const std::string name_suggestion =
         get_name_suggestion(
             EntityTraits::get_entity_type_name(),
-            EntityTraits::get_entity_container(Base::m_parent));
+            EntityTraits::get_entity_container(m_parent));
 
     typedef typename EntityTraits::FactoryRegistrarType FactoryRegistrarType;
 
     std::auto_ptr<EntityEditor::IFormFactory> form_factory(
         new MultiModelEntityEditorFormFactory<FactoryRegistrarType>(
-            Base::m_project_builder.template get_factory_registrar<Material>(),
+            m_project_builder.template get_factory_registrar<Entity>(),
             name_suggestion));
 
     std::auto_ptr<EntityEditor::IEntityBrowser> entity_browser(
-        new EntityBrowser<Assembly>(Base::m_parent));
+        new EntityBrowser<Assembly>(m_parent));
 
     std::auto_ptr<IEntityEditorFactory> entity_editor_factory(
         new EntityEditorFactory<Entity>());
@@ -141,7 +141,7 @@ void MaterialCollectionItem::create_editor()
     open_entity_editor(
         QTreeWidgetItem::treeWidget(),
         window_title,
-        Base::m_project_builder.get_project(),
+        m_project_builder.get_project(),
         form_factory,
         entity_browser,
         entity_editor_factory,
