@@ -89,7 +89,7 @@ class AssemblyItem
 
     ObjectCollectionItem& get_object_collection_item() const;
     ObjectInstanceCollectionItem& get_object_instance_collection_item() const;
-    
+
   private:
     friend class EntityInstantiationDelayedAction<AssemblyItem>;
     friend class EntityDeletionDelayedAction<AssemblyItem>;
@@ -103,7 +103,7 @@ class AssemblyItem
     typedef CollectionItem<renderer::EDF, renderer::Assembly, AssemblyItem> EDFCollectionItem;
     typedef CollectionItem<renderer::SurfaceShader, renderer::Assembly, AssemblyItem> SurfaceShaderCollectionItem;
     typedef CollectionItem<renderer::Light, renderer::Assembly, AssemblyItem> LightCollectionItem;
-    
+
     BSDFCollectionItem*             m_bsdf_collection_item;
     EDFCollectionItem*              m_edf_collection_item;
     SurfaceShaderCollectionItem*    m_surface_shader_collection_item;

@@ -93,7 +93,7 @@ bool GenericMaterial::on_frame_begin(
             "this may lead to unexpected or unphysical results.",
             context.get());
     }
-    
+
     return true;
 }
 

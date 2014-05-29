@@ -86,7 +86,7 @@ MaterialCollectionItem::MaterialCollectionItem(
 ItemBase* MaterialCollectionItem::create_item(Material* material)
 {
     assert(material);
-    
+
     typedef MultiModelEntityItem<Material, Assembly, MaterialCollectionItem> GenericMaterialItem;
 
     ItemBase* item = new GenericMaterialItem(
