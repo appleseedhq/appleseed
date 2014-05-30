@@ -55,7 +55,6 @@ namespace renderer      { class ShaderGroup; }
 #endif
 namespace renderer      { class Source; }
 namespace renderer      { class SurfaceShader; }
-namespace renderer      { class TextureCache; }
 
 namespace renderer
 {
@@ -131,30 +130,26 @@ class DLLSYMBOL Material
     const ShaderGroup* get_osl_surface() const;
     virtual const ShaderGroup* get_uncached_osl_surface() const;
 #endif
-    
-  private:    
-    struct Impl;
-    Impl* impl;
 
   protected:
-    bool                                m_shade_alpha_cutouts;
-    const SurfaceShader*                m_surface_shader;
-    const BSDF*                         m_bsdf;
-    const EDF*                          m_edf;
-    const Source*                       m_alpha_map;
-    const INormalModifier*              m_normal_modifier;
+    bool                            m_shade_alpha_cutouts;
+    const SurfaceShader*            m_surface_shader;
+    const BSDF*                     m_bsdf;
+    const EDF*                      m_edf;
+    const Source*                   m_alpha_map;
+    const INormalModifier*          m_normal_modifier;
 #ifdef WITH_OSL
-    const ShaderGroup*                  m_shader_group;
+    const ShaderGroup*              m_shader_group;
 #endif
 
     // Constructor.
     Material(
         const char*                 name,
         const ParamArray&           params);
-    
+
     // Destructor.
     virtual ~Material();
-    
+
     const char* get_non_empty(const ParamArray& params, const char* name) const;
 
     bool create_normal_modifier(const MessageContext& context);
