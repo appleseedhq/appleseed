@@ -32,34 +32,13 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/assemblyitem.h"
-#include "mainwindow/project/entitybrowser.h"
-#include "mainwindow/project/entityeditorfactory.h"
-#include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/multimodelentityitem.h"
-#include "mainwindow/project/projectbuilder.h"
-#include "mainwindow/project/tools.h"
-#include "mainwindow/rendering/renderingmanager.h"
-#include "utility/interop.h"
-#include "utility/settingskeys.h"
-
-// appleseed.renderer headers.
-#include "renderer/api/utility.h"
-
-// appleseed.foundation headers.
-#include "foundation/math/transform.h"
-#include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/autoreleaseptr.h"
-#include "foundation/utility/searchpaths.h"
-#include "foundation/utility/uid.h"
 
 // Standard headers.
-#include <cassert>
-#include <cstddef>
-#include <string>
+#include <string.h>
 
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 namespace appleseed {
 namespace studio {
@@ -88,12 +67,26 @@ ItemBase* MaterialCollectionItem::create_item(Material* material)
     assert(material);
 
     typedef MultiModelEntityItem<Material, Assembly, MaterialCollectionItem> GenericMaterialItem;
+    typedef MultiModelEntityItem<DisneyMaterial, Assembly, MaterialCollectionItem> DisneyMaterialItem;
+    const char* model = material->get_model();
 
-    ItemBase* item = new GenericMaterialItem(
-        material,
-        m_parent,
-        this,
-        m_project_builder);
+    ItemBase* item;
+    if (strcmp(model, "generic_material") == 0)
+    {
+        item = new GenericMaterialItem(
+            material,
+            m_parent,
+            this,
+            m_project_builder);
+    }
+    else if (strcmp(model, "disney_material") == 0)
+    {
+        item = new DisneyMaterialItem(
+            static_cast<DisneyMaterial*>(material),
+            m_parent,
+            this,
+            m_project_builder);
+    }
 
     m_project_builder.get_item_registry().insert(material->get_uid(), item);
 
@@ -111,10 +104,9 @@ QMenu* MaterialCollectionItem::get_single_item_context_menu() const
     return menu;
 }
 
-template <typename Entity>
-void MaterialCollectionItem::create_editor()
+void MaterialCollectionItem::slot_create_generic()
 {
-    typedef typename renderer::EntityTraits<Entity> EntityTraits;
+    typedef typename renderer::EntityTraits<Material> EntityTraits;
 
     const std::string window_title =
         std::string("Create ") +
@@ -129,14 +121,14 @@ void MaterialCollectionItem::create_editor()
 
     std::auto_ptr<EntityEditor::IFormFactory> form_factory(
         new MultiModelEntityEditorFormFactory<FactoryRegistrarType>(
-            m_project_builder.template get_factory_registrar<Entity>(),
+            m_project_builder.get_factory_registrar<Material>(),
             name_suggestion));
 
     std::auto_ptr<EntityEditor::IEntityBrowser> entity_browser(
         new EntityBrowser<Assembly>(m_parent));
 
     std::auto_ptr<IEntityEditorFactory> entity_editor_factory(
-        new EntityEditorFactory<Entity>());
+        new EntityEditorFactory<Material>());
 
     open_entity_editor(
         QTreeWidgetItem::treeWidget(),
@@ -147,18 +139,85 @@ void MaterialCollectionItem::create_editor()
         entity_editor_factory,
         this,
         SLOT(slot_create_applied(foundation::Dictionary)),
-        SLOT(slot_create_accepted(foundation::Dictionary)),
+        SLOT(slot_create_accepted_generic(foundation::Dictionary)),
         SLOT(slot_create_canceled(foundation::Dictionary)));
-}
-
-void MaterialCollectionItem::slot_create_generic()
-{
-    create_editor<Material>();
 }
 
 void MaterialCollectionItem::slot_create_disney()
 {
-    create_editor<DisneyMaterial>();
+    typedef typename renderer::EntityTraits<DisneyMaterial> EntityTraits;
+
+    const std::string window_title =
+        std::string("Create ") +
+        EntityTraits::get_human_readable_entity_type_name();
+
+    const std::string name_suggestion =
+        get_name_suggestion(
+            EntityTraits::get_entity_type_name(),
+            EntityTraits::get_entity_container(m_parent));
+
+    typedef typename EntityTraits::FactoryRegistrarType FactoryRegistrarType;
+
+    std::auto_ptr<EntityEditor::IFormFactory> form_factory(
+        new MultiModelEntityEditorFormFactory<FactoryRegistrarType>(
+            m_project_builder.get_factory_registrar<DisneyMaterial>(),
+            name_suggestion));
+
+    std::auto_ptr<EntityEditor::IEntityBrowser> entity_browser(
+        new EntityBrowser<Assembly>(m_parent));
+
+    std::auto_ptr<IEntityEditorFactory> entity_editor_factory(
+        new EntityEditorFactory<DisneyMaterial>());
+
+    open_entity_editor(
+        QTreeWidgetItem::treeWidget(),
+        window_title,
+        m_project_builder.get_project(),
+        form_factory,
+        entity_browser,
+        entity_editor_factory,
+        this,
+        SLOT(slot_create_applied(foundation::Dictionary)),
+        SLOT(slot_create_accepted_disney(foundation::Dictionary)),
+        SLOT(slot_create_canceled(foundation::Dictionary)));
+}
+
+void MaterialCollectionItem::slot_create_accepted_generic(foundation::Dictionary values)
+{
+    create_accepted<Material>(values);
+}
+
+void MaterialCollectionItem::slot_create_accepted_disney(foundation::Dictionary values)
+{
+    create_accepted<DisneyMaterial>(values);
+}
+
+template <typename Material>
+void MaterialCollectionItem::create_accepted(const foundation::Dictionary& values)
+{
+    catch_entity_creation_errors(
+        m_project_builder.get_rendering_manager().is_rendering()
+            ? &MaterialCollectionItem::schedule_create<Material>
+            : &MaterialCollectionItem::create<Material>,
+        values,
+        renderer::EntityTraits<Material>::get_human_readable_entity_type_name());
+}
+
+template <typename Material>
+void MaterialCollectionItem::schedule_create(const foundation::Dictionary& values)
+{
+    m_project_builder.get_rendering_manager().push_delayed_action(
+        std::auto_ptr<RenderingManager::IDelayedAction>(
+            new MaterialCreationDelayedAction<MaterialCollectionItem, Material>(this, values)));
+
+    m_project_builder.get_rendering_manager().reinitialize_rendering();
+}
+
+template <typename Material>
+void MaterialCollectionItem::create(const foundation::Dictionary& values)
+{
+    Material* material = m_project_builder.insert_entity<Material>(m_parent, values);
+    m_parent_item->add_item(material);
 }
 
 }   // namespace studio

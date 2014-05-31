@@ -110,10 +110,11 @@ struct EntityTraits<DisneyMaterial>
 
     template <typename ParentEntity>
     static void insert_entity(
-        foundation::auto_release_ptr<Material>  entity,
-        ParentEntity&                           parent)
+        foundation::auto_release_ptr<DisneyMaterial>    entity,
+        ParentEntity&                                   parent)
     {
-        get_entity_container(parent).insert(entity);
+        foundation::auto_release_ptr<Material> material_entity(entity);
+        get_entity_container(parent).insert(material_entity);
     }
 
     template <typename ParentEntity>

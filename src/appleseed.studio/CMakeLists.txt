@@ -151,6 +151,7 @@ set (mainwindow_project_sources
     mainwindow/project/materialassignmenteditorwindow.ui
     mainwindow/project/materialcollectionitem.cpp
     mainwindow/project/materialcollectionitem.h
+    mainwindow/project/materialdelayedactions.h
     mainwindow/project/multimodelcollectionitem.h
     mainwindow/project/multimodelentityeditorformfactory.h
     mainwindow/project/multimodelentityitem.h

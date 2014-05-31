@@ -60,6 +60,11 @@ void DisneyMaterialEntityEditor::rebuild_form(const Dictionary& values)
     clear_layout(m_form_layout);
 
     m_widget_proxies.clear();
+
+    m_form_factory->update(values, m_input_metadata);
+
+    for (const_each<InputMetadataCollection> i = m_input_metadata; i; ++i)
+        create_input_widgets(*i);
 }
 
 }   // namespace studio

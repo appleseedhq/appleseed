@@ -40,7 +40,7 @@
 #include <memory>
 
 // Forward declarations.
-namespace renderer  { class IMaterialFactory; }
+namespace renderer  { class DisneyMaterialFactory; }
 
 namespace renderer
 {
@@ -49,7 +49,7 @@ namespace renderer
 // An array of disney material factories.
 //
 
-DECLARE_ARRAY(DisneyMaterialFactoryArray, IMaterialFactory*);
+DECLARE_ARRAY(DisneyMaterialFactoryArray, DisneyMaterialFactory*);
 
 //
 // Material factory registrar.
@@ -59,7 +59,7 @@ class DLLSYMBOL DisneyMaterialFactoryRegistrar
   : public foundation::NonCopyable
 {
   public:
-    typedef IMaterialFactory FactoryType;
+    typedef DisneyMaterialFactory FactoryType;
     typedef DisneyMaterialFactoryArray FactoryArrayType;
 
     // Constructor.

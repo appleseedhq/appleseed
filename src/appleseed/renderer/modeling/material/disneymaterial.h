@@ -88,7 +88,7 @@ class DLLSYMBOL DisneyMaterial
     
     // Delete this instance.
     virtual void release() OVERRIDE;
-
+    
     // Return a string identifying the model of this material.
     virtual const char* get_model() const OVERRIDE;
 
@@ -103,7 +103,7 @@ class DLLSYMBOL DisneyMaterial
     virtual void on_frame_end(
         const Project&              project,
         const Assembly&             assembly) OVERRIDE;
-
+    
   private:
     // Destructor
     ~DisneyMaterial();
