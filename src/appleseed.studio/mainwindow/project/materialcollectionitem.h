@@ -33,21 +33,9 @@
 // appleseed.studio headers.
 #include "mainwindow/project/assemblyitem.h"
 #include "mainwindow/project/collectionitem.h"
-
-// appleseed.renderer headers.
-#include "renderer/api/material.h"
-
-// appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
-
-// Qt headers.
-#include <QObject>
-
-// Standard headers.
-#include <string>
+#include "mainwindow/project/materialdelayedactions.h"
 
 // Forward declarations.
-namespace appleseed { namespace studio { class ItemBase; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace renderer  { class Assembly; }
 namespace renderer  { class ParamArray; }
@@ -71,12 +59,16 @@ class MaterialCollectionItem
   protected:
     virtual QMenu* get_single_item_context_menu() const OVERRIDE;
 
-    template <typename Entity> void create_editor();
+    template <typename Material> void create_accepted(const foundation::Dictionary& values);
+    template <typename Material> void schedule_create(const foundation::Dictionary& values);
+    template <typename Material> void create(const foundation::Dictionary& values);
 
   protected slots:
     void slot_create_generic();
-
     void slot_create_disney();
+
+    void slot_create_accepted_generic(foundation::Dictionary values);
+    void slot_create_accepted_disney(foundation::Dictionary values);
 
   private:
     virtual ItemBase* create_item(renderer::Material* material) OVERRIDE;
@@ -84,6 +76,9 @@ class MaterialCollectionItem
     renderer::Assembly&                 m_parent;
     AssemblyItem*                       m_parent_item;
     renderer::ParamArray&               m_settings;
+
+    friend class MaterialCreationDelayedAction<MaterialCollectionItem, renderer::Material>;
+    friend class MaterialCreationDelayedAction<MaterialCollectionItem, renderer::DisneyMaterial>;
 };
 
 }       // namespace studio

@@ -105,7 +105,7 @@ bool DisneyMaterial::on_frame_begin(
 {
     if (!Material::on_frame_begin(project, assembly, abort_switch))
         return false;
-    
+
     return true;
 }
 
@@ -134,8 +134,6 @@ const char* DisneyMaterialFactory::get_human_readable_model() const
 DictionaryArray DisneyMaterialFactory::get_input_metadata() const
 {
     DictionaryArray metadata;
-
-    add_common_input_metadata(metadata);
 
     metadata.push_back(
         Dictionary()
@@ -208,12 +206,12 @@ DictionaryArray DisneyMaterialFactory::get_input_metadata() const
     return metadata;
 }
 
-auto_release_ptr<Material> DisneyMaterialFactory::create(
+auto_release_ptr<DisneyMaterial> DisneyMaterialFactory::create(
     const char*         name,
     const ParamArray&   params) const
 {
     return
-        auto_release_ptr<Material>(
+        auto_release_ptr<DisneyMaterial>(
             new DisneyMaterial(name, params));
 }
 

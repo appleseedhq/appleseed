@@ -51,7 +51,7 @@ DEFINE_ARRAY(DisneyMaterialFactoryArray);
 
 struct DisneyMaterialFactoryRegistrar::Impl
 {
-    Registrar<IMaterialFactory> m_registrar;
+    Registrar<DisneyMaterialFactory> m_registrar;
 };
 
 DisneyMaterialFactoryRegistrar::DisneyMaterialFactoryRegistrar()

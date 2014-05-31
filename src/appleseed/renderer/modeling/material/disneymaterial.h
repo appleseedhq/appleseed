@@ -71,11 +71,11 @@ class DLLSYMBOL DisneyMaterial
     // Constructor.
     DisneyMaterial(
         const char*                 name,
-        const ParamArray&           params);  
-    
+        const ParamArray&           params);
+
     // Delete this instance.
     virtual void release() OVERRIDE;
-    
+
     // Return a string identifying the model of this material.
     virtual const char* get_model() const OVERRIDE;
 
@@ -85,16 +85,16 @@ class DLLSYMBOL DisneyMaterial
         const Project&              project,
         const Assembly&             assembly,
         foundation::AbortSwitch*    abort_switch = 0) OVERRIDE;
-    
+
     // This method is called once after rendering each frame.
     virtual void on_frame_end(
         const Project&              project,
         const Assembly&             assembly) OVERRIDE;
-    
+
   private:
     // Destructor
     ~DisneyMaterial();
-    
+
     struct Impl;
     Impl *impl;
 };
@@ -104,7 +104,6 @@ class DLLSYMBOL DisneyMaterial
 //
 
 class DLLSYMBOL DisneyMaterialFactory
-  : public IMaterialFactory
 {
   public:
     // Return a string identifying this material model.
@@ -117,7 +116,7 @@ class DLLSYMBOL DisneyMaterialFactory
     virtual foundation::DictionaryArray get_input_metadata() const OVERRIDE;
 
     // Create a new material instance.
-    virtual foundation::auto_release_ptr<Material> create(
+    virtual foundation::auto_release_ptr<DisneyMaterial> create(
         const char*         name,
         const ParamArray&   params) const OVERRIDE;
 };
