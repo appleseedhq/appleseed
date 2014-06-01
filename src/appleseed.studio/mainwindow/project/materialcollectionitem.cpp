@@ -33,6 +33,7 @@
 // appleseed.studio headers.
 #include "mainwindow/project/assemblyitem.h"
 #include "mainwindow/project/multimodelentityitem.h"
+#include "mainwindow/project/singlemodelentityitem.h"
 
 // Standard headers.
 #include <string.h>
@@ -67,7 +68,7 @@ ItemBase* MaterialCollectionItem::create_item(Material* material)
     assert(material);
 
     typedef MultiModelEntityItem<Material, Assembly, MaterialCollectionItem> GenericMaterialItem;
-    typedef MultiModelEntityItem<DisneyMaterial, Assembly, MaterialCollectionItem> DisneyMaterialItem;
+    typedef SingleModelEntityItem<DisneyMaterial, Assembly, MaterialCollectionItem> DisneyMaterialItem;
     const char* model = material->get_model();
 
     ItemBase* item;
@@ -156,12 +157,12 @@ void MaterialCollectionItem::slot_create_disney()
             EntityTraits::get_entity_type_name(),
             EntityTraits::get_entity_container(m_parent));
 
-    typedef typename EntityTraits::FactoryRegistrarType FactoryRegistrarType;
+    typedef typename EntityTraits::FactoryType FactoryType;
 
     std::auto_ptr<EntityEditor::IFormFactory> form_factory(
-        new MultiModelEntityEditorFormFactory<FactoryRegistrarType>(
-            m_project_builder.get_factory_registrar<DisneyMaterial>(),
-            name_suggestion));
+        new SingleModelEntityEditorFormFactory(
+            name_suggestion,
+            FactoryType::get_input_metadata()));
 
     std::auto_ptr<EntityEditor::IEntityBrowser> entity_browser(
         new EntityBrowser<Assembly>(m_parent));

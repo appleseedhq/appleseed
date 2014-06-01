@@ -106,19 +106,13 @@ class DLLSYMBOL DisneyMaterial
 class DLLSYMBOL DisneyMaterialFactory
 {
   public:
-    // Return a string identifying this material model.
-    virtual const char* get_model() const OVERRIDE;
+    // Return a set of input metadata for the disney material entity.
+    static foundation::DictionaryArray get_input_metadata();
 
-    // Return a human-readable string identifying this material model.
-    virtual const char* get_human_readable_model() const OVERRIDE;
-
-    // Return a set of input metadata for this material model.
-    virtual foundation::DictionaryArray get_input_metadata() const OVERRIDE;
-
-    // Create a new material instance.
-    virtual foundation::auto_release_ptr<DisneyMaterial> create(
+    // Create a new disney material entity.
+    static foundation::auto_release_ptr<DisneyMaterial> create(
         const char*         name,
-        const ParamArray&   params) const OVERRIDE;
+        const ParamArray&   params);
 };
 
 }       // namespace renderer

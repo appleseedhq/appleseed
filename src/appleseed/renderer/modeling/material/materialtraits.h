@@ -42,7 +42,6 @@
 #include "foundation/utility/autoreleaseptr.h"
 
 // Forward declarations.
-namespace renderer  { class DisneyMaterialFactoryRegistrar; }
 namespace renderer  { class MaterialFactoryRegistrar; }
 
 namespace renderer
@@ -94,7 +93,7 @@ template <>
 struct EntityTraits<DisneyMaterial>
 {
     typedef MaterialContainer ContainerType;
-    typedef DisneyMaterialFactoryRegistrar FactoryRegistrarType;
+    typedef DisneyMaterialFactory FactoryType;
 
     static const char* get_entity_type_name()                           { return "disney material"; }
     static const char* get_human_readable_entity_type_name()            { return "Disney Material"; }

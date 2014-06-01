@@ -1413,8 +1413,6 @@ set (renderer_modeling_material_sources
     renderer/modeling/material/bumpmappingmodifier.h
     renderer/modeling/material/disneymaterial.cpp
     renderer/modeling/material/disneymaterial.h
-    renderer/modeling/material/disneymaterialfactoryregistrar.cpp
-    renderer/modeling/material/disneymaterialfactoryregistrar.h
     renderer/modeling/material/genericmaterial.cpp
     renderer/modeling/material/genericmaterial.h
     renderer/modeling/material/imaterialfactory.cpp

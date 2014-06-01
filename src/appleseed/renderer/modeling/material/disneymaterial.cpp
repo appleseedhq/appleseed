@@ -121,17 +121,7 @@ void DisneyMaterial::on_frame_end(
 // DisneyMaterialFactory class implementation.
 //
 
-const char* DisneyMaterialFactory::get_model() const
-{
-    return Model;
-}
-
-const char* DisneyMaterialFactory::get_human_readable_model() const
-{
-    return "Disney Material";
-}
-
-DictionaryArray DisneyMaterialFactory::get_input_metadata() const
+DictionaryArray DisneyMaterialFactory::get_input_metadata()
 {
     DictionaryArray metadata;
     return metadata;
@@ -139,7 +129,7 @@ DictionaryArray DisneyMaterialFactory::get_input_metadata() const
 
 auto_release_ptr<DisneyMaterial> DisneyMaterialFactory::create(
     const char*         name,
-    const ParamArray&   params) const
+    const ParamArray&   params)
 {
     return
         auto_release_ptr<DisneyMaterial>(
