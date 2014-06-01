@@ -423,6 +423,18 @@ inline foundation::auto_release_ptr<renderer::ColorEntity> ProjectBuilder::creat
 }
 
 template <>
+inline foundation::auto_release_ptr<renderer::DisneyMaterial> ProjectBuilder::create_entity(
+    const foundation::Dictionary&       values) const
+{
+    const std::string name = get_entity_name(values);
+
+    foundation::Dictionary clean_values(values);
+    clean_values.strings().remove(EntityEditorFormFactoryBase::NameParameter);
+
+    return renderer::DisneyMaterialFactory::create(name.c_str(), clean_values);
+}
+
+template <>
 inline foundation::auto_release_ptr<renderer::Texture> ProjectBuilder::create_entity(
     const foundation::Dictionary&       values) const
 {

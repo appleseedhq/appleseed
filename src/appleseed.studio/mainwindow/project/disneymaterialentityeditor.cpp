@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014 Marius Avram, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,15 +26,46 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_MATERIAL_H
-#define APPLESEED_RENDERER_API_MATERIAL_H
+// Interface header.
+#include "disneymaterialentityeditor.h"
 
-// API headers.
-#include "renderer/modeling/material/disneymaterial.h"
-#include "renderer/modeling/material/genericmaterial.h"
-#include "renderer/modeling/material/imaterialfactory.h"
-#include "renderer/modeling/material/material.h"
-#include "renderer/modeling/material/materialfactoryregistrar.h"
-#include "renderer/modeling/material/materialtraits.h"
+// appleseed.studio headers.
+#include "utility/miscellaneous.h"
 
-#endif  // !APPLESEED_RENDERER_API_MATERIAL_H
+// appleseed.renderer headers.
+#include "renderer/api/project.h"
+
+// Qt headers.
+#include <QFormLayout>
+
+using namespace foundation;
+using namespace renderer;
+using namespace std;
+
+namespace appleseed {
+namespace studio {
+
+DisneyMaterialEntityEditor::DisneyMaterialEntityEditor(
+    QWidget*                    parent,
+    const Project&              project,
+    auto_ptr<IFormFactory>      form_factory,
+    auto_ptr<IEntityBrowser>    entity_browser,
+    const Dictionary&           values)
+  : EntityEditor(parent, project, form_factory, entity_browser, values)
+{
+}
+
+void DisneyMaterialEntityEditor::rebuild_form(const Dictionary& values)
+{
+    clear_layout(m_form_layout);
+
+    m_widget_proxies.clear();
+
+    m_form_factory->update(values, m_input_metadata);
+
+    for (const_each<InputMetadataCollection> i = m_input_metadata; i; ++i)
+        create_input_widgets(*i);
+}
+
+}   // namespace studio
+}   // namespace appleseed

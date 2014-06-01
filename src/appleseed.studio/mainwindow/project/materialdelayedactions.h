@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014 Marius Avram, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,53 +26,53 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ATTRIBUTEEDITOR_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ATTRIBUTEEDITOR_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_MATERIALDELAYEDACTIONS_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_MATERIALDELAYEDACTIONS_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/entityeditor.h"
-#include "mainwindow/project/entityeditorfactory.h"
+#include "mainwindow/rendering/renderingmanager.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
-
-// Standard headers.
-#include <memory>
+#include "foundation/platform/compiler.h"
+#include "foundation/utility/containers/dictionary.h"
 
 // Forward declarations.
-namespace foundation    { class Dictionary; }
-namespace renderer      { class Project; }
-class QObject;
-class QWidget;
+namespace applessed { namespace studio { class MaterialCollectionItem; } }
+namespace renderer { class MasterRenderer; }
+namespace renderer { class Project; }
 
 namespace appleseed {
 namespace studio {
 
-class AttributeEditor
-  : public foundation::NonCopyable
+// There delayed actions allow to schedule the creation and edition of materials
+// right before rendering starts. They are used to live-edit materials during
+// rendering.
+template <typename CollectionItem, typename Material>
+class MaterialCreationDelayedAction
+  : public RenderingManager::IDelayedAction
 {
   public:
-    AttributeEditor(
-        QWidget*                parent,
-        renderer::Project&      project);
+    MaterialCreationDelayedAction(
+        CollectionItem*                     parent,
+        const foundation::Dictionary&       values)
+      : m_parent(parent)
+      , m_values(values)
+    {
+    }
 
-    void clear();
-
-    void edit(
-        std::auto_ptr<EntityEditor::IFormFactory>   form_factory,
-        std::auto_ptr<EntityEditor::IEntityBrowser> entity_browser,
-        std::auto_ptr<IEntityEditorFactory>         entity_editor_factory,
-        const foundation::Dictionary&               values,
-        QObject*                                    receiver,
-        const char*                                 slot_apply);
+    virtual void operator()(
+        renderer::MasterRenderer&           master_renderer,
+        renderer::Project&                  project) OVERRIDE
+    {
+        (*m_parent).template create<Material>(m_values);
+    }
 
   private:
-    QWidget*                    m_parent;
-    renderer::Project&          m_project;
-    std::auto_ptr<EntityEditor> m_entity_editor;
+    CollectionItem*                         m_parent;
+    const foundation::Dictionary            m_values;
 };
 
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ATTRIBUTEEDITOR_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_MATERIALDELAYEDACTIONS_H

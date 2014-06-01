@@ -118,6 +118,8 @@ set (mainwindow_project_sources
     mainwindow/project/basegroupitem.h
     mainwindow/project/collectionitem.h
     mainwindow/project/collectionitembase.h
+    mainwindow/project/disneymaterialentityeditor.cpp
+    mainwindow/project/disneymaterialentityeditor.h
     mainwindow/project/entitybrowser.cpp
     mainwindow/project/entitybrowser.h
     mainwindow/project/entitybrowserwindow.cpp
@@ -128,6 +130,7 @@ set (mainwindow_project_sources
     mainwindow/project/entitydelayedactions.h
     mainwindow/project/entityeditor.cpp
     mainwindow/project/entityeditor.h
+    mainwindow/project/entityeditorfactory.h
     mainwindow/project/entityeditorformfactorybase.cpp
     mainwindow/project/entityeditorformfactorybase.h
     mainwindow/project/entityeditorwindow.cpp
@@ -146,6 +149,9 @@ set (mainwindow_project_sources
     mainwindow/project/materialassignmenteditorwindow.cpp
     mainwindow/project/materialassignmenteditorwindow.h
     mainwindow/project/materialassignmenteditorwindow.ui
+    mainwindow/project/materialcollectionitem.cpp
+    mainwindow/project/materialcollectionitem.h
+    mainwindow/project/materialdelayedactions.h
     mainwindow/project/multimodelcollectionitem.h
     mainwindow/project/multimodelentityeditorformfactory.h
     mainwindow/project/multimodelentityitem.h

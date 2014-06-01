@@ -105,7 +105,7 @@ bool DisneyMaterial::on_frame_begin(
 {
     if (!Material::on_frame_begin(project, assembly, abort_switch))
         return false;
-    
+
     return true;
 }
 
@@ -121,99 +121,18 @@ void DisneyMaterial::on_frame_end(
 // DisneyMaterialFactory class implementation.
 //
 
-const char* DisneyMaterialFactory::get_model() const
-{
-    return Model;
-}
-
-const char* DisneyMaterialFactory::get_human_readable_model() const
-{
-    return "Disney Material";
-}
-
-DictionaryArray DisneyMaterialFactory::get_input_metadata() const
+DictionaryArray DisneyMaterialFactory::get_input_metadata()
 {
     DictionaryArray metadata;
-
-    add_common_input_metadata(metadata);
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "bsdf")
-            .insert("label", "BSDF")
-            .insert("type", "entity")
-            .insert("entity_types", Dictionary().insert("bsdf", "BSDF"))
-            .insert("use", "optional"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "edf")
-            .insert("label", "EDF")
-            .insert("type", "entity")
-            .insert("entity_types", Dictionary().insert("edf", "EDF"))
-            .insert("use", "optional"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "alpha_map")
-            .insert("label", "Alpha Map")
-            .insert("type", "colormap")
-            .insert("entity_types",
-                Dictionary()
-                    .insert("color", "Colors")
-                    .insert("texture_instance", "Textures"))
-            .insert("use", "optional"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "displacement_map")
-            .insert("label", "Displacement Map")
-            .insert("type", "colormap")
-            .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
-            .insert("use", "optional"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "displacement_method")
-            .insert("label", "Displacement Method")
-            .insert("type", "enumeration")
-            .insert("items",
-                Dictionary()
-                    .insert("Bump Mapping", "bump")
-                    .insert("Normal Mapping", "normal"))
-            .insert("use", "required")
-            .insert("default", "bump"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "bump_amplitude")
-            .insert("label", "Bump Amplitude")
-            .insert("type", "text")
-            .insert("use", "optional")
-            .insert("default", "1.0"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "normal_map_up")
-            .insert("label", "Normal Map Up Vector")
-            .insert("type", "enumeration")
-            .insert("items",
-                Dictionary()
-                    .insert("Green Channel (Y)", "y")
-                    .insert("Blue Channel (Z)", "z"))
-            .insert("use", "optional")
-            .insert("default", "z"));
-
     return metadata;
 }
 
-auto_release_ptr<Material> DisneyMaterialFactory::create(
+auto_release_ptr<DisneyMaterial> DisneyMaterialFactory::create(
     const char*         name,
-    const ParamArray&   params) const
+    const ParamArray&   params)
 {
     return
-        auto_release_ptr<Material>(
+        auto_release_ptr<DisneyMaterial>(
             new DisneyMaterial(name, params));
 }
 

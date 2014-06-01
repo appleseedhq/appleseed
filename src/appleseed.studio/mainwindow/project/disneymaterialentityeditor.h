@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014 Marius Avram, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,15 +26,31 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_MATERIAL_H
-#define APPLESEED_RENDERER_API_MATERIAL_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_DISNEYMATERIALENTITYEDITOR_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_DISNEYMATERIALENTITYEDITOR_H
 
-// API headers.
-#include "renderer/modeling/material/disneymaterial.h"
-#include "renderer/modeling/material/genericmaterial.h"
-#include "renderer/modeling/material/imaterialfactory.h"
-#include "renderer/modeling/material/material.h"
-#include "renderer/modeling/material/materialfactoryregistrar.h"
-#include "renderer/modeling/material/materialtraits.h"
+// appleseed.studio headers.
+#include "mainwindow/project/entityeditor.h"
 
-#endif  // !APPLESEED_RENDERER_API_MATERIAL_H
+namespace appleseed {
+namespace studio {
+
+class DisneyMaterialEntityEditor
+    : public EntityEditor
+{
+  public:
+    DisneyMaterialEntityEditor(
+        QWidget*                            parent,
+        const renderer::Project&            project,
+        std::auto_ptr<IFormFactory>         form_factory,
+        std::auto_ptr<IEntityBrowser>       entity_browser,
+        const foundation::Dictionary&       values = foundation::Dictionary());
+
+  private:
+    virtual void rebuild_form(const foundation::Dictionary& values);
+};
+
+}       // namespace studio
+}       // namespace appleseed
+
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_DISNEYMATERIALENTITYEDITOR_H

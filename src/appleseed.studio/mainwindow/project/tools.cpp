@@ -79,6 +79,7 @@ void open_entity_editor(
     const Project&                          project,
     auto_ptr<EntityEditor::IFormFactory>    form_factory,
     auto_ptr<EntityEditor::IEntityBrowser>  entity_browser,
+    auto_ptr<IEntityEditorFactory>          entity_editor_factory,
     const Dictionary&                       values,
     QObject*                                receiver,
     const char*                             slot_apply,
@@ -92,6 +93,7 @@ void open_entity_editor(
             project,
             form_factory,
             entity_browser,
+            entity_editor_factory,
             values);
 
     QObject::connect(
@@ -116,6 +118,7 @@ void open_entity_editor(
     const Project&                          project,
     auto_ptr<EntityEditor::IFormFactory>    form_factory,
     auto_ptr<EntityEditor::IEntityBrowser>  entity_browser,
+    auto_ptr<IEntityEditorFactory>          entity_editor_factory,
     QObject*                                receiver,
     const char*                             slot_apply,
     const char*                             slot_accept,
@@ -127,6 +130,7 @@ void open_entity_editor(
         project,
         form_factory,
         entity_browser,
+        entity_editor_factory,
         Dictionary(),
         receiver,
         slot_apply,
