@@ -424,7 +424,7 @@ inline T factorial(T x)
 }
 
 template <typename T>
-T binomial(const T n, const T k)
+inline T binomial(const T n, const T k)
 {
     assert(k <= n);
 
