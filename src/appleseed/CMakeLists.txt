@@ -1364,6 +1364,8 @@ source_group ("renderer\\modeling\\frame" FILES
 set (renderer_modeling_input_sources
     renderer/modeling/input/colorsource.cpp
     renderer/modeling/input/colorsource.h
+    renderer/modeling/input/expression.cpp
+    renderer/modeling/input/expression.h
     renderer/modeling/input/inputarray.cpp
     renderer/modeling/input/inputarray.h
     renderer/modeling/input/inputbinder.cpp

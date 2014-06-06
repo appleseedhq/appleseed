@@ -35,8 +35,14 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/bsdf/disneylayeredbdrf.h"
+#include "renderer/modeling/input/expression.h"
+
+// standard headers
+#include <algorithm>
+#include <vector>
 
 using namespace foundation;
+using namespace std;
 
 namespace renderer
 {
@@ -47,16 +53,90 @@ namespace renderer
 
 struct DisneyMaterialLayer::Impl
 {
+    Impl(
+        const char* name,
+        const Dictionary& params)
+      : m_name(name)
+    {
+        m_layer_number = params.get<size_t>("layer_number");
+        m_mask.set_expression(params.get<string>("mask").c_str(), false);
+        m_base_color.set_expression(params.get<string>("base_color").c_str());
+        m_subsurface.set_expression(params.get<string>("subsurface").c_str(), false);
+        m_metallic.set_expression(params.get<string>("metallic").c_str(), false);
+        m_specular.set_expression(params.get<string>("specular").c_str(), false);
+        m_specular_tint.set_expression(params.get<string>("specular_tint").c_str(), false);
+        m_anisotropic.set_expression(params.get<string>("anisotropic").c_str(), false);
+        m_roughness.set_expression(params.get<string>("roughness").c_str(), false);
+        m_sheen.set_expression(params.get<string>("sheen").c_str(), false);
+        m_sheen_tint.set_expression(params.get<string>("sheen_tint").c_str(), false);
+        m_clearcoat.set_expression(params.get<string>("clearcoat").c_str(), false);
+        m_clearcoat_gloss.set_expression(params.get<string>("clearcoat_gloss").c_str(), false);
+    }
+
+    string      m_name;
+    size_t      m_layer_number;
+    Expression  m_mask;
+    Expression  m_base_color;
+    Expression  m_subsurface;
+    Expression  m_metallic;
+    Expression  m_specular;
+    Expression  m_specular_tint;
+    Expression  m_anisotropic;
+    Expression  m_roughness;
+    Expression  m_sheen;
+    Expression  m_sheen_tint;
+    Expression  m_clearcoat;
+    Expression  m_clearcoat_gloss;
 };
 
-DisneyMaterialLayer::DisneyMaterialLayer()
-  : impl(new Impl())
+DisneyMaterialLayer::DisneyMaterialLayer(
+    const char* name,
+    const Dictionary& params)
+  : impl(new Impl(name, params))
 {
 }
 
 DisneyMaterialLayer::~DisneyMaterialLayer()
 {
     delete impl;
+}
+
+DisneyMaterialLayer::DisneyMaterialLayer(const DisneyMaterialLayer& other)
+{
+    impl = new Impl(*other.impl);
+}
+
+DisneyMaterialLayer& DisneyMaterialLayer::operator=(const DisneyMaterialLayer& other)
+{
+    DisneyMaterialLayer tmp(other);
+    swap(tmp);
+    return *this;
+}
+
+void DisneyMaterialLayer::swap(DisneyMaterialLayer& other)
+{
+    std::swap(impl, other.impl);
+}
+
+bool DisneyMaterialLayer::operator<(const DisneyMaterialLayer& other) const
+{
+    return impl->m_layer_number < other.impl->m_layer_number;
+}
+
+bool DisneyMaterialLayer::check_expressions_syntax() const
+{
+    return  impl->m_mask.syntax_ok() &&
+            impl->m_base_color.syntax_ok() &&
+            impl->m_subsurface.syntax_ok() &&
+            impl->m_metallic.syntax_ok() &&
+            impl->m_specular.syntax_ok() &&
+            impl->m_specular_tint.syntax_ok() &&
+            impl->m_anisotropic.syntax_ok() &&
+            impl->m_roughness.syntax_ok() &&
+            impl->m_sheen.syntax_ok() &&
+            impl->m_sheen_tint.syntax_ok() &&
+            impl->m_clearcoat.syntax_ok() &&
+            impl->m_clearcoat_gloss.syntax_ok();            
 }
 
 //
@@ -72,6 +152,7 @@ const char* Model = "disney_material";
 
 struct DisneyMaterial::Impl
 {
+    vector<DisneyMaterialLayer>                     m_layers;
     foundation::auto_release_ptr<DisneyLayeredBRDF> m_brdf;
 };
 
@@ -105,7 +186,32 @@ bool DisneyMaterial::on_frame_begin(
 {
     if (!Material::on_frame_begin(project, assembly, abort_switch))
         return false;
+
+    // TODO: handle per material options here...
+
+    try
+    {
+        for (const_each<DictionaryDictionary> it = m_params.dictionaries(); it; ++it)
+            impl->m_layers.push_back(DisneyMaterialLayer(it->name(), it->value()));
+    }
+    catch(...)
+    {
+        return false;
+    }
+
+    sort(impl->m_layers.begin(), impl->m_layers.end());
+
+    for (const_each<vector<DisneyMaterialLayer> > it = impl->m_layers; it ; ++it)
+    {
+        if (!it->check_expressions_syntax())
+            return false;
+    }
     
+    impl->m_brdf.reset(new DisneyLayeredBRDF());
+    
+    if (!impl->m_brdf->on_frame_begin(project, assembly, abort_switch))
+        return false;
+
     return true;
 }
 
@@ -114,7 +220,22 @@ void DisneyMaterial::on_frame_end(
     const Project&              project,
     const Assembly&             assembly) OVERRIDE
 {
+    impl->m_brdf->on_frame_end(project, assembly);
+    impl->m_brdf.reset();
+    impl->m_layers.clear();    
     Material::on_frame_end(project, assembly);
+}
+
+std::size_t DisneyMaterial::num_layers() const
+{
+    return impl->m_layers.size();
+}
+
+const DisneyMaterialLayer& DisneyMaterial::get_layer(std::size_t index) const
+{
+    assert(index < num_layers());
+
+    return impl->m_layers[index];
 }
 
 //
