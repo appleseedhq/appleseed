@@ -29,7 +29,7 @@
 #
 
 # Package builder settings.
-VersionString = "2.3.7"
+VersionString = "2.3.8"
 SettingsFileName = "appleseed.package.configuration.xml"
 
 # Imports.
@@ -361,6 +361,7 @@ class MacPackageBuilder(PackageBuilder):
         dest_path = os.path.join("appleseed", "bin", framework_name + ".framework", "Versions", "4")
         safe_make_directory(dest_path)
         shutil.copy(src_filepath, dest_path)
+        os.chmod(os.path.join(dest_path, framework_name), S_IRUSR | S_IWUSR)
 
     def copy_qt_resources(self, framework_name):
         framework_dir = framework_name + ".framework"
