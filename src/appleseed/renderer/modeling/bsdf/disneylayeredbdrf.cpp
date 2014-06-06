@@ -54,10 +54,8 @@ const char* Model = "disney_layered_brdf";
 
 }
 
-DisneyLayeredBRDF::DisneyLayeredBRDF(
-    const char*         name,
-    const ParamArray&   params)
-  : BSDF(name, Reflective, Diffuse | Glossy, params)
+DisneyLayeredBRDF::DisneyLayeredBRDF()
+  : BSDF("disney_layered_brdf", Reflective, Diffuse | Glossy, ParamArray())
 {
 }
 
@@ -104,7 +102,8 @@ void DisneyLayeredBRDF::evaluate_inputs(
     const ShadingPoint&         shading_point,
     const size_t                offset) const
 {
-    // TODO: setup SeExpr for shading point, exec layer expressions, ..., ...
+    // TODO: setup SeExpr for shading point, 
+    // for each layer, exec layer expressions, layer param values
     // write all to input_evaluator data block.
 }
 

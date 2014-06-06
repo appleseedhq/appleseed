@@ -72,6 +72,7 @@ namespace
             m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("transmittance", InputFormatSpectralReflectance);
             m_inputs.declare("transmittance_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("fresnel_multiplier", InputFormatScalar, "1.0");
             m_inputs.declare("from_ior", InputFormatScalar);
             m_inputs.declare("to_ior", InputFormatScalar);
         }
@@ -117,16 +118,25 @@ namespace
             {
                 // Compute the Fresnel reflection factor.
                 const double cos_theta_t = sqrt(cos_theta_t2);
-                const double fresnel_reflection =
-                    fresnel_dielectric_unpolarized(
-                        values->m_from_ior,
-                        values->m_to_ior,
-                        abs(cos_theta_i),
-                        cos_theta_t);
+                double fresnel_reflection = 0.0;
 
-                sampling_context.split_in_place(1, 1);
-                const double s = sampling_context.next_double2();
+                if (values->m_fresnel_multiplier != 0.0)
+                {
+                    fresnel_reflection = 
+                        fresnel_dielectric_unpolarized(
+                            values->m_from_ior,
+                            values->m_to_ior,
+                            abs(cos_theta_i),
+                            cos_theta_t) * values->m_fresnel_multiplier;
+                }
+
+                double s = 0.0;
                 const double reflection_prob = min(fresnel_reflection, 1.0);
+                if (reflection_prob != 0.0)
+                {
+                    sampling_context.split_in_place(1, 1);
+                    s = sampling_context.next_double2();
+                }
 
                 if (s < reflection_prob)
                 {
@@ -248,6 +258,16 @@ DictionaryArray SpecularBTDFFactory::get_input_metadata() const
         Dictionary()
             .insert("name", "transmittance_multiplier")
             .insert("label", "Transmittance Multiplier")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "optional")
+            .insert("default", "1.0"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "fresnel_multiplier")
+            .insert("label", "Fresnel Multiplier")
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))

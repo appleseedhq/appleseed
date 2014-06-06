@@ -221,7 +221,7 @@ void fresnel (vector I, normal N, float eta,
         F *= sqr (beta / (g+c));
         Kr = F;
         Kt = (1.0 - Kr) * eta*eta;
-        // OPT: the following recomputes some of the above values, but it 
+        // OPT: the following recomputes some of the above values, but it
         // gives us the same result as if the shader-writer called refract()
         T = refract(I, N, eta);
     } else {
@@ -409,7 +409,7 @@ color transformc (string from, string to, color x)
     return transformc (to, r);
 }
 
- 
+
 
 // Matrix functions
 
@@ -480,13 +480,7 @@ string concat (string a, string b, string c, string d, string e, string f) {
 /*************************************************************/
 
 /********************************/
-// standard OSL closures that are different in appleseed
-
-closure color reflection(normal N) BUILTIN;
-closure color refraction(normal N, float from_ior, float to_ior) BUILTIN;
-
-/********************************/
-// standard OSL closures
+// Standard OSL closures
 
 closure color background() BUILTIN;
 closure color debug(string tag) BUILTIN;
@@ -495,33 +489,35 @@ closure color emission(float inner_angle, float outer_angle) BUILTIN;
 closure color emission(float outer_angle) { return emission(outer_angle, outer_angle); }
 closure color emission() { return emission(M_PI_2, M_PI_2); }
 
-// to keep compatibility with other renderers
-closure color reflection(normal N, float eta)
-{
-    return reflection(N);
-}
-
-closure color refraction(normal N, float eta)
-{
-    if (eta < 1)
-        return refraction(N, 1.0 / eta, 1.0);
-    else
-        return refraction(N, 1.0, eta);
-}
-
-closure color microfacet(string distribution, normal N, vector U, float xalpha,
-                         float yalpha, float eta, int refract) BUILTIN;
-
-closure color microfacet(string distribution, normal N, float alpha, float eta,
-                         int refr)
-{
-    return microfacet(distribution, N, vector(0), alpha, alpha, eta, refr);
-}
-
 closure color diffuse(normal N) BUILTIN;
 closure color holdout() BUILTIN;
 closure color translucent(normal N) BUILTIN;
 closure color transparent() BUILTIN;
+
+closure color reflection(normal N) BUILTIN;
+closure color refraction(normal N, float from_ior, float to_ior) BUILTIN;
+
+// Assume one of the mediums is air.
+closure color refraction(normal N, float eta)
+{
+    if (eta > 1.0)
+        return refraction(N, 1.0, 1.0 / eta);
+    else
+        return refraction(N, eta, 1.0);
+}
+
+/********************************/
+// closures that are in the standard but are different in appleseed
+
+// original:
+//closure color microfacet_beckmann(normal N, float roughness, float eta) BUILTIN;
+// appleseed:
+closure color microfacet_beckmann(normal N, float glossiness) BUILTIN;
+
+// original:
+//closure color microfacet_ggx(normal N, float roughness, float eta) BUILTIN;
+// appleseed:
+closure color microfacet_ggx(normal N, float glossiness) BUILTIN;
 
 /********************************/
 // appleseed specific closures
@@ -535,6 +531,9 @@ closure color as_ashikhmin_shirley(
     color Cs,
     float nu,
     float nv) BUILTIN;
+
+closure color as_microfacet_blinn(normal N, float glossiness) BUILTIN;
+closure color as_microfacet_ward(normal N, float glossiness) BUILTIN;
 
 closure color as_oren_nayar(normal N, float roughness) BUILTIN;
 
@@ -630,4 +629,3 @@ int getmatrix (string fromspace, output matrix M) {
 #undef PERCOMP2F
 
 #endif /* STDOSL_H */
-

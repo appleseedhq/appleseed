@@ -1,5 +1,5 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.5.6dev
+# Compiled by oslc 1.5.7dev
 surface diffuse_mirror_mix
 param	float	Kd	1 		 %read{1,1} %write{2147483647,-1}
 param	color	Cs	1 1 1 		 %read{1,1} %write{2147483647,-1}

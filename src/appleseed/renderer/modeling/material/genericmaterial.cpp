@@ -51,11 +51,10 @@ namespace
       : public Material
     {
       public:
-        // Constructor.
         GenericMaterial(
             const char*                 name,
             const ParamArray&           params)
-            : Material(name, params)
+          : Material(name, params)
         {
             m_inputs.declare("bsdf", InputFormatEntity, "");
             m_inputs.declare("edf", InputFormatEntity, "");
@@ -63,20 +62,16 @@ namespace
             m_inputs.declare("displacement_map", InputFormatSpectralReflectance, "");
         }
 
-        // Delete this instance.
         virtual void release() OVERRIDE
         {
             delete this;
         }
-        
-        // Return a string identifying the model of this material.
+
         virtual const char* get_model() const OVERRIDE
         {
             return Model;
         }
-        
-        // This method is called once before rendering each frame.
-        // Returns true on success, false otherwise.
+
         virtual bool on_frame_begin(
             const Project&              project,
             const Assembly&             assembly,
@@ -87,11 +82,11 @@ namespace
 
             m_bsdf = get_uncached_bsdf();
             m_edf = get_uncached_edf();
-    
+
             const EntityDefMessageContext context("material", this);
             if (!create_normal_modifier(context))
                 return false;
-    
+
             if (m_edf && m_alpha_map)
             {
                 RENDERER_LOG_WARNING(
@@ -99,21 +94,19 @@ namespace
                     "this may lead to unexpected or unphysical results.",
                     context.get());
             }
-            
+
             return true;
         }
-    
-        // This method is called once after rendering each frame.
+
         virtual void on_frame_end(
             const Project&              project,
             const Assembly&             assembly) OVERRIDE
         {
             Material::on_frame_end(project, assembly);
         }
-
-      private:
     };
 }
+
 
 //
 // GenericMaterialFactory class implementation.

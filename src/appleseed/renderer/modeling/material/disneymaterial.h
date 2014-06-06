@@ -41,6 +41,7 @@
 #include "main/dllsymbol.h"
 
 // Forward declarations.
+namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class DisneyMaterial; }
@@ -54,12 +55,24 @@ class DLLSYMBOL DisneyMaterialLayer
     // Destructor
     ~DisneyMaterialLayer();
 
+    DisneyMaterialLayer(const DisneyMaterialLayer& other);
+
+    DisneyMaterialLayer& operator=(const DisneyMaterialLayer& other);
+    
+    bool operator<(const DisneyMaterialLayer& other) const;
+
+    bool check_expressions_syntax() const;
+    
   private:
     friend class DisneyMaterial;
 
     // Constructor
-    DisneyMaterialLayer();
+    DisneyMaterialLayer(
+        const char* name,
+        const foundation::Dictionary& params);
 
+    void swap(DisneyMaterialLayer& other);
+    
     struct Impl;
     Impl *impl;
 };
@@ -75,7 +88,7 @@ class DLLSYMBOL DisneyMaterial
     
     // Delete this instance.
     virtual void release() OVERRIDE;
-    
+
     // Return a string identifying the model of this material.
     virtual const char* get_model() const OVERRIDE;
 
@@ -90,10 +103,13 @@ class DLLSYMBOL DisneyMaterial
     virtual void on_frame_end(
         const Project&              project,
         const Assembly&             assembly) OVERRIDE;
-    
+
   private:
     // Destructor
     ~DisneyMaterial();
+
+    std::size_t num_layers() const;
+    const DisneyMaterialLayer& get_layer(std::size_t index) const;
     
     struct Impl;
     Impl *impl;

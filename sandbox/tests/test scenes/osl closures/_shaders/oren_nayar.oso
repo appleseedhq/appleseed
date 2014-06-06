@@ -1,5 +1,5 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.5.5dev
+# Compiled by oslc 1.5.7dev
 surface oren_nayar
 param	float	Kd	1 		 %read{1,1} %write{2147483647,-1}
 param	float	roughness	1 		 %read{0,0} %write{2147483647,-1}

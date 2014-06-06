@@ -182,7 +182,7 @@ bool Material::has_osl_surface() const
 
 const ShaderGroup* Material::get_uncached_osl_surface() const
 {
-    return 0;    
+    return 0;
 }
 
 #endif

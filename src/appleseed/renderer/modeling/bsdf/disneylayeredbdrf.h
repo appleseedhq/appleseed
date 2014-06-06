@@ -44,6 +44,7 @@
 
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
+namespace renderer      { class DisneyMaterial; }
 namespace renderer      { class ParamArray; }
 
 namespace renderer
@@ -58,9 +59,7 @@ class DisneyLayeredBRDF
 {
   public:
     // Constructor.
-    DisneyLayeredBRDF(
-            const char*         name,
-            const ParamArray&   params);
+    DisneyLayeredBRDF();
     
     // Delete this instance.    
     virtual void release() OVERRIDE;
@@ -133,6 +132,8 @@ class DisneyLayeredBRDF
             const int                       modes) const OVERRIDE;
 
   private:
+    friend class DisneyMaterial;
+
     foundation::auto_release_ptr<BSDF> m_brdf;
 };
 

@@ -136,6 +136,10 @@ T int_log2(T x);
 template <typename T>
 T factorial(T x);
 
+// Return the binomial coefficient (n, k).
+template <typename T>
+T binomial(const T n, const T k);
+
 // Return the log in a given base of a given scalar.
 template <typename T>
 T log(const T x, const T base);
@@ -417,6 +421,14 @@ inline T factorial(T x)
     }
 
     return fac;
+}
+
+template <typename T>
+inline T binomial(const T n, const T k)
+{
+    assert(k <= n);
+
+    return factorial(n) / (factorial(k) * factorial(n - k));
 }
 
 template <typename T>

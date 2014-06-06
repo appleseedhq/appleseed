@@ -559,12 +559,18 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     // Compute the incoming direction in world space.
     foundation::Vector3d incoming = sample.m_point - m_point;
 
-    // Cull light samples behind the shading surface.
-    double cos_in = foundation::dot(incoming, m_shading_basis.get_normal());
-    if (m_bsdf.get_type() == BSDF::Transmissive)
-        cos_in = -cos_in;
-    if (cos_in <= 0.0)
-        return;
+    // Cull light samples behind the shading surface
+    // if the BSDF is either Reflective or Transmissive, but not both.
+    if (m_bsdf.get_type() != BSDF::AllBSDFTypes)
+    {
+        double cos_in = foundation::dot(incoming, m_shading_basis.get_normal());
+
+        if (m_bsdf.get_type() == BSDF::Transmissive)
+            cos_in = -cos_in;
+
+        if (cos_in <= 0.0)
+            return;
+    }
 
     // Cull samples on lights emitting in the wrong direction.
     double cos_on = foundation::dot(-incoming, sample.m_shading_normal);
@@ -593,7 +599,6 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
 
     // Normalize the incoming direction.
     incoming *= rcp_sample_distance;
-    cos_in *= rcp_sample_distance;
     cos_on *= rcp_sample_distance;
 
     // Evaluate the BSDF.

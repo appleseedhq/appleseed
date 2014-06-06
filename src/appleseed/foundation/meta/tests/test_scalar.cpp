@@ -166,6 +166,36 @@ TEST_SUITE(Foundation_Math_Scalar)
         EXPECT_EQ(120, factorial(5));
     }
 
+    TEST_CASE(TestBinomial)
+    {
+        EXPECT_EQ(1,   binomial(0, 0));
+
+        EXPECT_EQ(1,   binomial(1, 0));
+        EXPECT_EQ(1,   binomial(1, 1));
+
+        EXPECT_EQ(1,   binomial(2, 0));
+        EXPECT_EQ(2,   binomial(2, 1));
+        EXPECT_EQ(1,   binomial(2, 2));
+
+        EXPECT_EQ(1,   binomial(3, 0));
+        EXPECT_EQ(3,   binomial(3, 1));
+        EXPECT_EQ(3,   binomial(3, 2));
+        EXPECT_EQ(1,   binomial(3, 3));
+
+        EXPECT_EQ(1,   binomial(4, 0));
+        EXPECT_EQ(4,   binomial(4, 1));
+        EXPECT_EQ(6,   binomial(4, 2));
+        EXPECT_EQ(4,   binomial(4, 3));
+        EXPECT_EQ(1,   binomial(4, 4));
+
+        EXPECT_EQ(1,   binomial(5, 0));
+        EXPECT_EQ(5,   binomial(5, 1));
+        EXPECT_EQ(10,  binomial(5, 2));
+        EXPECT_EQ(10,  binomial(5, 3));
+        EXPECT_EQ(5,   binomial(5, 4));
+        EXPECT_EQ(1,   binomial(5, 5));
+    }
+
     TEST_CASE(Wrap_Given0_Returns0)
     {
         EXPECT_EQ(0.0, wrap(0.0));
