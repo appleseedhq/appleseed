@@ -29,7 +29,7 @@
 #
 
 # Package builder settings.
-VersionString = "2.3.6"
+VersionString = "2.3.8"
 SettingsFileName = "appleseed.package.configuration.xml"
 
 # Imports.
@@ -48,6 +48,9 @@ import zipfile
 #--------------------------------------------------------------------------------------------------
 # Utility functions.
 #--------------------------------------------------------------------------------------------------
+
+def info(message):
+    print("  " + message)
 
 def progress(message):
     print("  " + message + "...")
@@ -195,7 +198,7 @@ class PackageBuilder:
     def retrieve_sandbox_from_git_repository(self):
         progress("Retrieving sandbox from Git repository")
         old_path = pushd(os.path.join(self.settings.appleseed_path, "sandbox"))
-        os.system("git archive --format=zip --output=" + os.path.join(old_path, "sandbox.zip") + " --worktree-attributes HEAD")
+        self.run("git archive --format=zip --output=" + os.path.join(old_path, "sandbox.zip") + " --worktree-attributes HEAD")
         os.chdir(old_path)
 
     def deploy_sandbox_to_stage(self):
@@ -263,6 +266,10 @@ class PackageBuilder:
 
     def remove_stage(self):
         safe_delete_directory("appleseed")
+
+    def run(self, cmdline):
+        info("Running command line: {0}".format(cmdline))
+        os.system(cmdline)
 
 
 #--------------------------------------------------------------------------------------------------
@@ -340,7 +347,7 @@ class MacPackageBuilder(PackageBuilder):
         self.fixup(target, '-change "' + old + '" "' + new + '"')
 
     def fixup(self, target, args):
-        os.system("install_name_tool " + args + " " + os.path.join("appleseed/bin/", target))
+        self.run("install_name_tool " + args + " " + os.path.join("appleseed/bin/", target))
 
     def add_dependencies_to_stage(self):
         progress("Mac-specific: adding dependencies to staging directory")
@@ -354,6 +361,7 @@ class MacPackageBuilder(PackageBuilder):
         dest_path = os.path.join("appleseed", "bin", framework_name + ".framework", "Versions", "4")
         safe_make_directory(dest_path)
         shutil.copy(src_filepath, dest_path)
+        os.chmod(os.path.join(dest_path, framework_name), S_IRUSR | S_IWUSR)
 
     def copy_qt_resources(self, framework_name):
         framework_dir = framework_name + ".framework"

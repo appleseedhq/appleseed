@@ -29,5 +29,5 @@ More developer documentation can be found in the [wiki](https://github.com/apple
 ##### Light And Dark (BBC 4)
 [![Light And Dark (BBC 4)](https://raw.github.com/appleseedhq/appleseed-wiki/master/images/light-and-dark.png)](https://vimeo.com/81199785)
 
-##### Fetch (2013 Preview)
-[![Fetch (2013 Preview)](https://raw.github.com/appleseedhq/appleseed-wiki/master/images/fetch.png)](https://vimeo.com/66799467)
+##### Fetch
+[![Fetch](https://raw.github.com/appleseedhq/appleseed-wiki/master/images/fetch.png)](https://vimeo.com/appleseedhq/fetchaveryshortfilm)
