@@ -32,6 +32,7 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/assemblyitem.h"
+#include "mainwindow/project/materialitem.h"
 #include "mainwindow/project/multimodelentityitem.h"
 
 // Standard headers.
@@ -65,28 +66,11 @@ MaterialCollectionItem::MaterialCollectionItem(
 ItemBase* MaterialCollectionItem::create_item(Material* material)
 {
     assert(material);
-
-    typedef MultiModelEntityItem<Material, Assembly, MaterialCollectionItem> GenericMaterialItem;
-    typedef MultiModelEntityItem<DisneyMaterial, Assembly, MaterialCollectionItem> DisneyMaterialItem;
-    const char* model = material->get_model();
-
-    ItemBase* item;
-    if (strcmp(model, "generic_material") == 0)
-    {
-        item = new GenericMaterialItem(
-            material,
-            m_parent,
-            this,
-            m_project_builder);
-    }
-    else if (strcmp(model, "disney_material") == 0)
-    {
-        item = new DisneyMaterialItem(
-            static_cast<DisneyMaterial*>(material),
-            m_parent,
-            this,
-            m_project_builder);
-    }
+    ItemBase* item = new MaterialItem(
+        material,
+        m_parent,
+        this,
+        m_project_builder);
 
     m_project_builder.get_item_registry().insert(material->get_uid(), item);
 
@@ -139,13 +123,13 @@ void MaterialCollectionItem::slot_create_generic()
         entity_editor_factory,
         this,
         SLOT(slot_create_applied(foundation::Dictionary)),
-        SLOT(slot_create_accepted_generic(foundation::Dictionary)),
+        SLOT(slot_create_accepted(foundation::Dictionary)),
         SLOT(slot_create_canceled(foundation::Dictionary)));
 }
 
 void MaterialCollectionItem::slot_create_disney()
 {
-    typedef typename renderer::EntityTraits<DisneyMaterial> EntityTraits;
+    typedef typename renderer::EntityTraits<Material> EntityTraits;
 
     const std::string window_title =
         std::string("Create ") +
@@ -160,7 +144,7 @@ void MaterialCollectionItem::slot_create_disney()
 
     std::auto_ptr<EntityEditor::IFormFactory> form_factory(
         new MultiModelEntityEditorFormFactory<FactoryRegistrarType>(
-            m_project_builder.get_factory_registrar<DisneyMaterial>(),
+            m_project_builder.get_factory_registrar<Material>(),
             name_suggestion));
 
     std::auto_ptr<EntityEditor::IEntityBrowser> entity_browser(
@@ -178,46 +162,8 @@ void MaterialCollectionItem::slot_create_disney()
         entity_editor_factory,
         this,
         SLOT(slot_create_applied(foundation::Dictionary)),
-        SLOT(slot_create_accepted_disney(foundation::Dictionary)),
+        SLOT(slot_create_accepted(foundation::Dictionary)),
         SLOT(slot_create_canceled(foundation::Dictionary)));
-}
-
-void MaterialCollectionItem::slot_create_accepted_generic(foundation::Dictionary values)
-{
-    create_accepted<Material>(values);
-}
-
-void MaterialCollectionItem::slot_create_accepted_disney(foundation::Dictionary values)
-{
-    create_accepted<DisneyMaterial>(values);
-}
-
-template <typename Material>
-void MaterialCollectionItem::create_accepted(const foundation::Dictionary& values)
-{
-    catch_entity_creation_errors(
-        m_project_builder.get_rendering_manager().is_rendering()
-            ? &MaterialCollectionItem::schedule_create<Material>
-            : &MaterialCollectionItem::create<Material>,
-        values,
-        renderer::EntityTraits<Material>::get_human_readable_entity_type_name());
-}
-
-template <typename Material>
-void MaterialCollectionItem::schedule_create(const foundation::Dictionary& values)
-{
-    m_project_builder.get_rendering_manager().push_delayed_action(
-        std::auto_ptr<RenderingManager::IDelayedAction>(
-            new MaterialCreationDelayedAction<MaterialCollectionItem, Material>(this, values)));
-
-    m_project_builder.get_rendering_manager().reinitialize_rendering();
-}
-
-template <typename Material>
-void MaterialCollectionItem::create(const foundation::Dictionary& values)
-{
-    Material* material = m_project_builder.insert_entity<Material>(m_parent, values);
-    m_parent_item->add_item(material);
 }
 
 }   // namespace studio

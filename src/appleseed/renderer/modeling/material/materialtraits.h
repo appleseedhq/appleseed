@@ -87,45 +87,6 @@ struct EntityTraits<Material>
     }
 };
 
-//
-// Disney Material entity traits.
-//
-template <>
-struct EntityTraits<DisneyMaterial>
-{
-    typedef MaterialContainer ContainerType;
-    typedef DisneyMaterialFactoryRegistrar FactoryRegistrarType;
-
-    static const char* get_entity_type_name()                           { return "disney material"; }
-    static const char* get_human_readable_entity_type_name()            { return "Disney Material"; }
-    static const char* get_human_readable_collection_type_name()        { return "Materials"; }
-
-    template <typename ParentEntity>
-    static ContainerType& get_entity_container(ParentEntity& parent)    { return parent.materials(); }
-
-    static foundation::Dictionary get_entity_values(const Material* entity)
-    {
-        return entity->get_parameters();
-    }
-
-    template <typename ParentEntity>
-    static void insert_entity(
-        foundation::auto_release_ptr<DisneyMaterial>    entity,
-        ParentEntity&                                   parent)
-    {
-        foundation::auto_release_ptr<Material> material_entity(entity);
-        get_entity_container(parent).insert(material_entity);
-    }
-
-    template <typename ParentEntity>
-    static void remove_entity(
-        DisneyMaterial*                         entity,
-        ParentEntity&                           parent)
-    {
-        get_entity_container(parent).remove(entity);
-    }
-};
-
 }       // namespace renderer
 
 #endif  // !APPLESEED_RENDERER_MODELING_MATERIAL_MATERIALTRAITS_H
