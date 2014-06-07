@@ -32,6 +32,8 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/assemblyitem.h"
+#include "mainwindow/project/materialformfactory.h"
+#include "mainwindow/project/disneymaterialformfactory.h"
 #include "mainwindow/project/materialitem.h"
 #include "mainwindow/project/multimodelentityitem.h"
 
@@ -104,7 +106,7 @@ void MaterialCollectionItem::slot_create_generic()
     typedef typename EntityTraits::FactoryRegistrarType FactoryRegistrarType;
 
     std::auto_ptr<EntityEditor::IFormFactory> form_factory(
-        new MultiModelEntityEditorFormFactory<FactoryRegistrarType>(
+        new MaterialFormFactory(
             m_project_builder.get_factory_registrar<Material>(),
             name_suggestion));
 
@@ -143,7 +145,7 @@ void MaterialCollectionItem::slot_create_disney()
     typedef typename EntityTraits::FactoryRegistrarType FactoryRegistrarType;
 
     std::auto_ptr<EntityEditor::IFormFactory> form_factory(
-        new MultiModelEntityEditorFormFactory<FactoryRegistrarType>(
+        new DisneyMaterialFormFactory(
             m_project_builder.get_factory_registrar<Material>(),
             name_suggestion));
 

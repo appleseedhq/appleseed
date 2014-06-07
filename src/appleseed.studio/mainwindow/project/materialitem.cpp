@@ -32,11 +32,13 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/attributeeditor.h"
+#include "mainwindow/project/disneymaterialformfactory.h"
 #include "mainwindow/project/entitybrowser.h"
 #include "mainwindow/project/entityeditor.h"
 #include "mainwindow/project/entityitem.h"
 #include "mainwindow/project/entityeditorfactory.h"
 #include "mainwindow/project/materialcollectionitem.h"
+#include "mainwindow/project/materialformfactory.h"
 #include "mainwindow/project/multimodelentityeditorformfactory.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/tools.h"
@@ -65,18 +67,34 @@ MaterialItem::MaterialItem(
 {
 }
 
+template <>
+std::auto_ptr<EntityEditor::IFormFactory> MaterialItem::get_form_factory<Material>()
+{
+    return std::auto_ptr<EntityEditor::IFormFactory>(
+        new MaterialFormFactory(
+            m_project_builder.get_factory_registrar<Material>(),
+            m_entity->get_name()));
+}
+
+template <>
+std::auto_ptr<EntityEditor::IFormFactory> MaterialItem::get_form_factory<DisneyMaterial>()
+{
+    return std::auto_ptr<EntityEditor::IFormFactory>(
+        new DisneyMaterialFormFactory(
+            m_project_builder.get_factory_registrar<Material>(),
+            m_entity->get_name()));
+}
+
 template <typename Entity>
-void MaterialItem::edit_helper(AttributeEditor* attribute_editor)
+void MaterialItem::edit(AttributeEditor* attribute_editor)
 {
     typedef typename renderer::EntityTraits<Material> EntityTraitsType;
     typedef MultiModelEntityEditorFormFactory<
             typename EntityTraitsType::FactoryRegistrarType
                 > MultiModelEntityEditorFormFactoryType;
 
-    std::auto_ptr<EntityEditor::IFormFactory> form_factory(
-        new MultiModelEntityEditorFormFactoryType(
-            m_project_builder.template get_factory_registrar<Material>(),
-            m_entity->get_name()));
+    std::auto_ptr<EntityEditor::IFormFactory> form_factory =
+        get_form_factory<Entity>();
 
     std::auto_ptr<EntityEditor::IEntityBrowser> entity_browser(
         new EntityBrowser<Assembly>(m_parent));
@@ -127,9 +145,9 @@ void MaterialItem::slot_edit(AttributeEditor* attribute_editor)
     const char* model = m_entity->get_model();
 
     if (strcmp(model, "generic_material") == 0)
-        edit_helper<Material>(attribute_editor);
+        edit<Material>(attribute_editor);
     else if (strcmp(model, "disney_material") == 0)
-        edit_helper<DisneyMaterial>(attribute_editor);
+        edit<DisneyMaterial>(attribute_editor);
 }
 
 }   // namespace studio

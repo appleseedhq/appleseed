@@ -5,7 +5,6 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014 Esteban Tovagliari, The appleseedhq Organization
 // Copyright (c) 2014 Marius Avram, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,50 +26,35 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_MATERIALCOLLECTIONITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_MATERIALCOLLECTIONITEM_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_DISNEYMATERIALFORMFACTORY_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_DISNEYMATERIALFORMFACTORY_H
 
-// appleseed.studio headers.
-#include "mainwindow/project/assemblyitem.h"
-#include "mainwindow/project/collectionitem.h"
+// appleseed.studio headers
+#include "mainwindow/project/multimodelentityeditorformfactory.h"
 
-// Forward declarations.
-namespace appleseed { namespace studio { class ProjectBuilder; } }
-namespace renderer  { class Assembly; }
-namespace renderer  { class ParamArray; }
+
+// Forward declarations
+namespace renderer { class MaterialFactoryRegistrar; }
 
 namespace appleseed {
 namespace studio {
 
-class MaterialCollectionItem
-  : public CollectionItem<renderer::Material, renderer::Assembly, AssemblyItem>
+class DisneyMaterialFormFactory
+  : public MultiModelEntityEditorFormFactory<renderer::MaterialFactoryRegistrar>
 {
-    Q_OBJECT
-
   public:
-    MaterialCollectionItem(
-        renderer::MaterialContainer&    materials,
-        renderer::Assembly&             parent,
-        AssemblyItem*                   parent_item,
-        ProjectBuilder&                 project_builder,
-        renderer::ParamArray&           settings);
+    DisneyMaterialFormFactory(
+        const renderer::MaterialFactoryRegistrar&   factory_registrar,
+        const std::string&                          entity_name);
 
   protected:
-    virtual QMenu* get_single_item_context_menu() const OVERRIDE;
+    virtual std::string add_model_widget_definition(
+        const foundation::Dictionary&               values,
+        InputMetadataCollection&                    metadata) const;
 
-  protected slots:
-    void slot_create_generic();
-    void slot_create_disney();
-
-  private:
-    virtual ItemBase* create_item(renderer::Material* material) OVERRIDE;
-
-    renderer::Assembly&                 m_parent;
-    AssemblyItem*                       m_parent_item;
-    renderer::ParamArray&               m_settings;
 };
 
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_MATERIALCOLLECTIONITEM_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_DISNEYMATERIALFORMFACTORY_H

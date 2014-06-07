@@ -31,6 +31,7 @@
 #include "materialfactoryregistrar.h"
 
 // appleseed.renderer headers.
+#include "renderer/modeling/material/disneymaterial.h"
 #include "renderer/modeling/material/genericmaterial.h"
 #include "renderer/modeling/material/material.h"
 #ifdef WITH_OSL
@@ -61,8 +62,9 @@ struct MaterialFactoryRegistrar::Impl
 MaterialFactoryRegistrar::MaterialFactoryRegistrar()
   : impl(new Impl())
 {
+    register_factory(auto_ptr<FactoryType>(new DisneyMaterialFactory()));
     register_factory(auto_ptr<FactoryType>(new GenericMaterialFactory()));
-    
+
 #ifdef WITH_OSL
     register_factory(auto_ptr<FactoryType>(new OSLMaterialFactory()));
 #endif

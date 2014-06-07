@@ -68,7 +68,12 @@ class MaterialItem
         ProjectBuilder&             project_builder);
 
   private:
-    template <typename Material> void edit_helper(AttributeEditor* attribute_editor);
+    template <typename Material>
+    std::auto_ptr<EntityEditor::IFormFactory> get_form_factory();
+
+    template <typename Material>
+    void edit(AttributeEditor* attribute_editor);
+
     virtual void slot_edit(AttributeEditor* attribute_editor) OVERRIDE;
 
     renderer::Assembly&             m_parent;

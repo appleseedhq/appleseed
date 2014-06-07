@@ -58,10 +58,10 @@ class MultiModelEntityEditorFormFactory
         const foundation::Dictionary&   values,
         InputMetadataCollection&        metadata) const;
 
-  private:
+  protected:
     const FactoryRegistrar&     m_factory_registrar;
 
-    std::string add_model_widget_definition(
+    virtual std::string add_model_widget_definition(
         const foundation::Dictionary&   values,
         InputMetadataCollection&        metadata) const;
 };
