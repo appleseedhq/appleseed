@@ -42,7 +42,6 @@
 #include "foundation/utility/autoreleaseptr.h"
 
 // Forward declarations.
-namespace renderer  { class DisneyMaterialFactoryRegistrar; }
 namespace renderer  { class MaterialFactoryRegistrar; }
 
 namespace renderer
