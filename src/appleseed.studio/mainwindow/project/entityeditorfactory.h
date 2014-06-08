@@ -31,7 +31,6 @@
 
 
 // appleseed.studio headers.
-#include "mainwindow/project/disneymaterialentityeditor.h"
 #include "mainwindow/project/entityeditorfactory.h"
 
 // appleseed.foundation headers.
@@ -84,18 +83,6 @@ inline std::auto_ptr<EntityEditor> EntityEditorFactory<Entity>::create(
 {
     return std::auto_ptr<EntityEditor>(
         new EntityEditor(parent, project, form_factory, entity_browser, values));
-}
-
-template <>
-inline std::auto_ptr<EntityEditor> EntityEditorFactory<DisneyMaterial>::create(
-    QWidget*                                        parent,
-    const renderer::Project&                        project,
-    std::auto_ptr<EntityEditor::IFormFactory>       form_factory,
-    std::auto_ptr<EntityEditor::IEntityBrowser>     entity_browser,
-    const foundation::Dictionary&                   values) const
-{
-    return std::auto_ptr<EntityEditor>(
-        new DisneyMaterialEntityEditor(parent, project, form_factory, entity_browser, values));
 }
 
 } // namespace studio

@@ -1122,3 +1122,11 @@ QToolTip
     font-size: 11px;
     opacity: 200;
 }
+
+QWidget#layer
+{
+    background-color: DEFAULT_BACKGROUND_COLOR;
+    border: 2px solid BORDER_COLOR;
+    min-width: 420px;
+    padding: 10px;
+}

@@ -33,6 +33,7 @@
 // appleseed.studio headers.
 #include "mainwindow/project/assemblyitem.h"
 #include "mainwindow/project/materialformfactory.h"
+#include "mainwindow/project/disneymaterialentityeditor.h"
 #include "mainwindow/project/disneymaterialformfactory.h"
 #include "mainwindow/project/materialitem.h"
 #include "mainwindow/project/multimodelentityitem.h"
@@ -155,17 +156,17 @@ void MaterialCollectionItem::slot_create_disney()
     std::auto_ptr<IEntityEditorFactory> entity_editor_factory(
         new EntityEditorFactory<DisneyMaterial>());
 
-    open_entity_editor(
-        QTreeWidgetItem::treeWidget(),
-        window_title,
-        m_project_builder.get_project(),
-        form_factory,
-        entity_browser,
-        entity_editor_factory,
-        this,
-        SLOT(slot_create_applied(foundation::Dictionary)),
-        SLOT(slot_create_accepted(foundation::Dictionary)),
-        SLOT(slot_create_canceled(foundation::Dictionary)));
+    // Skipping open_entity_editor() system
+    DisneyMaterialEntityEditor* entity_editor = 
+        new DisneyMaterialEntityEditor(
+            QTreeWidgetItem::treeWidget(),
+            m_project_builder.get_project(),
+            form_factory,
+            entity_browser,
+            Dictionary());
+
+    entity_editor->showNormal();
+    entity_editor->activateWindow();
 }
 
 }   // namespace studio

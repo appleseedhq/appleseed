@@ -32,22 +32,50 @@
 // appleseed.studio headers.
 #include "mainwindow/project/entityeditor.h"
 
+// Standard headers.
+#include <string>
+
+// Qt headers.
+#include <QObject>
+#include <QWidget>
+
+// Forward declarations.
+namespace Ui { class DisneyMaterialEntityEditor; }
+class QVBoxLayout;
+
 namespace appleseed {
 namespace studio {
 
 class DisneyMaterialEntityEditor
-    : public EntityEditor
+    : public QWidget
 {
+    Q_OBJECT
+
   public:
     DisneyMaterialEntityEditor(
-        QWidget*                            parent,
-        const renderer::Project&            project,
-        std::auto_ptr<IFormFactory>         form_factory,
-        std::auto_ptr<IEntityBrowser>       entity_browser,
-        const foundation::Dictionary&       values = foundation::Dictionary());
+        QWidget*                                        parent,
+        const renderer::Project&                        project,
+        std::auto_ptr<EntityEditor::IFormFactory>       form_factory,
+        std::auto_ptr<EntityEditor::IEntityBrowser>     entity_browser,
+        const foundation::Dictionary&                   values = foundation::Dictionary());
+
+    virtual ~DisneyMaterialEntityEditor();
 
   private:
-    virtual void rebuild_form(const foundation::Dictionary& values);
+    void create_form_layout();
+    void create_layer_layout();
+
+    void create_color_input_widgets(const std::string parameter, int index);
+    void create_colormap_input_widgets(const std::string parameter, int index);
+    void add_layer();
+
+    Ui::DisneyMaterialEntityEditor* m_ui;
+
+    QWidget*        m_parent;
+    QWidget*        m_scrollarea;
+    QWidget*        m_layer_widget;
+    QVBoxLayout*    m_layer_layout;
+    QVBoxLayout*    m_form_layout;
 };
 
 }       // namespace studio

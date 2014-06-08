@@ -122,6 +122,7 @@ set (mainwindow_project_sources
     mainwindow/project/disneymaterialformfactory.h
     mainwindow/project/disneymaterialentityeditor.cpp
     mainwindow/project/disneymaterialentityeditor.h
+    mainwindow/project/disneymaterialentityeditor.ui
     mainwindow/project/entitybrowser.cpp
     mainwindow/project/entitybrowser.h
     mainwindow/project/entitybrowserwindow.cpp
