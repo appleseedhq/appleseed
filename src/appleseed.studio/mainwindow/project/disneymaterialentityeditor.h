@@ -34,6 +34,7 @@
 
 // Standard headers.
 #include <string>
+#include <vector>
 
 // Qt headers.
 #include <QObject>
@@ -61,21 +62,31 @@ class DisneyMaterialEntityEditor
 
     virtual ~DisneyMaterialEntityEditor();
 
+  private slots:
+    void add_layer_slot();
+    void delete_layer_slot();
+
   private:
     void create_form_layout();
     void create_layer_layout();
-
-    void create_color_input_widgets(const std::string parameter, int index);
-    void create_colormap_input_widgets(const std::string parameter, int index);
+    
+    std::string unique_layer_name();
+    void create_text_input_widgets(const std::string& parameter, const std::string& value);
+    void create_color_input_widgets(const std::string& parameter, int index);
+    void create_colormap_input_widgets(const std::string& parameter, int index);
     void add_layer();
 
     Ui::DisneyMaterialEntityEditor* m_ui;
+    std::vector<QWidget*> m_layers_widgets;
 
+    int             m_num_created_layers;
     QWidget*        m_parent;
     QWidget*        m_scrollarea;
     QWidget*        m_layer_widget;
+    QWidget*        m_selected_layer_widget;
     QVBoxLayout*    m_layer_layout;
     QVBoxLayout*    m_form_layout;
+    class           LayerWidget;
 };
 
 }       // namespace studio

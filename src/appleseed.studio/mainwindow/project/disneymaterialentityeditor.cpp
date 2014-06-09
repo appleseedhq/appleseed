@@ -37,6 +37,9 @@
 // appleseed.renderer headers.
 #include "renderer/api/project.h"
 
+// Standard headers.
+#include <sstream>
+
 // Ui definition headers.
 #include "ui_disneymaterialentityeditor.h"
 
@@ -120,7 +123,45 @@ namespace
             m_slider->setPageStep(new_max / 10.0);
         }
     };
+
 }
+
+class DisneyMaterialEntityEditor::LayerWidget
+  : public QFrame
+{
+    Q_OBJECT
+
+  public:
+    LayerWidget(DisneyMaterialEntityEditor* editor, QWidget* parent = 0)
+      : QFrame(parent)
+      , m_editor(editor)
+    {
+        setObjectName("layer");
+    }
+
+    void mousePressEvent(QMouseEvent* event)
+    {
+        if (objectName() != "selected_layer")
+        {
+            setObjectName("selected_layer");
+
+            // Force stylesheet reloading for this widget.
+            style()->unpolish(this);
+            style()->polish(this);
+            
+            QWidget* selected_layer = m_editor->m_selected_layer_widget;
+            if (selected_layer)
+            {
+                selected_layer->setObjectName("layer");
+                style()->unpolish(selected_layer);
+                style()->polish(selected_layer);
+            }
+            m_editor->m_selected_layer_widget = this;
+        }
+    }
+
+    DisneyMaterialEntityEditor* m_editor;
+};
 
 
 DisneyMaterialEntityEditor::DisneyMaterialEntityEditor(
@@ -131,7 +172,9 @@ DisneyMaterialEntityEditor::DisneyMaterialEntityEditor(
     const Dictionary&           values)
   : QWidget(parent)
   , m_ui(new Ui::DisneyMaterialEntityEditor())
+  , m_num_created_layers(0)
   , m_parent(parent)
+  , m_selected_layer_widget(0)
 {
     m_ui->setupUi(this);
 
@@ -141,8 +184,10 @@ DisneyMaterialEntityEditor::DisneyMaterialEntityEditor(
     
     m_scrollarea = m_ui->scrollarea_contents;
     create_form_layout();
-    add_layer();
-    add_layer();
+
+    // Connect slots
+    connect(m_ui->add_button, SIGNAL(released()), this, SLOT(add_layer_slot()));
+    connect(m_ui->delete_button, SIGNAL(released()), this, SLOT(delete_layer_slot()));
 }
 
 DisneyMaterialEntityEditor::~DisneyMaterialEntityEditor()
@@ -150,26 +195,72 @@ DisneyMaterialEntityEditor::~DisneyMaterialEntityEditor()
     delete m_ui;
 }
 
+void DisneyMaterialEntityEditor::add_layer_slot()
+{
+    add_layer();
+}
+
+void DisneyMaterialEntityEditor::delete_layer_slot()
+{
+    if (m_selected_layer_widget) {
+     
+        delete m_selected_layer_widget;
+        m_selected_layer_widget = 0;
+
+        // Remove existing spacer and add new one at the end
+        for (int i=0; i<m_form_layout->count(); ++i) 
+        {
+            QLayoutItem* layout_item = m_form_layout->itemAt(i);
+            if (!layout_item->widget())
+                m_form_layout->takeAt(i);
+        }
+        if (m_form_layout->count() != 0)
+            m_form_layout->addStretch(1);
+    }
+}
+
 void DisneyMaterialEntityEditor::create_form_layout()
 {
     m_form_layout = new QVBoxLayout(m_ui->scrollarea_contents);
-    m_form_layout->setSpacing(10);
+    m_form_layout->setSpacing(5);
+
+    // Add a default layer
+    add_layer();
 }
 
 void DisneyMaterialEntityEditor::create_layer_layout()
 {
-    m_layer_widget = new QWidget();
-    m_layer_widget->setObjectName("layer");
-    m_form_layout->addWidget(m_layer_widget);
+    m_layer_widget = new LayerWidget(this);
+    m_layers_widgets.push_back(m_layer_widget);
 
+    m_form_layout->addWidget(m_layer_widget);
     m_layer_layout = new QVBoxLayout(m_layer_widget);
 }
 
-void DisneyMaterialEntityEditor::create_color_input_widgets(const string parameter, int index)
+string DisneyMaterialEntityEditor::unique_layer_name()
+{
+    stringstream sstream;
+    sstream << "layer" << ++m_num_created_layers;
+    return sstream.str();
+}
+
+void DisneyMaterialEntityEditor::create_text_input_widgets(const string& parameter, const string& value)
+{
+    QLabel* label = new QLabel(parameter.c_str(), m_layer_widget);
+    QLineEdit* line_edit = new QLineEdit(value.c_str(), m_layer_widget);
+
+    QHBoxLayout* layout = new QHBoxLayout();
+    layout->setSpacing(6);
+    layout->addWidget(label);
+    layout->addWidget(line_edit);
+    
+    m_layer_layout->addLayout(layout);
+}
+
+void DisneyMaterialEntityEditor::create_color_input_widgets(const string& parameter, int index)
 {
     QLabel* label = new QLabel(parameter.c_str(), m_layer_widget);
     QLineEdit* line_edit = new QLineEdit("0", m_layer_widget);
-    line_edit->setMaximumWidth(150);
 
     QWidget* bind_button = new QPushButton("Bind", m_layer_widget);
     bind_button->setObjectName("bind_color_button");
@@ -177,20 +268,18 @@ void DisneyMaterialEntityEditor::create_color_input_widgets(const string paramet
 
     QHBoxLayout* layout = new QHBoxLayout();
     layout->setSpacing(6);
-    layout->addWidget(label, 1, Qt::AlignRight);
-    layout->addWidget(line_edit, 1);
-    layout->addWidget(bind_button, 1);
-    layout->addStretch(1);
+    layout->addWidget(label);
+    layout->addWidget(line_edit);
+    layout->addWidget(bind_button);
 
     m_layer_layout->addLayout(layout);
 }
 
-void DisneyMaterialEntityEditor::create_colormap_input_widgets(const string parameter, int index)
+void DisneyMaterialEntityEditor::create_colormap_input_widgets(const string& parameter, int index)
 {
     QLabel* label = new QLabel(parameter.c_str(), m_layer_widget);
     QLineEdit* line_edit = new QLineEdit("0", m_layer_widget);
-    line_edit->setMaximumWidth(150);
-
+ 
     const double min_value = 0.0;
     const double max_value = 1.0;
 
@@ -219,10 +308,10 @@ void DisneyMaterialEntityEditor::create_colormap_input_widgets(const string para
     
     QHBoxLayout* layout = new QHBoxLayout();
     layout->setSpacing(6);
-    layout->addWidget(label, 1, Qt::AlignRight);
-    layout->addWidget(line_edit, 1);
-    layout->addWidget(slider, 1);
-    layout->addWidget(bind_button, 1);
+    layout->addWidget(label);
+    layout->addWidget(line_edit);
+    layout->addWidget(slider);
+    layout->addWidget(bind_button);
 
     m_layer_layout->addLayout(layout);
 }
@@ -231,6 +320,13 @@ void DisneyMaterialEntityEditor::add_layer()
 {
     typedef std::vector<foundation::Dictionary> InputMetadataCollection;
     InputMetadataCollection metadata;
+    int index = 0;
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "layer_name")
+            .insert("label", "Layer name")
+            .insert("type", "text"));
 
     metadata.push_back(
         Dictionary()
@@ -305,20 +401,23 @@ void DisneyMaterialEntityEditor::add_layer()
             .insert("type", "colormap"));
     
     create_layer_layout();
-    int index = 0;
     for (const_each<InputMetadataCollection> i = metadata; i; ++i)
     {
         const string name = i->get<string>("name");
         const string label = i->get<string>("label") + ":";
         const string type = i->get<string>("type");
         
-        if (type == "colormap")
-            create_colormap_input_widgets(label, index);
-        else if (type == "color")
+        if (type == "color")
             create_color_input_widgets(label, index);
+        else if (type == "colormap")
+            create_colormap_input_widgets(label, index);
+        else if (type == "text")
+            create_text_input_widgets(label, unique_layer_name());
 
         index++;
     }
+    if (m_form_layout->count() == 1)
+        m_form_layout->addStretch(1);
 }
 
 }   // namespace studio

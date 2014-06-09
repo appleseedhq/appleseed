@@ -1125,8 +1125,19 @@ QToolTip
 
 QWidget#layer
 {
-    background-color: DEFAULT_BACKGROUND_COLOR;
     border: 2px solid BORDER_COLOR;
-    min-width: 420px;
-    padding: 10px;
+    padding: 6px;
+}
+
+QWidget#selected_layer
+{
+    border: 2px solid SELECTED_BACKGROUND_COLOR;
+    padding: 6px;
+}
+
+QWidget#layer > QLabel
+{
+    min-width: 100px;
+    qproperty-alignment: AlignRight;
+    margin-top:3px;
 }
