@@ -1039,6 +1039,8 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
     save_ui_state();
 
+    remove_render_widgets();
+
     m_project_manager.close_project();
 
     slot_save_settings();
