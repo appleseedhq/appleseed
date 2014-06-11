@@ -65,6 +65,8 @@ class DisneyMaterialEntityEditor
   private slots:
     void add_layer_slot();
     void delete_layer_slot();
+    void move_layer_up_slot();
+    void move_layer_down_slot();
 
   private:
     void create_form_layout();

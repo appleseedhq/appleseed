@@ -188,6 +188,8 @@ DisneyMaterialEntityEditor::DisneyMaterialEntityEditor(
     // Connect slots
     connect(m_ui->add_button, SIGNAL(released()), this, SLOT(add_layer_slot()));
     connect(m_ui->delete_button, SIGNAL(released()), this, SLOT(delete_layer_slot()));
+    connect(m_ui->up_button, SIGNAL(released()), this, SLOT(move_layer_up_slot()));
+    connect(m_ui->down_button, SIGNAL(released()), this, SLOT(move_layer_down_slot()));
 }
 
 DisneyMaterialEntityEditor::~DisneyMaterialEntityEditor()
@@ -202,20 +204,51 @@ void DisneyMaterialEntityEditor::add_layer_slot()
 
 void DisneyMaterialEntityEditor::delete_layer_slot()
 {
-    if (m_selected_layer_widget) {
-     
+    if (m_selected_layer_widget) 
+    { 
         delete m_selected_layer_widget;
         m_selected_layer_widget = 0;
+    }
+}
 
-        // Remove existing spacer and add new one at the end
-        for (int i=0; i<m_form_layout->count(); ++i) 
+void DisneyMaterialEntityEditor::move_layer_up_slot()
+{
+    if (m_selected_layer_widget)
+    {
+        for (int i=0; i<m_form_layout->count(); ++i)
         {
             QLayoutItem* layout_item = m_form_layout->itemAt(i);
-            if (!layout_item->widget())
-                m_form_layout->takeAt(i);
+            if (m_selected_layer_widget == layout_item->widget())
+            {
+                if (i > 0)
+                {
+                    m_form_layout->takeAt(i);
+                    m_form_layout->insertWidget(i-1, m_selected_layer_widget);
+                }
+                break;
+            }
+            
         }
-        if (m_form_layout->count() != 0)
-            m_form_layout->addStretch(1);
+    }
+}
+
+void DisneyMaterialEntityEditor::move_layer_down_slot()
+{
+    if (m_selected_layer_widget)
+    {
+        for (int i=0; i<m_form_layout->count(); ++i)
+        {
+            QLayoutItem* layout_item = m_form_layout->itemAt(i);
+            if (m_selected_layer_widget == layout_item->widget())
+            {
+                if (i < m_form_layout->count()-2)
+                {
+                    m_form_layout->takeAt(i);
+                    m_form_layout->insertWidget(i+1, m_selected_layer_widget);
+                }
+                break;
+            }
+        }
     }
 }
 
@@ -416,8 +449,18 @@ void DisneyMaterialEntityEditor::add_layer()
 
         index++;
     }
+
     if (m_form_layout->count() == 1)
+    {
+        // Add a stretch at the end
         m_form_layout->addStretch(1);
+    }
+    else
+    {
+        // Remove previous strech and add new one at the end
+        m_form_layout->takeAt(m_form_layout->count()-2);
+        m_form_layout->addStretch(1);
+    }
 }
 
 }   // namespace studio
