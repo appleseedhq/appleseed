@@ -1137,7 +1137,7 @@ QWidget#selected_layer
 
 QWidget#layer > QLabel
 {
-    min-width: 100px;
+    min-width: 85px;
     qproperty-alignment: AlignRight;
     margin-top:3px;
 }

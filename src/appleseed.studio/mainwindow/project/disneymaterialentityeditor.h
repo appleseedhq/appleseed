@@ -42,6 +42,7 @@
 
 // Forward declarations.
 namespace Ui { class DisneyMaterialEntityEditor; }
+class QSignalMapper;
 class QVBoxLayout;
 
 namespace appleseed {
@@ -63,31 +64,49 @@ class DisneyMaterialEntityEditor
     virtual ~DisneyMaterialEntityEditor();
 
   private slots:
-    void add_layer_slot();
-    void delete_layer_slot();
-    void move_layer_up_slot();
-    void move_layer_down_slot();
+    void slot_add_layer();
+    void slot_delete_layer();
+    void slot_move_layer_up();
+    void slot_move_layer_down();
+
+    void slot_open_color_picker(const QString& widget_name);
+    void slot_color_changed(const QString& widget_name, const QColor& color);
+
+    void slot_open_file_picker(const QString& widget_name);
+    void slot_open_seexpr_editor(const QString& widget_name);
 
   private:
+    void create_connections();
+    void create_buttons_connections(const QString& widget_name, QLineEdit* line_edit);
     void create_form_layout();
     void create_layer_layout();
-    
+
     std::string unique_layer_name();
     void create_text_input_widgets(const std::string& parameter, const std::string& value);
-    void create_color_input_widgets(const std::string& parameter, int index);
-    void create_colormap_input_widgets(const std::string& parameter, int index);
+    void create_color_input_widgets(const foundation::Dictionary& parameters, const std::string& layer_name);
+    void create_colormap_input_widgets(const foundation::Dictionary& parameters, const std::string& layer_name);
     void add_layer();
 
     Ui::DisneyMaterialEntityEditor* m_ui;
     std::vector<QWidget*> m_layers_widgets;
 
-    int             m_num_created_layers;
-    QWidget*        m_parent;
-    QWidget*        m_scrollarea;
-    QWidget*        m_layer_widget;
-    QWidget*        m_selected_layer_widget;
-    QVBoxLayout*    m_layer_layout;
-    QVBoxLayout*    m_form_layout;
+    QWidget*                        m_parent;
+    const renderer::Project&        m_project;
+    QWidget*                        m_layer_widget;
+    QWidget*                        m_selected_layer_widget;
+    QWidget*                        m_color_button;
+    QWidget*                        m_texture_button;
+    QWidget*                        m_seexpr_button;
+    QVBoxLayout*                    m_layer_layout;
+    QVBoxLayout*                    m_form_layout;
+    int                             m_num_created_layers;
+
+    QSignalMapper*                  m_color_picker_signal_mapper;
+    QSignalMapper*                  m_file_picker_signal_mapper;
+    QSignalMapper*                  m_seexpr_editor_signal_mapper;
+
+    InputWidgetProxyCollection      m_widget_proxies;
+
     class           LayerWidget;
 };
 
