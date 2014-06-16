@@ -1126,13 +1126,12 @@ QToolTip
 QWidget#layer
 {
     border: 2px solid BORDER_COLOR;
-    padding: 6px;
+    margin: 0px 0px 0px 0px;
 }
 
 QWidget#selected_layer
 {
     border: 2px solid SELECTED_BACKGROUND_COLOR;
-    padding: 6px;
 }
 
 QWidget#layer > QLabel, QWidget#disney > QLabel

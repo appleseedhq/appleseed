@@ -58,6 +58,7 @@
 #include <QString>
 #include <QVBoxLayout>
 #include <Qt>
+#include <QToolButton>
 
 #include <SeExprEditor/SeExprEditor.h>
 #include <SeExprEditor/SeExprEdControlCollection.h>
@@ -497,7 +498,7 @@ void DisneyMaterialEntityEditor::create_form_layout()
 {
     m_form_layout = new QVBoxLayout(m_parent);
     m_form_layout->setSpacing(5);
-    
+
     add_material_parameters();
     add_layer();
 }
@@ -518,6 +519,27 @@ void DisneyMaterialEntityEditor::create_layer_layout()
 
     m_form_layout->addWidget(m_group_widget);
     m_group_layout = new QVBoxLayout(m_group_widget);
+
+
+    QWidget *button_box = new QWidget(m_group_widget);
+    QHBoxLayout *button_box_layout = new QHBoxLayout(button_box);
+    button_box_layout->setSpacing(0);
+    button_box_layout->setMargin(0);
+    m_group_layout->addWidget(button_box);
+
+    // Close button.
+    QIcon close = QIcon(":/icons/close.png");
+    QToolButton* close_button = new QToolButton(button_box);
+    close_button->setIcon(close);
+    button_box_layout->addWidget(close_button);
+
+    // Folding button.
+    QIcon arrow = QIcon(":/widgets/combobox_arrow_down_disabled.png");
+    QToolButton* fold_button = new QToolButton(button_box);
+    fold_button->setIcon(arrow);
+    button_box_layout->addWidget(fold_button);
+
+    button_box_layout->addStretch(1);
 }
 
 string DisneyMaterialEntityEditor::unique_layer_name()
