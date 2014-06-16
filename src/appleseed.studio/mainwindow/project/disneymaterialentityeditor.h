@@ -49,7 +49,7 @@ namespace appleseed {
 namespace studio {
 
 class DisneyMaterialEntityEditor
-    : public QWidget
+  : public QWidget
 {
     Q_OBJECT
 
@@ -73,7 +73,8 @@ class DisneyMaterialEntityEditor
     void slot_color_changed(const QString& widget_name, const QColor& color);
 
     void slot_open_file_picker(const QString& widget_name);
-    void slot_open_seexpr_editor(const QString& widget_name);
+    void slot_open_expression_editor(const QString& widget_name);
+    void slot_expression_changed(const QString& widget_name, const QString& expression);
 
   private:
     void create_connections();
@@ -82,6 +83,10 @@ class DisneyMaterialEntityEditor
     void create_layer_layout();
 
     std::string unique_layer_name();
+    std::string qcolor_to_expression(const QColor& color);
+    QColor expression_to_qcolor(const std::string& color);
+    std::string texture_to_expression(const QString& path);
+
     void create_text_input_widgets(const std::string& parameter, const std::string& value);
     void create_color_input_widgets(const foundation::Dictionary& parameters, const std::string& layer_name);
     void create_colormap_input_widgets(const foundation::Dictionary& parameters, const std::string& layer_name);
@@ -96,14 +101,14 @@ class DisneyMaterialEntityEditor
     QWidget*                        m_selected_layer_widget;
     QWidget*                        m_color_button;
     QWidget*                        m_texture_button;
-    QWidget*                        m_seexpr_button;
+    QWidget*                        m_expression_button;
     QVBoxLayout*                    m_layer_layout;
     QVBoxLayout*                    m_form_layout;
     int                             m_num_created_layers;
 
     QSignalMapper*                  m_color_picker_signal_mapper;
     QSignalMapper*                  m_file_picker_signal_mapper;
-    QSignalMapper*                  m_seexpr_editor_signal_mapper;
+    QSignalMapper*                  m_expression_editor_signal_mapper;
 
     InputWidgetProxyCollection      m_widget_proxies;
 

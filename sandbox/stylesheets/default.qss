@@ -1141,3 +1141,8 @@ QWidget#layer > QLabel
     qproperty-alignment: AlignRight;
     margin-top:3px;
 }
+
+QWidget#seexpr_controls
+{
+    border: 2px solid BORDER_COLOR;
+}

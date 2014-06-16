@@ -1,5 +1,5 @@
 
-# -*- cmake -*- 
+# -*- cmake -*-
 # This source file is part of appleseed.
 # Visit http://appleseedhq.net/ for additional information and resources.
 #
@@ -189,6 +189,10 @@ endmacro ()
 
 macro (link_against_seexpr target)
     target_link_libraries (${target} ${SEEXPR_LIBRARIES})
+endmacro ()
+
+macro (link_against_seexpreditor target)
+    target_link_libraries (${target} ${SEEXPREDITOR_LIBRARIES})
 endmacro ()
 
 #--------------------------------------------------------------------------------------------------

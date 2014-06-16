@@ -39,10 +39,12 @@
 #include "renderer/api/project.h"
 
 // Standard headers.
+#include <algorithm>
 #include <sstream>
 
 // Ui definition headers.
 #include "ui_disneymaterialentityeditor.h"
+#include "ui_expressioneditorwindow.h"
 
 // Qt headers.
 #include <QColorDialog>
@@ -57,7 +59,12 @@
 #include <QVBoxLayout>
 #include <Qt>
 
+#include <SeExprEditor/SeExprEditor.h>
+#include <SeExprEditor/SeExprEdControlCollection.h>
+
 // boost headers.
+#include "boost/algorithm/string.hpp"
+#include "boost/algorithm/string/split.hpp"
 #include "boost/filesystem/operations.hpp"
 #include "boost/filesystem/path.hpp"
 
@@ -157,6 +164,81 @@ namespace
       private:
         const QString m_widget_name;
     };
+
+    class ExpressionEditorWindow
+      : public QWidget
+    {
+        Q_OBJECT
+
+      public:
+        ExpressionEditorWindow(
+            const QString& widget_name,
+            const string& expression,
+            QWidget* parent = 0)
+          : QWidget(parent)
+          , m_widget_name(widget_name)
+          , m_ui(new Ui::ExpressionEditorWindow())
+        {
+            m_ui->setupUi(this);
+            setWindowFlags(Qt::Tool);
+            setAttribute(Qt::WA_DeleteOnClose);
+            QVBoxLayout* root_layout = new QVBoxLayout(m_ui->scrollarea);
+
+            // Expression controls
+            SeExprEdControlCollection *controls = new SeExprEdControlCollection();
+            QScrollArea* controls_scrollarea = new QScrollArea(this);
+            controls_scrollarea->setObjectName("expression_controls");
+            controls_scrollarea->setMinimumHeight(200);
+            controls_scrollarea->setWidgetResizable(true);
+            controls_scrollarea->setWidget(controls);
+            root_layout->addWidget(controls_scrollarea);
+
+            m_editor = new SeExprEditor(this, controls);
+            // setObjectName does not have effect on stylesheet
+            m_editor->setStyleSheet("background-color: rgb(30, 30, 30);");
+            m_editor->setExpr(expression, true);
+            root_layout->addWidget(m_editor);
+
+            QPushButton* apply_button = m_ui->buttonbox->button(QDialogButtonBox::Apply);
+
+            // Create connections
+            connect(m_ui->buttonbox, SIGNAL(accepted()), SLOT(slot_accept()));
+            connect(apply_button, SIGNAL(clicked()), SLOT(slot_apply()));
+            connect(m_ui->buttonbox, SIGNAL(rejected()), SLOT(slot_cancel()));
+        }
+
+        void apply_expression()
+        {
+            const QString expression = QString::fromStdString(m_editor->getExpr());
+            if (!expression.isEmpty())
+                emit signal_expression_applied(m_widget_name, expression);
+        }
+
+      public slots:
+        void slot_accept()
+        {
+            apply_expression();
+            close();
+        }
+
+        void slot_apply()
+        {
+            apply_expression();
+        }
+
+        void slot_cancel()
+        {
+            close();
+        }
+
+      signals:
+        void signal_expression_applied(const QString& widget_name, const QString& expression);
+
+      private:
+        Ui::ExpressionEditorWindow*     m_ui;
+        const QString                   m_widget_name;
+        SeExprEditor*                   m_editor;
+    };
 }
 
 class DisneyMaterialEntityEditor::LayerWidget
@@ -181,7 +263,7 @@ class DisneyMaterialEntityEditor::LayerWidget
             // Force stylesheet reloading for this widget.
             style()->unpolish(this);
             style()->polish(this);
-            
+
             QWidget* selected_layer = m_editor->m_selected_layer_widget;
             if (selected_layer)
             {
@@ -210,7 +292,7 @@ DisneyMaterialEntityEditor::DisneyMaterialEntityEditor(
   , m_selected_layer_widget(0)
   , m_color_picker_signal_mapper(new QSignalMapper(this))
   , m_file_picker_signal_mapper(new QSignalMapper(this))
-  , m_seexpr_editor_signal_mapper(new QSignalMapper(this))
+  , m_expression_editor_signal_mapper(new QSignalMapper(this))
 {
     m_ui->setupUi(this);
 
@@ -242,8 +324,8 @@ void DisneyMaterialEntityEditor::slot_add_layer()
 
 void DisneyMaterialEntityEditor::slot_delete_layer()
 {
-    if (m_selected_layer_widget) 
-    { 
+    if (m_selected_layer_widget)
+    {
         delete m_selected_layer_widget;
         m_selected_layer_widget = 0;
     }
@@ -291,11 +373,13 @@ void DisneyMaterialEntityEditor::slot_move_layer_down()
 
 void DisneyMaterialEntityEditor::slot_open_color_picker(const QString& widget_name)
 {
-    const Color3d initial_color;
+    IInputWidgetProxy* proxy = m_widget_proxies.get(widget_name.toStdString());
+    const string color_expression = proxy->get();
+    const QColor initial_color = expression_to_qcolor(color_expression);
 
     QColorDialog* dialog =
         new QColorDialog(
-            color_to_qcolor(initial_color),
+            initial_color,
             m_parent);
     dialog->setWindowTitle("Pick Color");
     dialog->setOptions(QColorDialog::DontUseNativeDialog);
@@ -315,7 +399,7 @@ void DisneyMaterialEntityEditor::slot_open_color_picker(const QString& widget_na
 void DisneyMaterialEntityEditor::slot_color_changed(const QString& widget_name, const QColor& color)
 {
     IInputWidgetProxy* proxy = m_widget_proxies.get(widget_name.toStdString());
-    proxy->set(to_string(qcolor_to_color<Color3d>(color)));
+    proxy->set(qcolor_to_expression(color));
     proxy->emit_signal_changed();
 }
 
@@ -329,7 +413,7 @@ void DisneyMaterialEntityEditor::slot_open_file_picker(const QString& widget_nam
 
     QFileDialog::Options options;
     QString selected_filter;
-    
+
     const QString file_picker_filter("PNG (*.png)");
     QString filepath =
         QFileDialog::getOpenFileName(
@@ -341,12 +425,39 @@ void DisneyMaterialEntityEditor::slot_open_file_picker(const QString& widget_nam
             options);
 
     if (!filepath.isEmpty())
-        widget_proxy->set(QDir::toNativeSeparators(filepath).toStdString());
+    {
+        QString native_path = QDir::toNativeSeparators(filepath);
+        widget_proxy->set(texture_to_expression(native_path));
+    }
 }
 
-
-void DisneyMaterialEntityEditor::slot_open_seexpr_editor(const QString& widget_name)
+void DisneyMaterialEntityEditor::slot_open_expression_editor(const QString& widget_name)
 {
+    IInputWidgetProxy* proxy = m_widget_proxies.get(widget_name.toStdString());
+    string expression = proxy->get();
+
+    // If widget has a double convert it to valid expression.
+    double value;
+    istringstream sstream(expression);
+    if ((sstream >> value))
+        expression = "$value = " + sstream.str() + ";";
+
+    ExpressionEditorWindow* expression_editor_window = new ExpressionEditorWindow(widget_name, expression, m_parent);
+
+    connect(
+        expression_editor_window, SIGNAL(signal_expression_applied(const QString&, const QString&)),
+        SLOT(slot_expression_changed(const QString&, const QString&)));
+
+    expression_editor_window->show();
+}
+
+void DisneyMaterialEntityEditor::slot_expression_changed(
+    const QString& widget_name,
+    const QString& expression)
+{
+    IInputWidgetProxy* proxy = m_widget_proxies.get(widget_name.toStdString());
+    proxy->set(expression.toStdString());
+    proxy->emit_signal_changed();
 }
 
 void DisneyMaterialEntityEditor::create_connections()
@@ -354,26 +465,29 @@ void DisneyMaterialEntityEditor::create_connections()
     connect(
         m_color_picker_signal_mapper, SIGNAL(mapped(const QString&)),
         SLOT(slot_open_color_picker(const QString&)));
-    
+
     connect(
         m_file_picker_signal_mapper, SIGNAL(mapped(const QString&)),
         SLOT(slot_open_file_picker(const QString&)));
-    
+
     connect(
-        m_seexpr_editor_signal_mapper, SIGNAL(mapped(const QString&)),
-        SLOT(slot_open_seexpr_editor(const QString&)));
+        m_expression_editor_signal_mapper, SIGNAL(mapped(const QString&)),
+        SLOT(slot_open_expression_editor(const QString&)));
 }
 
 void DisneyMaterialEntityEditor::create_buttons_connections(const QString& widget_name, QLineEdit* line_edit)
 {
-    connect(m_color_button, SIGNAL(clicked()), m_color_picker_signal_mapper, SLOT(map()));
-    m_color_picker_signal_mapper->setMapping(m_color_button, widget_name);
+    if (m_color_button)
+    {
+        connect(m_color_button, SIGNAL(clicked()), m_color_picker_signal_mapper, SLOT(map()));
+        m_color_picker_signal_mapper->setMapping(m_color_button, widget_name);
+    }
 
     connect(m_texture_button, SIGNAL(clicked()), m_file_picker_signal_mapper, SLOT(map()));
     m_file_picker_signal_mapper->setMapping(m_texture_button, widget_name);
 
-    connect(m_seexpr_button, SIGNAL(clicked()), m_seexpr_editor_signal_mapper, SLOT(map()));
-    m_seexpr_editor_signal_mapper->setMapping(m_seexpr_button, widget_name);
+    connect(m_expression_button, SIGNAL(clicked()), m_expression_editor_signal_mapper, SLOT(map()));
+    m_expression_editor_signal_mapper->setMapping(m_expression_button, widget_name);
 
     auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
     m_widget_proxies.insert(widget_name.toStdString(), widget_proxy);
@@ -399,9 +513,44 @@ void DisneyMaterialEntityEditor::create_layer_layout()
 
 string DisneyMaterialEntityEditor::unique_layer_name()
 {
-    stringstream sstream;
-    sstream << "layer" << ++m_num_created_layers;
-    return sstream.str();
+    string layer_name = "layer" + to_string(++m_num_created_layers);
+    return layer_name;
+}
+
+string DisneyMaterialEntityEditor::qcolor_to_expression(const QColor& color)
+{
+    QString color_expression = QString("[%1, %2, %3]")
+            .arg(color.redF())
+            .arg(color.greenF())
+            .arg(color.blueF());
+    return color_expression.toStdString();
+}
+
+QColor DisneyMaterialEntityEditor::expression_to_qcolor(const std::string& color)
+{
+    vector<string> color_components;
+    split(color_components, color, is_any_of(",[] "));
+    color_components.erase(
+        remove(color_components.begin(), color_components.end(), ""),
+        color_components.end());
+
+    QColor q_color;
+    if (color_components.size() >= 3)
+    {
+        double red, green, blue;
+        istringstream(color_components[0]) >> red;
+        istringstream(color_components[1]) >> green;
+        istringstream(color_components[2]) >> blue;
+        q_color.setRgbF(red, green, blue);
+    }
+    return q_color;
+}
+
+string DisneyMaterialEntityEditor::texture_to_expression(const QString& expression)
+{
+    QString texture_expression = QString("texture([%1], $u, $v)")
+            .arg(expression);
+    return texture_expression.toStdString();
 }
 
 void DisneyMaterialEntityEditor::create_text_input_widgets(const string& parameter, const string& value)
@@ -413,7 +562,7 @@ void DisneyMaterialEntityEditor::create_text_input_widgets(const string& paramet
     layout->setSpacing(6);
     layout->addWidget(label);
     layout->addWidget(line_edit);
-    
+
     m_layer_layout->addLayout(layout);
 }
 
@@ -432,8 +581,8 @@ void DisneyMaterialEntityEditor::create_color_input_widgets(
     m_color_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     m_texture_button = new QPushButton("Texture", m_layer_widget);
     m_texture_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    m_seexpr_button = new QPushButton("SeExpr", m_layer_widget);
-    m_seexpr_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    m_expression_button = new QPushButton("Expression", m_layer_widget);
+    m_expression_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
     create_buttons_connections(name, line_edit);
 
@@ -443,7 +592,7 @@ void DisneyMaterialEntityEditor::create_color_input_widgets(
     layout->addWidget(line_edit);
     layout->addWidget(m_color_button);
     layout->addWidget(m_texture_button);
-    layout->addWidget(m_seexpr_button);
+    layout->addWidget(m_expression_button);
 
     m_layer_layout->addLayout(layout);
 }
@@ -454,16 +603,17 @@ void DisneyMaterialEntityEditor::create_colormap_input_widgets(
 {
     const string label_name = parameters.get<string>("label") + ":";
     const string parameter_name = parameters.get<string>("name");
-    
+
     QLabel* label = new QLabel(label_name.c_str(), m_layer_widget);
     QLineEdit* line_edit = new QLineEdit("0", m_layer_widget);
- 
+
     const double min_value = 0.0;
     const double max_value = 1.0;
 
     DoubleSlider* slider = new DoubleSlider(Qt::Horizontal, m_layer_widget);
     slider->setRange(min_value, max_value);
     slider->setPageStep((max_value - min_value) / 10.0);
+    slider->setMaximumWidth(100);
 
     new MouseWheelFocusEventFilter(slider);
 
@@ -481,12 +631,11 @@ void DisneyMaterialEntityEditor::create_colormap_input_widgets(
         adaptor, SLOT(slot_apply_slider_value()));
 
     QString name = QString::fromStdString(layer_name + "_" + parameter_name);
-    m_color_button = new QPushButton("Color", m_layer_widget);
-    m_color_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    m_color_button = 0;
     m_texture_button = new QPushButton("Texture", m_layer_widget);
     m_texture_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    m_seexpr_button = new QPushButton("SeExpr", m_layer_widget);
-    m_seexpr_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    m_expression_button = new QPushButton("Expression", m_layer_widget);
+    m_expression_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
     create_buttons_connections(name, line_edit);
 
@@ -495,9 +644,8 @@ void DisneyMaterialEntityEditor::create_colormap_input_widgets(
     layout->addWidget(label);
     layout->addWidget(line_edit);
     layout->addWidget(slider);
-    layout->addWidget(m_color_button);
     layout->addWidget(m_texture_button);
-    layout->addWidget(m_seexpr_button);
+    layout->addWidget(m_expression_button);
 
     m_layer_layout->addLayout(layout);
 }
@@ -585,7 +733,7 @@ void DisneyMaterialEntityEditor::add_layer()
             .insert("name", "clearcoat_gloss")
             .insert("label", "Clearcoat gloss")
             .insert("type", "colormap"));
-    
+
     create_layer_layout();
     const string layer_name = unique_layer_name();
 
