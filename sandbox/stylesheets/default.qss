@@ -1135,7 +1135,7 @@ QWidget#selected_layer
     padding: 6px;
 }
 
-QWidget#layer > QLabel
+QWidget#layer > QLabel, QWidget#disney > QLabel
 {
     min-width: 85px;
     qproperty-alignment: AlignRight;

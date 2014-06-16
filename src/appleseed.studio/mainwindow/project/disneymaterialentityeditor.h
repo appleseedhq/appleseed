@@ -80,6 +80,7 @@ class DisneyMaterialEntityEditor
     void create_connections();
     void create_buttons_connections(const QString& widget_name, QLineEdit* line_edit);
     void create_form_layout();
+    void create_parameters_layout();
     void create_layer_layout();
 
     std::string unique_layer_name();
@@ -88,8 +89,10 @@ class DisneyMaterialEntityEditor
     std::string texture_to_expression(const QString& path);
 
     void create_text_input_widgets(const std::string& parameter, const std::string& value);
-    void create_color_input_widgets(const foundation::Dictionary& parameters, const std::string& layer_name);
-    void create_colormap_input_widgets(const foundation::Dictionary& parameters, const std::string& layer_name);
+    void create_color_input_widgets(const foundation::Dictionary& parameters, const std::string& group_name);
+    void create_colormap_input_widgets(const foundation::Dictionary& parameters, const std::string& group_name);
+
+    void add_material_parameters();
     void add_layer();
 
     Ui::DisneyMaterialEntityEditor* m_ui;
@@ -97,12 +100,12 @@ class DisneyMaterialEntityEditor
 
     QWidget*                        m_parent;
     const renderer::Project&        m_project;
-    QWidget*                        m_layer_widget;
+    QWidget*                        m_group_widget;
     QWidget*                        m_selected_layer_widget;
     QWidget*                        m_color_button;
     QWidget*                        m_texture_button;
     QWidget*                        m_expression_button;
-    QVBoxLayout*                    m_layer_layout;
+    QVBoxLayout*                    m_group_layout;
     QVBoxLayout*                    m_form_layout;
     int                             m_num_created_layers;
 

@@ -335,12 +335,12 @@ void DisneyMaterialEntityEditor::slot_move_layer_up()
 {
     if (m_selected_layer_widget)
     {
-        for (int i=0; i<m_form_layout->count(); ++i)
+        for (int i=1; i<m_form_layout->count(); ++i)
         {
             QLayoutItem* layout_item = m_form_layout->itemAt(i);
             if (m_selected_layer_widget == layout_item->widget())
             {
-                if (i > 0)
+                if (i > 1)
                 {
                     m_form_layout->takeAt(i);
                     m_form_layout->insertWidget(i-1, m_selected_layer_widget);
@@ -355,7 +355,7 @@ void DisneyMaterialEntityEditor::slot_move_layer_down()
 {
     if (m_selected_layer_widget)
     {
-        for (int i=0; i<m_form_layout->count(); ++i)
+        for (int i=1; i<m_form_layout->count(); ++i)
         {
             QLayoutItem* layout_item = m_form_layout->itemAt(i);
             if (m_selected_layer_widget == layout_item->widget())
@@ -497,18 +497,27 @@ void DisneyMaterialEntityEditor::create_form_layout()
 {
     m_form_layout = new QVBoxLayout(m_parent);
     m_form_layout->setSpacing(5);
-
-    // Add a default layer
+    
+    add_material_parameters();
     add_layer();
+}
+
+void DisneyMaterialEntityEditor::create_parameters_layout()
+{
+    m_group_widget = new QWidget(this);
+    m_group_widget->setObjectName("disney");
+    m_group_layout = new QVBoxLayout(m_group_widget);
+
+    m_form_layout->addWidget(m_group_widget);
 }
 
 void DisneyMaterialEntityEditor::create_layer_layout()
 {
-    m_layer_widget = new LayerWidget(this);
-    m_layers_widgets.push_back(m_layer_widget);
+    m_group_widget = new LayerWidget(this);
+    m_layers_widgets.push_back(m_group_widget);
 
-    m_form_layout->addWidget(m_layer_widget);
-    m_layer_layout = new QVBoxLayout(m_layer_widget);
+    m_form_layout->addWidget(m_group_widget);
+    m_group_layout = new QVBoxLayout(m_group_widget);
 }
 
 string DisneyMaterialEntityEditor::unique_layer_name()
@@ -555,33 +564,33 @@ string DisneyMaterialEntityEditor::texture_to_expression(const QString& expressi
 
 void DisneyMaterialEntityEditor::create_text_input_widgets(const string& parameter, const string& value)
 {
-    QLabel* label = new QLabel(parameter.c_str(), m_layer_widget);
-    QLineEdit* line_edit = new QLineEdit(value.c_str(), m_layer_widget);
+    QLabel* label = new QLabel(parameter.c_str(), m_group_widget);
+    QLineEdit* line_edit = new QLineEdit(value.c_str(), m_group_widget);
 
     QHBoxLayout* layout = new QHBoxLayout();
     layout->setSpacing(6);
     layout->addWidget(label);
     layout->addWidget(line_edit);
 
-    m_layer_layout->addLayout(layout);
+    m_group_layout->addLayout(layout);
 }
 
 void DisneyMaterialEntityEditor::create_color_input_widgets(
     const Dictionary& parameters,
-    const string& layer_name)
+    const string& group_name)
 {
     const string label_name = parameters.get<string>("label") + ":";
     const string parameter_name = parameters.get<string>("name");
 
-    QLabel* label = new QLabel(label_name.c_str(), m_layer_widget);
-    QLineEdit* line_edit = new QLineEdit("0", m_layer_widget);
+    QLabel* label = new QLabel(group_name.c_str(), m_group_widget);
+    QLineEdit* line_edit = new QLineEdit("0", m_group_widget);
 
-    QString name = QString::fromStdString(layer_name + "_" + parameter_name);
-    m_color_button = new QPushButton("Color", m_layer_widget);
+    QString name = QString::fromStdString(group_name + "_" + parameter_name);
+    m_color_button = new QPushButton("Color", m_group_widget);
     m_color_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    m_texture_button = new QPushButton("Texture", m_layer_widget);
+    m_texture_button = new QPushButton("Texture", m_group_widget);
     m_texture_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    m_expression_button = new QPushButton("Expression", m_layer_widget);
+    m_expression_button = new QPushButton("Expression", m_group_widget);
     m_expression_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
     create_buttons_connections(name, line_edit);
@@ -594,23 +603,23 @@ void DisneyMaterialEntityEditor::create_color_input_widgets(
     layout->addWidget(m_texture_button);
     layout->addWidget(m_expression_button);
 
-    m_layer_layout->addLayout(layout);
+    m_group_layout->addLayout(layout);
 }
 
 void DisneyMaterialEntityEditor::create_colormap_input_widgets(
     const foundation::Dictionary& parameters,
-    const string& layer_name)
+    const string& group_name)
 {
     const string label_name = parameters.get<string>("label") + ":";
     const string parameter_name = parameters.get<string>("name");
 
-    QLabel* label = new QLabel(label_name.c_str(), m_layer_widget);
-    QLineEdit* line_edit = new QLineEdit("0", m_layer_widget);
+    QLabel* label = new QLabel(label_name.c_str(), m_group_widget);
+    QLineEdit* line_edit = new QLineEdit("0", m_group_widget);
 
     const double min_value = 0.0;
     const double max_value = 1.0;
 
-    DoubleSlider* slider = new DoubleSlider(Qt::Horizontal, m_layer_widget);
+    DoubleSlider* slider = new DoubleSlider(Qt::Horizontal, m_group_widget);
     slider->setRange(min_value, max_value);
     slider->setPageStep((max_value - min_value) / 10.0);
     slider->setMaximumWidth(100);
@@ -630,11 +639,11 @@ void DisneyMaterialEntityEditor::create_colormap_input_widgets(
         line_edit, SIGNAL(editingFinished()),
         adaptor, SLOT(slot_apply_slider_value()));
 
-    QString name = QString::fromStdString(layer_name + "_" + parameter_name);
+    QString name = QString::fromStdString(group_name + "_" + parameter_name);
     m_color_button = 0;
-    m_texture_button = new QPushButton("Texture", m_layer_widget);
+    m_texture_button = new QPushButton("Texture", m_group_widget);
     m_texture_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    m_expression_button = new QPushButton("Expression", m_layer_widget);
+    m_expression_button = new QPushButton("Expression", m_group_widget);
     m_expression_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
     create_buttons_connections(name, line_edit);
@@ -647,7 +656,46 @@ void DisneyMaterialEntityEditor::create_colormap_input_widgets(
     layout->addWidget(m_texture_button);
     layout->addWidget(m_expression_button);
 
-    m_layer_layout->addLayout(layout);
+    m_group_layout->addLayout(layout);
+}
+
+void DisneyMaterialEntityEditor::add_material_parameters()
+{
+
+    typedef std::vector<foundation::Dictionary> InputMetadataCollection;
+    InputMetadataCollection metadata;
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "name")
+            .insert("label", "Name")
+            .insert("type", "text"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "alpha_mask")
+            .insert("label", "Alpha Mask")
+            .insert("type", "colormap"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "emission")
+            .insert("label", "Emission")
+            .insert("type", "colormap"));
+
+    create_parameters_layout();
+    for (const_each<InputMetadataCollection> i = metadata; i; ++i)
+    {
+        const string label = i->get<string>("label") + ":";
+        const string type = i->get<string>("type");
+
+        if (type == "colormap") {
+            create_colormap_input_widgets(*i, "base");
+        }
+        else if (type == "text") {
+            create_text_input_widgets(label, "disney_material1");
+        }
+    }
 }
 
 void DisneyMaterialEntityEditor::add_layer()
@@ -739,7 +787,6 @@ void DisneyMaterialEntityEditor::add_layer()
 
     for (const_each<InputMetadataCollection> i = metadata; i; ++i)
     {
-        const string name = i->get<string>("name");
         const string label = i->get<string>("label") + ":";
         const string type = i->get<string>("type");
 
@@ -753,7 +800,7 @@ void DisneyMaterialEntityEditor::add_layer()
         index++;
     }
 
-    if (m_form_layout->count() == 1)
+    if (m_form_layout->count() == 2)
     {
         // Add a stretch at the end
         m_form_layout->addStretch(1);
