@@ -231,17 +231,24 @@ class Bezier1
   : public BezierBase<T, 1>
 {
   public:
+    // Types.
+    typedef BezierBase<T, 1> Base;
+    typedef typename Base::ValueType ValueType;
+    typedef typename Base::VectorType VectorType;
+    typedef typename Base::AABBType AABBType;
+    typedef typename Base::MatrixType MatrixType;
+
     Bezier1()
     {
     }
 
     Bezier1(const VectorType ctrl_pts[2], const ValueType width)
-      : BezierBase<T, 1>(ctrl_pts, width)
+      : Base(ctrl_pts, width)
     {
     }
 
     Bezier1(const VectorType ctrl_pts[2], const ValueType width[2])
-      : BezierBase<T, 1>(ctrl_pts, width)
+      : Base(ctrl_pts, width)
     {
     }
 
@@ -293,17 +300,24 @@ class Bezier2
   : public BezierBase<T, 2>
 {
   public:
+    // Types.
+    typedef BezierBase<T, 2> Base;
+    typedef typename Base::ValueType ValueType;
+    typedef typename Base::VectorType VectorType;
+    typedef typename Base::AABBType AABBType;
+    typedef typename Base::MatrixType MatrixType;
+
     Bezier2()
     {
     }
 
     Bezier2(const VectorType ctrl_pts[3], const ValueType width)
-      : BezierBase<T, 2>(ctrl_pts, width)
+      : Base(ctrl_pts, width)
     {
     }
 
     Bezier2(const VectorType ctrl_pts[3], const ValueType width[3])
-      : BezierBase<T, 2>(ctrl_pts, width)
+      : Base(ctrl_pts, width)
     {
     }
 
@@ -367,17 +381,24 @@ class Bezier3
   : public BezierBase<T, 3>
 {
   public:
+    // Types.
+    typedef BezierBase<T, 3> Base;
+    typedef typename Base::ValueType ValueType;
+    typedef typename Base::VectorType VectorType;
+    typedef typename Base::AABBType AABBType;
+    typedef typename Base::MatrixType MatrixType;
+
     Bezier3()
     {
     }
 
     Bezier3(const VectorType ctrl_pts[4], const ValueType width)
-      : BezierBase<T, 3>(ctrl_pts, width)
+      : Base(ctrl_pts, width)
     {
     }
 
     Bezier3(const VectorType ctrl_pts[4], const ValueType width[4])
-      : BezierBase<T, 3>(ctrl_pts, width)
+      : Base(ctrl_pts, width)
     {
     }
 
