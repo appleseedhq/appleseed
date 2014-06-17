@@ -38,6 +38,7 @@
 
 // Standard headers.
 #include <cstddef>
+#include <limits>
 
 namespace foundation
 {

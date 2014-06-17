@@ -31,8 +31,13 @@
 #include "foundation/image/genericimagefilewriter.h"
 #include "foundation/image/icanvas.h"
 #include "foundation/image/image.h"
+#include "foundation/image/pixel.h"
+#include "foundation/math/aabb.h"
 #include "foundation/math/bezier.h"
 #include "foundation/math/curve.h"
+#include "foundation/math/matrix.h"
+#include "foundation/math/ray.h"
+#include "foundation/math/vector.h"
 #include "foundation/math/intersection/rayaabb.h"
 #include "foundation/utility/test.h"
 
@@ -46,33 +51,37 @@ using namespace std;
 TEST_SUITE(Foundation_Math_Bezier)
 {
     // Render a bunch of curves to an image on disk.
-    template <typename T>
-    void render_curves_to_image(const T curves[], const size_t curve_count, const char* filename) 
+    template <typename Curve>
+    void render_curves_to_image(
+        const Curve     curves[],
+        const size_t    curve_count,
+        const char*     filename) 
     {
-        // Typedefs used within the function
-        typedef typename T::ValueType ValueType;
+        typedef typename Curve::ValueType ValueType;
         typedef Vector<ValueType, 3> VectorType;
         typedef AABB<ValueType, 3> AABBType;
-        typedef Ray<ValueType, 3> RayType;
         typedef Matrix<ValueType, 4, 4> MatrixType;
+        typedef Ray<ValueType, 3> RayType;
         typedef RayInfo<ValueType, 3> RayInfoType;
 
         const size_t ImageWidth = 500;
         const size_t ImageHeight = 500;
-        Image img(ImageWidth, ImageHeight, ImageWidth, ImageHeight, 3, PixelFormatFloat);
+
+        Image image(ImageWidth, ImageHeight, ImageWidth, ImageHeight, 3, PixelFormatFloat);
+        image.clear(Color3f(0.0f));
 
         const ValueType XStep = ValueType(2.0) / ImageWidth;
         const ValueType YStep = ValueType(2.0) / ImageHeight;
 
         for (size_t c = 0; c < curve_count; ++c)
         {
-            const T& curve = curves[c];
-            const AABBType& curve_bounds = curve.get_bounds();
+            const Curve& curve = curves[c];
+            const size_t control_point_count = curve.get_num_ctrl_pts();
 
-            // Create an array of overgrow bounding boxes to represent the control points.
+            // Create an array of bounding boxes to represent the control points.
             vector<AABBType> control_points;
-            control_points.reserve(curve.get_num_ctrl_pts());
-            for (size_t i = 0; i < curve.get_num_ctrl_pts(); ++i)
+            control_points.reserve(control_point_count);
+            for (size_t i = 0; i < control_point_count; ++i)
             {
                 AABBType bbox;
                 bbox.invalidate();
@@ -95,10 +104,11 @@ TEST_SUITE(Foundation_Math_Bezier)
 
                     const MatrixType xfm = ray_curve_intersection_xfm(ray);
 
-                    Color3f color(0.0f);
+                    Color3f color;
+                    image.get_pixel(x, y, color);
 
                     // Draw the bounding box of the curve.
-                    if (intersect(ray, RayInfoType(ray), curve_bounds))
+                    if (intersect(ray, RayInfoType(ray), curve.get_bounds()))
                         color[1] = 0.5f;
 
                     // Draw the curve.
@@ -110,7 +120,7 @@ TEST_SUITE(Foundation_Math_Bezier)
                     }
 
                     // Draw control points.
-                    for (size_t i = 0; i < control_points.size(); ++i)
+                    for (size_t i = 0; i < control_point_count; ++i)
                     {
                         if (intersect(ray, RayInfoType(ray), control_points[i]))
                         {
@@ -119,100 +129,116 @@ TEST_SUITE(Foundation_Math_Bezier)
                         }
                     }
 
-                    img.set_pixel(x, y, color);
+                    image.set_pixel(x, y, color);
                 }
             }
         }
-        
+
         GenericImageFileWriter writer;
-        writer.write(filename, img);    
+        writer.write(filename, image);
     }
 
-    // Test case for degree 1 curves.
+
+    //
+    // Degree 1 curves.
+    //
+
     TEST_CASE(Ray_Curve_Segment_Intersection_Bezier1)
     {
         const Vector3f ControlPoints[2] = {Vector3f(-0.5f, -0.5f, 0.0f), Vector3f(0.5f, 0.5f, 0.0f)};
         const Bezier1f b1(ControlPoints, 0.06f);
         const Curve1f test_curve[1] = {Curve1f(b1)};
         
-        render_curves_to_image(test_curve, 1, "unit tests/outputs/test_curve_degree1_curve.png");
+        render_curves_to_image(test_curve, 1, "unit tests/outputs/test_curve_degree1.png");
     }
-    
-    TEST_CASE(Ray_Curve_Segment_Intersection_Bezier1_Hor)
+
+    TEST_CASE(Ray_Curve_Segment_Intersection_Bezier1_Horizontal)
     {
         const Vector3f ControlPoints[2] = {Vector3f(-0.5f, 0.0f, 0.0f), Vector3f(0.5f, -0.0f, 0.0f)};
         const Bezier1f b1(ControlPoints, 0.06f);
         const Curve1f test_curve[1] = {Curve1f(b1)};
         
-        render_curves_to_image(test_curve, 1, "unit tests/outputs/test_curve_degree1_curve_hor.png");
+        render_curves_to_image(test_curve, 1, "unit tests/outputs/test_curve_degree1_horizontal.png");
     }
 
-    TEST_CASE(Ray_Curve_Segment_Intersection_Bezier1_Vert)
+    TEST_CASE(Ray_Curve_Segment_Intersection_Bezier1_Vertical)
     {
         const Vector3f ControlPoints[2] = {Vector3f(0.0f, 0.5f, 0.0f), Vector3f(0.0f, -0.5f, 0.0f)};
         const Bezier1f b1(ControlPoints, 0.06f);
         const Curve1f test_curve[1] = {Curve1f(b1)};
         
-        render_curves_to_image(test_curve, 1, "unit tests/outputs/test_curve_degree1_curve_vert.png");
+        render_curves_to_image(test_curve, 1, "unit tests/outputs/test_curve_degree1_vertical.png");
     }
-    
-    // Test cases for degree 2 curves.
+
+
+    //
+    // Degree 2 curves.
+    //
+
     TEST_CASE(Ray_Curve_Segment_Intersection_Bezier2)
     {
         const Vector3f ControlPoints[3] = {Vector3f(-0.5f, 0.0f, 0.0f), Vector3f(0.0f, 0.5f, 0.0f), Vector3f(0.50f, 0.0f, 0.0f)};
         const Bezier2f b1(ControlPoints, 0.06f);
         const Curve2f test_curve[1] = {Curve2f(b1)};
         
-        render_curves_to_image(test_curve, 1, "unit tests/outputs/test_curve_degree2_curve.png");
+        render_curves_to_image(test_curve, 1, "unit tests/outputs/test_curve_degree2.png");
     }
 
-    TEST_CASE(Ray_Curve_Segment_Intersection_Bezier2_Hor)
+    TEST_CASE(Ray_Curve_Segment_Intersection_Bezier2_Horizontal)
     {
         const Vector3f ControlPoints[3] = {Vector3f(-0.5f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.50f, 0.0f, 0.0f)};
         const Bezier2f b1(ControlPoints, 0.06f);
         const Curve2f test_curve[1] = {Curve2f(b1)};
         
-        render_curves_to_image(test_curve, 1, "unit tests/outputs/test_curve_degree2_curve_hor.png");
+        render_curves_to_image(test_curve, 1, "unit tests/outputs/test_curve_degree2_horizontal.png");
     }
 
-    TEST_CASE(Ray_Curve_Segment_Intersection_Bezier2_Vert)
+    TEST_CASE(Ray_Curve_Segment_Intersection_Bezier2_Vertical)
     {
         const Vector3f ControlPoints[3] = {Vector3f(0.0f, 0.5f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.0f, -0.50f, 0.0f)};
         const Bezier2f b1(ControlPoints, 0.06f);
         const Curve2f test_curve[1] = {Curve2f(b1)};
         
-        render_curves_to_image(test_curve, 1, "unit tests/outputs/test_curve_degree2_curve_vert.png");
+        render_curves_to_image(test_curve, 1, "unit tests/outputs/test_curve_degree2_vertical.png");
     }
-    
-    // Test cases for degree 3 curves.
+
+
+    //
+    // Degree 3 curves.
+    //
+
     TEST_CASE(Ray_Curve_Segment_Intersection_Bezier3)
     {
         const Vector3f ControlPoints[4] = {Vector3f(-0.5f, 0.0f, 0.0f), Vector3f(-0.20f, 0.20f, 0.0f), Vector3f(0.20f, -0.20f, 0.0f), Vector3f(0.5f, 0.0f, 0.0f)};
         const Bezier3f b1(ControlPoints, 0.06f);
         const Curve3f test_curve[1] = {Curve3f(b1)};
         
-        render_curves_to_image(test_curve, 1, "unit tests/outputs/test_curve_degree3_curve.png");
+        render_curves_to_image(test_curve, 1, "unit tests/outputs/test_curve_degree3.png");
     }
 
-    TEST_CASE(Ray_Curve_Segment_Intersection_Bezier3_Hor)
+    TEST_CASE(Ray_Curve_Segment_Intersection_Bezier3_Horizontal)
     {
         const Vector3f ControlPoints[4] = {Vector3f(-0.5f, 0.0f, 0.0f), Vector3f(-0.25f, 0.0f, 0.0f), Vector3f(0.25f, 0.0f, 0.0f), Vector3f(0.5f, 0.0f, 0.0f)};
         const Bezier3f b1(ControlPoints, 0.06f);
         const Curve3f test_curve[1] = {Curve3f(b1)};
         
-        render_curves_to_image(test_curve, 1, "unit tests/outputs/test_curve_degree3_curve_hor.png");
+        render_curves_to_image(test_curve, 1, "unit tests/outputs/test_curve_degree3_horizontal.png");
     }
 
-    TEST_CASE(Ray_Curve_Segment_Intersection_Bezier3_Vert)
+    TEST_CASE(Ray_Curve_Segment_Intersection_Bezier3_Vertical)
     {
         const Vector3f ControlPoints[4] = {Vector3f(0.0f, 0.50f, 0.0f), Vector3f(0.0f, 0.25f, 0.0f), Vector3f(0.0f, -0.25f, 0.0f), Vector3f(0.0f, -0.50f, 0.0f)};
         const Bezier3f b1(ControlPoints, 0.06f);
         const Curve3f test_curve[1] = {Curve3f(b1)};
         
-        render_curves_to_image(test_curve, 1, "unit tests/outputs/test_curve_degree3_curve_vert.png");
+        render_curves_to_image(test_curve, 1, "unit tests/outputs/test_curve_degree3_vertical.png");
     }
 
-    // Test cases for variable width curves
+
+    //
+    // Variable width curves.
+    //
+
     TEST_CASE(Ray_Curve_Segment_Intersection_Bezier1_Variable_Width)
     {
         const Vector3f ControlPoints[2] = {Vector3f(-0.5f, 0.5f, 0.0f), Vector3f(0.5f, -0.5f, 0.0f)};
@@ -220,7 +246,7 @@ TEST_SUITE(Foundation_Math_Bezier)
         const Bezier1f b1(ControlPoints, widths);
         const Curve1f test_curve[1] = {Curve1f(b1)};
         
-        render_curves_to_image(test_curve, 1, "unit tests/outputs/test_curve_degree1_curve_var_width.png");
+        render_curves_to_image(test_curve, 1, "unit tests/outputs/test_curve_degree1_vw.png");
     }
         
     TEST_CASE(Ray_Curve_Segment_Intersection_Bezier2_Variable_Width)
@@ -230,7 +256,7 @@ TEST_SUITE(Foundation_Math_Bezier)
         const Bezier2f b1(ControlPoints, widths);
         const Curve2f test_curve[1] = {Curve2f(b1)};
         
-        render_curves_to_image(test_curve, 1, "unit tests/outputs/test_curve_degree2_curve_var_width.png");
+        render_curves_to_image(test_curve, 1, "unit tests/outputs/test_curve_degree2_vw.png");
     }
 
     TEST_CASE(Ray_Curve_Segment_Intersection_Bezier3_Variable_Width)
@@ -240,10 +266,28 @@ TEST_SUITE(Foundation_Math_Bezier)
         const Bezier3f b1(ControlPoints, widths);
         const Curve3f test_curve[1] = {Curve3f(b1)};
         
-        render_curves_to_image(test_curve, 1, "unit tests/outputs/test_curve_degree3_curve_var_width.png");
+        render_curves_to_image(test_curve, 1, "unit tests/outputs/test_curve_degree3_vw.png");
     }
-    
+
+
+    //
     // Test cases for multiple curve segments - to check continuity.
+    //
+
+    TEST_CASE(Ray_Curve_Segment_Intersection_Bezier2_Small_Curve)
+    {
+        const Vector3f ControlPoints[4] = {Vector3f(-0.5f, 0.0f, 0.0f), Vector3f(-0.4f, 0.0f, 0.0f), Vector3f(-0.3f, 0.0f, 0.0f), Vector3f(-0.2f, 0.0f, 0.0f)};
+        const Bezier3f b1(ControlPoints, 0.06f);
+        const Curve3f test_curve[1] = {Curve3f(b1)};
+
+        render_curves_to_image(test_curve, 1, "unit tests/outputs/test_curve_degree2_small.png");
+    }
+
+
+    //
+    // Multiple curve segments - to check continuity.
+    //
+
     TEST_CASE(Ray_Multiple_Curve_Segment_Intersection_Bezier1_Constant_Width)
     {
         const Vector3f ctrlPts1[2] = {Vector3f(-0.5f, -0.5f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f)};
@@ -253,7 +297,7 @@ TEST_SUITE(Foundation_Math_Bezier)
         
         render_curves_to_image(test_curves, 2, "unit tests/outputs/test_curve_degree1_mc_cw.png");
     }
-    
+
     TEST_CASE(Ray_Multiple_Curve_Segment_Intersection_Bezier1_Variable_Width)
     {
         const Vector3f ctrlPts1[2] = {Vector3f(-0.5f, -0.5f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f)};
@@ -276,7 +320,7 @@ TEST_SUITE(Foundation_Math_Bezier)
         
         render_curves_to_image(test_curves, 2, "unit tests/outputs/test_curve_degree2_mc_cw.png");
     }
-    
+
     TEST_CASE(Ray_Multiple_Curve_Segment_Intersection_Bezier2_Variable_Width)
     {
         const Vector3f ctrlPts1[3] = {Vector3f(-0.7f, 0.0f, 0.0f), Vector3f(-0.40f, 0.5f, 0.0f), Vector3f(0.00f, 0.0f, 0.0f)};
@@ -299,7 +343,7 @@ TEST_SUITE(Foundation_Math_Bezier)
         
         render_curves_to_image(test_curves, 2, "unit tests/outputs/test_curve_degree3_mc_cw.png");
     }
-    
+
     TEST_CASE(Ray_Multiple_Curve_Segment_Intersection_Bezier3_Variable_Width)
     {
         const Vector3f ctrlPts1[4] = {Vector3f(-0.7f, 0.0f, 0.0f), Vector3f(-0.20f, 0.50f, 0.0f), Vector3f(-0.50f, -0.50f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f)};
@@ -310,14 +354,5 @@ TEST_SUITE(Foundation_Math_Bezier)
         const Curve3f test_curves[2] = {Curve3f(b1), Curve3f(b2)};
 
         render_curves_to_image(test_curves, 2, "unit tests/outputs/test_curve_degree3_mc_vw.png");
-    }
-
-    TEST_CASE(Ray_Curve_Segment_Intersection_Bezier2_Constant_Width_Small_Curve)
-    {
-        const Vector3f ControlPoints[4] = {Vector3f(-0.5f, 0.0f, 0.0f), Vector3f(-0.4f, 0.0f, 0.0f), Vector3f(-0.3f, 0.0f, 0.0f), Vector3f(-0.2f, 0.0f, 0.0f)};
-        const Bezier3f b1(ControlPoints, 0.06f);
-        const Curve3f test_curve[1] = {Curve3f(b1)};
-
-        render_curves_to_image(test_curve, 1, "unit tests/outputs/test_curve_degree3_curve_hor_sc.png");
     }
 }
