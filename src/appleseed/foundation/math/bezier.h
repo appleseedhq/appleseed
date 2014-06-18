@@ -120,7 +120,6 @@ class BezierBase
         
         compute_max_width();
         compute_bounds();
-        compute_max_recursion_depth();
     }
 
     BezierBase(const VectorType ctrl_pts[N + 1], const ValueType width[N + 1])
@@ -134,7 +133,18 @@ class BezierBase
 
         compute_max_width();
         compute_bounds();
-        compute_max_recursion_depth();
+    }
+
+    BezierBase(const BezierBase& bezier, const MatrixType& xfm)
+    {
+        for (size_t i = 0; i < N + 1; ++i)
+        {
+            m_ctrl_pts[i] = transform_point(xfm, bezier.m_ctrl_pts[i]);
+            m_width[i] = bezier.m_width[i];
+        }
+
+        compute_max_width();
+        compute_bounds();
     }
 
     size_t get_control_point_count() const
@@ -164,16 +174,39 @@ class BezierBase
         return m_bounds;
     }
 
-    size_t get_max_recursion_depth() const
+    size_t compute_max_recursion_depth() const
     {
-        return m_max_recursion_depth;
+        if (N < 2)
+            return 0;
+
+        ValueType l0 =
+            std::max(
+                std::abs(m_ctrl_pts[0].x - ValueType(2.0) * m_ctrl_pts[1].x + m_ctrl_pts[2].x),
+                std::abs(m_ctrl_pts[0].y - ValueType(2.0) * m_ctrl_pts[1].y + m_ctrl_pts[2].y));
+
+        for (size_t i = 1; i <= N - 2; ++i)
+        {
+            l0 =
+                max(
+                    l0,
+                    std::abs(m_ctrl_pts[i].x - ValueType(2.0) * m_ctrl_pts[i + 1].x + m_ctrl_pts[i + 2].x),
+                    std::abs(m_ctrl_pts[i].y - ValueType(2.0) * m_ctrl_pts[i + 1].y + m_ctrl_pts[i + 2].y));
+        }
+
+        const ValueType epsilon = m_max_width * ValueType(0.05);    // 1/20 of max_width
+        const ValueType value = (ValueType(SqrtTwo) * N * (N - 1) * l0) / (ValueType(8.0) * epsilon);
+        const ValueType r0 = log(value, ValueType(4.0));
+        const ValueType clamped_r0 = clamp(r0, ValueType(0.0), ValueType(5.0));
+
+        return truncate<size_t>(clamped_r0);
     }
 
     static VectorType transform_point(const MatrixType& xfm, const VectorType& p)
     {
-        const Vector<T, 4> pt(p.x, p.y, p.z, ValueType(1.0));
-        const Vector<T, 4> xpt = xfm * pt;
-        return VectorType(xpt.x / xpt.w, xpt.y / xpt.w, xpt.z / xpt.w);
+        const Vector<ValueType, 4> pt(p.x, p.y, p.z, ValueType(1.0));
+        const Vector<ValueType, 4> xpt = xfm * pt;
+        const ValueType rcp_w = ValueType(1.0) / xpt.w;
+        return VectorType(xpt.x * rcp_w, xpt.y * rcp_w, xpt.z * rcp_w);
     }
 
   protected:
@@ -194,40 +227,10 @@ class BezierBase
         m_bounds.robust_grow(ValueType(1.0e-4));
     }
 
-    void compute_max_recursion_depth()
-    {
-        if (N == 1)
-            m_max_recursion_depth = 0;
-        else
-        {
-            ValueType l0 =
-                std::max(
-                    std::abs(m_ctrl_pts[0].x - ValueType(2.0) * m_ctrl_pts[1].x + m_ctrl_pts[2].x),
-                    std::abs(m_ctrl_pts[0].y - ValueType(2.0) * m_ctrl_pts[1].y + m_ctrl_pts[2].y));
-
-            for (size_t i = 1; i <= N - 2; ++i)
-            {
-                l0 =
-                    max(
-                        l0,
-                        std::abs(m_ctrl_pts[i].x - ValueType(2.0) * m_ctrl_pts[i + 1].x + m_ctrl_pts[i + 2].x),
-                        std::abs(m_ctrl_pts[i].y - ValueType(2.0) * m_ctrl_pts[i + 1].y + m_ctrl_pts[i + 2].y));
-            }
-
-            const ValueType epsilon = m_max_width * ValueType(0.05);    // 1/20 of max_width
-            const ValueType value = (ValueType(SqrtTwo) * N * (N - 1) * l0) / (ValueType(8.0) * epsilon);
-            const ValueType r0 = log(value, ValueType(4.0));
-            const ValueType clamped_r0 = clamp(r0, ValueType(0.0), ValueType(5.0));
-
-            m_max_recursion_depth = truncate<size_t>(clamped_r0);
-        }
-    }
-
     VectorType  m_ctrl_pts[N + 1];
     ValueType   m_width[N + 1];
     ValueType   m_max_width;
     AABBType    m_bounds;
-    size_t      m_max_recursion_depth;
 };
 
 
@@ -260,15 +263,9 @@ class Bezier1
     {
     }
 
-    Bezier1 transform(const MatrixType& xfm) const
+    Bezier1(const Bezier1& bezier, const MatrixType& xfm)
+      : Base(bezier, xfm)
     {
-        const VectorType ctrl_pts[] =
-        {
-            Base::transform_point(xfm, Base::m_ctrl_pts[0]),
-            Base::transform_point(xfm, Base::m_ctrl_pts[1])
-        };
-
-        return Bezier1(ctrl_pts, Base::m_width);
     }
 
     VectorType evaluate_point(const ValueType t) const
@@ -286,14 +283,23 @@ class Bezier1
         const VectorType midpt = evaluate_point(ValueType(0.5));
         const ValueType midw = evaluate_width(ValueType(0.5));
 
-        const VectorType lc[] = { Base::m_ctrl_pts[0], midpt };
-        const VectorType rc[] = { midpt, Base::m_ctrl_pts[1] };
+        c1.m_ctrl_pts[0] = Base::m_ctrl_pts[0];
+        c1.m_ctrl_pts[1] = midpt;
 
-        const ValueType lw[] = { Base::m_width[0], midw };
-        const ValueType rw[] = { midw, Base::m_width[1] };
+        c1.m_width[0] = Base::m_width[0];
+        c1.m_width[1] = midw;
+        
+        c1.compute_max_width();
+        c1.compute_bounds();
 
-        c1 = Bezier1(lc, lw);
-        c2 = Bezier1(rc, rw);
+        c2.m_ctrl_pts[0] = midpt;
+        c2.m_ctrl_pts[1] = Base::m_ctrl_pts[1];
+        
+        c2.m_width[0] = midw;
+        c2.m_width[1] = Base::m_width[1];
+        
+        c2.compute_max_width();
+        c2.compute_bounds();
     }
 };
 
@@ -327,16 +333,9 @@ class Bezier2
     {
     }
 
-    Bezier2 transform(const MatrixType& xfm) const
+    Bezier2(const Bezier2& bezier, const MatrixType& xfm)
+      : Base(bezier, xfm)
     {
-        const VectorType ctrl_pts[] =
-        {
-            Base::transform_point(xfm, Base::m_ctrl_pts[0]),
-            Base::transform_point(xfm, Base::m_ctrl_pts[1]),
-            Base::transform_point(xfm, Base::m_ctrl_pts[2])
-        };
-
-        return Bezier2(ctrl_pts, Base::m_width);
     }
 
     VectorType evaluate_point(const ValueType t) const
@@ -364,36 +363,27 @@ class Bezier2
         const VectorType midpt = evaluate_point(ValueType(0.5));
         const ValueType midw = evaluate_width(ValueType(0.5));
 
-        const VectorType lc[] =
-        {
-            Base::m_ctrl_pts[0],
-            (Base::m_ctrl_pts[0] + Base::m_ctrl_pts[1]) * ValueType(0.5),
-            midpt
-        };
+        c1.m_ctrl_pts[0] = Base::m_ctrl_pts[0];
+        c1.m_ctrl_pts[1] = (Base::m_ctrl_pts[0] + Base::m_ctrl_pts[1]) * ValueType(0.5);
+        c1.m_ctrl_pts[2] = midpt;
 
-        const VectorType rc[] =
-        {
-            midpt,
-            (Base::m_ctrl_pts[1] + Base::m_ctrl_pts[2]) * ValueType(0.5),
-            Base::m_ctrl_pts[2]
-        };
+        c1.m_width[0] = Base::m_width[0];
+        c1.m_width[1] = (Base::m_width[0] + Base::m_width[1]) * ValueType(0.5);
+        c1.m_width[2] = midw;
 
-        const ValueType lw[] =
-        {
-            Base::m_width[0],
-            (Base::m_width[0] + Base::m_width[1]) * ValueType(0.5),
-            midw
-        };
+        c1.compute_max_width();
+        c1.compute_bounds();
 
-        const ValueType rw[] =
-        {
-            midw,
-            (Base::m_width[1] + Base::m_width[2]) * ValueType(0.5),
-            Base::m_width[2]
-        };
+        c2.m_ctrl_pts[0] = midpt;
+        c2.m_ctrl_pts[1] = (Base::m_ctrl_pts[1] + Base::m_ctrl_pts[2]) * ValueType(0.5);
+        c2.m_ctrl_pts[2] = Base::m_ctrl_pts[2];
 
-        c1 = Bezier2(lc, lw);
-        c2 = Bezier2(rc, rw);
+        c2.m_width[0] = midw;
+        c2.m_width[1] = (Base::m_width[1] + Base::m_width[2]) * ValueType(0.5);
+        c2.m_width[2] = Base::m_width[2];
+
+        c2.compute_max_width();
+        c2.compute_bounds();
     }
 };
 
@@ -427,17 +417,9 @@ class Bezier3
     {
     }
 
-    Bezier3 transform(const MatrixType& xfm) const
+    Bezier3(const Bezier3& bezier, const MatrixType& xfm)
+      : Base(bezier, xfm)
     {
-        const VectorType ctrl_pts[] =
-        {
-            Base::transform_point(xfm, Base::m_ctrl_pts[0]),
-            Base::transform_point(xfm, Base::m_ctrl_pts[1]),
-            Base::transform_point(xfm, Base::m_ctrl_pts[2]),
-            Base::transform_point(xfm, Base::m_ctrl_pts[3])
-        };
-
-        return Bezier3(ctrl_pts, Base::m_width);
     }
 
     VectorType evaluate_point(const ValueType t) const
@@ -474,22 +456,6 @@ class Bezier3
             (Base::m_ctrl_pts[2] + Base::m_ctrl_pts[3]) * ValueType(0.5)
         };
 
-        const VectorType lc[] =
-        {
-            Base::m_ctrl_pts[0],
-            mc[0],
-            (mc[0] + mc[1]) * ValueType(0.5),
-            midpt
-        };
-
-        const VectorType rc[] =
-        {
-            midpt,
-            (mc[1] + mc[2]) * ValueType(0.5),
-            mc[2],
-            Base::m_ctrl_pts[3]
-        };
-
         const ValueType mw[] =
         {
             (Base::m_width[0] + Base::m_width[1]) * ValueType(0.5),
@@ -497,24 +463,31 @@ class Bezier3
             (Base::m_width[2] + Base::m_width[3]) * ValueType(0.5)
         };
 
-        const ValueType lw[] =
-        {
-            Base::m_width[0],
-            mw[0],
-            (mw[0] + mw[1]) * ValueType(0.5),
-            midw
-        };
+        c1.m_ctrl_pts[0] = Base::m_ctrl_pts[0];
+        c1.m_ctrl_pts[1] = mc[0];
+        c1.m_ctrl_pts[2] = (mc[0] + mc[1]) * ValueType(0.5);
+        c1.m_ctrl_pts[3] = midpt;
 
-        const ValueType rw[] =
-        {
-            midw,
-            (mw[1] + mw[2]) * ValueType(0.5),
-            mw[2],
-            Base::m_width[3]
-        };
-        
-        c1 = Bezier3(lc, lw);
-        c2 = Bezier3(rc, rw);
+        c1.m_width[0] = Base::m_width[0];
+        c1.m_width[1] = mw[0];
+        c1.m_width[2] = (mw[0] + mw[1]) * ValueType(0.5);
+        c1.m_width[3] = midw;
+
+        c1.compute_max_width();
+        c1.compute_bounds();
+
+        c2.m_ctrl_pts[0] = midpt;
+        c2.m_ctrl_pts[1] = (mc[1] + mc[2]) * ValueType(0.5);
+        c2.m_ctrl_pts[2] = mc[2];
+        c2.m_ctrl_pts[3] = Base::m_ctrl_pts[3];
+
+        c2.m_width[0] = midw;
+        c2.m_width[1] = (mw[1] + mw[2]) * ValueType(0.5);
+        c2.m_width[2] = mw[2];
+        c2.m_width[3] = Base::m_width[3];
+
+        c2.compute_max_width();
+        c2.compute_bounds();
     }
 };
 

@@ -102,8 +102,8 @@ class Curve
 
     bool intersect(const RayType& ray, const MatrixType& xfm, ValueType& t) const
     {
-        const BezierType xfm_bezier = m_bezier.transform(xfm);
-        const size_t depth = xfm_bezier.get_max_recursion_depth();
+        const BezierType xfm_bezier(m_bezier, xfm);
+        const size_t depth = xfm_bezier.compute_max_recursion_depth();
 
         ValueType hit;
         ValueType phit = std::numeric_limits<ValueType>::max();
@@ -139,11 +139,11 @@ class Curve
     {
         const ValueType curve_width = bezier.get_max_width() * ValueType(0.5);
 
-        const AABBType& box = bezier.get_bounds();
+        const AABBType& bbox = bezier.get_bounds();
 
-        if (box.min.z >= phit        || box.max.z <= ValueType(1e-6) || 
-            box.min.x >= curve_width || box.max.x <= -curve_width    || 
-            box.min.y >= curve_width || box.max.y <= -curve_width)
+        if (bbox.min.z >= phit        || bbox.max.z <= ValueType(1e-6) ||
+            bbox.min.x >= curve_width || bbox.max.x <= -curve_width    ||
+            bbox.min.y >= curve_width || bbox.max.y <= -curve_width)
             return false;
 
         if (depth == 0)
@@ -203,9 +203,10 @@ class Curve
         {
             // Split the curve and recurse on the two new curves.
 
-            const ValueType vm = (v0 + vn) * ValueType(0.5);
             BezierType b1, b2;
             bezier.split(b1, b2);
+
+            const ValueType vm = (v0 + vn) * ValueType(0.5);
             
             ValueType v_left, v_right;
             ValueType t_left = std::numeric_limits<ValueType>::max();
