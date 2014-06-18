@@ -110,14 +110,14 @@ class Curve
         return converge(depth, xfm_bezier, xfm, 0, 1, hit, phit);
     }
 
-    size_t get_num_ctrl_pts() const
+    size_t get_control_point_count() const
     {
-        return m_bezier.get_num_ctrl_pts();
+        return m_bezier.get_control_point_count();
     }
 
-    VectorType get_ctrl_pt(const size_t index) const
+    VectorType get_control_point(const size_t index) const
     {
-        return m_bezier.get_ctrl_pt(index);
+        return m_bezier.get_control_point(index);
     }
 
     AABBType get_bounds() const
@@ -150,27 +150,27 @@ class Curve
         {
             // Compute the intersection.
             static const size_t Degree = BezierType::Degree;
-            const VectorType dir = bezier.get_ctrl_pt(Degree) - bezier.get_ctrl_pt(0);
+            const VectorType dir = bezier.get_control_point(Degree) - bezier.get_control_point(0);
 
-            VectorType dp0 = bezier.get_ctrl_pt(1) - bezier.get_ctrl_pt(0);
+            VectorType dp0 = bezier.get_control_point(1) - bezier.get_control_point(0);
             if (dot(dir, dp0) < ValueType(0.0))
                 dp0 = -dp0;
 
-            if (dot(dp0, bezier.get_ctrl_pt(0)) > ValueType(0.0))
+            if (dot(dp0, bezier.get_control_point(0)) > ValueType(0.0))
                 return false;
 
-            VectorType dpn = bezier.get_ctrl_pt(Degree) - bezier.get_ctrl_pt(Degree - 1);
+            VectorType dpn = bezier.get_control_point(Degree) - bezier.get_control_point(Degree - 1);
             if (dot(dir, dpn) < ValueType(0.0))
                 dpn = -dpn;
 
-            if (dot(dpn, bezier.get_ctrl_pt(Degree)) < ValueType(0.0))
+            if (dot(dpn, bezier.get_control_point(Degree)) < ValueType(0.0))
                 return false;
 
             // Compute w on the line segment.
             ValueType w = dir.x * dir.x + dir.y * dir.y;
             if (w < ValueType(1.0e-6))
                 return false;
-            w = -(bezier.get_ctrl_pt(0).x * dir.x + bezier.get_ctrl_pt(0).y * dir.y) / w;
+            w = -(bezier.get_control_point(0).x * dir.x + bezier.get_control_point(0).y * dir.y) / w;
             w = saturate(w);
 
             // Compute v on the line segment.

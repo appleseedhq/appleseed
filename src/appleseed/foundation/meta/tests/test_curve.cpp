@@ -49,7 +49,7 @@
 using namespace foundation;
 using namespace std;
 
-TEST_SUITE(Foundation_Math_Bezier)
+TEST_SUITE(Foundation_Math_Curve)
 {
     // Render a bunch of curves to an image on disk.
     template <typename Curve>
@@ -77,7 +77,7 @@ TEST_SUITE(Foundation_Math_Bezier)
         for (size_t c = 0; c < curve_count; ++c)
         {
             const Curve& curve = curves[c];
-            const size_t control_point_count = curve.get_num_ctrl_pts();
+            const size_t control_point_count = curve.get_control_point_count();
 
             // Create an array of bounding boxes to represent the control points.
             vector<AABBType> control_points;
@@ -86,7 +86,7 @@ TEST_SUITE(Foundation_Math_Bezier)
             {
                 AABBType bbox;
                 bbox.invalidate();
-                bbox.insert(curve.get_ctrl_pt(i));
+                bbox.insert(curve.get_control_point(i));
                 bbox.grow(VectorType(ValueType(0.01)));
                 control_points.push_back(bbox);
             }

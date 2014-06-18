@@ -137,12 +137,12 @@ class BezierBase
         compute_max_recursion_depth();
     }
 
-    size_t get_num_ctrl_pts() const
+    size_t get_control_point_count() const
     {
         return N + 1;
     }
 
-    VectorType get_ctrl_pt(const size_t index) const
+    VectorType get_control_point(const size_t index) const
     {
         assert(index < N + 1);
         return m_ctrl_pts[index];
@@ -191,7 +191,7 @@ class BezierBase
             m_bounds.insert(m_ctrl_pts[i]);
 
         m_bounds.grow(VectorType(m_max_width * ValueType(0.5)));
-        m_bounds.robust_grow(ValueType(1e-4));
+        m_bounds.robust_grow(ValueType(1.0e-4));
     }
 
     void compute_max_recursion_depth()
@@ -200,24 +200,26 @@ class BezierBase
             m_max_recursion_depth = 0;
         else
         {
-            ValueType l0 = ValueType(-1.0);
+            ValueType l0 =
+                std::max(
+                    std::abs(m_ctrl_pts[0].x - ValueType(2.0) * m_ctrl_pts[1].x + m_ctrl_pts[2].x),
+                    std::abs(m_ctrl_pts[0].y - ValueType(2.0) * m_ctrl_pts[1].y + m_ctrl_pts[2].y));
 
-            for (size_t i = 0; i <= N - 2; ++i)
+            for (size_t i = 1; i <= N - 2; ++i)
             {
                 l0 =
                     max(
                         l0,
-                        std::abs(m_ctrl_pts[i].x - 2 * m_ctrl_pts[i+1].x + m_ctrl_pts[i+2].x),
-                        std::abs(m_ctrl_pts[i].y - 2 * m_ctrl_pts[i+1].y + m_ctrl_pts[i+2].y));
+                        std::abs(m_ctrl_pts[i].x - ValueType(2.0) * m_ctrl_pts[i + 1].x + m_ctrl_pts[i + 2].x),
+                        std::abs(m_ctrl_pts[i].y - ValueType(2.0) * m_ctrl_pts[i + 1].y + m_ctrl_pts[i + 2].y));
             }
 
-            const ValueType sqrt2 = ValueType(1.414);
             const ValueType epsilon = m_max_width * ValueType(0.05);    // 1/20 of max_width
-            const ValueType value = (sqrt2 * N * (N - 1) * l0) / (ValueType(8.0) * epsilon);
-            const ValueType log_value = log(value, ValueType(4.0));
-            const ValueType clamp_value = clamp(log_value, ValueType(0.0), ValueType(5.0));
+            const ValueType value = (ValueType(SqrtTwo) * N * (N - 1) * l0) / (ValueType(8.0) * epsilon);
+            const ValueType r0 = log(value, ValueType(4.0));
+            const ValueType clamped_r0 = clamp(r0, ValueType(0.0), ValueType(5.0));
 
-            m_max_recursion_depth = truncate<size_t>(clamp_value);
+            m_max_recursion_depth = truncate<size_t>(clamped_r0);
         }
     }
 
