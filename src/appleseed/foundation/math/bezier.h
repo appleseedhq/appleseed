@@ -238,7 +238,6 @@ class Bezier1
   : public BezierBase<T, 1>
 {
   public:
-    // Types.
     typedef BezierBase<T, 1> Base;
     typedef typename Base::ValueType ValueType;
     typedef typename Base::VectorType VectorType;
@@ -283,7 +282,7 @@ class Bezier1
     void split(Bezier1& c1, Bezier1& c2) const
     {
         const VectorType midpt = evaluate_point(ValueType(0.5));
-        const ValueType midw = (Base::m_width[0] + Base::m_width[1]) * ValueType(0.5);
+        const ValueType midw = evaluate_width(ValueType(0.5));
 
         const VectorType lc[] = { Base::m_ctrl_pts[0], midpt };
         const VectorType rc[] = { midpt, Base::m_ctrl_pts[1] };
@@ -306,7 +305,6 @@ class Bezier2
   : public BezierBase<T, 2>
 {
   public:
-    // Types.
     typedef BezierBase<T, 2> Base;
     typedef typename Base::ValueType ValueType;
     typedef typename Base::VectorType VectorType;
@@ -362,6 +360,7 @@ class Bezier2
     void split(Bezier2& c1, Bezier2& c2) const
     {
         const VectorType midpt = evaluate_point(ValueType(0.5));
+        const ValueType midw = evaluate_width(ValueType(0.5));
 
         const VectorType lc[] =
         {
@@ -377,25 +376,17 @@ class Bezier2
             Base::m_ctrl_pts[2]
         };
 
-        const ValueType first_mid_width[] =
-        {
-            (Base::m_width[0] + Base::m_width[1]) * ValueType(0.5),
-            (Base::m_width[1] + Base::m_width[2]) * ValueType(0.5)
-        };
-
-        const ValueType midw = (first_mid_width[0] + first_mid_width[1]) * ValueType(0.5);
-        
         const ValueType lw[] =
         {
             Base::m_width[0],
-            first_mid_width[0],
+            (Base::m_width[0] + Base::m_width[1]) * ValueType(0.5),
             midw
         };
 
         const ValueType rw[] =
         {
             midw,
-            first_mid_width[1],
+            (Base::m_width[1] + Base::m_width[2]) * ValueType(0.5),
             Base::m_width[2]
         };
 
@@ -414,7 +405,6 @@ class Bezier3
   : public BezierBase<T, 3>
 {
   public:
-    // Types.
     typedef BezierBase<T, 3> Base;
     typedef typename Base::ValueType ValueType;
     typedef typename Base::VectorType VectorType;
@@ -473,8 +463,9 @@ class Bezier3
     void split(Bezier3& c1, Bezier3& c2) const
     {
         const VectorType midpt = evaluate_point(ValueType(0.5));
+        const ValueType midw = evaluate_width(ValueType(0.5));
 
-        const VectorType first_mid_pts[] =
+        const VectorType mc[] =
         {
             (Base::m_ctrl_pts[0] + Base::m_ctrl_pts[1]) * ValueType(0.5),
             (Base::m_ctrl_pts[1] + Base::m_ctrl_pts[2]) * ValueType(0.5),
@@ -484,47 +475,39 @@ class Bezier3
         const VectorType lc[] =
         {
             Base::m_ctrl_pts[0],
-            first_mid_pts[0],
-            (first_mid_pts[0] + first_mid_pts[1]) * ValueType(0.5),
+            mc[0],
+            (mc[0] + mc[1]) * ValueType(0.5),
             midpt
         };
 
         const VectorType rc[] =
         {
             midpt,
-            (first_mid_pts[1] + first_mid_pts[2]) * ValueType(0.5),
-            first_mid_pts[2],
+            (mc[1] + mc[2]) * ValueType(0.5),
+            mc[2],
             Base::m_ctrl_pts[3]
         };
 
-        const ValueType first_mid_width[] =
+        const ValueType mw[] =
         {
             (Base::m_width[0] + Base::m_width[1]) * ValueType(0.5),
             (Base::m_width[1] + Base::m_width[2]) * ValueType(0.5),
             (Base::m_width[2] + Base::m_width[3]) * ValueType(0.5)
         };
 
-        const ValueType second_mid_width[] =
-        {
-            (first_mid_width[0] + first_mid_width[1]) * ValueType(0.5),
-            (first_mid_width[1] + first_mid_width[2]) * ValueType(0.5)
-        };
-
-        const ValueType third_mid_width = (second_mid_width[0] + second_mid_width[1]) * ValueType(0.5);
-
         const ValueType lw[] =
         {
             Base::m_width[0],
-            first_mid_width[0],
-            second_mid_width[0],
-            third_mid_width
+            mw[0],
+            (mw[0] + mw[1]) * ValueType(0.5),
+            midw
         };
 
         const ValueType rw[] =
         {
-            third_mid_width,
-            second_mid_width[1],
-            first_mid_width[2],
+            midw,
+            (mw[1] + mw[2]) * ValueType(0.5),
+            mw[2],
             Base::m_width[3]
         };
         
