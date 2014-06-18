@@ -200,23 +200,23 @@ class BezierBase
             m_max_recursion_depth = 0;
         else
         {
-            ValueType L0 = ValueType(-1.0);
+            ValueType l0 = ValueType(-1.0);
 
             for (size_t i = 0; i <= N - 2; ++i)
             {
-                L0 =
+                l0 =
                     max(
-                        L0,
+                        l0,
                         std::abs(m_ctrl_pts[i].x - 2 * m_ctrl_pts[i+1].x + m_ctrl_pts[i+2].x),
                         std::abs(m_ctrl_pts[i].y - 2 * m_ctrl_pts[i+1].y + m_ctrl_pts[i+2].y));
             }
 
-            // Handle the boundary test cases for L < 1.0f where log(x) returns a negative value.
             const ValueType sqrt2 = ValueType(1.414);
             const ValueType epsilon = m_max_width * ValueType(0.05);    // 1/20 of max_width
-            const ValueType value = (sqrt2 * N * (N - 1) * L0) / (ValueType(8.0) * epsilon);
+            const ValueType value = (sqrt2 * N * (N - 1) * l0) / (ValueType(8.0) * epsilon);
             const ValueType log_value = log(value, ValueType(4.0));
             const ValueType clamp_value = clamp(log_value, ValueType(0.0), ValueType(5.0));
+
             m_max_recursion_depth = truncate<size_t>(clamp_value);
         }
     }
