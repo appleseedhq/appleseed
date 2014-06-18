@@ -169,6 +169,13 @@ class BezierBase
         return m_max_recursion_depth;
     }
 
+    static VectorType transform_point(const MatrixType& xfm, const VectorType& p)
+    {
+        const Vector<T, 4> pt(p.x, p.y, p.z, ValueType(1.0));
+        const Vector<T, 4> xpt = xfm * pt;
+        return VectorType(xpt.x / xpt.w, xpt.y / xpt.w, xpt.z / xpt.w);
+    }
+
   protected:
     void compute_max_width() 
     {
@@ -212,13 +219,6 @@ class BezierBase
             const ValueType clamp_value = clamp(log_value, ValueType(0.0), ValueType(5.0));
             m_max_recursion_depth = truncate<size_t>(clamp_value);
         }
-    }
-
-    static VectorType transform_point(const MatrixType& xfm, const VectorType& p)
-    {
-        const Vector<T, 4> pt(p.x, p.y, p.z, ValueType(1.0));
-        const Vector<T, 4> xpt = xfm * pt;
-        return VectorType(xpt.x / xpt.w, xpt.y / xpt.w, xpt.z / xpt.w);
     }
 
     VectorType  m_ctrl_pts[N + 1];
@@ -270,19 +270,19 @@ class Bezier1
         return Bezier1(ctrl_pts, Base::m_width);
     }
 
-    VectorType operator()(const ValueType t) const
+    VectorType evaluate_point(const ValueType t) const
     {
         return interpolate_bezier1(Base::m_ctrl_pts[0], Base::m_ctrl_pts[1], t);
     }
 
-    ValueType get_interpolated_width(const ValueType t) const
+    ValueType evaluate_width(const ValueType t) const
     {
         return interpolate_bezier1(Base::m_width[0], Base::m_width[1], t);
     }
 
     void split(Bezier1& c1, Bezier1& c2) const
     {
-        const VectorType midpt = (*this)(ValueType(0.5));
+        const VectorType midpt = evaluate_point(ValueType(0.5));
         const ValueType midw = (Base::m_width[0] + Base::m_width[1]) * ValueType(0.5);
 
         const VectorType lc[] = { Base::m_ctrl_pts[0], midpt };
@@ -339,7 +339,7 @@ class Bezier2
         return Bezier2(ctrl_pts, Base::m_width);
     }
 
-    VectorType operator()(const ValueType t) const
+    VectorType evaluate_point(const ValueType t) const
     {
         return
             interpolate_bezier2(
@@ -349,7 +349,7 @@ class Bezier2
                 t);
     }
 
-    ValueType get_interpolated_width(const ValueType t) const
+    ValueType evaluate_width(const ValueType t) const
     {
         return
             interpolate_bezier2(
@@ -361,7 +361,7 @@ class Bezier2
 
     void split(Bezier2& c1, Bezier2& c2) const
     {
-        const VectorType midpt = (*this)(ValueType(0.5));
+        const VectorType midpt = evaluate_point(ValueType(0.5));
 
         const VectorType lc[] =
         {
@@ -448,7 +448,7 @@ class Bezier3
         return Bezier3(ctrl_pts, Base::m_width);
     }
 
-    VectorType operator()(const ValueType t) const
+    VectorType evaluate_point(const ValueType t) const
     {
         return
             interpolate_bezier3(
@@ -459,7 +459,7 @@ class Bezier3
                 t);
     }
 
-    ValueType get_interpolated_width(const ValueType t) const
+    ValueType evaluate_width(const ValueType t) const
     {
         return
             interpolate_bezier3(
@@ -472,7 +472,7 @@ class Bezier3
 
     void split(Bezier3& c1, Bezier3& c2) const
     {
-        const VectorType midpt = (*this)(ValueType(0.5));
+        const VectorType midpt = evaluate_point(ValueType(0.5));
 
         const VectorType first_mid_pts[] =
         {

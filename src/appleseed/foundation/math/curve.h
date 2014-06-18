@@ -177,11 +177,10 @@ class Curve
             const ValueType v = v0 * (ValueType(1.0) - w) + vn * w;
 
             // Compute point on original unsplit curve.
-            const VectorType orig_p = m_bezier(v);
+            const VectorType orig_p = m_bezier.evaluate_point(v);
 
             // Transform back to orignal required frame.
-            const Vector<ValueType, 4> xfm_pt = xfm * Vector<ValueType, 4>(orig_p.x, orig_p.y, orig_p.z, ValueType(1.0));
-            const VectorType p(xfm_pt.x / xfm_pt.w, xfm_pt.y / xfm_pt.w, xfm_pt.z / xfm_pt.w);
+            const VectorType p = BezierType::transform_point(xfm, orig_p);
 
             if (p.z <= ValueType(1.0e-6) || phit < p.z)
                 return false;
@@ -190,7 +189,7 @@ class Curve
             // Note: We use the modified curve and not the actual curve because the width values are
             // correctly split and interpolated during split operations. In order to have a smooth
             // transition between the control point widths, we use the transformed curve.
-            const ValueType half_width = ValueType(0.5) * bezier.get_interpolated_width(w);
+            const ValueType half_width = ValueType(0.5) * bezier.evaluate_width(w);
 
             if (p.x * p.x + p.y * p.y >= half_width * half_width)
                 return false;
