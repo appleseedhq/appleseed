@@ -34,10 +34,12 @@
 #include "foundation/math/bezier.h"
 #include "foundation/math/matrix.h"
 #include "foundation/math/ray.h"
+#include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 
 // Standard headers.
 #include <cstddef>
+#include <cmath>
 #include <limits>
 
 namespace foundation
@@ -49,39 +51,40 @@ namespace foundation
 template <typename T>
 Matrix<T, 4, 4> ray_curve_intersection_xfm(const Ray<T, 3>& r)
 {
-
     typedef T ValueType;
     typedef Matrix<T, 4, 4> MatrixType;
     typedef Vector<T, 3> VectorType;
 
-    MatrixType translate = MatrixType::translation(-r.m_org);
     MatrixType rotate;
 
-    // We manually create the rotation matrix required for us.
-    VectorType rdir = normalize(r.m_dir);
-    ValueType d = std::sqrt(rdir.x * rdir.x + rdir.z * rdir.z);
+    const VectorType rdir = normalize(r.m_dir);
+    const ValueType d = std::sqrt(rdir.x * rdir.x + rdir.z * rdir.z);
 
     // We are actually required to do a test against 0 but we consider a small epsilon for our calculations.
-    if (d >= ValueType(1e-6))
+    if (d >= ValueType(1.0e-6))
     {
-        ValueType inv_d = ValueType(1.0)/d;
-        rotate(0, 0) = rdir.z * inv_d;             rotate(0, 1) = 0.0f;   rotate(0, 2) = -rdir.x * inv_d;            rotate(0, 3) = ValueType(0.0);
-        rotate(1, 0) = -(rdir.x * rdir.y) * inv_d; rotate(1, 1) = d;      rotate(1, 2) = -(rdir.y * rdir.z) * inv_d; rotate(1, 3) = ValueType(0.0);
-        rotate(2, 0) = rdir.x;                     rotate(2, 1) = rdir.y; rotate(2, 2) = rdir.z;                     rotate(2, 3) = ValueType(0.0);
-        rotate(3, 0) = ValueType(0.0);   rotate(3, 1) = ValueType(0.0);   rotate(3, 2) = ValueType(0.0);             rotate(3, 3) = ValueType(1.0);
+        const ValueType inv_d = ValueType(1.0) / d;
+        rotate(0, 0) = rdir.z * inv_d;             rotate(0, 1) = ValueType(0.0);   rotate(0, 2) = -rdir.x * inv_d;            rotate(0, 3) = ValueType(0.0);
+        rotate(1, 0) = -(rdir.x * rdir.y) * inv_d; rotate(1, 1) = d;                rotate(1, 2) = -(rdir.y * rdir.z) * inv_d; rotate(1, 3) = ValueType(0.0);
+        rotate(2, 0) = rdir.x;                     rotate(2, 1) = rdir.y;           rotate(2, 2) = rdir.z;                     rotate(2, 3) = ValueType(0.0);
+        rotate(3, 0) = ValueType(0.0);             rotate(3, 1) = ValueType(0.0);   rotate(3, 2) = ValueType(0.0);             rotate(3, 3) = ValueType(1.0);
     }
     else
     {
-        // We replace the matrix by the one that rotates about x-axis by pi/2. 
-        // Sign of rotation depends upon sign of 'y' component of direction vector.
-        ValueType angle = rdir.y > ValueType(0.0) ? (ValueType(HalfPi)) : -(ValueType(HalfPi));
+        // We replace the matrix by the one that rotates about the x axis by Pi/2.
+        // The sign of rotation depends on the sign of the y component of the direction vector.
+        const ValueType angle = rdir.y > ValueType(0.0) ? ValueType(HalfPi) : -ValueType(HalfPi);
         rotate = MatrixType::rotation_x(angle);
     }
-    return rotate * translate;
+
+    return rotate * MatrixType::translation(-r.m_org);
 }
 
-// Curve class
-// Includes a bezier curve of degree N that composes the curve.
+
+//
+// The Curve class wraps a Bezier curve of degree N and adds an intersecion method.
+//
+
 template <typename BezierType>
 class Curve
 {
@@ -91,10 +94,6 @@ class Curve
     typedef Matrix<ValueType, 4, 4> MatrixType;
     typedef AABB<ValueType, 3> AABBType;
     typedef Vector<ValueType, 3> VectorType;
-    
-    Curve()
-    {
-    }
 
     Curve(const BezierType& bezier)
       : m_bezier(bezier)
@@ -103,18 +102,28 @@ class Curve
 
     bool intersect(const RayType& ray, const MatrixType& xfm, ValueType& t) const
     {
-        ValueType vhit;
-        ValueType ttmp = std::numeric_limits<ValueType>::max();
         const BezierType xfm_bezier = m_bezier.transform(xfm);
-        const size_t depth = xfm_bezier.get_max_recursion_depth();   // epsilon = 1/20 of the width
-        return converge(depth, xfm_bezier, xfm, 0, 1, vhit, ttmp);
+        const size_t depth = xfm_bezier.get_max_recursion_depth();
+
+        ValueType hit;
+        ValueType phit = std::numeric_limits<ValueType>::max();
+        return converge(depth, xfm_bezier, xfm, 0, 1, hit, phit);
     }
 
-    AABBType get_bounds() const { return m_bezier.get_bounds(); }
+    size_t get_num_ctrl_pts() const
+    {
+        return m_bezier.get_num_ctrl_pts();
+    }
 
-    size_t get_num_ctrl_pts() const { return m_bezier.get_num_ctrl_pts(); }
+    VectorType get_ctrl_pt(const size_t index) const
+    {
+        return m_bezier.get_ctrl_pt(index);
+    }
 
-    VectorType get_ctrl_pt(size_t index) const { return m_bezier.get_ctrl_pt(index); }
+    AABBType get_bounds() const
+    {
+        return m_bezier.get_bounds();
+    }
 
   private:
     const BezierType& m_bezier;
@@ -129,39 +138,39 @@ class Curve
         ValueType&          phit) const
     {
         const ValueType curve_width = bezier.get_max_width() * ValueType(0.5);
-        
-        const AABBType box = bezier.get_bounds();
-        
+
+        const AABBType& box = bezier.get_bounds();
+
         if (box.min.z >= phit        || box.max.z <= ValueType(1e-6) || 
             box.min.x >= curve_width || box.max.x <= -curve_width    || 
             box.min.y >= curve_width || box.max.y <= -curve_width)
             return false;
-        else if (depth == 0)
+
+        if (depth == 0)
         {
             // Compute the intersection.
-            const size_t n = BezierType::Degree;
-            const VectorType dir = bezier.get_ctrl_pt(n) - bezier.get_ctrl_pt(0);
-            VectorType dp0 = bezier.get_ctrl_pt(1) - bezier.get_ctrl_pt(0);
+            static const size_t Degree = BezierType::Degree;
+            const VectorType dir = bezier.get_ctrl_pt(Degree) - bezier.get_ctrl_pt(0);
 
+            VectorType dp0 = bezier.get_ctrl_pt(1) - bezier.get_ctrl_pt(0);
             if (dot(dir, dp0) < ValueType(0.0))
                 dp0 = -dp0;
 
             if (dot(dp0, bezier.get_ctrl_pt(0)) > ValueType(0.0))
                 return false;
 
-            VectorType dpn = bezier.get_ctrl_pt(n) - bezier.get_ctrl_pt(n-1);
-            
-            if (dot(dir, dpn) < 0)
+            VectorType dpn = bezier.get_ctrl_pt(Degree) - bezier.get_ctrl_pt(Degree - 1);
+            if (dot(dir, dpn) < ValueType(0.0))
                 dpn = -dpn;
 
-            if (dot(dpn, bezier.get_ctrl_pt(n)) < ValueType(0.0))
+            if (dot(dpn, bezier.get_ctrl_pt(Degree)) < ValueType(0.0))
                 return false;
 
             // Compute w on the line segment.
             ValueType w = dir.x * dir.x + dir.y * dir.y;
-            if (w < ValueType(1e-6))
+            if (w < ValueType(1.0e-6))
                 return false;
-            w = - (bezier.get_ctrl_pt(0).x * dir.x + bezier.get_ctrl_pt(0).y * dir.y) / w;
+            w = -(bezier.get_ctrl_pt(0).x * dir.x + bezier.get_ctrl_pt(0).y * dir.y) / w;
             w = saturate(w);
 
             // Compute v on the line segment.
@@ -174,6 +183,9 @@ class Curve
             const Vector<ValueType, 4> xfm_pt = xfm * Vector<ValueType, 4>(orig_p.x, orig_p.y, orig_p.z, ValueType(1.0));
             const VectorType p(xfm_pt.x / xfm_pt.w, xfm_pt.y / xfm_pt.w, xfm_pt.z / xfm_pt.w);
 
+            if (p.z <= ValueType(1.0e-6) || phit < p.z)
+                return false;
+
             // Compute the correct interpolated width on the transformed curve and not original curve.
             // Note: We use the modified curve and not the actual curve because the width values are
             // correctly split and interpolated during split operations. In order to have a smooth
@@ -181,9 +193,6 @@ class Curve
             const ValueType half_width = ValueType(0.5) * bezier.get_interpolated_width(w);
 
             if (p.x * p.x + p.y * p.y >= half_width * half_width)
-                return false;
-
-            if (p.z <= ValueType(1e-6) || phit < p.z)
                 return false;
 
             // Found an intersection.

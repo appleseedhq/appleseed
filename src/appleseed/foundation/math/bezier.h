@@ -213,7 +213,14 @@ class BezierBase
             m_max_recursion_depth = truncate<size_t>(clamp_value);
         }
     }
-     
+
+    static VectorType transform_point(const MatrixType& xfm, const VectorType& p)
+    {
+        const Vector<T, 4> pt(p.x, p.y, p.z, ValueType(1.0));
+        const Vector<T, 4> xpt = xfm * pt;
+        return VectorType(xpt.x / xpt.w, xpt.y / xpt.w, xpt.z / xpt.w);
+    }
+
     VectorType  m_ctrl_pts[N + 1];
     ValueType   m_width[N + 1];
     ValueType   m_max_width;
@@ -254,36 +261,35 @@ class Bezier1
 
     Bezier1 transform(const MatrixType& xfm) const
     {
-        VectorType ctrl_pts[2];
-        for (size_t i = 0; i < 2; ++i)
+        const VectorType ctrl_pts[] =
         {
-            const Vector<T, 4> pt(m_ctrl_pts[i].x, m_ctrl_pts[i].y, m_ctrl_pts[i].z, ValueType(1.0));
-            const Vector<T, 4> xpt = xfm * pt;
-            ctrl_pts[i] = VectorType(xpt.x / xpt.w, xpt.y / xpt.w, xpt.z / xpt.w);
-        }
-        return Bezier1(ctrl_pts, m_width);
+            Base::transform_point(xfm, Base::m_ctrl_pts[0]),
+            Base::transform_point(xfm, Base::m_ctrl_pts[1])
+        };
+
+        return Bezier1(ctrl_pts, Base::m_width);
     }
 
     VectorType operator()(const ValueType t) const
     {
-        return interpolate_bezier1(m_ctrl_pts[0], m_ctrl_pts[1], t);
+        return interpolate_bezier1(Base::m_ctrl_pts[0], Base::m_ctrl_pts[1], t);
     }
 
     ValueType get_interpolated_width(const ValueType t) const
     {
-        return interpolate_bezier1(m_width[0], m_width[1], t);
+        return interpolate_bezier1(Base::m_width[0], Base::m_width[1], t);
     }
 
     void split(Bezier1& c1, Bezier1& c2) const
     {
         const VectorType midpt = (*this)(ValueType(0.5));
+        const ValueType midw = (Base::m_width[0] + Base::m_width[1]) * ValueType(0.5);
 
-        const VectorType lc[2] = {m_ctrl_pts[0], midpt};
-        const VectorType rc[2] = {midpt, m_ctrl_pts[1]};
+        const VectorType lc[] = { Base::m_ctrl_pts[0], midpt };
+        const VectorType rc[] = { midpt, Base::m_ctrl_pts[1] };
 
-        const ValueType mw = (m_width[0] + m_width[1]) * ValueType(0.5);
-        const ValueType lw[2] = {m_width[0], mw};
-        const ValueType rw[2] = {mw, m_width[1]};
+        const ValueType lw[] = { Base::m_width[0], midw };
+        const ValueType rw[] = { midw, Base::m_width[1] };
 
         c1 = Bezier1(lc, lw);
         c2 = Bezier1(rc, rw);
@@ -323,48 +329,75 @@ class Bezier2
 
     Bezier2 transform(const MatrixType& xfm) const
     {
-        VectorType ctrl_pts[3];
-        for (size_t i = 0; i < 3; ++i)
+        const VectorType ctrl_pts[] =
         {
-            const Vector<T, 4> pt(m_ctrl_pts[i].x, m_ctrl_pts[i].y, m_ctrl_pts[i].z, ValueType(1.0));
-            const Vector<T, 4> xpt = xfm * pt;
-            ctrl_pts[i] = VectorType(xpt.x / xpt.w, xpt.y / xpt.w, xpt.z / xpt.w);
-        }
-        return Bezier2(ctrl_pts, m_width);
+            Base::transform_point(xfm, Base::m_ctrl_pts[0]),
+            Base::transform_point(xfm, Base::m_ctrl_pts[1]),
+            Base::transform_point(xfm, Base::m_ctrl_pts[2])
+        };
+
+        return Bezier2(ctrl_pts, Base::m_width);
     }
 
     VectorType operator()(const ValueType t) const
     {
-        return interpolate_bezier2(m_ctrl_pts[0], m_ctrl_pts[1], m_ctrl_pts[2], t);
+        return
+            interpolate_bezier2(
+                Base::m_ctrl_pts[0],
+                Base::m_ctrl_pts[1],
+                Base::m_ctrl_pts[2],
+                t);
     }
 
     ValueType get_interpolated_width(const ValueType t) const
     {
-        return interpolate_bezier2(m_width[0], m_width[1], m_width[2], t);
+        return
+            interpolate_bezier2(
+                Base::m_width[0],
+                Base::m_width[1],
+                Base::m_width[2],
+                t);
     }
 
     void split(Bezier2& c1, Bezier2& c2) const
     {
-        VectorType first_mid_pts[2];
-        VectorType second_mid_pts[1];
-        const VectorType mid_pt = (*this)(ValueType(0.5));
+        const VectorType midpt = (*this)(ValueType(0.5));
 
-        first_mid_pts[0] = (m_ctrl_pts[0] + m_ctrl_pts[1]) * ValueType(0.5);
-        first_mid_pts[1] = (m_ctrl_pts[1] + m_ctrl_pts[2]) * ValueType(0.5);
+        const VectorType lc[] =
+        {
+            Base::m_ctrl_pts[0],
+            (Base::m_ctrl_pts[0] + Base::m_ctrl_pts[1]) * ValueType(0.5),
+            midpt
+        };
+
+        const VectorType rc[] =
+        {
+            midpt,
+            (Base::m_ctrl_pts[1] + Base::m_ctrl_pts[2]) * ValueType(0.5),
+            Base::m_ctrl_pts[2]
+        };
+
+        const ValueType first_mid_width[] =
+        {
+            (Base::m_width[0] + Base::m_width[1]) * ValueType(0.5),
+            (Base::m_width[1] + Base::m_width[2]) * ValueType(0.5)
+        };
+
+        const ValueType midw = (first_mid_width[0] + first_mid_width[1]) * ValueType(0.5);
         
-        const VectorType lc[3] = {m_ctrl_pts[0], first_mid_pts[0], mid_pt};
-        const VectorType rc[3] = {mid_pt, first_mid_pts[1], m_ctrl_pts[2]};
+        const ValueType lw[] =
+        {
+            Base::m_width[0],
+            first_mid_width[0],
+            midw
+        };
 
-        // Split the weight components
-        ValueType first_mid_width[2];
-        ValueType second_mid_width[1];
-
-        first_mid_width[0] = (m_width[0] + m_width[1]) * ValueType(0.5);
-        first_mid_width[1] = (m_width[1] + m_width[2]) * ValueType(0.5);
-        second_mid_width[0] = (first_mid_width[0] + first_mid_width[1]) * ValueType(0.5);
-        
-        const ValueType lw[3] = {m_width[0], first_mid_width[0], second_mid_width[0]};
-        const ValueType rw[3] = {second_mid_width[0], first_mid_width[1], m_width[2]};
+        const ValueType rw[] =
+        {
+            midw,
+            first_mid_width[1],
+            Base::m_width[2]
+        };
 
         c1 = Bezier2(lc, lw);
         c2 = Bezier2(rc, rw);
@@ -404,57 +437,96 @@ class Bezier3
 
     Bezier3 transform(const MatrixType& xfm) const
     {
-        VectorType ctrl_pts[4];
-        for (size_t i = 0; i < 4; ++i)
+        const VectorType ctrl_pts[] =
         {
-            const Vector<T, 4> pt(m_ctrl_pts[i].x, m_ctrl_pts[i].y, m_ctrl_pts[i].z, ValueType(1.0));
-            const Vector<T, 4> xpt = xfm * pt;
-            ctrl_pts[i] = VectorType(xpt.x / xpt.w, xpt.y / xpt.w, xpt.z / xpt.w);
-        }
-        return Bezier3(ctrl_pts, m_width);
+            Base::transform_point(xfm, Base::m_ctrl_pts[0]),
+            Base::transform_point(xfm, Base::m_ctrl_pts[1]),
+            Base::transform_point(xfm, Base::m_ctrl_pts[2]),
+            Base::transform_point(xfm, Base::m_ctrl_pts[3])
+        };
+
+        return Bezier3(ctrl_pts, Base::m_width);
     }
 
     VectorType operator()(const ValueType t) const
     {
-        return interpolate_bezier3(m_ctrl_pts[0], m_ctrl_pts[1], m_ctrl_pts[2], m_ctrl_pts[3], t);
+        return
+            interpolate_bezier3(
+                Base::m_ctrl_pts[0],
+                Base::m_ctrl_pts[1],
+                Base::m_ctrl_pts[2],
+                Base::m_ctrl_pts[3],
+                t);
     }
 
     ValueType get_interpolated_width(const ValueType t) const
     {
-        return interpolate_bezier3(m_width[0], m_width[1], m_width[2], m_width[3], t);
+        return
+            interpolate_bezier3(
+                Base::m_width[0],
+                Base::m_width[1],
+                Base::m_width[2],
+                Base::m_width[3],
+                t);
     }
 
     void split(Bezier3& c1, Bezier3& c2) const
     {
-        VectorType first_mid_pts[3];
-        VectorType second_mid_pts[2];
-        const VectorType mid_pt = (*this)(ValueType(0.5));
+        const VectorType midpt = (*this)(ValueType(0.5));
 
-        first_mid_pts[0] = (m_ctrl_pts[0] + m_ctrl_pts[1]) * ValueType(0.5);
-        first_mid_pts[1] = (m_ctrl_pts[1] + m_ctrl_pts[2]) * ValueType(0.5);
-        first_mid_pts[2] = (m_ctrl_pts[2] + m_ctrl_pts[3]) * ValueType(0.5);
+        const VectorType first_mid_pts[] =
+        {
+            (Base::m_ctrl_pts[0] + Base::m_ctrl_pts[1]) * ValueType(0.5),
+            (Base::m_ctrl_pts[1] + Base::m_ctrl_pts[2]) * ValueType(0.5),
+            (Base::m_ctrl_pts[2] + Base::m_ctrl_pts[3]) * ValueType(0.5)
+        };
 
-        second_mid_pts[0] = (first_mid_pts[0] + first_mid_pts[1]) * ValueType(0.5);
-        second_mid_pts[1] = (first_mid_pts[1] + first_mid_pts[2]) * ValueType(0.5);
+        const VectorType lc[] =
+        {
+            Base::m_ctrl_pts[0],
+            first_mid_pts[0],
+            (first_mid_pts[0] + first_mid_pts[1]) * ValueType(0.5),
+            midpt
+        };
 
-        const VectorType lc[4] = {m_ctrl_pts[0], first_mid_pts[0], second_mid_pts[0], mid_pt};
-        const VectorType rc[4] = {mid_pt, second_mid_pts[1], first_mid_pts[2], m_ctrl_pts[3]};
+        const VectorType rc[] =
+        {
+            midpt,
+            (first_mid_pts[1] + first_mid_pts[2]) * ValueType(0.5),
+            first_mid_pts[2],
+            Base::m_ctrl_pts[3]
+        };
 
-        // Split the weight components.
-        ValueType first_mid_width[3];
-        ValueType second_mid_width[2];
-        ValueType third_mid_width[1];
+        const ValueType first_mid_width[] =
+        {
+            (Base::m_width[0] + Base::m_width[1]) * ValueType(0.5),
+            (Base::m_width[1] + Base::m_width[2]) * ValueType(0.5),
+            (Base::m_width[2] + Base::m_width[3]) * ValueType(0.5)
+        };
 
-        first_mid_width[0] = (m_width[0] + m_width[1]) * ValueType(0.5);
-        first_mid_width[1] = (m_width[1] + m_width[2]) * ValueType(0.5);
-        first_mid_width[2] = (m_width[2] + m_width[3]) * ValueType(0.5);
+        const ValueType second_mid_width[] =
+        {
+            (first_mid_width[0] + first_mid_width[1]) * ValueType(0.5),
+            (first_mid_width[1] + first_mid_width[2]) * ValueType(0.5)
+        };
 
-        second_mid_width[0] = (first_mid_width[0] + first_mid_width[1]) * ValueType(0.5);
-        second_mid_width[1] = (first_mid_width[1] + first_mid_width[2]) * ValueType(0.5);
-        third_mid_width[0] = (second_mid_width[0] + second_mid_width[1]) * ValueType(0.5);
+        const ValueType third_mid_width = (second_mid_width[0] + second_mid_width[1]) * ValueType(0.5);
 
-        const ValueType lw[4] = {m_width[0], first_mid_width[0], second_mid_width[0], third_mid_width[0]};
-        const ValueType rw[4] = {third_mid_width[0], second_mid_width[1], first_mid_width[2], m_width[3]};
+        const ValueType lw[] =
+        {
+            Base::m_width[0],
+            first_mid_width[0],
+            second_mid_width[0],
+            third_mid_width
+        };
+
+        const ValueType rw[] =
+        {
+            third_mid_width,
+            second_mid_width[1],
+            first_mid_width[2],
+            Base::m_width[3]
+        };
         
         c1 = Bezier3(lc, lw);
         c2 = Bezier3(rc, rw);
