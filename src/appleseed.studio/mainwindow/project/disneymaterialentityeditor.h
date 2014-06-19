@@ -65,9 +65,6 @@ class DisneyMaterialEntityEditor
 
   private slots:
     void slot_add_layer();
-    void slot_delete_layer();
-    void slot_move_layer_up();
-    void slot_move_layer_down();
 
     void slot_open_color_picker(const QString& widget_name);
     void slot_color_changed(const QString& widget_name, const QColor& color);

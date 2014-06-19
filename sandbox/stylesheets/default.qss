@@ -1125,8 +1125,7 @@ QToolTip
 
 QWidget#layer
 {
-    border: 2px solid BORDER_COLOR;
-    margin: 0px 0px 0px 0px;
+    border: 1px solid SELECTED_BACKGROUND_COLOR;
 }
 
 QWidget#selected_layer
@@ -1144,4 +1143,11 @@ QWidget#layer > QLabel, QWidget#disney > QLabel
 QWidget#seexpr_controls
 {
     border: 2px solid BORDER_COLOR;
+}
+
+QPushButton#add_layer
+{
+    border-radius: 0px;
+    border: 1px solid SELECTED_BACKGROUND_COLOR;
+    height: 25px;
 }
