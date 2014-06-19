@@ -486,29 +486,33 @@ class BezierCurveIntersector
     // Compute the transformation matrix required for ray-curve intersection.
     static MatrixType compute_curve_transform(const RayType& ray)
     {
-        MatrixType rotation;
+        MatrixType matrix;
 
+        // Build the rotation matrix.
         const VectorType rdir = normalize(ray.m_dir);
         const ValueType d = std::sqrt(rdir.x * rdir.x + rdir.z * rdir.z);
-
-        // We are actually required to do a test against 0 but we consider a small epsilon for our calculations.
         if (d >= ValueType(1.0e-6))
         {
-            const ValueType inv_d = ValueType(1.0) / d;
-            rotation(0, 0) = rdir.z * inv_d;             rotation(0, 1) = ValueType(0.0);   rotation(0, 2) = -rdir.x * inv_d;            rotation(0, 3) = ValueType(0.0);
-            rotation(1, 0) = -(rdir.x * rdir.y) * inv_d; rotation(1, 1) = d;                rotation(1, 2) = -(rdir.y * rdir.z) * inv_d; rotation(1, 3) = ValueType(0.0);
-            rotation(2, 0) = rdir.x;                     rotation(2, 1) = rdir.y;           rotation(2, 2) = rdir.z;                     rotation(2, 3) = ValueType(0.0);
-            rotation(3, 0) = ValueType(0.0);             rotation(3, 1) = ValueType(0.0);   rotation(3, 2) = ValueType(0.0);             rotation(3, 3) = ValueType(1.0);
+            const ValueType rcp_d = ValueType(1.0) / d;
+            matrix[ 0] = rdir.z * rcp_d;             matrix[ 1] = ValueType(0.0);   matrix[ 2] = -rdir.x * rcp_d;            matrix[ 3] = ValueType(0.0);
+            matrix[ 4] = -(rdir.x * rdir.y) * rcp_d; matrix[ 5] = d;                matrix[ 6] = -(rdir.y * rdir.z) * rcp_d; matrix[ 7] = ValueType(0.0);
+            matrix[ 8] = rdir.x;                     matrix[ 9] = rdir.y;           matrix[10] = rdir.z;                     matrix[11] = ValueType(0.0);
+            matrix[12] = ValueType(0.0);             matrix[13] = ValueType(0.0);   matrix[14] = ValueType(0.0);             matrix[15] = ValueType(1.0);
         }
         else
         {
-            // We replace the matrix by the one that rotates about the x axis by Pi/2.
+            // We replace the matrix by one that rotates about the x axis by Pi/2.
             // The sign of rotation depends on the sign of the y component of the direction vector.
             const ValueType angle = rdir.y > ValueType(0.0) ? ValueType(HalfPi) : -ValueType(HalfPi);
-            rotation = MatrixType::rotation_x(angle);
+            matrix = MatrixType::rotation_x(angle);
         }
 
-        return rotation * MatrixType::translation(-ray.m_org);
+        // Right-multiply the rotation matrix by a translation matrix.
+        matrix[ 3] = -ray.m_org.x;
+        matrix[ 7] = -ray.m_org.y;
+        matrix[11] = -ray.m_org.z;
+
+        return matrix;
     }
 
     bool intersect(
