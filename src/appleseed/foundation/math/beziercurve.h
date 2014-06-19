@@ -115,7 +115,7 @@ class BezierCurveBase
         return N + 1;
     }
 
-    VectorType get_control_point(const size_t index) const
+    const VectorType& get_control_point(const size_t index) const
     {
         assert(index < N + 1);
         return m_ctrl_pts[index];
@@ -132,7 +132,7 @@ class BezierCurveBase
         return m_max_width;
     }
 
-    AABBType get_bounds() const
+    const AABBType& get_bounds() const
     {
         return m_bounds;
     }
@@ -552,28 +552,30 @@ class BezierCurveIntersector
         if (depth == 0)
         {
             // Compute the intersection.
-            static const size_t Degree = BezierCurveType::Degree;
-            const VectorType dir = curve.get_control_point(Degree) - curve.get_control_point(0);
 
-            VectorType dp0 = curve.get_control_point(1) - curve.get_control_point(0);
+            const VectorType& cp0 = curve.get_control_point(0);
+            const VectorType& cpn = curve.get_control_point(BezierCurveType::Degree);
+            const VectorType dir = cpn - cp0;
+
+            VectorType dp0 = curve.get_control_point(1) - cp0;
             if (dot(dir, dp0) < ValueType(0.0))
                 dp0 = -dp0;
 
-            if (dot(dp0, curve.get_control_point(0)) > ValueType(0.0))
+            if (dot(dp0, cp0) > ValueType(0.0))
                 return false;
 
-            VectorType dpn = curve.get_control_point(Degree) - curve.get_control_point(Degree - 1);
+            VectorType dpn = cpn - curve.get_control_point(BezierCurveType::Degree - 1);
             if (dot(dir, dpn) < ValueType(0.0))
                 dpn = -dpn;
 
-            if (dot(dpn, curve.get_control_point(Degree)) < ValueType(0.0))
+            if (dot(dpn, cpn) < ValueType(0.0))
                 return false;
 
             // Compute w on the line segment.
             ValueType w = dir.x * dir.x + dir.y * dir.y;
             if (w < ValueType(1.0e-6))
                 return false;
-            w = -(curve.get_control_point(0).x * dir.x + curve.get_control_point(0).y * dir.y) / w;
+            w = -(cp0.x * dir.x + cp0.y * dir.y) / w;
             w = saturate(w);
 
             // Compute v on the line segment.
@@ -629,6 +631,7 @@ class BezierCurveIntersector
                     hit = v_right;
                     phit = t_right;
                 }
+
                 return true;
             }
 
