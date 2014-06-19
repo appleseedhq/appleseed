@@ -158,7 +158,8 @@ class BezierCurveBase
 
         const ValueType epsilon = m_max_width * ValueType(0.05);    // 1/20 of max_width
         const ValueType value = (ValueType(SqrtTwo) * N * (N - 1) * l0) / (ValueType(8.0) * epsilon);
-        const ValueType r0 = log(value, ValueType(4.0));
+        const ValueType RcpLog4 = ValueType(0.7213475204444817);
+        const ValueType r0 = std::log(value) * RcpLog4;
         const ValueType clamped_r0 = clamp(r0, ValueType(0.0), ValueType(5.0));
 
         return truncate<size_t>(clamped_r0);
