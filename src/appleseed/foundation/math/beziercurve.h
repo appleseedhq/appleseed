@@ -544,7 +544,7 @@ class BezierCurveIntersector
 
         const AABBType& bbox = curve.get_bounds();
 
-        if (bbox.min.z >= phit        || bbox.max.z <= ValueType(1e-6) ||
+        if (bbox.min.z >= phit        || bbox.max.z <= ValueType(1.0e-6) ||
             bbox.min.x >= curve_width || bbox.max.x <= -curve_width    ||
             bbox.min.y >= curve_width || bbox.max.y <= -curve_width)
             return false;
