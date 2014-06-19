@@ -118,7 +118,8 @@ class FilteredTile
     // Set all pixels to black and all weights to zero.
     void clear();
 
-    // The point (x, y) is expressed in continuous image space (http://appleseedhq.net/conventions).
+    // The point (x, y) is expressed in continuous image space
+    // (https://github.com/appleseedhq/appleseed/wiki/Terminology).
     void add(
         const double        x,
         const double        y,

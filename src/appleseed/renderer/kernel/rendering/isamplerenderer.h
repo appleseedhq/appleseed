@@ -54,7 +54,7 @@ class ISampleRenderer
 {
   public:
     // Render a sample at a given point on the image plane expressed in
-    // normalized device coordinates (http://appleseedhq.net/conventions).
+    // normalized device coordinates (https://github.com/appleseedhq/appleseed/wiki/Terminology).
     virtual void render_sample(
         SamplingContext&                sampling_context,
         const PixelContext&             pixel_context,

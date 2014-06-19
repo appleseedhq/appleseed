@@ -62,7 +62,7 @@ class PixelSampler
     // number of the corresponding sampling context, given the integer coordinates
     // of the subpixel grid cell containing the sample. The coordinates of the
     // pixel sample are expressed in continous image space
-    // (http://appleseedhq.net/conventions).
+    // (https://github.com/appleseedhq/appleseed/wiki/Terminology).
     void sample(
         const int               sx,
         const int               sy,
