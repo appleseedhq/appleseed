@@ -537,7 +537,7 @@ void TriangleTree::build_bvh(
 
     // Retrieving the partitioner parameters.
     const size_t max_leaf_size = params.get_optional<size_t>("max_leaf_size", TriangleTreeDefaultMaxLeafSize);
-    const GScalar interior_node_travesal_cost = params.get_optional<GScalar>("interior_node_traversal_cost", TriangleTreeDefaultInteriorNodeTraversalCost);
+    const GScalar interior_node_traversal_cost = params.get_optional<GScalar>("interior_node_traversal_cost", TriangleTreeDefaultInteriorNodeTraversalCost);
     const GScalar triangle_intersection_cost = params.get_optional<GScalar>("triangle_intersection_cost", TriangleTreeDefaultTriangleIntersectionCost);
 
     // Create the partitioner.
@@ -545,7 +545,7 @@ void TriangleTree::build_bvh(
     Partitioner partitioner(
         triangle_bboxes,
         max_leaf_size,
-        interior_node_travesal_cost,
+        interior_node_traversal_cost,
         triangle_intersection_cost);
 
     // Build the tree.
@@ -638,7 +638,7 @@ void TriangleTree::build_sbvh(
     // Retrieving the partitioner parameters.
     const size_t max_leaf_size = params.get_optional<size_t>("max_leaf_size", TriangleTreeDefaultMaxLeafSize);
     const size_t bin_count = params.get_optional<size_t>("bin_count", TriangleTreeDefaultBinCount);
-    const GScalar interior_node_travesal_cost = params.get_optional<GScalar>("interior_node_traversal_cost", TriangleTreeDefaultInteriorNodeTraversalCost);
+    const GScalar interior_node_traversal_cost = params.get_optional<GScalar>("interior_node_traversal_cost", TriangleTreeDefaultInteriorNodeTraversalCost);
     const GScalar triangle_intersection_cost = params.get_optional<GScalar>("triangle_intersection_cost", TriangleTreeDefaultTriangleIntersectionCost);
 
     // Create the partitioner.
@@ -652,7 +652,7 @@ void TriangleTree::build_sbvh(
         triangle_bboxes,
         max_leaf_size,
         bin_count,
-        interior_node_travesal_cost,
+        interior_node_traversal_cost,
         triangle_intersection_cost);
 
     // Create the root leaf.
