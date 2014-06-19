@@ -29,51 +29,53 @@
 #ifndef APPLESEED_FOUNDATION_MATH_BEZIER_H
 #define APPLESEED_FOUNDATION_MATH_BEZIER_H
 
-// appleseed.foundation headers.
-#include "foundation/math/aabb.h"
-#include "foundation/math/matrix.h"
-#include "foundation/math/minmax.h"
-#include "foundation/math/ray.h"
-#include "foundation/math/vector.h"
-
-// Standard headers.
-#include <algorithm>
-#include <cassert>
-#include <cmath>
-#include <cstddef>
-
 namespace foundation
 {
 
 //
 // Free functions to evaluate Bezier interpolation polynomials.
-// T: type of the interpolation parameter
-// V: type of the interpolated values
+//
+//   T: type of the interpolation parameter
+//   V: type of the interpolated values
 //
 
 template <typename T, typename V>
-inline V interpolate_bezier1(const V x, const V y, const T t)
+V interpolate_bezier1(const V v0, const V v1, const T t);
+
+template <typename T, typename V>
+V interpolate_bezier2(const V v0, const V v1, const V v2, const T t);
+
+template <typename T, typename V>
+V interpolate_bezier3(const V v0, const V v1, const V v2, const V v3, const T t);
+
+
+//
+// Implementation.
+//
+
+template <typename T, typename V>
+inline V interpolate_bezier1(const V v0, const V v1, const T t)
 {
-    return (T(1.0) - t) * x + t * y;
+    return (T(1.0) - t) * v0 + t * v1;
 }
 
 template <typename T, typename V>
-inline V interpolate_bezier2(const V x, const V y, const V z, const T t)
+inline V interpolate_bezier2(const V v0, const V v1, const V v2, const T t)
 {
-    // Formula: (1-t)^2 * P0 + 2 * (1-t)*t*P1 + t^2 * P2.
+    // Formula: (1-t)^2 * v0 + 2 * (1-t)*t * v1 + t^2 * v2.
 
     const T u = T(1.0) - t;
     const T a = u * u;              // (1-t)^2
     const T b = u * t;              // (1-t) * t
     const T c = t * t;              // t^2
-    
-    return a * x + 2 * b * y + c * z;
+
+    return a * v0 + T(2.0) * b * v1 + c * v2;
 }
 
 template <typename T, typename V>
-inline V interpolate_bezier3(const V x, const V y, const V z, const V w, const T t)
+inline V interpolate_bezier3(const V v0, const V v1, const V v2, const V v3, const T t)
 {
-    // Formula: (1-t)^3 * P0 + 3 * (1-t)^2 * t * P1 + 3 * (1-t) * t^2 * P2 + t^3 * P3.
+    // Formula: (1-t)^3 * v0 + 3 * (1-t)^2 * t * v1 + 3 * (1-t) * t^2 * v2 + t^3 * v3.
 
     const T u = T(1.0) - t;
     const T a = u * u * u;          // (1-t)^3
@@ -81,427 +83,8 @@ inline V interpolate_bezier3(const V x, const V y, const V z, const V w, const T
     const T c = u * t * t;          // (1-t) * t^2
     const T d = t * t * t;          // t^3
 
-    return a * x + 3 * b * y + 3 * c * z + d * w;
+    return a * v0 + T(3.0) * (b * v1 + c * v2) + d * v3;
 }
-
-
-//
-// Base class for Bezier curves.
-// N is the degree of the curve.
-// A curve of degree N has N+1 control points.
-//
-
-template <typename T, size_t N>
-class BezierBase
-{
-  public:
-    // Types.
-    typedef T ValueType;
-    typedef Vector<T, 3> VectorType;
-    typedef AABB<T, 3> AABBType;
-    typedef Matrix<T, 4, 4> MatrixType;
-
-    // Degree of the Bezier curve.
-    static const size_t Degree = N;
-
-    BezierBase()
-    {
-    }
-
-    BezierBase(const VectorType ctrl_pts[N + 1], const ValueType width)
-    {
-        assert(width >= ValueType(0.0));
-
-        for (size_t i = 0; i < N + 1; ++i)
-        {
-            m_ctrl_pts[i] = ctrl_pts[i];
-            m_width[i] = width;
-        }
-        
-        compute_max_width();
-        compute_bounds();
-    }
-
-    BezierBase(const VectorType ctrl_pts[N + 1], const ValueType width[N + 1])
-    {   
-        for (size_t i = 0; i < N + 1; ++i)
-        {
-            assert(width[i] >= ValueType(0.0));
-            m_ctrl_pts[i] = ctrl_pts[i];
-            m_width[i] = width[i];
-        }
-
-        compute_max_width();
-        compute_bounds();
-    }
-
-    BezierBase(const BezierBase& bezier, const MatrixType& xfm)
-    {
-        for (size_t i = 0; i < N + 1; ++i)
-        {
-            m_ctrl_pts[i] = transform_point(xfm, bezier.m_ctrl_pts[i]);
-            m_width[i] = bezier.m_width[i];
-        }
-
-        compute_max_width();
-        compute_bounds();
-    }
-
-    size_t get_control_point_count() const
-    {
-        return N + 1;
-    }
-
-    VectorType get_control_point(const size_t index) const
-    {
-        assert(index < N + 1);
-        return m_ctrl_pts[index];
-    }
-
-    ValueType get_width(const size_t index) const
-    {
-        assert(index < N + 1);
-        return m_width[index];
-    }
-
-    ValueType get_max_width() const
-    {
-        return m_max_width;
-    }
-
-    AABBType get_bounds() const
-    {
-        return m_bounds;
-    }
-
-    size_t compute_max_recursion_depth() const
-    {
-        if (N < 2)
-            return 0;
-
-        ValueType l0 =
-            std::max(
-                std::abs(m_ctrl_pts[0].x - ValueType(2.0) * m_ctrl_pts[1].x + m_ctrl_pts[2].x),
-                std::abs(m_ctrl_pts[0].y - ValueType(2.0) * m_ctrl_pts[1].y + m_ctrl_pts[2].y));
-
-        for (size_t i = 1; i <= N - 2; ++i)
-        {
-            l0 =
-                max(
-                    l0,
-                    std::abs(m_ctrl_pts[i].x - ValueType(2.0) * m_ctrl_pts[i + 1].x + m_ctrl_pts[i + 2].x),
-                    std::abs(m_ctrl_pts[i].y - ValueType(2.0) * m_ctrl_pts[i + 1].y + m_ctrl_pts[i + 2].y));
-        }
-
-        const ValueType epsilon = m_max_width * ValueType(0.05);    // 1/20 of max_width
-        const ValueType value = (ValueType(SqrtTwo) * N * (N - 1) * l0) / (ValueType(8.0) * epsilon);
-        const ValueType r0 = log(value, ValueType(4.0));
-        const ValueType clamped_r0 = clamp(r0, ValueType(0.0), ValueType(5.0));
-
-        return truncate<size_t>(clamped_r0);
-    }
-
-    static VectorType transform_point(const MatrixType& xfm, const VectorType& p)
-    {
-        const Vector<ValueType, 4> pt(p.x, p.y, p.z, ValueType(1.0));
-        const Vector<ValueType, 4> xpt = xfm * pt;
-        const ValueType rcp_w = ValueType(1.0) / xpt.w;
-        return VectorType(xpt.x * rcp_w, xpt.y * rcp_w, xpt.z * rcp_w);
-    }
-
-  protected:
-    void compute_max_width() 
-    {
-        m_max_width = m_width[0];
-        for (size_t i = 1; i < N + 1; ++i)
-            m_max_width = std::max(m_max_width, m_width[i]);
-    }
-
-    void compute_bounds()
-    {
-        m_bounds.invalidate();
-        for (size_t i = 0; i < N + 1; ++i)
-            m_bounds.insert(m_ctrl_pts[i]);
-
-        m_bounds.grow(VectorType(m_max_width * ValueType(0.5)));
-        m_bounds.robust_grow(ValueType(1.0e-4));
-    }
-
-    VectorType  m_ctrl_pts[N + 1];
-    ValueType   m_width[N + 1];
-    ValueType   m_max_width;
-    AABBType    m_bounds;
-};
-
-
-//
-// Degree 1 Bezier curve (a straight line).
-//
-
-template <typename T>
-class Bezier1
-  : public BezierBase<T, 1>
-{
-  public:
-    typedef BezierBase<T, 1> Base;
-    typedef typename Base::ValueType ValueType;
-    typedef typename Base::VectorType VectorType;
-    typedef typename Base::AABBType AABBType;
-    typedef typename Base::MatrixType MatrixType;
-
-    Bezier1()
-    {
-    }
-
-    Bezier1(const VectorType ctrl_pts[2], const ValueType width)
-      : Base(ctrl_pts, width)
-    {
-    }
-
-    Bezier1(const VectorType ctrl_pts[2], const ValueType width[2])
-      : Base(ctrl_pts, width)
-    {
-    }
-
-    Bezier1(const Bezier1& bezier, const MatrixType& xfm)
-      : Base(bezier, xfm)
-    {
-    }
-
-    VectorType evaluate_point(const ValueType t) const
-    {
-        return interpolate_bezier1(Base::m_ctrl_pts[0], Base::m_ctrl_pts[1], t);
-    }
-
-    ValueType evaluate_width(const ValueType t) const
-    {
-        return interpolate_bezier1(Base::m_width[0], Base::m_width[1], t);
-    }
-
-    void split(Bezier1& c1, Bezier1& c2) const
-    {
-        const VectorType midpt = evaluate_point(ValueType(0.5));
-        const ValueType midw = evaluate_width(ValueType(0.5));
-
-        c1.m_ctrl_pts[0] = Base::m_ctrl_pts[0];
-        c1.m_ctrl_pts[1] = midpt;
-
-        c1.m_width[0] = Base::m_width[0];
-        c1.m_width[1] = midw;
-        
-        c1.compute_max_width();
-        c1.compute_bounds();
-
-        c2.m_ctrl_pts[0] = midpt;
-        c2.m_ctrl_pts[1] = Base::m_ctrl_pts[1];
-        
-        c2.m_width[0] = midw;
-        c2.m_width[1] = Base::m_width[1];
-        
-        c2.compute_max_width();
-        c2.compute_bounds();
-    }
-};
-
-
-//
-// Degree 2 Bezier curve.
-//
-
-template <typename T>
-class Bezier2
-  : public BezierBase<T, 2>
-{
-  public:
-    typedef BezierBase<T, 2> Base;
-    typedef typename Base::ValueType ValueType;
-    typedef typename Base::VectorType VectorType;
-    typedef typename Base::AABBType AABBType;
-    typedef typename Base::MatrixType MatrixType;
-
-    Bezier2()
-    {
-    }
-
-    Bezier2(const VectorType ctrl_pts[3], const ValueType width)
-      : Base(ctrl_pts, width)
-    {
-    }
-
-    Bezier2(const VectorType ctrl_pts[3], const ValueType width[3])
-      : Base(ctrl_pts, width)
-    {
-    }
-
-    Bezier2(const Bezier2& bezier, const MatrixType& xfm)
-      : Base(bezier, xfm)
-    {
-    }
-
-    VectorType evaluate_point(const ValueType t) const
-    {
-        return
-            interpolate_bezier2(
-                Base::m_ctrl_pts[0],
-                Base::m_ctrl_pts[1],
-                Base::m_ctrl_pts[2],
-                t);
-    }
-
-    ValueType evaluate_width(const ValueType t) const
-    {
-        return
-            interpolate_bezier2(
-                Base::m_width[0],
-                Base::m_width[1],
-                Base::m_width[2],
-                t);
-    }
-
-    void split(Bezier2& c1, Bezier2& c2) const
-    {
-        const VectorType midpt = evaluate_point(ValueType(0.5));
-        const ValueType midw = evaluate_width(ValueType(0.5));
-
-        c1.m_ctrl_pts[0] = Base::m_ctrl_pts[0];
-        c1.m_ctrl_pts[1] = (Base::m_ctrl_pts[0] + Base::m_ctrl_pts[1]) * ValueType(0.5);
-        c1.m_ctrl_pts[2] = midpt;
-
-        c1.m_width[0] = Base::m_width[0];
-        c1.m_width[1] = (Base::m_width[0] + Base::m_width[1]) * ValueType(0.5);
-        c1.m_width[2] = midw;
-
-        c1.compute_max_width();
-        c1.compute_bounds();
-
-        c2.m_ctrl_pts[0] = midpt;
-        c2.m_ctrl_pts[1] = (Base::m_ctrl_pts[1] + Base::m_ctrl_pts[2]) * ValueType(0.5);
-        c2.m_ctrl_pts[2] = Base::m_ctrl_pts[2];
-
-        c2.m_width[0] = midw;
-        c2.m_width[1] = (Base::m_width[1] + Base::m_width[2]) * ValueType(0.5);
-        c2.m_width[2] = Base::m_width[2];
-
-        c2.compute_max_width();
-        c2.compute_bounds();
-    }
-};
-
-
-//
-// Degree 3 Bezier curve.
-//
-
-template <typename T>
-class Bezier3
-  : public BezierBase<T, 3>
-{
-  public:
-    typedef BezierBase<T, 3> Base;
-    typedef typename Base::ValueType ValueType;
-    typedef typename Base::VectorType VectorType;
-    typedef typename Base::AABBType AABBType;
-    typedef typename Base::MatrixType MatrixType;
-
-    Bezier3()
-    {
-    }
-
-    Bezier3(const VectorType ctrl_pts[4], const ValueType width)
-      : Base(ctrl_pts, width)
-    {
-    }
-
-    Bezier3(const VectorType ctrl_pts[4], const ValueType width[4])
-      : Base(ctrl_pts, width)
-    {
-    }
-
-    Bezier3(const Bezier3& bezier, const MatrixType& xfm)
-      : Base(bezier, xfm)
-    {
-    }
-
-    VectorType evaluate_point(const ValueType t) const
-    {
-        return
-            interpolate_bezier3(
-                Base::m_ctrl_pts[0],
-                Base::m_ctrl_pts[1],
-                Base::m_ctrl_pts[2],
-                Base::m_ctrl_pts[3],
-                t);
-    }
-
-    ValueType evaluate_width(const ValueType t) const
-    {
-        return
-            interpolate_bezier3(
-                Base::m_width[0],
-                Base::m_width[1],
-                Base::m_width[2],
-                Base::m_width[3],
-                t);
-    }
-
-    void split(Bezier3& c1, Bezier3& c2) const
-    {
-        const VectorType midpt = evaluate_point(ValueType(0.5));
-        const ValueType midw = evaluate_width(ValueType(0.5));
-
-        const VectorType mc[] =
-        {
-            (Base::m_ctrl_pts[0] + Base::m_ctrl_pts[1]) * ValueType(0.5),
-            (Base::m_ctrl_pts[1] + Base::m_ctrl_pts[2]) * ValueType(0.5),
-            (Base::m_ctrl_pts[2] + Base::m_ctrl_pts[3]) * ValueType(0.5)
-        };
-
-        const ValueType mw[] =
-        {
-            (Base::m_width[0] + Base::m_width[1]) * ValueType(0.5),
-            (Base::m_width[1] + Base::m_width[2]) * ValueType(0.5),
-            (Base::m_width[2] + Base::m_width[3]) * ValueType(0.5)
-        };
-
-        c1.m_ctrl_pts[0] = Base::m_ctrl_pts[0];
-        c1.m_ctrl_pts[1] = mc[0];
-        c1.m_ctrl_pts[2] = (mc[0] + mc[1]) * ValueType(0.5);
-        c1.m_ctrl_pts[3] = midpt;
-
-        c1.m_width[0] = Base::m_width[0];
-        c1.m_width[1] = mw[0];
-        c1.m_width[2] = (mw[0] + mw[1]) * ValueType(0.5);
-        c1.m_width[3] = midw;
-
-        c1.compute_max_width();
-        c1.compute_bounds();
-
-        c2.m_ctrl_pts[0] = midpt;
-        c2.m_ctrl_pts[1] = (mc[1] + mc[2]) * ValueType(0.5);
-        c2.m_ctrl_pts[2] = mc[2];
-        c2.m_ctrl_pts[3] = Base::m_ctrl_pts[3];
-
-        c2.m_width[0] = midw;
-        c2.m_width[1] = (mw[1] + mw[2]) * ValueType(0.5);
-        c2.m_width[2] = mw[2];
-        c2.m_width[3] = Base::m_width[3];
-
-        c2.compute_max_width();
-        c2.compute_bounds();
-    }
-};
-
-
-//
-// Full specializations for degree 1, 2, 3 Bezier curves of type float and double.
-//
-
-typedef Bezier1<float>  Bezier1f;
-typedef Bezier1<double> Bezier1d;
-typedef Bezier2<float>  Bezier2f;
-typedef Bezier2<double> Bezier2d;
-typedef Bezier3<float>  Bezier3f;
-typedef Bezier3<double> Bezier3d;
 
 }       // namespace foundation
 

@@ -241,11 +241,11 @@ set (foundation_math_sources
     foundation/math/basis.h
     foundation/math/bestcandidate.h
     foundation/math/bezier.h
+    foundation/math/beziercurve.h
     foundation/math/bsp.h
     foundation/math/bvh.h
     foundation/math/cdf.h
     foundation/math/combination.h
-    foundation/math/curve.h
     foundation/math/distance.h
     foundation/math/fastmath.h
     foundation/math/filter.h
@@ -365,6 +365,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_attributeset.cpp
     foundation/meta/tests/test_autoreleaseptr.cpp
     foundation/meta/tests/test_benchmarkaggregator.cpp
+    foundation/meta/tests/test_beziercurve.cpp
     foundation/meta/tests/test_bitmask.cpp
     foundation/meta/tests/test_boost_datetime.cpp
     foundation/meta/tests/test_boost_path.cpp
@@ -381,7 +382,6 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_commandlineparser.cpp
     foundation/meta/tests/test_concepts.cpp
     foundation/meta/tests/test_countof.cpp
-    foundation/meta/tests/test_curve.cpp
     foundation/meta/tests/test_datetime.cpp
     foundation/meta/tests/test_dictionary.cpp
     foundation/meta/tests/test_distance.cpp
