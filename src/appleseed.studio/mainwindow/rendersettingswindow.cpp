@@ -987,7 +987,7 @@ namespace
             create_bounce_settings(sublayout, "radiance_estimation");
             sublayout->addRow("Initial Radius:", create_double_input("radiance_estimation.initial_radius", 0.001, 100.0, 3, 0.1, "%"));
             sublayout->addRow("Max Photons:", create_integer_input("radiance_estimation.max_photons", 8, 1000000000, 50));
-            sublayout->addRow("Alpha:", create_double_input("radiance_estimation.alpha", 0.0, 1.0, 1, 0.1));
+            sublayout->addRow("Alpha:", create_double_input("radiance_estimation.alpha", 0.0, 1.0, 2, 0.1));
         }
     };
 
