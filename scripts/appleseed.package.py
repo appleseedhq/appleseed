@@ -29,7 +29,7 @@
 #
 
 # Package builder settings.
-VersionString = "2.3.8"
+VersionString = "2.3.9"
 SettingsFileName = "appleseed.package.configuration.xml"
 
 # Imports.
@@ -330,6 +330,9 @@ class MacPackageBuilder(PackageBuilder):
     def fixup_appleseed_studio(self):
         self.fixup_change("appleseed.studio", os.path.join(self.build_path, "appleseed/libappleseed.dylib"), "libappleseed.dylib")
         self.fixup_change("appleseed.studio", os.path.join(self.build_path, "appleseed.shared/libappleseed.shared.dylib"), "libappleseed.shared.dylib")
+        self.fixup_change("appleseed.studio", self.get_qt_framework_path("QtCore"), "QtCore.framework/Versions/4/QtCore")
+        self.fixup_change("appleseed.studio", self.get_qt_framework_path("QtGui"), "QtGui.framework/Versions/4/QtGui")
+        self.fixup_change("appleseed.studio", self.get_qt_framework_path("QtOpenGL"), "QtOpenGL.framework/Versions/4/QtOpenGL")
 
     def fixup_qt_frameworks(self):
         self.fixup_id("QtCore.framework/Versions/4/QtCore", "QtCore.framework/Versions/4/QtCore")
@@ -343,7 +346,6 @@ class MacPackageBuilder(PackageBuilder):
         self.fixup(target, '-id @"' + name + '"')
 
     def fixup_change(self, target, old, new):
-        progress("Mac-specific fixup: changing {0} to {1}".format(old, new))
         self.fixup(target, '-change "' + old + '" "' + new + '"')
 
     def fixup(self, target, args):
