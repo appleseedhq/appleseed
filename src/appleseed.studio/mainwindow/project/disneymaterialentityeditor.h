@@ -81,8 +81,6 @@ class DisneyMaterialEntityEditor
     void create_layer_layout();
 
     std::string unique_layer_name();
-    std::string qcolor_to_expression(const QColor& color);
-    QColor expression_to_qcolor(const std::string& color);
     std::string texture_to_expression(const QString& path);
 
     void create_text_input_widgets(const std::string& parameter, const std::string& value);
@@ -99,7 +97,6 @@ class DisneyMaterialEntityEditor
     const renderer::Project&        m_project;
     QWidget*                        m_group_widget;
     QWidget*                        m_selected_layer_widget;
-    QWidget*                        m_color_button;
     QWidget*                        m_texture_button;
     QWidget*                        m_expression_button;
     QVBoxLayout*                    m_group_layout;
@@ -111,8 +108,6 @@ class DisneyMaterialEntityEditor
     QSignalMapper*                  m_expression_editor_signal_mapper;
 
     InputWidgetProxyCollection      m_widget_proxies;
-
-    class           LayerWidget;
 };
 
 }       // namespace studio

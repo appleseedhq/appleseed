@@ -30,6 +30,7 @@
 #include "disneymaterialentityeditor.h"
 
 // appleseed.studio headers.
+#include "mainwindow/project/expressioneditorwindow.h"
 #include "utility/doubleslider.h"
 #include "utility/interop.h"
 #include "utility/miscellaneous.h"
@@ -59,9 +60,6 @@
 #include <QVBoxLayout>
 #include <Qt>
 #include <QToolButton>
-
-#include <SeExprEditor/SeExprEditor.h>
-#include <SeExprEditor/SeExprEdControlCollection.h>
 
 // boost headers.
 #include "boost/algorithm/string.hpp"
@@ -141,6 +139,7 @@ namespace
         }
     };
 
+
     class ForwardColorChangedSignal
       : public QObject
     {
@@ -166,253 +165,178 @@ namespace
         const QString m_widget_name;
     };
 
-    class ExpressionEditorWindow
-      : public QWidget
+    class LayerWidget
+      : public QFrame
     {
         Q_OBJECT
 
       public:
-        ExpressionEditorWindow(
-            const QString& widget_name,
-            const string& expression,
-            QWidget* parent = 0)
-          : QWidget(parent)
-          , m_widget_name(widget_name)
-          , m_ui(new Ui::ExpressionEditorWindow())
+        LayerWidget(QVBoxLayout* form_layout, QWidget* parent = 0)
+          : QFrame(parent)
+          , m_form_layout(form_layout)
+          , m_is_folded(false)
         {
-            m_ui->setupUi(this);
-            setWindowFlags(Qt::Tool);
-            setAttribute(Qt::WA_DeleteOnClose);
-            QVBoxLayout* root_layout = new QVBoxLayout(m_ui->scrollarea);
+            setObjectName("layer");
 
-            // Expression controls
-            SeExprEdControlCollection *controls = new SeExprEdControlCollection();
-            QScrollArea* controls_scrollarea = new QScrollArea(this);
-            controls_scrollarea->setObjectName("expression_controls");
-            controls_scrollarea->setMinimumHeight(200);
-            controls_scrollarea->setWidgetResizable(true);
-            controls_scrollarea->setWidget(controls);
-            root_layout->addWidget(controls_scrollarea);
+            m_spacer = new QWidget();
+            QHBoxLayout* spacer_layout = new QHBoxLayout(m_spacer);
+            spacer_layout->setSpacing(0);
 
-            m_editor = new SeExprEditor(this, controls);
-            // setObjectName does not have effect on stylesheet
-            m_editor->setStyleSheet("background-color: rgb(30, 30, 30);");
-            m_editor->setExpr(expression, true);
-            root_layout->addWidget(m_editor);
+            m_layout = new QVBoxLayout(this);
+            m_form_layout->insertWidget(m_form_layout->count() - 2, this);
 
-            QPushButton* apply_button = m_ui->buttonbox->button(QDialogButtonBox::Apply);
+            QWidget *button_box = new QWidget(this);
+            QHBoxLayout *button_box_layout = new QHBoxLayout(button_box);
+            button_box_layout->setSpacing(0);
+            button_box_layout->setMargin(0);
+            m_layout->addWidget(button_box);
 
-            // Create connections
-            connect(m_ui->buttonbox, SIGNAL(accepted()), SLOT(slot_accept()));
-            connect(apply_button, SIGNAL(clicked()), SLOT(slot_apply()));
-            connect(m_ui->buttonbox, SIGNAL(rejected()), SLOT(slot_cancel()));
+            // Folding button.
+            m_fold_arrow_disabled = QIcon(":/widgets/header_arrow_down_disabled.png");
+            m_fold_arrow_enabled = QIcon(":/widgets/scrollbar_arrow_right_disabled.png");
+            m_fold_button = new QToolButton(button_box);
+            m_fold_button->setIcon(m_fold_arrow_disabled);
+            button_box_layout->addWidget(m_fold_button);
+            connect(m_fold_button, SIGNAL(clicked()), this, SLOT(slot_fold()));
+
+            button_box_layout->addStretch(1);
+
+            // Up button.
+            QIcon arrow_up = QIcon(":icons/layer_arrow_up.png");
+            QToolButton* up_button = new QToolButton(button_box);
+            up_button->setIcon(arrow_up);
+            button_box_layout->addWidget(up_button);
+            connect(up_button, SIGNAL(clicked()), this, SLOT(slot_move_layer_up()));
+
+            // Down button.
+            QIcon arrow_down = QIcon(":icons/layer_arrow_down.png");
+            QToolButton* down_button = new QToolButton(button_box);
+            down_button->setIcon(arrow_down);
+            button_box_layout->addWidget(down_button);
+            connect(down_button, SIGNAL(clicked()), this, SLOT(slot_move_layer_down()));
+
+            // Close button.
+            QIcon close = QIcon(":/icons/close.png");
+            QToolButton* close_button = new QToolButton(button_box);
+            close_button->setIcon(close);
+            button_box_layout->addWidget(close_button);
+            connect(close_button, SIGNAL(clicked()), this, SLOT(slot_delete_layer()));
         }
 
-        void apply_expression()
+        void mousePressEvent(QMouseEvent* event)
         {
-            const QString expression = QString::fromStdString(m_editor->getExpr());
-            if (!expression.isEmpty())
-                emit signal_expression_applied(m_widget_name, expression);
+            for (int i=1; i<m_form_layout->count()-2; ++i)
+            {
+                QLayoutItem* layout_item = m_form_layout->itemAt(i);
+                QWidget* widget = layout_item->widget();
+                if (widget->objectName() == "selected_layer")
+                {
+                    widget->setObjectName("layer");
+                    style()->unpolish(widget);
+                    style()->polish(widget);
+                    break;
+                }
+            }
+            setObjectName("selected_layer");
+            style()->unpolish(this);
+            style()->polish(this);
         }
 
-      public slots:
-        void slot_accept()
+        void mouseDoubleClickEvent(QMouseEvent* event)
         {
-            apply_expression();
-            close();
+            fold_layer();
         }
 
-        void slot_apply()
+        QVBoxLayout* get_layout()
         {
-            apply_expression();
+            return m_layout;
+        }
+      
+      private:
+        void fold_layer()
+        {
+            if (m_is_folded)
+            {
+                m_layout->removeWidget(m_spacer);
+                m_spacer->hide();
+                m_fold_button->setIcon(m_fold_arrow_disabled);
+            }
+
+            for (int i=2; i<m_layout->count(); ++i)
+            {
+                QLayout* vertical_layout = m_layout->itemAt(i)->layout();
+                for (int j=0; j<vertical_layout->count(); ++j)
+                {
+                    QWidget* widget = vertical_layout->itemAt(j)->widget();
+                    m_is_folded ? widget->show() : widget->hide();
+                }
+            }
+            
+            if (!m_is_folded)
+            {
+                m_layout->addWidget(m_spacer);
+                m_spacer->show();
+                m_fold_button->setIcon(m_fold_arrow_enabled);
+            }
+
+            m_is_folded = !m_is_folded;
         }
 
-        void slot_cancel()
+      private slots:
+        void slot_delete_layer() 
         {
-            close();
+            delete this;
         }
 
-      signals:
-        void signal_expression_applied(const QString& widget_name, const QString& expression);
+        void slot_move_layer_up()
+        {
+            for (int i=1; i<m_form_layout->count(); ++i)
+            {
+                QLayoutItem* layout_item = m_form_layout->itemAt(i);
+                if (this == layout_item->widget())
+                {
+                    if (i > 1)
+                    {
+                        m_form_layout->takeAt(i);
+                        m_form_layout->insertWidget(i-1, this);
+                    }
+                    break;
+                }
+            }
+        }
+
+        void slot_move_layer_down()
+        {
+            for (int i=1; i<m_form_layout->count(); ++i)
+            {
+                QLayoutItem* layout_item = m_form_layout->itemAt(i);
+                if (this == layout_item->widget())
+                {
+                    if (i < m_form_layout->count()-3)
+                    {
+                        m_form_layout->takeAt(i);
+                        m_form_layout->insertWidget(i+1, this);
+                    }
+                    break;
+                }
+            }
+        }
+
+        void slot_fold()
+        {
+            fold_layer();
+        }
 
       private:
-        Ui::ExpressionEditorWindow*     m_ui;
-        const QString                   m_widget_name;
-        SeExprEditor*                   m_editor;
+        QVBoxLayout*    m_layout;
+        QVBoxLayout*    m_form_layout;
+        QWidget*        m_spacer;
+        QToolButton*    m_fold_button;
+        bool            m_is_folded;
+        QIcon           m_fold_arrow_enabled;
+        QIcon           m_fold_arrow_disabled;
     };
 }
-
-class DisneyMaterialEntityEditor::LayerWidget
-  : public QFrame
-{
-    Q_OBJECT
-
-  public:
-    LayerWidget(QVBoxLayout* form_layout, QWidget* parent = 0)
-      : QFrame(parent)
-      , m_form_layout(form_layout)
-      , m_is_folded(false)
-    {
-        setObjectName("layer");
-
-        m_spacer = new QWidget();
-        QHBoxLayout* spacer_layout = new QHBoxLayout(m_spacer);
-        spacer_layout->setSpacing(0);
-
-        m_layout = new QVBoxLayout(this);
-        m_form_layout->insertWidget(m_form_layout->count() - 2, this);
-
-        QWidget *button_box = new QWidget(this);
-        QHBoxLayout *button_box_layout = new QHBoxLayout(button_box);
-        button_box_layout->setSpacing(0);
-        button_box_layout->setMargin(0);
-        m_layout->addWidget(button_box);
-
-        button_box_layout->addStretch(1);
-
-        // Folding button.
-        m_fold_arrow_disabled = QIcon(":/widgets/header_arrow_down_disabled.png");
-        m_fold_arrow_enabled = QIcon(":/widgets/scrollbar_arrow_left_disabled.png");
-        m_fold_button = new QToolButton(button_box);
-        m_fold_button->setIcon(m_fold_arrow_disabled);
-        button_box_layout->addWidget(m_fold_button);
-        connect(m_fold_button, SIGNAL(clicked()), this, SLOT(slot_fold()));
-
-        // Up button.
-        QIcon arrow_up = QIcon(":icons/layer_arrow_up.png");
-        QToolButton* up_button = new QToolButton(button_box);
-        up_button->setIcon(arrow_up);
-        button_box_layout->addWidget(up_button);
-        connect(up_button, SIGNAL(clicked()), this, SLOT(slot_move_layer_up()));
-
-        // Down button.
-        QIcon arrow_down = QIcon(":icons/layer_arrow_down.png");
-        QToolButton* down_button = new QToolButton(button_box);
-        down_button->setIcon(arrow_down);
-        button_box_layout->addWidget(down_button);
-        connect(down_button, SIGNAL(clicked()), this, SLOT(slot_move_layer_down()));
-
-        // Close button.
-        QIcon close = QIcon(":/icons/close.png");
-        QToolButton* close_button = new QToolButton(button_box);
-        close_button->setIcon(close);
-        button_box_layout->addWidget(close_button);
-        connect(close_button, SIGNAL(clicked()), this, SLOT(slot_delete_layer()));
-    }
-
-    void mousePressEvent(QMouseEvent* event)
-    {
-        for (int i=1; i<m_form_layout->count()-2; ++i)
-        {
-            QLayoutItem* layout_item = m_form_layout->itemAt(i);
-            QWidget* widget = layout_item->widget();
-            if (widget->objectName() == "selected_layer")
-            {
-                widget->setObjectName("layer");
-                style()->unpolish(widget);
-                style()->polish(widget);
-                break;
-            }
-        }
-        setObjectName("selected_layer");
-        style()->unpolish(this);
-        style()->polish(this);
-    }
-
-    void mouseDoubleClickEvent(QMouseEvent* event)
-    {
-        fold_layer();
-    }
-
-    QVBoxLayout* get_layout()
-    {
-        return m_layout;
-    }
-  
-  private:
-    void fold_layer()
-    {
-        if (m_is_folded)
-        {
-            m_layout->removeWidget(m_spacer);
-            m_spacer->hide();
-            m_fold_button->setIcon(m_fold_arrow_disabled);
-        }
-
-        for (int i=2; i<m_layout->count(); ++i)
-        {
-            QLayout* vertical_layout = m_layout->itemAt(i)->layout();
-            for (int j=0; j<vertical_layout->count(); ++j)
-            {
-                QWidget* widget = vertical_layout->itemAt(j)->widget();
-                m_is_folded ? widget->show() : widget->hide();
-            }
-        }
-        
-        if (!m_is_folded)
-        {
-            m_layout->addWidget(m_spacer);
-            m_spacer->show();
-            m_fold_button->setIcon(m_fold_arrow_enabled);
-        }
-
-        m_is_folded = !m_is_folded;
-    }
-
-  private slots:
-    void slot_delete_layer() 
-    {
-        delete this;
-    }
-
-    void slot_move_layer_up()
-    {
-        for (int i=1; i<m_form_layout->count(); ++i)
-        {
-            QLayoutItem* layout_item = m_form_layout->itemAt(i);
-            if (this == layout_item->widget())
-            {
-                if (i > 1)
-                {
-                    m_form_layout->takeAt(i);
-                    m_form_layout->insertWidget(i-1, this);
-                }
-                break;
-            }
-        }
-    }
-
-    void slot_move_layer_down()
-    {
-        for (int i=1; i<m_form_layout->count(); ++i)
-        {
-            QLayoutItem* layout_item = m_form_layout->itemAt(i);
-            if (this == layout_item->widget())
-            {
-                if (i < m_form_layout->count()-3)
-                {
-                    m_form_layout->takeAt(i);
-                    m_form_layout->insertWidget(i+1, this);
-                }
-                break;
-            }
-        }
-    }
-
-    void slot_fold()
-    {
-        fold_layer();
-    }
-
-  private:
-    QVBoxLayout*    m_layout;
-    QVBoxLayout*    m_form_layout;
-    QWidget*        m_spacer;
-    QToolButton*    m_fold_button;
-    bool            m_is_folded;
-    QIcon           m_fold_arrow_enabled;
-    QIcon           m_fold_arrow_disabled;
-};
 
 
 DisneyMaterialEntityEditor::DisneyMaterialEntityEditor(
@@ -455,7 +379,7 @@ void DisneyMaterialEntityEditor::slot_open_color_picker(const QString& widget_na
 {
     IInputWidgetProxy* proxy = m_widget_proxies.get(widget_name.toStdString());
     const string color_expression = proxy->get();
-    const QColor initial_color = expression_to_qcolor(color_expression);
+    const QColor initial_color = ColorExpressionProxy::expression_to_qcolor(color_expression);
 
     QColorDialog* dialog =
         new QColorDialog(
@@ -479,7 +403,7 @@ void DisneyMaterialEntityEditor::slot_open_color_picker(const QString& widget_na
 void DisneyMaterialEntityEditor::slot_color_changed(const QString& widget_name, const QColor& color)
 {
     IInputWidgetProxy* proxy = m_widget_proxies.get(widget_name.toStdString());
-    proxy->set(qcolor_to_expression(color));
+    proxy->set(ColorExpressionProxy::qcolor_to_expression(color));
     proxy->emit_signal_changed();
 }
 
@@ -557,12 +481,6 @@ void DisneyMaterialEntityEditor::create_connections()
 
 void DisneyMaterialEntityEditor::create_buttons_connections(const QString& widget_name, QLineEdit* line_edit)
 {
-    if (m_color_button)
-    {
-        connect(m_color_button, SIGNAL(clicked()), m_color_picker_signal_mapper, SLOT(map()));
-        m_color_picker_signal_mapper->setMapping(m_color_button, widget_name);
-    }
-
     connect(m_texture_button, SIGNAL(clicked()), m_file_picker_signal_mapper, SLOT(map()));
     m_file_picker_signal_mapper->setMapping(m_texture_button, widget_name);
 
@@ -619,35 +537,6 @@ string DisneyMaterialEntityEditor::unique_layer_name()
     return layer_name;
 }
 
-string DisneyMaterialEntityEditor::qcolor_to_expression(const QColor& color)
-{
-    QString color_expression = QString("[%1, %2, %3]")
-            .arg(color.redF())
-            .arg(color.greenF())
-            .arg(color.blueF());
-    return color_expression.toStdString();
-}
-
-QColor DisneyMaterialEntityEditor::expression_to_qcolor(const std::string& color)
-{
-    vector<string> color_components;
-    split(color_components, color, is_any_of(",[] "));
-    color_components.erase(
-        remove(color_components.begin(), color_components.end(), ""),
-        color_components.end());
-
-    QColor q_color;
-    if (color_components.size() >= 3)
-    {
-        double red, green, blue;
-        istringstream(color_components[0]) >> red;
-        istringstream(color_components[1]) >> green;
-        istringstream(color_components[2]) >> blue;
-        q_color.setRgbF(red, green, blue);
-    }
-    return q_color;
-}
-
 string DisneyMaterialEntityEditor::texture_to_expression(const QString& expression)
 {
     QString texture_expression = QString("texture([%1], $u, $v)")
@@ -679,12 +568,21 @@ void DisneyMaterialEntityEditor::create_color_input_widgets(
     QLineEdit* line_edit = new QLineEdit("0", m_group_widget);
 
     QString name = QString::fromStdString(group_name + "_" + parameter_name);
-    m_color_button = new QPushButton("Color", m_group_widget);
-    m_color_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    QToolButton* picker_button = new QToolButton(m_group_widget);
+    picker_button->setObjectName("ColorPicker");
+    ColorPickerProxy picker_proxy(line_edit, picker_button); 
+
     m_texture_button = new QPushButton("Texture", m_group_widget);
     m_texture_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     m_expression_button = new QPushButton("Expression", m_group_widget);
     m_expression_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+
+    QString picker_name = QString::fromStdString(group_name + "_color_expression");
+    connect(picker_button, SIGNAL(clicked()), m_color_picker_signal_mapper, SLOT(map()));
+    m_color_picker_signal_mapper->setMapping(picker_button, picker_name);
+    auto_ptr<IInputWidgetProxy> widget_proxy(new ColorExpressionProxy(line_edit, picker_button));
+    widget_proxy->set("[0.0, 0.0, 0.0]");
+    m_widget_proxies.insert(picker_name.toStdString(), widget_proxy);
 
     create_buttons_connections(name, line_edit);
 
@@ -692,7 +590,7 @@ void DisneyMaterialEntityEditor::create_color_input_widgets(
     layout->setSpacing(6);
     layout->addWidget(label);
     layout->addWidget(line_edit);
-    layout->addWidget(m_color_button);
+    layout->addWidget(picker_button);
     layout->addWidget(m_texture_button);
     layout->addWidget(m_expression_button);
 
@@ -733,7 +631,6 @@ void DisneyMaterialEntityEditor::create_colormap_input_widgets(
         adaptor, SLOT(slot_apply_slider_value()));
 
     QString name = QString::fromStdString(group_name + "_" + parameter_name);
-    m_color_button = 0;
     m_texture_button = new QPushButton("Texture", m_group_widget);
     m_texture_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     m_expression_button = new QPushButton("Expression", m_group_widget);

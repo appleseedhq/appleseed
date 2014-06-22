@@ -142,6 +142,8 @@ set (mainwindow_project_sources
     mainwindow/project/entityitem.h
     mainwindow/project/entityitembase.h
     mainwindow/project/exceptioninvalidentityname.h
+    mainwindow/project/expressioneditorwindow.cpp
+    mainwindow/project/expressioneditorwindow.h
     mainwindow/project/expressioneditorwindow.ui
     mainwindow/project/frameitem.cpp
     mainwindow/project/frameitem.h
