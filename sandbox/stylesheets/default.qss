@@ -1151,3 +1151,8 @@ QPushButton#add_layer
     border: 1px solid SELECTED_BACKGROUND_COLOR;
     height: 25px;
 }
+
+QLabel#error
+{
+    color: rgba(255, 179, 156);
+}

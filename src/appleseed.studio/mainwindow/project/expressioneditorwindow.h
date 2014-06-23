@@ -40,6 +40,7 @@
 // Forward declarations.
 class SeExprEditor;
 namespace Ui { class ExpressionEditorWindow; }
+class QLabel;
 
 namespace appleseed {
 namespace studio {
@@ -69,6 +70,7 @@ class ExpressionEditorWindow
     Ui::ExpressionEditorWindow*     m_ui;
     const QString                   m_widget_name;
     SeExprEditor*                   m_editor;
+    QLabel*                         m_error;
 };
 
 }       // namespace studio

@@ -651,7 +651,6 @@ void DisneyMaterialEntityEditor::create_colormap_input_widgets(
 
 void DisneyMaterialEntityEditor::add_material_parameters()
 {
-
     typedef std::vector<foundation::Dictionary> InputMetadataCollection;
     InputMetadataCollection metadata;
 
@@ -679,12 +678,10 @@ void DisneyMaterialEntityEditor::add_material_parameters()
         const string label = i->get<string>("label") + ":";
         const string type = i->get<string>("type");
 
-        if (type == "colormap") {
+        if (type == "colormap")
             create_colormap_input_widgets(*i, "base");
-        }
-        else if (type == "text") {
+        else if (type == "text")
             create_text_input_widgets(label, "disney_material1");
-        }
     }
 }
 

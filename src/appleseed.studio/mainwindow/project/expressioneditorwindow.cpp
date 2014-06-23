@@ -29,18 +29,36 @@
 // Interface header.
 #include "expressioneditorwindow.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/foreach.h"
+
+// appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
+
 // SeExpr Editor headers.
+#include <SeExpression.h>
 #include <SeExprEditor/SeExprEditor.h>
 #include <SeExprEditor/SeExprEdControlCollection.h>
+
+// standard headers
+#include <vector>
 
 // Ui definition headers.
 #include "ui_expressioneditorwindow.h"
 
 // Qt headers.
+#include <QLabel>
 #include <QPushButton>
 #include <QScrollArea>
 #include <QVBoxLayout>
 
+// boost headers.
+#include "boost/algorithm/string.hpp"
+#include "boost/algorithm/string/split.hpp"
+
+using namespace boost;
+using namespace foundation;
+using namespace renderer;
 using namespace std;
 
 namespace appleseed {
@@ -68,12 +86,19 @@ ExpressionEditorWindow::ExpressionEditorWindow(
     controls_scrollarea->setWidget(controls);
     root_layout->addWidget(controls_scrollarea);
 
+    QLabel* label_editor = new QLabel("SeExpression:");
+    root_layout->addWidget(label_editor);
     m_editor = new SeExprEditor(this, controls);
     // setObjectName does not have effect on stylesheet
     m_editor->setStyleSheet("background-color: rgb(30, 30, 30);");
     m_editor->setExpr(expression, true);
     root_layout->addWidget(m_editor);
 
+    m_error = new QLabel("SeExpression has errors. View log for details.");
+    m_error->setObjectName("error");
+    m_error->hide();
+    root_layout->addWidget(m_error);
+    
     QPushButton* apply_button = m_ui->buttonbox->button(QDialogButtonBox::Apply);
 
     // Create connections
@@ -84,9 +109,32 @@ ExpressionEditorWindow::ExpressionEditorWindow(
 
 void ExpressionEditorWindow::apply_expression()
 {
-    const QString expression = QString::fromStdString(m_editor->getExpr());
-    if (!expression.isEmpty())
-        emit signal_expression_applied(m_widget_name, expression);
+    string expression = m_editor->getExpr();
+    SeExpression *se_expression = new SeExpression(expression);
+    if (!se_expression->isValid())
+    {
+        m_error->show();
+
+        // Do not print empty lines from the error.
+        string error = se_expression->parseError();
+        vector<string> errors;
+        split(errors, error, is_any_of("\n"));
+
+        RENDERER_LOG_INFO("SeExpression has errors.");
+        for (const_each<vector<string> > e = errors; e; ++e)
+        {
+            if (*e != "")
+                RENDERER_LOG_ERROR("%s", e->c_str());
+        }
+    }
+    else
+    {
+        m_error->hide();
+        RENDERER_LOG_INFO("SeExpression successfully applied.");
+        const QString q_expression = QString::fromStdString(expression);
+        if (!q_expression.isEmpty())
+            emit signal_expression_applied(m_widget_name, q_expression);
+    }
 }
 
 void ExpressionEditorWindow::slot_accept()
