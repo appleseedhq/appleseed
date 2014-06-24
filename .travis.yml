@@ -1,0 +1,5 @@
+language: cpp
+compiler:
+  - gcc
+script: ./travis-ci-build.sh
+
