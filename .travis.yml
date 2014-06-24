@@ -1,5 +1,9 @@
 language: cpp
 compiler:
   - gcc
+before_install:
+  - sudo apt-get doxygen
+  - sudo apt-get libboost-all-dev
+  - sudo apt-get libxerces-c-dev
+  - sudo apt-get libhdf5-dev
 script: ./travis-ci-build.sh
-
