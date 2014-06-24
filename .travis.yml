@@ -5,5 +5,5 @@ before_install:
   - sudo apt-get install doxygen
   - sudo apt-get install libboost-all-dev
   - sudo apt-get install libxerces-c-dev
-  - sudo apt-get install libhdf5-dev
+  - sudo apt-get install libhdf5-serial-dev
 script: ./travis-ci-build.sh
