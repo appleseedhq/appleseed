@@ -53,7 +53,7 @@
 #include <QFormLayout>
 #include <QHBoxLayout>
 #include <QLabel>
-#include <QLineEdit>
+//#include <QLineEdit>
 #include <QPushButton>
 #include <QSignalMapper>
 #include <QString>
@@ -353,6 +353,7 @@ DisneyMaterialEntityEditor::DisneyMaterialEntityEditor(
   , m_color_picker_signal_mapper(new QSignalMapper(this))
   , m_file_picker_signal_mapper(new QSignalMapper(this))
   , m_expression_editor_signal_mapper(new QSignalMapper(this))
+  , m_line_edit_signal_mapper(new QSignalMapper(this))
 {
     m_ui->setupUi(this);
 
@@ -464,6 +465,48 @@ void DisneyMaterialEntityEditor::slot_expression_changed(
     proxy->emit_signal_changed();
 }
 
+void DisneyMaterialEntityEditor::slot_line_edit_changed(const QString& widget_name)
+{
+    IInputWidgetProxy* proxy = m_widget_proxies.get(widget_name.toStdString());
+
+    vector<string> widget_tokens;
+    tokenize(widget_name.toStdString(), ";", widget_tokens);
+    string initial_layer_name = widget_tokens[0];
+    string layer_name = m_renames.get(initial_layer_name.c_str());
+    string parameter = widget_tokens[1];
+
+    // Handle layer rename.
+    if (parameter == "layer_name")
+    {
+        Dictionary old_layer_params = m_params.dictionary(layer_name);
+        string new_layer_name = proxy->get();
+        m_renames.insert(initial_layer_name, new_layer_name);
+        m_params.dictionaries().remove(layer_name.c_str());
+        m_params.insert(new_layer_name, old_layer_params);
+        layer_name = new_layer_name;
+
+        // Debug info.
+        std::cout << "layer_renames ---- " << std::endl;
+        for (const_each<StringDictionary> i = m_renames.strings(); i; ++i)
+        {
+            std::cout << i->name() << " : " << i->value() << std::endl;
+        }
+        std::cout << "-------------------" << std::endl;
+    }
+
+    // Handle generic line edit change.
+    Dictionary& layer_params = m_params.dictionary(layer_name);
+    layer_params.insert(parameter, proxy->get());
+
+    // Debug info.
+    std::cout << "layer_name" <<  layer_name << "----" << std::endl;
+    for (const_each<StringDictionary> i = layer_params.strings(); i; ++i)
+    {
+        std::cout << i->name() << " : " << i->value() << std::endl;
+    }
+    std::cout << "--------------------------" << std::endl;
+}
+
 void DisneyMaterialEntityEditor::create_connections()
 {
     connect(
@@ -477,17 +520,24 @@ void DisneyMaterialEntityEditor::create_connections()
     connect(
         m_expression_editor_signal_mapper, SIGNAL(mapped(const QString&)),
         SLOT(slot_open_expression_editor(const QString&)));
+
+    connect(
+        m_line_edit_signal_mapper, SIGNAL(mapped(const QString&)),
+        SLOT(slot_line_edit_changed(const QString&)));
 }
 
-void DisneyMaterialEntityEditor::create_buttons_connections(const QString& widget_name, QLineEdit* line_edit)
+void DisneyMaterialEntityEditor::create_buttons_connections(const QString& widget_name)
 {
+    connect(m_line_edit, SIGNAL(signal_text_changed()), m_line_edit_signal_mapper, SLOT(map()));
+    m_line_edit_signal_mapper->setMapping(m_line_edit, widget_name);
+
     connect(m_texture_button, SIGNAL(clicked()), m_file_picker_signal_mapper, SLOT(map()));
     m_file_picker_signal_mapper->setMapping(m_texture_button, widget_name);
 
     connect(m_expression_button, SIGNAL(clicked()), m_expression_editor_signal_mapper, SLOT(map()));
     m_expression_editor_signal_mapper->setMapping(m_expression_button, widget_name);
 
-    auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
+    auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(m_line_edit));
     m_widget_proxies.insert(widget_name.toStdString(), widget_proxy);
 }
 
@@ -544,15 +594,27 @@ string DisneyMaterialEntityEditor::texture_to_expression(const QString& expressi
     return texture_expression.toStdString();
 }
 
-void DisneyMaterialEntityEditor::create_text_input_widgets(const string& parameter, const string& value)
+void DisneyMaterialEntityEditor::create_text_input_widgets(
+    const Dictionary& parameters,
+    const string& group_name)
 {
-    QLabel* label = new QLabel(parameter.c_str(), m_group_widget);
-    QLineEdit* line_edit = new QLineEdit(value.c_str(), m_group_widget);
+    const string label_name = parameters.get<string>("label") + ":";
+    const string parameter_name = parameters.get<string>("name");
+    const string value = parameters.get<string>("default");
+    QLabel* label = new QLabel(label_name.c_str(), m_group_widget);
+    m_line_edit = new ForwardLineEdit(value.c_str(), m_group_widget);
+
+    string widget_name = group_name + ";" + parameter_name;
+    connect(m_line_edit, SIGNAL(signal_text_changed()), m_line_edit_signal_mapper, SLOT(map()));
+    m_line_edit_signal_mapper->setMapping(m_line_edit, QString::fromStdString(widget_name));
+
+    auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(m_line_edit));
+    m_widget_proxies.insert(widget_name, widget_proxy);
 
     QHBoxLayout* layout = new QHBoxLayout();
     layout->setSpacing(6);
     layout->addWidget(label);
-    layout->addWidget(line_edit);
+    layout->addWidget(m_line_edit);
 
     m_group_layout->addLayout(layout);
 }
@@ -563,14 +625,15 @@ void DisneyMaterialEntityEditor::create_color_input_widgets(
 {
     const string label_name = parameters.get<string>("label") + ":";
     const string parameter_name = parameters.get<string>("name");
+    const string value = parameters.get<string>("default");
 
     QLabel* label = new QLabel(label_name.c_str(), m_group_widget);
-    QLineEdit* line_edit = new QLineEdit("0", m_group_widget);
+    m_line_edit = new ForwardLineEdit(value.c_str(), m_group_widget);
 
-    QString name = QString::fromStdString(group_name + "_" + parameter_name);
+    QString name = QString::fromStdString(group_name + ";" + parameter_name);
     QToolButton* picker_button = new QToolButton(m_group_widget);
     picker_button->setObjectName("ColorPicker");
-    ColorPickerProxy picker_proxy(line_edit, picker_button); 
+    ColorPickerProxy picker_proxy(m_line_edit, picker_button);
 
     m_texture_button = new QPushButton("Texture", m_group_widget);
     m_texture_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
@@ -580,16 +643,16 @@ void DisneyMaterialEntityEditor::create_color_input_widgets(
     QString picker_name = QString::fromStdString(group_name + "_color_expression");
     connect(picker_button, SIGNAL(clicked()), m_color_picker_signal_mapper, SLOT(map()));
     m_color_picker_signal_mapper->setMapping(picker_button, picker_name);
-    auto_ptr<IInputWidgetProxy> widget_proxy(new ColorExpressionProxy(line_edit, picker_button));
-    widget_proxy->set("[0.0, 0.0, 0.0]");
+    auto_ptr<IInputWidgetProxy> widget_proxy(new ColorExpressionProxy(m_line_edit, picker_button));
+    widget_proxy->set(value);
     m_widget_proxies.insert(picker_name.toStdString(), widget_proxy);
 
-    create_buttons_connections(name, line_edit);
+    create_buttons_connections(name);
 
     QHBoxLayout* layout = new QHBoxLayout();
     layout->setSpacing(6);
     layout->addWidget(label);
-    layout->addWidget(line_edit);
+    layout->addWidget(m_line_edit);
     layout->addWidget(picker_button);
     layout->addWidget(m_texture_button);
     layout->addWidget(m_expression_button);
@@ -603,9 +666,10 @@ void DisneyMaterialEntityEditor::create_colormap_input_widgets(
 {
     const string label_name = parameters.get<string>("label") + ":";
     const string parameter_name = parameters.get<string>("name");
+    const string value = parameters.get<string>("default");
 
     QLabel* label = new QLabel(label_name.c_str(), m_group_widget);
-    QLineEdit* line_edit = new QLineEdit("0", m_group_widget);
+    m_line_edit = new ForwardLineEdit(value.c_str(), m_group_widget);
 
     const double min_value = 0.0;
     const double max_value = 1.0;
@@ -619,29 +683,29 @@ void DisneyMaterialEntityEditor::create_colormap_input_widgets(
 
     // Connect the line edit and the slider together.
     LineEditDoubleSliderAdaptor* adaptor =
-        new LineEditDoubleSliderAdaptor(line_edit, slider);
+        new LineEditDoubleSliderAdaptor(m_line_edit, slider);
     connect(
         slider, SIGNAL(valueChanged(const double)),
         adaptor, SLOT(slot_set_line_edit_value(const double)));
     connect(
-        line_edit, SIGNAL(textChanged(const QString&)),
+        m_line_edit, SIGNAL(textChanged(const QString&)),
         adaptor, SLOT(slot_set_slider_value(const QString&)));
     connect(
-        line_edit, SIGNAL(editingFinished()),
+        m_line_edit, SIGNAL(editingFinished()),
         adaptor, SLOT(slot_apply_slider_value()));
 
-    QString name = QString::fromStdString(group_name + "_" + parameter_name);
+    QString name = QString::fromStdString(group_name + ";" + parameter_name);
     m_texture_button = new QPushButton("Texture", m_group_widget);
     m_texture_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     m_expression_button = new QPushButton("Expression", m_group_widget);
     m_expression_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
-    create_buttons_connections(name, line_edit);
+    create_buttons_connections(name);
 
     QHBoxLayout* layout = new QHBoxLayout();
     layout->setSpacing(6);
     layout->addWidget(label);
-    layout->addWidget(line_edit);
+    layout->addWidget(m_line_edit);
     layout->addWidget(slider);
     layout->addWidget(m_texture_button);
     layout->addWidget(m_expression_button);
@@ -658,30 +722,32 @@ void DisneyMaterialEntityEditor::add_material_parameters()
         Dictionary()
             .insert("name", "name")
             .insert("label", "Name")
-            .insert("type", "text"));
+            .insert("type", "text")
+            .insert("default", "disney_material1"));
 
     metadata.push_back(
         Dictionary()
             .insert("name", "alpha_mask")
             .insert("label", "Alpha Mask")
-            .insert("type", "colormap"));
+            .insert("type", "colormap")
+            .insert("default", "0"));
 
     metadata.push_back(
         Dictionary()
             .insert("name", "emission")
             .insert("label", "Emission")
-            .insert("type", "colormap"));
+            .insert("type", "colormap")
+            .insert("default", "0"));
 
     create_parameters_layout();
     for (const_each<InputMetadataCollection> i = metadata; i; ++i)
     {
-        const string label = i->get<string>("label") + ":";
         const string type = i->get<string>("type");
 
         if (type == "colormap")
             create_colormap_input_widgets(*i, "base");
         else if (type == "text")
-            create_text_input_widgets(label, "disney_material1");
+            create_text_input_widgets(*i, "base");
     }
 }
 
@@ -689,92 +755,106 @@ void DisneyMaterialEntityEditor::add_layer()
 {
     typedef std::vector<foundation::Dictionary> InputMetadataCollection;
     InputMetadataCollection metadata;
-    int index = 0;
+    create_layer_layout();
+    const string layer_name = unique_layer_name();
 
     metadata.push_back(
         Dictionary()
             .insert("name", "layer_name")
             .insert("label", "Layer name")
-            .insert("type", "text"));
+            .insert("type", "text")
+            .insert("default", layer_name));
 
     metadata.push_back(
         Dictionary()
             .insert("name", "mask")
             .insert("label", "Mask")
-            .insert("type", "colormap"));
+            .insert("type", "colormap")
+            .insert("default", "0"));
 
     metadata.push_back(
         Dictionary()
             .insert("name", "base_color")
             .insert("label", "Base Color")
-            .insert("type", "color"));
+            .insert("type", "color")
+            .insert("default", "[0.0, 0.0, 0.0]"));
 
     metadata.push_back(
         Dictionary()
             .insert("name", "subsurface")
             .insert("label", "Subsurface")
-            .insert("type", "colormap"));
+            .insert("type", "colormap")
+            .insert("default", "0"));
 
     metadata.push_back(
         Dictionary()
             .insert("name", "metallic")
             .insert("label", "Metallic")
-            .insert("type", "colormap"));
+            .insert("type", "colormap")
+            .insert("default", "0"));
 
     metadata.push_back(
         Dictionary()
             .insert("name", "specular")
             .insert("label", "Specular")
-            .insert("type", "colormap"));
+            .insert("type", "colormap")
+            .insert("default", "0"));
 
     metadata.push_back(
         Dictionary()
             .insert("name", "specular_tint")
             .insert("label", "Specular tint")
-            .insert("type", "colormap"));
+            .insert("type", "colormap")
+            .insert("default", "0"));
 
     metadata.push_back(
         Dictionary()
             .insert("name", "anisotropic")
             .insert("label", "Anisotropic")
-            .insert("type", "colormap"));
+            .insert("type", "colormap")
+            .insert("default", "0"));
 
     metadata.push_back(
         Dictionary()
             .insert("name", "roughness")
             .insert("label", "Roughness")
-            .insert("type", "colormap"));
+            .insert("type", "colormap")
+            .insert("default", "0"));
 
     metadata.push_back(
         Dictionary()
             .insert("name", "sheen")
             .insert("label", "Sheen")
-            .insert("type", "colormap"));
+            .insert("type", "colormap")
+            .insert("default", "0"));
 
     metadata.push_back(
         Dictionary()
             .insert("name", "shin_tint")
             .insert("label", "Shin tint")
-            .insert("type", "colormap"));
+            .insert("type", "colormap")
+            .insert("default", "0"));
 
     metadata.push_back(
         Dictionary()
             .insert("name", "clearcoat")
             .insert("label", "Clearcoat")
-            .insert("type", "colormap"));
+            .insert("type", "colormap")
+            .insert("default", "0"));
 
     metadata.push_back(
         Dictionary()
             .insert("name", "clearcoat_gloss")
             .insert("label", "Clearcoat gloss")
-            .insert("type", "colormap"));
+            .insert("type", "colormap")
+            .insert("default", "0"));
 
-    create_layer_layout();
-    const string layer_name = unique_layer_name();
+    Dictionary layer_params;
+    layer_params.insert("layer_number", m_num_created_layers);
 
     for (const_each<InputMetadataCollection> i = metadata; i; ++i)
     {
-        const string label = i->get<string>("label") + ":";
+        layer_params.insert(i->get<string>("name"), i->get<string>("default"));
         const string type = i->get<string>("type");
 
         if (type == "color")
@@ -782,10 +862,10 @@ void DisneyMaterialEntityEditor::add_layer()
         else if (type == "colormap")
             create_colormap_input_widgets(*i, layer_name);
         else if (type == "text")
-            create_text_input_widgets(label, layer_name);
-
-        index++;
+            create_text_input_widgets(*i, layer_name);
     }
+    m_params.insert(layer_name, layer_params);
+    m_renames.insert(layer_name, layer_name);
 }
 
 }   // namespace studio

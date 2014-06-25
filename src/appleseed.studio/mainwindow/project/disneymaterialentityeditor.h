@@ -29,6 +29,9 @@
 #ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_DISNEYMATERIALENTITYEDITOR_H
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_DISNEYMATERIALENTITYEDITOR_H
 
+// appleseed.renderer headers.
+#include "renderer/utility/paramarray.h"
+
 // appleseed.studio headers.
 #include "mainwindow/project/entityeditor.h"
 
@@ -37,16 +40,42 @@
 #include <vector>
 
 // Qt headers.
+#include <QLineEdit>
 #include <QObject>
 #include <QWidget>
 
 // Forward declarations.
+//class ForwardLineEdit;
 namespace Ui { class DisneyMaterialEntityEditor; }
 class QSignalMapper;
 class QVBoxLayout;
 
 namespace appleseed {
 namespace studio {
+
+class ForwardLineEdit
+  : public QLineEdit
+{
+    Q_OBJECT
+
+  public:
+    ForwardLineEdit(const QString& contents, QWidget* parent = 0)
+      : QLineEdit(contents, parent)
+    {
+        connect(this, SIGNAL(textChanged(const QString&)),
+                this, SLOT(slot_text_changed(const QString&)));
+    }
+
+  public slots:
+    void slot_text_changed(const QString& text)
+    {
+        emit signal_text_changed();
+    }
+
+  signals:
+    void signal_text_changed();
+};
+
 
 class DisneyMaterialEntityEditor
   : public QWidget
@@ -72,10 +101,11 @@ class DisneyMaterialEntityEditor
     void slot_open_file_picker(const QString& widget_name);
     void slot_open_expression_editor(const QString& widget_name);
     void slot_expression_changed(const QString& widget_name, const QString& expression);
+    void slot_line_edit_changed(const QString& widget_name);
 
   private:
     void create_connections();
-    void create_buttons_connections(const QString& widget_name, QLineEdit* line_edit);
+    void create_buttons_connections(const QString& widget_name);
     void create_form_layout();
     void create_parameters_layout();
     void create_layer_layout();
@@ -83,7 +113,7 @@ class DisneyMaterialEntityEditor
     std::string unique_layer_name();
     std::string texture_to_expression(const QString& path);
 
-    void create_text_input_widgets(const std::string& parameter, const std::string& value);
+    void create_text_input_widgets(const foundation::Dictionary& parameter, const std::string& group_name);
     void create_color_input_widgets(const foundation::Dictionary& parameters, const std::string& group_name);
     void create_colormap_input_widgets(const foundation::Dictionary& parameters, const std::string& group_name);
 
@@ -97,17 +127,21 @@ class DisneyMaterialEntityEditor
     const renderer::Project&        m_project;
     QWidget*                        m_group_widget;
     QWidget*                        m_selected_layer_widget;
+    ForwardLineEdit*                m_line_edit;
     QWidget*                        m_texture_button;
     QWidget*                        m_expression_button;
     QVBoxLayout*                    m_group_layout;
     QVBoxLayout*                    m_form_layout;
-    int                             m_num_created_layers;
+    size_t                          m_num_created_layers;
 
     QSignalMapper*                  m_color_picker_signal_mapper;
     QSignalMapper*                  m_file_picker_signal_mapper;
     QSignalMapper*                  m_expression_editor_signal_mapper;
+    QSignalMapper*                  m_line_edit_signal_mapper;
 
     InputWidgetProxyCollection      m_widget_proxies;
+    foundation::Dictionary          m_renames;
+    renderer::ParamArray            m_params;
 };
 
 }       // namespace studio
