@@ -8,6 +8,8 @@ appleseed is available under the [MIT license](http://en.wikipedia.org/wiki/MIT_
 
 More information at http://appleseedhq.net/.
 
+[![Build Status](https://travis-ci.org/nyue/appleseed.svg?branch=master)](https://travis-ci.org/nyue/appleseed)
+
 ### Documentation
 
 Check out our [detailed build instructions](https://github.com/appleseedhq/appleseed/wiki/Building-appleseed) to build appleseed from source.
