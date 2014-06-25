@@ -37,8 +37,10 @@
         <file>widgets/header_arrow_up_enabled.png</file>
         <file>widgets/radiobutton_checked_disabled.png</file>
         <file>widgets/radiobutton_checked_enabled.png</file>
+        <file>widgets/radiobutton_checked_enabled_hover.png</file>
         <file>widgets/radiobutton_unchecked_disabled.png</file>
         <file>widgets/radiobutton_unchecked_enabled.png</file>
+        <file>widgets/radiobutton_unchecked_enabled_hover.png</file>
         <file>widgets/scrollbar_arrow_down_disabled.png</file>
         <file>widgets/scrollbar_arrow_down_enabled.png</file>
         <file>widgets/scrollbar_arrow_left_disabled.png</file>

@@ -748,9 +748,19 @@ QRadioButton::indicator:checked:enabled
     image: url(":/widgets/radiobutton_checked_enabled.png");
 }
 
+QRadioButton::indicator:checked:enabled:hover
+{
+    image: url(":/widgets/radiobutton_checked_enabled_hover.png");
+}
+
 QRadioButton::indicator:unchecked:enabled
 {
     image: url(":/widgets/radiobutton_unchecked_enabled.png");
+}
+
+QRadioButton::indicator:unchecked:enabled:hover
+{
+    image: url(":/widgets/radiobutton_unchecked_enabled_hover.png");
 }
 
 QRadioButton::indicator:checked:disabled
