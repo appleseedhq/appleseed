@@ -35,3 +35,4 @@ cmake \
     -D USE_EXTERNAL_PNG=ON \
     -D USE_EXTERNAL_XERCES=ON \
     .
+make
