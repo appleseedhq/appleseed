@@ -2,10 +2,11 @@ language: cpp
 compiler:
   - gcc
 before_install:
-  - sudo add-apt-repository -y ppa:boost-latest/ppa
+#  - sudo add-apt-repository -y ppa:boost-latest/ppa
   - sudo apt-get -y update
+  - sudo apt-cache search boost
   - sudo apt-get install doxygen
-  - sudo apt-get install libboost1.54-dev
+#  - sudo apt-get install libboost1.54-dev
   - sudo apt-get install libxerces-c-dev
   - sudo apt-get install libhdf5-serial-dev
 script: ./travis-ci-build.sh
