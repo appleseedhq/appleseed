@@ -43,6 +43,10 @@
 #include "renderer/modeling/bsdf/specularbrdf.h"
 #include "renderer/modeling/bsdf/specularbtdf.h"
 
+//#ifndef NDEBUG
+#include "renderer/modeling/bsdf/microfacet2brdf.h"
+//#endif
+
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/registrar.h"
@@ -77,6 +81,13 @@ BSDFFactoryRegistrar::BSDFFactoryRegistrar()
     register_factory(auto_ptr<FactoryType>(new OrenNayarBRDFFactory()));
     register_factory(auto_ptr<FactoryType>(new SpecularBRDFFactory()));
     register_factory(auto_ptr<FactoryType>(new SpecularBTDFFactory()));
+    
+    // The Microfacet2BRDF is internal to appleseed.
+    // It's currently being used in the OSL closures and the DisneyBRDF.
+    // Only register the factory in debug builds for testing purpouses.
+//#ifndef NDEBUG
+    register_factory(auto_ptr<FactoryType>(new Microfacet2BRDFFactory()));
+//#endif
 }
 
 BSDFFactoryRegistrar::~BSDFFactoryRegistrar()

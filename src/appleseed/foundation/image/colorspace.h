@@ -370,6 +370,12 @@ void daylight_ciexy_to_spectrum(
 
 // Convert a linear RGB reflectance value to a spectrum.
 template <typename T, typename Spectrum>
+void linear_rgb_reflectance_to_spectrum_unclamped(
+    const Color<T, 3>&          linear_rgb,
+    Spectrum&                   spectrum);
+
+// Convert a linear RGB reflectance value to a spectrum.
+template <typename T, typename Spectrum>
 void linear_rgb_reflectance_to_spectrum(
     const Color<T, 3>&          linear_rgb,
     Spectrum&                   spectrum);
@@ -912,6 +918,23 @@ namespace impl
             }
         }
     }
+}
+
+template <typename T, typename Spectrum>
+void linear_rgb_reflectance_to_spectrum_unclamped(
+    const Color<T, 3>&          linear_rgb,
+    Spectrum&                   spectrum)
+{
+    impl::linear_rgb_to_spectrum(
+        linear_rgb,
+        RGBToSpectrumWhiteReflectance,
+        RGBToSpectrumCyanReflectance,
+        RGBToSpectrumMagentaReflectance,
+        RGBToSpectrumYellowReflectance,
+        RGBToSpectrumRedReflectance,
+        RGBToSpectrumGreenReflectance,
+        RGBToSpectrumBlueReflectance,
+        spectrum);
 }
 
 template <typename T, typename Spectrum>

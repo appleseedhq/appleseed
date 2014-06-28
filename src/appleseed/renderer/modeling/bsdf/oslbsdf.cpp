@@ -38,6 +38,7 @@
 #include "renderer/modeling/bsdf/bsdffactoryregistrar.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/ibsdffactory.h"
+#include "renderer/modeling/bsdf/microfacet2brdf.h"
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/utility/paramarray.h"
@@ -100,51 +101,42 @@ namespace
                     "lambertian_brdf",
                     "osl_lambert");
 
-            m_specular_brdf =
-                create_and_register_bsdf(
-                    ReflectionID,
-                    "specular_brdf",
-                    "osl_reflection");
-
-            m_specular_btdf =
-                create_and_register_bsdf(
-                    RefractionID,
-                    "specular_btdf",
-                    "osl_refraction");
-
-            m_microfacet_beckmann_brdf =
-                create_and_register_bsdf(
-                    MicrofacetBeckmannID,
-                    "microfacet_brdf",
-                    "osl_beckmann",
-                    ParamArray().insert("mdf", "beckmann"));
-
-            m_microfacet_blinn_brdf =
-                create_and_register_bsdf(
-                    MicrofacetBlinnID,
-                    "microfacet_brdf",
-                    "osl_blinn",
-                    ParamArray().insert("mdf", "blinn"));
-
-            m_microfacet_ggx_brdf =
-                create_and_register_bsdf(
-                    MicrofacetGGXID,
-                    "microfacet_brdf",
-                    "osl_ggx",
-                    ParamArray().insert("mdf", "ggx"));
-
-            m_microfacet_ward_brdf =
-                create_and_register_bsdf(
-                    MicrofacetWardID,
-                    "microfacet_brdf",
-                    "osl_ward",
-                    ParamArray().insert("mdf", "ward"));
-
             m_orennayar_brdf =
                 create_and_register_bsdf(
                     OrenNayarID,
                     "orennayar_brdf",
                     "osl_orennayar");
+
+            m_specular_brdf = 
+                create_and_register_bsdf(
+                    ReflectionID,
+                    "specular_brdf",
+                    "osl_reflection");
+            
+            m_specular_btdf = 
+                create_and_register_bsdf(
+                    RefractionID,
+                    "specular_btdf",
+                    "osl_refraction");
+            
+            // OSL Microfacet models.
+            m_microfacet_beckmann_brdf = 
+                create_and_register_microfacet_brdf(
+                    MicrofacetBeckmannReflectionID,
+                    "beckmann",
+                    "osl_beckmann_brdf");
+
+            m_microfacet_blinn_brdf = 
+                create_and_register_microfacet_brdf(
+                    MicrofacetBlinnReflectionID,
+                    "blinn",
+                    "osl_blinn_brdf");
+
+            m_microfacet_ggx_brdf = 
+                create_and_register_microfacet_brdf(
+                    MicrofacetGGXReflectionID,
+                    "ggx",
+                    "osl_ggx_brdf");
         }
 
         virtual void release() OVERRIDE
@@ -333,7 +325,6 @@ namespace
         auto_release_ptr<BSDF>      m_microfacet_beckmann_brdf;
         auto_release_ptr<BSDF>      m_microfacet_blinn_brdf;
         auto_release_ptr<BSDF>      m_microfacet_ggx_brdf;
-        auto_release_ptr<BSDF>      m_microfacet_ward_brdf;
         auto_release_ptr<BSDF>      m_orennayar_brdf;
         auto_release_ptr<BSDF>      m_specular_brdf;
         auto_release_ptr<BSDF>      m_specular_btdf;
@@ -353,6 +344,20 @@ namespace
             return bsdf;
         }
 
+        auto_release_ptr<BSDF> create_and_register_microfacet_brdf(
+            const ClosureID         cid,
+            const char*             mdf_name,
+            const char*             name)
+        {
+            auto_release_ptr<BSDF> bsdf =
+                Microfacet2BRDFFactory().create(
+                    name, 
+                    ParamArray().insert("mdf", mdf_name));
+
+            m_all_bsdfs[cid] = bsdf.get();
+            return bsdf;
+        }
+        
         const BSDF& bsdf_to_closure_id(const ClosureID cid) const
         {
             const BSDF* bsdf = m_all_bsdfs[cid];
