@@ -75,237 +75,237 @@ using namespace std;
 namespace appleseed {
 namespace studio {
 
-    class DisneyMaterialEntityEditor::LayerWidget
-      : public QFrame
+class DisneyMaterialEntityEditor::LayerWidget
+  : public QFrame
+{
+    Q_OBJECT
+
+  public:
+    LayerWidget(
+        const string& layer_name,
+        DisneyMaterialEntityEditor* entity_editor,
+        QVBoxLayout* form_layout,
+        QWidget* parent = 0)
+      : m_layer_name(layer_name)
+      , m_entity_editor(entity_editor)
+      , QFrame(parent)
+      , m_form_layout(form_layout)
+      , m_is_folded(false)
     {
-        Q_OBJECT
+        setObjectName("layer");
 
-      public:
-        LayerWidget(
-            const string& layer_name,
-            DisneyMaterialEntityEditor* entity_editor,
-            QVBoxLayout* form_layout,
-            QWidget* parent = 0)
-          : m_layer_name(layer_name)
-          , m_entity_editor(entity_editor)
-          , QFrame(parent)
-          , m_form_layout(form_layout)
-          , m_is_folded(false)
+        m_spacer = new QWidget();
+        QHBoxLayout* spacer_layout = new QHBoxLayout(m_spacer);
+        spacer_layout->setSpacing(0);
+
+        m_layout = new QVBoxLayout(this);
+        m_form_layout->insertWidget(m_form_layout->count() - 2, this);
+
+        QWidget *button_box = new QWidget(this);
+        QHBoxLayout *button_box_layout = new QHBoxLayout(button_box);
+        button_box_layout->setSpacing(0);
+        button_box_layout->setMargin(0);
+        m_layout->addWidget(button_box);
+
+        // Folding button.
+        m_fold_arrow_disabled = QIcon(":/widgets/header_arrow_down_disabled.png");
+        m_fold_arrow_enabled = QIcon(":/widgets/scrollbar_arrow_right_disabled.png");
+        m_fold_button = new QToolButton(button_box);
+        m_fold_button->setIcon(m_fold_arrow_disabled);
+        button_box_layout->addWidget(m_fold_button);
+        connect(m_fold_button, SIGNAL(clicked()), this, SLOT(slot_fold()));
+
+        button_box_layout->addStretch(1);
+
+        // Up button.
+        QIcon arrow_up = QIcon(":icons/layer_arrow_up.png");
+        QToolButton* up_button = new QToolButton(button_box);
+        up_button->setIcon(arrow_up);
+        button_box_layout->addWidget(up_button);
+        connect(up_button, SIGNAL(clicked()), this, SLOT(slot_move_layer_up()));
+
+        // Down button.
+        QIcon arrow_down = QIcon(":icons/layer_arrow_down.png");
+        QToolButton* down_button = new QToolButton(button_box);
+        down_button->setIcon(arrow_down);
+        button_box_layout->addWidget(down_button);
+        connect(down_button, SIGNAL(clicked()), this, SLOT(slot_move_layer_down()));
+
+        // Close button.
+        QIcon close = QIcon(":/icons/close.png");
+        QToolButton* close_button = new QToolButton(button_box);
+        close_button->setIcon(close);
+        button_box_layout->addWidget(close_button);
+        connect(close_button, SIGNAL(clicked()), this, SLOT(slot_delete_layer()));
+    }
+
+    void mousePressEvent(QMouseEvent* event)
+    {
+        for (int i=1; i<m_form_layout->count()-2; ++i)
         {
-            setObjectName("layer");
+            QLayoutItem* layout_item = m_form_layout->itemAt(i);
+            QWidget* widget = layout_item->widget();
+            if (widget->objectName() == "selected_layer")
+            {
+                widget->setObjectName("layer");
+                style()->unpolish(widget);
+                style()->polish(widget);
+                break;
+            }
+        }
+        setObjectName("selected_layer");
+        style()->unpolish(this);
+        style()->polish(this);
+    }
 
-            m_spacer = new QWidget();
-            QHBoxLayout* spacer_layout = new QHBoxLayout(m_spacer);
-            spacer_layout->setSpacing(0);
+    void mouseDoubleClickEvent(QMouseEvent* event)
+    {
+        fold_layer();
+    }
 
-            m_layout = new QVBoxLayout(this);
-            m_form_layout->insertWidget(m_form_layout->count() - 2, this);
-
-            QWidget *button_box = new QWidget(this);
-            QHBoxLayout *button_box_layout = new QHBoxLayout(button_box);
-            button_box_layout->setSpacing(0);
-            button_box_layout->setMargin(0);
-            m_layout->addWidget(button_box);
-
-            // Folding button.
-            m_fold_arrow_disabled = QIcon(":/widgets/header_arrow_down_disabled.png");
-            m_fold_arrow_enabled = QIcon(":/widgets/scrollbar_arrow_right_disabled.png");
-            m_fold_button = new QToolButton(button_box);
+    QVBoxLayout* get_layout()
+    {
+        return m_layout;
+    }
+  
+  private:
+    void fold_layer()
+    {
+        if (m_is_folded)
+        {
+            m_layout->removeWidget(m_spacer);
+            m_spacer->hide();
             m_fold_button->setIcon(m_fold_arrow_disabled);
-            button_box_layout->addWidget(m_fold_button);
-            connect(m_fold_button, SIGNAL(clicked()), this, SLOT(slot_fold()));
-
-            button_box_layout->addStretch(1);
-
-            // Up button.
-            QIcon arrow_up = QIcon(":icons/layer_arrow_up.png");
-            QToolButton* up_button = new QToolButton(button_box);
-            up_button->setIcon(arrow_up);
-            button_box_layout->addWidget(up_button);
-            connect(up_button, SIGNAL(clicked()), this, SLOT(slot_move_layer_up()));
-
-            // Down button.
-            QIcon arrow_down = QIcon(":icons/layer_arrow_down.png");
-            QToolButton* down_button = new QToolButton(button_box);
-            down_button->setIcon(arrow_down);
-            button_box_layout->addWidget(down_button);
-            connect(down_button, SIGNAL(clicked()), this, SLOT(slot_move_layer_down()));
-
-            // Close button.
-            QIcon close = QIcon(":/icons/close.png");
-            QToolButton* close_button = new QToolButton(button_box);
-            close_button->setIcon(close);
-            button_box_layout->addWidget(close_button);
-            connect(close_button, SIGNAL(clicked()), this, SLOT(slot_delete_layer()));
         }
 
-        void mousePressEvent(QMouseEvent* event)
+        for (int i=2; i<m_layout->count(); ++i)
         {
-            for (int i=1; i<m_form_layout->count()-2; ++i)
+            QLayout* vertical_layout = m_layout->itemAt(i)->layout();
+            for (int j=0; j<vertical_layout->count(); ++j)
             {
-                QLayoutItem* layout_item = m_form_layout->itemAt(i);
-                QWidget* widget = layout_item->widget();
-                if (widget->objectName() == "selected_layer")
+                QWidget* widget = vertical_layout->itemAt(j)->widget();
+                m_is_folded ? widget->show() : widget->hide();
+            }
+        }
+        
+        if (!m_is_folded)
+        {
+            m_layout->addWidget(m_spacer);
+            m_spacer->show();
+            m_fold_button->setIcon(m_fold_arrow_enabled);
+        }
+
+        m_is_folded = !m_is_folded;
+    }
+
+  private slots:
+    void slot_delete_layer() 
+    {
+        // Remove model
+        string layer_rename = m_entity_editor->m_renames.get(m_layer_name.c_str());
+        m_entity_editor->m_params.dictionaries().remove(layer_rename);
+        delete this;
+    }
+
+    void slot_move_layer_up()
+    {
+        int new_position = 0;
+        // Update interface.
+        for (int i=1; i<m_form_layout->count(); ++i)
+        {
+            QLayoutItem* layout_item = m_form_layout->itemAt(i);
+            if (this == layout_item->widget())
+            {
+                if (i > 1)
                 {
-                    widget->setObjectName("layer");
-                    style()->unpolish(widget);
-                    style()->polish(widget);
-                    break;
+                    m_form_layout->takeAt(i);
+                    new_position = i-1;
+                    m_form_layout->insertWidget(new_position, this);
                 }
+                break;
             }
-            setObjectName("selected_layer");
-            style()->unpolish(this);
-            style()->polish(this);
         }
 
-        void mouseDoubleClickEvent(QMouseEvent* event)
+        // Update model.
+        if (new_position > 0)
         {
-            fold_layer();
-        }
-
-        QVBoxLayout* get_layout()
-        {
-            return m_layout;
-        }
-      
-      private:
-        void fold_layer()
-        {
-            if (m_is_folded)
+            string previous_layer_name, current_layer_name;
+            for (const_each<DictionaryDictionary> i = m_entity_editor->m_params.dictionaries(); i; ++i)
             {
-                m_layout->removeWidget(m_spacer);
-                m_spacer->hide();
-                m_fold_button->setIcon(m_fold_arrow_disabled);
+                Dictionary& layer_params = m_entity_editor->m_params.dictionary(i->name());
+                size_t layer_number = layer_params.get<size_t>("layer_number");
+                if (layer_number == new_position)
+                    previous_layer_name = i->name();
+                else if (layer_number == new_position+1)
+                    current_layer_name = i->name();
             }
+            m_entity_editor->m_params
+                .dictionary(previous_layer_name)
+                .insert("layer_number", new_position+1);
+            m_entity_editor->m_params
+                .dictionary(current_layer_name)
+                .insert("layer_number", new_position);
+        }
+    }
 
-            for (int i=2; i<m_layout->count(); ++i)
+    void slot_move_layer_down()
+    {
+        int new_position = 0;
+        // Update interface.
+        for (int i=1; i<m_form_layout->count(); ++i)
+        {
+            QLayoutItem* layout_item = m_form_layout->itemAt(i);
+            if (this == layout_item->widget())
             {
-                QLayout* vertical_layout = m_layout->itemAt(i)->layout();
-                for (int j=0; j<vertical_layout->count(); ++j)
+                if (i < m_form_layout->count()-3)
                 {
-                    QWidget* widget = vertical_layout->itemAt(j)->widget();
-                    m_is_folded ? widget->show() : widget->hide();
+                    m_form_layout->takeAt(i);
+                    new_position = i+1;
+                    m_form_layout->insertWidget(new_position, this);
                 }
+                break;
             }
-            
-            if (!m_is_folded)
-            {
-                m_layout->addWidget(m_spacer);
-                m_spacer->show();
-                m_fold_button->setIcon(m_fold_arrow_enabled);
-            }
-
-            m_is_folded = !m_is_folded;
         }
 
-      private slots:
-        void slot_delete_layer() 
+        // Update model.
+        if (new_position > 0)
         {
-            // Remove model
-            string layer_rename = m_entity_editor->m_renames.get(m_layer_name.c_str());
-            m_entity_editor->m_params.dictionaries().remove(layer_rename);
-            delete this;
-        }
-
-        void slot_move_layer_up()
-        {
-            int new_position = 0;
-            // Update interface.
-            for (int i=1; i<m_form_layout->count(); ++i)
+            string next_layer_name, current_layer_name;
+            for (const_each<DictionaryDictionary> i = m_entity_editor->m_params.dictionaries(); i; ++i)
             {
-                QLayoutItem* layout_item = m_form_layout->itemAt(i);
-                if (this == layout_item->widget())
-                {
-                    if (i > 1)
-                    {
-                        m_form_layout->takeAt(i);
-                        new_position = i-1;
-                        m_form_layout->insertWidget(new_position, this);
-                    }
-                    break;
-                }
+                Dictionary& layer_params = m_entity_editor->m_params.dictionary(i->name());
+                size_t layer_number = layer_params.get<size_t>("layer_number");
+                if (layer_number == new_position-1)
+                    current_layer_name = i->name();
+                else if (layer_number == new_position)
+                    next_layer_name = i->name();
             }
-
-            // Update model.
-            if (new_position > 0)
-            {
-                string previous_layer_name, current_layer_name;
-                for (const_each<DictionaryDictionary> i = m_entity_editor->m_params.dictionaries(); i; ++i)
-                {
-                    Dictionary& layer_params = m_entity_editor->m_params.dictionary(i->name());
-                    size_t layer_number = layer_params.get<size_t>("layer_number");
-                    if (layer_number == new_position)
-                        previous_layer_name = i->name();
-                    else if (layer_number == new_position+1)
-                        current_layer_name = i->name();
-                }
-                m_entity_editor->m_params
-                    .dictionary(previous_layer_name)
-                    .insert("layer_number", new_position+1);
-                m_entity_editor->m_params
-                    .dictionary(current_layer_name)
-                    .insert("layer_number", new_position);
-            }
+            m_entity_editor->m_params
+                .dictionary(current_layer_name)
+                .insert("layer_number", new_position);
+            m_entity_editor->m_params
+                .dictionary(next_layer_name)
+                .insert("layer_number", new_position-1);
         }
+    }
 
-        void slot_move_layer_down()
-        {
-            int new_position = 0;
-            // Update interface.
-            for (int i=1; i<m_form_layout->count(); ++i)
-            {
-                QLayoutItem* layout_item = m_form_layout->itemAt(i);
-                if (this == layout_item->widget())
-                {
-                    if (i < m_form_layout->count()-3)
-                    {
-                        m_form_layout->takeAt(i);
-                        new_position = i+1;
-                        m_form_layout->insertWidget(new_position, this);
-                    }
-                    break;
-                }
-            }
+    void slot_fold()
+    {
+        fold_layer();
+    }
 
-            // Update model.
-            if (new_position > 0)
-            {
-                string next_layer_name, current_layer_name;
-                for (const_each<DictionaryDictionary> i = m_entity_editor->m_params.dictionaries(); i; ++i)
-                {
-                    Dictionary& layer_params = m_entity_editor->m_params.dictionary(i->name());
-                    size_t layer_number = layer_params.get<size_t>("layer_number");
-                    if (layer_number == new_position-1)
-                        current_layer_name = i->name();
-                    else if (layer_number == new_position)
-                        next_layer_name = i->name();
-                }
-                m_entity_editor->m_params
-                    .dictionary(current_layer_name)
-                    .insert("layer_number", new_position);
-                m_entity_editor->m_params
-                    .dictionary(next_layer_name)
-                    .insert("layer_number", new_position-1);
-            }
-        }
+  private:
+    string                      m_layer_name;
+    DisneyMaterialEntityEditor* m_entity_editor;
 
-        void slot_fold()
-        {
-            fold_layer();
-        }
-
-      private:
-        string                      m_layer_name;
-        DisneyMaterialEntityEditor* m_entity_editor;
-
-        QVBoxLayout*                m_layout;
-        QVBoxLayout*                m_form_layout;
-        QWidget*                    m_spacer;
-        QToolButton*                m_fold_button;
-        bool                        m_is_folded;
-        QIcon                       m_fold_arrow_enabled;
-        QIcon                       m_fold_arrow_disabled;
-    };
+    QVBoxLayout*                m_layout;
+    QVBoxLayout*                m_form_layout;
+    QWidget*                    m_spacer;
+    QToolButton*                m_fold_button;
+    bool                        m_is_folded;
+    QIcon                       m_fold_arrow_enabled;
+    QIcon                       m_fold_arrow_disabled;
+};
 
 DisneyMaterialEntityEditor::DisneyMaterialEntityEditor(
     QWidget*                                parent,
