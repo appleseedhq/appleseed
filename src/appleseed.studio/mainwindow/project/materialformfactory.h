@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014 Marius Avram, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,15 +26,35 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_MATERIAL_H
-#define APPLESEED_RENDERER_API_MATERIAL_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_MATERIALFORMFACTORY_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_MATERIALFORMFACTORY_H
 
-// API headers.
-#include "renderer/modeling/material/disneymaterial.h"
-#include "renderer/modeling/material/genericmaterial.h"
-#include "renderer/modeling/material/imaterialfactory.h"
-#include "renderer/modeling/material/material.h"
-#include "renderer/modeling/material/materialfactoryregistrar.h"
-#include "renderer/modeling/material/materialtraits.h"
+// appleseed.studio headers
+#include "mainwindow/project/multimodelentityeditorformfactory.h"
 
-#endif  // !APPLESEED_RENDERER_API_MATERIAL_H
+
+// Forward declarations
+namespace renderer { class MaterialFactoryRegistrar; }
+
+namespace appleseed {
+namespace studio {
+
+class MaterialFormFactory
+  : public MultiModelEntityEditorFormFactory<renderer::MaterialFactoryRegistrar>
+{
+  public:
+    MaterialFormFactory(
+        const renderer::MaterialFactoryRegistrar&   factory_registrar,
+        const std::string&                          entity_name);
+
+  protected:
+    virtual std::string add_model_widget_definition(
+        const foundation::Dictionary&               values,
+        InputMetadataCollection&                    metadata) const;
+
+};
+
+}       // namespace studio
+}       // namespace appleseed
+
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_MATERIALFORMFACTORY_H

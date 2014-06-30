@@ -118,6 +118,11 @@ set (mainwindow_project_sources
     mainwindow/project/basegroupitem.h
     mainwindow/project/collectionitem.h
     mainwindow/project/collectionitembase.h
+    mainwindow/project/disneymaterialformfactory.cpp
+    mainwindow/project/disneymaterialformfactory.h
+    mainwindow/project/disneymaterialentityeditor.cpp
+    mainwindow/project/disneymaterialentityeditor.h
+    mainwindow/project/disneymaterialentityeditor.ui
     mainwindow/project/entitybrowser.cpp
     mainwindow/project/entitybrowser.h
     mainwindow/project/entitybrowserwindow.cpp
@@ -128,14 +133,20 @@ set (mainwindow_project_sources
     mainwindow/project/entitydelayedactions.h
     mainwindow/project/entityeditor.cpp
     mainwindow/project/entityeditor.h
+    mainwindow/project/entityeditorfactory.h
     mainwindow/project/entityeditorformfactorybase.cpp
     mainwindow/project/entityeditorformfactorybase.h
+    mainwindow/project/entityeditorutils.cpp
+    mainwindow/project/entityeditorutils.h
     mainwindow/project/entityeditorwindow.cpp
     mainwindow/project/entityeditorwindow.h
     mainwindow/project/entityeditorwindow.ui
     mainwindow/project/entityitem.h
     mainwindow/project/entityitembase.h
     mainwindow/project/exceptioninvalidentityname.h
+    mainwindow/project/expressioneditorwindow.cpp
+    mainwindow/project/expressioneditorwindow.h
+    mainwindow/project/expressioneditorwindow.ui
     mainwindow/project/frameitem.cpp
     mainwindow/project/frameitem.h
     mainwindow/project/instancecollectionitem.h
@@ -146,6 +157,12 @@ set (mainwindow_project_sources
     mainwindow/project/materialassignmenteditorwindow.cpp
     mainwindow/project/materialassignmenteditorwindow.h
     mainwindow/project/materialassignmenteditorwindow.ui
+    mainwindow/project/materialcollectionitem.cpp
+    mainwindow/project/materialcollectionitem.h
+    mainwindow/project/materialformfactory.cpp
+    mainwindow/project/materialformfactory.h
+    mainwindow/project/materialitem.cpp
+    mainwindow/project/materialitem.h
     mainwindow/project/multimodelcollectionitem.h
     mainwindow/project/multimodelentityeditorformfactory.h
     mainwindow/project/multimodelentityitem.h
@@ -412,6 +429,7 @@ apply_preprocessor_definitions (appleseed.studio)
 # Static libraries must be specified in order of reverse-dependency.
 link_against_platform (appleseed.studio)
 link_against_openexr (appleseed.studio)
+link_against_seexpreditor(appleseed.studio)
 
 target_link_libraries (appleseed.studio
     appleseed

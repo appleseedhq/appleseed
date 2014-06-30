@@ -5,8 +5,8 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014 Marius Avram, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,53 +27,50 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ATTRIBUTEEDITOR_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ATTRIBUTEEDITOR_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_MATERIALCOLLECTIONITEM_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_MATERIALCOLLECTIONITEM_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/entityeditor.h"
-#include "mainwindow/project/entityeditorfactory.h"
-
-// appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
-
-// Standard headers.
-#include <memory>
+#include "mainwindow/project/assemblyitem.h"
+#include "mainwindow/project/collectionitem.h"
 
 // Forward declarations.
-namespace foundation    { class Dictionary; }
-namespace renderer      { class Project; }
-class QObject;
-class QWidget;
+namespace appleseed { namespace studio { class ProjectBuilder; } }
+namespace renderer  { class Assembly; }
+namespace renderer  { class ParamArray; }
 
 namespace appleseed {
 namespace studio {
 
-class AttributeEditor
-  : public foundation::NonCopyable
+class MaterialCollectionItem
+  : public CollectionItem<renderer::Material, renderer::Assembly, AssemblyItem>
 {
+    Q_OBJECT
+
   public:
-    AttributeEditor(
-        QWidget*                parent,
-        renderer::Project&      project);
+    MaterialCollectionItem(
+        renderer::MaterialContainer&    materials,
+        renderer::Assembly&             parent,
+        AssemblyItem*                   parent_item,
+        ProjectBuilder&                 project_builder,
+        renderer::ParamArray&           settings);
 
-    void clear();
+  protected:
+    virtual QMenu* get_single_item_context_menu() const OVERRIDE;
 
-    void edit(
-        std::auto_ptr<EntityEditor::IFormFactory>   form_factory,
-        std::auto_ptr<EntityEditor::IEntityBrowser> entity_browser,
-        std::auto_ptr<IEntityEditorFactory>         entity_editor_factory,
-        const foundation::Dictionary&               values,
-        QObject*                                    receiver,
-        const char*                                 slot_apply);
+  protected slots:
+    void slot_create_generic();
+    void slot_create_disney();
 
   private:
-    QWidget*                    m_parent;
-    renderer::Project&          m_project;
-    std::auto_ptr<EntityEditor> m_entity_editor;
+    virtual ItemBase* create_item(renderer::Material* material) OVERRIDE;
+
+    renderer::Assembly&                 m_parent;
+    AssemblyItem*                       m_parent_item;
+    renderer::ParamArray&               m_settings;
 };
 
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ATTRIBUTEEDITOR_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_MATERIALCOLLECTIONITEM_H

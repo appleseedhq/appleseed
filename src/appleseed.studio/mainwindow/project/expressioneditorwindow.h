@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014 Marius Avram, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,15 +26,54 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_MATERIAL_H
-#define APPLESEED_RENDERER_API_MATERIAL_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_EXPRESSIONEDITORWINDOW_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_EXPRESSIONEDITORWINDOW_H
 
-// API headers.
-#include "renderer/modeling/material/disneymaterial.h"
-#include "renderer/modeling/material/genericmaterial.h"
-#include "renderer/modeling/material/imaterialfactory.h"
-#include "renderer/modeling/material/material.h"
-#include "renderer/modeling/material/materialfactoryregistrar.h"
-#include "renderer/modeling/material/materialtraits.h"
+// standard headers.
+#include <string>
 
-#endif  // !APPLESEED_RENDERER_API_MATERIAL_H
+// Qt headers.
+#include <QObject>
+#include <QString>
+#include <QWidget>
+
+// Forward declarations.
+class SeExprEditor;
+namespace Ui { class ExpressionEditorWindow; }
+class QLabel;
+
+namespace appleseed {
+namespace studio {
+
+class ExpressionEditorWindow
+  : public QWidget
+{
+    Q_OBJECT
+
+  public:
+    ExpressionEditorWindow(
+        const QString& widget_name,
+        const std::string& expression,
+        QWidget* parent = 0);
+
+    void apply_expression();
+
+  public slots:
+    void slot_accept();
+    void slot_apply();
+    void slot_cancel();
+
+  signals:
+    void signal_expression_applied(const QString& widget_name, const QString& expression);
+
+  private:
+    Ui::ExpressionEditorWindow*     m_ui;
+    const QString                   m_widget_name;
+    SeExprEditor*                   m_editor;
+    QLabel*                         m_error;
+};
+
+}       // namespace studio
+}       // namespace appleseed
+
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_EXPRESSIONEDITORWINDOW_H

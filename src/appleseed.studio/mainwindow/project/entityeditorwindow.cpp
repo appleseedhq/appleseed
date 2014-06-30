@@ -29,6 +29,11 @@
 
 // Interface header.
 #include "entityeditorwindow.h"
+#include "renderer/api/material.h"
+
+// appleseed.studio headers.
+#include "mainwindow/project/disneymaterialentityeditor.h"
+#include "mainwindow/project/entityeditorfactory.h"
 
 // UI definition header.
 #include "ui_entityeditorwindow.h"
@@ -54,6 +59,7 @@ EntityEditorWindow::EntityEditorWindow(
     const Project&                          project,
     auto_ptr<EntityEditor::IFormFactory>    form_factory,
     auto_ptr<EntityEditor::IEntityBrowser>  entity_browser,
+    auto_ptr<IEntityEditorFactory>          entity_editor_factory,
     const Dictionary&                       values)
   : QWidget(parent)
   , m_ui(new Ui::EntityEditorWindow())
@@ -64,13 +70,14 @@ EntityEditorWindow::EntityEditorWindow(
     setWindowFlags(Qt::Tool);
     setAttribute(Qt::WA_DeleteOnClose);
 
-    m_entity_editor.reset(
-        new EntityEditor(
-            m_ui->scrollarea_contents,
-            project,
-            form_factory,
-            entity_browser,
-            values));
+    m_entity_editor = entity_editor_factory->create(
+        m_ui->scrollarea_contents,
+        project,
+        form_factory,
+        entity_browser,
+        values);
+
+    m_entity_editor->initialize();
 
     m_initial_values = m_entity_editor->get_values();
 

@@ -62,7 +62,7 @@ namespace studio {
 template <typename Entity, typename ParentEntity, typename ParentItem>
 class CollectionItem
   : public CollectionItemBase<Entity>
-  , private EntityCreatorBase
+  , protected EntityCreatorBase
 {
   public:
     CollectionItem(
@@ -150,6 +150,7 @@ void CollectionItem<Entity, ParentEntity, ParentItem>::slot_create_accepted(foun
             : &CollectionItem::create,
         values,
         renderer::EntityTraits<Entity>::get_human_readable_entity_type_name());
+
 }
 
 template <typename Entity, typename ParentEntity, typename ParentItem>

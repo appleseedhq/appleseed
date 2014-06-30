@@ -5,8 +5,8 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014 Marius Avram, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,88 +27,87 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_SINGLEMODELENTITYITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_SINGLEMODELENTITYITEM_H
+// Interface header.
+#include "materialitem.h"
 
 // appleseed.studio headers.
 #include "mainwindow/project/attributeeditor.h"
+#include "mainwindow/project/disneymaterialformfactory.h"
 #include "mainwindow/project/entitybrowser.h"
 #include "mainwindow/project/entityeditor.h"
 #include "mainwindow/project/entityitem.h"
 #include "mainwindow/project/entityeditorfactory.h"
+#include "mainwindow/project/materialcollectionitem.h"
+#include "mainwindow/project/materialformfactory.h"
+#include "mainwindow/project/multimodelentityeditorformfactory.h"
 #include "mainwindow/project/projectbuilder.h"
-#include "mainwindow/project/singlemodelentityeditorformfactory.h"
 #include "mainwindow/project/tools.h"
 
 // appleseed.renderer headers.
-#include "renderer/api/entity.h"
-#include "renderer/api/utility.h"
+#include "renderer/api/material.h"
 
-// appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
-#include "foundation/utility/containers/dictionary.h"
+// Standard headers
+#include <string.h>
 
-// Standard headers.
-#include <memory>
-#include <string>
+using namespace foundation;
+using namespace renderer;
 
 namespace appleseed {
 namespace studio {
 
-template <typename Entity, typename ParentEntity, typename CollectionItem>
-class SingleModelEntityItem
-  : public EntityItem<Entity, ParentEntity, CollectionItem>
-{
-  public:
-    SingleModelEntityItem(
-        Entity*             entity,
-        ParentEntity&       parent,
-        CollectionItem*     collection_item,
-        ProjectBuilder&     project_builder);
-
-  private:
-    typedef EntityItem<Entity, ParentEntity, CollectionItem> Base;
-    typedef typename renderer::EntityTraits<Entity> EntityTraitsType;
-
-    virtual void slot_edit(AttributeEditor* attribute_editor) OVERRIDE;
-};
-
-
-//
-// SingleModelEntityItem class implementation.
-//
-
-template <typename Entity, typename ParentEntity, typename CollectionItem>
-SingleModelEntityItem<Entity, ParentEntity, CollectionItem>::SingleModelEntityItem(
-    Entity*                 entity,
-    ParentEntity&           parent,
-    CollectionItem*         collection_item,
-    ProjectBuilder&         project_builder)
-  : Base(entity, parent, collection_item, project_builder)
+MaterialItem::MaterialItem(
+    Material*                 material,
+    Assembly&                 parent,
+    MaterialCollectionItem*   collection_item,
+    ProjectBuilder&           project_builder)
+    : EntityItem<Material, Assembly, MaterialCollectionItem>(material, parent, collection_item, project_builder)
+    , m_parent(parent)
+    , m_collection_item(collection_item)
+    , m_project_builder(project_builder)
 {
 }
 
-template <typename Entity, typename ParentEntity, typename CollectionItem>
-void SingleModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit(AttributeEditor* attribute_editor)
+template <>
+std::auto_ptr<EntityEditor::IFormFactory> MaterialItem::get_form_factory<Material>()
 {
-    if (!Base::allows_edition())
-        return;
+    return std::auto_ptr<EntityEditor::IFormFactory>(
+        new MaterialFormFactory(
+            m_project_builder.get_factory_registrar<Material>(),
+            m_entity->get_name()));
+}
 
-    typedef typename EntityTraitsType::FactoryType FactoryType;
+template <>
+std::auto_ptr<EntityEditor::IFormFactory> MaterialItem::get_form_factory<DisneyMaterial>()
+{
+    return std::auto_ptr<EntityEditor::IFormFactory>(
+        new DisneyMaterialFormFactory(
+            m_project_builder.get_factory_registrar<Material>(),
+            m_entity->get_name()));
+}
 
-    std::auto_ptr<EntityEditor::IFormFactory> form_factory(
-        new SingleModelEntityEditorFormFactory(
-            Base::m_entity->get_name(),
-            FactoryType::get_input_metadata()));
+template <typename Entity>
+void MaterialItem::edit(AttributeEditor* attribute_editor)
+{
+    typedef typename renderer::EntityTraits<Material> EntityTraitsType;
+    typedef MultiModelEntityEditorFormFactory<
+            typename EntityTraitsType::FactoryRegistrarType
+                > MultiModelEntityEditorFormFactoryType;
+
+    std::auto_ptr<EntityEditor::IFormFactory> form_factory =
+        get_form_factory<Entity>();
 
     std::auto_ptr<EntityEditor::IEntityBrowser> entity_browser(
-        new EntityBrowser<ParentEntity>(Base::m_parent));
+        new EntityBrowser<Assembly>(m_parent));
 
     std::auto_ptr<IEntityEditorFactory> entity_editor_factory(
         new EntityEditorFactory<Entity>());
 
-    const foundation::Dictionary values =
-        EntityTraitsType::get_entity_values(Base::m_entity);
+    foundation::Dictionary values =
+        EntityTraitsType::get_entity_values(m_entity);
+
+    values.insert(
+        MultiModelEntityEditorFormFactoryType::ModelParameter,
+        m_entity->get_model());
 
     if (attribute_editor)
     {
@@ -129,7 +128,7 @@ void SingleModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit(Attr
         open_entity_editor(
             QTreeWidgetItem::treeWidget(),
             window_title,
-            Base::m_project_builder.get_project(),
+            m_project_builder.get_project(),
             form_factory,
             entity_browser,
             entity_editor_factory,
@@ -141,7 +140,16 @@ void SingleModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit(Attr
     }
 }
 
-}       // namespace studio
-}       // namespace appleseed
+void MaterialItem::slot_edit(AttributeEditor* attribute_editor)
+{
+    const char* model = m_entity->get_model();
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_SINGLEMODELENTITYITEM_H
+    if (strcmp(model, "generic_material") == 0)
+        edit<Material>(attribute_editor);
+    else if (strcmp(model, "disney_material") == 0)
+        edit<DisneyMaterial>(attribute_editor);
+}
+
+}   // namespace studio
+}   // namespace appleseed
+

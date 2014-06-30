@@ -1,6 +1,7 @@
 <RCC>
     <qresource prefix="/">
         <file>icons/application_icon.png</file>
+        <file>icons/close.png</file>
         <file>icons/cog_go.png</file>
         <file>icons/cog_go_disable.png</file>
         <file>icons/cross.png</file>
@@ -13,6 +14,8 @@
         <file>icons/film_go_disable.png</file>
         <file>icons/folder.png</file>
         <file>icons/folder_disable.png</file>
+        <file>icons/layer_arrow_down.png</file>
+        <file>icons/layer_arrow_up.png</file>
         <file>icons/page_white.png</file>
         <file>icons/page_white_disable.png</file>
         <file>icons/picture_empty.png</file>
@@ -25,6 +28,7 @@
         <file>icons/selection-crossed.png</file>
         <file>images/appleseed-logo-256.png</file>
         <file>patterns/texture.png</file>
+        <file>widgets/big_add.png</file>
         <file>widgets/checkbox_checked_disabled.png</file>
         <file>widgets/checkbox_checked_enabled.png</file>
         <file>widgets/checkbox_indeterminate_disabled.png</file>

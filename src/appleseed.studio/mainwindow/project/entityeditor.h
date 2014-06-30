@@ -103,16 +103,19 @@ class EntityEditor
         std::auto_ptr<IEntityBrowser>       entity_browser,
         const foundation::Dictionary&       values = foundation::Dictionary());
 
+    void initialize();
+
     foundation::Dictionary get_values() const;
 
   signals:
     void signal_applied(foundation::Dictionary values);
 
-  private:
+  protected:
     QWidget*                                m_parent;
     const renderer::Project&                m_project;
     std::auto_ptr<IFormFactory>             m_form_factory;
     std::auto_ptr<IEntityBrowser>           m_entity_browser;
+    const foundation::Dictionary&           m_values;
 
     QFormLayout*                            m_form_layout;
     InputMetadataCollection                 m_input_metadata;
@@ -125,7 +128,7 @@ class EntityEditor
     void create_form_layout();
     void create_connections();
 
-    void rebuild_form(const foundation::Dictionary& values);
+    virtual void rebuild_form(const foundation::Dictionary& values);
 
     foundation::Dictionary get_input_metadata(const std::string& name) const;
 
@@ -140,7 +143,7 @@ class EntityEditor
     std::auto_ptr<IInputWidgetProxy> create_color_input_widgets(const foundation::Dictionary& definition);
     std::auto_ptr<IInputWidgetProxy> create_file_input_widgets(const foundation::Dictionary& definition);
 
-  private slots:
+  protected slots:
     void slot_rebuild_form();
 
     void slot_open_entity_browser(const QString& widget_name);
