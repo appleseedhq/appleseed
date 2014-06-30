@@ -84,7 +84,7 @@ class DisneyMaterialEntityEditor
     void create_buttons_connections(const QString& widget_name);
     void create_form_layout();
     void create_parameters_layout();
-    void create_layer_layout();
+    void create_layer_layout(const std::string& layer_name);
 
     std::string unique_layer_name();
     std::string texture_to_expression(const QString& path);
@@ -118,6 +118,8 @@ class DisneyMaterialEntityEditor
     InputWidgetProxyCollection      m_widget_proxies;
     foundation::Dictionary          m_renames;
     renderer::ParamArray            m_params;
+
+    class LayerWidget;
 };
 
 }       // namespace studio

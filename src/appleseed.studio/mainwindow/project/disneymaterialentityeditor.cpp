@@ -75,16 +75,20 @@ using namespace std;
 namespace appleseed {
 namespace studio {
 
-namespace
-{
-    class LayerWidget
+    class DisneyMaterialEntityEditor::LayerWidget
       : public QFrame
     {
         Q_OBJECT
 
       public:
-        LayerWidget(QVBoxLayout* form_layout, QWidget* parent = 0)
-          : QFrame(parent)
+        LayerWidget(
+            const string& layer_name,
+            DisneyMaterialEntityEditor* entity_editor,
+            QVBoxLayout* form_layout,
+            QWidget* parent = 0)
+          : m_layer_name(layer_name)
+          , m_entity_editor(entity_editor)
+          , QFrame(parent)
           , m_form_layout(form_layout)
           , m_is_folded(false)
         {
@@ -197,11 +201,16 @@ namespace
       private slots:
         void slot_delete_layer() 
         {
+            // Remove model
+            string layer_rename = m_entity_editor->m_renames.get(m_layer_name.c_str());
+            m_entity_editor->m_params.dictionaries().remove(layer_rename);
             delete this;
         }
 
         void slot_move_layer_up()
         {
+            int new_position = 0;
+            // Update interface.
             for (int i=1; i<m_form_layout->count(); ++i)
             {
                 QLayoutItem* layout_item = m_form_layout->itemAt(i);
@@ -210,15 +219,39 @@ namespace
                     if (i > 1)
                     {
                         m_form_layout->takeAt(i);
-                        m_form_layout->insertWidget(i-1, this);
+                        new_position = i-1;
+                        m_form_layout->insertWidget(new_position, this);
                     }
                     break;
                 }
+            }
+
+            // Update model.
+            if (new_position > 0)
+            {
+                string previous_layer_name, current_layer_name;
+                for (const_each<DictionaryDictionary> i = m_entity_editor->m_params.dictionaries(); i; ++i)
+                {
+                    Dictionary& layer_params = m_entity_editor->m_params.dictionary(i->name());
+                    size_t layer_number = layer_params.get<size_t>("layer_number");
+                    if (layer_number == new_position)
+                        previous_layer_name = i->name();
+                    else if (layer_number == new_position+1)
+                        current_layer_name = i->name();
+                }
+                m_entity_editor->m_params
+                    .dictionary(previous_layer_name)
+                    .insert("layer_number", new_position+1);
+                m_entity_editor->m_params
+                    .dictionary(current_layer_name)
+                    .insert("layer_number", new_position);
             }
         }
 
         void slot_move_layer_down()
         {
+            int new_position = 0;
+            // Update interface.
             for (int i=1; i<m_form_layout->count(); ++i)
             {
                 QLayoutItem* layout_item = m_form_layout->itemAt(i);
@@ -227,10 +260,32 @@ namespace
                     if (i < m_form_layout->count()-3)
                     {
                         m_form_layout->takeAt(i);
-                        m_form_layout->insertWidget(i+1, this);
+                        new_position = i+1;
+                        m_form_layout->insertWidget(new_position, this);
                     }
                     break;
                 }
+            }
+
+            // Update model.
+            if (new_position > 0)
+            {
+                string next_layer_name, current_layer_name;
+                for (const_each<DictionaryDictionary> i = m_entity_editor->m_params.dictionaries(); i; ++i)
+                {
+                    Dictionary& layer_params = m_entity_editor->m_params.dictionary(i->name());
+                    size_t layer_number = layer_params.get<size_t>("layer_number");
+                    if (layer_number == new_position-1)
+                        current_layer_name = i->name();
+                    else if (layer_number == new_position)
+                        next_layer_name = i->name();
+                }
+                m_entity_editor->m_params
+                    .dictionary(current_layer_name)
+                    .insert("layer_number", new_position);
+                m_entity_editor->m_params
+                    .dictionary(next_layer_name)
+                    .insert("layer_number", new_position-1);
             }
         }
 
@@ -240,16 +295,17 @@ namespace
         }
 
       private:
-        QVBoxLayout*    m_layout;
-        QVBoxLayout*    m_form_layout;
-        QWidget*        m_spacer;
-        QToolButton*    m_fold_button;
-        bool            m_is_folded;
-        QIcon           m_fold_arrow_enabled;
-        QIcon           m_fold_arrow_disabled;
-    };
-}
+        string                      m_layer_name;
+        DisneyMaterialEntityEditor* m_entity_editor;
 
+        QVBoxLayout*                m_layout;
+        QVBoxLayout*                m_form_layout;
+        QWidget*                    m_spacer;
+        QToolButton*                m_fold_button;
+        bool                        m_is_folded;
+        QIcon                       m_fold_arrow_enabled;
+        QIcon                       m_fold_arrow_disabled;
+    };
 
 DisneyMaterialEntityEditor::DisneyMaterialEntityEditor(
     QWidget*                                parent,
@@ -484,9 +540,9 @@ void DisneyMaterialEntityEditor::create_parameters_layout()
     m_form_layout->addWidget(m_group_widget);
 }
 
-void DisneyMaterialEntityEditor::create_layer_layout()
+void DisneyMaterialEntityEditor::create_layer_layout(const std::string& layer_name)
 {
-    LayerWidget* layer_widget = new LayerWidget(m_form_layout);
+    LayerWidget* layer_widget = new LayerWidget(layer_name, this, m_form_layout);
     m_group_layout = layer_widget->get_layout();
     m_group_widget = layer_widget;
 
@@ -667,8 +723,8 @@ void DisneyMaterialEntityEditor::add_layer()
 {
     typedef std::vector<foundation::Dictionary> InputMetadataCollection;
     InputMetadataCollection metadata;
-    create_layer_layout();
     const string layer_name = unique_layer_name();
+    create_layer_layout(layer_name);
 
     metadata.push_back(
         Dictionary()
