@@ -136,6 +136,8 @@ set (mainwindow_project_sources
     mainwindow/project/entityeditorfactory.h
     mainwindow/project/entityeditorformfactorybase.cpp
     mainwindow/project/entityeditorformfactorybase.h
+    mainwindow/project/entityeditorutils.cpp
+    mainwindow/project/entityeditorutils.h
     mainwindow/project/entityeditorwindow.cpp
     mainwindow/project/entityeditorwindow.h
     mainwindow/project/entityeditorwindow.ui

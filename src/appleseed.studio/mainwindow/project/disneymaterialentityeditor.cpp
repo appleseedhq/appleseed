@@ -30,6 +30,7 @@
 #include "disneymaterialentityeditor.h"
 
 // appleseed.studio headers.
+#include "mainwindow/project/entityeditorutils.h"
 #include "mainwindow/project/expressioneditorwindow.h"
 #include "utility/doubleslider.h"
 #include "utility/interop.h"
@@ -53,7 +54,6 @@
 #include <QFormLayout>
 #include <QHBoxLayout>
 #include <QLabel>
-//#include <QLineEdit>
 #include <QPushButton>
 #include <QSignalMapper>
 #include <QString>
@@ -77,94 +77,6 @@ namespace studio {
 
 namespace
 {
-    class LineEditDoubleSliderAdaptor
-      : public QObject
-    {
-        Q_OBJECT
-
-      public:
-        LineEditDoubleSliderAdaptor(QLineEdit* line_edit, DoubleSlider* slider)
-          : QObject(line_edit)
-          , m_line_edit(line_edit)
-          , m_slider(slider)
-        {
-        }
-
-      public slots:
-        void slot_set_line_edit_value(const double value)
-        {
-            // Don't block signals here, for live edit to work we want the line edit to signal changes.
-            m_line_edit->setText(QString("%1").arg(value));
-        }
-
-        void slot_set_slider_value(const QString& value)
-        {
-            m_slider->blockSignals(true);
-
-            const double new_value = value.toDouble();
-
-            // Adjust range max if the new value is greater than current range max.
-            if (new_value > m_slider->maximum())
-                adjust_slider(new_value);
-
-            m_slider->setValue(new_value);
-            m_slider->blockSignals(false);
-        }
-
-        void slot_apply_slider_value()
-        {
-            m_slider->blockSignals(true);
-
-            const double new_value = m_line_edit->text().toDouble();
-
-            // Adjust range max if the new value is greater than current range max
-            // or less than a certain percentage of current range max.
-            if (new_value > m_slider->maximum() ||
-                new_value < lerp(m_slider->minimum(), m_slider->maximum(), 1.0 / 3))
-                adjust_slider(new_value);
-
-            m_slider->setValue(new_value);
-            m_slider->blockSignals(false);
-        }
-
-      private:
-        QLineEdit*      m_line_edit;
-        DoubleSlider*   m_slider;
-
-        void adjust_slider(const double new_value)
-        {
-            const double new_max = 2.0 * new_value;
-            m_slider->setRange(0.0, new_max);
-            m_slider->setPageStep(new_max / 10.0);
-        }
-    };
-
-
-    class ForwardColorChangedSignal
-      : public QObject
-    {
-        Q_OBJECT
-
-      public:
-        ForwardColorChangedSignal(QObject* parent, const QString& widget_name)
-          : QObject(parent)
-          , m_widget_name(widget_name)
-        {
-        }
-
-      public slots:
-        void slot_color_changed(const QColor& color)
-        {
-            emit signal_color_changed(m_widget_name, color);
-        }
-
-      signals:
-        void signal_color_changed(const QString& widget_name, const QColor& color);
-
-      private:
-        const QString m_widget_name;
-    };
-
     class LayerWidget
       : public QFrame
     {
@@ -602,7 +514,7 @@ void DisneyMaterialEntityEditor::create_text_input_widgets(
     const string parameter_name = parameters.get<string>("name");
     const string value = parameters.get<string>("default");
     QLabel* label = new QLabel(label_name.c_str(), m_group_widget);
-    m_line_edit = new ForwardLineEdit(value.c_str(), m_group_widget);
+    m_line_edit = new LineEditForwarder(value.c_str(), m_group_widget);
 
     string widget_name = group_name + ";" + parameter_name;
     connect(m_line_edit, SIGNAL(signal_text_changed()), m_line_edit_signal_mapper, SLOT(map()));
@@ -628,7 +540,7 @@ void DisneyMaterialEntityEditor::create_color_input_widgets(
     const string value = parameters.get<string>("default");
 
     QLabel* label = new QLabel(label_name.c_str(), m_group_widget);
-    m_line_edit = new ForwardLineEdit(value.c_str(), m_group_widget);
+    m_line_edit = new LineEditForwarder(value.c_str(), m_group_widget);
 
     QString name = QString::fromStdString(group_name + ";" + parameter_name);
     QToolButton* picker_button = new QToolButton(m_group_widget);
@@ -669,7 +581,7 @@ void DisneyMaterialEntityEditor::create_colormap_input_widgets(
     const string value = parameters.get<string>("default");
 
     QLabel* label = new QLabel(label_name.c_str(), m_group_widget);
-    m_line_edit = new ForwardLineEdit(value.c_str(), m_group_widget);
+    m_line_edit = new LineEditForwarder(value.c_str(), m_group_widget);
 
     const double min_value = 0.0;
     const double max_value = 1.0;

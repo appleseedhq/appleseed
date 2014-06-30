@@ -45,37 +45,13 @@
 #include <QWidget>
 
 // Forward declarations.
-//class ForwardLineEdit;
+namespace appleseed { namespace studio { class LineEditForwarder; } }
 namespace Ui { class DisneyMaterialEntityEditor; }
 class QSignalMapper;
 class QVBoxLayout;
 
 namespace appleseed {
 namespace studio {
-
-class ForwardLineEdit
-  : public QLineEdit
-{
-    Q_OBJECT
-
-  public:
-    ForwardLineEdit(const QString& contents, QWidget* parent = 0)
-      : QLineEdit(contents, parent)
-    {
-        connect(this, SIGNAL(textChanged(const QString&)),
-                this, SLOT(slot_text_changed(const QString&)));
-    }
-
-  public slots:
-    void slot_text_changed(const QString& text)
-    {
-        emit signal_text_changed();
-    }
-
-  signals:
-    void signal_text_changed();
-};
-
 
 class DisneyMaterialEntityEditor
   : public QWidget
@@ -127,7 +103,7 @@ class DisneyMaterialEntityEditor
     const renderer::Project&        m_project;
     QWidget*                        m_group_widget;
     QWidget*                        m_selected_layer_widget;
-    ForwardLineEdit*                m_line_edit;
+    LineEditForwarder*              m_line_edit;
     QWidget*                        m_texture_button;
     QWidget*                        m_expression_button;
     QVBoxLayout*                    m_group_layout;
