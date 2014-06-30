@@ -48,8 +48,17 @@
 namespace foundation
 {
 
+//
+// Torrance-Sparrow Masking Shadowing Function.
+//
+// References:
+//
+//   [1] Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs
+//       http://hal.inria.fr/docs/00/96/78/44/PDF/RR-8468.pdf
+//
+
 template <typename T>
-struct TorranceSparrowGeometricAttenuation
+struct TorranceSparrowMaskingShadowing
 {
     // incoming and outgoing are in shading basis space.
     static T G(
@@ -59,15 +68,24 @@ struct TorranceSparrowGeometricAttenuation
         const T             alpha_x,
         const T             alpha_y)
     {
-        const T cos_hn = h.y;
-        const T cos_on = outgoing.y;
-        const T cos_in = incoming.y;
-        const T cos_oh = dot(outgoing, h);
-        const T rcp_cos_oh = T(1.0) / cos_oh;
-        const T a = T(2) * cos_hn * cos_on * rcp_cos_oh;
-        const T b = T(2) * cos_hn * cos_in * rcp_cos_oh;
-        return std::min(a, std::min(b, T(1.0)));
+        if (outgoing.y > T(0))
+            return std::min(G1(incoming,h), G1(outgoing,h));
+
+        return std::max(G1(incoming,h) + G1(outgoing,h) - T(1), T(0));        
     }
+    
+  private:
+    static T G1(
+        const Vector<T,3>&  v,
+        const Vector<T,3>&  h)
+    {
+        const T cos_vh = dot(v,h);
+       if (cos_vh / v.y < T(0))
+           return T(0);
+       
+       return std::min( T(1), T(2) * std::fabs(h.y) * std::fabs(v.y) / cos_vh);
+    }
+    
 };
 
 template <typename T>
@@ -155,7 +173,7 @@ class MDF : NonCopyable
         const T             alpha_x,
         const T             alpha_y) const
     {
-        return TorranceSparrowGeometricAttenuation<T>::G(
+        return TorranceSparrowMaskingShadowing<T>::G(
             incoming,
             outgoing,
             h,
@@ -234,9 +252,16 @@ class BlinnMDF2
 //   [3] Microfacet Models for Refraction through Rough Surfaces
 //       http://www.cs.cornell.edu/~srm/publications/EGSR07-btdf.pdf
 //
+//   [4] Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs
+//       http://hal.inria.fr/docs/00/96/78/44/PDF/RR-8468.pdf
+//
+
+//
+// For some reason, this produces fireflies, so we don't really use it yet.
+//
 
 template <typename T>
-struct BeckmannSmithGeometricAttenuation
+struct BeckmannSmithMaskingShadowing
 {
     // incoming and outgoing are in shading basis space.
     static T G(
@@ -246,19 +271,18 @@ struct BeckmannSmithGeometricAttenuation
         const T             alpha_x,
         const T             alpha_y)
     {
-        return G1(incoming, h, alpha_x, alpha_y) * G1(outgoing, h, alpha_x, alpha_y);
+        return G1(outgoing, alpha_x, alpha_y) * G1(incoming, alpha_x, alpha_y);        
     }
 
   private:
-    static T G1(const Vector<T,3>& v,
-                const Vector<T,3>& h, 
-                const T            alpha_x,
-                const T            alpha_y)
+    static inline T G1(
+            const Vector<T,3>&  v,
+            const T             alpha_x,
+            const T             alpha_y)
     {
-        // [3] equations 26 and 27.
         const T cos_alpha2 = square(v.y);
-        const T tan_alpha = std::sqrt((T(1.0) - cos_alpha2) / cos_alpha2);        
-        const T a = T(1.0) / alpha_x * tan_alpha;
+        const T tan_alpha = std::sqrt((T(1.0) - cos_alpha2) / cos_alpha2);
+        const T a = T(1) / alpha_x * tan_alpha;
 
         if (a < T(1.6))
         {
@@ -266,11 +290,11 @@ struct BeckmannSmithGeometricAttenuation
             return (T(3.535) * a + T(2.181) * a2) / (T(1) + T(2.276) * a + T(2.577) * a2);
         }
 
-        return T(1.0);
+        return T(1.0);        
     }
 };
 
-template <typename T, template <typename> class GeomAttenuationFunction = TorranceSparrowGeometricAttenuation>
+template <typename T, template <typename> class MaskingShadowingFunction = TorranceSparrowMaskingShadowing>
 class BeckmannMDF2
   : public MDF<T>
 {
@@ -283,6 +307,8 @@ class BeckmannMDF2
         const T             alpha_x,
         const T             alpha_y) const OVERRIDE
     {
+        const T a = alpha_x;
+        
         // Same sampling procedure as for the Ward distribution.
         const T alpha_x2 = square(alpha_x);
         const T tan_alpha_2 = alpha_x2 * (-std::log(T(1.0) - s[0]));
@@ -319,7 +345,7 @@ class BeckmannMDF2
         const T             alpha_x,
         const T             alpha_y) const
     {
-        return GeomAttenuationFunction<T>::G(
+        return MaskingShadowingFunction<T>::G(
             incoming,
             outgoing,
             h,
@@ -350,12 +376,14 @@ class BeckmannMDF2
 //
 // Reference:
 //
-//   Microfacet Models for Refraction through Rough Surfaces
-//   http://www.cs.cornell.edu/~srm/publications/EGSR07-btdf.pdf
+//   [1] Microfacet Models for Refraction through Rough Surfaces
+//       http://www.cs.cornell.edu/~srm/publications/EGSR07-btdf.pdf
 //
+//   [2] Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs
+//       http://hal.inria.fr/docs/00/96/78/44/PDF/RR-8468.pdf
 
 template <typename T>
-struct GGXSmithGeometricAttenuation
+struct GGXSmithMaskingShadowing
 {
     // incoming and outgoing are in shading basis space.
     static T G(
@@ -365,23 +393,32 @@ struct GGXSmithGeometricAttenuation
         const T             alpha_x,
         const T             alpha_y)
     {
-        return G1(incoming, h, alpha_x, alpha_y) * G1(outgoing, h, alpha_x, alpha_y);
+        return G1(outgoing, alpha_x, alpha_y) * G1(incoming, alpha_x, alpha_y);
     }
 
-  private:
-    static T G1(const Vector<T,3>& v,
-                const Vector<T,3>& h, 
-                const T            alpha_x,
-                const T            alpha_y)
+  protected:
+    static inline T G1(
+            const Vector<T,3>&  v,
+            const T             alpha_x,
+            const T             alpha_y)
     {
-        // equation 34.
+        return T(1) / (T(1) + A(v, alpha_x, alpha_y));
+    }
+    
+    static T A(
+        const Vector<T,3>& v,
+        const T            alpha_x,
+        const T            alpha_y)
+    {
+        // [2] page 13.        
         const T cos_alpha2 = square(v.y);
         const T tan_alpha2 = (T(1.0) - cos_alpha2) / cos_alpha2;
-        return T(2.0) / (T(1.0) + std::sqrt(T(1.0) + square(alpha_x) * tan_alpha2));
+        const T a2_rcp = square(alpha_x) * tan_alpha2;
+        return (T(-1) + std::sqrt( T(1) + a2_rcp)) * T(0.5);        
     }
 };
 
-template <typename T, template <typename> class GeomAttenuationFunction = TorranceSparrowGeometricAttenuation>
+template <typename T, template <typename> class MaskingShadowingFunction = GGXSmithMaskingShadowing>
 class GGXMDF2
   : public MDF<T>
 {
@@ -427,7 +464,7 @@ class GGXMDF2
         const T             alpha_x,
         const T             alpha_y) const
     {
-        return GeomAttenuationFunction<T>::G(
+        return MaskingShadowingFunction<T>::G(
             incoming,
             outgoing,
             h,
