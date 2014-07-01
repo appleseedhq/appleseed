@@ -156,17 +156,19 @@ namespace
             if (cos_in < 0.0)
                 return Absorption;
 
-            const double D = m_mdf->D(
-                m,
-                values->m_ax,
-                values->m_ay);
+            const double D = 
+                m_mdf->D(
+                    m,
+                    values->m_ax,
+                    values->m_ay);
 
-            const double G = m_mdf->G(
-                shading_basis.transform_to_local(incoming),
-                shading_basis.transform_to_local(outgoing),
-                m,
-                values->m_ax,
-                values->m_ay);
+            const double G = 
+                m_mdf->G(
+                    shading_basis.transform_to_local(incoming),
+                    shading_basis.transform_to_local(outgoing),
+                    m,
+                    values->m_ax,
+                    values->m_ay);
 
             const double F = values->m_eta == 0.0 ? 1.0 : fresnel_dielectric(cos_oh, values->m_eta);
             value.set(D * G * F / (4.0 * cos_on * cos_in));
@@ -199,17 +201,19 @@ namespace
             
             const Vector3d h = normalize(incoming + outgoing);
             const Vector3d m = shading_basis.transform_to_local(h);
-            const double D = m_mdf->D(
-                m,
-                values->m_ax,
-                values->m_ay);
+            const double D = 
+                m_mdf->D(
+                    m,
+                    values->m_ax,
+                    values->m_ay);
 
-            const double G = m_mdf->G(
-                shading_basis.transform_to_local(outgoing), 
-                shading_basis.transform_to_local(incoming),
-                m,
-                values->m_ax, 
-                values->m_ay);
+            const double G = 
+                m_mdf->G(
+                    shading_basis.transform_to_local(outgoing), 
+                    shading_basis.transform_to_local(incoming),
+                    m,
+                    values->m_ax, 
+                    values->m_ay);
 
             const double cos_oh = dot(outgoing, h);
             const double F = values->m_eta == 0.0 ? 1.0 : fresnel_dielectric(cos_oh, values->m_eta);

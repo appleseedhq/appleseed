@@ -32,8 +32,8 @@
 #include "renderer/modeling/bsdf/ashikhminbrdf.h"
 #include "renderer/modeling/bsdf/diffusebtdf.h"
 #include "renderer/modeling/bsdf/lambertianbrdf.h"
-#include "renderer/modeling/bsdf/orennayarbrdf.h"
 #include "renderer/modeling/bsdf/microfacet2brdf.h"
+#include "renderer/modeling/bsdf/orennayarbrdf.h"
 #include "renderer/modeling/bsdf/specularbrdf.h"
 #include "renderer/modeling/bsdf/specularbtdf.h"
 
