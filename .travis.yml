@@ -1,0 +1,12 @@
+language: cpp
+compiler:
+  - gcc
+before_install:
+  - sudo apt-get -y update
+  - sudo apt-cache search boost
+  - sudo apt-get install doxygen
+  - sudo apt-get install libboost1.48-all-dev
+  - sudo apt-get install libxerces-c-dev
+  - sudo apt-get install libhdf5-serial-dev
+  - sudo apt-get install libxext-dev
+script: ./travis-ci-build.sh
