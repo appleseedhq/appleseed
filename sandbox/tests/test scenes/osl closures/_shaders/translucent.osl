@@ -1,5 +1,7 @@
 
-surface translucent(float Kd = 1, color Cs = 1)
+surface translucent(color Cs = 0.8,
+					float Kd = 0.7,
+					float Kt = 0.3)
 {
-    Ci = Kd * Cs * translucent(N);
+    Ci = Cs * (Kd * diffuse(N)) + (Kt * translucent(N));
 }

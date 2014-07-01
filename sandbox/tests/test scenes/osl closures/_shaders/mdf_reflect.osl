@@ -1,0 +1,5 @@
+
+surface mdf_reflect(float Ks = 1, color Cs = 1, float roughness = 0.05, float eta = 1.5)
+{
+    Ci = Ks * Cs * microfacet( "beckmann", N, roughness, eta, 0);
+}
