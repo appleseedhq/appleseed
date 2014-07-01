@@ -368,7 +368,8 @@ void daylight_ciexy_to_spectrum(
 //   http://www.cs.utah.edu/~bes/papers/color/
 //
 
-// Convert a linear RGB reflectance value to a spectrum.
+// Convert a linear RGB reflectance value to a spectrum, 
+// without clamping the spectrum values.
 template <typename T, typename Spectrum>
 void linear_rgb_reflectance_to_spectrum_unclamped(
     const Color<T, 3>&          linear_rgb,
@@ -944,15 +945,8 @@ void linear_rgb_reflectance_to_spectrum(
 {
     const T m = max_value(linear_rgb);
 
-    impl::linear_rgb_to_spectrum(
+    linear_rgb_reflectance_to_spectrum_unclamped(
         linear_rgb,
-        RGBToSpectrumWhiteReflectance,
-        RGBToSpectrumCyanReflectance,
-        RGBToSpectrumMagentaReflectance,
-        RGBToSpectrumYellowReflectance,
-        RGBToSpectrumRedReflectance,
-        RGBToSpectrumGreenReflectance,
-        RGBToSpectrumBlueReflectance,
         spectrum);
 
     spectrum = clamp(spectrum, 0.0f, std::max(m, 1.0f));

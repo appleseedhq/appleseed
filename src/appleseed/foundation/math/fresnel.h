@@ -229,15 +229,15 @@ T fresnel_dielectric(const T cosi, T eta)
     if (cosi < T(0.0))
         eta = T(1.0) / eta;
 
-    const T c = std::fabs(cosi);
+    const T c = std::abs(cosi);
     T g = eta * eta - T(1.0) + c * c;
 
     if (g > T(0.0))
     {
         g = std::sqrt(g);
-        T A = (g - c) / (g + c);
-        T B = (c * (g + c) - 1) / (c * (g - c) + 1);
-        T F = T(0.5) * A * A * (1 + B * B);
+        const T A = (g - c) / (g + c);
+        const T B = (c * (g + c) - T(1.0)) / (c * (g - c) + T(1.0));
+        const T F = T(0.5) * square(A) * (1 + square(B));
         assert(F >= T(0.0));
         return F;
     }
