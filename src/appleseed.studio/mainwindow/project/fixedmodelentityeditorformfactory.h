@@ -5,7 +5,6 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
 // Copyright (c) 2014 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_MULTIMODELENTITYEDITORFORMFACTORY_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_MULTIMODELENTITYEDITORFORMFACTORY_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_FIXEDMODELENTITYEDITORFORMFACTORY_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_FIXEDMODELENTITYEDITORFORMFACTORY_H
 
 // appleseed.studio headers.
 #include "mainwindow/project/entityeditorformfactorybase.h"
@@ -44,13 +43,14 @@ namespace appleseed {
 namespace studio {
 
 template <typename FactoryRegistrar>
-class MultiModelEntityEditorFormFactory
+class FixedModelEntityEditorFormFactory
   : public EntityEditorFormFactoryBase
 {
   public:
-    MultiModelEntityEditorFormFactory(
+    FixedModelEntityEditorFormFactory(
         const FactoryRegistrar&         factory_registrar,
-        const std::string&              entity_name);
+        const std::string&              entity_name,
+        const std::string&              model);
 
     virtual void update(
         const foundation::Dictionary&   values,
@@ -58,72 +58,39 @@ class MultiModelEntityEditorFormFactory
 
   private:
     const FactoryRegistrar&     m_factory_registrar;
-
-    std::string add_model_widget_definition(
-        const foundation::Dictionary&   values,
-        InputMetadataCollection&        metadata) const;
+    const std::string           m_model;
 };
 
 
 //
-// MultiModelEntityEditorFormFactory class implementation.
+// FixedModelEntityEditorFormFactory class implementation.
 //
 
 template <typename FactoryRegistrar>
-MultiModelEntityEditorFormFactory<FactoryRegistrar>::MultiModelEntityEditorFormFactory(
+FixedModelEntityEditorFormFactory<FactoryRegistrar>::FixedModelEntityEditorFormFactory(
     const FactoryRegistrar&             factory_registrar,
-    const std::string&                  entity_name)
+    const std::string&                  entity_name,
+    const std::string&                  model)
   : EntityEditorFormFactoryBase(entity_name)
   , m_factory_registrar(factory_registrar)
+  , m_model(model)
 {
 }
 
 template <typename FactoryRegistrar>
-void MultiModelEntityEditorFormFactory<FactoryRegistrar>::update(
+void FixedModelEntityEditorFormFactory<FactoryRegistrar>::update(
     const foundation::Dictionary&       values,
     InputMetadataCollection&            metadata) const
 {
     metadata.clear();
-
     add_name_input_metadata(values, metadata);
 
-    const std::string model =
-        add_model_widget_definition(values, metadata);
+    const typename FactoryRegistrar::FactoryType* factory =
+        m_factory_registrar.lookup(m_model.c_str());
 
-    if (!model.empty())
-    {
-        const typename FactoryRegistrar::FactoryType* factory =
-            m_factory_registrar.lookup(model.c_str());
-
-        add_input_metadata(
-            factory->get_input_metadata(),
-            values,
-            metadata);
-    }
-}
-
-template <typename FactoryRegistrar>
-std::string MultiModelEntityEditorFormFactory<FactoryRegistrar>::add_model_widget_definition(
-    const foundation::Dictionary&       values,
-    InputMetadataCollection&            metadata) const
-{
-    const typename FactoryRegistrar::FactoryArrayType factories =
-        m_factory_registrar.get_factories();
-
+    // We insert only the current model, so the model of the entiry cannot be changed.
     foundation::Dictionary model_items;
-    for (size_t i = 0; i < factories.size(); ++i)
-    {
-        model_items.insert(
-            factories[i]->get_human_readable_model(),
-            factories[i]->get_model());
-    }
-
-    const std::string model =
-        get_value(
-            values,
-            ModelParameter,
-            factories.empty() ? "" : factories[0]->get_model());
-
+    model_items.insert(factory->get_human_readable_model(), m_model.c_str());
     metadata.push_back(
         foundation::Dictionary()
             .insert("name", ModelParameter)
@@ -131,13 +98,16 @@ std::string MultiModelEntityEditorFormFactory<FactoryRegistrar>::add_model_widge
             .insert("type", "enumeration")
             .insert("items", model_items)
             .insert("use", "required")
-            .insert("default", model)
+            .insert("default", m_model.c_str())
             .insert("on_change", "rebuild_form"));
 
-    return model;
+    add_input_metadata(
+        factory->get_input_metadata(),
+        values,
+        metadata);    
 }
 
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_MULTIMODELENTITYEDITORFORMFACTORY_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_FIXEDMODELENTITYEDITORFORMFACTORY_H

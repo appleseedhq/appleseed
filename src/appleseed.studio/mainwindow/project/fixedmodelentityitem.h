@@ -5,7 +5,6 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
 // Copyright (c) 2014 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,15 +26,15 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_MULTIMODELENTITYITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_MULTIMODELENTITYITEM_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_FIXEDMODELENTITYITEM_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_FIXEDMODELENTITYITEM_H
 
 // appleseed.studio headers.
 #include "mainwindow/project/attributeeditor.h"
 #include "mainwindow/project/entitybrowser.h"
 #include "mainwindow/project/entityeditor.h"
 #include "mainwindow/project/entityitem.h"
-#include "mainwindow/project/multimodelentityeditorformfactory.h"
+#include "mainwindow/project/fixedmodelentityeditorformfactory.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/tools.h"
 
@@ -55,11 +54,11 @@ namespace appleseed {
 namespace studio {
 
 template <typename Entity, typename ParentEntity, typename CollectionItem>
-class MultiModelEntityItem
+class FixedModelEntityItem
   : public EntityItem<Entity, ParentEntity, CollectionItem>
 {
   public:
-    MultiModelEntityItem(
+    FixedModelEntityItem(
         Entity*             entity,
         ParentEntity&       parent,
         CollectionItem*     collection_item,
@@ -69,20 +68,20 @@ class MultiModelEntityItem
     typedef EntityItem<Entity, ParentEntity, CollectionItem> Base;
     typedef typename renderer::EntityTraits<Entity> EntityTraitsType;
 
-    typedef MultiModelEntityEditorFormFactory<
+    typedef FixedModelEntityEditorFormFactory<
         typename EntityTraitsType::FactoryRegistrarType
-    > MultiModelEntityEditorFormFactoryType;
+    > FixedModelEntityEditorFormFactoryType;
 
     virtual void slot_edit(AttributeEditor* attribute_editor) OVERRIDE;
 };
 
 
 //
-// MultiModelEntityItem class implementation.
+// FixedModelEntityItem class implementation.
 //
 
 template <typename Entity, typename ParentEntity, typename CollectionItem>
-MultiModelEntityItem<Entity, ParentEntity, CollectionItem>::MultiModelEntityItem(
+FixedModelEntityItem<Entity, ParentEntity, CollectionItem>::FixedModelEntityItem(
     Entity*                 entity,
     ParentEntity&           parent,
     CollectionItem*         collection_item,
@@ -92,25 +91,22 @@ MultiModelEntityItem<Entity, ParentEntity, CollectionItem>::MultiModelEntityItem
 }
 
 template <typename Entity, typename ParentEntity, typename CollectionItem>
-void MultiModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit(AttributeEditor* attribute_editor)
+void FixedModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit(AttributeEditor* attribute_editor)
 {
     if (!Base::allows_edition())
         return;
 
     std::auto_ptr<EntityEditor::IFormFactory> form_factory(
-        new MultiModelEntityEditorFormFactoryType(
+        new FixedModelEntityEditorFormFactoryType(
             Base::m_project_builder.template get_factory_registrar<Entity>(),
-            Base::m_entity->get_name()));
+            Base::m_entity->get_name(),
+            Base::m_entity->get_model()));
 
     std::auto_ptr<EntityEditor::IEntityBrowser> entity_browser(
         new EntityBrowser<ParentEntity>(Base::m_parent));
 
     foundation::Dictionary values =
         EntityTraitsType::get_entity_values(Base::m_entity);
-
-    values.insert(
-        EntityEditorFormFactoryBase::ModelParameter,
-        Base::m_entity->get_model());
 
     if (attribute_editor)
     {
@@ -144,4 +140,4 @@ void MultiModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit(Attri
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_MULTIMODELENTITYITEM_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_FIXEDMODELENTITYITEM_H

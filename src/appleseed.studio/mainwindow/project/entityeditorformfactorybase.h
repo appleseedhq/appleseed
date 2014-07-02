@@ -48,6 +48,7 @@ class EntityEditorFormFactoryBase
 {
   public:
     static const std::string NameParameter;
+    static const std::string ModelParameter;
 
   protected:
     typedef EntityEditor::InputMetadataCollection InputMetadataCollection;

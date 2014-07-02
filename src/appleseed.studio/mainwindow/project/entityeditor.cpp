@@ -65,6 +65,7 @@
 #include <Qt>
 #include <QToolButton>
 #include <QVariant>
+#include <QVBoxLayout>
 
 // boost headers.
 #include "boost/filesystem/operations.hpp"
@@ -82,20 +83,27 @@ namespace appleseed {
 namespace studio {
 
 EntityEditor::EntityEditor(
-    QWidget*                    parent,
-    const Project&              project,
-    auto_ptr<IFormFactory>      form_factory,
-    auto_ptr<IEntityBrowser>    entity_browser,
-    const Dictionary&           values)
+    QWidget*                        parent,
+    const Project&                  project,
+    auto_ptr<IFormFactory>          form_factory,
+    auto_ptr<IEntityBrowser>        entity_browser,
+    std::auto_ptr<ICustomEntityUI>  custom_ui,
+    const Dictionary&               values)
   : QObject(parent)
   , m_parent(parent)
   , m_project(project)
   , m_form_factory(form_factory)
   , m_entity_browser(entity_browser)
+  , m_custom_ui(custom_ui)
   , m_entity_picker_bind_signal_mapper(new QSignalMapper(this))
   , m_color_picker_signal_mapper(new QSignalMapper(this))
   , m_file_picker_signal_mapper(new QSignalMapper(this))
 {
+    assert(m_parent->layout() == 0);
+
+    m_top_layout = new QVBoxLayout(m_parent);
+    m_top_layout->setMargin(0);
+    
     create_form_layout();
     create_connections();
     rebuild_form(values);
@@ -103,17 +111,21 @@ EntityEditor::EntityEditor(
 
 Dictionary EntityEditor::get_values() const
 {
-    return m_widget_proxies.get_values();
+    Dictionary values(m_widget_proxies.get_values());
+
+    if (m_custom_ui.get())
+        values.merge(m_custom_ui->get_values());
+
+    return values;
 }
 
 void EntityEditor::create_form_layout()
 {
-    assert(m_parent->layout() == 0);
-
-    m_form_layout = new QFormLayout(m_parent);
+    m_form_layout = new QFormLayout();
     m_form_layout->setLabelAlignment(Qt::AlignRight);
     m_form_layout->setSpacing(10);
     m_form_layout->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
+    m_top_layout->addLayout(m_form_layout);
 }
 
 void EntityEditor::create_connections()
@@ -133,7 +145,8 @@ void EntityEditor::create_connections()
 
 void EntityEditor::rebuild_form(const Dictionary& values)
 {
-    clear_layout(m_form_layout);
+    clear_layout(m_top_layout);
+    create_form_layout();
 
     m_widget_proxies.clear();
 
@@ -143,6 +156,24 @@ void EntityEditor::rebuild_form(const Dictionary& values)
 
     for (const_each<InputMetadataCollection> i = m_input_metadata; i; ++i)
         create_input_widgets(*i);
+    
+    if (m_custom_ui.get())
+    {
+        m_custom_ui->create_custom_widgets(m_top_layout, values);
+        
+        // Create some example widgets, for testing.
+        QPushButton *x = new QPushButton();
+        x->setText("XXX");
+        m_top_layout->addWidget(x);
+
+        x = new QPushButton();
+        x->setText("YYY");
+        m_top_layout->addWidget(x);
+
+        x = new QPushButton();
+        x->setText("ZZZ");
+        m_top_layout->addWidget(x);
+    }
 }
 
 Dictionary EntityEditor::get_input_metadata(const string& name) const
