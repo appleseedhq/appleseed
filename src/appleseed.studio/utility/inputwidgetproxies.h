@@ -46,6 +46,7 @@
 // Forward declarations.
 namespace foundation    { class Dictionary; }
 class QCheckBox;
+class QColor;
 class QComboBox;
 class QDoubleSpinBox;
 class QGroupBox;
@@ -229,6 +230,26 @@ class ColorPickerProxy
     QToolButton*    m_picker_button;
 };
 
+//
+// ColorExpression proxy.
+//
+
+class ColorExpressionProxy
+  : public IInputWidgetProxy
+{
+  public:
+    explicit ColorExpressionProxy(QLineEdit* line_edit, QToolButton* picker_button);
+
+    virtual void set(const std::string& value) OVERRIDE;
+    virtual std::string get() const OVERRIDE;
+
+    static std::string qcolor_to_expression(const QColor& color);
+    static QColor expression_to_qcolor(const std::string& color);
+
+  private:
+    QLineEdit*      m_line_edit;
+    QToolButton*    m_picker_button;
+};
 
 //
 // A collection of named proxies.

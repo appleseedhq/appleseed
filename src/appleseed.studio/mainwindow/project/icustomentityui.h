@@ -1,12 +1,11 @@
-
 //
 // This source file is part of appleseed.
 // Visit http://appleseedhq.net/ for additional information and resources.
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014 Marius Avram, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,52 +26,41 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ATTRIBUTEEDITOR_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ATTRIBUTEEDITOR_H
-
-// appleseed.studio headers.
-#include "mainwindow/project/entityeditor.h"
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ICUSTOMENTITYUI_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ICUSTOMENTITYUI_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
+#include "foundation/utility/containers/dictionary.h"
 
-// Standard headers.
-#include <memory>
+// Qt headers.
+#include <QObject>
 
 // Forward declarations.
-namespace foundation    { class Dictionary; }
-namespace renderer      { class Project; }
-class QObject;
-class QWidget;
+class QVBoxLayout;
 
 namespace appleseed {
 namespace studio {
 
-class AttributeEditor
-  : public foundation::NonCopyable
+class ICustomEntityUI
+  : public QObject
 {
+    Q_OBJECT
+
   public:
-    AttributeEditor(
-        QWidget*                parent,
-        renderer::Project&      project);
+    virtual void create_custom_widgets(
+        QVBoxLayout*                    layout,
+        const foundation::Dictionary&   values) = 0;
 
-    void clear();
+    virtual foundation::Dictionary get_values() const = 0;
 
-    void edit(
-        std::auto_ptr<EntityEditor::IFormFactory>       form_factory,
-        std::auto_ptr<EntityEditor::IEntityBrowser>     entity_browser,
-        std::auto_ptr<ICustomEntityUI>                  custom_ui,
-        const foundation::Dictionary&                   values,
-        QObject*                                        receiver,
-        const char*                                     slot_apply);
+  protected:
+    void emit_signal_custom_applied();
 
-  private:
-    QWidget*                    m_parent;
-    renderer::Project&          m_project;
-    std::auto_ptr<EntityEditor> m_entity_editor;
+  signals:
+    void signal_custom_applied();
 };
 
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ATTRIBUTEEDITOR_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ICUSTOMENTITYUI_H

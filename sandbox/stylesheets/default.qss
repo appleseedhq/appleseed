@@ -1129,3 +1129,30 @@ QToolTip
     border: 0px;
     opacity: 200;
 }
+
+QWidget#layer
+{
+    border: 1px solid SELECTED_BACKGROUND_COLOR;
+}
+
+QWidget#selected_layer
+{
+    border: 2px solid SELECTED_BACKGROUND_COLOR;
+}
+
+QWidget#seexpr_controls
+{
+    border: 2px solid BORDER_COLOR;
+}
+
+QPushButton#add_layer
+{
+    border-radius: 0px;
+    border: 1px solid SELECTED_BACKGROUND_COLOR;
+    height: 25px;
+}
+
+QLabel#error
+{
+    color: rgba(255, 179, 156);
+}

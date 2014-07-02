@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -88,7 +88,7 @@ void FixedModelEntityEditorFormFactory<FactoryRegistrar>::update(
     const typename FactoryRegistrar::FactoryType* factory =
         m_factory_registrar.lookup(m_model.c_str());
 
-    // We insert only the current model, so the model of the entiry cannot be changed.
+    // We insert only the current model, so the model of the entity cannot be changed.
     foundation::Dictionary model_items;
     model_items.insert(factory->get_human_readable_model(), m_model.c_str());
     metadata.push_back(

@@ -33,9 +33,11 @@
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
 
+// appleseed.renderer headers.
+#include "renderer/modeling/input/expression.h"
+
 // standard headers
 #include <algorithm>
-#include <string>
 #include <vector>
 
 using namespace foundation;
@@ -56,10 +58,35 @@ struct DisneyMaterialLayer::Impl
       : m_name(name)
       , m_layer_number(params.get<size_t>("layer_number"))
     {
+        m_layer_number = params.get<size_t>("layer_number");
+        m_mask.set_expression(params.get<string>("mask").c_str(), false);
+        m_base_color.set_expression(params.get<string>("base_color").c_str());
+        m_subsurface.set_expression(params.get<string>("subsurface").c_str(), false);
+        m_metallic.set_expression(params.get<string>("metallic").c_str(), false);
+        m_specular.set_expression(params.get<string>("specular").c_str(), false);
+        m_specular_tint.set_expression(params.get<string>("specular_tint").c_str(), false);
+        m_anisotropic.set_expression(params.get<string>("anisotropic").c_str(), false);
+        m_roughness.set_expression(params.get<string>("roughness").c_str(), false);
+        m_sheen.set_expression(params.get<string>("sheen").c_str(), false);
+        m_sheen_tint.set_expression(params.get<string>("sheen_tint").c_str(), false);
+        m_clearcoat.set_expression(params.get<string>("clearcoat").c_str(), false);
+        m_clearcoat_gloss.set_expression(params.get<string>("clearcoat_gloss").c_str(), false);
     }
 
-    string  m_name;
-    size_t  m_layer_number;
+    string      m_name;
+    size_t      m_layer_number;
+    Expression  m_mask;
+    Expression  m_base_color;
+    Expression  m_subsurface;
+    Expression  m_metallic;
+    Expression  m_specular;
+    Expression  m_specular_tint;
+    Expression  m_anisotropic;
+    Expression  m_roughness;
+    Expression  m_sheen;
+    Expression  m_sheen_tint;
+    Expression  m_clearcoat;
+    Expression  m_clearcoat_gloss;
 };
 
 DisneyMaterialLayer::DisneyMaterialLayer(
@@ -98,7 +125,18 @@ bool DisneyMaterialLayer::operator<(const DisneyMaterialLayer& other) const
 
 bool DisneyMaterialLayer::check_expressions_syntax() const
 {
-    return false;         
+    return  impl->m_mask.syntax_ok() &&
+            impl->m_base_color.syntax_ok() &&
+            impl->m_subsurface.syntax_ok() &&
+            impl->m_metallic.syntax_ok() &&
+            impl->m_specular.syntax_ok() &&
+            impl->m_specular_tint.syntax_ok() &&
+            impl->m_anisotropic.syntax_ok() &&
+            impl->m_roughness.syntax_ok() &&
+            impl->m_sheen.syntax_ok() &&
+            impl->m_sheen_tint.syntax_ok() &&
+            impl->m_clearcoat.syntax_ok() &&
+            impl->m_clearcoat_gloss.syntax_ok();            
 }
 
 DictionaryArray DisneyMaterialLayer::get_input_metadata()
@@ -204,16 +242,17 @@ Dictionary DisneyMaterialLayer::get_default_values()
     Dictionary layer_params;
     for (size_t i = 0; i < metadata.size(); ++i)
     {
-        const Dictionary& parameter = metadata[i];
+        Dictionary parameter = metadata[i];
         const string name = parameter.get<string>("name");
         const string default_value = parameter.get<string>("default");
+
         layer_params.insert(name, default_value);
     }
-    
     layer_params.insert("layer_number", 1);
 
     Dictionary values;
     values.insert("layer1", layer_params);
+
     return values;
 }
 
@@ -223,7 +262,9 @@ Dictionary DisneyMaterialLayer::get_default_values()
 
 namespace
 {
-    const char* Model = "disney_material";
+
+const char* Model = "disney_material";
+
 }
 
 struct DisneyMaterial::Impl
@@ -255,20 +296,20 @@ const char* DisneyMaterial::get_model() const
 }
 
 bool DisneyMaterial::on_frame_begin(
-    const Project&  project,
-    const Assembly& assembly,
-    AbortSwitch*    abort_switch)
+    const Project&              project,
+    const Assembly&             assembly,
+    AbortSwitch*                abort_switch)
 {
     if (!Material::on_frame_begin(project, assembly, abort_switch))
         return false;
+
+    // TODO: handle per material options here...
 
     try
     {
         for (const_each<DictionaryDictionary> it = m_params.dictionaries(); it; ++it)
             impl->m_layers.push_back(DisneyMaterialLayer(it->name(), it->value()));
     }
-    // TODO: be more specific about what we catch here, 
-    // once we know what can be thrown. (est.)
     catch(...)
     {
         return false;
@@ -285,22 +326,25 @@ bool DisneyMaterial::on_frame_begin(
     return true;
 }
 
+// This method is called once after rendering each frame.
 void DisneyMaterial::on_frame_end(
-    const Project&  project,
-    const Assembly& assembly) OVERRIDE
+    const Project&              project,
+    const Assembly&             assembly) OVERRIDE
 {
+    impl->m_brdf->on_frame_end(project, assembly);
+    impl->m_brdf.reset();
     impl->m_layers.clear();    
     Material::on_frame_end(project, assembly);
 }
 
-std::size_t DisneyMaterial::get_layer_count() const
+std::size_t DisneyMaterial::num_layers() const
 {
     return impl->m_layers.size();
 }
 
-const DisneyMaterialLayer& DisneyMaterial::get_layer(const size_t index) const
+const DisneyMaterialLayer& DisneyMaterial::get_layer(std::size_t index) const
 {
-    assert(index < get_layer_count());
+    assert(index < num_layers());
 
     return impl->m_layers[index];
 }
@@ -324,7 +368,7 @@ DictionaryArray DisneyMaterialFactory::get_input_metadata() const
     DictionaryArray metadata;
 
     add_common_input_metadata(metadata);
-    
+
     metadata.push_back(
         Dictionary()
             .insert("name", "alpha_mask")
@@ -334,63 +378,10 @@ DictionaryArray DisneyMaterialFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "edf")
-            .insert("label", "EDF")
-            .insert("type", "entity")
-            .insert("entity_types", Dictionary().insert("edf", "EDF"))
-            .insert("use", "optional"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "alpha_map")
-            .insert("label", "Alpha Map")
+            .insert("name", "emission")
+            .insert("label", "Emission")
             .insert("type", "colormap")
-            .insert("entity_types",
-                Dictionary()
-                    .insert("color", "Colors")
-                    .insert("texture_instance", "Textures"))
-            .insert("use", "optional"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "displacement_map")
-            .insert("label", "Displacement Map")
-            .insert("type", "colormap")
-            .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
-            .insert("use", "optional"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "displacement_method")
-            .insert("label", "Displacement Method")
-            .insert("type", "enumeration")
-            .insert("items",
-                Dictionary()
-                    .insert("Bump Mapping", "bump")
-                    .insert("Normal Mapping", "normal"))
-            .insert("use", "required")
-            .insert("default", "bump"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "bump_amplitude")
-            .insert("label", "Bump Amplitude")
-            .insert("type", "text")
-            .insert("use", "optional")
-            .insert("default", "1.0"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "normal_map_up")
-            .insert("label", "Normal Map Up Vector")
-            .insert("type", "enumeration")
-            .insert("items",
-                Dictionary()
-                    .insert("Green Channel (Y)", "y")
-                    .insert("Blue Channel (Z)", "z"))
-            .insert("use", "optional")
-            .insert("default", "z"));
+            .insert("default", "0"));
 
     return metadata;
 }

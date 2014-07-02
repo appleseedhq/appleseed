@@ -65,6 +65,7 @@ void AttributeEditor::clear()
 void AttributeEditor::edit(
     auto_ptr<EntityEditor::IFormFactory>    form_factory,
     auto_ptr<EntityEditor::IEntityBrowser>  entity_browser,
+    auto_ptr<ICustomEntityUI>               custom_ui,
     const Dictionary&                       values,
     QObject*                                receiver,
     const char*                             slot_apply)
@@ -75,7 +76,7 @@ void AttributeEditor::edit(
             m_project,
             form_factory,
             entity_browser,
-            std::auto_ptr<EntityEditor::ICustomEntityUI>(),
+            custom_ui,
             values));
 
     QObject::connect(

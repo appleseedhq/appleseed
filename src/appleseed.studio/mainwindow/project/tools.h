@@ -45,6 +45,7 @@
 #include <string>
 
 // Forward declarations.
+namespace appleseed     { namespace studio { class EntityEditorWindow; } }
 namespace foundation    { class Dictionary; }
 namespace renderer      { class Project; }
 class QObject;
@@ -65,28 +66,40 @@ std::string get_entity_name_dialog(
     const std::string&                          text);
 
 void open_entity_editor(
-    QWidget*                                    parent,
-    const std::string&                          window_title,
-    const renderer::Project&                    project,
-    std::auto_ptr<EntityEditor::IFormFactory>   form_factory,
-    std::auto_ptr<EntityEditor::IEntityBrowser> entity_browser,
-    const foundation::Dictionary&               values,
-    QObject*                                    receiver,
-    const char*                                 slot_apply,
-    const char*                                 slot_accept,
-    const char*                                 slot_cancel);
+    QWidget*                                        parent,
+    const std::string&                              window_title,
+    const renderer::Project&                        project,
+    std::auto_ptr<EntityEditor::IFormFactory>       form_factory,
+    std::auto_ptr<EntityEditor::IEntityBrowser>     entity_browser,
+    std::auto_ptr<ICustomEntityUI>                  custom_entity_ui,
+    const foundation::Dictionary&                   values,
+    QObject*                                        receiver,
+    const char*                                     slot_apply,
+    const char*                                     slot_accept,
+    const char*                                     slot_cancel);
 
 void open_entity_editor(
-    QWidget*                                    parent,
-    const std::string&                          window_title,
-    const renderer::Project&                    project,
-    std::auto_ptr<EntityEditor::IFormFactory>   form_factory,
-    std::auto_ptr<EntityEditor::IEntityBrowser> entity_browser,
-    QObject*                                    receiver,
-    const char*                                 slot_apply,
-    const char*                                 slot_accept,
-    const char*                                 slot_cancel);
+    QWidget*                                        parent,
+    const std::string&                              window_title,
+    const renderer::Project&                        project,
+    std::auto_ptr<EntityEditor::IFormFactory>       form_factory,
+    std::auto_ptr<EntityEditor::IEntityBrowser>     entity_browser,
+    const foundation::Dictionary&                   values,
+    QObject*                                        receiver,
+    const char*                                     slot_apply,
+    const char*                                     slot_accept,
+    const char*                                     slot_cancel);
 
+void open_entity_editor(
+    QWidget*                                        parent,
+    const std::string&                              window_title,
+    const renderer::Project&                        project,
+    std::auto_ptr<EntityEditor::IFormFactory>       form_factory,
+    std::auto_ptr<EntityEditor::IEntityBrowser>     entity_browser,
+    QObject*                                        receiver,
+    const char*                                     slot_apply,
+    const char*                                     slot_accept,
+    const char*                                     slot_cancel);
 
 //
 // Implementation.

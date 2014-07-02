@@ -53,9 +53,9 @@ class DLLSYMBOL DisneyMaterialLayer
 {
   public:
     DisneyMaterialLayer(const DisneyMaterialLayer& other);
-    
-    ~DisneyMaterialLayer();
 
+    // Destructor
+    ~DisneyMaterialLayer();
     DisneyMaterialLayer& operator=(const DisneyMaterialLayer& other);
     
     bool operator<(const DisneyMaterialLayer& other) const;
@@ -77,13 +77,18 @@ class DLLSYMBOL DisneyMaterialLayer
     void swap(DisneyMaterialLayer& other);
     
     struct Impl;
-    Impl* impl;
+    Impl *impl;
 };
 
 class DLLSYMBOL DisneyMaterial
   : public Material
 {
-  public:    
+  public:
+    // Constructor.
+    DisneyMaterial(
+        const char*                 name,
+        const ParamArray&           params);  
+    
     // Delete this instance.
     virtual void release() OVERRIDE;
 
@@ -103,21 +108,14 @@ class DLLSYMBOL DisneyMaterial
         const Assembly&             assembly) OVERRIDE;
 
   private:
-    friend class DisneyMaterialFactory;
-
-    // Constructor.
-    DisneyMaterial(
-        const char*                 name,
-        const ParamArray&           params);  
-    
     // Destructor
     ~DisneyMaterial();
 
-    std::size_t get_layer_count() const;
-    const DisneyMaterialLayer& get_layer(const std::size_t index) const;
-
+    std::size_t num_layers() const;
+    const DisneyMaterialLayer& get_layer(std::size_t index) const;
+    
     struct Impl;
-    Impl* impl;
+    Impl *impl;
 };
 
 //

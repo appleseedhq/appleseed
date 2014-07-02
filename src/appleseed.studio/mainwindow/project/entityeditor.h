@@ -31,6 +31,7 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYEDITOR_H
 
 // appleseed.studio headers.
+#include "mainwindow/project/icustomentityui.h"
 #include "utility/inputwidgetproxies.h"
 
 // appleseed.foundation headers.

@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2014 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -59,19 +59,19 @@ class FixedModelEntityItem
 {
   public:
     FixedModelEntityItem(
-        Entity*             entity,
-        ParentEntity&       parent,
-        CollectionItem*     collection_item,
-        ProjectBuilder&     project_builder);
+        Entity*                                         entity,
+        ParentEntity&                                   parent,
+        CollectionItem*                                 collection_item,
+        ProjectBuilder&                                 project_builder);
 
-  private:
+  protected:
     typedef EntityItem<Entity, ParentEntity, CollectionItem> Base;
     typedef typename renderer::EntityTraits<Entity> EntityTraitsType;
 
     typedef FixedModelEntityEditorFormFactory<
         typename EntityTraitsType::FactoryRegistrarType
     > FixedModelEntityEditorFormFactoryType;
-
+  private:
     virtual void slot_edit(AttributeEditor* attribute_editor) OVERRIDE;
 };
 
@@ -82,10 +82,11 @@ class FixedModelEntityItem
 
 template <typename Entity, typename ParentEntity, typename CollectionItem>
 FixedModelEntityItem<Entity, ParentEntity, CollectionItem>::FixedModelEntityItem(
-    Entity*                 entity,
-    ParentEntity&           parent,
-    CollectionItem*         collection_item,
-    ProjectBuilder&         project_builder)
+    Entity*                                         entity,
+    ParentEntity&                                   parent,
+    CollectionItem*                                 collection_item,
+    ProjectBuilder&                                 project_builder)
+
   : Base(entity, parent, collection_item, project_builder)
 {
 }
@@ -113,6 +114,7 @@ void FixedModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit(Attri
         attribute_editor->edit(
             form_factory,
             entity_browser,
+            std::auto_ptr<ICustomEntityUI>(),
             values,
             this,
             SLOT(slot_edit_accepted(foundation::Dictionary)));
