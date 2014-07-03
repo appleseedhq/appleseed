@@ -30,7 +30,6 @@
 #define APPLESEED_RENDERER_MODELING_BSDF_MICROFACET2BRDF_H
 
 // appleseed.renderer headers.
-#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/bsdf/ibsdffactory.h"
 #include "renderer/modeling/input/inputarray.h"
 
@@ -50,7 +49,7 @@ namespace renderer
 {
 
 //
-// Microfacet BRDF input values.
+// Microfacet2 BRDF input values.
 //
 
 DECLARE_INPUT_VALUES(Microfacet2BRDFInputValues)
@@ -60,8 +59,9 @@ DECLARE_INPUT_VALUES(Microfacet2BRDFInputValues)
     double m_eta;
 };
 
+
 //
-// Microfacet BRDF factory.
+// Microfacet2 BRDF factory.
 //
 
 class DLLSYMBOL Microfacet2BRDFFactory

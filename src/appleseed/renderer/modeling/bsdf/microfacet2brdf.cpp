@@ -31,6 +31,7 @@
 #include "microfacet2brdf.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/utility/messagecontext.h"
@@ -65,7 +66,7 @@ namespace
 {
 
     //
-    // OSLMicrofacet BRDF.
+    // Microfacet2 BRDF.
     //
 
     const char* Model = "microfacet2_brdf";
