@@ -37,7 +37,7 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 
-// boost headers
+// boost headers.
 #include "boost/mpl/bool.hpp"
 
 // Standard headers.
@@ -58,8 +58,9 @@ namespace foundation
 //
 
 template <typename T>
-struct TorranceSparrowMaskingShadowing
+class TorranceSparrowMaskingShadowing
 {
+  public:
     // incoming and outgoing are in shading basis space.
     static T G(
         const Vector<T, 3>&  incoming,
@@ -69,21 +70,21 @@ struct TorranceSparrowMaskingShadowing
         const T              alpha_y)
     {
         if (outgoing.y > T(0.0))
-            return std::min(G1(incoming,h), G1(outgoing,h));
+            return std::min(G1(incoming, h), G1(outgoing, h));
 
-        return std::max(G1(incoming,h) + G1(outgoing,h) - T(1.0), T(0.0));
+        return std::max(G1(incoming, h) + G1(outgoing, h) - T(1.0), T(0.0));
     }
-    
+
   private:
     static T G1(
         const Vector<T, 3>&  v,
         const Vector<T, 3>&  h)
     {
         const T cos_vh = dot(v,h);
-       if (cos_vh / v.y < T(0.0))
-           return T(0.0);
+        if (cos_vh / v.y < T(0.0))
+            return T(0.0);
 
-       return std::min( T(1.0), T(2.0) * std::abs(h.y) * std::abs(v.y) / cos_vh);
+        return std::min( T(1.0), T(2.0) * std::abs(h.y) * std::abs(v.y) / cos_vh);
     }
 };
 
@@ -101,15 +102,15 @@ class MDF
         const T              alpha_x,
         const T              alpha_y) const
     {
-        // preconditions.
-        assert(s[0] >= 0.0);
-        assert(s[0] < 1.0);
-        assert(s[1] >= 0.0);
-        assert(s[1] < 1.0);
+        // Preconditions.
+        assert(s[0] >= T(0.0));
+        assert(s[0] <  T(1.0));
+        assert(s[1] >= T(0.0));
+        assert(s[1] <  T(1.0));
 
-        Vector<T, 3> result = do_sample(s, alpha_x, alpha_y);
+        const Vector<T, 3> result = do_sample(s, alpha_x, alpha_y);
 
-        // postconditions.
+        // Postconditions.
         assert(is_normalized(result));
         return result;
     }
@@ -119,9 +120,9 @@ class MDF
         const T              alpha_x,
         const T              alpha_y) const
     {
-        T result = do_eval_D(h, alpha_x, alpha_y);
+        const T result = do_eval_D(h, alpha_x, alpha_y);
 
-        // postconditions.
+        // Postconditions.
         assert(result >= T(0.0));
         return result;
     }
@@ -133,10 +134,10 @@ class MDF
         const T              alpha_x,
         const T              alpha_y) const
     {
-        T result = do_eval_G(incoming, outgoing, h, alpha_x, alpha_y);
+        const T result = do_eval_G(incoming, outgoing, h, alpha_x, alpha_y);
 
-        // postconditions.
-        assert(result >= 0.0);
+        // Postconditions.
+        assert(result >= T(0.0));
         return result;
     }
 
@@ -145,10 +146,10 @@ class MDF
         const T              alpha_x,
         const T              alpha_y) const
     {
-        T pdf = do_eval_pdf(h, alpha_x, alpha_y);
+        const T pdf = do_eval_pdf(h, alpha_x, alpha_y);
 
-        // postconditions.
-        assert(pdf >= 0.0);
+        // Postconditions.
+        assert(pdf >= T(0.0));
         return pdf;
     }
 
@@ -173,12 +174,13 @@ class MDF
         const T              alpha_x,
         const T              alpha_y) const
     {
-        return TorranceSparrowMaskingShadowing<T>::G(
-            incoming,
-            outgoing,
-            h,
-            alpha_x,
-            alpha_y);
+        return
+            TorranceSparrowMaskingShadowing<T>::G(
+                incoming,
+                outgoing,
+                h,
+                alpha_x,
+                alpha_y);
     }
 
     // h is in shading basis space.
@@ -187,6 +189,7 @@ class MDF
         const T              alpha_x,
         const T              alpha_y) const = 0;
 };
+
 
 //
 // Blinn-Phong Microfacet Distribution Function.
@@ -223,7 +226,7 @@ class BlinnMDF2
         const T              alpha_x,
         const T              alpha_y) const OVERRIDE
     {
-        assert(h.y >= 0.0);
+        assert(h.y >= T(0.0));
 
         return (alpha_x + T(2.0)) * T(RcpTwoPi) * std::pow(h.y, alpha_x);
     }
@@ -233,11 +236,12 @@ class BlinnMDF2
         const T              alpha_x,
         const T              alpha_y) const OVERRIDE
     {
-        assert(h.y >= 0.0);
+        assert(h.y >= T(0.0));
 
         return (alpha_x + T(2.0)) * T(RcpTwoPi) * std::pow(h.y, alpha_x + T(1.0));
     }
 };
+
 
 //
 // Beckmann Microfacet Distribution Function.
@@ -255,15 +259,15 @@ class BlinnMDF2
 //   [4] Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs
 //       http://hal.inria.fr/docs/00/96/78/44/PDF/RR-8468.pdf
 //
-
 //
 // For some reason, this produces fireflies. It's mentioned in [3], 
 // but it can also be a bug. We don't use it yet.
 //
 
 template <typename T>
-struct BeckmannSmithMaskingShadowing
+class BeckmannSmithMaskingShadowing
 {
+  public:
     // incoming and outgoing are in shading basis space.
     static T G(
         const Vector<T, 3>&  incoming,
@@ -343,12 +347,13 @@ class BeckmannMDF2
         const T              alpha_x,
         const T              alpha_y) const OVERRIDE
     {
-        return MaskingShadowingFunction<T>::G(
-            incoming,
-            outgoing,
-            h,
-            alpha_x,
-            alpha_y);
+        return
+            MaskingShadowingFunction<T>::G(
+                incoming,
+                outgoing,
+                h,
+                alpha_x,
+                alpha_y);
     }
 
     virtual T do_eval_pdf(
@@ -369,20 +374,23 @@ class BeckmannMDF2
     }
 };
 
+
 //
 // GGX Microfacet Distribution Function.
 //
-// Reference:
+// References:
 //
 //   [1] Microfacet Models for Refraction through Rough Surfaces
 //       http://www.cs.cornell.edu/~srm/publications/EGSR07-btdf.pdf
 //
 //   [2] Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs
 //       http://hal.inria.fr/docs/00/96/78/44/PDF/RR-8468.pdf
+//
 
 template <typename T>
-struct GGXSmithMaskingShadowing
+class GGXSmithMaskingShadowing
 {
+  public:
     // incoming and outgoing are in shading basis space.
     static T G(
         const Vector<T, 3>&  incoming,
@@ -394,8 +402,8 @@ struct GGXSmithMaskingShadowing
         return G1(outgoing, alpha_x, alpha_y) * G1(incoming, alpha_x, alpha_y);
     }
 
-    // we want to inherit from this class later, so G1 is protected.
   protected:
+    // We want to inherit from this class later, so G1 is protected.
     static T G1(
         const Vector<T, 3>&  v,
         const T              alpha_x,
@@ -405,7 +413,7 @@ struct GGXSmithMaskingShadowing
         const T cos_alpha2 = square(v.y);
         const T tan_alpha2 = (T(1.0) - cos_alpha2) / cos_alpha2;
         const T a2_rcp = square(alpha_x) * tan_alpha2;
-        const T A = (T(-1.0) + std::sqrt( T(1.0) + a2_rcp)) * T(0.5);
+        const T A = (T(-1.0) + std::sqrt(T(1.0) + a2_rcp)) * T(0.5);
         return T(1.0) / (T(1.0) + A);
     }
 };
@@ -435,7 +443,7 @@ class GGXMDF2
         const T              alpha_x,
         const T              alpha_y) const OVERRIDE
     {
-        assert(h.y >= 0.0);
+        assert(h.y >= T(0.0));
 
         const T alpha_x2 = square(alpha_x);
 
@@ -455,12 +463,13 @@ class GGXMDF2
         const T              alpha_x,
         const T              alpha_y) const OVERRIDE
     {
-        return MaskingShadowingFunction<T>::G(
-            incoming,
-            outgoing,
-            h,
-            alpha_x,
-            alpha_y);
+        return
+            MaskingShadowingFunction<T>::G(
+                incoming,
+                outgoing,
+                h,
+                alpha_x,
+                alpha_y);
     }
 
     virtual T do_eval_pdf(
@@ -468,7 +477,7 @@ class GGXMDF2
         const T              alpha_x,
         const T              alpha_y) const OVERRIDE
     {
-        assert(h.y >= 0.0);
+        assert(h.y >= T(0.0));
 
         if (h.y == T(0.0))
             return T(0.0);

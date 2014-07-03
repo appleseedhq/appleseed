@@ -38,7 +38,7 @@
 #include "foundation/utility/maplefile.h"
 #include "foundation/utility/test.h"
 
-// boost headers
+// boost headers.
 #include <boost/mpl/assert.hpp>
 #include <boost/mpl/not.hpp>
 
