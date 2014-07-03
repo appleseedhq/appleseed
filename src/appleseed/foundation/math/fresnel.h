@@ -30,8 +30,12 @@
 #ifndef APPLESEED_FOUNDATION_MATH_FRESNEL_H
 #define APPLESEED_FOUNDATION_MATH_FRESNEL_H
 
+// appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
+
 // Standard headers.
 #include <cassert>
+#include <cmath>
 
 namespace foundation
 {
@@ -88,6 +92,14 @@ Spectrum fresnel_dielectric_schlick(
     const T             cos_theta,              // cos(incident direction, normal)
     const T             multiplier = T(1.0));   // reflectance multiplier at tangent incidence
 
+//
+// Compute the Fresnel reflection factor for a dielectric.
+// Adapted from OSL's test render sample.
+// TODO: this probably needs a better name
+//
+
+template <typename T>
+T fresnel_dielectric(const T cosi, T eta);
 
 //
 // Implementation.
@@ -208,6 +220,29 @@ Spectrum fresnel_dielectric_schlick(
     fr += Spectrum(static_cast<ValueType>(k5 * multiplier));
 
     return fr;
+}
+
+template <typename T>
+T fresnel_dielectric(const T cosi, T eta)
+{
+    // compute fresnel reflectance without explicitly computing the refracted direction
+    if (cosi < T(0.0))
+        eta = T(1.0) / eta;
+
+    const T c = std::abs(cosi);
+    T g = eta * eta - T(1.0) + c * c;
+
+    if (g > T(0.0))
+    {
+        g = std::sqrt(g);
+        const T A = (g - c) / (g + c);
+        const T B = (c * (g + c) - T(1.0)) / (c * (g - c) + T(1.0));
+        const T F = T(0.5) * square(A) * (1 + square(B));
+        assert(F >= T(0.0));
+        return F;
+    }
+
+    return T(1.0); // TIR (no refracted component)    
 }
 
 }       // namespace foundation

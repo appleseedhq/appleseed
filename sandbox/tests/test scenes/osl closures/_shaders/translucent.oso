@@ -1,17 +1,25 @@
 OpenShadingLanguage 1.00
 # Compiled by oslc 1.5.7dev
 surface translucent
-param	float	Kd	1 		 %read{1,1} %write{2147483647,-1}
-param	color	Cs	1 1 1 		 %read{1,1} %write{2147483647,-1}
-global	normal	N	 %read{0,0} %write{2147483647,-1}
-global	closure color	Ci	 %read{2147483647,-1} %write{2,2}
-temp	closure color	$tmp1	 %read{2,2} %write{0,0}
-const	string	$const1	"translucent"		 %read{0,0} %write{2147483647,-1}
-temp	color	$tmp2	 %read{2,2} %write{1,1}
+param	color	Cs	0.80000001 0.80000001 0.80000001 		 %read{2,2} %write{2147483647,-1}
+param	float	Kd	0.69999999 		 %read{1,1} %write{2147483647,-1}
+param	float	Kt	0.30000001 		 %read{4,4} %write{2147483647,-1}
+global	normal	N	 %read{0,3} %write{2147483647,-1}
+global	closure color	Ci	 %read{2147483647,-1} %write{5,5}
+temp	closure color	$tmp1	 %read{1,1} %write{0,0}
+const	string	$const1	"diffuse"		 %read{0,0} %write{2147483647,-1}
+temp	closure color	$tmp2	 %read{2,2} %write{1,1}
+temp	closure color	$tmp3	 %read{5,5} %write{2,2}
+temp	closure color	$tmp4	 %read{4,4} %write{3,3}
+const	string	$const2	"translucent"		 %read{3,3} %write{2147483647,-1}
+temp	closure color	$tmp5	 %read{5,5} %write{4,4}
 code ___main___
-# translucent.osl:4
-#     Ci = Kd * Cs * translucent(N);
-	closure		$tmp1 $const1 N 	%filename{"translucent.osl"} %line{4} %argrw{"wrr"}
-	mul		$tmp2 Kd Cs 	%argrw{"wrr"}
-	mul		Ci $tmp1 $tmp2 	%argrw{"wrr"}
+# translucent.osl:6
+#     Ci = Cs * (Kd * diffuse(N)) + (Kt * translucent(N));
+	closure		$tmp1 $const1 N 	%filename{"translucent.osl"} %line{6} %argrw{"wrr"}
+	mul		$tmp2 $tmp1 Kd 	%argrw{"wrr"}
+	mul		$tmp3 $tmp2 Cs 	%argrw{"wrr"}
+	closure		$tmp4 $const2 N 	%argrw{"wrr"}
+	mul		$tmp5 $tmp4 Kt 	%argrw{"wrr"}
+	add		Ci $tmp3 $tmp5 	%argrw{"wrr"}
 	end

@@ -258,6 +258,7 @@ set (foundation_math_sources
     foundation/math/knn.h
     foundation/math/matrix.h
     foundation/math/microfacet.h
+    foundation/math/microfacet2.h
     foundation/math/minmax.h
     foundation/math/mis.h
     foundation/math/noise.cpp
@@ -404,6 +405,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_matrix.cpp
     foundation/meta/tests/test_memory.cpp
     foundation/meta/tests/test_microfacet.cpp
+    foundation/meta/tests/test_microfacet2.cpp
     foundation/meta/tests/test_minmax.cpp
     foundation/meta/tests/test_noise.cpp
     foundation/meta/tests/test_objmeshfilereader.cpp
@@ -1190,6 +1192,8 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/lambertianbrdf.h
     renderer/modeling/bsdf/microfacetbrdf.cpp
     renderer/modeling/bsdf/microfacetbrdf.h
+    renderer/modeling/bsdf/microfacet2brdf.cpp
+    renderer/modeling/bsdf/microfacet2brdf.h
     renderer/modeling/bsdf/nullbsdf.h
     renderer/modeling/bsdf/orennayarbrdf.cpp
     renderer/modeling/bsdf/orennayarbrdf.h       

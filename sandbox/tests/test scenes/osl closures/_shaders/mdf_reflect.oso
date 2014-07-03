@@ -1,0 +1,27 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.5.7dev
+surface mdf_reflect
+param	float	Ks	1 		 %read{2,2} %write{2147483647,-1}
+param	color	Cs	1 1 1 		 %read{2,2} %write{2147483647,-1}
+param	float	roughness	0.050000001 		 %read{1,1} %write{2147483647,-1}
+param	float	eta	1.5 		 %read{1,1} %write{2147483647,-1}
+global	normal	N	 %read{1,1} %write{2147483647,-1}
+global	closure color	Ci	 %read{2147483647,-1} %write{3,3}
+temp	closure color	$tmp1	 %read{3,3} %write{1,1}
+const	string	$const1	"beckmann"		 %read{1,1} %write{2147483647,-1}
+const	int	$const2	0		 %read{1,1} %write{2147483647,-1}
+const	string	$const3	"microfacet"		 %read{0,1} %write{2147483647,-1}
+const	vector	$const4	0 0 0		 %read{1,1} %write{2147483647,-1}
+temp	color	$tmp3	 %read{3,3} %write{2,2}
+code ___main___
+# mdf_reflect.osl:4
+#     Ci = Ks * Cs * microfacet( "beckmann", N, roughness, eta, 0);
+	functioncall	$const3 2 	%filename{"mdf_reflect.osl"} %line{4} %argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:512
+#                          float yalpha, float eta, int refract) BUILTIN;
+	closure		$tmp1 $const3 $const1 N $const4 roughness roughness eta $const2 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{512} %argrw{"wrrrrrrrr"}
+# mdf_reflect.osl:4
+#     Ci = Ks * Cs * microfacet( "beckmann", N, roughness, eta, 0);
+	mul		$tmp3 Ks Cs 	%filename{"mdf_reflect.osl"} %line{4} %argrw{"wrr"}
+	mul		Ci $tmp1 $tmp3 	%argrw{"wrr"}
+	end
