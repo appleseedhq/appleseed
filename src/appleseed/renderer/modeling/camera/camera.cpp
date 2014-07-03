@@ -68,7 +68,7 @@ UniqueID Camera::get_class_uid()
 Camera::Camera(
     const char*         name,
     const ParamArray&   params)
-  : Entity(g_class_uid, params)
+  : ConnectableEntity(g_class_uid, params)
 {
     set_name(name);
 }

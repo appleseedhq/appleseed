@@ -32,7 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/modeling/entity/entity.h"
+#include "renderer/modeling/entity/connectableentity.h"
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
@@ -59,7 +59,7 @@ namespace renderer
 //
 
 class DLLSYMBOL Camera
-  : public Entity
+  : public ConnectableEntity
 {
   public:
     // Return the unique ID of this class of entities.

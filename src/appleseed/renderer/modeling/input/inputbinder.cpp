@@ -185,6 +185,16 @@ void InputBinder::bind_scene_entities_inputs(
     const Scene&                    scene,
     const SymbolTable&              scene_symbols)
 {
+    // Bind camera inputs.
+    if (scene.get_camera())
+    {
+        bind_scene_entity_inputs(
+            scene,
+            scene_symbols,
+            SymbolTable::symbol_name(SymbolTable::SymbolCamera),
+            *scene.get_camera());
+    }
+
     // Bind textures to texture instances.
     for (each<TextureInstanceContainer> i = scene.texture_instances(); i; ++i)
     {
