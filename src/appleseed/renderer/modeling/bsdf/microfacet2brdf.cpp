@@ -47,8 +47,8 @@
 // Standard headers.
 #include <algorithm>
 #include <cmath>
-#include <string>
 #include <memory>
+#include <string>
 
 // Forward declarations.
 namespace foundation    { class AbortSwitch; }
@@ -243,16 +243,17 @@ namespace
 
             const Vector3d h = normalize(incoming + outgoing);
             const double cos_oh = dot(outgoing, h);
-            return m_mdf->pdf(
-                        shading_basis.transform_to_local(h),
-                        values->m_ax,
-                        values->m_ay) / (4.0 * cos_oh);
+            return
+                m_mdf->pdf(
+                    shading_basis.transform_to_local(h),
+                    values->m_ax,
+                    values->m_ay) / (4.0 * cos_oh);
         }
 
       private:
         typedef Microfacet2BRDFInputValues InputValues;
 
-        std::auto_ptr<MDF<double> > m_mdf;
+        auto_ptr<MDF<double> > m_mdf;
     };
 
     typedef BSDFWrapper<Microfacet2BRDFImpl> Microfacet2BRDF;
