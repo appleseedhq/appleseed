@@ -171,7 +171,7 @@ namespace
                     values->m_ay);
 
             const double F = values->m_eta == 0.0 ? 1.0 : fresnel_dielectric(cos_oh, values->m_eta);
-            value.set(D * G * F / (4.0 * cos_on * cos_in));
+            value.set(static_cast<float>(D * G * F / (4.0 * cos_on * cos_in)));
             probability = m_mdf->pdf(m, values->m_ax, values->m_ay) / (4.0 * cos_oh);
             return Glossy;
         }
@@ -217,7 +217,7 @@ namespace
 
             const double cos_oh = dot(outgoing, h);
             const double F = values->m_eta == 0.0 ? 1.0 : fresnel_dielectric(cos_oh, values->m_eta);
-            value.set(D * G * F / (4.0 * cos_on * cos_in));
+            value.set(static_cast<float>(D * G * F / (4.0 * cos_on * cos_in)));
             return m_mdf->pdf(m, values->m_ax, values->m_ay) / (4.0 * cos_oh);
         }
 
