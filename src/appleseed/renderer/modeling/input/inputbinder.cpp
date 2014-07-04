@@ -185,6 +185,16 @@ void InputBinder::bind_scene_entities_inputs(
     const Scene&                    scene,
     const SymbolTable&              scene_symbols)
 {
+    // Bind textures to texture instances.
+    // Other entities might need to access the textures bound to texture instances,
+    // so binding of textures to texture instances must come first.
+    for (each<TextureInstanceContainer> i = scene.texture_instances(); i; ++i)
+    {
+        i->unbind_texture();
+        i->bind_texture(scene.textures());
+        i->check_texture();
+    }
+
     // Bind camera inputs.
     if (scene.get_camera())
     {
@@ -193,14 +203,6 @@ void InputBinder::bind_scene_entities_inputs(
             scene_symbols,
             SymbolTable::symbol_name(SymbolTable::SymbolCamera),
             *scene.get_camera());
-    }
-
-    // Bind textures to texture instances.
-    for (each<TextureInstanceContainer> i = scene.texture_instances(); i; ++i)
-    {
-        i->unbind_texture();
-        i->bind_texture(scene.textures());
-        i->check_texture();
     }
 
     // Bind environment EDFs inputs.
@@ -258,6 +260,8 @@ void InputBinder::bind_assembly_entities_inputs(
     m_assembly_info.push_back(info);
 
     // Bind textures to texture instances.
+    // Other entities might need to access the textures bound to texture instances,
+    // so binding of textures to texture instances must come first.
     for (each<TextureInstanceContainer> i = assembly.texture_instances(); i; ++i)
     {
         i->unbind_texture();
