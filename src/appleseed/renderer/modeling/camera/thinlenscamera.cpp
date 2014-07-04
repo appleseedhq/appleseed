@@ -34,13 +34,17 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/intersection/intersector.h"
+#include "renderer/kernel/lighting/imageimportancesampler.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/frame/frame.h"
+#include "renderer/modeling/input/texturesource.h"
 #include "renderer/modeling/project/project.h"
+#include "renderer/modeling/scene/textureinstance.h"
+#include "renderer/modeling/texture/texture.h"
 #include "renderer/utility/paramarray.h"
 #include "renderer/utility/transformsequence.h"
 
@@ -89,6 +93,53 @@ namespace
     //   http://en.wikipedia.org/wiki/Diaphragm_(optics)
     //
 
+	typedef ImageImportanceSampler<Vector2d, double> ImageImportanceSamplerType;
+
+	class ImageSampler
+	{
+		public:
+		explicit ImageSampler(
+			TextureCache&				texture_cache,
+			const TextureSource*		texture_source,
+			const size_t				width,
+			const size_t				height)
+		  : m_texture_cache(texture_cache)
+		  , m_texture_source(texture_source)
+		  , m_width(width)
+		  , m_height(height)
+		  , m_range(sqrt(1.0+(double)(m_height*m_height)/(m_width*m_width)))
+		{
+		}
+
+		void sample(const size_t x, const size_t y, Vector2d& payload, double& importance) const
+		{
+			payload = Vector2d(
+				(2.0 * x + 1.0 - m_width) / (m_width - 1.0),
+                (2.0 * y + 1.0 - m_height) / (m_height - 1.0));
+
+			if (m_height != m_width)
+				payload.y *= (double)m_height/m_width;
+
+			payload /= m_range;		// scale to fit in a unit disk
+
+			const Vector2d uv(
+                x/(m_width-1.0),
+                y/(m_height-1.0));
+
+			Color3f color;
+			m_texture_source->evaluate(m_texture_cache, uv, color);
+
+			importance = static_cast<double>(luminance(color));
+		}
+
+		private:
+		TextureCache&			m_texture_cache;
+		const TextureSource*    m_texture_source;
+		const size_t			m_width;
+		const size_t			m_height;
+		const double			m_range;
+	};
+
     const char* Model = "thinlens_camera";
 
     class ThinLensCamera
@@ -100,6 +151,7 @@ namespace
             const ParamArray&   params)
           : Camera(name, params)
         {
+			m_inputs.declare("diaphragm_map", InputFormatSpectralReflectance, "");
         }
 
         virtual void release() OVERRIDE
@@ -132,8 +184,10 @@ namespace
                 m_focal_distance);
 
             // Extract the diaphragm configuration from the camera parameters.
-            extract_diaphragm_blade_count();
-            extract_diaphragm_tilt_angle();
+			m_diaphragm_map_bound = extract_diaphragm_importance_sampler(*project.get_scene());
+			extract_diaphragm_blade_count();
+			extract_diaphragm_tilt_angle();
+
 
             // Compute the view frustum of the camera.
             m_view_frustum = compute_view_frustum(m_film_dimensions, m_focal_length);
@@ -160,7 +214,7 @@ namespace
             m_ky = m_film_dimensions[1] * t;
 
             // Build the diaphragm polygon.
-            if (m_diaphragm_blade_count > 0)
+            if (!m_diaphragm_map_bound && m_diaphragm_blade_count > 0)
             {
                 m_diaphragm_vertices.resize(m_diaphragm_blade_count);
                 build_regular_polygon(
@@ -184,7 +238,18 @@ namespace
 
             // Sample the surface of the lens.
             Vector2d lens_point;
-            if (m_diaphragm_blade_count == 0)
+
+			if (m_diaphragm_map_bound) {
+				sampling_context.split_in_place(2, 1);
+				const Vector2d s = sampling_context.next_vector2<2>();
+				Vector2d v;
+				size_t y;
+				double prob_xy;
+				m_importance_sampler->sample(s, v, y, prob_xy);
+
+				lens_point = m_lens_radius * v;
+			}
+            else if (m_diaphragm_blade_count == 0)
             {
                 sampling_context.split_in_place(2, 1);
                 const Vector2d s = sampling_context.next_vector2<2>();
@@ -247,7 +312,7 @@ namespace
             if (point_camera.z > -m_focal_length)
                 return false;
 
-            // Project the point onto the film plane.
+            // Project the point onto the diaphragm mapfilm plane.
             const double k = -m_focal_length / point_camera.z;
             ndc.x = 0.5 + (point_camera.x * k * m_rcp_film_width);
             ndc.y = 0.5 - (point_camera.y * k * m_rcp_film_height);
@@ -298,6 +363,7 @@ namespace
         Vector2d            m_film_dimensions;          // film dimensions in camera space, in meters
         double              m_focal_length;             // focal length in camera space, in meters
         bool                m_autofocus_enabled;        // is autofocus enabled?
+		bool				m_diaphragm_map_bound;		// is a diaphragm_map bound to the camera
         Vector2d            m_autofocus_target;         // autofocus target on film plane, in NDC
         double              m_focal_distance;           // focal distance in camera space
         size_t              m_diaphragm_blade_count;    // number of blades of the diaphragm, 0 for round aperture
@@ -309,6 +375,38 @@ namespace
         double              m_rcp_film_height;          // film height reciprocal in camera space
         double              m_lens_radius;              // radius of the lens in camera space
         double              m_kx, m_ky;
+
+		// An ImageImportanceSampler to sample sample the grayscale image and find where to place the samples on the lens
+		auto_ptr<ImageImportanceSamplerType>    m_importance_sampler;
+		string									m_diaphragm_map_name;
+
+		bool extract_diaphragm_importance_sampler(const Scene& scene)
+        {
+			const Source* diaphragm_map_source = m_inputs.source("diaphragm_map");
+            
+            if (!diaphragm_map_source || !dynamic_cast<const TextureSource*>(diaphragm_map_source))
+				return false;
+
+			const TextureSource* texture_source = static_cast<const TextureSource*>(diaphragm_map_source);
+			const CanvasProperties& texture_props =
+				texture_source->get_texture_instance().get_texture().properties();
+			const size_t width = texture_props.m_canvas_width;
+			const size_t height = texture_props.m_canvas_height;
+			m_diaphragm_map_name = texture_source->get_texture_instance().get_name();
+
+			TextureStore texture_store(scene);
+            TextureCache texture_cache(texture_store);
+			ImageSampler sampler(
+				texture_cache,
+				texture_source,
+				width,
+				height);
+
+			m_importance_sampler.reset(
+				new ImageImportanceSamplerType(width, height));
+			m_importance_sampler->rebuild(sampler);
+			return true;
+        }
 
         vector<Vector2d>    m_diaphragm_vertices;
 
@@ -396,6 +494,7 @@ namespace
                 "  autofocus        %s\n"
                 "  autofocus target %f, %f\n"
                 "  focal distance   %f\n"
+				"  diaphragm map    %s\n"
                 "  diaphragm blades %s\n"
                 "  diaphragm angle  %f\n"
                 "  shutter open     %f\n"
@@ -408,6 +507,7 @@ namespace
                 m_autofocus_target[0],
                 m_autofocus_target[1],
                 m_focal_distance,
+				m_diaphragm_map_bound?m_diaphragm_map_name.c_str():"none",
                 pretty_uint(m_diaphragm_blade_count).c_str(),
                 m_diaphragm_tilt_angle,
                 m_shutter_open_time,
@@ -509,13 +609,21 @@ DictionaryArray ThinLensCameraFactory::get_input_metadata() const
             .insert("type", "text")
             .insert("use", "required"));
 
+	metadata.push_back(
+		Dictionary()
+			.insert("name", "diaphragm_map")
+			.insert("label", "Diaphragm Map")
+			.insert("type", "text")
+			.insert("use", "optional")
+			.insert("default", "")
+		);
+
     metadata.push_back(
         Dictionary()
             .insert("name", "diaphragm_blades")
             .insert("label", "Diaphragm Blades")
             .insert("type", "text")
-            .insert("use", "optional")
-            .insert("default", "0"));
+            .insert("use", "optional"));
 
     metadata.push_back(
         Dictionary()
