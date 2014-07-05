@@ -71,7 +71,6 @@ QWidget
     border: 0px;
     selection-color: SELECTED_TEXT_COLOR;
     selection-background-color: SELECTED_BACKGROUND_COLOR;
-    font-size: 11px;
 }
 
 QWidget:disabled
@@ -283,7 +282,6 @@ QMenuBar
     background-color: ACTIVE_BACKGROUND_COLOR;
     border: BORDER_STYLE;
     border-top: 0px;
-    font-size: 12px;
     padding: 4px;
 }
 
@@ -1129,6 +1127,5 @@ QToolTip
     background-color: rgba(80, 80, 80, 180);
     color: rgba(255, 255, 255, 180);
     border: 0px;
-    font-size: 11px;
     opacity: 200;
 }
