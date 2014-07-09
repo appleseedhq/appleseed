@@ -66,6 +66,7 @@
 
 // Standard headers.
 #include <cassert>
+#include <cmath>
 #include <cstddef>
 #include <limits>
 #include <vector>
@@ -97,17 +98,17 @@ namespace
 
     class ImageSampler
     {
-        public:
+      public:
         explicit ImageSampler(
-            TextureCache&               texture_cache,
-            const TextureSource*        texture_source,
-            const size_t                width,
-            const size_t                height)
+            TextureCache&           texture_cache,
+            const TextureSource*    texture_source,
+            const size_t            width,
+            const size_t            height)
           : m_texture_cache(texture_cache)
           , m_texture_source(texture_source)
           , m_width(width)
           , m_height(height)
-          , m_range(sqrt(1.0 + (double)(m_height * m_height) / (m_width * m_width)))
+          , m_range(sqrt(1.0 + static_cast<double>(m_height * m_height) / (m_width * m_width)))
         {
         }
 
@@ -118,9 +119,9 @@ namespace
                 (2.0 * y + 1.0 - m_height) / (m_height - 1.0));
 
             if (m_height != m_width)
-                payload.y *= (double)m_height / m_width;
+                payload.y *= static_cast<double>(m_height) / m_width;
 
-                payload /= m_range; // scale to fit in a unit disk
+            payload /= m_range;     // scale to fit in a unit disk
 
             const Vector2d uv(
                 x / (m_width - 1.0),
@@ -132,12 +133,12 @@ namespace
             importance = static_cast<double>(luminance(color));
         }
 
-        private:
-        TextureCache&           m_texture_cache;
-        const TextureSource*    m_texture_source;
-        const size_t            m_width;
-        const size_t            m_height;
-        const double            m_range;
+      private:
+        TextureCache&               m_texture_cache;
+        const TextureSource*        m_texture_source;
+        const size_t                m_width;
+        const size_t                m_height;
+        const double                m_range;
     };
 
     const char* Model = "thinlens_camera";
@@ -184,7 +185,7 @@ namespace
                 m_focal_distance);
 
             // Extract the diaphragm configuration from the camera parameters.
-            m_diaphragm_map_bound = extract_diaphragm_importance_sampler(*project.get_scene());
+            m_diaphragm_map_bound = build_diaphragm_importance_sampler(*project.get_scene());
             extract_diaphragm_blade_count();
             extract_diaphragm_tilt_angle();
 
@@ -236,13 +237,14 @@ namespace
             // Initialize the ray.
             initialize_ray(sampling_context, ray);
 
-            // Sample the surface of the lens.
             Vector2d lens_point;
 
+            // Sample the surface of the lens.
             if (m_diaphragm_map_bound) 
             {
                 sampling_context.split_in_place(2, 1);
                 const Vector2d s = sampling_context.next_vector2<2>();
+
                 Vector2d v;
                 size_t y;
                 double prob_xy;
@@ -377,39 +379,13 @@ namespace
         double              m_lens_radius;              // radius of the lens in camera space
         double              m_kx, m_ky;
 
-        // An ImageImportanceSampler to sample sample the grayscale image and find where to place the samples on the lens
-        auto_ptr<ImageImportanceSamplerType>    m_importance_sampler;
-        string                                  m_diaphragm_map_name;
-
-        bool extract_diaphragm_importance_sampler(const Scene& scene)
-        {
-            const Source* diaphragm_map_source = m_inputs.source("diaphragm_map");
-
-            if (!diaphragm_map_source || !dynamic_cast<const TextureSource*>(diaphragm_map_source))
-                return false;
-
-            const TextureSource* texture_source = static_cast<const TextureSource*>(diaphragm_map_source);
-            const CanvasProperties& texture_props =
-                texture_source->get_texture_instance().get_texture().properties();
-            const size_t width = texture_props.m_canvas_width;
-            const size_t height = texture_props.m_canvas_height;
-            m_diaphragm_map_name = texture_source->get_texture_instance().get_name();
-
-            TextureStore texture_store(scene);
-            TextureCache texture_cache(texture_store);
-            ImageSampler sampler(
-                texture_cache,
-                texture_source,
-                width,
-                height);
-
-            m_importance_sampler.reset(
-                new ImageImportanceSamplerType(width, height));
-            m_importance_sampler->rebuild(sampler);
-            return true;
-        }
-
+        // Vertices of the diaphragm polygon.
         vector<Vector2d>    m_diaphragm_vertices;
+
+        // Importance sampler to sample the diaphragm map.
+        auto_ptr<ImageImportanceSamplerType>
+                            m_importance_sampler;
+        string              m_diaphragm_map_name;
 
         void extract_diaphragm_blade_count()
         {
@@ -434,6 +410,35 @@ namespace
         {
             m_diaphragm_tilt_angle =
                 deg_to_rad(m_params.get_optional<double>("diaphragm_tilt_angle", 0.0));
+        }
+
+        bool build_diaphragm_importance_sampler(const Scene& scene)
+        {
+            const TextureSource* diaphragm_map_source =
+                dynamic_cast<const TextureSource*>(m_inputs.source("diaphragm_map"));
+
+            if (diaphragm_map_source == 0)
+                return false;
+
+            const TextureInstance& texture_instance = diaphragm_map_source->get_texture_instance();
+            m_diaphragm_map_name = texture_instance.get_name();
+
+            const CanvasProperties& texture_props = texture_instance.get_texture().properties();
+            const size_t width = texture_props.m_canvas_width;
+            const size_t height = texture_props.m_canvas_height;
+
+            TextureStore texture_store(scene);
+            TextureCache texture_cache(texture_store);
+            ImageSampler sampler(
+                texture_cache,
+                diaphragm_map_source,
+                width,
+                height);
+
+            m_importance_sampler.reset(new ImageImportanceSamplerType(width, height));
+            m_importance_sampler->rebuild(sampler);
+
+            return true;
         }
 
         double get_autofocus_focal_distance(const Intersector& intersector) const
@@ -508,7 +513,7 @@ namespace
                 m_autofocus_target[0],
                 m_autofocus_target[1],
                 m_focal_distance,
-                m_diaphragm_map_bound?m_diaphragm_map_name.c_str():"none",
+                m_diaphragm_map_bound ? m_diaphragm_map_name.c_str() : "none",
                 pretty_uint(m_diaphragm_blade_count).c_str(),
                 m_diaphragm_tilt_angle,
                 m_shutter_open_time,
@@ -612,16 +617,6 @@ DictionaryArray ThinLensCameraFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "diaphragm_map")
-            .insert("label", "Diaphragm Map")
-            .insert("type", "colormap")
-            .insert("entity_types",
-                Dictionary()
-                    .insert("texture_instance", "Textures"))
-            .insert("use", "optional"));
-
-    metadata.push_back(
-        Dictionary()
             .insert("name", "diaphragm_blades")
             .insert("label", "Diaphragm Blades")
             .insert("type", "text")
@@ -637,6 +632,16 @@ DictionaryArray ThinLensCameraFactory::get_input_metadata() const
             .insert("max_value", "360.0")
             .insert("use", "optional")
             .insert("default", "0.0"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "diaphragm_map")
+            .insert("label", "Diaphragm Map")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary()
+                    .insert("texture_instance", "Textures"))
+            .insert("use", "optional"));
 
     return metadata;
 }
