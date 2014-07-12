@@ -371,4 +371,75 @@ TEST_SUITE(Foundation_Utility_Dictionary)
             const int item = dic.get<int>(string("key"));
         });
     }
+    
+    TEST_CASE(Merge_GivenOneIntInSourceAndOneIntInDestWithDifferentNames_InsertsDestIntIntoSource)
+    {
+        Dictionary dst;
+        dst.insert("A", 1);
+
+        Dictionary src;
+        src.insert("B", 2);
+
+        dst.merge(src);
+
+        EXPECT_EQ(2, dst.size());
+        EXPECT_EQ(1, dst.get<int>("A"));
+        EXPECT_EQ(2, dst.get<int>("B"));
+    }
+
+    TEST_CASE(Merge_GivenOneIntInSourceAndOneIntInDestWithSameNames_OverwritesDestValueWithSourceValue)
+    {
+        Dictionary dst;
+        dst.insert("A", 1);
+
+        Dictionary src;
+        src.insert("A", 2);
+
+        dst.merge(src);
+
+        EXPECT_EQ(1, dst.size());
+        EXPECT_EQ(2, dst.get<int>("A"));
+    }
+
+    TEST_CASE(Merge_GivenOneDicInSourceAndOneDicInDestWithDifferentNames_MergesDestDicIntoSource)
+    {
+        Dictionary dst_child;
+        dst_child.insert("AA", 1);
+
+        Dictionary dst;
+        dst.dictionaries().insert("A", dst_child);
+
+        Dictionary src_child;
+        src_child.insert("BB", 2);
+
+        Dictionary src;
+        src.dictionaries().insert("B", src_child);
+
+        dst.merge(src);
+
+        EXPECT_EQ(2, dst.size());
+        EXPECT_EQ(1, dst.dictionary("A").get<int>("AA"));
+        EXPECT_EQ(2, dst.dictionary("B").get<int>("BB"));
+    }
+
+    TEST_CASE(Merge_GivenOneDicInSourceAndOneDicInDestWithSameNames_MergesDicContents)
+    {
+        Dictionary dst_child;
+        dst_child.insert("AA", 1);
+
+        Dictionary dst;
+        dst.dictionaries().insert("A", dst_child);
+
+        Dictionary src_child;
+        src_child.insert("BB", 2);
+
+        Dictionary src;
+        src.dictionaries().insert("A", src_child);
+
+        dst.merge(src);
+
+        EXPECT_EQ(1, dst.size());
+        EXPECT_EQ(1, dst.dictionary("A").get<int>("AA"));
+        EXPECT_EQ(2, dst.dictionary("A").get<int>("BB"));
+    }    
 }

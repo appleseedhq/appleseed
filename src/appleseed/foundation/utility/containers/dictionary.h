@@ -306,6 +306,9 @@ class DLLSYMBOL Dictionary
     DictionaryDictionary& dictionaries();
     const DictionaryDictionary& dictionaries() const;
 
+    // Merge another set of parameters into this one.
+    Dictionary& merge(const Dictionary& rhs);
+
   private:
     StringDictionary        m_strings;
     DictionaryDictionary    m_dictionaries;

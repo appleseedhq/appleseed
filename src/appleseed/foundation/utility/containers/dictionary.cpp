@@ -30,6 +30,9 @@
 // Interface header.
 #include "dictionary.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/foreach.h"
+
 // Standard headers.
 #include <cassert>
 #include <map>
@@ -433,6 +436,25 @@ DictionaryDictionary::const_iterator DictionaryDictionary::end() const
     const_iterator it;
     it.impl->m_it = impl->m_dictionaries.end();
     return it;
+}
+
+//
+// Dictionary class implementation.
+//
+
+Dictionary& Dictionary::merge(const Dictionary& rhs)
+{
+    // Merge strings.
+    for (const_each<StringDictionary> i = rhs.strings(); i; ++i)
+        insert(i->name(), i->value());
+
+    // Recursively merge dictionaries.
+    for (const_each<DictionaryDictionary> i = rhs.dictionaries(); i; ++i)
+    {
+        if (dictionaries().exist(i->name()))
+            dictionary(i->name()).merge(i->value());
+        else insert(i->name(), i->value());
+    }
 }
 
 }   // namespace foundation

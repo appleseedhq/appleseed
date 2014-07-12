@@ -209,9 +209,6 @@ class DLLSYMBOL ParamArray
     // Returns an empty parameter set if the specified set cannot be found.
     const ParamArray& child(const char* name) const;
 
-    // Merge another set of parameters into this one.
-    ParamArray& merge(const ParamArray& rhs);
-
   private:
     template <typename T>
     T get_helper(
