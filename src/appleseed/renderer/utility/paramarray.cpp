@@ -180,28 +180,4 @@ const ParamArray& ParamArray::child(const char* name) const
         : m_empty_param_array;
 }
 
-namespace
-{
-    void merge_dictionaries(Dictionary& dest, const Dictionary& source)
-    {
-        // Merge strings.
-        for (const_each<StringDictionary> i = source.strings(); i; ++i)
-            dest.insert(i->name(), i->value());
-
-        // Recursively merge dictionaries.
-        for (const_each<DictionaryDictionary> i = source.dictionaries(); i; ++i)
-        {
-            if (dest.dictionaries().exist(i->name()))
-                merge_dictionaries(dest.dictionary(i->name()), i->value());
-            else dest.insert(i->name(), i->value());
-        }
-    }
-}
-
-ParamArray& ParamArray::merge(const ParamArray& rhs)
-{
-    merge_dictionaries(*this, rhs);
-    return *this;
-}
-
 }   // namespace renderer
