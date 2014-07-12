@@ -158,22 +158,7 @@ void EntityEditor::rebuild_form(const Dictionary& values)
         create_input_widgets(*i);
     
     if (m_custom_ui.get())
-    {
         m_custom_ui->create_custom_widgets(m_top_layout, values);
-        
-        // Create some example widgets, for testing.
-        QPushButton *x = new QPushButton();
-        x->setText("XXX");
-        m_top_layout->addWidget(x);
-
-        x = new QPushButton();
-        x->setText("YYY");
-        m_top_layout->addWidget(x);
-
-        x = new QPushButton();
-        x->setText("ZZZ");
-        m_top_layout->addWidget(x);
-    }
 }
 
 Dictionary EntityEditor::get_input_metadata(const string& name) const

@@ -70,7 +70,6 @@ QMenu* MaterialCollectionItem::get_single_item_context_menu() const
 
     menu->addSeparator();
     menu->addAction("Create Generic Material...", this, SLOT(slot_create_generic()));
-    menu->addAction("Create Disney Material...", this, SLOT(slot_create_disney()));
 #ifdef WITH_OSL
     menu->addAction("Create OSL Material...", this, SLOT(slot_create_osl()));
 #endif
@@ -91,11 +90,6 @@ ItemBase* MaterialCollectionItem::create_item(Material* material)
 void MaterialCollectionItem::slot_create_generic()
 {
     do_create_material("generic_material");  
-}
-
-void MaterialCollectionItem::slot_create_disney()
-{
-    //do_create_material("disney_material");    
 }
 
 #ifdef WITH_OSL
