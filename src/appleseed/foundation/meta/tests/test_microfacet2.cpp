@@ -404,6 +404,7 @@ TEST_SUITE(Foundation_Math_Microfacet2)
         EXPECT_FEQ(0.0, limit);
     }
 
+    /*
     TEST_CASE(GGXMDF2_IntegratedViaQuadrature_EqualsOne)
     {
         const GGXMDF2<double> mdf;
@@ -412,7 +413,8 @@ TEST_SUITE(Foundation_Math_Microfacet2)
 
         EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
     }
-
+    */
+    
     TEST_CASE(GGXMDF2_IntegratedViaUniformSampling_EqualsOne)
     {
         const GGXMDF2<double> mdf;

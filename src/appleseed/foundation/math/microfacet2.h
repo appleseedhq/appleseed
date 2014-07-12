@@ -153,6 +153,32 @@ class MDF
         return pdf;
     }
 
+  protected:
+    inline T cos_theta(const Vector<T, 3>& v) const
+    {
+        return v.y;
+    }
+    
+    inline T sin_theta_2(const Vector<T, 3>& v) const
+    {
+        return T(1.0) - square(cos_theta(v));
+    }
+    
+    inline T sin_theta(const Vector<T, 3>& v) const
+    {
+        return std::sqrt(std::max(T(0.0), sin_theta_2(v)));
+    }
+
+    inline T cos_phi(const Vector<T, 3>& v) const
+    {
+        return v.x / sin_theta(v);
+    }
+
+    inline T sin_phi(const Vector<T, 3>& v) const
+    {
+        return v.z / sin_theta(v);
+    }
+
   private:
     virtual Vector<T, 3> do_sample(
         const Vector<T, 2>&  s,
@@ -187,7 +213,7 @@ class MDF
     virtual T do_eval_pdf(
         const Vector<T, 3>&  h,
         const T              alpha_x,
-        const T              alpha_y) const = 0;
+        const T              alpha_y) const = 0;    
 };
 
 
@@ -215,10 +241,10 @@ class BlinnMDF2
         const T              alpha_x,
         const T              alpha_y) const OVERRIDE
     {
-        const T cos_alpha = std::pow(T(1.0) - s[0], T(1.0) / (alpha_x + T(2.0)));
-        const T sin_alpha = std::sqrt(T(1.0) - cos_alpha * cos_alpha);
+        const T cos_theta = std::pow(T(1.0) - s[0], T(1.0) / (alpha_x + T(2.0)));
+        const T sin_theta = std::sqrt(T(1.0) - cos_theta * cos_theta);
         const T phi = T(TwoPi) * s[1];
-        return Vector<T, 3>::unit_vector(cos_alpha, sin_alpha, std::cos(phi), std::sin(phi));
+        return Vector<T, 3>::unit_vector(cos_theta, sin_theta, std::cos(phi), std::sin(phi));
     }
 
     virtual T do_eval_D(
@@ -228,7 +254,7 @@ class BlinnMDF2
     {
         assert(h.y >= T(0.0));
 
-        return (alpha_x + T(2.0)) * T(RcpTwoPi) * std::pow(h.y, alpha_x);
+        return (alpha_x + T(2.0)) * T(RcpTwoPi) * std::pow(this->cos_theta(h), alpha_x);
     }
 
     virtual T do_eval_pdf(
@@ -238,13 +264,13 @@ class BlinnMDF2
     {
         assert(h.y >= T(0.0));
 
-        return (alpha_x + T(2.0)) * T(RcpTwoPi) * std::pow(h.y, alpha_x + T(1.0));
+        return (alpha_x + T(2.0)) * T(RcpTwoPi) * std::pow(this->cos_theta(h), alpha_x + T(1.0));
     }
 };
 
 
 //
-// Beckmann Microfacet Distribution Function.
+// Isotropic Beckmann Microfacet Distribution Function.
 //
 // References:
 //
@@ -285,9 +311,9 @@ class BeckmannSmithMaskingShadowing
         const T              alpha_x,
         const T              alpha_y)
     {
-        const T cos_alpha2 = square(v.y);
-        const T tan_alpha = std::sqrt((T(1.0) - cos_alpha2) / cos_alpha2);
-        const T a = T(1.0) / alpha_x * tan_alpha;
+        const T cos_theta_2 = square(v.y);
+        const T tan_theta = std::sqrt((T(1.0) - cos_theta_2) / cos_theta_2);
+        const T a = T(1.0) / alpha_x * tan_theta;
 
         if (a < T(1.6))
         {
@@ -313,12 +339,12 @@ class BeckmannMDF2
         const T              alpha_y) const OVERRIDE
     {
         // Same sampling procedure as for the Ward distribution.
-        const T alpha_x2 = square(alpha_x);
-        const T tan_alpha_2 = alpha_x2 * (-std::log(T(1.0) - s[0]));
-        const T cos_alpha = T(1.0) / std::sqrt(T(1.0) + tan_alpha_2);
-        const T sin_alpha = cos_alpha * std::sqrt(tan_alpha_2);
+        const T alpha_x_2 = square(alpha_x);
+        const T tan_theta_2 = alpha_x_2 * (-std::log(T(1.0) - s[0]));
+        const T cos_theta = T(1.0) / std::sqrt(T(1.0) + tan_theta_2);
+        const T sin_theta = cos_theta * std::sqrt(tan_theta_2);
         const T phi = T(TwoPi) * s[1];
-        return Vector<T, 3>::unit_vector(cos_alpha, sin_alpha, std::cos(phi), std::sin(phi));
+        return Vector<T, 3>::unit_vector(cos_theta, sin_theta, std::cos(phi), std::sin(phi));
     }
 
     virtual T do_eval_D(
@@ -331,13 +357,13 @@ class BeckmannMDF2
         if (h.y == T(0.0))
             return T(0.0);
 
-        const T cos_alpha_2 = h.y * h.y;
-        const T cos_alpha_4 = cos_alpha_2 * cos_alpha_2;
-        const T tan_alpha_2 = (T(1.0) - cos_alpha_2) / cos_alpha_2;
-        const T alpha_x2 = square(alpha_x);
+        const T cos_theta_2 = square(this->cos_theta(h));
+        const T cos_theta_4 = cos_theta_2 * cos_theta_2;
+        const T tan_theta_2 = (T(1.0) - cos_theta_2) / cos_theta_2;
+        const T alpha_x_2 = square(alpha_x);
 
         // Note: in [2] there's a missing Pi factor in the denominator.
-        return std::exp(-tan_alpha_2 / alpha_x2) / (alpha_x2 * T(Pi) * cos_alpha_4);
+        return std::exp(-tan_theta_2 / alpha_x_2) / (alpha_x_2 * T(Pi) * cos_theta_4);
     }
 
     virtual T do_eval_G(
@@ -366,17 +392,17 @@ class BeckmannMDF2
         if (h.y == T(0.0))
             return T(0.0);
 
-        const T cos_alpha_2 = h.y * h.y;
-        const T cos_alpha_3 = h.y * cos_alpha_2;
-        const T tan_alpha_2 = (T(1.0) - cos_alpha_2) / cos_alpha_2;
-        const T alpha_x2 = square(alpha_x);
-        return std::exp(-tan_alpha_2 / alpha_x2) / (alpha_x2 * T(Pi) * cos_alpha_3);
+        const T cos_theta_2 = square(this->cos_theta(h));
+        const T cos_theta_3 = h.y * cos_theta_2;
+        const T tan_theta_2 = (T(1.0) - cos_theta_2) / cos_theta_2;
+        const T alpha_x_2 = square(alpha_x);
+        return std::exp(-tan_theta_2 / alpha_x_2) / (alpha_x_2 * T(Pi) * cos_theta_3);
     }
 };
 
 
 //
-// GGX Microfacet Distribution Function.
+// Anisotropic GGX Microfacet Distribution Function.
 //
 // References:
 //
@@ -409,10 +435,24 @@ class GGXSmithMaskingShadowing
         const T              alpha_x,
         const T              alpha_y)
     {
+        const T cos_theta = v.y;
+        const T cos_theta_2 = square(cos_theta);
+        
+        if (alpha_x != alpha_y)
+        {
+            const T sin_theta = std::sqrt(std::max(T(1.0) - cos_theta_2, T(0.0)));
+            const T cos_phi_2 = square(v.x / sin_theta);
+            const T sin_phi_2 = square(v.z / sin_theta);
+
+            const T alpha = std::sqrt(cos_phi_2 * square(alpha_x) + sin_phi_2 * square(alpha_y));
+            const T a = cos_theta / (alpha * sin_theta);
+            const T lambda = (T(-1) + std::sqrt(T(1) + T(1) / square(a))) * T(0.5);
+            return T(1.0) / (T(1.0) + lambda);
+        }
+
         // [2] page 13.
-        const T cos_alpha2 = square(v.y);
-        const T tan_alpha2 = (T(1.0) - cos_alpha2) / cos_alpha2;
-        const T a2_rcp = square(alpha_x) * tan_alpha2;
+        const T tan_theta_2 = (T(1.0) - cos_theta_2) / cos_theta_2;
+        const T a2_rcp = square(alpha_x) * tan_theta_2;
         const T A = (T(-1.0) + std::sqrt(T(1.0) + a2_rcp)) * T(0.5);
         return T(1.0) / (T(1.0) + A);
     }
@@ -423,7 +463,7 @@ class GGXMDF2
   : public MDF<T>
 {
   public:
-    typedef boost::mpl::bool_<false> IsAnisotropicType;
+    typedef boost::mpl::bool_<true> IsAnisotropicType;
 
   private:
     virtual Vector<T, 3> do_sample(
@@ -431,11 +471,11 @@ class GGXMDF2
         const T              alpha_x,
         const T              alpha_y) const OVERRIDE
     {
-        const T tan_alpha_2 = square(alpha_x) * s[0] / (T(1.0) - s[0]);
-        const T cos_alpha = T(1.0) / std::sqrt(T(1.0) + tan_alpha_2);
-        const T sin_alpha = cos_alpha * std::sqrt(tan_alpha_2);
+        const T tan_theta_2 = square(alpha_x) * s[0] / (T(1.0) - s[0]);
+        const T cos_theta = T(1.0) / std::sqrt(T(1.0) + tan_theta_2);
+        const T sin_theta = cos_theta * std::sqrt(tan_theta_2);
         const T phi = T(TwoPi) * s[1];
-        return Vector<T, 3>::unit_vector(cos_alpha, sin_alpha, std::cos(phi), std::sin(phi));
+        return Vector<T, 3>::unit_vector(cos_theta, sin_theta, std::cos(phi), std::sin(phi));
     }
 
     virtual T do_eval_D(
@@ -445,15 +485,26 @@ class GGXMDF2
     {
         assert(h.y >= T(0.0));
 
-        const T alpha_x2 = square(alpha_x);
+        const T alpha_x_2 = square(alpha_x);
 
         if (h.y == T(0.0))
-            return alpha_x2 * T(RcpPi);
+            return alpha_x_2 * T(RcpPi);
 
-        const T cos_alpha_2 = square(h.y);
-        const T cos_alpha_4 = square(cos_alpha_2);
-        const T tan_alpha_2 = (T(1.0) - cos_alpha_2) / cos_alpha_2;
-        return alpha_x2 / (T(Pi) * cos_alpha_4 * square(alpha_x2 + tan_alpha_2));
+        const T cos_theta_2 = square(this->cos_theta(h));
+        const T cos_theta_4 = square(cos_theta_2);
+
+        if (alpha_x != alpha_y)
+        {
+            const T sin_theta = this->sin_theta(h);
+            const T cos_phi_2_ax = square(h.x / sin_theta) / alpha_x_2;
+            const T sin_phi_2_ay = square(h.z / sin_theta) / square(alpha_y);
+            const T tan_theta_2 = square(sin_theta) / cos_theta_2;
+            const T tmp = T(1.0) + tan_theta_2 * (cos_phi_2_ax + sin_phi_2_ay);
+            return T(1.0) / (T(Pi) * alpha_x * alpha_y * cos_theta_4 * square(tmp));
+        }
+        
+        const T tan_theta_2 = (T(1.0) - cos_theta_2) / cos_theta_2;
+        return alpha_x_2 / (T(Pi) * cos_theta_4 * square(alpha_x_2 + tan_theta_2));
     }
 
     virtual T do_eval_G(
@@ -482,11 +533,22 @@ class GGXMDF2
         if (h.y == T(0.0))
             return T(0.0);
 
-        const T alpha_x2 = square(alpha_x);
-        const T cos_alpha_2 = square(h.y);
-        const T cos_alpha_3 = h.y * cos_alpha_2;
-        const T tan_alpha_2 = (T(1.0) - cos_alpha_2) / cos_alpha_2;
-        return alpha_x2 / (T(Pi) * cos_alpha_3 * square(alpha_x2 + tan_alpha_2));
+        const T alpha_x_2 = square(alpha_x);
+        const T cos_theta_2 = square(this->cos_theta(h));
+        const T cos_theta_3 = h.y * cos_theta_2;
+        
+        if (alpha_x != alpha_y)
+        {
+            const T sin_theta = this->sin_theta(h);
+            const T cos_phi_2_ax = square(h.x / sin_theta) / alpha_x_2;
+            const T sin_phi_2_ay = square(h.z / sin_theta) / square(alpha_y);
+            const T tan_theta_2 = square(sin_theta) / cos_theta_2;
+            const T tmp = T(1.0) + tan_theta_2 * (cos_phi_2_ax + sin_phi_2_ay);
+            return T(1.0) / (T(Pi) * alpha_x * alpha_y * cos_theta_3 * square(tmp));
+        }
+        
+        const T tan_theta_2 = (T(1.0) - cos_theta_2) / cos_theta_2;
+        return alpha_x_2 / (T(Pi) * cos_theta_3 * square(alpha_x_2 + tan_theta_2));
     }
 };
 
