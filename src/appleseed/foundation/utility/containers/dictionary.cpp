@@ -438,6 +438,7 @@ DictionaryDictionary::const_iterator DictionaryDictionary::end() const
     return it;
 }
 
+
 //
 // Dictionary class implementation.
 //
