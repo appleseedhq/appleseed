@@ -35,11 +35,17 @@
 #include "mainwindow/project/entityeditor.h"
 #include "mainwindow/project/fixedmodelentityitem.h"
 
+// Qt headers.
+#include <QMenu>
+
 // Standard headers.
-#include <string.h>
+#include <cassert>
+#include <memory>
+#include <string>
 
 using namespace foundation;
 using namespace renderer;
+using namespace std;
 
 namespace appleseed {
 namespace studio {
@@ -73,6 +79,7 @@ QMenu* MaterialCollectionItem::get_single_item_context_menu() const
 #ifdef WITH_OSL
     menu->addAction("Create OSL Material...", this, SLOT(slot_create_osl()));
 #endif
+
     return menu;
 }
 
@@ -80,7 +87,7 @@ ItemBase* MaterialCollectionItem::create_item(Material* material)
 {
     assert(material);
 
-    typedef FixedModelEntityItem<renderer::Material, renderer::Assembly, MaterialCollectionItem> MaterialItem;
+    typedef FixedModelEntityItem<Material, Assembly, MaterialCollectionItem> MaterialItem;
     
     ItemBase* item = new MaterialItem(material, m_parent, this, m_project_builder);
     m_project_builder.get_item_registry().insert(material->get_uid(), item);
@@ -101,26 +108,26 @@ void MaterialCollectionItem::slot_create_osl()
 
 void MaterialCollectionItem::do_create_material(const char* model)
 {
-    typedef typename renderer::EntityTraits<Material> EntityTraits;
+    typedef EntityTraits<Material> EntityTraits;
 
-    const std::string window_title =
-        std::string("Create ") +
+    const string window_title =
+        string("Create ") +
         EntityTraits::get_human_readable_entity_type_name();
 
-    const std::string name_suggestion =
+    const string name_suggestion =
         get_name_suggestion(
             EntityTraits::get_entity_type_name(),
             EntityTraits::get_entity_container(Base::m_parent));
 
-    typedef typename EntityTraits::FactoryRegistrarType FactoryRegistrarType;
+    typedef EntityTraits::FactoryRegistrarType FactoryRegistrarType;
 
-    std::auto_ptr<EntityEditor::IFormFactory> form_factory(
+    auto_ptr<EntityEditor::IFormFactory> form_factory(
         new FixedModelEntityEditorFormFactory<FactoryRegistrarType>(
             Base::m_project_builder.get_factory_registrar<Material>(),
             name_suggestion,
             model));
 
-    std::auto_ptr<EntityEditor::IEntityBrowser> entity_browser(
+    auto_ptr<EntityEditor::IEntityBrowser> entity_browser(
         new EntityBrowser<Assembly>(Base::m_parent));
 
     open_entity_editor(
@@ -130,9 +137,9 @@ void MaterialCollectionItem::do_create_material(const char* model)
         form_factory,
         entity_browser,
         this,
-        SLOT(slot_create_applied(foundation::Dictionary)),
-        SLOT(slot_create_accepted(foundation::Dictionary)),
-        SLOT(slot_create_canceled(foundation::Dictionary)));
+        SLOT(slot_create_applied(Dictionary)),
+        SLOT(slot_create_accepted(Dictionary)),
+        SLOT(slot_create_canceled(Dictionary)));
 }
 
 }   // namespace studio

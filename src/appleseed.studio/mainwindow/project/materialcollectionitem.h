@@ -34,6 +34,9 @@
 #include "mainwindow/project/assemblyitem.h"
 #include "mainwindow/project/collectionitem.h"
 
+// Qt headers.
+#include <QObject>
+
 // Forward declarations.
 namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace renderer  { class Assembly; }
