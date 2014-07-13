@@ -43,6 +43,7 @@
 // Forward declarations.
 namespace appleseed { namespace studio { template <typename Entity, typename ParentEntity, typename ParentItem> class CollectionItem; } }
 namespace appleseed { namespace studio { template <typename Entity, typename EntityItem, typename ParentEntity> class InstanceCollectionItem; } }
+namespace appleseed { namespace studio { class MaterialCollectionItem; } }
 namespace appleseed { namespace studio { class ObjectCollectionItem; } }
 namespace appleseed { namespace studio { class ObjectInstanceItem; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
@@ -56,6 +57,7 @@ namespace renderer  { class Object; }
 namespace renderer  { class ObjectInstance; }
 namespace renderer  { class ParamArray; }
 namespace renderer  { class SurfaceShader; }
+
 class QMenu;
 
 namespace appleseed {
@@ -101,7 +103,6 @@ class AssemblyItem
     typedef CollectionItem<renderer::BSDF, renderer::Assembly, AssemblyItem> BSDFCollectionItem;
     typedef CollectionItem<renderer::EDF, renderer::Assembly, AssemblyItem> EDFCollectionItem;
     typedef CollectionItem<renderer::SurfaceShader, renderer::Assembly, AssemblyItem> SurfaceShaderCollectionItem;
-    typedef CollectionItem<renderer::Material, renderer::Assembly, AssemblyItem> MaterialCollectionItem;
     typedef CollectionItem<renderer::Light, renderer::Assembly, AssemblyItem> LightCollectionItem;
 
     BSDFCollectionItem*             m_bsdf_collection_item;
