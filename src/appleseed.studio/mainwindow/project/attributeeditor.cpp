@@ -75,6 +75,7 @@ void AttributeEditor::edit(
             m_project,
             form_factory,
             entity_browser,
+            std::auto_ptr<EntityEditor::ICustomEntityUI>(),
             values));
 
     QObject::connect(

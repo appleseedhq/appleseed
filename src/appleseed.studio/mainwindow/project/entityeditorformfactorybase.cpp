@@ -44,6 +44,7 @@ namespace appleseed {
 namespace studio {
 
 const string EntityEditorFormFactoryBase::NameParameter = "__name";
+const std::string EntityEditorFormFactoryBase::ModelParameter = "__model";
 
 EntityEditorFormFactoryBase::EntityEditorFormFactoryBase(const string& entity_name)
   : m_entity_name(entity_name)

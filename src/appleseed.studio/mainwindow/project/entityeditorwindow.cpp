@@ -70,6 +70,7 @@ EntityEditorWindow::EntityEditorWindow(
             project,
             form_factory,
             entity_browser,
+            std::auto_ptr<EntityEditor::ICustomEntityUI>(),
             values));
 
     m_initial_values = m_entity_editor->get_values();
