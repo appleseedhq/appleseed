@@ -456,6 +456,8 @@ Dictionary& Dictionary::merge(const Dictionary& rhs)
             dictionary(i->name()).merge(i->value());
         else insert(i->name(), i->value());
     }
+
+    return *this;
 }
 
 }   // namespace foundation
