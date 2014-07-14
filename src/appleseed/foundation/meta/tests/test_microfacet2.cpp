@@ -76,12 +76,9 @@ TEST_SUITE(Foundation_Math_Microfacet2)
     template <typename MDF>
     typename MDF::ValueType integrate_quadrature(
         const MDF&                      mdf,
-        const typename MDF::ValueType   alpha_x,
-        const typename MDF::ValueType   alpha_y,
+        const typename MDF::ValueType   alpha,
         const size_t                    sample_count)
     {
-        BOOST_MPL_ASSERT((boost::mpl::not_<typename MDF::IsAnisotropicType>));
-
         typedef typename MDF::ValueType RealType;
         
         Vector<RealType,3> h(0.0);
@@ -93,7 +90,7 @@ TEST_SUITE(Foundation_Math_Microfacet2)
             h.y = cos(theta);
             const RealType sin_theta = sin(theta);
 
-            const RealType value = mdf.D(h, alpha_x, alpha_y);
+            const RealType value = mdf.D(h, alpha, alpha);
 
             integral += value * h.y * sin_theta;
         }
@@ -240,7 +237,7 @@ TEST_SUITE(Foundation_Math_Microfacet2)
     {
         const BlinnMDF2<double> mdf;
 
-        const double integral = integrate_quadrature(mdf, 10.0, 10.0, IntegrationSampleCount);
+        const double integral = integrate_quadrature(mdf, 10.0, IntegrationSampleCount);
 
         EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
     }
@@ -323,7 +320,7 @@ TEST_SUITE(Foundation_Math_Microfacet2)
     {
         const BeckmannMDF2<double> mdf;
 
-        const double integral = integrate_quadrature(mdf, 0.5, 0.5, IntegrationSampleCount);
+        const double integral = integrate_quadrature(mdf, 0.5, IntegrationSampleCount);
 
         EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
     }
@@ -404,16 +401,14 @@ TEST_SUITE(Foundation_Math_Microfacet2)
         EXPECT_FEQ(0.0, limit);
     }
 
-    /*
     TEST_CASE(GGXMDF2_IntegratedViaQuadrature_EqualsOne)
     {
         const GGXMDF2<double> mdf;
 
-        const double integral = integrate_quadrature(mdf, 0.5, 0.5, IntegrationSampleCount);
+        const double integral = integrate_quadrature(mdf, 0.5, IntegrationSampleCount);
 
         EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
     }
-    */
     
     TEST_CASE(GGXMDF2_IntegratedViaUniformSampling_EqualsOne)
     {
