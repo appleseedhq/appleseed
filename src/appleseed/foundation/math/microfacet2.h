@@ -81,8 +81,8 @@ class TorranceSparrowMaskingShadowing
         const Vector<T, 3>&  h)
     {
         const T cos_vh = dot(v,h);
-        //if (cos_vh / v.y < T(0.0))
-        //    return T(0.0);
+        if (cos_vh / v.y < T(0.0))
+            return T(0.0);
 
         return std::min( T(1.0), T(2.0) * std::abs(h.y) * std::abs(v.y) / cos_vh);
     }
@@ -440,6 +440,7 @@ class GGXSmithMaskingShadowing
         
         if (alpha_x != alpha_y)
         {
+            // [2] page 15.
             const T sin_theta = std::sqrt(std::max(T(1.0) - cos_theta_2, T(0.0)));
             const T cos_phi_2 = square(v.x / sin_theta);
             const T sin_phi_2 = square(v.z / sin_theta);
@@ -477,11 +478,11 @@ class GGXMDF2
         {
             cos_phi = std::cos(T(TwoPi) * s[0]) * alpha_x;
             sin_phi = std::sin(T(TwoPi) * s[0]) * alpha_y;
-            T invnorm = T(1.0) / std::sqrt(square(cos_phi) + square(sin_phi));
+            const T invnorm = T(1.0) / std::sqrt(square(cos_phi) + square(sin_phi));
             cos_phi *= invnorm;
             sin_phi *= invnorm;
 
-            T C = square(cos_phi / alpha_x) + square(sin_phi / alpha_y);
+            const T C = square(cos_phi / alpha_x) + square(sin_phi / alpha_y);
             tan_theta_2 = s[1] / ((T(1.0) - s[1]) * C);
         }
         else
