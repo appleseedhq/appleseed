@@ -39,6 +39,7 @@
 
 // boost headers.
 #include "boost/mpl/bool.hpp"
+#include "boost/math/special_functions/fpclassify.hpp"
 
 // Standard headers.
 #include <algorithm>
@@ -81,7 +82,7 @@ class TorranceSparrowMaskingShadowing
         const Vector<T, 3>&  h)
     {
         const T cos_vh = dot(v,h);
-        if (cos_vh / v.y < T(0.0))
+        if (cos_vh < T(0.0))
             return T(0.0);
 
         return std::min( T(1.0), T(2.0) * std::abs(h.y) * std::abs(v.y) / cos_vh);
@@ -120,6 +121,9 @@ class MDF
         const T              alpha_x,
         const T              alpha_y) const
     {
+        // Preconditions.
+        assert(cos_theta(h) >= T(0.0));
+        
         const T result = do_eval_D(h, alpha_x, alpha_y);
 
         // Postconditions.
@@ -146,11 +150,14 @@ class MDF
         const T              alpha_x,
         const T              alpha_y) const
     {
-        const T pdf = do_eval_pdf(h, alpha_x, alpha_y);
+        // Preconditions.
+        assert(cos_theta(h) >= T(0.0));
+        
+        const T result = do_eval_pdf(h, alpha_x, alpha_y);
 
         // Postconditions.
-        assert(pdf >= T(0.0));
-        return pdf;
+        assert(result >= T(0.0));
+        return result;
     }
 
   protected:
@@ -163,7 +170,7 @@ class MDF
     {
         return T(1.0) - square(cos_theta(v));
     }
-    
+
     inline T sin_theta(const Vector<T, 3>& v) const
     {
         return std::sqrt(std::max(T(0.0), sin_theta_2(v)));
@@ -178,7 +185,7 @@ class MDF
     {
         return v.z / sin_theta(v);
     }
-
+    
   private:
     virtual Vector<T, 3> do_sample(
         const Vector<T, 2>&  s,
@@ -252,8 +259,6 @@ class BlinnMDF2
         const T              alpha_x,
         const T              alpha_y) const OVERRIDE
     {
-        assert(h.y >= T(0.0));
-
         return (alpha_x + T(2.0)) * T(RcpTwoPi) * std::pow(this->cos_theta(h), alpha_x);
     }
 
@@ -262,8 +267,6 @@ class BlinnMDF2
         const T              alpha_x,
         const T              alpha_y) const OVERRIDE
     {
-        assert(h.y >= T(0.0));
-
         return (alpha_x + T(2.0)) * T(RcpTwoPi) * std::pow(this->cos_theta(h), alpha_x + T(1.0));
     }
 };
@@ -286,10 +289,9 @@ class BlinnMDF2
 //       http://hal.inria.fr/docs/00/96/78/44/PDF/RR-8468.pdf
 //
 //
+
 // For some reason, this produces fireflies. It's mentioned in [3], 
 // but it can also be a bug. We don't use it yet.
-//
-
 template <typename T>
 class BeckmannSmithMaskingShadowing
 {
@@ -352,13 +354,11 @@ class BeckmannMDF2
         const T              alpha_x,
         const T              alpha_y) const OVERRIDE
     {
-        assert(h.y >= T(0.0));
-
-        if (h.y == T(0.0))
+        if (this->cos_theta(h) == T(0.0))
             return T(0.0);
 
         const T cos_theta_2 = square(this->cos_theta(h));
-        const T cos_theta_4 = cos_theta_2 * cos_theta_2;
+        const T cos_theta_4 = square(cos_theta_2);
         const T tan_theta_2 = (T(1.0) - cos_theta_2) / cos_theta_2;
         const T alpha_x_2 = square(alpha_x);
 
@@ -387,13 +387,11 @@ class BeckmannMDF2
         const T              alpha_x,
         const T              alpha_y) const OVERRIDE
     {
-        assert(h.y >= T(0.0));
-
-        if (h.y == T(0.0))
+        if (this->cos_theta(h) == T(0.0))
             return T(0.0);
 
         const T cos_theta_2 = square(this->cos_theta(h));
-        const T cos_theta_3 = h.y * cos_theta_2;
+        const T cos_theta_3 = this->cos_theta(h) * cos_theta_2;
         const T tan_theta_2 = (T(1.0) - cos_theta_2) / cos_theta_2;
         const T alpha_x_2 = square(alpha_x);
         return std::exp(-tan_theta_2 / alpha_x_2) / (alpha_x_2 * T(Pi) * cos_theta_3);
@@ -436,6 +434,10 @@ class GGXSmithMaskingShadowing
         const T              alpha_y)
     {
         const T cos_theta = v.y;
+
+        if (cos_theta == T(1.0))
+            return T(1.0);
+
         const T cos_theta_2 = square(cos_theta);
         
         if (alpha_x != alpha_y)
@@ -444,7 +446,6 @@ class GGXSmithMaskingShadowing
             const T sin_theta = std::sqrt(std::max(T(1.0) - cos_theta_2, T(0.0)));
             const T cos_phi_2 = square(v.x / sin_theta);
             const T sin_phi_2 = square(v.z / sin_theta);
-
             const T alpha = std::sqrt(cos_phi_2 * square(alpha_x) + sin_phi_2 * square(alpha_y));
             const T a = cos_theta / (alpha * sin_theta);
             const T lambda = (T(-1) + std::sqrt(T(1) + T(1) / square(a))) * T(0.5);
@@ -476,14 +477,14 @@ class GGXMDF2
 
         if (alpha_x != alpha_y)
         {
-            cos_phi = std::cos(T(TwoPi) * s[0]) * alpha_x;
-            sin_phi = std::sin(T(TwoPi) * s[0]) * alpha_y;
-            const T invnorm = T(1.0) / std::sqrt(square(cos_phi) + square(sin_phi));
-            cos_phi *= invnorm;
-            sin_phi *= invnorm;
-
-            const T C = square(cos_phi / alpha_x) + square(sin_phi / alpha_y);
-            tan_theta_2 = s[1] / ((T(1.0) - s[1]) * C);
+            Vector<T,2> sin_cos_phi(
+                std::cos(T(TwoPi) * s[1]) * alpha_x,
+                std::sin(T(TwoPi) * s[1]) * alpha_y);
+            sin_cos_phi = normalize(sin_cos_phi);
+            cos_phi = sin_cos_phi[0];
+            sin_phi = sin_cos_phi[1];
+            const T tmp = square(cos_phi / alpha_x) + square(sin_phi / alpha_y);
+            tan_theta_2 = s[0] / ((T(1.0) - s[0]) * tmp);
         }
         else
         {
@@ -494,7 +495,7 @@ class GGXMDF2
         }
 
         const T cos_theta  = T(1.0) / std::sqrt(T(1) + tan_theta_2);
-        const T sin_theta  = cos_theta * sqrtf(tan_theta_2);
+        const T sin_theta  = std::sqrt(T(1.0) - square(cos_theta));
         return Vector<T, 3>::unit_vector(cos_theta, sin_theta, cos_phi, sin_phi);
     }
 
@@ -503,23 +504,37 @@ class GGXMDF2
         const T              alpha_x,
         const T              alpha_y) const OVERRIDE
     {
-        assert(h.y >= T(0.0));
-
         const T alpha_x_2 = square(alpha_x);
 
-        if (h.y == T(0.0))
+        const T cos_theta = this->cos_theta(h);
+
+        if (cos_theta == T(0.0))
             return alpha_x_2 * T(RcpPi);
 
-        const T cos_theta_2 = square(this->cos_theta(h));
+        const T cos_theta_2 = square(cos_theta);
         const T cos_theta_4 = square(cos_theta_2);
 
         if (alpha_x != alpha_y)
         {
             const T sin_theta = this->sin_theta(h);
-            const T cos_phi_2_ax = square(h.x / sin_theta) / alpha_x_2;
-            const T sin_phi_2_ay = square(h.z / sin_theta) / square(alpha_y);
+            
+            T cos_phi_2_ax_2;
+            T sin_phi_2_ay_2;
+
+            if (sin_theta != T(0.0))
+            {
+                cos_phi_2_ax_2 = square(h.x / sin_theta) / alpha_x_2;
+                sin_phi_2_ay_2 = square(h.z / sin_theta) / square(alpha_y);
+            }
+            else
+            {
+                // Choose some arbitrary phi angle (0).
+                cos_phi_2_ax_2 = T(1.0) / alpha_x_2;
+                sin_phi_2_ay_2 = T(0.0);
+            }
+
             const T tan_theta_2 = square(sin_theta) / cos_theta_2;
-            const T tmp = T(1.0) + tan_theta_2 * (cos_phi_2_ax + sin_phi_2_ay);
+            const T tmp = T(1.0) + tan_theta_2 * (cos_phi_2_ax_2 + sin_phi_2_ay_2);
             return T(1.0) / (T(Pi) * alpha_x * alpha_y * cos_theta_4 * square(tmp));
         }
 
@@ -548,9 +563,7 @@ class GGXMDF2
         const T              alpha_x,
         const T              alpha_y) const OVERRIDE
     {
-        assert(h.y >= T(0.0));
-
-        if (h.y == T(0.0))
+        if (this->cos_theta(h) == T(0.0))
             return T(0.0);
 
         const T alpha_x_2 = square(alpha_x);
@@ -560,10 +573,23 @@ class GGXMDF2
         if (alpha_x != alpha_y)
         {
             const T sin_theta = this->sin_theta(h);
-            const T cos_phi_2_ax = square(h.x / sin_theta) / alpha_x_2;
-            const T sin_phi_2_ay = square(h.z / sin_theta) / square(alpha_y);
+            T cos_phi_2_ax_2;
+            T sin_phi_2_ay_2;
+            
+            if (sin_theta != T(0.0))
+            {
+                cos_phi_2_ax_2 = square(h.x / sin_theta) / alpha_x_2;
+                sin_phi_2_ay_2 = square(h.z / sin_theta) / square(alpha_y);
+            }
+            else
+            {
+                // Choose some arbitrary phi angle (0).
+                cos_phi_2_ax_2 = T(1.0) / alpha_x_2;
+                sin_phi_2_ay_2 = T(0.0);
+            }
+            
             const T tan_theta_2 = square(sin_theta) / cos_theta_2;
-            const T tmp = T(1.0) + tan_theta_2 * (cos_phi_2_ax + sin_phi_2_ay);
+            const T tmp = T(1.0) + tan_theta_2 * (cos_phi_2_ax_2 + sin_phi_2_ay_2);
             return T(1.0) / (T(Pi) * alpha_x * alpha_y * cos_theta_3 * square(tmp));
         }
         

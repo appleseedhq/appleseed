@@ -38,10 +38,6 @@
 #include "foundation/utility/maplefile.h"
 #include "foundation/utility/test.h"
 
-// boost headers.
-#include <boost/mpl/assert.hpp>
-#include <boost/mpl/not.hpp>
-
 // Standard headers.
 #include <cmath>
 #include <cstddef>
@@ -425,6 +421,21 @@ TEST_SUITE(Foundation_Math_Microfacet2)
         EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
     }
 
+    TEST_CASE(GGXMDF2_Anisotropic_IntegratedViaUniformSampling_EqualsOne)
+    {
+        const GGXMDF2<double> mdf;
+
+        const double integral =
+            integrate_sampling(
+                mdf,
+                0.6,
+                0.2,
+                UniformHemisphereSampler<double>(),
+                IntegrationSampleCount);
+
+        EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
+    }
+    
     TEST_CASE(GGXMDF2_IntegratedViaCosineWeightedSampling_EqualsOne)
     {
         const GGXMDF2<double> mdf;
@@ -440,6 +451,21 @@ TEST_SUITE(Foundation_Math_Microfacet2)
         EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
     }
 
+    TEST_CASE(GGXMDF2_Anisotropic_IntegratedViaCosineWeightedSampling_EqualsOne)
+    {
+        const GGXMDF2<double> mdf;
+
+        const double integral =
+            integrate_sampling(
+                mdf,
+                0.2,
+                0.6,
+                CosineHemisphereSampler<double>(),
+                IntegrationSampleCount);
+
+        EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
+    }
+    
     TEST_CASE(GGXMDF2_IntegratedViaImportanceSampling_EqualsOne)
     {
         const GGXMDF2<double> mdf;
@@ -449,6 +475,21 @@ TEST_SUITE(Foundation_Math_Microfacet2)
                 mdf,
                 0.5,
                 0.5,
+                ImportanceSampler<double, GGXMDF2<double> >(mdf),
+                IntegrationSampleCount);
+
+        EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
+    }
+
+    TEST_CASE(GGXMDF2_Anisotropic_IntegratedViaImportanceSampling_EqualsOne)
+    {
+        const GGXMDF2<double> mdf;
+
+        const double integral =
+            integrate_sampling(
+                mdf,
+                0.7,
+                0.2,
                 ImportanceSampler<double, GGXMDF2<double> >(mdf),
                 IntegrationSampleCount);
 
