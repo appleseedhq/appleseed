@@ -224,7 +224,7 @@ namespace
 // Entry point of appleseed.studio.
 //
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
     start_memory_tracking();
 

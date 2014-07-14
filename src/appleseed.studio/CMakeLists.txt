@@ -136,6 +136,8 @@ set (mainwindow_project_sources
     mainwindow/project/entityitem.h
     mainwindow/project/entityitembase.h
     mainwindow/project/exceptioninvalidentityname.h
+    mainwindow/project/fixedmodelentityeditorformfactory.h
+    mainwindow/project/fixedmodelentityitem.h
     mainwindow/project/frameitem.cpp
     mainwindow/project/frameitem.h
     mainwindow/project/instancecollectionitem.h
@@ -146,6 +148,8 @@ set (mainwindow_project_sources
     mainwindow/project/materialassignmenteditorwindow.cpp
     mainwindow/project/materialassignmenteditorwindow.h
     mainwindow/project/materialassignmenteditorwindow.ui
+    mainwindow/project/materialcollectionitem.cpp
+    mainwindow/project/materialcollectionitem.h
     mainwindow/project/multimodelcollectionitem.h
     mainwindow/project/multimodelentityeditorformfactory.h
     mainwindow/project/multimodelentityitem.h

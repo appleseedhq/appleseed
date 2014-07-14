@@ -49,6 +49,7 @@
 // Forward declarations.
 namespace renderer  { class Project; }
 class QColor;
+class QVBoxLayout;
 class QFormLayout;
 class QSignalMapper;
 class QString;
@@ -96,11 +97,25 @@ class EntityEditor
             const std::string&              type) const = 0;
     };
 
+    class ICustomEntityUI
+      : public foundation::NonCopyable
+    {
+      public:
+        virtual ~ICustomEntityUI() {}
+        
+        virtual void create_custom_widgets(
+            QVBoxLayout*                    layout,
+            const foundation::Dictionary&   values) = 0;
+        
+        virtual foundation::Dictionary get_values() const = 0;
+    };
+
     EntityEditor(
         QWidget*                            parent,
         const renderer::Project&            project,
         std::auto_ptr<IFormFactory>         form_factory,
         std::auto_ptr<IEntityBrowser>       entity_browser,
+        std::auto_ptr<ICustomEntityUI>      custom_ui,
         const foundation::Dictionary&       values = foundation::Dictionary());
 
     foundation::Dictionary get_values() const;
@@ -113,7 +128,9 @@ class EntityEditor
     const renderer::Project&                m_project;
     std::auto_ptr<IFormFactory>             m_form_factory;
     std::auto_ptr<IEntityBrowser>           m_entity_browser;
+    std::auto_ptr<ICustomEntityUI>          m_custom_ui;
 
+    QVBoxLayout*                            m_top_layout;
     QFormLayout*                            m_form_layout;
     InputMetadataCollection                 m_input_metadata;
     InputWidgetProxyCollection              m_widget_proxies;

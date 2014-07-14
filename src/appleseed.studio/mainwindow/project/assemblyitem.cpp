@@ -36,6 +36,7 @@
 #include "mainwindow/project/collectionitem.h"
 #include "mainwindow/project/instancecollectionitem.h"
 #include "mainwindow/project/itemregistry.h"
+#include "mainwindow/project/materialcollectionitem.h"
 #include "mainwindow/project/multimodelcollectionitem.h"
 #include "mainwindow/project/objectcollectionitem.h"
 #include "mainwindow/project/objectinstanceitem.h"
@@ -110,10 +111,15 @@ AssemblyItem::AssemblyItem(
     insertChild(
         5,
         m_surface_shader_collection_item = add_multi_model_collection_item<SurfaceShader>(assembly.surface_shaders()));
-
+    
     insertChild(
         6,
-        m_material_collection_item = add_multi_model_collection_item<Material>(assembly.materials()));
+        m_material_collection_item = new MaterialCollectionItem(
+            assembly.materials(),
+            assembly,
+            this,
+            project_builder,
+            settings));
 
     insertChild(
         7,
