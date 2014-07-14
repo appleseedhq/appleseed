@@ -39,7 +39,6 @@
 
 // boost headers.
 #include "boost/mpl/bool.hpp"
-#include "boost/math/special_functions/fpclassify.hpp"
 
 // Standard headers.
 #include <algorithm>
@@ -220,7 +219,7 @@ class MDF
     virtual T do_eval_pdf(
         const Vector<T, 3>&  h,
         const T              alpha_x,
-        const T              alpha_y) const = 0;    
+        const T              alpha_y) const = 0;
 };
 
 

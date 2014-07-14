@@ -282,7 +282,7 @@ TEST_SUITE(Foundation_Math_Microfacet2)
 
         EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
     }
-    
+
     //
     // Beckmann MDF.
     //
@@ -365,7 +365,7 @@ TEST_SUITE(Foundation_Math_Microfacet2)
 
         EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
     }
-    
+
     //
     // GGX MDF.
     //
@@ -405,7 +405,7 @@ TEST_SUITE(Foundation_Math_Microfacet2)
 
         EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
     }
-    
+
     TEST_CASE(GGXMDF2_IntegratedViaUniformSampling_EqualsOne)
     {
         const GGXMDF2<double> mdf;
@@ -435,7 +435,7 @@ TEST_SUITE(Foundation_Math_Microfacet2)
 
         EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
     }
-    
+
     TEST_CASE(GGXMDF2_IntegratedViaCosineWeightedSampling_EqualsOne)
     {
         const GGXMDF2<double> mdf;
@@ -465,7 +465,7 @@ TEST_SUITE(Foundation_Math_Microfacet2)
 
         EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
     }
-    
+
     TEST_CASE(GGXMDF2_IntegratedViaImportanceSampling_EqualsOne)
     {
         const GGXMDF2<double> mdf;
