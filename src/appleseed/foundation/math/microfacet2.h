@@ -81,8 +81,8 @@ class TorranceSparrowMaskingShadowing
         const Vector<T, 3>&  h)
     {
         const T cos_vh = dot(v,h);
-        if (cos_vh / v.y < T(0.0))
-            return T(0.0);
+        //if (cos_vh / v.y < T(0.0))
+        //    return T(0.0);
 
         return std::min( T(1.0), T(2.0) * std::abs(h.y) * std::abs(v.y) / cos_vh);
     }
@@ -471,11 +471,30 @@ class GGXMDF2
         const T              alpha_x,
         const T              alpha_y) const OVERRIDE
     {
-        const T tan_theta_2 = square(alpha_x) * s[0] / (T(1.0) - s[0]);
-        const T cos_theta = T(1.0) / std::sqrt(T(1.0) + tan_theta_2);
-        const T sin_theta = cos_theta * std::sqrt(tan_theta_2);
-        const T phi = T(TwoPi) * s[1];
-        return Vector<T, 3>::unit_vector(cos_theta, sin_theta, std::cos(phi), std::sin(phi));
+        T cos_phi, sin_phi, tan_theta_2;
+
+        if (alpha_x != alpha_y)
+        {
+            cos_phi = std::cos(T(TwoPi) * s[0]) * alpha_x;
+            sin_phi = std::sin(T(TwoPi) * s[0]) * alpha_y;
+            T invnorm = T(1.0) / std::sqrt(square(cos_phi) + square(sin_phi));
+            cos_phi *= invnorm;
+            sin_phi *= invnorm;
+
+            T C = square(cos_phi / alpha_x) + square(sin_phi / alpha_y);
+            tan_theta_2 = s[1] / ((T(1.0) - s[1]) * C);
+        }
+        else
+        {
+            tan_theta_2 = square(alpha_x) * s[0] / (T(1.0) - s[0]);
+            const T phi = T(TwoPi) * s[1];
+            cos_phi = std::cos(phi);
+            sin_phi = std::sin(phi);
+        }
+
+        const T cos_theta  = T(1.0) / std::sqrt(T(1) + tan_theta_2);
+        const T sin_theta  = cos_theta * sqrtf(tan_theta_2);
+        return Vector<T, 3>::unit_vector(cos_theta, sin_theta, cos_phi, sin_phi);
     }
 
     virtual T do_eval_D(
@@ -502,7 +521,7 @@ class GGXMDF2
             const T tmp = T(1.0) + tan_theta_2 * (cos_phi_2_ax + sin_phi_2_ay);
             return T(1.0) / (T(Pi) * alpha_x * alpha_y * cos_theta_4 * square(tmp));
         }
-        
+
         const T tan_theta_2 = (T(1.0) - cos_theta_2) / cos_theta_2;
         return alpha_x_2 / (T(Pi) * cos_theta_4 * square(alpha_x_2 + tan_theta_2));
     }
