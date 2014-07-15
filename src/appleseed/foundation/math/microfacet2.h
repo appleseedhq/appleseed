@@ -80,7 +80,7 @@ class TorranceSparrowMaskingShadowing
         const Vector<T, 3>&  v,
         const Vector<T, 3>&  h)
     {
-        const T cos_vh = dot(v,h);
+        const T cos_vh = dot(v, h);
         if (cos_vh < T(0.0))
             return T(0.0);
 
@@ -160,27 +160,27 @@ class MDF
     }
 
   protected:
-    inline T cos_theta(const Vector<T, 3>& v) const
+    T cos_theta(const Vector<T, 3>& v) const
     {
         return v.y;
     }
     
-    inline T sin_theta_2(const Vector<T, 3>& v) const
+    T sin_theta_2(const Vector<T, 3>& v) const
     {
         return T(1.0) - square(cos_theta(v));
     }
 
-    inline T sin_theta(const Vector<T, 3>& v) const
+    T sin_theta(const Vector<T, 3>& v) const
     {
         return std::sqrt(std::max(T(0.0), sin_theta_2(v)));
     }
 
-    inline T cos_phi(const Vector<T, 3>& v) const
+    T cos_phi(const Vector<T, 3>& v) const
     {
         return v.x / sin_theta(v);
     }
 
-    inline T sin_phi(const Vector<T, 3>& v) const
+    T sin_phi(const Vector<T, 3>& v) const
     {
         return v.z / sin_theta(v);
     }
@@ -493,7 +493,7 @@ class GGXMDF2
             sin_phi = std::sin(phi);
         }
 
-        const T cos_theta  = T(1.0) / std::sqrt(T(1) + tan_theta_2);
+        const T cos_theta = T(1.0) / std::sqrt(T(1) + tan_theta_2);
         const T sin_theta  = std::sqrt(T(1.0) - square(cos_theta));
         return Vector<T, 3>::unit_vector(cos_theta, sin_theta, cos_phi, sin_phi);
     }
