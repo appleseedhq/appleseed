@@ -59,7 +59,7 @@ namespace
 
     struct EmptyClosureParams {};
 
-    struct AshikhminShirleyClosureParams
+    struct AshikhminShirleyBRDFClosureParams
     {
         OSL::Vec3       N;
         OSL::Vec3       T;
@@ -76,13 +76,30 @@ namespace
         OSL::ustring    tag;
     };
 
+    struct DisneyBRDFClosureParams
+    {
+        OSL::Vec3   N;
+        OSL::Vec3   T;
+        OSL::Color3 base_color;
+        float       subsurface;
+        float       metallic;
+        float       specular;
+        float       specular_tint;
+        float       anisotropic;
+        float       roughness;
+        float       sheen;
+        float       sheen_tint;
+        float       clearcoat;
+        float       clearcoat_gloss;
+    };
+    
     struct EmissionClosureParams
     {
         float           inner_angle;
         float           outer_angle;
     };
 
-    struct LambertClosureParams
+    struct DiffuseBSDFClosureParams
     {
         OSL::Vec3       N;
     };
@@ -93,21 +110,16 @@ namespace
         float           roughness;
     };
 
-    struct ReflectionClosureParams
+    struct ReflectionBRDFClosureParams
     {
         OSL::Vec3       N;
     };
     
-    struct RefractionClosureParams
+    struct RefractionBTDFClosureParams
     {
         OSL::Vec3       N;
         float           from_ior;
         float           to_ior;
-    };
-
-    struct TranslucentClosureParams
-    {
-        OSL::Vec3       N;
     };
 
     OSL::ustring beckmann_mdf_name("beckmann");
@@ -184,15 +196,15 @@ void CompositeClosure::process_closure_tree(
             {
               case AshikhminShirleyID:
                 {
-                    const AshikhminShirleyClosureParams* p =
-                        reinterpret_cast<const AshikhminShirleyClosureParams*>(c->data());
+                    const AshikhminShirleyBRDFClosureParams* p =
+                        reinterpret_cast<const AshikhminShirleyBRDFClosureParams*>(c->data());
 
                     AshikminBRDFInputValues values;
 
-                    linear_rgb_reflectance_to_spectrum_unclamped(Color3f(p->Cd), values.m_rd);
+                    linear_rgb_reflectance_to_spectrum(Color3f(p->Cd), values.m_rd);
                     values.m_rd_multiplier = p->kd;
 
-                    linear_rgb_reflectance_to_spectrum_unclamped(Color3f(p->Cs), values.m_rg);
+                    linear_rgb_reflectance_to_spectrum(Color3f(p->Cs), values.m_rg);
                     values.m_rg_multiplier = p->ks;
                     values.m_fr_multiplier = 1.0;
                     values.m_nu = p->nu;
@@ -207,10 +219,37 @@ void CompositeClosure::process_closure_tree(
                 }
                 break;
 
+              case DisneyID:
+                {                
+                    const DisneyBRDFClosureParams* p =
+                        reinterpret_cast<const DisneyBRDFClosureParams*>(c->data());
+    
+                    DisneyBRDFInputValues values;
+                    linear_rgb_reflectance_to_spectrum(Color3f(p->base_color), values.m_base_color);
+                    values.m_subsurface = p->subsurface;
+                    values.m_metallic = p->metallic;
+                    values.m_specular = p->specular;
+                    values.m_specular_tint = p->specular_tint;
+                    values.m_anisotropic = p->anisotropic;
+                    values.m_roughness = p->roughness;
+                    values.m_sheen = p->sheen;
+                    values.m_sheen_tint = p->sheen_tint;
+                    values.m_clearcoat = p->clearcoat;
+                    values.m_clearcoat_gloss = p->clearcoat_gloss;
+    
+                    add_closure<DisneyBRDFInputValues>(
+                        static_cast<ClosureID>(c->id),
+                        w,
+                        Vector3d(p->N),
+                        Vector3d(p->T),
+                        values);
+                }
+                break;
+
               case LambertID:
                 {
-                    const LambertClosureParams* p =
-                        reinterpret_cast<const LambertClosureParams*>(c->data());
+                    const DiffuseBSDFClosureParams* p =
+                        reinterpret_cast<const DiffuseBSDFClosureParams*>(c->data());
 
                     LambertianBRDFInputValues values;
                     values.m_reflectance.set(1.0f);
@@ -292,8 +331,8 @@ void CompositeClosure::process_closure_tree(
 
               case ReflectionID:
                 {
-                    const ReflectionClosureParams* p =
-                        reinterpret_cast<const ReflectionClosureParams*>(c->data());
+                    const ReflectionBRDFClosureParams* p =
+                        reinterpret_cast<const ReflectionBRDFClosureParams*>(c->data());
 
                     SpecularBRDFInputValues values;
                     values.m_reflectance.set(1.0f);
@@ -309,8 +348,8 @@ void CompositeClosure::process_closure_tree(
 
               case RefractionID:
                 {
-                    const RefractionClosureParams* p =
-                        reinterpret_cast<const RefractionClosureParams*>(c->data());
+                    const RefractionBTDFClosureParams* p =
+                        reinterpret_cast<const RefractionBTDFClosureParams*>(c->data());
 
                     SpecularBTDFInputValues values;
                     values.m_reflectance.set(0.0f);
@@ -331,8 +370,8 @@ void CompositeClosure::process_closure_tree(
 
               case TranslucentID:
                 {
-                    const TranslucentClosureParams* p =
-                        reinterpret_cast<const TranslucentClosureParams*>(c->data());
+                    const DiffuseBSDFClosureParams* p =
+                        reinterpret_cast<const DiffuseBSDFClosureParams*>(c->data());
 
                     DiffuseBTDFInputValues values;
                     values.m_transmittance.set(1.0f);
@@ -524,15 +563,30 @@ void register_appleseed_closures(OSL::ShadingSystem& shading_system)
 
     static const BuiltinClosures builtins[] =
     {
-        { "as_ashikhmin_shirley", AshikhminShirleyID, { CLOSURE_VECTOR_PARAM(AshikhminShirleyClosureParams, N),
-                                                        CLOSURE_VECTOR_PARAM(AshikhminShirleyClosureParams, T),
-                                                        CLOSURE_FLOAT_PARAM(AshikhminShirleyClosureParams, kd),
-                                                        CLOSURE_COLOR_PARAM(AshikhminShirleyClosureParams, Cd),
-                                                        CLOSURE_FLOAT_PARAM(AshikhminShirleyClosureParams, ks),
-                                                        CLOSURE_COLOR_PARAM(AshikhminShirleyClosureParams, Cs),
-                                                        CLOSURE_FLOAT_PARAM(AshikhminShirleyClosureParams, nu),
-                                                        CLOSURE_FLOAT_PARAM(AshikhminShirleyClosureParams, nv),
-                                                        CLOSURE_FINISH_PARAM(AshikhminShirleyClosureParams) } },
+        { "as_ashikhmin_shirley", AshikhminShirleyID, { CLOSURE_VECTOR_PARAM(AshikhminShirleyBRDFClosureParams, N),
+                                                        CLOSURE_VECTOR_PARAM(AshikhminShirleyBRDFClosureParams, T),
+                                                        CLOSURE_FLOAT_PARAM(AshikhminShirleyBRDFClosureParams, kd),
+                                                        CLOSURE_COLOR_PARAM(AshikhminShirleyBRDFClosureParams, Cd),
+                                                        CLOSURE_FLOAT_PARAM(AshikhminShirleyBRDFClosureParams, ks),
+                                                        CLOSURE_COLOR_PARAM(AshikhminShirleyBRDFClosureParams, Cs),
+                                                        CLOSURE_FLOAT_PARAM(AshikhminShirleyBRDFClosureParams, nu),
+                                                        CLOSURE_FLOAT_PARAM(AshikhminShirleyBRDFClosureParams, nv),
+                                                        CLOSURE_FINISH_PARAM(AshikhminShirleyBRDFClosureParams) } },
+
+        { "as_disney", DisneyID, { CLOSURE_VECTOR_PARAM(DisneyBRDFClosureParams, N),
+                                   CLOSURE_VECTOR_PARAM(DisneyBRDFClosureParams, T),
+                                   CLOSURE_COLOR_PARAM(DisneyBRDFClosureParams, base_color),
+                                   CLOSURE_FLOAT_PARAM(DisneyBRDFClosureParams, subsurface),
+                                   CLOSURE_FLOAT_PARAM(DisneyBRDFClosureParams, metallic),
+                                   CLOSURE_FLOAT_PARAM(DisneyBRDFClosureParams, specular),
+                                   CLOSURE_FLOAT_PARAM(DisneyBRDFClosureParams, specular_tint),
+                                   CLOSURE_FLOAT_PARAM(DisneyBRDFClosureParams, anisotropic),
+                                   CLOSURE_FLOAT_PARAM(DisneyBRDFClosureParams, roughness),
+                                   CLOSURE_FLOAT_PARAM(DisneyBRDFClosureParams, sheen),
+                                   CLOSURE_FLOAT_PARAM(DisneyBRDFClosureParams, sheen_tint),
+                                   CLOSURE_FLOAT_PARAM(DisneyBRDFClosureParams, clearcoat),
+                                   CLOSURE_FLOAT_PARAM(DisneyBRDFClosureParams, clearcoat_gloss),
+                                   CLOSURE_FINISH_PARAM(DisneyBRDFClosureParams) } },
 
         { "as_oren_nayar", OrenNayarID, { CLOSURE_VECTOR_PARAM(OrenNayarBRDFClosureParams, N),
                                           CLOSURE_FLOAT_PARAM(OrenNayarBRDFClosureParams, roughness),
@@ -543,8 +597,8 @@ void register_appleseed_closures(OSL::ShadingSystem& shading_system)
         { "debug", DebugID, { CLOSURE_STRING_PARAM(DebugClosureParams, tag),
                               CLOSURE_FINISH_PARAM(DebugClosureParams) } },
 
-        { "diffuse", LambertID, { CLOSURE_VECTOR_PARAM(LambertClosureParams, N),
-                                  CLOSURE_FINISH_PARAM(LambertClosureParams) } },
+        { "diffuse", LambertID, { CLOSURE_VECTOR_PARAM(DiffuseBSDFClosureParams, N),
+                                  CLOSURE_FINISH_PARAM(DiffuseBSDFClosureParams) } },
 
         { "emission", EmissionID, { CLOSURE_FLOAT_PARAM(EmissionClosureParams, inner_angle),
                                     CLOSURE_FLOAT_PARAM(EmissionClosureParams, outer_angle),
@@ -560,16 +614,16 @@ void register_appleseed_closures(OSL::ShadingSystem& shading_system)
                                         CLOSURE_FLOAT_PARAM(MicrofacetBSDFClosureParams, eta),
                                         CLOSURE_FINISH_PARAM(MicrofacetBSDFClosureParams) } },
         
-        { "reflection", ReflectionID, { CLOSURE_VECTOR_PARAM(ReflectionClosureParams, N),
-                                        CLOSURE_FINISH_PARAM(ReflectionClosureParams) } },
+        { "reflection", ReflectionID, { CLOSURE_VECTOR_PARAM(ReflectionBRDFClosureParams, N),
+                                        CLOSURE_FINISH_PARAM(ReflectionBRDFClosureParams) } },
 
-        { "refraction", RefractionID, { CLOSURE_VECTOR_PARAM(RefractionClosureParams, N),
-                                        CLOSURE_FLOAT_PARAM(RefractionClosureParams, from_ior),
-                                        CLOSURE_FLOAT_PARAM(RefractionClosureParams, to_ior),
-                                        CLOSURE_FINISH_PARAM(RefractionClosureParams) } },
+        { "refraction", RefractionID, { CLOSURE_VECTOR_PARAM(RefractionBTDFClosureParams, N),
+                                        CLOSURE_FLOAT_PARAM(RefractionBTDFClosureParams, from_ior),
+                                        CLOSURE_FLOAT_PARAM(RefractionBTDFClosureParams, to_ior),
+                                        CLOSURE_FINISH_PARAM(RefractionBTDFClosureParams) } },
 
-        { "translucent", TranslucentID, { CLOSURE_VECTOR_PARAM(LambertClosureParams, N),
-                                          CLOSURE_FINISH_PARAM(LambertClosureParams) } },
+        { "translucent", TranslucentID, { CLOSURE_VECTOR_PARAM(DiffuseBSDFClosureParams, N),
+                                          CLOSURE_FINISH_PARAM(DiffuseBSDFClosureParams) } },
 
         { "transparent", TransparentID, { CLOSURE_FINISH_PARAM(EmptyClosureParams) } },
 

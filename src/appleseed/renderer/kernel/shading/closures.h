@@ -31,6 +31,7 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/bsdf/ashikhminbrdf.h"
 #include "renderer/modeling/bsdf/diffusebtdf.h"
+#include "renderer/modeling/bsdf/disneybrdf.h"
 #include "renderer/modeling/bsdf/lambertianbrdf.h"
 #include "renderer/modeling/bsdf/microfacet2brdf.h"
 #include "renderer/modeling/bsdf/orennayarbrdf.h"
@@ -75,6 +76,7 @@ enum ClosureID
 {
     // BSDF closures.
     AshikhminShirleyID,
+    DisneyID,
     LambertID,
     OrenNayarID,
     ReflectionID,
@@ -122,6 +124,7 @@ class APPLESEED_ALIGN(16) CompositeClosure
     typedef boost::mpl::vector<
         AshikminBRDFInputValues,
         DiffuseBTDFInputValues,
+        DisneyBRDFInputValues,
         LambertianBRDFInputValues,
         Microfacet2BRDFInputValues,
         OrenNayarBRDFInputValues,
