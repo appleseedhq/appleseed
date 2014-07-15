@@ -447,7 +447,7 @@ class GGXSmithMaskingShadowing
             const T sin_phi_2 = square(v.z / sin_theta);
             const T alpha = std::sqrt(cos_phi_2 * square(alpha_x) + sin_phi_2 * square(alpha_y));
             const T a = cos_theta / (alpha * sin_theta);
-            const T lambda = (T(-1) + std::sqrt(T(1) + T(1) / square(a))) * T(0.5);
+            const T lambda = (T(-1) + std::sqrt(T(1.0) + T(1.0) / square(a))) * T(0.5);
             return T(1.0) / (T(1.0) + lambda);
         }
 
@@ -493,8 +493,8 @@ class GGXMDF2
             sin_phi = std::sin(phi);
         }
 
-        const T cos_theta = T(1.0) / std::sqrt(T(1) + tan_theta_2);
-        const T sin_theta  = std::sqrt(T(1.0) - square(cos_theta));
+        const T cos_theta = T(1.0) / std::sqrt(T(1.0) + tan_theta_2);
+        const T sin_theta = std::sqrt(T(1.0) - square(cos_theta));
         return Vector<T, 3>::unit_vector(cos_theta, sin_theta, cos_phi, sin_phi);
     }
 
