@@ -137,9 +137,9 @@ void MaterialCollectionItem::do_create_material(const char* model)
         form_factory,
         entity_browser,
         this,
-        SLOT(slot_create_applied(Dictionary)),
-        SLOT(slot_create_accepted(Dictionary)),
-        SLOT(slot_create_canceled(Dictionary)));
+        SLOT(slot_create_applied(foundation::Dictionary)),
+        SLOT(slot_create_accepted(foundation::Dictionary)),
+        SLOT(slot_create_canceled(foundation::Dictionary)));
 }
 
 }   // namespace studio
