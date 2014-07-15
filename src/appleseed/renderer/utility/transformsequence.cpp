@@ -169,7 +169,7 @@ void TransformSequence::optimize()
 
             if (same_left && same_right)
             {
-                memcpy(&m_keys[i], &m_keys[i + 1], (m_size - 1 - i) * sizeof(TransformKey));
+                memmove(&m_keys[i], &m_keys[i + 1], (m_size - 1 - i) * sizeof(TransformKey));
                 --m_size;
             }
         }
