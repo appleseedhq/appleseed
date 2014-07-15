@@ -38,10 +38,6 @@
 #include "foundation/utility/maplefile.h"
 #include "foundation/utility/test.h"
 
-// boost headers.
-#include <boost/mpl/assert.hpp>
-#include <boost/mpl/not.hpp>
-
 // Standard headers.
 #include <cmath>
 #include <cstddef>
@@ -76,12 +72,9 @@ TEST_SUITE(Foundation_Math_Microfacet2)
     template <typename MDF>
     typename MDF::ValueType integrate_quadrature(
         const MDF&                      mdf,
-        const typename MDF::ValueType   alpha_x,
-        const typename MDF::ValueType   alpha_y,
+        const typename MDF::ValueType   alpha,
         const size_t                    sample_count)
     {
-        BOOST_MPL_ASSERT((boost::mpl::not_<typename MDF::IsAnisotropicType>));
-
         typedef typename MDF::ValueType RealType;
         
         Vector<RealType,3> h(0.0);
@@ -93,7 +86,7 @@ TEST_SUITE(Foundation_Math_Microfacet2)
             h.y = cos(theta);
             const RealType sin_theta = sin(theta);
 
-            const RealType value = mdf.D(h, alpha_x, alpha_y);
+            const RealType value = mdf.D(h, alpha, alpha);
 
             integral += value * h.y * sin_theta;
         }
@@ -240,7 +233,7 @@ TEST_SUITE(Foundation_Math_Microfacet2)
     {
         const BlinnMDF2<double> mdf;
 
-        const double integral = integrate_quadrature(mdf, 10.0, 10.0, IntegrationSampleCount);
+        const double integral = integrate_quadrature(mdf, 10.0, IntegrationSampleCount);
 
         EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
     }
@@ -289,7 +282,7 @@ TEST_SUITE(Foundation_Math_Microfacet2)
 
         EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
     }
-    
+
     //
     // Beckmann MDF.
     //
@@ -323,7 +316,7 @@ TEST_SUITE(Foundation_Math_Microfacet2)
     {
         const BeckmannMDF2<double> mdf;
 
-        const double integral = integrate_quadrature(mdf, 0.5, 0.5, IntegrationSampleCount);
+        const double integral = integrate_quadrature(mdf, 0.5, IntegrationSampleCount);
 
         EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
     }
@@ -372,7 +365,7 @@ TEST_SUITE(Foundation_Math_Microfacet2)
 
         EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
     }
-    
+
     //
     // GGX MDF.
     //
@@ -408,7 +401,7 @@ TEST_SUITE(Foundation_Math_Microfacet2)
     {
         const GGXMDF2<double> mdf;
 
-        const double integral = integrate_quadrature(mdf, 0.5, 0.5, IntegrationSampleCount);
+        const double integral = integrate_quadrature(mdf, 0.5, IntegrationSampleCount);
 
         EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
     }
@@ -422,6 +415,21 @@ TEST_SUITE(Foundation_Math_Microfacet2)
                 mdf,
                 0.5,
                 0.5,
+                UniformHemisphereSampler<double>(),
+                IntegrationSampleCount);
+
+        EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
+    }
+
+    TEST_CASE(GGXMDF2_Anisotropic_IntegratedViaUniformSampling_EqualsOne)
+    {
+        const GGXMDF2<double> mdf;
+
+        const double integral =
+            integrate_sampling(
+                mdf,
+                0.6,
+                0.2,
                 UniformHemisphereSampler<double>(),
                 IntegrationSampleCount);
 
@@ -443,6 +451,21 @@ TEST_SUITE(Foundation_Math_Microfacet2)
         EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
     }
 
+    TEST_CASE(GGXMDF2_Anisotropic_IntegratedViaCosineWeightedSampling_EqualsOne)
+    {
+        const GGXMDF2<double> mdf;
+
+        const double integral =
+            integrate_sampling(
+                mdf,
+                0.2,
+                0.6,
+                CosineHemisphereSampler<double>(),
+                IntegrationSampleCount);
+
+        EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
+    }
+
     TEST_CASE(GGXMDF2_IntegratedViaImportanceSampling_EqualsOne)
     {
         const GGXMDF2<double> mdf;
@@ -452,6 +475,21 @@ TEST_SUITE(Foundation_Math_Microfacet2)
                 mdf,
                 0.5,
                 0.5,
+                ImportanceSampler<double, GGXMDF2<double> >(mdf),
+                IntegrationSampleCount);
+
+        EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
+    }
+
+    TEST_CASE(GGXMDF2_Anisotropic_IntegratedViaImportanceSampling_EqualsOne)
+    {
+        const GGXMDF2<double> mdf;
+
+        const double integral =
+            integrate_sampling(
+                mdf,
+                0.7,
+                0.2,
                 ImportanceSampler<double, GGXMDF2<double> >(mdf),
                 IntegrationSampleCount);
 
