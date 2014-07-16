@@ -45,6 +45,6 @@
 #endif
 
 // Windows headers.
-#include <windows.h>
+#include <Windows.h>
 
 #endif  // !APPLESEED_FOUNDATION_PLATFORM_WINDOWS_H
