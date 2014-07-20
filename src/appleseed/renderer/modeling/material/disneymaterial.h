@@ -78,7 +78,7 @@ class DLLSYMBOL DisneyMaterialLayer
     void swap(DisneyMaterialLayer& other);
     
     struct Impl;
-    Impl *impl;
+    Impl* impl;
 };
 
 class DLLSYMBOL DisneyMaterial
@@ -118,7 +118,7 @@ class DLLSYMBOL DisneyMaterial
     const DisneyMaterialLayer& get_layer(std::size_t index) const;
 
     struct Impl;
-    Impl *impl;
+    Impl* impl;
 };
 
 //

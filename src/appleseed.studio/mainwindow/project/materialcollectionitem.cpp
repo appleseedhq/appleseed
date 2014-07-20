@@ -108,7 +108,7 @@ void MaterialCollectionItem::slot_create_osl()
 }
 #endif
 
-#ifdef WITH_OSL
+#ifdef WITH_DISNEY_MATERIAL
 void MaterialCollectionItem::slot_create_disney()
 {
     do_create_material("disney_material");

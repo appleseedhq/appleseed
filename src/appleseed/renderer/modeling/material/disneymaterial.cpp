@@ -57,8 +57,8 @@ struct DisneyMaterialLayer::Impl
         m_layer_number = params.get<size_t>("layer_number");
     }
 
-    string      m_name;
-    size_t      m_layer_number;
+    string  m_name;
+    size_t  m_layer_number;
 };
 
 DisneyMaterialLayer::DisneyMaterialLayer(
@@ -230,7 +230,7 @@ const char* Model = "disney_material";
 
 struct DisneyMaterial::Impl
 {
-    vector<DisneyMaterialLayer>                     m_layers;
+    vector<DisneyMaterialLayer> m_layers;
 };
 
 DisneyMaterial::DisneyMaterial(
