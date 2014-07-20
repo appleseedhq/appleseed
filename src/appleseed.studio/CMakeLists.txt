@@ -425,6 +425,13 @@ target_link_libraries (appleseed.studio
     ${OPENGL_LIBRARY}
 )
 
+if (WITH_DISNEY_MATERIAL)
+    target_link_libraries (appleseed.studio
+        ${SEEXPR_LIBRARIES}
+        ${SEEXPREDITOR_LIBRARIES}
+)
+endif ()
+
 if (WIN32)
     target_link_libraries (appleseed.studio
         ${QT_QTMAIN_LIBRARY}

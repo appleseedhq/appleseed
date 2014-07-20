@@ -1428,6 +1428,12 @@ if (WITH_OSL)
         renderer/modeling/material/oslmaterial.h
     )
 endif ()
+if (WITH_DISNEY_MATERIAL)
+    list (APPEND renderer_modeling_material_sources
+        renderer/modeling/material/disneymaterial.cpp
+        renderer/modeling/material/disneymaterial.h
+    )
+endif ()
 list (APPEND appleseed_sources
     ${renderer_modeling_material_sources}
 )
@@ -1676,6 +1682,10 @@ link_against_zlib (appleseed)
 if (WITH_OSL)
     link_against_oiio (appleseed)
     link_against_oslexec (appleseed)
+endif ()
+
+if (WITH_DISNEY_MATERIAL)
+    target_link_libraries (appleseed ${SEEXPR_LIBRARIES})
 endif ()
 
 target_link_libraries (appleseed ${Boost_LIBRARIES})
