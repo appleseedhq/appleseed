@@ -52,10 +52,9 @@ namespace renderer
 class DLLSYMBOL DisneyMaterialLayer
 {
   public:
-    // Destructor
-    ~DisneyMaterialLayer();
-
     DisneyMaterialLayer(const DisneyMaterialLayer& other);
+    
+    ~DisneyMaterialLayer();
 
     DisneyMaterialLayer& operator=(const DisneyMaterialLayer& other);
     
@@ -114,8 +113,8 @@ class DLLSYMBOL DisneyMaterial
     // Destructor
     ~DisneyMaterial();
 
-    std::size_t num_layers() const;
-    const DisneyMaterialLayer& get_layer(std::size_t index) const;
+    std::size_t get_layer_count() const;
+    const DisneyMaterialLayer& get_layer(const std::size_t index) const;
 
     struct Impl;
     Impl* impl;

@@ -35,6 +35,7 @@
 
 // standard headers
 #include <algorithm>
+#include <string>
 #include <vector>
 
 using namespace foundation;
@@ -50,11 +51,11 @@ namespace renderer
 struct DisneyMaterialLayer::Impl
 {
     Impl(
-        const char* name,
-        const Dictionary& params)
+        const char*         name,
+        const Dictionary&   params)
       : m_name(name)
+      , m_layer_number(params.get<size_t>("layer_number"))
     {
-        m_layer_number = params.get<size_t>("layer_number");
     }
 
     string  m_name;
@@ -62,8 +63,8 @@ struct DisneyMaterialLayer::Impl
 };
 
 DisneyMaterialLayer::DisneyMaterialLayer(
-    const char* name,
-    const Dictionary& params)
+    const char*         name,
+    const Dictionary&   params)
   : impl(new Impl(name, params))
 {
 }
@@ -74,8 +75,8 @@ DisneyMaterialLayer::~DisneyMaterialLayer()
 }
 
 DisneyMaterialLayer::DisneyMaterialLayer(const DisneyMaterialLayer& other)
+  : impl(new Impl(*other.impl))
 {
-    impl = new Impl(*other.impl);
 }
 
 DisneyMaterialLayer& DisneyMaterialLayer::operator=(const DisneyMaterialLayer& other)
@@ -203,17 +204,16 @@ Dictionary DisneyMaterialLayer::get_default_values()
     Dictionary layer_params;
     for (size_t i = 0; i < metadata.size(); ++i)
     {
-        Dictionary parameter = metadata[i];
+        const Dictionary& parameter = metadata[i];
         const string name = parameter.get<string>("name");
         const string default_value = parameter.get<string>("default");
-
         layer_params.insert(name, default_value);
     }
+    
     layer_params.insert("layer_number", 1);
 
     Dictionary values;
     values.insert("layer1", layer_params);
-
     return values;
 }
 
@@ -223,9 +223,7 @@ Dictionary DisneyMaterialLayer::get_default_values()
 
 namespace
 {
-
-const char* Model = "disney_material";
-
+    const char* Model = "disney_material";
 }
 
 struct DisneyMaterial::Impl
@@ -234,10 +232,10 @@ struct DisneyMaterial::Impl
 };
 
 DisneyMaterial::DisneyMaterial(
-    const char*         name,
-    const ParamArray&   params)
-    : Material(name, params)
-    , impl(new Impl())
+  const char*         name,
+  const ParamArray&   params)
+  : Material(name, params)
+  , impl(new Impl())
 {
 }
 
@@ -257,9 +255,9 @@ const char* DisneyMaterial::get_model() const
 }
 
 bool DisneyMaterial::on_frame_begin(
-    const Project&              project,
-    const Assembly&             assembly,
-    AbortSwitch*                abort_switch)
+    const Project&  project,
+    const Assembly& assembly,
+    AbortSwitch*    abort_switch)
 {
     if (!Material::on_frame_begin(project, assembly, abort_switch))
         return false;
@@ -285,23 +283,22 @@ bool DisneyMaterial::on_frame_begin(
     return true;
 }
 
-// This method is called once after rendering each frame.
 void DisneyMaterial::on_frame_end(
-    const Project&              project,
-    const Assembly&             assembly) OVERRIDE
+    const Project&  project,
+    const Assembly& assembly) OVERRIDE
 {
     impl->m_layers.clear();    
     Material::on_frame_end(project, assembly);
 }
 
-std::size_t DisneyMaterial::num_layers() const
+std::size_t DisneyMaterial::get_layer_count() const
 {
     return impl->m_layers.size();
 }
 
-const DisneyMaterialLayer& DisneyMaterial::get_layer(std::size_t index) const
+const DisneyMaterialLayer& DisneyMaterial::get_layer(const size_t index) const
 {
-    assert(index < num_layers());
+    assert(index < get_layer_count());
 
     return impl->m_layers[index];
 }
