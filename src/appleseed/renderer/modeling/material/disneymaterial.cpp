@@ -267,6 +267,8 @@ bool DisneyMaterial::on_frame_begin(
         for (const_each<DictionaryDictionary> it = m_params.dictionaries(); it; ++it)
             impl->m_layers.push_back(DisneyMaterialLayer(it->name(), it->value()));
     }
+    // TODO: be more specific about what we catch here, 
+    // once we know what can be thrown. (est.)
     catch(...)
     {
         return false;
