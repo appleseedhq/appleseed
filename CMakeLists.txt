@@ -75,6 +75,7 @@ option (WITH_TOOLS              "Build appleseed tools"                         
 option (WITH_PYTHON             "Build Python bindings"                                 ON)
 option (WITH_ALEMBIC            "Build Alembic support"                                 ON)
 option (WITH_OSL                "Build OSL support"                                     OFF)
+option (WITH_DISNEY_MATERIAL    "Build Disney Material"                                 OFF)
 
 option (USE_SSE                 "Use SSE and SSE 2 instruction sets"                    ON)
 option (USE_QMC_SAMPLER         "Use QMC sampler (possible software patent issues)"     OFF)
@@ -187,6 +188,15 @@ if (WITH_OSL)
     find_package (OSL REQUIRED)
 endif ()
 
+if (WITH_DISNEY_MATERIAL)
+    add_definitions (-DWITH_DISNEY_MATERIAL)
+
+    find_package(SeExpr REQUIRED)
+
+    if (WITH_STUDIO)
+        find_package(SeExprEditor REQUIRED)
+    endif ()
+endif ()
 
 #--------------------------------------------------------------------------------------------------
 # Include paths.
@@ -251,6 +261,13 @@ if (WITH_OSL)
     )
 endif ()
 
+if (WITH_DISNEY_MATERIAL)
+    include_directories (${SEEXPR_INCLUDE_DIRS})
+
+    if (WITH_STUDIO)
+        include_directories (${SEEXPREDITOR_INCLUDE_DIRS})
+    endif ()
+endif ()
 
 #--------------------------------------------------------------------------------------------------
 # Extract version from git.

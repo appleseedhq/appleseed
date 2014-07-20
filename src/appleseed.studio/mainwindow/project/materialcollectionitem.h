@@ -68,6 +68,9 @@ class MaterialCollectionItem
 #ifdef WITH_OSL
     void slot_create_osl();
 #endif
+#ifdef WITH_DISNEY_MATERIAL
+    void slot_create_disney();
+#endif
 
   private:
     virtual ItemBase* create_item(renderer::Material* material) OVERRIDE;
