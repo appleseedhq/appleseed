@@ -157,6 +157,12 @@ class DisneyBRDFImpl
   private:
     typedef DisneyBRDFInputValues InputValues;
 
+    static foundation::LightingConditions   m_lighting_conditions;
+    static Spectrum                         m_white_spectrum;
+    foundation::auto_release_ptr<BSDF>      m_diffuse_brdf;    
+    foundation::MDF<double>*                m_specular_mdf;
+    foundation::MDF<double>*                m_clearcoat_mdf;
+    
     virtual ~DisneyBRDFImpl();
     
     void compute_component_weights(
@@ -177,12 +183,6 @@ class DisneyBRDFImpl
     double clearcoat_roughness(const DisneyBRDFInputValues* values) const;
 
     double clearcoat_f(const double clearcoat, const double cos_oh) const;
-
-    static foundation::LightingConditions   m_lighting_conditions;
-    static Spectrum                         m_white_spectrum;
-    foundation::auto_release_ptr<BSDF>      m_diffuse_brdf;    
-    foundation::MDF<double>*                m_specular_mdf;
-    foundation::MDF<double>*                m_clearcoat_mdf;
 };
 
 typedef BSDFWrapper<DisneyBRDFImpl> DisneyBRDF;
