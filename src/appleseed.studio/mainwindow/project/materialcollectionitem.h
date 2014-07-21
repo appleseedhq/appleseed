@@ -62,7 +62,9 @@ class MaterialCollectionItem
 
   private slots:
     void slot_create_generic();
+#ifdef WITH_DISNEY_MATERIAL
     void slot_create_disney();
+#endif
 #ifdef WITH_OSL
     void slot_create_osl();
 #endif

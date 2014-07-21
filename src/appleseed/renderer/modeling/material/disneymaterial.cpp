@@ -331,8 +331,6 @@ void DisneyMaterial::on_frame_end(
     const Project&              project,
     const Assembly&             assembly) OVERRIDE
 {
-    impl->m_brdf->on_frame_end(project, assembly);
-    impl->m_brdf.reset();
     impl->m_layers.clear();    
     Material::on_frame_end(project, assembly);
 }

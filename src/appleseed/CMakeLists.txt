@@ -1185,10 +1185,8 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/bsdfwrapper.h
     renderer/modeling/bsdf/diffusebtdf.cpp
     renderer/modeling/bsdf/diffusebtdf.h
-    renderer/modeling/bsdf/disneybdrf.cpp
-    renderer/modeling/bsdf/disneybdrf.h
-    renderer/modeling/bsdf/disneylayeredbdrf.cpp
-    renderer/modeling/bsdf/disneylayeredbdrf.h
+    renderer/modeling/bsdf/disneybrdf.cpp
+    renderer/modeling/bsdf/disneybrdf.h
     renderer/modeling/bsdf/ibsdffactory.h
     renderer/modeling/bsdf/kelemenbrdf.cpp
     renderer/modeling/bsdf/kelemenbrdf.h
@@ -1198,8 +1196,6 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/microfacetbrdf.h
     renderer/modeling/bsdf/microfacet2brdf.cpp
     renderer/modeling/bsdf/microfacet2brdf.h
-    renderer/modeling/bsdf/oslmicrofacetbrdf.cpp
-    renderer/modeling/bsdf/oslmicrofacetbrdf.h    
 	renderer/modeling/bsdf/nullbsdf.h
     renderer/modeling/bsdf/orennayarbrdf.cpp
     renderer/modeling/bsdf/orennayarbrdf.h       
@@ -1368,8 +1364,6 @@ source_group ("renderer\\modeling\\frame" FILES
 set (renderer_modeling_input_sources
     renderer/modeling/input/colorsource.cpp
     renderer/modeling/input/colorsource.h
-    renderer/modeling/input/expression.cpp
-    renderer/modeling/input/expression.h
     renderer/modeling/input/inputarray.cpp
     renderer/modeling/input/inputarray.h
     renderer/modeling/input/inputbinder.cpp
@@ -1383,9 +1377,16 @@ set (renderer_modeling_input_sources
     renderer/modeling/input/texturesource.h
     renderer/modeling/input/uniforminputevaluator.h
 )
+if (WITH_DISNEY_MATERIAL)
+list (APPEND renderer_modeling_input_sources
+    renderer/modeling/input/expression.cpp
+    renderer/modeling/input/expression.h
+)
+endif ()
 list (APPEND appleseed_sources
     ${renderer_modeling_input_sources}
 )
+
 source_group ("renderer\\modeling\\input" FILES
     ${renderer_modeling_input_sources}
 )

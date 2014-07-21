@@ -98,19 +98,6 @@ class EntityEditor
             const std::string&              type) const = 0;
     };
 
-    class ICustomEntityUI
-      : public foundation::NonCopyable
-    {
-      public:
-        virtual ~ICustomEntityUI() {}
-        
-        virtual void create_custom_widgets(
-            QVBoxLayout*                    layout,
-            const foundation::Dictionary&   values) = 0;
-        
-        virtual foundation::Dictionary get_values() const = 0;
-    };
-
     EntityEditor(
         QWidget*                            parent,
         const renderer::Project&            project,

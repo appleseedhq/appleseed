@@ -122,10 +122,11 @@ Dictionary EntityEditor::get_values() const
 
 void EntityEditor::create_form_layout()
 {
-    m_form_layout = new QFormLayout(m_parent);
+    m_form_layout = new QFormLayout();
     m_form_layout->setLabelAlignment(Qt::AlignRight);
     m_form_layout->setSpacing(10);
     m_form_layout->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
+    m_top_layout->addLayout(m_form_layout);
 }
 
 void EntityEditor::create_connections()
