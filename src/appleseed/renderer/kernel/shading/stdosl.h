@@ -532,6 +532,21 @@ closure color as_ashikhmin_shirley(
 
 closure color as_oren_nayar(normal N, float roughness) BUILTIN;
 
+closure color as_disney(
+        normal N,
+        vector T,
+        color  base_color,
+        float  subsurface,
+        float  metallic,
+        float  specular,
+        float  specular_tint,
+        float  anisotropic,
+        float  roughness,
+        float  sheen,
+        float  sheen_tint,
+        float  clearcoat,
+        float  clearcoat_gloss) BUILTIN;
+
 /********************************/
 // closures in OSL spec that are not supported in appleseed.
 /*
