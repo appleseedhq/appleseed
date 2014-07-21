@@ -192,6 +192,15 @@ TEST_SUITE(Foundation_Math_Microfacet2)
         return integral;
     }
 
+    //
+    // Weak white furnace test.
+    //
+    // References:
+    //
+    //   Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs
+    //   http://hal.inria.fr/docs/00/96/78/44/PDF/RR-8468.pdf
+    //
+
     template <typename MDF, typename G>
     double weak_white_furnace_test(
         const MDF&      mdf,
@@ -224,14 +233,15 @@ TEST_SUITE(Foundation_Math_Microfacet2)
                 if (h.y > 0.0)
                 {
                     const double D = mdf.D(h, alpha_x, alpha_y);
-                    integral += sin_theta * D * G1 / cos_thetha_o_4;
+                    integral += sin_theta * D;
                 }
             }
         }
 
-        return integral * square(angle_step);
+        // Result should be 1.
+        return integral * G1 * square(angle_step) / cos_thetha_o_4;
     }
-    
+
     //
     // Test settings.
     //
