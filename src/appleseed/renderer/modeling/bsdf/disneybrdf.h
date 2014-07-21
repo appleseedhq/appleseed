@@ -48,7 +48,7 @@
 
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
-namespace foundation    { template<typename T> class MDF; }
+namespace foundation    { template <typename T> class MDF; }
 namespace renderer      { class ParamArray; }
 
 namespace renderer
@@ -84,7 +84,7 @@ DECLARE_INPUT_VALUES(DisneyBRDFInputValues)
 class DisneyBRDFImpl
   : public BSDF
 {
-public:
+  public:
     DisneyBRDFImpl(
             const char*         name,
             const ParamArray&   params);
@@ -153,12 +153,12 @@ public:
             const foundation::Vector3d&     outgoing,
             const foundation::Vector3d&     incoming,
             const int                       modes) const OVERRIDE;
-protected:
-    virtual ~DisneyBRDFImpl();
 
-private:
+  private:
     typedef DisneyBRDFInputValues InputValues;
 
+    virtual ~DisneyBRDFImpl();
+    
     void compute_component_weights(
         const DisneyBRDFInputValues*    values,
         double                          weights[3]) const;

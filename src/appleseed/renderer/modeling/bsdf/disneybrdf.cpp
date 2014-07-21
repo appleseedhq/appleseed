@@ -37,6 +37,7 @@
 #include "foundation/math/fresnel.h"
 #include "foundation/math/microfacet2.h"
 #include "foundation/math/sampling.h"
+#include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
@@ -65,14 +66,14 @@ double schlick_fresnel(double u)
     return square(m2) * m;
 }
 
-void mix_spectrums(
+void mix_spectra(
     const Spectrum&     a,
     const Spectrum&     b,
     float               t,
     Spectrum&           result)
 {
     const float one_minus_t = 1.0f - t;
-    for (int i = 0; i < Spectrum::Samples; ++i)
+    for (size_t i = 0; i < Spectrum::Samples; ++i)
         result[i] = one_minus_t * a[i] + t * b[i];    
 }
 
@@ -104,18 +105,19 @@ public:
     }
 
     virtual BSDF::Mode sample(
-            SamplingContext&                sampling_context,
-            const void*                     data,
-            const bool                      adjoint,
-            const bool                      cosine_mult,
-            const foundation::Vector3d&     geometric_normal,
-            const foundation::Basis3d&      shading_basis,
-            const foundation::Vector3d&     outgoing,
-            foundation::Vector3d&           incoming,
-            Spectrum&                       value,
-            double&                         probability) const OVERRIDE
+            SamplingContext&    sampling_context,
+            const void*         data,
+            const bool          adjoint,
+            const bool          cosine_mult,
+            const Vector3d&     geometric_normal,
+            const Basis3d&      shading_basis,
+            const Vector3d&     outgoing,
+            Vector3d&           incoming,
+            Spectrum&           value,
+            double&             probability) const OVERRIDE
     {
         const DisneyBRDFInputValues* values = static_cast<const DisneyBRDFInputValues*>(data);
+        
         // Compute the incoming direction in local space.
         sampling_context.split_in_place(2, 1);
         const Vector2d s = sampling_context.next_vector2<2>();
@@ -125,11 +127,11 @@ public:
         incoming = shading_basis.transform_to_parent(wi);
 
         evaluate_diffuse(
-                    values,
-                    shading_basis,
-                    outgoing,
-                    incoming,
-                    value);
+            values,
+            shading_basis,
+            outgoing,
+            incoming,
+            value);
 
         probability = wi.y * RcpPi;
         assert(probability > 0.0);
@@ -138,15 +140,15 @@ public:
     }
 
     virtual double evaluate(
-            const void*                     data,
-            const bool                      adjoint,
-            const bool                      cosine_mult,
-            const foundation::Vector3d&     geometric_normal,
-            const foundation::Basis3d&      shading_basis,
-            const foundation::Vector3d&     outgoing,
-            const foundation::Vector3d&     incoming,
-            const int                       modes,
-            Spectrum&                       value) const OVERRIDE
+            const void*     data,
+            const bool      adjoint,
+            const bool      cosine_mult,
+            const Vector3d& geometric_normal,
+            const Basis3d&  shading_basis,
+            const Vector3d& outgoing,
+            const Vector3d& incoming,
+            const int       modes,
+            Spectrum&       value) const OVERRIDE
     {
         if (!(modes & Diffuse))
             return 0.0;
@@ -171,12 +173,12 @@ public:
     }
 
     virtual double evaluate_pdf(
-            const void*                     data,
-            const foundation::Vector3d&     geometric_normal,
-            const foundation::Basis3d&      shading_basis,
-            const foundation::Vector3d&     outgoing,
-            const foundation::Vector3d&     incoming,
-            const int                       modes) const OVERRIDE
+            const void*     data,
+            const Vector3d& geometric_normal,
+            const Basis3d&  shading_basis,
+            const Vector3d& outgoing,
+            const Vector3d& incoming,
+            const int       modes) const OVERRIDE
     {
         if (!(modes & Diffuse))
             return 0.0;
@@ -192,6 +194,9 @@ public:
     }
     
   private:
+    const LightingConditions&   m_lighting_conditions;
+    const Spectrum&             m_white_spectrum;
+    
     void evaluate_diffuse(
         const DisneyBRDFInputValues*    values,
         const Basis3d&                  shading_basis,
@@ -202,8 +207,8 @@ public:
         // This code is ported from the GLSL implementation 
         // in Disney's BRDF explorer.
         
-        Vector3d h(normalize(incoming + outgoing));
-        Vector3d n(shading_basis.get_normal());
+        const Vector3d h(normalize(incoming + outgoing));
+        const Vector3d n(shading_basis.get_normal());
 
         const double cos_no = dot(n, outgoing);
         const double cos_ni = dot(n, incoming);
@@ -229,7 +234,7 @@ public:
         if (values->m_sheen > 0.0)
         {
             Spectrum csheen;
-            mix_spectrums(
+            mix_spectra(
                 m_white_spectrum, 
                 values->m_tint_color, 
                 static_cast<float>(values->m_sheen_tint), 
@@ -241,9 +246,6 @@ public:
 
         value *= static_cast<float>(1.0 - values->m_metallic);
     }
-
-    const LightingConditions&   m_lighting_conditions;
-    const Spectrum&             m_white_spectrum;
 };
 
 //
@@ -265,11 +267,11 @@ class BerryMDF2
         const T              alpha_y) const OVERRIDE
     {
         const T alpha_x_2 = square(alpha_x);
-        const T a = T(1.0) - std::pow(alpha_x_2, T(1.0) - s[0]);
-        const T cos_theta = std::sqrt(a / (T(1.0) - alpha_x_2));
-        const T sin_theta  = std::sqrt(T(1.0) - square(cos_theta));
+        const T a = T(1.0) - pow(alpha_x_2, T(1.0) - s[0]);
+        const T cos_theta = sqrt(a / (T(1.0) - alpha_x_2));
+        const T sin_theta  = sqrt(T(1.0) - square(cos_theta));
         const T phi = T(TwoPi) * s[1];
-        return Vector<T, 3>::unit_vector(cos_theta, sin_theta, std::cos(phi), std::sin(phi));
+        return Vector<T, 3>::unit_vector(cos_theta, sin_theta, cos(phi), sin(phi));
     }
 
     virtual T do_eval_D(
@@ -279,7 +281,7 @@ class BerryMDF2
     {
         const T alpha_x_2 = square(alpha_x);
         const T cos_theta_2 = square(this->cos_theta(h));
-        const T a = (alpha_x_2 - T(1.0)) / (T(Pi) * std::log(alpha_x_2));
+        const T a = (alpha_x_2 - T(1.0)) / (T(Pi) * log(alpha_x_2));
         const T b = (T(1.0) / (T(1.0) + (alpha_x_2 - T(1.0)) * cos_theta_2));
         return a * b;
     }
@@ -309,7 +311,7 @@ class BerryMDF2
             return T(0.0);
 
         const T alpha_x_2 = square(alpha_x);
-        const T a = (alpha_x_2 - T(1.0)) / (T(Pi) * std::log(alpha_x_2));
+        const T a = (alpha_x_2 - T(1.0)) / (T(Pi) * log(alpha_x_2));
         const T b = (T(1.0) / (T(1.0) + (alpha_x_2 - T(1.0)) * this->cos_theta(h)));
         return a * b;
     }
@@ -344,12 +346,12 @@ DisneyBRDFImpl::DisneyBRDFImpl(
     m_inputs.declare("clearcoat_gloss", InputFormatScalar, "1.0");
 
     m_lighting_conditions = LightingConditions(
-                IlluminantCIED65, 
-                XYZCMFCIE196410Deg);
+        IlluminantCIED65, 
+        XYZCMFCIE196410Deg);
 
     linear_rgb_reflectance_to_spectrum(
-                Color3f(1.0f, 1.0f, 1.0f),
-                m_white_spectrum);
+        Color3f(1.0f, 1.0f, 1.0f),
+        m_white_spectrum);
 
     m_diffuse_brdf.reset(new DisneyDiffuseBRDF(m_lighting_conditions, m_white_spectrum));
     m_specular_mdf = new GGXMDF2<double>();
@@ -373,9 +375,9 @@ const char* DisneyBRDFImpl::get_model() const
 }
 
 bool DisneyBRDFImpl::on_frame_begin(
-    const Project&              project,
-    const Assembly&             assembly,
-    foundation::AbortSwitch*    abort_switch)
+    const Project&  project,
+    const Assembly& assembly,
+    AbortSwitch*    abort_switch)
 {
     if (!BSDF::on_frame_begin(project,assembly,abort_switch))
         return false;
@@ -463,7 +465,7 @@ BSDF::Mode DisneyBRDFImpl::sample(
     if (cos_on < 0.0)
         return Absorption;
 
-    MDF<double> *mdf = 0;
+    MDF<double>* mdf = 0;
     double alpha_x, alpha_y, alpha_g;
 
     if (s < weights[1])
@@ -700,9 +702,9 @@ void DisneyBRDFImpl::specular_roughness(
     double&                         alpha_y,
     double&                         alpha_g) const
 {
-    const double aspect = std::sqrt(1.0 - values->m_anisotropic * 0.9);
-    alpha_x = std::max(0.001, square(values->m_roughness) / aspect);
-    alpha_y = std::max(0.001, square(values->m_roughness) * aspect);
+    const double aspect = sqrt(1.0 - values->m_anisotropic * 0.9);
+    alpha_x = max(0.001, square(values->m_roughness) / aspect);
+    alpha_y = max(0.001, square(values->m_roughness) * aspect);
     alpha_g = square(values->m_roughness * 0.5 + 0.5);
 }
 
@@ -711,10 +713,10 @@ void DisneyBRDFImpl::specular_f(
     const double                    cos_oh,
     Spectrum&                       f) const
 {
-    mix_spectrums(m_white_spectrum, values->m_tint_color, values->m_specular_tint, f);
+    mix_spectra(m_white_spectrum, values->m_tint_color, values->m_specular_tint, f);
     f *= static_cast<float>(values->m_specular * 0.08);
-    mix_spectrums(f, values->m_base_color, values->m_metallic, f);
-    mix_spectrums(f, m_white_spectrum, schlick_fresnel(cos_oh), f);    
+    mix_spectra(f, values->m_base_color, values->m_metallic, f);
+    mix_spectra(f, m_white_spectrum, schlick_fresnel(cos_oh), f);    
 }
 
 double DisneyBRDFImpl::clearcoat_roughness(const DisneyBRDFInputValues* values) const
@@ -727,7 +729,7 @@ double DisneyBRDFImpl::clearcoat_f(const double clearcoat, const double cos_oh) 
     return mix(0.04, 1.0, schlick_fresnel(cos_oh)) * 0.25 * clearcoat;
 }
 
-foundation::LightingConditions DisneyBRDFImpl::m_lighting_conditions;
+LightingConditions DisneyBRDFImpl::m_lighting_conditions;
 Spectrum DisneyBRDFImpl::m_white_spectrum;
 
 //
