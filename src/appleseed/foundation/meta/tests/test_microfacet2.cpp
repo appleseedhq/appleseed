@@ -192,6 +192,46 @@ TEST_SUITE(Foundation_Math_Microfacet2)
         return integral;
     }
 
+    template <typename MDF, typename G>
+    double weak_white_furnace_test(
+        const MDF&      mdf,
+        const G&        g,
+        const double    theta_o,
+        const double    phi_o,
+        const double    alpha_x,
+        const double    alpha_y,
+        const double    angle_step)
+    {
+        const Vector3d v(Vector3d::unit_vector(theta_o, phi_o));
+        const double cos_thetha_o_4 = fabs(4.0 * v.y);
+        const double G1 = g.G1(v, alpha_x, alpha_y);
+
+        double integral = 0.0;
+        
+        for (double theta = 0; theta < Pi; theta += angle_step)
+        {
+            const double cos_theta = cos(theta);
+            const double sin_theta = sin(theta);
+
+            for (double phi = 0; phi < TwoPi; phi += angle_step)
+            {
+                const double cos_phi = cos(phi);
+                const double sin_phi = sin(phi);
+
+                const Vector3d l = Vector3d::unit_vector(cos_theta, sin_theta, cos_phi, sin_phi);
+                const Vector3d h = normalize(v + l);
+
+                if (h.y > 0.0)
+                {
+                    const double D = mdf.D(h, alpha_x, alpha_y);
+                    integral += sin_theta * D * G1 / cos_thetha_o_4;
+                }
+            }
+        }
+
+        return integral * square(angle_step);
+    }
+    
     //
     // Test settings.
     //
@@ -201,6 +241,8 @@ TEST_SUITE(Foundation_Math_Microfacet2)
     const size_t FunctionPlotSampleCount = 256;
     const size_t FunctionSamplingSampleCount = 64;
     const double IntegrationEps = 1.0e-3;
+    const double WeakWhiteFurnaceAngleStep = 0.05;
+    const double WeakWhiteFurnaceEps = 1.0e-2;
 
     //
     // Blinn-Phong MDF.
@@ -365,6 +407,24 @@ TEST_SUITE(Foundation_Math_Microfacet2)
 
         EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
     }
+    
+    TEST_CASE(BeckmannMDF2_Isotropic_SmithWeakWhiteFurnace)
+    {
+        const BeckmannSmithMaskingShadowing<double> g;
+        const BeckmannMDF2<double> mdf;
+    
+        const double integral = 
+            weak_white_furnace_test(
+                mdf,
+                g,
+                Pi / 7.0,
+                0,
+                0.25,
+                0.25,
+                WeakWhiteFurnaceAngleStep);
+
+        EXPECT_FEQ_EPS(1.0, integral, WeakWhiteFurnaceEps);
+    }
 
     //
     // GGX MDF.
@@ -494,5 +554,41 @@ TEST_SUITE(Foundation_Math_Microfacet2)
                 IntegrationSampleCount);
 
         EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
+    }
+
+    TEST_CASE(GGXMDF2_Isotropic_SmithWeakWhiteFurnace)
+    {
+        const GGXSmithMaskingShadowing<double> g;
+        const GGXMDF2<double> mdf;
+    
+        const double integral = 
+            weak_white_furnace_test(
+                mdf,
+                g,
+                Pi / 6.0,
+                Pi / 3.0,
+                0.35,
+                0.35,
+                WeakWhiteFurnaceAngleStep);
+
+        EXPECT_FEQ_EPS(1.0, integral, WeakWhiteFurnaceEps);
+    }
+    
+    TEST_CASE(GGXMDF2_Anisotropic_SmithWeakWhiteFurnace)
+    {
+        const GGXSmithMaskingShadowing<double> g;
+        const GGXMDF2<double> mdf;
+    
+        const double integral = 
+            weak_white_furnace_test(
+                mdf,
+                g,
+                Pi / 5.0,
+                Pi / 8.0,
+                0.25,
+                0.5,
+                0.05);
+
+        EXPECT_FEQ_EPS(1.0, integral, WeakWhiteFurnaceEps);
     }
 }
