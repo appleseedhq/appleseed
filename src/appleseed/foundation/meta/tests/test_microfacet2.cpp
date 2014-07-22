@@ -417,12 +417,12 @@ TEST_SUITE(Foundation_Math_Microfacet2)
 
         EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
     }
-    
+
     TEST_CASE(BeckmannMDF2_Isotropic_SmithWeakWhiteFurnace)
     {
         const BeckmannSmithMaskingShadowing<double> g;
         const BeckmannMDF2<double> mdf;
-    
+
         const double integral = 
             weak_white_furnace_test(
                 mdf,
@@ -597,7 +597,7 @@ TEST_SUITE(Foundation_Math_Microfacet2)
                 Pi / 8.0,
                 0.25,
                 0.5,
-                0.05);
+                WeakWhiteFurnaceAngleStep);
 
         EXPECT_FEQ_EPS(1.0, integral, WeakWhiteFurnaceEps);
     }
