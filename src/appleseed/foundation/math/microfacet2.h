@@ -306,7 +306,7 @@ class BeckmannSmithMaskingShadowing
         return G1(outgoing, alpha_x, alpha_y) * G1(incoming, alpha_x, alpha_y);
     }
 
-  private:
+    // G1 is used in microfacet2 unit tests, so it's public.    
     static T G1(
         const Vector<T, 3>&  v,
         const T              alpha_x,
@@ -425,8 +425,7 @@ class GGXSmithMaskingShadowing
         return G1(outgoing, alpha_x, alpha_y) * G1(incoming, alpha_x, alpha_y);
     }
 
-  protected:
-    // We want to inherit from this class later, so G1 is protected.
+    // G1 is used in microfacet2 unit tests, so it's public.
     static T G1(
         const Vector<T, 3>&  v,
         const T              alpha_x,
@@ -438,7 +437,7 @@ class GGXSmithMaskingShadowing
             return T(1.0);
 
         const T cos_theta_2 = square(cos_theta);
-        
+
         if (alpha_x != alpha_y)
         {
             // [2] page 15.
