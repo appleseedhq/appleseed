@@ -142,8 +142,8 @@ set (mainwindow_project_sources
     mainwindow/project/fixedmodelentityitem.h
     mainwindow/project/frameitem.cpp
     mainwindow/project/frameitem.h
-    mainwindow/project/icustomentityui.cpp
-    mainwindow/project/icustomentityui.h
+    mainwindow/project/customentityui.cpp
+    mainwindow/project/customentityui.h
     mainwindow/project/instancecollectionitem.h
     mainwindow/project/itembase.cpp
     mainwindow/project/itembase.h

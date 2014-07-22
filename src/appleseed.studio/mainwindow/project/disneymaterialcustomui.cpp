@@ -45,9 +45,6 @@
 #include <algorithm>
 #include <sstream>
 
-// Ui definition headers.
-#include "ui_expressioneditorwindow.h"
-
 // Qt headers.
 #include <QColorDialog>
 #include <QFileDialog>
@@ -88,12 +85,6 @@ DisneyMaterialCustomUI::DisneyMaterialCustomUI(
   , m_expression_editor_signal_mapper(new QSignalMapper(this))
   , m_line_edit_signal_mapper(new QSignalMapper(this))
 {
-
-}
-
-DisneyMaterialCustomUI::~DisneyMaterialCustomUI()
-{
-
 }
 
 void DisneyMaterialCustomUI::create_custom_widgets(
@@ -122,8 +113,9 @@ void DisneyMaterialCustomUI::create_custom_widgets(
 
     // New layer button.
     QIcon add_icon = QIcon(":/widgets/big_add.png");
-    QPushButton *add_layer_button = new QPushButton(add_icon, "   Add new layer");
-    add_layer_button->setObjectName("add_layer");
+    // Use blanks for spacing between icon and text, as there is no other option
+    QPushButton* add_layer_button = new QPushButton(add_icon, "   Add new layer");
+    add_layer_button->setObjectName("add_material_layer");
     m_form_layout->addWidget(add_layer_button);
     connect(add_layer_button, SIGNAL(clicked()), this, SLOT(slot_add_layer()));
 
@@ -135,7 +127,7 @@ void DisneyMaterialCustomUI::create_custom_widgets(
     {
         for (const_each<DictionaryDictionary> d = m_values.dictionaries(); d; ++d)
         {
-            size_t layer_number = d->value().get<size_t>("layer_number");
+            const size_t layer_number = d->value().get<size_t>("layer_number");
             if (layer_number == i)
                 add_layer(false, d->value());
         }
@@ -198,7 +190,8 @@ void DisneyMaterialCustomUI::slot_open_file_picker(const QString& widget_name)
     QFileDialog::Options options;
     QString selected_filter;
 
-    const QString file_picker_filter("PNG (*.png)");
+    // TODO: refactor file_picker_filter extensions
+    const QString file_picker_filter("OpenEXR (*.exr);;PNG (*.png)");
     QString filepath =
         QFileDialog::getOpenFileName(
             m_parent,
@@ -210,7 +203,7 @@ void DisneyMaterialCustomUI::slot_open_file_picker(const QString& widget_name)
 
     if (!filepath.isEmpty())
     {
-        QString native_path = QDir::toNativeSeparators(filepath);
+        const QString native_path = QDir::toNativeSeparators(filepath);
         widget_proxy->set(texture_to_expression(native_path));
     }
 }
@@ -250,8 +243,8 @@ void DisneyMaterialCustomUI::slot_line_edit_changed(const QString& widget_name)
 
     vector<string> widget_tokens;
     tokenize(widget_name.toStdString(), ";", widget_tokens);
-    string initial_layer_name = widget_tokens[0];
-    string parameter = widget_tokens[1];
+    const string initial_layer_name = widget_tokens[0];
+    const string parameter = widget_tokens[1];
     string layer_name = m_renames.get(initial_layer_name.c_str());
 
     // Handle layer rename.
@@ -260,30 +253,14 @@ void DisneyMaterialCustomUI::slot_line_edit_changed(const QString& widget_name)
         Dictionary old_layer_params = m_values.dictionary(layer_name);
         string new_layer_name = proxy->get();
         m_renames.insert(initial_layer_name, new_layer_name);
-        m_values.dictionaries().remove(layer_name.c_str());
+        m_values.dictionaries().remove(layer_name);
         m_values.insert(new_layer_name, old_layer_params);
         layer_name = new_layer_name;
-
-        // Debug info.
-        std::cout << "layer_renames ---- " << std::endl;
-        for (const_each<StringDictionary> i = m_renames.strings(); i; ++i)
-        {
-            std::cout << i->name() << " : " << i->value() << std::endl;
-        }
-        std::cout << "-------------------" << std::endl;
     }
 
     // Handle generic line edit change.
     Dictionary& layer_params = m_values.dictionary(layer_name);
     layer_params.insert(parameter, proxy->get());
-
-    // Debug info.
-    std::cout << "layer_name" <<  layer_name << "----" << std::endl;
-    for (const_each<StringDictionary> i = layer_params.strings(); i; ++i)
-    {
-        std::cout << i->name() << " : " << i->value() << std::endl;
-    }
-    std::cout << "--------------------------" << std::endl;
 
     emit_signal_custom_applied();
 }
@@ -331,7 +308,7 @@ void DisneyMaterialCustomUI::create_parameters_layout()
     m_form_layout->addWidget(m_group_widget);
 }
 
-void DisneyMaterialCustomUI::create_layer_layout(const std::string& layer_name)
+void DisneyMaterialCustomUI::create_layer_layout(const string& layer_name)
 {
     DisneyMaterialLayerUI* layer_widget = new DisneyMaterialLayerUI(layer_name, this, m_form_layout);
     m_group_layout = layer_widget->get_layout();
@@ -342,8 +319,7 @@ void DisneyMaterialCustomUI::create_layer_layout(const std::string& layer_name)
 
 string DisneyMaterialCustomUI::unique_layer_name()
 {
-    string layer_name = "layer" + to_string(++m_num_created_layers);
-    return layer_name;
+    return "layer" + to_string(++m_num_created_layers);
 }
 
 string DisneyMaterialCustomUI::texture_to_expression(const QString& expression)
@@ -354,20 +330,20 @@ string DisneyMaterialCustomUI::texture_to_expression(const QString& expression)
 }
 
 void DisneyMaterialCustomUI::create_text_input_widgets(
-    const Dictionary& parameters,
-    const string& group_name)
+    const Dictionary&   parameters,
+    const string&       group_name)
 {
     const string label_name = parameters.get<string>("label") + ":";
     const string parameter_name = parameters.get<string>("name");
     const string value = parameters.get<string>("default");
     m_line_edit = new LineEditForwarder(value.c_str(), m_group_widget);
 
-    string widget_name = group_name + ";" + parameter_name;
+    const QString name = QString::fromStdString(group_name + ";" + parameter_name);
     connect(m_line_edit, SIGNAL(signal_text_changed()), m_line_edit_signal_mapper, SLOT(map()));
-    m_line_edit_signal_mapper->setMapping(m_line_edit, QString::fromStdString(widget_name));
+    m_line_edit_signal_mapper->setMapping(m_line_edit, name);
 
     auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(m_line_edit));
-    m_widget_proxies.insert(widget_name, widget_proxy);
+    m_widget_proxies.insert(name.toStdString(), widget_proxy);
 
     QHBoxLayout* layout = new QHBoxLayout();
     layout->setSpacing(6);
@@ -377,8 +353,8 @@ void DisneyMaterialCustomUI::create_text_input_widgets(
 }
 
 void DisneyMaterialCustomUI::create_color_input_widgets(
-    const Dictionary& parameters,
-    const string& group_name)
+    const Dictionary&   parameters,
+    const string&       group_name)
 {
     const string label_name = parameters.get<string>("label") + ":";
     const string parameter_name = parameters.get<string>("name");
@@ -386,7 +362,7 @@ void DisneyMaterialCustomUI::create_color_input_widgets(
 
     m_line_edit = new LineEditForwarder(value.c_str(), m_group_widget);
 
-    QString name = QString::fromStdString(group_name + ";" + parameter_name);
+    const QString name = QString::fromStdString(group_name + ";" + parameter_name);
     QToolButton* picker_button = new QToolButton(m_group_widget);
     picker_button->setObjectName("ColorPicker");
     ColorPickerProxy picker_proxy(m_line_edit, picker_button);
@@ -416,8 +392,8 @@ void DisneyMaterialCustomUI::create_color_input_widgets(
 }
 
 void DisneyMaterialCustomUI::create_colormap_input_widgets(
-    const foundation::Dictionary& parameters,
-    const string& group_name)
+    const Dictionary&   parameters,
+    const string&       group_name)
 {
     const string label_name = parameters.get<string>("label") + ":";
     const string parameter_name = parameters.get<string>("name");
@@ -448,7 +424,7 @@ void DisneyMaterialCustomUI::create_colormap_input_widgets(
         m_line_edit, SIGNAL(editingFinished()),
         adaptor, SLOT(slot_apply_slider_value()));
 
-    QString name = QString::fromStdString(group_name + ";" + parameter_name);
+    const QString name = QString::fromStdString(group_name + ";" + parameter_name);
     m_texture_button = new QPushButton("Texture", m_group_widget);
     m_texture_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     m_expression_button = new QPushButton("Expression", m_group_widget);
@@ -466,7 +442,7 @@ void DisneyMaterialCustomUI::create_colormap_input_widgets(
     m_group_layout->addRow(QString::fromStdString(label_name), layout);
 }
 
-void DisneyMaterialCustomUI::add_layer(bool update, const Dictionary& parameters)
+void DisneyMaterialCustomUI::add_layer(const bool update, const Dictionary& parameters)
 {
     string layer_name = unique_layer_name();
     

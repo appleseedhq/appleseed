@@ -1,3 +1,4 @@
+
 //
 // This source file is part of appleseed.
 // Visit http://appleseedhq.net/ for additional information and resources.
@@ -33,13 +34,12 @@
 
 // Qt headers.
 #include <QFormLayout>
-#include <QVBoxLayout>
-#include <QWidget>
+#include <QStyle>
 #include <Qt>
 #include <QToolButton>
-#include <QStyle>
+#include <QVBoxLayout>
+#include <QWidget>
 
-#include <iostream>
 using namespace foundation;
 using namespace std;
 
@@ -57,7 +57,7 @@ DisneyMaterialLayerUI::DisneyMaterialLayerUI(
   , m_parent_layout(parent_layout)
   , m_is_folded(false)
 {
-    setObjectName("layer");
+    setObjectName("material_editor_layer");
 
     m_spacer = new QWidget();
     QHBoxLayout* spacer_layout = new QHBoxLayout(m_spacer);
@@ -110,19 +110,19 @@ DisneyMaterialLayerUI::DisneyMaterialLayerUI(
 
 void DisneyMaterialLayerUI::mousePressEvent(QMouseEvent* event)
 {
-    for (int i=1; i<m_parent_layout->count()-2; ++i)
+    for (int i = 1; i < m_parent_layout->count() - 2; ++i)
     {
         QLayoutItem* layout_item = m_parent_layout->itemAt(i);
         QWidget* widget = layout_item->widget();
-        if (widget->objectName() == "selected_layer")
+        if (widget->objectName() == "selected_material_editor_layer")
         {
-            widget->setObjectName("layer");
+            widget->setObjectName("material_editor_layer");
             style()->unpolish(widget);
             style()->polish(widget);
             break;
         }
     }
-    setObjectName("selected_layer");
+    setObjectName("selected_material_editor_layer");
     style()->unpolish(this);
     style()->polish(this);
 }
@@ -196,6 +196,30 @@ void DisneyMaterialLayerUI::slot_delete_layer()
     delete this;
 }
 
+void DisneyMaterialLayerUI::update_model(const int new_position, const int offset)
+{
+    if (new_position > 0)
+    {
+        string previous_layer_name, next_layer_name;
+        for (const_each<DictionaryDictionary> i = m_entity_editor->m_values.dictionaries(); i; ++i)
+        {
+            Dictionary& layer_params = m_entity_editor->m_values.dictionary(i->name());
+            size_t layer_number = layer_params.get<size_t>("layer_number");
+            if (layer_number == new_position - 1 + offset)
+                previous_layer_name = i->name();
+            else if (layer_number == new_position + offset)
+                next_layer_name = i->name();
+        }
+        m_entity_editor->m_values
+            .dictionary(previous_layer_name)
+            .insert("layer_number", new_position + offset);
+        m_entity_editor->m_values
+            .dictionary(next_layer_name)
+            .insert("layer_number", new_position - 1 + offset);
+        m_entity_editor->emit_signal_custom_applied();
+    }
+}
+
 void DisneyMaterialLayerUI::slot_move_layer_up()
 {
     int new_position = 0;
@@ -216,26 +240,7 @@ void DisneyMaterialLayerUI::slot_move_layer_up()
     }
 
     // Update model.
-    if (new_position > 0)
-    {
-        string previous_layer_name, current_layer_name;
-        for (const_each<DictionaryDictionary> i = m_entity_editor->m_values.dictionaries(); i; ++i)
-        {
-            Dictionary& layer_params = m_entity_editor->m_values.dictionary(i->name());
-            size_t layer_number = layer_params.get<size_t>("layer_number");
-            if (layer_number == new_position)
-                previous_layer_name = i->name();
-            else if (layer_number == new_position+1)
-                current_layer_name = i->name();
-        }
-        m_entity_editor->m_values
-            .dictionary(previous_layer_name)
-            .insert("layer_number", new_position+1);
-        m_entity_editor->m_values
-            .dictionary(current_layer_name)
-            .insert("layer_number", new_position);
-        m_entity_editor->emit_signal_custom_applied();
-    }
+    update_model(new_position, 1);
 }
 
 void DisneyMaterialLayerUI::slot_move_layer_down()
@@ -258,26 +263,7 @@ void DisneyMaterialLayerUI::slot_move_layer_down()
     }
 
     // Update model.
-    if (new_position > 0)
-    {
-        string next_layer_name, current_layer_name;
-        for (const_each<DictionaryDictionary> i = m_entity_editor->m_values.dictionaries(); i; ++i)
-        {
-            Dictionary& layer_params = m_entity_editor->m_values.dictionary(i->name());
-            size_t layer_number = layer_params.get<size_t>("layer_number");
-            if (layer_number == new_position-1)
-                current_layer_name = i->name();
-            else if (layer_number == new_position)
-                next_layer_name = i->name();
-        }
-        m_entity_editor->m_values
-            .dictionary(current_layer_name)
-            .insert("layer_number", new_position);
-        m_entity_editor->m_values
-            .dictionary(next_layer_name)
-            .insert("layer_number", new_position-1);
-        m_entity_editor->emit_signal_custom_applied();
-    }
+    update_model(new_position, 0);
 }
 
 void DisneyMaterialLayerUI::slot_fold()

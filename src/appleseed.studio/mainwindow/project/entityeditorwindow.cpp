@@ -55,7 +55,7 @@ EntityEditorWindow::EntityEditorWindow(
     const Project&                              project,
     auto_ptr<EntityEditor::IFormFactory>        form_factory,
     auto_ptr<EntityEditor::IEntityBrowser>      entity_browser,
-    auto_ptr<ICustomEntityUI>                   custom_entity_ui,
+    auto_ptr<CustomEntityUI>                    custom_entity_ui,
     const Dictionary&                           values)
   : QWidget(parent)
   , m_ui(new Ui::EntityEditorWindow())

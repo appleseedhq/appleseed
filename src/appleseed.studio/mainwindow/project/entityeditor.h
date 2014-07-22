@@ -31,7 +31,7 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYEDITOR_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/icustomentityui.h"
+#include "mainwindow/project/customentityui.h"
 #include "utility/inputwidgetproxies.h"
 
 // appleseed.foundation headers.
@@ -103,7 +103,7 @@ class EntityEditor
         const renderer::Project&            project,
         std::auto_ptr<IFormFactory>         form_factory,
         std::auto_ptr<IEntityBrowser>       entity_browser,
-        std::auto_ptr<ICustomEntityUI>      custom_ui,
+        std::auto_ptr<CustomEntityUI>       custom_ui,
         const foundation::Dictionary&       values = foundation::Dictionary());
 
     foundation::Dictionary get_values() const;
@@ -116,7 +116,7 @@ class EntityEditor
     const renderer::Project&                m_project;
     std::auto_ptr<IFormFactory>             m_form_factory;
     std::auto_ptr<IEntityBrowser>           m_entity_browser;
-    std::auto_ptr<ICustomEntityUI>          m_custom_ui;
+    std::auto_ptr<CustomEntityUI>           m_custom_ui;
 
     QVBoxLayout*                            m_top_layout;
     QFormLayout*                            m_form_layout;

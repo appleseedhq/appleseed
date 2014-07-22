@@ -26,13 +26,16 @@
 //
 
 // Interface header.
-#include "icustomentityui.h"
+#include "customentityui.h"
 
 namespace appleseed {
 namespace studio {
 
-// ICustomEntityUI implementation.
-void ICustomEntityUI::emit_signal_custom_applied()
+//
+// CustomEntityUI implementation.
+//
+
+void CustomEntityUI::emit_signal_custom_applied()
 {
     emit signal_custom_applied();
 }

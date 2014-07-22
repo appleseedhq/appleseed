@@ -1130,14 +1130,21 @@ QToolTip
     opacity: 200;
 }
 
-QWidget#layer
+QWidget#material_editor_layer
 {
     border: 1px solid SELECTED_BACKGROUND_COLOR;
 }
 
-QWidget#selected_layer
+QWidget#selected_material_editor_layer
 {
     border: 2px solid SELECTED_BACKGROUND_COLOR;
+}
+
+QPushButton#add_material_layer
+{
+    border-radius: 0px;
+    border: 1px solid SELECTED_BACKGROUND_COLOR;
+    height: 25px;
 }
 
 QWidget#seexpr_controls
@@ -1145,11 +1152,9 @@ QWidget#seexpr_controls
     border: 2px solid BORDER_COLOR;
 }
 
-QPushButton#add_layer
+QTextEdit#expression_editor
 {
-    border-radius: 0px;
-    border: 1px solid SELECTED_BACKGROUND_COLOR;
-    height: 25px;
+    background-color: INPUT_BACKGROUND_COLOR;
 }
 
 QLabel#error

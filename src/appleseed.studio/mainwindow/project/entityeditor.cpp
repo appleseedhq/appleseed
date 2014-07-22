@@ -87,7 +87,7 @@ EntityEditor::EntityEditor(
     const Project&                  project,
     auto_ptr<IFormFactory>          form_factory,
     auto_ptr<IEntityBrowser>        entity_browser,
-    auto_ptr<ICustomEntityUI>       custom_ui,
+    auto_ptr<CustomEntityUI>        custom_ui,
     const Dictionary&               values)
   : QObject(parent)
   , m_parent(parent)
@@ -144,8 +144,10 @@ void EntityEditor::create_connections()
         SLOT(slot_open_file_picker(const QString&)));
     
     if (m_custom_ui.get())
+    {
         connect(m_custom_ui.get(), SIGNAL(signal_custom_applied()),
             SLOT(slot_apply()));
+    }
 }
 
 void EntityEditor::rebuild_form(const Dictionary& values)

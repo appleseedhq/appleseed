@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -59,10 +59,10 @@ class FixedModelEntityItem
 {
   public:
     FixedModelEntityItem(
-        Entity*                                         entity,
-        ParentEntity&                                   parent,
-        CollectionItem*                                 collection_item,
-        ProjectBuilder&                                 project_builder);
+        Entity*             entity,
+        ParentEntity&       parent,
+        CollectionItem*     collection_item,
+        ProjectBuilder&     project_builder);
 
   protected:
     typedef EntityItem<Entity, ParentEntity, CollectionItem> Base;
@@ -114,7 +114,7 @@ void FixedModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit(Attri
         attribute_editor->edit(
             form_factory,
             entity_browser,
-            std::auto_ptr<ICustomEntityUI>(),
+            std::auto_ptr<CustomEntityUI>(),
             values,
             this,
             SLOT(slot_edit_accepted(foundation::Dictionary)));

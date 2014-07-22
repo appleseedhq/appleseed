@@ -29,22 +29,19 @@
 // Interface header.
 #include "expressioneditorwindow.h"
 
-// appleseed.foundation headers.
-#include "foundation/utility/foreach.h"
+// UI definition headers.
+#include "ui_expressioneditorwindow.h"
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+
+// appleseed.foundation headers.
+#include "foundation/utility/foreach.h"
 
 // SeExpr Editor headers.
 #include <SeExpression.h>
 #include <SeExprEditor/SeExprEditor.h>
 #include <SeExprEditor/SeExprEdControlCollection.h>
-
-// standard headers
-#include <vector>
-
-// Ui definition headers.
-#include "ui_expressioneditorwindow.h"
 
 // Qt headers.
 #include <QLabel>
@@ -55,6 +52,9 @@
 // boost headers.
 #include "boost/algorithm/string.hpp"
 #include "boost/algorithm/string/split.hpp"
+
+// Standard headers
+#include <vector>
 
 using namespace boost;
 using namespace foundation;
@@ -89,11 +89,11 @@ ExpressionEditorWindow::ExpressionEditorWindow(
     QLabel* label_editor = new QLabel("SeExpression:");
     root_layout->addWidget(label_editor);
     m_editor = new SeExprEditor(this, controls);
-    // setObjectName does not have effect on stylesheet
-    m_editor->setStyleSheet("background-color: rgb(30, 30, 30);");
+    QTextEdit* text_edit = m_editor->findChild<QTextEdit*>("");
+    text_edit->setObjectName("expression_editor");
     m_editor->setExpr(expression, true);
     root_layout->addWidget(m_editor);
-
+ 
     m_error = new QLabel("SeExpression has errors. View log for details.");
     m_error->setObjectName("error");
     m_error->hide();
@@ -120,10 +120,10 @@ void ExpressionEditorWindow::apply_expression()
         vector<string> errors;
         split(errors, error, is_any_of("\n"));
 
-        RENDERER_LOG_INFO("SeExpression has errors.");
+        RENDERER_LOG_ERROR("SeExpression has errors.");
         for (const_each<vector<string> > e = errors; e; ++e)
         {
-            if (*e != "")
+            if (!e->empty())
                 RENDERER_LOG_ERROR("%s", e->c_str());
         }
     }

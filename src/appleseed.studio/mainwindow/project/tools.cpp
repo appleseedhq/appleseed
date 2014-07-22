@@ -74,17 +74,17 @@ string get_entity_name_dialog(
 }
 
 void open_entity_editor(
-    QWidget*                                        parent,
-    const std::string&                              window_title,
-    const renderer::Project&                        project,
-    std::auto_ptr<EntityEditor::IFormFactory>       form_factory,
-    std::auto_ptr<EntityEditor::IEntityBrowser>     entity_browser,
-    std::auto_ptr<ICustomEntityUI>                  custom_entity_ui,
-    const foundation::Dictionary&                   values,
-    QObject*                                        receiver,
-    const char*                                     slot_apply,
-    const char*                                     slot_accept,
-    const char*                                     slot_cancel)
+    QWidget*                                parent,
+    const string&                           window_title,
+    const Project&                          project,
+    auto_ptr<EntityEditor::IFormFactory>    form_factory,
+    auto_ptr<EntityEditor::IEntityBrowser>  entity_browser,
+    auto_ptr<CustomEntityUI>                custom_entity_ui,
+    const Dictionary&                       values,
+    QObject*                                receiver,
+    const char*                             slot_apply,
+    const char*                             slot_accept,
+    const char*                             slot_cancel)
 {
     EntityEditorWindow* editor_window =
         new EntityEditorWindow(
@@ -130,7 +130,7 @@ void open_entity_editor(
         project,
         form_factory,
         entity_browser,
-        auto_ptr<ICustomEntityUI>(),
+        auto_ptr<CustomEntityUI>(),
         values,
         receiver,
         slot_apply,
@@ -155,7 +155,7 @@ void open_entity_editor(
         project,
         form_factory,
         entity_browser,
-        auto_ptr<ICustomEntityUI>(),
+        auto_ptr<CustomEntityUI>(),
         Dictionary(),
         receiver,
         slot_apply,

@@ -57,7 +57,7 @@ namespace appleseed {
 namespace studio {
 
 class DisneyMaterialCustomUI
-  : public ICustomEntityUI
+  : public CustomEntityUI
 {
     Q_OBJECT
 
@@ -65,8 +65,6 @@ class DisneyMaterialCustomUI
     DisneyMaterialCustomUI(
         const renderer::Project&            project,
         foundation::DictionaryArray         layer_metadata);
-
-    virtual ~DisneyMaterialCustomUI();
 
     virtual void  create_custom_widgets(
         QVBoxLayout*                    layout,
@@ -98,9 +96,9 @@ class DisneyMaterialCustomUI
     void create_color_input_widgets(const foundation::Dictionary& parameters, const std::string& group_name);
     void create_colormap_input_widgets(const foundation::Dictionary& parameters, const std::string& group_name);
 
-    void add_layer(bool update, const foundation::Dictionary& parameters = foundation::Dictionary());
+    void add_layer(const bool update, const foundation::Dictionary& parameters = foundation::Dictionary());
 
-    std::vector<QWidget*> m_layers_widgets;
+    std::vector<QWidget*>           m_layers_widgets;
 
     QWidget*                        m_parent;
     const renderer::Project&        m_project;

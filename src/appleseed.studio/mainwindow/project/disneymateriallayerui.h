@@ -1,3 +1,4 @@
+
 //
 // This source file is part of appleseed.
 // Visit http://appleseedhq.net/ for additional information and resources.
@@ -65,6 +66,7 @@ class DisneyMaterialLayerUI
     QFormLayout* get_layout();
 
   private:
+    void update_model(const int new_position, const int offset);
     void fold_layer();
 
   private slots:
@@ -74,7 +76,7 @@ class DisneyMaterialLayerUI
     void slot_fold();
 
   private:
-    std::string                 m_layer_name;
+    const std::string           m_layer_name;
     DisneyMaterialCustomUI*     m_entity_editor;
 
     QFormLayout*                m_inner_layout;

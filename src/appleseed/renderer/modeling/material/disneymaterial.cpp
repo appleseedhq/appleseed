@@ -29,14 +29,14 @@
 // Interface header.
 #include "disneymaterial.h"
 
+// appleseed.renderer headers.
+#include "renderer/modeling/input/expression.h"
+
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
 
-// appleseed.renderer headers.
-#include "renderer/modeling/input/expression.h"
-
-// standard headers
+// Standard headers.
 #include <algorithm>
 #include <vector>
 

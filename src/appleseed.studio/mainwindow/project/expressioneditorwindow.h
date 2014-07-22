@@ -29,13 +29,13 @@
 #ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_EXPRESSIONEDITORWINDOW_H
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_EXPRESSIONEDITORWINDOW_H
 
-// standard headers.
-#include <string>
-
 // Qt headers.
 #include <QObject>
 #include <QString>
 #include <QWidget>
+
+// Standard headers.
+#include <string>
 
 // Forward declarations.
 class SeExprEditor;

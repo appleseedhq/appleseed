@@ -1,3 +1,4 @@
+
 //
 // This source file is part of appleseed.
 // Visit http://appleseedhq.net/ for additional information and resources.
@@ -26,8 +27,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ICUSTOMENTITYUI_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ICUSTOMENTITYUI_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_CUSTOMENTITYUI_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_CUSTOMENTITYUI_H
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
@@ -41,7 +42,7 @@ class QVBoxLayout;
 namespace appleseed {
 namespace studio {
 
-class ICustomEntityUI
+class CustomEntityUI
   : public QObject
 {
     Q_OBJECT
@@ -63,4 +64,4 @@ class ICustomEntityUI
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ICUSTOMENTITYUI_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_CUSTOMENTITYUI_H

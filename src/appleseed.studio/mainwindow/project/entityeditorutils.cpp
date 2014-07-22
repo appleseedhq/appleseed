@@ -40,6 +40,7 @@ namespace studio {
 //
 // LineEditDoubleSliderAdaptor class implementation
 //
+
 LineEditDoubleSliderAdaptor::LineEditDoubleSliderAdaptor(
     QLineEdit* line_edit,
     DoubleSlider* slider)

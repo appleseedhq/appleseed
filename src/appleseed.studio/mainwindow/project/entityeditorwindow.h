@@ -63,7 +63,7 @@ class EntityEditorWindow
         const renderer::Project&                        project,
         std::auto_ptr<EntityEditor::IFormFactory>       form_factory,
         std::auto_ptr<EntityEditor::IEntityBrowser>     entity_browser,
-        std::auto_ptr<ICustomEntityUI>                  custom_entity_ui,
+        std::auto_ptr<CustomEntityUI>                   custom_entity_ui,
         const foundation::Dictionary&                   values = foundation::Dictionary());
 
     ~EntityEditorWindow();

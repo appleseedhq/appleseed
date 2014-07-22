@@ -46,10 +46,14 @@
 #include "mainwindow/project/materialitem.h"
 
 // Standard headers.
+#include <cassert>
+#include <memory>
+#include <string>
 #include <string.h>
 
 using namespace foundation;
 using namespace renderer;
+using namespace std;
 
 namespace appleseed {
 namespace studio {
@@ -119,35 +123,35 @@ void MaterialCollectionItem::slot_create_osl()
 
 void MaterialCollectionItem::do_create_material(const char* model)
 {
-    typedef typename renderer::EntityTraits<Material> EntityTraits;
+    typedef EntityTraits<Material> EntityTraits;
 
-    const std::string window_title =
-        std::string("Create ") +
+    const string window_title =
+        string("Create ") +
         EntityTraits::get_human_readable_entity_type_name();
 
-    const std::string name_suggestion =
+    const string name_suggestion =
         get_name_suggestion(
             EntityTraits::get_entity_type_name(),
             EntityTraits::get_entity_container(Base::m_parent));
 
-    typedef typename EntityTraits::FactoryRegistrarType FactoryRegistrarType;
+    typedef EntityTraits::FactoryRegistrarType FactoryRegistrarType;
 
-    std::auto_ptr<EntityEditor::IFormFactory> form_factory(
+    auto_ptr<EntityEditor::IFormFactory> form_factory(
         new FixedModelEntityEditorFormFactory<FactoryRegistrarType>(
             Base::m_project_builder.get_factory_registrar<Material>(),
             name_suggestion,
             model));
 
-    std::auto_ptr<EntityEditor::IEntityBrowser> entity_browser(
+    auto_ptr<EntityEditor::IEntityBrowser> entity_browser(
         new EntityBrowser<Assembly>(Base::m_parent));
 
-    std::auto_ptr<ICustomEntityUI> custom_entity_ui;
+    auto_ptr<CustomEntityUI> custom_entity_ui;
     Dictionary values;
 
 #ifdef WITH_DISNEY_MATERIAL
     if (strcmp(model, "disney_material") == 0)
     {
-        custom_entity_ui = std::auto_ptr<ICustomEntityUI>(
+        custom_entity_ui = auto_ptr<CustomEntityUI>(
             new DisneyMaterialCustomUI(
                 Base::m_project_builder.get_project(),
                 DisneyMaterialLayer::get_input_metadata()));

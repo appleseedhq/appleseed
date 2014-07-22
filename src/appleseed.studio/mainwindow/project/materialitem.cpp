@@ -48,33 +48,31 @@ namespace appleseed {
 namespace studio {
 
 MaterialItem::MaterialItem(
-    Material*         entity,
-    Assembly&         parent,
+    Material*                   entity,
+    Assembly&                   parent,
     MaterialCollectionItem*     collection_item,
     ProjectBuilder&             project_builder)
-
   : FixedModelEntityItem<Material, Assembly, MaterialCollectionItem>(entity, parent, collection_item, project_builder)
 {
-
 }
 
 void MaterialItem::slot_edit(AttributeEditor* attribute_editor)
 {
-    std::auto_ptr<EntityEditor::IFormFactory> form_factory(
+    auto_ptr<EntityEditor::IFormFactory> form_factory(
         new FixedModelEntityEditorFormFactoryType(
             m_project_builder.get_factory_registrar<Material>(),
             m_entity->get_name(),
             m_entity->get_model()));
 
-    std::auto_ptr<EntityEditor::IEntityBrowser> entity_browser(
+    auto_ptr<EntityEditor::IEntityBrowser> entity_browser(
         new EntityBrowser<Assembly>(m_parent));
 
-    std::auto_ptr<ICustomEntityUI> custom_entity_ui;
+    auto_ptr<CustomEntityUI> custom_entity_ui;
 
 #ifdef WITH_DISNEY_MATERIAL
     if (strcmp(m_entity->get_model(), "disney_material") == 0)
     {
-        custom_entity_ui = std::auto_ptr<ICustomEntityUI>(
+        custom_entity_ui = std::auto_ptr<CustomEntityUI>(
             new DisneyMaterialCustomUI(
                 Base::m_project_builder.get_project(),
                 DisneyMaterialLayer::get_input_metadata()));

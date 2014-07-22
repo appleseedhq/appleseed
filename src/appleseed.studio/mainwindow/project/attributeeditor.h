@@ -61,7 +61,7 @@ class AttributeEditor
     void edit(
         std::auto_ptr<EntityEditor::IFormFactory>       form_factory,
         std::auto_ptr<EntityEditor::IEntityBrowser>     entity_browser,
-        std::auto_ptr<ICustomEntityUI>                  custom_ui,
+        std::auto_ptr<CustomEntityUI>                   custom_ui,
         const foundation::Dictionary&                   values,
         QObject*                                        receiver,
         const char*                                     slot_apply);

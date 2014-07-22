@@ -111,7 +111,7 @@ void SingleModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit(Attr
         attribute_editor->edit(
             form_factory,
             entity_browser,
-            std::auto_ptr<ICustomEntityUI>(),
+            std::auto_ptr<CustomEntityUI>(),
             values,
             this,
             SLOT(slot_edit_accepted(foundation::Dictionary)));

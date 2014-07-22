@@ -1196,7 +1196,7 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/microfacetbrdf.h
     renderer/modeling/bsdf/microfacet2brdf.cpp
     renderer/modeling/bsdf/microfacet2brdf.h
-	renderer/modeling/bsdf/nullbsdf.h
+    renderer/modeling/bsdf/nullbsdf.h
     renderer/modeling/bsdf/orennayarbrdf.cpp
     renderer/modeling/bsdf/orennayarbrdf.h       
     renderer/modeling/bsdf/specularbrdf.cpp
@@ -1386,7 +1386,6 @@ endif ()
 list (APPEND appleseed_sources
     ${renderer_modeling_input_sources}
 )
-
 source_group ("renderer\\modeling\\input" FILES
     ${renderer_modeling_input_sources}
 )
