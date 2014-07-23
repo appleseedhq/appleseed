@@ -143,8 +143,10 @@ MasterRenderer::~MasterRenderer()
     delete m_serial_tile_callback_factory;
     delete m_serial_renderer_controller;
 
+#ifdef WITH_OSL
     if (m_texture_system)
         OIIO::TextureSystem::destroy(m_texture_system, true);
+#endif
 }
 
 ParamArray& MasterRenderer::get_parameters()
