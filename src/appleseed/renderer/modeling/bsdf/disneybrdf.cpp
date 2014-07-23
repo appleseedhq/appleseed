@@ -567,7 +567,7 @@ class DisneyBRDFImpl
     
         if (!(modes & Glossy))
             return pdf;
-    
+
         const Vector3d h = normalize(incoming + outgoing);
         const Vector3d m = shading_basis.transform_to_local(h);
         const Vector3d wi = shading_basis.transform_to_local(incoming);
