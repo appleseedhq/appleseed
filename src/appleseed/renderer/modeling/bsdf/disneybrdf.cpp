@@ -517,7 +517,7 @@ class DisneyBRDFImpl
         if (s < weights[1])
             specular_f(values, cos_oh, value);
         else
-            value.set(clearcoat_f(values->m_clearcoat, cos_oh));
+            value.set(static_cast<float>(clearcoat_f(values->m_clearcoat, cos_oh)));
     
         value *= static_cast<float>((D * G) / (4.0 * cos_on * cos_in));
         probability = mdf->pdf(m, alpha_x, alpha_y) / (4.0 * cos_oh);
@@ -728,10 +728,10 @@ class DisneyBRDFImpl
         const double                    cos_oh,
         Spectrum&                       f) const
     {
-        mix_spectra(m_white_spectrum, values->m_tint_color, values->m_specular_tint, f);
+        mix_spectra(m_white_spectrum, values->m_tint_color, static_cast<float>(values->m_specular_tint), f);
         f *= static_cast<float>(values->m_specular * 0.08);
-        mix_spectra(f, values->m_base_color, values->m_metallic, f);
-        mix_spectra(f, m_white_spectrum, schlick_fresnel(cos_oh), f);    
+        mix_spectra(f, values->m_base_color, static_cast<float>(values->m_metallic), f);
+        mix_spectra(f, m_white_spectrum, static_cast<float>(schlick_fresnel(cos_oh)), f);    
     }
 
     double clearcoat_roughness(const DisneyBRDFInputValues* values) const
