@@ -155,7 +155,7 @@ void ObjectItem::slot_instantiate()
     }
 }
 
-void ObjectItem::do_instantiate(const std::string& name)
+void ObjectItem::do_instantiate(const string& name)
 {
     auto_release_ptr<ObjectInstance> object_instance(
         ObjectInstanceFactory::create(
@@ -172,7 +172,7 @@ void ObjectItem::do_instantiate(const std::string& name)
     m_project_builder.notify_project_modification();
 }
 
-void ObjectItem::schedule_instantiate(const std::string& name)
+void ObjectItem::schedule_instantiate(const string& name)
 {
     m_project_builder.get_rendering_manager().push_delayed_action(
         auto_ptr<RenderingManager::IDelayedAction>(

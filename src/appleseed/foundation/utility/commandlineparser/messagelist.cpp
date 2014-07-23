@@ -54,10 +54,10 @@ struct MessageList::Impl
     struct Message
     {
         LogMessage::Category    m_category;
-        std::string             m_text;
+        string                  m_text;
     };
 
-    typedef std::vector<Message> Messages;
+    typedef vector<Message> Messages;
 
     Messages    m_messages;
 };

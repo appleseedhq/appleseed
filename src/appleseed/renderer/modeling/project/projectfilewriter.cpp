@@ -842,7 +842,7 @@ namespace
             XMLElement element("search_path", m_file, m_indenter);
             element.write(true);
 
-            std::fprintf(m_file, "%s%s\n", m_indenter.c_str(), search_path);
+            fprintf(m_file, "%s%s\n", m_indenter.c_str(), search_path);
         }
 
         // Write a <search_paths> element.

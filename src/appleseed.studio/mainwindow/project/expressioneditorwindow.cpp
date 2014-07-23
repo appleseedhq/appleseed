@@ -53,7 +53,7 @@
 #include "boost/algorithm/string.hpp"
 #include "boost/algorithm/string/split.hpp"
 
-// Standard headers
+// Standard headers.
 #include <vector>
 
 using namespace boost;

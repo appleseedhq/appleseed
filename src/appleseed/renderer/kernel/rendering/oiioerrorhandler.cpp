@@ -61,6 +61,7 @@ void OIIOErrorHandler::operator()(int errcode, const std::string& msg)
 
       default:
         RENDERER_LOG_INFO("%s", msg.c_str());
+        break;
     }
 }
 

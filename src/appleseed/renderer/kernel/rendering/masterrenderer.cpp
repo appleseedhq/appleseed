@@ -271,7 +271,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     // Set the texture system mem limit.
     m_texture_system->attribute("max_memory_MB", static_cast<float>(m_texture_cache_size / 1024));
 
-    std::string search_paths;
+    string search_paths;
 
     // Skip search paths for builtin projects.
     if (m_project.search_paths().has_root_path())

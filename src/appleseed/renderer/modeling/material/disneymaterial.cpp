@@ -324,7 +324,6 @@ bool DisneyMaterial::on_frame_begin(
     return true;
 }
 
-// This method is called once after rendering each frame.
 void DisneyMaterial::on_frame_end(
     const Project&  project,
     const Assembly& assembly) OVERRIDE
@@ -333,7 +332,7 @@ void DisneyMaterial::on_frame_end(
     Material::on_frame_end(project, assembly);
 }
 
-std::size_t DisneyMaterial::get_layer_count() const
+size_t DisneyMaterial::get_layer_count() const
 {
     return impl->m_layers.size();
 }
@@ -344,6 +343,7 @@ const DisneyMaterialLayer& DisneyMaterial::get_layer(const size_t index) const
 
     return impl->m_layers[index];
 }
+
 
 //
 // DisneyMaterialFactory class implementation.

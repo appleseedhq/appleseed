@@ -47,9 +47,9 @@
 
 // Standard headers.
 #include <cassert>
+#include <cstring>
 #include <memory>
 #include <string>
-#include <string.h>
 
 using namespace foundation;
 using namespace renderer;

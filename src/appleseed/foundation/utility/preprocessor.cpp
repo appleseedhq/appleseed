@@ -375,7 +375,7 @@ struct Preprocessor::Impl
     {
         string::size_type pos = line.find(old_string);
 
-        while (pos != std::string::npos)
+        while (pos != string::npos)
         {
             if (is_surrounded_by_separators(line, pos, pos + old_string.size()))
                 line.replace(pos, old_string.size(), new_string);

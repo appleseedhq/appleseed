@@ -241,7 +241,7 @@ void AssemblyItem::slot_instantiate()
     }
 }
 
-void AssemblyItem::do_instantiate(const std::string& name)
+void AssemblyItem::do_instantiate(const string& name)
 {
     auto_release_ptr<AssemblyInstance> assembly_instance(
         AssemblyInstanceFactory::create(
@@ -256,11 +256,11 @@ void AssemblyItem::do_instantiate(const std::string& name)
     m_project_builder.notify_project_modification();
 }
 
-void AssemblyItem::schedule_instantiate(const std::string& name)
+void AssemblyItem::schedule_instantiate(const string& name)
 {
     m_project_builder.get_rendering_manager().push_delayed_action(
-            std::auto_ptr<RenderingManager::IDelayedAction>(
-                new EntityInstantiationDelayedAction<AssemblyItem>(this, name)));
+        auto_ptr<RenderingManager::IDelayedAction>(
+            new EntityInstantiationDelayedAction<AssemblyItem>(this, name)));
 
     m_project_builder.get_rendering_manager().reinitialize_rendering();
 }
