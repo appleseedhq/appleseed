@@ -114,7 +114,7 @@ MasterRenderer::MasterRenderer(
   , m_serial_renderer_controller(0)
   , m_serial_tile_callback_factory(0)
 #ifdef WITH_OSL
-  , m_texture_cache_size(0)
+  , m_texture_system(0)
 #endif
 {
 }
@@ -130,6 +130,9 @@ MasterRenderer::MasterRenderer(
   , m_abort_switch(abort_switch)
   , m_serial_renderer_controller(new SerialRendererController(renderer_controller, tile_callback))
   , m_serial_tile_callback_factory(new SerialTileCallbackFactory(m_serial_renderer_controller))
+#ifdef WITH_OSL
+  , m_texture_system(0)
+#endif
 {
     m_renderer_controller = m_serial_renderer_controller;
     m_tile_callback_factory = m_serial_tile_callback_factory;
@@ -139,6 +142,11 @@ MasterRenderer::~MasterRenderer()
 {
     delete m_serial_tile_callback_factory;
     delete m_serial_renderer_controller;
+
+#ifdef WITH_OSL
+    if (m_texture_system)
+        OIIO::TextureSystem::destroy(m_texture_system, true);
+#endif
 }
 
 ParamArray& MasterRenderer::get_parameters()
@@ -250,26 +258,13 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     error_handler.verbosity(OIIO::ErrorHandler::VERBOSE);
 #endif
 
+    if (!m_texture_system)
+        m_texture_system = OIIO::TextureSystem::create(true);
+
     const size_t texture_cache_size =
         m_params.get_optional<size_t>("texture_cache_size",  256 * 1024 * 1024);
 
-    // If the texture cache size changes, we have to recreate the texture system.
-    if (texture_cache_size != m_texture_cache_size)
-    {
-        m_texture_cache_size = texture_cache_size;
-        m_texture_system.reset();
-    }
-
-    // Create the OIIO texture system, if needed.
-    if (!m_texture_system)
-    {
-        m_texture_system.reset(
-            OIIO::TextureSystem::create(false),
-            bind(&OIIO::TextureSystem::destroy, _1));
-    }
-
-    // Set the texture system mem limit.
-    m_texture_system->attribute("max_memory_MB", static_cast<float>(m_texture_cache_size / 1024));
+    m_texture_system->attribute("max_memory_MB", static_cast<float>(texture_cache_size / 1024));
 
     string search_paths;
 
@@ -302,8 +297,13 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     if (!search_paths.empty())
         m_texture_system->attribute("searchpath", search_paths);
 
-    // TODO: set other texture system options here.
-
+    // Set other texture system options here.    
+    m_texture_system->attribute("automip", 0);
+    m_texture_system->attribute("accept_untiled", 1);
+    m_texture_system->attribute("accept_unmipped", 1);
+    m_texture_system->attribute("gray_to_rgb", 1);
+    m_texture_system->attribute("latlong_up", "y");
+    
     // Create our renderer services.
     RendererServices services(m_project, *m_texture_system);
 
@@ -311,9 +311,9 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     boost::shared_ptr<OSL::ShadingSystem> shading_system(
         OSL::ShadingSystem::create(
             &services,
-            m_texture_system.get(),
+            m_texture_system,
             &error_handler),
-            bind(&destroy_osl_shading_system, _1, m_texture_system.get()));
+            bind(&destroy_osl_shading_system, _1, m_texture_system));
 
     if (!search_paths.empty())
         shading_system->attribute("searchpath:shader", search_paths);
