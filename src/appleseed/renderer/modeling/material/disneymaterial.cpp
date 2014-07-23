@@ -301,6 +301,7 @@ bool DisneyMaterial::on_frame_begin(
     if (!Material::on_frame_begin(project, assembly, abort_switch))
         return false;
 
+    /*
     try
     {
         for (const_each<DictionaryDictionary> it = m_params.dictionaries(); it; ++it)
@@ -320,6 +321,7 @@ bool DisneyMaterial::on_frame_begin(
         if (!it->check_expressions_syntax())
             return false;
     }
+    */
 
     return true;
 }
