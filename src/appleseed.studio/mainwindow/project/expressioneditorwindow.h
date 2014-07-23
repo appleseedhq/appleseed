@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014 Marius Avram, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,52 +26,54 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ATTRIBUTEEDITOR_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ATTRIBUTEEDITOR_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_EXPRESSIONEDITORWINDOW_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_EXPRESSIONEDITORWINDOW_H
 
-// appleseed.studio headers.
-#include "mainwindow/project/entityeditor.h"
-
-// appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
+// Qt headers.
+#include <QObject>
+#include <QString>
+#include <QWidget>
 
 // Standard headers.
-#include <memory>
+#include <string>
 
 // Forward declarations.
-namespace foundation    { class Dictionary; }
-namespace renderer      { class Project; }
-class QObject;
-class QWidget;
+class SeExprEditor;
+namespace Ui { class ExpressionEditorWindow; }
+class QLabel;
 
 namespace appleseed {
 namespace studio {
 
-class AttributeEditor
-  : public foundation::NonCopyable
+class ExpressionEditorWindow
+  : public QWidget
 {
+    Q_OBJECT
+
   public:
-    AttributeEditor(
-        QWidget*                parent,
-        renderer::Project&      project);
+    ExpressionEditorWindow(
+        const QString& widget_name,
+        const std::string& expression,
+        QWidget* parent = 0);
 
-    void clear();
+    void apply_expression();
 
-    void edit(
-        std::auto_ptr<EntityEditor::IFormFactory>       form_factory,
-        std::auto_ptr<EntityEditor::IEntityBrowser>     entity_browser,
-        std::auto_ptr<CustomEntityUI>                   custom_ui,
-        const foundation::Dictionary&                   values,
-        QObject*                                        receiver,
-        const char*                                     slot_apply);
+  public slots:
+    void slot_accept();
+    void slot_apply();
+    void slot_cancel();
+
+  signals:
+    void signal_expression_applied(const QString& widget_name, const QString& expression);
 
   private:
-    QWidget*                    m_parent;
-    renderer::Project&          m_project;
-    std::auto_ptr<EntityEditor> m_entity_editor;
+    Ui::ExpressionEditorWindow*     m_ui;
+    const QString                   m_widget_name;
+    SeExprEditor*                   m_editor;
+    QLabel*                         m_error;
 };
 
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ATTRIBUTEEDITOR_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_EXPRESSIONEDITORWINDOW_H

@@ -64,14 +64,14 @@ class FixedModelEntityItem
         CollectionItem*     collection_item,
         ProjectBuilder&     project_builder);
 
-  private:
+  protected:
     typedef EntityItem<Entity, ParentEntity, CollectionItem> Base;
     typedef typename renderer::EntityTraits<Entity> EntityTraitsType;
 
     typedef FixedModelEntityEditorFormFactory<
         typename EntityTraitsType::FactoryRegistrarType
     > FixedModelEntityEditorFormFactoryType;
-
+  private:
     virtual void slot_edit(AttributeEditor* attribute_editor) OVERRIDE;
 };
 
@@ -82,10 +82,11 @@ class FixedModelEntityItem
 
 template <typename Entity, typename ParentEntity, typename CollectionItem>
 FixedModelEntityItem<Entity, ParentEntity, CollectionItem>::FixedModelEntityItem(
-    Entity*                 entity,
-    ParentEntity&           parent,
-    CollectionItem*         collection_item,
-    ProjectBuilder&         project_builder)
+    Entity*                                         entity,
+    ParentEntity&                                   parent,
+    CollectionItem*                                 collection_item,
+    ProjectBuilder&                                 project_builder)
+
   : Base(entity, parent, collection_item, project_builder)
 {
 }
@@ -113,6 +114,7 @@ void FixedModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit(Attri
         attribute_editor->edit(
             form_factory,
             entity_browser,
+            std::auto_ptr<CustomEntityUI>(),
             values,
             this,
             SLOT(slot_edit_accepted(foundation::Dictionary)));

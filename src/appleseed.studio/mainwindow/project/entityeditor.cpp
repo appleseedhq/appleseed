@@ -87,7 +87,7 @@ EntityEditor::EntityEditor(
     const Project&                  project,
     auto_ptr<IFormFactory>          form_factory,
     auto_ptr<IEntityBrowser>        entity_browser,
-    std::auto_ptr<ICustomEntityUI>  custom_ui,
+    auto_ptr<CustomEntityUI>        custom_ui,
     const Dictionary&               values)
   : QObject(parent)
   , m_parent(parent)
@@ -102,7 +102,7 @@ EntityEditor::EntityEditor(
     assert(m_parent->layout() == 0);
 
     m_top_layout = new QVBoxLayout(m_parent);
-    m_top_layout->setMargin(0);
+    m_top_layout->setMargin(7);
     
     create_form_layout();
     create_connections();
@@ -111,10 +111,11 @@ EntityEditor::EntityEditor(
 
 Dictionary EntityEditor::get_values() const
 {
-    Dictionary values(m_widget_proxies.get_values());
-
+    Dictionary values;
     if (m_custom_ui.get())
-        values.merge(m_custom_ui->get_values());
+        values = m_custom_ui->get_values();
+
+    values.merge(m_widget_proxies.get_values());
 
     return values;
 }
@@ -141,6 +142,12 @@ void EntityEditor::create_connections()
     connect(
         m_file_picker_signal_mapper, SIGNAL(mapped(const QString&)),
         SLOT(slot_open_file_picker(const QString&)));
+    
+    if (m_custom_ui.get())
+    {
+        connect(m_custom_ui.get(), SIGNAL(signal_custom_applied()),
+            SLOT(slot_apply()));
+    }
 }
 
 void EntityEditor::rebuild_form(const Dictionary& values)
@@ -158,7 +165,9 @@ void EntityEditor::rebuild_form(const Dictionary& values)
         create_input_widgets(*i);
     
     if (m_custom_ui.get())
+    {
         m_custom_ui->create_custom_widgets(m_top_layout, values);
+    }
 }
 
 Dictionary EntityEditor::get_input_metadata(const string& name) const
@@ -553,9 +562,9 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_file_input_widgets(const Dictio
 
 void EntityEditor::slot_rebuild_form()
 {
-    rebuild_form(m_widget_proxies.get_values());
+    rebuild_form(get_values());
 
-    emit signal_applied(m_widget_proxies.get_values());
+    emit signal_applied(get_values());
 }
 
 namespace
@@ -726,7 +735,7 @@ void EntityEditor::slot_open_file_picker(const QString& widget_name)
 
 void EntityEditor::slot_apply()
 {
-    emit signal_applied(m_widget_proxies.get_values());
+    emit signal_applied(get_values());
 }
 
 }   // namespace studio

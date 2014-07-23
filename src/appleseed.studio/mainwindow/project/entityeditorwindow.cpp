@@ -34,6 +34,7 @@
 #include "ui_entityeditorwindow.h"
 
 // appleseed.studio headers.
+#include "mainwindow/project/disneymaterialcustomui.h"
 #include "utility/miscellaneous.h"
 
 // Qt headers.
@@ -49,12 +50,13 @@ namespace appleseed {
 namespace studio {
 
 EntityEditorWindow::EntityEditorWindow(
-    QWidget*                                parent,
-    const string&                           window_title,
-    const Project&                          project,
-    auto_ptr<EntityEditor::IFormFactory>    form_factory,
-    auto_ptr<EntityEditor::IEntityBrowser>  entity_browser,
-    const Dictionary&                       values)
+    QWidget*                                    parent,
+    const string&                               window_title,
+    const Project&                              project,
+    auto_ptr<EntityEditor::IFormFactory>        form_factory,
+    auto_ptr<EntityEditor::IEntityBrowser>      entity_browser,
+    auto_ptr<CustomEntityUI>                    custom_entity_ui,
+    const Dictionary&                           values)
   : QWidget(parent)
   , m_ui(new Ui::EntityEditorWindow())
 {
@@ -63,6 +65,7 @@ EntityEditorWindow::EntityEditorWindow(
     setWindowTitle(QString::fromStdString(window_title));
     setWindowFlags(Qt::Tool);
     setAttribute(Qt::WA_DeleteOnClose);
+    setObjectName("EntityEditorWindow");
 
     m_entity_editor.reset(
         new EntityEditor(
@@ -70,7 +73,7 @@ EntityEditorWindow::EntityEditorWindow(
             project,
             form_factory,
             entity_browser,
-            std::auto_ptr<EntityEditor::ICustomEntityUI>(),
+            custom_entity_ui,
             values));
 
     m_initial_values = m_entity_editor->get_values();

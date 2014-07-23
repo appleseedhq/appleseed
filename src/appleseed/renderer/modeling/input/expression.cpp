@@ -28,61 +28,79 @@
 //
 
 // Interface header.
-#include "attributeeditor.h"
+#include "expression.h"
 
-// appleseed.studio headers.
-#include "utility/miscellaneous.h"
+// appleseed.renderer headers.
 
-// Qt headers.
-#include <QLayout>
-#include <QObject>
-#include <Qt>
+// appleseed.foundation headers.
+
+// Standard headers.
+#include <algorithm>
+#include <string>
 
 using namespace foundation;
-using namespace renderer;
 using namespace std;
 
-namespace appleseed {
-namespace studio {
-
-AttributeEditor::AttributeEditor(
-    QWidget*    parent,
-    Project&    project)
-  : m_parent(parent)
-  , m_project(project)
+namespace renderer
 {
-}
 
-void AttributeEditor::clear()
+//
+// Expression class implementation.
+//
+
+struct Expression::Impl : public SeExpression
 {
-    if (m_parent->layout())
+    Impl() : SeExpression()
     {
-        clear_layout(m_parent->layout());
-        delete m_parent->layout();
     }
-}
 
-void AttributeEditor::edit(
-    auto_ptr<EntityEditor::IFormFactory>    form_factory,
-    auto_ptr<EntityEditor::IEntityBrowser>  entity_browser,
-    auto_ptr<CustomEntityUI>                custom_ui,
-    const Dictionary&                       values,
-    QObject*                                receiver,
-    const char*                             slot_apply)
+    explicit Impl(const string& expr, bool is_vector = true)
+      : SeExpression(expr, is_vector)
+    {
+    }
+};
+
+Expression::Expression()
+  : impl(new Impl())
 {
-    m_entity_editor.reset(
-        new EntityEditor(
-            m_parent,
-            m_project,
-            form_factory,
-            entity_browser,
-            custom_ui,
-            values));
-
-    QObject::connect(
-        m_entity_editor.get(), SIGNAL(signal_applied(foundation::Dictionary)),
-        receiver, slot_apply);
 }
 
-}   // namespace studio
-}   // namespace appleseed
+Expression::Expression(const char* expr, bool is_vector)
+  : impl(new Impl(expr, is_vector))
+{
+}
+
+Expression::~Expression()
+{
+    delete impl;
+}
+
+Expression::Expression(const Expression& other)
+  : impl(new Impl(other.impl->getExpr(), other.impl->wantVec()))
+{
+}
+
+Expression& Expression::operator=(const Expression& other)
+{
+    Expression tmp(other);
+    swap(tmp);
+    return *this;
+}
+
+void Expression::swap(Expression& other)
+{
+    std::swap(impl, other.impl);
+}
+
+void Expression::set_expression(const char* expr, bool is_vector)
+{
+    impl->setExpr(expr);
+    impl->setWantVec(is_vector);
+}
+
+bool Expression::syntax_ok() const
+{
+    return impl->syntaxOK();
+}
+
+}   // namespace renderer

@@ -59,6 +59,11 @@
 // Standard headers.
 #include <vector>
 
+// boost headers.
+#include "boost/algorithm/string.hpp"
+#include "boost/algorithm/string/split.hpp"
+
+using namespace boost;
 using namespace foundation;
 using namespace renderer;
 using namespace std;
@@ -334,6 +339,59 @@ Color3d ColorPickerProxy::get_color_from_string(const string& s, const string& w
     }
 }
 
+//
+// ColorExpressionProxy class implementation.
+//
+
+ColorExpressionProxy::ColorExpressionProxy(QLineEdit* line_edit, QToolButton* picker_button)
+  : m_line_edit(line_edit)
+  , m_picker_button(picker_button)
+{
+    connect(m_line_edit, SIGNAL(returnPressed()), SIGNAL(signal_changed()));
+}
+
+void ColorExpressionProxy::set(const string& value)
+{
+    m_line_edit->setText(QString::fromStdString(value));
+
+    set_tool_button_color(
+        m_picker_button,
+        expression_to_qcolor(value));
+}
+
+string ColorExpressionProxy::get() const
+{
+    return m_line_edit->text().toStdString();
+}
+
+string ColorExpressionProxy::qcolor_to_expression(const QColor& color)
+{
+    QString color_expression = QString("[%1, %2, %3]")
+            .arg(color.redF())
+            .arg(color.greenF())
+            .arg(color.blueF());
+    return color_expression.toStdString();
+}
+
+QColor ColorExpressionProxy::expression_to_qcolor(const string& color)
+{
+    vector<string> color_components;
+    split(color_components, color, is_any_of(",[] "));
+    color_components.erase(
+        remove(color_components.begin(), color_components.end(), ""),
+        color_components.end());
+
+    QColor q_color;
+    if (color_components.size() >= 3)
+    {
+        double red, green, blue;
+        istringstream(color_components[0]) >> red;
+        istringstream(color_components[1]) >> green;
+        istringstream(color_components[2]) >> blue;
+        q_color.setRgbF(red, green, blue);
+    }
+    return q_color;
+}
 
 //
 // InputWidgetProxyCollection class implementation.

@@ -163,7 +163,11 @@ QMenu* AssemblyItem::get_single_item_context_menu() const
     menu->addAction("Create Color...", &get_color_collection_item(), SLOT(slot_create()));
     menu->addAction("Create EDF...", m_edf_collection_item, SLOT(slot_create()));
     menu->addAction("Create Light...", m_light_collection_item, SLOT(slot_create()));
-    menu->addAction("Create Material...", m_material_collection_item, SLOT(slot_create()));
+
+    QMenu* submenu = menu->addMenu("Create Material...");
+    submenu->addAction("Create Disney Material...", m_material_collection_item, SLOT(slot_create_disney()));
+    submenu->addAction("Create Generic Material...", m_material_collection_item, SLOT(slot_create_generic()));
+
     menu->addAction("Create Surface Shader...", m_surface_shader_collection_item, SLOT(slot_create()));
 
     return menu;

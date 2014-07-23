@@ -130,6 +130,8 @@ set (mainwindow_project_sources
     mainwindow/project/entityeditor.h
     mainwindow/project/entityeditorformfactorybase.cpp
     mainwindow/project/entityeditorformfactorybase.h
+    mainwindow/project/entityeditorutils.cpp
+    mainwindow/project/entityeditorutils.h
     mainwindow/project/entityeditorwindow.cpp
     mainwindow/project/entityeditorwindow.h
     mainwindow/project/entityeditorwindow.ui
@@ -140,6 +142,8 @@ set (mainwindow_project_sources
     mainwindow/project/fixedmodelentityitem.h
     mainwindow/project/frameitem.cpp
     mainwindow/project/frameitem.h
+    mainwindow/project/customentityui.cpp
+    mainwindow/project/customentityui.h
     mainwindow/project/instancecollectionitem.h
     mainwindow/project/itembase.cpp
     mainwindow/project/itembase.h
@@ -150,6 +154,8 @@ set (mainwindow_project_sources
     mainwindow/project/materialassignmenteditorwindow.ui
     mainwindow/project/materialcollectionitem.cpp
     mainwindow/project/materialcollectionitem.h
+    mainwindow/project/materialitem.cpp
+    mainwindow/project/materialitem.h
     mainwindow/project/multimodelcollectionitem.h
     mainwindow/project/multimodelentityeditorformfactory.h
     mainwindow/project/multimodelentityitem.h
@@ -184,6 +190,19 @@ set (mainwindow_project_sources
     mainwindow/project/tools.cpp
     mainwindow/project/tools.h
 )
+
+if (WITH_DISNEY_MATERIAL)
+    list (APPEND mainwindow_project_sources
+        mainwindow/project/expressioneditorwindow.cpp
+        mainwindow/project/expressioneditorwindow.h
+        mainwindow/project/expressioneditorwindow.ui
+        mainwindow/project/disneymaterialcustomui.cpp
+        mainwindow/project/disneymaterialcustomui.h
+        mainwindow/project/disneymateriallayerui.cpp
+        mainwindow/project/disneymateriallayerui.h
+    )
+endif ()
+
 list (APPEND appleseed.studio_sources
     ${mainwindow_project_sources}
 )

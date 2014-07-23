@@ -53,7 +53,7 @@ class DLLSYMBOL DisneyMaterialLayer
 {
   public:
     DisneyMaterialLayer(const DisneyMaterialLayer& other);
-    
+
     ~DisneyMaterialLayer();
 
     DisneyMaterialLayer& operator=(const DisneyMaterialLayer& other);
@@ -71,11 +71,11 @@ class DLLSYMBOL DisneyMaterialLayer
 
     // Constructor
     DisneyMaterialLayer(
-        const char* name,
-        const foundation::Dictionary& params);
+        const char*                     name,
+        const foundation::Dictionary&   params);
 
     void swap(DisneyMaterialLayer& other);
-    
+
     struct Impl;
     Impl* impl;
 };
@@ -83,7 +83,7 @@ class DLLSYMBOL DisneyMaterialLayer
 class DLLSYMBOL DisneyMaterial
   : public Material
 {
-  public:    
+  public:
     // Delete this instance.
     virtual void release() OVERRIDE;
 
@@ -107,9 +107,9 @@ class DLLSYMBOL DisneyMaterial
 
     // Constructor.
     DisneyMaterial(
-        const char*                 name,
-        const ParamArray&           params);  
-    
+        const char*         name,
+        const ParamArray&   params);
+
     // Destructor
     ~DisneyMaterial();
 

@@ -1377,6 +1377,12 @@ set (renderer_modeling_input_sources
     renderer/modeling/input/texturesource.h
     renderer/modeling/input/uniforminputevaluator.h
 )
+if (WITH_DISNEY_MATERIAL)
+list (APPEND renderer_modeling_input_sources
+    renderer/modeling/input/expression.cpp
+    renderer/modeling/input/expression.h
+)
+endif ()
 list (APPEND appleseed_sources
     ${renderer_modeling_input_sources}
 )

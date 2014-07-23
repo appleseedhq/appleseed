@@ -30,18 +30,26 @@
 // Interface header.
 #include "materialcollectionitem.h"
 
+// appleseed.renderer headers.
+#ifdef WITH_DISNEY_MATERIAL
+#include "renderer/modeling/material/disneymaterial.h"
+#endif
+
 // appleseed.studio headers.
 #include "mainwindow/project/assemblyitem.h"
+#ifdef WITH_DISNEY_MATERIAL
+#include "mainwindow/project/disneymaterialcustomui.h"
+#endif
 #include "mainwindow/project/entityeditor.h"
+#include "mainwindow/project/entityeditorwindow.h"
 #include "mainwindow/project/fixedmodelentityitem.h"
-
-// Qt headers.
-#include <QMenu>
+#include "mainwindow/project/materialitem.h"
 
 // Standard headers.
 #include <cassert>
 #include <memory>
 #include <string>
+#include <string.h>
 
 using namespace foundation;
 using namespace renderer;
@@ -76,11 +84,11 @@ QMenu* MaterialCollectionItem::get_single_item_context_menu() const
 
     menu->addSeparator();
     menu->addAction("Create Generic Material...", this, SLOT(slot_create_generic()));
-#ifdef WITH_OSL
-    menu->addAction("Create OSL Material...", this, SLOT(slot_create_osl()));
-#endif
 #ifdef WITH_DISNEY_MATERIAL
     menu->addAction("Create Disney Material...", this, SLOT(slot_create_disney()));
+#endif
+#ifdef WITH_OSL
+    menu->addAction("Create OSL Material...", this, SLOT(slot_create_osl()));
 #endif
     return menu;
 }
@@ -89,8 +97,6 @@ ItemBase* MaterialCollectionItem::create_item(Material* material)
 {
     assert(material);
 
-    typedef FixedModelEntityItem<Material, Assembly, MaterialCollectionItem> MaterialItem;
-    
     ItemBase* item = new MaterialItem(material, m_parent, this, m_project_builder);
     m_project_builder.get_item_registry().insert(material->get_uid(), item);
     return item;
@@ -98,20 +104,20 @@ ItemBase* MaterialCollectionItem::create_item(Material* material)
 
 void MaterialCollectionItem::slot_create_generic()
 {
-    do_create_material("generic_material");  
+    do_create_material("generic_material");
 }
-
-#ifdef WITH_OSL
-void MaterialCollectionItem::slot_create_osl()
-{
-    do_create_material("osl_material");
-}
-#endif
 
 #ifdef WITH_DISNEY_MATERIAL
 void MaterialCollectionItem::slot_create_disney()
 {
     do_create_material("disney_material");
+}
+#endif
+
+#ifdef WITH_OSL
+void MaterialCollectionItem::slot_create_osl()
+{
+    do_create_material("osl_material");
 }
 #endif
 
@@ -139,12 +145,29 @@ void MaterialCollectionItem::do_create_material(const char* model)
     auto_ptr<EntityEditor::IEntityBrowser> entity_browser(
         new EntityBrowser<Assembly>(Base::m_parent));
 
+    auto_ptr<CustomEntityUI> custom_entity_ui;
+    Dictionary values;
+
+#ifdef WITH_DISNEY_MATERIAL
+    if (strcmp(model, "disney_material") == 0)
+    {
+        custom_entity_ui = auto_ptr<CustomEntityUI>(
+            new DisneyMaterialCustomUI(
+                Base::m_project_builder.get_project(),
+                DisneyMaterialLayer::get_input_metadata()));
+
+        values = DisneyMaterialLayer::get_default_values();
+    }
+#endif
+
     open_entity_editor(
         QTreeWidgetItem::treeWidget(),
         window_title,
         Base::m_project_builder.get_project(),
         form_factory,
         entity_browser,
+        custom_entity_ui,
+        values,
         this,
         SLOT(slot_create_applied(foundation::Dictionary)),
         SLOT(slot_create_accepted(foundation::Dictionary)),

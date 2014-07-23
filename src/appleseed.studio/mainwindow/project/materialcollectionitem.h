@@ -34,9 +34,6 @@
 #include "mainwindow/project/assemblyitem.h"
 #include "mainwindow/project/collectionitem.h"
 
-// Qt headers.
-#include <QObject>
-
 // Forward declarations.
 namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace renderer  { class Assembly; }
@@ -65,11 +62,11 @@ class MaterialCollectionItem
 
   private slots:
     void slot_create_generic();
-#ifdef WITH_OSL
-    void slot_create_osl();
-#endif
 #ifdef WITH_DISNEY_MATERIAL
     void slot_create_disney();
+#endif
+#ifdef WITH_OSL
+    void slot_create_osl();
 #endif
 
   private:

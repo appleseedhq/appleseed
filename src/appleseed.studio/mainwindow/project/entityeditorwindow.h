@@ -58,12 +58,13 @@ class EntityEditorWindow
 
   public:
     EntityEditorWindow(
-        QWidget*                                    parent,
-        const std::string&                          window_title,
-        const renderer::Project&                    project,
-        std::auto_ptr<EntityEditor::IFormFactory>   form_factory,
-        std::auto_ptr<EntityEditor::IEntityBrowser> entity_browser,
-        const foundation::Dictionary&               values = foundation::Dictionary());
+        QWidget*                                        parent,
+        const std::string&                              window_title,
+        const renderer::Project&                        project,
+        std::auto_ptr<EntityEditor::IFormFactory>       form_factory,
+        std::auto_ptr<EntityEditor::IEntityBrowser>     entity_browser,
+        std::auto_ptr<CustomEntityUI>                   custom_entity_ui,
+        const foundation::Dictionary&                   values = foundation::Dictionary());
 
     ~EntityEditorWindow();
 

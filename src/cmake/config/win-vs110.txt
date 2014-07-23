@@ -1,5 +1,5 @@
 
-# -*- cmake -*- 
+# -*- cmake -*-
 # This source file is part of appleseed.
 # Visit http://appleseedhq.net/ for additional information and resources.
 #
@@ -257,6 +257,10 @@ macro (link_against_oslexec target)
     target_link_libraries (${target} ${OSL_EXEC_LIBRARY})
 endmacro ()
 
+
+macro (link_against_seexpreditor target)
+    target_link_libraries (${target} ${SEEXPREDITOR_LIBRARIES})
+endmacro ()
 
 #--------------------------------------------------------------------------------------------------
 # Copy a target binary to the sandbox.

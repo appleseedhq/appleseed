@@ -88,7 +88,7 @@ void FixedModelEntityEditorFormFactory<FactoryRegistrar>::update(
     const typename FactoryRegistrar::FactoryType* factory =
         m_factory_registrar.lookup(m_model.c_str());
 
-    // We insert only the current model, so the model of the entiry cannot be changed.
+    // We insert only the current model, so the model of the entity cannot be changed.
     foundation::Dictionary model_items;
     model_items.insert(factory->get_human_readable_model(), m_model.c_str());
     metadata.push_back(

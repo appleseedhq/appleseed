@@ -1,4 +1,5 @@
 
+
 //
 // This source file is part of appleseed.
 // Visit http://appleseedhq.net/ for additional information and resources.
@@ -27,62 +28,60 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "attributeeditor.h"
+#ifndef APPLESEED_RENDERER_MODELING_INPUT_EXPRESSION_H
+#define APPLESEED_RENDERER_MODELING_INPUT_EXPRESSION_H
 
-// appleseed.studio headers.
-#include "utility/miscellaneous.h"
+// appleseed.renderer headers.
+#include "renderer/global/globaltypes.h"
 
-// Qt headers.
-#include <QLayout>
-#include <QObject>
-#include <Qt>
+// appleseed.foundation headers.
+#include "foundation/image/color.h"
+#include "foundation/platform/compiler.h"
+#include "foundation/platform/types.h"
+#include "foundation/core/concepts/noncopyable.h"
 
-using namespace foundation;
-using namespace renderer;
-using namespace std;
+// SeExpr headers
+#include "SeExpression.h"
 
-namespace appleseed {
-namespace studio {
+// Forward declarations.
+namespace renderer { class ShadingPoint; }
 
-AttributeEditor::AttributeEditor(
-    QWidget*    parent,
-    Project&    project)
-  : m_parent(parent)
-  , m_project(project)
+namespace renderer
 {
-}
 
-void AttributeEditor::clear()
+//
+// Expression.
+//
+
+class DLLSYMBOL Expression
 {
-    if (m_parent->layout())
-    {
-        clear_layout(m_parent->layout());
-        delete m_parent->layout();
-    }
-}
+  public:
+    // Constructor.
+    Expression();
+    
+    // Constructor.
+    explicit Expression(const char* expr, bool is_vector = true);
 
-void AttributeEditor::edit(
-    auto_ptr<EntityEditor::IFormFactory>    form_factory,
-    auto_ptr<EntityEditor::IEntityBrowser>  entity_browser,
-    auto_ptr<CustomEntityUI>                custom_ui,
-    const Dictionary&                       values,
-    QObject*                                receiver,
-    const char*                             slot_apply)
-{
-    m_entity_editor.reset(
-        new EntityEditor(
-            m_parent,
-            m_project,
-            form_factory,
-            entity_browser,
-            custom_ui,
-            values));
+    // Destructor.
+    ~Expression();
+    
+    // Copy constructor.
+    Expression(const Expression& other);
+    
+    // Assignment.
+    Expression& operator=(const Expression& other);
+    
+    void swap(Expression& other);
 
-    QObject::connect(
-        m_entity_editor.get(), SIGNAL(signal_applied(foundation::Dictionary)),
-        receiver, slot_apply);
-}
+    void set_expression(const char* expr, bool is_vector = true);
 
-}   // namespace studio
-}   // namespace appleseed
+    bool syntax_ok() const;
+    
+  private:
+    struct Impl;
+    Impl *impl;
+};
+
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_MODELING_INPUT_EXPRESSION_H
