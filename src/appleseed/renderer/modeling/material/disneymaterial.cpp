@@ -242,17 +242,17 @@ Dictionary DisneyMaterialLayer::get_default_values()
     Dictionary layer_params;
     for (size_t i = 0; i < metadata.size(); ++i)
     {
-        Dictionary parameter = metadata[i];
+        const Dictionary& parameter = metadata[i];
         const string name = parameter.get<string>("name");
         const string default_value = parameter.get<string>("default");
 
         layer_params.insert(name, default_value);
     }
+
     layer_params.insert("layer_number", 1);
 
     Dictionary values;
     values.insert("layer1", layer_params);
-
     return values;
 }
 
@@ -262,9 +262,7 @@ Dictionary DisneyMaterialLayer::get_default_values()
 
 namespace
 {
-
-const char* Model = "disney_material";
-
+    const char* Model = "disney_material";
 }
 
 struct DisneyMaterial::Impl
@@ -296,20 +294,20 @@ const char* DisneyMaterial::get_model() const
 }
 
 bool DisneyMaterial::on_frame_begin(
-    const Project&              project,
-    const Assembly&             assembly,
-    AbortSwitch*                abort_switch)
+    const Project&  project,
+    const Assembly& assembly,
+    AbortSwitch*    abort_switch)
 {
     if (!Material::on_frame_begin(project, assembly, abort_switch))
         return false;
-
-    // TODO: handle per material options here...
 
     try
     {
         for (const_each<DictionaryDictionary> it = m_params.dictionaries(); it; ++it)
             impl->m_layers.push_back(DisneyMaterialLayer(it->name(), it->value()));
     }
+    // TODO: be more specific about what we catch here,
+    // once we know what can be thrown. (est.)
     catch(...)
     {
         return false;
@@ -328,21 +326,21 @@ bool DisneyMaterial::on_frame_begin(
 
 // This method is called once after rendering each frame.
 void DisneyMaterial::on_frame_end(
-    const Project&              project,
-    const Assembly&             assembly) OVERRIDE
+    const Project&  project,
+    const Assembly& assembly) OVERRIDE
 {
     impl->m_layers.clear();    
     Material::on_frame_end(project, assembly);
 }
 
-std::size_t DisneyMaterial::num_layers() const
+std::size_t DisneyMaterial::get_layer_count() const
 {
     return impl->m_layers.size();
 }
 
-const DisneyMaterialLayer& DisneyMaterial::get_layer(std::size_t index) const
+const DisneyMaterialLayer& DisneyMaterial::get_layer(const size_t index) const
 {
-    assert(index < num_layers());
+    assert(index < get_layer_count());
 
     return impl->m_layers[index];
 }
@@ -364,8 +362,6 @@ const char* DisneyMaterialFactory::get_human_readable_model() const
 DictionaryArray DisneyMaterialFactory::get_input_metadata() const
 {
     DictionaryArray metadata;
-
-    add_common_input_metadata(metadata);
 
     metadata.push_back(
         Dictionary()
