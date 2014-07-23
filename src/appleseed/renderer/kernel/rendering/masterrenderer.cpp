@@ -130,6 +130,9 @@ MasterRenderer::MasterRenderer(
   , m_abort_switch(abort_switch)
   , m_serial_renderer_controller(new SerialRendererController(renderer_controller, tile_callback))
   , m_serial_tile_callback_factory(new SerialTileCallbackFactory(m_serial_renderer_controller))
+#ifdef WITH_OSL
+  , m_texture_system(0)
+#endif
 {
     m_renderer_controller = m_serial_renderer_controller;
     m_tile_callback_factory = m_serial_tile_callback_factory;
@@ -139,7 +142,7 @@ MasterRenderer::~MasterRenderer()
 {
     delete m_serial_tile_callback_factory;
     delete m_serial_renderer_controller;
-    
+
     if (m_texture_system)
         OIIO::TextureSystem::destroy(m_texture_system, true);
 }
