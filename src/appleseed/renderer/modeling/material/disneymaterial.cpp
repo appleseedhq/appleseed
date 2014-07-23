@@ -30,6 +30,7 @@
 #include "disneymaterial.h"
 
 // appleseed.renderer headers.
+#include "renderer/modeling/bsdf/disneybrdf.h"
 #include "renderer/modeling/input/expression.h"
 
 // appleseed.foundation headers.
@@ -142,6 +143,7 @@ bool DisneyMaterialLayer::check_expressions_syntax() const
 DictionaryArray DisneyMaterialLayer::get_input_metadata()
 {
     DictionaryArray metadata;
+
     metadata.push_back(
         Dictionary()
             .insert("name", "layer_name")
@@ -156,82 +158,16 @@ DictionaryArray DisneyMaterialLayer::get_input_metadata()
             .insert("type", "colormap")
             .insert("default", "0"));
 
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "base_color")
-            .insert("label", "Base Color")
-            .insert("type", "color")
-            .insert("default", "[0.0, 0.0, 0.0]"));
+    metadata.append(DisneyBRDFFactory().get_input_metadata());
 
-   metadata.push_back(
-        Dictionary()
-            .insert("name", "subsurface")
-            .insert("label", "Subsurface")
-            .insert("type", "colormap")
-            .insert("default", "0"));
+    // Modify base_color default value.
+    for (size_t i = 0; i < metadata.size(); ++i)
+    {
+        const string name = metadata[i].get<string>("name");
+        if (name == "base_color")
+            metadata[i].insert("default", "[0.5, 0.5, 0.5]");
+    }
 
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "metallic")
-            .insert("label", "Metallic")
-            .insert("type", "colormap")
-            .insert("default", "0"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "specular")
-            .insert("label", "Specular")
-            .insert("type", "colormap")
-            .insert("default", "0"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "specular_tint")
-            .insert("label", "Specular tint")
-            .insert("type", "colormap")
-            .insert("default", "0"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "anisotropic")
-            .insert("label", "Anisotropic")
-            .insert("type", "colormap")
-            .insert("default", "0"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "roughness")
-            .insert("label", "Roughness")
-            .insert("type", "colormap")
-            .insert("default", "0"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "sheen")
-            .insert("label", "Sheen")
-            .insert("type", "colormap")
-            .insert("default", "0"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "shin_tint")
-            .insert("label", "Shin tint")
-            .insert("type", "colormap")
-            .insert("default", "0"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "clearcoat")
-            .insert("label", "Clearcoat")
-            .insert("type", "colormap")
-            .insert("default", "0"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "clearcoat_gloss")
-            .insert("label", "Clearcoat gloss")
-            .insert("type", "colormap")
-            .insert("default", "0"));
     return metadata;
 }
 
@@ -363,6 +299,8 @@ DictionaryArray DisneyMaterialFactory::get_input_metadata() const
 {
     DictionaryArray metadata;
 
+    add_common_input_metadata(metadata);
+
     metadata.push_back(
         Dictionary()
             .insert("name", "alpha_mask")
@@ -372,10 +310,63 @@ DictionaryArray DisneyMaterialFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "emission")
-            .insert("label", "Emission")
+            .insert("name", "edf")
+            .insert("label", "EDF")
+            .insert("type", "entity")
+            .insert("entity_types", Dictionary().insert("edf", "EDF"))
+            .insert("use", "optional"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "alpha_map")
+            .insert("label", "Alpha Map")
             .insert("type", "colormap")
-            .insert("default", "0"));
+            .insert("entity_types",
+                Dictionary()
+                    .insert("color", "Colors")
+                    .insert("texture_instance", "Textures"))
+            .insert("use", "optional"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "displacement_map")
+            .insert("label", "Displacement Map")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "optional"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "displacement_method")
+            .insert("label", "Displacement Method")
+            .insert("type", "enumeration")
+            .insert("items",
+                Dictionary()
+                    .insert("Bump Mapping", "bump")
+                    .insert("Normal Mapping", "normal"))
+            .insert("use", "required")
+            .insert("default", "bump"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "bump_amplitude")
+            .insert("label", "Bump Amplitude")
+            .insert("type", "text")
+            .insert("use", "optional")
+            .insert("default", "1.0"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "normal_map_up")
+            .insert("label", "Normal Map Up Vector")
+            .insert("type", "enumeration")
+            .insert("items",
+                Dictionary()
+                    .insert("Green Channel (Y)", "y")
+                    .insert("Blue Channel (Z)", "z"))
+            .insert("use", "optional")
+            .insert("default", "z"));
 
     return metadata;
 }

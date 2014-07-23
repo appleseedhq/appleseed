@@ -475,10 +475,21 @@ void DisneyMaterialCustomUI::add_layer(const bool update, const Dictionary& para
 
         metadata.insert("default", default_value);
 
-        if (type == "color")
-            create_color_input_widgets(metadata, layer_name);
-        else if (type == "colormap")
-            create_colormap_input_widgets(metadata, layer_name);
+        if (type == "colormap")
+        {
+            if (metadata.dictionaries().size() > 0)
+            {
+                const Dictionary entity_types = metadata.dictionaries().get("entity_types");
+                if (entity_types.strings().exist("color"))
+                    create_color_input_widgets(metadata, layer_name);
+                else
+                    create_colormap_input_widgets(metadata, layer_name);
+            }
+            else
+            {
+                create_colormap_input_widgets(metadata, layer_name);
+            }
+        }
         else if (type == "text")
             create_text_input_widgets(metadata, layer_name);
 
