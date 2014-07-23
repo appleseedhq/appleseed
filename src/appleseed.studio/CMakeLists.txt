@@ -118,6 +118,8 @@ set (mainwindow_project_sources
     mainwindow/project/basegroupitem.h
     mainwindow/project/collectionitem.h
     mainwindow/project/collectionitembase.h
+    mainwindow/project/customentityui.cpp
+    mainwindow/project/customentityui.h
     mainwindow/project/entitybrowser.cpp
     mainwindow/project/entitybrowser.h
     mainwindow/project/entitybrowserwindow.cpp
@@ -142,8 +144,6 @@ set (mainwindow_project_sources
     mainwindow/project/fixedmodelentityitem.h
     mainwindow/project/frameitem.cpp
     mainwindow/project/frameitem.h
-    mainwindow/project/customentityui.cpp
-    mainwindow/project/customentityui.h
     mainwindow/project/instancecollectionitem.h
     mainwindow/project/itembase.cpp
     mainwindow/project/itembase.h

@@ -93,7 +93,7 @@ void DisneyMaterialCustomUI::create_custom_widgets(
 {
     m_parent = layout->parentWidget();
 
-    // Resize if has EntityEditorWidget ancestor
+    // Resize if has EntityEditorWidget ancestor.
     QWidget* parent = m_parent;
     while (parent != 0)
     {
@@ -108,14 +108,14 @@ void DisneyMaterialCustomUI::create_custom_widgets(
     m_form_layout = layout;
     m_form_layout->setSpacing(5);
 
-    // Copy values
+    // Copy values.
     m_values = values;
 
     // New layer button.
+    // Use blanks for spacing between icon and text, as there does not appear to be a better option.
     QIcon add_icon = QIcon(":/widgets/big_add.png");
-    // Use blanks for spacing between icon and text, as there is no other option
     QPushButton* add_layer_button = new QPushButton(add_icon, "   Add new layer");
-    add_layer_button->setObjectName("add_material_layer");
+    add_layer_button->setObjectName("add_material_editor_layer");
     m_form_layout->addWidget(add_layer_button);
     connect(add_layer_button, SIGNAL(clicked()), this, SLOT(slot_add_layer()));
 

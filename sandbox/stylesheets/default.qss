@@ -1140,7 +1140,7 @@ QWidget#selected_material_editor_layer
     border: 2px solid SELECTED_BACKGROUND_COLOR;
 }
 
-QPushButton#add_material_layer
+QPushButton#add_material_editor_layer
 {
     border-radius: 0px;
     border: 1px solid SELECTED_BACKGROUND_COLOR;
