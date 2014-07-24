@@ -46,7 +46,7 @@ class CurveKey
 {
   public:
     // Constructors.
-    CurveKey();
+    CurveKey();         // leave all fields uninitialized
     CurveKey(
         const size_t    object_instance_index,
         const size_t    curve_index,
