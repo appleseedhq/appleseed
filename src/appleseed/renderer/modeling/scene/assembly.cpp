@@ -34,6 +34,7 @@
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/light/light.h"
+#include "renderer/modeling/object/object.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/objectinstance.h"
@@ -338,7 +339,6 @@ void Assembly::on_frame_end(const Project& project)
     invoke_on_frame_end(project, *this, surface_shaders());
     invoke_on_frame_end(project, texture_instances());
 }
-
 
 //
 // AssemblyFactory class implementation.

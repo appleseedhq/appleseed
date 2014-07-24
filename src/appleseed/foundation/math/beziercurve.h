@@ -115,7 +115,7 @@ class BezierCurveBase
         return N + 1;
     }
 
-    const VectorType& get_control_point(const size_t index) const
+    VectorType get_control_point(const size_t index) const
     {
         assert(index < N + 1);
         return m_ctrl_pts[index];
@@ -132,7 +132,7 @@ class BezierCurveBase
         return m_max_width;
     }
 
-    const AABBType& get_bounds() const
+    AABBType get_bounds() const
     {
         return m_bounds;
     }
@@ -158,8 +158,7 @@ class BezierCurveBase
 
         const ValueType epsilon = m_max_width * ValueType(0.05);    // 1/20 of max_width
         const ValueType value = (ValueType(SqrtTwo) * N * (N - 1) * l0) / (ValueType(8.0) * epsilon);
-        const ValueType RcpLog4 = ValueType(0.7213475204444817);
-        const ValueType r0 = std::log(value) * RcpLog4;
+        const ValueType r0 = log(value, ValueType(4.0));
         const ValueType clamped_r0 = clamp(r0, ValueType(0.0), ValueType(5.0));
 
         return truncate<size_t>(clamped_r0);
@@ -174,10 +173,10 @@ class BezierCurveBase
     }
 
   protected:
-    VectorType  m_ctrl_pts[N + 1];
-    ValueType   m_width[N + 1];
-    ValueType   m_max_width;
-    AABBType    m_bounds;
+    VectorType  m_ctrl_pts[N + 1];      // an array of the control points that make up the curve.
+    ValueType   m_width[N + 1];         // an array of per control point widths.
+    ValueType   m_max_width;            // the max width of all widths at all control points.
+    AABBType    m_bounds;               // the bounding box for the curve.
 
     void compute_max_width()
     {
@@ -484,54 +483,59 @@ class BezierCurveIntersector
     typedef typename BezierCurveType::MatrixType MatrixType;
     typedef Ray<ValueType, 3> RayType;
 
+    // Modified dot product functionality that considers only x and y components of the vector.
+    static ValueType dotxy(const VectorType& lhs, const VectorType& rhs)
+    {
+        return lhs.x * rhs.x + lhs.y * rhs.y;
+    }
+
     // Compute the transformation matrix required for ray-curve intersection.
     static MatrixType compute_curve_transform(const RayType& ray)
     {
-        MatrixType matrix;
+        MatrixType rotation;
 
-        // Build the rotation matrix.
         const VectorType rdir = normalize(ray.m_dir);
         const ValueType d = std::sqrt(rdir.x * rdir.x + rdir.z * rdir.z);
+
+        // We are actually required to do a test against 0 but we consider a small epsilon for our calculations.
         if (d >= ValueType(1.0e-6))
         {
-            const ValueType rcp_d = ValueType(1.0) / d;
-            matrix[ 0] = rdir.z * rcp_d;             matrix[ 1] = ValueType(0.0);   matrix[ 2] = -rdir.x * rcp_d;            matrix[ 3] = ValueType(0.0);
-            matrix[ 4] = -(rdir.x * rdir.y) * rcp_d; matrix[ 5] = d;                matrix[ 6] = -(rdir.y * rdir.z) * rcp_d; matrix[ 7] = ValueType(0.0);
-            matrix[ 8] = rdir.x;                     matrix[ 9] = rdir.y;           matrix[10] = rdir.z;                     matrix[11] = ValueType(0.0);
-            matrix[12] = ValueType(0.0);             matrix[13] = ValueType(0.0);   matrix[14] = ValueType(0.0);             matrix[15] = ValueType(1.0);
+            const ValueType inv_d = ValueType(1.0) / d;
+            rotation(0, 0) = rdir.z * inv_d;             rotation(0, 1) = ValueType(0.0);   rotation(0, 2) = -rdir.x * inv_d;            rotation(0, 3) = ValueType(0.0);
+            rotation(1, 0) = -(rdir.x * rdir.y) * inv_d; rotation(1, 1) = d;                rotation(1, 2) = -(rdir.y * rdir.z) * inv_d; rotation(1, 3) = ValueType(0.0);
+            rotation(2, 0) = rdir.x;                     rotation(2, 1) = rdir.y;           rotation(2, 2) = rdir.z;                     rotation(2, 3) = ValueType(0.0);
+            rotation(3, 0) = ValueType(0.0);             rotation(3, 1) = ValueType(0.0);   rotation(3, 2) = ValueType(0.0);             rotation(3, 3) = ValueType(1.0);
         }
         else
         {
-            // We replace the matrix by one that rotates about the x axis by Pi/2.
+            // We replace the matrix by the one that rotates about the x axis by Pi/2.
             // The sign of rotation depends on the sign of the y component of the direction vector.
             const ValueType angle = rdir.y > ValueType(0.0) ? ValueType(HalfPi) : -ValueType(HalfPi);
-            matrix = MatrixType::rotation_x(angle);
+            rotation = MatrixType::rotation_x(angle);
         }
 
-        // Right-multiply the rotation matrix by a translation matrix.
-        matrix[ 3] = -ray.m_org.x;
-        matrix[ 7] = -ray.m_org.y;
-        matrix[11] = -ray.m_org.z;
-
-        return matrix;
+        return rotation * MatrixType::translation(-ray.m_org);
     }
 
-    bool intersect(
+    static bool intersect(
         const BezierCurveType&  curve,
         const RayType&          ray,
         const MatrixType&       xfm,
-        ValueType&              t) const
+        ValueType&              t)
     {
         const BezierCurveType xfm_curve(curve, xfm);
         const size_t depth = xfm_curve.compute_max_recursion_depth();
 
+        const ValueType raylen = norm(ray.m_dir);
         ValueType hit;
         ValueType phit = std::numeric_limits<ValueType>::max();
-        return converge(depth, curve, xfm_curve, xfm, 0, 1, hit, phit);
+        bool intersected = converge(depth, curve, xfm_curve, xfm, 0, 1, hit, phit);
+        t = phit / raylen;               // return the intersected distance - scaled appropriately.
+        return intersected;
     }
 
   private:
-    bool converge(
+    static bool converge(
         const size_t            depth,
         const BezierCurveType&  original_curve,
         const BezierCurveType&  curve,
@@ -539,13 +543,13 @@ class BezierCurveIntersector
         const ValueType         v0,
         const ValueType         vn,
         ValueType&              hit,
-        ValueType&              phit) const
+        ValueType&              phit)
     {
         const ValueType curve_width = curve.get_max_width() * ValueType(0.5);
 
         const AABBType& bbox = curve.get_bounds();
 
-        if (bbox.min.z >= phit        || bbox.max.z <= ValueType(1.0e-6) ||
+        if (bbox.min.z >= phit        || bbox.max.z <= ValueType(1e-6) ||
             bbox.min.x >= curve_width || bbox.max.x <= -curve_width    ||
             bbox.min.y >= curve_width || bbox.max.y <= -curve_width)
             return false;
@@ -553,30 +557,28 @@ class BezierCurveIntersector
         if (depth == 0)
         {
             // Compute the intersection.
+            static const size_t Degree = BezierCurveType::Degree;
+            const VectorType dir = curve.get_control_point(Degree) - curve.get_control_point(0);
 
-            const VectorType& cp0 = curve.get_control_point(0);
-            const VectorType& cpn = curve.get_control_point(BezierCurveType::Degree);
-            const VectorType dir = cpn - cp0;
-
-            VectorType dp0 = curve.get_control_point(1) - cp0;
-            if (dot(dir, dp0) < ValueType(0.0))
+            VectorType dp0 = curve.get_control_point(1) - curve.get_control_point(0);
+            if (dotxy(dir, dp0) < ValueType(0.0))
                 dp0 = -dp0;
 
-            if (dot(dp0, cp0) > ValueType(0.0))
+            if (dotxy(dp0, curve.get_control_point(0)) > ValueType(0.0))
                 return false;
 
-            VectorType dpn = cpn - curve.get_control_point(BezierCurveType::Degree - 1);
-            if (dot(dir, dpn) < ValueType(0.0))
+            VectorType dpn = curve.get_control_point(Degree) - curve.get_control_point(Degree - 1);
+            if (dotxy(dir, dpn) < ValueType(0.0))
                 dpn = -dpn;
 
-            if (dot(dpn, cpn) < ValueType(0.0))
+            if (dotxy(dpn, curve.get_control_point(Degree)) < ValueType(0.0))
                 return false;
 
             // Compute w on the line segment.
             ValueType w = dir.x * dir.x + dir.y * dir.y;
             if (w < ValueType(1.0e-6))
                 return false;
-            w = -(cp0.x * dir.x + cp0.y * dir.y) / w;
+            w = -(curve.get_control_point(0).x * dir.x + curve.get_control_point(0).y * dir.y) / w;
             w = saturate(w);
 
             // Compute v on the line segment.
@@ -632,7 +634,6 @@ class BezierCurveIntersector
                     hit = v_right;
                     phit = t_right;
                 }
-
                 return true;
             }
 

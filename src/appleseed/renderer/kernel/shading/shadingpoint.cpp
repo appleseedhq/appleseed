@@ -52,6 +52,20 @@ namespace renderer
 
 void ShadingPoint::fetch_source_geometry() const
 {
+    if (m_primitive_type == PrimitiveTriangle)
+    {
+        // Retrieve triangles.
+        fetch_triangle_source_geometry();
+    }
+    else if (m_primitive_type == PrimitiveCurve)
+    {
+        // Retrieve curves.
+        fetch_curve_source_geometry();
+    }
+}
+
+void ShadingPoint::fetch_triangle_source_geometry() const
+{
     assert(hit());
     assert(!(m_members & HasSourceGeometry));
 
@@ -82,10 +96,10 @@ void ShadingPoint::fetch_source_geometry() const
     const size_t motion_segment_count = tess.get_motion_segment_count();
 
     // Retrieve the triangle.
-    const Triangle& triangle = tess.m_primitives[m_triangle_index];
+    const Triangle& triangle = tess.m_primitives[m_primitive_index];
 
     // Copy the index of the triangle attribute.
-    m_triangle_pa = triangle.m_pa;
+    m_primitive_pa = triangle.m_pa;
 
     // Copy the texture coordinates from UV set #0.
     if (triangle.has_vertex_attributes() && tess.get_uv_vertex_count() > 0)
@@ -152,6 +166,28 @@ void ShadingPoint::fetch_source_geometry() const
     assert(is_normalized(m_n0));
     assert(is_normalized(m_n1));
     assert(is_normalized(m_n2));
+
+
+}
+
+void ShadingPoint::fetch_curve_source_geometry() const
+{
+    assert(hit());
+    assert(!(m_members & HasSourceGeometry));
+
+    // Retrieve the assembly.
+    m_assembly = &m_assembly_instance->get_assembly();
+
+    // Retrieve the object instance.
+    m_object_instance = m_assembly->object_instances().get_by_index(m_object_instance_index);
+    assert(m_object_instance);
+
+    // Retrieve the object.
+    m_object = &m_object_instance->get_object();
+
+    // Set primitive attribute to default value of 0.
+    // We have set the curve key's pa value also to be 0.
+    m_primitive_pa = 0;
 }
 
 void ShadingPoint::refine_and_offset() const
@@ -166,34 +202,43 @@ void ShadingPoint::refine_and_offset() const
     ShadingRay::RayType local_ray = m_assembly_instance_transform.to_local(m_ray);
     local_ray.m_org += local_ray.m_tmax * local_ray.m_dir;
 
-    // Refine the location of the intersection point.
-    local_ray.m_org =
-        Intersector::refine(
+    if (m_primitive_type == PrimitiveTriangle)
+    {
+        // Refine the location of the intersection point.
+        local_ray.m_org =
+            Intersector::refine(
+                m_triangle_support_plane,
+                local_ray.m_org,
+                local_ray.m_dir);
+
+        // Compute the geometric normal to the hit triangle in assembly instance space.
+        // Note that it doesn't need to be normalized at this point.
+        m_asm_geo_normal = Vector3d(cross(m_v1 - m_v0, m_v2 - m_v0));
+        m_asm_geo_normal = m_object_instance->get_transform().normal_to_parent(m_asm_geo_normal);
+        m_asm_geo_normal = faceforward(m_asm_geo_normal, local_ray.m_dir);
+
+        // Compute the offset points in assembly instance space.
+#ifdef RENDERER_ADAPTIVE_OFFSET
+        Intersector::adaptive_offset(
             m_triangle_support_plane,
             local_ray.m_org,
-            local_ray.m_dir);
-
-    // Compute the geometric normal to the hit triangle in assembly instance space.
-    // Note that it doesn't need to be normalized at this point.
-    m_asm_geo_normal = Vector3d(cross(m_v1 - m_v0, m_v2 - m_v0));
-    m_asm_geo_normal = m_object_instance->get_transform().normal_to_parent(m_asm_geo_normal);
-    m_asm_geo_normal = faceforward(m_asm_geo_normal, local_ray.m_dir);
-
-    // Compute the offset points in assembly instance space.
-#ifdef RENDERER_ADAPTIVE_OFFSET
-    Intersector::adaptive_offset(
-        m_triangle_support_plane,
-        local_ray.m_org,
-        m_asm_geo_normal,
-        m_front_point,
-        m_back_point);
+            m_asm_geo_normal,
+            m_front_point,
+            m_back_point);
 #else
-    Intersector::offset(
-        local_ray.m_org,
-        m_asm_geo_normal,
-        m_front_point,
-        m_back_point);
+        Intersector::offset(
+            local_ray.m_org,
+            m_asm_geo_normal,
+            m_front_point,
+            m_back_point);
 #endif
+    }
+    else if (m_primitive_type == PrimitiveCurve)
+    {
+        m_asm_geo_normal = -local_ray.m_dir;
+        m_front_point = local_ray.m_org + 1.0e-6 * m_asm_geo_normal;
+        m_back_point = local_ray.m_org + 1.0e-6 * m_asm_geo_normal;
+    }
 
     // The refined intersection points are now available.
     m_members |= ShadingPoint::HasRefinedPoints;
