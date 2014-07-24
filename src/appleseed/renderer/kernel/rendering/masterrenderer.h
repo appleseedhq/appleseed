@@ -42,11 +42,6 @@
 #include <OSL/oslexec.h>
 #endif
 
-// boost headers.
-#ifdef WITH_OSL
-#include "boost/shared_ptr.hpp"
-#endif
-
 // Forward declarations.
 namespace foundation    { class AbortSwitch; }
 namespace renderer      { class IFrameRenderer; }
@@ -104,8 +99,7 @@ class DLLSYMBOL MasterRenderer
     ITileCallbackFactory*           m_serial_tile_callback_factory;
 
 #ifdef WITH_OSL
-    boost::shared_ptr<OIIO::TextureSystem>  m_texture_system;
-    std::size_t                             m_texture_cache_size;
+    OIIO::TextureSystem*            m_texture_system;
 #endif
 
     // Render frame sequences, each time reinitializing the rendering components.

@@ -34,6 +34,7 @@
 #include "renderer/global/globaltypes.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/beziercurve.h"
 #include "foundation/math/intersection.h"
 
 // Standard headers.
@@ -115,6 +116,30 @@ const size_t TriangleTreeAccessCacheWays = 2;
 
 // Size of the stack (in number of nodes) used during traversal.
 const size_t TriangleTreeStackSize = 64;
+
+
+//
+// Curve Tree settings.
+//
+
+// Curve format used for storage.
+typedef foundation::BezierCurve3d GCurveType;
+
+// Curve format used for intersections.
+typedef foundation::BezierCurve3d CurveType;
+
+// Curve Intersector format used for intersection.
+typedef foundation::BezierCurveIntersector<CurveType> GCurveIntersector;
+
+// Depth of a subtree in the van Emde Boas node layout.
+const size_t CurveTreeSubtreeDepth = 3;
+
+// Size of the curve tree access cache.
+const size_t CurveTreeAccessCacheLines = 128;
+const size_t CurveTreeAccessCacheWays = 2;
+
+// Size of the stack (in number of nodes) used during traversal.
+const size_t CurveTreeStackSize = 64;
 
 
 //
