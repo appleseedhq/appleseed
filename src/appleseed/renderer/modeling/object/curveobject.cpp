@@ -88,10 +88,10 @@ struct CurveObject::Impl
                 size_t num_ctrl_pts;
                 input >> num_curves;
                 input >> num_ctrl_pts;
-                for (size_t curve = 0; curve < num_curves; curve++)
+                for (size_t i = 0; i < num_curves; ++i)
                 {
                     std::vector<Vector3d> m_ctrl_points;
-                    for (size_t pt = 0; pt < num_ctrl_pts; pt++)
+                    for (size_t pt = 0; pt < num_ctrl_pts; ++pt)
                     {
                         Vector3d point;
                         input >> point.x >> point.y >> point.z;
