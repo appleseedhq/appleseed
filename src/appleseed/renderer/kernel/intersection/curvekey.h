@@ -48,23 +48,23 @@ class CurveKey
     // Constructors.
     CurveKey();
     CurveKey(
-        const size_t        object_instance_index,
-        const size_t        curve_index,
-        const size_t        curve_pa);
+        const size_t    object_instance_index,
+        const size_t    curve_index,
+        const size_t    curve_pa);
 
     // Return the index of the object instance within the assembly.
     size_t get_object_instance_index() const;
 
-    // Return the index of the curve within the assembly.
+    // Return the index of the curve within the object.
     size_t get_curve_index() const;
 
     // Return the primitive attribute index of the curve.
     size_t get_curve_pa() const;
 
   private:
-    foundation::uint32 m_object_instance_index;
-    foundation::uint32 m_curve_index;
-    foundation::uint16 m_curve_pa;
+    foundation::uint32  m_object_instance_index;
+    foundation::uint32  m_curve_index;
+    foundation::uint16  m_curve_pa;
 };
 
 
@@ -77,9 +77,9 @@ inline CurveKey::CurveKey()
 }
 
 inline CurveKey::CurveKey(
-    const size_t            object_instance_index,
-    const size_t            curve_index,
-    const size_t            curve_pa)
+    const size_t        object_instance_index,
+    const size_t        curve_index,
+    const size_t        curve_pa)
   : m_object_instance_index(static_cast<foundation::uint32>(object_instance_index))
   , m_curve_index(static_cast<foundation::uint32>(curve_index))
   , m_curve_pa(static_cast<foundation::uint16>(curve_pa))
