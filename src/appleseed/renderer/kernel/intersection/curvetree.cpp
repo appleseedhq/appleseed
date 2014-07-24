@@ -60,14 +60,12 @@ namespace
             
             const Object& object = object_instance->get_object();
 
-            size_t curve_index = 0;
-            
             // Process only curve objects.
             if (object.get_model() == "curve_object")
             {
                 // Cast the object as curve object.
                 const size_t object_instance_index = i;
-                const CurveObject* curve_object = dynamic_cast<const CurveObject*>(&object);
+                const CurveObject* curve_object = static_cast<const CurveObject*>(&object);
 
                 // Get the curves and store them.
                 const size_t num_curves = curve_object->get_curve_count();
@@ -75,10 +73,10 @@ namespace
                 // Create the curve keys and store them with the curves.
                 for (size_t j = 0; j < num_curves; j++)
                 {
-                    (*curves).push_back(curve_object->get_curve(j));
-                    (*curve_keys).push_back(CurveKey(
-                                                object_instance_index,  
-                                                j,                      
+                    curves->push_back(curve_object->get_curve(j));
+                    curve_keys->push_back(CurveKey(
+                                                object_instance_index,
+                                                j,
                                                 0));                    // For now we assume all the curves have a default pa value of 0.
                 }
             }
@@ -175,7 +173,7 @@ void CurveTree::build_bvh(
     const vector<size_t>& order = partitioner.get_item_ordering();
     
     // Try to perform a reorder only if there is some data available.
-    if(m_curves3.size() != 0)
+    if (m_curves3.size() != 0)
     {
         small_item_reorder<BezierCurve3d, size_t>(&m_curves3[0], &m_temp[0], &order[0], order.size());
         small_item_reorder<CurveKey, size_t>(&m_curve_keys[0], &m_temp_keys[0], &order[0], order.size());
