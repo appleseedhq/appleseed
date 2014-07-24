@@ -210,7 +210,8 @@ namespace
         assert(rhs.hit());
 
         return
-            lhs.get_triangle_index() == rhs.get_triangle_index() &&
+            lhs.get_primitive_type() == rhs.get_primitive_type() &&
+            lhs.get_primitive_index() == rhs.get_primitive_index() &&
             lhs.get_region_index() == rhs.get_region_index() &&
             lhs.get_object_instance_index() == rhs.get_object_instance_index() &&
             lhs.get_assembly_instance().get_uid() == rhs.get_assembly_instance().get_uid();
@@ -271,6 +272,7 @@ bool Intersector::trace(
         assembly_tree,
         m_region_tree_cache,
         m_triangle_tree_cache,
+        m_curve_tree_cache,
         parent_shading_point
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
         , m_triangle_tree_traversal_stats
@@ -320,6 +322,7 @@ bool Intersector::trace_probe(
         assembly_tree,
         m_region_tree_cache,
         m_triangle_tree_cache,
+        m_curve_tree_cache,
         parent_shading_point
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
         , m_triangle_tree_traversal_stats
@@ -339,14 +342,15 @@ bool Intersector::trace_probe(
 }
 
 void Intersector::manufacture_hit(
-    ShadingPoint&                   shading_point,
-    const ShadingRay&               shading_ray,
-    const AssemblyInstance*         assembly_instance,
-    const Transformd&               assembly_instance_transform,
-    const size_t                    object_instance_index,
-    const size_t                    region_index,
-    const size_t                    triangle_index,
-    const TriangleSupportPlaneType& triangle_support_plane) const
+    ShadingPoint&                       shading_point,
+    const ShadingPoint::PrimitiveType   primitive_type,
+    const ShadingRay&                   shading_ray,
+    const AssemblyInstance*             assembly_instance,
+    const Transformd&                   assembly_instance_transform,
+    const size_t                        object_instance_index,
+    const size_t                        region_index,
+    const size_t                        primitive_index,
+    const TriangleSupportPlaneType&     triangle_support_plane) const
 {
     shading_point.m_region_kit_cache = &m_region_kit_cache;
     shading_point.m_tess_cache = &m_tess_cache;
@@ -358,7 +362,8 @@ void Intersector::manufacture_hit(
     shading_point.m_assembly_instance_transform = assembly_instance_transform;
     shading_point.m_object_instance_index = object_instance_index;
     shading_point.m_region_index = region_index;
-    shading_point.m_triangle_index = triangle_index;
+    shading_point.m_primitive_index = primitive_index;
+    shading_point.m_primitive_type = primitive_type;
     shading_point.m_triangle_support_plane = triangle_support_plane;
 }
 
