@@ -67,6 +67,7 @@ class CurveKey
     foundation::uint16 m_curve_pa;
 };
 
+
 //
 // CurveKey class implementation.
 //

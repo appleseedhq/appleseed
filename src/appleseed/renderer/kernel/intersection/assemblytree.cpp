@@ -523,7 +523,7 @@ bool AssemblyLeafVisitor::visit(
     const ShadingRay::RayInfoType&      ray_info,
     double&                             distance
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
-    , bvh::TraversalStatistics&         stats,
+    , bvh::TraversalStatistics&         stats
 #endif
     )
 {

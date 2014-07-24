@@ -181,6 +181,7 @@ const BezierCurve3d& CurveObject::get_curve(const size_t index) const
     return impl->m_curves[index];
 }
 
+
 //
 // CurveObjectFactory class implementation.
 //

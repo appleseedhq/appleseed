@@ -121,6 +121,7 @@ private:
     std::vector<CurveKey>                       m_curve_keys;
 };
 
+
 //
 // Curve tree factory.
 //
@@ -139,6 +140,7 @@ class CurveTreeFactory
   private:
     const CurveTree::Arguments       m_arguments;
 };
+
 
 //
 // Some additional types.

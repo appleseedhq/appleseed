@@ -170,7 +170,7 @@ class AssemblyLeafVisitor
         const ShadingRay::RayInfoType&              ray_info,
         double&                                     distance
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
-        , foundation::bvh::TraversalStatistics&     stats,
+        , foundation::bvh::TraversalStatistics&     stats
 #endif
         );
 

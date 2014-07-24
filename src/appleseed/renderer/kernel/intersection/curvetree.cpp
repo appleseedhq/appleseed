@@ -40,6 +40,10 @@ using namespace std;
 namespace renderer
 {
 
+//
+// CurveTree class implementation.
+//
+
 namespace
 {
     void collect_curves(
@@ -177,6 +181,7 @@ void CurveTree::build_bvh(
         small_item_reorder<CurveKey, size_t>(&m_curve_keys[0], &m_temp_keys[0], &order[0], order.size());
     }
 }
+
 
 //
 // CurveTreeFactory class implementation.

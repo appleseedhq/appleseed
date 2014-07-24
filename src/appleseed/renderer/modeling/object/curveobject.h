@@ -97,6 +97,7 @@ class DLLSYMBOL CurveObject
     ~CurveObject();
 };
 
+
 //
 // Curve Object Factory
 //
