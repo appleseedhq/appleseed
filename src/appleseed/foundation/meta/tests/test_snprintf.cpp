@@ -28,6 +28,7 @@
 //
 
 // appleseed.foundation headers.
+#include "foundation/platform/arch.h"
 #include "foundation/platform/snprintf.h"
 #include "foundation/utility/test.h"
 

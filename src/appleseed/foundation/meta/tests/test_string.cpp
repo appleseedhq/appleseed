@@ -29,6 +29,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/rng.h"
+#include "foundation/platform/arch.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/makevector.h"

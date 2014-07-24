@@ -460,6 +460,7 @@ source_group ("foundation\\platform\\snprintf" FILES
 )
 
 set (foundation_platform_sources
+    foundation/platform/arch.h
     foundation/platform/breakpoint.h
     foundation/platform/compiler.cpp
     foundation/platform/compiler.h

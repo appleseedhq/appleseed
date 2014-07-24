@@ -288,19 +288,6 @@ set (preprocessor_definitions_common
     ${preprocessor_definitions_common}
     APPLESEED_VERSION_STRING="${git_tag}"
 )
-if (CMAKE_SIZEOF_VOID_P MATCHES 4)
-    set (preprocessor_definitions_common
-        ${preprocessor_definitions_common}
-        APPLESEED_ARCH32
-)
-elseif (CMAKE_SIZEOF_VOID_P MATCHES 8)
-    set (preprocessor_definitions_common
-        ${preprocessor_definitions_common}
-        APPLESEED_ARCH64
-)
-else ()
-    message (FATAL_ERROR "Cannot determine pointer size.")
-endif ()
 if (USE_QMC_SAMPLER)
     set (preprocessor_definitions_common
         ${preprocessor_definitions_common}

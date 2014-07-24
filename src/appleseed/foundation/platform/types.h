@@ -30,6 +30,9 @@
 #ifndef APPLESEED_FOUNDATION_PLATFORM_TYPES_H
 #define APPLESEED_FOUNDATION_PLATFORM_TYPES_H
 
+// appleseed.foundation headers.
+#include "foundation/platform/arch.h"
+
 // boost headers.
 #include "boost/static_assert.hpp"
 
