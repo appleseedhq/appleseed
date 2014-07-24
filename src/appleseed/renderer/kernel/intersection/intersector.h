@@ -31,6 +31,7 @@
 #define APPLESEED_RENDERER_KERNEL_INTERSECTION_INTERSECTOR_H
 
 // appleseed.renderer headers.
+#include "renderer/kernel/intersection/curvetree.h"
 #include "renderer/kernel/intersection/intersectionsettings.h"
 #include "renderer/kernel/intersection/regiontree.h"
 #include "renderer/kernel/intersection/triangletree.h"
@@ -104,14 +105,15 @@ class Intersector
 
     // Manufacture a hit "by hand".
     void manufacture_hit(
-        ShadingPoint&                   shading_point,
-        const ShadingRay&               shading_ray,
-        const AssemblyInstance*         assembly_instance,
-        const foundation::Transformd&   assembly_instance_transform,
-        const size_t                    object_instance_index,
-        const size_t                    region_index,
-        const size_t                    triangle_index,
-        const TriangleSupportPlaneType& triangle_support_plane) const;
+        ShadingPoint&                       shading_point,
+        const ShadingPoint::PrimitiveType   type,
+        const ShadingRay&                   shading_ray,
+        const AssemblyInstance*             assembly_instance,
+        const foundation::Transformd&       assembly_instance_transform,
+        const size_t                        object_instance_index,
+        const size_t                        region_index,
+        const size_t                        primitive_index,
+        const TriangleSupportPlaneType&     triangle_support_plane) const;
 
     // Retrieve performance statistics.
     foundation::StatisticsVector get_statistics() const;
@@ -124,6 +126,7 @@ class Intersector
     // Access caches.
     mutable RegionTreeAccessCache                   m_region_tree_cache;
     mutable TriangleTreeAccessCache                 m_triangle_tree_cache;
+    mutable CurveTreeAccessCache                    m_curve_tree_cache;
     mutable RegionKitAccessCache                    m_region_kit_cache;
     mutable StaticTriangleTessAccessCache           m_tess_cache;
 
@@ -133,6 +136,7 @@ class Intersector
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
     mutable foundation::bvh::TraversalStatistics    m_assembly_tree_traversal_stats;
     mutable foundation::bvh::TraversalStatistics    m_triangle_tree_traversal_stats;
+    mutable foundation::bvh::TraversalStatistics    m_curve_tree_traversal_stats;
 #endif
 };
 

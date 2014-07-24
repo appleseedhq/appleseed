@@ -78,8 +78,17 @@ namespace renderer
 class ShadingPoint
 {
   public:
+
+    // Add a primitive type to represent triangles as well as curves.
+    enum PrimitiveType
+    {
+        PrimitiveTriangle,
+        PrimitiveCurve,
+        PrimitiveUndefined
+    };
+
     // Constructor, calls clear().
-    ShadingPoint();
+    ShadingPoint(const PrimitiveType& type = PrimitiveUndefined);
 
     // Copy constructor.
     explicit ShadingPoint(const ShadingPoint& rhs);
@@ -170,10 +179,13 @@ class ShadingPoint
     size_t get_region_index() const;
 
     // Return the index, within the region, of the hit triangle.
-    size_t get_triangle_index() const;
+    size_t get_primitive_index() const;
 
     // Return the index, within the region, of the primitive attribute of the hit triangle.
     size_t get_primitive_attribute_index() const;
+
+    // Return the type of the primitive.
+    PrimitiveType get_primitive_type() const;
 
 #ifdef WITH_OSL
     struct OSLObjectTransformInfo
@@ -202,6 +214,7 @@ class ShadingPoint
 #endif
     friend class RegionLeafVisitor;
     friend class TriangleLeafVisitor;
+    friend class CurveLeafVisitor;
     friend class ShadingPointBuilder;
 
     RegionKitAccessCache*               m_region_kit_cache;
@@ -218,7 +231,8 @@ class ShadingPoint
     foundation::Transformd              m_assembly_instance_transform;  // transform of the hit assembly instance at ray time
     size_t                              m_object_instance_index;        // index of the object instance that was hit
     size_t                              m_region_index;                 // index of the region containing the hit triangle
-    size_t                              m_triangle_index;               // index of the hit triangle
+    size_t                              m_primitive_index;              // index of the hit triangle
+    mutable PrimitiveType               m_primitive_type;
     TriangleSupportPlaneType            m_triangle_support_plane;       // support plane of the hit triangle
 
     // Additional intersection results, computed on demand.
@@ -246,7 +260,7 @@ class ShadingPoint
     mutable const Assembly*             m_assembly;                     // hit assembly
     mutable const ObjectInstance*       m_object_instance;              // hit object instance
     mutable Object*                     m_object;                       // hit object
-    mutable foundation::uint32          m_triangle_pa;                  // hit triangle attribute index
+    mutable foundation::uint32          m_primitive_pa;                 // hit primitive attribute index
     mutable GVector2                    m_v0_uv, m_v1_uv, m_v2_uv;      // texture coordinates from UV set #0 at triangle vertices
     mutable GVector3                    m_v0, m_v1, m_v2;               // object instance space triangle vertices
     mutable GVector3                    m_n0, m_n1, m_n2;               // object instance space triangle vertex normals
@@ -280,6 +294,11 @@ class ShadingPoint
     // Fetch the source geometry.
     void fetch_source_geometry() const;
 
+    // Additional fetch functions for different primitive types
+    void fetch_triangle_source_geometry() const;
+
+    void fetch_curve_source_geometry() const;
+
     // Refine and offset the intersection point.
     void refine_and_offset() const;
 
@@ -292,9 +311,10 @@ class ShadingPoint
 // ShadingPoint class implementation.
 //
 
-FORCE_INLINE ShadingPoint::ShadingPoint()
+FORCE_INLINE ShadingPoint::ShadingPoint(const PrimitiveType& type)
 {
     clear();
+    m_primitive_type = type;
 }
 
 inline ShadingPoint::ShadingPoint(const ShadingPoint& rhs)
@@ -309,9 +329,10 @@ inline ShadingPoint::ShadingPoint(const ShadingPoint& rhs)
   , m_assembly_instance_transform(rhs.m_assembly_instance_transform)
   , m_object_instance_index(rhs.m_object_instance_index)
   , m_region_index(rhs.m_region_index)
-  , m_triangle_index(rhs.m_triangle_index)
+  , m_primitive_index(rhs.m_primitive_index)
   , m_triangle_support_plane(rhs.m_triangle_support_plane)
   , m_members(0)
+  , m_primitive_type(rhs.m_primitive_type)
 {
 }
 
@@ -323,6 +344,7 @@ FORCE_INLINE void ShadingPoint::clear()
     m_scene = 0;
     m_hit = false;
     m_members = 0;
+    m_primitive_type = PrimitiveUndefined;
 }
 
 inline void ShadingPoint::set_ray(const ShadingRay& ray)
@@ -442,51 +464,61 @@ inline const foundation::Vector3d& ShadingPoint::get_geometric_normal() const
 {
     assert(hit());
 
+    // Compute triangle normals only.
     if (!(m_members & HasGeometricNormal))
     {
-        if (m_members & HasWorldSpaceVertices)
+        if(m_primitive_type == PrimitiveTriangle)
         {
-            // We already have the world space vertices of the hit triangle.
-            // Use them to compute the geometric normal directly in world space.
-            m_geometric_normal = foundation::cross(m_v1_w - m_v0_w, m_v2_w - m_v0_w);
+            if (m_members & HasWorldSpaceVertices)
+            {
+                // We already have the world space vertices of the hit triangle.
+                // Use them to compute the geometric normal directly in world space.
+                m_geometric_normal = foundation::cross(m_v1_w - m_v0_w, m_v2_w - m_v0_w);
+            }
+            else
+            {
+                cache_source_geometry();
+
+                // Compute the object instance space geometric normal.
+                const foundation::Vector3d v0(m_v0);
+                const foundation::Vector3d v1(m_v1);
+                const foundation::Vector3d v2(m_v2);
+                m_geometric_normal = foundation::cross(v1 - v0, v2 - v0);
+
+                // Transform the geometric normal to world space.
+                m_geometric_normal =
+                    m_assembly_instance_transform.normal_to_parent(
+                        m_object_instance->get_transform().normal_to_parent(m_geometric_normal));
+            }
+
+            // Normalize the geometric normal.
+            m_geometric_normal = foundation::normalize(m_geometric_normal);
+
+            // Place the geometric normal in the same hemisphere as the original shading normal.
+            if (foundation::dot(m_geometric_normal, get_original_shading_normal()) < 0.0)
+                m_geometric_normal = -m_geometric_normal;
+
+            // Remember which side of the geometric surface we hit.
+            m_side =
+                foundation::dot(m_ray.m_dir, m_geometric_normal) > 0.0
+                    ? ObjectInstance::BackSide
+                    : ObjectInstance::FrontSide;
+
+            // Finally make the geometric normal face the direction of the incoming ray.
+            if (m_side == ObjectInstance::BackSide)
+                m_geometric_normal = -m_geometric_normal;
+
+            // The geometric normal is now available.
+            m_members |= HasGeometricNormal;
         }
-        else
+        else if (m_primitive_type == PrimitiveCurve)
         {
-            cache_source_geometry();
-
-            // Compute the object instance space geometric normal.
-            const foundation::Vector3d v0(m_v0);
-            const foundation::Vector3d v1(m_v1);
-            const foundation::Vector3d v2(m_v2);
-            m_geometric_normal = foundation::cross(v1 - v0, v2 - v0);
-
-            // Transform the geometric normal to world space.
-            m_geometric_normal =
-                m_assembly_instance_transform.normal_to_parent(
-                    m_object_instance->get_transform().normal_to_parent(m_geometric_normal));
+            // Get geometric normal for curves.
+            // We assume flat ribbon primitive facing the incoming ray.
+            m_geometric_normal = -normalize(m_ray.m_dir);
+            m_members |= HasGeometricNormal;
         }
-
-        // Normalize the geometric normal.
-        m_geometric_normal = foundation::normalize(m_geometric_normal);
-
-        // Place the geometric normal in the same hemisphere as the original shading normal.
-        if (foundation::dot(m_geometric_normal, get_original_shading_normal()) < 0.0)
-            m_geometric_normal = -m_geometric_normal;
-
-        // Remember which side of the geometric surface we hit.
-        m_side =
-            foundation::dot(m_ray.m_dir, m_geometric_normal) > 0.0
-                ? ObjectInstance::BackSide
-                : ObjectInstance::FrontSide;
-
-        // Finally make the geometric normal face the direction of the incoming ray.
-        if (m_side == ObjectInstance::BackSide)
-            m_geometric_normal = -m_geometric_normal;
-
-        // The geometric normal is now available.
-        m_members |= HasGeometricNormal;
     }
-
     return m_geometric_normal;
 }
 
@@ -496,32 +528,42 @@ inline const foundation::Vector3d& ShadingPoint::get_shading_normal() const
 
     if (!(m_members & HasShadingNormal))
     {
-        // Start with the original shading normal.
-        m_shading_normal = get_original_shading_normal();
-
-        // Apply the normal modifier if the material has one.
-        const Material* material = get_material();
-        if (material)
+        if(m_primitive_type == PrimitiveTriangle)
         {
-            const INormalModifier* modifier = material->get_normal_modifier();
-            if (modifier)
+            // Start with the original shading normal.
+            m_shading_normal = get_original_shading_normal();
+
+            // Apply the normal modifier if the material has one.
+            const Material* material = get_material();
+            if (material)
             {
-                m_shading_normal =
-                    modifier->evaluate(
-                        *m_texture_cache,
-                        m_shading_normal,
-                        get_uv(0),
-                        get_dpdu(0),
-                        get_dpdv(0));
+                const INormalModifier* modifier = material->get_normal_modifier();
+                if (modifier)
+                {
+                    m_shading_normal =
+                        modifier->evaluate(
+                            *m_texture_cache,
+                            m_shading_normal,
+                            get_uv(0),
+                            get_dpdu(0),
+                            get_dpdv(0));
+                }
             }
+
+            // Place the shading normal in the same hemisphere as the geometric normal.
+            if (m_side == ObjectInstance::BackSide)
+                m_shading_normal = -m_shading_normal;
+
+            // The shading normal is now available.
+            m_members |= HasShadingNormal;
         }
-
-        // Place the shading normal in the same hemisphere as the geometric normal.
-        if (m_side == ObjectInstance::BackSide)
-            m_shading_normal = -m_shading_normal;
-
-        // The shading normal is now available.
-        m_members |= HasShadingNormal;
+        else if (m_primitive_type == PrimitiveCurve)
+        {
+            // Computing shading normal for the curve primitive
+            // We assume the shading normal to be the same as the geomtric normal.
+            m_shading_normal = -normalize(m_ray.m_dir);
+            m_members |= HasShadingNormal;
+        }
     }
 
     return m_shading_normal;
@@ -533,35 +575,42 @@ inline const foundation::Vector3d& ShadingPoint::get_original_shading_normal() c
 
     if (!(m_members & HasOriginalShadingNormal))
     {
-        const double w = 1.0 - m_bary[0] - m_bary[1];
-
-        if (m_members & HasWorldSpaceVertexNormals)
+        if (m_primitive_type == PrimitiveTriangle)
         {
-            // We already have the world space vertex normals of the hit triangle.
-            // Use them to compute the shading normal directly in world space.
-            m_original_shading_normal =
-                  m_n0_w * w
-                + m_n1_w * m_bary[0]
-                + m_n2_w * m_bary[1];
+            const double w = 1.0 - m_bary[0] - m_bary[1];
+
+            if (m_members & HasWorldSpaceVertexNormals)
+            {
+                // We already have the world space vertex normals of the hit triangle.
+                // Use them to compute the shading normal directly in world space.
+                m_original_shading_normal =
+                      m_n0_w * w
+                    + m_n1_w * m_bary[0]
+                    + m_n2_w * m_bary[1];
+            }
+            else
+            {
+                cache_source_geometry();
+
+                // Compute the object instance space shading normal.
+                m_original_shading_normal =
+                      foundation::Vector3d(m_n0) * w
+                    + foundation::Vector3d(m_n1) * m_bary[0]
+                    + foundation::Vector3d(m_n2) * m_bary[1];
+
+                // Transform the shading normal to world space.
+                m_original_shading_normal =
+                    m_assembly_instance_transform.normal_to_parent(
+                        m_object_instance->get_transform().normal_to_parent(m_original_shading_normal));
+            }
+
+            // Normalize the shading normal.
+            m_original_shading_normal = foundation::normalize(m_original_shading_normal);
         }
-        else
+        else if (m_primitive_type == PrimitiveCurve)
         {
-            cache_source_geometry();
-
-            // Compute the object instance space shading normal.
-            m_original_shading_normal =
-                  foundation::Vector3d(m_n0) * w
-                + foundation::Vector3d(m_n1) * m_bary[0]
-                + foundation::Vector3d(m_n2) * m_bary[1];
-
-            // Transform the shading normal to world space.
-            m_original_shading_normal =
-                m_assembly_instance_transform.normal_to_parent(
-                    m_object_instance->get_transform().normal_to_parent(m_original_shading_normal));
+            m_original_shading_normal = -normalize(m_ray.m_dir);
         }
-
-        // Normalize the shading normal.
-        m_original_shading_normal = foundation::normalize(m_original_shading_normal);
 
         // The shading normal is now available.
         m_members |= HasOriginalShadingNormal;
@@ -666,7 +715,7 @@ inline const Material* ShadingPoint::get_material() const
         m_material = 0;
 
         // Proceed with retrieving the material only if the hit triangle has one.
-        if (m_triangle_pa != Triangle::None)
+        if (m_primitive_pa != Triangle::None)
         {
             // Retrieve material indices from the object instance.
             const MaterialArray& materials =
@@ -675,8 +724,8 @@ inline const Material* ShadingPoint::get_material() const
                     : m_object_instance->get_front_materials();
 
             // Fetch the material.
-            if (static_cast<size_t>(m_triangle_pa) < materials.size())
-                m_material = materials[m_triangle_pa];
+            if (static_cast<size_t>(m_primitive_pa) < materials.size())
+                m_material = materials[m_primitive_pa];
         }
 
         // The material at the intersection point is now available.
@@ -725,17 +774,22 @@ inline size_t ShadingPoint::get_region_index() const
     return m_region_index;
 }
 
-inline size_t ShadingPoint::get_triangle_index() const
+inline size_t ShadingPoint::get_primitive_index() const
 {
     assert(hit());
-    return m_triangle_index;
+    return m_primitive_index;
+}
+
+inline ShadingPoint::PrimitiveType ShadingPoint::get_primitive_type() const
+{
+    return m_primitive_type;
 }
 
 inline size_t ShadingPoint::get_primitive_attribute_index() const
 {
     assert(hit());
     cache_source_geometry();
-    return static_cast<size_t>(m_triangle_pa);
+    return static_cast<size_t>(m_primitive_pa);
 }
 
 inline void ShadingPoint::cache_source_geometry() const

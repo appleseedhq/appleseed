@@ -55,6 +55,7 @@
 #include "renderer/modeling/material/imaterialfactory.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/material/materialfactoryregistrar.h"
+#include "renderer/modeling/object/curveobject.h"
 #include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/meshobjectreader.h"
 #include "renderer/modeling/object/object.h"
@@ -1528,6 +1529,10 @@ namespace
                             m_objects = array_vector<ObjectVector>(object_array);
                         else m_context.get_event_counters().signal_error();
                     }
+                }
+                else if (m_model == CurveObjectFactory::get_model())
+                {
+                    m_objects.push_back(CurveObjectFactory::create(m_name.c_str(), m_params).release());
                 }
                 else
                 {
