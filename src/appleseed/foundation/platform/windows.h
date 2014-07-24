@@ -31,7 +31,7 @@
 #define APPLESEED_FOUNDATION_PLATFORM_WINDOWS_H
 
 #ifndef _WIN32
-#error Unsupported platform.
+    #error Unsupported platform.
 #endif
 
 // Exclude rarely-used stuff from Windows headers.

@@ -31,7 +31,7 @@
 #define APPLESEED_FOUNDATION_PLATFORM_SSE_H
 
 #ifndef APPLESEED_USE_SSE
-#error SSE support not enabled.
+    #error SSE support not enabled.
 #endif
 
 // Platform headers.
