@@ -75,10 +75,10 @@ namespace foundation
     typedef signed int                  int32;
     typedef unsigned int                uint32;
 
-    #if defined ARCH32
+    #if defined APPLESEED_ARCH32
         typedef signed long long int    int64;
         typedef unsigned long long int  uint64;
-    #elif defined ARCH64
+    #elif defined APPLESEED_ARCH64
         typedef signed long int         int64;
         typedef unsigned long int       uint64;
     #else
@@ -104,9 +104,9 @@ BOOST_STATIC_ASSERT(sizeof(uint64) == 8);
 // Define a signed counterpart to std::size_t, i.e. a synonym for the non-standard ssize_t type.
 //
 
-#if defined ARCH32
+#if defined APPLESEED_ARCH32
     typedef int32 isize_t;
-#elif defined ARCH64
+#elif defined APPLESEED_ARCH64
     typedef int64 isize_t;
 #else
     #error Cannot determine machine architecture.
@@ -129,10 +129,10 @@ BOOST_STATIC_ASSERT(sizeof(isize_t) == sizeof(size_t));
 // gcc.
 #elif defined __GNUC__
 
-    #if defined ARCH32
+    #if defined APPLESEED_ARCH32
         #define FMT_UINT64      "%llu"
         #define FMT_UINT64_HEX  "%llx"
-    #elif defined ARCH64
+    #elif defined APPLESEED_ARCH64
         #define FMT_UINT64      "%lu"
         #define FMT_UINT64_HEX  "%lx"
     #else

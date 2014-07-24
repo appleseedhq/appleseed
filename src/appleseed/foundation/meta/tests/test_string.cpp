@@ -111,12 +111,12 @@ TEST_SUITE(Foundation_Utility_String)
         EXPECT_EQ("42", to_string<uint64>(42));
     }
 
-#if defined ARCH32
+#if defined APPLESEED_ARCH32
     #define ZERO_PTR            0x00000000
     #define ZERO_PTR_STR        "0x00000000"
     #define DEADBEEF_PTR        0xDEADBEEF
     #define DEADBEEF_PTR_STR    "0xDEADBEEF"
-#elif defined ARCH64
+#elif defined APPLESEED_ARCH64
     #define ZERO_PTR            0x0000000000000000
     #define ZERO_PTR_STR        "0x0000000000000000"
     #define DEADBEEF_PTR        0xDEADBEEFDEAFBABE

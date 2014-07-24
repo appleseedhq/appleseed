@@ -85,10 +85,10 @@ TEST_SUITE(Foundation_Platform_Snprintf)
         EXPECT_EQ(4, result);
     }
 
-#if defined ARCH32
+#if defined APPLESEED_ARCH32
     const size_t MaxSizeTValue = ~0;
     const char MaxSizeTValueString[] = "4294967295";
-#elif defined ARCH64
+#elif defined APPLESEED_ARCH64
     const size_t MaxSizeTValue = ~0;
     const char MaxSizeTValueString[] = "18446744073709551615";
 #else

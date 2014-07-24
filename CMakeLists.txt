@@ -291,12 +291,12 @@ set (preprocessor_definitions_common
 if (CMAKE_SIZEOF_VOID_P MATCHES 4)
     set (preprocessor_definitions_common
         ${preprocessor_definitions_common}
-        ARCH32
+        APPLESEED_ARCH32
 )
 elseif (CMAKE_SIZEOF_VOID_P MATCHES 8)
     set (preprocessor_definitions_common
         ${preprocessor_definitions_common}
-        ARCH64
+        APPLESEED_ARCH64
 )
 else ()
     message (FATAL_ERROR "Cannot determine pointer size.")
