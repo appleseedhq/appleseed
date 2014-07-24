@@ -366,10 +366,13 @@ string ColorExpressionProxy::get() const
 
 string ColorExpressionProxy::qcolor_to_expression(const QColor& color)
 {
+    // Convert sRGB to linear RGB
+    const Color<float, 3> s_color(color.redF(), color.greenF(), color.blueF());
+    const Color<float, 3> linear_color = srgb_to_linear_rgb(s_color);
     QString color_expression = QString("[%1, %2, %3]")
-            .arg(color.redF())
-            .arg(color.greenF())
-            .arg(color.blueF());
+            .arg(linear_color.r)
+            .arg(linear_color.g)
+            .arg(linear_color.b);
     return color_expression.toStdString();
 }
 
@@ -384,11 +387,14 @@ QColor ColorExpressionProxy::expression_to_qcolor(const string& color)
     QColor q_color;
     if (color_components.size() >= 3)
     {
-        double red, green, blue;
+        float red, green, blue;
         istringstream(color_components[0]) >> red;
         istringstream(color_components[1]) >> green;
         istringstream(color_components[2]) >> blue;
-        q_color.setRgbF(red, green, blue);
+        // Convert from linear RGB to sRGB
+        const Color<float, 3> linear_color(red, green, blue);
+        const Color<float, 3> s_color = linear_rgb_to_srgb(linear_color);
+        q_color.setRgbF(s_color.r, s_color.g, s_color.b);
     }
     return q_color;
 }

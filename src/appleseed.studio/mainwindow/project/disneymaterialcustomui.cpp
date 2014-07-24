@@ -324,7 +324,7 @@ string DisneyMaterialCustomUI::unique_layer_name()
 
 string DisneyMaterialCustomUI::texture_to_expression(const QString& expression)
 {
-    QString texture_expression = QString("texture([%1], $u, $v)")
+    QString texture_expression = QString("texture(\"%1\", $u, $v)")
             .arg(expression);
     return texture_expression.toStdString();
 }
