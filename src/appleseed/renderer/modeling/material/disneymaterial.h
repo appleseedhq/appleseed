@@ -30,6 +30,7 @@
 #define APPLESEED_RENDERER_MODELING_MATERIAL_DISNEYMATERIAL_H
 
 // appleseed.renderer headers.
+#include "renderer/modeling/bsdf/disneybrdf.h"
 #include "renderer/modeling/material/imaterialfactory.h"
 #include "renderer/modeling/material/material.h"
 
@@ -43,8 +44,8 @@
 // Forward declarations.
 namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }
-namespace renderer      { class ParamArray; }
 namespace renderer      { class DisneyMaterial; }
+namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
@@ -62,6 +63,11 @@ class DLLSYMBOL DisneyMaterialLayer
 
     bool check_expressions_syntax() const;
 
+    void evaluate_expressions(
+        const ShadingPoint&     shading_point,
+        foundation::Color3d&    base_color,
+        DisneyBRDFInputValues&  values) const;
+    
     static foundation::DictionaryArray get_input_metadata();
 
     static foundation::Dictionary get_default_values();
@@ -75,7 +81,7 @@ class DLLSYMBOL DisneyMaterialLayer
         const foundation::Dictionary&   params);
 
     void swap(DisneyMaterialLayer& other);
-
+    
     struct Impl;
     Impl* impl;
 };
@@ -102,6 +108,10 @@ class DLLSYMBOL DisneyMaterial
         const Project&              project,
         const Assembly&             assembly) OVERRIDE;
 
+    std::size_t get_layer_count() const;
+
+    const DisneyMaterialLayer& get_layer(const std::size_t index) const;
+    
   private:
     friend class DisneyMaterialFactory;
 
@@ -112,9 +122,6 @@ class DLLSYMBOL DisneyMaterial
 
     // Destructor
     ~DisneyMaterial();
-
-    std::size_t get_layer_count() const;
-    const DisneyMaterialLayer& get_layer(const std::size_t index) const;
 
     struct Impl;
     Impl* impl;

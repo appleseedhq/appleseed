@@ -31,14 +31,17 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/bsdf/disneybrdf.h"
+#include "renderer/modeling/bsdf/disneylayeredbrdf.h"
 #include "renderer/modeling/input/expression.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/scalar.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
 
 // Standard headers.
 #include <algorithm>
+#include <memory>
 #include <vector>
 
 using namespace foundation;
@@ -57,7 +60,6 @@ struct DisneyMaterialLayer::Impl
         const char*         name,
         const Dictionary&   params)
       : m_name(name)
-      , m_layer_number(params.get<size_t>("layer_number"))
     {
         m_layer_number = params.get<size_t>("layer_number");
         m_mask.set_expression(params.get<string>("mask").c_str(), false);
@@ -126,6 +128,15 @@ bool DisneyMaterialLayer::operator<(const DisneyMaterialLayer& other) const
 
 bool DisneyMaterialLayer::check_expressions_syntax() const
 {
+    if (!impl->m_mask.syntax_ok())
+    {
+        //RENDERER_LOG_ERROR( something here...);
+        return false;
+    }
+    
+    // ...
+    
+    /*
     return  impl->m_mask.syntax_ok() &&
             impl->m_base_color.syntax_ok() &&
             impl->m_subsurface.syntax_ok() &&
@@ -137,7 +148,73 @@ bool DisneyMaterialLayer::check_expressions_syntax() const
             impl->m_sheen.syntax_ok() &&
             impl->m_sheen_tint.syntax_ok() &&
             impl->m_clearcoat.syntax_ok() &&
-            impl->m_clearcoat_gloss.syntax_ok();            
+            impl->m_clearcoat_gloss.syntax_ok();
+    */
+
+    return true;
+}
+
+void DisneyMaterialLayer::evaluate_expressions(
+    const ShadingPoint&     shading_point,
+    Color3d&                base_color,        
+    DisneyBRDFInputValues&  values) const
+{
+    const double mask = clamp(impl->m_mask.evaluate(shading_point)[0], 0.0, 1.0);
+
+    if (mask == 0)
+        return;
+    
+    base_color = mix(base_color, impl->m_base_color.evaluate(shading_point), mask);
+    
+    values.m_subsurface = mix(
+        values.m_subsurface,
+        clamp(impl->m_subsurface.evaluate(shading_point)[0], 0.0, 1.0),
+        mask);
+
+    values.m_metallic = mix(
+        values.m_metallic,
+        clamp(impl->m_metallic.evaluate(shading_point)[0], 0.0, 1.0),
+        mask);
+    
+    values.m_specular = mix(
+        values.m_specular, 
+        max(impl->m_specular.evaluate(shading_point)[0], 0.0),
+        mask);
+    
+    values.m_specular_tint = mix(
+        values.m_specular_tint, 
+        clamp(impl->m_specular_tint.evaluate(shading_point)[0], 0.0, 1.0),
+        mask);
+    
+    values.m_anisotropic = mix(
+        values.m_anisotropic, 
+        clamp(impl->m_anisotropic.evaluate(shading_point)[0], 0.0, 1.0),
+        mask);
+    
+    values.m_roughness = mix(
+        values.m_roughness,
+        clamp(impl->m_roughness.evaluate(shading_point)[0], 0.001, 1.0),
+        mask);
+
+    values.m_sheen = mix(
+        values.m_sheen, 
+        impl->m_sheen.evaluate(shading_point)[0],
+        mask);
+    
+    values.m_sheen_tint = mix(
+        values.m_sheen_tint, 
+        clamp(impl->m_sheen_tint.evaluate(shading_point)[0], 0.0, 1.0),
+        mask);
+    
+    values.m_clearcoat = mix(
+        values.m_clearcoat, 
+        impl->m_clearcoat.evaluate(shading_point)[0],
+        mask);
+    
+    values.m_clearcoat_gloss = mix(
+        values.m_clearcoat_gloss, 
+        clamp(impl->m_clearcoat_gloss.evaluate(shading_point)[0], 0.0, 1.0),
+        mask);
 }
 
 DictionaryArray DisneyMaterialLayer::get_input_metadata()
@@ -203,15 +280,22 @@ namespace
 
 struct DisneyMaterial::Impl
 {
+    explicit Impl(const DisneyMaterial* parent)
+      : m_brdf(new DisneyLayeredBRDF(parent))
+    {
+    }
+
     vector<DisneyMaterialLayer> m_layers;
+    auto_ptr<DisneyLayeredBRDF> m_brdf;
 };
 
 DisneyMaterial::DisneyMaterial(
   const char*         name,
   const ParamArray&   params)
   : Material(name, params)
-  , impl(new Impl())
+  , impl(new Impl(this))
 {
+    m_bsdf = impl->m_brdf.get();
 }
 
 DisneyMaterial::~DisneyMaterial()
@@ -237,7 +321,6 @@ bool DisneyMaterial::on_frame_begin(
     if (!Material::on_frame_begin(project, assembly, abort_switch))
         return false;
 
-    /*
     try
     {
         for (const_each<DictionaryDictionary> it = m_params.dictionaries(); it; ++it)
@@ -257,7 +340,6 @@ bool DisneyMaterial::on_frame_begin(
         if (!it->check_expressions_syntax())
             return false;
     }
-    */
 
     return true;
 }

@@ -30,14 +30,14 @@
 // Interface header.
 #include "expression.h"
 
-// appleseed.renderer headers.
-
-// appleseed.foundation headers.
+// Boost headers.
+#include "boost/thread/tss.hpp"
 
 // Standard headers.
 #include <algorithm>
 #include <string>
 
+using namespace boost;
 using namespace foundation;
 using namespace std;
 
@@ -48,15 +48,62 @@ namespace renderer
 // Expression class implementation.
 //
 
-struct Expression::Impl : public SeExpression
+class Expression::Impl
 {
-    Impl() : SeExpression()
+  public:
+    
+    class SeExpr : public SeExpression
+    {
+      public:
+        SeExpr() : SeExpression()
+        {
+        }
+
+        SeExpr( const string& expr, bool is_vector)
+          : SeExpression(expr, is_vector)
+        {
+        }
+        
+      private:
+    };
+    
+    Impl()
+      : m_is_vector(false)
     {
     }
 
-    explicit Impl(const string& expr, bool is_vector = true)
-      : SeExpression(expr, is_vector)
+    explicit Impl(const char* expr, bool is_vector = true)
     {
+        set_expression(expr, is_vector);
+    }
+
+    void set_expression(const char* expr, bool is_vector = true)
+    {
+        m_expr = expr;
+        m_is_vector = is_vector;        
+    }
+    
+    bool syntax_ok() const
+    {
+        SeExpr x(m_expr, m_is_vector);
+        return x.syntaxOK();
+    }
+
+    string                              m_expr;
+    bool                                m_is_vector;
+    mutable thread_specific_ptr<SeExpr> m_seexprs;
+    
+    SeExpr& get_expression() const
+    {
+        SeExpr* e = m_seexprs.get();
+        
+        if (!e)
+        {
+            e = new SeExpr(m_expr, m_is_vector);
+            m_seexprs.reset(e);
+        }
+
+        return *e;
     }
 };
 
@@ -76,7 +123,7 @@ Expression::~Expression()
 }
 
 Expression::Expression(const Expression& other)
-  : impl(new Impl(other.impl->getExpr(), other.impl->wantVec()))
+  : impl(new Impl(other.impl->m_expr.c_str(), other.impl->m_is_vector))
 {
 }
 
@@ -94,13 +141,17 @@ void Expression::swap(Expression& other)
 
 void Expression::set_expression(const char* expr, bool is_vector)
 {
-    impl->setExpr(expr);
-    impl->setWantVec(is_vector);
+    impl->set_expression(expr, is_vector);
 }
 
 bool Expression::syntax_ok() const
 {
-    return impl->syntaxOK();
+    return impl->syntax_ok();
+}
+
+Color3d Expression::evaluate(const ShadingPoint& shading_point) const
+{
+    return Color3d(0.0);
 }
 
 }   // namespace renderer

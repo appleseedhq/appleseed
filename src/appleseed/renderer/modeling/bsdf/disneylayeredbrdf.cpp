@@ -112,45 +112,20 @@ void DisneyLayeredBRDF::evaluate_inputs(
     const size_t                offset) const
 {
     BSDF::evaluate_inputs(input_evaluator, shading_point, offset);
-    
-    // TODO: setup SeExpr for shading point,
 
     char* ptr = reinterpret_cast<char*>(input_evaluator.data());
     DisneyBRDFInputValues* values = reinterpret_cast<DisneyBRDFInputValues*>(ptr + offset);
     memset(values, 0, sizeof(DisneyBRDFInputValues));
 
-    double mask = 1.0;
-    Color3f base_color(0.0f);
+    Color3d base_color(0.0f);
 
-    // for each layer, exec layer expressions and mix layer param values
-
-    //for( size_t i = 0, e = m_parent->get_layer_count(); i < e; ++i)
+    for( size_t i = 0, e = m_parent->get_layer_count(); i < e; ++i)
     {
-        //const DisneyMaterialLayer& layer = m_parent->get_layer(i);
-
-        //if (i != 0)
-        //{
-        //    // eval mask here...
-        //    mask = clamp(0.0, 1.0, 1.0);
-        //}
-        
-        // eval base color...
-        Color3f c;
-        base_color = mix(base_color, c, static_cast<float>(mask));
-        
-        values->m_subsurface = mix(values->m_subsurface, 0.0, mask);
-        values->m_metallic = mix(values->m_metallic, 0.0, mask);
-        values->m_specular = mix(values->m_specular, 0.0, mask);
-        values->m_specular_tint = mix(values->m_specular_tint, 0.0, mask);
-        values->m_anisotropic = mix(values->m_anisotropic, 0.0, mask);
-        values->m_roughness = mix(values->m_roughness, 0.0, mask);
-        values->m_sheen = mix(values->m_sheen, 0.0, mask);
-        values->m_sheen_tint = mix(values->m_sheen_tint, 0.0, mask);
-        values->m_clearcoat = mix(values->m_clearcoat, 0.0, mask);
-        values->m_clearcoat_gloss = mix(values->m_clearcoat_gloss, 0.0, mask);
+        const DisneyMaterialLayer& layer = m_parent->get_layer(i);
+        layer.evaluate_expressions(shading_point, base_color, *values);
     }
 
-    linear_rgb_reflectance_to_spectrum(base_color, values->m_base_color);
+    linear_rgb_reflectance_to_spectrum(Color3f(base_color), values->m_base_color);
 }
 
 BSDF::Mode DisneyLayeredBRDF::sample(
@@ -165,15 +140,13 @@ BSDF::Mode DisneyLayeredBRDF::sample(
     Spectrum&           value,
     double&             probability) const
 {
-    /*
     if (m_parent->get_layer_count() == 0)
     {
         value.set(0.0f);
         probability = 0.0;
         return Absorption;
     }
-    */
-    
+
     return m_brdf->sample(
         sampling_context,
         data,
@@ -198,13 +171,11 @@ double DisneyLayeredBRDF::evaluate(
     const int           modes,
     Spectrum&           value) const
 {
-    /*
     if (m_parent->get_layer_count() == 0)
     {
         value.set(0.0f);
         return 0.0;
     }
-    */
 
     return m_brdf->evaluate(
         data,
@@ -226,8 +197,8 @@ double DisneyLayeredBRDF::evaluate_pdf(
     const Vector3d&     incoming,
     const int           modes) const
 {
-    //if (m_parent->get_layer_count() == 0)
-    //    return 0.0;
+    if (m_parent->get_layer_count() == 0)
+        return 0.0;
 
     return m_brdf->evaluate_pdf(
         data,

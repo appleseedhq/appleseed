@@ -67,16 +67,18 @@ class DLLSYMBOL Expression
     
     // Copy constructor.
     Expression(const Expression& other);
-    
+
     // Assignment.
     Expression& operator=(const Expression& other);
-    
+
     void swap(Expression& other);
 
     void set_expression(const char* expr, bool is_vector = true);
 
     bool syntax_ok() const;
-    
+
+    foundation::Color3d evaluate(const ShadingPoint& shading_point) const;
+
   private:
     struct Impl;
     Impl *impl;
