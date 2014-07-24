@@ -174,10 +174,10 @@ class BezierCurveBase
     }
 
   protected:
-    VectorType  m_ctrl_pts[N + 1];
-    ValueType   m_width[N + 1];
-    ValueType   m_max_width;
-    AABBType    m_bounds;
+    VectorType  m_ctrl_pts[N + 1];      // an array of the control points that make up the curve.
+    ValueType   m_width[N + 1];         // an array of per control point widths.
+    ValueType   m_max_width;            // the max width of all widths at all control points.
+    AABBType    m_bounds;               // the bounding box for the curve.
 
     void compute_max_width()
     {
@@ -484,6 +484,12 @@ class BezierCurveIntersector
     typedef typename BezierCurveType::MatrixType MatrixType;
     typedef Ray<ValueType, 3> RayType;
 
+    // Modified dot product functionality that considers only x and y components of the vector.
+    static ValueType dotxy(const VectorType& lhs, const VectorType& rhs)
+    {
+        return lhs.x * rhs.x + lhs.y * rhs.y;
+    }
+
     // Compute the transformation matrix required for ray-curve intersection.
     static MatrixType compute_curve_transform(const RayType& ray)
     {
@@ -509,29 +515,32 @@ class BezierCurveIntersector
         }
 
         // Right-multiply the rotation matrix by a translation matrix.
-        matrix[ 3] = -ray.m_org.x;
-        matrix[ 7] = -ray.m_org.y;
-        matrix[11] = -ray.m_org.z;
-
+        matrix[ 3] = -(matrix[ 0] * ray.m_org.x + matrix[ 1] * ray.m_org.y + matrix[ 2] * ray.m_org.z);
+        matrix[ 7] = -(matrix[ 4] * ray.m_org.x + matrix[ 5] * ray.m_org.y + matrix[ 6] * ray.m_org.z);
+        matrix[11] = -(matrix[ 8] * ray.m_org.x + matrix[ 9] * ray.m_org.y + matrix[10] * ray.m_org.z);
+        
         return matrix;
     }
 
-    bool intersect(
+    static bool intersect(
         const BezierCurveType&  curve,
         const RayType&          ray,
         const MatrixType&       xfm,
-        ValueType&              t) const
+        ValueType&              t)
     {
         const BezierCurveType xfm_curve(curve, xfm);
         const size_t depth = xfm_curve.compute_max_recursion_depth();
 
+        const ValueType raylen = norm(ray.m_dir);
         ValueType hit;
         ValueType phit = std::numeric_limits<ValueType>::max();
-        return converge(depth, curve, xfm_curve, xfm, 0, 1, hit, phit);
+        bool intersected = converge(depth, curve, xfm_curve, xfm, 0, 1, hit, phit);
+        t = phit / raylen;               // return the intersected distance - scaled appropriately.
+        return intersected;
     }
 
   private:
-    bool converge(
+    static bool converge(
         const size_t            depth,
         const BezierCurveType&  original_curve,
         const BezierCurveType&  curve,
@@ -539,7 +548,7 @@ class BezierCurveIntersector
         const ValueType         v0,
         const ValueType         vn,
         ValueType&              hit,
-        ValueType&              phit) const
+        ValueType&              phit)
     {
         const ValueType curve_width = curve.get_max_width() * ValueType(0.5);
 
@@ -559,17 +568,17 @@ class BezierCurveIntersector
             const VectorType dir = cpn - cp0;
 
             VectorType dp0 = curve.get_control_point(1) - cp0;
-            if (dot(dir, dp0) < ValueType(0.0))
+            if (dotxy(dir, dp0) < ValueType(0.0))
                 dp0 = -dp0;
 
-            if (dot(dp0, cp0) > ValueType(0.0))
+            if (dotxy(dp0, cp0) > ValueType(0.0))
                 return false;
 
             VectorType dpn = cpn - curve.get_control_point(BezierCurveType::Degree - 1);
-            if (dot(dir, dpn) < ValueType(0.0))
+            if (dotxy(dir, dpn) < ValueType(0.0))
                 dpn = -dpn;
 
-            if (dot(dpn, cpn) < ValueType(0.0))
+            if (dotxy(dpn, cpn) < ValueType(0.0))
                 return false;
 
             // Compute w on the line segment.
@@ -632,10 +641,8 @@ class BezierCurveIntersector
                     hit = v_right;
                     phit = t_right;
                 }
-
                 return true;
             }
-
             return false;
         }
     }

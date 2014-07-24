@@ -810,6 +810,9 @@ source_group ("renderer\\kernel\\aov" FILES
 set (renderer_kernel_intersection_sources
     renderer/kernel/intersection/assemblytree.cpp
     renderer/kernel/intersection/assemblytree.h
+    renderer/kernel/intersection/curvekey.h
+    renderer/kernel/intersection/curvetree.cpp
+    renderer/kernel/intersection/curvetree.h
     renderer/kernel/intersection/intersectionfilter.cpp
     renderer/kernel/intersection/intersectionfilter.h
     renderer/kernel/intersection/intersectionsettings.h
@@ -1450,6 +1453,8 @@ source_group ("renderer\\modeling\\material" FILES
 )
 
 set (renderer_modeling_object_sources
+    renderer/modeling/object/curveobject.cpp
+    renderer/modeling/object/curveobject.h
     renderer/modeling/object/iregion.h
     renderer/modeling/object/meshobject.cpp
     renderer/modeling/object/meshobject.h
