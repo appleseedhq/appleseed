@@ -166,8 +166,6 @@ void ShadingPoint::fetch_triangle_source_geometry() const
     assert(is_normalized(m_n0));
     assert(is_normalized(m_n1));
     assert(is_normalized(m_n2));
-
-
 }
 
 void ShadingPoint::fetch_curve_source_geometry() const

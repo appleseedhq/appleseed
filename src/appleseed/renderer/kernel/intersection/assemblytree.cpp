@@ -593,7 +593,8 @@ bool AssemblyLeafVisitor::visit(
                     item.m_assembly_uid,
                     m_tree.m_triangle_trees);
 
-            const CurveTree* curve_tree = m_curve_tree_cache.access(
+            const CurveTree* curve_tree =
+                m_curve_tree_cache.access(
                     item.m_assembly_uid,
                     m_tree.m_curve_trees);
 

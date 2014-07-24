@@ -88,7 +88,7 @@ class ShadingPoint
     };
 
     // Constructor, calls clear().
-    ShadingPoint(const PrimitiveType& type = PrimitiveUndefined);
+    ShadingPoint(const PrimitiveType type = PrimitiveUndefined);
 
     // Copy constructor.
     explicit ShadingPoint(const ShadingPoint& rhs);
@@ -311,7 +311,7 @@ class ShadingPoint
 // ShadingPoint class implementation.
 //
 
-FORCE_INLINE ShadingPoint::ShadingPoint(const PrimitiveType& type)
+FORCE_INLINE ShadingPoint::ShadingPoint(const PrimitiveType type)
 {
     clear();
     m_primitive_type = type;
@@ -467,7 +467,7 @@ inline const foundation::Vector3d& ShadingPoint::get_geometric_normal() const
     // Compute triangle normals only.
     if (!(m_members & HasGeometricNormal))
     {
-        if(m_primitive_type == PrimitiveTriangle)
+        if (m_primitive_type == PrimitiveTriangle)
         {
             if (m_members & HasWorldSpaceVertices)
             {
@@ -528,7 +528,7 @@ inline const foundation::Vector3d& ShadingPoint::get_shading_normal() const
 
     if (!(m_members & HasShadingNormal))
     {
-        if(m_primitive_type == PrimitiveTriangle)
+        if (m_primitive_type == PrimitiveTriangle)
         {
             // Start with the original shading normal.
             m_shading_normal = get_original_shading_normal();
