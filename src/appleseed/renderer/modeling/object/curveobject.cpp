@@ -29,7 +29,14 @@
 // Interface header.
 #include "curveobject.h"
 
+// appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
+#include "renderer/utility/paramarray.h"
+
 // appleseed.foundation headers.
+#include "foundation/math/aabb.h"
+#include "foundation/math/vector.h"
+#include "foundation/platform/defaulttimers.h"
 #include "foundation/utility/searchpaths.h"
 #include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"

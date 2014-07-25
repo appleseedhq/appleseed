@@ -45,10 +45,10 @@
 
 // Standard headers.
 #include <cstddef>
-#include <vector>
 
 // Forward declarations.
 namespace foundation    { class SearchPaths; }
+namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
