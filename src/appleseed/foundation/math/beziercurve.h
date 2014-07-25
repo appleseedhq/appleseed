@@ -532,8 +532,7 @@ class BezierCurveIntersector
         const BezierCurveType xfm_curve(curve, xfm);
         const size_t depth = xfm_curve.compute_max_recursion_depth();
 
-        ValueType hit;
-        if (converge(depth, curve, xfm_curve, xfm, 0, 1, hit, t))
+        if (converge(depth, curve, xfm_curve, xfm, ValueType(0.0), ValueType(1.0), t))
         {
             t /= norm(ray.m_dir);
             return true;
@@ -550,7 +549,6 @@ class BezierCurveIntersector
         const Matrix4f&         xfm,
         const ValueType         v0,
         const ValueType         vn,
-        ValueType&              hit,
         ValueType&              t)
     {
         const ValueType curve_width = curve.get_max_width() * ValueType(0.5);
@@ -614,7 +612,6 @@ class BezierCurveIntersector
 
             // Found an intersection.
             t = p.z;
-            hit  = v;
             return true;
         }
         else
@@ -626,25 +623,14 @@ class BezierCurveIntersector
 
             const ValueType vm = (v0 + vn) * ValueType(0.5);
 
-            ValueType v_left, v_right;
             ValueType t_left = t;
             ValueType t_right = t;
-            const bool hit_left = converge(depth - 1, original_curve, c1, xfm, v0, vm, v_left, t_left);
-            const bool hit_right = converge(depth - 1, original_curve, c2, xfm, vm, vn, v_right, t_right);
+            const bool hit_left = converge(depth - 1, original_curve, c1, xfm, v0, vm, t_left);
+            const bool hit_right = converge(depth - 1, original_curve, c2, xfm, vm, vn, t_right);
 
             if (hit_left || hit_right)
             {
-                if (t_left < t_right)
-                {
-                    hit = v_left;
-                    t = t_left;
-                }
-                else
-                {
-                    hit = v_right;
-                    t = t_right;
-                }
-
+                t = std::min(t_left, t_right);
                 return true;
             }
 
