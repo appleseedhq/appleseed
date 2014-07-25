@@ -97,7 +97,6 @@ class CurveTree
     void build_bvh(        
         const ParamArray&                       params,
         const double                            time,
-        const bool                              save_memory,
         foundation::Statistics&                 statistics);
 
   private:
@@ -272,7 +271,7 @@ inline bool CurveLeafVisitor::visit(
 
         // Intersect the curve.
         double t;
-        if (GCurveIntersector::intersect(curve, m_shading_point.m_ray, m_xfm_matrix, t))
+        if (CurveIntersector::intersect(curve, m_shading_point.m_ray, m_xfm_matrix, t))
         {
             const CurveKey& key = m_tree.m_curve_keys[curve_index + i];
             m_shading_point.m_ray.m_tmax = t;
@@ -322,9 +321,9 @@ inline bool CurveLeafProbeVisitor::visit(
         const GCurveType& curve = m_tree.m_curves3[curve_index + i];
 
         // Intersect the curve.
-        // todo: we need a variante of GCurveIntersector::intersect() that does not compute or return t.
+        // todo: we need a variante of CurveIntersector::intersect() that does not compute or return t.
         double t;
-        if (GCurveIntersector::intersect(curve, ray, m_xfm_matrix, t))
+        if (CurveIntersector::intersect(curve, ray, m_xfm_matrix, t))
         {
             FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(i + 1));
             m_hit = true;

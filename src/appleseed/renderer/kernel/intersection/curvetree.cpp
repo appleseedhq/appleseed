@@ -30,6 +30,7 @@
 #include "curvetree.h"
 
 // appleseed.foundation headers.
+#include "foundation/core/exceptions/exceptionnotimplemented.h"
 #include "foundation/platform/defaulttimers.h"
 #include "foundation/platform/system.h"
 #include "foundation/utility/makevector.h"
@@ -66,7 +67,7 @@ namespace
             const Object& object = object_instance->get_object();
 
             // Process only curve objects.
-            if (strcmp(object.get_model(), "curve_object"))
+            if (strcmp(object.get_model(), CurveObjectFactory::get_model()))
                 continue;
 
             // Store the curves and the curve keys.
@@ -103,11 +104,10 @@ CurveTree::CurveTree(const Arguments& arguments)
 {
     // Retrieve construction parameters.
     const MessageContext message_context(
-        string("while building acceleration structure for assembly \"") + m_arguments.m_assembly.get_name() + "\"");
+        string("while building curve tree for assembly \"") + m_arguments.m_assembly.get_name() + "\"");
     const ParamArray& params = m_arguments.m_assembly.get_parameters().child("acceleration_structure");
     const string algorithm = params.get_optional<string>("algorithm", "bvh", make_vector("bvh", "sbvh"), message_context);
     const double time = params.get_optional<double>("time", 0.5);
-    const bool save_memory = params.get_optional<bool>("save_temporary_memory", false);
 
     // Start stopwatch.
     Stopwatch<DefaultWallclockTimer> stopwatch;
@@ -116,7 +116,8 @@ CurveTree::CurveTree(const Arguments& arguments)
     // Build the tree.
     Statistics statistics;
     if (algorithm == "bvh")
-        build_bvh(params, time, save_memory, statistics);   
+        build_bvh(params, time, statistics);   
+    else throw ExceptionNotImplemented();
 
     // Print curve tree statistics.
     statistics.insert_size("nodes alignment", alignment(&m_nodes[0]));
@@ -130,50 +131,47 @@ CurveTree::CurveTree(const Arguments& arguments)
 void CurveTree::build_bvh(
     const ParamArray&       params,
     const double            time,
-    const bool              save_memory,
     Statistics&             statistics)
 {
-    vector<GAABB3> curve_bboxes;
-
-    // Obtain the curves and curve keys from the curve object.
+    // Collect the curves and curve keys from the curve object.
     collect_curves(m_arguments, &m_curves3, &m_curve_keys);
 
-    // Create the keys and curve bboxes required.
-    curve_bboxes.resize(m_curves3.size());
-
-    for (size_t i = 0; i < m_curves3.size(); ++i)
+    // Retrieve the bounding box of the individual curves.
+    const size_t curve_count = m_curves3.size();
+    vector<GAABB3> curve_bboxes(curve_count);
+    for (size_t i = 0; i < curve_count; ++i)
         curve_bboxes[i] = m_curves3[i].get_bounds();
-
-    const size_t max_leaf_size = 1;
-    const GScalar interior_node_travesal_cost = 1.0f;
-    const GScalar triangle_intersection_cost = 1.0f;
 
     // Create the partitioner.
     typedef bvh::SAHPartitioner<vector<GAABB3> > Partitioner;
     Partitioner partitioner(
         curve_bboxes,
-        max_leaf_size,
-        interior_node_travesal_cost,
-        triangle_intersection_cost);
+        CurveTreeDefaultMaxLeafSize,
+        CurveTreeDefaultInteriorNodeTraversalCost,
+        CurveTreeDefaultCurveIntersectionCost);
 
     // Build the tree.
     typedef bvh::Builder<CurveTree, Partitioner> Builder;
     Builder builder;
-    builder.build<DefaultWallclockTimer>(*this, partitioner, m_curves3.size(), max_leaf_size);
+    builder.build<DefaultWallclockTimer>(
+        *this,
+        partitioner,
+        m_curves3.size(),
+        CurveTreeDefaultMaxLeafSize);
 
     // Bounding boxes are no longer needed.
     clear_release_memory(curve_bboxes);
 
-    // Reorder the curves based upon the node indices.
-    vector<BezierCurve3d> m_temp(m_curves3.size());
-    vector<CurveKey> m_temp_keys(m_curve_keys.size());
-    const vector<size_t>& order = partitioner.get_item_ordering();
-
-    // Try to perform a reorder only if there is some data available.
+    // Reorder the curves based on the nodes ordering.
     if (!m_curves3.empty())
     {
-        small_item_reorder<BezierCurve3d, size_t>(&m_curves3[0], &m_temp[0], &order[0], order.size());
-        small_item_reorder<CurveKey, size_t>(&m_curve_keys[0], &m_temp_keys[0], &order[0], order.size());
+        const vector<size_t>& order = partitioner.get_item_ordering();
+
+        vector<BezierCurve3d> temp_curves(m_curves3.size());
+        small_item_reorder(&m_curves3[0], &temp_curves[0], &order[0], order.size());
+
+        vector<CurveKey> temp_keys(m_curve_keys.size());
+        small_item_reorder(&m_curve_keys[0], &temp_keys[0], &order[0], order.size());
     }
 }
 
