@@ -199,7 +199,7 @@ void ObjectCollectionItem::insert_objects(const string& path) const
         m_parent.objects().insert(auto_release_ptr<Object>(object));
 
         const string object_instance_name = string(object->get_name()) + "_inst";
-        
+
         auto_release_ptr<ObjectInstance> object_instance(
             ObjectInstanceFactory::create(
                 object_instance_name.c_str(),

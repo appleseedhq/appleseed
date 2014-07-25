@@ -152,7 +152,7 @@ void DisneyMaterialLayerUI::fold_layer()
         QWidget* widget = m_inner_layout->itemAt(i)->widget();
         if (widget)
             m_is_folded ? widget->show() : widget->hide();
-        
+
         QLayout* vertical_layout = m_inner_layout->itemAt(i)->layout();
         if (vertical_layout)
         {
@@ -163,7 +163,7 @@ void DisneyMaterialLayerUI::fold_layer()
             }
         }
     }
-    
+
     if (!m_is_folded)
     {
         m_inner_layout->setSpacing(0);
@@ -175,7 +175,7 @@ void DisneyMaterialLayerUI::fold_layer()
     m_is_folded = !m_is_folded;
 }
 
-void DisneyMaterialLayerUI::slot_delete_layer() 
+void DisneyMaterialLayerUI::slot_delete_layer()
 {
     // Remove model
     string layer_rename = m_entity_editor->m_renames.get(m_layer_name.c_str());

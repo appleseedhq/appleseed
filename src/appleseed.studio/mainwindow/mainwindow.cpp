@@ -690,7 +690,7 @@ void MainWindow::set_rendering_widgets_enabled(const bool is_enabled, const bool
     {
         const int current_tab_index = m_ui->tab_render_channels->currentIndex();
         if (current_tab_index != -1)
-            m_tab_index_to_render_tab[current_tab_index]->set_clear_frame_button_enabled(!is_rendering);        
+            m_tab_index_to_render_tab[current_tab_index]->set_clear_frame_button_enabled(!is_rendering);
     }
 }
 
@@ -931,7 +931,7 @@ void MainWindow::dragEnterEvent(QDragEnterEvent* event)
 {
     if (event->mimeData()->hasFormat("text/plain") || event->mimeData()->hasFormat("text/uri-list"))
          event->acceptProposedAction();
-} 
+}
 
 void MainWindow::dropEvent(QDropEvent* event)
 {
@@ -939,7 +939,7 @@ void MainWindow::dropEvent(QDropEvent* event)
     {
         const QList<QUrl> urls = event->mimeData()->urls();
         QApplication::sendEvent(this, new QCloseEvent());
-        open_project(urls[0].toLocalFile());   
+        open_project(urls[0].toLocalFile());
     }
     else
     {
@@ -947,7 +947,7 @@ void MainWindow::dropEvent(QDropEvent* event)
         QApplication::sendEvent(this, new QCloseEvent());
         open_project(text);
     }
-     
+
      event->accept();
 }
 
@@ -1166,7 +1166,7 @@ void MainWindow::slot_save_project()
         slot_save_project_as();
         return;
     }
-    
+
     if (m_project_file_watcher)
         stop_watching_project_file();
 

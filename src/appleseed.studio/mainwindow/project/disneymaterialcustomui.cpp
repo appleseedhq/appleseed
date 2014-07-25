@@ -445,7 +445,7 @@ void DisneyMaterialCustomUI::create_colormap_input_widgets(
 void DisneyMaterialCustomUI::add_layer(const bool update, const Dictionary& parameters)
 {
     string layer_name = unique_layer_name();
-    
+
     if (parameters.strings().exist("layer_name"))
         layer_name = parameters.strings().get<string>("layer_name");
 

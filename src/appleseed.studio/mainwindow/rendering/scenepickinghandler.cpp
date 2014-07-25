@@ -242,7 +242,7 @@ void ScenePickingHandler::pick(const QPoint& point)
     emit signal_entity_picked();
 }
 
-void ScenePickingHandler::set_rgba_label(const QPoint& point) const 
+void ScenePickingHandler::set_rgba_label(const QPoint& point) const
 {
     const Vector2i pix = m_mouse_tracker.widget_to_pixel(point);
 
