@@ -77,7 +77,7 @@ struct CurveObject::Impl
         const size_t curve_count = m_curves.size();
 
         for (size_t i = 0; i < curve_count; ++i)
-            bbox.insert(m_curves[i].get_bounds());
+            bbox.insert(m_curves[i].get_bbox());
 
         return bbox;
     }

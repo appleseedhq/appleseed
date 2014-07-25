@@ -96,7 +96,7 @@ TEST_SUITE(Foundation_Math_BezierCurve)
                     const BezierCurveType& curve = curves[c];
 
                     // Draw the bounding box of the curve.
-                    if (intersect(ray, ray_info, curve.get_bounds()))
+                    if (intersect(ray, ray_info, curve.get_bbox()))
                         color[1] = 0.5f;
 
                     // Draw the curve.

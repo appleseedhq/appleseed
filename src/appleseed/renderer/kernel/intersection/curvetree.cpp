@@ -70,12 +70,19 @@ namespace
             if (strcmp(object.get_model(), CurveObjectFactory::get_model()))
                 continue;
 
+            // Retrieve the object instance transform.
+            const Transformd::MatrixType& transform =
+                object_instance->get_transform().get_local_to_parent();
+
             // Store the curves and the curve keys.
-            const CurveObject* curve_object = static_cast<const CurveObject*>(&object);
-            const size_t curve_count = curve_object->get_curve_count();
+            const CurveObject& curve_object = static_cast<const CurveObject&>(object);
+            const size_t curve_count = curve_object.get_curve_count();
             for (size_t j = 0; j < curve_count; ++j)
             {
-                curves->push_back(curve_object->get_curve(j));
+                curves->push_back(
+                    BezierCurve3d(
+                        curve_object.get_curve(j),
+                        transform));
                 curve_keys->push_back(
                     CurveKey(
                         i,          // object instance index
@@ -140,7 +147,7 @@ void CurveTree::build_bvh(
     const size_t curve_count = m_curves3.size();
     vector<GAABB3> curve_bboxes(curve_count);
     for (size_t i = 0; i < curve_count; ++i)
-        curve_bboxes[i] = m_curves3[i].get_bounds();
+        curve_bboxes[i] = m_curves3[i].get_bbox();
 
     // Create the partitioner.
     typedef bvh::SAHPartitioner<vector<GAABB3> > Partitioner;
