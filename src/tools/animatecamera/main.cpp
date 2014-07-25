@@ -323,7 +323,7 @@ namespace
                         source_image_filepath.c_str(),
                         image_filepath.c_str());
                 }
-                
+
                 fprintf(script_file, ")\n\n");
             }
 
