@@ -85,7 +85,7 @@ struct CurveObject::Impl
     // Read a custom curve file and load it in m_curves.
     void load_curve_file(const char* filename)
     {
-        const float CurveWidth = 0.009f;
+        const double CurveWidth = 0.009;
 
         ifstream input;
         input.open(filename);
@@ -100,22 +100,23 @@ struct CurveObject::Impl
             input >> curve_count;
 
             // Read the number of control points per curve.
-            size_t ctrl_pt_count;
-            input >> ctrl_pt_count;
+            size_t control_point_count;
+            input >> control_point_count;
 
-            vector<Vector3d> m_ctrl_points(ctrl_pt_count);
+            vector<Vector3d> control_points(control_point_count);
+
+            m_curves.reserve(curve_count);
 
             for (size_t c = 0; c < curve_count; ++c)
             {
-                for (size_t p = 0; p < ctrl_pt_count; ++p)
+                for (size_t p = 0; p < control_point_count; ++p)
                 {
                     Vector3d point;
                     input >> point.x >> point.y >> point.z;
-                    m_ctrl_points[p] = point;
+                    control_points[p] = point;
                 }
 
-                const Vector3d ctrl_pts[] = { m_ctrl_points[0], m_ctrl_points[1], m_ctrl_points[2], m_ctrl_points[3] };
-                const BezierCurve3d curve(ctrl_pts, CurveWidth);
+                const BezierCurve3d curve(&control_points[0], CurveWidth);
                 m_curves.push_back(curve);
             }
 
