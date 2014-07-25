@@ -65,6 +65,7 @@
 #include <algorithm>
 #include <cassert>
 #include <set>
+#include <string>
 
 using namespace foundation;
 using namespace std;

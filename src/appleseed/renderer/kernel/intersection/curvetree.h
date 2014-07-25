@@ -31,10 +31,8 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/intersection/curvekey.h"
-#include "renderer/kernel/intersection/intersectionfilter.h"
 #include "renderer/kernel/intersection/intersectionsettings.h"
 #include "renderer/kernel/intersection/probevisitorbase.h"
-#include "renderer/kernel/intersection/regioninfo.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/object/curveobject.h"
 #include "renderer/global/globaltypes.h"
@@ -45,8 +43,6 @@
 #include "foundation/math/bvh.h"
 #include "foundation/math/beziercurve.h"
 #include "foundation/math/matrix.h"
-#include "foundation/math/rng.h"
-#include "foundation/math/vector.h"
 #include "foundation/utility/alignedvector.h"
 #include "foundation/utility/lazy.h"
 #include "foundation/utility/poolallocator.h"
@@ -78,7 +74,7 @@ class CurveTree
                >
            >
 {
-public:
+  public:
     // Construction arguments.
     struct Arguments
     {
@@ -86,18 +82,16 @@ public:
         const foundation::UniqueID              m_curve_tree_uid;
         const GAABB3                            m_bbox;
         const Assembly&                         m_assembly;
-        const RegionInfoVector                  m_regions;
 
         // Constructor.
         Arguments(
             const Scene&                        scene,
             const foundation::UniqueID          curve_tree_uid,
             const GAABB3&                       bbox,
-            const Assembly&                     assembly,
-            const RegionInfoVector&             regions);
+            const Assembly&                     assembly);
     };
  
-    // Constructor, builds the tree for a given set of regions.
+    // Constructor, builds the tree for a given assembly.
     explicit CurveTree(const Arguments& arguments);
     
     void build_bvh(        
@@ -106,18 +100,16 @@ public:
         const bool                              save_memory,
         foundation::Statistics&                 statistics);
 
-private:
-
+  private:
     friend class CurveLeafVisitor;
     friend class CurveLeafProbeVisitor;
 
-    const Arguments                             m_arguments;    
+    const Arguments                             m_arguments;
 
     std::vector<foundation::BezierCurve1d>      m_curves1;
     std::vector<foundation::BezierCurve2d>      m_curves2;
     std::vector<foundation::BezierCurve3d>      m_curves3;
 
-    std::vector<const IntersectionFilter*>      m_intersection_filters;
     std::vector<CurveKey>                       m_curve_keys;
 };
 
@@ -188,16 +180,10 @@ class CurveLeafVisitor
 #endif
         );
 
-    // Read additional data about the curve that was hit, if any.
-    void read_hit_curve_data() const;
-
   private:
     const CurveTree&                m_tree;
     const foundation::Matrix4d&     m_xfm_matrix;
     ShadingPoint&                   m_shading_point;
-    GCurveType                      m_interpolated_curve;
-    const GCurveType*               m_hit_curve;
-    size_t                          m_hit_curve_index;    
 };
 
 
@@ -256,23 +242,22 @@ typedef foundation::bvh::Intersector<
 //
 
 inline CurveLeafVisitor::CurveLeafVisitor(
-    const CurveTree&                      tree,
-    const foundation::Matrix4d&           xfm_matrix,
-    ShadingPoint&                         shading_point)
+    const CurveTree&                            tree,
+    const foundation::Matrix4d&                 xfm_matrix,
+    ShadingPoint&                               shading_point)
   : m_tree(tree)
   , m_xfm_matrix(xfm_matrix)
   , m_shading_point(shading_point)
-  , m_hit_curve(0)  
 {
 }
 
 inline bool CurveLeafVisitor::visit(
-    const CurveTree::NodeType&              node,
-    const ShadingRay&                       ray,
-    const ShadingRay::RayInfoType&          ray_info,
-    double&                                 distance
+    const CurveTree::NodeType&                  node,
+    const ShadingRay&                           ray,
+    const ShadingRay::RayInfoType&              ray_info,
+    double&                                     distance
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
-    , foundation::bvh::TraversalStatistics& stats
+    , foundation::bvh::TraversalStatistics&     stats
 #endif
     )
 {
@@ -282,20 +267,18 @@ inline bool CurveLeafVisitor::visit(
     // Sequentially intersect all curves of the leaf.
     for (size_t i = 0; i < curve_count; ++i)
     {
-        // For now all curves are stored and processed in double format only.
-        // They are not converted between types.
+        // For now we intersect curves as they are stored in memory (no floating point format conversion).
         const GCurveType& curve = m_tree.m_curves3[curve_index + i];
 
+        // Intersect the curve.
         double t;
         if (GCurveIntersector::intersect(curve, m_shading_point.m_ray, m_xfm_matrix, t))
         {
-            // Update params.
-            m_hit_curve = &curve;
-            m_hit_curve_index = curve_index + i;
+            const CurveKey& key = m_tree.m_curve_keys[curve_index + i];
             m_shading_point.m_ray.m_tmax = t;
             m_shading_point.m_hit = true;
-            m_shading_point.m_object_instance_index = m_tree.m_curve_keys[m_hit_curve_index].get_object_instance_index();
-            m_shading_point.m_primitive_index = m_tree.m_curve_keys[m_hit_curve_index].get_curve_index();
+            m_shading_point.m_object_instance_index = key.get_object_instance_index();
+            m_shading_point.m_primitive_index = key.get_curve_index();
         }
     }
 
@@ -312,20 +295,20 @@ inline bool CurveLeafVisitor::visit(
 //
 
 inline CurveLeafProbeVisitor::CurveLeafProbeVisitor(
-    const CurveTree&                     tree,
-    const foundation::Matrix4d&          xfm_matrix)
+    const CurveTree&                            tree,
+    const foundation::Matrix4d&                 xfm_matrix)
   : m_tree(tree)
   , m_xfm_matrix(xfm_matrix)
 {
 }
 
 inline bool CurveLeafProbeVisitor::visit(
-    const CurveTree::NodeType&              node,
-    const ShadingRay&                       ray,
-    const ShadingRay::RayInfoType&          ray_info,
-    double&                                 distance
+    const CurveTree::NodeType&                  node,
+    const ShadingRay&                           ray,
+    const ShadingRay::RayInfoType&              ray_info,
+    double&                                     distance
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
-    , foundation::bvh::TraversalStatistics& stats
+    , foundation::bvh::TraversalStatistics&     stats
 #endif
     )
 {
@@ -335,10 +318,11 @@ inline bool CurveLeafProbeVisitor::visit(
     // Sequentially intersect all curves of the leaf.
     for (size_t i = 0; i < curve_count; ++i)
     {
-        // For now all curves are stored and processed in double format only.
-        // They are not converted between types.
+        // For now we intersect curves as they are stored in memory (no floating point format conversion).
         const GCurveType& curve = m_tree.m_curves3[curve_index + i];
 
+        // Intersect the curve.
+        // todo: we need a variante of GCurveIntersector::intersect() that does not compute or return t.
         double t;
         if (GCurveIntersector::intersect(curve, ray, m_xfm_matrix, t))
         {

@@ -30,12 +30,14 @@
 #include "curvetree.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/defaulttimers.h"
 #include "foundation/platform/system.h"
-#include "foundation/platform/timer.h"
 #include "foundation/utility/makevector.h"
+#include "foundation/utility/stopwatch.h"
 
 // Standard headers.
 #include <cstring>
+#include <string>
 
 using namespace foundation;
 using namespace std;
@@ -67,21 +69,17 @@ namespace
             if (strcmp(object.get_model(), "curve_object"))
                 continue;
 
-            // Cast the object as curve object.
+            // Store the curves and the curve keys.
             const CurveObject* curve_object = static_cast<const CurveObject*>(&object);
-
-            // Get the curves and store them.
             const size_t curve_count = curve_object->get_curve_count();
-
-            // Create the curve keys and store them with the curves.
             for (size_t j = 0; j < curve_count; ++j)
             {
                 curves->push_back(curve_object->get_curve(j));
                 curve_keys->push_back(
                     CurveKey(
-                        i,      // object instance index
-                        j,      // curve index
-                        0));    // for now we assume all the curves have the same material
+                        i,          // object instance index
+                        j,          // curve index
+                        0));        // for now we assume all the curves have the same material
             }
         }
     }
@@ -91,13 +89,11 @@ CurveTree::Arguments::Arguments(
     const Scene&            scene,
     const UniqueID          curve_tree_uid,
     const GAABB3&           bbox,
-    const Assembly&         assembly,
-    const RegionInfoVector& regions)
+    const Assembly&         assembly)
   : m_scene(scene)
   , m_curve_tree_uid(curve_tree_uid)
   , m_bbox(bbox)
   , m_assembly(assembly)
-  , m_regions(regions)
 {
 }
 
@@ -115,7 +111,7 @@ CurveTree::CurveTree(const Arguments& arguments)
 
     // Start stopwatch.
     Stopwatch<DefaultWallclockTimer> stopwatch;
-    stopwatch.start();    
+    stopwatch.start();
 
     // Build the tree.
     Statistics statistics;

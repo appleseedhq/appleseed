@@ -362,17 +362,13 @@ namespace
                 assembly.object_instances().begin(),
                 assembly.object_instances().end());
 
-        RegionInfoVector regions;
-        collect_regions(assembly, regions);
-
         auto_ptr<ILazyFactory<CurveTree> > curve_tree_factory(
             new CurveTreeFactory(
                 CurveTree::Arguments(
                     scene,
                     assembly.get_uid(),
                     assembly_bbox,
-                    assembly,
-                    regions)));
+                    assembly)));
 
         return new Lazy<CurveTree>(curve_tree_factory);
     }
