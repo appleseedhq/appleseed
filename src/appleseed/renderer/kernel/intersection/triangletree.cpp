@@ -65,6 +65,7 @@
 #include <algorithm>
 #include <cassert>
 #include <set>
+#include <string>
 
 using namespace foundation;
 using namespace std;
@@ -672,7 +673,7 @@ void TriangleTree::build_sbvh(
     // Add splits statistics.
     const size_t spatial_splits = partitioner.get_spatial_split_count();
     const size_t object_splits = partitioner.get_object_split_count();
-    const size_t total_splits = spatial_splits + object_splits; 
+    const size_t total_splits = spatial_splits + object_splits;
     statistics.insert(
         "splits",
         "spatial " + pretty_uint(spatial_splits) + " (" + pretty_percent(spatial_splits, total_splits) + ")  "

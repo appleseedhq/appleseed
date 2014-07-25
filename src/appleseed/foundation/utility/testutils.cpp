@@ -70,7 +70,7 @@ bool compare_text_files(const string& filename1, const string& filename2)
         return false;
 
     string contents2;
-    
+
     if (!load_text_file(filename2, contents2))
         return false;
 

@@ -330,7 +330,7 @@ void LineChart::draw_point_highlight(QPainter& painter, const QPoint& mouse_posi
 
     if (on_chart(mouse_position, point_index))
     {
-        const QColor DiskColor(140, 200, 255); 
+        const QColor DiskColor(140, 200, 255);
         const qreal DiskRadius = 3.0;
 
         const Vector2d p = convert_to_frame(m_points[point_index]);

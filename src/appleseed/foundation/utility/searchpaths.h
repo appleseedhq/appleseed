@@ -50,7 +50,7 @@ namespace foundation
 // over those inserted earlier).
 //
 
-class DLLSYMBOL SearchPaths 
+class DLLSYMBOL SearchPaths
   : public NonCopyable
 {
   public:

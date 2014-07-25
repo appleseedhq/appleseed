@@ -89,8 +89,8 @@ namespace
 //
 
 BOOL APIENTRY DllMain(
-    HANDLE  /*module*/, 
-    DWORD   reason_for_call, 
+    HANDLE  /*module*/,
+    DWORD   reason_for_call,
     LPVOID  /*reserved*/)
 {
     switch (reason_for_call)

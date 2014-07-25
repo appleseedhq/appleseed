@@ -51,7 +51,7 @@ namespace foundation
 //
 // Interesting reference:
 //
-//   Slerping Clock Cycles 
+//   Slerping Clock Cycles
 //   J.M.P. van Waveren
 //   http://fabiensanglard.net/doom3_documentation/37725-293747_293747.pdf
 //

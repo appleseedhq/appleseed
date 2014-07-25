@@ -220,7 +220,7 @@ inline float fast_log2(const float x)
     const float y = static_cast<float>(vx.i) * 1.1920928955078125e-7f;
 
     return y - 124.22551499f
-             - 1.498030302f * mx.f 
+             - 1.498030302f * mx.f
              - 1.72587999f / (0.3520887068f + mx.f);
 }
 

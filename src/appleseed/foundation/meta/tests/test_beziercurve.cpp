@@ -58,7 +58,7 @@ TEST_SUITE(Foundation_Math_BezierCurve)
     void render_curves_to_image(
         const BezierCurveType   curves[],
         const size_t            curve_count,
-        const char*             filename) 
+        const char*             filename)
     {
         typedef typename BezierCurveType::ValueType ValueType;
         typedef typename BezierCurveType::VectorType VectorType;
@@ -96,15 +96,14 @@ TEST_SUITE(Foundation_Math_BezierCurve)
                     const BezierCurveType& curve = curves[c];
 
                     // Draw the bounding box of the curve.
-                    if (intersect(ray, ray_info, curve.get_bounds()))
+                    if (intersect(ray, ray_info, curve.get_bbox()))
                         color[1] = 0.5f;
 
                     // Draw the curve.
                     const MatrixType curve_transform =
                         BezierCurveIntersectorType::compute_curve_transform(ray);
-                    BezierCurveIntersectorType intersector;
                     ValueType t;
-                    if (intersector.intersect(curve, ray, curve_transform, t))
+                    if (BezierCurveIntersectorType::intersect(curve, ray, curve_transform, t))
                     {
                         color[0] = 0.2f;
                         color[2] = 0.7f;
@@ -353,4 +352,61 @@ TEST_SUITE(Foundation_Math_BezierCurve)
 
         render_curves_to_image(Curves, countof(Curves), "unit tests/outputs/test_beziercurve_degree3_mc_vw.png");
     }
+
+
+    //
+    // Check intersection distance for Bezier curves.
+    //
+
+    TEST_CASE(Ray_Curve_Intersection_Distance_Test_X)
+    {
+        const Vector3f ControlPoints[] = { Vector3f(-0.5f, -0.5f, -0.5f), Vector3f(0.5f, 0.5f, 0.5f) };
+        const BezierCurve1f Curves[] = { BezierCurve1f(ControlPoints, 0.06f) };
+
+        const Ray3f ray(Vector3f(-3.0f, 0.0f, 0.0f), Vector3f(1.0f, 0.0f, 0.0f));
+
+        const Matrix4f xfm_matrix = BezierCurveIntersector<BezierCurve1f>::compute_curve_transform(ray);
+        float t = std::numeric_limits<float>::max();
+
+        BezierCurveIntersector<BezierCurve1f>::intersect(Curves[0], ray, xfm_matrix, t);
+
+        EXPECT_FEQ(3.0f, t);
+
+        render_curves_to_image(Curves, countof(Curves), "unit tests/outputs/test_beziercurve_intersect_x.png");
+    }
+
+    TEST_CASE(Ray_Curve_Intersection_Distance_Test_Y)
+    {
+        const Vector3f ControlPoints[] = { Vector3f(-0.5f, -0.5f, -0.5f), Vector3f(0.5f, 0.5f, 0.5f) };
+        const BezierCurve1f Curves[] = { BezierCurve1f(ControlPoints, 0.06f) };
+
+        const Ray3f ray(Vector3f(0.0f, 3.0f, 0.0f), Vector3f(0.0f, -1.0f, 0.0f));
+
+        const Matrix4f xfm_matrix = BezierCurveIntersector<BezierCurve1f>::compute_curve_transform(ray);
+        float t = std::numeric_limits<float>::max();
+
+        BezierCurveIntersector<BezierCurve1f>::intersect(Curves[0], ray, xfm_matrix, t);
+
+        EXPECT_FEQ(3.0f, t);
+
+        render_curves_to_image(Curves, countof(Curves), "unit tests/outputs/test_beziercurve_intersect_y.png");
+    }
+
+    TEST_CASE(Ray_Curve_Intersection_Distance_Test_Z)
+    {
+        const Vector3f ControlPoints[] = { Vector3f(-0.5f, -0.5f, -0.5f), Vector3f(0.5f, 0.5f, 0.5f) };
+        const BezierCurve1f Curves[] = { BezierCurve1f(ControlPoints, 0.06f) };
+
+        const Ray3f ray(Vector3f(0.0f, 0.0f, -3.0f), Vector3f(0.0f, 0.0f, 1.0f));
+
+        const Matrix4f xfm_matrix = BezierCurveIntersector<BezierCurve1f>::compute_curve_transform(ray);
+        float t = std::numeric_limits<float>::max();
+
+        BezierCurveIntersector<BezierCurve1f>::intersect(Curves[0], ray, xfm_matrix, t);
+
+        EXPECT_FEQ(3.0f, t);
+
+        render_curves_to_image(Curves, countof(Curves), "unit tests/outputs/test_beziercurve_intersect_z.png");
+    }
+
 }

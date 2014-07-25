@@ -80,7 +80,7 @@ class DLLSYMBOL StringDictionary
 
         // Destructor.
         ~const_iterator();
-        
+
         // Assignment operator.
         const_iterator& operator=(const const_iterator& rhs);
 

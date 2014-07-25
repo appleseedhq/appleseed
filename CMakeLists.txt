@@ -288,19 +288,6 @@ set (preprocessor_definitions_common
     ${preprocessor_definitions_common}
     APPLESEED_VERSION_STRING="${git_tag}"
 )
-if (CMAKE_SIZEOF_VOID_P MATCHES 4)
-    set (preprocessor_definitions_common
-        ${preprocessor_definitions_common}
-        ARCH32
-)
-elseif (CMAKE_SIZEOF_VOID_P MATCHES 8)
-    set (preprocessor_definitions_common
-        ${preprocessor_definitions_common}
-        ARCH64
-)
-else ()
-    message (FATAL_ERROR "Cannot determine pointer size.")
-endif ()
 if (USE_QMC_SAMPLER)
     set (preprocessor_definitions_common
         ${preprocessor_definitions_common}
@@ -537,7 +524,7 @@ execute_process (
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/extras/devkit/lib/${CMAKE_BUILD_TYPE}
 )
 
-# Archive extraction in preparation for installation commands.
+# Archives extraction in preparation for installation commands.
 execute_process (
     COMMAND ${CMAKE_COMMAND} -E tar xf ${CMAKE_BINARY_DIR}/appleseed_include.tar
     COMMAND ${CMAKE_COMMAND} -E tar xf ${CMAKE_BINARY_DIR}/appleseed_shared_include.tar

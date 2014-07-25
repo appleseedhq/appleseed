@@ -107,7 +107,7 @@ namespace
         SyntheticVersionString()
         {
             sprintf(
-                m_value, 
+                m_value,
                 "%s version %s",
                 Appleseed::get_lib_name(),
                 Appleseed::get_lib_version());

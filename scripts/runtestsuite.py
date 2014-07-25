@@ -270,7 +270,7 @@ class ReportWriter:
            VALUE_THRESHOLD,
            MAX_DIFFERING_COMPONENTS))
         self.file.flush()
-        
+
     def __write_footer(self):
         if self.failures == 0:
             self.file.write("            <p>None.</p>")

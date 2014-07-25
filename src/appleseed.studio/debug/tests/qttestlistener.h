@@ -107,7 +107,7 @@ class QtTestListener
 
     TestOutputItem*     m_suite_item;
     TestOutputItem*     m_case_item;
-    
+
     Stopwatch           m_suite_stopwatch;
     Stopwatch           m_case_stopwatch;
 };

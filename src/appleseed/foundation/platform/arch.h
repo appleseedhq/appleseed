@@ -5,7 +5,6 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
 // Copyright (c) 2014 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,39 +26,41 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_PLATFORM_SSE_H
-#define APPLESEED_FOUNDATION_PLATFORM_SSE_H
+#ifndef APPLESEED_FOUNDATION_PLATFORM_ARCH_H
+#define APPLESEED_FOUNDATION_PLATFORM_ARCH_H
 
-#ifndef APPLESEED_USE_SSE
-    #error SSE support not enabled.
+//
+// Make sure APPLESEED_ARCH32 and APPLESEED_ARCH64 are not both defined at the same time.
+//
+
+#if defined(APPLESEED_ARCH32) && defined(APPLESEED_ARCH64)
+    #error Only one of APPLESEED_ARCH32 and APPLESEED_ARCH64 must be defined.
 #endif
 
-// Platform headers.
-#include <xmmintrin.h>      // SSE1 intrinsics
-#include <emmintrin.h>      // SSE2 intrinsics
-
-namespace foundation
-{
 
 //
-// 4-way SSE implementation of std::floor().
+// Define APPLESEED_ARCH32 or APPLESEED_ARCH64 appropriately, if necessary.
 //
-// Reference:
-//
-//   http://www.masm32.com/board/index.php?topic=9515.msg78719#msg78719
-//
-// Note: SSE 4.1 has an _mm_floor_ps() intrinsic (see smmintrin.h).
+// This code is inspired by the LZ4 implementation.
 //
 
-inline __m128 floorps(const __m128 x)
-{
-    return
-        _mm_cvtepi32_ps(
-            _mm_sub_epi32(
-                _mm_cvttps_epi32(x),
-                _mm_srli_epi32(_mm_castps_si128(x), 31)));
-}
+#if !defined(APPLESEED_ARCH32) && !defined(APPLESEED_ARCH64)
+    #if defined __x86_64__      || \
+        defined _M_X64          || \
+        defined _WIN64          || \
+        defined __powerpc64__   || \
+        defined __ppc64__       || \
+        defined __PPC64__       || \
+        defined __64BIT__       || \
+        defined _LP64           || \
+        defined __LP64__        || \
+        defined __ia64          || \
+        defined __itanium__     || \
+        defined _M_IA64
+        #define APPLESEED_ARCH64
+    #else
+        #define APPLESEED_ARCH32
+    #endif
+#endif
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_PLATFORM_SSE_H
+#endif  // !APPLESEED_FOUNDATION_PLATFORM_ARCH_H

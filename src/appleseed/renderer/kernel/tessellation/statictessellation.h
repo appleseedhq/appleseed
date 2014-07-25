@@ -292,7 +292,7 @@ void StaticTessellation<Primitive>::create_uv_0_attribute()
 template <typename Primitive>
 void StaticTessellation<Primitive>::create_motion_segment_count_attribute()
 {
-    m_ms_count_cid = 
+    m_ms_count_cid =
         m_tessellation_attributes.create_channel(
             "motion_segment_count",
             foundation::NumericTypeUInt32,

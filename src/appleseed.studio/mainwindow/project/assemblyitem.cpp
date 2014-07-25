@@ -111,7 +111,7 @@ AssemblyItem::AssemblyItem(
     insertChild(
         5,
         m_surface_shader_collection_item = add_multi_model_collection_item<SurfaceShader>(assembly.surface_shaders()));
-    
+
     insertChild(
         6,
         m_material_collection_item = new MaterialCollectionItem(

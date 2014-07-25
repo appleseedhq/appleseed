@@ -67,7 +67,7 @@ TEST_SUITE(Foundation_Utility_SettingsFileReader)
     {
         const bool succeeded = read("unit tests/inputs/test_settings_emptysettingsfile.xml");
         ASSERT_TRUE(succeeded);
-        
+
         EXPECT_TRUE(m_dictionary.empty());
     }
 
@@ -75,7 +75,7 @@ TEST_SUITE(Foundation_Utility_SettingsFileReader)
     {
         const bool succeeded = read("unit tests/inputs/test_settings_settingsfilewithtwoscalarparameters.xml");
         ASSERT_TRUE(succeeded);
-        
+
         ASSERT_EQ(2, m_dictionary.strings().size());
 
         EXPECT_EQ(42, m_dictionary.get<int>("x"));

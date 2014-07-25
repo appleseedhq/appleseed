@@ -34,6 +34,7 @@
 #include "renderer/global/globaltypes.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/beziercurve.h"
 #include "foundation/math/intersection.h"
 
 // Standard headers.
@@ -41,18 +42,6 @@
 
 namespace renderer
 {
-
-//
-// Triangle types.
-//
-
-// Triangle format used for storage.
-typedef foundation::TriangleMT<GScalar> GTriangleType;
-
-// Triangle format used for intersection.
-typedef foundation::TriangleMT<double> TriangleType;
-typedef foundation::TriangleMTSupportPlane<double> TriangleSupportPlaneType;
-
 
 //
 // Assembly tree settings.
@@ -90,6 +79,13 @@ const size_t RegionTreeAccessCacheWays = 1;
 // Triangle tree settings.
 //
 
+// Triangle format used for storage.
+typedef foundation::TriangleMT<GScalar> GTriangleType;
+
+// Triangle format used for intersection.
+typedef foundation::TriangleMT<double> TriangleType;
+typedef foundation::TriangleMTSupportPlane<double> TriangleSupportPlaneType;
+
 // Maximum number of triangles per leaf.
 const size_t TriangleTreeDefaultMaxLeafSize = 2;
 
@@ -115,6 +111,36 @@ const size_t TriangleTreeAccessCacheWays = 2;
 
 // Size of the stack (in number of nodes) used during traversal.
 const size_t TriangleTreeStackSize = 64;
+
+
+//
+// Curve tree settings.
+//
+
+// Curve format used for storage.
+typedef foundation::BezierCurve3d GCurveType;
+
+// Curve format used for intersection.
+typedef foundation::BezierCurve3d CurveType;
+
+// Curve intersector format used for intersection.
+typedef foundation::BezierCurveIntersector<CurveType> CurveIntersector;
+
+// Maximum number of curves per leaf.
+const size_t CurveTreeDefaultMaxLeafSize = 1;
+
+// Relative cost of traversing an interior node.
+const GScalar CurveTreeDefaultInteriorNodeTraversalCost(1.0);
+
+// Relative cost of intersecting a curve.
+const GScalar CurveTreeDefaultCurveIntersectionCost(1.0);
+
+// Size of the curve tree access cache.
+const size_t CurveTreeAccessCacheLines = 128;
+const size_t CurveTreeAccessCacheWays = 2;
+
+// Size of the stack (in number of nodes) used during traversal.
+const size_t CurveTreeStackSize = 64;
 
 
 //

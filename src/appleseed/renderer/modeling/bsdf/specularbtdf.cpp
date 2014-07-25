@@ -122,7 +122,7 @@ namespace
 
                 if (values->m_fresnel_multiplier != 0.0)
                 {
-                    fresnel_reflection = 
+                    fresnel_reflection =
                         fresnel_dielectric_unpolarized(
                             values->m_from_ior,
                             values->m_to_ior,

@@ -60,7 +60,7 @@ namespace detail
         virtual void on_rendering_begin() OVERRIDE
         {
             m_base_controller.on_rendering_begin();
-            
+
             // Lock Python's global interpreter lock (GIL),
             // it was released in MasterRenderer.render.
             ScopedGILLock lock;
@@ -78,7 +78,7 @@ namespace detail
         virtual void on_rendering_success() OVERRIDE
         {
             m_base_controller.on_rendering_success();
-            
+
             // Lock Python's global interpreter lock (GIL),
             // it was released in MasterRenderer.render.
             ScopedGILLock lock;
@@ -96,7 +96,7 @@ namespace detail
         virtual void on_rendering_abort() OVERRIDE
         {
             m_base_controller.on_rendering_abort();
-            
+
             // Lock Python's global interpreter lock (GIL),
             // it was released in MasterRenderer.render.
             ScopedGILLock lock;
@@ -114,7 +114,7 @@ namespace detail
         virtual void on_frame_begin() OVERRIDE
         {
             m_base_controller.on_frame_begin();
-            
+
             // Lock Python's global interpreter lock (GIL),
             // it was released in MasterRenderer.render.
             ScopedGILLock lock;
@@ -132,7 +132,7 @@ namespace detail
         virtual void on_frame_end() OVERRIDE
         {
             m_base_controller.on_frame_end();
-            
+
             // Lock Python's global interpreter lock (GIL),
             // it was released in MasterRenderer.render.
             ScopedGILLock lock;
@@ -165,7 +165,7 @@ namespace detail
                 return AbortRendering;
             }
         }
-        
+
       private:
         renderer::DefaultRendererController m_base_controller;
     };

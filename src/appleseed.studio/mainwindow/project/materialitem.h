@@ -52,7 +52,7 @@ class MaterialItem
         renderer::Material*         entity,
         renderer::Assembly&         parent,
         MaterialCollectionItem*     collection_item,
-        ProjectBuilder&             project_builder);        
+        ProjectBuilder&             project_builder);
 
   private:
     virtual void slot_edit(AttributeEditor* attribute_editor) OVERRIDE;

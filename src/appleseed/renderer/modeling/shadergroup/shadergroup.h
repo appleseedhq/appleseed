@@ -113,7 +113,7 @@ class DLLSYMBOL ShaderGroup
 
     // Returns true if the shader group contains at least one transparency closure.
     bool has_transparency() const;
-    
+
     // Return a reference-counted (but opaque) reference to the OSL shader.
     OSL::ShaderGroupRef& shadergroup_ref() const;
 
@@ -144,7 +144,7 @@ class DLLSYMBOL ShaderGroupFactory
 
     // Create a new ShaderGroup.
     static foundation::auto_release_ptr<ShaderGroup> create(
-        const char* name, 
+        const char* name,
         const foundation::SearchPaths& searchpaths);
 };
 

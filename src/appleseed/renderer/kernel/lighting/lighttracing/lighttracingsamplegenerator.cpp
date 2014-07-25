@@ -172,13 +172,13 @@ namespace
           , m_shadergroup_exec(shading_system)
 #endif
           , m_tracer(
-                m_scene, 
-                m_intersector, 
+                m_scene,
+                m_intersector,
                 m_texture_cache,
 #ifdef WITH_OSL
                 &m_shadergroup_exec,
 #endif
-                m_params.m_transparency_threshold, 
+                m_params.m_transparency_threshold,
                 m_params.m_max_iterations)
           , m_shading_context(
                 m_intersector,

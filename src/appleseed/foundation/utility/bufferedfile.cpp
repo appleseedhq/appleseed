@@ -692,7 +692,7 @@ void LZ4CompressedWriterAdapter::flush_buffer()
             reinterpret_cast<const char*>(&m_buffer[0]),
             reinterpret_cast<char*>(&m_compressed_buffer[0]),
             static_cast<int>(m_buffer_index));
- 
+
     m_file.write(static_cast<uint64>(m_buffer_index));
     m_file.write(static_cast<uint64>(compressed_buffer_size));
     m_file.write(&m_compressed_buffer[0], compressed_buffer_size);

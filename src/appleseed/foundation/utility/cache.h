@@ -194,7 +194,7 @@ namespace cache_impl
                     oldest_timestamp = m_entries[i].m_timestamp;
                 }
             }
-            
+
             return &m_entries[oldest_index];
         }
 

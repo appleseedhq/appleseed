@@ -47,7 +47,7 @@ namespace
 
     const char* Model = "generic_material";
 
-    class GenericMaterial 
+    class GenericMaterial
       : public Material
     {
       public:

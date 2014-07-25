@@ -70,7 +70,7 @@ class ShaderParamParser
 
     template <typename T>
     void parse_three_values(
-        T&          a, 
+        T&          a,
         T&          b,
         T&          c,
         const bool  parse_as_color = false);

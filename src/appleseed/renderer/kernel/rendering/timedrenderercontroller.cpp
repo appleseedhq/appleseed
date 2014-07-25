@@ -66,7 +66,7 @@ TimedRendererController::~TimedRendererController()
 
 void TimedRendererController::on_frame_begin()
 {
-    impl->m_stopwatch.start(); 
+    impl->m_stopwatch.start();
 }
 
 TimedRendererController::Status TimedRendererController::on_progress()

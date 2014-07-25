@@ -65,7 +65,7 @@ MaterialFactoryRegistrar::MaterialFactoryRegistrar()
   : impl(new Impl())
 {
     register_factory(auto_ptr<FactoryType>(new GenericMaterialFactory()));
-    
+
 #ifdef WITH_OSL
     register_factory(auto_ptr<FactoryType>(new OSLMaterialFactory()));
 #endif

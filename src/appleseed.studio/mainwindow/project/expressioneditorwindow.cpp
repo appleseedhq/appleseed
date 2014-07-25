@@ -93,12 +93,12 @@ ExpressionEditorWindow::ExpressionEditorWindow(
     text_edit->setObjectName("expression_editor");
     m_editor->setExpr(expression, true);
     root_layout->addWidget(m_editor);
- 
+
     m_error = new QLabel("SeExpression has errors. View log for details.");
     m_error->setObjectName("error");
     m_error->hide();
     root_layout->addWidget(m_error);
-    
+
     QPushButton* apply_button = m_ui->buttonbox->button(QDialogButtonBox::Apply);
 
     // Create connections

@@ -136,7 +136,7 @@ class RendererServices
     // invert it, but a particular renderer may have a better technique
     // and overload the implementation.
     virtual bool get_inverse_matrix(
-        OSL::Matrix44&          result, 
+        OSL::Matrix44&          result,
         OSL::TransformationPtr  xform,
         float                   time) OVERRIDE;
 
@@ -155,9 +155,9 @@ class RendererServices
     // get_matrix and invert it, but a particular renderer may have a
     // better technique and overload the implementation.
     virtual bool get_inverse_matrix(
-        OSL::Matrix44&          result, 
+        OSL::Matrix44&          result,
         OSL::TransformationPtr  xform) OVERRIDE;
-    
+
     // Get the 4x4 matrix that transforms points from the named
     // 'from' coordinate system to "common" space at the given time.
     // Returns true if ok, false if the named matrix is not known.

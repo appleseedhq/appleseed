@@ -70,7 +70,7 @@ class DisneyMaterialLayerUI
     void fold_layer();
 
   private slots:
-    void slot_delete_layer(); 
+    void slot_delete_layer();
     void slot_move_layer_up();
     void slot_move_layer_down();
     void slot_fold();

@@ -76,7 +76,7 @@ class PathVertex
 
     // Constructor.
     explicit PathVertex(SamplingContext& sampling_context);
-    
+
     // Forward the most useful methods to the shading point.
     const ShadingRay& get_ray() const;
     double get_time() const;

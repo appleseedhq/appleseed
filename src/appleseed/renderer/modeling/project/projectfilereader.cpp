@@ -55,6 +55,7 @@
 #include "renderer/modeling/material/imaterialfactory.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/material/materialfactoryregistrar.h"
+#include "renderer/modeling/object/curveobject.h"
 #include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/meshobjectreader.h"
 #include "renderer/modeling/object/object.h"
@@ -1516,7 +1517,12 @@ namespace
                 if (m_model == MeshObjectFactory::get_model())
                 {
                     if (m_context.get_options() & ProjectFileReader::OmitReadingMeshFiles)
-                        m_objects.push_back(MeshObjectFactory::create(m_name.c_str(), m_params).release());
+                    {
+                        m_objects.push_back(
+                            MeshObjectFactory::create(
+                                m_name.c_str(),
+                                m_params).release());
+                    }
                     else
                     {
                         MeshObjectArray object_array;
@@ -1528,6 +1534,15 @@ namespace
                             m_objects = array_vector<ObjectVector>(object_array);
                         else m_context.get_event_counters().signal_error();
                     }
+                }
+                else if (m_model == CurveObjectFactory::get_model())
+                {
+                    // todo: create a CurveObjectReader?
+                    m_objects.push_back(
+                        CurveObjectFactory::create(
+                            m_context.get_project().search_paths(),
+                            m_name.c_str(),
+                            m_params).release());
                 }
                 else
                 {
@@ -1871,7 +1886,7 @@ namespace
         {
             m_name = get_value(attrs, "name");
             m_shader_group = ShaderGroupFactory::create(
-                m_name.c_str(), 
+                m_name.c_str(),
                 m_context.get_project().search_paths());
         }
 

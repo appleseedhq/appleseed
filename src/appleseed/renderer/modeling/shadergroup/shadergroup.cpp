@@ -97,7 +97,7 @@ void ShaderGroup::add_shader(
     if (!m_has_emission || !m_has_transparency)
     {
         bool has_emission, has_transparency;
-        
+
         shader->get_shader_info(
             m_search_paths,
             has_emission,

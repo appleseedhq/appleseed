@@ -77,7 +77,7 @@ class CommandLineHandler
     // Houdini related options.
     foundation::FlagOptionHandler                   m_mplay_display;
     foundation::ValueOptionHandler<int>             m_hrmanpipe_display;
-    
+
     // Developer-oriented options.
     foundation::ValueOptionHandler<std::string>     m_run_unit_tests;
     foundation::ValueOptionHandler<std::string>     m_run_unit_benchmarks;

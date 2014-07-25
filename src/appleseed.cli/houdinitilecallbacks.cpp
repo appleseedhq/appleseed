@@ -116,7 +116,7 @@ namespace
             if (m_fp == 0)
                 LOG_FATAL(m_logger, "Unable to open hrmanpipe");
         }
-        
+
         ~HoudiniTileCallback()
         {
             if (m_fp)
@@ -223,12 +223,12 @@ namespace
             plane_def[0] = static_cast<int>(index);
             plane_def[1] = static_cast<int>(strlen(name));
             plane_def[2] = map_pixel_format(img.properties().m_pixel_format);
-            
+
             if (img.properties().m_pixel_format == PixelFormatDouble)
                 LOG_WARNING(m_logger, "Houdini does not support double pixels, converting to float");
 
             plane_def[3] = static_cast<int>(img.properties().m_channel_count);
-        
+
             if (fwrite(plane_def, sizeof(int), 8, m_fp) != 8)
                 LOG_FATAL(m_logger, "Error sending plane definition");
 
@@ -243,7 +243,7 @@ namespace
         {
             // We assume all AOV images have the same properties as the main image.
             const CanvasProperties& props = frame.image().properties();
-        
+
             // Send beauty tile.
             do_send_tile(
                 props,
@@ -338,7 +338,7 @@ namespace
 
             return -1;
         }
-        
+
         Logger&         m_logger;
         boost::mutex    m_mutex;
         FILE*           m_fp;

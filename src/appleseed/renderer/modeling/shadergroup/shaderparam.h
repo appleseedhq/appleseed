@@ -96,7 +96,7 @@ class DLLSYMBOL ShaderParam
 
     // Create an int param.
     static foundation::auto_release_ptr<ShaderParam> create_int_param(
-        const char* name, 
+        const char* name,
         const int   value);
 
     // Create a float param.

@@ -66,7 +66,7 @@ class ShadingContext
         TextureCache&           texture_cache,
 #ifdef WITH_OSL
         OSLShaderGroupExec&     osl_shadergroup_exec,
-#endif            
+#endif
         ILightingEngine*        lighting_engine = 0,
         const float             transparency_threshold = 0.001f,
         const size_t            max_iterations = 1000);
@@ -87,16 +87,16 @@ class ShadingContext
 
 #ifdef WITH_OSL
     void execute_osl_shading(
-        const ShaderGroup&  shader_group, 
+        const ShaderGroup&  shader_group,
         const ShadingPoint& shading_point) const;
 
     void execute_osl_transparency(
-        const ShaderGroup&  shader_group, 
+        const ShaderGroup&  shader_group,
         const ShadingPoint& shading_point,
         Alpha&              alpha,
         float*              holdout = 0) const;
 #endif
-    
+
   private:
     const Intersector&          m_intersector;
     Tracer&                     m_tracer;

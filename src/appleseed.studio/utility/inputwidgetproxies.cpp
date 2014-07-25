@@ -324,7 +324,7 @@ Color3d ColorPickerProxy::get_color_from_string(const string& s)
     return Color3d(do_get_color_from_string(s, LowWavelength, HighWavelength));
 }
 
-Color3d ColorPickerProxy::get_color_from_string(const string& s, const string& wavelength_range) 
+Color3d ColorPickerProxy::get_color_from_string(const string& s, const string& wavelength_range)
 {
     try
     {

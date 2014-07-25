@@ -208,7 +208,7 @@
     </output>
     <test>
         <commandline>copy appleseed.foundation.test.cpp "$OutputBasePath"</commandline>
-        <commandline>cl /W3 /wd"4355" /EHsc /D_CRT_SECURE_NO_WARNINGS /DARCH64 /I"$OutputBasePath" appleseed.foundation.test.cpp $OutputSourceFilePath</commandline>
+        <commandline>cl /W3 /wd"4355" /EHsc /D_CRT_SECURE_NO_WARNINGS /I"$OutputBasePath" appleseed.foundation.test.cpp $OutputSourceFilePath</commandline>
         <commandline>appleseed.foundation.test.exe</commandline>
         <commandline>del appleseed.foundation.obj</commandline>
         <commandline>del appleseed.foundation.test.obj</commandline>

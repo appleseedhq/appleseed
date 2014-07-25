@@ -103,7 +103,7 @@ EntityEditor::EntityEditor(
 
     m_top_layout = new QVBoxLayout(m_parent);
     m_top_layout->setMargin(7);
-    
+
     create_form_layout();
     create_connections();
     rebuild_form(values);
@@ -142,7 +142,7 @@ void EntityEditor::create_connections()
     connect(
         m_file_picker_signal_mapper, SIGNAL(mapped(const QString&)),
         SLOT(slot_open_file_picker(const QString&)));
-    
+
     if (m_custom_ui.get())
     {
         connect(m_custom_ui.get(), SIGNAL(signal_custom_applied()),
@@ -163,7 +163,7 @@ void EntityEditor::rebuild_form(const Dictionary& values)
 
     for (const_each<InputMetadataCollection> i = m_input_metadata; i; ++i)
         create_input_widgets(*i);
-    
+
     if (m_custom_ui.get())
     {
         m_custom_ui->create_custom_widgets(m_top_layout, values);

@@ -104,7 +104,7 @@ void FixedModelEntityEditorFormFactory<FactoryRegistrar>::update(
     add_input_metadata(
         factory->get_input_metadata(),
         values,
-        metadata);    
+        metadata);
 }
 
 }       // namespace studio

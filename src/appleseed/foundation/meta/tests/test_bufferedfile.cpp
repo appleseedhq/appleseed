@@ -150,7 +150,7 @@ TEST_SUITE(Foundation_Utility_BufferedFile)
         const uint32 Value = 0xDEADBEEFUL;
         EXPECT_EQ(4, file.write(Value));
         EXPECT_EQ(4, file.tell());
-        
+
         file.close();
 
         file.open(

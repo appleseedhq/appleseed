@@ -56,22 +56,6 @@ namespace foundation
 {
 
 //
-// The Compiler class provides information about the compiler used to build the library.
-//
-
-class DLLSYMBOL Compiler
-  : public NonCopyable
-{
-  public:
-    // Return the name of the compiler.
-    static const char* get_compiler_name();
-
-    // Return the version of the compiler.
-    static const char* get_compiler_version();
-};
-
-
-//
 // A qualifier to force inlining of a function/method on supported compilers.
 //
 
@@ -265,6 +249,22 @@ class DLLSYMBOL Compiler
     #define PRINTF_FMT
     #define PRINTF_FMT_ATTR(string_index, first_to_check)
 #endif
+
+
+//
+// The Compiler class provides information about the compiler used to build the library.
+//
+
+class DLLSYMBOL Compiler
+  : public NonCopyable
+{
+  public:
+    // Return the name of the compiler.
+    static const char* get_compiler_name();
+
+    // Return the version of the compiler.
+    static const char* get_compiler_version();
+};
 
 }       // namespace foundation
 

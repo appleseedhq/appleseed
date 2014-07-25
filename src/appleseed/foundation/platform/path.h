@@ -45,7 +45,7 @@
 #if defined __APPLE__
 #include <sys/param.h>
 #elif defined __linux__
-#include <linux/limits.h> 
+#include <linux/limits.h>
 #endif
 
 namespace foundation
@@ -57,19 +57,19 @@ namespace foundation
 
 // Windows.
 #if defined _WIN32
-#define FOUNDATION_MAX_PATH_LENGTH  MAX_PATH
+    #define FOUNDATION_MAX_PATH_LENGTH  MAX_PATH
 
 // Mac OS X.
 #elif defined __APPLE__
-#define FOUNDATION_MAX_PATH_LENGTH  MAXPATHLEN
+    #define FOUNDATION_MAX_PATH_LENGTH  MAXPATHLEN
 
 // Linux.
 #elif defined __linux__
-#define FOUNDATION_MAX_PATH_LENGTH  PATH_MAX
+    #define FOUNDATION_MAX_PATH_LENGTH  PATH_MAX
 
 // Unsupported platform.
 #else
-#error Unsupported platform.
+    #error Unsupported platform.
 #endif
 
 

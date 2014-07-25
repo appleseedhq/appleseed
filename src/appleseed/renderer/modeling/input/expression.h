@@ -64,7 +64,7 @@ class DLLSYMBOL Expression
 
     // Destructor.
     ~Expression();
-    
+
     // Copy constructor.
     Expression(const Expression& other);
 

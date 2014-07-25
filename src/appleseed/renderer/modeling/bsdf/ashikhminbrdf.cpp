@@ -127,7 +127,7 @@ namespace
             // Compute shininess-related values.
             SVal sval;
             compute_sval(sval, values->m_nu, values->m_nv);
-            
+
             // Generate a uniform sample in [0,1)^3.
             sampling_context.split_in_place(3, 1);
             const Vector3d s = sampling_context.next_vector2<3>();
@@ -387,7 +387,7 @@ namespace
             double      m_pd;               // probability of diffuse component
             double      m_pg;               // probability of glossy component
         };
-        
+
         // Precomputed shininess-related values.
         struct SVal
         {

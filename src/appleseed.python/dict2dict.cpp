@@ -166,7 +166,7 @@ namespace
     bpy::object obj_from_string(const std::string& str)
     {
         // try to guess the type of the value represented by str.
-        
+
         try // Vector2
         {
             Vector2d v = from_string<Vector2d>(str);
@@ -180,7 +180,7 @@ namespace
             return bpy::object(d);
         }
         catch (ExceptionStringConversionError&) {}
-        
+
         try // bool
         {
             bool b = from_string<bool>(str);

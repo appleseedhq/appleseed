@@ -242,7 +242,7 @@ T fresnel_dielectric(const T cosi, T eta)
         return F;
     }
 
-    return T(1.0); // TIR (no refracted component)    
+    return T(1.0); // TIR (no refracted component)
 }
 
 }       // namespace foundation

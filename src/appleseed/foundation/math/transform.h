@@ -614,7 +614,7 @@ inline void TransformInterpolator<T>::evaluate(const T t, Transform<T>& result) 
     //     Matrix<T, 4, 4> local_to_parent = smat;
     //     local_to_parent = rmat * local_to_parent;
     //     local_to_parent = tmat * local_to_parent;
-    //     
+    //
     //     // Compute the parent-to-local matrix.
     //     const Vector<T, 3> inv_s(T(1.0) / s[0], T(1.0) / s[1], T(1.0) / s[2]);
     //     const Matrix<T, 4, 4> inv_smat(Matrix<T, 4, 4>::scaling(inv_s));

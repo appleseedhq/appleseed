@@ -83,7 +83,7 @@ namespace GenerateCMakeLists
             foreach (var file in files)
             {
                 string relativeFilePath = GetRelativePath(file.FullName);
-                
+
                 relativeFilePath = relativeFilePath.Replace('\\', '/');
                 relativeFilePath = relativeFilePath.Replace(" ", "\\ ");
 

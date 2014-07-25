@@ -383,7 +383,7 @@ class Matrix<T, 4, 4>
         const ValueType         roll);                      // rotation angle, in radians
 
     // Build a rotation matrix from an axis and an angle.
-    static MatrixType rotation(                
+    static MatrixType rotation(
         const Vector<T, 3>&     axis,                       // rotation axis, unit-length
         const ValueType         angle);                     // rotation angle, in radians
     static MatrixType rotation(
@@ -1047,7 +1047,7 @@ Matrix<T, 3, 3> Matrix<T, 3, 3>::make_identity()
     mat[0] = T(1.0);
     mat[4] = T(1.0);
     mat[8] = T(1.0);
-    
+
     return mat;
 }
 
@@ -2008,7 +2008,7 @@ inline Vector<T, 4> operator*(
     res[1] = m[ 4] * v[0] + m[ 5] * v[1] + m[ 6] * v[2] + m[ 7] * v[3];
     res[2] = m[ 8] * v[0] + m[ 9] * v[1] + m[10] * v[2] + m[11] * v[3];
     res[3] = m[12] * v[0] + m[13] * v[1] + m[14] * v[2] + m[15] * v[3];
-    
+
     return res;
 }
 

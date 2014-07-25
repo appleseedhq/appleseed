@@ -445,8 +445,8 @@ namespace
           , m_shadergroup_exec(shading_system)
 #endif
           , m_tracer(
-                m_scene, 
-                m_intersector, 
+                m_scene,
+                m_intersector,
                 m_texture_cache,
 #ifdef WITH_OSL
                 &m_shadergroup_exec,
@@ -455,8 +455,8 @@ namespace
                 m_params.m_max_iterations,
                 false)
           , m_shading_context(
-                m_intersector, 
-                m_tracer, 
+                m_intersector,
+                m_tracer,
                 m_texture_cache
 #ifdef WITH_OSL
                 , m_shadergroup_exec

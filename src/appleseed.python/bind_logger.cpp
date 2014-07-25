@@ -74,7 +74,7 @@ namespace detail
             // because this can be called from multiple threads
             // we need to lock python here.
             ScopedGILLock lock;
-            
+
             try
             {
                 this->get_override("write")(category, file, line, header, message);

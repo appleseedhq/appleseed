@@ -94,7 +94,7 @@ namespace
         GenericTileRenderer(
             const Frame&                        frame,
             IPixelRendererFactory*              pixel_renderer_factory,
-            IShadingResultFrameBufferFactory*   framebuffer_factory, 
+            IShadingResultFrameBufferFactory*   framebuffer_factory,
             const ParamArray&                   params,
             const bool                          primary)
           : m_pixel_renderer(pixel_renderer_factory->create(primary))
@@ -294,7 +294,7 @@ namespace
 GenericTileRendererFactory::GenericTileRendererFactory(
     const Frame&                        frame,
     IPixelRendererFactory*              pixel_renderer_factory,
-    IShadingResultFrameBufferFactory*   framebuffer_factory, 
+    IShadingResultFrameBufferFactory*   framebuffer_factory,
     const ParamArray&                   params)
   : m_frame(frame)
   , m_pixel_renderer_factory(pixel_renderer_factory)

@@ -158,7 +158,7 @@ TEST_SUITE(Foundation_Math_QMC)
         const size_t    initial_instance = 0)
     {
         const size_t bases[2] = { b0, b1 };
-        
+
         size_t perms[100];
         apply_permutation(permutation, b0, perms);
         apply_permutation(permutation, b1, perms + b0);

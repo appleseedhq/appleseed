@@ -90,7 +90,7 @@ enum ClosureID
     HoldoutID,
     TransparentID,
 
-    // Microfacets are special.    
+    // Microfacets are special.
     MicrofacetID,
     MicrofacetBeckmannReflectionID = MicrofacetID,
     MicrofacetBlinnReflectionID,

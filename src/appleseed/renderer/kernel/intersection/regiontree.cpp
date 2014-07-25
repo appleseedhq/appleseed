@@ -371,7 +371,7 @@ namespace
 
             // Log a progress message.
             RENDERER_LOG_INFO(
-                "building region tree for assembly #" FMT_UNIQUE_ID " (%s %s)...", 
+                "building region tree for assembly #" FMT_UNIQUE_ID " (%s %s)...",
                 arguments.m_assembly_uid,
                 pretty_int(root_leaf->get_size()).c_str(),
                 plural(root_leaf->get_size(), "region").c_str());
@@ -458,7 +458,7 @@ RegionTree::RegionTree(const Arguments& arguments)
 RegionTree::~RegionTree()
 {
     RENDERER_LOG_INFO(
-        "deleting region tree for assembly #" FMT_UNIQUE_ID "...", 
+        "deleting region tree for assembly #" FMT_UNIQUE_ID "...",
         m_assembly_uid);
 
     // Delete triangle trees.

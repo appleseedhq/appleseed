@@ -421,7 +421,7 @@ inline typename AABBVector::value_type::ValueType SBVHPartitioner<ItemHandler, A
     assert(bbox_half_surface_area > ValueType(0.0));
 
     return
-        m_interior_node_traversal_cost +  
+        m_interior_node_traversal_cost +
         m_item_intersection_cost * (cost / bbox_half_surface_area);
 }
 

@@ -74,7 +74,7 @@ namespace
 
             if (i > 0)
                 sstr << ",";
-            
+
             sstr << "(" << point.x << "," << point.y << "," << point.z << ")";
         }
 

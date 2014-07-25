@@ -60,7 +60,7 @@ class EventCounters
     // Signal one or several errors.
     void signal_error();
     void signal_errors(const size_t error_count);
-    
+
     // Read the event counters.
     size_t get_warning_count() const;
     size_t get_error_count() const;

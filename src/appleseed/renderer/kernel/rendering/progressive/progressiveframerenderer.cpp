@@ -460,7 +460,7 @@ ProgressiveFrameRendererFactory::ProgressiveFrameRendererFactory(
     ITileCallbackFactory*       callback_factory,
     const ParamArray&           params)
   : m_project(project)
-  , m_generator_factory(generator_factory)  
+  , m_generator_factory(generator_factory)
   , m_callback_factory(callback_factory)
   , m_params(params)
 {

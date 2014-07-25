@@ -52,7 +52,7 @@ namespace studio {
 
 MouseCoordinatesTracker::MouseCoordinatesTracker(
     RenderWidget*    widget,
-    QLabel*          label) 
+    QLabel*          label)
   : m_widget(widget)
   , m_label(label)
   , m_content_width(widget->width())

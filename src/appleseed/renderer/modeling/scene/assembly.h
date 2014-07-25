@@ -98,7 +98,7 @@ class DLLSYMBOL Assembly
     // Access the OSL shader groups.
     ShaderGroupContainer& shader_groups() const;
 #endif
-    
+
     // Return true if this assembly is tagged as flushable.
     bool is_flushable() const;
 

@@ -208,7 +208,7 @@ bool Shader::add(OSL::ShadingSystem& shading_system)
     }
 
     // For some reason, OSL only supports the surface shader usage.
-    // So, we ignore the user shader type specified in the XML file, 
+    // So, we ignore the user shader type specified in the XML file,
     // and hardcode "surface" here. TODO: research this...
     //if (!shading_system.Shader(get_type(), get_shader(), get_layer()))
     if (!shading_system.Shader("surface", get_shader(), get_layer()))
@@ -227,7 +227,7 @@ void Shader::get_shader_info(
 {
     has_emission = false;
     has_transparency = false;
-    
+
     string filename = get_shader();
     filename += ".oso";
     filename = searchpaths.qualify(filename);
@@ -240,7 +240,7 @@ void Shader::get_shader_info(
         RENDERER_LOG_ERROR("couldn't open shader %s.", filename.c_str());
         return;
     }
-    
+
     // search for the emission and transparent closures.
     string line;
     while (!file.eof())
@@ -248,10 +248,10 @@ void Shader::get_shader_info(
         getline(file, line);
         if (line.find("\"emission\"", 0) != string::npos)
             has_emission = true;
-        
+
         if (line.find("\"transparent\"", 0) != string::npos)
             has_transparency = true;
-        
+
         if (has_emission && has_transparency)
             break;
     }

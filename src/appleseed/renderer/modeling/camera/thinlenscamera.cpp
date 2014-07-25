@@ -240,7 +240,7 @@ namespace
             Vector2d lens_point;
 
             // Sample the surface of the lens.
-            if (m_diaphragm_map_bound) 
+            if (m_diaphragm_map_bound)
             {
                 sampling_context.split_in_place(2, 1);
                 const Vector2d s = sampling_context.next_vector2<2>();

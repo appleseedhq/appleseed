@@ -264,7 +264,7 @@ void Tracer::evaluate_alpha(
             }
         }
     }
-#endif    
+#endif
 }
 
 }   // namespace renderer

@@ -381,7 +381,7 @@ void DiagnosticSurfaceShader::evaluate(
                 mix_uint32(
                     static_cast<uint32>(shading_point.get_object_instance().get_uid()),
                     static_cast<uint32>(shading_point.get_region_index()),
-                    static_cast<uint32>(shading_point.get_triangle_index()));
+                    static_cast<uint32>(shading_point.get_primitive_index()));
             shading_result.set_main_to_linear_rgb(integer_to_color(h));
         }
         break;

@@ -371,7 +371,7 @@ TEST_SUITE(Foundation_Utility_Dictionary)
             const int item = dic.get<int>(string("key"));
         });
     }
-    
+
     TEST_CASE(Merge_GivenOneIntInSourceAndOneIntInDestWithDifferentNames_InsertsDestIntIntoSource)
     {
         Dictionary dst;
@@ -441,5 +441,5 @@ TEST_SUITE(Foundation_Utility_Dictionary)
         EXPECT_EQ(1, dst.size());
         EXPECT_EQ(1, dst.dictionary("A").get<int>("AA"));
         EXPECT_EQ(2, dst.dictionary("A").get<int>("BB"));
-    }    
+    }
 }
