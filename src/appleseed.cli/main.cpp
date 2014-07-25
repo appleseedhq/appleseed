@@ -134,7 +134,7 @@ namespace
         const size_t suite_fail = result.get_suite_failure_count();
         const size_t case_exec = result.get_case_execution_count();
         const size_t case_fail = result.get_case_failure_count();
-  
+
         LOG_INFO(
             g_logger,
             "  suites      : %s executed, %s failed (%s)\n"
@@ -475,7 +475,7 @@ namespace
         const RegExFilter filter(regex, RegExFilter::CaseSensitive);
 
         Scene* scene = project.get_scene();
-        
+
         for (each<AssemblyContainer> i = scene->assemblies(); i; ++i)
             apply_select_object_instances_command_line_option(*i, filter);
     }
@@ -625,9 +625,9 @@ namespace
     bool is_progressive_render(const ParamArray& params)
     {
         const string value = params.get_required<string>("frame_renderer", "generic");
-        return value == "progressive";        
+        return value == "progressive";
     }
-    
+
     void render(const string& project_filename)
     {
         // Load the project.
@@ -670,7 +670,7 @@ namespace
             tile_callback_factory.reset(
                 new ProgressTileCallbackFactory(g_logger));
         }
-        
+
         // Create the master renderer.
         DefaultRendererController renderer_controller;
         MasterRenderer renderer(

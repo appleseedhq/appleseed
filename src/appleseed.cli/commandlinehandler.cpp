@@ -132,13 +132,13 @@ CommandLineHandler::CommandLineHandler()
     m_mplay_display.add_name("--mplay");
     m_mplay_display.set_description("use Houdini's mplay");
     parser().add_option_handler(&m_mplay_display);
-    
+
     m_hrmanpipe_display.add_name("--hrmanpipe");
     m_hrmanpipe_display.set_description("use Houdini's hrmanpipe; the argument is the socket number to pass to hrmanpipe");
     m_hrmanpipe_display.set_syntax("n");
     m_hrmanpipe_display.set_exact_value_count(1);
     parser().add_option_handler(&m_hrmanpipe_display);
-   
+
     m_run_unit_tests.add_name("--run-unit-tests");
     m_run_unit_tests.set_description("run unit tests; filter them based on the optional regular expression argument");
     m_run_unit_tests.set_min_value_count(0);
