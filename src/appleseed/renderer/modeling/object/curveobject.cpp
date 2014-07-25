@@ -34,7 +34,9 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/aabb.h"
+#include "foundation/math/rng.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/defaulttimers.h"
 #include "foundation/utility/searchpaths.h"
@@ -43,6 +45,7 @@
 
 // Standard headers.
 #include <cassert>
+#include <cmath>
 #include <fstream>
 #include <string>
 #include <vector>
@@ -80,6 +83,39 @@ struct CurveObject::Impl
             bbox.insert(m_curves[i].get_bbox());
 
         return bbox;
+    }
+
+    void create_hair_ball(const ParamArray& params)
+    {
+        const size_t ControlPointCount = 4;
+        const Vector3d Origin(0.0);
+        const double Radius = 1.0;
+
+        const size_t curve_count = params.get_optional<size_t>("curves", 100);
+        const double curve_width = params.get_optional<double>("width", 0.001);
+
+        Vector3d control_points[ControlPointCount];
+        MersenneTwister rng;
+
+        m_curves.reserve(curve_count);
+
+        for (size_t c = 0; c < curve_count; ++c)
+        {
+            for (size_t p = 0; p < ControlPointCount; ++p)
+            {
+                // http://math.stackexchange.com/questions/87230/picking-random-points-in-the-volume-of-sphere-with-uniform-probability
+                const double r = Radius * pow(rand_double1(rng), 1.0 / 3);
+
+                Vector2d s;
+                s[0] = rand_double1(rng);
+                s[1] = rand_double1(rng);
+
+                control_points[p] = r * sample_sphere_uniform(s);
+            }
+
+            const BezierCurve3d curve(&control_points[0], curve_width);
+            m_curves.push_back(curve);
+        }
     }
 
     // Read a custom curve file and load it in m_curves.
@@ -145,8 +181,14 @@ CurveObject::CurveObject(
   , impl(new Impl())
 {
     const string filename = params.get<string>("filename");
-    const string filepath = search_paths.qualify(filename);
-    impl->load_curve_file(filepath.c_str());
+
+    if (filename == "builtin:hairball")
+        impl->create_hair_ball(params);
+    else
+    {
+        const string filepath = search_paths.qualify(filename);
+        impl->load_curve_file(filepath.c_str());
+    }
 }
 
 CurveObject::~CurveObject()
