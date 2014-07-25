@@ -110,7 +110,7 @@ namespace
             const InputValues* values = static_cast<const InputValues*>(data);
             value = values->m_reflectance;
             value *= static_cast<float>(values->m_reflectance_multiplier * RcpPi);
-            
+
             // Compute the probability density of the sampled direction.
             probability = wi.y * RcpPi;
             assert(probability > 0.0);

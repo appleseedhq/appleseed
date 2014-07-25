@@ -60,7 +60,7 @@ class OSLShaderGroupExec
     ~OSLShaderGroupExec();
 
     void execute_shading(
-        const ShaderGroup&      shader_group, 
+        const ShaderGroup&      shader_group,
         const ShadingPoint&     shading_point) const;
 
     void execute_transparency(

@@ -90,11 +90,11 @@ class CurveTree
             const GAABB3&                       bbox,
             const Assembly&                     assembly);
     };
- 
+
     // Constructor, builds the tree for a given assembly.
     explicit CurveTree(const Arguments& arguments);
-    
-    void build_bvh(        
+
+    void build_bvh(
         const ParamArray&                       params,
         const double                            time,
         foundation::Statistics&                 statistics);

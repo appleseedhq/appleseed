@@ -58,7 +58,7 @@ TEST_SUITE(Foundation_Math_BezierCurve)
     void render_curves_to_image(
         const BezierCurveType   curves[],
         const size_t            curve_count,
-        const char*             filename) 
+        const char*             filename)
     {
         typedef typename BezierCurveType::ValueType ValueType;
         typedef typename BezierCurveType::VectorType VectorType;

@@ -72,7 +72,7 @@ namespace renderer
 {
 
 //
-// A shading point. 
+// A shading point.
 //
 
 class ShadingPoint
@@ -201,10 +201,10 @@ class ShadingPoint
         const TransformSequence*        m_assembly_instance_transform;
         const foundation::Transformd*   m_object_instance_transform;
     };
-    
+
     OSL::ShaderGlobals& get_osl_shader_globals() const;
 #endif
-    
+
   private:
     friend class AssemblyLeafProbeVisitor;
     friend class AssemblyLeafVisitor;

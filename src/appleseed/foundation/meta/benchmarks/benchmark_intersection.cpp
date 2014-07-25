@@ -212,7 +212,7 @@ namespace
 
         void generate_hitting_ray(MersenneTwister& rng, RayType& ray)
         {
-            do 
+            do
             {
                 FixtureBase<T>::get_random_ray(rng, T(10.0), ray);
             } while (!m_triangle.intersect(ray));
@@ -220,7 +220,7 @@ namespace
 
         void generate_missing_ray(MersenneTwister& rng, RayType& ray)
         {
-            do 
+            do
             {
                 FixtureBase<T>::get_random_ray(rng, T(10.0), ray);
             } while (m_triangle.intersect(ray));

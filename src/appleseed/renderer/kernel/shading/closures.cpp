@@ -92,7 +92,7 @@ namespace
         float       clearcoat;
         float       clearcoat_gloss;
     };
-    
+
     struct EmissionClosureParams
     {
         float           inner_angle;
@@ -114,7 +114,7 @@ namespace
     {
         OSL::Vec3       N;
     };
-    
+
     struct RefractionBTDFClosureParams
     {
         OSL::Vec3       N;
@@ -220,10 +220,10 @@ void CompositeClosure::process_closure_tree(
                 break;
 
               case DisneyID:
-                {                
+                {
                     const DisneyBRDFClosureParams* p =
                         reinterpret_cast<const DisneyBRDFClosureParams*>(c->data());
-    
+
                     DisneyBRDFInputValues values;
                     linear_rgb_reflectance_to_spectrum(Color3f(p->base_color), values.m_base_color);
                     values.m_subsurface = p->subsurface;
@@ -236,7 +236,7 @@ void CompositeClosure::process_closure_tree(
                     values.m_sheen_tint = p->sheen_tint;
                     values.m_clearcoat = p->clearcoat;
                     values.m_clearcoat_gloss = p->clearcoat_gloss;
-    
+
                     add_closure<DisneyBRDFInputValues>(
                         static_cast<ClosureID>(c->id),
                         w,
@@ -305,7 +305,7 @@ void CompositeClosure::process_closure_tree(
                                 w,
                                 Vector3d(p->N),
                                 Vector3d(p->T),
-                                values);                            
+                                values);
                         }
                     }
                 }
@@ -472,7 +472,7 @@ void CompositeClosure::do_add_closure(
     // This can happen when using the isotropic microfacet closure overload, for example.
     if (square_norm(tangent) == 0.0)
         has_tangent = false;
-    
+
     m_has_tangent[m_num_closures] = has_tangent;
 
     if (has_tangent)
@@ -613,7 +613,7 @@ void register_appleseed_closures(OSL::ShadingSystem& shading_system)
                                         CLOSURE_FLOAT_PARAM(MicrofacetBSDFClosureParams, yalpha),
                                         CLOSURE_FLOAT_PARAM(MicrofacetBSDFClosureParams, eta),
                                         CLOSURE_FINISH_PARAM(MicrofacetBSDFClosureParams) } },
-        
+
         { "reflection", ReflectionID, { CLOSURE_VECTOR_PARAM(ReflectionBRDFClosureParams, N),
                                         CLOSURE_FINISH_PARAM(ReflectionBRDFClosureParams) } },
 

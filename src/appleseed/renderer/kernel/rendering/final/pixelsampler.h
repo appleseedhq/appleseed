@@ -47,7 +47,7 @@ namespace renderer
 //
 // Reference:
 //
-//   Strictly Deterministic Sampling Methods in Computer Graphics 
+//   Strictly Deterministic Sampling Methods in Computer Graphics
 //   http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.88.7937
 //
 

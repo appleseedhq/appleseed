@@ -89,7 +89,7 @@ class TorranceSparrowMaskingShadowing
 };
 
 template <typename T>
-class MDF 
+class MDF
   : public NonCopyable
 {
   public:
@@ -122,7 +122,7 @@ class MDF
     {
         // Preconditions.
         assert(cos_theta(h) >= T(0.0));
-        
+
         const T result = do_eval_D(h, alpha_x, alpha_y);
 
         // Postconditions.
@@ -151,7 +151,7 @@ class MDF
     {
         // Preconditions.
         assert(cos_theta(h) >= T(0.0));
-        
+
         const T result = do_eval_pdf(h, alpha_x, alpha_y);
 
         // Postconditions.
@@ -164,7 +164,7 @@ class MDF
     {
         return v.y;
     }
-    
+
     T sin_theta_2(const Vector<T, 3>& v) const
     {
         return T(1.0) - square(cos_theta(v));
@@ -184,7 +184,7 @@ class MDF
     {
         return v.z / sin_theta(v);
     }
-    
+
   private:
     virtual Vector<T, 3> do_sample(
         const Vector<T, 2>&  s,
@@ -289,7 +289,7 @@ class BlinnMDF2
 //
 //
 
-// For some reason, this produces fireflies. It's mentioned in [3], 
+// For some reason, this produces fireflies. It's mentioned in [3],
 // but it can also be a bug. We don't use it yet.
 template <typename T>
 class BeckmannSmithMaskingShadowing
@@ -306,7 +306,7 @@ class BeckmannSmithMaskingShadowing
         return G1(outgoing, alpha_x, alpha_y) * G1(incoming, alpha_x, alpha_y);
     }
 
-    // G1 is used in microfacet2 unit tests, so it's public.    
+    // G1 is used in microfacet2 unit tests, so it's public.
     static T G1(
         const Vector<T, 3>&  v,
         const T              alpha_x,
@@ -515,7 +515,7 @@ class GGXMDF2
         if (alpha_x != alpha_y)
         {
             const T sin_theta = this->sin_theta(h);
-            
+
             T cos_phi_2_ax_2;
             T sin_phi_2_ay_2;
 
@@ -567,13 +567,13 @@ class GGXMDF2
         const T alpha_x_2 = square(alpha_x);
         const T cos_theta_2 = square(this->cos_theta(h));
         const T cos_theta_3 = h.y * cos_theta_2;
-        
+
         if (alpha_x != alpha_y)
         {
             const T sin_theta = this->sin_theta(h);
             T cos_phi_2_ax_2;
             T sin_phi_2_ay_2;
-            
+
             if (sin_theta != T(0.0))
             {
                 cos_phi_2_ax_2 = square(h.x / sin_theta) / alpha_x_2;
@@ -585,12 +585,12 @@ class GGXMDF2
                 cos_phi_2_ax_2 = T(1.0) / alpha_x_2;
                 sin_phi_2_ay_2 = T(0.0);
             }
-            
+
             const T tan_theta_2 = square(sin_theta) / cos_theta_2;
             const T tmp = T(1.0) + tan_theta_2 * (cos_phi_2_ax_2 + sin_phi_2_ay_2);
             return T(1.0) / (T(Pi) * alpha_x * alpha_y * cos_theta_3 * square(tmp));
         }
-        
+
         const T tan_theta_2 = (T(1.0) - cos_theta_2) / cos_theta_2;
         return alpha_x_2 / (T(Pi) * cos_theta_3 * square(alpha_x_2 + tan_theta_2));
     }

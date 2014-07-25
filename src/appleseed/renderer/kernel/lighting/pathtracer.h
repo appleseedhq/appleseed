@@ -200,7 +200,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         // Terminate the path if the surface has no material.
         if (material == 0)
             break;
-        
+
         // Handle alpha mapping.
         if (vertex.m_path_length > 1)
         {
@@ -209,7 +209,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
 #ifdef WITH_OSL
             if (!has_transparency)
             {
-                has_transparency = 
+                has_transparency =
                     material->get_osl_surface() && material->get_osl_surface()->has_transparency();
             }
 #endif
@@ -217,7 +217,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             if (has_transparency)
             {
                 Alpha alpha;
-                
+
                 if (material->get_alpha_map())
                 {
                     // Evaluate the alpha map at the shading point.
@@ -250,18 +250,18 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                         ray.m_time,
                         ray.m_type,
                         ray.m_depth);   // ray depth does not increase when passing through an alpha-mapped surface
-    
+
                     // Trace the ray.
                     shading_points[shading_point_index].clear();
                     shading_context.get_intersector().trace(
                         cutoff_ray,
                         shading_points[shading_point_index],
                         vertex.m_shading_point);
-    
+
                     // Update the pointers to the shading points.
                     vertex.m_shading_point = &shading_points[shading_point_index];
                     shading_point_index = 1 - shading_point_index;
-    
+
                     continue;
                 }
             }

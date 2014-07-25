@@ -45,7 +45,7 @@
 #if defined __APPLE__
 #include <sys/param.h>
 #elif defined __linux__
-#include <linux/limits.h> 
+#include <linux/limits.h>
 #endif
 
 namespace foundation

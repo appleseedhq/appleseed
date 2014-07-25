@@ -74,7 +74,7 @@ ShaderConnection::ShaderConnection(
     impl->m_dst_layer = dst_layer;
     impl->m_dst_param = dst_param;
 
-    const string entity_name = 
+    const string entity_name =
         string(get_src_layer()) + ":" + get_src_param() + "->" + get_dst_layer() + ":" + get_dst_param();
 
     set_name(entity_name.c_str());

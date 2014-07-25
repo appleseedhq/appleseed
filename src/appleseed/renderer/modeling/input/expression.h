@@ -58,25 +58,25 @@ class DLLSYMBOL Expression
   public:
     // Constructor.
     Expression();
-    
+
     // Constructor.
     explicit Expression(const char* expr, bool is_vector = true);
 
     // Destructor.
     ~Expression();
-    
+
     // Copy constructor.
     Expression(const Expression& other);
-    
+
     // Assignment.
     Expression& operator=(const Expression& other);
-    
+
     void swap(Expression& other);
 
     void set_expression(const char* expr, bool is_vector = true);
 
     bool syntax_ok() const;
-    
+
   private:
     struct Impl;
     Impl *impl;

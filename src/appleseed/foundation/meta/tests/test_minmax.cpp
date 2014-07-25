@@ -140,7 +140,7 @@ TEST_SUITE(Foundation_Math_MinMax)
 
             const UInt expected_min = binary_cast<UInt>(ssemin_reference(a, b));
             const UInt obtained_min = binary_cast<UInt>(ssemin(a, b));
-            
+
             EXPECT_EQ(expected_min, obtained_min);
 
             const UInt expected_max = binary_cast<UInt>(ssemax_reference(a, b));

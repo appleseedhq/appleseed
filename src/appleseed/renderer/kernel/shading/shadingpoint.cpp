@@ -368,18 +368,18 @@ OSL::ShaderGlobals& ShadingPoint::get_osl_shader_globals() const
         m_shader_globals.time = ray.m_time;
         m_shader_globals.dtime = 0;
         m_shader_globals.dPdtime = OSL::Vec3(0, 0, 0);
-        
+
         m_shader_globals.Ps = OSL::Vec3(0, 0, 0);
         m_shader_globals.dPsdx = OSL::Vec3(0, 0, 0);
         m_shader_globals.dPsdy = OSL::Vec3(0, 0, 0);
-        
+
         m_shader_globals.renderstate = 0;
         m_shader_globals.tracedata = 0;
         m_shader_globals.objdata = 0;
 
-        m_obj_transform_info.m_assembly_instance_transform = 
+        m_obj_transform_info.m_assembly_instance_transform =
             &get_assembly_instance().cumulated_transform_sequence();
-        m_obj_transform_info.m_object_instance_transform = 
+        m_obj_transform_info.m_object_instance_transform =
             &get_object_instance().get_transform();
 
         m_shader_globals.object2common = reinterpret_cast<OSL::TransformationPtr>(&m_obj_transform_info);
@@ -394,7 +394,7 @@ OSL::ShaderGlobals& ShadingPoint::get_osl_shader_globals() const
 
         m_shader_globals.context = 0;
         m_shader_globals.Ci = 0;
-        
+
         m_members |= HasOSLShaderGlobals;
     }
     else

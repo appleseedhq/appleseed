@@ -123,7 +123,7 @@ CurveTree::CurveTree(const Arguments& arguments)
     // Build the tree.
     Statistics statistics;
     if (algorithm == "bvh")
-        build_bvh(params, time, statistics);   
+        build_bvh(params, time, statistics);
     else throw ExceptionNotImplemented();
 
     // Print curve tree statistics.

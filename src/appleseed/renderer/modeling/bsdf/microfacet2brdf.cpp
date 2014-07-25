@@ -157,13 +157,13 @@ namespace
             if (cos_in < 0.0)
                 return Absorption;
 
-            const double D = 
+            const double D =
                 m_mdf->D(
                     m,
                     values->m_ax,
                     values->m_ay);
 
-            const double G = 
+            const double G =
                 m_mdf->G(
                     shading_basis.transform_to_local(incoming),
                     shading_basis.transform_to_local(outgoing),
@@ -199,21 +199,21 @@ namespace
                 return 0.0;
 
             const InputValues* values = static_cast<const InputValues*>(data);
-            
+
             const Vector3d h = normalize(incoming + outgoing);
             const Vector3d m = shading_basis.transform_to_local(h);
-            const double D = 
+            const double D =
                 m_mdf->D(
                     m,
                     values->m_ax,
                     values->m_ay);
 
-            const double G = 
+            const double G =
                 m_mdf->G(
-                    shading_basis.transform_to_local(outgoing), 
+                    shading_basis.transform_to_local(outgoing),
                     shading_basis.transform_to_local(incoming),
                     m,
-                    values->m_ax, 
+                    values->m_ax,
                     values->m_ay);
 
             const double cos_oh = dot(outgoing, h);
@@ -321,7 +321,7 @@ DictionaryArray Microfacet2BRDFFactory::get_input_metadata() const
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "optional")
             .insert("default", "1.5"));
-    
+
     return metadata;
 }
 

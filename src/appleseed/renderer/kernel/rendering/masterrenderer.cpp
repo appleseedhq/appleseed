@@ -297,13 +297,13 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     if (!search_paths.empty())
         m_texture_system->attribute("searchpath", search_paths);
 
-    // Set other texture system options here.    
+    // Set other texture system options here.
     m_texture_system->attribute("automip", 0);
     m_texture_system->attribute("accept_untiled", 1);
     m_texture_system->attribute("accept_unmipped", 1);
     m_texture_system->attribute("gray_to_rgb", 1);
     m_texture_system->attribute("latlong_up", "y");
-    
+
     // Create our renderer services.
     RendererServices services(m_project, *m_texture_system);
 

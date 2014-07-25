@@ -132,7 +132,7 @@ bool RendererServices::get_matrix(
     if (!xform)
         return false;
 
-    const ShadingPoint::OSLObjectTransformInfo* obj_xform = 
+    const ShadingPoint::OSLObjectTransformInfo* obj_xform =
         reinterpret_cast<const ShadingPoint::OSLObjectTransformInfo*>(xform);
 
     result = obj_xform->get_transform(time);
@@ -140,14 +140,14 @@ bool RendererServices::get_matrix(
 }
 
 bool RendererServices::get_inverse_matrix(
-    OSL::Matrix44&          result, 
+    OSL::Matrix44&          result,
     OSL::TransformationPtr  xform,
     float                   time)
 {
     if (!xform)
         return false;
 
-    const ShadingPoint::OSLObjectTransformInfo* obj_xform = 
+    const ShadingPoint::OSLObjectTransformInfo* obj_xform =
         reinterpret_cast<const ShadingPoint::OSLObjectTransformInfo*>(xform);
 
     result = obj_xform->get_inverse_transform(time);
@@ -161,7 +161,7 @@ bool RendererServices::get_matrix(
     if (!xform)
         return false;
 
-    const ShadingPoint::OSLObjectTransformInfo* obj_xform = 
+    const ShadingPoint::OSLObjectTransformInfo* obj_xform =
         reinterpret_cast<const ShadingPoint::OSLObjectTransformInfo*>(xform);
 
     if (obj_xform->is_animated())
@@ -172,13 +172,13 @@ bool RendererServices::get_matrix(
 }
 
 bool RendererServices::get_inverse_matrix(
-    OSL::Matrix44&          result, 
+    OSL::Matrix44&          result,
     OSL::TransformationPtr  xform)
 {
     if (!xform)
         return false;
 
-    const ShadingPoint::OSLObjectTransformInfo* obj_xform = 
+    const ShadingPoint::OSLObjectTransformInfo* obj_xform =
         reinterpret_cast<const ShadingPoint::OSLObjectTransformInfo*>(xform);
 
     if (obj_xform->is_animated())

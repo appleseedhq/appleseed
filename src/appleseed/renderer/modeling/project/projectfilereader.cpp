@@ -1886,7 +1886,7 @@ namespace
         {
             m_name = get_value(attrs, "name");
             m_shader_group = ShaderGroupFactory::create(
-                m_name.c_str(), 
+                m_name.c_str(),
                 m_context.get_project().search_paths());
         }
 

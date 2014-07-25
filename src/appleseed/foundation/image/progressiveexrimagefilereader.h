@@ -95,7 +95,7 @@ class DLLSYMBOL ProgressiveEXRImageFileReader
     virtual Tile* read_tile(
         const size_t        tile_x,
         const size_t        tile_y);
-        
+
   private:
     struct Impl;
     Impl* impl;

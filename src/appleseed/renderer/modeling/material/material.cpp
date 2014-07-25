@@ -90,7 +90,7 @@ Material::Material(
 {
     set_name(name);
 
-    m_inputs.declare("surface_shader", InputFormatEntity);    
+    m_inputs.declare("surface_shader", InputFormatEntity);
 }
 
 Material::~Material()
@@ -101,9 +101,9 @@ const char* Material::get_non_empty(const ParamArray& params, const char* name) 
 {
     if (!params.strings().exist(name))
         return 0;
-    
+
     const char* value = params.strings().get(name);
-    
+
     return strlen(value) > 0 ? value : 0;
 }
 
@@ -150,7 +150,7 @@ void Material::on_frame_end(
     m_alpha_map = 0;
 
     delete m_normal_modifier;
-    m_normal_modifier = 0;    
+    m_normal_modifier = 0;
 }
 
 const SurfaceShader* Material::get_uncached_surface_shader() const

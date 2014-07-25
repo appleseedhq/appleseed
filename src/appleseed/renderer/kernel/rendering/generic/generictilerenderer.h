@@ -57,7 +57,7 @@ class GenericTileRendererFactory
     GenericTileRendererFactory(
         const Frame&                        frame,
         IPixelRendererFactory*              pixel_renderer_factory,
-        IShadingResultFrameBufferFactory*   framebuffer_factory, 
+        IShadingResultFrameBufferFactory*   framebuffer_factory,
         const ParamArray&                   params);
 
     // Delete this instance.

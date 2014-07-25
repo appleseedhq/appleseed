@@ -369,7 +369,7 @@ GenericFrameRendererFactory::GenericFrameRendererFactory(
     IPassCallback*          pass_callback,
     const ParamArray&       params)
   : m_frame(frame)
-  , m_tile_renderer_factory(tile_renderer_factory)  
+  , m_tile_renderer_factory(tile_renderer_factory)
   , m_tile_callback_factory(tile_callback_factory)
   , m_pass_callback(pass_callback)
   , m_params(params)

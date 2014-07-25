@@ -89,7 +89,7 @@ void OSLShaderGroupExec::execute_transparency(
 
     if (holdout)
         *holdout = process_holdout_tree(shading_point.get_osl_shader_globals().Ci);
-    
+
     // Restore the original ray type.
     shading_point.m_ray.m_type = saved_type;
 }

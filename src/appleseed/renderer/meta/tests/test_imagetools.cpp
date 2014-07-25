@@ -52,7 +52,7 @@ TEST_SUITE(ImageTools)
     static const Color3f Red(1.0f, 0.0f, 0.0f);                                                     // linear RGB
     static const float IsoLumRedComp = luminance(srgb_to_linear_rgb(IsoLumBlue)) / luminance(Red);  // linear RGB
     static const Color3f IsoLumRed = linear_rgb_to_srgb(Color3f(IsoLumRedComp, 0.0f, 0.0f));        // sRGB
-    
+
     TEST_CASE(CheckPointsIsoluminance)
     {
         const size_t W = 256;
@@ -193,7 +193,7 @@ TEST_SUITE(ImageTools)
             {
                 Color4f lhs_color;
                 lhs.get_pixel(x, y, lhs_color);
-                
+
                 Color4f rhs_color;
                 rhs.get_pixel(x, y, rhs_color);
 
@@ -249,7 +249,7 @@ TEST_SUITE(ImageTools)
         ASSERT_TRUE(input_image.get());
 
         const CanvasProperties& props = input_image->properties();
-        
+
         Image output_image(
             props.m_canvas_width,
             props.m_canvas_height,

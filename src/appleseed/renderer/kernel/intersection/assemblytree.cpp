@@ -118,7 +118,7 @@ void AssemblyTree::compute_cumulated_transforms(
         const Assembly& assembly = assembly_instance.get_assembly();
 
         // Compute the cumulated transform sequence of this assembly instance.
-        assembly_instance.cumulated_transform_sequence() = 
+        assembly_instance.cumulated_transform_sequence() =
             assembly_instance.transform_sequence() * parent_transform_seq;
         assembly_instance.cumulated_transform_sequence().prepare();
 
@@ -173,7 +173,7 @@ void AssemblyTree::rebuild_assembly_tree()
     m_items.clear();
 
     Statistics statistics;
-    
+
     compute_cumulated_transforms(
         m_scene.assembly_instances(),
         TransformSequence());
@@ -747,7 +747,7 @@ bool AssemblyLeafProbeVisitor::visit(
                 local_ray,
                 local_ray_info,
                 visitor);
-        
+
             // Terminate traversal if there was a hit.
             if (visitor.hit())
             {

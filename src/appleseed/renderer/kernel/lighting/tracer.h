@@ -144,7 +144,7 @@ class Tracer
     const Intersector&                  m_intersector;
     TextureCache&                       m_texture_cache;
 #ifdef WITH_OSL
-    // TODO: it would be better if Tracer had a reference to the OSLShaderGroupExec 
+    // TODO: it would be better if Tracer had a reference to the OSLShaderGroupExec
     // instance instead of a pointer, but that'd mess with the unit tests.
     // It's probably better to change it when OSL support is an integral part of appleseed.
     OSLShaderGroupExec*                 m_shadergroup_exec;
@@ -171,7 +171,7 @@ class Tracer
         const ShadingRay::DepthType     ray_depth,
         double&                         transmission,
         const ShadingPoint*             parent_shading_point);
-    
+
     void evaluate_alpha(
         const Material&                 material,
         const ShadingPoint&             shading_point,

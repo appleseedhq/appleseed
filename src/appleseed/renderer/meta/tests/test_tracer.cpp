@@ -143,7 +143,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             mesh_object->push_vertex(GVector3(0.0f, +0.5f, -0.5f));
             mesh_object->push_vertex(GVector3(0.0f, +0.5f, +0.5f));
             mesh_object->push_vertex(GVector3(0.0f, -0.5f, +0.5f));
-            
+
             mesh_object->push_vertex_normal(GVector3(-1.0f, 0.0f, 0.0f));
 
             mesh_object->push_triangle(Triangle(0, 1, 2, 0, 0, 0, 0));
@@ -209,8 +209,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
     TEST_CASE_F(Trace_GivenNoOccluder, Fixture<EmptyScene>)
     {
         Tracer tracer(
-            *m_scene, 
-            m_intersector, 
+            *m_scene,
+            m_intersector,
             m_texture_cache
 #ifdef WITH_OSL
             , 0
@@ -234,8 +234,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
     TEST_CASE_F(Trace_QuickVariant_GivenNoOccluder, Fixture<EmptyScene>)
     {
         Tracer tracer(
-            *m_scene, 
-            m_intersector, 
+            *m_scene,
+            m_intersector,
             m_texture_cache
 #ifdef WITH_OSL
             , 0
@@ -256,8 +256,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
     TEST_CASE_F(TraceBetween_GivenNoOccluder, Fixture<EmptyScene>)
     {
         Tracer tracer(
-            *m_scene, 
-            m_intersector, 
+            *m_scene,
+            m_intersector,
             m_texture_cache
 #ifdef WITH_OSL
             , 0
@@ -281,8 +281,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
     TEST_CASE_F(TraceBetween_QuickVariant_GivenNoOccluder, Fixture<EmptyScene>)
     {
         Tracer tracer(
-            *m_scene, 
-            m_intersector, 
+            *m_scene,
+            m_intersector,
             m_texture_cache
 #ifdef WITH_OSL
             , 0
@@ -312,8 +312,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
     TEST_CASE_F(Trace_GivenSingleOpaqueOccluder, Fixture<SceneWithSingleOpaqueOccluder>)
     {
         Tracer tracer(
-            *m_scene, 
-            m_intersector, 
+            *m_scene,
+            m_intersector,
             m_texture_cache
 #ifdef WITH_OSL
             , 0
@@ -338,8 +338,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
     TEST_CASE_F(Trace_QuickVariant_GivenSingleOpaqueOccluder, Fixture<SceneWithSingleOpaqueOccluder>)
     {
         Tracer tracer(
-            *m_scene, 
-            m_intersector, 
+            *m_scene,
+            m_intersector,
             m_texture_cache
 #ifdef WITH_OSL
             , 0
@@ -360,8 +360,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
     TEST_CASE_F(TraceBetween_GivenSingleOpaqueOccluder, Fixture<SceneWithSingleOpaqueOccluder>)
     {
         Tracer tracer(
-            *m_scene, 
-            m_intersector, 
+            *m_scene,
+            m_intersector,
             m_texture_cache
 #ifdef WITH_OSL
             , 0
@@ -386,8 +386,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
     TEST_CASE_F(TraceBetween_QuickVariant_GivenSingleOpaqueOccluder, Fixture<SceneWithSingleOpaqueOccluder>)
     {
         Tracer tracer(
-            *m_scene, 
-            m_intersector, 
+            *m_scene,
+            m_intersector,
             m_texture_cache
 #ifdef WITH_OSL
             , 0
@@ -417,8 +417,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
     TEST_CASE_F(Trace_GivenSingleTransparentOccluder, Fixture<SceneWithSingleTransparentOccluder>)
     {
         Tracer tracer(
-            *m_scene, 
-            m_intersector, 
+            *m_scene,
+            m_intersector,
             m_texture_cache
 #ifdef WITH_OSL
             , 0
@@ -442,8 +442,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
     TEST_CASE_F(Trace_QuickVariant_GivenSingleTransparentOccluder, Fixture<SceneWithSingleTransparentOccluder>)
     {
         Tracer tracer(
-            *m_scene, 
-            m_intersector, 
+            *m_scene,
+            m_intersector,
             m_texture_cache
 #ifdef WITH_OSL
             , 0
@@ -464,8 +464,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
     TEST_CASE_F(TraceBetween_GivenSingleTransparentOccluder, Fixture<SceneWithSingleTransparentOccluder>)
     {
         Tracer tracer(
-            *m_scene, 
-            m_intersector, 
+            *m_scene,
+            m_intersector,
             m_texture_cache
 #ifdef WITH_OSL
             , 0
@@ -489,8 +489,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
     TEST_CASE_F(TraceBetween_QuickVariant_GivenSingleTransparentOccluder, Fixture<SceneWithSingleTransparentOccluder>)
     {
         Tracer tracer(
-            *m_scene, 
-            m_intersector, 
+            *m_scene,
+            m_intersector,
             m_texture_cache
 #ifdef WITH_OSL
             , 0
@@ -521,8 +521,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
     TEST_CASE_F(Trace_GivenTransparentThenOpaqueOccluders, Fixture<SceneWithTransparentThenOpaqueOccluders>)
     {
         Tracer tracer(
-            *m_scene, 
-            m_intersector, 
+            *m_scene,
+            m_intersector,
             m_texture_cache
 #ifdef WITH_OSL
             , 0
@@ -547,8 +547,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
     TEST_CASE_F(Trace_QuickVariant_GivenTransparentThenOpaqueOccluders, Fixture<SceneWithTransparentThenOpaqueOccluders>)
     {
         Tracer tracer(
-            *m_scene, 
-            m_intersector, 
+            *m_scene,
+            m_intersector,
             m_texture_cache
 #ifdef WITH_OSL
             , 0
@@ -569,8 +569,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
     TEST_CASE_F(TraceBetween_GivenTransparentThenOpaqueOccluders_GivenTargetPastOpaqueOccluder, Fixture<SceneWithTransparentThenOpaqueOccluders>)
     {
         Tracer tracer(
-            *m_scene, 
-            m_intersector, 
+            *m_scene,
+            m_intersector,
             m_texture_cache
 #ifdef WITH_OSL
             , 0
@@ -595,8 +595,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
     TEST_CASE_F(TraceBetween_QuickVariant_GivenTransparentThenOpaqueOccluders_GivenTargetPastOpaqueOccluder, Fixture<SceneWithTransparentThenOpaqueOccluders>)
     {
         Tracer tracer(
-            *m_scene, 
-            m_intersector, 
+            *m_scene,
+            m_intersector,
             m_texture_cache
 #ifdef WITH_OSL
             , 0
@@ -617,8 +617,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
     TEST_CASE_F(TraceBetween_GivenTransparentThenOpaqueOccluders_GivenTargetOnOpaqueOccluder, Fixture<SceneWithTransparentThenOpaqueOccluders>)
     {
         Tracer tracer(
-            *m_scene, 
-            m_intersector, 
+            *m_scene,
+            m_intersector,
             m_texture_cache
 #ifdef WITH_OSL
             , 0
@@ -642,8 +642,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
     TEST_CASE_F(TraceBetween_QuickVariant_GivenTransparentThenOpaqueOccluders_GivenTargetOnOpaqueOccluder, Fixture<SceneWithTransparentThenOpaqueOccluders>)
     {
         Tracer tracer(
-            *m_scene, 
-            m_intersector, 
+            *m_scene,
+            m_intersector,
             m_texture_cache
 #ifdef WITH_OSL
             , 0
@@ -674,8 +674,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
     TEST_CASE_F(TraceBetween_ComputeVisibilityBetweenTwoOpaqueOccluders_ReturnsOne, Fixture<SceneWithTwoOpaqueOccluders>)
     {
         Tracer parent_tracer(
-            *m_scene, 
-            m_intersector, 
+            *m_scene,
+            m_intersector,
             m_texture_cache
 #ifdef WITH_OSL
             , 0
@@ -696,8 +696,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         ASSERT_FEQ(2.0, parent_shading_point.get_distance());
 
         Tracer tracer(
-            *m_scene, 
-            m_intersector, 
+            *m_scene,
+            m_intersector,
             m_texture_cache
 #ifdef WITH_OSL
             , 0
@@ -725,8 +725,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
     TEST_CASE_F(TraceBetween_ComputeVisibilityBetweenTwoOpaqueOccludersAndScaledAssemblyInstance_ReturnsOne, Fixture<SceneWithTwoOpaqueOccludersAndScaledAssemblyInstance>)
     {
         Tracer parent_tracer(
-            *m_scene, 
-            m_intersector, 
+            *m_scene,
+            m_intersector,
             m_texture_cache
 #ifdef WITH_OSL
             , 0
@@ -747,8 +747,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         ASSERT_FEQ(1.0, parent_shading_point.get_distance());
 
         Tracer tracer(
-            *m_scene, 
-            m_intersector, 
+            *m_scene,
+            m_intersector,
             m_texture_cache
 #ifdef WITH_OSL
             , 0

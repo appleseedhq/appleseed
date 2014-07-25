@@ -57,7 +57,7 @@ class DLLSYMBOL DisneyMaterialLayer
     ~DisneyMaterialLayer();
 
     DisneyMaterialLayer& operator=(const DisneyMaterialLayer& other);
-    
+
     bool operator<(const DisneyMaterialLayer& other) const;
 
     bool check_expressions_syntax() const;
@@ -96,7 +96,7 @@ class DLLSYMBOL DisneyMaterial
         const Project&              project,
         const Assembly&             assembly,
         foundation::AbortSwitch*    abort_switch = 0) OVERRIDE;
-    
+
     // This method is called once after rendering each frame.
     virtual void on_frame_end(
         const Project&              project,

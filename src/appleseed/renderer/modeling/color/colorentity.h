@@ -108,7 +108,7 @@ class DLLSYMBOL ColorEntity
         const ParamArray&       params,
         const ColorValueArray&  values,
         const ColorValueArray&  alpha);
-    
+
     // Destructor.
     ~ColorEntity();
 

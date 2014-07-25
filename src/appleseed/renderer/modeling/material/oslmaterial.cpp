@@ -51,7 +51,7 @@ namespace
 
     const char* Model = "osl_material";
 
-    class OSLMaterial 
+    class OSLMaterial
       : public Material
     {
       public:

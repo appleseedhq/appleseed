@@ -66,7 +66,7 @@ struct JobQueue::Impl
             if (i->m_owned)
                 delete i->m_job;
         }
- 
+
         list.clear();
     }
 };

@@ -80,7 +80,7 @@ class DLLSYMBOL AssemblyInstance
     // Access the accumulated transform sequence of the instance.
     TransformSequence& cumulated_transform_sequence();
     const TransformSequence& cumulated_transform_sequence() const;
-    
+
     // Find the assembly bound to this instance.
     Assembly* find_assembly() const;
 

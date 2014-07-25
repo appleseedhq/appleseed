@@ -82,7 +82,7 @@ struct Assembly::Impl
 #ifdef WITH_OSL
     ShaderGroupContainer        m_shader_groups;
 #endif
-    
+
     explicit Impl(Entity* parent)
       : m_bsdfs(parent)
       , m_edfs(parent)
@@ -226,7 +226,7 @@ namespace
     }
 
 #ifdef WITH_OSL
-    
+
     template <typename EntityCollection>
     bool invoke_on_frame_begin(
         const Project&          project,
@@ -268,7 +268,7 @@ namespace
         return success;
     }
 #endif
-    
+
     template <typename EntityCollection>
     void invoke_on_frame_end(
         const Project&          project,
@@ -302,11 +302,11 @@ bool Assembly::on_frame_begin(
     success = success && invoke_on_frame_begin(project, *this, surface_shaders(), abort_switch);
     success = success && invoke_on_frame_begin(project, *this, bsdfs(), abort_switch);
     success = success && invoke_on_frame_begin(project, *this, edfs(), abort_switch);
-    
+
 #ifdef WITH_OSL
     success = success && invoke_on_frame_begin(project, *this, shading_system, shader_groups(), abort_switch);
 #endif
-    
+
     success = success && invoke_on_frame_begin(project, *this, materials(), abort_switch);
     success = success && invoke_on_frame_begin(project, *this, lights(), abort_switch);
 
@@ -317,7 +317,7 @@ bool Assembly::on_frame_begin(
 #else
     success = success && invoke_on_frame_begin(project, assemblies(), abort_switch);
 #endif
-    
+
     success = success && invoke_on_frame_begin(project, assembly_instances(), abort_switch);
 
     return success;

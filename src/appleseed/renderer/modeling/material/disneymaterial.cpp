@@ -137,7 +137,7 @@ bool DisneyMaterialLayer::check_expressions_syntax() const
             impl->m_sheen.syntax_ok() &&
             impl->m_sheen_tint.syntax_ok() &&
             impl->m_clearcoat.syntax_ok() &&
-            impl->m_clearcoat_gloss.syntax_ok();            
+            impl->m_clearcoat_gloss.syntax_ok();
 }
 
 DictionaryArray DisneyMaterialLayer::get_input_metadata()
@@ -266,7 +266,7 @@ void DisneyMaterial::on_frame_end(
     const Project&  project,
     const Assembly& assembly) OVERRIDE
 {
-    impl->m_layers.clear();    
+    impl->m_layers.clear();
     Material::on_frame_end(project, assembly);
 }
 

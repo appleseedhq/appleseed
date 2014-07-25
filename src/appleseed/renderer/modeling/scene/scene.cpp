@@ -258,10 +258,10 @@ namespace
 }
 
 bool Scene::on_frame_begin(
-    const Project&          project, 
+    const Project&          project,
 #ifdef WITH_OSL
     OSL::ShadingSystem*     shading_system,
-#endif            
+#endif
     AbortSwitch*            abort_switch)
 {
     bool success = true;

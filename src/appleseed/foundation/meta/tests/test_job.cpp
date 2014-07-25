@@ -301,7 +301,7 @@ TEST_SUITE(Foundation_Utility_Job_JobManager)
         Logger      logger;
         JobQueue    job_queue;
         JobManager  job_manager;
-        
+
         FixtureJobManager()
           : job_manager(logger, job_queue, 1)
         {

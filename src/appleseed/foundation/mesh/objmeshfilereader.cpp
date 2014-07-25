@@ -350,7 +350,7 @@ struct OBJMeshFileReader::Impl
         const size_t n = m_face_vertex_indices.size();
 
         // Begin defining a new face.
-        m_builder.begin_face(n); 
+        m_builder.begin_face(n);
 
         // Set face vertices.
         m_builder.set_face_vertices(&m_face_vertex_indices.front());

@@ -107,32 +107,32 @@ namespace
                     "orennayar_brdf",
                     "osl_orennayar");
 
-            m_specular_brdf = 
+            m_specular_brdf =
                 create_and_register_bsdf(
                     ReflectionID,
                     "specular_brdf",
                     "osl_reflection");
-            
-            m_specular_btdf = 
+
+            m_specular_btdf =
                 create_and_register_bsdf(
                     RefractionID,
                     "specular_btdf",
                     "osl_refraction");
-            
+
             // OSL Microfacet models.
-            m_microfacet_beckmann_brdf = 
+            m_microfacet_beckmann_brdf =
                 create_and_register_microfacet_brdf(
                     MicrofacetBeckmannReflectionID,
                     "beckmann",
                     "osl_beckmann_brdf");
 
-            m_microfacet_blinn_brdf = 
+            m_microfacet_blinn_brdf =
                 create_and_register_microfacet_brdf(
                     MicrofacetBlinnReflectionID,
                     "blinn",
                     "osl_blinn_brdf");
 
-            m_microfacet_ggx_brdf = 
+            m_microfacet_ggx_brdf =
                 create_and_register_microfacet_brdf(
                     MicrofacetGGXReflectionID,
                     "ggx",
@@ -351,13 +351,13 @@ namespace
         {
             auto_release_ptr<BSDF> bsdf =
                 Microfacet2BRDFFactory().create(
-                    name, 
+                    name,
                     ParamArray().insert("mdf", mdf_name));
 
             m_all_bsdfs[cid] = bsdf.get();
             return bsdf;
         }
-        
+
         const BSDF& bsdf_to_closure_id(const ClosureID cid) const
         {
             const BSDF* bsdf = m_all_bsdfs[cid];

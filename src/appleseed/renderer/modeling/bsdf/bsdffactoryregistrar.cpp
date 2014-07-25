@@ -83,7 +83,7 @@ BSDFFactoryRegistrar::BSDFFactoryRegistrar()
     register_factory(auto_ptr<FactoryType>(new OrenNayarBRDFFactory()));
     register_factory(auto_ptr<FactoryType>(new SpecularBRDFFactory()));
     register_factory(auto_ptr<FactoryType>(new SpecularBTDFFactory()));
-    
+
     // The Microfacet2BRDF is internal to appleseed.
     // It's currently being used in the OSL closures and the DisneyBRDF.
     // Only register the factory in debug builds for testing purpouses.

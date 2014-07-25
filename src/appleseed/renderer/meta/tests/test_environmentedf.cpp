@@ -175,7 +175,7 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
                 probability1);
 
             Spectrum value2;
-            
+
             env_edf.evaluate(
                 input_evaluator,
                 outgoing,

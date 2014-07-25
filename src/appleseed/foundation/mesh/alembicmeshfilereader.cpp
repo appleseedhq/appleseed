@@ -135,7 +135,7 @@ namespace
 
             const N3f* normals = normal_sample.getVals()->get();
             const size_t normal_count = normal_sample.getVals()->size();
-                
+
             for (size_t i = 0; i < normal_count; ++i)
             {
                 const Vector3d n(normals[i]);       // todo: transform to world space using matrix stack
@@ -157,7 +157,7 @@ namespace
 
             const V2f* uv = uv_sample.getVals()->get();
             const size_t uv_count = uv_sample.getVals()->size();
-                
+
             for (size_t i = 0; i < uv_count; ++i)
             {
                 const Vector2d v(uv[i]);

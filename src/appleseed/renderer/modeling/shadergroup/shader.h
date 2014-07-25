@@ -88,7 +88,7 @@ class DLLSYMBOL Shader
 
     // Destructor.
     ~Shader();
-    
+
     bool add(OSL::ShadingSystem& shading_system);
 
     void get_shader_info(

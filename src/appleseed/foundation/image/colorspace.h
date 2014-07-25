@@ -368,7 +368,7 @@ void daylight_ciexy_to_spectrum(
 //   http://www.cs.utah.edu/~bes/papers/color/
 //
 
-// Convert a linear RGB reflectance value to a spectrum, 
+// Convert a linear RGB reflectance value to a spectrum,
 // without clamping the spectrum values.
 template <typename T, typename Spectrum>
 void linear_rgb_reflectance_to_spectrum_unclamped(
@@ -550,7 +550,7 @@ inline Color<T, 3> linear_rgb_to_hsl(const Color<T, 3>& linear_rgb)
     const T max_val = max_value(linear_rgb);
     const T min_val = min_value(linear_rgb);
     const T c = max_val - min_val;
-    
+
     // Special case for zero chroma.
     if (c == T(0.0))
         return Color<T, 3>(0.0);

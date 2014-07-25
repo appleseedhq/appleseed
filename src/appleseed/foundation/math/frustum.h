@@ -93,7 +93,7 @@ typedef Pyramid3<double> Pyramid3d;
 
 //
 // A view frustum defined by six planes containing the origin.
-// todo: implement. 
+// todo: implement.
 //
 
 template <typename T>

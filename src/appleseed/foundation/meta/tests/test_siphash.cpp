@@ -147,7 +147,7 @@ TEST_SUITE(Foundation_Utility_SipHash)
             in[i] = static_cast<uint8>(i);
 
             const uint64 h = siphash24(in, i, k);
-            
+
             EXPECT_EQ(0, memcmp(&h, vectors[i], 8));
         }
     }

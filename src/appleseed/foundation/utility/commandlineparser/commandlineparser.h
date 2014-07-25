@@ -58,7 +58,7 @@ class CommandLineParser
   public:
     // Constructor.
     CommandLineParser();
-    
+
     // Add an option handler.
     void add_option_handler(OptionHandler* handler);
 

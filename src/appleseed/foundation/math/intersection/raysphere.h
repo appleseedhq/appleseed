@@ -51,7 +51,7 @@ namespace foundation
             if (b < 0.0)
                 return m_huge;        // no intersection
 
-            const double c  = sqrt(b);    
+            const double c  = sqrt(b);
             double t = a - c;
 
             if (t < 0.0)

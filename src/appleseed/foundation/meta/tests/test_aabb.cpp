@@ -403,7 +403,7 @@ TEST_SUITE(Foundation_Math_AABB)
             Vector3d(-1.0, -2.0, -3.0),
             Vector3d(4.0, 5.0, 6.0));
 
-        EXPECT_FEQ(5.0 * 7.0 + 5.0 * 9.0 + 7.0 * 9.0, half_surface_area(bbox)); 
+        EXPECT_FEQ(5.0 * 7.0 + 5.0 * 9.0 + 7.0 * 9.0, half_surface_area(bbox));
     }
 
     TEST_CASE(TestSurfaceArea)

@@ -236,7 +236,7 @@ void CameraController<T>::update_drag(const Vector<T, 2>& point)
 
       default:;
     }
-        
+
     const Vector<T, 2> delta = (point - m_drag_origin) * speed;
 
     m_drag_origin = point;

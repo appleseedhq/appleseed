@@ -76,7 +76,7 @@ TEST_SUITE(Foundation_Math_Microfacet2)
         const size_t                    sample_count)
     {
         typedef typename MDF::ValueType RealType;
-        
+
         Vector<RealType,3> h(0.0);
         RealType integral = 0.0;
 
@@ -216,7 +216,7 @@ TEST_SUITE(Foundation_Math_Microfacet2)
         const double G1 = g.G1(v, alpha_x, alpha_y);
 
         double integral = 0.0;
-        
+
         for (double theta = 0; theta < Pi; theta += angle_step)
         {
             const double cos_theta = cos(theta);
@@ -423,7 +423,7 @@ TEST_SUITE(Foundation_Math_Microfacet2)
         const BeckmannSmithMaskingShadowing<double> g;
         const BeckmannMDF2<double> mdf;
 
-        const double integral = 
+        const double integral =
             weak_white_furnace_test(
                 mdf,
                 g,
@@ -570,8 +570,8 @@ TEST_SUITE(Foundation_Math_Microfacet2)
     {
         const GGXSmithMaskingShadowing<double> g;
         const GGXMDF2<double> mdf;
-    
-        const double integral = 
+
+        const double integral =
             weak_white_furnace_test(
                 mdf,
                 g,
@@ -583,13 +583,13 @@ TEST_SUITE(Foundation_Math_Microfacet2)
 
         EXPECT_FEQ_EPS(1.0, integral, WeakWhiteFurnaceEps);
     }
-    
+
     TEST_CASE(GGXMDF2_Anisotropic_SmithWeakWhiteFurnace)
     {
         const GGXSmithMaskingShadowing<double> g;
         const GGXMDF2<double> mdf;
-    
-        const double integral = 
+
+        const double integral =
             weak_white_furnace_test(
                 mdf,
                 g,
