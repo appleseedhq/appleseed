@@ -101,6 +101,6 @@ inline size_t CurveKey::get_curve_pa() const
     return static_cast<size_t>(m_curve_pa);
 }
 
-};  // namespace renderer.
+}       // namespace renderer
 
-#endif // !APPLESEED_RENDERER_KERNEL_INTERSECTION_CURVEKEY_H
+#endif  // !APPLESEED_RENDERER_KERNEL_INTERSECTION_CURVEKEY_H

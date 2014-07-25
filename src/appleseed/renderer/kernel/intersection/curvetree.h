@@ -52,10 +52,10 @@
 #include "foundation/utility/poolallocator.h"
 #include "foundation/utility/uid.h"
 
-// Standard c++ headers.
-#include <exception>
+// Standard headers.
+#include <cstddef>
 #include <map>
-#include <fstream>
+#include <memory>
 #include <vector>
 
 // Forward declarations.
@@ -193,7 +193,6 @@ class CurveLeafVisitor
 
   private:
     const CurveTree&                m_tree;
-    const bool                      m_has_intersection_filters;
     const foundation::Matrix4d&     m_xfm_matrix;
     ShadingPoint&                   m_shading_point;
     GCurveType                      m_interpolated_curve;
@@ -212,7 +211,7 @@ class CurveLeafProbeVisitor
 {
   public:
     // Constructor.
-    explicit CurveLeafProbeVisitor(
+    CurveLeafProbeVisitor(
         const CurveTree&                        tree,
         const foundation::Matrix4d&             xfm_matrix);
 
@@ -229,7 +228,6 @@ class CurveLeafProbeVisitor
 
   private:
     const CurveTree&                m_tree;
-    const bool                      m_has_intersection_filters;
     const foundation::Matrix4d&     m_xfm_matrix;
 };
 
@@ -262,7 +260,6 @@ inline CurveLeafVisitor::CurveLeafVisitor(
     const foundation::Matrix4d&           xfm_matrix,
     ShadingPoint&                         shading_point)
   : m_tree(tree)
-  , m_has_intersection_filters(!tree.m_intersection_filters.empty())
   , m_xfm_matrix(xfm_matrix)
   , m_shading_point(shading_point)
   , m_hit_curve(0)  
@@ -283,7 +280,7 @@ inline bool CurveLeafVisitor::visit(
     const size_t curve_count = node.get_item_count();
 
     // Sequentially intersect all curves of the leaf.
-    for (size_t i = 0; i < curve_count; i++)
+    for (size_t i = 0; i < curve_count; ++i)
     {
         // For now all curves are stored and processed in double format only.
         // They are not converted between types.
@@ -318,7 +315,6 @@ inline CurveLeafProbeVisitor::CurveLeafProbeVisitor(
     const CurveTree&                     tree,
     const foundation::Matrix4d&          xfm_matrix)
   : m_tree(tree)
-  , m_has_intersection_filters(!tree.m_intersection_filters.empty())
   , m_xfm_matrix(xfm_matrix)
 {
 }
@@ -337,7 +333,7 @@ inline bool CurveLeafProbeVisitor::visit(
     const size_t curve_count = node.get_item_count();
 
     // Sequentially intersect all curves of the leaf.
-    for (size_t i = 0; i < curve_count; i++)
+    for (size_t i = 0; i < curve_count; ++i)
     {
         // For now all curves are stored and processed in double format only.
         // They are not converted between types.
@@ -359,6 +355,6 @@ inline bool CurveLeafProbeVisitor::visit(
     return true;
 }
 
-};       // namespace renderer.
+}       // namespace renderer
 
 #endif  // !APPLESEED_RENDERER_KERNEL_INTERSECTION_CURVETREE_H

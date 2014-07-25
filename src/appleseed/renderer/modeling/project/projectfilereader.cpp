@@ -1517,7 +1517,12 @@ namespace
                 if (m_model == MeshObjectFactory::get_model())
                 {
                     if (m_context.get_options() & ProjectFileReader::OmitReadingMeshFiles)
-                        m_objects.push_back(MeshObjectFactory::create(m_name.c_str(), m_params).release());
+                    {
+                        m_objects.push_back(
+                            MeshObjectFactory::create(
+                                m_name.c_str(),
+                                m_params).release());
+                    }
                     else
                     {
                         MeshObjectArray object_array;
@@ -1532,7 +1537,12 @@ namespace
                 }
                 else if (m_model == CurveObjectFactory::get_model())
                 {
-                    m_objects.push_back(CurveObjectFactory::create(m_name.c_str(), m_params).release());
+                    // todo: create a CurveObjectReader?
+                    m_objects.push_back(
+                        CurveObjectFactory::create(
+                            m_context.get_project().search_paths(),
+                            m_name.c_str(),
+                            m_params).release());
                 }
                 else
                 {

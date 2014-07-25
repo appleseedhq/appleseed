@@ -34,6 +34,9 @@
 #include "foundation/platform/timer.h"
 #include "foundation/utility/makevector.h"
 
+// Standard headers.
+#include <cstring>
+
 using namespace foundation;
 using namespace std;
 
@@ -51,34 +54,34 @@ namespace
         vector<BezierCurve3d>*      curves,
         vector<CurveKey>*           curve_keys)
     {
-        
-        for (size_t i = 0; i < arguments.m_assembly.object_instances().size(); i++)
+        for (size_t i = 0; i < arguments.m_assembly.object_instances().size(); ++i)
         {
+            // Retrieve the object instance.
             const ObjectInstance* object_instance = arguments.m_assembly.object_instances().get_by_index(i);
-            
             assert(object_instance);
-            
+
+            // Retrieve the object.
             const Object& object = object_instance->get_object();
 
             // Process only curve objects.
-            if (object.get_model() == "curve_object")
+            if (strcmp(object.get_model(), "curve_object"))
+                continue;
+
+            // Cast the object as curve object.
+            const CurveObject* curve_object = static_cast<const CurveObject*>(&object);
+
+            // Get the curves and store them.
+            const size_t curve_count = curve_object->get_curve_count();
+
+            // Create the curve keys and store them with the curves.
+            for (size_t j = 0; j < curve_count; ++j)
             {
-                // Cast the object as curve object.
-                const size_t object_instance_index = i;
-                const CurveObject* curve_object = static_cast<const CurveObject*>(&object);
-
-                // Get the curves and store them.
-                const size_t num_curves = curve_object->get_curve_count();
-
-                // Create the curve keys and store them with the curves.
-                for (size_t j = 0; j < num_curves; j++)
-                {
-                    curves->push_back(curve_object->get_curve(j));
-                    curve_keys->push_back(CurveKey(
-                                                object_instance_index,
-                                                j,
-                                                0));                    // For now we assume all the curves have a default pa value of 0.
-                }
+                curves->push_back(curve_object->get_curve(j));
+                curve_keys->push_back(
+                    CurveKey(
+                        i,      // object instance index
+                        j,      // curve index
+                        0));    // for now we assume all the curves have the same material
             }
         }
     }
@@ -129,24 +132,22 @@ CurveTree::CurveTree(const Arguments& arguments)
 }
 
 void CurveTree::build_bvh(
-    const ParamArray&                      params,
-    const double                           time,
-    const bool                             save_memory,
-    foundation::Statistics&                statistics)
+    const ParamArray&       params,
+    const double            time,
+    const bool              save_memory,
+    Statistics&             statistics)
 {
     vector<GAABB3> curve_bboxes;
-    
+
     // Obtain the curves and curve keys from the curve object.
     collect_curves(m_arguments, &m_curves3, &m_curve_keys);
 
     // Create the keys and curve bboxes required.
     curve_bboxes.resize(m_curves3.size());
 
-    for (size_t i = 0; i < m_curves3.size(); i++)
-    {
-        curve_bboxes[i] = m_curves3[i].get_bounds();        
-    }
-    
+    for (size_t i = 0; i < m_curves3.size(); ++i)
+        curve_bboxes[i] = m_curves3[i].get_bounds();
+
     const size_t max_leaf_size = 1;
     const GScalar interior_node_travesal_cost = 1.0f;
     const GScalar triangle_intersection_cost = 1.0f;
@@ -171,9 +172,9 @@ void CurveTree::build_bvh(
     vector<BezierCurve3d> m_temp(m_curves3.size());
     vector<CurveKey> m_temp_keys(m_curve_keys.size());
     const vector<size_t>& order = partitioner.get_item_ordering();
-    
+
     // Try to perform a reorder only if there is some data available.
-    if (m_curves3.size() != 0)
+    if (!m_curves3.empty())
     {
         small_item_reorder<BezierCurve3d, size_t>(&m_curves3[0], &m_temp[0], &order[0], order.size());
         small_item_reorder<CurveKey, size_t>(&m_curve_keys[0], &m_temp_keys[0], &order[0], order.size());
@@ -195,4 +196,4 @@ auto_ptr<CurveTree> CurveTreeFactory::create()
     return auto_ptr<CurveTree>(new CurveTree(m_arguments));
 }
 
-}   // namespace renderer.
+}   // namespace renderer

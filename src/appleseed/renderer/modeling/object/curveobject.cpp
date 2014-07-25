@@ -30,6 +30,7 @@
 #include "curveobject.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/searchpaths.h"
 #include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
 
@@ -51,88 +52,93 @@ namespace renderer
 
 struct CurveObject::Impl
 {
-    RegionKit                   m_region_kit;
-    mutable Lazy<RegionKit>     m_lazy_region_kit;
-    std::vector<BezierCurve3d>  m_curves;
-    vector<string>              m_material_slots;
+    RegionKit               m_region_kit;
+    Lazy<RegionKit>         m_lazy_region_kit;
+    vector<BezierCurve3d>   m_curves;
+    vector<string>          m_material_slots;
 
     Impl()
       : m_lazy_region_kit(&m_region_kit)
-    {       
+    {
     }
 
     GAABB3 compute_bounds() const
     {
-        AABB3d ret(AABB3d::invalid());
-        for(size_t i = 0; i < m_curves.size(); i++)
-            ret.insert(m_curves[i].get_bounds());
-        return ret;
+        AABB3d bbox;
+        bbox.invalidate();
+
+        const size_t curve_count = m_curves.size();
+
+        for (size_t i = 0; i < curve_count; ++i)
+            bbox.insert(m_curves[i].get_bounds());
+
+        return bbox;
     }
 
     // Read a custom curve file and load it in m_curves.
-    void load_curve_file(const string& filename)
+    void load_curve_file(const char* filename)
     {
-        std::ifstream input;
-        const float curve_width = 0.009f;
+        const float CurveWidth = 0.009f;
 
-        try
+        ifstream input;
+        input.open(filename);
+
+        if (input.good())
         {
-            input.open(filename.c_str());
-            if (input.good())
+            Stopwatch<DefaultWallclockTimer> stopwatch;
+            stopwatch.start();
+
+            // Read the number of curves.
+            size_t curve_count;
+            input >> curve_count;
+
+            // Read the number of control points per curve.
+            size_t ctrl_pt_count;
+            input >> ctrl_pt_count;
+
+            vector<Vector3d> m_ctrl_points(ctrl_pt_count);
+
+            for (size_t c = 0; c < curve_count; ++c)
             {
-                Stopwatch<DefaultWallclockTimer> stopwatch;
-                stopwatch.start();
-
-                // First read number of curves and degree of curves.
-                size_t num_curves;
-                size_t num_ctrl_pts;
-                input >> num_curves;
-                input >> num_ctrl_pts;
-                for (size_t curve = 0; curve < num_curves; curve++)
+                for (size_t p = 0; p < ctrl_pt_count; ++p)
                 {
-                    std::vector<Vector3d> m_ctrl_points;
-                    for (size_t pt = 0; pt < num_ctrl_pts; pt++)
-                    {
-                        Vector3d point;
-                        input >> point.x >> point.y >> point.z;
-                        m_ctrl_points.push_back(point);
-                    }
-
-                    Vector3d ctrl_pts[4] = {m_ctrl_points[0], m_ctrl_points[1], m_ctrl_points[2], m_ctrl_points[3]};
-                    BezierCurve3d curve(ctrl_pts, curve_width);
-                    m_curves.push_back(curve);                    
+                    Vector3d point;
+                    input >> point.x >> point.y >> point.z;
+                    m_ctrl_points[p] = point;
                 }
 
-                stopwatch.measure();
-
-                RENDERER_LOG_INFO(
-                    "loaded curve file : %s ( %s curves ) in %s",
-                    filename.c_str(),
-                    pretty_int(num_curves).c_str(),
-                    pretty_time(stopwatch.get_seconds()).c_str());
+                const Vector3d ctrl_pts[] = { m_ctrl_points[0], m_ctrl_points[1], m_ctrl_points[2], m_ctrl_points[3] };
+                const BezierCurve3d curve(ctrl_pts, CurveWidth);
+                m_curves.push_back(curve);
             }
-            else
-            {
-                RENDERER_LOG_ERROR(
-                    "Something happend while reading %s",
-                    filename.c_str());                
-            }        
+
+            stopwatch.measure();
+
+            RENDERER_LOG_INFO(
+                "loaded curve file %s (%s curves) in %s.",
+                filename,
+                pretty_uint(curve_count).c_str(),
+                pretty_time(stopwatch.get_seconds()).c_str());
+
             input.close();
         }
-        catch(std::exception& e)
+        else
         {
-            std::cout<<e.what()<<"\n";
+            RENDERER_LOG_ERROR("failed to load curve file %s.", filename);
         }
     }
 };
 
 CurveObject::CurveObject(
-    const char* name,
-    const ParamArray& params)
-  : Object(name, params)  
+    const SearchPaths&  search_paths,
+    const char*         name,
+    const ParamArray&   params)
+  : Object(name, params)
   , impl(new Impl())
 {
-    impl->load_curve_file(params.get("filename"));    
+    const string filename = params.get<string>("filename");
+    const string filepath = search_paths.qualify(filename);
+    impl->load_curve_file(filepath.c_str());
 }
 
 CurveObject::~CurveObject()
@@ -192,12 +198,13 @@ const char* CurveObjectFactory::get_model()
 }
 
 auto_release_ptr<CurveObject> CurveObjectFactory::create(
-    const char*       name,
-    const ParamArray& params)
+    const SearchPaths&  search_paths,
+    const char*         name,
+    const ParamArray&   params)
 {
     return
         auto_release_ptr<CurveObject>(
-            new CurveObject(name, params));        
+            new CurveObject(search_paths, name, params));
 }
 
-}   // namespace renderer.
+}   // namespace renderer

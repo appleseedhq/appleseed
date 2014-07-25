@@ -44,21 +44,23 @@
 #include "main/dllsymbol.h"
 
 // Standard headers.
-#include <vector>
 #include <cstddef>
+#include <vector>
+
+// Forward declarations.
+namespace foundation    { class SearchPaths; }
 
 namespace renderer
 {
 
 //
-// Curve Object.
+// Curve object (source geometry).
 //
 
 class DLLSYMBOL CurveObject
   : public Object
 {
   public:
-
     // Delete this instance.
     virtual void release() OVERRIDE;
 
@@ -75,11 +77,12 @@ class DLLSYMBOL CurveObject
     virtual size_t get_material_slot_count() const OVERRIDE;
     virtual const char* get_material_slot(const size_t index) const OVERRIDE;
 
-    // Additional methods for getting the curve data out of the curve object.
+    // Retrieve the number of curves in this object.
     size_t get_curve_count() const;
 
+    // Retrieve a given curve.
     const foundation::BezierCurve3d& get_curve(const size_t index) const;
-    
+
   private:
     friend class CurveObjectFactory;
 
@@ -90,8 +93,9 @@ class DLLSYMBOL CurveObject
 
     // Constructor.
     CurveObject(
-        const char*       name,
-        const ParamArray& params);
+        const foundation::SearchPaths&  search_paths,
+        const char*                     name,
+        const ParamArray&               params);
 
     // Destructor.
     ~CurveObject();
@@ -110,8 +114,9 @@ class DLLSYMBOL CurveObjectFactory
 
     // Create a new curve object.
     static foundation::auto_release_ptr<CurveObject> create(
-        const char*       name,
-        const ParamArray& params);
+        const foundation::SearchPaths&  search_paths,
+        const char*                     name,
+        const ParamArray&               params);
 };
 
 }       // namespace renderer
