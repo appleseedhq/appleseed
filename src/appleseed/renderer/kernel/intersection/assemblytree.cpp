@@ -319,6 +319,18 @@ namespace
         }
     }
 
+    Lazy<RegionTree>* create_region_tree(const Scene& scene, const Assembly& assembly)
+    {
+        auto_ptr<ILazyFactory<RegionTree> > region_tree_factory(
+            new RegionTreeFactory(
+                RegionTree::Arguments(
+                    scene,
+                    assembly.get_uid(),
+                    assembly)));
+
+        return new Lazy<RegionTree>(region_tree_factory);
+    }
+
     Lazy<TriangleTree>* create_triangle_tree(const Scene& scene, const Assembly& assembly)
     {
         // Compute the assembly space bounding box of the assembly.
@@ -340,18 +352,6 @@ namespace
                     regions)));
 
         return new Lazy<TriangleTree>(triangle_tree_factory);
-    }
-
-    Lazy<RegionTree>* create_region_tree(const Scene& scene, const Assembly& assembly)
-    {
-        auto_ptr<ILazyFactory<RegionTree> > region_tree_factory(
-            new RegionTreeFactory(
-                RegionTree::Arguments(
-                    scene,
-                    assembly.get_uid(),
-                    assembly)));
-
-        return new Lazy<RegionTree>(region_tree_factory);
     }
 
     Lazy<CurveTree>* create_curve_tree(const Scene& scene, const Assembly& assembly)
@@ -398,8 +398,8 @@ void AssemblyTree::update_child_trees()
         {
             if (stored_version_it->second == current_version_id)
             {
-                // The child tree of this assembly is up-to-date wrt. the assembly's geometry.
-                // Simply update the child tree.
+                // The child trees of this assembly are up-to-date wrt. the assembly's geometry:
+                // simply update them.
                 if (assembly.is_flushable())
                 {
                     Update<RegionTree> access(m_region_trees.find(assembly_uid)->second);
@@ -417,8 +417,8 @@ void AssemblyTree::update_child_trees()
             }
             else
             {
-                // The child tree is out-of-date wrt. the assembly's geometry: delete it.
-                // It will get rebuilt from scratch lazily.
+                // The child trees of this assembly are out-of-date wrt. the assembly's geometry:
+                // delete them. They are rebuilt from scratch lazily.
                 if (assembly.is_flushable())
                 {
                     const RegionTreeContainer::iterator it = m_region_trees.find(assembly_uid);
@@ -430,11 +430,10 @@ void AssemblyTree::update_child_trees()
                     const TriangleTreeContainer::iterator it = m_triangle_trees.find(assembly_uid);
                     delete it->second;
                     m_triangle_trees.erase(it);
-
-                    const CurveTreeContainer::iterator cit = m_curve_trees.find(assembly_uid);
-                    delete cit->second;
-                    m_curve_trees.erase(cit);
                 }
+                const CurveTreeContainer::iterator it = m_curve_trees.find(assembly_uid);
+                delete it->second;
+                m_curve_trees.erase(it);
             }
         }
 
@@ -442,7 +441,7 @@ void AssemblyTree::update_child_trees()
         if (assembly.object_instances().empty())
             continue;
 
-        // The assembly does contains geometry, lazily build a new child tree.
+        // The assembly does contains geometry, lazily build new child trees.
         if (assembly.is_flushable())
         {
             m_region_trees.insert(
@@ -452,10 +451,9 @@ void AssemblyTree::update_child_trees()
         {
             m_triangle_trees.insert(
                 make_pair(assembly_uid, create_triangle_tree(m_scene, assembly)));
-
-            m_curve_trees.insert(
-                make_pair(assembly_uid, create_curve_tree(m_scene, assembly)));
         }
+        m_curve_trees.insert(
+            make_pair(assembly_uid, create_curve_tree(m_scene, assembly)));
 
         // Store the current version ID of the assembly.
         m_assembly_versions[assembly_uid] = current_version_id;
@@ -533,6 +531,8 @@ bool AssemblyLeafVisitor::visit(
 
     for (size_t i = 0; i < assembly_instance_count; ++i)
     {
+        FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(1));
+
         // Retrieve the assembly instance.
         const AssemblyTree::Item& item = items[i];
 
@@ -542,21 +542,14 @@ bool AssemblyLeafVisitor::visit(
             item.m_transform_sequence.evaluate(ray.m_time, tmp);
 
         // Transform the ray to assembly instance space.
-        ShadingPoint local_triangle_shading_point(ShadingPoint::PrimitiveTriangle);
-        ShadingPoint local_curve_shading_point(ShadingPoint::PrimitiveCurve);
-
+        ShadingPoint local_shading_point;
         compute_assembly_instance_ray(
             *item.m_assembly_instance,
             assembly_instance_transform,
             m_parent_shading_point,
             ray,
-            local_triangle_shading_point.m_ray);
-
-        const RayInfo3d local_ray_info(local_triangle_shading_point.m_ray);
-
-        ShadingPoint& local_shading_point = local_triangle_shading_point;
-
-        FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(1));
+            local_shading_point.m_ray);
+        const RayInfo3d local_ray_info(local_shading_point.m_ray);
 
         if (item.m_assembly->is_flushable())
         {
@@ -568,7 +561,7 @@ bool AssemblyLeafVisitor::visit(
 
             // Check the intersection between the ray and the region tree.
             RegionLeafVisitor visitor(
-                local_triangle_shading_point,
+                local_shading_point,
                 m_triangle_tree_cache
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
                 , m_triangle_tree_stats
@@ -577,7 +570,7 @@ bool AssemblyLeafVisitor::visit(
             RegionLeafIntersector intersector;
             intersector.intersect(
                 region_tree,
-                local_triangle_shading_point.m_ray,
+                local_shading_point.m_ray,
                 local_ray_info,
                 visitor);
         }
@@ -589,23 +582,18 @@ bool AssemblyLeafVisitor::visit(
                     item.m_assembly_uid,
                     m_tree.m_triangle_trees);
 
-            const CurveTree* curve_tree =
-                m_curve_tree_cache.access(
-                    item.m_assembly_uid,
-                    m_tree.m_curve_trees);
-
             if (triangle_tree)
             {
                 // Check the intersection between the ray and the triangle tree.
                 TriangleTreeIntersector intersector;
-                TriangleLeafVisitor visitor(*triangle_tree, local_triangle_shading_point);
+                TriangleLeafVisitor visitor(*triangle_tree, local_shading_point);
                 if (triangle_tree->get_moving_triangle_count() > 0)
                 {
                     intersector.intersect_motion(
                         *triangle_tree,
-                        local_triangle_shading_point.m_ray,
+                        local_shading_point.m_ray,
                         local_ray_info,
-                        local_triangle_shading_point.m_ray.m_time,
+                        local_shading_point.m_ray.m_time,
                         visitor
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
                         , m_triangle_tree_stats
@@ -616,7 +604,7 @@ bool AssemblyLeafVisitor::visit(
                 {
                     intersector.intersect_no_motion(
                         *triangle_tree,
-                        local_triangle_shading_point.m_ray,
+                        local_shading_point.m_ray,
                         local_ray_info,
                         visitor
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
@@ -626,39 +614,32 @@ bool AssemblyLeafVisitor::visit(
                 }
                 visitor.read_hit_triangle_data();
             }
-
-            // Check for intersection with curves.
-
-            compute_assembly_instance_ray(
-                *item.m_assembly_instance,
-                assembly_instance_transform,
-                m_parent_shading_point,
-                ray,
-                local_curve_shading_point.m_ray);
-            const RayInfo3d local_ray_info(local_curve_shading_point.m_ray);
-
-            if (curve_tree)
-            {
-                CurveTreeIntersector intersector;
-                const Matrix4d xfm_matrix = BezierCurveIntersector<BezierCurve3d>::compute_curve_transform(ray);
-                CurveLeafVisitor visitor(*curve_tree, xfm_matrix, local_curve_shading_point);
-
-                intersector.intersect_no_motion(
-                    *curve_tree,
-                    local_curve_shading_point.m_ray,
-                    local_ray_info,
-                    visitor
-#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
-                    , m_curve_tree_stats
-#endif
-                    );
-            }
         }
 
-        // Update local shading point to point to the curve shading point if its nearer than the nearest triangle.
-        if (local_curve_shading_point.m_hit && local_curve_shading_point.m_ray.m_tmax < local_triangle_shading_point.m_ray.m_tmax)
+        // Retrieve the curve tree of this assembly.
+        const CurveTree* curve_tree =
+            m_curve_tree_cache.access(
+                item.m_assembly_uid,
+                m_tree.m_curve_trees);
+
+        if (curve_tree)
         {
-            local_shading_point = local_curve_shading_point;
+            // Check the intersection between the ray and the curve tree.
+            Matrix4d xfm_matrix;
+            BezierCurveIntersector<BezierCurve3d>::make_facing_curve_transform(
+                xfm_matrix,
+                local_shading_point.m_ray);
+            CurveLeafVisitor visitor(*curve_tree, xfm_matrix, local_shading_point);
+            CurveTreeIntersector intersector;
+            intersector.intersect_no_motion(
+                *curve_tree,
+                local_shading_point.m_ray,
+                local_ray_info,
+                visitor
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+                , m_curve_tree_stats
+#endif
+                );
         }
 
         // Keep track of the closest hit.
@@ -706,6 +687,8 @@ bool AssemblyLeafProbeVisitor::visit(
 
     for (size_t i = 0; i < assembly_instance_count; ++i)
     {
+        FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(1));
+
         // Retrieve the assembly instance.
         const AssemblyTree::Item& item = items[i];
 
@@ -723,8 +706,6 @@ bool AssemblyLeafProbeVisitor::visit(
             ray,
             local_ray);
         const RayInfo3d local_ray_info(local_ray);
-
-        FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(1));
 
         if (item.m_assembly->is_flushable())
         {
@@ -757,7 +738,7 @@ bool AssemblyLeafProbeVisitor::visit(
         }
         else
         {
-            // Retrieve the triangle tree of this leaf.
+            // Retrieve the triangle tree of this assembly.
             const TriangleTree* triangle_tree =
                 m_triangle_tree_cache.access(
                     item.m_assembly_uid,
@@ -801,36 +782,38 @@ bool AssemblyLeafProbeVisitor::visit(
                     return false;
                 }
             }
+        }
 
-            // Retrieve the curve tree for this leaf.
-            const CurveTree* curve_tree =
-                m_curve_tree_cache.access(
-                    item.m_assembly_uid,
-                    m_tree.m_curve_trees);
+        // Retrieve the curve tree of this assembly.
+        const CurveTree* curve_tree =
+            m_curve_tree_cache.access(
+                item.m_assembly_uid,
+                m_tree.m_curve_trees);
 
-            if (curve_tree)
-            {
-                // Check intersection between ray and curve tree.
-                CurveTreeProbeIntersector intersector;
-                const Matrix4d xfm_matrix = BezierCurveIntersector<BezierCurve3d>::compute_curve_transform(ray);
-                CurveLeafProbeVisitor visitor(*curve_tree, xfm_matrix);
-
-                intersector.intersect_no_motion(
-                    *curve_tree,
-                    local_ray,
-                    local_ray_info,
-                    visitor
+        if (curve_tree)
+        {
+            // Check intersection between ray and curve tree.
+            Matrix4d xfm_matrix;
+            BezierCurveIntersector<BezierCurve3d>::make_facing_curve_transform(
+                xfm_matrix,
+                local_ray);
+            CurveLeafProbeVisitor visitor(*curve_tree, xfm_matrix);
+            CurveTreeProbeIntersector intersector;
+            intersector.intersect_no_motion(
+                *curve_tree,
+                local_ray,
+                local_ray_info,
+                visitor
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
-                    , m_curve_tree_stats
+                , m_curve_tree_stats
 #endif
-                    );
+                );
 
-                // Terminate traversal if there was a hit.
-                if (visitor.hit())
-                {
-                    m_hit = true;
-                    return false;
-                }
+            // Terminate traversal if there was a hit.
+            if (visitor.hit())
+            {
+                m_hit = true;
+                return false;
             }
         }
     }

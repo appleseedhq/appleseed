@@ -42,6 +42,7 @@
 
 // Standard headers.
 #include <cstddef>
+#include <limits>
 
 using namespace foundation;
 using namespace std;
@@ -100,9 +101,9 @@ TEST_SUITE(Foundation_Math_BezierCurve)
                         color[1] = 0.5f;
 
                     // Draw the curve.
-                    const MatrixType curve_transform =
-                        BezierCurveIntersectorType::compute_curve_transform(ray);
-                    ValueType t;
+                    MatrixType curve_transform;
+                    BezierCurveIntersectorType::make_facing_curve_transform(curve_transform, ray);
+                    ValueType t = numeric_limits<ValueType>::max();
                     if (BezierCurveIntersectorType::intersect(curve, ray, curve_transform, t))
                     {
                         color[0] = 0.2f;
@@ -365,9 +366,10 @@ TEST_SUITE(Foundation_Math_BezierCurve)
 
         const Ray3f ray(Vector3f(-3.0f, 0.0f, 0.0f), Vector3f(1.0f, 0.0f, 0.0f));
 
-        const Matrix4f xfm_matrix = BezierCurveIntersector<BezierCurve1f>::compute_curve_transform(ray);
-        float t = std::numeric_limits<float>::max();
+        Matrix4f xfm_matrix;
+        BezierCurveIntersector<BezierCurve1f>::make_facing_curve_transform(xfm_matrix, ray);
 
+        float t = numeric_limits<float>::max();
         BezierCurveIntersector<BezierCurve1f>::intersect(Curves[0], ray, xfm_matrix, t);
 
         EXPECT_FEQ(3.0f, t);
@@ -382,9 +384,10 @@ TEST_SUITE(Foundation_Math_BezierCurve)
 
         const Ray3f ray(Vector3f(0.0f, 3.0f, 0.0f), Vector3f(0.0f, -1.0f, 0.0f));
 
-        const Matrix4f xfm_matrix = BezierCurveIntersector<BezierCurve1f>::compute_curve_transform(ray);
-        float t = std::numeric_limits<float>::max();
+        Matrix4f xfm_matrix;
+        BezierCurveIntersector<BezierCurve1f>::make_facing_curve_transform(xfm_matrix, ray);
 
+        float t = numeric_limits<float>::max();
         BezierCurveIntersector<BezierCurve1f>::intersect(Curves[0], ray, xfm_matrix, t);
 
         EXPECT_FEQ(3.0f, t);
@@ -399,14 +402,14 @@ TEST_SUITE(Foundation_Math_BezierCurve)
 
         const Ray3f ray(Vector3f(0.0f, 0.0f, -3.0f), Vector3f(0.0f, 0.0f, 1.0f));
 
-        const Matrix4f xfm_matrix = BezierCurveIntersector<BezierCurve1f>::compute_curve_transform(ray);
-        float t = std::numeric_limits<float>::max();
+        Matrix4f xfm_matrix;
+        BezierCurveIntersector<BezierCurve1f>::make_facing_curve_transform(xfm_matrix, ray);
 
+        float t = numeric_limits<float>::max();
         BezierCurveIntersector<BezierCurve1f>::intersect(Curves[0], ray, xfm_matrix, t);
 
         EXPECT_FEQ(3.0f, t);
 
         render_curves_to_image(Curves, countof(Curves), "unit tests/outputs/test_beziercurve_intersect_z.png");
     }
-
 }

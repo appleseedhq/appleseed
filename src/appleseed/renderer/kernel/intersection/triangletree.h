@@ -467,11 +467,11 @@ inline void TriangleLeafVisitor::read_hit_triangle_data() const
 {
     if (m_hit_triangle)
     {
-        // Set the intersected primitive to be triangle type.
-        m_shading_point.m_primitive_type = ShadingPoint::PrimitiveTriangle;
-
         // Record a hit.
         m_shading_point.m_hit = true;
+
+        // Set the primitive type.
+        m_shading_point.m_primitive_type = ShadingPoint::PrimitiveTriangle;
 
         // Copy the triangle key.
         const TriangleKey& triangle_key = m_tree.m_triangle_keys[m_hit_triangle_index];
