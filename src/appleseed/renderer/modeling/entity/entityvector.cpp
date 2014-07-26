@@ -113,7 +113,7 @@ EntityVector::iterator::operator--()
 EntityVector::iterator
 EntityVector::iterator::operator++(int)
 {
-    iterator current( *this);
+    const iterator current(*this);
     ++impl->m_it;
     return current;
 }
@@ -121,7 +121,7 @@ EntityVector::iterator::operator++(int)
 EntityVector::iterator
 EntityVector::iterator::operator--(int)
 {
-    iterator current( *this);
+    const iterator current(*this);
     --impl->m_it;
     return current;
 }
@@ -196,7 +196,7 @@ EntityVector::const_iterator::operator--()
 EntityVector::const_iterator
 EntityVector::const_iterator::operator++(int)
 {
-    const_iterator current( *this);
+    const const_iterator current(*this);
     ++impl->m_it;
     return current;
 }
@@ -204,7 +204,7 @@ EntityVector::const_iterator::operator++(int)
 EntityVector::const_iterator
 EntityVector::const_iterator::operator--(int)
 {
-    const_iterator current( *this);
+    const const_iterator current(*this);
     --impl->m_it;
     return current;
 }
