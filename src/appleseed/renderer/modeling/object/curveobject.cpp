@@ -88,8 +88,6 @@ struct CurveObject::Impl
     void create_hair_ball(const ParamArray& params)
     {
         const size_t ControlPointCount = 4;
-        const Vector3d Origin(0.0);
-        const double Radius = 1.0;
 
         const size_t curve_count = params.get_optional<size_t>("curves", 100);
         const double curve_width = params.get_optional<double>("width", 0.001);
@@ -104,7 +102,7 @@ struct CurveObject::Impl
             for (size_t p = 0; p < ControlPointCount; ++p)
             {
                 // http://math.stackexchange.com/questions/87230/picking-random-points-in-the-volume-of-sphere-with-uniform-probability
-                const double r = Radius * pow(rand_double1(rng), 1.0 / 3);
+                const double r = pow(rand_double1(rng), 1.0 / 3);
 
                 Vector2d s;
                 s[0] = rand_double1(rng);
