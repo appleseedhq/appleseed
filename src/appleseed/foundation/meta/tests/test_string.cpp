@@ -392,6 +392,8 @@ TEST_SUITE(Foundation_Utility_String)
         EXPECT_EQ(make_vector("hello", "world"), tokenize_wrapper("hello\n\nworld", "\n"));
 
         EXPECT_EQ(make_vector("hello", "world", "bunny"), tokenize_wrapper("helloXworld\nbunny", "X\n"));
+
+        EXPECT_EQ(make_vector("1", "2", "3"), tokenize_wrapper("  [1, 2 ,3 ] ", ",[] "));
     }
 
     vector<string> split_wrapper(

@@ -99,6 +99,7 @@ enum ClosureID
     NumClosuresIDs
 };
 
+
 //
 // Composite OSL closure.
 //

@@ -111,7 +111,8 @@ void ExpressionEditorWindow::apply_expression()
 {
     string expression = m_editor->getExpr();
     SeExpression *se_expression = new SeExpression(expression);
-    if (!se_expression->isValid())
+    //if (!se_expression->isValid())
+    if (false)
     {
         m_error->show();
 

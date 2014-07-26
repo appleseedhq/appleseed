@@ -30,11 +30,15 @@
 // Interface header.
 #include "expression.h"
 
+// appleseed.renderer headers
+#include "renderer/kernel/shading/shadingpoint.h"
+
 // Boost headers.
 #include "boost/thread/tss.hpp"
 
 // Standard headers.
 #include <algorithm>
+#include <map>
 #include <string>
 
 using namespace boost;
@@ -55,18 +59,45 @@ class Expression::Impl
     class SeExpr : public SeExpression
     {
       public:
-        SeExpr() : SeExpression()
-        {
-        }
+        SeExpr() : SeExpression() {}
 
         SeExpr( const string& expr, bool is_vector)
           : SeExpression(expr, is_vector)
         {
+            m_vars["u"] = SeExpr::Var(0.0);
+            m_vars["v"] = SeExpr::Var(0.0);
         }
         
-      private:
-    };
+        struct Var : public SeExprScalarVarRef
+        {
+            Var(){}
+            
+            explicit Var(const double val)
+              : m_val(val)
+            {
+            }
+
+            virtual void eval(const SeExprVarNode* /*node*/,SeVec3d& result) OVERRIDE
+            {
+                result[0] = m_val;
+            }
+            
+            double m_val;            
+        };
     
+        SeExprVarRef* resolveVar(const string& name) const OVERRIDE
+        {
+            map<string,Var>::iterator i = m_vars.find(name);
+            
+            if (i != m_vars.end())
+                return &i->second;
+
+            return 0;
+        }
+
+        mutable map<string,Var> m_vars;
+    };
+
     Impl()
       : m_is_vector(false)
     {
@@ -82,21 +113,25 @@ class Expression::Impl
         m_expr = expr;
         m_is_vector = is_vector;        
     }
-    
-    bool syntax_ok() const
+
+    Color3d evaluate(const ShadingPoint& shading_point) const
     {
-        SeExpr x(m_expr, m_is_vector);
-        return x.syntaxOK();
+        SeExpr& e = get_expression();
+        e.m_vars["u"] = SeExpr::Var(shading_point.get_uv(0)[0]);
+        e.m_vars["v"] = SeExpr::Var(shading_point.get_uv(0)[1]);
+        SeVec3d result = e.evaluate();
+        return Color3d(result[0], result[1], result[2]);
     }
 
     string                              m_expr;
     bool                                m_is_vector;
     mutable thread_specific_ptr<SeExpr> m_seexprs;
-    
+
+  private:
     SeExpr& get_expression() const
     {
         SeExpr* e = m_seexprs.get();
-        
+
         if (!e)
         {
             e = new SeExpr(m_expr, m_is_vector);
@@ -136,6 +171,7 @@ Expression& Expression::operator=(const Expression& other)
 
 void Expression::swap(Expression& other)
 {
+    // gcc needs the std qualifier.
     std::swap(impl, other.impl);
 }
 
@@ -146,12 +182,40 @@ void Expression::set_expression(const char* expr, bool is_vector)
 
 bool Expression::syntax_ok() const
 {
-    return impl->syntax_ok();
+    Impl::SeExpr x(impl->m_expr, impl->m_is_vector);
+
+    if (!x.syntaxOK())
+    {
+        // report error here
+        return false;
+    }
+
+    return true;
+}
+
+bool Expression::prepare() const
+{
+    Impl::SeExpr x(impl->m_expr, impl->m_is_vector);
+    
+    if (!x.isValid())
+    {
+        // report error here
+        return false;
+    }
+    
+    if (x.isConstant())
+    {
+    }
+
+    // if (x.isBasicTextureLookup())
+    //  ...
+
+    return true;
 }
 
 Color3d Expression::evaluate(const ShadingPoint& shading_point) const
 {
-    return Color3d(0.0);
+    return impl->evaluate(shading_point);
 }
 
 }   // namespace renderer

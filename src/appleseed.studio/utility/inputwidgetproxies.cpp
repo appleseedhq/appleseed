@@ -59,11 +59,6 @@
 // Standard headers.
 #include <vector>
 
-// boost headers.
-#include "boost/algorithm/string.hpp"
-#include "boost/algorithm/string/split.hpp"
-
-using namespace boost;
 using namespace foundation;
 using namespace renderer;
 using namespace std;
@@ -339,6 +334,7 @@ Color3d ColorPickerProxy::get_color_from_string(const string& s, const string& w
     }
 }
 
+
 //
 // ColorExpressionProxy class implementation.
 //
@@ -366,32 +362,32 @@ string ColorExpressionProxy::get() const
 
 string ColorExpressionProxy::qcolor_to_expression(const QColor& color)
 {
-    QString color_expression = QString("[%1, %2, %3]")
-            .arg(color.redF())
-            .arg(color.greenF())
-            .arg(color.blueF());
+    const Color3f srgb_color = qcolor_to_color<Color3f>(color);
+    const Color3f linear_color = srgb_to_linear_rgb(srgb_color);
+    const QString color_expression =
+        QString("[%1, %2, %3]")
+            .arg(linear_color.r)
+            .arg(linear_color.g)
+            .arg(linear_color.b);
     return color_expression.toStdString();
 }
 
 QColor ColorExpressionProxy::expression_to_qcolor(const string& color)
 {
     vector<string> color_components;
-    split(color_components, color, is_any_of(",[] "));
-    color_components.erase(
-        remove(color_components.begin(), color_components.end(), ""),
-        color_components.end());
+    tokenize(color, ",[] ", color_components);
 
-    QColor q_color;
-    if (color_components.size() >= 3)
-    {
-        double red, green, blue;
-        istringstream(color_components[0]) >> red;
-        istringstream(color_components[1]) >> green;
-        istringstream(color_components[2]) >> blue;
-        q_color.setRgbF(red, green, blue);
-    }
-    return q_color;
+    if (color_components.size() < 3)
+        return QColor(0, 0, 0, 0);
+
+    const Color3f linear_color(
+        from_string<float>(color_components[0]),
+        from_string<float>(color_components[1]),
+        from_string<float>(color_components[2]));
+    const Color3f srgb_color = linear_rgb_to_srgb(linear_color);
+    return color_to_qcolor(srgb_color);
 }
+
 
 //
 // InputWidgetProxyCollection class implementation.
@@ -429,11 +425,10 @@ Dictionary InputWidgetProxyCollection::get_values() const
 
     for (const_each<ProxyCollection> i = m_proxies; i; ++i)
     {
-        const string name = i->first;
         const string value = i->second->get();
 
         if (!value.empty())
-            values.insert(name, value);
+            values.insert(i->first, value);
     }
 
     return values;

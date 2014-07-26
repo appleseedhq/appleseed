@@ -140,6 +140,7 @@ namespace
 
 BOOST_STATIC_ASSERT(sizeof(CompositeClosure) <= InputEvaluator::DataSize);
 
+
 //
 // CompositeClosure class implementation.
 //
@@ -446,7 +447,7 @@ void CompositeClosure::do_add_closure(
 {
     // Check that InputValues is included in our type list.
     typedef typename boost::mpl::contains<InputValuesTypeList,InputValues>::type value_in_list;
-    BOOST_STATIC_ASSERT( value_in_list::value);
+    BOOST_STATIC_ASSERT(value_in_list::value);
 
     // Make sure we have enough space.
     if (get_num_closures() >= MaxClosureEntries)
@@ -490,7 +491,6 @@ void CompositeClosure::do_add_closure(
 
 namespace
 {
-
     Color3f do_process_closure_id_tree(
         const OSL::ClosureColor*    closure,
         const int                   closure_id)
@@ -529,7 +529,6 @@ namespace
           assert_otherwise;
         }
     }
-
 }
 
 void process_transparency_tree(const OSL::ClosureColor* ci, Alpha& alpha)

@@ -509,10 +509,10 @@ void TriangleTree::build_bvh(
         m_arguments.m_assembly.get_name(),
         pretty_uint(m_arguments.m_regions.size()).c_str(),
         plural(m_arguments.m_regions.size(), "region").c_str());
+    stopwatch.start();
     vector<TriangleKey> triangle_keys;
     vector<TriangleVertexInfo> triangle_vertex_infos;
     vector<GAABB3> triangle_bboxes;
-    stopwatch.start();
     collect_triangles(
         m_arguments,
         time,
@@ -529,7 +529,7 @@ void TriangleTree::build_bvh(
 
     // Print statistics about the input geometry.
     RENDERER_LOG_INFO(
-        "building bvh triangle tree #" FMT_UNIQUE_ID " (%s %s, %s %s)...",
+        "building triangle tree #" FMT_UNIQUE_ID " (bvh, %s %s, %s %s)...",
         m_arguments.m_triangle_tree_uid,
         pretty_uint(m_static_triangle_count).c_str(),
         plural(m_static_triangle_count, "static triangle").c_str(),
@@ -552,8 +552,13 @@ void TriangleTree::build_bvh(
     // Build the tree.
     typedef bvh::Builder<TriangleTree, Partitioner> Builder;
     Builder builder;
-    builder.build<DefaultWallclockTimer>(*this, partitioner, triangle_keys.size(), max_leaf_size);
-    statistics.merge(bvh::TreeStatistics<TriangleTree>(*this, AABB3d(m_arguments.m_bbox)));
+    builder.build<DefaultWallclockTimer>(
+        *this,
+        partitioner,
+        triangle_keys.size(),
+        max_leaf_size);
+    statistics.merge(
+        bvh::TreeStatistics<TriangleTree>(*this, AABB3d(m_arguments.m_bbox)));
 
     stopwatch.start();
 
@@ -629,7 +634,7 @@ void TriangleTree::build_sbvh(
 
     // Print statistics about the input geometry.
     RENDERER_LOG_INFO(
-        "building sbvh triangle tree #" FMT_UNIQUE_ID " (%s %s, %s %s)...",
+        "building triangle tree #" FMT_UNIQUE_ID " (sbvh, %s %s, %s %s)...",
         m_arguments.m_triangle_tree_uid,
         pretty_uint(m_static_triangle_count).c_str(),
         plural(m_static_triangle_count, "static triangle").c_str(),

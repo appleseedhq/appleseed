@@ -87,6 +87,7 @@ class ShaderParamParser
     T convert_from_string(const std::string& s) const;
 };
 
+
 //
 // ShaderParamParser implementation.
 //

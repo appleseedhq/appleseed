@@ -50,6 +50,7 @@
 
 // Standard headers.
 #include <cstddef>
+#include <limits>
 #include <map>
 #include <memory>
 #include <vector>
@@ -270,14 +271,15 @@ inline bool CurveLeafVisitor::visit(
         const GCurveType& curve = m_tree.m_curves3[curve_index + i];
 
         // Intersect the curve.
-        double t;
+        double t = m_shading_point.m_ray.m_tmax;
         if (CurveIntersector::intersect(curve, m_shading_point.m_ray, m_xfm_matrix, t))
         {
             const CurveKey& key = m_tree.m_curve_keys[curve_index + i];
-            m_shading_point.m_ray.m_tmax = t;
             m_shading_point.m_hit = true;
+            m_shading_point.m_ray.m_tmax = t;
             m_shading_point.m_object_instance_index = key.get_object_instance_index();
             m_shading_point.m_primitive_index = key.get_curve_index();
+            m_shading_point.m_primitive_type = ShadingPoint::PrimitiveCurve;
         }
     }
 
@@ -322,7 +324,7 @@ inline bool CurveLeafProbeVisitor::visit(
 
         // Intersect the curve.
         // todo: we need a variante of CurveIntersector::intersect() that does not compute or return t.
-        double t;
+        double t = std::numeric_limits<double>::max();
         if (CurveIntersector::intersect(curve, ray, m_xfm_matrix, t))
         {
             FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(i + 1));

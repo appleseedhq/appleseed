@@ -110,7 +110,7 @@ EntityMap::iterator::operator--()
 EntityMap::iterator
 EntityMap::iterator::operator++(int)
 {
-    iterator current( *this);
+    const iterator current(*this);
     ++impl->m_it;
     return current;
 }
@@ -118,7 +118,7 @@ EntityMap::iterator::operator++(int)
 EntityMap::iterator
 EntityMap::iterator::operator--(int)
 {
-    iterator current( *this);
+    const iterator current(*this);
     --impl->m_it;
     return current;
 }
@@ -193,7 +193,7 @@ EntityMap::const_iterator::operator--()
 EntityMap::const_iterator
 EntityMap::const_iterator::operator++(int)
 {
-    const_iterator current( *this);
+    const const_iterator current(*this);
     ++impl->m_it;
     return current;
 }
@@ -201,7 +201,7 @@ EntityMap::const_iterator::operator++(int)
 EntityMap::const_iterator
 EntityMap::const_iterator::operator--(int)
 {
-    const_iterator current( *this);
+    const const_iterator current(*this);
     --impl->m_it;
     return current;
 }

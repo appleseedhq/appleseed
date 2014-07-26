@@ -63,7 +63,7 @@ struct DisneyMaterialLayer::Impl
     {
         m_layer_number = params.get<size_t>("layer_number");
         m_mask.set_expression(params.get<string>("mask").c_str(), false);
-        m_base_color.set_expression(params.get<string>("base_color").c_str());
+        m_base_color.set_expression(params.get<string>("base_color").c_str(), true);
         m_subsurface.set_expression(params.get<string>("subsurface").c_str(), false);
         m_metallic.set_expression(params.get<string>("metallic").c_str(), false);
         m_specular.set_expression(params.get<string>("specular").c_str(), false);
@@ -128,15 +128,6 @@ bool DisneyMaterialLayer::operator<(const DisneyMaterialLayer& other) const
 
 bool DisneyMaterialLayer::check_expressions_syntax() const
 {
-    if (!impl->m_mask.syntax_ok())
-    {
-        //RENDERER_LOG_ERROR( something here...);
-        return false;
-    }
-    
-    // ...
-    
-    /*
     return  impl->m_mask.syntax_ok() &&
             impl->m_base_color.syntax_ok() &&
             impl->m_subsurface.syntax_ok() &&
@@ -149,9 +140,22 @@ bool DisneyMaterialLayer::check_expressions_syntax() const
             impl->m_sheen_tint.syntax_ok() &&
             impl->m_clearcoat.syntax_ok() &&
             impl->m_clearcoat_gloss.syntax_ok();
-    */
+}
 
-    return true;
+bool DisneyMaterialLayer::prepare_expressions() const
+{
+    return  impl->m_mask.prepare() &&
+            impl->m_base_color.prepare() &&
+            impl->m_subsurface.prepare() &&
+            impl->m_metallic.prepare() &&
+            impl->m_specular.prepare() &&
+            impl->m_specular_tint.prepare() &&
+            impl->m_anisotropic.prepare() &&
+            impl->m_roughness.prepare() &&
+            impl->m_sheen.prepare() &&
+            impl->m_sheen_tint.prepare() &&
+            impl->m_clearcoat.prepare() &&
+            impl->m_clearcoat_gloss.prepare();
 }
 
 void DisneyMaterialLayer::evaluate_expressions(
@@ -338,6 +342,9 @@ bool DisneyMaterial::on_frame_begin(
     for (const_each<vector<DisneyMaterialLayer> > it = impl->m_layers; it ; ++it)
     {
         if (!it->check_expressions_syntax())
+            return false;
+        
+        if (!it->prepare_expressions())
             return false;
     }
 

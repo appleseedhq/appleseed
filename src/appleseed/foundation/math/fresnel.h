@@ -32,6 +32,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/math/scalar.h"
 
 // Standard headers.
 #include <cassert>
@@ -92,14 +93,16 @@ Spectrum fresnel_dielectric_schlick(
     const T             cos_theta,              // cos(incident direction, normal)
     const T             multiplier = T(1.0));   // reflectance multiplier at tangent incidence
 
+
 //
 // Compute the Fresnel reflection factor for a dielectric.
 // Adapted from OSL's test render sample.
-// TODO: this probably needs a better name
+// TODO: this probably needs a better name.
 //
 
 template <typename T>
 T fresnel_dielectric(const T cosi, T eta);
+
 
 //
 // Implementation.
@@ -225,24 +228,25 @@ Spectrum fresnel_dielectric_schlick(
 template <typename T>
 T fresnel_dielectric(const T cosi, T eta)
 {
-    // compute fresnel reflectance without explicitly computing the refracted direction
+    // Compute Fresnel reflectance without explicitly computing the refracted direction.
     if (cosi < T(0.0))
         eta = T(1.0) / eta;
 
     const T c = std::abs(cosi);
-    T g = eta * eta - T(1.0) + c * c;
+    T g = eta * eta - T(1.0) + square(c);
 
-    if (g > T(0.0))
-    {
-        g = std::sqrt(g);
-        const T A = (g - c) / (g + c);
-        const T B = (c * (g + c) - T(1.0)) / (c * (g - c) + T(1.0));
-        const T F = T(0.5) * square(A) * (1 + square(B));
-        assert(F >= T(0.0));
-        return F;
-    }
+    // Total internal reflection (no refracted component).
+    if (g <= T(0.0))
+        return T(1.0);
 
-    return T(1.0); // TIR (no refracted component)
+    g = std::sqrt(g);
+
+    const T a = (g - c) / (g + c);
+    const T b = (c * (g + c) - T(1.0)) / (c * (g - c) + T(1.0));
+    const T f = T(0.5) * square(a) * (T(1.0) + square(b));
+
+    assert(f >= T(0.0));
+    return f;
 }
 
 }       // namespace foundation

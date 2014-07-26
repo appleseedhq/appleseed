@@ -77,6 +77,8 @@ class DLLSYMBOL Expression
 
     bool syntax_ok() const;
 
+    bool prepare() const;
+    
     foundation::Color3d evaluate(const ShadingPoint& shading_point) const;
 
   private:

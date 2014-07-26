@@ -63,11 +63,13 @@ class DLLSYMBOL DisneyMaterialLayer
 
     bool check_expressions_syntax() const;
 
+    bool prepare_expressions() const;
+    
     void evaluate_expressions(
         const ShadingPoint&     shading_point,
         foundation::Color3d&    base_color,
         DisneyBRDFInputValues&  values) const;
-    
+
     static foundation::DictionaryArray get_input_metadata();
 
     static foundation::Dictionary get_default_values();

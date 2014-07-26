@@ -57,269 +57,270 @@ using namespace std;
 
 namespace renderer
 {
-
 namespace
 {
-
-double schlick_fresnel(double u)
-{
-    double m = clamp(1.0 - u, 0.0, 1.0);
-    double m2 = square(m);
-    return square(m2) * m;
-}
-
-void mix_spectra(
-    const Spectrum&     a,
-    const Spectrum&     b,
-    float               t,
-    Spectrum&           result)
-{
-    const float one_minus_t = 1.0f - t;
-    for (size_t i = 0; i < Spectrum::Samples; ++i)
-        result[i] = one_minus_t * a[i] + t * b[i];
-}
-
-//
-// DisneyDiffuse BRDF class.
-//
-
-class DisneyDiffuseBRDF
-  : public BSDF
-{
-public:
-    DisneyDiffuseBRDF(
-        const LightingConditions&   lighting_conditions,
-        const Spectrum&             white_spectrum)
-      : BSDF("disney_diffuse", Reflective, Diffuse, ParamArray())
-      , m_lighting_conditions(lighting_conditions)
-      , m_white_spectrum(white_spectrum)
+    double schlick_fresnel(const double u)
     {
+        const double m = saturate(1.0 - u);
+        const double m2 = square(m);
+        return square(m2) * m;
     }
 
-    virtual void release() OVERRIDE
+    void mix_spectra(
+        const Spectrum&     a,
+        const Spectrum&     b,
+        const float         t,
+        Spectrum&           result)
     {
-        delete this;
+        const float one_minus_t = 1.0f - t;
+        for (size_t i = 0; i < Spectrum::Samples; ++i)
+            result[i] = one_minus_t * a[i] + t * b[i];
     }
 
-    virtual const char* get_model() const OVERRIDE
+
+    //
+    // DisneyDiffuse BRDF class.
+    //
+
+    class DisneyDiffuseBRDF
+      : public BSDF
     {
-        return "disney_diffuse_brdf";
-    }
-
-    virtual BSDF::Mode sample(
-            SamplingContext&    sampling_context,
-            const void*         data,
-            const bool          adjoint,
-            const bool          cosine_mult,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            Vector3d&           incoming,
-            Spectrum&           value,
-            double&             probability) const OVERRIDE
-    {
-        const DisneyBRDFInputValues* values = static_cast<const DisneyBRDFInputValues*>(data);
-
-        // Compute the incoming direction in local space.
-        sampling_context.split_in_place(2, 1);
-        const Vector2d s = sampling_context.next_vector2<2>();
-        const Vector3d wi = sample_hemisphere_cosine(s);
-
-        // Transform the incoming direction to parent space.
-        incoming = shading_basis.transform_to_parent(wi);
-
-        evaluate_diffuse(
-            values,
-            shading_basis,
-            outgoing,
-            incoming,
-            value);
-
-        probability = wi.y * RcpPi;
-        assert(probability > 0.0);
-
-        return Diffuse;
-    }
-
-    virtual double evaluate(
-            const void*     data,
-            const bool      adjoint,
-            const bool      cosine_mult,
-            const Vector3d& geometric_normal,
-            const Basis3d&  shading_basis,
-            const Vector3d& outgoing,
-            const Vector3d& incoming,
-            const int       modes,
-            Spectrum&       value) const OVERRIDE
-    {
-        if (!(modes & Diffuse))
-            return 0.0;
-
-        // No reflection below the shading surface.
-        const Vector3d& n = shading_basis.get_normal();
-        const double cos_in = dot(incoming, n);
-        if (cos_in < 0.0)
-            return 0.0;
-
-        const DisneyBRDFInputValues* values = static_cast<const DisneyBRDFInputValues*>(data);
-
-        evaluate_diffuse(
-                    values,
-                    shading_basis,
-                    outgoing,
-                    incoming,
-                    value);
-
-        // Return the probability density of the sampled direction.
-        return cos_in * RcpPi;
-    }
-
-    virtual double evaluate_pdf(
-            const void*     data,
-            const Vector3d& geometric_normal,
-            const Basis3d&  shading_basis,
-            const Vector3d& outgoing,
-            const Vector3d& incoming,
-            const int       modes) const OVERRIDE
-    {
-        if (!(modes & Diffuse))
-            return 0.0;
-
-        // No reflection below the shading surface.
-        const Vector3d& n = shading_basis.get_normal();
-        const double cos_in = dot(incoming, n);
-        const double cos_on = dot(outgoing, n);
-        if (cos_in < 0.0 || cos_on < 0.0)
-            return 0.0;
-
-        return cos_in * RcpPi;
-    }
-
-  private:
-    const LightingConditions&   m_lighting_conditions;
-    const Spectrum&             m_white_spectrum;
-
-    void evaluate_diffuse(
-        const DisneyBRDFInputValues*    values,
-        const Basis3d&                  shading_basis,
-        const Vector3d&                 outgoing,
-        const Vector3d&                 incoming,
-        Spectrum&                       value) const
-    {
-        // This code is ported from the GLSL implementation
-        // in Disney's BRDF explorer.
-
-        const Vector3d h(normalize(incoming + outgoing));
-        const Vector3d n(shading_basis.get_normal());
-
-        const double cos_no = dot(n, outgoing);
-        const double cos_ni = dot(n, incoming);
-        const double cos_oh = dot(outgoing, h);
-
-        value = values->m_base_color;
-
-        const double fl = schlick_fresnel(cos_no);
-        const double fv = schlick_fresnel(cos_ni);
-        const double fd90 = 0.5 + 2.0 * square(cos_oh) * values->m_roughness;
-        double fd = mix(1.0, fd90, fl) * mix(1.0, fd90, fv);
-
-        if (values->m_subsurface > 0.0)
+      public:
+        DisneyDiffuseBRDF(
+            const LightingConditions&       lighting_conditions,
+            const Spectrum&                 white_spectrum)
+          : BSDF("disney_diffuse", Reflective, Diffuse, ParamArray())
+          , m_lighting_conditions(lighting_conditions)
+          , m_white_spectrum(white_spectrum)
         {
-            const double fss90 = square(cos_oh) * values->m_roughness;
-            const double fss = mix(1.0, fss90, fl) * mix(1.0, fss90, fv);
-            const double ss = 1.25 * (fss * (1.0 / (cos_no + cos_ni) - 0.5) + 0.5);
-            fd = mix(fd, ss, values->m_subsurface);
         }
 
-        value *= static_cast<float>(fd * RcpPi);
-
-        if (values->m_sheen > 0.0)
+        virtual void release() OVERRIDE
         {
-            Spectrum csheen;
-            mix_spectra(
-                m_white_spectrum,
-                values->m_tint_color,
-                static_cast<float>(values->m_sheen_tint),
-                csheen);
-            const double fh = schlick_fresnel(cos_oh);
-            csheen *= static_cast<float>(fh * values->m_sheen);
-            value += csheen;
+            delete this;
         }
 
-        value *= static_cast<float>(1.0 - values->m_metallic);
-    }
-};
+        virtual const char* get_model() const OVERRIDE
+        {
+            return "disney_diffuse_brdf";
+        }
 
-//
-// Berry microfacet distribution function.
-// It's used in the clearcoat layer.
-//
+        virtual BSDF::Mode sample(
+            SamplingContext&                sampling_context,
+            const void*                     data,
+            const bool                      adjoint,
+            const bool                      cosine_mult,
+            const Vector3d&                 geometric_normal,
+            const Basis3d&                  shading_basis,
+            const Vector3d&                 outgoing,
+            Vector3d&                       incoming,
+            Spectrum&                       value,
+            double&                         probability) const OVERRIDE
+        {
+            const DisneyBRDFInputValues* values = static_cast<const DisneyBRDFInputValues*>(data);
 
-template <typename T>
-class BerryMDF2
-  : public MDF<T>
-{
-  public:
-    typedef boost::mpl::bool_<false> IsAnisotropicType;
+            // Compute the incoming direction in local space.
+            sampling_context.split_in_place(2, 1);
+            const Vector2d s = sampling_context.next_vector2<2>();
+            const Vector3d wi = sample_hemisphere_cosine(s);
 
-  private:
-    virtual Vector<T, 3> do_sample(
-        const Vector<T, 2>&  s,
-        const T              alpha_x,
-        const T              alpha_y) const OVERRIDE
-    {
-        const T alpha_x_2 = square(alpha_x);
-        const T a = T(1.0) - pow(alpha_x_2, T(1.0) - s[0]);
-        const T cos_theta = sqrt(a / (T(1.0) - alpha_x_2));
-        const T sin_theta  = sqrt(T(1.0) - square(cos_theta));
-        const T phi = T(TwoPi) * s[1];
-        return Vector<T, 3>::unit_vector(cos_theta, sin_theta, cos(phi), sin(phi));
-    }
+            // Transform the incoming direction to parent space.
+            incoming = shading_basis.transform_to_parent(wi);
 
-    virtual T do_eval_D(
-        const Vector<T, 3>&  h,
-        const T              alpha_x,
-        const T              alpha_y) const OVERRIDE
-    {
-        const T alpha_x_2 = square(alpha_x);
-        const T cos_theta_2 = square(this->cos_theta(h));
-        const T a = (alpha_x_2 - T(1.0)) / (T(Pi) * log(alpha_x_2));
-        const T b = (T(1.0) / (T(1.0) + (alpha_x_2 - T(1.0)) * cos_theta_2));
-        return a * b;
-    }
-
-    virtual T do_eval_G(
-        const Vector<T, 3>&  incoming,
-        const Vector<T, 3>&  outgoing,
-        const Vector<T, 3>&  h,
-        const T              alpha_x,
-        const T              alpha_y) const OVERRIDE
-    {
-        return
-            GGXSmithMaskingShadowing<T>::G(
-                incoming,
+            evaluate_diffuse(
+                values,
+                shading_basis,
                 outgoing,
-                h,
-                alpha_x,
-                alpha_y);
-    }
+                incoming,
+                value);
 
-    virtual T do_eval_pdf(
-        const Vector<T, 3>&  h,
-        const T              alpha_x,
-        const T              alpha_y) const OVERRIDE
+            probability = wi.y * RcpPi;
+            assert(probability > 0.0);
+
+            return Diffuse;
+        }
+
+        virtual double evaluate(
+            const void*                     data,
+            const bool                      adjoint,
+            const bool                      cosine_mult,
+            const Vector3d&                 geometric_normal,
+            const Basis3d&                  shading_basis,
+            const Vector3d&                 outgoing,
+            const Vector3d&                 incoming,
+            const int                       modes,
+            Spectrum&                       value) const OVERRIDE
+        {
+            if (!(modes & Diffuse))
+                return 0.0;
+
+            // No reflection below the shading surface.
+            const Vector3d& n = shading_basis.get_normal();
+            const double cos_in = dot(incoming, n);
+            if (cos_in < 0.0)
+                return 0.0;
+
+            const DisneyBRDFInputValues* values = static_cast<const DisneyBRDFInputValues*>(data);
+
+            evaluate_diffuse(
+                        values,
+                        shading_basis,
+                        outgoing,
+                        incoming,
+                        value);
+
+            // Return the probability density of the sampled direction.
+            return cos_in * RcpPi;
+        }
+
+        virtual double evaluate_pdf(
+            const void*                     data,
+            const Vector3d&                 geometric_normal,
+            const Basis3d&                  shading_basis,
+            const Vector3d&                 outgoing,
+            const Vector3d&                 incoming,
+            const int                       modes) const OVERRIDE
+        {
+            if (!(modes & Diffuse))
+                return 0.0;
+
+            // No reflection below the shading surface.
+            const Vector3d& n = shading_basis.get_normal();
+            const double cos_in = dot(incoming, n);
+            const double cos_on = dot(outgoing, n);
+            if (cos_in < 0.0 || cos_on < 0.0)
+                return 0.0;
+
+            return cos_in * RcpPi;
+        }
+
+      private:
+        const LightingConditions&   m_lighting_conditions;
+        const Spectrum&             m_white_spectrum;
+
+        void evaluate_diffuse(
+            const DisneyBRDFInputValues*    values,
+            const Basis3d&                  shading_basis,
+            const Vector3d&                 outgoing,
+            const Vector3d&                 incoming,
+            Spectrum&                       value) const
+        {
+            // This code is ported from the GLSL implementation
+            // in Disney's BRDF explorer.
+
+            const Vector3d h(normalize(incoming + outgoing));
+            const Vector3d n(shading_basis.get_normal());
+
+            const double cos_no = dot(n, outgoing);
+            const double cos_ni = dot(n, incoming);
+            const double cos_oh = dot(outgoing, h);
+
+            value = values->m_base_color;
+
+            const double fl = schlick_fresnel(cos_no);
+            const double fv = schlick_fresnel(cos_ni);
+            const double fd90 = 0.5 + 2.0 * square(cos_oh) * values->m_roughness;
+            double fd = mix(1.0, fd90, fl) * mix(1.0, fd90, fv);
+
+            if (values->m_subsurface > 0.0)
+            {
+                const double fss90 = square(cos_oh) * values->m_roughness;
+                const double fss = mix(1.0, fss90, fl) * mix(1.0, fss90, fv);
+                const double ss = 1.25 * (fss * (1.0 / (cos_no + cos_ni) - 0.5) + 0.5);
+                fd = mix(fd, ss, values->m_subsurface);
+            }
+
+            value *= static_cast<float>(fd * RcpPi);
+
+            if (values->m_sheen > 0.0)
+            {
+                Spectrum csheen;
+                mix_spectra(
+                    m_white_spectrum,
+                    values->m_tint_color,
+                    static_cast<float>(values->m_sheen_tint),
+                    csheen);
+                const double fh = schlick_fresnel(cos_oh);
+                csheen *= static_cast<float>(fh * values->m_sheen);
+                value += csheen;
+            }
+
+            value *= static_cast<float>(1.0 - values->m_metallic);
+        }
+    };
+
+
+    //
+    // Berry microfacet distribution function.
+    // It's used in the clearcoat layer.
+    //
+
+    template <typename T>
+    class BerryMDF2
+      : public MDF<T>
     {
-        if (this->cos_theta(h) == T(0.0))
-            return T(0.0);
+      public:
+        typedef boost::mpl::bool_<false> IsAnisotropicType;
 
-        const T alpha_x_2 = square(alpha_x);
-        const T a = (alpha_x_2 - T(1.0)) / (T(Pi) * log(alpha_x_2));
-        const T b = (T(1.0) / (T(1.0) + (alpha_x_2 - T(1.0)) * this->cos_theta(h)));
-        return a * b;
-    }
-};
+      private:
+        virtual Vector<T, 3> do_sample(
+            const Vector<T, 2>&  s,
+            const T              alpha_x,
+            const T              alpha_y) const OVERRIDE
+        {
+            const T alpha_x_2 = square(alpha_x);
+            const T a = T(1.0) - pow(alpha_x_2, T(1.0) - s[0]);
+            const T cos_theta = sqrt(a / (T(1.0) - alpha_x_2));
+            const T sin_theta  = sqrt(T(1.0) - square(cos_theta));
+            const T phi = T(TwoPi) * s[1];
+            return Vector<T, 3>::unit_vector(cos_theta, sin_theta, cos(phi), sin(phi));
+        }
+
+        virtual T do_eval_D(
+            const Vector<T, 3>&  h,
+            const T              alpha_x,
+            const T              alpha_y) const OVERRIDE
+        {
+            const T alpha_x_2 = square(alpha_x);
+            const T cos_theta_2 = square(this->cos_theta(h));
+            const T a = (alpha_x_2 - T(1.0)) / (T(Pi) * log(alpha_x_2));
+            const T b = (T(1.0) / (T(1.0) + (alpha_x_2 - T(1.0)) * cos_theta_2));
+            return a * b;
+        }
+
+        virtual T do_eval_G(
+            const Vector<T, 3>&  incoming,
+            const Vector<T, 3>&  outgoing,
+            const Vector<T, 3>&  h,
+            const T              alpha_x,
+            const T              alpha_y) const OVERRIDE
+        {
+            return
+                GGXSmithMaskingShadowing<T>::G(
+                    incoming,
+                    outgoing,
+                    h,
+                    alpha_x,
+                    alpha_y);
+        }
+
+        virtual T do_eval_pdf(
+            const Vector<T, 3>&  h,
+            const T              alpha_x,
+            const T              alpha_y) const OVERRIDE
+        {
+            if (this->cos_theta(h) == T(0.0))
+                return T(0.0);
+
+            const T alpha_x_2 = square(alpha_x);
+            const T a = (alpha_x_2 - T(1.0)) / (T(Pi) * log(alpha_x_2));
+            const T b = (T(1.0) / (T(1.0) + (alpha_x_2 - T(1.0)) * this->cos_theta(h)));
+            return a * b;
+        }
+    };
 
 }
+
 
 //
 // Disney BRDF implementation.
@@ -370,20 +371,20 @@ class DisneyBRDFImpl
         delete m_clearcoat_mdf;
     }
 
-    void release()
+    virtual void release() OVERRIDE
     {
         delete this;
     }
 
-    const char* get_model() const
+    virtual const char* get_model() const OVERRIDE
     {
         return Model;
     }
 
-    bool on_frame_begin(
-        const Project&  project,
-        const Assembly& assembly,
-        AbortSwitch*    abort_switch)
+    virtual bool on_frame_begin(
+        const Project&      project,
+        const Assembly&     assembly,
+        AbortSwitch*        abort_switch) OVERRIDE
     {
         if (!BSDF::on_frame_begin(project,assembly,abort_switch))
             return false;
@@ -394,18 +395,18 @@ class DisneyBRDFImpl
         return true;
     }
 
-    void on_frame_end(
-        const Project&              project,
-        const Assembly&             assembly)
+    virtual void on_frame_end(
+        const Project&      project,
+        const Assembly&     assembly) OVERRIDE
     {
         m_diffuse_brdf->on_frame_end(project, assembly);
         BSDF::on_frame_end(project, assembly);
     }
 
-    void evaluate_inputs(
-        InputEvaluator&             input_evaluator,
-        const ShadingPoint&         shading_point,
-        const size_t                offset) const
+    virtual void evaluate_inputs(
+        InputEvaluator&     input_evaluator,
+        const ShadingPoint& shading_point,
+        const size_t        offset) const OVERRIDE
     {
         BSDF::evaluate_inputs(input_evaluator, shading_point, offset);
 
@@ -427,7 +428,7 @@ class DisneyBRDFImpl
             values->m_tint_color = m_white_spectrum;
     }
 
-    Mode sample(
+    virtual Mode sample(
         SamplingContext&    sampling_context,
         const void*         data,
         const bool          adjoint,
@@ -437,7 +438,7 @@ class DisneyBRDFImpl
         const Vector3d&     outgoing,
         Vector3d&           incoming,
         Spectrum&           value,
-        double&             probability) const
+        double&             probability) const OVERRIDE
     {
         const DisneyBRDFInputValues* values =
             reinterpret_cast<const DisneyBRDFInputValues*>(data);
@@ -524,7 +525,7 @@ class DisneyBRDFImpl
         return Glossy;
     }
 
-    double evaluate(
+    virtual double evaluate(
         const void*         data,
         const bool          adjoint,
         const bool          cosine_mult,
@@ -533,7 +534,7 @@ class DisneyBRDFImpl
         const Vector3d&     outgoing,
         const Vector3d&     incoming,
         const int           modes,
-        Spectrum&           value) const
+        Spectrum&           value) const OVERRIDE
     {
         // No reflection below the shading surface.
         const Vector3d& n = shading_basis.get_normal();
@@ -631,13 +632,13 @@ class DisneyBRDFImpl
         return pdf;
     }
 
-    double evaluate_pdf(
+    virtual double evaluate_pdf(
         const void*         data,
         const Vector3d&     geometric_normal,
         const Basis3d&      shading_basis,
         const Vector3d&     outgoing,
         const Vector3d&     incoming,
-        const int           modes) const
+        const int           modes) const OVERRIDE
     {
         const DisneyBRDFInputValues* values =
             reinterpret_cast<const DisneyBRDFInputValues*>(data);
@@ -749,6 +750,7 @@ LightingConditions DisneyBRDFImpl::m_lighting_conditions;
 Spectrum DisneyBRDFImpl::m_white_spectrum;
 
 typedef BSDFWrapper<DisneyBRDFImpl> DisneyBRDF;
+
 
 //
 // DisneyBRDFFactory class implementation.
