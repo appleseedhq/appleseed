@@ -140,7 +140,11 @@ void CurveTree::build_bvh(
     const double            time,
     Statistics&             statistics)
 {
-    // Collect the curves and curve keys from the curve object.
+    // Collect curves for this tree.
+    RENDERER_LOG_INFO(
+        "collecting geometry for curve tree #" FMT_UNIQUE_ID " from assembly \"%s\"...",
+        m_arguments.m_curve_tree_uid,
+        m_arguments.m_assembly.get_name());
     collect_curves(m_arguments, &m_curves3, &m_curve_keys);
 
     // Retrieve the bounding box of the individual curves.
@@ -148,6 +152,13 @@ void CurveTree::build_bvh(
     vector<GAABB3> curve_bboxes(curve_count);
     for (size_t i = 0; i < curve_count; ++i)
         curve_bboxes[i] = m_curves3[i].get_bbox();
+
+    // Print statistics about the input geometry.
+    RENDERER_LOG_INFO(
+        "building bvh curve tree #" FMT_UNIQUE_ID " (%s %s)...",
+        m_arguments.m_curve_tree_uid,
+        pretty_uint(curve_count).c_str(),
+        plural(curve_count, "curve").c_str());
 
     // Create the partitioner.
     typedef bvh::SAHPartitioner<vector<GAABB3> > Partitioner;
@@ -165,6 +176,8 @@ void CurveTree::build_bvh(
         partitioner,
         m_curves3.size(),
         CurveTreeDefaultMaxLeafSize);
+    statistics.merge(
+        bvh::TreeStatistics<CurveTree>(*this, AABB3d(m_arguments.m_bbox)));
 
     // Bounding boxes are no longer needed.
     clear_release_memory(curve_bboxes);
