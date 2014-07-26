@@ -141,7 +141,7 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     set_target_properties (appleseed.python PROPERTIES
         SUFFIX ".pyd"
     )
-endif()
+endif ()
 
 
 #--------------------------------------------------------------------------------------------------
