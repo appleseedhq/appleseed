@@ -155,7 +155,7 @@ void CurveTree::build_bvh(
 
     // Print statistics about the input geometry.
     RENDERER_LOG_INFO(
-        "building bvh curve tree #" FMT_UNIQUE_ID " (%s %s)...",
+        "building curve tree #" FMT_UNIQUE_ID " (bvh, %s %s)...",
         m_arguments.m_curve_tree_uid,
         pretty_uint(curve_count).c_str(),
         plural(curve_count, "curve").c_str());

@@ -529,7 +529,7 @@ void TriangleTree::build_bvh(
 
     // Print statistics about the input geometry.
     RENDERER_LOG_INFO(
-        "building bvh triangle tree #" FMT_UNIQUE_ID " (%s %s, %s %s)...",
+        "building triangle tree #" FMT_UNIQUE_ID " (bvh, %s %s, %s %s)...",
         m_arguments.m_triangle_tree_uid,
         pretty_uint(m_static_triangle_count).c_str(),
         plural(m_static_triangle_count, "static triangle").c_str(),
@@ -634,7 +634,7 @@ void TriangleTree::build_sbvh(
 
     // Print statistics about the input geometry.
     RENDERER_LOG_INFO(
-        "building sbvh triangle tree #" FMT_UNIQUE_ID " (%s %s, %s %s)...",
+        "building triangle tree #" FMT_UNIQUE_ID " (sbvh, %s %s, %s %s)...",
         m_arguments.m_triangle_tree_uid,
         pretty_uint(m_static_triangle_count).c_str(),
         plural(m_static_triangle_count, "static triangle").c_str(),
