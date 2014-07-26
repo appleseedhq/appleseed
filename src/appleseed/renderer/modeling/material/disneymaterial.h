@@ -40,11 +40,14 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
+// Standard headers.
+#include <cstddef>
+
 // Forward declarations.
 namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }
-namespace renderer      { class ParamArray; }
 namespace renderer      { class DisneyMaterial; }
+namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
@@ -69,15 +72,15 @@ class DLLSYMBOL DisneyMaterialLayer
   private:
     friend class DisneyMaterial;
 
+    struct Impl;
+    Impl* impl;
+
     // Constructor
     DisneyMaterialLayer(
         const char*                     name,
         const foundation::Dictionary&   params);
 
     void swap(DisneyMaterialLayer& other);
-
-    struct Impl;
-    Impl* impl;
 };
 
 class DLLSYMBOL DisneyMaterial
@@ -105,20 +108,21 @@ class DLLSYMBOL DisneyMaterial
   private:
     friend class DisneyMaterialFactory;
 
+    struct Impl;
+    Impl* impl;
+
     // Constructor.
     DisneyMaterial(
-        const char*         name,
-        const ParamArray&   params);
+        const char*                 name,
+        const ParamArray&           params);
 
     // Destructor
     ~DisneyMaterial();
 
-    std::size_t get_layer_count() const;
-    const DisneyMaterialLayer& get_layer(const std::size_t index) const;
-
-    struct Impl;
-    Impl* impl;
+    size_t get_layer_count() const;
+    const DisneyMaterialLayer& get_layer(const size_t index) const;
 };
+
 
 //
 // Disney material factory.

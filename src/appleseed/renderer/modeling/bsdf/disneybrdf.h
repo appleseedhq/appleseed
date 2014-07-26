@@ -29,11 +29,9 @@
 #ifndef APPLESEED_RENDERER_MODELING_BSDF_DISNEYBRDF_H
 #define APPLESEED_RENDERER_MODELING_BSDF_DISNEYBRDF_H
 
-// Interface header.
-#include "bsdf.h"
-
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/ibsdffactory.h"
 #include "renderer/modeling/input/inputarray.h"
 
