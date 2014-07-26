@@ -77,7 +77,7 @@ TEST_SUITE(Renderer_Modeling_ShaderParamParser)
     {
         EXPECT_EXCEPTION(ExceptionOSLParamParseError,
         {
-            ShaderParamParser( "unknown-type 77");
+            ShaderParamParser("unknown-type 77");
         });
     }
 
@@ -114,7 +114,7 @@ TEST_SUITE(Renderer_Modeling_ShaderParamParser)
         }
 
         {
-            ShaderParamParser parser( "string a b");
+            ShaderParamParser parser("string a b");
 
             EXPECT_EXCEPTION(ExceptionOSLParamParseError,
             {

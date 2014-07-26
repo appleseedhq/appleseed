@@ -123,7 +123,7 @@ void bind_logger()
     bpy::class_<detail::ILogTargetWrap, boost::shared_ptr<detail::ILogTargetWrap> ,boost::noncopyable>("ILogTarget")
         .def("write", bpy::pure_virtual(&ILogTarget::write));
 
-    bpy::enum_<LogMessage::Category>( "LogMessageCategory")
+    bpy::enum_<LogMessage::Category>("LogMessageCategory")
         .value("Info", LogMessage::Info)
         .value("Debug", LogMessage::Debug)
         .value("Warning", LogMessage::Warning)

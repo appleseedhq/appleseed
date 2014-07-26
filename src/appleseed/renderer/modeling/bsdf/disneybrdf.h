@@ -74,6 +74,7 @@ DECLARE_INPUT_VALUES(DisneyBRDFInputValues)
     Spectrum    m_tint_color;
 };
 
+
 //
 // Disney BRDF factory.
 //

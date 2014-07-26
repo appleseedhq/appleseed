@@ -84,7 +84,7 @@ class TorranceSparrowMaskingShadowing
         if (cos_vh < T(0.0))
             return T(0.0);
 
-        return std::min( T(1.0), T(2.0) * std::abs(h.y) * std::abs(v.y) / cos_vh);
+        return std::min(T(1.0), T(2.0) * std::abs(h.y) * std::abs(v.y) / cos_vh);
     }
 };
 
