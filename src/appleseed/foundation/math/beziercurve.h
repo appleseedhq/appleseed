@@ -48,6 +48,14 @@ namespace foundation
 {
 
 //
+// Reference:
+//
+//   Ray Tracing for Curves Primitive
+//   Koji Nakamaru, Yoshio Ohno
+//   http://wscg.zcu.cz/wscg2002/Papers_2002/A83.pdf
+//
+
+//
 // Base class for Bezier curves.
 // N is the degree of the curve.
 // A curve of degree N has N + 1 control points.
