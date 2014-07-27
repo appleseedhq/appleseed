@@ -36,7 +36,9 @@
 // appleseed.foundation headers.
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/aabb.h"
+#include "foundation/math/qmc.h"
 #include "foundation/math/rng.h"
+#include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/defaulttimers.h"
 #include "foundation/utility/searchpaths.h"
@@ -85,16 +87,23 @@ struct CurveObject::Impl
         return bbox;
     }
 
+    template <typename RNG>
+    static Vector2d rand_vector2d(RNG& rng)
+    {
+        Vector2d v;
+        v[0] = rand_double2(rng);
+        v[1] = rand_double2(rng);
+        return v;
+    }
+
     void create_hair_ball(const ParamArray& params)
     {
         const size_t ControlPointCount = 4;
-        const Vector3d Origin(0.0);
-        const double Radius = 1.0;
 
         const size_t curve_count = params.get_optional<size_t>("curves", 100);
-        const double curve_width = params.get_optional<double>("width", 0.001);
+        const double curve_width = params.get_optional<double>("width", 0.002);
 
-        Vector3d control_points[ControlPointCount];
+        Vector3d points[ControlPointCount];
         MersenneTwister rng;
 
         m_curves.reserve(curve_count);
@@ -104,27 +113,64 @@ struct CurveObject::Impl
             for (size_t p = 0; p < ControlPointCount; ++p)
             {
                 // http://math.stackexchange.com/questions/87230/picking-random-points-in-the-volume-of-sphere-with-uniform-probability
-                const double r = Radius * pow(rand_double1(rng), 1.0 / 3);
-
-                Vector2d s;
-                s[0] = rand_double1(rng);
-                s[1] = rand_double1(rng);
-
-                control_points[p] = r * sample_sphere_uniform(s);
+                const double r = pow(1.0 - rand_double2(rng), 1.0 / 3);
+                const Vector3d d = sample_sphere_uniform(rand_vector2d(rng));
+                points[p] = r * d;
             }
 
-            const BezierCurve3d curve(&control_points[0], curve_width);
+            const BezierCurve3d curve(&points[0], curve_width);
             m_curves.push_back(curve);
         }
     }
 
-    // Read a custom curve file and load it in m_curves.
-    void load_curve_file(const char* filename)
+    void create_furry_ball(const ParamArray& params)
+    {
+        const size_t ControlPointCount = 4;
+
+        const size_t curve_count = params.get_optional<size_t>("curves", 100);
+        const double curve_length = params.get_optional<double>("length", 0.1);
+        const double base_width = params.get_optional<double>("base_width", 0.001);
+        const double tip_width = params.get_optional<double>("tip_width", 0.0001);
+        const double length_fuzziness = params.get_optional<double>("length_fuzziness", 0.3);
+        const double curliness = params.get_optional<double>("curliness", 0.5);
+
+        Vector3d points[ControlPointCount];
+        double widths[ControlPointCount];
+
+        MersenneTwister rng;
+
+        m_curves.reserve(curve_count);
+
+        for (size_t c = 0; c < curve_count; ++c)
+        {
+            static const size_t Bases[] = { 2 };
+            const Vector2d s = hammersley_sequence<double, 2>(Bases, c, curve_count);
+            const Vector3d d = sample_sphere_uniform(s);
+            points[0] = d;
+            widths[0] = base_width;
+
+            const double f = rand_double1(rng, -length_fuzziness, +length_fuzziness);
+            const double length = curve_length * (1.0 + f);
+
+            for (size_t p = 1; p < ControlPointCount; ++p)
+            {
+                const double r = static_cast<double>(p) / (ControlPointCount - 1);
+                const Vector3d f = curliness * sample_sphere_uniform(rand_vector2d(rng));
+                points[p] = points[0] + length * (r * d + f);
+                widths[p] = lerp(base_width, tip_width, r);
+            }
+
+            const BezierCurve3d curve(&points[0], &widths[0]);
+            m_curves.push_back(curve);
+        }
+    }
+
+    void load_curve_file(const char* filepath)
     {
         const double CurveWidth = 0.009;
 
         ifstream input;
-        input.open(filename);
+        input.open(filepath);
 
         if (input.good())
         {
@@ -139,7 +185,7 @@ struct CurveObject::Impl
             size_t control_point_count;
             input >> control_point_count;
 
-            vector<Vector3d> control_points(control_point_count);
+            vector<Vector3d> points(control_point_count);
 
             m_curves.reserve(curve_count);
 
@@ -149,10 +195,10 @@ struct CurveObject::Impl
                 {
                     Vector3d point;
                     input >> point.x >> point.y >> point.z;
-                    control_points[p] = point;
+                    points[p] = point;
                 }
 
-                const BezierCurve3d curve(&control_points[0], CurveWidth);
+                const BezierCurve3d curve(&points[0], CurveWidth);
                 m_curves.push_back(curve);
             }
 
@@ -160,7 +206,7 @@ struct CurveObject::Impl
 
             RENDERER_LOG_INFO(
                 "loaded curve file %s (%s curves) in %s.",
-                filename,
+                filepath,
                 pretty_uint(curve_count).c_str(),
                 pretty_time(stopwatch.get_seconds()).c_str());
 
@@ -168,7 +214,7 @@ struct CurveObject::Impl
         }
         else
         {
-            RENDERER_LOG_ERROR("failed to load curve file %s.", filename);
+            RENDERER_LOG_ERROR("failed to load curve file %s.", filepath);
         }
     }
 };
@@ -180,13 +226,15 @@ CurveObject::CurveObject(
   : Object(name, params)
   , impl(new Impl())
 {
-    const string filename = params.get<string>("filename");
+    const string filepath = params.get<string>("filepath");
 
-    if (filename == "builtin:hairball")
+    if (filepath == "builtin:hairball")
         impl->create_hair_ball(params);
+    else if (filepath == "builtin:furryball")
+        impl->create_furry_ball(params);
     else
     {
-        const string filepath = search_paths.qualify(filename);
+        const string filepath = search_paths.qualify(filepath);
         impl->load_curve_file(filepath.c_str());
     }
 }

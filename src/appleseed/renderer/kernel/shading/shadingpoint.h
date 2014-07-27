@@ -464,7 +464,6 @@ inline const foundation::Vector3d& ShadingPoint::get_geometric_normal() const
 {
     assert(hit());
 
-    // Compute triangle normals only.
     if (!(m_members & HasGeometricNormal))
     {
         if (m_primitive_type == PrimitiveTriangle)
@@ -507,18 +506,18 @@ inline const foundation::Vector3d& ShadingPoint::get_geometric_normal() const
             // Finally make the geometric normal face the direction of the incoming ray.
             if (m_side == ObjectInstance::BackSide)
                 m_geometric_normal = -m_geometric_normal;
-
-            // The geometric normal is now available.
-            m_members |= HasGeometricNormal;
         }
         else if (m_primitive_type == PrimitiveCurve)
         {
-            // Get geometric normal for curves.
-            // We assume flat ribbon primitive facing the incoming ray.
+            // We assume flat ribbons facing incoming rays.
             m_geometric_normal = -normalize(m_ray.m_dir);
-            m_members |= HasGeometricNormal;
+            m_side = ObjectInstance::FrontSide;
         }
+
+        // The geometric normal is now available.
+        m_members |= HasGeometricNormal;
     }
+
     return m_geometric_normal;
 }
 
@@ -528,11 +527,11 @@ inline const foundation::Vector3d& ShadingPoint::get_shading_normal() const
 
     if (!(m_members & HasShadingNormal))
     {
+        // Start with the original shading normal.
+        m_shading_normal = get_original_shading_normal();
+
         if (m_primitive_type == PrimitiveTriangle)
         {
-            // Start with the original shading normal.
-            m_shading_normal = get_original_shading_normal();
-
             // Apply the normal modifier if the material has one.
             const Material* material = get_material();
             if (material)
@@ -553,17 +552,10 @@ inline const foundation::Vector3d& ShadingPoint::get_shading_normal() const
             // Place the shading normal in the same hemisphere as the geometric normal.
             if (m_side == ObjectInstance::BackSide)
                 m_shading_normal = -m_shading_normal;
+        }
 
-            // The shading normal is now available.
-            m_members |= HasShadingNormal;
-        }
-        else if (m_primitive_type == PrimitiveCurve)
-        {
-            // Computing shading normal for the curve primitive
-            // We assume the shading normal to be the same as the geomtric normal.
-            m_shading_normal = -normalize(m_ray.m_dir);
-            m_members |= HasShadingNormal;
-        }
+        // The shading normal is now available.
+        m_members |= HasShadingNormal;
     }
 
     return m_shading_normal;
@@ -609,6 +601,7 @@ inline const foundation::Vector3d& ShadingPoint::get_original_shading_normal() c
         }
         else if (m_primitive_type == PrimitiveCurve)
         {
+            // We assume flat ribbons facing incoming rays.
             m_original_shading_normal = -normalize(m_ray.m_dir);
         }
 

@@ -43,9 +43,18 @@
 #include <cassert>
 #include <cmath>
 #include <cstddef>
+#include <limits>
 
 namespace foundation
 {
+
+//
+// Reference:
+//
+//   Ray Tracing for Curves Primitive
+//   Koji Nakamaru, Yoshio Ohno
+//   http://wscg.zcu.cz/wscg2002/Papers_2002/A83.pdf
+//
 
 //
 // Base class for Bezier curves.
@@ -141,12 +150,9 @@ class BezierCurveBase
         if (N < 2)
             return 0;
 
-        ValueType l0 =
-            std::max(
-                std::abs(m_ctrl_pts[0].x - ValueType(2.0) * m_ctrl_pts[1].x + m_ctrl_pts[2].x),
-                std::abs(m_ctrl_pts[0].y - ValueType(2.0) * m_ctrl_pts[1].y + m_ctrl_pts[2].y));
+        ValueType l0 = std::numeric_limits<ValueType>::max();
 
-        for (size_t i = 1; i <= N - 2; ++i)
+        for (size_t i = 0; i <= N - 2; ++i)
         {
             l0 =
                 max(
@@ -489,14 +495,14 @@ class BezierCurveIntersector
     typedef typename BezierCurveType::MatrixType MatrixType;
     typedef Ray<ValueType, 3> RayType;
 
-    // Modified dot product functionality that considers only x and y components of the vector.
+    // Dot product function that only considers the x and y components of the vectors.
     static ValueType dotxy(const VectorType& lhs, const VectorType& rhs)
     {
         return lhs.x * rhs.x + lhs.y * rhs.y;
     }
 
     // Compute the transformation matrix required for ray-curve intersection.
-    static void make_facing_curve_transform(MatrixType& matrix, const RayType& ray)
+    static void make_projection_transform(MatrixType& matrix, const RayType& ray)
     {
         // Build the rotation matrix.
         const VectorType rdir = normalize(ray.m_dir);
@@ -551,16 +557,28 @@ class BezierCurveIntersector
         const ValueType         vn,
         ValueType&              t)
     {
-        const ValueType curve_width = curve.get_max_width() * ValueType(0.5);
-
         const AABBType& bbox = curve.get_bbox();
+        const ValueType half_width = curve.get_max_width() * ValueType(0.5);
 
-        if (bbox.min.z >= t           || bbox.max.z <= ValueType(1.0e-6) ||
-            bbox.min.x >= curve_width || bbox.max.x <= -curve_width      ||
-            bbox.min.y >= curve_width || bbox.max.y <= -curve_width)
+        // Check whether the curve's bounding box overlaps the square centered at 0.
+        if (bbox.min.z >= t          || bbox.max.z <= ValueType(1.0e-6) ||
+            bbox.min.x >= half_width || bbox.max.x <= -half_width       ||
+            bbox.min.y >= half_width || bbox.max.y <= -half_width)
             return false;
 
-        if (depth == 0)
+        if (depth > 0)
+        {
+            // Split the curve.
+            BezierCurveType c1, c2;
+            curve.split(c1, c2);
+
+            // Recurse on the two child curves.
+            const ValueType vm = (v0 + vn) * ValueType(0.5);
+            return
+                converge(depth - 1, original_curve, c1, xfm, v0, vm, t) ||
+                converge(depth - 1, original_curve, c2, xfm, vm, vn, t);
+        }
+        else
         {
             // Compute the intersection.
 
@@ -583,58 +601,34 @@ class BezierCurveIntersector
                 return false;
 
             // Compute w on the line segment.
-            ValueType w = dir.x * dir.x + dir.y * dir.y;
-            if (w < ValueType(1.0e-6))
+            const ValueType den = dotxy(dir, dir);
+            if (den < ValueType(1.0e-6))
                 return false;
-            w = -(cp0.x * dir.x + cp0.y * dir.y) / w;
-            w = saturate(w);
+            const ValueType w = saturate(-dotxy(cp0, dir) / den);
 
             // Compute v on the line segment.
-            const ValueType v = v0 * (ValueType(1.0) - w) + vn * w;
+            const ValueType v = lerp(v0, vn, w);
 
             // Compute point on original unsplit curve.
             const VectorType orig_p = original_curve.evaluate_point(v);
 
-            // Transform back to orignal required frame.
+            // Transform point back to original frame.
             const VectorType p = BezierCurveType::transform_point(xfm, orig_p);
 
-            if (p.z <= ValueType(1.0e-6) || t < p.z)
+            // Compare Z distances.
+            if (p.z <= ValueType(1.0e-6) || p.z > t)
                 return false;
 
             // Compute the correct interpolated width on the transformed curve and not original curve.
             // Note: We use the modified curve and not the actual curve because the width values are
             // correctly split and interpolated during split operations. In order to have a smooth
             // transition between the control point widths, we use the transformed curve.
-            const ValueType half_width = ValueType(0.5) * curve.evaluate_width(w);
-
-            if (p.x * p.x + p.y * p.y >= half_width * half_width)
+            if (dotxy(p, p) >= ValueType(0.25) * square(curve.evaluate_width(w)))
                 return false;
 
             // Found an intersection.
             t = p.z;
             return true;
-        }
-        else
-        {
-            // Split the curve and recurse on the two new curves.
-
-            BezierCurveType c1, c2;
-            curve.split(c1, c2);
-
-            const ValueType vm = (v0 + vn) * ValueType(0.5);
-
-            ValueType t_left = t;
-            ValueType t_right = t;
-            const bool hit_left = converge(depth - 1, original_curve, c1, xfm, v0, vm, t_left);
-            const bool hit_right = converge(depth - 1, original_curve, c2, xfm, vm, vn, t_right);
-
-            if (hit_left || hit_right)
-            {
-                t = std::min(t_left, t_right);
-                return true;
-            }
-
-            return false;
         }
     }
 };

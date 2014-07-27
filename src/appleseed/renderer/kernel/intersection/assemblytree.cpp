@@ -626,7 +626,7 @@ bool AssemblyLeafVisitor::visit(
         {
             // Check the intersection between the ray and the curve tree.
             Matrix4d xfm_matrix;
-            BezierCurveIntersector<BezierCurve3d>::make_facing_curve_transform(
+            BezierCurveIntersector<BezierCurve3d>::make_projection_transform(
                 xfm_matrix,
                 local_shading_point.m_ray);
             CurveLeafVisitor visitor(*curve_tree, xfm_matrix, local_shading_point);
@@ -794,7 +794,7 @@ bool AssemblyLeafProbeVisitor::visit(
         {
             // Check intersection between ray and curve tree.
             Matrix4d xfm_matrix;
-            BezierCurveIntersector<BezierCurve3d>::make_facing_curve_transform(
+            BezierCurveIntersector<BezierCurve3d>::make_projection_transform(
                 xfm_matrix,
                 local_ray);
             CurveLeafProbeVisitor visitor(*curve_tree, xfm_matrix);
