@@ -111,15 +111,14 @@ ExpressionEditorWindow::ExpressionEditorWindow(
 void ExpressionEditorWindow::apply_expression()
 {
     string expression = m_editor->getExpr();
-    //renderer::SeExpr se_expression(expression);
-    //if (!se_expression.isValid())
-    if (false)
+    DisneyParamExpression se_expression(expression.c_str());
+
+    if (!se_expression.is_valid())
     {
-        /*
         m_error->show();
 
         // Do not print empty lines from the error.
-        string error = se_expression.parseError();
+        string error = se_expression.parse_error();
         vector<string> errors;
         split(errors, error, is_any_of("\n"));
 
@@ -129,7 +128,6 @@ void ExpressionEditorWindow::apply_expression()
             if (!e->empty())
                 RENDERER_LOG_ERROR("%s", e->c_str());
         }
-        */
     }
     else
     {

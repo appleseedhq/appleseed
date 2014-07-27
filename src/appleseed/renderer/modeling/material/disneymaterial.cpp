@@ -62,7 +62,6 @@ namespace renderer
 class SeExpr : public SeExpression
 {
   public:
-    
     struct Var : public SeExprScalarVarRef
     {
         Var() {}
@@ -110,37 +109,22 @@ class SeExpr : public SeExpression
     mutable std::map<std::string,Var> m_vars;
 };
 
-/*
 //
 // DisneyParamExpression class implementation.
 //
 
-struct DisneyParamExpression::Impl
+struct DisneyParamExpression::Impl : NonCopyable
 {
-    Impl() {}
-
-    Impl(const Impl& other)
-      : m_expr_string(other.m_expr_string)
+    explicit Impl(const char *expr)
+      : m_expr(expr)
     {
     }
-        
-    string m_expr_string;
-    SeExpr m_expression;
+    
+    SeExpr m_expr;
 };
 
-DisneyParamExpression::DisneyParamExpression()
-  : impl(new Impl())
-{
-}
-
 DisneyParamExpression::DisneyParamExpression(const char* expr)
-  : impl(new Impl())
-{
-    set_expression(expr);
-}
-
-DisneyParamExpression::DisneyParamExpression(const DisneyParamExpression& other)
-  : impl(new Impl(*other.impl))
+  : impl(new Impl(expr))
 {
 }
 
@@ -149,23 +133,20 @@ DisneyParamExpression::~DisneyParamExpression()
     delete impl;
 }
 
-DisneyParamExpression::DisneyParamExpression& operator=(const DisneyParamExpression& other)
+bool DisneyParamExpression::is_valid() const
 {
-    DisneyParamExpression tmp(other);
-    swap(tmp);
-    return *this;    
+    return impl->m_expr.isValid();
 }
 
-void DisneyParamExpression::swap(DisneyParamExpression& other)
+const char* DisneyParamExpression::parse_error() const
 {
-    std::swap(impl, other.impl);
+    return impl->m_expr.parseError().c_str();
 }
 
-void DisneyParamExpression::set_expression(const char* expr, bool is_vector = false)
+bool DisneyParamExpression::is_constant() const
 {
-    // ...
+    return impl->m_expr.isConstant();
 }
-*/
 
 //
 // DisneyLayerParam class implementation.

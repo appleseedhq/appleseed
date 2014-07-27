@@ -50,28 +50,22 @@ namespace renderer      { class ParamArray; }
 namespace renderer
 {
 
-/*
-class DLLSYMBOL DisneyParamExpression
+class DLLSYMBOL DisneyParamExpression : foundation::NonCopyable
 {
   public:
-    DisneyParamExpression();
-    explicit DisneyParamExpression(const char* expr);
-
-    DisneyParamExpression(const DisneyParamExpression& other);
-    
+    DisneyParamExpression(const char* expr);
     ~DisneyParamExpression();
 
-    DisneyParamExpression& operator=(const DisneyParamExpression& other);
-    
-    void set_expression(const char* expr);
+    bool is_valid() const;
+
+    const char* parse_error() const;
+
+    bool is_constant() const;
     
   private:
-    void swap(DisneyParamExpression& other);
-
     struct Impl;
     Impl* impl;    
 };
-*/
 
 class DLLSYMBOL DisneyMaterialLayer
 {
