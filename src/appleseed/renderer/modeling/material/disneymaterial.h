@@ -41,9 +41,6 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// SeExpr headers
-#include "SeExpression.h"
-
 // Forward declarations.
 namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }
@@ -53,35 +50,28 @@ namespace renderer      { class ParamArray; }
 namespace renderer
 {
 
-class SeExpr : public SeExpression
+/*
+class DLLSYMBOL DisneyParamExpression
 {
   public:
+    DisneyParamExpression();
+    explicit DisneyParamExpression(const char* expr);
+
+    DisneyParamExpression(const DisneyParamExpression& other);
     
-    struct Var : public SeExprScalarVarRef
-    {
-        Var() {}
+    ~DisneyParamExpression();
 
-        explicit Var(const double val)
-          : m_val(val)
-        {
-        }
-
-        virtual void eval(const SeExprVarNode* /*node*/,SeVec3d& result) OVERRIDE
-        {
-            result[0] = m_val;
-        }
-        
-        double m_val;            
-    };
+    DisneyParamExpression& operator=(const DisneyParamExpression& other);
     
-    SeExpr();
+    void set_expression(const char* expr);
+    
+  private:
+    void swap(DisneyParamExpression& other);
 
-    SeExpr(const std::string& expr, bool is_vector);
-
-    SeExprVarRef* resolveVar(const std::string& name) const OVERRIDE;
-
-    mutable std::map<std::string,Var> m_vars;
+    struct Impl;
+    Impl* impl;    
 };
+*/
 
 class DLLSYMBOL DisneyMaterialLayer
 {

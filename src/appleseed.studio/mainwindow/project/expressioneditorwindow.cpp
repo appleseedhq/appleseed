@@ -34,6 +34,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/modeling/material/disneymaterial.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
@@ -110,14 +111,15 @@ ExpressionEditorWindow::ExpressionEditorWindow(
 void ExpressionEditorWindow::apply_expression()
 {
     string expression = m_editor->getExpr();
-    SeExpression *se_expression = new SeExpression(expression);
-    //if (!se_expression->isValid())
+    //renderer::SeExpr se_expression(expression);
+    //if (!se_expression.isValid())
     if (false)
     {
+        /*
         m_error->show();
 
         // Do not print empty lines from the error.
-        string error = se_expression->parseError();
+        string error = se_expression.parseError();
         vector<string> errors;
         split(errors, error, is_any_of("\n"));
 
@@ -127,6 +129,7 @@ void ExpressionEditorWindow::apply_expression()
             if (!e->empty())
                 RENDERER_LOG_ERROR("%s", e->c_str());
         }
+        */
     }
     else
     {

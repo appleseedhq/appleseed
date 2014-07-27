@@ -39,12 +39,16 @@
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
 
+// SeExpr headers
+#include "SeExpression.h"
+
 // Boost headers.
 #include "boost/thread/locks.hpp"
 #include "boost/thread/mutex.hpp"
 
 // Standard headers.
 #include <algorithm>
+#include <iostream>
 #include <memory>
 #include <vector>
 
@@ -55,28 +59,113 @@ using namespace std;
 namespace renderer
 {
 
+class SeExpr : public SeExpression
+{
+  public:
+    
+    struct Var : public SeExprScalarVarRef
+    {
+        Var() {}
+
+        explicit Var(const double val)
+          : m_val(val)
+        {
+        }
+
+        virtual void eval(const SeExprVarNode* /*node*/,SeVec3d& result) OVERRIDE
+        {
+            result[0] = m_val;
+        }
+        
+        double m_val;            
+    };
+    
+    SeExpr() : SeExpression()
+    {
+    }
+
+    SeExpr(const std::string& expr) : SeExpression(expr)
+    {
+        m_vars["u"] = Var(0.0);
+        m_vars["v"] = Var(0.0);
+    }
+
+    void setExpr(const std::string& e)
+    {
+        SeExpression::setExpr(e);
+        m_vars["u"] = Var(0.0);
+        m_vars["v"] = Var(0.0);
+    }
+
+    SeExprVarRef* resolveVar(const std::string& name) const OVERRIDE
+    {
+        map<string,Var>::iterator i = m_vars.find(name);
+    
+        if (i != m_vars.end())
+            return &i->second;
+    
+        return 0;
+    }
+
+    mutable std::map<std::string,Var> m_vars;
+};
+
+/*
 //
-// SeExpr class implementation.
+// DisneyParamExpression class implementation.
 //
 
-SeExpr::SeExpr() : SeExpression()
+struct DisneyParamExpression::Impl
+{
+    Impl() {}
+
+    Impl(const Impl& other)
+      : m_expr_string(other.m_expr_string)
+    {
+    }
+        
+    string m_expr_string;
+    SeExpr m_expression;
+};
+
+DisneyParamExpression::DisneyParamExpression()
+  : impl(new Impl())
 {
 }
 
-SeExpr::SeExpr(const string& expr, bool is_vector)
-  : SeExpression(expr, is_vector)
+DisneyParamExpression::DisneyParamExpression(const char* expr)
+  : impl(new Impl())
+{
+    set_expression(expr);
+}
+
+DisneyParamExpression::DisneyParamExpression(const DisneyParamExpression& other)
+  : impl(new Impl(*other.impl))
 {
 }
 
-SeExprVarRef* SeExpr::resolveVar(const string& name) const
+DisneyParamExpression::~DisneyParamExpression()
 {
-    map<string,Var>::iterator i = m_vars.find(name);
-
-    if (i != m_vars.end())
-        return &i->second;
-
-    return 0;
+    delete impl;
 }
+
+DisneyParamExpression::DisneyParamExpression& operator=(const DisneyParamExpression& other)
+{
+    DisneyParamExpression tmp(other);
+    swap(tmp);
+    return *this;    
+}
+
+void DisneyParamExpression::swap(DisneyParamExpression& other)
+{
+    std::swap(impl, other.impl);
+}
+
+void DisneyParamExpression::set_expression(const char* expr, bool is_vector = false)
+{
+    // ...
+}
+*/
 
 //
 // DisneyLayerParam class implementation.
@@ -92,6 +181,7 @@ class DisneyLayerParam
       : m_param_name(name)
       , m_expr(params.get<string>(m_param_name))
       , m_is_vector(is_vector)
+      , m_is_constant(false)
     {
     }
 
@@ -99,6 +189,7 @@ class DisneyLayerParam
       : m_param_name(other.m_param_name)
       , m_expr(other.m_expr)
       , m_is_vector(other.m_is_vector)
+      , m_is_constant(false)
     {
     }
     
@@ -118,47 +209,51 @@ class DisneyLayerParam
 
     bool prepare()
     {
-        m_expression.setExpr(m_expr);
         m_expression.setWantVec(m_is_vector);
-
+        m_expression.setExpr(m_expr);
         m_expression.m_vars["u"] = SeExpr::Var(0.0);
         m_expression.m_vars["v"] = SeExpr::Var(0.0);
-
-        if (!m_expression.syntaxOK())
-        {
-            // report error here
-            return false;
-        }
         
         if (!m_expression.isValid())
         {
-            // report error here
+            std::cout << "SeExpr Error: " << m_expression.parseError() << std::endl;
             return false;
         }
+
+        m_is_constant = m_expression.isConstant();
         
-        if (m_expression.isConstant())
+        if (m_is_constant)
         {
-            // ...
+            SeVec3d result = m_expression.evaluate();
+            m_constant_value = Color3d(result[0], result[1], result[2]);
         }
 
         // Check for texture lookup here...
+
+        return true;
     }
     
-    foundation::Color3d evaluate(const ShadingPoint& shading_point) const
+    Color3d evaluate(const ShadingPoint& shading_point) const
     {
-       lock_guard<mutex> lock(m_mutex);
-       
-       m_expression.m_vars["u"] = SeExpr::Var(shading_point.get_uv(0)[0]);
-       m_expression.m_vars["v"] = SeExpr::Var(shading_point.get_uv(0)[1]);
-       SeVec3d result = m_expression.evaluate();
-       return Color3d(result[0], result[1], result[2]);       
+        if (m_is_constant)
+            return m_constant_value;
+
+        lock_guard<mutex> lock(m_mutex);
+
+        m_expression.m_vars["u"] = SeExpr::Var(shading_point.get_uv(0)[0]);
+        m_expression.m_vars["v"] = SeExpr::Var(shading_point.get_uv(0)[1]);
+        SeVec3d result = m_expression.evaluate();
+        return Color3d(result[0], result[1], result[2]);       
     }
-    
+
   private:
     const char*     m_param_name;
     string          m_expr;
     bool            m_is_vector;
 
+    bool            m_is_constant;
+    Color3d         m_constant_value;
+    
     mutable SeExpr  m_expression;
     // TODO: this is horrible. Remove it ASAP.
     mutable mutex   m_mutex;
@@ -335,7 +430,7 @@ DictionaryArray DisneyMaterialLayer::get_input_metadata()
             .insert("name", "mask")
             .insert("label", "Mask")
             .insert("type", "colormap")
-            .insert("default", "0"));
+            .insert("default", "1"));
 
     metadata.append(DisneyBRDFFactory().get_input_metadata());
 
@@ -397,7 +492,6 @@ DisneyMaterial::DisneyMaterial(
   : Material(name, params)
   , impl(new Impl(this))
 {
-    m_bsdf = impl->m_brdf.get();
 }
 
 DisneyMaterial::~DisneyMaterial()
@@ -443,6 +537,7 @@ bool DisneyMaterial::on_frame_begin(
             return false;
     }
 
+    m_bsdf = impl->m_brdf.get();
     return true;
 }
 
@@ -451,17 +546,6 @@ void DisneyMaterial::on_frame_end(
     const Assembly& assembly) OVERRIDE
 {
     impl->m_layers.clear();
-
-    /*
-    if (!g_all_expr_maps.empty())
-    {
-        for( each i(g_all_expr_maps); i; ++i)
-            (*i)->clear();
-    
-        g_all_expr_maps.clear();
-    }
-    */
-
     Material::on_frame_end(project, assembly);
 }
 
