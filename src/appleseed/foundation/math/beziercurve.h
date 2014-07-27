@@ -560,6 +560,7 @@ class BezierCurveIntersector
         const AABBType& bbox = curve.get_bbox();
         const ValueType half_width = curve.get_max_width() * ValueType(0.5);
 
+        // Check whether the curve's bounding box overlaps the square centered at 0.
         if (bbox.min.z >= t          || bbox.max.z <= ValueType(1.0e-6) ||
             bbox.min.x >= half_width || bbox.max.x <= -half_width       ||
             bbox.min.y >= half_width || bbox.max.y <= -half_width)
@@ -614,6 +615,7 @@ class BezierCurveIntersector
             // Transform point back to original frame.
             const VectorType p = BezierCurveType::transform_point(xfm, orig_p);
 
+            // Compare Z distances.
             if (p.z <= ValueType(1.0e-6) || p.z > t)
                 return false;
 
@@ -621,9 +623,7 @@ class BezierCurveIntersector
             // Note: We use the modified curve and not the actual curve because the width values are
             // correctly split and interpolated during split operations. In order to have a smooth
             // transition between the control point widths, we use the transformed curve.
-            const ValueType half_width = ValueType(0.5) * curve.evaluate_width(w);
-
-            if (p.x * p.x + p.y * p.y >= half_width * half_width)
+            if (dotxy(p, p) >= ValueType(0.25) * square(curve.evaluate_width(w)))
                 return false;
 
             // Found an intersection.
