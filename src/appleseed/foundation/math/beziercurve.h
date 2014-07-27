@@ -43,6 +43,7 @@
 #include <cassert>
 #include <cmath>
 #include <cstddef>
+#include <limits>
 
 namespace foundation
 {
@@ -149,12 +150,9 @@ class BezierCurveBase
         if (N < 2)
             return 0;
 
-        ValueType l0 =
-            std::max(
-                std::abs(m_ctrl_pts[0].x - ValueType(2.0) * m_ctrl_pts[1].x + m_ctrl_pts[2].x),
-                std::abs(m_ctrl_pts[0].y - ValueType(2.0) * m_ctrl_pts[1].y + m_ctrl_pts[2].y));
+        ValueType l0 = std::numeric_limits<ValueType>::max();
 
-        for (size_t i = 1; i <= N - 2; ++i)
+        for (size_t i = 0; i <= N - 2; ++i)
         {
             l0 =
                 max(
