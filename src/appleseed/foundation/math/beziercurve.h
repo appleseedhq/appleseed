@@ -602,14 +602,14 @@ class BezierCurveIntersector
                 return false;
 
             // Compute w on the line segment.
-            ValueType w = dir.x * dir.x + dir.y * dir.y;
+            ValueType w = dotxy(dir, dir);
             if (w < ValueType(1.0e-6))
                 return false;
-            w = -(cp0.x * dir.x + cp0.y * dir.y) / w;
+            w = -dotxy(cp0, dir) / w;
             w = saturate(w);
 
             // Compute v on the line segment.
-            const ValueType v = v0 * (ValueType(1.0) - w) + vn * w;
+            const ValueType v = lerp(v0, vn, w);
 
             // Compute point on original unsplit curve.
             const VectorType orig_p = original_curve.evaluate_point(v);
@@ -617,7 +617,7 @@ class BezierCurveIntersector
             // Transform point back to original frame.
             const VectorType p = BezierCurveType::transform_point(xfm, orig_p);
 
-            if (p.z <= ValueType(1.0e-6) || t < p.z)
+            if (p.z <= ValueType(1.0e-6) || p.z > t)
                 return false;
 
             // Compute the correct interpolated width on the transformed curve and not original curve.
