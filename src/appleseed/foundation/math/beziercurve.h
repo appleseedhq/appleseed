@@ -497,7 +497,7 @@ class BezierCurveIntersector
     typedef typename BezierCurveType::MatrixType MatrixType;
     typedef Ray<ValueType, 3> RayType;
 
-    // Modified dot product functionality that considers only x and y components of the vector.
+    // Dot product function that only considers the x and y components of the vectors.
     static ValueType dotxy(const VectorType& lhs, const VectorType& rhs)
     {
         return lhs.x * rhs.x + lhs.y * rhs.y;
@@ -614,7 +614,7 @@ class BezierCurveIntersector
             // Compute point on original unsplit curve.
             const VectorType orig_p = original_curve.evaluate_point(v);
 
-            // Transform back to orignal required frame.
+            // Transform point back to original frame.
             const VectorType p = BezierCurveType::transform_point(xfm, orig_p);
 
             if (p.z <= ValueType(1.0e-6) || t < p.z)
