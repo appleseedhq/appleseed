@@ -30,14 +30,18 @@
 #include "disneymaterial.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/disneybrdf.h"
 #include "renderer/modeling/bsdf/disneylayeredbrdf.h"
-#include "renderer/modeling/input/expression.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
+
+// Boost headers.
+#include "boost/thread/locks.hpp"
+#include "boost/thread/mutex.hpp"
 
 // Standard headers.
 #include <algorithm>
@@ -45,10 +49,120 @@
 #include <vector>
 
 using namespace foundation;
+using namespace boost;
 using namespace std;
 
 namespace renderer
 {
+
+//
+// SeExpr class implementation.
+//
+
+SeExpr::SeExpr() : SeExpression()
+{
+}
+
+SeExpr::SeExpr(const string& expr, bool is_vector)
+  : SeExpression(expr, is_vector)
+{
+}
+
+SeExprVarRef* SeExpr::resolveVar(const string& name) const
+{
+    map<string,Var>::iterator i = m_vars.find(name);
+
+    if (i != m_vars.end())
+        return &i->second;
+
+    return 0;
+}
+
+//
+// DisneyLayerParam class implementation.
+//
+
+class DisneyLayerParam
+{
+  public:
+    DisneyLayerParam(
+        const char*         name,
+        const Dictionary&   params,
+        const bool          is_vector)
+      : m_param_name(name)
+      , m_expr(params.get<string>(m_param_name))
+      , m_is_vector(is_vector)
+    {
+    }
+
+    DisneyLayerParam(const DisneyLayerParam& other)
+      : m_param_name(other.m_param_name)
+      , m_expr(other.m_expr)
+      , m_is_vector(other.m_is_vector)
+    {
+    }
+    
+    void swap(DisneyLayerParam& other)
+    {
+        std::swap(m_param_name, other.m_param_name);
+        std::swap(m_expr, other.m_expr);
+        std::swap(m_is_vector, other.m_is_vector);        
+    }
+
+    DisneyLayerParam& operator=(const DisneyLayerParam& other)
+    {
+        DisneyLayerParam tmp(other);
+        swap(tmp);
+        return *this;
+    }
+
+    bool prepare()
+    {
+        m_expression.setExpr(m_expr);
+        m_expression.setWantVec(m_is_vector);
+
+        m_expression.m_vars["u"] = SeExpr::Var(0.0);
+        m_expression.m_vars["v"] = SeExpr::Var(0.0);
+
+        if (!m_expression.syntaxOK())
+        {
+            // report error here
+            return false;
+        }
+        
+        if (!m_expression.isValid())
+        {
+            // report error here
+            return false;
+        }
+        
+        if (m_expression.isConstant())
+        {
+            // ...
+        }
+
+        // Check for texture lookup here...
+    }
+    
+    foundation::Color3d evaluate(const ShadingPoint& shading_point) const
+    {
+       lock_guard<mutex> lock(m_mutex);
+       
+       m_expression.m_vars["u"] = SeExpr::Var(shading_point.get_uv(0)[0]);
+       m_expression.m_vars["v"] = SeExpr::Var(shading_point.get_uv(0)[1]);
+       SeVec3d result = m_expression.evaluate();
+       return Color3d(result[0], result[1], result[2]);       
+    }
+    
+  private:
+    const char*     m_param_name;
+    string          m_expr;
+    bool            m_is_vector;
+
+    mutable SeExpr  m_expression;
+    // TODO: this is horrible. Remove it ASAP.
+    mutable mutex   m_mutex;
+};
 
 //
 // DisneyMaterialLayer class implementation.
@@ -60,36 +174,36 @@ struct DisneyMaterialLayer::Impl
         const char*         name,
         const Dictionary&   params)
       : m_name(name)
+      , m_layer_number(params.get<size_t>("layer_number"))
+      , m_mask("mask", params, false)
+      , m_base_color("base_color", params, true)
+      , m_subsurface("subsurface", params, false)
+      , m_metallic("metallic", params, false)
+      , m_specular("specular", params, false)
+      , m_specular_tint("specular_tint", params, false)
+      , m_anisotropic("anisotropic", params, false)
+      , m_roughness("roughness", params, false)
+      , m_sheen("sheen", params, false)
+      , m_sheen_tint("sheen_tint", params, false)
+      , m_clearcoat("clearcoat", params, false)
+      , m_clearcoat_gloss("clearcoat_gloss", params, false)
     {
-        m_layer_number = params.get<size_t>("layer_number");
-        m_mask.set_expression(params.get<string>("mask").c_str(), false);
-        m_base_color.set_expression(params.get<string>("base_color").c_str(), true);
-        m_subsurface.set_expression(params.get<string>("subsurface").c_str(), false);
-        m_metallic.set_expression(params.get<string>("metallic").c_str(), false);
-        m_specular.set_expression(params.get<string>("specular").c_str(), false);
-        m_specular_tint.set_expression(params.get<string>("specular_tint").c_str(), false);
-        m_anisotropic.set_expression(params.get<string>("anisotropic").c_str(), false);
-        m_roughness.set_expression(params.get<string>("roughness").c_str(), false);
-        m_sheen.set_expression(params.get<string>("sheen").c_str(), false);
-        m_sheen_tint.set_expression(params.get<string>("sheen_tint").c_str(), false);
-        m_clearcoat.set_expression(params.get<string>("clearcoat").c_str(), false);
-        m_clearcoat_gloss.set_expression(params.get<string>("clearcoat_gloss").c_str(), false);
     }
 
-    string      m_name;
-    size_t      m_layer_number;
-    Expression  m_mask;
-    Expression  m_base_color;
-    Expression  m_subsurface;
-    Expression  m_metallic;
-    Expression  m_specular;
-    Expression  m_specular_tint;
-    Expression  m_anisotropic;
-    Expression  m_roughness;
-    Expression  m_sheen;
-    Expression  m_sheen_tint;
-    Expression  m_clearcoat;
-    Expression  m_clearcoat_gloss;
+    const string        m_name;
+    const size_t        m_layer_number;
+    DisneyLayerParam    m_mask;
+    DisneyLayerParam    m_base_color;
+    DisneyLayerParam    m_subsurface;
+    DisneyLayerParam    m_metallic;
+    DisneyLayerParam    m_specular;
+    DisneyLayerParam    m_specular_tint;
+    DisneyLayerParam    m_anisotropic;
+    DisneyLayerParam    m_roughness;
+    DisneyLayerParam    m_sheen;
+    DisneyLayerParam    m_sheen_tint;
+    DisneyLayerParam    m_clearcoat;
+    DisneyLayerParam    m_clearcoat_gloss;
 };
 
 DisneyMaterialLayer::DisneyMaterialLayer(
@@ -124,22 +238,6 @@ void DisneyMaterialLayer::swap(DisneyMaterialLayer& other)
 bool DisneyMaterialLayer::operator<(const DisneyMaterialLayer& other) const
 {
     return impl->m_layer_number < other.impl->m_layer_number;
-}
-
-bool DisneyMaterialLayer::check_expressions_syntax() const
-{
-    return  impl->m_mask.syntax_ok() &&
-            impl->m_base_color.syntax_ok() &&
-            impl->m_subsurface.syntax_ok() &&
-            impl->m_metallic.syntax_ok() &&
-            impl->m_specular.syntax_ok() &&
-            impl->m_specular_tint.syntax_ok() &&
-            impl->m_anisotropic.syntax_ok() &&
-            impl->m_roughness.syntax_ok() &&
-            impl->m_sheen.syntax_ok() &&
-            impl->m_sheen_tint.syntax_ok() &&
-            impl->m_clearcoat.syntax_ok() &&
-            impl->m_clearcoat_gloss.syntax_ok();
 }
 
 bool DisneyMaterialLayer::prepare_expressions() const
@@ -204,7 +302,7 @@ void DisneyMaterialLayer::evaluate_expressions(
         values.m_sheen, 
         impl->m_sheen.evaluate(shading_point)[0],
         mask);
-    
+
     values.m_sheen_tint = mix(
         values.m_sheen_tint, 
         clamp(impl->m_sheen_tint.evaluate(shading_point)[0], 0.0, 1.0),
@@ -341,9 +439,6 @@ bool DisneyMaterial::on_frame_begin(
 
     for (const_each<vector<DisneyMaterialLayer> > it = impl->m_layers; it ; ++it)
     {
-        if (!it->check_expressions_syntax())
-            return false;
-        
         if (!it->prepare_expressions())
             return false;
     }
@@ -355,7 +450,18 @@ void DisneyMaterial::on_frame_end(
     const Project&  project,
     const Assembly& assembly) OVERRIDE
 {
-    impl->m_layers.clear();    
+    impl->m_layers.clear();
+
+    /*
+    if (!g_all_expr_maps.empty())
+    {
+        for( each i(g_all_expr_maps); i; ++i)
+            (*i)->clear();
+    
+        g_all_expr_maps.clear();
+    }
+    */
+
     Material::on_frame_end(project, assembly);
 }
 
