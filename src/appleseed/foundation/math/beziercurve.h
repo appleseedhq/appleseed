@@ -551,16 +551,27 @@ class BezierCurveIntersector
         const ValueType         vn,
         ValueType&              t)
     {
-        const ValueType curve_width = curve.get_max_width() * ValueType(0.5);
-
         const AABBType& bbox = curve.get_bbox();
+        const ValueType half_width = curve.get_max_width() * ValueType(0.5);
 
-        if (bbox.min.z >= t           || bbox.max.z <= ValueType(1.0e-6) ||
-            bbox.min.x >= curve_width || bbox.max.x <= -curve_width      ||
-            bbox.min.y >= curve_width || bbox.max.y <= -curve_width)
+        if (bbox.min.z >= t          || bbox.max.z <= ValueType(1.0e-6) ||
+            bbox.min.x >= half_width || bbox.max.x <= -half_width       ||
+            bbox.min.y >= half_width || bbox.max.y <= -half_width)
             return false;
 
-        if (depth == 0)
+        if (depth > 0)
+        {
+            // Split the curve.
+            BezierCurveType c1, c2;
+            curve.split(c1, c2);
+
+            // Recurse on the two child curves.
+            const ValueType vm = (v0 + vn) * ValueType(0.5);
+            return
+                converge(depth - 1, original_curve, c1, xfm, v0, vm, t) ||
+                converge(depth - 1, original_curve, c2, xfm, vm, vn, t);
+        }
+        else
         {
             // Compute the intersection.
 
@@ -613,28 +624,6 @@ class BezierCurveIntersector
             // Found an intersection.
             t = p.z;
             return true;
-        }
-        else
-        {
-            // Split the curve and recurse on the two new curves.
-
-            BezierCurveType c1, c2;
-            curve.split(c1, c2);
-
-            const ValueType vm = (v0 + vn) * ValueType(0.5);
-
-            ValueType t_left = t;
-            ValueType t_right = t;
-            const bool hit_left = converge(depth - 1, original_curve, c1, xfm, v0, vm, t_left);
-            const bool hit_right = converge(depth - 1, original_curve, c2, xfm, vm, vn, t_right);
-
-            if (hit_left || hit_right)
-            {
-                t = std::min(t_left, t_right);
-                return true;
-            }
-
-            return false;
         }
     }
 };
