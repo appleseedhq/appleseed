@@ -602,11 +602,10 @@ class BezierCurveIntersector
                 return false;
 
             // Compute w on the line segment.
-            ValueType w = dotxy(dir, dir);
-            if (w < ValueType(1.0e-6))
+            const ValueType den = dotxy(dir, dir);
+            if (den < ValueType(1.0e-6))
                 return false;
-            w = -dotxy(cp0, dir) / w;
-            w = saturate(w);
+            const ValueType w = saturate(-dotxy(cp0, dir) / den);
 
             // Compute v on the line segment.
             const ValueType v = lerp(v0, vn, w);
