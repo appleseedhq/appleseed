@@ -102,7 +102,7 @@ TEST_SUITE(Foundation_Math_BezierCurve)
 
                     // Draw the curve.
                     MatrixType curve_transform;
-                    BezierCurveIntersectorType::make_facing_curve_transform(curve_transform, ray);
+                    BezierCurveIntersectorType::make_projection_transform(curve_transform, ray);
                     ValueType t = numeric_limits<ValueType>::max();
                     if (BezierCurveIntersectorType::intersect(curve, ray, curve_transform, t))
                     {
@@ -367,7 +367,7 @@ TEST_SUITE(Foundation_Math_BezierCurve)
         const Ray3f ray(Vector3f(-3.0f, 0.0f, 0.0f), Vector3f(1.0f, 0.0f, 0.0f));
 
         Matrix4f xfm_matrix;
-        BezierCurveIntersector<BezierCurve1f>::make_facing_curve_transform(xfm_matrix, ray);
+        BezierCurveIntersector<BezierCurve1f>::make_projection_transform(xfm_matrix, ray);
 
         float t = numeric_limits<float>::max();
         BezierCurveIntersector<BezierCurve1f>::intersect(Curves[0], ray, xfm_matrix, t);
@@ -385,7 +385,7 @@ TEST_SUITE(Foundation_Math_BezierCurve)
         const Ray3f ray(Vector3f(0.0f, 3.0f, 0.0f), Vector3f(0.0f, -1.0f, 0.0f));
 
         Matrix4f xfm_matrix;
-        BezierCurveIntersector<BezierCurve1f>::make_facing_curve_transform(xfm_matrix, ray);
+        BezierCurveIntersector<BezierCurve1f>::make_projection_transform(xfm_matrix, ray);
 
         float t = numeric_limits<float>::max();
         BezierCurveIntersector<BezierCurve1f>::intersect(Curves[0], ray, xfm_matrix, t);
@@ -403,7 +403,7 @@ TEST_SUITE(Foundation_Math_BezierCurve)
         const Ray3f ray(Vector3f(0.0f, 0.0f, -3.0f), Vector3f(0.0f, 0.0f, 1.0f));
 
         Matrix4f xfm_matrix;
-        BezierCurveIntersector<BezierCurve1f>::make_facing_curve_transform(xfm_matrix, ray);
+        BezierCurveIntersector<BezierCurve1f>::make_projection_transform(xfm_matrix, ray);
 
         float t = numeric_limits<float>::max();
         BezierCurveIntersector<BezierCurve1f>::intersect(Curves[0], ray, xfm_matrix, t);

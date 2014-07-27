@@ -504,7 +504,7 @@ class BezierCurveIntersector
     }
 
     // Compute the transformation matrix required for ray-curve intersection.
-    static void make_facing_curve_transform(MatrixType& matrix, const RayType& ray)
+    static void make_projection_transform(MatrixType& matrix, const RayType& ray)
     {
         // Build the rotation matrix.
         const VectorType rdir = normalize(ray.m_dir);
