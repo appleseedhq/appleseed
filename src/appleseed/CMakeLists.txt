@@ -1387,7 +1387,6 @@ set (renderer_modeling_input_sources
     renderer/modeling/input/texturesource.h
     renderer/modeling/input/uniforminputevaluator.h
 )
-endif ()
 list (APPEND appleseed_sources
     ${renderer_modeling_input_sources}
 )
