@@ -59,7 +59,7 @@ using namespace std;
 namespace renderer
 {
 
-class SeExpr : public SeExpression
+class SeAppleseedExpr : public SeExpression
 {
   public:
     struct Var : public SeExprScalarVarRef
@@ -79,11 +79,11 @@ class SeExpr : public SeExpression
         double m_val;            
     };
     
-    SeExpr() : SeExpression()
+    SeAppleseedExpr() : SeExpression()
     {
     }
 
-    SeExpr(const std::string& expr) : SeExpression(expr)
+    SeAppleseedExpr(const std::string& expr) : SeExpression(expr)
     {
         m_vars["u"] = Var(0.0);
         m_vars["v"] = Var(0.0);
@@ -120,7 +120,7 @@ struct DisneyParamExpression::Impl : NonCopyable
     {
     }
     
-    SeExpr m_expr;
+    SeAppleseedExpr m_expr;
 };
 
 DisneyParamExpression::DisneyParamExpression(const char* expr)
@@ -192,8 +192,8 @@ class DisneyLayerParam
     {
         m_expression.setWantVec(m_is_vector);
         m_expression.setExpr(m_expr);
-        m_expression.m_vars["u"] = SeExpr::Var(0.0);
-        m_expression.m_vars["v"] = SeExpr::Var(0.0);
+        m_expression.m_vars["u"] = SeAppleseedExpr::Var(0.0);
+        m_expression.m_vars["v"] = SeAppleseedExpr::Var(0.0);
         
         if (!m_expression.isValid())
         {
@@ -221,21 +221,21 @@ class DisneyLayerParam
 
         lock_guard<mutex> lock(m_mutex);
 
-        m_expression.m_vars["u"] = SeExpr::Var(shading_point.get_uv(0)[0]);
-        m_expression.m_vars["v"] = SeExpr::Var(shading_point.get_uv(0)[1]);
+        m_expression.m_vars["u"] = SeAppleseedExpr::Var(shading_point.get_uv(0)[0]);
+        m_expression.m_vars["v"] = SeAppleseedExpr::Var(shading_point.get_uv(0)[1]);
         SeVec3d result = m_expression.evaluate();
         return Color3d(result[0], result[1], result[2]);       
     }
 
   private:
-    const char*     m_param_name;
-    string          m_expr;
-    bool            m_is_vector;
+    const char*             m_param_name;
+    string                  m_expr;
+    bool                    m_is_vector;
 
-    bool            m_is_constant;
-    Color3d         m_constant_value;
+    bool                    m_is_constant;
+    Color3d                 m_constant_value;
     
-    mutable SeExpr  m_expression;
+    mutable SeAppleseedExpr m_expression;
     // TODO: this is horrible. Remove it ASAP.
     mutable mutex   m_mutex;
 };
