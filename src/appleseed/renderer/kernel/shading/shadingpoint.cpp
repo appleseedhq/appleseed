@@ -52,20 +52,6 @@ namespace renderer
 
 void ShadingPoint::fetch_source_geometry() const
 {
-    if (m_primitive_type == PrimitiveTriangle)
-    {
-        // Retrieve triangles.
-        fetch_triangle_source_geometry();
-    }
-    else if (m_primitive_type == PrimitiveCurve)
-    {
-        // Retrieve curves.
-        fetch_curve_source_geometry();
-    }
-}
-
-void ShadingPoint::fetch_triangle_source_geometry() const
-{
     assert(hit());
     assert(!(m_members & HasSourceGeometry));
 
@@ -79,6 +65,19 @@ void ShadingPoint::fetch_triangle_source_geometry() const
     // Retrieve the object.
     m_object = &m_object_instance->get_object();
 
+    if (m_primitive_type == PrimitiveTriangle)
+    {
+        fetch_triangle_source_geometry();
+    }
+    else
+    {
+        assert(m_primitive_type == PrimitiveCurve);
+        fetch_curve_source_geometry();
+    }
+}
+
+void ShadingPoint::fetch_triangle_source_geometry() const
+{
     // Retrieve the region kit of the object.
     assert(m_region_kit_cache);
     const RegionKit& region_kit =
@@ -170,21 +169,8 @@ void ShadingPoint::fetch_triangle_source_geometry() const
 
 void ShadingPoint::fetch_curve_source_geometry() const
 {
-    assert(hit());
-    assert(!(m_members & HasSourceGeometry));
-
-    // Retrieve the assembly.
-    m_assembly = &m_assembly_instance->get_assembly();
-
-    // Retrieve the object instance.
-    m_object_instance = m_assembly->object_instances().get_by_index(m_object_instance_index);
-    assert(m_object_instance);
-
-    // Retrieve the object.
-    m_object = &m_object_instance->get_object();
-
     // Set primitive attribute to default value of 0.
-    // We have set the curve key's pa value also to be 0.
+    // todo: fix.
     m_primitive_pa = 0;
 }
 
@@ -231,11 +217,15 @@ void ShadingPoint::refine_and_offset() const
             m_back_point);
 #endif
     }
-    else if (m_primitive_type == PrimitiveCurve)
+    else
     {
-        m_asm_geo_normal = -local_ray.m_dir;
-        m_front_point = local_ray.m_org + 1.0e-6 * m_asm_geo_normal;
-        m_back_point = local_ray.m_org + 1.0e-6 * m_asm_geo_normal;
+        assert(m_primitive_type == PrimitiveCurve);
+
+        m_asm_geo_normal = normalize(-local_ray.m_dir);
+
+        const double Eps = 1.0e-6;
+        m_front_point = local_ray.m_org + Eps * m_asm_geo_normal;
+        m_back_point = local_ray.m_org - Eps * m_asm_geo_normal;
     }
 
     // The refined intersection points are now available.

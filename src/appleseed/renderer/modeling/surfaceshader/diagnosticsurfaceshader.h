@@ -84,7 +84,7 @@ class DLLSYMBOL DiagnosticSurfaceShader
         AssemblyInstances,          // assign a unique color to each assembly instance
         ObjectInstances,            // assign a unique color to each object instance
         Regions,                    // assign a unique color to each region
-        Triangles,                  // assign a unique color to each triangle
+        Primitives,                 // assign a unique color to each primitive
         Materials,                  // assign a unique color to each material
         ShadingModeCount            // number of shading modes -- keep last
     };

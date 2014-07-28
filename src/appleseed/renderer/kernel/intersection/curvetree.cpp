@@ -29,14 +29,25 @@
 // Interface header.
 #include "curvetree.h"
 
+// appleseed.renderer headers.
+#include "renderer/modeling/object/curveobject.h"
+#include "renderer/modeling/object/object.h"
+#include "renderer/modeling/scene/assembly.h"
+#include "renderer/modeling/scene/containers.h"
+#include "renderer/modeling/scene/objectinstance.h"
+#include "renderer/utility/messagecontext.h"
+#include "renderer/utility/paramarray.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exceptionnotimplemented.h"
+#include "foundation/math/transform.h"
 #include "foundation/platform/defaulttimers.h"
 #include "foundation/platform/system.h"
 #include "foundation/utility/makevector.h"
 #include "foundation/utility/stopwatch.h"
 
 // Standard headers.
+#include <cassert>
 #include <cstring>
 #include <string>
 
@@ -49,49 +60,6 @@ namespace renderer
 //
 // CurveTree class implementation.
 //
-
-namespace
-{
-    void collect_curves(
-        const CurveTree::Arguments& arguments,
-        vector<BezierCurve3d>*      curves,
-        vector<CurveKey>*           curve_keys)
-    {
-        for (size_t i = 0; i < arguments.m_assembly.object_instances().size(); ++i)
-        {
-            // Retrieve the object instance.
-            const ObjectInstance* object_instance = arguments.m_assembly.object_instances().get_by_index(i);
-            assert(object_instance);
-
-            // Retrieve the object.
-            const Object& object = object_instance->get_object();
-
-            // Process only curve objects.
-            if (strcmp(object.get_model(), CurveObjectFactory::get_model()))
-                continue;
-
-            // Retrieve the object instance transform.
-            const Transformd::MatrixType& transform =
-                object_instance->get_transform().get_local_to_parent();
-
-            // Store the curves and the curve keys.
-            const CurveObject& curve_object = static_cast<const CurveObject&>(object);
-            const size_t curve_count = curve_object.get_curve_count();
-            for (size_t j = 0; j < curve_count; ++j)
-            {
-                curves->push_back(
-                    BezierCurve3d(
-                        curve_object.get_curve(j),
-                        transform));
-                curve_keys->push_back(
-                    CurveKey(
-                        i,          // object instance index
-                        j,          // curve index
-                        0));        // for now we assume all the curves have the same material
-            }
-        }
-    }
-};
 
 CurveTree::Arguments::Arguments(
     const Scene&            scene,
@@ -145,23 +113,18 @@ void CurveTree::build_bvh(
         "collecting geometry for curve tree #" FMT_UNIQUE_ID " from assembly \"%s\"...",
         m_arguments.m_curve_tree_uid,
         m_arguments.m_assembly.get_name());
-    collect_curves(m_arguments, &m_curves3, &m_curve_keys);
-
-    // Retrieve the bounding box of the individual curves.
-    const size_t curve_count = m_curves3.size();
-    vector<GAABB3> curve_bboxes(curve_count);
-    for (size_t i = 0; i < curve_count; ++i)
-        curve_bboxes[i] = m_curves3[i].get_bbox();
+    vector<AABB3d> curve_bboxes;
+    collect_curves(curve_bboxes);
 
     // Print statistics about the input geometry.
     RENDERER_LOG_INFO(
         "building curve tree #" FMT_UNIQUE_ID " (bvh, %s %s)...",
         m_arguments.m_curve_tree_uid,
-        pretty_uint(curve_count).c_str(),
-        plural(curve_count, "curve").c_str());
+        pretty_uint(m_curve_keys.size()).c_str(),
+        plural(m_curve_keys.size(), "curve").c_str());
 
     // Create the partitioner.
-    typedef bvh::SAHPartitioner<vector<GAABB3> > Partitioner;
+    typedef bvh::SAHPartitioner<vector<AABB3d> > Partitioner;
     Partitioner partitioner(
         curve_bboxes,
         CurveTreeDefaultMaxLeafSize,
@@ -179,9 +142,6 @@ void CurveTree::build_bvh(
     statistics.merge(
         bvh::TreeStatistics<CurveTree>(*this, AABB3d(m_arguments.m_bbox)));
 
-    // Bounding boxes are no longer needed.
-    clear_release_memory(curve_bboxes);
-
     // Reorder the curves based on the nodes ordering.
     if (!m_curves3.empty())
     {
@@ -192,6 +152,45 @@ void CurveTree::build_bvh(
 
         vector<CurveKey> temp_keys(m_curve_keys.size());
         small_item_reorder(&m_curve_keys[0], &temp_keys[0], &order[0], order.size());
+    }
+}
+
+void CurveTree::collect_curves(vector<AABB3d>& curve_bboxes)
+{
+    const ObjectInstanceContainer& object_instances = m_arguments.m_assembly.object_instances();
+
+    for (size_t i = 0; i < object_instances.size(); ++i)
+    {
+        // Retrieve the object instance.
+        const ObjectInstance* object_instance = object_instances.get_by_index(i);
+        assert(object_instance);
+
+        // Retrieve the object.
+        const Object& object = object_instance->get_object();
+
+        // Process only curve objects.
+        if (strcmp(object.get_model(), CurveObjectFactory::get_model()))
+            continue;
+
+        // Retrieve the object instance transform.
+        const Transformd::MatrixType& transform =
+            object_instance->get_transform().get_local_to_parent();
+
+        // Store the curves, curve keys and curve bounding boxes.
+        const CurveObject& curve_object = static_cast<const CurveObject&>(object);
+        const size_t curve_count = curve_object.get_curve_count();
+        for (size_t j = 0; j < curve_count; ++j)
+        {
+            const BezierCurve3d curve(curve_object.get_curve(j), transform);
+            const CurveKey curve_key(i, j, 0);  // for now we assume all the curves have the same material
+
+            AABB3d curve_bbox = curve.get_bbox();
+            curve_bbox.grow(Vector3d(0.5 * curve.get_max_width()));
+
+            m_curves3.push_back(curve);
+            m_curve_keys.push_back(curve_key);
+            curve_bboxes.push_back(curve_bbox);
+        }
     }
 }
 

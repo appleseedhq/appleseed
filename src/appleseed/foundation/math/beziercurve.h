@@ -204,9 +204,6 @@ class BezierCurveBase
 
         for (size_t i = 0; i < N + 1; ++i)
             m_bbox.insert(m_ctrl_pts[i]);
-
-        m_bbox.grow(VectorType(m_max_width * ValueType(0.5)));
-        m_bbox.robust_grow(ValueType(1.0e-4));
     }
 };
 

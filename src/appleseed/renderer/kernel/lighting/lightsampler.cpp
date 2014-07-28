@@ -81,8 +81,8 @@ void LightSample::make_shading_point(
 
     intersector.manufacture_hit(
         shading_point,
-        ShadingPoint::PrimitiveTriangle,                                          // NOTE: we assume shading points are on triangles and not curves.
         ShadingRay(m_point, direction, 0.0, 0.0, 0.0, ShadingRay::CameraRay),
+        ShadingPoint::PrimitiveTriangle,    // note: we assume light samples are always on triangles (and not on curves)
         m_triangle->m_assembly_instance,
         m_triangle->m_assembly_instance->transform_sequence().get_earliest_transform(),
         m_triangle->m_object_instance_index,
@@ -486,6 +486,7 @@ void LightSampler::sample(
 double LightSampler::evaluate_pdf(const ShadingPoint& shading_point) const
 {
     assert(shading_point.get_primitive_type() == ShadingPoint::PrimitiveTriangle);
+
     const EmittingTriangleKey triangle_key(
         shading_point.get_assembly_instance().get_uid(),
         shading_point.get_object_instance_index(),

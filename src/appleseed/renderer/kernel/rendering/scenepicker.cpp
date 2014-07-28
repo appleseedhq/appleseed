@@ -34,7 +34,6 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/intersection/tracecontext.h"
-#include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/kernel/texturing/texturestore.h"
@@ -103,8 +102,8 @@ ScenePicker::PickingResult ScenePicker::pick(const Vector2d& ndc) const
     const bool hit = shading_point.hit();
 
     PickingResult result;
+    result.m_primitive_type = shading_point.get_primitive_type();
     result.m_camera = camera;
-    result.m_hit = hit;
     result.m_assembly_instance = hit ? &shading_point.get_assembly_instance() : 0;
     result.m_assembly = hit ? &shading_point.get_assembly() : 0;
     result.m_object_instance = hit ? &shading_point.get_object_instance() : 0;
