@@ -412,4 +412,20 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
 
         render_curves_to_image(Curves, countof(Curves), "unit tests/outputs/test_beziercurveintersector_bezier1curve_rayalongz.png");
     }
+
+    TEST_CASE(Intersect_GivenBezier1CurveAndNonUnitRayDirection_ReturnsCorrectHitDistance)
+    {
+        const Vector3f ControlPoints[] = { Vector3f(-0.5f, -0.5f, -0.5f), Vector3f(0.5f, 0.5f, 0.5f) };
+        const BezierCurve1f Curve(ControlPoints, 0.06f);
+
+        const Ray3f ray(Vector3f(0.0f, 0.0f, -6.0f), Vector3f(0.0f, 0.0f, 3.0f));
+
+        Matrix4f xfm_matrix;
+        BezierCurveIntersector<BezierCurve1f>::make_projection_transform(xfm_matrix, ray);
+
+        float t = numeric_limits<float>::max();
+        BezierCurveIntersector<BezierCurve1f>::intersect(Curve, ray, xfm_matrix, t);
+
+        EXPECT_FEQ(2.0f, t);
+    }
 }
