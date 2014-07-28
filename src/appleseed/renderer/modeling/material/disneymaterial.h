@@ -60,6 +60,8 @@ class DLLSYMBOL DisneyParamExpression : foundation::NonCopyable
 
     const char* parse_error() const;
 
+    void report_error(const char* message) const;
+
     bool is_constant() const;
     
   private:

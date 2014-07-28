@@ -43,6 +43,8 @@
 #include "SeExpression.h"
 
 // Boost headers.
+#include "boost/algorithm/string.hpp"
+#include "boost/algorithm/string/split.hpp"
 #include "boost/thread/locks.hpp"
 #include "boost/thread/mutex.hpp"
 
@@ -109,6 +111,27 @@ class SeAppleseedExpr : public SeExpression
     mutable std::map<std::string,Var> m_vars;
 };
 
+void report_expression_error(
+    const char* message1,
+    const char* message2,
+    const SeAppleseedExpr& expr)
+{
+    string error = expr.parseError();
+    vector<string> errors;
+    split(errors, error, is_any_of("\n"));
+
+    if (message2)
+        RENDERER_LOG_ERROR("%s%s", message1, message2);
+    else
+        RENDERER_LOG_ERROR("%s:", message1);
+    
+    for (const_each<vector<string> > e = errors; e; ++e)
+    {
+        if (!e->empty())
+            RENDERER_LOG_ERROR("%s", e->c_str());
+    }
+}
+
 //
 // DisneyParamExpression class implementation.
 //
@@ -141,6 +164,11 @@ bool DisneyParamExpression::is_valid() const
 const char* DisneyParamExpression::parse_error() const
 {
     return impl->m_expr.parseError().c_str();
+}
+
+void DisneyParamExpression::report_error(const char* message) const
+{
+    report_expression_error(message, 0, impl->m_expr);
 }
 
 bool DisneyParamExpression::is_constant() const
@@ -197,7 +225,7 @@ class DisneyLayerParam
         
         if (!m_expression.isValid())
         {
-            std::cout << "SeExpr Error: " << m_expression.parseError() << std::endl;
+            report_expression_error("Expression error: ", m_param_name, m_expression);
             return false;
         }
 
@@ -209,7 +237,7 @@ class DisneyLayerParam
             m_constant_value = Color3d(result[0], result[1], result[2]);
         }
 
-        // Check for texture lookup here...
+        // Check for texture lookups here...
 
         return true;
     }
@@ -236,6 +264,7 @@ class DisneyLayerParam
     Color3d                 m_constant_value;
     
     mutable SeAppleseedExpr m_expression;
+
     // TODO: this is horrible. Remove it ASAP.
     mutable mutex   m_mutex;
 };
