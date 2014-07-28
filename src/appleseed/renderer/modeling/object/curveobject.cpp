@@ -234,8 +234,8 @@ CurveObject::CurveObject(
         impl->create_furry_ball(params);
     else
     {
-        const string filepath = search_paths.qualify(filepath);
-        impl->load_curve_file(filepath.c_str());
+        impl->load_curve_file(
+            search_paths.qualify(filepath).c_str());
     }
 }
 
