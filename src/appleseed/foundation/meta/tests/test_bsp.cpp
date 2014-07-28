@@ -294,7 +294,7 @@ TEST_SUITE(Foundation_Math_BSP_Intersector)
 #endif
 
 #pragma warning (push)
-#pragma warning (disable : 4723)    // potential divide by 0
+#pragma warning (disable : 4723)    // potential division by 0
 
     TEST_CASE_F(Intersect_GivenRayEmbeddedInSplitPlane_VisitsBothLeaves, Fixture)
     {

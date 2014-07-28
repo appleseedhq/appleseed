@@ -43,7 +43,7 @@ using namespace std;
 TEST_SUITE(Foundation_Math_Intersection_RayAABB)
 {
 #pragma warning (push)
-#pragma warning (disable : 4723)    // potential divide by 0
+#pragma warning (disable : 4723)    // potential division by 0
 
     TEST_CASE(Intersect_GivenRayNotPiercingTheAABB_ReturnsFalse)
     {

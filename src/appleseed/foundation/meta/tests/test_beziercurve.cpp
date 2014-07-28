@@ -50,7 +50,7 @@ using namespace std;
 TEST_SUITE(Foundation_Math_BezierCurve)
 {
 #pragma warning (push)
-#pragma warning (disable : 4723)    // potential divide by 0
+#pragma warning (disable : 4723)    // potential division by 0
 
     // Render a bunch of Bezier curves to an image on disk.
     // The control points of the curves are expressed in [-1,1]^2
