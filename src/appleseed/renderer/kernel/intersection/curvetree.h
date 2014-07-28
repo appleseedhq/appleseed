@@ -50,7 +50,6 @@
 
 // Standard headers.
 #include <cstddef>
-#include <limits>
 #include <map>
 #include <memory>
 #include <vector>
@@ -327,7 +326,7 @@ inline bool CurveLeafProbeVisitor::visit(
 
         // Intersect the curve.
         // todo: we need a variante of CurveIntersector::intersect() that does not compute or return t.
-        double t = std::numeric_limits<double>::max();
+        double t = ray.m_tmax;
         if (CurveIntersector::intersect(curve, ray, m_xfm_matrix, t))
         {
             FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(i + 1));
