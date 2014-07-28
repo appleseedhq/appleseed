@@ -370,8 +370,9 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
         BezierCurveIntersector<BezierCurve1f>::make_projection_transform(xfm_matrix, ray);
 
         float t = numeric_limits<float>::max();
-        BezierCurveIntersector<BezierCurve1f>::intersect(Curves[0], ray, xfm_matrix, t);
+        const bool hit = BezierCurveIntersector<BezierCurve1f>::intersect(Curves[0], ray, xfm_matrix, t);
 
+        ASSERT_TRUE(hit);
         EXPECT_FEQ(3.0f, t);
 
         render_curves_to_image(Curves, countof(Curves), "unit tests/outputs/test_beziercurveintersector_bezier1curve_rayalongx.png");
@@ -388,8 +389,9 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
         BezierCurveIntersector<BezierCurve1f>::make_projection_transform(xfm_matrix, ray);
 
         float t = numeric_limits<float>::max();
-        BezierCurveIntersector<BezierCurve1f>::intersect(Curves[0], ray, xfm_matrix, t);
+        const bool hit = BezierCurveIntersector<BezierCurve1f>::intersect(Curves[0], ray, xfm_matrix, t);
 
+        ASSERT_TRUE(hit);
         EXPECT_FEQ(3.0f, t);
 
         render_curves_to_image(Curves, countof(Curves), "unit tests/outputs/test_beziercurveintersector_bezier1curve_rayalongy.png");
@@ -406,8 +408,9 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
         BezierCurveIntersector<BezierCurve1f>::make_projection_transform(xfm_matrix, ray);
 
         float t = numeric_limits<float>::max();
-        BezierCurveIntersector<BezierCurve1f>::intersect(Curves[0], ray, xfm_matrix, t);
+        const bool hit = BezierCurveIntersector<BezierCurve1f>::intersect(Curves[0], ray, xfm_matrix, t);
 
+        ASSERT_TRUE(hit);
         EXPECT_FEQ(3.0f, t);
 
         render_curves_to_image(Curves, countof(Curves), "unit tests/outputs/test_beziercurveintersector_bezier1curve_rayalongz.png");
@@ -424,8 +427,9 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
         BezierCurveIntersector<BezierCurve1f>::make_projection_transform(xfm_matrix, ray);
 
         float t = numeric_limits<float>::max();
-        BezierCurveIntersector<BezierCurve1f>::intersect(Curve, ray, xfm_matrix, t);
+        const bool hit = BezierCurveIntersector<BezierCurve1f>::intersect(Curve, ray, xfm_matrix, t);
 
+        ASSERT_TRUE(hit);
         EXPECT_FEQ(2.0f, t);
     }
 }
