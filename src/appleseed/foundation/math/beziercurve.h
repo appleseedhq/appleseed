@@ -56,6 +56,7 @@ namespace foundation
 //   http://wscg.zcu.cz/wscg2002/Papers_2002/A83.pdf
 //
 
+
 //
 // Base class for Bezier curves.
 // N is the degree of the curve.
@@ -420,7 +421,7 @@ inline typename BezierCurve1<T>::VectorType BezierCurve1<T>::evaluate_point(cons
 }
 
 template <typename T>
-inline T BezierCurve1<T>::evaluate_width(const ValueType t) const
+inline typename BezierCurve1<T>::ValueType BezierCurve1<T>::evaluate_width(const ValueType t) const
 {
     return interpolate_bezier1(Base::m_width[0], Base::m_width[1], t);
 }
@@ -490,7 +491,7 @@ inline typename BezierCurve2<T>::VectorType BezierCurve2<T>::evaluate_point(cons
 }
 
 template <typename T>
-inline T BezierCurve2<T>::evaluate_width(const ValueType t) const
+inline typename BezierCurve2<T>::ValueType BezierCurve2<T>::evaluate_width(const ValueType t) const
 {
     return
         interpolate_bezier2(
@@ -570,7 +571,7 @@ inline typename BezierCurve3<T>::VectorType BezierCurve3<T>::evaluate_point(cons
 }
 
 template <typename T>
-inline T BezierCurve3<T>::evaluate_width(const ValueType t) const
+inline typename BezierCurve3<T>::ValueType BezierCurve3<T>::evaluate_width(const ValueType t) const
 {
     return
         interpolate_bezier3(
