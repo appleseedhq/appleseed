@@ -535,9 +535,12 @@ class BezierCurveIntersector
         const BezierCurveType xfm_curve(curve, xfm);
         const size_t depth = xfm_curve.compute_max_recursion_depth();
 
-        if (converge(depth, curve, xfm_curve, xfm, ValueType(0.0), ValueType(1.0), t))
+        const ValueType norm_dir = norm(ray.m_dir);
+        ValueType scaled_t = t * norm_dir;
+
+        if (converge(depth, curve, xfm_curve, xfm, ValueType(0.0), ValueType(1.0), scaled_t))
         {
-            t /= norm(ray.m_dir);
+            t = scaled_t / norm_dir;
             return true;
         }
 
@@ -609,7 +612,7 @@ class BezierCurveIntersector
             // Compute point on original unsplit curve.
             const VectorType orig_p = original_curve.evaluate_point(v);
 
-            // Transform point back to original frame.
+            // Transform point to local coordinate system.
             const VectorType p = BezierCurveType::transform_point(xfm, orig_p);
 
             // Compare Z distances.

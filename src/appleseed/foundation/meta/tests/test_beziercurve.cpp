@@ -432,4 +432,21 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
         ASSERT_TRUE(hit);
         EXPECT_FEQ(2.0f, t);
     }
+
+    TEST_CASE(Intersect_GivenBezier1CurveAndNonUnitRayDirectionAndCloserIntersection_ReturnsNoHit)
+    {
+        const Vector3f ControlPoints[] = { Vector3f(-0.5f, -0.5f, -0.5f), Vector3f(0.5f, 0.5f, 0.5f) };
+        const BezierCurve1f Curve(ControlPoints, 0.06f);
+
+        const Ray3f ray(Vector3f(0.0f, 0.0f, -6.0f), Vector3f(0.0f, 0.0f, 0.1f));
+
+        Matrix4f xfm_matrix;
+        BezierCurveIntersector<BezierCurve1f>::make_projection_transform(xfm_matrix, ray);
+
+        float t = 20.0f;
+        const bool hit = BezierCurveIntersector<BezierCurve1f>::intersect(Curve, ray, xfm_matrix, t);
+
+        ASSERT_FALSE(hit);
+        EXPECT_FEQ(20.0f, t);
+    }
 }
