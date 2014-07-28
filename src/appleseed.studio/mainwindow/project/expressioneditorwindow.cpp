@@ -50,14 +50,9 @@
 #include <QScrollArea>
 #include <QVBoxLayout>
 
-// boost headers.
-#include "boost/algorithm/string.hpp"
-#include "boost/algorithm/string/split.hpp"
-
 // Standard headers.
-#include <vector>
+#include <string>
 
-using namespace boost;
 using namespace foundation;
 using namespace renderer;
 using namespace std;
@@ -116,18 +111,7 @@ void ExpressionEditorWindow::apply_expression()
     if (!se_expression.is_valid())
     {
         m_error->show();
-
-        // Do not print empty lines from the error.
-        string error = se_expression.parse_error();
-        vector<string> errors;
-        split(errors, error, is_any_of("\n"));
-
-        RENDERER_LOG_ERROR("SeExpression has errors.");
-        for (const_each<vector<string> > e = errors; e; ++e)
-        {
-            if (!e->empty())
-                RENDERER_LOG_ERROR("%s", e->c_str());
-        }
+        se_expression.report_error("SeExpression has errors");
     }
     else
     {
