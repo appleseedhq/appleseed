@@ -37,7 +37,7 @@ using namespace foundation;
 TEST_SUITE(Foundation_Math_RayInfo)
 {
 #pragma warning (push)
-#pragma warning (disable : 4723)    // potential divide by 0
+#pragma warning (disable : 4723)    // potential division by 0
 
     TEST_CASE(Constructor_ComputesDirectionReciprocal)
     {
