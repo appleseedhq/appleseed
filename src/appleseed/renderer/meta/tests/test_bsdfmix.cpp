@@ -134,6 +134,7 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
 
         ShadingPoint shading_point;
         ShadingPointBuilder builder(shading_point);
+        builder.set_primitive_type(ShadingPoint::PrimitiveTriangle);
         builder.set_uvs(Vector2d(0.0));
 
         BSDF& parent_bsdf = *assembly.bsdfs().get_by_name("parent_bsdf");

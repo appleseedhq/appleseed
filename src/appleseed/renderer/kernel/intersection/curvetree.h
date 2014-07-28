@@ -30,12 +30,12 @@
 #define APPLESEED_RENDERER_KERNEL_INTERSECTION_CURVETREE_H
 
 // appleseed.renderer headers.
+#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/intersection/curvekey.h"
 #include "renderer/kernel/intersection/intersectionsettings.h"
 #include "renderer/kernel/intersection/probevisitorbase.h"
 #include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/modeling/object/curveobject.h"
-#include "renderer/global/globaltypes.h"
+#include "renderer/kernel/shading/shadingray.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -109,8 +109,10 @@ class CurveTree
     std::vector<foundation::BezierCurve1d>      m_curves1;
     std::vector<foundation::BezierCurve2d>      m_curves2;
     std::vector<foundation::BezierCurve3d>      m_curves3;
-
     std::vector<CurveKey>                       m_curve_keys;
+
+    void collect_curves(
+        std::vector<foundation::AABB3d>&        curve_bboxes);
 };
 
 
@@ -275,11 +277,12 @@ inline bool CurveLeafVisitor::visit(
         if (CurveIntersector::intersect(curve, m_shading_point.m_ray, m_xfm_matrix, t))
         {
             const CurveKey& key = m_tree.m_curve_keys[curve_index + i];
-            m_shading_point.m_hit = true;
+            m_shading_point.m_primitive_type = ShadingPoint::PrimitiveCurve;
             m_shading_point.m_ray.m_tmax = t;
+            m_shading_point.m_bary[0] = 0.0;
+            m_shading_point.m_bary[1] = 0.0;
             m_shading_point.m_object_instance_index = key.get_object_instance_index();
             m_shading_point.m_primitive_index = key.get_curve_index();
-            m_shading_point.m_primitive_type = ShadingPoint::PrimitiveCurve;
         }
     }
 

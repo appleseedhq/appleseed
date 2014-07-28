@@ -87,7 +87,7 @@ const KeyValuePair<const char*, DiagnosticSurfaceShader::ShadingMode>
     { "assembly_instances",         AssemblyInstances },
     { "object_instances",           ObjectInstances },
     { "regions",                    Regions },
-    { "triangles",                  Triangles },
+    { "primitives",                 Primitives },
     { "materials",                  Materials }
 };
 
@@ -110,7 +110,7 @@ const KeyValuePair<const char*, const char*> DiagnosticSurfaceShader::ShadingMod
     { "assembly_instances",         "Assembly Instances" },
     { "object_instances",           "Object Instances" },
     { "regions",                    "Regions" },
-    { "triangles",                  "Triangles" },
+    { "primitives",                 "Primitives" },
     { "materials",                  "Materials" }
 };
 
@@ -260,79 +260,97 @@ void DiagnosticSurfaceShader::evaluate(
 
       case ScreenSpaceWireframe:
         {
-            // Film space thickness of the wires.
-            const double SquareWireThickness = square(0.0005);
-
             // Initialize the shading result to the background color.
             shading_result.set_main_to_linear_rgba(Color4f(0.0f, 0.0f, 0.8f, 0.5f));
 
-            // Retrieve the time, the scene and the camera.
-            const double time = shading_point.get_time();
-            const Scene& scene = shading_point.get_scene();
-            const Camera& camera = *scene.get_camera();
-
-            // Compute the film space coordinates of the intersection point.
-            Vector2d point_fs;
-            camera.project_point(time, shading_point.get_point(), point_fs);
-
-            // Loop over the triangle edges.
-            for (size_t i = 0; i < 3; ++i)
+            if (shading_point.get_primitive_type() == ShadingPoint::PrimitiveTriangle)
             {
-                // Retrieve the end points of this edge.
-                const size_t j = (i + 1) % 3;
-                Vector3d vi = shading_point.get_vertex(i);
-                Vector3d vj = shading_point.get_vertex(j);
+                // Film space thickness of the wires.
+                const double SquareWireThickness = square(0.0005);
 
-                // Clip the edge against the view frustum.
-                if (!camera.clip_segment(time, vi, vj))
-                    continue;
+                // Retrieve the time, the scene and the camera.
+                const double time = shading_point.get_time();
+                const Scene& scene = shading_point.get_scene();
+                const Camera& camera = *scene.get_camera();
 
-                // Transform the edge to film space.
-                Vector2d vi_fs, vj_fs;
-                camera.project_point(time, vi, vi_fs);
-                camera.project_point(time, vj, vj_fs);
+                // Compute the film space coordinates of the intersection point.
+                Vector2d point_fs;
+                camera.project_point(time, shading_point.get_point(), point_fs);
 
-                // Compute the film space distance from the intersection point to the edge.
-                const double d = square_distance_point_segment(point_fs, vi_fs, vj_fs);
-
-                // Shade with the wire's color if the hit point is close enough to the edge.
-                if (d < SquareWireThickness)
+                // Loop over the triangle edges.
+                for (size_t i = 0; i < 3; ++i)
                 {
-                    shading_result.set_main_to_linear_rgba(Color4f(1.0f));
-                    break;
+                    // Retrieve the end points of this edge.
+                    const size_t j = (i + 1) % 3;
+                    Vector3d vi = shading_point.get_vertex(i);
+                    Vector3d vj = shading_point.get_vertex(j);
+
+                    // Clip the edge against the view frustum.
+                    if (!camera.clip_segment(time, vi, vj))
+                        continue;
+
+                    // Transform the edge to film space.
+                    Vector2d vi_fs, vj_fs;
+                    camera.project_point(time, vi, vi_fs);
+                    camera.project_point(time, vj, vj_fs);
+
+                    // Compute the film space distance from the intersection point to the edge.
+                    const double d = square_distance_point_segment(point_fs, vi_fs, vj_fs);
+
+                    // Shade with the wire's color if the hit point is close enough to the edge.
+                    if (d < SquareWireThickness)
+                    {
+                        shading_result.set_main_to_linear_rgba(Color4f(1.0f));
+                        break;
+                    }
                 }
+            }
+            else
+            {
+                assert(shading_point.get_primitive_type() == ShadingPoint::PrimitiveCurve);
+
+                // todo: implement.
             }
         }
         break;
 
       case WorldSpaceWireframe:
         {
-            // World space thickness of the wires.
-            const double SquareWireThickness = square(0.0015);
-
             // Initialize the shading result to the background color.
             shading_result.set_main_to_linear_rgba(Color4f(0.0f, 0.0f, 0.8f, 0.5f));
 
-            // Retrieve the world space intersection point.
-            const Vector3d& point = shading_point.get_point();
-
-            // Loop over the triangle edges.
-            for (size_t i = 0; i < 3; ++i)
+            if (shading_point.get_primitive_type() == ShadingPoint::PrimitiveTriangle)
             {
-                // Retrieve the end points of this edge.
-                const size_t j = (i + 1) % 3;
-                const Vector3d& vi = shading_point.get_vertex(i);
-                const Vector3d& vj = shading_point.get_vertex(j);
+                // World space thickness of the wires.
+                const double SquareWireThickness = square(0.0015);
 
-                // Compute the world space distance from the intersection point to the edge.
-                const double d = square_distance_point_segment(point, vi, vj);
+                // Retrieve the world space intersection point.
+                const Vector3d& point = shading_point.get_point();
 
-                // Shade with the wire's color if the hit point is close enough to the edge.
-                if (d < SquareWireThickness)
+                // Loop over the triangle edges.
+                for (size_t i = 0; i < 3; ++i)
                 {
-                    shading_result.set_main_to_linear_rgba(Color4f(1.0f));
-                    break;
+                    // Retrieve the end points of this edge.
+                    const size_t j = (i + 1) % 3;
+                    const Vector3d& vi = shading_point.get_vertex(i);
+                    const Vector3d& vj = shading_point.get_vertex(j);
+
+                    // Compute the world space distance from the intersection point to the edge.
+                    const double d = square_distance_point_segment(point, vi, vj);
+
+                    // Shade with the wire's color if the hit point is close enough to the edge.
+                    if (d < SquareWireThickness)
+                    {
+                        shading_result.set_main_to_linear_rgba(Color4f(1.0f));
+                        break;
+                    }
                 }
+            }
+            else
+            {
+                assert(shading_point.get_primitive_type() == ShadingPoint::PrimitiveCurve);
+
+                // todo: implement.
             }
         }
         break;
@@ -375,7 +393,7 @@ void DiagnosticSurfaceShader::evaluate(
         }
         break;
 
-      case Triangles:
+      case Primitives:
         {
             const uint32 h =
                 mix_uint32(

@@ -643,17 +643,16 @@ bool AssemblyLeafVisitor::visit(
         }
 
         // Keep track of the closest hit.
-        if (local_shading_point.m_hit && local_shading_point.m_ray.m_tmax < m_shading_point.m_ray.m_tmax)
+        if (local_shading_point.hit() && local_shading_point.m_ray.m_tmax < m_shading_point.m_ray.m_tmax)
         {
             m_shading_point.m_ray.m_tmax = local_shading_point.m_ray.m_tmax;
-            m_shading_point.m_hit = true;
+            m_shading_point.m_primitive_type = local_shading_point.m_primitive_type;
             m_shading_point.m_bary = local_shading_point.m_bary;
             m_shading_point.m_assembly_instance = item.m_assembly_instance;
             m_shading_point.m_assembly_instance_transform = assembly_instance_transform;
             m_shading_point.m_object_instance_index = local_shading_point.m_object_instance_index;
             m_shading_point.m_region_index = local_shading_point.m_region_index;
             m_shading_point.m_primitive_index = local_shading_point.m_primitive_index;
-            m_shading_point.m_primitive_type = local_shading_point.m_primitive_type;
             m_shading_point.m_triangle_support_plane = local_shading_point.m_triangle_support_plane;
         }
     }

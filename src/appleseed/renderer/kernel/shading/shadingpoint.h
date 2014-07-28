@@ -78,17 +78,16 @@ namespace renderer
 class ShadingPoint
 {
   public:
-
-    // Add a primitive type to represent triangles as well as curves.
+    // The type of the primitive at the shading point.
     enum PrimitiveType
     {
+        PrimitiveNone,
         PrimitiveTriangle,
-        PrimitiveCurve,
-        PrimitiveUndefined
+        PrimitiveCurve
     };
 
     // Constructor, calls clear().
-    ShadingPoint(const PrimitiveType type = PrimitiveUndefined);
+    ShadingPoint();
 
     // Copy constructor.
     explicit ShadingPoint(const ShadingPoint& rhs);
@@ -110,6 +109,9 @@ class ShadingPoint
 
     // Return true if an intersection was found, false otherwise.
     bool hit() const;
+
+    // Return the type of the hit primitive.
+    PrimitiveType get_primitive_type() const;
 
     // Return the distance from the ray origin to the intersection point.
     double get_distance() const;
@@ -178,14 +180,11 @@ class ShadingPoint
     // Return the index, within the object, of the region containing the hit triangle.
     size_t get_region_index() const;
 
-    // Return the index, within the region, of the hit triangle.
+    // Return the index of the hit primitive.
     size_t get_primitive_index() const;
 
-    // Return the index, within the region, of the primitive attribute of the hit triangle.
+    // Return the index of the primitive attribute.
     size_t get_primitive_attribute_index() const;
-
-    // Return the type of the primitive.
-    PrimitiveType get_primitive_type() const;
 
 #ifdef WITH_OSL
     struct OSLObjectTransformInfo
@@ -208,14 +207,14 @@ class ShadingPoint
   private:
     friend class AssemblyLeafProbeVisitor;
     friend class AssemblyLeafVisitor;
+    friend class CurveLeafVisitor;
     friend class Intersector;
 #ifdef WITH_OSL
     friend class OSLShaderGroupExec;
 #endif
     friend class RegionLeafVisitor;
-    friend class TriangleLeafVisitor;
-    friend class CurveLeafVisitor;
     friend class ShadingPointBuilder;
+    friend class TriangleLeafVisitor;
 
     RegionKitAccessCache*               m_region_kit_cache;
     StaticTriangleTessAccessCache*      m_tess_cache;
@@ -225,14 +224,13 @@ class ShadingPoint
     mutable ShadingRay                  m_ray;                          // world space ray (m_tmax = distance to intersection)
 
     // Intersection results.
-    bool                                m_hit;                          // true if there was a hit, false otherwise
+    PrimitiveType                       m_primitive_type;               // type of the hit primitive
     foundation::Vector2d                m_bary;                         // barycentric coordinates of intersection point
     const AssemblyInstance*             m_assembly_instance;            // hit assembly instance
     foundation::Transformd              m_assembly_instance_transform;  // transform of the hit assembly instance at ray time
     size_t                              m_object_instance_index;        // index of the object instance that was hit
     size_t                              m_region_index;                 // index of the region containing the hit triangle
-    size_t                              m_primitive_index;              // index of the hit triangle
-    mutable PrimitiveType               m_primitive_type;
+    size_t                              m_primitive_index;              // index of the hit primitive
     TriangleSupportPlaneType            m_triangle_support_plane;       // support plane of the hit triangle
 
     // Additional intersection results, computed on demand.
@@ -311,10 +309,9 @@ class ShadingPoint
 // ShadingPoint class implementation.
 //
 
-FORCE_INLINE ShadingPoint::ShadingPoint(const PrimitiveType type)
+FORCE_INLINE ShadingPoint::ShadingPoint()
 {
     clear();
-    m_primitive_type = type;
 }
 
 inline ShadingPoint::ShadingPoint(const ShadingPoint& rhs)
@@ -323,7 +320,7 @@ inline ShadingPoint::ShadingPoint(const ShadingPoint& rhs)
   , m_texture_cache(rhs.m_texture_cache)
   , m_scene(rhs.m_scene)
   , m_ray(rhs.m_ray)
-  , m_hit(rhs.m_hit)
+  , m_primitive_type(rhs.m_primitive_type)
   , m_bary(rhs.m_bary)
   , m_assembly_instance(rhs.m_assembly_instance)
   , m_assembly_instance_transform(rhs.m_assembly_instance_transform)
@@ -332,7 +329,6 @@ inline ShadingPoint::ShadingPoint(const ShadingPoint& rhs)
   , m_primitive_index(rhs.m_primitive_index)
   , m_triangle_support_plane(rhs.m_triangle_support_plane)
   , m_members(0)
-  , m_primitive_type(rhs.m_primitive_type)
 {
 }
 
@@ -342,9 +338,8 @@ FORCE_INLINE void ShadingPoint::clear()
     m_tess_cache = 0;
     m_texture_cache = 0;
     m_scene = 0;
-    m_hit = false;
+    m_primitive_type = PrimitiveNone;
     m_members = 0;
-    m_primitive_type = PrimitiveUndefined;
 }
 
 inline void ShadingPoint::set_ray(const ShadingRay& ray)
@@ -370,7 +365,12 @@ inline double ShadingPoint::get_time() const
 
 inline bool ShadingPoint::hit() const
 {
-    return m_hit;
+    return m_primitive_type != PrimitiveNone;
+}
+
+inline ShadingPoint::PrimitiveType ShadingPoint::get_primitive_type() const
+{
+    return m_primitive_type;
 }
 
 inline double ShadingPoint::get_distance() const
@@ -394,15 +394,23 @@ inline const foundation::Vector2d& ShadingPoint::get_uv(const size_t uvset) cons
     {
         cache_source_geometry();
 
-        // Compute the texture coordinates.
-        const foundation::Vector2d v0_uv(m_v0_uv);
-        const foundation::Vector2d v1_uv(m_v1_uv);
-        const foundation::Vector2d v2_uv(m_v2_uv);
-        const double w = 1.0 - m_bary[0] - m_bary[1];
-        m_uv =
-              v0_uv * w
-            + v1_uv * m_bary[0]
-            + v2_uv * m_bary[1];
+        if (m_primitive_type == PrimitiveTriangle)
+        {
+            // Compute the texture coordinates.
+            const foundation::Vector2d v0_uv(m_v0_uv);
+            const foundation::Vector2d v1_uv(m_v1_uv);
+            const foundation::Vector2d v2_uv(m_v2_uv);
+            const double w = 1.0 - m_bary[0] - m_bary[1];
+            m_uv =
+                  v0_uv * w
+                + v1_uv * m_bary[0]
+                + v2_uv * m_bary[1];
+        }
+        else
+        {
+            assert(m_primitive_type == PrimitiveCurve);
+            m_uv = m_bary;
+        }
 
         // Texture coordinates from UV set #0 are now available.
         m_members |= HasUV0;
@@ -507,8 +515,10 @@ inline const foundation::Vector3d& ShadingPoint::get_geometric_normal() const
             if (m_side == ObjectInstance::BackSide)
                 m_geometric_normal = -m_geometric_normal;
         }
-        else if (m_primitive_type == PrimitiveCurve)
+        else
         {
+            assert(m_primitive_type == PrimitiveCurve);
+
             // We assume flat ribbons facing incoming rays.
             m_geometric_normal = -normalize(m_ray.m_dir);
             m_side = ObjectInstance::FrontSide;
@@ -599,8 +609,10 @@ inline const foundation::Vector3d& ShadingPoint::get_original_shading_normal() c
             // Normalize the shading normal.
             m_original_shading_normal = foundation::normalize(m_original_shading_normal);
         }
-        else if (m_primitive_type == PrimitiveCurve)
+        else
         {
+            assert(m_primitive_type == PrimitiveCurve);
+
             // We assume flat ribbons facing incoming rays.
             m_original_shading_normal = -normalize(m_ray.m_dir);
         }
@@ -773,11 +785,6 @@ inline size_t ShadingPoint::get_primitive_index() const
     return m_primitive_index;
 }
 
-inline ShadingPoint::PrimitiveType ShadingPoint::get_primitive_type() const
-{
-    return m_primitive_type;
-}
-
 inline size_t ShadingPoint::get_primitive_attribute_index() const
 {
     assert(hit());
@@ -798,34 +805,46 @@ inline void ShadingPoint::compute_partial_derivatives() const
 {
     cache_source_geometry();
 
-    const double du0 = static_cast<double>(m_v0_uv[0] - m_v2_uv[0]);
-    const double dv0 = static_cast<double>(m_v0_uv[1] - m_v2_uv[1]);
-    const double du1 = static_cast<double>(m_v1_uv[0] - m_v2_uv[0]);
-    const double dv1 = static_cast<double>(m_v1_uv[1] - m_v2_uv[1]);
-
-    const double det = du0 * dv1 - dv0 * du1;
-
-    if (det == 0.0)
+    if (m_primitive_type == PrimitiveTriangle)
     {
+        const double du0 = static_cast<double>(m_v0_uv[0] - m_v2_uv[0]);
+        const double dv0 = static_cast<double>(m_v0_uv[1] - m_v2_uv[1]);
+        const double du1 = static_cast<double>(m_v1_uv[0] - m_v2_uv[0]);
+        const double dv1 = static_cast<double>(m_v1_uv[1] - m_v2_uv[1]);
+
+        const double det = du0 * dv1 - dv0 * du1;
+
+        if (det == 0.0)
+        {
+            const foundation::Basis3d basis(get_original_shading_normal());
+
+            m_dpdu = basis.get_tangent_u();
+            m_dpdv = basis.get_tangent_v();
+        }
+        else
+        {
+            const double rcp_det = 1.0 / det;
+
+            const foundation::Vector3d dp0 = get_vertex(0) - get_vertex(2);
+            const foundation::Vector3d dp1 = get_vertex(1) - get_vertex(2);
+
+            m_dpdu = (dv1 * dp0 - dv0 * dp1) * rcp_det;
+            m_dpdv = (du0 * dp1 - du1 * dp0) * rcp_det;
+
+            const foundation::Vector3d& sn = get_original_shading_normal();
+
+            m_dpdu = foundation::cross(sn, foundation::normalize(foundation::cross(m_dpdu, sn)));
+            m_dpdv = foundation::cross(sn, foundation::normalize(foundation::cross(m_dpdv, sn)));
+        }
+    }
+    else
+    {
+        assert(m_primitive_type == PrimitiveCurve);
+
         const foundation::Basis3d basis(get_original_shading_normal());
 
         m_dpdu = basis.get_tangent_u();
         m_dpdv = basis.get_tangent_v();
-    }
-    else
-    {
-        const double rcp_det = 1.0 / det;
-
-        const foundation::Vector3d dp0 = get_vertex(0) - get_vertex(2);
-        const foundation::Vector3d dp1 = get_vertex(1) - get_vertex(2);
-
-        m_dpdu = (dv1 * dp0 - dv0 * dp1) * rcp_det;
-        m_dpdv = (du0 * dp1 - du1 * dp0) * rcp_det;
-
-        const foundation::Vector3d& sn = get_original_shading_normal();
-
-        m_dpdu = foundation::cross(sn, foundation::normalize(foundation::cross(m_dpdu, sn)));
-        m_dpdv = foundation::cross(sn, foundation::normalize(foundation::cross(m_dpdv, sn)));
     }
 }
 

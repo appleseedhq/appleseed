@@ -158,6 +158,17 @@ bool ScenePickingHandler::eventFilter(QObject* object, QEvent* event)
 
 namespace
 {
+    const char* get_primitive_type_name(const ShadingPoint::PrimitiveType primitive_type)
+    {
+        switch (primitive_type)
+        {
+          case ShadingPoint::PrimitiveNone: return "none";
+          case ShadingPoint::PrimitiveTriangle: return "triangle";
+          case ShadingPoint::PrimitiveCurve: return "curve";
+          default: return "unknown";
+        }
+    }
+
     string print_entity(const char* label, const Entity* entity)
     {
         stringstream sstr;
@@ -217,6 +228,7 @@ void ScenePickingHandler::pick(const QPoint& point)
     sstr << "picking details:" << endl;
     sstr << "  pixel coords     " << pix.x << ", " << pix.y << endl;
     sstr << "  ndc coords       " << ndc.x << ", " << ndc.y << endl;
+    sstr << "  primitive type   " << get_primitive_type_name(result.m_primitive_type) << endl;
 
     sstr << print_entity("  camera           ", result.m_camera) << endl;
     sstr << print_entity("  assembly inst.   ", result.m_assembly_instance) << endl;
@@ -244,12 +256,12 @@ void ScenePickingHandler::pick(const QPoint& point)
 
 void ScenePickingHandler::set_rgba_label(const QPoint& point) const
 {
-    const Vector2i pix = m_mouse_tracker.widget_to_pixel(point);
+    const Vector2i pixel = m_mouse_tracker.widget_to_pixel(point);
 
     Color4f linear_rgba;
     m_project.get_frame()->image().get_pixel(
-        static_cast<size_t>(pix.x),
-        static_cast<size_t>(pix.y),
+        static_cast<size_t>(pixel.x),
+        static_cast<size_t>(pixel.y),
         linear_rgba);
 
     m_r_label->setText(QString().sprintf("%4.3f", linear_rgba.r));

@@ -30,6 +30,9 @@
 #ifndef APPLESEED_RENDERER_KERNEL_SHADING_SHADINGPOINTBUILDER_H
 #define APPLESEED_RENDERER_KERNEL_SHADING_SHADINGPOINTBUILDER_H
 
+// appleseed.renderer headers.
+#include "renderer/kernel/shading/shadingpoint.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/basis.h"
@@ -37,7 +40,6 @@
 
 // Forward declarations.
 namespace renderer  { class Scene; }
-namespace renderer  { class ShadingPoint; }
 
 namespace renderer
 {
@@ -53,6 +55,7 @@ class ShadingPointBuilder
   public:
     explicit ShadingPointBuilder(ShadingPoint& shading_point);
 
+    void set_primitive_type(const ShadingPoint::PrimitiveType primitive_type);
     void set_scene(const Scene* scene);
     void set_point(const foundation::Vector3d& point);
     void set_geometric_normal(const foundation::Vector3d& n);

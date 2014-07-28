@@ -106,8 +106,8 @@ class Intersector
     // Manufacture a hit "by hand".
     void manufacture_hit(
         ShadingPoint&                       shading_point,
-        const ShadingPoint::PrimitiveType   type,
         const ShadingRay&                   shading_ray,
+        const ShadingPoint::PrimitiveType   primitive_type,
         const AssemblyInstance*             assembly_instance,
         const foundation::Transformd&       assembly_instance_transform,
         const size_t                        object_instance_index,

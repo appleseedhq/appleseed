@@ -30,6 +30,9 @@
 #ifndef APPLESEED_RENDERER_KERNEL_RENDERING_SCENEPICKER_H
 #define APPLESEED_RENDERER_KERNEL_RENDERING_SCENEPICKER_H
 
+// appleseed.renderer headers.
+#include "renderer/kernel/shading/shadingpoint.h"
+
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
 
@@ -56,16 +59,16 @@ class DLLSYMBOL ScenePicker
   public:
     struct PickingResult
     {
-        const Camera*           m_camera;
-        bool                    m_hit;
-        const AssemblyInstance* m_assembly_instance;
-        const Assembly*         m_assembly;
-        const ObjectInstance*   m_object_instance;
-        const Object*           m_object;
-        const Material*         m_material;
-        const SurfaceShader*    m_surface_shader;
-        const BSDF*             m_bsdf;
-        const EDF*              m_edf;
+        ShadingPoint::PrimitiveType m_primitive_type;
+        const Camera*               m_camera;
+        const AssemblyInstance*     m_assembly_instance;
+        const Assembly*             m_assembly;
+        const ObjectInstance*       m_object_instance;
+        const Object*               m_object;
+        const Material*             m_material;
+        const SurfaceShader*        m_surface_shader;
+        const BSDF*                 m_bsdf;
+        const EDF*                  m_edf;
     };
 
     explicit ScenePicker(const TraceContext& trace_context);

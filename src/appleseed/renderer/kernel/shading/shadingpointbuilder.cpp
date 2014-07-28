@@ -30,9 +30,6 @@
 // Interface header.
 #include "shadingpointbuilder.h"
 
-// appleseed.renderer headers.
-#include "renderer/kernel/shading/shadingpoint.h"
-
 using namespace foundation;
 
 namespace renderer
@@ -41,7 +38,11 @@ namespace renderer
 ShadingPointBuilder::ShadingPointBuilder(ShadingPoint& shading_point)
   : m_shading_point(shading_point)
 {
-    m_shading_point.m_hit = true;
+}
+
+void ShadingPointBuilder::set_primitive_type(const ShadingPoint::PrimitiveType primitive_type)
+{
+    m_shading_point.m_primitive_type = primitive_type;
 }
 
 void ShadingPointBuilder::set_scene(const Scene* scene)
