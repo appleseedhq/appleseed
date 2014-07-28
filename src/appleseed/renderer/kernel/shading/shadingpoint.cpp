@@ -225,7 +225,7 @@ void ShadingPoint::refine_and_offset() const
 
         const double Eps = 1.0e-6;
         m_front_point = local_ray.m_org + Eps * m_asm_geo_normal;
-        m_back_point = local_ray.m_org + Eps * m_asm_geo_normal;
+        m_back_point = local_ray.m_org - Eps * m_asm_geo_normal;
     }
 
     // The refined intersection points are now available.
