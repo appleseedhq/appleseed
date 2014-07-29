@@ -35,7 +35,7 @@
 #include "foundation/platform/compiler.h"
 
 // OSL headers.
-#include "OSL/oslexec.h"
+#include "OSL/rendererservices.h"
 
 // OpenImageIO headers.
 #include "OpenImageIO/texture.h"
@@ -126,6 +126,7 @@ class RendererServices
     // transformation at the given time.  Return true if ok, false
     // on error.
     virtual bool get_matrix(
+        OSL::ShaderGlobals*     sg,
         OSL::Matrix44&          result,
         OSL::TransformationPtr  xform,
         float                   time) OVERRIDE;
@@ -136,6 +137,7 @@ class RendererServices
     // invert it, but a particular renderer may have a better technique
     // and overload the implementation.
     virtual bool get_inverse_matrix(
+        OSL::ShaderGlobals*     sg,        
         OSL::Matrix44&          result,
         OSL::TransformationPtr  xform,
         float                   time) OVERRIDE;
@@ -145,6 +147,7 @@ class RendererServices
     // time value is given, also return false if the transformation may
     // be time-varying.
     virtual bool get_matrix(
+        OSL::ShaderGlobals*     sg,
         OSL::Matrix44&          result,
         OSL::TransformationPtr  xform) OVERRIDE;
 
@@ -155,6 +158,7 @@ class RendererServices
     // get_matrix and invert it, but a particular renderer may have a
     // better technique and overload the implementation.
     virtual bool get_inverse_matrix(
+        OSL::ShaderGlobals*     sg,
         OSL::Matrix44&          result,
         OSL::TransformationPtr  xform) OVERRIDE;
 
@@ -162,6 +166,7 @@ class RendererServices
     // 'from' coordinate system to "common" space at the given time.
     // Returns true if ok, false if the named matrix is not known.
     virtual bool get_matrix(
+        OSL::ShaderGlobals*     sg,
         OSL::Matrix44&          result,
         OIIO::ustring           from,
         float                   time) OVERRIDE;
@@ -171,6 +176,7 @@ class RendererServices
     // transformation may be time-varying(as well as if it's not found
     // at all).
     virtual bool get_matrix(
+        OSL::ShaderGlobals*     sg,
         OSL::Matrix44&          result,
         OIIO::ustring           from) OVERRIDE;
 
@@ -187,7 +193,7 @@ class RendererServices
     // attribute) if you can (known object and attribute name), but
     // otherwise just fail by returning 'false'.
     virtual bool get_attribute(
-        void*                   renderstate,
+        OSL::ShaderGlobals*     sg,
         bool                    derivatives,
         OIIO::ustring           object,
         OIIO::TypeDesc          type,
@@ -197,7 +203,7 @@ class RendererServices
     // Similar to get_attribute();  this method will return the 'index'
     // element of an attribute array.
     virtual bool get_array_attribute(
-        void*                   renderstate,
+        OSL::ShaderGlobals*     sg,
         bool                    derivatives,
         OIIO::ustring           object,
         OIIO::TypeDesc          type,
@@ -212,14 +218,14 @@ class RendererServices
         bool                    derivatives,
         OIIO::ustring           name,
         OIIO::TypeDesc          type,
-        void*                   renderstate,
+        OSL::ShaderGlobals*     sg,
         void*                   val) OVERRIDE;
 
     // Does the current object have the named user-data associated with it?
     virtual bool has_userdata(
         OIIO::ustring           name,
         OIIO::TypeDesc          type,
-        void*                   renderstate) OVERRIDE;
+        OSL::ShaderGlobals*     sg) OVERRIDE;
 
   private:
     static void log_error(const std::string& message);
