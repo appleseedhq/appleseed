@@ -60,82 +60,87 @@ using namespace std;
 namespace renderer
 {
 
-class SeAppleseedExpr : public SeExpression
+namespace
 {
-  public:
-    struct Var : public SeExprScalarVarRef
+
+    class SeAppleseedExpr : public SeExpression
     {
-        Var() {}
-
-        explicit Var(const double val)
-          : m_val(val)
+      public:
+        struct Var : public SeExprScalarVarRef
         {
-        }
-
-        virtual void eval(const SeExprVarNode* /*node*/,SeVec3d& result) OVERRIDE
-        {
-            result[0] = m_val;
-        }
+            Var() {}
+    
+            explicit Var(const double val)
+              : m_val(val)
+            {
+            }
+    
+            virtual void eval(const SeExprVarNode* /*node*/,SeVec3d& result) OVERRIDE
+            {
+                result[0] = m_val;
+            }
+            
+            double m_val;            
+        };
         
-        double m_val;            
+        SeAppleseedExpr() : SeExpression()
+        {
+        }
+    
+        SeAppleseedExpr(const string& expr) : SeExpression(expr)
+        {
+            m_vars["u"] = Var(0.0);
+            m_vars["v"] = Var(0.0);
+        }
+    
+        void set_expr(const string& e)
+        {
+            SeExpression::setExpr(e);
+            m_vars["u"] = Var(0.0);
+            m_vars["v"] = Var(0.0);
+        }
+    
+        SeExprVarRef* resolveVar(const string& name) const OVERRIDE
+        {
+            map<string,Var>::iterator i = m_vars.find(name);
+        
+            if (i != m_vars.end())
+                return &i->second;
+        
+            return 0;
+        }
+    
+        mutable map<string,Var> m_vars;
     };
     
-    SeAppleseedExpr() : SeExpression()
+    void report_expression_error(
+        const char*             message1,
+        const char*             message2,
+        const SeAppleseedExpr&  expr)
     {
-    }
-
-    SeAppleseedExpr(const std::string& expr) : SeExpression(expr)
-    {
-        m_vars["u"] = Var(0.0);
-        m_vars["v"] = Var(0.0);
-    }
-
-    void setExpr(const std::string& e)
-    {
-        SeExpression::setExpr(e);
-        m_vars["u"] = Var(0.0);
-        m_vars["v"] = Var(0.0);
-    }
-
-    SeExprVarRef* resolveVar(const std::string& name) const OVERRIDE
-    {
-        map<string,Var>::iterator i = m_vars.find(name);
+        if (message2)
+            RENDERER_LOG_ERROR("%s%s", message1, message2);
+        else
+            RENDERER_LOG_ERROR("%s:", message1);
     
-        if (i != m_vars.end())
-            return &i->second;
-    
-        return 0;
-    }
-
-    mutable std::map<std::string,Var> m_vars;
-};
-
-void report_expression_error(
-    const char* message1,
-    const char* message2,
-    const SeAppleseedExpr& expr)
-{
-    string error = expr.parseError();
-    vector<string> errors;
-    split(errors, error, is_any_of("\n"));
-
-    if (message2)
-        RENDERER_LOG_ERROR("%s%s", message1, message2);
-    else
-        RENDERER_LOG_ERROR("%s:", message1);
-    
-    for (const_each<vector<string> > e = errors; e; ++e)
-    {
-        if (!e->empty())
-            RENDERER_LOG_ERROR("%s", e->c_str());
+        string error = expr.parseError();
+        vector<string> errors;
+        split(errors, error, is_any_of("\n"));
+        
+        for (const_each<vector<string> > e = errors; e; ++e)
+        {
+            if (!e->empty())
+                RENDERER_LOG_ERROR("%s", e->c_str());
+        }
     }
 }
+
 
 //
 // DisneyParamExpression class implementation.
 //
 
-struct DisneyParamExpression::Impl : NonCopyable
+struct DisneyParamExpression::Impl : public NonCopyable
 {
     explicit Impl(const char *expr)
       : m_expr(expr)
@@ -174,6 +179,7 @@ bool DisneyParamExpression::is_constant() const
 {
     return impl->m_expr.isConstant();
 }
+
 
 //
 // DisneyLayerParam class implementation.
@@ -218,9 +224,7 @@ class DisneyLayerParam
     bool prepare()
     {
         m_expression.setWantVec(m_is_vector);
-        m_expression.setExpr(m_expr);
-        m_expression.m_vars["u"] = SeAppleseedExpr::Var(0.0);
-        m_expression.m_vars["v"] = SeAppleseedExpr::Var(0.0);
+        m_expression.set_expr(m_expr);
         
         if (!m_expression.isValid())
         {
@@ -365,61 +369,61 @@ void DisneyMaterialLayer::evaluate_expressions(
     Color3d&                base_color,        
     DisneyBRDFInputValues&  values) const
 {
-    const double mask = clamp(impl->m_mask.evaluate(shading_point)[0], 0.0, 1.0);
+    const double mask = saturate(impl->m_mask.evaluate(shading_point)[0]);
 
-    if (mask == 0)
+    if (mask == 0.0)
         return;
-    
-    base_color = mix(base_color, impl->m_base_color.evaluate(shading_point), mask);
-    
-    values.m_subsurface = mix(
+
+    base_color = lerp(base_color, impl->m_base_color.evaluate(shading_point), mask);
+
+    values.m_subsurface = lerp(
         values.m_subsurface,
-        clamp(impl->m_subsurface.evaluate(shading_point)[0], 0.0, 1.0),
+        saturate(impl->m_subsurface.evaluate(shading_point)[0]),
         mask);
 
-    values.m_metallic = mix(
+    values.m_metallic = lerp(
         values.m_metallic,
-        clamp(impl->m_metallic.evaluate(shading_point)[0], 0.0, 1.0),
+        saturate(impl->m_metallic.evaluate(shading_point)[0]),
         mask);
-    
-    values.m_specular = mix(
+
+    values.m_specular = lerp(
         values.m_specular, 
         max(impl->m_specular.evaluate(shading_point)[0], 0.0),
         mask);
-    
-    values.m_specular_tint = mix(
+
+    values.m_specular_tint = lerp(
         values.m_specular_tint, 
-        clamp(impl->m_specular_tint.evaluate(shading_point)[0], 0.0, 1.0),
+        saturate(impl->m_specular_tint.evaluate(shading_point)[0]),
         mask);
-    
-    values.m_anisotropic = mix(
+
+    values.m_anisotropic = lerp(
         values.m_anisotropic, 
-        clamp(impl->m_anisotropic.evaluate(shading_point)[0], 0.0, 1.0),
+        saturate(impl->m_anisotropic.evaluate(shading_point)[0]),
         mask);
-    
-    values.m_roughness = mix(
+
+    values.m_roughness = lerp(
         values.m_roughness,
         clamp(impl->m_roughness.evaluate(shading_point)[0], 0.001, 1.0),
         mask);
 
-    values.m_sheen = mix(
+    values.m_sheen = lerp(
         values.m_sheen, 
         impl->m_sheen.evaluate(shading_point)[0],
         mask);
 
-    values.m_sheen_tint = mix(
+    values.m_sheen_tint = lerp(
         values.m_sheen_tint, 
-        clamp(impl->m_sheen_tint.evaluate(shading_point)[0], 0.0, 1.0),
+        saturate(impl->m_sheen_tint.evaluate(shading_point)[0]),
         mask);
-    
-    values.m_clearcoat = mix(
+
+    values.m_clearcoat = lerp(
         values.m_clearcoat, 
         impl->m_clearcoat.evaluate(shading_point)[0],
         mask);
-    
-    values.m_clearcoat_gloss = mix(
+
+    values.m_clearcoat_gloss = lerp(
         values.m_clearcoat_gloss, 
-        clamp(impl->m_clearcoat_gloss.evaluate(shading_point)[0], 0.0, 1.0),
+        saturate(impl->m_clearcoat_gloss.evaluate(shading_point)[0]),
         mask);
 }
 

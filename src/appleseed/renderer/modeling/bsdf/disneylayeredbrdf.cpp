@@ -56,7 +56,7 @@ namespace renderer
 namespace
 {
 
-const char* Model = "disney_layered_brdf";
+    const char* Model = "disney_layered_brdf";
 
 }
 
@@ -117,7 +117,7 @@ void DisneyLayeredBRDF::evaluate_inputs(
 
     Color3d base_color(0.0f);
 
-    for( size_t i = 0, e = m_parent->get_layer_count(); i < e; ++i)
+    for (size_t i = 0, e = m_parent->get_layer_count(); i < e; ++i)
     {
         const DisneyMaterialLayer& layer = m_parent->get_layer(i);
         layer.evaluate_expressions(shading_point, base_color, *values);

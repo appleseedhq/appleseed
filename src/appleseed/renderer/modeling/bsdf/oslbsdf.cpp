@@ -173,13 +173,13 @@ namespace
             const Project&          project,
             const Assembly&         assembly) OVERRIDE
         {
-            BSDF::on_frame_end(project, assembly);
-
             for (int i = 0; i < NumClosuresIDs; ++i)
             {
                 if (BSDF* bsdf = m_all_bsdfs[i])
                     bsdf->on_frame_end(project, assembly);
             }
+
+            BSDF::on_frame_end(project, assembly);
         }
 
         virtual size_t compute_input_data_size(

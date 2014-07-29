@@ -387,7 +387,7 @@ QColor ColorExpressionProxy::expression_to_qcolor(const string& color)
             from_string<float>(color_components[2]));
         return color_to_qcolor(srgb_color);
     }
-    catch(ExceptionStringConversionError&)
+    catch (ExceptionStringConversionError&)
     {
         return QColor(0, 0, 0, 0);
     }

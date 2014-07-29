@@ -94,39 +94,39 @@ class DisneyLayeredBRDF
     // pair of directions. Return the scattering mode. If the scattering mode
     // is Absorption, the BSDF and PDF values are undefined.    
     virtual BSDF::Mode sample(
-            SamplingContext&                sampling_context,
-            const void*                     data,
-            const bool                      adjoint,
-            const bool                      cosine_mult,
-            const foundation::Vector3d&     geometric_normal,
-            const foundation::Basis3d&      shading_basis,
-            const foundation::Vector3d&     outgoing,
-            foundation::Vector3d&           incoming,
-            Spectrum&                       value,
-            double&                         probability) const OVERRIDE;
+        SamplingContext&                sampling_context,
+        const void*                     data,
+        const bool                      adjoint,
+        const bool                      cosine_mult,
+        const foundation::Vector3d&     geometric_normal,
+        const foundation::Basis3d&      shading_basis,
+        const foundation::Vector3d&     outgoing,
+        foundation::Vector3d&           incoming,
+        Spectrum&                       value,
+        double&                         probability) const OVERRIDE;
 
     // Evaluate the BSDF for a given pair of directions. Return the PDF value
     // for this pair of directions. If the returned probability is zero, the
     // BSDF value is undefined.    
     virtual double evaluate(
-            const void*                     data,
-            const bool                      adjoint,
-            const bool                      cosine_mult,
-            const foundation::Vector3d&     geometric_normal,
-            const foundation::Basis3d&      shading_basis,
-            const foundation::Vector3d&     outgoing,
-            const foundation::Vector3d&     incoming,
-            const int                       modes,
-            Spectrum&                       value) const OVERRIDE;
+        const void*                     data,
+        const bool                      adjoint,
+        const bool                      cosine_mult,
+        const foundation::Vector3d&     geometric_normal,
+        const foundation::Basis3d&      shading_basis,
+        const foundation::Vector3d&     outgoing,
+        const foundation::Vector3d&     incoming,
+        const int                       modes,
+        Spectrum&                       value) const OVERRIDE;
     
     // Evaluate the PDF for a given pair of directions.    
     virtual double evaluate_pdf(
-            const void*                     data,
-            const foundation::Vector3d&     geometric_normal,
-            const foundation::Basis3d&      shading_basis,
-            const foundation::Vector3d&     outgoing,
-            const foundation::Vector3d&     incoming,
-            const int                       modes) const OVERRIDE;
+        const void*                     data,
+        const foundation::Vector3d&     geometric_normal,
+        const foundation::Basis3d&      shading_basis,
+        const foundation::Vector3d&     outgoing,
+        const foundation::Vector3d&     incoming,
+        const int                       modes) const OVERRIDE;
 
   private:
     friend class DisneyMaterial;

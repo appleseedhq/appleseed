@@ -50,7 +50,8 @@ namespace renderer      { class ParamArray; }
 namespace renderer
 {
 
-class DLLSYMBOL DisneyParamExpression : foundation::NonCopyable
+class DLLSYMBOL DisneyParamExpression 
+  : public foundation::NonCopyable
 {
   public:
     DisneyParamExpression(const char* expr);
@@ -94,15 +95,15 @@ class DLLSYMBOL DisneyMaterialLayer
   private:
     friend class DisneyMaterial;
 
+    struct Impl;
+    Impl* impl;
+    
     // Constructor
     DisneyMaterialLayer(
         const char*                     name,
         const foundation::Dictionary&   params);
 
-    void swap(DisneyMaterialLayer& other);
-    
-    struct Impl;
-    Impl* impl;
+    void swap(DisneyMaterialLayer& other);    
 };
 
 class DLLSYMBOL DisneyMaterial
@@ -134,6 +135,9 @@ class DLLSYMBOL DisneyMaterial
   private:
     friend class DisneyMaterialFactory;
 
+    struct Impl;
+    Impl* impl;
+    
     // Constructor.
     DisneyMaterial(
         const char*         name,
@@ -141,10 +145,8 @@ class DLLSYMBOL DisneyMaterial
 
     // Destructor
     ~DisneyMaterial();
-
-    struct Impl;
-    Impl* impl;
 };
+
 
 //
 // Disney material factory.
