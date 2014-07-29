@@ -266,6 +266,15 @@ class Matrix<T, 3, 3>
     static MatrixType rotation_x(const ValueType angle);    // rotation angle, in radians
     static MatrixType rotation_y(const ValueType angle);    // rotation angle, in radians
     static MatrixType rotation_z(const ValueType angle);    // rotation angle, in radians
+    static MatrixType rotation_x(
+        const ValueType         cos_angle,                  // cosine of the rotation angle
+        const ValueType         sin_angle);                 // sine of the rotation angle
+    static MatrixType rotation_y(
+        const ValueType         cos_angle,                  // cosine of the rotation angle
+        const ValueType         sin_angle);                 // sine of the rotation angle
+    static MatrixType rotation_z(
+        const ValueType         cos_angle,                  // cosine of the rotation angle
+        const ValueType         sin_angle);                 // sine of the rotation angle
 
     // Build a rotation matrix from Euler angles.
     static MatrixType rotation(
@@ -375,6 +384,15 @@ class Matrix<T, 4, 4>
     static MatrixType rotation_x(const ValueType angle);    // rotation angle, in radians
     static MatrixType rotation_y(const ValueType angle);    // rotation angle, in radians
     static MatrixType rotation_z(const ValueType angle);    // rotation angle, in radians
+    static MatrixType rotation_x(
+        const ValueType         cos_angle,                  // cosine of the rotation angle
+        const ValueType         sin_angle);                 // sine of the rotation angle
+    static MatrixType rotation_y(
+        const ValueType         cos_angle,                  // cosine of the rotation angle
+        const ValueType         sin_angle);                 // sine of the rotation angle
+    static MatrixType rotation_z(
+        const ValueType         cos_angle,                  // cosine of the rotation angle
+        const ValueType         sin_angle);                 // sine of the rotation angle
 
     // Build a rotation matrix from Euler angles.
     static MatrixType rotation(
@@ -1072,9 +1090,26 @@ inline Matrix<T, 3, 3> Matrix<T, 3, 3>::scaling(const Vector<T, 3>& s)
 template <typename T>
 inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation_x(const ValueType angle)
 {
-    const T cos_angle = std::cos(angle);
-    const T sin_angle = std::sin(angle);
+    return rotation_x(std::cos(angle), std::sin(angle));
+}
 
+template <typename T>
+inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation_y(const ValueType angle)
+{
+    return rotation_y(std::cos(angle), std::sin(angle));
+}
+
+template <typename T>
+inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation_z(const ValueType angle)
+{
+    return rotation_z(std::cos(angle), std::sin(angle));
+}
+
+template <typename T>
+inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation_x(
+    const ValueType         cos_angle,
+    const ValueType         sin_angle)
+{
     MatrixType mat(T(0.0));
 
     mat[0] =  T(1.0);
@@ -1087,11 +1122,10 @@ inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation_x(const ValueType angle)
 }
 
 template <typename T>
-inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation_y(const ValueType angle)
+inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation_y(
+    const ValueType         cos_angle,
+    const ValueType         sin_angle)
 {
-    const T cos_angle = std::cos(angle);
-    const T sin_angle = std::sin(angle);
-
     MatrixType mat(T(0.0));
 
     mat[0] =  cos_angle;
@@ -1104,11 +1138,10 @@ inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation_y(const ValueType angle)
 }
 
 template <typename T>
-inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation_z(const ValueType angle)
+inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation_z(
+    const ValueType         cos_angle,
+    const ValueType         sin_angle)
 {
-    const T cos_angle = std::cos(angle);
-    const T sin_angle = std::sin(angle);
-
     MatrixType mat(T(0.0));
 
     mat[0] =  cos_angle;
@@ -1562,9 +1595,26 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::scaling(const Vector<T, 3>& s)
 template <typename T>
 inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation_x(const ValueType angle)
 {
-    const T cos_angle = std::cos(angle);
-    const T sin_angle = std::sin(angle);
+    return rotation_x(std::cos(angle), std::sin(angle));
+}
 
+template <typename T>
+inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation_y(const ValueType angle)
+{
+    return rotation_y(std::cos(angle), std::sin(angle));
+}
+
+template <typename T>
+inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation_z(const ValueType angle)
+{
+    return rotation_z(std::cos(angle), std::sin(angle));
+}
+
+template <typename T>
+inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation_x(
+    const ValueType         cos_angle,
+    const ValueType         sin_angle)
+{
     MatrixType mat(T(0.0));
 
     mat[ 0] =  T(1.0);
@@ -1578,11 +1628,10 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation_x(const ValueType angle)
 }
 
 template <typename T>
-inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation_y(const ValueType angle)
+inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation_y(
+    const ValueType         cos_angle,
+    const ValueType         sin_angle)
 {
-    const T cos_angle = std::cos(angle);
-    const T sin_angle = std::sin(angle);
-
     MatrixType mat(T(0.0));
 
     mat[ 0] =  cos_angle;
@@ -1596,11 +1645,10 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation_y(const ValueType angle)
 }
 
 template <typename T>
-inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation_z(const ValueType angle)
+inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation_z(
+    const ValueType         cos_angle,
+    const ValueType         sin_angle)
 {
-    const T cos_angle = std::cos(angle);
-    const T sin_angle = std::sin(angle);
-
     MatrixType mat(T(0.0));
 
     mat[ 0] =  cos_angle;
