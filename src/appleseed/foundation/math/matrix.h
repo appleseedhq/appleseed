@@ -1060,10 +1060,18 @@ const Matrix<T, 3, 3> Matrix<T, 3, 3>::m_identity(Matrix<T, 3, 3>::make_identity
 template <typename T>
 Matrix<T, 3, 3> Matrix<T, 3, 3>::make_identity()
 {
-    MatrixType mat(T(0.0));
+    MatrixType mat;
 
     mat[0] = T(1.0);
+    mat[1] = T(0.0);
+    mat[2] = T(0.0);
+
+    mat[3] = T(0.0);
     mat[4] = T(1.0);
+    mat[5] = T(0.0);
+
+    mat[6] = T(0.0);
+    mat[7] = T(0.0);
     mat[8] = T(1.0);
 
     return mat;
@@ -1078,10 +1086,18 @@ inline const Matrix<T, 3, 3>& Matrix<T, 3, 3>::identity()
 template <typename T>
 inline Matrix<T, 3, 3> Matrix<T, 3, 3>::scaling(const Vector<T, 3>& s)
 {
-    MatrixType mat(T(0.0));
+    MatrixType mat;
 
     mat[0] = s.x;
+    mat[1] = T(0.0);
+    mat[2] = T(0.0);
+
+    mat[3] = T(0.0);
     mat[4] = s.y;
+    mat[5] = T(0.0);
+
+    mat[6] = T(0.0);
+    mat[7] = T(0.0);
     mat[8] = s.z;
 
     return mat;
@@ -1110,13 +1126,19 @@ inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation_x(
     const ValueType         cos_angle,
     const ValueType         sin_angle)
 {
-    MatrixType mat(T(0.0));
+    MatrixType mat;
 
-    mat[0] =  T(1.0);
-    mat[4] =  cos_angle;
+    mat[0] = T(1.0);
+    mat[1] = T(0.0);
+    mat[2] = T(0.0);
+
+    mat[3] = T(0.0);
+    mat[4] = cos_angle;
     mat[5] = -sin_angle;
-    mat[7] =  sin_angle;
-    mat[8] =  cos_angle;
+
+    mat[6] = T(0.0);
+    mat[7] = sin_angle;
+    mat[8] = cos_angle;
 
     return mat;
 }
@@ -1126,13 +1148,19 @@ inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation_y(
     const ValueType         cos_angle,
     const ValueType         sin_angle)
 {
-    MatrixType mat(T(0.0));
+    MatrixType mat;
 
-    mat[0] =  cos_angle;
-    mat[2] =  sin_angle;
-    mat[4] =  T(1.0);
+    mat[0] = cos_angle;
+    mat[1] = T(0.0);
+    mat[2] = sin_angle;
+
+    mat[3] = T(0.0);
+    mat[4] = T(1.0);
+    mat[5] = T(0.0);
+
     mat[6] = -sin_angle;
-    mat[8] =  cos_angle;
+    mat[7] = T(0.0);
+    mat[8] = cos_angle;
 
     return mat;
 }
@@ -1142,13 +1170,19 @@ inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation_z(
     const ValueType         cos_angle,
     const ValueType         sin_angle)
 {
-    MatrixType mat(T(0.0));
+    MatrixType mat;
 
-    mat[0] =  cos_angle;
+    mat[0] = cos_angle;
     mat[1] = -sin_angle;
-    mat[3] =  sin_angle;
-    mat[4] =  cos_angle;
-    mat[8] =  T(1.0);
+    mat[2] = T(0.0);
+
+    mat[3] = sin_angle;
+    mat[4] = cos_angle;
+    mat[5] = T(0.0);
+
+    mat[6] = T(0.0);
+    mat[7] = T(0.0);
+    mat[8] = T(1.0);
 
     return mat;
 }
@@ -1203,17 +1237,14 @@ inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation(
 
     MatrixType mat;
 
-    // First row.
     mat[0] = one_min_cos_angle * axis.x * axis.x + cos_angle;
     mat[1] = one_min_cos_angle * axis.x * axis.y - sin_angle * axis.z;
     mat[2] = one_min_cos_angle * axis.x * axis.z + sin_angle * axis.y;
 
-    // Second row.
     mat[3] = one_min_cos_angle * axis.y * axis.x + sin_angle * axis.z;
     mat[4] = one_min_cos_angle * axis.y * axis.y + cos_angle;
     mat[5] = one_min_cos_angle * axis.y * axis.z - sin_angle * axis.x;
 
-    // Third row.
     mat[6] = one_min_cos_angle * axis.z * axis.x - sin_angle * axis.y;
     mat[7] = one_min_cos_angle * axis.z * axis.y + sin_angle * axis.x;
     mat[8] = one_min_cos_angle * axis.z * axis.z + cos_angle;
@@ -1247,17 +1278,14 @@ inline Matrix<T, 3, 3> Matrix<T, 3, 3>::rotation(
 
     MatrixType mat;
 
-    // First row.
     mat[0] = ValueType(1.0) - (tyy + tzz);
     mat[1] = txy - twz;
     mat[2] = txz + twy;
 
-    // Second row.
     mat[3] = txy + twz;
     mat[4] = ValueType(1.0) - (txx + tzz);
     mat[5] = tyz - twx;
 
-    // Third row.
     mat[6] = txz - twy;
     mat[7] = tyz + twx;
     mat[8] = ValueType(1.0) - (txx + tyy);
@@ -1444,17 +1472,14 @@ inline Matrix<T, 3, 3> operator*(
 {
     Matrix<T, 3, 3> res;
 
-    // Compute first row.
     res[0] = lhs[0] * rhs[0] + lhs[1] * rhs[3] + lhs[2] * rhs[6];
     res[1] = lhs[0] * rhs[1] + lhs[1] * rhs[4] + lhs[2] * rhs[7];
     res[2] = lhs[0] * rhs[2] + lhs[1] * rhs[5] + lhs[2] * rhs[8];
 
-    // Compute second row.
     res[3] = lhs[3] * rhs[0] + lhs[4] * rhs[3] + lhs[5] * rhs[6];
     res[4] = lhs[3] * rhs[1] + lhs[4] * rhs[4] + lhs[5] * rhs[7];
     res[5] = lhs[3] * rhs[2] + lhs[4] * rhs[5] + lhs[5] * rhs[8];
 
-    // Compute third row.
     res[6] = lhs[6] * rhs[0] + lhs[7] * rhs[3] + lhs[8] * rhs[6];
     res[7] = lhs[6] * rhs[1] + lhs[7] * rhs[4] + lhs[8] * rhs[7];
     res[8] = lhs[6] * rhs[2] + lhs[7] * rhs[5] + lhs[8] * rhs[8];
@@ -1551,11 +1576,26 @@ const Matrix<T, 4, 4> Matrix<T, 4, 4>::m_identity(Matrix<T, 4, 4>::make_identity
 template <typename T>
 Matrix<T, 4, 4> Matrix<T, 4, 4>::make_identity()
 {
-    MatrixType mat(T(0.0));
+    MatrixType mat;
 
     mat[ 0] = T(1.0);
+    mat[ 1] = T(0.0);
+    mat[ 2] = T(0.0);
+    mat[ 3] = T(0.0);
+
+    mat[ 4] = T(0.0);
     mat[ 5] = T(1.0);
+    mat[ 6] = T(0.0);
+    mat[ 7] = T(0.0);
+
+    mat[ 8] = T(0.0);
+    mat[ 9] = T(0.0);
     mat[10] = T(1.0);
+    mat[11] = T(0.0);
+
+    mat[12] = T(0.0);
+    mat[13] = T(0.0);
+    mat[14] = T(0.0);
     mat[15] = T(1.0);
 
     return mat;
@@ -1570,11 +1610,27 @@ inline const Matrix<T, 4, 4>& Matrix<T, 4, 4>::identity()
 template <typename T>
 inline Matrix<T, 4, 4> Matrix<T, 4, 4>::translation(const Vector<T, 3>& v)
 {
-    MatrixType mat = identity();
+    MatrixType mat;
 
+    mat[ 0] = T(1.0);
+    mat[ 1] = T(0.0);
+    mat[ 2] = T(0.0);
     mat[ 3] = v.x;
+
+    mat[ 4] = T(0.0);
+    mat[ 5] = T(1.0);
+    mat[ 6] = T(0.0);
     mat[ 7] = v.y;
+
+    mat[ 8] = T(0.0);
+    mat[ 9] = T(0.0);
+    mat[10] = T(1.0);
     mat[11] = v.z;
+
+    mat[12] = T(0.0);
+    mat[13] = T(0.0);
+    mat[14] = T(0.0);
+    mat[15] = T(1.0);
 
     return mat;
 }
@@ -1582,11 +1638,26 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::translation(const Vector<T, 3>& v)
 template <typename T>
 inline Matrix<T, 4, 4> Matrix<T, 4, 4>::scaling(const Vector<T, 3>& s)
 {
-    MatrixType mat(T(0.0));
+    MatrixType mat;
 
     mat[ 0] = s.x;
+    mat[ 1] = T(0.0);
+    mat[ 2] = T(0.0);
+    mat[ 3] = T(0.0);
+
+    mat[ 4] = T(0.0);
     mat[ 5] = s.y;
+    mat[ 6] = T(0.0);
+    mat[ 7] = T(0.0);
+
+    mat[ 8] = T(0.0);
+    mat[ 9] = T(0.0);
     mat[10] = s.z;
+    mat[11] = T(0.0);
+
+    mat[12] = T(0.0);
+    mat[13] = T(0.0);
+    mat[14] = T(0.0);
     mat[15] = T(1.0);
 
     return mat;
@@ -1615,14 +1686,27 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation_x(
     const ValueType         cos_angle,
     const ValueType         sin_angle)
 {
-    MatrixType mat(T(0.0));
+    MatrixType mat;
 
-    mat[ 0] =  T(1.0);
-    mat[ 5] =  cos_angle;
+    mat[ 0] = T(1.0);
+    mat[ 1] = T(0.0);
+    mat[ 2] = T(0.0);
+    mat[ 3] = T(0.0);
+
+    mat[ 4] = T(0.0);
+    mat[ 5] = cos_angle;
     mat[ 6] = -sin_angle;
-    mat[ 9] =  sin_angle;
-    mat[10] =  cos_angle;
-    mat[15] =  T(1.0);
+    mat[ 7] = T(0.0);
+
+    mat[ 8] = T(0.0);
+    mat[ 9] = sin_angle;
+    mat[10] = cos_angle;
+    mat[11] = T(0.0);
+
+    mat[12] = T(0.0);
+    mat[13] = T(0.0);
+    mat[14] = T(0.0);
+    mat[15] = T(1.0);
 
     return mat;
 }
@@ -1632,14 +1716,27 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation_y(
     const ValueType         cos_angle,
     const ValueType         sin_angle)
 {
-    MatrixType mat(T(0.0));
+    MatrixType mat;
 
-    mat[ 0] =  cos_angle;
-    mat[ 2] =  sin_angle;
-    mat[ 5] =  T(1.0);
+    mat[ 0] = cos_angle;
+    mat[ 1] = T(0.0);
+    mat[ 2] = sin_angle;
+    mat[ 3] = T(0.0);
+
+    mat[ 4] = T(0.0);
+    mat[ 5] = T(1.0);
+    mat[ 6] = T(0.0);
+    mat[ 7] = T(0.0);
+
     mat[ 8] = -sin_angle;
-    mat[10] =  cos_angle;
-    mat[15] =  T(1.0);
+    mat[ 9] = T(0.0);
+    mat[10] = cos_angle;
+    mat[11] = T(0.0);
+
+    mat[12] = T(0.0);
+    mat[13] = T(0.0);
+    mat[14] = T(0.0);
+    mat[15] = T(1.0);
 
     return mat;
 }
@@ -1649,14 +1746,27 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation_z(
     const ValueType         cos_angle,
     const ValueType         sin_angle)
 {
-    MatrixType mat(T(0.0));
+    MatrixType mat;
 
-    mat[ 0] =  cos_angle;
+    mat[ 0] = cos_angle;
     mat[ 1] = -sin_angle;
-    mat[ 4] =  sin_angle;
-    mat[ 5] =  cos_angle;
-    mat[10] =  T(1.0);
-    mat[15] =  T(1.0);
+    mat[ 2] = T(0.0);
+    mat[ 3] = T(0.0);
+
+    mat[ 4] = sin_angle;
+    mat[ 5] = cos_angle;
+    mat[ 6] = T(0.0);
+    mat[ 7] = T(0.0);
+
+    mat[ 8] = T(0.0);
+    mat[ 9] = T(0.0);
+    mat[10] = T(1.0);
+    mat[11] = T(0.0);
+
+    mat[12] = T(0.0);
+    mat[13] = T(0.0);
+    mat[14] = T(0.0);
+    mat[15] = T(1.0);
 
     return mat;
 }
@@ -1676,25 +1786,21 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation(
 
     MatrixType mat;
 
-    // First row.
     mat[ 0] = cos_yaw * cos_roll - sin_yaw * sin_pitch * sin_roll;
     mat[ 1] = -cos_pitch * sin_roll;
     mat[ 2] = sin_yaw * cos_roll + cos_yaw * sin_pitch * sin_roll;
     mat[ 3] = T(0.0);
 
-    // Second row.
     mat[ 4] = cos_yaw * sin_roll + sin_yaw * sin_pitch * cos_roll;
     mat[ 5] = cos_pitch * cos_roll;
     mat[ 6] = sin_yaw * sin_roll - cos_yaw * sin_pitch * cos_roll;
     mat[ 7] = T(0.0);
 
-    // Third row.
     mat[ 8] = -sin_yaw * cos_pitch;
     mat[ 9] = sin_pitch;
     mat[10] = cos_yaw * cos_pitch;
     mat[11] = T(0.0);
 
-    // Fourth row.
     mat[12] = T(0.0);
     mat[13] = T(0.0);
     mat[14] = T(0.0);
@@ -1723,25 +1829,21 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation(
 
     MatrixType mat;
 
-    // First row.
     mat[ 0] = one_min_cos_angle * axis.x * axis.x + cos_angle;
     mat[ 1] = one_min_cos_angle * axis.x * axis.y - sin_angle * axis.z;
     mat[ 2] = one_min_cos_angle * axis.x * axis.z + sin_angle * axis.y;
     mat[ 3] = T(0.0);
 
-    // Second row.
     mat[ 4] = one_min_cos_angle * axis.y * axis.x + sin_angle * axis.z;
     mat[ 5] = one_min_cos_angle * axis.y * axis.y + cos_angle;
     mat[ 6] = one_min_cos_angle * axis.y * axis.z - sin_angle * axis.x;
     mat[ 7] = T(0.0);
 
-    // Third row.
     mat[ 8] = one_min_cos_angle * axis.z * axis.x - sin_angle * axis.y;
     mat[ 9] = one_min_cos_angle * axis.z * axis.y + sin_angle * axis.x;
     mat[10] = one_min_cos_angle * axis.z * axis.z + cos_angle;
     mat[11] = T(0.0);
 
-    // Fourth row.
     mat[12] = T(0.0);
     mat[13] = T(0.0);
     mat[14] = T(0.0);
@@ -1776,25 +1878,21 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::rotation(
 
     MatrixType mat;
 
-    // First row.
     mat[ 0] = ValueType(1.0) - (tyy + tzz);
     mat[ 1] = txy - twz;
     mat[ 2] = txz + twy;
     mat[ 3] = T(0.0);
 
-    // Second row.
     mat[ 4] = txy + twz;
     mat[ 5] = ValueType(1.0) - (txx + tzz);
     mat[ 6] = tyz - twx;
     mat[ 7] = T(0.0);
 
-    // Third row.
     mat[ 8] = txz - twy;
     mat[ 9] = tyz + twx;
     mat[10] = ValueType(1.0) - (txx + tyy);
     mat[11] = T(0.0);
 
-    // Fourth row.
     mat[12] = T(0.0);
     mat[13] = T(0.0);
     mat[14] = T(0.0);
@@ -1825,28 +1923,24 @@ inline Matrix<T, 4, 4> Matrix<T, 4, 4>::lookat(
 
     MatrixType mat;
 
-    // First column.
     mat[ 0] = x.x;
-    mat[ 4] = x.y;
-    mat[ 8] = x.z;
-    mat[12] = T(0.0);
-
-    // Second column.
     mat[ 1] = y.x;
-    mat[ 5] = y.y;
-    mat[ 9] = y.z;
-    mat[13] = T(0.0);
-
-    // Third column.
     mat[ 2] = z.x;
-    mat[ 6] = z.y;
-    mat[10] = z.z;
-    mat[14] = T(0.0);
-
-    // Fourth column.
     mat[ 3] = origin.x;
+
+    mat[ 4] = x.y;
+    mat[ 5] = y.y;
+    mat[ 6] = z.y;
     mat[ 7] = origin.y;
+
+    mat[ 8] = x.z;
+    mat[ 9] = y.z;
+    mat[10] = z.z;
     mat[11] = origin.z;
+
+    mat[12] = T(0.0);
+    mat[13] = T(0.0);
+    mat[14] = T(0.0);
     mat[15] = T(1.0);
 
     return mat;
@@ -1890,9 +1984,11 @@ inline Matrix<T, 3, 3> Matrix<T, 4, 4>::extract_matrix3() const
     mat[0] = m_comp[ 0];
     mat[1] = m_comp[ 1];
     mat[2] = m_comp[ 2];
+
     mat[3] = m_comp[ 4];
     mat[4] = m_comp[ 5];
     mat[5] = m_comp[ 6];
+
     mat[6] = m_comp[ 8];
     mat[7] = m_comp[ 9];
     mat[8] = m_comp[10];
@@ -1924,25 +2020,21 @@ inline Matrix<T, 4, 4> operator*(
 {
     Matrix<T, 4, 4> res;
 
-    // Compute first row.
     res[ 0] = lhs[ 0] * rhs[0] + lhs[ 1] * rhs[4] + lhs[ 2] * rhs[ 8] + lhs[ 3] * rhs[12];
     res[ 1] = lhs[ 0] * rhs[1] + lhs[ 1] * rhs[5] + lhs[ 2] * rhs[ 9] + lhs[ 3] * rhs[13];
     res[ 2] = lhs[ 0] * rhs[2] + lhs[ 1] * rhs[6] + lhs[ 2] * rhs[10] + lhs[ 3] * rhs[14];
     res[ 3] = lhs[ 0] * rhs[3] + lhs[ 1] * rhs[7] + lhs[ 2] * rhs[11] + lhs[ 3] * rhs[15];
 
-    // Compute second row.
     res[ 4] = lhs[ 4] * rhs[0] + lhs[ 5] * rhs[4] + lhs[ 6] * rhs[ 8] + lhs[ 7] * rhs[12];
     res[ 5] = lhs[ 4] * rhs[1] + lhs[ 5] * rhs[5] + lhs[ 6] * rhs[ 9] + lhs[ 7] * rhs[13];
     res[ 6] = lhs[ 4] * rhs[2] + lhs[ 5] * rhs[6] + lhs[ 6] * rhs[10] + lhs[ 7] * rhs[14];
     res[ 7] = lhs[ 4] * rhs[3] + lhs[ 5] * rhs[7] + lhs[ 6] * rhs[11] + lhs[ 7] * rhs[15];
 
-    // Compute third row.
     res[ 8] = lhs[ 8] * rhs[0] + lhs[ 9] * rhs[4] + lhs[10] * rhs[ 8] + lhs[11] * rhs[12];
     res[ 9] = lhs[ 8] * rhs[1] + lhs[ 9] * rhs[5] + lhs[10] * rhs[ 9] + lhs[11] * rhs[13];
     res[10] = lhs[ 8] * rhs[2] + lhs[ 9] * rhs[6] + lhs[10] * rhs[10] + lhs[11] * rhs[14];
     res[11] = lhs[ 8] * rhs[3] + lhs[ 9] * rhs[7] + lhs[10] * rhs[11] + lhs[11] * rhs[15];
 
-    // Compute fourth row.
     res[12] = lhs[12] * rhs[0] + lhs[13] * rhs[4] + lhs[14] * rhs[ 8] + lhs[15] * rhs[12];
     res[13] = lhs[12] * rhs[1] + lhs[13] * rhs[5] + lhs[14] * rhs[ 9] + lhs[15] * rhs[13];
     res[14] = lhs[12] * rhs[2] + lhs[13] * rhs[6] + lhs[14] * rhs[10] + lhs[15] * rhs[14];
