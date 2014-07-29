@@ -184,8 +184,8 @@ void CurveTree::collect_curves(vector<AABB3d>& curve_bboxes)
             const BezierCurve3d curve(curve_object.get_curve(j), transform);
             const CurveKey curve_key(i, j, 0);  // for now we assume all the curves have the same material
 
-            AABB3d curve_bbox = curve.get_bbox();
-            curve_bbox.grow(Vector3d(0.5 * curve.get_max_width()));
+            AABB3d curve_bbox = curve.compute_bbox();
+            curve_bbox.grow(Vector3d(0.5 * curve.compute_max_width()));
 
             m_curves3.push_back(curve);
             m_curve_keys.push_back(curve_key);

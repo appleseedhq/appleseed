@@ -96,10 +96,6 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
                 {
                     const BezierCurveType& curve = curves[c];
 
-                    // Draw the bounding box of the curve.
-                    if (intersect(ray, ray_info, curve.get_bbox()))
-                        color[1] = 0.5f;
-
                     // Draw the curve.
                     MatrixType curve_transform;
                     BezierCurveIntersectorType::make_projection_transform(curve_transform, ray);
