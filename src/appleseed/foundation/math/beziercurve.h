@@ -639,29 +639,98 @@ void BezierCurveIntersector<BezierCurveType>::make_projection_transform(
     MatrixType&             matrix,
     const RayType&          ray)
 {
-    // Build the rotation matrix.
-    const VectorType rdir = normalize(ray.m_dir);
-    const ValueType d = std::sqrt(rdir.x * rdir.x + rdir.z * rdir.z);
+    //
+    // We build a matrix that will transform a curve such that:
+    //
+    //   - It lies in the XY plane.
+    //   - The ray-curve intersection point is at the origin.
+    //
+    // This matrix is the product of three transforms (in order):
+    //
+    //   1. A translation
+    //   2. A rotation around Y
+    //   3. A rotation around X
+    //
+    // Unoptimized implementation:
+    //
+    //     const VectorType dir = normalize(ray.m_dir);
+    //     const ValueType d = std::sqrt(dir.x * dir.x + dir.z * dir.z);
+    //
+    //     if (d > ValueType(1.0e-6))
+    //     {
+    //         const MatrixType rot_y = rotation_y(dir.z / d, -dir.x / d);
+    //         const MatrixType rot_x = rotation_x(d, dir.y);
+    //         const MatrixType tr = MatrixType::translation(-ray.m_org);
+    //         matrix = rot_x * rot_y * tr;
+    //     }
+    //     else
+    //     {
+    //         const ValueType phi = dir.y > ValueType(0.0) ? ValueType(HalfPi) : -ValueType(HalfPi);
+    //         const MatrixType rot_x = MatrixType::rotation_x(phi);
+    //         const MatrixType tr = MatrixType::translation(-ray.m_org);
+    //         matrix = rot_x * tr;
+    //     }
+    //
+
+    const VectorType dir = normalize(ray.m_dir);
+    const ValueType d = std::sqrt(dir.x * dir.x + dir.z * dir.z);
+
     if (d >= ValueType(1.0e-6))
     {
         const ValueType rcp_d = ValueType(1.0) / d;
-        matrix[ 0] = rdir.z * rcp_d;             matrix[ 1] = ValueType(0.0);   matrix[ 2] = -rdir.x * rcp_d;            matrix[ 3] = ValueType(0.0);
-        matrix[ 4] = -(rdir.x * rdir.y) * rcp_d; matrix[ 5] = d;                matrix[ 6] = -(rdir.y * rdir.z) * rcp_d; matrix[ 7] = ValueType(0.0);
-        matrix[ 8] = rdir.x;                     matrix[ 9] = rdir.y;           matrix[10] = rdir.z;                     matrix[11] = ValueType(0.0);
-        matrix[12] = ValueType(0.0);             matrix[13] = ValueType(0.0);   matrix[14] = ValueType(0.0);             matrix[15] = ValueType(1.0);
+
+        // First row.
+        matrix[ 0] = dir.z * rcp_d;
+        matrix[ 1] = ValueType(0.0);
+        matrix[ 2] = -dir.x * rcp_d;
+        matrix[ 3] = -(matrix[0] * ray.m_org.x + matrix[2] * ray.m_org.z);
+
+        // Second row.
+        matrix[ 4] = -(dir.x * dir.y) * rcp_d;
+        matrix[ 5] = d;
+        matrix[ 6] = -(dir.y * dir.z) * rcp_d;
+        matrix[ 7] = -(matrix[4] * ray.m_org.x + matrix[5] * ray.m_org.y + matrix[6] * ray.m_org.z);
+
+        // Third row.
+        matrix[ 8] = dir.x;
+        matrix[ 9] = dir.y;
+        matrix[10] = dir.z;
+        matrix[11] = -(matrix[8] * ray.m_org.x + matrix[9] * ray.m_org.y + matrix[10] * ray.m_org.z);
+
+        // Fourth row.
+        matrix[12] = ValueType(0.0);
+        matrix[13] = ValueType(0.0);
+        matrix[14] = ValueType(0.0);
+        matrix[15] = ValueType(1.0);
     }
     else
     {
-        // We replace the matrix by one that rotates about the x axis by Pi/2.
-        // The sign of rotation depends on the sign of the y component of the direction vector.
-        const ValueType angle = rdir.y > ValueType(0.0) ? ValueType(HalfPi) : -ValueType(HalfPi);
-        matrix = MatrixType::rotation_x(angle);
-    }
+        const ValueType sin_angle = dir.y > ValueType(0.0) ? ValueType(1.0) : -ValueType(1.0);
 
-    // Right-multiply the rotation matrix by a translation matrix.
-    matrix[ 3] = -(matrix[ 0] * ray.m_org.x + matrix[ 1] * ray.m_org.y + matrix[ 2] * ray.m_org.z);
-    matrix[ 7] = -(matrix[ 4] * ray.m_org.x + matrix[ 5] * ray.m_org.y + matrix[ 6] * ray.m_org.z);
-    matrix[11] = -(matrix[ 8] * ray.m_org.x + matrix[ 9] * ray.m_org.y + matrix[10] * ray.m_org.z);
+        // First row.
+        matrix[ 0] = ValueType(1.0);
+        matrix[ 1] = ValueType(0.0);
+        matrix[ 2] = ValueType(0.0);
+        matrix[ 3] = -ray.m_org.x;
+
+        // Second row.
+        matrix[ 4] = ValueType(0.0);
+        matrix[ 5] = ValueType(0.0);
+        matrix[ 6] = -sin_angle;
+        matrix[ 7] = sin_angle * ray.m_org.z;
+
+        // Third row.
+        matrix[ 8] = ValueType(0.0);
+        matrix[ 9] = sin_angle;
+        matrix[10] = ValueType(0.0);
+        matrix[11] = -sin_angle * ray.m_org.y;
+
+        // Fourth row.
+        matrix[12] = ValueType(0.0);
+        matrix[13] = ValueType(0.0);
+        matrix[14] = ValueType(0.0);
+        matrix[15] = ValueType(1.0);
+    }
 }
 
 template <typename BezierCurveType>
