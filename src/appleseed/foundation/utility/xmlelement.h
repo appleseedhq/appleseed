@@ -69,7 +69,7 @@ class XMLElement
         const T&            value);
 
     // Write the element.
-    void write(const bool has_content);
+    void write(const bool has_content, const bool is_singleline = false);
 
     // Close the element.
     void close();
@@ -82,22 +82,28 @@ class XMLElement
     std::FILE*              m_file;
     Indenter&               m_indenter;
     AttributeVector         m_attributes;
-    bool                    m_opened;
+    bool                    m_has_content;
+    bool                    m_is_singleline;
 };
-
 
 //
 // An utility function to write a dictionary to an XML file.
 //
-// Example: a dictionary containing two scalar values "x" and "y"
-// and a child dictionary "nested" containing a scalar value "z"
+// Example: a dictionary containing two scalar values "u" and "v"
+// and a child dictionary "nested" containing a scalar named "x"
+// with the value found in the attribute and another named "y"
+// with the value found between an opening and a closing tag
 // will be written as follow:
 //
-//   <parameter name="x" value="17" />
-//   <parameter name="y" value="42" />
+//   <parameter name="u" value="17" />
+//   <parameter name="v" value="42" />
 //   <parameters name="nested">
-//       <parameter name="z" value="66" />
+//       <parameter name="x" value="66" />
+//       <parameter name="y">15</parameter>
 //   </parameters>
+//
+// The example with the value found between an opening and a closing
+// tag can contain special characters such as newlines.
 //
 
 void write_dictionary(
@@ -117,7 +123,8 @@ inline XMLElement::XMLElement(
   : m_name(name)
   , m_file(file)
   , m_indenter(indenter)
-  , m_opened(false)
+  , m_has_content(false)
+  , m_is_singleline(false)
 {
 }
 
@@ -136,8 +143,9 @@ void XMLElement::add_attribute(
     m_attributes.push_back(std::make_pair(name, to_string(value)));
 }
 
-inline void XMLElement::write(const bool has_content)
+inline void XMLElement::write(const bool has_content, const bool is_singleline)
 {
+
     assert(!m_opened);
 
     std::fprintf(m_file, "%s<%s", m_indenter.c_str(), m_name.c_str());
@@ -148,25 +156,33 @@ inline void XMLElement::write(const bool has_content)
         std::fprintf(m_file, " %s=\"%s\"", i->first.c_str(), attribute_value.c_str());
     }
 
-    if (has_content)
+    if (has_content && is_singleline)
+    {
+        std::fprintf(m_file, ">");
+    }
+    else if (has_content)
     {
         std::fprintf(m_file, ">\n");
         ++m_indenter;
-        m_opened = true;
     }
     else
     {
         std::fprintf(m_file, " />\n");
     }
+    m_has_content = has_content;
+    m_is_singleline = is_singleline;
 }
 
 inline void XMLElement::close()
 {
-    if (m_opened)
+    if (m_has_content && m_is_singleline)
+    {
+        std::fprintf(m_file, "</%s>\n", m_name.c_str());
+    }
+    else if (m_has_content)
     {
         --m_indenter;
         std::fprintf(m_file, "%s</%s>\n", m_indenter.c_str(), m_name.c_str());
-        m_opened = false;
     }
 }
 
@@ -179,8 +195,18 @@ inline void write_dictionary(
     {
         XMLElement element("parameter", file, indenter);
         element.add_attribute("name", i->name());
-        element.add_attribute("value", i->value<std::string>());
-        element.write(false);
+        const std::string value = i->value<std::string>();
+
+        if (value.find('\n') != std::string::npos)
+        {
+            element.write(true, true);
+            std::fprintf(file, "%s", value.c_str());
+        }
+        else
+        {
+            element.add_attribute("value", value);
+            element.write(false);
+        }
     }
 
     for (const_each<DictionaryDictionary> i = dictionary.dictionaries(); i; ++i)
