@@ -125,6 +125,7 @@ bool RendererServices::get_texture_info(
 }
 
 bool RendererServices::get_matrix(
+    OSL::ShaderGlobals*     sg,
     OSL::Matrix44&          result,
     OSL::TransformationPtr  xform,
     float                   time)
@@ -140,6 +141,7 @@ bool RendererServices::get_matrix(
 }
 
 bool RendererServices::get_inverse_matrix(
+    OSL::ShaderGlobals*     sg,
     OSL::Matrix44&          result,
     OSL::TransformationPtr  xform,
     float                   time)
@@ -155,6 +157,7 @@ bool RendererServices::get_inverse_matrix(
 }
 
 bool RendererServices::get_matrix(
+    OSL::ShaderGlobals*     sg,
     OSL::Matrix44&          result,
     OSL::TransformationPtr  xform)
 {
@@ -172,6 +175,7 @@ bool RendererServices::get_matrix(
 }
 
 bool RendererServices::get_inverse_matrix(
+    OSL::ShaderGlobals*     sg,
     OSL::Matrix44&          result,
     OSL::TransformationPtr  xform)
 {
@@ -189,6 +193,7 @@ bool RendererServices::get_inverse_matrix(
 }
 
 bool RendererServices::get_matrix(
+    OSL::ShaderGlobals*     sg,
     OSL::Matrix44&          result,
     OIIO::ustring           from,
     float                   time)
@@ -197,6 +202,7 @@ bool RendererServices::get_matrix(
 }
 
 bool RendererServices::get_matrix(
+    OSL::ShaderGlobals*     sg,
     OSL::Matrix44&          result,
     OIIO::ustring           from)
 {
@@ -204,7 +210,7 @@ bool RendererServices::get_matrix(
 }
 
 bool RendererServices::get_attribute(
-    void*                   renderstate,
+    OSL::ShaderGlobals*     sg,
     bool                    derivatives,
     OIIO::ustring           object,
     OIIO::TypeDesc          type,
@@ -215,7 +221,7 @@ bool RendererServices::get_attribute(
 }
 
 bool RendererServices::get_array_attribute(
-    void*                   renderstate,
+    OSL::ShaderGlobals*     sg,
     bool                    derivatives,
     OIIO::ustring           object,
     OIIO::TypeDesc          type,
@@ -230,7 +236,7 @@ bool RendererServices::get_userdata(
     bool                    derivatives,
     OIIO::ustring           name,
     OIIO::TypeDesc          type,
-    void*                   renderstate,
+    OSL::ShaderGlobals*     sg,
     void*                   val)
 {
     return false;
@@ -239,7 +245,7 @@ bool RendererServices::get_userdata(
 bool RendererServices::has_userdata(
     OIIO::ustring           name,
     OIIO::TypeDesc          type,
-    void*                   renderstate)
+    OSL::ShaderGlobals*     sg)
 {
     return false;
 }

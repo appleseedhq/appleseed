@@ -44,8 +44,9 @@
 
 // Forward declarations.
 namespace foundation    { class AbortSwitch; }
-namespace foundation    { class DictionaryArray; }
 namespace renderer      { class Assembly; }
+namespace foundation    { class DictionaryArray; }
+namespace renderer      { class DisneyMaterial; }
 namespace renderer      { class InputEvaluator; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }

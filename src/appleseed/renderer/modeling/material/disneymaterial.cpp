@@ -115,7 +115,6 @@ namespace
             return 0;
         }
 
-      private:
         mutable map<string, Var> m_vars;
     };
 
