@@ -45,7 +45,12 @@
 
 // OSL headers.
 #ifdef WITH_OSL
-#include <OSL/oslexec.h>
+#include "OSL/oslexec.h"
+#endif
+
+//OpenImageIO headers.
+#ifdef WITH_OIIO
+#include "OpenImageIO/texture.h"
 #endif
 
 // Standard headers.
@@ -79,6 +84,9 @@ class SPPMPassCallback
         const LightSampler&         light_sampler,
         const TraceContext&         trace_context,
         TextureStore&               texture_store,
+#ifdef WITH_OIIO
+        OIIO::TextureSystem&        oiio_texture_system,
+#endif
 #ifdef WITH_OSL
         OSL::ShadingSystem&         shading_system,
 #endif

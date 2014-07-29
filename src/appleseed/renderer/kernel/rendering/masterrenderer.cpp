@@ -264,7 +264,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     if (m_project.search_paths().has_root_path())
     {
         // Setup texture / shader search paths.
-        // In OIIO / OSL, the path priorities are the opposite of appleseed,
+        // In OIIO, the path priorities are the opposite of appleseed,
         // so we copy the paths in reverse order.
 
         const filesystem::path root_path = m_project.search_paths().get_root_path();
@@ -333,7 +333,9 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
 #endif
 
     // Create our renderer services.
-    RendererServices services(m_project, *m_texture_system);
+    RendererServices services(
+        m_project, 
+        *m_texture_system);
 
     // Create our OSL shading system.
     boost::shared_ptr<OSL::ShadingSystem> shading_system(
@@ -415,6 +417,9 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
                     light_sampler,
                     trace_context,
                     texture_store,
+#ifdef WITH_OIIO
+                    *m_texture_system,
+#endif
 #ifdef WITH_OSL
                     *shading_system,
 #endif
@@ -455,6 +460,9 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
                     texture_store,
                     lighting_engine_factory.get(),
                     shading_engine,
+#ifdef WITH_OIIO
+                    *m_texture_system,
+#endif
 #ifdef WITH_OSL
                     *shading_system,
 #endif
@@ -502,6 +510,9 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
                     trace_context,
                     texture_store,
                     light_sampler,
+#ifdef WITH_OIIO
+                    *m_texture_system,
+#endif
 #ifdef WITH_OSL
                     *shading_system,
 #endif

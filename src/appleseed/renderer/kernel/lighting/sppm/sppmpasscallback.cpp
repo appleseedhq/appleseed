@@ -59,6 +59,9 @@ SPPMPassCallback::SPPMPassCallback(
     const LightSampler&     light_sampler,
     const TraceContext&     trace_context,
     TextureStore&           texture_store,
+#ifdef WITH_OIIO
+    OIIO::TextureSystem&    oiio_texture_system,
+#endif
 #ifdef WITH_OSL
     OSL::ShadingSystem&     shading_system,
 #endif
@@ -69,6 +72,9 @@ SPPMPassCallback::SPPMPassCallback(
         light_sampler,
         trace_context,
         texture_store,
+#ifdef WITH_OIIO
+        oiio_texture_system,
+#endif
 #ifdef WITH_OSL
         shading_system,
 #endif

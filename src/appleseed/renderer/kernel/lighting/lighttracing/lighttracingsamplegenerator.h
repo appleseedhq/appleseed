@@ -39,7 +39,12 @@
 
 // OSL headers.
 #ifdef WITH_OSL
-#include <OSL/oslexec.h>
+#include "OSL/oslexec.h"
+#endif
+
+//OpenImageIO headers.
+#ifdef WITH_OIIO
+#include "OpenImageIO/texture.h"
 #endif
 
 // Standard headers.
@@ -67,6 +72,9 @@ class LightTracingSampleGeneratorFactory
         const TraceContext&     trace_context,
         TextureStore&           texture_store,
         const LightSampler&     light_sampler,
+#ifdef WITH_OIIO
+        OIIO::TextureSystem&    oiio_texture_system,
+#endif
 #ifdef WITH_OSL
         OSL::ShadingSystem&     shading_system,
 #endif
@@ -90,6 +98,9 @@ class LightTracingSampleGeneratorFactory
     const TraceContext&         m_trace_context;
     TextureStore&               m_texture_store;
     const LightSampler&         m_light_sampler;
+#ifdef WITH_OIIO
+    OIIO::TextureSystem&        m_oiio_texture_system;
+#endif
 #ifdef WITH_OSL
     OSL::ShadingSystem&         m_shading_system;
 #endif

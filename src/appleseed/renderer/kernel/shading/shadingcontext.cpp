@@ -47,6 +47,9 @@ ShadingContext::ShadingContext(
     const Intersector&          intersector,
     Tracer&                     tracer,
     TextureCache&               texture_cache,
+#ifdef WITH_OIIO
+    OIIO::TextureSystem&        oiio_texture_system,
+#endif
 #ifdef WITH_OSL
     OSLShaderGroupExec&         osl_shadergroup_exec,
 #endif
@@ -59,11 +62,21 @@ ShadingContext::ShadingContext(
   , m_lighting_engine(lighting_engine)
   , m_transparency_threshold(transparency_threshold)
   , m_max_iterations(max_iterations)
+#ifdef WITH_OIIO
+  , m_oiio_texture_system(oiio_texture_system)
+#endif
 #ifdef WITH_OSL
   , m_shadergroup_exec(osl_shadergroup_exec)
 #endif
 {
 }
+
+#ifdef WITH_OIIO
+OIIO::TextureSystem& ShadingContext::get_oiio_texture_system() const
+{
+    return m_oiio_texture_system;
+}
+#endif
 
 #ifdef WITH_OSL
 
