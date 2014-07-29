@@ -386,7 +386,7 @@ class DisneyBRDFImpl
         const Assembly&     assembly,
         AbortSwitch*        abort_switch) OVERRIDE
     {
-        if (!BSDF::on_frame_begin(project,assembly,abort_switch))
+        if (!BSDF::on_frame_begin(project, assembly, abort_switch))
             return false;
 
         if (!m_diffuse_brdf->on_frame_begin(project, assembly, abort_switch))

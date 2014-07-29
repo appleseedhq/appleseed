@@ -70,7 +70,7 @@ class SymbolTable
         SymbolTexture,
         SymbolTextureInstance
 #ifdef WITH_OSL
-        ,SymbolShaderGroup
+        , SymbolShaderGroup
 #endif
     };
 

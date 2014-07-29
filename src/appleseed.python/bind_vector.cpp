@@ -73,11 +73,11 @@ namespace detail
     struct vector_constructor {};
 
     template <class T>
-    struct vector_constructor<T,2>
+    struct vector_constructor<T, 2>
     {
-        static Vector<T,2>* construct(T x, T y)
+        static Vector<T, 2>* construct(T x, T y)
         {
-            Vector<T,2>* r = new Vector<T,2>();
+            Vector<T, 2>* r = new Vector<T, 2>();
             (*r)[0] = x;
             (*r)[1] = y;
             return r;
@@ -85,11 +85,11 @@ namespace detail
     };
 
     template <class T>
-    struct vector_constructor<T,3>
+    struct vector_constructor<T, 3>
     {
-        static Vector<T,3>* construct(T x, T y, T z)
+        static Vector<T, 3>* construct(T x, T y, T z)
         {
-            Vector<T,3>* r = new Vector<T,3>();
+            Vector<T, 3>* r = new Vector<T, 3>();
             (*r)[0] = x;
             (*r)[1] = y;
             (*r)[2] = z;
@@ -98,11 +98,11 @@ namespace detail
     };
 
     template <class T>
-    struct vector_constructor<T,4>
+    struct vector_constructor<T, 4>
     {
-        static Vector<T,4>* construct(T x, T y, T z, T w)
+        static Vector<T, 4>* construct(T x, T y, T z, T w)
         {
-            Vector<T,4>* r = new Vector<T,4>();
+            Vector<T, 4>* r = new Vector<T, 4>();
             (*r)[0] = x;
             (*r)[1] = y;
             (*r)[2] = z;
@@ -184,13 +184,13 @@ namespace detail
 
 void bind_vector()
 {
-    detail::do_bind_vector<int,2>("Vector2i");
-    detail::do_bind_vector<float,2>("Vector2f");
-    detail::do_bind_vector<double,2>("Vector2d");
+    detail::do_bind_vector<int, 2>("Vector2i");
+    detail::do_bind_vector<float, 2>("Vector2f");
+    detail::do_bind_vector<double, 2>("Vector2d");
 
-    detail::do_bind_vector<int,3>("Vector3i");
-    detail::do_bind_vector<float,3>("Vector3f");
-    detail::do_bind_vector<double,3>("Vector3d");
+    detail::do_bind_vector<int, 3>("Vector3i");
+    detail::do_bind_vector<float, 3>("Vector3f");
+    detail::do_bind_vector<double, 3>("Vector3d");
 
-    detail::do_bind_vector<int,4>("Vector4i");
+    detail::do_bind_vector<int, 4>("Vector4i");
 }

@@ -120,7 +120,7 @@ namespace detail
 
 void bind_logger()
 {
-    bpy::class_<detail::ILogTargetWrap, boost::shared_ptr<detail::ILogTargetWrap> ,boost::noncopyable>("ILogTarget")
+    bpy::class_<detail::ILogTargetWrap, boost::shared_ptr<detail::ILogTargetWrap>, boost::noncopyable>("ILogTarget")
         .def("write", bpy::pure_virtual(&ILogTarget::write));
 
     bpy::enum_<LogMessage::Category>("LogMessageCategory")

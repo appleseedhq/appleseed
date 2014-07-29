@@ -218,6 +218,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
                     .set_color("red")));
     }
 
+
     //
     // Test settings.
     //
@@ -227,6 +228,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
     const size_t FunctionPlotSampleCount = 256;
     const size_t FunctionSamplingSampleCount = 64;
     const double IntegrationEps = 1.0e-3;
+
 
     //
     // Blinn-Phong MDF.
@@ -314,6 +316,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
         plot(file, "blinn_50", BlinnMDF<double>(50.0), FunctionPlotSampleCount, FunctionSamplingSampleCount);
     }
 
+
     //
     // Beckmann MDF.
     //
@@ -400,6 +403,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
         plot(file, "beckmann_1_0", BeckmannMDF<double>(1.0), FunctionPlotSampleCount, FunctionSamplingSampleCount);
     }
 
+
     //
     // Ward MDF.
     //
@@ -437,6 +441,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
         plot(file, "ward_0_5", WardMDF<double>(0.5), FunctionPlotSampleCount, FunctionSamplingSampleCount);
         plot(file, "ward_1_0", WardMDF<double>(1.0), FunctionPlotSampleCount, FunctionSamplingSampleCount);
     }
+
 
     //
     // GGX MDF.

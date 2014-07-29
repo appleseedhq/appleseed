@@ -34,8 +34,6 @@
 #include "foundation/math/qmc.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
-#include "foundation/utility/makevector.h"
-#include "foundation/utility/maplefile.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.
@@ -59,7 +57,8 @@ TEST_SUITE(Foundation_Math_Microfacet2)
         {
             static const size_t Bases[] = { 2 };
             const Vector2d s = hammersley_sequence<double, 2>(Bases, i, sample_count);
-            Vector<typename MDF::ValueType,3> h = sample_hemisphere_uniform(s);
+
+            const Vector<typename MDF::ValueType,3> h = sample_hemisphere_uniform(s);
             const double value = mdf.D(h, alpha_x, alpha_y);
 
             if (value < 0.0)
@@ -75,24 +74,21 @@ TEST_SUITE(Foundation_Math_Microfacet2)
         const typename MDF::ValueType   alpha,
         const size_t                    sample_count)
     {
-        typedef typename MDF::ValueType RealType;
+        typedef typename MDF::ValueType ValueType;
 
-        Vector<RealType,3> h(0.0);
-        RealType integral = 0.0;
+        ValueType integral = ValueType(0.0);
 
         for (size_t i = 0; i < sample_count; ++i)
         {
-            const RealType theta = radical_inverse_base2<double>(i) * HalfPi;
-            h.y = cos(theta);
-            const RealType sin_theta = sin(theta);
+            const ValueType theta = radical_inverse_base2<ValueType>(i) * ValueType(HalfPi);
+            const Vector<ValueType, 3> h(ValueType(0.0), cos(theta), ValueType(0.0));
+            const ValueType value = mdf.D(h, alpha, alpha);
 
-            const RealType value = mdf.D(h, alpha, alpha);
-
-            integral += value * h.y * sin_theta;
+            integral += value * h.y * sin(theta);
         }
 
-        integral *= RealType(HalfPi) / sample_count;  // integration over theta
-        integral *= TwoPi;                  // integration over phi
+        integral *= ValueType(HalfPi) / sample_count;   // integration over theta
+        integral *= ValueType(TwoPi);                   // integration over phi
 
         return integral;
     }
@@ -192,6 +188,7 @@ TEST_SUITE(Foundation_Math_Microfacet2)
         return integral;
     }
 
+
     //
     // Weak white furnace test.
     //
@@ -211,8 +208,8 @@ TEST_SUITE(Foundation_Math_Microfacet2)
         const double    alpha_y,
         const double    angle_step)
     {
-        const Vector3d v(Vector3d::unit_vector(theta_o, phi_o));
-        const double cos_thetha_o_4 = fabs(4.0 * v.y);
+        const Vector3d v = Vector3d::unit_vector(theta_o, phi_o);
+        const double cos_thetha_o_4 = abs(4.0 * v.y);
         const double G1 = g.G1(v, alpha_x, alpha_y);
 
         double integral = 0.0;
@@ -242,6 +239,7 @@ TEST_SUITE(Foundation_Math_Microfacet2)
         return integral * G1 * square(angle_step) / cos_thetha_o_4;
     }
 
+
     //
     // Test settings.
     //
@@ -253,6 +251,7 @@ TEST_SUITE(Foundation_Math_Microfacet2)
     const double IntegrationEps = 1.0e-3;
     const double WeakWhiteFurnaceAngleStep = 0.05;
     const double WeakWhiteFurnaceEps = 1.0e-2;
+
 
     //
     // Blinn-Phong MDF.
@@ -334,6 +333,7 @@ TEST_SUITE(Foundation_Math_Microfacet2)
 
         EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
     }
+
 
     //
     // Beckmann MDF.
@@ -435,6 +435,7 @@ TEST_SUITE(Foundation_Math_Microfacet2)
 
         EXPECT_FEQ_EPS(1.0, integral, WeakWhiteFurnaceEps);
     }
+
 
     //
     // GGX MDF.

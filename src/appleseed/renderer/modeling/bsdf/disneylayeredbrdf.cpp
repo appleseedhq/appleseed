@@ -33,15 +33,15 @@
 #include "renderer/modeling/bsdf/disneybrdf.h"
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/material/disneymaterial.h"
+#include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
-#include "foundation/math/scalar.h"
 
-// Forward declarations.
-namespace foundation    { class AbortSwitch; }
-namespace renderer      { class Assembly; }
-namespace renderer      { class Project; }
+// Standard headers.
+#include <cassert>
+#include <cstring>
 
 using namespace foundation;
 using namespace std;
@@ -50,14 +50,12 @@ namespace renderer
 {
 
 //
-// Disney Layered BRDF implementation.
+// DisneyLayeredBRDF class implementation.
 //
 
 namespace
 {
-
     const char* Model = "disney_layered_brdf";
-
 }
 
 DisneyLayeredBRDF::DisneyLayeredBRDF(const DisneyMaterial* parent)
@@ -81,7 +79,7 @@ const char* DisneyLayeredBRDF::get_model() const
 bool DisneyLayeredBRDF::on_frame_begin(
     const Project&              project,
     const Assembly&             assembly,
-    foundation::AbortSwitch*    abort_switch)
+    AbortSwitch*                abort_switch)
 {
     if (!BSDF::on_frame_begin(project, assembly, abort_switch))
         return false;
@@ -128,16 +126,16 @@ void DisneyLayeredBRDF::evaluate_inputs(
 }
 
 BSDF::Mode DisneyLayeredBRDF::sample(
-    SamplingContext&    sampling_context,
-    const void*         data,
-    const bool          adjoint,
-    const bool          cosine_mult,
-    const Vector3d&     geometric_normal,
-    const Basis3d&      shading_basis,
-    const Vector3d&     outgoing,
-    Vector3d&           incoming,
-    Spectrum&           value,
-    double&             probability) const
+    SamplingContext&            sampling_context,
+    const void*                 data,
+    const bool                  adjoint,
+    const bool                  cosine_mult,
+    const Vector3d&             geometric_normal,
+    const Basis3d&              shading_basis,
+    const Vector3d&             outgoing,
+    Vector3d&                   incoming,
+    Spectrum&                   value,
+    double&                     probability) const
 {
     if (m_parent->get_layer_count() == 0)
     {
@@ -160,15 +158,15 @@ BSDF::Mode DisneyLayeredBRDF::sample(
 }
 
 double DisneyLayeredBRDF::evaluate(
-    const void*         data,
-    const bool          adjoint,
-    const bool          cosine_mult,
-    const Vector3d&     geometric_normal,
-    const Basis3d&      shading_basis,
-    const Vector3d&     outgoing,
-    const Vector3d&     incoming,
-    const int           modes,
-    Spectrum&           value) const
+    const void*                 data,
+    const bool                  adjoint,
+    const bool                  cosine_mult,
+    const Vector3d&             geometric_normal,
+    const Basis3d&              shading_basis,
+    const Vector3d&             outgoing,
+    const Vector3d&             incoming,
+    const int                   modes,
+    Spectrum&                   value) const
 {
     if (m_parent->get_layer_count() == 0)
     {
@@ -189,12 +187,12 @@ double DisneyLayeredBRDF::evaluate(
 }
 
 double DisneyLayeredBRDF::evaluate_pdf(
-    const void*         data,
-    const Vector3d&     geometric_normal,
-    const Basis3d&      shading_basis,
-    const Vector3d&     outgoing,
-    const Vector3d&     incoming,
-    const int           modes) const
+    const void*                 data,
+    const Vector3d&             geometric_normal,
+    const Basis3d&              shading_basis,
+    const Vector3d&             outgoing,
+    const Vector3d&             incoming,
+    const int                   modes) const
 {
     if (m_parent->get_layer_count() == 0)
         return 0.0;

@@ -41,17 +41,17 @@
 #include <cmath>
 #include <cstddef>
 
-//
-// Research for this post on Stack Overflow:
-//
-// "How to efficiently compare the sign of two floating-point values while handling negative zeros"
-// http://stackoverflow.com/questions/2922619/how-to-efficiently-compare-the-sign-of-two-floating-point-values-while-handling-n
-//
+using namespace foundation;
+using namespace std;
 
 BENCHMARK_SUITE(SameSign)
 {
-    using namespace foundation;
-    using namespace std;
+    //
+    // Research for this post on Stack Overflow:
+    //
+    // "How to efficiently compare the sign of two floating-point values while handling negative zeros"
+    // http://stackoverflow.com/questions/2922619/how-to-efficiently-compare-the-sign-of-two-floating-point-values-while-handling-n
+    //
 
     //
     // Empty function.
@@ -73,7 +73,7 @@ BENCHMARK_SUITE(SameSign)
 
     NO_INLINE bool same_sign_naive(const float a, const float b)
     {
-        if (fabs(a) == 0.0f || fabs(b) == 0.0f)
+        if (abs(a) == 0.0f || abs(b) == 0.0f)
             return true;
 
         return (a >= 0.0f) == (b >= 0.0f);

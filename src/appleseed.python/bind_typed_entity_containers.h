@@ -121,8 +121,7 @@ void bind_typed_entity_vector(const char* name)
 
         .def("insert", &renderer::TypedEntityVector<T>::insert)
 
-        .def("__iter__", boost::python::iterator<renderer::TypedEntityVector<T>,boost::python::return_internal_reference<> >())
-        ;
+        .def("__iter__", boost::python::iterator<renderer::TypedEntityVector<T>, boost::python::return_internal_reference<> >());
 }
 
 template <class T>
@@ -138,8 +137,7 @@ void bind_typed_entity_map(const char* name)
 
         .def("__iter__", &detail::typed_entity_map_get_iter<T>)
         .def("keys", &detail::typed_entity_map_get_keys<T>)
-        .def("values", &detail::typed_entity_map_get_values<T>)
-        ;
+        .def("values", &detail::typed_entity_map_get_values<T>);
 }
 
 #endif  // !APPLESEED_PYTHON_BIND_TYPED_ENTITY_CONTAINERS_H

@@ -219,7 +219,7 @@ UnalignedMatrix44<T> operator*(const UnalignedMatrix44<T>& a, const UnalignedMat
 }
 
 template <class T>
-Vector<T,4> operator*(const UnalignedMatrix44<T>& a, const Vector<T,4>& v)
+Vector<T, 4> operator*(const UnalignedMatrix44<T>& a, const Vector<T, 4>& v)
 {
     return a.as_foundation_matrix() * v;
 }

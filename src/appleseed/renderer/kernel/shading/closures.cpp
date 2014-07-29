@@ -446,7 +446,7 @@ void CompositeClosure::do_add_closure(
     const InputValues&          params)
 {
     // Check that InputValues is included in our type list.
-    typedef typename boost::mpl::contains<InputValuesTypeList,InputValues>::type value_in_list;
+    typedef typename boost::mpl::contains<InputValuesTypeList, InputValues>::type value_in_list;
     BOOST_STATIC_ASSERT(value_in_list::value);
 
     // Make sure we have enough space.

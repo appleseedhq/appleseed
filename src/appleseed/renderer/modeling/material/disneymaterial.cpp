@@ -50,7 +50,9 @@
 
 // Standard headers.
 #include <algorithm>
+#include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
 using namespace foundation;
@@ -62,12 +64,15 @@ namespace renderer
 
 namespace
 {
-
-    class SeAppleseedExpr : public SeExpression
+    class SeAppleseedExpr
+      : public SeExpression
     {
       public:
-        struct Var : public SeExprScalarVarRef
+        struct Var
+          : public SeExprScalarVarRef
         {
+            double m_val;
+
             Var() {}
 
             explicit Var(const double val)
@@ -75,19 +80,19 @@ namespace
             {
             }
 
-            virtual void eval(const SeExprVarNode* /*node*/,SeVec3d& result) OVERRIDE
+            virtual void eval(const SeExprVarNode* /*node*/, SeVec3d& result) OVERRIDE
             {
                 result[0] = m_val;
             }
-
-            double m_val;
         };
 
-        SeAppleseedExpr() : SeExpression()
+        SeAppleseedExpr()
+          : SeExpression()
         {
         }
 
-        SeAppleseedExpr(const string& expr) : SeExpression(expr)
+        SeAppleseedExpr(const string& expr)
+          : SeExpression(expr)
         {
             m_vars["u"] = Var(0.0);
             m_vars["v"] = Var(0.0);
@@ -102,7 +107,7 @@ namespace
 
         SeExprVarRef* resolveVar(const string& name) const OVERRIDE
         {
-            map<string,Var>::iterator i = m_vars.find(name);
+            const map<string, Var>::iterator i = m_vars.find(name);
 
             if (i != m_vars.end())
                 return &i->second;
@@ -110,7 +115,8 @@ namespace
             return 0;
         }
 
-        mutable map<string,Var> m_vars;
+      private:
+        mutable map<string, Var> m_vars;
     };
 
     void report_expression_error(
@@ -123,7 +129,8 @@ namespace
         else
             RENDERER_LOG_ERROR("%s:", message1);
 
-        string error = expr.parseError();
+        const string error = expr.parseError();
+
         vector<string> errors;
         split(errors, error, is_any_of("\n"));
 
@@ -140,14 +147,15 @@ namespace
 // DisneyParamExpression class implementation.
 //
 
-struct DisneyParamExpression::Impl : public NonCopyable
+struct DisneyParamExpression::Impl
+  : public NonCopyable
 {
+    SeAppleseedExpr m_expr;
+
     explicit Impl(const char *expr)
       : m_expr(expr)
     {
     }
-
-    SeAppleseedExpr m_expr;
 };
 
 DisneyParamExpression::DisneyParamExpression(const char* expr)
@@ -254,7 +262,8 @@ class DisneyLayerParam
 
         m_expression.m_vars["u"] = SeAppleseedExpr::Var(shading_point.get_uv(0)[0]);
         m_expression.m_vars["v"] = SeAppleseedExpr::Var(shading_point.get_uv(0)[1]);
-        SeVec3d result = m_expression.evaluate();
+
+        const SeVec3d result = m_expression.evaluate();
         return Color3d(result[0], result[1], result[2]);
     }
 
@@ -269,8 +278,9 @@ class DisneyLayerParam
     mutable SeAppleseedExpr m_expression;
 
     // TODO: this is horrible. Remove it ASAP.
-    mutable mutex   m_mutex;
+    mutable mutex           m_mutex;
 };
+
 
 //
 // DisneyMaterialLayer class implementation.
@@ -315,8 +325,8 @@ struct DisneyMaterialLayer::Impl
 };
 
 DisneyMaterialLayer::DisneyMaterialLayer(
-    const char*         name,
-    const Dictionary&   params)
+    const char*             name,
+    const Dictionary&       params)
   : impl(new Impl(name, params))
 {
 }
@@ -460,15 +470,15 @@ DictionaryArray DisneyMaterialLayer::get_input_metadata()
 
 Dictionary DisneyMaterialLayer::get_default_values()
 {
+    Dictionary layer_params;
+
     DictionaryArray metadata = get_input_metadata();
 
-    Dictionary layer_params;
     for (size_t i = 0; i < metadata.size(); ++i)
     {
         const Dictionary& parameter = metadata[i];
         const string name = parameter.get<string>("name");
         const string default_value = parameter.get<string>("default");
-
         layer_params.insert(name, default_value);
     }
 
@@ -476,8 +486,10 @@ Dictionary DisneyMaterialLayer::get_default_values()
 
     Dictionary values;
     values.insert("layer1", layer_params);
+
     return values;
 }
+
 
 //
 // DisneyMaterial class implementation.
@@ -500,8 +512,8 @@ struct DisneyMaterial::Impl
 };
 
 DisneyMaterial::DisneyMaterial(
-  const char*         name,
-  const ParamArray&   params)
+    const char*             name,
+    const ParamArray&       params)
   : Material(name, params)
   , impl(new Impl(this))
 {
@@ -523,9 +535,9 @@ const char* DisneyMaterial::get_model() const
 }
 
 bool DisneyMaterial::on_frame_begin(
-    const Project&  project,
-    const Assembly& assembly,
-    AbortSwitch*    abort_switch)
+    const Project&          project,
+    const Assembly&         assembly,
+    AbortSwitch*            abort_switch)
 {
     if (!Material::on_frame_begin(project, assembly, abort_switch))
         return false;
@@ -555,8 +567,8 @@ bool DisneyMaterial::on_frame_begin(
 }
 
 void DisneyMaterial::on_frame_end(
-    const Project&  project,
-    const Assembly& assembly) OVERRIDE
+    const Project&          project,
+    const Assembly&         assembly) OVERRIDE
 {
     impl->m_layers.clear();
     Material::on_frame_end(project, assembly);
@@ -666,8 +678,8 @@ DictionaryArray DisneyMaterialFactory::get_input_metadata() const
 }
 
 auto_release_ptr<Material> DisneyMaterialFactory::create(
-    const char*         name,
-    const ParamArray&   params) const
+    const char*             name,
+    const ParamArray&       params) const
 {
     return
         auto_release_ptr<Material>(

@@ -475,7 +475,7 @@ class GGXMDF2
 
         if (alpha_x != alpha_y)
         {
-            Vector<T,2> sin_cos_phi(
+            Vector<T, 2> sin_cos_phi(
                 std::cos(T(TwoPi) * s[1]) * alpha_x,
                 std::sin(T(TwoPi) * s[1]) * alpha_y);
             sin_cos_phi = normalize(sin_cos_phi);

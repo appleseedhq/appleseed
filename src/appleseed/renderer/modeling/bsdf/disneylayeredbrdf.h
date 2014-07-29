@@ -29,29 +29,33 @@
 #ifndef APPLESEED_RENDERER_MODELING_BSDF_DISNEYLAYEREDBRDF_H
 #define APPLESEED_RENDERER_MODELING_BSDF_DISNEYLAYEREDBRDF_H
 
-// Interface header.
-#include "bsdf.h"
-
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/modeling/bsdf/bsdf.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/basis.h"
+#include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
+// Standard headers.
+#include <cstddef>
 
 // Forward declarations.
+namespace foundation    { class AbortSwitch; }
 namespace foundation    { class DictionaryArray; }
-namespace renderer      { class DisneyMaterial; }
+namespace renderer      { class Assembly; }
+namespace renderer      { class InputEvaluator; }
 namespace renderer      { class ParamArray; }
+namespace renderer      { class Project; }
+namespace renderer      { class ShadingPoint; }
 
 namespace renderer
 {
 
 //
-// Disney Layered BRDF class.
+// Disney layered BRDF class.
 //
 
 class DisneyLayeredBRDF
@@ -67,27 +71,27 @@ class DisneyLayeredBRDF
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
     virtual bool on_frame_begin(
-        const Project&              project,
-        const Assembly&             assembly,
-        foundation::AbortSwitch*    abort_switch = 0) OVERRIDE;
+        const Project&                  project,
+        const Assembly&                 assembly,
+        foundation::AbortSwitch*        abort_switch = 0) OVERRIDE;
 
     // This method is called once after rendering each frame.
     virtual void on_frame_end(
-        const Project&              project,
-        const Assembly&             assembly) OVERRIDE;
+        const Project&                  project,
+        const Assembly&                 assembly) OVERRIDE;
 
     // Compute the cumulated size in bytes of the values of all inputs of
     // this BSDF and its child BSDFs, if any.
     virtual size_t compute_input_data_size(
-        const Assembly&             assembly) const OVERRIDE;
+        const Assembly&                 assembly) const OVERRIDE;
 
     // Evaluate the inputs of this BSDF and of its child BSDFs, if any.
     // Input values are stored in the input evaluator. This method is called
     // once per shading point and pair of incoming/outgoing directions.
     virtual void evaluate_inputs(
-        InputEvaluator&             input_evaluator,
-        const ShadingPoint&         shading_point,
-        const size_t                offset = 0) const OVERRIDE;
+        InputEvaluator&                 input_evaluator,
+        const ShadingPoint&             shading_point,
+        const size_t                    offset = 0) const OVERRIDE;
 
     // Given an outgoing direction, sample the BSDF and compute the incoming
     // direction, its probability density and the value of the BSDF for this

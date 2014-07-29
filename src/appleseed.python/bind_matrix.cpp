@@ -183,9 +183,9 @@ namespace detail
     template <class T>
     void bind_typed_matrix4(const char* class_name)
     {
-        UnalignedMatrix44<T> (*rot1)(T, T, T) = &UnalignedMatrix44<T>::rotation;
-        UnalignedMatrix44<T> (*rot2)(const Vector<T,3>&, T) = &UnalignedMatrix44<T>::rotation;
-        UnalignedMatrix44<T> (*rot3)(const Quaternion<T>&) = &UnalignedMatrix44<T>::rotation;
+        UnalignedMatrix44<T>(*rot1)(T, T, T) = &UnalignedMatrix44<T>::rotation;
+        UnalignedMatrix44<T>(*rot2)(const Vector<T, 3>&, T) = &UnalignedMatrix44<T>::rotation;
+        UnalignedMatrix44<T>(*rot3)(const Quaternion<T>&) = &UnalignedMatrix44<T>::rotation;
 
         bpy::class_<UnalignedMatrix44<T> > X(class_name);
 
@@ -209,15 +209,14 @@ namespace detail
          .def("inverse", &invert_matrix<T>)
 
          .def(bpy::self * bpy::self)
-         .def(bpy::self * Vector<T,4>())
+         .def(bpy::self * Vector<T, 4>())
 
          // Because of a bug in Boost.Python, this needs the extra self_ns qualification.
          .def(bpy::self_ns::str(bpy::self))
          .def(bpy::self_ns::repr(bpy::self))
 
          .def("extract_matrix3", &UnalignedMatrix44<T>::extract_matrix3)
-         .def("extract_translation", &UnalignedMatrix44<T>::extract_translation)
-         ;
+         .def("extract_translation", &UnalignedMatrix44<T>::extract_translation);
 
         bind_typed_matrix4_extra(X);
     }

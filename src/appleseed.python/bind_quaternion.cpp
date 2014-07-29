@@ -49,7 +49,7 @@ namespace detail
     template <class T>
     bpy::tuple quat_extract_axis_angle(const Quaternion<T>& q)
     {
-        Vector<T,3> axis;
+        Vector<T, 3> axis;
         T angle;
 
         q.extract_axis_angle(axis, angle);
@@ -107,15 +107,15 @@ namespace detail
     template <class T>
     void do_bind_quaternion(const char* class_name)
     {
-        Quaternion<T> (*rot1)(const Vector<T,3>&, T) = &Quaternion<T>::rotation;
-        Quaternion<T> (*rot2)(const Vector<T,3>&, const Vector<T,3>&) = &Quaternion<T>::rotation;
+        Quaternion<T>(*rot1)(const Vector<T, 3>&, T) = &Quaternion<T>::rotation;
+        Quaternion<T>(*rot2)(const Vector<T, 3>&, const Vector<T, 3>&) = &Quaternion<T>::rotation;
 
         bpy::class_<Quaternion<T> >(class_name)
             .def("identity", &Quaternion<T>::identity).staticmethod("identity")
             .def("rotation", rot1).def("rotation", rot2).staticmethod("rotation")
 
             .def(bpy::init<>())
-            .def(bpy::init<T, Vector<T,3> >())
+            .def(bpy::init<T, Vector<T, 3> >())
 
             .def_readwrite("s", &Quaternion<T>::s)
             .def_readwrite("v", &Quaternion<T>::v)

@@ -33,7 +33,6 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/ibsdffactory.h"
-#include "renderer/modeling/input/inputarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
