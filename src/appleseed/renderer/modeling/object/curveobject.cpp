@@ -167,8 +167,6 @@ struct CurveObject::Impl
 
     void load_curve_file(const char* filepath)
     {
-        const double CurveWidth = 0.009;
-
         ifstream input;
         input.open(filepath);
 
@@ -185,7 +183,16 @@ struct CurveObject::Impl
             size_t control_point_count;
             input >> control_point_count;
 
+            if (control_point_count != 4)
+            {
+                RENDERER_LOG_ERROR(
+                    "while loading curve file %s: only curves with 4 control points are currently supported.",
+                    filepath);
+                return;
+            }
+
             vector<Vector3d> points(control_point_count);
+            vector<double> widths(control_point_count);
 
             m_curves.reserve(curve_count);
 
@@ -193,14 +200,15 @@ struct CurveObject::Impl
             {
                 for (size_t p = 0; p < control_point_count; ++p)
                 {
-                    Vector3d point;
-                    input >> point.x >> point.y >> point.z;
-                    points[p] = point;
+                    input >> points[p].x >> points[p].y >> points[p].z;
+                    input >> widths[p];
                 }
 
-                const BezierCurve3d curve(&points[0], CurveWidth);
+                const BezierCurve3d curve(&points[0], &widths[0]);
                 m_curves.push_back(curve);
             }
+
+            input.close();
 
             stopwatch.measure();
 
@@ -209,8 +217,6 @@ struct CurveObject::Impl
                 filepath,
                 pretty_uint(curve_count).c_str(),
                 pretty_time(stopwatch.get_seconds()).c_str());
-
-            input.close();
         }
         else
         {
