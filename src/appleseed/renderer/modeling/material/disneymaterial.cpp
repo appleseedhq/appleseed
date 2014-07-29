@@ -30,22 +30,247 @@
 #include "disneymaterial.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/disneybrdf.h"
-#include "renderer/modeling/input/expression.h"
+#include "renderer/modeling/bsdf/disneylayeredbrdf.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/scalar.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
 
+// SeExpr headers
+#include "SeExpression.h"
+
+// Boost headers.
+#include "boost/algorithm/string.hpp"
+#include "boost/algorithm/string/split.hpp"
+#include "boost/thread/locks.hpp"
+#include "boost/thread/mutex.hpp"
+
 // Standard headers.
 #include <algorithm>
+#include <memory>
 #include <vector>
 
 using namespace foundation;
+using namespace boost;
 using namespace std;
 
 namespace renderer
 {
+
+namespace
+{
+
+    class SeAppleseedExpr : public SeExpression
+    {
+      public:
+        struct Var : public SeExprScalarVarRef
+        {
+            Var() {}
+    
+            explicit Var(const double val)
+              : m_val(val)
+            {
+            }
+    
+            virtual void eval(const SeExprVarNode* /*node*/,SeVec3d& result) OVERRIDE
+            {
+                result[0] = m_val;
+            }
+            
+            double m_val;            
+        };
+        
+        SeAppleseedExpr() : SeExpression()
+        {
+        }
+    
+        SeAppleseedExpr(const string& expr) : SeExpression(expr)
+        {
+            m_vars["u"] = Var(0.0);
+            m_vars["v"] = Var(0.0);
+        }
+    
+        void set_expr(const string& e)
+        {
+            SeExpression::setExpr(e);
+            m_vars["u"] = Var(0.0);
+            m_vars["v"] = Var(0.0);
+        }
+    
+        SeExprVarRef* resolveVar(const string& name) const OVERRIDE
+        {
+            map<string,Var>::iterator i = m_vars.find(name);
+        
+            if (i != m_vars.end())
+                return &i->second;
+        
+            return 0;
+        }
+    
+        mutable map<string,Var> m_vars;
+    };
+    
+    void report_expression_error(
+        const char*             message1,
+        const char*             message2,
+        const SeAppleseedExpr&  expr)
+    {
+        if (message2)
+            RENDERER_LOG_ERROR("%s%s", message1, message2);
+        else
+            RENDERER_LOG_ERROR("%s:", message1);
+    
+        string error = expr.parseError();
+        vector<string> errors;
+        split(errors, error, is_any_of("\n"));
+        
+        for (const_each<vector<string> > e = errors; e; ++e)
+        {
+            if (!e->empty())
+                RENDERER_LOG_ERROR("%s", e->c_str());
+        }
+    }
+}
+
+
+//
+// DisneyParamExpression class implementation.
+//
+
+struct DisneyParamExpression::Impl : public NonCopyable
+{
+    explicit Impl(const char *expr)
+      : m_expr(expr)
+    {
+    }
+    
+    SeAppleseedExpr m_expr;
+};
+
+DisneyParamExpression::DisneyParamExpression(const char* expr)
+  : impl(new Impl(expr))
+{
+}
+
+DisneyParamExpression::~DisneyParamExpression()
+{
+    delete impl;
+}
+
+bool DisneyParamExpression::is_valid() const
+{
+    return impl->m_expr.isValid();
+}
+
+const char* DisneyParamExpression::parse_error() const
+{
+    return impl->m_expr.parseError().c_str();
+}
+
+void DisneyParamExpression::report_error(const char* message) const
+{
+    report_expression_error(message, 0, impl->m_expr);
+}
+
+bool DisneyParamExpression::is_constant() const
+{
+    return impl->m_expr.isConstant();
+}
+
+
+//
+// DisneyLayerParam class implementation.
+//
+
+class DisneyLayerParam
+{
+  public:
+    DisneyLayerParam(
+        const char*         name,
+        const Dictionary&   params,
+        const bool          is_vector)
+      : m_param_name(name)
+      , m_expr(params.get<string>(m_param_name))
+      , m_is_vector(is_vector)
+      , m_is_constant(false)
+    {
+    }
+
+    DisneyLayerParam(const DisneyLayerParam& other)
+      : m_param_name(other.m_param_name)
+      , m_expr(other.m_expr)
+      , m_is_vector(other.m_is_vector)
+      , m_is_constant(false)
+    {
+    }
+    
+    void swap(DisneyLayerParam& other)
+    {
+        std::swap(m_param_name, other.m_param_name);
+        std::swap(m_expr, other.m_expr);
+        std::swap(m_is_vector, other.m_is_vector);        
+    }
+
+    DisneyLayerParam& operator=(const DisneyLayerParam& other)
+    {
+        DisneyLayerParam tmp(other);
+        swap(tmp);
+        return *this;
+    }
+
+    bool prepare()
+    {
+        m_expression.setWantVec(m_is_vector);
+        m_expression.set_expr(m_expr);
+        
+        if (!m_expression.isValid())
+        {
+            report_expression_error("Expression error: ", m_param_name, m_expression);
+            return false;
+        }
+
+        m_is_constant = m_expression.isConstant();
+        
+        if (m_is_constant)
+        {
+            SeVec3d result = m_expression.evaluate();
+            m_constant_value = Color3d(result[0], result[1], result[2]);
+        }
+
+        // Check for texture lookups here...
+
+        return true;
+    }
+    
+    Color3d evaluate(const ShadingPoint& shading_point) const
+    {
+        if (m_is_constant)
+            return m_constant_value;
+
+        lock_guard<mutex> lock(m_mutex);
+
+        m_expression.m_vars["u"] = SeAppleseedExpr::Var(shading_point.get_uv(0)[0]);
+        m_expression.m_vars["v"] = SeAppleseedExpr::Var(shading_point.get_uv(0)[1]);
+        SeVec3d result = m_expression.evaluate();
+        return Color3d(result[0], result[1], result[2]);       
+    }
+
+  private:
+    const char*             m_param_name;
+    string                  m_expr;
+    bool                    m_is_vector;
+
+    bool                    m_is_constant;
+    Color3d                 m_constant_value;
+    
+    mutable SeAppleseedExpr m_expression;
+
+    // TODO: this is horrible. Remove it ASAP.
+    mutable mutex   m_mutex;
+};
 
 //
 // DisneyMaterialLayer class implementation.
@@ -58,36 +283,35 @@ struct DisneyMaterialLayer::Impl
         const Dictionary&   params)
       : m_name(name)
       , m_layer_number(params.get<size_t>("layer_number"))
+      , m_mask("mask", params, false)
+      , m_base_color("base_color", params, true)
+      , m_subsurface("subsurface", params, false)
+      , m_metallic("metallic", params, false)
+      , m_specular("specular", params, false)
+      , m_specular_tint("specular_tint", params, false)
+      , m_anisotropic("anisotropic", params, false)
+      , m_roughness("roughness", params, false)
+      , m_sheen("sheen", params, false)
+      , m_sheen_tint("sheen_tint", params, false)
+      , m_clearcoat("clearcoat", params, false)
+      , m_clearcoat_gloss("clearcoat_gloss", params, false)
     {
-        m_layer_number = params.get<size_t>("layer_number");
-        m_mask.set_expression(params.get<string>("mask").c_str(), false);
-        m_base_color.set_expression(params.get<string>("base_color").c_str());
-        m_subsurface.set_expression(params.get<string>("subsurface").c_str(), false);
-        m_metallic.set_expression(params.get<string>("metallic").c_str(), false);
-        m_specular.set_expression(params.get<string>("specular").c_str(), false);
-        m_specular_tint.set_expression(params.get<string>("specular_tint").c_str(), false);
-        m_anisotropic.set_expression(params.get<string>("anisotropic").c_str(), false);
-        m_roughness.set_expression(params.get<string>("roughness").c_str(), false);
-        m_sheen.set_expression(params.get<string>("sheen").c_str(), false);
-        m_sheen_tint.set_expression(params.get<string>("sheen_tint").c_str(), false);
-        m_clearcoat.set_expression(params.get<string>("clearcoat").c_str(), false);
-        m_clearcoat_gloss.set_expression(params.get<string>("clearcoat_gloss").c_str(), false);
     }
 
-    string      m_name;
-    size_t      m_layer_number;
-    Expression  m_mask;
-    Expression  m_base_color;
-    Expression  m_subsurface;
-    Expression  m_metallic;
-    Expression  m_specular;
-    Expression  m_specular_tint;
-    Expression  m_anisotropic;
-    Expression  m_roughness;
-    Expression  m_sheen;
-    Expression  m_sheen_tint;
-    Expression  m_clearcoat;
-    Expression  m_clearcoat_gloss;
+    const string        m_name;
+    const size_t        m_layer_number;
+    DisneyLayerParam    m_mask;
+    DisneyLayerParam    m_base_color;
+    DisneyLayerParam    m_subsurface;
+    DisneyLayerParam    m_metallic;
+    DisneyLayerParam    m_specular;
+    DisneyLayerParam    m_specular_tint;
+    DisneyLayerParam    m_anisotropic;
+    DisneyLayerParam    m_roughness;
+    DisneyLayerParam    m_sheen;
+    DisneyLayerParam    m_sheen_tint;
+    DisneyLayerParam    m_clearcoat;
+    DisneyLayerParam    m_clearcoat_gloss;
 };
 
 DisneyMaterialLayer::DisneyMaterialLayer(
@@ -124,20 +348,83 @@ bool DisneyMaterialLayer::operator<(const DisneyMaterialLayer& other) const
     return impl->m_layer_number < other.impl->m_layer_number;
 }
 
-bool DisneyMaterialLayer::check_expressions_syntax() const
+bool DisneyMaterialLayer::prepare_expressions() const
 {
-    return  impl->m_mask.syntax_ok() &&
-            impl->m_base_color.syntax_ok() &&
-            impl->m_subsurface.syntax_ok() &&
-            impl->m_metallic.syntax_ok() &&
-            impl->m_specular.syntax_ok() &&
-            impl->m_specular_tint.syntax_ok() &&
-            impl->m_anisotropic.syntax_ok() &&
-            impl->m_roughness.syntax_ok() &&
-            impl->m_sheen.syntax_ok() &&
-            impl->m_sheen_tint.syntax_ok() &&
-            impl->m_clearcoat.syntax_ok() &&
-            impl->m_clearcoat_gloss.syntax_ok();
+    return  impl->m_mask.prepare() &&
+            impl->m_base_color.prepare() &&
+            impl->m_subsurface.prepare() &&
+            impl->m_metallic.prepare() &&
+            impl->m_specular.prepare() &&
+            impl->m_specular_tint.prepare() &&
+            impl->m_anisotropic.prepare() &&
+            impl->m_roughness.prepare() &&
+            impl->m_sheen.prepare() &&
+            impl->m_sheen_tint.prepare() &&
+            impl->m_clearcoat.prepare() &&
+            impl->m_clearcoat_gloss.prepare();
+}
+
+void DisneyMaterialLayer::evaluate_expressions(
+    const ShadingPoint&     shading_point,
+    Color3d&                base_color,        
+    DisneyBRDFInputValues&  values) const
+{
+    const double mask = saturate(impl->m_mask.evaluate(shading_point)[0]);
+
+    if (mask == 0.0)
+        return;
+
+    base_color = lerp(base_color, impl->m_base_color.evaluate(shading_point), mask);
+
+    values.m_subsurface = lerp(
+        values.m_subsurface,
+        saturate(impl->m_subsurface.evaluate(shading_point)[0]),
+        mask);
+
+    values.m_metallic = lerp(
+        values.m_metallic,
+        saturate(impl->m_metallic.evaluate(shading_point)[0]),
+        mask);
+
+    values.m_specular = lerp(
+        values.m_specular, 
+        max(impl->m_specular.evaluate(shading_point)[0], 0.0),
+        mask);
+
+    values.m_specular_tint = lerp(
+        values.m_specular_tint, 
+        saturate(impl->m_specular_tint.evaluate(shading_point)[0]),
+        mask);
+
+    values.m_anisotropic = lerp(
+        values.m_anisotropic, 
+        saturate(impl->m_anisotropic.evaluate(shading_point)[0]),
+        mask);
+
+    values.m_roughness = lerp(
+        values.m_roughness,
+        clamp(impl->m_roughness.evaluate(shading_point)[0], 0.001, 1.0),
+        mask);
+
+    values.m_sheen = lerp(
+        values.m_sheen, 
+        impl->m_sheen.evaluate(shading_point)[0],
+        mask);
+
+    values.m_sheen_tint = lerp(
+        values.m_sheen_tint, 
+        saturate(impl->m_sheen_tint.evaluate(shading_point)[0]),
+        mask);
+
+    values.m_clearcoat = lerp(
+        values.m_clearcoat, 
+        impl->m_clearcoat.evaluate(shading_point)[0],
+        mask);
+
+    values.m_clearcoat_gloss = lerp(
+        values.m_clearcoat_gloss, 
+        saturate(impl->m_clearcoat_gloss.evaluate(shading_point)[0]),
+        mask);
 }
 
 DictionaryArray DisneyMaterialLayer::get_input_metadata()
@@ -156,7 +443,7 @@ DictionaryArray DisneyMaterialLayer::get_input_metadata()
             .insert("name", "mask")
             .insert("label", "Mask")
             .insert("type", "colormap")
-            .insert("default", "0"));
+            .insert("default", "1"));
 
     metadata.append(DisneyBRDFFactory().get_input_metadata());
 
@@ -203,14 +490,20 @@ namespace
 
 struct DisneyMaterial::Impl
 {
+    explicit Impl(const DisneyMaterial* parent)
+      : m_brdf(new DisneyLayeredBRDF(parent))
+    {
+    }
+
     vector<DisneyMaterialLayer> m_layers;
+    auto_ptr<DisneyLayeredBRDF> m_brdf;
 };
 
 DisneyMaterial::DisneyMaterial(
   const char*         name,
   const ParamArray&   params)
   : Material(name, params)
-  , impl(new Impl())
+  , impl(new Impl(this))
 {
 }
 
@@ -237,7 +530,6 @@ bool DisneyMaterial::on_frame_begin(
     if (!Material::on_frame_begin(project, assembly, abort_switch))
         return false;
 
-    /*
     try
     {
         for (const_each<DictionaryDictionary> it = m_params.dictionaries(); it; ++it)
@@ -254,11 +546,11 @@ bool DisneyMaterial::on_frame_begin(
 
     for (const_each<vector<DisneyMaterialLayer> > it = impl->m_layers; it ; ++it)
     {
-        if (!it->check_expressions_syntax())
+        if (!it->prepare_expressions())
             return false;
     }
-    */
 
+    m_bsdf = impl->m_brdf.get();
     return true;
 }
 

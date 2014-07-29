@@ -30,6 +30,7 @@
 #define APPLESEED_RENDERER_MODELING_MATERIAL_DISNEYMATERIAL_H
 
 // appleseed.renderer headers.
+#include "renderer/modeling/bsdf/disneybrdf.h"
 #include "renderer/modeling/material/imaterialfactory.h"
 #include "renderer/modeling/material/material.h"
 
@@ -40,9 +41,6 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// Standard headers.
-#include <cstddef>
-
 // Forward declarations.
 namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }
@@ -51,6 +49,26 @@ namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
+
+class DLLSYMBOL DisneyParamExpression 
+  : public foundation::NonCopyable
+{
+  public:
+    DisneyParamExpression(const char* expr);
+    ~DisneyParamExpression();
+
+    bool is_valid() const;
+
+    const char* parse_error() const;
+
+    void report_error(const char* message) const;
+
+    bool is_constant() const;
+    
+  private:
+    struct Impl;
+    Impl* impl;    
+};
 
 class DLLSYMBOL DisneyMaterialLayer
 {
@@ -63,7 +81,12 @@ class DLLSYMBOL DisneyMaterialLayer
 
     bool operator<(const DisneyMaterialLayer& other) const;
 
-    bool check_expressions_syntax() const;
+    bool prepare_expressions() const;
+    
+    void evaluate_expressions(
+        const ShadingPoint&     shading_point,
+        foundation::Color3d&    base_color,
+        DisneyBRDFInputValues&  values) const;
 
     static foundation::DictionaryArray get_input_metadata();
 
@@ -74,13 +97,13 @@ class DLLSYMBOL DisneyMaterialLayer
 
     struct Impl;
     Impl* impl;
-
+    
     // Constructor
     DisneyMaterialLayer(
         const char*                     name,
         const foundation::Dictionary&   params);
 
-    void swap(DisneyMaterialLayer& other);
+    void swap(DisneyMaterialLayer& other);    
 };
 
 class DLLSYMBOL DisneyMaterial
@@ -105,22 +128,23 @@ class DLLSYMBOL DisneyMaterial
         const Project&              project,
         const Assembly&             assembly) OVERRIDE;
 
+    std::size_t get_layer_count() const;
+
+    const DisneyMaterialLayer& get_layer(const std::size_t index) const;
+    
   private:
     friend class DisneyMaterialFactory;
 
     struct Impl;
     Impl* impl;
-
+    
     // Constructor.
     DisneyMaterial(
-        const char*                 name,
-        const ParamArray&           params);
+        const char*         name,
+        const ParamArray&   params);
 
     // Destructor
     ~DisneyMaterial();
-
-    size_t get_layer_count() const;
-    const DisneyMaterialLayer& get_layer(const size_t index) const;
 };
 
 

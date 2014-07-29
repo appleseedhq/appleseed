@@ -217,7 +217,7 @@ void DisneyMaterialCustomUI::slot_open_expression_editor(const QString& widget_n
     double value;
     istringstream sstream(expression);
     if ((sstream >> value))
-        expression = "$value = " + sstream.str() + ";";
+        expression = sstream.str();
 
     ExpressionEditorWindow* expression_editor_window = new ExpressionEditorWindow(widget_name, expression, m_parent);
 

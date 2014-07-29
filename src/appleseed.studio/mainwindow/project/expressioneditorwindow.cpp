@@ -34,6 +34,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/modeling/material/disneymaterial.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
@@ -49,14 +50,9 @@
 #include <QScrollArea>
 #include <QVBoxLayout>
 
-// boost headers.
-#include "boost/algorithm/string.hpp"
-#include "boost/algorithm/string/split.hpp"
-
 // Standard headers.
-#include <vector>
+#include <string>
 
-using namespace boost;
 using namespace foundation;
 using namespace renderer;
 using namespace std;
@@ -110,22 +106,12 @@ ExpressionEditorWindow::ExpressionEditorWindow(
 void ExpressionEditorWindow::apply_expression()
 {
     string expression = m_editor->getExpr();
-    SeExpression *se_expression = new SeExpression(expression);
-    if (!se_expression->isValid())
+    DisneyParamExpression se_expression(expression.c_str());
+
+    if (!se_expression.is_valid())
     {
         m_error->show();
-
-        // Do not print empty lines from the error.
-        string error = se_expression->parseError();
-        vector<string> errors;
-        split(errors, error, is_any_of("\n"));
-
-        RENDERER_LOG_ERROR("SeExpression has errors.");
-        for (const_each<vector<string> > e = errors; e; ++e)
-        {
-            if (!e->empty())
-                RENDERER_LOG_ERROR("%s", e->c_str());
-        }
+        se_expression.report_error("SeExpression has errors");
     }
     else
     {

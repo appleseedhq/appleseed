@@ -363,12 +363,11 @@ string ColorExpressionProxy::get() const
 string ColorExpressionProxy::qcolor_to_expression(const QColor& color)
 {
     const Color3f srgb_color = qcolor_to_color<Color3f>(color);
-    const Color3f linear_color = srgb_to_linear_rgb(srgb_color);
     const QString color_expression =
         QString("[%1, %2, %3]")
-            .arg(linear_color.r)
-            .arg(linear_color.g)
-            .arg(linear_color.b);
+            .arg(srgb_color.r)
+            .arg(srgb_color.g)
+            .arg(srgb_color.b);
     return color_expression.toStdString();
 }
 
@@ -380,12 +379,18 @@ QColor ColorExpressionProxy::expression_to_qcolor(const string& color)
     if (color_components.size() < 3)
         return QColor(0, 0, 0, 0);
 
-    const Color3f linear_color(
-        from_string<float>(color_components[0]),
-        from_string<float>(color_components[1]),
-        from_string<float>(color_components[2]));
-    const Color3f srgb_color = linear_rgb_to_srgb(linear_color);
-    return color_to_qcolor(srgb_color);
+    try
+    {
+        const Color3f srgb_color(
+            from_string<float>(color_components[0]),
+            from_string<float>(color_components[1]),
+            from_string<float>(color_components[2]));
+        return color_to_qcolor(srgb_color);
+    }
+    catch (ExceptionStringConversionError&)
+    {
+        return QColor(0, 0, 0, 0);
+    }
 }
 
 
