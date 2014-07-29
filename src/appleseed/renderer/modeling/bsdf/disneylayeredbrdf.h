@@ -57,13 +57,13 @@ namespace renderer
 class DisneyLayeredBRDF
   : public BSDF
 {
-  public:    
-    // Delete this instance.    
+  public:
+    // Delete this instance.
     virtual void release() OVERRIDE;
-    
-    // Return a string identifying the model of this entity.    
+
+    // Return a string identifying the model of this entity.
     virtual const char* get_model() const OVERRIDE;
-    
+
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
     virtual bool on_frame_begin(
@@ -92,7 +92,7 @@ class DisneyLayeredBRDF
     // Given an outgoing direction, sample the BSDF and compute the incoming
     // direction, its probability density and the value of the BSDF for this
     // pair of directions. Return the scattering mode. If the scattering mode
-    // is Absorption, the BSDF and PDF values are undefined.    
+    // is Absorption, the BSDF and PDF values are undefined.
     virtual BSDF::Mode sample(
         SamplingContext&                sampling_context,
         const void*                     data,
@@ -107,7 +107,7 @@ class DisneyLayeredBRDF
 
     // Evaluate the BSDF for a given pair of directions. Return the PDF value
     // for this pair of directions. If the returned probability is zero, the
-    // BSDF value is undefined.    
+    // BSDF value is undefined.
     virtual double evaluate(
         const void*                     data,
         const bool                      adjoint,
@@ -118,8 +118,8 @@ class DisneyLayeredBRDF
         const foundation::Vector3d&     incoming,
         const int                       modes,
         Spectrum&                       value) const OVERRIDE;
-    
-    // Evaluate the PDF for a given pair of directions.    
+
+    // Evaluate the PDF for a given pair of directions.
     virtual double evaluate_pdf(
         const void*                     data,
         const foundation::Vector3d&     geometric_normal,

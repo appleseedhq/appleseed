@@ -85,7 +85,7 @@ bool DisneyLayeredBRDF::on_frame_begin(
 {
     if (!BSDF::on_frame_begin(project, assembly, abort_switch))
         return false;
-    
+
     if (!m_brdf->on_frame_begin(project, assembly, abort_switch))
         return false;
 

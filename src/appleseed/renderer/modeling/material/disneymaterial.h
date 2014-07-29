@@ -50,7 +50,7 @@ namespace renderer      { class ParamArray; }
 namespace renderer
 {
 
-class DLLSYMBOL DisneyParamExpression 
+class DLLSYMBOL DisneyParamExpression
   : public foundation::NonCopyable
 {
   public:
@@ -64,10 +64,10 @@ class DLLSYMBOL DisneyParamExpression
     void report_error(const char* message) const;
 
     bool is_constant() const;
-    
+
   private:
     struct Impl;
-    Impl* impl;    
+    Impl* impl;
 };
 
 class DLLSYMBOL DisneyMaterialLayer
@@ -82,7 +82,7 @@ class DLLSYMBOL DisneyMaterialLayer
     bool operator<(const DisneyMaterialLayer& other) const;
 
     bool prepare_expressions() const;
-    
+
     void evaluate_expressions(
         const ShadingPoint&     shading_point,
         foundation::Color3d&    base_color,
@@ -97,13 +97,13 @@ class DLLSYMBOL DisneyMaterialLayer
 
     struct Impl;
     Impl* impl;
-    
+
     // Constructor
     DisneyMaterialLayer(
         const char*                     name,
         const foundation::Dictionary&   params);
 
-    void swap(DisneyMaterialLayer& other);    
+    void swap(DisneyMaterialLayer& other);
 };
 
 class DLLSYMBOL DisneyMaterial
@@ -131,13 +131,13 @@ class DLLSYMBOL DisneyMaterial
     std::size_t get_layer_count() const;
 
     const DisneyMaterialLayer& get_layer(const std::size_t index) const;
-    
+
   private:
     friend class DisneyMaterialFactory;
 
     struct Impl;
     Impl* impl;
-    
+
     // Constructor.
     DisneyMaterial(
         const char*         name,

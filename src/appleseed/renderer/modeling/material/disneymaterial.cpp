@@ -69,50 +69,50 @@ namespace
         struct Var : public SeExprScalarVarRef
         {
             Var() {}
-    
+
             explicit Var(const double val)
               : m_val(val)
             {
             }
-    
+
             virtual void eval(const SeExprVarNode* /*node*/,SeVec3d& result) OVERRIDE
             {
                 result[0] = m_val;
             }
-            
-            double m_val;            
+
+            double m_val;
         };
-        
+
         SeAppleseedExpr() : SeExpression()
         {
         }
-    
+
         SeAppleseedExpr(const string& expr) : SeExpression(expr)
         {
             m_vars["u"] = Var(0.0);
             m_vars["v"] = Var(0.0);
         }
-    
+
         void set_expr(const string& e)
         {
             SeExpression::setExpr(e);
             m_vars["u"] = Var(0.0);
             m_vars["v"] = Var(0.0);
         }
-    
+
         SeExprVarRef* resolveVar(const string& name) const OVERRIDE
         {
             map<string,Var>::iterator i = m_vars.find(name);
-        
+
             if (i != m_vars.end())
                 return &i->second;
-        
+
             return 0;
         }
-    
+
         mutable map<string,Var> m_vars;
     };
-    
+
     void report_expression_error(
         const char*             message1,
         const char*             message2,
@@ -122,11 +122,11 @@ namespace
             RENDERER_LOG_ERROR("%s%s", message1, message2);
         else
             RENDERER_LOG_ERROR("%s:", message1);
-    
+
         string error = expr.parseError();
         vector<string> errors;
         split(errors, error, is_any_of("\n"));
-        
+
         for (const_each<vector<string> > e = errors; e; ++e)
         {
             if (!e->empty())
@@ -146,7 +146,7 @@ struct DisneyParamExpression::Impl : public NonCopyable
       : m_expr(expr)
     {
     }
-    
+
     SeAppleseedExpr m_expr;
 };
 
@@ -206,12 +206,12 @@ class DisneyLayerParam
       , m_is_constant(false)
     {
     }
-    
+
     void swap(DisneyLayerParam& other)
     {
         std::swap(m_param_name, other.m_param_name);
         std::swap(m_expr, other.m_expr);
-        std::swap(m_is_vector, other.m_is_vector);        
+        std::swap(m_is_vector, other.m_is_vector);
     }
 
     DisneyLayerParam& operator=(const DisneyLayerParam& other)
@@ -225,7 +225,7 @@ class DisneyLayerParam
     {
         m_expression.setWantVec(m_is_vector);
         m_expression.set_expr(m_expr);
-        
+
         if (!m_expression.isValid())
         {
             report_expression_error("Expression error: ", m_param_name, m_expression);
@@ -233,7 +233,7 @@ class DisneyLayerParam
         }
 
         m_is_constant = m_expression.isConstant();
-        
+
         if (m_is_constant)
         {
             SeVec3d result = m_expression.evaluate();
@@ -244,7 +244,7 @@ class DisneyLayerParam
 
         return true;
     }
-    
+
     Color3d evaluate(const ShadingPoint& shading_point) const
     {
         if (m_is_constant)
@@ -255,7 +255,7 @@ class DisneyLayerParam
         m_expression.m_vars["u"] = SeAppleseedExpr::Var(shading_point.get_uv(0)[0]);
         m_expression.m_vars["v"] = SeAppleseedExpr::Var(shading_point.get_uv(0)[1]);
         SeVec3d result = m_expression.evaluate();
-        return Color3d(result[0], result[1], result[2]);       
+        return Color3d(result[0], result[1], result[2]);
     }
 
   private:
@@ -265,7 +265,7 @@ class DisneyLayerParam
 
     bool                    m_is_constant;
     Color3d                 m_constant_value;
-    
+
     mutable SeAppleseedExpr m_expression;
 
     // TODO: this is horrible. Remove it ASAP.
@@ -366,7 +366,7 @@ bool DisneyMaterialLayer::prepare_expressions() const
 
 void DisneyMaterialLayer::evaluate_expressions(
     const ShadingPoint&     shading_point,
-    Color3d&                base_color,        
+    Color3d&                base_color,
     DisneyBRDFInputValues&  values) const
 {
     const double mask = saturate(impl->m_mask.evaluate(shading_point)[0]);
@@ -387,17 +387,17 @@ void DisneyMaterialLayer::evaluate_expressions(
         mask);
 
     values.m_specular = lerp(
-        values.m_specular, 
+        values.m_specular,
         max(impl->m_specular.evaluate(shading_point)[0], 0.0),
         mask);
 
     values.m_specular_tint = lerp(
-        values.m_specular_tint, 
+        values.m_specular_tint,
         saturate(impl->m_specular_tint.evaluate(shading_point)[0]),
         mask);
 
     values.m_anisotropic = lerp(
-        values.m_anisotropic, 
+        values.m_anisotropic,
         saturate(impl->m_anisotropic.evaluate(shading_point)[0]),
         mask);
 
@@ -407,22 +407,22 @@ void DisneyMaterialLayer::evaluate_expressions(
         mask);
 
     values.m_sheen = lerp(
-        values.m_sheen, 
+        values.m_sheen,
         impl->m_sheen.evaluate(shading_point)[0],
         mask);
 
     values.m_sheen_tint = lerp(
-        values.m_sheen_tint, 
+        values.m_sheen_tint,
         saturate(impl->m_sheen_tint.evaluate(shading_point)[0]),
         mask);
 
     values.m_clearcoat = lerp(
-        values.m_clearcoat, 
+        values.m_clearcoat,
         impl->m_clearcoat.evaluate(shading_point)[0],
         mask);
 
     values.m_clearcoat_gloss = lerp(
-        values.m_clearcoat_gloss, 
+        values.m_clearcoat_gloss,
         saturate(impl->m_clearcoat_gloss.evaluate(shading_point)[0]),
         mask);
 }
@@ -537,7 +537,7 @@ bool DisneyMaterial::on_frame_begin(
     }
     // TODO: be more specific about what we catch here,
     // once we know what can be thrown. (est.)
-    catch(...)
+    catch (...)
     {
         return false;
     }
