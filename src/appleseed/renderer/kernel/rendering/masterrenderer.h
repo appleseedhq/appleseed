@@ -39,7 +39,12 @@
 
 // OSL headers.
 #ifdef WITH_OSL
-#include <OSL/oslexec.h>
+#include "OSL/oslexec.h"
+#endif
+
+// OpenImageIO headers.
+#ifdef WITH_OIIO
+#include "OpenImageIO/texture.h"
 #endif
 
 // Forward declarations.
@@ -98,7 +103,7 @@ class DLLSYMBOL MasterRenderer
     SerialRendererController*       m_serial_renderer_controller;
     ITileCallbackFactory*           m_serial_tile_callback_factory;
 
-#ifdef WITH_OSL
+#ifdef WITH_OIIO
     OIIO::TextureSystem*            m_texture_system;
 #endif
 

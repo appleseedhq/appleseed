@@ -61,7 +61,6 @@
 #include "renderer/kernel/rendering/permanentshadingresultframebufferfactory.h"
 #include "renderer/kernel/rendering/serialrenderercontroller.h"
 #include "renderer/kernel/rendering/serialtilecallback.h"
-#include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingengine.h"
 #include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/frame/frame.h"
@@ -143,9 +142,9 @@ MasterRenderer::~MasterRenderer()
     delete m_serial_tile_callback_factory;
     delete m_serial_renderer_controller;
 
-#ifdef WITH_OSL
+#ifdef WITH_OIIO
     if (m_texture_system)
-        OIIO::TextureSystem::destroy(m_texture_system, true);
+        OIIO::TextureSystem::destroy(m_texture_system);
 #endif
 }
 
@@ -248,18 +247,11 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     if (m_abort_switch)
         m_abort_switch->clear();
 
-#ifdef WITH_OSL
-
-    // Create the error handler.
-    OIIOErrorHandler error_handler;
-
-    // While debugging, we want all possible outputs.
-#ifndef NDEBUG
-    error_handler.verbosity(OIIO::ErrorHandler::VERBOSE);
-#endif
+    // Create OpenImageIO's texture system.
+#ifdef WITH_OIIO
 
     if (!m_texture_system)
-        m_texture_system = OIIO::TextureSystem::create(true);
+        m_texture_system = OIIO::TextureSystem::create();
 
     const size_t texture_cache_size =
         m_params.get_optional<size_t>("texture_cache_size",  256 * 1024 * 1024);
@@ -303,6 +295,42 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     m_texture_system->attribute("accept_unmipped", 1);
     m_texture_system->attribute("gray_to_rgb", 1);
     m_texture_system->attribute("latlong_up", "y");
+
+#endif  // WITH_OIIO
+
+    // We start by binding entities inputs. This must be done before creating/updating the trace context.
+    if (!bind_scene_entities_inputs())
+        return IRendererController::AbortRendering;
+
+    m_project.create_aov_images();
+    m_project.update_trace_context();
+
+    const Scene& scene = *m_project.get_scene();
+
+    Frame& frame = *m_project.get_frame();
+    frame.print_settings();
+
+    const TraceContext& trace_context = m_project.get_trace_context();
+
+    // Create the texture store.
+    TextureStore texture_store(scene, m_params.child("texture_store"));
+
+    // Create the light sampler.
+    LightSampler light_sampler(scene, m_params.child("light_sampler"));
+
+    // Create the shading engine.
+    ShadingEngine shading_engine(m_params.child("shading_engine"));
+
+    // Create OSL's shading system.
+#ifdef WITH_OSL
+
+    // Create the error handler.
+    OIIOErrorHandler error_handler;
+
+    // While debugging, we want all possible outputs.
+#ifndef NDEBUG
+    error_handler.verbosity(OIIO::ErrorHandler::VERBOSE);
+#endif
 
     // Create our renderer services.
     RendererServices services(m_project, *m_texture_system);
@@ -353,29 +381,6 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     register_closures(*shading_system);
 
 #endif  // WITH_OSL
-
-    // We start by binding entities inputs. This must be done before creating/updating the trace context.
-    if (!bind_scene_entities_inputs())
-        return IRendererController::AbortRendering;
-
-    m_project.create_aov_images();
-    m_project.update_trace_context();
-
-    const Scene& scene = *m_project.get_scene();
-
-    Frame& frame = *m_project.get_frame();
-    frame.print_settings();
-
-    const TraceContext& trace_context = m_project.get_trace_context();
-
-    // Create the texture store.
-    TextureStore texture_store(scene, m_params.child("texture_store"));
-
-    // Create the light sampler.
-    LightSampler light_sampler(scene, m_params.child("light_sampler"));
-
-    // Create the shading engine.
-    ShadingEngine shading_engine(m_params.child("shading_engine"));
 
     //
     // Create a lighting engine factory.

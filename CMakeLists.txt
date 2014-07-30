@@ -181,10 +181,17 @@ if (USE_EXTERNAL_XERCES)
     find_package (Xerces REQUIRED)
 endif ()
 
+if (WITH_OSL OR WITH_DISNEY_MATERIAL)
+    set (WITH_OIIO TRUE)
+endif ()
+  
+if (WITH_OIIO)
+    add_definitions (-DWITH_OIIO)
+    find_package (OpenImageIO REQUIRED)
+endif ()
+
 if (WITH_OSL)
     add_definitions (-DWITH_OSL)
-
-    find_package (OpenImageIO REQUIRED)
     find_package (OSL REQUIRED)
 endif ()
 
@@ -254,9 +261,14 @@ else ()
     include_directories (3rdparty/xerces-c/src)
 endif ()
 
-if (WITH_OSL)
+if (WITH_OIIO)
     include_directories (
         ${OPENIMAGEIO_INCLUDE_DIRS}
+    )
+endif ()
+
+if (WITH_OSL)
+    include_directories (
         ${OSL_INCLUDE_DIRS}
     )
 endif ()

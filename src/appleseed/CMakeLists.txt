@@ -1693,8 +1693,11 @@ endif ()
 link_against_openexr (appleseed)
 link_against_zlib (appleseed)
 
-if (WITH_OSL)
+if (WITH_OIIO)
     link_against_oiio (appleseed)
+endif ()
+
+if (WITH_OSL)
     link_against_oslexec (appleseed)
 endif ()
 
