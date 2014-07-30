@@ -69,7 +69,7 @@ class XMLElement
         const T&            value);
 
     // Write the element.
-    void write(const bool has_content, const bool is_singleline = false);
+    void write(const bool has_content, const bool is_single_line = false);
 
     // Close the element.
     void close();
@@ -83,8 +83,9 @@ class XMLElement
     Indenter&               m_indenter;
     AttributeVector         m_attributes;
     bool                    m_has_content;
-    bool                    m_is_singleline;
+    bool                    m_is_single_line;
 };
+
 
 //
 // An utility function to write a dictionary to an XML file.
@@ -124,7 +125,7 @@ inline XMLElement::XMLElement(
   , m_file(file)
   , m_indenter(indenter)
   , m_has_content(false)
-  , m_is_singleline(false)
+  , m_is_single_line(false)
 {
 }
 
@@ -138,16 +139,11 @@ void XMLElement::add_attribute(
     const std::string&      name,
     const T&                value)
 {
-    assert(!m_opened);
-
     m_attributes.push_back(std::make_pair(name, to_string(value)));
 }
 
-inline void XMLElement::write(const bool has_content, const bool is_singleline)
+inline void XMLElement::write(const bool has_content, const bool is_single_line)
 {
-
-    assert(!m_opened);
-
     std::fprintf(m_file, "%s<%s", m_indenter.c_str(), m_name.c_str());
 
     for (const_each<AttributeVector> i = m_attributes; i; ++i)
@@ -156,33 +152,40 @@ inline void XMLElement::write(const bool has_content, const bool is_singleline)
         std::fprintf(m_file, " %s=\"%s\"", i->first.c_str(), attribute_value.c_str());
     }
 
-    if (has_content && is_singleline)
+    if (has_content)
     {
-        std::fprintf(m_file, ">");
-    }
-    else if (has_content)
-    {
-        std::fprintf(m_file, ">\n");
-        ++m_indenter;
+        if (is_single_line)
+        {
+            std::fprintf(m_file, ">");
+        }
+        else
+        {
+            std::fprintf(m_file, ">\n");
+            ++m_indenter;
+        }
     }
     else
     {
         std::fprintf(m_file, " />\n");
     }
+
     m_has_content = has_content;
-    m_is_singleline = is_singleline;
+    m_is_single_line = is_single_line;
 }
 
 inline void XMLElement::close()
 {
-    if (m_has_content && m_is_singleline)
+    if (m_has_content)
     {
-        std::fprintf(m_file, "</%s>\n", m_name.c_str());
-    }
-    else if (m_has_content)
-    {
-        --m_indenter;
-        std::fprintf(m_file, "%s</%s>\n", m_indenter.c_str(), m_name.c_str());
+        if (m_is_single_line)
+        {
+            std::fprintf(m_file, "</%s>\n", m_name.c_str());
+        }
+        else
+        {
+            --m_indenter;
+            std::fprintf(m_file, "%s</%s>\n", m_indenter.c_str(), m_name.c_str());
+        }
     }
 }
 
@@ -195,6 +198,7 @@ inline void write_dictionary(
     {
         XMLElement element("parameter", file, indenter);
         element.add_attribute("name", i->name());
+
         const std::string value = i->value<std::string>();
 
         if (value.find('\n') != std::string::npos)
