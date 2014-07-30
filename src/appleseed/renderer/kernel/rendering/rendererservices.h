@@ -40,6 +40,9 @@
 // OpenImageIO headers.
 #include "OpenImageIO/texture.h"
 
+// boost headers
+#include "boost/unordered_map.hpp"
+
 // Standard headers.
 #include <string>
 
@@ -228,10 +231,50 @@ class RendererServices
         OSL::ShaderGlobals*     sg) OVERRIDE;
 
   private:
-    static void log_error(const std::string& message);
+    // This code is from OSL's test renderer.
+    typedef bool (RendererServices::*AttrGetterFun)(
+        OSL::ShaderGlobals* sg, 
+        bool                derivs,
+        OIIO::ustring       object,
+        OIIO::TypeDesc      type,
+        OIIO::ustring       name, 
+        void                *val) const;
 
+    typedef boost::unordered_map<OIIO::ustring, AttrGetterFun, OIIO::ustringHash> AttrGetterMapType;            
+
+    #define DECLARE_ATTR_GETTER(name)   \
+    bool get_##name(                    \
+        OSL::ShaderGlobals* sg,         \
+        bool                derivs,     \
+        OIIO::ustring       object,     \
+        OIIO::TypeDesc      type,       \
+        OIIO::ustring       name,       \
+        void                *val) const;
+
+    DECLARE_ATTR_GETTER(camera_resolution)
+    DECLARE_ATTR_GETTER(camera_projection)
+    DECLARE_ATTR_GETTER(camera_fov)
+    DECLARE_ATTR_GETTER(camera_pixelaspect)
+    DECLARE_ATTR_GETTER(camera_clip)
+    DECLARE_ATTR_GETTER(camera_clip_near)
+    DECLARE_ATTR_GETTER(camera_clip_far)
+    DECLARE_ATTR_GETTER(camera_shutter)
+    DECLARE_ATTR_GETTER(camera_shutter_open)
+    DECLARE_ATTR_GETTER(camera_shutter_close)
+    DECLARE_ATTR_GETTER(camera_screen_window)
+
+    #undef DECLARE_ATTR_GETTER
+    
+    static void clear_attr_derivatives(
+        bool                    derivs,
+        const OIIO::TypeDesc&   type,
+        void*                   val);
+
+    static void log_error(const std::string& message);
+    
     const Project&              m_project;
     OIIO::TextureSystem&        m_texture_sys;
+    AttrGetterMapType           m_attr_getters;
 };
 
 }       // namespace renderer
