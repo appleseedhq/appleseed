@@ -41,11 +41,15 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
+// OpenImageIO headers
+#include "OpenImageIO/texture.h"
+
 // Forward declarations.
 namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }
 namespace renderer      { class DisneyMaterial; }
 namespace renderer      { class ParamArray; }
+namespace renderer      { class ShadingContext; }
 
 namespace renderer
 {
@@ -85,6 +89,7 @@ class DLLSYMBOL DisneyMaterialLayer
 
     void evaluate_expressions(
         const ShadingPoint&     shading_point,
+        OIIO::TextureSystem&    texture_system,
         foundation::Color3d&    base_color,
         DisneyBRDFInputValues&  values) const;
 

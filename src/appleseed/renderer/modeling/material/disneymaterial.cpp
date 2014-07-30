@@ -252,11 +252,30 @@ class DisneyLayerParam
         return true;
     }
 
-    Color3d evaluate(const ShadingPoint& shading_point) const
+    Color3d evaluate(
+        const ShadingPoint&     shading_point,
+        OIIO::TextureSystem&    texture_system) const
     {
         if (m_is_constant)
             return m_constant_value;
 
+        if (!m_texture_filename.empty())
+        {
+            float val[3];
+            texture_system.texture(
+                m_texture_filename,
+                m_texture_options,
+                static_cast<float>(shading_point.get_uv(0)[0]),
+                static_cast<float>(shading_point.get_uv(0)[1]),
+                0.0f,
+                0.0f,
+                0.0f,
+                0.0f,
+                val);
+            
+            return Color3d(val[0], val[1], val[2]);
+        }
+        
         lock_guard<mutex> lock(m_mutex);
 
         m_expression.m_vars["u"] = SeAppleseedExpr::Var(shading_point.get_uv(0)[0]);
@@ -267,17 +286,20 @@ class DisneyLayerParam
     }
 
   private:
-    const char*             m_param_name;
-    string                  m_expr;
-    bool                    m_is_vector;
+    const char*                 m_param_name;
+    string                      m_expr;
+    bool                        m_is_vector;
 
-    bool                    m_is_constant;
-    Color3d                 m_constant_value;
+    bool                        m_is_constant;
+    Color3d                     m_constant_value;
 
-    mutable SeAppleseedExpr m_expression;
+    OIIO::ustring               m_texture_filename;
+    mutable OIIO::TextureOpt    m_texture_options;
+    
+    mutable SeAppleseedExpr     m_expression;
 
     // TODO: this is horrible. Remove it ASAP.
-    mutable mutex           m_mutex;
+    mutable mutex               m_mutex;
 };
 
 
@@ -375,64 +397,65 @@ bool DisneyMaterialLayer::prepare_expressions() const
 
 void DisneyMaterialLayer::evaluate_expressions(
     const ShadingPoint&     shading_point,
+    OIIO::TextureSystem&    texture_system,
     Color3d&                base_color,
     DisneyBRDFInputValues&  values) const
 {
-    const double mask = saturate(impl->m_mask.evaluate(shading_point)[0]);
+    const double mask = saturate(impl->m_mask.evaluate(shading_point, texture_system)[0]);
 
     if (mask == 0.0)
         return;
 
-    base_color = lerp(base_color, impl->m_base_color.evaluate(shading_point), mask);
+    base_color = lerp(base_color, impl->m_base_color.evaluate(shading_point, texture_system), mask);
 
     values.m_subsurface = lerp(
         values.m_subsurface,
-        saturate(impl->m_subsurface.evaluate(shading_point)[0]),
+        saturate(impl->m_subsurface.evaluate(shading_point, texture_system)[0]),
         mask);
 
     values.m_metallic = lerp(
         values.m_metallic,
-        saturate(impl->m_metallic.evaluate(shading_point)[0]),
+        saturate(impl->m_metallic.evaluate(shading_point, texture_system)[0]),
         mask);
 
     values.m_specular = lerp(
         values.m_specular,
-        max(impl->m_specular.evaluate(shading_point)[0], 0.0),
+        max(impl->m_specular.evaluate(shading_point, texture_system)[0], 0.0),
         mask);
 
     values.m_specular_tint = lerp(
         values.m_specular_tint,
-        saturate(impl->m_specular_tint.evaluate(shading_point)[0]),
+        saturate(impl->m_specular_tint.evaluate(shading_point, texture_system)[0]),
         mask);
 
     values.m_anisotropic = lerp(
         values.m_anisotropic,
-        saturate(impl->m_anisotropic.evaluate(shading_point)[0]),
+        saturate(impl->m_anisotropic.evaluate(shading_point, texture_system)[0]),
         mask);
 
     values.m_roughness = lerp(
         values.m_roughness,
-        clamp(impl->m_roughness.evaluate(shading_point)[0], 0.001, 1.0),
+        clamp(impl->m_roughness.evaluate(shading_point, texture_system)[0], 0.001, 1.0),
         mask);
 
     values.m_sheen = lerp(
         values.m_sheen,
-        impl->m_sheen.evaluate(shading_point)[0],
+        impl->m_sheen.evaluate(shading_point, texture_system)[0],
         mask);
 
     values.m_sheen_tint = lerp(
         values.m_sheen_tint,
-        saturate(impl->m_sheen_tint.evaluate(shading_point)[0]),
+        saturate(impl->m_sheen_tint.evaluate(shading_point, texture_system)[0]),
         mask);
 
     values.m_clearcoat = lerp(
         values.m_clearcoat,
-        impl->m_clearcoat.evaluate(shading_point)[0],
+        impl->m_clearcoat.evaluate(shading_point, texture_system)[0],
         mask);
 
     values.m_clearcoat_gloss = lerp(
         values.m_clearcoat_gloss,
-        saturate(impl->m_clearcoat_gloss.evaluate(shading_point)[0]),
+        saturate(impl->m_clearcoat_gloss.evaluate(shading_point, texture_system)[0]),
         mask);
 }
 
