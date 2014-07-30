@@ -3,7 +3,7 @@
 rm -f CMakeCache.txt
 
 cmake \
-    -D git_tag=travis-build \
+    -D git_tag=1.1.0-travis \
     -D WITH_CLI=ON \
     -D WITH_STUDIO=OFF \
     -D WITH_TOOLS=OFF \
