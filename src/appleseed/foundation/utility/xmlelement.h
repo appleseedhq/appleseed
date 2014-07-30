@@ -138,16 +138,11 @@ void XMLElement::add_attribute(
     const std::string&      name,
     const T&                value)
 {
-    assert(!m_opened);
-
     m_attributes.push_back(std::make_pair(name, to_string(value)));
 }
 
 inline void XMLElement::write(const bool has_content, const bool is_singleline)
 {
-
-    assert(!m_opened);
-
     std::fprintf(m_file, "%s<%s", m_indenter.c_str(), m_name.c_str());
 
     for (const_each<AttributeVector> i = m_attributes; i; ++i)
