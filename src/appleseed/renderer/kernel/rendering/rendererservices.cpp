@@ -348,7 +348,13 @@ IMPLEMENT_ATTR_GETTER(camera_fov)
 
 IMPLEMENT_ATTR_GETTER(camera_pixelaspect)
 {
-    RENDERER_LOG_WARNING("OSL: get camera pixel aspect not implemented");
+    if (type == OIIO::TypeDesc::TypeFloat)
+    {
+        reinterpret_cast<float*>(val)[0] = 1.0f;
+        clear_attr_derivatives(derivs, type, val);
+        return true;
+    }
+    
     return false;
 }
 
