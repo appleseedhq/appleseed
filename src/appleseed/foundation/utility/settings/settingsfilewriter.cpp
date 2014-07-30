@@ -56,7 +56,7 @@ bool SettingsFileWriter::write(
     Indenter indenter(4);
 
     XMLElement settings_element("settings", file, indenter);
-    settings_element.write(true);
+    settings_element.write(XMLElement::HasChildElements);
 
     write_dictionary(settings, file, indenter);
 

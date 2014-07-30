@@ -320,11 +320,11 @@ namespace
         void write_transform(const Transformd& transform)
         {
             XMLElement element("transform", m_file, m_indenter);
-            element.write(true);
+            element.write(XMLElement::HasChildElements);
 
             {
                 XMLElement child_element("matrix", m_file, m_indenter);
-                child_element.write(true);
+                child_element.write(XMLElement::HasChildElements);
 
                 write_vector(
                     transform.get_local_to_parent(),
@@ -339,11 +339,11 @@ namespace
         {
             XMLElement element("transform", m_file, m_indenter);
             element.add_attribute("time", time);
-            element.write(true);
+            element.write(XMLElement::HasChildElements);
 
             {
                 XMLElement child_element("matrix", m_file, m_indenter);
-                child_element.write(true);
+                child_element.write(XMLElement::HasChildElements);
 
                 write_vector(
                     transform.get_local_to_parent(),
@@ -369,7 +369,7 @@ namespace
         void write_value_array(const char* element_name, const ColorValueArray& values)
         {
             XMLElement element(element_name, m_file, m_indenter);
-            element.write(true);
+            element.write(XMLElement::HasChildElements);
             write_vector(
                 values,
                 values.size(),
@@ -383,7 +383,10 @@ namespace
             XMLElement element(entity_name, m_file, m_indenter);
             element.add_attribute("name", entity.get_name());
             element.add_attribute("model", entity.get_model());
-            element.write(!entity.get_parameters().empty());
+            element.write(
+                !entity.get_parameters().empty()
+                    ? XMLElement::HasChildElements
+                    : XMLElement::HasNoContent);
 
             write_params(entity.get_parameters());
         }
@@ -444,7 +447,9 @@ namespace
                 !assembly.objects().empty() ||
                 !assembly.object_instances().empty() ||
                 !assembly.assemblies().empty() ||
-                !assembly.assembly_instances().empty());
+                !assembly.assembly_instances().empty()
+                    ? XMLElement::HasChildElements
+                    : XMLElement::HasNoContent);
 
             write_params(assembly.get_parameters());
 
@@ -471,7 +476,10 @@ namespace
             XMLElement element("assembly_instance", m_file, m_indenter);
             element.add_attribute("name", assembly_instance.get_name());
             element.add_attribute("assembly", assembly_instance.get_assembly_name());
-            element.write(!assembly_instance.transform_sequence().empty());
+            element.write(
+                !assembly_instance.transform_sequence().empty()
+                    ? XMLElement::HasChildElements
+                    : XMLElement::HasNoContent);
 
             write_transform_sequence(assembly_instance.transform_sequence());
         }
@@ -486,7 +494,7 @@ namespace
             element.add_attribute("slot", slot);
             element.add_attribute("side", side);
             element.add_attribute("material", name);
-            element.write(false);
+            element.write(XMLElement::HasNoContent);
         }
 
         // Write a series of <assign_material> elements.
@@ -512,7 +520,7 @@ namespace
             XMLElement element("camera", m_file, m_indenter);
             element.add_attribute("name", camera.get_name());
             element.add_attribute("model", camera.get_model());
-            element.write(true);
+            element.write(XMLElement::HasChildElements);
 
             write_params(camera.get_parameters());
             write_transform_sequence(camera.transform_sequence());
@@ -523,7 +531,7 @@ namespace
         {
             XMLElement element("color", m_file, m_indenter);
             element.add_attribute("name", color_entity.get_name());
-            element.write(true);
+            element.write(XMLElement::HasChildElements);
 
             write_params(color_entity.get_parameters());
 
@@ -538,7 +546,10 @@ namespace
             element.add_attribute("name", configuration.get_name());
             if (configuration.get_base())
                 element.add_attribute("base", configuration.get_base()->get_name());
-            element.write(!configuration.get_parameters().empty());
+            element.write(
+                !configuration.get_parameters().empty()
+                    ? XMLElement::HasChildElements
+                    : XMLElement::HasNoContent);
             write_params(configuration.get_parameters());
         }
 
@@ -559,7 +570,10 @@ namespace
         void write_configurations(const Project& project)
         {
             XMLElement element("configurations", m_file, m_indenter);
-            element.write(count_non_base_configurations(project.configurations()) > 0);
+            element.write(
+                count_non_base_configurations(project.configurations()) > 0
+                    ? XMLElement::HasChildElements
+                    : XMLElement::HasNoContent);
 
             // Write configurations.
             for (const_each<ConfigurationContainer> i = project.configurations(); i; ++i)
@@ -599,7 +613,10 @@ namespace
         {
             XMLElement element("frame", m_file, m_indenter);
             element.add_attribute("name", frame.get_name());
-            element.write(!frame.get_parameters().empty());
+            element.write(
+                !frame.get_parameters().empty()
+                    ? XMLElement::HasChildElements
+                    : XMLElement::HasNoContent);
             write_params(frame.get_parameters());
         }
 
@@ -609,7 +626,7 @@ namespace
             XMLElement element("light", m_file, m_indenter);
             element.add_attribute("name", light.get_name());
             element.add_attribute("model", light.get_model());
-            element.write(true);
+            element.write(XMLElement::HasChildElements);
 
             write_params(light.get_parameters());
             write_transform(light.get_transform());
@@ -689,7 +706,7 @@ namespace
             XMLElement element("object", m_file, m_indenter);
             element.add_attribute("name", name);
             element.add_attribute("model", MeshObjectFactory::get_model());
-            element.write(true);
+            element.write(XMLElement::HasChildElements);
             write_params(params);
         }
 
@@ -725,7 +742,7 @@ namespace
             XMLElement element("object", m_file, m_indenter);
             element.add_attribute("name", name);
             element.add_attribute("model", MeshObjectFactory::get_model());
-            element.write(true);
+            element.write(XMLElement::HasChildElements);
 
             // Output a "filename" parameter but don't add it to the object.
             ParamArray params = object.get_parameters();
@@ -748,7 +765,7 @@ namespace
             XMLElement element("object_instance", m_file, m_indenter);
             element.add_attribute("name", object_instance.get_name());
             element.add_attribute("object", translate_object_name(object_instance.get_object_name()));
-            element.write(true);
+            element.write(XMLElement::HasChildElements);
 
             write_params(object_instance.get_parameters());
             write_transform(object_instance.get_transform());
@@ -761,7 +778,10 @@ namespace
         void write_output(const Project& project)
         {
             XMLElement element("output", m_file, m_indenter);
-            element.write(project.get_frame() != 0);
+            element.write(
+                project.get_frame() != 0
+                    ? XMLElement::HasChildElements
+                    : XMLElement::HasNoContent);
 
             if (project.get_frame())
                 write_frame(*project.get_frame());
@@ -772,7 +792,7 @@ namespace
         {
             XMLElement element("project", m_file, m_indenter);
             element.add_attribute("format_revision", project.get_format_revision());
-            element.write(true);
+            element.write(XMLElement::HasChildElements);
 
             if (!(m_options & ProjectFileWriter::OmitSearchPaths))
                 write_search_paths(project);
@@ -791,7 +811,7 @@ namespace
             if (!project.render_layer_rules().empty())
             {
                 XMLElement element("rules", m_file, m_indenter);
-                element.write(true);
+                element.write(XMLElement::HasChildElements);
 
                 write_collection(project.render_layer_rules());
             }
@@ -816,7 +836,9 @@ namespace
                 !scene.environment_shaders().empty() ||
                 scene.get_environment() != 0 ||
                 !scene.assemblies().empty() ||
-                !scene.assembly_instances().empty());
+                !scene.assembly_instances().empty()
+                    ? XMLElement::HasChildElements
+                    : XMLElement::HasNoContent);
 
             write_params(scene.get_parameters());
 
@@ -840,7 +862,7 @@ namespace
         void write_search_path(const char* search_path)
         {
             XMLElement element("search_path", m_file, m_indenter);
-            element.write(true);
+            element.write(XMLElement::HasChildElements);
 
             fprintf(m_file, "%s%s\n", m_indenter.c_str(), search_path);
         }
@@ -853,7 +875,7 @@ namespace
             if (!search_paths.empty())
             {
                 XMLElement element("search_paths", m_file, m_indenter);
-                element.write(true);
+                element.write(XMLElement::HasChildElements);
 
                 for (size_t i = 0; i < search_paths.size(); ++i)
                     write_search_path(search_paths[i]);
@@ -868,7 +890,7 @@ namespace
             XMLElement element("parameter", m_file, m_indenter);
             element.add_attribute("name", param.get_name());
             element.add_attribute("value", param.get_value_as_string());
-            element.write(false);
+            element.write(XMLElement::HasNoContent);
         }
 
         // Write a <shader> element.
@@ -878,7 +900,7 @@ namespace
             element.add_attribute("type", shader.get_type());
             element.add_attribute("name", shader.get_shader());
             element.add_attribute("layer", shader.get_layer());
-            element.write(true);
+            element.write(XMLElement::HasChildElements);
 
             for (const_each<ShaderParamContainer> i = shader.shader_params(); i; ++i)
                 write(*i);
@@ -892,7 +914,7 @@ namespace
             element.add_attribute("src_param", connection.get_src_param());
             element.add_attribute("dst_layer", connection.get_dst_layer());
             element.add_attribute("dst_param", connection.get_dst_param());
-            element.write(false);
+            element.write(XMLElement::HasNoContent);
         }
 
         // Write a <shader_group> element.
@@ -900,7 +922,7 @@ namespace
         {
             XMLElement element("shader_group", m_file, m_indenter);
             element.add_attribute("name", shader_group.get_name());
-            element.write(true);
+            element.write(XMLElement::HasChildElements);
 
             for (const_each<ShaderContainer> i = shader_group.shaders(); i; ++i)
                 write(*i);
@@ -923,7 +945,10 @@ namespace
             XMLElement element("texture", m_file, m_indenter);
             element.add_attribute("name", texture.get_name());
             element.add_attribute("model", texture.get_model());
-            element.write(!texture.get_parameters().empty());
+            element.write(
+                !texture.get_parameters().empty()
+                    ? XMLElement::HasChildElements
+                    : XMLElement::HasNoContent);
 
             ParamArray& params = texture.get_parameters();
 
@@ -939,7 +964,7 @@ namespace
             XMLElement element("texture_instance", m_file, m_indenter);
             element.add_attribute("name", texture_instance.get_name());
             element.add_attribute("texture", texture_instance.get_texture_name());
-            element.write(true);
+            element.write(XMLElement::HasChildElements);
 
             write_params(texture_instance.get_parameters());
             write_transform(texture_instance.get_transform());
