@@ -419,6 +419,33 @@ namespace
             m_value = ElementHandlerBase::get_value(attrs, "value");
         }
 
+        virtual void characters(
+            const XMLCh* const  chars,
+            const XMLSize_t     length) OVERRIDE
+        {
+            const string inner_value = transcode(chars);
+            if (!m_value.empty() && !inner_value.empty())
+            {
+                RENDERER_LOG_ERROR(
+                    "while defining <parameter> element: value specified multiple times.");
+                m_context.get_event_counters().signal_error();
+            }
+            else
+            {
+                m_value = inner_value;
+            }
+        }
+
+        virtual void end_element() OVERRIDE
+        {
+            if (m_value.empty())
+            {
+                RENDERER_LOG_ERROR(
+                    "while defining <parameter> element: value not specified.");
+                m_context.get_event_counters().signal_error();
+            }
+        }
+
         const string& get_name() const
         {
             return m_name;
