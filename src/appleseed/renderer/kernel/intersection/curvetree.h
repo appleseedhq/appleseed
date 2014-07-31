@@ -272,14 +272,14 @@ inline bool CurveLeafVisitor::visit(
         const GCurveType& curve = m_tree.m_curves3[curve_index + i];
 
         // Intersect the curve.
-        double t = m_shading_point.m_ray.m_tmax;
-        if (CurveIntersector::intersect(curve, m_shading_point.m_ray, m_xfm_matrix, t))
+        double u, v, t = m_shading_point.m_ray.m_tmax;
+        if (CurveIntersector::intersect(curve, m_shading_point.m_ray, m_xfm_matrix, u, v, t))
         {
             const CurveKey& key = m_tree.m_curve_keys[curve_index + i];
             m_shading_point.m_primitive_type = ShadingPoint::PrimitiveCurve;
             m_shading_point.m_ray.m_tmax = t;
-            m_shading_point.m_bary[0] = 0.0;
-            m_shading_point.m_bary[1] = 0.0;
+            m_shading_point.m_bary[0] = u;
+            m_shading_point.m_bary[1] = v;
             m_shading_point.m_object_instance_index = key.get_object_instance_index();
             m_shading_point.m_primitive_index = key.get_curve_index();
         }
@@ -325,9 +325,7 @@ inline bool CurveLeafProbeVisitor::visit(
         const GCurveType& curve = m_tree.m_curves3[curve_index + i];
 
         // Intersect the curve.
-        // todo: we need a variante of CurveIntersector::intersect() that does not compute or return t.
-        double t = ray.m_tmax;
-        if (CurveIntersector::intersect(curve, ray, m_xfm_matrix, t))
+        if (CurveIntersector::intersect(curve, ray, m_xfm_matrix))
         {
             FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(i + 1));
             m_hit = true;

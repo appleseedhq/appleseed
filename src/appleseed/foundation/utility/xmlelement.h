@@ -68,8 +68,15 @@ class XMLElement
         const std::string&  name,
         const T&            value);
 
+    enum ContentType
+    {
+        HasNoContent,
+        HasChildElements,
+        HasChildText
+    };
+
     // Write the element.
-    void write(const bool has_content, const bool is_singleline = false);
+    void write(const ContentType content_type);
 
     // Close the element.
     void close();
@@ -82,9 +89,10 @@ class XMLElement
     std::FILE*              m_file;
     Indenter&               m_indenter;
     AttributeVector         m_attributes;
-    bool                    m_has_content;
-    bool                    m_is_singleline;
+    bool                    m_is_open;
+    ContentType             m_content_type;
 };
+
 
 //
 // An utility function to write a dictionary to an XML file.
@@ -123,8 +131,8 @@ inline XMLElement::XMLElement(
   : m_name(name)
   , m_file(file)
   , m_indenter(indenter)
-  , m_has_content(false)
-  , m_is_singleline(false)
+  , m_is_open(false)
+  , m_content_type(HasNoContent)
 {
 }
 
@@ -138,46 +146,69 @@ void XMLElement::add_attribute(
     const std::string&      name,
     const T&                value)
 {
+    assert(!m_is_open);
+
     m_attributes.push_back(std::make_pair(name, to_string(value)));
 }
 
-inline void XMLElement::write(const bool has_content, const bool is_singleline)
+inline void XMLElement::write(const ContentType content_type)
 {
+    assert(!m_is_open);
+
+    // Open the tag.
     std::fprintf(m_file, "%s<%s", m_indenter.c_str(), m_name.c_str());
 
+    // Emit the attributes.
     for (const_each<AttributeVector> i = m_attributes; i; ++i)
     {
         const std::string attribute_value = replace_special_xml_characters(i->second);
         std::fprintf(m_file, " %s=\"%s\"", i->first.c_str(), attribute_value.c_str());
     }
 
-    if (has_content && is_singleline)
+    // Close the tag or the whole element.
+    switch (content_type)
     {
-        std::fprintf(m_file, ">");
-    }
-    else if (has_content)
-    {
+      case HasNoContent:
+        std::fprintf(m_file, " />\n");
+        break;
+
+      case HasChildElements:
         std::fprintf(m_file, ">\n");
         ++m_indenter;
+        m_is_open = true;
+        break;
+
+      case HasChildText:
+        std::fprintf(m_file, ">");
+        m_is_open = true;
+        break;
     }
-    else
-    {
-        std::fprintf(m_file, " />\n");
-    }
-    m_has_content = has_content;
-    m_is_singleline = is_singleline;
+
+    m_content_type = content_type;
 }
 
 inline void XMLElement::close()
 {
-    if (m_has_content && m_is_singleline)
+    if (m_is_open)
     {
-        std::fprintf(m_file, "</%s>\n", m_name.c_str());
-    }
-    else if (m_has_content)
-    {
-        --m_indenter;
-        std::fprintf(m_file, "%s</%s>\n", m_indenter.c_str(), m_name.c_str());
+        // Close the element.
+        switch (m_content_type)
+        {
+          case HasNoContent:
+            assert(!"Should never happen.");
+            break;
+
+          case HasChildElements:
+            --m_indenter;
+            std::fprintf(m_file, "%s</%s>\n", m_indenter.c_str(), m_name.c_str());
+            break;
+
+          case HasChildText:
+            std::fprintf(m_file, "</%s>\n", m_name.c_str());
+            break;
+        }
+
+        m_is_open = false;
     }
 }
 
@@ -190,17 +221,18 @@ inline void write_dictionary(
     {
         XMLElement element("parameter", file, indenter);
         element.add_attribute("name", i->name());
+
         const std::string value = i->value<std::string>();
 
         if (value.find('\n') != std::string::npos)
         {
-            element.write(true, true);
+            element.write(XMLElement::HasChildText);
             std::fprintf(file, "%s", value.c_str());
         }
         else
         {
             element.add_attribute("value", value);
-            element.write(false);
+            element.write(XMLElement::HasNoContent);
         }
     }
 
@@ -208,7 +240,7 @@ inline void write_dictionary(
     {
         XMLElement element("parameters", file, indenter);
         element.add_attribute("name", i->name());
-        element.write(true);
+        element.write(XMLElement::HasChildElements);
         write_dictionary(i->value(), file, indenter);
     }
 }

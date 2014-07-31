@@ -317,7 +317,7 @@ namespace
         XMLElement entity_element("entity", file, indenter);
         entity_element.add_attribute("type", entity_type);
         entity_element.add_attribute("model", entity_model);
-        entity_element.write(true);
+        entity_element.write(XMLElement::HasChildElements);
 
         dump_input_metadata(metadata_array, file, indenter);
     }
@@ -352,7 +352,7 @@ namespace
             Appleseed::get_synthetic_version_string());
 
         XMLElement metadata_element("metadata", file, indenter);
-        metadata_element.write(true);
+        metadata_element.write(XMLElement::HasChildElements);
 
         dump_metadata<BSDFFactoryRegistrar>("bsdf", file, indenter);
         dump_metadata<CameraFactoryRegistrar>("camera", file, indenter);
