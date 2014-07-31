@@ -37,6 +37,7 @@
 #include "renderer/kernel/tessellation/statictessellation.h"
 #include "renderer/modeling/material/inormalmodifier.h"
 #include "renderer/modeling/material/material.h"
+#include "renderer/modeling/object/curveobject.h"
 #include "renderer/modeling/object/regionkit.h"
 #include "renderer/modeling/object/triangle.h"
 #include "renderer/modeling/scene/assembly.h"
@@ -46,6 +47,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
+#include "foundation/math/beziercurve.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
@@ -841,10 +843,13 @@ inline void ShadingPoint::compute_partial_derivatives() const
     {
         assert(m_primitive_type == PrimitiveCurve);
 
-        const foundation::Basis3d basis(get_original_shading_normal());
+        // Obtain the tangent from the curve using the primitive id.
+        const CurveObject* curves = static_cast<const CurveObject*>(m_object);
+        const foundation::BezierCurve3d& m_curve = curves->get_curve(m_primitive_index);
 
-        m_dpdu = basis.get_tangent_u();
-        m_dpdv = basis.get_tangent_v();
+        // Orient the du along the tangent and construct dv perpendicular to du and surface normal.
+        m_dpdu = foundation::normalize(m_curve.evaluate_tangent(m_bary[1]));
+        m_dpdv = foundation::normalize(foundation::cross(get_original_shading_normal(), m_dpdu));
     }
 }
 

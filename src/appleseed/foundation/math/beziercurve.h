@@ -125,6 +125,7 @@ class BezierCurve1
 
     VectorType evaluate_point(const ValueType t) const;
     ValueType evaluate_width(const ValueType t) const;
+    VectorType evaluate_tangent(const ValueType t) const;
 
     void split(BezierCurve1& c1, BezierCurve1& c2) const;
 };
@@ -153,6 +154,7 @@ class BezierCurve2
 
     VectorType evaluate_point(const ValueType t) const;
     ValueType evaluate_width(const ValueType t) const;
+    VectorType evaluate_tangent(const ValueType t) const;
 
     void split(BezierCurve2& c1, BezierCurve2& c2) const;
 };
@@ -181,6 +183,7 @@ class BezierCurve3
 
     VectorType evaluate_point(const ValueType t) const;
     ValueType evaluate_width(const ValueType t) const;
+    VectorType evaluate_tangent(const ValueType t) const;
 
     void split(BezierCurve3& c1, BezierCurve3& c2) const;
 };
@@ -211,6 +214,7 @@ class BezierCurveIntersector
     typedef typename BezierCurveType::AABBType AABBType;
     typedef typename BezierCurveType::MatrixType MatrixType;
     typedef Ray<ValueType, 3> RayType;
+    typedef Vector<ValueType, 2> Vector2dType;
 
     // Compute the transformation matrix required for ray-curve intersection.
     static void make_projection_transform(
@@ -222,7 +226,15 @@ class BezierCurveIntersector
         const BezierCurveType&  curve,
         const RayType&          ray,
         const MatrixType&       xfm,
+        ValueType&              u,
+        ValueType&              v,
         ValueType&              t);
+
+    // Intersection method for probe rays.
+    static bool intersect(
+        const BezierCurveType&  curve,
+        const RayType&          ray,
+        const MatrixType&       xfm);
 
   private:
     // Dot product function that only considers the x and y components of the vectors.
@@ -237,7 +249,10 @@ class BezierCurveIntersector
         const ValueType         half_max_width,
         const ValueType         v0,
         const ValueType         vn,
-        ValueType&              t);
+        ValueType&              u,
+        ValueType&              v,
+        ValueType&              t,
+        const bool              probe_test);            // variable used to skip unnecessary calculation for probe rays.
 };
 
 
@@ -405,6 +420,12 @@ inline typename BezierCurve1<T>::ValueType BezierCurve1<T>::evaluate_width(const
 }
 
 template <typename T>
+inline typename BezierCurve1<T>::VectorType BezierCurve1<T>::evaluate_tangent(const ValueType t) const
+{
+    return Base::m_ctrl_pts[1] - Base::m_ctrl_pts[0];
+}
+
+template <typename T>
 inline void BezierCurve1<T>::split(BezierCurve1& c1, BezierCurve1& c2) const
 {
     const VectorType midpt = evaluate_point(ValueType(0.5));
@@ -471,6 +492,15 @@ inline typename BezierCurve2<T>::ValueType BezierCurve2<T>::evaluate_width(const
             Base::m_width[1],
             Base::m_width[2],
             t);
+}
+
+template <typename T>
+inline typename BezierCurve2<T>::VectorType BezierCurve2<T>::evaluate_tangent(const ValueType t) const
+{
+    const ValueType a = 2 * (ValueType(1.0) - t);
+    const ValueType b = 2 * t;
+    return a * (Base::m_ctrl_pts[1] - Base::m_ctrl_pts[0])
+         + b * (Base::m_ctrl_pts[2] - Base::m_ctrl_pts[1]);
 }
 
 template <typename T>
@@ -546,6 +576,18 @@ inline typename BezierCurve3<T>::ValueType BezierCurve3<T>::evaluate_width(const
             Base::m_width[2],
             Base::m_width[3],
             t);
+}
+
+template <typename T>
+inline typename BezierCurve3<T>::VectorType BezierCurve3<T>::evaluate_tangent(const ValueType t) const
+{
+    const ValueType u = ValueType(1.0) - t;
+    const ValueType a = 3 * u * u;
+    const ValueType b = 6 * u * t;
+    const ValueType c = 3 * t * t;
+    return a * (Base::m_ctrl_pts[1] - Base::m_ctrl_pts[0])
+         + b * (Base::m_ctrl_pts[2] - Base::m_ctrl_pts[1])
+         + c * (Base::m_ctrl_pts[3] - Base::m_ctrl_pts[2]);
 }
 
 template <typename T>
@@ -698,6 +740,8 @@ bool BezierCurveIntersector<BezierCurveType>::intersect(
     const BezierCurveType&  curve,
     const RayType&          ray,
     const MatrixType&       xfm,
+    ValueType&              u,
+    ValueType&              v,
     ValueType&              t)
 {
     const BezierCurveType xfm_curve(curve, xfm);
@@ -707,7 +751,7 @@ bool BezierCurveIntersector<BezierCurveType>::intersect(
     const ValueType norm_dir = norm(ray.m_dir);
     ValueType scaled_t = t * norm_dir;
 
-    if (converge(depth, xfm_curve, ValueType(0.5) * max_width, ValueType(0.0), ValueType(1.0), scaled_t))
+    if (converge(depth, xfm_curve, ValueType(0.5) * max_width, ValueType(0.0), ValueType(1.0), u, v, scaled_t, false))
     {
         t = scaled_t / norm_dir;
         return true;
@@ -717,13 +761,32 @@ bool BezierCurveIntersector<BezierCurveType>::intersect(
 }
 
 template <typename BezierCurveType>
+bool BezierCurveIntersector<BezierCurveType>::intersect(
+    const BezierCurveType&  curve,
+    const RayType&          ray,
+    const MatrixType&       xfm)
+{
+    const BezierCurveType xfm_curve(curve, xfm);
+    const ValueType max_width = xfm_curve.compute_max_width();
+    const size_t depth = xfm_curve.compute_max_recursion_depth(max_width);
+
+    const ValueType norm_dir = norm(ray.m_dir);
+    ValueType u, v, scaled_t = norm_dir * ray.m_tmax;
+
+    return converge(depth, xfm_curve, ValueType(0.5) * max_width, ValueType(0.0), ValueType(1.0), u, v, scaled_t, true);
+}
+
+template <typename BezierCurveType>
 bool BezierCurveIntersector<BezierCurveType>::converge(
     const size_t            depth,
     const BezierCurveType&  curve,
     const ValueType         half_max_width,
     const ValueType         v0,
     const ValueType         vn,
-    ValueType&              t)
+    ValueType&              u,
+    ValueType&              v,
+    ValueType&              t,
+    const bool              probe_test)
 {
     const AABBType bbox = curve.compute_bbox();
 
@@ -742,8 +805,8 @@ bool BezierCurveIntersector<BezierCurveType>::converge(
         // Recurse on the two child curves.
         const ValueType vm = (v0 + vn) * ValueType(0.5);
         return
-            converge(depth - 1, c1, half_max_width, v0, vm, t) ||
-            converge(depth - 1, c2, half_max_width, vm, vn, t);
+            converge(depth - 1, c1, half_max_width, v0, vm, u, v, t, probe_test) ||
+            converge(depth - 1, c2, half_max_width, vm, vn, u, v, t, probe_test);
     }
     else
     {
@@ -787,8 +850,29 @@ bool BezierCurveIntersector<BezierCurveType>::converge(
         if (dotxy(p, p) >= ValueType(0.25) * width * width)
             return false;
 
-        // Found an intersection.
-        t = p.z;
+        // skip uv computation for probe tests.
+        if (!probe_test)
+        {
+            // Found an intersection.
+            t = p.z;
+
+            // Compute u,v parameters.
+            v = lerp(v0, vn, w);
+
+            const VectorType ct = curve.evaluate_tangent(v);
+
+            // Compute the tangent, bitangent, intersection point in 2d space.
+            const Vector2dType tangent = normalize(Vector2dType(ct.x, ct.y));
+            const Vector2dType bitangent(-tangent.y, tangent.x);
+            const Vector2dType point(p.x, p.y);
+
+            // Compute the vertical projection of point to the bitangent.
+            const ValueType vert_proj = dot(point, bitangent);
+
+            // Evaluate u from projection in [0-1] range.
+            u = saturate((vert_proj + ValueType(0.5) * width)/width);
+        }
+
         return true;
     }
 }
