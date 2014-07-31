@@ -58,6 +58,16 @@ OIIO::TypeDesc g_float_array2_typedesc(OIIO::TypeDesc::FLOAT, 2);
 OIIO::TypeDesc g_float_array4_typedesc(OIIO::TypeDesc::FLOAT, 4);
 OIIO::TypeDesc g_int_array2_typedesc(OIIO::TypeDesc::INT, 2);
 
+OIIO::ustring g_empty_ustr;
+OIIO::ustring g_trace_ustr("trace");
+OIIO::ustring g_hit_ustr("hit");
+OIIO::ustring g_hitdist_ustr("hitdist");
+OIIO::ustring g_N_ustr("N");
+OIIO::ustring g_Ng_ustr("Ng");
+OIIO::ustring g_P_ustr("P");
+OIIO::ustring g_I_ustr("I");
+OIIO::ustring g_u_ustr("u");
+OIIO::ustring g_v_ustr("v");
 OIIO::ustring g_perspective_ustr("perspective");
 OIIO::ustring g_spherical_ustr("spherical");
 OIIO::ustring g_unknown_proj_ustr("unknown");
@@ -87,6 +97,11 @@ RendererServices::RendererServices(
     m_attr_getters[OIIO::ustring("camera:shutter")] = &RendererServices::get_camera_shutter;
     m_attr_getters[OIIO::ustring("camera:shutter_open")] = &RendererServices::get_camera_shutter_open;
     m_attr_getters[OIIO::ustring("camera:shutter_close")] = &RendererServices::get_camera_shutter_close;
+}
+
+OIIO::TextureSystem* RendererServices::texturesys() const
+{
+    return &m_texture_sys;
 }
 
 bool RendererServices::texture(
@@ -296,6 +311,30 @@ bool RendererServices::has_userdata(
     OIIO::ustring           name,
     OIIO::TypeDesc          type,
     OSL::ShaderGlobals*     sg)
+{
+    return false;
+}
+
+bool RendererServices::trace(
+    TraceOpt&           options,
+    OSL::ShaderGlobals* sg,
+    const OSL::Vec3&    P,
+    const OSL::Vec3&    dPdx,
+    const OSL::Vec3&    dPdy,
+    const OSL::Vec3&    R,
+    const OSL::Vec3&    dRdx,
+    const OSL::Vec3&    dRdy)
+{
+    return false;
+}
+
+bool RendererServices::getmessage(
+    OSL::ShaderGlobals* sg,
+    OIIO::ustring       source,
+    OIIO::ustring       name,
+    OIIO::TypeDesc      type, 
+    void*               val, 
+    bool                derivatives)
 {
     return false;
 }

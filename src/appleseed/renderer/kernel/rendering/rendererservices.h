@@ -65,6 +65,9 @@ class RendererServices
         const Project&          project,
         OIIO::TextureSystem&    texture_sys);
 
+    // Return a pointer to the texture system (if available).
+    virtual OIIO::TextureSystem* texturesys() const OVERRIDE;
+
     // Filtered 2D texture lookup for a single point.
     virtual bool texture(
         OSL::ustring            filename,
@@ -230,6 +233,29 @@ class RendererServices
         OIIO::ustring           name,
         OIIO::TypeDesc          type,
         OSL::ShaderGlobals*     sg) OVERRIDE;
+
+    // Immediately trace a ray from P in the direction R.  Return true
+    // if anything hit, otherwise false.
+    virtual bool trace(
+        TraceOpt&           options, 
+        OSL::ShaderGlobals* sg,
+        const OSL::Vec3&    P, 
+        const OSL::Vec3&    dPdx,
+        const OSL::Vec3&    dPdy, 
+        const OSL::Vec3&    R,
+        const OSL::Vec3&    dRdx, 
+        const OSL::Vec3&    dRdy) OVERRIDE;
+
+    // Get the named message from the renderer and if found then
+    // write it into 'val'.  Otherwise, return false.  This is only
+    // called for "sourced" messages, not ordinary intra-group messages.
+    virtual bool getmessage(
+        OSL::ShaderGlobals* sg, 
+        OIIO::ustring       source,
+        OIIO::ustring       name,
+        OIIO::TypeDesc      type, 
+        void*               val, 
+        bool                derivatives) OVERRIDE;
 
   private:
     // This code based on OSL's test renderer.
