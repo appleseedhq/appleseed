@@ -232,7 +232,7 @@ class RendererServices
         OSL::ShaderGlobals*     sg) OVERRIDE;
 
   private:
-    // This code is from OSL's test renderer.
+    // This code based on OSL's test renderer.
     typedef bool (RendererServices::*AttrGetterFun)(
         OSL::ShaderGlobals* sg, 
         bool                derivs,

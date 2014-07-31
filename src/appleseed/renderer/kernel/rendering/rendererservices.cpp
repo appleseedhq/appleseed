@@ -474,8 +474,6 @@ IMPLEMENT_ATTR_GETTER(camera_screen_window)
     return false;
 }
 
-#undef IMPLEMENT_ATTR_GETTER
-
 void RendererServices::clear_attr_derivatives(
     bool                    derivs,
     const OIIO::TypeDesc&   type,
