@@ -147,6 +147,7 @@ bool RendererServices::environment(
 }
 
 bool RendererServices::get_texture_info(
+    OSL::ShaderGlobals*     sg,
     OSL::ustring            filename,
     int                     subimage,
     OSL::ustring            dataname,
