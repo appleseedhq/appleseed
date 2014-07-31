@@ -422,7 +422,7 @@ inline typename BezierCurve1<T>::ValueType BezierCurve1<T>::evaluate_width(const
 template <typename T>
 inline typename BezierCurve1<T>::VectorType BezierCurve1<T>::evaluate_tangent(const ValueType t) const
 {
-    return m_ctrl_pts[1] - m_ctrl_pts[0];
+    return Base::m_ctrl_pts[1] - Base::m_ctrl_pts[0];
 }
 
 template <typename T>
@@ -499,7 +499,8 @@ inline typename BezierCurve2<T>::VectorType BezierCurve2<T>::evaluate_tangent(co
 {
     const ValueType a = 2 * (ValueType(1.0) - t);
     const ValueType b = 2 * t;
-    return a * (m_ctrl_pts[1] - m_ctrl_pts[0]) + b * (m_ctrl_pts[2] - m_ctrl_pts[1]);
+    return a * (Base::m_ctrl_pts[1] - Base::m_ctrl_pts[0])
+         + b * (Base::m_ctrl_pts[2] - Base::m_ctrl_pts[1]);
 }
 
 template <typename T>
@@ -584,7 +585,9 @@ inline typename BezierCurve3<T>::VectorType BezierCurve3<T>::evaluate_tangent(co
     const ValueType a = 3 * u * u;
     const ValueType b = 6 * u * t;
     const ValueType c = 3 * t * t;
-    return a * (m_ctrl_pts[1] - m_ctrl_pts[0]) + b * (m_ctrl_pts[2] - m_ctrl_pts[1]) + c * (m_ctrl_pts[3] - m_ctrl_pts[2]);
+    return a * (Base::m_ctrl_pts[1] - Base::m_ctrl_pts[0])
+         + b * (Base::m_ctrl_pts[2] - Base::m_ctrl_pts[1])
+         + c * (Base::m_ctrl_pts[3] - Base::m_ctrl_pts[2]);
 }
 
 template <typename T>
