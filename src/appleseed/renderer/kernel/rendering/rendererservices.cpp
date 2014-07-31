@@ -32,10 +32,37 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/modeling/camera/camera.h"
+#include "renderer/modeling/frame/frame.h"
+#include "renderer/modeling/project/project.h"
+#include "renderer/modeling/scene/scene.h"
 #include "renderer/kernel/shading/shadingpoint.h"
+
+// appleseed.foundation headers.
+#include "foundation/image/image.h"
+
+// Standard headers.
+#include <limits>
+
+using namespace foundation;
+using namespace std;
 
 namespace renderer
 {
+
+// Globals used by RendererServices.
+namespace
+{
+
+OIIO::TypeDesc g_float_array2_typedesc(OIIO::TypeDesc::FLOAT, 2);
+OIIO::TypeDesc g_float_array4_typedesc(OIIO::TypeDesc::FLOAT, 4);
+OIIO::TypeDesc g_int_array2_typedesc(OIIO::TypeDesc::INT, 2);
+
+OIIO::ustring g_perspective_ustr("perspective");
+OIIO::ustring g_spherical_ustr("spherical");
+OIIO::ustring g_unknown_proj_ustr("unknown");
+
+}
 
 //
 // RendererServices class implementation.
@@ -48,6 +75,18 @@ RendererServices::RendererServices(
   , m_project(project)
   , m_texture_sys(texture_sys)
 {
+    // Set up attribute getters
+    m_attr_getters[OIIO::ustring("camera:resolution")] = &RendererServices::get_camera_resolution;    
+    m_attr_getters[OIIO::ustring("camera:projection")] = &RendererServices::get_camera_projection;
+    m_attr_getters[OIIO::ustring("camera:pixelaspect")] = &RendererServices::get_camera_pixelaspect;
+    m_attr_getters[OIIO::ustring("camera:screen_window")] = &RendererServices::get_camera_screen_window;
+    m_attr_getters[OIIO::ustring("camera:fov")] = &RendererServices::get_camera_fov;
+    m_attr_getters[OIIO::ustring("camera:clip")] = &RendererServices::get_camera_clip;
+    m_attr_getters[OIIO::ustring("camera:clip_near")] = &RendererServices::get_camera_clip_near;
+    m_attr_getters[OIIO::ustring("camera:clip_far")] = &RendererServices::get_camera_clip_far;
+    m_attr_getters[OIIO::ustring("camera:shutter")] = &RendererServices::get_camera_shutter;
+    m_attr_getters[OIIO::ustring("camera:shutter_open")] = &RendererServices::get_camera_shutter_open;
+    m_attr_getters[OIIO::ustring("camera:shutter_close")] = &RendererServices::get_camera_shutter_close;
 }
 
 bool RendererServices::texture(
@@ -109,6 +148,7 @@ bool RendererServices::environment(
 }
 
 bool RendererServices::get_texture_info(
+    OSL::ShaderGlobals*     sg,
     OSL::ustring            filename,
     int                     subimage,
     OSL::ustring            dataname,
@@ -216,7 +256,17 @@ bool RendererServices::get_attribute(
     OIIO::TypeDesc          type,
     OIIO::ustring           name,
     void*                   val)
-{
+{    
+    AttrGetterMapType::const_iterator i = m_attr_getters.find (name);
+    if (i != m_attr_getters.end())
+    {
+        AttrGetterFun getter = i->second;
+        return (this->*(getter))(sg, derivatives, object, type, name, val);
+    }
+
+    if (object.empty())
+        return get_userdata(derivatives, name, type, sg, val);
+
     return false;
 }
 
@@ -248,6 +298,189 @@ bool RendererServices::has_userdata(
     OSL::ShaderGlobals*     sg)
 {
     return false;
+}
+
+// Attribute getters.
+#define IMPLEMENT_ATTR_GETTER(name) \
+bool RendererServices::get_##name(  \
+    OSL::ShaderGlobals* sg,         \
+    bool                derivs,     \
+    OIIO::ustring       object,     \
+    OIIO::TypeDesc      type,       \
+    OIIO::ustring       name,       \
+    void                *val) const
+
+IMPLEMENT_ATTR_GETTER(camera_resolution)
+{
+    if (type == g_int_array2_typedesc)
+    {
+        Image& img = m_project.get_frame()->image();
+        reinterpret_cast<int*>(val)[0] = img.properties().m_canvas_width;
+        reinterpret_cast<int*>(val)[1] = img.properties().m_canvas_height;
+        return true;
+    }
+
+    return false;
+}
+
+IMPLEMENT_ATTR_GETTER(camera_projection)
+{
+    if (type == OIIO::TypeDesc::TypeString)
+    {
+        if (m_cam_projection_str.empty())
+        {
+            Camera* cam = m_project.get_scene()->get_camera();
+    
+            if (strcmp(cam->get_model(), "pinhole_camera") == 0)
+            {
+                m_cam_projection_str = g_perspective_ustr;
+                reinterpret_cast<OIIO::ustring*>(val)[0] = g_perspective_ustr;
+            }
+            
+            if (strcmp(cam->get_model(), "thinlens_camera") == 0)
+            {
+                m_cam_projection_str = g_perspective_ustr;
+                reinterpret_cast<OIIO::ustring*>(val)[0] = g_perspective_ustr;
+            }
+            
+            if (strcmp(cam->get_model(), "spherical_camera") == 0)
+            {
+                m_cam_projection_str = g_spherical_ustr;
+                reinterpret_cast<OIIO::ustring*>(val)[0] = g_spherical_ustr;
+            }
+
+            m_cam_projection_str = g_unknown_proj_ustr;
+            reinterpret_cast<OIIO::ustring*>(val)[0] = g_unknown_proj_ustr;
+        }
+        else
+            reinterpret_cast<OIIO::ustring*>(val)[0] = m_cam_projection_str;
+
+        return true;
+    }
+
+    return false;
+}
+
+IMPLEMENT_ATTR_GETTER(camera_fov)
+{
+    RENDERER_LOG_WARNING("OSL: get camera fov attribute not implemented");
+    return false;
+}
+
+IMPLEMENT_ATTR_GETTER(camera_pixelaspect)
+{
+    if (type == OIIO::TypeDesc::TypeFloat)
+    {
+        reinterpret_cast<float*>(val)[0] = 1.0f;
+        clear_attr_derivatives(derivs, type, val);
+        return true;
+    }
+    
+    return false;
+}
+
+IMPLEMENT_ATTR_GETTER(camera_clip)
+{
+    if (type == g_float_array2_typedesc)
+    {
+        reinterpret_cast<float*>(val)[0] = 0.0f;
+        reinterpret_cast<float*>(val)[1] = numeric_limits<float>::max();
+        clear_attr_derivatives(derivs, type, val);
+        return true;
+    }
+    
+    return false;
+}
+
+IMPLEMENT_ATTR_GETTER(camera_clip_near)
+{
+    if (type == OIIO::TypeDesc::TypeFloat)
+    {
+        reinterpret_cast<float*>(val)[0] = 0.0f;
+        clear_attr_derivatives(derivs, type, val);
+        return true;
+    }
+    
+    return false;
+}
+
+IMPLEMENT_ATTR_GETTER(camera_clip_far)
+{
+    if (type == OIIO::TypeDesc::TypeFloat)
+    {
+        reinterpret_cast<float*>(val)[0] = numeric_limits<float>::max();
+        clear_attr_derivatives(derivs, type, val);
+        return true;
+    }
+    
+    return false;
+}
+
+IMPLEMENT_ATTR_GETTER(camera_shutter)
+{
+    if (type == g_float_array2_typedesc)
+    {
+        Camera* cam = m_project.get_scene()->get_camera();
+        reinterpret_cast<float*>(val)[0] = cam->get_shutter_open_time();
+        reinterpret_cast<float*>(val)[1] = cam->get_shutter_close_time();
+        clear_attr_derivatives(derivs, type, val);
+        return true;
+    }
+    
+    return false;
+}
+
+IMPLEMENT_ATTR_GETTER(camera_shutter_open)
+{
+    if (type == OIIO::TypeDesc::TypeFloat)
+    {
+        Camera* cam = m_project.get_scene()->get_camera();
+        reinterpret_cast<float*>(val)[0] = cam->get_shutter_open_time();
+        clear_attr_derivatives(derivs, type, val);
+        return true;
+    }
+    
+    return false;
+}
+
+IMPLEMENT_ATTR_GETTER(camera_shutter_close)
+{
+    if (type == OIIO::TypeDesc::TypeFloat)
+    {
+        Camera* cam = m_project.get_scene()->get_camera();
+        reinterpret_cast<float*>(val)[0] = cam->get_shutter_close_time();
+        clear_attr_derivatives(derivs, type, val);
+        return true;
+    }
+    
+    return false;
+}
+
+IMPLEMENT_ATTR_GETTER(camera_screen_window)
+{
+    if (type == g_float_array4_typedesc)
+    {
+        Image& img = m_project.get_frame()->image();
+        const float aspect = img.properties().m_canvas_width / img.properties().m_canvas_height;
+
+        reinterpret_cast<float*>(val)[0] = -aspect;
+        reinterpret_cast<float*>(val)[1] = -1.0f;
+        reinterpret_cast<float*>(val)[2] =  aspect;
+        reinterpret_cast<float*>(val)[3] =  1.0f;
+        clear_attr_derivatives(derivs, type, val);
+        return true;
+    }
+
+    return false;
+}
+
+void RendererServices::clear_attr_derivatives(
+    bool                    derivs,
+    const OIIO::TypeDesc&   type,
+    void*                   val)
+{
+    if (derivs)
+        memset(reinterpret_cast<char*>(val) + type.size(), 0, 2 * type.size());
 }
 
 void RendererServices::log_error(const std::string& message)
