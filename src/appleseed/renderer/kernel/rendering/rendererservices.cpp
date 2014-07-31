@@ -60,6 +60,7 @@ OIIO::TypeDesc g_int_array2_typedesc(OIIO::TypeDesc::INT, 2);
 
 OIIO::ustring g_perspective_ustr("perspective");
 OIIO::ustring g_spherical_ustr("spherical");
+OIIO::ustring g_unknown_proj_ustr("unknown");
 
 }
 
@@ -314,8 +315,8 @@ IMPLEMENT_ATTR_GETTER(camera_resolution)
     if (type == g_int_array2_typedesc)
     {
         Image& img = m_project.get_frame()->image();
-        reinterpret_cast<int *>(val)[0] = img.properties().m_canvas_width;
-        reinterpret_cast<int *>(val)[1] = img.properties().m_canvas_height;
+        reinterpret_cast<int*>(val)[0] = img.properties().m_canvas_width;
+        reinterpret_cast<int*>(val)[1] = img.properties().m_canvas_height;
         return true;
     }
 
@@ -326,16 +327,35 @@ IMPLEMENT_ATTR_GETTER(camera_projection)
 {
     if (type == OIIO::TypeDesc::TypeString)
     {
-        Camera* cam = m_project.get_scene()->get_camera();
+        if (m_cam_projection_str.empty())
+        {
+            Camera* cam = m_project.get_scene()->get_camera();
+    
+            if (strcmp(cam->get_model(), "pinhole_camera") == 0)
+            {
+                m_cam_projection_str = g_perspective_ustr;
+                reinterpret_cast<OIIO::ustring*>(val)[0] = g_perspective_ustr;
+            }
+            
+            if (strcmp(cam->get_model(), "thinlens_camera") == 0)
+            {
+                m_cam_projection_str = g_perspective_ustr;
+                reinterpret_cast<OIIO::ustring*>(val)[0] = g_perspective_ustr;
+            }
+            
+            if (strcmp(cam->get_model(), "spherical_camera") == 0)
+            {
+                m_cam_projection_str = g_spherical_ustr;
+                reinterpret_cast<OIIO::ustring*>(val)[0] = g_spherical_ustr;
+            }
 
-        if (strcmp(cam->get_model(), "pinhole_camera") == 0)
-            reinterpret_cast<OIIO::ustring*>(val)[0] = g_perspective_ustr;
+            m_cam_projection_str = g_unknown_proj_ustr;
+            reinterpret_cast<OIIO::ustring*>(val)[0] = g_unknown_proj_ustr;
+        }
+        else
+            reinterpret_cast<OIIO::ustring*>(val)[0] = m_cam_projection_str;
 
-        if (strcmp(cam->get_model(), "thinlens_camera") == 0)
-            reinterpret_cast<OIIO::ustring*>(val)[0] = g_perspective_ustr;
-
-        if (strcmp(cam->get_model(), "spherical_camera") == 0)
-            reinterpret_cast<OIIO::ustring*>(val)[0] = g_spherical_ustr;
+        return true;
     }
 
     return false;
@@ -438,7 +458,18 @@ IMPLEMENT_ATTR_GETTER(camera_shutter_close)
 
 IMPLEMENT_ATTR_GETTER(camera_screen_window)
 {
-    RENDERER_LOG_WARNING("OSL: get camera screen window attribute not implemented");
+    if (type == g_float_array4_typedesc)
+    {
+        Image& img = m_project.get_frame()->image();
+        const float aspect = img.properties().m_canvas_width / img.properties().m_canvas_height;
+
+        reinterpret_cast<float*>(val)[0] = -aspect;
+        reinterpret_cast<float*>(val)[1] = -1.0f;
+        reinterpret_cast<float*>(val)[2] =  aspect;
+        reinterpret_cast<float*>(val)[3] =  1.0f;
+        clear_attr_derivatives(derivs, type, val);
+        return true;
+    }
 
     return false;
 }

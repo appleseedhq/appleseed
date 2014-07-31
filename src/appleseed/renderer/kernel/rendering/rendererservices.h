@@ -276,6 +276,7 @@ class RendererServices
     const Project&              m_project;
     OIIO::TextureSystem&        m_texture_sys;
     AttrGetterMapType           m_attr_getters;
+    mutable OIIO::ustring       m_cam_projection_str;
 };
 
 }       // namespace renderer
