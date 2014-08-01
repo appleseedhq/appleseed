@@ -59,8 +59,7 @@ class DLLSYMBOL EntityVector
     class DLLSYMBOL iterator
     {
       public:
-
-        // iterator category
+        // Iterator category.
         typedef std::bidirectional_iterator_tag iterator_category;
 
         // Value type.
@@ -106,8 +105,7 @@ class DLLSYMBOL EntityVector
     class DLLSYMBOL const_iterator
     {
       public:
-
-        // iterator category
+        // Iterator category.
         typedef std::bidirectional_iterator_tag iterator_category;
 
         // Value type.

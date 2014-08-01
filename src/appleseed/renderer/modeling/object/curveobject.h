@@ -103,7 +103,7 @@ class DLLSYMBOL CurveObject
 
 
 //
-// Curve Object Factory
+// Curve object factory.
 //
 
 class DLLSYMBOL CurveObjectFactory
