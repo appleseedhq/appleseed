@@ -75,7 +75,7 @@ RendererServices::RendererServices(
   , m_project(project)
   , m_texture_sys(texture_sys)
 {
-    // Set up attribute getters
+    // Set up attribute getters.
     m_attr_getters[OIIO::ustring("camera:resolution")] = &RendererServices::get_camera_resolution;    
     m_attr_getters[OIIO::ustring("camera:projection")] = &RendererServices::get_camera_projection;
     m_attr_getters[OIIO::ustring("camera:pixelaspect")] = &RendererServices::get_camera_pixelaspect;
@@ -461,7 +461,8 @@ IMPLEMENT_ATTR_GETTER(camera_screen_window)
     if (type == g_float_array4_typedesc)
     {
         Image& img = m_project.get_frame()->image();
-        const float aspect = img.properties().m_canvas_width / img.properties().m_canvas_height;
+        const float aspect = 
+            static_cast<float>(img.properties().m_canvas_width) / img.properties().m_canvas_height;
 
         reinterpret_cast<float*>(val)[0] = -aspect;
         reinterpret_cast<float*>(val)[1] = -1.0f;
@@ -473,6 +474,8 @@ IMPLEMENT_ATTR_GETTER(camera_screen_window)
 
     return false;
 }
+
+#undef IMPLEMENT_ATTR_GETTER
 
 void RendererServices::clear_attr_derivatives(
     bool                    derivs,
