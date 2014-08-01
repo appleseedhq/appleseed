@@ -410,6 +410,11 @@ void ShadingPoint::update_osl_shading_normal() const
     // Place the shading normal in the same hemisphere as the geometric normal.
     if (m_side == ObjectInstance::BackSide)
         m_shading_normal = -m_shading_normal;
+
+    // Update the tangent vectors.
+    Vector3d dpdu = Vector3f(m_shader_globals.dPdu);
+    m_dpdv = normalize(cross(dpdu, m_shading_normal));
+    m_dpdu = cross(m_shading_normal, m_dpdv);
 }
 
 #endif
