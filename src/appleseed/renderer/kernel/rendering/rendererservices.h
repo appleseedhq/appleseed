@@ -68,6 +68,9 @@ class RendererServices
         OIIO::TextureSystem&    texture_sys,
         TextureStore&           texture_store);
     
+    // Precompute attribute values for get_attribute calls.
+    void precompute_attributes();
+    
     // Return a pointer to the texture system (if available).
     virtual OIIO::TextureSystem* texturesys() const OVERRIDE;
 

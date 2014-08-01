@@ -103,6 +103,23 @@ RendererServices::RendererServices(
     m_attr_getters[OIIO::ustring("camera:shutter_close")] = &RendererServices::get_camera_shutter_close;
 }
 
+void RendererServices::precompute_attributes()
+{
+    // Camera projection string.
+    {
+        Camera* cam = m_project.get_scene()->get_camera();
+    
+        if (strcmp(cam->get_model(), "pinhole_camera") == 0)
+            m_cam_projection_str = g_perspective_ustr;
+        else if (strcmp(cam->get_model(), "thinlens_camera") == 0)
+            m_cam_projection_str = g_perspective_ustr;
+        else if (strcmp(cam->get_model(), "spherical_camera") == 0)
+            m_cam_projection_str = g_spherical_ustr;
+        else
+            m_cam_projection_str = g_unknown_proj_ustr;
+    }
+}
+
 OIIO::TextureSystem* RendererServices::texturesys() const
 {
     return &m_texture_sys;
@@ -458,34 +475,7 @@ IMPLEMENT_ATTR_GETTER(camera_projection)
 {
     if (type == OIIO::TypeDesc::TypeString)
     {
-        if (m_cam_projection_str.empty())
-        {
-            Camera* cam = m_project.get_scene()->get_camera();
-
-            if (strcmp(cam->get_model(), "pinhole_camera") == 0)
-            {
-                m_cam_projection_str = g_perspective_ustr;
-                reinterpret_cast<OIIO::ustring*>(val)[0] = g_perspective_ustr;
-            }
-
-            if (strcmp(cam->get_model(), "thinlens_camera") == 0)
-            {
-                m_cam_projection_str = g_perspective_ustr;
-                reinterpret_cast<OIIO::ustring*>(val)[0] = g_perspective_ustr;
-            }
-
-            if (strcmp(cam->get_model(), "spherical_camera") == 0)
-            {
-                m_cam_projection_str = g_spherical_ustr;
-                reinterpret_cast<OIIO::ustring*>(val)[0] = g_spherical_ustr;
-            }
-
-            m_cam_projection_str = g_unknown_proj_ustr;
-            reinterpret_cast<OIIO::ustring*>(val)[0] = g_unknown_proj_ustr;
-        }
-        else
-            reinterpret_cast<OIIO::ustring*>(val)[0] = m_cam_projection_str;
-
+        reinterpret_cast<OIIO::ustring*>(val)[0] = m_cam_projection_str;
         return true;
     }
 
