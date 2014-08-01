@@ -69,6 +69,9 @@ namespace renderer
 
 DECLARE_ARRAY(MaterialArray, const Material*);
 
+// Return true if at least one material in the array emits light.
+bool has_emitting_materials(const MaterialArray& materials);
+
 // Return true if at least one material in the array has an alpha map set.
 bool uses_alpha_mapping(const MaterialArray& materials);
 

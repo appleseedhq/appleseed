@@ -96,21 +96,6 @@ void LightSample::make_shading_point(
 // LightSampler class implementation.
 //
 
-namespace
-{
-    // Return true if at least one material emits light.
-    bool has_emitting_materials(const MaterialArray& materials)
-    {
-        for (size_t i = 0; i < materials.size(); ++i)
-        {
-            if (materials[i] && materials[i]->get_uncached_edf())
-                return true;
-        }
-
-        return false;
-    }
-}
-
 LightSampler::LightSampler(const Scene& scene, const ParamArray& params)
   : m_params(params)
   , m_emitting_triangle_hash_table(m_triangle_key_hasher)

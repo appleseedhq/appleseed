@@ -61,6 +61,17 @@ namespace renderer
 
 DEFINE_ARRAY(MaterialArray);
 
+bool has_emitting_materials(const MaterialArray& materials)
+{
+    for (size_t i = 0; i < materials.size(); ++i)
+    {
+        if (materials[i] && materials[i]->get_uncached_edf())
+            return true;
+    }
+
+    return false;
+}
+
 bool uses_alpha_mapping(const MaterialArray& materials)
 {
     for (size_t i = 0; i < materials.size(); ++i)
