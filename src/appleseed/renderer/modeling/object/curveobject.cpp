@@ -165,8 +165,25 @@ struct CurveObject::Impl
         }
     }
 
-    void load_curve_file(const char* filepath)
+    void split_and_store(vector<BezierCurve3d>& curves, const BezierCurve3d& curve, const size_t split_count)
     {
+        if (split_count > 0)
+        {
+            BezierCurve3d child1, child2;
+            curve.split(child1, child2);
+            split_and_store(curves, child1, split_count - 1);
+            split_and_store(curves, child2, split_count - 1);
+        }
+        else
+        {
+            curves.push_back(curve);
+        }
+    }
+
+    void load_curve_file(const char* filepath, const ParamArray& params)
+    {
+        const size_t presplit_count = params.get_optional<size_t>("presplits", 0);
+
         ifstream input;
         input.open(filepath);
 
@@ -205,7 +222,7 @@ struct CurveObject::Impl
                 }
 
                 const BezierCurve3d curve(&points[0], &widths[0]);
-                m_curves.push_back(curve);
+                split_and_store(m_curves, curve, presplit_count);
             }
 
             input.close();
@@ -241,7 +258,8 @@ CurveObject::CurveObject(
     else
     {
         impl->load_curve_file(
-            search_paths.qualify(filepath).c_str());
+            search_paths.qualify(filepath).c_str(),
+            params);
     }
 }
 
