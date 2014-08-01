@@ -96,12 +96,25 @@ struct CurveObject::Impl
         return v;
     }
 
+    void split_and_store(vector<BezierCurve3d>& curves, const BezierCurve3d& curve, const size_t split_count)
+    {
+        if (split_count > 0)
+        {
+            BezierCurve3d child1, child2;
+            curve.split(child1, child2);
+            split_and_store(curves, child1, split_count - 1);
+            split_and_store(curves, child2, split_count - 1);
+        }
+        else curves.push_back(curve);
+    }
+
     void create_hair_ball(const ParamArray& params)
     {
         const size_t ControlPointCount = 4;
 
         const size_t curve_count = params.get_optional<size_t>("curves", 100);
         const double curve_width = params.get_optional<double>("width", 0.002);
+        const size_t split_count = params.get_optional<size_t>("presplits", 0);
 
         Vector3d points[ControlPointCount];
         MersenneTwister rng;
@@ -119,7 +132,7 @@ struct CurveObject::Impl
             }
 
             const BezierCurve3d curve(&points[0], curve_width);
-            m_curves.push_back(curve);
+            split_and_store(m_curves, curve, split_count);
         }
     }
 
@@ -133,6 +146,7 @@ struct CurveObject::Impl
         const double tip_width = params.get_optional<double>("tip_width", 0.0001);
         const double length_fuzziness = params.get_optional<double>("length_fuzziness", 0.3);
         const double curliness = params.get_optional<double>("curliness", 0.5);
+        const size_t split_count = params.get_optional<size_t>("presplits", 0);
 
         Vector3d points[ControlPointCount];
         double widths[ControlPointCount];
@@ -161,28 +175,13 @@ struct CurveObject::Impl
             }
 
             const BezierCurve3d curve(&points[0], &widths[0]);
-            m_curves.push_back(curve);
-        }
-    }
-
-    void split_and_store(vector<BezierCurve3d>& curves, const BezierCurve3d& curve, const size_t split_count)
-    {
-        if (split_count > 0)
-        {
-            BezierCurve3d child1, child2;
-            curve.split(child1, child2);
-            split_and_store(curves, child1, split_count - 1);
-            split_and_store(curves, child2, split_count - 1);
-        }
-        else
-        {
-            curves.push_back(curve);
+            split_and_store(m_curves, curve, split_count);
         }
     }
 
     void load_curve_file(const char* filepath, const ParamArray& params)
     {
-        const size_t presplit_count = params.get_optional<size_t>("presplits", 0);
+        const size_t split_count = params.get_optional<size_t>("presplits", 0);
 
         ifstream input;
         input.open(filepath);
@@ -222,7 +221,7 @@ struct CurveObject::Impl
                 }
 
                 const BezierCurve3d curve(&points[0], &widths[0]);
-                split_and_store(m_curves, curve, presplit_count);
+                split_and_store(m_curves, curve, split_count);
             }
 
             input.close();
