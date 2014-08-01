@@ -1,0 +1,40 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.5.10
+surface ashikhmin_shirley
+param	normal	Normal	0 0 0 		 %read{4,4} %write{0,0}
+param	vector	Tangent	0 0 0 		 %read{5,5} %write{1,1}
+param	color	Cd	0.5 0.5 0.5 		 %read{5,5} %write{2,2}
+param	float	Kd	0.80000001 		 %read{5,5} %write{2147483647,-1}
+param	color	Cs	0.80000001 0.80000001 0.80000001 		 %read{5,5} %write{3,3}
+param	float	Ks	0.2 		 %read{5,5} %write{2147483647,-1}
+param	float	exponent	1000 		 %read{5,5} %write{2147483647,-1}
+global	normal	N	 %read{0,5} %write{4,4}
+global	vector	dPdu	 %read{1,1} %write{2147483647,-1}
+global	closure color	Ci	 %read{2147483647,-1} %write{5,5}
+const	color	$const1	0.5 0.5 0.5		 %read{2,2} %write{2147483647,-1}
+const	color	$const2	0.80000001 0.80000001 0.80000001		 %read{3,3} %write{2147483647,-1}
+const	string	$const3	"as_ashikhmin_shirley"		 %read{5,5} %write{2147483647,-1}
+code Normal
+# ashikhmin_shirley.osl:3
+#     normal Normal = N,
+	assign		Normal N 	%filename{"ashikhmin_shirley.osl"} %line{3} %argrw{"wr"}
+code Tangent
+# ashikhmin_shirley.osl:4
+#     vector Tangent = dPdu,
+	assign		Tangent dPdu 	%filename{"ashikhmin_shirley.osl"} %line{4} %argrw{"wr"}
+code Cd
+# ashikhmin_shirley.osl:5
+#     color  Cd = color(0.5),
+	assign		Cd $const1 	%filename{"ashikhmin_shirley.osl"} %line{5} %argrw{"wr"}
+code Cs
+# ashikhmin_shirley.osl:7
+#     color  Cs = color(0.8),
+	assign		Cs $const2 	%filename{"ashikhmin_shirley.osl"} %line{7} %argrw{"wr"}
+code ___main___
+# ashikhmin_shirley.osl:11
+#     N = Normal;
+	assign		N Normal 	%filename{"ashikhmin_shirley.osl"} %line{11} %argrw{"wr"}
+# ashikhmin_shirley.osl:20
+#         exponent);
+	closure		Ci $const3 N Tangent Kd Cd Ks Cs exponent exponent 	%line{20} %argrw{"wrrrrrrrrr"}
+	end

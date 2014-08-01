@@ -1,5 +1,9 @@
 
-surface matte(float Kd = 1, color Cs = 0)
+surface matte(
+	normal 	Normal = N,
+	float 	Kd = 1, 
+	color 	Cd = color(0.5))
 {
-    Ci = Kd * Cs * diffuse(N);
+	N = Normal;
+    Ci = Kd * Cd * diffuse(N);
 }

@@ -1,17 +1,37 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.5.7dev
+# Compiled by oslc 1.5.10
 surface matte
-param	float	Kd	1 		 %read{1,1} %write{2147483647,-1}
-param	color	Cs	0 0 0 		 %read{1,1} %write{2147483647,-1}
-global	normal	N	 %read{0,0} %write{2147483647,-1}
-global	closure color	Ci	 %read{2147483647,-1} %write{2,2}
-temp	closure color	$tmp1	 %read{2,2} %write{0,0}
-const	string	$const1	"diffuse"		 %read{0,0} %write{2147483647,-1}
-temp	color	$tmp2	 %read{2,2} %write{1,1}
+param	normal	Normal	0 0 0 		 %read{3,3} %write{0,0}
+param	float	Kd	1 		 %read{5,5} %write{2147483647,-1}
+param	color	Cd	0.5 0.5 0.5 		 %read{6,6} %write{1,1}
+global	normal	N	 %read{0,4} %write{3,3}
+global	closure color	Ci	 %read{2147483647,-1} %write{7,7}
+local	float	factor	 %read{5,5} %write{2,2}
+const	color	$const1	0.5 0.5 0.5		 %read{1,1} %write{2147483647,-1}
+const	float	$const2	1		 %read{2,2} %write{2147483647,-1}
+temp	closure color	$tmp1	 %read{7,7} %write{4,4}
+const	string	$const3	"diffuse"		 %read{4,4} %write{2147483647,-1}
+temp	float	$tmp2	 %read{6,6} %write{5,5}
+temp	color	$tmp3	 %read{7,7} %write{6,6}
+code Normal
+# matte.osl:3
+# 	normal 	Normal = N,
+	assign		Normal N 	%filename{"matte.osl"} %line{3} %argrw{"wr"}
+code Cd
+# matte.osl:5
+# 	color 	Cd = color(0.5))
+	assign		Cd $const1 	%filename{"matte.osl"} %line{5} %argrw{"wr"}
 code ___main___
-# matte.osl:4
-#     Ci = Kd * Cs * diffuse(N);
-	closure		$tmp1 $const1 N 	%filename{"matte.osl"} %line{4} %argrw{"wrr"}
-	mul		$tmp2 Kd Cs 	%argrw{"wrr"}
-	mul		Ci $tmp1 $tmp2 	%argrw{"wrr"}
+# matte.osl:7
+# 	float factor = 1.0;
+	assign		factor $const2 	%filename{"matte.osl"} %line{7} %argrw{"wr"}
+# matte.osl:12
+# 	N = Normal;
+	assign		N Normal 	%line{12} %argrw{"wr"}
+# matte.osl:13
+#     Ci = factor * Kd * Cd * diffuse(N);
+	closure		$tmp1 $const3 N 	%line{13} %argrw{"wrr"}
+	mul		$tmp2 factor Kd 	%argrw{"wrr"}
+	mul		$tmp3 $tmp2 Cd 	%argrw{"wrr"}
+	mul		Ci $tmp1 $tmp3 	%argrw{"wrr"}
 	end
