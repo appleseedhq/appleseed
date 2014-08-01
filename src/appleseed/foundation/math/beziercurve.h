@@ -98,7 +98,7 @@ class BezierCurveBase
 
     static VectorType transform_point(const MatrixType& xfm, const VectorType& p);
 
-    size_t compute_max_recursion_depth(const ValueType max_width) const;
+    size_t compute_recursion_depth(const ValueType epsilon) const;
 };
 
 
@@ -214,7 +214,6 @@ class BezierCurveIntersector
     typedef typename BezierCurveType::AABBType AABBType;
     typedef typename BezierCurveType::MatrixType MatrixType;
     typedef Ray<ValueType, 3> RayType;
-    typedef Vector<ValueType, 2> Vector2dType;
 
     // Compute the transformation matrix required for ray-curve intersection.
     static void make_projection_transform(
@@ -228,13 +227,17 @@ class BezierCurveIntersector
         const MatrixType&       xfm,
         ValueType&              u,
         ValueType&              v,
-        ValueType&              t);
+        ValueType&              t,
+        const ValueType         epsilon = ValueType(0.05),
+        const size_t            max_depth = 5);
 
-    // Intersection method for probe rays.
+    // Return whether a ray intersects a curve.
     static bool intersect(
         const BezierCurveType&  curve,
         const RayType&          ray,
-        const MatrixType&       xfm);
+        const MatrixType&       xfm,
+        const ValueType         epsilon = ValueType(0.05),
+        const size_t            max_depth = 5);
 
   private:
     // Dot product function that only considers the x and y components of the vectors.
@@ -252,7 +255,7 @@ class BezierCurveIntersector
         ValueType&              u,
         ValueType&              v,
         ValueType&              t,
-        const bool              probe_test);            // variable used to skip unnecessary calculation for probe rays.
+        const bool              compute_params);
 };
 
 
@@ -354,7 +357,7 @@ inline typename BezierCurveBase<T, N>::VectorType BezierCurveBase<T, N>::transfo
 }
 
 template <typename T, size_t N>
-size_t BezierCurveBase<T, N>::compute_max_recursion_depth(const ValueType max_width) const
+size_t BezierCurveBase<T, N>::compute_recursion_depth(const ValueType epsilon) const
 {
     if (N < 2)
         return 0;
@@ -370,13 +373,10 @@ size_t BezierCurveBase<T, N>::compute_max_recursion_depth(const ValueType max_wi
                 std::abs(m_ctrl_pts[i].y - ValueType(2.0) * m_ctrl_pts[i + 1].y + m_ctrl_pts[i + 2].y));
     }
 
-    const ValueType epsilon = max_width * ValueType(0.05);  // 1/20 of max_width
     const ValueType value = (ValueType(SqrtTwo) * N * (N - 1) * l0) / (ValueType(8.0) * epsilon);
     const ValueType RcpLog4 = ValueType(0.7213475204444817);
     const ValueType r0 = std::log(value) * RcpLog4;
-    const ValueType clamped_r0 = clamp(r0, ValueType(0.0), ValueType(5.0));
-
-    return truncate<size_t>(clamped_r0);
+    return r0 > ValueType(0.0) ? truncate<size_t>(r0) : 0;
 }
 
 
@@ -410,37 +410,50 @@ inline BezierCurve1<T>::BezierCurve1(const BezierCurve1& curve, const MatrixType
 template <typename T>
 inline typename BezierCurve1<T>::VectorType BezierCurve1<T>::evaluate_point(const ValueType t) const
 {
-    return interpolate_bezier1(Base::m_ctrl_pts[0], Base::m_ctrl_pts[1], t);
+    return
+        evaluate_bezier1(
+            Base::m_ctrl_pts[0],
+            Base::m_ctrl_pts[1],
+            t);
 }
 
 template <typename T>
 inline typename BezierCurve1<T>::ValueType BezierCurve1<T>::evaluate_width(const ValueType t) const
 {
-    return interpolate_bezier1(Base::m_width[0], Base::m_width[1], t);
+    return
+        evaluate_bezier1(
+            Base::m_width[0],
+            Base::m_width[1],
+            t);
 }
 
 template <typename T>
 inline typename BezierCurve1<T>::VectorType BezierCurve1<T>::evaluate_tangent(const ValueType t) const
 {
-    return Base::m_ctrl_pts[1] - Base::m_ctrl_pts[0];
+    return
+        evaluate_bezier1_derivative(
+            Base::m_ctrl_pts[0],
+            Base::m_ctrl_pts[1],
+            t);
 }
 
 template <typename T>
 inline void BezierCurve1<T>::split(BezierCurve1& c1, BezierCurve1& c2) const
 {
-    const VectorType midpt = evaluate_point(ValueType(0.5));
-    const ValueType midw = evaluate_width(ValueType(0.5));
+    const VectorType pq = ValueType(0.5) * (Base::m_ctrl_pts[0] + Base::m_ctrl_pts[1]);
 
     c1.m_ctrl_pts[0] = Base::m_ctrl_pts[0];
-    c1.m_ctrl_pts[1] = midpt;
+    c1.m_ctrl_pts[1] = pq;
 
-    c1.m_width[0] = Base::m_width[0];
-    c1.m_width[1] = midw;
-
-    c2.m_ctrl_pts[0] = midpt;
+    c2.m_ctrl_pts[0] = pq;
     c2.m_ctrl_pts[1] = Base::m_ctrl_pts[1];
 
-    c2.m_width[0] = midw;
+    const ValueType wq = ValueType(0.5) * (Base::m_width[0] + Base::m_width[1]);
+
+    c1.m_width[0] = Base::m_width[0];
+    c1.m_width[1] = wq;
+
+    c2.m_width[0] = wq;
     c2.m_width[1] = Base::m_width[1];
 }
 
@@ -476,7 +489,7 @@ template <typename T>
 inline typename BezierCurve2<T>::VectorType BezierCurve2<T>::evaluate_point(const ValueType t) const
 {
     return
-        interpolate_bezier2(
+        evaluate_bezier2(
             Base::m_ctrl_pts[0],
             Base::m_ctrl_pts[1],
             Base::m_ctrl_pts[2],
@@ -487,7 +500,7 @@ template <typename T>
 inline typename BezierCurve2<T>::ValueType BezierCurve2<T>::evaluate_width(const ValueType t) const
 {
     return
-        interpolate_bezier2(
+        evaluate_bezier2(
             Base::m_width[0],
             Base::m_width[1],
             Base::m_width[2],
@@ -497,32 +510,41 @@ inline typename BezierCurve2<T>::ValueType BezierCurve2<T>::evaluate_width(const
 template <typename T>
 inline typename BezierCurve2<T>::VectorType BezierCurve2<T>::evaluate_tangent(const ValueType t) const
 {
-    const ValueType a = 2 * (ValueType(1.0) - t);
-    const ValueType b = 2 * t;
-    return a * (Base::m_ctrl_pts[1] - Base::m_ctrl_pts[0])
-         + b * (Base::m_ctrl_pts[2] - Base::m_ctrl_pts[1]);
+    return
+        evaluate_bezier2_derivative(
+            Base::m_ctrl_pts[0],
+            Base::m_ctrl_pts[1],
+            Base::m_ctrl_pts[2],
+            t);
 }
 
 template <typename T>
 void BezierCurve2<T>::split(BezierCurve2& c1, BezierCurve2& c2) const
 {
-    const VectorType midpt = evaluate_point(ValueType(0.5));
-    const ValueType midw = evaluate_width(ValueType(0.5));
+    const VectorType pm0 = ValueType(0.5) * (Base::m_ctrl_pts[0] + Base::m_ctrl_pts[1]);
+    const VectorType pm1 = ValueType(0.5) * (Base::m_ctrl_pts[1] + Base::m_ctrl_pts[2]);
+
+    const VectorType pq = ValueType(0.5) * (pm0 + pm1);
 
     c1.m_ctrl_pts[0] = Base::m_ctrl_pts[0];
-    c1.m_ctrl_pts[1] = (Base::m_ctrl_pts[0] + Base::m_ctrl_pts[1]) * ValueType(0.5);
-    c1.m_ctrl_pts[2] = midpt;
+    c1.m_ctrl_pts[1] = pm0;
+    c1.m_ctrl_pts[2] = pq;
 
-    c1.m_width[0] = Base::m_width[0];
-    c1.m_width[1] = (Base::m_width[0] + Base::m_width[1]) * ValueType(0.5);
-    c1.m_width[2] = midw;
-
-    c2.m_ctrl_pts[0] = midpt;
-    c2.m_ctrl_pts[1] = (Base::m_ctrl_pts[1] + Base::m_ctrl_pts[2]) * ValueType(0.5);
+    c2.m_ctrl_pts[0] = pq;
+    c2.m_ctrl_pts[1] = pm1;
     c2.m_ctrl_pts[2] = Base::m_ctrl_pts[2];
 
-    c2.m_width[0] = midw;
-    c2.m_width[1] = (Base::m_width[1] + Base::m_width[2]) * ValueType(0.5);
+    const ValueType wm0 = ValueType(0.5) * (Base::m_width[0] + Base::m_width[1]);
+    const ValueType wm1 = ValueType(0.5) * (Base::m_width[1] + Base::m_width[2]);
+
+    const ValueType wq = ValueType(0.5) * (wm0 + wm1);
+
+    c1.m_width[0] = Base::m_width[0];
+    c1.m_width[1] = wm0;
+    c1.m_width[2] = wq;
+
+    c2.m_width[0] = wq;
+    c2.m_width[1] = wm1;
     c2.m_width[2] = Base::m_width[2];
 }
 
@@ -558,7 +580,7 @@ template <typename T>
 inline typename BezierCurve3<T>::VectorType BezierCurve3<T>::evaluate_point(const ValueType t) const
 {
     return
-        interpolate_bezier3(
+        evaluate_bezier3(
             Base::m_ctrl_pts[0],
             Base::m_ctrl_pts[1],
             Base::m_ctrl_pts[2],
@@ -570,7 +592,7 @@ template <typename T>
 inline typename BezierCurve3<T>::ValueType BezierCurve3<T>::evaluate_width(const ValueType t) const
 {
     return
-        interpolate_bezier3(
+        evaluate_bezier3(
             Base::m_width[0],
             Base::m_width[1],
             Base::m_width[2],
@@ -581,53 +603,52 @@ inline typename BezierCurve3<T>::ValueType BezierCurve3<T>::evaluate_width(const
 template <typename T>
 inline typename BezierCurve3<T>::VectorType BezierCurve3<T>::evaluate_tangent(const ValueType t) const
 {
-    const ValueType u = ValueType(1.0) - t;
-    const ValueType a = 3 * u * u;
-    const ValueType b = 6 * u * t;
-    const ValueType c = 3 * t * t;
-    return a * (Base::m_ctrl_pts[1] - Base::m_ctrl_pts[0])
-         + b * (Base::m_ctrl_pts[2] - Base::m_ctrl_pts[1])
-         + c * (Base::m_ctrl_pts[3] - Base::m_ctrl_pts[2]);
+    return
+        evaluate_bezier3_derivative(
+            Base::m_ctrl_pts[0],
+            Base::m_ctrl_pts[1],
+            Base::m_ctrl_pts[2],
+            Base::m_ctrl_pts[3],
+            t);
 }
 
 template <typename T>
 void BezierCurve3<T>::split(BezierCurve3& c1, BezierCurve3& c2) const
 {
-    const VectorType midpt = evaluate_point(ValueType(0.5));
-    const ValueType midw = evaluate_width(ValueType(0.5));
+    const VectorType pm0 = ValueType(0.5) * (Base::m_ctrl_pts[0] + Base::m_ctrl_pts[1]);
+    const VectorType pm1 = ValueType(0.5) * (Base::m_ctrl_pts[1] + Base::m_ctrl_pts[2]);
+    const VectorType pm2 = ValueType(0.5) * (Base::m_ctrl_pts[2] + Base::m_ctrl_pts[3]);
 
-    const VectorType mc[] =
-    {
-        (Base::m_ctrl_pts[0] + Base::m_ctrl_pts[1]) * ValueType(0.5),
-        (Base::m_ctrl_pts[1] + Base::m_ctrl_pts[2]) * ValueType(0.5),
-        (Base::m_ctrl_pts[2] + Base::m_ctrl_pts[3]) * ValueType(0.5)
-    };
-
-    const ValueType mw[] =
-    {
-        (Base::m_width[0] + Base::m_width[1]) * ValueType(0.5),
-        (Base::m_width[1] + Base::m_width[2]) * ValueType(0.5),
-        (Base::m_width[2] + Base::m_width[3]) * ValueType(0.5)
-    };
+    const VectorType pn0 = ValueType(0.5) * (pm0 + pm1);
+    const VectorType pn1 = ValueType(0.5) * (pm1 + pm2);
+    const VectorType pq  = ValueType(0.5) * (pn0 + pn1);
 
     c1.m_ctrl_pts[0] = Base::m_ctrl_pts[0];
-    c1.m_ctrl_pts[1] = mc[0];
-    c1.m_ctrl_pts[2] = (mc[0] + mc[1]) * ValueType(0.5);
-    c1.m_ctrl_pts[3] = midpt;
+    c1.m_ctrl_pts[1] = pm0;
+    c1.m_ctrl_pts[2] = pn0;
+    c1.m_ctrl_pts[3] = pq;
 
-    c1.m_width[0] = Base::m_width[0];
-    c1.m_width[1] = mw[0];
-    c1.m_width[2] = (mw[0] + mw[1]) * ValueType(0.5);
-    c1.m_width[3] = midw;
-
-    c2.m_ctrl_pts[0] = midpt;
-    c2.m_ctrl_pts[1] = (mc[1] + mc[2]) * ValueType(0.5);
-    c2.m_ctrl_pts[2] = mc[2];
+    c2.m_ctrl_pts[0] = pq;
+    c2.m_ctrl_pts[1] = pn1;
+    c2.m_ctrl_pts[2] = pm2;
     c2.m_ctrl_pts[3] = Base::m_ctrl_pts[3];
 
-    c2.m_width[0] = midw;
-    c2.m_width[1] = (mw[1] + mw[2]) * ValueType(0.5);
-    c2.m_width[2] = mw[2];
+    const ValueType wm0 = ValueType(0.5) * (Base::m_width[0] + Base::m_width[1]);
+    const ValueType wm1 = ValueType(0.5) * (Base::m_width[1] + Base::m_width[2]);
+    const ValueType wm2 = ValueType(0.5) * (Base::m_width[2] + Base::m_width[3]);
+
+    const ValueType wn0 = ValueType(0.5) * (wm0 + wm1);
+    const ValueType wn1 = ValueType(0.5) * (wm1 + wm2);
+    const ValueType wq =  ValueType(0.5) * (wn0 + wn1);
+
+    c1.m_width[0] = Base::m_width[0];
+    c1.m_width[1] = wm0;
+    c1.m_width[2] = wn0;
+    c1.m_width[3] = wq;
+
+    c2.m_width[0] = wq;
+    c2.m_width[1] = wn1;
+    c2.m_width[2] = wm2;
     c2.m_width[3] = Base::m_width[3];
 }
 
@@ -658,7 +679,7 @@ void BezierCurveIntersector<BezierCurveType>::make_projection_transform(
     //     const VectorType dir = normalize(ray.m_dir);
     //     const ValueType d = std::sqrt(dir.x * dir.x + dir.z * dir.z);
     //
-    //     if (d > ValueType(1.0e-6))
+    //     if (d > ValueType(0.0))
     //     {
     //         const MatrixType rot_y = rotation_y(dir.z / d, -dir.x / d);
     //         const MatrixType rot_x = rotation_x(d, dir.y);
@@ -677,7 +698,7 @@ void BezierCurveIntersector<BezierCurveType>::make_projection_transform(
     const VectorType dir = normalize(ray.m_dir);
     const ValueType d = std::sqrt(dir.x * dir.x + dir.z * dir.z);
 
-    if (d >= ValueType(1.0e-6))
+    if (d > ValueType(0.0))
     {
         const ValueType rcp_d = ValueType(1.0) / d;
 
@@ -742,16 +763,25 @@ bool BezierCurveIntersector<BezierCurveType>::intersect(
     const MatrixType&       xfm,
     ValueType&              u,
     ValueType&              v,
-    ValueType&              t)
+    ValueType&              t,
+    const ValueType         epsilon,
+    const size_t            max_depth)
 {
     const BezierCurveType xfm_curve(curve, xfm);
     const ValueType max_width = xfm_curve.compute_max_width();
-    const size_t depth = xfm_curve.compute_max_recursion_depth(max_width);
+    const size_t depth = xfm_curve.compute_recursion_depth(max_width * epsilon);
 
     const ValueType norm_dir = norm(ray.m_dir);
     ValueType scaled_t = t * norm_dir;
 
-    if (converge(depth, xfm_curve, ValueType(0.5) * max_width, ValueType(0.0), ValueType(1.0), u, v, scaled_t, false))
+    if (converge(
+            depth < max_depth ? depth : max_depth,
+            xfm_curve,
+            ValueType(0.5) * max_width,
+            ValueType(0.0), ValueType(1.0),
+            u, v,
+            scaled_t,
+            true))
     {
         t = scaled_t / norm_dir;
         return true;
@@ -764,16 +794,28 @@ template <typename BezierCurveType>
 bool BezierCurveIntersector<BezierCurveType>::intersect(
     const BezierCurveType&  curve,
     const RayType&          ray,
-    const MatrixType&       xfm)
+    const MatrixType&       xfm,
+    const ValueType         epsilon,
+    const size_t            max_depth)
 {
     const BezierCurveType xfm_curve(curve, xfm);
     const ValueType max_width = xfm_curve.compute_max_width();
-    const size_t depth = xfm_curve.compute_max_recursion_depth(max_width);
+    const size_t depth = xfm_curve.compute_recursion_depth(max_width * epsilon);
 
     const ValueType norm_dir = norm(ray.m_dir);
-    ValueType u, v, scaled_t = norm_dir * ray.m_tmax;
+    ValueType scaled_t = ray.m_tmax * norm_dir;
 
-    return converge(depth, xfm_curve, ValueType(0.5) * max_width, ValueType(0.0), ValueType(1.0), u, v, scaled_t, true);
+    ValueType u, v;
+
+    return
+        converge(
+            depth < max_depth ? depth : max_depth,
+            xfm_curve,
+            ValueType(0.5) * max_width,
+            ValueType(0.0), ValueType(1.0),
+            u, v,
+            scaled_t,
+            false);
 }
 
 template <typename BezierCurveType>
@@ -786,14 +828,14 @@ bool BezierCurveIntersector<BezierCurveType>::converge(
     ValueType&              u,
     ValueType&              v,
     ValueType&              t,
-    const bool              probe_test)
+    const bool              compute_params)
 {
     const AABBType bbox = curve.compute_bbox();
 
     // Check whether the curve's bounding box overlaps the square centered at 0.
-    if (bbox.min.z >= t              || bbox.max.z <= ValueType(1.0e-6) ||
-        bbox.min.x >= half_max_width || bbox.max.x <= -half_max_width   ||
-        bbox.min.y >= half_max_width || bbox.max.y <= -half_max_width)
+    if (bbox.min.z > t              || bbox.max.z < ValueType(1.0e-6) ||
+        bbox.min.x > half_max_width || bbox.max.x < -half_max_width   ||
+        bbox.min.y > half_max_width || bbox.max.y < -half_max_width)
         return false;
 
     if (depth > 0)
@@ -805,8 +847,8 @@ bool BezierCurveIntersector<BezierCurveType>::converge(
         // Recurse on the two child curves.
         const ValueType vm = (v0 + vn) * ValueType(0.5);
         return
-            converge(depth - 1, c1, half_max_width, v0, vm, u, v, t, probe_test) ||
-            converge(depth - 1, c2, half_max_width, vm, vn, u, v, t, probe_test);
+            converge(depth - 1, c1, half_max_width, v0, vm, u, v, t, compute_params) ||
+            converge(depth - 1, c2, half_max_width, vm, vn, u, v, t, compute_params);
     }
     else
     {
@@ -832,7 +874,7 @@ bool BezierCurveIntersector<BezierCurveType>::converge(
 
         // Compute w on the line segment.
         const ValueType den = dotxy(dir, dir);
-        if (den < ValueType(1.0e-6))
+        if (den < ValueType(0.0))
             return false;
         const ValueType w = saturate(-dotxy(cp0, dir) / den);
 
@@ -840,37 +882,34 @@ bool BezierCurveIntersector<BezierCurveType>::converge(
         const VectorType p = curve.evaluate_point(w);
 
         // Compare Z distances.
-        if (p.z <= ValueType(1.0e-6) || p.z > t)
+        if (p.z < ValueType(0.0) || p.z > t)
             return false;
 
         // Compute curve width.
         const ValueType width = curve.evaluate_width(w);
 
-        // Reject points outside the curve.
+        // Compare X-Y distances.
         if (dotxy(p, p) >= ValueType(0.25) * width * width)
             return false;
 
-        // skip uv computation for probe tests.
-        if (!probe_test)
+        if (compute_params)
         {
             // Found an intersection.
             t = p.z;
 
-            // Compute u,v parameters.
+            // Compute v parameter.
             v = lerp(v0, vn, w);
 
-            const VectorType ct = curve.evaluate_tangent(v);
-
-            // Compute the tangent, bitangent, intersection point in 2d space.
-            const Vector2dType tangent = normalize(Vector2dType(ct.x, ct.y));
-            const Vector2dType bitangent(-tangent.y, tangent.x);
-            const Vector2dType point(p.x, p.y);
+            // Compute the bitangent and intersection point in XY plane.
+            const VectorType tangent = curve.evaluate_tangent(v);
+            const Vector<ValueType, 2> bitangent = normalize(Vector<ValueType, 2>(-tangent.y, tangent.x));
+            const Vector<ValueType, 2> point(p.x, p.y);
 
             // Compute the vertical projection of point to the bitangent.
             const ValueType vert_proj = dot(point, bitangent);
 
-            // Evaluate u from projection in [0-1] range.
-            u = saturate((vert_proj + ValueType(0.5) * width)/width);
+            // Compute u parameter.
+            u = saturate((vert_proj + ValueType(0.5) * width) / width);
         }
 
         return true;

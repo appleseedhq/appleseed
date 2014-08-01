@@ -60,7 +60,7 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
         const BezierCurveType   curves[],
         const size_t            curve_count,
         const char*             filename,
-        const bool              texture)
+        const bool              textured)
     {
         typedef typename BezierCurveType::ValueType ValueType;
         typedef typename BezierCurveType::VectorType VectorType;
@@ -100,37 +100,39 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
                     // Draw the curve.
                     MatrixType curve_transform;
                     BezierCurveIntersectorType::make_projection_transform(curve_transform, ray);
-                    ValueType u, v, t = numeric_limits<ValueType>::max();
-                    if (BezierCurveIntersectorType::intersect(curve, ray, curve_transform, u, v, t))
+                    if (textured)
                     {
-                        if (!texture)
+                        ValueType u, v, t = numeric_limits<ValueType>::max();
+                        if (BezierCurveIntersectorType::intersect(curve, ray, curve_transform, u, v, t))
+                        {
+                            // Checkboard pattern.
+                            const int b = (truncate<int>(4.0 * u) ^ truncate<int>(32.0 * v)) & 1;
+                            color = b ? Color3f(0.8f) : Color3f(0.2f);
+                        }
+                    }
+                    else
+                    {
+                        if (BezierCurveIntersectorType::intersect(curve, ray, curve_transform))
                         {
                             color[0] = 0.2f;
                             color[2] = 0.7f;
                         }
-                        else
-                        {
-                            // Texture curve with a checkerboard pattern
-                            const int b = (truncate<int>(4.0 * u) % 2) ^ (truncate<int>(32.0 * v) % 2);
-                            color = b ? Color3f(1.0f) : Color3f(0.0f);
-                        }
                     }
 
                     // Draw control points.
-                    const size_t control_point_count = curve.get_control_point_count();
-                    for (size_t i = 0; i < control_point_count; ++i)
+                    if (!textured)
                     {
-                        const VectorType& cp = curve.get_control_point(i);
-                        const ValueType dx = pix_x - cp.x;
-                        const ValueType dy = pix_y - cp.y;
-                        if (square(dx) + square(dy) < square(ValueType(0.02)))
+                        const size_t control_point_count = curve.get_control_point_count();
+                        for (size_t i = 0; i < control_point_count; ++i)
                         {
-                            // Draw control points only when we dont add a texture to curve to make it less jarring.
-                            if (!texture)
+                            const VectorType& cp = curve.get_control_point(i);
+                            const ValueType dx = pix_x - cp.x;
+                            const ValueType dy = pix_y - cp.y;
+                            if (square(dx) + square(dy) < square(ValueType(0.02)))
                             {
                                 color = Color3f(1.0f, 1.0f, 0.0f);
+                                break;
                             }
-                            break;
                         }
                     }
                 }
@@ -312,8 +314,8 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
 
     TEST_CASE(RenderMultipleBezier2Curves)
     {
-        const Vector3f ControlPoints1[] = { Vector3f(-0.7f, 0.0f, 0.0f), Vector3f(-0.40f, 0.5f, 0.0f), Vector3f(0.00f, 0.0f, 0.0f) };
-        const Vector3f ControlPoints2[] = { Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.40f, -0.5f, 0.0f), Vector3f(0.70f, 0.0f, 0.0f) };
+        const Vector3f ControlPoints1[] = { Vector3f(-0.7f, 0.0f, 0.0f), Vector3f(-0.4f, 0.5f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f) };
+        const Vector3f ControlPoints2[] = { Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.4f, -0.5f, 0.0f), Vector3f(0.7f, 0.0f, 0.0f) };
         const BezierCurve2f Curves[] =
         {
             BezierCurve2f(ControlPoints1, 0.06f),
@@ -325,8 +327,8 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
 
     TEST_CASE(RenderMultipleBezier2Curves_VariableWidth)
     {
-        const Vector3f ControlPoints1[] = { Vector3f(-0.7f, 0.0f, 0.0f), Vector3f(-0.40f, 0.5f, 0.0f), Vector3f(0.00f, 0.0f, 0.0f) };
-        const Vector3f ControlPoints2[] = { Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.40f, -0.5f, 0.0f), Vector3f(0.70f, 0.0f, 0.0f) };
+        const Vector3f ControlPoints1[] = { Vector3f(-0.7f, 0.0f, 0.0f), Vector3f(-0.4f, 0.5f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f) };
+        const Vector3f ControlPoints2[] = { Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.4f, -0.5f, 0.0f), Vector3f(0.7f, 0.0f, 0.0f) };
         const float Widths[] = { 0.01f, 0.08f, 0.01f };
         const BezierCurve2f Curves[] =
         {
@@ -339,8 +341,8 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
 
     TEST_CASE(RenderMultipleBezier3Curves)
     {
-        const Vector3f ControlPoints1[] = { Vector3f(-0.7f, 0.0f, 0.0f), Vector3f(-0.20f, 0.50f, 0.0f), Vector3f(-0.50f, -0.50f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f) };
-        const Vector3f ControlPoints2[] = { Vector3f(-0.0f, 0.0f, 0.0f), Vector3f(0.4f, 0.30f, 0.0f), Vector3f(0.40f, -0.30f, 0.0f), Vector3f(0.6f, 0.0f, 0.0f) };
+        const Vector3f ControlPoints1[] = { Vector3f(-0.7f, 0.0f, 0.0f), Vector3f(-0.2f, 0.5f, 0.0f), Vector3f(-0.5f, -0.5f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f) };
+        const Vector3f ControlPoints2[] = { Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.5f, 0.5f, 0.0f), Vector3f(0.2f, -0.5f, 0.0f), Vector3f(0.7f, 0.0f, 0.0f) };
         const BezierCurve3f Curves[] =
         {
             BezierCurve3f(ControlPoints1, 0.06f),
@@ -352,8 +354,8 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
 
     TEST_CASE(RenderMultipleBezier3Curves_VariableWidth)
     {
-        const Vector3f ControlPoints1[] = { Vector3f(-0.7f, 0.0f, 0.0f), Vector3f(-0.20f, 0.50f, 0.0f), Vector3f(-0.50f, -0.50f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f) };
-        const Vector3f ControlPoints2[] = { Vector3f(-0.0f, 0.0f, 0.0f), Vector3f(0.4f, 0.30f, 0.0f), Vector3f(0.40f, -0.30f, 0.0f), Vector3f(0.6f, 0.0f, 0.0f) };
+        const Vector3f ControlPoints1[] = { Vector3f(-0.7f, 0.0f, 0.0f), Vector3f(-0.2f, 0.5f, 0.0f), Vector3f(-0.5f, -0.5f, 0.0f), Vector3f(0.0f, 0.0f, 0.0f) };
+        const Vector3f ControlPoints2[] = { Vector3f(0.0f, 0.0f, 0.0f), Vector3f(0.5f, 0.5f, 0.0f), Vector3f(0.2f, -0.5f, 0.0f), Vector3f(0.7f, 0.0f, 0.0f) };
         const float Widths[] = { 0.03f, 0.1f, 0.06f, 0.03f };
         const BezierCurve3f Curves[] =
         {
@@ -366,7 +368,7 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
 
 
     //
-    // Check intersection distance for Bezier curves.
+    // Check intersection distance.
     //
 
     TEST_CASE(Intersect_Bezier1CurveAndRayAlongX_ReturnsCorrectHitDistance)
@@ -462,14 +464,14 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
 
 
     //
-    // Check UV computation for ray-curve intersection.
+    // Check barycentric coordinates of ray-curve intersections.
     //
 
-    TEST_CASE(CurveUVComputationTest)
+    TEST_CASE(RenderSingleBezier3Curve_CheckboardTexture)
     {
-        const Vector3f ControlPoints[] = { Vector3f(-0.5f, 0.0f, 0.0f), Vector3f(-0.20f, 0.50f, 0.0f), Vector3f(0.20f, -0.50f, 0.0f), Vector3f(0.5f, 0.0f, 0.0f) };
-        const BezierCurve3f Curves[] = { BezierCurve3f(ControlPoints, 0.3f) };
+        const Vector3f ControlPoints[] = { Vector3f(-0.7f, 0.0f, 0.0f), Vector3f(-0.2f, 0.8f, 0.0f), Vector3f(0.2f, -0.8f, 0.0f), Vector3f(0.7f, 0.0f, 0.0f) };
+        const BezierCurve3f Curves[] = { BezierCurve3f(ControlPoints, 0.1f) };
 
-        render_curves_to_image(Curves, countof(Curves), "unit tests/outputs/curve_uv.png", true);
+        render_curves_to_image(Curves, countof(Curves), "unit tests/outputs/test_beziercurveintersector_bezier3curve_checkboard.png", true);
     }
 }

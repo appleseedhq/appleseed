@@ -33,20 +33,33 @@ namespace foundation
 {
 
 //
-// Free functions to evaluate Bezier interpolation polynomials.
+// Free functions to evaluate Bezier interpolation polynomials and their first derivatives.
 //
 //   T: type of the interpolation parameter
 //   V: type of the interpolated values
 //
+// Reference:
+//
+//   http://en.wikipedia.org/wiki/B%C3%A9zier_curve
+//
 
 template <typename T, typename V>
-V interpolate_bezier1(const V v0, const V v1, const T t);
+V evaluate_bezier1(const V v0, const V v1, const T t);
 
 template <typename T, typename V>
-V interpolate_bezier2(const V v0, const V v1, const V v2, const T t);
+V evaluate_bezier1_derivative(const V v0, const V v1, const T t);
 
 template <typename T, typename V>
-V interpolate_bezier3(const V v0, const V v1, const V v2, const V v3, const T t);
+V evaluate_bezier2(const V v0, const V v1, const V v2, const T t);
+
+template <typename T, typename V>
+V evaluate_bezier2_derivative(const V v0, const V v1, const V v2, const T t);
+
+template <typename T, typename V>
+V evaluate_bezier3(const V v0, const V v1, const V v2, const V v3, const T t);
+
+template <typename T, typename V>
+V evaluate_bezier3_derivative(const V v0, const V v1, const V v2, const V v3, const T t);
 
 
 //
@@ -54,36 +67,75 @@ V interpolate_bezier3(const V v0, const V v1, const V v2, const V v3, const T t)
 //
 
 template <typename T, typename V>
-inline V interpolate_bezier1(const V v0, const V v1, const T t)
+inline V evaluate_bezier1(const V v0, const V v1, const T t)
 {
     return (T(1.0) - t) * v0 + t * v1;
 }
 
 template <typename T, typename V>
-inline V interpolate_bezier2(const V v0, const V v1, const V v2, const T t)
+inline V evaluate_bezier1_derivative(const V v0, const V v1, const T t)
 {
-    // Formula: (1-t)^2 * v0 + 2 * (1-t)*t * v1 + t^2 * v2.
+    return v1 - v0;
+}
+
+template <typename T, typename V>
+inline V evaluate_bezier2(const V v0, const V v1, const V v2, const T t)
+{
+    // Formula: (1-t)^2 * v0 + 2*(1-t)*t * v1 + t^2 * v2.
 
     const T u = T(1.0) - t;
+
     const T a = u * u;              // (1-t)^2
-    const T b = u * t;              // (1-t) * t
+    const T b = u * t;              // 2*(1-t)*t
     const T c = t * t;              // t^2
 
     return a * v0 + T(2.0) * b * v1 + c * v2;
 }
 
 template <typename T, typename V>
-inline V interpolate_bezier3(const V v0, const V v1, const V v2, const V v3, const T t)
+inline V evaluate_bezier2_derivative(const V v0, const V v1, const V v2, const T t)
 {
-    // Formula: (1-t)^3 * v0 + 3 * (1-t)^2 * t * v1 + 3 * (1-t) * t^2 * v2 + t^3 * v3.
+    // Formula: 2*(1-t) * (v1-v0) + 2*t * (v2-v1).
 
     const T u = T(1.0) - t;
-    const T a = u * u * u;          // (1-t)^3
-    const T b = u * u * t;          // (1-t)^2 * t
-    const T c = u * t * t;          // (1-t) * t^2
-    const T d = t * t * t;          // t^3
+
+    return T(2.0) * (u * (v1 - v0) + t * (v2 - v1));
+}
+
+template <typename T, typename V>
+inline V evaluate_bezier3(const V v0, const V v1, const V v2, const V v3, const T t)
+{
+    // Formula: (1-t)^3 * v0 + 3*(1-t)^2*t * v1 + 3*(1-t)*t^2 * v2 + t^3 * v3.
+
+    const T u = T(1.0) - t;
+
+    const T t2 = t * t;             // t^2
+    const T u2 = u * u;             // (1-t)^2
+
+    const T a = u2 * u;             // (1-t)^3
+    const T b = u2 * t;             // (1-t)^2*t
+    const T c = u * t2;             // (1-t)*t^2
+    const T d = t2 * t;             // t^3
 
     return a * v0 + T(3.0) * (b * v1 + c * v2) + d * v3;
+}
+
+template <typename T, typename V>
+inline V evaluate_bezier3_derivative(const V v0, const V v1, const V v2, const V v3, const T t)
+{
+    // Formula: 3*(1-t)^2 * (v1-v0) + 6*(1-t)*t * (v2-v1) + 3*t^2 * (v3-v2).
+
+    const T u = T(1.0) - t;
+
+    const T t2 = t * t;             // t^2
+    const T u2 = u * u;             // (1-t)^2
+
+    const T a = u2 * u;             // (1-t)^3
+    const T b = u2 * t;             // (1-t)^2*t
+    const T c = u * t2;             // (1-t)*t^2
+    const T d = t2 * t;             // t^3
+
+    return T(3.0) * (u2 * (v1 - v0) + t2 * (v3 - v2)) + T(6.0) * u * t * (v2 - v1);
 }
 
 }       // namespace foundation
