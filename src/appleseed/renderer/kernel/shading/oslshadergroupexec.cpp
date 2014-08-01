@@ -68,6 +68,8 @@ void OSLShaderGroupExec::execute_shading(
         *m_osl_shading_context,
         *shader_group.shadergroup_ref(),
         shading_point.get_osl_shader_globals());
+    
+    shading_point.update_osl_shading_normal();
 }
 
 void OSLShaderGroupExec::execute_transparency(

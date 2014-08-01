@@ -48,6 +48,8 @@
 
 // Forward declarations.
 namespace renderer  { class Project; }
+namespace renderer  { class TextureStore; }
+namespace renderer  { class TraceContext; }
 
 namespace renderer
 {
@@ -63,8 +65,9 @@ class RendererServices
     // Constructor.
     RendererServices(
         const Project&          project,
-        OIIO::TextureSystem&    texture_sys);
-
+        OIIO::TextureSystem&    texture_sys,
+        TextureStore&           texture_store);
+    
     // Return a pointer to the texture system (if available).
     virtual OIIO::TextureSystem* texturesys() const OVERRIDE;
 
@@ -301,6 +304,8 @@ class RendererServices
     
     const Project&              m_project;
     OIIO::TextureSystem&        m_texture_sys;
+    const TraceContext&         m_trace_context;
+    TextureStore&               m_texture_store;
     AttrGetterMapType           m_attr_getters;
     mutable OIIO::ustring       m_cam_projection_str;
 };
