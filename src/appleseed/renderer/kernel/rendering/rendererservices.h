@@ -48,6 +48,8 @@
 
 // Forward declarations.
 namespace renderer  { class Project; }
+namespace renderer  { class TextureStore; }
+namespace renderer  { class TraceContext; }
 
 namespace renderer
 {
@@ -63,7 +65,14 @@ class RendererServices
     // Constructor.
     RendererServices(
         const Project&          project,
-        OIIO::TextureSystem&    texture_sys);
+        OIIO::TextureSystem&    texture_sys,
+        TextureStore&           texture_store);
+    
+    // Precompute attribute values for get_attribute calls.
+    void precompute_attributes();
+    
+    // Return a pointer to the texture system (if available).
+    virtual OIIO::TextureSystem* texturesys() const OVERRIDE;
 
     // Filtered 2D texture lookup for a single point.
     virtual bool texture(
@@ -231,6 +240,29 @@ class RendererServices
         OIIO::TypeDesc          type,
         OSL::ShaderGlobals*     sg) OVERRIDE;
 
+    // Immediately trace a ray from P in the direction R.  Return true
+    // if anything hit, otherwise false.
+    virtual bool trace(
+        TraceOpt&           options, 
+        OSL::ShaderGlobals* sg,
+        const OSL::Vec3&    P, 
+        const OSL::Vec3&    dPdx,
+        const OSL::Vec3&    dPdy, 
+        const OSL::Vec3&    R,
+        const OSL::Vec3&    dRdx, 
+        const OSL::Vec3&    dRdy) OVERRIDE;
+
+    // Get the named message from the renderer and if found then
+    // write it into 'val'.  Otherwise, return false.  This is only
+    // called for "sourced" messages, not ordinary intra-group messages.
+    virtual bool getmessage(
+        OSL::ShaderGlobals* sg, 
+        OIIO::ustring       source,
+        OIIO::ustring       name,
+        OIIO::TypeDesc      type, 
+        void*               val, 
+        bool                derivatives) OVERRIDE;
+
   private:
     // This code based on OSL's test renderer.
     typedef bool (RendererServices::*AttrGetterFun)(
@@ -275,6 +307,8 @@ class RendererServices
     
     const Project&              m_project;
     OIIO::TextureSystem&        m_texture_sys;
+    const TraceContext&         m_trace_context;
+    TextureStore&               m_texture_store;
     AttrGetterMapType           m_attr_getters;
     mutable OIIO::ustring       m_cam_projection_str;
 };

@@ -36,7 +36,9 @@
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/scene.h"
+#include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/kernel/texturing/texturecache.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/image.h"
@@ -58,6 +60,15 @@ OIIO::TypeDesc g_float_array2_typedesc(OIIO::TypeDesc::FLOAT, 2);
 OIIO::TypeDesc g_float_array4_typedesc(OIIO::TypeDesc::FLOAT, 4);
 OIIO::TypeDesc g_int_array2_typedesc(OIIO::TypeDesc::INT, 2);
 
+OIIO::ustring g_empty_ustr;
+OIIO::ustring g_trace_ustr("trace");
+OIIO::ustring g_hit_ustr("hit");
+OIIO::ustring g_hitdist_ustr("hitdist");
+OIIO::ustring g_N_ustr("N");
+OIIO::ustring g_Ng_ustr("Ng");
+OIIO::ustring g_P_ustr("P");
+OIIO::ustring g_u_ustr("u");
+OIIO::ustring g_v_ustr("v");
 OIIO::ustring g_perspective_ustr("perspective");
 OIIO::ustring g_spherical_ustr("spherical");
 OIIO::ustring g_unknown_proj_ustr("unknown");
@@ -70,10 +81,13 @@ OIIO::ustring g_unknown_proj_ustr("unknown");
 
 RendererServices::RendererServices(
     const Project&          project,
-    OIIO::TextureSystem&    texture_sys)
+    OIIO::TextureSystem&    texture_sys,
+    TextureStore&           texture_store)
   : OSL::RendererServices()
   , m_project(project)
   , m_texture_sys(texture_sys)
+  , m_trace_context(m_project.get_trace_context())
+  , m_texture_store(texture_store)
 {
     // Set up attribute getters.
     m_attr_getters[OIIO::ustring("camera:resolution")] = &RendererServices::get_camera_resolution;    
@@ -87,6 +101,28 @@ RendererServices::RendererServices(
     m_attr_getters[OIIO::ustring("camera:shutter")] = &RendererServices::get_camera_shutter;
     m_attr_getters[OIIO::ustring("camera:shutter_open")] = &RendererServices::get_camera_shutter_open;
     m_attr_getters[OIIO::ustring("camera:shutter_close")] = &RendererServices::get_camera_shutter_close;
+}
+
+void RendererServices::precompute_attributes()
+{
+    // Camera projection string.
+    {
+        Camera* cam = m_project.get_scene()->get_camera();
+    
+        if (strcmp(cam->get_model(), "pinhole_camera") == 0)
+            m_cam_projection_str = g_perspective_ustr;
+        else if (strcmp(cam->get_model(), "thinlens_camera") == 0)
+            m_cam_projection_str = g_perspective_ustr;
+        else if (strcmp(cam->get_model(), "spherical_camera") == 0)
+            m_cam_projection_str = g_spherical_ustr;
+        else
+            m_cam_projection_str = g_unknown_proj_ustr;
+    }
+}
+
+OIIO::TextureSystem* RendererServices::texturesys() const
+{
+    return &m_texture_sys;
 }
 
 bool RendererServices::texture(
@@ -300,6 +336,118 @@ bool RendererServices::has_userdata(
     return false;
 }
 
+bool RendererServices::trace(
+    TraceOpt&           options,
+    OSL::ShaderGlobals* sg,
+    const OSL::Vec3&    P,
+    const OSL::Vec3&    dPdx,
+    const OSL::Vec3&    dPdy,
+    const OSL::Vec3&    R,
+    const OSL::Vec3&    dRdx,
+    const OSL::Vec3&    dRdy)
+{
+    TextureCache texture_cache(m_texture_store);
+    Intersector intersector(m_trace_context, texture_cache);
+
+    const ShadingPoint* parent = reinterpret_cast<const ShadingPoint*>(sg->renderstate);
+
+    Vector3d PP = Vector3f(P);
+
+    if (P == sg->P)
+    {
+        Vector3d front = Vector3f(P);
+        Vector3d back = front;
+        
+        intersector.fixed_offset(
+            parent->get_point(),
+            parent->get_geometric_normal(),
+            front,
+            back);
+
+        if (sg->N.dot(R) >= 0.0f)
+            PP = front;
+        else
+            PP = back;
+    }
+
+    const ShadingRay ray(
+        PP,
+        normalize(Vector3f(R)),
+        options.mindist,
+        options.maxdist,
+        sg->time,
+        ShadingRay::ProbeRay,
+        parent->get_ray().m_depth + 1);
+
+    ShadingPoint shading_point;
+    intersector.trace(
+        ray, 
+        shading_point, 
+        P == sg->P ? parent : 0);
+
+    ShadingPoint::OSLTraceData* trace_data = 
+        reinterpret_cast<ShadingPoint::OSLTraceData*>(sg->tracedata);
+
+    trace_data->m_traced = true;
+
+    if (shading_point.hit())
+    {
+        trace_data->m_hit = true;
+        trace_data->m_P = Imath::V3d(shading_point.get_point());
+        trace_data->m_hit_distance = (trace_data->m_P - P).length();
+        trace_data->m_N = Imath::V3d(shading_point.get_shading_normal());
+        trace_data->m_Ng = Imath::V3d(shading_point.get_geometric_normal());
+        trace_data->m_u = shading_point.get_uv(0)[0];
+        trace_data->m_v = shading_point.get_uv(0)[1];
+        return true;
+    }
+
+    return false;
+}
+
+bool RendererServices::getmessage(
+    OSL::ShaderGlobals* sg,
+    OIIO::ustring       source,
+    OIIO::ustring       name,
+    OIIO::TypeDesc      type, 
+    void*               val, 
+    bool                derivatives)
+{
+    const ShadingPoint::OSLTraceData* trace_data = 
+        reinterpret_cast<ShadingPoint::OSLTraceData*>(sg->tracedata);
+
+    if (trace_data->m_traced)
+    {
+        if (source == g_trace_ustr)
+        {
+            if (name == g_hit_ustr && type == OIIO::TypeDesc::TypeInt)
+                reinterpret_cast<int*>(val)[0] = trace_data->m_hit ? 1 : 0;
+            else if (name == g_hitdist_ustr && type == OIIO::TypeDesc::TypeFloat)
+                reinterpret_cast<float*>(val)[0] = trace_data->m_hit_distance;
+            else if (name == g_N_ustr && type == OIIO::TypeDesc::TypeNormal)
+                *reinterpret_cast<OSL::Vec3*>(val) = trace_data->m_N;
+            else if (name == g_Ng_ustr && type == OIIO::TypeDesc::TypeNormal)
+                *reinterpret_cast<OSL::Vec3*>(val) = trace_data->m_Ng;
+            else if (name == g_P_ustr && type == OIIO::TypeDesc::TypePoint)
+                *reinterpret_cast<OSL::Vec3*>(val) = trace_data->m_P;
+            else if (name == g_u_ustr && type == OIIO::TypeDesc::TypeFloat)
+                reinterpret_cast<float*>(val)[0] = trace_data->m_u;
+            else if (name == g_v_ustr && type == OIIO::TypeDesc::TypeFloat)
+                reinterpret_cast<float*>(val)[0] = trace_data->m_v;
+            else
+                return false;
+
+            // For now, set derivatives to zero.
+            if (derivatives)
+                memset(reinterpret_cast<char*>(val) + type.size(), 0, 2 * type.size());
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
 // Attribute getters.
 #define IMPLEMENT_ATTR_GETTER(name) \
 bool RendererServices::get_##name(  \
@@ -327,34 +475,7 @@ IMPLEMENT_ATTR_GETTER(camera_projection)
 {
     if (type == OIIO::TypeDesc::TypeString)
     {
-        if (m_cam_projection_str.empty())
-        {
-            Camera* cam = m_project.get_scene()->get_camera();
-    
-            if (strcmp(cam->get_model(), "pinhole_camera") == 0)
-            {
-                m_cam_projection_str = g_perspective_ustr;
-                reinterpret_cast<OIIO::ustring*>(val)[0] = g_perspective_ustr;
-            }
-            
-            if (strcmp(cam->get_model(), "thinlens_camera") == 0)
-            {
-                m_cam_projection_str = g_perspective_ustr;
-                reinterpret_cast<OIIO::ustring*>(val)[0] = g_perspective_ustr;
-            }
-            
-            if (strcmp(cam->get_model(), "spherical_camera") == 0)
-            {
-                m_cam_projection_str = g_spherical_ustr;
-                reinterpret_cast<OIIO::ustring*>(val)[0] = g_spherical_ustr;
-            }
-
-            m_cam_projection_str = g_unknown_proj_ustr;
-            reinterpret_cast<OIIO::ustring*>(val)[0] = g_unknown_proj_ustr;
-        }
-        else
-            reinterpret_cast<OIIO::ustring*>(val)[0] = m_cam_projection_str;
-
+        reinterpret_cast<OIIO::ustring*>(val)[0] = m_cam_projection_str;
         return true;
     }
 
@@ -375,7 +496,7 @@ IMPLEMENT_ATTR_GETTER(camera_pixelaspect)
         clear_attr_derivatives(derivs, type, val);
         return true;
     }
-    
+
     return false;
 }
 
@@ -388,7 +509,7 @@ IMPLEMENT_ATTR_GETTER(camera_clip)
         clear_attr_derivatives(derivs, type, val);
         return true;
     }
-    
+
     return false;
 }
 
@@ -400,7 +521,7 @@ IMPLEMENT_ATTR_GETTER(camera_clip_near)
         clear_attr_derivatives(derivs, type, val);
         return true;
     }
-    
+
     return false;
 }
 
@@ -412,7 +533,7 @@ IMPLEMENT_ATTR_GETTER(camera_clip_far)
         clear_attr_derivatives(derivs, type, val);
         return true;
     }
-    
+
     return false;
 }
 
@@ -426,7 +547,7 @@ IMPLEMENT_ATTR_GETTER(camera_shutter)
         clear_attr_derivatives(derivs, type, val);
         return true;
     }
-    
+
     return false;
 }
 
@@ -439,7 +560,7 @@ IMPLEMENT_ATTR_GETTER(camera_shutter_open)
         clear_attr_derivatives(derivs, type, val);
         return true;
     }
-    
+
     return false;
 }
 
@@ -452,7 +573,7 @@ IMPLEMENT_ATTR_GETTER(camera_shutter_close)
         clear_attr_derivatives(derivs, type, val);
         return true;
     }
-    
+
     return false;
 }
 

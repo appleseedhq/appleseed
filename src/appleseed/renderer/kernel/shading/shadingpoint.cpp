@@ -362,8 +362,12 @@ OSL::ShaderGlobals& ShadingPoint::get_osl_shader_globals() const
         m_shader_globals.dPsdx = OSL::Vec3(0, 0, 0);
         m_shader_globals.dPsdy = OSL::Vec3(0, 0, 0);
 
-        m_shader_globals.renderstate = 0;
-        m_shader_globals.tracedata = 0;
+        m_shader_globals.renderstate = 
+            const_cast<void*>(reinterpret_cast<const void*>(this));
+
+        memset(reinterpret_cast<void*>(&m_osl_trace_data), 0, sizeof(OSLTraceData));
+        m_shader_globals.tracedata = reinterpret_cast<void*>(&m_osl_trace_data);
+
         m_shader_globals.objdata = 0;
 
         m_obj_transform_info.m_assembly_instance_transform =
@@ -393,6 +397,23 @@ OSL::ShaderGlobals& ShadingPoint::get_osl_shader_globals() const
     }
 
     return m_shader_globals;
+}
+
+void ShadingPoint::update_osl_shading_normal() const
+{
+    assert(hit());
+    assert(m_members & HasOSLShaderGlobals);
+
+    m_shading_normal = normalize(Vector3f(m_shader_globals.N));
+
+    // Place the shading normal in the same hemisphere as the geometric normal.
+    if (m_side == ObjectInstance::BackSide)
+        m_shading_normal = -m_shading_normal;
+
+    // Update the tangent vectors.
+    Vector3d dpdu = Vector3f(m_shader_globals.dPdu);
+    m_dpdv = normalize(cross(dpdu, m_shading_normal));
+    m_dpdu = cross(m_shading_normal, m_dpdv);
 }
 
 #endif

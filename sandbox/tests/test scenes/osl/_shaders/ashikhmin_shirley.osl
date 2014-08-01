@@ -1,0 +1,21 @@
+
+surface ashikhmin_shirley(
+    normal Normal = N,
+    vector Tangent = dPdu,
+    color  Cd = color(0.5),
+    float  Kd = 0.8,
+    color  Cs = color(0.8),
+    float  Ks = 0.2,
+    float  exponent = 1000)
+{
+    N = Normal;
+    Ci = as_ashikhmin_shirley(
+        N,
+        Tangent,
+        Kd,
+        Cd,
+        Ks,
+        Cs,
+        exponent,
+        exponent);
+}

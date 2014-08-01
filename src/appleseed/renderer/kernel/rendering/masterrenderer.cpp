@@ -333,7 +333,10 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
 #endif
 
     // Create our renderer services.
-    RendererServices services(m_project, *m_texture_system);
+    RendererServices services(
+        m_project, 
+        *m_texture_system,
+        texture_store);
 
     // Create our OSL shading system.
     boost::shared_ptr<OSL::ShadingSystem> shading_system(
@@ -342,7 +345,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
             m_texture_system,
             &error_handler),
             bind(&destroy_osl_shading_system, _1, m_texture_system));
-
+    
     if (!search_paths.empty())
         shading_system->attribute("searchpath:shader", search_paths);
 
@@ -708,6 +711,15 @@ IRendererController::Status MasterRenderer::render_frame_sequence(
             m_renderer_controller->on_frame_end();
             return m_renderer_controller->on_progress();
         }
+
+#ifdef WITH_OSL
+        {
+            RendererServices *s = 
+                static_cast<RendererServices*>(shading_system.renderer());
+
+            s->precompute_attributes();
+        }
+#endif
 
         frame_renderer->start_rendering();
 

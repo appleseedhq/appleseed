@@ -202,8 +202,22 @@ class ShadingPoint
         const TransformSequence*        m_assembly_instance_transform;
         const foundation::Transformd*   m_object_instance_transform;
     };
-
+    
+    struct OSLTraceData
+    {
+        bool        m_traced;
+        bool        m_hit;
+        float       m_hit_distance;
+        OSL::Vec3   m_P;
+        OSL::Vec3   m_N;
+        OSL::Vec3   m_Ng;
+        float       m_u;
+        float       m_v;
+    };
+    
     OSL::ShaderGlobals& get_osl_shader_globals() const;
+
+    void update_osl_shading_normal() const;
 #endif
 
   private:
@@ -285,6 +299,7 @@ class ShadingPoint
 
 #ifdef WITH_OSL
     mutable OSLObjectTransformInfo      m_obj_transform_info;
+    mutable OSLTraceData                m_osl_trace_data;
     mutable OSL::ShaderGlobals          m_shader_globals;
 #endif
 

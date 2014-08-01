@@ -1,0 +1,409 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.5.10
+shader edge_smooth
+param	int	Concave	1 		 %read{108,108} %write{2147483647,-1}
+param	int	Convex	1 		 %read{120,120} %write{2147483647,-1}
+param	int	Samples	4 		 %read{4,26} %write{2147483647,-1}
+param	int	Backfacing	1 		 %read{128,128} %write{2147483647,-1}
+param	float	Mask	1 		 %read{17,17} %write{2147483647,-1}
+param	float	Distance	0.1 		 %read{107,126} %write{2147483647,-1}
+param	normal	Normal	0 0 0 		 %read{3,3} %write{0,0}
+oparam	normal	outNormal	0 0 0 		 %read{118,142} %write{3,142}
+global	point	P	 %read{6,43} %write{2147483647,-1} %derivs
+global	vector	I	 %read{132,132} %write{2147483647,-1}
+global	normal	N	 %read{0,44} %write{2147483647,-1} %derivs
+local	int	___294_chash	 %read{13,16} %write{12,15} %derivs
+local	float	___295_res	 %read{24,141} %write{24,141} %derivs
+local	float	___296_r	 %read{24,141} %write{24,141} %derivs
+local	float	___296_phi	 %read{24,141} %write{24,141} %derivs
+local	float	___296_a	 %read{24,141} %write{24,141} %derivs
+local	float	___296_b	 %read{24,141} %write{24,141} %derivs
+local	vector	___304_T	 %read{24,141} %write{24,141} %derivs
+local	vector	___304_B	 %read{24,141} %write{24,141} %derivs
+local	float	___304_costheta	 %read{24,141} %write{24,141} %derivs
+local	int	i	 %read{24,141} %write{24,141}
+local	int	rng	 %read{24,141} %write{16,141} %derivs
+local	float	f	 %read{9,9} %write{8,8} %derivs
+local	float	randu	 %read{24,141} %write{24,141} %derivs
+local	float	randv	 %read{24,141} %write{24,141} %derivs
+local	float	ray_t	 %read{24,141} %write{24,141}
+local	float	hits	 %read{2147483647,-1} %write{1,1}
+local	vector	ray_P	 %read{24,141} %write{24,141} %derivs
+local	vector	ray_R	 %read{24,141} %write{24,141} %derivs
+local	normal	hit_normal	 %read{24,141} %write{2,141}
+local	float	hit_dist	 %read{24,141} %write{24,141}
+local	float	normal_blend	 %read{24,141} %write{24,141}
+local	float	s_weight	 %read{2147483647,-1} %write{5,5}
+const	int	$const1	0		 %read{1,134} %write{2147483647,-1}
+const	int	$const2	1		 %read{4,141} %write{2147483647,-1}
+temp	int	$tmp1	 %read{5,5} %write{4,4}
+temp	float	$tmp2	 %read{8,8} %write{7,7} %derivs
+const	float	$const3	123456		 %read{6,6} %write{2147483647,-1}
+temp	point	$tmp3	 %read{7,7} %write{6,6} %derivs
+const	float	$const4	1		 %read{8,127} %write{2147483647,-1}
+temp	int	$tmp4	 %read{12,12} %write{10,10} %derivs
+temp	float	$tmp5	 %read{10,10} %write{9,9} %derivs
+const	float	$const6	21374648		 %read{9,9} %write{2147483647,-1}
+const	string	$const7	"rng_seed"		 %read{11,11} %write{2147483647,-1}
+temp	int	$tmp6	 %read{14,14} %write{13,13}
+const	int	$const8	30391861		 %read{16,41} %write{2147483647,-1}
+const	float	$const9	0.5		 %read{17,40} %write{2147483647,-1}
+temp	int	$tmp7	 %read{18,18} %write{17,17}
+temp	int	$tmp8	 %read{19,23} %write{18,22}
+temp	int	$tmp9	 %read{21,21} %write{20,20}
+const	string	$const10	"camera"		 %read{20,20} %write{2147483647,-1}
+temp	int	$tmp10	 %read{22,22} %write{21,21}
+temp	int	$tmp11	 %read{24,141} %write{24,141}
+const	string	$const11	"rng_uniform"		 %read{27,35} %write{2147483647,-1}
+temp	float	$tmp12	 %read{30,30} %write{28,28} %derivs
+const	float	$const13	2.1374836e+09		 %read{28,36} %write{2147483647,-1}
+temp	float	$tmp13	 %read{31,31} %write{30,30} %derivs
+temp	float	$tmp14	 %read{30,30} %write{29,29} %derivs
+temp	float	$tmp15	 %read{32,32} %write{31,31} %derivs
+temp	float	$tmp16	 %read{38,38} %write{36,36} %derivs
+temp	float	$tmp17	 %read{39,39} %write{38,38} %derivs
+temp	float	$tmp18	 %read{38,38} %write{37,37} %derivs
+temp	float	$tmp19	 %read{40,40} %write{39,39} %derivs
+temp	normal	$tmp20	 %read{47,105} %write{44,44} %derivs
+const	string	$const14	"sample_cos_hemisphere"		 %read{45,45} %write{2147483647,-1}
+const	string	$const15	"make_orthonormals"		 %read{46,46} %write{2147483647,-1}
+temp	float	$tmp21	 %read{49,49} %write{47,47}
+temp	float	$tmp22	 %read{49,49} %write{48,48}
+temp	int	$tmp23	 %read{50,50} %write{49,49}
+temp	int	$tmp24	 %read{51,57} %write{50,56}
+temp	float	$tmp25	 %read{54,54} %write{52,52}
+const	int	$const16	2		 %read{53,53} %write{2147483647,-1}
+temp	float	$tmp26	 %read{54,54} %write{53,53}
+temp	int	$tmp27	 %read{55,55} %write{54,54}
+temp	int	$tmp28	 %read{56,56} %write{55,55}
+const	vector	$const17	1 1 1		 %read{58,58} %write{2147483647,-1}
+const	vector	$const18	-1 1 1		 %read{59,59} %write{2147483647,-1}
+const	string	$const19	"to_unit_disk"		 %read{62,62} %write{2147483647,-1}
+const	float	$const20	2		 %read{63,77} %write{2147483647,-1}
+temp	float	$tmp31	 %read{64,64} %write{63,63} %derivs
+temp	float	$tmp32	 %read{66,66} %write{65,65} %derivs
+temp	float	$tmp33	 %read{68,68} %write{67,67}
+temp	int	$tmp34	 %read{69,69} %write{68,68}
+temp	int	$tmp35	 %read{71,71} %write{70,70}
+const	float	$const21	0.78539819		 %read{74,90} %write{2147483647,-1}
+temp	float	$tmp36	 %read{74,74} %write{73,73} %derivs
+temp	float	$tmp37	 %read{77,77} %write{76,76} %derivs
+temp	float	$tmp38	 %read{78,78} %write{77,77} %derivs
+temp	int	$tmp39	 %read{80,80} %write{79,79}
+const	float	$const22	4		 %read{83,83} %write{2147483647,-1}
+temp	float	$tmp40	 %read{83,83} %write{82,82} %derivs
+temp	float	$tmp41	 %read{84,84} %write{83,83} %derivs
+const	float	$const23	0		 %read{86,133} %write{2147483647,-1}
+temp	int	$tmp42	 %read{87,87} %write{86,86}
+const	float	$const24	6		 %read{89,89} %write{2147483647,-1}
+temp	float	$tmp43	 %read{89,89} %write{88,88} %derivs
+temp	float	$tmp44	 %read{90,90} %write{89,89} %derivs
+temp	float	$tmp45	 %read{93,93} %write{92,92} %derivs
+temp	float	$tmp46	 %read{95,95} %write{94,94} %derivs
+temp	float	$tmp47	 %read{101,101} %write{100,100} %derivs
+temp	float	$tmp48	 %read{97,97} %write{96,96} %derivs
+temp	float	$tmp49	 %read{99,99} %write{97,97} %derivs
+temp	float	$tmp50	 %read{99,99} %write{98,98} %derivs
+temp	float	$tmp51	 %read{100,100} %write{99,99} %derivs
+temp	vector	$tmp52	 %read{104,104} %write{102,102} %derivs
+temp	vector	$tmp53	 %read{104,104} %write{103,103} %derivs
+temp	vector	$tmp54	 %read{106,106} %write{104,104} %derivs
+temp	vector	$tmp55	 %read{106,106} %write{105,105} %derivs
+temp	int	$tmp56	 %read{109,109} %write{108,108}
+temp	int	$tmp57	 %read{112,112} %write{111,111}
+temp	vector	$tmp58	 %read{111,111} %write{110,110} %derivs
+const	string	$const25	"maxdist"		 %read{111,122} %write{2147483647,-1}
+temp	int	$tmp59	 %read{2147483647,-1} %write{113,113}
+const	string	$const26	"trace"		 %read{113,125} %write{2147483647,-1}
+const	string	$const27	"N"		 %read{113,124} %write{2147483647,-1}
+temp	int	$tmp60	 %read{2147483647,-1} %write{114,114}
+const	string	$const28	"hitdist"		 %read{114,125} %write{2147483647,-1}
+temp	float	$tmp61	 %read{116,116} %write{115,115}
+temp	normal	$tmp62	 %read{118,118} %write{117,117}
+temp	int	$tmp63	 %read{121,121} %write{120,120}
+temp	int	$tmp64	 %read{123,123} %write{122,122}
+temp	int	$tmp65	 %read{2147483647,-1} %write{124,124}
+temp	int	$tmp66	 %read{2147483647,-1} %write{125,125}
+temp	float	$tmp67	 %read{127,127} %write{126,126}
+temp	int	$tmp68	 %read{129,129} %write{128,128}
+temp	int	$tmp69	 %read{130,136} %write{129,135}
+temp	float	$tmp70	 %read{133,133} %write{132,132}
+temp	normal	$tmp71	 %read{132,132} %write{131,131}
+temp	int	$tmp72	 %read{134,134} %write{133,133}
+temp	int	$tmp73	 %read{135,135} %write{134,134}
+temp	normal	$tmp74	 %read{138,138} %write{137,137}
+temp	int	$tmp75	 %read{2147483647,-1} %write{140,140}
+code Normal
+# edge_smooth.osl:74
+#   normal Normal = N,
+	assign		Normal N 	%filename{"edge_smooth.osl"} %line{74} %argrw{"wr"}
+code ___main___
+# edge_smooth.osl:78
+#   float f, randu, randv, ray_t, hits = 0;
+	assign		hits $const1 	%filename{"edge_smooth.osl"} %line{78} %argrw{"wr"}
+# edge_smooth.osl:80
+#   normal hit_normal = N;
+	assign		hit_normal N 	%line{80} %argrw{"wr"}
+# edge_smooth.osl:81
+#   outNormal = Normal;
+	assign		outNormal Normal 	%line{81} %argrw{"wr"}
+# edge_smooth.osl:84
+#   float s_weight = 1/Samples;
+	div		$tmp1 $const2 Samples 	%line{84} %argrw{"wrr"}
+	assign		s_weight $tmp1 	%argrw{"wr"}
+# edge_smooth.osl:86
+#   f = fmod(cellnoise(P*123456.0), 1.0);
+	mul		$tmp3 P $const3 	%line{86} %argrw{"wrr"}
+	cellnoise	$tmp2 $tmp3 	%argrw{"wr"}
+	fmod		f $tmp2 $const4 	%argrw{"wrr"}
+# edge_smooth.osl:87
+#   rng_seed(rng, int(f * 21374647));
+	mul		$tmp5 f $const6 	%line{87} %argrw{"wrr"}
+	assign		$tmp4 $tmp5 	%argrw{"wr"}
+	functioncall	$const7 17 	%argrw{"r"}
+# edge_smooth.osl:6
+#   int chash = seed;
+	assign		___294_chash $tmp4 	%line{6} %argrw{"wr"}
+# edge_smooth.osl:7
+#   if (chash == 0) chash = 1;
+	eq		$tmp6 ___294_chash $const1 	%line{7} %argrw{"wrr"}
+	if		$tmp6 16 16 	%argrw{"r"}
+	assign		___294_chash $const2 	%argrw{"wr"}
+# edge_smooth.osl:8
+#   rng = chash * 30391861;
+	mul		rng ___294_chash $const8 	%line{8} %argrw{"wrr"}
+# edge_smooth.osl:89
+#     if (Mask > 0.5 && raytype("camera"))
+	gt		$tmp7 Mask $const9 	%line{89} %argrw{"wrr"}
+	neq		$tmp8 $tmp7 $const1 	%argrw{"wrr"}
+	if		$tmp8 23 23 	%argrw{"r"}
+	raytype		$tmp9 $const10 	%argrw{"wr"}
+	neq		$tmp10 $tmp9 $const1 	%argrw{"wrr"}
+	assign		$tmp8 $tmp10 	%argrw{"wr"}
+	if		$tmp8 142 142 	%argrw{"r"}
+# edge_smooth.osl:91
+#       for(i = 0; i < Samples; i++)
+	for		$tmp11 26 27 140 142 	%line{91} %argrw{"r"}
+	assign		i $const1 	%argrw{"wr"}
+	lt		$tmp11 i Samples 	%argrw{"wrr"}
+# edge_smooth.osl:93
+#             randu = rng_uniform(rng);
+	functioncall	$const11 35 	%line{93} %argrw{"r"}
+# edge_smooth.osl:13
+#   float res = rng / float(2137483647) * 0.5 + 0.5;
+	assign		$tmp12 $const13 	%line{13} %argrw{"wr"}
+	assign		$tmp14 rng 	%argrw{"wr"}
+	div		$tmp13 $tmp14 $tmp12 	%argrw{"wrr"}
+	mul		$tmp15 $tmp13 $const9 	%argrw{"wrr"}
+	add		___295_res $tmp15 $const9 	%argrw{"wrr"}
+# edge_smooth.osl:14
+#   rng *= 30391861;
+	mul		rng rng $const8 	%line{14} %argrw{"wrr"}
+# edge_smooth.osl:15
+#   return res;
+	assign		randu ___295_res 	%line{15} %argrw{"wr"}
+# edge_smooth.osl:94
+#             randv = rng_uniform(rng);
+	functioncall	$const11 43 	%line{94} %argrw{"r"}
+# edge_smooth.osl:13
+#   float res = rng / float(2137483647) * 0.5 + 0.5;
+	assign		$tmp16 $const13 	%line{13} %argrw{"wr"}
+	assign		$tmp18 rng 	%argrw{"wr"}
+	div		$tmp17 $tmp18 $tmp16 	%argrw{"wrr"}
+	mul		$tmp19 $tmp17 $const9 	%argrw{"wrr"}
+	add		___295_res $tmp19 $const9 	%argrw{"wrr"}
+# edge_smooth.osl:14
+#   rng *= 30391861;
+	mul		rng rng $const8 	%line{14} %argrw{"wrr"}
+# edge_smooth.osl:15
+#   return res;
+	assign		randv ___295_res 	%line{15} %argrw{"wr"}
+# edge_smooth.osl:96
+#             ray_P = P;
+	assign		ray_P P 	%line{96} %argrw{"wr"}
+# edge_smooth.osl:97
+#             ray_R = sample_cos_hemisphere(-N, randu, randv); 
+	neg		$tmp20 N 	%line{97} %argrw{"wr"}
+	functioncall	$const14 107 	%argrw{"r"}
+# edge_smooth.osl:60
+#   make_orthonormals(N, T, B);
+	functioncall	$const15 62 	%line{60} %argrw{"r"}
+# edge_smooth.osl:49
+#   if(N[0] != N[1] || N[0] != N[2]) a = cross(vector(1, 1, 1), N);
+	compref		$tmp21 $tmp20 $const1 	%line{49} %argrw{"wrr"}
+	compref		$tmp22 $tmp20 $const2 	%argrw{"wrr"}
+	neq		$tmp23 $tmp21 $tmp22 	%argrw{"wrr"}
+	neq		$tmp24 $tmp23 $const1 	%argrw{"wrr"}
+	if		$tmp24 52 57 	%argrw{"r"}
+	compref		$tmp25 $tmp20 $const1 	%argrw{"wrr"}
+	compref		$tmp26 $tmp20 $const16 	%argrw{"wrr"}
+	neq		$tmp27 $tmp25 $tmp26 	%argrw{"wrr"}
+	neq		$tmp28 $tmp27 $const1 	%argrw{"wrr"}
+	assign		$tmp24 $tmp28 	%argrw{"wr"}
+	if		$tmp24 59 60 	%argrw{"r"}
+	cross		___304_T $const17 $tmp20 	%argrw{"wrr"}
+# edge_smooth.osl:50
+#   else a = cross(vector(-1, 1, 1), N);
+	cross		___304_T $const18 $tmp20 	%line{50} %argrw{"wrr"}
+# edge_smooth.osl:52
+#   a = normalize(a);
+	normalize	___304_T ___304_T 	%line{52} %argrw{"wr"}
+# edge_smooth.osl:53
+#   b = cross(N, a);
+	cross		___304_B $tmp20 ___304_T 	%line{53} %argrw{"wrr"}
+# edge_smooth.osl:61
+#   to_unit_disk(randu, randv, randu, randv);
+	functioncall	$const19 96 	%line{61} %argrw{"r"}
+# edge_smooth.osl:21
+#   float a = 2.0 * x - 1.0;
+	mul		$tmp31 $const20 randu 	%line{21} %argrw{"wrr"}
+	sub		___296_a $tmp31 $const4 	%argrw{"wrr"}
+# edge_smooth.osl:22
+#   float b = 2.0 * y - 1.0;
+	mul		$tmp32 $const20 randv 	%line{22} %argrw{"wrr"}
+	sub		___296_b $tmp32 $const4 	%argrw{"wrr"}
+# edge_smooth.osl:24
+#   if(a > -b) 
+	neg		$tmp33 ___296_b 	%line{24} %argrw{"wr"}
+	gt		$tmp34 ___296_a $tmp33 	%argrw{"wrr"}
+	if		$tmp34 79 92 	%argrw{"r"}
+# edge_smooth.osl:25
+#   { if(a > b) 
+	gt		$tmp35 ___296_a ___296_b 	%line{25} %argrw{"wrr"}
+	if		$tmp35 75 79 	%argrw{"r"}
+# edge_smooth.osl:26
+#     { r = a;
+	assign		___296_r ___296_a 	%line{26} %argrw{"wr"}
+# edge_smooth.osl:27
+#       phi = M_PI_4 *(b/a);
+	div		$tmp36 ___296_b ___296_a 	%line{27} %argrw{"wrr"}
+	mul		___296_phi $const21 $tmp36 	%argrw{"wrr"}
+# edge_smooth.osl:30
+#     { r = b;
+	assign		___296_r ___296_b 	%line{30} %argrw{"wr"}
+# edge_smooth.osl:31
+#       phi = M_PI_4 *(2.0 - a/b);
+	div		$tmp37 ___296_a ___296_b 	%line{31} %argrw{"wrr"}
+	sub		$tmp38 $const20 $tmp37 	%argrw{"wrr"}
+	mul		___296_phi $const21 $tmp38 	%argrw{"wrr"}
+# edge_smooth.osl:34
+#   { if(a < b) 
+	lt		$tmp39 ___296_a ___296_b 	%line{34} %argrw{"wrr"}
+	if		$tmp39 85 92 	%argrw{"r"}
+# edge_smooth.osl:35
+#     { r = -a;
+	neg		___296_r ___296_a 	%line{35} %argrw{"wr"}
+# edge_smooth.osl:36
+#       phi = M_PI_4 *(4.0 + b/a);
+	div		$tmp40 ___296_b ___296_a 	%line{36} %argrw{"wrr"}
+	add		$tmp41 $const22 $tmp40 	%argrw{"wrr"}
+	mul		___296_phi $const21 $tmp41 	%argrw{"wrr"}
+# edge_smooth.osl:39
+#     { r = -b;
+	neg		___296_r ___296_b 	%line{39} %argrw{"wr"}
+# edge_smooth.osl:40
+#       if(b != 0.0) phi = M_PI_4 *(6.0 - a/b);
+	neq		$tmp42 ___296_b $const23 	%line{40} %argrw{"wrr"}
+	if		$tmp42 91 92 	%argrw{"r"}
+	div		$tmp43 ___296_a ___296_b 	%argrw{"wrr"}
+	sub		$tmp44 $const24 $tmp43 	%argrw{"wrr"}
+	mul		___296_phi $const21 $tmp44 	%argrw{"wrr"}
+# edge_smooth.osl:41
+#       else phi = 0.0;
+	assign		___296_phi $const23 	%line{41} %argrw{"wr"}
+# edge_smooth.osl:43
+#   x_out = r * cos(phi);
+	cos		$tmp45 ___296_phi 	%line{43} %argrw{"wr"}
+	mul		randu ___296_r $tmp45 	%argrw{"wrr"}
+# edge_smooth.osl:44
+#   y_out = r * sin(phi);
+	sin		$tmp46 ___296_phi 	%line{44} %argrw{"wr"}
+	mul		randv ___296_r $tmp46 	%argrw{"wrr"}
+# edge_smooth.osl:62
+#   float costheta = sqrt(max(1.0 - randu * randu - randv * randv, 0.0));
+	mul		$tmp48 randu randu 	%line{62} %argrw{"wrr"}
+	sub		$tmp49 $const4 $tmp48 	%argrw{"wrr"}
+	mul		$tmp50 randv randv 	%argrw{"wrr"}
+	sub		$tmp51 $tmp49 $tmp50 	%argrw{"wrr"}
+	max		$tmp47 $tmp51 $const23 	%argrw{"wrr"}
+	sqrt		___304_costheta $tmp47 	%argrw{"wr"}
+# edge_smooth.osl:64
+#   return randu * T + randv * B + costheta * N;
+	mul		$tmp52 randu ___304_T 	%line{64} %argrw{"wrr"}
+	mul		$tmp53 randv ___304_B 	%argrw{"wrr"}
+	add		$tmp54 $tmp52 $tmp53 	%argrw{"wrr"}
+	mul		$tmp55 ___304_costheta $tmp20 	%argrw{"wrr"}
+	add		ray_R $tmp54 $tmp55 	%argrw{"wrr"}
+# edge_smooth.osl:98
+#             ray_t = Distance;
+	assign		ray_t Distance 	%line{98} %argrw{"wr"}
+# edge_smooth.osl:100
+#             if (Concave == 1)
+	eq		$tmp56 Concave $const2 	%line{100} %argrw{"wrr"}
+	if		$tmp56 120 120 	%argrw{"r"}
+# edge_smooth.osl:102
+#               if(trace(ray_P, -ray_R, "maxdist", ray_t))
+	neg		$tmp58 ray_R 	%line{102} %argrw{"wr"}
+	trace		$tmp57 ray_P $tmp58 $const25 ray_t 	%argrw{"wrrrr"} %argderivs{1,2}
+	if		$tmp57 120 120 	%argrw{"r"}
+# edge_smooth.osl:104
+#                     getmessage ("trace", "N", hit_normal);
+	getmessage	$tmp59 $const26 $const27 hit_normal 	%line{104} %argrw{"wrrw"}
+# edge_smooth.osl:105
+#                     getmessage ("trace", "hitdist", hit_dist);
+	getmessage	$tmp60 $const26 $const28 hit_dist 	%line{105} %argrw{"wrrw"}
+# edge_smooth.osl:106
+#                     normal_blend = 1-(hit_dist/Distance);
+	div		$tmp61 hit_dist Distance 	%line{106} %argrw{"wrr"}
+	sub		normal_blend $const4 $tmp61 	%argrw{"wrr"}
+# edge_smooth.osl:107
+#                     outNormal += (hit_normal*normal_blend);
+	mul		$tmp62 hit_normal normal_blend 	%line{107} %argrw{"wrr"}
+	add		outNormal outNormal $tmp62 	%argrw{"wrr"}
+# edge_smooth.osl:108
+#                     break;
+	break	%line{108}
+# edge_smooth.osl:111
+#             if (Convex == 1)
+	eq		$tmp63 Convex $const2 	%line{111} %argrw{"wrr"}
+	if		$tmp63 140 140 	%argrw{"r"}
+# edge_smooth.osl:113
+#                 if(trace(ray_P, ray_R, "maxdist", ray_t))
+	trace		$tmp64 ray_P ray_R $const25 ray_t 	%line{113} %argrw{"wrrrr"} %argderivs{1,2}
+	if		$tmp64 140 140 	%argrw{"r"}
+# edge_smooth.osl:115
+#                     getmessage ("trace", "N", hit_normal);
+	getmessage	$tmp65 $const26 $const27 hit_normal 	%line{115} %argrw{"wrrw"}
+# edge_smooth.osl:116
+#                     getmessage ("trace", "hitdist", hit_dist);
+	getmessage	$tmp66 $const26 $const28 hit_dist 	%line{116} %argrw{"wrrw"}
+# edge_smooth.osl:117
+#                     normal_blend = 1-(hit_dist/Distance);
+	div		$tmp67 hit_dist Distance 	%line{117} %argrw{"wrr"}
+	sub		normal_blend $const4 $tmp67 	%argrw{"wrr"}
+# edge_smooth.osl:119
+#                     if (Backfacing==1 || dot(I, -hit_normal) > 0.0)
+	eq		$tmp68 Backfacing $const2 	%line{119} %argrw{"wrr"}
+	neq		$tmp69 $tmp68 $const1 	%argrw{"wrr"}
+	if		$tmp69 131 136 	%argrw{"r"}
+	neg		$tmp71 hit_normal 	%argrw{"wr"}
+	dot		$tmp70 I $tmp71 	%argrw{"wrr"}
+	gt		$tmp72 $tmp70 $const23 	%argrw{"wrr"}
+	neq		$tmp73 $tmp72 $const1 	%argrw{"wrr"}
+	assign		$tmp69 $tmp73 	%argrw{"wr"}
+	if		$tmp69 139 139 	%argrw{"r"}
+# edge_smooth.osl:120
+#                         outNormal -= (hit_normal*normal_blend);
+	mul		$tmp74 hit_normal normal_blend 	%line{120} %argrw{"wrr"}
+	sub		outNormal outNormal $tmp74 	%argrw{"wrr"}
+# edge_smooth.osl:122
+#                     break;
+	break	%line{122}
+# edge_smooth.osl:91
+#       for(i = 0; i < Samples; i++)
+	assign		$tmp75 i 	%line{91} %argrw{"wr"}
+	add		i i $const2 	%argrw{"wrr"}
+# edge_smooth.osl:128
+#   outNormal = normalize(outNormal);
+	normalize	outNormal outNormal 	%line{128} %argrw{"wr"}
+	end
