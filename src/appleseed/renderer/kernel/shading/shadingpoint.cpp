@@ -65,10 +65,9 @@ void ShadingPoint::fetch_source_geometry() const
     // Retrieve the object.
     m_object = &m_object_instance->get_object();
 
+    // Fetch primitive-specific geometry.
     if (m_primitive_type == PrimitiveTriangle)
-    {
         fetch_triangle_source_geometry();
-    }
     else
     {
         assert(m_primitive_type == PrimitiveCurve);
