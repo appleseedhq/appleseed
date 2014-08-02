@@ -112,7 +112,7 @@ MasterRenderer::MasterRenderer(
   , m_abort_switch(abort_switch)
   , m_serial_renderer_controller(0)
   , m_serial_tile_callback_factory(0)
-#ifdef WITH_OSL
+#ifdef WITH_OIIO
   , m_texture_system(0)
 #endif
 {
@@ -129,7 +129,7 @@ MasterRenderer::MasterRenderer(
   , m_abort_switch(abort_switch)
   , m_serial_renderer_controller(new SerialRendererController(renderer_controller, tile_callback))
   , m_serial_tile_callback_factory(new SerialTileCallbackFactory(m_serial_renderer_controller))
-#ifdef WITH_OSL
+#ifdef WITH_OIIO
   , m_texture_system(0)
 #endif
 {
