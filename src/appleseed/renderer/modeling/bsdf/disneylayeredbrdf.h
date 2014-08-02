@@ -50,6 +50,7 @@ namespace renderer      { class DisneyMaterial; }
 namespace renderer      { class InputEvaluator; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
+namespace renderer      { class ShadingContext; }
 namespace renderer      { class ShadingPoint; }
 
 namespace renderer
@@ -90,6 +91,7 @@ class DisneyLayeredBRDF
     // Input values are stored in the input evaluator. This method is called
     // once per shading point and pair of incoming/outgoing directions.
     virtual void evaluate_inputs(
+        const ShadingContext&           shading_context,
         InputEvaluator&                 input_evaluator,
         const ShadingPoint&             shading_point,
         const size_t                    offset = 0) const OVERRIDE;
