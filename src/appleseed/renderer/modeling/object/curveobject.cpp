@@ -29,26 +29,11 @@
 // Interface header.
 #include "curveobject.h"
 
-// appleseed.renderer headers.
-#include "renderer/global/globallogger.h"
-#include "renderer/utility/paramarray.h"
-
 // appleseed.foundation headers.
-#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/aabb.h"
-#include "foundation/math/qmc.h"
-#include "foundation/math/rng.h"
-#include "foundation/math/scalar.h"
-#include "foundation/math/vector.h"
-#include "foundation/platform/defaulttimers.h"
-#include "foundation/utility/searchpaths.h"
-#include "foundation/utility/stopwatch.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <cassert>
-#include <cmath>
-#include <fstream>
 #include <string>
 #include <vector>
 
@@ -86,180 +71,14 @@ struct CurveObject::Impl
 
         return bbox;
     }
-
-    template <typename RNG>
-    static Vector2d rand_vector2d(RNG& rng)
-    {
-        Vector2d v;
-        v[0] = rand_double2(rng);
-        v[1] = rand_double2(rng);
-        return v;
-    }
-
-    void split_and_store(vector<BezierCurve3d>& curves, const BezierCurve3d& curve, const size_t split_count)
-    {
-        if (split_count > 0)
-        {
-            BezierCurve3d child1, child2;
-            curve.split(child1, child2);
-            split_and_store(curves, child1, split_count - 1);
-            split_and_store(curves, child2, split_count - 1);
-        }
-        else curves.push_back(curve);
-    }
-
-    void create_hair_ball(const ParamArray& params)
-    {
-        const size_t ControlPointCount = 4;
-
-        const size_t curve_count = params.get_optional<size_t>("curves", 100);
-        const double curve_width = params.get_optional<double>("width", 0.002);
-        const size_t split_count = params.get_optional<size_t>("presplits", 0);
-
-        Vector3d points[ControlPointCount];
-        MersenneTwister rng;
-
-        m_curves.reserve(curve_count);
-
-        for (size_t c = 0; c < curve_count; ++c)
-        {
-            for (size_t p = 0; p < ControlPointCount; ++p)
-            {
-                // http://math.stackexchange.com/questions/87230/picking-random-points-in-the-volume-of-sphere-with-uniform-probability
-                const double r = pow(1.0 - rand_double2(rng), 1.0 / 3);
-                const Vector3d d = sample_sphere_uniform(rand_vector2d(rng));
-                points[p] = r * d;
-            }
-
-            const BezierCurve3d curve(&points[0], curve_width);
-            split_and_store(m_curves, curve, split_count);
-        }
-    }
-
-    void create_furry_ball(const ParamArray& params)
-    {
-        const size_t ControlPointCount = 4;
-
-        const size_t curve_count = params.get_optional<size_t>("curves", 100);
-        const double curve_length = params.get_optional<double>("length", 0.1);
-        const double base_width = params.get_optional<double>("base_width", 0.001);
-        const double tip_width = params.get_optional<double>("tip_width", 0.0001);
-        const double length_fuzziness = params.get_optional<double>("length_fuzziness", 0.3);
-        const double curliness = params.get_optional<double>("curliness", 0.5);
-        const size_t split_count = params.get_optional<size_t>("presplits", 0);
-
-        Vector3d points[ControlPointCount];
-        double widths[ControlPointCount];
-
-        MersenneTwister rng;
-
-        m_curves.reserve(curve_count);
-
-        for (size_t c = 0; c < curve_count; ++c)
-        {
-            static const size_t Bases[] = { 2 };
-            const Vector2d s = hammersley_sequence<double, 2>(Bases, c, curve_count);
-            const Vector3d d = sample_sphere_uniform(s);
-            points[0] = d;
-            widths[0] = base_width;
-
-            const double f = rand_double1(rng, -length_fuzziness, +length_fuzziness);
-            const double length = curve_length * (1.0 + f);
-
-            for (size_t p = 1; p < ControlPointCount; ++p)
-            {
-                const double r = static_cast<double>(p) / (ControlPointCount - 1);
-                const Vector3d f = curliness * sample_sphere_uniform(rand_vector2d(rng));
-                points[p] = points[0] + length * (r * d + f);
-                widths[p] = lerp(base_width, tip_width, r);
-            }
-
-            const BezierCurve3d curve(&points[0], &widths[0]);
-            split_and_store(m_curves, curve, split_count);
-        }
-    }
-
-    void load_curve_file(const char* filepath, const ParamArray& params)
-    {
-        const size_t split_count = params.get_optional<size_t>("presplits", 0);
-
-        ifstream input;
-        input.open(filepath);
-
-        if (input.good())
-        {
-            Stopwatch<DefaultWallclockTimer> stopwatch;
-            stopwatch.start();
-
-            // Read the number of curves.
-            size_t curve_count;
-            input >> curve_count;
-
-            // Read the number of control points per curve.
-            size_t control_point_count;
-            input >> control_point_count;
-
-            if (control_point_count != 4)
-            {
-                RENDERER_LOG_ERROR(
-                    "while loading curve file %s: only curves with 4 control points are currently supported.",
-                    filepath);
-                return;
-            }
-
-            vector<Vector3d> points(control_point_count);
-            vector<double> widths(control_point_count);
-
-            m_curves.reserve(curve_count);
-
-            for (size_t c = 0; c < curve_count; ++c)
-            {
-                for (size_t p = 0; p < control_point_count; ++p)
-                {
-                    input >> points[p].x >> points[p].y >> points[p].z;
-                    input >> widths[p];
-                }
-
-                const BezierCurve3d curve(&points[0], &widths[0]);
-                split_and_store(m_curves, curve, split_count);
-            }
-
-            input.close();
-
-            stopwatch.measure();
-
-            RENDERER_LOG_INFO(
-                "loaded curve file %s (%s curves) in %s.",
-                filepath,
-                pretty_uint(curve_count).c_str(),
-                pretty_time(stopwatch.get_seconds()).c_str());
-        }
-        else
-        {
-            RENDERER_LOG_ERROR("failed to load curve file %s.", filepath);
-        }
-    }
 };
 
 CurveObject::CurveObject(
-    const SearchPaths&  search_paths,
-    const char*         name,
-    const ParamArray&   params)
+    const char*             name,
+    const ParamArray&       params)
   : Object(name, params)
   , impl(new Impl())
 {
-    const string filepath = params.get<string>("filepath");
-
-    if (filepath == "builtin:hairball")
-        impl->create_hair_ball(params);
-    else if (filepath == "builtin:furryball")
-        impl->create_furry_ball(params);
-    else
-    {
-        impl->load_curve_file(
-            search_paths.qualify(filepath).c_str(),
-            params);
-    }
 }
 
 CurveObject::~CurveObject()
@@ -287,14 +106,16 @@ Lazy<RegionKit>& CurveObject::get_region_kit()
     return impl->m_lazy_region_kit;
 }
 
-size_t CurveObject::get_material_slot_count() const
+void CurveObject::reserve_curves(const size_t count)
 {
-    return impl->m_material_slots.size();
+    impl->m_curves.reserve(count);
 }
 
-const char* CurveObject::get_material_slot(const size_t index) const
+size_t CurveObject::push_curve(const foundation::BezierCurve3d& curve)
 {
-    return impl->m_material_slots[index].c_str();
+    const size_t index = impl->m_curves.size();
+    impl->m_curves.push_back(curve);
+    return index;
 }
 
 size_t CurveObject::get_curve_count() const
@@ -308,6 +129,16 @@ const BezierCurve3d& CurveObject::get_curve(const size_t index) const
     return impl->m_curves[index];
 }
 
+size_t CurveObject::get_material_slot_count() const
+{
+    return impl->m_material_slots.size();
+}
+
+const char* CurveObject::get_material_slot(const size_t index) const
+{
+    return impl->m_material_slots[index].c_str();
+}
+
 
 //
 // CurveObjectFactory class implementation.
@@ -319,13 +150,12 @@ const char* CurveObjectFactory::get_model()
 }
 
 auto_release_ptr<CurveObject> CurveObjectFactory::create(
-    const SearchPaths&  search_paths,
-    const char*         name,
-    const ParamArray&   params)
+    const char*             name,
+    const ParamArray&       params)
 {
     return
         auto_release_ptr<CurveObject>(
-            new CurveObject(search_paths, name, params));
+            new CurveObject(name, params));
 }
 
 }   // namespace renderer

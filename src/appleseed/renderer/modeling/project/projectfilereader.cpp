@@ -56,6 +56,7 @@
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/material/materialfactoryregistrar.h"
 #include "renderer/modeling/object/curveobject.h"
+#include "renderer/modeling/object/curveobjectreader.h"
 #include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/meshobjectreader.h"
 #include "renderer/modeling/object/object.h"
@@ -1564,9 +1565,8 @@ namespace
                 }
                 else if (m_model == CurveObjectFactory::get_model())
                 {
-                    // todo: create a CurveObjectReader?
                     m_objects.push_back(
-                        CurveObjectFactory::create(
+                        CurveObjectReader::read(
                             m_context.get_project().search_paths(),
                             m_name.c_str(),
                             m_params).release());

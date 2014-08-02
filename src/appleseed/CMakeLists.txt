@@ -1456,6 +1456,8 @@ source_group ("renderer\\modeling\\material" FILES
 set (renderer_modeling_object_sources
     renderer/modeling/object/curveobject.cpp
     renderer/modeling/object/curveobject.h
+    renderer/modeling/object/curveobjectreader.cpp
+    renderer/modeling/object/curveobjectreader.h
     renderer/modeling/object/iregion.h
     renderer/modeling/object/meshobject.cpp
     renderer/modeling/object/meshobject.h

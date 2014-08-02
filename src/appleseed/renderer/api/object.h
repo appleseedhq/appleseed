@@ -31,6 +31,8 @@
 #define APPLESEED_RENDERER_API_OBJECT_H
 
 // API headers.
+#include "renderer/modeling/object/curveobject.h"
+#include "renderer/modeling/object/curveobjectreader.h"
 #include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/meshobjectreader.h"
 #include "renderer/modeling/object/meshobjectwriter.h"
