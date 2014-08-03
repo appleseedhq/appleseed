@@ -194,7 +194,7 @@ auto_release_ptr<CurveObject> CurveObjectReader::load_curve_file(
     const size_t split_count = params.get_optional<size_t>("presplits", 0);
 
     ifstream input;
-    input.open(filepath);
+    input.open(filepath.c_str());
 
     if (input.good())
     {
