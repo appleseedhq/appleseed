@@ -561,13 +561,13 @@ namespace
 
     auto_release_ptr<Project> load_project(const string& project_filename)
     {
-        const string builtin_prefix = "builtin:";
+        const string BuiltInPrefix = "builtin:";
 
-        if (project_filename.substr(0, builtin_prefix.size()) == builtin_prefix)
+        if (project_filename.substr(0, BuiltInPrefix.size()) == BuiltInPrefix)
         {
             // Load the built-in project.
             ProjectFileReader reader;
-            const string name = project_filename.substr(builtin_prefix.size());
+            const string name = project_filename.substr(BuiltInPrefix.size());
             return reader.load_builtin(name.c_str());
         }
         else

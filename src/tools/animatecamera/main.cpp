@@ -416,7 +416,7 @@ namespace
                 ProjectFileWriter::write(
                     project.ref(),
                     new_path.c_str(),
-                    i == 0 ? ProjectFileWriter::Defaults : ProjectFileWriter::OmitWritingMeshFiles);
+                    i == 0 ? ProjectFileWriter::Defaults : ProjectFileWriter::OmitWritingGeometryFiles);
                 project->set_path(new_path.c_str());
 
                 frames.push_back(frame);
@@ -505,7 +505,7 @@ namespace
                 ProjectFileWriter::write(
                     project.ref(),
                     new_path.c_str(),
-                    i == 0 ? ProjectFileWriter::Defaults : ProjectFileWriter::OmitWritingMeshFiles);
+                    i == 0 ? ProjectFileWriter::Defaults : ProjectFileWriter::OmitWritingGeometryFiles);
                 project->set_path(new_path.c_str());
 
                 frames.push_back(frame);

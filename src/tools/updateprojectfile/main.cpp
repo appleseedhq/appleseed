@@ -100,7 +100,7 @@ int main(int argc, const char* argv[])
         ProjectFileWriter::write(
             project.ref(),
             project->get_path(),
-            ProjectFileWriter::OmitWritingMeshFiles | ProjectFileWriter::OmitBringingAssets);
+            ProjectFileWriter::OmitWritingGeometryFiles | ProjectFileWriter::OmitBringingAssets);
 
     return success ? 0 : 1;
 }

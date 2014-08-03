@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014 Srinath Ravichandran, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,41 +26,32 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFILEWRITER_H
-#define APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFILEWRITER_H
+#ifndef APPLESEED_RENDERER_MODELING_OBJECT_CURVEOBJECTWRITER_H
+#define APPLESEED_RENDERER_MODELING_OBJECT_CURVEOBJECTWRITER_H
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
 // Forward declarations.
-namespace renderer  { class Project; }
+namespace renderer  { class CurveObject; }
 
 namespace renderer
 {
 
 //
-// Project file writer.
+// Curve object writer.
 //
 
-class DLLSYMBOL ProjectFileWriter
+class DLLSYMBOL CurveObjectWriter
 {
   public:
-    enum Options
-    {
-        Defaults                    = 0,        // none of the flags below
-        OmitHeaderComment           = 1 << 0,   // do not write the header comment
-        OmitWritingGeometryFiles    = 1 << 1,   // do not write geometry files to disk
-        OmitBringingAssets          = 1 << 2,   // do not copy assets (such as texture files) to the project file directory
-        OmitSearchPaths             = 1 << 3    // do not write search paths
-    };
-
-    // Write a project to disk. Return true on success, false otherwise.
+    // Write a curve object to disk.
+    // Return true on success, false otherwise.
     static bool write(
-        const Project&  project,
-        const char*     filepath,
-        const int       options = Defaults);
+        const CurveObject&  object,
+        const char*         filepath);
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFILEWRITER_H
+#endif  // !APPLESEED_RENDERER_MODELING_OBJECT_CURVEOBJECTWRITER_H

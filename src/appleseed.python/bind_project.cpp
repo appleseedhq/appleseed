@@ -214,7 +214,7 @@ void bind_project()
     bpy::enum_<ProjectFileWriter::Options>("ProjectFileWriterOptions")
         .value("Defaults", ProjectFileWriter::Defaults)
         .value("OmitHeaderComment", ProjectFileWriter::OmitHeaderComment)
-        .value("OmitWritingMeshFiles", ProjectFileWriter::OmitWritingMeshFiles)
+        .value("OmitWritingGeometryFiles", ProjectFileWriter::OmitWritingGeometryFiles)
         .value("OmitBringingAssets", ProjectFileWriter::OmitBringingAssets)
         .value("OmitSearchPaths", ProjectFileWriter::OmitSearchPaths);
 

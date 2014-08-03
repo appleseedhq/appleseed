@@ -41,6 +41,8 @@
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/material/material.h"
+#include "renderer/modeling/object/curveobject.h"
+#include "renderer/modeling/object/curveobjectwriter.h"
 #include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/meshobjectwriter.h"
 #include "renderer/modeling/object/object.h"
@@ -649,45 +651,47 @@ namespace
                 Object& object = **i;
 
                 if (strcmp(object.get_model(), MeshObjectFactory::get_model()) == 0)
-                {
-                    ParamArray& params = object.get_parameters();
+                    write_mesh_object(static_cast<MeshObject&>(object), groups);
+                else if (strcmp(object.get_model(), CurveObjectFactory::get_model()) == 0)
+                    write_curve_object(static_cast<CurveObject&>(object));
+                else write(object);
+            }
+        }
 
-                    if (params.strings().exist("__base_object_name"))
-                    {
-                        // This object belongs to a group of objects.
-                        const string group_name = params.get<string>("__base_object_name");
-                        if (groups.find(group_name) == groups.end())
-                        {
-                            // This is the first time we encounter this group of objects.
-                            groups.insert(group_name);
+        // Write a mesh object.
+        void write_mesh_object(MeshObject& object, set<string>& groups)
+        {
+            ParamArray& params = object.get_parameters();
 
-                            // Write the object group.
-                            params.strings().remove("__base_object_name");
-                            write_mesh_object(group_name, params);
-                            params.strings().insert("__base_object_name", group_name);
-                        }
-                    }
-                    else if (params.strings().exist("filename") || params.dictionaries().exist("filename"))
-                    {
-                        // This object has a filename parameter.
-                        write_mesh_object(object.get_name(), params);
-                    }
-                    else
-                    {
-                        // This object does not belong to a group and does not have a filename parameter.
-                        write_orphan_mesh_object(object);
-                    }
-                }
-                else
+            if (params.strings().exist("__base_object_name"))
+            {
+                // This object belongs to a group of objects.
+                const string group_name = params.get<string>("__base_object_name");
+                if (groups.find(group_name) == groups.end())
                 {
-                    // Non-mesh object.
-                    write(object);
+                    // This is the first time we encounter this group of objects.
+                    groups.insert(group_name);
+
+                    // Write the object group.
+                    params.strings().remove("__base_object_name");
+                    do_write_mesh_object(group_name, params);
+                    params.strings().insert("__base_object_name", group_name);
                 }
+            }
+            else if (params.strings().exist("filename") || params.dictionaries().exist("filename"))
+            {
+                // This object has a filename parameter.
+                do_write_mesh_object(object.get_name(), params);
+            }
+            else
+            {
+                // This object does not belong to a group and does not have a filename parameter.
+                do_write_orphan_mesh_object(object);
             }
         }
 
         // Write an <object> element for a mesh with a filename.
-        void write_mesh_object(const string& name, ParamArray& params)
+        void do_write_mesh_object(const string& name, ParamArray& params)
         {
             // The object must either have a scalar filename or a composite filename, but not both.
             assert(params.strings().exist("filename") ^ params.dictionaries().exist("filename"));
@@ -710,7 +714,7 @@ namespace
             write_params(params);
         }
 
-        // Object name mapping established by write_orphan_mesh_object().
+        // Object name mapping established by do_write_orphan_mesh_object().
         typedef map<string, string> ObjectNameMapping;
         ObjectNameMapping m_object_name_mapping;
 
@@ -722,25 +726,25 @@ namespace
         }
 
         // Write an <object> element for a mesh object without a filename.
-        void write_orphan_mesh_object(const Object& object)
+        void do_write_orphan_mesh_object(const MeshObject& object)
         {
             // Construct the name of the mesh file.
-            const string name = object.get_name();
-            const string filename = name + ".obj";
+            const string object_name = object.get_name();
+            const string filename = object_name + ".obj";
 
-            // Generate the mesh file on disk.
-            if (!(m_options & ProjectFileWriter::OmitWritingMeshFiles))
+            if (!(m_options & ProjectFileWriter::OmitWritingGeometryFiles))
             {
+                // Write the mesh file to disk.
                 const string filepath = (m_project_new_root_dir / filename).string();
                 MeshObjectWriter::write(
-                    static_cast<const MeshObject&>(object),
-                    name.c_str(),
+                    object,
+                    object_name.c_str(),
                     filepath.c_str());
             }
 
-            // Write an <object> element.
+            // Write the <object> element.
             XMLElement element("object", m_file, m_indenter);
-            element.add_attribute("name", name);
+            element.add_attribute("name", object_name);
             element.add_attribute("model", MeshObjectFactory::get_model());
             element.write(XMLElement::HasChildElements);
 
@@ -750,7 +754,35 @@ namespace
             write_params(params);
 
             // Update the object name mapping.
-            m_object_name_mapping[name] = name + "." + name;
+            m_object_name_mapping[object_name] = object_name + "." + object_name;
+        }
+
+        // Write a curve object.
+        void write_curve_object(CurveObject& object)
+        {
+            ParamArray& params = object.get_parameters();
+
+            if (params.strings().exist("filepath"))
+            {
+                const string filepath = params.get<string>("filepath");
+                const string BuiltInPrefix = "builtin:";
+                if (filepath.substr(0, BuiltInPrefix.size()) != BuiltInPrefix)
+                    handle_link_to_asset(params, "filepath");
+            }
+            else if (!(m_options & ProjectFileWriter::OmitWritingGeometryFiles))
+            {
+                // Write the curve file to disk.
+                const string object_name = object.get_name();
+                const string filename = object_name + ".curves";
+                const string filepath = (m_project_new_root_dir / filename).string();
+                CurveObjectWriter::write(object, filepath.c_str());
+
+                // Add a "filepath" parameter to the object.
+                params.insert("filepath", filepath);
+            }
+
+            // Write the <object> element.
+            write_entity("object", object);
         }
 
         // Write an <object> element.
