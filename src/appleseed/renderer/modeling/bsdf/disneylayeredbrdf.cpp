@@ -105,6 +105,7 @@ size_t DisneyLayeredBRDF::compute_input_data_size(
 }
 
 void DisneyLayeredBRDF::evaluate_inputs(
+    const ShadingContext&       shading_context,
     InputEvaluator&             input_evaluator,
     const ShadingPoint&         shading_point,
     const size_t                offset) const

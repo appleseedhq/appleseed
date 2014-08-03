@@ -98,6 +98,18 @@ TEST_SUITE(Foundation_Utility_SettingsFileReader)
         EXPECT_EQ("aa", sub2.get<string>("a"));
         EXPECT_EQ("bb", sub2.get<string>("b"));
     }
+
+    TEST_CASE_F(Read_GivenSettingsFileWithNewlinesParameters_ReturnsDictionaryWithNewlinesParameters, Fixture)
+    {
+        const bool succeeded = read("unit tests/inputs/test_settings_settingsfilewithnewlinesparameters.xml");
+        ASSERT_TRUE(succeeded);
+
+        ASSERT_EQ(2, m_dictionary.strings().size());
+        ASSERT_EQ(0, m_dictionary.dictionaries().size());
+
+        EXPECT_EQ("aa", m_dictionary.get<string>("a"));
+        EXPECT_EQ("bb\nbb\nbb", m_dictionary.get<string>("b"));
+    }
 }
 
 TEST_SUITE(Foundation_Utility_SettingsFileWriter)
@@ -155,6 +167,23 @@ TEST_SUITE(Foundation_Utility_SettingsFileWriter)
             compare_text_files(
                 "unit tests/inputs/test_settings_settingsfilewithtwodictionaryparameters.xml",
                 "unit tests/outputs/test_settings_settingsfilewithtwodictionaryparameters.xml");
+
+        EXPECT_TRUE(identical);
+    }
+
+    TEST_CASE(Write_GiveDictionaryWithNewlinesParameters_WriteSettingsFileWithNewlinesParameters)
+    {
+        Dictionary dictionary;
+        dictionary.insert("a", "aa");
+        dictionary.insert("b", "bb\nbb\nbb");
+
+        SettingsFileWriter writer;
+        writer.write("unit tests/outputs/test_settings_settingsfilewithnewlinesparameters.xml", dictionary);
+
+        const bool identical =
+            compare_text_files(
+                "unit tests/inputs/test_settings_settingsfilewithnewlinesparameters.xml",
+                "unit tests/outputs/test_settings_settingsfilewithnewlinesparameters.xml");
 
         EXPECT_TRUE(identical);
     }

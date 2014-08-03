@@ -90,9 +90,18 @@ namespace
                     const DOMNode* name_attribute = attributes->getNamedItem(name_attribute_name.c_str());
                     const DOMNode* value_attribute = attributes->getNamedItem(value_attribute_name.c_str());
 
-                    dictionary.insert(
-                        transcode(name_attribute->getNodeValue()),
-                        transcode(value_attribute->getNodeValue()));
+                    if (value_attribute)
+                    {
+                        dictionary.insert(
+                            transcode(name_attribute->getNodeValue()),
+                            transcode(value_attribute->getNodeValue()));
+                    }
+                    else
+                    {
+                        dictionary.insert(
+                            transcode(name_attribute->getNodeValue()),
+                            transcode(node->getTextContent()));
+                    }
                 }
             }
 

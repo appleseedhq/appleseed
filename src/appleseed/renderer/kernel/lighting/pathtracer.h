@@ -285,7 +285,10 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         InputEvaluator bsdf_input_evaluator(shading_context.get_texture_cache());
         if (vertex.m_bsdf)
         {
-            vertex.m_bsdf->evaluate_inputs(bsdf_input_evaluator, *vertex.m_shading_point);
+            vertex.m_bsdf->evaluate_inputs(
+                shading_context,
+                bsdf_input_evaluator, 
+                *vertex.m_shading_point);
             vertex.m_bsdf_data = bsdf_input_evaluator.data();
         }
 

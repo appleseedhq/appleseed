@@ -29,6 +29,9 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/intersection/intersector.h"
+#include "renderer/kernel/lighting/tracer.h"
+#include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingpointbuilder.h"
 #include "renderer/kernel/texturing/texturecache.h"
@@ -57,6 +60,7 @@
 using namespace foundation;
 using namespace renderer;
 
+#ifndef WITH_OSL
 TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
 {
     template <typename T>
@@ -122,23 +126,37 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
         input_binder.bind(scene);
         assert(input_binder.get_error_count() == 0);
 
-#ifdef WITH_OSL
-        scene.on_frame_begin(project.ref(), 0);
-#else
         scene.on_frame_begin(project.ref());
-#endif
 
         TextureStore texture_store(scene);
         TextureCache texture_cache(texture_store);
         InputEvaluator input_evaluator(texture_cache);
 
+        Intersector intersector(
+            project->get_trace_context(),
+            texture_cache);
+        
+        Tracer tracer(
+            *project->get_scene(),
+            intersector,
+            texture_cache);
+        
+        ShadingContext shading_context(
+            intersector,
+            tracer,
+            texture_cache,
+            0);
+        
         ShadingPoint shading_point;
         ShadingPointBuilder builder(shading_point);
         builder.set_primitive_type(ShadingPoint::PrimitiveTriangle);
         builder.set_uvs(Vector2d(0.0));
 
         BSDF& parent_bsdf = *assembly.bsdfs().get_by_name("parent_bsdf");
-        parent_bsdf.evaluate_inputs(input_evaluator, shading_point);
+        parent_bsdf.evaluate_inputs(
+            shading_context,
+            input_evaluator,
+            shading_point);
 
         // parent_bsdf mixing weights.
         EXPECT_EQ(0.6, get_value<double>(input_evaluator, 0));
@@ -160,3 +178,4 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
         scene.on_frame_end(project.ref());
     }
 }
+#endif
