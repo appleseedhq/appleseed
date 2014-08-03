@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings>
+    <parameter name="a" value="aa" />
+    <parameter name="b">bb
+bb
+bb</parameter>
+</settings>

@@ -30,8 +30,12 @@
         <xsd:documentation xml:lang="en">appleseed settings file format</xsd:documentation>
     </xsd:annotation>
     <xsd:complexType name="parameter">
-        <xsd:attribute name="name" type="xsd:string" use="required"/>
-        <xsd:attribute name="value" type="xsd:string" use="required"/>
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="name" type="xsd:string" use="required"/>
+                <xsd:attribute name="value" type="xsd:string" use="optional"/>
+            </xsd:extension>
+        </xsd:simpleContent>
     </xsd:complexType>
     <xsd:complexType name="parameterSet">
         <xsd:choice minOccurs="0" maxOccurs="unbounded">
