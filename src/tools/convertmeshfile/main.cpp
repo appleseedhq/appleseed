@@ -278,7 +278,6 @@ namespace
 int main(int argc, const char* argv[])
 {
     SuperLogger logger;
-
     Application::check_installation(logger);
 
     CommandLineHandler cl;

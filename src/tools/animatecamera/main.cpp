@@ -526,7 +526,6 @@ namespace
 int main(int argc, const char* argv[])
 {
     SuperLogger logger;
-
     Application::check_installation(logger);
 
     g_cl.parse(argc, argv, logger);

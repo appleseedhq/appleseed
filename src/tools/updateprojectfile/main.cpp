@@ -61,7 +61,6 @@ using namespace std;
 int main(int argc, const char* argv[])
 {
     SuperLogger logger;
-
     Application::check_installation(logger);
 
     CommandLineHandler cl;
@@ -77,7 +76,7 @@ int main(int argc, const char* argv[])
         (filesystem::path(Application::get_root_path())
         / "schemas" / "project.xsd").string();
 
-    // Load the input project from disk.
+    // Read the input project from disk.
     ProjectFileReader reader;
     auto_release_ptr<Project> project(
         reader.read(
