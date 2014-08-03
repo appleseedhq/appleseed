@@ -189,6 +189,7 @@ namespace
         }
 
         virtual void evaluate_inputs(
+            const ShadingContext&   shading_context,
             InputEvaluator&         input_evaluator,
             const ShadingPoint&     shading_point,
             const size_t            offset) const OVERRIDE

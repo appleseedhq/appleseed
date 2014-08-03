@@ -132,16 +132,30 @@ namespace
         }
 
         virtual void evaluate_inputs(
-            InputEvaluator&     input_evaluator,
-            const ShadingPoint& shading_point,
-            const size_t        offset) const OVERRIDE
+            const ShadingContext&   shading_context,            
+            InputEvaluator&         input_evaluator,
+            const ShadingPoint&     shading_point,
+            const size_t            offset) const OVERRIDE
         {
             assert(m_bsdf[0] && m_bsdf[1]);
 
-            BSDF::evaluate_inputs(input_evaluator, shading_point, offset);
+            BSDF::evaluate_inputs(
+                shading_context,
+                input_evaluator,
+                shading_point, 
+                offset);
 
-            m_bsdf[0]->evaluate_inputs(input_evaluator, shading_point, offset + m_bsdf_data_offset[0]);
-            m_bsdf[1]->evaluate_inputs(input_evaluator, shading_point, offset + m_bsdf_data_offset[1]);
+            m_bsdf[0]->evaluate_inputs(
+                shading_context,
+                input_evaluator, 
+                shading_point,
+                offset + m_bsdf_data_offset[0]);
+            
+            m_bsdf[1]->evaluate_inputs(
+                shading_context,
+                input_evaluator,
+                shading_point,
+                offset + m_bsdf_data_offset[1]);
         }
 
         FORCE_INLINE virtual Mode sample(

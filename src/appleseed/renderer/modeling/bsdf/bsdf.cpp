@@ -88,9 +88,10 @@ size_t BSDF::compute_input_data_size(
 }
 
 void BSDF::evaluate_inputs(
-    InputEvaluator&     input_evaluator,
-    const ShadingPoint& shading_point,
-    const size_t        offset) const
+    const ShadingContext&   shading_context,
+    InputEvaluator&         input_evaluator,
+    const ShadingPoint&     shading_point,
+    const size_t            offset) const
 {
     input_evaluator.evaluate(get_inputs(), shading_point.get_uv(0), offset);
 }

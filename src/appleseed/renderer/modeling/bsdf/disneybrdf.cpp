@@ -404,11 +404,16 @@ class DisneyBRDFImpl
     }
 
     virtual void evaluate_inputs(
-        InputEvaluator&     input_evaluator,
-        const ShadingPoint& shading_point,
-        const size_t        offset) const OVERRIDE
+        const ShadingContext&   shading_context,
+        InputEvaluator&         input_evaluator,
+        const ShadingPoint&     shading_point,
+        const size_t            offset) const OVERRIDE
     {
-        BSDF::evaluate_inputs(input_evaluator, shading_point, offset);
+        BSDF::evaluate_inputs(
+            shading_context,
+            input_evaluator,
+            shading_point,
+            offset);
 
         char* ptr = reinterpret_cast<char*>(input_evaluator.data());
         DisneyBRDFInputValues* values = reinterpret_cast<DisneyBRDFInputValues*>(ptr + offset);
