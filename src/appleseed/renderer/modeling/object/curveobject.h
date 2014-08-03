@@ -118,4 +118,4 @@ class DLLSYMBOL CurveObjectFactory
 
 }       // namespace renderer
 
-#endif  // #ifndef APPLESEED_RENDERER_MODELING_OBJECT_CURVEOBJECT_H
+#endif  // !APPLESEED_RENDERER_MODELING_OBJECT_CURVEOBJECT_H
