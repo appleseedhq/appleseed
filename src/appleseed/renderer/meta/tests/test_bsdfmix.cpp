@@ -61,6 +61,7 @@ using namespace foundation;
 using namespace renderer;
 
 #ifndef WITH_OSL
+
 TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
 {
     template <typename T>
@@ -178,4 +179,5 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
         scene.on_frame_end(project.ref());
     }
 }
-#endif
+
+#endif  // !WITH_OSL

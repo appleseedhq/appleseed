@@ -56,10 +56,10 @@ UniqueID BSDF::get_class_uid()
 const double BSDF::DiracDelta = -1.0;
 
 BSDF::BSDF(
-    const char*         name,
-    const Type          type,
-    const int           modes,
-    const ParamArray&   params)
+    const char*             name,
+    const Type              type,
+    const int               modes,
+    const ParamArray&       params)
   : ConnectableEntity(g_class_uid, params)
   , m_type(type)
   , m_modes(modes)
@@ -68,21 +68,21 @@ BSDF::BSDF(
 }
 
 bool BSDF::on_frame_begin(
-    const Project&      project,
-    const Assembly&     assembly,
-    AbortSwitch*        abort_switch)
+    const Project&          project,
+    const Assembly&         assembly,
+    AbortSwitch*            abort_switch)
 {
     return true;
 }
 
 void BSDF::on_frame_end(
-    const Project&      project,
-    const Assembly&     assembly)
+    const Project&          project,
+    const Assembly&         assembly)
 {
 }
 
 size_t BSDF::compute_input_data_size(
-    const Assembly&     assembly) const
+    const Assembly&         assembly) const
 {
     return get_inputs().compute_data_size();
 }

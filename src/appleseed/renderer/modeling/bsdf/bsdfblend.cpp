@@ -73,8 +73,8 @@ namespace
     {
       public:
         BSDFBlendImpl(
-            const char*         name,
-            const ParamArray&   params)
+            const char*             name,
+            const ParamArray&       params)
           : BSDF(name, Reflective, AllScatteringModes, params)
         {
             m_inputs.declare("weight", InputFormatScalar);
@@ -91,9 +91,9 @@ namespace
         }
 
         virtual bool on_frame_begin(
-            const Project&      project,
-            const Assembly&     assembly,
-            AbortSwitch*        abort_switch) OVERRIDE
+            const Project&          project,
+            const Assembly&         assembly,
+            AbortSwitch*            abort_switch) OVERRIDE
         {
             if (!BSDF::on_frame_begin(project, assembly, abort_switch))
                 return false;
@@ -158,16 +158,16 @@ namespace
         }
 
         FORCE_INLINE virtual Mode sample(
-            SamplingContext&    sampling_context,
-            const void*         data,
-            const bool          adjoint,
-            const bool          cosine_mult,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            Vector3d&           incoming,
-            Spectrum&           value,
-            double&             probability) const
+            SamplingContext&        sampling_context,
+            const void*             data,
+            const bool              adjoint,
+            const bool              cosine_mult,
+            const Vector3d&         geometric_normal,
+            const Basis3d&          shading_basis,
+            const Vector3d&         outgoing,
+            Vector3d&               incoming,
+            Spectrum&               value,
+            double&                 probability) const
         {
             assert(m_bsdf[0] && m_bsdf[1]);
 
@@ -195,15 +195,15 @@ namespace
         }
 
         FORCE_INLINE virtual double evaluate(
-            const void*         data,
-            const bool          adjoint,
-            const bool          cosine_mult,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            const Vector3d&     incoming,
-            const int           modes,
-            Spectrum&           value) const
+            const void*             data,
+            const bool              adjoint,
+            const bool              cosine_mult,
+            const Vector3d&         geometric_normal,
+            const Basis3d&          shading_basis,
+            const Vector3d&         outgoing,
+            const Vector3d&         incoming,
+            const int               modes,
+            Spectrum&               value) const
         {
             assert(m_bsdf[0] && m_bsdf[1]);
 
@@ -262,12 +262,12 @@ namespace
         }
 
         FORCE_INLINE virtual double evaluate_pdf(
-            const void*         data,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            const Vector3d&     incoming,
-            const int           modes) const
+            const void*             data,
+            const Vector3d&         geometric_normal,
+            const Basis3d&          shading_basis,
+            const Vector3d&         outgoing,
+            const Vector3d&         incoming,
+            const int               modes) const
         {
             assert(m_bsdf[0] && m_bsdf[1]);
 

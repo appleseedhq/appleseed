@@ -336,8 +336,8 @@ class DisneyBRDFImpl
 {
   public:
     DisneyBRDFImpl(
-        const char*         name,
-        const ParamArray&   params)
+        const char*             name,
+        const ParamArray&       params)
       : BSDF(name, Reflective, Diffuse | Glossy, params)
     {
         m_inputs.declare("base_color", InputFormatSpectralReflectance);
@@ -382,9 +382,9 @@ class DisneyBRDFImpl
     }
 
     virtual bool on_frame_begin(
-        const Project&      project,
-        const Assembly&     assembly,
-        AbortSwitch*        abort_switch) OVERRIDE
+        const Project&          project,
+        const Assembly&         assembly,
+        AbortSwitch*            abort_switch) OVERRIDE
     {
         if (!BSDF::on_frame_begin(project, assembly, abort_switch))
             return false;
@@ -396,8 +396,8 @@ class DisneyBRDFImpl
     }
 
     virtual void on_frame_end(
-        const Project&      project,
-        const Assembly&     assembly) OVERRIDE
+        const Project&          project,
+        const Assembly&         assembly) OVERRIDE
     {
         m_diffuse_brdf->on_frame_end(project, assembly);
         BSDF::on_frame_end(project, assembly);
@@ -434,16 +434,16 @@ class DisneyBRDFImpl
     }
 
     virtual Mode sample(
-        SamplingContext&    sampling_context,
-        const void*         data,
-        const bool          adjoint,
-        const bool          cosine_mult,
-        const Vector3d&     geometric_normal,
-        const Basis3d&      shading_basis,
-        const Vector3d&     outgoing,
-        Vector3d&           incoming,
-        Spectrum&           value,
-        double&             probability) const OVERRIDE
+        SamplingContext&        sampling_context,
+        const void*             data,
+        const bool              adjoint,
+        const bool              cosine_mult,
+        const Vector3d&         geometric_normal,
+        const Basis3d&          shading_basis,
+        const Vector3d&         outgoing,
+        Vector3d&               incoming,
+        Spectrum&               value,
+        double&                 probability) const OVERRIDE
     {
         const DisneyBRDFInputValues* values =
             reinterpret_cast<const DisneyBRDFInputValues*>(data);
@@ -531,15 +531,15 @@ class DisneyBRDFImpl
     }
 
     virtual double evaluate(
-        const void*         data,
-        const bool          adjoint,
-        const bool          cosine_mult,
-        const Vector3d&     geometric_normal,
-        const Basis3d&      shading_basis,
-        const Vector3d&     outgoing,
-        const Vector3d&     incoming,
-        const int           modes,
-        Spectrum&           value) const OVERRIDE
+        const void*             data,
+        const bool              adjoint,
+        const bool              cosine_mult,
+        const Vector3d&         geometric_normal,
+        const Basis3d&          shading_basis,
+        const Vector3d&         outgoing,
+        const Vector3d&         incoming,
+        const int               modes,
+        Spectrum&               value) const OVERRIDE
     {
         // No reflection below the shading surface.
         const Vector3d& n = shading_basis.get_normal();
@@ -638,12 +638,12 @@ class DisneyBRDFImpl
     }
 
     virtual double evaluate_pdf(
-        const void*         data,
-        const Vector3d&     geometric_normal,
-        const Basis3d&      shading_basis,
-        const Vector3d&     outgoing,
-        const Vector3d&     incoming,
-        const int           modes) const OVERRIDE
+        const void*             data,
+        const Vector3d&         geometric_normal,
+        const Basis3d&          shading_basis,
+        const Vector3d&         outgoing,
+        const Vector3d&         incoming,
+        const int               modes) const OVERRIDE
     {
         const DisneyBRDFInputValues* values =
             reinterpret_cast<const DisneyBRDFInputValues*>(data);
