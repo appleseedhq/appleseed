@@ -196,58 +196,61 @@ auto_release_ptr<CurveObject> CurveObjectReader::load_curve_file(
     ifstream input;
     input.open(filepath.c_str());
 
-    if (input.good())
+    if (!input.is_open())
     {
-        Stopwatch<DefaultWallclockTimer> stopwatch;
-        stopwatch.start();
+        RENDERER_LOG_ERROR("failed to open curve file %s.", filepath.c_str());
+        return object;
+    }
 
-        // Read the number of curves.
-        size_t curve_count;
-        input >> curve_count;
+    Stopwatch<DefaultWallclockTimer> stopwatch;
+    stopwatch.start();
 
-        // Read the number of control points per curve.
-        size_t control_point_count;
-        input >> control_point_count;
+    size_t curve_count;
+    input >> curve_count;
 
-        if (control_point_count != 4)
+    size_t control_point_count;
+    input >> control_point_count;
+
+    if (control_point_count != 4)
+    {
+        RENDERER_LOG_ERROR(
+            "while loading curve file %s: only curves with 4 control points are currently supported.",
+            filepath.c_str());
+        return object;
+    }
+
+    vector<Vector3d> points(control_point_count);
+    vector<double> widths(control_point_count);
+
+    object->reserve_curves(curve_count);
+
+    for (size_t c = 0; c < curve_count; ++c)
+    {
+        for (size_t p = 0; p < control_point_count; ++p)
         {
-            RENDERER_LOG_ERROR(
-                "while loading curve file %s: only curves with 4 control points are currently supported.",
-                filepath.c_str());
-            return object;
+            input >> points[p].x >> points[p].y >> points[p].z;
+            input >> widths[p];
         }
 
-        vector<Vector3d> points(control_point_count);
-        vector<double> widths(control_point_count);
-
-        object->reserve_curves(curve_count);
-
-        for (size_t c = 0; c < curve_count; ++c)
-        {
-            for (size_t p = 0; p < control_point_count; ++p)
-            {
-                input >> points[p].x >> points[p].y >> points[p].z;
-                input >> widths[p];
-            }
-
-            const BezierCurve3d curve(&points[0], &widths[0]);
-            split_and_store(object.ref(), curve, split_count);
-        }
-
-        input.close();
-
-        stopwatch.measure();
-
-        RENDERER_LOG_INFO(
-            "loaded curve file %s (%s curves) in %s.",
-            filepath.c_str(),
-            pretty_uint(curve_count).c_str(),
-            pretty_time(stopwatch.get_seconds()).c_str());
+        const BezierCurve3d curve(&points[0], &widths[0]);
+        split_and_store(object.ref(), curve, split_count);
     }
-    else
+
+    input.close();
+
+    if (input.bad())
     {
-        RENDERER_LOG_ERROR("failed to load curve file %s.", filepath.c_str());
+        RENDERER_LOG_ERROR("failed to load curve file %s: i/o error.", filepath.c_str());
+        return object;
     }
+
+    stopwatch.measure();
+
+    RENDERER_LOG_INFO(
+        "loaded curve file %s (%s curves) in %s.",
+        filepath.c_str(),
+        pretty_uint(curve_count).c_str(),
+        pretty_time(stopwatch.get_seconds()).c_str());
 
     return object;
 }
