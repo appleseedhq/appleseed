@@ -55,8 +55,8 @@ DisneyMaterialLayerUI::DisneyMaterialLayerUI(
   , m_entity_editor(entity_editor)
   , QFrame(parent)
   , m_parent_layout(parent_layout)
-  , m_is_folded(false)
 {
+
     setObjectName("material_editor_layer");
 
     m_spacer = new QWidget();
@@ -129,7 +129,7 @@ void DisneyMaterialLayerUI::mousePressEvent(QMouseEvent* event)
 
 void DisneyMaterialLayerUI::mouseDoubleClickEvent(QMouseEvent* event)
 {
-    fold_layer();
+    fold_layer(true);
 }
 
 QFormLayout* DisneyMaterialLayerUI::get_layout()
@@ -137,9 +137,14 @@ QFormLayout* DisneyMaterialLayerUI::get_layout()
     return m_inner_layout;
 }
 
-void DisneyMaterialLayerUI::fold_layer()
+void DisneyMaterialLayerUI::fold_layer(const bool update)
 {
-    if (m_is_folded)
+    Dictionary& layer_params = m_entity_editor->m_values.dictionaries().get(m_layer_name);
+    bool is_folded = layer_params.get<bool>("folded");
+    if (update)
+        is_folded = !is_folded;
+
+    if (!is_folded)
     {
         m_inner_layout->setSpacing(7);
         m_inner_layout->removeWidget(m_spacer);
@@ -151,7 +156,7 @@ void DisneyMaterialLayerUI::fold_layer()
     {
         QWidget* widget = m_inner_layout->itemAt(i)->widget();
         if (widget)
-            m_is_folded ? widget->show() : widget->hide();
+            is_folded ? widget->hide() : widget->show();
 
         QLayout* vertical_layout = m_inner_layout->itemAt(i)->layout();
         if (vertical_layout)
@@ -159,12 +164,12 @@ void DisneyMaterialLayerUI::fold_layer()
             for (int j=0; j<vertical_layout->count(); ++j)
             {
                 QWidget* widget = vertical_layout->itemAt(j)->widget();
-                m_is_folded ? widget->show() : widget->hide();
+                is_folded ? widget->hide() : widget->show();
             }
         }
     }
 
-    if (!m_is_folded)
+    if (is_folded)
     {
         m_inner_layout->setSpacing(0);
         m_inner_layout->addWidget(m_spacer);
@@ -174,13 +179,14 @@ void DisneyMaterialLayerUI::fold_layer()
 
     // Add extra margin to shown labels when folded.
     QWidget* label = m_inner_layout->itemAt(0)->widget();
-    m_is_folded ?
-        label->setObjectName("unfolded_label") :
-        label->setObjectName("folded_label");
+    is_folded ?
+        label->setObjectName("folded_label") :
+        label->setObjectName("unfolded_label");
     style()->unpolish(label);
     style()->polish(label);
 
-    m_is_folded = !m_is_folded;
+    // Update model
+    layer_params.insert("folded", is_folded);
 }
 
 void DisneyMaterialLayerUI::slot_delete_layer()
@@ -276,7 +282,7 @@ void DisneyMaterialLayerUI::slot_move_layer_down()
 
 void DisneyMaterialLayerUI::slot_fold()
 {
-    fold_layer();
+    fold_layer(true);
 }
 
 }       // namespace studio
