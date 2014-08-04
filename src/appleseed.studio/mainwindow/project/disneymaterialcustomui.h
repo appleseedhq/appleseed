@@ -104,6 +104,7 @@ class DisneyMaterialCustomUI
     const renderer::Project&        m_project;
     QWidget*                        m_group_widget;
     QWidget*                        m_selected_layer_widget;
+    DisneyMaterialLayerUI*          m_last_layer;
     LineEditForwarder*              m_line_edit;
     QWidget*                        m_texture_button;
     QWidget*                        m_expression_button;
