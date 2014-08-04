@@ -530,6 +530,7 @@ set (foundation_utility_commandlineparser_sources
     foundation/utility/commandlineparser/messagelist.cpp
     foundation/utility/commandlineparser/messagelist.h
     foundation/utility/commandlineparser/optionhandler.h
+    foundation/utility/commandlineparser/parseresults.h
     foundation/utility/commandlineparser/valueoptionhandler.h
 )
 list (APPEND appleseed_sources

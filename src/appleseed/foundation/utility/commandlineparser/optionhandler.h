@@ -40,7 +40,7 @@
 #include <vector>
 
 // Forward declarations.
-namespace foundation    { class MessageList; }
+namespace foundation    { class ParseResults; }
 
 namespace foundation
 {
@@ -63,9 +63,10 @@ class OptionHandler
     // Flags.
     enum Flags
     {
-        None        = 0,
-        Hidden      = 1 << 0,   // don't list this option in program usage
-        Repeatable  = 1 << 1    // this option can appear multiple times on a command line
+        None        = 0,        // none of the flags below are set
+        Required    = 1 << 0,   // this option is required and must appear on the command line
+        Hidden      = 1 << 1,   // don't list this option in program usage
+        Repeatable  = 1 << 2    // this option can appear multiple times on a command line
     };
 
     // Constructor.
@@ -106,7 +107,7 @@ class OptionHandler
     virtual void parse(
         const std::string&      name,
         const StringVector&     values,
-        MessageList&            messages) = 0;
+        ParseResults&           results) = 0;
 
     // Print this option to a string.
     virtual void print(std::string& s) const = 0;
