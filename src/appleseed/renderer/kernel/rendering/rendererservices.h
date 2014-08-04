@@ -65,6 +65,12 @@ class RendererServices
         const Project&          project,
         OIIO::TextureSystem&    texture_sys);
 
+    // Precompute attribute values before rendering starts.
+    void precompute_attributes();
+    
+    // Return a pointer to the texture system (if available).
+    virtual OIIO::TextureSystem* texturesys() const OVERRIDE;
+
     // Filtered 2D texture lookup for a single point.
     virtual bool texture(
         OSL::ustring            filename,

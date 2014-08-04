@@ -67,7 +67,7 @@ class DisneyMaterialLayerUI
 
   private:
     void update_model(const int new_position, const int offset);
-    void fold_layer();
+    void fold_layer(const bool update);
 
   private slots:
     void slot_delete_layer();
@@ -83,9 +83,10 @@ class DisneyMaterialLayerUI
     QVBoxLayout*                m_parent_layout;
     QWidget*                    m_spacer;
     QToolButton*                m_fold_button;
-    bool                        m_is_folded;
     QIcon                       m_fold_arrow_enabled;
     QIcon                       m_fold_arrow_disabled;
+
+    friend class DisneyMaterialCustomUI;
 };
 
 }       // namespace studio

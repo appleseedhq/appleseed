@@ -1159,5 +1159,21 @@ QTextEdit#expression_editor
 
 QLabel#error
 {
-    color: rgba(255, 179, 156);
+    color: rgb(255, 179, 156);
+}
+
+QWidget#folded_label
+{
+    min-width: 105px;
+    qproperty-alignment: AlignRight;
+    qproperty-margin: 3;
+    qproperty-indent: 4;
+}
+
+QWidget#unfolded_label
+{
+    min-width: 0px;
+    qproperty-alignment: 'AlignLeft | AlignCenter';
+    qproperty-margin: 0;
+    qproperty-indent: 0;
 }

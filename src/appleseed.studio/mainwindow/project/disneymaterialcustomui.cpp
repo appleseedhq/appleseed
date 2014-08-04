@@ -310,9 +310,9 @@ void DisneyMaterialCustomUI::create_parameters_layout()
 
 void DisneyMaterialCustomUI::create_layer_layout(const string& layer_name)
 {
-    DisneyMaterialLayerUI* layer_widget = new DisneyMaterialLayerUI(layer_name, this, m_form_layout);
-    m_group_layout = layer_widget->get_layout();
-    m_group_widget = layer_widget;
+    m_last_layer = new DisneyMaterialLayerUI(layer_name, this, m_form_layout);
+    m_group_layout = m_last_layer->get_layout();
+    m_group_widget = m_last_layer;
 
     m_layers_widgets.push_back(m_group_widget);
 }
@@ -500,6 +500,13 @@ void DisneyMaterialCustomUI::add_layer(const bool update, const Dictionary& para
     if (update)
         m_values.insert(layer_name, layer_params);
     m_renames.insert(layer_name, layer_name);
+
+    // Add default folded value.
+    Dictionary& current_layer = m_values.dictionaries().get(layer_name);
+    if (!current_layer.strings().exist("folded"))
+        current_layer.insert("folded", false);
+
+    m_last_layer->fold_layer(false);
 
     emit_signal_custom_applied();
 }
