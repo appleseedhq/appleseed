@@ -143,9 +143,9 @@ auto_release_ptr<CurveObject> CurveObjectReader::create_furry_ball(
     const size_t ControlPointCount = 4;
     const size_t curve_count = params.get_optional<size_t>("curves", 100);
     const double curve_length = params.get_optional<double>("length", 0.1);
-    const double base_width = params.get_optional<double>("base_width", 0.001);
-    const double tip_width = params.get_optional<double>("tip_width", 0.0001);
     const double length_fuzziness = params.get_optional<double>("length_fuzziness", 0.3);
+    const double root_width = params.get_optional<double>("root_width", 0.001);
+    const double tip_width = params.get_optional<double>("tip_width", 0.0001);
     const double curliness = params.get_optional<double>("curliness", 0.5);
     const size_t split_count = params.get_optional<size_t>("presplits", 0);
 
@@ -163,7 +163,7 @@ auto_release_ptr<CurveObject> CurveObjectReader::create_furry_ball(
         const Vector3d d = sample_sphere_uniform(s);
 
         points[0] = d;
-        widths[0] = base_width;
+        widths[0] = root_width;
 
         const double f = rand_double1(rng, -length_fuzziness, +length_fuzziness);
         const double length = curve_length * (1.0 + f);
@@ -173,7 +173,7 @@ auto_release_ptr<CurveObject> CurveObjectReader::create_furry_ball(
             const double r = static_cast<double>(p) / (ControlPointCount - 1);
             const Vector3d f = curliness * sample_sphere_uniform(rand_vector2d(rng));
             points[p] = points[0] + length * (r * d + f);
-            widths[p] = lerp(base_width, tip_width, r);
+            widths[p] = lerp(root_width, tip_width, r);
         }
 
         const BezierCurve3d curve(&points[0], &widths[0]);

@@ -168,7 +168,8 @@ void CommandLineHandlerBase::parse(
     const char*     argv[],
     SuperLogger&    logger)
 {
-    impl->m_parser.parse(argc, argv);
+    ParseResults results;
+    impl->m_parser.parse(argc, argv, results);
 
     if (impl->m_message_coloring.is_set())
         logger.enable_message_coloring();
@@ -195,7 +196,19 @@ void CommandLineHandlerBase::parse(
         impl->m_parser.print_recognized_options(logger);
     }
 
-    impl->m_parser.print_messages(logger);
+    results.m_messages.print(logger);
+
+    if (results.m_errors > 0 || results.m_warnings > 0)
+    {
+        LOG(
+            logger,
+            results.m_errors > 0 ? LogMessage::Fatal : LogMessage::Warning,
+            FMT_SIZE_T " error%s, " FMT_SIZE_T " warning%s encountered while parsing the command line.",
+            results.m_errors,
+            results.m_errors > 1 ? "s" : "",
+            results.m_warnings,
+            results.m_warnings > 1 ? "s" : "");
+    }
 }
 
 CommandLineParser& CommandLineHandlerBase::parser()

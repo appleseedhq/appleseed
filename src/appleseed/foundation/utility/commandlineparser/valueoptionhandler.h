@@ -31,8 +31,10 @@
 #define APPLESEED_FOUNDATION_UTILITY_COMMANDLINEPARSER_VALUEOPTIONHANDLER_H
 
 // appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/commandlineparser/messagelist.h"
 #include "foundation/utility/commandlineparser/optionhandler.h"
+#include "foundation/utility/commandlineparser/parseresults.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/log.h"
@@ -83,7 +85,7 @@ class ValueOptionHandler
     const ValueVectorType& values() const;
 
     // Return true if this option is set.
-    virtual bool is_set() const;
+    virtual bool is_set() const OVERRIDE;
 
   private:
     GRANT_ACCESS_TO_TEST_CASE(Foundation_Utility_CommandLineParser_ValueOptionHandler, Parse_GivenMultipleInvocations_AccumulateValues);
@@ -97,19 +99,19 @@ class ValueOptionHandler
     ValueVectorType     m_values;
 
     // Return a description of this option.
-    virtual std::string get_description() const;
+    virtual std::string get_description() const OVERRIDE;
 
     // Return the maximum number of values this option can handle.
-    virtual size_t get_max_value_count() const;
+    virtual size_t get_max_value_count() const OVERRIDE;
 
     // Parse a vector of values.
     virtual void parse(
         const std::string&  name,
         const StringVector& vals,
-        MessageList&        messages);
+        ParseResults&       results) OVERRIDE;
 
     // Print this option to a string.
-    virtual void print(std::string& s) const;
+    virtual void print(std::string& s) const OVERRIDE;
 };
 
 
@@ -194,17 +196,18 @@ template <typename T>
 void ValueOptionHandler<T>::parse(
     const std::string&  name,
     const StringVector& vals,
-    MessageList&        messages)
+    ParseResults&       results)
 {
     assert(vals.size() <= m_max_value_count);
 
     if ((m_flags & OptionHandler::Repeatable) == 0 && m_occurrence_count == 1)
     {
         // Error: option already specified.
-        messages.add(
-            LogMessage::Error,
+        results.m_messages.add(
+            LogMessage::Warning,
             "option '%s' already specified, ignoring all extra occurrences.",
             name.c_str());
+        ++results.m_warnings;
         ++m_occurrence_count;
         return;
     }
@@ -223,7 +226,8 @@ void ValueOptionHandler<T>::parse(
         if (!m_syntax.empty())
             error += " (syntax: " + name + " " + m_syntax + ")";
         error += ".";
-        messages.add(LogMessage::Fatal, "%s", error.c_str());
+        results.m_messages.add(LogMessage::Error, "%s", error.c_str());
+        ++results.m_errors;
         return;
     }
 
@@ -245,7 +249,8 @@ void ValueOptionHandler<T>::parse(
             error += "type mismatch.";
             if (!m_syntax.empty())
                 error += " syntax: " + name + " " + m_syntax + ".";
-            messages.add(LogMessage::Error, "%s", error.c_str());
+            results.m_messages.add(LogMessage::Error, "%s", error.c_str());
+            ++results.m_errors;
             return;
         }
     }

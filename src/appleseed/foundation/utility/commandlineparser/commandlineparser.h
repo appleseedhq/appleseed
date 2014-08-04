@@ -35,6 +35,7 @@
 #include "foundation/utility/commandlineparser/flagoptionhandler.h"
 #include "foundation/utility/commandlineparser/messagelist.h"
 #include "foundation/utility/commandlineparser/optionhandler.h"
+#include "foundation/utility/commandlineparser/parseresults.h"
 #include "foundation/utility/commandlineparser/valueoptionhandler.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/log.h"
@@ -69,12 +70,11 @@ class CommandLineParser
     void print_usage(Logger& logger) const;
 
     // Parse a command line.
+    // Returns true on success, or false if one or multiple errors were detected.
     void parse(
         const int       argc,
-        const char*     argv[]);
-
-    // Print the messages that were generated during parsing.
-    void print_messages(Logger& logger);
+        const char*     argv[],
+        ParseResults&   results);
 
     // Print the options that were recognized during parsing.
     void print_recognized_options(Logger& logger);
@@ -93,7 +93,6 @@ class CommandLineParser
     OptionHandlerVector m_handlers;         // option handlers
     OptionVector        m_options;          // options
     Option              m_default_option;   // default option
-    MessageList         m_messages;         // messages generated during parsing
 
     // Return the length of the longest header string.
     size_t get_max_header_length() const;
@@ -101,13 +100,20 @@ class CommandLineParser
     // Find an option handler that accepts a given argument.
     OptionHandler* find_option_handler(const std::string& arg) const;
 
+    // Return true if given handler is referenced by one of options.
+    bool is_handler_used(const OptionHandler* handler) const;
+
     // Collect the options from a command line.
     void collect_options(
         const int       argc,
-        const char*     argv[]);
+        const char*     argv[],
+        ParseResults&   results);
+
+    // Check if the required options are present.
+    void check_required_options(ParseResults& results);
 
     // Process the collected options.
-    void process_options();
+    void process_options(ParseResults& results);
 };
 
 
@@ -171,18 +177,12 @@ inline void CommandLineParser::print_usage(Logger& logger) const
 
 inline void CommandLineParser::parse(
     const int       argc,
-    const char*     argv[])
+    const char*     argv[],
+    ParseResults&   results)
 {
-    // Collect the options from a command line.
-    collect_options(argc, argv);
-
-    // Process the collected options.
-    process_options();
-}
-
-inline void CommandLineParser::print_messages(Logger& logger)
-{
-    m_messages.print(logger);
+    collect_options(argc, argv, results);
+    check_required_options(results);
+    process_options(results);
 }
 
 inline void CommandLineParser::print_recognized_options(Logger& logger)
@@ -266,9 +266,21 @@ inline OptionHandler* CommandLineParser::find_option_handler(const std::string& 
     return 0;
 }
 
+inline bool CommandLineParser::is_handler_used(const OptionHandler* handler) const
+{
+    for (const_each<OptionVector> i = m_options; i; ++i)
+    {
+        if (i->m_handler == handler)
+            return true;
+    }
+
+    return false;
+}
+
 inline void CommandLineParser::collect_options(
     const int       argc,
-    const char*     argv[])
+    const char*     argv[],
+    ParseResults&   results)
 {
     assert(m_options.empty());
 
@@ -297,7 +309,8 @@ inline void CommandLineParser::collect_options(
                     m_default_option.m_values.size() >= m_default_option.m_handler->get_max_value_count())
                 {
                     // Error: unknown option.
-                    m_messages.add(LogMessage::Error, "unknown option '%s'.", arg.c_str());
+                    results.m_messages.add(LogMessage::Warning, "unknown option: '%s'.", arg.c_str());
+                    ++results.m_warnings;
                 }
                 else
                 {
@@ -314,7 +327,28 @@ inline void CommandLineParser::collect_options(
     }
 }
 
-inline void CommandLineParser::process_options()
+inline void CommandLineParser::check_required_options(ParseResults& results)
+{
+    for (const_each<OptionHandlerVector> i = m_handlers; i; ++i)
+    {
+        OptionHandler* handler = *i;
+
+        if ((handler->m_flags & OptionHandler::Required) != 0)
+        {
+            if (!is_handler_used(handler))
+            {
+                // Error: required option missing.
+                results.m_messages.add(
+                    LogMessage::Error,
+                    "required option missing: '%s'.",
+                    handler->m_names.front().c_str());
+                ++results.m_errors;
+            }
+        }
+    }
+}
+
+inline void CommandLineParser::process_options(ParseResults& results)
 {
     for (const_each<OptionVector> i = m_options; i; ++i)
     {
@@ -325,7 +359,7 @@ inline void CommandLineParser::process_options()
         option.m_handler->parse(
             option.m_name,
             option.m_values,
-            m_messages);
+            results);
     }
 
     // Parse the default option values.
@@ -334,7 +368,7 @@ inline void CommandLineParser::process_options()
         m_default_option.m_handler->parse(
             m_default_option.m_name,
             m_default_option.m_values,
-            m_messages);
+            results);
     }
 }
 

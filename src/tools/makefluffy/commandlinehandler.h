@@ -5,7 +5,6 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
 // Copyright (c) 2014 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,32 +26,53 @@
 // THE SOFTWARE.
 //
 
+#ifndef APPLESEED_MAKEFLUFFY_COMMANDLINEHANDLER_H
+#define APPLESEED_MAKEFLUFFY_COMMANDLINEHANDLER_H
+
 // appleseed.foundation headers.
 #include "foundation/utility/commandlineparser.h"
-#include "foundation/utility/makevector.h"
-#include "foundation/utility/test.h"
+
+// appleseed.shared headers.
+#include "application/commandlinehandlerbase.h"
 
 // Standard headers.
+#include <cstddef>
 #include <string>
 
-using namespace foundation;
-using namespace std;
+// Forward declarations.
+namespace appleseed { namespace shared { class SuperLogger; } }
 
-TEST_SUITE(Foundation_Utility_CommandLineParser_ValueOptionHandler)
+namespace appleseed {
+namespace makefluffy {
+
+//
+// Command line handler.
+//
+
+class CommandLineHandler
+  : public shared::CommandLineHandlerBase
 {
-    TEST_CASE(Parse_GivenMultipleInvocations_AccumulateValues)
-    {
-        ValueOptionHandler<string> handler;
-        handler.set_exact_value_count(1);
-        handler.set_flags(OptionHandler::Repeatable);
+  public:
+    foundation::ValueOptionHandler<std::string>     m_filenames;
+    foundation::ValueOptionHandler<size_t>          m_curves;
+    foundation::ValueOptionHandler<double>          m_length;
+    foundation::ValueOptionHandler<double>          m_length_fuzziness;
+    foundation::ValueOptionHandler<double>          m_root_width;
+    foundation::ValueOptionHandler<double>          m_tip_width;
+    foundation::ValueOptionHandler<double>          m_curliness;
+    foundation::ValueOptionHandler<size_t>          m_presplits;
 
-        ParseResults results;
-        handler.parse("-opt", make_vector("val1"), results);
-        handler.parse("-opt", make_vector("val2"), results);
+    // Constructor.
+    CommandLineHandler();
 
-        const StringVector expected = make_vector("val1", "val2");
+  private:
+    // Emit usage instructions to the logger.
+    virtual void print_program_usage(
+        const char*             program_name,
+        shared::SuperLogger&    logger) const;
+};
 
-        EXPECT_EQ(expected, handler.string_values());
-        EXPECT_EQ(expected, handler.values());
-    }
-}
+}       // namespace makefluffy
+}       // namespace appleseed
+
+#endif  // !APPLESEED_MAKEFLUFFY_COMMANDLINEHANDLER_H

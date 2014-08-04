@@ -27,32 +27,41 @@
 // THE SOFTWARE.
 //
 
+#ifndef APPLESEED_FOUNDATION_UTILITY_COMMANDLINEPARSER_PARSERESULTS_H
+#define APPLESEED_FOUNDATION_UTILITY_COMMANDLINEPARSER_PARSERESULTS_H
+
 // appleseed.foundation headers.
-#include "foundation/utility/commandlineparser.h"
-#include "foundation/utility/makevector.h"
-#include "foundation/utility/test.h"
+#include "foundation/core/concepts/noncopyable.h"
+#include "foundation/utility/commandlineparser/messagelist.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Standard headers.
-#include <string>
+#include <cstddef>
 
-using namespace foundation;
-using namespace std;
-
-TEST_SUITE(Foundation_Utility_CommandLineParser_ValueOptionHandler)
+namespace foundation
 {
-    TEST_CASE(Parse_GivenMultipleInvocations_AccumulateValues)
+
+//
+// Results of parsing the command line.
+//
+
+class DLLSYMBOL ParseResults
+  : public NonCopyable
+{
+  public:
+    size_t      m_errors;
+    size_t      m_warnings;
+    MessageList m_messages;
+
+    ParseResults()
+      : m_errors(0)
+      , m_warnings(0)
     {
-        ValueOptionHandler<string> handler;
-        handler.set_exact_value_count(1);
-        handler.set_flags(OptionHandler::Repeatable);
-
-        ParseResults results;
-        handler.parse("-opt", make_vector("val1"), results);
-        handler.parse("-opt", make_vector("val2"), results);
-
-        const StringVector expected = make_vector("val1", "val2");
-
-        EXPECT_EQ(expected, handler.string_values());
-        EXPECT_EQ(expected, handler.values());
     }
-}
+};
+
+}       // namespace foundation
+
+#endif  // !APPLESEED_FOUNDATION_UTILITY_COMMANDLINEPARSER_PARSERESULTS_H

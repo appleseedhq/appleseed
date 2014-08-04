@@ -37,6 +37,8 @@
 // Interface headers.
 #include "foundation/utility/commandlineparser/commandlineparser.h"
 #include "foundation/utility/commandlineparser/flagoptionhandler.h"
+#include "foundation/utility/commandlineparser/messagelist.h"
+#include "foundation/utility/commandlineparser/parseresults.h"
 #include "foundation/utility/commandlineparser/valueoptionhandler.h"
 
 #endif  // !APPLESEED_FOUNDATION_UTILITY_COMMANDLINEPARSER_H

@@ -31,8 +31,10 @@
 #define APPLESEED_FOUNDATION_UTILITY_COMMANDLINEPARSER_FLAGOPTIONHANDLER_H
 
 // appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/commandlineparser/messagelist.h"
 #include "foundation/utility/commandlineparser/optionhandler.h"
+#include "foundation/utility/commandlineparser/parseresults.h"
 #include "foundation/utility/log.h"
 
 // Standard headers.
@@ -52,16 +54,16 @@ class FlagOptionHandler
 {
   private:
     // Return the maximum number of values this option can handle.
-    virtual size_t get_max_value_count() const;
+    virtual size_t get_max_value_count() const OVERRIDE;
 
     // Parse a vector of values.
     virtual void parse(
         const std::string&      name,
         const StringVector&     values,
-        MessageList&            messages);
+        ParseResults&           results) OVERRIDE;
 
     // Print this option to a string.
-    virtual void print(std::string& s) const;
+    virtual void print(std::string& s) const OVERRIDE;
 };
 
 
@@ -77,17 +79,18 @@ inline size_t FlagOptionHandler::get_max_value_count() const
 inline void FlagOptionHandler::parse(
     const std::string&  name,
     const StringVector& values,
-    MessageList&        messages)
+    ParseResults&       results)
 {
     assert(values.empty());
 
     if ((m_flags & OptionHandler::Repeatable) == 0 && m_occurrence_count == 1)
     {
         // Error: option already specified.
-        messages.add(
+        results.m_messages.add(
             LogMessage::Error,
             "flag '%s' already specified, ignoring all extra occurrences.",
             name.c_str());
+        ++results.m_errors;
         ++m_occurrence_count;
         return;
     }
