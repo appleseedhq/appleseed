@@ -78,6 +78,7 @@ RendererServices::RendererServices(
 {
     // Set up attribute getters.
     m_global_attr_getters[OIIO::ustring("object:object_instance_id")] = &RendererServices::get_object_instance_id;
+    m_global_attr_getters[OIIO::ustring("object:object_instance_index")] = &RendererServices::get_object_instance_index;
     m_global_attr_getters[OIIO::ustring("object:assembly_instance_id")] = &RendererServices::get_assembly_instance_id;
     m_global_attr_getters[OIIO::ustring("camera:resolution")] = &RendererServices::get_camera_resolution;
     m_global_attr_getters[OIIO::ustring("camera:projection")] = &RendererServices::get_camera_projection;
@@ -91,6 +92,7 @@ RendererServices::RendererServices(
     m_global_attr_getters[OIIO::ustring("camera:shutter_open")] = &RendererServices::get_camera_shutter_open;
     m_global_attr_getters[OIIO::ustring("camera:shutter_close")] = &RendererServices::get_camera_shutter_close;
     m_global_attr_getters[OIIO::ustring("path:ray_depth")] = &RendererServices::get_ray_depth;
+    m_global_attr_getters[OIIO::ustring("path:ray_length")] = &RendererServices::get_ray_length;
 }
 
 void RendererServices::precompute_attributes()
@@ -350,7 +352,22 @@ IMPLEMENT_ATTR_GETTER(object_instance_id)
         const ShadingPoint* shading_point = 
             reinterpret_cast<const ShadingPoint*>(sg->renderstate);
 
-        reinterpret_cast<int*>(val)[0] = shading_point->get_assembly_instance().get_uid();
+        reinterpret_cast<int*>(val)[0] = shading_point->get_object_instance().get_uid();
+        clear_attr_derivatives(derivs, type, val);
+        return true;        
+    }
+    
+    return false;
+}
+
+IMPLEMENT_ATTR_GETTER(object_instance_index)
+{
+    if (type == OIIO::TypeDesc::TypeInt)
+    {
+        const ShadingPoint* shading_point = 
+            reinterpret_cast<const ShadingPoint*>(sg->renderstate);
+
+        reinterpret_cast<int*>(val)[0] = shading_point->get_object_instance_index();
         clear_attr_derivatives(derivs, type, val);
         return true;        
     }
@@ -365,7 +382,7 @@ IMPLEMENT_ATTR_GETTER(assembly_instance_id)
         const ShadingPoint* shading_point = 
             reinterpret_cast<const ShadingPoint*>(sg->renderstate);
 
-        reinterpret_cast<int*>(val)[0] = shading_point->get_object_instance().get_uid();
+        reinterpret_cast<int*>(val)[0] = shading_point->get_assembly_instance().get_uid();
         clear_attr_derivatives(derivs, type, val);
         return true;        
     }
@@ -398,8 +415,7 @@ IMPLEMENT_ATTR_GETTER(camera_projection)
 }
 
 IMPLEMENT_ATTR_GETTER(camera_fov)
-{
-    RENDERER_LOG_WARNING("OSL: get camera fov attribute not implemented");
+{    
     return false;
 }
 
@@ -523,6 +539,22 @@ IMPLEMENT_ATTR_GETTER(ray_depth)
         return true;
     }
     
+    return false;
+}
+
+IMPLEMENT_ATTR_GETTER(ray_length)
+{
+    if (type == OIIO::TypeDesc::TypeFloat)
+    {
+        const ShadingPoint* shading_point = 
+            reinterpret_cast<const ShadingPoint*>(sg->renderstate);
+
+        reinterpret_cast<float*>(val)[0] = 
+            norm(shading_point->get_ray().m_org - shading_point->get_point());
+        clear_attr_derivatives(derivs, type, val);
+        return true;
+    }
+
     return false;
 }
 
