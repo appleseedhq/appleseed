@@ -530,6 +530,7 @@ int main(int argc, const char* argv[])
 
     g_cl.parse(argc, argv, logger);
 
+    // Initialize the renderer's logger.
     global_logger().add_target(&logger.get_log_target());
 
     const string base_output_filename =

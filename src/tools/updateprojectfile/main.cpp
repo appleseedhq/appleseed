@@ -66,6 +66,7 @@ int main(int argc, const char* argv[])
     CommandLineHandler cl;
     cl.parse(argc, argv, logger);
 
+    // Initialize the renderer's logger.
     global_logger().add_target(&logger.get_log_target());
 
     // Retrieve the input file path.
