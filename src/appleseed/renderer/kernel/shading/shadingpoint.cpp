@@ -362,7 +362,9 @@ OSL::ShaderGlobals& ShadingPoint::get_osl_shader_globals() const
         m_shader_globals.dPsdx = OSL::Vec3(0, 0, 0);
         m_shader_globals.dPsdy = OSL::Vec3(0, 0, 0);
 
-        m_shader_globals.renderstate = 0;
+        m_shader_globals.renderstate = 
+            const_cast<void*>(reinterpret_cast<const void*>(this));
+
         m_shader_globals.tracedata = 0;
         m_shader_globals.objdata = 0;
 

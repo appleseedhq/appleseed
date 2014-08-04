@@ -58,6 +58,7 @@ OIIO::TypeDesc g_float_array2_typedesc(OIIO::TypeDesc::FLOAT, 2);
 OIIO::TypeDesc g_float_array4_typedesc(OIIO::TypeDesc::FLOAT, 4);
 OIIO::TypeDesc g_int_array2_typedesc(OIIO::TypeDesc::INT, 2);
 
+OIIO::ustring g_empty_ustr;
 OIIO::ustring g_perspective_ustr("perspective");
 OIIO::ustring g_spherical_ustr("spherical");
 OIIO::ustring g_unknown_proj_ustr("unknown");
@@ -76,17 +77,20 @@ RendererServices::RendererServices(
   , m_texture_sys(texture_sys)
 {
     // Set up attribute getters.
-    m_attr_getters[OIIO::ustring("camera:resolution")] = &RendererServices::get_camera_resolution;    
-    m_attr_getters[OIIO::ustring("camera:projection")] = &RendererServices::get_camera_projection;
-    m_attr_getters[OIIO::ustring("camera:pixelaspect")] = &RendererServices::get_camera_pixelaspect;
-    m_attr_getters[OIIO::ustring("camera:screen_window")] = &RendererServices::get_camera_screen_window;
-    m_attr_getters[OIIO::ustring("camera:fov")] = &RendererServices::get_camera_fov;
-    m_attr_getters[OIIO::ustring("camera:clip")] = &RendererServices::get_camera_clip;
-    m_attr_getters[OIIO::ustring("camera:clip_near")] = &RendererServices::get_camera_clip_near;
-    m_attr_getters[OIIO::ustring("camera:clip_far")] = &RendererServices::get_camera_clip_far;
-    m_attr_getters[OIIO::ustring("camera:shutter")] = &RendererServices::get_camera_shutter;
-    m_attr_getters[OIIO::ustring("camera:shutter_open")] = &RendererServices::get_camera_shutter_open;
-    m_attr_getters[OIIO::ustring("camera:shutter_close")] = &RendererServices::get_camera_shutter_close;
+    m_global_attr_getters[OIIO::ustring("object:object_instance_id")] = &RendererServices::get_object_instance_id;
+    m_global_attr_getters[OIIO::ustring("object:assembly_instance_id")] = &RendererServices::get_assembly_instance_id;
+    m_global_attr_getters[OIIO::ustring("camera:resolution")] = &RendererServices::get_camera_resolution;
+    m_global_attr_getters[OIIO::ustring("camera:projection")] = &RendererServices::get_camera_projection;
+    m_global_attr_getters[OIIO::ustring("camera:pixelaspect")] = &RendererServices::get_camera_pixelaspect;
+    m_global_attr_getters[OIIO::ustring("camera:screen_window")] = &RendererServices::get_camera_screen_window;
+    m_global_attr_getters[OIIO::ustring("camera:fov")] = &RendererServices::get_camera_fov;
+    m_global_attr_getters[OIIO::ustring("camera:clip")] = &RendererServices::get_camera_clip;
+    m_global_attr_getters[OIIO::ustring("camera:clip_near")] = &RendererServices::get_camera_clip_near;
+    m_global_attr_getters[OIIO::ustring("camera:clip_far")] = &RendererServices::get_camera_clip_far;
+    m_global_attr_getters[OIIO::ustring("camera:shutter")] = &RendererServices::get_camera_shutter;
+    m_global_attr_getters[OIIO::ustring("camera:shutter_open")] = &RendererServices::get_camera_shutter_open;
+    m_global_attr_getters[OIIO::ustring("camera:shutter_close")] = &RendererServices::get_camera_shutter_close;
+    m_global_attr_getters[OIIO::ustring("path:ray_depth")] = &RendererServices::get_ray_depth;
 }
 
 void RendererServices::precompute_attributes()
@@ -278,9 +282,16 @@ bool RendererServices::get_attribute(
     OIIO::TypeDesc          type,
     OIIO::ustring           name,
     void*                   val)
-{    
-    AttrGetterMapType::const_iterator i = m_attr_getters.find (name);
-    if (i != m_attr_getters.end())
+{
+    // We don't support getting attributes from named objects, yet.
+    if (object != g_empty_ustr)
+    {
+        return false;
+    }
+
+    // Try global attributes.
+    AttrGetterMapType::const_iterator i = m_global_attr_getters.find (name);
+    if (i != m_global_attr_getters.end())
     {
         AttrGetterFun getter = i->second;
         return (this->*(getter))(sg, derivatives, object, type, name, val);
@@ -331,6 +342,36 @@ bool RendererServices::get_##name(  \
     OIIO::TypeDesc      type,       \
     OIIO::ustring       name,       \
     void                *val) const
+
+IMPLEMENT_ATTR_GETTER(object_instance_id)
+{
+    if (type == OIIO::TypeDesc::TypeInt)
+    {
+        const ShadingPoint* shading_point = 
+            reinterpret_cast<const ShadingPoint*>(sg->renderstate);
+
+        reinterpret_cast<int*>(val)[0] = shading_point->get_assembly_instance().get_uid();
+        clear_attr_derivatives(derivs, type, val);
+        return true;        
+    }
+    
+    return false;
+}
+
+IMPLEMENT_ATTR_GETTER(assembly_instance_id)
+{
+    if (type == OIIO::TypeDesc::TypeInt)
+    {
+        const ShadingPoint* shading_point = 
+            reinterpret_cast<const ShadingPoint*>(sg->renderstate);
+
+        reinterpret_cast<int*>(val)[0] = shading_point->get_object_instance().get_uid();
+        clear_attr_derivatives(derivs, type, val);
+        return true;        
+    }
+    
+    return false;
+}
 
 IMPLEMENT_ATTR_GETTER(camera_resolution)
 {
@@ -470,6 +511,21 @@ IMPLEMENT_ATTR_GETTER(camera_screen_window)
     return false;
 }
 
+IMPLEMENT_ATTR_GETTER(ray_depth)
+{
+    if (type == OIIO::TypeDesc::TypeInt)
+    {
+        const ShadingPoint* shading_point = 
+            reinterpret_cast<const ShadingPoint*>(sg->renderstate);
+
+        reinterpret_cast<int*>(val)[0] = shading_point->get_ray().m_depth;
+        clear_attr_derivatives(derivs, type, val);
+        return true;
+    }
+    
+    return false;
+}
+
 #undef IMPLEMENT_ATTR_GETTER
 
 void RendererServices::clear_attr_derivatives(
@@ -478,7 +534,15 @@ void RendererServices::clear_attr_derivatives(
     void*                   val)
 {
     if (derivs)
-        memset(reinterpret_cast<char*>(val) + type.size(), 0, 2 * type.size());
+    {
+        if (type == OIIO::TypeDesc::TypeString)
+        {
+            reinterpret_cast<OIIO::ustring*>(val)[1] = g_empty_ustr;
+            reinterpret_cast<OIIO::ustring*>(val)[2] = g_empty_ustr;
+        }
+        else
+            memset(reinterpret_cast<char*>(val) + type.size(), 0, 2 * type.size());
+    }
 }
 
 void RendererServices::log_error(const std::string& message)
