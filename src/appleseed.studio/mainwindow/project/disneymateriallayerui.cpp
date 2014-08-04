@@ -172,6 +172,14 @@ void DisneyMaterialLayerUI::fold_layer()
         m_fold_button->setIcon(m_fold_arrow_enabled);
     }
 
+    // Add extra margin to shown labels when folded.
+    QWidget* label = m_inner_layout->itemAt(0)->widget();
+    m_is_folded ?
+        label->setObjectName("unfolded_label") :
+        label->setObjectName("folded_label");
+    style()->unpolish(label);
+    style()->polish(label);
+
     m_is_folded = !m_is_folded;
 }
 
