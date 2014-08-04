@@ -258,6 +258,12 @@ class RendererServices
         OIIO::ustring       name,       \
         void                *val) const;
 
+    // Object attributes.
+    DECLARE_ATTR_GETTER(object_instance_id)
+    DECLARE_ATTR_GETTER(object_instance_index)
+    DECLARE_ATTR_GETTER(assembly_instance_id)
+
+    // Camera attributes.
     DECLARE_ATTR_GETTER(camera_resolution)
     DECLARE_ATTR_GETTER(camera_projection)
     DECLARE_ATTR_GETTER(camera_fov)
@@ -270,6 +276,10 @@ class RendererServices
     DECLARE_ATTR_GETTER(camera_shutter_close)
     DECLARE_ATTR_GETTER(camera_screen_window)
 
+    // Ray attributes.
+    DECLARE_ATTR_GETTER(ray_depth)
+    DECLARE_ATTR_GETTER(ray_length)
+    
     #undef DECLARE_ATTR_GETTER
     
     static void clear_attr_derivatives(
@@ -279,10 +289,10 @@ class RendererServices
 
     static void log_error(const std::string& message);
     
-    const Project&              m_project;
-    OIIO::TextureSystem&        m_texture_sys;
-    AttrGetterMapType           m_attr_getters;
-    mutable OIIO::ustring       m_cam_projection_str;
+    const Project&          m_project;
+    OIIO::TextureSystem&    m_texture_sys;
+    AttrGetterMapType       m_global_attr_getters;
+    OIIO::ustring           m_cam_projection_str;
 };
 
 }       // namespace renderer
