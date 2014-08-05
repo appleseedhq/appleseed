@@ -60,7 +60,7 @@
 using namespace foundation;
 using namespace renderer;
 
-#if not defined(WITH_OSL) && not defined(WITH_OIIO)
+#if !defined WITH_OSL && !defined WITH_OIIO
 
 TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
 {
@@ -180,4 +180,4 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
     }
 }
 
-#endif  // !WITH_OSL
+#endif
