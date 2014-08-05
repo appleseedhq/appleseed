@@ -43,7 +43,7 @@ namespace renderer
 {
 
 //
-// Cast a non-negative scalar n to an integer such that the expected value of that integer is n.
+// Randomly cast a non-negative scalar n to an integer such that the expected value of that integer is n.
 //
 
 template <typename Int>
