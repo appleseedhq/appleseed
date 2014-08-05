@@ -38,8 +38,9 @@
 #include <string>
 
 // Forward declarations.
-class SeExprEditor;
+namespace renderer { class Project; }
 namespace Ui { class ExpressionEditorWindow; }
+class SeExprEditor;
 class QLabel;
 
 namespace appleseed {
@@ -52,9 +53,10 @@ class ExpressionEditorWindow
 
   public:
     ExpressionEditorWindow(
-        const QString& widget_name,
-        const std::string& expression,
-        QWidget* parent = 0);
+        const renderer::Project&    project,
+        const QString&              widget_name,
+        const std::string&          expression,
+        QWidget*                    parent = 0);
 
     void apply_expression();
 
@@ -63,14 +65,22 @@ class ExpressionEditorWindow
     void slot_apply();
     void slot_cancel();
 
+    void slot_clear_expression();
+    void slot_save_script();
+    void slot_load_script();
+
   signals:
     void signal_expression_applied(const QString& widget_name, const QString& expression);
 
   private:
+    std::string get_project_path();
+
     Ui::ExpressionEditorWindow*     m_ui;
+    const renderer::Project&        m_project;
     const QString                   m_widget_name;
     SeExprEditor*                   m_editor;
     QLabel*                         m_error;
+    std::string                     m_script_filepath;
 };
 
 }       // namespace studio
