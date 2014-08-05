@@ -160,7 +160,7 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
         scene.on_frame_begin(
             project.ref()
 #ifdef WITH_OSL
-            ,*shading_system
+            , *shading_system
 #endif
             );
 
@@ -189,7 +189,7 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
             tracer,
             texture_cache
 #ifdef WITH_OIIO
-            ,*texture_system
+            , *texture_system
 #endif
 #ifdef WITH_OSL
             ,sg_exec
