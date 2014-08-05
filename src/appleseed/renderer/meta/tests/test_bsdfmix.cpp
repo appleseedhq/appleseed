@@ -60,7 +60,7 @@
 using namespace foundation;
 using namespace renderer;
 
-#if !defined WITH_OSL && !defined WITH_OIIO
+#ifndef WITH_OIIO
 
 TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
 {
