@@ -90,16 +90,16 @@ namespace
 
         explicit FluffParams(const CommandLineHandler& cl)
         {
-            m_include_filter.set_pattern(cl.m_include.values()[0].c_str());
-            m_exclude_filter.set_pattern(cl.m_exclude.values()[0].c_str());
+            m_include_filter.set_pattern(cl.m_include.value().c_str());
+            m_exclude_filter.set_pattern(cl.m_exclude.value().c_str());
 
-            m_curve_count = cl.m_curves.values()[0];
-            m_curve_length = cl.m_length.values()[0];
-            m_root_width = cl.m_root_width.values()[0];
-            m_tip_width = cl.m_tip_width.values()[0];
-            m_length_fuzziness = cl.m_length_fuzziness.values()[0];
-            m_curliness = cl.m_curliness.values()[0];
-            m_split_count = cl.m_presplits.values()[0];
+            m_curve_count = cl.m_curves.value();
+            m_curve_length = cl.m_length.value();
+            m_root_width = cl.m_root_width.value();
+            m_tip_width = cl.m_tip_width.value();
+            m_length_fuzziness = cl.m_length_fuzziness.value();
+            m_curliness = cl.m_curliness.value();
+            m_split_count = cl.m_presplits.value();
         }
     };
 

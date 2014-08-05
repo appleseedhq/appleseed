@@ -47,9 +47,9 @@ CommandLineHandler::CommandLineHandler()
 {
     add_default_options();
 
-    m_filenames.set_min_value_count(0);
-    m_filenames.set_max_value_count(1);
-    parser().set_default_option_handler(&m_filenames);
+    m_filename.set_min_value_count(0);
+    m_filename.set_max_value_count(1);
+    parser().set_default_option_handler(&m_filename);
 
     m_configuration.add_name("--configuration");
     m_configuration.add_name("-c");

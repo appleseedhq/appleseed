@@ -38,6 +38,7 @@
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/log.h"
+#include "foundation/utility/makevector.h"
 #include "foundation/utility/string.h"
 #include "foundation/utility/test.h"
 
@@ -76,9 +77,11 @@ class ValueOptionHandler
     void set_exact_value_count(const size_t count);
 
     // Set default values.
+    void set_default_value(const ValueType& default_value);
     void set_default_values(const ValueVectorType& default_values);
 
     // Return the values of this option.
+    const ValueType& value() const;
     const ValueVectorType& values() const;
 
     // Return true if this option is set.
@@ -140,9 +143,21 @@ inline void ValueOptionHandler<T>::set_exact_value_count(const size_t count)
 }
 
 template <typename T>
+inline void ValueOptionHandler<T>::set_default_value(const ValueType& default_value)
+{
+    m_default_values = make_vector(default_value);
+}
+
+template <typename T>
 inline void ValueOptionHandler<T>::set_default_values(const ValueVectorType& default_values)
 {
     m_default_values = default_values;
+}
+
+template <typename T>
+inline const T& ValueOptionHandler<T>::value() const
+{
+    return !m_values.empty() ? m_values.front() : m_default_values.front();
 }
 
 template <typename T>

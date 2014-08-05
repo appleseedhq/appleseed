@@ -255,11 +255,11 @@ int main(int argc, char* argv[])
 
     if (!cl.m_filename.values().empty())
     {
-        const QString filename = QString::fromStdString(cl.m_filename.values().front());
+        const QString filename = QString::fromStdString(cl.m_filename.value());
 
         if (cl.m_render.is_set())
         {
-            const QString configuration = QString::fromStdString(cl.m_render.values()[0]);
+            const QString configuration = QString::fromStdString(cl.m_render.value());
             window.open_and_render_project(filename, configuration);
         }
         else

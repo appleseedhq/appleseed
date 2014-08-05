@@ -284,8 +284,8 @@ int main(int argc, const char* argv[])
     cl.parse(argc, argv, logger);
 
     // Retrieve the input and output file paths.
-    const string& input_filepath = cl.m_filename.values()[0];
-    const string& output_filepath = cl.m_filename.values()[1];
+    const string& input_filepath = cl.m_filenames.values()[0];
+    const string& output_filepath = cl.m_filenames.values()[1];
 
     // Read the input mesh file.
     MeshBuilder builder;

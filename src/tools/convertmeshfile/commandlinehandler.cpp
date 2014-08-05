@@ -49,8 +49,8 @@ CommandLineHandler::CommandLineHandler()
 {
     add_default_options();
 
-    m_filename.set_exact_value_count(2);
-    parser().set_default_option_handler(&m_filename);
+    m_filenames.set_exact_value_count(2);
+    parser().set_default_option_handler(&m_filenames);
 
     m_print_bboxes.add_name("--print-bounding-boxes");
     m_print_bboxes.add_name("-b");

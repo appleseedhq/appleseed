@@ -70,7 +70,7 @@ int main(int argc, const char* argv[])
     global_logger().add_target(&logger.get_log_target());
 
     // Retrieve the input file path.
-    const string& input_filepath = cl.m_filename.values()[0];
+    const string& input_filepath = cl.m_filename.value();
 
     // Construct the schema file path.
     const filesystem::path schema_filepath =
@@ -93,7 +93,7 @@ int main(int argc, const char* argv[])
     // Update the project file to the desired revision.
     ProjectFileUpdater updater;
     if (cl.m_to_revision.is_set())
-        updater.update(project.ref(), cl.m_to_revision.values()[0]);
+        updater.update(project.ref(), cl.m_to_revision.value());
     else updater.update(project.ref());
 
     // Write the project back to disk.

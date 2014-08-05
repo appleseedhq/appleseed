@@ -34,7 +34,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/log.h"
-#include "foundation/utility/makevector.h"
 
 using namespace appleseed::shared;
 using namespace foundation;
@@ -72,7 +71,7 @@ CommandLineHandler::CommandLineHandler()
     m_length_fuzziness.set_description("set the amount of length variation");
     m_length_fuzziness.set_syntax("fuzziness");
     m_length_fuzziness.set_exact_value_count(1);
-    m_length_fuzziness.set_default_values(make_vector(0.6));
+    m_length_fuzziness.set_default_value(0.6);
     parser().add_option_handler(&m_length_fuzziness);
 
     m_root_width.add_name("--root-width");
@@ -96,7 +95,7 @@ CommandLineHandler::CommandLineHandler()
     m_curliness.set_description("set the amount of curliness");
     m_curliness.set_syntax("curliness");
     m_curliness.set_exact_value_count(1);
-    m_curliness.set_default_values(make_vector(1.5));
+    m_curliness.set_default_value(1.5);
     parser().add_option_handler(&m_curliness);
 
     m_presplits.add_name("--presplits");
@@ -104,7 +103,7 @@ CommandLineHandler::CommandLineHandler()
     m_presplits.set_description("set the number of presplits to apply to the curves");
     m_presplits.set_syntax("presplits");
     m_presplits.set_exact_value_count(1);
-    m_presplits.set_default_values(make_vector<size_t>(0));
+    m_presplits.set_default_value(0);
     parser().add_option_handler(&m_presplits);
 
     m_include.add_name("--include");
@@ -112,7 +111,7 @@ CommandLineHandler::CommandLineHandler()
     m_include.set_description("only consider object instances whose names match a given regex");
     m_include.set_syntax("regex");
     m_include.set_exact_value_count(1);
-    m_include.set_default_values(make_vector(".*"));        // match everything
+    m_include.set_default_value(".*");          // match everything
     parser().add_option_handler(&m_include);
 
     m_exclude.add_name("--exclude");
@@ -120,7 +119,7 @@ CommandLineHandler::CommandLineHandler()
     m_exclude.set_description("exclude object instances whose names match a given regex");
     m_exclude.set_syntax("regex");
     m_exclude.set_exact_value_count(1);
-    m_exclude.set_default_values(make_vector("/(?!)/"));    // match nothing -- http://stackoverflow.com/a/4589566/393756
+    m_exclude.set_default_value("/(?!)/");      // match nothing -- http://stackoverflow.com/a/4589566/393756
     parser().add_option_handler(&m_exclude);
 }
 

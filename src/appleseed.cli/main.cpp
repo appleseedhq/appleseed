@@ -198,7 +198,7 @@ namespace
             TestSuiteRepository::instance().run(listener.ref(), result);
         else
         {
-            const char* regex = g_cl.m_run_unit_tests.values().front().c_str();
+            const char* regex = g_cl.m_run_unit_tests.value().c_str();
             const RegExFilter filter(regex, RegExFilter::CaseInsensitive);
 
             if (filter.is_valid())
@@ -266,7 +266,7 @@ namespace
             BenchmarkSuiteRepository::instance().run(result);
         else
         {
-            const char* regex = g_cl.m_run_unit_benchmarks.values().front().c_str();
+            const char* regex = g_cl.m_run_unit_benchmarks.value().c_str();
             const RegExFilter filter(regex, RegExFilter::CaseInsensitive);
 
             if (filter.is_valid())
@@ -508,7 +508,7 @@ namespace
         {
             params.insert_path(
                 "rendering_threads",
-                g_cl.m_threads.values()[0]);
+                g_cl.m_threads.value());
         }
 
         // Apply --resolution option.
@@ -525,7 +525,7 @@ namespace
         {
             params.insert_path(
                 "shading_engine.override_shading.mode",
-                g_cl.m_override_shading.values()[0]);
+                g_cl.m_override_shading.value());
         }
 
         // Apply --select-object-instances option.
@@ -533,7 +533,7 @@ namespace
         {
             apply_select_object_instances_command_line_option(
                 project,
-                g_cl.m_select_object_instances.values()[0].c_str());
+                g_cl.m_select_object_instances.value().c_str());
         }
 
         // Apply --parameter options.
@@ -579,7 +579,7 @@ namespace
     {
         // Retrieve the name of the configuration to use.
         const string config_name = g_cl.m_configuration.is_set()
-            ? g_cl.m_configuration.values()[0]
+            ? g_cl.m_configuration.value()
             : "final";
 
         // Retrieve the configuration.
@@ -642,7 +642,7 @@ namespace
         {
             tile_callback_factory.reset(
                 new HRmanPipeTileCallbackFactory(
-                    g_cl.m_hrmanpipe_display.values()[0],
+                    g_cl.m_hrmanpipe_display.value(),
                     is_progressive_render(params),
                     g_logger));
         }
@@ -650,7 +650,7 @@ namespace
         {
             tile_callback_factory.reset(
                 new ContinuousSavingTileCallbackFactory(
-                    g_cl.m_output.values()[0].c_str(),
+                    g_cl.m_output.value().c_str(),
                     g_logger));
         }
         else
@@ -713,8 +713,8 @@ namespace
         if (g_cl.m_output.is_set() && !g_cl.m_continuous_saving.is_set())
         {
             LOG_INFO(g_logger, "writing frame to disk...");
-            project->get_frame()->write_main_image(g_cl.m_output.values()[0].c_str());
-            project->get_frame()->write_aov_images(g_cl.m_output.values()[0].c_str());
+            project->get_frame()->write_main_image(g_cl.m_output.value().c_str());
+            project->get_frame()->write_aov_images(g_cl.m_output.value().c_str());
         }
 
 #if defined __APPLE__ || defined _WIN32
@@ -723,7 +723,7 @@ namespace
         if (g_cl.m_display_output.is_set())
         {
             if (g_cl.m_output.is_set())
-                display_frame(g_cl.m_output.values()[0].c_str());
+                display_frame(g_cl.m_output.value().c_str());
             else if (archive_path)
                 display_frame(archive_path);
             else LOG_WARNING(g_logger, "cannot display output when no output is specified and autosave is disabled.");
@@ -785,7 +785,7 @@ namespace
         // Write the frame to disk.
         if (g_cl.m_output.is_set())
         {
-            const char* file_path = g_cl.m_output.values()[0].c_str();
+            const char* file_path = g_cl.m_output.value().c_str();
             project->get_frame()->write_main_image(file_path);
             project->get_frame()->write_aov_images(file_path);
         }
@@ -837,9 +837,9 @@ int main(int argc, const char* argv[])
         dump_input_metadata();
 
     // Render the specified project.
-    if (!g_cl.m_filenames.values().empty())
+    if (!g_cl.m_filename.values().empty())
     {
-        const string project_filename = g_cl.m_filenames.values().front();
+        const string project_filename = g_cl.m_filename.value();
 
         if (g_cl.m_benchmark_mode.is_set())
             benchmark_render(project_filename);

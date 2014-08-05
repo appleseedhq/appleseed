@@ -53,7 +53,7 @@ class CommandLineHandler
   : public shared::CommandLineHandlerBase
 {
   public:
-    foundation::ValueOptionHandler<std::string> m_filename;
+    foundation::ValueOptionHandler<std::string> m_filenames;
     foundation::FlagOptionHandler               m_print_bboxes;
 
     // Constructor.

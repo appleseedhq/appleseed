@@ -53,8 +53,8 @@ class CommandLineHandler
   : public shared::CommandLineHandlerBase
 {
   public:
-    // Input files.
-    foundation::ValueOptionHandler<std::string>     m_filenames;
+    // Input file.
+    foundation::ValueOptionHandler<std::string>     m_filename;
 
     // General options.
     foundation::ValueOptionHandler<std::string>     m_configuration;

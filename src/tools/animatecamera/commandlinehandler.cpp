@@ -68,7 +68,7 @@ CommandLineHandler::CommandLineHandler()
     m_output_format.set_description("set the format of the output frames");
     m_output_format.set_syntax("format");
     m_output_format.set_exact_value_count(1);
-    m_output_format.set_default_values(make_vector("exr"));
+    m_output_format.set_default_value("exr");
     parser().add_option_handler(&m_output_format);
 
     m_frame_count.add_name("--frame-count");
@@ -76,7 +76,7 @@ CommandLineHandler::CommandLineHandler()
     m_frame_count.set_description("set the number of frames in the animation");
     m_frame_count.set_syntax("count");
     m_frame_count.set_exact_value_count(1);
-    m_frame_count.set_default_values(make_vector(20));
+    m_frame_count.set_default_value(20);
     parser().add_option_handler(&m_frame_count);
 
     m_part_count.add_name("--part-count");
@@ -84,7 +84,7 @@ CommandLineHandler::CommandLineHandler()
     m_part_count.set_description("split the render script in that many parts");
     m_part_count.set_syntax("count");
     m_part_count.set_exact_value_count(1);
-    m_part_count.set_default_values(make_vector(1));
+    m_part_count.set_default_value(1);
     parser().add_option_handler(&m_part_count);
 
     m_camera_target.add_name("--target");
@@ -100,7 +100,7 @@ CommandLineHandler::CommandLineHandler()
     m_camera_distance.set_description("set the normalized distance from the camera to the scene");
     m_camera_distance.set_syntax("scalar");
     m_camera_distance.set_exact_value_count(1);
-    m_camera_distance.set_default_values(make_vector(10.0));
+    m_camera_distance.set_default_value(10.0);
     parser().add_option_handler(&m_camera_distance);
 
     m_camera_elevation.add_name("--elevation");
@@ -108,7 +108,7 @@ CommandLineHandler::CommandLineHandler()
     m_camera_elevation.set_description("set the normalized elevation of the camera");
     m_camera_elevation.set_syntax("scalar");
     m_camera_elevation.set_exact_value_count(1);
-    m_camera_elevation.set_default_values(make_vector(2.0));
+    m_camera_elevation.set_default_value(2.0);
     parser().add_option_handler(&m_camera_elevation);
 }
 

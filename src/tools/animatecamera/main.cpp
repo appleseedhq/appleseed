@@ -160,7 +160,7 @@ namespace
             LOG_INFO(
                 m_logger,
                 "generating render script%s...",
-                g_cl.m_part_count.values()[0] > 1 ? "s" : "");
+                g_cl.m_part_count.value() > 1 ? "s" : "");
 
 #ifdef _WIN32
             generate_windows_render_script(frames);
@@ -216,7 +216,7 @@ namespace
       private:
         void generate_windows_render_script(const vector<size_t>& frames) const
         {
-            const size_t part_count = g_cl.m_part_count.values()[0];
+            const size_t part_count = g_cl.m_part_count.value();
             const size_t frames_per_part =
                 static_cast<size_t>(ceil(static_cast<double>(frames.size()) / part_count));
 
@@ -281,7 +281,7 @@ namespace
                 ")\n"
                 "\n");
 
-            const string output_format = g_cl.m_output_format.values()[0];
+            const string output_format = g_cl.m_output_format.value();
 
             for (size_t i = frame_begin; i < frame_end; ++i)
             {
@@ -367,7 +367,7 @@ namespace
             // Load the animation path file from disk.
             AnimationPath animation_path(m_logger);
             animation_path.load(
-                g_cl.m_animation_path.values()[0].c_str(),
+                g_cl.m_animation_path.value().c_str(),
                 g_cl.m_3dsmax_mode.is_set() ? AnimationPath::Autodesk3dsMax : AnimationPath::Default);
 
             // Load the master project from disk.
@@ -450,13 +450,13 @@ namespace
             vector<size_t> frames;
 
             // Retrieve the command line parameter values.
-            const int frame_count = g_cl.m_frame_count.values()[0];
+            const int frame_count = g_cl.m_frame_count.value();
             const Vector3d center_offset(
                 g_cl.m_camera_target.values()[0],
                 g_cl.m_camera_target.values()[1],
                 g_cl.m_camera_target.values()[2]);
-            const double normalized_distance = g_cl.m_camera_distance.values()[0];
-            const double normalized_elevation = g_cl.m_camera_elevation.values()[0];
+            const double normalized_distance = g_cl.m_camera_distance.value();
+            const double normalized_elevation = g_cl.m_camera_elevation.value();
 
             if (frame_count < 1)
                 LOG_FATAL(m_logger, "the frame count must be greater than or equal to 1.");

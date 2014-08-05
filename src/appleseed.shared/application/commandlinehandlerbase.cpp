@@ -175,7 +175,7 @@ void CommandLineHandlerBase::parse(
         logger.enable_message_coloring();
 
     if (impl->m_message_verbosity.is_set())
-        set_verbosity(logger, impl->m_message_verbosity.values()[0]);
+        set_verbosity(logger, impl->m_message_verbosity.value());
 
     if (impl->m_version.is_set())
         print_version_information(logger);
