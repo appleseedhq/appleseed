@@ -704,7 +704,7 @@ IRendererController::Status MasterRenderer::render_frame_sequence(
 
         // Prepare the scene for rendering. Don't proceed if that failed.
 #ifdef WITH_OSL
-        if (!m_project.get_scene()->on_frame_begin(m_project, &shading_system, m_abort_switch))
+        if (!m_project.get_scene()->on_frame_begin(m_project, shading_system, m_abort_switch))
 #else
         if (!m_project.get_scene()->on_frame_begin(m_project, m_abort_switch))
 #endif

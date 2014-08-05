@@ -205,7 +205,7 @@ namespace
                 m_intersector,
                 m_texture_cache,
 #ifdef WITH_OSL
-                &m_shadergroup_exec,
+                m_shadergroup_exec,
 #endif
                 m_params.m_transparency_threshold,
                 m_params.m_max_iterations,
@@ -458,7 +458,7 @@ namespace
                 m_intersector,
                 m_texture_cache,
 #ifdef WITH_OSL
-                &m_shadergroup_exec,
+                m_shadergroup_exec,
 #endif
                 m_params.m_transparency_threshold,
                 m_params.m_max_iterations,
