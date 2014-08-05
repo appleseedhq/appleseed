@@ -30,6 +30,7 @@
 #include "disneylayeredbrdf.h"
 
 // appleseed.renderer headers
+#include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/modeling/bsdf/disneybrdf.h"
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/material/disneymaterial.h"
@@ -119,7 +120,11 @@ void DisneyLayeredBRDF::evaluate_inputs(
     for (size_t i = 0, e = m_parent->get_layer_count(); i < e; ++i)
     {
         const DisneyMaterialLayer& layer = m_parent->get_layer(i);
-        layer.evaluate_expressions(shading_point, base_color, *values);
+        layer.evaluate_expressions(
+            shading_point, 
+            shading_context.get_oiio_texture_system(),
+            base_color, 
+            *values);
     }
 
     base_color = srgb_to_linear_rgb(base_color);

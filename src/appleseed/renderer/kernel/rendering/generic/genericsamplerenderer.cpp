@@ -96,6 +96,9 @@ namespace
             TextureStore&           texture_store,
             ILightingEngineFactory* lighting_engine_factory,
             ShadingEngine&          shading_engine,
+#ifdef WITH_OIIO
+            OIIO::TextureSystem&    oiio_texture_system,
+#endif
 #ifdef WITH_OSL
             OSL::ShadingSystem&     shading_system,
 #endif
@@ -125,6 +128,9 @@ namespace
                 m_intersector,
                 m_tracer,
                 m_texture_cache,
+#ifdef WITH_OIIO
+                oiio_texture_system,
+#endif
 #ifdef WITH_OSL
                 m_shadergroup_exec,
 #endif
@@ -321,6 +327,9 @@ GenericSampleRendererFactory::GenericSampleRendererFactory(
     TextureStore&           texture_store,
     ILightingEngineFactory* lighting_engine_factory,
     ShadingEngine&          shading_engine,
+#ifdef WITH_OIIO
+    OIIO::TextureSystem&    oiio_texture_system,
+#endif
 #ifdef WITH_OSL
     OSL::ShadingSystem&     shading_system,
 #endif
@@ -331,6 +340,9 @@ GenericSampleRendererFactory::GenericSampleRendererFactory(
   , m_texture_store(texture_store)
   , m_lighting_engine_factory(lighting_engine_factory)
   , m_shading_engine(shading_engine)
+#ifdef WITH_OIIO
+  , m_oiio_texture_system(oiio_texture_system)
+#endif
 #ifdef WITH_OSL
   , m_shading_system(shading_system)
 #endif
@@ -353,6 +365,9 @@ ISampleRenderer* GenericSampleRendererFactory::create(const bool primary)
             m_texture_store,
             m_lighting_engine_factory,
             m_shading_engine,
+#ifdef WITH_OIIO
+            m_oiio_texture_system,
+#endif
 #ifdef WITH_OSL
             m_shading_system,
 #endif

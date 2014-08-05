@@ -181,6 +181,9 @@ namespace
             const size_t            photon_begin,
             const size_t            photon_end,
             const size_t            pass_hash,
+#ifdef WITH_OIIO
+            OIIO::TextureSystem&    oiio_texture_system,
+#endif
 #ifdef WITH_OSL
             OSL::ShadingSystem&     shading_system,
 #endif
@@ -211,6 +214,9 @@ namespace
                 m_intersector,
                 m_tracer,
                 m_texture_cache
+#ifdef WITH_OIIO
+                , oiio_texture_system
+#endif
 #ifdef WITH_OSL
                 , m_shadergroup_exec
 #endif
@@ -424,6 +430,9 @@ namespace
             const size_t            photon_begin,
             const size_t            photon_end,
             const size_t            pass_hash,
+#ifdef WITH_OIIO
+            OIIO::TextureSystem&    oiio_texture_system,
+#endif
 #ifdef WITH_OSL
             OSL::ShadingSystem&     shading_system,
 #endif
@@ -458,6 +467,9 @@ namespace
                 m_intersector,
                 m_tracer,
                 m_texture_cache
+#ifdef WITH_OIIO
+                , oiio_texture_system
+#endif
 #ifdef WITH_OSL
                 , m_shadergroup_exec
 #endif
@@ -578,6 +590,9 @@ SPPMPhotonTracer::SPPMPhotonTracer(
     const LightSampler&     light_sampler,
     const TraceContext&     trace_context,
     TextureStore&           texture_store,
+#ifdef WITH_OIIO
+    OIIO::TextureSystem&    oiio_texture_system,
+#endif
 #ifdef WITH_OSL
     OSL::ShadingSystem&     shading_system,
 #endif
@@ -589,6 +604,9 @@ SPPMPhotonTracer::SPPMPhotonTracer(
   , m_texture_store(texture_store)
   , m_total_emitted_photon_count(0)
   , m_total_stored_photon_count(0)
+#ifdef WITH_OIIO
+  , m_oiio_texture_system(oiio_texture_system)
+#endif
 #ifdef WITH_OSL
   , m_shading_system(shading_system)
 #endif
@@ -631,6 +649,9 @@ size_t SPPMPhotonTracer::trace_photons(
                     photon_begin,
                     photon_end,
                     pass_hash,
+#ifdef WITH_OIIO
+                    m_oiio_texture_system,
+#endif
 #ifdef WITH_OSL
                     m_shading_system,
 #endif
@@ -666,6 +687,9 @@ size_t SPPMPhotonTracer::trace_photons(
                     photon_begin,
                     photon_end,
                     pass_hash,
+#ifdef WITH_OIIO
+                    m_oiio_texture_system,
+#endif
 #ifdef WITH_OSL
                     m_shading_system,
 #endif

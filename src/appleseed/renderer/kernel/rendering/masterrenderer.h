@@ -37,6 +37,11 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
+// OpenImageIO headers.
+#ifdef WITH_OIIO
+#include "OpenImageIO/texture.h"
+#endif
+
 // OSL headers.
 #ifdef WITH_OSL
 #include "OSL/oslexec.h"

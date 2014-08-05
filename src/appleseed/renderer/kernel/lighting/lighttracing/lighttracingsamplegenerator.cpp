@@ -155,6 +155,9 @@ namespace
             const LightSampler&         light_sampler,
             const size_t                generator_index,
             const size_t                generator_count,
+#ifdef WITH_OIIO
+            OIIO::TextureSystem&        oiio_texture_system,
+#endif
 #ifdef WITH_OSL
             OSL::ShadingSystem&         shading_system,
 #endif
@@ -184,6 +187,9 @@ namespace
                 m_intersector,
                 m_tracer,
                 m_texture_cache,
+#ifdef WITH_OIIO
+                oiio_texture_system,
+#endif
 #ifdef WITH_OSL
                 m_shadergroup_exec,
 #endif
@@ -795,6 +801,9 @@ LightTracingSampleGeneratorFactory::LightTracingSampleGeneratorFactory(
     const TraceContext&     trace_context,
     TextureStore&           texture_store,
     const LightSampler&     light_sampler,
+#ifdef WITH_OIIO
+    OIIO::TextureSystem&    oiio_texture_system,
+#endif
 #ifdef WITH_OSL
     OSL::ShadingSystem&     shading_system,
 #endif
@@ -804,6 +813,9 @@ LightTracingSampleGeneratorFactory::LightTracingSampleGeneratorFactory(
   , m_trace_context(trace_context)
   , m_texture_store(texture_store)
   , m_light_sampler(light_sampler)
+#ifdef WITH_OIIO
+  , m_oiio_texture_system(oiio_texture_system)
+#endif
 #ifdef WITH_OSL
   , m_shading_system(shading_system)
 #endif
@@ -831,6 +843,9 @@ ISampleGenerator* LightTracingSampleGeneratorFactory::create(
             m_light_sampler,
             generator_index,
             generator_count,
+#ifdef WITH_OIIO
+            m_oiio_texture_system,
+#endif
 #ifdef WITH_OSL
             m_shading_system,
 #endif

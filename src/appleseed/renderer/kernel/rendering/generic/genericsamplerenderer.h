@@ -39,7 +39,12 @@
 
 // OSL headers.
 #ifdef WITH_OSL
-#include <OSL/oslexec.h>
+#include "OSL/oslexec.h"
+#endif
+
+//OpenImageIO headers.
+#ifdef WITH_OIIO
+#include "OpenImageIO/texture.h"
 #endif
 
 // Forward declarations.
@@ -69,6 +74,9 @@ class GenericSampleRendererFactory
         TextureStore&           texture_store,
         ILightingEngineFactory* lighting_engine_factory,
         ShadingEngine&          shading_engine,
+#ifdef WITH_OIIO
+        OIIO::TextureSystem&    oiio_texture_system,
+#endif
 #ifdef WITH_OSL
         OSL::ShadingSystem&     shading_system,
 #endif
@@ -87,6 +95,9 @@ class GenericSampleRendererFactory
     TextureStore&               m_texture_store;
     ILightingEngineFactory*     m_lighting_engine_factory;
     ShadingEngine&              m_shading_engine;
+#ifdef WITH_OIIO
+    OIIO::TextureSystem&        m_oiio_texture_system;
+#endif
 #ifdef WITH_OSL
     OSL::ShadingSystem&         m_shading_system;
 #endif
