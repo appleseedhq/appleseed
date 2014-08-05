@@ -55,6 +55,7 @@
 #include "boost/filesystem/path.hpp"
 
 // Standard headers.
+#include <algorithm>
 #include <cassert>
 #include <cstddef>
 #include <cstring>
@@ -219,8 +220,12 @@ namespace
             points[0] = st.m_v0 * bary[0] + st.m_v1 * bary[1] + st.m_v2 * bary[2];
             widths[0] = params.m_root_width;
 
-            const double f = rand_double1(rng, -params.m_length_fuzziness, +params.m_length_fuzziness);
-            const double length = params.m_curve_length * (1.0 + f);
+            double f, length;
+            do
+            {
+                f = rand_double1(rng, -params.m_length_fuzziness, +params.m_length_fuzziness);
+                length = max(params.m_curve_length * (1.0 + f), 0.0);
+            } while (length <= 0.0);
 
             for (size_t p = 1; p < ControlPointCount; ++p)
             {
