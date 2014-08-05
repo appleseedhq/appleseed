@@ -78,9 +78,6 @@ class ValueOptionHandler
     // Set default values.
     void set_default_values(const ValueVectorType& default_values);
 
-    // Return the string values of this option.
-    const StringVector& string_values() const;
-
     // Return the values of this option.
     const ValueVectorType& values() const;
 
@@ -92,10 +89,7 @@ class ValueOptionHandler
 
     size_t              m_min_value_count;
     size_t              m_max_value_count;
-
     ValueVectorType     m_default_values;
-
-    StringVector        m_string_values;
     ValueVectorType     m_values;
 
     // Return a description of this option.
@@ -149,24 +143,12 @@ template <typename T>
 inline void ValueOptionHandler<T>::set_default_values(const ValueVectorType& default_values)
 {
     m_default_values = default_values;
-    m_values = default_values;
-
-    m_string_values.clear();
-
-    for (size_t i = 0; i < m_default_values.size(); ++i)
-        m_string_values.push_back(to_string(m_values[i]));
-}
-
-template <typename T>
-inline const StringVector& ValueOptionHandler<T>::string_values() const
-{
-    return m_string_values;
 }
 
 template <typename T>
 inline const std::vector<T>& ValueOptionHandler<T>::values() const
 {
-    return m_values;
+    return !m_values.empty() ? m_values : m_default_values;
 }
 
 template <typename T>
@@ -255,9 +237,8 @@ void ValueOptionHandler<T>::parse(
         }
     }
 
-    // Copy string values locally.
+    // Store values.
     m_values.insert(m_values.end(), parsed_values.begin(), parsed_values.end());
-    m_string_values.insert(m_string_values.end(), vals.begin(), vals.end());
 
     // The option was successfully parsed.
     ++m_occurrence_count;

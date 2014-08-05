@@ -383,8 +383,8 @@ namespace
         if (g_cl.m_resolution.is_set())
         {
             const string resolution =
-                  g_cl.m_resolution.string_values()[0] + ' ' +
-                  g_cl.m_resolution.string_values()[1];
+                  to_string(g_cl.m_resolution.values()[0]) + ' ' +
+                  to_string(g_cl.m_resolution.values()[1]);
 
             set_frame_parameter(project, "resolution", resolution);
         }
@@ -395,10 +395,10 @@ namespace
         if (g_cl.m_window.is_set())
         {
             const string crop_window =
-                  g_cl.m_window.string_values()[0] + ' ' +
-                  g_cl.m_window.string_values()[1] + ' ' +
-                  g_cl.m_window.string_values()[2] + ' ' +
-                  g_cl.m_window.string_values()[3];
+                  to_string(g_cl.m_window.values()[0]) + ' ' +
+                  to_string(g_cl.m_window.values()[1]) + ' ' +
+                  to_string(g_cl.m_window.values()[2]) + ' ' +
+                  to_string(g_cl.m_window.values()[3]);
 
             set_frame_parameter(project, "crop_window", crop_window);
         }
@@ -410,15 +410,15 @@ namespace
         {
             params.insert_path(
                 "uniform_pixel_renderer.samples",
-                g_cl.m_samples.string_values()[1]);
+                g_cl.m_samples.values()[1]);
 
             params.insert_path(
                 "adaptive_pixel_renderer.min_samples",
-                g_cl.m_samples.string_values()[0]);
+                g_cl.m_samples.values()[0]);
 
             params.insert_path(
                 "adaptive_pixel_renderer.max_samples",
-                g_cl.m_samples.string_values()[1]);
+                g_cl.m_samples.values()[1]);
         }
     }
 
@@ -508,7 +508,7 @@ namespace
         {
             params.insert_path(
                 "rendering_threads",
-                g_cl.m_threads.string_values()[0]);
+                g_cl.m_threads.values()[0]);
         }
 
         // Apply --resolution option.
@@ -525,7 +525,7 @@ namespace
         {
             params.insert_path(
                 "shading_engine.override_shading.mode",
-                g_cl.m_override_shading.string_values()[0]);
+                g_cl.m_override_shading.values()[0]);
         }
 
         // Apply --select-object-instances option.
@@ -533,7 +533,7 @@ namespace
         {
             apply_select_object_instances_command_line_option(
                 project,
-                g_cl.m_select_object_instances.string_values()[0].c_str());
+                g_cl.m_select_object_instances.values()[0].c_str());
         }
 
         // Apply --parameter options.

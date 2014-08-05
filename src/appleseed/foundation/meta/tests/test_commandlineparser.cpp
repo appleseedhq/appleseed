@@ -50,9 +50,6 @@ TEST_SUITE(Foundation_Utility_CommandLineParser_ValueOptionHandler)
         handler.parse("-opt", make_vector("val1"), results);
         handler.parse("-opt", make_vector("val2"), results);
 
-        const StringVector expected = make_vector("val1", "val2");
-
-        EXPECT_EQ(expected, handler.string_values());
-        EXPECT_EQ(expected, handler.values());
+        EXPECT_EQ(make_vector("val1", "val2"), handler.values());
     }
 }
