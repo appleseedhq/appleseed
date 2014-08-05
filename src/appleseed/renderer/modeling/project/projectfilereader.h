@@ -57,11 +57,11 @@ class DLLSYMBOL ProjectFileReader
         OmitProjectFileUpdate   = 1 << 1    // do not update the project file format to the latest revision
     };
 
-    // Read a project from disk.
+    // Read a project from disk (or load a built-in project).
     // Return 0 if reading or parsing the file failed.
     foundation::auto_release_ptr<Project> read(
-        const char*             project_filename,
-        const char*             schema_filename,
+        const char*             project_filepath,
+        const char*             schema_filepath,
         const int               options = Defaults);
 
     // Load a built-in project.
@@ -71,8 +71,8 @@ class DLLSYMBOL ProjectFileReader
 
   private:
     foundation::auto_release_ptr<Project> load_project_file(
-        const char*             project_filename,
-        const char*             schema_filename,
+        const char*             project_filepath,
+        const char*             schema_filepath,
         const int               options,
         EventCounters&          event_counters) const;
 

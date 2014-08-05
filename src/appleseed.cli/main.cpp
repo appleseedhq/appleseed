@@ -559,32 +559,20 @@ namespace
 
 #endif
 
-    auto_release_ptr<Project> load_project(const string& project_filename)
+    auto_release_ptr<Project> load_project(const string& project_filepath)
     {
-        const string BuiltInPrefix = "builtin:";
+        // Construct the schema file path.
+        const filesystem::path schema_filepath =
+              filesystem::path(Application::get_root_path())
+            / "schemas"
+            / "project.xsd";
 
-        if (project_filename.substr(0, BuiltInPrefix.size()) == BuiltInPrefix)
-        {
-            // Load the built-in project.
-            ProjectFileReader reader;
-            const string name = project_filename.substr(BuiltInPrefix.size());
-            return reader.load_builtin(name.c_str());
-        }
-        else
-        {
-            // Construct the schema filename.
-            const filesystem::path schema_path =
-                  filesystem::path(Application::get_root_path())
-                / "schemas"
-                / "project.xsd";
-
-            // Load the project from disk.
-            ProjectFileReader reader;
-            return
-                reader.read(
-                    project_filename.c_str(),
-                    schema_path.string().c_str());
-        }
+        // Load the project from disk.
+        ProjectFileReader reader;
+        return
+            reader.read(
+                project_filepath.c_str(),
+                schema_filepath.string().c_str());
     }
 
     bool configure_project(Project& project, ParamArray& params)

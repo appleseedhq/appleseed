@@ -141,9 +141,9 @@ namespace
     {
       public:
         ErrorLoggerAndCounter(
-            const string&   input_filename,
+            const string&   input_filepath,
             EventCounters&  event_counters)
-          : ErrorLogger(global_logger(), input_filename)
+          : ErrorLogger(global_logger(), input_filepath)
           , m_event_counters(event_counters)
         {
         }
@@ -2915,13 +2915,34 @@ namespace
     };
 }
 
+namespace
+{
+    bool is_builtin_project(const string& project_filepath, string& project_name)
+    {
+        const string BuiltInPrefix = "builtin:";
+
+        if (project_filepath.substr(0, BuiltInPrefix.size()) == BuiltInPrefix)
+        {
+            project_name = project_filepath.substr(BuiltInPrefix.size());
+            return true;
+        }
+
+        return false;
+    }
+}
+
 auto_release_ptr<Project> ProjectFileReader::read(
-    const char*             project_filename,
-    const char*             schema_filename,
+    const char*             project_filepath,
+    const char*             schema_filepath,
     const int               options)
 {
-    assert(project_filename);
-    assert(schema_filename);
+    assert(project_filepath);
+    assert(schema_filepath);
+
+    // Handle built-in projects.
+    string project_name;
+    if (is_builtin_project(project_filepath, project_name))
+        return load_builtin(project_name.c_str());
 
     XercesCContext xerces_context(global_logger());
     if (!xerces_context.is_initialized())
@@ -2933,8 +2954,8 @@ auto_release_ptr<Project> ProjectFileReader::read(
     EventCounters event_counters;
     auto_release_ptr<Project> project(
         load_project_file(
-            project_filename,
-            schema_filename,
+            project_filepath,
+            schema_filepath,
             options,
             event_counters));
 
@@ -2944,7 +2965,7 @@ auto_release_ptr<Project> ProjectFileReader::read(
     stopwatch.measure();
 
     print_loading_results(
-        project_filename,
+        project_filepath,
         false,
         event_counters,
         stopwatch.get_seconds());
@@ -2979,19 +3000,19 @@ auto_release_ptr<Project> ProjectFileReader::load_builtin(
 }
 
 auto_release_ptr<Project> ProjectFileReader::load_project_file(
-    const char*             project_filename,
-    const char*             schema_filename,
+    const char*             project_filepath,
+    const char*             schema_filepath,
     const int               options,
     EventCounters&          event_counters) const
 {
     // Create an empty project.
-    auto_release_ptr<Project> project(ProjectFactory::create(project_filename));
-    project->set_path(project_filename);
+    auto_release_ptr<Project> project(ProjectFactory::create(project_filepath));
+    project->set_path(project_filepath);
 
     // Create the error handler.
     auto_ptr<ErrorLogger> error_handler(
         new ErrorLoggerAndCounter(
-            project_filename,
+            project_filepath,
             event_counters));
 
     // Create the content handler.
@@ -3010,15 +3031,15 @@ auto_release_ptr<Project> ProjectFileReader::load_project_file(
         XMLUni::fgXercesSchemaExternalNoNameSpaceSchemaLocation,
         const_cast<void*>(
             static_cast<const void*>(
-                transcode(schema_filename).c_str())));
+                transcode(schema_filepath).c_str())));
     parser->setErrorHandler(error_handler.get());
     parser->setContentHandler(content_handler.get());
 
     // Load the project file.
-    RENDERER_LOG_INFO("loading project file %s...", project_filename);
+    RENDERER_LOG_INFO("loading project file %s...", project_filepath);
     try
     {
-        parser->parse(project_filename);
+        parser->parse(project_filepath);
     }
     catch (const XMLException&)
     {
