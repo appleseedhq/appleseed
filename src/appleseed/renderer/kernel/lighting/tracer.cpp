@@ -53,7 +53,7 @@ Tracer::Tracer(
     const Intersector&          intersector,
     TextureCache&               texture_cache,
 #ifdef WITH_OSL
-    OSLShaderGroupExec*         shadergroup_exec,
+    OSLShaderGroupExec&         shadergroup_exec,
 #endif
     const float                 transparency_threshold,
     const size_t                max_iterations,
@@ -248,20 +248,17 @@ void Tracer::evaluate_alpha(
     }
 
 #ifdef WITH_OSL
-    if (m_shadergroup_exec)
+    if (const ShaderGroup* sg = material.get_osl_surface())
     {
-        if (const ShaderGroup* sg = material.get_osl_surface())
+        if (sg->has_transparency())
         {
-            if (sg->has_transparency())
-            {
-                Alpha a;
-                m_shadergroup_exec->execute_transparency(
-                    *sg,
-                    shading_point,
-                    a);
+            Alpha a;
+            m_shadergroup_exec.execute_transparency(
+                *sg,
+                shading_point,
+                a);
 
-                alpha *= a;
-            }
+            alpha *= a;
         }
     }
 #endif

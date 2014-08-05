@@ -383,8 +383,8 @@ namespace
         if (g_cl.m_resolution.is_set())
         {
             const string resolution =
-                  to_string(g_cl.m_resolution.values()[0]) + ' ' +
-                  to_string(g_cl.m_resolution.values()[1]);
+                  foundation::to_string(g_cl.m_resolution.values()[0]) + ' ' +
+                  foundation::to_string(g_cl.m_resolution.values()[1]);
 
             set_frame_parameter(project, "resolution", resolution);
         }
@@ -395,10 +395,10 @@ namespace
         if (g_cl.m_window.is_set())
         {
             const string crop_window =
-                  to_string(g_cl.m_window.values()[0]) + ' ' +
-                  to_string(g_cl.m_window.values()[1]) + ' ' +
-                  to_string(g_cl.m_window.values()[2]) + ' ' +
-                  to_string(g_cl.m_window.values()[3]);
+                  foundation::to_string(g_cl.m_window.values()[0]) + ' ' +
+                  foundation::to_string(g_cl.m_window.values()[1]) + ' ' +
+                  foundation::to_string(g_cl.m_window.values()[2]) + ' ' +
+                  foundation::to_string(g_cl.m_window.values()[3]);
 
             set_frame_parameter(project, "crop_window", crop_window);
         }

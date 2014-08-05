@@ -107,7 +107,7 @@ class DLLSYMBOL Scene
     bool on_frame_begin(
         const Project&              project,
 #ifdef WITH_OSL
-        OSL::ShadingSystem*         shading_system,
+        OSL::ShadingSystem&         shading_system,
 #endif
         foundation::AbortSwitch*    abort_switch = 0);
 

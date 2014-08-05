@@ -229,7 +229,7 @@ namespace
     bool invoke_on_frame_begin(
         const Project&          project,
         EntityCollection&       entities,
-        OSL::ShadingSystem*     shading_system,
+        OSL::ShadingSystem&     shading_system,
         AbortSwitch*            abort_switch)
     {
         bool success = true;
@@ -260,7 +260,7 @@ namespace
 bool Scene::on_frame_begin(
     const Project&          project,
 #ifdef WITH_OSL
-    OSL::ShadingSystem*     shading_system,
+    OSL::ShadingSystem&     shading_system,
 #endif
     AbortSwitch*            abort_switch)
 {
