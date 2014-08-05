@@ -319,16 +319,17 @@ int main(int argc, const char* argv[])
     const FluffParams params(cl);
 
     // Construct the schema file path.
-    const string schema_filepath =
-        (filesystem::path(Application::get_root_path())
-        / "schemas" / "project.xsd").string();
+    const filesystem::path schema_filepath =
+          filesystem::path(Application::get_root_path())
+        / "schemas"
+        / "project.xsd";
 
     // Read the input project from disk.
     ProjectFileReader reader;
     auto_release_ptr<Project> project(
         reader.read(
             input_filepath.c_str(),
-            schema_filepath.c_str()));
+            schema_filepath.string().c_str()));
 
     // Bail out if the project couldn't be loaded.
     if (project.get() == 0)

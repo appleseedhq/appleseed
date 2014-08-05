@@ -285,7 +285,7 @@ class ErrorLogger
     // Constructor.
     ErrorLogger(
         Logger&             logger,
-        const std::string&  input_filename);
+        const std::string&  input_filepath);
 
     // Reset the error handler object on its reuse.
     virtual void resetErrors();
@@ -306,7 +306,7 @@ class ErrorLogger
 
   private:
     Logger&             m_logger;
-    const std::string   m_input_filename;
+    const std::string   m_input_filepath;
 
     size_t              m_warning_count;
     size_t              m_error_count;

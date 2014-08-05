@@ -151,12 +151,12 @@ void ProjectManager::slot_load_project_async_complete()
 
 string ProjectManager::get_project_schema_filepath()
 {
-    const filesystem::path schema_path =
+    const filesystem::path schema_filepath =
           filesystem::path(Application::get_root_path())
         / "schemas"
         / "project.xsd";
 
-    return schema_path.string();
+    return schema_filepath.string();
 }
 
 bool ProjectManager::do_load_project(const string& filepath)

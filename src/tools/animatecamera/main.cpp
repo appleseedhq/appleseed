@@ -193,8 +193,8 @@ namespace
 
         static auto_release_ptr<Project> load_master_project()
         {
-            // Construct the schema filename.
-            const filesystem::path schema_path =
+            // Construct the schema file path.
+            const filesystem::path schema_filepath =
                   filesystem::path(Application::get_root_path())
                 / "schemas"
                 / "project.xsd";
@@ -204,7 +204,7 @@ namespace
             auto_release_ptr<Project> project(
                 reader.read(
                     g_cl.m_filenames.values()[0].c_str(),
-                    schema_path.string().c_str()));
+                    schema_filepath.string().c_str()));
 
             // Bail out if the master project file couldn't be read.
             if (project.get() == 0)

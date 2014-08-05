@@ -73,16 +73,17 @@ int main(int argc, const char* argv[])
     const string& input_filepath = cl.m_filename.values()[0];
 
     // Construct the schema file path.
-    const string schema_filepath =
-        (filesystem::path(Application::get_root_path())
-        / "schemas" / "project.xsd").string();
+    const filesystem::path schema_filepath =
+          filesystem::path(Application::get_root_path())
+        / "schemas"
+        / "project.xsd";
 
     // Read the input project from disk.
     ProjectFileReader reader;
     auto_release_ptr<Project> project(
         reader.read(
             input_filepath.c_str(),
-            schema_filepath.c_str(),
+            schema_filepath.string().c_str(),
             ProjectFileReader::OmitReadingMeshFiles | ProjectFileReader::OmitProjectFileUpdate));
 
     // Bail out if the project couldn't be loaded.

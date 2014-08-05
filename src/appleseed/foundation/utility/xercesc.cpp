@@ -118,9 +118,9 @@ bool XercesCContext::is_initialized() const
 
 ErrorLogger::ErrorLogger(
     Logger&         logger,
-    const string&   input_filename)
+    const string&   input_filepath)
   : m_logger(logger)
-  , m_input_filename(input_filename)
+  , m_input_filepath(input_filepath)
 {
     resetErrors();
 }
@@ -159,7 +159,7 @@ void ErrorLogger::fatalError(const SAXParseException& e)
         LOG_ERROR(
             m_logger,
             "failed to open %s for reading.",
-            m_input_filename.c_str());
+            m_input_filepath.c_str());
         break;
 
       // For now, all other errors will be reported as is.
@@ -195,7 +195,7 @@ void ErrorLogger::print(
         m_logger,
         category,
         "while reading %s: %s.",
-        m_input_filename.c_str(),
+        m_input_filepath.c_str(),
         transcode(e.getMessage()).c_str());
 }
 
