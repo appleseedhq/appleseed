@@ -362,7 +362,7 @@ size_t BezierCurveBase<T, N>::compute_recursion_depth(const ValueType epsilon) c
     if (N < 2)
         return 0;
 
-    ValueType l0 = std::numeric_limits<ValueType>::max();
+    ValueType l0 = -std::numeric_limits<ValueType>::max();
 
     for (size_t i = 0; i <= N - 2; ++i)
     {
