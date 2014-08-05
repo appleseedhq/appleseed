@@ -61,6 +61,8 @@ class CommandLineHandler
     foundation::ValueOptionHandler<double>          m_tip_width;
     foundation::ValueOptionHandler<double>          m_curliness;
     foundation::ValueOptionHandler<size_t>          m_presplits;
+    foundation::ValueOptionHandler<std::string>     m_include;
+    foundation::ValueOptionHandler<std::string>     m_exclude;
 
     // Constructor.
     CommandLineHandler();

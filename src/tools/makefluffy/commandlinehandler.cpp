@@ -106,6 +106,22 @@ CommandLineHandler::CommandLineHandler()
     m_presplits.set_exact_value_count(1);
     m_presplits.set_default_values(make_vector<size_t>(0));
     parser().add_option_handler(&m_presplits);
+
+    m_include.add_name("--include");
+    m_include.add_name("-i");
+    m_include.set_description("only consider object instances whose names match a given regex");
+    m_include.set_syntax("regex");
+    m_include.set_exact_value_count(1);
+    m_include.set_default_values(make_vector(".*"));        // match everything
+    parser().add_option_handler(&m_include);
+
+    m_exclude.add_name("--exclude");
+    m_exclude.add_name("-e");
+    m_exclude.set_description("exclude object instances whose names match a given regex");
+    m_exclude.set_syntax("regex");
+    m_exclude.set_exact_value_count(1);
+    m_exclude.set_default_values(make_vector("/(?!)/"));    // match nothing -- http://stackoverflow.com/a/4589566/393756
+    parser().add_option_handler(&m_exclude);
 }
 
 void CommandLineHandler::print_program_usage(

@@ -47,6 +47,7 @@
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/autoreleaseptr.h"
+#include "foundation/utility/filter.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/uid.h"
 
@@ -76,16 +77,22 @@ namespace
 
     struct FluffParams
     {
-        size_t  m_curve_count;
-        double  m_curve_length;
-        double  m_root_width;
-        double  m_tip_width;
-        double  m_length_fuzziness;
-        double  m_curliness;
-        size_t  m_split_count;
+        RegExFilter m_include_filter;
+        RegExFilter m_exclude_filter;
+
+        size_t      m_curve_count;
+        double      m_curve_length;
+        double      m_root_width;
+        double      m_tip_width;
+        double      m_length_fuzziness;
+        double      m_curliness;
+        size_t      m_split_count;
 
         explicit FluffParams(const CommandLineHandler& cl)
         {
+            m_include_filter.set_pattern(cl.m_include.values()[0].c_str());
+            m_exclude_filter.set_pattern(cl.m_exclude.values()[0].c_str());
+
             m_curve_count = cl.m_curves.values()[0];
             m_curve_length = cl.m_length.values()[0];
             m_root_width = cl.m_root_width.values()[0];
@@ -234,54 +241,60 @@ namespace
     {
         const ObjectContainer& objects = assembly.objects();
 
-        // Link object instances to objects.
-        map<UniqueID, vector<UniqueID> > objects_to_instances;
+        typedef vector<const ObjectInstance*> ObjectInstanceVector;
+        typedef map<const MeshObject*, ObjectInstanceVector> ObjectToInstanceMap;
+
+        // Establish an object -> object instance mapping.
+        ObjectToInstanceMap objects_to_instances;
         for (const_each<ObjectInstanceContainer> i = assembly.object_instances(); i; ++i)
         {
             const ObjectInstance& object_instance = *i;
+
+            // Skip excluded or non-included object instances.
+            if (!params.m_include_filter.accepts(object_instance.get_name()) ||
+                params.m_exclude_filter.accepts(object_instance.get_name()))
+                continue;
+
+            // Find the object referenced by this instance.
             const Object* object = object_instance.find_object();
-            if (object)
-                objects_to_instances[object->get_uid()].push_back(object_instance.get_uid());
+            if (object == 0)
+                continue;
+
+            // Skip non-mesh objects.
+            if (strcmp(object->get_model(), MeshObjectFactory::get_model()) != 0)
+                continue;
+
+            // Insert the (object, instance) pair into the mapping.
+            objects_to_instances[
+                static_cast<const MeshObject*>(object)].push_back(&object_instance);
         }
 
-        // Index-based iteration since we add objects during iteration.
-        for (size_t i = 0; i < objects.size(); ++i)
+        // Loop over the collected objects.
+        for (const_each<ObjectToInstanceMap> i = objects_to_instances; i; ++i)
         {
-            const Object& object = *objects.get_by_index(i);
+            const MeshObject& support_object = *i->first;
+            const ObjectInstanceVector& support_object_instances = i->second;
 
-            if (strcmp(object.get_model(), MeshObjectFactory::get_model()))
-                continue;
-
-            if (string(object.get_name()).find("light") != string::npos)
-                continue;
-
+            // Create a curve object.
             auto_release_ptr<CurveObject> curve_object =
-                create_curve_object(
-                    assembly,
-                    static_cast<const MeshObject&>(object),
-                    params);
+                create_curve_object(assembly, support_object, params);
 
-            const vector<UniqueID>& support_instances = objects_to_instances[object.get_uid()];
-
-            for (size_t j = 0; j < support_instances.size(); ++j)
+            // Instantiate the curve object into the assembly.
+            for (const_each<ObjectInstanceVector> j = support_object_instances; j; ++j)
             {
-                const ObjectInstance* support_instance =
-                    assembly.object_instances().get_by_uid(support_instances[j]);
-                assert(support_instance);
-
+                const ObjectInstance& support_instance = **j;
                 const string curve_object_instance_name = string(curve_object->get_name()) + "_inst";
-                auto_release_ptr<ObjectInstance> curve_object_instance =
+                assembly.object_instances().insert(
                     ObjectInstanceFactory::create(
                         curve_object_instance_name.c_str(),
-                        support_instance->get_parameters(),
+                        support_instance.get_parameters(),
                         curve_object->get_name(),
-                        support_instance->get_transform(),
-                        support_instance->get_front_material_mappings(),
-                        support_instance->get_back_material_mappings());
-
-                assembly.object_instances().insert(curve_object_instance);
+                        support_instance.get_transform(),
+                        support_instance.get_front_material_mappings(),
+                        support_instance.get_back_material_mappings()));
             }
 
+            // Insert the curve object into the assembly.
             assembly.objects().insert(auto_release_ptr<Object>(curve_object));
         }
     }
