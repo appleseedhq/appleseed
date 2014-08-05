@@ -41,7 +41,7 @@
 #include "OSL/oslexec.h"
 #endif
 
-//OpenImageIO headers.
+// OpenImageIO headers.
 #ifdef WITH_OIIO
 #include "OpenImageIO/texture.h"
 #endif

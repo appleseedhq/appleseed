@@ -38,7 +38,7 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 
-//OpenImageIO headers.
+// OpenImageIO headers.
 #ifdef WITH_OIIO
 #include "OpenImageIO/texture.h"
 #endif
