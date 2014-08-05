@@ -35,6 +35,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/modeling/material/disneymaterial.h"
+#include "renderer/modeling/project/project.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
@@ -45,14 +46,23 @@
 #include <SeExprEditor/SeExprEdControlCollection.h>
 
 // Qt headers.
+#include <QFileDialog>
+#include <QHBoxLayout>
 #include <QLabel>
 #include <QPushButton>
 #include <QScrollArea>
+#include <QString>
 #include <QVBoxLayout>
 
-// Standard headers.
-#include <string>
+// boost headers.
+#include "boost/filesystem/operations.hpp"
+#include "boost/filesystem/path.hpp"
 
+// Standard headers.
+#include <fstream>
+#include <sstream>
+
+using namespace boost;
 using namespace foundation;
 using namespace renderer;
 using namespace std;
@@ -61,19 +71,21 @@ namespace appleseed {
 namespace studio {
 
 ExpressionEditorWindow::ExpressionEditorWindow(
-    const QString& widget_name,
-    const string& expression,
-    QWidget* parent)
-  : m_widget_name(widget_name)
+    const Project&  project,
+    const QString&  widget_name,
+    const string&   expression,
+    QWidget*        parent)
+  : QWidget(parent)
+  , m_project(project)
+  , m_widget_name(widget_name)
   , m_ui(new Ui::ExpressionEditorWindow())
-  , QWidget(parent)
 {
     m_ui->setupUi(this);
     setWindowFlags(Qt::Tool);
     setAttribute(Qt::WA_DeleteOnClose);
     QVBoxLayout* root_layout = new QVBoxLayout(m_ui->scrollarea);
 
-    // Expression controls
+    // Expression controls.
     SeExprEdControlCollection *controls = new SeExprEdControlCollection();
     QScrollArea* controls_scrollarea = new QScrollArea(this);
     controls_scrollarea->setObjectName("expression_controls");
@@ -81,6 +93,19 @@ ExpressionEditorWindow::ExpressionEditorWindow(
     controls_scrollarea->setWidgetResizable(true);
     controls_scrollarea->setWidget(controls);
     root_layout->addWidget(controls_scrollarea);
+
+    // Clear, Save, Load buttons.
+    QHBoxLayout* file_buttonbox = new QHBoxLayout();
+    QPushButton* clear_button = new QPushButton("Clear");
+    connect(clear_button, SIGNAL(clicked()), SLOT(slot_clear_expression()));
+    QPushButton* save_button = new QPushButton("Save");
+    connect(save_button, SIGNAL(clicked()), SLOT(slot_save_script()));
+    QPushButton* load_button = new QPushButton("Load");
+    connect(load_button, SIGNAL(clicked()), SLOT(slot_load_script()));
+    file_buttonbox->addWidget(clear_button);
+    file_buttonbox->addWidget(save_button);
+    file_buttonbox->addWidget(load_button);
+    root_layout->addLayout(file_buttonbox);
 
     QLabel* label_editor = new QLabel("SeExpression:");
     root_layout->addWidget(label_editor);
@@ -97,7 +122,7 @@ ExpressionEditorWindow::ExpressionEditorWindow(
 
     QPushButton* apply_button = m_ui->buttonbox->button(QDialogButtonBox::Apply);
 
-    // Create connections
+    // Create connections.
     connect(m_ui->buttonbox, SIGNAL(accepted()), SLOT(slot_accept()));
     connect(apply_button, SIGNAL(clicked()), SLOT(slot_apply()));
     connect(m_ui->buttonbox, SIGNAL(rejected()), SLOT(slot_cancel()));
@@ -137,6 +162,80 @@ void ExpressionEditorWindow::slot_apply()
 void ExpressionEditorWindow::slot_cancel()
 {
     close();
+}
+
+void ExpressionEditorWindow::slot_clear_expression()
+{
+    m_editor->setExpr("");
+}
+
+void ExpressionEditorWindow::slot_save_script()
+{
+    QFileDialog::Options options;
+    QString selected_filter;
+
+    if (m_script_filepath.empty())
+    {
+        QString filepath =
+            QFileDialog::getSaveFileName(
+                this,
+                "Save As...",
+                QString::fromStdString(get_project_path()),
+                "Expression scripts (*.se)",
+                &selected_filter,
+                options);
+
+        if (!filepath.isEmpty())
+        {
+            filepath = QDir::toNativeSeparators(filepath);
+            m_script_filepath = filepath.toStdString();
+        }
+    }
+
+    if (!m_script_filepath.empty())
+    {
+        ofstream script_file(m_script_filepath.c_str());
+        script_file << m_editor->getExpr();
+        script_file.close();
+    }
+}
+
+void ExpressionEditorWindow::slot_load_script()
+{
+    QFileDialog::Options options;
+    QString selected_filter;
+
+    QString filepath =
+        QFileDialog::getOpenFileName(
+            this,
+            "Open...",
+            QString::fromStdString(get_project_path()),
+            "Expression scripts (*.se)",
+            &selected_filter,
+            options);
+
+    if (!filepath.isEmpty())
+    {
+        filepath = QDir::toNativeSeparators(filepath);
+
+        // Read script and set it as an expression.
+        ifstream script_file(filepath.toStdString().c_str());
+        stringstream script_buffer;
+        script_buffer << script_file.rdbuf();
+        script_file.close();
+
+        m_editor->setExpr(script_buffer.str());
+        apply_expression();
+    }
+}
+
+string ExpressionEditorWindow::get_project_path()
+{
+    const filesystem::path project_root_path = filesystem::path(m_project.get_path()).parent_path();
+    const filesystem::path file_path = absolute("script.se", project_root_path);
+    const filesystem::path file_root_path = file_path.parent_path();
+
+    return file_root_path.string();
 }
 
 }       // namespace studio
