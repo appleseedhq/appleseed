@@ -41,10 +41,13 @@
 
 // SeExpr headers
 #include "SeExpression.h"
+#include "SeExprFunc.h"
+#include "SeExprNode.h"
 
 // Boost headers.
 #include "boost/algorithm/string.hpp"
 #include "boost/algorithm/string/split.hpp"
+#include "boost/ptr_container/ptr_vector.hpp"
 #include "boost/thread/locks.hpp"
 #include "boost/thread/mutex.hpp"
 
@@ -64,6 +67,85 @@ namespace renderer
 
 namespace
 {
+    class TextureSeExprFunc
+      : public SeExprFuncX
+    {
+      public:
+        TextureSeExprFunc()
+          : SeExprFuncX(true)
+          , m_texture_system(0)
+        {
+            m_texture_options.nchannels = 3;
+        }
+
+        void set_texture_system(OIIO::TextureSystem*  texture_system)
+        {
+            m_texture_system = texture_system;
+        }
+
+        SeVec3d evaluate_texture(
+            OIIO::TextureSystem* texture_system,
+            const float u,
+            const float v) const
+        {
+            float color[3];
+            texture_system->texture(
+                m_texture_filename,
+                m_texture_options,
+                u,
+                v,
+                0.0f,
+                0.0f,
+                0.0f,
+                0.0f,
+                color);
+
+            return SeVec3d(color[0], color[1], color[2]);
+        }
+
+        virtual bool prep(SeExprFuncNode* node, bool /*wantVec*/) OVERRIDE
+        {
+            if (node->nargs() != 3)
+            {
+                node->addError("3 arguments expected.");
+                return false;
+            }
+
+            if (!node->isStrArg(0))
+            {
+                node->addError("First argument must be a texture filename.");
+                return false;
+            }
+
+            if (node->getStrArg(0).empty())
+            {
+                node->addError("Filepath to texture is empty.");
+                return false;
+            }
+
+            if (!node->child(1)->prep(0) || !node->child(2)->prep(0))
+                return false;
+
+            m_texture_filename = OIIO::ustring(node->getStrArg(0), 0);
+
+            return true;
+        }
+
+        virtual void eval(const SeExprFuncNode* node, SeVec3d& result) const OVERRIDE
+        {
+            SeVec3d u, v;
+            node->child(1)->eval(u);
+            node->child(2)->eval(v);
+
+            result = evaluate_texture(m_texture_system, static_cast<float>(u[0]), static_cast<float>(v[0]));
+        }
+
+      private:
+        OIIO::TextureSystem*        m_texture_system;
+        OIIO::ustring               m_texture_filename;
+        mutable OIIO::TextureOpt    m_texture_options;
+    };
+
     class SeAppleseedExpr
       : public SeExpression
     {
@@ -88,14 +170,24 @@ namespace
 
         SeAppleseedExpr()
           : SeExpression()
+          , m_is_texture_expr(false)
+          , m_num_functions(0)
         {
         }
 
         SeAppleseedExpr(const string& expr)
           : SeExpression(expr)
+          , m_is_texture_expr(false)
+          , m_num_functions(0)
         {
             m_vars["u"] = Var(0.0);
             m_vars["v"] = Var(0.0);
+        }
+
+        ~SeAppleseedExpr()
+        {
+            m_functions.clear();
+            m_functions_x.clear();
         }
 
         void set_expr(const string& e)
@@ -103,6 +195,14 @@ namespace
             SeExpression::setExpr(e);
             m_vars["u"] = Var(0.0);
             m_vars["v"] = Var(0.0);
+        }
+
+        bool is_simple_texture_expr()
+        {
+            return
+                m_num_functions == 1 &&
+                m_is_texture_expr &&
+                m_vars.size() == 2;
         }
 
         SeExprVarRef* resolveVar(const string& name) const OVERRIDE
@@ -115,7 +215,54 @@ namespace
             return 0;
         }
 
-        mutable map<string, Var> m_vars;
+        SeExprFunc* resolveFunc(const string& name) const OVERRIDE
+        {
+            m_num_functions++;
+            if (name == "texture")
+            {
+                TextureSeExprFunc* texture_function_x = new TextureSeExprFunc();
+                SeExprFunc* texture_function = new SeExprFunc(*texture_function_x, 3, 3);
+                m_functions_x.push_back(texture_function_x);
+                m_functions.push_back(texture_function);
+                m_is_texture_expr = true;
+                return texture_function;
+            }
+            return SeExpression::resolveFunc(name);
+        }
+
+        Color3d evaluate_texture(
+            const ShadingPoint&     shading_point,
+            OIIO::TextureSystem&    texture_system) const
+        {
+            float u, v;
+            u = static_cast<float>(shading_point.get_uv(0)[0]);
+            v = static_cast<float>(shading_point.get_uv(0)[1]);
+
+            SeVec3d result = m_functions_x[0].evaluate_texture(&texture_system, u, v);
+            return Color3d(result[0], result[1], result[2]);
+        }
+
+        Color3d update_and_evaluate(
+            const ShadingPoint&     shading_point,
+            OIIO::TextureSystem&    texture_system)
+        {
+            for (each<ptr_vector<TextureSeExprFunc> > it = m_functions_x; it; ++it)
+            {
+                it->set_texture_system(&texture_system);
+            }
+            m_vars["u"] = SeAppleseedExpr::Var(shading_point.get_uv(0)[0]);
+            m_vars["v"] = SeAppleseedExpr::Var(shading_point.get_uv(0)[1]);
+
+            SeVec3d result = evaluate();
+            return Color3d(result[0], result[1], result[2]);
+        }
+
+      private:
+        mutable map<string, Var>                m_vars;
+        mutable ptr_vector<TextureSeExprFunc>   m_functions_x;
+        mutable ptr_vector<SeExprFunc>          m_functions;
+        mutable bool                            m_is_texture_expr;
+        mutable int                             m_num_functions;
     };
 
     void report_expression_error(
@@ -247,8 +394,6 @@ class DisneyLayerParam
             m_constant_value = Color3d(result[0], result[1], result[2]);
         }
 
-        // Check for texture lookups here...
-
         return true;
     }
 
@@ -259,30 +404,12 @@ class DisneyLayerParam
         if (m_is_constant)
             return m_constant_value;
 
-        if (!m_texture_filename.empty())
-        {
-            float val[3];
-            texture_system.texture(
-                m_texture_filename,
-                m_texture_options,
-                static_cast<float>(shading_point.get_uv(0)[0]),
-                static_cast<float>(shading_point.get_uv(0)[1]),
-                0.0f,
-                0.0f,
-                0.0f,
-                0.0f,
-                val);
-            
-            return Color3d(val[0], val[1], val[2]);
-        }
-        
+        if (m_expression.is_simple_texture_expr())
+            return m_expression.evaluate_texture(shading_point, texture_system);
+
         lock_guard<mutex> lock(m_mutex);
 
-        m_expression.m_vars["u"] = SeAppleseedExpr::Var(shading_point.get_uv(0)[0]);
-        m_expression.m_vars["v"] = SeAppleseedExpr::Var(shading_point.get_uv(0)[1]);
-
-        const SeVec3d result = m_expression.evaluate();
-        return Color3d(result[0], result[1], result[2]);
+        return m_expression.update_and_evaluate(shading_point, texture_system);
     }
 
   private:
@@ -293,9 +420,7 @@ class DisneyLayerParam
     bool                        m_is_constant;
     Color3d                     m_constant_value;
 
-    OIIO::ustring               m_texture_filename;
     mutable OIIO::TextureOpt    m_texture_options;
-    
     mutable SeAppleseedExpr     m_expression;
 
     // TODO: this is horrible. Remove it ASAP.
