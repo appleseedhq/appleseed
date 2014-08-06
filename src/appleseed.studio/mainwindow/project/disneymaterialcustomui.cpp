@@ -184,11 +184,8 @@ void DisneyMaterialCustomUI::slot_open_file_picker(const QString& widget_name)
     IInputWidgetProxy* widget_proxy = m_widget_proxies.get(widget_name.toStdString());
 
     const filesystem::path project_root_path = filesystem::path(m_project.get_path()).parent_path();
-    std::cout << "project_root_path" << project_root_path << std::endl;
     const filesystem::path file_path = absolute(widget_proxy->get(), project_root_path);
-    std::cout << "file_path" << file_path << std::endl;
     const filesystem::path file_root_path = file_path.parent_path();
-    std::cout << "file_root_path" << file_root_path << std::endl;
 
     QFileDialog::Options options;
     QString selected_filter;
