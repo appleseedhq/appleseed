@@ -504,8 +504,48 @@ closure color refraction(normal N, float eta)
         return refraction(N, eta, 1.0);
 }
 
+closure color microfacet_refraction(string distribution, normal N, vector T, float xalpha,
+                         float yalpha, float from_ior, float to_ior) BUILTIN;
+
+closure color microfacet_refraction(string distribution, normal N, float alpha,
+                         float from_ior, float to_ior)
+{
+    return microfacet_refraction(distribution, N, vector(0), alpha, alpha, from_ior, to_ior);
+}
+
+closure color microfacet_reflection(string distribution, normal N, vector T, float xalpha,
+                         float yalpha, float eta) BUILTIN;
+
+closure color microfacet_reflection(string distribution, normal N, float alpha, float eta)
+{
+    return microfacet_reflection(distribution, N, vector(0), alpha, alpha, eta);
+}
+
 closure color microfacet(string distribution, normal N, vector T, float xalpha,
-                         float yalpha, float eta, int refract) BUILTIN;
+                         float yalpha, float eta, int refract)
+{
+    if (refract)
+    {
+        // Assume one of the mediums is air.
+
+        float from_ior, to_ior;
+        
+        if (eta > 1.0)
+        {
+            from_ior = 1.0;
+            to_ior = 1.0 / eta;
+        }
+        else
+        {
+            from_ior = eta;
+            to_ior = 1.0;
+        }
+        
+        return microfacet_refraction(distribution, N, T, xalpha, yalpha, from_ior, to_ior);
+    }
+    
+    return microfacet_reflection(distribution, N, T, xalpha, yalpha, eta);
+}
 
 closure color microfacet(string distribution, normal N, float alpha, float eta, int refr)
 {

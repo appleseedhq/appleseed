@@ -90,12 +90,17 @@ enum ClosureID
     HoldoutID,
     TransparentID,
 
-    // Microfacets are special.
-    MicrofacetID,
-    MicrofacetBeckmannReflectionID = MicrofacetID,
+    // Microfacets shoud always be last.
+    MicrofacetReflectionID,
+    MicrofacetRefractionID,
+    
+    MicrofacetBeckmannReflectionID,
     MicrofacetBlinnReflectionID,
     MicrofacetGGXReflectionID,
 
+    MicrofacetBeckmannRefractionID,
+    MicrofacetGGXRefractionID,
+    
     NumClosuresIDs
 };
 

@@ -126,7 +126,7 @@ namespace
     OSL::ustring blinn_mdf_name("blinn");
     OSL::ustring ggx_mdf_name("ggx");
 
-    struct MicrofacetBSDFClosureParams
+    struct MicrofacetBRDFClosureParams
     {
         OSL::ustring    dist;
         OSL::Vec3       N;
@@ -134,7 +134,17 @@ namespace
         float           xalpha;
         float           yalpha;
         float           eta;
-        int             refract;
+    };
+
+    struct MicrofacetBTDFClosureParams
+    {
+        OSL::ustring    dist;
+        OSL::Vec3       N;
+        OSL::Vec3       T;
+        float           xalpha;
+        float           yalpha;
+        float           from_ior;
+        float           to_ior;
     };
 }
 
@@ -264,51 +274,79 @@ void CompositeClosure::process_closure_tree(
                 }
                 break;
 
-              case MicrofacetID:
+              case MicrofacetReflectionID:
                 {
-                    const MicrofacetBSDFClosureParams* p =
-                        reinterpret_cast<const MicrofacetBSDFClosureParams*>(c->data());
+                    const MicrofacetBRDFClosureParams* p =
+                    reinterpret_cast<const MicrofacetBRDFClosureParams*>(c->data());
+                    Microfacet2BRDFInputValues values;
+                    values.m_ax = p->xalpha;
+                    values.m_ay = p->yalpha;
+                    values.m_eta = p->eta;
 
-                    if (p->refract)
+                    if (p->dist == blinn_mdf_name)
                     {
-                        // TODO: implement this
-                        // for now, we ignore Microfacet BTDFs
+                        add_closure<Microfacet2BRDFInputValues>(
+                            MicrofacetBlinnReflectionID,
+                            w,
+                            Vector3d(p->N),
+                            Vector3d(p->T),
+                            values);
                     }
-                    else
+                    else if (p->dist == ggx_mdf_name)
                     {
-                        Microfacet2BRDFInputValues values;
-                        values.m_ax = p->xalpha;
-                        values.m_ay = p->yalpha;
-                        values.m_eta = p->eta;
+                        add_closure<Microfacet2BRDFInputValues>(
+                            MicrofacetGGXReflectionID,
+                            w,
+                            Vector3d(p->N),
+                            Vector3d(p->T),
+                            values);
+                    }
+                    else // beckmann by default
+                    {
+                        add_closure<Microfacet2BRDFInputValues>(
+                            MicrofacetBeckmannReflectionID,
+                            w,
+                            Vector3d(p->N),
+                            Vector3d(p->T),
+                            values);
+                    }
+                }
+                break;
 
-                        if (p->dist == blinn_mdf_name)
-                        {
-                            add_closure<Microfacet2BRDFInputValues>(
-                                MicrofacetBlinnReflectionID,
-                                w,
-                                Vector3d(p->N),
-                                Vector3d(p->T),
-                                values);
-                        }
-                        else if (p->dist == ggx_mdf_name)
-                        {
-                            add_closure<Microfacet2BRDFInputValues>(
-                                MicrofacetGGXReflectionID,
-                                w,
-                                Vector3d(p->N),
-                                Vector3d(p->T),
-                                values);
-                        }
-                        else // beckmann by default
-                        {
-                            add_closure<Microfacet2BRDFInputValues>(
-                                MicrofacetBeckmannReflectionID,
-                                w,
-                                Vector3d(p->N),
-                                Vector3d(p->T),
-                                values);
-                        }
+              case MicrofacetRefractionID:
+                {
+                    const MicrofacetBTDFClosureParams* p =
+                    reinterpret_cast<const MicrofacetBTDFClosureParams*>(c->data());
+                    //Microfacet2BTDFInputValues values;
+                    //values.m_ax = p->xalpha;
+                    //values.m_ay = p->yalpha;
+                    //values.m_from_ior = p->from_ior;
+                    //values.m_to_ior = p->to_ior;
+
+                    if (p->dist == ggx_mdf_name)
+                    {
+                        /*
+                        add_closure<Microfacet2BTDFInputValues>(
+                            MicrofacetGGXRefractionID,
+                            w,
+                            Vector3d(p->N),
+                            Vector3d(p->T),
+                            values);
+                        */
                     }
+                    else // beckmann by default
+                    {
+                        /*
+                        add_closure<Microfacet2BTDFInputValues>(
+                            MicrofacetBeckmannRefractionID,
+                            w,
+                            Vector3d(p->N),
+                            Vector3d(p->T),
+                            values);
+                        */
+                    }
+
+                    RENDERER_LOG_WARNING("maximum number of closures in OSL shadergroup exceeded; ignoring closure.");            
                 }
                 break;
 
@@ -605,13 +643,22 @@ void register_appleseed_closures(OSL::ShadingSystem& shading_system)
 
         { "holdout", HoldoutID, { CLOSURE_FINISH_PARAM(EmptyClosureParams) } },
 
-        { "microfacet", MicrofacetID, { CLOSURE_STRING_PARAM(MicrofacetBSDFClosureParams, dist),
-                                        CLOSURE_VECTOR_PARAM(MicrofacetBSDFClosureParams, N),
-                                        CLOSURE_VECTOR_PARAM(MicrofacetBSDFClosureParams, T),
-                                        CLOSURE_FLOAT_PARAM(MicrofacetBSDFClosureParams, xalpha),
-                                        CLOSURE_FLOAT_PARAM(MicrofacetBSDFClosureParams, yalpha),
-                                        CLOSURE_FLOAT_PARAM(MicrofacetBSDFClosureParams, eta),
-                                        CLOSURE_FINISH_PARAM(MicrofacetBSDFClosureParams) } },
+        { "microfacet_reflection", MicrofacetReflectionID, { CLOSURE_STRING_PARAM(MicrofacetBRDFClosureParams, dist),
+                                                             CLOSURE_VECTOR_PARAM(MicrofacetBRDFClosureParams, N),
+                                                             CLOSURE_VECTOR_PARAM(MicrofacetBRDFClosureParams, T),
+                                                             CLOSURE_FLOAT_PARAM(MicrofacetBRDFClosureParams, xalpha),
+                                                             CLOSURE_FLOAT_PARAM(MicrofacetBRDFClosureParams, yalpha),
+                                                             CLOSURE_FLOAT_PARAM(MicrofacetBRDFClosureParams, eta),
+                                                             CLOSURE_FINISH_PARAM(MicrofacetBRDFClosureParams) } },
+
+        { "microfacet_refraction", MicrofacetRefractionID, { CLOSURE_STRING_PARAM(MicrofacetBTDFClosureParams, dist),
+                                                             CLOSURE_VECTOR_PARAM(MicrofacetBTDFClosureParams, N),
+                                                             CLOSURE_VECTOR_PARAM(MicrofacetBTDFClosureParams, T),
+                                                             CLOSURE_FLOAT_PARAM(MicrofacetBTDFClosureParams, xalpha),
+                                                             CLOSURE_FLOAT_PARAM(MicrofacetBTDFClosureParams, yalpha),
+                                                             CLOSURE_FLOAT_PARAM(MicrofacetBTDFClosureParams, from_ior),
+                                                             CLOSURE_FLOAT_PARAM(MicrofacetBTDFClosureParams, to_ior),
+                                                             CLOSURE_FINISH_PARAM(MicrofacetBTDFClosureParams) } },
 
         { "reflection", ReflectionID, { CLOSURE_VECTOR_PARAM(ReflectionBRDFClosureParams, N),
                                         CLOSURE_FINISH_PARAM(ReflectionBRDFClosureParams) } },
