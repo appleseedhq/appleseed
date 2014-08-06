@@ -192,9 +192,9 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
             , *texture_system
 #endif
 #ifdef WITH_OSL
-            ,sg_exec
+            , sg_exec
 #endif
-            ,0);
+            , 0);
 
         ShadingPoint shading_point;
         ShadingPointBuilder builder(shading_point);

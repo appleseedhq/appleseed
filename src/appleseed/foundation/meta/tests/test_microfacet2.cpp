@@ -58,7 +58,7 @@ TEST_SUITE(Foundation_Math_Microfacet2)
             static const size_t Bases[] = { 2 };
             const Vector2d s = hammersley_sequence<double, 2>(Bases, i, sample_count);
 
-            const Vector<typename MDF::ValueType,3> h = sample_hemisphere_uniform(s);
+            const Vector<typename MDF::ValueType, 3> h = sample_hemisphere_uniform(s);
             const double value = mdf.D(h, alpha_x, alpha_y);
 
             if (value < 0.0)
