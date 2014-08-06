@@ -161,14 +161,17 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             const char*             material_name,
             const ParamArray&       params = ParamArray())
         {
+            StringDictionary material_mappings;
+            material_mappings.insert("material", material_name);
+
             m_assembly->object_instances().insert(
                 ObjectInstanceFactory::create(
                     name,
                     params,
                     "plane",
                     Transformd::from_local_to_parent(Matrix4d::translation(position)),
-                    StringDictionary()
-                        .insert("material", material_name)));
+                    material_mappings,
+                    material_mappings));
         }
     };
 
