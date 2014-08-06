@@ -33,7 +33,8 @@
 #include "renderer/modeling/bsdf/diffusebtdf.h"
 #include "renderer/modeling/bsdf/disneybrdf.h"
 #include "renderer/modeling/bsdf/lambertianbrdf.h"
-#include "renderer/modeling/bsdf/microfacet2brdf.h"
+#include "renderer/modeling/bsdf/oslmicrofacetbrdf.h"
+#include "renderer/modeling/bsdf/oslmicrofacetbtdf.h"
 #include "renderer/modeling/bsdf/orennayarbrdf.h"
 #include "renderer/modeling/bsdf/specularbrdf.h"
 #include "renderer/modeling/bsdf/specularbtdf.h"
@@ -41,7 +42,6 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/image/color.h"
-#include "foundation/math/cdf.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 
@@ -91,8 +91,7 @@ enum ClosureID
     TransparentID,
 
     // Microfacets shoud always be last.
-    MicrofacetReflectionID,
-    MicrofacetRefractionID,
+    MicrofacetID,
     
     MicrofacetBeckmannReflectionID,
     MicrofacetBlinnReflectionID,
@@ -132,7 +131,8 @@ class APPLESEED_ALIGN(16) CompositeClosure
         DiffuseBTDFInputValues,
         DisneyBRDFInputValues,
         LambertianBRDFInputValues,
-        Microfacet2BRDFInputValues,
+        OSLMicrofacetBRDFInputValues,
+        OSLMicrofacetBTDFInputValues,
         OrenNayarBRDFInputValues,
         SpecularBRDFInputValues,
         SpecularBTDFInputValues> InputValuesTypeList;
@@ -156,8 +156,8 @@ class APPLESEED_ALIGN(16) CompositeClosure
     foundation::Vector3d            m_tangents[MaxClosureEntries];
     int                             m_num_closures;
     int                             m_num_bytes;
-    foundation::CDF<size_t, double> m_cdf;
     Spectrum                        m_spectrum_multipliers[MaxClosureEntries];
+    double                          m_cdf[MaxClosureEntries];
 
     void process_closure_tree(
         const OSL::ClosureColor*    closure,
@@ -210,7 +210,7 @@ inline ClosureID CompositeClosure::get_closure_type(const size_t index) const
 inline double CompositeClosure::get_closure_cdf_weight(const size_t index) const
 {
     assert(index < get_num_closures());
-    return m_cdf[index].second;
+    return m_cdf[index];
 }
 
 inline const Spectrum& CompositeClosure::get_closure_spectrum_multiplier(const size_t index) const

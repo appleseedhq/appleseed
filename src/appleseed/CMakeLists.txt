@@ -1199,8 +1199,6 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/lambertianbrdf.h
     renderer/modeling/bsdf/microfacetbrdf.cpp
     renderer/modeling/bsdf/microfacetbrdf.h
-    renderer/modeling/bsdf/microfacet2brdf.cpp
-    renderer/modeling/bsdf/microfacet2brdf.h
     renderer/modeling/bsdf/nullbsdf.h
     renderer/modeling/bsdf/orennayarbrdf.cpp
     renderer/modeling/bsdf/orennayarbrdf.h
@@ -1217,6 +1215,10 @@ list (APPEND renderer_modeling_bsdf_sources
 endif ()
 if (WITH_OSL)
     list (APPEND renderer_modeling_bsdf_sources
+        renderer/modeling/bsdf/oslmicrofacetbrdf.cpp
+        renderer/modeling/bsdf/oslmicrofacetbrdf.h
+        renderer/modeling/bsdf/oslmicrofacetbtdf.cpp
+        renderer/modeling/bsdf/oslmicrofacetbtdf.h
         renderer/modeling/bsdf/oslbsdf.cpp
         renderer/modeling/bsdf/oslbsdf.h
     )

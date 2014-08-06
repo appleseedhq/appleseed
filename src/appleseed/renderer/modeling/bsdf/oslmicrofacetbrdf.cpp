@@ -5,8 +5,8 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
 // Copyright (c) 2014 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@
 //
 
 // Interface header.
-#include "microfacet2brdf.h"
+#include "oslmicrofacetbrdf.h"
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -39,7 +39,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
-#include "foundation/math/fresnel.h"
 #include "foundation/math/microfacet2.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
@@ -66,23 +65,22 @@ namespace
 {
 
     //
-    // Microfacet2 BRDF.
+    // OSLMicrofacet BRDF.
     //
 
-    const char* Model = "microfacet2_brdf";
+    const char* Model = "osl_microfacet_brdf";
 
-    class Microfacet2BRDFImpl
+    class OSLMicrofacetBRDFImpl
       : public BSDF
     {
       public:
-        Microfacet2BRDFImpl(
+        OSLMicrofacetBRDFImpl(
             const char*         name,
             const ParamArray&   params)
           : BSDF(name, Reflective, Glossy, params)
         {
-            m_inputs.declare("ax", InputFormatScalar, "0.5");
-            m_inputs.declare("ay", InputFormatScalar, "0.5");
-            m_inputs.declare("eta", InputFormatScalar, "1.5");
+            m_inputs.declare("ax", InputFormatScalar, "0.1");
+            m_inputs.declare("ay", InputFormatScalar, "0.1");
         }
 
         virtual void release() OVERRIDE
@@ -145,7 +143,7 @@ namespace
 
             // Compute the incoming direction by sampling the MDF.
             sampling_context.split_in_place(2, 1);
-            const Vector2d s = sampling_context.next_vector2<2>();
+            const Vector2d s = sampling_context.next_vector2<2>();            
             const Vector3d m = m_mdf->sample(s, values->m_ax, values->m_ay);
             const Vector3d h = shading_basis.transform_to_parent(m);
 
@@ -171,8 +169,7 @@ namespace
                     values->m_ax,
                     values->m_ay);
 
-            const double F = values->m_eta == 0.0 ? 1.0 : fresnel_dielectric(cos_oh, values->m_eta);
-            value.set(static_cast<float>(D * G * F / (4.0 * cos_on * cos_in)));
+            value.set(static_cast<float>(D * G / (4.0 * cos_on * cos_in)));
             probability = m_mdf->pdf(m, values->m_ax, values->m_ay) / (4.0 * cos_oh);
             return Glossy;
         }
@@ -217,8 +214,7 @@ namespace
                     values->m_ay);
 
             const double cos_oh = dot(outgoing, h);
-            const double F = values->m_eta == 0.0 ? 1.0 : fresnel_dielectric(cos_oh, values->m_eta);
-            value.set(static_cast<float>(D * G * F / (4.0 * cos_on * cos_in)));
+            value.set(static_cast<float>(D * G / (4.0 * cos_on * cos_in)));
             return m_mdf->pdf(m, values->m_ax, values->m_ay) / (4.0 * cos_oh);
         }
 
@@ -252,30 +248,30 @@ namespace
         }
 
       private:
-        typedef Microfacet2BRDFInputValues InputValues;
+        typedef OSLMicrofacetBRDFInputValues InputValues;
 
-        auto_ptr<MDF<double> > m_mdf;
+        auto_ptr<MDF<double> >  m_mdf;
     };
 
-    typedef BSDFWrapper<Microfacet2BRDFImpl> Microfacet2BRDF;
+    typedef BSDFWrapper<OSLMicrofacetBRDFImpl> OSLMicrofacetBRDF;
 }
 
 
 //
-// Microfacet2BRDFFactory class implementation.
+// OSLMicrofacetBRDFFactory class implementation.
 //
 
-const char* Microfacet2BRDFFactory::get_model() const
+const char* OSLMicrofacetBRDFFactory::get_model() const
 {
     return Model;
 }
 
-const char* Microfacet2BRDFFactory::get_human_readable_model() const
+const char* OSLMicrofacetBRDFFactory::get_human_readable_model() const
 {
-    return "Microfacet2 BRDF";
+    return "OSL Microfacet BRDF";
 }
 
-DictionaryArray Microfacet2BRDFFactory::get_input_metadata() const
+DictionaryArray OSLMicrofacetBRDFFactory::get_input_metadata() const
 {
     DictionaryArray metadata;
 
@@ -300,7 +296,7 @@ DictionaryArray Microfacet2BRDFFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "required")
-            .insert("default", "0.5"));
+            .insert("default", "0.2"));
 
     metadata.push_back(
         Dictionary()
@@ -310,26 +306,16 @@ DictionaryArray Microfacet2BRDFFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "optional")
-            .insert("default", "0.5"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "eta")
-            .insert("label", "Eta")
-            .insert("type", "colormap")
-            .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
-            .insert("use", "optional")
-            .insert("default", "1.5"));
+            .insert("default", "0.2"));
 
     return metadata;
 }
 
-auto_release_ptr<BSDF> Microfacet2BRDFFactory::create(
+auto_release_ptr<BSDF> OSLMicrofacetBRDFFactory::create(
     const char*         name,
     const ParamArray&   params) const
 {
-    return auto_release_ptr<BSDF>(new Microfacet2BRDF(name, params));
+    return auto_release_ptr<BSDF>(new OSLMicrofacetBRDF(name, params));
 }
 
 }   // namespace renderer

@@ -139,14 +139,16 @@ Vector<T, N> reflect(
     const Vector<T, N>& i,
     const Vector<T, N>& n);
 
-// Return the refracted vector given a unit-length incoming vector i, a unit-length normal
+// Sets t to the refracted vector given a unit-length incoming vector i, a unit-length normal
 // vector n and a relative index of refraction eta.  eta is the ratio of the index of
 // refraction in the volume containing the incoming vector to that of the volume being entered.
+// Returns false in the case of total internal reflection.
 template <typename T, size_t N>
-Vector<T, N> refract(
+inline bool refract(
     const Vector<T, N>& i,
     const Vector<T, N>& n,
-    const T             eta);
+    const T             eta,
+    Vector<T, N>&       t);
 
 // Clamp the argument to [min, max].
 template <typename T, size_t N>
@@ -743,10 +745,11 @@ inline Vector<T, N> reflect(
 }
 
 template <typename T, size_t N>
-inline Vector<T, N> refract(
+inline bool refract(
     const Vector<T, N>& i,
     const Vector<T, N>& n,
-    const T             eta)
+    const T             eta,
+    Vector<T, N>&       t)
 {
     //
     // Reference: http://en.wikipedia.org/wiki/Snell's_law
@@ -761,14 +764,15 @@ inline Vector<T, N> refract(
 
     // Handle total internal reflection.
     if (cos_theta_t2 < T(0.0))
-        return Vector<T, N>(T(0.0));
+        return false;
 
     const T cos_theta_t = std::sqrt(cos_theta_t2);
 
-    return
-        cos_theta_i > T(0.0)
+    t = cos_theta_i > T(0.0)
             ? (eta * cos_theta_i - cos_theta_t) * n - eta * i
             : (eta * cos_theta_i + cos_theta_t) * n - eta * i;
+
+    return true;
 }
 
 template <typename T, size_t N>
