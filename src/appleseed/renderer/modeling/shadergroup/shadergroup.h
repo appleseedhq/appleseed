@@ -91,7 +91,7 @@ class DLLSYMBOL ShaderGroup
     bool on_frame_begin(
         const Project&              project,
         const Assembly&             assembly,
-        OSL::ShadingSystem*         shading_system,
+        OSL::ShadingSystem&         shading_system,
         foundation::AbortSwitch*    abort_switch = 0);
 
     // This method is called once after rendering each frame.

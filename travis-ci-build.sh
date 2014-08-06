@@ -15,6 +15,7 @@ cmake \
     -D USE_EXTERNAL_EXR=ON \
     -D USE_EXTERNAL_PNG=ON \
     -D USE_EXTERNAL_XERCES=ON \
+    -D CMAKE_BUILD_TYPE=Debug \
     -D CMAKE_INSTALL_PREFIX=./travis_install \
     .
 

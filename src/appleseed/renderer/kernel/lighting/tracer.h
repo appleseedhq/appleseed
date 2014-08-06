@@ -72,7 +72,7 @@ class Tracer
         const Intersector&              intersector,
         TextureCache&                   texture_cache,
 #ifdef WITH_OSL
-        OSLShaderGroupExec*             shadergroup_exec,
+        OSLShaderGroupExec&             shadergroup_exec,
 #endif
         const float                     transparency_threshold = 0.001f,
         const size_t                    max_iterations = 1000,
@@ -144,10 +144,7 @@ class Tracer
     const Intersector&                  m_intersector;
     TextureCache&                       m_texture_cache;
 #ifdef WITH_OSL
-    // TODO: it would be better if Tracer had a reference to the OSLShaderGroupExec
-    // instance instead of a pointer, but that'd mess with the unit tests.
-    // It's probably better to change it when OSL support is an integral part of appleseed.
-    OSLShaderGroupExec*                 m_shadergroup_exec;
+    OSLShaderGroupExec&                 m_shadergroup_exec;
 #endif
     const bool                          m_assume_no_alpha_mapping;
     const double                        m_transmission_threshold;

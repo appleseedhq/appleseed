@@ -32,6 +32,10 @@
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/intersection/tracecontext.h"
 #include "renderer/kernel/lighting/tracer.h"
+#ifdef WITH_OSL
+#include "renderer/kernel/rendering/rendererservices.h"
+#include "renderer/kernel/shading/oslshadergroupexec.h"
+#endif
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/kernel/texturing/texturecache.h"
@@ -60,22 +64,40 @@
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/test.h"
 
+// OpenImageIO headers.
+#ifdef WITH_OIIO
+#include "OpenImageIO/texture.h"
+#endif
+
+// boost headers.
+#include <boost/bind.hpp>
+#include <boost/shared_ptr.hpp>
+
 // Standard headers.
 #include <cstddef>
 #include <string>
 
 using namespace foundation;
 using namespace renderer;
+using namespace boost;
 using namespace std;
 
 TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 {
     struct SceneBase
     {
-        auto_release_ptr<Project>   m_project;
-        Scene*                      m_scene;
-        Assembly*                   m_assembly;
-        AssemblyInstance*           m_assembly_instance;
+        auto_release_ptr<Project>       m_project;
+        Scene*                          m_scene;
+        Assembly*                       m_assembly;
+        AssemblyInstance*               m_assembly_instance;
+#ifdef WITH_OIIO
+        shared_ptr<OIIO::TextureSystem> m_texture_system;
+#endif
+#ifdef WITH_OSL
+        shared_ptr<RendererServices>    m_renderer_services;
+        shared_ptr<OSL::ShadingSystem>  m_shading_system;
+        shared_ptr<OSLShaderGroupExec>  m_shading_group_exec;
+#endif
 
         SceneBase()
           : m_project(ProjectFactory::create("project"))
@@ -100,6 +122,21 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             create_material("transparent_material", "constant_white_surface_shader", 0.5f);
 
             create_plane_object();
+            
+#ifdef WITH_OIIO
+            m_texture_system.reset(
+                OIIO::TextureSystem::create(),
+                bind(&OIIO::TextureSystem::destroy, _1));
+#endif
+#ifdef WITH_OSL
+            m_renderer_services.reset(
+                new RendererServices(*m_project, *m_texture_system));
+            m_shading_system.reset(
+                new OSL::ShadingSystem(
+                    m_renderer_services.get(),
+                    m_texture_system.get()));
+            m_shading_group_exec.reset(new OSLShaderGroupExec(*m_shading_system));
+#endif
         }
 
         void create_color(const char* name, const Color4f& color)
@@ -191,11 +228,12 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
           , m_texture_cache(m_texture_store)
           , m_intersector(m_trace_context, m_texture_cache)
         {
+            Base::m_scene->on_frame_begin(
+                Base::m_project.ref()
 #ifdef WITH_OSL
-            Base::m_scene->on_frame_begin(Base::m_project.ref(), 0);
-#else
-            Base::m_scene->on_frame_begin(Base::m_project.ref());
+                , *Base::m_shading_system
 #endif
+                );
         }
 
         ~Fixture()
@@ -216,7 +254,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             m_intersector,
             m_texture_cache
 #ifdef WITH_OSL
-            , 0
+            , *m_shading_group_exec
 #endif
             );
 
@@ -241,7 +279,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             m_intersector,
             m_texture_cache
 #ifdef WITH_OSL
-            , 0
+            , *m_shading_group_exec
 #endif
             );
 
@@ -263,7 +301,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             m_intersector,
             m_texture_cache
 #ifdef WITH_OSL
-            , 0
+            , *m_shading_group_exec
 #endif
             );
 
@@ -288,7 +326,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             m_intersector,
             m_texture_cache
 #ifdef WITH_OSL
-            , 0
+            , *m_shading_group_exec
 #endif
             );
 
@@ -319,7 +357,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             m_intersector,
             m_texture_cache
 #ifdef WITH_OSL
-            , 0
+            , *m_shading_group_exec
 #endif
             );
 
@@ -345,7 +383,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             m_intersector,
             m_texture_cache
 #ifdef WITH_OSL
-            , 0
+            , *m_shading_group_exec
 #endif
             );
 
@@ -367,7 +405,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             m_intersector,
             m_texture_cache
 #ifdef WITH_OSL
-            , 0
+            , *m_shading_group_exec
 #endif
             );
 
@@ -393,7 +431,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             m_intersector,
             m_texture_cache
 #ifdef WITH_OSL
-            , 0
+            , *m_shading_group_exec
 #endif
             );
 
@@ -424,7 +462,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             m_intersector,
             m_texture_cache
 #ifdef WITH_OSL
-            , 0
+            , *m_shading_group_exec
 #endif
             );
 
@@ -449,7 +487,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             m_intersector,
             m_texture_cache
 #ifdef WITH_OSL
-            , 0
+            , *m_shading_group_exec
 #endif
             );
 
@@ -471,7 +509,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             m_intersector,
             m_texture_cache
 #ifdef WITH_OSL
-            , 0
+            , *m_shading_group_exec
 #endif
             );
 
@@ -496,7 +534,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             m_intersector,
             m_texture_cache
 #ifdef WITH_OSL
-            , 0
+            , *m_shading_group_exec
 #endif
             );
 
@@ -528,7 +566,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             m_intersector,
             m_texture_cache
 #ifdef WITH_OSL
-            , 0
+            , *m_shading_group_exec
 #endif
             );
 
@@ -554,7 +592,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             m_intersector,
             m_texture_cache
 #ifdef WITH_OSL
-            , 0
+            , *m_shading_group_exec
 #endif
             );
 
@@ -576,7 +614,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             m_intersector,
             m_texture_cache
 #ifdef WITH_OSL
-            , 0
+            , *m_shading_group_exec
 #endif
             );
 
@@ -602,7 +640,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             m_intersector,
             m_texture_cache
 #ifdef WITH_OSL
-            , 0
+            , *m_shading_group_exec
 #endif
             );
 
@@ -624,7 +662,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             m_intersector,
             m_texture_cache
 #ifdef WITH_OSL
-            , 0
+            , *m_shading_group_exec
 #endif
             );
 
@@ -649,7 +687,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             m_intersector,
             m_texture_cache
 #ifdef WITH_OSL
-            , 0
+            , *m_shading_group_exec
 #endif
             );
 
@@ -681,7 +719,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             m_intersector,
             m_texture_cache
 #ifdef WITH_OSL
-            , 0
+            , *m_shading_group_exec
 #endif
             );
 
@@ -703,7 +741,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             m_intersector,
             m_texture_cache
 #ifdef WITH_OSL
-            , 0
+            , *m_shading_group_exec
 #endif
             );
         const double transmission =
@@ -732,7 +770,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             m_intersector,
             m_texture_cache
 #ifdef WITH_OSL
-            , 0
+            , *m_shading_group_exec
 #endif
             );
 
@@ -754,7 +792,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             m_intersector,
             m_texture_cache
 #ifdef WITH_OSL
-            , 0
+            , *m_shading_group_exec
 #endif
             );
         const double transmission =

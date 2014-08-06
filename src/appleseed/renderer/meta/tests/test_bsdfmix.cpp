@@ -31,6 +31,10 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/lighting/tracer.h"
+#ifdef WITH_OSL
+#include "renderer/kernel/rendering/rendererservices.h"
+#include "renderer/kernel/shading/oslshadergroupexec.h"
+#endif
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingpointbuilder.h"
@@ -53,14 +57,28 @@
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/test.h"
 
+// OSL headers
+#ifdef WITH_OSL
+#include "OSL/oslexec.h"
+#endif
+
+// OpenImageIO headers.
+#ifdef WITH_OIIO
+#include "OpenImageIO/texture.h"
+#endif
+
+// boost headers.
+#include <boost/bind.hpp>
+#include <boost/shared_ptr.hpp>
+
 // Standard headers.
 #include <cassert>
 #include <cstddef>
 
 using namespace foundation;
 using namespace renderer;
+using namespace boost;
 
-#ifndef WITH_OIIO
 
 TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
 {
@@ -78,6 +96,18 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
         project->set_scene(SceneFactory::create());
 
         Scene& scene = *project->get_scene();
+
+#ifdef WITH_OIIO
+        shared_ptr<OIIO::TextureSystem> texture_system(
+            OIIO::TextureSystem::create(),
+            bind(&OIIO::TextureSystem::destroy, _1));
+#endif
+#ifdef WITH_OSL
+        RendererServices renderer_services(*project, *texture_system);
+        
+        shared_ptr<OSL::ShadingSystem> shading_system(
+            new OSL::ShadingSystem(&renderer_services, texture_system.get()));
+#endif
 
         scene.assemblies().insert(
             AssemblyFactory::create("assembly", ParamArray()));
@@ -127,7 +157,12 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
         input_binder.bind(scene);
         assert(input_binder.get_error_count() == 0);
 
-        scene.on_frame_begin(project.ref());
+        scene.on_frame_begin(
+            project.ref()
+#ifdef WITH_OSL
+            , *shading_system
+#endif
+            );
 
         TextureStore texture_store(scene);
         TextureCache texture_cache(texture_store);
@@ -136,18 +171,31 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
         Intersector intersector(
             project->get_trace_context(),
             texture_cache);
-        
+
+#ifdef WITH_OSL
+        OSLShaderGroupExec sg_exec(*shading_system);
+#endif
         Tracer tracer(
             *project->get_scene(),
             intersector,
-            texture_cache);
-        
+            texture_cache
+#ifdef WITH_OSL
+            , sg_exec
+#endif
+            );
+
         ShadingContext shading_context(
             intersector,
             tracer,
-            texture_cache,
-            0);
-        
+            texture_cache
+#ifdef WITH_OIIO
+            , *texture_system
+#endif
+#ifdef WITH_OSL
+            ,sg_exec
+#endif
+            ,0);
+
         ShadingPoint shading_point;
         ShadingPointBuilder builder(shading_point);
         builder.set_primitive_type(ShadingPoint::PrimitiveTriangle);
@@ -179,5 +227,3 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
         scene.on_frame_end(project.ref());
     }
 }
-
-#endif

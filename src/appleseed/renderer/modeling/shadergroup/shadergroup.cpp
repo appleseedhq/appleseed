@@ -138,14 +138,14 @@ void ShaderGroup::add_connection(
 bool ShaderGroup::on_frame_begin(
     const Project&      project,
     const Assembly&     assembly,
-    OSL::ShadingSystem* shading_system,
+    OSL::ShadingSystem& shading_system,
     AbortSwitch*        abort_switch)
 {
     RENDERER_LOG_DEBUG("setup shader group %s.", get_name());
 
     try
     {
-        m_shadergroup_ref = shading_system->ShaderGroupBegin(get_name());
+        m_shadergroup_ref = shading_system.ShaderGroupBegin(get_name());
 
         if (!valid())
         {
@@ -160,7 +160,7 @@ bool ShaderGroup::on_frame_begin(
             if (is_aborted(abort_switch))
                 return success;
 
-            success = success && i->add(*shading_system);
+            success = success && i->add(shading_system);
         }
 
         for (each<ShaderConnectionContainer> i = m_connections; i; ++i)
@@ -168,12 +168,12 @@ bool ShaderGroup::on_frame_begin(
             if (is_aborted(abort_switch))
                 return success;
 
-            success = success && i->add(*shading_system);
+            success = success && i->add(shading_system);
         }
 
         if (success)
         {
-            if (!shading_system->ShaderGroupEnd())
+            if (!shading_system.ShaderGroupEnd())
             {
                 RENDERER_LOG_ERROR("shader group end error: shader = %s.", get_name());
                 return false;
