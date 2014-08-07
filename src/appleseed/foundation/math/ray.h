@@ -78,6 +78,10 @@ class Ray
         const ValueType     tmin = ValueType(0.0),
         const ValueType     tmax = std::numeric_limits<ValueType>::max());
 
+    // Construct a ray from another ray of a different type.
+    template <typename U>
+    Ray(const Ray<U, N>& rhs);
+
     // Return the point of the ray at abscissa t, t >= 0.
     VectorType point_at(const ValueType t) const;
 };
@@ -131,6 +135,10 @@ class RayInfo
     // Constructors.
     RayInfo();                              // leave all fields uninitialized
     explicit RayInfo(const RayType& ray);   // initialize with a ray
+
+    // Construct ray info from other ray info of a different type.
+    template <typename U>
+    RayInfo(const RayInfo<U, N>& rhs);
 };
 
 #ifdef APPLESEED_USE_SSE
@@ -159,6 +167,10 @@ class RayInfo<double, 3>
     // Constructors.
     RayInfo();                              // leave all fields uninitialized
     explicit RayInfo(const RayType& ray);   // initialize with a ray
+
+    // Construct ray info from other ray info of a different type.
+    template <typename U>
+    RayInfo(const RayInfo<U, 3>& rhs);
 };
 
 #endif
@@ -195,6 +207,16 @@ inline Ray<T, N>::Ray(
   , m_dir(dir)
   , m_tmin(tmin)
   , m_tmax(tmax)
+{
+}
+
+template <typename T, size_t N>
+template <typename U>
+inline Ray<T, N>::Ray(const Ray<U, N>& rhs)
+  : m_org(rhs.m_org)
+  , m_dir(rhs.m_dir)
+  , m_tmin(static_cast<T>(rhs.m_tmin))
+  , m_tmax(static_cast<T>(rhs.m_tmax))
 {
 }
 
@@ -261,6 +283,15 @@ inline RayInfo<T, N>::RayInfo(const RayType& ray)
     }
 }
 
+template <typename T, size_t N>
+template <typename U>
+inline RayInfo<T, N>::RayInfo(const RayInfo<U, N>& rhs)
+  : m_rcp_dir(rhs.m_rcp_dir)
+{
+    for (size_t i = 0; i < Dimension; ++i)
+        m_sgn_dir[i] = rhs.m_sgn_dir[i];
+}
+
 #ifdef APPLESEED_USE_SSE
 
 inline RayInfo<double, 3>::RayInfo()
@@ -285,6 +316,14 @@ FORCE_INLINE RayInfo<double, 3>::RayInfo(const RayType& ray)
     const __m128i sgn = _mm_unpacklo_epi64(_mm_shuffle_epi32(sgn0, _MM_SHUFFLE(3, 3, 2, 0)), sgn2);
 
     _mm_store_si128((__m128i*)&m_sgn_dir[0], sgn);
+}
+
+template <typename U>
+inline RayInfo<double, 3>::RayInfo(const RayInfo<U, 3>& rhs)
+  : m_rcp_dir(rhs.m_rcp_dir)
+{
+    for (size_t i = 0; i < Dimension; ++i)
+        m_sgn_dir[i] = rhs.m_sgn_dir[i];
 }
 
 #endif

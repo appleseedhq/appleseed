@@ -30,9 +30,26 @@
 // appleseed.foundation headers.
 #include "foundation/math/fp.h"
 #include "foundation/math/ray.h"
+#include "foundation/math/vector.h"
+#include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"
 
 using namespace foundation;
+
+TEST_SUITE(Foundation_Math_Ray)
+{
+    TEST_CASE(ConversionConstructor_PreservesValues)
+    {
+        const Ray3f ray(Vector3f(1.0f, 2.0f, 3.0f), Vector3f(4.0f, 5.0f, 6.0f), 7.0f, 8.0f);
+
+        const Ray3d copy(ray);
+
+        EXPECT_EQ(Vector3d(ray.m_org), copy.m_org);
+        EXPECT_EQ(Vector3d(ray.m_dir), copy.m_dir);
+        EXPECT_EQ(static_cast<double>(ray.m_tmin), copy.m_tmin);
+        EXPECT_EQ(static_cast<double>(ray.m_tmax), copy.m_tmax);
+    }
+}
 
 TEST_SUITE(Foundation_Math_RayInfo)
 {
@@ -62,4 +79,19 @@ TEST_SUITE(Foundation_Math_RayInfo)
     }
 
 #pragma warning (pop)
+
+    TEST_CASE(ConversionConstructor_PreservesValues)
+    {
+        const Ray3f ray(Vector3f(1.0f, 2.0f, 3.0f), Vector3f(4.0f, 5.0f, 6.0f), 7.0f, 8.0f);
+        const RayInfo3f ray_info(ray);
+
+        const RayInfo3d copy(ray_info);
+
+        EXPECT_EQ(static_cast<double>(ray_info.m_rcp_dir[0]), copy.m_rcp_dir[0]);
+        EXPECT_EQ(static_cast<double>(ray_info.m_rcp_dir[1]), copy.m_rcp_dir[1]);
+        EXPECT_EQ(static_cast<double>(ray_info.m_rcp_dir[2]), copy.m_rcp_dir[2]);
+        EXPECT_EQ(ray_info.m_sgn_dir[0], copy.m_sgn_dir[0]);
+        EXPECT_EQ(ray_info.m_sgn_dir[1], copy.m_sgn_dir[1]);
+        EXPECT_EQ(ray_info.m_sgn_dir[2], copy.m_sgn_dir[2]);
+    }
 }
