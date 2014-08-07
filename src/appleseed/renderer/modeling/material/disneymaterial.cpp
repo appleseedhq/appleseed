@@ -179,27 +179,6 @@ namespace
             m_vars["v"] = Var(0.0);
         }
 
-        bool prep_texture_expr(OIIO::ustring& filename)
-        {
-            filename = "";
-            string expression = trim_both(getExpr(), " \r\n");
-            vector<string> tokens;
-            tokenize(expression, "()", tokens);
-            if (tokens.size() != 2)
-                return false;
-            if (trim_both(tokens[0]) != "texture")
-                return false;
-            string inner_content = tokens[1];
-            tokens.clear();
-            tokenize(inner_content, " ,", tokens);
-            if (tokens.size() != 3)
-                return false;
-            if (trim_both(tokens[1]) != "$u" && trim_both(tokens[2]) != "$v")
-                return false;
-            filename = OIIO::ustring(trim_both(tokens[0], " \""), 0);
-            return true;
-        }
-
         SeExprVarRef* resolveVar(const string& name) const OVERRIDE
         {
             const map<string, Var>::iterator i = m_vars.find(name);
@@ -371,9 +350,26 @@ class DisneyLayerParam
         {
             SeVec3d result = m_expression.evaluate();
             m_constant_value = Color3d(result[0], result[1], result[2]);
+            return true;
         }
 
-        m_expression.prep_texture_expr(m_texture_filename);
+        // Check for simple texture lookups.
+        m_texture_filename = "";
+        string expression = trim_both(m_expression.getExpr(), " \r\n");
+        vector<string> tokens;
+        tokenize(expression, "()", tokens);
+        if (tokens.size() != 2)
+            return true;
+        if (trim_both(tokens[0]) != "texture")
+            return true;
+        string inner_content = tokens[1];
+        tokens.clear();
+        tokenize(inner_content, " ,", tokens);
+        if (tokens.size() != 3)
+            return true;
+        if (trim_both(tokens[1]) != "$u" && trim_both(tokens[2]) != "$v")
+            return true;
+        m_texture_filename = OIIO::ustring(trim_both(tokens[0], " \""), 0);
         m_texture_options.nchannels = 3;
 
         return true;
