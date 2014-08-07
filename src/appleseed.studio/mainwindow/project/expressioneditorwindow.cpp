@@ -49,8 +49,10 @@
 #include <QFileDialog>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QMessageBox>
 #include <QPushButton>
 #include <QScrollArea>
+#include <QShortcut>
 #include <QString>
 #include <QVBoxLayout>
 
@@ -97,11 +99,20 @@ ExpressionEditorWindow::ExpressionEditorWindow(
     // Clear, Save, Load buttons.
     QHBoxLayout* file_buttonbox = new QHBoxLayout();
     QPushButton* clear_button = new QPushButton("Clear");
+    clear_button->setToolTip("Ctrl+N");
+    QShortcut* clear_shortcut = new QShortcut(QKeySequence("Ctrl+N"), this);
     connect(clear_button, SIGNAL(clicked()), SLOT(slot_clear_expression()));
+    connect(clear_shortcut, SIGNAL(activated()), SLOT(slot_clear_expression()));
     QPushButton* save_button = new QPushButton("Save");
+    save_button->setToolTip("Ctrl+S");
+    QShortcut* save_shortcut = new QShortcut(QKeySequence("Ctrl+S"), this);
     connect(save_button, SIGNAL(clicked()), SLOT(slot_save_script()));
+    connect(save_shortcut, SIGNAL(activated()), SLOT(slot_save_script()));
     QPushButton* load_button = new QPushButton("Load");
+    load_button->setToolTip("Ctrl+O");
+    QShortcut* load_shortcut = new QShortcut(QKeySequence("Ctrl+O"), this);
     connect(load_button, SIGNAL(clicked()), SLOT(slot_load_script()));
+    connect(load_shortcut, SIGNAL(activated()), SLOT(slot_load_script()));
     file_buttonbox->addWidget(clear_button);
     file_buttonbox->addWidget(save_button);
     file_buttonbox->addWidget(load_button);
@@ -146,6 +157,15 @@ void ExpressionEditorWindow::apply_expression()
         if (!q_expression.isEmpty())
             emit signal_expression_applied(m_widget_name, q_expression);
     }
+}
+
+void ExpressionEditorWindow::show_message_box(const QString& title, const QString& text)
+{
+    QMessageBox* error_message_box = new QMessageBox();
+    error_message_box->setWindowTitle(title);
+    error_message_box->setText(text);
+    error_message_box->setStandardButtons(QMessageBox::Ok);
+    error_message_box->exec();
 }
 
 void ExpressionEditorWindow::slot_accept()
@@ -195,6 +215,13 @@ void ExpressionEditorWindow::slot_save_script()
     if (!m_script_filepath.empty())
     {
         ofstream script_file(m_script_filepath.c_str());
+        if (!script_file.is_open())
+        {
+            show_message_box(
+                "Opening error",
+                "Error while saving expression script file.");
+            return;
+        }
         script_file << m_editor->getExpr();
         script_file.close();
     }
@@ -220,6 +247,13 @@ void ExpressionEditorWindow::slot_load_script()
 
         // Read script and set it as an expression.
         ifstream script_file(filepath.toStdString().c_str());
+        if (!script_file.is_open())
+        {
+            show_message_box(
+                "Opening error",
+                "Error while loading expression script file.");
+            return;
+        }
         stringstream script_buffer;
         script_buffer << script_file.rdbuf();
         script_file.close();
