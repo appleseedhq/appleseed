@@ -50,16 +50,16 @@ std::vector<std::string> make_vector(const char* v1, const char* v2, const char*
 std::vector<std::string> make_vector(const char* v1, const char* v2, const char* v3, const char* v4);
 std::vector<std::string> make_vector(const char* v1, const char* v2, const char* v3, const char* v4, const char* v5);
 
-template <typename T> std::vector<T> make_vector(const T v1);
-template <typename T> std::vector<T> make_vector(const T v1, const T v2);
-template <typename T> std::vector<T> make_vector(const T v1, const T v2, const T v3);
-template <typename T> std::vector<T> make_vector(const T v1, const T v2, const T v3, const T v4);
-template <typename T> std::vector<T> make_vector(const T v1, const T v2, const T v3, const T v4, const T v5);
+template <typename T> std::vector<T> make_vector(const T& v1);
+template <typename T> std::vector<T> make_vector(const T& v1, const T& v2);
+template <typename T> std::vector<T> make_vector(const T& v1, const T& v2, const T& v3);
+template <typename T> std::vector<T> make_vector(const T& v1, const T& v2, const T& v3, const T& v4);
+template <typename T> std::vector<T> make_vector(const T& v1, const T& v2, const T& v3, const T& v4, const T& v5);
 
 std::vector<std::string> make_vector_n(const size_t n, const char* val, ...);
 
 template <typename T>
-std::vector<T> make_vector_n(const size_t n, const T val, ...);
+std::vector<T> make_vector_n(const size_t n, const T& val, ...);
 
 
 //
@@ -112,7 +112,7 @@ inline std::vector<std::string> make_vector(const char* v1, const char* v2, cons
 }
 
 template <typename T>
-std::vector<T> make_vector(const T v1)
+std::vector<T> make_vector(const T& v1)
 {
     std::vector<T> vec;
     vec.push_back(v1);
@@ -120,7 +120,7 @@ std::vector<T> make_vector(const T v1)
 }
 
 template <typename T>
-std::vector<T> make_vector(const T v1, const T v2)
+std::vector<T> make_vector(const T& v1, const T& v2)
 {
     std::vector<T> vec;
     vec.push_back(v1);
@@ -129,7 +129,7 @@ std::vector<T> make_vector(const T v1, const T v2)
 }
 
 template <typename T>
-std::vector<T> make_vector(const T v1, const T v2, const T v3)
+std::vector<T> make_vector(const T& v1, const T& v2, const T& v3)
 {
     std::vector<T> vec;
     vec.push_back(v1);
@@ -139,7 +139,7 @@ std::vector<T> make_vector(const T v1, const T v2, const T v3)
 }
 
 template <typename T>
-std::vector<T> make_vector(const T v1, const T v2, const T v3, const T v4)
+std::vector<T> make_vector(const T& v1, const T& v2, const T& v3, const T& v4)
 {
     std::vector<T> vec;
     vec.push_back(v1);
@@ -150,7 +150,7 @@ std::vector<T> make_vector(const T v1, const T v2, const T v3, const T v4)
 }
 
 template <typename T>
-std::vector<T> make_vector(const T v1, const T v2, const T v3, const T v4, const T v5)
+std::vector<T> make_vector(const T& v1, const T& v2, const T& v3, const T& v4, const T& v5)
 {
     std::vector<T> vec;
     vec.push_back(v1);
@@ -180,7 +180,7 @@ inline std::vector<std::string> make_vector_n(const size_t n, const char* val, .
 }
 
 template <typename T>
-std::vector<T> make_vector_n(const size_t n, const T val, ...)
+std::vector<T> make_vector_n(const size_t n, const T& val, ...)
 {
     assert(n > 0);
 
