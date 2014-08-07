@@ -421,17 +421,16 @@ void Intersector<Tree, Visitor, Ray, StackSize, N>::intersect_motion(
 template <
     typename Tree,
     typename Visitor,
-    typename Ray,
     size_t StackSize
 >
-class Intersector<Tree, Visitor, Ray, StackSize, 3>
+class Intersector<Tree, Visitor, Ray3d, StackSize, 3>
   : public NonCopyable
 {
   public:
     typedef typename Tree::NodeType NodeType;
-    typedef typename NodeType::ValueType ValueType;
-    typedef Ray RayType;
-    typedef RayInfo<ValueType, NodeType::Dimension> RayInfoType;
+    typedef double ValueType;
+    typedef Ray3d RayType;
+    typedef RayInfo3d RayInfoType;
 
     // Intersect a ray with a given BVH without motion.
     void intersect_no_motion(
@@ -460,10 +459,9 @@ class Intersector<Tree, Visitor, Ray, StackSize, 3>
 template <
     typename Tree,
     typename Visitor,
-    typename Ray,
     size_t StackSize
 >
-void Intersector<Tree, Visitor, Ray, StackSize, 3>::intersect_no_motion(
+void Intersector<Tree, Visitor, Ray3d, StackSize, 3>::intersect_no_motion(
     const Tree&                 tree,
     const RayType&              ray,
     const RayInfoType&          ray_info,
@@ -612,10 +610,9 @@ void Intersector<Tree, Visitor, Ray, StackSize, 3>::intersect_no_motion(
 template <
     typename Tree,
     typename Visitor,
-    typename Ray,
     size_t StackSize
 >
-void Intersector<Tree, Visitor, Ray, StackSize, 3>::intersect_motion(
+void Intersector<Tree, Visitor, Ray3d, StackSize, 3>::intersect_motion(
     const Tree&                 tree,
     const RayType&              ray,
     const RayInfoType&          ray_info,
