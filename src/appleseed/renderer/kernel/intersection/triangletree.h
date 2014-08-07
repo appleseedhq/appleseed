@@ -45,6 +45,7 @@
 #include "foundation/math/aabb.h"
 #include "foundation/math/bvh.h"
 #include "foundation/math/intersection.h"
+#include "foundation/math/ray.h"
 #include "foundation/math/scalar.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/alignedvector.h"
@@ -219,8 +220,8 @@ class TriangleLeafVisitor
     // Visit a leaf.
     bool visit(
         const TriangleTree::NodeType&           node,
-        const ShadingRay&                       ray,
-        const ShadingRay::RayInfoType&          ray_info,
+        const foundation::Ray3d&                ray,
+        const foundation::RayInfo3d&            ray_info,
         double&                                 distance
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
         , foundation::bvh::TraversalStatistics& stats
@@ -250,14 +251,15 @@ class TriangleLeafProbeVisitor
 {
   public:
     // Constructor.
-    explicit TriangleLeafProbeVisitor(
-        const TriangleTree&                     tree);
+    TriangleLeafProbeVisitor(
+        const TriangleTree&                     tree,
+        const double                            time);
 
     // Visit a leaf.
     bool visit(
         const TriangleTree::NodeType&           node,
-        const ShadingRay&                       ray,
-        const ShadingRay::RayInfoType&          ray_info,
+        const foundation::Ray3d&                ray,
+        const foundation::RayInfo3d&            ray_info,
         double&                                 distance
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
         , foundation::bvh::TraversalStatistics& stats
@@ -266,6 +268,7 @@ class TriangleLeafProbeVisitor
 
   private:
     const TriangleTree&     m_tree;
+    const double            m_time;
     const bool              m_has_intersection_filters;
 };
 
@@ -277,14 +280,14 @@ class TriangleLeafProbeVisitor
 typedef foundation::bvh::Intersector<
     TriangleTree,
     TriangleLeafVisitor,
-    ShadingRay,
+    foundation::Ray3d,          // make sure we pick the SSE2-optimized version of foundation::bvh::Intersector
     TriangleTreeStackSize
 > TriangleTreeIntersector;
 
 typedef foundation::bvh::Intersector<
     TriangleTree,
     TriangleLeafProbeVisitor,
-    ShadingRay,
+    foundation::Ray3d,          // make sure we pick the SSE2-optimized version of foundation::bvh::Intersector
     TriangleTreeStackSize
 > TriangleTreeProbeIntersector;
 
@@ -358,8 +361,8 @@ inline TriangleLeafVisitor::TriangleLeafVisitor(
 
 inline bool TriangleLeafVisitor::visit(
     const TriangleTree::NodeType&           node,
-    const ShadingRay&                       ray,
-    const ShadingRay::RayInfoType&          ray_info,
+    const foundation::Ray3d&                ray,
+    const foundation::RayInfo3d&            ray_info,
     double&                                 distance
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
     , foundation::bvh::TraversalStatistics& stats
@@ -395,7 +398,7 @@ inline bool TriangleLeafVisitor::visit(
 
             // Intersect the triangle.
             double t, u, v;
-            if (reader.m_triangle.intersect(m_shading_point.m_ray, t, u, v))
+            if (reader.m_triangle.intersect(ray, t, u, v))
             {
                 // Optionally filter intersections.
                 if (m_has_intersection_filters)
@@ -417,13 +420,13 @@ inline bool TriangleLeafVisitor::visit(
         else
         {
             // Retrieve the vertices of the triangle at the two keyframes surrounding the ray time.
-            const size_t prev_index = foundation::truncate<size_t>(ray.m_time * motion_segment_count);
+            const size_t prev_index = foundation::truncate<size_t>(m_shading_point.m_ray.m_time * motion_segment_count);
             const GVector3* prev_vertices = reinterpret_cast<const GVector3*>(leaf_data) + prev_index * 3;
             const GVector3* next_vertices = prev_vertices + 3;
             leaf_data += (motion_segment_count + 1) * 3 * sizeof(GVector3);
 
             // Interpolate triangle vertices.
-            const GScalar k = static_cast<GScalar>(ray.m_time * motion_segment_count - prev_index);
+            const GScalar k = static_cast<GScalar>(m_shading_point.m_ray.m_time * motion_segment_count - prev_index);
             const GVector3 vert0 = foundation::lerp(prev_vertices[0], next_vertices[0], k);
             const GVector3 vert1 = foundation::lerp(prev_vertices[1], next_vertices[1], k);
             const GVector3 vert2 = foundation::lerp(prev_vertices[2], next_vertices[2], k);
@@ -434,7 +437,7 @@ inline bool TriangleLeafVisitor::visit(
 
             // Intersect the triangle.
             double t, u, v;
-            if (reader.m_triangle.intersect(m_shading_point.m_ray, t, u, v))
+            if (reader.m_triangle.intersect(ray, t, u, v))
             {
                 // Optionally filter intersections.
                 if (m_has_intersection_filters)
@@ -488,16 +491,18 @@ inline void TriangleLeafVisitor::read_hit_triangle_data() const
 //
 
 inline TriangleLeafProbeVisitor::TriangleLeafProbeVisitor(
-    const TriangleTree&                     tree)
+    const TriangleTree&                     tree,
+    const double                            time)
   : m_tree(tree)
+  , m_time(time)
   , m_has_intersection_filters(!tree.m_intersection_filters.empty())
 {
 }
 
 inline bool TriangleLeafProbeVisitor::visit(
     const TriangleTree::NodeType&           node,
-    const ShadingRay&                       ray,
-    const ShadingRay::RayInfoType&          ray_info,
+    const foundation::Ray3d&                ray,
+    const foundation::RayInfo3d&            ray_info,
     double&                                 distance
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
     , foundation::bvh::TraversalStatistics& stats
@@ -541,13 +546,13 @@ inline bool TriangleLeafProbeVisitor::visit(
         else
         {
             // Retrieve the vertices of the triangle at the two keyframes surrounding the ray time.
-            const size_t prev_index = foundation::truncate<size_t>(ray.m_time * motion_segment_count);
+            const size_t prev_index = foundation::truncate<size_t>(m_time * motion_segment_count);
             const GVector3* prev_vertices = reinterpret_cast<const GVector3*>(leaf_data) + prev_index * 3;
             const GVector3* next_vertices = prev_vertices + 3;
             leaf_data += (motion_segment_count + 1) * 3 * sizeof(GVector3);
 
             // Interpolate triangle vertices.
-            const GScalar k = static_cast<GScalar>(ray.m_time * motion_segment_count - prev_index);
+            const GScalar k = static_cast<GScalar>(m_time * motion_segment_count - prev_index);
             const GVector3 vert0 = foundation::lerp(prev_vertices[0], next_vertices[0], k);
             const GVector3 vert1 = foundation::lerp(prev_vertices[1], next_vertices[1], k);
             const GVector3 vert2 = foundation::lerp(prev_vertices[2], next_vertices[2], k);

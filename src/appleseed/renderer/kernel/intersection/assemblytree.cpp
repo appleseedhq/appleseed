@@ -747,7 +747,7 @@ bool AssemblyLeafProbeVisitor::visit(
             {
                 // Check the intersection between the ray and the triangle tree.
                 TriangleTreeProbeIntersector intersector;
-                TriangleLeafProbeVisitor visitor(*triangle_tree);
+                TriangleLeafProbeVisitor visitor(*triangle_tree, local_ray.m_time);
                 if (triangle_tree->get_moving_triangle_count() > 0)
                 {
                     intersector.intersect_motion(
