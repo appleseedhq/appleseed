@@ -59,6 +59,7 @@ class ExpressionEditorWindow
         QWidget*                    parent = 0);
 
     void apply_expression();
+    void show_message_box(const QString& title, const QString& text);
 
   public slots:
     void slot_accept();

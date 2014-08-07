@@ -49,6 +49,7 @@
 #include <QFileDialog>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QMessageBox>
 #include <QPushButton>
 #include <QScrollArea>
 #include <QShortcut>
@@ -158,6 +159,15 @@ void ExpressionEditorWindow::apply_expression()
     }
 }
 
+void ExpressionEditorWindow::show_message_box(const QString& title, const QString& text)
+{
+    QMessageBox* error_message_box = new QMessageBox();
+    error_message_box->setWindowTitle(title);
+    error_message_box->setText(text);
+    error_message_box->setStandardButtons(QMessageBox::Ok);
+    error_message_box->exec();
+}
+
 void ExpressionEditorWindow::slot_accept()
 {
     apply_expression();
@@ -205,6 +215,13 @@ void ExpressionEditorWindow::slot_save_script()
     if (!m_script_filepath.empty())
     {
         ofstream script_file(m_script_filepath.c_str());
+        if (!script_file.is_open())
+        {
+            show_message_box(
+                "Opening error",
+                "Error while saving expression script file.");
+            return;
+        }
         script_file << m_editor->getExpr();
         script_file.close();
     }
@@ -232,7 +249,9 @@ void ExpressionEditorWindow::slot_load_script()
         ifstream script_file(filepath.toStdString().c_str());
         if (!script_file.is_open())
         {
-            RENDERER_LOG_ERROR("Expression script couldn't be opened.");
+            show_message_box(
+                "Opening error",
+                "Error while loading expression script file.");
             return;
         }
         stringstream script_buffer;
