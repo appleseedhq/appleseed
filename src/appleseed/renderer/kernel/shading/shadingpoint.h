@@ -807,6 +807,8 @@ inline void ShadingPoint::compute_partial_derivatives() const
 {
     cache_source_geometry();
 
+    const foundation::Vector3d& sn = get_original_shading_normal();
+
     if (m_primitive_type == PrimitiveTriangle)
     {
         const double du0 = static_cast<double>(m_v0_uv[0] - m_v2_uv[0]);
@@ -818,7 +820,7 @@ inline void ShadingPoint::compute_partial_derivatives() const
 
         if (det == 0.0)
         {
-            const foundation::Basis3d basis(get_original_shading_normal());
+            const foundation::Basis3d basis(sn);
 
             m_dpdu = basis.get_tangent_u();
             m_dpdv = basis.get_tangent_v();
@@ -833,8 +835,6 @@ inline void ShadingPoint::compute_partial_derivatives() const
             m_dpdu = (dv1 * dp0 - dv0 * dp1) * rcp_det;
             m_dpdv = (du0 * dp1 - du1 * dp0) * rcp_det;
 
-            const foundation::Vector3d& sn = get_original_shading_normal();
-
             m_dpdu = foundation::cross(sn, foundation::normalize(foundation::cross(m_dpdu, sn)));
             m_dpdv = foundation::cross(sn, foundation::normalize(foundation::cross(m_dpdv, sn)));
         }
@@ -843,13 +843,14 @@ inline void ShadingPoint::compute_partial_derivatives() const
     {
         assert(m_primitive_type == PrimitiveCurve);
 
-        // Obtain the tangent from the curve using the primitive id.
         const CurveObject* curves = static_cast<const CurveObject*>(m_object);
-        const foundation::BezierCurve3d& m_curve = curves->get_curve(m_primitive_index);
+        const CurveType& m_curve = curves->get_curve(m_primitive_index);
 
-        // Orient the du along the tangent and construct dv perpendicular to du and surface normal.
-        m_dpdu = foundation::normalize(m_curve.evaluate_tangent(m_bary[1]));
-        m_dpdv = foundation::normalize(foundation::cross(get_original_shading_normal(), m_dpdu));
+        const GScalar v = static_cast<GScalar>(m_bary[1]);
+        const GVector3 tangent = m_curve.evaluate_tangent(v);
+
+        m_dpdu = foundation::normalize(foundation::Vector3d(tangent));
+        m_dpdv = foundation::normalize(foundation::cross(sn, m_dpdu));
     }
 }
 
