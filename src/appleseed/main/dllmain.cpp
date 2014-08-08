@@ -44,41 +44,28 @@ using namespace std;
 
 namespace
 {
-    void open_console()
+    void redirect(FILE* fp, const char* mode, const DWORD std_device)
     {
-        AllocConsole();
-
 #pragma warning (push)
 #pragma warning (disable : 4311)    // 'variable' : pointer truncation from 'type' to 'type'
-
-        int hConHandle;
-        long lStdHandle;
-        FILE* fp;
-
-        // Redirect stdout to the console.
-        lStdHandle = (long)GetStdHandle(STD_OUTPUT_HANDLE);
-        hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
-        fp = _fdopen(hConHandle, "w");
-        *stdout = *fp;
-        setvbuf(stdout, NULL, _IONBF, 0);
-
-        // Redirect stdin to the console.
-        lStdHandle = (long)GetStdHandle(STD_INPUT_HANDLE);
-        hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
-        fp = _fdopen(hConHandle, "r");
-        *stdin = *fp;
-        setvbuf(stdin, NULL, _IONBF, 0);
-
-        // Redirect stderr to the console.
-        lStdHandle = (long)GetStdHandle(STD_ERROR_HANDLE);
-        hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
-        fp = _fdopen(hConHandle, "w");
-        *stderr = *fp;
-        setvbuf(stderr, NULL, _IONBF, 0);
-
+        const long handle = (long)GetStdHandle(std_device);
+        const int fd = _open_osfhandle(handle, _O_TEXT);
+        *fp = *_fdopen(fd, mode);
+        setvbuf(fp, NULL, _IONBF, 0);
 #pragma warning (pop)
+    }
 
-        // Make cout, wcout, cin, wcin, wcerr, cerr, wclog and clog point to the console as well.
+    void open_console()
+    {
+        // Allocates a console for this process.
+        AllocConsole();
+
+        // Redirect stdout, stdin and stderr to the console.
+        redirect(stdout, "w", STD_OUTPUT_HANDLE);
+        redirect(stdin, "r", STD_INPUT_HANDLE);
+        redirect(stderr, "w", STD_ERROR_HANDLE);
+
+        // Make cout, wcout, cin, wcin, cerr, wcerr, clog and wclog point to the console as well.
         ios::sync_with_stdio();
     }
 }
