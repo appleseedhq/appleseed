@@ -29,9 +29,6 @@
 // Interface header.
 #include "curveobject.h"
 
-// appleseed.foundation headers.
-#include "foundation/math/aabb.h"
-
 // Standard headers.
 #include <cassert>
 #include <string>
@@ -49,10 +46,10 @@ namespace renderer
 
 struct CurveObject::Impl
 {
-    RegionKit               m_region_kit;
-    Lazy<RegionKit>         m_lazy_region_kit;
-    vector<BezierCurve3d>   m_curves;
-    vector<string>          m_material_slots;
+    RegionKit           m_region_kit;
+    Lazy<RegionKit>     m_lazy_region_kit;
+    vector<CurveType>   m_curves;
+    vector<string>      m_material_slots;
 
     Impl()
       : m_lazy_region_kit(&m_region_kit)
@@ -61,7 +58,7 @@ struct CurveObject::Impl
 
     GAABB3 compute_bounds() const
     {
-        AABB3d bbox;
+        GAABB3 bbox;
         bbox.invalidate();
 
         const size_t curve_count = m_curves.size();
@@ -74,8 +71,8 @@ struct CurveObject::Impl
 };
 
 CurveObject::CurveObject(
-    const char*             name,
-    const ParamArray&       params)
+    const char*         name,
+    const ParamArray&   params)
   : Object(name, params)
   , impl(new Impl())
 {
@@ -111,7 +108,7 @@ void CurveObject::reserve_curves(const size_t count)
     impl->m_curves.reserve(count);
 }
 
-size_t CurveObject::push_curve(const foundation::BezierCurve3d& curve)
+size_t CurveObject::push_curve(const CurveType& curve)
 {
     const size_t index = impl->m_curves.size();
     impl->m_curves.push_back(curve);
@@ -123,7 +120,7 @@ size_t CurveObject::get_curve_count() const
     return impl->m_curves.size();
 }
 
-const BezierCurve3d& CurveObject::get_curve(const size_t index) const
+const CurveType& CurveObject::get_curve(const size_t index) const
 {
     assert(index < impl->m_curves.size());
     return impl->m_curves[index];
@@ -150,8 +147,8 @@ const char* CurveObjectFactory::get_model()
 }
 
 auto_release_ptr<CurveObject> CurveObjectFactory::create(
-    const char*             name,
-    const ParamArray&       params)
+    const char*         name,
+    const ParamArray&   params)
 {
     return
         auto_release_ptr<CurveObject>(

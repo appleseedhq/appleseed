@@ -40,7 +40,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/sampling/mappings.h"
-#include "foundation/math/beziercurve.h"
 #include "foundation/math/cdf.h"
 #include "foundation/math/qmc.h"
 #include "foundation/math/rng.h"
@@ -82,11 +81,11 @@ namespace
         RegExFilter m_exclude_filter;
 
         size_t      m_curve_count;
-        double      m_curve_length;
-        double      m_root_width;
-        double      m_tip_width;
-        double      m_length_fuzziness;
-        double      m_curliness;
+        GScalar     m_curve_length;
+        GScalar     m_root_width;
+        GScalar     m_tip_width;
+        GScalar     m_length_fuzziness;
+        GScalar     m_curliness;
         size_t      m_split_count;
 
         explicit FluffParams(const CommandLineHandler& cl)
@@ -95,11 +94,11 @@ namespace
             m_exclude_filter.set_pattern(cl.m_exclude.value().c_str());
 
             m_curve_count = cl.m_curves.value();
-            m_curve_length = cl.m_length.value();
-            m_root_width = cl.m_root_width.value();
-            m_tip_width = cl.m_tip_width.value();
-            m_length_fuzziness = cl.m_length_fuzziness.value();
-            m_curliness = cl.m_curliness.value();
+            m_curve_length = static_cast<GScalar>(cl.m_length.value());
+            m_root_width = static_cast<GScalar>(cl.m_root_width.value());
+            m_tip_width = static_cast<GScalar>(cl.m_tip_width.value());
+            m_length_fuzziness = static_cast<GScalar>(cl.m_length_fuzziness.value());
+            m_curliness = static_cast<GScalar>(cl.m_curliness.value());
             m_split_count = cl.m_presplits.value();
         }
     };
@@ -111,15 +110,15 @@ namespace
 
     struct SupportTriangle
     {
-        Vector3d    m_v0, m_v1, m_v2;
-        Vector3d    m_normal;
-        double      m_area;
+        GVector3    m_v0, m_v1, m_v2;
+        GVector3    m_normal;
+        GScalar     m_area;
     };
 
     void extract_support_triangles(
         const MeshObject&           object,
         vector<SupportTriangle>&    support_triangles,
-        CDF<size_t, double>&        cdf)
+        CDF<size_t, GScalar>&       cdf)
     {
         const size_t triangle_count = object.get_triangle_count();
         for (size_t triangle_index = 0; triangle_index < triangle_count; ++triangle_index)
@@ -128,18 +127,18 @@ namespace
             const Triangle& triangle = object.get_triangle(triangle_index);
 
             // Retrieve object instance space vertices of the triangle.
-            const Vector3d v0 = Vector3d(object.get_vertex(triangle.m_v0));
-            const Vector3d v1 = Vector3d(object.get_vertex(triangle.m_v1));
-            const Vector3d v2 = Vector3d(object.get_vertex(triangle.m_v2));
+            const GVector3& v0 = object.get_vertex(triangle.m_v0);
+            const GVector3& v1 = object.get_vertex(triangle.m_v1);
+            const GVector3& v2 = object.get_vertex(triangle.m_v2);
 
             // Compute the geometric normal to the triangle and the area of the triangle.
-            Vector3d normal = cross(v1 - v0, v2 - v0);
-            const double normal_norm = norm(normal);
-            if (normal_norm == 0.0)
+            GVector3 normal = cross(v1 - v0, v2 - v0);
+            const GScalar normal_norm = norm(normal);
+            if (normal_norm == GScalar(0.0))
                 continue;
-            const double rcp_normal_norm = 1.0 / normal_norm;
-            const double rcp_area = 2.0 * rcp_normal_norm;
-            const double area = 0.5 * normal_norm;
+            const GScalar rcp_normal_norm = GScalar(1.0) / normal_norm;
+            const GScalar rcp_area = GScalar(2.0) * rcp_normal_norm;
+            const GScalar area = GScalar(0.5) * normal_norm;
             normal *= rcp_normal_norm;
             assert(is_normalized(normal));
 
@@ -160,23 +159,14 @@ namespace
         cdf.prepare();
     }
 
-    template <typename RNG>
-    static Vector2d rand_vector2d(RNG& rng)
-    {
-        Vector2d v;
-        v[0] = rand_double2(rng);
-        v[1] = rand_double2(rng);
-        return v;
-    }
-
     void split_and_store(
         CurveObject&                object,
-        const BezierCurve3d&        curve,
+        const CurveType&            curve,
         const size_t                split_count)
     {
         if (split_count > 0)
         {
-            BezierCurve3d child1, child2;
+            CurveType child1, child2;
             curve.split(child1, child2);
             split_and_store(object, child1, split_count - 1);
             split_and_store(object, child2, split_count - 1);
@@ -192,7 +182,7 @@ namespace
         const size_t ControlPointCount = 4;
 
         vector<SupportTriangle> support_triangles;
-        CDF<size_t, double> cdf;
+        CDF<size_t, GScalar> cdf;
         extract_support_triangles(support_object, support_triangles, cdf);
 
         const string curve_object_name = string(support_object.get_name()) + "_curves";
@@ -203,39 +193,39 @@ namespace
 
         curve_object->reserve_curves(params.m_curve_count);
 
-        Vector3d points[ControlPointCount];
-        double widths[ControlPointCount];
+        GVector3 points[ControlPointCount];
+        GScalar widths[ControlPointCount];
 
         MersenneTwister rng;
 
         for (size_t i = 0; i < params.m_curve_count; ++i)
         {
             static const size_t Bases[] = { 2, 3 };
-            const Vector3d s = hammersley_sequence<double, 3>(Bases, i, params.m_curve_count);
+            const GVector3 s = hammersley_sequence<double, 3>(Bases, i, params.m_curve_count);
 
             const size_t triangle_index = cdf.sample(s[0]).first;
             const SupportTriangle& st = support_triangles[triangle_index];
-            const Vector3d bary = sample_triangle_uniform(Vector2d(s[1], s[2]));
+            const GVector3 bary = sample_triangle_uniform(GVector2(s[1], s[2]));
 
             points[0] = st.m_v0 * bary[0] + st.m_v1 * bary[1] + st.m_v2 * bary[2];
             widths[0] = params.m_root_width;
 
-            double f, length;
+            GScalar f, length;
             do
             {
-                f = rand_double1(rng, -params.m_length_fuzziness, +params.m_length_fuzziness);
-                length = max(params.m_curve_length * (1.0 + f), 0.0);
+                f = rand1(rng, -params.m_length_fuzziness, +params.m_length_fuzziness);
+                length = max(params.m_curve_length * (GScalar(1.0) + f), GScalar(0.0));
             } while (length <= 0.0);
 
             for (size_t p = 1; p < ControlPointCount; ++p)
             {
-                const double r = static_cast<double>(p) / (ControlPointCount - 1);
-                const Vector3d f = params.m_curliness * sample_sphere_uniform(rand_vector2d(rng));
+                const GScalar r = static_cast<GScalar>(p) / (ControlPointCount - 1);
+                const GVector3 f = params.m_curliness * sample_sphere_uniform(rand_vector2<GVector2>(rng));
                 points[p] = points[0] + length * (r * st.m_normal + f);
                 widths[p] = lerp(params.m_root_width, params.m_tip_width, r);
             }
 
-            const BezierCurve3d curve(&points[0], &widths[0]);
+            const CurveType curve(&points[0], &widths[0]);
             split_and_store(curve_object.ref(), curve, params.m_split_count);
         }
 

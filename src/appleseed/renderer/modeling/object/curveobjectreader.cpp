@@ -31,6 +31,8 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/global/globaltypes.h"
+#include "renderer/kernel/intersection/intersectionsettings.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
@@ -79,20 +81,11 @@ auto_release_ptr<CurveObject> CurveObjectReader::read(
 
 namespace
 {
-    template <typename RNG>
-    static Vector2d rand_vector2d(RNG& rng)
-    {
-        Vector2d v;
-        v[0] = rand_double2(rng);
-        v[1] = rand_double2(rng);
-        return v;
-    }
-
-    void split_and_store(CurveObject& object, const BezierCurve3d& curve, const size_t split_count)
+    void split_and_store(CurveObject& object, const CurveType& curve, const size_t split_count)
     {
         if (split_count > 0)
         {
-            BezierCurve3d child1, child2;
+            CurveType child1, child2;
             curve.split(child1, child2);
             split_and_store(object, child1, split_count - 1);
             split_and_store(object, child2, split_count - 1);
@@ -109,10 +102,10 @@ auto_release_ptr<CurveObject> CurveObjectReader::create_hair_ball(
 
     const size_t ControlPointCount = 4;
     const size_t curve_count = params.get_optional<size_t>("curves", 100);
-    const double curve_width = params.get_optional<double>("width", 0.002);
+    const GScalar curve_width = params.get_optional<GScalar>("width", GScalar(0.002));
     const size_t split_count = params.get_optional<size_t>("presplits", 0);
 
-    Vector3d points[ControlPointCount];
+    GVector3 points[ControlPointCount];
     MersenneTwister rng;
 
     object->reserve_curves(curve_count);
@@ -122,12 +115,12 @@ auto_release_ptr<CurveObject> CurveObjectReader::create_hair_ball(
         for (size_t p = 0; p < ControlPointCount; ++p)
         {
             // http://math.stackexchange.com/questions/87230/picking-random-points-in-the-volume-of-sphere-with-uniform-probability
-            const double r = pow(1.0 - rand_double2(rng), 1.0 / 3);
-            const Vector3d d = sample_sphere_uniform(rand_vector2d(rng));
+            const GScalar r = pow(GScalar(1.0) - rand2<GScalar>(rng), GScalar(1.0) / 3);
+            const GVector3 d = sample_sphere_uniform(rand_vector2<GVector2>(rng));
             points[p] = r * d;
         }
 
-        const BezierCurve3d curve(&points[0], curve_width);
+        const CurveType curve(&points[0], curve_width);
         split_and_store(object.ref(), curve, split_count);
     }
 
@@ -142,15 +135,15 @@ auto_release_ptr<CurveObject> CurveObjectReader::create_furry_ball(
 
     const size_t ControlPointCount = 4;
     const size_t curve_count = params.get_optional<size_t>("curves", 100);
-    const double curve_length = params.get_optional<double>("length", 0.1);
-    const double length_fuzziness = params.get_optional<double>("length_fuzziness", 0.3);
-    const double root_width = params.get_optional<double>("root_width", 0.001);
-    const double tip_width = params.get_optional<double>("tip_width", 0.0001);
-    const double curliness = params.get_optional<double>("curliness", 0.5);
+    const GScalar curve_length = params.get_optional<GScalar>("length", GScalar(0.1));
+    const GScalar length_fuzziness = params.get_optional<GScalar>("length_fuzziness", GScalar(0.3));
+    const GScalar root_width = params.get_optional<GScalar>("root_width", GScalar(0.001));
+    const GScalar tip_width = params.get_optional<GScalar>("tip_width", GScalar(0.0001));
+    const GScalar curliness = params.get_optional<GScalar>("curliness", GScalar(0.5));
     const size_t split_count = params.get_optional<size_t>("presplits", 0);
 
-    Vector3d points[ControlPointCount];
-    double widths[ControlPointCount];
+    GVector3 points[ControlPointCount];
+    GScalar widths[ControlPointCount];
 
     MersenneTwister rng;
 
@@ -159,24 +152,24 @@ auto_release_ptr<CurveObject> CurveObjectReader::create_furry_ball(
     for (size_t c = 0; c < curve_count; ++c)
     {
         static const size_t Bases[] = { 2 };
-        const Vector2d s = hammersley_sequence<double, 2>(Bases, c, curve_count);
-        const Vector3d d = sample_sphere_uniform(s);
+        const GVector2 s = hammersley_sequence<GScalar, 2>(Bases, c, curve_count);
+        const GVector3 d = sample_sphere_uniform(s);
 
         points[0] = d;
         widths[0] = root_width;
 
-        const double f = rand_double1(rng, -length_fuzziness, +length_fuzziness);
-        const double length = curve_length * (1.0 + f);
+        const GScalar f = rand1(rng, -length_fuzziness, +length_fuzziness);
+        const GScalar length = curve_length * (GScalar(1.0) + f);
 
         for (size_t p = 1; p < ControlPointCount; ++p)
         {
-            const double r = static_cast<double>(p) / (ControlPointCount - 1);
-            const Vector3d f = curliness * sample_sphere_uniform(rand_vector2d(rng));
+            const GScalar r = static_cast<GScalar>(p) / (ControlPointCount - 1);
+            const GVector3 f = curliness * sample_sphere_uniform(rand_vector2<GVector2>(rng));
             points[p] = points[0] + length * (r * d + f);
             widths[p] = lerp(root_width, tip_width, r);
         }
 
-        const BezierCurve3d curve(&points[0], &widths[0]);
+        const CurveType curve(&points[0], &widths[0]);
         split_and_store(object.ref(), curve, split_count);
     }
 
@@ -219,8 +212,8 @@ auto_release_ptr<CurveObject> CurveObjectReader::load_curve_file(
         return object;
     }
 
-    vector<Vector3d> points(control_point_count);
-    vector<double> widths(control_point_count);
+    vector<GVector3> points(control_point_count);
+    vector<GScalar> widths(control_point_count);
 
     object->reserve_curves(curve_count);
 
@@ -232,7 +225,7 @@ auto_release_ptr<CurveObject> CurveObjectReader::load_curve_file(
             input >> widths[p];
         }
 
-        const BezierCurve3d curve(&points[0], &widths[0]);
+        const CurveType curve(&points[0], &widths[0]);
         split_and_store(object.ref(), curve, split_count);
     }
 

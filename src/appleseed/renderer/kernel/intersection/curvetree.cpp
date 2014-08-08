@@ -113,7 +113,7 @@ void CurveTree::build_bvh(
         "collecting geometry for curve tree #" FMT_UNIQUE_ID " from assembly \"%s\"...",
         m_arguments.m_curve_tree_uid,
         m_arguments.m_assembly.get_name());
-    vector<AABB3d> curve_bboxes;
+    vector<GAABB3> curve_bboxes;
     collect_curves(curve_bboxes);
 
     // Print statistics about the input geometry.
@@ -124,7 +124,7 @@ void CurveTree::build_bvh(
         plural(m_curve_keys.size(), "curve").c_str());
 
     // Create the partitioner.
-    typedef bvh::SAHPartitioner<vector<AABB3d> > Partitioner;
+    typedef bvh::SAHPartitioner<vector<GAABB3> > Partitioner;
     Partitioner partitioner(
         curve_bboxes,
         CurveTreeDefaultMaxLeafSize,
@@ -140,14 +140,14 @@ void CurveTree::build_bvh(
         m_curves3.size(),
         CurveTreeDefaultMaxLeafSize);
     statistics.merge(
-        bvh::TreeStatistics<CurveTree>(*this, AABB3d(m_arguments.m_bbox)));
+        bvh::TreeStatistics<CurveTree>(*this, m_arguments.m_bbox));
 
     // Reorder the curves based on the nodes ordering.
     if (!m_curves3.empty())
     {
         const vector<size_t>& order = partitioner.get_item_ordering();
 
-        vector<BezierCurve3d> temp_curves(m_curves3.size());
+        vector<CurveType> temp_curves(m_curves3.size());
         small_item_reorder(&m_curves3[0], &temp_curves[0], &order[0], order.size());
 
         vector<CurveKey> temp_keys(m_curve_keys.size());
@@ -155,7 +155,7 @@ void CurveTree::build_bvh(
     }
 }
 
-void CurveTree::collect_curves(vector<AABB3d>& curve_bboxes)
+void CurveTree::collect_curves(vector<GAABB3>& curve_bboxes)
 {
     const ObjectInstanceContainer& object_instances = m_arguments.m_assembly.object_instances();
 
@@ -181,11 +181,11 @@ void CurveTree::collect_curves(vector<AABB3d>& curve_bboxes)
         const size_t curve_count = curve_object.get_curve_count();
         for (size_t j = 0; j < curve_count; ++j)
         {
-            const BezierCurve3d curve(curve_object.get_curve(j), transform);
+            const CurveType curve(curve_object.get_curve(j), transform);
             const CurveKey curve_key(i, j, 0);  // for now we assume all the curves have the same material
 
-            AABB3d curve_bbox = curve.compute_bbox();
-            curve_bbox.grow(Vector3d(0.5 * curve.compute_max_width()));
+            GAABB3 curve_bbox = curve.compute_bbox();
+            curve_bbox.grow(GVector3(GScalar(0.5) * curve.compute_max_width()));
 
             m_curves3.push_back(curve);
             m_curve_keys.push_back(curve_key);

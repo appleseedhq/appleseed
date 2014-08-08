@@ -31,13 +31,13 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/global/globaltypes.h"
+#include "renderer/kernel/intersection/intersectionsettings.h"
 #include "renderer/modeling/object/curveobject.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
 #include "foundation/core/exceptions/exceptionioerror.h"
-#include "foundation/math/beziercurve.h"
-#include "foundation/math/vector.h"
 #include "foundation/platform/defaulttimers.h"
 #include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
@@ -84,7 +84,7 @@ bool CurveObjectWriter::write(
 
     for (size_t i = 0; i < curve_count; ++i)
     {
-        const BezierCurve3d& curve = object.get_curve(i);
+        const CurveType& curve = object.get_curve(i);
         const size_t control_point_count = curve.get_control_point_count();
 
         for (size_t p = 0; p < control_point_count; ++p)
@@ -92,8 +92,8 @@ bool CurveObjectWriter::write(
             if (p > 0)
                 output << ' ';
 
-            const Vector3d& point = curve.get_control_point(p);
-            const double width = curve.get_width(p);
+            const GVector3& point = curve.get_control_point(p);
+            const GScalar width = curve.get_width(p);
 
             output << point.x << ' ' << point.y << ' ' << point.z << ' ' << width;
         }

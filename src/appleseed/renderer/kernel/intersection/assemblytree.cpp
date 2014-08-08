@@ -625,16 +625,16 @@ bool AssemblyLeafVisitor::visit(
         if (curve_tree)
         {
             // Check the intersection between the ray and the curve tree.
-            Matrix4d xfm_matrix;
-            BezierCurveIntersector<BezierCurve3d>::make_projection_transform(
-                xfm_matrix,
-                local_shading_point.m_ray);
+            const GRay3 ray(local_shading_point.m_ray);
+            const GRayInfo3 ray_info(local_ray_info);
+            CurveIntersectorType::MatrixType xfm_matrix;
+            CurveIntersectorType::make_projection_transform(xfm_matrix, ray);
             CurveLeafVisitor visitor(*curve_tree, xfm_matrix, local_shading_point);
             CurveTreeIntersector intersector;
             intersector.intersect_no_motion(
                 *curve_tree,
-                local_shading_point.m_ray,
-                local_ray_info,
+                ray,
+                ray_info,
                 visitor
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
                 , m_curve_tree_stats
@@ -792,16 +792,16 @@ bool AssemblyLeafProbeVisitor::visit(
         if (curve_tree)
         {
             // Check intersection between ray and curve tree.
-            Matrix4d xfm_matrix;
-            BezierCurveIntersector<BezierCurve3d>::make_projection_transform(
-                xfm_matrix,
-                local_ray);
+            const GRay3 ray(local_ray);
+            const GRayInfo3 ray_info(local_ray_info);
+            CurveIntersectorType::MatrixType xfm_matrix;
+            CurveIntersectorType::make_projection_transform(xfm_matrix, ray);
             CurveLeafProbeVisitor visitor(*curve_tree, xfm_matrix);
             CurveTreeProbeIntersector intersector;
             intersector.intersect_no_motion(
                 *curve_tree,
-                local_ray,
-                local_ray_info,
+                ray,
+                ray_info,
                 visitor
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
                 , m_curve_tree_stats

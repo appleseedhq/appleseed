@@ -33,6 +33,7 @@
 #include "foundation/image/color.h"
 #include "foundation/image/spectrum.h"
 #include "foundation/math/aabb.h"
+#include "foundation/math/ray.h"
 #include "foundation/math/rng.h"
 #include "foundation/math/sampling.h"
 #include "foundation/math/vector.h"
@@ -44,12 +45,16 @@ namespace renderer
 // Globally defined types.
 //
 
-// Geometry types.
+// In-memory geometry storage type.
 typedef float GScalar;
+
+// GScalar-derived types.
 typedef foundation::Vector<GScalar, 2> GVector2;
 typedef foundation::Vector<GScalar, 3> GVector3;
 typedef foundation::AABB<GScalar, 3> GAABB3;
 typedef foundation::AABB<GScalar, 1> GAABB1;
+typedef foundation::Ray<GScalar, 3> GRay3;
+typedef foundation::RayInfo<GScalar, 3> GRayInfo3;
 
 // Spectrum representation.
 typedef foundation::RegularSpectrum<float, 31> Spectrum;

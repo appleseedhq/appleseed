@@ -117,14 +117,11 @@ const size_t TriangleTreeStackSize = 64;
 // Curve tree settings.
 //
 
-// Curve format used for storage.
-typedef foundation::BezierCurve3d GCurveType;
+// Curve format used for storage and intersection.
+typedef foundation::BezierCurve3<GScalar> CurveType;
 
-// Curve format used for intersection.
-typedef foundation::BezierCurve3d CurveType;
-
-// Curve intersector format used for intersection.
-typedef foundation::BezierCurveIntersector<CurveType> CurveIntersector;
+// Curve intersector.
+typedef foundation::BezierCurveIntersector<CurveType> CurveIntersectorType;
 
 // Maximum number of curves per leaf.
 const size_t CurveTreeDefaultMaxLeafSize = 1;

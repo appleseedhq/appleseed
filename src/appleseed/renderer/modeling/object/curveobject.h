@@ -31,11 +31,11 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/intersection/intersectionsettings.h"
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/object/regionkit.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/beziercurve.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/lazy.h"
@@ -47,7 +47,7 @@
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer      { class ParamArray; }
+namespace renderer  { class ParamArray; }
 
 namespace renderer
 {
@@ -74,9 +74,9 @@ class DLLSYMBOL CurveObject
 
     // Insert and access curves.
     void reserve_curves(const size_t count);
-    size_t push_curve(const foundation::BezierCurve3d& curve);
+    size_t push_curve(const CurveType& curve);
     size_t get_curve_count() const;
-    const foundation::BezierCurve3d& get_curve(const size_t index) const;
+    const CurveType& get_curve(const size_t index) const;
 
     // Insert and access material slots.
     virtual size_t get_material_slot_count() const OVERRIDE;
