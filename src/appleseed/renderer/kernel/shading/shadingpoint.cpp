@@ -365,7 +365,9 @@ OSL::ShaderGlobals& ShadingPoint::get_osl_shader_globals() const
         m_shader_globals.renderstate = 
             const_cast<void*>(reinterpret_cast<const void*>(this));
 
-        m_shader_globals.tracedata = 0;
+        memset(reinterpret_cast<void*>(&m_osl_trace_data), 0, sizeof(OSLTraceData));
+        m_shader_globals.tracedata = reinterpret_cast<void*>(&m_osl_trace_data);                
+
         m_shader_globals.objdata = 0;
 
         m_obj_transform_info.m_assembly_instance_transform =
