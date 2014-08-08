@@ -1647,9 +1647,7 @@ void MainWindow::slot_fullscreen()
         m_fullscreen = true;
 
     for (each<vector<MinimizeButton*> > button = m_minimize_buttons; button; ++button)
-    {
         (*button)->set_fullscreen(m_fullscreen);
-    }
 }
 
 void MainWindow::slot_show_render_settings_window()
