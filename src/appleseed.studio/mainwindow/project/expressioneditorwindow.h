@@ -1,5 +1,4 @@
 
-//
 // This source file is part of appleseed.
 // Visit http://appleseedhq.net/ for additional information and resources.
 //
@@ -38,8 +37,8 @@
 #include <string>
 
 // Forward declarations.
-namespace renderer { class Project; }
-namespace Ui { class ExpressionEditorWindow; }
+namespace renderer  { class Project; }
+namespace Ui        { class ExpressionEditorWindow; }
 class SeExprEditor;
 class QLabel;
 
@@ -59,7 +58,6 @@ class ExpressionEditorWindow
         QWidget*                    parent = 0);
 
     void apply_expression();
-    void show_message_box(const QString& title, const QString& text);
 
   public slots:
     void slot_accept();
@@ -74,7 +72,7 @@ class ExpressionEditorWindow
     void signal_expression_applied(const QString& widget_name, const QString& expression);
 
   private:
-    std::string get_project_path();
+    std::string get_project_path() const;
 
     Ui::ExpressionEditorWindow*     m_ui;
     const renderer::Project&        m_project;

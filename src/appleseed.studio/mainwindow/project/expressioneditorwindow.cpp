@@ -159,15 +159,6 @@ void ExpressionEditorWindow::apply_expression()
     }
 }
 
-void ExpressionEditorWindow::show_message_box(const QString& title, const QString& text)
-{
-    QMessageBox* error_message_box = new QMessageBox();
-    error_message_box->setWindowTitle(title);
-    error_message_box->setText(text);
-    error_message_box->setStandardButtons(QMessageBox::Ok);
-    error_message_box->exec();
-}
-
 void ExpressionEditorWindow::slot_accept()
 {
     apply_expression();
@@ -189,6 +180,19 @@ void ExpressionEditorWindow::slot_clear_expression()
     m_editor->setExpr("");
 }
 
+namespace
+{
+    void show_message_box(const string& title, const string& text)
+    {
+        QMessageBox msgbox;
+        msgbox.setWindowTitle(QString::fromStdString(title));
+        msgbox.setIcon(QMessageBox::Warning);
+        msgbox.setText(QString::fromStdString(text));
+        msgbox.setStandardButtons(QMessageBox::Ok);
+        msgbox.exec();
+    }
+}
+
 void ExpressionEditorWindow::slot_save_script()
 {
     QFileDialog::Options options;
@@ -201,7 +205,7 @@ void ExpressionEditorWindow::slot_save_script()
                 this,
                 "Save As...",
                 QString::fromStdString(get_project_path()),
-                "Expression scripts (*.se)",
+                "Expression Scripts (*.se)",
                 &selected_filter,
                 options);
 
@@ -218,8 +222,8 @@ void ExpressionEditorWindow::slot_save_script()
         if (!script_file.is_open())
         {
             show_message_box(
-                "Opening error",
-                "Error while saving expression script file.");
+                "Saving Error",
+                "Failed to save the expression script file " + m_script_filepath + ".");
             return;
         }
         script_file << m_editor->getExpr();
@@ -237,7 +241,7 @@ void ExpressionEditorWindow::slot_load_script()
             this,
             "Open...",
             QString::fromStdString(get_project_path()),
-            "Expression scripts (*.se)",
+            "Expression Scripts (*.se)",
             &selected_filter,
             options);
 
@@ -250,8 +254,8 @@ void ExpressionEditorWindow::slot_load_script()
         if (!script_file.is_open())
         {
             show_message_box(
-                "Opening error",
-                "Error while loading expression script file.");
+                "Loading Error",
+                "Failed to load the expression script file " + filepath.toStdString() + ".");
             return;
         }
         stringstream script_buffer;
@@ -263,7 +267,7 @@ void ExpressionEditorWindow::slot_load_script()
     }
 }
 
-string ExpressionEditorWindow::get_project_path()
+string ExpressionEditorWindow::get_project_path() const
 {
     const filesystem::path project_root_path = filesystem::path(m_project.get_path()).parent_path();
     const filesystem::path file_path = absolute("script.se", project_root_path);

@@ -364,7 +364,7 @@ class DisneyLayerParam
             return true;
         string inner_content = tokens[1];
         tokens.clear();
-        tokenize(inner_content, " ,", tokens);
+        tokenize(inner_content, ",", tokens);
         if (tokens.size() != 3)
             return true;
         if (trim_both(tokens[1]) != "$u" && trim_both(tokens[2]) != "$v")
