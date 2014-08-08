@@ -62,6 +62,9 @@ class DLLSYMBOL RenderLayerRule
         const char*         name,
         const ParamArray&   params);
 
+    // Destructor.
+    ~RenderLayerRule();
+
     // Return a string identifying the model of this entity.
     virtual const char* get_model() const = 0;
 

@@ -127,6 +127,11 @@ RenderLayerRule::RenderLayerRule(
     }
 }
 
+RenderLayerRule::~RenderLayerRule()
+{
+    delete impl;
+}
+
 const char* RenderLayerRule::get_render_layer() const
 {
     return impl->m_render_layer.c_str();

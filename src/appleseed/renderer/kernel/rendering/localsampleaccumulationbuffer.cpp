@@ -103,6 +103,8 @@ LocalSampleAccumulationBuffer::LocalSampleAccumulationBuffer(
         if (level_height > MinSize)
             level_height = max(level_height / 2, MinSize);
     }
+
+    m_active_level = m_levels.size() - 1;
 }
 
 LocalSampleAccumulationBuffer::~LocalSampleAccumulationBuffer()

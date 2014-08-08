@@ -292,6 +292,7 @@ void Camera::initialize_ray(
     }
 
     ray.m_type = ShadingRay::CameraRay;
+    ray.m_depth = 0;
 }
 
 bool Camera::has_param(const char* name) const

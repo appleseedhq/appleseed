@@ -88,8 +88,6 @@ class DLLSYMBOL CurveObject
     struct Impl;
     Impl*  impl;
 
-    const char* m_filename;
-
     // Constructor.
     CurveObject(
         const char*         name,
