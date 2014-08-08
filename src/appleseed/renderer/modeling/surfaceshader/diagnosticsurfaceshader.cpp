@@ -266,7 +266,7 @@ void DiagnosticSurfaceShader::evaluate(
             if (shading_point.get_primitive_type() == ShadingPoint::PrimitiveTriangle)
             {
                 // Film space thickness of the wires.
-                const double SquareWireThickness = square(0.0005);
+                const double SquareWireThickness = square(0.00025);
 
                 // Retrieve the time, the scene and the camera.
                 const double time = shading_point.get_time();
