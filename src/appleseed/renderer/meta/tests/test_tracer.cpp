@@ -90,14 +90,6 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         Scene*                          m_scene;
         Assembly*                       m_assembly;
         AssemblyInstance*               m_assembly_instance;
-#ifdef WITH_OIIO
-        shared_ptr<OIIO::TextureSystem> m_texture_system;
-#endif
-#ifdef WITH_OSL
-        shared_ptr<RendererServices>    m_renderer_services;
-        shared_ptr<OSL::ShadingSystem>  m_shading_system;
-        shared_ptr<OSLShaderGroupExec>  m_shading_group_exec;
-#endif
 
         SceneBase()
           : m_project(ProjectFactory::create("project"))
@@ -121,22 +113,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             create_material("opaque_material", "constant_white_surface_shader", 1.0f);
             create_material("transparent_material", "constant_white_surface_shader", 0.5f);
 
-            create_plane_object();
-            
-#ifdef WITH_OIIO
-            m_texture_system.reset(
-                OIIO::TextureSystem::create(),
-                bind(&OIIO::TextureSystem::destroy, _1));
-#endif
-#ifdef WITH_OSL
-            m_renderer_services.reset(
-                new RendererServices(*m_project, *m_texture_system));
-            m_shading_system.reset(
-                new OSL::ShadingSystem(
-                    m_renderer_services.get(),
-                    m_texture_system.get()));
-            m_shading_group_exec.reset(new OSLShaderGroupExec(*m_shading_system));
-#endif
+            create_plane_object();            
         }
 
         void create_color(const char* name, const Color4f& color)
@@ -221,6 +198,14 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         TextureCache        m_texture_cache;
         Intersector         m_intersector;
         MersenneTwister     m_rng;
+#ifdef WITH_OIIO
+        shared_ptr<OIIO::TextureSystem> m_texture_system;
+#endif
+#ifdef WITH_OSL
+        shared_ptr<RendererServices>    m_renderer_services;
+        shared_ptr<OSL::ShadingSystem>  m_shading_system;
+        shared_ptr<OSLShaderGroupExec>  m_shading_group_exec;
+#endif
 
         Fixture()
           : m_trace_context(*Base::m_scene)
@@ -228,10 +213,25 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
           , m_texture_cache(m_texture_store)
           , m_intersector(m_trace_context, m_texture_cache)
         {
+#ifdef WITH_OIIO
+            m_texture_system.reset(
+                OIIO::TextureSystem::create(),
+                bind(&OIIO::TextureSystem::destroy, _1));
+#endif
+#ifdef WITH_OSL
+            m_renderer_services.reset(
+                new RendererServices(*Base::m_project, *m_texture_system, m_texture_store));
+            m_shading_system.reset(
+                new OSL::ShadingSystem(
+                    m_renderer_services.get(),
+                    m_texture_system.get()));
+            m_shading_group_exec.reset(new OSLShaderGroupExec(*m_shading_system));
+#endif
+
             Base::m_scene->on_frame_begin(
                 Base::m_project.ref()
 #ifdef WITH_OSL
-                , *Base::m_shading_system
+                , *m_shading_system
 #endif
                 );
         }

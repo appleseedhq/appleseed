@@ -103,7 +103,8 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
             bind(&OIIO::TextureSystem::destroy, _1));
 #endif
 #ifdef WITH_OSL
-        RendererServices renderer_services(*project, *texture_system);
+        TextureStore texture_store(scene);
+        RendererServices renderer_services(*project, *texture_system, texture_store);
         
         shared_ptr<OSL::ShadingSystem> shading_system(
             new OSL::ShadingSystem(&renderer_services, texture_system.get()));
@@ -164,7 +165,6 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
 #endif
             );
 
-        TextureStore texture_store(scene);
         TextureCache texture_cache(texture_store);
         InputEvaluator input_evaluator(texture_cache);
 
