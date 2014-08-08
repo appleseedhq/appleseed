@@ -48,6 +48,8 @@
 
 // Forward declarations.
 namespace renderer  { class Project; }
+namespace renderer  { class TextureStore; }
+namespace renderer  { class TraceContext; }
 
 namespace renderer
 {
@@ -63,7 +65,8 @@ class RendererServices
     // Constructor.
     RendererServices(
         const Project&          project,
-        OIIO::TextureSystem&    texture_sys);
+        OIIO::TextureSystem&    texture_sys,
+        TextureStore&           texture_store);
 
     // Precompute attribute values before rendering starts.
     void precompute_attributes();
@@ -190,6 +193,29 @@ class RendererServices
         OSL::Matrix44&          result,
         OIIO::ustring           from) OVERRIDE;
 
+    // Immediately trace a ray from P in the direction R.  Return true
+    // if anything hit, otherwise false.
+    bool trace(
+        TraceOpt&           options,
+        OSL::ShaderGlobals* sg,
+        const OSL::Vec3&    P,
+        const OSL::Vec3&    dPdx,
+        const OSL::Vec3&    dPdy,
+        const OSL::Vec3&    R,
+        const OSL::Vec3&    dRdx,
+        const OSL::Vec3&    dRdy) OVERRIDE;
+
+    // Get the named message from the renderer and if found then
+    // write it into 'val'.  Otherwise, return false.  This is only
+    // called for "sourced" messages, not ordinary intra-group messages.    
+    bool getmessage(
+        OSL::ShaderGlobals* sg,
+        OIIO::ustring       source,
+        OIIO::ustring       name,
+        OIIO::TypeDesc      type, 
+        void*               val, 
+        bool                derivatives) OVERRIDE;
+
     // Get the named attribute from the renderer and if found then
     // write it into 'val'.  Otherwise, return false.  If no object is
     // specified (object == ustring()), then the renderer should search *first*
@@ -291,6 +317,8 @@ class RendererServices
     
     const Project&          m_project;
     OIIO::TextureSystem&    m_texture_sys;
+    const TraceContext&     m_trace_context;
+    TextureStore&           m_texture_store;
     AttrGetterMapType       m_global_attr_getters;
     OIIO::ustring           m_cam_projection_str;
 };

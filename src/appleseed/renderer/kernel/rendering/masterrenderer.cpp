@@ -335,7 +335,8 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     // Create our renderer services.
     RendererServices services(
         m_project, 
-        *m_texture_system);
+        *m_texture_system,
+        texture_store);
 
     // Create our OSL shading system.
     boost::shared_ptr<OSL::ShadingSystem> shading_system(
