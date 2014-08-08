@@ -36,6 +36,7 @@
 
 // Standard headers.
 #include <cassert>
+#include <cstddef>
 #include <limits>
 
 namespace foundation
@@ -45,38 +46,64 @@ namespace foundation
 // Distribution adapters.
 //
 
-// Returns a random number in the integer interval [0, 0x7fffffff].
+// Return a random number in the integer interval [0, 0x7fffffff].
 template <typename RNG> int32 rand_int31(RNG& rng);
 
-// Returns a random number in the integer interval [min, max].
+// Return a random number in the integer interval [min, max].
 template <typename RNG> int32 rand_int1(RNG& rng, const int32 min, const int32 max);
 
-// Returns a random number in the real interval [0,1].
+// Return a random number in the real interval [0,1].
 template <typename RNG> float rand_float1(RNG& rng);
 template <typename RNG> double rand_double1(RNG& rng);
+template <typename T, typename RNG> T rand1(RNG& rng);
 
-// Returns a random number in the real interval [min, max].
+// Return a random number in the real interval [min, max].
 template <typename RNG> float rand_float1(RNG& rng, const float min, const float max);
 template <typename RNG> double rand_double1(RNG& rng, const double min, const double max);
+template <typename RNG> float rand1(RNG& rng, const float min, const float max);
+template <typename RNG> double rand1(RNG& rng, const double min, const double max);
 
-// Returns a random number in the real interval [0,1).
+// Return a random number in the real interval [0,1).
 template <typename RNG> float rand_float2(RNG& rng);
 template <typename RNG> double rand_double2(RNG& rng);
+template <typename T, typename RNG> T rand2(RNG& rng);
 
-// Returns a random number in the real interval [min, max).
+// Return a random number in the real interval [min, max).
 template <typename RNG> float rand_float2(RNG& rng, const float min, const float max);
 template <typename RNG> double rand_double2(RNG& rng, const double min, const double max);
+template <typename RNG> float rand2(RNG& rng, const float min, const float max);
+template <typename RNG> double rand2(RNG& rng, const double min, const double max);
 
-// Returns a random number in the real interval (0,1).
+// Return a random number in the real interval (0,1).
 template <typename RNG> float rand_float3(RNG& rng);
 template <typename RNG> double rand_double3(RNG& rng);
+template <typename T, typename RNG> T rand3(RNG& rng);
 
-// Returns a random number in the real interval (min, max).
+// Return a random number in the real interval (min, max).
 template <typename RNG> float rand_float3(RNG& rng, const float min, const float max);
 template <typename RNG> double rand_double3(RNG& rng, const double min, const double max);
+template <typename RNG> float rand3(RNG& rng, const float min, const float max);
+template <typename RNG> double rand3(RNG& rng, const double min, const double max);
 
-// Returns a random number in the real interval [0,1) with 53-bit resolution.
+// Return a random number in the real interval [0,1) with 53-bit resolution.
 template <typename RNG> double rand_double2_res53(RNG& rng);
+
+
+//
+// Random vectors.
+//
+
+// Return a random vector whose components are in the real interval [0,1].
+template <typename VectorType, typename RNG>
+VectorType rand_vector1(RNG& rng);
+
+// Return a random vector whose components are in the real interval [0,1).
+template <typename VectorType, typename RNG>
+VectorType rand_vector2(RNG& rng);
+
+// Return a random vector whose components are in the real interval (0,1).
+template <typename VectorType, typename RNG>
+VectorType rand_vector3(RNG& rng);
 
 
 //
@@ -93,10 +120,11 @@ template <typename RNG>
 inline int32 rand_int1(RNG& rng, const int32 min, const int32 max)
 {
     assert(min <= max);
-    const double x = rand_double2(
-        rng,
-        static_cast<double>(min),
-        static_cast<double>(max) + 1);
+    const double x =
+        rand_double2(
+            rng,
+            static_cast<double>(min),
+            static_cast<double>(max) + 1);
     return truncate<int32>(x);
 }
 
@@ -112,20 +140,52 @@ inline double rand_double1(RNG& rng)
     return rng.rand_uint32() * (1.0 / 4294967295UL);
 }
 
+template <typename T, typename RNG>
+struct Rand1Helper;
+
+template <typename RNG>
+struct Rand1Helper<float, RNG>
+{
+    float operator()(RNG& rng) { return rand_float1(rng); }
+};
+
+template <typename RNG>
+struct Rand1Helper<double, RNG>
+{
+    double operator()(RNG& rng) { return rand_double1(rng); }
+};
+
+template <typename T, typename RNG>
+inline T rand1(RNG& rng)
+{
+    Rand1Helper<T, RNG> helper;
+    return helper(rng);
+}
+
 template <typename RNG>
 inline float rand_float1(RNG& rng, const float min, const float max)
 {
     assert(min <= max);
-    const float x = rand_float1(rng);
-    return (1.0f - x) * min + x * max;
+    return lerp(min, max, rand_float1(rng));
 }
 
 template <typename RNG>
 inline double rand_double1(RNG& rng, const double min, const double max)
 {
     assert(min <= max);
-    const double x = rand_double1(rng);
-    return (1.0 - x) * min + x * max;
+    return lerp(min, max, rand_double1(rng));
+}
+
+template <typename RNG>
+inline float rand1(RNG& rng, const float min, const float max)
+{
+    return rand_float1(rng, min, max);
+}
+
+template <typename RNG>
+inline double rand1(RNG& rng, const double min, const double max)
+{
+    return rand_double1(rng, min, max);
 }
 
 template <typename RNG>
@@ -140,20 +200,52 @@ inline double rand_double2(RNG& rng)
     return rng.rand_uint32() * (1.0 / 4294967296.0);
 }
 
+template <typename T, typename RNG>
+struct Rand2Helper;
+
+template <typename RNG>
+struct Rand2Helper<float, RNG>
+{
+    float operator()(RNG& rng) { return rand_float2(rng); }
+};
+
+template <typename RNG>
+struct Rand2Helper<double, RNG>
+{
+    double operator()(RNG& rng) { return rand_double2(rng); }
+};
+
+template <typename T, typename RNG>
+inline T rand2(RNG& rng)
+{
+    Rand2Helper<T, RNG> helper;
+    return helper(rng);
+}
+
 template <typename RNG>
 inline float rand_float2(RNG& rng, const float min, const float max)
 {
     assert(min <= max);
-    const float x = rand_float2(rng);
-    return (1.0f - x) * min + x * max;
+    return lerp(min, max, rand_float2(rng));
 }
 
 template <typename RNG>
 inline double rand_double2(RNG& rng, const double min, const double max)
 {
     assert(min <= max);
-    const double x = rand_double2(rng);
-    return (1.0 - x) * min + x * max;
+    return lerp(min, max, rand_double2(rng));
+}
+
+template <typename RNG>
+inline float rand2(RNG& rng, const float min, const float max)
+{
+    return rand_float2(rng, min, max);
+}
+
+template <typename RNG>
+inline double rand2(RNG& rng, const double min, const double max)
+{
+    return rand_double2(rng, min, max);
 }
 
 template <typename RNG>
@@ -168,20 +260,52 @@ inline double rand_double3(RNG& rng)
     return rng.rand_uint32() * 2.3283064370807963e-10 + std::numeric_limits<double>::epsilon();
 }
 
+template <typename T, typename RNG>
+struct Rand3Helper;
+
+template <typename RNG>
+struct Rand3Helper<float, RNG>
+{
+    float operator()(RNG& rng) { return rand_float3(rng); }
+};
+
+template <typename RNG>
+struct Rand3Helper<double, RNG>
+{
+    double operator()(RNG& rng) { return rand_double3(rng); }
+};
+
+template <typename T, typename RNG>
+inline T rand3(RNG& rng)
+{
+    Rand3Helper<T, RNG> helper;
+    return helper(rng);
+}
+
 template <typename RNG>
 inline float rand_float3(RNG& rng, const float min, const float max)
 {
     assert(min <= max);
-    const float x = rand_float3(rng);
-    return (1.0f - x) * min + x * max;
+    return lerp(min, max, rand_float3(rng));
 }
 
 template <typename RNG>
 inline double rand_double3(RNG& rng, const double min, const double max)
 {
     assert(min <= max);
-    const double x = rand_double3(rng);
-    return (1.0 - x) * min + x * max;
+    return lerp(min, max, rand_double3(rng));
+}
+
+template <typename RNG>
+inline float rand3(RNG& rng, const float min, const float max)
+{
+    return rand_float3(rng, min, max);
+}
+
+template <typename RNG>
+inline double rand3(RNG& rng, const double min, const double max)
+{
+    return rand_double3(rng, min, max);
 }
 
 template <typename RNG>
@@ -190,6 +314,33 @@ inline double rand_double2_res53(RNG& rng)
     const uint32 a = rng.rand_uint32() >> 5;
     const uint32 b = rng.rand_uint32() >> 6;
     return (a * 67108864.0 + b) * (1.0 / 9007199254740992.0);
+}
+
+template <typename VectorType, typename RNG>
+inline VectorType rand_vector1(RNG& rng)
+{
+    VectorType v;
+    for (size_t i = 0; i < VectorType::Dimension; ++i)
+        v[i] = rand1<typename VectorType::ValueType>(rng);
+    return v;
+}
+
+template <typename VectorType, typename RNG>
+inline VectorType rand_vector2(RNG& rng)
+{
+    VectorType v;
+    for (size_t i = 0; i < VectorType::Dimension; ++i)
+        v[i] = rand2<typename VectorType::ValueType>(rng);
+    return v;
+}
+
+template <typename VectorType, typename RNG>
+inline VectorType rand_vector3(RNG& rng)
+{
+    VectorType v;
+    for (size_t i = 0; i < VectorType::Dimension; ++i)
+        v[i] = rand3<typename VectorType::ValueType>(rng);
+    return v;
 }
 
 }       // namespace foundation
