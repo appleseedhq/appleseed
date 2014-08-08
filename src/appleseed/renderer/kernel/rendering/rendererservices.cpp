@@ -304,6 +304,7 @@ bool RendererServices::trace(
     Intersector intersector(m_trace_context, texture_cache);
 
     const ShadingPoint* parent = reinterpret_cast<const ShadingPoint*>(sg->renderstate);
+    const ShadingPoint* origin_shading_point = 0;
 
     Vector3d PP = Vector3f(P);
 
@@ -322,6 +323,8 @@ bool RendererServices::trace(
             PP = front;
         else
             PP = back;
+
+        origin_shading_point = parent;
     }
 
     const ShadingRay ray(
@@ -337,7 +340,7 @@ bool RendererServices::trace(
     intersector.trace(
         ray, 
         shading_point, 
-        P == sg->P ? parent : 0);
+        origin_shading_point);
 
     ShadingPoint::OSLTraceData* trace_data = 
         reinterpret_cast<ShadingPoint::OSLTraceData*>(sg->tracedata);
@@ -351,8 +354,9 @@ bool RendererServices::trace(
         trace_data->m_hit_distance = (trace_data->m_P - P).length();
         trace_data->m_N = Imath::V3d(shading_point.get_shading_normal());
         trace_data->m_Ng = Imath::V3d(shading_point.get_geometric_normal());
-        trace_data->m_u = shading_point.get_uv(0)[0];
-        trace_data->m_v = shading_point.get_uv(0)[1];
+        Vector2d uv = shading_point.get_uv(0);
+        trace_data->m_u = uv.x;
+        trace_data->m_v = uv.y;
         return true;
     }
 
