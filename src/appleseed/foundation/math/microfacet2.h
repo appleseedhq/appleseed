@@ -61,6 +61,8 @@ template <typename T>
 class TorranceSparrowMaskingShadowing
 {
   public:
+    TorranceSparrowMaskingShadowing() {}
+
     // incoming and outgoing are in shading basis space.
     static T G(
         const Vector<T, 3>&  incoming,
@@ -94,6 +96,8 @@ class MDF
 {
   public:
     typedef T ValueType;
+
+    MDF() {}
 
     virtual ~MDF() {}
 
@@ -241,6 +245,8 @@ class BlinnMDF2
   public:
     typedef boost::mpl::bool_<false> IsAnisotropicType;
 
+    BlinnMDF2() {}
+
   private:
     virtual Vector<T, 3> do_sample(
         const Vector<T, 2>&  s,
@@ -295,6 +301,8 @@ template <typename T>
 class BeckmannSmithMaskingShadowing
 {
   public:
+    BeckmannSmithMaskingShadowing() {}
+
     // incoming and outgoing are in shading basis space.
     static T G(
         const Vector<T, 3>&  incoming,
@@ -332,6 +340,8 @@ class BeckmannMDF2
 {
   public:
     typedef boost::mpl::bool_<false> IsAnisotropicType;
+
+    BeckmannMDF2() {}
 
   private:
     virtual Vector<T, 3> do_sample(
@@ -414,6 +424,8 @@ template <typename T>
 class GGXSmithMaskingShadowing
 {
   public:
+    GGXSmithMaskingShadowing() {}
+
     // incoming and outgoing are in shading basis space.
     static T G(
         const Vector<T, 3>&  incoming,
@@ -464,6 +476,8 @@ class GGXMDF2
 {
   public:
     typedef boost::mpl::bool_<true> IsAnisotropicType;
+
+    GGXMDF2() {}
 
   private:
     virtual Vector<T, 3> do_sample(
