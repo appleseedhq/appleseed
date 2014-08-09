@@ -189,7 +189,6 @@ namespace
             extract_diaphragm_blade_count();
             extract_diaphragm_tilt_angle();
 
-
             // Compute the view frustum of the camera.
             m_view_frustum = compute_view_frustum(m_film_dimensions, m_focal_length);
 
