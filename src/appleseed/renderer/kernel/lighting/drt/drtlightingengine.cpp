@@ -385,21 +385,16 @@ namespace
                 vertex_aovs.add(vertex.m_edf->get_render_layer_index(), emitted_radiance);
             }
 
-            void visit_environment(
-                const ShadingPoint&     shading_point,
-                const Vector3d&         outgoing,
-                const BSDF::Mode        prev_bsdf_mode,
-                const double            prev_bsdf_prob,
-                const Spectrum&         throughput)
+            void visit_environment(const PathVertex& vertex)
             {
-                assert(prev_bsdf_mode != BSDF::Absorption);
+                assert(vertex.m_prev_bsdf_mode != BSDF::Absorption);
 
                 // Can't look up the environment if there's no environment EDF.
                 if (m_env_edf == 0)
                     return;
 
                 // When IBL is disabled, only specular reflections should contribute here.
-                if (!m_params.m_enable_ibl && prev_bsdf_mode != BSDF::Specular)
+                if (!m_params.m_enable_ibl && vertex.m_prev_bsdf_mode != BSDF::Specular)
                     return;
 
                 // Evaluate the environment EDF.
@@ -408,24 +403,24 @@ namespace
                 double env_prob;
                 m_env_edf->evaluate(
                     input_evaluator,
-                    -outgoing,
+                    -vertex.m_outgoing,
                     env_radiance,
                     env_prob);
 
                 // Multiple importance sampling.
-                if (prev_bsdf_mode != BSDF::Specular)
+                if (vertex.m_prev_bsdf_mode != BSDF::Specular)
                 {
-                    assert(prev_bsdf_prob > 0.0);
+                    assert(vertex.m_prev_bsdf_prob > 0.0);
                     const double env_sample_count = max(m_params.m_ibl_env_sample_count, 1.0);
                     const double mis_weight =
                         mis_power2(
-                            1.0 * prev_bsdf_prob,
+                            1.0 * vertex.m_prev_bsdf_prob,
                             env_sample_count * env_prob);
                     env_radiance *= static_cast<float>(mis_weight);
                 }
 
                 // Update the path radiance.
-                env_radiance *= throughput;
+                env_radiance *= vertex.m_throughput;
                 m_path_radiance += env_radiance;
                 m_path_aovs.add(m_env_edf->get_render_layer_index(), env_radiance);
             }

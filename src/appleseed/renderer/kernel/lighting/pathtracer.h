@@ -181,16 +181,12 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
 
         // Retrieve the ray.
         const ShadingRay& ray = vertex.get_ray();
+        vertex.m_outgoing = foundation::normalize(-ray.m_dir);
 
         // Terminate the path if the ray didn't hit anything.
         if (!vertex.m_shading_point->hit())
         {
-            m_path_visitor.visit_environment(
-                *vertex.m_shading_point,
-                foundation::normalize(-ray.m_dir),
-                vertex.m_prev_bsdf_mode,
-                vertex.m_prev_bsdf_prob,
-                vertex.m_throughput);
+            m_path_visitor.visit_environment(vertex);
             break;
         }
 
@@ -292,11 +288,8 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             vertex.m_bsdf_data = bsdf_input_evaluator.data();
         }
 
-        // Compute the outgoing direction.
-        vertex.m_outgoing = foundation::normalize(-ray.m_dir);
-        vertex.m_cos_on = foundation::dot(vertex.m_outgoing, vertex.get_shading_normal());
-
         // Compute radiance contribution at this vertex.
+        vertex.m_cos_on = foundation::dot(vertex.m_outgoing, vertex.get_shading_normal());
         m_path_visitor.visit_vertex(vertex);
 
         // Terminate the path if the material doesn't have a BSDF.

@@ -464,12 +464,7 @@ namespace
                 ++m_sample_count;
             }
 
-            void visit_environment(
-                const ShadingPoint&         shading_point,
-                const Vector3d&             outgoing,
-                const BSDF::Mode            prev_bsdf_mode,
-                const double                prev_bsdf_prob,
-                const Spectrum&             throughput)
+            void visit_environment(const PathVertex& vertex)
             {
                 // The particle escapes.
             }
