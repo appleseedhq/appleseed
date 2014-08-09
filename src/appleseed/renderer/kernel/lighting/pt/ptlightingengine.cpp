@@ -644,6 +644,10 @@ namespace
                     env_radiance *= static_cast<float>(mis_weight);
                 }
 
+                // Optionally clamp secondary rays contribution.
+                if (m_params.m_has_max_ray_intensity && vertex.m_path_length > 1)
+                    clamp_contribution(env_radiance);
+
                 // Update the path radiance.
                 env_radiance *= vertex.m_throughput;
                 m_path_radiance += env_radiance;
