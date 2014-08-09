@@ -472,8 +472,7 @@ void Access<Object>::reset(LazyType* lazy)
 template <typename Object>
 inline const Object* Access<Object>::get() const
 {
-    assert(m_lazy);
-    return m_lazy->m_object;
+    return m_lazy ? m_lazy->m_object : 0;
 }
 
 template <typename Object>
@@ -487,9 +486,7 @@ inline const Object& Access<Object>::ref() const
 template <typename Object>
 inline const Object* Access<Object>::operator->() const
 {
-    assert(m_lazy);
-    assert(m_lazy->m_object);
-    return m_lazy->m_object;
+    return m_lazy ? m_lazy->m_object : 0;
 }
 
 template <typename Object>
@@ -556,8 +553,7 @@ void Update<Object>::reset(LazyType* lazy)
 template <typename Object>
 inline Object* Update<Object>::get() const
 {
-    assert(m_lazy);
-    return m_lazy->m_object;
+    return m_lazy ? m_lazy->m_object : 0;
 }
 
 template <typename Object>
@@ -571,9 +567,7 @@ inline Object& Update<Object>::ref() const
 template <typename Object>
 inline Object* Update<Object>::operator->() const
 {
-    assert(m_lazy);
-    assert(m_lazy->m_object);
-    return m_lazy->m_object;
+    return m_lazy ? m_lazy->m_object : 0;
 }
 
 template <typename Object>
@@ -757,11 +751,7 @@ inline void AccessCacheMap<ObjectMap, Lines, Ways, Allocator>::ObjectSwapper::lo
     AccessType&         access)
 {
     const typename ObjectMap::const_iterator i = m_object_map->find(key);
-
-    if (i == m_object_map->end())
-        throw ExceptionObjectNotFound();
-
-    access.reset(i->second);
+    access.reset(i != m_object_map->end() ? i->second : 0);
 }
 
 template <typename ObjectMap, size_t Lines, size_t Ways, typename Allocator>

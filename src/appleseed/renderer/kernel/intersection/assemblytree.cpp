@@ -32,7 +32,9 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/modeling/object/curveobject.h"
 #include "renderer/modeling/object/iregion.h"
+#include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/object/regionkit.h"
 #include "renderer/modeling/scene/assembly.h"
@@ -49,6 +51,7 @@
 
 // Standard headers.
 #include <algorithm>
+#include <cstring>
 #include <utility>
 
 using namespace foundation;
@@ -92,7 +95,7 @@ AssemblyTree::~AssemblyTree()
 void AssemblyTree::update()
 {
     rebuild_assembly_tree();
-    update_child_trees();
+    update_tree_hierarchy();
 }
 
 size_t AssemblyTree::get_memory_size() const
@@ -261,6 +264,46 @@ void AssemblyTree::store_items_in_leaves(Statistics& statistics)
     statistics.insert_percent("fat leaves", fat_leaf_count, leaf_count);
 }
 
+void AssemblyTree::update_tree_hierarchy()
+{
+    // Collect all assemblies in the scene.
+    AssemblyVector assemblies;
+    collect_unique_assemblies(assemblies);
+
+    // Create or rebuild the child tree of each assembly.
+    for (const_each<AssemblyVector> i = assemblies; i; ++i)
+    {
+        // Retrieve the assembly.
+        const Assembly& assembly = **i;
+
+        // Retrieve the current version ID of the assembly.
+        const VersionID current_version_id = assembly.get_version_id();
+
+        // Retrieve the stored version ID of the assembly.
+        const AssemblyVersionMap::const_iterator stored_version_it =
+            m_assembly_versions.find(assembly.get_uid());
+
+        if (stored_version_it != m_assembly_versions.end())
+        {
+            if (stored_version_it->second == current_version_id)
+            {
+                // The child trees of this assembly are up-to-date: update them.
+                update_child_trees(assembly);
+                continue;
+            }
+
+            // The child trees of this assembly are out-of-date: delete them.
+            delete_child_trees(assembly);
+        }
+
+        // Lazily build new child trees.
+        create_child_trees(assembly);
+
+        // Store the current version ID of the assembly.
+        m_assembly_versions[assembly.get_uid()] = current_version_id;
+    }
+}
+
 void AssemblyTree::collect_unique_assemblies(AssemblyVector& assemblies) const
 {
     assert(assemblies.empty());
@@ -279,6 +322,17 @@ void AssemblyTree::collect_unique_assemblies(AssemblyVector& assemblies) const
 
 namespace
 {
+    bool has_object_instances_of_type(const Assembly& assembly, const char* model)
+    {
+        for (const_each<ObjectInstanceContainer> i = assembly.object_instances(); i; ++i)
+        {
+            if (strcmp(i->get_object().get_model(), model) == 0)
+                return true;
+        }
+
+        return false;
+    }
+
     void collect_regions(const Assembly& assembly, RegionInfoVector& regions)
     {
         assert(regions.empty());
@@ -374,90 +428,65 @@ namespace
     }
 }
 
-void AssemblyTree::update_child_trees()
+void AssemblyTree::create_child_trees(const Assembly& assembly)
 {
-    // Collect all assemblies in the scene.
-    AssemblyVector assemblies;
-    collect_unique_assemblies(assemblies);
-
-    // Create or rebuild the child tree of each assembly.
-    for (const_each<AssemblyVector> i = assemblies; i; ++i)
+    // Create a region or a triangle tree if there are mesh objects.
+    if (has_object_instances_of_type(assembly, MeshObjectFactory::get_model()))
     {
-        // Retrieve the assembly.
-        const Assembly& assembly = **i;
-        const UniqueID assembly_uid = assembly.get_uid();
-
-        // Retrieve the current version ID of the assembly.
-        const VersionID current_version_id = assembly.get_version_id();
-
-        // Retrieve the stored version ID of the assembly.
-        const AssemblyVersionMap::const_iterator stored_version_it =
-            m_assembly_versions.find(assembly_uid);
-
-        if (stored_version_it != m_assembly_versions.end())
-        {
-            if (stored_version_it->second == current_version_id)
-            {
-                // The child trees of this assembly are up-to-date wrt. the assembly's geometry:
-                // simply update them.
-                if (assembly.is_flushable())
-                {
-                    Update<RegionTree> access(m_region_trees.find(assembly_uid)->second);
-                    if (access.get())
-                        access->update_non_geometry();
-                }
-                else
-                {
-                    Update<TriangleTree> access(m_triangle_trees.find(assembly_uid)->second);
-                    if (access.get())
-                        access->update_non_geometry();
-                }
-
-                continue;
-            }
-            else
-            {
-                // The child trees of this assembly are out-of-date wrt. the assembly's geometry:
-                // delete them. They are rebuilt from scratch lazily.
-                if (assembly.is_flushable())
-                {
-                    const RegionTreeContainer::iterator it = m_region_trees.find(assembly_uid);
-                    delete it->second;
-                    m_region_trees.erase(it);
-                }
-                else
-                {
-                    const TriangleTreeContainer::iterator it = m_triangle_trees.find(assembly_uid);
-                    delete it->second;
-                    m_triangle_trees.erase(it);
-                }
-                const CurveTreeContainer::iterator it = m_curve_trees.find(assembly_uid);
-                delete it->second;
-                m_curve_trees.erase(it);
-            }
-        }
-
-        // The assembly does not contain any geometry, nothing to do.
-        if (assembly.object_instances().empty())
-            continue;
-
-        // The assembly does contains geometry, lazily build new child trees.
         if (assembly.is_flushable())
         {
             m_region_trees.insert(
-                make_pair(assembly_uid, create_region_tree(m_scene, assembly)));
+                make_pair(assembly.get_uid(), create_region_tree(m_scene, assembly)));
         }
         else
         {
             m_triangle_trees.insert(
-                make_pair(assembly_uid, create_triangle_tree(m_scene, assembly)));
+                make_pair(assembly.get_uid(), create_triangle_tree(m_scene, assembly)));
         }
-        m_curve_trees.insert(
-            make_pair(assembly_uid, create_curve_tree(m_scene, assembly)));
-
-        // Store the current version ID of the assembly.
-        m_assembly_versions[assembly_uid] = current_version_id;
     }
+
+    // Create a curve tree if there are curve objects.
+    if (has_object_instances_of_type(assembly, CurveObjectFactory::get_model()))
+    {
+        m_curve_trees.insert(
+            make_pair(assembly.get_uid(), create_curve_tree(m_scene, assembly)));
+    }
+}
+
+void AssemblyTree::update_child_trees(const Assembly& assembly)
+{
+    if (assembly.is_flushable())
+    {
+        Update<RegionTree> access(m_region_trees.find(assembly.get_uid())->second);
+        if (access.get())
+            access->update_non_geometry();
+    }
+    else
+    {
+        Update<TriangleTree> access(m_triangle_trees.find(assembly.get_uid())->second);
+        if (access.get())
+            access->update_non_geometry();
+    }
+}
+
+void AssemblyTree::delete_child_trees(const Assembly& assembly)
+{
+    if (assembly.is_flushable())
+    {
+        const RegionTreeContainer::iterator it = m_region_trees.find(assembly.get_uid());
+        delete it->second;
+        m_region_trees.erase(it);
+    }
+    else
+    {
+        const TriangleTreeContainer::iterator it = m_triangle_trees.find(assembly.get_uid());
+        delete it->second;
+        m_triangle_trees.erase(it);
+    }
+
+    const CurveTreeContainer::iterator it = m_curve_trees.find(assembly.get_uid());
+    delete it->second;
+    m_curve_trees.erase(it);
 }
 
 

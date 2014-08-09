@@ -136,8 +136,11 @@ class AssemblyTree
     void rebuild_assembly_tree();
     void store_items_in_leaves(foundation::Statistics& statistics);
 
+    void update_tree_hierarchy();
     void collect_unique_assemblies(AssemblyVector& assemblies) const;
-    void update_child_trees();
+    void create_child_trees(const Assembly& assembly);
+    void update_child_trees(const Assembly& assembly);
+    void delete_child_trees(const Assembly& assembly);
 };
 
 
