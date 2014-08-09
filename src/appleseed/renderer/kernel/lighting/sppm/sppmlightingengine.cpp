@@ -514,15 +514,15 @@ namespace
             radiance.set(0.0f);
 
             const size_t photon_count = m_answer.size();
-
             for (size_t i = 0; i < photon_count; ++i)
             {
                 const knn::Answer<float>::Entry& photon = m_answer.get(i);
                 radiance += m_pass_callback.get_photon_data(photon_map.remap(photon.m_index)).m_flux;
             }
 
-            if (photon_count > 1)
-                radiance /= static_cast<float>(photon_count);
+            const float m = max_value(radiance);
+            if (m > 0.0f)
+                radiance /= m;
         }
     };
 }
