@@ -298,42 +298,10 @@ void TextureSource::get_texels_2x2(
         const size_t pixel_y_11 = p11.y - tile_y_11 * m_texture_props.m_tile_height;
 
         // Sample the tile.
-        sample_tile(
-            texture_cache,
-            m_assembly_uid,
-            m_texture_uid,
-            tile_x_00,
-            tile_y_00,
-            pixel_x_00,
-            pixel_y_00,
-            t00);
-        sample_tile(
-            texture_cache,
-            m_assembly_uid,
-            m_texture_uid,
-            tile_x_11,
-            tile_y_00,
-            pixel_x_11,
-            pixel_y_00,
-            t10);
-        sample_tile(
-            texture_cache,
-            m_assembly_uid,
-            m_texture_uid,
-            tile_x_00,
-            tile_y_11,
-            pixel_x_00,
-            pixel_y_11,
-            t01);
-        sample_tile(
-            texture_cache,
-            m_assembly_uid,
-            m_texture_uid,
-            tile_x_11,
-            tile_y_11,
-            pixel_x_11,
-            pixel_y_11,
-            t11);
+        sample_tile(texture_cache, m_assembly_uid, m_texture_uid, tile_x_00, tile_y_00, pixel_x_00, pixel_y_00, t00);
+        sample_tile(texture_cache, m_assembly_uid, m_texture_uid, tile_x_11, tile_y_00, pixel_x_11, pixel_y_00, t10);
+        sample_tile(texture_cache, m_assembly_uid, m_texture_uid, tile_x_00, tile_y_11, pixel_x_00, pixel_y_11, t01);
+        sample_tile(texture_cache, m_assembly_uid, m_texture_uid, tile_x_11, tile_y_11, pixel_x_11, pixel_y_11, t11);
     }
     else
     {
