@@ -37,6 +37,7 @@
 #include "foundation/math/knn/knn_tree.h"
 #include "foundation/math/distance.h"
 #include "foundation/math/fp.h"
+#include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 
@@ -307,17 +308,24 @@ inline void Query<T, N>::find_multiple_nearest_neighbors(
     {
         const size_t split_dim = node->get_split_dim();
         const ValueType split_abs = node->get_split_abs();
+        const ValueType split_dist = query_point[split_dim] - split_abs;
 
         const NodeType* RESTRICT child_node = nodes + node->get_child_node_index();
 
-        if (query_point[split_dim] >= split_abs)
+        if (split_dist > ValueType(0.0))
             ++child_node;
 
         FOUNDATION_KNN_QUERY_STATS(++fetched_node_count);
 
-        // The child node contains too few points, keep the current node.
+        // The child node contains too few points.
         if (child_node->get_point_count() < max_answer_size)
+        {
+            // Keep the child node anyway if its sibling is too far.
+            // Otherwise keep the current node.
+            if (square(split_dist) > query_max_square_distance)
+                node = child_node;
             break;
+        }
 
         // The child node contains enough points.
         node = child_node;
