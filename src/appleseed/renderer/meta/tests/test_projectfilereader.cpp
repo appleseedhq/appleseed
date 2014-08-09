@@ -52,10 +52,13 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileReader)
 
         ASSERT_NEQ(0, project.get());
 
-        ProjectFileWriter::write(
-            project.ref(),
-            "unit tests/outputs/test_projectfilereader_configurationblocks.appleseed",
-            ProjectFileWriter::OmitHeaderComment);
+        const bool success =
+            ProjectFileWriter::write(
+                project.ref(),
+                "unit tests/outputs/test_projectfilereader_configurationblocks.appleseed",
+                ProjectFileWriter::OmitHeaderComment);
+
+        ASSERT_TRUE(success);
 
         const bool identical =
             compare_text_files(

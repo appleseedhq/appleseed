@@ -78,8 +78,8 @@ void TileJobFactory::create(
         const size_t tile_index = tiles[i];
         const size_t tile_x = tile_index % props.m_tile_count_x;
         const size_t tile_y = tile_index / props.m_tile_count_x;
-        assert(tile_x >= 0 && tile_x < props.m_tile_count_x);
-        assert(tile_y >= 0 && tile_y < props.m_tile_count_y);
+        assert(tile_x < props.m_tile_count_x);
+        assert(tile_y < props.m_tile_count_y);
 
         // Create the tile job.
         tile_jobs.push_back(

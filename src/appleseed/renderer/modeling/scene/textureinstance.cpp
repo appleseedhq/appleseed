@@ -183,9 +183,11 @@ Texture* TextureInstance::find_texture() const
 
     while (parent)
     {
+        const BaseGroup* parent_base_group = dynamic_cast<const BaseGroup*>(parent);
+        assert(parent_base_group);
+
         Texture* texture =
-            dynamic_cast<const BaseGroup*>(parent)
-                ->textures().get_by_name(impl->m_texture_name.c_str());
+            parent_base_group->textures().get_by_name(impl->m_texture_name.c_str());
 
         if (texture)
             return texture;

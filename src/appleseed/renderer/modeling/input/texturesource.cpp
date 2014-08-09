@@ -209,8 +209,6 @@ Color4f TextureSource::get_texel(
     const size_t                ix,
     const size_t                iy) const
 {
-    assert(ix >= 0);
-    assert(iy >= 0);
     assert(ix < m_texture_props.m_canvas_width);
     assert(iy < m_texture_props.m_canvas_height);
 

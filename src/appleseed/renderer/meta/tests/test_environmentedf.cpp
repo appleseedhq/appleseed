@@ -157,7 +157,8 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
         {
             bind_inputs();
 
-            env_edf.on_frame_begin(m_project);
+            const bool success = env_edf.on_frame_begin(m_project);
+            assert(success);
 
             TextureStore texture_store(m_scene);
             TextureCache texture_cache(texture_store);

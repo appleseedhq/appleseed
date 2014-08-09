@@ -97,9 +97,11 @@ Assembly* AssemblyInstance::find_assembly() const
 
     while (parent)
     {
+        const BaseGroup* parent_base_group = dynamic_cast<const BaseGroup*>(parent);
+        assert(parent_base_group);
+
         Assembly* assembly =
-            dynamic_cast<const BaseGroup*>(parent)
-                ->assemblies().get_by_name(impl->m_assembly_name.c_str());
+            parent_base_group->assemblies().get_by_name(impl->m_assembly_name.c_str());
 
         if (assembly)
             return assembly;
