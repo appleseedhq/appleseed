@@ -722,14 +722,10 @@ IRendererController::Status MasterRenderer::render_frame_sequence(
         }
 
 #ifdef WITH_OSL
-        {
-            RendererServices *s = 
-                    static_cast<RendererServices*>(shading_system.renderer());
-            
-            s->precompute_attributes();
-        }
+        static_cast<RendererServices*>(shading_system.renderer())
+            ->precompute_attributes();
 #endif
-                
+
         frame_renderer->start_rendering();
 
         const IRendererController::Status status = wait_for_event(frame_renderer);
