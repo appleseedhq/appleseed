@@ -40,6 +40,7 @@
 #include "foundation/utility/string.h"
 
 // Standard headers.
+#include <cstddef>
 #include <string>
 
 using namespace foundation;
@@ -75,11 +76,6 @@ SPPMPhotonMap::SPPMPhotonMap(SPPMPhotonVector& photons)
         RENDERER_LOG_WARNING(
             "cannot build sppm photon map because no photon were stored by the photon tracing pass.");
     }
-}
-
-size_t SPPMPhotonMap::get_memory_size() const
-{
-    return knn::Tree3f::get_memory_size();
 }
 
 }   // namespace renderer

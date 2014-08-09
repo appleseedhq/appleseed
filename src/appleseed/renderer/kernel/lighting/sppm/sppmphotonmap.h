@@ -33,9 +33,6 @@
 // appleseed.foundation headers.
 #include "foundation/math/knn.h"
 
-// Standard headers.
-#include <cstddef>
-
 // Forward declarations.
 namespace renderer  { class SPPMPhotonVector; }
 
@@ -48,9 +45,6 @@ class SPPMPhotonMap
   public:
     // Constructor, *moves* the photon positions into the map.
     explicit SPPMPhotonMap(SPPMPhotonVector& photons);
-
-    // Return the size (in bytes) of this object in memory.
-    size_t get_memory_size() const;
 };
 
 }       // namespace renderer
