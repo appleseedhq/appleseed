@@ -310,7 +310,7 @@ namespace
             initial_flux *=
                 static_cast<float>(
                     dot(emission_direction, light_sample.m_shading_normal)
-                        / (light_sample.m_probability * edf_prob));
+                        / (light_sample.m_probability * edf_prob * m_params.m_light_photon_count));
 
             // Make a shading point that will be used to avoid self-intersections with the light sample.
             ShadingPoint parent_shading_point;
@@ -374,7 +374,7 @@ namespace
 
             // Compute the initial particle weight.
             Spectrum initial_flux = light_value;
-            initial_flux /= static_cast<float>(light_sample.m_probability * light_prob);
+            initial_flux /= static_cast<float>(light_sample.m_probability * light_prob * m_params.m_light_photon_count);
 
             // Build the photon ray.
             child_sampling_context.split_in_place(1, 1);
@@ -542,7 +542,7 @@ namespace
 
             // Compute the initial particle weight.
             Spectrum initial_flux = env_edf_value;
-            initial_flux /= static_cast<float>(m_disk_point_prob * env_edf_prob);
+            initial_flux /= static_cast<float>(m_disk_point_prob * env_edf_prob * m_params.m_env_photon_count);
 
             // Build the photon ray.
             child_sampling_context.split_in_place(1, 1);
@@ -556,7 +556,7 @@ namespace
             const bool cast_indirect_light = true;          // right now environments always cast indirect light
             PathVisitor path_visitor(
                 initial_flux,
-                true,                                       // do store IBL photons
+                m_params.m_enable_ibl,
                 cast_indirect_light,
                 m_params.m_enable_caustics,
                 m_local_photons);
@@ -608,91 +608,38 @@ SPPMPhotonTracer::SPPMPhotonTracer(
 {
 }
 
-size_t SPPMPhotonTracer::trace_photons(
+void SPPMPhotonTracer::trace_photons(
     SPPMPhotonVector&       photons,
     const size_t            pass_hash,
     JobQueue&               job_queue,
     AbortSwitch&            abort_switch)
 {
-    size_t job_count = 0;
-    size_t emitted_photon_count = 0;
-
     // Start stopwatch.
     Stopwatch<DefaultWallclockTimer> stopwatch;
     stopwatch.start();
 
+    // Schedule photon tracing jobs.
+    size_t job_count = 0;
+    size_t emitted_photon_count = 0;
     if (m_light_sampler.has_lights_or_emitting_triangles())
     {
-        RENDERER_LOG_INFO(
-            "tracing %s sppm light %s...",
-            pretty_uint(m_params.m_light_photon_count).c_str(),
-            m_params.m_light_photon_count > 1 ? "photons" : "photon");
-
-        for (size_t i = 0; i < m_params.m_light_photon_count; i += m_params.m_photon_packet_size)
-        {
-            const size_t photon_begin = i;
-            const size_t photon_end = min(i + m_params.m_photon_packet_size, m_params.m_light_photon_count);
-
-            job_queue.schedule(
-                new LightPhotonTracingJob(
-                    m_scene,
-                    m_light_sampler,
-                    m_trace_context,
-                    m_texture_store,
-                    m_params,
-                    photons,
-                    photon_begin,
-                    photon_end,
-                    pass_hash,
-#ifdef WITH_OIIO
-                    m_oiio_texture_system,
-#endif
-#ifdef WITH_OSL
-                    m_shading_system,
-#endif
-                    abort_switch));
-
-            ++job_count;
-            emitted_photon_count += photon_end - photon_begin;
-        }
+        schedule_light_photon_tracing_jobs(
+            photons,
+            pass_hash,
+            job_queue,
+            job_count,
+            emitted_photon_count,
+            abort_switch);
     }
-
-    if (m_params.m_enable_ibl &&
-        m_scene.get_environment()->get_environment_edf() &&
-        !abort_switch.is_aborted())
+    if (m_scene.get_environment()->get_environment_edf())
     {
-        RENDERER_LOG_INFO(
-            "tracing %s sppm environment %s...",
-            pretty_uint(m_params.m_env_photon_count).c_str(),
-            m_params.m_env_photon_count > 1 ? "photons" : "photon");
-
-        for (size_t i = 0; i < m_params.m_env_photon_count; i += m_params.m_photon_packet_size)
-        {
-            const size_t photon_begin = i;
-            const size_t photon_end = min(i + m_params.m_photon_packet_size, m_params.m_env_photon_count);
-
-            job_queue.schedule(
-                new EnvironmentPhotonTracingJob(
-                    m_scene,
-                    m_light_sampler,
-                    m_trace_context,
-                    m_texture_store,
-                    m_params,
-                    photons,
-                    photon_begin,
-                    photon_end,
-                    pass_hash,
-#ifdef WITH_OIIO
-                    m_oiio_texture_system,
-#endif
-#ifdef WITH_OSL
-                    m_shading_system,
-#endif
-                    abort_switch));
-
-            ++job_count;
-            emitted_photon_count += photon_end - photon_begin;
-        }
+        schedule_environment_photon_tracing_jobs(
+            photons,
+            pass_hash,
+            job_queue,
+            job_count,
+            emitted_photon_count,
+            abort_switch);
     }
 
     // Wait until the photon tracing jobs have completed.
@@ -716,8 +663,90 @@ size_t SPPMPhotonTracer::trace_photons(
         StatisticsVector::make(
             "sppm photon tracing statistics",
             statistics).to_string().c_str());
+}
 
-    return emitted_photon_count;
+void SPPMPhotonTracer::schedule_light_photon_tracing_jobs(
+    SPPMPhotonVector&       photons,
+    const size_t            pass_hash,
+    JobQueue&               job_queue,
+    size_t&                 job_count,
+    size_t&                 emitted_photon_count,
+    AbortSwitch&            abort_switch)
+{
+    RENDERER_LOG_INFO(
+        "tracing %s sppm light %s...",
+        pretty_uint(m_params.m_light_photon_count).c_str(),
+        m_params.m_light_photon_count > 1 ? "photons" : "photon");
+
+    for (size_t i = 0; i < m_params.m_light_photon_count; i += m_params.m_photon_packet_size)
+    {
+        const size_t photon_begin = i;
+        const size_t photon_end = min(i + m_params.m_photon_packet_size, m_params.m_light_photon_count);
+
+        job_queue.schedule(
+            new LightPhotonTracingJob(
+                m_scene,
+                m_light_sampler,
+                m_trace_context,
+                m_texture_store,
+                m_params,
+                photons,
+                photon_begin,
+                photon_end,
+                pass_hash,
+#ifdef WITH_OIIO
+                m_oiio_texture_system,
+#endif
+#ifdef WITH_OSL
+                m_shading_system,
+#endif
+                abort_switch));
+
+        ++job_count;
+        emitted_photon_count += photon_end - photon_begin;
+    }
+}
+
+void SPPMPhotonTracer::schedule_environment_photon_tracing_jobs(
+    SPPMPhotonVector&       photons,
+    const size_t            pass_hash,
+    JobQueue&               job_queue,
+    size_t&                 job_count,
+    size_t&                 emitted_photon_count,
+    AbortSwitch&            abort_switch)
+{
+    RENDERER_LOG_INFO(
+        "tracing %s sppm environment %s...",
+        pretty_uint(m_params.m_env_photon_count).c_str(),
+        m_params.m_env_photon_count > 1 ? "photons" : "photon");
+
+    for (size_t i = 0; i < m_params.m_env_photon_count; i += m_params.m_photon_packet_size)
+    {
+        const size_t photon_begin = i;
+        const size_t photon_end = min(i + m_params.m_photon_packet_size, m_params.m_env_photon_count);
+
+        job_queue.schedule(
+            new EnvironmentPhotonTracingJob(
+                m_scene,
+                m_light_sampler,
+                m_trace_context,
+                m_texture_store,
+                m_params,
+                photons,
+                photon_begin,
+                photon_end,
+                pass_hash,
+#ifdef WITH_OIIO
+                m_oiio_texture_system,
+#endif
+#ifdef WITH_OSL
+                m_shading_system,
+#endif
+                abort_switch));
+
+        ++job_count;
+        emitted_photon_count += photon_end - photon_begin;
+    }
 }
 
 }   // namespace renderer

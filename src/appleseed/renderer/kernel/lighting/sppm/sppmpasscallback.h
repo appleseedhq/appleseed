@@ -107,9 +107,6 @@ class SPPMPassCallback
         foundation::JobQueue&       job_queue,
         foundation::AbortSwitch&    abort_switch) OVERRIDE;
 
-    // Return the number of photons emitted for this pass.
-    size_t get_emitted_photon_count() const;
-
     // Return the i'th photon.
     const SPPMPhotonData& get_photon_data(const size_t i) const;
 
@@ -123,7 +120,6 @@ class SPPMPassCallback
     const SPPMParameters            m_params;
     SPPMPhotonTracer                m_photon_tracer;
     foundation::uint32              m_pass_number;
-    size_t                          m_emitted_photon_count;
     SPPMPhotonVector                m_photons;
     std::auto_ptr<SPPMPhotonMap>    m_photon_map;
     float                           m_initial_lookup_radius;
@@ -136,11 +132,6 @@ class SPPMPassCallback
 //
 // SPPMPassCallback class implementation.
 //
-
-inline size_t SPPMPassCallback::get_emitted_photon_count() const
-{
-    return m_emitted_photon_count;
-}
 
 inline const SPPMPhotonData& SPPMPassCallback::get_photon_data(const size_t i) const
 {

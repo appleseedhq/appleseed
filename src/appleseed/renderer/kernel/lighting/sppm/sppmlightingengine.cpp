@@ -451,7 +451,7 @@ namespace
 #endif
 
                 // Density estimation.
-                indirect_radiance /= max_square_dist * m_pass_callback.get_emitted_photon_count();
+                indirect_radiance /= max_square_dist;
 
                 // Add the indirect lighting contribution.
                 vertex_radiance += indirect_radiance;

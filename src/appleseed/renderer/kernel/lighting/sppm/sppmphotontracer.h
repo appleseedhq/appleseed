@@ -78,8 +78,7 @@ class SPPMPhotonTracer
 #endif
         const SPPMParameters&       params);
 
-    // Returns the total number of emitted photons.
-    size_t trace_photons(
+    void trace_photons(
         SPPMPhotonVector&           photons,
         const size_t                pass_hash,
         foundation::JobQueue&       job_queue,
@@ -99,6 +98,22 @@ class SPPMPhotonTracer
 #ifdef WITH_OSL
     OSL::ShadingSystem&             m_shading_system;
 #endif
+
+    void schedule_light_photon_tracing_jobs(
+        SPPMPhotonVector&           photons,
+        const size_t                pass_hash,
+        foundation::JobQueue&       job_queue,
+        size_t&                     job_count,
+        size_t&                     emitted_photon_count,
+        foundation::AbortSwitch&    abort_switch);
+
+    void schedule_environment_photon_tracing_jobs(
+        SPPMPhotonVector&           photons,
+        const size_t                pass_hash,
+        foundation::JobQueue&       job_queue,
+        size_t&                     job_count,
+        size_t&                     emitted_photon_count,
+        foundation::AbortSwitch&    abort_switch);
 };
 
 }       // namespace renderer

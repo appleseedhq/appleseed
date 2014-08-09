@@ -80,7 +80,6 @@ SPPMPassCallback::SPPMPassCallback(
 #endif
         params)
   , m_pass_number(0)
-  , m_emitted_photon_count(0)
 {
     // Compute the initial lookup radius.
     const float scene_diameter = static_cast<float>(2.0 * scene.compute_radius());
@@ -107,12 +106,11 @@ void SPPMPassCallback::pre_render(
 
     // Create a new set of photons.
     m_photons.clear_keep_memory();
-    m_emitted_photon_count =
-        m_photon_tracer.trace_photons(
-            m_photons,
-            hash_uint32(m_pass_number),
-            job_queue,
-            abort_switch);
+    m_photon_tracer.trace_photons(
+        m_photons,
+        hash_uint32(m_pass_number),
+        job_queue,
+        abort_switch);
 
     // Stop there if rendering was aborted.
     if (abort_switch.is_aborted())
