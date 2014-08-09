@@ -64,6 +64,7 @@ SPPMPhotonMap::SPPMPhotonMap(SPPMPhotonVector& photons)
 
         Statistics statistics;
         statistics.insert_time("build time", builder.get_build_time());
+        statistics.insert_size("size", photons.get_memory_size());
         statistics.merge(knn::TreeStatistics<knn::Tree3f>(*this));
 
         RENDERER_LOG_DEBUG("%s",
