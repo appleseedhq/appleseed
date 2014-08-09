@@ -29,12 +29,16 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/path.h"
+#include "foundation/utility/path.h"
 #include "foundation/utility/test.h"
 
 // boost headers.
+#include "boost/filesystem/operations.hpp"
 #include "boost/filesystem/path.hpp"
 
 // Standard headers.
+#include <cassert>
+#include <cstdio>
 #include <string>
 
 using namespace boost;
@@ -203,4 +207,53 @@ TEST_SUITE(Foundation_Platform_Path)
     }
 
 #endif  // _WIN32
+}
+
+TEST_SUITE(Foundation_Utility_Path)
+{
+    struct Fixture
+    {
+        const filesystem::path m_base_output;
+
+        Fixture()
+          : m_base_output(filesystem::absolute("unit tests/outputs/test_path/"))
+        {
+            filesystem::remove_all(m_base_output);
+            filesystem::create_directory(m_base_output);
+        }
+
+        static void create_file(const filesystem::path& filepath)
+        {
+            FILE* f = fopen(filepath.string().c_str(), "w");
+            assert(f);
+            fclose(f);
+        }
+    };
+
+    TEST_CASE_F(FindNextAvailablePath_GivenEmptyDirectory_ReturnsFileNumber1, Fixture)
+    {
+        EXPECT_EQ("test1.txt", find_next_available_path(m_base_output / "test#.txt").filename().string());
+    }
+
+    TEST_CASE_F(FindNextAvailablePath_GivenFileNumber1Exists_ReturnsFileNumber2, Fixture)
+    {
+        create_file(m_base_output / "test1.txt");
+
+        EXPECT_EQ("test2.txt", find_next_available_path(m_base_output / "test#.txt").filename().string());
+    }
+
+    TEST_CASE_F(FindNextAvailablePath_GivenFilesNumber1To9Exist_ReturnsFileNumber1, Fixture)
+    {
+        create_file(m_base_output / "test1.txt");
+        create_file(m_base_output / "test2.txt");
+        create_file(m_base_output / "test3.txt");
+        create_file(m_base_output / "test4.txt");
+        create_file(m_base_output / "test5.txt");
+        create_file(m_base_output / "test6.txt");
+        create_file(m_base_output / "test7.txt");
+        create_file(m_base_output / "test8.txt");
+        create_file(m_base_output / "test9.txt");
+
+        EXPECT_EQ("test1.txt", find_next_available_path(m_base_output / "test#.txt").filename().string());
+    }
 }

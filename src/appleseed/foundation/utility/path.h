@@ -39,6 +39,7 @@
 
 // Standard headers.
 #include <cstddef>
+#include <string>
 
 namespace foundation
 {
@@ -56,15 +57,18 @@ boost::filesystem::path find_next_available_path(const boost::filesystem::path& 
 
 inline boost::filesystem::path find_next_available_path(const boost::filesystem::path& path)
 {
-    for (size_t value = 1; value; ++value)
-    {
-        const boost::filesystem::path next(get_numbered_string(path.string(), value));
+    const std::string pattern = path.string();
+    const size_t max_value = get_numbered_string_max_value(pattern);
 
-        if (!boost::filesystem::exists(next))
-            return next;
+    for (size_t value = 1; value <= max_value; ++value)
+    {
+        const boost::filesystem::path candidate(get_numbered_string(pattern, value));
+
+        if (!boost::filesystem::exists(candidate))
+            return candidate;
     }
 
-    return boost::filesystem::path(get_numbered_string(path.string(), 1));
+    return boost::filesystem::path(get_numbered_string(pattern, 1));
 }
 
 }       // namespace foundation
