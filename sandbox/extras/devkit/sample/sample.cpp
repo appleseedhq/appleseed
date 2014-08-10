@@ -180,6 +180,10 @@ asf::auto_release_ptr<asr::Project> build_project()
             asf::Matrix4d::translation(asf::Vector3d(0.6, 2.0, 1.0))));
     assembly->lights().insert(light);
 
+    //------------------------------------------------------------------------
+    // Assembly instance
+    //------------------------------------------------------------------------
+
     // Create an instance of the assembly and insert it into the scene.
     asf::auto_release_ptr<asr::AssemblyInstance> assembly_instance(
         asr::AssemblyInstanceFactory::create(
