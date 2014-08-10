@@ -437,16 +437,6 @@ namespace
             }
         }
 
-        virtual void end_element() OVERRIDE
-        {
-            if (m_value.empty())
-            {
-                RENDERER_LOG_ERROR(
-                    "while defining <parameter> element: value not specified.");
-                m_context.get_event_counters().signal_error();
-            }
-        }
-
         const string& get_name() const
         {
             return m_name;
