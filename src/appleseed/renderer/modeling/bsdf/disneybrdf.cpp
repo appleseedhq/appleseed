@@ -419,18 +419,12 @@ class DisneyBRDFImpl
         DisneyBRDFInputValues* values = reinterpret_cast<DisneyBRDFInputValues*>(ptr + offset);
 
         // Precompute the tint color.
-        Color3f ctint =
-            ciexyz_to_linear_rgb(spectrum_to_ciexyz<float>(m_lighting_conditions, values->m_base_color));
-
-        const float lum = luminance(ctint);
-
-        if (lum >= 0.0f)
-        {
-            ctint /= lum;
-            linear_rgb_reflectance_to_spectrum(ctint, values->m_tint_color);
-        }
-        else
-            values->m_tint_color = m_white_spectrum;
+        const Color3f tint_xyz =
+            spectrum_to_ciexyz<float>(m_lighting_conditions, values->m_base_color);
+        const float lum = tint_xyz[1];
+        if (lum > 0.0f)
+            ciexyz_reflectance_to_spectrum(tint_xyz / lum, values->m_tint_color);
+        else values->m_tint_color = m_white_spectrum;
     }
 
     virtual Mode sample(
