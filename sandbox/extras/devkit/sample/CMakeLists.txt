@@ -28,29 +28,24 @@
 #
 
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+cmake_minimum_required (VERSION 2.8 FATAL_ERROR)
 
-PROJECT ( appleseed_sample )
+project (appleseed_sample)
 
-FIND_PACKAGE ( Appleseed )
-FIND_PACKAGE ( ILMBase )
-FIND_PACKAGE ( Boost )
+find_package (Appleseed)
+find_package (ILMBase)
+find_package (Boost)
 
-INCLUDE_DIRECTORIES ( ${ILMBASE_INCLUDE_DIRS} )
-INCLUDE_DIRECTORIES ( ${APPLESEED_INCLUDE_DIRS} )
-INCLUDE_DIRECTORIES ( ${Boost_INCLUDE_DIR} )
+include_directories (${ILMBASE_INCLUDE_DIRS})
+include_directories (${APPLESEED_INCLUDE_DIRS})
+include_directories (${Boost_INCLUDE_DIR})
 
-MESSAGE ( "APPLESEED_INCLUDE_DIRS = ${APPLESEED_INCLUDE_DIRS}" )
+add_executable (sample
+    half.cpp
+    sample.cpp
+)
 
-ADD_EXECUTABLE ( sample
-  half.cpp
-  sample.cpp
-  )
-
-MESSAGE ( "Appleseed_appleseed_LIBRARY=${Appleseed_appleseed_LIBRARY}" )
-MESSAGE ( "Appleseed_appleseed_shared_LIBRARY=${Appleseed_appleseed_shared_LIBRARY}" )
-
-TARGET_LINK_LIBRARIES ( sample
-  ${Appleseed_appleseed_LIBRARY}
-  ${Appleseed_appleseed_shared_LIBRARY}
+target_link_libraries (sample
+    ${Appleseed_appleseed_LIBRARY}
+    ${Appleseed_appleseed_shared_LIBRARY}
 )
