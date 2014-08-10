@@ -39,8 +39,8 @@
 #include "foundation/core/exceptions/exception.h"
 #include "foundation/core/exceptions/exceptionioerror.h"
 #include "foundation/math/vector.h"
+#include "foundation/mesh/genericmeshfilewriter.h"
 #include "foundation/mesh/imeshwalker.h"
-#include "foundation/mesh/objmeshfilewriter.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/defaulttimers.h"
 #include "foundation/utility/stopwatch.h"
@@ -180,7 +180,7 @@ bool MeshObjectWriter::write(
 
     try
     {
-        OBJMeshFileWriter writer(filename);
+        GenericMeshFileWriter writer(filename);
         MeshObjectWalker walker(object, object_name);
         writer.write(walker);
     }

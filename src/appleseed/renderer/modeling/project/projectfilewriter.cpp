@@ -730,7 +730,7 @@ namespace
         {
             // Construct the name of the mesh file.
             const string object_name = object.get_name();
-            const string filename = object_name + ".obj";
+            const string filename = object_name + ".binarymesh";
 
             if (!(m_options & ProjectFileWriter::OmitWritingGeometryFiles))
             {
