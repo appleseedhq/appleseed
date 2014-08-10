@@ -57,7 +57,6 @@
 
 // Standard headers.
 #include <cstddef>
-#include <cstdio>
 #include <memory>
 #include <string>
 
