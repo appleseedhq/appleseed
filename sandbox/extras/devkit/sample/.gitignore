@@ -1,8 +1,5 @@
-Debug/
-ipch/
 output/
-Release/
-*.opensdf
+x64/
 *.sdf
 *.suo
 *.user
