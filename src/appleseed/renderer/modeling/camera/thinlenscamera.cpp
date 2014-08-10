@@ -499,7 +499,7 @@ namespace
                 "  focal length     %f\n"
                 "  autofocus        %s\n"
                 "  autofocus target %f, %f\n"
-                "  focal distance   %f\n"
+                "  focal distance   %g\n"
                 "  diaphragm map    %s\n"
                 "  diaphragm blades %s\n"
                 "  diaphragm angle  %f\n"
