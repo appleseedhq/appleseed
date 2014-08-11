@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,13 +26,34 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_COLOR_H
-#define APPLESEED_RENDERER_API_COLOR_H
+// Interface header.
+#include "colorspace.h"
 
-// API headers.
-#include "renderer/modeling/color/colorentity.h"
-#include "renderer/modeling/color/colorspace.h"
-#include "renderer/modeling/color/colortraits.h"
-#include "renderer/modeling/color/wavelengths.h"
+using namespace foundation;
+using namespace std;
 
-#endif  // !APPLESEED_RENDERER_API_COLOR_H
+namespace renderer
+{
+
+//
+// CIED65 XYZCMFCIE196410 Lighting Conditions.
+//
+
+foundation::LightingConditions g_CIED65_XYZCMFCIE196410Deg_lighting_conditions;
+
+namespace
+{
+    struct InitializeGlobalLightingConditions
+    {
+        InitializeGlobalLightingConditions()
+        {
+            g_CIED65_XYZCMFCIE196410Deg_lighting_conditions = LightingConditions(
+                IlluminantCIED65,
+                XYZCMFCIE196410Deg);            
+        }
+    };
+
+    InitializeGlobalLightingConditions initialize_lighting_conditions;
+}
+
+}   // namespace renderer

@@ -31,6 +31,8 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
+#include "renderer/modeling/color/colorspace.h"
+#include "renderer/modeling/color/wavelengths.h"
 #include "renderer/modeling/input/inputevaluator.h"
 
 // appleseed.foundation headers.
@@ -59,9 +61,6 @@ namespace renderer
 {
 namespace
 {
-    LightingConditions  g_lighting_conditions;
-    Spectrum            g_white_spectrum;
-
     double schlick_fresnel(const double u)
     {
         const double m = saturate(1.0 - u);
@@ -726,33 +725,17 @@ void DisneyBRDFInputValues::precompute_tint_color()
     // Precompute the tint color.
     const Color3f tint_xyz =
         spectrum_to_ciexyz<float>(
-            g_lighting_conditions, m_base_color);
+            g_CIED65_XYZCMFCIE196410Deg_lighting_conditions, m_base_color);
     const float lum = tint_xyz[1];
     if (lum > 0.0f)
         ciexyz_reflectance_to_spectrum(tint_xyz / lum, m_tint_color);
     else m_tint_color = g_white_spectrum;    
 }
 
+
 //
 // DisneyBRDFFactory class implementation.
 //
-
-DisneyBRDFFactory::DisneyBRDFFactory()
-{
-    static bool initialized = false;
-    if (!initialized)
-    {
-        g_lighting_conditions = LightingConditions(
-            IlluminantCIED65,
-            XYZCMFCIE196410Deg);
-
-        linear_rgb_reflectance_to_spectrum(
-            Color3f(1.0f, 1.0f, 1.0f),
-            g_white_spectrum);
-
-        initialized = true;
-    }
-}
 
 const char* DisneyBRDFFactory::get_model() const
 {
