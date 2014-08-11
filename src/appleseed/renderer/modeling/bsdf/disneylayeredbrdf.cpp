@@ -129,6 +129,7 @@ void DisneyLayeredBRDF::evaluate_inputs(
 
     base_color = srgb_to_linear_rgb(base_color);
     linear_rgb_reflectance_to_spectrum(Color3f(base_color), values->m_base_color);
+    values->precompute_tint_color();
 }
 
 BSDF::Mode DisneyLayeredBRDF::sample(

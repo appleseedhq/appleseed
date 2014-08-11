@@ -69,6 +69,8 @@ DECLARE_INPUT_VALUES(DisneyBRDFInputValues)
     // This is not a real param of the BRDF.
     // Instead, it's used to hold a temporary value.
     Spectrum    m_tint_color;
+    
+    void precompute_tint_color();
 };
 
 
