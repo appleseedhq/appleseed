@@ -79,15 +79,11 @@ auto_release_ptr<Project> build_project()
     const size_t image_height = image->properties().m_canvas_height;
 
     auto_release_ptr<Project> project(ProjectFactory::create("heightfield"));
-    project->search_paths().push_back("data");
     project->add_default_configurations();
+    project->search_paths().push_back("data");
 
     auto_release_ptr<Scene> scene(SceneFactory::create());
-
-    auto_release_ptr<Assembly> assembly(
-        AssemblyFactory::create(
-            "assembly",
-            ParamArray()));
+    auto_release_ptr<Assembly> assembly(AssemblyFactory::create("assembly"));
 
     //------------------------------------------------------------------------
     // Material
@@ -107,8 +103,7 @@ auto_release_ptr<Project> build_project()
             ParamArray()
                 .insert("filtering_mode", "nearest")
                 .insert("addressing_mode", "wrap"),
-            "cubes_texture",
-            Transformd::identity()));
+            "cubes_texture"));
 
     assembly->bsdfs().insert(
         DisneyBRDFFactory().create(
@@ -200,6 +195,7 @@ auto_release_ptr<Project> build_project()
     const size_t cube_count = image_width * image_height;
     mesh->reserve_vertices(8 * cube_count);
     mesh->reserve_vertex_normals(6 * cube_count);
+    mesh->reserve_tex_coords(cube_count);
     mesh->reserve_triangles(12 * cube_count);
 
     MersenneTwister rng;
