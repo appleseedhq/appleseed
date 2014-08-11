@@ -73,10 +73,10 @@ namespace
 //
 
 void generate_wavelengths(
-    const float             low_wavelength,
-    const float             high_wavelength,
-    const size_t            count,
-    float                   wavelengths[])
+    const float     low_wavelength,
+    const float     high_wavelength,
+    const size_t    count,
+    float           wavelengths[])
 {
     if (count == 1)
         wavelengths[0] = 0.5f * (low_wavelength + high_wavelength);
@@ -96,11 +96,11 @@ void generate_wavelengths(
 }
 
 void spectral_values_to_spectrum(
-    const float             low_wavelength,
-    const float             high_wavelength,
-    const size_t            input_spectrum_count,
-    const float             input_spectrum[],
-    float                   output_spectrum[])
+    const float     low_wavelength,
+    const float     high_wavelength,
+    const size_t    input_spectrum_count,
+    const float     input_spectrum[],
+    float           output_spectrum[])
 {
     assert(low_wavelength < high_wavelength);
 

@@ -57,18 +57,18 @@ extern Spectrum g_light_wavelengths;        // wavelengths, in nm
 
 // Generate a set of regularly spaced wavelengths.
 DLLSYMBOL void generate_wavelengths(
-    const float             low_wavelength,
-    const float             high_wavelength,
-    const size_t            count,
-    float                   wavelengths[]);
+    const float     low_wavelength,
+    const float     high_wavelength,
+    const size_t    count,
+    float           wavelengths[]);
 
 // Convert a set of regularly spaced spectral values to the internal spectrum format.
 DLLSYMBOL void spectral_values_to_spectrum(
-    const float             low_wavelength,
-    const float             high_wavelength,
-    const size_t            input_spectrum_count,
-    const float             input_spectrum[],
-    float                   output_spectrum[]);
+    const float     low_wavelength,
+    const float     high_wavelength,
+    const size_t    input_spectrum_count,
+    const float     input_spectrum[],
+    float           output_spectrum[]);
 
 }       // namespace renderer
 
