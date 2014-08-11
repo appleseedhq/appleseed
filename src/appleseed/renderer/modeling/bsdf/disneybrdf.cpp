@@ -31,6 +31,8 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
+#include "renderer/modeling/color/colorspace.h"
+#include "renderer/modeling/color/wavelengths.h"
 #include "renderer/modeling/input/inputevaluator.h"
 
 // appleseed.foundation headers.
@@ -86,12 +88,8 @@ namespace
       : public BSDF
     {
       public:
-        DisneyDiffuseBRDF(
-            const LightingConditions&       lighting_conditions,
-            const Spectrum&                 white_spectrum)
+        DisneyDiffuseBRDF()
           : BSDF("disney_diffuse", Reflective, Diffuse, ParamArray())
-          , m_lighting_conditions(lighting_conditions)
-          , m_white_spectrum(white_spectrum)
         {
         }
 
@@ -195,9 +193,6 @@ namespace
         }
 
       private:
-        const LightingConditions&   m_lighting_conditions;
-        const Spectrum&             m_white_spectrum;
-
         void evaluate_diffuse(
             const DisneyBRDFInputValues*    values,
             const Basis3d&                  shading_basis,
@@ -236,7 +231,7 @@ namespace
             {
                 Spectrum csheen;
                 mix_spectra(
-                    m_white_spectrum,
+                    g_white_spectrum,
                     values->m_tint_color,
                     static_cast<float>(values->m_sheen_tint),
                     csheen);
@@ -261,6 +256,8 @@ namespace
     {
       public:
         typedef boost::mpl::bool_<false> IsAnisotropicType;
+
+        BerryMDF2() {}
 
       private:
         virtual Vector<T, 3> do_sample(
@@ -352,23 +349,7 @@ class DisneyBRDFImpl
         m_inputs.declare("clearcoat", InputFormatScalar, "0.0");
         m_inputs.declare("clearcoat_gloss", InputFormatScalar, "1.0");
 
-        m_lighting_conditions = LightingConditions(
-            IlluminantCIED65,
-            XYZCMFCIE196410Deg);
-
-        linear_rgb_reflectance_to_spectrum(
-            Color3f(1.0f, 1.0f, 1.0f),
-            m_white_spectrum);
-
-        m_diffuse_brdf.reset(new DisneyDiffuseBRDF(m_lighting_conditions, m_white_spectrum));
-        m_specular_mdf = new GGXMDF2<double>();
-        m_clearcoat_mdf = new BerryMDF2<double>();
-    }
-
-    ~DisneyBRDFImpl()
-    {
-        delete m_specular_mdf;
-        delete m_clearcoat_mdf;
+        m_diffuse_brdf.reset(new DisneyDiffuseBRDF());
     }
 
     virtual void release() OVERRIDE
@@ -417,14 +398,7 @@ class DisneyBRDFImpl
 
         char* ptr = reinterpret_cast<char*>(input_evaluator.data());
         DisneyBRDFInputValues* values = reinterpret_cast<DisneyBRDFInputValues*>(ptr + offset);
-
-        // Precompute the tint color.
-        const Color3f tint_xyz =
-            spectrum_to_ciexyz<float>(m_lighting_conditions, values->m_base_color);
-        const float lum = tint_xyz[1];
-        if (lum > 0.0f)
-            ciexyz_reflectance_to_spectrum(tint_xyz / lum, values->m_tint_color);
-        else values->m_tint_color = m_white_spectrum;
+        values->precompute_tint_color();
     }
 
     virtual Mode sample(
@@ -471,17 +445,17 @@ class DisneyBRDFImpl
         if (cos_on < 0.0)
             return Absorption;
 
-        MDF<double>* mdf = 0;
+        const MDF<double>* mdf = 0;
         double alpha_x, alpha_y, alpha_g;
 
         if (s < weights[1])
         {
-            mdf = m_specular_mdf;
+            mdf = &m_specular_mdf;
             specular_roughness(values, alpha_x, alpha_y, alpha_g);
         }
         else
         {
-            mdf = m_clearcoat_mdf;
+            mdf = &m_clearcoat_mdf;
             alpha_x = alpha_y = clearcoat_roughness(values);
             alpha_g = 0.25;
         }
@@ -580,13 +554,13 @@ class DisneyBRDFImpl
             specular_roughness(values, alpha_x, alpha_y, alpha_g);
 
             const double D =
-                m_specular_mdf->D(
+                m_specular_mdf.D(
                     m,
                     alpha_x,
                     alpha_y);
 
             const double G =
-                m_specular_mdf->G(
+                m_specular_mdf.G(
                     wo,
                     wi,
                     m,
@@ -598,7 +572,7 @@ class DisneyBRDFImpl
             specular_value *= static_cast<float>(D * G / (4.0 * cos_on * cos_in));
             value += specular_value;
 
-            pdf += m_specular_mdf->pdf(m, alpha_x, alpha_y)  / (4.0 * cos_oh) * weights[1];
+            pdf += m_specular_mdf.pdf(m, alpha_x, alpha_y)  / (4.0 * cos_oh) * weights[1];
         }
 
         if (weights[2] != 0.0)
@@ -606,13 +580,13 @@ class DisneyBRDFImpl
             const double alpha = clearcoat_roughness(values);
 
             const double D =
-                m_clearcoat_mdf->D(
+                m_clearcoat_mdf.D(
                     m,
                     alpha,
                     alpha);
 
             const double G =
-                m_clearcoat_mdf->G(
+                m_clearcoat_mdf.G(
                     wo,
                     wi,
                     m,
@@ -625,7 +599,7 @@ class DisneyBRDFImpl
             clearcoat_value.set(static_cast<float>(D * G * F / (4.0 * cos_on * cos_in)));
             value += clearcoat_value;
 
-            pdf += m_clearcoat_mdf->pdf(m, alpha, alpha)  / (4.0 * cos_oh) * weights[2];
+            pdf += m_clearcoat_mdf.pdf(m, alpha, alpha)  / (4.0 * cos_oh) * weights[2];
         }
 
         return pdf;
@@ -676,26 +650,24 @@ class DisneyBRDFImpl
         {
             double alpha_x, alpha_y, alpha_g;
             specular_roughness(values, alpha_x, alpha_y, alpha_g);
-            pdf += m_specular_mdf->pdf(hl, alpha_x, alpha_y) / (4.0 * cos_oh) * weights[1];
+            pdf += m_specular_mdf.pdf(hl, alpha_x, alpha_y) / (4.0 * cos_oh) * weights[1];
         }
 
         if (weights[2] != 0.0)
         {
             const double alpha = clearcoat_roughness(values);
-            pdf += m_specular_mdf->pdf(hl, alpha, alpha) / (4.0 * cos_oh) * weights[2];
+            pdf += m_specular_mdf.pdf(hl, alpha, alpha) / (4.0 * cos_oh) * weights[2];
         }
 
         return pdf;
     }
-
+    
   private:
     typedef DisneyBRDFInputValues InputValues;
 
-    static foundation::LightingConditions   m_lighting_conditions;
-    static Spectrum                         m_white_spectrum;
-    foundation::auto_release_ptr<BSDF>      m_diffuse_brdf;
-    foundation::MDF<double>*                m_specular_mdf;
-    foundation::MDF<double>*                m_clearcoat_mdf;
+    auto_release_ptr<BSDF>  m_diffuse_brdf;
+    const GGXMDF2<double>   m_specular_mdf;
+    const BerryMDF2<double> m_clearcoat_mdf;
 
     void compute_component_weights(
         const DisneyBRDFInputValues*    values,
@@ -728,10 +700,10 @@ class DisneyBRDFImpl
         const double                    cos_oh,
         Spectrum&                       f) const
     {
-        mix_spectra(m_white_spectrum, values->m_tint_color, static_cast<float>(values->m_specular_tint), f);
+        mix_spectra(g_white_spectrum, values->m_tint_color, static_cast<float>(values->m_specular_tint), f);
         f *= static_cast<float>(values->m_specular * 0.08);
         mix_spectra(f, values->m_base_color, static_cast<float>(values->m_metallic), f);
-        mix_spectra(f, m_white_spectrum, static_cast<float>(schlick_fresnel(cos_oh)), f);
+        mix_spectra(f, g_white_spectrum, static_cast<float>(schlick_fresnel(cos_oh)), f);
     }
 
     double clearcoat_roughness(const DisneyBRDFInputValues* values) const
@@ -745,10 +717,20 @@ class DisneyBRDFImpl
     }
 };
 
-LightingConditions DisneyBRDFImpl::m_lighting_conditions;
-Spectrum DisneyBRDFImpl::m_white_spectrum;
-
 typedef BSDFWrapper<DisneyBRDFImpl> DisneyBRDF;
+
+
+void DisneyBRDFInputValues::precompute_tint_color()
+{
+    // Precompute the tint color.
+    const Color3f tint_xyz =
+        spectrum_to_ciexyz<float>(
+            g_std_lighting_conditions, m_base_color);
+    const float lum = tint_xyz[1];
+    if (lum > 0.0f)
+        ciexyz_reflectance_to_spectrum(tint_xyz / lum, m_tint_color);
+    else m_tint_color = g_white_spectrum;    
+}
 
 
 //

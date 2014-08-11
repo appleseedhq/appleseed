@@ -1252,6 +1252,8 @@ source_group ("renderer\\modeling\\camera" FILES
 set (renderer_modeling_color_sources
     renderer/modeling/color/colorentity.cpp
     renderer/modeling/color/colorentity.h
+    renderer/modeling/color/colorspace.cpp
+    renderer/modeling/color/colorspace.h
     renderer/modeling/color/colortraits.h
     renderer/modeling/color/wavelengths.cpp
     renderer/modeling/color/wavelengths.h

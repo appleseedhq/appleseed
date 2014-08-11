@@ -115,7 +115,7 @@ void DisneyLayeredBRDF::evaluate_inputs(
     DisneyBRDFInputValues* values = reinterpret_cast<DisneyBRDFInputValues*>(ptr + offset);
     memset(values, 0, sizeof(DisneyBRDFInputValues));
 
-    Color3d base_color(0.0f);
+    Color3d base_color(0.0);
 
     for (size_t i = 0, e = m_parent->get_layer_count(); i < e; ++i)
     {
@@ -129,6 +129,7 @@ void DisneyLayeredBRDF::evaluate_inputs(
 
     base_color = srgb_to_linear_rgb(base_color);
     linear_rgb_reflectance_to_spectrum(Color3f(base_color), values->m_base_color);
+    values->precompute_tint_color();
 }
 
 BSDF::Mode DisneyLayeredBRDF::sample(
