@@ -29,19 +29,17 @@
 #ifndef APPLESEED_RENDERER_MODELING_COLOR_COLORSPACE_H
 #define APPLESEED_RENDERER_MODELING_COLOR_COLORSPACE_H
 
-
-// foundation headers.
+// appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
 
 namespace renderer
 {
 
 //
-// CIED65 XYZCMFCIE196410 Lighting Conditions.
+// Standard lighting conditions (D65 illuminant, CIE 1964 10-deg color matching functions).
 //
 
 extern foundation::LightingConditions g_std_lighting_conditions;
-
 
 }       // namespace renderer
 

@@ -316,417 +316,416 @@ namespace
         }
     };
 
-}
 
+    //
+    // Disney BRDF implementation.
+    //
 
-//
-// Disney BRDF implementation.
-//
-
-namespace
-{
-    const char* Model = "disney_brdf";
-}
-
-class DisneyBRDFImpl
-  : public BSDF
-{
-  public:
-    DisneyBRDFImpl(
-        const char*             name,
-        const ParamArray&       params)
-      : BSDF(name, Reflective, Diffuse | Glossy, params)
+    namespace
     {
-        m_inputs.declare("base_color", InputFormatSpectralReflectance);
-        m_inputs.declare("subsurface", InputFormatScalar, "0.0");
-        m_inputs.declare("metallic", InputFormatScalar, "0.0");
-        m_inputs.declare("specular", InputFormatScalar, "0.5");
-        m_inputs.declare("specular_tint", InputFormatScalar, "0.0");
-        m_inputs.declare("anisotropic", InputFormatScalar, "0.0");
-        m_inputs.declare("roughness", InputFormatScalar, "0.5");
-        m_inputs.declare("sheen", InputFormatScalar, "0.0");
-        m_inputs.declare("sheen_tint", InputFormatScalar, "0.5");
-        m_inputs.declare("clearcoat", InputFormatScalar, "0.0");
-        m_inputs.declare("clearcoat_gloss", InputFormatScalar, "1.0");
-
-        m_diffuse_brdf.reset(new DisneyDiffuseBRDF());
+        const char* Model = "disney_brdf";
     }
 
-    virtual void release() OVERRIDE
+    class DisneyBRDFImpl
+      : public BSDF
     {
-        delete this;
-    }
-
-    virtual const char* get_model() const OVERRIDE
-    {
-        return Model;
-    }
-
-    virtual bool on_frame_begin(
-        const Project&          project,
-        const Assembly&         assembly,
-        AbortSwitch*            abort_switch) OVERRIDE
-    {
-        if (!BSDF::on_frame_begin(project, assembly, abort_switch))
-            return false;
-
-        if (!m_diffuse_brdf->on_frame_begin(project, assembly, abort_switch))
-            return false;
-
-        return true;
-    }
-
-    virtual void on_frame_end(
-        const Project&          project,
-        const Assembly&         assembly) OVERRIDE
-    {
-        m_diffuse_brdf->on_frame_end(project, assembly);
-        BSDF::on_frame_end(project, assembly);
-    }
-
-    virtual void evaluate_inputs(
-        const ShadingContext&   shading_context,
-        InputEvaluator&         input_evaluator,
-        const ShadingPoint&     shading_point,
-        const size_t            offset) const OVERRIDE
-    {
-        BSDF::evaluate_inputs(
-            shading_context,
-            input_evaluator,
-            shading_point,
-            offset);
-
-        char* ptr = reinterpret_cast<char*>(input_evaluator.data());
-        DisneyBRDFInputValues* values = reinterpret_cast<DisneyBRDFInputValues*>(ptr + offset);
-        values->precompute_tint_color();
-    }
-
-    virtual Mode sample(
-        SamplingContext&        sampling_context,
-        const void*             data,
-        const bool              adjoint,
-        const bool              cosine_mult,
-        const Vector3d&         geometric_normal,
-        const Basis3d&          shading_basis,
-        const Vector3d&         outgoing,
-        Vector3d&               incoming,
-        Spectrum&               value,
-        double&                 probability) const OVERRIDE
-    {
-        const DisneyBRDFInputValues* values =
-            reinterpret_cast<const DisneyBRDFInputValues*>(data);
-
-        double weights[3];
-        compute_component_weights(values, weights);
-
-        // Choose which of the two BSDFs to sample.
-        sampling_context.split_in_place(1, 1);
-        const double s = sampling_context.next_double2();
-
-        if (s < weights[0])
+      public:
+        DisneyBRDFImpl(
+            const char*             name,
+            const ParamArray&       params)
+          : BSDF(name, Reflective, Diffuse | Glossy, params)
         {
-            return
-                m_diffuse_brdf->sample(
-                    sampling_context,
-                    data,
-                    adjoint,
-                    false,                      // do not multiply by |cos(incoming, normal)|
-                    geometric_normal,
-                    shading_basis,
-                    outgoing,
-                    incoming,
-                    value,
-                    probability);
+            m_inputs.declare("base_color", InputFormatSpectralReflectance);
+            m_inputs.declare("subsurface", InputFormatScalar, "0.0");
+            m_inputs.declare("metallic", InputFormatScalar, "0.0");
+            m_inputs.declare("specular", InputFormatScalar, "0.5");
+            m_inputs.declare("specular_tint", InputFormatScalar, "0.0");
+            m_inputs.declare("anisotropic", InputFormatScalar, "0.0");
+            m_inputs.declare("roughness", InputFormatScalar, "0.5");
+            m_inputs.declare("sheen", InputFormatScalar, "0.0");
+            m_inputs.declare("sheen_tint", InputFormatScalar, "0.5");
+            m_inputs.declare("clearcoat", InputFormatScalar, "0.0");
+            m_inputs.declare("clearcoat_gloss", InputFormatScalar, "1.0");
+
+            m_diffuse_brdf.reset(new DisneyDiffuseBRDF());
         }
 
-        // No reflection below the shading surface.
-        const Vector3d& n = shading_basis.get_normal();
-        const double cos_on = min(dot(outgoing, n), 1.0);
-        if (cos_on < 0.0)
-            return Absorption;
-
-        const MDF<double>* mdf = 0;
-        double alpha_x, alpha_y, alpha_g;
-
-        if (s < weights[1])
+        virtual void release() OVERRIDE
         {
-            mdf = &m_specular_mdf;
-            specular_roughness(values, alpha_x, alpha_y, alpha_g);
-        }
-        else
-        {
-            mdf = &m_clearcoat_mdf;
-            alpha_x = alpha_y = clearcoat_roughness(values);
-            alpha_g = 0.25;
+            delete this;
         }
 
-        // Compute the incoming direction by sampling the MDF.
-        sampling_context.split_in_place(2, 1);
-        const Vector2d s2 = sampling_context.next_vector2<2>();
-        const Vector3d m = mdf->sample(s2, alpha_x, alpha_y);
-        const Vector3d h = shading_basis.transform_to_parent(m);
-        incoming = reflect(outgoing, h);
-
-        // No reflection below the shading surface.
-        const double cos_in = dot(incoming, n);
-        if (cos_in < 0.0)
-            return Absorption;
-
-        const double D =
-            mdf->D(
-                m,
-                alpha_x,
-                alpha_y);
-
-        const double G =
-            mdf->G(
-                shading_basis.transform_to_local(incoming),
-                shading_basis.transform_to_local(outgoing),
-                m,
-                alpha_g,
-                alpha_g);
-
-        const double cos_oh = dot(outgoing, h);
-
-        if (s < weights[1])
-            specular_f(values, cos_oh, value);
-        else
-            value.set(static_cast<float>(clearcoat_f(values->m_clearcoat, cos_oh)));
-
-        value *= static_cast<float>((D * G) / (4.0 * cos_on * cos_in));
-        probability = mdf->pdf(m, alpha_x, alpha_y) / (4.0 * cos_oh);
-        return Glossy;
-    }
-
-    virtual double evaluate(
-        const void*             data,
-        const bool              adjoint,
-        const bool              cosine_mult,
-        const Vector3d&         geometric_normal,
-        const Basis3d&          shading_basis,
-        const Vector3d&         outgoing,
-        const Vector3d&         incoming,
-        const int               modes,
-        Spectrum&               value) const OVERRIDE
-    {
-        // No reflection below the shading surface.
-        const Vector3d& n = shading_basis.get_normal();
-        const double cos_in = dot(incoming, n);
-        const double cos_on = dot(outgoing, n);
-        if (cos_in < 0.0 || cos_on < 0.0)
-            return 0.0;
-
-        const DisneyBRDFInputValues* values =
-            reinterpret_cast<const DisneyBRDFInputValues*>(data);
-
-        double weights[3];
-        compute_component_weights(values, weights);
-
-        value.set(0.0f);
-        double pdf = 0.0;
-
-        if ((modes & Diffuse) && (weights[0] != 0.0))
+        virtual const char* get_model() const OVERRIDE
         {
-            pdf += m_diffuse_brdf->evaluate(
-                data,
-                adjoint,
-                false,                          // do not multiply by |cos(incoming, normal)|
-                geometric_normal,
-                shading_basis,
-                outgoing,
-                incoming,
-                modes,
-                value) * weights[0];
+            return Model;
         }
 
-        if (!(modes & Glossy))
-            return pdf;
-
-        const Vector3d h = normalize(incoming + outgoing);
-        const Vector3d m = shading_basis.transform_to_local(h);
-        const Vector3d wi = shading_basis.transform_to_local(incoming);
-        const Vector3d wo = shading_basis.transform_to_local(outgoing);
-        const double cos_oh = dot(outgoing, h);
-
-        if (weights[1] != 0.0)
+        virtual bool on_frame_begin(
+            const Project&          project,
+            const Assembly&         assembly,
+            AbortSwitch*            abort_switch) OVERRIDE
         {
+            if (!BSDF::on_frame_begin(project, assembly, abort_switch))
+                return false;
+
+            if (!m_diffuse_brdf->on_frame_begin(project, assembly, abort_switch))
+                return false;
+
+            return true;
+        }
+
+        virtual void on_frame_end(
+            const Project&          project,
+            const Assembly&         assembly) OVERRIDE
+        {
+            m_diffuse_brdf->on_frame_end(project, assembly);
+            BSDF::on_frame_end(project, assembly);
+        }
+
+        virtual void evaluate_inputs(
+            const ShadingContext&   shading_context,
+            InputEvaluator&         input_evaluator,
+            const ShadingPoint&     shading_point,
+            const size_t            offset) const OVERRIDE
+        {
+            BSDF::evaluate_inputs(
+                shading_context,
+                input_evaluator,
+                shading_point,
+                offset);
+
+            char* ptr = reinterpret_cast<char*>(input_evaluator.data());
+            DisneyBRDFInputValues* values = reinterpret_cast<DisneyBRDFInputValues*>(ptr + offset);
+            values->precompute_tint_color();
+        }
+
+        virtual Mode sample(
+            SamplingContext&        sampling_context,
+            const void*             data,
+            const bool              adjoint,
+            const bool              cosine_mult,
+            const Vector3d&         geometric_normal,
+            const Basis3d&          shading_basis,
+            const Vector3d&         outgoing,
+            Vector3d&               incoming,
+            Spectrum&               value,
+            double&                 probability) const OVERRIDE
+        {
+            const DisneyBRDFInputValues* values =
+                reinterpret_cast<const DisneyBRDFInputValues*>(data);
+
+            double weights[3];
+            compute_component_weights(values, weights);
+
+            // Choose which of the two BSDFs to sample.
+            sampling_context.split_in_place(1, 1);
+            const double s = sampling_context.next_double2();
+
+            if (s < weights[0])
+            {
+                return
+                    m_diffuse_brdf->sample(
+                        sampling_context,
+                        data,
+                        adjoint,
+                        false,                      // do not multiply by |cos(incoming, normal)|
+                        geometric_normal,
+                        shading_basis,
+                        outgoing,
+                        incoming,
+                        value,
+                        probability);
+            }
+
+            // No reflection below the shading surface.
+            const Vector3d& n = shading_basis.get_normal();
+            const double cos_on = min(dot(outgoing, n), 1.0);
+            if (cos_on < 0.0)
+                return Absorption;
+
+            const MDF<double>* mdf = 0;
             double alpha_x, alpha_y, alpha_g;
-            specular_roughness(values, alpha_x, alpha_y, alpha_g);
+
+            if (s < weights[1])
+            {
+                mdf = &m_specular_mdf;
+                specular_roughness(values, alpha_x, alpha_y, alpha_g);
+            }
+            else
+            {
+                mdf = &m_clearcoat_mdf;
+                alpha_x = alpha_y = clearcoat_roughness(values);
+                alpha_g = 0.25;
+            }
+
+            // Compute the incoming direction by sampling the MDF.
+            sampling_context.split_in_place(2, 1);
+            const Vector2d s2 = sampling_context.next_vector2<2>();
+            const Vector3d m = mdf->sample(s2, alpha_x, alpha_y);
+            const Vector3d h = shading_basis.transform_to_parent(m);
+            incoming = reflect(outgoing, h);
+
+            // No reflection below the shading surface.
+            const double cos_in = dot(incoming, n);
+            if (cos_in < 0.0)
+                return Absorption;
 
             const double D =
-                m_specular_mdf.D(
+                mdf->D(
                     m,
                     alpha_x,
                     alpha_y);
 
             const double G =
-                m_specular_mdf.G(
-                    wo,
-                    wi,
+                mdf->G(
+                    shading_basis.transform_to_local(incoming),
+                    shading_basis.transform_to_local(outgoing),
                     m,
                     alpha_g,
                     alpha_g);
 
-            Spectrum specular_value;
-            specular_f(values, cos_oh, specular_value);
-            specular_value *= static_cast<float>(D * G / (4.0 * cos_on * cos_in));
-            value += specular_value;
+            const double cos_oh = dot(outgoing, h);
 
-            pdf += m_specular_mdf.pdf(m, alpha_x, alpha_y)  / (4.0 * cos_oh) * weights[1];
+            if (s < weights[1])
+                specular_f(values, cos_oh, value);
+            else
+                value.set(static_cast<float>(clearcoat_f(values->m_clearcoat, cos_oh)));
+
+            value *= static_cast<float>((D * G) / (4.0 * cos_on * cos_in));
+            probability = mdf->pdf(m, alpha_x, alpha_y) / (4.0 * cos_oh);
+            return Glossy;
         }
 
-        if (weights[2] != 0.0)
+        virtual double evaluate(
+            const void*             data,
+            const bool              adjoint,
+            const bool              cosine_mult,
+            const Vector3d&         geometric_normal,
+            const Basis3d&          shading_basis,
+            const Vector3d&         outgoing,
+            const Vector3d&         incoming,
+            const int               modes,
+            Spectrum&               value) const OVERRIDE
         {
-            const double alpha = clearcoat_roughness(values);
+            // No reflection below the shading surface.
+            const Vector3d& n = shading_basis.get_normal();
+            const double cos_in = dot(incoming, n);
+            const double cos_on = dot(outgoing, n);
+            if (cos_in < 0.0 || cos_on < 0.0)
+                return 0.0;
 
-            const double D =
-                m_clearcoat_mdf.D(
-                    m,
-                    alpha,
-                    alpha);
+            const DisneyBRDFInputValues* values =
+                reinterpret_cast<const DisneyBRDFInputValues*>(data);
 
-            const double G =
-                m_clearcoat_mdf.G(
-                    wo,
-                    wi,
-                    m,
-                    0.25,
-                    0.25);
+            double weights[3];
+            compute_component_weights(values, weights);
 
-            const double F = clearcoat_f(values->m_clearcoat, cos_oh);
+            value.set(0.0f);
+            double pdf = 0.0;
 
-            Spectrum clearcoat_value;
-            clearcoat_value.set(static_cast<float>(D * G * F / (4.0 * cos_on * cos_in)));
-            value += clearcoat_value;
+            if ((modes & Diffuse) && (weights[0] != 0.0))
+            {
+                pdf += m_diffuse_brdf->evaluate(
+                    data,
+                    adjoint,
+                    false,                          // do not multiply by |cos(incoming, normal)|
+                    geometric_normal,
+                    shading_basis,
+                    outgoing,
+                    incoming,
+                    modes,
+                    value) * weights[0];
+            }
 
-            pdf += m_clearcoat_mdf.pdf(m, alpha, alpha)  / (4.0 * cos_oh) * weights[2];
-        }
+            if (!(modes & Glossy))
+                return pdf;
 
-        return pdf;
-    }
+            const Vector3d h = normalize(incoming + outgoing);
+            const Vector3d m = shading_basis.transform_to_local(h);
+            const Vector3d wi = shading_basis.transform_to_local(incoming);
+            const Vector3d wo = shading_basis.transform_to_local(outgoing);
+            const double cos_oh = dot(outgoing, h);
 
-    virtual double evaluate_pdf(
-        const void*             data,
-        const Vector3d&         geometric_normal,
-        const Basis3d&          shading_basis,
-        const Vector3d&         outgoing,
-        const Vector3d&         incoming,
-        const int               modes) const OVERRIDE
-    {
-        const DisneyBRDFInputValues* values =
-            reinterpret_cast<const DisneyBRDFInputValues*>(data);
+            if (weights[1] != 0.0)
+            {
+                double alpha_x, alpha_y, alpha_g;
+                specular_roughness(values, alpha_x, alpha_y, alpha_g);
 
-        double weights[3];
-        compute_component_weights(values, weights);
+                const double D =
+                    m_specular_mdf.D(
+                        m,
+                        alpha_x,
+                        alpha_y);
 
-        double pdf = 0.0;
+                const double G =
+                    m_specular_mdf.G(
+                        wo,
+                        wi,
+                        m,
+                        alpha_g,
+                        alpha_g);
 
-        if ((modes & Diffuse) && (weights[0] != 0.0))
-        {
-            pdf += m_diffuse_brdf->evaluate_pdf(
-                data,
-                geometric_normal,
-                shading_basis,
-                outgoing,
-                incoming,
-                modes) * weights[0];
-        }
+                Spectrum specular_value;
+                specular_f(values, cos_oh, specular_value);
+                specular_value *= static_cast<float>(D * G / (4.0 * cos_on * cos_in));
+                value += specular_value;
 
-        if (!(modes & Glossy))
+                pdf += m_specular_mdf.pdf(m, alpha_x, alpha_y)  / (4.0 * cos_oh) * weights[1];
+            }
+
+            if (weights[2] != 0.0)
+            {
+                const double alpha = clearcoat_roughness(values);
+
+                const double D =
+                    m_clearcoat_mdf.D(
+                        m,
+                        alpha,
+                        alpha);
+
+                const double G =
+                    m_clearcoat_mdf.G(
+                        wo,
+                        wi,
+                        m,
+                        0.25,
+                        0.25);
+
+                const double F = clearcoat_f(values->m_clearcoat, cos_oh);
+
+                Spectrum clearcoat_value;
+                clearcoat_value.set(static_cast<float>(D * G * F / (4.0 * cos_on * cos_in)));
+                value += clearcoat_value;
+
+                pdf += m_clearcoat_mdf.pdf(m, alpha, alpha)  / (4.0 * cos_oh) * weights[2];
+            }
+
             return pdf;
+        }
 
-        // No reflection below the shading surface.
-        const Vector3d& n = shading_basis.get_normal();
-        const double cos_in = dot(incoming, n);
-        const double cos_on = min(dot(outgoing, n), 1.0);
-        if (cos_in < 0.0 || cos_on < 0.0)
+        virtual double evaluate_pdf(
+            const void*             data,
+            const Vector3d&         geometric_normal,
+            const Basis3d&          shading_basis,
+            const Vector3d&         outgoing,
+            const Vector3d&         incoming,
+            const int               modes) const OVERRIDE
+        {
+            const DisneyBRDFInputValues* values =
+                reinterpret_cast<const DisneyBRDFInputValues*>(data);
+
+            double weights[3];
+            compute_component_weights(values, weights);
+
+            double pdf = 0.0;
+
+            if ((modes & Diffuse) && (weights[0] != 0.0))
+            {
+                pdf += m_diffuse_brdf->evaluate_pdf(
+                    data,
+                    geometric_normal,
+                    shading_basis,
+                    outgoing,
+                    incoming,
+                    modes) * weights[0];
+            }
+
+            if (!(modes & Glossy))
+                return pdf;
+
+            // No reflection below the shading surface.
+            const Vector3d& n = shading_basis.get_normal();
+            const double cos_in = dot(incoming, n);
+            const double cos_on = min(dot(outgoing, n), 1.0);
+            if (cos_in < 0.0 || cos_on < 0.0)
+                return pdf;
+
+            const Vector3d h = normalize(incoming + outgoing);
+            const Vector3d hl = shading_basis.transform_to_local(h);
+            const double cos_oh = dot(outgoing, h);
+
+            if (weights[1] != 0.0)
+            {
+                double alpha_x, alpha_y, alpha_g;
+                specular_roughness(values, alpha_x, alpha_y, alpha_g);
+                pdf += m_specular_mdf.pdf(hl, alpha_x, alpha_y) / (4.0 * cos_oh) * weights[1];
+            }
+
+            if (weights[2] != 0.0)
+            {
+                const double alpha = clearcoat_roughness(values);
+                pdf += m_specular_mdf.pdf(hl, alpha, alpha) / (4.0 * cos_oh) * weights[2];
+            }
+
             return pdf;
-
-        const Vector3d h = normalize(incoming + outgoing);
-        const Vector3d hl = shading_basis.transform_to_local(h);
-        const double cos_oh = dot(outgoing, h);
-
-        if (weights[1] != 0.0)
-        {
-            double alpha_x, alpha_y, alpha_g;
-            specular_roughness(values, alpha_x, alpha_y, alpha_g);
-            pdf += m_specular_mdf.pdf(hl, alpha_x, alpha_y) / (4.0 * cos_oh) * weights[1];
         }
 
-        if (weights[2] != 0.0)
+      private:
+        typedef DisneyBRDFInputValues InputValues;
+
+        auto_release_ptr<BSDF>  m_diffuse_brdf;
+        const GGXMDF2<double>   m_specular_mdf;
+        const BerryMDF2<double> m_clearcoat_mdf;
+
+        void compute_component_weights(
+            const DisneyBRDFInputValues*    values,
+            double                          weights[3]) const
         {
-            const double alpha = clearcoat_roughness(values);
-            pdf += m_specular_mdf.pdf(hl, alpha, alpha) / (4.0 * cos_oh) * weights[2];
+           weights[0] = 1.0 - values->m_metallic;
+           weights[1] = mix(values->m_specular, 1.0, values->m_metallic);
+           weights[2] = values->m_clearcoat;
+
+           const double total_weight = weights[0] + weights[1] + weights[2];
+           weights[0] /= total_weight;
+           weights[1] /= total_weight;
+           weights[2] /= total_weight;
         }
 
-        return pdf;
-    }
-    
-  private:
-    typedef DisneyBRDFInputValues InputValues;
+        void specular_roughness(
+            const DisneyBRDFInputValues*    values,
+            double&                         alpha_x,
+            double&                         alpha_y,
+            double&                         alpha_g) const
+        {
+            const double aspect = sqrt(1.0 - values->m_anisotropic * 0.9);
+            alpha_x = max(0.001, square(values->m_roughness) / aspect);
+            alpha_y = max(0.001, square(values->m_roughness) * aspect);
+            alpha_g = square(values->m_roughness * 0.5 + 0.5);
+        }
 
-    auto_release_ptr<BSDF>  m_diffuse_brdf;
-    const GGXMDF2<double>   m_specular_mdf;
-    const BerryMDF2<double> m_clearcoat_mdf;
+        void specular_f(
+            const DisneyBRDFInputValues*    values,
+            const double                    cos_oh,
+            Spectrum&                       f) const
+        {
+            mix_spectra(g_white_spectrum, values->m_tint_color, static_cast<float>(values->m_specular_tint), f);
+            f *= static_cast<float>(values->m_specular * 0.08);
+            mix_spectra(f, values->m_base_color, static_cast<float>(values->m_metallic), f);
+            mix_spectra(f, g_white_spectrum, static_cast<float>(schlick_fresnel(cos_oh)), f);
+        }
 
-    void compute_component_weights(
-        const DisneyBRDFInputValues*    values,
-        double                          weights[3]) const
-    {
-       weights[0] = 1.0 - values->m_metallic;
-       weights[1] = mix(values->m_specular, 1.0, values->m_metallic);
-       weights[2] = values->m_clearcoat;
+        double clearcoat_roughness(const DisneyBRDFInputValues* values) const
+        {
+            return mix(0.1, 0.001, values->m_clearcoat_gloss);
+        }
 
-       const double total_weight = weights[0] + weights[1] + weights[2];
-       weights[0] /= total_weight;
-       weights[1] /= total_weight;
-       weights[2] /= total_weight;
-    }
+        double clearcoat_f(const double clearcoat, const double cos_oh) const
+        {
+            return mix(0.04, 1.0, schlick_fresnel(cos_oh)) * 0.25 * clearcoat;
+        }
+    };
 
-    void specular_roughness(
-        const DisneyBRDFInputValues*    values,
-        double&                         alpha_x,
-        double&                         alpha_y,
-        double&                         alpha_g) const
-    {
-        const double aspect = sqrt(1.0 - values->m_anisotropic * 0.9);
-        alpha_x = max(0.001, square(values->m_roughness) / aspect);
-        alpha_y = max(0.001, square(values->m_roughness) * aspect);
-        alpha_g = square(values->m_roughness * 0.5 + 0.5);
-    }
-
-    void specular_f(
-        const DisneyBRDFInputValues*    values,
-        const double                    cos_oh,
-        Spectrum&                       f) const
-    {
-        mix_spectra(g_white_spectrum, values->m_tint_color, static_cast<float>(values->m_specular_tint), f);
-        f *= static_cast<float>(values->m_specular * 0.08);
-        mix_spectra(f, values->m_base_color, static_cast<float>(values->m_metallic), f);
-        mix_spectra(f, g_white_spectrum, static_cast<float>(schlick_fresnel(cos_oh)), f);
-    }
-
-    double clearcoat_roughness(const DisneyBRDFInputValues* values) const
-    {
-        return mix(0.1, 0.001, values->m_clearcoat_gloss);
-    }
-
-    double clearcoat_f(const double clearcoat, const double cos_oh) const
-    {
-        return mix(0.04, 1.0, schlick_fresnel(cos_oh)) * 0.25 * clearcoat;
-    }
-};
-
-typedef BSDFWrapper<DisneyBRDFImpl> DisneyBRDF;
-
+    typedef BSDFWrapper<DisneyBRDFImpl> DisneyBRDF;
+}
 
 void DisneyBRDFInputValues::precompute_tint_color()
 {
-    // Precompute the tint color.
     const Color3f tint_xyz =
         spectrum_to_ciexyz<float>(
             g_std_lighting_conditions, m_base_color);
+
     const float lum = tint_xyz[1];
+
     if (lum > 0.0f)
         ciexyz_reflectance_to_spectrum(tint_xyz / lum, m_tint_color);
     else m_tint_color = g_white_spectrum;    

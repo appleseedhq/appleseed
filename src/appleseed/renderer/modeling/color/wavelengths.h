@@ -46,10 +46,11 @@ namespace renderer
 // Wavelengths used throughout the spectral light simulation.
 //
 
-const float LowWavelength = 400.0f;         // low wavelength, in nm.
-const float HighWavelength = 700.0f;        // high wavelength, in nm.
-extern Spectrum g_light_wavelengths;        // wavelengths, in nm.
-extern Spectrum g_white_spectrum;           // spectral representation for white.
+const float LowWavelength = 400.0f;         // low wavelength, in nm
+const float HighWavelength = 700.0f;        // high wavelength, in nm
+extern Spectrum g_light_wavelengths;        // wavelengths, in nm
+extern Spectrum g_white_spectrum;           // spectral representation for white
+
 
 //
 // Utility functions.

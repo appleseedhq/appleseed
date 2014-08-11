@@ -81,7 +81,7 @@ DECLARE_INPUT_VALUES(DisneyBRDFInputValues)
 class DLLSYMBOL DisneyBRDFFactory
   : public IBSDFFactory
 {
-  public:    
+  public:
     // Return a string identifying this BSDF model.
     virtual const char* get_model() const OVERRIDE;
 

@@ -34,25 +34,19 @@ using namespace foundation;
 namespace renderer
 {
 
-//
-// CIED65 XYZCMFCIE196410 Lighting Conditions.
-//
-
-foundation::LightingConditions g_std_lighting_conditions;
+LightingConditions g_std_lighting_conditions;
 
 namespace
 {
-    struct InitializeGlobalLightingConditions
+    struct InitializeStdLightingConditions
     {
-        InitializeGlobalLightingConditions()
+        InitializeStdLightingConditions()
         {
-            g_std_lighting_conditions = LightingConditions(
-                IlluminantCIED65,
-                XYZCMFCIE196410Deg);            
+            g_std_lighting_conditions = LightingConditions(IlluminantCIED65, XYZCMFCIE196410Deg);
         }
     };
 
-    InitializeGlobalLightingConditions initialize_lighting_conditions;
+    InitializeStdLightingConditions initialize_std_lighting_conditions;
 }
 
 }   // namespace renderer
