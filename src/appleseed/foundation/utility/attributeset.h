@@ -78,6 +78,11 @@ class AttributeSet
     // Return the number of attributes in a given attribute channel.
     size_t get_attribute_count(const ChannelID channel_id) const;
 
+    // Reserve memory for a given number of atributes in a given attribute channel.
+    void reserve_attributes(
+        const ChannelID     channel_id,
+        const size_t        count);
+
     // Insert a new attribute at the end of a given attribute channel.
     // Return the index of the attribute in the attribute channel.
     template <typename T>
@@ -124,6 +129,18 @@ inline size_t AttributeSet::get_attribute_count(const ChannelID channel_id) cons
     Channel* channel = m_channels[channel_id];
 
     return channel->m_storage.size() / channel->m_value_size;
+}
+
+inline void AttributeSet::reserve_attributes(
+    const ChannelID         channel_id,
+    const size_t            count)
+{
+    // Get the channel descriptor.
+    assert(channel_id < m_channels.size());
+    Channel* channel = m_channels[channel_id];
+
+    // Reserve memory.
+    channel->m_storage.reserve(count * channel->m_value_size);
 }
 
 template <typename T>
