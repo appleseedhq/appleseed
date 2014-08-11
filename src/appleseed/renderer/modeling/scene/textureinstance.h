@@ -181,7 +181,7 @@ class DLLSYMBOL TextureInstanceFactory
         const char*                     name,
         const ParamArray&               params,
         const char*                     texture_name,
-        const foundation::Transformd&   transform);
+        const foundation::Transformd&   transform = foundation::Transformd::identity());
 };
 
 

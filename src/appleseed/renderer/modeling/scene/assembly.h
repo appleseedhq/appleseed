@@ -151,7 +151,7 @@ class DLLSYMBOL AssemblyFactory
     // Create a new assembly.
     static foundation::auto_release_ptr<Assembly> create(
         const char*         name,
-        const ParamArray&   params);
+        const ParamArray&   params = ParamArray());
 };
 
 
