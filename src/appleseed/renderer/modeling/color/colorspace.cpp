@@ -30,7 +30,6 @@
 #include "colorspace.h"
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -39,7 +38,7 @@ namespace renderer
 // CIED65 XYZCMFCIE196410 Lighting Conditions.
 //
 
-foundation::LightingConditions g_CIED65_XYZCMFCIE196410Deg_lighting_conditions;
+foundation::LightingConditions g_std_lighting_conditions;
 
 namespace
 {
@@ -47,7 +46,7 @@ namespace
     {
         InitializeGlobalLightingConditions()
         {
-            g_CIED65_XYZCMFCIE196410Deg_lighting_conditions = LightingConditions(
+            g_std_lighting_conditions = LightingConditions(
                 IlluminantCIED65,
                 XYZCMFCIE196410Deg);            
         }

@@ -33,12 +33,6 @@
 // foundation headers.
 #include "foundation/image/colorspace.h"
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
-// Standard headers.
-#include <cstddef>
-
 namespace renderer
 {
 
@@ -46,7 +40,7 @@ namespace renderer
 // CIED65 XYZCMFCIE196410 Lighting Conditions.
 //
 
-extern foundation::LightingConditions g_CIED65_XYZCMFCIE196410Deg_lighting_conditions;
+extern foundation::LightingConditions g_std_lighting_conditions;
 
 
 }       // namespace renderer

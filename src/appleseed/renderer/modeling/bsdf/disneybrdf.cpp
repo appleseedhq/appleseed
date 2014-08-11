@@ -725,7 +725,7 @@ void DisneyBRDFInputValues::precompute_tint_color()
     // Precompute the tint color.
     const Color3f tint_xyz =
         spectrum_to_ciexyz<float>(
-            g_CIED65_XYZCMFCIE196410Deg_lighting_conditions, m_base_color);
+            g_std_lighting_conditions, m_base_color);
     const float lum = tint_xyz[1];
     if (lum > 0.0f)
         ciexyz_reflectance_to_spectrum(tint_xyz / lum, m_tint_color);
