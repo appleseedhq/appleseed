@@ -247,6 +247,7 @@ void CompositeClosure::process_closure_tree(
                     values.m_sheen_tint = p->sheen_tint;
                     values.m_clearcoat = p->clearcoat;
                     values.m_clearcoat_gloss = p->clearcoat_gloss;
+                    values.precompute_tint_color();
 
                     add_closure<DisneyBRDFInputValues>(
                         static_cast<ClosureID>(c->id),
