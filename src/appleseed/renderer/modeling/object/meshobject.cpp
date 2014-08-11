@@ -65,13 +65,13 @@ namespace
         }
 
         // Compute the local space bounding box of the region over the shutter interval.
-        virtual GAABB3 compute_local_bbox() const
+        virtual GAABB3 compute_local_bbox() const OVERRIDE
         {
             return m_tess->compute_local_bbox();
         }
 
         // Return the static triangle tessellation of the region.
-        virtual Lazy<StaticTriangleTess>& get_static_triangle_tess() const
+        virtual Lazy<StaticTriangleTess>& get_static_triangle_tess() const OVERRIDE
         {
             return m_lazy_tess;
         }
@@ -175,6 +175,11 @@ size_t MeshObject::get_vertex_normal_count() const
 const GVector3& MeshObject::get_vertex_normal(const size_t index) const
 {
     return impl->m_tess.m_vertex_normals[index];
+}
+
+void MeshObject::reserve_tex_coords(const size_t count)
+{
+    impl->m_tess.reserve_uv_vertices(count);
 }
 
 size_t MeshObject::push_tex_coords(const GVector2& tex_coords)

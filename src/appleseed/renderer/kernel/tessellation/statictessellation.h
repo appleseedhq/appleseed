@@ -79,6 +79,9 @@ class StaticTessellation
     // Constructor.
     StaticTessellation();
 
+    // Reserve memory for a given number of UV vertices.
+    void reserve_uv_vertices(const size_t count);
+
     // Append a UV vertex to this tessellation.
     size_t push_uv_vertex(const GVector2& uv);
 
@@ -154,6 +157,15 @@ inline StaticTessellation<Primitive>::StaticTessellation()
   , m_ms_count_cid(foundation::AttributeSet::InvalidChannelID)
   , m_vp_cid(foundation::AttributeSet::InvalidChannelID)
 {
+}
+
+template <typename Primitive>
+inline void StaticTessellation<Primitive>::reserve_uv_vertices(const size_t count)
+{
+    if (m_uv_0_cid == foundation::AttributeSet::InvalidChannelID)
+        create_uv_0_attribute();
+
+    m_vertex_attributes.reserve_attributes(m_uv_0_cid, count);
 }
 
 template <typename Primitive>

@@ -88,6 +88,7 @@ class DLLSYMBOL MeshObject
     const GVector3& get_vertex_normal(const size_t index) const;
 
     // Insert and access texture coordinates.
+    void reserve_tex_coords(const size_t count);
     size_t push_tex_coords(const GVector2& tex_coords);
     size_t get_tex_coords_count() const;
     GVector2 get_tex_coords(const size_t index) const;
