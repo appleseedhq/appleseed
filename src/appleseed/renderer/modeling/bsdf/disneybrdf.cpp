@@ -319,6 +319,7 @@ namespace
 
 }
 
+
 //
 // Disney BRDF implementation.
 //
@@ -348,14 +349,6 @@ class DisneyBRDFImpl
         m_inputs.declare("sheen_tint", InputFormatScalar, "0.5");
         m_inputs.declare("clearcoat", InputFormatScalar, "0.0");
         m_inputs.declare("clearcoat_gloss", InputFormatScalar, "1.0");
-
-        g_lighting_conditions = LightingConditions(
-            IlluminantCIED65,
-            XYZCMFCIE196410Deg);
-
-        linear_rgb_reflectance_to_spectrum(
-            Color3f(1.0f, 1.0f, 1.0f),
-            g_white_spectrum);
 
         m_diffuse_brdf.reset(new DisneyDiffuseBRDF());
     }
@@ -406,15 +399,7 @@ class DisneyBRDFImpl
 
         char* ptr = reinterpret_cast<char*>(input_evaluator.data());
         DisneyBRDFInputValues* values = reinterpret_cast<DisneyBRDFInputValues*>(ptr + offset);
-
-        // Precompute the tint color.
         values->precompute_tint_color();
-        const Color3f tint_xyz =
-            spectrum_to_ciexyz<float>(g_lighting_conditions, values->m_base_color);
-        const float lum = tint_xyz[1];
-        if (lum > 0.0f)
-            ciexyz_reflectance_to_spectrum(tint_xyz / lum, values->m_tint_color);
-        else values->m_tint_color = g_white_spectrum;
     }
 
     virtual Mode sample(
@@ -751,6 +736,23 @@ void DisneyBRDFInputValues::precompute_tint_color()
 //
 // DisneyBRDFFactory class implementation.
 //
+
+DisneyBRDFFactory::DisneyBRDFFactory()
+{
+    static bool initialized = false;
+    if (!initialized)
+    {
+        g_lighting_conditions = LightingConditions(
+            IlluminantCIED65,
+            XYZCMFCIE196410Deg);
+
+        linear_rgb_reflectance_to_spectrum(
+            Color3f(1.0f, 1.0f, 1.0f),
+            g_white_spectrum);
+
+        initialized = true;
+    }
+}
 
 const char* DisneyBRDFFactory::get_model() const
 {

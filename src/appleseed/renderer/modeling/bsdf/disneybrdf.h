@@ -82,6 +82,9 @@ class DLLSYMBOL DisneyBRDFFactory
   : public IBSDFFactory
 {
   public:
+    // Constructor.
+    DisneyBRDFFactory();
+    
     // Return a string identifying this BSDF model.
     virtual const char* get_model() const OVERRIDE;
 
