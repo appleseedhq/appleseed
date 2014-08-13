@@ -35,8 +35,11 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/searchpaths.h"
 
 // Qt headers.
+#include <QDir>
+#include <QFileInfo>
 #include <QInputDialog>
 #include <QLineEdit>
 #include <QObject>
@@ -163,6 +166,45 @@ void open_entity_editor(
         slot_cancel);
 }
 
+QString find_path_in_searchpaths(const SearchPaths& s, const QString& filename)
+{
+    const QFileInfo file_info(filename);
+
+    if (file_info.isAbsolute())
+    {
+        if (s.size() > 0)
+        {
+            for (size_t i = s.size() - 1; i >= 0; --i)
+            {
+                QString search_path(QString::fromStdString(s[i]));
+                const QFileInfo search_path_info(search_path);
+
+                if (search_path_info.isRelative() && s.has_root_path())
+                {
+                    search_path = QDir::cleanPath(
+                        QString::fromStdString(s.get_root_path()) +
+                        QDir::separator() +
+                        search_path);
+
+                    const QDir search_dir(search_path);
+                    const QString relative_path = search_dir.relativeFilePath(filename);
+                    const QFileInfo relative_file_info(relative_path);
+
+                    if (!relative_file_info.isAbsolute() && !(relative_path == filename))
+                        return relative_path;
+                }
+            }
+        }
+
+        if (s.has_root_path())
+        {
+            const QDir root_dir(QString::fromStdString(s.get_root_path()));
+            return root_dir.relativeFilePath(filename);
+        }
+    }
+
+    return filename;
+}
 
 }   // namespace studio
 }   // namespace appleseed

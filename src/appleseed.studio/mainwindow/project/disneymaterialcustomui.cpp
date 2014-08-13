@@ -33,6 +33,7 @@
 #include "mainwindow/project/disneymateriallayerui.h"
 #include "mainwindow/project/entityeditorutils.h"
 #include "mainwindow/project/expressioneditorwindow.h"
+#include "mainwindow/project/tools.h"
 #include "utility/doubleslider.h"
 #include "utility/interop.h"
 #include "utility/miscellaneous.h"
@@ -40,6 +41,9 @@
 
 // appleseed.renderer headers.
 #include "renderer/api/project.h"
+
+// appleseed.foundation headers.
+#include "foundation/utility/searchpaths.h"
 
 // Standard headers.
 #include <algorithm>
@@ -184,7 +188,7 @@ void DisneyMaterialCustomUI::slot_open_file_picker(const QString& widget_name)
     IInputWidgetProxy* widget_proxy = m_widget_proxies.get(widget_name.toStdString());
 
     const filesystem::path project_root_path = filesystem::path(m_project.get_path()).parent_path();
-    const filesystem::path file_path = absolute(widget_proxy->get(), project_root_path);
+    const filesystem::path file_path = absolute(expression_to_texture(widget_proxy->get()), project_root_path);
     const filesystem::path file_root_path = file_path.parent_path();
 
     QFileDialog::Options options;
@@ -323,11 +327,33 @@ string DisneyMaterialCustomUI::unique_layer_name()
     return "layer" + to_string(++m_num_created_layers);
 }
 
-string DisneyMaterialCustomUI::texture_to_expression(const QString& expression)
+string DisneyMaterialCustomUI::texture_to_expression(const QString& path)
 {
+    const SearchPaths& search_paths = m_project.search_paths();
+    QString relative_path = find_path_in_searchpaths(search_paths, path);
     QString texture_expression = QString("texture(\"%1\", $u, $v)")
-            .arg(expression);
+            .arg(find_path_in_searchpaths(m_project.search_paths(), path));
     return texture_expression.toStdString();
+}
+
+string DisneyMaterialCustomUI::expression_to_texture(const string& expr)
+{
+    // TODO: refactor as soon as possible
+    string expression = trim_both(expr, " \r\n");
+    vector<string> tokens;
+    tokenize(expression, "()", tokens);
+    if (tokens.size() != 2)
+        return "";
+    if (trim_both(tokens[0]) != "texture")
+        return "";
+    string inner_content = tokens[1];
+    tokens.clear();
+    tokenize(inner_content, ",", tokens);
+    if (tokens.size() != 3)
+        return "";
+    if (trim_both(tokens[1]) != "$u" && trim_both(tokens[2]) != "$v")
+        return "";
+    return trim_both(tokens[0], " \"");
 }
 
 void DisneyMaterialCustomUI::create_text_input_widgets(
