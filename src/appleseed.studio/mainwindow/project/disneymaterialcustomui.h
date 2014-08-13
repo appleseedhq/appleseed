@@ -91,6 +91,7 @@ class DisneyMaterialCustomUI
 
     std::string unique_layer_name();
     std::string texture_to_expression(const QString& path);
+    std::string expression_to_texture(const std::string& expr);
 
     void create_text_input_widgets(const foundation::Dictionary& parameter, const std::string& group_name);
     void create_color_input_widgets(const foundation::Dictionary& parameters, const std::string& group_name);

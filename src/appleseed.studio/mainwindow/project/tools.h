@@ -40,6 +40,9 @@
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/string.h"
 
+// Qt headers.
+#include <QString>
+
 // Standard headers.
 #include <memory>
 #include <string>
@@ -47,6 +50,7 @@
 // Forward declarations.
 namespace appleseed     { namespace studio { class EntityEditorWindow; } }
 namespace foundation    { class Dictionary; }
+namespace foundation    { class SearchPaths; }
 namespace renderer      { class Project; }
 class QObject;
 class QWidget;
@@ -100,6 +104,8 @@ void open_entity_editor(
     const char*                                     slot_apply,
     const char*                                     slot_accept,
     const char*                                     slot_cancel);
+
+QString find_path_in_searchpaths(const foundation::SearchPaths& s, const QString& filename);
 
 //
 // Implementation.
