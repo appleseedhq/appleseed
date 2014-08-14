@@ -44,6 +44,21 @@
 #include "mainwindow/project/entityeditorwindow.h"
 #include "mainwindow/project/fixedmodelentityitem.h"
 #include "mainwindow/project/materialitem.h"
+#include "mainwindow/project/tools.h"
+
+// appleseed.foundation headers.
+#include "foundation/utility/settings/settingsfilereader.h"
+
+// appleseed.shared headers.
+#include "application/application.h"
+
+// Qt headers.
+#include <QFileDialog>
+#include <QString>
+
+// boost headers.
+#include "boost/filesystem/operations.hpp"
+#include "boost/filesystem/path.hpp"
 
 // Standard headers.
 #include <cassert>
@@ -51,6 +66,8 @@
 #include <memory>
 #include <string>
 
+using namespace appleseed::shared;
+using namespace boost;
 using namespace foundation;
 using namespace renderer;
 using namespace std;
@@ -90,6 +107,9 @@ QMenu* MaterialCollectionItem::get_single_item_context_menu() const
 #ifdef WITH_OSL
     menu->addAction("Create OSL Material...", this, SLOT(slot_create_osl()));
 #endif
+#ifdef WITH_DISNEY_MATERIAL
+    menu->addAction("Import Disney Material...", this, SLOT(slot_import_disney()));
+#endif
     return menu;
 }
 
@@ -111,6 +131,83 @@ void MaterialCollectionItem::slot_create_generic()
 void MaterialCollectionItem::slot_create_disney()
 {
     do_create_material("disney_material");
+}
+
+void MaterialCollectionItem::slot_import_disney()
+{
+    const filesystem::path root_path(Application::get_root_path());
+    const string schema_file_path = (root_path / "schemas" / "settings.xsd").string();
+
+    const char* project_path = m_project_builder.get_project().get_path();
+    const filesystem::path project_root_path = filesystem::path(project_path).parent_path();
+    const filesystem::path file_path = absolute("material.dmt", project_root_path);
+    const filesystem::path file_root_path = file_path.parent_path();
+
+    QFileDialog::Options options;
+    QString selected_filter;
+
+    QString filepath =
+        QFileDialog::getOpenFileName(
+            0,
+            "Import...",
+            QString::fromStdString(file_root_path.string()),
+            "Disney Material (*.dmt)",
+            &selected_filter,
+            options);
+
+    if (!filepath.isEmpty())
+    {
+        filepath = QDir::toNativeSeparators(filepath);
+        SettingsFileReader reader(global_logger());
+        ParamArray parameters;
+        bool result = reader.read(
+            filepath.toStdString().c_str(),
+            schema_file_path.c_str(),
+            parameters);
+
+        if (!result)
+        {
+            show_warning_message_box(
+                "Importing error",
+                "Failed to import the disney material file " + filepath.toStdString());
+            return;
+        }
+
+        const string name = parameters.get("__name");
+        const string model = parameters.get("__model");
+        parameters.strings().remove("__name");
+        parameters.strings().remove("__model");
+
+        if (model != "disney_material")
+        {
+            show_warning_message_box(
+                "Importing error",
+                "Model " + model + " from material file not supported.");
+            return;
+        }
+
+        for (each<MaterialContainer> i = m_parent.materials(); i; ++i)
+        {
+            if (strcmp(i->get_name(), name.c_str()) == 0)
+            {
+                show_warning_message_box(
+                    "Importing error",
+                    "Material named " + name + " already exists.");
+                return;
+            }
+        }
+
+        DisneyMaterialFactory factory;
+        auto_release_ptr<Material> material = factory.create(name.c_str(), parameters);
+
+        int index = find_sorted_position(this, name.c_str());
+        ItemBase* item = create_item(material.get());
+        insertChild(index, item);
+
+        EntityTraits<Material>::insert_entity(material, m_parent);
+        m_project_builder.notify_project_modification();
+    }
+
 }
 #endif
 
