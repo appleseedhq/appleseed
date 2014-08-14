@@ -213,7 +213,7 @@ namespace
             const double cos_on = dot(outgoing, n);
  
             // [1] equation 21.
-            double v = abs(cos_ih * cos_oh / cos_in * cos_on);
+            double v = abs((cos_ih * cos_oh) / (cos_in * cos_on));
             v *= square(values->m_to_ior) * D * G;
             const double denom = values->m_to_ior * cos_ih + values->m_from_ior * cos_oh;
             v /= square(denom);
@@ -282,7 +282,7 @@ namespace
             const double cos_on = dot(outgoing, n);
  
             // [1] equation 21.
-            double v = abs(cos_ih * cos_oh / cos_in * cos_on);
+            double v = abs((cos_ih * cos_oh) / (cos_in * cos_on));
             v *= square(values->m_to_ior) * D * G;
             const double denom = values->m_to_ior * cos_ih + values->m_from_ior * cos_oh;
             v /= square(denom);
