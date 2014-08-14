@@ -33,9 +33,9 @@
 #include "renderer/modeling/bsdf/diffusebtdf.h"
 #include "renderer/modeling/bsdf/disneybrdf.h"
 #include "renderer/modeling/bsdf/lambertianbrdf.h"
+#include "renderer/modeling/bsdf/orennayarbrdf.h"
 #include "renderer/modeling/bsdf/oslmicrofacetbrdf.h"
 #include "renderer/modeling/bsdf/oslmicrofacetbtdf.h"
-#include "renderer/modeling/bsdf/orennayarbrdf.h"
 #include "renderer/modeling/bsdf/specularbrdf.h"
 #include "renderer/modeling/bsdf/specularbtdf.h"
 

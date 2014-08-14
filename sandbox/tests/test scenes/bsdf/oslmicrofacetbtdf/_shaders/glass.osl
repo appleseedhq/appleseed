@@ -1,42 +1,34 @@
 
 surface glass(
-	string distribution = "specular",
-	float roughness = 0.025,
-	float inside_ior = 1.5,
-	float outside_ior = 1.0)
+    string distribution = "specular",
+    float roughness = 0.025,
+    float ior = 1.5)
 {
-	float from_ior;
-	float to_ior;
+    float from_ior;
+    float to_ior;
 
-	if (backfacing())
-	{
-		from_ior = inside_ior;
-		to_ior = outside_ior;
-	}
-	else
-	{
-		from_ior = outside_ior;
-		to_ior = inside_ior;
-	}
+    if (backfacing())
+    {
+        from_ior = ior;
+        to_ior = 1.0;
+    }
+    else
+    {
+        from_ior = 1.0;
+        to_ior = ior;
+    }
 
-	float eta = from_ior / to_ior;
+    float eta = from_ior / to_ior;
 
-	float Kr, Kt;
-	fresnel(I, N, eta, Kr, Kt);
+    float Kr, Kt;
+    fresnel(I, N, eta, Kr, Kt);
 
-	if (distribution == "specular")
-	{
-		Ci = 
-			 	Kr * reflection( N)
-			 	+
-		 		Kt * refraction( N, eta)
-		 		;
-	}
-	else
-	{
-		Ci =  Kr * microfacet(distribution, N, roughness, eta, 0)
-			  +
-		 	  microfacet(distribution, N, roughness, eta, 1)
-		 	  ;
-	}
+    if (distribution == "specular")
+        Ci = Kr * reflection(N) + Kt * refraction(N, eta);
+    else
+    {
+        Ci =  
+            Kr * microfacet(distribution, N, roughness, eta, 0) +
+            Kt * microfacet(distribution, N, roughness, eta, 1);
+    }
 }

@@ -143,7 +143,7 @@ namespace
 
             // Compute the incoming direction by sampling the MDF.
             sampling_context.split_in_place(2, 1);
-            const Vector2d s = sampling_context.next_vector2<2>();            
+            const Vector2d s = sampling_context.next_vector2<2>();
             const Vector3d m = m_mdf->sample(s, values->m_ax, values->m_ay);
             const Vector3d h = shading_basis.transform_to_parent(m);
 

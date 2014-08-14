@@ -1215,12 +1215,12 @@ list (APPEND renderer_modeling_bsdf_sources
 endif ()
 if (WITH_OSL)
     list (APPEND renderer_modeling_bsdf_sources
+        renderer/modeling/bsdf/oslbsdf.cpp
+        renderer/modeling/bsdf/oslbsdf.h
         renderer/modeling/bsdf/oslmicrofacetbrdf.cpp
         renderer/modeling/bsdf/oslmicrofacetbrdf.h
         renderer/modeling/bsdf/oslmicrofacetbtdf.cpp
         renderer/modeling/bsdf/oslmicrofacetbtdf.h
-        renderer/modeling/bsdf/oslbsdf.cpp
-        renderer/modeling/bsdf/oslbsdf.h
     )
 endif ()
 list (APPEND appleseed_sources

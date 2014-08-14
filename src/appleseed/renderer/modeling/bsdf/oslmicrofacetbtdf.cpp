@@ -91,7 +91,7 @@ namespace
         const double    hnorm)
     {
         // [1] equation 17.
-        return std::fabs(square(to_ior) * dot(incoming, h) / square(hnorm));
+        return abs(square(to_ior) * dot(incoming, h) / square(hnorm));
     }
 
 
@@ -192,7 +192,7 @@ namespace
             // this is not a refraction.
             if (dot(incoming, outgoing) >= 0)
                 return Absorption;
-            
+
             const double G =
                 m_mdf->G(
                     shading_basis.transform_to_local(incoming),
@@ -213,7 +213,7 @@ namespace
             const double cos_on = dot(outgoing, n);
  
             // [1] equation 21.
-            double v = std::fabs(cos_ih * cos_oh) / std::fabs(cos_in * cos_on);
+            double v = abs(cos_ih * cos_oh / cos_in * cos_on);
             v *= square(values->m_to_ior) * D * G;
             const double denom = values->m_to_ior * cos_ih + values->m_from_ior * cos_oh;
             v /= square(denom);
@@ -249,7 +249,7 @@ namespace
             if (dot(incoming, outgoing) >= 0)
                 return 0.0;
 
-            const InputValues* values = static_cast<const InputValues*>(data);            
+            const InputValues* values = static_cast<const InputValues*>(data);
             const Vector3d& n = shading_basis.get_normal();
 
             double ht_norm;
@@ -282,7 +282,7 @@ namespace
             const double cos_on = dot(outgoing, n);
  
             // [1] equation 21.
-            double v = std::fabs(cos_ih * cos_oh) / std::fabs(cos_in * cos_on);
+            double v = fabs(cos_ih * cos_oh) / fabs(cos_in * cos_on);
             v *= square(values->m_to_ior) * D * G;
             const double denom = values->m_to_ior * cos_ih + values->m_from_ior * cos_oh;
             v /= square(denom);
@@ -307,7 +307,7 @@ namespace
         {
             if (!(modes & Glossy))
                 return 0.0;
-            
+
             // If incoming and outgoing are on the same hemisphere
             // this is not a refraction.
             if (dot(incoming, outgoing) < 0)
@@ -415,7 +415,7 @@ DictionaryArray OSLMicrofacetBTDFFactory::get_input_metadata() const
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "optional")
             .insert("default", "1.5"));
-    
+
     return metadata;
 }
 

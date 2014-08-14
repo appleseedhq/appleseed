@@ -161,16 +161,14 @@ CompositeClosure::CompositeClosure(
     if (get_num_closures())
     {
         double total_weight = 0.0;
-        for (int i = 0, e = get_num_closures(); i < e; ++i)
+        for (size_t i = 0, e = get_num_closures(); i < e; ++i)
         {
             total_weight += m_cdf[i];
             m_cdf[i] = total_weight;            
         }
 
-        for (int i = 0, e = get_num_closures(); i < e; ++i)
+        for (size_t i = 0, e = get_num_closures(); i < e; ++i)
             m_cdf[i] /= total_weight;
-
-        sort(m_cdf, m_cdf + get_num_closures());
     }
 }
 
@@ -235,8 +233,8 @@ void CompositeClosure::process_closure_tree(
                     linear_rgb_reflectance_to_spectrum(Color3f(p->Cs), values.m_rg);
                     values.m_rg_multiplier = saturate(p->ks);
                     values.m_fr_multiplier = 1.0;
-                    values.m_nu = std::max(p->nu, 0.0f);
-                    values.m_nv = std::max(p->nv, 0.0f);
+                    values.m_nu = max(p->nu, 0.0f);
+                    values.m_nv = max(p->nv, 0.0f);
 
                     add_closure<AshikminBRDFInputValues>(
                         static_cast<ClosureID>(c->id),
@@ -256,13 +254,13 @@ void CompositeClosure::process_closure_tree(
                     linear_rgb_reflectance_to_spectrum(Color3f(p->base_color), values.m_base_color);
                     values.m_subsurface = saturate(p->subsurface);
                     values.m_metallic = saturate(p->metallic);
-                    values.m_specular = std::max(p->specular, 0.0f);
+                    values.m_specular = max(p->specular, 0.0f);
                     values.m_specular_tint = saturate(p->specular_tint);
                     values.m_anisotropic = saturate(p->anisotropic);
                     values.m_roughness = clamp(p->roughness, 0.0001f, 1.0f);
                     values.m_sheen = saturate(p->sheen);
                     values.m_sheen_tint = saturate(p->sheen_tint);
-                    values.m_clearcoat = std::max(p->clearcoat, 0.0f);
+                    values.m_clearcoat = max(p->clearcoat, 0.0f);
                     values.m_clearcoat_gloss = clamp(p->clearcoat_gloss, 0.0001f, 1.0f);
                     values.precompute_tint_color();
 
@@ -295,13 +293,13 @@ void CompositeClosure::process_closure_tree(
               case MicrofacetID:
                 {
                     const MicrofacetClosureParams* p =
-                    reinterpret_cast<const MicrofacetClosureParams*>(c->data());
+                        reinterpret_cast<const MicrofacetClosureParams*>(c->data());
                     
                     if (!p->refract)
                     {
                         OSLMicrofacetBRDFInputValues values;
-                        values.m_ax = std::max(p->xalpha, 0.0001f);
-                        values.m_ay = std::max(p->yalpha, 0.0001f);
+                        values.m_ax = max(p->xalpha, 0.0001f);
+                        values.m_ay = max(p->yalpha, 0.0001f);
     
                         if (p->dist == blinn_mdf_name)
                         {
@@ -333,12 +331,12 @@ void CompositeClosure::process_closure_tree(
                     }
                     else
                     {
-                        // Assume on of the mediums is air.
+                        // Assume one of the media is air.
                         double from_ior, to_ior;
                         if (p->eta > 1.0)
                         {
                             from_ior = 1.0;
-                            to_ior = 1.0f / p->eta;
+                            to_ior = 1.0 / p->eta;
                         }
                         else
                         {
@@ -347,8 +345,8 @@ void CompositeClosure::process_closure_tree(
                         }
 
                         OSLMicrofacetBTDFInputValues values;
-                        values.m_ax = std::max(p->xalpha, 0.0001f);
-                        values.m_ay = std::max(p->yalpha, 0.0001f);
+                        values.m_ax = max(p->xalpha, 0.0001f);
+                        values.m_ay = max(p->yalpha, 0.0001f);
                         values.m_from_ior = from_ior;
                         values.m_to_ior = to_ior;
 
@@ -382,7 +380,7 @@ void CompositeClosure::process_closure_tree(
                     OrenNayarBRDFInputValues values;
                     values.m_reflectance.set(1.0f);
                     values.m_reflectance_multiplier = 1.0;
-                    values.m_roughness = std::max(p->roughness, 0.0f);
+                    values.m_roughness = max(p->roughness, 0.0f);
 
                     add_closure<OrenNayarBRDFInputValues>(
                         static_cast<ClosureID>(c->id),
