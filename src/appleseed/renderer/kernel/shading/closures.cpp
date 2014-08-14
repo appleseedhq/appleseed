@@ -167,8 +167,10 @@ CompositeClosure::CompositeClosure(
             m_cdf[i] = total_weight;            
         }
 
-        for (size_t i = 0, e = get_num_closures(); i < e; ++i)
+        for (size_t i = 0, e = get_num_closures() - 1; i < e; ++i)
             m_cdf[i] /= total_weight;
+        
+        m_cdf[get_num_closures() - 1] = 1.0;
     }
 }
 
