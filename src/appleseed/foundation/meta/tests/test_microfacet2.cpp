@@ -210,7 +210,7 @@ TEST_SUITE(Foundation_Math_Microfacet2)
     {
         const Vector3d v = Vector3d::unit_vector(theta_o, phi_o);
         const double cos_thetha_o_4 = abs(4.0 * v.y);
-        const double G1 = g.G1(v, alpha_x, alpha_y);
+        const double G1 = g.G1(v, Vector3d(0, 1, 0), alpha_x, alpha_y);
 
         double integral = 0.0;
 

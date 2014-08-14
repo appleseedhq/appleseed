@@ -38,7 +38,8 @@
 #include "renderer/modeling/bsdf/bsdffactoryregistrar.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/ibsdffactory.h"
-#include "renderer/modeling/bsdf/microfacet2brdf.h"
+#include "renderer/modeling/bsdf/oslmicrofacetbrdf.h"
+#include "renderer/modeling/bsdf/oslmicrofacetbtdf.h"
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/utility/paramarray.h"
@@ -137,6 +138,18 @@ namespace
                     MicrofacetGGXReflectionID,
                     "ggx",
                     "osl_ggx_brdf");
+
+            m_microfacet_beckmann_btdf =
+                create_and_register_microfacet_btdf(
+                    MicrofacetBeckmannRefractionID,
+                    "beckmann",
+                    "osl_beckmann_btdf");
+
+            m_microfacet_ggx_btdf =
+                create_and_register_microfacet_btdf(
+                    MicrofacetGGXRefractionID,
+                    "ggx",
+                    "osl_ggx_btdf");
         }
 
         virtual void release() OVERRIDE
@@ -324,8 +337,10 @@ namespace
         auto_release_ptr<BSDF>      m_diffuse_btdf;
         auto_release_ptr<BSDF>      m_lambertian_brdf;
         auto_release_ptr<BSDF>      m_microfacet_beckmann_brdf;
+        auto_release_ptr<BSDF>      m_microfacet_beckmann_btdf;
         auto_release_ptr<BSDF>      m_microfacet_blinn_brdf;
         auto_release_ptr<BSDF>      m_microfacet_ggx_brdf;
+        auto_release_ptr<BSDF>      m_microfacet_ggx_btdf;
         auto_release_ptr<BSDF>      m_orennayar_brdf;
         auto_release_ptr<BSDF>      m_specular_brdf;
         auto_release_ptr<BSDF>      m_specular_btdf;
@@ -351,7 +366,21 @@ namespace
             const char*             name)
         {
             auto_release_ptr<BSDF> bsdf =
-                Microfacet2BRDFFactory().create(
+                OSLMicrofacetBRDFFactory().create(
+                    name,
+                    ParamArray().insert("mdf", mdf_name));
+
+            m_all_bsdfs[cid] = bsdf.get();
+            return bsdf;
+        }
+
+        auto_release_ptr<BSDF> create_and_register_microfacet_btdf(
+            const ClosureID         cid,
+            const char*             mdf_name,
+            const char*             name)
+        {
+            auto_release_ptr<BSDF> bsdf =
+                OSLMicrofacetBTDFFactory().create(
                     name,
                     ParamArray().insert("mdf", mdf_name));
 

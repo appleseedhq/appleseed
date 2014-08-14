@@ -56,6 +56,9 @@ namespace foundation
 //   [1] Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs
 //       http://hal.inria.fr/docs/00/96/78/44/PDF/RR-8468.pdf
 //
+//   [2] Importance Sampling Microfacet-Based BSDFs using the Distribution of Visible Normals
+//       http://hal.inria.fr/docs/01/00/66/20/PDF/article.pdf
+//
 
 template <typename T>
 class TorranceSparrowMaskingShadowing
@@ -71,7 +74,7 @@ class TorranceSparrowMaskingShadowing
         const T              alpha_x,
         const T              alpha_y)
     {
-        if (outgoing.y > T(0.0))
+        if (incoming.y >= T(0.0))
             return std::min(G1(incoming, h), G1(outgoing, h));
 
         return std::max(G1(incoming, h) + G1(outgoing, h) - T(1.0), T(0.0));
@@ -82,8 +85,14 @@ class TorranceSparrowMaskingShadowing
         const Vector<T, 3>&  v,
         const Vector<T, 3>&  h)
     {
-        const T cos_vh = dot(v, h);
-        if (cos_vh < T(0.0))
+        if (v.y <= T(0.0))
+            return T(0.0);
+
+        if (dot(v, h) <= T(0.0))
+            return T(0.0);
+        
+        const T cos_vh = std::abs(dot(v, h));
+        if (cos_vh == T(0.0))
             return T(0.0);
 
         return std::min(T(1.0), T(2.0) * std::abs(h.y) * std::abs(v.y) / cos_vh);
@@ -295,8 +304,6 @@ class BlinnMDF2
 //
 //
 
-// For some reason, this produces fireflies. It's mentioned in [3],
-// but it can also be a bug. We don't use it yet.
 template <typename T>
 class BeckmannSmithMaskingShadowing
 {
@@ -311,17 +318,25 @@ class BeckmannSmithMaskingShadowing
         const T              alpha_x,
         const T              alpha_y)
     {
-        return G1(outgoing, alpha_x, alpha_y) * G1(incoming, alpha_x, alpha_y);
+        return G1(outgoing, h, alpha_x, alpha_y) * G1(incoming, h, alpha_x, alpha_y);
     }
 
     // G1 is used in microfacet2 unit tests, so it's public.
     static T G1(
         const Vector<T, 3>&  v,
+        const Vector<T, 3>&  m,
         const T              alpha_x,
         const T              alpha_y)
     {
+        if (dot(v, m) * v.y <= T(0.0))
+            return T(0.0);
+
         const T cos_theta_2 = square(v.y);
         const T tan_theta = std::sqrt((T(1.0) - cos_theta_2) / cos_theta_2);
+        
+        if (tan_theta == T(0.0))
+            return T(1.0);
+
         const T a = T(1.0) / alpha_x * tan_theta;
 
         if (a < T(1.6))
@@ -334,7 +349,7 @@ class BeckmannSmithMaskingShadowing
     }
 };
 
-template <typename T, template <typename> class MaskingShadowingFunction = TorranceSparrowMaskingShadowing>
+template <typename T, template <typename> class MaskingShadowingFunction = BeckmannSmithMaskingShadowing>
 class BeckmannMDF2
   : public MDF<T>
 {
@@ -434,19 +449,23 @@ class GGXSmithMaskingShadowing
         const T              alpha_x,
         const T              alpha_y)
     {
-        return G1(outgoing, alpha_x, alpha_y) * G1(incoming, alpha_x, alpha_y);
+        return G1(outgoing, h, alpha_x, alpha_y) * G1(incoming, h, alpha_x, alpha_y);
     }
 
     // G1 is used in microfacet2 unit tests, so it's public.
     static T G1(
         const Vector<T, 3>&  v,
+        const Vector<T, 3>&  m,
         const T              alpha_x,
         const T              alpha_y)
     {
-        const T cos_theta = v.y;
+        if (dot(v, m) * v.y <= T(0.0))
+            return T(0.0);
+
+        const T cos_theta = std::abs(v.y);
 
         if (cos_theta == T(1.0))
-            return T(1.0);
+            return T(0.0);
 
         const T cos_theta_2 = square(cos_theta);
 

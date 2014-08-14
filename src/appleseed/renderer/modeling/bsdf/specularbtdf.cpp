@@ -104,8 +104,8 @@ namespace
             const Vector3d& shading_normal = shading_basis.get_normal();
             const double eta = values->m_from_ior / values->m_to_ior;
             const double cos_theta_i = dot(outgoing, shading_normal);
-            const double sin_theta_i2 = 1.0 - cos_theta_i * cos_theta_i;
-            const double cos_theta_t2 = 1.0 - eta * eta * sin_theta_i2;
+            const double sin_theta_i2 = 1.0 - square(cos_theta_i);
+            const double cos_theta_t2 = 1.0 - square(eta) * sin_theta_i2;
 
             if (cos_theta_t2 < 0.0)
             {
