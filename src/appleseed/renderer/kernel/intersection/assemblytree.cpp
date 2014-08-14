@@ -474,19 +474,28 @@ void AssemblyTree::delete_child_trees(const Assembly& assembly)
     if (assembly.is_flushable())
     {
         const RegionTreeContainer::iterator it = m_region_trees.find(assembly.get_uid());
-        delete it->second;
-        m_region_trees.erase(it);
+        if (it != m_region_trees.end())
+        {
+            delete it->second;
+            m_region_trees.erase(it);
+        }
     }
     else
     {
         const TriangleTreeContainer::iterator it = m_triangle_trees.find(assembly.get_uid());
-        delete it->second;
-        m_triangle_trees.erase(it);
+        if (it != m_triangle_trees.end())
+        {
+            delete it->second;
+            m_triangle_trees.erase(it);
+        }
     }
 
     const CurveTreeContainer::iterator it = m_curve_trees.find(assembly.get_uid());
-    delete it->second;
-    m_curve_trees.erase(it);
+    if (it != m_curve_trees.end())
+    {
+        delete it->second;
+        m_curve_trees.erase(it);
+    }
 }
 
 
