@@ -5,8 +5,8 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
 // Copyright (c) 2014 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@
 //
 
 // Interface header.
-#include "microfacet2brdf.h"
+#include "oslmicrofacetbtdf.h"
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -39,7 +39,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
-#include "foundation/math/fresnel.h"
 #include "foundation/math/microfacet2.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
@@ -65,24 +64,62 @@ namespace renderer
 namespace
 {
 
+    Vector3d half_refraction_vector(
+        const Vector3d& outgoing,
+        const Vector3d& incoming,
+        const Vector3d& normal,
+        const double    from_ior,
+        const double    to_ior,
+        double&         ht_norm)
+    {
+        // [1] equation 16.
+        Vector3d ht = -(from_ior * outgoing + to_ior * incoming);
+        ht_norm = norm(ht);
+        ht /= ht_norm;
+
+        // Flip the half vector to be on the same side as the normal.
+        if (dot(ht, normal) < 0.0)
+            ht = -ht;
+
+        return ht;
+    }
+
+    double refraction_jacobian(
+        const Vector3d& incoming,
+        const double    to_ior,
+        const Vector3d& h,
+        const double    hnorm)
+    {
+        // [1] equation 17.
+        return abs(square(to_ior) * dot(incoming, h) / square(hnorm));
+    }
+
+
     //
-    // Microfacet2 BRDF.
+    // OSLMicrofacet BTDF.
     //
 
-    const char* Model = "microfacet2_brdf";
+    // References:
+    //
+    //   [1] Microfacet Models for Refraction through Rough Surfaces
+    //       http://www.cs.cornell.edu/~srm/publications/EGSR07-btdf.pdf
+    //
 
-    class Microfacet2BRDFImpl
+    const char* Model = "osl_microfacet_btdf";
+
+    class OSLMicrofacetBTDFImpl
       : public BSDF
     {
       public:
-        Microfacet2BRDFImpl(
+        OSLMicrofacetBTDFImpl(
             const char*         name,
             const ParamArray&   params)
-          : BSDF(name, Reflective, Glossy, params)
+          : BSDF(name, Transmissive, Glossy, params)
         {
-            m_inputs.declare("ax", InputFormatScalar, "0.5");
-            m_inputs.declare("ay", InputFormatScalar, "0.5");
-            m_inputs.declare("eta", InputFormatScalar, "1.5");
+            m_inputs.declare("ax", InputFormatScalar, "0.05");
+            m_inputs.declare("ay", InputFormatScalar, "0.05");
+            m_inputs.declare("from_ior", InputFormatScalar, "1.0");
+            m_inputs.declare("to_ior", InputFormatScalar, "1.5");
         }
 
         virtual void release() OVERRIDE
@@ -108,13 +145,11 @@ namespace
                 m_params.get_required<string>(
                     "mdf",
                     "beckmann",
-                    make_vector("beckmann", "blinn", "ggx"),
+                    make_vector("beckmann", "ggx"),
                     context);
 
             if (mdf == "beckmann")
                 m_mdf.reset(new BeckmannMDF2<double>());
-            else if (mdf == "blinn")
-                m_mdf.reset(new BlinnMDF2<double>());
             else if (mdf == "ggx")
                 m_mdf.reset(new GGXMDF2<double>());
             else
@@ -135,33 +170,28 @@ namespace
             Spectrum&           value,
             double&             probability) const
         {
-            // No reflection below the shading surface.
-            const Vector3d& n = shading_basis.get_normal();
-            const double cos_on = min(dot(outgoing, n), 1.0);
-            if (cos_on < 0.0)
-                return Absorption;
-
             const InputValues* values = static_cast<const InputValues*>(data);
 
             // Compute the incoming direction by sampling the MDF.
             sampling_context.split_in_place(2, 1);
             const Vector2d s = sampling_context.next_vector2<2>();
             const Vector3d m = m_mdf->sample(s, values->m_ax, values->m_ay);
-            const Vector3d h = shading_basis.transform_to_parent(m);
+            const Vector3d ht = shading_basis.transform_to_parent(m);
 
-            incoming = reflect(outgoing, h);
-            const double cos_oh = dot(outgoing, h);
-
-            // No reflection below the shading surface.
-            const double cos_in = dot(incoming, n);
-            if (cos_in < 0.0)
+            if (!refract(
+                    outgoing,
+                    ht,
+                    values->m_from_ior / values->m_to_ior,
+                    incoming))
+            {
+                // Ignore TIR.
                 return Absorption;
+            }
 
-            const double D =
-                m_mdf->D(
-                    m,
-                    values->m_ax,
-                    values->m_ay);
+            // If incoming and outgoing are on the same hemisphere
+            // this is not a refraction.
+            if (dot(incoming, outgoing) >= 0)
+                return Absorption;
 
             const double G =
                 m_mdf->G(
@@ -171,9 +201,32 @@ namespace
                     values->m_ax,
                     values->m_ay);
 
-            const double F = values->m_eta == 0.0 ? 1.0 : fresnel_dielectric(cos_oh, values->m_eta);
-            value.set(static_cast<float>(D * G * F / (4.0 * cos_on * cos_in)));
-            probability = m_mdf->pdf(m, values->m_ax, values->m_ay) / (4.0 * cos_oh);
+            if (G == 0.0)
+                return Absorption;
+
+            const double D = m_mdf->D(m, values->m_ax, values->m_ay);
+
+            const Vector3d& n = shading_basis.get_normal();
+            const double cos_oh = dot(outgoing, ht);
+            const double cos_ih = dot(incoming, ht);
+            const double cos_in = dot(incoming, n);
+            const double cos_on = dot(outgoing, n);
+ 
+            // [1] equation 21.
+            double v = abs(cos_ih * cos_oh / cos_in * cos_on);
+            v *= square(values->m_to_ior) * D * G;
+            const double denom = values->m_to_ior * cos_ih + values->m_from_ior * cos_oh;
+            v /= square(denom);
+            value.set(v);
+
+            const double ht_norm = norm(values->m_from_ior * outgoing + values->m_to_ior * incoming);
+            const double dwh_dwo = refraction_jacobian(
+                incoming,
+                values->m_to_ior,
+                ht,
+                ht_norm);
+
+            probability = m_mdf->pdf(m, values->m_ax, values->m_ay) * dwh_dwo;
             return Glossy;
         }
 
@@ -191,35 +244,57 @@ namespace
             if (!(modes & Glossy))
                 return 0.0;
 
-            // No reflection below the shading surface.
-            const Vector3d& n = shading_basis.get_normal();
-            const double cos_in = dot(incoming, n);
-            const double cos_on = min(dot(outgoing, n), 1.0);
-            if (cos_in < 0.0 || cos_on < 0.0)
+            // If incoming and outgoing are on the same hemisphere
+            // this is not a refraction.
+            if (dot(incoming, outgoing) >= 0)
                 return 0.0;
 
             const InputValues* values = static_cast<const InputValues*>(data);
+            const Vector3d& n = shading_basis.get_normal();
 
-            const Vector3d h = normalize(incoming + outgoing);
-            const Vector3d m = shading_basis.transform_to_local(h);
-            const double D =
-                m_mdf->D(
-                    m,
-                    values->m_ax,
-                    values->m_ay);
+            double ht_norm;
+            const Vector3d ht = half_refraction_vector(
+                outgoing,
+                incoming,
+                n,
+                values->m_from_ior,
+                values->m_to_ior,
+                ht_norm);
+
+            Vector3d m = shading_basis.transform_to_local(ht);
 
             const double G =
                 m_mdf->G(
-                    shading_basis.transform_to_local(outgoing),
                     shading_basis.transform_to_local(incoming),
+                    shading_basis.transform_to_local(outgoing),
                     m,
                     values->m_ax,
                     values->m_ay);
 
-            const double cos_oh = dot(outgoing, h);
-            const double F = values->m_eta == 0.0 ? 1.0 : fresnel_dielectric(cos_oh, values->m_eta);
-            value.set(static_cast<float>(D * G * F / (4.0 * cos_on * cos_in)));
-            return m_mdf->pdf(m, values->m_ax, values->m_ay) / (4.0 * cos_oh);
+            if (G == 0.0)
+                return 0.0;
+
+            const double D = m_mdf->D(m, values->m_ax, values->m_ay);
+
+            const double cos_oh = dot(outgoing, ht);
+            const double cos_ih = dot(incoming, ht);
+            const double cos_in = dot(incoming, n);
+            const double cos_on = dot(outgoing, n);
+ 
+            // [1] equation 21.
+            double v = fabs(cos_ih * cos_oh) / fabs(cos_in * cos_on);
+            v *= square(values->m_to_ior) * D * G;
+            const double denom = values->m_to_ior * cos_ih + values->m_from_ior * cos_oh;
+            v /= square(denom);
+            value.set(v);
+
+            const double dwh_dwo = refraction_jacobian(
+                incoming,
+                values->m_to_ior,
+                ht,
+                ht_norm);
+
+            return m_mdf->pdf(m, values->m_ax, values->m_ay) * dwh_dwo;
         }
 
         FORCE_INLINE virtual double evaluate_pdf(
@@ -233,49 +308,59 @@ namespace
             if (!(modes & Glossy))
                 return 0.0;
 
-            // No reflection below the shading surface.
-            const Vector3d& n = shading_basis.get_normal();
-            const double cos_in = dot(incoming, n);
-            const double cos_on = min(dot(outgoing, n), 1.0);
-            if (cos_in < 0.0 || cos_on < 0.0)
+            // If incoming and outgoing are on the same hemisphere
+            // this is not a refraction.
+            if (dot(incoming, outgoing) < 0)
                 return 0.0;
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
-            const Vector3d h = normalize(incoming + outgoing);
-            const double cos_oh = dot(outgoing, h);
-            return
-                m_mdf->pdf(
-                    shading_basis.transform_to_local(h),
-                    values->m_ax,
-                    values->m_ay) / (4.0 * cos_oh);
+            const Vector3d& n = shading_basis.get_normal();
+
+            double ht_norm;
+            const Vector3d ht = half_refraction_vector(
+                outgoing,
+                incoming,
+                n,
+                values->m_from_ior,
+                values->m_to_ior,
+                ht_norm);
+
+            Vector3d m = shading_basis.transform_to_local(ht);
+            const double dwh_dwo = refraction_jacobian(
+                incoming,
+                values->m_to_ior,
+                ht,
+                ht_norm);
+
+            return m_mdf->pdf(m, values->m_ax, values->m_ay) * dwh_dwo;
         }
 
       private:
-        typedef Microfacet2BRDFInputValues InputValues;
+        typedef OSLMicrofacetBTDFInputValues InputValues;
 
         auto_ptr<MDF<double> > m_mdf;
     };
 
-    typedef BSDFWrapper<Microfacet2BRDFImpl> Microfacet2BRDF;
+    typedef BSDFWrapper<OSLMicrofacetBTDFImpl> OSLMicrofacetBTDF;
 }
 
 
 //
-// Microfacet2BRDFFactory class implementation.
+// OSLMicrofacetBTDFFactory class implementation.
 //
 
-const char* Microfacet2BRDFFactory::get_model() const
+const char* OSLMicrofacetBTDFFactory::get_model() const
 {
     return Model;
 }
 
-const char* Microfacet2BRDFFactory::get_human_readable_model() const
+const char* OSLMicrofacetBTDFFactory::get_human_readable_model() const
 {
-    return "Microfacet2 BRDF";
+    return "OSL Microfacet BTDF";
 }
 
-DictionaryArray Microfacet2BRDFFactory::get_input_metadata() const
+DictionaryArray OSLMicrofacetBTDFFactory::get_input_metadata() const
 {
     DictionaryArray metadata;
 
@@ -287,7 +372,6 @@ DictionaryArray Microfacet2BRDFFactory::get_input_metadata() const
             .insert("items",
                 Dictionary()
                     .insert("Beckmann", "beckmann")
-                    .insert("Blinn", "blinn")
                     .insert("GGX", "ggx"))
             .insert("use", "required")
             .insert("default", "beckmann"));
@@ -300,7 +384,7 @@ DictionaryArray Microfacet2BRDFFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "required")
-            .insert("default", "0.5"));
+            .insert("default", "0.2"));
 
     metadata.push_back(
         Dictionary()
@@ -310,12 +394,22 @@ DictionaryArray Microfacet2BRDFFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "optional")
-            .insert("default", "0.5"));
+            .insert("default", "0.2"));
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "eta")
-            .insert("label", "Eta")
+            .insert("name", "from_ior")
+            .insert("label", "From IOR")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "optional")
+            .insert("default", "1.0"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "to_ior")
+            .insert("label", "To IOR")
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
@@ -325,11 +419,11 @@ DictionaryArray Microfacet2BRDFFactory::get_input_metadata() const
     return metadata;
 }
 
-auto_release_ptr<BSDF> Microfacet2BRDFFactory::create(
+auto_release_ptr<BSDF> OSLMicrofacetBTDFFactory::create(
     const char*         name,
     const ParamArray&   params) const
 {
-    return auto_release_ptr<BSDF>(new Microfacet2BRDF(name, params));
+    return auto_release_ptr<BSDF>(new OSLMicrofacetBTDF(name, params));
 }
 
 }   // namespace renderer

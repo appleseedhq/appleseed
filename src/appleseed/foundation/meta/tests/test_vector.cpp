@@ -274,7 +274,8 @@ TEST_SUITE(Foundation_Math_Vector)
         const Vector2d n(0.0, 1.0);
         const double eta = 0.9;
 
-        const Vector2d r = refract(i, n, eta);
+        Vector2d r;
+        EXPECT_TRUE(refract(i, n, eta, r));
 
         EXPECT_FEQ(Vector2d(0.63639610306789274, -0.77136243102707558), r);
     }
@@ -285,7 +286,8 @@ TEST_SUITE(Foundation_Math_Vector)
         const Vector2d n(0.0, -1.0);
         const double eta = 0.9;
 
-        const Vector2d r = refract(i, n, eta);
+        Vector2d r;
+        EXPECT_TRUE(refract(i, n, eta, r));
 
         EXPECT_FEQ(Vector2d(0.63639610306789274, -0.77136243102707558), r);
     }

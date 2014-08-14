@@ -5,6 +5,7 @@
 //
 // This software is released under the MIT license.
 //
+// Copyright (c) 2014 Francois Beaune, The appleseedhq Organization
 // Copyright (c) 2014 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,8 +27,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSDF_MICROFACET2BRDF_H
-#define APPLESEED_RENDERER_MODELING_BSDF_MICROFACET2BRDF_H
+#ifndef APPLESEED_RENDERER_MODELING_BSDF_OSLMICROFACETBTDF_H
+#define APPLESEED_RENDERER_MODELING_BSDF_OSLMICROFACETBTDF_H
 
 // appleseed.renderer headers.
 #include "renderer/modeling/bsdf/ibsdffactory.h"
@@ -49,22 +50,23 @@ namespace renderer
 {
 
 //
-// Microfacet2 BRDF input values.
+// OSLMicrofacet BTDF input values.
 //
 
-DECLARE_INPUT_VALUES(Microfacet2BRDFInputValues)
+DECLARE_INPUT_VALUES(OSLMicrofacetBTDFInputValues)
 {
     double m_ax;
     double m_ay;
-    double m_eta;
+    double m_from_ior;
+    double m_to_ior;
 };
 
 
 //
-// Microfacet2 BRDF factory.
+// OSLMicrofacet BTDF factory.
 //
 
-class DLLSYMBOL Microfacet2BRDFFactory
+class DLLSYMBOL OSLMicrofacetBTDFFactory
   : public IBSDFFactory
 {
   public:
@@ -85,4 +87,4 @@ class DLLSYMBOL Microfacet2BRDFFactory
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_BSDF_MICROFACET2BRDF_H
+#endif  // !APPLESEED_RENDERER_MODELING_BSDF_OSLMICROFACETBTDF_H
