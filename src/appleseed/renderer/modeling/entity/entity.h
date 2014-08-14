@@ -36,6 +36,7 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/iunknown.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/siphash.h"
 #include "foundation/utility/uid.h"
 #include "foundation/utility/version.h"
 
@@ -125,6 +126,18 @@ class DLLSYMBOL Entity
 inline foundation::UniqueID Entity::get_class_uid() const
 {
     return m_class_uid;
+}
+
+inline foundation::uint64 Entity::compute_signature() const
+{
+    return foundation::siphash24(get_uid(), get_version_id());
+}
+
+inline foundation::uint64 Entity::combine_signatures(
+    const foundation::uint64            s1,
+    const foundation::uint64            s2)
+{
+    return foundation::siphash24(s1, s2);
 }
 
 inline void Entity::set_parent(Entity* parent)

@@ -90,7 +90,7 @@ inline ScalarSource::ScalarSource(const double scalar)
 
 inline foundation::uint64 ScalarSource::compute_signature() const
 {
-    return foundation::siphash24(&m_scalar, sizeof(m_scalar));
+    return foundation::siphash24(m_scalar);
 }
 
 inline void ScalarSource::evaluate_uniform(

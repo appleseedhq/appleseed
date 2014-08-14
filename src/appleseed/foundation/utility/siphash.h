@@ -74,6 +74,23 @@ inline uint64 siphash24(
     return siphash24(bytes, size, 0, 0);
 }
 
+template <typename T>
+inline uint64 siphash24(const T& object)
+{
+    return siphash24(&object, sizeof(T));
+}
+
+
+//
+// Helper function to combine two hashes.
+//
+
+inline uint64 siphash24(const uint64 a, const uint64 b)
+{
+    const uint64 pair[2] = { a, b };
+    return siphash24(&pair, sizeof(pair));
+}
+
 }       // namespace foundation
 
 #endif  // !APPLESEED_FOUNDATION_UTILITY_SIPHASH_H
