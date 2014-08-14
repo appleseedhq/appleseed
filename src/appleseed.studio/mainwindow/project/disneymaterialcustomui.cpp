@@ -332,7 +332,7 @@ string DisneyMaterialCustomUI::texture_to_expression(const QString& path)
     const SearchPaths& search_paths = m_project.search_paths();
     QString relative_path = find_path_in_searchpaths(search_paths, path);
     QString texture_expression = QString("texture(\"%1\", $u, $v)")
-            .arg(find_path_in_searchpaths(m_project.search_paths(), path));
+            .arg(relative_path);
     return texture_expression.toStdString();
 }
 
