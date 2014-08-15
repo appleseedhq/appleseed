@@ -37,6 +37,9 @@
 #include "renderer/modeling/material/disneymaterial.h"
 #include "renderer/modeling/project/project.h"
 
+// appleseed.studio headers.
+#include "mainwindow/project/tools.h"
+
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
 
@@ -180,19 +183,6 @@ void ExpressionEditorWindow::slot_clear_expression()
     m_editor->setExpr("");
 }
 
-namespace
-{
-    void show_message_box(const string& title, const string& text)
-    {
-        QMessageBox msgbox;
-        msgbox.setWindowTitle(QString::fromStdString(title));
-        msgbox.setIcon(QMessageBox::Warning);
-        msgbox.setText(QString::fromStdString(text));
-        msgbox.setStandardButtons(QMessageBox::Ok);
-        msgbox.exec();
-    }
-}
-
 void ExpressionEditorWindow::slot_save_script()
 {
     QFileDialog::Options options;
@@ -221,7 +211,7 @@ void ExpressionEditorWindow::slot_save_script()
         ofstream script_file(m_script_filepath.c_str());
         if (!script_file.is_open())
         {
-            show_message_box(
+            show_warning_message_box(
                 "Saving Error",
                 "Failed to save the expression script file " + m_script_filepath + ".");
             return;
@@ -253,7 +243,7 @@ void ExpressionEditorWindow::slot_load_script()
         ifstream script_file(filepath.toStdString().c_str());
         if (!script_file.is_open())
         {
-            show_message_box(
+            show_warning_message_box(
                 "Loading Error",
                 "Failed to load the expression script file " + filepath.toStdString() + ".");
             return;
