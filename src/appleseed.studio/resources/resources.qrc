@@ -63,5 +63,7 @@
         <file>widgets/combobox_arrow_down_disabled.png</file>
         <file>widgets/combobox_arrow_down_enabled.png</file>
         <file>widgets/combobox_arrow_down_selected.png</file>
+        <file>icons/disney_expr.png</file>
+        <file>icons/disney_texture.png</file>
     </qresource>
 </RCC>
