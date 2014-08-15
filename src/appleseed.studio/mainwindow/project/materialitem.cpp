@@ -34,12 +34,27 @@
 #ifdef WITH_DISNEY_MATERIAL
 #include "mainwindow/project/disneymaterialcustomui.h"
 #endif
+#include "mainwindow/project/tools.h"
 
 // appleseed.renderer headers.
 #ifdef WITH_DISNEY_MATERIAL
 #include "renderer/modeling/material/disneymaterial.h"
 #endif
 
+// appleseed.foundation headers.
+#include "foundation/utility/settings/settingsfilewriter.h"
+
+
+// Qt headers.
+#include <QFileDialog>
+#include <QMenu>
+#include <QString>
+
+// boost headers.
+#include "boost/filesystem/operations.hpp"
+#include "boost/filesystem/path.hpp"
+
+using namespace boost;
 using namespace foundation;
 using namespace renderer;
 using namespace std;
@@ -54,6 +69,20 @@ MaterialItem::MaterialItem(
     ProjectBuilder&             project_builder)
   : FixedModelEntityItem<Material, Assembly, MaterialCollectionItem>(entity, parent, collection_item, project_builder)
 {
+}
+
+QMenu* MaterialItem::get_single_item_context_menu() const
+{
+    QMenu* menu = new QMenu(treeWidget());
+
+    menu->addAction("Edit...", this, SLOT(slot_edit()));
+#ifdef WITH_DISNEY_MATERIAL
+    if (strcmp(m_entity->get_model(), "disney_material") == 0)
+        menu->addAction("Export...", this, SLOT(slot_export()));
+#endif
+    menu->addAction("Delete", this, SLOT(slot_delete()), QKeySequence(Qt::Key_Delete));
+
+    return menu;
 }
 
 void MaterialItem::slot_edit(AttributeEditor* attribute_editor)
@@ -111,6 +140,42 @@ void MaterialItem::slot_edit(AttributeEditor* attribute_editor)
             SLOT(slot_edit_accepted(foundation::Dictionary)),
             SLOT(slot_edit_accepted(foundation::Dictionary)),
             SLOT(slot_edit_accepted(foundation::Dictionary)));
+    }
+}
+
+void MaterialItem::slot_export()
+{
+    const char* project_path = m_project_builder.get_project().get_path();
+    const filesystem::path project_root_path = filesystem::path(project_path).parent_path();
+    const filesystem::path file_path = absolute("material.dmt", project_root_path);
+    const filesystem::path file_root_path = file_path.parent_path();
+
+    QFileDialog::Options options;
+    QString selected_filter;
+
+    QString filepath =
+        QFileDialog::getSaveFileName(
+            0,
+            "Export...",
+            QString::fromStdString(file_root_path.string()),
+            "Disney Material (*.dmt)",
+            &selected_filter,
+            options);
+
+    if (!filepath.isEmpty())
+    {
+        filepath = QDir::toNativeSeparators(filepath);
+        SettingsFileWriter writer;
+        ParamArray parameters = m_entity->get_parameters();
+        parameters.insert("__name", m_entity->get_name());
+        parameters.insert("__model", m_entity->get_model());
+
+        if (!writer.write(filepath.toStdString().c_str(), parameters))
+        {
+            show_warning_message_box(
+                "Exporting Error",
+                "Failed to export the disney material file " + filepath.toStdString());
+        }
     }
 }
 

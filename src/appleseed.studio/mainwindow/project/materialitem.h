@@ -54,8 +54,13 @@ class MaterialItem
         MaterialCollectionItem*     collection_item,
         ProjectBuilder&             project_builder);
 
+    virtual QMenu* get_single_item_context_menu() const;
+
   private:
     virtual void slot_edit(AttributeEditor* attribute_editor) OVERRIDE;
+
+  public slots:
+    void slot_export();
 };
 
 }       // namespace studio

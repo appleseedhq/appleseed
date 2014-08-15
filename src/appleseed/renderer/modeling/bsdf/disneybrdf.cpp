@@ -81,42 +81,21 @@ namespace
 
 
     //
-    // DisneyDiffuse BRDF class.
+    // DisneyDiffuseComponent: diffuse part of Disney BRDF.
     //
 
-    class DisneyDiffuseBRDF
-      : public BSDF
+    class DisneyDiffuseComponent
     {
       public:
-        DisneyDiffuseBRDF()
-          : BSDF("disney_diffuse", Reflective, Diffuse, ParamArray())
-        {
-        }
-
-        virtual void release() OVERRIDE
-        {
-            delete this;
-        }
-
-        virtual const char* get_model() const OVERRIDE
-        {
-            return "disney_diffuse_brdf";
-        }
-
-        virtual BSDF::Mode sample(
+        BSDF::Mode sample(
             SamplingContext&                sampling_context,
-            const void*                     data,
-            const bool                      adjoint,
-            const bool                      cosine_mult,
-            const Vector3d&                 geometric_normal,
+            const DisneyBRDFInputValues*    values,
             const Basis3d&                  shading_basis,
             const Vector3d&                 outgoing,
             Vector3d&                       incoming,
             Spectrum&                       value,
-            double&                         probability) const OVERRIDE
+            double&                         probability) const
         {
-            const DisneyBRDFInputValues* values = static_cast<const DisneyBRDFInputValues*>(data);
-
             // Compute the incoming direction in local space.
             sampling_context.split_in_place(2, 1);
             const Vector2d s = sampling_context.next_vector2<2>();
@@ -125,106 +104,57 @@ namespace
             // Transform the incoming direction to parent space.
             incoming = shading_basis.transform_to_parent(wi);
 
-            evaluate_diffuse(
+            probability = evaluate(
                 values,
                 shading_basis,
                 outgoing,
                 incoming,
                 value);
-
-            probability = wi.y * RcpPi;
+            
             assert(probability > 0.0);
-
-            return Diffuse;
+            return BSDF::Diffuse;
         }
 
-        virtual double evaluate(
-            const void*                     data,
-            const bool                      adjoint,
-            const bool                      cosine_mult,
-            const Vector3d&                 geometric_normal,
-            const Basis3d&                  shading_basis,
-            const Vector3d&                 outgoing,
-            const Vector3d&                 incoming,
-            const int                       modes,
-            Spectrum&                       value) const OVERRIDE
-        {
-            if (!(modes & Diffuse))
-                return 0.0;
-
-            // No reflection below the shading surface.
-            const Vector3d& n = shading_basis.get_normal();
-            const double cos_in = dot(incoming, n);
-            if (cos_in < 0.0)
-                return 0.0;
-
-            const DisneyBRDFInputValues* values = static_cast<const DisneyBRDFInputValues*>(data);
-
-            evaluate_diffuse(
-                        values,
-                        shading_basis,
-                        outgoing,
-                        incoming,
-                        value);
-
-            // Return the probability density of the sampled direction.
-            return cos_in * RcpPi;
-        }
-
-        virtual double evaluate_pdf(
-            const void*                     data,
-            const Vector3d&                 geometric_normal,
-            const Basis3d&                  shading_basis,
-            const Vector3d&                 outgoing,
-            const Vector3d&                 incoming,
-            const int                       modes) const OVERRIDE
-        {
-            if (!(modes & Diffuse))
-                return 0.0;
-
-            // No reflection below the shading surface.
-            const Vector3d& n = shading_basis.get_normal();
-            const double cos_in = dot(incoming, n);
-            const double cos_on = dot(outgoing, n);
-            if (cos_in < 0.0 || cos_on < 0.0)
-                return 0.0;
-
-            return cos_in * RcpPi;
-        }
-
-      private:
-        void evaluate_diffuse(
+        double evaluate(
             const DisneyBRDFInputValues*    values,
             const Basis3d&                  shading_basis,
             const Vector3d&                 outgoing,
             const Vector3d&                 incoming,
             Spectrum&                       value) const
         {
-            // This code is ported from the GLSL implementation
+            // This code is mostly ported from the GLSL implementation
             // in Disney's BRDF explorer.
 
-            const Vector3d h(normalize(incoming + outgoing));
             const Vector3d n(shading_basis.get_normal());
+            const Vector3d h(normalize(incoming + outgoing));
 
             const double cos_no = dot(n, outgoing);
             const double cos_ni = dot(n, incoming);
-            const double cos_oh = dot(outgoing, h);
+            const double cos_ih = dot(incoming, h);
 
-            value = values->m_base_color;
+            double fd = 0.0;
+            const double fl = schlick_fresnel(cos_ni);
+            const double fv = schlick_fresnel(cos_no);
 
-            const double fl = schlick_fresnel(cos_no);
-            const double fv = schlick_fresnel(cos_ni);
-            const double fd90 = 0.5 + 2.0 * square(cos_oh) * values->m_roughness;
-            double fd = mix(1.0, fd90, fl) * mix(1.0, fd90, fv);
+            if (values->m_subsurface != 1.0)
+            {
+                const double fd90 = 0.5 + 2.0 * square(cos_ih) * values->m_roughness;
+                fd = mix(1.0, fd90, fl) * mix(1.0, fd90, fv);
+            }
 
             if (values->m_subsurface > 0.0)
             {
-                const double fss90 = square(cos_oh) * values->m_roughness;
+                // Based on Hanrahan-Krueger brdf approximation of isotropic bssrdf
+                // 1.25 scale is used to (roughly) preserve albedo
+                // Fss90 used to "flatten" retroreflection based on roughness
+
+                const double fss90 = square(cos_ih) * values->m_roughness;
                 const double fss = mix(1.0, fss90, fl) * mix(1.0, fss90, fv);
                 const double ss = 1.25 * (fss * (1.0 / (cos_no + cos_ni) - 0.5) + 0.5);
                 fd = mix(fd, ss, values->m_subsurface);
             }
 
+            value = values->m_base_color;
             value *= static_cast<float>(fd * RcpPi);
 
             if (values->m_sheen > 0.0)
@@ -235,12 +165,22 @@ namespace
                     values->m_tint_color,
                     static_cast<float>(values->m_sheen_tint),
                     csheen);
-                const double fh = schlick_fresnel(cos_oh);
+                const double fh = schlick_fresnel(cos_ih);
                 csheen *= static_cast<float>(fh * values->m_sheen);
                 value += csheen;
             }
 
             value *= static_cast<float>(1.0 - values->m_metallic);
+            
+            // Return the probability density of the sampled direction.
+            return evaluate_pdf(shading_basis, incoming);
+        }
+
+        double evaluate_pdf(
+            const Basis3d&                  shading_basis,
+            const Vector3d&                 incoming) const
+        {
+            return dot(incoming, shading_basis.get_normal()) * RcpPi;
         }
     };
 
@@ -346,8 +286,6 @@ namespace
             m_inputs.declare("sheen_tint", InputFormatScalar, "0.5");
             m_inputs.declare("clearcoat", InputFormatScalar, "0.0");
             m_inputs.declare("clearcoat_gloss", InputFormatScalar, "1.0");
-
-            m_diffuse_brdf.reset(new DisneyDiffuseBRDF());
         }
 
         virtual void release() OVERRIDE
@@ -358,28 +296,6 @@ namespace
         virtual const char* get_model() const OVERRIDE
         {
             return Model;
-        }
-
-        virtual bool on_frame_begin(
-            const Project&          project,
-            const Assembly&         assembly,
-            AbortSwitch*            abort_switch) OVERRIDE
-        {
-            if (!BSDF::on_frame_begin(project, assembly, abort_switch))
-                return false;
-
-            if (!m_diffuse_brdf->on_frame_begin(project, assembly, abort_switch))
-                return false;
-
-            return true;
-        }
-
-        virtual void on_frame_end(
-            const Project&          project,
-            const Assembly&         assembly) OVERRIDE
-        {
-            m_diffuse_brdf->on_frame_end(project, assembly);
-            BSDF::on_frame_end(project, assembly);
         }
 
         virtual void evaluate_inputs(
@@ -417,19 +333,16 @@ namespace
             double weights[3];
             compute_component_weights(values, weights);
 
-            // Choose which of the two BSDFs to sample.
+            // Choose which of the three components to sample.
             sampling_context.split_in_place(1, 1);
             const double s = sampling_context.next_double2();
 
             if (s < weights[0])
             {
                 return
-                    m_diffuse_brdf->sample(
+                    DisneyDiffuseComponent().sample(
                         sampling_context,
-                        data,
-                        adjoint,
-                        false,                      // do not multiply by |cos(incoming, normal)|
-                        geometric_normal,
+                        values,
                         shading_basis,
                         outgoing,
                         incoming,
@@ -444,18 +357,20 @@ namespace
                 return Absorption;
 
             const MDF<double>* mdf = 0;
-            double alpha_x, alpha_y, alpha_g;
+            double alpha_x, alpha_y, alpha_gx, alpha_gy;
 
             if (s < weights[1])
             {
                 mdf = &m_specular_mdf;
-                specular_roughness(values, alpha_x, alpha_y, alpha_g);
+                specular_roughness(values, alpha_x, alpha_y);
+                alpha_gx = alpha_x;
+                alpha_gy = alpha_y;
             }
             else
             {
                 mdf = &m_clearcoat_mdf;
                 alpha_x = alpha_y = clearcoat_roughness(values);
-                alpha_g = 0.25;
+                alpha_gx = alpha_gy = 0.25;
             }
 
             // Compute the incoming direction by sampling the MDF.
@@ -481,8 +396,8 @@ namespace
                     shading_basis.transform_to_local(incoming),
                     shading_basis.transform_to_local(outgoing),
                     m,
-                    alpha_g,
-                    alpha_g);
+                    alpha_gx,
+                    alpha_gy);
 
             const double cos_oh = dot(outgoing, h);
 
@@ -525,15 +440,11 @@ namespace
 
             if ((modes & Diffuse) && (weights[0] != 0.0))
             {
-                pdf += m_diffuse_brdf->evaluate(
-                    data,
-                    adjoint,
-                    false,                          // do not multiply by |cos(incoming, normal)|
-                    geometric_normal,
+                pdf += DisneyDiffuseComponent().evaluate(
+                    values,
                     shading_basis,
                     outgoing,
                     incoming,
-                    modes,
                     value) * weights[0];
             }
 
@@ -548,8 +459,8 @@ namespace
 
             if (weights[1] != 0.0)
             {
-                double alpha_x, alpha_y, alpha_g;
-                specular_roughness(values, alpha_x, alpha_y, alpha_g);
+                double alpha_x, alpha_y;
+                specular_roughness(values, alpha_x, alpha_y);
 
                 const double D =
                     m_specular_mdf.D(
@@ -562,8 +473,8 @@ namespace
                         wo,
                         wi,
                         m,
-                        alpha_g,
-                        alpha_g);
+                        alpha_x,
+                        alpha_y);
 
                 Spectrum specular_value;
                 specular_f(values, cos_oh, specular_value);
@@ -621,13 +532,9 @@ namespace
 
             if ((modes & Diffuse) && (weights[0] != 0.0))
             {
-                pdf += m_diffuse_brdf->evaluate_pdf(
-                    data,
-                    geometric_normal,
+                pdf += DisneyDiffuseComponent().evaluate_pdf(
                     shading_basis,
-                    outgoing,
-                    incoming,
-                    modes) * weights[0];
+                    incoming) * weights[0];
             }
 
             if (!(modes & Glossy))
@@ -646,8 +553,8 @@ namespace
 
             if (weights[1] != 0.0)
             {
-                double alpha_x, alpha_y, alpha_g;
-                specular_roughness(values, alpha_x, alpha_y, alpha_g);
+                double alpha_x, alpha_y;
+                specular_roughness(values, alpha_x, alpha_y);
                 pdf += m_specular_mdf.pdf(hl, alpha_x, alpha_y) / (4.0 * cos_oh) * weights[1];
             }
 
@@ -663,7 +570,6 @@ namespace
       private:
         typedef DisneyBRDFInputValues InputValues;
 
-        auto_release_ptr<BSDF>  m_diffuse_brdf;
         const GGXMDF2<double>   m_specular_mdf;
         const BerryMDF2<double> m_clearcoat_mdf;
 
@@ -684,13 +590,11 @@ namespace
         void specular_roughness(
             const DisneyBRDFInputValues*    values,
             double&                         alpha_x,
-            double&                         alpha_y,
-            double&                         alpha_g) const
+            double&                         alpha_y) const
         {
             const double aspect = sqrt(1.0 - values->m_anisotropic * 0.9);
             alpha_x = max(0.001, square(values->m_roughness) / aspect);
             alpha_y = max(0.001, square(values->m_roughness) * aspect);
-            alpha_g = square(values->m_roughness * 0.5 + 0.5);
         }
 
         void specular_f(

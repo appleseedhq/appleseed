@@ -64,6 +64,7 @@ class MaterialCollectionItem
     void slot_create_generic();
 #ifdef WITH_DISNEY_MATERIAL
     void slot_create_disney();
+    void slot_import_disney();
 #endif
 #ifdef WITH_OSL
     void slot_create_osl();

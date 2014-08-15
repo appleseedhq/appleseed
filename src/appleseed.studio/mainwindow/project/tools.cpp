@@ -42,6 +42,7 @@
 #include <QFileInfo>
 #include <QInputDialog>
 #include <QLineEdit>
+#include <QMessageBox>
 #include <QObject>
 #include <QString>
 
@@ -204,6 +205,16 @@ QString find_path_in_searchpaths(const SearchPaths& s, const QString& filename)
     }
 
     return filename;
+}
+
+void show_warning_message_box(const string& title, const string& text)
+{
+    QMessageBox msgbox;
+    msgbox.setWindowTitle(QString::fromStdString(title));
+    msgbox.setIcon(QMessageBox::Warning);
+    msgbox.setText(QString::fromStdString(text));
+    msgbox.setStandardButtons(QMessageBox::Ok);
+    msgbox.exec();
 }
 
 }   // namespace studio
