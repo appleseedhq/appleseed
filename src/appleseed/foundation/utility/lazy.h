@@ -142,7 +142,7 @@ class Access
     const ObjectType* get() const;
     const ObjectType& ref() const;
 
-    // Access the object. The object must exist.
+    // Access the object.
     const ObjectType* operator->() const;
     const ObjectType& operator*() const;
 
@@ -183,7 +183,7 @@ class Update
     ObjectType* get() const;    // may return 0
     ObjectType& ref() const;
 
-    // Access the object. The object must exist.
+    // Access the object.
     ObjectType* operator->() const;
     ObjectType& operator*() const;
 
