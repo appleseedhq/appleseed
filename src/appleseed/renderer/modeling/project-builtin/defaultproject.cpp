@@ -62,7 +62,7 @@ auto_release_ptr<Project> DefaultProjectFactory::create()
     auto_release_ptr<Scene> scene(SceneFactory::create());
 
     // Create an assembly.
-    auto_release_ptr<Assembly> assembly(AssemblyFactory::create("assembly", ParamArray()));
+    auto_release_ptr<Assembly> assembly(AssemblyFactory::create("assembly"));
 
     // Create an instance of the assembly and insert it into the scene.
     scene->assembly_instances().insert(
@@ -74,37 +74,21 @@ auto_release_ptr<Project> DefaultProjectFactory::create()
     // Insert the assembly into the scene.
     scene->assemblies().insert(assembly);
 
-    //
-    // Camera.
-    //
+    // Create a pinhole camera and attach it to the scene.
+    scene->set_camera(
+        PinholeCameraFactory().create(
+            "camera",
+            ParamArray()
+                .insert("film_dimensions", "0.01024 0.00576")
+                .insert("focal_length", "0.035")));
 
-    {
-        // Create a pinhole camera.
-        // Film dimensions are 0.980 in × 0.735 in (24.892 mm x 18.669 mm).
-        // Reference: http://en.wikipedia.org/wiki/Aspect_ratio_(image).
-        ParamArray params;
-        params.insert("film_dimensions", "0.024892 0.018669");
-        params.insert("focal_length", "0.035");
-        auto_release_ptr<Camera> camera(PinholeCameraFactory().create("camera", params));
-
-        // Attach the camera to the scene.
-        scene->set_camera(camera);
-    }
-
-    //
-    // Frame.
-    //
-
-    {
-        // Create a frame.
-        ParamArray params;
-        params.insert("camera", scene->get_camera()->get_name());
-        params.insert("resolution", "640 480");
-        auto_release_ptr<Frame> frame(FrameFactory::create("beauty", params));
-
-        // Attach the frame to the project.
-        project->set_frame(frame);
-    }
+    // Create a frame (quarter 2K resolution) and attach it to the project.
+    project->set_frame(
+        FrameFactory::create(
+            "beauty",
+            ParamArray()
+                .insert("camera", scene->get_camera()->get_name())
+                .insert("resolution", "1024 576")));
 
     // Attach the scene to the project.
     project->set_scene(scene);
