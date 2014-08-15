@@ -394,10 +394,7 @@ void DisneyMaterialCustomUI::create_color_input_widgets(
     picker_button->setObjectName("ColorPicker");
     ColorPickerProxy picker_proxy(m_line_edit, picker_button);
 
-    m_texture_button = new QPushButton("Texture", m_group_widget);
-    m_texture_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    m_expression_button = new QPushButton("Expression", m_group_widget);
-    m_expression_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    create_texture_and_expr_buttons();
 
     QString picker_name = QString::fromStdString(group_name + "_color_expression");
     connect(picker_button, SIGNAL(clicked()), m_color_picker_signal_mapper, SLOT(map()));
@@ -452,11 +449,8 @@ void DisneyMaterialCustomUI::create_colormap_input_widgets(
         adaptor, SLOT(slot_apply_slider_value()));
 
     const QString name = QString::fromStdString(group_name + ";" + parameter_name);
-    m_texture_button = new QPushButton("Texture", m_group_widget);
-    m_texture_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    m_expression_button = new QPushButton("Expression", m_group_widget);
-    m_expression_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
+    create_texture_and_expr_buttons();
     create_buttons_connections(name);
 
     QHBoxLayout* layout = new QHBoxLayout();
@@ -467,6 +461,19 @@ void DisneyMaterialCustomUI::create_colormap_input_widgets(
     layout->addWidget(m_expression_button);
 
     m_group_layout->addRow(QString::fromStdString(label_name), layout);
+}
+
+void DisneyMaterialCustomUI::create_texture_and_expr_buttons()
+{
+    QIcon texture_icon = QIcon(":/icons/disney_texture.png");
+    m_texture_button = new QPushButton(texture_icon, QString(), m_group_widget);
+    m_texture_button->setFlat(true);
+    m_texture_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+
+    QIcon expression_icon = QIcon(":/icons/disney_expr.png");
+    m_expression_button = new QPushButton(expression_icon, QString(), m_group_widget);
+    m_expression_button->setFlat(true);
+    m_expression_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 }
 
 void DisneyMaterialCustomUI::add_layer(const bool update, const Dictionary& parameters)
