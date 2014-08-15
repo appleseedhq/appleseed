@@ -17,13 +17,6 @@
    <string>Expression Editor</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="1" column="0">
-    <widget class="QDialogButtonBox" name="buttonbox">
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Apply|QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-     </property>
-    </widget>
-   </item>
    <item row="0" column="0">
     <widget class="QScrollArea" name="scrollarea">
      <property name="widgetResizable">
@@ -35,11 +28,22 @@
         <x>0</x>
         <y>0</y>
         <width>380</width>
-        <height>547</height>
+        <height>545</height>
        </rect>
       </property>
      </widget>
     </widget>
+   </item>
+   <item row="1" column="0">
+    <layout class="QHBoxLayout" name="buttonbox_layout">
+     <item>
+      <widget class="QDialogButtonBox" name="buttonbox">
+       <property name="standardButtons">
+        <set>QDialogButtonBox::Apply|QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
   </layout>
  </widget>

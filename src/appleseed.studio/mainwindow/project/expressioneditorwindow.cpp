@@ -43,9 +43,13 @@
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
 
+// appleseed.shared headers.
+#include "application/application.h"
+
 // SeExpr Editor headers.
 #include <SeExpression.h>
 #include <SeExprEditor/SeExprEditor.h>
+#include <SeExprEditor/SeExprEdBrowser.h>
 #include <SeExprEditor/SeExprEdControlCollection.h>
 
 // Qt headers.
@@ -64,9 +68,11 @@
 #include "boost/filesystem/path.hpp"
 
 // Standard headers.
+#include <algorithm>
 #include <fstream>
 #include <sstream>
 
+using namespace appleseed::shared;
 using namespace boost;
 using namespace foundation;
 using namespace renderer;
@@ -84,11 +90,16 @@ ExpressionEditorWindow::ExpressionEditorWindow(
   , m_project(project)
   , m_widget_name(widget_name)
   , m_ui(new Ui::ExpressionEditorWindow())
+  , m_show_examples(false)
 {
     m_ui->setupUi(this);
     setWindowFlags(Qt::Tool);
     setAttribute(Qt::WA_DeleteOnClose);
-    QVBoxLayout* root_layout = new QVBoxLayout(m_ui->scrollarea);
+    QHBoxLayout* root_layout = new QHBoxLayout(m_ui->scrollarea);
+    QVBoxLayout* left_layout = new QVBoxLayout();
+    QVBoxLayout* right_layout = new QVBoxLayout();
+    root_layout->addLayout(left_layout);
+    root_layout->addLayout(right_layout);
 
     // Expression controls.
     SeExprEdControlCollection *controls = new SeExprEdControlCollection();
@@ -97,9 +108,9 @@ ExpressionEditorWindow::ExpressionEditorWindow(
     controls_scrollarea->setMinimumHeight(200);
     controls_scrollarea->setWidgetResizable(true);
     controls_scrollarea->setWidget(controls);
-    root_layout->addWidget(controls_scrollarea);
+    left_layout->addWidget(controls_scrollarea);
 
-    // Clear, Save, Load buttons.
+    // Clear, Save, Load, Example buttons.
     QHBoxLayout* file_buttonbox = new QHBoxLayout();
     QPushButton* clear_button = new QPushButton("Clear");
     clear_button->setToolTip("Ctrl+N");
@@ -116,23 +127,41 @@ ExpressionEditorWindow::ExpressionEditorWindow(
     QShortcut* load_shortcut = new QShortcut(QKeySequence("Ctrl+O"), this);
     connect(load_button, SIGNAL(clicked()), SLOT(slot_load_script()));
     connect(load_shortcut, SIGNAL(activated()), SLOT(slot_load_script()));
+    QPushButton* examples_button = new QPushButton("Examples");
+    connect(examples_button, SIGNAL(clicked()), SLOT(slot_show_examples()));
     file_buttonbox->addWidget(clear_button);
     file_buttonbox->addWidget(save_button);
     file_buttonbox->addWidget(load_button);
-    root_layout->addLayout(file_buttonbox);
+    file_buttonbox->addWidget(examples_button);
+    left_layout->addLayout(file_buttonbox);
 
     QLabel* label_editor = new QLabel("SeExpression:");
-    root_layout->addWidget(label_editor);
+    left_layout->addWidget(label_editor);
     m_editor = new SeExprEditor(this, controls);
     QTextEdit* text_edit = m_editor->findChild<QTextEdit*>("");
     text_edit->setObjectName("expression_editor");
     m_editor->setExpr(expression, true);
-    root_layout->addWidget(m_editor);
+    left_layout->addWidget(m_editor);
 
     m_error = new QLabel("SeExpression has errors. View log for details.");
     m_error->setObjectName("error");
     m_error->hide();
-    root_layout->addWidget(m_error);
+    left_layout->addWidget(m_error);
+
+    // Expression browser.
+    m_browser = new SeExprEdBrowser(0, m_editor);
+    const filesystem::path root_path(Application::get_root_path());
+    const string scripts_path = (root_path / "seexpr").string();
+    m_browser->addPath("Examples", scripts_path);
+    m_browser->update();
+    m_browser->hide();
+    right_layout->addWidget(m_browser);
+
+    m_ui->buttonbox_layout->addStretch(1);
+    m_ui->buttonbox_layout->setStretch(0, 1);
+    m_ui->buttonbox_layout->setStretch(1, 0);
+    std::cout << "rooth_path" << root_path << std::endl;
+
 
     QPushButton* apply_button = m_ui->buttonbox->button(QDialogButtonBox::Apply);
 
@@ -254,6 +283,26 @@ void ExpressionEditorWindow::slot_load_script()
 
         m_editor->setExpr(script_buffer.str());
         apply_expression();
+    }
+}
+
+void ExpressionEditorWindow::slot_show_examples()
+{
+    m_show_examples = !m_show_examples;
+    if (m_show_examples)
+    {
+        if (width() < 800)
+            resize(800, height());
+        m_ui->buttonbox_layout->setStretch(0, 1);
+        m_ui->buttonbox_layout->setStretch(1, 1);
+        m_browser->show();
+    }
+    else
+    {
+        if (width() > 400)
+            resize(max(400, width() - 400), height());
+        m_ui->buttonbox_layout->setStretch(1, 0);
+        m_browser->hide();
     }
 }
 
