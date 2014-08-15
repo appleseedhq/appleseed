@@ -108,8 +108,6 @@ QMenu* MaterialCollectionItem::get_single_item_context_menu() const
 #ifdef WITH_DISNEY_MATERIAL
     menu->addSeparator();
     menu->addAction("Create Disney Material...", this, SLOT(slot_create_disney()));
-#endif
-#ifdef WITH_DISNEY_MATERIAL
     menu->addAction("Import Disney Material...", this, SLOT(slot_import_disney()));
 #endif
     return menu;
