@@ -480,3 +480,7 @@ install (FILES ../../sandbox/stylesheets/default.qss
 install (FILES ../../sandbox/settings/appleseed.studio.xml
     DESTINATION settings
 )
+
+install (FILES ../../sandbox/seexpr/example1.se
+    DESTINATION seexpr
+)
