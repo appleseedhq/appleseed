@@ -47,7 +47,7 @@
 #include <boost/mpl/contains.hpp>
 #include <boost/static_assert.hpp>
 
-// standard headers.
+// Standard headers.
 #include <algorithm>
 
 using namespace foundation;

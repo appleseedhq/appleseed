@@ -44,7 +44,6 @@
 // appleseed.foundation headers.
 #include "foundation/utility/settings/settingsfilewriter.h"
 
-
 // Qt headers.
 #include <QFileDialog>
 #include <QMenu>
