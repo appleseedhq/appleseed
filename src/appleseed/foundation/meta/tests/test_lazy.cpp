@@ -34,11 +34,11 @@
 // Standard headers.
 #include <memory>
 
-TEST_SUITE(Foundation_Utility_Lazy_Access)
-{
-    using namespace foundation;
-    using namespace std;
+using namespace foundation;
+using namespace std;
 
+namespace
+{
     struct Object
     {
         const int m_value;
@@ -65,7 +65,10 @@ TEST_SUITE(Foundation_Utility_Lazy_Access)
             return auto_ptr<Object>(new Object(m_value));
         }
     };
+}
 
+TEST_SUITE(Foundation_Utility_Lazy_Access)
+{
     TEST_CASE(Get_GivenAccessBoundToNonNullObject_ReturnsNonNullPointer)
     {
         auto_ptr<ObjectFactory> factory(new SimpleObjectFactory(42));
@@ -110,6 +113,19 @@ TEST_SUITE(Foundation_Utility_Lazy_Access)
         Lazy<Object> object(factory);
 
         Access<Object> access(&object);
+
+        EXPECT_EQ(0, access.get());
+    }
+}
+
+TEST_SUITE(Foundation_Utility_Lazy_Update)
+{
+    TEST_CASE(Get_GivenUpdateBoundToNonConstructedObject_ReturnsNullPointer)
+    {
+        auto_ptr<ObjectFactory> factory(new SimpleObjectFactory(42));
+        Lazy<Object> object(factory);
+
+        Update<Object> access(&object);
 
         EXPECT_EQ(0, access.get());
     }
