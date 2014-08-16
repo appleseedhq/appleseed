@@ -40,6 +40,7 @@
 namespace renderer  { class Project; }
 namespace Ui        { class ExpressionEditorWindow; }
 class SeExprEditor;
+class SeExprEdBrowser;
 class QLabel;
 
 namespace appleseed {
@@ -67,6 +68,7 @@ class ExpressionEditorWindow
     void slot_clear_expression();
     void slot_save_script();
     void slot_load_script();
+    void slot_show_examples();
 
   signals:
     void signal_expression_applied(const QString& widget_name, const QString& expression);
@@ -78,8 +80,10 @@ class ExpressionEditorWindow
     const renderer::Project&        m_project;
     const QString                   m_widget_name;
     SeExprEditor*                   m_editor;
+    SeExprEdBrowser*                m_browser;
     QLabel*                         m_error;
     std::string                     m_script_filepath;
+    bool                            m_show_examples;
 };
 
 }       // namespace studio

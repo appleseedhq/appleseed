@@ -50,6 +50,7 @@
 // Forward declarations.
 namespace appleseed { namespace studio { class LineEditForwarder; } }
 namespace appleseed { namespace studio { class DisneyMaterialLayerUI; } }
+class QPushButton;
 class QSignalMapper;
 class QVBoxLayout;
 
@@ -97,6 +98,8 @@ class DisneyMaterialCustomUI
     void create_color_input_widgets(const foundation::Dictionary& parameters, const std::string& group_name);
     void create_colormap_input_widgets(const foundation::Dictionary& parameters, const std::string& group_name);
 
+    void create_texture_and_expr_buttons();
+    
     void add_layer(const bool update, const foundation::Dictionary& parameters = foundation::Dictionary());
 
     std::vector<QWidget*>           m_layers_widgets;
@@ -107,8 +110,8 @@ class DisneyMaterialCustomUI
     QWidget*                        m_selected_layer_widget;
     DisneyMaterialLayerUI*          m_last_layer;
     LineEditForwarder*              m_line_edit;
-    QWidget*                        m_texture_button;
-    QWidget*                        m_expression_button;
+    QPushButton*                    m_texture_button;
+    QPushButton*                    m_expression_button;
     QFormLayout*                    m_group_layout;
     QVBoxLayout*                    m_form_layout;
     size_t                          m_num_created_layers;

@@ -190,7 +190,8 @@ namespace
 
             // If incoming and outgoing are on the same hemisphere
             // this is not a refraction.
-            if (dot(incoming, outgoing) >= 0)
+            const Vector3d& n = shading_basis.get_normal();
+            if (dot(incoming, n) * dot(outgoing, n) >= 0)
                 return Absorption;
 
             const double G =
@@ -206,7 +207,6 @@ namespace
 
             const double D = m_mdf->D(m, values->m_ax, values->m_ay);
 
-            const Vector3d& n = shading_basis.get_normal();
             const double cos_oh = dot(outgoing, ht);
             const double cos_ih = dot(incoming, ht);
             const double cos_in = dot(incoming, n);
@@ -246,11 +246,11 @@ namespace
 
             // If incoming and outgoing are on the same hemisphere
             // this is not a refraction.
-            if (dot(incoming, outgoing) >= 0)
-                return 0.0;
+            const Vector3d& n = shading_basis.get_normal();
+            if (dot(incoming, n) * dot(outgoing, n) >= 0)
+                return Absorption;
 
             const InputValues* values = static_cast<const InputValues*>(data);
-            const Vector3d& n = shading_basis.get_normal();
 
             double ht_norm;
             const Vector3d ht = half_refraction_vector(
@@ -310,12 +310,11 @@ namespace
 
             // If incoming and outgoing are on the same hemisphere
             // this is not a refraction.
-            if (dot(incoming, outgoing) < 0)
-                return 0.0;
+            const Vector3d& n = shading_basis.get_normal();
+            if (dot(incoming, n) * dot(outgoing, n) >= 0)
+                return Absorption;
 
             const InputValues* values = static_cast<const InputValues*>(data);
-
-            const Vector3d& n = shading_basis.get_normal();
 
             double ht_norm;
             const Vector3d ht = half_refraction_vector(
