@@ -363,14 +363,6 @@ namespace
                 else max_square_dist = radius * radius;
                 const float rcp_max_square_dist = 1.0f / max_square_dist;
 
-#if 0
-                // Cannot do proper density estimation if too few photons are found.
-                const size_t MinPhotonCount = 8;
-                if (photon_count < MinPhotonCount)
-                    return;
-#endif
-
-                size_t included_photon_count = 0;
                 Spectrum indirect_radiance(0.0f);
 
                 // Loop over the nearby photons.
@@ -384,12 +376,10 @@ namespace
                     if (dot(normal, data.m_incoming) <= 0.0f)
                         continue;
 
-#if 1
                     // Reject photons on a surface with too different an orientation.
                     const float NormalThreshold = 1.0e-3f;
                     if (dot(normal, data.m_geometric_normal) < NormalThreshold)
                         continue;
-#endif
 
 #if 0
                     // Reject photons on the wrong side of the surface.
@@ -429,26 +419,11 @@ namespace
                     bsdf_value *= data.m_flux;
 
                     // Apply kernel weight.
-#if 0
-                    bsdf_value *= box2d(photon.m_square_dist * rcp_max_square_dist);
-#else
                     bsdf_value *= epanechnikov2d(photon.m_square_dist * rcp_max_square_dist);
-#endif
 
                     // Accumulate reflected flux.
-                    ++included_photon_count;
                     indirect_radiance += bsdf_value;
                 }
-
-#if 0
-                // Unreliable density estimation if too few photons were actually included.
-                if (included_photon_count < MinPhotonCount)
-                    return;
-#else
-                // Can't do density estimation without any photon.
-                if (included_photon_count == 0)
-                    return;
-#endif
 
                 // Density estimation.
                 indirect_radiance /= max_square_dist;
