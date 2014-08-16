@@ -32,6 +32,9 @@
 // appleseed.foundation headers.
 #include "foundation/platform/types.h"
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // Standard headers.
 #include <cstddef>
 
@@ -48,7 +51,7 @@ namespace foundation
 //   https://131002.net/siphash/siphash.pdf
 //
 
-uint64 siphash24(
+uint64 DLLSYMBOL siphash24(
     const void*     bytes,
     const size_t    size,
     const uint64    k0,
