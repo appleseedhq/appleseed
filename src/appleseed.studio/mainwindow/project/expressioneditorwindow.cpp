@@ -56,7 +56,6 @@
 #include <QFileDialog>
 #include <QHBoxLayout>
 #include <QLabel>
-#include <QMessageBox>
 #include <QPushButton>
 #include <QScrollArea>
 #include <QShortcut>
@@ -160,8 +159,6 @@ ExpressionEditorWindow::ExpressionEditorWindow(
     m_ui->buttonbox_layout->addStretch(1);
     m_ui->buttonbox_layout->setStretch(0, 1);
     m_ui->buttonbox_layout->setStretch(1, 0);
-    std::cout << "rooth_path" << root_path << std::endl;
-
 
     QPushButton* apply_button = m_ui->buttonbox->button(QDialogButtonBox::Apply);
 

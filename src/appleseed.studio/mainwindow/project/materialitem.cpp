@@ -173,7 +173,7 @@ void MaterialItem::slot_export()
         {
             show_warning_message_box(
                 "Exporting Error",
-                "Failed to export the disney material file " + filepath.toStdString());
+                "Failed to export the Disney Material file " + filepath.toStdString());
         }
     }
 }

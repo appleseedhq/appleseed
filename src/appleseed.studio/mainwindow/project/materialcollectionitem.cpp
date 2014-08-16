@@ -169,7 +169,7 @@ void MaterialCollectionItem::slot_import_disney()
         {
             show_warning_message_box(
                 "Importing error",
-                "Failed to import the disney material file " + filepath.toStdString());
+                "Failed to import the Disney Material file " + filepath.toStdString());
             return;
         }
 
