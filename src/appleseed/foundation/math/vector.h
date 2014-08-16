@@ -768,7 +768,8 @@ inline bool refract(
 
     const T cos_theta_t = std::sqrt(cos_theta_t2);
 
-    t = cos_theta_i > T(0.0)
+    t =
+        cos_theta_i > T(0.0)
             ? (eta * cos_theta_i - cos_theta_t) * n - eta * i
             : (eta * cos_theta_i + cos_theta_t) * n - eta * i;
 
