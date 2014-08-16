@@ -166,7 +166,7 @@ namespace
 
             // Compute the BRDF value.
             const double g = evaluate_attenuation(cos_on, cos_in, cos_hn, cos_oh);
-            value = fresnel_dielectric_schlick(values->m_reflectance, cos_on, values->m_fr_multiplier);
+            fresnel_dielectric_schlick(value, values->m_reflectance, cos_on, values->m_fr_multiplier);
             value *= static_cast<float>(mdf_value * g / (4.0 * cos_on * cos_in) * values->m_reflectance_multiplier);
 
             // Compute the PDF value.
@@ -210,7 +210,7 @@ namespace
 
             // Compute the BRDF value.
             const double g = evaluate_attenuation(cos_on, cos_in, cos_hn, cos_oh);
-            value = fresnel_dielectric_schlick(values->m_reflectance, cos_on, values->m_fr_multiplier);
+            fresnel_dielectric_schlick(value, values->m_reflectance, cos_on, values->m_fr_multiplier);
             value *= static_cast<float>(mdf_value * g / (4.0 * cos_on * cos_in) * values->m_reflectance_multiplier);
 
             // Compute and return the PDF value.

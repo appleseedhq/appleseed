@@ -41,7 +41,8 @@ TEST_SUITE(Foundation_Math_Fresnel)
     {
         const Spectrum31f NormalReflectance(42.0f);
 
-        const Spectrum31f result = fresnel_dielectric_schlick(NormalReflectance, 0.0);
+        Spectrum31f result;
+        fresnel_dielectric_schlick(result, NormalReflectance, 0.0);
 
         EXPECT_EQ(Spectrum31f(1.0f), result);
     }
@@ -50,7 +51,8 @@ TEST_SUITE(Foundation_Math_Fresnel)
     {
         const Spectrum31f NormalReflectance(42.0f);
 
-        const Spectrum31f result = fresnel_dielectric_schlick(NormalReflectance, 1.0);
+        Spectrum31f result;
+        fresnel_dielectric_schlick(result, NormalReflectance, 1.0);
 
         EXPECT_EQ(NormalReflectance, result);
     }

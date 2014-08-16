@@ -30,36 +30,39 @@
 #ifndef APPLESEED_FOUNDATION_MATH_FRESNEL_H
 #define APPLESEED_FOUNDATION_MATH_FRESNEL_H
 
-// appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
-#include "foundation/math/scalar.h"
-
 // Standard headers.
 #include <cassert>
-#include <cmath>
 
 namespace foundation
 {
 
 //
-// Implementation of the Fresnel equations.
+// Fresnel equations for dielectric materials.
 //
-// Reference:
+// Be careful: The equations here are following the intensity form, NOT the amplitude form.
+// In other words, we compute reflectances, not amplitude reflection coefficients. PBRT [2]
+// uses the amplitude formalism.
 //
-//   http://en.wikipedia.org/wiki/Fresnel_equations
+// References:
+//
+//   [1] http://en.wikipedia.org/wiki/Fresnel_equations
+//
+//   [2] Physically Based Rendering, first edition, pp. 419-422
 //
 
-// Compute the Fresnel reflectance for a dielectric for parallel polarized light (intensity form).
+// Compute the Fresnel reflectance for a dielectric for parallel-polarized light.
 template <typename Spectrum, typename T>
-Spectrum fresnel_dielectric_p_polarization(
+void fresnel_dielectric_p_polarization(
+    Spectrum&           reflectance,
     const Spectrum&     ior_i,
     const Spectrum&     ior_t,
     const T             cos_theta_i,
     const T             cos_theta_t);
 
-// Compute the Fresnel reflectance for a dielectric for perpendicular polarized light (intensity form).
+// Compute the Fresnel reflectance for a dielectric for perpendicular-polarized light.
 template <typename Spectrum, typename T>
-Spectrum fresnel_dielectric_s_polarization(
+void fresnel_dielectric_s_polarization(
+    Spectrum&           reflectance,
     const Spectrum&     ior_i,
     const Spectrum&     ior_t,
     const T             cos_theta_i,
@@ -67,7 +70,8 @@ Spectrum fresnel_dielectric_s_polarization(
 
 // Compute the Fresnel reflectance for a dielectric for unpolarized light.
 template <typename Spectrum, typename T>
-Spectrum fresnel_dielectric_unpolarized(
+void fresnel_dielectric_unpolarized(
+    Spectrum&           reflectance,
     const Spectrum&     ior_i,
     const Spectrum&     ior_t,
     const T             cos_theta_i,
@@ -75,7 +79,7 @@ Spectrum fresnel_dielectric_unpolarized(
 
 
 //
-// Compute the Fresnel reflection factor for a dielectric using Schlick's approximation:
+// Compute the Fresnel reflectance for a dielectric material using Schlick's approximation:
 //
 //   R(theta) = R0 + (1 - R0) * (1 - cos(theta)) ^ 5
 //
@@ -88,7 +92,16 @@ Spectrum fresnel_dielectric_unpolarized(
 //
 
 template <typename Spectrum, typename T>
-Spectrum fresnel_dielectric_schlick(
+void fresnel_dielectric_schlick(
+    Spectrum&           reflectance,
+    const Spectrum&     ior_i,
+    const Spectrum&     ior_t,
+    const T             cos_theta,              // cos(incident direction, normal)
+    const T             multiplier = T(1.0));   // reflectance multiplier at tangent incidence
+
+template <typename Spectrum, typename T>
+void fresnel_dielectric_schlick(
+    Spectrum&           reflectance,
     const Spectrum&     normal_reflectance,     // reflectance at normal incidence
     const T             cos_theta,              // cos(incident direction, normal)
     const T             multiplier = T(1.0));   // reflectance multiplier at tangent incidence
@@ -106,7 +119,8 @@ namespace impl
 }
 
 template <typename Spectrum, typename T>
-Spectrum fresnel_dielectric_p_polarization(
+void fresnel_dielectric_p_polarization(
+    Spectrum&           reflectance,
     const Spectrum&     ior_i,
     const Spectrum&     ior_t,
     const T             cos_theta_i,
@@ -117,54 +131,24 @@ Spectrum fresnel_dielectric_p_polarization(
     assert(cos_theta_i >= T(0.0) && cos_theta_i <= T(1.0));
     assert(cos_theta_t >= T(0.0) && cos_theta_t <= T(1.0));
 
-    Spectrum k1 = ior_i;
-    k1 *= static_cast<ValueType>(cos_theta_t);
-
-    Spectrum k2 = ior_t;
-    k2 *= static_cast<ValueType>(cos_theta_i);
-
-    Spectrum den = k1;
-    den += k2;
-
-    Spectrum fr = k1;
-    fr -= k2;
-    fr /= den;
-    fr *= fr;
-
-    return fr;
-}
-
-template <typename Spectrum, typename T>
-Spectrum fresnel_dielectric_s_polarization(
-    const Spectrum&     ior_i,
-    const Spectrum&     ior_t,
-    const T             cos_theta_i,
-    const T             cos_theta_t)
-{
-    typedef typename impl::GetValueType<Spectrum>::ValueType ValueType;
-
-    assert(cos_theta_i >= T(0.0) && cos_theta_i <= T(1.0));
-    assert(cos_theta_t >= T(0.0) && cos_theta_t <= T(1.0));
-
-    Spectrum k1 = ior_i;
+    Spectrum k1(ior_t);
     k1 *= static_cast<ValueType>(cos_theta_i);
 
-    Spectrum k2 = ior_t;
+    Spectrum k2(ior_i);
     k2 *= static_cast<ValueType>(cos_theta_t);
 
     Spectrum den = k1;
     den += k2;
 
-    Spectrum fr = k1;
-    fr -= k2;
-    fr /= den;
-    fr *= fr;
-
-    return fr;
+    reflectance = k1;
+    reflectance -= k2;
+    reflectance /= den;
+    reflectance *= reflectance;
 }
 
 template <typename Spectrum, typename T>
-Spectrum fresnel_dielectric_unpolarized(
+void fresnel_dielectric_s_polarization(
+    Spectrum&           reflectance,
     const Spectrum&     ior_i,
     const Spectrum&     ior_t,
     const T             cos_theta_i,
@@ -175,27 +159,82 @@ Spectrum fresnel_dielectric_unpolarized(
     assert(cos_theta_i >= T(0.0) && cos_theta_i <= T(1.0));
     assert(cos_theta_t >= T(0.0) && cos_theta_t <= T(1.0));
 
-    Spectrum fr =
-        fresnel_dielectric_p_polarization(
-            ior_i,
-            ior_t,
-            cos_theta_i,
-            cos_theta_t);
+    Spectrum k1(ior_i);
+    k1 *= static_cast<ValueType>(cos_theta_i);
 
-    fr +=
-        fresnel_dielectric_s_polarization(
-            ior_i,
-            ior_t,
-            cos_theta_i,
-            cos_theta_t);
+    Spectrum k2(ior_t);
+    k2 *= static_cast<ValueType>(cos_theta_t);
 
-    fr *= ValueType(0.5);
+    Spectrum den = k1;
+    den += k2;
 
-    return fr;
+    reflectance = k1;
+    reflectance -= k2;
+    reflectance /= den;
+    reflectance *= reflectance;
 }
 
 template <typename Spectrum, typename T>
-Spectrum fresnel_dielectric_schlick(
+void fresnel_dielectric_unpolarized(
+    Spectrum&           reflectance,
+    const Spectrum&     ior_i,
+    const Spectrum&     ior_t,
+    const T             cos_theta_i,
+    const T             cos_theta_t)
+{
+    typedef typename impl::GetValueType<Spectrum>::ValueType ValueType;
+
+    assert(cos_theta_i >= T(0.0) && cos_theta_i <= T(1.0));
+    assert(cos_theta_t >= T(0.0) && cos_theta_t <= T(1.0));
+
+    fresnel_dielectric_p_polarization(
+        reflectance,
+        ior_i,
+        ior_t,
+        cos_theta_i,
+        cos_theta_t);
+
+    Spectrum rs;
+    fresnel_dielectric_s_polarization(
+        rs,
+        ior_i,
+        ior_t,
+        cos_theta_i,
+        cos_theta_t);
+
+    reflectance += rs;
+    reflectance *= ValueType(0.5);
+}
+
+template <typename Spectrum, typename T>
+void fresnel_dielectric_schlick(
+    Spectrum&           reflectance,
+    const Spectrum&     ior_i,
+    const Spectrum&     ior_t,
+    const T             cos_theta,
+    const T             multiplier)
+{
+    typedef typename impl::GetValueType<Spectrum>::ValueType ValueType;
+
+    assert(cos_theta >= T(0.0) && cos_theta <= T(1.0));
+
+    Spectrum den = ior_i;
+    den += ior_t;
+
+    Spectrum normal_reflectance = ior_i;
+    normal_reflectance -= ior_t;
+    normal_reflectance /= den;
+
+    fresnel_dielectric_schlick(
+        reflectance,
+        normal_reflectance,
+        cos_theta,
+        multiplier);
+}
+
+template <typename Spectrum, typename T>
+void fresnel_dielectric_schlick(
+    Spectrum&           reflectance,
     const Spectrum&     normal_reflectance,
     const T             cos_theta,
     const T             multiplier)
@@ -208,11 +247,9 @@ Spectrum fresnel_dielectric_schlick(
     const T k2 = k1 * k1;
     const T k5 = k2 * k2 * k1;
 
-    Spectrum fr = normal_reflectance;
-    fr *= static_cast<ValueType>(T(1.0) - k5);
-    fr += Spectrum(static_cast<ValueType>(k5 * multiplier));
-
-    return fr;
+    reflectance = normal_reflectance;
+    reflectance *= static_cast<ValueType>(T(1.0) - k5);
+    reflectance += Spectrum(static_cast<ValueType>(k5 * multiplier));
 }
 
 }       // namespace foundation

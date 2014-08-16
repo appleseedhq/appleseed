@@ -122,12 +122,13 @@ namespace
 
                 if (values->m_fresnel_multiplier != 0.0)
                 {
-                    fresnel_reflection =
-                        fresnel_dielectric_unpolarized(
-                            values->m_from_ior,
-                            values->m_to_ior,
-                            abs(cos_theta_i),
-                            cos_theta_t) * values->m_fresnel_multiplier;
+                    fresnel_dielectric_unpolarized(
+                        fresnel_reflection,
+                        values->m_from_ior,
+                        values->m_to_ior,
+                        abs(cos_theta_i),
+                        cos_theta_t);
+                    fresnel_reflection *= values->m_fresnel_multiplier;
                 }
 
                 double s = 0.0;
