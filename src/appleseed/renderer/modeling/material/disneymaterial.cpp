@@ -86,6 +86,8 @@ namespace
           , m_texture_is_srgb(true)
         {
             m_texture_options.nchannels = 3;
+            m_texture_options.swrap = OIIO::TextureOpt::WrapPeriodic;
+            m_texture_options.twrap = OIIO::TextureOpt::WrapPeriodic;
         }
 
         void set_texture_system(OIIO::TextureSystem*  texture_system)
@@ -384,23 +386,36 @@ class DisneyLayerParam
         }
 
         // Check for simple texture lookups.
-        string expression = trim_both(m_expression.getExpr(), " \r\n");
-        vector<string> tokens;
-        tokenize(expression, "()", tokens);
-        if (tokens.size() != 2)
-            return true;
-        if (trim_both(tokens[0]) != "texture")
-            return true;
-        string inner_content = tokens[1];
-        tokens.clear();
-        tokenize(inner_content, ",", tokens);
-        if (tokens.size() != 3)
-            return true;
-        if (trim_both(tokens[1]) != "$u" && trim_both(tokens[2]) != "$v")
-            return true;
-        m_texture_filename = OIIO::ustring(trim_both(tokens[0], " \""));
-        m_texture_is_srgb = texture_is_srgb(m_texture_filename);
-        m_texture_options.nchannels = 3;
+        {
+            string expression = trim_both(m_expression.getExpr(), " \r\n");
+            vector<string> tokens;
+            tokenize(expression, "()", tokens);
+            
+            if (tokens.size() != 2)
+                return true;
+            
+            if (trim_both(tokens[0]) != "texture")
+                return true;
+            
+            string inner_content = tokens[1];
+            tokens.clear();
+            tokenize(inner_content, ",", tokens);
+            
+            if (tokens.size() != 3)
+                return true;
+            
+            if (trim_both(tokens[1]) != "$u")
+                return true;
+            
+            if (trim_both(tokens[2]) != "$v")
+                return true;
+
+            m_texture_filename = OIIO::ustring(trim_both(tokens[0], " \""));
+            m_texture_is_srgb = texture_is_srgb(m_texture_filename);
+            m_texture_options.nchannels = 3;
+            m_texture_options.swrap = OIIO::TextureOpt::WrapPeriodic;
+            m_texture_options.rwrap = OIIO::TextureOpt::WrapPeriodic;
+        }
 
         return true;
     }
