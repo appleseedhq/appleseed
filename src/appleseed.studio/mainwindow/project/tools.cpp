@@ -167,41 +167,67 @@ void open_entity_editor(
         slot_cancel);
 }
 
+namespace
+{
+
+bool find_path_in_dir(
+    const QString&  filename, 
+    const QDir&     dir,
+    QString&        result)
+{
+    result = dir.relativeFilePath(filename);
+
+    // Ignore paths that go up the directory hierarchy.
+    if (result.startsWith(".."))
+        return false;
+
+    const QFileInfo relative_file_info(result);
+    if (relative_file_info.isRelative())
+        return true;
+
+    return false;
+}
+
+}
+
 QString find_path_in_searchpaths(const SearchPaths& s, const QString& filename)
 {
     const QFileInfo file_info(filename);
+    assert(file_info.isAbsolute());
 
-    if (file_info.isAbsolute())
+    for (size_t i = 0, e = s.size(); i < e; ++i)
     {
-        if (s.size() > 0)
-        {
-            for (size_t i = s.size() - 1; i >= 0; --i)
-            {
-                QString search_path(QString::fromStdString(s[i]));
-                const QFileInfo search_path_info(search_path);
+        // Iterate in reverse order, to match searchpaths priorities.
+        size_t index = s.size() - 1 - i;
+        QString search_path(QString::fromStdString(s[index]));
+        const QFileInfo search_path_info(search_path);
 
-                if (search_path_info.isRelative() && s.has_root_path())
-                {
-                    search_path = QDir::cleanPath(
+        if (search_path_info.isRelative())
+        {
+            assert(s.has_root_path());
+
+            search_path = QDir::cleanPath(
                         QString::fromStdString(s.get_root_path()) +
                         QDir::separator() +
                         search_path);
-
-                    const QDir search_dir(search_path);
-                    const QString relative_path = search_dir.relativeFilePath(filename);
-                    const QFileInfo relative_file_info(relative_path);
-
-                    if (!relative_file_info.isAbsolute() && !(relative_path == filename))
-                        return relative_path;
-                }
-            }
         }
 
-        if (s.has_root_path())
-        {
-            const QDir root_dir(QString::fromStdString(s.get_root_path()));
-            return root_dir.relativeFilePath(filename);
-        }
+        const QDir search_dir(search_path);
+        QString relative_path;
+
+        if (find_path_in_dir(filename, search_dir, relative_path))
+            return relative_path;
+    }
+
+    if (s.has_root_path())
+    {
+        const QDir root_dir(QString::fromStdString(s.get_root_path()));
+        assert(root_dir.isAbsolute());
+
+        QString relative_path;
+
+        if (find_path_in_dir(filename, root_dir, relative_path))
+            return relative_path;
     }
 
     return filename;
