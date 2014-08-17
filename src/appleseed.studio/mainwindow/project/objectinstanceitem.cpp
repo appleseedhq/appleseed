@@ -201,6 +201,7 @@ void ObjectInstanceItem::slot_open_material_assignment_editor()
         new MaterialAssignmentEditorWindow(
             QTreeWidgetItem::treeWidget(),
             *m_entity,
+            *this,
             m_project_builder);
 
     editor_window->showNormal();
