@@ -134,8 +134,6 @@ ExpressionEditorWindow::ExpressionEditorWindow(
     file_buttonbox->addWidget(examples_button);
     left_layout->addLayout(file_buttonbox);
 
-    QLabel* label_editor = new QLabel("SeExpression:");
-    left_layout->addWidget(label_editor);
     m_editor = new SeExprEditor(this, controls);
     QTextEdit* text_edit = m_editor->findChild<QTextEdit*>("");
     text_edit->setObjectName("expression_editor");

@@ -39,6 +39,7 @@
 #include "foundation/math/scalar.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/siphash.h"
 
 // SeExpr headers
 #include "SeExpression.h"
@@ -331,6 +332,7 @@ class DisneyLayerParam
       , m_is_vector(is_vector)
       , m_is_constant(false)
       , m_texture_is_srgb(true)
+      , m_expr_hash(0)
     {
     }
 
@@ -343,6 +345,7 @@ class DisneyLayerParam
       , m_texture_filename(other.m_texture_filename)
       , m_texture_options(other.m_texture_options)
       , m_texture_is_srgb(other.m_texture_is_srgb)
+      , m_expr_hash(other.m_expr_hash)
     {
     }
 
@@ -355,7 +358,8 @@ class DisneyLayerParam
         std::swap(m_constant_value, other.m_constant_value);
         std::swap(m_texture_filename, other.m_texture_filename);
         std::swap(m_texture_options, other.m_texture_options);
-        std::swap(m_texture_is_srgb, other.m_texture_is_srgb);        
+        std::swap(m_texture_is_srgb, other.m_texture_is_srgb);
+        std::swap(m_expr_hash, other.m_expr_hash);
     }
 
     DisneyLayerParam& operator=(const DisneyLayerParam& other)
@@ -375,6 +379,9 @@ class DisneyLayerParam
             report_expression_error("Expression error: ", m_param_name, m_expression);
             return false;
         }
+
+        m_expr_hash = siphash24(
+            reinterpret_cast<const void*>(m_expr.c_str()), m_expr.length());
 
         m_is_constant = m_expression.isConstant();
 
@@ -403,10 +410,10 @@ class DisneyLayerParam
             
             if (tokens.size() != 3)
                 return true;
-            
+
             if (trim_both(tokens[1]) != "$u")
                 return true;
-            
+
             if (trim_both(tokens[2]) != "$v")
                 return true;
 
@@ -471,6 +478,7 @@ class DisneyLayerParam
     mutable OIIO::TextureOpt    m_texture_options;
     bool                        m_texture_is_srgb;
     mutable SeAppleseedExpr     m_expression;
+    uint64                      m_expr_hash;
 
     // TODO: this is horrible. Remove it ASAP.
     mutable mutex               m_mutex;

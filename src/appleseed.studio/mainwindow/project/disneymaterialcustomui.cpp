@@ -331,8 +331,7 @@ string DisneyMaterialCustomUI::texture_to_expression(const QString& path)
 {
     const SearchPaths& search_paths = m_project.search_paths();
     QString relative_path = find_path_in_searchpaths(search_paths, path);
-    QString texture_expression = QString("texture(\"%1\", $u, $v)")
-            .arg(relative_path);
+    QString texture_expression = QString("texture(\"%1\", $u, $v)").arg(relative_path);
     return texture_expression.toStdString();
 }
 
@@ -343,16 +342,23 @@ string DisneyMaterialCustomUI::expression_to_texture(const string& expr)
     vector<string> tokens;
     tokenize(expression, "()", tokens);
     if (tokens.size() != 2)
-        return "";
+        return string();
+
     if (trim_both(tokens[0]) != "texture")
-        return "";
+        return string();
+
     string inner_content = tokens[1];
     tokens.clear();
     tokenize(inner_content, ",", tokens);
     if (tokens.size() != 3)
-        return "";
-    if (trim_both(tokens[1]) != "$u" && trim_both(tokens[2]) != "$v")
-        return "";
+        return string();
+
+    if (trim_both(tokens[1]) != "$u")
+        return string();
+
+    if (trim_both(tokens[2]) != "$v")
+        return string();
+
     return trim_both(tokens[0], " \"");
 }
 
