@@ -33,13 +33,12 @@
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/disneybrdf.h"
 #include "renderer/modeling/bsdf/disneylayeredbrdf.h"
-#include "renderer/modeling/project/project.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/colorspace.h"
 #include "foundation/math/scalar.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
-#include "foundation/utility/searchpaths.h"
 
 // SeExpr headers
 #include "SeExpression.h"
@@ -69,21 +68,24 @@ namespace renderer
 
 namespace
 {
+    bool texture_is_srgb(const OIIO::ustring& filename)
+    {
+        if (filename.rfind(".exr") == filename.length() - 4)
+            return false;
+
+        return true;
+    }
+
     class TextureSeExprFunc
       : public SeExprFuncX
     {
       public:
         TextureSeExprFunc()
           : SeExprFuncX(true)
-          , m_search_paths(0)
           , m_texture_system(0)
+          , m_texture_is_srgb(true)
         {
             m_texture_options.nchannels = 3;
-        }
-
-        void set_search_paths(SearchPaths* search_paths)
-        {
-            m_search_paths = search_paths;
         }
 
         void set_texture_system(OIIO::TextureSystem*  texture_system)
@@ -115,6 +117,7 @@ namespace
                 return false;
 
             m_texture_filename = OIIO::ustring(node->getStrArg(0), 0);
+            m_texture_is_srgb = texture_is_srgb(m_texture_filename);
             return true;
         }
 
@@ -124,28 +127,36 @@ namespace
             node->child(1)->eval(u);
             node->child(2)->eval(v);
 
-            const OIIO::ustring texture_fullpath(m_search_paths->qualify(m_texture_filename), 0);
-
             float color[3];
-            m_texture_system->texture(
-                texture_fullpath,
-                m_texture_options,
-                static_cast<float>(u[0]),
-                static_cast<float>(v[0]),
-                0.0f,
-                0.0f,
-                0.0f,
-                0.0f,
-                color);
+            if( !m_texture_system->texture(
+                    m_texture_filename,
+                    m_texture_options,
+                    static_cast<float>(u[0]),
+                    static_cast<float>(v[0]),
+                    0.0f,
+                    0.0f,
+                    0.0f,
+                    0.0f,
+                    color))
+            {
+                result = SeVec3d(color[0], color[1], color[2]);
+            }
 
+            if (!m_texture_is_srgb)
+            {
+                color[0] = linear_rgb_to_srgb(color[0]);
+                color[1] = linear_rgb_to_srgb(color[1]);
+                color[2] = linear_rgb_to_srgb(color[2]);
+            }
+            
             result = SeVec3d(color[0], color[1], color[2]);
         }
 
       private:
-        SearchPaths*                m_search_paths;
         OIIO::TextureSystem*        m_texture_system;
-        string                      m_texture_filename;
+        OIIO::ustring               m_texture_filename;
         mutable OIIO::TextureOpt    m_texture_options;
+        bool                        m_texture_is_srgb;
     };
 
     class SeAppleseedExpr
@@ -213,15 +224,12 @@ namespace
         }
 
         Color3d update_and_evaluate(
-            SearchPaths&            search_paths,
             const ShadingPoint&     shading_point,
             OIIO::TextureSystem&    texture_system)
         {
             for (each<ptr_vector<TextureSeExprFunc> > it = m_functions_x; it; ++it)
-            {
-                it->set_search_paths(&search_paths);
                 it->set_texture_system(&texture_system);
-            }
+
             m_vars["u"] = SeAppleseedExpr::Var(shading_point.get_uv(0)[0]);
             m_vars["v"] = SeAppleseedExpr::Var(shading_point.get_uv(0)[1]);
 
@@ -315,22 +323,24 @@ class DisneyLayerParam
     DisneyLayerParam(
         const char*         name,
         const Dictionary&   params,
-        const Project&      project,
         const bool          is_vector)
       : m_param_name(name)
       , m_expr(params.get<string>(m_param_name))
-      , m_project(project)
       , m_is_vector(is_vector)
       , m_is_constant(false)
+      , m_texture_is_srgb(true)
     {
     }
 
     DisneyLayerParam(const DisneyLayerParam& other)
       : m_param_name(other.m_param_name)
       , m_expr(other.m_expr)
-      , m_project(other.m_project)
       , m_is_vector(other.m_is_vector)
-      , m_is_constant(false)
+      , m_is_constant(other.m_is_constant)
+      , m_constant_value(other.m_constant_value)
+      , m_texture_filename(other.m_texture_filename)
+      , m_texture_options(other.m_texture_options)
+      , m_texture_is_srgb(other.m_texture_is_srgb)
     {
     }
 
@@ -339,6 +349,11 @@ class DisneyLayerParam
         std::swap(m_param_name, other.m_param_name);
         std::swap(m_expr, other.m_expr);
         std::swap(m_is_vector, other.m_is_vector);
+        std::swap(m_is_constant, other.m_is_constant);
+        std::swap(m_constant_value, other.m_constant_value);
+        std::swap(m_texture_filename, other.m_texture_filename);
+        std::swap(m_texture_options, other.m_texture_options);
+        std::swap(m_texture_is_srgb, other.m_texture_is_srgb);        
     }
 
     DisneyLayerParam& operator=(const DisneyLayerParam& other)
@@ -369,7 +384,6 @@ class DisneyLayerParam
         }
 
         // Check for simple texture lookups.
-        m_texture_fullpath = "";
         string expression = trim_both(m_expression.getExpr(), " \r\n");
         vector<string> tokens;
         tokenize(expression, "()", tokens);
@@ -384,8 +398,8 @@ class DisneyLayerParam
             return true;
         if (trim_both(tokens[1]) != "$u" && trim_both(tokens[2]) != "$v")
             return true;
-        m_texture_fullpath = OIIO::ustring(
-            m_project.search_paths().qualify(trim_both(tokens[0], " \"")), 0);
+        m_texture_filename = OIIO::ustring(trim_both(tokens[0], " \""));
+        m_texture_is_srgb = texture_is_srgb(m_texture_filename);
         m_texture_options.nchannels = 3;
 
         return true;
@@ -398,27 +412,36 @@ class DisneyLayerParam
         if (m_is_constant)
             return m_constant_value;
 
-        if (!m_texture_fullpath.empty())
+        if (!m_texture_filename.empty())
         {
-            float val[3];
-            texture_system.texture(
-                m_texture_fullpath,
-                m_texture_options,
-                static_cast<float>(shading_point.get_uv(0)[0]),
-                static_cast<float>(shading_point.get_uv(0)[1]),
-                0.0f,
-                0.0f,
-                0.0f,
-                0.0f,
-                val);
+            float color[3];
+            if (!texture_system.texture(
+                    m_texture_filename,
+                    m_texture_options,
+                    static_cast<float>(shading_point.get_uv(0)[0]),
+                    static_cast<float>(shading_point.get_uv(0)[1]),
+                    0.0f,
+                    0.0f,
+                    0.0f,
+                    0.0f,
+                    color))
+            {
+                return Color3d(1.0, 0.0, 1.0);                
+            }
 
-            return Color3d(val[0], val[1], val[2]);
+            if (!m_texture_is_srgb)
+            {
+                color[0] = linear_rgb_to_srgb(color[0]);
+                color[1] = linear_rgb_to_srgb(color[1]);
+                color[2] = linear_rgb_to_srgb(color[2]);
+            }
+            
+            return Color3d(color[0], color[1], color[2]);
         }
 
         lock_guard<mutex> lock(m_mutex);
 
         return m_expression.update_and_evaluate(
-            m_project.search_paths(),
             shading_point,
             texture_system);
     }
@@ -426,14 +449,12 @@ class DisneyLayerParam
   private:
     const char*                 m_param_name;
     string                      m_expr;
-    const Project&              m_project;
     bool                        m_is_vector;
-
     bool                        m_is_constant;
     Color3d                     m_constant_value;
-
+    OIIO::ustring               m_texture_filename;
     mutable OIIO::TextureOpt    m_texture_options;
-    OIIO::ustring               m_texture_fullpath;
+    bool                        m_texture_is_srgb;
     mutable SeAppleseedExpr     m_expression;
 
     // TODO: this is horrible. Remove it ASAP.
@@ -448,23 +469,22 @@ class DisneyLayerParam
 struct DisneyMaterialLayer::Impl
 {
     Impl(
-        const Project&      project,
         const char*         name,
         const Dictionary&   params)
       : m_name(name)
       , m_layer_number(params.get<size_t>("layer_number"))
-      , m_mask("mask", params, project, false)
-      , m_base_color("base_color", params, project, true)
-      , m_subsurface("subsurface", params, project, false)
-      , m_metallic("metallic", params, project, false)
-      , m_specular("specular", params, project, false)
-      , m_specular_tint("specular_tint", params, project, false)
-      , m_anisotropic("anisotropic", params, project, false)
-      , m_roughness("roughness", params, project, false)
-      , m_sheen("sheen", params, project, false)
-      , m_sheen_tint("sheen_tint", params, project, false)
-      , m_clearcoat("clearcoat", params, project, false)
-      , m_clearcoat_gloss("clearcoat_gloss", params, project, false)
+      , m_mask("mask", params, false)
+      , m_base_color("base_color", params, true)
+      , m_subsurface("subsurface", params, false)
+      , m_metallic("metallic", params, false)
+      , m_specular("specular", params, false)
+      , m_specular_tint("specular_tint", params, false)
+      , m_anisotropic("anisotropic", params, false)
+      , m_roughness("roughness", params, false)
+      , m_sheen("sheen", params, false)
+      , m_sheen_tint("sheen_tint", params, false)
+      , m_clearcoat("clearcoat", params, false)
+      , m_clearcoat_gloss("clearcoat_gloss", params, false)
     {
     }
 
@@ -485,10 +505,9 @@ struct DisneyMaterialLayer::Impl
 };
 
 DisneyMaterialLayer::DisneyMaterialLayer(
-    const Project&          project,
     const char*             name,
     const Dictionary&       params)
-  : impl(new Impl(project, name, params))
+  : impl(new Impl(name, params))
 {
 }
 
@@ -809,7 +828,7 @@ bool DisneyMaterial::on_frame_begin(
     try
     {
         for (const_each<DictionaryDictionary> it = m_params.dictionaries(); it; ++it)
-            impl->m_layers.push_back(DisneyMaterialLayer(project, it->name(), it->value()));
+            impl->m_layers.push_back(DisneyMaterialLayer(it->name(), it->value()));
     }
     // TODO: be more specific about what we catch here,
     // once we know what can be thrown. (est.)

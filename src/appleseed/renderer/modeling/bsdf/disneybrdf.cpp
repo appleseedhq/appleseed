@@ -577,14 +577,14 @@ namespace
             const DisneyBRDFInputValues*    values,
             double                          weights[3]) const
         {
-           weights[0] = 1.0 - values->m_metallic;
-           weights[1] = mix(values->m_specular, 1.0, values->m_metallic);
-           weights[2] = values->m_clearcoat;
+            weights[0] = lerp(values->m_base_color_luminance, 0.0, values->m_metallic);
+            weights[1] = mix(values->m_specular, 1.0, values->m_metallic);
+            weights[2] = values->m_clearcoat * 0.25;
 
-           const double total_weight = weights[0] + weights[1] + weights[2];
-           weights[0] /= total_weight;
-           weights[1] /= total_weight;
-           weights[2] /= total_weight;
+            const double total_weight = weights[0] + weights[1] + weights[2];
+            weights[0] /= total_weight;
+            weights[1] /= total_weight;
+            weights[2] /= total_weight;
         }
 
         void specular_roughness(
@@ -603,7 +603,7 @@ namespace
             Spectrum&                       f) const
         {
             mix_spectra(g_white_spectrum, values->m_tint_color, static_cast<float>(values->m_specular_tint), f);
-            f *= static_cast<float>(values->m_specular * 0.08);
+            f *= static_cast<float>(values->m_specular * 0.08f);
             mix_spectra(f, values->m_base_color, static_cast<float>(values->m_metallic), f);
             mix_spectra(f, g_white_spectrum, static_cast<float>(schlick_fresnel(cos_oh)), f);
         }
@@ -631,8 +631,15 @@ void DisneyBRDFInputValues::precompute_tint_color()
     const float lum = tint_xyz[1];
 
     if (lum > 0.0f)
+    {
         ciexyz_reflectance_to_spectrum(tint_xyz / lum, m_tint_color);
-    else m_tint_color = g_white_spectrum;    
+        m_base_color_luminance = lum;
+    }
+    else
+    {
+        m_tint_color = g_white_spectrum;
+        m_base_color_luminance = 1.0;
+    }
 }
 
 

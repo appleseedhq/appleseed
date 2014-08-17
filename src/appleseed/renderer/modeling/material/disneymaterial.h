@@ -105,7 +105,6 @@ class DLLSYMBOL DisneyMaterialLayer
 
     // Constructor
     DisneyMaterialLayer(
-        const Project&                  project,
         const char*                     name,
         const foundation::Dictionary&   params);
 
