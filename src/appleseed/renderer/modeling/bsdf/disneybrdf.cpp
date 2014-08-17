@@ -743,7 +743,7 @@ DictionaryArray DisneyBRDFFactory::get_input_metadata() const
                     .insert("color", "Colors")
                     .insert("texture_instance", "Textures"))
             .insert("use", "optional")
-            .insert("default", "0.1"));
+            .insert("default", "0.5"));
 
     metadata.push_back(
         Dictionary()
@@ -767,7 +767,7 @@ DictionaryArray DisneyBRDFFactory::get_input_metadata() const
                     .insert("color", "Colors")
                     .insert("texture_instance", "Textures"))
             .insert("use", "optional")
-            .insert("default", "0.0"));
+            .insert("default", "0.5"));
 
     metadata.push_back(
         Dictionary()

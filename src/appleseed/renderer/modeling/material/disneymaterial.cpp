@@ -706,7 +706,7 @@ DictionaryArray DisneyMaterialLayer::get_input_metadata()
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "optional")
-            .insert("default", "0.1"));
+            .insert("default", "0.5"));
 
     metadata.push_back(
         Dictionary()
@@ -726,7 +726,7 @@ DictionaryArray DisneyMaterialLayer::get_input_metadata()
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "optional")
-            .insert("default", "0.0"));
+            .insert("default", "0.5"));
 
     metadata.push_back(
         Dictionary()
