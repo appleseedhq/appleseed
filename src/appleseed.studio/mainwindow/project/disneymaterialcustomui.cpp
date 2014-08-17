@@ -195,7 +195,7 @@ void DisneyMaterialCustomUI::slot_open_file_picker(const QString& widget_name)
     QString selected_filter;
 
     // TODO: refactor file_picker_filter extensions
-    const QString file_picker_filter("OpenEXR (*.exr);;PNG (*.png)");
+    const QString file_picker_filter("OpenEXR (*.exr);;PNG (*.png);;All Files (*.*)");
     QString filepath =
         QFileDialog::getOpenFileName(
             m_parent,

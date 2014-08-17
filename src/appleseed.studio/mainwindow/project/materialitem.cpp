@@ -163,6 +163,9 @@ void MaterialItem::slot_export()
 
     if (!filepath.isEmpty())
     {
+        if (!filepath.endsWith(".dmt"))
+            filepath.append(".dmt");
+
         filepath = QDir::toNativeSeparators(filepath);
         SettingsFileWriter writer;
         ParamArray parameters = m_entity->get_parameters();

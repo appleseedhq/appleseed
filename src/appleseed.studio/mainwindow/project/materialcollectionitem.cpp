@@ -151,7 +151,7 @@ void MaterialCollectionItem::slot_import_disney()
             0,
             "Import...",
             QString::fromStdString(file_root_path.string()),
-            "Disney Material (*.dmt)",
+            "Disney Material (*.dmt);;All Files (*.*)",
             &selected_filter,
             options);
 
