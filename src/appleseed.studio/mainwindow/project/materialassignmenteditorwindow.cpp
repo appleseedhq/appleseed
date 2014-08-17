@@ -75,12 +75,14 @@ namespace appleseed {
 namespace studio {
 
 MaterialAssignmentEditorWindow::MaterialAssignmentEditorWindow(
-    QWidget*            parent,
-    ObjectInstance&     object_instance,
-    ProjectBuilder&     project_builder)
+    QWidget*                parent,
+    ObjectInstance&         object_instance,
+    ObjectInstanceItem&     object_instance_item,
+    ProjectBuilder&         project_builder)
   : QWidget(parent)
   , m_ui(new Ui::MaterialAssignmentEditorWindow())
   , m_object_instance(object_instance)
+  , m_object_instance_item(object_instance_item)
   , m_object(m_object_instance.find_object())
   , m_project_builder(project_builder)
 {
@@ -313,13 +315,16 @@ namespace
 {
     void do_assign_material(
         ObjectInstance&                 object_instance,
+        ObjectInstanceItem&             object_instance_item,
         const string&                   slot,
         const ObjectInstance::Side      side,
         const string&                   name)
     {
         if (name.empty())
             object_instance.unassign_material(slot.c_str(), side);
-        else object_instance.assign_material(slot.c_str(), side, name.c_str());
+        else
+            object_instance.assign_material(slot.c_str(), side, name.c_str());
+        object_instance_item.update_style();
     }
 
     class AssignMaterialDelayedAction
@@ -328,10 +333,12 @@ namespace
       public:
         AssignMaterialDelayedAction(
             ObjectInstance&             object_instance,
+            ObjectInstanceItem&         object_instance_item,
             const string&               slot,
             const ObjectInstance::Side  side,
             const string&               name)
           : m_object_instance(object_instance)
+          , m_object_instance_item(object_instance_item)
           , m_slot(slot)
           , m_side(side)
           , m_name(name)
@@ -342,11 +349,12 @@ namespace
             MasterRenderer&             master_renderer,
             Project&                    project) OVERRIDE
         {
-            do_assign_material(m_object_instance, m_slot, m_side, m_name);
+            do_assign_material(m_object_instance, m_object_instance_item, m_slot, m_side, m_name);
         }
 
       private:
         ObjectInstance&                 m_object_instance;
+        ObjectInstanceItem&             m_object_instance_item;
         const string                    m_slot;
         const ObjectInstance::Side      m_side;
         const string                    m_name;
@@ -377,6 +385,7 @@ void MaterialAssignmentEditorWindow::assign_material(const SlotValue& slot_value
             auto_ptr<RenderingManager::IDelayedAction>(
                 new AssignMaterialDelayedAction(
                     m_object_instance,
+                    m_object_instance_item,
                     slot_value.m_slot_name,
                     slot_value.m_side,
                     slot_value.m_material_name)));
@@ -385,6 +394,7 @@ void MaterialAssignmentEditorWindow::assign_material(const SlotValue& slot_value
     {
         do_assign_material(
             m_object_instance,
+            m_object_instance_item,
             slot_value.m_slot_name,
             slot_value.m_side,
             slot_value.m_material_name);

@@ -36,6 +36,7 @@
 #include "mainwindow/project/itembase.h"
 #include "mainwindow/project/singlemodelentityitem.h"
 
+
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 
@@ -133,6 +134,7 @@ class ObjectInstanceItem
         const bool                      font_side,
         const bool                      back_side);
 
+  public:
     void update_style();
 };
 
