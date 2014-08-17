@@ -116,7 +116,7 @@ void DisneyLayeredBRDF::evaluate_inputs(
     memset(values, 0, sizeof(DisneyBRDFInputValues));
 
     Color3d base_color(0.0);
-
+    
     for (size_t i = 0, e = m_parent->get_layer_count(); i < e; ++i)
     {
         const DisneyMaterialLayer& layer = m_parent->get_layer(i);

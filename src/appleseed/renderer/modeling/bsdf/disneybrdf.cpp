@@ -577,14 +577,14 @@ namespace
             const DisneyBRDFInputValues*    values,
             double                          weights[3]) const
         {
-           weights[0] = 1.0 - values->m_metallic;
-           weights[1] = mix(values->m_specular, 1.0, values->m_metallic);
-           weights[2] = values->m_clearcoat;
+            weights[0] = lerp(values->m_base_color_luminance, 0.0, values->m_metallic);
+            weights[1] = mix(values->m_specular, 1.0, values->m_metallic);
+            weights[2] = values->m_clearcoat * 0.25;
 
-           const double total_weight = weights[0] + weights[1] + weights[2];
-           weights[0] /= total_weight;
-           weights[1] /= total_weight;
-           weights[2] /= total_weight;
+            const double total_weight = weights[0] + weights[1] + weights[2];
+            weights[0] /= total_weight;
+            weights[1] /= total_weight;
+            weights[2] /= total_weight;
         }
 
         void specular_roughness(
@@ -631,8 +631,15 @@ void DisneyBRDFInputValues::precompute_tint_color()
     const float lum = tint_xyz[1];
 
     if (lum > 0.0f)
+    {
         ciexyz_reflectance_to_spectrum(tint_xyz / lum, m_tint_color);
-    else m_tint_color = g_white_spectrum;    
+        m_base_color_luminance = lum;
+    }
+    else
+    {
+        m_tint_color = g_white_spectrum;
+        m_base_color_luminance = 1.0;
+    }
 }
 
 
@@ -736,7 +743,7 @@ DictionaryArray DisneyBRDFFactory::get_input_metadata() const
                     .insert("color", "Colors")
                     .insert("texture_instance", "Textures"))
             .insert("use", "optional")
-            .insert("default", "0.1"));
+            .insert("default", "0.5"));
 
     metadata.push_back(
         Dictionary()
@@ -760,7 +767,7 @@ DictionaryArray DisneyBRDFFactory::get_input_metadata() const
                     .insert("color", "Colors")
                     .insert("texture_instance", "Textures"))
             .insert("use", "optional")
-            .insert("default", "0.0"));
+            .insert("default", "0.5"));
 
     metadata.push_back(
         Dictionary()
