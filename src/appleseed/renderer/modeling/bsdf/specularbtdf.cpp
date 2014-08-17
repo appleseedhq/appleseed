@@ -118,33 +118,24 @@ namespace
             {
                 // Compute the Fresnel reflection factor.
                 const double cos_theta_t = sqrt(cos_theta_t2);
-                double fresnel_reflection = 0.0;
+                double fresnel_reflection;
+                fresnel_dielectric_unpolarized(
+                    fresnel_reflection,
+                    values->m_from_ior,
+                    values->m_to_ior,
+                    abs(cos_theta_i),
+                    cos_theta_t);
+                fresnel_reflection *= values->m_fresnel_multiplier;
 
-                if (values->m_fresnel_multiplier != 0.0)
-                {
-                    fresnel_dielectric_unpolarized(
-                        fresnel_reflection,
-                        values->m_from_ior,
-                        values->m_to_ior,
-                        abs(cos_theta_i),
-                        cos_theta_t);
-                    fresnel_reflection *= values->m_fresnel_multiplier;
-                }
+                sampling_context.split_in_place(1, 1);
+                const double s = sampling_context.next_double2();
 
-                double s = 0.0;
-                const double reflection_prob = min(fresnel_reflection, 1.0);
-                if (reflection_prob != 0.0)
-                {
-                    sampling_context.split_in_place(1, 1);
-                    s = sampling_context.next_double2();
-                }
-
-                if (s < reflection_prob)
+                if (s < fresnel_reflection)
                 {
                     // Fresnel reflection: compute the reflected direction and radiance.
                     incoming = reflect(outgoing, shading_normal);
                     value = values->m_reflectance;
-                    value *= static_cast<float>(fresnel_reflection * values->m_reflectance_multiplier / reflection_prob);
+                    value *= static_cast<float>(values->m_reflectance_multiplier);
                 }
                 else
                 {
@@ -156,7 +147,10 @@ namespace
 
                     // Compute the refracted radiance.
                     value = values->m_transmittance;
-                    value *= static_cast<float>((1.0 - fresnel_reflection) * values->m_transmittance_multiplier / (1.0 - reflection_prob));
+                    value *=
+                        adjoint
+                            ? static_cast<float>(values->m_transmittance_multiplier)
+                            : static_cast<float>(eta * eta * values->m_transmittance_multiplier);
                 }
             }
 
