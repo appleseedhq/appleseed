@@ -139,7 +139,9 @@ QFormLayout* DisneyMaterialLayerUI::get_layout()
 
 void DisneyMaterialLayerUI::fold_layer(const bool update)
 {
-    Dictionary& layer_params = m_entity_editor->m_values.dictionaries().get(m_layer_name);
+    const string current_layer_name = m_entity_editor->m_renames.get(m_layer_name.c_str());
+    Dictionary& layer_params = m_entity_editor->m_values.dictionaries().get(current_layer_name);
+
     bool is_folded = layer_params.get<bool>("folded");
     if (update)
         is_folded = !is_folded;
