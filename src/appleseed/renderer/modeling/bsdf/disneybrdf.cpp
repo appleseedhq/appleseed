@@ -603,7 +603,7 @@ namespace
             Spectrum&                       f) const
         {
             mix_spectra(g_white_spectrum, values->m_tint_color, static_cast<float>(values->m_specular_tint), f);
-            f *= static_cast<float>(values->m_specular * 0.08f);
+            f *= static_cast<float>(values->m_specular * 0.08);
             mix_spectra(f, values->m_base_color, static_cast<float>(values->m_metallic), f);
             mix_spectra(f, g_white_spectrum, static_cast<float>(schlick_fresnel(cos_oh)), f);
         }
