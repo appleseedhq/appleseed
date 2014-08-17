@@ -1406,7 +1406,7 @@ namespace
             MasterRenderer& master_renderer,
             Project&        project) OVERRIDE
         {
-            project.get_frame()->clear_crop_window();
+            project.get_frame()->reset_crop_window();
         }
     };
 

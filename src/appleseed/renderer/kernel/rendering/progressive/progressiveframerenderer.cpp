@@ -354,8 +354,10 @@ namespace
 
             void print_performance_statistics(const double elapsed_seconds)
             {
+                const Vector2u crop_window_extent = m_frame.get_crop_window().extent();
+                const size_t pixel_count = (crop_window_extent.x + 1) * (crop_window_extent.y + 1);
+
                 const uint64 new_sample_count = m_buffer.get_sample_count();
-                const uint64 pixel_count = static_cast<uint64>(m_frame.image().properties().m_pixel_count);
                 const double spp_count = static_cast<double>(new_sample_count) / pixel_count;
                 const double sps_count = static_cast<double>(new_sample_count - m_last_sample_count) / elapsed_seconds;
 

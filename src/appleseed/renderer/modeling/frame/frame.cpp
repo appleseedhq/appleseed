@@ -207,12 +207,12 @@ const LightingConditions& Frame::get_lighting_conditions() const
     return impl->m_lighting_conditions;
 }
 
-void Frame::clear_crop_window()
+void Frame::reset_crop_window()
 {
     impl->m_crop_window =
         AABB2u(
             Vector2u(0, 0),
-            Vector2u(impl->m_frame_width, impl->m_frame_height));
+            Vector2u(impl->m_frame_width - 1, impl->m_frame_height - 1));
 
     m_params.strings().remove("crop_window");
 }
@@ -668,7 +668,7 @@ void Frame::extract_parameters()
     // Retrieve crop window parameter.
     const AABB2u default_crop_window(
         Vector2u(0, 0),
-        Vector2u(impl->m_frame_width, impl->m_frame_height));
+        Vector2u(impl->m_frame_width - 1, impl->m_frame_height - 1));
     impl->m_crop_window = m_params.get_optional<AABB2u>("crop_window", default_crop_window);
 }
 

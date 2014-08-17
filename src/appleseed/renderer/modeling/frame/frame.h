@@ -99,8 +99,8 @@ class DLLSYMBOL Frame
     // Return true if the frame uses premultiplied alpha, false if it uses straight alpha.
     bool is_premultiplied_alpha() const;
 
-    // Set/get the crop window.
-    void clear_crop_window();
+    // Set/get the crop window. The crop window is inclusive on all sides.
+    void reset_crop_window();
     void set_crop_window(const foundation::AABB2u& crop_window);
     const foundation::AABB2u& get_crop_window() const;
 

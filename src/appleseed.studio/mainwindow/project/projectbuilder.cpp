@@ -99,7 +99,7 @@ Frame* ProjectBuilder::edit_frame(
     const size_t new_canvas_height = m_project.get_frame()->image().properties().m_canvas_height;
 
     if (new_canvas_width != old_canvas_width || new_canvas_height != old_canvas_height)
-        m_project.get_frame()->clear_crop_window();
+        m_project.get_frame()->reset_crop_window();
 
     notify_project_modification();
     emit signal_frame_modified();
