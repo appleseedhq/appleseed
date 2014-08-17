@@ -255,7 +255,7 @@ void ExpressionEditorWindow::slot_load_script()
             this,
             "Open...",
             QString::fromStdString(get_project_path()),
-            "Expression Scripts (*.se)",
+            "Expression Scripts (*.se);;All Files (*.*)",
             &selected_filter,
             options);
 
