@@ -83,11 +83,11 @@ namespace
 }
 
 SPPMParameters::SPPMParameters(const ParamArray& params)
-  : m_dl_mode(get_mode(params, "dl_mode", SPPM))
+  : m_dl_mode(get_mode(params, "dl_mode", RayTraced))
   , m_enable_ibl(params.get_optional<bool>("enable_ibl", true))
   , m_enable_caustics(params.get_optional<bool>("enable_caustics", true))
-  , m_light_photon_count(params.get_optional<size_t>("light_photons_per_pass", 100000))
-  , m_env_photon_count(params.get_optional<size_t>("env_photons_per_pass", 100000))
+  , m_light_photon_count(params.get_optional<size_t>("light_photons_per_pass", 1000000))
+  , m_env_photon_count(params.get_optional<size_t>("env_photons_per_pass", 1000000))
   , m_photon_packet_size(params.get_optional<size_t>("photon_packet_size", 100000))
   , m_photon_tracing_max_path_length(nz(params.get_optional<size_t>("photon_tracing_max_path_length", 0)))
   , m_photon_tracing_rr_min_path_length(nz(params.get_optional<size_t>("photon_tracing_rr_min_path_length", 3)))
@@ -115,7 +115,8 @@ void SPPMParameters::print() const
         "sppm settings:\n"
         "  dl               %s\n"
         "  ibl              %s",
-        m_dl_mode == SPPM ? "sppm" : m_dl_mode == RayTraced ? "ray traced" : "off",
+        m_dl_mode == RayTraced ? "ray traced" :
+        m_dl_mode == SPPM ? "sppm" : "off",
         m_enable_ibl ? "on" : "off");
 
     RENDERER_LOG_INFO(

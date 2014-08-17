@@ -41,7 +41,7 @@ namespace renderer
 
 struct SPPMParameters
 {
-    enum Mode { SPPM, RayTraced, Off };
+    enum Mode { RayTraced, SPPM, Off };
 
     const Mode      m_dl_mode;                              // direct lighting mode
     const bool      m_enable_ibl;                           // is image-based lighting enabled?

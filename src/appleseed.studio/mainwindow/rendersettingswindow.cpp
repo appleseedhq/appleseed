@@ -900,18 +900,18 @@ namespace
             QVBoxLayout* sublayout = new QVBoxLayout();
             groupbox->setLayout(sublayout);
 
-            QRadioButton* dl_buttons_sppm = create_radio_button("lighting_components.dl.sppm", "SPPM Direct Lighting");
             QRadioButton* dl_buttons_rt = create_radio_button("lighting_components.dl.rt", "RT Direct Lighting");
+            QRadioButton* dl_buttons_sppm = create_radio_button("lighting_components.dl.sppm", "SPPM Direct Lighting");
             QRadioButton* dl_buttons_off = create_radio_button("lighting_components.dl.off", "No Direct Lighting");
 
             QButtonGroup* dl_buttons = new QButtonGroup(groupbox);
-            dl_buttons->addButton(dl_buttons_sppm);
             dl_buttons->addButton(dl_buttons_rt);
+            dl_buttons->addButton(dl_buttons_sppm);
             dl_buttons->addButton(dl_buttons_off);
 
             QHBoxLayout* button_layout = new QHBoxLayout();
-            button_layout->addWidget(dl_buttons_sppm);
             button_layout->addWidget(dl_buttons_rt);
+            button_layout->addWidget(dl_buttons_sppm);
             button_layout->addWidget(dl_buttons_off);
             sublayout->addLayout(button_layout);
 
@@ -924,8 +924,8 @@ namespace
             create_direct_link("lighting_components.ibl", "sppm.enable_ibl", true);
             create_direct_link("lighting_components.caustics", "sppm.enable_caustics", true);
             create_direct_link("photon_tracing.bounces.rr_start_bounce", "sppm.photon_tracing_rr_min_path_length", 3);
-            create_direct_link("photon_tracing.light_photons", "sppm.light_photons_per_pass", 100000);
-            create_direct_link("photon_tracing.env_photons", "sppm.env_photons_per_pass", 100000);
+            create_direct_link("photon_tracing.light_photons", "sppm.light_photons_per_pass", 1000000);
+            create_direct_link("photon_tracing.env_photons", "sppm.env_photons_per_pass", 1000000);
             create_direct_link("radiance_estimation.bounces.rr_start_bounce", "sppm.path_tracing_rr_min_path_length", 3);
             create_direct_link("radiance_estimation.initial_radius", "sppm.initial_radius", 1.0);
             create_direct_link("radiance_estimation.max_photons", "sppm.max_photons_per_estimate", 100);
@@ -937,10 +937,10 @@ namespace
             load_bounce_settings(config, "radiance_estimation", "sppm.path_tracing_max_path_length");
 
             const string dl_mode = get_config<string>(config, "sppm.dl_mode", "sppm");
-            if (dl_mode == "sppm")
-                set_widget("lighting_components.dl.sppm", true);
-            else if (dl_mode == "rt")
+            if (dl_mode == "rt")
                 set_widget("lighting_components.dl.rt", true);
+            else if (dl_mode == "sppm")
+                set_widget("lighting_components.dl.sppm", true);
             else set_widget("lighting_components.dl.off", true);
         }
 
@@ -952,8 +952,8 @@ namespace
             save_bounce_settings(config, "radiance_estimation", "sppm.path_tracing_max_path_length");
 
             set_config(config, "sppm.dl_mode",
-                get_widget<bool>("lighting_components.dl.sppm") ? "sppm" :
-                get_widget<bool>("lighting_components.dl.rt") ? "rt" : "off");
+                get_widget<bool>("lighting_components.dl.rt") ? "rt" :
+                get_widget<bool>("lighting_components.dl.sppm") ? "sppm" : "off");
         }
 
       private:
