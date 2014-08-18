@@ -65,6 +65,8 @@ ShaderGroup::ShaderGroup(
   , m_search_paths(searchpaths)
   , m_has_emission(false)
   , m_has_transparency(false)
+  , m_has_holdout(false)
+  , m_has_debug(false)
 {
     set_name(name);
 }
@@ -92,24 +94,7 @@ void ShaderGroup::add_shader(
             layer,
             params));
 
-    RENDERER_LOG_DEBUG("created osl shader %s, layer = %s.", name, layer);
-
-    if (!m_has_emission || !m_has_transparency)
-    {
-        bool has_emission, has_transparency;
-
-        shader->get_shader_info(
-            m_search_paths,
-            has_emission,
-            has_transparency);
-
-        if (has_emission)
-            m_has_emission = true;
-
-        if (has_transparency)
-            m_has_transparency = true;
-    }
-
+    RENDERER_LOG_DEBUG("created shader %s, layer = %s.", name, layer);
     m_shaders.insert(shader);
 }
 
@@ -128,7 +113,7 @@ void ShaderGroup::add_connection(
 
     m_connections.insert(connection);
 
-    RENDERER_LOG_DEBUG("created osl connection: src = %s, src_param = %s, dst = %s, dst_param = %s.",
+    RENDERER_LOG_DEBUG("created shader connection: src = %s, src_param = %s, dst = %s, dst_param = %s.",
         src_layer,
         src_param,
         dst_layer,
@@ -178,17 +163,13 @@ bool ShaderGroup::on_frame_begin(
                 RENDERER_LOG_ERROR("shader group end error: shader = %s.", get_name());
                 return false;
             }
-
-            if (m_has_emission)
-                RENDERER_LOG_INFO("shader group %s has emission closures.", get_name());
-            else
-                RENDERER_LOG_INFO("shader group %s does not have emission closures.", get_name());
-
-            if (m_has_transparency)
-                RENDERER_LOG_INFO("shader group %s has transparency closures.", get_name());
-            else
-                RENDERER_LOG_INFO("shader group %s does not have transparency closures.", get_name());
         }
+
+        get_shadergroup_info(shading_system);
+        report_has_closures("emission", m_has_emission);
+        report_has_closures("transparent", m_has_transparency);
+        report_has_closures("holdout", m_has_holdout);
+        report_has_closures("debug", m_has_debug);
 
         return success;
     }
@@ -204,6 +185,108 @@ void ShaderGroup::on_frame_end(
     const Assembly&     assembly)
 {
     m_shadergroup_ref.reset();
+}
+
+void ShaderGroup::report_has_closures(const char* closure_name, bool has_closures) const
+{
+    if (has_closures)
+    {
+        RENDERER_LOG_INFO(
+            "shader group %s has %s closures.",
+            get_name(),
+            closure_name);
+    }
+    else
+    {
+        RENDERER_LOG_INFO(
+            "shader group %s does not have %s closures.",
+            get_name(),
+            closure_name);
+    }
+}
+
+void ShaderGroup::get_shadergroup_info(OSL::ShadingSystem& shading_system)
+{
+    m_has_emission = true;
+    m_has_transparency = true;
+    m_has_holdout = true;
+    m_has_debug = true;
+
+    int num_unknown_closures = 0;
+    if (!shading_system.getattribute(
+            m_shadergroup_ref.get(),
+            "unknown_closures_needed",
+            num_unknown_closures))
+    {
+        RENDERER_LOG_WARNING(
+            "getattribute call failed for shader group %s."
+            "assuming shader group has all kinds of closures.",
+            get_name());
+
+        return;
+    }
+
+    if (num_unknown_closures)
+    {
+        RENDERER_LOG_WARNING(
+            "shader group %s has unknown closures."
+            "assuming shader group has all kinds of closures.",
+            get_name());
+
+        return;
+    }
+
+    int num_closures = 0;
+    if (!shading_system.getattribute(
+            m_shadergroup_ref.get(),
+            "num_closures_needed",
+            num_closures))
+    {
+        RENDERER_LOG_WARNING(
+            "getattribute call failed for shader group %s."
+            "assuming shader group has all kinds of closures.",
+            get_name());
+
+        return;
+    }
+
+    if (num_closures)
+    {
+        OIIO::ustring *closures = 0;
+        if (!shading_system.getattribute(
+                m_shadergroup_ref.get(),
+                "closures_needed",
+                OIIO::TypeDesc::PTR,
+                &closures))
+        {
+            RENDERER_LOG_WARNING(
+                "getattribute call failed for shader group %s."
+                "assuming shader group has all kinds of closures.",
+                get_name());
+
+            return;
+        }
+
+        m_has_emission = false;
+        m_has_transparency = false;
+        m_has_holdout = false;
+        m_has_debug = false;
+
+        for (int i = 0; i < num_closures; ++i)
+        {
+            if (closures[i] == "emission")
+                m_has_emission = true;
+
+            if (closures[i] == "transparent")
+                m_has_transparency = true;
+
+            if (closures[i] == "holdout")
+                m_has_holdout = true;
+
+            if (closures[i] == "debug")
+                m_has_debug = true;
+        }
+    }
 }
 
 

@@ -114,6 +114,12 @@ class DLLSYMBOL ShaderGroup
     // Returns true if the shader group contains at least one transparency closure.
     bool has_transparency() const;
 
+    // Returns true if the shader group contains at least one holdout closure.
+    bool has_holdout() const;
+
+    // Returns true if the shader group contains at least one debug closure.
+    bool has_debug() const;
+
     // Return a reference-counted (but opaque) reference to the OSL shader.
     OSL::ShaderGroupRef& shadergroup_ref() const;
 
@@ -126,9 +132,14 @@ class DLLSYMBOL ShaderGroup
     const foundation::SearchPaths&  m_search_paths;
     bool                            m_has_emission;
     bool                            m_has_transparency;
+    bool                            m_has_holdout;
+    bool                            m_has_debug;
 
     // Constructor.
     ShaderGroup(const char* name, const foundation::SearchPaths& searchpaths);
+
+    void report_has_closures(const char* closure_name, bool has_closures) const;
+    void get_shadergroup_info(OSL::ShadingSystem& shading_system);
 };
 
 
@@ -181,6 +192,16 @@ inline bool ShaderGroup::has_emission() const
 inline bool ShaderGroup::has_transparency() const
 {
     return m_has_transparency;
+}
+
+inline bool ShaderGroup::has_holdout() const
+{
+    return m_has_holdout;
+}
+
+inline bool ShaderGroup::has_debug() const
+{
+    return m_has_debug;
 }
 
 }       // namespace renderer
