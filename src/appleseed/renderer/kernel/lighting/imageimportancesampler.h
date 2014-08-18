@@ -133,6 +133,7 @@ void ImageImportanceSampler<Payload, Importance>::rebuild(
     foundation::AbortSwitch*        abort_switch)
 {
     m_cdf_y.clear();
+    m_cdf_y.reserve(m_height);
 
     for (size_t y = 0; y < m_height; ++y)
     {
@@ -143,6 +144,7 @@ void ImageImportanceSampler<Payload, Importance>::rebuild(
         }
 
         m_cdf_x[y].clear();
+        m_cdf_x[y].reserve(m_width);
 
         for (size_t x = 0; x < m_width; ++x)
         {
