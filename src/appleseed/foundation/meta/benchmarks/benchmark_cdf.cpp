@@ -41,20 +41,20 @@ using namespace std;
 
 BENCHMARK_SUITE(Foundation_Math_CDF)
 {
+    template <size_t Size>
     struct Fixture
     {
         typedef CDF<size_t, double> CDFType;
 
-        CDFType m_cdf;
-        double  m_x;
+        CDFType     m_cdf;
+        Xorshift    m_rng;
+        double      m_x;
 
         Fixture()
           : m_x(0.0)
         {
-            MersenneTwister rng;
-
-            for (size_t i = 0; i < 1000; ++i)
-                m_cdf.insert(i, rand_double1(rng));
+            for (size_t i = 0; i < Size; ++i)
+                m_cdf.insert(i, rand_double1(m_rng));
 
             assert(m_cdf.valid());
 
@@ -62,8 +62,21 @@ BENCHMARK_SUITE(Foundation_Math_CDF)
         }
     };
 
-    BENCHMARK_CASE_F(DoublePrecisionSampling, Fixture)
+    BENCHMARK_CASE_F(DoublePrecisionSampling_10Elements, Fixture<10>)
     {
-        m_x += m_cdf.sample(0.5).second;
+        for (size_t i = 0; i < 100; ++i)
+            m_x += m_cdf.sample(rand_double2(m_rng)).second;
+    }
+
+    BENCHMARK_CASE_F(DoublePrecisionSampling_1000Elements, Fixture<1000>)
+    {
+        for (size_t i = 0; i < 100; ++i)
+            m_x += m_cdf.sample(rand_double2(m_rng)).second;
+    }
+
+    BENCHMARK_CASE_F(DoublePrecisionSampling_1000000Elements, Fixture<1000000>)
+    {
+        for (size_t i = 0; i < 100; ++i)
+            m_x += m_cdf.sample(rand_double2(m_rng)).second;
     }
 }

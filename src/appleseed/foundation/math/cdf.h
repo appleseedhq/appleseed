@@ -88,22 +88,11 @@ class CDF
     void prepare();
 
     // Sample the CDF. x is in [0,1).
-    ItemWeightPair sample(const Weight x) const;
+    const ItemWeightPair& sample(const Weight x) const;
 
   private:
     typedef std::vector<ItemWeightPair> ItemVector;
     typedef std::vector<Weight> DensityVector;
-    typedef typename std::vector<Weight>::const_iterator DensityVectorConstIt;
-
-    struct greater
-    {
-        bool operator()(
-            const ItemWeightPair& lhs,
-            const ItemWeightPair& rhs) const
-        {
-            return lhs.second > rhs.second;
-        }
-    };
 
     ItemVector      m_items;
     Weight          m_weight_sum;
@@ -143,7 +132,6 @@ template <typename Item, typename Weight>
 inline void CDF<Item, Weight>::clear()
 {
     m_items.clear();
-
     m_weight_sum = Weight(0.0);
 }
 
@@ -157,9 +145,7 @@ template <typename Item, typename Weight>
 inline void CDF<Item, Weight>::insert(const Item& item, const Weight weight)
 {
     assert(weight >= Weight(0.0));
-
     m_items.push_back(std::make_pair(item, weight));
-
     m_weight_sum += weight;
 }
 
@@ -167,7 +153,6 @@ template <typename Item, typename Weight>
 inline const std::pair<Item, Weight>& CDF<Item, Weight>::operator[](const size_t i) const
 {
     assert(i < m_items.size());
-
     return m_items[i];
 }
 
@@ -195,7 +180,7 @@ void CDF<Item, Weight>::prepare()
 }
 
 template <typename Item, typename Weight>
-inline std::pair<Item, Weight> CDF<Item, Weight>::sample(const Weight x) const
+inline const std::pair<Item, Weight>& CDF<Item, Weight>::sample(const Weight x) const
 {
     assert(!m_densities.empty());   // implies valid() == true
     assert(x >= Weight(0.0));

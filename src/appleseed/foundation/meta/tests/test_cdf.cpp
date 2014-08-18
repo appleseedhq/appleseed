@@ -32,11 +32,11 @@
 #include "foundation/math/fp.h"
 #include "foundation/utility/test.h"
 
+using namespace foundation;
+using namespace std;
+
 TEST_SUITE(Foundation_Math_CDF)
 {
-    using namespace foundation;
-    using namespace std;
-
     typedef CDF<int, double> CDF;
 
     TEST_CASE(Empty_GivenCDFInInitialState_ReturnsTrue)
