@@ -32,7 +32,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/utility/iterators.h"
 
 // Standard headers.
 #include <algorithm>
