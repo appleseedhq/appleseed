@@ -94,7 +94,7 @@ void ShaderGroup::add_shader(
             layer,
             params));
 
-    RENDERER_LOG_DEBUG("created osl shader %s, layer = %s.", name, layer);
+    RENDERER_LOG_DEBUG("created shader %s, layer = %s.", name, layer);
     m_shaders.insert(shader);
 }
 
@@ -113,7 +113,7 @@ void ShaderGroup::add_connection(
 
     m_connections.insert(connection);
 
-    RENDERER_LOG_DEBUG("created osl connection: src = %s, src_param = %s, dst = %s, dst_param = %s.",
+    RENDERER_LOG_DEBUG("created shader connection: src = %s, src_param = %s, dst = %s, dst_param = %s.",
         src_layer,
         src_param,
         dst_layer,
@@ -219,8 +219,8 @@ void ShaderGroup::get_shadergroup_info(OSL::ShadingSystem& shading_system)
             num_unknown_closures))
     {
         RENDERER_LOG_WARNING(
-            "getattribute call failed for shadergroup %s."
-            "Assuming shadergroup has all kind of closures.",
+            "getattribute call failed for shader group %s."
+            "assuming shader group has all kinds of closures.",
             get_name());
 
         return;
@@ -229,8 +229,8 @@ void ShaderGroup::get_shadergroup_info(OSL::ShadingSystem& shading_system)
     if (num_unknown_closures)
     {
         RENDERER_LOG_WARNING(
-            "Shadergroup %s has unknown closures."
-            "Assuming shadergroup has all kind of closures.",
+            "shader group %s has unknown closures."
+            "assuming shader group has all kinds of closures.",
             get_name());
 
         return;
@@ -243,8 +243,8 @@ void ShaderGroup::get_shadergroup_info(OSL::ShadingSystem& shading_system)
             num_closures))
     {
         RENDERER_LOG_WARNING(
-            "getattribute call failed for shadergroup %s."
-            "Assuming shadergroup has all kind of closures.",
+            "getattribute call failed for shader group %s."
+            "assuming shader group has all kinds of closures.",
             get_name());
 
         return;
@@ -260,8 +260,8 @@ void ShaderGroup::get_shadergroup_info(OSL::ShadingSystem& shading_system)
                 &closures))
         {
             RENDERER_LOG_WARNING(
-                "getattribute call failed for shadergroup %s."
-                "Assuming shadergroup has all kind of closures.",
+                "getattribute call failed for shader group %s."
+                "assuming shader group has all kinds of closures.",
                 get_name());
 
             return;
