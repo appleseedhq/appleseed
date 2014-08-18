@@ -325,7 +325,7 @@ Color<T, 3> spectrum_to_ciexyz(
     const LightingConditions&   lighting,
     const Spectrum&             spectrum);
 
-// Converts a spectrum to a color in the CIE XYZ color space using the CIE D65 illuminant
+// Convert a spectrum to a color in the CIE XYZ color space using the CIE D65 illuminant
 // and the CIE 1964 10-deg color matching functions.
 DLLSYMBOL void spectrum_to_ciexyz_standard(
     const float                 spectrum[],
