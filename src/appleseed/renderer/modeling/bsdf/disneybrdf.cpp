@@ -110,7 +110,7 @@ namespace
                 outgoing,
                 incoming,
                 value);
-            
+
             assert(probability > 0.0);
             return BSDF::Diffuse;
         }
@@ -171,7 +171,7 @@ namespace
             }
 
             value *= static_cast<float>(1.0 - values->m_metallic);
-            
+
             // Return the probability density of the sampled direction.
             return evaluate_pdf(shading_basis, incoming);
         }
@@ -582,9 +582,10 @@ namespace
             weights[2] = values->m_clearcoat * 0.25;
 
             const double total_weight = weights[0] + weights[1] + weights[2];
-            weights[0] /= total_weight;
-            weights[1] /= total_weight;
-            weights[2] /= total_weight;
+            const double total_weight_rcp = 1.0 / total_weight;
+            weights[0] *= total_weight_rcp;
+            weights[1] *= total_weight_rcp;
+            weights[2] *= total_weight_rcp;
         }
 
         void specular_roughness(
