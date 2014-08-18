@@ -47,7 +47,6 @@
 #include <string>
 
 // Forward declarations.
-
 namespace appleseed { namespace studio { class ObjectInstanceItem; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace renderer  { class Object; }
