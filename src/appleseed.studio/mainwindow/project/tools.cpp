@@ -170,23 +170,23 @@ void open_entity_editor(
 namespace
 {
 
-bool find_path_in_dir(
-    const QString&  filename, 
-    const QDir&     dir,
-    QString&        result)
-{
-    result = dir.relativeFilePath(filename);
+    bool find_path_in_dir(
+        const QString&  filename,
+        const QDir&     dir,
+        QString&        result)
+    {
+        result = dir.relativeFilePath(filename);
 
-    // Ignore paths that go up the directory hierarchy.
-    if (result.startsWith(".."))
+        // Ignore paths that go up the directory hierarchy.
+        if (result.startsWith(".."))
+            return false;
+
+        const QFileInfo relative_file_info(result);
+        if (relative_file_info.isRelative())
+            return true;
+
         return false;
-
-    const QFileInfo relative_file_info(result);
-    if (relative_file_info.isRelative())
-        return true;
-
-    return false;
-}
+    }
 
 }
 
@@ -207,9 +207,9 @@ QString find_path_in_searchpaths(const SearchPaths& s, const QString& filename)
             assert(s.has_root_path());
 
             search_path = QDir::cleanPath(
-                        QString::fromStdString(s.get_root_path()) +
-                        QDir::separator() +
-                        search_path);
+                QString::fromStdString(s.get_root_path()) +
+                QDir::separator() +
+                search_path);
         }
 
         const QDir search_dir(search_path);

@@ -131,7 +131,7 @@ namespace
             node->child(2)->eval(v);
 
             float color[3];
-            if( !m_texture_system->texture(
+            if (!m_texture_system->texture(
                     m_texture_filename,
                     m_texture_options,
                     static_cast<float>(u[0]),
@@ -151,7 +151,7 @@ namespace
                 color[1] = linear_rgb_to_srgb(color[1]);
                 color[2] = linear_rgb_to_srgb(color[2]);
             }
-            
+
             result = SeVec3d(color[0], color[1], color[2]);
         }
 
@@ -380,9 +380,7 @@ class DisneyLayerParam
             return false;
         }
 
-        m_expr_hash = siphash24(
-            reinterpret_cast<const void*>(m_expr.c_str()), m_expr.length());
-
+        m_expr_hash = siphash24(m_expr.c_str(), m_expr.length());
         m_is_constant = m_expression.isConstant();
 
         if (m_is_constant)
@@ -394,20 +392,20 @@ class DisneyLayerParam
 
         // Check for simple texture lookups.
         {
-            string expression = trim_both(m_expression.getExpr(), " \r\n");
+            const string expression = trim_both(m_expression.getExpr(), " \r\n");
             vector<string> tokens;
             tokenize(expression, "()", tokens);
-            
+
             if (tokens.size() != 2)
                 return true;
-            
+
             if (trim_both(tokens[0]) != "texture")
                 return true;
-            
-            string inner_content = tokens[1];
+
+            const string inner_content = tokens[1];
             tokens.clear();
             tokenize(inner_content, ",", tokens);
-            
+
             if (tokens.size() != 3)
                 return true;
 
@@ -448,7 +446,7 @@ class DisneyLayerParam
                     0.0f,
                     color))
             {
-                return Color3d(1.0, 0.0, 1.0);                
+                return Color3d(1.0, 0.0, 1.0);
             }
 
             if (!m_texture_is_srgb)
@@ -457,7 +455,7 @@ class DisneyLayerParam
                 color[1] = linear_rgb_to_srgb(color[1]);
                 color[2] = linear_rgb_to_srgb(color[2]);
             }
-            
+
             return Color3d(color[0], color[1], color[2]);
         }
 
@@ -720,7 +718,7 @@ DictionaryArray DisneyMaterialLayer::get_input_metadata()
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "optional")
             .insert("default", "0.0"));
-    
+
     metadata.push_back(
         Dictionary()
             .insert("name", "roughness")
@@ -770,7 +768,7 @@ DictionaryArray DisneyMaterialLayer::get_input_metadata()
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "optional")
             .insert("default", "1.0"));
-    
+
     return metadata;
 }
 
