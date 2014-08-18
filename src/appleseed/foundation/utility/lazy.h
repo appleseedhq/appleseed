@@ -85,13 +85,19 @@ class Lazy
     // object the first time it is accessed.
     explicit Lazy(std::auto_ptr<FactoryType> factory);
 
-    // Construct a lazy object that simply wraps an existing object,
+    // Construct a lazy object that simply wraps an existing source object,
     // effectively bypassing lazy object construction altogether.
-    explicit Lazy(ObjectType* object);
+    explicit Lazy(ObjectType* source_object);
 
     // Destructor, deletes the factory, as well as the object if
     // it is owned by the lazy object.
     ~Lazy();
+
+    // Return the factory associated with that lazy object, if any.
+    FactoryType* get_factory() const;
+
+    // Return the source object associated with that lazy object, if any.
+    ObjectType* get_source_object() const;
 
   private:
     template <typename> friend class Access;
@@ -101,6 +107,7 @@ class Lazy
     int             m_reference_count;
 
     FactoryType*    m_factory;
+    ObjectType*     m_source_object;
     ObjectType*     m_object;
     const bool      m_own_object;
 };
@@ -380,6 +387,7 @@ template <typename Object>
 Lazy<Object>::Lazy(std::auto_ptr<FactoryType> factory)
   : m_reference_count(0)
   , m_factory(factory.release())
+  , m_source_object(0)
   , m_object(0)
   , m_own_object(true)
 {
@@ -387,12 +395,14 @@ Lazy<Object>::Lazy(std::auto_ptr<FactoryType> factory)
 }
 
 template <typename Object>
-Lazy<Object>::Lazy(ObjectType* object)
+Lazy<Object>::Lazy(ObjectType* source_object)
   : m_reference_count(0)
   , m_factory(0)
-  , m_object(object)
+  , m_source_object(source_object)
+  , m_object(0)
   , m_own_object(false)
 {
+    assert(m_source_object);
 }
 
 template <typename Object>
@@ -402,11 +412,21 @@ Lazy<Object>::~Lazy()
     assert(m_reference_count == 0);
 
     delete m_factory;
-    m_factory = 0;
 
     if (m_own_object)
         delete m_object;
-    m_object = 0;
+}
+
+template <typename Object>
+inline typename Lazy<Object>::FactoryType* Lazy<Object>::get_factory() const
+{
+    return m_factory;
+}
+
+template <typename Object>
+inline typename Lazy<Object>::ObjectType* Lazy<Object>::get_source_object() const
+{
+    return m_source_object;
 }
 
 
@@ -463,8 +483,9 @@ void Access<Object>::reset(LazyType* lazy)
         // Create the object if it doesn't exist yet.
         if (m_lazy->m_object == 0)
         {
-            assert(m_lazy->m_factory);
-            m_lazy->m_object = m_lazy->m_factory->create().release();
+            if (m_lazy->m_factory)
+                m_lazy->m_object = m_lazy->m_factory->create().release();
+            else m_lazy->m_object = m_lazy->m_source_object;
         }
     }
 }
