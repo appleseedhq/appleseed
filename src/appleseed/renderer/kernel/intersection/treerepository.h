@@ -71,7 +71,7 @@ class TreeRepository
 
     LazyTreeType* acquire(const foundation::uint64 key)
     {
-        const TreeContainer::iterator i = m_trees.find(key);
+        const typename TreeContainer::iterator i = m_trees.find(key);
 
         if (i == m_trees.end())
             return 0;
@@ -82,10 +82,10 @@ class TreeRepository
 
     void release(LazyTreeType* tree)
     {
-        const TreeIndex::const_iterator i = m_index.find(tree);
+        const typename TreeIndex::const_iterator i = m_index.find(tree);
         assert(i != m_index.end());
 
-        const TreeContainer::iterator t = m_trees.find(i->second);
+        const typename TreeContainer::iterator t = m_trees.find(i->second);
         assert(t != m_trees.end());
 
         assert(t->second.m_ref > 0);
