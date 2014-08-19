@@ -36,7 +36,6 @@
 #include "mainwindow/project/itembase.h"
 #include "mainwindow/project/singlemodelentityitem.h"
 
-
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 
@@ -91,6 +90,8 @@ class ObjectInstanceItem
 
     void clear_material(const QVariant& untyped_data);
 
+    void update_style();
+
   private slots:
     void slot_open_material_assignment_editor();
     void slot_assign_material();
@@ -133,9 +134,6 @@ class ObjectInstanceItem
         const char*                     slot_name,
         const bool                      font_side,
         const bool                      back_side);
-
-  public:
-    void update_style();
 };
 
 }       // namespace studio
