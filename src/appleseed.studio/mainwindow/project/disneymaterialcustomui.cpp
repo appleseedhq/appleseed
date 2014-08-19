@@ -45,10 +45,6 @@
 // appleseed.foundation headers.
 #include "foundation/utility/searchpaths.h"
 
-// Standard headers.
-#include <algorithm>
-#include <sstream>
-
 // Qt headers.
 #include <QColorDialog>
 #include <QFileDialog>
@@ -68,6 +64,10 @@
 #include "boost/filesystem/operations.hpp"
 #include "boost/filesystem/path.hpp"
 
+// Standard headers.
+#include <algorithm>
+#include <sstream>
+
 using namespace boost;
 using namespace foundation;
 using namespace renderer;
@@ -77,8 +77,8 @@ namespace appleseed {
 namespace studio {
 
 DisneyMaterialCustomUI::DisneyMaterialCustomUI(
-    const Project&          project,
-    DictionaryArray         layer_metadata)
+    const Project&      project,
+    DictionaryArray     layer_metadata)
   : m_project(project)
   , m_layer_metadata(layer_metadata)
   , m_parent(0)
@@ -118,7 +118,7 @@ void DisneyMaterialCustomUI::create_custom_widgets(
     // New layer button.
     // Use blanks for spacing between icon and text, as there does not appear to be a better option.
     QIcon add_icon = QIcon(":/widgets/big_add.png");
-    QPushButton* add_layer_button = new QPushButton(add_icon, "   Add new layer");
+    QPushButton* add_layer_button = new QPushButton(add_icon, "   Add New Layer");
     add_layer_button->setObjectName("add_material_editor_layer");
     m_form_layout->addWidget(add_layer_button);
     connect(add_layer_button, SIGNAL(clicked()), this, SLOT(slot_add_layer()));
@@ -255,7 +255,7 @@ void DisneyMaterialCustomUI::slot_line_edit_changed(const QString& widget_name)
     // Handle layer rename.
     if (parameter == "layer_name")
     {
-        Dictionary old_layer_params = m_values.dictionary(layer_name);
+        const Dictionary old_layer_params = m_values.dictionary(layer_name);
         string new_layer_name = proxy->get();
         m_renames.insert(initial_layer_name, new_layer_name);
         m_values.dictionaries().remove(layer_name);
@@ -330,8 +330,8 @@ string DisneyMaterialCustomUI::unique_layer_name()
 string DisneyMaterialCustomUI::texture_to_expression(const QString& path)
 {
     const SearchPaths& search_paths = m_project.search_paths();
-    QString relative_path = find_path_in_searchpaths(search_paths, path);
-    QString texture_expression = QString("texture(\"%1\", $u, $v)").arg(relative_path);
+    const QString relative_path = find_path_in_searchpaths(search_paths, path);
+    const QString texture_expression = QString("texture(\"%1\", $u, $v)").arg(relative_path);
     return texture_expression.toStdString();
 }
 
@@ -431,12 +431,12 @@ void DisneyMaterialCustomUI::create_colormap_input_widgets(
 
     m_line_edit = new LineEditForwarder(value.c_str(), m_group_widget);
 
-    const double min_value = 0.0;
-    const double max_value = 1.0;
+    const double MinValue = 0.0;
+    const double MaxValue = 1.0;
 
     DoubleSlider* slider = new DoubleSlider(Qt::Horizontal, m_group_widget);
-    slider->setRange(min_value, max_value);
-    slider->setPageStep((max_value - min_value) / 10.0);
+    slider->setRange(MinValue, MaxValue);
+    slider->setPageStep((MaxValue - MinValue) / 10.0);
     slider->setMaximumWidth(100);
 
     new MouseWheelFocusEventFilter(slider);
@@ -471,12 +471,12 @@ void DisneyMaterialCustomUI::create_colormap_input_widgets(
 
 void DisneyMaterialCustomUI::create_texture_and_expr_buttons()
 {
-    QIcon texture_icon = QIcon(":/icons/disney_texture.png");
+    const QIcon texture_icon = QIcon(":/icons/disney_texture.png");
     m_texture_button = new QPushButton(texture_icon, QString(), m_group_widget);
     m_texture_button->setFlat(true);
     m_texture_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
-    QIcon expression_icon = QIcon(":/icons/disney_expr.png");
+    const QIcon expression_icon = QIcon(":/icons/disney_expr.png");
     m_expression_button = new QPushButton(expression_icon, QString(), m_group_widget);
     m_expression_button->setFlat(true);
     m_expression_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
@@ -501,15 +501,17 @@ void DisneyMaterialCustomUI::add_layer(const bool update, const Dictionary& para
 
     for (size_t i = 0; i < m_layer_metadata.size(); ++i)
     {
-        Dictionary metadata = m_layer_metadata[i];
+        const Dictionary& metadata = m_layer_metadata[i];
         const string type = metadata.get<string>("type");
         const string name = metadata.get<string>("name");
 
         // Change default value to existing value.
-        string default_value = parameters.strings().exist(name) ?
-            parameters.get(name.c_str()) : metadata.get<string>("default");
+        string default_value =
+            parameters.strings().exist(name)
+                ? parameters.get(name.c_str())
+                : metadata.get<string>("default");
 
-        // Change default name in metadata
+        // Change default name in metadata.
         if (name == "layer_name")
             default_value = layer_name;
 
@@ -531,7 +533,9 @@ void DisneyMaterialCustomUI::add_layer(const bool update, const Dictionary& para
             }
         }
         else if (type == "text")
+        {
             create_text_input_widgets(metadata, layer_name);
+        }
 
         if (update)
             layer_params.insert(name, default_value);
@@ -551,5 +555,5 @@ void DisneyMaterialCustomUI::add_layer(const bool update, const Dictionary& para
     emit_signal_custom_applied();
 }
 
-}       // namespace studio
-}       // namespace appleseed
+}   // namespace studio
+}   // namespace appleseed
