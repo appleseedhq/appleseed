@@ -82,7 +82,7 @@ class TreeRepository
 
     void release(LazyTreeType* tree)
     {
-        const typename TreeIndex::const_iterator i = m_index.find(tree);
+        const typename TreeIndex::iterator i = m_index.find(tree);
         assert(i != m_index.end());
 
         const typename TreeContainer::iterator t = m_trees.find(i->second);
