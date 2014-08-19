@@ -426,10 +426,6 @@ TriangleTree::TriangleTree(const Arguments& arguments)
         StatisticsVector::make(
             "triangle tree #" + to_string(m_arguments.m_triangle_tree_uid) + " statistics",
             statistics).to_string().c_str());
-
-    // Create intersection filters.
-    if (m_arguments.m_assembly.get_parameters().get_optional<bool>("enable_intersection_filters", true))
-        update_intersection_filters();
 }
 
 TriangleTree::~TriangleTree()
@@ -441,10 +437,10 @@ TriangleTree::~TriangleTree()
     delete_intersection_filters();
 }
 
-void TriangleTree::update_non_geometry()
+void TriangleTree::update_non_geometry(const bool enable_intersection_filters)
 {
-    // Update intersection filters.
-    if (m_arguments.m_assembly.get_parameters().get_optional<bool>("enable_intersection_filters", true))
+    if (enable_intersection_filters &&
+        m_arguments.m_assembly.get_parameters().get_optional<bool>("enable_intersection_filters", true))
         update_intersection_filters();
     else delete_intersection_filters();
 }

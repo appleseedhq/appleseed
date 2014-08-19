@@ -46,6 +46,7 @@
 #include "foundation/math/permutation.h"
 #include "foundation/platform/system.h"
 #include "foundation/platform/timer.h"
+#include "foundation/utility/siphash.h"
 #include "foundation/utility/statistics.h"
 #include "foundation/utility/string.h"
 
@@ -73,23 +74,7 @@ AssemblyTree::AssemblyTree(Scene& scene)
 
 AssemblyTree::~AssemblyTree()
 {
-    // Log a progress message.
     RENDERER_LOG_INFO("deleting assembly tree...");
-
-    // Delete region trees.
-    for (each<RegionTreeContainer> i = m_region_trees; i; ++i)
-        delete i->second;
-    m_region_trees.clear();
-
-    // Delete triangle trees.
-    for (each<TriangleTreeContainer> i = m_triangle_trees; i; ++i)
-        delete i->second;
-    m_triangle_trees.clear();
-
-    // Delete curve trees.
-    for (each<CurveTreeContainer> i = m_curve_trees; i; ++i)
-        delete i->second;
-    m_curve_trees.clear();
 }
 
 void AssemblyTree::update()
@@ -177,11 +162,14 @@ void AssemblyTree::rebuild_assembly_tree()
 
     Statistics statistics;
 
+    // Compute and store cumulated transforms in assembly instances.
+    RENDERER_LOG_INFO("computing cumulated assembly instance transforms...");
     compute_cumulated_transforms(
         m_scene.assembly_instances(),
         TransformSequence());
 
-    // Collect all assembly instances of the scene.
+    // Collect assembly instances and their bounding boxes.
+    RENDERER_LOG_INFO("collecting assembly instances...");
     AABBVector assembly_instance_bboxes;
     collect_assembly_instances(
         m_scene.assembly_instances(),
@@ -287,8 +275,7 @@ void AssemblyTree::update_tree_hierarchy()
         {
             if (stored_version_it->second == current_version_id)
             {
-                // The child trees of this assembly are up-to-date: update them.
-                update_child_trees(assembly);
+                // The child trees of this assembly are up-to-date.
                 continue;
             }
 
@@ -302,6 +289,10 @@ void AssemblyTree::update_tree_hierarchy()
         // Store the current version ID of the assembly.
         m_assembly_versions[assembly.get_uid()] = current_version_id;
     }
+
+    // Update child trees.
+    update_region_trees();
+    update_triangle_trees();
 }
 
 void AssemblyTree::collect_unique_assemblies(AssemblyVector& assemblies) const
@@ -331,6 +322,27 @@ namespace
         }
 
         return false;
+    }
+
+    uint64 hash_assembly_geometry(const Assembly& assembly, const char* model)
+    {
+        uint64 hash = 0;
+
+        for (const_each<ObjectInstanceContainer> i = assembly.object_instances(); i; ++i)
+        {
+            const Object& object = i->get_object();
+
+            if (strcmp(object.get_model(), model) == 0)
+            {
+                uint64 values[2 + 16];
+                values[0] = hash;
+                values[1] = object.get_uid();
+                memcpy(&values[2], &i->get_transform().get_local_to_parent()[0], 16 * 8);
+                hash = siphash24(&values, sizeof(values));
+            }
+        }
+
+        return hash;
     }
 
     void collect_regions(const Assembly& assembly, RegionInfoVector& regions)
@@ -372,20 +384,51 @@ namespace
             }
         }
     }
+}
 
-    Lazy<RegionTree>* create_region_tree(const Scene& scene, const Assembly& assembly)
+void AssemblyTree::create_child_trees(const Assembly& assembly)
+{
+    // Create a region or a triangle tree if there are mesh objects.
+    if (has_object_instances_of_type(assembly, MeshObjectFactory::get_model()))
+    {
+        assembly.is_flushable()
+            ? create_region_tree(assembly)
+            : create_triangle_tree(assembly);
+    }
+
+    // Create a curve tree if there are curve objects.
+    if (has_object_instances_of_type(assembly, CurveObjectFactory::get_model()))
+        create_curve_tree(assembly);
+}
+
+void AssemblyTree::create_region_tree(const Assembly& assembly)
+{
+    const uint64 hash = hash_assembly_geometry(assembly, MeshObjectFactory::get_model());
+    Lazy<RegionTree>* region_tree = m_region_tree_repository.acquire(hash);
+
+    if (region_tree == 0)
     {
         auto_ptr<ILazyFactory<RegionTree> > region_tree_factory(
             new RegionTreeFactory(
                 RegionTree::Arguments(
-                    scene,
+                    m_scene,
                     assembly.get_uid(),
                     assembly)));
 
-        return new Lazy<RegionTree>(region_tree_factory);
+        region_tree = new Lazy<RegionTree>(region_tree_factory);
+
+        m_region_tree_repository.insert(hash, region_tree);
     }
 
-    Lazy<TriangleTree>* create_triangle_tree(const Scene& scene, const Assembly& assembly)
+    m_region_trees.insert(make_pair(assembly.get_uid(), region_tree));
+}
+
+void AssemblyTree::create_triangle_tree(const Assembly& assembly)
+{
+    const uint64 hash = hash_assembly_geometry(assembly, MeshObjectFactory::get_model());
+    Lazy<TriangleTree>* triangle_tree = m_triangle_tree_repository.acquire(hash);
+
+    if (triangle_tree == 0)
     {
         // Compute the assembly space bounding box of the assembly.
         const GAABB3 assembly_bbox =
@@ -399,16 +442,26 @@ namespace
         auto_ptr<ILazyFactory<TriangleTree> > triangle_tree_factory(
             new TriangleTreeFactory(
                 TriangleTree::Arguments(
-                    scene,
+                    m_scene,
                     assembly.get_uid(),
                     assembly_bbox,
                     assembly,
                     regions)));
 
-        return new Lazy<TriangleTree>(triangle_tree_factory);
+        triangle_tree = new Lazy<TriangleTree>(triangle_tree_factory);
+
+        m_triangle_tree_repository.insert(hash, triangle_tree);
     }
 
-    Lazy<CurveTree>* create_curve_tree(const Scene& scene, const Assembly& assembly)
+    m_triangle_trees.insert(make_pair(assembly.get_uid(), triangle_tree));
+}
+
+void AssemblyTree::create_curve_tree(const Assembly& assembly)
+{
+    const uint64 hash = hash_assembly_geometry(assembly, CurveObjectFactory::get_model());
+    Lazy<CurveTree>* curve_tree = m_curve_tree_repository.acquire(hash);
+
+    if (curve_tree == 0)
     {
         // Compute the assembly space bounding box of the assembly.
         const GAABB3 assembly_bbox =
@@ -419,83 +472,86 @@ namespace
         auto_ptr<ILazyFactory<CurveTree> > curve_tree_factory(
             new CurveTreeFactory(
                 CurveTree::Arguments(
-                    scene,
+                    m_scene,
                     assembly.get_uid(),
                     assembly_bbox,
                     assembly)));
 
-        return new Lazy<CurveTree>(curve_tree_factory);
-    }
-}
+        curve_tree = new Lazy<CurveTree>(curve_tree_factory);
 
-void AssemblyTree::create_child_trees(const Assembly& assembly)
-{
-    // Create a region or a triangle tree if there are mesh objects.
-    if (has_object_instances_of_type(assembly, MeshObjectFactory::get_model()))
-    {
-        if (assembly.is_flushable())
-        {
-            m_region_trees.insert(
-                make_pair(assembly.get_uid(), create_region_tree(m_scene, assembly)));
-        }
-        else
-        {
-            m_triangle_trees.insert(
-                make_pair(assembly.get_uid(), create_triangle_tree(m_scene, assembly)));
-        }
+        m_curve_tree_repository.insert(hash, curve_tree);
     }
 
-    // Create a curve tree if there are curve objects.
-    if (has_object_instances_of_type(assembly, CurveObjectFactory::get_model()))
-    {
-        m_curve_trees.insert(
-            make_pair(assembly.get_uid(), create_curve_tree(m_scene, assembly)));
-    }
-}
-
-void AssemblyTree::update_child_trees(const Assembly& assembly)
-{
-    if (assembly.is_flushable())
-    {
-        Update<RegionTree> access(m_region_trees.find(assembly.get_uid())->second);
-        if (access.get())
-            access->update_non_geometry();
-    }
-    else
-    {
-        Update<TriangleTree> access(m_triangle_trees.find(assembly.get_uid())->second);
-        if (access.get())
-            access->update_non_geometry();
-    }
+    m_curve_trees.insert(make_pair(assembly.get_uid(), curve_tree));
 }
 
 void AssemblyTree::delete_child_trees(const Assembly& assembly)
 {
-    if (assembly.is_flushable())
-    {
-        const RegionTreeContainer::iterator it = m_region_trees.find(assembly.get_uid());
-        if (it != m_region_trees.end())
-        {
-            delete it->second;
-            m_region_trees.erase(it);
-        }
-    }
-    else
-    {
-        const TriangleTreeContainer::iterator it = m_triangle_trees.find(assembly.get_uid());
-        if (it != m_triangle_trees.end())
-        {
-            delete it->second;
-            m_triangle_trees.erase(it);
-        }
-    }
+    assembly.is_flushable()
+        ? delete_region_tree(assembly)
+        : delete_triangle_tree(assembly);
 
+    delete_curve_tree(assembly);
+}
+
+void AssemblyTree::delete_region_tree(const Assembly& assembly)
+{
+    const RegionTreeContainer::iterator it = m_region_trees.find(assembly.get_uid());
+    if (it != m_region_trees.end())
+    {
+        m_region_tree_repository.release(it->second);
+        m_region_trees.erase(it);
+    }
+}
+
+void AssemblyTree::delete_triangle_tree(const Assembly& assembly)
+{
+    const TriangleTreeContainer::iterator it = m_triangle_trees.find(assembly.get_uid());
+    if (it != m_triangle_trees.end())
+    {
+        m_triangle_tree_repository.release(it->second);
+        m_triangle_trees.erase(it);
+    }
+}
+
+void AssemblyTree::delete_curve_tree(const Assembly& assembly)
+{
     const CurveTreeContainer::iterator it = m_curve_trees.find(assembly.get_uid());
     if (it != m_curve_trees.end())
     {
-        delete it->second;
+        m_curve_tree_repository.release(it->second);
         m_curve_trees.erase(it);
     }
+}
+
+namespace
+{
+    template <typename TreeType>
+    struct UpdateTrees
+    {
+        void operator()(Lazy<TreeType>& tree, const size_t ref_count)
+        {
+            Update<TreeType> update(&tree);
+
+            if (update.get())
+            {
+                const bool enable_intersection_filters = ref_count == 1;
+                update->update_non_geometry(enable_intersection_filters);
+            }
+        }
+    };
+}
+
+void AssemblyTree::update_region_trees()
+{
+    UpdateTrees<RegionTree> update_trees;
+    m_region_tree_repository.for_each(update_trees);
+}
+
+void AssemblyTree::update_triangle_trees()
+{
+    UpdateTrees<TriangleTree> update_trees;
+    m_triangle_tree_repository.for_each(update_trees);
 }
 
 

@@ -37,6 +37,7 @@
 #include "renderer/kernel/intersection/probevisitorbase.h"
 #include "renderer/kernel/intersection/regioninfo.h"
 #include "renderer/kernel/intersection/regiontree.h"
+#include "renderer/kernel/intersection/treerepository.h"
 #include "renderer/kernel/intersection/triangletree.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/scene/containers.h"
@@ -118,12 +119,18 @@ class AssemblyTree
     typedef std::vector<const Assembly*> AssemblyVector;
     typedef std::map<foundation::UniqueID, foundation::VersionID> AssemblyVersionMap;
 
-    Scene&                  m_scene;
-    RegionTreeContainer     m_region_trees;
-    TriangleTreeContainer   m_triangle_trees;
-    ItemVector              m_items;
-    AssemblyVersionMap      m_assembly_versions;
-    CurveTreeContainer      m_curve_trees;
+    Scene&                          m_scene;
+    ItemVector                      m_items;
+    AssemblyVersionMap              m_assembly_versions;
+
+    TreeRepository<TriangleTree>    m_triangle_tree_repository;
+    TriangleTreeContainer           m_triangle_trees;
+
+    TreeRepository<RegionTree>      m_region_tree_repository;
+    RegionTreeContainer             m_region_trees;
+
+    TreeRepository<CurveTree>       m_curve_tree_repository;
+    CurveTreeContainer              m_curve_trees;
 
     void compute_cumulated_transforms(
         AssemblyInstanceContainer&              assembly_instances,
@@ -138,9 +145,19 @@ class AssemblyTree
 
     void update_tree_hierarchy();
     void collect_unique_assemblies(AssemblyVector& assemblies) const;
+
     void create_child_trees(const Assembly& assembly);
-    void update_child_trees(const Assembly& assembly);
+    void create_region_tree(const Assembly& assembly);
+    void create_triangle_tree(const Assembly& assembly);
+    void create_curve_tree(const Assembly& assembly);
+
     void delete_child_trees(const Assembly& assembly);
+    void delete_region_tree(const Assembly& assembly);
+    void delete_triangle_tree(const Assembly& assembly);
+    void delete_curve_tree(const Assembly& assembly);
+
+    void update_region_trees();
+    void update_triangle_trees();
 };
 
 

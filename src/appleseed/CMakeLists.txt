@@ -826,6 +826,7 @@ set (renderer_kernel_intersection_sources
     renderer/kernel/intersection/regiontree.h
     renderer/kernel/intersection/tracecontext.cpp
     renderer/kernel/intersection/tracecontext.h
+    renderer/kernel/intersection/treerepository.h
     renderer/kernel/intersection/triangleencoder.cpp
     renderer/kernel/intersection/triangleencoder.h
     renderer/kernel/intersection/triangleitemhandler.cpp

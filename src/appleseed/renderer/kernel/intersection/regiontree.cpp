@@ -466,13 +466,13 @@ RegionTree::~RegionTree()
         delete i->second;
 }
 
-void RegionTree::update_non_geometry()
+void RegionTree::update_non_geometry(const bool enable_intersection_filters)
 {
     for (each<TriangleTreeContainer> i = m_triangle_trees; i; ++i)
     {
         Update<TriangleTree> access(i->second);
         if (access.get())
-            access->update_non_geometry();
+            access->update_non_geometry(enable_intersection_filters);
     }
 }
 

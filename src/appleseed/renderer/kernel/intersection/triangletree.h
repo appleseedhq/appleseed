@@ -109,7 +109,7 @@ class TriangleTree
     ~TriangleTree();
 
     // Update the non-geometry aspects of the tree.
-    void update_non_geometry();
+    void update_non_geometry(const bool enable_intersection_filters);
 
     // Return the number of static and moving triangles.
     size_t get_static_triangle_count() const;
@@ -173,13 +173,13 @@ class TriangleTreeFactory
   public:
     // Constructor.
     explicit TriangleTreeFactory(
-        const TriangleTree::Arguments&  arguments);
+        const TriangleTree::Arguments& arguments);
 
     // Create the triangle tree.
     virtual std::auto_ptr<TriangleTree> create();
 
   private:
-    const TriangleTree::Arguments       m_arguments;
+    TriangleTree::Arguments m_arguments;
 };
 
 

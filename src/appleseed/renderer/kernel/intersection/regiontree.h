@@ -109,7 +109,7 @@ class RegionTree
     ~RegionTree();
 
     // Update the non-geometry aspects of the tree.
-    void update_non_geometry();
+    void update_non_geometry(const bool enable_intersection_filters);
 
   private:
     friend class RegionLeafVisitor;
