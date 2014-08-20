@@ -100,7 +100,9 @@ void DebugSampleRendererFactory::release()
     delete this;
 }
 
-ISampleRenderer* DebugSampleRendererFactory::create(const bool primary)
+ISampleRenderer* DebugSampleRendererFactory::create(
+    const bool          primary,
+    const std::size_t   thread_id)
 {
     return new DebugSampleRenderer();
 }

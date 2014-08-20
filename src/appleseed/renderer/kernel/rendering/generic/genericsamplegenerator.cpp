@@ -87,7 +87,7 @@ namespace
           , m_window_width(static_cast<int>(frame.get_crop_window().extent()[0] + 1))
           , m_window_height(static_cast<int>(frame.get_crop_window().extent()[1] + 1))
           , m_lighting_conditions(frame.get_lighting_conditions())
-          , m_sample_renderer(sample_renderer_factory->create(primary))
+          , m_sample_renderer(sample_renderer_factory->create(primary, generator_index))
           , m_window_width_next_pow2(next_power(static_cast<double>(m_window_width), 2.0))
           , m_window_height_next_pow3(next_power(static_cast<double>(m_window_height), 3.0))
         {

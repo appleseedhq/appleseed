@@ -85,8 +85,10 @@ class GenericSampleRendererFactory
     // Delete this instance.
     virtual void release() OVERRIDE;
 
-    // Return a new generic sample renderer instance.
-    virtual ISampleRenderer* create(const bool primary) OVERRIDE;
+    // Return a new sample renderer instance.
+    virtual ISampleRenderer* create(
+        const bool          primary,
+        const std::size_t   thread_id) OVERRIDE;
 
   private:
     const Scene&                m_scene;

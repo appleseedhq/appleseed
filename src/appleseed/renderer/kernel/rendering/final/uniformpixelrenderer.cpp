@@ -82,9 +82,10 @@ namespace
         UniformPixelRenderer(
             ISampleRendererFactory*     factory,
             const ParamArray&           params,
-            const bool                  primary)
+            const bool                  primary,
+            const size_t                thread_id)
           : m_params(params)
-          , m_sample_renderer(factory->create(primary))
+          , m_sample_renderer(factory->create(primary, thread_id))
           , m_sample_count(m_params.m_samples)
           , m_sqrt_sample_count(round<int>(sqrt(static_cast<double>(m_params.m_samples))))
         {
@@ -252,9 +253,11 @@ void UniformPixelRendererFactory::release()
     delete this;
 }
 
-IPixelRenderer* UniformPixelRendererFactory::create(const bool primary)
+IPixelRenderer* UniformPixelRendererFactory::create(
+    const bool      primary,
+    const size_t    thread_id)
 {
-    return new UniformPixelRenderer(m_factory, m_params, primary);
+    return new UniformPixelRenderer(m_factory, m_params, primary, thread_id);
 }
 
 }   // namespace renderer

@@ -39,7 +39,7 @@
 #include "foundation/math/scalar.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
-#include "foundation/utility/siphash.h"
+#include "foundation/utility/tls.h"
 
 // SeExpr headers
 #include "SeExpression.h"
@@ -333,7 +333,6 @@ class DisneyLayerParam
       , m_is_vector(is_vector)
       , m_is_constant(false)
       , m_texture_is_srgb(true)
-      , m_expr_hash(0)
     {
     }
 
@@ -346,7 +345,6 @@ class DisneyLayerParam
       , m_texture_filename(other.m_texture_filename)
       , m_texture_options(other.m_texture_options)
       , m_texture_is_srgb(other.m_texture_is_srgb)
-      , m_expr_hash(other.m_expr_hash)
     {
     }
 
@@ -360,7 +358,6 @@ class DisneyLayerParam
         std::swap(m_texture_filename, other.m_texture_filename);
         std::swap(m_texture_options, other.m_texture_options);
         std::swap(m_texture_is_srgb, other.m_texture_is_srgb);
-        std::swap(m_expr_hash, other.m_expr_hash);
     }
 
     DisneyLayerParam& operator=(const DisneyLayerParam& other)
@@ -381,9 +378,7 @@ class DisneyLayerParam
             return false;
         }
 
-        m_expr_hash = siphash24(m_expr.c_str(), m_expr.length());
         m_is_constant = m_expression.isConstant();
-
         if (m_is_constant)
         {
             SeVec3d result = m_expression.evaluate();
@@ -460,7 +455,7 @@ class DisneyLayerParam
             return Color3d(color[0], color[1], color[2]);
         }
 
-        lock_guard<mutex> lock(m_mutex);
+        //lock_guard<mutex> lock(m_mutex);
 
         return m_expression.update_and_evaluate(
             shading_point,
@@ -477,7 +472,6 @@ class DisneyLayerParam
     mutable OIIO::TextureOpt    m_texture_options;
     bool                        m_texture_is_srgb;
     mutable SeAppleseedExpr     m_expression;
-    uint64                      m_expr_hash;
 
     // TODO: this is horrible. Remove it ASAP.
     mutable mutex               m_mutex;
@@ -807,13 +801,40 @@ namespace
 
 struct DisneyMaterial::Impl
 {
+    typedef vector<DisneyMaterialLayer> DisneyMaterialLayerContainer;
+
+    static const int max_tls_threads = 256;
+
     explicit Impl(const DisneyMaterial* parent)
       : m_brdf(new DisneyLayeredBRDF(parent))
+      , m_per_thread_layers(max_tls_threads)
     {
+        for (size_t i = 0; i < max_tls_threads; ++i)
+            m_per_thread_layers(i) = 0;
     }
 
-    vector<DisneyMaterialLayer> m_layers;
-    auto_ptr<DisneyLayeredBRDF> m_brdf;
+    ~Impl()
+    {
+        for (size_t i = 0; i < max_tls_threads; ++i)
+            assert(m_per_thread_layers(i) == 0);
+    }
+
+    void clear_per_thread_layers()
+    {
+        for (size_t i = 0; i < max_tls_threads; ++i)
+        {
+            if (m_per_thread_layers(i))
+            {
+                delete m_per_thread_layers(i);
+                m_per_thread_layers(i) = 0;
+            }
+        }
+
+    }
+
+    DisneyMaterialLayerContainer                m_layers;
+    auto_ptr<DisneyLayeredBRDF>                 m_brdf;
+    mutable TLS<DisneyMaterialLayerContainer*>  m_per_thread_layers;
 };
 
 DisneyMaterial::DisneyMaterial(
@@ -875,6 +896,7 @@ void DisneyMaterial::on_frame_end(
     const Project&          project,
     const Assembly&         assembly) OVERRIDE
 {
+    impl->clear_per_thread_layers();
     impl->m_layers.clear();
     Material::on_frame_end(project, assembly);
 }
@@ -884,11 +906,34 @@ size_t DisneyMaterial::get_layer_count() const
     return impl->m_layers.size();
 }
 
-const DisneyMaterialLayer& DisneyMaterial::get_layer(const size_t index) const
+const DisneyMaterialLayer& DisneyMaterial::get_layer(
+    const size_t index,
+    const size_t thread_id) const
 {
     assert(index < get_layer_count());
 
-    return impl->m_layers[index];
+    if (thread_id == ~0)
+        return impl->m_layers[index];
+    else
+    {
+        assert(thread_id < Impl::max_tls_threads);
+
+        if (!impl->m_per_thread_layers(thread_id))
+        {
+            vector<DisneyMaterialLayer> *ts_layers =
+                    new vector<DisneyMaterialLayer>(impl->m_layers);
+
+            for (size_t i = 0; i < get_layer_count(); ++i)
+                (*ts_layers)[i].prepare_expressions();
+
+            impl->m_per_thread_layers(thread_id) = ts_layers;
+        }
+
+        const vector<DisneyMaterialLayer>* ts_layers =
+            impl->m_per_thread_layers(thread_id);
+
+        return (*ts_layers)[index];
+    }
 }
 
 

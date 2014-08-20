@@ -53,7 +53,9 @@ class BlankSampleRendererFactory
     virtual void release() OVERRIDE;
 
     // Return a new blank sample renderer instance.
-    virtual ISampleRenderer* create(const bool primary) OVERRIDE;
+    virtual ISampleRenderer* create(
+        const bool          primary,
+        const std::size_t   thread_id) OVERRIDE;
 };
 
 }       // namespace renderer

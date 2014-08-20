@@ -103,7 +103,9 @@ void BlankTileRendererFactory::release()
     delete this;
 }
 
-ITileRenderer* BlankTileRendererFactory::create(const bool primary)
+ITileRenderer* BlankTileRendererFactory::create(
+    const bool      primary,
+    const size_t    thread_id)
 {
     return new BlankTileRenderer();
 }

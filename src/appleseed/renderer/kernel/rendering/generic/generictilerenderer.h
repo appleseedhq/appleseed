@@ -64,7 +64,9 @@ class GenericTileRendererFactory
     virtual void release() OVERRIDE;
 
     // Return a new generic tile renderer instance.
-    virtual ITileRenderer* create(const bool primary) OVERRIDE;
+    virtual ITileRenderer* create(
+        const bool          primary,
+        const std::size_t   thread_id) OVERRIDE;
 
   private:
     const Frame&                            m_frame;

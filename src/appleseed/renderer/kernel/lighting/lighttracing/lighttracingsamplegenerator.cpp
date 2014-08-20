@@ -193,6 +193,7 @@ namespace
 #ifdef WITH_OSL
                 m_shadergroup_exec,
 #endif
+                generator_index,
                 0,
                 m_params.m_transparency_threshold,
                 m_params.m_max_iterations)
