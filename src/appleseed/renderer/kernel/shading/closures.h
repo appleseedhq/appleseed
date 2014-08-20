@@ -38,6 +38,7 @@
 #include "renderer/modeling/bsdf/oslmicrofacetbtdf.h"
 #include "renderer/modeling/bsdf/specularbrdf.h"
 #include "renderer/modeling/bsdf/specularbtdf.h"
+#include "renderer/modeling/edf/osledf.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -92,14 +93,14 @@ enum ClosureID
 
     // Microfacets shoud always be last.
     MicrofacetID,
-    
+
     MicrofacetBeckmannReflectionID,
     MicrofacetBlinnReflectionID,
     MicrofacetGGXReflectionID,
 
     MicrofacetBeckmannRefractionID,
     MicrofacetGGXRefractionID,
-    
+
     NumClosuresIDs
 };
 
@@ -158,6 +159,7 @@ class APPLESEED_ALIGN(16) CompositeClosure
     int                             m_num_bytes;
     Spectrum                        m_spectrum_multipliers[MaxClosureEntries];
     double                          m_cdf[MaxClosureEntries];
+    Spectrum                        m_emission;
 
     void process_closure_tree(
         const OSL::ClosureColor*    closure,

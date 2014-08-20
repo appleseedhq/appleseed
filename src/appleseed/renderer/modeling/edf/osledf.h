@@ -32,6 +32,7 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/edf/iedffactory.h"
+#include "renderer/modeling/input/inputarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -46,6 +47,7 @@ namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
+
 
 //
 // OSL EDF factory.
