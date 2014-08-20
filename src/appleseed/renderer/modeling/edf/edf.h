@@ -45,6 +45,7 @@
 // Forward declarations.
 namespace foundation    { class AbortSwitch; }
 namespace renderer      { class Assembly; }
+namespace renderer      { class InputEvaluator; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 
@@ -107,6 +108,12 @@ class DLLSYMBOL EDF
         const Project&              project,
         const Assembly&             assembly);
 
+    // Evaluate the inputs of this EDF.
+    // Input values are stored in the input evaluator.
+    virtual void evaluate_inputs(
+        InputEvaluator&             input_evaluator,
+        const foundation::Vector2d& uv) const;
+
     // Sample the EDF and compute the emission direction, its probability
     // density and the value of the EDF for this direction.
     virtual void sample(
@@ -141,6 +148,12 @@ class DLLSYMBOL EDF
         const foundation::Vector3d& outgoing) const = 0;        // world space emission direction, unit-length
 
   private:
+
+    inline const InputArray& get_inputs() const
+    {
+        return m_inputs;
+    }
+
     int    m_flags;
     double m_light_near_start;
 };

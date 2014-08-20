@@ -58,11 +58,6 @@ namespace renderer
 {
 namespace
 {
-    //
-    // Closure keywords constants
-    //
-
-    OIIO::ustring   g_angle_keyword("angle");
 
     //
     // Closure parameters.
@@ -156,7 +151,7 @@ CompositeClosure::CompositeClosure(
 {
     assert(is_aligned(m_pool, InputValuesAlignment));
 
-    m_emission.set(0);
+    m_diffuse_emission.set(0);
 
     process_closure_tree(ci, Color3f(1.0f));
 
@@ -279,26 +274,9 @@ void CompositeClosure::process_closure_tree(
 
               case EmissionID:
                 {
-                    bool is_diffuse = true;
-
-                    // Handle keyword arguments.
-                    const OSL::ClosureComponent::Attr* attr = c->attrs();
-
-                    for( size_t i = 0; i < c->nattrs; ++i)
-                    {
-                        if (attr[i].key == g_angle_keyword)
-                        {
-                            // Do something here...
-                            is_diffuse = false;
-                        }
-                    }
-
-                    if (is_diffuse)
-                    {
-                        Spectrum e;
-                        linear_rgb_reflectance_to_spectrum_unclamped(w, e);
-                        m_emission += e;
-                    }
+                    Spectrum e;
+                    linear_rgb_reflectance_to_spectrum_unclamped(w, e);
+                    m_diffuse_emission += e;
                 }
                 break;
 

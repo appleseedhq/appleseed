@@ -458,16 +458,13 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
 
     // Evaluate the input values of the EDF.
     InputEvaluator edf_input_evaluator(m_shading_context.get_texture_cache());
-    const void* edf_data =
-        edf_input_evaluator.evaluate(
-            edf->get_inputs(),
-            light_shading_point.get_uv(0));
+    edf->evaluate_inputs(edf_input_evaluator, light_shading_point.get_uv(0));
 
     // Evaluate emitted radiance.
     Spectrum edf_value;
     double edf_prob;
     edf->evaluate(
-        edf_data,
+        edf_input_evaluator.data(),
         light_shading_point.get_geometric_normal(),
         light_shading_point.get_shading_basis(),
         -incoming,
@@ -619,12 +616,12 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
 
     // Evaluate the input values of the EDF.
     InputEvaluator edf_input_evaluator(m_shading_context.get_texture_cache());
-    const void* edf_data = edf_input_evaluator.evaluate(edf->get_inputs(), sample.m_bary);
+    edf->evaluate_inputs(edf_input_evaluator, sample.m_bary);
 
     // Evaluate the EDF.
     Spectrum edf_value;
     edf->evaluate(
-        edf_data,
+        edf_input_evaluator.data(),
         sample.m_geometric_normal,
         foundation::Basis3d(sample.m_shading_normal),
         -incoming,

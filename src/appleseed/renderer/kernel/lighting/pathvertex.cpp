@@ -52,14 +52,11 @@ void PathVertex::compute_emitted_radiance(
 
     // Evaluate the input values of the EDF.
     InputEvaluator input_evaluator(texture_cache);
-    const void* edf_data =
-        input_evaluator.evaluate(
-            m_edf->get_inputs(),
-            m_shading_point->get_uv(0));
+    m_edf->evaluate_inputs(input_evaluator, m_shading_point->get_uv(0));
 
     // Compute the emitted radiance.
     m_edf->evaluate(
-        edf_data,
+        input_evaluator.data(),
         m_shading_point->get_geometric_normal(),
         m_shading_point->get_shading_basis(),
         m_outgoing,
