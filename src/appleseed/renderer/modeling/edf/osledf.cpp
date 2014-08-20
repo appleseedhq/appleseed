@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,10 +27,12 @@
 //
 
 // Interface header.
-#include "diffuseedf.h"
+#include "osledf.h"
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/modeling/edf/edffactoryregistrar.h"
+#include "renderer/modeling/input/inputarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
@@ -57,22 +58,20 @@ namespace renderer
 namespace
 {
     //
-    // Diffuse EDF.
+    // OSL EDF.
     //
 
-    const char* Model = "diffuse_edf";
+    const char* Model = "osl_edf";
 
-    class DiffuseEDF
+    class OSLEDF
       : public EDF
     {
       public:
-        DiffuseEDF(
+        OSLEDF(
             const char*         name,
             const ParamArray&   params)
           : EDF(name, params)
         {
-            m_inputs.declare("radiance", InputFormatSpectralIlluminance);
-            m_inputs.declare("radiance_multiplier", InputFormatScalar, "1.0");
         }
 
         virtual void release() OVERRIDE
@@ -93,8 +92,6 @@ namespace
             if (!EDF::on_frame_begin(project, assembly, abort_switch))
                 return false;
 
-            check_non_zero_radiance("radiance", "radiance_multiplier");
-
             return true;
         }
 
@@ -107,17 +104,6 @@ namespace
             Spectrum&           value,
             double&             probability) const OVERRIDE
         {
-            assert(is_normalized(geometric_normal));
-
-            const Vector3d wo = sample_hemisphere_cosine(s);
-            outgoing = shading_basis.transform_to_parent(wo);
-
-            const InputValues* values = static_cast<const InputValues*>(data);
-            value = values->m_radiance;
-            value *= static_cast<float>(values->m_radiance_multiplier);
-
-            probability = wo.y * RcpPi;
-            assert(probability > 0.0);
         }
 
         virtual void evaluate(
@@ -127,21 +113,6 @@ namespace
             const Vector3d&     outgoing,
             Spectrum&           value) const OVERRIDE
         {
-            assert(is_normalized(geometric_normal));
-            assert(is_normalized(outgoing));
-
-            const double cos_on = dot(outgoing, shading_basis.get_normal());
-
-            // No emission in or below the shading surface.
-            if (cos_on <= 0.0)
-            {
-                value.set(0.0f);
-                return;
-            }
-
-            const InputValues* values = static_cast<const InputValues*>(data);
-            value = values->m_radiance;
-            value *= static_cast<float>(values->m_radiance_multiplier);
         }
 
         virtual void evaluate(
@@ -152,24 +123,6 @@ namespace
             Spectrum&           value,
             double&             probability) const OVERRIDE
         {
-            assert(is_normalized(geometric_normal));
-            assert(is_normalized(outgoing));
-
-            const double cos_on = dot(outgoing, shading_basis.get_normal());
-
-            // No emission in or below the shading surface.
-            if (cos_on <= 0.0)
-            {
-                value.set(0.0f);
-                probability = 0.0;
-                return;
-            }
-
-            const InputValues* values = static_cast<const InputValues*>(data);
-            value = values->m_radiance;
-            value *= static_cast<float>(values->m_radiance_multiplier);
-
-            probability = cos_on * RcpPi;
         }
 
         virtual double evaluate_pdf(
@@ -178,74 +131,39 @@ namespace
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing) const OVERRIDE
         {
-            assert(is_normalized(geometric_normal));
-            assert(is_normalized(outgoing));
-
-            const double cos_on = dot(outgoing, shading_basis.get_normal());
-
-            // No emission in or below the shading surface.
-            if (cos_on <= 0.0)
-                return 0.0;
-
-            return cos_on * RcpPi;
         }
 
       private:
-        typedef DiffuseEDFInputValues InputValues;
+        auto_release_ptr<EDF> m_diffuse_edf;
+        auto_release_ptr<EDF> m_cone_edf;
     };
 }
 
 
 //
-// DiffuseEDFFactory class implementation.
+// OSLEDFFactory class implementation.
 //
 
-const char* DiffuseEDFFactory::get_model() const
+const char* OSLEDFFactory::get_model() const
 {
     return Model;
 }
 
-const char* DiffuseEDFFactory::get_human_readable_model() const
+const char* OSLEDFFactory::get_human_readable_model() const
 {
-    return "Diffuse EDF";
+    return "OSL EDF";
 }
 
-DictionaryArray DiffuseEDFFactory::get_input_metadata() const
+DictionaryArray OSLEDFFactory::get_input_metadata() const
 {
-    DictionaryArray metadata;
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "radiance")
-            .insert("label", "Radiance")
-            .insert("type", "colormap")
-            .insert("entity_types",
-                Dictionary()
-                    .insert("color", "Colors")
-                    .insert("texture_instance", "Textures"))
-            .insert("use", "required")
-            .insert("default", "1.0"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "radiance_multiplier")
-            .insert("label", "Radiance Multiplier")
-            .insert("type", "colormap")
-            .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
-            .insert("use", "optional")
-            .insert("default", "1.0"));
-
-    add_common_input_metadata(metadata);
-
-    return metadata;
+    return DictionaryArray();
 }
 
-auto_release_ptr<EDF> DiffuseEDFFactory::create(
+auto_release_ptr<EDF> OSLEDFFactory::create(
     const char*         name,
     const ParamArray&   params) const
 {
-    return auto_release_ptr<EDF>(new DiffuseEDF(name, params));
+    return auto_release_ptr<EDF>(new OSLEDF(name, params));
 }
 
 }   // namespace renderer
