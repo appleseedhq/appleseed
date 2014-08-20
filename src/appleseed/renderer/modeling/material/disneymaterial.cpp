@@ -233,10 +233,11 @@ namespace
             for (each<ptr_vector<TextureSeExprFunc> > it = m_functions_x; it; ++it)
                 it->set_texture_system(&texture_system);
 
-            m_vars["u"] = SeAppleseedExpr::Var(shading_point.get_uv(0)[0]);
-            m_vars["v"] = SeAppleseedExpr::Var(shading_point.get_uv(0)[1]);
+            const Vector2d& uv = shading_point.get_uv(0);
+            m_vars["u"] = Var(uv[0]);
+            m_vars["v"] = Var(uv[1]);
 
-            SeVec3d result = evaluate();
+            const SeVec3d result = evaluate();
             return Color3d(result[0], result[1], result[2]);
         }
 
