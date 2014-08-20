@@ -176,7 +176,7 @@ namespace
             const size_t            photon_begin,
             const size_t            photon_end,
             const size_t            pass_hash,
-            const size_t            thread_id,
+            const size_t            thread_index,
 #ifdef WITH_OIIO
             OIIO::TextureSystem&    oiio_texture_system,
 #endif
@@ -216,7 +216,7 @@ namespace
 #ifdef WITH_OSL
                 , m_shadergroup_exec
 #endif
-                , thread_id)
+                , thread_index)
           , m_abort_switch(abort_switch)
         {
         }
@@ -426,7 +426,7 @@ namespace
             const size_t            photon_begin,
             const size_t            photon_end,
             const size_t            pass_hash,
-            const size_t            thread_id,
+            const size_t            thread_index,
 #ifdef WITH_OIIO
             OIIO::TextureSystem&    oiio_texture_system,
 #endif
@@ -470,7 +470,7 @@ namespace
 #ifdef WITH_OSL
                 , m_shadergroup_exec
 #endif
-                , thread_id)
+                , thread_index)
         {
         }
 

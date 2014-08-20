@@ -53,7 +53,7 @@ ShadingContext::ShadingContext(
 #ifdef WITH_OSL
     OSLShaderGroupExec&         osl_shadergroup_exec,
 #endif
-    const size_t                thread_id,
+    const size_t                thread_index,
     ILightingEngine*            lighting_engine,
     const float                 transparency_threshold,
     const size_t                max_iterations)
@@ -63,7 +63,7 @@ ShadingContext::ShadingContext(
   , m_lighting_engine(lighting_engine)
   , m_transparency_threshold(transparency_threshold)
   , m_max_iterations(max_iterations)
-  , m_thread_id(thread_id)
+  , m_thread_index(thread_index)
 #ifdef WITH_OIIO
   , m_oiio_texture_system(oiio_texture_system)
 #endif

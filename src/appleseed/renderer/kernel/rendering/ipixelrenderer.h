@@ -100,7 +100,7 @@ class IPixelRendererFactory
     // Return a new pixel renderer instance.
     virtual IPixelRenderer* create(
         const bool      primary,
-        const size_t    thread_id) = 0;
+        const size_t    thread_index) = 0;
 };
 
 }       // namespace renderer

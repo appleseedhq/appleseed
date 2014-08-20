@@ -77,7 +77,7 @@ class ISampleRendererFactory
     // Return a new sample renderer instance.
     virtual ISampleRenderer* create(
         const bool          primary,
-        const std::size_t   thread_id) = 0;
+        const std::size_t   thread_index) = 0;
 };
 
 }       // namespace renderer

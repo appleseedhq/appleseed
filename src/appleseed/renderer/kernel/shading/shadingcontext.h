@@ -75,7 +75,7 @@ class ShadingContext
 #ifdef WITH_OSL
         OSLShaderGroupExec&     osl_shadergroup_exec,
 #endif
-        const size_t            thread_id,
+        const size_t            thread_index,
         ILightingEngine*        lighting_engine = 0,
         const float             transparency_threshold = 0.001f,
         const size_t            max_iterations = 1000);
@@ -89,7 +89,7 @@ class ShadingContext
     ILightingEngine* get_lighting_engine() const;
 
     // Return the thread id
-    size_t get_thread_id() const;
+    size_t get_thread_index() const;
 
     // Return the minimum transmission value that defines transparency.
     float get_transparency_threshold() const;
@@ -120,7 +120,7 @@ class ShadingContext
     ILightingEngine*            m_lighting_engine;
     const float                 m_transparency_threshold;
     const size_t                m_max_iterations;
-    const size_t                m_thread_id;
+    const size_t                m_thread_index;
 #ifdef WITH_OIIO
     OIIO::TextureSystem&        m_oiio_texture_system;
 #endif
@@ -149,9 +149,9 @@ inline ILightingEngine* ShadingContext::get_lighting_engine() const
     return m_lighting_engine;
 }
 
-inline size_t ShadingContext::get_thread_id() const
+inline size_t ShadingContext::get_thread_index() const
 {
-    return m_thread_id;
+    return m_thread_index;
 }
 
 inline float ShadingContext::get_transparency_threshold() const

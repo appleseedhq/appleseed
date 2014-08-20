@@ -87,9 +87,9 @@ namespace
             ISampleRendererFactory*     factory,
             const ParamArray&           params,
             const bool                  primary,
-            const size_t                thread_id)
+            const size_t                thread_index)
           : m_params(params)
-          , m_sample_renderer(factory->create(primary, thread_id))
+          , m_sample_renderer(factory->create(primary, thread_index))
         {
             if (m_params.m_diagnostics)
             {
@@ -364,14 +364,14 @@ void AdaptivePixelRendererFactory::release()
 
 IPixelRenderer* AdaptivePixelRendererFactory::create(
     const bool      primary,
-    const size_t    thread_id)
+    const size_t    thread_index)
 {
     return new AdaptivePixelRenderer(
         m_frame,
         m_factory,
         m_params,
         primary,
-        thread_id);
+        thread_index);
 }
 
 }   // namespace renderer

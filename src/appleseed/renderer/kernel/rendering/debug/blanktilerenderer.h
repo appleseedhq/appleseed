@@ -59,7 +59,7 @@ class BlankTileRendererFactory
     // Return a new blank tile renderer instance.
     virtual ITileRenderer* create(
         const bool          primary,
-        const std::size_t   thread_id) OVERRIDE;
+        const std::size_t   thread_index) OVERRIDE;
 };
 
 }       // namespace renderer

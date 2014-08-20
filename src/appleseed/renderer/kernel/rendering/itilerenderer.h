@@ -76,7 +76,7 @@ class ITileRendererFactory
     // Return a new tile renderer instance.
     virtual ITileRenderer* create(
         const bool          primary,
-        const std::size_t   thread_id) = 0;
+        const std::size_t   thread_index) = 0;
 };
 
 }       // namespace renderer

@@ -120,7 +120,7 @@ void DisneyLayeredBRDF::evaluate_inputs(
     for (size_t i = 0, e = m_parent->get_layer_count(); i < e; ++i)
     {
         const DisneyMaterialLayer& layer =
-            m_parent->get_layer(i, shading_context.get_thread_id());
+            m_parent->get_layer(i, shading_context.get_thread_index());
 
         layer.evaluate_expressions(
             shading_point,

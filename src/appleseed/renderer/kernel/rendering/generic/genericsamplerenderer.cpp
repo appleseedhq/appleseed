@@ -102,7 +102,7 @@ namespace
 #ifdef WITH_OSL
             OSL::ShadingSystem&     shading_system,
 #endif
-            const size_t            thread_id,
+            const size_t            thread_index,
             const ParamArray&       params,
             const bool              primary)
           : m_params(params)
@@ -135,7 +135,7 @@ namespace
 #ifdef WITH_OSL
                 m_shadergroup_exec,
 #endif
-                thread_id,
+                thread_index,
                 m_lighting_engine,
                 m_params.m_transparency_threshold,
                 m_params.m_max_iterations)
@@ -359,7 +359,7 @@ void GenericSampleRendererFactory::release()
 
 ISampleRenderer* GenericSampleRendererFactory::create(
     const bool          primary,
-    const std::size_t   thread_id)
+    const std::size_t   thread_index)
 {
     return
         new GenericSampleRenderer(
@@ -375,7 +375,7 @@ ISampleRenderer* GenericSampleRendererFactory::create(
 #ifdef WITH_OSL
             m_shading_system,
 #endif
-            thread_id,
+            thread_index,
             m_params,
             primary);
 }

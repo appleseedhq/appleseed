@@ -455,8 +455,6 @@ class DisneyLayerParam
             return Color3d(color[0], color[1], color[2]);
         }
 
-        //lock_guard<mutex> lock(m_mutex);
-
         return m_expression.update_and_evaluate(
             shading_point,
             texture_system);
@@ -472,9 +470,6 @@ class DisneyLayerParam
     mutable OIIO::TextureOpt    m_texture_options;
     bool                        m_texture_is_srgb;
     mutable SeAppleseedExpr     m_expression;
-
-    // TODO: this is horrible. Remove it ASAP.
-    mutable mutex               m_mutex;
 };
 
 
@@ -908,29 +903,32 @@ size_t DisneyMaterial::get_layer_count() const
 
 const DisneyMaterialLayer& DisneyMaterial::get_layer(
     const size_t index,
-    const size_t thread_id) const
+    const size_t thread_index) const
 {
     assert(index < get_layer_count());
 
-    if (thread_id == ~0)
+    if (thread_index == ~0)
         return impl->m_layers[index];
     else
     {
-        assert(thread_id < Impl::max_tls_threads);
+        assert(thread_index < Impl::max_tls_threads);
 
-        if (!impl->m_per_thread_layers(thread_id))
+        if (!impl->m_per_thread_layers(thread_index))
         {
             vector<DisneyMaterialLayer> *ts_layers =
                     new vector<DisneyMaterialLayer>(impl->m_layers);
 
-            for (size_t i = 0; i < get_layer_count(); ++i)
-                (*ts_layers)[i].prepare_expressions();
+            for (const_each<vector<DisneyMaterialLayer> > it = *ts_layers; it ; ++it)
+            {
+                const bool ok = it->prepare_expressions();
+                assert(ok);
+            }
 
-            impl->m_per_thread_layers(thread_id) = ts_layers;
+            impl->m_per_thread_layers(thread_index) = ts_layers;
         }
 
         const vector<DisneyMaterialLayer>* ts_layers =
-            impl->m_per_thread_layers(thread_id);
+            impl->m_per_thread_layers(thread_index);
 
         return (*ts_layers)[index];
     }

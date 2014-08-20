@@ -53,7 +53,7 @@ class DebugSampleRendererFactory
     // Return a new debug sample renderer instance.
     virtual ISampleRenderer* create(
         const bool          primary,
-        const std::size_t   thread_id) OVERRIDE;
+        const std::size_t   thread_index) OVERRIDE;
 };
 
 }       // namespace renderer

@@ -137,7 +137,7 @@ class DLLSYMBOL DisneyMaterial
 
     const DisneyMaterialLayer& get_layer(
         const std::size_t index,
-        const std::size_t thread_id = ~0) const;
+        const std::size_t thread_index = ~0) const;
 
   private:
     friend class DisneyMaterialFactory;
