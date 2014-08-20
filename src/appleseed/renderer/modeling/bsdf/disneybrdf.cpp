@@ -629,12 +629,11 @@ void DisneyBRDFInputValues::precompute_tint_color()
         spectrum_to_ciexyz<float>(
             g_std_lighting_conditions, m_base_color);
 
-    m_base_color_luminance = tint_xyz[1];
+    if (tint_xyz[1] > 0.0f)
+        ciexyz_reflectance_to_spectrum(tint_xyz / tint_xyz[1], m_tint_color);
+    else m_tint_color = g_white_spectrum;
 
-    if (m_base_color_luminance > 0.0f)
-        ciexyz_reflectance_to_spectrum(tint_xyz / m_base_color_luminance, m_tint_color);
-    else
-        m_tint_color = g_white_spectrum;
+    m_base_color_luminance = static_cast<double>(tint_xyz[1]);
 }
 
 
