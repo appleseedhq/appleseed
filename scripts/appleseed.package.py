@@ -29,7 +29,7 @@
 #
 
 # Package builder settings.
-VersionString = "2.3.9"
+VersionString = "2.3.10"
 SettingsFileName = "appleseed.package.configuration.xml"
 
 # Imports.
@@ -42,6 +42,8 @@ import os
 import platform
 import shutil
 import sys
+import time
+import traceback
 import zipfile
 
 
@@ -58,6 +60,8 @@ def progress(message):
 def fatal(message):
     print
     print("FATAL: " + message + ", aborting.")
+    if sys.exc_info()[0]:
+        print(traceback.format_exc())
     sys.exit(1)
 
 def safe_delete_file(path):
@@ -68,11 +72,17 @@ def safe_delete_file(path):
         fatal("failed to delete file '" + path + "'")
 
 def safe_delete_directory(path):
-    try:
-        if os.path.exists(path):
-            shutil.rmtree(path)
-    except OSError:
-        fatal("failed to delete directory '" + path + "'")
+    Attempts = 10
+    for attempt in range(Attempts):
+        try:
+            if os.path.exists(path):
+                shutil.rmtree(path)
+            return
+        except OSError:
+            if attempt < Attempts - 1:
+                time.sleep(0.5)
+            else:
+                fatal("failed to delete directory '" + path + "'")
 
 def safe_make_directory(path):
     if not os.path.isdir(path):
