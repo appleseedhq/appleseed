@@ -501,7 +501,7 @@ void DisneyMaterialCustomUI::add_layer(const bool update, const Dictionary& para
 
     for (size_t i = 0; i < m_layer_metadata.size(); ++i)
     {
-        const Dictionary& metadata = m_layer_metadata[i];
+        Dictionary& metadata = m_layer_metadata[i];
         const string type = metadata.get<string>("type");
         const string name = metadata.get<string>("name");
 
