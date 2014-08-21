@@ -55,7 +55,7 @@
 
 // OSL headers.
 #ifdef WITH_OSL
-#include <OSL/shaderglobals.h>
+#include "OSL/shaderglobals.h"
 #endif
 
 // Standard headers.

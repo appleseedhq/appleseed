@@ -48,7 +48,7 @@
 
 // OSL headers.
 #ifdef WITH_OSL
-#include <OSL/oslexec.h>
+#include "OSL/oslexec.h"
 #endif
 
 // Forward declarations.
