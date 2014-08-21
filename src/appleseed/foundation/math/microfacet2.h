@@ -477,7 +477,7 @@ class GGXSmithMaskingShadowing
             const T sin_phi_2 = square(v.z / sin_theta);
             const T alpha = std::sqrt(cos_phi_2 * square(alpha_x) + sin_phi_2 * square(alpha_y));
             const T a = cos_theta / (alpha * sin_theta);
-            const T lambda = (T(-1) + std::sqrt(T(1.0) + T(1.0) / square(a))) * T(0.5);
+            const T lambda = (T(-1.0) + std::sqrt(T(1.0) + T(1.0) / square(a))) * T(0.5);
             return T(1.0) / (T(1.0) + lambda);
         }
 
