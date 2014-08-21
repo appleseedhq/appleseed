@@ -678,8 +678,7 @@ void register_appleseed_closures(OSL::ShadingSystem& shading_system)
         { "diffuse", LambertID, { CLOSURE_VECTOR_PARAM(DiffuseBSDFClosureParams, N),
                                   CLOSURE_FINISH_PARAM(DiffuseBSDFClosureParams) } },
 
-        { "emission", EmissionID, { CLOSURE_FLOAT_KEYPARAM("angle"),
-                                    CLOSURE_FINISH_PARAM(EmptyClosureParams) } },
+        { "emission", EmissionID, { CLOSURE_FINISH_PARAM(EmptyClosureParams) } },
 
         { "holdout", HoldoutID, { CLOSURE_FINISH_PARAM(EmptyClosureParams) } },
 

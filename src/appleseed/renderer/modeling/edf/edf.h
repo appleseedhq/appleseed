@@ -148,12 +148,6 @@ class DLLSYMBOL EDF
         const foundation::Vector3d& outgoing) const = 0;        // world space emission direction, unit-length
 
   private:
-
-    inline const InputArray& get_inputs() const
-    {
-        return m_inputs;
-    }
-
     int    m_flags;
     double m_light_near_start;
 };
