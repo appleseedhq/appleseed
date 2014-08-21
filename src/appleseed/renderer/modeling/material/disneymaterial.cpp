@@ -42,9 +42,12 @@
 #include "foundation/utility/siphash.h"
 
 // SeExpr headers.
+#pragma warning (push)
+#pragma warning (disable : 4267)    // conversion from 'size_t' to 'int', possible loss of data
 #include "SeExpression.h"
 #include "SeExprFunc.h"
 #include "SeExprNode.h"
+#pragma warning (pop)
 
 // Boost headers.
 #include "boost/algorithm/string.hpp"

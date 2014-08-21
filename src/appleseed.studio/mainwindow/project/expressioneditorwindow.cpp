@@ -47,10 +47,13 @@
 #include "application/application.h"
 
 // SeExpr headers.
+#pragma warning (push)
+#pragma warning (disable : 4267)    // conversion from 'size_t' to 'int', possible loss of data
 #include "SeExpression.h"
 #include "SeExprEditor/SeExprEditor.h"
 #include "SeExprEditor/SeExprEdBrowser.h"
 #include "SeExprEditor/SeExprEdControlCollection.h"
+#pragma warning (pop)
 
 // Qt headers.
 #include <QFileDialog>
