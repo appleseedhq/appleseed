@@ -288,8 +288,7 @@ namespace
 
             // Evaluate the EDF inputs.
             InputEvaluator input_evaluator(m_texture_cache);
-            const void* edf_data =
-                input_evaluator.evaluate(edf->get_inputs(), light_sample.m_bary);
+            edf->evaluate_inputs(input_evaluator, light_sample.m_bary);
 
             // Sample the EDF.
             SamplingContext child_sampling_context = sampling_context.split(2, 1);
@@ -297,7 +296,7 @@ namespace
             Spectrum edf_value;
             double edf_prob;
             edf->sample(
-                edf_data,
+                input_evaluator.data(),
                 light_sample.m_geometric_normal,
                 Basis3d(light_sample.m_shading_normal),
                 child_sampling_context.next_vector2<2>(),

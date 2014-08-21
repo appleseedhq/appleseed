@@ -1281,6 +1281,11 @@ set (renderer_modeling_edf_sources
     renderer/modeling/edf/iedffactory.cpp
     renderer/modeling/edf/iedffactory.h
 )
+if (WITH_OSL)
+    list (APPEND renderer_modeling_edf_sources
+        renderer/modeling/edf/osledf.cpp
+        renderer/modeling/edf/osledf.h)
+endif ()
 list (APPEND appleseed_sources
     ${renderer_modeling_edf_sources}
 )

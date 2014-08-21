@@ -32,6 +32,8 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/modeling/input/inputevaluator.h"
 
 // Standard headers.
 #include <string>
@@ -108,6 +110,13 @@ void EDF::on_frame_end(
     const Project&      project,
     const Assembly&     assembly)
 {
+}
+
+void EDF::evaluate_inputs(
+    InputEvaluator& input_evaluator,
+    const Vector2d& uv) const
+{
+    input_evaluator.evaluate(get_inputs(), uv);
 }
 
 }   // namespace renderer

@@ -38,6 +38,7 @@
 #include "renderer/modeling/bsdf/oslmicrofacetbtdf.h"
 #include "renderer/modeling/bsdf/specularbrdf.h"
 #include "renderer/modeling/bsdf/specularbtdf.h"
+#include "renderer/modeling/edf/osledf.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -92,14 +93,14 @@ enum ClosureID
 
     // Microfacets shoud always be last.
     MicrofacetID,
-    
+
     MicrofacetBeckmannReflectionID,
     MicrofacetBlinnReflectionID,
     MicrofacetGGXReflectionID,
 
     MicrofacetBeckmannRefractionID,
     MicrofacetGGXRefractionID,
-    
+
     NumClosuresIDs
 };
 
@@ -147,6 +148,7 @@ class APPLESEED_ALIGN(16) CompositeClosure
     enum { MaxClosureEntries = 8 };
     enum { MaxPoolSize = MaxClosureEntries * (sizeof(boost::mpl::deref<BiggestInputValueType::base>::type) + 16) };
 
+    // Surface
     // m_pool has to be first, because it has to be aligned.
     char                            m_pool[MaxPoolSize];
     void*                           m_input_values[MaxClosureEntries];
@@ -158,6 +160,9 @@ class APPLESEED_ALIGN(16) CompositeClosure
     int                             m_num_bytes;
     Spectrum                        m_spectrum_multipliers[MaxClosureEntries];
     double                          m_cdf[MaxClosureEntries];
+
+    // Emission
+    Spectrum                        m_diffuse_emission;
 
     void process_closure_tree(
         const OSL::ClosureColor*    closure,
