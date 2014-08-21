@@ -59,6 +59,7 @@ DECLARE_INPUT_VALUES(DiffuseEDFInputValues)
     double      m_radiance_multiplier;  // emitted radiance multiplier
 };
 
+
 //
 // Diffuse EDF factory.
 //
