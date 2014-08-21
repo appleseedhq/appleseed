@@ -145,7 +145,7 @@ BOOST_STATIC_ASSERT(sizeof(CompositeClosure) <= InputEvaluator::DataSize);
 //
 
 CompositeClosure::CompositeClosure(
-    const OSL::ClosureColor* ci)
+    const OSL::ClosureColor*    ci)
   : m_num_closures(0)
   , m_num_bytes(0)
 {

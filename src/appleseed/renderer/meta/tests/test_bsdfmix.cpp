@@ -57,7 +57,7 @@
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/test.h"
 
-// OSL headers
+// OSL headers.
 #ifdef WITH_OSL
 #include "OSL/oslexec.h"
 #endif

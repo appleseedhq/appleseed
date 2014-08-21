@@ -230,7 +230,7 @@ namespace
                 sampling_context.split_in_place(1, 1);
                 const double s = sampling_context.next_double2();
 
-                const int closure_index = c->choose_closure(s);
+                const size_t closure_index = c->choose_closure(s);
                 const Basis3d new_shading_basis = make_osl_basis(c, closure_index, shading_basis);
 
                 const Mode result =

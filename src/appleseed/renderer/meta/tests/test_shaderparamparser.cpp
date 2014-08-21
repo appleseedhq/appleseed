@@ -105,7 +105,6 @@ TEST_SUITE(Renderer_Modeling_ShaderParamParser)
 
         {
             ShaderParamParser parser("float 1.0 0.5");
-            float r, g, b;
 
             EXPECT_EXCEPTION(ExceptionOSLParamParseError,
             {

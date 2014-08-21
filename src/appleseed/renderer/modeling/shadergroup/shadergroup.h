@@ -32,8 +32,6 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/connectableentity.h"
 #include "renderer/modeling/scene/containers.h"
-#include "renderer/modeling/shadergroup/shader.h"
-#include "renderer/modeling/shadergroup/shaderconnection.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -42,11 +40,8 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// Standard headers.
-#include <cstddef>
-
 // OSL headers.
-#include <OSL/oslexec.h>
+#include "OSL/oslexec.h"
 
 // Forward declarations.
 namespace foundation    { class AbortSwitch; }
@@ -74,30 +69,30 @@ class DLLSYMBOL ShaderGroup
 
     // Adds a new shader to the group.
     void add_shader(
-        const char*                 type,
-        const char*                 name,
-        const char*                 layer,
-        const ParamArray&           params);
+        const char*                     type,
+        const char*                     name,
+        const char*                     layer,
+        const ParamArray&               params);
 
     // Adds a connection between two parameters of two shaders.
     void add_connection(
-        const char*                 src_layer,
-        const char*                 src_param,
-        const char*                 dst_layer,
-        const char*                 dst_param);
+        const char*                     src_layer,
+        const char*                     src_param,
+        const char*                     dst_layer,
+        const char*                     dst_param);
 
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
     bool on_frame_begin(
-        const Project&              project,
-        const Assembly&             assembly,
-        OSL::ShadingSystem&         shading_system,
-        foundation::AbortSwitch*    abort_switch = 0);
+        const Project&                  project,
+        const Assembly&                 assembly,
+        OSL::ShadingSystem&             shading_system,
+        foundation::AbortSwitch*        abort_switch = 0);
 
     // This method is called once after rendering each frame.
     void on_frame_end(
-        const Project&              project,
-        const Assembly&             assembly);
+        const Project&                  project,
+        const Assembly&                 assembly);
 
     // Access the shaders.
     const ShaderContainer& shaders() const;
@@ -126,17 +121,21 @@ class DLLSYMBOL ShaderGroup
   private:
     friend class ShaderGroupFactory;
 
-    ShaderContainer                 m_shaders;
-    ShaderConnectionContainer       m_connections;
-    mutable OSL::ShaderGroupRef     m_shadergroup_ref;
-    const foundation::SearchPaths&  m_search_paths;
-    bool                            m_has_emission;
-    bool                            m_has_transparency;
-    bool                            m_has_holdout;
-    bool                            m_has_debug;
+    struct Impl;
+    Impl* impl;
+
+    bool    m_has_emission;
+    bool    m_has_transparency;
+    bool    m_has_holdout;
+    bool    m_has_debug;
 
     // Constructor.
-    ShaderGroup(const char* name, const foundation::SearchPaths& searchpaths);
+    ShaderGroup(
+        const char*                     name,
+        const foundation::SearchPaths&  search_paths);
+
+    // Destructor.
+    ~ShaderGroup();
 
     void report_has_closures(const char* closure_name, bool has_closures) const;
     void get_shadergroup_info(OSL::ShadingSystem& shading_system);
@@ -150,39 +149,19 @@ class DLLSYMBOL ShaderGroup
 class DLLSYMBOL ShaderGroupFactory
 {
   public:
-    // Return a string identifying this ShaderGroup model.
+    // Return a string identifying this shader group model.
     static const char* get_model();
 
-    // Create a new ShaderGroup.
+    // Create a new shader group.
     static foundation::auto_release_ptr<ShaderGroup> create(
-        const char* name,
-        const foundation::SearchPaths& searchpaths);
+        const char*                     name,
+        const foundation::SearchPaths&  search_paths);
 };
 
 
 //
 // ShaderGroup class implementation.
 //
-
-inline const ShaderContainer& ShaderGroup::shaders() const
-{
-    return m_shaders;
-}
-
-inline const ShaderConnectionContainer& ShaderGroup::shader_connections() const
-{
-    return m_connections;
-}
-
-inline OSL::ShaderGroupRef& ShaderGroup::shadergroup_ref() const
-{
-    return m_shadergroup_ref;
-}
-
-inline bool ShaderGroup::valid() const
-{
-    return m_shadergroup_ref.get() != 0;
-}
 
 inline bool ShaderGroup::has_emission() const
 {

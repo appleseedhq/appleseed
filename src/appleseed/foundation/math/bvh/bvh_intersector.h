@@ -193,9 +193,9 @@ void Intersector<Tree, Visitor, Ray, StackSize, N>::intersect_no_motion(
             if (hit_left | hit_right)
             {
                 // Push the far child node to the stack, continue with the near child node.
-                const int far = tmin[0] < tmin[1] ? 1 : 0;
-                *stack_ptr++ = node_ptr + far - 1;
-                node_ptr -= far;
+                const int far_index = tmin[0] < tmin[1] ? 1 : 0;
+                *stack_ptr++ = node_ptr + far_index - 1;
+                node_ptr -= far_index;
                 continue;
             }
 
@@ -356,9 +356,9 @@ void Intersector<Tree, Visitor, Ray, StackSize, N>::intersect_motion(
             if (hit_left | hit_right)
             {
                 // Push the far child node to the stack, continue with the near child node.
-                const int far = tmin[0] < tmin[1] ? 1 : 0;
-                *stack_ptr++ = node_ptr + far - 1;
-                node_ptr -= far;
+                const int far_index = tmin[0] < tmin[1] ? 1 : 0;
+                *stack_ptr++ = node_ptr + far_index - 1;
+                node_ptr -= far_index;
                 continue;
             }
 
@@ -543,13 +543,13 @@ void Intersector<Tree, Visitor, Ray3d, StackSize, 3>::intersect_no_motion(
             if (hits)
             {
                 // Push the far child node to the stack, continue with the near child node.
-                const int far =
+                const int far_index =
                     _mm_movemask_pd(
                         _mm_cmplt_pd(
                             tmin,
                             _mm_shuffle_pd(tmin, tmin, _MM_SHUFFLE2(1, 1))));
-                *stack_ptr++ = node_ptr + far - 1;
-                node_ptr -= far;
+                *stack_ptr++ = node_ptr + far_index - 1;
+                node_ptr -= far_index;
                 continue;
             }
 
@@ -817,13 +817,13 @@ void Intersector<Tree, Visitor, Ray3d, StackSize, 3>::intersect_motion(
             if (hits)
             {
                 // Push the far child node to the stack, continue with the near child node.
-                const int far =
+                const int far_index =
                     _mm_movemask_pd(
                         _mm_cmplt_pd(
                             tmin,
                             _mm_shuffle_pd(tmin, tmin, _MM_SHUFFLE2(1, 1))));
-                *stack_ptr++ = node_ptr + far - 1;
-                node_ptr -= far;
+                *stack_ptr++ = node_ptr + far_index - 1;
+                node_ptr -= far_index;
                 continue;
             }
 

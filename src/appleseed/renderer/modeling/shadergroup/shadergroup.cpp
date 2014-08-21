@@ -32,6 +32,8 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/modeling/project/project.h"
+#include "renderer/modeling/shadergroup/shader.h"
+#include "renderer/modeling/shadergroup/shaderconnection.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
@@ -58,17 +60,35 @@ namespace
     const UniqueID g_class_uid = new_guid();
 }
 
+struct ShaderGroup::Impl
+{
+    ShaderContainer                 m_shaders;
+    ShaderConnectionContainer       m_connections;
+    mutable OSL::ShaderGroupRef     m_shadergroup_ref;
+    const SearchPaths&              m_search_paths;
+
+    explicit Impl(const SearchPaths& search_paths)
+      : m_search_paths(search_paths)
+    {
+    }
+};
+
 ShaderGroup::ShaderGroup(
     const char*         name,
-    const SearchPaths&  searchpaths)
+    const SearchPaths&  search_paths)
   : ConnectableEntity(g_class_uid, ParamArray())
-  , m_search_paths(searchpaths)
+  , impl(new Impl(search_paths))
   , m_has_emission(false)
   , m_has_transparency(false)
   , m_has_holdout(false)
   , m_has_debug(false)
 {
     set_name(name);
+}
+
+ShaderGroup::~ShaderGroup()
+{
+    delete impl;
 }
 
 void ShaderGroup::release()
@@ -95,7 +115,7 @@ void ShaderGroup::add_shader(
             params));
 
     RENDERER_LOG_DEBUG("created shader %s, layer = %s.", name, layer);
-    m_shaders.insert(shader);
+    impl->m_shaders.insert(shader);
 }
 
 void ShaderGroup::add_connection(
@@ -111,7 +131,7 @@ void ShaderGroup::add_connection(
             dst_layer,
             dst_param));
 
-    m_connections.insert(connection);
+    impl->m_connections.insert(connection);
 
     RENDERER_LOG_DEBUG("created shader connection: src = %s, src_param = %s, dst = %s, dst_param = %s.",
         src_layer,
@@ -130,7 +150,7 @@ bool ShaderGroup::on_frame_begin(
 
     try
     {
-        m_shadergroup_ref = shading_system.ShaderGroupBegin(get_name());
+        impl->m_shadergroup_ref = shading_system.ShaderGroupBegin(get_name());
 
         if (!valid())
         {
@@ -140,7 +160,7 @@ bool ShaderGroup::on_frame_begin(
 
         bool success = true;
 
-        for (each<ShaderContainer> i = m_shaders; i; ++i)
+        for (each<ShaderContainer> i = impl->m_shaders; i; ++i)
         {
             if (is_aborted(abort_switch))
                 return success;
@@ -148,7 +168,7 @@ bool ShaderGroup::on_frame_begin(
             success = success && i->add(shading_system);
         }
 
-        for (each<ShaderConnectionContainer> i = m_connections; i; ++i)
+        for (each<ShaderConnectionContainer> i = impl->m_connections; i; ++i)
         {
             if (is_aborted(abort_switch))
                 return success;
@@ -175,7 +195,7 @@ bool ShaderGroup::on_frame_begin(
     }
     catch (const exception& e)
     {
-        RENDERER_LOG_ERROR("shader group exception: what = %s.", e.what());
+        RENDERER_LOG_ERROR("shader group exception: %s.", e.what());
         return false;
     }
 }
@@ -184,7 +204,27 @@ void ShaderGroup::on_frame_end(
     const Project&      project,
     const Assembly&     assembly)
 {
-    m_shadergroup_ref.reset();
+    impl->m_shadergroup_ref.reset();
+}
+
+const ShaderContainer& ShaderGroup::shaders() const
+{
+    return impl->m_shaders;
+}
+
+const ShaderConnectionContainer& ShaderGroup::shader_connections() const
+{
+    return impl->m_connections;
+}
+
+bool ShaderGroup::valid() const
+{
+    return impl->m_shadergroup_ref.get() != 0;
+}
+
+OSL::ShaderGroupRef& ShaderGroup::shadergroup_ref() const
+{
+    return impl->m_shadergroup_ref;
 }
 
 void ShaderGroup::report_has_closures(const char* closure_name, bool has_closures) const
@@ -214,12 +254,12 @@ void ShaderGroup::get_shadergroup_info(OSL::ShadingSystem& shading_system)
 
     int num_unknown_closures = 0;
     if (!shading_system.getattribute(
-            m_shadergroup_ref.get(),
+            impl->m_shadergroup_ref.get(),
             "unknown_closures_needed",
             num_unknown_closures))
     {
         RENDERER_LOG_WARNING(
-            "getattribute call failed for shader group %s."
+            "getattribute call failed for shader group %s; "
             "assuming shader group has all kinds of closures.",
             get_name());
 
@@ -229,7 +269,7 @@ void ShaderGroup::get_shadergroup_info(OSL::ShadingSystem& shading_system)
     if (num_unknown_closures)
     {
         RENDERER_LOG_WARNING(
-            "shader group %s has unknown closures."
+            "shader group %s has unknown closures; "
             "assuming shader group has all kinds of closures.",
             get_name());
 
@@ -238,12 +278,12 @@ void ShaderGroup::get_shadergroup_info(OSL::ShadingSystem& shading_system)
 
     int num_closures = 0;
     if (!shading_system.getattribute(
-            m_shadergroup_ref.get(),
+            impl->m_shadergroup_ref.get(),
             "num_closures_needed",
             num_closures))
     {
         RENDERER_LOG_WARNING(
-            "getattribute call failed for shader group %s."
+            "getattribute call failed for shader group %s; "
             "assuming shader group has all kinds of closures.",
             get_name());
 
@@ -254,13 +294,13 @@ void ShaderGroup::get_shadergroup_info(OSL::ShadingSystem& shading_system)
     {
         OIIO::ustring *closures = 0;
         if (!shading_system.getattribute(
-                m_shadergroup_ref.get(),
+                impl->m_shadergroup_ref.get(),
                 "closures_needed",
                 OIIO::TypeDesc::PTR,
                 &closures))
         {
             RENDERER_LOG_WARNING(
-                "getattribute call failed for shader group %s."
+                "getattribute call failed for shader group %s; "
                 "assuming shader group has all kinds of closures.",
                 get_name());
 
@@ -301,9 +341,11 @@ const char* ShaderGroupFactory::get_model()
 
 auto_release_ptr<ShaderGroup> ShaderGroupFactory::create(
     const char*         name,
-    const SearchPaths&  searchpaths)
+    const SearchPaths&  search_paths)
 {
-    return auto_release_ptr<ShaderGroup>(new ShaderGroup(name, searchpaths));
+    return
+        auto_release_ptr<ShaderGroup>(
+            new ShaderGroup(name, search_paths));
 }
 
 }   // namespace renderer
