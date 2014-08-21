@@ -131,6 +131,7 @@ namespace
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing) const OVERRIDE
         {
+            return 0.0;
         }
 
       private:
