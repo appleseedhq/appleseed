@@ -50,8 +50,6 @@
 #include "boost/algorithm/string.hpp"
 #include "boost/algorithm/string/split.hpp"
 #include "boost/ptr_container/ptr_vector.hpp"
-#include "boost/thread/locks.hpp"
-#include "boost/thread/mutex.hpp"
 
 // Standard headers.
 #include <algorithm>
