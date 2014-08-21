@@ -38,9 +38,6 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// OpenEXR headers.
-#include "OpenEXR/ImfTiledOutputFile.h"
-
 // Standard headers.
 #include <cstddef>
 

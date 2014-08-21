@@ -45,6 +45,7 @@
 #include "OpenEXR/ImfHeader.h"
 #include "OpenEXR/ImfPixelType.h"
 #include "OpenEXR/ImfTileDescription.h"
+#include "OpenEXR/ImfTiledOutputFile.h"
 
 // Standard headers.
 #include <cassert>
