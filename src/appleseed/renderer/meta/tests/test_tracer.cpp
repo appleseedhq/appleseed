@@ -199,12 +199,12 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         Intersector         m_intersector;
         MersenneTwister     m_rng;
 #ifdef WITH_OIIO
-        shared_ptr<OIIO::TextureSystem> m_texture_system;
+        boost::shared_ptr<OIIO::TextureSystem> m_texture_system;
 #endif
 #ifdef WITH_OSL
-        shared_ptr<RendererServices>    m_renderer_services;
-        shared_ptr<OSL::ShadingSystem>  m_shading_system;
-        shared_ptr<OSLShaderGroupExec>  m_shading_group_exec;
+        boost::shared_ptr<RendererServices>    m_renderer_services;
+        boost::shared_ptr<OSL::ShadingSystem>  m_shading_system;
+        boost::shared_ptr<OSLShaderGroupExec>  m_shading_group_exec;
 #endif
 
         Fixture()
@@ -216,7 +216,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 #ifdef WITH_OIIO
             m_texture_system.reset(
                 OIIO::TextureSystem::create(),
-                bind(&OIIO::TextureSystem::destroy, _1));
+                boost::bind(&OIIO::TextureSystem::destroy, _1));
 #endif
 #ifdef WITH_OSL
             m_renderer_services.reset(
