@@ -62,8 +62,8 @@ class TLS
     size_t get_thread_count() const;
 
     // Direct access to the storage area for a given thread.
-    T& operator()(const size_t thread_index);
-    const T& operator()(const size_t thread_index) const;
+    T& operator[](const size_t thread_index);
+    const T& operator[](const size_t thread_index) const;
 
   private:
     size_t          m_thread_count;
@@ -110,13 +110,13 @@ inline size_t TLS<T>::get_thread_count() const
 
 // Direct access to the storage area for a given thread.
 template <typename T>
-inline T& TLS<T>::operator()(const size_t thread_index)
+inline T& TLS<T>::operator[](const size_t thread_index)
 {
     assert(thread_index < m_thread_count);
     return m_elements[thread_index * m_stride];
 }
 template <typename T>
-inline const T& TLS<T>::operator()(const size_t thread_index) const
+inline const T& TLS<T>::operator[](const size_t thread_index) const
 {
     assert(thread_index < m_thread_count);
     return m_elements[thread_index * m_stride];

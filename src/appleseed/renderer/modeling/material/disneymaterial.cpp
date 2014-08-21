@@ -798,30 +798,30 @@ struct DisneyMaterial::Impl
 {
     typedef vector<DisneyMaterialLayer> DisneyMaterialLayerContainer;
 
-    static const int max_tls_threads = 256;
+    static const int MaxTLSThreads = 256;
 
     explicit Impl(const DisneyMaterial* parent)
       : m_brdf(new DisneyLayeredBRDF(parent))
-      , m_per_thread_layers(max_tls_threads)
+      , m_per_thread_layers(MaxTLSThreads)
     {
-        for (size_t i = 0; i < max_tls_threads; ++i)
-            m_per_thread_layers(i) = 0;
+        for (size_t i = 0; i < MaxTLSThreads; ++i)
+            m_per_thread_layers[i] = 0;
     }
 
     ~Impl()
     {
-        for (size_t i = 0; i < max_tls_threads; ++i)
-            assert(m_per_thread_layers(i) == 0);
+        for (size_t i = 0; i < MaxTLSThreads; ++i)
+            assert(m_per_thread_layers[i] == 0);
     }
 
     void clear_per_thread_layers()
     {
-        for (size_t i = 0; i < max_tls_threads; ++i)
+        for (size_t i = 0; i < MaxTLSThreads; ++i)
         {
-            if (m_per_thread_layers(i))
+            if (m_per_thread_layers[i])
             {
-                delete m_per_thread_layers(i);
-                m_per_thread_layers(i) = 0;
+                delete m_per_thread_layers[i];
+                m_per_thread_layers[i] = 0;
             }
         }
 
@@ -911,9 +911,9 @@ const DisneyMaterialLayer& DisneyMaterial::get_layer(
         return impl->m_layers[index];
     else
     {
-        assert(thread_index < Impl::max_tls_threads);
+        assert(thread_index < Impl::MaxTLSThreads);
 
-        if (!impl->m_per_thread_layers(thread_index))
+        if (!impl->m_per_thread_layers[thread_index])
         {
             vector<DisneyMaterialLayer> *ts_layers =
                     new vector<DisneyMaterialLayer>(impl->m_layers);
@@ -924,11 +924,11 @@ const DisneyMaterialLayer& DisneyMaterial::get_layer(
                 assert(ok);
             }
 
-            impl->m_per_thread_layers(thread_index) = ts_layers;
+            impl->m_per_thread_layers[thread_index] = ts_layers;
         }
 
         const vector<DisneyMaterialLayer>* ts_layers =
-            impl->m_per_thread_layers(thread_index);
+            impl->m_per_thread_layers[thread_index];
 
         return (*ts_layers)[index];
     }
