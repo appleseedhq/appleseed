@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_EDF_CONEEDF_H
-#define APPLESEED_RENDERER_MODELING_EDF_CONEEDF_H
+#ifndef APPLESEED_RENDERER_MODELING_EDF_OSLEDF_H
+#define APPLESEED_RENDERER_MODELING_EDF_OSLEDF_H
 
 // appleseed.renderer headers.
 #include "renderer/modeling/edf/edf.h"
@@ -49,23 +48,12 @@ namespace renderer      { class ParamArray; }
 namespace renderer
 {
 
-//
-// Cone-shaped EDF input values.
-//
-
-DECLARE_INPUT_VALUES(ConeEDFInputValues)
-{
-    Spectrum    m_radiance;             // emitted radiance in W.m^-2.sr^-1
-    double      m_radiance_multiplier;  // emitted radiance multiplier
-    double      m_angle;                // cone angle
-};
-
 
 //
-// Cone-shaped EDF factory.
+// OSL EDF factory.
 //
 
-class DLLSYMBOL ConeEDFFactory
+class DLLSYMBOL OSLEDFFactory
   : public IEDFFactory
 {
   public:
@@ -86,4 +74,4 @@ class DLLSYMBOL ConeEDFFactory
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_EDF_CONEEDF_H
+#endif  // !APPLESEED_RENDERER_MODELING_EDF_OSLEDF_H

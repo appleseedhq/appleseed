@@ -194,12 +194,7 @@ namespace
         }
 
       private:
-        DECLARE_INPUT_VALUES(InputValues)
-        {
-            Spectrum    m_radiance;             // emitted radiance in W.m^-2.sr^-1
-            double      m_radiance_multiplier;  // emitted radiance multiplier
-            double      m_angle;                // cone angle
-        };
+        typedef ConeEDFInputValues InputValues;
 
         double          m_cos_half_angle;
     };

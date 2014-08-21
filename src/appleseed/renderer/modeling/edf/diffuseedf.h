@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/edf/iedffactory.h"
+#include "renderer/modeling/input/inputarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -47,6 +48,17 @@ namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
+
+//
+// Diffuse EDF input values.
+//
+
+DECLARE_INPUT_VALUES(DiffuseEDFInputValues)
+{
+    Spectrum    m_radiance;             // emitted radiance in W.m^-2.sr^-1
+    double      m_radiance_multiplier;  // emitted radiance multiplier
+};
+
 
 //
 // Diffuse EDF factory.

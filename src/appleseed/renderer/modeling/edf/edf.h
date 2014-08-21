@@ -45,6 +45,7 @@
 // Forward declarations.
 namespace foundation    { class AbortSwitch; }
 namespace renderer      { class Assembly; }
+namespace renderer      { class InputEvaluator; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 
@@ -106,6 +107,12 @@ class DLLSYMBOL EDF
     virtual void on_frame_end(
         const Project&              project,
         const Assembly&             assembly);
+
+    // Evaluate the inputs of this EDF.
+    // Input values are stored in the input evaluator.
+    virtual void evaluate_inputs(
+        InputEvaluator&             input_evaluator,
+        const foundation::Vector2d& uv) const;
 
     // Sample the EDF and compute the emission direction, its probability
     // density and the value of the EDF for this direction.
