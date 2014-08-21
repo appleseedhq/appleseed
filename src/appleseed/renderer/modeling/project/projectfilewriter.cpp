@@ -58,7 +58,10 @@
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/scene/textureinstance.h"
 #ifdef WITH_OSL
+#include "renderer/modeling/shadergroup/shader.h"
+#include "renderer/modeling/shadergroup/shaderconnection.h"
 #include "renderer/modeling/shadergroup/shadergroup.h"
+#include "renderer/modeling/shadergroup/shaderparam.h"
 #endif
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/modeling/texture/texture.h"
