@@ -32,13 +32,13 @@
 // UI definition headers.
 #include "ui_expressioneditorwindow.h"
 
+// appleseed.studio headers.
+#include "mainwindow/project/tools.h"
+
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/modeling/material/disneymaterial.h"
 #include "renderer/modeling/project/project.h"
-
-// appleseed.studio headers.
-#include "mainwindow/project/tools.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
@@ -46,11 +46,11 @@
 // appleseed.shared headers.
 #include "application/application.h"
 
-// SeExpr Editor headers.
-#include <SeExpression.h>
-#include <SeExprEditor/SeExprEditor.h>
-#include <SeExprEditor/SeExprEdBrowser.h>
-#include <SeExprEditor/SeExprEdControlCollection.h>
+// SeExpr headers.
+#include "SeExpression.h"
+#include "SeExprEditor/SeExprEditor.h"
+#include "SeExprEditor/SeExprEdBrowser.h"
+#include "SeExprEditor/SeExprEdControlCollection.h"
 
 // Qt headers.
 #include <QFileDialog>

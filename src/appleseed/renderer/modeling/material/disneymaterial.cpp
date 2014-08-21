@@ -41,7 +41,7 @@
 #include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/siphash.h"
 
-// SeExpr headers
+// SeExpr headers.
 #include "SeExpression.h"
 #include "SeExprFunc.h"
 #include "SeExprNode.h"
