@@ -199,6 +199,48 @@ class MDF
         return v.z / sin_theta(v);
     }
 
+    void sample_phi(
+        const T s,
+        T&      cos_phi,
+        T&      sin_phi) const
+    {
+        const T phi = T(TwoPi) * s;
+        cos_phi = std::cos(phi);
+        sin_phi = std::sin(phi);
+    }
+
+    void sample_phi(
+        const T s,
+        const T alpha_x,
+        const T alpha_y,
+        T&      cos_phi,
+        T&      sin_phi) const
+    {
+        Vector<T, 2> sin_cos_phi(
+            std::cos(T(TwoPi) * s) * alpha_x,
+            std::sin(T(TwoPi) * s) * alpha_y);
+        sin_cos_phi = normalize(sin_cos_phi);
+        cos_phi = sin_cos_phi[0];
+        sin_phi = sin_cos_phi[1];
+    }
+
+    T projected_roughness(
+        const Vector<T, 3>& h,
+        const T             sin_theta,
+        const T             alpha_x,
+        const T             alpha_y) const
+    {
+        if (sin_theta != T(0.0))
+        {
+            const T cos_phi_2_ax_2 = square(h.x / sin_theta) / square(alpha_x);
+            const T sin_phi_2_ay_2 = square(h.z / sin_theta) / square(alpha_y);
+            return cos_phi_2_ax_2 + sin_phi_2_ay_2;
+        }
+
+        // Choose some arbitrary phi angle (0).
+        return T(1.0) / square(alpha_x);
+    }
+
   private:
     virtual Vector<T, 3> do_sample(
         const Vector<T, 2>&  s,
@@ -265,8 +307,9 @@ class BlinnMDF2
     {
         const T cos_theta = std::pow(T(1.0) - s[0], T(1.0) / (alpha_x + T(2.0)));
         const T sin_theta = std::sqrt(T(1.0) - cos_theta * cos_theta);
-        const T phi = T(TwoPi) * s[1];
-        return Vector<T, 3>::unit_vector(cos_theta, sin_theta, std::cos(phi), std::sin(phi));
+        T cos_phi, sin_phi;
+        this->sample_phi(s[1], cos_phi, sin_phi);
+        return Vector<T, 3>::unit_vector(cos_theta, sin_theta, cos_phi, sin_phi);
     }
 
     virtual T do_eval_D(
@@ -384,12 +427,7 @@ class BeckmannMDF2
 
         if (alpha_x != alpha_y)
         {
-            Vector<T, 2> sin_cos_phi(
-                std::cos(T(TwoPi) * s[1]) * alpha_x,
-                std::sin(T(TwoPi) * s[1]) * alpha_y);
-            sin_cos_phi = normalize(sin_cos_phi);
-            cos_phi = sin_cos_phi[0];
-            sin_phi = sin_cos_phi[1];
+            this->sample_phi(s[1], alpha_x, alpha_y, cos_phi, sin_phi);
             const T tmp = square(cos_phi / alpha_x) + square(sin_phi / alpha_y);
             const T tan_theta_2 = -std::log(T(1.0) - s[0]) / tmp;
             cos_theta = T(1.0) / std::sqrt(T(1) + tan_theta_2);
@@ -397,13 +435,11 @@ class BeckmannMDF2
         }
         else
         {
+            this->sample_phi(s[1], cos_phi, sin_phi);
             const T alpha_x_2 = square(alpha_x);
             const T tan_theta_2 = alpha_x_2 * (-std::log(T(1.0) - s[0]));
             cos_theta = T(1.0) / std::sqrt(T(1.0) + tan_theta_2);
             sin_theta = cos_theta * std::sqrt(tan_theta_2);
-            const T phi = T(TwoPi) * s[1];
-            cos_phi = std::cos(phi);
-            sin_phi = std::sin(phi);
         }
 
         return Vector<T, 3>::unit_vector(cos_theta, sin_theta, cos_phi, sin_phi);
@@ -424,24 +460,12 @@ class BeckmannMDF2
 
         if (alpha_x != alpha_y)
         {
-            const T sin_theta = this->sin_theta(h);
+            const T A = this->projected_roughness(
+                h,
+                this->sin_theta(h),
+                alpha_x,
+                alpha_y);
 
-            T cos_phi_2_ax_2;
-            T sin_phi_2_ay_2;
-
-            if (sin_theta != T(0.0))
-            {
-                cos_phi_2_ax_2 = square(h.x / sin_theta) / alpha_x_2;
-                sin_phi_2_ay_2 = square(h.z / sin_theta) / square(alpha_y);
-            }
-            else
-            {
-                // Choose some arbitrary phi angle (0).
-                cos_phi_2_ax_2 = T(1.0) / alpha_x_2;
-                sin_phi_2_ay_2 = T(0.0);
-            }
-
-            const T A = cos_phi_2_ax_2 + sin_phi_2_ay_2;
             const T denom = Pi * alpha_x * alpha_y * cos_theta_4;
             return std::exp(-tan_theta_2 * A) / denom;
         }
@@ -483,24 +507,12 @@ class BeckmannMDF2
 
         if (alpha_x != alpha_y)
         {
-            const T sin_theta = this->sin_theta(h);
+            const T A = this->projected_roughness(
+                h,
+                this->sin_theta(h),
+                alpha_x,
+                alpha_y);
 
-            T cos_phi_2_ax_2;
-            T sin_phi_2_ay_2;
-
-            if (sin_theta != T(0.0))
-            {
-                cos_phi_2_ax_2 = square(h.x / sin_theta) / alpha_x_2;
-                sin_phi_2_ay_2 = square(h.z / sin_theta) / square(alpha_y);
-            }
-            else
-            {
-                // Choose some arbitrary phi angle (0).
-                cos_phi_2_ax_2 = T(1.0) / alpha_x_2;
-                sin_phi_2_ay_2 = T(0.0);
-            }
-
-            const T A = cos_phi_2_ax_2 + sin_phi_2_ay_2;
             const T denom = Pi * alpha_x * alpha_y * cos_theta_3;
             return std::exp(-tan_theta_2 * A) / denom;
         }
@@ -598,21 +610,14 @@ class GGXMDF2
 
         if (alpha_x != alpha_y)
         {
-            Vector<T, 2> sin_cos_phi(
-                std::cos(T(TwoPi) * s[1]) * alpha_x,
-                std::sin(T(TwoPi) * s[1]) * alpha_y);
-            sin_cos_phi = normalize(sin_cos_phi);
-            cos_phi = sin_cos_phi[0];
-            sin_phi = sin_cos_phi[1];
+            this->sample_phi(s[1], alpha_x, alpha_y, cos_phi, sin_phi);
             const T tmp = square(cos_phi / alpha_x) + square(sin_phi / alpha_y);
             tan_theta_2 = s[0] / ((T(1.0) - s[0]) * tmp);
         }
         else
         {
+            this->sample_phi(s[1], cos_phi, sin_phi);
             tan_theta_2 = square(alpha_x) * s[0] / (T(1.0) - s[0]);
-            const T phi = T(TwoPi) * s[1];
-            cos_phi = std::cos(phi);
-            sin_phi = std::sin(phi);
         }
 
         const T cos_theta = T(1.0) / std::sqrt(T(1.0) + tan_theta_2);
@@ -638,24 +643,14 @@ class GGXMDF2
         if (alpha_x != alpha_y)
         {
             const T sin_theta = this->sin_theta(h);
-
-            T cos_phi_2_ax_2;
-            T sin_phi_2_ay_2;
-
-            if (sin_theta != T(0.0))
-            {
-                cos_phi_2_ax_2 = square(h.x / sin_theta) / alpha_x_2;
-                sin_phi_2_ay_2 = square(h.z / sin_theta) / square(alpha_y);
-            }
-            else
-            {
-                // Choose some arbitrary phi angle (0).
-                cos_phi_2_ax_2 = T(1.0) / alpha_x_2;
-                sin_phi_2_ay_2 = T(0.0);
-            }
+            const T A = this->projected_roughness(
+                h,
+                sin_theta,
+                alpha_x,
+                alpha_y);
 
             const T tan_theta_2 = square(sin_theta) / cos_theta_2;
-            const T tmp = T(1.0) + tan_theta_2 * (cos_phi_2_ax_2 + sin_phi_2_ay_2);
+            const T tmp = T(1.0) + tan_theta_2 * A;
             return T(1.0) / (T(Pi) * alpha_x * alpha_y * cos_theta_4 * square(tmp));
         }
 
@@ -694,23 +689,14 @@ class GGXMDF2
         if (alpha_x != alpha_y)
         {
             const T sin_theta = this->sin_theta(h);
-            T cos_phi_2_ax_2;
-            T sin_phi_2_ay_2;
-
-            if (sin_theta != T(0.0))
-            {
-                cos_phi_2_ax_2 = square(h.x / sin_theta) / alpha_x_2;
-                sin_phi_2_ay_2 = square(h.z / sin_theta) / square(alpha_y);
-            }
-            else
-            {
-                // Choose some arbitrary phi angle (0).
-                cos_phi_2_ax_2 = T(1.0) / alpha_x_2;
-                sin_phi_2_ay_2 = T(0.0);
-            }
+            const T A = this->projected_roughness(
+                h,
+                sin_theta,
+                alpha_x,
+                alpha_y);
 
             const T tan_theta_2 = square(sin_theta) / cos_theta_2;
-            const T tmp = T(1.0) + tan_theta_2 * (cos_phi_2_ax_2 + sin_phi_2_ay_2);
+            const T tmp = T(1.0) + tan_theta_2 * A;
             return T(1.0) / (T(Pi) * alpha_x * alpha_y * cos_theta_3 * square(tmp));
         }
 
