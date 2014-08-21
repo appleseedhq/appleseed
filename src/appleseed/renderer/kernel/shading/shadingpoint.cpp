@@ -332,36 +332,37 @@ OSL::ShaderGlobals& ShadingPoint::get_osl_shader_globals() const
         const ShadingRay& ray(get_ray());
 
         m_shader_globals.P = Vector3f(get_point());
-        m_shader_globals.dPdx = OSL::Vec3(0, 0, 0);
-        m_shader_globals.dPdy = OSL::Vec3(0, 0, 0);
-        m_shader_globals.dPdz = OSL::Vec3(0, 0, 0);
+        m_shader_globals.dPdx = OSL::Vec3(0.0f, 0.0f, 0.0f);
+        m_shader_globals.dPdy = OSL::Vec3(0.0f, 0.0f, 0.0f);
+        m_shader_globals.dPdz = OSL::Vec3(0.0f, 0.0f, 0.0f);
 
         m_shader_globals.I = Vector3f(normalize(ray.m_dir));
-        m_shader_globals.dIdx = OSL::Vec3(0, 0, 0);
-        m_shader_globals.dIdy = OSL::Vec3(0, 0, 0);
+        m_shader_globals.dIdx = OSL::Vec3(0.0f, 0.0f, 0.0f);
+        m_shader_globals.dIdy = OSL::Vec3(0.0f, 0.0f, 0.0f);
 
         m_shader_globals.N = Vector3f(get_shading_normal());
         m_shader_globals.Ng = Vector3f(get_geometric_normal());
 
-        Vector2d uv = get_uv(0);
-        m_shader_globals.u = uv.x;
-        m_shader_globals.dudx = 0;
-        m_shader_globals.dudy = 0;
+        const Vector2d& uv = get_uv(0);
 
-        m_shader_globals.v = uv.y;
-        m_shader_globals.dvdx = 0;
-        m_shader_globals.dvdy = 0;
+        m_shader_globals.u = static_cast<float>(uv[0]);
+        m_shader_globals.dudx = 0.0f;
+        m_shader_globals.dudy = 0.0f;
+
+        m_shader_globals.v = static_cast<float>(uv[1]);
+        m_shader_globals.dvdx = 0.0f;
+        m_shader_globals.dvdy = 0.0f;
 
         m_shader_globals.dPdu = Vector3f(get_dpdu(0));
         m_shader_globals.dPdv = Vector3f(get_dpdv(0));
 
-        m_shader_globals.time = ray.m_time;
-        m_shader_globals.dtime = 0;
-        m_shader_globals.dPdtime = OSL::Vec3(0, 0, 0);
+        m_shader_globals.time = static_cast<float>(ray.m_time);
+        m_shader_globals.dtime = 0.0f;
+        m_shader_globals.dPdtime = OSL::Vec3(0.0f, 0.0f, 0.0f);
 
-        m_shader_globals.Ps = OSL::Vec3(0, 0, 0);
-        m_shader_globals.dPsdx = OSL::Vec3(0, 0, 0);
-        m_shader_globals.dPsdy = OSL::Vec3(0, 0, 0);
+        m_shader_globals.Ps = OSL::Vec3(0.0f, 0.0f, 0.0f);
+        m_shader_globals.dPsdx = OSL::Vec3(0.0f, 0.0f, 0.0f);
+        m_shader_globals.dPsdy = OSL::Vec3(0.0f, 0.0f, 0.0f);
 
         m_shader_globals.renderstate = 
             const_cast<void*>(reinterpret_cast<const void*>(this));
@@ -379,7 +380,7 @@ OSL::ShaderGlobals& ShadingPoint::get_osl_shader_globals() const
         m_shader_globals.object2common = reinterpret_cast<OSL::TransformationPtr>(&m_obj_transform_info);
 
         m_shader_globals.shader2common = 0;
-        m_shader_globals.surfacearea = 0;
+        m_shader_globals.surfacearea = 0.0f;
 
         m_shader_globals.raytype = static_cast<int>(ray.m_type);
 
@@ -393,7 +394,7 @@ OSL::ShaderGlobals& ShadingPoint::get_osl_shader_globals() const
     }
     else
     {
-        // Update always the raytype, as it might have changed from the previous run.
+        // Update always the ray type, as it might have changed from the previous run.
         m_shader_globals.raytype = static_cast<int>(get_ray().m_type);
     }
 

@@ -217,7 +217,7 @@ namespace
             v *= square(values->m_to_ior) * D * G;
             const double denom = values->m_to_ior * cos_ih + values->m_from_ior * cos_oh;
             v /= square(denom);
-            value.set(v);
+            value.set(static_cast<float>(v));
 
             const double ht_norm = norm(values->m_from_ior * outgoing + values->m_to_ior * incoming);
             const double dwh_dwo = refraction_jacobian(
@@ -286,7 +286,7 @@ namespace
             v *= square(values->m_to_ior) * D * G;
             const double denom = values->m_to_ior * cos_ih + values->m_from_ior * cos_oh;
             v /= square(denom);
-            value.set(v);
+            value.set(static_cast<float>(v));
 
             const double dwh_dwo = refraction_jacobian(
                 incoming,

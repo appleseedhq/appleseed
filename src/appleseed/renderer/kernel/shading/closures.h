@@ -156,8 +156,8 @@ class APPLESEED_ALIGN(16) CompositeClosure
     foundation::Vector3d            m_normals[MaxClosureEntries];
     bool                            m_has_tangent[MaxClosureEntries];
     foundation::Vector3d            m_tangents[MaxClosureEntries];
-    int                             m_num_closures;
-    int                             m_num_bytes;
+    size_t                          m_num_closures;
+    size_t                          m_num_bytes;
     Spectrum                        m_spectrum_multipliers[MaxClosureEntries];
     double                          m_cdf[MaxClosureEntries];
 
