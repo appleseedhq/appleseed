@@ -50,7 +50,7 @@ namespace renderer
 {
 
 //
-// Cone-shaped input values.
+// Cone-shaped EDF input values.
 //
 
 DECLARE_INPUT_VALUES(ConeEDFInputValues)
