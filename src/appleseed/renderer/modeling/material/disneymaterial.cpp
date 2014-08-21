@@ -873,7 +873,7 @@ bool DisneyMaterial::on_frame_begin(
 
 void DisneyMaterial::on_frame_end(
     const Project&          project,
-    const Assembly&         assembly) OVERRIDE
+    const Assembly&         assembly)
 {
     impl->m_layers.clear();
     Material::on_frame_end(project, assembly);
@@ -887,7 +887,6 @@ size_t DisneyMaterial::get_layer_count() const
 const DisneyMaterialLayer& DisneyMaterial::get_layer(const size_t index) const
 {
     assert(index < get_layer_count());
-
     return impl->m_layers[index];
 }
 
