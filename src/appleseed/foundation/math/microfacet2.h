@@ -39,6 +39,7 @@
 
 // boost headers.
 #include "boost/mpl/bool.hpp"
+#include "boost/math/special_functions/erf.hpp"
 
 // Standard headers.
 #include <algorithm>
@@ -90,7 +91,7 @@ class TorranceSparrowMaskingShadowing
 
         if (dot(v, h) <= T(0.0))
             return T(0.0);
-        
+
         const T cos_vh = std::abs(dot(v, h));
         if (cos_vh == T(0.0))
             return T(0.0);
@@ -287,7 +288,7 @@ class BlinnMDF2
 
 
 //
-// Isotropic Beckmann Microfacet Distribution Function.
+// Anisotropic Beckmann Microfacet Distribution Function.
 //
 // References:
 //
@@ -331,21 +332,36 @@ class BeckmannSmithMaskingShadowing
         if (dot(v, m) * v.y <= T(0.0))
             return T(0.0);
 
-        const T cos_theta_2 = square(v.y);
-        const T tan_theta = std::sqrt((T(1.0) - cos_theta_2) / cos_theta_2);
-        
-        if (tan_theta == T(0.0))
-            return T(1.0);
-
-        const T a = T(1.0) / alpha_x * tan_theta;
-
-        if (a < T(1.6))
+        if (alpha_x != alpha_y)
         {
-            const T a2 = square(a);
-            return (T(3.535) * a + T(2.181) * a2) / (T(1.0) + T(2.276) * a + T(2.577) * a2);
+            const T cos_theta = v.y;
+            const T cos_theta_2 = square(cos_theta);
+            const T sin_theta = std::sqrt(std::max(T(1.0) - cos_theta_2, T(0.0)));
+            const T cos_phi_2 = square(v.x / sin_theta);
+            const T sin_phi_2 = square(v.z / sin_theta);
+            const T alpha = std::sqrt(cos_phi_2 * square(alpha_x) + sin_phi_2 * square(alpha_y));
+            const T a = cos_theta / (alpha * sin_theta);
+            const T lambda = (erf(a) - 1) * T(0.5) + std::exp(-square(a)) / (T(2.0) * a * SqrtPi);
+            return T(1.0) / (T(1.0) + lambda);
         }
+        else
+        {
+            const T cos_theta_2 = square(v.y);
+            const T tan_theta = std::sqrt((T(1.0) - cos_theta_2) / cos_theta_2);
 
-        return T(1.0);
+            if (tan_theta == T(0.0))
+                return T(1.0);
+
+            const T a = T(1.0) / alpha_x * tan_theta;
+
+            if (a < T(1.6))
+            {
+                const T a2 = square(a);
+                return (T(3.535) * a + T(2.181) * a2) / (T(1.0) + T(2.276) * a + T(2.577) * a2);
+            }
+
+            return T(1.0);
+        }
     }
 };
 
@@ -354,7 +370,7 @@ class BeckmannMDF2
   : public MDF<T>
 {
   public:
-    typedef boost::mpl::bool_<false> IsAnisotropicType;
+    typedef boost::mpl::bool_<true> IsAnisotropicType;
 
     BeckmannMDF2() {}
 
@@ -364,13 +380,33 @@ class BeckmannMDF2
         const T              alpha_x,
         const T              alpha_y) const OVERRIDE
     {
-        // Same sampling procedure as for the Ward distribution.
-        const T alpha_x_2 = square(alpha_x);
-        const T tan_theta_2 = alpha_x_2 * (-std::log(T(1.0) - s[0]));
-        const T cos_theta = T(1.0) / std::sqrt(T(1.0) + tan_theta_2);
-        const T sin_theta = cos_theta * std::sqrt(tan_theta_2);
-        const T phi = T(TwoPi) * s[1];
-        return Vector<T, 3>::unit_vector(cos_theta, sin_theta, std::cos(phi), std::sin(phi));
+        T cos_theta, sin_theta, cos_phi, sin_phi;
+
+        if (alpha_x != alpha_y)
+        {
+            Vector<T, 2> sin_cos_phi(
+                std::cos(T(TwoPi) * s[1]) * alpha_x,
+                std::sin(T(TwoPi) * s[1]) * alpha_y);
+            sin_cos_phi = normalize(sin_cos_phi);
+            cos_phi = sin_cos_phi[0];
+            sin_phi = sin_cos_phi[1];
+            const T tmp = square(cos_phi / alpha_x) + square(sin_phi / alpha_y);
+            const T tan_theta_2 = -std::log(T(1.0) - s[0]) / tmp;
+            cos_theta = T(1.0) / std::sqrt(T(1) + tan_theta_2);
+            sin_theta = cos_theta * std::sqrt(tan_theta_2);
+        }
+        else
+        {
+            const T alpha_x_2 = square(alpha_x);
+            const T tan_theta_2 = alpha_x_2 * (-std::log(T(1.0) - s[0]));
+            cos_theta = T(1.0) / std::sqrt(T(1.0) + tan_theta_2);
+            sin_theta = cos_theta * std::sqrt(tan_theta_2);
+            const T phi = T(TwoPi) * s[1];
+            cos_phi = std::cos(phi);
+            sin_phi = std::sin(phi);
+        }
+
+        return Vector<T, 3>::unit_vector(cos_theta, sin_theta, cos_phi, sin_phi);
     }
 
     virtual T do_eval_D(
@@ -386,8 +422,34 @@ class BeckmannMDF2
         const T tan_theta_2 = (T(1.0) - cos_theta_2) / cos_theta_2;
         const T alpha_x_2 = square(alpha_x);
 
-        // Note: in [2] there's a missing Pi factor in the denominator.
-        return std::exp(-tan_theta_2 / alpha_x_2) / (alpha_x_2 * T(Pi) * cos_theta_4);
+        if (alpha_x != alpha_y)
+        {
+            const T sin_theta = this->sin_theta(h);
+
+            T cos_phi_2_ax_2;
+            T sin_phi_2_ay_2;
+
+            if (sin_theta != T(0.0))
+            {
+                cos_phi_2_ax_2 = square(h.x / sin_theta) / alpha_x_2;
+                sin_phi_2_ay_2 = square(h.z / sin_theta) / square(alpha_y);
+            }
+            else
+            {
+                // Choose some arbitrary phi angle (0).
+                cos_phi_2_ax_2 = T(1.0) / alpha_x_2;
+                sin_phi_2_ay_2 = T(0.0);
+            }
+
+            const T A = cos_phi_2_ax_2 + sin_phi_2_ay_2;
+            const T denom = Pi * alpha_x * alpha_y * cos_theta_4;
+            return std::exp(-tan_theta_2 * A) / denom;
+        }
+        else
+        {
+            // Note: in [2] there's a missing Pi factor in the denominator.
+            return std::exp(-tan_theta_2 / alpha_x_2) / (alpha_x_2 * T(Pi) * cos_theta_4);
+        }
     }
 
     virtual T do_eval_G(
@@ -418,7 +480,35 @@ class BeckmannMDF2
         const T cos_theta_3 = this->cos_theta(h) * cos_theta_2;
         const T tan_theta_2 = (T(1.0) - cos_theta_2) / cos_theta_2;
         const T alpha_x_2 = square(alpha_x);
-        return std::exp(-tan_theta_2 / alpha_x_2) / (alpha_x_2 * T(Pi) * cos_theta_3);
+
+        if (alpha_x != alpha_y)
+        {
+            const T sin_theta = this->sin_theta(h);
+
+            T cos_phi_2_ax_2;
+            T sin_phi_2_ay_2;
+
+            if (sin_theta != T(0.0))
+            {
+                cos_phi_2_ax_2 = square(h.x / sin_theta) / alpha_x_2;
+                sin_phi_2_ay_2 = square(h.z / sin_theta) / square(alpha_y);
+            }
+            else
+            {
+                // Choose some arbitrary phi angle (0).
+                cos_phi_2_ax_2 = T(1.0) / alpha_x_2;
+                sin_phi_2_ay_2 = T(0.0);
+            }
+
+            const T A = cos_phi_2_ax_2 + sin_phi_2_ay_2;
+            const T denom = Pi * alpha_x * alpha_y * cos_theta_3;
+            return std::exp(-tan_theta_2 * A) / denom;
+        }
+        else
+        {
+            const T alpha_x_2 = square(alpha_x);
+            return std::exp(-tan_theta_2 / alpha_x_2) / (alpha_x_2 * T(Pi) * cos_theta_3);
+        }
     }
 };
 
