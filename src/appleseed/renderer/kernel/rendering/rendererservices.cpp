@@ -354,9 +354,9 @@ bool RendererServices::trace(
         trace_data->m_hit_distance = (trace_data->m_P - P).length();
         trace_data->m_N = Imath::V3d(shading_point.get_shading_normal());
         trace_data->m_Ng = Imath::V3d(shading_point.get_geometric_normal());
-        Vector2d uv = shading_point.get_uv(0);
-        trace_data->m_u = uv.x;
-        trace_data->m_v = uv.y;
+        const Vector2d& uv = shading_point.get_uv(0);
+        trace_data->m_u = static_cast<float>(uv[0]);
+        trace_data->m_v = static_cast<float>(uv[1]);
         return true;
     }
 
@@ -481,7 +481,8 @@ IMPLEMENT_ATTR_GETTER(object_instance_id)
         const ShadingPoint* shading_point = 
             reinterpret_cast<const ShadingPoint*>(sg->renderstate);
 
-        reinterpret_cast<int*>(val)[0] = shading_point->get_object_instance().get_uid();
+        reinterpret_cast<int*>(val)[0] =
+            static_cast<int>(shading_point->get_object_instance().get_uid());
         clear_attr_derivatives(derivs, type, val);
         return true;        
     }
@@ -496,7 +497,8 @@ IMPLEMENT_ATTR_GETTER(object_instance_index)
         const ShadingPoint* shading_point = 
             reinterpret_cast<const ShadingPoint*>(sg->renderstate);
 
-        reinterpret_cast<int*>(val)[0] = shading_point->get_object_instance_index();
+        reinterpret_cast<int*>(val)[0] =
+            static_cast<int>(shading_point->get_object_instance_index());
         clear_attr_derivatives(derivs, type, val);
         return true;        
     }
@@ -511,7 +513,8 @@ IMPLEMENT_ATTR_GETTER(assembly_instance_id)
         const ShadingPoint* shading_point = 
             reinterpret_cast<const ShadingPoint*>(sg->renderstate);
 
-        reinterpret_cast<int*>(val)[0] = shading_point->get_assembly_instance().get_uid();
+        reinterpret_cast<int*>(val)[0] =
+            static_cast<int>(shading_point->get_assembly_instance().get_uid());
         clear_attr_derivatives(derivs, type, val);
         return true;        
     }
@@ -524,8 +527,8 @@ IMPLEMENT_ATTR_GETTER(camera_resolution)
     if (type == g_int_array2_typedesc)
     {
         Image& img = m_project.get_frame()->image();
-        reinterpret_cast<int*>(val)[0] = img.properties().m_canvas_width;
-        reinterpret_cast<int*>(val)[1] = img.properties().m_canvas_height;
+        reinterpret_cast<int*>(val)[0] = static_cast<int>(img.properties().m_canvas_width);
+        reinterpret_cast<int*>(val)[1] = static_cast<int>(img.properties().m_canvas_height);
         return true;
     }
 
@@ -602,8 +605,8 @@ IMPLEMENT_ATTR_GETTER(camera_shutter)
     if (type == g_float_array2_typedesc)
     {
         Camera* cam = m_project.get_scene()->get_camera();
-        reinterpret_cast<float*>(val)[0] = cam->get_shutter_open_time();
-        reinterpret_cast<float*>(val)[1] = cam->get_shutter_close_time();
+        reinterpret_cast<float*>(val)[0] = static_cast<float>(cam->get_shutter_open_time());
+        reinterpret_cast<float*>(val)[1] = static_cast<float>(cam->get_shutter_close_time());
         clear_attr_derivatives(derivs, type, val);
         return true;
     }
@@ -616,7 +619,7 @@ IMPLEMENT_ATTR_GETTER(camera_shutter_open)
     if (type == OIIO::TypeDesc::TypeFloat)
     {
         Camera* cam = m_project.get_scene()->get_camera();
-        reinterpret_cast<float*>(val)[0] = cam->get_shutter_open_time();
+        reinterpret_cast<float*>(val)[0] = static_cast<float>(cam->get_shutter_open_time());
         clear_attr_derivatives(derivs, type, val);
         return true;
     }
@@ -629,7 +632,7 @@ IMPLEMENT_ATTR_GETTER(camera_shutter_close)
     if (type == OIIO::TypeDesc::TypeFloat)
     {
         Camera* cam = m_project.get_scene()->get_camera();
-        reinterpret_cast<float*>(val)[0] = cam->get_shutter_close_time();
+        reinterpret_cast<float*>(val)[0] = static_cast<float>(cam->get_shutter_close_time());
         clear_attr_derivatives(derivs, type, val);
         return true;
     }
@@ -663,7 +666,7 @@ IMPLEMENT_ATTR_GETTER(ray_depth)
         const ShadingPoint* shading_point = 
             reinterpret_cast<const ShadingPoint*>(sg->renderstate);
 
-        reinterpret_cast<int*>(val)[0] = shading_point->get_ray().m_depth;
+        reinterpret_cast<int*>(val)[0] = static_cast<int>(shading_point->get_ray().m_depth);
         clear_attr_derivatives(derivs, type, val);
         return true;
     }
@@ -679,7 +682,7 @@ IMPLEMENT_ATTR_GETTER(ray_length)
             reinterpret_cast<const ShadingPoint*>(sg->renderstate);
 
         reinterpret_cast<float*>(val)[0] = 
-            norm(shading_point->get_ray().m_org - shading_point->get_point());
+            static_cast<float>(norm(shading_point->get_ray().m_org - shading_point->get_point()));
         clear_attr_derivatives(derivs, type, val);
         return true;
     }
