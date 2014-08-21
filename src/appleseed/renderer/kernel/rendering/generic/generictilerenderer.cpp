@@ -96,12 +96,11 @@ namespace
             IPixelRendererFactory*              pixel_renderer_factory,
             IShadingResultFrameBufferFactory*   framebuffer_factory,
             const ParamArray&                   params,
-            const bool                          primary,
             const size_t                        thread_index)
-          : m_pixel_renderer(pixel_renderer_factory->create(primary, thread_index))
+          : m_pixel_renderer(pixel_renderer_factory->create(thread_index))
           , m_framebuffer_factory(framebuffer_factory)
         {
-            compute_tile_margins(frame, primary);
+            compute_tile_margins(frame, thread_index == 0);
             compute_pixel_ordering(frame);
         }
 
@@ -310,7 +309,6 @@ void GenericTileRendererFactory::release()
 }
 
 ITileRenderer* GenericTileRendererFactory::create(
-    const bool      primary,
     const size_t    thread_index)
 {
     return
@@ -319,7 +317,6 @@ ITileRenderer* GenericTileRendererFactory::create(
             m_pixel_renderer_factory,
             m_framebuffer_factory,
             m_params,
-            primary,
             thread_index);
 }
 

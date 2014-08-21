@@ -57,7 +57,6 @@ class DebugTileRendererFactory
 
     // Return a new debug tile renderer instance.
     virtual ITileRenderer* create(
-        const bool          primary,
         const std::size_t   thread_index) OVERRIDE;
 };
 

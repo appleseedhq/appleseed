@@ -60,10 +60,10 @@ ShadingContext::ShadingContext(
   : m_intersector(intersector)
   , m_tracer(tracer)
   , m_texture_cache(texture_cache)
+  , m_thread_index(thread_index)
   , m_lighting_engine(lighting_engine)
   , m_transparency_threshold(transparency_threshold)
   , m_max_iterations(max_iterations)
-  , m_thread_index(thread_index)
 #ifdef WITH_OIIO
   , m_oiio_texture_system(oiio_texture_system)
 #endif

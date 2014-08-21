@@ -104,7 +104,6 @@ void BlankTileRendererFactory::release()
 }
 
 ITileRenderer* BlankTileRendererFactory::create(
-    const bool      primary,
     const size_t    thread_index)
 {
     return new BlankTileRenderer();

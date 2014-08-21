@@ -101,7 +101,6 @@ void DebugSampleRendererFactory::release()
 }
 
 ISampleRenderer* DebugSampleRendererFactory::create(
-    const bool          primary,
     const std::size_t   thread_index)
 {
     return new DebugSampleRenderer();

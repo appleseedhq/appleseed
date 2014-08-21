@@ -122,7 +122,6 @@ void DebugTileRendererFactory::release()
 }
 
 ITileRenderer* DebugTileRendererFactory::create(
-    const bool      primary,
     const size_t    thread_index)
 {
     return new DebugTileRenderer();

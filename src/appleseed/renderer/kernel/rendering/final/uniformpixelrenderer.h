@@ -61,7 +61,6 @@ class UniformPixelRendererFactory
 
     // Return a new uniform pixel renderer instance.
     virtual IPixelRenderer* create(
-        const bool          primary,
         const std::size_t   thread_index) OVERRIDE;
 
   private:

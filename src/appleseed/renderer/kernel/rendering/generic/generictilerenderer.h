@@ -65,7 +65,6 @@ class GenericTileRendererFactory
 
     // Return a new generic tile renderer instance.
     virtual ITileRenderer* create(
-        const bool          primary,
         const std::size_t   thread_index) OVERRIDE;
 
   private:

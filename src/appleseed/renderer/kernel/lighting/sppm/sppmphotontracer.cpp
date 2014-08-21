@@ -679,7 +679,7 @@ void SPPMPhotonTracer::schedule_light_photon_tracing_jobs(
         pretty_uint(m_params.m_light_photon_count).c_str(),
         m_params.m_light_photon_count > 1 ? "photons" : "photon");
 
-    for (size_t i = 0, j = 0; i < m_params.m_light_photon_count; i += m_params.m_photon_packet_size, ++j)
+    for (size_t i = 0, thread_index = 0; i < m_params.m_light_photon_count; i += m_params.m_photon_packet_size, ++thread_index)
     {
         const size_t photon_begin = i;
         const size_t photon_end = min(i + m_params.m_photon_packet_size, m_params.m_light_photon_count);
@@ -695,7 +695,7 @@ void SPPMPhotonTracer::schedule_light_photon_tracing_jobs(
                 photon_begin,
                 photon_end,
                 pass_hash,
-                j,
+                thread_index,
 #ifdef WITH_OIIO
                 m_oiio_texture_system,
 #endif
@@ -722,7 +722,7 @@ void SPPMPhotonTracer::schedule_environment_photon_tracing_jobs(
         pretty_uint(m_params.m_env_photon_count).c_str(),
         m_params.m_env_photon_count > 1 ? "photons" : "photon");
 
-    for (size_t i = 0, j = 0; i < m_params.m_env_photon_count; i += m_params.m_photon_packet_size, ++j)
+    for (size_t i = 0, thread_index = 0; i < m_params.m_env_photon_count; i += m_params.m_photon_packet_size, ++thread_index)
     {
         const size_t photon_begin = i;
         const size_t photon_end = min(i + m_params.m_photon_packet_size, m_params.m_env_photon_count);
@@ -738,7 +738,7 @@ void SPPMPhotonTracer::schedule_environment_photon_tracing_jobs(
                 photon_begin,
                 photon_end,
                 pass_hash,
-                j,
+                thread_index,
 #ifdef WITH_OIIO
                 m_oiio_texture_system,
 #endif

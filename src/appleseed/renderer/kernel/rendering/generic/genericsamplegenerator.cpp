@@ -76,8 +76,7 @@ namespace
             const Frame&                    frame,
             ISampleRendererFactory*         sample_renderer_factory,
             const size_t                    generator_index,
-            const size_t                    generator_count,
-            const bool                      primary)
+            const size_t                    generator_count)
           : SampleGeneratorBase(generator_index, generator_count)
           , m_frame(frame)
           , m_canvas_width(frame.image().properties().m_canvas_width)
@@ -87,7 +86,7 @@ namespace
           , m_window_width(static_cast<int>(frame.get_crop_window().extent()[0] + 1))
           , m_window_height(static_cast<int>(frame.get_crop_window().extent()[1] + 1))
           , m_lighting_conditions(frame.get_lighting_conditions())
-          , m_sample_renderer(sample_renderer_factory->create(primary, generator_index))
+          , m_sample_renderer(sample_renderer_factory->create(generator_index))
           , m_window_width_next_pow2(next_power(static_cast<double>(m_window_width), 2.0))
           , m_window_height_next_pow3(next_power(static_cast<double>(m_window_height), 3.0))
         {
@@ -220,16 +219,14 @@ void GenericSampleGeneratorFactory::release()
 
 ISampleGenerator* GenericSampleGeneratorFactory::create(
     const size_t            generator_index,
-    const size_t            generator_count,
-    const bool              primary)
+    const size_t            generator_count)
 {
     return
         new GenericSampleGenerator(
             m_frame,
             m_sample_renderer_factory,
             generator_index,
-            generator_count,
-            primary);
+            generator_count);
 }
 
 SampleAccumulationBuffer* GenericSampleGeneratorFactory::create_sample_accumulation_buffer()
