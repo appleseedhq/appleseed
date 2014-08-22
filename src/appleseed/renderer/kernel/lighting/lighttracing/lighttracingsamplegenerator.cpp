@@ -193,6 +193,7 @@ namespace
 #ifdef WITH_OSL
                 m_shadergroup_exec,
 #endif
+                generator_index,
                 0,
                 m_params.m_transparency_threshold,
                 m_params.m_max_iterations)
@@ -825,8 +826,7 @@ void LightTracingSampleGeneratorFactory::release()
 
 ISampleGenerator* LightTracingSampleGeneratorFactory::create(
     const size_t            generator_index,
-    const size_t            generator_count,
-    const bool              primary)
+    const size_t            generator_count)
 {
     return
         new LightTracingSampleGenerator(

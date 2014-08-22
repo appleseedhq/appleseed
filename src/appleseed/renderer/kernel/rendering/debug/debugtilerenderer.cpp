@@ -121,7 +121,8 @@ void DebugTileRendererFactory::release()
     delete this;
 }
 
-ITileRenderer* DebugTileRendererFactory::create(const bool primary)
+ITileRenderer* DebugTileRendererFactory::create(
+    const size_t    thread_index)
 {
     return new DebugTileRenderer();
 }

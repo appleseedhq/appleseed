@@ -102,8 +102,8 @@ namespace
 #ifdef WITH_OSL
             OSL::ShadingSystem&     shading_system,
 #endif
-            const ParamArray&       params,
-            const bool              primary)
+            const size_t            thread_index,
+            const ParamArray&       params)
           : m_params(params)
           , m_scene(scene)
           , m_lighting_conditions(frame.get_lighting_conditions())
@@ -122,7 +122,7 @@ namespace
 #endif
                 m_params.m_transparency_threshold,
                 m_params.m_max_iterations,
-                primary)
+                thread_index == 0)
           , m_lighting_engine(lighting_engine_factory->create())
           , m_shading_context(
                 m_intersector,
@@ -134,6 +134,7 @@ namespace
 #ifdef WITH_OSL
                 m_shadergroup_exec,
 #endif
+                thread_index,
                 m_lighting_engine,
                 m_params.m_transparency_threshold,
                 m_params.m_max_iterations)
@@ -355,7 +356,8 @@ void GenericSampleRendererFactory::release()
     delete this;
 }
 
-ISampleRenderer* GenericSampleRendererFactory::create(const bool primary)
+ISampleRenderer* GenericSampleRendererFactory::create(
+    const std::size_t   thread_index)
 {
     return
         new GenericSampleRenderer(
@@ -371,8 +373,8 @@ ISampleRenderer* GenericSampleRendererFactory::create(const bool primary)
 #ifdef WITH_OSL
             m_shading_system,
 #endif
-            m_params,
-            primary);
+            thread_index,
+            m_params);
 }
 
 }   // namespace renderer
