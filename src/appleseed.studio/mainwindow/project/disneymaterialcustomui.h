@@ -63,9 +63,7 @@ class DisneyMaterialCustomUI
     Q_OBJECT
 
   public:
-    DisneyMaterialCustomUI(
-        const renderer::Project&            project,
-        foundation::DictionaryArray         layer_metadata);
+    explicit DisneyMaterialCustomUI(const renderer::Project& project);
 
     virtual void  create_custom_widgets(
         QVBoxLayout*                    layout,
@@ -83,6 +81,7 @@ class DisneyMaterialCustomUI
     void slot_open_expression_editor(const QString& widget_name);
     void slot_expression_changed(const QString& widget_name, const QString& expression);
     void slot_line_edit_changed(const QString& widget_name);
+    void slot_expression_editor_closed();
 
   private:
     void create_connections();
@@ -99,33 +98,33 @@ class DisneyMaterialCustomUI
     void create_colormap_input_widgets(const foundation::Dictionary& parameters, const std::string& group_name);
 
     void create_texture_and_expr_buttons();
-    
+
     void add_layer(const bool update, const foundation::Dictionary& parameters = foundation::Dictionary());
+    void layer_deleted(DisneyMaterialLayerUI* layer);
 
-    std::vector<QWidget*>           m_layers_widgets;
+    std::vector<QWidget*>               m_layers_widgets;
 
-    QWidget*                        m_parent;
-    const renderer::Project&        m_project;
-    QWidget*                        m_group_widget;
-    QWidget*                        m_selected_layer_widget;
-    DisneyMaterialLayerUI*          m_last_layer;
-    LineEditForwarder*              m_line_edit;
-    QPushButton*                    m_texture_button;
-    QPushButton*                    m_expression_button;
-    QFormLayout*                    m_group_layout;
-    QVBoxLayout*                    m_form_layout;
-    size_t                          m_num_created_layers;
+    QWidget*                            m_parent;
+    const renderer::Project&            m_project;
+    QWidget*                            m_group_widget;
+    QWidget*                            m_selected_layer_widget;
+    DisneyMaterialLayerUI*              m_last_layer;
+    QPushButton*                        m_add_layer_button;
+    LineEditForwarder*                  m_line_edit;
+    QPushButton*                        m_texture_button;
+    QPushButton*                        m_expression_button;
+    QFormLayout*                        m_group_layout;
+    QVBoxLayout*                        m_form_layout;
+    size_t                              m_num_created_layers;
 
-    QSignalMapper*                  m_color_picker_signal_mapper;
-    QSignalMapper*                  m_file_picker_signal_mapper;
-    QSignalMapper*                  m_expression_editor_signal_mapper;
-    QSignalMapper*                  m_line_edit_signal_mapper;
+    QSignalMapper*                      m_color_picker_signal_mapper;
+    QSignalMapper*                      m_file_picker_signal_mapper;
+    QSignalMapper*                      m_expression_editor_signal_mapper;
+    QSignalMapper*                      m_line_edit_signal_mapper;
 
-    InputWidgetProxyCollection      m_widget_proxies;
-    foundation::Dictionary          m_renames;
-    foundation::Dictionary          m_values;
-
-    foundation::DictionaryArray     m_layer_metadata;
+    InputWidgetProxyCollection          m_widget_proxies;
+    foundation::Dictionary              m_renames;
+    foundation::Dictionary              m_values;
 
     friend class DisneyMaterialLayerUI;
 };
