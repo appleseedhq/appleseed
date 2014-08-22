@@ -469,7 +469,9 @@ set (foundation_platform_sources
     foundation/platform/datetime.h
     foundation/platform/defaulttimers.cpp
     foundation/platform/defaulttimers.h
+    foundation/platform/exrheaderguards.h
     foundation/platform/opengl.h
+    foundation/platform/oslheaderguards.h
     foundation/platform/path.cpp
     foundation/platform/path.h
     foundation/platform/python.h

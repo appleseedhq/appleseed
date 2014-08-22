@@ -33,7 +33,10 @@
 #include "foundation/utility/test.h"
 
 // OpenEXR headers.
+#include "foundation/platform/exrheaderguards.h"
+BEGIN_EXR_INCLUDES
 #include "OpenEXR/half.h"
+END_EXR_INCLUDES
 
 using namespace foundation;
 

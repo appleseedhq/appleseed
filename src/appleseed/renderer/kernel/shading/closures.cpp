@@ -40,8 +40,11 @@
 #include "foundation/utility/otherwise.h"
 
 // OSL headers.
+#include "foundation/platform/oslheaderguards.h"
+BEGIN_OSL_INCLUDES
 #include "OSL/genclosure.h"
 #include "OSL/oslclosure.h"
+END_OSL_INCLUDES
 
 // boost headers.
 #include <boost/mpl/contains.hpp>

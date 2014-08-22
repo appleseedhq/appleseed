@@ -47,8 +47,11 @@
 #include "foundation/platform/compiler.h"
 
 // OSL headers.
+#include "foundation/platform/oslheaderguards.h"
+BEGIN_OSL_INCLUDES
 #include "OSL/dual.h"
 #include "OSL/oslexec.h"
+END_OSL_INCLUDES
 
 // boost headers.
 #include <boost/mpl/assert.hpp>

@@ -35,7 +35,10 @@
 #include "foundation/platform/compiler.h"
 
 // OSL headers.
+#include "foundation/platform/oslheaderguards.h"
+BEGIN_OSL_INCLUDES
 #include "OSL/rendererservices.h"
+END_OSL_INCLUDES
 
 // OpenImageIO headers.
 #include "OpenImageIO/texture.h"
