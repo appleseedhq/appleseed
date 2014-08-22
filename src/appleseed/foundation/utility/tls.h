@@ -76,14 +76,12 @@ class TLS
 // TLS class implementation.
 //
 
-// Constructor.
 template <typename T>
 inline TLS<T>::TLS(const size_t thread_count)
 {
     set_thread_count(thread_count);
 }
 
-// Set the number of threads having access to this object.
 template <typename T>
 inline void TLS<T>::set_thread_count(const size_t thread_count)
 {
@@ -101,20 +99,19 @@ inline void TLS<T>::set_thread_count(const size_t thread_count)
     m_thread_count = thread_count;
 }
 
-// Get the number of threads having access to this object.
 template <typename T>
 inline size_t TLS<T>::get_thread_count() const
 {
     return m_thread_count;
 }
 
-// Direct access to the storage area for a given thread.
 template <typename T>
 inline T& TLS<T>::operator[](const size_t thread_index)
 {
     assert(thread_index < m_thread_count);
     return m_elements[thread_index * m_stride];
 }
+
 template <typename T>
 inline const T& TLS<T>::operator[](const size_t thread_index) const
 {

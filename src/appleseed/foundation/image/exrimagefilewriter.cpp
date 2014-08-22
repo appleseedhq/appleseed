@@ -39,6 +39,8 @@
 #include "foundation/image/pixel.h"
 
 // OpenEXR headers.
+#include "foundation/platform/exrheaderguards.h"
+BEGIN_EXR_INCLUDES
 #include "OpenEXR/IexBaseExc.h"
 #include "OpenEXR/ImathBox.h"
 #include "OpenEXR/ImfChannelList.h"
@@ -47,6 +49,7 @@
 #include "OpenEXR/ImfPixelType.h"
 #include "OpenEXR/ImfTileDescription.h"
 #include "OpenEXR/ImfTiledOutputFile.h"
+END_EXR_INCLUDES
 
 // Standard headers.
 #include <cassert>

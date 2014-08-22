@@ -47,8 +47,11 @@
 #include "foundation/platform/compiler.h"
 
 // OSL headers.
+#include "foundation/platform/oslheaderguards.h"
+BEGIN_OSL_INCLUDES
 #include "OSL/dual.h"
 #include "OSL/oslexec.h"
+END_OSL_INCLUDES
 
 // boost headers.
 #include <boost/mpl/assert.hpp>
@@ -156,8 +159,8 @@ class APPLESEED_ALIGN(16) CompositeClosure
     foundation::Vector3d            m_normals[MaxClosureEntries];
     bool                            m_has_tangent[MaxClosureEntries];
     foundation::Vector3d            m_tangents[MaxClosureEntries];
-    int                             m_num_closures;
-    int                             m_num_bytes;
+    size_t                          m_num_closures;
+    size_t                          m_num_bytes;
     Spectrum                        m_spectrum_multipliers[MaxClosureEntries];
     double                          m_cdf[MaxClosureEntries];
 

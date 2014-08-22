@@ -43,7 +43,10 @@
 
 // Imath headers.
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
+#include "foundation/platform/exrheaderguards.h"
+BEGIN_EXR_INCLUDES
 #include "OpenEXR/ImathMatrix.h"
+END_EXR_INCLUDES
 #endif
 
 // Standard headers.

@@ -388,6 +388,21 @@ TEST_SUITE(Foundation_Math_Microfacet2)
         EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
     }
 
+    TEST_CASE(BeckmannMDF2_Anisotropic_IntegratedViaUniformSampling_EqualsOne)
+    {
+        const BeckmannMDF2<double> mdf;
+
+        const double integral =
+            integrate_sampling(
+                mdf,
+                0.6,
+                0.2,
+                UniformHemisphereSampler<double>(),
+                IntegrationSampleCount);
+
+        EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
+    }
+
     TEST_CASE(BeckmannMDF2_IntegratedViaCosineWeightedSampling_EqualsOne)
     {
         const BeckmannMDF2<double> mdf;
@@ -403,6 +418,21 @@ TEST_SUITE(Foundation_Math_Microfacet2)
         EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
     }
 
+    TEST_CASE(BeckmannMDF2_Anisotropic_IntegratedViaCosineWeightedSampling_EqualsOne)
+    {
+        const BeckmannMDF2<double> mdf;
+
+        const double integral =
+            integrate_sampling(
+                mdf,
+                0.2,
+                0.6,
+                CosineHemisphereSampler<double>(),
+                IntegrationSampleCount);
+
+        EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
+    }
+
     TEST_CASE(BeckmannMDF2_IntegratedViaImportanceSampling_EqualsOne)
     {
         const BeckmannMDF2<double> mdf;
@@ -412,6 +442,21 @@ TEST_SUITE(Foundation_Math_Microfacet2)
                 mdf,
                 0.5,
                 0.5,
+                ImportanceSampler<double, BeckmannMDF2<double> >(mdf),
+                IntegrationSampleCount);
+
+        EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
+    }
+
+    TEST_CASE(BeckmannMDF2_Anisotropic_IntegratedViaImportanceSampling_EqualsOne)
+    {
+        const BeckmannMDF2<double> mdf;
+
+        const double integral =
+            integrate_sampling(
+                mdf,
+                0.7,
+                0.2,
                 ImportanceSampler<double, BeckmannMDF2<double> >(mdf),
                 IntegrationSampleCount);
 
@@ -436,6 +481,23 @@ TEST_SUITE(Foundation_Math_Microfacet2)
         EXPECT_FEQ_EPS(1.0, integral, WeakWhiteFurnaceEps);
     }
 
+    TEST_CASE(BeckmannMDF2_Anisotropic_SmithWeakWhiteFurnace)
+    {
+        const BeckmannSmithMaskingShadowing<double> g;
+        const BeckmannMDF2<double> mdf;
+
+        const double integral =
+            weak_white_furnace_test(
+                mdf,
+                g,
+                Pi / 5.0,
+                Pi / 8.0,
+                0.25,
+                0.5,
+                WeakWhiteFurnaceAngleStep);
+
+        EXPECT_FEQ_EPS(1.0, integral, WeakWhiteFurnaceEps);
+    }
 
     //
     // GGX MDF.

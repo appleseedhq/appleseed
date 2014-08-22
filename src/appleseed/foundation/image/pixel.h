@@ -39,7 +39,10 @@
 #include "main/dllsymbol.h"
 
 // OpenEXR headers.
+#include "foundation/platform/exrheaderguards.h"
+BEGIN_EXR_INCLUDES
 #include "OpenEXR/half.h"
+END_EXR_INCLUDES
 
 // Standard headers.
 #include <cassert>

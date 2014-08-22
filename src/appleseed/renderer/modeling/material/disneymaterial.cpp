@@ -41,10 +41,13 @@
 #include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/tls.h"
 
-// SeExpr headers
+// SeExpr headers.
+#pragma warning (push)
+#pragma warning (disable : 4267)    // conversion from 'size_t' to 'int', possible loss of data
 #include "SeExpression.h"
 #include "SeExprFunc.h"
 #include "SeExprNode.h"
+#pragma warning (pop)
 
 // Boost headers.
 #include "boost/algorithm/string.hpp"
@@ -887,7 +890,7 @@ bool DisneyMaterial::on_frame_begin(
 
 void DisneyMaterial::on_frame_end(
     const Project&          project,
-    const Assembly&         assembly) OVERRIDE
+    const Assembly&         assembly)
 {
     impl->clear_per_thread_layers();
     impl->m_layers.clear();
@@ -905,9 +908,8 @@ const DisneyMaterialLayer& DisneyMaterial::get_layer(
 {
     assert(index < get_layer_count());
 
-    if (thread_index == ~0)
-        return impl->m_layers[index];
-    else
+
+    if (thread_index != ~0)
     {
         assert(thread_index < Impl::MaxTLSThreads);
 
@@ -930,6 +932,8 @@ const DisneyMaterialLayer& DisneyMaterial::get_layer(
 
         return (*ts_layers)[index];
     }
+
+    return impl->m_layers[index];
 }
 
 

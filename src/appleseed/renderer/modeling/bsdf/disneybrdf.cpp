@@ -209,8 +209,9 @@ namespace
             const T a = T(1.0) - pow(alpha_x_2, T(1.0) - s[0]);
             const T cos_theta = sqrt(a / (T(1.0) - alpha_x_2));
             const T sin_theta  = sqrt(T(1.0) - square(cos_theta));
-            const T phi = T(TwoPi) * s[1];
-            return Vector<T, 3>::unit_vector(cos_theta, sin_theta, cos(phi), sin(phi));
+            T cos_phi, sin_phi;
+            this->sample_phi(s[1], cos_phi, sin_phi);
+            return Vector<T, 3>::unit_vector(cos_theta, sin_theta, cos_phi, sin_phi);
         }
 
         virtual T do_eval_D(

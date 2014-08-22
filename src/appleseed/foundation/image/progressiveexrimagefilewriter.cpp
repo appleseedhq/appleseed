@@ -40,11 +40,15 @@
 #include "foundation/utility/log.h"
 
 // OpenEXR headers.
+#include "foundation/platform/exrheaderguards.h"
+BEGIN_EXR_INCLUDES
 #include "OpenEXR/ImfChannelList.h"
 #include "OpenEXR/ImfFrameBuffer.h"
 #include "OpenEXR/ImfHeader.h"
 #include "OpenEXR/ImfPixelType.h"
 #include "OpenEXR/ImfTileDescription.h"
+#include "OpenEXR/ImfTiledOutputFile.h"
+END_EXR_INCLUDES
 
 // Standard headers.
 #include <cassert>

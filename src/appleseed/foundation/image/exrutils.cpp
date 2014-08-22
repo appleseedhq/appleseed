@@ -37,9 +37,12 @@
 #include "foundation/utility/string.h"
 
 // OpenEXR headers.
+#include "foundation/platform/exrheaderguards.h"
+BEGIN_EXR_INCLUDES
 #include "OpenEXR/ImfStandardAttributes.h"
 #include "OpenEXR/ImfStringAttribute.h"
 #include "OpenEXR/ImfThreading.h"
+END_EXR_INCLUDES
 
 // Standard headers.
 #include <string>

@@ -39,7 +39,7 @@
 #include "main/dllsymbol.h"
 
 // OSL headers.
-#include <OSL/oslexec.h>
+#include "OSL/oslexec.h"
 
 // Forward declarations.
 namespace renderer  { class ShaderGroup; }

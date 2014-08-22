@@ -40,8 +40,11 @@
 #include "foundation/utility/otherwise.h"
 
 // OSL headers.
+#include "foundation/platform/oslheaderguards.h"
+BEGIN_OSL_INCLUDES
 #include "OSL/genclosure.h"
 #include "OSL/oslclosure.h"
+END_OSL_INCLUDES
 
 // boost headers.
 #include <boost/mpl/contains.hpp>
@@ -145,7 +148,7 @@ BOOST_STATIC_ASSERT(sizeof(CompositeClosure) <= InputEvaluator::DataSize);
 //
 
 CompositeClosure::CompositeClosure(
-    const OSL::ClosureColor* ci)
+    const OSL::ClosureColor*    ci)
   : m_num_closures(0)
   , m_num_bytes(0)
 {

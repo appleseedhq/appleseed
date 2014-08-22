@@ -5,7 +5,6 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
 // Copyright (c) 2014 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,29 +26,24 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_IMAGE_EXRUTILS_H
-#define APPLESEED_FOUNDATION_IMAGE_EXRUTILS_H
+#ifndef APPLESEED_FOUNDATION_PLATFORM_OSLHEADERGUARDS_H
+#define APPLESEED_FOUNDATION_PLATFORM_OSLHEADERGUARDS_H
 
-// OpenEXR headers.
-#include "foundation/platform/exrheaderguards.h"
-BEGIN_EXR_INCLUDES
-#include "OpenEXR/ImfHeader.h"
-END_EXR_INCLUDES
+#if defined _MSC_VER
 
-// Forward declarations.
-namespace foundation    { class ImageAttributes; }
+    // C4305: truncation from 'double' to 'float'
+    #define BEGIN_OSL_INCLUDES              \
+        __pragma(warning(push))             \
+        __pragma(warning(disable: 4305))
 
-namespace foundation
-{
+    #define END_OSL_INCLUDES                \
+        __pragma(warning(pop))
 
-// Configure the OpenEXR library on first use.
-void initialize_openexr();
+#else
 
-// Add image attributes to an OpenEXR Header object.
-void add_attributes(
-    const ImageAttributes&  image_attributes,
-    Imf::Header&            header);
+    #define BEGIN_OSL_INCLUDES
+    #define END_OSL_INCLUDES
 
-}       // namespace foundation
+#endif
 
-#endif  // !APPLESEED_FOUNDATION_IMAGE_EXRUTILS_H
+#endif  // !APPLESEED_FOUNDATION_PLATFORM_OSLHEADERGUARDS_H

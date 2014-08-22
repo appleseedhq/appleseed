@@ -321,7 +321,6 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     // Create the shading engine.
     ShadingEngine shading_engine(m_params.child("shading_engine"));
 
-    // Create OSL's shading system.
 #ifdef WITH_OSL
 
     // Create the error handler.
@@ -344,7 +343,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
             &services,
             m_texture_system,
             &error_handler),
-            bind(&destroy_osl_shading_system, _1, m_texture_system));
+        boost::bind(&destroy_osl_shading_system, _1, m_texture_system));
 
     if (!search_paths.empty())
         shading_system->attribute("searchpath:shader", search_paths);

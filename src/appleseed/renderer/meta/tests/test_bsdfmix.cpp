@@ -57,9 +57,12 @@
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/test.h"
 
-// OSL headers
+// OSL headers.
 #ifdef WITH_OSL
+#include "foundation/platform/oslheaderguards.h"
+BEGIN_OSL_INCLUDES
 #include "OSL/oslexec.h"
+END_OSL_INCLUDES
 #endif
 
 // OpenImageIO headers.

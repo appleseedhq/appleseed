@@ -42,6 +42,8 @@
 #include "foundation/utility/memory.h"
 
 // OpenEXR headers.
+#include "foundation/platform/exrheaderguards.h"
+BEGIN_EXR_INCLUDES
 #include "OpenEXR/ImathBox.h"
 #include "OpenEXR/ImfChannelList.h"
 #include "OpenEXR/ImfFrameBuffer.h"
@@ -50,6 +52,7 @@
 #include "OpenEXR/ImfPixelType.h"
 #include "OpenEXR/ImfTileDescription.h"
 #include "OpenEXR/ImfTiledInputFile.h"
+END_EXR_INCLUDES
 
 // Standard headers.
 #include <algorithm>

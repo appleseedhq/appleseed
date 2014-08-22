@@ -50,6 +50,9 @@
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/scene/textureinstance.h"
+#ifdef WITH_OSL
+#include "renderer/modeling/shadergroup/shadergroup.h"
+#endif
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/modeling/texture/texture.h"
 
@@ -59,11 +62,6 @@
 
 // Standard headers.
 #include <exception>
-
-// OSL headers
-#ifdef WITH_OSL
-#include "renderer/modeling/shadergroup/shadergroup.h"
-#endif
 
 using namespace foundation;
 using namespace std;
