@@ -69,6 +69,7 @@ class ExpressionEditorWindow
     void slot_save_script();
     void slot_load_script();
     void slot_show_examples();
+    void slot_show_help();
 
   signals:
     void signal_expression_applied(const QString& widget_name, const QString& expression);
