@@ -40,7 +40,7 @@
 // OpenImageIO headers.
 #include "OpenImageIO/texture.h"
 
-// boost headers
+// boost headers.
 #include "boost/unordered_map.hpp"
 
 // Standard headers.
