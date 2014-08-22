@@ -462,7 +462,7 @@ endif ()
 # Post-build commands.
 #--------------------------------------------------------------------------------------------------
 
-add_copy_target_to_sandbox_command (appleseed.studio)
+add_copy_target_exe_to_sandbox_command (appleseed.studio)
 
 
 #--------------------------------------------------------------------------------------------------

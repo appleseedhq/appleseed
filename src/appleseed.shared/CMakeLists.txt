@@ -103,17 +103,23 @@ target_link_libraries (appleseed.shared
 # Post-build commands.
 #--------------------------------------------------------------------------------------------------
 
-add_copy_target_to_sandbox_command (appleseed.shared)
+add_copy_target_lib_to_sandbox_command (appleseed.shared)
 
 
 #--------------------------------------------------------------------------------------------------
 # Installation.
 #--------------------------------------------------------------------------------------------------
 
-install (TARGETS appleseed.shared
-    DESTINATION bin
-)
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    install (TARGETS appleseed.shared
+        DESTINATION bin
+    )
 
-install (TARGETS appleseed.shared
-    DESTINATION extras/devkit/lib
-)
+    install (TARGETS appleseed.shared
+        DESTINATION extras/devkit/lib
+    )
+else ()
+    install (TARGETS appleseed.shared
+        DESTINATION lib
+    )
+endif ()
