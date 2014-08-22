@@ -56,6 +56,7 @@
 #pragma warning (pop)
 
 // Qt headers.
+#include <QCloseEvent>
 #include <QFileDialog>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -311,6 +312,12 @@ string ExpressionEditorWindow::get_project_path() const
     const filesystem::path file_root_path = file_path.parent_path();
 
     return file_root_path.string();
+}
+
+void ExpressionEditorWindow::closeEvent(QCloseEvent *e)
+{
+    emit editor_closed();
+    e->accept();
 }
 
 }       // namespace studio

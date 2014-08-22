@@ -73,6 +73,10 @@ class ExpressionEditorWindow
   signals:
     void signal_expression_applied(const QString& widget_name, const QString& expression);
 
+    void editor_closed();
+  protected:
+    virtual void closeEvent(QCloseEvent* e);
+
   private:
     std::string get_project_path() const;
 
