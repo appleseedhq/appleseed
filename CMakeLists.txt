@@ -63,12 +63,11 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/src/cmake/Modul
 # Build options.
 #--------------------------------------------------------------------------------------------------
 
-option (USE_STATIC_BOOST        "Use static Boost libs"                                 ON)
-option (USE_EXTERNAL_ZLIB       "Use external zlib lib"                                 OFF)
-option (USE_EXTERNAL_PNG        "Use external png lib"                                  OFF)
-option (USE_EXTERNAL_EXR        "Use external OpenEXR lib"                              OFF)
-option (USE_EXTERNAL_ALEMBIC    "Use external Alembic lib"                              OFF)
-option (USE_EXTERNAL_XERCES     "Use external Xerces lib"                               OFF)
+option (USE_EXTERNAL_ZLIB       "Use external zlib library"                             OFF)
+option (USE_EXTERNAL_PNG        "Use external png library"                              OFF)
+option (USE_EXTERNAL_EXR        "Use external OpenEXR library"                          OFF)
+option (USE_EXTERNAL_ALEMBIC    "Use external Alembic library"                          OFF)
+option (USE_EXTERNAL_XERCES     "Use external Xerces library"                           OFF)
 
 option (WITH_CLI                "Build appleseed.cli"                                   ON)
 option (WITH_STUDIO             "Build appleseed.studio"                                ON)
@@ -76,7 +75,11 @@ option (WITH_TOOLS              "Build appleseed tools"                         
 option (WITH_PYTHON             "Build Python bindings"                                 ON)
 option (WITH_ALEMBIC            "Build Alembic support"                                 ON)
 option (WITH_OSL                "Build OSL support"                                     OFF)
-option (WITH_DISNEY_MATERIAL    "Build Disney Material"                                 OFF)
+option (WITH_DISNEY_MATERIAL    "Build Disney material"                                 OFF)
+
+option (USE_STATIC_BOOST        "Use static Boost libraries"                            ON)
+option (USE_STATIC_OIIO         "Use static OIIO libraries"                             ON)
+option (USE_STATIC_OSL          "Use static OSL libraries"                              ON)
 
 option (USE_SSE                 "Use SSE and SSE 2 instruction sets"                    ON)
 option (USE_QMC_SAMPLER         "Use QMC sampler (possible software patent issues)"     OFF)
@@ -141,7 +144,7 @@ if (USE_STATIC_BOOST)
     set (Boost_USE_STATIC_LIBS TRUE)
 endif ()
 
-set (BOOST_NEEDED_LIBS chrono date_time filesystem regex system thread)
+set (BOOST_NEEDED_LIBS chrono date_time filesystem regex system thread wave)
 find_package (Boost 1.47 REQUIRED ${BOOST_NEEDED_LIBS})
 
 add_definitions (-DBOOST_FILESYSTEM_VERSION=3 -DBOOST_FILESYSTEM_NO_DEPRECATED)
@@ -188,11 +191,17 @@ endif ()
   
 if (WITH_OIIO)
     add_definitions (-DWITH_OIIO)
+    if (USE_STATIC_OIIO)
+        add_definitions (-DOIIO_STATIC_BUILD)
+    endif ()
     find_package (OpenImageIO REQUIRED)
 endif ()
 
 if (WITH_OSL)
     add_definitions (-DWITH_OSL)
+    if (USE_STATIC_OSL)
+        add_definitions (-DOSL_STATIC_LIBRARY)
+    endif ()
     find_package (OSL REQUIRED)
 endif ()
 
