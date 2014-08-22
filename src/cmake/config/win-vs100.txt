@@ -162,7 +162,7 @@ set (shared_lib_linker_flags_profile
 
 
 #--------------------------------------------------------------------------------------------------
-# Static libraries.
+# libraries.
 #--------------------------------------------------------------------------------------------------
 
 macro (link_against_platform target)
@@ -272,7 +272,16 @@ macro (get_sandbox_bin_path path)
     set (${path} ${${path}}\\sandbox\\bin\\$(ConfigurationName)\\)
 endmacro ()
 
-macro (add_copy_target_to_sandbox_command target)
+macro (add_copy_target_exe_to_sandbox_command target)
+    get_sandbox_bin_path (bin_path)
+
+    add_custom_command (TARGET ${target} POST_BUILD
+        COMMAND if not exist "${bin_path}" mkdir "${bin_path}"
+        COMMAND ${CMAKE_COMMAND} -E copy "$(TargetPath)" "${bin_path}"
+    )
+endmacro ()
+
+macro (add_copy_target_lib_to_sandbox_command target)
     get_sandbox_bin_path (bin_path)
 
     add_custom_command (TARGET ${target} POST_BUILD
