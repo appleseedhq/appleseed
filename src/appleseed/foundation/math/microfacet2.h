@@ -384,7 +384,7 @@ class BeckmannSmithMaskingShadowing
             const T sin_phi_2 = square(v.z / sin_theta);
             const T alpha = std::sqrt(cos_phi_2 * square(alpha_x) + sin_phi_2 * square(alpha_y));
             const T a = cos_theta / (alpha * sin_theta);
-            const T lambda = (erf(a) - 1) * T(0.5) + std::exp(-square(a)) / (T(2.0) * a * SqrtPi);
+            const T lambda = (boost::math::erf(a) - 1) * T(0.5) + std::exp(-square(a)) / (T(2.0) * a * SqrtPi);
             return T(1.0) / (T(1.0) + lambda);
         }
         else
