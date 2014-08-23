@@ -106,7 +106,13 @@ add_copy_target_lib_to_sandbox_command (appleseed.shared)
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     install (TARGETS appleseed.shared
+        RUNTIME
         DESTINATION bin
+    )
+
+    install (TARGETS appleseed.shared
+        ARCHIVE
+        DESTINATION lib
     )
 
     install (TARGETS appleseed.shared
