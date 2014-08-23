@@ -65,6 +65,11 @@ set_target_properties (appleseed.cli PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/appleseed.cli
 )
 
+if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set_target_properties (appleseed.cli PROPERTIES
+        INSTALL_RPATH "\$ORIGIN/../lib"
+    )
+endif ()
 
 #--------------------------------------------------------------------------------------------------
 # Include paths.
