@@ -89,7 +89,7 @@ target_link_libraries (makefluffy
 )
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    set_target_properties (convertmeshfile PROPERTIES
+    set_target_properties (makefluffy PROPERTIES
         INSTALL_RPATH "\$ORIGIN/../lib"
     )
 endif ()
