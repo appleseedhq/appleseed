@@ -22,4 +22,4 @@ cmake \
 make all install package
 
 # Unit tests (appleseed must be installed to function properly)
-env LD_LIBRARY_PATH=./travis_install/bin:$LD_LIBRARY_PATH ./travis_install/bin/appleseed.cli --run-unit-tests --verbose-unit-tests
+env LD_LIBRARY_PATH=./travis_install/lib:$LD_LIBRARY_PATH ./travis_install/bin/appleseed.cli --run-unit-tests --verbose-unit-tests
