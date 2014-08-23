@@ -90,7 +90,7 @@ target_link_libraries (maketiledexr
 )
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    set_target_properties (convertmeshfile PROPERTIES
+    set_target_properties (maketiledexr PROPERTIES
         INSTALL_RPATH "\$ORIGIN/../lib"
     )
 endif ()
