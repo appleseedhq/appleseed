@@ -66,12 +66,6 @@ add_library (appleseed.shared SHARED
     ${appleseed.shared_sources}
 )
 
-set_target_properties (appleseed.shared PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/appleseed.shared
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/appleseed.shared
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/appleseed.shared
-)
-
 
 #--------------------------------------------------------------------------------------------------
 # Include paths.

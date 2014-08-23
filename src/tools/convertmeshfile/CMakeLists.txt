@@ -53,12 +53,6 @@ add_executable (convertmeshfile
     ${convertmeshfile_sources}
 )
 
-set_target_properties (convertmeshfile PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/convertmeshfile
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/convertmeshfile
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/convertmeshfile
-)
-
 
 #--------------------------------------------------------------------------------------------------
 # Include paths.

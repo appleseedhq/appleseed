@@ -53,12 +53,6 @@ add_executable (maketiledexr
     ${maketiledexr_sources}
 )
 
-set_target_properties (maketiledexr PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/maketiledexr
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/maketiledexr
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/maketiledexr
-)
-
 
 #--------------------------------------------------------------------------------------------------
 # Include paths.

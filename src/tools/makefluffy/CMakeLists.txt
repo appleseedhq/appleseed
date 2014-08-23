@@ -52,12 +52,6 @@ add_executable (makefluffy
     ${makefluffy_sources}
 )
 
-set_target_properties (makefluffy PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/makefluffy
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/makefluffy
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/makefluffy
-)
-
 
 #--------------------------------------------------------------------------------------------------
 # Include paths.

@@ -173,8 +173,8 @@ macro (link_against_zlib target)
         target_link_libraries (${target} ${ZLIB_LIBRARIES})
     else ()
         target_link_libraries (${target}
-            debug       ${CMAKE_SOURCE_DIR}/build/${platform}/zlib/Debug/zlib.lib
-            optimized   ${CMAKE_SOURCE_DIR}/build/${platform}/zlib/Release/zlib.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/zlib/lib/zlibstaticd.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/zlib/lib/zlibstatic.lib
         )
     endif ()
 endmacro ()
@@ -184,8 +184,8 @@ macro (link_against_libpng target)
         target_link_libraries (${target} ${PNG_LIBRARIES})
     else ()
         target_link_libraries (${target}
-            debug       ${CMAKE_SOURCE_DIR}/build/${platform}/libpng/Debug/libpng.lib
-            optimized   ${CMAKE_SOURCE_DIR}/build/${platform}/libpng/Release/libpng.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/libpng-debug/lib/libpng16_staticd.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/libpng-release/lib/libpng16_static.lib
         )
     endif ()
 endmacro ()
@@ -198,16 +198,16 @@ macro (link_against_openexr target)
         )
     else ()
         target_link_libraries (${target}
-            debug       ${CMAKE_SOURCE_DIR}/build/${platform}/openexr/Half/Debug/Half.lib
-            debug       ${CMAKE_SOURCE_DIR}/build/${platform}/openexr/Iex/Debug/Iex.lib
-            debug       ${CMAKE_SOURCE_DIR}/build/${platform}/openexr/IlmImf/Debug/IlmImf.lib
-            debug       ${CMAKE_SOURCE_DIR}/build/${platform}/openexr/IlmThread/Debug/IlmThread.lib
-            debug       ${CMAKE_SOURCE_DIR}/build/${platform}/openexr/Imath/Debug/Imath.lib
-            optimized   ${CMAKE_SOURCE_DIR}/build/${platform}/openexr/Half/Release/Half.lib
-            optimized   ${CMAKE_SOURCE_DIR}/build/${platform}/openexr/Iex/Release/Iex.lib
-            optimized   ${CMAKE_SOURCE_DIR}/build/${platform}/openexr/IlmImf/Release/IlmImf.lib
-            optimized   ${CMAKE_SOURCE_DIR}/build/${platform}/openexr/IlmThread/Release/IlmThread.lib
-            optimized   ${CMAKE_SOURCE_DIR}/build/${platform}/openexr/Imath/Release/Imath.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/ilmbase-debug/lib/Half.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/ilmbase-debug/lib/Iex-2_2.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/ilmbase-debug/lib/IlmThread-2_2.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/ilmbase-debug/lib/Imath-2_2.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/openexr-debug/lib/IlmImf-2_2.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/ilmbase-release/lib/Half.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/ilmbase-release/lib/Iex-2_2.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/ilmbase-release/lib/IlmThread-2_2.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/ilmbase-release/lib/Imath-2_2.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/openexr-release/lib/IlmImf-2_2.lib
         )
     endif ()
 endmacro ()
@@ -220,10 +220,10 @@ macro (link_against_hdf5 target)
         )
     else ()
         target_link_libraries (${target}
-            debug       ${CMAKE_SOURCE_DIR}/build/${platform}/hdf5/Debug/hdf5d.lib
-            debug       ${CMAKE_SOURCE_DIR}/build/${platform}/hdf5/Debug/hdf5_hld.lib
-            optimized   ${CMAKE_SOURCE_DIR}/build/${platform}/hdf5/Release/hdf5.lib
-            optimized   ${CMAKE_SOURCE_DIR}/build/${platform}/hdf5/Release/hdf5_hl.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/hdf5/Debug/hdf5d.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/hdf5/Debug/hdf5_hld.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/hdf5/Release/hdf5.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/hdf5/Release/hdf5_hl.lib
         )
     endif ()
 endmacro ()
@@ -233,8 +233,8 @@ macro (link_against_alembic target)
         target_link_libraries (${target} ${ALEMBIC_LIBRARIES})
     else ()
         target_link_libraries (${target}
-            debug       ${CMAKE_SOURCE_DIR}/build/${platform}/alembic/Debug/alembic.lib
-            optimized   ${CMAKE_SOURCE_DIR}/build/${platform}/alembic/Release/alembic.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/alembic/Debug/alembic.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/alembic/Release/alembic.lib
         )
     endif ()
 endmacro ()
@@ -244,26 +244,32 @@ macro (link_against_xercesc target)
         target_link_libraries (${target} ${XERCES_LIBRARIES})
     else ()
         target_link_libraries (${target}
-            debug       ${CMAKE_SOURCE_DIR}/build/${platform}/xerces-c/Static\ Debug/xerces-c_static_3D.lib
-            optimized   ${CMAKE_SOURCE_DIR}/build/${platform}/xerces-c/Static\ Release/xerces-c_static_3.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/xerces-c/Static\ Debug/xerces-c_static_3D.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/xerces-c/Static\ Release/xerces-c_static_3.lib
         )
     endif ()
 endmacro ()
 
 macro (link_against_oiio target)
-    target_link_libraries (${target}
-        ${OPENIMAGEIO_LIBRARIES}
-        ${LIBJPEG_LIBRARY}
-        ${LIBTIFF_LIBRARY}
-    )
+    if (USE_EXTERNAL_OIIO)
+        target_link_libraries (${target}
+            ${OPENIMAGEIO_LIBRARIES}
+            ${LIBJPEG_LIBRARY}
+            ${LIBTIFF_LIBRARY}
+        )
+    else ()
+        target_link_libraries (${target}
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/oiio-debug/lib/OpenImageIO.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/libjpeg-turbo-debug/lib/jpeg-static.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/libtiff-debug/lib/libtiff.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/oiio-release/lib/OpenImageIO.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/libjpeg-turbo-release/lib/jpeg-static.lib 
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/libtiff-release/lib/libtiff.lib
+        )
+    endif ()
 endmacro ()
 
 macro (link_against_oslexec target)
-    target_link_libraries (${target}
-        ${OSL_EXEC_LIBRARY}
-        ${OSL_COMP_LIBRARY}
-    )
-
     set (LLVM_LIBS
         LLVMLTO LLVMLinker LLVMipo LLVMVectorize LLVMBitWriter LLVMTableGen LLVMDebugInfo LLVMOption LLVMX86Disassembler LLVMX86AsmParser
         LLVMX86CodeGen LLVMSelectionDAG LLVMAsmPrinter LLVMX86Desc LLVMX86Info LLVMX86AsmPrinter LLVMX86Utils LLVMIRReader LLVMBitReader
@@ -272,13 +278,50 @@ macro (link_against_oslexec target)
         LLVMObject LLVMCore LLVMSupport
     )
 
-    foreach (lib ${LLVM_LIBS})
-        target_link_libraries (${target} "${LLVM_LIBS_DIR}/${lib}.lib")
-    endforeach ()
+    if (USE_EXTERNAL_OSL)
+        target_link_libraries (${target}
+            ${OSL_EXEC_LIBRARY}
+            ${OSL_COMP_LIBRARY}
+        )
+        foreach (lib ${LLVM_LIBS})
+            target_link_libraries (${target} "${LLVM_LIBS_DIR}/${lib}.lib")
+        endforeach ()
+    else ()
+        target_link_libraries (${target}
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/osl-debug/lib/oslcomp.lib
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/osl-debug/lib/oslexec.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/osl-release/lib/oslcomp.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/osl-release/lib/oslexec.lib
+        )
+        foreach (lib ${LLVM_LIBS})
+            target_link_libraries (${target}
+                debug       ${APPLESEED_DEPS_STAGE_DIR}/llvm-debug/lib/${lib}.lib
+                optimized   ${APPLESEED_DEPS_STAGE_DIR}/llvm-release/lib/${lib}.lib
+            )
+        endforeach ()
+    endif ()
+endmacro ()
+
+macro (link_against_seexpr target)
+    if (USE_EXTERNAL_SEEXPR)
+        target_link_libraries (${target} ${SEEXPR_LIBRARIES})
+    else ()
+        target_link_libraries (${target}
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/SeExpr-debug/lib/SeExpr.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/SeExpr-release/lib/SeExpr.lib
+        )
+    endif ()
 endmacro ()
 
 macro (link_against_seexpreditor target)
-    target_link_libraries (${target} ${SEEXPREDITOR_LIBRARIES})
+    if (USE_EXTERNAL_SEEXPR)
+        target_link_libraries (${target} ${SEEXPREDITOR_LIBRARIES})
+    else ()
+        target_link_libraries (${target}
+            debug       ${APPLESEED_DEPS_STAGE_DIR}/SeExpr-debug/lib/SeExprEditor.lib
+            optimized   ${APPLESEED_DEPS_STAGE_DIR}/SeExpr-release/lib/SeExprEditor.lib
+        )
+    endif ()
 endmacro ()
 
 

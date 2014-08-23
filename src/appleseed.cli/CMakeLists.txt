@@ -59,12 +59,6 @@ add_executable (appleseed.cli
     ${appleseed.cli_sources}
 )
 
-set_target_properties (appleseed.cli PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/appleseed.cli
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/appleseed.cli
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/appleseed.cli
-)
-
 
 #--------------------------------------------------------------------------------------------------
 # Include paths.

@@ -54,12 +54,6 @@ add_library (lz4 STATIC
     ${lz4_sources}
 )
 
-set_target_properties (lz4 PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/lz4
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/lz4
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/lz4
-)
-
 apply_static_lib_linker_flags (lz4)
 
 

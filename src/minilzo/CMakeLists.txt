@@ -54,12 +54,6 @@ add_library (minilzo STATIC
     ${minilzo_sources}
 )
 
-set_target_properties (minilzo PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/minilzo
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/minilzo
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/minilzo
-)
-
 apply_static_lib_linker_flags (minilzo)
 
 

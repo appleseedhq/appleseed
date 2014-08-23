@@ -1675,12 +1675,6 @@ add_library (appleseed SHARED
     ${appleseed_sources}
 )
 
-set_target_properties (appleseed PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/appleseed
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/appleseed
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/appleseed
-)
-
 
 #--------------------------------------------------------------------------------------------------
 # Preprocessor definitions.
@@ -1719,7 +1713,7 @@ if (WITH_OSL)
 endif ()
 
 if (WITH_DISNEY_MATERIAL)
-    target_link_libraries (appleseed ${SEEXPR_LIBRARIES})
+    link_against_seexpr (appleseed)
 endif ()
 
 target_link_libraries (appleseed ${Boost_LIBRARIES})

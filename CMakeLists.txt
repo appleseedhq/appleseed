@@ -63,11 +63,14 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/src/cmake/Modul
 # Build options.
 #--------------------------------------------------------------------------------------------------
 
-option (USE_EXTERNAL_ZLIB       "Use external zlib library"                             OFF)
-option (USE_EXTERNAL_PNG        "Use external png library"                              OFF)
-option (USE_EXTERNAL_EXR        "Use external OpenEXR library"                          OFF)
 option (USE_EXTERNAL_ALEMBIC    "Use external Alembic library"                          OFF)
+option (USE_EXTERNAL_EXR        "Use external OpenEXR library"                          OFF)
+option (USE_EXTERNAL_OIIO       "Use external OpenImageIO library"                      OFF)
+option (USE_EXTERNAL_OSL        "Use external OpenShadingLanguage library"              OFF)
+option (USE_EXTERNAL_PNG        "Use external libpng library"                           OFF)
+option (USE_EXTERNAL_SEEXPR     "Use external SeExpr library"                           OFF)
 option (USE_EXTERNAL_XERCES     "Use external Xerces library"                           OFF)
+option (USE_EXTERNAL_ZLIB       "Use external zlib library"                             OFF)
 
 option (WITH_CLI                "Build appleseed.cli"                                   ON)
 option (WITH_STUDIO             "Build appleseed.studio"                                ON)
@@ -78,8 +81,8 @@ option (WITH_OSL                "Build OSL support"                             
 option (WITH_DISNEY_MATERIAL    "Build Disney material"                                 OFF)
 
 option (USE_STATIC_BOOST        "Use static Boost libraries"                            ON)
-option (USE_STATIC_OIIO         "Use static OIIO libraries"                             ON)
-option (USE_STATIC_OSL          "Use static OSL libraries"                              ON)
+option (USE_STATIC_OIIO         "Use static OpenImageIO libraries"                      ON)
+option (USE_STATIC_OSL          "Use static OpenShadingLanguage libraries"              ON)
 
 option (USE_SSE                 "Use SSE and SSE 2 instruction sets"                    ON)
 option (USE_QMC_SAMPLER         "Use QMC sampler (possible software patent issues)"     OFF)
@@ -172,7 +175,6 @@ endif ()
 
 if (WITH_ALEMBIC)
     add_definitions (-DWITH_ALEMBIC)
-
     if (USE_EXTERNAL_ALEMBIC)
         find_package (HDF5 REQUIRED COMPONENTS C HL)
         find_package (Alembic REQUIRED)
@@ -181,20 +183,21 @@ endif ()
 
 if (USE_EXTERNAL_XERCES)
     add_definitions (-DWITH_EXTERNAL_XERCES)
-
     find_package (Xerces REQUIRED)
 endif ()
 
 if (WITH_OSL OR WITH_DISNEY_MATERIAL)
     set (WITH_OIIO TRUE)
 endif ()
-  
+
 if (WITH_OIIO)
     add_definitions (-DWITH_OIIO)
     if (USE_STATIC_OIIO)
         add_definitions (-DOIIO_STATIC_BUILD)
     endif ()
-    find_package (OpenImageIO REQUIRED)
+    if (USE_EXTERNAL_OIIO)
+        find_package (OpenImageIO REQUIRED)
+    endif ()
 endif ()
 
 if (WITH_OSL)
@@ -202,18 +205,21 @@ if (WITH_OSL)
     if (USE_STATIC_OSL)
         add_definitions (-DOSL_STATIC_LIBRARY)
     endif ()
-    find_package (OSL REQUIRED)
+    if (USE_EXTERNAL_OSL)
+        find_package (OSL REQUIRED)
+    endif ()
 endif ()
 
 if (WITH_DISNEY_MATERIAL)
     add_definitions (-DWITH_DISNEY_MATERIAL)
-
-    find_package(SeExpr REQUIRED)
-
-    if (WITH_STUDIO)
-        find_package(SeExprEditor REQUIRED)
+    if (USE_EXTERNAL_SEEXPR)
+        find_package(SeExpr REQUIRED)
+        if (WITH_STUDIO)
+            find_package(SeExprEditor REQUIRED)
+        endif ()
     endif ()
 endif ()
+
 
 #--------------------------------------------------------------------------------------------------
 # Include paths.
@@ -231,26 +237,28 @@ include_directories (
 if (USE_EXTERNAL_ZLIB)
     include_directories (${ZLIB_INCLUDE_DIRS})
 else ()
-    include_directories (3rdparty/zlib)
+    include_directories (${APPLESEED_DEPS_STAGE_DIR}/zlib/include)
 endif ()
 
 if (USE_EXTERNAL_PNG)
     include_directories (${PNG_INCLUDE_DIR})
 else ()
-    include_directories (3rdparty/libpng)
+    include_directories (${APPLESEED_DEPS_STAGE_DIR}/libpng-debug/include)
 endif ()
 
 if (USE_EXTERNAL_EXR)
     include_directories (
-        ${OPENEXR_INCLUDE_DIRS}
-        ${OPENEXR_INCLUDE_DIRS}/OpenEXR/
         ${IMATH_INCLUDE_DIRS}
         ${IMATH_INCLUDE_DIRS}/OpenEXR/
+        ${OPENEXR_INCLUDE_DIRS}
+        ${OPENEXR_INCLUDE_DIRS}/OpenEXR/
     )
 else ()
     include_directories (
-        3rdparty/openexr/include
-        3rdparty/openexr/include/OpenEXR
+        ${APPLESEED_DEPS_STAGE_DIR}/ilmbase-debug/include
+        ${APPLESEED_DEPS_STAGE_DIR}/ilmbase-debug/include/OpenEXR
+        ${APPLESEED_DEPS_STAGE_DIR}/openexr-debug/include
+        ${APPLESEED_DEPS_STAGE_DIR}/openexr-debug/include/OpenEXR
     )
 endif ()
 
@@ -261,35 +269,43 @@ if (WITH_ALEMBIC)
             ${ALEMBIC_INCLUDE_DIRS}
         )
     else ()
-        include_directories (3rdparty/alembic/lib)
+        include_directories (${APPLESEED_DEPS_STAGE_DIR}/alembic/include)
     endif ()
 endif ()
 
 if (USE_EXTERNAL_XERCES)
     include_directories (${XERCES_INCLUDE_DIRS})
 else ()
-    include_directories (3rdparty/xerces-c/src)
+    include_directories (${APPLESEED_DEPS_STAGE_DIR}/xerces-c/include)
 endif ()
 
 if (WITH_OIIO)
-    include_directories (
-        ${OPENIMAGEIO_INCLUDE_DIRS}
-    )
+    if (USE_EXTERNAL_OIIO)
+        include_directories (${OPENIMAGEIO_INCLUDE_DIRS})
+    else ()
+        include_directories (${APPLESEED_DEPS_STAGE_DIR}/oiio-debug/include)
+    endif ()
 endif ()
 
 if (WITH_OSL)
-    include_directories (
-        ${OSL_INCLUDE_DIRS}
-    )
+    if (USE_EXTERNAL_OSL)
+        include_directories (${OSL_INCLUDE_DIRS})
+    else ()
+        include_directories (${APPLESEED_DEPS_STAGE_DIR}/osl-debug/include)
+    endif ()
 endif ()
 
 if (WITH_DISNEY_MATERIAL)
-    include_directories (${SEEXPR_INCLUDE_DIRS})
-
-    if (WITH_STUDIO)
-        include_directories (${SEEXPREDITOR_INCLUDE_DIRS})
+    if (USE_EXTERNAL_SEEXPR)
+        include_directories (${SEEXPR_INCLUDE_DIRS})
+        if (WITH_STUDIO)
+            include_directories (${SEEXPREDITOR_INCLUDE_DIRS})
+        endif ()
+    else ()
+        include_directories (${APPLESEED_DEPS_STAGE_DIR}/SeExpr-debug/include)
     endif ()
 endif ()
+
 
 #--------------------------------------------------------------------------------------------------
 # Extract version from git.

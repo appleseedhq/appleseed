@@ -398,12 +398,6 @@ add_executable (appleseed.studio
     ${appleseed.studio_resource_files}
 )
 
-set_target_properties (appleseed.studio PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/appleseed.studio
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/appleseed.studio
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/appleseed.studio
-)
-
 if (WIN32)
     set_target_properties (appleseed.studio PROPERTIES
         WIN32_EXECUTABLE TRUE
@@ -445,10 +439,7 @@ target_link_libraries (appleseed.studio
 )
 
 if (WITH_DISNEY_MATERIAL)
-    target_link_libraries (appleseed.studio
-        ${SEEXPR_LIBRARIES}
-        ${SEEXPREDITOR_LIBRARIES}
-)
+    link_against_seexpreditor (appleseed.studio)
 endif ()
 
 if (WIN32)

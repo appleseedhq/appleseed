@@ -53,12 +53,6 @@ add_executable (updateprojectfile
     ${updateprojectfile_sources}
 )
 
-set_target_properties (updateprojectfile PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/updateprojectfile
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/updateprojectfile
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${platform}/updateprojectfile
-)
-
 
 #--------------------------------------------------------------------------------------------------
 # Include paths.
