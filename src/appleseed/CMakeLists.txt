@@ -1765,7 +1765,13 @@ endif ()
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     install (TARGETS appleseed
+        RUNTIME
         DESTINATION bin
+    )
+
+    install (TARGETS appleseed
+        ARCHIVE
+        DESTINATION lib
     )
 
     install (TARGETS appleseed
