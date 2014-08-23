@@ -579,6 +579,7 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     )
 endif ()
 
+
 #--------------------------------------------------------------------------------------------------
 # Installation.
 #--------------------------------------------------------------------------------------------------
@@ -636,17 +637,20 @@ install (
 install (
     DIRECTORY src/appleseed/foundation
     DESTINATION include
-    FILES_MATCHING PATTERN "*.h")
+    FILES_MATCHING PATTERN "*.h"
+)
 
 install (
     DIRECTORY src/appleseed/main
     DESTINATION include
-    FILES_MATCHING PATTERN "*.h")
+    FILES_MATCHING PATTERN "*.h"
+)
 
 install (
     DIRECTORY src/appleseed/renderer
     DESTINATION include
-    FILES_MATCHING PATTERN "*.h")
+    FILES_MATCHING PATTERN "*.h"
+)
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     install (
@@ -667,6 +671,7 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
         DESTINATION extras/devkit
     )
 endif ()
+
 
 #--------------------------------------------------------------------------------------------------
 # Packaging.
