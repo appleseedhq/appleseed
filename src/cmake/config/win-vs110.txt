@@ -85,7 +85,6 @@ if (CMAKE_SIZEOF_VOID_P EQUAL 8)
     )
 endif ()
 set (exe_linker_flags_common
-    /WX                                     # Treat Warnings As Errors
 )
 set (shared_lib_linker_flags_common
     ${exe_linker_flags_common}
