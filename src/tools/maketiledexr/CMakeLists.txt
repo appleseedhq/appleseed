@@ -89,12 +89,17 @@ target_link_libraries (maketiledexr
     ${Boost_LIBRARIES}
 )
 
+if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set_target_properties (maketiledexr PROPERTIES
+        INSTALL_RPATH "\$ORIGIN/../lib"
+    )
+endif ()
 
 #--------------------------------------------------------------------------------------------------
 # Post-build commands.
 #--------------------------------------------------------------------------------------------------
 
-add_copy_target_to_sandbox_command (maketiledexr)
+add_copy_target_exe_to_sandbox_command (maketiledexr)
 
 
 #--------------------------------------------------------------------------------------------------

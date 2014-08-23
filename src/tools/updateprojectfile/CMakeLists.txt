@@ -89,12 +89,17 @@ target_link_libraries (updateprojectfile
     ${Boost_LIBRARIES}
 )
 
+if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set_target_properties (updateprojectfile PROPERTIES
+        INSTALL_RPATH "\$ORIGIN/../lib"
+    )
+endif ()
 
 #--------------------------------------------------------------------------------------------------
 # Post-build commands.
 #--------------------------------------------------------------------------------------------------
 
-add_copy_target_to_sandbox_command (updateprojectfile)
+add_copy_target_exe_to_sandbox_command (updateprojectfile)
 
 
 #--------------------------------------------------------------------------------------------------
