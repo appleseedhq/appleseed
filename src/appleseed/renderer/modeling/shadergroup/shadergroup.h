@@ -41,7 +41,10 @@
 #include "main/dllsymbol.h"
 
 // OSL headers.
+#include "foundation/platform/oslheaderguards.h"
+BEGIN_OSL_INCLUDES
 #include "OSL/oslexec.h"
+END_OSL_INCLUDES
 
 // Forward declarations.
 namespace foundation    { class AbortSwitch; }

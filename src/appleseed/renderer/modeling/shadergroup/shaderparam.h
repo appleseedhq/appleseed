@@ -44,7 +44,10 @@
 #include <string>
 
 // OSL headers.
+#include "foundation/platform/oslheaderguards.h"
+BEGIN_OSL_INCLUDES
 #include "OSL/oslexec.h"
+END_OSL_INCLUDES
 
 // Forward declarations.
 namespace renderer  { class Shader; }
