@@ -98,7 +98,8 @@ class IPixelRendererFactory
 {
   public:
     // Return a new pixel renderer instance.
-    virtual IPixelRenderer* create(const bool primary) = 0;
+    virtual IPixelRenderer* create(
+        const size_t    thread_index) = 0;
 };
 
 }       // namespace renderer

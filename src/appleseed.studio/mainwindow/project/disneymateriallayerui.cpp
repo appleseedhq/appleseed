@@ -208,6 +208,7 @@ void DisneyMaterialLayerUI::slot_delete_layer()
             layer_params.insert("layer_number", layer_number - 1);
     }
 
+    m_entity_editor->layer_deleted(this);
     m_entity_editor->emit_signal_custom_applied();
     delete this;
 }

@@ -249,9 +249,7 @@ void MaterialCollectionItem::do_create_material(const char* model)
     if (strcmp(model, "disney_material") == 0)
     {
         custom_entity_ui = auto_ptr<CustomEntityUI>(
-            new DisneyMaterialCustomUI(
-                Base::m_project_builder.get_project(),
-                DisneyMaterialLayer::get_input_metadata()));
+            new DisneyMaterialCustomUI(Base::m_project_builder.get_project()));
 
         values = DisneyMaterialLayer::get_default_values();
     }

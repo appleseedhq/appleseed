@@ -60,7 +60,8 @@ class UniformPixelRendererFactory
     virtual void release() OVERRIDE;
 
     // Return a new uniform pixel renderer instance.
-    virtual IPixelRenderer* create(const bool primary) OVERRIDE;
+    virtual IPixelRenderer* create(
+        const std::size_t   thread_index) OVERRIDE;
 
   private:
     ISampleRendererFactory*         m_factory;

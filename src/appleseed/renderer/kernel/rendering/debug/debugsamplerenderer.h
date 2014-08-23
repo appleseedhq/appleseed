@@ -51,7 +51,8 @@ class DebugSampleRendererFactory
     virtual void release() OVERRIDE;
 
     // Return a new debug sample renderer instance.
-    virtual ISampleRenderer* create(const bool primary) OVERRIDE;
+    virtual ISampleRenderer* create(
+        const std::size_t   thread_index) OVERRIDE;
 };
 
 }       // namespace renderer

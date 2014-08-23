@@ -1724,7 +1724,7 @@ target_link_libraries (appleseed lz4 minilzo)
 # Post-build commands.
 #--------------------------------------------------------------------------------------------------
 
-add_copy_target_to_sandbox_command (appleseed)
+add_copy_target_lib_to_sandbox_command (appleseed)
 
 # Copy all XML schema files to the sandbox.
 foreach (schema_file ${appleseed_schema_files})
@@ -1740,6 +1740,16 @@ if (WITH_OSL)
             COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/${osl_header} ${PROJECT_SOURCE_DIR}/sandbox/shaders/
         )
     endforeach ()
+
+    add_custom_command (TARGET appleseed POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy ${OSL_COMPILER} ${PROJECT_SOURCE_DIR}/sandbox/bin/
+        )
+    add_custom_command (TARGET appleseed POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy ${OSL_QUERY_INFO} ${PROJECT_SOURCE_DIR}/sandbox/bin/
+        )
+    add_custom_command (TARGET appleseed POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy ${OSL_MAKETX} ${PROJECT_SOURCE_DIR}/sandbox/bin/
+        )
 endif ()
 
 
@@ -1747,10 +1757,16 @@ endif ()
 # Installation.
 #--------------------------------------------------------------------------------------------------
 
-install (TARGETS appleseed
-    DESTINATION bin
-)
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    install (TARGETS appleseed
+        DESTINATION bin
+    )
 
-install (TARGETS appleseed
-    DESTINATION extras/devkit/lib
-)
+    install (TARGETS appleseed
+        DESTINATION extras/devkit/lib
+    )
+else ()
+    install (TARGETS appleseed
+        DESTINATION lib
+    )
+endif ()

@@ -103,8 +103,7 @@ void MaterialItem::slot_edit(AttributeEditor* attribute_editor)
         custom_entity_ui =
             auto_ptr<CustomEntityUI>(
                 new DisneyMaterialCustomUI(
-                    Base::m_project_builder.get_project(),
-                    DisneyMaterialLayer::get_input_metadata()));
+                    Base::m_project_builder.get_project()));
     }
 #endif
 

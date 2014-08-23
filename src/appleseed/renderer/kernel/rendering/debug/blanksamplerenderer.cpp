@@ -88,7 +88,8 @@ void BlankSampleRendererFactory::release()
     delete this;
 }
 
-ISampleRenderer* BlankSampleRendererFactory::create(const bool primary)
+ISampleRenderer* BlankSampleRendererFactory::create(
+    const size_t    thread_index)
 {
     return new BlankSampleRenderer();
 }

@@ -176,6 +176,7 @@ namespace
             const size_t            photon_begin,
             const size_t            photon_end,
             const size_t            pass_hash,
+            const size_t            thread_index,
 #ifdef WITH_OIIO
             OIIO::TextureSystem&    oiio_texture_system,
 #endif
@@ -215,7 +216,7 @@ namespace
 #ifdef WITH_OSL
                 , m_shadergroup_exec
 #endif
-                )
+                , thread_index)
           , m_abort_switch(abort_switch)
         {
         }
@@ -424,6 +425,7 @@ namespace
             const size_t            photon_begin,
             const size_t            photon_end,
             const size_t            pass_hash,
+            const size_t            thread_index,
 #ifdef WITH_OIIO
             OIIO::TextureSystem&    oiio_texture_system,
 #endif
@@ -467,7 +469,7 @@ namespace
 #ifdef WITH_OSL
                 , m_shadergroup_exec
 #endif
-                )
+                , thread_index)
         {
         }
 
@@ -677,7 +679,7 @@ void SPPMPhotonTracer::schedule_light_photon_tracing_jobs(
         pretty_uint(m_params.m_light_photon_count).c_str(),
         m_params.m_light_photon_count > 1 ? "photons" : "photon");
 
-    for (size_t i = 0; i < m_params.m_light_photon_count; i += m_params.m_photon_packet_size)
+    for (size_t i = 0, thread_index = 0; i < m_params.m_light_photon_count; i += m_params.m_photon_packet_size, ++thread_index)
     {
         const size_t photon_begin = i;
         const size_t photon_end = min(i + m_params.m_photon_packet_size, m_params.m_light_photon_count);
@@ -693,6 +695,7 @@ void SPPMPhotonTracer::schedule_light_photon_tracing_jobs(
                 photon_begin,
                 photon_end,
                 pass_hash,
+                thread_index,
 #ifdef WITH_OIIO
                 m_oiio_texture_system,
 #endif
@@ -719,7 +722,7 @@ void SPPMPhotonTracer::schedule_environment_photon_tracing_jobs(
         pretty_uint(m_params.m_env_photon_count).c_str(),
         m_params.m_env_photon_count > 1 ? "photons" : "photon");
 
-    for (size_t i = 0; i < m_params.m_env_photon_count; i += m_params.m_photon_packet_size)
+    for (size_t i = 0, thread_index = 0; i < m_params.m_env_photon_count; i += m_params.m_photon_packet_size, ++thread_index)
     {
         const size_t photon_begin = i;
         const size_t photon_end = min(i + m_params.m_photon_packet_size, m_params.m_env_photon_count);
@@ -735,6 +738,7 @@ void SPPMPhotonTracer::schedule_environment_photon_tracing_jobs(
                 photon_begin,
                 photon_end,
                 pass_hash,
+                thread_index,
 #ifdef WITH_OIIO
                 m_oiio_texture_system,
 #endif

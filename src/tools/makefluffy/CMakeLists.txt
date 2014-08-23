@@ -82,12 +82,17 @@ target_link_libraries (makefluffy
     ${Boost_LIBRARIES}
 )
 
+if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set_target_properties (makefluffy PROPERTIES
+        INSTALL_RPATH "\$ORIGIN/../lib"
+    )
+endif ()
 
 #--------------------------------------------------------------------------------------------------
 # Post-build commands.
 #--------------------------------------------------------------------------------------------------
 
-add_copy_target_to_sandbox_command (makefluffy)
+add_copy_target_exe_to_sandbox_command (makefluffy)
 
 
 #--------------------------------------------------------------------------------------------------

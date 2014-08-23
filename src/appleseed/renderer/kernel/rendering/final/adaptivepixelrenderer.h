@@ -62,7 +62,8 @@ class AdaptivePixelRendererFactory
     virtual void release() OVERRIDE;
 
     // Return a new adaptive pixel renderer instance.
-    virtual IPixelRenderer* create(const bool primary) OVERRIDE;
+    virtual IPixelRenderer* create(
+        const std::size_t   thread_index) OVERRIDE;
 
   private:
     const Frame&                    m_frame;

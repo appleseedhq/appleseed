@@ -62,8 +62,8 @@ class TLS
     size_t get_thread_count() const;
 
     // Direct access to the storage area for a given thread.
-    T& operator()(const size_t thread_index);
-    const T& operator()(const size_t thread_index) const;
+    T& operator[](const size_t thread_index);
+    const T& operator[](const size_t thread_index) const;
 
   private:
     size_t          m_thread_count;
@@ -87,7 +87,7 @@ inline void TLS<T>::set_thread_count(const size_t thread_count)
 {
     // Get cache line size (in bytes) of current CPU.
     // todo: pass ID of current CPU to get_l1_data_cache_line_size().
-    const size_t cache_line_size = System::get_l1_data_cache_line_size(0);
+    const size_t cache_line_size = System::get_l1_data_cache_line_size();
 
     // Compute stride to avoid cache aliasing (false sharing).
     // todo: make stride a power of two, and use bit shifting.
@@ -106,14 +106,14 @@ inline size_t TLS<T>::get_thread_count() const
 }
 
 template <typename T>
-inline T& TLS<T>::operator()(const size_t thread_index)
+inline T& TLS<T>::operator[](const size_t thread_index)
 {
     assert(thread_index < m_thread_count);
     return m_elements[thread_index * m_stride];
 }
 
 template <typename T>
-inline const T& TLS<T>::operator()(const size_t thread_index) const
+inline const T& TLS<T>::operator[](const size_t thread_index) const
 {
     assert(thread_index < m_thread_count);
     return m_elements[thread_index * m_stride];

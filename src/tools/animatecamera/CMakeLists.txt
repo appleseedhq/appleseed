@@ -85,12 +85,17 @@ target_link_libraries (animatecamera
     ${Boost_LIBRARIES}
 )
 
+if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set_target_properties (animatecamera PROPERTIES
+        INSTALL_RPATH "\$ORIGIN/../lib"
+    )
+endif ()
 
 #--------------------------------------------------------------------------------------------------
 # Post-build commands.
 #--------------------------------------------------------------------------------------------------
 
-add_copy_target_to_sandbox_command (animatecamera)
+add_copy_target_exe_to_sandbox_command (animatecamera)
 
 
 #--------------------------------------------------------------------------------------------------

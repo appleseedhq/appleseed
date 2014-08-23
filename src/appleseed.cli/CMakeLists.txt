@@ -59,6 +59,12 @@ add_executable (appleseed.cli
     ${appleseed.cli_sources}
 )
 
+if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set_target_properties (appleseed.cli PROPERTIES
+        INSTALL_RPATH "\$ORIGIN/../lib"
+    )
+endif ()
+
 
 #--------------------------------------------------------------------------------------------------
 # Include paths.
@@ -94,7 +100,7 @@ target_link_libraries (appleseed.cli
 # Post-build commands.
 #--------------------------------------------------------------------------------------------------
 
-add_copy_target_to_sandbox_command (appleseed.cli)
+add_copy_target_exe_to_sandbox_command (appleseed.cli)
 
 
 #--------------------------------------------------------------------------------------------------

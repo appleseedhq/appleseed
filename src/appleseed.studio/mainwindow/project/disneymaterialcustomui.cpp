@@ -41,6 +41,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/api/project.h"
+#include "renderer/modeling/material/disneymaterial.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/searchpaths.h"
@@ -76,11 +77,8 @@ using namespace std;
 namespace appleseed {
 namespace studio {
 
-DisneyMaterialCustomUI::DisneyMaterialCustomUI(
-    const Project&      project,
-    DictionaryArray     layer_metadata)
+DisneyMaterialCustomUI::DisneyMaterialCustomUI(const Project& project)
   : m_project(project)
-  , m_layer_metadata(layer_metadata)
   , m_parent(0)
   , m_num_created_layers(0)
   , m_selected_layer_widget(0)
@@ -118,10 +116,10 @@ void DisneyMaterialCustomUI::create_custom_widgets(
     // New layer button.
     // Use blanks for spacing between icon and text, as there does not appear to be a better option.
     QIcon add_icon = QIcon(":/widgets/big_add.png");
-    QPushButton* add_layer_button = new QPushButton(add_icon, "   Add New Layer");
-    add_layer_button->setObjectName("add_material_editor_layer");
-    m_form_layout->addWidget(add_layer_button);
-    connect(add_layer_button, SIGNAL(clicked()), this, SLOT(slot_add_layer()));
+    m_add_layer_button = new QPushButton(add_icon, "   Add New Layer");
+    m_add_layer_button->setObjectName("add_material_editor_layer");
+    m_form_layout->addWidget(m_add_layer_button);
+    connect(m_add_layer_button, SIGNAL(clicked()), this, SLOT(slot_add_layer()));
 
     // Stretch at the end.
     m_form_layout->addStretch(1);
@@ -223,12 +221,31 @@ void DisneyMaterialCustomUI::slot_open_expression_editor(const QString& widget_n
     if ((sstream >> value))
         expression = sstream.str();
 
-    ExpressionEditorWindow* expression_editor_window = new ExpressionEditorWindow(
-        m_project, widget_name, expression, m_parent);
+    ExpressionEditorWindow* expression_editor_window =
+        new ExpressionEditorWindow(
+            m_project,
+            widget_name,
+            expression,
+            m_parent);
 
     connect(
         expression_editor_window, SIGNAL(signal_expression_applied(const QString&, const QString&)),
         SLOT(slot_expression_changed(const QString&, const QString&)));
+
+    connect(
+        expression_editor_window,
+        SIGNAL(editor_closed()),
+        SLOT(slot_expression_editor_closed()));
+
+    // Disable all layers widgets to prevent inconsistencies
+    // between the layer widgets and the expression editor
+    // while the expression editor is visible.
+    {
+        for(each<std::vector<QWidget*> > i = m_layers_widgets; i ; ++i)
+            (*i)->setEnabled(false);
+
+        m_add_layer_button->setEnabled(false);
+    }
 
     expression_editor_window->show();
 }
@@ -268,6 +285,16 @@ void DisneyMaterialCustomUI::slot_line_edit_changed(const QString& widget_name)
     layer_params.insert(parameter, proxy->get());
 
     emit_signal_custom_applied();
+}
+
+void DisneyMaterialCustomUI::slot_expression_editor_closed()
+{
+    // Enable again all layers widgets
+    // when the expression editor is closed.
+    for(each<std::vector<QWidget*> > i = m_layers_widgets; i ; ++i)
+        (*i)->setEnabled(true);
+
+    m_add_layer_button->setEnabled(true);
 }
 
 void DisneyMaterialCustomUI::create_connections()
@@ -484,6 +511,8 @@ void DisneyMaterialCustomUI::create_texture_and_expr_buttons()
 
 void DisneyMaterialCustomUI::add_layer(const bool update, const Dictionary& parameters)
 {
+    DictionaryArray layer_metadata = DisneyMaterialLayer::get_input_metadata();
+
     string layer_name = unique_layer_name();
 
     if (parameters.strings().exist("layer_name"))
@@ -499,9 +528,9 @@ void DisneyMaterialCustomUI::add_layer(const bool update, const Dictionary& para
     if (update)
         layer_params.insert("layer_number", m_values.dictionaries().size()+1);
 
-    for (size_t i = 0; i < m_layer_metadata.size(); ++i)
+    for (size_t i = 0; i < layer_metadata.size(); ++i)
     {
-        Dictionary& metadata = m_layer_metadata[i];
+        Dictionary metadata = layer_metadata[i];
         const string type = metadata.get<string>("type");
         const string name = metadata.get<string>("name");
 
@@ -553,6 +582,16 @@ void DisneyMaterialCustomUI::add_layer(const bool update, const Dictionary& para
     m_last_layer->fold_layer(false);
 
     emit_signal_custom_applied();
+}
+
+void DisneyMaterialCustomUI::layer_deleted(DisneyMaterialLayerUI* layer)
+{
+    m_layers_widgets.erase(
+        remove(
+            m_layers_widgets.begin(),
+            m_layers_widgets.end(),
+            layer),
+        m_layers_widgets.end());
 }
 
 }   // namespace studio

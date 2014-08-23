@@ -56,6 +56,8 @@
 #pragma warning (pop)
 
 // Qt headers.
+#include <QCloseEvent>
+#include <QDesktopServices>
 #include <QFileDialog>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -129,11 +131,15 @@ ExpressionEditorWindow::ExpressionEditorWindow(
     QShortcut* load_shortcut = new QShortcut(QKeySequence("Ctrl+O"), this);
     connect(load_button, SIGNAL(clicked()), SLOT(slot_load_script()));
     connect(load_shortcut, SIGNAL(activated()), SLOT(slot_load_script()));
+    QPushButton *help_button = new QPushButton("Help");
+    connect(help_button, SIGNAL(clicked()), SLOT(slot_show_help()));
     QPushButton* examples_button = new QPushButton("Examples");
     connect(examples_button, SIGNAL(clicked()), SLOT(slot_show_examples()));
+
     file_buttonbox->addWidget(clear_button);
     file_buttonbox->addWidget(save_button);
     file_buttonbox->addWidget(load_button);
+    file_buttonbox->addWidget(help_button);
     file_buttonbox->addWidget(examples_button);
     left_layout->addLayout(file_buttonbox);
 
@@ -304,6 +310,14 @@ void ExpressionEditorWindow::slot_show_examples()
     }
 }
 
+void ExpressionEditorWindow::slot_show_help()
+{
+    filesystem::path docs_path = Application::get_root_path();
+    docs_path /= "documentation/seexpr/userdoc.html";
+    QString docs_file = QString::fromStdString(docs_path.string());
+    QDesktopServices::openUrl(QUrl::fromLocalFile(docs_file));
+}
+
 string ExpressionEditorWindow::get_project_path() const
 {
     const filesystem::path project_root_path = filesystem::path(m_project.get_path()).parent_path();
@@ -311,6 +325,12 @@ string ExpressionEditorWindow::get_project_path() const
     const filesystem::path file_root_path = file_path.parent_path();
 
     return file_root_path.string();
+}
+
+void ExpressionEditorWindow::closeEvent(QCloseEvent *e)
+{
+    emit editor_closed();
+    e->accept();
 }
 
 }       // namespace studio

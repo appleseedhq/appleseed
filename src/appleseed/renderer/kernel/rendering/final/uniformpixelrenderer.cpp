@@ -82,9 +82,9 @@ namespace
         UniformPixelRenderer(
             ISampleRendererFactory*     factory,
             const ParamArray&           params,
-            const bool                  primary)
+            const size_t                thread_index)
           : m_params(params)
-          , m_sample_renderer(factory->create(primary))
+          , m_sample_renderer(factory->create(thread_index))
           , m_sample_count(m_params.m_samples)
           , m_sqrt_sample_count(round<int>(sqrt(static_cast<double>(m_params.m_samples))))
         {
@@ -92,7 +92,7 @@ namespace
             {
                 m_pixel_sampler.initialize(m_sqrt_sample_count);
 
-                if (primary)
+                if (thread_index == 0)
                 {
                     if (params.get_optional<size_t>("passes", 1) > 1)
                         RENDERER_LOG_WARNING("doing multipass rendering with pixel decorrelation off.");
@@ -252,9 +252,10 @@ void UniformPixelRendererFactory::release()
     delete this;
 }
 
-IPixelRenderer* UniformPixelRendererFactory::create(const bool primary)
+IPixelRenderer* UniformPixelRendererFactory::create(
+    const size_t    thread_index)
 {
-    return new UniformPixelRenderer(m_factory, m_params, primary);
+    return new UniformPixelRenderer(m_factory, m_params, thread_index);
 }
 
 }   // namespace renderer
