@@ -120,6 +120,13 @@ else ()
                          "Edit ${CMAKE_CURRENT_LIST_FILE} to add support for it.")
 endif ()
 
+# Extension of executable files.
+if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    set (exe_ext ".exe")
+else ()
+    set (exe_ext "")
+endif ()
+
 
 #--------------------------------------------------------------------------------------------------
 # Version information.

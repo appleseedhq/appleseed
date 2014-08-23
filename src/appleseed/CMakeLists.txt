@@ -1726,30 +1726,43 @@ target_link_libraries (appleseed lz4 minilzo)
 
 add_copy_target_lib_to_sandbox_command (appleseed)
 
-# Copy all XML schema files to the sandbox.
+# Copy XML schema files to the sandbox.
 foreach (schema_file ${appleseed_schema_files})
     add_custom_command (TARGET appleseed POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/${schema_file} ${PROJECT_SOURCE_DIR}/sandbox/schemas/
     )
 endforeach ()
 
-# Copy all OSL headers to the sandbox.
 if (WITH_OSL)
+    # Copy OSL headers to the sandbox.
     foreach (osl_header ${appleseed_osl_headers})
         add_custom_command (TARGET appleseed POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/${osl_header} ${PROJECT_SOURCE_DIR}/sandbox/shaders/
         )
     endforeach ()
 
-    add_custom_command (TARGET appleseed POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy ${OSL_COMPILER} ${PROJECT_SOURCE_DIR}/sandbox/bin/
+    # Copy OSL and OIIO tools to the sandbox.
+    if (USE_EXTERNAL_SEEXPR)
+        add_custom_command (TARGET appleseed POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy ${OSL_COMPILER} ${PROJECT_SOURCE_DIR}/sandbox/bin/
         )
-    add_custom_command (TARGET appleseed POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy ${OSL_QUERY_INFO} ${PROJECT_SOURCE_DIR}/sandbox/bin/
+        add_custom_command (TARGET appleseed POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy ${OSL_QUERY_INFO} ${PROJECT_SOURCE_DIR}/sandbox/bin/
         )
-    add_custom_command (TARGET appleseed POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy ${OSL_MAKETX} ${PROJECT_SOURCE_DIR}/sandbox/bin/
+        add_custom_command (TARGET appleseed POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy ${OSL_MAKETX} ${PROJECT_SOURCE_DIR}/sandbox/bin/
         )
+    else ()
+        add_custom_command (TARGET appleseed POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy ${APPLESEED_DEPS_STAGE_DIR}/osl-release/bin/oslc${exe_ext} ${PROJECT_SOURCE_DIR}/sandbox/bin/
+        )
+        add_custom_command (TARGET appleseed POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy ${APPLESEED_DEPS_STAGE_DIR}/osl-release/bin/oslinfo${exe_ext} ${PROJECT_SOURCE_DIR}/sandbox/bin/
+        )
+        add_custom_command (TARGET appleseed POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy ${APPLESEED_DEPS_STAGE_DIR}/oiio-release/bin/maketx${exe_ext} ${PROJECT_SOURCE_DIR}/sandbox/bin/
+        )
+    endif ()
 endif ()
 
 
