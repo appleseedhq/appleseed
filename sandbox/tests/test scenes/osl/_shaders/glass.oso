@@ -1,10 +1,10 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.5.7dev
+# Compiled by oslc 1.6.0dev
 surface glass
 param	float	eta	1.5 		 %read{2,5} %write{2147483647,-1}
 global	vector	I	 %read{9,57} %write{2147483647,-1}
-global	normal	N	 %read{9,69} %write{2147483647,-1}
-global	closure color	Ci	 %read{2147483647,-1} %write{71,71}
+global	normal	N	 %read{9,70} %write{2147483647,-1}
+global	closure color	Ci	 %read{2147483647,-1} %write{72,72}
 local	float	___216_IdotN	 %read{50,58} %write{48,48}
 local	float	___216_k	 %read{54,59} %write{53,53}
 local	float	___217_c	 %read{10,38} %write{9,12}
@@ -16,7 +16,7 @@ local	vector	___221_T	 %read{2147483647,-1} %write{56,66}
 local	float	from_ior	 %read{6,69} %write{2,4}
 local	float	to_ior	 %read{6,69} %write{3,5}
 local	float	Kr	 %read{44,68} %write{43,64}
-local	float	Kt	 %read{70,70} %write{46,65}
+local	float	Kt	 %read{71,71} %write{46,65}
 temp	int	$tmp1	 %read{1,1} %write{0,0}
 const	float	$const1	1		 %read{3,64} %write{2147483647,-1}
 temp	float	$tmp2	 %read{19,58} %write{6,6}
@@ -62,10 +62,11 @@ temp	float	$tmp32	 %read{61,61} %write{60,60}
 temp	vector	$tmp33	 %read{62,62} %write{61,61}
 temp	closure color	$tmp34	 %read{68,68} %write{67,67}
 const	string	$const13	"reflection"		 %read{67,67} %write{2147483647,-1}
-temp	closure color	$tmp35	 %read{71,71} %write{68,68}
-temp	closure color	$tmp36	 %read{70,70} %write{69,69}
-const	string	$const14	"refraction"		 %read{69,69} %write{2147483647,-1}
-temp	closure color	$tmp37	 %read{71,71} %write{70,70}
+temp	closure color	$tmp35	 %read{72,72} %write{68,68}
+temp	closure color	$tmp36	 %read{71,71} %write{70,70}
+temp	float	$tmp37	 %read{70,70} %write{69,69}
+const	string	$const14	"refraction"		 %read{70,70} %write{2147483647,-1}
+temp	closure color	$tmp38	 %read{72,72} %write{71,71}
 code ___main___
 # glass.osl:6
 # 	if (backfacing())
@@ -203,10 +204,11 @@ code ___main___
 #         T = vector (0,0,0);
 	assign		___221_T $const12 	%line{231} %argrw{"wr"}
 # glass.osl:19
-#  	Ci = (Kr * reflection(N)) + (Kt * refraction(N, from_ior, to_ior));
+#  	Ci = (Kr * reflection(N)) + (Kt * refraction(N, from_ior / to_ior));
 	closure		$tmp34 $const13 N 	%filename{"glass.osl"} %line{19} %argrw{"wrr"}
 	mul		$tmp35 $tmp34 Kr 	%argrw{"wrr"}
-	closure		$tmp36 $const14 N from_ior to_ior 	%argrw{"wrrrr"}
-	mul		$tmp37 $tmp36 Kt 	%argrw{"wrr"}
-	add		Ci $tmp35 $tmp37 	%argrw{"wrr"}
+	div		$tmp37 from_ior to_ior 	%argrw{"wrr"}
+	closure		$tmp36 $const14 N $tmp37 	%argrw{"wrrr"}
+	mul		$tmp38 $tmp36 Kt 	%argrw{"wrr"}
+	add		Ci $tmp35 $tmp38 	%argrw{"wrr"}
 	end
