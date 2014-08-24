@@ -197,8 +197,8 @@ QString find_path_in_searchpaths(const SearchPaths& s, const QString& filename)
 
     for (size_t i = 0, e = s.size(); i < e; ++i)
     {
-        // Iterate in reverse order, to match searchpaths priorities.
-        size_t index = s.size() - 1 - i;
+        // Iterate in reverse order, to match search paths priorities.
+        const size_t index = s.size() - 1 - i;
         QString search_path(QString::fromStdString(s[index]));
         const QFileInfo search_path_info(search_path);
 

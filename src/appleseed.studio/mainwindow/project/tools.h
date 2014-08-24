@@ -109,6 +109,7 @@ QString find_path_in_searchpaths(const foundation::SearchPaths& s, const QString
 
 void show_warning_message_box(const std::string& title, const std::string& text);
 
+
 //
 // Implementation.
 //
