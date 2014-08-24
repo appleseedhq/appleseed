@@ -29,7 +29,7 @@
 #
 
 # Package builder settings.
-VersionString = "2.3.10"
+VersionString = "2.3.11"
 SettingsFileName = "appleseed.package.configuration.xml"
 
 # Imports.
@@ -101,6 +101,9 @@ def extract_zip_file(zip_path, output_path):
 def copy_glob(input_pattern, output_path):
     for input_file in glob.glob(input_pattern):
         shutil.copy(input_file, output_path)
+
+def exe(filepath):
+    return filepath + ".exe" if os.name == "nt" else filepath
 
 
 #--------------------------------------------------------------------------------------------------
@@ -236,6 +239,9 @@ class PackageBuilder:
         progress("Adding local binaries to staging directory")
         safe_make_directory("appleseed/bin")
         dir_util.copy_tree(os.path.join(self.settings.appleseed_path, "sandbox/bin", self.settings.configuration), "appleseed/bin/")
+        shutil.copy(os.path.join(self.settings.appleseed_path, "sandbox/bin", exe("maketx")), "appleseed/bin/")
+        shutil.copy(os.path.join(self.settings.appleseed_path, "sandbox/bin", exe("oslc")), "appleseed/bin/")
+        shutil.copy(os.path.join(self.settings.appleseed_path, "sandbox/bin", exe("oslinfo")), "appleseed/bin/")
 
     def add_scripts_to_stage(self):
         progress("Adding scripts to staging directory")
