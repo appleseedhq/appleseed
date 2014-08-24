@@ -315,43 +315,6 @@ class CompressedReaderAdapter
 
 
 //
-// LZO compression adapters.
-//
-
-class LZOCompressedWriterAdapter
-  : public CompressedWriterAdapter
-{
-  public:
-    explicit LZOCompressedWriterAdapter(BufferedFile& file);
-
-    LZOCompressedWriterAdapter(
-        BufferedFile&       file,
-        const size_t        buffer_size);               // compression buffer size, in bytes
-
-    virtual ~LZOCompressedWriterAdapter();
-
-  private:
-    std::vector<uint8>      m_working_memory;
-    std::vector<uint8>      m_compressed_buffer;
-
-    virtual void flush_buffer() OVERRIDE;
-};
-
-class LZOCompressedReaderAdapter
-  : public CompressedReaderAdapter
-{
-  public:
-    explicit LZOCompressedReaderAdapter(BufferedFile& file);
-
-  private:
-    std::vector<uint8>      m_working_memory;
-    std::vector<uint8>      m_compressed_buffer;
-
-    virtual bool fill_buffer() OVERRIDE;
-};
-
-
-//
 // LZ4 compression adapters.
 //
 

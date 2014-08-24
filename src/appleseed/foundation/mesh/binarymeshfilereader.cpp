@@ -102,20 +102,25 @@ void BinaryMeshFileReader::read(IMeshBuilder& builder)
 
     switch (version)
     {
-      case 1:                       // uncompressed
+      // Uncompressed.
+      case 1:
         reader.reset(new PassthroughReaderAdapter(file));
         break;
 
-      case 2:                       // LZO-compressed (deprecated)
-        reader.reset(new LZOCompressedReaderAdapter(file));
-        break;
+      // LZO-compressed.
+      case 2:
+        throw ExceptionIOError(
+            "binarymesh format version 2 is no longer supported; "
+            "please use the convertmeshfile tool that ships with appleseed 1.1.0 alpha-21 or earlier");
 
-      case 3:                       // LZ4-compressed
+      // LZ4-compressed.
+      case 3:
         reader.reset(new LZ4CompressedReaderAdapter(file));
         break;
 
-      default:                      // unknown format
-        throw ExceptionIOError();   // todo: throw better-qualified exception
+      // Unknown format.
+      default:
+        throw ExceptionIOError("unknown binarymesh format version");
     }
 
     read_meshes(*reader.get(), builder);
@@ -129,7 +134,7 @@ void BinaryMeshFileReader::read_and_check_signature(BufferedFile& file)
     checked_read(file, signature, sizeof(signature));
 
     if (memcmp(signature, ExpectedSig, sizeof(ExpectedSig)))
-        throw ExceptionIOError();   // todo: throw better-qualified exception
+        throw ExceptionIOError("invalid binarymesh format signature");
 }
 
 string BinaryMeshFileReader::read_string(ReaderAdapter& reader)

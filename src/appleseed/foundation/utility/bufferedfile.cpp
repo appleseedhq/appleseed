@@ -37,11 +37,6 @@
 // lz4 headers.
 #include "lz4.h"
 
-// minilzo headers.
-extern "C" {
-#include "minilzo.h"
-}
-
 // Standard headers.
 #include <algorithm>
 #include <cstring>
@@ -551,111 +546,6 @@ namespace
         x = static_cast<T>(y);
         return result;
     }
-}
-
-
-//
-// LZOCompressedWriterAdapter class implementation.
-//
-
-namespace
-{
-    const size_t WorkingMemorySizeBytes =
-        sizeof(lzo_align_t) * ((LZO1X_1_MEM_COMPRESS + (sizeof(lzo_align_t) - 1)) / sizeof(lzo_align_t));
-}
-
-LZOCompressedWriterAdapter::LZOCompressedWriterAdapter(BufferedFile& file)
-  : CompressedWriterAdapter(file)
-  , m_working_memory(WorkingMemorySizeBytes)
-{
-#ifdef NDEBUG
-    lzo_init();
-#else
-    assert(lzo_init() == LZO_E_OK);
-#endif
-}
-
-LZOCompressedWriterAdapter::LZOCompressedWriterAdapter(
-    BufferedFile&       file,
-    const size_t        buffer_size)
-  : CompressedWriterAdapter(file, buffer_size)
-  , m_working_memory(WorkingMemorySizeBytes)
-{
-#ifdef NDEBUG
-    lzo_init();
-#else
-    assert(lzo_init() == LZO_E_OK);
-#endif
-}
-
-LZOCompressedWriterAdapter::~LZOCompressedWriterAdapter()
-{
-    if (m_buffer_index > 0)
-        flush_buffer();
-}
-
-void LZOCompressedWriterAdapter::flush_buffer()
-{
-    const size_t max_compressed_buffer_size = m_buffer_index + (m_buffer_index / 16) + 64 + 3;
-    ensure_minimum_size(m_compressed_buffer, max_compressed_buffer_size);
-
-    lzo_uint compressed_buffer_size;
-    lzo1x_1_compress(
-        &m_buffer[0],
-        m_buffer_index,
-        &m_compressed_buffer[0],
-        &compressed_buffer_size,
-        &m_working_memory[0]);
-
-    m_file.write(static_cast<uint64>(m_buffer_index));
-    m_file.write(static_cast<uint64>(compressed_buffer_size));
-    m_file.write(&m_compressed_buffer[0], compressed_buffer_size);
-
-    m_buffer_index = 0;
-}
-
-
-//
-// LZOCompressedReaderAdapter class implementation.
-//
-
-LZOCompressedReaderAdapter::LZOCompressedReaderAdapter(BufferedFile& file)
-  : CompressedReaderAdapter(file)
-  , m_working_memory(WorkingMemorySizeBytes)
-{
-#ifdef NDEBUG
-    lzo_init();
-#else
-    assert(lzo_init() == LZO_E_OK);
-#endif
-}
-
-bool LZOCompressedReaderAdapter::fill_buffer()
-{
-    size_t buffer_size;
-    if (read_uint64(m_file, buffer_size) == 0)
-        return false;
-
-    ensure_minimum_size(m_buffer, buffer_size);
-
-    lzo_uint compressed_buffer_size;
-    read_uint64(m_file, compressed_buffer_size);
-
-    ensure_minimum_size(m_compressed_buffer, compressed_buffer_size);
-    m_file.read(&m_compressed_buffer[0], compressed_buffer_size);
-
-    lzo_uint new_buffer_end;
-    lzo1x_decompress(
-        &m_compressed_buffer[0],
-        compressed_buffer_size,
-        &m_buffer[0],
-        &new_buffer_end,
-        &m_working_memory[0]);
-
-    m_buffer_index = 0;
-    m_buffer_end = static_cast<size_t>(new_buffer_end);
-
-    return true;
 }
 
 

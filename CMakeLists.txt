@@ -243,7 +243,6 @@ endif ()
 include_directories (
     src/appleseed
     src/lz4
-    src/minilzo
     src/STANN/include
     ${PYTHON_INCLUDE_DIRS}
 )
@@ -514,7 +513,6 @@ endmacro ()
 
 add_subdirectory (src/appleseed)
 add_subdirectory (src/lz4)
-add_subdirectory (src/minilzo)
 
 if (WITH_CLI OR WITH_STUDIO OR WITH_TOOLS)
     add_subdirectory (src/appleseed.shared)

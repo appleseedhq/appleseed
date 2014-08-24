@@ -1717,7 +1717,7 @@ if (WITH_DISNEY_MATERIAL)
 endif ()
 
 target_link_libraries (appleseed ${Boost_LIBRARIES})
-target_link_libraries (appleseed lz4 minilzo)
+target_link_libraries (appleseed lz4)
 
 
 #--------------------------------------------------------------------------------------------------
