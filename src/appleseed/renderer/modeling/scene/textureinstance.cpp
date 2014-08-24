@@ -99,7 +99,7 @@ TextureInstance::TextureInstance(
 
     // Retrieve the texture addressing mode.
     const string addressing_mode =
-        m_params.get_optional<string>("addressing_mode", "wrap", make_vector("clamp, wrap"), context);
+        m_params.get_optional<string>("addressing_mode", "wrap", make_vector("clamp", "wrap"), context);
     if (addressing_mode == "clamp")
         m_addressing_mode = TextureAddressingClamp;
     else m_addressing_mode = TextureAddressingWrap;
