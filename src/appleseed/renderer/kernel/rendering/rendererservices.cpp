@@ -143,7 +143,15 @@ bool RendererServices::texture(
     float*                  result)
 {
     const bool status =
-        m_texture_sys.texture(filename, options, s, t, dsdx, dtdx, dsdy, dtdy, result);
+        m_texture_sys.texture(
+            filename,
+            options,
+            s, 1.0f - t,
+            dsdx,
+            dtdx,
+            dsdy,
+            dtdy,
+            result);
 
     if (!status)
         log_error(m_texture_sys.geterror());

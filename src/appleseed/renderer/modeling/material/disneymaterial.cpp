@@ -136,7 +136,7 @@ namespace
                     m_texture_filename,
                     m_texture_options,
                     static_cast<float>(u[0]),
-                    static_cast<float>(v[0]),
+                    static_cast<float>(1.0 - v[0]),
                     0.0f,
                     0.0f,
                     0.0f,
@@ -431,12 +431,13 @@ class DisneyLayerParam
 
         if (!m_texture_filename.empty())
         {
+            const Vector2d& uv = shading_point.get_uv(0);
             float color[3];
             if (!texture_system.texture(
                     m_texture_filename,
                     m_texture_options,
-                    static_cast<float>(shading_point.get_uv(0)[0]),
-                    static_cast<float>(shading_point.get_uv(0)[1]),
+                    static_cast<float>(uv[0]),
+                    static_cast<float>(1.0 - uv[1]),
                     0.0f,
                     0.0f,
                     0.0f,
