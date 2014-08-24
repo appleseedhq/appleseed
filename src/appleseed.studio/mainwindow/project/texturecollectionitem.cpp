@@ -109,31 +109,23 @@ namespace
         texture_params.insert("filename", path);
         texture_params.insert("color_space", "srgb");
 
-        SearchPaths search_paths;
-
         return
-            auto_release_ptr<Texture>(
-                DiskTexture2dFactory().create(
-                    texture_name.c_str(),
-                    texture_params,
-                    search_paths));
+            DiskTexture2dFactory().create(
+                texture_name.c_str(),
+                texture_params,
+                SearchPaths());
     }
 
     auto_release_ptr<TextureInstance> create_texture_instance(const string& texture_name)
     {
         const string texture_instance_name = texture_name + "_inst";
 
-        ParamArray texture_instance_params;
-        texture_instance_params.insert("addressing_mode", "clamp");
-        texture_instance_params.insert("filtering_mode", "bilinear");
-
         return
-            auto_release_ptr<TextureInstance>(
-                TextureInstanceFactory::create(
-                    texture_instance_name.c_str(),
-                    texture_instance_params,
-                    texture_name.c_str(),
-                    Transformd::identity()));
+            TextureInstanceFactory::create(
+                texture_instance_name.c_str(),
+                ParamArray(),
+                texture_name.c_str(),
+                Transformd::identity());
     }
 }
 

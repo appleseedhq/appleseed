@@ -34,6 +34,7 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/modeling/scene/basegroup.h"
 #include "renderer/modeling/texture/texture.h"
+#include "renderer/utility/messagecontext.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
@@ -42,6 +43,7 @@
 #include "foundation/image/tile.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/makevector.h"
 
 // Standard headers.
 #include <cstddef>
@@ -93,52 +95,30 @@ TextureInstance::TextureInstance(
 
     m_texture = 0;
 
+    const EntityDefMessageContext context("texture instance", this);
+
     // Retrieve the texture addressing mode.
-    const string addressing_mode = m_params.get_required<string>("addressing_mode", "wrap");
+    const string addressing_mode =
+        m_params.get_optional<string>("addressing_mode", "wrap", make_vector("clamp, wrap"), context);
     if (addressing_mode == "clamp")
         m_addressing_mode = TextureAddressingClamp;
-    else if (addressing_mode == "wrap")
-        m_addressing_mode = TextureAddressingWrap;
-    else
-    {
-        RENDERER_LOG_ERROR(
-            "invalid value \"%s\" for parameter \"addressing_mode\", "
-            "using default value \"wrap\".",
-            addressing_mode.c_str());
-        m_addressing_mode = TextureAddressingWrap;
-    }
+    else m_addressing_mode = TextureAddressingWrap;
 
     // Retrieve the texture filtering mode.
-    const string filtering_mode = m_params.get_required<string>("filtering_mode", "bilinear");
+    const string filtering_mode =
+        m_params.get_optional<string>("filtering_mode", "bilinear", make_vector("nearest", "bilinear"), context);
     if (filtering_mode == "nearest")
         m_filtering_mode = TextureFilteringNearest;
-    else if (filtering_mode == "bilinear")
-        m_filtering_mode = TextureFilteringBilinear;
-    else
-    {
-        RENDERER_LOG_ERROR(
-            "invalid value \"%s\" for parameter \"filtering_mode\", "
-            "using default value \"bilinear\".",
-            filtering_mode.c_str());
-        m_filtering_mode = TextureFilteringBilinear;
-    }
+    else m_filtering_mode = TextureFilteringBilinear;
 
     // Retrieve the texture alpha mode.
-    const string alpha_mode = m_params.get_optional<string>("alpha_mode", "alpha_channel");
+    const string alpha_mode =
+        m_params.get_optional<string>("alpha_mode", "alpha_channel", make_vector("alpha_channel", "luminance", "detect"), context);
     if (alpha_mode == "alpha_channel")
         m_alpha_mode = TextureAlphaModeAlphaChannel;
     else if (alpha_mode == "luminance")
         m_alpha_mode = TextureAlphaModeLuminance;
-    else if (alpha_mode == "detect")
-        m_alpha_mode = TextureAlphaModeDetect;
-    else
-    {
-        RENDERER_LOG_ERROR(
-            "invalid value \"%s\" for parameter \"alpha_mode\", "
-            "using default value \"alpha_channel\".",
-            alpha_mode.c_str());
-        m_alpha_mode = TextureAlphaModeAlphaChannel;
-    }
+    else m_alpha_mode = TextureAlphaModeDetect;
 
     // Until a texture is bound, the effective alpha mode is simply the user-selected alpha mode.
     m_effective_alpha_mode = m_alpha_mode;
@@ -299,7 +279,7 @@ DictionaryArray TextureInstanceFactory::get_input_metadata()
                 Dictionary()
                     .insert("Clamp", "clamp")
                     .insert("Wrap/Tile", "wrap"))
-            .insert("use", "required")
+            .insert("use", "optional")
             .insert("default", "wrap"));
 
     metadata.push_back(
@@ -311,7 +291,7 @@ DictionaryArray TextureInstanceFactory::get_input_metadata()
                 Dictionary()
                     .insert("Nearest", "nearest")
                     .insert("Bilinear", "bilinear"))
-            .insert("use", "required")
+            .insert("use", "optional")
             .insert("default", "bilinear"));
 
     metadata.push_back(
