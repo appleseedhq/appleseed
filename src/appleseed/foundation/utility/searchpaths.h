@@ -50,15 +50,15 @@ namespace foundation
 // over those inserted earlier).
 //
 
-class DLLSYMBOL SearchPaths
+class DLLSYMBOL SearchPathsImpl
   : public NonCopyable
 {
   public:
     // Constructor.
-    SearchPaths();
+    SearchPathsImpl();
 
     // Destructor.
-    ~SearchPaths();
+    ~SearchPathsImpl();
 
     // Remove all search paths and clears the root path.
     void clear();
@@ -69,18 +69,33 @@ class DLLSYMBOL SearchPaths
     // Return the number of paths.
     size_t size() const;
 
-    // Set the root path that is used to resolve relative paths.
-    void set_root_path(const char* path);
-    void set_root_path(const std::string& path);
-
-    // Get the root path.
-    std::string get_root_path() const;
-
     // Return true if the root path has been set.
     bool has_root_path() const;
 
     // Return the i'th path.
     const char* operator[](const size_t i) const;
+
+  protected:
+    struct Impl;
+    Impl* impl;
+
+    void do_set_root_path(const char* path);
+    char* do_get_root_path() const;
+    void do_push_back(const char* path);
+    bool do_exist(const char* filepath) const;
+    char* do_qualify(const char* filepath) const;
+};
+
+class SearchPaths
+  : public SearchPathsImpl
+{
+  public:
+    // Set the root path that is used to resolve relative paths.
+    void set_root_path(const char* path);
+    void set_root_path(const std::string& path);
+
+    // Return the root path that is used to resolve relative paths.
+    std::string get_root_path() const;
 
     // Insert a search path at the end of the collection.
     void push_back(const char* path);
@@ -95,15 +110,6 @@ class DLLSYMBOL SearchPaths
     // Find a file in the search paths. If the file was found, the qualified path to
     // this file is returned. Otherwise the input path is returned.
     std::string qualify(const std::string& filepath) const;
-
-  private:
-    struct Impl;
-    Impl* impl;
-
-    static std::string make_string(const char* s);
-
-    char* do_get_root_path() const;
-    char* do_qualify(const char* filepath) const;
 };
 
 
@@ -111,36 +117,44 @@ class DLLSYMBOL SearchPaths
 // SearchPaths class implementation.
 //
 
-inline std::string SearchPaths::make_string(const char* s)
+inline void SearchPaths::set_root_path(const char* path)
 {
-    const std::string result = s;
-    free_string(s);
-    return result;
+    do_set_root_path(path);
 }
 
 inline void SearchPaths::set_root_path(const std::string& path)
 {
-    set_root_path(path.c_str());
+    do_set_root_path(path.c_str());
+}
+
+inline void SearchPaths::push_back(const char* path)
+{
+    do_push_back(path);
 }
 
 inline void SearchPaths::push_back(const std::string& path)
 {
-    return push_back(path.c_str());
+    do_push_back(path.c_str());
 }
 
 inline std::string SearchPaths::get_root_path() const
 {
-    return make_string(do_get_root_path());
+    return convert_to_std_string(do_get_root_path());
+}
+
+inline bool SearchPaths::exist(const char* filepath) const
+{
+    return do_exist(filepath);
 }
 
 inline bool SearchPaths::exist(const std::string& filepath) const
 {
-    return exist(filepath.c_str());
+    return do_exist(filepath.c_str());
 }
 
 inline std::string SearchPaths::qualify(const std::string& filepath) const
 {
-    return make_string(do_qualify(filepath.c_str()));
+    return convert_to_std_string(do_qualify(filepath.c_str()));
 }
 
 }       // namespace foundation

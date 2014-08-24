@@ -45,10 +45,10 @@ namespace foundation
 {
 
 //
-// SearchPaths class implementation.
+// SearchPathsImpl class implementation.
 //
 
-struct SearchPaths::Impl
+struct SearchPathsImpl::Impl
 {
     typedef vector<string> PathCollection;
 
@@ -56,60 +56,60 @@ struct SearchPaths::Impl
     PathCollection      m_paths;
 };
 
-SearchPaths::SearchPaths()
+SearchPathsImpl::SearchPathsImpl()
   : impl(new Impl())
 {
 }
 
-SearchPaths::~SearchPaths()
+SearchPathsImpl::~SearchPathsImpl()
 {
     delete impl;
 }
 
-void SearchPaths::clear()
+void SearchPathsImpl::clear()
 {
     impl->m_root_path.clear();
     impl->m_paths.clear();
 }
 
-bool SearchPaths::empty() const
+bool SearchPathsImpl::empty() const
 {
     return impl->m_paths.empty();
 }
 
-size_t SearchPaths::size() const
+size_t SearchPathsImpl::size() const
 {
     return impl->m_paths.size();
 }
 
-void SearchPaths::set_root_path(const char* path)
-{
-    impl->m_root_path = filesystem::path(path).make_preferred();
-}
-
-char* SearchPaths::do_get_root_path() const
-{
-    return duplicate_string(impl->m_root_path.string().c_str());
-}
-
-bool SearchPaths::has_root_path() const
+bool SearchPathsImpl::has_root_path() const
 {
     return !impl->m_root_path.empty();
 }
 
-const char* SearchPaths::operator[](const size_t i) const
+const char* SearchPathsImpl::operator[](const size_t i) const
 {
     assert(i < size());
     return impl->m_paths[i].c_str();
 }
 
-void SearchPaths::push_back(const char* path)
+void SearchPathsImpl::do_set_root_path(const char* path)
+{
+    impl->m_root_path = filesystem::path(path).make_preferred();
+}
+
+char* SearchPathsImpl::do_get_root_path() const
+{
+    return duplicate_string(impl->m_root_path.string().c_str());
+}
+
+void SearchPathsImpl::do_push_back(const char* path)
 {
     assert(path);
     impl->m_paths.push_back(path);
 }
 
-bool SearchPaths::exist(const char* filepath) const
+bool SearchPathsImpl::do_exist(const char* filepath) const
 {
     assert(filepath);
 
@@ -139,7 +139,7 @@ bool SearchPaths::exist(const char* filepath) const
     return filesystem::exists(fp);
 }
 
-char* SearchPaths::do_qualify(const char* filepath) const
+char* SearchPathsImpl::do_qualify(const char* filepath) const
 {
     assert(filepath);
 

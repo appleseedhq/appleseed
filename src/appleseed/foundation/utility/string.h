@@ -98,11 +98,14 @@ T from_string(const char* s);
 // String manipulation functions.
 //
 
-// Duplicate a string. The returned string must be freed using free_string().
+// Duplicate a C string. The returned string must be freed using free_string().
 DLLSYMBOL char* duplicate_string(const char* s);
 
-// Deallocate a string returned by duplicate_string().
+// Deallocate a C string allocated by duplicate_string().
 DLLSYMBOL void free_string(const char* s);
+
+// Convert a C string allocated by duplicate_string() to an std::string, and dellocate the C string.
+FORCE_INLINE std::string convert_to_std_string(const char* s);
 
 // Convert all characters of a string to lower case.
 std::string lower_case(const std::string& s);
@@ -479,6 +482,13 @@ inline uint8 from_string(const char* s)
 //
 // String manipulation functions implementation.
 //
+
+FORCE_INLINE std::string convert_to_std_string(const char* s)
+{
+    const std::string result = s;
+    free_string(s);
+    return result;
+}
 
 inline std::string lower_case(const std::string& s)
 {
