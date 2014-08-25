@@ -110,11 +110,11 @@ set (CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 
 # This must come after project () otherwise CMAKE_SYSTEM_NAME is undefined.
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    include (src/cmake/config/win-vs110.txt)
+    include (src/cmake/config/win-vs.txt)
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-    include (src/cmake/config/mac-gcc4.txt)
+    include (src/cmake/config/mac-clang.txt)
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    include (src/cmake/config/linux-gcc4.txt)
+    include (src/cmake/config/linux-gcc.txt)
 else ()
     message (FATAL_ERROR "Unsupported platform or compiler (CMAKE_SYSTEM_NAME is \"${CMAKE_SYSTEM_NAME}\"). "
                          "Edit ${CMAKE_CURRENT_LIST_FILE} to add support for it.")
