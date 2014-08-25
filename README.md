@@ -16,7 +16,6 @@ Check out our [detailed build instructions](https://github.com/appleseedhq/apple
 
 More developer documentation can be found in the [wiki](https://github.com/appleseedhq/appleseed/wiki).
 
-
 ### On the Web
 
 * [appleseed Website](http://appleseedhq.net/)
@@ -37,6 +36,8 @@ More developer documentation can be found in the [wiki](https://github.com/apple
 [![Fetch](https://raw.github.com/appleseedhq/appleseed-wiki/master/images/fetch.png)](https://vimeo.com/appleseedhq/fetchaveryshortfilm)
 
 ### Screenshots
+
+##### appleseed.studio
 
 ![Disney Material Editor](https://cloud.githubusercontent.com/assets/321290/4024500/967e8c30-2bcc-11e4-90a9-2f163394a391.png)
 
