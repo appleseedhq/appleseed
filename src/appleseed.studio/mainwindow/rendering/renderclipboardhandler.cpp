@@ -65,7 +65,7 @@ bool RenderClipboardHandler::eventFilter(QObject* object, QEvent* event)
 
         if (key_event->modifiers() == Qt::ControlModifier && key_event->key() == Qt::Key_C)
         {
-            QApplication::clipboard()->setImage(m_widget->get_image());
+            QApplication::clipboard()->setImage(m_widget->get_image_copy());
             RENDERER_LOG_INFO("copied render to the clipboard.");
             return true;
         }

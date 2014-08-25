@@ -77,7 +77,7 @@ RenderWidget::RenderWidget(
     resize(width, height);
 }
 
-QImage RenderWidget::get_image() const
+QImage RenderWidget::get_image_copy() const
 {
     QMutexLocker locker(&m_mutex);
 

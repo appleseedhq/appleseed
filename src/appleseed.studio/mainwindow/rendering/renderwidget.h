@@ -68,7 +68,7 @@ class RenderWidget
         QWidget*                    parent = 0);
 
     // Thread-safe.
-    QImage get_image() const;
+    QImage get_image_copy() const;
 
     // Thread-safe.
     void resize(
