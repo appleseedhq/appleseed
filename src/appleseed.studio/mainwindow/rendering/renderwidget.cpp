@@ -111,6 +111,11 @@ void RenderWidget::clear(const Color4f& color)
 
 namespace
 {
+    inline uint8* get_image_pointer(QImage& image)
+    {
+        return static_cast<uint8*>(image.scanLine(0));
+    }
+
     inline uint8* get_image_pointer(
         QImage&         image,
         const size_t    x,
@@ -131,7 +136,7 @@ void RenderWidget::multiply(const float multiplier)
     const size_t image_height = static_cast<size_t>(m_image.height());
     const size_t dest_stride = static_cast<size_t>(m_image.bytesPerLine());
 
-    uint8* dest = get_image_pointer(m_image, 0, 0);
+    uint8* dest = get_image_pointer(m_image);
 
     for (size_t y = 0; y < image_height; ++y)
     {
