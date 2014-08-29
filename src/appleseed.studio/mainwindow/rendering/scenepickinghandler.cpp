@@ -228,6 +228,7 @@ void ScenePickingHandler::pick(const QPoint& point)
     sstr << "picking details:" << endl;
     sstr << "  pixel coords     " << pix.x << ", " << pix.y << endl;
     sstr << "  ndc coords       " << ndc.x << ", " << ndc.y << endl;
+    sstr << "  depth            " << result.m_distance << endl;
     sstr << "  primitive type   " << get_primitive_type_name(result.m_primitive_type) << endl;
 
     sstr << print_entity("  camera           ", result.m_camera) << endl;

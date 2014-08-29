@@ -102,6 +102,11 @@ ScenePicker::PickingResult ScenePicker::pick(const Vector2d& ndc) const
     const bool hit = shading_point.hit();
 
     PickingResult result;
+    result.m_hit = hit;
+    result.m_distance =
+        hit
+            ? shading_point.get_distance() * norm(ray.m_dir)
+            : shading_point.get_distance();
     result.m_primitive_type = shading_point.get_primitive_type();
     result.m_camera = camera;
     result.m_assembly_instance = hit ? &shading_point.get_assembly_instance() : 0;
