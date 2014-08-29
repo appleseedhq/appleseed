@@ -215,12 +215,12 @@ void DiagnosticSurfaceShader::evaluate(
 
       case Tangent:
         shading_result.set_main_to_linear_rgb(
-            vector3_to_color(normalize(shading_point.get_dpdu(0))));
+            vector3_to_color(normalize(shading_point.get_shading_basis().get_tangent_u())));
         break;
 
       case Bitangent:
         shading_result.set_main_to_linear_rgb(
-            vector3_to_color(normalize(shading_point.get_dpdv(0))));
+            vector3_to_color(normalize(shading_point.get_shading_basis().get_tangent_v())));
         break;
 
       case GeometricNormal:
