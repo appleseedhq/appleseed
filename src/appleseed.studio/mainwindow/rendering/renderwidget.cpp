@@ -30,9 +30,6 @@
 // Interface header.
 #include "renderwidget.h"
 
-// appleseed.studio headers.
-#include "utility/interop.h"
-
 // appleseed.renderer headers.
 #include "renderer/api/frame.h"
 
@@ -45,6 +42,7 @@
 #include "foundation/platform/types.h"
 
 // Qt headers.
+#include <QColor>
 #include <QMutexLocker>
 #include <Qt>
 
@@ -99,14 +97,14 @@ void RenderWidget::resize(
             static_cast<int>(height),
             QImage::Format_RGB888);
 
-    clear(Color4f(0.0f));
+    clear();
 }
 
-void RenderWidget::clear(const Color4f& color)
+void RenderWidget::clear()
 {
     QMutexLocker locker(&m_mutex);
 
-    m_image.fill(color_to_qcolor(color).rgba());
+    m_image.fill(QColor(0, 0, 0));
 }
 
 namespace

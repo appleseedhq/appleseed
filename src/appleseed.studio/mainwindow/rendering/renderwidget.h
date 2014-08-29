@@ -31,7 +31,6 @@
 #define APPLESEED_STUDIO_MAINWINDOW_RENDERING_RENDERWIDGET_H
 
 // appleseed.foundation headers.
-#include "foundation/image/color.h"
 #include "foundation/platform/compiler.h"
 
 // Qt headers.
@@ -63,55 +62,53 @@ class RenderWidget
   public:
     // Constructor.
     RenderWidget(
-        const size_t                width,
-        const size_t                height,
-        QWidget*                    parent = 0);
+        const size_t            width,
+        const size_t            height,
+        QWidget*                parent = 0);
 
     // Thread-safe.
     QImage get_image_copy() const;
 
     // Thread-safe.
     void resize(
-        const size_t                width,
-        const size_t                height);
+        const size_t            width,
+        const size_t            height);
 
     // Thread-safe.
-    void clear(const foundation::Color4f& color);
+    void clear();
 
     // Thread-safe.
     void multiply(const float multiplier);
 
     // Thread-safe.
     void highlight_region(
-        const size_t                x,
-        const size_t                y,
-        const size_t                width,
-        const size_t                height);
+        const size_t            x,
+        const size_t            y,
+        const size_t            width,
+        const size_t            height);
 
     // Thread-safe.
     void blit_tile(
-        const renderer::Frame&      frame,
-        const size_t                tile_x,
-        const size_t                tile_y);
+        const renderer::Frame&  frame,
+        const size_t            tile_x,
+        const size_t            tile_y);
 
     // Thread-safe.
-    void blit_frame(
-        const renderer::Frame&      frame);
+    void blit_frame(const renderer::Frame& frame);
 
   private:
-    mutable QMutex  m_mutex;
-    QImage          m_image;
-    QPainter        m_painter;
-
+    mutable QMutex                  m_mutex;
+    QImage                          m_image;
+    QPainter                        m_painter;
     std::auto_ptr<foundation::Tile> m_float_tile_storage;
     std::auto_ptr<foundation::Tile> m_uint8_tile_storage;
 
     void allocate_working_storage(const foundation::CanvasProperties& frame_props);
 
     void blit_tile_no_lock(
-        const renderer::Frame&      frame,
-        const size_t                tile_x,
-        const size_t                tile_y);
+        const renderer::Frame&  frame,
+        const size_t            tile_x,
+        const size_t            tile_y);
 
     virtual void paintEvent(QPaintEvent* event) OVERRIDE;
 };

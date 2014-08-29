@@ -39,7 +39,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
-#include "foundation/image/color.h"
 #include "foundation/image/image.h"
 
 // Qt headers.
@@ -87,7 +86,7 @@ RenderTab::RenderTab(
 
 void RenderTab::clear()
 {
-    m_render_widget->clear(Color4f(0.0f));
+    m_render_widget->clear();
     m_render_widget->repaint();
 }
 
