@@ -235,8 +235,8 @@ namespace
 
                     // Merge the sample into the scratch framebuffer.
                     m_scratch_fb->add(
-                        m_scratch_fb_half_width + s.x,
-                        m_scratch_fb_half_height + s.y,
+                        static_cast<float>(m_scratch_fb_half_width + s.x),
+                        static_cast<float>(m_scratch_fb_half_height + s.y),
                         shading_result);
 
                     // Update statistics for this pixel.

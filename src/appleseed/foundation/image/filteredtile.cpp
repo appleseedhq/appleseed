@@ -60,7 +60,7 @@ FilteredTile::FilteredTile(
     const size_t        width,
     const size_t        height,
     const size_t        channel_count,
-    const Filter2d&     filter)
+    const Filter2f&     filter)
   : Tile(width, height, channel_count + 1, PixelFormatFloat)
   , m_crop_window(Vector2u(0, 0), Vector2u(width - 1, height - 1))
   , m_filter(filter)
@@ -72,7 +72,7 @@ FilteredTile::FilteredTile(
     const size_t        height,
     const size_t        channel_count,
     const AABB2u&       crop_window,
-    const Filter2d&     filter)
+    const Filter2f&     filter)
   : Tile(width, height, channel_count + 1, PixelFormatFloat)
   , m_crop_window(crop_window)
   , m_filter(filter)
@@ -88,13 +88,13 @@ void FilteredTile::clear()
 }
 
 void FilteredTile::add(
-    const double        x,
-    const double        y,
+    const float         x,
+    const float         y,
     const float*        values)
 {
     // Convert (x, y) from continuous image space to discrete image space.
-    const double dx = x - 0.5;
-    const double dy = y - 0.5;
+    const float dx = x - 0.5f;
+    const float dy = y - 0.5f;
 
     // Find the pixels affected by this sample.
     AABB2i footprint;
@@ -110,9 +110,8 @@ void FilteredTile::add(
     {
         for (int rx = footprint.min.x; rx <= footprint.max.x; ++rx)
         {
-            const float weight = static_cast<float>(m_filter.evaluate(rx - dx, ry - dy));
-
             float* RESTRICT ptr = reinterpret_cast<float*>(pixel(rx, ry));
+            const float weight = m_filter.evaluate(rx - dx, ry - dy);
 
             *ptr++ += weight;
 

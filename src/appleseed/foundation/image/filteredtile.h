@@ -55,18 +55,18 @@ class FilteredTile
         const size_t        width,
         const size_t        height,
         const size_t        channel_count,
-        const Filter2d&     filter);
+        const Filter2f&     filter);
 
     FilteredTile(
         const size_t        width,
         const size_t        height,
         const size_t        channel_count,
         const AABB2u&       crop_window,
-        const Filter2d&     filter);
+        const Filter2f&     filter);
 
     // Tile properties.
     const AABB2u& get_crop_window() const;
-    const Filter2d& get_filter() const;
+    const Filter2f& get_filter() const;
 
     // Direct access to a given pixel.
     float* pixel(
@@ -121,13 +121,13 @@ class FilteredTile
     // The point (x, y) is expressed in continuous image space
     // (https://github.com/appleseedhq/appleseed/wiki/Terminology).
     void add(
-        const double        x,
-        const double        y,
+        const float         x,
+        const float         y,
         const float*        values);
 
   protected:
     const AABB2u            m_crop_window;
-    const Filter2d&         m_filter;
+    const Filter2f&         m_filter;
 };
 
 
@@ -140,7 +140,7 @@ inline const AABB2u& FilteredTile::get_crop_window() const
     return m_crop_window;
 }
 
-inline const Filter2d& FilteredTile::get_filter() const
+inline const Filter2f& FilteredTile::get_filter() const
 {
     return m_filter;
 }

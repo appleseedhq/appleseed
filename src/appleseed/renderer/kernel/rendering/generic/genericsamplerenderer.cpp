@@ -215,6 +215,12 @@ namespace
                     // Apply alpha premultiplication.
                     if (shading_point_ptr->hit())
                         shading_result.apply_alpha_premult_linear_rgb();
+
+                    // Store the depth value.
+                    shading_result.m_depth =
+                        shading_point_ptr->hit()
+                            ? shading_point_ptr->get_distance()
+                            : -1.0;
                 }
                 else
                 {

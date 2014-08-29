@@ -159,7 +159,12 @@ namespace
 
                     // Merge the sample into the framebuffer.
                     if (shading_result.is_valid_linear_rgb())
-                        framebuffer.add(tx + s.x, ty + s.y, shading_result);
+                    {
+                        framebuffer.add(
+                            static_cast<float>(tx + s.x),
+                            static_cast<float>(ty + s.y),
+                            shading_result);
+                    }
                     else signal_invalid_sample();
                 }
             }
@@ -199,7 +204,12 @@ namespace
 
                         // Merge the sample into the framebuffer.
                         if (shading_result.is_valid_linear_rgb())
-                            framebuffer.add(s.x - ix + tx, s.y - iy + ty, shading_result);
+                        {
+                            framebuffer.add(
+                                static_cast<float>(s.x - ix + tx),
+                                static_cast<float>(s.y - iy + ty),
+                                shading_result);
+                        }
                         else signal_invalid_sample();
                     }
                 }

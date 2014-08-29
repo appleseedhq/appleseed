@@ -320,7 +320,8 @@ namespace
 
                 // Adjust cos(alpha).
                 const double square_distance = square_norm(vertex_to_camera);
-                cos_alpha /= sqrt(square_distance);
+                const double distance = sqrt(square_distance);
+                cos_alpha /= distance;
 
                 // Compute the solid angle sustained by the pixel.
                 const double solid_angle = m_camera.get_pixel_solid_angle(m_frame, sample_position);
@@ -328,7 +329,7 @@ namespace
                 // Store the contribution of this vertex.
                 Spectrum radiance = light_particle_flux;
                 radiance *= static_cast<float>(transmission * cos_alpha / (square_distance * solid_angle));
-                emit_sample(sample_position, radiance);
+                emit_sample(sample_position, distance, radiance);
             }
 
             void visit_non_physical_light_vertex(
@@ -351,6 +352,7 @@ namespace
 
                 // Compute the square distance from the camera to the vertex.
                 const double square_distance = square_norm(m_camera_position - light_vertex);
+                const double distance = sqrt(square_distance);
 
                 // Compute the solid angle sustained by the pixel.
                 const double solid_angle = m_camera.get_pixel_solid_angle(m_frame, sample_position);
@@ -358,7 +360,7 @@ namespace
                 // Store the contribution of this vertex.
                 Spectrum radiance = light_particle_flux;
                 radiance *= static_cast<float>(transmission / (square_distance * solid_angle));
-                emit_sample(sample_position, radiance);
+                emit_sample(sample_position, distance, radiance);
             }
 
             void visit_vertex(const PathVertex& vertex)
@@ -390,7 +392,8 @@ namespace
 
                 // Normalize the vertex-to-camera vector.
                 const double square_distance = square_norm(vertex_to_camera);
-                vertex_to_camera /= sqrt(square_distance);
+                const double distance = sqrt(square_distance);
+                vertex_to_camera /= distance;
 
                 // Retrieve the geometric normal at the vertex.
                 const Vector3d geometric_normal =
@@ -422,7 +425,7 @@ namespace
                 radiance *= vertex.m_throughput;
                 radiance *= bsdf_value;
                 radiance *= static_cast<float>(transmission / (square_distance * solid_angle));
-                emit_sample(sample_position, radiance);
+                emit_sample(sample_position, distance, radiance);
             }
 
             double vertex_visible_to_camera(
@@ -451,17 +454,26 @@ namespace
                         ray_depth);
             }
 
-            void emit_sample(const Vector2d& position_ndc, const Spectrum& radiance)
+            void emit_sample(
+                const Vector2d&             position_ndc,
+                const double                distance,
+                const Spectrum&             radiance)
             {
                 assert(min_value(radiance) >= 0.0f);
 
-                Sample sample;
-                sample.m_position = position_ndc;
-                sample.m_color.rgb() =
+                const Color3f linear_rgb =
                     ciexyz_to_linear_rgb(
                         spectrum_to_ciexyz<float>(m_lighting_conditions, radiance));
-                sample.m_color[3] = 1.0f;
+
+                Sample sample;
+                sample.m_position = Vector2f(position_ndc);
+                sample.m_values[0] = linear_rgb.r;
+                sample.m_values[1] = linear_rgb.g;
+                sample.m_values[2] = linear_rgb.b;
+                sample.m_values[3] = 1.0f;
+                sample.m_values[4] = static_cast<float>(distance);
                 m_samples.push_back(sample);
+
                 ++m_sample_count;
             }
 

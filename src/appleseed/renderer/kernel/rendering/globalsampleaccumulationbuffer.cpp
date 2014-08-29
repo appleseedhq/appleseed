@@ -51,9 +51,9 @@ namespace renderer
 GlobalSampleAccumulationBuffer::GlobalSampleAccumulationBuffer(
     const size_t    width,
     const size_t    height,
-    const Filter2d& filter)
+    const Filter2f& filter)
   : m_fb(width, height, 3, filter)
-  , m_filter_rcp_norm_factor(static_cast<float>(1.0 / compute_normalization_factor(filter)))
+  , m_filter_rcp_norm_factor(1.0f / compute_normalization_factor(filter))
 {
 }
 
@@ -72,16 +72,16 @@ void GlobalSampleAccumulationBuffer::store_samples(
 {
     boost::mutex::scoped_lock lock(m_mutex);
 
-    const double fw = static_cast<double>(m_fb.get_width());
-    const double fh = static_cast<double>(m_fb.get_height());
+    const float fw = static_cast<float>(m_fb.get_width());
+    const float fh = static_cast<float>(m_fb.get_height());
     const Sample* sample_end = samples + sample_count;
 
     for (const Sample* sample_ptr = samples; sample_ptr < sample_end; ++sample_ptr)
     {
-        const double fx = sample_ptr->m_position.x * fw;
-        const double fy = sample_ptr->m_position.y * fh;
+        const float fx = sample_ptr->m_position.x * fw;
+        const float fy = sample_ptr->m_position.y * fh;
 
-        Color3f value = sample_ptr->m_color.rgb();
+        Color3f value(sample_ptr->m_values);
         value *= m_filter_rcp_norm_factor;
 
         m_fb.add(fx, fy, &value[0]);

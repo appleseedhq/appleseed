@@ -58,7 +58,7 @@ class GlobalSampleAccumulationBuffer
     GlobalSampleAccumulationBuffer(
         const size_t                width,
         const size_t                height,
-        const foundation::Filter2d& filter);
+        const foundation::Filter2f& filter);
 
     // Reset the buffer to its initial state. Thread-safe.
     virtual void clear() OVERRIDE;

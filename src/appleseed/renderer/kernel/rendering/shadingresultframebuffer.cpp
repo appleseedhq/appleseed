@@ -63,7 +63,7 @@ ShadingResultFrameBuffer::ShadingResultFrameBuffer(
     const size_t                    width,
     const size_t                    height,
     const size_t                    aov_count,
-    const Filter2d&                 filter)
+    const Filter2f&                 filter)
   : FilteredTile(
         width,
         height,
@@ -79,7 +79,7 @@ ShadingResultFrameBuffer::ShadingResultFrameBuffer(
     const size_t                    height,
     const size_t                    aov_count,
     const AABB2u&                   crop_window,
-    const Filter2d&                 filter)
+    const Filter2f&                 filter)
   : FilteredTile(
         width,
         height,
@@ -92,8 +92,8 @@ ShadingResultFrameBuffer::ShadingResultFrameBuffer(
 }
 
 void ShadingResultFrameBuffer::add(
-    const double                    x,
-    const double                    y,
+    const float                     x,
+    const float                     y,
     const ShadingResult&            sample)
 {
     assert(sample.m_color_space == ColorSpaceLinearRGB);
