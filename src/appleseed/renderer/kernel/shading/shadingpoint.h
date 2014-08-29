@@ -161,9 +161,6 @@ class ShadingPoint
     // Return the i'th world space vertex of the hit triangle.
     const foundation::Vector3d& get_vertex(const size_t i) const;
 
-    // Return the world space normal at the i'th vertex of the hit triangle.
-    const foundation::Vector3d& get_vertex_normal(const size_t i) const;
-
     // Return the material at the intersection point, or 0 if there is none.
     const Material* get_material() const;
 
@@ -250,7 +247,7 @@ class ShadingPoint
     size_t                              m_primitive_index;              // index of the hit primitive
     TriangleSupportPlaneType            m_triangle_support_plane;       // support plane of the hit triangle
 
-    // Additional intersection results, computed on demand.
+    // Flags to keep track of which on-demand results have been computed and cached.
     enum Members
     {
         HasSourceGeometry               = 1 << 0,
@@ -263,15 +260,16 @@ class ShadingPoint
         HasShadingNormal                = 1 << 7,
         HasOriginalShadingNormal        = 1 << 8,
         HasShadingBasis                 = 1 << 9,
-        HasWorldSpaceVertices           = 1 << 10,
-        HasWorldSpaceVertexNormals      = 1 << 11,
-        HasMaterial                     = 1 << 12
-
+        HasWorldSpaceTriangleVertices   = 1 << 10,
+        HasMaterial                     = 1 << 11,
+        HasTriangleVertexTangents       = 1 << 12
 #ifdef WITH_OSL
         , HasOSLShaderGlobals           = 1 << 13
 #endif
     };
-    mutable foundation::uint32          m_members;                      // which members have already been computed
+    mutable foundation::uint32          m_members;
+
+    // Source geometry, fetched on demand.
     mutable const Assembly*             m_assembly;                     // hit assembly
     mutable const ObjectInstance*       m_object_instance;              // hit object instance
     mutable Object*                     m_object;                       // hit object
@@ -279,6 +277,9 @@ class ShadingPoint
     mutable GVector2                    m_v0_uv, m_v1_uv, m_v2_uv;      // texture coordinates from UV set #0 at triangle vertices
     mutable GVector3                    m_v0, m_v1, m_v2;               // object instance space triangle vertices
     mutable GVector3                    m_n0, m_n1, m_n2;               // object instance space triangle vertex normals
+    mutable GVector3                    m_t0, m_t1, m_t2;               // object instance space triangle vertex tangents
+
+    // Additional intersection results, computed on demand.
     mutable foundation::Vector2d        m_uv;                           // texture coordinates from UV set #0
     mutable foundation::Vector3d        m_point;                        // world space intersection point
     mutable foundation::Vector3d        m_biased_point;                 // world space intersection point with per-object-instance bias applied
@@ -290,7 +291,6 @@ class ShadingPoint
     mutable ObjectInstance::Side        m_side;                         // side of the surface that was hit
     mutable foundation::Basis3d         m_shading_basis;                // world space orthonormal basis around shading normal
     mutable foundation::Vector3d        m_v0_w, m_v1_w, m_v2_w;         // world space triangle vertices
-    mutable foundation::Vector3d        m_n0_w, m_n1_w, m_n2_w;         // world space triangle vertex normals
     mutable const Material*             m_material;                     // material at intersection point
 
     // Data required to avoid self-intersections.
@@ -304,22 +304,23 @@ class ShadingPoint
     mutable OSL::ShaderGlobals          m_shader_globals;
 #endif
 
-    // Cache the source geometry, fetching it if necessary.
+    // Fetch and cache the source geometry.
     void cache_source_geometry() const;
 
     // Fetch the source geometry.
     void fetch_source_geometry() const;
-
-    // Additional fetch functions for different primitive types
     void fetch_triangle_source_geometry() const;
-
     void fetch_curve_source_geometry() const;
 
     // Refine and offset the intersection point.
     void refine_and_offset() const;
 
-    // Compute the partial derivatives dp/du and dp/dv.
     void compute_partial_derivatives() const;
+    void compute_geometric_normal() const;
+    void compute_shading_normal() const;
+    void compute_original_shading_normal() const;
+    void compute_shading_basis() const;
+    void compute_world_space_triangle_vertices() const;
 };
 
 
@@ -418,9 +419,8 @@ inline const foundation::Vector2d& ShadingPoint::get_uv(const size_t uvset) cons
             const foundation::Vector2d v0_uv(m_v0_uv);
             const foundation::Vector2d v1_uv(m_v1_uv);
             const foundation::Vector2d v2_uv(m_v2_uv);
-            const double w = 1.0 - m_bary[0] - m_bary[1];
             m_uv =
-                  v0_uv * w
+                  v0_uv * (1.0 - m_bary[0] - m_bary[1])
                 + v1_uv * m_bary[0]
                 + v2_uv * m_bary[1];
         }
@@ -455,7 +455,10 @@ inline const foundation::Vector3d& ShadingPoint::get_offset_point(const foundati
     assert(hit());
     assert(m_members & HasRefinedPoints);
 
-    return foundation::dot(m_asm_geo_normal, direction) > 0.0 ? m_front_point : m_back_point;
+    return
+        foundation::dot(m_asm_geo_normal, direction) > 0.0
+            ? m_front_point
+            : m_back_point;
 }
 
 inline const foundation::Vector3d& ShadingPoint::get_dpdu(const size_t uvset) const
@@ -492,57 +495,7 @@ inline const foundation::Vector3d& ShadingPoint::get_geometric_normal() const
 
     if (!(m_members & HasGeometricNormal))
     {
-        if (m_primitive_type == PrimitiveTriangle)
-        {
-            if (m_members & HasWorldSpaceVertices)
-            {
-                // We already have the world space vertices of the hit triangle.
-                // Use them to compute the geometric normal directly in world space.
-                m_geometric_normal = foundation::cross(m_v1_w - m_v0_w, m_v2_w - m_v0_w);
-            }
-            else
-            {
-                cache_source_geometry();
-
-                // Compute the object instance space geometric normal.
-                const foundation::Vector3d v0(m_v0);
-                const foundation::Vector3d v1(m_v1);
-                const foundation::Vector3d v2(m_v2);
-                m_geometric_normal = foundation::cross(v1 - v0, v2 - v0);
-
-                // Transform the geometric normal to world space.
-                m_geometric_normal =
-                    m_assembly_instance_transform.normal_to_parent(
-                        m_object_instance->get_transform().normal_to_parent(m_geometric_normal));
-            }
-
-            // Normalize the geometric normal.
-            m_geometric_normal = foundation::normalize(m_geometric_normal);
-
-            // Place the geometric normal in the same hemisphere as the original shading normal.
-            if (foundation::dot(m_geometric_normal, get_original_shading_normal()) < 0.0)
-                m_geometric_normal = -m_geometric_normal;
-
-            // Remember which side of the geometric surface we hit.
-            m_side =
-                foundation::dot(m_ray.m_dir, m_geometric_normal) > 0.0
-                    ? ObjectInstance::BackSide
-                    : ObjectInstance::FrontSide;
-
-            // Finally make the geometric normal face the direction of the incoming ray.
-            if (m_side == ObjectInstance::BackSide)
-                m_geometric_normal = -m_geometric_normal;
-        }
-        else
-        {
-            assert(m_primitive_type == PrimitiveCurve);
-
-            // We assume flat ribbons facing incoming rays.
-            m_geometric_normal = -normalize(m_ray.m_dir);
-            m_side = ObjectInstance::FrontSide;
-        }
-
-        // The geometric normal is now available.
+        compute_geometric_normal();
         m_members |= HasGeometricNormal;
     }
 
@@ -555,34 +508,7 @@ inline const foundation::Vector3d& ShadingPoint::get_shading_normal() const
 
     if (!(m_members & HasShadingNormal))
     {
-        // Start with the original shading normal.
-        m_shading_normal = get_original_shading_normal();
-
-        if (m_primitive_type == PrimitiveTriangle)
-        {
-            // Apply the normal modifier if the material has one.
-            const Material* material = get_material();
-            if (material)
-            {
-                const INormalModifier* modifier = material->get_normal_modifier();
-                if (modifier)
-                {
-                    m_shading_normal =
-                        modifier->evaluate(
-                            *m_texture_cache,
-                            m_shading_normal,
-                            get_uv(0),
-                            get_dpdu(0),
-                            get_dpdv(0));
-                }
-            }
-
-            // Place the shading normal in the same hemisphere as the geometric normal.
-            if (m_side == ObjectInstance::BackSide)
-                m_shading_normal = -m_shading_normal;
-        }
-
-        // The shading normal is now available.
+        compute_shading_normal();
         m_members |= HasShadingNormal;
     }
 
@@ -595,47 +521,7 @@ inline const foundation::Vector3d& ShadingPoint::get_original_shading_normal() c
 
     if (!(m_members & HasOriginalShadingNormal))
     {
-        if (m_primitive_type == PrimitiveTriangle)
-        {
-            const double w = 1.0 - m_bary[0] - m_bary[1];
-
-            if (m_members & HasWorldSpaceVertexNormals)
-            {
-                // We already have the world space vertex normals of the hit triangle.
-                // Use them to compute the shading normal directly in world space.
-                m_original_shading_normal =
-                      m_n0_w * w
-                    + m_n1_w * m_bary[0]
-                    + m_n2_w * m_bary[1];
-            }
-            else
-            {
-                cache_source_geometry();
-
-                // Compute the object instance space shading normal.
-                m_original_shading_normal =
-                      foundation::Vector3d(m_n0) * w
-                    + foundation::Vector3d(m_n1) * m_bary[0]
-                    + foundation::Vector3d(m_n2) * m_bary[1];
-
-                // Transform the shading normal to world space.
-                m_original_shading_normal =
-                    m_assembly_instance_transform.normal_to_parent(
-                        m_object_instance->get_transform().normal_to_parent(m_original_shading_normal));
-            }
-
-            // Normalize the shading normal.
-            m_original_shading_normal = foundation::normalize(m_original_shading_normal);
-        }
-        else
-        {
-            assert(m_primitive_type == PrimitiveCurve);
-
-            // We assume flat ribbons facing incoming rays.
-            m_original_shading_normal = -normalize(m_ray.m_dir);
-        }
-
-        // The shading normal is now available.
+        compute_original_shading_normal();
         m_members |= HasOriginalShadingNormal;
     }
 
@@ -648,10 +534,7 @@ inline const foundation::Basis3d& ShadingPoint::get_shading_basis() const
 
     if (!(m_members & HasShadingBasis))
     {
-        // Construct the orthonormal basis.
-        m_shading_basis.build(get_shading_normal(), normalize(get_dpdu(0)));
-
-        // The orthonormal basis is now available.
+        compute_shading_basis();
         m_members |= HasShadingBasis;
     }
 
@@ -668,63 +551,16 @@ inline ObjectInstance::Side ShadingPoint::get_side() const
 inline const foundation::Vector3d& ShadingPoint::get_vertex(const size_t i) const
 {
     assert(hit());
+    assert(m_primitive_type == PrimitiveTriangle);
     assert(i < 3);
 
-    if (!(m_members & HasWorldSpaceVertices))
+    if (!(m_members & HasWorldSpaceTriangleVertices))
     {
-        cache_source_geometry();
-
-        // Retrieve object instance space to assembly instance space transform.
-        const foundation::Transformd& obj_instance_transform =
-            m_object_instance->get_transform();
-
-        // Transform triangle vertices to world space.
-        const foundation::Vector3d v0(m_v0);
-        const foundation::Vector3d v1(m_v1);
-        const foundation::Vector3d v2(m_v2);
-        m_v0_w = obj_instance_transform.point_to_parent(v0);
-        m_v1_w = obj_instance_transform.point_to_parent(v1);
-        m_v2_w = obj_instance_transform.point_to_parent(v2);
-        m_v0_w = m_assembly_instance_transform.point_to_parent(m_v0_w);
-        m_v1_w = m_assembly_instance_transform.point_to_parent(m_v1_w);
-        m_v2_w = m_assembly_instance_transform.point_to_parent(m_v2_w);
-
-        // World space triangle vertices are now available.
-        m_members |= HasWorldSpaceVertices;
+        compute_world_space_triangle_vertices();
+        m_members |= HasWorldSpaceTriangleVertices;
     }
 
     return (&m_v0_w)[i];
-}
-
-inline const foundation::Vector3d& ShadingPoint::get_vertex_normal(const size_t i) const
-{
-    assert(hit());
-    assert(i < 3);
-
-    if (!(m_members & HasWorldSpaceVertexNormals))
-    {
-        cache_source_geometry();
-
-        // Retrieve instance space to assembly instance space transform.
-        const foundation::Transformd& obj_instance_transform =
-            m_object_instance->get_transform();
-
-        // Transform vertex normals to world space.
-        const foundation::Vector3d n0(m_n0);
-        const foundation::Vector3d n1(m_n1);
-        const foundation::Vector3d n2(m_n2);
-        m_n0_w = obj_instance_transform.normal_to_parent(n0);
-        m_n1_w = obj_instance_transform.normal_to_parent(n1);
-        m_n2_w = obj_instance_transform.normal_to_parent(n2);
-        m_n0_w = m_assembly_instance_transform.normal_to_parent(m_n0_w);
-        m_n1_w = m_assembly_instance_transform.normal_to_parent(m_n1_w);
-        m_n2_w = m_assembly_instance_transform.normal_to_parent(m_n2_w);
-
-        // World space vertex normals are now available.
-        m_members |= HasWorldSpaceVertexNormals;
-    }
-
-    return (&m_n0_w)[i];
 }
 
 inline const Material* ShadingPoint::get_material() const
@@ -737,7 +573,7 @@ inline const Material* ShadingPoint::get_material() const
 
         m_material = 0;
 
-        // Proceed with retrieving the material only if the hit triangle has one.
+        // Proceed with retrieving the material only if the hit primitive has one.
         if (m_primitive_pa != Triangle::None)
         {
             // Retrieve material indices from the object instance.
@@ -816,57 +652,6 @@ inline void ShadingPoint::cache_source_geometry() const
     {
         fetch_source_geometry();
         m_members |= HasSourceGeometry;
-    }
-}
-
-inline void ShadingPoint::compute_partial_derivatives() const
-{
-    cache_source_geometry();
-
-    const foundation::Vector3d& sn = get_original_shading_normal();
-
-    if (m_primitive_type == PrimitiveTriangle)
-    {
-        const double du0 = static_cast<double>(m_v0_uv[0] - m_v2_uv[0]);
-        const double dv0 = static_cast<double>(m_v0_uv[1] - m_v2_uv[1]);
-        const double du1 = static_cast<double>(m_v1_uv[0] - m_v2_uv[0]);
-        const double dv1 = static_cast<double>(m_v1_uv[1] - m_v2_uv[1]);
-
-        const double det = du0 * dv1 - dv0 * du1;
-
-        if (det == 0.0)
-        {
-            const foundation::Basis3d basis(sn);
-
-            m_dpdu = basis.get_tangent_u();
-            m_dpdv = basis.get_tangent_v();
-        }
-        else
-        {
-            const double rcp_det = 1.0 / det;
-
-            const foundation::Vector3d dp0 = get_vertex(0) - get_vertex(2);
-            const foundation::Vector3d dp1 = get_vertex(1) - get_vertex(2);
-
-            m_dpdu = (dv1 * dp0 - dv0 * dp1) * rcp_det;
-            m_dpdv = (du0 * dp1 - du1 * dp0) * rcp_det;
-
-            m_dpdu = foundation::cross(sn, foundation::normalize(foundation::cross(m_dpdu, sn)));
-            m_dpdv = foundation::cross(sn, foundation::normalize(foundation::cross(m_dpdv, sn)));
-        }
-    }
-    else
-    {
-        assert(m_primitive_type == PrimitiveCurve);
-
-        const CurveObject* curves = static_cast<const CurveObject*>(m_object);
-        const CurveType& m_curve = curves->get_curve(m_primitive_index);
-
-        const GScalar v = static_cast<GScalar>(m_bary[1]);
-        const GVector3 tangent = m_curve.evaluate_tangent(v);
-
-        m_dpdu = foundation::normalize(foundation::Vector3d(tangent));
-        m_dpdv = foundation::normalize(foundation::cross(sn, m_dpdu));
     }
 }
 

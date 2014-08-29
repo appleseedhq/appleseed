@@ -37,6 +37,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/intersection.h"
+#include "foundation/math/scalar.h"
 #include "foundation/utility/attributeset.h"
 #include "foundation/utility/otherwise.h"
 
@@ -95,12 +96,13 @@ void ShadingPoint::fetch_triangle_source_geometry() const
 
     // Retrieve the triangle.
     const Triangle& triangle = tess.m_primitives[m_primitive_index];
+    const bool triangle_has_vertex_attributes = triangle.has_vertex_attributes();
 
     // Copy the index of the triangle attribute.
     m_primitive_pa = triangle.m_pa;
 
     // Copy the texture coordinates from UV set #0.
-    if (triangle.has_vertex_attributes() && tess.get_tex_coords_count() > 0)
+    if (triangle_has_vertex_attributes && tess.get_tex_coords_count() > 0)
     {
         m_v0_uv = tess.get_tex_coords(triangle.m_a0);
         m_v1_uv = tess.get_tex_coords(triangle.m_a1);
@@ -109,8 +111,8 @@ void ShadingPoint::fetch_triangle_source_geometry() const
     else
     {
         // UV set #0 doesn't exist, or this triangle doesn't have vertex attributes.
-        m_v0_uv =
-        m_v1_uv =
+        m_v0_uv = GVector2(0.0);
+        m_v1_uv = GVector2(0.0);
         m_v2_uv = GVector2(0.0);
     }
 
@@ -143,9 +145,9 @@ void ShadingPoint::fetch_triangle_source_geometry() const
 
         // Interpolate triangle vertices.
         const GScalar k = static_cast<GScalar>(m_ray.m_time * motion_segment_count - prev_index);
-        m_v0 = (GScalar(1.0) - k) * prev_v0 + k * next_v0;
-        m_v1 = (GScalar(1.0) - k) * prev_v1 + k * next_v1;
-        m_v2 = (GScalar(1.0) - k) * prev_v2 + k * next_v2;
+        m_v0 = lerp(prev_v0, next_v0, k);
+        m_v1 = lerp(prev_v1, next_v1, k);
+        m_v2 = lerp(prev_v2, next_v2, k);
     }
     else
     {
@@ -154,7 +156,7 @@ void ShadingPoint::fetch_triangle_source_geometry() const
         m_v2 = tess.m_vertices[triangle.m_v2];
     }
 
-    // Copy the object instance space triangle vertex normals.
+    // Copy the object instance space vertex normals.
     assert(triangle.m_n0 != Triangle::None);
     assert(triangle.m_n1 != Triangle::None);
     assert(triangle.m_n2 != Triangle::None);
@@ -164,6 +166,18 @@ void ShadingPoint::fetch_triangle_source_geometry() const
     assert(is_normalized(m_n0));
     assert(is_normalized(m_n1));
     assert(is_normalized(m_n2));
+
+    // Copy the object instance space vertex tangents.
+    if (triangle_has_vertex_attributes && tess.get_vertex_tangent_count() > 0)
+    {
+        m_members |= HasTriangleVertexTangents;
+        m_t0 = tess.get_vertex_tangent(triangle.m_v0);
+        m_t1 = tess.get_vertex_tangent(triangle.m_v1);
+        m_t2 = tess.get_vertex_tangent(triangle.m_v2);
+        assert(is_normalized(m_t0));
+        assert(is_normalized(m_t1));
+        assert(is_normalized(m_t2));
+    }
 }
 
 void ShadingPoint::fetch_curve_source_geometry() const
@@ -178,7 +192,6 @@ void ShadingPoint::refine_and_offset() const
     assert(hit());
     assert(!(m_members & ShadingPoint::HasRefinedPoints));
 
-    // Cache the source geometry.
     cache_source_geometry();
 
     // Compute the location of the intersection point in assembly instance space.
@@ -222,6 +235,7 @@ void ShadingPoint::refine_and_offset() const
 
         m_asm_geo_normal = normalize(-local_ray.m_dir);
 
+        // todo: this does not look correct, considering the flat ribbon nature of curves.
         const double Eps = 1.0e-6;
         m_front_point = local_ray.m_org + Eps * m_asm_geo_normal;
         m_back_point = local_ray.m_org - Eps * m_asm_geo_normal;
@@ -237,7 +251,7 @@ Vector3d ShadingPoint::get_biased_point(const Vector3d& direction) const
 
     if (!(m_members & HasBiasedPoint))
     {
-        const Vector3d point = m_ray.point_at(m_ray.m_tmax);
+        const Vector3d& point = get_point();
 
         switch (m_object_instance->get_ray_bias_method())
         {
@@ -276,7 +290,220 @@ Vector3d ShadingPoint::get_biased_point(const Vector3d& direction) const
     return m_biased_point;
 }
 
+void ShadingPoint::compute_partial_derivatives() const
+{
+    cache_source_geometry();
+
+    if (m_primitive_type == PrimitiveTriangle)
+    {
+        //
+        // Reference:
+        //
+        //   Physically Based Rendering, first edition, pp. 128-129
+        //
+
+        const double du0 = static_cast<double>(m_v0_uv[0] - m_v2_uv[0]);
+        const double dv0 = static_cast<double>(m_v0_uv[1] - m_v2_uv[1]);
+        const double du1 = static_cast<double>(m_v1_uv[0] - m_v2_uv[0]);
+        const double dv1 = static_cast<double>(m_v1_uv[1] - m_v2_uv[1]);
+
+        const double det = du0 * dv1 - dv0 * du1;
+
+        if (det == 0.0)
+        {
+            const Basis3d basis(get_original_shading_normal());
+
+            m_dpdu = basis.get_tangent_u();
+            m_dpdv = basis.get_tangent_v();
+        }
+        else
+        {
+            const Vector3d& v2 = get_vertex(2);
+            const Vector3d dp0 = get_vertex(0) - v2;
+            const Vector3d dp1 = get_vertex(1) - v2;
+            const double rcp_det = 1.0 / det;
+
+            m_dpdu = (dv1 * dp0 - dv0 * dp1) * rcp_det;
+            m_dpdv = (du0 * dp1 - du1 * dp0) * rcp_det;
+        }
+    }
+    else
+    {
+        assert(m_primitive_type == PrimitiveCurve);
+
+        const CurveObject* curves = static_cast<const CurveObject*>(m_object);
+        const CurveType& m_curve = curves->get_curve(m_primitive_index);
+
+        const GScalar v = static_cast<GScalar>(m_bary[1]);
+        const GVector3 tangent = m_curve.evaluate_tangent(v);
+        const Vector3d& sn = get_original_shading_normal();
+
+        m_dpdu = normalize(Vector3d(tangent));
+        m_dpdv = normalize(cross(sn, m_dpdu));
+    }
+}
+
+void ShadingPoint::compute_geometric_normal() const
+{
+    if (m_primitive_type == PrimitiveTriangle)
+    {
+        if (m_members & HasWorldSpaceTriangleVertices)
+        {
+            // We already have the world space vertices of the hit triangle.
+            // Use them to compute the geometric normal directly in world space.
+            m_geometric_normal = cross(m_v1_w - m_v0_w, m_v2_w - m_v0_w);
+        }
+        else
+        {
+            cache_source_geometry();
+
+            // Compute the object instance space geometric normal.
+            const Vector3d v0(m_v0);
+            const Vector3d v1(m_v1);
+            const Vector3d v2(m_v2);
+            m_geometric_normal = cross(v1 - v0, v2 - v0);
+
+            // Transform the geometric normal to world space.
+            m_geometric_normal =
+                m_assembly_instance_transform.normal_to_parent(
+                    m_object_instance->get_transform().normal_to_parent(m_geometric_normal));
+        }
+
+        // Normalize the geometric normal.
+        m_geometric_normal = normalize(m_geometric_normal);
+
+        // Place the geometric normal in the same hemisphere as the original shading normal.
+        if (dot(m_geometric_normal, get_original_shading_normal()) < 0.0)
+            m_geometric_normal = -m_geometric_normal;
+
+        // Remember which side of the geometric surface we hit.
+        m_side =
+            dot(m_ray.m_dir, m_geometric_normal) > 0.0
+                ? ObjectInstance::BackSide
+                : ObjectInstance::FrontSide;
+
+        // Finally make the geometric normal face the direction of the incoming ray.
+        if (m_side == ObjectInstance::BackSide)
+            m_geometric_normal = -m_geometric_normal;
+    }
+    else
+    {
+        assert(m_primitive_type == PrimitiveCurve);
+
+        // We assume flat ribbons facing incoming rays.
+        m_geometric_normal = -normalize(m_ray.m_dir);
+        m_side = ObjectInstance::FrontSide;
+    }
+}
+
+void ShadingPoint::compute_shading_normal() const
+{
+    // Start with the original shading normal.
+    m_shading_normal = get_original_shading_normal();
+
+    if (m_primitive_type == PrimitiveTriangle)
+    {
+        // Apply the normal modifier if the material has one.
+        const Material* material = get_material();
+        if (material)
+        {
+            const INormalModifier* modifier = material->get_normal_modifier();
+            if (modifier)
+            {
+                m_shading_normal =
+                    modifier->evaluate(
+                        *m_texture_cache,
+                        m_shading_normal,
+                        get_uv(0),
+                        get_dpdu(0),
+                        get_dpdv(0));
+            }
+        }
+
+        // Place the shading normal in the same hemisphere as the geometric normal.
+        if (m_side == ObjectInstance::BackSide)
+            m_shading_normal = -m_shading_normal;
+    }
+}
+
+void ShadingPoint::compute_original_shading_normal() const
+{
+    if (m_primitive_type == PrimitiveTriangle)
+    {
+        cache_source_geometry();
+
+        // Compute the object instance space shading normal.
+        m_original_shading_normal =
+              Vector3d(m_n0) * (1.0 - m_bary[0] - m_bary[1])
+            + Vector3d(m_n1) * m_bary[0]
+            + Vector3d(m_n2) * m_bary[1];
+
+        // Transform the shading normal to world space.
+        m_original_shading_normal =
+            m_assembly_instance_transform.normal_to_parent(
+                m_object_instance->get_transform().normal_to_parent(m_original_shading_normal));
+
+        // Normalize the shading normal.
+        m_original_shading_normal = normalize(m_original_shading_normal);
+    }
+    else
+    {
+        assert(m_primitive_type == PrimitiveCurve);
+
+        // We assume flat ribbons facing incoming rays.
+        m_original_shading_normal = -normalize(m_ray.m_dir);
+    }
+}
+
+void ShadingPoint::compute_shading_basis() const
+{
+    //
+    // Reference:
+    //
+    //   Physically Based Rendering, first edition, pp. 133
+    //
+
+    // Retrieve or compute the first tangent vector.
+    const Vector3d tangent =
+        (m_members & HasTriangleVertexTangents) != 0
+            ? m_assembly_instance_transform.vector_to_parent(
+                  m_object_instance->get_transform().vector_to_parent(
+                        Vector3d(m_t0) * (1.0 - m_bary[0] - m_bary[1])
+                      + Vector3d(m_t1) * m_bary[0]
+                      + Vector3d(m_t2) * m_bary[1]))
+            : get_dpdu(0);
+
+    // Compute the final tangent vectors.
+    const Vector3d& sn = get_shading_normal();
+    const Vector3d t = normalize(cross(tangent, sn));
+    const Vector3d s = normalize(cross(sn, t));
+
+    // Construct an orthonormal basis.
+    m_shading_basis.build(sn, s, t);
+}
+
+void ShadingPoint::compute_world_space_triangle_vertices() const
+{
+    cache_source_geometry();
+
+    // Transform vertices to assembly space.
+    const Transformd& obj_instance_transform = m_object_instance->get_transform();
+    m_v0_w = obj_instance_transform.point_to_parent(Vector3d(m_v0));
+    m_v1_w = obj_instance_transform.point_to_parent(Vector3d(m_v1));
+    m_v2_w = obj_instance_transform.point_to_parent(Vector3d(m_v2));
+
+    // Transform vertices to world space.
+    m_v0_w = m_assembly_instance_transform.point_to_parent(m_v0_w);
+    m_v1_w = m_assembly_instance_transform.point_to_parent(m_v1_w);
+    m_v2_w = m_assembly_instance_transform.point_to_parent(m_v2_w);
+}
+
+
 #ifdef WITH_OSL
+
+//
+// ShadingPoint::OSLObjectTransformInfo class implementation.
+//
 
 bool ShadingPoint::OSLObjectTransformInfo::is_animated() const
 {
@@ -368,7 +595,7 @@ OSL::ShaderGlobals& ShadingPoint::get_osl_shader_globals() const
             const_cast<void*>(reinterpret_cast<const void*>(this));
 
         memset(reinterpret_cast<void*>(&m_osl_trace_data), 0, sizeof(OSLTraceData));
-        m_shader_globals.tracedata = reinterpret_cast<void*>(&m_osl_trace_data);                
+        m_shader_globals.tracedata = reinterpret_cast<void*>(&m_osl_trace_data);
 
         m_shader_globals.objdata = 0;
 
