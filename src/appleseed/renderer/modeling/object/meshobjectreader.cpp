@@ -34,6 +34,7 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/object/meshobject.h"
+#include "renderer/modeling/object/meshobjectoperations.h"
 #include "renderer/modeling/object/triangle.h"
 #include "renderer/utility/paramarray.h"
 
@@ -50,6 +51,7 @@
 #include "foundation/platform/defaulttimers.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/autoreleaseptr.h"
+#include "foundation/utility/filter.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/memory.h"
 #include "foundation/utility/searchpaths.h"
@@ -678,6 +680,29 @@ namespace
 
         return true;
     }
+
+    void compute_smooth_tangents(MeshObject& object)
+    {
+        if (object.get_vertex_tangent_count() > 0)
+        {
+            RENDERER_LOG_WARNING(
+                "skipping computation of smooth tangent vectors for mesh object \"%s\" because it already has tangent vectors.",
+                object.get_name());
+            return;
+        }
+
+        if (object.get_tex_coords_count() == 0)
+        {
+            RENDERER_LOG_WARNING(
+                "cannot compute smooth tangent vectors for mesh object \"%s\" because it lacks texture coordinates.",
+                object.get_name());
+            return;
+        }
+
+        RENDERER_LOG_INFO("computing smooth tangent vectors for mesh object \"%s\"...", object.get_name());
+
+        compute_smooth_vertex_tangents(object);
+    }
 }
 
 bool MeshObjectReader::read(
@@ -692,6 +717,7 @@ bool MeshObjectReader::read(
     ParamArray completed_params(params);
     completed_params.insert("__base_object_name", base_object_name);
 
+    // Read object(s) from disk.
     if (params.strings().exist("filename"))
     {
         if (params.dictionaries().exist("filename"))
@@ -756,6 +782,18 @@ bool MeshObjectReader::read(
                 base_object_name);
 
             return false;
+        }
+    }
+
+    // Compute smooth tangents.
+    if (params.strings().exist("compute_smooth_tangents"))
+    {
+        const RegExFilter filter(params.get("compute_smooth_tangents"));
+        for (size_t i = 0; i < objects.size(); ++i)
+        {
+            MeshObject& object = *objects[i];
+            if (filter.accepts(object.get_name()))
+                compute_smooth_tangents(object);
         }
     }
 

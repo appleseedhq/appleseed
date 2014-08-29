@@ -1476,6 +1476,8 @@ set (renderer_modeling_object_sources
     renderer/modeling/object/iregion.h
     renderer/modeling/object/meshobject.cpp
     renderer/modeling/object/meshobject.h
+    renderer/modeling/object/meshobjectoperations.cpp
+    renderer/modeling/object/meshobjectoperations.h
     renderer/modeling/object/meshobjectreader.cpp
     renderer/modeling/object/meshobjectreader.h
     renderer/modeling/object/meshobjectwriter.cpp
