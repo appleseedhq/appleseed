@@ -197,6 +197,26 @@ GVector2 MeshObject::get_tex_coords(const size_t index) const
     return impl->m_tess.get_tex_coords(index);
 }
 
+void MeshObject::reserve_vertex_tangents(const size_t count)
+{
+    impl->m_tess.reserve_vertex_tangents(count);
+}
+
+size_t MeshObject::push_vertex_tangent(const GVector3& tangent)
+{
+    return impl->m_tess.push_vertex_tangent(tangent);
+}
+
+size_t MeshObject::get_vertex_tangent_count() const
+{
+    return impl->m_tess.get_vertex_tangent_count();
+}
+
+GVector3 MeshObject::get_vertex_tangent(const size_t index) const
+{
+    return impl->m_tess.get_vertex_tangent(index);
+}
+
 void MeshObject::reserve_triangles(const size_t count)
 {
     impl->m_tess.m_primitives.reserve(count);

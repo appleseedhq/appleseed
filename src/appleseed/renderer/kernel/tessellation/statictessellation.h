@@ -71,7 +71,7 @@ class StaticTessellation
     VectorArray                 m_vertex_normals;
     PrimitiveArray              m_primitives;
 
-    // Custom attributes.
+    // Additional attributes.
     foundation::AttributeSet    m_tessellation_attributes;
     foundation::AttributeSet    m_primitive_attributes;
     foundation::AttributeSet    m_vertex_attributes;
@@ -84,6 +84,12 @@ class StaticTessellation
     size_t push_tex_coords(const GVector2& uv);
     size_t get_tex_coords_count() const;
     GVector2 get_tex_coords(const size_t index) const;
+
+    // Insert and access vertex tangents.
+    void reserve_vertex_tangents(const size_t count);
+    size_t push_vertex_tangent(const GVector3& tangent);    // the tangent must be unit-length
+    size_t get_vertex_tangent_count() const;
+    GVector3 get_vertex_tangent(const size_t index) const;
 
     // Set the number of motion segments for this tessellation.
     void set_motion_segment_count(const size_t count);
@@ -112,16 +118,13 @@ class StaticTessellation
 
   private:
     foundation::AttributeSet::ChannelID m_uv_0_cid;         // UV coordinates set #0
+    foundation::AttributeSet::ChannelID m_tangents_cid;     // per-vertex tangent vectors
     foundation::AttributeSet::ChannelID m_ms_count_cid;     // motion segment count
     foundation::AttributeSet::ChannelID m_vp_cid;           // vertex poses
 
-    // Create a vertex attribute to store the UV coordinates set #0.
     void create_uv_0_attribute();
-
-    // Create a tessellation attribute to store the number of motion segments used in this tessellation.
+    void create_tangents_attribute();
     void create_motion_segment_count_attribute();
-
-    // Create a vertex attribute to store vertex poses.
     void create_vertex_poses_attribute();
 };
 
@@ -148,6 +151,7 @@ typedef foundation::AccessCache<
 template <typename Primitive>
 inline StaticTessellation<Primitive>::StaticTessellation()
   : m_uv_0_cid(foundation::AttributeSet::InvalidChannelID)
+  , m_tangents_cid(foundation::AttributeSet::InvalidChannelID)
   , m_ms_count_cid(foundation::AttributeSet::InvalidChannelID)
   , m_vp_cid(foundation::AttributeSet::InvalidChannelID)
 {
@@ -190,6 +194,45 @@ inline GVector2 StaticTessellation<Primitive>::get_tex_coords(const size_t index
     m_vertex_attributes.get_attribute(m_uv_0_cid, index, &uv);
 
     return uv;
+}
+
+template <typename Primitive>
+inline void StaticTessellation<Primitive>::reserve_vertex_tangents(const size_t count)
+{
+    if (m_tangents_cid == foundation::AttributeSet::InvalidChannelID)
+        create_tangents_attribute();
+
+    m_vertex_attributes.reserve_attributes(m_tangents_cid, count);
+}
+
+template <typename Primitive>
+inline size_t StaticTessellation<Primitive>::push_vertex_tangent(const GVector3& tangent)
+{
+    if (m_tangents_cid == foundation::AttributeSet::InvalidChannelID)
+        create_tangents_attribute();
+
+    return m_vertex_attributes.push_attribute(m_tangents_cid, tangent);
+}
+
+template <typename Primitive>
+inline size_t StaticTessellation<Primitive>::get_vertex_tangent_count() const
+{
+    if (m_tangents_cid == foundation::AttributeSet::InvalidChannelID)
+        return 0;
+
+    return m_vertex_attributes.get_attribute_count(m_tangents_cid);
+}
+
+template <typename Primitive>
+inline GVector3 StaticTessellation<Primitive>::get_vertex_tangent(const size_t index) const
+{
+    if (m_tangents_cid == foundation::AttributeSet::InvalidChannelID)
+        return GVector3(0.0);
+
+    GVector3 tangent;
+    m_vertex_attributes.get_attribute(m_tangents_cid, index, &tangent);
+
+    return tangent;
 }
 
 template <typename Primitive>
@@ -293,6 +336,16 @@ void StaticTessellation<Primitive>::create_uv_0_attribute()
             "uv_0",
             foundation::NumericType::id<GVector2::ValueType>(),
             2);
+}
+
+template <typename Primitive>
+void StaticTessellation<Primitive>::create_tangents_attribute()
+{
+    m_tangents_cid =
+        m_vertex_attributes.create_channel(
+            "tangents",
+            foundation::NumericType::id<GVector3::ValueType>(),
+            3);
 }
 
 template <typename Primitive>

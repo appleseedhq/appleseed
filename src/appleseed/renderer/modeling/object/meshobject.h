@@ -93,6 +93,12 @@ class DLLSYMBOL MeshObject
     size_t get_tex_coords_count() const;
     GVector2 get_tex_coords(const size_t index) const;
 
+    // Insert and access vertex tangents.
+    void reserve_vertex_tangents(const size_t count);
+    size_t push_vertex_tangent(const GVector3& tangent);    // the tangent must be unit-length
+    size_t get_vertex_tangent_count() const;
+    GVector3 get_vertex_tangent(const size_t index) const;
+
     // Insert and access triangles.
     void reserve_triangles(const size_t count);
     size_t push_triangle(const Triangle& triangle);
