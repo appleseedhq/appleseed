@@ -150,9 +150,11 @@ void bind_image()
         .def("properties", &Image::properties, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("tile", image_get_tile, bpy::return_value_policy<bpy::reference_existing_object>());
 
+    const Image& (ImageStack::*image_stack_get_image)(const size_t) const = &ImageStack::get_image;
+
     bpy::class_<ImageStack, boost::noncopyable>("ImageStack", bpy::no_init)
         .def("empty", &ImageStack::empty)
         .def("size", &ImageStack::size)
         .def("get_name", detail::image_stack_get_name)
-        .def("get_image", &ImageStack::get_image, bpy::return_value_policy<bpy::reference_existing_object>());
+        .def("get_image", image_stack_get_image, bpy::return_value_policy<bpy::reference_existing_object>());
 }

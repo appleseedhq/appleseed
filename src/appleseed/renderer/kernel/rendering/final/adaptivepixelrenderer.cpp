@@ -96,11 +96,11 @@ namespace
 
                 m_variation_aov_index = images.get("variation");
                 if (m_variation_aov_index == ~0 && images.size() < MaxAOVCount)
-                    m_variation_aov_index = images.append("variation", ImageStack::IdentificationType, PixelFormatFloat);
+                    m_variation_aov_index = images.append("variation", ImageStack::IdentificationType, 4, PixelFormatFloat);
 
                 m_samples_aov_index = images.get("samples");
                 if (m_samples_aov_index == ~0 && images.size() < MaxAOVCount)
-                    m_samples_aov_index = images.append("samples", ImageStack::IdentificationType, PixelFormatFloat);
+                    m_samples_aov_index = images.append("samples", ImageStack::IdentificationType, 4, PixelFormatFloat);
 
                 if ((thread_index == 0) && (m_variation_aov_index == ~0 || m_samples_aov_index == ~0))
                 {

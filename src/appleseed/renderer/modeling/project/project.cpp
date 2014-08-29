@@ -361,6 +361,7 @@ namespace
                     m_aov_images.append(
                         render_layer_name.c_str(),
                         type,
+                        4,
                         m_pixel_format);
 
                 RenderLayer& render_layer = m_mapping[render_layer_name];

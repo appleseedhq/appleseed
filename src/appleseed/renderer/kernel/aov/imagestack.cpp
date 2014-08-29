@@ -117,6 +117,12 @@ ImageStack::Type ImageStack::get_type(const size_t index) const
     return impl->m_images[index].m_type;
 }
 
+Image& ImageStack::get_image(const size_t index)
+{
+    assert(index < impl->m_images.size());
+    return *impl->m_images[index].m_image;
+}
+
 const Image& ImageStack::get_image(const size_t index) const
 {
     assert(index < impl->m_images.size());
@@ -139,6 +145,7 @@ size_t ImageStack::get(const char* name) const
 size_t ImageStack::append(
     const char*             name,
     const Type              type,
+    const size_t            channel_count,
     const PixelFormat       pixel_format)
 {
     Impl::NamedImage named_image;
@@ -151,7 +158,7 @@ size_t ImageStack::append(
             impl->m_canvas_height,
             impl->m_tile_width,
             impl->m_tile_height,
-            4,
+            channel_count,
             pixel_format);
 
     const size_t aov_index = impl->m_images.size();

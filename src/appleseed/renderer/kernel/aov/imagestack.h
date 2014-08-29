@@ -79,6 +79,7 @@ class DLLSYMBOL ImageStack
 
     Type get_type(const size_t index) const;
 
+    foundation::Image& get_image(const size_t index);
     const foundation::Image& get_image(const size_t index) const;
 
     // Returns ~0 if the requested image cannot be found.
@@ -87,6 +88,7 @@ class DLLSYMBOL ImageStack
     size_t append(
         const char*                     name,
         const Type                      type,
+        const size_t                    channel_count,
         const foundation::PixelFormat   pixel_format);
 
     TileStack tiles(
