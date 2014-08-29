@@ -156,16 +156,19 @@ bool CameraController::handle_mouse_button_press_event(const QMouseEvent* event)
     switch (event->button())
     {
       case Qt::LeftButton:
+        emit signal_camera_change_begin();
         m_controller.begin_drag(
             (event->modifiers() & Qt::AltModifier) ? ControllerType::Track : ControllerType::Tumble,
             position);
         return true;
 
       case Qt::MidButton:
+        emit signal_camera_change_begin();
         m_controller.begin_drag(ControllerType::Track, position);
         return true;
 
       case Qt::RightButton:
+        emit signal_camera_change_begin();
         m_controller.begin_drag(ControllerType::Dolly, position);
         return true;
     }
@@ -179,6 +182,7 @@ bool CameraController::handle_mouse_button_release_event(const QMouseEvent* even
         return false;
 
     m_controller.end_drag();
+    emit signal_camera_change_end();
 
     return true;
 }
@@ -191,7 +195,6 @@ bool CameraController::handle_mouse_move_event(const QMouseEvent* event)
     const Vector2d position = get_mouse_position(event);
 
     m_controller.update_drag(position);
-
     emit signal_camera_changed();
 
     return true;

@@ -64,7 +64,9 @@ class CameraController
     void update_camera_transform();
 
   signals:
+    void signal_camera_change_begin();
     void signal_camera_changed();
+    void signal_camera_change_end();
 
   private:
     typedef foundation::CameraController<double> ControllerType;
