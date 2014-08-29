@@ -64,7 +64,7 @@ class DLLSYMBOL IRendererController
 
     enum Status
     {
-        // Continue rendering (no op).
+        // Continue rendering.
         ContinueRendering,
 
         // Terminate rendering, call on_rendering_success() on the renderer controller.

@@ -85,7 +85,7 @@ BOOL APIENTRY DllMain(
       case DLL_PROCESS_ATTACH:
 #ifndef SHIP
         // Open a console.
-//      open_console();
+        // open_console();
 #endif
         break;
 
