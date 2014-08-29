@@ -79,11 +79,11 @@ namespace
     {
         for (const_each<StaticTriangleTess::PrimitiveArray> i = tess.m_primitives; i; ++i)
         {
-            if (i->has_vertex_attributes() && tess.get_uv_vertex_count() > 0)
+            if (i->has_vertex_attributes() && tess.get_tex_coords_count() > 0)
             {
-                const Vector2f uv0(tess.get_uv_vertex(i->m_a0));
-                const Vector2f uv1(tess.get_uv_vertex(i->m_a1));
-                const Vector2f uv2(tess.get_uv_vertex(i->m_a2));
+                const Vector2f uv0(tess.get_tex_coords(i->m_a0));
+                const Vector2f uv1(tess.get_tex_coords(i->m_a1));
+                const Vector2f uv2(tess.get_tex_coords(i->m_a2));
 
                 uv.push_back(Vector2f(uv0[0], 1.0f - uv0[1]));
                 uv.push_back(Vector2f(uv1[0], 1.0f - uv1[1]));

@@ -79,17 +79,11 @@ class StaticTessellation
     // Constructor.
     StaticTessellation();
 
-    // Reserve memory for a given number of UV vertices.
-    void reserve_uv_vertices(const size_t count);
-
-    // Append a UV vertex to this tessellation.
-    size_t push_uv_vertex(const GVector2& uv);
-
-    // Retrieve the number of UV vertices stored in this tessellation.
-    size_t get_uv_vertex_count() const;
-
-    // Retrieve a given UV vertex.
-    GVector2 get_uv_vertex(const size_t index) const;
+    // Insert and access texture coordinates.
+    void reserve_tex_coords(const size_t count);
+    size_t push_tex_coords(const GVector2& uv);
+    size_t get_tex_coords_count() const;
+    GVector2 get_tex_coords(const size_t index) const;
 
     // Set the number of motion segments for this tessellation.
     void set_motion_segment_count(const size_t count);
@@ -160,7 +154,7 @@ inline StaticTessellation<Primitive>::StaticTessellation()
 }
 
 template <typename Primitive>
-inline void StaticTessellation<Primitive>::reserve_uv_vertices(const size_t count)
+inline void StaticTessellation<Primitive>::reserve_tex_coords(const size_t count)
 {
     if (m_uv_0_cid == foundation::AttributeSet::InvalidChannelID)
         create_uv_0_attribute();
@@ -169,7 +163,7 @@ inline void StaticTessellation<Primitive>::reserve_uv_vertices(const size_t coun
 }
 
 template <typename Primitive>
-inline size_t StaticTessellation<Primitive>::push_uv_vertex(const GVector2& uv)
+inline size_t StaticTessellation<Primitive>::push_tex_coords(const GVector2& uv)
 {
     if (m_uv_0_cid == foundation::AttributeSet::InvalidChannelID)
         create_uv_0_attribute();
@@ -178,7 +172,7 @@ inline size_t StaticTessellation<Primitive>::push_uv_vertex(const GVector2& uv)
 }
 
 template <typename Primitive>
-inline size_t StaticTessellation<Primitive>::get_uv_vertex_count() const
+inline size_t StaticTessellation<Primitive>::get_tex_coords_count() const
 {
     if (m_uv_0_cid == foundation::AttributeSet::InvalidChannelID)
         return 0;
@@ -187,7 +181,7 @@ inline size_t StaticTessellation<Primitive>::get_uv_vertex_count() const
 }
 
 template <typename Primitive>
-inline GVector2 StaticTessellation<Primitive>::get_uv_vertex(const size_t index) const
+inline GVector2 StaticTessellation<Primitive>::get_tex_coords(const size_t index) const
 {
     if (m_uv_0_cid == foundation::AttributeSet::InvalidChannelID)
         return GVector2(0.0);

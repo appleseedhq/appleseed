@@ -179,22 +179,22 @@ const GVector3& MeshObject::get_vertex_normal(const size_t index) const
 
 void MeshObject::reserve_tex_coords(const size_t count)
 {
-    impl->m_tess.reserve_uv_vertices(count);
+    impl->m_tess.reserve_tex_coords(count);
 }
 
 size_t MeshObject::push_tex_coords(const GVector2& tex_coords)
 {
-    return impl->m_tess.push_uv_vertex(tex_coords);
+    return impl->m_tess.push_tex_coords(tex_coords);
 }
 
 size_t MeshObject::get_tex_coords_count() const
 {
-    return impl->m_tess.get_uv_vertex_count();
+    return impl->m_tess.get_tex_coords_count();
 }
 
 GVector2 MeshObject::get_tex_coords(const size_t index) const
 {
-    return impl->m_tess.get_uv_vertex(index);
+    return impl->m_tess.get_tex_coords(index);
 }
 
 void MeshObject::reserve_triangles(const size_t count)
