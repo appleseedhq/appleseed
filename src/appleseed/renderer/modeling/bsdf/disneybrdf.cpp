@@ -234,23 +234,6 @@ namespace
         {
             return RcpTwoPi;
         }
-
-        Vector3d generate_sample(const Vector2d& s) const
-        {
-            assert(s[0] >= T(0.0) && s[0] < T(1.0));
-            assert(s[1] >= T(0.0) && s[1] < T(1.0));
-
-            const double phi = TwoPi * s[0];
-            const double cos_theta = 1.0 - s[1];
-            const double sin_theta = std::sqrt(1.0 - cos_theta * cos_theta);
-
-            return
-                Vector3d::unit_vector(
-                    cos_theta,
-                    sin_theta,
-                    std::cos(phi),
-                    std::sin(phi));
-        }
     };
 
 
