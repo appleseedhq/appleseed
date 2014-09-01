@@ -159,7 +159,7 @@ CompositeClosure::CompositeClosure(
     process_closure_tree(ci, Color3f(1.0f));
 
     const size_t closure_count = get_num_closures();
-    if (closure_count)
+    if (closure_count > 0)
     {
         double total_weight = 0.0;
         for (size_t i = 0; i < closure_count; ++i)
@@ -173,10 +173,10 @@ CompositeClosure::CompositeClosure(
         for (size_t i = 0; i < closure_count; ++i)
             m_pdf_weights[i] *= rcp_total_weight;
 
-        for (size_t i = 0, e = closure_count - 1; i < e; ++i)
+        for (size_t i = 0; i < closure_count - 1; ++i)
             m_cdf[i] *= rcp_total_weight;
 
-        m_cdf[get_num_closures() - 1] = 1.0;
+        m_cdf[closure_count - 1] = 1.0;
     }
 }
 
@@ -185,7 +185,7 @@ size_t CompositeClosure::choose_closure(const double w) const
     assert(w >= 0.0);
     assert(w < 1.0);
 
-    const double *i =
+    const double* i =
         upper_bound(
             m_cdf,
             m_cdf + get_num_closures(),
