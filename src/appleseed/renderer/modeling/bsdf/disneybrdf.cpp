@@ -103,7 +103,6 @@ namespace
 
             // Transform the incoming direction to parent space.
             incoming = shading_basis.transform_to_parent(wi);
-
             probability = evaluate(
                 values,
                 shading_basis,
@@ -128,13 +127,13 @@ namespace
             const Vector3d n(shading_basis.get_normal());
             const Vector3d h(normalize(incoming + outgoing));
 
-            const double cos_no = dot(n, outgoing);
-            const double cos_ni = dot(n, incoming);
+            const double cos_on = dot(n, outgoing);
+            const double cos_in = dot(n, incoming);
             const double cos_ih = dot(incoming, h);
 
             double fd = 0.0;
-            const double fl = schlick_fresnel(cos_ni);
-            const double fv = schlick_fresnel(cos_no);
+            const double fl = schlick_fresnel(cos_in);
+            const double fv = schlick_fresnel(cos_on);
 
             if (values->m_subsurface != 1.0)
             {
@@ -150,27 +149,12 @@ namespace
 
                 const double fss90 = square(cos_ih) * values->m_roughness;
                 const double fss = mix(1.0, fss90, fl) * mix(1.0, fss90, fv);
-                const double ss = 1.25 * (fss * (1.0 / (cos_no + cos_ni) - 0.5) + 0.5);
+                const double ss = 1.25 * (fss * (1.0 / (cos_on + cos_in) - 0.5) + 0.5);
                 fd = mix(fd, ss, values->m_subsurface);
             }
 
             value = values->m_base_color;
-            value *= static_cast<float>(fd * RcpPi);
-
-            if (values->m_sheen > 0.0)
-            {
-                Spectrum csheen;
-                mix_spectra(
-                    g_white_spectrum,
-                    values->m_tint_color,
-                    static_cast<float>(values->m_sheen_tint),
-                    csheen);
-                const double fh = schlick_fresnel(cos_ih);
-                csheen *= static_cast<float>(fh * values->m_sheen);
-                value += csheen;
-            }
-
-            value *= static_cast<float>(1.0 - values->m_metallic);
+            value *= static_cast<float>(fd * RcpPi * (1.0 - values->m_metallic));
 
             // Return the probability density of the sampled direction.
             return evaluate_pdf(shading_basis, incoming);
@@ -181,6 +165,74 @@ namespace
             const Vector3d&                 incoming) const
         {
             return dot(incoming, shading_basis.get_normal()) * RcpPi;
+        }
+    };
+
+
+    //
+    // DisneySheenComponent: sheen part of Disney BRDF.
+    //
+
+    class DisneySheenComponent
+    {
+      public:
+        BSDF::Mode sample(
+            SamplingContext&                sampling_context,
+            const DisneyBRDFInputValues*    values,
+            const Basis3d&                  shading_basis,
+            const Vector3d&                 outgoing,
+            Vector3d&                       incoming,
+            Spectrum&                       value,
+            double&                         probability) const
+        {
+            // Compute the incoming direction in local space.
+            sampling_context.split_in_place(2, 1);
+            const Vector2d s = sampling_context.next_vector2<2>();
+            const Vector3d wi = sample_hemisphere_uniform(s);
+
+            // Transform the incoming direction to parent space.
+            incoming = shading_basis.transform_to_parent(wi);
+            probability = evaluate(
+                values,
+                shading_basis,
+                outgoing,
+                incoming,
+                value);
+
+            assert(probability > 0.0);
+            return BSDF::Diffuse;
+        }
+
+        double evaluate(
+            const DisneyBRDFInputValues*    values,
+            const Basis3d&                  shading_basis,
+            const Vector3d&                 outgoing,
+            const Vector3d&                 incoming,
+            Spectrum&                       value) const
+        {
+            // This code is mostly ported from the GLSL implementation
+            // in Disney's BRDF explorer.
+
+            const Vector3d h(normalize(incoming + outgoing));
+            const double cos_ih = dot(incoming, h);
+
+            mix_spectra(
+                g_white_spectrum,
+                values->m_tint_color,
+                static_cast<float>(values->m_sheen_tint),
+                value);
+            const double fh = schlick_fresnel(cos_ih);
+            value *= static_cast<float>(fh * values->m_sheen * (1.0 - values->m_metallic));
+
+            // Return the probability density of the sampled direction.
+            return evaluate_pdf(shading_basis, incoming);
+        }
+
+        double evaluate_pdf(
+            const Basis3d&                  shading_basis,
+            const Vector3d&                 incoming) const
+        {
+            return RcpTwoPi;
         }
     };
 
@@ -271,6 +323,16 @@ namespace
       : public BSDF
     {
       public:
+        // BRDF components.
+        enum
+        {
+            DiffuseComponent,
+            SheenComponent,
+            SpecularComponent,
+            CleatcoatComponent,
+            NumComponents
+        };
+
         DisneyBRDFImpl(
             const char*             name,
             const ParamArray&       params)
@@ -331,17 +393,30 @@ namespace
             const DisneyBRDFInputValues* values =
                 reinterpret_cast<const DisneyBRDFInputValues*>(data);
 
-            double weights[3];
-            compute_component_weights(values, weights);
+            double cdf[NumComponents];
+            compute_component_cdf(values, cdf);
 
-            // Choose which of the three components to sample.
+            // Choose which of the components to sample.
             sampling_context.split_in_place(1, 1);
             const double s = sampling_context.next_double2();
 
-            if (s < weights[0])
+            if (s < cdf[DiffuseComponent])
             {
                 return
                     DisneyDiffuseComponent().sample(
+                        sampling_context,
+                        values,
+                        shading_basis,
+                        outgoing,
+                        incoming,
+                        value,
+                        probability);
+            }
+
+            if (s < cdf[SheenComponent])
+            {
+                return
+                    DisneySheenComponent().sample(
                         sampling_context,
                         values,
                         shading_basis,
@@ -360,7 +435,7 @@ namespace
             const MDF<double>* mdf = 0;
             double alpha_x, alpha_y, alpha_gx, alpha_gy;
 
-            if (s < weights[1])
+            if (s < cdf[SpecularComponent])
             {
                 mdf = &m_specular_mdf;
                 specular_roughness(values, alpha_x, alpha_y);
@@ -402,7 +477,7 @@ namespace
 
             const double cos_oh = dot(outgoing, h);
 
-            if (s < weights[1])
+            if (s < cdf[SpecularComponent])
                 specular_f(values, cos_oh, value);
             else
                 value.set(static_cast<float>(clearcoat_f(values->m_clearcoat, cos_oh)));
@@ -433,20 +508,35 @@ namespace
             const DisneyBRDFInputValues* values =
                 reinterpret_cast<const DisneyBRDFInputValues*>(data);
 
-            double weights[3];
+            double weights[NumComponents];
             compute_component_weights(values, weights);
 
             value.set(0.0f);
             double pdf = 0.0;
 
-            if ((modes & Diffuse) && (weights[0] != 0.0))
+            if (modes & Diffuse)
             {
-                pdf += DisneyDiffuseComponent().evaluate(
-                    values,
-                    shading_basis,
-                    outgoing,
-                    incoming,
-                    value) * weights[0];
+                if (weights[DiffuseComponent] != 0.0)
+                {
+                    pdf += DisneyDiffuseComponent().evaluate(
+                        values,
+                        shading_basis,
+                        outgoing,
+                        incoming,
+                        value) * weights[DiffuseComponent];
+                }
+
+                if (weights[SheenComponent] != 0.0)
+                {
+                    Spectrum sheen;
+                    pdf += DisneySheenComponent().evaluate(
+                        values,
+                        shading_basis,
+                        outgoing,
+                        incoming,
+                        sheen) * weights[SheenComponent];
+                    value += sheen;
+                }
             }
 
             if (!(modes & Glossy))
@@ -458,7 +548,7 @@ namespace
             const Vector3d wo = shading_basis.transform_to_local(outgoing);
             const double cos_oh = dot(outgoing, h);
 
-            if (weights[1] != 0.0)
+            if (weights[SpecularComponent] != 0.0)
             {
                 double alpha_x, alpha_y;
                 specular_roughness(values, alpha_x, alpha_y);
@@ -482,10 +572,10 @@ namespace
                 specular_value *= static_cast<float>(D * G / (4.0 * cos_on * cos_in));
                 value += specular_value;
 
-                pdf += m_specular_mdf.pdf(m, alpha_x, alpha_y)  / (4.0 * cos_oh) * weights[1];
+                pdf += m_specular_mdf.pdf(m, alpha_x, alpha_y)  / (4.0 * cos_oh) * weights[SpecularComponent];
             }
 
-            if (weights[2] != 0.0)
+            if (weights[CleatcoatComponent] != 0.0)
             {
                 const double alpha = clearcoat_roughness(values);
 
@@ -509,7 +599,7 @@ namespace
                 clearcoat_value.set(static_cast<float>(D * G * F / (4.0 * cos_on * cos_in)));
                 value += clearcoat_value;
 
-                pdf += m_clearcoat_mdf.pdf(m, alpha, alpha)  / (4.0 * cos_oh) * weights[2];
+                pdf += m_clearcoat_mdf.pdf(m, alpha, alpha)  / (4.0 * cos_oh) * weights[CleatcoatComponent];
             }
 
             return pdf;
@@ -526,16 +616,26 @@ namespace
             const DisneyBRDFInputValues* values =
                 reinterpret_cast<const DisneyBRDFInputValues*>(data);
 
-            double weights[3];
+            double weights[NumComponents];
             compute_component_weights(values, weights);
 
             double pdf = 0.0;
 
-            if ((modes & Diffuse) && (weights[0] != 0.0))
+            if (modes & Diffuse)
             {
-                pdf += DisneyDiffuseComponent().evaluate_pdf(
-                    shading_basis,
-                    incoming) * weights[0];
+                if (weights[DiffuseComponent] != 0.0)
+                {
+                    pdf += DisneyDiffuseComponent().evaluate_pdf(
+                        shading_basis,
+                        incoming) * weights[DiffuseComponent];
+                }
+
+                if (weights[SheenComponent] != 0.0)
+                {
+                    pdf += DisneySheenComponent().evaluate_pdf(
+                        shading_basis,
+                        incoming) * weights[SheenComponent];
+                }
             }
 
             if (!(modes & Glossy))
@@ -552,17 +652,17 @@ namespace
             const Vector3d hl = shading_basis.transform_to_local(h);
             const double cos_oh = dot(outgoing, h);
 
-            if (weights[1] != 0.0)
+            if (weights[SpecularComponent] != 0.0)
             {
                 double alpha_x, alpha_y;
                 specular_roughness(values, alpha_x, alpha_y);
-                pdf += m_specular_mdf.pdf(hl, alpha_x, alpha_y) / (4.0 * cos_oh) * weights[1];
+                pdf += m_specular_mdf.pdf(hl, alpha_x, alpha_y) / (4.0 * cos_oh) * weights[SpecularComponent];
             }
 
-            if (weights[2] != 0.0)
+            if (weights[CleatcoatComponent] != 0.0)
             {
                 const double alpha = clearcoat_roughness(values);
-                pdf += m_specular_mdf.pdf(hl, alpha, alpha) / (4.0 * cos_oh) * weights[2];
+                pdf += m_specular_mdf.pdf(hl, alpha, alpha) / (4.0 * cos_oh) * weights[CleatcoatComponent];
             }
 
             return pdf;
@@ -576,17 +676,38 @@ namespace
 
         void compute_component_weights(
             const DisneyBRDFInputValues*    values,
-            double                          weights[3]) const
+            double                          weights[NumComponents]) const
         {
-            weights[0] = lerp(values->m_base_color_luminance, 0.0, values->m_metallic);
-            weights[1] = mix(values->m_specular, 1.0, values->m_metallic);
-            weights[2] = values->m_clearcoat * 0.25;
+            weights[DiffuseComponent] =
+                lerp(values->m_base_color_luminance, 0.0, values->m_metallic);
+            weights[SheenComponent] =
+                lerp(values->m_sheen, 0.0, values->m_metallic);
+            weights[SpecularComponent] =
+                lerp(values->m_specular, 1.0, values->m_metallic);
+            weights[CleatcoatComponent] =
+                values->m_clearcoat * 0.25;
 
-            const double total_weight = weights[0] + weights[1] + weights[2];
+            const double total_weight =
+                weights[DiffuseComponent] +
+                weights[SheenComponent] +
+                weights[SpecularComponent] +
+                weights[CleatcoatComponent];
+
             const double total_weight_rcp = 1.0 / total_weight;
-            weights[0] *= total_weight_rcp;
-            weights[1] *= total_weight_rcp;
-            weights[2] *= total_weight_rcp;
+            weights[DiffuseComponent] *= total_weight_rcp;
+            weights[SheenComponent] *= total_weight_rcp;
+            weights[SpecularComponent] *= total_weight_rcp;
+            weights[CleatcoatComponent] *= total_weight_rcp;
+        }
+
+        void compute_component_cdf(
+            const DisneyBRDFInputValues*    values,
+            double                          cdf[NumComponents]) const
+        {
+            compute_component_weights(values, cdf);
+            cdf[SheenComponent] += cdf[DiffuseComponent];
+            cdf[SpecularComponent] += cdf[SheenComponent];
+            cdf[CleatcoatComponent] = 1.0;
         }
 
         void specular_roughness(
