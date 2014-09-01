@@ -393,14 +393,14 @@ namespace
             const DisneyBRDFInputValues* values =
                 reinterpret_cast<const DisneyBRDFInputValues*>(data);
 
-            double weights[NumComponents];
-            compute_component_weights(values, weights);
+            double cdf[NumComponents];
+            compute_component_cdf(values, cdf);
 
             // Choose which of the components to sample.
             sampling_context.split_in_place(1, 1);
             const double s = sampling_context.next_double2();
 
-            if (s < weights[DiffuseComponent])
+            if (s < cdf[DiffuseComponent])
             {
                 return
                     DisneyDiffuseComponent().sample(
@@ -413,7 +413,7 @@ namespace
                         probability);
             }
 
-            if (s < weights[SheenComponent])
+            if (s < cdf[SheenComponent])
             {
                 return
                     DisneySheenComponent().sample(
@@ -435,7 +435,7 @@ namespace
             const MDF<double>* mdf = 0;
             double alpha_x, alpha_y, alpha_gx, alpha_gy;
 
-            if (s < weights[SpecularComponent])
+            if (s < cdf[SpecularComponent])
             {
                 mdf = &m_specular_mdf;
                 specular_roughness(values, alpha_x, alpha_y);
@@ -477,7 +477,7 @@ namespace
 
             const double cos_oh = dot(outgoing, h);
 
-            if (s < weights[SpecularComponent])
+            if (s < cdf[SpecularComponent])
                 specular_f(values, cos_oh, value);
             else
                 value.set(static_cast<float>(clearcoat_f(values->m_clearcoat, cos_oh)));
@@ -698,6 +698,16 @@ namespace
             weights[SheenComponent] *= total_weight_rcp;
             weights[SpecularComponent] *= total_weight_rcp;
             weights[CleatcoatComponent] *= total_weight_rcp;
+        }
+
+        void compute_component_cdf(
+            const DisneyBRDFInputValues*    values,
+            double                          cdf[NumComponents]) const
+        {
+            compute_component_weights(values, cdf);
+            cdf[SheenComponent] += cdf[DiffuseComponent];
+            cdf[SpecularComponent] += cdf[SheenComponent];
+            cdf[CleatcoatComponent] = 1.0;
         }
 
         void specular_roughness(
