@@ -127,6 +127,7 @@ class Settings:
         self.platform_id = tree.findtext("platform_id")
         self.platform_name = tree.findtext("platform_name")
         self.appleseed_path = tree.findtext("appleseed_path")
+        self.headers_path = tree.findtext("headers_path")
         self.qt_runtime_path = tree.findtext("qt_runtime_path")
         self.platform_runtime_path = tree.findtext("platform_runtime_path")
         self.package_output_path = tree.findtext("package_output_path")
@@ -137,6 +138,7 @@ class Settings:
         print "  Platform ID:               " + self.platform_id + " (Python says " + os.name + ")"
         print "  Platform Name:             " + self.platform_name
         print "  Path to appleseed:         " + self.appleseed_path
+        print "  Path to appleseed headers: " + self.headers_path
         print "  Path to Qt runtime:        " + self.qt_runtime_path
         print "  Path to platform runtime:  " + self.platform_runtime_path
         print "  Output directory:          " + self.package_output_path
@@ -196,6 +198,7 @@ class PackageBuilder:
         self.cleanup_stage()
         self.add_local_binaries_to_stage()
         self.add_local_libraries_to_stage()
+        self.add_headers_to_stage()
         self.add_scripts_to_stage()
         self.add_local_schema_files_to_stage()
         self.add_text_files_to_stage()
@@ -249,6 +252,15 @@ class PackageBuilder:
         progress("Adding local libraries to staging directory")
         safe_make_directory("appleseed/lib")
         dir_util.copy_tree(os.path.join(self.settings.appleseed_path, "sandbox/lib", self.settings.configuration), "appleseed/lib/")
+
+    def add_headers_to_stage(self):
+        progress("Adding headers to staging directory")
+        safe_make_directory("appleseed/include")
+
+        ignore_files = shutil.ignore_patterns("*.cpp", "*.c", "*.xsd", "stdosl.h", "oslutil.h", "meta", "snprintf", "benchmark")
+        shutil.copytree(os.path.join(self.settings.headers_path, "foundation"), "appleseed/include/foundation", ignore = ignore_files)
+        shutil.copytree(os.path.join(self.settings.headers_path, "main"), "appleseed/include/main", ignore = ignore_files)
+        shutil.copytree(os.path.join(self.settings.headers_path, "renderer"), "appleseed/include/renderer", ignore = ignore_files)
 
     def add_scripts_to_stage(self):
         progress("Adding scripts to staging directory")
