@@ -246,7 +246,7 @@ namespace
                         value,
                         probability);
 
-                value *= c->get_closure_spectrum_multiplier(closure_index);
+                value *= c->get_closure_weight(closure_index);
                 return result;
             }
             else
@@ -292,11 +292,10 @@ namespace
 
                 if (bsdf_prob > 0.0)
                 {
-                    s *= c->get_closure_spectrum_multiplier(i);
+                    s *= c->get_closure_weight(i);
                     value += s;
+                    prob += bsdf_prob * c->get_closure_pdf_weight(i);
                 }
-
-                prob += bsdf_prob * c->get_closure_cdf_weight(i);
             }
 
             return prob;
@@ -326,7 +325,8 @@ namespace
                         incoming,
                         modes);
 
-                prob += bsdf_prob * c->get_closure_cdf_weight(i);
+                if (bsdf_prob > 0.0)
+                    prob += bsdf_prob * c->get_closure_pdf_weight(i);
             }
 
             return prob;
