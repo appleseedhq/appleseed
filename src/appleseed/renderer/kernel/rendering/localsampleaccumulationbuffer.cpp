@@ -76,7 +76,7 @@ namespace renderer
 LocalSampleAccumulationBuffer::LocalSampleAccumulationBuffer(
     const size_t    width,
     const size_t    height,
-    const Filter2d& filter)
+    const Filter2f& filter)
 {
     const size_t MinSize = 32;
 
@@ -140,15 +140,14 @@ void LocalSampleAccumulationBuffer::store_samples(
     {
         FilteredTile* level = m_levels[0];
 
-        const double level_width = static_cast<double>(level->get_width());
-        const double level_height = static_cast<double>(level->get_height());
+        const float level_width = static_cast<float>(level->get_width());
+        const float level_height = static_cast<float>(level->get_height());
 
         for (const Sample* sample_ptr = samples; sample_ptr < sample_end; ++sample_ptr)
         {
-            const double fx = sample_ptr->m_position.x * level_width;
-            const double fy = sample_ptr->m_position.y * level_height;
-
-            level->add(fx, fy, &sample_ptr->m_color[0]);
+            const float fx = sample_ptr->m_position.x * level_width;
+            const float fy = sample_ptr->m_position.y * level_height;
+            level->add(fx, fy, sample_ptr->m_values);
         }
     }
     else
@@ -159,10 +158,9 @@ void LocalSampleAccumulationBuffer::store_samples(
             {
                 FilteredTile* level = m_levels[level_index];
 
-                const double fx = sample_ptr->m_position.x * level->get_width();
-                const double fy = sample_ptr->m_position.y * level->get_height();
-
-                level->add(fx, fy, &sample_ptr->m_color[0]);
+                const float fx = sample_ptr->m_position.x * level->get_width();
+                const float fy = sample_ptr->m_position.y * level->get_height();
+                level->add(fx, fy, sample_ptr->m_values);
 
                 size_t& remaining_pixels = m_remaining_pixels[level_index];
 

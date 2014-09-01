@@ -80,25 +80,25 @@ TEST_SUITE(Foundation_Image_FilteredTile)
 
     TEST_CASE(BoxFilter_Radius0Dot5)
     {
-        const BoxFilter2<double> filter(0.5, 0.5);
+        const BoxFilter2<float> filter(0.5f, 0.5f);
         test("unit tests/outputs/test_filteredtile_boxfilter_radius0dot5.txt", filter);
     }
 
     TEST_CASE(BoxFilter_Radius1Dot0)
     {
-        const BoxFilter2<double> filter(1.0, 1.0);
+        const BoxFilter2<float> filter(1.0f, 1.0f);
         test("unit tests/outputs/test_filteredtile_boxfilter_radius1dot0.txt", filter);
     }
 
     TEST_CASE(BoxFilter_Radius1Dot5)
     {
-        const BoxFilter2<double> filter(1.5, 1.5);
+        const BoxFilter2<float> filter(1.5f, 1.5f);
         test("unit tests/outputs/test_filteredtile_boxfilter_radius1dot5.txt", filter);
     }
 
     TEST_CASE(BoxFilter_Radius2Dot0)
     {
-        const BoxFilter2<double> filter(2.0, 2.0);
+        const BoxFilter2<float> filter(2.0f, 2.0f);
         test("unit tests/outputs/test_filteredtile_boxfilter_radius2dot0.txt", filter);
     }
 }

@@ -232,8 +232,8 @@ namespace
 
         void compute_tile_margins(const Frame& frame, const bool primary)
         {
-            m_margin_width = truncate<int>(ceil(frame.get_filter().get_xradius() - 0.5));
-            m_margin_height = truncate<int>(ceil(frame.get_filter().get_yradius() - 0.5));
+            m_margin_width = truncate<int>(ceil(frame.get_filter().get_xradius() - 0.5f));
+            m_margin_height = truncate<int>(ceil(frame.get_filter().get_yradius() - 0.5f));
 
             const CanvasProperties& properties = frame.image().properties();
             const size_t padded_tile_width = properties.m_tile_width + 2 * m_margin_width;

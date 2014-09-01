@@ -97,8 +97,8 @@ struct Frame::Impl
     size_t                  m_tile_height;
     PixelFormat             m_pixel_format;
     string                  m_filter_name;
-    double                  m_filter_radius;
-    auto_ptr<Filter2d>      m_filter;
+    float                   m_filter_radius;
+    auto_ptr<Filter2f>      m_filter;
     bool                    m_clamp;
     float                   m_target_gamma;
     float                   m_rcp_target_gamma;
@@ -197,7 +197,7 @@ ImageStack& Frame::aov_images() const
     return *impl->m_aov_images.get();
 }
 
-const Filter2d& Frame::get_filter() const
+const Filter2f& Frame::get_filter() const
 {
     return *impl->m_filter.get();
 }
@@ -602,24 +602,24 @@ void Frame::extract_parameters()
         const char* DefaultFilterName = "gaussian";
 
         impl->m_filter_name = m_params.get_optional<string>("filter", DefaultFilterName);
-        impl->m_filter_radius = m_params.get_optional<double>("filter_size", 2.0);
+        impl->m_filter_radius = m_params.get_optional<float>("filter_size", 2.0f);
 
         if (impl->m_filter_name == "box")
-            impl->m_filter.reset(new BoxFilter2<double>(impl->m_filter_radius, impl->m_filter_radius));
+            impl->m_filter.reset(new BoxFilter2<float>(impl->m_filter_radius, impl->m_filter_radius));
         else if (impl->m_filter_name == "triangle")
-            impl->m_filter.reset(new TriangleFilter2<double>(impl->m_filter_radius, impl->m_filter_radius));
+            impl->m_filter.reset(new TriangleFilter2<float>(impl->m_filter_radius, impl->m_filter_radius));
         else if (impl->m_filter_name == "gaussian")
-            impl->m_filter.reset(new GaussianFilter2<double>(impl->m_filter_radius, impl->m_filter_radius, 8.0));
+            impl->m_filter.reset(new GaussianFilter2<float>(impl->m_filter_radius, impl->m_filter_radius, 8.0f));
         else if (impl->m_filter_name == "mitchell")
-            impl->m_filter.reset(new MitchellFilter2<double>(impl->m_filter_radius, impl->m_filter_radius, 1.0/3, 1.0/3));
+            impl->m_filter.reset(new MitchellFilter2<float>(impl->m_filter_radius, impl->m_filter_radius, 1.0f/3, 1.0f/3));
         else if (impl->m_filter_name == "bspline")
-            impl->m_filter.reset(new MitchellFilter2<double>(impl->m_filter_radius, impl->m_filter_radius, 1.0, 0.0));
+            impl->m_filter.reset(new MitchellFilter2<float>(impl->m_filter_radius, impl->m_filter_radius, 1.0f, 0.0f));
         else if (impl->m_filter_name == "catmull")
-            impl->m_filter.reset(new MitchellFilter2<double>(impl->m_filter_radius, impl->m_filter_radius, 0.0, 0.5));
+            impl->m_filter.reset(new MitchellFilter2<float>(impl->m_filter_radius, impl->m_filter_radius, 0.0f, 0.5f));
         else if (impl->m_filter_name == "lanczos")
-            impl->m_filter.reset(new LanczosFilter2<double>(impl->m_filter_radius, impl->m_filter_radius, 3.0));
+            impl->m_filter.reset(new LanczosFilter2<float>(impl->m_filter_radius, impl->m_filter_radius, 3.0f));
         else if (impl->m_filter_name == "blackman-harris")
-            impl->m_filter.reset(new BlackmanHarrisFilter2<double>(impl->m_filter_radius, impl->m_filter_radius));
+            impl->m_filter.reset(new BlackmanHarrisFilter2<float>(impl->m_filter_radius, impl->m_filter_radius));
         else
         {
             RENDERER_LOG_ERROR(
@@ -628,7 +628,7 @@ void Frame::extract_parameters()
                 "filter",
                 DefaultFilterName);
             impl->m_filter_name = DefaultFilterName;
-            impl->m_filter.reset(new GaussianFilter2<double>(impl->m_filter_radius, impl->m_filter_radius, 8.0));
+            impl->m_filter.reset(new GaussianFilter2<float>(impl->m_filter_radius, impl->m_filter_radius, 8.0f));
         }
     }
 

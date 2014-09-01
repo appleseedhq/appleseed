@@ -55,19 +55,19 @@ class ShadingResultFrameBuffer
         const size_t                    width,
         const size_t                    height,
         const size_t                    aov_count,
-        const foundation::Filter2d&     filter);
+        const foundation::Filter2f&     filter);
 
     ShadingResultFrameBuffer(
         const size_t                    width,
         const size_t                    height,
         const size_t                    aov_count,
         const foundation::AABB2u&       crop_window,
-        const foundation::Filter2d&     filter);
+        const foundation::Filter2f&     filter);
 
     // The sample must be in the linear RGB color space.
     void add(
-        const double                    x,
-        const double                    y,
+        const float                     x,
+        const float                     y,
         const ShadingResult&            sample);
 
     void merge(

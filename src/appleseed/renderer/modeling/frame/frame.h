@@ -88,7 +88,7 @@ class DLLSYMBOL Frame
     ImageStack& aov_images() const;
 
     // Return the reconstruction filter used by the main image and the AOV images.
-    const foundation::Filter2d& get_filter() const;
+    const foundation::Filter2f& get_filter() const;
 
     // Return the color space the frame should be converted to for display.
     foundation::ColorSpace get_color_space() const;
