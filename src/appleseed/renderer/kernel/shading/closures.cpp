@@ -158,11 +158,11 @@ CompositeClosure::CompositeClosure(
 
     process_closure_tree(ci, Color3f(1.0f));
 
-    const size_t e = get_num_closures();
-    if (e)
+    const size_t closure_count = get_num_closures();
+    if (closure_count)
     {
         double total_weight = 0.0;
-        for (size_t i = 0; i < e; ++i)
+        for (size_t i = 0; i < closure_count; ++i)
         {
             total_weight += m_pdf_weights[i];
             m_cdf[i] = total_weight;
@@ -170,10 +170,10 @@ CompositeClosure::CompositeClosure(
 
         const double rcp_total_weight = 1.0 / total_weight;
 
-        for (size_t i = 0; i < e; ++i)
+        for (size_t i = 0; i < closure_count; ++i)
             m_pdf_weights[i] *= rcp_total_weight;
 
-        for (size_t i = 0, ie = e - 1; i < ie; ++i)
+        for (size_t i = 0, e = closure_count - 1; i < e; ++i)
             m_cdf[i] *= rcp_total_weight;
 
         m_cdf[get_num_closures() - 1] = 1.0;
