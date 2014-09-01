@@ -158,17 +158,23 @@ CompositeClosure::CompositeClosure(
 
     process_closure_tree(ci, Color3f(1.0f));
 
-    if (get_num_closures())
+    const size_t e = get_num_closures();
+    if (e)
     {
         double total_weight = 0.0;
-        for (size_t i = 0, e = get_num_closures(); i < e; ++i)
+        for (size_t i = 0; i < e; ++i)
         {
-            total_weight += m_cdf[i];
+            total_weight += m_pdf_weights[i];
             m_cdf[i] = total_weight;
         }
 
-        for (size_t i = 0, e = get_num_closures() - 1; i < e; ++i)
-            m_cdf[i] /= total_weight;
+        const double rcp_total_weight = 1.0 / total_weight;
+
+        for (size_t i = 0; i < e; ++i)
+            m_pdf_weights[i] *= rcp_total_weight;
+
+        for (size_t i = 0, ie = e - 1; i < ie; ++i)
+            m_cdf[i] *= rcp_total_weight;
 
         m_cdf[get_num_closures() - 1] = 1.0;
     }
@@ -547,8 +553,8 @@ void CompositeClosure::do_add_closure(
     if (w <= 0.0)
         return;
 
-    m_cdf[m_num_closures] = w;
-    linear_rgb_reflectance_to_spectrum_unclamped(weight, m_spectrum_multipliers[m_num_closures]);
+    m_pdf_weights[m_num_closures] = w;
+    linear_rgb_reflectance_to_spectrum_unclamped(weight, m_weights[m_num_closures]);
     m_normals[m_num_closures] = normalize(normal);
 
     // If the tangent is zero, ignore it.
