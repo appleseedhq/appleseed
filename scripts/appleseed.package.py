@@ -41,6 +41,7 @@ import glob
 import os
 import platform
 import shutil
+import subprocess
 import sys
 import time
 import traceback
@@ -194,6 +195,7 @@ class PackageBuilder:
         self.deploy_sandbox_to_stage()
         self.cleanup_stage()
         self.add_local_binaries_to_stage()
+        self.add_local_libraries_to_stage()
         self.add_scripts_to_stage()
         self.add_local_schema_files_to_stage()
         self.add_text_files_to_stage()
@@ -243,6 +245,11 @@ class PackageBuilder:
         shutil.copy(os.path.join(self.settings.appleseed_path, "sandbox/bin", exe("oslc")), "appleseed/bin/")
         shutil.copy(os.path.join(self.settings.appleseed_path, "sandbox/bin", exe("oslinfo")), "appleseed/bin/")
 
+    def add_local_libraries_to_stage(self):
+        progress("Adding local libraries to staging directory")
+        safe_make_directory("appleseed/lib")
+        dir_util.copy_tree(os.path.join(self.settings.appleseed_path, "sandbox/lib", self.settings.configuration), "appleseed/lib/")
+
     def add_scripts_to_stage(self):
         progress("Adding scripts to staging directory")
         shutil.copy("convertmany.py", "appleseed/bin/")
@@ -282,6 +289,7 @@ class PackageBuilder:
 
     def remove_stage(self):
         safe_delete_directory("appleseed")
+        pass
 
     def run(self, cmdline):
         info("Running command line: {0}".format(cmdline))
@@ -411,40 +419,90 @@ class MacPackageBuilder(PackageBuilder):
 #--------------------------------------------------------------------------------------------------
 
 class LinuxPackageBuilder(PackageBuilder):
+    def __init__(self, settings, package_info):
+        PackageBuilder.__init__(self, settings, package_info)
+        self.system_libs_prefixes = ["linux", "librt", "libpthread", "libGL", "libX", "libselinux", "libICE", "libSM", "libdl", "libm.so", "libgcc", "libc.so", "/lib64/ld-linux-", "libstdc++", "libxcb", "libdrm", "libnsl", "libuuid", "libgthread", "libglib", "libgobject", "libglapi", "libffi", "libfontconfig"]
+
     def alterate_stage(self):
+        self.make_executable(os.path.join("appleseed/bin", "maketx"))
+        self.make_executable(os.path.join("appleseed/bin", "oslc"))
+        self.make_executable(os.path.join("appleseed/bin", "oslinfo"))
         self.add_dependencies_to_stage()
-        self.copy_run_script()
+        self.set_runtime_paths()
 
     def add_dependencies_to_stage(self):
         progress("Linux-specific: adding dependencies to staging directory")
-        self.copy_qt_library("QtCore")
-        self.copy_qt_library("QtGui")
-        self.copy_qt_library("QtOpenGL")
-        self.copy_png_library()
 
-    def copy_qt_library(self, library_name):
-        library_filename = "lib" + library_name + ".so.4"
-        src_filepath = os.path.join(self.settings.qt_runtime_path, library_filename)
-        dest_path = os.path.join("appleseed", "bin")
-        shutil.copy(src_filepath, dest_path)
+        bin_libs = set()
+        for dirpath, dirnames, filenames in os.walk("appleseed/bin"):
+            for f in filenames:
+                if not f.endswith(".py"):
+                    bin_libs = bin_libs.union(self.get_dependencies_for_file(os.path.join("appleseed/bin", f)))
 
-    def copy_png_library(self):
-        library_filename = "libpng15.so.15"
-        src_filepath = os.path.join("/usr/local/lib", library_filename)
-        dest_path = os.path.join("appleseed", "bin")
-        shutil.copy(src_filepath, dest_path)
+        lib_libs = set()
+        for l in bin_libs:
+            lib_libs = lib_libs.union(self.get_dependencies_for_file(l))
 
-    def copy_run_script(self):
-        script_filename = "run-appleseed.sh"
-        dest_path = os.path.join("appleseed", "bin")
-        shutil.copy(script_filename, dest_path)
-        self.make_executable(os.path.join(dest_path, script_filename))
+        dest_path = os.path.join("appleseed", "lib")
+        all_libs = bin_libs.union(lib_libs)
+        for l in all_libs:
+            progress("    Copying " + l + " to lib directory")
+            shutil.copy(l, dest_path)
+
+    def set_runtime_paths(self):
+        progress("Setting binary runtime paths")
+        for dirpath, dirnames, filenames in os.walk("appleseed/bin"):
+            for f in filenames:
+                if not f.endswith(".py"):
+                    self.run("chrpath -r \$ORIGIN/../lib " + os.path.join("appleseed/bin", f))
+
+        progress("Deleting library runtime paths")
+        for dirpath, dirnames, filenames in os.walk("appleseed/lib"):
+            for f in filenames:
+                if ".so" in f:
+                    self.run("chrpath -d " + os.path.join(dirpath, f))
 
     def make_executable(self, filepath):
         mode = os.stat(filepath)[ST_MODE]
         mode |= S_IXUSR | S_IXGRP | S_IXOTH
         os.chmod(filepath, mode)
 
+    def is_system_lib(self, lib):
+        for prefix in self.system_libs_prefixes:
+            if lib.startswith(prefix):
+                return True
+
+        return False
+
+    def get_dependencies_for_file(self, filename):
+        progress("Getting deps for " + filename)
+        p = subprocess.Popen(["ldd", filename], stdout=subprocess.PIPE)
+        out, err = p.communicate()
+
+        if err != None:
+            print "Error!!!"
+            sys.exit(0)
+
+        libs = set()
+        lines = out.split("\n")
+        for l in lines:
+            l = l.strip()
+
+            # ignore empty lines.
+            if len(l) == 0:
+                continue
+
+            # ignore system libs.
+            if self.is_system_lib(l):
+                continue
+
+            # ignore appleseed libs.
+            if l.startswith("libappleseed"):
+                continue
+
+            libs.add(l.split()[2])
+
+        return libs
 
 #--------------------------------------------------------------------------------------------------
 # Entry point.
