@@ -295,6 +295,10 @@ class PackageBuilder:
         info("Running command line: {0}".format(cmdline))
         os.system(cmdline)
 
+    def run_subprocess(self, cmdline):
+        p = subprocess.Popen(cmdline, stdout=subprocess.PIPE)
+        out, err = p.communicate()
+        return out, err
 
 #--------------------------------------------------------------------------------------------------
 # Windows package builder.
@@ -433,16 +437,19 @@ class LinuxPackageBuilder(PackageBuilder):
     def add_dependencies_to_stage(self):
         progress("Linux-specific: adding dependencies to staging directory")
 
+        # get shared libs needed by binaries.
         bin_libs = set()
         for dirpath, dirnames, filenames in os.walk("appleseed/bin"):
             for f in filenames:
                 if not f.endswith(".py"):
                     bin_libs = bin_libs.union(self.get_dependencies_for_file(os.path.join("appleseed/bin", f)))
 
+        # get shared libs needed by libraries.
         lib_libs = set()
         for l in bin_libs:
             lib_libs = lib_libs.union(self.get_dependencies_for_file(l))
 
+        # copy needed libs to lib dir.
         dest_path = os.path.join("appleseed", "lib")
         all_libs = bin_libs.union(lib_libs)
         for l in all_libs:
@@ -476,11 +483,11 @@ class LinuxPackageBuilder(PackageBuilder):
 
     def get_dependencies_for_file(self, filename):
         progress("Getting deps for " + filename)
-        p = subprocess.Popen(["ldd", filename], stdout=subprocess.PIPE)
-        out, err = p.communicate()
+        out, err = self.run_subprocess(["ldd", filename])
 
         if err != None:
-            print "Error!!!"
+            print "Error getting dependencies for file: " + filename
+            print err
             sys.exit(0)
 
         libs = set()
