@@ -289,7 +289,6 @@ class PackageBuilder:
 
     def remove_stage(self):
         safe_delete_directory("appleseed")
-        pass
 
     def run(self, cmdline):
         info("Running command line: {0}".format(cmdline))
