@@ -120,8 +120,8 @@ class APPLESEED_ALIGN(16) CompositeClosure
 
     size_t get_num_closures() const;
     ClosureID get_closure_type(const size_t index) const;
-    double get_closure_cdf_weight(const size_t index) const;
-    const Spectrum& get_closure_spectrum_multiplier(const size_t index) const;
+    const Spectrum& get_closure_weight(const size_t index) const;
+    double get_closure_pdf_weight(const size_t index) const;
     const foundation::Vector3d& get_closure_normal(const size_t index) const;
     bool closure_has_tangent(const size_t index) const;
     const foundation::Vector3d& get_closure_tangent(const size_t index) const;
@@ -161,8 +161,9 @@ class APPLESEED_ALIGN(16) CompositeClosure
     foundation::Vector3d            m_tangents[MaxClosureEntries];
     size_t                          m_num_closures;
     size_t                          m_num_bytes;
-    Spectrum                        m_spectrum_multipliers[MaxClosureEntries];
+    Spectrum                        m_weights[MaxClosureEntries];
     double                          m_cdf[MaxClosureEntries];
+    double                          m_pdf_weights[MaxClosureEntries];
 
     // Emission
     Spectrum                        m_diffuse_emission;
@@ -215,16 +216,16 @@ inline ClosureID CompositeClosure::get_closure_type(const size_t index) const
     return m_closure_types[index];
 }
 
-inline double CompositeClosure::get_closure_cdf_weight(const size_t index) const
+inline const Spectrum& CompositeClosure::get_closure_weight(const size_t index) const
 {
     assert(index < get_num_closures());
-    return m_cdf[index];
+    return m_weights[index];
 }
 
-inline const Spectrum& CompositeClosure::get_closure_spectrum_multiplier(const size_t index) const
+inline double CompositeClosure::get_closure_pdf_weight(const size_t index) const
 {
     assert(index < get_num_closures());
-    return m_spectrum_multipliers[index];
+    return m_pdf_weights[index];
 }
 
 inline const foundation::Vector3d& CompositeClosure::get_closure_normal(const size_t index) const
