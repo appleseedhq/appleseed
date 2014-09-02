@@ -126,15 +126,10 @@ namespace
             ray.m_dir = transform.vector_to_parent(ndc_to_camera(point));
         }
 
-        virtual bool project_point(
-            const double            time,
+        virtual bool project_camera_space_point(
             const Vector3d&         point,
             Vector2d&               ndc) const OVERRIDE
         {
-            // Retrieve the camera transform.
-            Transformd tmp;
-            const Transformd& transform = m_transform_sequence.evaluate(time, tmp);
-
             // Compute the unit direction vector from the camera position to the point.
             const Vector3d dir = normalize(point);
 

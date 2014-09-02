@@ -49,7 +49,8 @@ class QtTileCallbackFactory
     // Constructor.
     QtTileCallbackFactory(
         RenderWidget*   render_widget,
-        const bool      highlight_tiles);
+        const bool      highlight_tiles,
+        volatile bool&  tile_callbacks_enabled);
 
     // Delete this instance.
     virtual void release() OVERRIDE;
@@ -60,6 +61,7 @@ class QtTileCallbackFactory
   private:
     RenderWidget*       m_render_widget;
     const bool          m_highlight_tiles;
+    volatile bool&      m_tile_callbacks_enabled;
 };
 
 }       // namespace studio

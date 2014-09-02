@@ -32,6 +32,8 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/rendering/sample.h"
+#include "renderer/kernel/aov/imagestack.h"
+#include "renderer/kernel/aov/tilestack.h"
 #include "renderer/modeling/frame/frame.h"
 
 // appleseed.foundation headers.
@@ -89,7 +91,7 @@ LocalSampleAccumulationBuffer::LocalSampleAccumulationBuffer(
             new FilteredTile(
                 level_width,
                 level_height,
-                4,
+                5,
                 filter));
 
         m_remaining_pixels.push_back(level_width * level_height);
@@ -185,7 +187,8 @@ void LocalSampleAccumulationBuffer::store_samples(
 namespace
 {
     void develop_to_tile(
-        Tile&                   tile,
+        Tile&                   color_tile,
+        Tile&                   depth_tile,
         const size_t            image_width,
         const size_t            image_height,
         const FilteredTile&     level,
@@ -194,8 +197,8 @@ namespace
         const AABB2u&           crop_window,
         const bool              undo_premultiplied_alpha)
     {
-        const size_t tile_width = tile.get_width();
-        const size_t tile_height = tile.get_height();
+        const size_t tile_width = color_tile.get_width();
+        const size_t tile_height = color_tile.get_height();
         const size_t level_width = level.get_width();
         const size_t level_height = level.get_height();
 
@@ -203,7 +206,7 @@ namespace
         {
             for (size_t x = 0; x < tile_width; ++x)
             {
-                Color4f color;
+                Color<float, 5> values;
 
                 const size_t ix = origin_x + x;
                 const size_t iy = origin_y + y;
@@ -213,22 +216,23 @@ namespace
                     level.get_pixel(
                         ix * level_width / image_width,
                         iy * level_height / image_height,
-                        &color[0]);
+                        &values[0]);
 
                     if (undo_premultiplied_alpha)
                     {
-                        const float rcp_alpha = color[3] == 0.0f ? 0.0f : 1.0f / color[3];
-                        color[0] *= rcp_alpha;
-                        color[1] *= rcp_alpha;
-                        color[2] *= rcp_alpha;
+                        const float rcp_alpha = values[3] == 0.0f ? 0.0f : 1.0f / values[3];
+                        values[0] *= rcp_alpha;
+                        values[1] *= rcp_alpha;
+                        values[2] *= rcp_alpha;
                     }
                 }
                 else
                 {
-                    color.set(0.0f);
+                    values.set(0.0f);
                 }
 
-                tile.set_pixel(x, y, color);
+                color_tile.set_pixel(x, y, Color4f(&values[0]));
+                depth_tile.set_component(x, y, 0, values[4]);
             }
         }
     }
@@ -238,9 +242,10 @@ void LocalSampleAccumulationBuffer::develop_to_frame(Frame& frame)
 {
     boost::mutex::scoped_lock lock(m_mutex);
 
-    Image& image = frame.image();
-    const CanvasProperties& frame_props = image.properties();
+    Image& color_image = frame.image();
+    Image& depth_image = frame.aov_images().get_image(0);
 
+    const CanvasProperties& frame_props = color_image.properties();
     assert(frame_props.m_canvas_width == m_levels[0]->get_width());
     assert(frame_props.m_canvas_height == m_levels[0]->get_height());
     assert(frame_props.m_channel_count == 4);
@@ -254,13 +259,15 @@ void LocalSampleAccumulationBuffer::develop_to_frame(Frame& frame)
     {
         for (size_t tx = 0; tx < frame_props.m_tile_count_x; ++tx)
         {
-            Tile& tile = image.tile(tx, ty);
-
             const size_t origin_x = tx * frame_props.m_tile_width;
             const size_t origin_y = ty * frame_props.m_tile_height;
 
+            Tile& color_tile = color_image.tile(tx, ty);
+            Tile& depth_tile = depth_image.tile(tx, ty);
+
             develop_to_tile(
-                tile,
+                color_tile,
+                depth_tile,
                 frame_props.m_canvas_width,
                 frame_props.m_canvas_height,
                 level,

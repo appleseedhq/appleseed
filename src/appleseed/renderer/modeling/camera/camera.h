@@ -106,8 +106,13 @@ class DLLSYMBOL Camera
     // Project a 3D point back to the film plane. The input point is expressed in
     // world space. The returned point is expressed in normalized device coordinates.
     // Returns true if the projection was successful, false otherwise.
-    virtual bool project_point(
+    bool project_point(
         const double                    time,
+        const foundation::Vector3d&     point,
+        foundation::Vector2d&           ndc) const;
+
+    // Similar to project_point(), except that the input point is expressed in camera space.
+    virtual bool project_camera_space_point(
         const foundation::Vector3d&     point,
         foundation::Vector2d&           ndc) const = 0;
 

@@ -92,6 +92,21 @@ void Camera::on_frame_end(const Project& project)
 {
 }
 
+bool Camera::project_point(
+    const double        time,
+    const Vector3d&     point,
+    Vector2d&           ndc) const
+{
+    // Retrieve the camera transform.
+    Transformd tmp;
+    const Transformd& transform = m_transform_sequence.evaluate(time, tmp);
+
+    // Transform the point from world space to camera space.
+    const Vector3d point_camera = transform.point_to_local(point);
+
+    return project_camera_space_point(point_camera, ndc);
+}
+
 Vector2d Camera::extract_film_dimensions() const
 {
     const Vector2d DefaultFilmDimensions(0.025, 0.025);     // in meters

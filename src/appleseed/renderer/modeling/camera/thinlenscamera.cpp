@@ -298,26 +298,18 @@ namespace
             ray.m_dir = transform.vector_to_parent(ray.m_dir);
         }
 
-        virtual bool project_point(
-            const double            time,
+        virtual bool project_camera_space_point(
             const Vector3d&         point,
             Vector2d&               ndc) const OVERRIDE
         {
-            // Retrieve the camera transform.
-            Transformd tmp;
-            const Transformd& transform = m_transform_sequence.evaluate(time, tmp);
-
-            // Transform the point from world space to camera space.
-            const Vector3d point_camera = transform.point_to_local(point);
-
             // Cannot project the point if it is behind the film plane.
-            if (point_camera.z > -m_focal_length)
+            if (point.z > -m_focal_length)
                 return false;
 
             // Project the point onto the film plane.
-            const double k = -m_focal_length / point_camera.z;
-            ndc.x = 0.5 + (point_camera.x * k * m_rcp_film_width);
-            ndc.y = 0.5 - (point_camera.y * k * m_rcp_film_height);
+            const double k = -m_focal_length / point.z;
+            ndc.x = 0.5 + (point.x * k * m_rcp_film_width);
+            ndc.y = 0.5 - (point.y * k * m_rcp_film_height);
 
             // Projection was successful.
             return true;

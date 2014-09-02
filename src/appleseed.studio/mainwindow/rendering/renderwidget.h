@@ -96,6 +96,10 @@ class RenderWidget
     // Thread-safe.
     void blit_frame(const renderer::Frame& frame);
 
+    // Direct access to internals for high-performance drawing.
+    QMutex& mutex();
+    QImage& image();
+
   private:
     mutable QMutex                  m_mutex;
     QImage                          m_image;
@@ -112,6 +116,21 @@ class RenderWidget
 
     virtual void paintEvent(QPaintEvent* event) OVERRIDE;
 };
+
+
+//
+// RenderWidget class implementation.
+//
+
+inline QMutex& RenderWidget::mutex()
+{
+    return m_mutex;
+}
+
+inline QImage& RenderWidget::image()
+{
+    return m_image;
+}
 
 }       // namespace studio
 }       // namespace appleseed

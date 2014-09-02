@@ -140,6 +140,7 @@ class RenderingManager
 
     std::auto_ptr<CameraController>             m_camera_controller;
     bool                                        m_camera_changed;
+    volatile bool                               m_tile_callbacks_enabled;
 
     std::auto_ptr<QtTileCallbackFactory>        m_tile_callback_factory;
     std::auto_ptr<renderer::MasterRenderer>     m_master_renderer;
@@ -155,6 +156,8 @@ class RenderingManager
     DelayedActionCollection                     m_delayed_actions;
     PermanentStateCollection                    m_permanent_states;
 
+    std::auto_ptr<QThread>                      m_frozen_display_thread;
+
     virtual void timerEvent(QTimerEvent* event);
 
     void print_final_rendering_time();
@@ -169,7 +172,9 @@ class RenderingManager
     void slot_rendering_end();
     void slot_frame_begin();
     void slot_frame_end();
+    void slot_camera_change_begin();
     void slot_camera_changed();
+    void slot_camera_change_end();
 };
 
 }       // namespace studio

@@ -38,14 +38,19 @@
 #include "application/application.h"
 
 // appleseed.renderer headers.
+#include "renderer/api/aov.h"
 #include "renderer/api/camera.h"
 #include "renderer/api/frame.h"
 #include "renderer/api/project.h"
+#include "renderer/api/scene.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/analysis.h"
 #include "foundation/image/image.h"
+#include "foundation/math/rng.h"
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/foreach.h"
+#include "foundation/utility/memory.h"
 #include "foundation/utility/string.h"
 
 // boost headers.
@@ -53,13 +58,13 @@
 
 // Qt headers.
 #include <QApplication>
+#include <QImage>
+#include <QMutexLocker>
+#include <QThread>
 #include <QTimerEvent>
 
 // Standard headers.
 #include <cassert>
-
-// Forward declarations.
-namespace renderer  { class Scene; }
 
 using namespace appleseed::shared;
 using namespace boost;
@@ -175,6 +180,14 @@ void RenderingManager::start_rendering(
                 m_project->get_scene()));
 
         connect(
+            m_camera_controller.get(), SIGNAL(signal_camera_change_begin()),
+            this, SLOT(slot_camera_change_begin()));
+
+        connect(
+            m_camera_controller.get(), SIGNAL(signal_camera_change_end()),
+            this, SLOT(slot_camera_change_end()));
+
+        connect(
             m_camera_controller.get(), SIGNAL(signal_camera_changed()),
             this, SLOT(slot_camera_changed()));
 
@@ -183,12 +196,13 @@ void RenderingManager::start_rendering(
             this, SIGNAL(signal_camera_changed()));
     }
 
-    const bool highlight_tiles = !interactive;
+    m_tile_callbacks_enabled = true;
 
     m_tile_callback_factory.reset(
         new QtTileCallbackFactory(
             m_render_widget,
-            highlight_tiles));
+            !interactive,
+            m_tile_callbacks_enabled));
 
     m_master_renderer.reset(
         new MasterRenderer(
@@ -202,6 +216,9 @@ void RenderingManager::start_rendering(
         new MasterRendererThread(m_master_renderer.get()));
 
     m_master_renderer_thread->start();
+
+    // todo: refactor.
+    QThread::currentThread()->setPriority(QThread::Priority::TimeCriticalPriority);
 }
 
 bool RenderingManager::is_rendering() const
@@ -340,6 +357,225 @@ void RenderingManager::consume_delayed_actions()
     m_delayed_actions.clear();
 }
 
+namespace
+{
+    // todo: factorize with code in utility/interop.h and foundation/image/pixel.h.
+    Color3b rgb32f_to_color3b(const float r, const float g, const float b)
+    {
+        return
+            Color3b(
+                truncate<uint8>(clamp(r * 256.0f, 0.0f, 255.0f)),
+                truncate<uint8>(clamp(g * 256.0f, 0.0f, 255.0f)),
+                truncate<uint8>(clamp(b * 256.0f, 0.0f, 255.0f)));
+    }
+
+    class FrozenDisplayThread
+      : public QThread
+    {
+      public:
+        FrozenDisplayThread(
+            const Camera&       camera,
+            const Frame&        frame,
+            RenderWidget&       render_widget)
+          : m_camera(camera)
+          , m_frame(frame)
+          , m_frame_props(frame.image().properties())
+          , m_render_widget(render_widget)
+          , m_abort(false)
+          , m_point_count(0)
+          , m_point_index(0)
+        {
+            const QImage& dest_image = m_render_widget.image();
+            m_zbuffer.resize(dest_image.width() * dest_image.height(), 0.0f);
+
+            ensure_minimum_size(m_points, 2 * m_frame_props.m_pixel_count);
+
+            update_camera_transform();
+        }
+
+        void update_camera_transform()
+        {
+            QMutexLocker locker(&m_camera_mutex);
+            m_camera_transform = m_camera.transform_sequence().evaluate(0.0);
+        }
+
+        void abort()
+        {
+            m_abort = true;
+        }
+
+      private:
+        const Camera&           m_camera;
+        const Frame&            m_frame;
+        const CanvasProperties& m_frame_props;
+        RenderWidget&           m_render_widget;
+        volatile bool           m_abort;
+        Transformd              m_camera_transform;
+        QMutex                  m_camera_mutex;
+
+        struct RenderPoint
+        {
+            Vector3f    m_position;
+            Color3b     m_color;
+        };
+
+        vector<RenderPoint>     m_points;
+        size_t                  m_point_count;
+        size_t                  m_point_index;
+
+        vector<float>           m_zbuffer;
+
+        MersenneTwister         m_rng;
+
+        virtual void run() OVERRIDE
+        {
+            RENDERER_LOG_DEBUG("frozen display thread started.");
+
+            add_points(1);
+
+            while (!m_abort)
+            {
+                render_points();
+            }
+
+            RENDERER_LOG_DEBUG("frozen display thread terminated.");
+        }
+
+        void add_points(const size_t spacing)
+        {
+            QMutexLocker locker(&m_camera_mutex);
+
+            const Image& color_image = m_frame.image();
+            const Image& depth_image = m_frame.aov_images().get_image(0);   // todo: fix
+
+            SamplingContext sampling_context(
+                m_rng,
+                2,      // number of dimensions
+                0,      // number of samples -- unknown
+                0);     // initial instance number
+
+            for (size_t ty = 0; ty < m_frame_props.m_tile_count_y; ++ty)
+            {
+                for (size_t tx = 0; tx < m_frame_props.m_tile_count_x; ++tx)
+                {
+                    const Tile& color_tile = color_image.tile(tx, ty);
+                    const Tile& depth_tile = depth_image.tile(tx, ty);
+                    const size_t tile_width = color_tile.get_width();
+                    const size_t tile_height = color_tile.get_height();
+
+                    for (size_t py = 0; py < tile_height; py += spacing)
+                    {
+                        for (size_t px = 0; px < tile_width; px += spacing)
+                        {
+                            // Compute film point in NDC.
+                            const Vector2d point =
+                                m_frame.get_sample_position(
+                                    tx, ty,
+                                    px, py,
+                                    0.5, 0.5);
+
+                            // Generate a world space ray going through that film point.
+                            ShadingRay ray;
+                            m_camera.generate_ray(sampling_context, point, ray);
+
+                            // Retrieve pixel color.
+                            Color4f pixel;
+                            color_tile.get_pixel(px, py, pixel);
+
+                            // todo: hack.
+                            pixel.rgb() = fast_linear_rgb_to_srgb(pixel.rgb());
+
+                            // Retrieve pixel depth.
+                            const float depth = depth_tile.get_component<float>(px, py, 0);
+
+                            if (depth >= 0.0f)
+                            {
+                                // Compute and store world space point and color.
+                                RenderPoint point;
+                                point.m_position = Vector3f(ray.point_at(depth));
+                                point.m_color = rgb32f_to_color3b(pixel[0], pixel[1], pixel[2]);
+                                m_points[m_point_index++] = point;
+                                m_point_count = max(m_point_count, m_point_index);
+                                if (m_point_index == m_points.size())
+                                    m_point_index = 0;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        void render_points()
+        {
+            // Copy the camera transform.
+            m_camera_mutex.lock();
+            const Transformd camera_transform_copy = m_camera_transform;
+            m_camera_mutex.unlock();
+
+            // Get exclusive access to the render widget.
+            QMutexLocker render_widget_locker(&m_render_widget.mutex());
+
+            const Image& color_image = m_frame.image();
+            const Image& depth_image = m_frame.aov_images().get_image(0);   // todo: fix
+
+            // Retrieve destination image and associated information.
+            QImage& dest_image = m_render_widget.image();
+            const int image_width = dest_image.width();
+            const int image_height = dest_image.height();
+            const size_t dest_stride = static_cast<size_t>(dest_image.bytesPerLine());
+
+            // Retrieve pointers to the color and depth buffers.
+            uint8* pixels = static_cast<uint8*>(dest_image.scanLine(0));
+            float* zbuffer = &m_zbuffer[0];
+
+            // Clear image.
+            for (size_t y = 0; y < image_height; ++y)
+                memset(pixels + y * dest_stride, 0, dest_stride);
+
+            // Clear Z-buffer.
+            for (size_t i = 0; i < image_width * image_height; ++i)
+                zbuffer[i] = -1.0e38f;
+
+            for (size_t i = 0; i < m_point_count; ++i)
+            {
+                const RenderPoint& point = m_points[i];
+
+                // Transform point to camera space.
+                const Vector3f point_camera = camera_transform_copy.point_to_local(point.m_position);
+
+                // Project point to film plane.
+                Vector2d ndc;
+                m_camera.project_camera_space_point(Vector3d(point_camera), ndc);
+
+                // Compute point coordinates in pixels.
+                const int ix = truncate<int>(ndc.x * image_width);
+                const int iy = truncate<int>(ndc.y * image_height);
+
+                // Reject points outside the frame.
+                if (ix < 0 ||
+                    iy < 0 ||
+                    ix >= image_width ||
+                    iy >= image_height)
+                    continue;
+
+                // Check point depth against Z-buffer.
+                const size_t zbuffer_index = iy * image_width + ix;
+                if (point_camera.z <= zbuffer[zbuffer_index])
+                    continue;
+
+                // Write to Z-buffer.
+                zbuffer[zbuffer_index] = point_camera.z;
+
+                // Draw point on render widget.
+                const size_t base = iy * dest_stride + ix * 3;
+                pixels[base + 0] = point.m_color[0];
+                pixels[base + 1] = point.m_color[1];
+                pixels[base + 2] = point.m_color[2];
+            }
+        }
+    };
+}
+
 void RenderingManager::slot_rendering_begin()
 {
     assert(m_master_renderer.get());
@@ -373,8 +609,12 @@ void RenderingManager::slot_frame_begin()
 {
     if (m_camera_changed)
     {
+        // Update the scene's camera before rendering the frame.
         if (m_camera_controller.get())
             m_camera_controller->update_camera_transform();
+
+        if (m_frozen_display_thread.get())
+            static_cast<FrozenDisplayThread*>(m_frozen_display_thread.get())->update_camera_transform();
 
         m_camera_changed = false;
     }
@@ -391,11 +631,31 @@ void RenderingManager::slot_frame_end()
     m_render_widget->update();
 }
 
+void RenderingManager::slot_camera_change_begin()
+{
+    m_tile_callbacks_enabled = false;
+
+    m_frozen_display_thread.reset(
+        new FrozenDisplayThread(
+            *m_project->get_scene()->get_camera(),
+            *m_project->get_frame(),
+            *m_render_widget));
+    m_frozen_display_thread->start();
+}
+
 void RenderingManager::slot_camera_changed()
 {
     m_camera_changed = true;
-
     restart_rendering();
+}
+
+void RenderingManager::slot_camera_change_end()
+{
+    static_cast<FrozenDisplayThread*>(m_frozen_display_thread.get())->abort();
+    m_frozen_display_thread->wait();
+    m_frozen_display_thread.reset();
+
+    m_tile_callbacks_enabled = true;
 }
 
 }   // namespace studio
