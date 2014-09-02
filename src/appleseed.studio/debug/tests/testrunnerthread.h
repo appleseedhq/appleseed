@@ -30,6 +30,9 @@
 #ifndef APPLESEED_STUDIO_DEBUG_TESTS_TESTRUNNERTHREAD_H
 #define APPLESEED_STUDIO_DEBUG_TESTS_TESTRUNNERTHREAD_H
 
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
+
 // Qt headers.
 #include <QObject>
 #include <QThread>
@@ -63,7 +66,7 @@ class TestRunnerThread
     TestResultWidgetDecorator*                  m_result_widget;
 
     // The starting point for the thread.
-    virtual void run();
+    virtual void run() OVERRIDE;
 };
 
 }       // namespace studio
