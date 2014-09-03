@@ -257,7 +257,7 @@ class PackageBuilder:
         progress("Adding headers to staging directory")
         safe_make_directory("appleseed/include")
 
-        ignore_files = shutil.ignore_patterns("*.cpp", "*.c", "*.xsd", "stdosl.h", "oslutil.h", "meta", "snprintf", "benchmark")
+        ignore_files = shutil.ignore_patterns("*.cpp", "*.c", "*.xsd", "stdosl.h", "oslutil.h", "snprintf")
         shutil.copytree(os.path.join(self.settings.headers_path, "foundation"), "appleseed/include/foundation", ignore = ignore_files)
         shutil.copytree(os.path.join(self.settings.headers_path, "main"), "appleseed/include/main", ignore = ignore_files)
         shutil.copytree(os.path.join(self.settings.headers_path, "renderer"), "appleseed/include/renderer", ignore = ignore_files)
@@ -497,9 +497,7 @@ class LinuxPackageBuilder(PackageBuilder):
         out, err = self.run_subprocess(["ldd", filename])
 
         if err != None:
-            print "Error getting dependencies for file: " + filename
-            print err
-            sys.exit(0)
+            fatal("Error getting dependencies for " + filename + ": " + err)
 
         libs = set()
         lines = out.split("\n")
