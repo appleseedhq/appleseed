@@ -39,7 +39,6 @@
 // appleseed.foundation headers.
 #include "foundation/utility/job/abortswitch.h"
 #include "foundation/utility/foreach.h"
-#include "foundation/utility/searchpaths.h"
 #include "foundation/utility/uid.h"
 
 // Standard headers.
@@ -65,19 +64,11 @@ struct ShaderGroup::Impl
     ShaderContainer                 m_shaders;
     ShaderConnectionContainer       m_connections;
     mutable OSL::ShaderGroupRef     m_shadergroup_ref;
-    const SearchPaths&              m_search_paths;
-
-    explicit Impl(const SearchPaths& search_paths)
-      : m_search_paths(search_paths)
-    {
-    }
 };
 
-ShaderGroup::ShaderGroup(
-    const char*         name,
-    const SearchPaths&  search_paths)
+ShaderGroup::ShaderGroup(const char* name)
   : ConnectableEntity(g_class_uid, ParamArray())
-  , impl(new Impl(search_paths))
+  , impl(new Impl())
   , m_has_emission(false)
   , m_has_transparency(false)
   , m_has_holdout(false)
@@ -339,13 +330,10 @@ const char* ShaderGroupFactory::get_model()
     return "shadergroup";
 }
 
-auto_release_ptr<ShaderGroup> ShaderGroupFactory::create(
-    const char*         name,
-    const SearchPaths&  search_paths)
+auto_release_ptr<ShaderGroup> ShaderGroupFactory::create(const char* name)
 {
     return
-        auto_release_ptr<ShaderGroup>(
-            new ShaderGroup(name, search_paths));
+        auto_release_ptr<ShaderGroup>(new ShaderGroup(name));
 }
 
 }   // namespace renderer

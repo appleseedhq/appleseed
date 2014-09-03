@@ -48,7 +48,6 @@ END_OSL_INCLUDES
 
 // Forward declarations.
 namespace foundation    { class AbortSwitch; }
-namespace foundation    { class SearchPaths; }
 namespace renderer      { class Assembly; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
@@ -133,9 +132,7 @@ class DLLSYMBOL ShaderGroup
     bool    m_has_debug;
 
     // Constructor.
-    ShaderGroup(
-        const char*                     name,
-        const foundation::SearchPaths&  search_paths);
+    explicit ShaderGroup(const char* name);
 
     // Destructor.
     ~ShaderGroup();
@@ -156,9 +153,7 @@ class DLLSYMBOL ShaderGroupFactory
     static const char* get_model();
 
     // Create a new shader group.
-    static foundation::auto_release_ptr<ShaderGroup> create(
-        const char*                     name,
-        const foundation::SearchPaths&  search_paths);
+    static foundation::auto_release_ptr<ShaderGroup> create(const char* name);
 };
 
 
