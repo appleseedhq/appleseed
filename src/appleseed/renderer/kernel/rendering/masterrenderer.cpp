@@ -225,16 +225,18 @@ namespace
     }
 
 #ifdef WITH_OSL
-
     void destroy_osl_shading_system(
-        OSL::ShadingSystem*     s,
-        OIIO::TextureSystem*    tx)
+        OSL::ShadingSystem*     shading_system,
+        Scene*                  scene,
+        OIIO::TextureSystem*    texture_system)
     {
-        RENDERER_LOG_INFO("%s", tx->getstats().c_str());
-        tx->reset_stats();
-        OSL::ShadingSystem::destroy(s);
-    }
+        RENDERER_LOG_INFO("%s", "releasing OSL shader groups.");
+        scene->release_osl_shader_groups();
 
+        RENDERER_LOG_INFO("%s", texture_system->getstats().c_str());
+        texture_system->reset_stats();
+        OSL::ShadingSystem::destroy(shading_system);
+    }
 #endif
 }
 
@@ -305,7 +307,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     m_project.create_aov_images();
     m_project.update_trace_context();
 
-    const Scene& scene = *m_project.get_scene();
+    Scene& scene = *m_project.get_scene();
 
     Frame& frame = *m_project.get_frame();
     frame.print_settings();
@@ -333,7 +335,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
 
     // Create our renderer services.
     RendererServices services(
-        m_project, 
+        m_project,
         *m_texture_system,
         texture_store);
 
@@ -343,7 +345,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
             &services,
             m_texture_system,
             &error_handler),
-        boost::bind(&destroy_osl_shading_system, _1, m_texture_system));
+        boost::bind(&destroy_osl_shading_system, _1, &scene, m_texture_system));
 
     if (!search_paths.empty())
         shading_system->attribute("searchpath:shader", search_paths);
@@ -381,6 +383,12 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
 #endif
 
     register_closures(*shading_system);
+
+    if (!scene.create_osl_shader_groups(*shading_system, m_abort_switch))
+        return IRendererController::AbortRendering;
+
+    if (is_aborted(m_abort_switch))
+        return IRendererController::ContinueRendering;
 
 #endif  // WITH_OSL
 
@@ -703,11 +711,7 @@ IRendererController::Status MasterRenderer::render_frame_sequence(
         m_renderer_controller->on_frame_begin();
 
         // Prepare the scene for rendering. Don't proceed if that failed.
-#ifdef WITH_OSL
-        if (!m_project.get_scene()->on_frame_begin(m_project, shading_system, m_abort_switch))
-#else
         if (!m_project.get_scene()->on_frame_begin(m_project, m_abort_switch))
-#endif
         {
             m_renderer_controller->on_frame_end();
             return IRendererController::AbortRendering;

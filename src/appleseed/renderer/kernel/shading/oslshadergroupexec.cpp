@@ -66,7 +66,7 @@ void OSLShaderGroupExec::execute_shading(
 
     m_osl_shading_system.execute(
         *m_osl_shading_context,
-        *shader_group.shadergroup_ref(),
+        *shader_group.shader_group_ref(),
         shading_point.get_osl_shader_globals());
 }
 
@@ -82,7 +82,7 @@ void OSLShaderGroupExec::execute_transparency(
 
     m_osl_shading_system.execute(
         *m_osl_shading_context,
-        *shader_group.shadergroup_ref(),
+        *shader_group.shader_group_ref(),
         shading_point.get_osl_shader_globals());
 
     process_transparency_tree(shading_point.get_osl_shader_globals().Ci, alpha);

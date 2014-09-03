@@ -38,9 +38,6 @@
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/textureinstance.h"
-#ifdef WITH_OSL
-#include "renderer/modeling/shadergroup/shadergroup.h"
-#endif
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/utility/bbox.h"
 #include "renderer/utility/paramarray.h"
@@ -79,10 +76,6 @@ struct Assembly::Impl
     ObjectContainer             m_objects;
     ObjectInstanceContainer     m_object_instances;
 
-#ifdef WITH_OSL
-    ShaderGroupContainer        m_shader_groups;
-#endif
-
     explicit Impl(Entity* parent)
       : m_bsdfs(parent)
       , m_edfs(parent)
@@ -91,9 +84,6 @@ struct Assembly::Impl
       , m_lights(parent)
       , m_objects(parent)
       , m_object_instances(parent)
-#ifdef WITH_OSL
-      , m_shader_groups(parent)
-#endif
     {
     }
 };
@@ -154,15 +144,6 @@ ObjectInstanceContainer& Assembly::object_instances() const
 {
     return impl->m_object_instances;
 }
-
-#ifdef WITH_OSL
-
-ShaderGroupContainer& Assembly::shader_groups() const
-{
-    return impl->m_shader_groups;
-}
-
-#endif
 
 GAABB3 Assembly::compute_local_bbox() const
 {
@@ -225,50 +206,6 @@ namespace
         return success;
     }
 
-#ifdef WITH_OSL
-
-    template <typename EntityCollection>
-    bool invoke_on_frame_begin(
-        const Project&          project,
-        EntityCollection&       entities,
-        OSL::ShadingSystem&     shading_system,
-        AbortSwitch*            abort_switch)
-    {
-        bool success = true;
-
-        for (each<EntityCollection> i = entities; i; ++i)
-        {
-            if (is_aborted(abort_switch))
-                break;
-
-            success = success && i->on_frame_begin(project, shading_system, abort_switch);
-        }
-
-        return success;
-    }
-
-    template <typename EntityCollection>
-    bool invoke_on_frame_begin(
-        const Project&          project,
-        const Assembly&         assembly,
-        OSL::ShadingSystem&     shading_system,
-        EntityCollection&       entities,
-        AbortSwitch*            abort_switch)
-    {
-        bool success = true;
-
-        for (each<EntityCollection> i = entities; i; ++i)
-        {
-            if (is_aborted(abort_switch))
-                break;
-
-            success = success && i->on_frame_begin(project, assembly, shading_system, abort_switch);
-        }
-
-        return success;
-    }
-#endif
-
     template <typename EntityCollection>
     void invoke_on_frame_end(
         const Project&          project,
@@ -291,35 +228,18 @@ namespace
 
 bool Assembly::on_frame_begin(
     const Project&      project,
-#ifdef WITH_OSL
-    OSL::ShadingSystem& shading_system,
-#endif
     AbortSwitch*        abort_switch)
 {
     bool success = true;
-
     success = success && invoke_on_frame_begin(project, texture_instances(), abort_switch);
     success = success && invoke_on_frame_begin(project, *this, surface_shaders(), abort_switch);
     success = success && invoke_on_frame_begin(project, *this, bsdfs(), abort_switch);
     success = success && invoke_on_frame_begin(project, *this, edfs(), abort_switch);
-
-#ifdef WITH_OSL
-    success = success && invoke_on_frame_begin(project, *this, shading_system, shader_groups(), abort_switch);
-#endif
-
     success = success && invoke_on_frame_begin(project, *this, materials(), abort_switch);
     success = success && invoke_on_frame_begin(project, *this, lights(), abort_switch);
-
     success = success && invoke_on_frame_begin(project, *this, object_instances(), abort_switch);
-
-#ifdef WITH_OSL
-    success = success && invoke_on_frame_begin(project, assemblies(), shading_system, abort_switch);
-#else
     success = success && invoke_on_frame_begin(project, assemblies(), abort_switch);
-#endif
-
     success = success && invoke_on_frame_begin(project, assembly_instances(), abort_switch);
-
     return success;
 }
 
@@ -330,9 +250,6 @@ void Assembly::on_frame_end(const Project& project)
     invoke_on_frame_end(project, object_instances());
     invoke_on_frame_end(project, *this, lights());
     invoke_on_frame_end(project, *this, materials());
-#ifdef WITH_OSL
-    invoke_on_frame_end(project, *this, shader_groups());
-#endif
     invoke_on_frame_end(project, *this, edfs());
     invoke_on_frame_end(project, *this, bsdfs());
     invoke_on_frame_end(project, *this, surface_shaders());

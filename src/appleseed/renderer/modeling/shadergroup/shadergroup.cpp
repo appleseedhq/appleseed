@@ -63,7 +63,7 @@ struct ShaderGroup::Impl
 {
     ShaderContainer                 m_shaders;
     ShaderConnectionContainer       m_connections;
-    mutable OSL::ShaderGroupRef     m_shadergroup_ref;
+    mutable OSL::ShaderGroupRef     m_shader_group_ref;
 };
 
 ShaderGroup::ShaderGroup(const char* name)
@@ -131,17 +131,17 @@ void ShaderGroup::add_connection(
         dst_param);
 }
 
-bool ShaderGroup::on_frame_begin(
-    const Project&      project,
-    const Assembly&     assembly,
+bool ShaderGroup::create_osl_shader_group(
     OSL::ShadingSystem& shading_system,
     AbortSwitch*        abort_switch)
 {
+    assert (impl->m_shader_group_ref.get() == 0);
+
     RENDERER_LOG_DEBUG("setup shader group %s.", get_name());
 
     try
     {
-        impl->m_shadergroup_ref = shading_system.ShaderGroupBegin(get_name());
+        impl->m_shader_group_ref = shading_system.ShaderGroupBegin(get_name());
 
         if (!valid())
         {
@@ -176,7 +176,7 @@ bool ShaderGroup::on_frame_begin(
             }
         }
 
-        get_shadergroup_info(shading_system);
+        get_shader_group_info(shading_system);
         report_has_closures("emission", m_has_emission);
         report_has_closures("transparent", m_has_transparency);
         report_has_closures("holdout", m_has_holdout);
@@ -191,11 +191,9 @@ bool ShaderGroup::on_frame_begin(
     }
 }
 
-void ShaderGroup::on_frame_end(
-    const Project&      project,
-    const Assembly&     assembly)
+void ShaderGroup::release_osl_shader_group()
 {
-    impl->m_shadergroup_ref.reset();
+    impl->m_shader_group_ref.reset();
 }
 
 const ShaderContainer& ShaderGroup::shaders() const
@@ -210,12 +208,12 @@ const ShaderConnectionContainer& ShaderGroup::shader_connections() const
 
 bool ShaderGroup::valid() const
 {
-    return impl->m_shadergroup_ref.get() != 0;
+    return impl->m_shader_group_ref.get() != 0;
 }
 
-OSL::ShaderGroupRef& ShaderGroup::shadergroup_ref() const
+OSL::ShaderGroupRef& ShaderGroup::shader_group_ref() const
 {
-    return impl->m_shadergroup_ref;
+    return impl->m_shader_group_ref;
 }
 
 void ShaderGroup::report_has_closures(const char* closure_name, bool has_closures) const
@@ -236,7 +234,7 @@ void ShaderGroup::report_has_closures(const char* closure_name, bool has_closure
     }
 }
 
-void ShaderGroup::get_shadergroup_info(OSL::ShadingSystem& shading_system)
+void ShaderGroup::get_shader_group_info(OSL::ShadingSystem& shading_system)
 {
     m_has_emission = true;
     m_has_transparency = true;
@@ -245,7 +243,7 @@ void ShaderGroup::get_shadergroup_info(OSL::ShadingSystem& shading_system)
 
     int num_unknown_closures = 0;
     if (!shading_system.getattribute(
-            impl->m_shadergroup_ref.get(),
+            impl->m_shader_group_ref.get(),
             "unknown_closures_needed",
             num_unknown_closures))
     {
@@ -269,7 +267,7 @@ void ShaderGroup::get_shadergroup_info(OSL::ShadingSystem& shading_system)
 
     int num_closures = 0;
     if (!shading_system.getattribute(
-            impl->m_shadergroup_ref.get(),
+            impl->m_shader_group_ref.get(),
             "num_closures_needed",
             num_closures))
     {
@@ -285,7 +283,7 @@ void ShaderGroup::get_shadergroup_info(OSL::ShadingSystem& shading_system)
     {
         OIIO::ustring *closures = 0;
         if (!shading_system.getattribute(
-                impl->m_shadergroup_ref.get(),
+                impl->m_shader_group_ref.get(),
                 "closures_needed",
                 OIIO::TypeDesc::PTR,
                 &closures))

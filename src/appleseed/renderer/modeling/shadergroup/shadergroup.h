@@ -83,18 +83,13 @@ class DLLSYMBOL ShaderGroup
         const char*                     dst_layer,
         const char*                     dst_param);
 
-    // This method is called once before rendering each frame.
-    // Returns true on success, false otherwise.
-    bool on_frame_begin(
-        const Project&                  project,
-        const Assembly&                 assembly,
+    // Create OSL shadergroup.
+    bool create_osl_shader_group(
         OSL::ShadingSystem&             shading_system,
         foundation::AbortSwitch*        abort_switch = 0);
 
-    // This method is called once after rendering each frame.
-    void on_frame_end(
-        const Project&                  project,
-        const Assembly&                 assembly);
+    // Release internal OSL shadergroup.
+    void release_osl_shader_group();
 
     // Access the shaders.
     const ShaderContainer& shaders() const;
@@ -118,7 +113,7 @@ class DLLSYMBOL ShaderGroup
     bool has_debug() const;
 
     // Return a reference-counted (but opaque) reference to the OSL shader.
-    OSL::ShaderGroupRef& shadergroup_ref() const;
+    OSL::ShaderGroupRef& shader_group_ref() const;
 
   private:
     friend class ShaderGroupFactory;
@@ -138,7 +133,7 @@ class DLLSYMBOL ShaderGroup
     ~ShaderGroup();
 
     void report_has_closures(const char* closure_name, bool has_closures) const;
-    void get_shadergroup_info(OSL::ShadingSystem& shading_system);
+    void get_shader_group_info(OSL::ShadingSystem& shading_system);
 };
 
 
