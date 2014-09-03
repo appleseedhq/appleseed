@@ -353,6 +353,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     shading_system->attribute("lockgeom", 1);
     shading_system->attribute("colorspace", "Linear");
     shading_system->attribute("commonspace", "world");
+    shading_system->attribute("statistics:level", 1);
 
     // This array needs to be kept in sync with the ShadingRay::Type enumeration.
     static const char* ray_type_labels[] =
@@ -376,7 +377,6 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
 #ifndef NDEBUG
     // While debugging, we want all possible outputs.
     shading_system->attribute("debug", 1);
-    shading_system->attribute("statistics:level", 1);
     shading_system->attribute("compile_report", 1);
     shading_system->attribute("countlayerexecs", 1);
     shading_system->attribute("clearmemory", 1);
