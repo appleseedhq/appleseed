@@ -198,7 +198,7 @@ namespace
         virtual size_t compute_input_data_size(
             const Assembly&         assembly) const OVERRIDE
         {
-            return sizeof(CompositeClosure);
+            return sizeof(CompositeSurfaceClosure);
         }
 
         virtual void evaluate_inputs(
@@ -207,8 +207,8 @@ namespace
             const ShadingPoint&     shading_point,
             const size_t            offset) const OVERRIDE
         {
-            CompositeClosure* c = reinterpret_cast<CompositeClosure*>(input_evaluator.data());
-            new (c) CompositeClosure(shading_point.get_osl_shader_globals().Ci);
+            CompositeSurfaceClosure* c = reinterpret_cast<CompositeSurfaceClosure*>(input_evaluator.data());
+            new (c) CompositeSurfaceClosure(shading_point.get_osl_shader_globals().Ci);
         }
 
         FORCE_INLINE virtual Mode sample(
@@ -223,7 +223,7 @@ namespace
             Spectrum&               value,
             double&                 probability) const
         {
-            const CompositeClosure* c = reinterpret_cast<const CompositeClosure*>(data);
+            const CompositeSurfaceClosure* c = reinterpret_cast<const CompositeSurfaceClosure*>(data);
 
             if (c->get_num_closures() > 0)
             {
@@ -271,7 +271,7 @@ namespace
             double prob = 0.0;
             value.set(0.0f);
 
-            const CompositeClosure* c = reinterpret_cast<const CompositeClosure*>(data);
+            const CompositeSurfaceClosure* c = reinterpret_cast<const CompositeSurfaceClosure*>(data);
 
             for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
             {
@@ -309,7 +309,7 @@ namespace
             const Vector3d&         incoming,
             const int               modes) const
         {
-            const CompositeClosure* c = reinterpret_cast<const CompositeClosure*>(data);
+            const CompositeSurfaceClosure* c = reinterpret_cast<const CompositeSurfaceClosure*>(data);
             double prob = 0.0;
 
             for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
@@ -403,7 +403,7 @@ namespace
         }
 
         Basis3d make_osl_basis(
-            const CompositeClosure* c,
+            const CompositeSurfaceClosure* c,
             const size_t            index,
             const Basis3d&          original_basis) const
         {

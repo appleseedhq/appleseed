@@ -94,4 +94,21 @@ void OSLShaderGroupExec::execute_transparency(
     shading_point.m_ray.m_type = saved_type;
 }
 
+void OSLShaderGroupExec::execute_emission(
+    const ShaderGroup&  shader_group,
+    const ShadingPoint& shading_point) const
+{
+    // Switch temporary the ray type to Light.
+    ShadingRay::TypeType saved_type = shading_point.m_ray.m_type;
+    shading_point.m_ray.m_type = ShadingRay::LightRay;
+
+    m_osl_shading_system.execute(
+        *m_osl_shading_context,
+        *shader_group.shader_group_ref(),
+        shading_point.get_osl_shader_globals());
+
+    // Restore the original ray type.
+    shading_point.m_ray.m_type = saved_type;
+}
+
 }   // namespace renderer
