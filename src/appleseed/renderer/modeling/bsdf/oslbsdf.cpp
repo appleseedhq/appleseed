@@ -96,6 +96,12 @@ namespace
                     "diffuse_btdf",
                     "osl_translucent");
 
+            m_disney_brdf =
+                create_and_register_bsdf(
+                    DisneyID,
+                    "disney_brdf",
+                    "osl_disney_brdf");
+
             m_lambertian_brdf =
                 create_and_register_bsdf(
                     LambertID,
@@ -335,6 +341,7 @@ namespace
       private:
         auto_release_ptr<BSDF>      m_ashikhmin_shirley_brdf;
         auto_release_ptr<BSDF>      m_diffuse_btdf;
+        auto_release_ptr<BSDF>      m_disney_brdf;
         auto_release_ptr<BSDF>      m_lambertian_brdf;
         auto_release_ptr<BSDF>      m_microfacet_beckmann_brdf;
         auto_release_ptr<BSDF>      m_microfacet_beckmann_btdf;
