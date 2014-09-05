@@ -439,7 +439,10 @@ namespace
             {
                 // Compute the emitted radiance.
                 Spectrum emitted_radiance;
-                vertex.compute_emitted_radiance(m_texture_cache, emitted_radiance);
+                vertex.compute_emitted_radiance(
+                    m_shading_context,
+                    m_texture_cache,
+                    emitted_radiance);
 
                 // Add the emitted light contribution.
                 vertex_radiance += emitted_radiance;

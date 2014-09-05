@@ -317,12 +317,6 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     // Create the texture store.
     TextureStore texture_store(scene, m_params.child("texture_store"));
 
-    // Create the light sampler.
-    LightSampler light_sampler(scene, m_params.child("light_sampler"));
-
-    // Create the shading engine.
-    ShadingEngine shading_engine(m_params.child("shading_engine"));
-
 #ifdef WITH_OSL
 
     // Create the error handler.
@@ -391,6 +385,12 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
         return IRendererController::ContinueRendering;
 
 #endif  // WITH_OSL
+
+    // Create the light sampler.
+    LightSampler light_sampler(scene, m_params.child("light_sampler"));
+
+    // Create the shading engine.
+    ShadingEngine shading_engine(m_params.child("shading_engine"));
 
     //
     // Create a lighting engine factory.

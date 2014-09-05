@@ -1,0 +1,42 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.6.0dev
+surface test_emission
+param	float	Kl	1 		 %read{9,9} %write{2147483647,-1}
+param	color	Cl	1 1 1 		 %read{10,10} %write{2147483647,-1}
+param	color	Cs	0 0 0 		 %read{2147483647,-1} %write{2147483647,-1}
+global	point	P	 %read{3,4} %write{2147483647,-1}
+global	closure color	Ci	 %read{2147483647,-1} %write{11,11}
+temp	int	$tmp1	 %read{1,1} %write{0,0}
+const	string	$const1	"light"		 %read{0,0} %write{2147483647,-1}
+temp	closure color	$tmp2	 %read{11,11} %write{2,2}
+const	string	$const2	"emission"		 %read{2,2} %write{2147483647,-1}
+const	float	$const3	10		 %read{8,8} %write{2147483647,-1}
+const	int	$const4	1		 %read{3,3} %write{2147483647,-1}
+temp	float	$tmp3	 %read{7,7} %write{3,3}
+temp	float	$tmp4	 %read{6,6} %write{5,5}
+const	float	$const5	7.5		 %read{4,4} %write{2147483647,-1}
+temp	point	$tmp5	 %read{5,5} %write{4,4}
+const	float	$const6	0.1		 %read{6,6} %write{2147483647,-1}
+temp	float	$tmp6	 %read{7,7} %write{6,6}
+temp	float	$tmp7	 %read{8,8} %write{7,7}
+temp	float	$tmp8	 %read{9,9} %write{8,8}
+temp	float	$tmp9	 %read{10,10} %write{9,9}
+temp	color	$tmp10	 %read{11,11} %write{10,10}
+code ___main___
+# test_emission.osl:7
+#     if (raytype("light"))
+	raytype		$tmp1 $const1 	%filename{"test_emission.osl"} %line{7} %argrw{"wr"}
+	if		$tmp1 12 12 	%argrw{"r"}
+# test_emission.osl:8
+# 	    Ci = 10.0 * (P[1] + noise(P * 7.5) * 0.1) * Kl * Cl * emission();
+	closure		$tmp2 $const2 	%line{8} %argrw{"wr"}
+	compref		$tmp3 P $const4 	%argrw{"wrr"}
+	mul		$tmp5 P $const5 	%argrw{"wrr"}
+	noise		$tmp4 $tmp5 	%argrw{"wr"}
+	mul		$tmp6 $tmp4 $const6 	%argrw{"wrr"}
+	add		$tmp7 $tmp3 $tmp6 	%argrw{"wrr"}
+	mul		$tmp8 $const3 $tmp7 	%argrw{"wrr"}
+	mul		$tmp9 $tmp8 Kl 	%argrw{"wrr"}
+	mul		$tmp10 $tmp9 Cl 	%argrw{"wrr"}
+	mul		Ci $tmp2 $tmp10 	%argrw{"wrr"}
+	end

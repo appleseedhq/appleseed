@@ -249,4 +249,9 @@ bool Material::create_normal_modifier(const MessageContext& context)
     return true;
 }
 
+bool Material::has_emission() const
+{
+    return get_uncached_edf() != 0;
+}
+
 }   // namespace renderer
