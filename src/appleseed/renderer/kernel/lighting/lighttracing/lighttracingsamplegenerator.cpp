@@ -200,6 +200,13 @@ namespace
           , m_light_sample_count(0)
           , m_path_count(0)
         {
+            if (const Camera* camera = scene.get_camera())
+            {
+                m_ray_dtime =
+                    camera->get_shutter_close_time() - camera->get_shutter_open_time();
+            }
+            else
+                m_ray_dtime = 0.0;
         }
 
         virtual void release() OVERRIDE
@@ -248,6 +255,7 @@ namespace
             Vector3d                        m_camera_position;      // camera position in world space
             SampleVector&                   m_samples;
             size_t                          m_sample_count;         // the number of samples added to m_samples
+            double                          m_ray_dtime;
 
             PathVisitor(
                 const Parameters&           params,
@@ -269,6 +277,7 @@ namespace
                 // todo: add support for camera motion blur.
                 // todo: do this outside the performance-sensitive code path.
                 m_camera_position = m_camera.transform_sequence().evaluate(0.0).point_to_parent(Vector3d(0.0));
+                m_ray_dtime = m_camera.get_shutter_close_time() - m_camera.get_shutter_open_time();
             }
 
             size_t get_sample_count() const
@@ -510,6 +519,8 @@ namespace
         uint64                          m_path_count;
         Population<uint64>              m_path_length;
 
+        double                          m_ray_dtime;
+
         virtual size_t generate_samples(
             const size_t                sequence_index,
             SampleVector&               samples) OVERRIDE
@@ -607,6 +618,7 @@ namespace
                 light_sample.m_point,
                 emission_direction,
                 sampling_context.next_double2(),
+                m_ray_dtime,
                 ShadingRay::LightRay);
 
             // Build the path tracer.
@@ -681,6 +693,7 @@ namespace
                 emission_position,
                 emission_direction,
                 sampling_context.next_double2(),
+                m_ray_dtime,
                 ShadingRay::LightRay);
 
             // Build the path tracer.
@@ -764,6 +777,7 @@ namespace
                 ray_origin,
                 -outgoing,
                 sampling_context.next_double2(),
+                m_ray_dtime,
                 ShadingRay::LightRay);
 
             // Build the path tracer.

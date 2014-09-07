@@ -219,6 +219,13 @@ namespace
                 , thread_index)
           , m_abort_switch(abort_switch)
         {
+            if (const Camera* camera = scene.get_camera())
+            {
+                m_ray_dtime =
+                    camera->get_shutter_close_time() - camera->get_shutter_open_time();
+            }
+            else
+                m_ray_dtime = 0.0;
         }
 
         virtual void execute(const size_t thread_index) OVERRIDE
@@ -254,6 +261,7 @@ namespace
 #endif
         Tracer                      m_tracer;
         ShadingContext              m_shading_context;
+        double                      m_ray_dtime;
 
         void trace_light_photon(
             SamplingContext&        sampling_context)
@@ -325,6 +333,7 @@ namespace
                 light_sample.m_point,
                 emission_direction,
                 child_sampling_context.next_double2(),
+                m_ray_dtime,
                 ShadingRay::LightRay);
 
             // Build the path tracer.
@@ -382,6 +391,7 @@ namespace
                 emission_position,
                 emission_direction,
                 child_sampling_context.next_double2(),
+                m_ray_dtime,
                 ShadingRay::LightRay);
 
             // Build the path tracer.
@@ -471,6 +481,13 @@ namespace
 #endif
                 , thread_index)
         {
+            if (const Camera* camera = scene.get_camera())
+            {
+                m_ray_dtime =
+                    camera->get_shutter_close_time() - camera->get_shutter_open_time();
+            }
+            else
+                m_ray_dtime = 0.0;
         }
 
         virtual void execute(const size_t thread_index) OVERRIDE
@@ -509,6 +526,7 @@ namespace
 #endif
         Tracer                      m_tracer;
         ShadingContext              m_shading_context;
+        double                      m_ray_dtime;
 
         void trace_env_photon(
             SamplingContext&        sampling_context)
@@ -551,6 +569,7 @@ namespace
                 ray_origin,
                 -outgoing,
                 child_sampling_context.next_double2(),
+                m_ray_dtime,
                 ShadingRay::LightRay);
 
             // Build the path tracer.

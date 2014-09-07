@@ -82,6 +82,7 @@ ShaderGroup::ShaderGroup(
   , m_has_transparency(false)
   , m_has_holdout(false)
   , m_has_debug(false)
+  , m_uses_dPdtime(false)
 {
     set_name(name);
 }
@@ -259,12 +260,12 @@ void ShaderGroup::get_shadergroup_info(OSL::ShadingSystem& shading_system)
             num_unknown_closures))
     {
         RENDERER_LOG_WARNING(
-            "getattribute call failed for shader group %s; "
+            "getattribute: unknown_closures_needed call failed for shader group %s; "
             "assuming shader group has all kinds of closures.",
             get_name());
-
-        return;
     }
+
+    int num_closures = 0;
 
     if (num_unknown_closures)
     {
@@ -272,25 +273,22 @@ void ShaderGroup::get_shadergroup_info(OSL::ShadingSystem& shading_system)
             "shader group %s has unknown closures; "
             "assuming shader group has all kinds of closures.",
             get_name());
-
-        return;
     }
-
-    int num_closures = 0;
-    if (!shading_system.getattribute(
-            impl->m_shadergroup_ref.get(),
-            "num_closures_needed",
-            num_closures))
+    else
     {
-        RENDERER_LOG_WARNING(
-            "getattribute call failed for shader group %s; "
-            "assuming shader group has all kinds of closures.",
-            get_name());
-
-        return;
+        if (!shading_system.getattribute(
+                impl->m_shadergroup_ref.get(),
+                "num_closures_needed",
+                num_closures))
+        {
+            RENDERER_LOG_WARNING(
+                "getattribute: num_closures_needed call failed for shader group %s; "
+                "assuming shader group has all kinds of closures.",
+                get_name());
+        }
     }
 
-    if (num_closures)
+    if (num_closures != 0)
     {
         OIIO::ustring *closures = 0;
         if (!shading_system.getattribute(
@@ -300,11 +298,11 @@ void ShaderGroup::get_shadergroup_info(OSL::ShadingSystem& shading_system)
                 &closures))
         {
             RENDERER_LOG_WARNING(
-                "getattribute call failed for shader group %s; "
+                "getattribute: closures_needed call failed for shader group %s; "
                 "assuming shader group has all kinds of closures.",
                 get_name());
 
-            return;
+            num_closures = 0;
         }
 
         m_has_emission = false;
@@ -325,6 +323,46 @@ void ShaderGroup::get_shadergroup_info(OSL::ShadingSystem& shading_system)
 
             if (closures[i] == "debug")
                 m_has_debug = true;
+        }
+    }
+
+    m_uses_dPdtime = true;
+
+    int num_globals = 0;
+    if (!shading_system.getattribute(
+            impl->m_shadergroup_ref.get(),
+            "num_globals_needed",
+            num_globals))
+    {
+        RENDERER_LOG_WARNING(
+            "getattribute: num_globals_needed call failed for shader group %s; "
+            "assuming shader group uses all kinds of globals.",
+            get_name());
+    }
+
+    if (num_globals != 0)
+    {
+        OIIO::ustring *globals = 0;
+        if (!shading_system.getattribute(
+                impl->m_shadergroup_ref.get(),
+                "globals_needed",
+                OIIO::TypeDesc::PTR,
+                &globals))
+        {
+            RENDERER_LOG_WARNING(
+                "getattribute: globals_needed call failed for shader group %s; "
+                "assuming shader group uses all kinds of globals.",
+                get_name());
+
+            num_globals = 0;
+        }
+
+        m_uses_dPdtime = false;
+
+        for (int i = 0; i < num_globals; ++i)
+        {
+            if (globals[i] == "dPdtime")
+                m_uses_dPdtime = true;
         }
     }
 }

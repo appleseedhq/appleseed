@@ -69,6 +69,7 @@ END_OSL_INCLUDES
 namespace renderer  { class Object; }
 #ifdef WITH_OSL
 namespace renderer  { class OSLShaderGroupExec; }
+namespace renderer  { class ShaderGroup; }
 #endif
 namespace renderer  { class Scene; }
 namespace renderer  { class TextureCache; }
@@ -111,6 +112,9 @@ class ShadingPoint
 
     // Return the time stored in the ray.
     double get_time() const;
+
+    // Return the time differential stored in the ray.
+    double get_dtime() const;
 
     // Return true if an intersection was found, false otherwise.
     bool hit() const;
@@ -160,6 +164,9 @@ class ShadingPoint
 
     // Return the i'th world space vertex of the hit triangle.
     const foundation::Vector3d& get_vertex(const size_t i) const;
+
+    // Return the world space point velocity.
+    const foundation::Vector3d& get_point_velocity() const;
 
     // Return the material at the intersection point, or 0 if there is none.
     const Material* get_material() const;
@@ -262,9 +269,10 @@ class ShadingPoint
         HasShadingBasis                 = 1 << 9,
         HasWorldSpaceTriangleVertices   = 1 << 10,
         HasMaterial                     = 1 << 11,
-        HasTriangleVertexTangents       = 1 << 12
+        HasTriangleVertexTangents       = 1 << 12,
+        HasPointVelocity                = 1 << 13
 #ifdef WITH_OSL
-        , HasOSLShaderGlobals           = 1 << 13
+        , HasOSLGlobals                 = 1 << 14
 #endif
     };
     mutable foundation::uint32          m_members;
@@ -291,6 +299,7 @@ class ShadingPoint
     mutable ObjectInstance::Side        m_side;                         // side of the surface that was hit
     mutable foundation::Basis3d         m_shading_basis;                // world space orthonormal basis around shading normal
     mutable foundation::Vector3d        m_v0_w, m_v1_w, m_v2_w;         // world space triangle vertices
+    mutable foundation::Vector3d        m_point_velocity;               // world space point velocity
     mutable const Material*             m_material;                     // material at intersection point
 
     // Data required to avoid self-intersections.
@@ -321,6 +330,18 @@ class ShadingPoint
     void compute_original_shading_normal() const;
     void compute_shading_basis() const;
     void compute_world_space_triangle_vertices() const;
+    void compute_point_velocity() const;
+
+#ifdef WITH_OSL
+    void initialize_osl_shader_globals(
+        const ShaderGroup&      sg,
+        OSL::RendererServices*  renderer) const;
+
+    void initialize_osl_shader_globals(
+        const ShaderGroup&          sg,
+        const ShadingRay::TypeType  ray_type,
+        OSL::RendererServices*      renderer) const;
+#endif
 };
 
 
@@ -380,6 +401,11 @@ inline const ShadingRay& ShadingPoint::get_ray() const
 inline double ShadingPoint::get_time() const
 {
     return m_ray.m_time;
+}
+
+inline double ShadingPoint::get_dtime() const
+{
+    return m_ray.m_dtime;
 }
 
 inline bool ShadingPoint::hit() const
@@ -561,6 +587,19 @@ inline const foundation::Vector3d& ShadingPoint::get_vertex(const size_t i) cons
     }
 
     return (&m_v0_w)[i];
+}
+
+inline const foundation::Vector3d& ShadingPoint::get_point_velocity() const
+{
+    assert(hit());
+
+    if (!(m_members & HasPointVelocity))
+    {
+        compute_point_velocity();
+        m_members |= HasPointVelocity;
+    }
+
+    return m_point_velocity;
 }
 
 inline const Material* ShadingPoint::get_material() const

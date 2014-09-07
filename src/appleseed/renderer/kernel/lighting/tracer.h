@@ -150,6 +150,7 @@ class Tracer
     const double                        m_transmission_threshold;
     const size_t                        m_max_iterations;
     ShadingPoint                        m_shading_points[2];
+    double                              m_ray_dtime;
 
     const ShadingPoint& do_trace(
         const foundation::Vector3d&     origin,
