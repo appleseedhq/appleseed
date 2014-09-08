@@ -49,9 +49,6 @@
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/scene.h"
-#ifdef WITH_OSL
-#include "renderer/modeling/shadergroup/shadergroup.h"
-#endif
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/utility/paramarray.h"
 
@@ -253,17 +250,6 @@ namespace
             radiance.set(0.0f);
             aovs.set(0.0f);
 
-#ifdef WITH_OSL
-            // Execute the OSL shader, if we have one.
-            const Material* material = shading_point.get_material();
-            if (material && material->get_osl_surface())
-            {
-                shading_context.execute_osl_shading(
-                    *material->get_osl_surface(),
-                    shading_point);
-            }
-#endif
-
             for (size_t i = 0; i < m_front_lighting_samples; ++i)
             {
                 shading_context.get_lighting_engine()->compute_lighting(
@@ -307,18 +293,6 @@ namespace
 
             Spectrum back_radiance(0.0f);
             SpectrumStack back_aovs(aovs.size(), 0.0f);
-
-#ifdef WITH_OSL
-            // Execute the OSL shader, if we have one.
-            const Material* material = back_shading_point.get_material();
-
-            if (material && material->get_osl_surface())
-            {
-                shading_context.execute_osl_shading(
-                    *material->get_osl_surface(),
-                    back_shading_point);
-            }
-#endif
 
             // Compute back lighting.
             for (size_t i = 0; i < m_back_lighting_samples; ++i)
