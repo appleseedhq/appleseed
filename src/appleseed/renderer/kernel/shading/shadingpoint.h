@@ -235,17 +235,18 @@ class ShadingPoint
     TextureCache*                       m_texture_cache;
 
     const Scene*                        m_scene;
-    mutable ShadingRay                  m_ray;                          // world space ray (m_tmax = distance to intersection)
+    mutable ShadingRay                  m_ray;                              // world space ray (m_tmax = distance to intersection)
 
     // Intersection results.
-    PrimitiveType                       m_primitive_type;               // type of the hit primitive
-    foundation::Vector2d                m_bary;                         // barycentric coordinates of intersection point
-    const AssemblyInstance*             m_assembly_instance;            // hit assembly instance
-    foundation::Transformd              m_assembly_instance_transform;  // transform of the hit assembly instance at ray time
-    size_t                              m_object_instance_index;        // index of the object instance that was hit
-    size_t                              m_region_index;                 // index of the region containing the hit triangle
-    size_t                              m_primitive_index;              // index of the hit primitive
-    TriangleSupportPlaneType            m_triangle_support_plane;       // support plane of the hit triangle
+    PrimitiveType                       m_primitive_type;                   // type of the hit primitive
+    foundation::Vector2d                m_bary;                             // barycentric coordinates of intersection point
+    const AssemblyInstance*             m_assembly_instance;                // hit assembly instance
+    foundation::Transformd              m_assembly_instance_transform;      // transform of the hit assembly instance at ray time
+    const TransformSequence*            m_assembly_instance_transform_seq;  // transform sequence of the hit assembly instance.
+    size_t                              m_object_instance_index;            // index of the object instance that was hit
+    size_t                              m_region_index;                     // index of the region containing the hit triangle
+    size_t                              m_primitive_index;                  // index of the hit primitive
+    TriangleSupportPlaneType            m_triangle_support_plane;           // support plane of the hit triangle
 
     // Flags to keep track of which on-demand results have been computed and cached.
     enum Members
@@ -358,6 +359,7 @@ FORCE_INLINE void ShadingPoint::clear()
     m_texture_cache = 0;
     m_scene = 0;
     m_primitive_type = PrimitiveNone;
+    m_assembly_instance_transform_seq = 0;
     m_members = 0;
 }
 
