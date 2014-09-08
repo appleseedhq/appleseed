@@ -1,9 +1,9 @@
 
 surface constant_emission(
-	float Kl = 1,
-	color Cl = 1,
-	color Cs = 0)
+    float Kl = 1,
+    color Cl = 1,
+    color Cs = 0)
 {
     if (raytype("light"))
-	    Ci = Kl * Cl * emission();
+        Ci = Kl * Cl * emission();
 }
