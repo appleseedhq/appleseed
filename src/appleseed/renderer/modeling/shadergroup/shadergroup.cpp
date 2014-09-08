@@ -58,6 +58,12 @@ namespace renderer
 namespace
 {
     const UniqueID g_class_uid = new_guid();
+
+    const OIIO::ustring g_emission_str("emission");
+    const OIIO::ustring g_transparent_str("transparent");
+    const OIIO::ustring g_holdout_str("holdout");
+    const OIIO::ustring g_debug_str("debug");
+    const OIIO::ustring g_dPdtime_str("dPdtime");
 }
 
 struct ShaderGroup::Impl
@@ -248,6 +254,12 @@ void ShaderGroup::report_has_closures(const char* closure_name, bool has_closure
 
 void ShaderGroup::get_shadergroup_info(OSL::ShadingSystem& shading_system)
 {
+    get_shadergroup_closures_info(shading_system);
+    get_shadergroup_globals_info(shading_system);
+}
+
+void ShaderGroup::get_shadergroup_closures_info(OSL::ShadingSystem& shading_system)
+{
     m_has_emission = true;
     m_has_transparency = true;
     m_has_holdout = true;
@@ -263,9 +275,9 @@ void ShaderGroup::get_shadergroup_info(OSL::ShadingSystem& shading_system)
             "getattribute: unknown_closures_needed call failed for shader group %s; "
             "assuming shader group has all kinds of closures.",
             get_name());
-    }
 
-    int num_closures = 0;
+        return;
+    }
 
     if (num_unknown_closures)
     {
@@ -273,19 +285,20 @@ void ShaderGroup::get_shadergroup_info(OSL::ShadingSystem& shading_system)
             "shader group %s has unknown closures; "
             "assuming shader group has all kinds of closures.",
             get_name());
+
+        return;
     }
-    else
+
+    int num_closures = 0;
+    if (!shading_system.getattribute(
+            impl->m_shadergroup_ref.get(),
+            "num_closures_needed",
+            num_closures))
     {
-        if (!shading_system.getattribute(
-                impl->m_shadergroup_ref.get(),
-                "num_closures_needed",
-                num_closures))
-        {
-            RENDERER_LOG_WARNING(
-                "getattribute: num_closures_needed call failed for shader group %s; "
-                "assuming shader group has all kinds of closures.",
-                get_name());
-        }
+        RENDERER_LOG_WARNING(
+            "getattribute: num_closures_needed call failed for shader group %s; "
+            "assuming shader group has all kinds of closures.",
+            get_name());
     }
 
     if (num_closures != 0)
@@ -302,7 +315,7 @@ void ShaderGroup::get_shadergroup_info(OSL::ShadingSystem& shading_system)
                 "assuming shader group has all kinds of closures.",
                 get_name());
 
-            num_closures = 0;
+            return;
         }
 
         m_has_emission = false;
@@ -312,20 +325,23 @@ void ShaderGroup::get_shadergroup_info(OSL::ShadingSystem& shading_system)
 
         for (int i = 0; i < num_closures; ++i)
         {
-            if (closures[i] == "emission")
+            if (closures[i] == g_emission_str)
                 m_has_emission = true;
 
-            if (closures[i] == "transparent")
+            if (closures[i] == g_transparent_str)
                 m_has_transparency = true;
 
-            if (closures[i] == "holdout")
+            if (closures[i] == g_holdout_str)
                 m_has_holdout = true;
 
-            if (closures[i] == "debug")
+            if (closures[i] == g_debug_str)
                 m_has_debug = true;
         }
     }
+}
 
+void ShaderGroup::get_shadergroup_globals_info(OSL::ShadingSystem& shading_system)
+{
     m_uses_dPdtime = true;
 
     int num_globals = 0;
@@ -336,7 +352,7 @@ void ShaderGroup::get_shadergroup_info(OSL::ShadingSystem& shading_system)
     {
         RENDERER_LOG_WARNING(
             "getattribute: num_globals_needed call failed for shader group %s; "
-            "assuming shader group uses all kinds of globals.",
+            "assuming shader group uses all globals.",
             get_name());
     }
 
@@ -351,17 +367,17 @@ void ShaderGroup::get_shadergroup_info(OSL::ShadingSystem& shading_system)
         {
             RENDERER_LOG_WARNING(
                 "getattribute: globals_needed call failed for shader group %s; "
-                "assuming shader group uses all kinds of globals.",
+                "assuming shader group uses all globals.",
                 get_name());
 
-            num_globals = 0;
+            return;
         }
 
         m_uses_dPdtime = false;
 
         for (int i = 0; i < num_globals; ++i)
         {
-            if (globals[i] == "dPdtime")
+            if (globals[i] == g_dPdtime_str)
                 m_uses_dPdtime = true;
         }
     }

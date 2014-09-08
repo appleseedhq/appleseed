@@ -146,6 +146,8 @@ class DLLSYMBOL ShaderGroup
 
     void report_has_closures(const char* closure_name, bool has_closures) const;
     void get_shadergroup_info(OSL::ShadingSystem& shading_system);
+    void get_shadergroup_closures_info(OSL::ShadingSystem& shading_system);
+    void get_shadergroup_globals_info(OSL::ShadingSystem& shading_system);
 };
 
 
