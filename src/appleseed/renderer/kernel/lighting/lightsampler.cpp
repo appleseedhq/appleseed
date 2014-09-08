@@ -277,8 +277,8 @@ void LightSampler::collect_emitting_triangles(
                     pa_index < back_materials.size() ? back_materials[pa_index] : 0;
 
                 // Skip triangles that don't emit light.
-                if ((front_material == 0 || front_material->get_uncached_edf() == 0) &&
-                    (back_material == 0 || back_material->get_uncached_edf() == 0))
+                if ((front_material == 0 || front_material->has_emission() == false) &&
+                    (back_material == 0 || back_material->has_emission() == false))
                     continue;
 
                 // Retrieve object instance space vertices of the triangle.
@@ -355,6 +355,9 @@ void LightSampler::collect_emitting_triangles(
                     emitting_triangle.m_rcp_area = rcp_area;
                     emitting_triangle.m_triangle_prob = 0.0;    // will be initialized once the emitting triangle CDF is built
                     emitting_triangle.m_edf = edf;
+#ifdef WITH_OSL
+                    emitting_triangle.m_shader_group = material->get_uncached_osl_surface();
+#endif
 
                     // Store the light-emitting triangle.
                     const size_t emitting_triangle_index = m_emitting_triangles.size();

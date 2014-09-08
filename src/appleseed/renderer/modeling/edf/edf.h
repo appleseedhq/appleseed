@@ -96,6 +96,9 @@ class DLLSYMBOL EDF
     // Retrieve the light near start value.
     double get_uncached_light_near_start() const;
 
+    // Return true if the edf is an OSL edf.
+    virtual bool is_osl_edf() const;
+
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
     virtual bool on_frame_begin(
@@ -117,6 +120,7 @@ class DLLSYMBOL EDF
     // Sample the EDF and compute the emission direction, its probability
     // density and the value of the EDF for this direction.
     virtual void sample(
+        SamplingContext&            sampling_context,
         const void*                 data,                       // input values
         const foundation::Vector3d& geometric_normal,           // world space geometric normal, unit-length
         const foundation::Basis3d&  shading_basis,              // world space orthonormal basis around shading normal

@@ -44,14 +44,6 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// OSL headers.
-#ifdef WITH_OSL
-#include "foundation/platform/oslheaderguards.h"
-BEGIN_OSL_INCLUDES
-#include "OSL/oslexec.h"
-END_OSL_INCLUDES
-#endif
-
 // Forward declarations.
 namespace foundation    { class AbortSwitch; }
 namespace renderer      { class ParamArray; }
@@ -97,11 +89,6 @@ class DLLSYMBOL Assembly
     // Access the object instances.
     ObjectInstanceContainer& object_instances() const;
 
-#ifdef WITH_OSL
-    // Access the OSL shader groups.
-    ShaderGroupContainer& shader_groups() const;
-#endif
-
     // Return true if this assembly is tagged as flushable.
     bool is_flushable() const;
 
@@ -117,9 +104,6 @@ class DLLSYMBOL Assembly
     // Returns true on success, false otherwise.
     bool on_frame_begin(
         const Project&              project,
-#ifdef WITH_OSL
-        OSL::ShadingSystem&         shading_system,
-#endif
         foundation::AbortSwitch*    abort_switch = 0);
 
     // Perform post-frame rendering actions.
