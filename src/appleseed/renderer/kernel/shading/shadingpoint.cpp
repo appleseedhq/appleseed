@@ -696,7 +696,7 @@ void ShadingPoint::initialize_osl_shader_globals(
         m_members |= HasOSLGlobals;
     }
 
-    // Always update raytype.
+    // Always update the raytype.
     m_shader_globals.raytype = static_cast<int>(ray_type);
 
     // These are set by OSL when the shader is executed.

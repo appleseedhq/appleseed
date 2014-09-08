@@ -332,7 +332,7 @@ void ShaderGroup::get_shadergroup_globals_info(OSL::ShadingSystem& shading_syste
 
     int num_globals = 0;
     if (!shading_system.getattribute(
-            impl->m_shadergroup_ref.get(),
+            impl->m_shader_group_ref.get(),
             "num_globals_needed",
             num_globals))
     {
@@ -346,7 +346,7 @@ void ShaderGroup::get_shadergroup_globals_info(OSL::ShadingSystem& shading_syste
     {
         OIIO::ustring *globals = 0;
         if (!shading_system.getattribute(
-                impl->m_shadergroup_ref.get(),
+                impl->m_shader_group_ref.get(),
                 "globals_needed",
                 OIIO::TypeDesc::PTR,
                 &globals))
