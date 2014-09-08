@@ -280,7 +280,7 @@ namespace
                 // todo: add support for camera motion blur.
                 // todo: do this outside the performance-sensitive code path.
                 m_camera_position = m_camera.transform_sequence().evaluate(0.0).point_to_parent(Vector3d(0.0));
-                m_ray_dtime = m_camera.get_shutter_close_time() - m_camera.get_shutter_open_time();
+                m_ray_dtime = m_camera.get_shutter_open_time_interval();
             }
 
             size_t get_sample_count() const

@@ -223,10 +223,7 @@ namespace
           , m_abort_switch(abort_switch)
         {
             if (const Camera* camera = scene.get_camera())
-            {
-                m_ray_dtime =
-                    camera->get_shutter_close_time() - camera->get_shutter_open_time();
-            }
+                m_ray_dtime = camera->get_shutter_open_time_interval();
             else
                 m_ray_dtime = 0.0;
         }
@@ -504,10 +501,7 @@ namespace
                 , thread_index)
         {
             if (const Camera* camera = scene.get_camera())
-            {
-                m_ray_dtime =
-                    camera->get_shutter_close_time() - camera->get_shutter_open_time();
-            }
+                m_ray_dtime = camera->get_shutter_open_time_interval();
             else
                 m_ray_dtime = 0.0;
         }

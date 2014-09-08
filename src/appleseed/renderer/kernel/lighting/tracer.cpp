@@ -68,13 +68,9 @@ Tracer::Tracer(
   , m_max_iterations(max_iterations)
 {
     if (const Camera* camera = scene.get_camera())
-    {
-        m_ray_dtime =
-            camera->get_shutter_close_time() - camera->get_shutter_open_time();
-    }
+        m_ray_dtime = camera->get_shutter_open_time_interval();
     else
         m_ray_dtime = 0.0;
-
 
     if (print_details)
     {
