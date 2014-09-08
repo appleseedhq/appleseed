@@ -632,7 +632,7 @@ void ShadingPoint::initialize_osl_shader_globals(
     assert(hit());
     assert(renderer);
 
-    if (!(m_members & HasOSLGlobals))
+    if (!(m_members & HasOSLShaderGlobals))
     {
         const ShadingRay& ray(get_ray());
 
@@ -696,7 +696,7 @@ void ShadingPoint::initialize_osl_shader_globals(
         m_shader_globals.flipHandedness = 0;
         m_shader_globals.backfacing = get_side() == ObjectInstance::FrontSide ? 0 : 1;
 
-        m_members |= HasOSLGlobals;
+        m_members |= HasOSLShaderGlobals;
     }
 
     // Always update the raytype.
@@ -710,7 +710,7 @@ void ShadingPoint::initialize_osl_shader_globals(
 OSL::ShaderGlobals& ShadingPoint::get_osl_shader_globals() const
 {
     assert(hit());
-    assert(m_members & HasOSLGlobals);
+    assert(m_members & HasOSLShaderGlobals);
 
     return m_shader_globals;
 }

@@ -273,7 +273,7 @@ class ShadingPoint
         HasTriangleVertexTangents       = 1 << 12,
         HasPointVelocity                = 1 << 13
 #ifdef WITH_OSL
-        , HasOSLGlobals                 = 1 << 14
+        , HasOSLShaderGlobals           = 1 << 14
 #endif
     };
     mutable foundation::uint32          m_members;
