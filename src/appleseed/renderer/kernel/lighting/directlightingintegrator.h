@@ -465,7 +465,7 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
 #ifdef WITH_OSL
     if (edf->is_osl_edf())
     {
-        const OSLEDF *osl_edf = static_cast<const OSLEDF*>(edf);
+        const OSLEDF* osl_edf = static_cast<const OSLEDF*>(edf);
         const ShaderGroup* sg = material->get_osl_surface();
         m_shading_context.execute_osl_emission(*sg, light_shading_point);
         osl_edf->evaluate_osl_inputs(edf_input_evaluator, light_shading_point);
@@ -634,7 +634,7 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
 #ifdef WITH_OSL
     if (edf->is_osl_edf())
     {
-        const OSLEDF *osl_edf = static_cast<const OSLEDF*>(edf);
+        const OSLEDF* osl_edf = static_cast<const OSLEDF*>(edf);
         const ShaderGroup* sg = sample.m_triangle->m_shader_group;
         assert(sg);
 

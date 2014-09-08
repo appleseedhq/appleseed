@@ -60,7 +60,7 @@ void PathVertex::compute_emitted_radiance(
 #ifdef WITH_OSL
     if (m_edf->is_osl_edf())
     {
-        const OSLEDF *osl_edf = static_cast<const OSLEDF*>(m_edf);
+        const OSLEDF* osl_edf = static_cast<const OSLEDF*>(m_edf);
         const ShaderGroup* sg = get_material()->get_osl_surface();
         assert(sg);
 

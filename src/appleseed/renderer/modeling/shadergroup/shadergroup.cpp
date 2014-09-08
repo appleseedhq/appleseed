@@ -135,7 +135,7 @@ bool ShaderGroup::create_osl_shader_group(
     OSL::ShadingSystem& shading_system,
     AbortSwitch*        abort_switch)
 {
-    assert (impl->m_shader_group_ref.get() == 0);
+    assert(impl->m_shader_group_ref.get() == 0);
 
     RENDERER_LOG_DEBUG("setup shader group %s.", get_name());
 

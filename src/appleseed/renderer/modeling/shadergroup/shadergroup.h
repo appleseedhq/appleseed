@@ -56,7 +56,7 @@ namespace renderer
 {
 
 //
-// OSL Shadergroup.
+// OSL shader group.
 //
 
 class DLLSYMBOL ShaderGroup
@@ -83,12 +83,12 @@ class DLLSYMBOL ShaderGroup
         const char*                     dst_layer,
         const char*                     dst_param);
 
-    // Create OSL shadergroup.
+    // Create OSL shader group.
     bool create_osl_shader_group(
         OSL::ShadingSystem&             shading_system,
         foundation::AbortSwitch*        abort_switch = 0);
 
-    // Release internal OSL shadergroup.
+    // Release internal OSL shader group.
     void release_osl_shader_group();
 
     // Access the shaders.
@@ -112,7 +112,8 @@ class DLLSYMBOL ShaderGroup
     // Returns true if the shader group contains at least one debug closure.
     bool has_debug() const;
 
-    // Return a reference-counted (but opaque) reference to the OSL shader.
+    // Return a reference-counted (but opaque) reference to
+    // the internal OSL shader group.
     OSL::ShaderGroupRef& shader_group_ref() const;
 
   private:

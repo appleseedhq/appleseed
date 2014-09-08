@@ -44,6 +44,7 @@
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
 namespace renderer      { class ParamArray; }
+namespace renderer      { class ShadingContext; }
 namespace renderer      { class ShadingPoint; }
 
 namespace renderer

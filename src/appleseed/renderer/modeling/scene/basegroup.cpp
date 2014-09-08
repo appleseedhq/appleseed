@@ -30,14 +30,14 @@
 // Interface header.
 #include "basegroup.h"
 
-// appleseed.foundation headers.
-#include "foundation/utility/job/abortswitch.h"
-
 // appleseed.renderer headers.
 #include "renderer/modeling/scene/assembly.h"
 #ifdef WITH_OSL
 #include "renderer/modeling/shadergroup/shadergroup.h"
 #endif
+
+// appleseed.foundation headers.
+#include "foundation/utility/job/abortswitch.h"
 
 using namespace foundation;
 
@@ -99,10 +99,9 @@ ShaderGroupContainer& BaseGroup::shader_groups() const
     return impl->m_shader_groups;
 }
 
-// Create OSL shadergroups and optimize them.
 bool BaseGroup::create_osl_shader_groups(
-    OSL::ShadingSystem&             shading_system,
-    foundation::AbortSwitch*        abort_switch)
+    OSL::ShadingSystem& shading_system,
+    AbortSwitch*        abort_switch)
 {
     bool success = true;
 
@@ -129,7 +128,6 @@ bool BaseGroup::create_osl_shader_groups(
     return success;
 }
 
-// Release internal OSL shadergroups.
 void BaseGroup::release_osl_shader_groups()
 {
     for (each<AssemblyContainer> i = assemblies(); i ; ++i)

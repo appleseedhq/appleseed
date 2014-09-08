@@ -295,7 +295,7 @@ namespace
 #ifdef WITH_OSL
             if (edf->is_osl_edf())
             {
-                const OSLEDF *osl_edf = static_cast<const OSLEDF*>(edf);
+                const OSLEDF* osl_edf = static_cast<const OSLEDF*>(edf);
                 const ShaderGroup* sg = light_sample.m_triangle->m_shader_group;
                 assert(sg);
 

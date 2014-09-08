@@ -111,8 +111,8 @@ void OSLEDF::on_frame_end(
 }
 
 void OSLEDF::evaluate_inputs(
-    InputEvaluator&             input_evaluator,
-    const foundation::Vector2d& uv) const OVERRIDE
+    InputEvaluator& input_evaluator,
+    const Vector2d& uv) const OVERRIDE
 {
     RENDERER_LOG_FATAL(
         "Internal error: OSLEDF::evaluate_inputs should never be called");
@@ -128,14 +128,14 @@ void OSLEDF::evaluate_osl_inputs(
 }
 
 void OSLEDF::sample(
-        SamplingContext&    sampling_context,
-        const void*         data,
-        const Vector3d&     geometric_normal,
-        const Basis3d&      shading_basis,
-        const Vector2d&     s,
-        Vector3d&           outgoing,
-        Spectrum&           value,
-        double&             probability) const
+    SamplingContext&    sampling_context,
+    const void*         data,
+    const Vector3d&     geometric_normal,
+    const Basis3d&      shading_basis,
+    const Vector2d&     s,
+    Vector3d&           outgoing,
+    Spectrum&           value,
+    double&             probability) const
 {
     const CompositeEmissionClosure* c =
         reinterpret_cast<const CompositeEmissionClosure*>(data);
@@ -152,11 +152,11 @@ void OSLEDF::sample(
 }
 
 void OSLEDF::evaluate(
-        const void*         data,
-        const Vector3d&     geometric_normal,
-        const Basis3d&      shading_basis,
-        const Vector3d&     outgoing,
-        Spectrum&           value) const
+    const void*         data,
+    const Vector3d&     geometric_normal,
+    const Basis3d&      shading_basis,
+    const Vector3d&     outgoing,
+    Spectrum&           value) const
 {
     const CompositeEmissionClosure* c =
         reinterpret_cast<const CompositeEmissionClosure*>(data);
@@ -170,12 +170,12 @@ void OSLEDF::evaluate(
 }
 
 void OSLEDF::evaluate(
-        const void*         data,
-        const Vector3d&     geometric_normal,
-        const Basis3d&      shading_basis,
-        const Vector3d&     outgoing,
-        Spectrum&           value,
-        double&             probability) const
+    const void*         data,
+    const Vector3d&     geometric_normal,
+    const Basis3d&      shading_basis,
+    const Vector3d&     outgoing,
+    Spectrum&           value,
+    double&             probability) const
 {
     const CompositeEmissionClosure* c =
         reinterpret_cast<const CompositeEmissionClosure*>(data);
@@ -190,10 +190,10 @@ void OSLEDF::evaluate(
 }
 
 double OSLEDF::evaluate_pdf(
-        const void*         data,
-        const Vector3d&     geometric_normal,
-        const Basis3d&      shading_basis,
-        const Vector3d&     outgoing) const
+    const void*         data,
+    const Vector3d&     geometric_normal,
+    const Basis3d&      shading_basis,
+    const Vector3d&     outgoing) const
 {
     const CompositeEmissionClosure* c =
         reinterpret_cast<const CompositeEmissionClosure*>(data);

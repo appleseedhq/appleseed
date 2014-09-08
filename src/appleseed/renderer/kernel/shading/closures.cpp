@@ -592,7 +592,7 @@ CompositeEmissionClosure::CompositeEmissionClosure(
 
 void CompositeEmissionClosure::process_closure_tree(
     const OSL::ClosureColor*    closure,
-    const foundation::Color3f&  weight)
+    const Color3f&              weight)
 {
     if (closure == 0)
         return;
