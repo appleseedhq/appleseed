@@ -204,10 +204,7 @@ namespace
           , m_path_count(0)
         {
             if (const Camera* camera = scene.get_camera())
-            {
-                m_ray_dtime =
-                    camera->get_shutter_close_time() - camera->get_shutter_open_time();
-            }
+                m_ray_dtime = camera->get_shutter_open_time_interval();
             else
                 m_ray_dtime = 0.0;
         }
@@ -585,6 +582,8 @@ namespace
 
             // Evaluate the EDF inputs.
             InputEvaluator input_evaluator(m_texture_cache);
+
+            // TODO: refactor this code (est.).
 #ifdef WITH_OSL
             if (edf->is_osl_edf())
             {
@@ -598,7 +597,9 @@ namespace
                     light_sample.m_shading_normal,
                     m_shading_context.get_intersector());
 
-                m_shading_context.execute_osl_emission(*sg, shading_point);
+                // TODO: get object area somehow.
+                const float surface_area = 0.0f;
+                m_shading_context.execute_osl_emission(*sg, shading_point, surface_area);
                 osl_edf->evaluate_osl_inputs(input_evaluator, shading_point);
             }
             else

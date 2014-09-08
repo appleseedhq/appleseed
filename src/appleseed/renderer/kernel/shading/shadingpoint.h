@@ -336,12 +336,14 @@ class ShadingPoint
 #ifdef WITH_OSL
     void initialize_osl_shader_globals(
         const ShaderGroup&      sg,
-        OSL::RendererServices*  renderer) const;
+        OSL::RendererServices*  renderer,
+        const float             surface_area = 0.0f) const;
 
     void initialize_osl_shader_globals(
         const ShaderGroup&          sg,
         const ShadingRay::TypeType  ray_type,
-        OSL::RendererServices*      renderer) const;
+        OSL::RendererServices*      renderer,
+        const float                 surface_area = 0.0f) const;
 #endif
 };
 

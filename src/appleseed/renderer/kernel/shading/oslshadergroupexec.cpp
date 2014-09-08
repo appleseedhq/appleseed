@@ -97,12 +97,14 @@ void OSLShaderGroupExec::execute_transparency(
 
 void OSLShaderGroupExec::execute_emission(
     const ShaderGroup&  shader_group,
-    const ShadingPoint& shading_point) const
+    const ShadingPoint& shading_point,
+    const float         surface_area) const
 {
     shading_point.initialize_osl_shader_globals(
         shader_group,
         ShadingRay::LightRay,
-        m_osl_shading_system.renderer());
+        m_osl_shading_system.renderer(),
+        surface_area);
 
     m_osl_shading_system.execute(
         *m_osl_shading_context,

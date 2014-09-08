@@ -617,17 +617,20 @@ OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::get_inverse_transform(float 
 
 void ShadingPoint::initialize_osl_shader_globals(
     const ShaderGroup&      sg,
-    OSL::RendererServices*  renderer) const
+    OSL::RendererServices*  renderer,
+    const float             surface_area) const
 {
-    initialize_osl_shader_globals(sg, get_ray().m_type, renderer);
+    initialize_osl_shader_globals(sg, get_ray().m_type, renderer, surface_area);
 }
 
 void ShadingPoint::initialize_osl_shader_globals(
     const ShaderGroup&          sg,
     const ShadingRay::TypeType  ray_type,
-    OSL::RendererServices*      renderer) const
+    OSL::RendererServices*      renderer,
+    const float                 surface_area) const
 {
     assert(hit());
+    assert(renderer);
 
     if (!(m_members & HasOSLGlobals))
     {
@@ -688,7 +691,7 @@ void ShadingPoint::initialize_osl_shader_globals(
         m_shader_globals.object2common = reinterpret_cast<OSL::TransformationPtr>(&m_obj_transform_info);
 
         m_shader_globals.shader2common = 0;
-        m_shader_globals.surfacearea = 0.0f;
+        m_shader_globals.surfacearea = surface_area;
 
         m_shader_globals.flipHandedness = 0;
         m_shader_globals.backfacing = get_side() == ObjectInstance::FrontSide ? 0 : 1;

@@ -57,6 +57,8 @@ void PathVertex::compute_emitted_radiance(
 
     // Evaluate the input values of the EDF.
     InputEvaluator input_evaluator(texture_cache);
+
+    // TODO: refactor this code (est.).
 #ifdef WITH_OSL
     if (m_edf->is_osl_edf())
     {
@@ -64,7 +66,9 @@ void PathVertex::compute_emitted_radiance(
         const ShaderGroup* sg = get_material()->get_osl_surface();
         assert(sg);
 
-        shading_context.execute_osl_emission(*sg, *m_shading_point);
+        // TODO: get object area somehow.
+        const float surface_area = 0.0f;
+        shading_context.execute_osl_emission(*sg, *m_shading_point, surface_area);
         osl_edf->evaluate_osl_inputs(input_evaluator, *m_shading_point);
     }
     else
