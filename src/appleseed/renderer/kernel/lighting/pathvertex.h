@@ -48,6 +48,7 @@
 // Forward declarations.
 namespace renderer  { class EDF; }
 namespace renderer  { class Material; }
+namespace renderer  { class ShadingContext; }
 namespace renderer  { class ShadingRay; }
 
 namespace renderer
@@ -89,8 +90,9 @@ class PathVertex
 
     // Compute the radiance emitted at this vertex. Only call when there is an EDF (when m_edf is set).
     void compute_emitted_radiance(
-        TextureCache&       texture_cache,
-        Spectrum&           radiance) const;
+        const ShadingContext&   shading_context,
+        TextureCache&           texture_cache,
+        Spectrum&               radiance) const;
 
     // Return the probability density wrt. surface area mesure of reaching this vertex via BSDF sampling.
     double get_bsdf_point_prob() const;

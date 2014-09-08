@@ -72,6 +72,10 @@ class OSLShaderGroupExec
         Alpha&                  alpha,
         float*                  holdout = 0) const;
 
+    void execute_emission(
+        const ShaderGroup&      shader_group,
+        const ShadingPoint&     shading_point) const;
+
   private:
     OSL::ShadingSystem&         m_osl_shading_system;
     OSL::PerThreadInfo*         m_osl_thread_info;

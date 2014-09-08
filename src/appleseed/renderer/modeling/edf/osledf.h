@@ -44,32 +44,95 @@
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
 namespace renderer      { class ParamArray; }
+namespace renderer      { class ShadingContext; }
+namespace renderer      { class ShadingPoint; }
 
 namespace renderer
 {
 
 
 //
+// OSL EDF.
+//
+
+class OSLEDF
+  : public EDF
+{
+  public:
+    virtual void release() OVERRIDE;
+
+    virtual const char* get_model() const OVERRIDE;
+
+    virtual bool is_osl_edf() const OVERRIDE;
+
+    virtual bool on_frame_begin(
+        const Project&              project,
+        const Assembly&             assembly,
+        foundation::AbortSwitch*    abort_switch) OVERRIDE;
+
+    virtual void on_frame_end(
+        const Project&              project,
+        const Assembly&             assembly);
+
+    virtual void evaluate_inputs(
+        InputEvaluator&             input_evaluator,
+        const foundation::Vector2d& uv) const OVERRIDE;
+
+    void evaluate_osl_inputs(
+        InputEvaluator&             input_evaluator,
+        const ShadingPoint&         shading_point) const;
+
+    virtual void sample(
+        SamplingContext&            sampling_context,
+        const void*                 data,
+        const foundation::Vector3d& geometric_normal,
+        const foundation::Basis3d&  shading_basis,
+        const foundation::Vector2d& s,
+        foundation::Vector3d&       outgoing,
+        Spectrum&                   value,
+        double&                     probability) const OVERRIDE;
+
+    virtual void evaluate(
+        const void*                 data,
+        const foundation::Vector3d& geometric_normal,
+        const foundation::Basis3d&  shading_basis,
+        const foundation::Vector3d& outgoing,
+        Spectrum&                   value) const OVERRIDE;
+
+    virtual void evaluate(
+        const void*                 data,
+        const foundation::Vector3d& geometric_normal,
+        const foundation::Basis3d&  shading_basis,
+        const foundation::Vector3d& outgoing,
+        Spectrum&                   value,
+        double&                     probability) const OVERRIDE;
+
+    virtual double evaluate_pdf(
+        const void*                 data,
+        const foundation::Vector3d& geometric_normal,
+        const foundation::Basis3d&  shading_basis,
+        const foundation::Vector3d& outgoing) const OVERRIDE;
+
+  private:
+    friend class OSLEDFFactory;
+
+    OSLEDF(
+        const char*         name,
+        const ParamArray&   params);
+
+    foundation::auto_release_ptr<EDF> m_diffuse_edf;
+};
+
+
+//
 // OSL EDF factory.
 //
 
-class DLLSYMBOL OSLEDFFactory
-  : public IEDFFactory
+class OSLEDFFactory
 {
   public:
-    // Return a string identifying this EDF model.
-    virtual const char* get_model() const OVERRIDE;
-
-    // Return a human-readable string identifying this EDF model.
-    virtual const char* get_human_readable_model() const OVERRIDE;
-
-    // Return a set of input metadata for this EDF model.
-    virtual foundation::DictionaryArray get_input_metadata() const OVERRIDE;
-
     // Create a new EDF instance.
-    virtual foundation::auto_release_ptr<EDF> create(
-        const char*         name,
-        const ParamArray&   params) const OVERRIDE;
+    foundation::auto_release_ptr<EDF> create() const;
 };
 
 }       // namespace renderer

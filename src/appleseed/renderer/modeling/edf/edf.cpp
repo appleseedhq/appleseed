@@ -77,6 +77,11 @@ double EDF::get_uncached_light_near_start() const
     return m_params.get_optional<double>("light_near_start", 0.0);
 }
 
+bool EDF::is_osl_edf() const
+{
+    return false;
+}
+
 bool EDF::on_frame_begin(
     const Project&      project,
     const Assembly&     assembly,

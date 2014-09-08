@@ -225,16 +225,18 @@ namespace
     }
 
 #ifdef WITH_OSL
-
     void destroy_osl_shading_system(
-        OSL::ShadingSystem*     s,
-        OIIO::TextureSystem*    tx)
+        OSL::ShadingSystem*     shading_system,
+        Scene*                  scene,
+        OIIO::TextureSystem*    texture_system)
     {
-        RENDERER_LOG_INFO("%s", tx->getstats().c_str());
-        tx->reset_stats();
-        OSL::ShadingSystem::destroy(s);
-    }
+        RENDERER_LOG_INFO("%s", "releasing OSL shader groups.");
+        scene->release_osl_shader_groups();
 
+        RENDERER_LOG_INFO("%s", texture_system->getstats().c_str());
+        texture_system->reset_stats();
+        OSL::ShadingSystem::destroy(shading_system);
+    }
 #endif
 }
 
@@ -305,7 +307,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     m_project.create_aov_images();
     m_project.update_trace_context();
 
-    const Scene& scene = *m_project.get_scene();
+    Scene& scene = *m_project.get_scene();
 
     Frame& frame = *m_project.get_frame();
     frame.print_settings();
@@ -314,12 +316,6 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
 
     // Create the texture store.
     TextureStore texture_store(scene, m_params.child("texture_store"));
-
-    // Create the light sampler.
-    LightSampler light_sampler(scene, m_params.child("light_sampler"));
-
-    // Create the shading engine.
-    ShadingEngine shading_engine(m_params.child("shading_engine"));
 
 #ifdef WITH_OSL
 
@@ -333,7 +329,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
 
     // Create our renderer services.
     RendererServices services(
-        m_project, 
+        m_project,
         *m_texture_system,
         texture_store);
 
@@ -343,7 +339,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
             &services,
             m_texture_system,
             &error_handler),
-        boost::bind(&destroy_osl_shading_system, _1, m_texture_system));
+        boost::bind(&destroy_osl_shading_system, _1, &scene, m_texture_system));
 
     if (!search_paths.empty())
         shading_system->attribute("searchpath:shader", search_paths);
@@ -351,6 +347,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     shading_system->attribute("lockgeom", 1);
     shading_system->attribute("colorspace", "Linear");
     shading_system->attribute("commonspace", "world");
+    shading_system->attribute("statistics:level", 1);
 
     // This array needs to be kept in sync with the ShadingRay::Type enumeration.
     static const char* ray_type_labels[] =
@@ -374,7 +371,6 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
 #ifndef NDEBUG
     // While debugging, we want all possible outputs.
     shading_system->attribute("debug", 1);
-    shading_system->attribute("statistics:level", 1);
     shading_system->attribute("compile_report", 1);
     shading_system->attribute("countlayerexecs", 1);
     shading_system->attribute("clearmemory", 1);
@@ -382,7 +378,19 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
 
     register_closures(*shading_system);
 
+    if (!scene.create_osl_shader_groups(*shading_system, m_abort_switch))
+        return IRendererController::AbortRendering;
+
+    if (is_aborted(m_abort_switch))
+        return IRendererController::ContinueRendering;
+
 #endif  // WITH_OSL
+
+    // Create the light sampler.
+    LightSampler light_sampler(scene, m_params.child("light_sampler"));
+
+    // Create the shading engine.
+    ShadingEngine shading_engine(m_params.child("shading_engine"));
 
     //
     // Create a lighting engine factory.
@@ -703,11 +711,7 @@ IRendererController::Status MasterRenderer::render_frame_sequence(
         m_renderer_controller->on_frame_begin();
 
         // Prepare the scene for rendering. Don't proceed if that failed.
-#ifdef WITH_OSL
-        if (!m_project.get_scene()->on_frame_begin(m_project, shading_system, m_abort_switch))
-#else
         if (!m_project.get_scene()->on_frame_begin(m_project, m_abort_switch))
-#endif
         {
             m_renderer_controller->on_frame_end();
             return IRendererController::AbortRendering;

@@ -39,7 +39,6 @@
 // appleseed.foundation headers.
 #include "foundation/utility/job/abortswitch.h"
 #include "foundation/utility/foreach.h"
-#include "foundation/utility/searchpaths.h"
 #include "foundation/utility/uid.h"
 
 // Standard headers.
@@ -70,20 +69,12 @@ struct ShaderGroup::Impl
 {
     ShaderContainer                 m_shaders;
     ShaderConnectionContainer       m_connections;
-    mutable OSL::ShaderGroupRef     m_shadergroup_ref;
-    const SearchPaths&              m_search_paths;
-
-    explicit Impl(const SearchPaths& search_paths)
-      : m_search_paths(search_paths)
-    {
-    }
+    mutable OSL::ShaderGroupRef     m_shader_group_ref;
 };
 
-ShaderGroup::ShaderGroup(
-    const char*         name,
-    const SearchPaths&  search_paths)
+ShaderGroup::ShaderGroup(const char* name)
   : ConnectableEntity(g_class_uid, ParamArray())
-  , impl(new Impl(search_paths))
+  , impl(new Impl())
   , m_has_emission(false)
   , m_has_transparency(false)
   , m_has_holdout(false)
@@ -147,17 +138,17 @@ void ShaderGroup::add_connection(
         dst_param);
 }
 
-bool ShaderGroup::on_frame_begin(
-    const Project&      project,
-    const Assembly&     assembly,
+bool ShaderGroup::create_osl_shader_group(
     OSL::ShadingSystem& shading_system,
     AbortSwitch*        abort_switch)
 {
+    assert(impl->m_shader_group_ref.get() == 0);
+
     RENDERER_LOG_DEBUG("setup shader group %s.", get_name());
 
     try
     {
-        impl->m_shadergroup_ref = shading_system.ShaderGroupBegin(get_name());
+        impl->m_shader_group_ref = shading_system.ShaderGroupBegin(get_name());
 
         if (!valid())
         {
@@ -192,11 +183,14 @@ bool ShaderGroup::on_frame_begin(
             }
         }
 
-        get_shadergroup_info(shading_system);
-        report_has_closures("emission", m_has_emission);
-        report_has_closures("transparent", m_has_transparency);
-        report_has_closures("holdout", m_has_holdout);
-        report_has_closures("debug", m_has_debug);
+        get_shadergroup_closures_info(shading_system);
+        report_has_closure("emission", m_has_emission);
+        report_has_closure("transparent", m_has_transparency);
+        report_has_closure("holdout", m_has_holdout);
+        report_has_closure("debug", m_has_debug);
+
+        get_shadergroup_globals_info(shading_system);
+        report_uses_global("dPdtime", m_uses_dPdtime);
 
         return success;
     }
@@ -207,11 +201,9 @@ bool ShaderGroup::on_frame_begin(
     }
 }
 
-void ShaderGroup::on_frame_end(
-    const Project&      project,
-    const Assembly&     assembly)
+void ShaderGroup::release_osl_shader_group()
 {
-    impl->m_shadergroup_ref.reset();
+    impl->m_shader_group_ref.reset();
 }
 
 const ShaderContainer& ShaderGroup::shaders() const
@@ -226,36 +218,12 @@ const ShaderConnectionContainer& ShaderGroup::shader_connections() const
 
 bool ShaderGroup::valid() const
 {
-    return impl->m_shadergroup_ref.get() != 0;
+    return impl->m_shader_group_ref.get() != 0;
 }
 
-OSL::ShaderGroupRef& ShaderGroup::shadergroup_ref() const
+OSL::ShaderGroupRef& ShaderGroup::shader_group_ref() const
 {
-    return impl->m_shadergroup_ref;
-}
-
-void ShaderGroup::report_has_closures(const char* closure_name, bool has_closures) const
-{
-    if (has_closures)
-    {
-        RENDERER_LOG_INFO(
-            "shader group %s has %s closures.",
-            get_name(),
-            closure_name);
-    }
-    else
-    {
-        RENDERER_LOG_INFO(
-            "shader group %s does not have %s closures.",
-            get_name(),
-            closure_name);
-    }
-}
-
-void ShaderGroup::get_shadergroup_info(OSL::ShadingSystem& shading_system)
-{
-    get_shadergroup_closures_info(shading_system);
-    get_shadergroup_globals_info(shading_system);
+    return impl->m_shader_group_ref;
 }
 
 void ShaderGroup::get_shadergroup_closures_info(OSL::ShadingSystem& shading_system)
@@ -267,7 +235,7 @@ void ShaderGroup::get_shadergroup_closures_info(OSL::ShadingSystem& shading_syst
 
     int num_unknown_closures = 0;
     if (!shading_system.getattribute(
-            impl->m_shadergroup_ref.get(),
+            impl->m_shader_group_ref.get(),
             "unknown_closures_needed",
             num_unknown_closures))
     {
@@ -291,7 +259,7 @@ void ShaderGroup::get_shadergroup_closures_info(OSL::ShadingSystem& shading_syst
 
     int num_closures = 0;
     if (!shading_system.getattribute(
-            impl->m_shadergroup_ref.get(),
+            impl->m_shader_group_ref.get(),
             "num_closures_needed",
             num_closures))
     {
@@ -305,7 +273,7 @@ void ShaderGroup::get_shadergroup_closures_info(OSL::ShadingSystem& shading_syst
     {
         OIIO::ustring *closures = 0;
         if (!shading_system.getattribute(
-                impl->m_shadergroup_ref.get(),
+                impl->m_shader_group_ref.get(),
                 "closures_needed",
                 OIIO::TypeDesc::PTR,
                 &closures))
@@ -337,6 +305,24 @@ void ShaderGroup::get_shadergroup_closures_info(OSL::ShadingSystem& shading_syst
             if (closures[i] == g_debug_str)
                 m_has_debug = true;
         }
+    }
+}
+
+void ShaderGroup::report_has_closure(const char* closure_name, bool has_closure) const
+{
+    if (has_closure)
+    {
+        RENDERER_LOG_INFO(
+            "shader group %s has %s closures.",
+            get_name(),
+            closure_name);
+    }
+    else
+    {
+        RENDERER_LOG_INFO(
+            "shader group %s does not have %s closures.",
+            get_name(),
+            closure_name);
     }
 }
 
@@ -383,6 +369,23 @@ void ShaderGroup::get_shadergroup_globals_info(OSL::ShadingSystem& shading_syste
     }
 }
 
+void ShaderGroup::report_uses_global(const char* global_name, bool uses_global) const
+{
+    if (uses_global)
+    {
+        RENDERER_LOG_INFO(
+            "shader group %s uses the %s global.",
+            get_name(),
+            global_name);
+    }
+    else
+    {
+        RENDERER_LOG_INFO(
+            "shader group %s does not use the %s global.",
+            get_name(),
+            global_name);
+    }
+}
 
 //
 // ShaderGroupFactory class implementation.
@@ -393,13 +396,10 @@ const char* ShaderGroupFactory::get_model()
     return "shadergroup";
 }
 
-auto_release_ptr<ShaderGroup> ShaderGroupFactory::create(
-    const char*         name,
-    const SearchPaths&  search_paths)
+auto_release_ptr<ShaderGroup> ShaderGroupFactory::create(const char* name)
 {
     return
-        auto_release_ptr<ShaderGroup>(
-            new ShaderGroup(name, search_paths));
+        auto_release_ptr<ShaderGroup>(new ShaderGroup(name));
 }
 
 }   // namespace renderer

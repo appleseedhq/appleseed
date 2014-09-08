@@ -48,7 +48,6 @@ END_OSL_INCLUDES
 
 // Forward declarations.
 namespace foundation    { class AbortSwitch; }
-namespace foundation    { class SearchPaths; }
 namespace renderer      { class Assembly; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
@@ -57,7 +56,7 @@ namespace renderer
 {
 
 //
-// OSL Shadergroup.
+// OSL shader group.
 //
 
 class DLLSYMBOL ShaderGroup
@@ -84,18 +83,13 @@ class DLLSYMBOL ShaderGroup
         const char*                     dst_layer,
         const char*                     dst_param);
 
-    // This method is called once before rendering each frame.
-    // Returns true on success, false otherwise.
-    bool on_frame_begin(
-        const Project&                  project,
-        const Assembly&                 assembly,
+    // Create OSL shader group.
+    bool create_osl_shader_group(
         OSL::ShadingSystem&             shading_system,
         foundation::AbortSwitch*        abort_switch = 0);
 
-    // This method is called once after rendering each frame.
-    void on_frame_end(
-        const Project&                  project,
-        const Assembly&                 assembly);
+    // Release internal OSL shader group.
+    void release_osl_shader_group();
 
     // Access the shaders.
     const ShaderContainer& shaders() const;
@@ -121,8 +115,9 @@ class DLLSYMBOL ShaderGroup
     // Returns true if the shader group uses dPdtime.
     bool uses_dPdtime() const;
 
-    // Return a reference-counted (but opaque) reference to the OSL shader.
-    OSL::ShaderGroupRef& shadergroup_ref() const;
+    // Return a reference-counted (but opaque) reference to
+    // the internal OSL shader group.
+    OSL::ShaderGroupRef& shader_group_ref() const;
 
   private:
     friend class ShaderGroupFactory;
@@ -137,17 +132,16 @@ class DLLSYMBOL ShaderGroup
     bool    m_uses_dPdtime;
 
     // Constructor.
-    ShaderGroup(
-        const char*                     name,
-        const foundation::SearchPaths&  search_paths);
+    explicit ShaderGroup(const char* name);
 
     // Destructor.
     ~ShaderGroup();
 
-    void report_has_closures(const char* closure_name, bool has_closures) const;
-    void get_shadergroup_info(OSL::ShadingSystem& shading_system);
     void get_shadergroup_closures_info(OSL::ShadingSystem& shading_system);
+    void report_has_closure(const char* closure_name, bool has_closure) const;
+
     void get_shadergroup_globals_info(OSL::ShadingSystem& shading_system);
+    void report_uses_global(const char* global_name, bool uses_global) const;
 };
 
 
@@ -162,9 +156,7 @@ class DLLSYMBOL ShaderGroupFactory
     static const char* get_model();
 
     // Create a new shader group.
-    static foundation::auto_release_ptr<ShaderGroup> create(
-        const char*                     name,
-        const foundation::SearchPaths&  search_paths);
+    static foundation::auto_release_ptr<ShaderGroup> create(const char* name);
 };
 
 

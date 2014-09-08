@@ -57,6 +57,9 @@ namespace renderer  { class Intersector; }
 namespace renderer  { class Light; }
 namespace renderer  { class ParamArray; }
 namespace renderer  { class Scene; }
+#ifdef WITH_OSL
+namespace renderer  { class ShaderGroup; }
+#endif
 namespace renderer  { class ShadingPoint; }
 
 namespace renderer
@@ -92,6 +95,9 @@ class EmittingTriangle
     double                      m_rcp_area;                     // world space triangle area reciprocal
     double                      m_triangle_prob;                // probability density of this triangle
     const EDF*                  m_edf;
+#ifdef WITH_OSL
+    const ShaderGroup*          m_shader_group;
+#endif
 };
 
 
