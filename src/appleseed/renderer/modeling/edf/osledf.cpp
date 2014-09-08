@@ -31,8 +31,11 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/shading/closures.h"
+#include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/edf/edffactoryregistrar.h"
 #include "renderer/modeling/input/inputarray.h"
+#include "renderer/modeling/input/inputevaluator.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
@@ -55,89 +58,151 @@ using namespace foundation;
 namespace renderer
 {
 
+//
+// OSL EDF class implementation.
+//
+
 namespace
 {
-    //
-    // OSL EDF.
-    //
 
-    const char* Model = "osl_edf";
+const char* Model = "osl_edf";
 
-    class OSLEDF
-      : public EDF
-    {
-      public:
-        OSLEDF(
-            const char*         name,
-            const ParamArray&   params)
-          : EDF(name, params)
-        {
-        }
+}
 
-        virtual void release() OVERRIDE
-        {
-            delete this;
-        }
+OSLEDF::OSLEDF(
+    const char*         name,
+    const ParamArray&   params)
+  : EDF(name, params)
+{
+    m_diffuse_edf = DiffuseEDFFactory().create("osl_edf", ParamArray());
+}
 
-        virtual const char* get_model() const OVERRIDE
-        {
-            return Model;
-        }
+void OSLEDF::release()
+{
+    delete this;
+}
 
-        virtual bool on_frame_begin(
-            const Project&      project,
-            const Assembly&     assembly,
-            AbortSwitch*        abort_switch) OVERRIDE
-        {
-            if (!EDF::on_frame_begin(project, assembly, abort_switch))
-                return false;
+const char* OSLEDF::get_model() const
+{
+    return Model;
+}
 
-            return true;
-        }
+bool OSLEDF::is_osl_edf() const
+{
+    return true;
+}
 
-        virtual void sample(
-            const void*         data,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector2d&     s,
-            Vector3d&           outgoing,
-            Spectrum&           value,
-            double&             probability) const OVERRIDE
-        {
-        }
+bool OSLEDF::on_frame_begin(
+        const Project&      project,
+        const Assembly&     assembly,
+        AbortSwitch*        abort_switch)
+{
+    if (!EDF::on_frame_begin(project, assembly, abort_switch))
+        return false;
 
-        virtual void evaluate(
-            const void*         data,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            Spectrum&           value) const OVERRIDE
-        {
-        }
+    return true;
+}
 
-        virtual void evaluate(
-            const void*         data,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            Spectrum&           value,
-            double&             probability) const OVERRIDE
-        {
-        }
+void OSLEDF::on_frame_end(
+    const Project&              project,
+    const Assembly&             assembly) OVERRIDE
+{
+    EDF::on_frame_end(project, assembly);
+}
 
-        virtual double evaluate_pdf(
-            const void*         data,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing) const OVERRIDE
-        {
-            return 0.0;
-        }
+void OSLEDF::evaluate_inputs(
+    InputEvaluator& input_evaluator,
+    const Vector2d& uv) const OVERRIDE
+{
+    RENDERER_LOG_FATAL(
+        "Internal error: OSLEDF::evaluate_inputs should never be called");
+}
 
-      private:
-        auto_release_ptr<EDF> m_diffuse_edf;
-        auto_release_ptr<EDF> m_cone_edf;
-    };
+void OSLEDF::evaluate_osl_inputs(
+    InputEvaluator&             input_evaluator,
+    const ShadingPoint&         shading_point) const
+{
+    CompositeEmissionClosure* c =
+        reinterpret_cast<CompositeEmissionClosure*>(input_evaluator.data());
+    new (c) CompositeEmissionClosure(shading_point.get_osl_shader_globals().Ci);
+}
+
+void OSLEDF::sample(
+    SamplingContext&    sampling_context,
+    const void*         data,
+    const Vector3d&     geometric_normal,
+    const Basis3d&      shading_basis,
+    const Vector2d&     s,
+    Vector3d&           outgoing,
+    Spectrum&           value,
+    double&             probability) const
+{
+    const CompositeEmissionClosure* c =
+        reinterpret_cast<const CompositeEmissionClosure*>(data);
+
+    m_diffuse_edf->sample(
+        sampling_context,
+        &c->edf_input_values(),
+        geometric_normal,
+        shading_basis,
+        s,
+        outgoing,
+        value,
+        probability);
+}
+
+void OSLEDF::evaluate(
+    const void*         data,
+    const Vector3d&     geometric_normal,
+    const Basis3d&      shading_basis,
+    const Vector3d&     outgoing,
+    Spectrum&           value) const
+{
+    const CompositeEmissionClosure* c =
+        reinterpret_cast<const CompositeEmissionClosure*>(data);
+
+    m_diffuse_edf->evaluate(
+        &c->edf_input_values(),
+        geometric_normal,
+        shading_basis,
+        outgoing,
+        value);
+}
+
+void OSLEDF::evaluate(
+    const void*         data,
+    const Vector3d&     geometric_normal,
+    const Basis3d&      shading_basis,
+    const Vector3d&     outgoing,
+    Spectrum&           value,
+    double&             probability) const
+{
+    const CompositeEmissionClosure* c =
+        reinterpret_cast<const CompositeEmissionClosure*>(data);
+
+    m_diffuse_edf->evaluate(
+        &c->edf_input_values(),
+        geometric_normal,
+        shading_basis,
+        outgoing,
+        value,
+        probability);
+}
+
+double OSLEDF::evaluate_pdf(
+    const void*         data,
+    const Vector3d&     geometric_normal,
+    const Basis3d&      shading_basis,
+    const Vector3d&     outgoing) const
+{
+    const CompositeEmissionClosure* c =
+        reinterpret_cast<const CompositeEmissionClosure*>(data);
+
+    return m_diffuse_edf->evaluate_pdf(
+        &c->edf_input_values(),
+        geometric_normal,
+        shading_basis,
+        outgoing);
 }
 
 
@@ -145,26 +210,10 @@ namespace
 // OSLEDFFactory class implementation.
 //
 
-const char* OSLEDFFactory::get_model() const
-{
-    return Model;
-}
 
-const char* OSLEDFFactory::get_human_readable_model() const
+auto_release_ptr<EDF> OSLEDFFactory::create() const
 {
-    return "OSL EDF";
-}
-
-DictionaryArray OSLEDFFactory::get_input_metadata() const
-{
-    return DictionaryArray();
-}
-
-auto_release_ptr<EDF> OSLEDFFactory::create(
-    const char*         name,
-    const ParamArray&   params) const
-{
-    return auto_release_ptr<EDF>(new OSLEDF(name, params));
+    return auto_release_ptr<EDF>(new OSLEDF("osl_edf", ParamArray()));
 }
 
 }   // namespace renderer

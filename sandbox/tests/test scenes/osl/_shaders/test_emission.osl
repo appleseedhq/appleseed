@@ -1,0 +1,9 @@
+
+surface test_emission(
+    float Kl = 1,
+    color Cl = 1,
+    color Cs = 0)
+{
+    if (raytype("light"))
+        Ci = 10.0 * (P[1] + noise(P * 7.5) * 0.1) * Kl * Cl * emission();
+}

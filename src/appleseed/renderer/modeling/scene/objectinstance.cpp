@@ -65,7 +65,7 @@ bool has_emitting_materials(const MaterialArray& materials)
 {
     for (size_t i = 0; i < materials.size(); ++i)
     {
-        if (materials[i] && materials[i]->get_uncached_edf())
+        if (materials[i] && materials[i]->has_emission())
             return true;
     }
 

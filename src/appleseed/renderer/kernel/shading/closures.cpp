@@ -104,7 +104,22 @@ namespace
 
     struct DiffuseBSDFClosureParams
     {
+        OSL::Vec3 N;
+    };
+
+    OSL::ustring beckmann_mdf_name("beckmann");
+    OSL::ustring blinn_mdf_name("blinn");
+    OSL::ustring ggx_mdf_name("ggx");
+
+    struct MicrofacetClosureParams
+    {
+        OSL::ustring    dist;
         OSL::Vec3       N;
+        OSL::Vec3       T;
+        float           xalpha;
+        float           yalpha;
+        float           eta;
+        int             refract;
     };
 
     struct OrenNayarBRDFClosureParams
@@ -123,38 +138,21 @@ namespace
         OSL::Vec3       N;
         float           eta;
     };
-
-    OSL::ustring beckmann_mdf_name("beckmann");
-    OSL::ustring blinn_mdf_name("blinn");
-    OSL::ustring ggx_mdf_name("ggx");
-
-    struct MicrofacetClosureParams
-    {
-        OSL::ustring    dist;
-        OSL::Vec3       N;
-        OSL::Vec3       T;
-        float           xalpha;
-        float           yalpha;
-        float           eta;
-        int             refract;
-    };
 }
 
-BOOST_STATIC_ASSERT(sizeof(CompositeClosure) <= InputEvaluator::DataSize);
-
 
 //
-// CompositeClosure class implementation.
+// CompositeSurfaceClosure class implementation.
 //
 
-CompositeClosure::CompositeClosure(
+BOOST_STATIC_ASSERT(sizeof(CompositeSurfaceClosure) <= InputEvaluator::DataSize);
+
+CompositeSurfaceClosure::CompositeSurfaceClosure(
     const OSL::ClosureColor*    ci)
   : m_num_closures(0)
   , m_num_bytes(0)
 {
     assert(is_aligned(m_pool, InputValuesAlignment));
-
-    m_diffuse_emission.set(0);
 
     process_closure_tree(ci, Color3f(1.0f));
 
@@ -180,7 +178,7 @@ CompositeClosure::CompositeClosure(
     }
 }
 
-size_t CompositeClosure::choose_closure(const double w) const
+size_t CompositeSurfaceClosure::choose_closure(const double w) const
 {
     assert(w >= 0.0);
     assert(w < 1.0);
@@ -196,7 +194,7 @@ size_t CompositeClosure::choose_closure(const double w) const
     return i - m_cdf;
 }
 
-void CompositeClosure::process_closure_tree(
+void CompositeSurfaceClosure::process_closure_tree(
     const OSL::ClosureColor*    closure,
     const Color3f&              weight)
 {
@@ -278,14 +276,6 @@ void CompositeClosure::process_closure_tree(
                         Vector3d(p->N),
                         Vector3d(p->T),
                         values);
-                }
-                break;
-
-              case EmissionID:
-                {
-                    Spectrum e;
-                    linear_rgb_reflectance_to_spectrum_unclamped(w, e);
-                    m_diffuse_emission += e;
                 }
                 break;
 
@@ -474,15 +464,6 @@ void CompositeClosure::process_closure_tree(
                         values);
                 }
                 break;
-
-              // These are handled in another place.
-              case BackgroundID:
-              case DebugID:
-              case HoldoutID:
-              case TransparentID:
-                break;
-
-              assert_otherwise;
             }
         }
         break;
@@ -492,7 +473,7 @@ void CompositeClosure::process_closure_tree(
 }
 
 template <typename InputValues>
-void CompositeClosure::add_closure(
+void CompositeSurfaceClosure::add_closure(
     const ClosureID             closure_type,
     const Color3f&              weight,
     const Vector3d&             normal,
@@ -508,7 +489,7 @@ void CompositeClosure::add_closure(
 }
 
 template <typename InputValues>
-void CompositeClosure::add_closure(
+void CompositeSurfaceClosure::add_closure(
     const ClosureID             closure_type,
     const Color3f&              weight,
     const Vector3d&             normal,
@@ -525,7 +506,7 @@ void CompositeClosure::add_closure(
 }
 
 template <typename InputValues>
-void CompositeClosure::do_add_closure(
+void CompositeSurfaceClosure::do_add_closure(
     const ClosureID             closure_type,
     const Color3f&              weight,
     const Vector3d&             normal,
@@ -558,7 +539,8 @@ void CompositeClosure::do_add_closure(
     m_normals[m_num_closures] = normalize(normal);
 
     // If the tangent is zero, ignore it.
-    // This can happen when using the isotropic microfacet closure overload, for example.
+    // This can happen when using the isotropic microfacet
+    // closure overloads, for example.
     if (square_norm(tangent) == 0.0)
         has_tangent = false;
 
@@ -575,6 +557,76 @@ void CompositeClosure::do_add_closure(
     m_input_values[m_num_closures] = values_ptr;
     m_num_bytes += align(sizeof(InputValues), InputValuesAlignment);
     ++m_num_closures;
+}
+
+
+//
+// CompositeEmissionClosure class implementation.
+//
+
+BOOST_STATIC_ASSERT(sizeof(CompositeEmissionClosure) <= InputEvaluator::DataSize);
+
+CompositeEmissionClosure::CompositeEmissionClosure(
+    const OSL::ClosureColor*    ci)
+{
+    m_total_weight = Color3f(0.0f);
+    process_closure_tree(ci, Color3f(1.0f));
+
+    const float max_comp = max_value(m_total_weight);
+
+    if (max_comp != 0.0f)
+    {
+        m_total_weight /= max_comp;
+
+        linear_rgb_illuminance_to_spectrum(
+            m_total_weight,
+            m_edf_values.m_radiance);
+        m_edf_values.m_radiance_multiplier = static_cast<double>(max_comp);
+    }
+    else
+    {
+        m_edf_values.m_radiance.set(0.0f);
+        m_edf_values.m_radiance_multiplier = 1.0;
+    }
+}
+
+void CompositeEmissionClosure::process_closure_tree(
+    const OSL::ClosureColor*    closure,
+    const Color3f&              weight)
+{
+    if (closure == 0)
+        return;
+
+    switch (closure->type)
+    {
+      case OSL::ClosureColor::MUL:
+        {
+            const OSL::ClosureMul* c = reinterpret_cast<const OSL::ClosureMul*>(closure);
+            const Color3f w = weight * Color3f(c->weight);
+            process_closure_tree(c->closure, w);
+        }
+        break;
+
+      case OSL::ClosureColor::ADD:
+        {
+            const OSL::ClosureAdd* c = reinterpret_cast<const OSL::ClosureAdd*>(closure);
+            process_closure_tree(c->closureA, weight);
+            process_closure_tree(c->closureB, weight);
+        }
+        break;
+
+      case OSL::ClosureColor::COMPONENT:
+        {
+            const OSL::ClosureComponent* c = reinterpret_cast<const OSL::ClosureComponent*>(closure);
+            const Color3f w = weight * Color3f(c->w);
+
+            if (c->id == EmissionID)
+                m_total_weight += w;
+        }
+        break;
+
+      assert_otherwise;
+    }
 }
 
 namespace
@@ -631,8 +683,8 @@ float process_holdout_tree(const OSL::ClosureColor* ci)
 
 }   // namespace renderer
 
-// We probably want to reuse OSL macros to declare closure params
-// and register the closures. We can use them only inside the OSL namespace.
+// We want to reuse OSL macros to declare closure params and register the closures.
+// We can use them only inside the OSL namespace.
 OSL_NAMESPACE_ENTER
 
 void register_appleseed_closures(OSL::ShadingSystem& shading_system)

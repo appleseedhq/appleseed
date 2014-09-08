@@ -108,7 +108,7 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
 #endif
 #ifdef WITH_OSL
         RendererServices renderer_services(*project, *texture_system, texture_store);
-        
+
         shared_ptr<OSL::ShadingSystem> shading_system(
             new OSL::ShadingSystem(&renderer_services, texture_system.get()));
 #endif
@@ -161,12 +161,7 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
         input_binder.bind(scene);
         assert(input_binder.get_error_count() == 0);
 
-        scene.on_frame_begin(
-            project.ref()
-#ifdef WITH_OSL
-            , *shading_system
-#endif
-            );
+        scene.on_frame_begin(project.ref());
 
         TextureCache texture_cache(texture_store);
         InputEvaluator input_evaluator(texture_cache);

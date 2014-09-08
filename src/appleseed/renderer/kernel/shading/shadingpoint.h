@@ -57,6 +57,7 @@
 #ifdef WITH_OSL
 #include "foundation/platform/oslheaderguards.h"
 BEGIN_OSL_INCLUDES
+#include "OSL/oslexec.h"
 #include "OSL/shaderglobals.h"
 END_OSL_INCLUDES
 #endif

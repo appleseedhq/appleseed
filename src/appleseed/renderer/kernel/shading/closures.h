@@ -38,7 +38,7 @@
 #include "renderer/modeling/bsdf/oslmicrofacetbtdf.h"
 #include "renderer/modeling/bsdf/specularbrdf.h"
 #include "renderer/modeling/bsdf/specularbtdf.h"
-#include "renderer/modeling/edf/osledf.h"
+#include "renderer/modeling/edf/diffuseedf.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -109,14 +109,14 @@ enum ClosureID
 
 
 //
-// Composite OSL closure.
+// Composite OSL surface closure.
 //
 
-class APPLESEED_ALIGN(16) CompositeClosure
+class APPLESEED_ALIGN(16) CompositeSurfaceClosure
   : public foundation::NonCopyable
 {
   public:
-    explicit CompositeClosure(const OSL::ClosureColor* ci);
+    explicit CompositeSurfaceClosure(const OSL::ClosureColor* ci);
 
     size_t get_num_closures() const;
     ClosureID get_closure_type(const size_t index) const;
@@ -165,9 +165,6 @@ class APPLESEED_ALIGN(16) CompositeClosure
     double                          m_cdf[MaxClosureEntries];
     double                          m_pdf_weights[MaxClosureEntries];
 
-    // Emission
-    Spectrum                        m_diffuse_emission;
-
     void process_closure_tree(
         const OSL::ClosureColor*    closure,
         const foundation::Color3f&  weight);
@@ -197,64 +194,96 @@ class APPLESEED_ALIGN(16) CompositeClosure
         const InputValues&          values);
 };
 
-// Register appleseed's closures.
-void register_closures(OSL::ShadingSystem& shading_system);
-
 
 //
-// CompositeClosure class implementation.
+// CompositeSurfaceClosure class implementation.
 //
 
-inline size_t CompositeClosure::get_num_closures() const
+inline size_t CompositeSurfaceClosure::get_num_closures() const
 {
     return m_num_closures;
 }
 
-inline ClosureID CompositeClosure::get_closure_type(const size_t index) const
+inline ClosureID CompositeSurfaceClosure::get_closure_type(const size_t index) const
 {
     assert(index < get_num_closures());
     return m_closure_types[index];
 }
 
-inline const Spectrum& CompositeClosure::get_closure_weight(const size_t index) const
+inline const Spectrum& CompositeSurfaceClosure::get_closure_weight(const size_t index) const
 {
     assert(index < get_num_closures());
     return m_weights[index];
 }
 
-inline double CompositeClosure::get_closure_pdf_weight(const size_t index) const
+inline double CompositeSurfaceClosure::get_closure_pdf_weight(const size_t index) const
 {
     assert(index < get_num_closures());
     return m_pdf_weights[index];
 }
 
-inline const foundation::Vector3d& CompositeClosure::get_closure_normal(const size_t index) const
+inline const foundation::Vector3d& CompositeSurfaceClosure::get_closure_normal(const size_t index) const
 {
     assert(index < get_num_closures());
     return m_normals[index];
 }
 
-inline bool CompositeClosure::closure_has_tangent(const size_t index) const
+inline bool CompositeSurfaceClosure::closure_has_tangent(const size_t index) const
 {
     assert(index < get_num_closures());
     return m_has_tangent[index];
 }
 
-inline const foundation::Vector3d& CompositeClosure::get_closure_tangent(const size_t index) const
+inline const foundation::Vector3d& CompositeSurfaceClosure::get_closure_tangent(const size_t index) const
 {
     assert(index < get_num_closures());
     assert(closure_has_tangent(index));
     return m_tangents[index];
 }
 
-inline void* CompositeClosure::get_closure_input_values(const size_t index) const
+inline void* CompositeSurfaceClosure::get_closure_input_values(const size_t index) const
 {
     assert(index < get_num_closures());
     return m_input_values[index];
 }
 
+
+//
+// Composite OSL emission closure.
+//
+
+class APPLESEED_ALIGN(16) CompositeEmissionClosure
+  : public foundation::NonCopyable
+{
+  public:
+    explicit CompositeEmissionClosure(const OSL::ClosureColor* ci);
+
+    const DiffuseEDFInputValues& edf_input_values() const;
+
+  private:
+    void process_closure_tree(
+        const OSL::ClosureColor*    closure,
+        const foundation::Color3f&  weight);
+
+    DiffuseEDFInputValues   m_edf_values;
+    foundation::Color3f     m_total_weight;
+};
+
+
+//
+// CompositeEmissionClosure class implementation.
+//
+
+inline const DiffuseEDFInputValues& CompositeEmissionClosure::edf_input_values() const
+{
+    return m_edf_values;
+}
+
+
 void process_transparency_tree(const OSL::ClosureColor* ci, Alpha& alpha);
 float process_holdout_tree(const OSL::ClosureColor* ci);
+
+void register_closures(OSL::ShadingSystem& shading_system);
 
 }       // namespace renderer
 
