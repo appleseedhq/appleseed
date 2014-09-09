@@ -360,6 +360,7 @@ void Intersector::manufacture_hit(
     shading_point.m_primitive_type = primitive_type;
     shading_point.m_assembly_instance = assembly_instance;
     shading_point.m_assembly_instance_transform = assembly_instance_transform;
+    shading_point.m_assembly_instance_transform_seq = &assembly_instance->transform_sequence();
     shading_point.m_object_instance_index = object_instance_index;
     shading_point.m_region_index = region_index;
     shading_point.m_primitive_index = primitive_index;

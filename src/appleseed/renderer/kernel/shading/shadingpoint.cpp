@@ -591,7 +591,7 @@ OSL::ShaderGlobals& ShadingPoint::get_osl_shader_globals() const
         m_shader_globals.dPsdx = OSL::Vec3(0.0f, 0.0f, 0.0f);
         m_shader_globals.dPsdy = OSL::Vec3(0.0f, 0.0f, 0.0f);
 
-        m_shader_globals.renderstate = 
+        m_shader_globals.renderstate =
             const_cast<void*>(reinterpret_cast<const void*>(this));
 
         memset(reinterpret_cast<void*>(&m_osl_trace_data), 0, sizeof(OSLTraceData));
@@ -599,10 +599,11 @@ OSL::ShaderGlobals& ShadingPoint::get_osl_shader_globals() const
 
         m_shader_globals.objdata = 0;
 
+        assert(m_assembly_instance_transform_seq != 0);
         m_obj_transform_info.m_assembly_instance_transform =
-            &get_assembly_instance().cumulated_transform_sequence();
+            m_assembly_instance_transform_seq;
         m_obj_transform_info.m_object_instance_transform =
-            &get_object_instance().get_transform();
+            &m_object_instance->get_transform();
 
         m_shader_globals.object2common = reinterpret_cast<OSL::TransformationPtr>(&m_obj_transform_info);
 
