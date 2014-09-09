@@ -112,6 +112,9 @@ class DLLSYMBOL ShaderGroup
     // Returns true if the shader group contains at least one debug closure.
     bool has_debug() const;
 
+    // Returns true if the shader group uses dPdtime.
+    bool uses_dPdtime() const;
+
     // Return a reference-counted (but opaque) reference to
     // the internal OSL shader group.
     OSL::ShaderGroupRef& shader_group_ref() const;
@@ -126,6 +129,7 @@ class DLLSYMBOL ShaderGroup
     bool    m_has_transparency;
     bool    m_has_holdout;
     bool    m_has_debug;
+    bool    m_uses_dPdtime;
 
     // Constructor.
     explicit ShaderGroup(const char* name);
@@ -133,8 +137,11 @@ class DLLSYMBOL ShaderGroup
     // Destructor.
     ~ShaderGroup();
 
-    void report_has_closures(const char* closure_name, bool has_closures) const;
-    void get_shader_group_info(OSL::ShadingSystem& shading_system);
+    void get_shadergroup_closures_info(OSL::ShadingSystem& shading_system);
+    void report_has_closure(const char* closure_name, bool has_closure) const;
+
+    void get_shadergroup_globals_info(OSL::ShadingSystem& shading_system);
+    void report_uses_global(const char* global_name, bool uses_global) const;
 };
 
 
@@ -175,6 +182,11 @@ inline bool ShaderGroup::has_holdout() const
 inline bool ShaderGroup::has_debug() const
 {
     return m_has_debug;
+}
+
+inline bool ShaderGroup::uses_dPdtime() const
+{
+    return m_uses_dPdtime;
 }
 
 }       // namespace renderer

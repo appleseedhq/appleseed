@@ -462,12 +462,16 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     // Evaluate the input values of the EDF.
     InputEvaluator edf_input_evaluator(m_shading_context.get_texture_cache());
 
+    // TODO: refactor this code (est.).
 #ifdef WITH_OSL
     if (edf->is_osl_edf())
     {
         const OSLEDF* osl_edf = static_cast<const OSLEDF*>(edf);
         const ShaderGroup* sg = material->get_osl_surface();
-        m_shading_context.execute_osl_emission(*sg, light_shading_point);
+
+        // TODO: get object area somehow.
+        const float surface_area = 0.0f;
+        m_shading_context.execute_osl_emission(*sg, light_shading_point, surface_area);
         osl_edf->evaluate_osl_inputs(edf_input_evaluator, light_shading_point);
     }
     else
@@ -631,6 +635,7 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     // Evaluate the input values of the EDF.
     InputEvaluator edf_input_evaluator(m_shading_context.get_texture_cache());
 
+    // TODO: refactor this code (est.).
 #ifdef WITH_OSL
     if (edf->is_osl_edf())
     {
@@ -644,7 +649,9 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
             sample.m_shading_normal,
             m_shading_context.get_intersector());
 
-        m_shading_context.execute_osl_emission(*sg, shading_point);
+        // TODO: get object area somehow.
+        const float surface_area = 0.0f;
+        m_shading_context.execute_osl_emission(*sg, shading_point, surface_area);
         osl_edf->evaluate_osl_inputs(edf_input_evaluator, shading_point);
     }
     else

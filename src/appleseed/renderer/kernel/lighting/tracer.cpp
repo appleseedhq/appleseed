@@ -67,6 +67,11 @@ Tracer::Tracer(
   , m_transmission_threshold(static_cast<double>(transparency_threshold))
   , m_max_iterations(max_iterations)
 {
+    if (const Camera* camera = scene.get_camera())
+        m_ray_dtime = camera->get_shutter_open_time_interval();
+    else
+        m_ray_dtime = 0.0;
+
     if (print_details)
     {
         if (m_assume_no_alpha_mapping)
@@ -107,6 +112,7 @@ const ShadingPoint& Tracer::do_trace(
             point,
             direction,
             time,
+            m_ray_dtime,
             ray_type,
             ray_depth);         // ray depth does not increase when passing through an alpha-mapped surface
 
@@ -185,6 +191,7 @@ const ShadingPoint& Tracer::do_trace_between(
             0.0,                // ray tmin
             1.0 - 1.0e-6,       // ray tmax
             time,
+            m_ray_dtime,
             ray_type,
             ray_depth);         // ray depth does not increase when passing through an alpha-mapped surface
 

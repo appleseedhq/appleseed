@@ -64,6 +64,9 @@ void OSLShaderGroupExec::execute_shading(
     assert(m_osl_shading_context);
     assert(m_osl_thread_info);
 
+    shading_point.initialize_osl_shader_globals(
+        shader_group,
+        m_osl_shading_system.renderer());
     m_osl_shading_system.execute(
         *m_osl_shading_context,
         *shader_group.shader_group_ref(),
@@ -76,9 +79,10 @@ void OSLShaderGroupExec::execute_transparency(
     Alpha&              alpha,
     float*              holdout) const
 {
-    // Switch temporary the ray type to Shadow.
-    ShadingRay::TypeType saved_type = shading_point.m_ray.m_type;
-    shading_point.m_ray.m_type = ShadingRay::ShadowRay;
+    shading_point.initialize_osl_shader_globals(
+        shader_group,
+        ShadingRay::ShadowRay,
+        m_osl_shading_system.renderer());
 
     m_osl_shading_system.execute(
         *m_osl_shading_context,
@@ -89,26 +93,23 @@ void OSLShaderGroupExec::execute_transparency(
 
     if (holdout)
         *holdout = process_holdout_tree(shading_point.get_osl_shader_globals().Ci);
-
-    // Restore the original ray type.
-    shading_point.m_ray.m_type = saved_type;
 }
 
 void OSLShaderGroupExec::execute_emission(
     const ShaderGroup&  shader_group,
-    const ShadingPoint& shading_point) const
+    const ShadingPoint& shading_point,
+    const float         surface_area) const
 {
-    // Switch temporary the ray type to Light.
-    ShadingRay::TypeType saved_type = shading_point.m_ray.m_type;
-    shading_point.m_ray.m_type = ShadingRay::LightRay;
+    shading_point.initialize_osl_shader_globals(
+        shader_group,
+        ShadingRay::LightRay,
+        m_osl_shading_system.renderer(),
+        surface_area);
 
     m_osl_shading_system.execute(
         *m_osl_shading_context,
         *shader_group.shader_group_ref(),
         shading_point.get_osl_shader_globals());
-
-    // Restore the original ray type.
-    shading_point.m_ray.m_type = saved_type;
 }
 
 }   // namespace renderer

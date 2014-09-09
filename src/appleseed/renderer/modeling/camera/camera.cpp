@@ -84,7 +84,7 @@ bool Camera::on_frame_begin(
 
     m_shutter_open_time = m_params.get_optional<double>("shutter_open_time", 0.0);
     m_shutter_close_time = m_params.get_optional<double>("shutter_close_time", 1.0);
-
+    m_shutter_open_time_interval = m_shutter_close_time - m_shutter_open_time;
     return true;
 }
 
@@ -280,7 +280,10 @@ void Camera::initialize_ray(
     ray.m_tmax = numeric_limits<double>::max();
 
     if (m_shutter_open_time == m_shutter_close_time)
+    {
         ray.m_time = m_shutter_open_time;
+        ray.m_dtime = 0.0;
+    }
     else
     {
         sampling_context.split_in_place(1, 1);
@@ -289,6 +292,8 @@ void Camera::initialize_ray(
                 sampling_context.next_double2(),
                 0.0, 1.0,
                 m_shutter_open_time, m_shutter_close_time);
+
+        ray.m_dtime = m_shutter_open_time_interval;
     }
 
     ray.m_type = ShadingRay::CameraRay;

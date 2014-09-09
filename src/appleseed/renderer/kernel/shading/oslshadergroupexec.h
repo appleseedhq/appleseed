@@ -74,7 +74,8 @@ class OSLShaderGroupExec
 
     void execute_emission(
         const ShaderGroup&      shader_group,
-        const ShadingPoint&     shading_point) const;
+        const ShadingPoint&     shading_point,
+        const float             surface_area) const;
 
   private:
     OSL::ShadingSystem&         m_osl_shading_system;

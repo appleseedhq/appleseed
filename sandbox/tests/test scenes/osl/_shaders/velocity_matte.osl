@@ -1,0 +1,6 @@
+
+surface velocity_matte()
+{
+    color Cs = abs(color(dPdtime)) * 0.3;
+    Ci = Cs * diffuse(N);
+}

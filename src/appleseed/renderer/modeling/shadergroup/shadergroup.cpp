@@ -57,6 +57,12 @@ namespace renderer
 namespace
 {
     const UniqueID g_class_uid = new_guid();
+
+    const OIIO::ustring g_emission_str("emission");
+    const OIIO::ustring g_transparent_str("transparent");
+    const OIIO::ustring g_holdout_str("holdout");
+    const OIIO::ustring g_debug_str("debug");
+    const OIIO::ustring g_dPdtime_str("dPdtime");
 }
 
 struct ShaderGroup::Impl
@@ -73,6 +79,7 @@ ShaderGroup::ShaderGroup(const char* name)
   , m_has_transparency(false)
   , m_has_holdout(false)
   , m_has_debug(false)
+  , m_uses_dPdtime(false)
 {
     set_name(name);
 }
@@ -176,11 +183,14 @@ bool ShaderGroup::create_osl_shader_group(
             }
         }
 
-        get_shader_group_info(shading_system);
-        report_has_closures("emission", m_has_emission);
-        report_has_closures("transparent", m_has_transparency);
-        report_has_closures("holdout", m_has_holdout);
-        report_has_closures("debug", m_has_debug);
+        get_shadergroup_closures_info(shading_system);
+        report_has_closure("emission", m_has_emission);
+        report_has_closure("transparent", m_has_transparency);
+        report_has_closure("holdout", m_has_holdout);
+        report_has_closure("debug", m_has_debug);
+
+        get_shadergroup_globals_info(shading_system);
+        report_uses_global("dPdtime", m_uses_dPdtime);
 
         return success;
     }
@@ -216,25 +226,7 @@ OSL::ShaderGroupRef& ShaderGroup::shader_group_ref() const
     return impl->m_shader_group_ref;
 }
 
-void ShaderGroup::report_has_closures(const char* closure_name, bool has_closures) const
-{
-    if (has_closures)
-    {
-        RENDERER_LOG_INFO(
-            "shader group %s has %s closures.",
-            get_name(),
-            closure_name);
-    }
-    else
-    {
-        RENDERER_LOG_INFO(
-            "shader group %s does not have %s closures.",
-            get_name(),
-            closure_name);
-    }
-}
-
-void ShaderGroup::get_shader_group_info(OSL::ShadingSystem& shading_system)
+void ShaderGroup::get_shadergroup_closures_info(OSL::ShadingSystem& shading_system)
 {
     m_has_emission = true;
     m_has_transparency = true;
@@ -248,7 +240,7 @@ void ShaderGroup::get_shader_group_info(OSL::ShadingSystem& shading_system)
             num_unknown_closures))
     {
         RENDERER_LOG_WARNING(
-            "getattribute call failed for shader group %s; "
+            "getattribute: unknown_closures_needed call failed for shader group %s; "
             "assuming shader group has all kinds of closures.",
             get_name());
 
@@ -272,14 +264,12 @@ void ShaderGroup::get_shader_group_info(OSL::ShadingSystem& shading_system)
             num_closures))
     {
         RENDERER_LOG_WARNING(
-            "getattribute call failed for shader group %s; "
+            "getattribute: num_closures_needed call failed for shader group %s; "
             "assuming shader group has all kinds of closures.",
             get_name());
-
-        return;
     }
 
-    if (num_closures)
+    if (num_closures != 0)
     {
         OIIO::ustring *closures = 0;
         if (!shading_system.getattribute(
@@ -289,7 +279,7 @@ void ShaderGroup::get_shader_group_info(OSL::ShadingSystem& shading_system)
                 &closures))
         {
             RENDERER_LOG_WARNING(
-                "getattribute call failed for shader group %s; "
+                "getattribute: closures_needed call failed for shader group %s; "
                 "assuming shader group has all kinds of closures.",
                 get_name());
 
@@ -303,21 +293,99 @@ void ShaderGroup::get_shader_group_info(OSL::ShadingSystem& shading_system)
 
         for (int i = 0; i < num_closures; ++i)
         {
-            if (closures[i] == "emission")
+            if (closures[i] == g_emission_str)
                 m_has_emission = true;
 
-            if (closures[i] == "transparent")
+            if (closures[i] == g_transparent_str)
                 m_has_transparency = true;
 
-            if (closures[i] == "holdout")
+            if (closures[i] == g_holdout_str)
                 m_has_holdout = true;
 
-            if (closures[i] == "debug")
+            if (closures[i] == g_debug_str)
                 m_has_debug = true;
         }
     }
 }
 
+void ShaderGroup::report_has_closure(const char* closure_name, bool has_closure) const
+{
+    if (has_closure)
+    {
+        RENDERER_LOG_INFO(
+            "shader group %s has %s closures.",
+            get_name(),
+            closure_name);
+    }
+    else
+    {
+        RENDERER_LOG_INFO(
+            "shader group %s does not have %s closures.",
+            get_name(),
+            closure_name);
+    }
+}
+
+void ShaderGroup::get_shadergroup_globals_info(OSL::ShadingSystem& shading_system)
+{
+    m_uses_dPdtime = true;
+
+    int num_globals = 0;
+    if (!shading_system.getattribute(
+            impl->m_shader_group_ref.get(),
+            "num_globals_needed",
+            num_globals))
+    {
+        RENDERER_LOG_WARNING(
+            "getattribute: num_globals_needed call failed for shader group %s; "
+            "assuming shader group uses all globals.",
+            get_name());
+    }
+
+    if (num_globals != 0)
+    {
+        OIIO::ustring *globals = 0;
+        if (!shading_system.getattribute(
+                impl->m_shader_group_ref.get(),
+                "globals_needed",
+                OIIO::TypeDesc::PTR,
+                &globals))
+        {
+            RENDERER_LOG_WARNING(
+                "getattribute: globals_needed call failed for shader group %s; "
+                "assuming shader group uses all globals.",
+                get_name());
+
+            return;
+        }
+
+        m_uses_dPdtime = false;
+
+        for (int i = 0; i < num_globals; ++i)
+        {
+            if (globals[i] == g_dPdtime_str)
+                m_uses_dPdtime = true;
+        }
+    }
+}
+
+void ShaderGroup::report_uses_global(const char* global_name, bool uses_global) const
+{
+    if (uses_global)
+    {
+        RENDERER_LOG_INFO(
+            "shader group %s uses the %s global.",
+            get_name(),
+            global_name);
+    }
+    else
+    {
+        RENDERER_LOG_INFO(
+            "shader group %s does not use the %s global.",
+            get_name(),
+            global_name);
+    }
+}
 
 //
 // ShaderGroupFactory class implementation.
