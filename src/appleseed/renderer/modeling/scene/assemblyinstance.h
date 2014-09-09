@@ -77,10 +77,6 @@ class DLLSYMBOL AssemblyInstance
     TransformSequence& transform_sequence();
     const TransformSequence& transform_sequence() const;
 
-    // Access the accumulated transform sequence of the instance.
-    TransformSequence& cumulated_transform_sequence();
-    const TransformSequence& cumulated_transform_sequence() const;
-
     // Find the assembly bound to this instance.
     Assembly* find_assembly() const;
 
@@ -112,7 +108,6 @@ class DLLSYMBOL AssemblyInstance
 
     Assembly*                       m_assembly;
     TransformSequence               m_transform_sequence;
-    TransformSequence               m_cumulated_transform_sequence;
 
     // Constructor.
     AssemblyInstance(
@@ -152,16 +147,6 @@ inline TransformSequence& AssemblyInstance::transform_sequence()
 inline const TransformSequence& AssemblyInstance::transform_sequence() const
 {
     return m_transform_sequence;
-}
-
-inline TransformSequence& AssemblyInstance::cumulated_transform_sequence()
-{
-    return m_cumulated_transform_sequence;
-}
-
-inline const TransformSequence& AssemblyInstance::cumulated_transform_sequence() const
-{
-    return m_cumulated_transform_sequence;
 }
 
 inline Assembly& AssemblyInstance::get_assembly() const

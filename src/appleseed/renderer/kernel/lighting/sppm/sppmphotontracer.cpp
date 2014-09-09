@@ -222,10 +222,7 @@ namespace
                 , thread_index)
           , m_abort_switch(abort_switch)
         {
-            if (const Camera* camera = scene.get_camera())
-                m_ray_dtime = camera->get_shutter_open_time_interval();
-            else
-                m_ray_dtime = 0.0;
+            m_ray_dtime = scene.get_camera()->get_shutter_open_time_interval();
         }
 
         virtual void execute(const size_t thread_index) OVERRIDE
@@ -504,10 +501,7 @@ namespace
 #endif
                 , thread_index)
         {
-            if (const Camera* camera = scene.get_camera())
-                m_ray_dtime = camera->get_shutter_open_time_interval();
-            else
-                m_ray_dtime = 0.0;
+            m_ray_dtime = scene.get_camera()->get_shutter_open_time_interval();
         }
 
         virtual void execute(const size_t thread_index) OVERRIDE
