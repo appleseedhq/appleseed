@@ -43,7 +43,6 @@ list (GET PYTHON_VERSION_LIST 1 PYTHON_MINOR_VERSION)
 #--------------------------------------------------------------------------------------------------
 # Boost libraries.
 #--------------------------------------------------------------------------------------------------
-
 if (PYTHON_MAJOR_VERSION STREQUAL "3")
     find_package (Boost 1.46 COMPONENTS ${BOOST_NEEDED_LIBS} python3)
 else ()
@@ -59,7 +58,12 @@ if ("${CMAKE_SYSTEM}" MATCHES "Linux")
 
     # Try liboost-python-pyXX.
     if (NOT Boost_FOUND)
-        find_package (Boost 1.46 REQUIRED COMPONENTS ${BOOST_NEEDED_LIBS} python-py${PYTHON_MAJOR_VERSION}${PYTHON_MINOR_VERSION})
+        find_package (Boost 1.46 COMPONENTS ${BOOST_NEEDED_LIBS} python-py${PYTHON_MAJOR_VERSION}${PYTHON_MINOR_VERSION})
+    endif ()
+
+    # Gentoo try libboost_python-x.x
+    if (NOT Boost_FOUND)
+            find_package (Boost 1.46 REQUIRED COMPONENTS ${BOOST_NEEDED_LIBS} python-${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION})
     endif ()
 endif ()
 

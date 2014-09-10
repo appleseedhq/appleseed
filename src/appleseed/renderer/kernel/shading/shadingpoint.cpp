@@ -34,6 +34,9 @@
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/modeling/object/iregion.h"
 #include "renderer/modeling/object/object.h"
+#ifdef WITH_OSL
+#include "renderer/modeling/shadergroup/shadergroup.h"
+#endif
 
 // appleseed.foundation headers.
 #include "foundation/math/intersection.h"
@@ -498,6 +501,68 @@ void ShadingPoint::compute_world_space_triangle_vertices() const
     m_v2_w = m_assembly_instance_transform.point_to_parent(m_v2_w);
 }
 
+void ShadingPoint::compute_point_velocity() const
+{
+    m_point_velocity = Vector3d(0.0);
+
+    if (m_primitive_type == PrimitiveTriangle)
+    {
+        // Retrieve the region kit of the object.
+        assert(m_region_kit_cache);
+        const RegionKit& region_kit =
+            *m_region_kit_cache->access(
+                m_object->get_uid(), m_object->get_region_kit());
+
+        // Retrieve the region.
+        const IRegion* region = region_kit[m_region_index];
+
+        // Retrieve the tessellation of the region.
+        assert(m_tess_cache);
+        const StaticTriangleTess& tess =
+            *m_tess_cache->access(
+                region->get_uid(), region->get_static_triangle_tess());
+        const size_t motion_segment_count = tess.get_motion_segment_count();
+
+        // Retrieve the triangle.
+        const Triangle& triangle = tess.m_primitives[m_primitive_index];
+
+        // Copy the object instance space triangle vertices.
+        assert(triangle.m_v0 != Triangle::None);
+        assert(triangle.m_v1 != Triangle::None);
+        assert(triangle.m_v2 != Triangle::None);
+        if (motion_segment_count > 0)
+        {
+            // Fetch triangle vertices from the last pose.
+            const GVector3 last_v0 = tess.get_vertex_pose(triangle.m_v0, motion_segment_count - 1);
+            const GVector3 last_v1 = tess.get_vertex_pose(triangle.m_v1, motion_segment_count - 1);
+            const GVector3 last_v2 = tess.get_vertex_pose(triangle.m_v2, motion_segment_count - 1);
+
+            // Compute velocities per vertex.
+            const GVector3 vel_v0 = last_v0 - tess.m_vertices[triangle.m_v0];
+            const GVector3 vel_v1 = last_v1 - tess.m_vertices[triangle.m_v1];
+            const GVector3 vel_v2 = last_v2 - tess.m_vertices[triangle.m_v2];
+
+            const float v = static_cast<float>(m_bary[0]);
+            const float w = static_cast<float>(m_bary[1]);
+            const float u = 1.0f - v - w;
+
+            // Compute point velocity.
+            const GVector3 velocity =
+                vel_v0 * u
+              + vel_v1 * v
+              + vel_v2 * w;
+
+            m_point_velocity = Vector3d(velocity);
+
+            // Transform to assembly space.
+            const Transformd& obj_instance_transform = m_object_instance->get_transform();
+            m_point_velocity = obj_instance_transform.vector_to_parent(m_point_velocity);
+
+            // Transform to world space.
+            m_point_velocity = m_assembly_instance_transform.vector_to_parent(m_point_velocity);
+        }
+    }
+}
 
 #ifdef WITH_OSL
 
@@ -550,9 +615,22 @@ OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::get_inverse_transform(float 
     return Matrix4f(transpose(m));
 }
 
-OSL::ShaderGlobals& ShadingPoint::get_osl_shader_globals() const
+void ShadingPoint::initialize_osl_shader_globals(
+    const ShaderGroup&      sg,
+    OSL::RendererServices*  renderer,
+    const float             surface_area) const
+{
+    initialize_osl_shader_globals(sg, get_ray().m_type, renderer, surface_area);
+}
+
+void ShadingPoint::initialize_osl_shader_globals(
+    const ShaderGroup&          sg,
+    const ShadingRay::TypeType  ray_type,
+    OSL::RendererServices*      renderer,
+    const float                 surface_area) const
 {
     assert(hit());
+    assert(renderer);
 
     if (!(m_members & HasOSLShaderGlobals))
     {
@@ -584,14 +662,19 @@ OSL::ShaderGlobals& ShadingPoint::get_osl_shader_globals() const
         m_shader_globals.dPdv = Vector3f(get_dpdv(0));
 
         m_shader_globals.time = static_cast<float>(ray.m_time);
-        m_shader_globals.dtime = 0.0f;
-        m_shader_globals.dPdtime = OSL::Vec3(0.0f, 0.0f, 0.0f);
+        m_shader_globals.dtime = get_dtime();
+
+        if (sg.uses_dPdtime())
+            m_shader_globals.dPdtime = Vector3f(get_point_velocity());
+        else
+            m_shader_globals.dPdtime = Vector3f(0.0f);
 
         m_shader_globals.Ps = OSL::Vec3(0.0f, 0.0f, 0.0f);
         m_shader_globals.dPsdx = OSL::Vec3(0.0f, 0.0f, 0.0f);
         m_shader_globals.dPsdy = OSL::Vec3(0.0f, 0.0f, 0.0f);
 
-        m_shader_globals.renderstate = 
+        m_shader_globals.renderer = renderer;
+        m_shader_globals.renderstate =
             const_cast<void*>(reinterpret_cast<const void*>(this));
 
         memset(reinterpret_cast<void*>(&m_osl_trace_data), 0, sizeof(OSLTraceData));
@@ -600,30 +683,33 @@ OSL::ShaderGlobals& ShadingPoint::get_osl_shader_globals() const
         m_shader_globals.objdata = 0;
 
         m_obj_transform_info.m_assembly_instance_transform =
-            &get_assembly_instance().cumulated_transform_sequence();
+            m_assembly_instance_transform_seq;
         m_obj_transform_info.m_object_instance_transform =
-            &get_object_instance().get_transform();
+            &m_object_instance->get_transform();
 
         m_shader_globals.object2common = reinterpret_cast<OSL::TransformationPtr>(&m_obj_transform_info);
 
         m_shader_globals.shader2common = 0;
-        m_shader_globals.surfacearea = 0.0f;
-
-        m_shader_globals.raytype = static_cast<int>(ray.m_type);
+        m_shader_globals.surfacearea = surface_area;
 
         m_shader_globals.flipHandedness = 0;
         m_shader_globals.backfacing = get_side() == ObjectInstance::FrontSide ? 0 : 1;
 
-        m_shader_globals.context = 0;
-        m_shader_globals.Ci = 0;
-
         m_members |= HasOSLShaderGlobals;
     }
-    else
-    {
-        // Update always the ray type, as it might have changed from the previous run.
-        m_shader_globals.raytype = static_cast<int>(get_ray().m_type);
-    }
+
+    // Always update the raytype.
+    m_shader_globals.raytype = static_cast<int>(ray_type);
+
+    // These are set by OSL when the shader is executed.
+    m_shader_globals.context = 0;
+    m_shader_globals.Ci = 0;
+}
+
+OSL::ShaderGlobals& ShadingPoint::get_osl_shader_globals() const
+{
+    assert(hit());
+    assert(m_members & HasOSLShaderGlobals);
 
     return m_shader_globals;
 }

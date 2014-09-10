@@ -47,6 +47,9 @@
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/edf/edf.h"
+#ifdef WITH_OSL
+#include "renderer/modeling/edf/osledf.h"
+#endif
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/input/inputevaluator.h"
@@ -219,6 +222,7 @@ namespace
                 , thread_index)
           , m_abort_switch(abort_switch)
         {
+            m_ray_dtime = scene.get_camera()->get_shutter_open_time_interval();
         }
 
         virtual void execute(const size_t thread_index) OVERRIDE
@@ -254,6 +258,7 @@ namespace
 #endif
         Tracer                      m_tracer;
         ShadingContext              m_shading_context;
+        double                      m_ray_dtime;
 
         void trace_light_photon(
             SamplingContext&        sampling_context)
@@ -289,7 +294,29 @@ namespace
 
             // Evaluate the EDF inputs.
             InputEvaluator input_evaluator(m_texture_cache);
-            edf->evaluate_inputs(input_evaluator, light_sample.m_bary);
+
+            // TODO: refactor this code (est.).
+#ifdef WITH_OSL
+            if (edf->is_osl_edf())
+            {
+                const OSLEDF* osl_edf = static_cast<const OSLEDF*>(edf);
+                const ShaderGroup* sg = light_sample.m_triangle->m_shader_group;
+                assert(sg);
+
+                ShadingPoint shading_point;
+                light_sample.make_shading_point(
+                    shading_point,
+                    light_sample.m_shading_normal,
+                    m_shading_context.get_intersector());
+
+                // TODO: get object area somehow.
+                const float surface_area = 0.0f;
+                m_shading_context.execute_osl_emission(*sg, shading_point, surface_area);
+                osl_edf->evaluate_osl_inputs(input_evaluator, shading_point);
+            }
+            else
+#endif
+                edf->evaluate_inputs(input_evaluator, light_sample.m_bary);
 
             // Sample the EDF.
             SamplingContext child_sampling_context = sampling_context.split(2, 1);
@@ -297,6 +324,7 @@ namespace
             Spectrum edf_value;
             double edf_prob;
             edf->sample(
+                sampling_context,
                 input_evaluator.data(),
                 light_sample.m_geometric_normal,
                 Basis3d(light_sample.m_shading_normal),
@@ -325,6 +353,7 @@ namespace
                 light_sample.m_point,
                 emission_direction,
                 child_sampling_context.next_double2(),
+                m_ray_dtime,
                 ShadingRay::LightRay);
 
             // Build the path tracer.
@@ -382,6 +411,7 @@ namespace
                 emission_position,
                 emission_direction,
                 child_sampling_context.next_double2(),
+                m_ray_dtime,
                 ShadingRay::LightRay);
 
             // Build the path tracer.
@@ -471,6 +501,7 @@ namespace
 #endif
                 , thread_index)
         {
+            m_ray_dtime = scene.get_camera()->get_shutter_open_time_interval();
         }
 
         virtual void execute(const size_t thread_index) OVERRIDE
@@ -509,6 +540,7 @@ namespace
 #endif
         Tracer                      m_tracer;
         ShadingContext              m_shading_context;
+        double                      m_ray_dtime;
 
         void trace_env_photon(
             SamplingContext&        sampling_context)
@@ -551,6 +583,7 @@ namespace
                 ray_origin,
                 -outgoing,
                 child_sampling_context.next_double2(),
+                m_ray_dtime,
                 ShadingRay::LightRay);
 
             // Build the path tracer.

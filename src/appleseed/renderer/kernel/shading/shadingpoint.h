@@ -57,6 +57,7 @@
 #ifdef WITH_OSL
 #include "foundation/platform/oslheaderguards.h"
 BEGIN_OSL_INCLUDES
+#include "OSL/oslexec.h"
 #include "OSL/shaderglobals.h"
 END_OSL_INCLUDES
 #endif
@@ -69,6 +70,7 @@ END_OSL_INCLUDES
 namespace renderer  { class Object; }
 #ifdef WITH_OSL
 namespace renderer  { class OSLShaderGroupExec; }
+namespace renderer  { class ShaderGroup; }
 #endif
 namespace renderer  { class Scene; }
 namespace renderer  { class TextureCache; }
@@ -111,6 +113,9 @@ class ShadingPoint
 
     // Return the time stored in the ray.
     double get_time() const;
+
+    // Return the time differential stored in the ray.
+    double get_dtime() const;
 
     // Return true if an intersection was found, false otherwise.
     bool hit() const;
@@ -160,6 +165,9 @@ class ShadingPoint
 
     // Return the i'th world space vertex of the hit triangle.
     const foundation::Vector3d& get_vertex(const size_t i) const;
+
+    // Return the world space point velocity.
+    const foundation::Vector3d& get_point_velocity() const;
 
     // Return the material at the intersection point, or 0 if there is none.
     const Material* get_material() const;
@@ -235,17 +243,18 @@ class ShadingPoint
     TextureCache*                       m_texture_cache;
 
     const Scene*                        m_scene;
-    mutable ShadingRay                  m_ray;                          // world space ray (m_tmax = distance to intersection)
+    mutable ShadingRay                  m_ray;                              // world space ray (m_tmax = distance to intersection)
 
     // Intersection results.
-    PrimitiveType                       m_primitive_type;               // type of the hit primitive
-    foundation::Vector2d                m_bary;                         // barycentric coordinates of intersection point
-    const AssemblyInstance*             m_assembly_instance;            // hit assembly instance
-    foundation::Transformd              m_assembly_instance_transform;  // transform of the hit assembly instance at ray time
-    size_t                              m_object_instance_index;        // index of the object instance that was hit
-    size_t                              m_region_index;                 // index of the region containing the hit triangle
-    size_t                              m_primitive_index;              // index of the hit primitive
-    TriangleSupportPlaneType            m_triangle_support_plane;       // support plane of the hit triangle
+    PrimitiveType                       m_primitive_type;                   // type of the hit primitive
+    foundation::Vector2d                m_bary;                             // barycentric coordinates of intersection point
+    const AssemblyInstance*             m_assembly_instance;                // hit assembly instance
+    foundation::Transformd              m_assembly_instance_transform;      // transform of the hit assembly instance at ray time
+    const TransformSequence*            m_assembly_instance_transform_seq;  // transform sequence of the hit assembly instance.
+    size_t                              m_object_instance_index;            // index of the object instance that was hit
+    size_t                              m_region_index;                     // index of the region containing the hit triangle
+    size_t                              m_primitive_index;                  // index of the hit primitive
+    TriangleSupportPlaneType            m_triangle_support_plane;           // support plane of the hit triangle
 
     // Flags to keep track of which on-demand results have been computed and cached.
     enum Members
@@ -262,9 +271,10 @@ class ShadingPoint
         HasShadingBasis                 = 1 << 9,
         HasWorldSpaceTriangleVertices   = 1 << 10,
         HasMaterial                     = 1 << 11,
-        HasTriangleVertexTangents       = 1 << 12
+        HasTriangleVertexTangents       = 1 << 12,
+        HasPointVelocity                = 1 << 13
 #ifdef WITH_OSL
-        , HasOSLShaderGlobals           = 1 << 13
+        , HasOSLShaderGlobals           = 1 << 14
 #endif
     };
     mutable foundation::uint32          m_members;
@@ -291,6 +301,7 @@ class ShadingPoint
     mutable ObjectInstance::Side        m_side;                         // side of the surface that was hit
     mutable foundation::Basis3d         m_shading_basis;                // world space orthonormal basis around shading normal
     mutable foundation::Vector3d        m_v0_w, m_v1_w, m_v2_w;         // world space triangle vertices
+    mutable foundation::Vector3d        m_point_velocity;               // world space point velocity
     mutable const Material*             m_material;                     // material at intersection point
 
     // Data required to avoid self-intersections.
@@ -321,6 +332,20 @@ class ShadingPoint
     void compute_original_shading_normal() const;
     void compute_shading_basis() const;
     void compute_world_space_triangle_vertices() const;
+    void compute_point_velocity() const;
+
+#ifdef WITH_OSL
+    void initialize_osl_shader_globals(
+        const ShaderGroup&      sg,
+        OSL::RendererServices*  renderer,
+        const float             surface_area = 0.0f) const;
+
+    void initialize_osl_shader_globals(
+        const ShaderGroup&          sg,
+        const ShadingRay::TypeType  ray_type,
+        OSL::RendererServices*      renderer,
+        const float                 surface_area = 0.0f) const;
+#endif
 };
 
 
@@ -343,6 +368,7 @@ inline ShadingPoint::ShadingPoint(const ShadingPoint& rhs)
   , m_bary(rhs.m_bary)
   , m_assembly_instance(rhs.m_assembly_instance)
   , m_assembly_instance_transform(rhs.m_assembly_instance_transform)
+  , m_assembly_instance_transform_seq(rhs.m_assembly_instance_transform_seq)
   , m_object_instance_index(rhs.m_object_instance_index)
   , m_region_index(rhs.m_region_index)
   , m_primitive_index(rhs.m_primitive_index)
@@ -380,6 +406,11 @@ inline const ShadingRay& ShadingPoint::get_ray() const
 inline double ShadingPoint::get_time() const
 {
     return m_ray.m_time;
+}
+
+inline double ShadingPoint::get_dtime() const
+{
+    return m_ray.m_dtime;
 }
 
 inline bool ShadingPoint::hit() const
@@ -561,6 +592,19 @@ inline const foundation::Vector3d& ShadingPoint::get_vertex(const size_t i) cons
     }
 
     return (&m_v0_w)[i];
+}
+
+inline const foundation::Vector3d& ShadingPoint::get_point_velocity() const
+{
+    assert(hit());
+
+    if (!(m_members & HasPointVelocity))
+    {
+        compute_point_velocity();
+        m_members |= HasPointVelocity;
+    }
+
+    return m_point_velocity;
 }
 
 inline const Material* ShadingPoint::get_material() const

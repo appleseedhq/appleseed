@@ -86,6 +86,9 @@ class DLLSYMBOL Camera
     // Get the time at the middle of the shutter interval.
     double get_shutter_middle_time() const;
 
+    // Get the amount of time the shutter is open.
+    double get_shutter_open_time_interval() const;
+
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
     virtual bool on_frame_begin(
@@ -133,6 +136,7 @@ class DLLSYMBOL Camera
     TransformSequence   m_transform_sequence;
     double              m_shutter_open_time;
     double              m_shutter_close_time;
+    double              m_shutter_open_time_interval;
 
     // Utility function to retrieve the film dimensions (in meters) from the camera parameters.
     foundation::Vector2d extract_film_dimensions() const;
@@ -209,6 +213,11 @@ inline double Camera::get_shutter_close_time() const
 inline double Camera::get_shutter_middle_time() const
 {
     return 0.5 * (m_shutter_open_time + m_shutter_close_time);
+}
+
+inline double Camera::get_shutter_open_time_interval() const
+{
+    return m_shutter_open_time_interval;
 }
 
 }       // namespace renderer

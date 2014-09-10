@@ -344,7 +344,10 @@ namespace
                 {
                     // Compute the emitted radiance.
                     Spectrum emitted_radiance;
-                    vertex.compute_emitted_radiance(m_texture_cache, emitted_radiance);
+                    vertex.compute_emitted_radiance(
+                        m_shading_context,
+                        m_texture_cache,
+                        emitted_radiance);
 
                     // Update the path radiance.
                     emitted_radiance *= vertex.m_throughput;
@@ -592,7 +595,10 @@ namespace
             {
                 // Compute the emitted radiance.
                 Spectrum emitted_radiance;
-                vertex.compute_emitted_radiance(m_texture_cache, emitted_radiance);
+                vertex.compute_emitted_radiance(
+                    m_shading_context,
+                    m_texture_cache,
+                    emitted_radiance);
 
                 // Multiple importance sampling.
                 if (vertex.m_prev_bsdf_mode != BSDF::Specular)

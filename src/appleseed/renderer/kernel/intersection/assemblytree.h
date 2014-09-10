@@ -77,7 +77,7 @@ class AssemblyTree
 {
   public:
     // Constructor, builds the tree for a given scene.
-    explicit AssemblyTree(Scene& scene);
+    explicit AssemblyTree(const Scene& scene);
 
     // Destructor.
     ~AssemblyTree();
@@ -119,7 +119,7 @@ class AssemblyTree
     typedef std::vector<const Assembly*> AssemblyVector;
     typedef std::map<foundation::UniqueID, foundation::VersionID> AssemblyVersionMap;
 
-    Scene&                          m_scene;
+    const Scene&                    m_scene;
     ItemVector                      m_items;
     AssemblyVersionMap              m_assembly_versions;
 
@@ -132,12 +132,9 @@ class AssemblyTree
     TreeRepository<CurveTree>       m_curve_tree_repository;
     CurveTreeContainer              m_curve_trees;
 
-    void compute_cumulated_transforms(
-        AssemblyInstanceContainer&              assembly_instances,
-        const TransformSequence&                parent_transform_seq);
-
     void collect_assembly_instances(
         const AssemblyInstanceContainer&        assembly_instances,
+        const TransformSequence&                parent_transform_seq,
         AABBVector&                             assembly_instance_bboxes);
 
     void rebuild_assembly_tree();

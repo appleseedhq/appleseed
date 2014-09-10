@@ -104,6 +104,17 @@ void ShadingContext::execute_osl_transparency(
         holdout);
 }
 
+void ShadingContext::execute_osl_emission(
+    const ShaderGroup&  shader_group,
+    const ShadingPoint& shading_point,
+    const float         surface_area) const
+{
+    m_shadergroup_exec.execute_emission(
+        shader_group,
+        shading_point,
+        surface_area);
+}
+
 #endif
 
 }   // namespace renderer

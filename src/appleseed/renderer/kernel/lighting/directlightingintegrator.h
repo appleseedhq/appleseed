@@ -40,6 +40,9 @@
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/edf/edf.h"
+#ifdef WITH_OSL
+#include "renderer/modeling/edf/osledf.h"
+#endif
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/material/material.h"
 
@@ -458,7 +461,22 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
 
     // Evaluate the input values of the EDF.
     InputEvaluator edf_input_evaluator(m_shading_context.get_texture_cache());
-    edf->evaluate_inputs(edf_input_evaluator, light_shading_point.get_uv(0));
+
+    // TODO: refactor this code (est.).
+#ifdef WITH_OSL
+    if (edf->is_osl_edf())
+    {
+        const OSLEDF* osl_edf = static_cast<const OSLEDF*>(edf);
+        const ShaderGroup* sg = material->get_osl_surface();
+
+        // TODO: get object area somehow.
+        const float surface_area = 0.0f;
+        m_shading_context.execute_osl_emission(*sg, light_shading_point, surface_area);
+        osl_edf->evaluate_osl_inputs(edf_input_evaluator, light_shading_point);
+    }
+    else
+#endif
+        edf->evaluate_inputs(edf_input_evaluator, light_shading_point.get_uv(0));
 
     // Evaluate emitted radiance.
     Spectrum edf_value;
@@ -616,7 +634,29 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
 
     // Evaluate the input values of the EDF.
     InputEvaluator edf_input_evaluator(m_shading_context.get_texture_cache());
-    edf->evaluate_inputs(edf_input_evaluator, sample.m_bary);
+
+    // TODO: refactor this code (est.).
+#ifdef WITH_OSL
+    if (edf->is_osl_edf())
+    {
+        const OSLEDF* osl_edf = static_cast<const OSLEDF*>(edf);
+        const ShaderGroup* sg = sample.m_triangle->m_shader_group;
+        assert(sg);
+
+        ShadingPoint shading_point;
+        sample.make_shading_point(
+            shading_point,
+            sample.m_shading_normal,
+            m_shading_context.get_intersector());
+
+        // TODO: get object area somehow.
+        const float surface_area = 0.0f;
+        m_shading_context.execute_osl_emission(*sg, shading_point, surface_area);
+        osl_edf->evaluate_osl_inputs(edf_input_evaluator, shading_point);
+    }
+    else
+#endif
+        edf->evaluate_inputs(edf_input_evaluator, sample.m_bary);
 
     // Evaluate the EDF.
     Spectrum edf_value;

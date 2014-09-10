@@ -30,6 +30,17 @@
 // Interface header.
 #include "basegroup.h"
 
+// appleseed.renderer headers.
+#include "renderer/modeling/scene/assembly.h"
+#ifdef WITH_OSL
+#include "renderer/modeling/shadergroup/shadergroup.h"
+#endif
+
+// appleseed.foundation headers.
+#include "foundation/utility/job/abortswitch.h"
+
+using namespace foundation;
+
 namespace renderer
 {
 
@@ -38,6 +49,9 @@ struct BaseGroup::Impl
     ColorContainer              m_colors;
     TextureContainer            m_textures;
     TextureInstanceContainer    m_texture_instances;
+#ifdef WITH_OSL
+    ShaderGroupContainer        m_shader_groups;
+#endif
     AssemblyContainer           m_assemblies;
     AssemblyInstanceContainer   m_assembly_instances;
 
@@ -45,6 +59,9 @@ struct BaseGroup::Impl
       : m_colors(parent)
       , m_textures(parent)
       , m_texture_instances(parent)
+#ifdef WITH_OSL
+      , m_shader_groups(parent)
+#endif
       , m_assemblies(parent)
       , m_assembly_instances(parent)
     {
@@ -75,6 +92,51 @@ TextureInstanceContainer& BaseGroup::texture_instances() const
 {
     return impl->m_texture_instances;
 }
+
+#ifdef WITH_OSL
+ShaderGroupContainer& BaseGroup::shader_groups() const
+{
+    return impl->m_shader_groups;
+}
+
+bool BaseGroup::create_osl_shader_groups(
+    OSL::ShadingSystem& shading_system,
+    AbortSwitch*        abort_switch)
+{
+    bool success = true;
+
+    for (each<AssemblyContainer> i = assemblies(); i ; ++i)
+    {
+        if (is_aborted(abort_switch))
+            return success;
+
+        success = success && i->create_osl_shader_groups(
+            shading_system,
+            abort_switch);
+    }
+
+    for (each<ShaderGroupContainer> i = shader_groups(); i ; ++i)
+    {
+        if (is_aborted(abort_switch))
+            return success;
+
+        success = success && i->create_osl_shader_group(
+            shading_system,
+            abort_switch);
+    }
+
+    return success;
+}
+
+void BaseGroup::release_osl_shader_groups()
+{
+    for (each<AssemblyContainer> i = assemblies(); i ; ++i)
+        i->release_osl_shader_groups();
+
+    for (each<ShaderGroupContainer> i = shader_groups(); i ; ++i)
+        i->release_osl_shader_group();
+}
+#endif
 
 AssemblyContainer& BaseGroup::assemblies() const
 {

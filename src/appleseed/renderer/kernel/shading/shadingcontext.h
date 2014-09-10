@@ -111,6 +111,11 @@ class ShadingContext
         const ShadingPoint& shading_point,
         Alpha&              alpha,
         float*              holdout = 0) const;
+
+    void execute_osl_emission(
+        const ShaderGroup&  shader_group,
+        const ShadingPoint& shading_point,
+        const float         surface_area) const;
 #endif
 
   private:

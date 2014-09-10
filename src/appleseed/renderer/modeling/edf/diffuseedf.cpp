@@ -99,6 +99,7 @@ namespace
         }
 
         virtual void sample(
+            SamplingContext&    sampling_context,
             const void*         data,
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,

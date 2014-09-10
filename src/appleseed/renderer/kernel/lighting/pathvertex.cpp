@@ -31,15 +31,20 @@
 #include "pathvertex.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/modeling/edf/edf.h"
+#ifdef WITH_OSL
+#include "renderer/modeling/edf/osledf.h"
+#endif
 #include "renderer/modeling/input/inputevaluator.h"
 
 namespace renderer
 {
 
 void PathVertex::compute_emitted_radiance(
-    TextureCache&       texture_cache,
-    Spectrum&           radiance) const
+    const ShadingContext&   shading_context,
+    TextureCache&           texture_cache,
+    Spectrum&               radiance) const
 {
     assert(m_edf);
 
@@ -52,7 +57,23 @@ void PathVertex::compute_emitted_radiance(
 
     // Evaluate the input values of the EDF.
     InputEvaluator input_evaluator(texture_cache);
-    m_edf->evaluate_inputs(input_evaluator, m_shading_point->get_uv(0));
+
+    // TODO: refactor this code (est.).
+#ifdef WITH_OSL
+    if (m_edf->is_osl_edf())
+    {
+        const OSLEDF* osl_edf = static_cast<const OSLEDF*>(m_edf);
+        const ShaderGroup* sg = get_material()->get_osl_surface();
+        assert(sg);
+
+        // TODO: get object area somehow.
+        const float surface_area = 0.0f;
+        shading_context.execute_osl_emission(*sg, *m_shading_point, surface_area);
+        osl_edf->evaluate_osl_inputs(input_evaluator, *m_shading_point);
+    }
+    else
+#endif
+        m_edf->evaluate_inputs(input_evaluator, m_shading_point->get_uv(0));
 
     // Compute the emitted radiance.
     m_edf->evaluate(

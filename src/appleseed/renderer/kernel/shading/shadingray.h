@@ -72,6 +72,7 @@ class ShadingRay
 
     // Public members.
     double                          m_time;
+    double                          m_dtime;
     TypeType                        m_type;
     DepthType                       m_depth;
 
@@ -80,12 +81,14 @@ class ShadingRay
     ShadingRay(
         const RayType&              ray,
         const double                time,
+        const double                dtime,
         const TypeType              type,
         const DepthType             depth = 0);
     ShadingRay(
         const VectorType&           org,
         const VectorType&           dir,
         const double                time,
+        const double                dtime,
         const TypeType              type,
         const DepthType             depth = 0);
     ShadingRay(
@@ -94,6 +97,7 @@ class ShadingRay
         const ValueType             tmin,
         const ValueType             tmax,
         const double                time,
+        const double                dtime,
         const TypeType              type,
         const DepthType             depth = 0);
 };
@@ -120,10 +124,12 @@ inline ShadingRay::ShadingRay()
 inline ShadingRay::ShadingRay(
     const RayType&                  ray,
     const double                    time,
+    const double                    dtime,
     const TypeType                  type,
     const DepthType                 depth)
   : RayType(ray)
   , m_time(time)
+  , m_dtime(dtime)
   , m_type(type)
   , m_depth(depth)
 {
@@ -133,10 +139,12 @@ inline ShadingRay::ShadingRay(
     const VectorType&               org,
     const VectorType&               dir,
     const double                    time,
+    const double                    dtime,
     const TypeType                  type,
     const DepthType                 depth)
   : RayType(org, dir)
   , m_time(time)
+  , m_dtime(dtime)
   , m_type(type)
   , m_depth(depth)
 {
@@ -148,10 +156,12 @@ inline ShadingRay::ShadingRay(
     const ValueType                 tmin,
     const ValueType                 tmax,
     const double                    time,
+    const double                    dtime,
     const TypeType                  type,
     const DepthType                 depth)
   : RayType(org, dir, tmin, tmax)
   , m_time(time)
+  , m_dtime(dtime)
   , m_type(type)
   , m_depth(depth)
 {
@@ -166,6 +176,7 @@ inline ShadingRay transform_to_local(
         ShadingRay(
             transform.transform_to_local(ray),
             ray.m_time,
+            ray.m_dtime,
             ray.m_type,
             ray.m_depth);
 }
@@ -179,6 +190,7 @@ inline ShadingRay transform_to_parent(
         ShadingRay(
             transform.transform_to_parent(ray),
             ray.m_time,
+            ray.m_dtime,
             ray.m_type,
             ray.m_depth);
 }

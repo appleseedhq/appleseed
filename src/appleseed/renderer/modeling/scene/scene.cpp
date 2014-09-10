@@ -223,30 +223,6 @@ namespace
         return success;
     }
 
-#ifdef WITH_OSL
-
-    template <typename EntityCollection>
-    bool invoke_on_frame_begin(
-        const Project&          project,
-        EntityCollection&       entities,
-        OSL::ShadingSystem&     shading_system,
-        AbortSwitch*            abort_switch)
-    {
-        bool success = true;
-
-        for (each<EntityCollection> i = entities; i; ++i)
-        {
-            if (is_aborted(abort_switch))
-                break;
-
-            success = success && i->on_frame_begin(project, shading_system, abort_switch);
-        }
-
-        return success;
-    }
-
-#endif
-
     template <typename EntityCollection>
     void invoke_on_frame_end(
         const Project&          project,
@@ -259,9 +235,6 @@ namespace
 
 bool Scene::on_frame_begin(
     const Project&          project,
-#ifdef WITH_OSL
-    OSL::ShadingSystem&     shading_system,
-#endif
     AbortSwitch*            abort_switch)
 {
     bool success = true;
@@ -279,12 +252,7 @@ bool Scene::on_frame_begin(
     if (impl->m_environment.get())
         success = success && impl->m_environment->on_frame_begin(project, abort_switch);
 
-#ifdef WITH_OSL
-    success = success && invoke_on_frame_begin(project, assemblies(), shading_system, abort_switch);
-#else
     success = success && invoke_on_frame_begin(project, assemblies(), abort_switch);
-#endif
-
     success = success && invoke_on_frame_begin(project, assembly_instances(), abort_switch);
 
     return success;
