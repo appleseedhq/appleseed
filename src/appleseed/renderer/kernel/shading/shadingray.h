@@ -77,7 +77,7 @@ class ShadingRay
     DepthType                       m_depth;
 
     // Constructors.
-    ShadingRay();                               // leave all fields uninitialized
+    ShadingRay();                   // leave all fields uninitialized
     ShadingRay(
         const RayType&              ray,
         const double                time,

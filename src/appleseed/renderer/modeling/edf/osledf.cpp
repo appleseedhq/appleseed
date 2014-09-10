@@ -30,28 +30,11 @@
 #include "osledf.h"
 
 // appleseed.renderer headers.
-#include "renderer/global/globaltypes.h"
+#include "renderer/global/globallogger.h"
 #include "renderer/kernel/shading/closures.h"
 #include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/modeling/edf/edffactoryregistrar.h"
-#include "renderer/modeling/input/inputarray.h"
+#include "renderer/modeling/edf/diffuseedf.h"
 #include "renderer/modeling/input/inputevaluator.h"
-
-// appleseed.foundation headers.
-#include "foundation/math/basis.h"
-#include "foundation/math/sampling.h"
-#include "foundation/math/scalar.h"
-#include "foundation/math/vector.h"
-#include "foundation/platform/compiler.h"
-#include "foundation/utility/containers/specializedarrays.h"
-
-// Standard headers.
-#include <cassert>
-
-// Forward declarations.
-namespace foundation    { class AbortSwitch; }
-namespace renderer      { class Assembly; }
-namespace renderer      { class Project; }
 
 using namespace foundation;
 
@@ -59,14 +42,12 @@ namespace renderer
 {
 
 //
-// OSL EDF class implementation.
+// OSLEDF class implementation.
 //
 
 namespace
 {
-
-const char* Model = "osl_edf";
-
+    const char* Model = "osl_edf";
 }
 
 OSLEDF::OSLEDF(
@@ -93,9 +74,9 @@ bool OSLEDF::is_osl_edf() const
 }
 
 bool OSLEDF::on_frame_begin(
-        const Project&      project,
-        const Assembly&     assembly,
-        AbortSwitch*        abort_switch)
+    const Project&      project,
+    const Assembly&     assembly,
+    AbortSwitch*        abort_switch)
 {
     if (!EDF::on_frame_begin(project, assembly, abort_switch))
         return false;
@@ -104,23 +85,23 @@ bool OSLEDF::on_frame_begin(
 }
 
 void OSLEDF::on_frame_end(
-    const Project&              project,
-    const Assembly&             assembly) OVERRIDE
+    const Project&      project,
+    const Assembly&     assembly)
 {
     EDF::on_frame_end(project, assembly);
 }
 
 void OSLEDF::evaluate_inputs(
-    InputEvaluator& input_evaluator,
-    const Vector2d& uv) const OVERRIDE
+    InputEvaluator&     input_evaluator,
+    const Vector2d&     uv) const
 {
     RENDERER_LOG_FATAL(
-        "Internal error: OSLEDF::evaluate_inputs should never be called");
+        "internal error: OSLEDF::evaluate_inputs should never be called.");
 }
 
 void OSLEDF::evaluate_osl_inputs(
-    InputEvaluator&             input_evaluator,
-    const ShadingPoint&         shading_point) const
+    InputEvaluator&     input_evaluator,
+    const ShadingPoint& shading_point) const
 {
     CompositeEmissionClosure* c =
         reinterpret_cast<CompositeEmissionClosure*>(input_evaluator.data());
@@ -209,7 +190,6 @@ double OSLEDF::evaluate_pdf(
 //
 // OSLEDFFactory class implementation.
 //
-
 
 auto_release_ptr<EDF> OSLEDFFactory::create() const
 {

@@ -30,11 +30,12 @@
 #define APPLESEED_RENDERER_MODELING_EDF_OSLEDF_H
 
 // appleseed.renderer headers.
+#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/edf/edf.h"
-#include "renderer/modeling/edf/iedffactory.h"
-#include "renderer/modeling/input/inputarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/basis.h"
+#include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
 
@@ -42,14 +43,17 @@
 #include "main/dllsymbol.h"
 
 // Forward declarations.
+namespace foundation    { class AbortSwitch; }
 namespace foundation    { class DictionaryArray; }
+namespace renderer      { class Assembly; }
+namespace renderer      { class InputEvaluator; }
 namespace renderer      { class ParamArray; }
+namespace renderer      { class Project; }
 namespace renderer      { class ShadingContext; }
 namespace renderer      { class ShadingPoint; }
 
 namespace renderer
 {
-
 
 //
 // OSL EDF.
@@ -116,11 +120,11 @@ class OSLEDF
   private:
     friend class OSLEDFFactory;
 
-    OSLEDF(
-        const char*         name,
-        const ParamArray&   params);
-
     foundation::auto_release_ptr<EDF> m_diffuse_edf;
+
+    OSLEDF(
+        const char*                 name,
+        const ParamArray&           params);
 };
 
 

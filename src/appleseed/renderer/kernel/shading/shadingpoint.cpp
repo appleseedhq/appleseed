@@ -662,12 +662,12 @@ void ShadingPoint::initialize_osl_shader_globals(
         m_shader_globals.dPdv = Vector3f(get_dpdv(0));
 
         m_shader_globals.time = static_cast<float>(ray.m_time);
-        m_shader_globals.dtime = get_dtime();
+        m_shader_globals.dtime = static_cast<float>(get_dtime());
 
-        if (sg.uses_dPdtime())
-            m_shader_globals.dPdtime = Vector3f(get_point_velocity());
-        else
-            m_shader_globals.dPdtime = Vector3f(0.0f);
+        m_shader_globals.dPdtime =
+            sg.uses_dPdtime()
+                ? Vector3f(get_point_velocity())
+                : Vector3f(0.0f);
 
         m_shader_globals.Ps = OSL::Vec3(0.0f, 0.0f, 0.0f);
         m_shader_globals.dPsdx = OSL::Vec3(0.0f, 0.0f, 0.0f);
