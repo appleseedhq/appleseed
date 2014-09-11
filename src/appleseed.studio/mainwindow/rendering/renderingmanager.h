@@ -32,6 +32,7 @@
 
 // appleseed.studio headers.
 #include "mainwindow/rendering/cameracontroller.h"
+#include "mainwindow/rendering/frozendisplaythread.h"
 #include "mainwindow/rendering/qtrenderercontroller.h"
 #include "mainwindow/rendering/qttilecallbackfactory.h"
 #include "mainwindow/rendering/renderingtimer.h"
@@ -156,7 +157,7 @@ class RenderingManager
     DelayedActionCollection                     m_delayed_actions;
     PermanentStateCollection                    m_permanent_states;
 
-    std::auto_ptr<QThread>                      m_frozen_display_thread;
+    std::auto_ptr<FrozenDisplayThread>          m_frozen_display_thread;
 
     virtual void timerEvent(QTimerEvent* event);
 
