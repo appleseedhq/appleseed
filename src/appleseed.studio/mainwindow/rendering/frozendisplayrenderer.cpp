@@ -27,7 +27,7 @@
 //
 
 // Interface header.
-#include "frozendisplaythread.h"
+#include "frozendisplayrenderer.h"
 
 // appleseed.studio headers.
 #include "mainwindow/rendering/renderwidget.h"
@@ -36,7 +36,6 @@
 #include "renderer/api/aov.h"
 #include "renderer/api/camera.h"
 #include "renderer/api/frame.h"
-#include "renderer/api/log.h"
 #include "renderer/api/trace.h"
 #include "renderer/api/utility.h"
 
@@ -44,15 +43,17 @@
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
 #include "foundation/image/tile.h"
+#include "foundation/math/rng.h"
 #include "foundation/math/scalar.h"
+#include "foundation/math/transform.h"
 #include "foundation/platform/types.h"
-#include "foundation/utility/memory.h"
 
 // Qt headers.
 #include <QImage>
 #include <QMutexLocker>
 
 // Standard headers.
+#include <cstddef>
 #include <cstring>
 
 using namespace foundation;
@@ -62,7 +63,7 @@ using namespace std;
 namespace appleseed {
 namespace studio {
 
-FrozenDisplayThread::FrozenDisplayThread(
+FrozenDisplayRenderer::FrozenDisplayRenderer(
     const Camera&   camera,
     const Frame&    frame,
     RenderWidget&   render_widget)
@@ -72,38 +73,10 @@ FrozenDisplayThread::FrozenDisplayThread(
   , m_color_image(frame.image())
   , m_depth_image(frame.aov_images().get_image(frame.aov_images().get_index("depth")))
   , m_render_widget(render_widget)
-  , m_point_count(0)
-  , m_point_index(0)
 {
     const QImage& dest_image = m_render_widget.image();
     m_zbuffer.resize(dest_image.width() * dest_image.height(), 0.0f);
-
-    ensure_minimum_size(m_points, 2 * m_frame_props.m_pixel_count);
-
-    update_camera_transform();
-}
-
-void FrozenDisplayThread::update_camera_transform()
-{
-    QMutexLocker locker(&m_camera_mutex);
-    m_camera_transform = m_camera.transform_sequence().evaluate(0.0);
-}
-
-void FrozenDisplayThread::abort()
-{
-    m_abort_switch.abort();
-}
-
-void FrozenDisplayThread::run()
-{
-    RENDERER_LOG_DEBUG("frozen display thread started.");
-
-    add_points(1);
-
-    while (!m_abort_switch.is_aborted())
-        render_points();
-
-    RENDERER_LOG_DEBUG("frozen display thread terminated.");
+    m_points.resize(m_frame_props.m_pixel_count);
 }
 
 namespace
@@ -119,15 +92,16 @@ namespace
     }
 }
 
-void FrozenDisplayThread::add_points(const size_t spacing)
+void FrozenDisplayRenderer::capture()
 {
-    QMutexLocker locker(&m_camera_mutex);
-
+    MersenneTwister rng;
     SamplingContext sampling_context(
-        m_rng,
+        rng,
         2,      // number of dimensions
         0,      // number of samples -- unknown
         0);     // initial instance number
+
+    size_t point_index = 0;
 
     for (size_t ty = 0; ty < m_frame_props.m_tile_count_y; ++ty)
     {
@@ -138,9 +112,9 @@ void FrozenDisplayThread::add_points(const size_t spacing)
             const size_t tile_width = color_tile.get_width();
             const size_t tile_height = color_tile.get_height();
 
-            for (size_t py = 0; py < tile_height; py += spacing)
+            for (size_t py = 0; py < tile_height; ++py)
             {
-                for (size_t px = 0; px < tile_width; px += spacing)
+                for (size_t px = 0; px < tile_width; ++px)
                 {
                     // Compute film point in NDC.
                     const Vector2d point =
@@ -169,10 +143,7 @@ void FrozenDisplayThread::add_points(const size_t spacing)
                         RenderPoint point;
                         point.m_position = Vector3f(ray.point_at(depth));
                         point.m_color = rgb32f_to_color3b(pixel[0], pixel[1], pixel[2]);
-                        m_points[m_point_index++] = point;
-                        m_point_count = max(m_point_count, m_point_index);
-                        if (m_point_index == m_points.size())
-                            m_point_index = 0;
+                        m_points[point_index++] = point;
                     }
                 }
             }
@@ -180,12 +151,11 @@ void FrozenDisplayThread::add_points(const size_t spacing)
     }
 }
 
-void FrozenDisplayThread::render_points()
+void FrozenDisplayRenderer::render()
 {
-    // Copy the camera transform.
-    m_camera_mutex.lock();
-    const Transformd camera_transform_copy = m_camera_transform;
-    m_camera_mutex.unlock();
+    // Get the camera transform.
+    Transformd tmp;
+    const Transformd& camera_transform = m_camera.transform_sequence().evaluate(0.0, tmp);
 
     // Get exclusive access to the render widget.
     QMutexLocker render_widget_locker(&m_render_widget.mutex());
@@ -208,12 +178,13 @@ void FrozenDisplayThread::render_points()
     for (size_t i = 0; i < image_width * image_height; ++i)
         zbuffer[i] = -1.0e38f;
 
-    for (size_t i = 0; i < m_point_count; ++i)
+    const size_t point_count = m_points.size();
+    for (size_t i = 0; i < point_count; ++i)
     {
         const RenderPoint& point = m_points[i];
 
         // Transform point to camera space.
-        const Vector3f point_camera = camera_transform_copy.point_to_local(point.m_position);
+        const Vector3f point_camera = camera_transform.point_to_local(point.m_position);
 
         // Project point to film plane.
         Vector2d ndc;

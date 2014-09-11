@@ -1,3 +1,4 @@
+
 #
 # This source file is part of appleseed.
 # Visit http://appleseedhq.net/ for additional information and resources.
@@ -213,8 +214,8 @@ source_group ("mainwindow\\project" FILES
 set (mainwindow_rendering_sources
     mainwindow/rendering/cameracontroller.cpp
     mainwindow/rendering/cameracontroller.h
-    mainwindow/rendering/frozendisplaythread.cpp
-    mainwindow/rendering/frozendisplaythread.h
+    mainwindow/rendering/frozendisplayrenderer.cpp
+    mainwindow/rendering/frozendisplayrenderer.h
     mainwindow/rendering/pixelinspectorhandler.cpp
     mainwindow/rendering/pixelinspectorhandler.h
     mainwindow/rendering/qtrenderercontroller.cpp

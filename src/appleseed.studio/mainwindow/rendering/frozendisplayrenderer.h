@@ -26,23 +26,14 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_RENDERING_FROZENDISPLAYTHREAD_H
-#define APPLESEED_STUDIO_MAINWINDOW_RENDERING_FROZENDISPLAYTHREAD_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_RENDERING_FROZENDISPLAYRENDERER_H
+#define APPLESEED_STUDIO_MAINWINDOW_RENDERING_FROZENDISPLAYRENDERER_H
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
-#include "foundation/math/rng.h"
-#include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/compiler.h"
-#include "foundation/utility/job/abortswitch.h"
-
-// Qt headers.
-#include <QMutex>
-#include <QThread>
 
 // Standard headers.
-#include <cstddef>
 #include <vector>
 
 // Forward declarations.
@@ -55,18 +46,16 @@ namespace renderer      { class Frame; }
 namespace appleseed {
 namespace studio {
 
-class FrozenDisplayThread
-  : public QThread
+class FrozenDisplayRenderer
 {
   public:
-    FrozenDisplayThread(
+    FrozenDisplayRenderer(
         const renderer::Camera&         camera,
         const renderer::Frame&          frame,
         RenderWidget&                   render_widget);
 
-    void update_camera_transform();
-
-    void abort();
+    void capture();
+    void render();
 
   private:
     const renderer::Camera&             m_camera;
@@ -75,9 +64,6 @@ class FrozenDisplayThread
     foundation::Image&                  m_color_image;
     foundation::Image&                  m_depth_image;
     RenderWidget&                       m_render_widget;
-    foundation::AbortSwitch             m_abort_switch;
-    foundation::Transformd              m_camera_transform;
-    QMutex                              m_camera_mutex;
 
     struct RenderPoint
     {
@@ -86,20 +72,10 @@ class FrozenDisplayThread
     };
 
     std::vector<RenderPoint>            m_points;
-    size_t                              m_point_count;
-    size_t                              m_point_index;
-
     std::vector<float>                  m_zbuffer;
-
-    foundation::MersenneTwister         m_rng;
-
-    virtual void run() OVERRIDE;
-
-    void add_points(const size_t spacing);
-    void render_points();
 };
 
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_RENDERING_FROZENDISPLAYTHREAD_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_RENDERING_FROZENDISPLAYRENDERER_H

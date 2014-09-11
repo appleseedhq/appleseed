@@ -387,8 +387,8 @@ void RenderingManager::slot_frame_begin()
         if (m_camera_controller.get())
             m_camera_controller->update_camera_transform();
 
-        if (m_frozen_display_thread.get())
-            m_frozen_display_thread->update_camera_transform();
+        if (m_frozen_display_renderer.get())
+            m_frozen_display_renderer->render();
 
         m_camera_changed = false;
     }
@@ -410,12 +410,12 @@ void RenderingManager::slot_camera_change_begin()
     if (m_params.get_optional<bool>("freeze_display_during_navigation", false))
     {
         m_tile_callbacks_enabled = false;
-        m_frozen_display_thread.reset(
-            new FrozenDisplayThread(
+        m_frozen_display_renderer.reset(
+            new FrozenDisplayRenderer(
                 *m_project->get_scene()->get_camera(),
                 *m_project->get_frame(),
                 *m_render_widget));
-        m_frozen_display_thread->start();
+        m_frozen_display_renderer->capture();
     }
 }
 
@@ -427,11 +427,9 @@ void RenderingManager::slot_camera_changed()
 
 void RenderingManager::slot_camera_change_end()
 {
-    if (m_frozen_display_thread.get())
+    if (m_frozen_display_renderer.get())
     {
-        m_frozen_display_thread->abort();
-        m_frozen_display_thread->wait();
-        m_frozen_display_thread.reset();
+        m_frozen_display_renderer.reset();
         m_tile_callbacks_enabled = true;
     }
 }
