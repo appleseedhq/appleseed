@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/shading/shadingray.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -81,6 +82,12 @@ class OSLShaderGroupExec
     OSL::ShadingSystem&         m_osl_shading_system;
     OSL::PerThreadInfo*         m_osl_thread_info;
     OSL::ShadingContext*        m_osl_shading_context;
+
+    void do_execute(
+        const ShaderGroup&          shader_group,
+        const ShadingPoint&         shading_point,
+        const ShadingRay::TypeType  ray_type,
+        const float                 surface_area) const;
 };
 
 }       // namespace renderer
