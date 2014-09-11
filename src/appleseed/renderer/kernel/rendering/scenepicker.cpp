@@ -50,6 +50,9 @@
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/modeling/surfaceshader/surfaceshadertraits.h"
 
+// Standard headers.
+#include <limits>
+
 using namespace foundation;
 using namespace std;
 
@@ -106,7 +109,7 @@ ScenePicker::PickingResult ScenePicker::pick(const Vector2d& ndc) const
     result.m_distance =
         hit
             ? shading_point.get_distance() * norm(ray.m_dir)
-            : shading_point.get_distance();
+            : numeric_limits<double>::max();
     result.m_primitive_type = shading_point.get_primitive_type();
     result.m_camera = camera;
     result.m_assembly_instance = hit ? &shading_point.get_assembly_instance() : 0;
