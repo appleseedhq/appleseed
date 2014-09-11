@@ -75,15 +75,15 @@ class DLLSYMBOL ImageStack
 
     size_t size() const;
 
+    // Returns ~0 if the requested image cannot be found.
+    size_t get_index(const char* name) const;
+
     const char* get_name(const size_t index) const;
 
     Type get_type(const size_t index) const;
 
     foundation::Image& get_image(const size_t index);
     const foundation::Image& get_image(const size_t index) const;
-
-    // Returns ~0 if the requested image cannot be found.
-    size_t get(const char* name) const;
 
     size_t append(
         const char*                     name,

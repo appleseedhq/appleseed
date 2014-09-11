@@ -94,11 +94,11 @@ namespace
             {
                 ImageStack& images = frame.aov_images();
 
-                m_variation_aov_index = images.get("variation");
+                m_variation_aov_index = images.get_index("variation");
                 if (m_variation_aov_index == ~0 && images.size() < MaxAOVCount)
                     m_variation_aov_index = images.append("variation", ImageStack::IdentificationType, 4, PixelFormatFloat);
 
-                m_samples_aov_index = images.get("samples");
+                m_samples_aov_index = images.get_index("samples");
                 if (m_samples_aov_index == ~0 && images.size() < MaxAOVCount)
                     m_samples_aov_index = images.append("samples", ImageStack::IdentificationType, 4, PixelFormatFloat);
 

@@ -105,6 +105,19 @@ size_t ImageStack::size() const
     return impl->m_images.size();
 }
 
+size_t ImageStack::get_index(const char* name) const
+{
+    const size_t size = impl->m_images.size();
+
+    for (size_t i = 0; i < size; ++i)
+    {
+        if (strcmp(impl->m_images[i].m_name.c_str(), name) == 0)
+            return i;
+    }
+
+    return ~0;
+}
+
 const char* ImageStack::get_name(const size_t index) const
 {
     assert(index < impl->m_images.size());
@@ -127,19 +140,6 @@ const Image& ImageStack::get_image(const size_t index) const
 {
     assert(index < impl->m_images.size());
     return *impl->m_images[index].m_image;
-}
-
-size_t ImageStack::get(const char* name) const
-{
-    const size_t size = impl->m_images.size();
-
-    for (size_t i = 0; i < size; ++i)
-    {
-        if (strcmp(impl->m_images[i].m_name.c_str(), name) == 0)
-            return i;
-    }
-
-    return ~0;
 }
 
 size_t ImageStack::append(
