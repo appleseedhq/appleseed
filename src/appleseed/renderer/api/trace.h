@@ -27,10 +27,11 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_TRACECONTEXT_H
-#define APPLESEED_RENDERER_API_TRACECONTEXT_H
+#ifndef APPLESEED_RENDERER_API_TRACE_H
+#define APPLESEED_RENDERER_API_TRACE_H
 
 // API headers.
 #include "renderer/kernel/intersection/tracecontext.h"
+#include "renderer/kernel/shading/shadingray.h"
 
-#endif  // !APPLESEED_RENDERER_API_TRACECONTEXT_H
+#endif  // !APPLESEED_RENDERER_API_TRACE_H

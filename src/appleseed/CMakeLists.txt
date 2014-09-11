@@ -773,7 +773,7 @@ set (renderer_api_sources
     renderer/api/scene.h
     renderer/api/surfaceshader.h
     renderer/api/texture.h
-    renderer/api/tracecontext.h
+    renderer/api/trace.h
     renderer/api/utility.h
 )
 list (APPEND appleseed_sources
