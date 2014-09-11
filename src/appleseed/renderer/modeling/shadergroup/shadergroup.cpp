@@ -247,7 +247,7 @@ void ShaderGroup::get_shadergroup_closures_info(OSL::ShadingSystem& shading_syst
         return;
     }
 
-    if (num_unknown_closures)
+    if (num_unknown_closures != 0)
     {
         RENDERER_LOG_WARNING(
             "shader group %s has unknown closures; "
@@ -271,7 +271,7 @@ void ShaderGroup::get_shadergroup_closures_info(OSL::ShadingSystem& shading_syst
 
     if (num_closures != 0)
     {
-        OIIO::ustring *closures = 0;
+        OIIO::ustring* closures = 0;
         if (!shading_system.getattribute(
                 impl->m_shader_group_ref.get(),
                 "closures_needed",
