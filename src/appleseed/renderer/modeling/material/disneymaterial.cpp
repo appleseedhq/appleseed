@@ -87,7 +87,9 @@ namespace
           , m_texture_system(0)
           , m_texture_is_srgb(true)
         {
+#if OIIO_VERSION <= 10504
             m_texture_options.nchannels = 3;
+#endif
             m_texture_options.swrap = OIIO::TextureOpt::WrapPeriodic;
             m_texture_options.twrap = OIIO::TextureOpt::WrapPeriodic;
         }
@@ -141,6 +143,9 @@ namespace
                     0.0f,
                     0.0f,
                     0.0f,
+#if OIIO_VERSION > 10504
+                    3,
+#endif
                     color))
             {
                 result = SeVec3d(color[0], color[1], color[2]);
@@ -414,9 +419,11 @@ class DisneyLayerParam
 
             m_texture_filename = OIIO::ustring(trim_both(tokens[0], " \""));
             m_texture_is_srgb = texture_is_srgb(m_texture_filename);
-            m_texture_options.nchannels = 3;
             m_texture_options.swrap = OIIO::TextureOpt::WrapPeriodic;
             m_texture_options.rwrap = OIIO::TextureOpt::WrapPeriodic;
+#if OIIO_VERSION <= 10504
+            m_texture_options.nchannels = 3;
+#endif
         }
 
         return true;
@@ -442,6 +449,9 @@ class DisneyLayerParam
                     0.0f,
                     0.0f,
                     0.0f,
+#if OIIO_VERSION > 10504
+                    3,
+#endif
                     color))
             {
                 return Color3d(1.0, 0.0, 1.0);

@@ -211,7 +211,7 @@ void RenderingManager::start_rendering(
     m_master_renderer_thread->start();
 
     // todo: refactor.
-    QThread::currentThread()->setPriority(QThread::Priority::TimeCriticalPriority);
+    QThread::currentThread()->setPriority(QThread::TimeCriticalPriority);
 }
 
 bool RenderingManager::is_rendering() const

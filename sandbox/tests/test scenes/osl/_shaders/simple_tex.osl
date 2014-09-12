@@ -1,0 +1,8 @@
+
+surface simple_tex(
+    float     Kd = 1, 
+    string    texfile = "")
+{
+    color Cs = texture(texfile, u, v);
+    Ci = Kd * Cs * diffuse(N);
+}

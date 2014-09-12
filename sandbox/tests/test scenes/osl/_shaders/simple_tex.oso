@@ -1,0 +1,23 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.6.1dev
+surface simple_tex
+param	float	Kd	1 		 %read{2,2} %write{2147483647,-1}
+param	string	texfile	"" 		 %read{0,0} %write{2147483647,-1}
+global	normal	N	 %read{1,1} %write{2147483647,-1}
+global	float	u	 %read{0,0} %write{2147483647,-1} %derivs
+global	float	v	 %read{0,0} %write{2147483647,-1} %derivs
+global	closure color	Ci	 %read{2147483647,-1} %write{3,3}
+local	color	Cs	 %read{2,2} %write{0,0}
+temp	closure color	$tmp1	 %read{3,3} %write{1,1}
+const	string	$const1	"diffuse"		 %read{1,1} %write{2147483647,-1}
+temp	color	$tmp2	 %read{3,3} %write{2,2}
+code ___main___
+# simple_tex.osl:6
+#     color Cs = texture(texfile, u, v);
+	texture		Cs texfile u v 	%filename{"simple_tex.osl"} %line{6} %argrw{"wrrr"} %argderivs{2,3}
+# simple_tex.osl:7
+#     Ci = Kd * Cs * diffuse(N);
+	closure		$tmp1 $const1 N 	%line{7} %argrw{"wrr"}
+	mul		$tmp2 Kd Cs 	%argrw{"wrr"}
+	mul		Ci $tmp1 $tmp2 	%argrw{"wrr"}
+	end
