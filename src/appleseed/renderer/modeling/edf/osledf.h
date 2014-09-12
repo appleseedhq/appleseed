@@ -30,103 +30,16 @@
 #define APPLESEED_RENDERER_MODELING_EDF_OSLEDF_H
 
 // appleseed.renderer headers.
-#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/edf/edf.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/basis.h"
-#include "foundation/math/vector.h"
-#include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// Forward declarations.
-namespace foundation    { class AbortSwitch; }
-namespace foundation    { class DictionaryArray; }
-namespace renderer      { class Assembly; }
-namespace renderer      { class InputEvaluator; }
-namespace renderer      { class ParamArray; }
-namespace renderer      { class Project; }
-namespace renderer      { class ShadingContext; }
-namespace renderer      { class ShadingPoint; }
-
 namespace renderer
 {
-
-//
-// OSL EDF.
-//
-
-class OSLEDF
-  : public EDF
-{
-  public:
-    virtual void release() OVERRIDE;
-
-    virtual const char* get_model() const OVERRIDE;
-
-    virtual bool is_osl_edf() const OVERRIDE;
-
-    virtual bool on_frame_begin(
-        const Project&              project,
-        const Assembly&             assembly,
-        foundation::AbortSwitch*    abort_switch) OVERRIDE;
-
-    virtual void on_frame_end(
-        const Project&              project,
-        const Assembly&             assembly);
-
-    virtual void evaluate_inputs(
-        InputEvaluator&             input_evaluator,
-        const foundation::Vector2d& uv) const OVERRIDE;
-
-    void evaluate_osl_inputs(
-        InputEvaluator&             input_evaluator,
-        const ShadingPoint&         shading_point) const;
-
-    virtual void sample(
-        SamplingContext&            sampling_context,
-        const void*                 data,
-        const foundation::Vector3d& geometric_normal,
-        const foundation::Basis3d&  shading_basis,
-        const foundation::Vector2d& s,
-        foundation::Vector3d&       outgoing,
-        Spectrum&                   value,
-        double&                     probability) const OVERRIDE;
-
-    virtual void evaluate(
-        const void*                 data,
-        const foundation::Vector3d& geometric_normal,
-        const foundation::Basis3d&  shading_basis,
-        const foundation::Vector3d& outgoing,
-        Spectrum&                   value) const OVERRIDE;
-
-    virtual void evaluate(
-        const void*                 data,
-        const foundation::Vector3d& geometric_normal,
-        const foundation::Basis3d&  shading_basis,
-        const foundation::Vector3d& outgoing,
-        Spectrum&                   value,
-        double&                     probability) const OVERRIDE;
-
-    virtual double evaluate_pdf(
-        const void*                 data,
-        const foundation::Vector3d& geometric_normal,
-        const foundation::Basis3d&  shading_basis,
-        const foundation::Vector3d& outgoing) const OVERRIDE;
-
-  private:
-    friend class OSLEDFFactory;
-
-    foundation::auto_release_ptr<EDF> m_diffuse_edf;
-
-    OSLEDF(
-        const char*                 name,
-        const ParamArray&           params);
-};
-
 
 //
 // OSL EDF factory.
