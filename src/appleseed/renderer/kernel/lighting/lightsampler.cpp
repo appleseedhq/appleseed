@@ -354,10 +354,7 @@ void LightSampler::collect_emitting_triangles(
                     emitting_triangle.m_triangle_support_plane = triangle_support_plane;
                     emitting_triangle.m_rcp_area = rcp_area;
                     emitting_triangle.m_triangle_prob = 0.0;    // will be initialized once the emitting triangle CDF is built
-                    emitting_triangle.m_edf = edf;
-#ifdef WITH_OSL
-                    emitting_triangle.m_shader_group = material->get_uncached_osl_surface();
-#endif
+                    emitting_triangle.m_material = material;
 
                     // Store the light-emitting triangle.
                     const size_t emitting_triangle_index = m_emitting_triangles.size();

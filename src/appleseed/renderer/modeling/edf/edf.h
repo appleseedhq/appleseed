@@ -48,6 +48,7 @@ namespace renderer      { class Assembly; }
 namespace renderer      { class InputEvaluator; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
+namespace renderer      { class ShadingPoint; }
 
 namespace renderer
 {
@@ -96,9 +97,6 @@ class DLLSYMBOL EDF
     // Retrieve the light near start value.
     double get_uncached_light_near_start() const;
 
-    // Return true if the edf is an OSL edf.
-    virtual bool is_osl_edf() const;
-
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
     virtual bool on_frame_begin(
@@ -114,8 +112,8 @@ class DLLSYMBOL EDF
     // Evaluate the inputs of this EDF.
     // Input values are stored in the input evaluator.
     virtual void evaluate_inputs(
-        InputEvaluator&             input_evaluator,
-        const foundation::Vector2d& uv) const;
+        InputEvaluator&     input_evaluator,
+        const ShadingPoint& shading_point) const;
 
     // Sample the EDF and compute the emission direction, its probability
     // density and the value of the EDF for this direction.
