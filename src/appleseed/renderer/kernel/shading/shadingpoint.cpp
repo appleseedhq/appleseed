@@ -616,14 +616,6 @@ OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::get_inverse_transform(float 
 }
 
 void ShadingPoint::initialize_osl_shader_globals(
-    const ShaderGroup&      sg,
-    OSL::RendererServices*  renderer,
-    const float             surface_area) const
-{
-    initialize_osl_shader_globals(sg, get_ray().m_type, renderer, surface_area);
-}
-
-void ShadingPoint::initialize_osl_shader_globals(
     const ShaderGroup&          sg,
     const ShadingRay::TypeType  ray_type,
     OSL::RendererServices*      renderer,
@@ -690,7 +682,6 @@ void ShadingPoint::initialize_osl_shader_globals(
         m_shader_globals.object2common = reinterpret_cast<OSL::TransformationPtr>(&m_obj_transform_info);
 
         m_shader_globals.shader2common = 0;
-        m_shader_globals.surfacearea = surface_area;
 
         m_shader_globals.flipHandedness = 0;
         m_shader_globals.backfacing = get_side() == ObjectInstance::FrontSide ? 0 : 1;
@@ -698,8 +689,9 @@ void ShadingPoint::initialize_osl_shader_globals(
         m_members |= HasOSLShaderGlobals;
     }
 
-    // Always update the raytype.
+    // Always update the raytype and surface area.
     m_shader_globals.raytype = static_cast<int>(ray_type);
+    m_shader_globals.surfacearea = surface_area;
 
     // These are set by OSL when the shader is executed.
     m_shader_globals.context = 0;
