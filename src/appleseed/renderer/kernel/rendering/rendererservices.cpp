@@ -113,7 +113,7 @@ void RendererServices::precompute_attributes()
     // Camera projection string.
     {
         Camera* cam = m_project.get_scene()->get_camera();
-    
+
         if (strcmp(cam->get_model(), "pinhole_camera") == 0)
             m_cam_projection_str = g_perspective_ustr;
         else if (strcmp(cam->get_model(), "thinlens_camera") == 0)
@@ -140,7 +140,15 @@ bool RendererServices::texture(
     float                   dtdx,
     float                   dsdy,
     float                   dtdy,
-    float*                  result)
+#if OSL_LIBRARY_VERSION_CODE <= 10600
+    float*                  result
+#else
+    int                     nchannels,
+    float*                  result,
+    float*                  dresultds,
+    float*                  dresultdt
+#endif
+    )
 {
     const bool status =
         m_texture_sys.texture(
@@ -151,7 +159,15 @@ bool RendererServices::texture(
             dtdx,
             dsdy,
             dtdy,
-            result);
+#if OSL_LIBRARY_VERSION_CODE <= 10600
+            result
+#else
+            nchannels,
+            result,
+            dresultds,
+            dresultdt
+#endif
+            );
 
     if (!status)
         log_error(m_texture_sys.geterror());
@@ -167,10 +183,32 @@ bool RendererServices::texture3d(
     const OSL::Vec3&        dPdx,
     const OSL::Vec3&        dPdy,
     const OSL::Vec3&        dPdz,
-    float*                  result)
+#if OSL_LIBRARY_VERSION_CODE <= 10600
+    float*                  result
+#else
+    int                     nchannels,
+    float*                  result,
+    float*                  dresultds,
+    float*                  dresultdt
+#endif
+    )
 {
-    const bool status =
-        m_texture_sys.texture3d(filename, options, P, dPdx, dPdy, dPdz, result);
+    const bool status = m_texture_sys.texture3d(
+        filename,
+        options,
+        P,
+        dPdx,
+        dPdy,
+        dPdz,
+#if OSL_LIBRARY_VERSION_CODE <= 10600
+        result
+#else
+        nchannels,
+        result,
+        dresultds,
+        dresultdt
+#endif
+        );
 
     if (!status)
         log_error(m_texture_sys.geterror());
@@ -185,10 +223,31 @@ bool RendererServices::environment(
     const OSL::Vec3&        R,
     const OSL::Vec3&        dRdx,
     const OSL::Vec3&        dRdy,
-    float*                  result)
+#if OSL_LIBRARY_VERSION_CODE <= 10600
+    float*                  result
+#else
+    int                     nchannels,
+    float*                  result,
+    float*                  dresultds,
+    float*                  dresultdt
+#endif
+    )
 {
-    const bool status =
-        m_texture_sys.environment(filename, options, R, dRdx, dRdy, result);
+    const bool status = m_texture_sys.environment(
+        filename,
+        options,
+        R,
+        dRdx,
+        dRdy,
+#if OSL_LIBRARY_VERSION_CODE <= 10600
+        result
+#else
+        nchannels,
+        result,
+        dresultds,
+        dresultdt
+#endif
+        );
 
     if (!status)
         log_error(m_texture_sys.geterror());
@@ -320,7 +379,7 @@ bool RendererServices::trace(
     {
         Vector3d front = Vector3f(P);
         Vector3d back = front;
-        
+
         intersector.fixed_offset(
             parent->get_point(),
             parent->get_geometric_normal(),
@@ -346,11 +405,11 @@ bool RendererServices::trace(
 
     ShadingPoint shading_point;
     intersector.trace(
-        ray, 
-        shading_point, 
+        ray,
+        shading_point,
         origin_shading_point);
 
-    ShadingPoint::OSLTraceData* trace_data = 
+    ShadingPoint::OSLTraceData* trace_data =
         reinterpret_cast<ShadingPoint::OSLTraceData*>(sg->tracedata);
 
     trace_data->m_traced = true;
@@ -375,11 +434,11 @@ bool RendererServices::getmessage(
     OSL::ShaderGlobals* sg,
     OIIO::ustring       source,
     OIIO::ustring       name,
-    OIIO::TypeDesc      type, 
-    void*               val, 
+    OIIO::TypeDesc      type,
+    void*               val,
     bool                derivatives)
 {
-    const ShadingPoint::OSLTraceData* trace_data = 
+    const ShadingPoint::OSLTraceData* trace_data =
         reinterpret_cast<ShadingPoint::OSLTraceData*>(sg->tracedata);
 
     if (trace_data->m_traced)
@@ -486,15 +545,15 @@ IMPLEMENT_ATTR_GETTER(object_instance_id)
 {
     if (type == OIIO::TypeDesc::TypeInt)
     {
-        const ShadingPoint* shading_point = 
+        const ShadingPoint* shading_point =
             reinterpret_cast<const ShadingPoint*>(sg->renderstate);
 
         reinterpret_cast<int*>(val)[0] =
             static_cast<int>(shading_point->get_object_instance().get_uid());
         clear_attr_derivatives(derivs, type, val);
-        return true;        
+        return true;
     }
-    
+
     return false;
 }
 
@@ -502,15 +561,15 @@ IMPLEMENT_ATTR_GETTER(object_instance_index)
 {
     if (type == OIIO::TypeDesc::TypeInt)
     {
-        const ShadingPoint* shading_point = 
+        const ShadingPoint* shading_point =
             reinterpret_cast<const ShadingPoint*>(sg->renderstate);
 
         reinterpret_cast<int*>(val)[0] =
             static_cast<int>(shading_point->get_object_instance_index());
         clear_attr_derivatives(derivs, type, val);
-        return true;        
+        return true;
     }
-    
+
     return false;
 }
 
@@ -518,15 +577,15 @@ IMPLEMENT_ATTR_GETTER(assembly_instance_id)
 {
     if (type == OIIO::TypeDesc::TypeInt)
     {
-        const ShadingPoint* shading_point = 
+        const ShadingPoint* shading_point =
             reinterpret_cast<const ShadingPoint*>(sg->renderstate);
 
         reinterpret_cast<int*>(val)[0] =
             static_cast<int>(shading_point->get_assembly_instance().get_uid());
         clear_attr_derivatives(derivs, type, val);
-        return true;        
+        return true;
     }
-    
+
     return false;
 }
 
@@ -555,7 +614,7 @@ IMPLEMENT_ATTR_GETTER(camera_projection)
 }
 
 IMPLEMENT_ATTR_GETTER(camera_fov)
-{    
+{
     return false;
 }
 
@@ -567,7 +626,7 @@ IMPLEMENT_ATTR_GETTER(camera_pixelaspect)
         clear_attr_derivatives(derivs, type, val);
         return true;
     }
-    
+
     return false;
 }
 
@@ -580,7 +639,7 @@ IMPLEMENT_ATTR_GETTER(camera_clip)
         clear_attr_derivatives(derivs, type, val);
         return true;
     }
-    
+
     return false;
 }
 
@@ -592,7 +651,7 @@ IMPLEMENT_ATTR_GETTER(camera_clip_near)
         clear_attr_derivatives(derivs, type, val);
         return true;
     }
-    
+
     return false;
 }
 
@@ -604,7 +663,7 @@ IMPLEMENT_ATTR_GETTER(camera_clip_far)
         clear_attr_derivatives(derivs, type, val);
         return true;
     }
-    
+
     return false;
 }
 
@@ -618,7 +677,7 @@ IMPLEMENT_ATTR_GETTER(camera_shutter)
         clear_attr_derivatives(derivs, type, val);
         return true;
     }
-    
+
     return false;
 }
 
@@ -631,7 +690,7 @@ IMPLEMENT_ATTR_GETTER(camera_shutter_open)
         clear_attr_derivatives(derivs, type, val);
         return true;
     }
-    
+
     return false;
 }
 
@@ -644,7 +703,7 @@ IMPLEMENT_ATTR_GETTER(camera_shutter_close)
         clear_attr_derivatives(derivs, type, val);
         return true;
     }
-    
+
     return false;
 }
 
@@ -653,7 +712,7 @@ IMPLEMENT_ATTR_GETTER(camera_screen_window)
     if (type == g_float_array4_typedesc)
     {
         Image& img = m_project.get_frame()->image();
-        const float aspect = 
+        const float aspect =
             static_cast<float>(img.properties().m_canvas_width) / img.properties().m_canvas_height;
 
         reinterpret_cast<float*>(val)[0] = -aspect;
@@ -671,14 +730,14 @@ IMPLEMENT_ATTR_GETTER(ray_depth)
 {
     if (type == OIIO::TypeDesc::TypeInt)
     {
-        const ShadingPoint* shading_point = 
+        const ShadingPoint* shading_point =
             reinterpret_cast<const ShadingPoint*>(sg->renderstate);
 
         reinterpret_cast<int*>(val)[0] = static_cast<int>(shading_point->get_ray().m_depth);
         clear_attr_derivatives(derivs, type, val);
         return true;
     }
-    
+
     return false;
 }
 
@@ -686,10 +745,10 @@ IMPLEMENT_ATTR_GETTER(ray_length)
 {
     if (type == OIIO::TypeDesc::TypeFloat)
     {
-        const ShadingPoint* shading_point = 
+        const ShadingPoint* shading_point =
             reinterpret_cast<const ShadingPoint*>(sg->renderstate);
 
-        reinterpret_cast<float*>(val)[0] = 
+        reinterpret_cast<float*>(val)[0] =
             static_cast<float>(norm(shading_point->get_ray().m_org - shading_point->get_point()));
         clear_attr_derivatives(derivs, type, val);
         return true;

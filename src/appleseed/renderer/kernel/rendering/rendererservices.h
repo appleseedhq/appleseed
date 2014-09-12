@@ -37,6 +37,7 @@
 // OSL headers.
 #include "foundation/platform/oslheaderguards.h"
 BEGIN_OSL_INCLUDES
+#include "OSL/oslversion.h"
 #include "OSL/rendererservices.h"
 END_OSL_INCLUDES
 
@@ -73,7 +74,7 @@ class RendererServices
 
     // Precompute attribute values before rendering starts.
     void precompute_attributes();
-    
+
     // Return a pointer to the texture system (if available).
     virtual OIIO::TextureSystem* texturesys() const OVERRIDE;
 
@@ -88,7 +89,15 @@ class RendererServices
         float                   dtdx,
         float                   dsdy,
         float                   dtdy,
-        float*                  result) OVERRIDE;
+#if OSL_LIBRARY_VERSION_CODE <= 10600
+        float*                  result
+#else
+        int                     nchannels,
+        float*                  result,
+        float*                  dresultds,
+        float*                  dresultdt
+#endif
+        ) OVERRIDE;
 
     // Filtered 3D texture lookup for a single point.
     //
@@ -108,7 +117,15 @@ class RendererServices
         const OSL::Vec3&        dPdx,
         const OSL::Vec3&        dPdy,
         const OSL::Vec3&        dPdz,
-        float*                  result) OVERRIDE;
+#if OSL_LIBRARY_VERSION_CODE <= 10600
+        float*                  result
+#else
+        int                     nchannels,
+        float*                  result,
+        float*                  dresultds,
+        float*                  dresultdt
+#endif
+        ) OVERRIDE;
 
     // Filtered environment lookup for a single point.
     //
@@ -124,7 +141,15 @@ class RendererServices
         const OSL::Vec3&        R,
         const OSL::Vec3&        dRdx,
         const OSL::Vec3&        dRdy,
-        float*                  result) OVERRIDE;
+#if OSL_LIBRARY_VERSION_CODE <= 10600
+        float*                  result
+#else
+        int                     nchannels,
+        float*                  result,
+        float*                  dresultds,
+        float*                  dresultdt
+#endif
+        ) OVERRIDE;
 
     // Get information about the given texture.  Return true if found
     // and the data has been put in* data.  Return false if the texture
@@ -153,7 +178,7 @@ class RendererServices
     // invert it, but a particular renderer may have a better technique
     // and overload the implementation.
     virtual bool get_inverse_matrix(
-        OSL::ShaderGlobals*     sg,        
+        OSL::ShaderGlobals*     sg,
         OSL::Matrix44&          result,
         OSL::TransformationPtr  xform,
         float                   time) OVERRIDE;
@@ -210,13 +235,13 @@ class RendererServices
 
     // Get the named message from the renderer and if found then
     // write it into 'val'.  Otherwise, return false.  This is only
-    // called for "sourced" messages, not ordinary intra-group messages.    
+    // called for "sourced" messages, not ordinary intra-group messages.
     bool getmessage(
         OSL::ShaderGlobals* sg,
         OIIO::ustring       source,
         OIIO::ustring       name,
-        OIIO::TypeDesc      type, 
-        void*               val, 
+        OIIO::TypeDesc      type,
+        void*               val,
         bool                derivatives) OVERRIDE;
 
     // Get the named attribute from the renderer and if found then
@@ -269,14 +294,14 @@ class RendererServices
   private:
     // This code based on OSL's test renderer.
     typedef bool (RendererServices::*AttrGetterFun)(
-        OSL::ShaderGlobals* sg, 
+        OSL::ShaderGlobals* sg,
         bool                derivs,
         OIIO::ustring       object,
         OIIO::TypeDesc      type,
-        OIIO::ustring       name, 
+        OIIO::ustring       name,
         void                *val) const;
 
-    typedef boost::unordered_map<OIIO::ustring, AttrGetterFun, OIIO::ustringHash> AttrGetterMapType;            
+    typedef boost::unordered_map<OIIO::ustring, AttrGetterFun, OIIO::ustringHash> AttrGetterMapType;
 
     #define DECLARE_ATTR_GETTER(name)   \
     bool get_##name(                    \
@@ -308,16 +333,16 @@ class RendererServices
     // Ray attributes.
     DECLARE_ATTR_GETTER(ray_depth)
     DECLARE_ATTR_GETTER(ray_length)
-    
+
     #undef DECLARE_ATTR_GETTER
-    
+
     static void clear_attr_derivatives(
         bool                    derivs,
         const OIIO::TypeDesc&   type,
         void*                   val);
 
     static void log_error(const std::string& message);
-    
+
     const Project&          m_project;
     OIIO::TextureSystem&    m_texture_sys;
     const TraceContext&     m_trace_context;
