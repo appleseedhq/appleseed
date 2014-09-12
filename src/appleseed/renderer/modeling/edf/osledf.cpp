@@ -31,10 +31,17 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/shading/closures.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/edf/diffuseedf.h"
 #include "renderer/modeling/input/inputevaluator.h"
+#include "renderer/utility/paramarray.h"
+
+// appleseed.foundation headers.
+#include "foundation/math/basis.h"
+#include "foundation/math/vector.h"
+#include "foundation/platform/compiler.h"
 
 using namespace foundation;
 
@@ -42,128 +49,124 @@ namespace renderer
 {
 
 //
-// OSL EDF class implementation.
+// OSL EDF class.
 //
 
 namespace
 {
     const char* Model = "osl_edf";
+
+    class OSLEDF
+      : public EDF
+    {
+      public:
+        OSLEDF()
+          : EDF("osl_edf", ParamArray())
+        {
+            m_diffuse_edf = DiffuseEDFFactory().create("osl_diff_edf", ParamArray());
+        }
+
+        virtual void release() OVERRIDE
+        {
+            delete this;
+        }
+
+        virtual const char* get_model() const OVERRIDE
+        {
+            return Model;
+        }
+
+        virtual void evaluate_inputs(
+            InputEvaluator&         input_evaluator,
+            const ShadingPoint&     shading_point) const OVERRIDE
+        {
+            CompositeEmissionClosure* c =
+                reinterpret_cast<CompositeEmissionClosure*>(input_evaluator.data());
+            new (c) CompositeEmissionClosure(shading_point.get_osl_shader_globals().Ci);
+        }
+
+        virtual void sample(
+            SamplingContext&        sampling_context,
+            const void*             data,
+            const Vector3d&         geometric_normal,
+            const Basis3d&          shading_basis,
+            const Vector2d&         s,
+            Vector3d&               outgoing,
+            Spectrum&               value,
+            double&                 probability) const OVERRIDE
+        {
+            const CompositeEmissionClosure* c =
+                reinterpret_cast<const CompositeEmissionClosure*>(data);
+
+            m_diffuse_edf->sample(
+                sampling_context,
+                &c->edf_input_values(),
+                geometric_normal,
+                shading_basis,
+                s,
+                outgoing,
+                value,
+                probability);
+        }
+
+        virtual void evaluate(
+            const void*             data,
+            const Vector3d&         geometric_normal,
+            const Basis3d&          shading_basis,
+            const Vector3d&         outgoing,
+            Spectrum&               value) const OVERRIDE
+        {
+            const CompositeEmissionClosure* c =
+                reinterpret_cast<const CompositeEmissionClosure*>(data);
+
+            m_diffuse_edf->evaluate(
+                &c->edf_input_values(),
+                geometric_normal,
+                shading_basis,
+                outgoing,
+                value);
+        }
+
+        virtual void evaluate(
+            const void*             data,
+            const Vector3d&         geometric_normal,
+            const Basis3d&          shading_basis,
+            const Vector3d&         outgoing,
+            Spectrum&               value,
+            double&                 probability) const OVERRIDE
+        {
+            const CompositeEmissionClosure* c =
+                reinterpret_cast<const CompositeEmissionClosure*>(data);
+
+            m_diffuse_edf->evaluate(
+                &c->edf_input_values(),
+                geometric_normal,
+                shading_basis,
+                outgoing,
+                value,
+                probability);
+        }
+
+        virtual double evaluate_pdf(
+            const void*             data,
+            const Vector3d&         geometric_normal,
+            const Basis3d&          shading_basis,
+            const Vector3d&         outgoing) const OVERRIDE
+        {
+            const CompositeEmissionClosure* c =
+                reinterpret_cast<const CompositeEmissionClosure*>(data);
+
+            return m_diffuse_edf->evaluate_pdf(
+                &c->edf_input_values(),
+                geometric_normal,
+                shading_basis,
+                outgoing);
+        }
+
+      private:
+        auto_release_ptr<EDF> m_diffuse_edf;
+    };
 }
-
-//
-// OSL EDF.
-//
-
-class OSLEDF
-  : public EDF
-{
-  public:
-    OSLEDF()
-      : EDF("osl_edf", ParamArray())
-    {
-        m_diffuse_edf = DiffuseEDFFactory().create("osl_diff_edf", ParamArray());
-    }
-
-    virtual void release() OVERRIDE
-    {
-        delete this;
-    }
-
-    virtual const char* get_model() const OVERRIDE
-    {
-        return Model;
-    }
-
-    virtual void evaluate_inputs(
-        InputEvaluator&             input_evaluator,
-        const ShadingPoint&         shading_point) const OVERRIDE
-    {
-        CompositeEmissionClosure* c =
-            reinterpret_cast<CompositeEmissionClosure*>(input_evaluator.data());
-        new (c) CompositeEmissionClosure(shading_point.get_osl_shader_globals().Ci);
-    }
-
-    virtual void sample(
-        SamplingContext&            sampling_context,
-        const void*                 data,
-        const foundation::Vector3d& geometric_normal,
-        const foundation::Basis3d&  shading_basis,
-        const foundation::Vector2d& s,
-        foundation::Vector3d&       outgoing,
-        Spectrum&                   value,
-        double&                     probability) const OVERRIDE
-    {
-        const CompositeEmissionClosure* c =
-            reinterpret_cast<const CompositeEmissionClosure*>(data);
-
-        m_diffuse_edf->sample(
-            sampling_context,
-            &c->edf_input_values(),
-            geometric_normal,
-            shading_basis,
-            s,
-            outgoing,
-            value,
-            probability);
-    }
-
-    virtual void evaluate(
-        const void*                 data,
-        const foundation::Vector3d& geometric_normal,
-        const foundation::Basis3d&  shading_basis,
-        const foundation::Vector3d& outgoing,
-        Spectrum&                   value) const OVERRIDE
-    {
-        const CompositeEmissionClosure* c =
-            reinterpret_cast<const CompositeEmissionClosure*>(data);
-
-        m_diffuse_edf->evaluate(
-            &c->edf_input_values(),
-            geometric_normal,
-            shading_basis,
-            outgoing,
-            value);
-    }
-
-    virtual void evaluate(
-        const void*                 data,
-        const foundation::Vector3d& geometric_normal,
-        const foundation::Basis3d&  shading_basis,
-        const foundation::Vector3d& outgoing,
-        Spectrum&                   value,
-        double&                     probability) const OVERRIDE
-    {
-        const CompositeEmissionClosure* c =
-            reinterpret_cast<const CompositeEmissionClosure*>(data);
-
-        m_diffuse_edf->evaluate(
-            &c->edf_input_values(),
-            geometric_normal,
-            shading_basis,
-            outgoing,
-            value,
-            probability);
-    }
-
-    virtual double evaluate_pdf(
-        const void*                 data,
-        const foundation::Vector3d& geometric_normal,
-        const foundation::Basis3d&  shading_basis,
-        const foundation::Vector3d& outgoing) const OVERRIDE
-    {
-        const CompositeEmissionClosure* c =
-            reinterpret_cast<const CompositeEmissionClosure*>(data);
-
-        return m_diffuse_edf->evaluate_pdf(
-            &c->edf_input_values(),
-            geometric_normal,
-            shading_basis,
-            outgoing);
-    }
-
-  private:
-    foundation::auto_release_ptr<EDF> m_diffuse_edf;
-};
 
 
 //

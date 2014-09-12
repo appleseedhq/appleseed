@@ -35,9 +35,6 @@
 // appleseed.foundation headers.
 #include "foundation/utility/autoreleaseptr.h"
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 namespace renderer
 {
 
