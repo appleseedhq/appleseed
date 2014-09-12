@@ -449,7 +449,7 @@ class DisneyLayerParam
                     0.0f,
                     0.0f,
                     0.0f,
-#if OIIO_VERSION >= 10505
+#if OIIO_VERSION > 10504
                     3,
 #endif
                     color))
