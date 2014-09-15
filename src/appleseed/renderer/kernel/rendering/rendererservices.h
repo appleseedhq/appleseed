@@ -51,6 +51,7 @@ END_OSL_INCLUDES
 #include <string>
 
 // Forward declarations.
+namespace renderer  { class Camera; }
 namespace renderer  { class Project; }
 namespace renderer  { class TextureStore; }
 namespace renderer  { class TraceContext; }
@@ -72,8 +73,8 @@ class RendererServices
         OIIO::TextureSystem&    texture_sys,
         TextureStore&           texture_store);
 
-    // Precompute attribute values before rendering starts.
-    void precompute_attributes();
+    // Initialize before rendering starts.
+    void initialize();
 
     // Return a pointer to the texture system (if available).
     virtual OIIO::TextureSystem* texturesys() const OVERRIDE;
@@ -212,6 +213,17 @@ class RendererServices
         OIIO::ustring           from,
         float                   time) OVERRIDE;
 
+    // Get the 4x4 matrix that transforms points from "common" space to
+    // the named 'to' coordinate system to at the given time.  The
+    // default implementation is to use get_matrix and invert it, but a
+    // particular renderer may have a better technique and overload the
+    // implementation.
+    virtual bool get_inverse_matrix(
+        OSL::ShaderGlobals*     sg,
+        OSL::Matrix44&          result,
+        OSL::ustring            to,
+        float                   time) OVERRIDE;
+
     // Get the 4x4 matrix that transforms 'from' to "common" space.
     // Since there is no time value passed, return false if the
     // transformation may be time-varying(as well as if it's not found
@@ -220,6 +232,51 @@ class RendererServices
         OSL::ShaderGlobals*     sg,
         OSL::Matrix44&          result,
         OIIO::ustring           from) OVERRIDE;
+
+    // Get the 4x4 matrix that transforms points from "common" space to
+    // the named 'to' coordinate system.  Since there is no time value
+    // passed, return false if the transformation may be time-varying
+    // (as well as if it's not found at all).  The default
+    // implementation is to use get_matrix and invert it, but a
+    // particular renderer may have a better technique and overload the
+    // implementation.
+    virtual bool get_inverse_matrix(
+        OSL::ShaderGlobals* sg,
+        OSL::Matrix44&      result,
+        OSL::ustring        to) OVERRIDE;
+
+    // Transform points Pin[0..npoints-1] in named coordinate system
+    // 'from' into 'to' coordinates, storing the result in Pout[] using
+    // the specified vector semantic (POINT, VECTOR, NORMAL).  The
+    // function returns true if the renderer correctly transformed the
+    // points, false if it failed (for example, because it did not know
+    // the name of one of the coordinate systems).  A renderer is free
+    // to not implement this, in which case the default implementation
+    // is simply to make appropriate calls to get_matrix and
+    // get_inverse_matrix.  The existance of this method is to allow
+    // some renderers to provide transformations that cannot be
+    // expressed by a 4x4 matrix.
+    //
+    // If npoints == 0, the function should just return true if a
+    // known nonlinear transformation is available to transform points
+    // between the two spaces, otherwise false.  (For this calling
+    // pattern, sg, Pin, Pout, and time will not be used and may be 0.
+    // As a special case, if from and to are both empty strings, it
+    // returns true if *any* nonlinear transformations are supported,
+    // otherwise false.
+    //
+    // Note to RendererServices implementations: just return 'false'
+    // if there isn't a special nonlinear transformation between the
+    // two spaces.
+    virtual bool transform_points(
+        OSL::ShaderGlobals*         sg,
+        OSL::ustring                from,
+        OSL::ustring                to,
+        float                       time,
+        const OSL::Vec3*            Pin,
+        OSL::Vec3*                  Pout,
+        int                         npoints,
+        OSL::TypeDesc::VECSEMANTICS vectype) OVERRIDE;
 
     // Immediately trace a ray from P in the direction R.  Return true
     // if anything hit, otherwise false.
@@ -344,6 +401,7 @@ class RendererServices
     static void log_error(const std::string& message);
 
     const Project&          m_project;
+    const Camera*           m_camera;
     OIIO::TextureSystem&    m_texture_sys;
     const TraceContext&     m_trace_context;
     TextureStore&           m_texture_store;

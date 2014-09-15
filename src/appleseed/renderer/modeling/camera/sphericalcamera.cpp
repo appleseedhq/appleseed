@@ -175,6 +175,11 @@ namespace
             return 0.5 * norm(cross(q2 - q0, q3 - q1));
         }
 
+        bool is_nonlinear() const OVERRIDE
+        {
+            return true;
+        }
+
       private:
         Vector3d m_ray_org;         // origin of the rays in world space
 
