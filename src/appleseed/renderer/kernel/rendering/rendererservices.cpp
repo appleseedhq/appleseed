@@ -73,6 +73,15 @@ OIIO::ustring g_P_ustr("P");
 OIIO::ustring g_u_ustr("u");
 OIIO::ustring g_v_ustr("v");
 
+// Coordinate systems
+OIIO::ustring g_camera_ustr("camera");
+OIIO::ustring g_common_ustr("common");
+OIIO::ustring g_NDC_ustr("NDC");
+OIIO::ustring g_raster_ustr("raster");
+OIIO::ustring g_screen_ustr("screen");
+OIIO::ustring g_shader_usrt("shader");
+OIIO::ustring g_world_ustr("world");
+
 }
 
 //
@@ -108,21 +117,19 @@ RendererServices::RendererServices(
     m_global_attr_getters[OIIO::ustring("path:ray_length")] = &RendererServices::get_ray_length;
 }
 
-void RendererServices::precompute_attributes()
+void RendererServices::initialize()
 {
     // Camera projection string.
-    {
-        Camera* cam = m_project.get_scene()->get_camera();
+    m_camera = m_project.get_scene()->get_camera();
 
-        if (strcmp(cam->get_model(), "pinhole_camera") == 0)
-            m_cam_projection_str = g_perspective_ustr;
-        else if (strcmp(cam->get_model(), "thinlens_camera") == 0)
-            m_cam_projection_str = g_perspective_ustr;
-        else if (strcmp(cam->get_model(), "spherical_camera") == 0)
-            m_cam_projection_str = g_spherical_ustr;
-        else
-            m_cam_projection_str = g_unknown_proj_ustr;
-    }
+    if (strcmp(m_camera->get_model(), "pinhole_camera") == 0)
+        m_cam_projection_str = g_perspective_ustr;
+    else if (strcmp(m_camera->get_model(), "thinlens_camera") == 0)
+        m_cam_projection_str = g_perspective_ustr;
+    else if (strcmp(m_camera->get_model(), "spherical_camera") == 0)
+        m_cam_projection_str = g_spherical_ustr;
+    else
+        m_cam_projection_str = g_unknown_proj_ustr;
 }
 
 OIIO::TextureSystem* RendererServices::texturesys() const
@@ -346,13 +353,84 @@ bool RendererServices::get_matrix(
     OIIO::ustring           from,
     float                   time)
 {
+    if (from == g_camera_ustr)
+    {
+        Transformd tmp = m_camera->transform_sequence().evaluate(time);
+        result = Matrix4f(transpose(tmp.get_local_to_parent()));
+        return true;
+    }
+
     return false;
+}
+
+bool RendererServices::get_inverse_matrix(
+    OSL::ShaderGlobals* sg,
+    OSL::Matrix44&      result,
+    OSL::ustring        to,
+    float               time)
+{
+    if (to == g_camera_ustr)
+    {
+        Transformd tmp = m_camera->transform_sequence().evaluate(time);
+        result = Matrix4f(transpose(tmp.get_parent_to_local()));
+        return true;
+    }
+
+    return OSL::RendererServices::get_inverse_matrix(
+        sg,
+        result,
+        to,
+        time);
 }
 
 bool RendererServices::get_matrix(
     OSL::ShaderGlobals*     sg,
     OSL::Matrix44&          result,
     OIIO::ustring           from)
+{
+    if (from == g_camera_ustr)
+    {
+        if (m_camera->transform_sequence().size() > 1)
+            return false;
+
+        const Transformd& tmp = m_camera->transform_sequence().get_earliest_transform();
+        result = Matrix4f(transpose(tmp.get_local_to_parent()));
+        return true;
+    }
+
+    return false;
+}
+
+bool RendererServices::get_inverse_matrix(
+    OSL::ShaderGlobals* sg,
+    OSL::Matrix44&      result,
+    OSL::ustring        to)
+{
+    if (to == g_camera_ustr)
+    {
+        if (m_camera->transform_sequence().size() > 1)
+            return false;
+
+        const Transformd& tmp = m_camera->transform_sequence().get_earliest_transform();
+        result = Matrix4f(transpose(tmp.get_parent_to_local()));
+        return true;
+    }
+
+    return OSL::RendererServices::get_inverse_matrix(
+        sg,
+        result,
+        to);
+}
+
+bool RendererServices::transform_points(
+    OSL::ShaderGlobals*         sg,
+    OSL::ustring                from,
+    OSL::ustring                to,
+    float                       time,
+    const OSL::Vec3*            Pin,
+    OSL::Vec3*                  Pout,
+    int                         npoints,
+    OSL::TypeDesc::VECSEMANTICS vectype)
 {
     return false;
 }
@@ -483,18 +561,17 @@ bool RendererServices::get_attribute(
 {
     // We don't support getting attributes from named objects, yet.
     if (object != g_empty_ustr)
-    {
         return false;
-    }
 
     // Try global attributes.
-    AttrGetterMapType::const_iterator i = m_global_attr_getters.find (name);
+    AttrGetterMapType::const_iterator i = m_global_attr_getters.find(name);
     if (i != m_global_attr_getters.end())
     {
         AttrGetterFun getter = i->second;
         return (this->*(getter))(sg, derivatives, object, type, name, val);
     }
 
+    // Try user data from the current object.
     if (object.empty())
         return get_userdata(derivatives, name, type, sg, val);
 
@@ -671,9 +748,8 @@ IMPLEMENT_ATTR_GETTER(camera_shutter)
 {
     if (type == g_float_array2_typedesc)
     {
-        Camera* cam = m_project.get_scene()->get_camera();
-        reinterpret_cast<float*>(val)[0] = static_cast<float>(cam->get_shutter_open_time());
-        reinterpret_cast<float*>(val)[1] = static_cast<float>(cam->get_shutter_close_time());
+        reinterpret_cast<float*>(val)[0] = static_cast<float>(m_camera->get_shutter_open_time());
+        reinterpret_cast<float*>(val)[1] = static_cast<float>(m_camera->get_shutter_close_time());
         clear_attr_derivatives(derivs, type, val);
         return true;
     }
@@ -685,8 +761,7 @@ IMPLEMENT_ATTR_GETTER(camera_shutter_open)
 {
     if (type == OIIO::TypeDesc::TypeFloat)
     {
-        Camera* cam = m_project.get_scene()->get_camera();
-        reinterpret_cast<float*>(val)[0] = static_cast<float>(cam->get_shutter_open_time());
+        reinterpret_cast<float*>(val)[0] = static_cast<float>(m_camera->get_shutter_open_time());
         clear_attr_derivatives(derivs, type, val);
         return true;
     }
@@ -698,8 +773,7 @@ IMPLEMENT_ATTR_GETTER(camera_shutter_close)
 {
     if (type == OIIO::TypeDesc::TypeFloat)
     {
-        Camera* cam = m_project.get_scene()->get_camera();
-        reinterpret_cast<float*>(val)[0] = static_cast<float>(cam->get_shutter_close_time());
+        reinterpret_cast<float*>(val)[0] = static_cast<float>(m_camera->get_shutter_close_time());
         clear_attr_derivatives(derivs, type, val);
         return true;
     }

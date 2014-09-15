@@ -726,7 +726,7 @@ IRendererController::Status MasterRenderer::render_frame_sequence(
 
 #ifdef WITH_OSL
         static_cast<RendererServices*>(shading_system.renderer())
-            ->precompute_attributes();
+            ->initialize();
 #endif
 
         frame_renderer->start_rendering();

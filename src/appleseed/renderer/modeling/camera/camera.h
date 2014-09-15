@@ -132,6 +132,9 @@ class DLLSYMBOL Camera
         const Frame&                    frame,
         const foundation::Vector2d&     point) const = 0;
 
+    // Return true if the camera projection is not linear.
+    virtual bool is_nonlinear() const;
+
   protected:
     TransformSequence   m_transform_sequence;
     double              m_shutter_open_time;
