@@ -76,6 +76,10 @@ OIIO::ustring g_v_ustr("v");
 // Coordinate systems
 OIIO::ustring g_camera_ustr("camera");
 OIIO::ustring g_common_ustr("common");
+OIIO::ustring g_NDC_ustr("NDC");
+OIIO::ustring g_raster_ustr("raster");
+OIIO::ustring g_screen_ustr("screen");
+OIIO::ustring g_shader_usrt("shader");
 OIIO::ustring g_world_ustr("world");
 
 }
