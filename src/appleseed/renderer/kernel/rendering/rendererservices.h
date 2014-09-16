@@ -241,9 +241,9 @@ class RendererServices
     // particular renderer may have a better technique and overload the
     // implementation.
     virtual bool get_inverse_matrix(
-        OSL::ShaderGlobals* sg,
-        OSL::Matrix44&      result,
-        OSL::ustring        to) OVERRIDE;
+        OSL::ShaderGlobals*     sg,
+        OSL::Matrix44&          result,
+        OSL::ustring            to) OVERRIDE;
 
     // Transform points Pin[0..npoints-1] in named coordinate system
     // 'from' into 'to' coordinates, storing the result in Pout[] using
