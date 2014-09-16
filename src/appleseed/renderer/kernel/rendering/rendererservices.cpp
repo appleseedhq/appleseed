@@ -119,7 +119,6 @@ RendererServices::RendererServices(
 
 void RendererServices::initialize()
 {
-    // Camera projection string.
     m_camera = m_project.get_scene()->get_camera();
 
     if (strcmp(m_camera->get_model(), "pinhole_camera") == 0)
@@ -355,8 +354,10 @@ bool RendererServices::get_matrix(
 {
     if (from == g_camera_ustr)
     {
-        Transformd tmp = m_camera->transform_sequence().evaluate(time);
-        result = Matrix4f(transpose(tmp.get_local_to_parent()));
+        Transformd tmp;
+        const Transformd& transform =
+                m_camera->transform_sequence().evaluate(time, tmp);
+        result = Matrix4f(transpose(transform.get_local_to_parent()));
         return true;
     }
 
@@ -371,8 +372,10 @@ bool RendererServices::get_inverse_matrix(
 {
     if (to == g_camera_ustr)
     {
-        Transformd tmp = m_camera->transform_sequence().evaluate(time);
-        result = Matrix4f(transpose(tmp.get_parent_to_local()));
+        Transformd tmp;
+        const Transformd& transform =
+                m_camera->transform_sequence().evaluate(time, tmp);
+        result = Matrix4f(transpose(transform.get_parent_to_local()));
         return true;
     }
 
@@ -393,7 +396,8 @@ bool RendererServices::get_matrix(
         if (m_camera->transform_sequence().size() > 1)
             return false;
 
-        const Transformd& tmp = m_camera->transform_sequence().get_earliest_transform();
+        const Transformd& tmp =
+            m_camera->transform_sequence().get_earliest_transform();
         result = Matrix4f(transpose(tmp.get_local_to_parent()));
         return true;
     }
@@ -411,7 +415,8 @@ bool RendererServices::get_inverse_matrix(
         if (m_camera->transform_sequence().size() > 1)
             return false;
 
-        const Transformd& tmp = m_camera->transform_sequence().get_earliest_transform();
+        const Transformd& tmp =
+            m_camera->transform_sequence().get_earliest_transform();
         result = Matrix4f(transpose(tmp.get_parent_to_local()));
         return true;
     }
@@ -448,7 +453,8 @@ bool RendererServices::trace(
     TextureCache texture_cache(m_texture_store);
     Intersector intersector(m_trace_context, texture_cache);
 
-    const ShadingPoint* parent = reinterpret_cast<const ShadingPoint*>(sg->renderstate);
+    const ShadingPoint* parent =
+        reinterpret_cast<const ShadingPoint*>(sg->renderstate);
     const ShadingPoint* origin_shading_point = 0;
 
     Vector3d PP = Vector3f(P);
