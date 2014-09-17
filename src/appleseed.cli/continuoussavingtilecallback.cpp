@@ -43,7 +43,6 @@
 
 // Standard headers.
 #include <cstddef>
-#include <vector>
 
 using namespace foundation;
 using namespace renderer;
@@ -77,9 +76,6 @@ namespace
       private:
         const string                    m_output_filename;
         ProgressiveEXRImageFileWriter   m_exr_writer;
-        size_t                          m_tile_count_x;
-        size_t                          m_tile_count_y;
-        vector<size_t>                  m_tiles_done;
 
         virtual void do_post_render_tile(
             const Frame*    frame,
@@ -88,35 +84,16 @@ namespace
         {
             ProgressTileCallback::do_post_render_tile(frame, tile_x, tile_y);
 
-            const CanvasProperties& props = frame->image().properties();
-
             if (!m_exr_writer.is_open())
             {
                 m_exr_writer.open(
                     m_output_filename.c_str(),
-                    props,
+                    frame->image().properties(),
                     ImageAttributes::create_default_attributes());
-
-                m_tile_count_x = props.m_tile_count_x;
-                m_tile_count_y = props.m_tile_count_y;
-                m_tiles_done.resize(m_tile_count_y, 0);
             }
 
-            m_tiles_done[tile_y] += 1;
-
-            for( size_t j = 0; j < m_tile_count_y; ++j)
-            {
-                if (m_tiles_done[j] == m_tile_count_x)
-                {
-                    for (size_t i = 0; i < m_tile_count_x; ++i)
-                    {
-                        const Tile& tile = frame->image().tile(i, j);
-                        m_exr_writer.write_tile(tile, i, j);
-                    }
-
-                    m_tiles_done[j] = 0;
-                }
-            }
+            const Tile& tile = frame->image().tile(tile_x, tile_y);
+            m_exr_writer.write_tile(tile, tile_x, tile_y);
         }
     };
 }
