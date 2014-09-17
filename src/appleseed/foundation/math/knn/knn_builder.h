@@ -237,13 +237,12 @@ void Builder<T, N>::partition(
         assert(pivot >= begin);
         assert(pivot <= end);
 
-        // Switch to median split if one of the two leaf is empty.
+        // Given a split-the-longest-axis-in-the-middle strategy, the only case where
+        // the left or right leaf may be empty is when all the points are coincident.
+        // In that degenerate case, we simply split the point set in two and recurse.
+        // Without this treatment, we would recurse until we exhaust stack space.
         if (pivot == begin || pivot == end)
-        {
             pivot = (begin + end) / 2;
-            const VectorType& median_point = m_tree.m_points[m_tree.m_indices[pivot]];
-            split.m_abscissa = median_point[split.m_dimension];
-        }
 
         const size_t left_node_index = m_tree.m_nodes.size();
         const size_t right_node_index = left_node_index + 1;

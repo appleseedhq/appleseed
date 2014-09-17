@@ -128,6 +128,17 @@ TEST_SUITE(Foundation_Math_Knn_Builder)
 
         EXPECT_EQ(8 + 4 + 2 + 1, tree.m_nodes.size());
     }
+
+    TEST_CASE(Build_GivenTwoCoincidentPoints_Terminates)
+    {
+        const size_t PointCount = 2;
+        const Vector3d points[PointCount] = { Vector3d(0.0), Vector3d(0.0) };
+
+        knn::Tree3d tree;
+
+        knn::Builder3d builder(tree);
+        builder.build<DefaultWallclockTimer>(points, PointCount);
+    }
 }
 
 TEST_SUITE(Foundation_Math_Knn_Answer)
