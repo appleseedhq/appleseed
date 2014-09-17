@@ -36,6 +36,11 @@
 // appleseed.renderer headers.
 #include "renderer/api/frame.h"
 
+// appleseed.foundation headers.
+#include "foundation/image/image.h"
+#include "foundation/image/imageattributes.h"
+#include "foundation/image/progressiveexrimagefilewriter.h"
+
 // Standard headers.
 #include <cstddef>
 
@@ -59,11 +64,18 @@ namespace
         ContinuousSavingTileCallback(const string& output_filename, Logger& logger)
           : ProgressTileCallback(logger)
           , m_output_filename(output_filename)
+          , m_exr_writer(&logger)
         {
         }
 
+        ~ContinuousSavingTileCallback()
+        {
+            m_exr_writer.close();
+        }
+
       private:
-        const string m_output_filename;
+        const string                    m_output_filename;
+        ProgressiveEXRImageFileWriter   m_exr_writer;
 
         virtual void do_post_render_tile(
             const Frame*    frame,
@@ -72,8 +84,16 @@ namespace
         {
             ProgressTileCallback::do_post_render_tile(frame, tile_x, tile_y);
 
-            frame->write_main_image(m_output_filename.c_str());
-            frame->write_aov_images(m_output_filename.c_str());
+            if (!m_exr_writer.is_open())
+            {
+                m_exr_writer.open(
+                    m_output_filename.c_str(),
+                    frame->image().properties(),
+                    ImageAttributes::create_default_attributes());
+            }
+
+            const Tile& tile = frame->image().tile(tile_x, tile_y);
+            m_exr_writer.write_tile(tile, tile_x, tile_y);
         }
     };
 }

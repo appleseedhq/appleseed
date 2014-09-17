@@ -153,6 +153,7 @@ void ProgressiveEXRImageFileWriter::open(
             static_cast<int>(props.m_canvas_height),
             static_cast<float>(props.m_canvas_width) / props.m_canvas_height);
         header.setTileDescription(tile_desc);
+        header.lineOrder() = RANDOM_Y;
         header.channels() = channels;
 
         // Add image attributes to the Header object.
