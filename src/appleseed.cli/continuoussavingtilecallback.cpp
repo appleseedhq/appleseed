@@ -44,6 +44,9 @@
 // Standard headers.
 #include <cstddef>
 
+// Forward declarations.
+namespace foundation    { class Tile; }
+
 using namespace foundation;
 using namespace renderer;
 using namespace std;
