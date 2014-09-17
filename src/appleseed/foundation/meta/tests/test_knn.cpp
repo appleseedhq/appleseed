@@ -27,21 +27,10 @@
 // THE SOFTWARE.
 //
 
-//
-// Compiling the STANN library on 64-bit Windows generates the following warnings:
-//
-//   warning C4267: 'var' : conversion from 'size_t' to 'type', possible loss of data
-//   warning C4800: 'type' : forcing value to bool 'true' or 'false' (performance warning)
-//
-// Since they are mostly harmless, we simply disable them for this file.
-//
-
-#pragma warning (push)
-#pragma warning (disable : 4800)
-#pragma warning (disable : 4267)
-
 // appleseed.foundation headers.
+#include "foundation/math/distance.h"
 #include "foundation/math/knn.h"
+#include "foundation/math/permutation.h"
 #include "foundation/math/rng.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
@@ -49,10 +38,8 @@
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"
 
-// STANN headers.
-#include "sfcnn.hpp"
-
 // Standard headers.
+#include <algorithm>
 #include <cstddef>
 #include <vector>
 
@@ -283,67 +270,119 @@ TEST_SUITE(Foundation_Math_Knn_Query)
     }
 
     void generate_random_points(
-        MersenneTwister&    rng,
-        vector<Vector3d>&   points,
-        const size_t        count)
+        MersenneTwister&            rng,
+        vector<Vector3d>&           points,
+        const size_t                count)
     {
         assert(points.empty());
 
         points.reserve(count);
 
         for (size_t i = 0; i < count; ++i)
-        {
-            Vector3d p;
-            p.x = rand_double1(rng);
-            p.y = rand_double1(rng);
-            p.z = rand_double1(rng);
-            points.push_back(p);
-        }
+            points.push_back(rand_vector1<Vector3d>(rng));
     }
 
-    TEST_CASE(Run_ReturnsSameResultsAsSTANN)
+    struct SortPointByDistancePredicate
+    {
+        const vector<Vector3d>&     m_points;
+        const Vector3d&             m_q;
+
+        SortPointByDistancePredicate(
+            const vector<Vector3d>& points,
+            const Vector3d&         q)
+          : m_points(points)
+          , m_q(q)
+        {
+        }
+
+        bool operator()(const size_t lhs, const size_t rhs) const
+        {
+            return
+                square_distance(m_q, m_points[lhs]) <
+                square_distance(m_q, m_points[rhs]);
+        }
+    };
+
+    void naive_query(
+        const vector<Vector3d>&     points,
+        const Vector3d&             q,
+        vector<size_t>&             indices)
+    {
+        assert(indices.size() == points.size());
+
+        SortPointByDistancePredicate pred(points, q);
+        sort(indices.begin(), indices.end(), pred);
+    }
+
+    bool do_results_match_naive_algorithm(
+        const vector<Vector3d>&     points,
+        const size_t                answer_size,
+        const size_t                query_count,
+        MersenneTwister&            rng)
+    {
+        knn::Tree3d tree;
+        knn::Builder3d builder(tree);
+        builder.build<DefaultWallclockTimer>(&points[0], points.size());
+
+        knn::Answer<double> answer(answer_size);
+        knn::Query3d query(tree, answer);
+
+        vector<size_t> ref_answer(points.size());
+        identity_permutation(ref_answer.size(), &ref_answer[0]);
+
+        for (size_t i = 0; i < query_count; ++i)
+        {
+            const Vector3d q = rand_vector1<Vector3d>(rng);
+
+            naive_query(points, q, ref_answer);
+
+            query.run(q);
+            answer.sort();
+
+            if (answer.size() != answer_size)
+                return false;
+
+            for (size_t j = 0; j < answer_size; ++j)
+            {
+                if (tree.remap(answer.get(j).m_index) != ref_answer[j])
+                    return false;
+            }
+        }
+
+        return true;
+    }
+
+    TEST_CASE(Run_UniformPointDistribution_ReturnsSameResultsAsNaiveAlgorithm)
     {
         const size_t PointCount = 1000;
-        const size_t QueryCount = 1000;
-        const size_t AnswerSize = 100;
+        const size_t QueryCount = 200;
+        const size_t AnswerSize = 20;
 
         MersenneTwister rng;
 
         vector<Vector3d> points;
         generate_random_points(rng, points, PointCount);
 
-        knn::Tree3d tree;
-        knn::Builder3d builder(tree);
-        builder.build<DefaultWallclockTimer>(&points[0], PointCount);
+        EXPECT_TRUE(do_results_match_naive_algorithm(points, AnswerSize, QueryCount, rng));
+    }
 
-        sfcnn<foundation::Vector3d, 3, double> stann_tree(&points[0], PointCount);
+    TEST_CASE(Run_SkewedPointDistribution_ReturnsSameResultsAsNaiveAlgorithm)
+    {
+        const size_t PointCount = 1000;
+        const size_t QueryCount = 200;
+        const size_t AnswerSize = 20;
 
-        knn::Answer<double> answer(AnswerSize);
-        knn::Query3d query(tree, answer);
+        MersenneTwister rng;
 
-        vector<long unsigned int> stann_answer(AnswerSize);
-        vector<double> stann_distances(AnswerSize);
+        vector<Vector3d> points;
+        generate_random_points(rng, points, PointCount);
 
-        for (size_t i = 0; i < QueryCount; ++i)
-        {
-            Vector3d q;
-            q.x = rand_double1(rng);
-            q.y = rand_double1(rng);
-            q.z = rand_double1(rng);
+        points[0] = Vector3d(0.0);
 
-            stann_tree.ksearch(q, AnswerSize, stann_answer, stann_distances);
+        for (size_t i = 1; i < points.size(); ++i)
+            points[i] = Vector3d(0.55) + 0.45 * points[i];
 
-            query.run(q);
-            answer.sort();
-
-            ASSERT_EQ(AnswerSize, answer.size());
-
-            size_t our_answer[AnswerSize];
-            for (size_t j = 0; j < AnswerSize; ++j)
-                our_answer[j] = tree.remap(answer.get(j).m_index);
-
-            EXPECT_SEQUENCE_EQ(AnswerSize, &stann_answer[0], &our_answer[0]);
-        }
+        EXPECT_TRUE(do_results_match_naive_algorithm(points, AnswerSize, QueryCount, rng));
     }
 
     TEST_CASE(Run_GivenMaxSearchDistance_ReturnsCorrectResults)
@@ -370,10 +409,7 @@ TEST_SUITE(Foundation_Math_Knn_Query)
 
         for (size_t i = 0; i < QueryCount; ++i)
         {
-            Vector3d q;
-            q.x = rand_double1(rng);
-            q.y = rand_double1(rng);
-            q.z = rand_double1(rng);
+            const Vector3d q = rand_vector1<Vector3d>(rng);
 
             full_query.run(q);
             full_answer.sort();
@@ -397,5 +433,3 @@ TEST_SUITE(Foundation_Math_Knn_Query)
         }
     }
 }
-
-#pragma warning (pop)

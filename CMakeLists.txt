@@ -243,7 +243,6 @@ endif ()
 include_directories (
     src/appleseed
     src/lz4
-    src/STANN/include
     ${PYTHON_INCLUDE_DIRS}
 )
 
