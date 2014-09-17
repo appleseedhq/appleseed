@@ -33,6 +33,9 @@
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 namespace foundation
 {
 
@@ -40,7 +43,7 @@ namespace foundation
 // Image attributes.
 //
 
-class ImageAttributes
+class DLLSYMBOL ImageAttributes
   : public StringDictionary
 {
   public:

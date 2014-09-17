@@ -36,8 +36,14 @@
 // appleseed.renderer headers.
 #include "renderer/api/frame.h"
 
+// appleseed.foundation headers.
+#include "foundation/image/image.h"
+#include "foundation/image/imageattributes.h"
+#include "foundation/image/progressiveexrimagefilewriter.h"
+
 // Standard headers.
 #include <cstddef>
+#include <vector>
 
 using namespace foundation;
 using namespace renderer;
@@ -59,11 +65,21 @@ namespace
         ContinuousSavingTileCallback(const string& output_filename, Logger& logger)
           : ProgressTileCallback(logger)
           , m_output_filename(output_filename)
+          , m_exr_writer(&logger)
         {
         }
 
+        ~ContinuousSavingTileCallback()
+        {
+            m_exr_writer.close();
+        }
+
       private:
-        const string m_output_filename;
+        const string                    m_output_filename;
+        ProgressiveEXRImageFileWriter   m_exr_writer;
+        size_t                          m_tile_count_x;
+        size_t                          m_tile_count_y;
+        vector<size_t>                  m_tiles_done;
 
         virtual void do_post_render_tile(
             const Frame*    frame,
@@ -72,8 +88,35 @@ namespace
         {
             ProgressTileCallback::do_post_render_tile(frame, tile_x, tile_y);
 
-            frame->write_main_image(m_output_filename.c_str());
-            frame->write_aov_images(m_output_filename.c_str());
+            const CanvasProperties& props = frame->image().properties();
+
+            if (!m_exr_writer.is_open())
+            {
+                m_exr_writer.open(
+                    m_output_filename.c_str(),
+                    props,
+                    ImageAttributes::create_default_attributes());
+
+                m_tile_count_x = props.m_tile_count_x;
+                m_tile_count_y = props.m_tile_count_y;
+                m_tiles_done.resize(m_tile_count_y, 0);
+            }
+
+            m_tiles_done[tile_y] += 1;
+
+            for( size_t j = 0; j < m_tile_count_y; ++j)
+            {
+                if (m_tiles_done[j] == m_tile_count_x)
+                {
+                    for (size_t i = 0; i < m_tile_count_x; ++i)
+                    {
+                        const Tile& tile = frame->image().tile(i, j);
+                        m_exr_writer.write_tile(tile, i, j);
+                    }
+
+                    m_tiles_done[j] = 0;
+                }
+            }
         }
     };
 }
