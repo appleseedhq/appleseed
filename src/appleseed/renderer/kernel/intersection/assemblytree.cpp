@@ -701,8 +701,8 @@ bool AssemblyLeafVisitor::visit(
             // Check the intersection between the ray and the curve tree.
             const GRay3 ray(local_shading_point.m_ray);
             const GRayInfo3 ray_info(local_ray_info);
-            CurveIntersectorType::MatrixType xfm_matrix;
-            CurveIntersectorType::make_projection_transform(xfm_matrix, ray);
+            CurveMatrixType xfm_matrix;
+            make_curve_projection_transform(xfm_matrix, ray);
             CurveLeafVisitor visitor(*curve_tree, xfm_matrix, local_shading_point);
             CurveTreeIntersector intersector;
             intersector.intersect_no_motion(
@@ -869,8 +869,8 @@ bool AssemblyLeafProbeVisitor::visit(
             // Check intersection between ray and curve tree.
             const GRay3 ray(local_ray);
             const GRayInfo3 ray_info(local_ray_info);
-            CurveIntersectorType::MatrixType xfm_matrix;
-            CurveIntersectorType::make_projection_transform(xfm_matrix, ray);
+            CurveMatrixType xfm_matrix;
+            make_curve_projection_transform(xfm_matrix, ray);
             CurveLeafProbeVisitor visitor(*curve_tree, xfm_matrix);
             CurveTreeProbeIntersector intersector;
             intersector.intersect_no_motion(

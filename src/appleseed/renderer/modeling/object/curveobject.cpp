@@ -48,7 +48,8 @@ struct CurveObject::Impl
 {
     RegionKit           m_region_kit;
     Lazy<RegionKit>     m_lazy_region_kit;
-    vector<CurveType>   m_curves;
+    vector<CurveType3>  m_curves3;
+    vector<CurveType1>  m_curves1;
     vector<string>      m_material_slots;
 
     Impl()
@@ -61,10 +62,14 @@ struct CurveObject::Impl
         GAABB3 bbox;
         bbox.invalidate();
 
-        const size_t curve_count = m_curves.size();
+        const size_t curve3_count = m_curves3.size();
+        const size_t curve1_count = m_curves1.size();
 
-        for (size_t i = 0; i < curve_count; ++i)
-            bbox.insert(m_curves[i].compute_bbox());
+        for (size_t i = 0; i < curve3_count; ++i)
+            bbox.insert(m_curves3[i].compute_bbox());
+
+        for (size_t i = 0; i < curve1_count; ++i)
+            bbox.insert(m_curves1[i].compute_bbox());
 
         return bbox;
     }
@@ -103,27 +108,50 @@ Lazy<RegionKit>& CurveObject::get_region_kit()
     return impl->m_lazy_region_kit;
 }
 
-void CurveObject::reserve_curves(const size_t count)
+void CurveObject::reserve_curves1(const size_t count)
 {
-    impl->m_curves.reserve(count);
+    impl->m_curves1.reserve(count);
 }
 
-size_t CurveObject::push_curve(const CurveType& curve)
+void CurveObject::reserve_curves3(const size_t count)
 {
-    const size_t index = impl->m_curves.size();
-    impl->m_curves.push_back(curve);
+    impl->m_curves3.reserve(count);
+}
+
+size_t CurveObject::push_curve1(const CurveType1& curve)
+{
+    const size_t index = impl->m_curves1.size();
+    impl->m_curves1.push_back(curve);
     return index;
 }
 
-size_t CurveObject::get_curve_count() const
+size_t CurveObject::push_curve3(const CurveType3& curve)
 {
-    return impl->m_curves.size();
+    const size_t index = impl->m_curves3.size();
+    impl->m_curves3.push_back(curve);
+    return index;
 }
 
-const CurveType& CurveObject::get_curve(const size_t index) const
+size_t CurveObject::get_curve1_count() const
 {
-    assert(index < impl->m_curves.size());
-    return impl->m_curves[index];
+    return impl->m_curves1.size();
+}
+
+size_t CurveObject::get_curve3_count() const
+{
+    return impl->m_curves3.size();
+}
+
+const CurveType1& CurveObject::get_curve1(const size_t index) const
+{
+    assert(index < impl->m_curves1.size());
+    return impl->m_curves1[index];
+}
+
+const CurveType3& CurveObject::get_curve3(const size_t index) const
+{
+    assert(index < impl->m_curves3.size());
+    return impl->m_curves3[index];
 }
 
 size_t CurveObject::get_material_slot_count() const

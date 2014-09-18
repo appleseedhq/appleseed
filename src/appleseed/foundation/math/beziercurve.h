@@ -215,11 +215,6 @@ class BezierCurveIntersector
     typedef typename BezierCurveType::MatrixType MatrixType;
     typedef Ray<ValueType, 3> RayType;
 
-    // Compute the transformation matrix required for ray-curve intersection.
-    static void make_projection_transform(
-        MatrixType&             matrix,
-        const RayType&          ray);
-
     // Compute the intersection between a ray and a curve.
     static bool intersect(
         const BezierCurveType&  curve,
@@ -654,14 +649,17 @@ void BezierCurve3<T>::split(BezierCurve3& c1, BezierCurve3& c2) const
 
 
 //
-// BezierCurveIntersector class implementation.
+// Projection transform free function for Ray-Curve Intersection.
 //
 
-template <typename BezierCurveType>
-void BezierCurveIntersector<BezierCurveType>::make_projection_transform(
-    MatrixType&             matrix,
-    const RayType&          ray)
+template<typename MatrixType, typename RayType>
+void make_curve_projection_transform(
+    MatrixType&         matrix,
+    const RayType&      ray)
 {
+    typedef typename MatrixType::ValueType ValueType;
+    typedef typename RayType::VectorType   VectorType;
+
     //
     // We build a matrix that will transform a curve such that:
     //
@@ -694,6 +692,8 @@ void BezierCurveIntersector<BezierCurveType>::make_projection_transform(
     //         matrix = rot_x * tr;
     //     }
     //
+    // NOTE: This function does not depend on the type of the curve and only dependent on the ray.
+    //       Hence it's made into a free function.
 
     const VectorType dir = normalize(ray.m_dir);
     const ValueType d = std::sqrt(dir.x * dir.x + dir.z * dir.z);
@@ -755,6 +755,10 @@ void BezierCurveIntersector<BezierCurveType>::make_projection_transform(
         matrix[15] = ValueType(1.0);
     }
 }
+
+//
+// BezierCurveIntersector class implementation.
+//
 
 template <typename BezierCurveType>
 bool BezierCurveIntersector<BezierCurveType>::intersect(

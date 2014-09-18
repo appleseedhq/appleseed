@@ -77,15 +77,40 @@ bool CurveObjectWriter::write(
         return false;
     }
 
-    const size_t curve_count = object.get_curve_count();
+    const size_t curve1_count = object.get_curve1_count();
+    const size_t curve3_count = object.get_curve3_count();
 
-    output << curve_count << endl;
-    output << 4 << endl;    // numberof control points
+    output << curve1_count << endl;
+    output << curve3_count << endl;
 
-    for (size_t i = 0; i < curve_count; ++i)
+    // Degree 1 curves.
+    for (size_t i = 0; i < curve1_count; ++i)
     {
-        const CurveType& curve = object.get_curve(i);
+        const CurveType1& curve = object.get_curve1(i);
         const size_t control_point_count = curve.get_control_point_count();
+
+        output << control_point_count << ' ';
+
+        for (size_t p = 0; p < control_point_count; ++p)
+        {
+            if (p > 0)
+                output << ' ';
+
+            const GVector3& point = curve.get_control_point(p);
+            const GScalar width = curve.get_width(p);
+
+            output << point.x << ' ' << point.y << ' ' << point.z << ' ' << width;
+        }
+
+        output << endl;
+    }
+
+    for (size_t i = 0; i < curve3_count; ++i)
+    {
+        const CurveType3& curve = object.get_curve3(i);
+        const size_t control_point_count = curve.get_control_point_count();
+
+        output << control_point_count << ' ';
 
         for (size_t p = 0; p < control_point_count; ++p)
         {

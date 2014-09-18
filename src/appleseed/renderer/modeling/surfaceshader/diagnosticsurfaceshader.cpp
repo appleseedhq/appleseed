@@ -307,7 +307,8 @@ void DiagnosticSurfaceShader::evaluate(
             }
             else
             {
-                assert(shading_point.get_primitive_type() == ShadingPoint::PrimitiveCurve);
+                assert(shading_point.get_primitive_type() == ShadingPoint::PrimitiveCurve1 ||
+                       shading_point.get_primitive_type() == ShadingPoint::PrimitiveCurve3);
 
                 // todo: implement.
             }
@@ -348,7 +349,8 @@ void DiagnosticSurfaceShader::evaluate(
             }
             else
             {
-                assert(shading_point.get_primitive_type() == ShadingPoint::PrimitiveCurve);
+                assert(shading_point.get_primitive_type() == ShadingPoint::PrimitiveCurve1 ||
+                       shading_point.get_primitive_type() == ShadingPoint::PrimitiveCurve3);
 
                 // todo: implement.
             }

@@ -137,21 +137,127 @@ void CurveTree::build_bvh(
     builder.build<DefaultWallclockTimer>(
         *this,
         partitioner,
-        m_curves3.size(),
+        m_curves1.size() + m_curves3.size(),
         CurveTreeDefaultMaxLeafSize);
     statistics.merge(
         bvh::TreeStatistics<CurveTree>(*this, m_arguments.m_bbox));
 
-    // Reorder the curves based on the nodes ordering.
-    if (!m_curves3.empty())
+    // Reorder the curve keys based on the nodes ordering.
+    // The curves are then reordered within each leaf node.
+    if (!m_curves1.empty() || !m_curves3.empty())
     {
         const vector<size_t>& order = partitioner.get_item_ordering();
 
-        vector<CurveType> temp_curves(m_curves3.size());
-        small_item_reorder(&m_curves3[0], &temp_curves[0], &order[0], order.size());
-
+        // Reorder they keys first.
         vector<CurveKey> temp_keys(m_curve_keys.size());
         small_item_reorder(&m_curve_keys[0], &temp_keys[0], &order[0], order.size());
+
+        vector<CurveType1> temp_curves1(m_curves1.size());
+        vector<CurveType3> temp_curves3(m_curves3.size());
+        vector<CurveKey>   new_keys(temp_keys.size());
+
+        size_t curve1_index = 0;
+        size_t curve3_index = 0;
+
+        // Reorder the curves in the original list based on type.
+        for (size_t i = 0; i < order.size(); i++)
+        {
+            const CurveKey& key = m_curve_keys[i];
+            if (key.get_curve_degree() == 1)
+            {
+                temp_curves1[curve1_index] = m_curves1[key.get_curve_index_tree()];
+                new_keys[i] = CurveKey(key.get_object_instance_index(),
+                                       key.get_curve_index(),
+                                       curve1_index,
+                                       key.get_curve_pa(),
+                                       1);
+                curve1_index++;
+            }
+            else if (key.get_curve_degree() == 3)
+            {
+                temp_curves3[curve3_index] = m_curves3[key.get_curve_index_tree()];
+                new_keys[i] = CurveKey(key.get_object_instance_index(),
+                                       key.get_curve_index(),
+                                       curve3_index,
+                                       key.get_curve_pa(),
+                                       3);
+                curve3_index++;
+            }
+        }
+
+        // Sanity check to see if we have correctly reordered the keys.
+        assert(curve1_index == m_curves1.size());
+        assert(curve3_index == m_curves3.size());
+
+        // Write curves and curve keys back to the original list.
+        for (size_t i = 0; i < m_curves1.size(); i++)
+            m_curves1[i] = temp_curves1[i];
+        for (size_t i = 0; i < m_curves3.size(); i++)
+            m_curves3[i] = temp_curves3[i];
+        for (size_t i = 0; i < new_keys.size(); i++)
+            m_curve_keys[i] = new_keys[i];
+
+        // We now add extra data to the nodes so that elements in a leaf can be sequentially accessed.
+        size_t degree1_curves_offset = 0;
+        size_t degree3_curves_offset = 0;
+
+        for (size_t i = 0; i < m_nodes.size(); i++)
+        {
+            if (m_nodes[i].is_leaf())
+            {
+                size_t num_elements = m_nodes[i].get_item_count();
+                size_t key_index = m_nodes[i].get_item_index();
+
+                std::vector<CurveKey> m_temp_curve1_keys;
+                std::vector<CurveKey> m_temp_curve3_keys;
+                
+                // Get the number of degree 1 and degree 3 curves.
+                // user_data is of the form [degree1_cnt, degree1_curves_offset, degree3_cnt, degree3_curves_offset].
+                // Also reorder the keys within the node so that degree 1 curves keys come first and degree 3 curves come last.
+                Vector4u user_data(0, 0, 0, 0);
+
+                for (size_t j = 0; j < num_elements; j++)
+                {
+                    const CurveKey& key = m_curve_keys[key_index + j];
+
+                    if (key.get_curve_degree() == 1)
+                    {
+                        (user_data[0])++;
+                        m_temp_curve1_keys.push_back(key);
+                    }
+                    else
+                    {
+                        (user_data[2])++;
+                        m_temp_curve3_keys.push_back(key);
+                    }
+                }
+
+                // We have the count. We can decide the locations of the elements within the node.
+                user_data[1] += degree1_curves_offset;
+                user_data[3] += degree3_curves_offset;
+
+                Vector4u& data = m_nodes[i].get_user_data<Vector4u>();
+                data = user_data;
+
+                // Update the offset.
+                degree1_curves_offset += user_data[0];
+                degree3_curves_offset += user_data[2];
+
+                // Reorder the curve keys in the original list.
+                size_t offset = 0;
+                for (size_t curve1 = 0; curve1 < m_temp_curve1_keys.size(); curve1++)
+                {
+                    m_curve_keys[key_index + offset] = m_temp_curve1_keys[curve1];
+                    offset++;
+                }
+
+                for (size_t curve3 = 0; curve3 < m_temp_curve3_keys.size(); curve3++)
+                {
+                    m_curve_keys[key_index + offset] = m_temp_curve3_keys[curve3];
+                    offset++;
+                }
+            }
+        }
     }
 }
 
@@ -159,6 +265,7 @@ void CurveTree::collect_curves(vector<GAABB3>& curve_bboxes)
 {
     const ObjectInstanceContainer& object_instances = m_arguments.m_assembly.object_instances();
 
+    size_t index = 0;
     for (size_t i = 0; i < object_instances.size(); ++i)
     {
         // Retrieve the object instance.
@@ -178,11 +285,28 @@ void CurveTree::collect_curves(vector<GAABB3>& curve_bboxes)
 
         // Store the curves, curve keys and curve bounding boxes.
         const CurveObject& curve_object = static_cast<const CurveObject&>(object);
-        const size_t curve_count = curve_object.get_curve_count();
-        for (size_t j = 0; j < curve_count; ++j)
+
+        // Store degree 1 curves.
+        const size_t curve1_count = curve_object.get_curve1_count();
+        for (size_t j = 0; j < curve1_count; ++j)
         {
-            const CurveType curve(curve_object.get_curve(j), transform);
-            const CurveKey curve_key(i, j, 0);  // for now we assume all the curves have the same material
+            const CurveType1 curve(curve_object.get_curve1(j), transform);
+            const CurveKey curve_key(i, j, m_curves1.size(), 0, 1);
+
+            GAABB3 curve_bbox = curve.compute_bbox();
+            curve_bbox.grow(GVector3(GScalar(0.5) * curve.compute_max_width()));
+
+            m_curves1.push_back(curve);
+            m_curve_keys.push_back(curve_key);
+            curve_bboxes.push_back(curve_bbox);
+        }
+
+        // Store degree 3 curves.
+        const size_t curve3_count = curve_object.get_curve3_count();
+        for (size_t j = 0; j < curve3_count; ++j)
+        {
+            const CurveType3 curve(curve_object.get_curve3(j), transform);
+            const CurveKey curve_key(i, j, m_curves3.size(), 0, 3);  // for now we assume all the curves have the same material
 
             GAABB3 curve_bbox = curve.compute_bbox();
             curve_bbox.grow(GVector3(GScalar(0.5) * curve.compute_max_width()));

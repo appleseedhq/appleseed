@@ -73,10 +73,14 @@ class DLLSYMBOL CurveObject
     virtual foundation::Lazy<RegionKit>& get_region_kit() OVERRIDE;
 
     // Insert and access curves.
-    void reserve_curves(const size_t count);
-    size_t push_curve(const CurveType& curve);
-    size_t get_curve_count() const;
-    const CurveType& get_curve(const size_t index) const;
+    void reserve_curves1(const size_t count);
+    void reserve_curves3(const size_t count);
+    size_t push_curve1(const CurveType1& curve);
+    size_t push_curve3(const CurveType3& curve);
+    size_t get_curve1_count() const;
+    size_t get_curve3_count() const;
+    const CurveType1& get_curve1(const size_t index) const;
+    const CurveType3& get_curve3(const size_t index) const;
 
     // Insert and access material slots.
     virtual size_t get_material_slot_count() const OVERRIDE;
