@@ -197,10 +197,17 @@ source_group ("foundation\\math\\knn" FILES
 set (foundation_math_rng_sources
     foundation/math/rng/distribution.h
     foundation/math/rng/lcg.h
-    foundation/math/rng/mersennetwister.cpp
     foundation/math/rng/mersennetwister.h
+    foundation/math/rng/serialmersennetwister.cpp
+    foundation/math/rng/serialmersennetwister.h
     foundation/math/rng/xorshift.h
 )
+if (USE_SIMD_RNG)
+    list (APPEND foundation_math_rng_sources
+        foundation/math/rng/simdmersennetwister.cpp
+        foundation/math/rng/simdmersennetwister.h
+    )
+endif ()
 list (APPEND appleseed_sources
     ${foundation_math_rng_sources}
 )
@@ -346,6 +353,7 @@ set (foundation_meta_benchmarks_sources
     foundation/meta/benchmarks/benchmark_poolallocator.cpp
     foundation/meta/benchmarks/benchmark_qmc.cpp
     foundation/meta/benchmarks/benchmark_ray.cpp
+    foundation/meta/benchmarks/benchmark_rng.cpp
     foundation/meta/benchmarks/benchmark_samesign.cpp
     foundation/meta/benchmarks/benchmark_sampling.cpp
     foundation/meta/benchmarks/benchmark_spectrum.cpp
