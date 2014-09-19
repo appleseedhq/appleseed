@@ -29,7 +29,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/rng/distribution.h"
-#include "foundation/math/rng/mersennetwister.h"
+#include "foundation/math/rng/serialmersennetwister.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/countof.h"
 #include "foundation/utility/test.h"
@@ -343,7 +343,7 @@ TEST_SUITE(Foundation_Math_Rng)
     }
 }
 
-TEST_SUITE(Foundation_Math_Rng_MersenneTwister)
+TEST_SUITE(Foundation_Math_Rng_SerialMersenneTwister)
 {
     TEST_CASE(CheckThousandFirstOutputValues)
     {
@@ -552,7 +552,7 @@ TEST_SUITE(Foundation_Math_Rng_MersenneTwister)
         };
 
         static const uint32 InitKey[] = { 0x123UL, 0x234UL, 0x345UL, 0x456UL };
-        MersenneTwister rng(InitKey, countof(InitKey));
+        SerialMersenneTwister rng(InitKey, countof(InitKey));
 
         for (size_t i = 0; i < 1000; ++i)
             EXPECT_EQ(Expected[i], rng.rand_uint32());
