@@ -34,6 +34,8 @@
 #include "foundation/math/rng/distribution.h"
 #include "foundation/math/rng/lcg.h"
 #include "foundation/math/rng/mersennetwister.h"
+#include "foundation/math/rng/serialmersennetwister.h"
+#include "foundation/math/rng/simdmersennetwister.h"
 #include "foundation/math/rng/xorshift.h"
 
 #endif  // !APPLESEED_FOUNDATION_MATH_RNG_H
