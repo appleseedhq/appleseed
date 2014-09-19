@@ -31,31 +31,36 @@
 #ifdef APPLESEED_USE_SIMD_RNG
 #include "foundation/math/rng/simdmersennetwister.h"
 #endif
-
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/benchmark.h"
 
 // Standard headers.
+#include <cstddef>
 
 using namespace foundation;
 
-BENCHMARK_SUITE(Foundation_Math_Rng)
+BENCHMARK_SUITE(Foundation_Math_Rng_SerialMersenneTwister)
 {
-    BENCHMARK_CASE(SerialRngInt32RandomGen)
+    BENCHMARK_CASE(RandUint32)
     {
         SerialMersenneTwister rng;
 
         for (size_t i = 0; i < 1753117; ++i)
-            uint32 x = rng.rand_uint32();
+            rng.rand_uint32();
     }
+}
 
 #ifdef APPLESEED_USE_SIMD_RNG
-    BENCHMARK_CASE(SimdRngInt32RandomGen)
+
+BENCHMARK_SUITE(Foundation_Math_Rng_SimdRngInt32RandomGen)
+{
+    BENCHMARK_CASE(RandUint32)
     {
         SimdMersenneTwister rng;
 
         for (size_t i = 0; i < 1753117; ++i)
-            uint32 x = rng.rand_uint32();
+            rng.rand_uint32();
     }
-#endif
 }
+
+#endif

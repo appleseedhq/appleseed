@@ -30,7 +30,9 @@
 #include "simdmersennetwister.h"
 
 // Standard headers.
-#include <string.h>
+#include <cstring>
+
+using namespace std;
 
 /*
     Copyright (c) 2006,2007 Mutsuo Saito, Makoto Matsumoto and Hiroshima
@@ -91,45 +93,42 @@
 
 namespace foundation
 {
-
 namespace
 {
+    inline int idxof(int i)
+    {
+        return i;
+    }
 
-inline int idxof(int i)
-{
-    return i;
-}
+    inline uint32 func1(uint32 x)
+    {
+        return (x ^ (x >> 27)) * (uint32)1664525UL;
+    }
 
-uint32 func1(uint32 x)
-{
-    return (x ^ (x >> 27)) * (uint32)1664525UL;
-}
+    inline uint32 func2(uint32 x)
+    {
+        return (x ^ (x >> 27)) * (uint32)1566083941UL;
+    }
 
-uint32 func2(uint32 x)
-{
-    return (x ^ (x >> 27)) * (uint32)1566083941UL;
-}
-
-inline void mm_recursion(
-    __m128i* r,
-    __m128i a,
-    __m128i b,
-    __m128i c,
-    __m128i d,
-    __m128i sse2_param_mask)
-{
-    __m128i y = _mm_srli_epi32(b, SFMT_SR1);
-    __m128i z = _mm_srli_si128(c, SFMT_SR2);
-    __m128i v = _mm_slli_epi32(d, SFMT_SL1);
-    z = _mm_xor_si128(z, a);
-    z = _mm_xor_si128(z, v);
-    __m128i x = _mm_slli_si128(a, SFMT_SL2);
-    y = _mm_and_si128(y, sse2_param_mask);
-    z = _mm_xor_si128(z, x);
-    z = _mm_xor_si128(z, y);
-    *r = z;
-}
-
+    inline void mm_recursion(
+        __m128i* r,
+        __m128i a,
+        __m128i b,
+        __m128i c,
+        __m128i d,
+        __m128i sse2_param_mask)
+    {
+        __m128i y = _mm_srli_epi32(b, SFMT_SR1);
+        __m128i z = _mm_srli_si128(c, SFMT_SR2);
+        __m128i v = _mm_slli_epi32(d, SFMT_SL1);
+        z = _mm_xor_si128(z, a);
+        z = _mm_xor_si128(z, v);
+        __m128i x = _mm_slli_si128(a, SFMT_SL2);
+        y = _mm_and_si128(y, sse2_param_mask);
+        z = _mm_xor_si128(z, x);
+        z = _mm_xor_si128(z, y);
+        *r = z;
+    }
 }
 
 const SimdMersenneTwister::w128 SimdMersenneTwister::m_sse2_param_mask =
