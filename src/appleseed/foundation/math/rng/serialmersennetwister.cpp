@@ -28,14 +28,14 @@
 //
 
 // Interface header.
-#include "mersennetwister.h"
+#include "serialmersennetwister.h"
 
 namespace foundation
 {
 
-/* 
+/*
    Copyright (C) 1997 - 2002, Makoto Matsumoto and Takuji Nishimura,
-   All rights reserved.                          
+   All rights reserved.
 
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
@@ -48,8 +48,8 @@ namespace foundation
         notice, this list of conditions and the following disclaimer in the
         documentation and/or other materials provided with the distribution.
 
-     3. The names of its contributors may not be used to endorse or promote 
-        products derived from this software without specific prior written 
+     3. The names of its contributors may not be used to endorse or promote
+        products derived from this software without specific prior written
         permission.
 
    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
@@ -72,12 +72,12 @@ namespace foundation
    Real versions are due to Isaku Wada, 2002/01/09 added.
 */
 
-MersenneTwister::MersenneTwister(const uint32 seed)
+SerialMersenneTwister::SerialMersenneTwister(const uint32 seed)
 {
     init_state(seed);
 }
 
-MersenneTwister::MersenneTwister(const uint32 init_key[], const int key_length)
+SerialMersenneTwister::SerialMersenneTwister(const uint32 init_key[], const int key_length)
 {
     /* initialize by an array with array-length */
     /* init_key is the array for initializing keys */
@@ -103,16 +103,16 @@ MersenneTwister::MersenneTwister(const uint32 init_key[], const int key_length)
         if (i>=N) { mt[0] = mt[N-1]; i=1; }
     }
 
-    mt[0] = 0x80000000UL; /* MSB is 1; assuring non-zero initial array */ 
+    mt[0] = 0x80000000UL; /* MSB is 1; assuring non-zero initial array */
 }
 
-void MersenneTwister::init_state(const uint32 seed)
+void SerialMersenneTwister::init_state(const uint32 seed)
 {
     /* initializes mt[N] with a seed */
     mt[0]= seed & 0xffffffffUL;
     for (mti=1; mti<N; mti++) {
-        mt[mti] = 
-	    (1812433253UL * (mt[mti-1] ^ (mt[mti-1] >> 30)) + mti); 
+        mt[mti] =
+        (1812433253UL * (mt[mti-1] ^ (mt[mti-1] >> 30)) + mti);
         /* See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier. */
         /* In the previous versions, MSBs of the seed affect   */
         /* only MSBs of the array mt[].                        */
@@ -129,7 +129,7 @@ namespace
     const uint32 LOWER_MASK = 0x7fffffffUL;     // least significant r bits
 }
 
-void MersenneTwister::update_state()
+void SerialMersenneTwister::update_state()
 {
     /* generate N words at one time */
     unsigned long y;

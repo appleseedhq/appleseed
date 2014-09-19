@@ -26,15 +26,20 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_RNG_MERSENNETWISTER_H
-#define APPLESEED_FOUNDATION_MATH_RNG_MERSENNETWISTER_H
+#ifndef APPLESEED_FOUNDATION_MATH_RNG_SIMDMERSENNETWISTER_H
+#define APPLESEED_FOUNDATION_MATH_RNG_SIMDMERSENNETWISTER_H
 
 // appleseed.foundation headers.
-#ifdef APPLESEED_USE_SIMD_RNG
-#include "foundation/math/rng/simdmersennetwister.h"
-#else
-#include "foundation/math/rng/serialmersennetwister.h"
-#endif
+#include "foundation/platform/types.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+// Standard headers.
+#include <cstddef>
+
+#include <xmmintrin.h>
+#include <emmintrin.h>
 
 namespace foundation
 {
@@ -43,11 +48,64 @@ namespace foundation
 // Mersenne Twister random number generator.
 //
 
-#ifdef APPLESEED_USE_SIMD_RNG
-typedef SimdMersenneTwister MersenneTwister;
-#else
-typedef SerialMersenneTwister MersenneTwister;
-#endif
+class DLLSYMBOL SimdMersenneTwister
+{
+  public:
+    // Constructors, seed the generator.
+    explicit SimdMersenneTwister(const uint32 seed = 5489UL);
+    SimdMersenneTwister(const uint32 init_key[], const int key_length);
+
+    // Generate a full-range 32-bit random number.
+    uint32 rand_uint32();
+
+  private:
+    // Parameters.
+    enum
+    {
+        MEXP = 19937,
+        N = MEXP / 128 + 1,
+        N32 = N * 4,
+        POS1 = 122
+    };
+
+    union w128
+    {
+        uint32  u[4];
+        uint64  u64[2];
+        __m128i si;
+    };
+
+    w128    mt[N];
+    int     mti;    // current index in state vector
+
+    static const w128 m_sse2_param_mask;
+
+    // Initialize the state vector with a seed.
+    void init_state(uint32 seed);
+    void init_array_state(const uint32 init_key[], const int key_length);
+
+    // Update the state vector.
+    void update_state();
+
+    void period_certification();
+};
+
+
+//
+// Simd MersenneTwister class implementation.
+//
+
+inline uint32 SimdMersenneTwister::rand_uint32()
+{
+    uint32* psfmt32 = &mt[0].u[0];
+
+    if (mti >= N32)
+    {
+        update_state();
+        mti = 0;
+    }
+    return psfmt32[mti++];
+}
 
 }       // namespace foundation
 

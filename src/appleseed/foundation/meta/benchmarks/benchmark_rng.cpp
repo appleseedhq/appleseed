@@ -26,29 +26,36 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_RNG_MERSENNETWISTER_H
-#define APPLESEED_FOUNDATION_MATH_RNG_MERSENNETWISTER_H
-
 // appleseed.foundation headers.
+#include "foundation/math/rng/serialmersennetwister.h"
 #ifdef APPLESEED_USE_SIMD_RNG
 #include "foundation/math/rng/simdmersennetwister.h"
-#else
-#include "foundation/math/rng/serialmersennetwister.h"
 #endif
 
-namespace foundation
-{
+#include "foundation/platform/compiler.h"
+#include "foundation/utility/benchmark.h"
 
-//
-// Mersenne Twister random number generator.
-//
+// Standard headers.
+
+using namespace foundation;
+
+BENCHMARK_SUITE(Foundation_Math_Rng)
+{
+    BENCHMARK_CASE(SerialRngInt32RandomGen)
+    {
+        SerialMersenneTwister rng;
+
+        for (size_t i = 0; i < 1753117; ++i)
+            uint32 x = rng.rand_uint32();
+    }
 
 #ifdef APPLESEED_USE_SIMD_RNG
-typedef SimdMersenneTwister MersenneTwister;
-#else
-typedef SerialMersenneTwister MersenneTwister;
+    BENCHMARK_CASE(SimdRngInt32RandomGen)
+    {
+        SimdMersenneTwister rng;
+
+        for (size_t i = 0; i < 1753117; ++i)
+            uint32 x = rng.rand_uint32();
+    }
 #endif
-
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_MATH_RNG_MERSENNETWISTER_H
+}
