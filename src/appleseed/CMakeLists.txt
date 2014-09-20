@@ -202,7 +202,7 @@ set (foundation_math_rng_sources
     foundation/math/rng/serialmersennetwister.h
     foundation/math/rng/xorshift.h
 )
-if (USE_SIMD_RNG)
+if (USE_SSE)
     list (APPEND foundation_math_rng_sources
         foundation/math/rng/simdmersennetwister.cpp
         foundation/math/rng/simdmersennetwister.h

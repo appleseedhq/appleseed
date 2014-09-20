@@ -28,7 +28,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/rng/serialmersennetwister.h"
-#ifdef APPLESEED_USE_SIMD_RNG
+#ifdef APPLESEED_USE_SSE
 #include "foundation/math/rng/simdmersennetwister.h"
 #endif
 #include "foundation/platform/compiler.h"
@@ -50,8 +50,7 @@ BENCHMARK_SUITE(Foundation_Math_Rng_SerialMersenneTwister)
     }
 }
 
-#ifdef APPLESEED_USE_SIMD_RNG
-
+#ifdef APPLESEED_USE_SSE
 BENCHMARK_SUITE(Foundation_Math_Rng_SimdRngInt32RandomGen)
 {
     BENCHMARK_CASE(RandUint32)
@@ -62,5 +61,4 @@ BENCHMARK_SUITE(Foundation_Math_Rng_SimdRngInt32RandomGen)
             rng.rand_uint32();
     }
 }
-
 #endif

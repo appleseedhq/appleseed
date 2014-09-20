@@ -85,7 +85,6 @@ option (USE_STATIC_OIIO         "Use static OpenImageIO libraries"              
 option (USE_STATIC_OSL          "Use static OpenShadingLanguage libraries"              ON)
 
 option (USE_SSE                 "Use SSE and SSE 2 instruction sets"                    ON)
-option (USE_SIMD_RNG            "Use SIMD random number generator (experimental)"       OFF)
 option (USE_QMC_SAMPLER         "Use QMC sampler (possible software patent issues)"     OFF)
 
 option (HIDE_SYMBOLS            "When using gcc, hide symbols not on the public API"    ON)
@@ -352,13 +351,6 @@ if (USE_SSE)
         set (preprocessor_definitions_common
             ${preprocessor_definitions_common}
             APPLESEED_USE_SSE
-        )
-    endif ()
-
-    if (USE_SIMD_RNG)
-        set (preprocessor_definitions_common
-            ${preprocessor_definitions_common}
-            APPLESEED_USE_SIMD_RNG
         )
     endif ()
 endif ()
