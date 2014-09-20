@@ -30,7 +30,7 @@
 #define APPLESEED_FOUNDATION_MATH_RNG_MERSENNETWISTER_H
 
 // appleseed.foundation headers.
-#ifdef APPLESEED_USE_SIMD_RNG
+#ifdef APPLESEED_USE_SSE
 #include "foundation/math/rng/simdmersennetwister.h"
 #else
 #include "foundation/math/rng/serialmersennetwister.h"
@@ -43,7 +43,7 @@ namespace foundation
 // Mersenne Twister random number generator.
 //
 
-#ifdef APPLESEED_USE_SIMD_RNG
+#ifdef APPLESEED_USE_SSE
 typedef SimdMersenneTwister MersenneTwister;
 #else
 typedef SerialMersenneTwister MersenneTwister;
