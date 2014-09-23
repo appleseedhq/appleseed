@@ -293,6 +293,52 @@ TEST_SUITE(Foundation_Math_Knn_Query)
             points.push_back(rand_vector1<Vector3d>(rng));
     }
 
+    TEST_CASE(Run_GivenMaxSearchDistance_ReturnsCorrectResults)
+    {
+        const size_t PointCount = 1000;
+        const size_t QueryCount = 1000;
+        const size_t AnswerSize = 100;
+        const double QueryMaxSquareDistance = square(0.1);
+
+        MersenneTwister rng;
+
+        vector<Vector3d> points;
+        generate_random_points(rng, points, PointCount);
+
+        knn::Tree3d tree;
+        knn::Builder3d builder(tree);
+        builder.build<DefaultWallclockTimer>(&points[0], PointCount);
+
+        knn::Answer<double> full_answer(AnswerSize);
+        knn::Query3d full_query(tree, full_answer);
+
+        knn::Answer<double> limited_answer(AnswerSize);
+        knn::Query3d limited_query(tree, limited_answer);
+
+        for (size_t i = 0; i < QueryCount; ++i)
+        {
+            const Vector3d q = rand_vector1<Vector3d>(rng);
+
+            full_query.run(q);
+            full_answer.sort();
+
+            limited_query.run(q, QueryMaxSquareDistance);
+            limited_answer.sort();
+
+            for (size_t j = 0; j < AnswerSize; ++j)
+            {
+                if (full_answer.get(j).m_square_dist > QueryMaxSquareDistance)
+                {
+                    EXPECT_EQ(j, limited_answer.size());
+                    break;
+                }
+
+                EXPECT_EQ(full_answer.get(j).m_index, limited_answer.get(j).m_index);
+                EXPECT_EQ(full_answer.get(j).m_square_dist, limited_answer.get(j).m_square_dist);
+            }
+        }
+    }
+
     struct SortPointByDistancePredicate
     {
         const vector<Vector3d>&     m_points;
@@ -363,7 +409,7 @@ TEST_SUITE(Foundation_Math_Knn_Query)
         return true;
     }
 
-    TEST_CASE(Run_UniformPointDistribution_ReturnsSameResultsAsNaiveAlgorithm)
+    TEST_CASE(Run_UniformPointDistribution_ReturnsIdenticalResultsAsNaiveAlgorithm)
     {
         const size_t PointCount = 1000;
         const size_t QueryCount = 200;
@@ -377,7 +423,7 @@ TEST_SUITE(Foundation_Math_Knn_Query)
         EXPECT_TRUE(do_results_match_naive_algorithm(points, AnswerSize, QueryCount, rng));
     }
 
-    TEST_CASE(Run_SkewedPointDistribution_ReturnsSameResultsAsNaiveAlgorithm)
+    TEST_CASE(Run_SkewedPointDistribution_ReturnsIdenticalResultsAsNaiveAlgorithm)
     {
         const size_t PointCount = 1000;
         const size_t QueryCount = 200;
@@ -394,53 +440,5 @@ TEST_SUITE(Foundation_Math_Knn_Query)
             points[i] = Vector3d(0.55) + 0.45 * points[i];
 
         EXPECT_TRUE(do_results_match_naive_algorithm(points, AnswerSize, QueryCount, rng));
-    }
-
-    TEST_CASE(Run_GivenMaxSearchDistance_ReturnsCorrectResults)
-    {
-        const size_t PointCount = 1000;
-        const size_t QueryCount = 1000;
-        const size_t AnswerSize = 100;
-        const double QueryMaxSquareDistance = square(0.1);
-
-        MersenneTwister rng;
-
-        vector<Vector3d> points;
-        generate_random_points(rng, points, PointCount);
-
-        knn::Tree3d tree;
-        knn::Builder3d builder(tree);
-        builder.build<DefaultWallclockTimer>(&points[0], PointCount);
-
-        knn::Answer<double> full_answer(AnswerSize);
-        knn::Query3d full_query(tree, full_answer);
-
-        knn::Answer<double> limited_answer(AnswerSize);
-        knn::Query3d limited_query(tree, limited_answer);
-
-        for (size_t i = 0; i < QueryCount; ++i)
-        {
-            const Vector3d q = rand_vector1<Vector3d>(rng);
-
-            full_query.run(q);
-            full_answer.sort();
-
-            limited_query.run(q, QueryMaxSquareDistance);
-            limited_answer.sort();
-
-            for (size_t j = 0; j < AnswerSize; ++j)
-            {
-                if (full_answer.get(j).m_square_dist > QueryMaxSquareDistance)
-                {
-                    EXPECT_EQ(j, limited_answer.size());
-                    break;
-                }
-
-                const knn::Answer<double>::Entry& ref_entry = full_answer.get(j);
-                const knn::Answer<double>::Entry& entry = limited_answer.get(j);
-
-                EXPECT_EQ(ref_entry.m_index, entry.m_index);
-            }
-        }
     }
 }
