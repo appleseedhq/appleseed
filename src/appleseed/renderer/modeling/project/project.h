@@ -49,6 +49,7 @@
 
 // Forward declarations.
 namespace foundation    { class SearchPaths; }
+namespace renderer      { class Display; }
 namespace renderer      { class Frame; }
 namespace renderer      { class Scene; }
 namespace renderer      { class TraceContext; }
@@ -96,6 +97,13 @@ class DLLSYMBOL Project
     // Access the frame.
     // Return 0 if the project does not contain a frame.
     Frame* get_frame() const;
+
+    // Set the display, replacing the existing display.
+    void set_display(foundation::auto_release_ptr<Display> display);
+
+    // Access the display.
+    // Return 0 if the project does not contain a display.
+    Display* get_display() const;
 
     // Add a render layer rule.
     void add_render_layer_rule(foundation::auto_release_ptr<RenderLayerRule> rule);

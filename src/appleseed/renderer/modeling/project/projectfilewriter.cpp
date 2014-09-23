@@ -34,6 +34,7 @@
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/color/colorentity.h"
+#include "renderer/modeling/display/display.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
@@ -589,6 +590,19 @@ namespace
             }
         }
 
+        // Write a <display> element.
+        void write(const Display& display)
+        {
+            XMLElement element("display", m_file, m_indenter);
+            element.add_attribute("name", display.get_name());
+            element.write(
+                !display.get_parameters().empty()
+                    ? XMLElement::HasChildElements
+                    : XMLElement::HasNoContent);
+
+            write_params(display.get_parameters());
+        }
+
         // Write an <edf> element.
         void write(const EDF& edf)
         {
@@ -831,6 +845,9 @@ namespace
 
             if (!(m_options & ProjectFileWriter::OmitSearchPaths))
                 write_search_paths(project);
+
+            if (project.get_display())
+                write(*project.get_display());
 
             if (project.get_scene())
                 write_scene(*project.get_scene());

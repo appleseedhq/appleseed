@@ -655,8 +655,12 @@ namespace
         }
         else
         {
-            tile_callback_factory.reset(
-                new ProgressTileCallbackFactory(g_logger));
+            // Create a default tile callback if needed.
+            if (project->get_display() == 0)
+            {
+                tile_callback_factory.reset(
+                    new ProgressTileCallbackFactory(g_logger));
+            }
         }
 
         // Create the master renderer.

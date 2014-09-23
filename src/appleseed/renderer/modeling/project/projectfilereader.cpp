@@ -38,6 +38,7 @@
 #include "renderer/modeling/camera/camerafactoryregistrar.h"
 #include "renderer/modeling/camera/icamerafactory.h"
 #include "renderer/modeling/color/colorentity.h"
+#include "renderer/modeling/display/display.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/edf/edffactoryregistrar.h"
 #include "renderer/modeling/edf/iedffactory.h"
@@ -362,6 +363,7 @@ namespace
         ElementColor,
         ElementConfiguration,
         ElementConfigurations,
+        ElementDisplay,
         ElementEDF,
         ElementEnvironment,
         ElementEnvironmentEDF,
@@ -2677,6 +2679,42 @@ namespace
 
 
     //
+    // <display> element handler.
+    //
+
+    class DisplayElementHandler
+      : public ParametrizedElementHandler
+    {
+      public:
+        explicit DisplayElementHandler(ParseContext& context)
+          : m_context(context)
+        {
+        }
+
+        virtual void start_element(const Attributes& attrs) OVERRIDE
+        {
+            ParametrizedElementHandler::start_element(attrs);
+            m_name = get_value(attrs, "name");
+        }
+
+        virtual void end_element() OVERRIDE
+        {
+            ParametrizedElementHandler::end_element();
+            m_project->set_display(DisplayFactory::create(m_name.c_str(), m_params));
+        }
+
+        void set_project(Project* project)
+        {
+            m_project = project;
+        }
+
+      private:
+        ParseContext&                   m_context;
+        string                          m_name;
+        Project*                        m_project;
+    };
+
+    //
     // <project> element handler.
     //
 
@@ -2744,6 +2782,12 @@ namespace
                 }
                 break;
 
+              case ElementDisplay:
+                {
+                    DisplayElementHandler* display_handler =
+                        static_cast<DisplayElementHandler*>(handler);
+                    display_handler->set_project(m_project);
+                }
               assert_otherwise;
             }
         }
@@ -2782,6 +2826,10 @@ namespace
                 // Nothing to do, search paths were directly inserted into the project.
                 break;
 
+              case ElementDisplay:
+                // Nothing to do, display was directly inserted into the project.
+                break;
+
               assert_otherwise;
             }
         }
@@ -2815,6 +2863,7 @@ namespace
 #ifdef WITH_OSL
             register_factory_helper<ShaderConnectionElementHandler>("connect_shaders", ElementShaderConnection);
 #endif
+            register_factory_helper<DisplayElementHandler>("display", ElementDisplay);
             register_factory_helper<EDFElementHandler>("edf", ElementEDF);
             register_factory_helper<EnvironmentElementHandler>("environment", ElementEnvironment);
             register_factory_helper<EnvironmentEDFElementHandler>("environment_edf", ElementEnvironmentEDF);

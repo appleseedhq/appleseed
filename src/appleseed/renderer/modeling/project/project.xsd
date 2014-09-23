@@ -190,7 +190,7 @@
                             </xsd:sequence>
                             <xsd:attribute name="name" type="xsd:string" use="required"/>
                         </xsd:complexType>
-                    </xsd:element>                    
+                    </xsd:element>
                     <xsd:element name="surface_shader">
                         <xsd:complexType>
                             <xsd:complexContent>
@@ -229,6 +229,15 @@
                         <xsd:choice minOccurs="0" maxOccurs="unbounded">
                             <xsd:element name="search_path"/>
                         </xsd:choice>
+                    </xsd:complexType>
+                </xsd:element>
+                <xsd:element name="display">
+                    <xsd:complexType>
+                        <xsd:complexContent>
+                            <xsd:extension base="parameterSet">
+                                <xsd:attribute name="name" type="xsd:string" use="required"/>
+                            </xsd:extension>
+                        </xsd:complexContent>
                     </xsd:complexType>
                 </xsd:element>
                 <xsd:element name="scene">

@@ -1281,6 +1281,17 @@ source_group ("renderer\\modeling\\color" FILES
     ${renderer_modeling_color_sources}
 )
 
+set (renderer_modeling_display_sources
+    renderer/modeling/display/display.cpp
+    renderer/modeling/display/display.h
+)
+list (APPEND appleseed_sources
+    ${renderer_modeling_display_sources}
+)
+source_group ("renderer\\modeling\\display" FILES
+    ${renderer_modeling_display_sources}
+)
+
 set (renderer_modeling_edf_sources
     renderer/modeling/edf/coneedf.cpp
     renderer/modeling/edf/coneedf.h
