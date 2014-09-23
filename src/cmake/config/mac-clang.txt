@@ -55,6 +55,7 @@ set (git_command "git")
 set (c_compiler_flags_common
     -Werror                                             # Treat Warnings As Errors
     -Wno-switch                                         # don't complain about unhandled enumeration values in switch
+    -fno-math-errno                                     # ignore errno when calling math functions
 )
 if (USE_SSE)
     set (c_compiler_flags_common
