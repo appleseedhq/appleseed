@@ -203,8 +203,8 @@ void CurveTree::build_bvh(
             const size_t item_count = m_nodes[i].get_item_count();
             const size_t item_index = m_nodes[i].get_item_index();
 
-            vector<CurveKey> m_temp_curve1_keys;
-            vector<CurveKey> m_temp_curve3_keys;
+            vector<CurveKey> temp_curve1_keys;
+            vector<CurveKey> temp_curve3_keys;
 
             Vector4u user_data(0, 0, 0, 0);
             size_t curve1_cnt = 0;
@@ -219,34 +219,34 @@ void CurveTree::build_bvh(
                 if (key.get_curve_degree() == 1)
                 {
                     curve1_cnt++;
-                    m_temp_curve1_keys.push_back(key);
+                    temp_curve1_keys.push_back(key);
                 }
                 else
                 {
                     curve3_cnt++;
-                    m_temp_curve3_keys.push_back(key);
+                    temp_curve3_keys.push_back(key);
                 }
             }
 
             // We have the count. We can decide the locations of the elements within the node.
-            if (m_temp_curve1_keys.size() > 0)
-                curve1_offset = m_temp_curve1_keys[0].get_curve_index_tree();
-            if (m_temp_curve3_keys.size() > 0)
-                curve3_offset = m_temp_curve3_keys[0].get_curve_index_tree();
+            if (temp_curve1_keys.size() > 0)
+                curve1_offset = temp_curve1_keys[0].get_curve_index_tree();
+            if (temp_curve3_keys.size() > 0)
+                curve3_offset = temp_curve3_keys[0].get_curve_index_tree();
 
             m_nodes[i].get_user_data<Vector4u>() = Vector4u(curve1_cnt, curve1_offset, curve3_cnt, curve3_offset);
 
             // Reorder the curve keys in the original list.
             size_t offset = 0;
-            for (size_t curve1 = 0; curve1 < m_temp_curve1_keys.size(); curve1++)
+            for (size_t curve1 = 0; curve1 < temp_curve1_keys.size(); curve1++)
             {
-                m_curve_keys[item_index + offset] = m_temp_curve1_keys[curve1];
+                m_curve_keys[item_index + offset] = temp_curve1_keys[curve1];
                 offset++;
             }
 
-            for (size_t curve3 = 0; curve3 < m_temp_curve3_keys.size(); curve3++)
+            for (size_t curve3 = 0; curve3 < temp_curve3_keys.size(); curve3++)
             {
-                m_curve_keys[item_index + offset] = m_temp_curve3_keys[curve3];
+                m_curve_keys[item_index + offset] = temp_curve3_keys[curve3];
                 offset++;
             }
         }

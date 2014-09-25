@@ -52,6 +52,30 @@ using namespace std;
 namespace renderer
 {
 
+namespace
+{
+    template <typename CurveType>
+    void write_curve(ostream& output, CurveType& curve)
+    {
+        const size_t control_point_count = curve.get_control_point_count();
+
+        output << control_point_count << ' ';
+
+        for (size_t p = 0; p < control_point_count; ++p)
+        {
+            if (p > 0)
+                output << ' ';
+
+            const GVector3& point = curve.get_control_point(p);
+            const GScalar width = curve.get_width(p);
+
+            output << point.x << ' ' << point.y << ' ' << point.z << ' ' << width;
+        }
+        output << endl;
+    }
+}
+
+
 //
 // CurveObjectWriter class implementation.
 //

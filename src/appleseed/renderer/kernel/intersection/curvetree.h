@@ -266,7 +266,7 @@ inline bool CurveLeafVisitor::visit(
     const size_t degree3_curve_offset = curve_data[3];
 
     size_t curve_num = 0;
-    size_t intersected_key = 0;
+    size_t hit_curve_index = 0;
 
     // Intersection params.
     GScalar u, v, t = ray.m_tmax;
@@ -281,7 +281,7 @@ inline bool CurveLeafVisitor::visit(
         {
             intersected = true;
             m_type = ShadingPoint::PrimitiveCurve1;
-            intersected_key = curve_index + curve_num;
+            hit_curve_index = curve_index + curve_num;
         }
         curve_num++;
     }
@@ -293,7 +293,7 @@ inline bool CurveLeafVisitor::visit(
         {
             intersected = true;
             m_type = ShadingPoint::PrimitiveCurve3;
-            intersected_key = curve_index + curve_num;
+            hit_curve_index = curve_index + curve_num;
         }
         curve_num++;
     }
@@ -304,8 +304,8 @@ inline bool CurveLeafVisitor::visit(
         m_shading_point.m_ray.m_tmax = static_cast<double>(t);
         m_shading_point.m_bary[0] = static_cast<double>(u);
         m_shading_point.m_bary[1] = static_cast<double>(v);
-        m_shading_point.m_object_instance_index = m_tree.m_curve_keys[intersected_key].get_object_instance_index();
-        m_shading_point.m_primitive_index = m_tree.m_curve_keys[intersected_key].get_curve_index();
+        m_shading_point.m_object_instance_index = m_tree.m_curve_keys[hit_curve_index].get_object_instance_index();
+        m_shading_point.m_primitive_index = m_tree.m_curve_keys[hit_curve_index].get_curve_index();
     }
 
     FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(curve_count));
