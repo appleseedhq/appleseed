@@ -652,7 +652,7 @@ void BezierCurve3<T>::split(BezierCurve3& c1, BezierCurve3& c2) const
 // Projection transform free function for Ray-Curve Intersection.
 //
 
-template<typename MatrixType, typename RayType>
+template <typename MatrixType, typename RayType>
 void make_curve_projection_transform(
     MatrixType&         matrix,
     const RayType&      ray)
@@ -692,7 +692,7 @@ void make_curve_projection_transform(
     //         matrix = rot_x * tr;
     //     }
     //
-    // NOTE: This function does not depend on the type of the curve and only dependent on the ray.
+    // NOTE: This function does not depend on the type of the curve and depends only on the ray.
     //       Hence it's made into a free function.
 
     const VectorType dir = normalize(ray.m_dir);

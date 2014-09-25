@@ -335,10 +335,10 @@ void ShadingPoint::compute_partial_derivatives() const
         assert(m_primitive_type == PrimitiveCurve1);
 
         const CurveObject* curves = static_cast<const CurveObject*>(m_object);
-        const CurveType1& m_curve = curves->get_curve1(m_primitive_index);
+        const CurveType1& curve = curves->get_curve1(m_primitive_index);
 
         const GScalar v = static_cast<GScalar>(m_bary[1]);
-        const GVector3 tangent = m_curve.evaluate_tangent(v);
+        const GVector3 tangent = curve.evaluate_tangent(v);
         const Vector3d& sn = get_original_shading_normal();
 
         m_dpdu = normalize(Vector3d(tangent));
@@ -346,13 +346,13 @@ void ShadingPoint::compute_partial_derivatives() const
     }
     else
     {
-        assert (m_primitive_type == PrimitiveCurve3);
+        assert(m_primitive_type == PrimitiveCurve3);
 
         const CurveObject* curves = static_cast<const CurveObject*>(m_object);
-        const CurveType3& m_curve = curves->get_curve3(m_primitive_index);
+        const CurveType3& curve = curves->get_curve3(m_primitive_index);
 
         const GScalar v = static_cast<GScalar>(m_bary[1]);
-        const GVector3 tangent = m_curve.evaluate_tangent(v);
+        const GVector3 tangent = curve.evaluate_tangent(v);
         const Vector3d& sn = get_original_shading_normal();
 
         m_dpdu = normalize(Vector3d(tangent));

@@ -240,13 +240,14 @@ auto_release_ptr<CurveObject> CurveObjectReader::load_curve_file(
         }
         else
         {
+            assert(control_point_count == 4);
+
             for (size_t p = 0; p < control_point_count; ++p)
             {
                 input >> points3[p].x >> points3[p].y >> points3[p].z;
                 input >> widths3[p];
             }
 
-            assert(control_point_count == 4);
             const CurveType3 curve(&points3[0], &widths3[0]);
             split_and_store(object.ref(), curve, split_count);
         }

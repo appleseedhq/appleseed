@@ -48,8 +48,8 @@ struct CurveObject::Impl
 {
     RegionKit           m_region_kit;
     Lazy<RegionKit>     m_lazy_region_kit;
-    vector<CurveType3>  m_curves3;
     vector<CurveType1>  m_curves1;
+    vector<CurveType3>  m_curves3;
     vector<string>      m_material_slots;
 
     Impl()
@@ -62,14 +62,14 @@ struct CurveObject::Impl
         GAABB3 bbox;
         bbox.invalidate();
 
-        const size_t curve3_count = m_curves3.size();
         const size_t curve1_count = m_curves1.size();
-
-        for (size_t i = 0; i < curve3_count; ++i)
-            bbox.insert(m_curves3[i].compute_bbox());
+        const size_t curve3_count = m_curves3.size();
 
         for (size_t i = 0; i < curve1_count; ++i)
             bbox.insert(m_curves1[i].compute_bbox());
+
+        for (size_t i = 0; i < curve3_count; ++i)
+            bbox.insert(m_curves3[i].compute_bbox());
 
         return bbox;
     }

@@ -162,7 +162,7 @@ class CurveLeafVisitor
     // Constructor.
     CurveLeafVisitor(
         const CurveTree&                        tree,
-        const CurveMatrixType& xfm_matrix,
+        const CurveMatrixType&                  xfm_matrix,
         ShadingPoint&                           shading_point);
 
     // Visit a leaf.
@@ -265,8 +265,8 @@ inline bool CurveLeafVisitor::visit(
     const size_t degree3_curve_count = curve_data[2];
     const size_t degree3_curve_offset = curve_data[3];
 
-    CurveKey intersected_key = m_tree.m_curve_keys[curve_index];
     size_t curve_num = 0;
+    size_t intersected_key = 0;
 
     // Intersection params.
     GScalar u, v, t = ray.m_tmax;
@@ -281,7 +281,7 @@ inline bool CurveLeafVisitor::visit(
         {
             intersected = true;
             m_type = ShadingPoint::PrimitiveCurve1;
-            intersected_key = m_tree.m_curve_keys[curve_index + curve_num];
+            intersected_key = curve_index + curve_num;
         }
         curve_num++;
     }
@@ -293,7 +293,7 @@ inline bool CurveLeafVisitor::visit(
         {
             intersected = true;
             m_type = ShadingPoint::PrimitiveCurve3;
-            intersected_key = m_tree.m_curve_keys[curve_index + curve_num];
+            intersected_key = curve_index + curve_num;
         }
         curve_num++;
     }
@@ -304,8 +304,8 @@ inline bool CurveLeafVisitor::visit(
         m_shading_point.m_ray.m_tmax = static_cast<double>(t);
         m_shading_point.m_bary[0] = static_cast<double>(u);
         m_shading_point.m_bary[1] = static_cast<double>(v);
-        m_shading_point.m_object_instance_index = intersected_key.get_object_instance_index();
-        m_shading_point.m_primitive_index = intersected_key.get_curve_index();
+        m_shading_point.m_object_instance_index = m_tree.m_curve_keys[intersected_key].get_object_instance_index();
+        m_shading_point.m_primitive_index = m_tree.m_curve_keys[intersected_key].get_curve_index();
     }
 
     FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(curve_count));
@@ -346,37 +346,24 @@ inline bool CurveLeafProbeVisitor::visit(
     const size_t degree3_curve_count = curve_data[2];
     const size_t degree3_curve_offset = curve_data[3];
 
-    // Intersection params.
-    bool intersected = false;
-
     for (size_t i = 0; i < degree1_curve_count; i++)
     {
         const CurveType1& curve = m_tree.m_curves1[degree1_curve_offset + i];
         if (Curve1IntersectorType::intersect(curve, ray, m_xfm_matrix))
         {
-            intersected = true;
-            break;
+            m_hit = true;
+            return false;
         }
     }
 
-    if (!intersected)
+    for (size_t i = 0; i < degree3_curve_count; i++)
     {
-        for (size_t i = 0; i < degree3_curve_count; i++)
+        const CurveType3& curve = m_tree.m_curves3[degree3_curve_offset + i];
+        if (Curve3IntersectorType::intersect(curve, ray, m_xfm_matrix))
         {
-            const CurveType3& curve = m_tree.m_curves3[degree3_curve_offset + i];
-            if (Curve3IntersectorType::intersect(curve, ray, m_xfm_matrix))
-            {
-                intersected = true;
-                break;
-            }
+            m_hit = true;
+            return false;
         }
-    }
-
-    if (intersected)
-    {
-        FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(i + 1));
-        m_hit = true;
-        return false;
     }
 
     FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(curve_count));
