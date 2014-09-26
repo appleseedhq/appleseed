@@ -142,7 +142,7 @@ size_t Project::get_format_revision() const
 
 bool Project::has_path() const
 {
-    return impl->m_path.size() > 0;
+    return !impl->m_path.empty();
 }
 
 void Project::set_path(const char* path)

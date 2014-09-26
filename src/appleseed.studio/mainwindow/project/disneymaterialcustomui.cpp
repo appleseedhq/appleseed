@@ -548,7 +548,7 @@ void DisneyMaterialCustomUI::add_layer(const bool update, const Dictionary& para
 
         if (type == "colormap")
         {
-            if (metadata.dictionaries().size() > 0)
+            if (!metadata.dictionaries().empty())
             {
                 const Dictionary entity_types = metadata.dictionaries().get("entity_types");
                 if (entity_types.strings().exist("color"))
