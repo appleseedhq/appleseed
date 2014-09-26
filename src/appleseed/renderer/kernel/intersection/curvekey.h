@@ -50,7 +50,9 @@ class CurveKey
     CurveKey(
         const size_t    object_instance_index,
         const size_t    curve_index,
-        const size_t    curve_pa);
+        const size_t    curve_index_tree,
+        const size_t    curve_pa,
+        const size_t    curve_degree);
 
     // Return the index of the object instance within the assembly.
     size_t get_object_instance_index() const;
@@ -58,13 +60,22 @@ class CurveKey
     // Return the index of the curve within the object.
     size_t get_curve_index() const;
 
+    // Return the index of the curve within the tree.
+    // This index is required because we reorder the curves within each node in the tree.
+    size_t get_curve_index_tree() const;
+
     // Return the primitive attribute index of the curve.
     size_t get_curve_pa() const;
+
+    // Return the curve type
+    size_t get_curve_degree() const;
 
   private:
     foundation::uint32  m_object_instance_index;
     foundation::uint32  m_curve_index;
+    foundation::uint32  m_curve_index_tree;
     foundation::uint16  m_curve_pa;
+    foundation::uint16  m_curve_degree;
 };
 
 
@@ -79,10 +90,14 @@ inline CurveKey::CurveKey()
 inline CurveKey::CurveKey(
     const size_t        object_instance_index,
     const size_t        curve_index,
-    const size_t        curve_pa)
+    const size_t        curve_index_tree,
+    const size_t        curve_pa,
+    const size_t        curve_degree)
   : m_object_instance_index(static_cast<foundation::uint32>(object_instance_index))
   , m_curve_index(static_cast<foundation::uint32>(curve_index))
+  , m_curve_index_tree(static_cast<foundation::uint32>(curve_index_tree))
   , m_curve_pa(static_cast<foundation::uint16>(curve_pa))
+  , m_curve_degree(static_cast<foundation::uint16>(curve_degree))
 {
 }
 
@@ -96,9 +111,19 @@ inline size_t CurveKey::get_curve_index() const
     return static_cast<size_t>(m_curve_index);
 }
 
+inline size_t CurveKey::get_curve_index_tree() const
+{
+    return static_cast<size_t>(m_curve_index_tree);
+}
+
 inline size_t CurveKey::get_curve_pa() const
 {
     return static_cast<size_t>(m_curve_pa);
+}
+
+inline size_t CurveKey::get_curve_degree() const
+{
+    return static_cast<size_t>(m_curve_degree);
 }
 
 }       // namespace renderer

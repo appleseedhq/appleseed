@@ -81,16 +81,16 @@ auto_release_ptr<CurveObject> CurveObjectReader::read(
 
 namespace
 {
-    void split_and_store(CurveObject& object, const CurveType& curve, const size_t split_count)
+    void split_and_store(CurveObject& object, const CurveType3& curve, const size_t split_count)
     {
         if (split_count > 0)
         {
-            CurveType child1, child2;
+            CurveType3 child1, child2;
             curve.split(child1, child2);
             split_and_store(object, child1, split_count - 1);
             split_and_store(object, child2, split_count - 1);
         }
-        else object.push_curve(curve);
+        else object.push_curve3(curve);
     }
 }
 
@@ -108,7 +108,7 @@ auto_release_ptr<CurveObject> CurveObjectReader::create_hair_ball(
     GVector3 points[ControlPointCount];
     MersenneTwister rng;
 
-    object->reserve_curves(curve_count);
+    object->reserve_curves3(curve_count);
 
     for (size_t c = 0; c < curve_count; ++c)
     {
@@ -120,7 +120,7 @@ auto_release_ptr<CurveObject> CurveObjectReader::create_hair_ball(
             points[p] = r * d;
         }
 
-        const CurveType curve(&points[0], curve_width);
+        const CurveType3 curve(&points[0], curve_width);
         split_and_store(object.ref(), curve, split_count);
     }
 
@@ -147,7 +147,7 @@ auto_release_ptr<CurveObject> CurveObjectReader::create_furry_ball(
 
     MersenneTwister rng;
 
-    object->reserve_curves(curve_count);
+    object->reserve_curves3(curve_count);
 
     for (size_t c = 0; c < curve_count; ++c)
     {
@@ -169,7 +169,7 @@ auto_release_ptr<CurveObject> CurveObjectReader::create_furry_ball(
             widths[p] = lerp(root_width, tip_width, r);
         }
 
-        const CurveType curve(&points[0], &widths[0]);
+        const CurveType3 curve(&points[0], &widths[0]);
         split_and_store(object.ref(), curve, split_count);
     }
 
@@ -198,35 +198,59 @@ auto_release_ptr<CurveObject> CurveObjectReader::load_curve_file(
     Stopwatch<DefaultWallclockTimer> stopwatch;
     stopwatch.start();
 
-    size_t curve_count;
-    input >> curve_count;
+    size_t curve1_count = 0;
+    size_t curve3_count = 0;
+    input >> curve1_count;
+    input >> curve3_count;
 
     size_t control_point_count;
-    input >> control_point_count;
 
-    if (control_point_count != 4)
+    vector<GVector3> points1(2);
+    vector<GScalar> widths1(2);
+    vector<GVector3> points3(4);
+    vector<GScalar> widths3(4);
+
+    object->reserve_curves1(curve1_count);
+    object->reserve_curves3(curve3_count);
+
+    for (size_t c = 0; c < curve1_count + curve3_count; ++c)
     {
-        RENDERER_LOG_ERROR(
-            "while loading curve file %s: only curves with 4 control points are currently supported.",
-            filepath.c_str());
-        return object;
-    }
+        // Each line starts with num control points followed by the control points.
+        input >> control_point_count;
 
-    vector<GVector3> points(control_point_count);
-    vector<GScalar> widths(control_point_count);
-
-    object->reserve_curves(curve_count);
-
-    for (size_t c = 0; c < curve_count; ++c)
-    {
-        for (size_t p = 0; p < control_point_count; ++p)
+        if (control_point_count != 2 && control_point_count != 4)
         {
-            input >> points[p].x >> points[p].y >> points[p].z;
-            input >> widths[p];
+            RENDERER_LOG_ERROR(
+                "while loading curve file %s: only linear curves (2 control points) or cubic curves (4 control points) are currently supported.",
+                filepath.c_str());
+            return object;
         }
 
-        const CurveType curve(&points[0], &widths[0]);
-        split_and_store(object.ref(), curve, split_count);
+        if (control_point_count == 2)
+        {
+            for (size_t p = 0; p < control_point_count; ++p)
+            {
+                input >> points1[p].x >> points1[p].y >> points1[p].z;
+                input >> widths1[p];
+            }
+
+            // We don't require presplitting of degree 1 curves.
+            const CurveType1 curve(&points1[0], &widths1[0]);
+            object->push_curve1(curve);
+        }
+        else
+        {
+            assert(control_point_count == 4);
+
+            for (size_t p = 0; p < control_point_count; ++p)
+            {
+                input >> points3[p].x >> points3[p].y >> points3[p].z;
+                input >> widths3[p];
+            }
+
+            const CurveType3 curve(&points3[0], &widths3[0]);
+            split_and_store(object.ref(), curve, split_count);
+        }
     }
 
     input.close();
@@ -242,7 +266,7 @@ auto_release_ptr<CurveObject> CurveObjectReader::load_curve_file(
     RENDERER_LOG_INFO(
         "loaded curve file %s (%s curves) in %s.",
         filepath.c_str(),
-        pretty_uint(curve_count).c_str(),
+        pretty_uint(curve1_count + curve3_count).c_str(),
         pretty_time(stopwatch.get_seconds()).c_str());
 
     return object;

@@ -90,7 +90,8 @@ class ShadingPoint
     {
         PrimitiveNone,
         PrimitiveTriangle,
-        PrimitiveCurve
+        PrimitiveCurve1,
+        PrimitiveCurve3
     };
 
     // Constructor, calls clear().
@@ -452,7 +453,7 @@ inline const foundation::Vector2d& ShadingPoint::get_uv(const size_t uvset) cons
         }
         else
         {
-            assert(m_primitive_type == PrimitiveCurve);
+            assert(m_primitive_type == PrimitiveCurve1 || m_primitive_type == PrimitiveCurve3);
             m_uv = m_bary;
         }
 
