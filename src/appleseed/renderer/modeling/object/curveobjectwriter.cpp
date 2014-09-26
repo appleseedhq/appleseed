@@ -52,6 +52,10 @@ using namespace std;
 namespace renderer
 {
 
+//
+// CurveObjectWriter class implementation.
+//
+
 namespace
 {
     template <typename CurveType>
@@ -59,26 +63,19 @@ namespace
     {
         const size_t control_point_count = curve.get_control_point_count();
 
-        output << control_point_count << ' ';
+        output << control_point_count;
 
         for (size_t p = 0; p < control_point_count; ++p)
         {
-            if (p > 0)
-                output << ' ';
-
             const GVector3& point = curve.get_control_point(p);
             const GScalar width = curve.get_width(p);
 
-            output << point.x << ' ' << point.y << ' ' << point.z << ' ' << width;
+            output << ' ' << point.x << ' ' << point.y << ' ' << point.z << ' ' << width;
         }
+
         output << endl;
     }
 }
-
-
-//
-// CurveObjectWriter class implementation.
-//
 
 bool CurveObjectWriter::write(
     const CurveObject&  object,
@@ -104,18 +101,11 @@ bool CurveObjectWriter::write(
     output << curve1_count << endl;
     output << curve3_count << endl;
 
-    // Degree 1 curves.
     for (size_t i = 0; i < curve1_count; ++i)
-    {
-        const CurveType1& curve = object.get_curve1(i);
-        write_curve(output, curve);
-    }
+        write_curve(output, object.get_curve1(i));
 
     for (size_t i = 0; i < curve3_count; ++i)
-    {
-        const CurveType3& curve = object.get_curve3(i);
-        write_curve(output, curve);
-    }
+        write_curve(output, object.get_curve3(i));
 
     output.close();
 

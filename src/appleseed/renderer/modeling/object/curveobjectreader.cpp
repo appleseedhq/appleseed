@@ -198,12 +198,10 @@ auto_release_ptr<CurveObject> CurveObjectReader::load_curve_file(
     Stopwatch<DefaultWallclockTimer> stopwatch;
     stopwatch.start();
 
-    size_t curve1_count = 0;
-    size_t curve3_count = 0;
+    size_t curve1_count;
+    size_t curve3_count;
     input >> curve1_count;
     input >> curve3_count;
-
-    size_t control_point_count;
 
     vector<GVector3> points1(2);
     vector<GScalar> widths1(2);
@@ -215,7 +213,7 @@ auto_release_ptr<CurveObject> CurveObjectReader::load_curve_file(
 
     for (size_t c = 0; c < curve1_count + curve3_count; ++c)
     {
-        // Each line starts with num control points followed by the control points.
+        size_t control_point_count;
         input >> control_point_count;
 
         if (control_point_count != 2 && control_point_count != 4)
@@ -234,7 +232,7 @@ auto_release_ptr<CurveObject> CurveObjectReader::load_curve_file(
                 input >> widths1[p];
             }
 
-            // We don't require presplitting of degree 1 curves.
+            // We never presplit degree-1 curves.
             const CurveType1 curve(&points1[0], &widths1[0]);
             object->push_curve1(curve);
         }
