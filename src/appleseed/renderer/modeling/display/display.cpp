@@ -68,12 +68,12 @@ struct Display::Impl
         const ParamArray&   params)
       : m_plugin(plugin_path)
     {
-        typedef ITileCallbackFactory*(*CreateFnType)(void);
+        typedef ITileCallbackFactory*(*CreateFnType)(const ParamArray&);
 
         CreateFnType create_fn =
             reinterpret_cast<CreateFnType>(m_plugin.get_symbol("create_tile_callback_factory"), false);
 
-        m_tile_callback_factory.reset(create_fn());
+        m_tile_callback_factory.reset(create_fn(params));
     }
 
     SharedLibrary                           m_plugin;

@@ -52,7 +52,7 @@ namespace renderer
 // Plugin tile callback.
 //
 
-class Display
+class DLLSYMBOL Display
   : public Entity
 {
   public:
@@ -85,7 +85,7 @@ class Display
 // Display factory.
 //
 
-class DisplayFactory
+class DLLSYMBOL DisplayFactory
 {
   public:
     // Create a new display.

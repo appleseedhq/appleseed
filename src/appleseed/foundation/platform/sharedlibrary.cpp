@@ -109,7 +109,7 @@ struct SharedLibrary::Impl
     {
         void* symbol = GetProcAddress(m_handle, name);
 
-        if (no_throw == false && !symbol)
+        if (!symbol && !no_throw)
         {
             throw ExceptionSharedLibCannotGetSymbol(
                 name,
@@ -133,7 +133,7 @@ struct SharedLibrary::Impl
 {
     explicit Impl(const char* path)
     {
-        m_handle = dlopen(path, RTLD_LAZY | RTLD_LOCAL);
+        m_handle = dlopen(path, RTLD_NOW | RTLD_GLOBAL);
 
         if (!m_handle)
         {

@@ -34,6 +34,11 @@
 #include "foundation/core/exceptions/exception.h"
 #include "foundation/platform/compiler.h"
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+// TODO: unexport these classes ASAP... (est.)
+
 namespace foundation
 {
 
@@ -41,7 +46,7 @@ namespace foundation
 // Cannot load shared lib exception.
 //
 
-class ExceptionErrorCannotLoadSharedLib
+class DLLSYMBOL ExceptionErrorCannotLoadSharedLib
   : public Exception
 {
   public:
@@ -56,7 +61,7 @@ class ExceptionErrorCannotLoadSharedLib
 // Shared library cannot get symbol exception.
 //
 
-class ExceptionSharedLibCannotGetSymbol
+class DLLSYMBOL ExceptionSharedLibCannotGetSymbol
   : public Exception
 {
   public:
@@ -71,7 +76,7 @@ class ExceptionSharedLibCannotGetSymbol
 // SharedLibrary class.
 //
 
-class SharedLibrary
+class DLLSYMBOL SharedLibrary
   : public NonCopyable
 {
   public:
