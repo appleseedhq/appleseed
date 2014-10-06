@@ -107,7 +107,7 @@ void Display::open(const Project& project) const
     try
     {
         plugin = get_parameters().get("plugin_name");
-        // add platform dependent extension here...
+        // Add platform dependent extension.
 #ifdef _WIN32
         plugin += ".dll";
 #else
@@ -118,7 +118,7 @@ void Display::open(const Project& project) const
     }
     catch(const ExceptionDictionaryItemNotFound&)
     {
-        RENDERER_LOG_ERROR("%s", "Cannot open display. Bad params.");
+        RENDERER_LOG_ERROR("%s", "cannot open display: bad parameters.");
         return;
     }
 
@@ -126,13 +126,13 @@ void Display::open(const Project& project) const
     {
         impl = new Impl(plugin.c_str(), get_parameters());
     }
-    catch(const ExceptionCannotLoadSharedLib& e)
+    catch (const ExceptionCannotLoadSharedLib& e)
     {
-        RENDERER_LOG_ERROR("Cannot open display.%s", e.what());
+        RENDERER_LOG_ERROR("cannot open display: %s", e.what());
     }
-    catch(const ExceptionSharedLibCannotGetSymbol& e)
+    catch (const ExceptionSharedLibCannotGetSymbol& e)
     {
-        RENDERER_LOG_ERROR("Cannot open display.%s", e.what());
+        RENDERER_LOG_ERROR("cannot open display: %s", e.what());
     }
 }
 

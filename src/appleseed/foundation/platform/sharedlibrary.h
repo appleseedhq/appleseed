@@ -82,6 +82,7 @@ class DLLSYMBOL SharedLibrary
     // Constructor.
     explicit SharedLibrary(const char* path);
 
+    // Delete this instance.
     virtual void release() OVERRIDE;
 
     // Get a symbol from the shared library
