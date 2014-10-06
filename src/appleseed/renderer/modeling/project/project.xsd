@@ -231,7 +231,7 @@
                         </xsd:choice>
                     </xsd:complexType>
                 </xsd:element>
-                <xsd:element name="display">
+                <xsd:element name="display" minOccurs="0" maxOccurs="1">
                     <xsd:complexType>
                         <xsd:complexContent>
                             <xsd:extension base="parameterSet">

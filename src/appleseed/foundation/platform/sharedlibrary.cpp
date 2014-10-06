@@ -31,8 +31,6 @@
 
 // Standard headers.
 #include <string>
-
-// Windows
 #ifdef _WIN32
     #include "foundation/platform/windows.h"
 // Unix
@@ -47,10 +45,10 @@ namespace foundation
 
 
 //
-// ExceptionErrorCannotLoadSharedLib class implementation.
+// ExceptionCannotLoadSharedLib class implementation.
 //
 
-ExceptionErrorCannotLoadSharedLib::ExceptionErrorCannotLoadSharedLib(
+ExceptionCannotLoadSharedLib::ExceptionCannotLoadSharedLib(
     const char* path,
     const char* error_msg)
   : Exception()
@@ -64,7 +62,7 @@ ExceptionErrorCannotLoadSharedLib::ExceptionErrorCannotLoadSharedLib(
 
 
 //
-// ExceptionErrorCannotLoadSharedLib class implementation.
+// ExceptionCannotLoadSharedLib class implementation.
 //
 
 ExceptionSharedLibCannotGetSymbol::ExceptionSharedLibCannotGetSymbol(
@@ -94,7 +92,7 @@ struct SharedLibrary::Impl
 
         if (!m_handle)
         {
-            throw ExceptionErrorCannotLoadSharedLib(
+            throw ExceptionCannotLoadSharedLib(
                 path,
                 GetLastError());
         }
@@ -137,7 +135,7 @@ struct SharedLibrary::Impl
 
         if (!m_handle)
         {
-            throw ExceptionErrorCannotLoadSharedLib(
+            throw ExceptionCannotLoadSharedLib(
                 path,
                 dlerror());
         }
@@ -152,7 +150,7 @@ struct SharedLibrary::Impl
     {
         void* symbol = dlsym(m_handle, name);
 
-        if (no_throw == false && !symbol)
+        if (!symbol && !no_throw)
         {
             throw ExceptionSharedLibCannotGetSymbol(
                 name,
@@ -179,6 +177,11 @@ SharedLibrary::SharedLibrary(const char* path)
 SharedLibrary::~SharedLibrary()
 {
     delete impl;
+}
+
+void SharedLibrary::release()
+{
+    delete this;
 }
 
 void* SharedLibrary::get_symbol(const char* name, bool no_throw) const

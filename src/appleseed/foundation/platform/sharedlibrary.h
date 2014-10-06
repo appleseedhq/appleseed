@@ -30,14 +30,13 @@
 #define APPLESEED_FOUNDATION_PLATFORM_SHARED_LIBRARY_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
+#include "foundation/core/concepts/iunknown.h"
 #include "foundation/core/exceptions/exception.h"
 #include "foundation/platform/compiler.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// TODO: unexport these classes ASAP... (est.)
 
 namespace foundation
 {
@@ -46,12 +45,12 @@ namespace foundation
 // Cannot load shared lib exception.
 //
 
-class DLLSYMBOL ExceptionErrorCannotLoadSharedLib
+class DLLSYMBOL ExceptionCannotLoadSharedLib
   : public Exception
 {
   public:
     // Constructor.
-    ExceptionErrorCannotLoadSharedLib(
+    ExceptionCannotLoadSharedLib(
         const char* path,
         const char* error_msg);
 };
@@ -77,14 +76,13 @@ class DLLSYMBOL ExceptionSharedLibCannotGetSymbol
 //
 
 class DLLSYMBOL SharedLibrary
-  : public NonCopyable
+  : public IUnknown
 {
   public:
     // Constructor.
     explicit SharedLibrary(const char* path);
 
-    // Destructor.
-    ~SharedLibrary();
+    virtual void release() OVERRIDE;
 
     // Get a symbol from the shared library
     void* get_symbol(const char* name, bool no_throw = true) const;
@@ -92,6 +90,9 @@ class DLLSYMBOL SharedLibrary
   private:
     struct Impl;
     Impl* impl;
+
+    // Destructor.
+    ~SharedLibrary();
 };
 
 }       // namespace foundation

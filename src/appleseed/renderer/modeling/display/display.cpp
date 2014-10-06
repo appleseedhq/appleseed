@@ -35,6 +35,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/sharedlibrary.h"
+#include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/searchpaths.h"
 
 // Standard headers.
@@ -66,17 +67,17 @@ struct Display::Impl
     Impl(
         const char*         plugin_path,
         const ParamArray&   params)
-      : m_plugin(plugin_path)
+      : m_plugin(new SharedLibrary(plugin_path))
     {
         typedef ITileCallbackFactory*(*CreateFnType)(const ParamArray&);
 
         CreateFnType create_fn =
-            reinterpret_cast<CreateFnType>(m_plugin.get_symbol("create_tile_callback_factory"), false);
+            reinterpret_cast<CreateFnType>(m_plugin->get_symbol("create_tile_callback_factory"), false);
 
         m_tile_callback_factory.reset(create_fn(params));
     }
 
-    SharedLibrary                           m_plugin;
+    auto_release_ptr<SharedLibrary>         m_plugin;
     auto_release_ptr<ITileCallbackFactory>  m_tile_callback_factory;
 };
 
@@ -125,7 +126,7 @@ void Display::open(const Project& project) const
     {
         impl = new Impl(plugin.c_str(), get_parameters());
     }
-    catch(const ExceptionErrorCannotLoadSharedLib& e)
+    catch(const ExceptionCannotLoadSharedLib& e)
     {
         RENDERER_LOG_ERROR("Cannot open display.%s", e.what());
     }
