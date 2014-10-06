@@ -193,7 +193,7 @@ namespace
             const IntermRegionLeaf::LeafInfoType&   leaf_info,
             IntermRegionLeaf::SplitType&            split)
         {
-            assert(leaf.m_regions.size() > 0);
+            assert(!leaf.m_regions.empty());
 
             const GAABB3& leaf_bbox = leaf_info.get_bbox();
 
@@ -250,7 +250,7 @@ namespace
             IntermRegionLeaf&                       right_leaf,
             const IntermRegionLeaf::LeafInfoType&   right_leaf_info)
         {
-            assert(leaf.m_regions.size() > 0);
+            assert(!leaf.m_regions.empty());
 
             // Save the extent of the child leaves.
             left_leaf.m_extent = left_leaf_info.get_bbox();

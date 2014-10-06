@@ -164,7 +164,8 @@ namespace
         {
           case ShadingPoint::PrimitiveNone: return "none";
           case ShadingPoint::PrimitiveTriangle: return "triangle";
-          case ShadingPoint::PrimitiveCurve: return "curve";
+          case ShadingPoint::PrimitiveCurve1: return "curve";
+          case ShadingPoint::PrimitiveCurve3: return "curve";
           default: return "unknown";
         }
     }

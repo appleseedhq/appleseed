@@ -84,7 +84,7 @@ void ColorSource::initialize_from_spectrum(
 {
     const ColorValueArray& values = color_entity.get_values();
 
-    if (values.size() > 0)
+    if (!values.empty())
     {
         // todo: this should be user-settable.
         const LightingConditions lighting_conditions(

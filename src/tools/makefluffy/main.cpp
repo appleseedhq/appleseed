@@ -161,17 +161,17 @@ namespace
 
     void split_and_store(
         CurveObject&                object,
-        const CurveType&            curve,
+        const CurveType3&           curve,
         const size_t                split_count)
     {
         if (split_count > 0)
         {
-            CurveType child1, child2;
+            CurveType3 child1, child2;
             curve.split(child1, child2);
             split_and_store(object, child1, split_count - 1);
             split_and_store(object, child2, split_count - 1);
         }
-        else object.push_curve(curve);
+        else object.push_curve3(curve);
     }
 
     auto_release_ptr<CurveObject> create_curve_object(
@@ -191,7 +191,7 @@ namespace
                 curve_object_name.c_str(),
                 ParamArray());
 
-        curve_object->reserve_curves(params.m_curve_count);
+        curve_object->reserve_curves3(params.m_curve_count);
 
         GVector3 points[ControlPointCount];
         GScalar widths[ControlPointCount];
@@ -225,7 +225,7 @@ namespace
                 widths[p] = lerp(params.m_root_width, params.m_tip_width, r);
             }
 
-            const CurveType curve(&points[0], &widths[0]);
+            const CurveType3 curve(&points[0], &widths[0]);
             split_and_store(curve_object.ref(), curve, params.m_split_count);
         }
 

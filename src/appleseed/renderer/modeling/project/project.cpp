@@ -144,7 +144,7 @@ size_t Project::get_format_revision() const
 
 bool Project::has_path() const
 {
-    return impl->m_path.size() > 0;
+    return !impl->m_path.empty();
 }
 
 void Project::set_path(const char* path)
@@ -417,7 +417,7 @@ void Project::create_aov_images()
 
     impl->m_frame->aov_images().clear();
 
-    impl->m_frame->aov_images().append("depth", ImageStack::ContributionType, 1, PixelFormatFloat);
+    impl->m_frame->aov_images().append("depth", ImageStack::ContributionType, 4, PixelFormatFloat);
 
     ApplyRenderLayer apply_render_layers(
         impl->m_scene.ref(),
