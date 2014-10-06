@@ -1740,8 +1740,11 @@ if (WITH_DISNEY_MATERIAL)
     link_against_seexpr (appleseed)
 endif ()
 
-target_link_libraries (appleseed ${Boost_LIBRARIES})
-target_link_libraries (appleseed lz4)
+target_link_libraries (appleseed
+    ${Boost_LIBRARIES}
+    lz4
+    ${CMAKE_DL_LIBS}
+)
 
 
 #--------------------------------------------------------------------------------------------------
