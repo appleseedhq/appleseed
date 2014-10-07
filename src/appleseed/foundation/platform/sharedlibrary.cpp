@@ -29,20 +29,23 @@
 // Interface header.
 #include "sharedlibrary.h"
 
+// appleseed.foundation headers.
+#ifdef _WIN32
+#include "foundation/platform/windows.h"
+#endif
+
 // Standard headers.
 #include <string>
-#ifdef _WIN32
-    #include "foundation/platform/windows.h"
-// Unix
-#else
-    #include <dlfcn.h>
+
+// Platform headers.
+#ifndef _WIN32
+#include <dlfcn.h>
 #endif
 
 using namespace std;
 
 namespace foundation
 {
-
 
 //
 // ExceptionCannotLoadSharedLib class implementation.
@@ -164,6 +167,7 @@ struct SharedLibrary::Impl
 };
 
 #endif
+
 
 //
 // SharedLibrary class implementation.

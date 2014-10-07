@@ -31,21 +31,23 @@
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/test.h"
 
-// Standard headers.
-#include <cstddef>
+using namespace foundation;
 
 TEST_SUITE(Foundation_Platform_SharedLibrary)
 {
-    using namespace foundation;
-
 #ifdef _WIN32
-        // Not sure how to test this...
+
+    // Not sure how to test this...
+
 #else
+
     TEST_CASE(LoadSystemLibAndGetSymbol)
     {
         auto_release_ptr<SharedLibrary> sh_lib(new SharedLibrary("libdl.so"));
+
         void* symbol = sh_lib->get_symbol("dlopen", false);
-        EXPECT_TRUE(symbol != 0);
+
+        EXPECT_NEQ(0, symbol);
     }
 
     TEST_CASE(CannotLoadSharedLibrary)
@@ -55,15 +57,23 @@ TEST_SUITE(Foundation_Platform_SharedLibrary)
             auto_release_ptr<SharedLibrary>(new SharedLibrary("libdlXX.so")));
     }
 
-    TEST_CASE(CannotGetSymbol)
+    TEST_CASE(CannotGetSymbol_ThrowExceptionIsTrue)
     {
         auto_release_ptr<SharedLibrary> sh_lib(new SharedLibrary("libdl.so"));
-        void* symbol = sh_lib->get_symbol("XdlopenXX");
-        EXPECT_TRUE(symbol == 0);
 
         EXPECT_EXCEPTION(
             ExceptionSharedLibCannotGetSymbol,
             sh_lib->get_symbol("XdlopenXX", false));
     }
+
+    TEST_CASE(CannotGetSymbol_ThrowExceptionIsFalse)
+    {
+        auto_release_ptr<SharedLibrary> sh_lib(new SharedLibrary("libdl.so"));
+
+        void* symbol = sh_lib->get_symbol("XdlopenXX");
+
+        EXPECT_EQ(0, symbol);
+    }
+
 #endif
 }

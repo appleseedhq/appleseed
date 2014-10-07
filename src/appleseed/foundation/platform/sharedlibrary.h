@@ -37,7 +37,6 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-
 namespace foundation
 {
 
@@ -85,7 +84,7 @@ class DLLSYMBOL SharedLibrary
     // Delete this instance.
     virtual void release() OVERRIDE;
 
-    // Get a symbol from the shared library
+    // Get a symbol from the shared library.
     void* get_symbol(const char* name, bool no_throw = true) const;
 
   private:
