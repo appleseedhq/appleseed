@@ -35,6 +35,7 @@
 #include "renderer/kernel/aov/aovsettings.h"
 #include "renderer/kernel/aov/imagestack.h"
 #include "renderer/kernel/intersection/tracecontext.h"
+#include "renderer/modeling/display/display.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
@@ -101,6 +102,7 @@ struct Project::Impl
     string                      m_path;
     auto_release_ptr<Scene>     m_scene;
     auto_release_ptr<Frame>     m_frame;
+    auto_release_ptr<Display>   m_display;
     RenderLayerRuleContainer    m_render_layer_rules;
     ConfigurationContainer      m_configurations;
     SearchPaths                 m_search_paths;
@@ -179,6 +181,16 @@ void Project::set_frame(auto_release_ptr<Frame> frame)
 Frame* Project::get_frame() const
 {
     return impl->m_frame.get();
+}
+
+void Project::set_display(foundation::auto_release_ptr<Display> display)
+{
+    impl->m_display = display;
+}
+
+Display* Project::get_display() const
+{
+    return impl->m_display.get();
 }
 
 void Project::add_render_layer_rule(foundation::auto_release_ptr<RenderLayerRule> rule)

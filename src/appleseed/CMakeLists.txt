@@ -433,6 +433,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_sampling.cpp
     foundation/meta/tests/test_scalar.cpp
     foundation/meta/tests/test_settings.cpp
+    foundation/meta/tests/test_sharedlibrary.cpp
     foundation/meta/tests/test_siphash.cpp
     foundation/meta/tests/test_snprintf.cpp
     foundation/meta/tests/test_spectrum.cpp
@@ -485,6 +486,8 @@ set (foundation_platform_sources
     foundation/platform/python.h
     foundation/platform/snprintf.h
     foundation/platform/sse.h
+    foundation/platform/sharedlibrary.cpp
+    foundation/platform/sharedlibrary.h
     foundation/platform/system.cpp
     foundation/platform/system.h
     foundation/platform/thread.cpp
@@ -1278,6 +1281,17 @@ source_group ("renderer\\modeling\\color" FILES
     ${renderer_modeling_color_sources}
 )
 
+set (renderer_modeling_display_sources
+    renderer/modeling/display/display.cpp
+    renderer/modeling/display/display.h
+)
+list (APPEND appleseed_sources
+    ${renderer_modeling_display_sources}
+)
+source_group ("renderer\\modeling\\display" FILES
+    ${renderer_modeling_display_sources}
+)
+
 set (renderer_modeling_edf_sources
     renderer/modeling/edf/coneedf.cpp
     renderer/modeling/edf/coneedf.h
@@ -1726,8 +1740,11 @@ if (WITH_DISNEY_MATERIAL)
     link_against_seexpr (appleseed)
 endif ()
 
-target_link_libraries (appleseed ${Boost_LIBRARIES})
-target_link_libraries (appleseed lz4)
+target_link_libraries (appleseed
+    ${Boost_LIBRARIES}
+    lz4
+    ${CMAKE_DL_LIBS}
+)
 
 
 #--------------------------------------------------------------------------------------------------

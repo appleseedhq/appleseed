@@ -63,6 +63,7 @@
 #include "renderer/kernel/rendering/serialtilecallback.h"
 #include "renderer/kernel/shading/shadingengine.h"
 #include "renderer/kernel/texturing/texturestore.h"
+#include "renderer/modeling/display/display.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/input/inputbinder.h"
 #include "renderer/modeling/project/project.h"
@@ -637,6 +638,20 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     }
 
     //
+    // Open the (plugin) display, if needed.
+    //
+
+    ITileCallbackFactory* tile_callback_factory = m_tile_callback_factory;
+    if (tile_callback_factory == 0)
+    {
+        if (const Display* dpy = m_project.get_display())
+        {
+            dpy->open(m_project);
+            tile_callback_factory = dpy->get_tile_callback_factory();
+        }
+    }
+
+    //
     // Create a frame renderer.
     //
 
@@ -653,7 +668,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
                 GenericFrameRendererFactory::create(
                     frame,
                     tile_renderer_factory.get(),
-                    m_tile_callback_factory,
+                    tile_callback_factory,
                     pass_callback.get(),
                     params));
         }
@@ -666,7 +681,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
                 ProgressiveFrameRendererFactory::create(
                     m_project,
                     sample_generator_factory.get(),
-                    m_tile_callback_factory,
+                    tile_callback_factory,
                     params));
         }
         else
@@ -687,6 +702,16 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
             , *shading_system
 #endif
             );
+
+    //
+    // Close the (plugin) display, if needed.
+    //
+
+    if (m_tile_callback_factory == 0)
+    {
+        if (const Display* dpy = m_project.get_display())
+            dpy->close();
+    }
 
     // Print texture store performance statistics.
     RENDERER_LOG_DEBUG("%s", texture_store.get_statistics().to_string().c_str());
