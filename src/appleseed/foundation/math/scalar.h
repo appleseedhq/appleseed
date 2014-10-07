@@ -230,8 +230,8 @@ template <> inline double default_eps<double>() { return 1.0e-14; }
 
 // Allow using custom epsilon values in template code.
 template <typename T> T make_eps(const float feps, const double deps);
-template <> inline float make_eps(const float feps, const double deps)  { return feps; }
-template <> inline double make_eps(const float feps, const double deps) { return deps; }
+template <> inline float make_eps(const float feps, const double /*deps*/)  { return feps; }
+template <> inline double make_eps(const float /*feps*/, const double deps) { return deps; }
 
 // Approximate equality tests.
 template <typename T> bool feq(const T lhs, const T rhs);
