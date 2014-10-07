@@ -35,10 +35,10 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/sharedlibrary.h"
-#include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/searchpaths.h"
 
 // Standard headers.
+#include <memory>
 #include <string>
 
 using namespace std;
@@ -62,7 +62,6 @@ UniqueID Display::get_class_uid()
 }
 
 struct Display::Impl
-  : public NonCopyable
 {
     Impl(
         const char*         plugin_path,
@@ -77,7 +76,7 @@ struct Display::Impl
         m_tile_callback_factory.reset(create_fn(params));
     }
 
-    auto_release_ptr<SharedLibrary>         m_plugin;
+    auto_ptr<SharedLibrary>                 m_plugin;
     auto_release_ptr<ITileCallbackFactory>  m_tile_callback_factory;
 };
 
@@ -100,7 +99,7 @@ void Display::release()
     delete this;
 }
 
-void Display::open(const Project& project) const
+void Display::open(const Project& project)
 {
     string plugin;
 
@@ -116,7 +115,7 @@ void Display::open(const Project& project) const
 
         plugin = project.search_paths().qualify(plugin);
     }
-    catch(const ExceptionDictionaryItemNotFound&)
+    catch (const ExceptionDictionaryItemNotFound&)
     {
         RENDERER_LOG_ERROR("%s", "cannot open display: bad parameters.");
         return;
@@ -136,7 +135,7 @@ void Display::open(const Project& project) const
     }
 }
 
-void Display::close() const
+void Display::close()
 {
     delete impl;
 }

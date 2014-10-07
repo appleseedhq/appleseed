@@ -484,10 +484,10 @@ set (foundation_platform_sources
     foundation/platform/path.cpp
     foundation/platform/path.h
     foundation/platform/python.h
-    foundation/platform/snprintf.h
-    foundation/platform/sse.h
     foundation/platform/sharedlibrary.cpp
     foundation/platform/sharedlibrary.h
+    foundation/platform/snprintf.h
+    foundation/platform/sse.h
     foundation/platform/system.cpp
     foundation/platform/system.h
     foundation/platform/thread.cpp

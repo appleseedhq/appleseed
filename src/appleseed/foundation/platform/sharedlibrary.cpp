@@ -65,7 +65,7 @@ ExceptionCannotLoadSharedLib::ExceptionCannotLoadSharedLib(
 
 
 //
-// ExceptionCannotLoadSharedLib class implementation.
+// ExceptionSharedLibCannotGetSymbol class implementation.
 //
 
 ExceptionSharedLibCannotGetSymbol::ExceptionSharedLibCannotGetSymbol(
@@ -181,11 +181,6 @@ SharedLibrary::SharedLibrary(const char* path)
 SharedLibrary::~SharedLibrary()
 {
     delete impl;
-}
-
-void SharedLibrary::release()
-{
-    delete this;
 }
 
 void* SharedLibrary::get_symbol(const char* name, bool no_throw) const
