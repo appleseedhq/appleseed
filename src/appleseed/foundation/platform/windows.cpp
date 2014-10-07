@@ -26,6 +26,8 @@
 // THE SOFTWARE.
 //
 
+#ifdef _WIN32
+
 // Interface header.
 #include "windows.h"
 
@@ -69,3 +71,5 @@ string get_windows_last_error_message()
 }
 
 }   // namespace foundation
+
+#endif
