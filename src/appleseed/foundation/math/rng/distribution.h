@@ -120,12 +120,19 @@ template <typename RNG>
 inline int32 rand_int1(RNG& rng, const int32 min, const int32 max)
 {
     assert(min <= max);
+
     const double x =
         rand_double2(
             rng,
             static_cast<double>(min),
             static_cast<double>(max) + 1);
-    return truncate<int32>(x);
+
+    const int32 result = truncate<int32>(x);
+
+    assert(result >= min);
+    assert(result <= max);
+
+    return result;
 }
 
 template <typename RNG>
