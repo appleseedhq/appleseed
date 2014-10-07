@@ -30,6 +30,7 @@
 #define APPLESEED_FOUNDATION_MATH_RNG_SIMDMERSENNETWISTER_H
 
 // appleseed.foundation headers.
+#include "foundation/platform/sse.h"
 #include "foundation/platform/types.h"
 
 // appleseed.main headers.
@@ -37,9 +38,6 @@
 
 // Standard headers.
 #include <cstddef>
-
-#include <xmmintrin.h>
-#include <emmintrin.h>
 
 namespace foundation
 {
@@ -92,18 +90,19 @@ class DLLSYMBOL SimdMersenneTwister
 
 
 //
-// Simd MersenneTwister class implementation.
+// SimdMersenneTwister class implementation.
 //
 
 inline uint32 SimdMersenneTwister::rand_uint32()
 {
-    uint32* psfmt32 = &mt[0].u[0];
+    const uint32* psfmt32 = &mt[0].u[0];
 
     if (mti >= N32)
     {
         update_state();
         mti = 0;
     }
+
     return psfmt32[mti++];
 }
 
