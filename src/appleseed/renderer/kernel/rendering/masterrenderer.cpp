@@ -644,7 +644,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     ITileCallbackFactory* tile_callback_factory = m_tile_callback_factory;
     if (tile_callback_factory == 0)
     {
-        if (const Display* dpy = m_project.get_display())
+        if (Display* dpy = m_project.get_display())
         {
             dpy->open(m_project);
             tile_callback_factory = dpy->get_tile_callback_factory();
@@ -709,7 +709,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
 
     if (m_tile_callback_factory == 0)
     {
-        if (const Display* dpy = m_project.get_display())
+        if (Display* dpy = m_project.get_display())
             dpy->close();
     }
 

@@ -67,15 +67,15 @@ class DLLSYMBOL Display
     // Delete this instance.
     virtual void release() OVERRIDE;
 
-    void open(const Project& project) const;
-    void close() const;
+    void open(const Project& project);
+    void close();
 
     // Return the tile callback factory.
     ITileCallbackFactory* get_tile_callback_factory() const;
 
   private:
     struct Impl;
-    mutable Impl* impl;
+    Impl* impl;
 
     // Destructor.
     ~Display();

@@ -28,7 +28,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/sharedlibrary.h"
-#include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/test.h"
 
 using namespace foundation;
@@ -43,9 +42,8 @@ TEST_SUITE(Foundation_Platform_SharedLibrary)
 
     TEST_CASE(LoadSystemLibAndGetSymbol)
     {
-        auto_release_ptr<SharedLibrary> sh_lib(new SharedLibrary("libdl.so"));
-
-        void* symbol = sh_lib->get_symbol("dlopen", false);
+        SharedLibrary sh_lib("libdl.so");
+        void* symbol = sh_lib.get_symbol("dlopen", false);
 
         EXPECT_NEQ(0, symbol);
     }
@@ -54,23 +52,22 @@ TEST_SUITE(Foundation_Platform_SharedLibrary)
     {
         EXPECT_EXCEPTION(
             ExceptionCannotLoadSharedLib,
-            auto_release_ptr<SharedLibrary>(new SharedLibrary("libdlXX.so")));
+            SharedLibrary("libdlXX.so"));
     }
 
     TEST_CASE(CannotGetSymbol_ThrowExceptionIsTrue)
     {
-        auto_release_ptr<SharedLibrary> sh_lib(new SharedLibrary("libdl.so"));
+        SharedLibrary sh_lib("libdl.so");
 
         EXPECT_EXCEPTION(
             ExceptionSharedLibCannotGetSymbol,
-            sh_lib->get_symbol("XdlopenXX", false));
+            sh_lib.get_symbol("XdlopenXX", false));
     }
 
     TEST_CASE(CannotGetSymbol_ThrowExceptionIsFalse)
     {
-        auto_release_ptr<SharedLibrary> sh_lib(new SharedLibrary("libdl.so"));
-
-        void* symbol = sh_lib->get_symbol("XdlopenXX");
+        SharedLibrary sh_lib("libdl.so");
+        void* symbol = sh_lib.get_symbol("XdlopenXX");
 
         EXPECT_EQ(0, symbol);
     }

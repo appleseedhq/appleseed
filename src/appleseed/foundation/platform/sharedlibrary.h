@@ -26,16 +26,14 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_PLATFORM_SHARED_LIBRARY_H
-#define APPLESEED_FOUNDATION_PLATFORM_SHARED_LIBRARY_H
+#ifndef APPLESEED_FOUNDATION_PLATFORM_SHAREDLIBRARY_H
+#define APPLESEED_FOUNDATION_PLATFORM_SHAREDLIBRARY_H
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts/iunknown.h"
+#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/core/exceptions/exception.h"
 #include "foundation/platform/compiler.h"
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
 
 namespace foundation
 {
@@ -44,7 +42,7 @@ namespace foundation
 // Cannot load shared lib exception.
 //
 
-class DLLSYMBOL ExceptionCannotLoadSharedLib
+class ExceptionCannotLoadSharedLib
   : public Exception
 {
   public:
@@ -59,7 +57,7 @@ class DLLSYMBOL ExceptionCannotLoadSharedLib
 // Shared library cannot get symbol exception.
 //
 
-class DLLSYMBOL ExceptionSharedLibCannotGetSymbol
+class ExceptionSharedLibCannotGetSymbol
   : public Exception
 {
   public:
@@ -74,15 +72,15 @@ class DLLSYMBOL ExceptionSharedLibCannotGetSymbol
 // SharedLibrary class.
 //
 
-class DLLSYMBOL SharedLibrary
-  : public IUnknown
+class SharedLibrary
+  : public NonCopyable
 {
   public:
     // Constructor.
     explicit SharedLibrary(const char* path);
 
-    // Delete this instance.
-    virtual void release() OVERRIDE;
+    // Destructor.
+    ~SharedLibrary();
 
     // Get a symbol from the shared library.
     void* get_symbol(const char* name, bool no_throw = true) const;
@@ -90,11 +88,8 @@ class DLLSYMBOL SharedLibrary
   private:
     struct Impl;
     Impl* impl;
-
-    // Destructor.
-    ~SharedLibrary();
 };
 
 }       // namespace foundation
 
-#endif  // !APPLESEED_FOUNDATION_PLATFORM_SHARED_LIBRARY_H
+#endif  // !APPLESEED_FOUNDATION_PLATFORM_SHAREDLIBRARY_H
