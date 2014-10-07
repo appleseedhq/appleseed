@@ -89,38 +89,38 @@ ExceptionSharedLibCannotGetSymbol::ExceptionSharedLibCannotGetSymbol(
 
 struct SharedLibrary::Impl
 {
+    HMODULE m_handle;
+
     explicit Impl(const char* path)
     {
         m_handle = LoadLibraryA(path);
 
-        if (!m_handle)
+        if (m_handle == 0)
         {
             throw ExceptionCannotLoadSharedLib(
                 path,
-                GetLastError());
+                get_windows_last_error_message().c_str());
         }
     }
 
     ~Impl()
     {
-        FreeLibrary(handle);
+        FreeLibrary(m_handle);
     }
 
     void* get_symbol(const char* name, bool no_throw) const
     {
         void* symbol = GetProcAddress(m_handle, name);
 
-        if (!symbol && !no_throw)
+        if (symbol == 0 && !no_throw)
         {
             throw ExceptionSharedLibCannotGetSymbol(
                 name,
-                GetLastError());
+                get_windows_last_error_message().c_str());
         }
 
         return symbol;
     }
-
-    HMODULE m_handle;
 };
 
 
@@ -132,16 +132,14 @@ struct SharedLibrary::Impl
 
 struct SharedLibrary::Impl
 {
+    void* m_handle;
+
     explicit Impl(const char* path)
     {
         m_handle = dlopen(path, RTLD_NOW | RTLD_GLOBAL);
 
-        if (!m_handle)
-        {
-            throw ExceptionCannotLoadSharedLib(
-                path,
-                dlerror());
-        }
+        if (m_handle == 0)
+            throw ExceptionCannotLoadSharedLib(path, dlerror());
     }
 
     ~Impl()
@@ -149,21 +147,15 @@ struct SharedLibrary::Impl
         dlclose(m_handle);
     }
 
-    void* get_symbol(const char* name, bool no_throw) const
+    void* get_symbol(const char* name, const bool no_throw) const
     {
         void* symbol = dlsym(m_handle, name);
 
-        if (!symbol && !no_throw)
-        {
-            throw ExceptionSharedLibCannotGetSymbol(
-                name,
-                dlerror());
-        }
+        if (symbol == 0 && !no_throw)
+            throw ExceptionSharedLibCannotGetSymbol(name, dlerror());
 
         return symbol;
     }
-
-    void* m_handle;
 };
 
 #endif
@@ -183,7 +175,7 @@ SharedLibrary::~SharedLibrary()
     delete impl;
 }
 
-void* SharedLibrary::get_symbol(const char* name, bool no_throw) const
+void* SharedLibrary::get_symbol(const char* name, const bool no_throw) const
 {
     return impl->get_symbol(name, no_throw);
 }

@@ -34,12 +34,11 @@
 #include "foundation/core/exceptions/exception.h"
 #include "foundation/platform/compiler.h"
 
-
 namespace foundation
 {
 
 //
-// Cannot load shared lib exception.
+// Exception thrown when a shared library cannot be loaded.
 //
 
 class ExceptionCannotLoadSharedLib
@@ -54,7 +53,7 @@ class ExceptionCannotLoadSharedLib
 
 
 //
-// Shared library cannot get symbol exception.
+// Exception thrown when a shared library symbol is not found.
 //
 
 class ExceptionSharedLibCannotGetSymbol
@@ -83,7 +82,7 @@ class SharedLibrary
     ~SharedLibrary();
 
     // Get a symbol from the shared library.
-    void* get_symbol(const char* name, bool no_throw = true) const;
+    void* get_symbol(const char* name, const bool no_throw = true) const;
 
   private:
     struct Impl;

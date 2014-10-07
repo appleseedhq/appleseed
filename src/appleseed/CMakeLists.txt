@@ -450,6 +450,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_utility_filter.cpp
     foundation/meta/tests/test_vector.cpp
     foundation/meta/tests/test_voxelgrid.cpp
+    foundation/meta/tests/test_windows.cpp
 )
 list (APPEND appleseed_sources
     ${foundation_meta_tests_sources}
@@ -496,6 +497,7 @@ set (foundation_platform_sources
     foundation/platform/types.h
     foundation/platform/win32stackwalker.cpp
     foundation/platform/win32stackwalker.h
+    foundation/platform/windows.cpp
     foundation/platform/windows.h
     foundation/platform/x86timer.cpp
     foundation/platform/x86timer.h

@@ -5,7 +5,6 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
 // Copyright (c) 2014 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,35 +26,33 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_PLATFORM_WINDOWS_H
-#define APPLESEED_FOUNDATION_PLATFORM_WINDOWS_H
+#ifdef _WIN32
 
-#ifndef _WIN32
-    #error Unsupported platform.
-#endif
+// appleseed.foundation headers.
+#include "foundation/platform/windows.h"
+#include "foundation/utility/test.h"
 
 // Standard headers.
 #include <string>
 
-// Exclude rarely-used stuff from Windows headers.
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
+using namespace foundation;
+using namespace std;
 
-// Don't define the min and max macros.
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
-
-// Windows headers.
-#include <Windows.h>
-
-namespace foundation
+TEST_SUITE(Foundation_Platform_Windows)
 {
+    TEST_CASE(GetWindowsLastErrorMessage_LastErrorCodeIsSuccess)
+    {
+        SetLastError(ERROR_SUCCESS);
+        const string msg = get_windows_last_error_message();
+        EXPECT_FALSE(msg.empty());
+    }
 
-// Return the error message associated with the error code returned by GetLastError().
-std::string get_windows_last_error_message();
+    TEST_CASE(GetWindowsLastErrorMessage_LastErrorCodeIsFileNotFound)
+    {
+        SetLastError(ERROR_FILE_NOT_FOUND);
+        const string msg = get_windows_last_error_message();
+        EXPECT_FALSE(msg.empty());
+    }
+}
 
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_PLATFORM_WINDOWS_H
+#endif
