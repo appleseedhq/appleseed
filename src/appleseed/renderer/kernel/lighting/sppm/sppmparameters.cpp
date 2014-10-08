@@ -35,6 +35,7 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/makevector.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
@@ -53,37 +54,44 @@ namespace
         return x == 0 ? ~0 : x;
     }
 
-    SPPMParameters::Mode get_mode(
-        const ParamArray&           params,
-        const char*                 name,
-        const SPPMParameters::Mode  default_mode)
+    SPPMParameters::PhotonType get_photon_type(
+        const ParamArray&   params,
+        const char*         name,
+        const char*         default_value)
     {
-        const string default_mode_str =
-            default_mode == SPPMParameters::SPPM ? "sppm" :
-            default_mode == SPPMParameters::RayTraced ? "rt" : "off";
-
-        const string value = params.get_optional<string>(name, default_mode_str);
-
-        if (value == "sppm")
-            return SPPMParameters::SPPM;
-        else if (value == "rt")
-            return SPPMParameters::RayTraced;
-        else if (value == "off")
-            return SPPMParameters::Off;
-        else
-        {
-            RENDERER_LOG_ERROR(
-                "invalid value \"%s\" for parameter \"%s\", using default value \"%s\"",
-                value.c_str(),
+        const string value =
+            params.get_optional<string>(
                 name,
-                default_mode_str.c_str());
-            return default_mode;
-        }
+                default_value,
+                make_vector("mono", "poly"));
+
+        return
+            value == "mono"
+                ? SPPMParameters::Monochromatic
+                : SPPMParameters::Polychromatic;
+    }
+
+    SPPMParameters::Mode get_mode(
+        const ParamArray&   params,
+        const char*         name,
+        const char*         default_value)
+    {
+        const string value =
+            params.get_optional<string>(
+                name,
+                default_value,
+                make_vector("sppm", "rt", "off"));
+
+        return
+            value == "sppm" ? SPPMParameters::SPPM :
+            value == "rt" ? SPPMParameters::RayTraced :
+            SPPMParameters::Off;
     }
 }
 
 SPPMParameters::SPPMParameters(const ParamArray& params)
-  : m_dl_mode(get_mode(params, "dl_mode", RayTraced))
+  : m_photon_type(get_photon_type(params, "photon_type", "mono"))
+  , m_dl_mode(get_mode(params, "dl_mode", "rt"))
   , m_enable_ibl(params.get_optional<bool>("enable_ibl", true))
   , m_enable_caustics(params.get_optional<bool>("enable_caustics", true))
   , m_light_photon_count(params.get_optional<size_t>("light_photons_per_pass", 1000000))
@@ -113,8 +121,10 @@ void SPPMParameters::print() const
 {
     RENDERER_LOG_INFO(
         "sppm settings:\n"
+        "  photon type      %s\n"
         "  dl               %s\n"
         "  ibl              %s",
+        m_photon_type == Monochromatic ? "monochromatic" : "polychromatic",
         m_dl_mode == RayTraced ? "ray traced" :
         m_dl_mode == SPPM ? "sppm" : "off",
         m_enable_ibl ? "on" : "off");

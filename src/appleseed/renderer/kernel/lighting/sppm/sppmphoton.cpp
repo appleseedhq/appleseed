@@ -44,13 +44,11 @@ namespace renderer
 
 bool SPPMPhotonVector::empty() const
 {
-    assert(m_positions.empty() == m_data.empty());
     return m_positions.empty();
 }
 
 size_t SPPMPhotonVector::size() const
 {
-    assert(m_positions.size() == m_data.size());
     return m_positions.size();
 }
 
@@ -58,31 +56,50 @@ size_t SPPMPhotonVector::get_memory_size() const
 {
     return
         m_positions.capacity() * sizeof(Vector3f) +
-        m_data.capacity() * sizeof(SPPMPhotonData);
+        m_mono_photons.capacity() * sizeof(SPPMMonoPhoton) +
+        m_poly_photons.capacity() * sizeof(SPPMPolyPhoton);
 }
 
 void SPPMPhotonVector::swap(SPPMPhotonVector& rhs)
 {
     m_positions.swap(rhs.m_positions);
-    m_data.swap(rhs.m_data);
+    m_mono_photons.swap(rhs.m_mono_photons);
+    m_poly_photons.swap(rhs.m_poly_photons);
 }
 
 void SPPMPhotonVector::clear_keep_memory()
 {
     foundation::clear_keep_memory(m_positions);
-    foundation::clear_keep_memory(m_data);
+    foundation::clear_keep_memory(m_mono_photons);
+    foundation::clear_keep_memory(m_poly_photons);
 }
 
-void SPPMPhotonVector::reserve(const size_t capacity)
+void SPPMPhotonVector::reserve_mono_photons(const size_t capacity)
 {
     m_positions.reserve(capacity);
-    m_data.reserve(capacity);
+    m_mono_photons.reserve(capacity);
 }
 
-void SPPMPhotonVector::push_back(const SPPMPhoton& photon)
+void SPPMPhotonVector::reserve_poly_photons(const size_t capacity)
 {
-    m_positions.push_back(photon.m_position);
-    m_data.push_back(photon.m_data);
+    m_positions.reserve(capacity);
+    m_poly_photons.reserve(capacity);
+}
+
+void SPPMPhotonVector::push_back(
+    const Vector3f&         position,
+    const SPPMMonoPhoton&   photon)
+{
+    m_positions.push_back(position);
+    m_mono_photons.push_back(photon);
+}
+
+void SPPMPhotonVector::push_back(
+    const Vector3f&         position,
+    const SPPMPolyPhoton&   photon)
+{
+    m_positions.push_back(position);
+    m_poly_photons.push_back(photon);
 }
 
 void SPPMPhotonVector::append(const SPPMPhotonVector& rhs)
@@ -90,7 +107,8 @@ void SPPMPhotonVector::append(const SPPMPhotonVector& rhs)
     boost::mutex::scoped_lock lock(m_mutex);
 
     m_positions.insert(m_positions.end(), rhs.m_positions.begin(), rhs.m_positions.end());
-    m_data.insert(m_data.end(), rhs.m_data.begin(), rhs.m_data.end());
+    m_mono_photons.insert(m_mono_photons.end(), rhs.m_mono_photons.begin(), rhs.m_mono_photons.end());
+    m_poly_photons.insert(m_poly_photons.end(), rhs.m_poly_photons.begin(), rhs.m_poly_photons.end());
 }
 
 }   // namespace renderer

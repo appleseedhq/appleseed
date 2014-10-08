@@ -66,7 +66,8 @@ namespace foundation    { class JobQueue; }
 namespace renderer      { class Frame; }
 namespace renderer      { class LightSampler; }
 namespace renderer      { class Scene; }
-namespace renderer      { class SPPMPhotonData; }
+namespace renderer      { class SPPMMonoPhoton; }
+namespace renderer      { class SPPMPolyPhoton; }
 namespace renderer      { class TextureStore; }
 namespace renderer      { class TraceContext; }
 
@@ -111,7 +112,8 @@ class SPPMPassCallback
         foundation::AbortSwitch&    abort_switch) OVERRIDE;
 
     // Return the i'th photon.
-    const SPPMPhotonData& get_photon_data(const size_t i) const;
+    const SPPMMonoPhoton& get_mono_photon(const size_t i) const;
+    const SPPMPolyPhoton& get_poly_photon(const size_t i) const;
 
     // Return the current photon map.
     const SPPMPhotonMap& get_photon_map() const;
@@ -136,9 +138,14 @@ class SPPMPassCallback
 // SPPMPassCallback class implementation.
 //
 
-inline const SPPMPhotonData& SPPMPassCallback::get_photon_data(const size_t i) const
+inline const SPPMMonoPhoton& SPPMPassCallback::get_mono_photon(const size_t i) const
 {
-    return m_photons.m_data[i];
+    return m_photons.m_mono_photons[i];
+}
+
+inline const SPPMPolyPhoton& SPPMPassCallback::get_poly_photon(const size_t i) const
+{
+    return m_photons.m_poly_photons[i];
 }
 
 inline const SPPMPhotonMap& SPPMPassCallback::get_photon_map() const

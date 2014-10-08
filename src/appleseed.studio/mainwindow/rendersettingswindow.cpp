@@ -894,32 +894,10 @@ namespace
             QVBoxLayout* layout = new QVBoxLayout();
             container()->setLayout(layout);
 
-            QGroupBox* groupbox = new QGroupBox("Components");
-            layout->addWidget(groupbox);
-
-            QVBoxLayout* sublayout = new QVBoxLayout();
-            groupbox->setLayout(sublayout);
-
-            QRadioButton* dl_buttons_rt = create_radio_button("lighting_components.dl.rt", "RT Direct Lighting");
-            QRadioButton* dl_buttons_sppm = create_radio_button("lighting_components.dl.sppm", "SPPM Direct Lighting");
-            QRadioButton* dl_buttons_off = create_radio_button("lighting_components.dl.off", "No Direct Lighting");
-
-            QButtonGroup* dl_buttons = new QButtonGroup(groupbox);
-            dl_buttons->addButton(dl_buttons_rt);
-            dl_buttons->addButton(dl_buttons_sppm);
-            dl_buttons->addButton(dl_buttons_off);
-
-            QHBoxLayout* button_layout = new QHBoxLayout();
-            button_layout->addWidget(dl_buttons_rt);
-            button_layout->addWidget(dl_buttons_sppm);
-            button_layout->addWidget(dl_buttons_off);
-            sublayout->addLayout(button_layout);
-
-            sublayout->addWidget(create_checkbox("lighting_components.ibl", "Image-Based Lighting"));
-            sublayout->addWidget(create_checkbox("lighting_components.caustics", "Caustics"));
-
-            create_sppm_photon_tracing_settings(layout);
-            create_sppm_radiance_estimation_settings(layout);
+            create_photon_type_settings(layout);
+            create_components_settings(layout);
+            create_photon_tracing_settings(layout);
+            create_radiance_estimation_settings(layout);
 
             create_direct_link("lighting_components.ibl", "sppm.enable_ibl", true);
             create_direct_link("lighting_components.caustics", "sppm.enable_caustics", true);
@@ -936,12 +914,17 @@ namespace
             load_bounce_settings(config, "photon_tracing", "sppm.photon_tracing_max_path_length");
             load_bounce_settings(config, "radiance_estimation", "sppm.path_tracing_max_path_length");
 
-            const string dl_mode = get_config<string>(config, "sppm.dl_mode", "sppm");
+            const string dl_mode = get_config<string>(config, "sppm.dl_mode", "rt");
             if (dl_mode == "rt")
                 set_widget("lighting_components.dl.rt", true);
             else if (dl_mode == "sppm")
                 set_widget("lighting_components.dl.sppm", true);
             else set_widget("lighting_components.dl.off", true);
+
+            const string photon_type = get_config<string>(config, "sppm.photon_type", "mono");
+            if (photon_type == "mono")
+                set_widget("photon_type.mono", true);
+            else set_widget("photon_type.poly", true);
         }
 
         virtual void save_config(Configuration& config) const OVERRIDE
@@ -954,10 +937,56 @@ namespace
             set_config(config, "sppm.dl_mode",
                 get_widget<bool>("lighting_components.dl.rt") ? "rt" :
                 get_widget<bool>("lighting_components.dl.sppm") ? "sppm" : "off");
+
+            set_config(config, "sppm.photon_type",
+                get_widget<bool>("photon_type.mono") ? "mono" : "poly");
         }
 
       private:
-        void create_sppm_photon_tracing_settings(QVBoxLayout* parent)
+        void create_photon_type_settings(QVBoxLayout* parent)
+        {
+            QGroupBox* groupbox = new QGroupBox("Photon Type");
+            parent->addWidget(groupbox);
+
+            QButtonGroup* buttons = new QButtonGroup(groupbox);
+            QRadioButton* buttons_mono = create_radio_button("photon_type.mono", "Monochromatic Photons");
+            QRadioButton* buttons_poly = create_radio_button("photon_type.poly", "Polychromatic Photons");
+            buttons->addButton(buttons_mono);
+            buttons->addButton(buttons_poly);
+
+            QHBoxLayout* photontype_buttons_layout = new QHBoxLayout();
+            photontype_buttons_layout->addWidget(buttons_mono);
+            photontype_buttons_layout->addWidget(buttons_poly);
+            groupbox->setLayout(photontype_buttons_layout);
+        }
+
+        void create_components_settings(QVBoxLayout* parent)
+        {
+            QGroupBox* groupbox = new QGroupBox("Components");
+            parent->addWidget(groupbox);
+
+            QVBoxLayout* layout = new QVBoxLayout();
+            groupbox->setLayout(layout);
+
+            QButtonGroup* buttons = new QButtonGroup(groupbox);
+            QRadioButton* buttons_rt = create_radio_button("lighting_components.dl.rt", "RT Direct Lighting");
+            QRadioButton* buttons_sppm = create_radio_button("lighting_components.dl.sppm", "SPPM Direct Lighting");
+            QRadioButton* buttons_off = create_radio_button("lighting_components.dl.off", "No Direct Lighting");
+            buttons->addButton(buttons_rt);
+            buttons->addButton(buttons_sppm);
+            buttons->addButton(buttons_off);
+
+            QHBoxLayout* dl_buttons_layout = new QHBoxLayout();
+            dl_buttons_layout->addWidget(buttons_rt);
+            dl_buttons_layout->addWidget(buttons_sppm);
+            dl_buttons_layout->addWidget(buttons_off);
+            layout->addLayout(dl_buttons_layout);
+
+            layout->addWidget(create_checkbox("lighting_components.ibl", "Image-Based Lighting"));
+            layout->addWidget(create_checkbox("lighting_components.caustics", "Caustics"));
+        }
+
+        void create_photon_tracing_settings(QVBoxLayout* parent)
         {
             QGroupBox* groupbox = new QGroupBox("Photon Tracing");
             parent->addWidget(groupbox);
@@ -973,7 +1002,7 @@ namespace
             sublayout->addRow("Environment Photons:", create_integer_input("photon_tracing.env_photons", 0, 1000000000, 100000));
         }
 
-        void create_sppm_radiance_estimation_settings(QVBoxLayout* parent)
+        void create_radiance_estimation_settings(QVBoxLayout* parent)
         {
             QGroupBox* groupbox = new QGroupBox("Radiance Estimation");
             parent->addWidget(groupbox);

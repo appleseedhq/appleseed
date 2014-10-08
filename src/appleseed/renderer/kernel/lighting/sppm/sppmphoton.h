@@ -38,6 +38,7 @@
 
 // boost headers.
 #include "foundation/platform/thread.h"
+#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <cstddef>
@@ -47,22 +48,34 @@ namespace renderer
 {
 
 //
-// A photon in the SPPM photon map.
+// A monochromatic photon.
 //
 
-class SPPMPhotonData
+struct SpectrumLine
+{
+    foundation::uint32      m_wavelength;
+    float                   m_amplitude;
+};
+
+class SPPMMonoPhoton
+{
+  public:
+    foundation::Vector3f    m_incoming;             // incoming direction, world space, unit length
+    foundation::Vector3f    m_geometric_normal;     // geometric normal at the photon location, world space, unit length
+    SpectrumLine            m_flux;                 // flux carried by this photon (in W)
+};
+
+
+//
+// A polychromatic photon.
+//
+
+class SPPMPolyPhoton
 {
   public:
     foundation::Vector3f    m_incoming;             // incoming direction, world space, unit length
     foundation::Vector3f    m_geometric_normal;     // geometric normal at the photon location, world space, unit length
     Spectrum                m_flux;                 // flux carried by this photon (in W)
-};
-
-class SPPMPhoton
-{
-  public:
-    foundation::Vector3f    m_position;
-    SPPMPhotonData          m_data;
 };
 
 
@@ -74,7 +87,8 @@ class SPPMPhotonVector
 {
   public:
     std::vector<foundation::Vector3f>   m_positions;
-    std::vector<SPPMPhotonData>         m_data;
+    std::vector<SPPMMonoPhoton>         m_mono_photons;
+    std::vector<SPPMPolyPhoton>         m_poly_photons;
     boost::mutex                        m_mutex;
 
     bool empty() const;
@@ -85,10 +99,16 @@ class SPPMPhotonVector
 
     void swap(SPPMPhotonVector& rhs);
     void clear_keep_memory();
-    void reserve(const size_t capacity);
-    void push_back(const SPPMPhoton& photon);
+    void reserve_mono_photons(const size_t capacity);
+    void reserve_poly_photons(const size_t capacity);
+    void push_back(
+        const foundation::Vector3f&     position,
+        const SPPMMonoPhoton&           photon);
+    void push_back(
+        const foundation::Vector3f&     position,
+        const SPPMPolyPhoton&           photon);
 
-    // Thread-safe.
+    // The only thread-safe method of this class.
     void append(const SPPMPhotonVector& rhs);
 };
 

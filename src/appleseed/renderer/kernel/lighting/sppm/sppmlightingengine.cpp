@@ -344,9 +344,8 @@ namespace
                 if (photon_map.empty())
                     return;
 
-                const float radius = m_pass_callback.get_lookup_radius();
                 const Vector3f point(vertex.get_point());
-                const Vector3f normal(vertex.get_geometric_normal());
+                const float radius = m_pass_callback.get_lookup_radius();
 
                 // Find the nearby photons around the path vertex.
                 const knn::Query3f query(photon_map, m_answer);
@@ -363,27 +362,61 @@ namespace
                 else max_square_dist = radius * radius;
                 const float rcp_max_square_dist = 1.0f / max_square_dist;
 
+                // Accumulate photons contributions.
                 Spectrum indirect_radiance(0.0f);
+                if (m_params.m_photon_type == SPPMParameters::Monochromatic)
+                {
+                    accumulate_mono_photons(
+                        vertex,
+                        photon_count,
+                        rcp_max_square_dist,
+                        indirect_radiance);
+                }
+                else
+                {
+                    accumulate_poly_photons(
+                        vertex,
+                        photon_count,
+                        rcp_max_square_dist,
+                        indirect_radiance);
+                }
 
-                // Loop over the nearby photons.
+                // Estimate photon density.
+                indirect_radiance *= rcp_max_square_dist;
+
+                // Add the indirect lighting contribution.
+                vertex_radiance += indirect_radiance;
+            }
+
+            void accumulate_mono_photons(
+                const PathVertex&       vertex,
+                const size_t            photon_count,
+                const float             rcp_max_square_dist,
+                Spectrum&               radiance)
+            {
+                const SPPMPhotonMap& photon_map = m_pass_callback.get_photon_map();
+                const Vector3f normal(vertex.get_geometric_normal());
+
                 for (size_t i = 0; i < photon_count; ++i)
                 {
                     // Retrieve the i'th photon.
-                    const knn::Answer<float>::Entry& photon = m_answer.get(i);
-                    const SPPMPhotonData& data = m_pass_callback.get_photon_data(photon_map.remap(photon.m_index));
+                    const knn::Answer<float>::Entry& entry = m_answer.get(i);
+                    const SPPMMonoPhoton& photon =
+                        m_pass_callback.get_mono_photon(
+                            photon_map.remap(entry.m_index));
 
                     // Reject photons from the opposite hemisphere as they won't contribute.
-                    if (dot(normal, data.m_incoming) <= 0.0f)
+                    if (dot(normal, photon.m_incoming) <= 0.0f)
                         continue;
 
                     // Reject photons on a surface with too different an orientation.
                     const float NormalThreshold = 1.0e-3f;
-                    if (dot(normal, data.m_geometric_normal) < NormalThreshold)
+                    if (dot(normal, photon.m_geometric_normal) < NormalThreshold)
                         continue;
 
 #if 0
                     // Reject photons on the wrong side of the surface.
-                    if (dot(vertex.m_outgoing, Vector3d(data.m_geometric_normal)) <= 0.0)
+                    if (dot(vertex.m_outgoing, Vector3d(photon.m_geometric_normal)) <= 0.0)
                         continue;
 #endif
 
@@ -401,12 +434,12 @@ namespace
                     const double bsdf_prob =
                         vertex.m_bsdf->evaluate(
                             vertex.m_bsdf_data,
-                            false,                                  // not adjoint
-                            true,                                   // multiply by |cos(incoming, normal)|
+                            false,                                      // not adjoint
+                            true,                                       // multiply by |cos(incoming, normal)|
                             vertex.get_geometric_normal(),
                             vertex.get_shading_basis(),
-                            vertex.m_outgoing,                      // toward the camera
-                            normalize(Vector3d(data.m_incoming)),   // toward the light
+                            vertex.m_outgoing,                          // toward the camera
+                            normalize(Vector3d(photon.m_incoming)),     // toward the light
                             BSDF::Diffuse,
                             bsdf_value);
                     if (bsdf_prob == 0.0)
@@ -415,21 +448,87 @@ namespace
                     // The photons store flux but we are computing reflected radiance.
                     // The first step of the flux -> radiance conversion is done here.
                     // The conversion will be completed when doing density estimation.
-                    bsdf_value /= abs(dot(data.m_incoming, data.m_geometric_normal));
-                    bsdf_value *= data.m_flux;
+                    float bsdf_mono_value = bsdf_value[photon.m_flux.m_wavelength];
+                    bsdf_mono_value /= abs(dot(photon.m_incoming, photon.m_geometric_normal));
+                    bsdf_mono_value *= photon.m_flux.m_amplitude;
 
                     // Apply kernel weight.
-                    bsdf_value *= epanechnikov2d(photon.m_square_dist * rcp_max_square_dist);
+                    bsdf_mono_value *= epanechnikov2d(entry.m_square_dist * rcp_max_square_dist);
 
                     // Accumulate reflected flux.
-                    indirect_radiance += bsdf_value;
+                    radiance[photon.m_flux.m_wavelength] += bsdf_mono_value;
                 }
+            }
 
-                // Density estimation.
-                indirect_radiance /= max_square_dist;
+            void accumulate_poly_photons(
+                const PathVertex&       vertex,
+                const size_t            photon_count,
+                const float             rcp_max_square_dist,
+                Spectrum&               radiance)
+            {
+                const SPPMPhotonMap& photon_map = m_pass_callback.get_photon_map();
+                const Vector3f normal(vertex.get_geometric_normal());
 
-                // Add the indirect lighting contribution.
-                vertex_radiance += indirect_radiance;
+                for (size_t i = 0; i < photon_count; ++i)
+                {
+                    // Retrieve the i'th photon.
+                    const knn::Answer<float>::Entry& entry = m_answer.get(i);
+                    const SPPMPolyPhoton& photon =
+                        m_pass_callback.get_poly_photon(
+                            photon_map.remap(entry.m_index));
+
+                    // Reject photons from the opposite hemisphere as they won't contribute.
+                    if (dot(normal, photon.m_incoming) <= 0.0f)
+                        continue;
+
+                    // Reject photons on a surface with too different an orientation.
+                    const float NormalThreshold = 1.0e-3f;
+                    if (dot(normal, photon.m_geometric_normal) < NormalThreshold)
+                        continue;
+
+#if 0
+                    // Reject photons on the wrong side of the surface.
+                    if (dot(vertex.m_outgoing, Vector3d(photon.m_geometric_normal)) <= 0.0)
+                        continue;
+#endif
+
+#if 0
+                    // Reject photons too far away along the surface's normal.
+                    const Vector3f& photon_position = photon_map.get_point(photon.m_index);
+                    const Vector3f point_to_photon = photon_position - point;
+                    const float vdist = abs(dot(normal, point_to_photon));
+                    if (vdist > 0.1f * radius)
+                        continue;
+#endif
+
+                    // Evaluate the BSDF for this photon.
+                    Spectrum bsdf_value;
+                    const double bsdf_prob =
+                        vertex.m_bsdf->evaluate(
+                            vertex.m_bsdf_data,
+                            false,                                      // not adjoint
+                            true,                                       // multiply by |cos(incoming, normal)|
+                            vertex.get_geometric_normal(),
+                            vertex.get_shading_basis(),
+                            vertex.m_outgoing,                          // toward the camera
+                            normalize(Vector3d(photon.m_incoming)),     // toward the light
+                            BSDF::Diffuse,
+                            bsdf_value);
+                    if (bsdf_prob == 0.0)
+                        continue;
+
+                    // The photons store flux but we are computing reflected radiance.
+                    // The first step of the flux -> radiance conversion is done here.
+                    // The conversion will be completed when doing density estimation.
+                    bsdf_value /= abs(dot(photon.m_incoming, photon.m_geometric_normal));
+                    bsdf_value *= photon.m_flux;
+
+                    // Apply kernel weight.
+                    bsdf_value *= epanechnikov2d(entry.m_square_dist * rcp_max_square_dist);
+
+                    // Accumulate reflected flux.
+                    radiance += bsdf_value;
+                }
             }
 
             void add_emitted_light_contribution(
@@ -492,10 +591,24 @@ namespace
             radiance.set(0.0f);
 
             const size_t photon_count = m_answer.size();
-            for (size_t i = 0; i < photon_count; ++i)
+
+            if (m_params.m_photon_type == SPPMParameters::Monochromatic)
             {
-                const knn::Answer<float>::Entry& photon = m_answer.get(i);
-                radiance += m_pass_callback.get_photon_data(photon_map.remap(photon.m_index)).m_flux;
+                for (size_t i = 0; i < photon_count; ++i)
+                {
+                    const knn::Answer<float>::Entry& photon = m_answer.get(i);
+                    const SpectrumLine& flux =
+                        m_pass_callback.get_mono_photon(photon_map.remap(photon.m_index)).m_flux;
+                    radiance[flux.m_wavelength] += flux.m_amplitude;
+                }
+            }
+            else
+            {
+                for (size_t i = 0; i < photon_count; ++i)
+                {
+                    const knn::Answer<float>::Entry& photon = m_answer.get(i);
+                    radiance += m_pass_callback.get_poly_photon(photon_map.remap(photon.m_index)).m_flux;
+                }
             }
 
             const float m = max_value(radiance);

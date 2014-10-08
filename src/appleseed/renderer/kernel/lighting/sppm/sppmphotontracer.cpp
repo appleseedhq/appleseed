@@ -89,6 +89,7 @@ namespace
     struct PathVisitor
     {
         const Spectrum              m_initial_flux;     // initial particle flux (in W)
+        const SPPMParameters&       m_params;
         const bool                  m_store_direct;
         const bool                  m_store_indirect;
         const bool                  m_store_caustics;
@@ -96,11 +97,13 @@ namespace
 
         PathVisitor(
             const Spectrum&         initial_flux,
+            const SPPMParameters&   params,
             const bool              store_direct,
             const bool              store_indirect,
             const bool              store_caustics,
             SPPMPhotonVector&       photons)
           : m_initial_flux(initial_flux)
+          , m_params(params)
           , m_store_direct(store_direct)
           , m_store_indirect(store_indirect)
           , m_store_caustics(store_caustics)
@@ -141,13 +144,34 @@ namespace
                     return;
 
                 // Create and store a new photon.
-                SPPMPhoton photon;
-                photon.m_position = vertex.get_point();
-                photon.m_data.m_incoming = Vector3f(vertex.m_outgoing);
-                photon.m_data.m_geometric_normal = Vector3f(vertex.get_geometric_normal());
-                photon.m_data.m_flux = m_initial_flux;
-                photon.m_data.m_flux *= vertex.m_throughput;
-                m_photons.push_back(photon);
+                if (m_params.m_photon_type == SPPMParameters::Monochromatic)
+                {
+                    vertex.m_sampling_context.split_in_place(1, 1);
+                    const uint32 wavelength =
+                        truncate<uint32>(
+                            vertex.m_sampling_context.next_double2() * Spectrum::Samples);
+
+                    SPPMMonoPhoton photon;
+                    photon.m_incoming = Vector3f(vertex.m_outgoing);
+                    photon.m_geometric_normal = Vector3f(vertex.get_geometric_normal());
+                    photon.m_flux.m_wavelength = wavelength;
+                    photon.m_flux.m_amplitude =
+                        m_initial_flux[wavelength] *
+                        Spectrum::Samples *
+                        vertex.m_throughput[wavelength];
+                    m_photons.push_back(vertex.get_point(), photon);
+                }
+                else
+                {
+                    assert(m_params.m_photon_type == SPPMParameters::Polychromatic);
+
+                    SPPMPolyPhoton photon;
+                    photon.m_incoming = Vector3f(vertex.m_outgoing);
+                    photon.m_geometric_normal = Vector3f(vertex.get_geometric_normal());
+                    photon.m_flux = m_initial_flux;
+                    photon.m_flux *= vertex.m_throughput;
+                    m_photons.push_back(vertex.get_point(), photon);
+                }
             }
         }
 
@@ -193,6 +217,7 @@ namespace
           , m_photon_begin(photon_begin)
           , m_photon_end(photon_end)
           , m_pass_hash(pass_hash)
+          , m_abort_switch(abort_switch)
 #ifdef WITH_OSL
           , m_shadergroup_exec(shading_system)
 #endif
@@ -217,9 +242,8 @@ namespace
                 , m_shadergroup_exec
 #endif
                 , thread_index)
-          , m_abort_switch(abort_switch)
+          , m_ray_dtime(scene.get_camera()->get_shutter_open_time_interval())
         {
-            m_ray_dtime = scene.get_camera()->get_shutter_open_time_interval();
         }
 
         virtual void execute(const size_t thread_index) OVERRIDE
@@ -351,6 +375,7 @@ namespace
             const bool cast_indirect_light = (edf->get_flags() & EDF::CastIndirectLight) != 0;
             PathVisitor path_visitor(
                 initial_flux,
+                m_params,
                 m_params.m_dl_mode == SPPMParameters::SPPM, // store direct lighting photons?
                 cast_indirect_light,
                 m_params.m_enable_caustics,
@@ -409,6 +434,7 @@ namespace
             const bool cast_indirect_light = (light_sample.m_light->get_flags() & EDF::CastIndirectLight) != 0;
             PathVisitor path_visitor(
                 initial_flux,
+                m_params,
                 m_params.m_dl_mode == SPPMParameters::SPPM, // store direct lighting photons?
                 cast_indirect_light,
                 m_params.m_enable_caustics,
@@ -491,8 +517,8 @@ namespace
                 , m_shadergroup_exec
 #endif
                 , thread_index)
+          , m_ray_dtime(scene.get_camera()->get_shutter_open_time_interval())
         {
-            m_ray_dtime = scene.get_camera()->get_shutter_open_time_interval();
         }
 
         virtual void execute(const size_t thread_index) OVERRIDE
@@ -581,6 +607,7 @@ namespace
             const bool cast_indirect_light = true;          // right now environments always cast indirect light
             PathVisitor path_visitor(
                 initial_flux,
+                m_params,
                 m_params.m_enable_ibl,
                 cast_indirect_light,
                 m_params.m_enable_caustics,
