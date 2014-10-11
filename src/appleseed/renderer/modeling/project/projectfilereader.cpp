@@ -2788,6 +2788,8 @@ namespace
                         static_cast<DisplayElementHandler*>(handler);
                     display_handler->set_project(m_project);
                 }
+                break;
+
               assert_otherwise;
             }
         }
