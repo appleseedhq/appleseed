@@ -68,12 +68,12 @@ struct Display::Impl
         const ParamArray&   params)
       : m_plugin(new SharedLibrary(plugin_path))
     {
-        typedef ITileCallbackFactory*(*CreateFnType)(const ParamArray&);
+        typedef ITileCallbackFactory*(*CreateFnType)(const ParamArray*);
 
         CreateFnType create_fn =
-            reinterpret_cast<CreateFnType>(m_plugin->get_symbol("create_tile_callback_factory"), false);
+            reinterpret_cast<CreateFnType>(m_plugin->get_symbol("create_tile_callback_factory", false));
 
-        m_tile_callback_factory.reset(create_fn(params));
+        m_tile_callback_factory.reset(create_fn(&params));
     }
 
     auto_ptr<SharedLibrary>                 m_plugin;
@@ -117,7 +117,7 @@ void Display::open(const Project& project)
     }
     catch (const ExceptionDictionaryItemNotFound&)
     {
-        RENDERER_LOG_ERROR("%s", "cannot open display: bad parameters.");
+        RENDERER_LOG_FATAL("%s", "cannot open display: bad parameters.");
         return;
     }
 
@@ -127,17 +127,18 @@ void Display::open(const Project& project)
     }
     catch (const ExceptionCannotLoadSharedLib& e)
     {
-        RENDERER_LOG_ERROR("cannot open display: %s", e.what());
+        RENDERER_LOG_FATAL("cannot open display: %s", e.what());
     }
     catch (const ExceptionSharedLibCannotGetSymbol& e)
     {
-        RENDERER_LOG_ERROR("cannot open display: %s", e.what());
+        RENDERER_LOG_FATAL("cannot open display: %s", e.what());
     }
 }
 
 void Display::close()
 {
     delete impl;
+    impl = 0;
 }
 
 ITileCallbackFactory* Display::get_tile_callback_factory() const

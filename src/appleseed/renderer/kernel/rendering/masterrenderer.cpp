@@ -241,6 +241,31 @@ namespace
 #endif
 }
 
+namespace
+{
+
+struct ScopedDisplayClose
+{
+    ScopedDisplayClose(
+        Project& project,
+        const bool do_close)
+      : m_project(project)
+      , m_do_close(do_close)
+    {
+    }
+
+    ~ScopedDisplayClose()
+    {
+        if (m_do_close)
+            m_project.get_display()->close();
+    }
+
+    Project&    m_project;
+    const bool  m_do_close;
+};
+
+}
+
 IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence()
 {
     assert(m_project.get_scene());
@@ -652,6 +677,14 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     }
 
     //
+    // Close the (plugin) display, if needed,
+    // after the frame renderer has been destroyed, at scope exit.
+    //
+    ScopedDisplayClose dpy_close(
+        m_project,
+        (m_tile_callback_factory == 0) && (m_project.get_display() != 0));
+
+    //
     // Create a frame renderer.
     //
 
@@ -702,16 +735,6 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
             , *shading_system
 #endif
             );
-
-    //
-    // Close the (plugin) display, if needed.
-    //
-
-    if (m_tile_callback_factory == 0)
-    {
-        if (Display* dpy = m_project.get_display())
-            dpy->close();
-    }
 
     // Print texture store performance statistics.
     RENDERER_LOG_DEBUG("%s", texture_store.get_statistics().to_string().c_str());
