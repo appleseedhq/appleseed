@@ -247,8 +247,8 @@ namespace
 struct ScopedDisplayClose
 {
     ScopedDisplayClose(
-        Project& project,
-        const bool do_close)
+        Project&    project,
+        const bool  do_close)
       : m_project(project)
       , m_do_close(do_close)
     {
