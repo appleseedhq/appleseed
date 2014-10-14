@@ -770,6 +770,7 @@ set (renderer_api_sources
     renderer/api/bsdf.h
     renderer/api/camera.h
     renderer/api/color.h
+    renderer/api/display.h
     renderer/api/edf.h
     renderer/api/entity.h
     renderer/api/environment.h
@@ -789,6 +790,11 @@ set (renderer_api_sources
     renderer/api/trace.h
     renderer/api/utility.h
 )
+if (WITH_OSL)
+    list (APPEND renderer_api_sources
+        renderer/api/shadergroup.h
+    )
+endif ()
 list (APPEND appleseed_sources
     ${renderer_api_sources}
 )
