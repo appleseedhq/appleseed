@@ -29,7 +29,7 @@
 #
 
 # Package builder settings.
-VersionString = "2.3.11"
+VersionString = "2.3.12"
 SettingsFileName = "appleseed.package.configuration.xml"
 
 # Imports.
@@ -70,7 +70,7 @@ def safe_delete_file(path):
         if os.path.exists(path):
             os.remove(path)
     except OSError:
-        fatal("failed to delete file '" + path + "'")
+        fatal("Failed to delete file '" + path + "'")
 
 def safe_delete_directory(path):
     Attempts = 10
@@ -83,7 +83,7 @@ def safe_delete_directory(path):
             if attempt < Attempts - 1:
                 time.sleep(0.5)
             else:
-                fatal("failed to delete directory '" + path + "'")
+                fatal("Failed to delete directory '" + path + "'")
 
 def safe_make_directory(path):
     if not os.path.isdir(path):
@@ -118,19 +118,19 @@ class Settings:
         try:
             tree.parse(SettingsFileName)
         except IOError:
-            fatal("failed to load configuration file '" + SettingsFileName + "'")
+            fatal("Failed to load configuration file '" + SettingsFileName + "'")
         self.load_values(tree)
         self.print_summary()
 
     def load_values(self, tree):
-        self.configuration = tree.findtext("configuration")
-        self.platform_id = tree.findtext("platform_id")
-        self.platform_name = tree.findtext("platform_name")
-        self.appleseed_path = tree.findtext("appleseed_path")
-        self.headers_path = tree.findtext("headers_path")
-        self.qt_runtime_path = tree.findtext("qt_runtime_path")
-        self.platform_runtime_path = tree.findtext("platform_runtime_path")
-        self.package_output_path = tree.findtext("package_output_path")
+        self.configuration = self.__get_required(tree, "configuration")
+        self.platform_id = self.__get_required(tree, "platform_id")
+        self.platform_name = self.__get_required(tree, "platform_name")
+        self.appleseed_path = self.__get_required(tree, "appleseed_path")
+        self.headers_path = self.__get_required(tree, "headers_path")
+        self.qt_runtime_path = self.__get_required(tree, "qt_runtime_path")
+        self.platform_runtime_path = self.__get_required(tree, "platform_runtime_path")
+        self.package_output_path = self.__get_required(tree, "package_output_path")
 
     def print_summary(self):
         print
@@ -143,6 +143,12 @@ class Settings:
         print "  Path to platform runtime:  " + self.platform_runtime_path
         print "  Output directory:          " + self.package_output_path
         print
+
+    def __get_required(self, tree, key):
+        value = tree.findtext(key)
+        if value is None:
+            fatal("Missing value \"{0}\" in configuration file".format(key))
+        return value
 
 
 #--------------------------------------------------------------------------------------------------
@@ -541,7 +547,7 @@ def main():
     elif os.name == "posix" and platform.mac_ver()[0] == "":
         package_builder = LinuxPackageBuilder(settings, package_info)
     else:
-        fatal("unsupported platform: " + os.name)
+        fatal("Unsupported platform: " + os.name)
 
     package_builder.build_package()
 
