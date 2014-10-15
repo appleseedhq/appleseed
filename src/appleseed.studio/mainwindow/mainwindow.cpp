@@ -89,7 +89,7 @@
 #include <QToolButton>
 #include <QUrl>
 
-// boost headers.
+// Boost headers.
 #include "boost/filesystem/path.hpp"
 
 // Standard headers.

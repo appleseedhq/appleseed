@@ -30,7 +30,7 @@
 #ifndef APPLESEED_FOUNDATION_PLATFORM_PYTHON_H
 #define APPLESEED_FOUNDATION_PLATFORM_PYTHON_H
 
-// boost headers.
+// Boost headers.
 #pragma warning (push)
 #pragma warning (disable : 4244)    // conversion from 'Py_ssize_t' to 'unsigned int', possible loss of data
 #include "boost/python.hpp"

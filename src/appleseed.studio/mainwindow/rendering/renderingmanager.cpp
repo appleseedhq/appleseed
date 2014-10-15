@@ -49,7 +49,7 @@
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/string.h"
 
-// boost headers.
+// Boost headers.
 #include "boost/filesystem/path.hpp"
 
 // Qt headers.

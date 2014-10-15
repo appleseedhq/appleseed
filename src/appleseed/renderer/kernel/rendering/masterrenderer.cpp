@@ -80,7 +80,7 @@
 #include "foundation/utility/job/abortswitch.h"
 #include "foundation/utility/searchpaths.h"
 
-// boost headers.
+// Boost headers.
 #include "boost/filesystem/path.hpp"
 #include "boost/shared_ptr.hpp"
 #include "boost/bind.hpp"

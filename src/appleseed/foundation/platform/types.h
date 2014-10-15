@@ -33,7 +33,7 @@
 // appleseed.foundation headers.
 #include "foundation/platform/arch.h"
 
-// boost headers.
+// Boost headers.
 #include "boost/static_assert.hpp"
 
 // Make sure that uintptr_t is defined on all platforms.

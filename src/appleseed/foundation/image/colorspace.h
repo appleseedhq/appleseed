@@ -45,7 +45,7 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// boost headers.
+// Boost headers.
 #include "boost/static_assert.hpp"
 
 // Standard headers.

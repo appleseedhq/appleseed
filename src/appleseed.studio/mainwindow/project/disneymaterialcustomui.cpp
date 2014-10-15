@@ -59,7 +59,7 @@
 #include <Qt>
 #include <QToolButton>
 
-// boost headers.
+// Boost headers.
 #include "boost/algorithm/string.hpp"
 #include "boost/algorithm/string/split.hpp"
 #include "boost/filesystem/operations.hpp"

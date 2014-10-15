@@ -56,7 +56,7 @@
 #include "foundation/utility/memory.h"
 #include "foundation/utility/string.h"
 
-// boost headers.
+// Boost headers.
 #include "boost/thread/recursive_mutex.hpp"
 
 // Standard headers.

@@ -53,7 +53,7 @@ BEGIN_OSL_INCLUDES
 #include "OSL/oslexec.h"
 END_OSL_INCLUDES
 
-// boost headers.
+// Boost headers.
 #include <boost/mpl/assert.hpp>
 #include <boost/mpl/back_inserter.hpp>
 #include <boost/mpl/copy.hpp>

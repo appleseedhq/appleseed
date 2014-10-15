@@ -40,7 +40,7 @@
 #include "foundation/utility/cache.h"
 #include "foundation/utility/uid.h"
 
-// boost headers.
+// Boost headers.
 #include "boost/cstdint.hpp"
 
 // Standard headers.

@@ -34,7 +34,7 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
 
-// boost headers.
+// Boost headers.
 #include "boost/static_assert.hpp"
 
 // Standard headers.

@@ -36,7 +36,7 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// boost headers.
+// Boost headers.
 #include "boost/cstdint.hpp"
 
 namespace foundation

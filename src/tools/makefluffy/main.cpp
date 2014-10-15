@@ -50,7 +50,7 @@
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/uid.h"
 
-// boost headers.
+// Boost headers.
 #include "boost/filesystem/path.hpp"
 
 // Standard headers.

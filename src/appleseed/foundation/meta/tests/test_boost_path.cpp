@@ -30,7 +30,7 @@
 // appleseed.foundation headers.
 #include "foundation/utility/test.h"
 
-// boost headers.
+// Boost headers.
 #include "boost/filesystem/path.hpp"
 
 // Standard headers.

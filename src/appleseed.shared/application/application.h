@@ -33,7 +33,7 @@
 // appleseed.shared headers.
 #include "dllsymbol.h"
 
-// boost headers.
+// Boost headers.
 #include "boost/filesystem/operations.hpp"
 #include "boost/filesystem/path.hpp"
 

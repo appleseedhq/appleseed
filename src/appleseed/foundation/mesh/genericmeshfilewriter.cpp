@@ -36,7 +36,7 @@
 #include "foundation/mesh/objmeshfilewriter.h"
 #include "foundation/utility/string.h"
 
-// boost headers.
+// Boost headers.
 #include "boost/filesystem/path.hpp"
 
 // Standard headers.

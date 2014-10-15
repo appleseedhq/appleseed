@@ -34,7 +34,7 @@
 #include "foundation/platform/types.h"
 #include "foundation/utility/string.h"
 
-// boost headers.
+// Boost headers.
 #include "boost/date_time/gregorian/gregorian.hpp"
 #include "boost/date_time/posix_time/posix_time.hpp"
 

@@ -108,7 +108,7 @@
 #include "xercesc/util/PlatformUtils.hpp"
 #include "xercesc/util/XMLException.hpp"
 
-// boost headers.
+// Boost headers.
 #include "boost/filesystem/path.hpp"
 
 // Standard headers.

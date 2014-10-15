@@ -36,7 +36,7 @@
 #endif
 #include "foundation/utility/iterators.h"
 
-// boost headers.
+// Boost headers.
 #include "boost/filesystem/operations.hpp"
 
 // Standard headers.

@@ -44,7 +44,7 @@ END_OSL_INCLUDES
 // OpenImageIO headers.
 #include "OpenImageIO/texture.h"
 
-// boost headers.
+// Boost headers.
 #include "boost/unordered_map.hpp"
 
 // Standard headers.

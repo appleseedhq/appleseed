@@ -37,7 +37,7 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// boost headers.
+// Boost headers.
 #include "boost/interprocess/detail/atomic.hpp"
 #include "boost/smart_ptr/detail/spinlock.hpp"
 #include "boost/thread/mutex.hpp"

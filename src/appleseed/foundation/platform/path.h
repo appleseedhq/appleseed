@@ -38,7 +38,7 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// boost headers.
+// Boost headers.
 #include "boost/filesystem/path.hpp"
 
 // Platform headers.

@@ -60,7 +60,7 @@
 #include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
 
-// boost headers.
+// Boost headers.
 #include "boost/filesystem/path.hpp"
 
 // Standard headers.

@@ -40,7 +40,7 @@
 #include "foundation/utility/commandlineparser.h"
 #include "foundation/utility/log.h"
 
-// boost headers.
+// Boost headers.
 #include "boost/filesystem/path.hpp"
 
 // Standard headers.

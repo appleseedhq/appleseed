@@ -30,7 +30,7 @@
 // Interface header.
 #include "searchpaths.h"
 
-// boost headers.
+// Boost headers.
 #include "boost/filesystem/operations.hpp"
 #include "boost/filesystem/path.hpp"
 

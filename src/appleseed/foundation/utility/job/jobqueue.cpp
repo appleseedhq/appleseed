@@ -37,7 +37,7 @@
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/iterators.h"
 
-// boost headers.
+// Boost headers.
 #include "boost/thread/condition_variable.hpp"
 
 // Standard headers.

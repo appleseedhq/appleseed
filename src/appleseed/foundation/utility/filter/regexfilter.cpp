@@ -30,7 +30,7 @@
 // Interface header.
 #include "regexfilter.h"
 
-// boost headers.
+// Boost headers.
 #include "boost/regex.hpp"
 
 // Standard headers.

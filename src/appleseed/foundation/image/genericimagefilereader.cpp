@@ -36,7 +36,7 @@
 #include "foundation/image/pngimagefilereader.h"
 #include "foundation/utility/string.h"
 
-// boost headers.
+// Boost headers.
 #include "boost/filesystem/path.hpp"
 
 using namespace boost;

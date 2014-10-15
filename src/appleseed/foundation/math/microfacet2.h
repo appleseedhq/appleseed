@@ -37,7 +37,7 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 
-// boost headers.
+// Boost headers.
 #include "boost/mpl/bool.hpp"
 #include "boost/math/special_functions/erf.hpp"
 

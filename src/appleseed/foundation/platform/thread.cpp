@@ -36,7 +36,7 @@
 #endif
 #include "foundation/utility/log.h"
 
-// boost headers.
+// Boost headers.
 #include "boost/date_time/posix_time/posix_time_types.hpp"
 
 // Standard headers.

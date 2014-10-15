@@ -36,7 +36,7 @@
 // Qt headers.
 #include <QtConcurrentRun>
 
-// boost headers.
+// Boost headers.
 #include "boost/filesystem/path.hpp"
 
 using namespace appleseed::shared;

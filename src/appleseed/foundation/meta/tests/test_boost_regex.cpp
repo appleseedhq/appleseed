@@ -30,7 +30,7 @@
 // appleseed.foundation headers.
 #include "foundation/utility/test.h"
 
-// boost headers.
+// Boost headers.
 #include "boost/regex.hpp"
 
 TEST_SUITE(Boost_Regex)

@@ -38,7 +38,7 @@
 #include "foundation/utility/string.h"
 #include "foundation/utility/xercesc.h"
 
-// boost headers.
+// Boost headers.
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include "boost/filesystem/operations.hpp"
 #include "boost/filesystem/path.hpp"

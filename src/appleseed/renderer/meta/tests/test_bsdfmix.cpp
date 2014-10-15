@@ -70,7 +70,7 @@ END_OSL_INCLUDES
 #include "OpenImageIO/texture.h"
 #endif
 
-// boost headers.
+// Boost headers.
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
 

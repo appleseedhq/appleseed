@@ -46,7 +46,7 @@ BEGIN_OSL_INCLUDES
 #include "OSL/oslclosure.h"
 END_OSL_INCLUDES
 
-// boost headers.
+// Boost headers.
 #include <boost/mpl/contains.hpp>
 #include <boost/static_assert.hpp>
 

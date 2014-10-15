@@ -39,7 +39,7 @@
     #include "foundation/mesh/alembicmeshfilereader.h"
 #endif
 
-// boost headers.
+// Boost headers.
 #include "boost/filesystem/path.hpp"
 
 // Standard headers.

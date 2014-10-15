@@ -54,7 +54,7 @@
 #include <QString>
 #include <QStringList>
 
-// boost headers.
+// Boost headers.
 #include "boost/filesystem/path.hpp"
 
 // Standard headers.

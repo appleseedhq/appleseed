@@ -30,7 +30,7 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_CASTS_H
 #define APPLESEED_FOUNDATION_UTILITY_CASTS_H
 
-// boost headers.
+// Boost headers.
 #include "boost/static_assert.hpp"
 
 // Standard headers.
