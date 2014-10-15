@@ -304,7 +304,7 @@ namespace
 
         void adjust_slider(const double new_value)
         {
-            const double new_max = 2.0 * new_value;
+            const double new_max = new_value == 0.0 ? 1.0 : 2.0 * new_value;
             m_slider->setRange(0.0, new_max);
             m_slider->setPageStep(new_max / 10.0);
         }
