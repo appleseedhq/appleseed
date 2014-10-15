@@ -81,9 +81,9 @@
 #include "foundation/utility/searchpaths.h"
 
 // Boost headers.
+#include "boost/bind.hpp"
 #include "boost/filesystem/path.hpp"
 #include "boost/shared_ptr.hpp"
-#include "boost/bind.hpp"
 
 // Standard headers.
 #include <deque>

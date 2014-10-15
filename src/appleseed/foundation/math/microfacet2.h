@@ -38,8 +38,8 @@
 #include "foundation/platform/compiler.h"
 
 // Boost headers.
-#include "boost/mpl/bool.hpp"
 #include "boost/math/special_functions/erf.hpp"
+#include "boost/mpl/bool.hpp"
 
 // Standard headers.
 #include <algorithm>

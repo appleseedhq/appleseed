@@ -47,8 +47,8 @@ BEGIN_OSL_INCLUDES
 END_OSL_INCLUDES
 
 // Boost headers.
-#include <boost/mpl/contains.hpp>
-#include <boost/static_assert.hpp>
+#include "boost/mpl/contains.hpp"
+#include "boost/static_assert.hpp"
 
 // Standard headers.
 #include <algorithm>
