@@ -200,9 +200,13 @@ void EntityEditor::create_input_widgets(const Dictionary& metadata)
 
     assert(widget_proxy.get());
 
-    if (metadata.strings().exist("on_change") && metadata.get<string>("on_change") == "rebuild_form")
-        connect(widget_proxy.get(), SIGNAL(signal_changed()), SLOT(slot_rebuild_form()));
-    else connect(widget_proxy.get(), SIGNAL(signal_changed()), SLOT(slot_apply()));
+    const bool rebuild_form =
+        metadata.strings().exist("on_change") && metadata.get<string>("on_change") == "rebuild_form";
+
+    connect(
+        widget_proxy.get(),
+        SIGNAL(signal_changed()),
+        rebuild_form ? SLOT(slot_rebuild_form()) : SLOT(slot_apply()));
 
     m_widget_proxies.insert(name, widget_proxy);
 }
