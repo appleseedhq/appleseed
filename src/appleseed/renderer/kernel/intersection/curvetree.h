@@ -41,6 +41,7 @@
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/bvh.h"
 #include "foundation/math/matrix.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/alignedvector.h"
 #include "foundation/utility/lazy.h"
 #include "foundation/utility/poolallocator.h"
@@ -92,14 +93,17 @@ class CurveTree
     // Constructor, builds the tree for a given assembly.
     explicit CurveTree(const Arguments& arguments);
 
-    void build_bvh(
-        const ParamArray&                       params,
-        const double                            time,
-        foundation::Statistics&                 statistics);
-
   private:
     friend class CurveLeafVisitor;
     friend class CurveLeafProbeVisitor;
+
+    struct LeafUserData
+    {
+        foundation::uint32  m_curve1_offset;
+        foundation::uint32  m_curve1_count;
+        foundation::uint32  m_curve3_offset;
+        foundation::uint32  m_curve3_count;
+    };
 
     const Arguments         m_arguments;
     std::vector<CurveType1> m_curves1;
@@ -107,6 +111,20 @@ class CurveTree
     std::vector<CurveKey>   m_curve_keys;
 
     void collect_curves(std::vector<GAABB3>& curve_bboxes);
+
+    void build_bvh(
+        const ParamArray&                       params,
+        const double                            time,
+        foundation::Statistics&                 statistics);
+
+    // Reorder curve keys to match a given ordering.
+    void reorder_curve_keys(const std::vector<size_t>& ordering);
+
+    // Reorder curves to match a given ordering.
+    void reorder_curves(const std::vector<size_t>& ordering);
+
+    // Reorder curve keys in leaf nodes so that all degree-1 curve keys come before degree-3 ones.
+    void reorder_curve_keys_in_leaf_nodes();
 };
 
 
@@ -257,58 +275,48 @@ inline bool CurveLeafVisitor::visit(
 #endif
     )
 {
-    const size_t curve_index = node.get_item_index();
-    const size_t curve_count = node.get_item_count();
-    const foundation::Vector4u& curve_data = node.get_user_data<foundation::Vector4u>();
-    const size_t degree1_curve_count = curve_data[0];
-    const size_t degree1_curve_offset = curve_data[1];
-    const size_t degree3_curve_count = curve_data[2];
-    const size_t degree3_curve_offset = curve_data[3];
+    const CurveTree::LeafUserData& user_data = node.get_user_data<CurveTree::LeafUserData>();
 
-    size_t curve_num = 0;
-    size_t hit_curve_index = 0;
-
-    // Intersection params.
+    size_t curve_index = node.get_item_index();
+    size_t hit_curve_index = ~0;
     GScalar u, v, t = ray.m_tmax;
-    bool intersected = false;
-    ShadingPoint::PrimitiveType m_type = ShadingPoint::PrimitiveNone;
 
-    // Sequentially intersect all curves of the leaf.
-    for (size_t i = 0; i < degree1_curve_count; i++)
+    for (foundation::uint32 i = 0; i < user_data.m_curve1_count; ++i, ++curve_index)
     {
-        const CurveType1& curve = m_tree.m_curves1[degree1_curve_offset + i];
+        const CurveType1& curve = m_tree.m_curves1[user_data.m_curve1_offset + i];
         if (Curve1IntersectorType::intersect(curve, ray, m_xfm_matrix, u, v, t))
         {
-            intersected = true;
-            m_type = ShadingPoint::PrimitiveCurve1;
-            hit_curve_index = curve_index + curve_num;
+            m_shading_point.m_primitive_type = ShadingPoint::PrimitiveCurve1;
+            m_shading_point.m_ray.m_tmax = static_cast<double>(t);
+            m_shading_point.m_bary[0] = static_cast<double>(u);
+            m_shading_point.m_bary[1] = static_cast<double>(v);
+            hit_curve_index = curve_index;
         }
-        curve_num++;
     }
 
-    for (size_t i = 0; i < degree3_curve_count; i++)
+    FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(curve1_curve_count));
+
+    for (foundation::uint32 i = 0; i < user_data.m_curve3_count; ++i, ++curve_index)
     {
-        const CurveType3& curve = m_tree.m_curves3[degree3_curve_offset + i];
+        const CurveType3& curve = m_tree.m_curves3[user_data.m_curve3_offset + i];
         if (Curve3IntersectorType::intersect(curve, ray, m_xfm_matrix, u, v, t))
         {
-            intersected = true;
-            m_type = ShadingPoint::PrimitiveCurve3;
-            hit_curve_index = curve_index + curve_num;
+            m_shading_point.m_primitive_type = ShadingPoint::PrimitiveCurve3;
+            m_shading_point.m_ray.m_tmax = static_cast<double>(t);
+            m_shading_point.m_bary[0] = static_cast<double>(u);
+            m_shading_point.m_bary[1] = static_cast<double>(v);
+            hit_curve_index = curve_index;
         }
-        curve_num++;
     }
 
-    if (intersected)
+    FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(curve3_curve_count));
+
+    if (hit_curve_index != ~0)
     {
-        m_shading_point.m_primitive_type = m_type;
-        m_shading_point.m_ray.m_tmax = static_cast<double>(t);
-        m_shading_point.m_bary[0] = static_cast<double>(u);
-        m_shading_point.m_bary[1] = static_cast<double>(v);
-        m_shading_point.m_object_instance_index = m_tree.m_curve_keys[hit_curve_index].get_object_instance_index();
-        m_shading_point.m_primitive_index = m_tree.m_curve_keys[hit_curve_index].get_curve_index();
+        const CurveKey& curve_key = m_tree.m_curve_keys[hit_curve_index];
+        m_shading_point.m_object_instance_index = curve_key.get_object_instance_index();
+        m_shading_point.m_primitive_index = curve_key.get_curve_index_object();
     }
-
-    FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(curve_count));
 
     // Continue traversal.
     distance = static_cast<GScalar>(m_shading_point.m_ray.m_tmax);
@@ -338,35 +346,33 @@ inline bool CurveLeafProbeVisitor::visit(
 #endif
     )
 {
-    const size_t curve_index = node.get_item_index();
-    const size_t curve_count = node.get_item_count();
-    const foundation::Vector4u& curve_data = node.get_user_data<foundation::Vector4u>();
-    const size_t degree1_curve_count = curve_data[0];
-    const size_t degree1_curve_offset = curve_data[1];
-    const size_t degree3_curve_count = curve_data[2];
-    const size_t degree3_curve_offset = curve_data[3];
+    const CurveTree::LeafUserData& user_data = node.get_user_data<CurveTree::LeafUserData>();
 
-    for (size_t i = 0; i < degree1_curve_count; i++)
+    for (foundation::uint32 i = 0; i < user_data.m_curve1_count; ++i)
     {
-        const CurveType1& curve = m_tree.m_curves1[degree1_curve_offset + i];
+        const CurveType1& curve = m_tree.m_curves1[user_data.m_curve1_offset + i];
         if (Curve1IntersectorType::intersect(curve, ray, m_xfm_matrix))
         {
+            FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(i + 1));
             m_hit = true;
             return false;
         }
     }
 
-    for (size_t i = 0; i < degree3_curve_count; i++)
+    FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(curve1_curve_count));
+
+    for (foundation::uint32 i = 0; i < user_data.m_curve3_count; ++i)
     {
-        const CurveType3& curve = m_tree.m_curves3[degree3_curve_offset + i];
+        const CurveType3& curve = m_tree.m_curves3[user_data.m_curve3_offset + i];
         if (Curve3IntersectorType::intersect(curve, ray, m_xfm_matrix))
         {
+            FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(i + 1));
             m_hit = true;
             return false;
         }
     }
 
-    FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(curve_count));
+    FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(curve3_curve_count));
 
     // Continue traversal.
     distance = ray.m_tmax;
