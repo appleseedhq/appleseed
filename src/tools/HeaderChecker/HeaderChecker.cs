@@ -5,7 +5,8 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010 Francois Beaune
+// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
+// Copyright (c) 2014 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -88,9 +89,9 @@ namespace headerchecker
             }
         }
 
-		// The main entry point for the application.
-		static void Main(String[] args)
-		{
+        // The main entry point for the application.
+        static void Main(String[] args)
+        {
             // Check command line and print usage if incomplete.
             if (args.Length < 1)
             {
@@ -151,5 +152,5 @@ namespace headerchecker
                     Console.WriteLine("  {0}", failedFile);
             }
         }
-	}
+    }
 }

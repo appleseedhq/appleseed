@@ -34,7 +34,6 @@
 #include "foundation/core/exceptions/exceptionunsupportedfileformat.h"
 #include "foundation/mesh/binarymeshfilereader.h"
 #include "foundation/utility/string.h"
-
 #ifdef WITH_ALEMBIC
     #include "foundation/mesh/alembicmeshfilereader.h"
 #endif

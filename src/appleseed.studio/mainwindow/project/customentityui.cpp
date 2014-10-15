@@ -1,3 +1,4 @@
+
 //
 // This source file is part of appleseed.
 // Visit http://appleseedhq.net/ for additional information and resources.
@@ -32,7 +33,7 @@ namespace appleseed {
 namespace studio {
 
 //
-// CustomEntityUI implementation.
+// CustomEntityUI class implementation.
 //
 
 void CustomEntityUI::emit_signal_custom_applied()
@@ -40,5 +41,5 @@ void CustomEntityUI::emit_signal_custom_applied()
     emit signal_custom_applied();
 }
 
-}       // namespace studio
-}       // namespace appleseed
+}   // namespace studio
+}   // namespace appleseed
