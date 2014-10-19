@@ -31,10 +31,16 @@
 #define APPLESEED_RENDERER_API_MATERIAL_H
 
 // API headers.
+#ifdef WITH_DISNEY_MATERIAL
+#include "renderer/modeling/material/disneymaterial.h"
+#endif
 #include "renderer/modeling/material/genericmaterial.h"
 #include "renderer/modeling/material/imaterialfactory.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/material/materialfactoryregistrar.h"
 #include "renderer/modeling/material/materialtraits.h"
+#ifdef WITH_OSL
+#include "renderer/modeling/material/oslmaterial.h"
+#endif
 
 #endif  // !APPLESEED_RENDERER_API_MATERIAL_H
