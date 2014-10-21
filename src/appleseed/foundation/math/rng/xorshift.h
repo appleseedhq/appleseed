@@ -52,6 +52,10 @@ namespace foundation
 //   http://www.jstatsoft.org/v08/i14/paper
 //   http://tbf.coe.wayne.edu/jmasm/vol2_no1.pdf
 //
+// Additional resource about xorshift generators:
+//
+//   http://xorshift.di.unimi.it/
+//
 
 class Xorshift
 {
