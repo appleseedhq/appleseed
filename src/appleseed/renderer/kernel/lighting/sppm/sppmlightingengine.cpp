@@ -354,12 +354,18 @@ namespace
 
                 // Compute the square radius of the lookup disk.
                 float max_square_dist;
-                if (photon_count == m_params.m_max_photons_per_estimate)
+                if (photon_count < m_params.m_max_photons_per_estimate)
+                    max_square_dist = radius * radius;
+                else
                 {
-                    m_answer.sort();
-                    max_square_dist = m_answer.get(photon_count - 1).m_square_dist;
+                    max_square_dist = 0.0f;
+                    for (size_t i = 0; i < photon_count; ++i)
+                    {
+                        const float square_dist = m_answer.get(i).m_square_dist;
+                        if (max_square_dist < square_dist)
+                            max_square_dist = square_dist;
+                    }
                 }
-                else max_square_dist = radius * radius;
                 const float rcp_max_square_dist = 1.0f / max_square_dist;
 
                 // Accumulate photons contributions.
