@@ -58,7 +58,7 @@ typedef foundation::Ray<GScalar, 3> GRay3;
 typedef foundation::RayInfo<GScalar, 3> GRayInfo3;
 
 // Spectrum representation.
-typedef foundation::RegularSpectrum<float, 31> Spectrum;
+typedef foundation::RegularSpectrum31f Spectrum;
 
 // Alpha channel representation.
 typedef foundation::Color<float, 1> Alpha;
