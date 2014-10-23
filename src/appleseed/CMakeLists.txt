@@ -353,10 +353,10 @@ set (foundation_meta_benchmarks_sources
     foundation/meta/benchmarks/benchmark_poolallocator.cpp
     foundation/meta/benchmarks/benchmark_qmc.cpp
     foundation/meta/benchmarks/benchmark_ray.cpp
+    foundation/meta/benchmarks/benchmark_regularspectrum.cpp
     foundation/meta/benchmarks/benchmark_rng.cpp
     foundation/meta/benchmarks/benchmark_samesign.cpp
     foundation/meta/benchmarks/benchmark_sampling.cpp
-    foundation/meta/benchmarks/benchmark_spectrum.cpp
     foundation/meta/benchmarks/benchmark_string.cpp
     foundation/meta/benchmarks/benchmark_transform.cpp
     foundation/meta/benchmarks/benchmark_voxelgrid.cpp
@@ -429,6 +429,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_quaternion.cpp
     foundation/meta/tests/test_ray.cpp
     foundation/meta/tests/test_registrar.cpp
+    foundation/meta/tests/test_regularspectrum.cpp
     foundation/meta/tests/test_rng.cpp
     foundation/meta/tests/test_sampling.cpp
     foundation/meta/tests/test_scalar.cpp
@@ -436,7 +437,6 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_sharedlibrary.cpp
     foundation/meta/tests/test_siphash.cpp
     foundation/meta/tests/test_snprintf.cpp
-    foundation/meta/tests/test_spectrum.cpp
     foundation/meta/tests/test_spline.cpp
     foundation/meta/tests/test_statistics.cpp
     foundation/meta/tests/test_stlallocatortestbed.cpp

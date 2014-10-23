@@ -39,19 +39,19 @@ TEST_SUITE(Foundation_Math_Fresnel)
 {
     TEST_CASE(FresnelDielectricSchlick_GivenCosThetaIsZero_ReturnsOne)
     {
-        const Spectrum31f NormalReflectance(42.0f);
+        const RegularSpectrum31f NormalReflectance(42.0f);
 
-        Spectrum31f result;
+        RegularSpectrum31f result;
         fresnel_dielectric_schlick(result, NormalReflectance, 0.0);
 
-        EXPECT_EQ(Spectrum31f(1.0f), result);
+        EXPECT_EQ(RegularSpectrum31f(1.0f), result);
     }
 
     TEST_CASE(FresnelDielectricSchlick_GivenCosThetaIsOne_ReturnsNormalReflectance)
     {
-        const Spectrum31f NormalReflectance(42.0f);
+        const RegularSpectrum31f NormalReflectance(42.0f);
 
-        Spectrum31f result;
+        RegularSpectrum31f result;
         fresnel_dielectric_schlick(result, NormalReflectance, 1.0);
 
         EXPECT_EQ(NormalReflectance, result);

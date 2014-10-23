@@ -177,7 +177,7 @@ TEST_SUITE(Foundation_Image_ColorSpace)
             1.0e-5f);
     }
 
-    static Spectrum31f get_white_spectrum()
+    static RegularSpectrum31f get_white_spectrum()
     {
         // The white color from the Cornell Box scene.
         static const float Values[31] =
@@ -187,12 +187,12 @@ TEST_SUITE(Foundation_Image_ColorSpace)
             0.733000f, 0.724813f, 0.764000f, 0.733563f, 0.740000f, 0.751063f, 0.744000f, 0.739438f,
             0.712000f, 0.731000f, 0.707000f, 0.740500f, 0.751000f, 0.725438f, 0.737000f
         };
-        return Spectrum31f(Values);
+        return RegularSpectrum31f(Values);
     }
 
     TEST_CASE(TestSpectrumToCIEXYZConversion)
     {
-        const Spectrum31f spectrum = get_white_spectrum();
+        const RegularSpectrum31f spectrum = get_white_spectrum();
         const LightingConditions lighting_conditions(IlluminantCIED65, XYZCMFCIE196410Deg);
         const Color3f ciexyz = spectrum_to_ciexyz<float>(lighting_conditions, spectrum);
 
@@ -206,7 +206,7 @@ TEST_SUITE(Foundation_Image_ColorSpace)
     {
         const Color3f ciexyz(0.699385f, 0.738633f, 0.790319f);
 
-        Spectrum31f spectrum;
+        RegularSpectrum31f spectrum;
         ciexyz_reflectance_to_spectrum(ciexyz, spectrum);
 
         const float ExpectedSpectrumValues[31] =
@@ -218,30 +218,30 @@ TEST_SUITE(Foundation_Image_ColorSpace)
         };
 
         EXPECT_FEQ_EPS(
-            Spectrum31f(ExpectedSpectrumValues),
+            RegularSpectrum31f(ExpectedSpectrumValues),
             spectrum,
             1.0e-6f);
     }
 
     TEST_CASE(TestSpectrumToSpectrumConversion)
     {
-        static const float InputWavelength[Spectrum31f::Samples] =
+        static const float InputWavelength[RegularSpectrum31f::Samples] =
         {
             400.0f, 410.0f, 420.0f, 430.0f, 440.0f, 450.0f, 460.0f, 470.0f, 480.0f, 490.0f,
             500.0f, 510.0f, 520.0f, 530.0f, 540.0f, 550.0f, 560.0f, 570.0f, 580.0f, 590.0f,
             600.0f, 610.0f, 620.0f, 630.0f, 640.0f, 650.0f, 660.0f, 670.0f, 680.0f, 690.0f,
             700.0f
         };
-        const Spectrum31f input_spectrum = get_white_spectrum();
+        const RegularSpectrum31f input_spectrum = get_white_spectrum();
 
-        typedef RegularSpectrum<float, 4> Spectrum4f;
+        typedef RegularSpectrum<float, 4> RegularSpectrum4f;
 
-        static const float OutputWavelength[Spectrum4f::Samples] =
+        static const float OutputWavelength[RegularSpectrum4f::Samples] =
         {
             400.0f, 500.0f, 600.0f, 700.0f
         };
 
-        Spectrum4f output_spectrum;
+        RegularSpectrum4f output_spectrum;
         spectrum_to_spectrum(
             input_spectrum.Samples,
             InputWavelength,
@@ -256,7 +256,7 @@ TEST_SUITE(Foundation_Image_ColorSpace)
         };
 
         EXPECT_FEQ_EPS(
-            Spectrum4f(ExpectedOutputSpectrumValues),
+            RegularSpectrum4f(ExpectedOutputSpectrumValues),
             output_spectrum,
             1.0e-6f);
     }

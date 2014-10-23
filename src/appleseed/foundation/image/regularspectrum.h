@@ -153,8 +153,8 @@ template <typename T, size_t N> bool has_nan(const RegularSpectrum<T, N>& s);
 // Full specializations for spectra of type float and double.
 //
 
-typedef RegularSpectrum<float,  31> Spectrum31f;
-typedef RegularSpectrum<double, 31> Spectrum31d;
+typedef RegularSpectrum<float,  31> RegularSpectrum31f;
+typedef RegularSpectrum<double, 31> RegularSpectrum31d;
 
 
 //

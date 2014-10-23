@@ -31,14 +31,14 @@
 #include "foundation/image/regularspectrum.h"
 #include "foundation/utility/benchmark.h"
 
-BENCHMARK_SUITE(Foundation_Image_Spectrum31f)
+BENCHMARK_SUITE(Foundation_Image_RegularSpectrum31f)
 {
     using namespace foundation;
 
     struct Fixture
     {
-        Spectrum31f m_spectrum1;
-        Spectrum31f m_spectrum2;
+        RegularSpectrum31f  m_spectrum1;
+        RegularSpectrum31f  m_spectrum2;
 
         Fixture()
           : m_spectrum1(42.0f)
