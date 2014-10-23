@@ -30,7 +30,7 @@
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
-#include "foundation/image/spectrum.h"
+#include "foundation/image/regularspectrum.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/makevector.h"
 #include "foundation/utility/maplefile.h"

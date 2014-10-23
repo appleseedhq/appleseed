@@ -27,8 +27,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_IMAGE_SPECTRUM_H
-#define APPLESEED_FOUNDATION_IMAGE_SPECTRUM_H
+#ifndef APPLESEED_FOUNDATION_IMAGE_REGULARSPECTRUM_H
+#define APPLESEED_FOUNDATION_IMAGE_REGULARSPECTRUM_H
 
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
@@ -158,7 +158,7 @@ typedef RegularSpectrum<double, 31> Spectrum31d;
 
 
 //
-// Regular spectrum implementation.
+// RegularSpectrum class implementation.
 //
 
 template <typename T, size_t N>
@@ -771,4 +771,4 @@ inline foundation::RegularSpectrum<T, N> max(
 
 }       // namespace std
 
-#endif  // !APPLESEED_FOUNDATION_IMAGE_SPECTRUM_H
+#endif  // !APPLESEED_FOUNDATION_IMAGE_REGULARSPECTRUM_H

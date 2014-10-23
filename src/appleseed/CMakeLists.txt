@@ -115,7 +115,7 @@ set (foundation_image_sources
     foundation/image/progressiveexrimagefilewriter.h
     foundation/image/progressivepngimagefilereader.cpp
     foundation/image/progressivepngimagefilereader.h
-    foundation/image/spectrum.h
+    foundation/image/regularspectrum.h
     foundation/image/tile.cpp
     foundation/image/tile.h
 )

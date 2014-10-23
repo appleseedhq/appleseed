@@ -28,7 +28,7 @@
 //
 
 // appleseed.foundation headers.
-#include "foundation/image/spectrum.h"
+#include "foundation/image/regularspectrum.h"
 #include "foundation/utility/benchmark.h"
 
 BENCHMARK_SUITE(Foundation_Image_Spectrum31f)

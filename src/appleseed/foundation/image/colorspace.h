@@ -32,7 +32,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
-#include "foundation/image/spectrum.h"
+#include "foundation/image/regularspectrum.h"
 #include "foundation/math/fastmath.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/spline.h"

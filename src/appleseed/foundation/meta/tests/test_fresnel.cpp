@@ -28,7 +28,7 @@
 //
 
 // appleseed.foundation headers.
-#include "foundation/image/spectrum.h"
+#include "foundation/image/regularspectrum.h"
 #include "foundation/math/fresnel.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"

@@ -65,7 +65,7 @@
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
 #include "foundation/image/image.h"
-#include "foundation/image/spectrum.h"
+#include "foundation/image/regularspectrum.h"
 #include "foundation/math/population.h"
 #include "foundation/math/qmc.h"
 #include "foundation/math/rng.h"
