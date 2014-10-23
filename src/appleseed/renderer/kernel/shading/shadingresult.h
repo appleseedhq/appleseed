@@ -62,7 +62,7 @@ class ShadingResult
     explicit ShadingResult(const size_t aov_count = 0);
 
     // Return true if this shading result contains valid linear RGB values;
-    // false if the color, alpha or any AOV contains NaN or negative values.
+    // false if the color, alpha or any AOV contain NaN or negative values.
     bool is_valid_linear_rgb() const;
 
     // Set the main color to a given linear RGB value. Leaves the alpha channel intact.
