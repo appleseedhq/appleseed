@@ -320,10 +320,10 @@ T luminance(const Color<T, 3>& linear_rgb);
 //
 
 // Convert a spectrum to a color in the CIE XYZ color space.
-template <typename T, typename Spectrum>
+template <typename T, typename SpectrumType>
 Color<T, 3> spectrum_to_ciexyz(
     const LightingConditions&   lighting,
-    const Spectrum&             spectrum);
+    const SpectrumType&         spectrum);
 
 // Convert a spectrum to a color in the CIE XYZ color space using the CIE D65 illuminant
 // and the CIE 1964 10-deg color matching functions.
@@ -332,27 +332,27 @@ DLLSYMBOL void spectrum_to_ciexyz_standard(
     float                       ciexyz[3]);
 
 // Convert a reflectance in the CIE XYZ color space to a spectrum.
-template <typename T, typename Spectrum>
+template <typename T, typename SpectrumType>
 void ciexyz_reflectance_to_spectrum(
     const Color<T, 3>&          xyz,
-    Spectrum&                   spectrum);
+    SpectrumType&               spectrum);
 
 // Convert an illuminance in the CIE XYZ color space to a spectrum.
-template <typename T, typename Spectrum>
+template <typename T, typename SpectrumType>
 void ciexyz_illuminance_to_spectrum(
     const Color<T, 3>&          xyz,
-    Spectrum&                   spectrum);
+    SpectrumType&               spectrum);
 
 
 //
 // Convert the CIE xy chromaticity of a D series (daylight) illuminant to a spectrum.
 //
 
-template <typename T, typename Spectrum>
+template <typename T, typename SpectrumType>
 void daylight_ciexy_to_spectrum(
     const T                     x,
     const T                     y,
-    Spectrum&                   spectrum);
+    SpectrumType&               spectrum);
 
 
 //
@@ -370,22 +370,22 @@ void daylight_ciexy_to_spectrum(
 
 // Convert a linear RGB reflectance value to a spectrum,
 // without clamping the spectrum values.
-template <typename T, typename Spectrum>
+template <typename T, typename SpectrumType>
 void linear_rgb_reflectance_to_spectrum_unclamped(
     const Color<T, 3>&          linear_rgb,
-    Spectrum&                   spectrum);
+    SpectrumType&               spectrum);
 
 // Convert a linear RGB reflectance value to a spectrum.
-template <typename T, typename Spectrum>
+template <typename T, typename SpectrumType>
 void linear_rgb_reflectance_to_spectrum(
     const Color<T, 3>&          linear_rgb,
-    Spectrum&                   spectrum);
+    SpectrumType&               spectrum);
 
 // Convert a linear RGB illuminance value to a spectrum.
-template <typename T, typename Spectrum>
+template <typename T, typename SpectrumType>
 void linear_rgb_illuminance_to_spectrum(
     const Color<T, 3>&          linear_rgb,
-    Spectrum&                   spectrum);
+    SpectrumType&               spectrum);
 
 
 //
@@ -740,12 +740,12 @@ inline T luminance(const Color<T, 3>& linear_rgb)
 // Spectrum <-> CIE XYZ transformations implementation.
 //
 
-template <typename T, typename Spectrum>
+template <typename T, typename SpectrumType>
 Color<T, 3> spectrum_to_ciexyz(
     const LightingConditions&   lighting,
-    const Spectrum&             spectrum)
+    const SpectrumType&         spectrum)
 {
-    BOOST_STATIC_ASSERT(Spectrum::Samples == 31);
+    BOOST_STATIC_ASSERT(SpectrumType::Samples == 31);
 
     T x = T(0.0);
     T y = T(0.0);
@@ -794,20 +794,20 @@ inline Color3f spectrum_to_ciexyz<float, RegularSpectrum31f>(
 
 #endif  // APPLESEED_USE_SSE
 
-template <typename T, typename Spectrum>
+template <typename T, typename SpectrumType>
 void ciexyz_reflectance_to_spectrum(
     const Color<T, 3>&          xyz,
-    Spectrum&                   spectrum)
+    SpectrumType&               spectrum)
 {
     linear_rgb_reflectance_to_spectrum(
         ciexyz_to_linear_rgb(xyz),
         spectrum);
 }
 
-template <typename T, typename Spectrum>
+template <typename T, typename SpectrumType>
 void ciexyz_illuminance_to_spectrum(
     const Color<T, 3>&          xyz,
-    Spectrum&                   spectrum)
+    SpectrumType&               spectrum)
 {
     linear_rgb_illuminance_to_spectrum(
         ciexyz_to_linear_rgb(xyz),
@@ -847,10 +847,10 @@ inline void daylight_ciexy_to_spectrum<float, RegularSpectrum31f>(
 
 namespace impl
 {
-    template <typename T, typename Spectrum>
+    template <typename T, typename SpectrumType>
     void linear_rgb_to_spectrum_approximation(
         const Color<T, 3>&      linear_rgb,
-        Spectrum&               spectrum)
+        SpectrumType&           spectrum)
     {
         for (size_t w = 0;  w < 10; ++w)
             spectrum[w] = static_cast<T>(linear_rgb[2]);
@@ -860,17 +860,17 @@ namespace impl
             spectrum[w] = static_cast<T>(linear_rgb[0]);
     }
 
-    template <typename T, typename Spectrum>
+    template <typename T, typename SpectrumType>
     void linear_rgb_to_spectrum(
         const Color<T, 3>&      linear_rgb,
-        const Spectrum&         white,
-        const Spectrum&         cyan,
-        const Spectrum&         magenta,
-        const Spectrum&         yellow,
-        const Spectrum&         red,
-        const Spectrum&         green,
-        const Spectrum&         blue,
-        Spectrum&               spectrum)
+        const SpectrumType&     white,
+        const SpectrumType&     cyan,
+        const SpectrumType&     magenta,
+        const SpectrumType&     yellow,
+        const SpectrumType&     red,
+        const SpectrumType&     green,
+        const SpectrumType&     blue,
+        SpectrumType&           spectrum)
     {
         const T r = linear_rgb[0];
         const T g = linear_rgb[1];
@@ -921,10 +921,10 @@ namespace impl
     }
 }
 
-template <typename T, typename Spectrum>
+template <typename T, typename SpectrumType>
 void linear_rgb_reflectance_to_spectrum_unclamped(
     const Color<T, 3>&          linear_rgb,
-    Spectrum&                   spectrum)
+    SpectrumType&               spectrum)
 {
     impl::linear_rgb_to_spectrum(
         linear_rgb,
@@ -938,10 +938,10 @@ void linear_rgb_reflectance_to_spectrum_unclamped(
         spectrum);
 }
 
-template <typename T, typename Spectrum>
+template <typename T, typename SpectrumType>
 void linear_rgb_reflectance_to_spectrum(
     const Color<T, 3>&          linear_rgb,
-    Spectrum&                   spectrum)
+    SpectrumType&               spectrum)
 {
     const T m = max_value(linear_rgb);
 
@@ -952,10 +952,10 @@ void linear_rgb_reflectance_to_spectrum(
     spectrum = clamp(spectrum, T(0.0), std::max(m, T(1.0)));
 }
 
-template <typename T, typename Spectrum>
+template <typename T, typename SpectrumType>
 void linear_rgb_illuminance_to_spectrum(
     const Color<T, 3>&          linear_rgb,
-    Spectrum&                   spectrum)
+    SpectrumType&               spectrum)
 {
     /* This gives an undesirable blue tint...
     impl::linear_rgb_to_spectrum(
