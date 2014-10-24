@@ -32,13 +32,13 @@
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"
 
+using namespace foundation;
+
 TEST_SUITE(Foundation_Image_RegularSpectrum31f)
 {
-    using namespace foundation;
-
     TEST_CASE(Set)
     {
-        const float ExpectedValues[31] =
+        static const float ExpectedValues[31] =
         {
             42.0f, 42.0f, 42.0f, 42.0f, 42.0f, 42.0f, 42.0f, 42.0f,
             42.0f, 42.0f, 42.0f, 42.0f, 42.0f, 42.0f, 42.0f, 42.0f,
@@ -56,7 +56,7 @@ TEST_SUITE(Foundation_Image_RegularSpectrum31f)
 
     TEST_CASE(InPlaceAddition)
     {
-        const float InputValues[31] =
+        static const float InputValues[31] =
         {
              1.0f,  2.0f,  3.0f,  4.0f,  5.0f,  6.0f,  7.0f,  8.0f,
              9.0f, 10.0f, 11.0f, 12.0f, 13.0f, 14.0f, 15.0f, 16.0f,
@@ -64,7 +64,7 @@ TEST_SUITE(Foundation_Image_RegularSpectrum31f)
             25.0f, 26.0f, 27.0f, 28.0f, 29.0f, 30.0f, 31.0f
         };
 
-        const float RhsValues[31] =
+        static const float RhsValues[31] =
         {
             31.0f, 30.0f, 29.0f, 28.0f, 27.0f, 26.0f, 25.0f, 24.0f,
             23.0f, 22.0f, 21.0f, 20.0f, 19.0f, 18.0f, 17.0f, 16.0f,
@@ -83,7 +83,7 @@ TEST_SUITE(Foundation_Image_RegularSpectrum31f)
 
     TEST_CASE(InPlaceMultiplicationByScalar)
     {
-        const float InputValues[31] =
+        static const float InputValues[31] =
         {
              1.0f,  2.0f,  3.0f,  4.0f,  5.0f,  6.0f,  7.0f,  8.0f,
              9.0f, 10.0f, 11.0f, 12.0f, 13.0f, 14.0f, 15.0f, 16.0f,
@@ -91,7 +91,7 @@ TEST_SUITE(Foundation_Image_RegularSpectrum31f)
             25.0f, 26.0f, 27.0f, 28.0f, 29.0f, 30.0f, 31.0f
         };
 
-        const float ExpectedValues[31] =
+        static const float ExpectedValues[31] =
         {
              2.0f,  4.0f,  6.0f,  8.0f, 10.0f, 12.0f, 14.0f, 16.0f,
             18.0f, 20.0f, 22.0f, 24.0f, 26.0f, 28.0f, 30.0f, 32.0f,
@@ -109,7 +109,7 @@ TEST_SUITE(Foundation_Image_RegularSpectrum31f)
 
     TEST_CASE(InPlaceMultiplicationBySpectrum)
     {
-        const float InputValues[31] =
+        static const float InputValues[31] =
         {
               1.0f,   2.0f,   3.0f,   4.0f,   5.0f,   6.0f,   7.0f,   8.0f,
               9.0f,  10.0f,  11.0f,  12.0f,  13.0f,  14.0f,  15.0f,  16.0f,
@@ -117,7 +117,7 @@ TEST_SUITE(Foundation_Image_RegularSpectrum31f)
              25.0f,  26.0f,  27.0f,  28.0f,  29.0f,  30.0f,  31.0f
         };
 
-        const float RhsValues[31] =
+        static const float RhsValues[31] =
         {
              31.0f,  30.0f,  29.0f,  28.0f,  27.0f,  26.0f,  25.0f,  24.0f,
              23.0f,  22.0f,  21.0f,  20.0f,  19.0f,  18.0f,  17.0f,  16.0f,
@@ -125,7 +125,7 @@ TEST_SUITE(Foundation_Image_RegularSpectrum31f)
               7.0f,   6.0f,   5.0f,   4.0f,   3.0f,   2.0f,   1.0f
         };
 
-        const float ExpectedValues[31] =
+        static const float ExpectedValues[31] =
         {
              31.0f,  60.0f,  87.0f, 112.0f, 135.0f, 156.0f, 175.0f, 192.0f,
             207.0f, 220.0f, 231.0f, 240.0f, 247.0f, 252.0f, 255.0f, 256.0f,
