@@ -55,6 +55,7 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/autoreleaseptr.h"
+#include "foundation/utility/memory.h"
 #include "foundation/utility/test.h"
 
 // OSL headers.
@@ -80,8 +81,6 @@ END_OSL_INCLUDES
 
 using namespace foundation;
 using namespace renderer;
-using namespace boost;
-
 
 TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
 {
@@ -102,14 +101,14 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
         TextureStore texture_store(scene);
 
 #ifdef WITH_OIIO
-        shared_ptr<OIIO::TextureSystem> texture_system(
+        boost::shared_ptr<OIIO::TextureSystem> texture_system(
             OIIO::TextureSystem::create(),
-            bind(&OIIO::TextureSystem::destroy, _1));
+            boost::bind(&OIIO::TextureSystem::destroy, _1));
 #endif
 #ifdef WITH_OSL
         RendererServices renderer_services(*project, *texture_system, texture_store);
 
-        shared_ptr<OSL::ShadingSystem> shading_system(
+        boost::shared_ptr<OSL::ShadingSystem> shading_system(
             new OSL::ShadingSystem(&renderer_services, texture_system.get()));
 #endif
 
@@ -205,22 +204,26 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
             input_evaluator,
             shading_point);
 
+        size_t offset = 0;
+
         // parent_bsdf mixing weights.
-        EXPECT_EQ(0.6, get_value<double>(input_evaluator, 0));
-        EXPECT_EQ(0.4, get_value<double>(input_evaluator, 8));
+        EXPECT_EQ(0.6, get_value<double>(input_evaluator, offset)); offset += sizeof(double);
+        EXPECT_EQ(0.4, get_value<double>(input_evaluator, offset)); offset += sizeof(double);
 
         // child0_bsdf mixing weights.
-        EXPECT_EQ(0.2, get_value<double>(input_evaluator, 16));
-        EXPECT_EQ(0.8, get_value<double>(input_evaluator, 24));
+        EXPECT_EQ(0.2, get_value<double>(input_evaluator, offset)); offset += sizeof(double);
+        EXPECT_EQ(0.8, get_value<double>(input_evaluator, offset)); offset += sizeof(double);
 
         // child0_child0_bsdf reflectance.
-        EXPECT_EQ(Spectrum(0.5f), get_value<Spectrum>(input_evaluator, 32));
+        EXPECT_EQ(Spectrum(0.5f), get_value<Spectrum>(input_evaluator, offset));
+        offset = align(offset + sizeof(Spectrum) + sizeof(double), 16);
 
         // child0_child1_bsdf reflectance.
-        EXPECT_EQ(Spectrum(0.1f), get_value<Spectrum>(input_evaluator, 176));
+        EXPECT_EQ(Spectrum(0.1f), get_value<Spectrum>(input_evaluator, offset));
+        offset = align(offset + sizeof(Spectrum) + sizeof(double), 16);
 
         // child1_bsdf reflectance.
-        EXPECT_EQ(Spectrum(1.0f), get_value<Spectrum>(input_evaluator, 320));
+        EXPECT_EQ(Spectrum(1.0f), get_value<Spectrum>(input_evaluator, offset));
 
         scene.on_frame_end(project.ref());
     }
