@@ -184,6 +184,9 @@ template <typename T, size_t N>
 inline RegularSpectrum<T, N>::RegularSpectrum(const ValueType val)
 {
     set(val);
+
+    for (size_t i = N; i < StoredSamples; ++i)
+        m_samples[i] = T(0.0);
 }
 
 template <typename T, size_t N>
@@ -197,7 +200,7 @@ inline RegularSpectrum<T, N>::RegularSpectrum(const RegularSpectrum<U, N>& rhs)
 template <typename T, size_t N>
 inline void RegularSpectrum<T, N>::set(const ValueType val)
 {
-    for (size_t i = 0; i < StoredSamples; ++i)
+    for (size_t i = 0; i < N; ++i)
         m_samples[i] = val;
 }
 
