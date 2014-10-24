@@ -113,9 +113,9 @@ std::istream& operator>>(std::istream& s, Color<T, N>& color);
 
 // foundation::RegularSpectrum.
 template <typename T, size_t N>
-std::ostream& operator<<(std::ostream& s, const Color<T, N>& spectrum);
+std::ostream& operator<<(std::ostream& s, const RegularSpectrum<T, N>& spectrum);
 template <typename T, size_t N>
-std::istream& operator>>(std::istream& s, Color<T, N>& spectrum);
+std::istream& operator>>(std::istream& s, RegularSpectrum<T, N>& spectrum);
 
 // foundation::Ray.
 template <typename T, size_t N>
