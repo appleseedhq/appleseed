@@ -503,6 +503,11 @@ closure color holdout() BUILTIN;
 closure color translucent(normal N) BUILTIN;
 closure color transparent() BUILTIN;
 
+closure color oren_nayar(normal N, float roughness)
+{
+    return as_oren_nayar(N, roughness);
+}
+
 /********************************/
 // appleseed specific closures
 
