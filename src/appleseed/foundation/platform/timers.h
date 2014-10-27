@@ -27,40 +27,11 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_PLATFORM_TIMER_H
-#define APPLESEED_FOUNDATION_PLATFORM_TIMER_H
+#ifndef APPLESEED_FOUNDATION_PLATFORM_TIMERS_H
+#define APPLESEED_FOUNDATION_PLATFORM_TIMERS_H
 
 // Include all available timer classes here.
 #include "foundation/platform/defaulttimers.h"
 #include "foundation/platform/x86timer.h"
 
-// appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
-#include "foundation/platform/types.h"
-
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
-namespace foundation
-{
-
-//
-// A timer class must conform to the following prototype to make it usable
-// as a template parameter for the other timing functionalities available
-// in appleseed.foundation. This class is not implemented, and may not be used.
-//
-
-class DLLSYMBOL Timer
-  : public NonCopyable
-{
-  public:
-    // Get the timer frequency, in Hz.
-    uint64 frequency();
-
-    // Read the timer value.
-    uint64 read();
-};
-
-}       // namespace foundation
-
-#endif  // !APPLESEED_FOUNDATION_PLATFORM_TIMER_H
+#endif  // !APPLESEED_FOUNDATION_PLATFORM_TIMERS_H

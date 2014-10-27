@@ -32,7 +32,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/platform/timer.h"
+#include "foundation/platform/timers.h"
 #include "foundation/platform/types.h"
 
 // Standard headers.

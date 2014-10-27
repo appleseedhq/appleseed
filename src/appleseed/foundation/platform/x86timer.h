@@ -41,9 +41,9 @@ namespace foundation
 {
 
 //
-// x86-specific timer, conforming to the interface described in foundation/platform/timer.h.
-// This timer measures processor time (not wallclock time). It uses the RDTSC instruction
-// available on all modern x86 processors to read the CPU internal clock cycle counter.
+// x86-specific timer measuring processor time (not wallclock time).
+// Uses the RDTSC instruction available on all modern x86 processors
+// to read the CPU internal clock cycle counter.
 //
 
 class DLLSYMBOL X86Timer

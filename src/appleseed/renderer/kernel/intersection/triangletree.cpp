@@ -55,7 +55,7 @@
 #include "foundation/math/permutation.h"
 #include "foundation/math/treeoptimizer.h"
 #include "foundation/platform/system.h"
-#include "foundation/platform/timer.h"
+#include "foundation/platform/timers.h"
 #include "foundation/utility/makevector.h"
 #include "foundation/utility/memory.h"
 #include "foundation/utility/statistics.h"

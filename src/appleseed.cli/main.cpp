@@ -58,7 +58,7 @@
 #include "foundation/core/appleseed.h"
 #include "foundation/platform/path.h"
 #include "foundation/platform/thread.h"
-#include "foundation/platform/timer.h"
+#include "foundation/platform/timers.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/benchmark.h"
 #include "foundation/utility/filter.h"

@@ -31,7 +31,7 @@
 #define APPLESEED_STUDIO_MAINWINDOW_RENDERING_RENDERINGTIMER_H
 
 // appleseed.foundation headers.
-#include "foundation/platform/timer.h"
+#include "foundation/platform/timers.h"
 #include "foundation/utility/stopwatch.h"
 
 namespace appleseed {

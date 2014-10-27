@@ -52,7 +52,7 @@
 #ifdef APPLESEED_USE_SSE
 #include "foundation/platform/sse.h"
 #endif
-#include "foundation/platform/timer.h"
+#include "foundation/platform/timers.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/iostreamop.h"

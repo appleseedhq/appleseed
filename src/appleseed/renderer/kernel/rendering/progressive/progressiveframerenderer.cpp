@@ -47,7 +47,7 @@
 #include "foundation/image/image.h"
 #include "foundation/math/fixedsizehistory.h"
 #include "foundation/platform/thread.h"
-#include "foundation/platform/timer.h"
+#include "foundation/platform/timers.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/job.h"
 #include "foundation/utility/maplefile.h"

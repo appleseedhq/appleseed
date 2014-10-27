@@ -36,7 +36,7 @@
 #include "foundation/math/scalar.h"
 #include "foundation/math/split.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/timer.h"
+#include "foundation/platform/timers.h"
 #include "foundation/utility/stopwatch.h"
 
 // Standard headers.

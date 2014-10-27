@@ -493,7 +493,7 @@ set (foundation_platform_sources
     foundation/platform/system.h
     foundation/platform/thread.cpp
     foundation/platform/thread.h
-    foundation/platform/timer.h
+    foundation/platform/timers.h
     foundation/platform/types.h
     foundation/platform/win32stackwalker.cpp
     foundation/platform/win32stackwalker.h

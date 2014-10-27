@@ -32,7 +32,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/thread.h"
-#include "foundation/platform/timer.h"
+#include "foundation/platform/timers.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/benchmark/benchmarkresult.h"
 #include "foundation/utility/benchmark/ibenchmarkcase.h"

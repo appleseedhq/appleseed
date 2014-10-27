@@ -28,7 +28,7 @@
 //
 
 // appleseed.foundation headers.
-#include "foundation/platform/timer.h"
+#include "foundation/platform/timers.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/test.h"
 

@@ -32,7 +32,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
-#include "foundation/platform/timer.h"
+#include "foundation/platform/timers.h"
 #include "foundation/utility/stopwatch.h"
 #include "foundation/utility/test.h"
 
