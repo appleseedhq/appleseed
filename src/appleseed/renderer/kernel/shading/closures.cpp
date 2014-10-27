@@ -718,7 +718,7 @@ void register_appleseed_closures(OSL::ShadingSystem& shading_system)
                                    CLOSURE_FLOAT_PARAM(DisneyBRDFClosureParams, clearcoat_gloss),
                                    CLOSURE_FINISH_PARAM(DisneyBRDFClosureParams) } },
 
-        { "as_oren_nayar", OrenNayarID, { CLOSURE_VECTOR_PARAM(OrenNayarBRDFClosureParams, N),
+        { "oren_nayar", OrenNayarID, { CLOSURE_VECTOR_PARAM(OrenNayarBRDFClosureParams, N),
                                           CLOSURE_FLOAT_PARAM(OrenNayarBRDFClosureParams, roughness),
                                           CLOSURE_FINISH_PARAM(OrenNayarBRDFClosureParams) } },
 

@@ -480,30 +480,6 @@ string concat (string a, string b, string c, string d, string e, string f) {
 /*************************************************************/
 
 /********************************/
-// Standard OSL closures
-
-closure color background() BUILTIN;
-closure color debug(string tag) BUILTIN;
-
-closure color emission() BUILTIN;
-
-closure color reflection(normal N) BUILTIN;
-closure color refraction(normal N, float eta) BUILTIN;
-
-closure color microfacet(string distribution, normal N, vector T, float xalpha,
-                         float yalpha, float eta, int refract) BUILTIN;
-
-closure color microfacet(string distribution, normal N, float alpha, float eta, int refract)
-{
-    return microfacet(distribution, N, vector(0), alpha, alpha, eta, refract);
-}
-
-closure color diffuse(normal N) BUILTIN;
-closure color holdout() BUILTIN;
-closure color translucent(normal N) BUILTIN;
-closure color transparent() BUILTIN;
-
-/********************************/
 // appleseed specific closures
 
 closure color as_ashikhmin_shirley(
@@ -532,6 +508,32 @@ closure color as_disney(
         float  sheen_tint,
         float  clearcoat,
         float  clearcoat_gloss) BUILTIN;
+
+/********************************/
+// Standard OSL closures
+
+closure color background() BUILTIN;
+closure color debug(string tag) BUILTIN;
+
+closure color emission() BUILTIN;
+
+closure color reflection(normal N) BUILTIN;
+closure color refraction(normal N, float eta) BUILTIN;
+
+closure color microfacet(string distribution, normal N, vector T, float xalpha,
+                         float yalpha, float eta, int refract) BUILTIN;
+
+closure color microfacet(string distribution, normal N, float alpha, float eta, int refract)
+{
+    return microfacet(distribution, N, vector(0), alpha, alpha, eta, refract);
+}
+
+closure color diffuse(normal N) BUILTIN;
+closure color holdout() BUILTIN;
+closure color translucent(normal N) BUILTIN;
+closure color transparent() BUILTIN;
+
+closure color oren_nayar(normal N, float roughness) BUILTIN;
 
 // Renderer state
 int backfacing () BUILTIN;
