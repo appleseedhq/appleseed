@@ -1182,6 +1182,7 @@ set (renderer_meta_tests_sources
     renderer/meta/tests/test_sphericalcamera.cpp
     renderer/meta/tests/test_texturestore.cpp
     renderer/meta/tests/test_tracer.cpp
+    renderer/meta/tests/test_trackingspectrum.cpp
     renderer/meta/tests/test_transformsequence.cpp
     renderer/meta/tests/test_variationtracker.cpp
 )
@@ -1661,6 +1662,7 @@ source_group ("renderer\\modeling\\texture" FILES
 
 set (renderer_utility_sources
     renderer/utility/bbox.h
+    renderer/utility/iostreamop.h
     renderer/utility/messagecontext.cpp
     renderer/utility/messagecontext.h
     renderer/utility/paramarray.cpp
@@ -1668,6 +1670,7 @@ set (renderer_utility_sources
     renderer/utility/stochasticcast.h
     renderer/utility/testutils.cpp
     renderer/utility/testutils.h
+    renderer/utility/trackingspectrum.h
     renderer/utility/transformsequence.cpp
     renderer/utility/transformsequence.h
 )

@@ -218,8 +218,8 @@ namespace
             unit_square_to_angles(u, v, theta, phi);
             outgoing = Vector3d::unit_vector(theta, phi);
 
-            // Compute the spectral illuminance.
-            linear_rgb_illuminance_to_spectrum(payload.m_color, value);
+            // Return the emitted radiance.
+            value = payload.m_color;
 
             // Compute the probability density of this direction.
             probability = prob_xy * m_probability_scale / sin(theta);

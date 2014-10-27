@@ -41,6 +41,7 @@
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
+#include "foundation/image/regularspectrum.h"
 #include "foundation/math/fastmath.h"
 #include "foundation/math/sampling.h"
 #include "foundation/math/scalar.h"
@@ -412,7 +413,9 @@ namespace
             // Split sky color into luminance and chromaticity.
             Color3f xyY = ciexyz_to_ciexyy(ciexyz);
             float luminance = xyY[2];
-            daylight_ciexy_to_spectrum(xyY[0], xyY[1], value);
+            RegularSpectrum31f spectrum;
+            daylight_ciexy_to_spectrum(xyY[0], xyY[1], spectrum);
+            value = spectrum;
 
             // Apply luminance gamma and multiplier.
             if (m_uniform_values.m_luminance_gamma != 1.0)
@@ -421,10 +424,10 @@ namespace
 
             // Compute the final sky radiance.
             value *=
-                  luminance                                 // start with computed luminance
-                / sum_value(value * XYZCMFCIE19312Deg[1])   // normalize to unit luminance
-                * (1.0f / 683.0f)                           // convert lumens to Watts
-                * static_cast<float>(RcpPi);                // convert irradiance to radiance
+                  luminance                                         // start with computed luminance
+                / sum_value(value * Spectrum(XYZCMFCIE19312Deg[1])) // normalize to unit luminance
+                * (1.0f / 683.0f)                                   // convert lumens to Watts
+                * static_cast<float>(RcpPi);                        // convert irradiance to radiance
         }
 
         Vector3d shift(Vector3d v) const

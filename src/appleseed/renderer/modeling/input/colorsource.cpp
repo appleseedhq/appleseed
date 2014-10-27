@@ -93,6 +93,7 @@ void ColorSource::initialize_from_spectrum(
 
         m_scalar = static_cast<double>(values[0]);
 
+        m_spectrum.resize(Spectrum::Samples);
         spectral_values_to_spectrum(
             color_entity.get_wavelength_range()[0],
             color_entity.get_wavelength_range()[1],
@@ -112,78 +113,45 @@ void ColorSource::initialize_from_spectrum(
     }
 }
 
-namespace
-{
-    void linear_rgb_to_spectrum(
-        const InputFormat   input_format,
-        const Color3f&      linear_rgb,
-        Spectrum&           spectrum)
-    {
-        if (input_format == InputFormatSpectralReflectance ||
-            input_format == InputFormatSpectralReflectanceWithAlpha)
-        {
-            linear_rgb_reflectance_to_spectrum(
-                linear_rgb,
-                spectrum);
-        }
-        else
-        {
-            assert(input_format == InputFormatSpectralIlluminance ||
-                   input_format == InputFormatSpectralIlluminanceWithAlpha);
-            linear_rgb_illuminance_to_spectrum(
-                linear_rgb,
-                spectrum);
-        }
-    }
-}
-
 void ColorSource::initialize_from_3d_color(
     const ColorEntity&      color_entity,
     const InputFormat       input_format)
 {
+    Color3f color;
+
     const ColorValueArray& values = color_entity.get_values();
-
     if (values.size() == 1)
-        m_linear_rgb.set(values[0]);
+        color.set(values[0]);
     else if (values.size() == 3)
-        m_linear_rgb = Color3f(values[0], values[1], values[2]);
-    else m_linear_rgb.set(0.0f);
+        color = Color3f(values[0], values[1], values[2]);
+    else color.set(0.0f);
 
-    m_scalar = static_cast<double>(m_linear_rgb[0]);
+    m_scalar = static_cast<double>(color[0]);
+
+    switch (color_entity.get_color_space())
+    {
+      case ColorSpaceLinearRGB:
+        m_linear_rgb = color;
+        break;
+
+      case ColorSpaceSRGB:
+        m_linear_rgb = srgb_to_linear_rgb(color);
+        break;
+
+      case ColorSpaceCIEXYZ:
+        m_linear_rgb = ciexyz_to_linear_rgb(color);
+        break;
+
+      default:
+        assert(!"Invalid color space.");
+        break;
+    }
 
     if (input_format == InputFormatSpectralIlluminance ||
         input_format == InputFormatSpectralReflectance ||
         input_format == InputFormatSpectralIlluminanceWithAlpha ||
         input_format == InputFormatSpectralReflectanceWithAlpha)
-    {
-        switch (color_entity.get_color_space())
-        {
-          case ColorSpaceLinearRGB:
-            linear_rgb_to_spectrum(
-                input_format,
-                m_linear_rgb,
-                m_spectrum);
-            break;
-
-          case ColorSpaceSRGB:
-            linear_rgb_to_spectrum(
-                input_format,
-                srgb_to_linear_rgb(m_linear_rgb),
-                m_spectrum);
-            break;
-
-          case ColorSpaceCIEXYZ:
-            linear_rgb_to_spectrum(
-                input_format,
-                ciexyz_to_linear_rgb(m_linear_rgb),
-                m_spectrum);
-            break;
-
-          default:
-            assert(!"Invalid color space.");
-            break;
-        }
-    }
+        m_spectrum = m_linear_rgb;
     else m_spectrum.set(0.0f);
 }
 

@@ -49,6 +49,7 @@
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/scene.h"
+#include "renderer/utility/iostreamop.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.

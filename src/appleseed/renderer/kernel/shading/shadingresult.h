@@ -91,9 +91,6 @@ class ShadingResult
     // Transform main and AOV colors to the linear RGB color space.
     void transform_to_linear_rgb(const foundation::LightingConditions& lighting);
 
-    // Transform main and AOV colors to the spectral color space.
-    void transform_to_spectrum(const foundation::LightingConditions& lighting);
-
     // Composite this shading result over 'background'.
     // Both shading results must be expressed in linear RGB.
     void composite_over_linear_rgb(const ShadingResult& background);

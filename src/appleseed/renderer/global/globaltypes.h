@@ -30,9 +30,11 @@
 #ifndef APPLESEED_RENDERER_GLOBAL_GLOBALTYPES_H
 #define APPLESEED_RENDERER_GLOBAL_GLOBALTYPES_H
 
+// appleseed.renderer headers.
+#include "renderer/utility/trackingspectrum.h"
+
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
-#include "foundation/image/regularspectrum.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/ray.h"
 #include "foundation/math/rng.h"
@@ -58,7 +60,7 @@ typedef foundation::Ray<GScalar, 3> GRay3;
 typedef foundation::RayInfo<GScalar, 3> GRayInfo3;
 
 // Spectrum representation.
-typedef foundation::RegularSpectrum31f Spectrum;
+typedef TrackingSpectrum31f Spectrum;
 
 // Alpha channel representation.
 typedef foundation::Color<float, 1> Alpha;

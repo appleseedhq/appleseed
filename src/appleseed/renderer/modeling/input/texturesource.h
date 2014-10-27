@@ -39,7 +39,6 @@
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
-#include "foundation/image/colorspace.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
@@ -183,10 +182,7 @@ inline void TextureSource::evaluate(
 {
     const foundation::Color4f color = sample_texture(texture_cache, uv);
 
-    if (m_input_format == InputFormatSpectralReflectance ||
-        m_input_format == InputFormatSpectralReflectanceWithAlpha)
-        foundation::linear_rgb_reflectance_to_spectrum(color.rgb(), spectrum);
-    else foundation::linear_rgb_illuminance_to_spectrum(color.rgb(), spectrum);
+    spectrum = color.rgb();
 }
 
 inline void TextureSource::evaluate(
@@ -220,10 +216,7 @@ inline void TextureSource::evaluate(
 {
     const foundation::Color4f color = sample_texture(texture_cache, uv);
 
-    if (m_input_format == InputFormatSpectralReflectance ||
-        m_input_format == InputFormatSpectralReflectanceWithAlpha)
-        foundation::linear_rgb_reflectance_to_spectrum(color.rgb(), spectrum);
-    else foundation::linear_rgb_illuminance_to_spectrum(color.rgb(), spectrum);
+    spectrum = color.rgb();
 
     evaluate_alpha(color, alpha);
 }

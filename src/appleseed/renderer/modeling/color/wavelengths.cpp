@@ -69,28 +69,6 @@ namespace
 
 
 //
-// spectral representation for white.
-//
-
-Spectrum g_white_spectrum;
-
-namespace
-{
-    struct InitializeWhiteSpectrum
-    {
-        InitializeWhiteSpectrum()
-        {
-            linear_rgb_reflectance_to_spectrum(
-                Color3f(1.0f, 1.0f, 1.0f),
-                g_white_spectrum);            
-        }
-    };
-
-    InitializeWhiteSpectrum initialize_white_spectrum;
-}
-
-
-//
 // Utility functions implementation.
 //
 

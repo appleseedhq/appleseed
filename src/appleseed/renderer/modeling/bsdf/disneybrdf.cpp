@@ -75,8 +75,25 @@ namespace
         Spectrum&           result)
     {
         const float one_minus_t = 1.0f - t;
-        for (size_t i = 0; i < Spectrum::Samples; ++i)
-            result[i] = one_minus_t * a[i] + t * b[i];
+
+        if (a.size() == b.size())
+        {
+            result.resize(a.size());
+
+            for (size_t i = 0, e = a.size(); i < e; ++i)
+                result[i] = one_minus_t * a[i] + t * b[i];
+        }
+        else
+        {
+            result.resize(Spectrum::Samples);
+
+            Spectrum up_a, up_b;
+            Spectrum::upgrade(a, up_a);
+            Spectrum::upgrade(b, up_b);
+
+            for (size_t i = 0; i < Spectrum::Samples; ++i)
+                result[i] = one_minus_t * up_a[i] + t * up_b[i];
+        }
     }
 
 
@@ -217,7 +234,7 @@ namespace
             const double cos_ih = dot(incoming, h);
 
             mix_spectra(
-                g_white_spectrum,
+                Color3f(1.0f),
                 values->m_tint_color,
                 static_cast<float>(values->m_sheen_tint),
                 value);
@@ -725,10 +742,10 @@ namespace
             const double                    cos_oh,
             Spectrum&                       f) const
         {
-            mix_spectra(g_white_spectrum, values->m_tint_color, static_cast<float>(values->m_specular_tint), f);
+            mix_spectra(Color3f(1.0f), values->m_tint_color, static_cast<float>(values->m_specular_tint), f);
             f *= static_cast<float>(values->m_specular * 0.08);
             mix_spectra(f, values->m_base_color, static_cast<float>(values->m_metallic), f);
-            mix_spectra(f, g_white_spectrum, static_cast<float>(schlick_fresnel(cos_oh)), f);
+            mix_spectra(f, Color3f(1.0f), static_cast<float>(schlick_fresnel(cos_oh)), f);
         }
 
         double clearcoat_roughness(const DisneyBRDFInputValues* values) const
@@ -748,12 +765,14 @@ namespace
 void DisneyBRDFInputValues::precompute_tint_color()
 {
     const Color3f tint_xyz =
-        spectrum_to_ciexyz<float>(
-            g_std_lighting_conditions, m_base_color);
+        m_base_color.is_linear_rgb()
+            ? linear_rgb_to_ciexyz(Color3f(m_base_color[0], m_base_color[1], m_base_color[2]))
+            : spectrum_to_ciexyz<float>(g_std_lighting_conditions, m_base_color);
 
-    if (tint_xyz[1] > 0.0f)
-        ciexyz_reflectance_to_spectrum(tint_xyz / tint_xyz[1], m_tint_color);
-    else m_tint_color = g_white_spectrum;
+    m_tint_color =
+        tint_xyz[1] > 0.0f
+            ? ciexyz_to_linear_rgb(tint_xyz / tint_xyz[1])
+            : Color3f(1.0f);
 
     m_base_color_luminance = static_cast<double>(tint_xyz[1]);
 }

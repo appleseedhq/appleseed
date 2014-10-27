@@ -34,7 +34,6 @@
 #include "renderer/modeling/input/inputevaluator.h"
 
 // appleseed.foundation headers.
-#include "foundation/image/colorspace.h"
 #include "foundation/math/scalar.h"
 #include "foundation/utility/memory.h"
 #include "foundation/utility/otherwise.h"
@@ -232,11 +231,9 @@ void CompositeSurfaceClosure::process_closure_tree(
                         reinterpret_cast<const AshikhminShirleyBRDFClosureParams*>(c->data());
 
                     AshikminBRDFInputValues values;
-
-                    linear_rgb_reflectance_to_spectrum(Color3f(p->Cd), values.m_rd);
+                    values.m_rd = Color3f(p->Cd);
                     values.m_rd_multiplier = saturate(p->kd);
-
-                    linear_rgb_reflectance_to_spectrum(Color3f(p->Cs), values.m_rg);
+                    values.m_rg = Color3f(p->Cs);
                     values.m_rg_multiplier = saturate(p->ks);
                     values.m_fr_multiplier = 1.0;
                     values.m_nu = max(p->nu, 0.0f);
@@ -257,7 +254,7 @@ void CompositeSurfaceClosure::process_closure_tree(
                         reinterpret_cast<const DisneyBRDFClosureParams*>(c->data());
 
                     DisneyBRDFInputValues values;
-                    linear_rgb_reflectance_to_spectrum(Color3f(p->base_color), values.m_base_color);
+                    values.m_base_color = Color3f(p->base_color);
                     values.m_subsurface = saturate(p->subsurface);
                     values.m_metallic = saturate(p->metallic);
                     values.m_specular = max(p->specular, 0.0f);
@@ -325,7 +322,7 @@ void CompositeSurfaceClosure::process_closure_tree(
                                 Vector3d(p->T),
                                 values);
                         }
-                        else // Beckmann by default.
+                        else    // Beckmann by default
                         {
                             add_closure<OSLMicrofacetBRDFInputValues>(
                                 MicrofacetBeckmannReflectionID,
@@ -365,7 +362,7 @@ void CompositeSurfaceClosure::process_closure_tree(
                                 Vector3d(p->T),
                                 values);
                         }
-                        else // beckmann by default
+                        else    // Beckmann by default
                         {
                             add_closure<OSLMicrofacetBTDFInputValues>(
                                 MicrofacetBeckmannRefractionID,
@@ -420,7 +417,7 @@ void CompositeSurfaceClosure::process_closure_tree(
 
                     // Assume on of the mediums is air.
                     double from_ior, to_ior;
-                    if (p->eta > 1.0)
+                    if (p->eta > 1.0f)
                     {
                         from_ior = 1.0;
                         to_ior = 1.0f / p->eta;
@@ -535,12 +532,11 @@ void CompositeSurfaceClosure::do_add_closure(
         return;
 
     m_pdf_weights[m_num_closures] = w;
-    linear_rgb_reflectance_to_spectrum_unclamped(weight, m_weights[m_num_closures]);
+    m_weights[m_num_closures] = weight;
     m_normals[m_num_closures] = normalize(normal);
 
     // If the tangent is zero, ignore it.
-    // This can happen when using the isotropic microfacet
-    // closure overloads, for example.
+    // This can happen when using the isotropic microfacet closure overloads, for example.
     if (square_norm(tangent) == 0.0)
         has_tangent = false;
 
@@ -577,10 +573,7 @@ CompositeEmissionClosure::CompositeEmissionClosure(
     if (max_comp != 0.0f)
     {
         m_total_weight /= max_comp;
-
-        linear_rgb_illuminance_to_spectrum(
-            m_total_weight,
-            m_edf_values.m_radiance);
+        m_edf_values.m_radiance = m_total_weight;
         m_edf_values.m_radiance_multiplier = static_cast<double>(max_comp);
     }
     else

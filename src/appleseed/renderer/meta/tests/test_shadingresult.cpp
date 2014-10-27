@@ -113,60 +113,6 @@ TEST_SUITE(Renderer_Kernel_Shading_ShadingResult)
         EXPECT_EQ(0.0f, result.m_main.m_color[2]);
     }
 
-    TEST_CASE_F(TransformToSpectrum_FromLinearRGB, Fixture)
-    {
-        ShadingResult result;
-        result.m_color_space = ColorSpaceLinearRGB;
-        result.m_main.m_color[0] = 0.0f;
-        result.m_main.m_color[1] = 0.0f;
-        result.m_main.m_color[2] = 0.0f;
-
-        result.transform_to_spectrum(m_lighting_conditions);
-
-        EXPECT_EQ(ColorSpaceSpectral, result.m_color_space);
-        EXPECT_EQ(Spectrum(0.0f), result.m_main.m_color);
-    }
-
-    TEST_CASE_F(TransformToSpectrum_FromSRGB, Fixture)
-    {
-        ShadingResult result;
-        result.m_color_space = ColorSpaceSRGB;
-        result.m_main.m_color[0] = 0.0f;
-        result.m_main.m_color[1] = 0.0f;
-        result.m_main.m_color[2] = 0.0f;
-
-        result.transform_to_spectrum(m_lighting_conditions);
-
-        EXPECT_EQ(ColorSpaceSpectral, result.m_color_space);
-        EXPECT_EQ(Spectrum(0.0f), result.m_main.m_color);
-    }
-
-    TEST_CASE_F(TransformToSpectrum_FromCIEXYZ, Fixture)
-    {
-        ShadingResult result;
-        result.m_color_space = ColorSpaceCIEXYZ;
-        result.m_main.m_color[0] = 0.0f;
-        result.m_main.m_color[1] = 0.0f;
-        result.m_main.m_color[2] = 0.0f;
-
-        result.transform_to_spectrum(m_lighting_conditions);
-
-        EXPECT_EQ(ColorSpaceSpectral, result.m_color_space);
-        EXPECT_EQ(Spectrum(0.0f), result.m_main.m_color);
-    }
-
-    TEST_CASE_F(TransformToSpectrum_GivenSpectrum_DoesNothing, Fixture)
-    {
-        ShadingResult result;
-        result.m_color_space = ColorSpaceSpectral;
-        result.m_main.m_color.set(0.0f);
-
-        result.transform_to_spectrum(m_lighting_conditions);
-
-        EXPECT_EQ(ColorSpaceSpectral, result.m_color_space);
-        EXPECT_EQ(Spectrum(0.0f), result.m_main.m_color);
-    }
-
     TEST_CASE(CompositeOverLinearRGB_TenPercentOpaqueWhiteOverFullyTransparentBlack)
     {
         ShadingResult a;

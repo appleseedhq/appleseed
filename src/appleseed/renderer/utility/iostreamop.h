@@ -5,7 +5,6 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
 // Copyright (c) 2014 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,49 +26,41 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_SPECTRUM_WAVELENGTHS_H
-#define APPLESEED_RENDERER_MODELING_SPECTRUM_WAVELENGTHS_H
+#ifndef APPLESEED_RENDERER_UTILITY_IOSTREAMOP_H
+#define APPLESEED_RENDERER_UTILITY_IOSTREAMOP_H
 
 // appleseed.renderer headers.
-#include "renderer/global/globaltypes.h"
+#include "renderer/utility/trackingspectrum.h"
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
+// appleseed.foundation headers.
+#include "foundation/utility/iostreamop.h"
 
 // Standard headers.
 #include <cstddef>
+#include <iostream>
 
 namespace renderer
 {
 
 //
-// Wavelengths used throughout the spectral light simulation.
+// I/O of appleseed.renderer types from/to C++ streams.
 //
 
-const float LowWavelength = 400.0f;         // low wavelength, in nm
-const float HighWavelength = 700.0f;        // high wavelength, in nm
-extern Spectrum g_light_wavelengths;        // wavelengths, in nm
+// renderer::TrackingSpectrum.
+template <typename T, size_t N>
+std::ostream& operator<<(std::ostream& s, const TrackingSpectrum<T, N>& spectrum);
 
 
 //
-// Utility functions.
+// iostream operators implementation.
 //
 
-// Generate a set of regularly spaced wavelengths.
-DLLSYMBOL void generate_wavelengths(
-    const float     low_wavelength,
-    const float     high_wavelength,
-    const size_t    count,
-    float           wavelengths[]);
-
-// Convert a set of regularly spaced spectral values to the internal spectrum format.
-DLLSYMBOL void spectral_values_to_spectrum(
-    const float     low_wavelength,
-    const float     high_wavelength,
-    const size_t    input_spectrum_count,
-    const float     input_spectrum[],
-    float           output_spectrum[]);
+template <typename T, size_t N>
+std::ostream& operator<<(std::ostream& s, const TrackingSpectrum<T, N>& spectrum)
+{
+    return foundation::impl::write_sequence(s, spectrum, spectrum.size());
+}
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_SPECTRUM_WAVELENGTHS_H
+#endif  // !APPLESEED_RENDERER_UTILITY_IOSTREAMOP_H
