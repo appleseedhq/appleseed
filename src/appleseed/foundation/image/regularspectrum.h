@@ -139,6 +139,10 @@ template <typename T, size_t N> size_t max_index(const RegularSpectrum<T, N>& s)
 template <typename T, size_t N> size_t min_abs_index(const RegularSpectrum<T, N>& s);
 template <typename T, size_t N> size_t max_abs_index(const RegularSpectrum<T, N>& s);
 
+// Component-wise min/max of two spectra.
+template <typename T, size_t N> RegularSpectrum<T, N> component_wise_min(const RegularSpectrum<T, N>& lhs, const RegularSpectrum<T, N>& rhs);
+template <typename T, size_t N> RegularSpectrum<T, N> component_wise_max(const RegularSpectrum<T, N>& lhs, const RegularSpectrum<T, N>& rhs);
+
 // Return the sum of all values of a spectrum.
 template <typename T, size_t N> T sum_value(const RegularSpectrum<T, N>& s);
 
@@ -640,6 +644,7 @@ inline size_t min_index(const RegularSpectrum<T, N>& s)
     for (size_t i = 1; i < N; ++i)
     {
         const size_t x = s[i];
+
         if (value > x)
         {
             value = x;
@@ -659,6 +664,7 @@ inline size_t max_index(const RegularSpectrum<T, N>& s)
     for (size_t i = 1; i < N; ++i)
     {
         const size_t x = s[i];
+
         if (value < x)
         {
             value = x;
@@ -678,6 +684,7 @@ inline size_t min_abs_index(const RegularSpectrum<T, N>& s)
     for (size_t i = 1; i < N; ++i)
     {
         const size_t x = std::abs(s[i]);
+
         if (value > x)
         {
             value = x;
@@ -697,6 +704,7 @@ inline size_t max_abs_index(const RegularSpectrum<T, N>& s)
     for (size_t i = 1; i < N; ++i)
     {
         const size_t x = std::abs(s[i]);
+
         if (value < x)
         {
             value = x;
@@ -705,6 +713,28 @@ inline size_t max_abs_index(const RegularSpectrum<T, N>& s)
     }
 
     return index;
+}
+
+template <typename T, size_t N>
+inline RegularSpectrum<T, N> component_wise_min(const RegularSpectrum<T, N>& lhs, const RegularSpectrum<T, N>& rhs)
+{
+    RegularSpectrum<T, N> result;
+
+    for (size_t i = 0; i < N; ++i)
+        result[i] = std::min(lhs[i], rhs[i]);
+
+    return result;
+}
+
+template <typename T, size_t N>
+inline RegularSpectrum<T, N> component_wise_max(const RegularSpectrum<T, N>& lhs, const RegularSpectrum<T, N>& rhs)
+{
+    RegularSpectrum<T, N> result;
+
+    for (size_t i = 0; i < N; ++i)
+        result[i] = std::max(lhs[i], rhs[i]);
+
+    return result;
 }
 
 template <typename T, size_t N>
@@ -737,41 +767,5 @@ inline bool has_nan(const RegularSpectrum<T, N>& s)
 }
 
 }       // namespace foundation
-
-
-//
-// Overload std::min() and std::max() for component-wise min/max operations on spectra.
-//
-
-namespace std
-{
-
-template <typename T, size_t N>
-inline foundation::RegularSpectrum<T, N> min(
-    const foundation::RegularSpectrum<T, N>&    lhs,
-    const foundation::RegularSpectrum<T, N>&    rhs)
-{
-    foundation::RegularSpectrum<T, N> result;
-
-    for (size_t i = 0; i < N; ++i)
-        result[i] = min(lhs[i], rhs[i]);
-
-    return result;
-}
-
-template <typename T, size_t N>
-inline foundation::RegularSpectrum<T, N> max(
-    const foundation::RegularSpectrum<T, N>&    lhs,
-    const foundation::RegularSpectrum<T, N>&    rhs)
-{
-    foundation::RegularSpectrum<T, N> result;
-
-    for (size_t i = 0; i < N; ++i)
-        result[i] = max(lhs[i], rhs[i]);
-
-    return result;
-}
-
-}       // namespace std
 
 #endif  // !APPLESEED_FOUNDATION_IMAGE_REGULARSPECTRUM_H

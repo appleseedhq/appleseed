@@ -60,20 +60,20 @@ TEST_SUITE(Foundation_Image_Color)
         EXPECT_EQ(Color3d(1.5, -4.0, 1.0), clamp_high(c, 1.5));
     }
 
-    TEST_CASE(TestMin)
+    TEST_CASE(TestComponentWiseMin)
     {
         const Color3d a(2.0, -4.0, 1.0);
         const Color3d b(-3.0, -2.0, 0.0);
 
-        EXPECT_EQ(Color3d(-3.0, -4.0, 0.0), min(a, b));
+        EXPECT_EQ(Color3d(-3.0, -4.0, 0.0), component_wise_min(a, b));
     }
 
-    TEST_CASE(TestMax)
+    TEST_CASE(TestComponentWiseMax)
     {
         const Color3d a(2.0, -4.0, 1.0);
         const Color3d b(-3.0, -2.0, 0.0);
 
-        EXPECT_EQ(Color3d(2.0, -2.0, 1.0), max(a, b));
+        EXPECT_EQ(Color3d(2.0, -2.0, 1.0), component_wise_max(a, b));
     }
 
     TEST_CASE(TestAverageValue)

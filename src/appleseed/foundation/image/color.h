@@ -139,6 +139,10 @@ template <typename T, size_t N> size_t max_index(const Color<T, N>& c);
 template <typename T, size_t N> size_t min_abs_index(const Color<T, N>& c);
 template <typename T, size_t N> size_t max_abs_index(const Color<T, N>& c);
 
+// Component-wise min/max of two colors.
+template <typename T, size_t N> Color<T, N> component_wise_min(const Color<T, N>& lhs, const Color<T, N>& rhs);
+template <typename T, size_t N> Color<T, N> component_wise_max(const Color<T, N>& lhs, const Color<T, N>& rhs);
+
 // Return the average value of a color.
 template <typename T, size_t N> T average_value(const Color<T, N>& c);
 
@@ -720,6 +724,28 @@ inline size_t max_abs_index(const Color<T, N>& c)
 }
 
 template <typename T, size_t N>
+inline Color<T, N> component_wise_min(const Color<T, N>& lhs, const Color<T, N>& rhs)
+{
+    Color<T, N> result;
+
+    for (size_t i = 0; i < N; ++i)
+        result[i] = std::min(lhs[i], rhs[i]);
+
+    return result;
+}
+
+template <typename T, size_t N>
+inline Color<T, N> component_wise_max(const Color<T, N>& lhs, const Color<T, N>& rhs)
+{
+    Color<T, N> result;
+
+    for (size_t i = 0; i < N; ++i)
+        result[i] = std::max(lhs[i], rhs[i]);
+
+    return result;
+}
+
+template <typename T, size_t N>
 inline T average_value(const Color<T, N>& c)
 {
     T average = c[0];
@@ -954,37 +980,5 @@ inline const T& Color<T, 4>::operator[](const size_t i) const
 }
 
 }       // namespace foundation
-
-
-//
-// Overload std::min() and std::max() for component-wise min/max operations on colors.
-//
-
-namespace std
-{
-
-template <typename T, size_t N>
-inline foundation::Color<T, N> min(const foundation::Color<T, N>& lhs, const foundation::Color<T, N>& rhs)
-{
-    foundation::Color<T, N> result;
-
-    for (size_t i = 0; i < N; ++i)
-        result[i] = min(lhs[i], rhs[i]);
-
-    return result;
-}
-
-template <typename T, size_t N>
-inline foundation::Color<T, N> max(const foundation::Color<T, N>& lhs, const foundation::Color<T, N>& rhs)
-{
-    foundation::Color<T, N> result;
-
-    for (size_t i = 0; i < N; ++i)
-        result[i] = max(lhs[i], rhs[i]);
-
-    return result;
-}
-
-}       // namespace std
 
 #endif  // !APPLESEED_FOUNDATION_IMAGE_COLOR_H

@@ -309,20 +309,20 @@ TEST_SUITE(Foundation_Math_Vector)
         EXPECT_EQ(Vector3d(0.0, 1.0, 1.0), saturate(Vector3d(-1.0, 2.0, 3.0)));
     }
 
-    TEST_CASE(TestMin)
+    TEST_CASE(TestComponentWiseMin)
     {
         const Vector2d a(2.0, -4.0);
         const Vector2d b(-3.0, -2.0);
 
-        EXPECT_EQ(Vector2d(-3.0, -4.0), min(a, b));
+        EXPECT_EQ(Vector2d(-3.0, -4.0), component_wise_min(a, b));
     }
 
-    TEST_CASE(TestMax)
+    TEST_CASE(TestComponentWiseMax)
     {
         const Vector2d a(2.0, -4.0);
         const Vector2d b(-3.0, -2.0);
 
-        EXPECT_EQ(Vector2d(2.0, -2.0), max(a, b));
+        EXPECT_EQ(Vector2d(2.0, -2.0), component_wise_max(a, b));
     }
 
     TEST_CASE(TestMinValue)

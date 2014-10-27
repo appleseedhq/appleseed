@@ -175,6 +175,10 @@ template <typename T, size_t N> size_t max_index(const Vector<T, N>& v);
 template <typename T, size_t N> size_t min_abs_index(const Vector<T, N>& v);
 template <typename T, size_t N> size_t max_abs_index(const Vector<T, N>& v);
 
+// Component-wise min/max of two vectors.
+template <typename T, size_t N> Vector<T, N> component_wise_min(const Vector<T, N>& lhs, const Vector<T, N>& rhs);
+template <typename T, size_t N> Vector<T, N> component_wise_max(const Vector<T, N>& lhs, const Vector<T, N>& rhs);
+
 
 //
 // 2-dimensional vector class of arbitrary type.
@@ -841,6 +845,7 @@ inline size_t min_index(const Vector<T, N>& v)
     for (size_t i = 1; i < N; ++i)
     {
         const T x = v[i];
+
         if (value > x)
         {
             value = x;
@@ -860,6 +865,7 @@ inline size_t max_index(const Vector<T, N>& v)
     for (size_t i = 1; i < N; ++i)
     {
         const T x = v[i];
+
         if (value < x)
         {
             value = x;
@@ -879,6 +885,7 @@ inline size_t min_abs_index(const Vector<T, N>& v)
     for (size_t i = 1; i < N; ++i)
     {
         const T x = std::abs(v[i]);
+
         if (value > x)
         {
             value = x;
@@ -898,6 +905,7 @@ inline size_t max_abs_index(const Vector<T, N>& v)
     for (size_t i = 1; i < N; ++i)
     {
         const T x = std::abs(v[i]);
+
         if (value < x)
         {
             value = x;
@@ -906,6 +914,28 @@ inline size_t max_abs_index(const Vector<T, N>& v)
     }
 
     return index;
+}
+
+template <typename T, size_t N>
+inline Vector<T, N> component_wise_min(const Vector<T, N>& lhs, const Vector<T, N>& rhs)
+{
+    Vector<T, N> result;
+
+    for (size_t i = 0; i < N; ++i)
+        result[i] = std::min(lhs[i], rhs[i]);
+
+    return result;
+}
+
+template <typename T, size_t N>
+inline Vector<T, N> component_wise_max(const Vector<T, N>& lhs, const Vector<T, N>& rhs)
+{
+    Vector<T, N> result;
+
+    for (size_t i = 0; i < N; ++i)
+        result[i] = std::max(lhs[i], rhs[i]);
+
+    return result;
 }
 
 
@@ -1183,37 +1213,5 @@ inline const T& Vector<T, 4>::operator[](const size_t i) const
 }
 
 }       // namespace foundation
-
-
-//
-// Overload std::min() and std::max() for component-wise min/max operations on vectors.
-//
-
-namespace std
-{
-
-template <typename T, size_t N>
-inline foundation::Vector<T, N> min(const foundation::Vector<T, N>& lhs, const foundation::Vector<T, N>& rhs)
-{
-    foundation::Vector<T, N> result;
-
-    for (size_t i = 0; i < N; ++i)
-        result[i] = min(lhs[i], rhs[i]);
-
-    return result;
-}
-
-template <typename T, size_t N>
-inline foundation::Vector<T, N> max(const foundation::Vector<T, N>& lhs, const foundation::Vector<T, N>& rhs)
-{
-    foundation::Vector<T, N> result;
-
-    for (size_t i = 0; i < N; ++i)
-        result[i] = max(lhs[i], rhs[i]);
-
-    return result;
-}
-
-}       // namespace std
 
 #endif  // !APPLESEED_FOUNDATION_MATH_VECTOR_H
