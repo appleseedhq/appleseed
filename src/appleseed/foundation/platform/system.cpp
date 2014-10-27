@@ -32,7 +32,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/thread.h"
-#include "foundation/platform/x86timer.h"
 #include "foundation/utility/log.h"
 #include "foundation/utility/string.h"
 
@@ -117,11 +116,6 @@ size_t System::get_logical_cpu_core_count()
         static_cast<size_t>(boost::thread::hardware_concurrency());
 
     return concurrency > 1 ? concurrency : 1;
-}
-
-uint64 System::get_cpu_core_frequency(const uint32 calibration_time_ms)
-{
-    return X86Timer(calibration_time_ms).frequency();
 }
 
 // ------------------------------------------------------------------------------------------------

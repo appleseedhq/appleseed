@@ -64,9 +64,6 @@ class DLLSYMBOL System
     // Return the number of logical CPU cores available in the system.
     static size_t get_logical_cpu_core_count();
 
-    // Return the frequency, in Hz, of a given CPU core at this instant.
-    static uint64 get_cpu_core_frequency(const uint32 calibration_time_ms = 10);
-
     //
     // CPU caches.
     //
