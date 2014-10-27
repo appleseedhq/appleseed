@@ -93,7 +93,7 @@ CommandLineHandler::CommandLineHandler()
     parser().add_option_handler(&m_output);
 
     m_continuous_saving.add_name("--continuous-saving");
-    m_continuous_saving.set_description("write each tile to disk as soon as it is rendered");
+    m_continuous_saving.set_description("write tiles to disk as soon as they are rendered");
     parser().add_option_handler(&m_continuous_saving);
 
     m_resolution.add_name("--resolution");
