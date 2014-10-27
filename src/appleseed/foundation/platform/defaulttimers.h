@@ -66,7 +66,7 @@ class DLLSYMBOL DefaultProcessorTimer
 
 
 //
-// Default wallclock-time timer, based on std::gettimeofday() on POSIX
+// Default wallclock-time timer, based on gettimeofday() on POSIX
 // platforms, _ftime() on Windows and std::time() on other platforms.
 //
 
