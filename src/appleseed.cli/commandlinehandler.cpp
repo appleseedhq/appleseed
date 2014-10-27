@@ -93,7 +93,7 @@ CommandLineHandler::CommandLineHandler()
     parser().add_option_handler(&m_output);
 
     m_continuous_saving.add_name("--continuous-saving");
-    m_continuous_saving.set_description("write each tile to disk as soon as it is rendered");
+    m_continuous_saving.set_description("write tiles to disk as soon as they are rendered");
     parser().add_option_handler(&m_continuous_saving);
 
     m_resolution.add_name("--resolution");
@@ -112,10 +112,16 @@ CommandLineHandler::CommandLineHandler()
 
     m_samples.add_name("--samples");
     m_samples.add_name("-s");
-    m_samples.set_description("set the minimum and maximum sampling rate");
+    m_samples.set_description("set the minimum and maximum numbers of samples per pixel");
     m_samples.set_syntax("min max");
     m_samples.set_exact_value_count(2);
     parser().add_option_handler(&m_samples);
+
+    m_passes.add_name("--passes");
+    m_passes.set_description("set the number of rendering passes");
+    m_passes.set_syntax("n");
+    m_passes.set_exact_value_count(1);
+    parser().add_option_handler(&m_passes);
 
     m_override_shading.add_name("--override-shading");
     m_override_shading.set_description("override shading with a diagnostic shader");
@@ -135,7 +141,7 @@ CommandLineHandler::CommandLineHandler()
 
     m_hrmanpipe_display.add_name("--hrmanpipe");
     m_hrmanpipe_display.set_description("use Houdini's hrmanpipe; the argument is the socket number to pass to hrmanpipe");
-    m_hrmanpipe_display.set_syntax("n");
+    m_hrmanpipe_display.set_syntax("socket");
     m_hrmanpipe_display.set_exact_value_count(1);
     parser().add_option_handler(&m_hrmanpipe_display);
 
