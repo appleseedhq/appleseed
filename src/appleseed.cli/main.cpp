@@ -422,6 +422,16 @@ namespace
         }
     }
 
+    void apply_passes_command_line_option(ParamArray& params)
+    {
+        if (g_cl.m_passes.is_set())
+        {
+            params.insert_path(
+                "generic_frame_renderer.passes",
+                g_cl.m_passes.values()[0]);
+        }
+    }
+
     void apply_select_object_instances_command_line_option(Assembly& assembly, const RegExFilter& filter)
     {
         static const char* ColorName = "opaque_black-75AB13E8-D5A2-4D27-A64E-4FC41B55A272";
@@ -519,6 +529,9 @@ namespace
 
         // Apply --samples option.
         apply_samples_command_line_option(params);
+
+        // Apply --passes option.
+        apply_passes_command_line_option(params);
 
         // Apply --override-shading option.
         if (g_cl.m_override_shading.is_set())
