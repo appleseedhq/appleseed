@@ -105,6 +105,9 @@ class DLLSYMBOL AssemblyInstance
     const Material* get_front_material_override() const;
     const Material* get_back_material_override() const;
 
+    const char* get_front_material_override_name() const;
+    const char* get_back_material_override_name() const;
+
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
     bool on_frame_begin(
