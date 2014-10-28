@@ -50,6 +50,7 @@
 // Forward declarations.
 namespace foundation    { class AbortSwitch; }
 namespace renderer      { class Assembly; }
+namespace renderer      { class Material; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 
@@ -91,6 +92,19 @@ class DLLSYMBOL AssemblyInstance
     // Return the assembly bound to this instance.
     Assembly& get_assembly() const;
 
+    // Material override binding.
+    void unbind_material_overrides();
+    void bind_material_overrides(const MaterialContainer& materials);
+    void check_material_overrides();
+
+    // Returns true if the assembly instance has material overrides.
+    bool has_material_overrides() const;
+
+    // Return the material overrides of this assembly
+    // instance or null if not present.
+    const Material* get_front_material_override() const;
+    const Material* get_back_material_override() const;
+
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
     bool on_frame_begin(
@@ -109,11 +123,16 @@ class DLLSYMBOL AssemblyInstance
     Assembly*                       m_assembly;
     TransformSequence               m_transform_sequence;
 
+    const Material*                 m_front_material_override;
+    const Material*                 m_back_material_override;
+
     // Constructor.
     AssemblyInstance(
         const char*                 name,
         const ParamArray&           params,
-        const char*                 assembly_name);
+        const char*                 assembly_name,
+        const char*                 front_material_override = 0,
+        const char*                 back_material_override = 0);
 
     // Destructor.
     ~AssemblyInstance();
@@ -131,7 +150,9 @@ class DLLSYMBOL AssemblyInstanceFactory
     static foundation::auto_release_ptr<AssemblyInstance> create(
         const char*                 name,
         const ParamArray&           params,
-        const char*                 assembly_name);
+        const char*                 assembly_name,
+        const char*                 front_material_override = 0,
+        const char*                 back_material_override = 0);
 };
 
 
@@ -154,6 +175,21 @@ inline Assembly& AssemblyInstance::get_assembly() const
     assert(m_assembly);
 
     return *m_assembly;
+}
+
+inline bool AssemblyInstance::has_material_overrides() const
+{
+    return m_front_material_override != 0 || m_back_material_override != 0;
+}
+
+inline const Material* AssemblyInstance::get_front_material_override() const
+{
+    return m_front_material_override;
+}
+
+inline const Material* AssemblyInstance::get_back_material_override() const
+{
+    return m_back_material_override;
 }
 
 }       // namespace renderer

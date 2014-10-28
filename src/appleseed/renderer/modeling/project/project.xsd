@@ -218,6 +218,9 @@
                 </xsd:sequence>
                 <xsd:attribute name="name" type="xsd:string" use="required"/>
                 <xsd:attribute name="assembly" type="xsd:string" use="required"/>
+                <xsd:attribute name="material_override" type="xsd:string" use="optional"/>
+                <xsd:attribute name="front_material_override" type="xsd:string" use="optional"/>
+                <xsd:attribute name="back_material_override" type="xsd:string" use="optional"/>
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>

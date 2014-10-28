@@ -1757,6 +1757,15 @@ namespace
 
             m_name = get_value(attrs, "name");
             m_assembly = get_value(attrs, "assembly");
+
+            m_front_material_override = get_value(attrs, "material_override", "");
+            m_back_material_override = m_front_material_override;
+
+            if (m_front_material_override.empty())
+                m_front_material_override = get_value(attrs, "front_material_override", "");
+
+            if (m_back_material_override.empty())
+                m_back_material_override = get_value(attrs, "back_material_override", "");
         }
 
         virtual void end_element() OVERRIDE
@@ -1767,7 +1776,9 @@ namespace
                 AssemblyInstanceFactory::create(
                     m_name.c_str(),
                     m_params,
-                    m_assembly.c_str());
+                    m_assembly.c_str(),
+                    m_front_material_override.empty() ? 0 : m_front_material_override.c_str(),
+                    m_back_material_override.empty() ? 0 : m_back_material_override.c_str());
 
             copy_transform_sequence_to(m_assembly_instance->transform_sequence());
         }
@@ -1784,6 +1795,8 @@ namespace
         auto_release_ptr<AssemblyInstance>  m_assembly_instance;
         string                              m_name;
         string                              m_assembly;
+        string                              m_front_material_override;
+        string                              m_back_material_override;
     };
 
 

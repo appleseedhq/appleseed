@@ -613,18 +613,31 @@ inline const Material* ShadingPoint::get_material() const
 
         m_material = 0;
 
-        // Proceed with retrieving the material only if the hit primitive has one.
-        if (m_primitive_pa != Triangle::None)
+        // First, try the assembly instance material overrides, if any.
+        if (get_assembly_instance().has_material_overrides())
         {
-            // Retrieve material indices from the object instance.
-            const MaterialArray& materials =
+            m_material =
                 get_side() == ObjectInstance::BackSide
-                    ? m_object_instance->get_back_materials()
-                    : m_object_instance->get_front_materials();
+                    ? get_assembly_instance().get_back_material_override()
+                    : get_assembly_instance().get_front_material_override();
+        }
 
-            // Fetch the material.
-            if (static_cast<size_t>(m_primitive_pa) < materials.size())
-                m_material = materials[m_primitive_pa];
+        // Now, try the object instance materials if needed.
+        if (m_material == 0)
+        {
+            // Proceed with retrieving the material only if the hit primitive has one.
+            if (m_primitive_pa != Triangle::None)
+            {
+                // Retrieve material indices from the object instance.
+                const MaterialArray& materials =
+                    get_side() == ObjectInstance::BackSide
+                        ? m_object_instance->get_back_materials()
+                        : m_object_instance->get_front_materials();
+
+                // Fetch the material.
+                if (static_cast<size_t>(m_primitive_pa) < materials.size())
+                    m_material = materials[m_primitive_pa];
+            }
         }
 
         // The material at the intersection point is now available.
