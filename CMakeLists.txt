@@ -56,7 +56,7 @@ endif ()
 project (appleseed)
 
 # Setup the path for our FindPackage modules.
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/src/cmake/Modules)
+set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/src/cmake/Modules)
 
 
 #--------------------------------------------------------------------------------------------------
@@ -129,26 +129,29 @@ endif ()
 
 
 #--------------------------------------------------------------------------------------------------
-# Version information.
+# Extract version string and version components from Git repository.
 #--------------------------------------------------------------------------------------------------
 
-if (git_tag)
-    # The presence of this variable is currently used as an indication that this is not a git
-    # repository and hence the git command will fail. This variable should be set (via CMake
-    # command line option) to the following versioning pattern: MAJOR.MINOR.PATCH to satisfy
-    # the parsing later on in the file.
-    #
-    # This is just an interim solution and should be replaced by a proper version header file
-    # approach as outlined by Esteban.
-else ()
-    # Extract git tag.
-    exec_program (
-        ${git_command}
-        ${CMAKE_CURRENT_SOURCE_DIR}
-        ARGS "describe --long"
-        OUTPUT_VARIABLE git_tag
-    )
+# Extract version string from Git repository.
+execute_process (
+    COMMAND ${git_command} describe --long
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    RESULT_VARIABLE git_describe_result
+    OUTPUT_VARIABLE appleseed_version_string
+    ERROR_QUIET
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+# Use dummy version string if 'git describe' command failed (e.g. when building from a source dump).
+if (NOT ${git_describe_result} EQUAL 0)
+    set (appleseed_version_string "0.0.0")
 endif ()
+
+# Extract version components from version string.
+string (REGEX MATCHALL "[0-9]+" appleseed_version_components ${appleseed_version_string})
+list (GET appleseed_version_components 0 appleseed_version_major)
+list (GET appleseed_version_components 1 appleseed_version_minor)
+list (GET appleseed_version_components 2 appleseed_version_patch)
 
 
 #--------------------------------------------------------------------------------------------------
@@ -320,23 +323,13 @@ endif ()
 
 
 #--------------------------------------------------------------------------------------------------
-# Extract version from git.
-#--------------------------------------------------------------------------------------------------
-
-string (REGEX MATCHALL "[0-9]+" APPLESEED_VERSION_COMPONENTS ${git_tag})
-list (GET APPLESEED_VERSION_COMPONENTS 0 APPLESEED_VERSION_MAJOR)
-list (GET APPLESEED_VERSION_COMPONENTS 1 APPLESEED_VERSION_MINOR)
-list (GET APPLESEED_VERSION_COMPONENTS 2 APPLESEED_VERSION_PATCH)
-
-
-#--------------------------------------------------------------------------------------------------
 # Preprocessor definitions.
 #--------------------------------------------------------------------------------------------------
 
 # Definitions common to all configurations.
 set (preprocessor_definitions_common
     ${preprocessor_definitions_common}
-    APPLESEED_VERSION_STRING="${git_tag}"
+    APPLESEED_VERSION_STRING="${appleseed_version_string}"
 )
 if (USE_QMC_SAMPLER)
     set (preprocessor_definitions_common
@@ -682,8 +675,8 @@ endif ()
 #--------------------------------------------------------------------------------------------------
 
 set (CPACK_PACKAGE_VENDOR "appleseedhq")
-set (CPACK_PACKAGE_VERSION_MAJOR ${APPLESEED_VERSION_MAJOR})
-set (CPACK_PACKAGE_VERSION_MINOR ${APPLESEED_VERSION_MINOR})
-set (CPACK_PACKAGE_VERSION_PATCH ${APPLESEED_VERSION_PATCH})
+set (CPACK_PACKAGE_VERSION_MAJOR ${appleseed_version_major})
+set (CPACK_PACKAGE_VERSION_MINOR ${appleseed_version_minor})
+set (CPACK_PACKAGE_VERSION_PATCH ${appleseed_version_patch})
 
 include (CPack)
