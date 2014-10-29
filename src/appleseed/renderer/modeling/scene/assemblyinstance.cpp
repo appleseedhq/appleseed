@@ -197,32 +197,12 @@ void AssemblyInstance::check_material_overrides()
             impl->m_back_material_override.c_str());
     }
 
-    if (m_front_material_override && m_front_material_override->has_emission())
-    {
-        RENDERER_LOG_WARNING(
-            "assembly instance \"%s\" light emission not supported in override material \"%s\". Ignoring override.",
-            get_name(),
-            impl->m_front_material_override.c_str());
-
-        m_front_material_override = 0;
-    }
-
     if (m_front_material_override && m_front_material_override->has_alpha_map())
     {
         RENDERER_LOG_WARNING(
             "assembly instance \"%s\" alpha maps can give unexpected results in override material \"%s\".",
             get_name(),
             impl->m_front_material_override.c_str());
-    }
-
-    if (m_back_material_override && m_back_material_override->has_emission())
-    {
-        RENDERER_LOG_WARNING(
-            "assembly instance \"%s\" light emission not supported in override material \"%s\". Ignoring override.",
-            get_name(),
-            impl->m_back_material_override.c_str());
-
-        m_back_material_override = 0;
     }
 
     if (m_back_material_override && m_back_material_override->has_alpha_map())
