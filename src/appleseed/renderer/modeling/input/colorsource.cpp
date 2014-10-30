@@ -101,9 +101,7 @@ void ColorSource::initialize_from_spectrum(
             &values[0],
             &m_spectrum[0]);
 
-        m_linear_rgb =
-            ciexyz_to_linear_rgb(
-                spectrum_to_ciexyz<float>(lighting_conditions, m_spectrum));
+        m_linear_rgb = m_spectrum.convert_to_rgb(lighting_conditions);
     }
     else
     {

@@ -765,8 +765,8 @@ namespace
 void DisneyBRDFInputValues::precompute_tint_color()
 {
     const Color3f tint_xyz =
-        m_base_color.is_linear_rgb()
-            ? linear_rgb_to_ciexyz(Color3f(m_base_color[0], m_base_color[1], m_base_color[2]))
+        m_base_color.is_rgb()
+            ? linear_rgb_to_ciexyz(m_base_color.rgb())
             : spectrum_to_ciexyz<float>(g_std_lighting_conditions, m_base_color);
 
     m_tint_color =

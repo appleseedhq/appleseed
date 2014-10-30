@@ -80,7 +80,7 @@ class TrackingSpectrum
     TrackingSpectrum& operator=(const foundation::RegularSpectrum<ValueType, N>& rhs);
 
     // Return true if this spectrum currently stores a linear RGB value.
-    bool is_linear_rgb() const;
+    bool is_rgb() const;
 
     // Return true if this spectrul currently stores a spectral value.
     bool is_spectral() const;
@@ -93,6 +93,14 @@ class TrackingSpectrum
 
     // Set all components to a given value.
     void set(const ValueType val);
+
+    // Access the spectrum as a linear RGB color.
+    foundation::Color<ValueType, 3>& rgb();
+    const foundation::Color<ValueType, 3>& rgb() const;
+
+    // Convert the spectrum to a linear RGB color.
+    foundation::Color<ValueType, 3> convert_to_rgb(
+        const foundation::LightingConditions& lighting_conditions) const;
 
     // Unchecked array subscripting.
     ValueType& operator[](const size_t i);
@@ -289,7 +297,7 @@ inline TrackingSpectrum<T, N>& TrackingSpectrum<T, N>::operator=(const foundatio
 }
 
 template <typename T, size_t N>
-inline bool TrackingSpectrum<T, N>::is_linear_rgb() const
+inline bool TrackingSpectrum<T, N>::is_rgb() const
 {
     return m_size == 3;
 }
@@ -344,6 +352,27 @@ FORCE_INLINE void TrackingSpectrum<float, 31>::set(const float val)
 #endif  // APPLESEED_USE_SSE
 
 template <typename T, size_t N>
+inline foundation::Color<T, 3>& TrackingSpectrum<T, N>::rgb()
+{
+    return reinterpret_cast<foundation::Color<T, 3>&>(m_samples);
+}
+
+template <typename T, size_t N>
+inline const foundation::Color<T, 3>& TrackingSpectrum<T, N>::rgb() const
+{
+    return reinterpret_cast<const foundation::Color<T, 3>&>(m_samples);
+}
+
+template <typename T, size_t N>
+inline foundation::Color<T, 3> TrackingSpectrum<T, N>::convert_to_rgb(
+    const foundation::LightingConditions& lighting_conditions) const
+{
+    return
+        foundation::ciexyz_to_linear_rgb(
+            foundation::spectrum_to_ciexyz<float>(lighting_conditions, *this));
+}
+
+template <typename T, size_t N>
 inline T& TrackingSpectrum<T, N>::operator[](const size_t i)
 {
     assert(i < m_size);
@@ -362,7 +391,7 @@ inline void TrackingSpectrum<T, N>::upgrade(
     const TrackingSpectrum& source,
     TrackingSpectrum&       dest)
 {
-    if (source.is_linear_rgb())
+    if (source.is_rgb())
     {
         dest.m_size = N;
 
