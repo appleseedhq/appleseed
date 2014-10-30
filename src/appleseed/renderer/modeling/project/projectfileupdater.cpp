@@ -46,7 +46,6 @@
 #include "renderer/modeling/environmentshader/environmentshader.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/input/colorsource.h"
-#include "renderer/modeling/input/inputformat.h"
 #include "renderer/modeling/light/directionallight.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/light/pointlight.h"
@@ -514,7 +513,7 @@ namespace
 
                     if (color)
                     {
-                        const ColorSource source(*color, InputFormatScalar);
+                        const ColorSource source(*color);
 
                         double mdf_param_value;
                         source.evaluate_uniform(mdf_param_value);

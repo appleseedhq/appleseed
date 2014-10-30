@@ -32,7 +32,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/modeling/input/inputformat.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/scene/textureinstance.h"
 
@@ -65,8 +64,7 @@ class TextureSource
     // Constructor.
     TextureSource(
         const foundation::UniqueID          assembly_uid,
-        const TextureInstance&              texture_instance,
-        const InputFormat                   input_format);
+        const TextureInstance&              texture_instance);
 
     // Retrieve the texture instance used by this source.
     const TextureInstance& get_texture_instance() const;
@@ -108,7 +106,6 @@ class TextureSource
     const foundation::UniqueID              m_texture_uid;
     const foundation::CanvasProperties      m_texture_props;
     const foundation::Transformd            m_texture_transform;
-    const InputFormat                       m_input_format;
     const double                            m_scalar_canvas_width;
     const double                            m_scalar_canvas_height;
     const double                            m_max_x;
