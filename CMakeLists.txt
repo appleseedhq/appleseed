@@ -127,13 +127,6 @@ else ()
     set (is_x86 FALSE)
 endif ()
 
-# Extension of executable files.
-if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    set (exe_ext ".exe")
-else ()
-    set (exe_ext "")
-endif ()
-
 
 #--------------------------------------------------------------------------------------------------
 # Extract version string and version components from Git repository.
