@@ -66,13 +66,11 @@ namespace
     struct EmptyBenchmarkCase
       : public IBenchmarkCase
     {
-        // Return the name of the benchmark case.
         virtual const char* get_name() const
         {
             return "Empty";
         }
 
-        // Run the benchmark case.
         virtual void run()
         {
         }
