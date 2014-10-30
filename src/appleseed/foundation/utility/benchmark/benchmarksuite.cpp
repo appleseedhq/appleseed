@@ -81,7 +81,11 @@ namespace
 
 struct BenchmarkSuite::Impl
 {
+#if APPLESEED_X86
     typedef Stopwatch<X86Timer> StopwatchType;
+#else
+    typedef Stopwatch<DefaultProcessorTimer> StopwatchType;
+#endif
 
     string                          m_name;
     vector<IBenchmarkCaseFactory*>  m_factories;

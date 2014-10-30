@@ -32,9 +32,11 @@
 #include "foundation/platform/types.h"
 #include "foundation/utility/test.h"
 
-TEST_SUITE(Foundation_Platform_Timer)
+using namespace foundation;
+
+TEST_SUITE(Foundation_Platform_Timers)
 {
-    using namespace foundation;
+#ifdef APPLESEED_X86
 
     TEST_CASE(TestX86TimerFrequency)
     {
@@ -49,6 +51,8 @@ TEST_SUITE(Foundation_Platform_Timer)
         const uint64 val2 = timer.read();
         EXPECT_TRUE(val1 <= val2);
     }
+
+#endif
 
     TEST_CASE(TestDefaultProcessorTimerFrequency)
     {
