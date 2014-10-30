@@ -64,10 +64,8 @@ BENCHMARK_SUITE(Foundation_Image_ColorSpace)
 
     struct SpectrumFixture
     {
-        typedef RegularSpectrum<float, 31> SpectrumType;
-
         const LightingConditions    m_lighting_conditions;
-        SpectrumType                m_input;
+        RegularSpectrum31f          m_input;
         Color3f                     m_output;
 
         SpectrumFixture()
@@ -75,7 +73,7 @@ BENCHMARK_SUITE(Foundation_Image_ColorSpace)
         {
             MersenneTwister rng;
 
-            for (size_t w = 0; w < SpectrumType::Samples; ++w)
+            for (size_t w = 0; w < RegularSpectrum31f::Samples; ++w)
                 m_input[w] = rand_float1(rng);
         }
     };

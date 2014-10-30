@@ -120,11 +120,11 @@ else ()
                          "Edit ${CMAKE_CURRENT_LIST_FILE} to add support for it.")
 endif ()
 
-# Extension of executable files.
-if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    set (exe_ext ".exe")
+# Detect x86-based platforms.
+if (CMAKE_SYSTEM_PROCESSOR MATCHES "(x86)|(X86)|(amd64)|(AMD64)")
+    set (is_x86 TRUE)
 else ()
-    set (exe_ext "")
+    set (is_x86 FALSE)
 endif ()
 
 
@@ -331,6 +331,12 @@ set (preprocessor_definitions_common
     ${preprocessor_definitions_common}
     APPLESEED_VERSION_STRING="${appleseed_version_string}"
 )
+if (is_x86)
+    set (preprocessor_definitions_common
+        ${preprocessor_definitions_common}
+        APPLESEED_X86
+    )
+endif ()
 if (USE_QMC_SAMPLER)
     set (preprocessor_definitions_common
         ${preprocessor_definitions_common}
@@ -671,7 +677,7 @@ endif ()
 
 
 #--------------------------------------------------------------------------------------------------
-# Packaging.
+# Packaging with CPack.
 #--------------------------------------------------------------------------------------------------
 
 set (CPACK_PACKAGE_VENDOR "appleseedhq")

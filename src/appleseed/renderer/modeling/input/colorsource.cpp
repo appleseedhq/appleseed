@@ -52,16 +52,14 @@ namespace renderer
 // ColorSource class implementation.
 //
 
-ColorSource::ColorSource(
-    const ColorEntity&      color_entity,
-    const InputFormat       input_format)
+ColorSource::ColorSource(const ColorEntity& color_entity)
   : Source(true)
   , m_color_entity(color_entity)
 {
     // Retrieve the color values.
     if (color_entity.get_color_space() == ColorSpaceSpectral)
         initialize_from_spectrum(color_entity);
-    else initialize_from_3d_color(color_entity, input_format);
+    else initialize_from_color3(color_entity);
 
     // Apply the multiplier to the color values.
     const float multiplier = color_entity.get_multiplier();
@@ -79,43 +77,37 @@ uint64 ColorSource::compute_signature() const
     return m_color_entity.compute_signature();
 }
 
-void ColorSource::initialize_from_spectrum(
-    const ColorEntity&      color_entity)
+void ColorSource::initialize_from_spectrum(const ColorEntity& color_entity)
 {
     const ColorValueArray& values = color_entity.get_values();
 
-    if (!values.empty())
-    {
-        // todo: this should be user-settable.
-        const LightingConditions lighting_conditions(
-            IlluminantCIED65,
-            XYZCMFCIE196410Deg);
-
-        m_scalar = static_cast<double>(values[0]);
-
-        m_spectrum.resize(Spectrum::Samples);
-        spectral_values_to_spectrum(
-            color_entity.get_wavelength_range()[0],
-            color_entity.get_wavelength_range()[1],
-            values.size(),
-            &values[0],
-            &m_spectrum[0]);
-
-        m_linear_rgb =
-            ciexyz_to_linear_rgb(
-                spectrum_to_ciexyz<float>(lighting_conditions, m_spectrum));
-    }
-    else
+    if (values.empty())
     {
         m_scalar = 0.0;
         m_linear_rgb.set(0.0f);
         m_spectrum.set(0.0f);
+        return;
     }
+
+    m_scalar = static_cast<double>(values[0]);
+
+    m_spectrum.resize(Spectrum::Samples);
+    spectral_values_to_spectrum(
+        color_entity.get_wavelength_range()[0],
+        color_entity.get_wavelength_range()[1],
+        values.size(),
+        &values[0],
+        &m_spectrum[0]);
+
+    // todo: this should be user-settable.
+    const LightingConditions lighting_conditions(
+        IlluminantCIED65,
+        XYZCMFCIE196410Deg);
+
+    m_linear_rgb = m_spectrum.convert_to_rgb(lighting_conditions);
 }
 
-void ColorSource::initialize_from_3d_color(
-    const ColorEntity&      color_entity,
-    const InputFormat       input_format)
+void ColorSource::initialize_from_color3(const ColorEntity& color_entity)
 {
     Color3f color;
 
@@ -124,7 +116,13 @@ void ColorSource::initialize_from_3d_color(
         color.set(values[0]);
     else if (values.size() == 3)
         color = Color3f(values[0], values[1], values[2]);
-    else color.set(0.0f);
+    else
+    {
+        m_scalar = 0.0;
+        m_linear_rgb.set(0.0f);
+        m_spectrum.set(0.0f);
+        return;
+    }
 
     m_scalar = static_cast<double>(color[0]);
 
@@ -147,12 +145,7 @@ void ColorSource::initialize_from_3d_color(
         break;
     }
 
-    if (input_format == InputFormatSpectralIlluminance ||
-        input_format == InputFormatSpectralReflectance ||
-        input_format == InputFormatSpectralIlluminanceWithAlpha ||
-        input_format == InputFormatSpectralReflectanceWithAlpha)
-        m_spectrum = m_linear_rgb;
-    else m_spectrum.set(0.0f);
+    m_spectrum = m_linear_rgb;
 }
 
 }   // namespace renderer

@@ -66,13 +66,11 @@ namespace
     struct EmptyBenchmarkCase
       : public IBenchmarkCase
     {
-        // Return the name of the benchmark case.
         virtual const char* get_name() const
         {
             return "Empty";
         }
 
-        // Run the benchmark case.
         virtual void run()
         {
         }
@@ -81,7 +79,11 @@ namespace
 
 struct BenchmarkSuite::Impl
 {
+#if APPLESEED_X86
     typedef Stopwatch<X86Timer> StopwatchType;
+#else
+    typedef Stopwatch<DefaultProcessorTimer> StopwatchType;
+#endif
 
     string                          m_name;
     vector<IBenchmarkCaseFactory*>  m_factories;

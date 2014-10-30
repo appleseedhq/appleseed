@@ -32,6 +32,8 @@
 
 // Include all available timer classes here.
 #include "foundation/platform/defaulttimers.h"
+#ifdef APPLESEED_X86
 #include "foundation/platform/x86timer.h"
+#endif
 
 #endif  // !APPLESEED_FOUNDATION_PLATFORM_TIMERS_H

@@ -171,15 +171,13 @@ namespace
 
 TextureSource::TextureSource(
     const UniqueID              assembly_uid,
-    const TextureInstance&      texture_instance,
-    const InputFormat           input_format)
+    const TextureInstance&      texture_instance)
   : Source(false)
   , m_assembly_uid(assembly_uid)
   , m_texture_instance(texture_instance)
   , m_texture_uid(texture_instance.get_texture().get_uid())
   , m_texture_props(texture_instance.get_texture().properties())
   , m_texture_transform(texture_instance.get_transform())
-  , m_input_format(input_format)
   , m_scalar_canvas_width(static_cast<double>(m_texture_props.m_canvas_width))
   , m_scalar_canvas_height(static_cast<double>(m_texture_props.m_canvas_height))
   , m_max_x(static_cast<double>(m_texture_props.m_canvas_width - 1))

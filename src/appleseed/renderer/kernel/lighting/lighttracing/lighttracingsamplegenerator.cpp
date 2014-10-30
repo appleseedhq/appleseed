@@ -463,8 +463,9 @@ namespace
                 assert(min_value(radiance) >= 0.0f);
 
                 const Color3f linear_rgb =
-                    ciexyz_to_linear_rgb(
-                        spectrum_to_ciexyz<float>(m_lighting_conditions, radiance));
+                    radiance.is_rgb()
+                        ? radiance.rgb()
+                        : radiance.convert_to_rgb(m_lighting_conditions);
 
                 Sample sample;
                 sample.m_position = Vector2f(position_ndc);

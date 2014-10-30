@@ -369,9 +369,11 @@ namespace
                 const float rcp_max_square_dist = 1.0f / max_square_dist;
 
                 // Accumulate photons contributions.
-                Spectrum indirect_radiance(0.0f);
+                Spectrum indirect_radiance;
                 if (m_params.m_photon_type == SPPMParameters::Monochromatic)
                 {
+                    indirect_radiance.resize(Spectrum::Samples);
+                    indirect_radiance.set(0.0f);
                     accumulate_mono_photons(
                         vertex,
                         photon_count,
@@ -380,6 +382,7 @@ namespace
                 }
                 else
                 {
+                    indirect_radiance.set(0.0f);
                     accumulate_poly_photons(
                         vertex,
                         photon_count,

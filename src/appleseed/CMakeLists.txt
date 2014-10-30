@@ -443,7 +443,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_string.cpp
     foundation/meta/tests/test_test.cpp
     foundation/meta/tests/test_tile.cpp
-    foundation/meta/tests/test_timer.cpp
+    foundation/meta/tests/test_timers.cpp
     foundation/meta/tests/test_transform.cpp
     foundation/meta/tests/test_triangulator.cpp
     foundation/meta/tests/test_typetraits.cpp
@@ -499,9 +499,13 @@ set (foundation_platform_sources
     foundation/platform/win32stackwalker.h
     foundation/platform/windows.cpp
     foundation/platform/windows.h
-    foundation/platform/x86timer.cpp
-    foundation/platform/x86timer.h
 )
+if (is_x86)
+    list (APPEND foundation_platform_sources
+        foundation/platform/x86timer.cpp
+        foundation/platform/x86timer.h
+    )
+endif ()
 list (APPEND appleseed_sources
     ${foundation_platform_sources}
 )
