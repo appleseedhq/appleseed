@@ -131,11 +131,12 @@ void ShaderGroup::add_connection(
 
     impl->m_connections.insert(connection);
 
-    RENDERER_LOG_DEBUG("created shader connection: src = %s, src_param = %s, dst = %s, dst_param = %s.",
-        src_layer,
-        src_param,
-        dst_layer,
-        dst_param);
+    RENDERER_LOG_DEBUG(
+        "created shader connection: src = %s, src_param = %s, dst = %s, dst_param = %s.",
+            src_layer,
+            src_param,
+            dst_layer,
+            dst_param);
 }
 
 bool ShaderGroup::create_osl_shader_group(
@@ -148,40 +149,39 @@ bool ShaderGroup::create_osl_shader_group(
 
     try
     {
-        impl->m_shader_group_ref = shading_system.ShaderGroupBegin(get_name());
+        OSL::ShaderGroupRef shader_group_ref = shading_system.ShaderGroupBegin(get_name());
 
-        if (!valid())
+        if (shader_group_ref.get() == 0)
         {
             RENDERER_LOG_ERROR("shader group begin error: shader = %s.", get_name());
             return false;
         }
 
-        bool success = true;
-
         for (each<ShaderContainer> i = impl->m_shaders; i; ++i)
         {
             if (is_aborted(abort_switch))
-                return success;
+                return false;
 
-            success = success && i->add(shading_system);
+            if (!i->add(shading_system))
+                return false;
         }
 
         for (each<ShaderConnectionContainer> i = impl->m_connections; i; ++i)
         {
             if (is_aborted(abort_switch))
-                return success;
-
-            success = success && i->add(shading_system);
-        }
-
-        if (success)
-        {
-            if (!shading_system.ShaderGroupEnd())
-            {
-                RENDERER_LOG_ERROR("shader group end error: shader = %s.", get_name());
                 return false;
-            }
+
+            if (!i->add(shading_system))
+                return false;
         }
+
+        if (!shading_system.ShaderGroupEnd())
+        {
+            RENDERER_LOG_ERROR("shader group end error: shader = %s.", get_name());
+            return false;
+        }
+
+        impl->m_shader_group_ref = shader_group_ref;
 
         get_shadergroup_closures_info(shading_system);
         report_has_closure("emission", m_has_emission);
@@ -192,7 +192,7 @@ bool ShaderGroup::create_osl_shader_group(
         get_shadergroup_globals_info(shading_system);
         report_uses_global("dPdtime", m_uses_dPdtime);
 
-        return success;
+        return true;
     }
     catch (const exception& e)
     {
@@ -387,6 +387,7 @@ void ShaderGroup::report_uses_global(const char* global_name, bool uses_global) 
     }
 }
 
+
 //
 // ShaderGroupFactory class implementation.
 //
@@ -398,8 +399,7 @@ const char* ShaderGroupFactory::get_model()
 
 auto_release_ptr<ShaderGroup> ShaderGroupFactory::create(const char* name)
 {
-    return
-        auto_release_ptr<ShaderGroup>(new ShaderGroup(name));
+    return auto_release_ptr<ShaderGroup>(new ShaderGroup(name));
 }
 
 }   // namespace renderer

@@ -108,7 +108,7 @@ bool BaseGroup::create_osl_shader_groups(
     for (each<AssemblyContainer> i = assemblies(); i ; ++i)
     {
         if (is_aborted(abort_switch))
-            return success;
+            return false;
 
         success = success && i->create_osl_shader_groups(
             shading_system,
@@ -118,7 +118,7 @@ bool BaseGroup::create_osl_shader_groups(
     for (each<ShaderGroupContainer> i = shader_groups(); i ; ++i)
     {
         if (is_aborted(abort_switch))
-            return success;
+            return false;
 
         success = success && i->create_osl_shader_group(
             shading_system,
