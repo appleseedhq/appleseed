@@ -1,0 +1,5 @@
+
+surface matte(float Kd = 1, color Cs = 0)
+{
+    Ci = Kd * Cs * diffuse(N);
+}

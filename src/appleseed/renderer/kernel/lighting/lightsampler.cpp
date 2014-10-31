@@ -262,23 +262,32 @@ void LightSampler::collect_emitting_triangles(
             const size_t triangle_count = tess->m_primitives.size();
             for (size_t triangle_index = 0; triangle_index < triangle_count; ++triangle_index)
             {
+                // Check the assembly instance material overrides first.
+                const Material* front_material = assembly_instance.get_front_material_override();
+                const Material* back_material = assembly_instance.get_back_material_override();
+
                 // Fetch the triangle.
                 const Triangle& triangle = tess->m_primitives[triangle_index];
 
-                // Skip triangles without a material.
-                if (triangle.m_pa == Triangle::None)
-                    continue;
+                // Check the triangle materials, if needed.
+                if (front_material == 0 || back_material == 0)
+                {
+                    if (triangle.m_pa != Triangle::None)
+                    {
+                        // Fetch the materials assigned to this triangle.
+                        const size_t pa_index = static_cast<size_t>(triangle.m_pa);
 
-                // Fetch the materials assigned to this triangle.
-                const size_t pa_index = static_cast<size_t>(triangle.m_pa);
-                const Material* front_material =
-                    pa_index < front_materials.size() ? front_materials[pa_index] : 0;
-                const Material* back_material =
-                    pa_index < back_materials.size() ? back_materials[pa_index] : 0;
+                        if (front_material == 0)
+                            front_material = pa_index < front_materials.size() ? front_materials[pa_index] : 0;
+
+                        if (back_material == 0)
+                            back_material = pa_index < back_materials.size() ? back_materials[pa_index] : 0;
+                    }
+                }
 
                 // Skip triangles that don't emit light.
                 if ((front_material == 0 || front_material->has_emission() == false) &&
-                    (back_material == 0 || back_material->has_emission() == false))
+                    (back_material  == 0 || back_material->has_emission()  == false))
                     continue;
 
                 // Retrieve object instance space vertices of the triangle.

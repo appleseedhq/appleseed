@@ -82,7 +82,7 @@ class TrackingSpectrum
     // Return true if this spectrum currently stores a linear RGB value.
     bool is_rgb() const;
 
-    // Return true if this spectrul currently stores a spectral value.
+    // Return true if this spectrum currently stores a spectral value.
     bool is_spectral() const;
 
     // Return the number of active components in the spectrum.

@@ -482,6 +482,30 @@ namespace
             XMLElement element("assembly_instance", m_file, m_indenter);
             element.add_attribute("name", assembly_instance.get_name());
             element.add_attribute("assembly", assembly_instance.get_assembly_name());
+
+            string front_override;
+            string back_override;
+
+            if (assembly_instance.get_front_material_override_name())
+                front_override = assembly_instance.get_front_material_override_name();
+
+            if (assembly_instance.get_back_material_override_name())
+                back_override = assembly_instance.get_back_material_override_name();
+
+            if (front_override == back_override)
+            {
+                if (!front_override.empty())
+                    element.add_attribute("material_override", front_override.c_str());
+            }
+            else
+            {
+                if (!front_override.empty())
+                    element.add_attribute("front_material_override", front_override.c_str());
+
+                if (!back_override.empty())
+                    element.add_attribute("back_material_override", back_override.c_str());
+            }
+
             element.write(
                 !assembly_instance.transform_sequence().empty()
                     ? XMLElement::HasChildElements

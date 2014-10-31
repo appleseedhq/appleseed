@@ -1,0 +1,17 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.5.7dev
+surface matte
+param	float	Kd	1 		 %read{1,1} %write{2147483647,-1}
+param	color	Cs	0 0 0 		 %read{1,1} %write{2147483647,-1}
+global	normal	N	 %read{0,0} %write{2147483647,-1}
+global	closure color	Ci	 %read{2147483647,-1} %write{2,2}
+temp	closure color	$tmp1	 %read{2,2} %write{0,0}
+const	string	$const1	"diffuse"		 %read{0,0} %write{2147483647,-1}
+temp	color	$tmp2	 %read{2,2} %write{1,1}
+code ___main___
+# matte.osl:4
+#     Ci = Kd * Cs * diffuse(N);
+	closure		$tmp1 $const1 N 	%filename{"matte.osl"} %line{4} %argrw{"wrr"}
+	mul		$tmp2 Kd Cs 	%argrw{"wrr"}
+	mul		Ci $tmp1 $tmp2 	%argrw{"wrr"}
+	end

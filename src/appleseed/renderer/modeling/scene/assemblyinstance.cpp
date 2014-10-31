@@ -31,6 +31,8 @@
 #include "assemblyinstance.h"
 
 // appleseed.renderer headers.
+#include "renderer/modeling/input/inputbinder.h"
+#include "renderer/modeling/material/material.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/basegroup.h"
 
@@ -60,12 +62,16 @@ UniqueID AssemblyInstance::get_class_uid()
 struct AssemblyInstance::Impl
 {
     string m_assembly_name;
+    string m_front_material_override;
+    string m_back_material_override;
 };
 
 AssemblyInstance::AssemblyInstance(
     const char*         name,
     const ParamArray&   params,
-    const char*         assembly_name)
+    const char*         assembly_name,
+    const char*         front_material_override,
+    const char*         back_material_override)
   : Entity(g_class_uid, params)
   , impl(new Impl())
 {
@@ -73,7 +79,15 @@ AssemblyInstance::AssemblyInstance(
 
     impl->m_assembly_name = assembly_name;
 
+    if (front_material_override)
+        impl->m_front_material_override = front_material_override;
+
+    if (back_material_override)
+        impl->m_back_material_override = back_material_override;
+
     m_assembly = 0;
+    m_front_material_override = 0;
+    m_back_material_override = 0;
 }
 
 AssemblyInstance::~AssemblyInstance()
@@ -144,6 +158,72 @@ void AssemblyInstance::check_assembly() const
         throw ExceptionUnknownEntity(impl->m_assembly_name.c_str(), this);
 }
 
+void AssemblyInstance::unbind_material_overrides()
+{
+    m_front_material_override = 0;
+    m_back_material_override = 0;
+}
+
+void AssemblyInstance::bind_material_overrides(const MaterialContainer& materials)
+{
+    if (!impl->m_front_material_override.empty())
+    {
+        if (m_front_material_override == 0)
+            m_front_material_override = materials.get_by_name(impl->m_front_material_override.c_str());
+    }
+
+    if (!impl->m_back_material_override.empty())
+    {
+        if (m_back_material_override == 0)
+            m_back_material_override = materials.get_by_name(impl->m_back_material_override.c_str());
+    }
+}
+
+void AssemblyInstance::check_material_overrides()
+{
+    if (!impl->m_front_material_override.empty() && m_front_material_override == 0)
+    {
+        RENDERER_LOG_WARNING(
+            "assembly instance \"%s\" front override material \"%s\" not found.",
+            get_name(),
+            impl->m_front_material_override.c_str());
+    }
+
+    if (!impl->m_back_material_override.empty() && m_back_material_override == 0)
+    {
+        RENDERER_LOG_WARNING(
+            "assembly instance \"%s\" back override material \"%s\" not found.",
+            get_name(),
+            impl->m_back_material_override.c_str());
+    }
+
+    if (m_front_material_override && m_front_material_override->has_alpha_map())
+    {
+        RENDERER_LOG_WARNING(
+            "assembly instance \"%s\" alpha maps can give unexpected results in override material \"%s\".",
+            get_name(),
+            impl->m_front_material_override.c_str());
+    }
+
+    if (m_back_material_override && m_back_material_override->has_alpha_map())
+    {
+        RENDERER_LOG_WARNING(
+            "assembly instance \"%s\" alpha maps can give unexpected results in override material \"%s\".",
+            get_name(),
+            impl->m_back_material_override.c_str());
+    }
+}
+
+const char* AssemblyInstance::get_front_material_override_name() const
+{
+    return impl->m_front_material_override.empty() ? 0 : impl->m_front_material_override.c_str();
+}
+
+const char* AssemblyInstance::get_back_material_override_name() const
+{
+    return impl->m_back_material_override.empty() ? 0 : impl->m_back_material_override.c_str();
+}
+
 bool AssemblyInstance::on_frame_begin(
     const Project&      project,
     AbortSwitch*        abort_switch)
@@ -168,14 +248,18 @@ void AssemblyInstance::on_frame_end(const Project& project)
 auto_release_ptr<AssemblyInstance> AssemblyInstanceFactory::create(
     const char*         name,
     const ParamArray&   params,
-    const char*         assembly_name)
+    const char*         assembly_name,
+    const char*         front_material_override,
+    const char*         back_material_override)
 {
     return
         auto_release_ptr<AssemblyInstance>(
             new AssemblyInstance(
                 name,
                 params,
-                assembly_name));
+                assembly_name,
+                front_material_override,
+                back_material_override));
 }
 
 }   // namespace renderer

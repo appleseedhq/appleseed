@@ -240,6 +240,14 @@ void InputBinder::bind_scene_entities_inputs(
         i->bind_assembly(scene.assemblies());
         i->check_assembly();
     }
+
+    // Bind material overrides to assembly instances.
+    for (each<AssemblyInstanceContainer> i = scene.assembly_instances(); i; ++i)
+    {
+        i->unbind_material_overrides();
+        i->bind_material_overrides(i->get_assembly().materials());
+        i->check_material_overrides();
+    }
 }
 
 void InputBinder::bind_assembly_entities_inputs(
@@ -367,6 +375,17 @@ void InputBinder::bind_assembly_entities_inputs(
         i->bind_assembly(scene.assemblies());
 
         i->check_assembly();
+    }
+
+    // Bind material overrides to assembly instances.
+    for (each<AssemblyInstanceContainer> i = assembly.assembly_instances(); i; ++i)
+    {
+        i->unbind_material_overrides();
+
+        for (AssemblyInfoIt j = m_assembly_info.rbegin(); j != m_assembly_info.rend(); ++j)
+            i->bind_material_overrides(j->m_assembly->materials());
+
+        i->check_material_overrides();
     }
 
     // Recurse into child assemblies.
