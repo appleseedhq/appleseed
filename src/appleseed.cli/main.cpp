@@ -733,6 +733,16 @@ namespace
             project->get_frame()->write_main_image(g_cl.m_output.value().c_str());
             project->get_frame()->write_aov_images(g_cl.m_output.value().c_str());
         }
+        else
+        {
+            string output_fname_param = project->get_frame()->get_parameters().get_optional<string>("cli_output_filename");
+            if (!output_fname_param.empty())
+            {
+                LOG_INFO(g_logger, "writing frame to disk...");
+                project->get_frame()->write_main_image(output_fname_param.c_str() );
+                project->get_frame()->write_aov_images(output_fname_param.c_str() );
+            }
+        }
 
 #if defined __APPLE__ || defined _WIN32
 
