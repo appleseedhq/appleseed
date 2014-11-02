@@ -737,14 +737,14 @@ namespace
         {
             const Frame* frame = project->get_frame();
             string output_fname_param =
-                frame->get_parameters().get_optional<string>("cli_output_filename");
+                frame->get_parameters().get_optional<string>("output_filename");
 
             if (!output_fname_param.empty())
             {
                 LOG_INFO(g_logger, "writing frame to disk...");
                 frame->write_main_image(output_fname_param.c_str());
 
-                if( frame->get_parameters().get_optional<bool>("cli_output_aovs", false))
+                if( frame->get_parameters().get_optional<bool>("output_aovs", false))
                     frame->write_aov_images(output_fname_param.c_str());
             }
         }
