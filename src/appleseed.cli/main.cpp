@@ -736,16 +736,16 @@ namespace
         else
         {
             const Frame* frame = project->get_frame();
-            string output_fname_param =
+            const string output_filename =
                 frame->get_parameters().get_optional<string>("output_filename");
 
-            if (!output_fname_param.empty())
+            if (!output_filename.empty())
             {
                 LOG_INFO(g_logger, "writing frame to disk...");
-                frame->write_main_image(output_fname_param.c_str());
+                frame->write_main_image(output_filename.c_str());
 
-                if( frame->get_parameters().get_optional<bool>("output_aovs", false))
-                    frame->write_aov_images(output_fname_param.c_str());
+                if (frame->get_parameters().get_optional<bool>("output_aovs", false))
+                    frame->write_aov_images(output_filename.c_str());
             }
         }
 
