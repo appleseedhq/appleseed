@@ -78,8 +78,10 @@
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/thread.h"
+#include "foundation/utility/foreach.h"
 #include "foundation/utility/job/abortswitch.h"
 #include "foundation/utility/searchpaths.h"
+#include "foundation/utility/string.h"
 
 // Boost headers.
 #include "boost/bind.hpp"
@@ -87,6 +89,7 @@
 #include "boost/shared_ptr.hpp"
 
 // Standard headers.
+#include <cstdlib>
 #include <deque>
 #include <exception>
 
@@ -292,27 +295,9 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     // Skip search paths for builtin projects.
     if (m_project.search_paths().has_root_path())
     {
-        // Setup texture / shader search paths.
-        // In OIIO, the path priorities are the opposite of appleseed,
-        // so we copy the paths in reverse order.
-
-        const filesystem::path root_path = m_project.search_paths().get_root_path();
-
-        if (!m_project.search_paths().empty())
-        {
-            for (size_t i = 0, e = m_project.search_paths().size(); i != e; ++i)
-            {
-                filesystem::path p(m_project.search_paths()[e - 1 - i]);
-
-                if (p.is_relative())
-                   p = root_path / p;
-
-                search_paths.append(p.string());
-                search_paths.append(";");
-            }
-        }
-
-        search_paths.append(root_path.string());
+        // In OIIO / OSL, the path priorities are the opposite of appleseed,
+        // so we need to set reversed to true.
+        search_paths = m_project.search_paths().to_string(';', true, true);
     }
 
     if (!search_paths.empty())
