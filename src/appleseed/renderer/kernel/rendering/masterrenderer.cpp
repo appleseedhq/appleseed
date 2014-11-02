@@ -78,10 +78,8 @@
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/thread.h"
-#include "foundation/utility/foreach.h"
 #include "foundation/utility/job/abortswitch.h"
 #include "foundation/utility/searchpaths.h"
-#include "foundation/utility/string.h"
 
 // Boost headers.
 #include "boost/bind.hpp"
