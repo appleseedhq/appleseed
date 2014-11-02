@@ -74,17 +74,19 @@ ShadingContext::ShadingContext(
 }
 
 #ifdef WITH_OIIO
+
 OIIO::TextureSystem& ShadingContext::get_oiio_texture_system() const
 {
     return m_oiio_texture_system;
 }
+
 #endif
 
 #ifdef WITH_OSL
 
 void ShadingContext::execute_osl_shading(
-    const ShaderGroup&  shader_group,
-    const ShadingPoint& shading_point) const
+    const ShaderGroup&          shader_group,
+    const ShadingPoint&         shading_point) const
 {
     m_shadergroup_exec.execute_shading(
         shader_group,
@@ -92,10 +94,10 @@ void ShadingContext::execute_osl_shading(
 }
 
 void ShadingContext::execute_osl_transparency(
-    const ShaderGroup&  shader_group,
-    const ShadingPoint& shading_point,
-    Alpha&              alpha,
-    float*              holdout) const
+    const ShaderGroup&          shader_group,
+    const ShadingPoint&         shading_point,
+    Alpha&                      alpha,
+    float*                      holdout) const
 {
     m_shadergroup_exec.execute_transparency(
         shader_group,
@@ -105,9 +107,9 @@ void ShadingContext::execute_osl_transparency(
 }
 
 void ShadingContext::execute_osl_emission(
-    const ShaderGroup&  shader_group,
-    const ShadingPoint& shading_point,
-    const float         surface_area) const
+    const ShaderGroup&          shader_group,
+    const ShadingPoint&         shading_point,
+    const float                 surface_area) const
 {
     m_shadergroup_exec.execute_emission(
         shader_group,

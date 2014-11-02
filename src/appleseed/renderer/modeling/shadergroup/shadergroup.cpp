@@ -145,7 +145,7 @@ bool ShaderGroup::create_osl_shader_group(
 {
     assert(impl->m_shader_group_ref.get() == 0);
 
-    RENDERER_LOG_DEBUG("setup shader group %s.", get_name());
+    RENDERER_LOG_DEBUG("setting up shader group %s...", get_name());
 
     try
     {
@@ -153,7 +153,7 @@ bool ShaderGroup::create_osl_shader_group(
 
         if (shader_group_ref.get() == 0)
         {
-            RENDERER_LOG_ERROR("shader group begin error: shader = %s.", get_name());
+            RENDERER_LOG_ERROR("ShaderGroupBegin error: shader = %s.", get_name());
             return false;
         }
 
@@ -177,7 +177,7 @@ bool ShaderGroup::create_osl_shader_group(
 
         if (!shading_system.ShaderGroupEnd())
         {
-            RENDERER_LOG_ERROR("shader group end error: shader = %s.", get_name());
+            RENDERER_LOG_ERROR("ShaderGroupEnd error: shader = %s.", get_name());
             return false;
         }
 
@@ -196,7 +196,7 @@ bool ShaderGroup::create_osl_shader_group(
     }
     catch (const exception& e)
     {
-        RENDERER_LOG_ERROR("shader group exception: %s.", e.what());
+        RENDERER_LOG_ERROR("failed to setup shader group: %s.", e.what());
         return false;
     }
 }
@@ -308,7 +308,7 @@ void ShaderGroup::get_shadergroup_closures_info(OSL::ShadingSystem& shading_syst
     }
 }
 
-void ShaderGroup::report_has_closure(const char* closure_name, bool has_closure) const
+void ShaderGroup::report_has_closure(const char* closure_name, const bool has_closure) const
 {
     if (has_closure)
     {
@@ -369,7 +369,7 @@ void ShaderGroup::get_shadergroup_globals_info(OSL::ShadingSystem& shading_syste
     }
 }
 
-void ShaderGroup::report_uses_global(const char* global_name, bool uses_global) const
+void ShaderGroup::report_uses_global(const char* global_name, const bool uses_global) const
 {
     if (uses_global)
     {

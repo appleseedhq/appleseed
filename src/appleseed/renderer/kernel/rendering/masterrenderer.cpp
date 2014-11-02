@@ -227,18 +227,20 @@ namespace
     }
 
 #ifdef WITH_OSL
+
     void destroy_osl_shading_system(
         OSL::ShadingSystem*     shading_system,
         Scene*                  scene,
         OIIO::TextureSystem*    texture_system)
     {
-        RENDERER_LOG_INFO("%s", "releasing OSL shader groups.");
+        RENDERER_LOG_INFO("releasing osl shader groups.");
         scene->release_osl_shader_groups();
 
         RENDERER_LOG_INFO("%s", texture_system->getstats().c_str());
         texture_system->reset_stats();
         OSL::ShadingSystem::destroy(shading_system);
     }
+
 #endif
 }
 

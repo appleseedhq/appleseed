@@ -87,7 +87,7 @@ class OSLShaderGroupExec
         const ShaderGroup&          shader_group,
         const ShadingPoint&         shading_point,
         const ShadingRay::TypeType  ray_type,
-        const float                 surface_area) const;
+        const float                 surface_area = 0.0f) const;
 };
 
 }       // namespace renderer

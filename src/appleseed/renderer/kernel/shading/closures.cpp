@@ -86,24 +86,24 @@ namespace
 
     struct DisneyBRDFClosureParams
     {
-        OSL::Vec3   N;
-        OSL::Vec3   T;
-        OSL::Color3 base_color;
-        float       subsurface;
-        float       metallic;
-        float       specular;
-        float       specular_tint;
-        float       anisotropic;
-        float       roughness;
-        float       sheen;
-        float       sheen_tint;
-        float       clearcoat;
-        float       clearcoat_gloss;
+        OSL::Vec3       N;
+        OSL::Vec3       T;
+        OSL::Color3     base_color;
+        float           subsurface;
+        float           metallic;
+        float           specular;
+        float           specular_tint;
+        float           anisotropic;
+        float           roughness;
+        float           sheen;
+        float           sheen_tint;
+        float           clearcoat;
+        float           clearcoat_gloss;
     };
 
     struct DiffuseBSDFClosureParams
     {
-        OSL::Vec3 N;
+        OSL::Vec3       N;
     };
 
     OSL::ustring beckmann_mdf_name("beckmann");
@@ -518,7 +518,7 @@ void CompositeSurfaceClosure::do_add_closure(
     // Make sure we have enough space.
     if (get_num_closures() >= MaxClosureEntries)
     {
-        RENDERER_LOG_WARNING("maximum number of closures in OSL shadergroup exceeded; ignoring closure.");
+        RENDERER_LOG_WARNING("maximum number of closures in osl shader group exceeded; ignoring closure.");
         return;
     }
 
@@ -719,8 +719,8 @@ void register_appleseed_closures(OSL::ShadingSystem& shading_system)
                                    CLOSURE_FINISH_PARAM(DisneyBRDFClosureParams) } },
 
         { "oren_nayar", OrenNayarID, { CLOSURE_VECTOR_PARAM(OrenNayarBRDFClosureParams, N),
-                                          CLOSURE_FLOAT_PARAM(OrenNayarBRDFClosureParams, roughness),
-                                          CLOSURE_FINISH_PARAM(OrenNayarBRDFClosureParams) } },
+                                       CLOSURE_FLOAT_PARAM(OrenNayarBRDFClosureParams, roughness),
+                                       CLOSURE_FINISH_PARAM(OrenNayarBRDFClosureParams) } },
 
         { "background", BackgroundID, { CLOSURE_FINISH_PARAM(EmptyClosureParams) } },
 
@@ -767,7 +767,7 @@ void register_appleseed_closures(OSL::ShadingSystem& shading_system)
             0,
             0);
 
-        RENDERER_LOG_INFO("registered OSL closure %s.", builtins[i].name);
+        RENDERER_LOG_INFO("registered osl closure %s.", builtins[i].name);
     }
 }
 

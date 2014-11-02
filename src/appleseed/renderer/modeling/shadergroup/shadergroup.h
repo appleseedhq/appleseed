@@ -138,10 +138,10 @@ class DLLSYMBOL ShaderGroup
     ~ShaderGroup();
 
     void get_shadergroup_closures_info(OSL::ShadingSystem& shading_system);
-    void report_has_closure(const char* closure_name, bool has_closure) const;
+    void report_has_closure(const char* closure_name, const bool has_closure) const;
 
     void get_shadergroup_globals_info(OSL::ShadingSystem& shading_system);
-    void report_uses_global(const char* global_name, bool uses_global) const;
+    void report_uses_global(const char* global_name, const bool uses_global) const;
 };
 
 

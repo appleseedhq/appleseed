@@ -64,21 +64,19 @@ void OSLShaderGroupExec::execute_shading(
     do_execute(
         shader_group,
         shading_point,
-        shading_point.get_ray().m_type,
-        0.0f);
+        shading_point.get_ray().m_type);
 }
 
 void OSLShaderGroupExec::execute_transparency(
-    const ShaderGroup&  shader_group,
-    const ShadingPoint& shading_point,
-    Alpha&              alpha,
-    float*              holdout) const
+    const ShaderGroup&          shader_group,
+    const ShadingPoint&         shading_point,
+    Alpha&                      alpha,
+    float*                      holdout) const
 {
     do_execute(
         shader_group,
         shading_point,
-        ShadingRay::ShadowRay,
-        0.0f);
+        ShadingRay::ShadowRay);
 
     process_transparency_tree(shading_point.get_osl_shader_globals().Ci, alpha);
 
@@ -87,9 +85,9 @@ void OSLShaderGroupExec::execute_transparency(
 }
 
 void OSLShaderGroupExec::execute_emission(
-    const ShaderGroup&  shader_group,
-    const ShadingPoint& shading_point,
-    const float         surface_area) const
+    const ShaderGroup&          shader_group,
+    const ShadingPoint&         shading_point,
+    const float                 surface_area) const
 {
     do_execute(
         shader_group,
@@ -102,7 +100,7 @@ void OSLShaderGroupExec::do_execute(
     const ShaderGroup&          shader_group,
     const ShadingPoint&         shading_point,
     const ShadingRay::TypeType  ray_type,
-    const float                 surface_area = 0.0) const
+    const float                 surface_area) const
 {
     assert(m_osl_shading_context);
     assert(m_osl_thread_info);
