@@ -143,7 +143,14 @@ namespace
 
         virtual const ShaderGroup* get_uncached_osl_surface() const OVERRIDE
         {
-            return static_cast<const ShaderGroup*>(m_inputs.get_entity("osl_surface"));
+            const ShaderGroup* sg =
+                static_cast<const ShaderGroup*>(m_inputs.get_entity("osl_surface"));
+
+            // Skip invalid ShaderGroups.
+            if (!sg->valid())
+                return 0;
+
+            return sg;
         }
     };
 }
