@@ -216,7 +216,7 @@ char* SearchPathsImpl::do_to_string(
     const bool reversed) const
 {
     if (make_paths_absolute)
-        assert (has_root_path());
+        assert(has_root_path());
 
     Impl::PathCollection paths;
 

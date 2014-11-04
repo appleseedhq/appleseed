@@ -87,6 +87,7 @@ namespace
                 return false;
 
             m_shader_group = get_uncached_osl_surface();
+
             if (m_shader_group)
             {
                 m_bsdf = m_osl_bsdf.get();
