@@ -57,6 +57,9 @@ class DLLSYMBOL SearchPathsImpl
     // Constructor.
     SearchPathsImpl();
 
+    // Constructor.
+    explicit SearchPathsImpl(const char* envvar);
+
     // Destructor.
     ~SearchPathsImpl();
 
@@ -84,12 +87,24 @@ class DLLSYMBOL SearchPathsImpl
     void do_push_back(const char* path);
     bool do_exist(const char* filepath) const;
     char* do_qualify(const char* filepath) const;
+    char* do_to_string(
+        const char separator,
+        const bool make_paths_absolute,
+        const bool reversed) const;
+
 };
 
 class SearchPaths
   : public SearchPathsImpl
 {
   public:
+    // Constructor.
+    SearchPaths();
+
+    // Constructor. Initializes searchpaths with the
+    // contents of the specified environment variable.
+    explicit SearchPaths(const char* envvar);
+
     // Set the root path that is used to resolve relative paths.
     void set_root_path(const char* path);
     void set_root_path(const std::string& path);
@@ -110,12 +125,28 @@ class SearchPaths
     // Find a file in the search paths. If the file was found, the qualified path to
     // this file is returned. Otherwise the input path is returned.
     std::string qualify(const std::string& filepath) const;
+
+    // Return a string with all the searchpaths separated by the
+    // specified separator, optionally making them absolute and / or in reverse order.
+    std::string to_string(
+        const char separator = ':',
+        const bool make_paths_absolute = true,
+        const bool reversed = false) const;
 };
 
 
 //
 // SearchPaths class implementation.
 //
+
+inline SearchPaths::SearchPaths()
+{
+}
+
+inline SearchPaths::SearchPaths(const char* envvar)
+  : SearchPathsImpl(envvar)
+{
+}
 
 inline void SearchPaths::set_root_path(const char* path)
 {
@@ -155,6 +186,14 @@ inline bool SearchPaths::exist(const std::string& filepath) const
 inline std::string SearchPaths::qualify(const std::string& filepath) const
 {
     return convert_to_std_string(do_qualify(filepath.c_str()));
+}
+
+inline std::string SearchPaths::to_string(
+    const char separator,
+    const bool make_paths_absolute,
+    const bool reversed) const
+{
+    return convert_to_std_string(do_to_string(separator, make_paths_absolute, reversed));
 }
 
 }       // namespace foundation
