@@ -94,6 +94,7 @@ TextureInstanceContainer& BaseGroup::texture_instances() const
 }
 
 #ifdef WITH_OSL
+
 ShaderGroupContainer& BaseGroup::shader_groups() const
 {
     return impl->m_shader_groups;
@@ -105,7 +106,7 @@ bool BaseGroup::create_osl_shader_groups(
 {
     bool success = true;
 
-    for (each<AssemblyContainer> i = assemblies(); i ; ++i)
+    for (each<AssemblyContainer> i = assemblies(); i; ++i)
     {
         if (is_aborted(abort_switch))
             return false;
@@ -115,7 +116,7 @@ bool BaseGroup::create_osl_shader_groups(
             abort_switch);
     }
 
-    for (each<ShaderGroupContainer> i = shader_groups(); i ; ++i)
+    for (each<ShaderGroupContainer> i = shader_groups(); i; ++i)
     {
         if (is_aborted(abort_switch))
             return false;
@@ -130,12 +131,13 @@ bool BaseGroup::create_osl_shader_groups(
 
 void BaseGroup::release_osl_shader_groups()
 {
-    for (each<AssemblyContainer> i = assemblies(); i ; ++i)
+    for (each<AssemblyContainer> i = assemblies(); i; ++i)
         i->release_osl_shader_groups();
 
-    for (each<ShaderGroupContainer> i = shader_groups(); i ; ++i)
+    for (each<ShaderGroupContainer> i = shader_groups(); i; ++i)
         i->release_osl_shader_group();
 }
+
 #endif
 
 AssemblyContainer& BaseGroup::assemblies() const

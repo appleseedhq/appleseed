@@ -74,16 +74,18 @@ class DLLSYMBOL BaseGroup
     TextureInstanceContainer& texture_instances() const;
 
 #ifdef WITH_OSL
+
     // Access the OSL shader groups.
     ShaderGroupContainer& shader_groups() const;
 
-    // Create OSL shadergroups and optimize them.
+    // Create OSL shader groups and optimize them.
     bool create_osl_shader_groups(
-        OSL::ShadingSystem&             shading_system,
-        foundation::AbortSwitch*        abort_switch = 0);
+        OSL::ShadingSystem&         shading_system,
+        foundation::AbortSwitch*    abort_switch = 0);
 
-    // Release internal OSL shadergroups.
+    // Release internal OSL shader groups.
     void release_osl_shader_groups();
+
 #endif
 
     // Access the assemblies.

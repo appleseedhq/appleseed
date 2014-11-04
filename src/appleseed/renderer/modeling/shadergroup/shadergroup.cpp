@@ -153,7 +153,7 @@ bool ShaderGroup::create_osl_shader_group(
 
         if (shader_group_ref.get() == 0)
         {
-            RENDERER_LOG_ERROR("ShaderGroupBegin error: shader = %s.", get_name());
+            RENDERER_LOG_ERROR("failed to setup shader group %s: ShaderGroupBegin() call failed.", get_name());
             return false;
         }
 
@@ -177,7 +177,7 @@ bool ShaderGroup::create_osl_shader_group(
 
         if (!shading_system.ShaderGroupEnd())
         {
-            RENDERER_LOG_ERROR("ShaderGroupEnd error: shader = %s.", get_name());
+            RENDERER_LOG_ERROR("failed to setup shader group %s: ShaderGroupEnd() call failed.", get_name());
             return false;
         }
 
@@ -196,7 +196,7 @@ bool ShaderGroup::create_osl_shader_group(
     }
     catch (const exception& e)
     {
-        RENDERER_LOG_ERROR("failed to setup shader group: %s.", e.what());
+        RENDERER_LOG_ERROR("failed to setup shader group %s: %s.", get_name(), e.what());
         return false;
     }
 }

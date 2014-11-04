@@ -241,7 +241,7 @@ void DisneyMaterialCustomUI::slot_open_expression_editor(const QString& widget_n
     // between the layer widgets and the expression editor
     // while the expression editor is visible.
     {
-        for(each<std::vector<QWidget*> > i = m_layers_widgets; i ; ++i)
+        for (each<vector<QWidget*> > i = m_layers_widgets; i; ++i)
             (*i)->setEnabled(false);
 
         m_add_layer_button->setEnabled(false);
@@ -265,15 +265,16 @@ void DisneyMaterialCustomUI::slot_line_edit_changed(const QString& widget_name)
 
     vector<string> widget_tokens;
     tokenize(widget_name.toStdString(), ";", widget_tokens);
-    const string initial_layer_name = widget_tokens[0];
-    const string parameter = widget_tokens[1];
+
+    const string& initial_layer_name = widget_tokens[0];
+    const string& parameter = widget_tokens[1];
     string layer_name = m_renames.get(initial_layer_name.c_str());
 
     // Handle layer rename.
     if (parameter == "layer_name")
     {
         const Dictionary old_layer_params = m_values.dictionary(layer_name);
-        string new_layer_name = proxy->get();
+        const string new_layer_name = proxy->get();
         m_renames.insert(initial_layer_name, new_layer_name);
         m_values.dictionaries().remove(layer_name);
         m_values.insert(new_layer_name, old_layer_params);
@@ -289,9 +290,8 @@ void DisneyMaterialCustomUI::slot_line_edit_changed(const QString& widget_name)
 
 void DisneyMaterialCustomUI::slot_expression_editor_closed()
 {
-    // Enable again all layers widgets
-    // when the expression editor is closed.
-    for(each<std::vector<QWidget*> > i = m_layers_widgets; i ; ++i)
+    // Enable again all layers widgets when the expression editor is closed.
+    for (each<vector<QWidget*> > i = m_layers_widgets; i; ++i)
         (*i)->setEnabled(true);
 
     m_add_layer_button->setEnabled(true);
