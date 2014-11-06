@@ -492,8 +492,6 @@ closure color as_ashikhmin_shirley(
     float nu,
     float nv) BUILTIN;
 
-closure color as_oren_nayar(normal N, float roughness) BUILTIN;
-
 closure color as_disney(
         normal N,
         vector T,
