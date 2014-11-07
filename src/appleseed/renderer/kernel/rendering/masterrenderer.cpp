@@ -69,7 +69,7 @@
 #include "renderer/modeling/input/inputbinder.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/scene.h"
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
 #include "renderer/kernel/rendering/oiioerrorhandler.h"
 #include "renderer/kernel/rendering/rendererservices.h"
 #include "renderer/kernel/shading/closures.h"
@@ -227,7 +227,7 @@ namespace
             dest.strings().insert(param_name, source.strings().get(param_name));
     }
 
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
 
     void destroy_osl_shading_system(
         OSL::ShadingSystem*     shading_system,
@@ -329,7 +329,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     // Create the texture store.
     TextureStore texture_store(scene, m_params.child("texture_store"));
 
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
 
     // Create the error handler.
     OIIOErrorHandler error_handler;
@@ -396,7 +396,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     if (is_aborted(m_abort_switch))
         return IRendererController::ContinueRendering;
 
-#endif  // WITH_OSL
+#endif  // APPLESEED_WITH_OSL
 
     // Create the light sampler.
     LightSampler light_sampler(scene, m_params.child("light_sampler"));
@@ -440,7 +440,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
 #ifdef WITH_OIIO
                     *m_texture_system,
 #endif
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
                     *shading_system,
 #endif
                     params);
@@ -483,7 +483,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
 #ifdef WITH_OIIO
                     *m_texture_system,
 #endif
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
                     *shading_system,
 #endif
                     m_params.child("generic_sample_renderer")));
@@ -533,7 +533,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
 #ifdef WITH_OIIO
                     *m_texture_system,
 #endif
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
                     *shading_system,
 #endif
                     m_params.child("lighttracing_sample_generator")));
@@ -717,7 +717,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     const IRendererController::Status status =
         render_frame_sequence(
             frame_renderer.get()
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
             , *shading_system
 #endif
             );
@@ -730,7 +730,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
 
 IRendererController::Status MasterRenderer::render_frame_sequence(
     IFrameRenderer*         frame_renderer
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
     , OSL::ShadingSystem&   shading_system
 #endif
     )
@@ -758,7 +758,7 @@ IRendererController::Status MasterRenderer::render_frame_sequence(
             return m_renderer_controller->on_progress();
         }
 
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
         static_cast<RendererServices*>(shading_system.renderer())
             ->initialize();
 #endif

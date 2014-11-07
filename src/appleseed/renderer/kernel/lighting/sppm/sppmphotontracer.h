@@ -37,7 +37,7 @@
 #include "foundation/core/concepts/noncopyable.h"
 
 // OSL headers.
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
 #include "foundation/platform/oslheaderguards.h"
 BEGIN_OSL_INCLUDES
 #include "OSL/oslexec.h"
@@ -76,7 +76,7 @@ class SPPMPhotonTracer
 #ifdef WITH_OIIO
         OIIO::TextureSystem&        oiio_texture_system,
 #endif
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
         OSL::ShadingSystem&         shading_system,
 #endif
         const SPPMParameters&       params);
@@ -98,7 +98,7 @@ class SPPMPhotonTracer
 #ifdef WITH_OIIO
     OIIO::TextureSystem&            m_oiio_texture_system;
 #endif
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
     OSL::ShadingSystem&             m_shading_system;
 #endif
 

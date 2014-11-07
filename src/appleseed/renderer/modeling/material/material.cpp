@@ -84,7 +84,7 @@ Material::Material(
   , m_edf(0)
   , m_alpha_map(0)
   , m_normal_modifier(0)
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
   , m_shader_group(0)
 #endif
 {
@@ -173,7 +173,7 @@ const Source* Material::get_uncached_alpha_map() const
     return m_inputs.source("alpha_map");
 }
 
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
 
 bool Material::has_osl_surface() const
 {

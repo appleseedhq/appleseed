@@ -32,7 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/shadingpoint.h"
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
 #include "renderer/modeling/shadergroup/shadergroup.h"
 #endif
 
@@ -50,7 +50,7 @@ ShadingContext::ShadingContext(
 #ifdef WITH_OIIO
     OIIO::TextureSystem&        oiio_texture_system,
 #endif
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
     OSLShaderGroupExec&         osl_shadergroup_exec,
 #endif
     const size_t                thread_index,
@@ -67,7 +67,7 @@ ShadingContext::ShadingContext(
 #ifdef WITH_OIIO
   , m_oiio_texture_system(oiio_texture_system)
 #endif
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
   , m_shadergroup_exec(osl_shadergroup_exec)
 #endif
 {
@@ -82,7 +82,7 @@ OIIO::TextureSystem& ShadingContext::get_oiio_texture_system() const
 
 #endif
 
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
 
 void ShadingContext::execute_osl_shading(
     const ShaderGroup&          shader_group,

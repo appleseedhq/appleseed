@@ -794,7 +794,7 @@ set (renderer_api_sources
     renderer/api/trace.h
     renderer/api/utility.h
 )
-if (WITH_OSL)
+if (APPLESEED_WITH_OSL)
     list (APPEND renderer_api_sources
         renderer/api/shadergroup.h
     )
@@ -1068,7 +1068,7 @@ set (renderer_kernel_rendering_sources
     renderer/kernel/rendering/timedrenderercontroller.cpp
     renderer/kernel/rendering/timedrenderercontroller.h
 )
-if (WITH_OSL)
+if (APPLESEED_WITH_OSL)
     list (APPEND renderer_kernel_rendering_sources
         renderer/kernel/rendering/oiioerrorhandler.cpp
         renderer/kernel/rendering/oiioerrorhandler.h
@@ -1100,7 +1100,7 @@ set (renderer_kernel_shading_sources
     renderer/kernel/shading/shadingresult.cpp
     renderer/kernel/shading/shadingresult.h
 )
-if (WITH_OSL)
+if (APPLESEED_WITH_OSL)
     list (APPEND renderer_kernel_shading_sources
         renderer/kernel/shading/closures.cpp
         renderer/kernel/shading/closures.h
@@ -1190,7 +1190,7 @@ set (renderer_meta_tests_sources
     renderer/meta/tests/test_transformsequence.cpp
     renderer/meta/tests/test_variationtracker.cpp
 )
-if (WITH_OSL)
+if (APPLESEED_WITH_OSL)
     list (APPEND renderer_meta_tests_sources
         renderer/meta/tests/test_shaderparamparser.cpp
     )
@@ -1234,13 +1234,13 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/specularbtdf.cpp
     renderer/modeling/bsdf/specularbtdf.h
 )
-if (WITH_DISNEY_MATERIAL)
+if (APPLESEED_WITH_DISNEY_MATERIAL)
 list (APPEND renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/disneylayeredbrdf.cpp
     renderer/modeling/bsdf/disneylayeredbrdf.h
 )
 endif ()
-if (WITH_OSL)
+if (APPLESEED_WITH_OSL)
     list (APPEND renderer_modeling_bsdf_sources
         renderer/modeling/bsdf/oslbsdf.cpp
         renderer/modeling/bsdf/oslbsdf.h
@@ -1318,7 +1318,7 @@ set (renderer_modeling_edf_sources
     renderer/modeling/edf/iedffactory.cpp
     renderer/modeling/edf/iedffactory.h
 )
-if (WITH_OSL)
+if (APPLESEED_WITH_OSL)
     list (APPEND renderer_modeling_edf_sources
         renderer/modeling/edf/osledf.cpp
         renderer/modeling/edf/osledf.h)
@@ -1482,13 +1482,13 @@ set (renderer_modeling_material_sources
     renderer/modeling/material/normalmappingmodifier.cpp
     renderer/modeling/material/normalmappingmodifier.h
 )
-if (WITH_OSL)
+if (APPLESEED_WITH_OSL)
     list (APPEND renderer_modeling_material_sources
         renderer/modeling/material/oslmaterial.cpp
         renderer/modeling/material/oslmaterial.h
     )
 endif ()
-if (WITH_DISNEY_MATERIAL)
+if (APPLESEED_WITH_DISNEY_MATERIAL)
     list (APPEND renderer_modeling_material_sources
         renderer/modeling/material/disneymaterial.cpp
         renderer/modeling/material/disneymaterial.h
@@ -1599,7 +1599,7 @@ source_group ("renderer\\modeling\\scene" FILES
     ${renderer_modeling_scene_sources}
 )
 
-if (WITH_OSL)
+if (APPLESEED_WITH_OSL)
     set (renderer_modeling_shadergroup
         renderer/modeling/shadergroup/shader.cpp
         renderer/modeling/shadergroup/shader.h
@@ -1698,7 +1698,7 @@ set_source_files_properties (${appleseed_schema_files} PROPERTIES
 )
 
 # Collect all OSL headers.
-if (WITH_OSL)
+if (APPLESEED_WITH_OSL)
     set (appleseed_osl_headers
         renderer/kernel/shading/oslutil.h
         renderer/kernel/shading/stdosl.h
@@ -1747,11 +1747,11 @@ if (WITH_OIIO)
     link_against_oiio (appleseed)
 endif ()
 
-if (WITH_OSL)
+if (APPLESEED_WITH_OSL)
     link_against_oslexec (appleseed)
 endif ()
 
-if (WITH_DISNEY_MATERIAL)
+if (APPLESEED_WITH_DISNEY_MATERIAL)
     link_against_seexpr (appleseed)
 endif ()
 
@@ -1775,7 +1775,7 @@ foreach (schema_file ${appleseed_schema_files})
     )
 endforeach ()
 
-if (WITH_OSL)
+if (APPLESEED_WITH_OSL)
     # Copy OSL headers to the sandbox.
     foreach (osl_header ${appleseed_osl_headers})
         add_custom_command (TARGET appleseed POST_BUILD

@@ -32,7 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
 #include "renderer/kernel/shading/oslshadergroupexec.h"
 #include "renderer/modeling/shadergroup/shadergroup.h"
 #endif
@@ -52,7 +52,7 @@ Tracer::Tracer(
     const Scene&                scene,
     const Intersector&          intersector,
     TextureCache&               texture_cache,
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
     OSLShaderGroupExec&         shadergroup_exec,
 #endif
     const float                 transparency_threshold,
@@ -60,7 +60,7 @@ Tracer::Tracer(
     const bool                  print_details)
   : m_intersector(intersector)
   , m_texture_cache(texture_cache)
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
   , m_shadergroup_exec(shadergroup_exec)
 #endif
   , m_assume_no_alpha_mapping(!scene.uses_alpha_mapping())
@@ -254,7 +254,7 @@ void Tracer::evaluate_alpha(
             alpha);
     }
 
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
     if (const ShaderGroup* sg = material.get_osl_surface())
     {
         if (sg->has_transparency())

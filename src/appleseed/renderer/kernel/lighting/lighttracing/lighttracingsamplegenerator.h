@@ -38,7 +38,7 @@
 #include "foundation/platform/compiler.h"
 
 // OSL headers.
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
 #include "foundation/platform/oslheaderguards.h"
 BEGIN_OSL_INCLUDES
 #include "OSL/oslexec.h"
@@ -78,7 +78,7 @@ class LightTracingSampleGeneratorFactory
 #ifdef WITH_OIIO
         OIIO::TextureSystem&    oiio_texture_system,
 #endif
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
         OSL::ShadingSystem&     shading_system,
 #endif
         const ParamArray&       params);
@@ -103,7 +103,7 @@ class LightTracingSampleGeneratorFactory
 #ifdef WITH_OIIO
     OIIO::TextureSystem&        m_oiio_texture_system;
 #endif
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
     OSL::ShadingSystem&         m_shading_system;
 #endif
     const ParamArray            m_params;

@@ -58,7 +58,7 @@
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/scene/textureinstance.h"
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
 #include "renderer/modeling/shadergroup/shader.h"
 #include "renderer/modeling/shadergroup/shaderconnection.h"
 #include "renderer/modeling/shadergroup/shadergroup.h"
@@ -444,7 +444,7 @@ namespace
                 !assembly.texture_instances().empty() ||
                 !assembly.bsdfs().empty() ||
                 !assembly.edfs().empty() ||
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
                 !assembly.shader_groups().empty() ||
 #endif
                 !assembly.surface_shaders().empty() ||
@@ -464,7 +464,7 @@ namespace
             write_collection(assembly.texture_instances());
             write_collection(assembly.bsdfs());
             write_collection(assembly.edfs());
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
             write_collection(assembly.shader_groups());
 #endif
             write_collection(assembly.surface_shaders());
@@ -934,7 +934,7 @@ namespace
             }
         }
 
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
 
         // Write a <shader> parameter.
         void write(const ShaderParam& param)

@@ -33,10 +33,10 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/material/genericmaterial.h"
 #include "renderer/modeling/material/material.h"
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
 #include "renderer/modeling/material/oslmaterial.h"
 #endif
-#ifdef WITH_DISNEY_MATERIAL
+#ifdef APPLESEED_WITH_DISNEY_MATERIAL
 #include "renderer/modeling/material/disneymaterial.h"
 #endif
 
@@ -66,11 +66,11 @@ MaterialFactoryRegistrar::MaterialFactoryRegistrar()
 {
     register_factory(auto_ptr<FactoryType>(new GenericMaterialFactory()));
 
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
     register_factory(auto_ptr<FactoryType>(new OSLMaterialFactory()));
 #endif
 
-#ifdef WITH_DISNEY_MATERIAL
+#ifdef APPLESEED_WITH_DISNEY_MATERIAL
     register_factory(auto_ptr<FactoryType>(new DisneyMaterialFactory()));
 #endif
 }

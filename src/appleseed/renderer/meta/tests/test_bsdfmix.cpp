@@ -31,7 +31,7 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/lighting/tracer.h"
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
 #include "renderer/kernel/rendering/rendererservices.h"
 #include "renderer/kernel/shading/oslshadergroupexec.h"
 #endif
@@ -60,7 +60,7 @@
 #include "foundation/utility/test.h"
 
 // OSL headers.
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
 #include "foundation/platform/oslheaderguards.h"
 BEGIN_OSL_INCLUDES
 #include "OSL/oslexec.h"
@@ -106,7 +106,7 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
             OIIO::TextureSystem::create(),
             boost::bind(&OIIO::TextureSystem::destroy, _1));
 #endif
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
         RendererServices renderer_services(*project, *texture_system, texture_store);
 
         boost::shared_ptr<OSL::ShadingSystem> shading_system(
@@ -170,14 +170,14 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
             project->get_trace_context(),
             texture_cache);
 
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
         OSLShaderGroupExec sg_exec(*shading_system);
 #endif
         Tracer tracer(
             *project->get_scene(),
             intersector,
             texture_cache
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
             , sg_exec
 #endif
             );
@@ -189,7 +189,7 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
 #ifdef WITH_OIIO
             , *texture_system
 #endif
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
             , sg_exec
 #endif
             , 0);

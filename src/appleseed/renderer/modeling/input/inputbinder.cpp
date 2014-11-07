@@ -50,7 +50,7 @@
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/scene/textureinstance.h"
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
 #include "renderer/modeling/shadergroup/shadergroup.h"
 #endif
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
@@ -163,7 +163,7 @@ void InputBinder::build_assembly_symbol_table(
         insert_entities(symbols, assembly.texture_instances(), SymbolTable::SymbolTextureInstance);
         insert_entities(symbols, assembly.bsdfs(), SymbolTable::SymbolBSDF);
         insert_entities(symbols, assembly.edfs(), SymbolTable::SymbolEDF);
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
         insert_entities(symbols, assembly.shader_groups(), SymbolTable::SymbolShaderGroup);
 #endif
         insert_entities(symbols, assembly.surface_shaders(), SymbolTable::SymbolSurfaceShader);
@@ -292,7 +292,7 @@ void InputBinder::bind_assembly_entities_inputs(
             *i);
     }
 
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
     // Bind ShaderGroups inputs.
     for (each<ShaderGroupContainer> i = assembly.shader_groups(); i; ++i)
     {
@@ -609,7 +609,7 @@ bool InputBinder::try_bind_assembly_entity_to_input(
           BIND(SymbolTable::SymbolTextureInstance, assembly.texture_instances());
           BIND(SymbolTable::SymbolBSDF, assembly.bsdfs());
           BIND(SymbolTable::SymbolEDF, assembly.edfs());
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
           BIND(SymbolTable::SymbolShaderGroup, assembly.shader_groups());
 #endif
           BIND(SymbolTable::SymbolSurfaceShader, assembly.surface_shaders());

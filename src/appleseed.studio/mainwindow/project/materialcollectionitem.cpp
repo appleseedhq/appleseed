@@ -31,13 +31,13 @@
 #include "materialcollectionitem.h"
 
 // appleseed.renderer headers.
-#ifdef WITH_DISNEY_MATERIAL
+#ifdef APPLESEED_WITH_DISNEY_MATERIAL
 #include "renderer/modeling/material/disneymaterial.h"
 #endif
 
 // appleseed.studio headers.
 #include "mainwindow/project/assemblyitem.h"
-#ifdef WITH_DISNEY_MATERIAL
+#ifdef APPLESEED_WITH_DISNEY_MATERIAL
 #include "mainwindow/project/disneymaterialcustomui.h"
 #endif
 #include "mainwindow/project/entityeditor.h"
@@ -101,11 +101,11 @@ QMenu* MaterialCollectionItem::get_single_item_context_menu() const
 
     menu->addSeparator();
     menu->addAction("Create Generic Material...", this, SLOT(slot_create_generic()));
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
     menu->addAction("Create OSL Material...", this, SLOT(slot_create_osl()));
 #endif
 
-#ifdef WITH_DISNEY_MATERIAL
+#ifdef APPLESEED_WITH_DISNEY_MATERIAL
     menu->addSeparator();
     menu->addAction("Create Disney Material...", this, SLOT(slot_create_disney()));
     menu->addAction("Import Disney Material...", this, SLOT(slot_import_disney()));
@@ -127,7 +127,7 @@ void MaterialCollectionItem::slot_create_generic()
     do_create_material("generic_material");
 }
 
-#ifdef WITH_DISNEY_MATERIAL
+#ifdef APPLESEED_WITH_DISNEY_MATERIAL
 void MaterialCollectionItem::slot_create_disney()
 {
     do_create_material("disney_material");
@@ -211,7 +211,7 @@ void MaterialCollectionItem::slot_import_disney()
 }
 #endif
 
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
 void MaterialCollectionItem::slot_create_osl()
 {
     do_create_material("osl_material");
@@ -245,7 +245,7 @@ void MaterialCollectionItem::do_create_material(const char* model)
     auto_ptr<CustomEntityUI> custom_entity_ui;
     Dictionary values;
 
-#ifdef WITH_DISNEY_MATERIAL
+#ifdef APPLESEED_WITH_DISNEY_MATERIAL
     if (strcmp(model, "disney_material") == 0)
     {
         custom_entity_ui = auto_ptr<CustomEntityUI>(

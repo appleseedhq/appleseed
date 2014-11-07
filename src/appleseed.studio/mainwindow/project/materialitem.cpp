@@ -31,13 +31,13 @@
 #include "materialitem.h"
 
 // appleseed.studio headers.
-#ifdef WITH_DISNEY_MATERIAL
+#ifdef APPLESEED_WITH_DISNEY_MATERIAL
 #include "mainwindow/project/disneymaterialcustomui.h"
 #endif
 #include "mainwindow/project/tools.h"
 
 // appleseed.renderer headers.
-#ifdef WITH_DISNEY_MATERIAL
+#ifdef APPLESEED_WITH_DISNEY_MATERIAL
 #include "renderer/modeling/material/disneymaterial.h"
 #endif
 
@@ -75,7 +75,7 @@ QMenu* MaterialItem::get_single_item_context_menu() const
     QMenu* menu = new QMenu(treeWidget());
 
     menu->addAction("Edit...", this, SLOT(slot_edit()));
-#ifdef WITH_DISNEY_MATERIAL
+#ifdef APPLESEED_WITH_DISNEY_MATERIAL
     if (strcmp(m_entity->get_model(), "disney_material") == 0)
         menu->addAction("Export...", this, SLOT(slot_export()));
 #endif
@@ -97,7 +97,7 @@ void MaterialItem::slot_edit(AttributeEditor* attribute_editor)
 
     auto_ptr<CustomEntityUI> custom_entity_ui;
 
-#ifdef WITH_DISNEY_MATERIAL
+#ifdef APPLESEED_WITH_DISNEY_MATERIAL
     if (strcmp(m_entity->get_model(), "disney_material") == 0)
     {
         custom_entity_ui =

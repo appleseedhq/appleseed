@@ -43,7 +43,7 @@
 #endif
 
 // OSL headers.
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
 #include "foundation/platform/oslheaderguards.h"
 BEGIN_OSL_INCLUDES
 #include "OSL/oslexec.h"
@@ -124,7 +124,7 @@ class DLLSYMBOL MasterRenderer
     // Render a frame sequence until the sequence is completed or rendering is aborted.
     IRendererController::Status render_frame_sequence(
         IFrameRenderer*             frame_renderer
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
         , OSL::ShadingSystem&       shading_system
 #endif
         );

@@ -32,7 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/scene/assembly.h"
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
 #include "renderer/modeling/shadergroup/shadergroup.h"
 #endif
 
@@ -49,7 +49,7 @@ struct BaseGroup::Impl
     ColorContainer              m_colors;
     TextureContainer            m_textures;
     TextureInstanceContainer    m_texture_instances;
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
     ShaderGroupContainer        m_shader_groups;
 #endif
     AssemblyContainer           m_assemblies;
@@ -59,7 +59,7 @@ struct BaseGroup::Impl
       : m_colors(parent)
       , m_textures(parent)
       , m_texture_instances(parent)
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
       , m_shader_groups(parent)
 #endif
       , m_assemblies(parent)
@@ -93,7 +93,7 @@ TextureInstanceContainer& BaseGroup::texture_instances() const
     return impl->m_texture_instances;
 }
 
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
 
 ShaderGroupContainer& BaseGroup::shader_groups() const
 {

@@ -192,7 +192,7 @@ set (mainwindow_project_sources
     mainwindow/project/tools.h
 )
 
-if (WITH_DISNEY_MATERIAL)
+if (APPLESEED_WITH_DISNEY_MATERIAL)
     list (APPEND mainwindow_project_sources
         mainwindow/project/expressioneditorwindow.cpp
         mainwindow/project/expressioneditorwindow.h
@@ -447,7 +447,7 @@ target_link_libraries (appleseed.studio
     ${OPENGL_LIBRARY}
 )
 
-if (WITH_DISNEY_MATERIAL)
+if (APPLESEED_WITH_DISNEY_MATERIAL)
     link_against_seexpreditor (appleseed.studio)
 endif ()
 

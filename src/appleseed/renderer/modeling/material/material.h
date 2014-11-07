@@ -50,7 +50,7 @@ namespace renderer      { class INormalModifier; }
 namespace renderer      { class MessageContext; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
 namespace renderer      { class ShaderGroup; }
 #endif
 namespace renderer      { class Source; }
@@ -128,7 +128,7 @@ class DLLSYMBOL Material
     // Return true if the material emits light.
     virtual bool has_emission() const;
 
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
     virtual bool has_osl_surface() const;
     const ShaderGroup* get_osl_surface() const;
     virtual const ShaderGroup* get_uncached_osl_surface() const;
@@ -141,7 +141,7 @@ class DLLSYMBOL Material
     const EDF*                      m_edf;
     const Source*                   m_alpha_map;
     const INormalModifier*          m_normal_modifier;
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
     const ShaderGroup*              m_shader_group;
 #endif
 
@@ -193,7 +193,7 @@ inline const INormalModifier* Material::get_normal_modifier() const
     return m_normal_modifier;
 }
 
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
 
 inline const ShaderGroup* Material::get_osl_surface() const
 {

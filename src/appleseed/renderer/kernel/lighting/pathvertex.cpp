@@ -56,7 +56,7 @@ void PathVertex::compute_emitted_radiance(
     InputEvaluator input_evaluator(texture_cache);
 
     // TODO: refactor this code (est.).
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
     if (const ShaderGroup* sg = get_material()->get_osl_surface())
     {
         // TODO: get object area somehow.

@@ -53,7 +53,7 @@ namespace renderer  { class Light; }
 namespace renderer  { class Material; }
 namespace renderer  { class Object; }
 namespace renderer  { class ObjectInstance; }
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
 namespace renderer  { class Shader; }
 namespace renderer  { class ShaderConnection; }
 namespace renderer  { class ShaderGroup; }
@@ -81,7 +81,7 @@ typedef TypedEntityVector<Light>                LightContainer;
 typedef TypedEntityVector<Material>             MaterialContainer;
 typedef TypedEntityVector<Object>               ObjectContainer;
 typedef TypedEntityVector<ObjectInstance>       ObjectInstanceContainer;
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
 typedef TypedEntityVector<Shader>               ShaderContainer;
 typedef TypedEntityVector<ShaderConnection>     ShaderConnectionContainer;
 typedef TypedEntityVector<ShaderGroup>          ShaderGroupContainer;
