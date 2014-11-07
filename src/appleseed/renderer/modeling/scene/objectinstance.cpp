@@ -35,7 +35,7 @@
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/scene/assembly.h"
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
 #include "renderer/modeling/shadergroup/shadergroup.h"
 #endif
 #include "renderer/utility/messagecontext.h"
@@ -81,7 +81,7 @@ bool uses_alpha_mapping(const MaterialArray& materials)
             if (materials[i]->has_alpha_map())
                 return true;
 
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
             if (materials[i]->has_osl_surface())
                 return materials[i]->get_uncached_osl_surface()->has_transparency();
 #endif

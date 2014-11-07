@@ -460,7 +460,7 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     InputEvaluator edf_input_evaluator(m_shading_context.get_texture_cache());
 
     // TODO: refactor this code (est.).
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
     if (const ShaderGroup* sg = material->get_osl_surface())
     {
         // TODO: get object area somehow.
@@ -635,7 +635,7 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
         sample.m_shading_normal,
         m_shading_context.get_intersector());
 
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
     if (const ShaderGroup* sg = material->get_osl_surface())
     {
         // TODO: get object area somehow.

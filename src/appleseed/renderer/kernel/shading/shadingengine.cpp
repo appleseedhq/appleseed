@@ -46,7 +46,7 @@
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
 #include "renderer/modeling/shadergroup/shadergroup.h"
 #endif
 #include "renderer/modeling/surfaceshader/diagnosticsurfaceshader.h"
@@ -107,7 +107,7 @@ void ShadingEngine::shade_hit_point(
         shading_result.m_main.m_alpha = Alpha(1.0f);
     }
 
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
 
     // Apply OSL transparency.
     if (material && material->get_osl_surface() && material->get_osl_surface()->has_transparency())

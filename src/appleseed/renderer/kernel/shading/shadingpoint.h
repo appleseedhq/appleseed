@@ -54,7 +54,7 @@
 #include "foundation/platform/types.h"
 
 // OSL headers.
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
 #include "foundation/platform/oslheaderguards.h"
 BEGIN_OSL_INCLUDES
 #include "OSL/oslexec.h"
@@ -68,7 +68,7 @@ END_OSL_INCLUDES
 
 // Forward declarations.
 namespace renderer  { class Object; }
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
 namespace renderer  { class OSLShaderGroupExec; }
 namespace renderer  { class ShaderGroup; }
 #endif
@@ -197,7 +197,7 @@ class ShadingPoint
     // Return the index of the primitive attribute.
     size_t get_primitive_attribute_index() const;
 
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
     struct OSLObjectTransformInfo
     {
         bool is_animated() const;
@@ -232,7 +232,7 @@ class ShadingPoint
     friend class AssemblyLeafVisitor;
     friend class CurveLeafVisitor;
     friend class Intersector;
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
     friend class OSLShaderGroupExec;
 #endif
     friend class RegionLeafVisitor;
@@ -274,7 +274,7 @@ class ShadingPoint
         HasMaterial                     = 1 << 11,
         HasTriangleVertexTangents       = 1 << 12,
         HasPointVelocity                = 1 << 13
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
         , HasOSLShaderGlobals           = 1 << 14
 #endif
     };
@@ -310,7 +310,7 @@ class ShadingPoint
     mutable foundation::Vector3d        m_front_point;                  // hit point refined to front, in assembly instance space
     mutable foundation::Vector3d        m_back_point;                   // hit point refined to back, in assembly instance space
 
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
     mutable OSLObjectTransformInfo      m_obj_transform_info;
     mutable OSLTraceData                m_osl_trace_data;
     mutable OSL::ShaderGlobals          m_shader_globals;
@@ -335,7 +335,7 @@ class ShadingPoint
     void compute_world_space_triangle_vertices() const;
     void compute_point_velocity() const;
 
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
     void initialize_osl_shader_globals(
         const ShaderGroup&          sg,
         const ShadingRay::TypeType  ray_type,

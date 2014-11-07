@@ -34,7 +34,7 @@
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/modeling/object/iregion.h"
 #include "renderer/modeling/object/object.h"
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
 #include "renderer/modeling/shadergroup/shadergroup.h"
 #endif
 
@@ -578,7 +578,7 @@ void ShadingPoint::compute_point_velocity() const
     }
 }
 
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
 
 //
 // ShadingPoint::OSLObjectTransformInfo class implementation.

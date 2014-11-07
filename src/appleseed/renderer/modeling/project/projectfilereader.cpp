@@ -76,7 +76,7 @@
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/scene/textureinstance.h"
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
 #include "renderer/modeling/shadergroup/shadergroup.h"
 #endif
 #include "renderer/modeling/surfaceshader/isurfaceshaderfactory.h"
@@ -386,7 +386,7 @@ namespace
         ElementScene,
         ElementSearchPath,
         ElementSearchPaths,
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
         ElementShader,
         ElementShaderConnection,
         ElementShaderGroup,
@@ -1787,7 +1787,7 @@ namespace
     };
 
 
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
 
     //
     // <shader> element handler.
@@ -2020,7 +2020,7 @@ namespace
             m_surface_shaders.clear();
             m_textures.clear();
             m_texture_instances.clear();
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
             m_shader_groups.clear();
 #endif
 
@@ -2045,7 +2045,7 @@ namespace
             m_assembly->surface_shaders().swap(m_surface_shaders);
             m_assembly->textures().swap(m_textures);
             m_assembly->texture_instances().swap(m_texture_instances);
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
             m_assembly->shader_groups().swap(m_shader_groups);
 #endif
         }
@@ -2110,7 +2110,7 @@ namespace
                     static_cast<ObjectInstanceElementHandler*>(handler)->get_object_instance());
                 break;
 
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
               case ElementShaderGroup:
                 insert(
                     m_shader_groups,
@@ -2159,7 +2159,7 @@ namespace
         MaterialContainer           m_materials;
         ObjectContainer             m_objects;
         ObjectInstanceContainer     m_object_instances;
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
         ShaderGroupContainer        m_shader_groups;
 #endif
         SurfaceShaderContainer      m_surface_shaders;
@@ -2862,7 +2862,7 @@ namespace
             register_factory_helper<ColorElementHandler>("color", ElementColor);
             register_factory_helper<ConfigurationElementHandler>("configuration", ElementConfiguration);
             register_factory_helper<ConfigurationsElementHandler>("configurations", ElementConfigurations);
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
             register_factory_helper<ShaderConnectionElementHandler>("connect_shaders", ElementShaderConnection);
 #endif
             register_factory_helper<DisplayElementHandler>("display", ElementDisplay);
@@ -2887,7 +2887,7 @@ namespace
             register_factory_helper<SceneElementHandler>("scene", ElementScene);
             register_factory_helper<SearchPathElementHandler>("search_path", ElementSearchPath);
             register_factory_helper<SearchPathsElementHandler>("search_paths", ElementSearchPaths);
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
             register_factory_helper<ShaderElementHandler>("shader", ElementShader);
             register_factory_helper<ShaderGroupElementHandler>("shader_group", ElementShaderGroup);
 #endif

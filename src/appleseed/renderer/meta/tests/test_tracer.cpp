@@ -32,7 +32,7 @@
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/intersection/tracecontext.h"
 #include "renderer/kernel/lighting/tracer.h"
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
 #include "renderer/kernel/rendering/rendererservices.h"
 #include "renderer/kernel/shading/oslshadergroupexec.h"
 #endif
@@ -201,7 +201,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 #ifdef WITH_OIIO
         boost::shared_ptr<OIIO::TextureSystem> m_texture_system;
 #endif
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
         boost::shared_ptr<RendererServices>    m_renderer_services;
         boost::shared_ptr<OSL::ShadingSystem>  m_shading_system;
         boost::shared_ptr<OSLShaderGroupExec>  m_shading_group_exec;
@@ -218,7 +218,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 OIIO::TextureSystem::create(),
                 boost::bind(&OIIO::TextureSystem::destroy, _1));
 #endif
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
             m_renderer_services.reset(
                 new RendererServices(*Base::m_project, *m_texture_system, m_texture_store));
             m_shading_system.reset(
@@ -248,7 +248,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             *m_scene,
             m_intersector,
             m_texture_cache
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
             , *m_shading_group_exec
 #endif
             );
@@ -273,7 +273,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             *m_scene,
             m_intersector,
             m_texture_cache
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
             , *m_shading_group_exec
 #endif
             );
@@ -295,7 +295,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             *m_scene,
             m_intersector,
             m_texture_cache
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
             , *m_shading_group_exec
 #endif
             );
@@ -320,7 +320,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             *m_scene,
             m_intersector,
             m_texture_cache
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
             , *m_shading_group_exec
 #endif
             );
@@ -351,7 +351,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             *m_scene,
             m_intersector,
             m_texture_cache
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
             , *m_shading_group_exec
 #endif
             );
@@ -377,7 +377,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             *m_scene,
             m_intersector,
             m_texture_cache
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
             , *m_shading_group_exec
 #endif
             );
@@ -399,7 +399,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             *m_scene,
             m_intersector,
             m_texture_cache
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
             , *m_shading_group_exec
 #endif
             );
@@ -425,7 +425,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             *m_scene,
             m_intersector,
             m_texture_cache
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
             , *m_shading_group_exec
 #endif
             );
@@ -456,7 +456,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             *m_scene,
             m_intersector,
             m_texture_cache
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
             , *m_shading_group_exec
 #endif
             );
@@ -481,7 +481,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             *m_scene,
             m_intersector,
             m_texture_cache
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
             , *m_shading_group_exec
 #endif
             );
@@ -503,7 +503,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             *m_scene,
             m_intersector,
             m_texture_cache
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
             , *m_shading_group_exec
 #endif
             );
@@ -528,7 +528,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             *m_scene,
             m_intersector,
             m_texture_cache
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
             , *m_shading_group_exec
 #endif
             );
@@ -560,7 +560,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             *m_scene,
             m_intersector,
             m_texture_cache
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
             , *m_shading_group_exec
 #endif
             );
@@ -586,7 +586,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             *m_scene,
             m_intersector,
             m_texture_cache
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
             , *m_shading_group_exec
 #endif
             );
@@ -608,7 +608,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             *m_scene,
             m_intersector,
             m_texture_cache
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
             , *m_shading_group_exec
 #endif
             );
@@ -634,7 +634,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             *m_scene,
             m_intersector,
             m_texture_cache
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
             , *m_shading_group_exec
 #endif
             );
@@ -656,7 +656,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             *m_scene,
             m_intersector,
             m_texture_cache
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
             , *m_shading_group_exec
 #endif
             );
@@ -681,7 +681,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             *m_scene,
             m_intersector,
             m_texture_cache
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
             , *m_shading_group_exec
 #endif
             );
@@ -713,7 +713,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             *m_scene,
             m_intersector,
             m_texture_cache
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
             , *m_shading_group_exec
 #endif
             );
@@ -735,7 +735,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             *m_scene,
             m_intersector,
             m_texture_cache
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
             , *m_shading_group_exec
 #endif
             );
@@ -764,7 +764,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             *m_scene,
             m_intersector,
             m_texture_cache
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
             , *m_shading_group_exec
 #endif
             );
@@ -786,7 +786,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             *m_scene,
             m_intersector,
             m_texture_cache
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
             , *m_shading_group_exec
 #endif
             );

@@ -37,7 +37,7 @@
 #include "main/dllsymbol.h"
 
 // OSL headers.
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
 #include "foundation/platform/oslheaderguards.h"
 BEGIN_OSL_INCLUDES
 #include "OSL/oslexec.h"
@@ -73,7 +73,7 @@ class DLLSYMBOL BaseGroup
     // Access the texture instances.
     TextureInstanceContainer& texture_instances() const;
 
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
 
     // Access the OSL shader groups.
     ShaderGroupContainer& shader_groups() const;

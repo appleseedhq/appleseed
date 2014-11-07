@@ -39,7 +39,7 @@
 #include "renderer/kernel/lighting/pathtracer.h"
 #include "renderer/kernel/lighting/pathvertex.h"
 #include "renderer/kernel/lighting/tracer.h"
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
 #include "renderer/kernel/shading/oslshadergroupexec.h"
 #endif
 #include "renderer/kernel/shading/shadingpoint.h"
@@ -204,7 +204,7 @@ namespace
 #ifdef WITH_OIIO
             OIIO::TextureSystem&    oiio_texture_system,
 #endif
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
             OSL::ShadingSystem&     shading_system,
 #endif
             AbortSwitch&            abort_switch)
@@ -218,14 +218,14 @@ namespace
           , m_photon_end(photon_end)
           , m_pass_hash(pass_hash)
           , m_abort_switch(abort_switch)
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
           , m_shadergroup_exec(shading_system)
 #endif
           , m_tracer(
                 m_scene,
                 m_intersector,
                 m_texture_cache,
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
                 m_shadergroup_exec,
 #endif
                 m_params.m_transparency_threshold,
@@ -238,7 +238,7 @@ namespace
 #ifdef WITH_OIIO
                 , oiio_texture_system
 #endif
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
                 , m_shadergroup_exec
 #endif
                 , thread_index)
@@ -274,7 +274,7 @@ namespace
         const size_t                m_pass_hash;
         AbortSwitch&                m_abort_switch;
         SPPMPhotonVector            m_local_photons;
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
         OSLShaderGroupExec          m_shadergroup_exec;
 #endif
         Tracer                      m_tracer;
@@ -323,7 +323,7 @@ namespace
                 shading_point,
                 light_sample.m_shading_normal,
                 m_shading_context.get_intersector());
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
             if (const ShaderGroup* sg = material->get_osl_surface())
             {
                 // TODO: get object area somehow.
@@ -476,7 +476,7 @@ namespace
 #ifdef WITH_OIIO
             OIIO::TextureSystem&    oiio_texture_system,
 #endif
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
             OSL::ShadingSystem&     shading_system,
 #endif
             AbortSwitch&            abort_switch)
@@ -493,14 +493,14 @@ namespace
           , m_abort_switch(abort_switch)
           , m_safe_scene_radius(scene.compute_radius() * (1.0 + 1.0e-3))
           , m_disk_point_prob(1.0 / (Pi * square(m_safe_scene_radius)))
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
           , m_shadergroup_exec(shading_system)
 #endif
           , m_tracer(
                 m_scene,
                 m_intersector,
                 m_texture_cache,
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
                 m_shadergroup_exec,
 #endif
                 m_params.m_transparency_threshold,
@@ -513,7 +513,7 @@ namespace
 #ifdef WITH_OIIO
                 , oiio_texture_system
 #endif
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
                 , m_shadergroup_exec
 #endif
                 , thread_index)
@@ -552,7 +552,7 @@ namespace
         const double                m_safe_scene_radius;
         const double                m_disk_point_prob;
         SPPMPhotonVector            m_local_photons;
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
         OSLShaderGroupExec          m_shadergroup_exec;
 #endif
         Tracer                      m_tracer;
@@ -640,7 +640,7 @@ SPPMPhotonTracer::SPPMPhotonTracer(
 #ifdef WITH_OIIO
     OIIO::TextureSystem&    oiio_texture_system,
 #endif
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
     OSL::ShadingSystem&     shading_system,
 #endif
     const SPPMParameters&   params)
@@ -654,7 +654,7 @@ SPPMPhotonTracer::SPPMPhotonTracer(
 #ifdef WITH_OIIO
   , m_oiio_texture_system(oiio_texture_system)
 #endif
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
   , m_shading_system(shading_system)
 #endif
 {
@@ -750,7 +750,7 @@ void SPPMPhotonTracer::schedule_light_photon_tracing_jobs(
 #ifdef WITH_OIIO
                 m_oiio_texture_system,
 #endif
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
                 m_shading_system,
 #endif
                 abort_switch));
@@ -793,7 +793,7 @@ void SPPMPhotonTracer::schedule_environment_photon_tracing_jobs(
 #ifdef WITH_OIIO
                 m_oiio_texture_system,
 #endif
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
                 m_shading_system,
 #endif
                 abort_switch));

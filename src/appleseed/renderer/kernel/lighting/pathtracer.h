@@ -43,7 +43,7 @@
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/material/material.h"
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
 #include "renderer/modeling/shadergroup/shadergroup.h"
 #endif
 
@@ -202,7 +202,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         {
             bool has_transparency = material->get_alpha_map() ? true : false;
 
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
             if (!has_transparency)
             {
                 has_transparency =
@@ -223,7 +223,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                         alpha);
                 }
 
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
                 if (material->get_osl_surface() && material->get_osl_surface()->has_transparency())
                 {
                     // Evaluate the OSL shader at the shading point.
@@ -263,7 +263,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             }
         }
 
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
         // Execute the OSL shader, if we have one.
         if (material && material->get_osl_surface())
         {

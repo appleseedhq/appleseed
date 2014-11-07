@@ -62,7 +62,7 @@ SPPMPassCallback::SPPMPassCallback(
 #ifdef WITH_OIIO
     OIIO::TextureSystem&    oiio_texture_system,
 #endif
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
     OSL::ShadingSystem&     shading_system,
 #endif
     const SPPMParameters&   params)
@@ -75,7 +75,7 @@ SPPMPassCallback::SPPMPassCallback(
 #ifdef WITH_OIIO
         oiio_texture_system,
 #endif
-#ifdef WITH_OSL
+#ifdef APPLESEED_WITH_OSL
         shading_system,
 #endif
         params)
