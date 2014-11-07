@@ -526,12 +526,37 @@ closure color microfacet(string distribution, normal N, float alpha, float eta, 
     return microfacet(distribution, N, vector(0), alpha, alpha, eta, refract);
 }
 
+closure color microfacet_ggx(normal N, float ag, float eta)
+{
+    return microfacet("ggx", N, ag, eta, 0);
+}
+
+closure color microfacet_ggx_refraction(normal N, float ag, float eta)
+{
+    return microfacet("ggx", N, ag, eta, 1);
+}
+
+closure color microfacet_beckmann(normal N, float ab, float eta)
+{
+    return microfacet("beckmann", N, ab, eta, 0);
+}
+
+closure color microfacet_beckmann_refraction(normal N, float ab, float eta)
+{
+    return microfacet("beckmann", N, ab, eta, 1);
+}
+
 closure color diffuse(normal N) BUILTIN;
 closure color holdout() BUILTIN;
 closure color translucent(normal N) BUILTIN;
 closure color transparent() BUILTIN;
 
 closure color oren_nayar(normal N, float roughness) BUILTIN;
+
+closure color phong(normal N, float exponent)
+{
+    return as_ashikhmin_shirley(N, vector(0), 0, color(0), 1, color(1), exponent, exponent);
+}
 
 // Renderer state
 int backfacing () BUILTIN;
