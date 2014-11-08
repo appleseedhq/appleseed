@@ -38,9 +38,6 @@
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
 namespace renderer      { class BSDF; }
@@ -66,7 +63,7 @@ DECLARE_INPUT_VALUES(OSLMicrofacetBTDFInputValues)
 // OSLMicrofacet BTDF factory.
 //
 
-class DLLSYMBOL OSLMicrofacetBTDFFactory
+class OSLMicrofacetBTDFFactory
   : public IBSDFFactory
 {
   public:

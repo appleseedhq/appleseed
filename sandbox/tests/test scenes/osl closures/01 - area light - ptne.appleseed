@@ -63,18 +63,15 @@
             </edf>
             <shader_group name="ashikhmin2_shadergroup">
                 <shader type="surface" name="ashikhmin" layer="ashikhmin1">
-                    <parameter name="Cd" value="color 0 0.3 0.6" />
                     <parameter name="Cs" value="color 0 0.5 0.8" />
-                    <parameter name="kd" value="float 0.4" />
-                    <parameter name="ks" value="float 0.6" />
-                    <parameter name="nu" value="float 10000" />
-                    <parameter name="nv" value="float 10000" />
+                    <parameter name="ks" value="float 0.9" />
+                    <parameter name="nu" value="float 1000" />
+                    <parameter name="nv" value="float 1000" />
                 </shader>
             </shader_group>
             <shader_group name="ashikhmin3_shadergroup">
                 <shader type="surface" name="ashikhmin" layer="ashikhmin1">
                     <parameter name="Cs" value="color 0.4 0.8 0.1" />
-                    <parameter name="kd" value="float 0" />
                     <parameter name="ks" value="float 1" />
                     <parameter name="nu" value="float 10" />
                     <parameter name="nv" value="float 600" />
@@ -82,9 +79,7 @@
             </shader_group>
             <shader_group name="ashikhmin_shadergroup">
                 <shader type="surface" name="ashikhmin" layer="ashikhmin1">
-                    <parameter name="Cd" value="color 0.4 0.2 0.1" />
                     <parameter name="Cs" value="color 0.8 0.5 0.2" />
-                    <parameter name="kd" value="float 0.2" />
                     <parameter name="ks" value="float 0.8" />
                     <parameter name="nu" value="float 100" />
                     <parameter name="nv" value="float 100" />

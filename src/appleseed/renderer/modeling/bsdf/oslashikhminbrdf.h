@@ -5,6 +5,7 @@
 //
 // This software is released under the MIT license.
 //
+// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
 // Copyright (c) 2014 Francois Beaune, The appleseedhq Organization
 // Copyright (c) 2014 Esteban Tovagliari, The appleseedhq Organization
 //
@@ -27,10 +28,11 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSDF_OSLMICROFACETBRDF_H
-#define APPLESEED_RENDERER_MODELING_BSDF_OSLMICROFACETBRDF_H
+#ifndef APPLESEED_RENDERER_MODELING_BSDF_OSLASHIKHMINBRDF_H
+#define APPLESEED_RENDERER_MODELING_BSDF_OSLASHIKHMINBRDF_H
 
 // appleseed.renderer headers.
+#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/bsdf/ibsdffactory.h"
 #include "renderer/modeling/input/inputarray.h"
 
@@ -47,21 +49,21 @@ namespace renderer
 {
 
 //
-// OSLMicrofacet BRDF input values.
+// OSL Ashikhmin-Shirley BRDF input values.
 //
 
-DECLARE_INPUT_VALUES(OSLMicrofacetBRDFInputValues)
+DECLARE_INPUT_VALUES(OSLAshikminBRDFInputValues)
 {
-    double m_ax;
-    double m_ay;
+    double      m_nu;               // Phong-like exponent in first tangent direction
+    double      m_nv;               // Phong-like exponent in second tangent direction
 };
 
 
 //
-// OSLMicrofacet BRDF factory.
+// OSL Ashikhmin-Shirley BRDF factory.
 //
 
-class OSLMicrofacetBRDFFactory
+class OSLAshikhminBRDFFactory
   : public IBSDFFactory
 {
   public:
@@ -82,4 +84,4 @@ class OSLMicrofacetBRDFFactory
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_BSDF_OSLMICROFACETBRDF_H
+#endif  // !APPLESEED_RENDERER_MODELING_BSDF_ASHIKHMINBRDF_H

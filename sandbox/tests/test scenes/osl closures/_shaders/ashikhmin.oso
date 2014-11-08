@@ -1,18 +1,24 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.5.7dev
+# Compiled by oslc 1.6.2dev
 surface ashikhmin
-param	float	kd	1 		 %read{0,0} %write{2147483647,-1}
-param	color	Cd	1 1 1 		 %read{0,0} %write{2147483647,-1}
-param	float	ks	1 		 %read{0,0} %write{2147483647,-1}
-param	float	nu	1000 		 %read{0,0} %write{2147483647,-1}
-param	float	nv	1000 		 %read{0,0} %write{2147483647,-1}
-param	color	Cs	1 1 1 		 %read{0,0} %write{2147483647,-1}
+param	float	ks	1		 %read{1,1} %write{2147483647,-1}
+param	color	Cs	1 1 1		 %read{1,1} %write{2147483647,-1}
+param	float	nu	1000		 %read{0,0} %write{2147483647,-1}
+param	float	nv	1000		 %read{0,0} %write{2147483647,-1}
 global	normal	N	 %read{0,0} %write{2147483647,-1}
 global	vector	dPdu	 %read{0,0} %write{2147483647,-1}
-global	closure color	Ci	 %read{2147483647,-1} %write{0,0}
+global	closure color	Ci	 %read{2147483647,-1} %write{2,2}
+temp	closure color	$tmp1	 %read{2,2} %write{0,0}
 const	string	$const1	"as_ashikhmin_shirley"		 %read{0,0} %write{2147483647,-1}
+temp	color	$tmp2	 %read{2,2} %write{1,1}
 code ___main___
-# ashikhmin.osl:18
+# ashikhmin.osl:12
 # 		nv);
-	closure		Ci $const1 N dPdu kd Cd ks Cs nu nv 	%filename{"ashikhmin.osl"} %line{18} %argrw{"wrrrrrrrrr"}
+	closure		$tmp1 $const1 N dPdu nu nv 	%filename{"ashikhmin.osl"} %line{12} %argrw{"wrrrrr"}
+# ashikhmin.osl:8
+# 	Ci = ks * Cs * as_ashikhmin_shirley(
+	mul		$tmp2 ks Cs 	%line{8} %argrw{"wrr"}
+# ashikhmin.osl:12
+# 		nv);
+	mul		Ci $tmp1 $tmp2 	%line{12} %argrw{"wrr"}
 	end
