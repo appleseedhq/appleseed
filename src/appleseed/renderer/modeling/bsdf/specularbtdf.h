@@ -60,7 +60,7 @@ DECLARE_INPUT_VALUES(SpecularBTDFInputValues)
     double      m_reflectance_multiplier;       // specular reflectance multiplier
     Spectrum    m_transmittance;                // specular transmittance
     double      m_transmittance_multiplier;     // specular transmittance multiplier
-    double      m_fresnel_multiplier;           // fresnel multiplier
+    double      m_fresnel_multiplier;           // Fresnel multiplier
     double      m_from_ior;                     // from this index of refraction
     double      m_to_ior;                       // to this index of refraction
 };

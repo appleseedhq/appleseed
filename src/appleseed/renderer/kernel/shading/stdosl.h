@@ -482,8 +482,8 @@ string concat (string a, string b, string c, string d, string e, string f) {
 /********************************/
 // appleseed specific closures
 
-// Specular component of Ashikhmin Shirley (anisotropic Phong model)
-// without fresnel term.
+// Specular component of Ashikhmin-Shirley (anisotropic Phong model)
+// without Fresnel term.
 closure color as_ashikhmin_shirley(
     normal N,
     vector T,

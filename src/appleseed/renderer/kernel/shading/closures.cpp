@@ -226,11 +226,11 @@ void CompositeSurfaceClosure::process_closure_tree(
                     const AshikhminShirleyBRDFClosureParams* p =
                         reinterpret_cast<const AshikhminShirleyBRDFClosureParams*>(c->data());
 
-                    OSLAshikminBRDFInputValues values;
+                    OSLAshikhminBRDFInputValues values;
                     values.m_nu = max(p->nu, 0.01f);
                     values.m_nv = max(p->nv, 0.01f);
 
-                    add_closure<OSLAshikminBRDFInputValues>(
+                    add_closure<OSLAshikhminBRDFInputValues>(
                         static_cast<ClosureID>(c->id),
                         w,
                         Vector3d(p->N),

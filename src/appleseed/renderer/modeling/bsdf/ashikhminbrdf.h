@@ -54,7 +54,7 @@ namespace renderer
 // Ashikhmin-Shirley BRDF input values.
 //
 
-DECLARE_INPUT_VALUES(AshikminBRDFInputValues)
+DECLARE_INPUT_VALUES(AshikhminBRDFInputValues)
 {
     Spectrum    m_rd;               // diffuse reflectance of the substrate
     double      m_rd_multiplier;    // diffuse reflectance multiplier

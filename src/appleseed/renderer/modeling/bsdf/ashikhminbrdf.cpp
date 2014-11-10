@@ -379,7 +379,7 @@ namespace
         }
 
       private:
-        typedef AshikminBRDFInputValues InputValues;
+        typedef AshikhminBRDFInputValues InputValues;
 
         // Precomputed reflectance-related values.
         struct RVal

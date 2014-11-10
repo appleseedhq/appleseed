@@ -132,7 +132,7 @@ class APPLESEED_ALIGN(16) CompositeSurfaceClosure
 
   private:
     typedef boost::mpl::vector<
-        OSLAshikminBRDFInputValues,
+        OSLAshikhminBRDFInputValues,
         DiffuseBTDFInputValues,
         DisneyBRDFInputValues,
         LambertianBRDFInputValues,
