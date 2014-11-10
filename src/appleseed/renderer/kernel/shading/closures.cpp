@@ -71,10 +71,6 @@ namespace
     {
         OSL::Vec3       N;
         OSL::Vec3       T;
-        float           kd;
-        OSL::Color3     Cd;
-        float           ks;
-        OSL::Color3     Cs;
         float           nu;
         float           nv;
     };
@@ -230,16 +226,11 @@ void CompositeSurfaceClosure::process_closure_tree(
                     const AshikhminShirleyBRDFClosureParams* p =
                         reinterpret_cast<const AshikhminShirleyBRDFClosureParams*>(c->data());
 
-                    AshikminBRDFInputValues values;
-                    values.m_rd = Color3f(p->Cd);
-                    values.m_rd_multiplier = saturate(p->kd);
-                    values.m_rg = Color3f(p->Cs);
-                    values.m_rg_multiplier = saturate(p->ks);
-                    values.m_fr_multiplier = 1.0;
-                    values.m_nu = max(p->nu, 0.0f);
-                    values.m_nv = max(p->nv, 0.0f);
+                    OSLAshikminBRDFInputValues values;
+                    values.m_nu = max(p->nu, 0.01f);
+                    values.m_nv = max(p->nv, 0.01f);
 
-                    add_closure<AshikminBRDFInputValues>(
+                    add_closure<OSLAshikminBRDFInputValues>(
                         static_cast<ClosureID>(c->id),
                         w,
                         Vector3d(p->N),
@@ -695,10 +686,6 @@ void register_appleseed_closures(OSL::ShadingSystem& shading_system)
     {
         { "as_ashikhmin_shirley", AshikhminShirleyID, { CLOSURE_VECTOR_PARAM(AshikhminShirleyBRDFClosureParams, N),
                                                         CLOSURE_VECTOR_PARAM(AshikhminShirleyBRDFClosureParams, T),
-                                                        CLOSURE_FLOAT_PARAM(AshikhminShirleyBRDFClosureParams, kd),
-                                                        CLOSURE_COLOR_PARAM(AshikhminShirleyBRDFClosureParams, Cd),
-                                                        CLOSURE_FLOAT_PARAM(AshikhminShirleyBRDFClosureParams, ks),
-                                                        CLOSURE_COLOR_PARAM(AshikhminShirleyBRDFClosureParams, Cs),
                                                         CLOSURE_FLOAT_PARAM(AshikhminShirleyBRDFClosureParams, nu),
                                                         CLOSURE_FLOAT_PARAM(AshikhminShirleyBRDFClosureParams, nv),
                                                         CLOSURE_FINISH_PARAM(AshikhminShirleyBRDFClosureParams) } },
