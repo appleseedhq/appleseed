@@ -52,7 +52,7 @@ namespace renderer
 // OSL Ashikhmin-Shirley BRDF input values.
 //
 
-DECLARE_INPUT_VALUES(OSLAshikminBRDFInputValues)
+DECLARE_INPUT_VALUES(OSLAshikhminBRDFInputValues)
 {
     double      m_nu;               // Phong-like exponent in first tangent direction
     double      m_nv;               // Phong-like exponent in second tangent direction

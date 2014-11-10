@@ -284,7 +284,7 @@ namespace
         }
 
       private:
-        typedef OSLAshikminBRDFInputValues InputValues;
+        typedef OSLAshikhminBRDFInputValues InputValues;
 
         // Precomputed shininess-related values.
         struct SVal
