@@ -263,6 +263,7 @@ void Tracer::evaluate_alpha(
             m_shadergroup_exec.execute_transparency(
                 *sg,
                 shading_point,
+                true,
                 a);
 
             alpha *= a;

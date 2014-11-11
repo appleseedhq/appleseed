@@ -96,12 +96,14 @@ void ShadingContext::execute_osl_shading(
 void ShadingContext::execute_osl_transparency(
     const ShaderGroup&          shader_group,
     const ShadingPoint&         shading_point,
+    bool                        shadow,
     Alpha&                      alpha,
     float*                      holdout) const
 {
     m_shadergroup_exec.execute_transparency(
         shader_group,
         shading_point,
+        shadow,
         alpha,
         holdout);
 }

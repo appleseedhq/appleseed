@@ -70,6 +70,7 @@ class OSLShaderGroupExec
     void execute_transparency(
         const ShaderGroup&      shader_group,
         const ShadingPoint&     shading_point,
+        bool                    shadow,
         Alpha&                  alpha,
         float*                  holdout = 0) const;
 

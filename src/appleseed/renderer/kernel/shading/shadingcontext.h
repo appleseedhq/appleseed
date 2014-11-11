@@ -109,6 +109,7 @@ class ShadingContext
     void execute_osl_transparency(
         const ShaderGroup&  shader_group,
         const ShadingPoint& shading_point,
+        bool                shadow,
         Alpha&              alpha,
         float*              holdout = 0) const;
 

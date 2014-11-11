@@ -231,6 +231,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                     shading_context.execute_osl_transparency(
                         *material->get_osl_surface(),
                         *vertex.m_shading_point,
+                        false,
                         a);
 
                     alpha *= a;

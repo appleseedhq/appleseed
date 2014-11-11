@@ -70,13 +70,14 @@ void OSLShaderGroupExec::execute_shading(
 void OSLShaderGroupExec::execute_transparency(
     const ShaderGroup&          shader_group,
     const ShadingPoint&         shading_point,
+    bool                        shadow,
     Alpha&                      alpha,
     float*                      holdout) const
 {
     do_execute(
         shader_group,
         shading_point,
-        ShadingRay::ShadowRay);
+        shadow ? ShadingRay::ShadowRay : ShadingRay::TransparencyRay);
 
     process_transparency_tree(shading_point.get_osl_shader_globals().Ci, alpha);
 
