@@ -1,8 +1,8 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.6.1dev
+# Compiled by oslc 1.6.2dev
 surface simple_tex
-param	float	Kd	1 		 %read{2,2} %write{2147483647,-1}
-param	string	texfile	"" 		 %read{0,0} %write{2147483647,-1}
+param	float	Kd	1		 %read{2,2} %write{2147483647,-1}
+param	string	texfile	""		 %read{0,0} %write{2147483647,-1}
 global	normal	N	 %read{1,1} %write{2147483647,-1}
 global	float	u	 %read{0,0} %write{2147483647,-1} %derivs
 global	float	v	 %read{0,0} %write{2147483647,-1} %derivs

@@ -1,9 +1,9 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.5.7dev
+# Compiled by oslc 1.6.2dev
 surface diffuse_mirror_mix
-param	float	Kd	1 		 %read{1,1} %write{2147483647,-1}
-param	color	Cs	1 1 1 		 %read{1,1} %write{2147483647,-1}
-param	float	Kr	0 		 %read{10,16} %write{2147483647,-1}
+param	float	Kd	1		 %read{1,1} %write{2147483647,-1}
+param	color	Cs	1 1 1		 %read{1,1} %write{2147483647,-1}
+param	float	Kr	0		 %read{10,16} %write{2147483647,-1}
 global	point	P	 %read{3,12} %write{2147483647,-1}
 global	normal	N	 %read{0,15} %write{2147483647,-1}
 global	closure color	Ci	 %read{11,17} %write{2,17}

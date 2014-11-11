@@ -1,5 +1,5 @@
 OpenShadingLanguage 1.00
-# Compiled by oslc 1.6.0dev
+# Compiled by oslc 1.6.2dev
 surface velocity_matte
 global	normal	N	 %read{3,3} %write{2147483647,-1}
 global	closure color	Ci	 %read{2147483647,-1} %write{4,4}
@@ -12,7 +12,7 @@ temp	closure color	$tmp3	 %read{4,4} %write{3,3}
 const	string	$const2	"diffuse"		 %read{3,3} %write{2147483647,-1}
 code ___main___
 # velocity_matte.osl:4
-# 	color Cs = abs(color(dPdtime)) * 0.3;
+#     color Cs = abs(color(dPdtime)) * 0.3;
 	assign		$tmp2 dPdtime 	%filename{"velocity_matte.osl"} %line{4} %argrw{"wr"}
 	abs		$tmp1 $tmp2 	%argrw{"wr"}
 	mul		Cs $tmp1 $const1 	%argrw{"wrr"}
