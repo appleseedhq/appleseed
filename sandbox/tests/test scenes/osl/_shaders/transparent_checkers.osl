@@ -5,7 +5,7 @@ surface transparent_checkers(
     float scale = 5,
     float transparency = 0.0)
 {
-    if (raytype("shadow"))
+    if (raytype("shadow") || raytype("transparency"))
     {
         point q = P * scale;
         q[0] = (q[0] + 0.00001) * 0.9999;

@@ -53,13 +53,7 @@ surface marble(
         DARKER_GRAY
         };
 
-    Ci = as_ashikhmin_shirley(
-        N,
-        dPdu,
-        Kd,
-        Cd * spline("catmull-rom", clamp(2 * marble + .75, 0, 1), marble_ramp),
-        Ks,
-        Cs,
-        exponent,
-        exponent);
+    Ci = 
+        Kd * Cd * spline("catmull-rom", clamp(2 * marble + .75, 0, 1), marble_ramp) * diffuse(N) +
+        Ks * Cs * phong(N, exponent);
 }
