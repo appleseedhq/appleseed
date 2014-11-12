@@ -367,6 +367,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
         "camera",
         "light",
         "shadow",
+        "transparency",
         "probe",
         "diffuse",
         "glossy",

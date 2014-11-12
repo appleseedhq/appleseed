@@ -1,0 +1,119 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.6.2dev
+surface transparent_shadow_checkers
+param	float	kd	1		 %read{38,38} %write{2147483647,-1}
+param	color	Cs	1 1 1		 %read{38,38} %write{2147483647,-1}
+param	float	scale	5		 %read{2,2} %write{2147483647,-1}
+param	float	transparency	0		 %read{27,27} %write{2147483647,-1}
+global	point	P	 %read{2,2} %write{2147483647,-1}
+global	normal	N	 %read{37,37} %write{2147483647,-1}
+global	closure color	Ci	 %read{2147483647,-1} %write{36,39}
+local	point	___299_q	 %read{3,23} %write{2,14}
+local	int	___299_xi	 %read{28,28} %write{18,18}
+local	int	___299_yi	 %read{29,29} %write{22,22}
+local	int	___299_zi	 %read{31,31} %write{26,26}
+local	float	___299_transp	 %read{36,36} %write{27,34}
+temp	int	$tmp1	 %read{1,1} %write{0,0}
+const	string	$const1	"shadow"		 %read{0,0} %write{2147483647,-1}
+const	int	$const2	0		 %read{3,15} %write{2147483647,-1}
+temp	float	$tmp2	 %read{4,4} %write{3,3}
+const	float	$const3	9.9999997e-06		 %read{4,12} %write{2147483647,-1}
+temp	float	$tmp3	 %read{5,5} %write{4,4}
+const	float	$const4	0.99989998		 %read{5,13} %write{2147483647,-1}
+temp	float	$tmp4	 %read{6,6} %write{5,5}
+const	int	$const5	1		 %read{7,19} %write{2147483647,-1}
+temp	float	$tmp5	 %read{8,8} %write{7,7}
+temp	float	$tmp6	 %read{9,9} %write{8,8}
+temp	float	$tmp7	 %read{10,10} %write{9,9}
+const	int	$const6	2		 %read{11,31} %write{2147483647,-1}
+temp	float	$tmp8	 %read{12,12} %write{11,11}
+temp	float	$tmp9	 %read{13,13} %write{12,12}
+temp	float	$tmp10	 %read{14,14} %write{13,13}
+temp	float	$tmp11	 %read{18,18} %write{17,17}
+temp	float	$tmp12	 %read{17,17} %write{16,16}
+temp	float	$tmp13	 %read{16,16} %write{15,15}
+temp	float	$tmp14	 %read{22,22} %write{21,21}
+temp	float	$tmp15	 %read{21,21} %write{20,20}
+temp	float	$tmp16	 %read{20,20} %write{19,19}
+temp	float	$tmp17	 %read{26,26} %write{25,25}
+temp	float	$tmp18	 %read{25,25} %write{24,24}
+temp	float	$tmp19	 %read{24,24} %write{23,23}
+temp	int	$tmp20	 %read{30,30} %write{28,28}
+temp	int	$tmp21	 %read{30,30} %write{29,29}
+temp	int	$tmp22	 %read{32,32} %write{30,30}
+temp	int	$tmp23	 %read{32,32} %write{31,31}
+temp	int	$tmp24	 %read{33,33} %write{32,32}
+const	float	$const7	1		 %read{34,34} %write{2147483647,-1}
+temp	closure color	$tmp25	 %read{36,36} %write{35,35}
+const	string	$const8	"transparent"		 %read{35,35} %write{2147483647,-1}
+temp	closure color	$tmp26	 %read{39,39} %write{37,37}
+const	string	$const9	"diffuse"		 %read{37,37} %write{2147483647,-1}
+temp	color	$tmp27	 %read{39,39} %write{38,38}
+code ___main___
+# transparent_shadow_checkers.osl:8
+#     if (raytype("shadow"))
+	raytype		$tmp1 $const1 	%filename{"transparent_shadow_checkers.osl"} %line{8} %argrw{"wr"}
+	if		$tmp1 37 40 	%argrw{"r"}
+# transparent_shadow_checkers.osl:10
+#         point q = P * scale;
+	mul		___299_q P scale 	%line{10} %argrw{"wrr"}
+# transparent_shadow_checkers.osl:11
+#         q[0] = (q[0] + 0.00001) * 0.9999;
+	compref		$tmp2 ___299_q $const2 	%line{11} %argrw{"wrr"}
+	add		$tmp3 $tmp2 $const3 	%argrw{"wrr"}
+	mul		$tmp4 $tmp3 $const4 	%argrw{"wrr"}
+	compassign	___299_q $const2 $tmp4 	%argrw{"wrr"}
+# transparent_shadow_checkers.osl:12
+#         q[1] = (q[1] + 0.00001) * 0.9999;
+	compref		$tmp5 ___299_q $const5 	%line{12} %argrw{"wrr"}
+	add		$tmp6 $tmp5 $const3 	%argrw{"wrr"}
+	mul		$tmp7 $tmp6 $const4 	%argrw{"wrr"}
+	compassign	___299_q $const5 $tmp7 	%argrw{"wrr"}
+# transparent_shadow_checkers.osl:13
+#         q[2] = (q[2] + 0.00001) * 0.9999;
+	compref		$tmp8 ___299_q $const6 	%line{13} %argrw{"wrr"}
+	add		$tmp9 $tmp8 $const3 	%argrw{"wrr"}
+	mul		$tmp10 $tmp9 $const4 	%argrw{"wrr"}
+	compassign	___299_q $const6 $tmp10 	%argrw{"wrr"}
+# transparent_shadow_checkers.osl:15
+#         int xi = (int)fabs(floor(q[0]));
+	compref		$tmp13 ___299_q $const2 	%line{15} %argrw{"wrr"}
+	floor		$tmp12 $tmp13 	%argrw{"wr"}
+	fabs		$tmp11 $tmp12 	%argrw{"wr"}
+	assign		___299_xi $tmp11 	%argrw{"wr"}
+# transparent_shadow_checkers.osl:16
+#         int yi = (int)fabs(floor(q[1]));
+	compref		$tmp16 ___299_q $const5 	%line{16} %argrw{"wrr"}
+	floor		$tmp15 $tmp16 	%argrw{"wr"}
+	fabs		$tmp14 $tmp15 	%argrw{"wr"}
+	assign		___299_yi $tmp14 	%argrw{"wr"}
+# transparent_shadow_checkers.osl:17
+#         int zi = (int)fabs(floor(q[2]));
+	compref		$tmp19 ___299_q $const6 	%line{17} %argrw{"wrr"}
+	floor		$tmp18 $tmp19 	%argrw{"wr"}
+	fabs		$tmp17 $tmp18 	%argrw{"wr"}
+	assign		___299_zi $tmp17 	%argrw{"wr"}
+# transparent_shadow_checkers.osl:19
+#         float transp = transparency;
+	assign		___299_transp transparency 	%line{19} %argrw{"wr"}
+# transparent_shadow_checkers.osl:21
+#         if ((xi % 2 == yi % 2) == (zi % 2))
+	mod		$tmp20 ___299_xi $const6 	%line{21} %argrw{"wrr"}
+	mod		$tmp21 ___299_yi $const6 	%argrw{"wrr"}
+	eq		$tmp22 $tmp20 $tmp21 	%argrw{"wrr"}
+	mod		$tmp23 ___299_zi $const6 	%argrw{"wrr"}
+	eq		$tmp24 $tmp22 $tmp23 	%argrw{"wrr"}
+	if		$tmp24 35 35 	%argrw{"r"}
+# transparent_shadow_checkers.osl:22
+#             transp = 1.0;
+	assign		___299_transp $const7 	%line{22} %argrw{"wr"}
+# transparent_shadow_checkers.osl:24
+#         Ci = transp * transparent();
+	closure		$tmp25 $const8 	%line{24} %argrw{"wr"}
+	mul		Ci $tmp25 ___299_transp 	%argrw{"wrr"}
+# transparent_shadow_checkers.osl:27
+#         Ci = kd * Cs * diffuse(N);
+	closure		$tmp26 $const9 N 	%line{27} %argrw{"wrr"}
+	mul		$tmp27 kd Cs 	%argrw{"wrr"}
+	mul		Ci $tmp26 $tmp27 	%argrw{"wrr"}
+	end

@@ -44,7 +44,9 @@ END_OSL_INCLUDES
 
 // Forward declarations.
 namespace renderer  { class ShaderGroup; }
+namespace renderer  { class ShadingContext; }
 namespace renderer  { class ShadingPoint; }
+namespace renderer  { class Tracer; }
 
 namespace renderer
 {
@@ -63,6 +65,14 @@ class OSLShaderGroupExec
     // Destructor.
     ~OSLShaderGroupExec();
 
+  private:
+    friend class ShadingContext;
+    friend class Tracer;
+
+    OSL::ShadingSystem&         m_osl_shading_system;
+    OSL::PerThreadInfo*         m_osl_thread_info;
+    OSL::ShadingContext*        m_osl_shading_context;
+
     void execute_shading(
         const ShaderGroup&      shader_group,
         const ShadingPoint&     shading_point) const;
@@ -73,15 +83,15 @@ class OSLShaderGroupExec
         Alpha&                  alpha,
         float*                  holdout = 0) const;
 
+    void execute_shadow(
+        const ShaderGroup&      shader_group,
+        const ShadingPoint&     shading_point,
+        Alpha&                  alpha) const;
+
     void execute_emission(
         const ShaderGroup&      shader_group,
         const ShadingPoint&     shading_point,
         const float             surface_area) const;
-
-  private:
-    OSL::ShadingSystem&         m_osl_shading_system;
-    OSL::PerThreadInfo*         m_osl_thread_info;
-    OSL::ShadingContext*        m_osl_shading_context;
 
     void do_execute(
         const ShaderGroup&          shader_group,

@@ -260,7 +260,7 @@ void Tracer::evaluate_alpha(
         if (sg->has_transparency())
         {
             Alpha a;
-            m_shadergroup_exec.execute_transparency(
+            m_shadergroup_exec.execute_shadow(
                 *sg,
                 shading_point,
                 a);
