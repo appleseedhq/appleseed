@@ -116,7 +116,6 @@ void ShadingEngine::shade_hit_point(
         shading_context.execute_osl_transparency(
             *material->get_osl_surface(),
             shading_point,
-            false,
             alpha);
         shading_result.m_main.m_alpha *= alpha;
     }
