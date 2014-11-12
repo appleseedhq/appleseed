@@ -11,14 +11,14 @@
     </search_paths>
     <scene>
         <camera name="camera" model="pinhole_camera">
-            <parameter name="controller_target" value="0.0366996 0.179622 0.10447" />
+            <parameter name="controller_target" value="-0.122031 0.152254 -0.277076" />
             <parameter name="film_dimensions" value="0.024892 0.018669" />
             <parameter name="focal_length" value="0.035" />
             <transform time="0">
                 <matrix>
-                    0.607901243370755 0.334832188539049 -0.719960751587502 -1.055745030434826
-                    0.000000000000000 0.906737137408178 0.421696293136214 0.819489535104667
-                    0.794012643670295 -0.256349700922343 0.551206633240870 0.940852427261277
+                    -0.318035518251928 0.369665576065961 -0.873041104989936 -1.719184666719326
+                    0.000000000000000 0.920852893137743 0.389910180938955 0.865561462573073
+                    0.948078799008937 0.124005286466624 -0.292863927102850 -0.812845670902206
                     0.000000000000000 0.000000000000000 0.000000000000000 1.000000000000000
                 </matrix>
             </transform>
@@ -36,9 +36,15 @@
                 1.000000
             </alpha>
         </color>
-        <environment_edf name="environment_edf1" model="gradient_environment_edf">
-            <parameter name="horizon_radiance" value="0" />
-            <parameter name="zenith_radiance" value="1" />
+        <environment_edf name="environment_edf1" model="preetham_environment_edf">
+            <parameter name="horizon_shift" value="0.0" />
+            <parameter name="luminance_gamma" value="1.0" />
+            <parameter name="luminance_multiplier" value="1.0" />
+            <parameter name="saturation_multiplier" value="1.0" />
+            <parameter name="sun_phi" value="72.646" />
+            <parameter name="sun_theta" value="62.96" />
+            <parameter name="turbidity" value="1.0" />
+            <parameter name="turbidity_multiplier" value="2.0" />
         </environment_edf>
         <environment name="environment" model="generic_environment">
             <parameter name="environment_edf" value="environment_edf1" />
@@ -67,6 +73,21 @@
                 <parameter name="osl_surface" value="transparent_checkers" />
                 <parameter name="surface_shader" value="physical_surface_shader" />
             </material>
+            <light name="light1" model="sun_light">
+                <parameter name="cast_indirect_light" value="true" />
+                <parameter name="environment_edf" value="environment_edf1" />
+                <parameter name="importance_multiplier" value="1.0" />
+                <parameter name="radiance_multiplier" value="0.2" />
+                <parameter name="turbidity" value="4.0" />
+                <transform>
+                    <matrix>
+                        1.000000000000000 0.000000000000000 0.000000000000000 0.000000000000000
+                        0.000000000000000 1.000000000000000 0.000000000000000 0.000000000000000
+                        0.000000000000000 0.000000000000000 1.000000000000000 0.000000000000000
+                        0.000000000000000 0.000000000000000 0.000000000000000 1.000000000000000
+                    </matrix>
+                </transform>
+            </light>
             <object name="sphere" model="mesh_object">
                 <parameter name="filename" value="sphere.obj" />
             </object>
