@@ -385,7 +385,7 @@ def render_test_scene(args, logger, report_writer, project_directory, project_fi
 
     if num_diff > MAX_DIFFERING_COMPONENTS:
         num_comps = ref_width * ref_height * 4
-        logger.fail_rendering(rendering_time, "OUTPUT/REFERENCE DIFFERENCES")
+        logger.fail_rendering(rendering_time, "DIFFERENCES")
         report_writer.report_failure(project_filepath, ref_filepath, output_filepath, log_filepath,
                                      "Output and reference images are significantly different",
                                      max_diff, num_diff, num_comps)
