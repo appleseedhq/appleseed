@@ -88,7 +88,7 @@ namespace
 
     struct PathVisitor
     {
-        const Spectrum              m_initial_flux;     // initial particle flux (in W)
+        Spectrum                    m_initial_flux;     // initial particle flux (in W)
         const SPPMParameters&       m_params;
         const bool                  m_store_direct;
         const bool                  m_store_indirect;
@@ -109,6 +109,8 @@ namespace
           , m_store_caustics(store_caustics)
           , m_photons(photons)
         {
+            if (params.m_photon_type == SPPMParameters::Monochromatic)
+                Spectrum::upgrade(m_initial_flux, m_initial_flux);
         }
 
         bool accept_scattering(
@@ -143,14 +145,19 @@ namespace
                 if (vertex.m_bsdf->is_purely_specular())
                     return;
 
-                // Create and store a new photon.
                 if (m_params.m_photon_type == SPPMParameters::Monochromatic)
                 {
+                    // Choose a wavelength at random.
                     vertex.m_sampling_context.split_in_place(1, 1);
                     const uint32 wavelength =
                         truncate<uint32>(
                             vertex.m_sampling_context.next_double2() * Spectrum::Samples);
 
+                    // Make sure the path throughput is spectral.
+                    Spectrum spectral_throughput;
+                    Spectrum::upgrade(vertex.m_throughput, spectral_throughput);
+
+                    // Create and store a new photon.
                     SPPMMonoPhoton photon;
                     photon.m_incoming = Vector3f(vertex.m_outgoing);
                     photon.m_geometric_normal = Vector3f(vertex.get_geometric_normal());
@@ -158,13 +165,14 @@ namespace
                     photon.m_flux.m_amplitude =
                         m_initial_flux[wavelength] *
                         Spectrum::Samples *
-                        vertex.m_throughput[wavelength];
+                        spectral_throughput[wavelength];
                     m_photons.push_back(vertex.get_point(), photon);
                 }
                 else
                 {
                     assert(m_params.m_photon_type == SPPMParameters::Polychromatic);
 
+                    // Create and store a new photon.
                     SPPMPolyPhoton photon;
                     photon.m_incoming = Vector3f(vertex.m_outgoing);
                     photon.m_geometric_normal = Vector3f(vertex.get_geometric_normal());

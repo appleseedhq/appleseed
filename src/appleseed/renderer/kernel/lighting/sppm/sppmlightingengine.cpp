@@ -454,10 +454,14 @@ namespace
                     if (bsdf_prob == 0.0)
                         continue;
 
+                    // Make sure the BSDF value is spectral.
+                    Spectrum spectral_bsdf_value;
+                    Spectrum::upgrade(bsdf_value, spectral_bsdf_value);
+
                     // The photons store flux but we are computing reflected radiance.
                     // The first step of the flux -> radiance conversion is done here.
                     // The conversion will be completed when doing density estimation.
-                    float bsdf_mono_value = bsdf_value[photon.m_flux.m_wavelength];
+                    float bsdf_mono_value = spectral_bsdf_value[photon.m_flux.m_wavelength];
                     bsdf_mono_value /= abs(dot(photon.m_incoming, photon.m_geometric_normal));
                     bsdf_mono_value *= photon.m_flux.m_amplitude;
 
