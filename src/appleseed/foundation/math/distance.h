@@ -110,11 +110,15 @@ inline T square_distance_point_segment(
     const Vector<T, N>& a,
     const Vector<T, N>& b)
 {
-    assert(square_norm(b - a) > T(0.0));
-
     const Vector<T, N> u = point - a;
+
     const Vector<T, N> v = b - a;
-    const T s = saturate(dot(u, v) / square_norm(v));
+    const T square_norm_v = square_norm(v);
+
+    if (square_norm_v == T(0.0))
+        return square_norm(u);
+
+    const T s = saturate(dot(u, v) / square_norm_v);
     const Vector<T, N> d = u - s * v;
 
     return square_norm(d);
