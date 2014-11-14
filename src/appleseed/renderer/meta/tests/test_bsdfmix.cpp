@@ -68,7 +68,7 @@ END_OSL_INCLUDES
 #endif
 
 // OpenImageIO headers.
-#ifdef WITH_OIIO
+#ifdef APPLESEED_WITH_OIIO
 #include "OpenImageIO/texture.h"
 #endif
 
@@ -101,7 +101,7 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
         Scene& scene = *project->get_scene();
         TextureStore texture_store(scene);
 
-#ifdef WITH_OIIO
+#ifdef APPLESEED_WITH_OIIO
         boost::shared_ptr<OIIO::TextureSystem> texture_system(
             OIIO::TextureSystem::create(),
             boost::bind(&OIIO::TextureSystem::destroy, _1));
@@ -186,7 +186,7 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
             intersector,
             tracer,
             texture_cache
-#ifdef WITH_OIIO
+#ifdef APPLESEED_WITH_OIIO
             , *texture_system
 #endif
 #ifdef APPLESEED_WITH_OSL

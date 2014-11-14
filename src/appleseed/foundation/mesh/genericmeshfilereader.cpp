@@ -34,7 +34,7 @@
 #include "foundation/core/exceptions/exceptionunsupportedfileformat.h"
 #include "foundation/mesh/binarymeshfilereader.h"
 #include "foundation/utility/string.h"
-#ifdef WITH_ALEMBIC
+#ifdef APPLESEED_WITH_ALEMBIC
     #include "foundation/mesh/alembicmeshfilereader.h"
 #endif
 
@@ -88,7 +88,7 @@ void GenericMeshFileReader::read(IMeshBuilder& builder)
         OBJMeshFileReader reader(impl->m_filename, impl->m_obj_options);
         reader.read(builder);
     }
-    #ifdef WITH_ALEMBIC
+    #ifdef APPLESEED_WITH_ALEMBIC
         else if (extension == ".abc")
         {
             AlembicMeshFileReader reader(impl->m_filename);

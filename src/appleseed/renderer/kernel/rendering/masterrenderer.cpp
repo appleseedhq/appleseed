@@ -115,7 +115,7 @@ MasterRenderer::MasterRenderer(
   , m_abort_switch(abort_switch)
   , m_serial_renderer_controller(0)
   , m_serial_tile_callback_factory(0)
-#ifdef WITH_OIIO
+#ifdef APPLESEED_WITH_OIIO
   , m_texture_system(0)
 #endif
 {
@@ -132,7 +132,7 @@ MasterRenderer::MasterRenderer(
   , m_abort_switch(abort_switch)
   , m_serial_renderer_controller(new SerialRendererController(renderer_controller, tile_callback))
   , m_serial_tile_callback_factory(new SerialTileCallbackFactory(m_serial_renderer_controller))
-#ifdef WITH_OIIO
+#ifdef APPLESEED_WITH_OIIO
   , m_texture_system(0)
 #endif
 {
@@ -145,7 +145,7 @@ MasterRenderer::~MasterRenderer()
     delete m_serial_tile_callback_factory;
     delete m_serial_renderer_controller;
 
-#ifdef WITH_OIIO
+#ifdef APPLESEED_WITH_OIIO
     if (m_texture_system)
         OIIO::TextureSystem::destroy(m_texture_system);
 #endif
@@ -280,7 +280,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
         m_abort_switch->clear();
 
     // Create OpenImageIO's texture system.
-#ifdef WITH_OIIO
+#ifdef APPLESEED_WITH_OIIO
 
     if (!m_texture_system)
         m_texture_system = OIIO::TextureSystem::create();
@@ -310,7 +310,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     m_texture_system->attribute("gray_to_rgb", 1);
     m_texture_system->attribute("latlong_up", "y");
 
-#endif  // WITH_OIIO
+#endif  // APPLESEED_WITH_OIIO
 
     // We start by binding entities inputs. This must be done before creating/updating the trace context.
     if (!bind_scene_entities_inputs())
@@ -438,7 +438,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
                     light_sampler,
                     trace_context,
                     texture_store,
-#ifdef WITH_OIIO
+#ifdef APPLESEED_WITH_OIIO
                     *m_texture_system,
 #endif
 #ifdef APPLESEED_WITH_OSL
@@ -481,7 +481,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
                     texture_store,
                     lighting_engine_factory.get(),
                     shading_engine,
-#ifdef WITH_OIIO
+#ifdef APPLESEED_WITH_OIIO
                     *m_texture_system,
 #endif
 #ifdef APPLESEED_WITH_OSL
@@ -531,7 +531,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
                     trace_context,
                     texture_store,
                     light_sampler,
-#ifdef WITH_OIIO
+#ifdef APPLESEED_WITH_OIIO
                     *m_texture_system,
 #endif
 #ifdef APPLESEED_WITH_OSL

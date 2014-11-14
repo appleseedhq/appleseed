@@ -39,7 +39,7 @@
 #include "foundation/core/concepts/noncopyable.h"
 
 // OpenImageIO headers.
-#ifdef WITH_OIIO
+#ifdef APPLESEED_WITH_OIIO
 #include "OpenImageIO/texture.h"
 #endif
 
@@ -69,7 +69,7 @@ class ShadingContext
         const Intersector&      intersector,
         Tracer&                 tracer,
         TextureCache&           texture_cache,
-#ifdef WITH_OIIO
+#ifdef APPLESEED_WITH_OIIO
         OIIO::TextureSystem&    oiio_texture_system,
 #endif
 #ifdef APPLESEED_WITH_OSL
@@ -97,7 +97,7 @@ class ShadingContext
     // Return the maximum number of iterations in ray/path tracing loops.
     size_t get_max_iterations() const;
 
-#ifdef WITH_OIIO
+#ifdef APPLESEED_WITH_OIIO
     OIIO::TextureSystem& get_oiio_texture_system() const;
 #endif
 
@@ -126,7 +126,7 @@ class ShadingContext
     const float                 m_transparency_threshold;
     const size_t                m_max_iterations;
     const size_t                m_thread_index;
-#ifdef WITH_OIIO
+#ifdef APPLESEED_WITH_OIIO
     OIIO::TextureSystem&        m_oiio_texture_system;
 #endif
 #ifdef APPLESEED_WITH_OSL
