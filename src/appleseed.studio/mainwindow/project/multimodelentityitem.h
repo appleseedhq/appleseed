@@ -73,7 +73,7 @@ class MultiModelEntityItem
         typename EntityTraitsType::FactoryRegistrarType
     > MultiModelEntityEditorFormFactoryType;
 
-    virtual void slot_edit(AttributeEditor* attribute_editor) OVERRIDE;
+    virtual void slot_edit(AttributeEditor* attribute_editor) APPLESEED_OVERRIDE;
 };
 
 

@@ -45,7 +45,7 @@ namespace foundation
 // on Windows and std::clock() on other platforms.
 //
 
-class DLLSYMBOL DefaultProcessorTimer
+class APPLESEED_DLLSYMBOL DefaultProcessorTimer
   : public NonCopyable
 {
   public:
@@ -70,7 +70,7 @@ class DLLSYMBOL DefaultProcessorTimer
 // platforms, _ftime() on Windows and std::time() on other platforms.
 //
 
-class DLLSYMBOL DefaultWallclockTimer
+class APPLESEED_DLLSYMBOL DefaultWallclockTimer
   : public NonCopyable
 {
   public:

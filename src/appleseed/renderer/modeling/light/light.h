@@ -56,7 +56,7 @@ namespace renderer
 // Shape-less light.
 //
 
-class DLLSYMBOL Light
+class APPLESEED_DLLSYMBOL Light
   : public ConnectableEntity
 {
   public:

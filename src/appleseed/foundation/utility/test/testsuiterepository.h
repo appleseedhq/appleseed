@@ -52,7 +52,7 @@ namespace foundation
 // The (unique) test suite repository, as a collection of test suites.
 //
 
-class DLLSYMBOL TestSuiteRepository
+class APPLESEED_DLLSYMBOL TestSuiteRepository
   : public Singleton<TestSuiteRepository>
 {
   public:

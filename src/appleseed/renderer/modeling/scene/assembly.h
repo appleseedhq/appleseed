@@ -57,7 +57,7 @@ namespace renderer
 // textures and texture instances defined in the parent scene or assembly.
 //
 
-class DLLSYMBOL Assembly
+class APPLESEED_DLLSYMBOL Assembly
   : public Entity
   , public BaseGroup
 {
@@ -66,7 +66,7 @@ class DLLSYMBOL Assembly
     static foundation::UniqueID get_class_uid();
 
     // Delete this instance.
-    virtual void release() OVERRIDE;
+    virtual void release() APPLESEED_OVERRIDE;
 
     // Access the BSDFs.
     BSDFContainer& bsdfs() const;
@@ -132,7 +132,7 @@ class DLLSYMBOL Assembly
 // Assembly factory.
 //
 
-class DLLSYMBOL AssemblyFactory
+class APPLESEED_DLLSYMBOL AssemblyFactory
 {
   public:
     // Create a new assembly.

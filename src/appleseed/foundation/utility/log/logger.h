@@ -54,7 +54,7 @@ namespace foundation
 // All methods of this class are thread-safe.
 //
 
-class DLLSYMBOL Logger
+class APPLESEED_DLLSYMBOL Logger
   : public NonCopyable
 {
   public:

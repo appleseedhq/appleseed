@@ -65,13 +65,13 @@ namespace
         }
 
         // Compute the local space bounding box of the region over the shutter interval.
-        virtual GAABB3 compute_local_bbox() const OVERRIDE
+        virtual GAABB3 compute_local_bbox() const APPLESEED_OVERRIDE
         {
             return m_tess->compute_local_bbox();
         }
 
         // Return the static triangle tessellation of the region.
-        virtual Lazy<StaticTriangleTess>& get_static_triangle_tess() const OVERRIDE
+        virtual Lazy<StaticTriangleTess>& get_static_triangle_tess() const APPLESEED_OVERRIDE
         {
             return m_lazy_tess;
         }

@@ -44,7 +44,7 @@
 namespace foundation
 {
 
-class DLLSYMBOL BenchmarkDataPoint
+class APPLESEED_DLLSYMBOL BenchmarkDataPoint
 {
   public:
     BenchmarkDataPoint();

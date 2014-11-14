@@ -47,7 +47,7 @@ namespace foundation
 // The log target interface.
 //
 
-class DLLSYMBOL ILogTarget
+class APPLESEED_DLLSYMBOL ILogTarget
   : public IUnknown
 {
   public:

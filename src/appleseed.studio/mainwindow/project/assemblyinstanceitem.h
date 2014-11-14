@@ -65,7 +65,7 @@ class AssemblyInstanceItem
     AssemblyInstanceCollectionItem*     m_collection_item;
     ProjectBuilder&                     m_project_builder;
 
-    virtual void slot_delete() OVERRIDE;
+    virtual void slot_delete() APPLESEED_OVERRIDE;
 
     void schedule_delete();
     void do_delete();

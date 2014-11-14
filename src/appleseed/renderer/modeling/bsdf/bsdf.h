@@ -80,7 +80,7 @@ namespace renderer
 //   * The incoming direction is always the sampled direction.
 //
 
-class DLLSYMBOL BSDF
+class APPLESEED_DLLSYMBOL BSDF
   : public ConnectableEntity
 {
   public:

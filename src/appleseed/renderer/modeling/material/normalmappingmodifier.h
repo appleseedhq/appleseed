@@ -62,7 +62,7 @@ class NormalMappingModifier
         const foundation::Vector3d&     n,
         const foundation::Vector2d&     uv,
         const foundation::Vector3d&     dpdu,
-        const foundation::Vector3d&     dpdv) const OVERRIDE;
+        const foundation::Vector3d&     dpdv) const APPLESEED_OVERRIDE;
 
   private:
     const Source*   m_map;

@@ -39,7 +39,7 @@
 namespace foundation
 {
 
-class DLLSYMBOL IFilter
+class APPLESEED_DLLSYMBOL IFilter
   : public NonCopyable
 {
   public:

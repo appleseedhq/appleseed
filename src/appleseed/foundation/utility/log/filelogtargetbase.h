@@ -47,7 +47,7 @@ namespace foundation
 // A convenient base class for log targets that write to std::FILE.
 //
 
-class DLLSYMBOL FileLogTargetBase
+class APPLESEED_DLLSYMBOL FileLogTargetBase
   : public ILogTarget
 {
   protected:

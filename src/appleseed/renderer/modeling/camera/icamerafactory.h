@@ -49,7 +49,7 @@ namespace renderer
 // Camera factory interface.
 //
 
-class DLLSYMBOL ICameraFactory
+class APPLESEED_DLLSYMBOL ICameraFactory
   : public foundation::NonCopyable
 {
   public:

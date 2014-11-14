@@ -43,7 +43,7 @@ namespace foundation
 // A filter based on Perl regular expressions.
 //
 
-class DLLSYMBOL RegExFilter
+class APPLESEED_DLLSYMBOL RegExFilter
   : public IFilter
 {
   public:

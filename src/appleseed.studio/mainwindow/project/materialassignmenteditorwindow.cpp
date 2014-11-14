@@ -347,7 +347,7 @@ namespace
 
         virtual void operator()(
             MasterRenderer&             master_renderer,
-            Project&                    project) OVERRIDE
+            Project&                    project) APPLESEED_OVERRIDE
         {
             do_assign_material(m_object_instance, m_object_instance_item, m_slot, m_side, m_name);
         }

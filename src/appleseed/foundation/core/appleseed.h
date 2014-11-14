@@ -43,7 +43,7 @@ namespace foundation
 // The Appleseed class provides information about the appleseed library.
 //
 
-class DLLSYMBOL Appleseed
+class APPLESEED_DLLSYMBOL Appleseed
   : public NonCopyable
 {
   public:

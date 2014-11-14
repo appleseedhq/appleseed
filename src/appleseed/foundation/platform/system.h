@@ -50,7 +50,7 @@ namespace foundation
 // The System class provides information about the system.
 //
 
-class DLLSYMBOL System
+class APPLESEED_DLLSYMBOL System
   : public NonCopyable
 {
   public:

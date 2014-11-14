@@ -63,7 +63,7 @@ namespace renderer
 // Material.
 //
 
-class DLLSYMBOL Material
+class APPLESEED_DLLSYMBOL Material
   : public ConnectableEntity
 {
   public:

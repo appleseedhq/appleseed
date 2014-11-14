@@ -272,7 +272,7 @@ namespace
         virtual Vector<T, 3> do_sample(
             const Vector<T, 2>&  s,
             const T              alpha_x,
-            const T              alpha_y) const OVERRIDE
+            const T              alpha_y) const APPLESEED_OVERRIDE
         {
             const T alpha_x_2 = square(alpha_x);
             const T a = T(1.0) - pow(alpha_x_2, T(1.0) - s[0]);
@@ -286,7 +286,7 @@ namespace
         virtual T do_eval_D(
             const Vector<T, 3>&  h,
             const T              alpha_x,
-            const T              alpha_y) const OVERRIDE
+            const T              alpha_y) const APPLESEED_OVERRIDE
         {
             const T alpha_x_2 = square(alpha_x);
             const T cos_theta_2 = square(this->cos_theta(h));
@@ -300,7 +300,7 @@ namespace
             const Vector<T, 3>&  outgoing,
             const Vector<T, 3>&  h,
             const T              alpha_x,
-            const T              alpha_y) const OVERRIDE
+            const T              alpha_y) const APPLESEED_OVERRIDE
         {
             return
                 GGXSmithMaskingShadowing<T>::G(
@@ -314,7 +314,7 @@ namespace
         virtual T do_eval_pdf(
             const Vector<T, 3>&  h,
             const T              alpha_x,
-            const T              alpha_y) const OVERRIDE
+            const T              alpha_y) const APPLESEED_OVERRIDE
         {
             if (this->cos_theta(h) == T(0.0))
                 return T(0.0);
@@ -368,12 +368,12 @@ namespace
             m_inputs.declare("clearcoat_gloss", InputFormatScalar, "1.0");
         }
 
-        virtual void release() OVERRIDE
+        virtual void release() APPLESEED_OVERRIDE
         {
             delete this;
         }
 
-        virtual const char* get_model() const OVERRIDE
+        virtual const char* get_model() const APPLESEED_OVERRIDE
         {
             return Model;
         }
@@ -382,7 +382,7 @@ namespace
             const ShadingContext&   shading_context,
             InputEvaluator&         input_evaluator,
             const ShadingPoint&     shading_point,
-            const size_t            offset) const OVERRIDE
+            const size_t            offset) const APPLESEED_OVERRIDE
         {
             BSDF::evaluate_inputs(
                 shading_context,
@@ -405,7 +405,7 @@ namespace
             const Vector3d&         outgoing,
             Vector3d&               incoming,
             Spectrum&               value,
-            double&                 probability) const OVERRIDE
+            double&                 probability) const APPLESEED_OVERRIDE
         {
             const DisneyBRDFInputValues* values =
                 reinterpret_cast<const DisneyBRDFInputValues*>(data);
@@ -513,7 +513,7 @@ namespace
             const Vector3d&         outgoing,
             const Vector3d&         incoming,
             const int               modes,
-            Spectrum&               value) const OVERRIDE
+            Spectrum&               value) const APPLESEED_OVERRIDE
         {
             // No reflection below the shading surface.
             const Vector3d& n = shading_basis.get_normal();
@@ -628,7 +628,7 @@ namespace
             const Basis3d&          shading_basis,
             const Vector3d&         outgoing,
             const Vector3d&         incoming,
-            const int               modes) const OVERRIDE
+            const int               modes) const APPLESEED_OVERRIDE
         {
             const DisneyBRDFInputValues* values =
                 reinterpret_cast<const DisneyBRDFInputValues*>(data);

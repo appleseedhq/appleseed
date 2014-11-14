@@ -54,7 +54,7 @@ namespace renderer
 // Base class for all entities in the scene.
 //
 
-class DLLSYMBOL Entity
+class APPLESEED_DLLSYMBOL Entity
   : public foundation::Identifiable
   , public foundation::Versionable
   , public foundation::IUnknown

@@ -48,14 +48,14 @@ namespace renderer
 // An array of mesh objects.
 //
 
-DECLARE_ARRAY(MeshObjectArray, MeshObject*);
+APPLESEED_DECLARE_ARRAY(MeshObjectArray, MeshObject*);
 
 
 //
 // Mesh object reader.
 //
 
-class DLLSYMBOL MeshObjectReader
+class APPLESEED_DLLSYMBOL MeshObjectReader
 {
   public:
     // Read mesh objects from disk. The filenames are defined in params.

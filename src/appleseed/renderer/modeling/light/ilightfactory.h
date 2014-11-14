@@ -49,7 +49,7 @@ namespace renderer
 // Light factory interface.
 //
 
-class DLLSYMBOL ILightFactory
+class APPLESEED_DLLSYMBOL ILightFactory
   : public foundation::NonCopyable
 {
   public:

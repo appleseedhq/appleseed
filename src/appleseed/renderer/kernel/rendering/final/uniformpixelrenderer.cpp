@@ -105,7 +105,7 @@ namespace
             }
         }
 
-        virtual void release() OVERRIDE
+        virtual void release() APPLESEED_OVERRIDE
         {
             delete this;
         }
@@ -120,7 +120,7 @@ namespace
             const int                   tx,
             const int                   ty,
             SamplingContext::RNGType&   rng,
-            ShadingResultFrameBuffer&   framebuffer) OVERRIDE
+            ShadingResultFrameBuffer&   framebuffer) APPLESEED_OVERRIDE
         {
             const int ix = pixel_context.m_ix;
             const int iy = pixel_context.m_iy;
@@ -216,7 +216,7 @@ namespace
             }
         }
 
-        virtual StatisticsVector get_statistics() const OVERRIDE
+        virtual StatisticsVector get_statistics() const APPLESEED_OVERRIDE
         {
             return m_sample_renderer->get_statistics();
         }

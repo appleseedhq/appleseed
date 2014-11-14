@@ -80,9 +80,9 @@ class MultiModelCollectionItem
     typedef CollectionItem<Entity, ParentEntity, ParentItem> Base;
     typedef MultiModelCollectionItem<Entity, ParentEntity, ParentItem> This;
 
-    virtual ItemBase* create_item(Entity* entity) OVERRIDE;
+    virtual ItemBase* create_item(Entity* entity) APPLESEED_OVERRIDE;
 
-    virtual void slot_create() OVERRIDE;
+    virtual void slot_create() APPLESEED_OVERRIDE;
 };
 
 

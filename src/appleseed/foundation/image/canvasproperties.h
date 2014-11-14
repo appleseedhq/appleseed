@@ -49,7 +49,7 @@ namespace foundation
 // Canvas properties.
 //
 
-class DLLSYMBOL CanvasProperties
+class APPLESEED_DLLSYMBOL CanvasProperties
 {
   public:
     // Properties.

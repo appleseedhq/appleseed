@@ -53,7 +53,7 @@ namespace foundation
 // The object through which benchmarks report their results.
 //
 
-class DLLSYMBOL BenchmarkResult
+class APPLESEED_DLLSYMBOL BenchmarkResult
   : public NonCopyable
 {
   public:

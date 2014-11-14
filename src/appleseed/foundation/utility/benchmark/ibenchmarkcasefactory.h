@@ -46,7 +46,7 @@ namespace foundation
 // Interface of a benchmark case factory.
 //
 
-class DLLSYMBOL IBenchmarkCaseFactory
+class APPLESEED_DLLSYMBOL IBenchmarkCaseFactory
   : public NonCopyable
 {
   public:

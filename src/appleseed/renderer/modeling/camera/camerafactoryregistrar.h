@@ -50,14 +50,14 @@ namespace renderer
 // An array of camera factories.
 //
 
-DECLARE_ARRAY(CameraFactoryArray, ICameraFactory*);
+APPLESEED_DECLARE_ARRAY(CameraFactoryArray, ICameraFactory*);
 
 
 //
 // Camera factory registrar.
 //
 
-class DLLSYMBOL CameraFactoryRegistrar
+class APPLESEED_DLLSYMBOL CameraFactoryRegistrar
   : public foundation::NonCopyable
 {
   public:

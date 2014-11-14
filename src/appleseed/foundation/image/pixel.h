@@ -70,7 +70,7 @@ enum PixelFormat
 };
 
 // Return a string identifying a pixel format.
-DLLSYMBOL const char* pixel_format_name(const PixelFormat pixel_format);
+APPLESEED_DLLSYMBOL const char* pixel_format_name(const PixelFormat pixel_format);
 
 
 //

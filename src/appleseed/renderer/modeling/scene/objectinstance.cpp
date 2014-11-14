@@ -59,7 +59,7 @@ namespace renderer
 // MaterialArray class implementation.
 //
 
-DEFINE_ARRAY(MaterialArray);
+APPLESEED_DEFINE_ARRAY(MaterialArray);
 
 bool has_emitting_materials(const MaterialArray& materials)
 {

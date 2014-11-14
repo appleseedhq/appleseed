@@ -54,7 +54,7 @@ namespace renderer  { class TraceContext; }
 namespace renderer
 {
 
-class DLLSYMBOL ScenePicker
+class APPLESEED_DLLSYMBOL ScenePicker
 {
   public:
     struct PickingResult

@@ -52,12 +52,12 @@ namespace detail
       , public bpy::wrapper<IRendererController>
     {
       public:
-        virtual void release() OVERRIDE
+        virtual void release() APPLESEED_OVERRIDE
         {
             delete this;
         }
 
-        virtual void on_rendering_begin() OVERRIDE
+        virtual void on_rendering_begin() APPLESEED_OVERRIDE
         {
             m_base_controller.on_rendering_begin();
 
@@ -75,7 +75,7 @@ namespace detail
             }
         }
 
-        virtual void on_rendering_success() OVERRIDE
+        virtual void on_rendering_success() APPLESEED_OVERRIDE
         {
             m_base_controller.on_rendering_success();
 
@@ -93,7 +93,7 @@ namespace detail
             }
         }
 
-        virtual void on_rendering_abort() OVERRIDE
+        virtual void on_rendering_abort() APPLESEED_OVERRIDE
         {
             m_base_controller.on_rendering_abort();
 
@@ -111,7 +111,7 @@ namespace detail
             }
         }
 
-        virtual void on_frame_begin() OVERRIDE
+        virtual void on_frame_begin() APPLESEED_OVERRIDE
         {
             m_base_controller.on_frame_begin();
 
@@ -129,7 +129,7 @@ namespace detail
             }
         }
 
-        virtual void on_frame_end() OVERRIDE
+        virtual void on_frame_end() APPLESEED_OVERRIDE
         {
             m_base_controller.on_frame_end();
 
@@ -147,7 +147,7 @@ namespace detail
             }
         }
 
-        virtual Status on_progress() OVERRIDE
+        virtual Status on_progress() APPLESEED_OVERRIDE
         {
             m_base_controller.on_progress();
 

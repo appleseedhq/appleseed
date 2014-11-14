@@ -59,7 +59,7 @@ namespace foundation
 // Progressive OpenEXR image file reader interface.
 //
 
-class DLLSYMBOL ProgressiveEXRImageFileReader
+class APPLESEED_DLLSYMBOL ProgressiveEXRImageFileReader
   : public IProgressiveImageFileReader
 {
   public:

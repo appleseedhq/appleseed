@@ -45,7 +45,7 @@ namespace foundation
 // Taken from boost (http://www.boost.org/boost/noncopyable.hpp).
 //
 
-class DLLSYMBOL NonCopyable
+class APPLESEED_DLLSYMBOL NonCopyable
 {
   protected:
     // Class NonCopyable has protected constructor and destructor members

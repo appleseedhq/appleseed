@@ -81,12 +81,12 @@ namespace
             m_inputs.declare("weight1", InputFormatScalar);
         }
 
-        virtual void release() OVERRIDE
+        virtual void release() APPLESEED_OVERRIDE
         {
             delete this;
         }
 
-        virtual const char* get_model() const OVERRIDE
+        virtual const char* get_model() const APPLESEED_OVERRIDE
         {
             return Model;
         }
@@ -94,7 +94,7 @@ namespace
         virtual bool on_frame_begin(
             const Project&          project,
             const Assembly&         assembly,
-            AbortSwitch*            abort_switch) OVERRIDE
+            AbortSwitch*            abort_switch) APPLESEED_OVERRIDE
         {
             if (!BSDF::on_frame_begin(project, assembly, abort_switch))
                 return false;
@@ -112,7 +112,7 @@ namespace
         }
 
         virtual size_t compute_input_data_size(
-            const Assembly&     assembly) const OVERRIDE
+            const Assembly&     assembly) const APPLESEED_OVERRIDE
         {
             size_t size = get_inputs().compute_data_size();
 
@@ -135,7 +135,7 @@ namespace
             const ShadingContext&   shading_context,            
             InputEvaluator&         input_evaluator,
             const ShadingPoint&     shading_point,
-            const size_t            offset) const OVERRIDE
+            const size_t            offset) const APPLESEED_OVERRIDE
         {
             assert(m_bsdf[0] && m_bsdf[1]);
 
@@ -327,7 +327,7 @@ namespace
         }
 
       private:
-        DECLARE_INPUT_VALUES(InputValues)
+        APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
             double  m_weight[2];
         };

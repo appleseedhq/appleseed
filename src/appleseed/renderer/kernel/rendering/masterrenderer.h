@@ -70,7 +70,7 @@ namespace renderer
 // Master renderer, handles rendering of a given project.
 //
 
-class DLLSYMBOL MasterRenderer
+class APPLESEED_DLLSYMBOL MasterRenderer
   : public foundation::NonCopyable
 {
   public:

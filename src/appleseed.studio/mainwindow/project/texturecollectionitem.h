@@ -67,7 +67,7 @@ class TextureCollectionItem
         ProjectBuilder&             project_builder,
         renderer::ParamArray&       settings);
 
-    virtual QMenu* get_single_item_context_menu() const OVERRIDE;
+    virtual QMenu* get_single_item_context_menu() const APPLESEED_OVERRIDE;
 
   public slots:
     void slot_import_textures();
@@ -77,7 +77,7 @@ class TextureCollectionItem
     BaseGroupItem*                  m_parent_item;
     renderer::ParamArray&           m_settings;
 
-    virtual ItemBase* create_item(renderer::Texture* texture) OVERRIDE;
+    virtual ItemBase* create_item(renderer::Texture* texture) APPLESEED_OVERRIDE;
 };
 
 }       // namespace studio

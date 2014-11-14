@@ -65,7 +65,7 @@ const VersionID InvalidVersionID = ~0;
 // Base class for versionable objects.
 //
 
-class DLLSYMBOL Versionable
+class APPLESEED_DLLSYMBOL Versionable
   : public NonCopyable
 {
   public:

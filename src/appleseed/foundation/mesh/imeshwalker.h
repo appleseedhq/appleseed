@@ -47,7 +47,7 @@ namespace foundation
 // Mesh walker interface.
 //
 
-class DLLSYMBOL IMeshWalker
+class APPLESEED_DLLSYMBOL IMeshWalker
   : public NonCopyable
 {
   public:

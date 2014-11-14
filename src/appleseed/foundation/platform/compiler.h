@@ -159,20 +159,20 @@ namespace foundation
 
 
 //
-// Define the OVERRIDE qualifer as a synonym for the 'override' keyword in C++11.
+// Define the APPLESEED_OVERRIDE qualifer as a synonym for the 'override' keyword in C++11.
 //
 
 // Visual C++: supported since Visual Studio 2010.
 #if _MSC_VER >= 1600
-    #define OVERRIDE override
+    #define APPLESEED_OVERRIDE override
 
 // gcc: supported since gcc 4.7 when C++11 mode is enabled.
 #elif defined __GNUC__ && __cplusplus >= 201103
-    #define OVERRIDE override
+    #define APPLESEED_OVERRIDE override
 
-// Other compilers: the OVERRIDE qualifier has no effect.
+// Other compilers: the APPLESEED_OVERRIDE qualifier has no effect.
 #else
-    #define OVERRIDE
+    #define APPLESEED_OVERRIDE
 #endif
 
 
@@ -255,7 +255,7 @@ namespace foundation
 // The Compiler class provides information about the compiler used to build the library.
 //
 
-class DLLSYMBOL Compiler
+class APPLESEED_DLLSYMBOL Compiler
   : public NonCopyable
 {
   public:

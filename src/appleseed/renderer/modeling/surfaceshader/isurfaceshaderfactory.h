@@ -49,7 +49,7 @@ namespace renderer
 // Surface shader factory interface.
 //
 
-class DLLSYMBOL ISurfaceShaderFactory
+class APPLESEED_DLLSYMBOL ISurfaceShaderFactory
   : public foundation::NonCopyable
 {
   public:

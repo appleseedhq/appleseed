@@ -52,23 +52,23 @@ namespace renderer
 // Factory for an environment shader that wraps an environment EDF.
 //
 
-class DLLSYMBOL EDFEnvironmentShaderFactory
+class APPLESEED_DLLSYMBOL EDFEnvironmentShaderFactory
   : public IEnvironmentShaderFactory
 {
   public:
     // Return a string identifying this environment shader model.
-    virtual const char* get_model() const OVERRIDE;
+    virtual const char* get_model() const APPLESEED_OVERRIDE;
 
     // Return a human-readable string identifying this environment shader model.
-    virtual const char* get_human_readable_model() const OVERRIDE;
+    virtual const char* get_human_readable_model() const APPLESEED_OVERRIDE;
 
     // Return a set of input metadata for this environment shader model.
-    virtual foundation::DictionaryArray get_input_metadata() const OVERRIDE;
+    virtual foundation::DictionaryArray get_input_metadata() const APPLESEED_OVERRIDE;
 
     // Create a new environment shader instance.
     virtual foundation::auto_release_ptr<EnvironmentShader> create(
         const char*         name,
-        const ParamArray&   params) const OVERRIDE;
+        const ParamArray&   params) const APPLESEED_OVERRIDE;
 };
 
 }       // namespace renderer

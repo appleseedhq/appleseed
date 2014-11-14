@@ -43,7 +43,7 @@ namespace renderer
 // A globally accessible logger.
 //
 
-DLLSYMBOL foundation::Logger& global_logger();
+APPLESEED_DLLSYMBOL foundation::Logger& global_logger();
 
 
 //

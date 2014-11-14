@@ -46,7 +46,7 @@ namespace foundation
 // Create an instance of a log target that outputs to the console and use colors.
 //
 
-DLLSYMBOL ILogTarget* create_console_log_target(std::FILE* file);
+APPLESEED_DLLSYMBOL ILogTarget* create_console_log_target(std::FILE* file);
 
 }       // namespace foundation
 

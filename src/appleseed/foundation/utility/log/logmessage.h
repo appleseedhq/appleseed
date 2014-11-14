@@ -40,7 +40,7 @@ namespace foundation
 // Log message.
 //
 
-class DLLSYMBOL LogMessage
+class APPLESEED_DLLSYMBOL LogMessage
 {
   public:
     // Message categories.

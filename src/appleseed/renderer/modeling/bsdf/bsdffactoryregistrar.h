@@ -50,14 +50,14 @@ namespace renderer
 // An array of BSDF factories.
 //
 
-DECLARE_ARRAY(BSDFFactoryArray, IBSDFFactory*);
+APPLESEED_DECLARE_ARRAY(BSDFFactoryArray, IBSDFFactory*);
 
 
 //
 // BSDF factory registrar.
 //
 
-class DLLSYMBOL BSDFFactoryRegistrar
+class APPLESEED_DLLSYMBOL BSDFFactoryRegistrar
   : public foundation::NonCopyable
 {
   public:

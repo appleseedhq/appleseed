@@ -53,7 +53,7 @@ namespace renderer
 // Cone-shaped EDF input values.
 //
 
-DECLARE_INPUT_VALUES(ConeEDFInputValues)
+APPLESEED_DECLARE_INPUT_VALUES(ConeEDFInputValues)
 {
     Spectrum    m_radiance;             // emitted radiance in W.m^-2.sr^-1
     double      m_radiance_multiplier;  // emitted radiance multiplier
@@ -65,23 +65,23 @@ DECLARE_INPUT_VALUES(ConeEDFInputValues)
 // Cone-shaped EDF factory.
 //
 
-class DLLSYMBOL ConeEDFFactory
+class APPLESEED_DLLSYMBOL ConeEDFFactory
   : public IEDFFactory
 {
   public:
     // Return a string identifying this EDF model.
-    virtual const char* get_model() const OVERRIDE;
+    virtual const char* get_model() const APPLESEED_OVERRIDE;
 
     // Return a human-readable string identifying this EDF model.
-    virtual const char* get_human_readable_model() const OVERRIDE;
+    virtual const char* get_human_readable_model() const APPLESEED_OVERRIDE;
 
     // Return a set of input metadata for this EDF model.
-    virtual foundation::DictionaryArray get_input_metadata() const OVERRIDE;
+    virtual foundation::DictionaryArray get_input_metadata() const APPLESEED_OVERRIDE;
 
     // Create a new EDF instance.
     virtual foundation::auto_release_ptr<EDF> create(
         const char*         name,
-        const ParamArray&   params) const OVERRIDE;
+        const ParamArray&   params) const APPLESEED_OVERRIDE;
 };
 
 }       // namespace renderer

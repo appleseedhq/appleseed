@@ -51,7 +51,7 @@ namespace foundation
 // A benchmark listener that outputs to a XML file.
 //
 
-class DLLSYMBOL XMLFileBenchmarkListener
+class APPLESEED_DLLSYMBOL XMLFileBenchmarkListener
   : public BenchmarkListenerBase
 {
   public:
@@ -99,7 +99,7 @@ class DLLSYMBOL XMLFileBenchmarkListener
     bool is_open() const;
 
   private:
-    friend DLLSYMBOL XMLFileBenchmarkListener* create_xmlfile_benchmark_listener();
+    friend APPLESEED_DLLSYMBOL XMLFileBenchmarkListener* create_xmlfile_benchmark_listener();
 
     struct Impl;
     Impl* impl;
@@ -115,7 +115,7 @@ class DLLSYMBOL XMLFileBenchmarkListener
 };
 
 // Create an instance of a benchmark listener that outputs to a XML file.
-DLLSYMBOL XMLFileBenchmarkListener* create_xmlfile_benchmark_listener();
+APPLESEED_DLLSYMBOL XMLFileBenchmarkListener* create_xmlfile_benchmark_listener();
 
 }       // namespace foundation
 

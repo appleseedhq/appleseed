@@ -52,23 +52,23 @@ namespace renderer
 // Spherical camera factory.
 //
 
-class DLLSYMBOL SphericalCameraFactory
+class APPLESEED_DLLSYMBOL SphericalCameraFactory
   : public ICameraFactory
 {
   public:
     // Return a string identifying this camera model.
-    virtual const char* get_model() const OVERRIDE;
+    virtual const char* get_model() const APPLESEED_OVERRIDE;
 
     // Return a human-readable string identifying this camera model.
-    virtual const char* get_human_readable_model() const OVERRIDE;
+    virtual const char* get_human_readable_model() const APPLESEED_OVERRIDE;
 
     // Return a set of input metadata for this camera model.
-    virtual foundation::DictionaryArray get_input_metadata() const OVERRIDE;
+    virtual foundation::DictionaryArray get_input_metadata() const APPLESEED_OVERRIDE;
 
     // Create a new camera instance.
     virtual foundation::auto_release_ptr<Camera> create(
         const char*         name,
-        const ParamArray&   params) const OVERRIDE;
+        const ParamArray&   params) const APPLESEED_OVERRIDE;
 };
 
 }       // namespace renderer

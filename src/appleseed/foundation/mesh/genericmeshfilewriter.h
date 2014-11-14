@@ -47,7 +47,7 @@ namespace foundation
 // Write a mesh file using the right writer based on the extension of the mesh file name.
 //
 
-class DLLSYMBOL GenericMeshFileWriter
+class APPLESEED_DLLSYMBOL GenericMeshFileWriter
   : public IMeshFileWriter
 {
   public:
@@ -58,7 +58,7 @@ class DLLSYMBOL GenericMeshFileWriter
     virtual ~GenericMeshFileWriter();
 
     // Write a mesh.
-    virtual void write(const IMeshWalker& walker) OVERRIDE;
+    virtual void write(const IMeshWalker& walker) APPLESEED_OVERRIDE;
 
   private:
     IMeshFileWriter* m_writer;

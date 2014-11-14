@@ -49,7 +49,7 @@ namespace foundation
 // A tile, as a 2D array of pixels.
 //
 
-class DLLSYMBOL Tile
+class APPLESEED_DLLSYMBOL Tile
 {
   public:
     // Construct a new tile. The content of the tile is left undefined.

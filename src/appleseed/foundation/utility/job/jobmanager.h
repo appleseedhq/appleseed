@@ -52,7 +52,7 @@ namespace foundation
 // The job manager itself is thread-local: none of its methods are thread-safe.
 //
 
-class DLLSYMBOL JobManager
+class APPLESEED_DLLSYMBOL JobManager
   : public NonCopyable
 {
   public:

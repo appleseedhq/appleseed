@@ -101,12 +101,12 @@ namespace
             }
         }
 
-        virtual void release() OVERRIDE
+        virtual void release() APPLESEED_OVERRIDE
         {
             delete this;
         }
 
-        virtual const char* get_model() const OVERRIDE
+        virtual const char* get_model() const APPLESEED_OVERRIDE
         {
             return Model;
         }
@@ -114,7 +114,7 @@ namespace
         virtual bool on_frame_begin(
             const Project&          project,
             const Assembly&         assembly,
-            AbortSwitch*            abort_switch) OVERRIDE
+            AbortSwitch*            abort_switch) APPLESEED_OVERRIDE
         {
             if (!SurfaceShader::on_frame_begin(project, assembly, abort_switch))
                 return false;
@@ -136,7 +136,7 @@ namespace
             const PixelContext&     pixel_context,
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
-            ShadingResult&          shading_result) const OVERRIDE
+            ShadingResult&          shading_result) const APPLESEED_OVERRIDE
         {
             m_surface_shaders[0]->evaluate(
                 sampling_context,

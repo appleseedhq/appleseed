@@ -57,11 +57,11 @@ class UniformPixelRendererFactory
         const ParamArray&           params);
 
     // Delete this instance.
-    virtual void release() OVERRIDE;
+    virtual void release() APPLESEED_OVERRIDE;
 
     // Return a new uniform pixel renderer instance.
     virtual IPixelRenderer* create(
-        const std::size_t   thread_index) OVERRIDE;
+        const std::size_t   thread_index) APPLESEED_OVERRIDE;
 
   private:
     ISampleRendererFactory*         m_factory;

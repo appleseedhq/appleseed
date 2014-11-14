@@ -50,14 +50,14 @@ namespace renderer
 // An array of light factories.
 //
 
-DECLARE_ARRAY(LightFactoryArray, ILightFactory*);
+APPLESEED_DECLARE_ARRAY(LightFactoryArray, ILightFactory*);
 
 
 //
 // Light factory registrar.
 //
 
-class DLLSYMBOL LightFactoryRegistrar
+class APPLESEED_DLLSYMBOL LightFactoryRegistrar
   : public foundation::NonCopyable
 {
   public:

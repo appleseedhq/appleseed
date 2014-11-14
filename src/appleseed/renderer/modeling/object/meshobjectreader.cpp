@@ -77,7 +77,7 @@ namespace renderer
 // MeshObjectArray class implementation.
 //
 
-DEFINE_ARRAY(MeshObjectArray);
+APPLESEED_DEFINE_ARRAY(MeshObjectArray);
 
 
 //
@@ -123,7 +123,7 @@ namespace
             return m_total_triangle_count;
         }
 
-        virtual void begin_mesh(const char* mesh_name) OVERRIDE
+        virtual void begin_mesh(const char* mesh_name) APPLESEED_OVERRIDE
         {
             // Construct the object name.
             const string object_name = m_base_object_name + "." + make_unique_mesh_name(mesh_name);
@@ -138,7 +138,7 @@ namespace
             reset_mesh_stats();
         }
 
-        virtual void end_mesh() OVERRIDE
+        virtual void end_mesh() APPLESEED_OVERRIDE
         {
             // Print the number of faces that could not be triangulated, if any.
             if (m_triangulation_error_count > 0)
@@ -167,12 +167,12 @@ namespace
             m_total_triangle_count += m_objects.back()->get_triangle_count();
         }
 
-        virtual size_t push_vertex(const Vector3d& v) OVERRIDE
+        virtual size_t push_vertex(const Vector3d& v) APPLESEED_OVERRIDE
         {
             return m_objects.back()->push_vertex(GVector3(v));
         }
 
-        virtual size_t push_vertex_normal(const Vector3d& v) OVERRIDE
+        virtual size_t push_vertex_normal(const Vector3d& v) APPLESEED_OVERRIDE
         {
             GVector3 n(v);
 
@@ -191,17 +191,17 @@ namespace
             return m_objects.back()->push_vertex_normal(n);
         }
 
-        virtual size_t push_tex_coords(const Vector2d& v) OVERRIDE
+        virtual size_t push_tex_coords(const Vector2d& v) APPLESEED_OVERRIDE
         {
             return m_objects.back()->push_tex_coords(GVector2(v));
         }
 
-        virtual size_t push_material_slot(const char* name) OVERRIDE
+        virtual size_t push_material_slot(const char* name) APPLESEED_OVERRIDE
         {
             return m_objects.back()->push_material_slot(name);
         }
 
-        virtual void begin_face(const size_t vertex_count) OVERRIDE
+        virtual void begin_face(const size_t vertex_count) APPLESEED_OVERRIDE
         {
             assert(vertex_count >= 3);
 
@@ -214,7 +214,7 @@ namespace
             ++m_face_count;
         }
 
-        virtual void end_face() OVERRIDE
+        virtual void end_face() APPLESEED_OVERRIDE
         {
             assert(m_face_vertices.size() == m_vertex_count);
             assert(m_face_normals.size() == 0 || m_face_normals.size() == m_vertex_count);
@@ -265,7 +265,7 @@ namespace
             }
         }
 
-        virtual void set_face_vertices(const size_t vertices[]) OVERRIDE
+        virtual void set_face_vertices(const size_t vertices[]) APPLESEED_OVERRIDE
         {
             m_face_vertices.resize(m_vertex_count);
 
@@ -273,7 +273,7 @@ namespace
                 m_face_vertices[i] = static_cast<uint32>(vertices[i]);
         }
 
-        virtual void set_face_vertex_normals(const size_t vertex_normals[]) OVERRIDE
+        virtual void set_face_vertex_normals(const size_t vertex_normals[]) APPLESEED_OVERRIDE
         {
             m_face_normals.resize(m_vertex_count);
 
@@ -281,7 +281,7 @@ namespace
                 m_face_normals[i] = static_cast<uint32>(vertex_normals[i]);
         }
 
-        virtual void set_face_vertex_tex_coords(const size_t tex_coords[]) OVERRIDE
+        virtual void set_face_vertex_tex_coords(const size_t tex_coords[]) APPLESEED_OVERRIDE
         {
             m_face_tex_coords.resize(m_vertex_count);
 
@@ -289,7 +289,7 @@ namespace
                 m_face_tex_coords[i] = static_cast<uint32>(tex_coords[i]);
         }
 
-        virtual void set_face_material(const size_t material) OVERRIDE
+        virtual void set_face_material(const size_t material) APPLESEED_OVERRIDE
         {
             m_face_material = static_cast<uint32>(material);
         }

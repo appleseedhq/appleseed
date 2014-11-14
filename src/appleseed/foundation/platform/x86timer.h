@@ -46,7 +46,7 @@ namespace foundation
 // to read the CPU internal clock cycle counter.
 //
 
-class DLLSYMBOL X86Timer
+class APPLESEED_DLLSYMBOL X86Timer
   : public NonCopyable
 {
   public:

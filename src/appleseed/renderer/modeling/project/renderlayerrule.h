@@ -50,7 +50,7 @@ namespace renderer
 // Base class for render layer rules.
 //
 
-class DLLSYMBOL RenderLayerRule
+class APPLESEED_DLLSYMBOL RenderLayerRule
   : public Entity
 {
   public:
@@ -91,7 +91,7 @@ class DLLSYMBOL RenderLayerRule
 // common to all render layer rule models.
 //
 
-class DLLSYMBOL RenderLayerRuleFactory
+class APPLESEED_DLLSYMBOL RenderLayerRuleFactory
 {
   public:
     // Return a set of input metadata common to all render layer rule models.

@@ -69,23 +69,23 @@ namespace
         {
         }
 
-        virtual void release() OVERRIDE
+        virtual void release() APPLESEED_OVERRIDE
         {
             delete this;
         }
 
-        virtual const char* get_model() const OVERRIDE
+        virtual const char* get_model() const APPLESEED_OVERRIDE
         {
             return Model;
         }
 
-        virtual ColorSpace get_color_space() const OVERRIDE
+        virtual ColorSpace get_color_space() const APPLESEED_OVERRIDE
         {
             throw ExceptionNotImplemented();
             return ColorSpaceLinearRGB;
         }
 
-        virtual const CanvasProperties& properties() OVERRIDE
+        virtual const CanvasProperties& properties() APPLESEED_OVERRIDE
         {
             boost::mutex::scoped_lock lock(m_mutex);
 
@@ -100,7 +100,7 @@ namespace
 
         virtual Tile* load_tile(
             const size_t        tile_x,
-            const size_t        tile_y) OVERRIDE
+            const size_t        tile_y) APPLESEED_OVERRIDE
         {
             boost::mutex::scoped_lock lock(m_mutex);
 
@@ -113,7 +113,7 @@ namespace
         virtual void unload_tile(
             const size_t        tile_x,
             const size_t        tile_y,
-            const Tile*         tile) OVERRIDE
+            const Tile*         tile) APPLESEED_OVERRIDE
         {
             boost::mutex::scoped_lock lock(m_mutex);
 

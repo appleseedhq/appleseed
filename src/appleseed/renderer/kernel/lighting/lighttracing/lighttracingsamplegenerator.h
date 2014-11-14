@@ -84,15 +84,15 @@ class LightTracingSampleGeneratorFactory
         const ParamArray&       params);
 
     // Delete this instance.
-    virtual void release() OVERRIDE;
+    virtual void release() APPLESEED_OVERRIDE;
 
     // Return a new sample generator instance.
     virtual ISampleGenerator* create(
         const size_t            generator_index,
-        const size_t            generator_count) OVERRIDE;
+        const size_t            generator_count) APPLESEED_OVERRIDE;
 
     // Create an accumulation buffer for this sample generator.
-    virtual SampleAccumulationBuffer* create_sample_accumulation_buffer() OVERRIDE;
+    virtual SampleAccumulationBuffer* create_sample_accumulation_buffer() APPLESEED_OVERRIDE;
 
   private:
     const Scene&                m_scene;

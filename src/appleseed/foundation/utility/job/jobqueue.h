@@ -67,7 +67,7 @@ namespace foundation
 //   - running: the job is currently being executed
 //
 
-class DLLSYMBOL JobQueue
+class APPLESEED_DLLSYMBOL JobQueue
   : public NonCopyable
 {
   public:

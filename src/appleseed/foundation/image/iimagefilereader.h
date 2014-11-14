@@ -47,7 +47,7 @@ namespace foundation
 // Image file reader interface.
 //
 
-class DLLSYMBOL IImageFileReader
+class APPLESEED_DLLSYMBOL IImageFileReader
   : public NonCopyable
 {
   public:

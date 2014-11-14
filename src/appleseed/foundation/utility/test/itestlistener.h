@@ -51,7 +51,7 @@ namespace foundation
 // Interface of a test listener.
 //
 
-class DLLSYMBOL ITestListener
+class APPLESEED_DLLSYMBOL ITestListener
   : public IUnknown
 {
   public:

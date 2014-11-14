@@ -48,7 +48,7 @@ namespace renderer
 // A piecewise linear rigid transform path as a function of time.
 //
 
-class DLLSYMBOL TransformSequence
+class APPLESEED_DLLSYMBOL TransformSequence
 {
   public:
     // Constructors.

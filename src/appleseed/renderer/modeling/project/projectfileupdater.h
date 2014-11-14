@@ -46,7 +46,7 @@ namespace renderer
 // Project file updater.
 //
 
-class DLLSYMBOL ProjectFileUpdater
+class APPLESEED_DLLSYMBOL ProjectFileUpdater
 {
   public:
     bool update(

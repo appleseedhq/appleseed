@@ -66,19 +66,19 @@ namespace
             m_diffuse_edf = DiffuseEDFFactory().create("osl_diff_edf", ParamArray());
         }
 
-        virtual void release() OVERRIDE
+        virtual void release() APPLESEED_OVERRIDE
         {
             delete this;
         }
 
-        virtual const char* get_model() const OVERRIDE
+        virtual const char* get_model() const APPLESEED_OVERRIDE
         {
             return Model;
         }
 
         virtual void evaluate_inputs(
             InputEvaluator&         input_evaluator,
-            const ShadingPoint&     shading_point) const OVERRIDE
+            const ShadingPoint&     shading_point) const APPLESEED_OVERRIDE
         {
             CompositeEmissionClosure* c =
                 reinterpret_cast<CompositeEmissionClosure*>(input_evaluator.data());
@@ -93,7 +93,7 @@ namespace
             const Vector2d&         s,
             Vector3d&               outgoing,
             Spectrum&               value,
-            double&                 probability) const OVERRIDE
+            double&                 probability) const APPLESEED_OVERRIDE
         {
             const CompositeEmissionClosure* c =
                 reinterpret_cast<const CompositeEmissionClosure*>(data);
@@ -114,7 +114,7 @@ namespace
             const Vector3d&         geometric_normal,
             const Basis3d&          shading_basis,
             const Vector3d&         outgoing,
-            Spectrum&               value) const OVERRIDE
+            Spectrum&               value) const APPLESEED_OVERRIDE
         {
             const CompositeEmissionClosure* c =
                 reinterpret_cast<const CompositeEmissionClosure*>(data);
@@ -133,7 +133,7 @@ namespace
             const Basis3d&          shading_basis,
             const Vector3d&         outgoing,
             Spectrum&               value,
-            double&                 probability) const OVERRIDE
+            double&                 probability) const APPLESEED_OVERRIDE
         {
             const CompositeEmissionClosure* c =
                 reinterpret_cast<const CompositeEmissionClosure*>(data);
@@ -151,7 +151,7 @@ namespace
             const void*             data,
             const Vector3d&         geometric_normal,
             const Basis3d&          shading_basis,
-            const Vector3d&         outgoing) const OVERRIDE
+            const Vector3d&         outgoing) const APPLESEED_OVERRIDE
         {
             const CompositeEmissionClosure* c =
                 reinterpret_cast<const CompositeEmissionClosure*>(data);

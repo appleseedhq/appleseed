@@ -35,10 +35,10 @@
 // Standard headers.
 #include <cstddef>
 
-DLLSYMBOL void log_allocation(const void* ptr, const size_t size);
-DLLSYMBOL void log_allocation_failure(const size_t size);
-DLLSYMBOL void log_deallocation(const void* ptr);
-DLLSYMBOL void start_memory_tracking();
-DLLSYMBOL void stop_memory_tracking();
+APPLESEED_DLLSYMBOL void log_allocation(const void* ptr, const size_t size);
+APPLESEED_DLLSYMBOL void log_allocation_failure(const size_t size);
+APPLESEED_DLLSYMBOL void log_deallocation(const void* ptr);
+APPLESEED_DLLSYMBOL void start_memory_tracking();
+APPLESEED_DLLSYMBOL void stop_memory_tracking();
 
 #endif  // !APPLESEED_MAIN_ALLOCATOR_H

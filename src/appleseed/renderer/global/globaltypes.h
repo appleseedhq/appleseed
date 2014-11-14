@@ -66,7 +66,7 @@ typedef DynamicSpectrum31f Spectrum;
 typedef foundation::Color<float, 1> Alpha;
 
 // Sampling context.
-#ifdef USE_QMC_SAMPLER
+#ifdef APPLESEED_USE_QMC_SAMPLER
     typedef foundation::QMCSamplingContext<
         foundation::MersenneTwister
     > SamplingContext;

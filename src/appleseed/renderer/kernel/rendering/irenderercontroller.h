@@ -43,7 +43,7 @@ namespace renderer
 // Renderer controller, allows to react to various rendering events.
 //
 
-class DLLSYMBOL IRendererController
+class APPLESEED_DLLSYMBOL IRendererController
   : public foundation::IUnknown
 {
   public:

@@ -63,12 +63,12 @@ namespace renderer
 // OSL Shader.
 //
 
-class DLLSYMBOL Shader
+class APPLESEED_DLLSYMBOL Shader
   : public Entity
 {
   public:
     // Delete this instance.
-    virtual void release() OVERRIDE;
+    virtual void release() APPLESEED_OVERRIDE;
 
     const char *get_type() const;
     const char *get_shader() const;

@@ -51,12 +51,12 @@ namespace renderer
 // An entity container providing random access to entities.
 //
 
-class DLLSYMBOL EntityVector
+class APPLESEED_DLLSYMBOL EntityVector
   : public foundation::NonCopyable
 {
   public:
     // Mutable iterator.
-    class DLLSYMBOL iterator
+    class APPLESEED_DLLSYMBOL iterator
     {
       public:
         // Iterator category.
@@ -102,7 +102,7 @@ class DLLSYMBOL EntityVector
     };
 
     // Constant iterator.
-    class DLLSYMBOL const_iterator
+    class APPLESEED_DLLSYMBOL const_iterator
     {
       public:
         // Iterator category.

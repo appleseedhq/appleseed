@@ -88,12 +88,12 @@ namespace
             m_inputs.declare("fresnel_multiplier", InputFormatScalar, "1.0");
         }
 
-        virtual void release() OVERRIDE
+        virtual void release() APPLESEED_OVERRIDE
         {
             delete this;
         }
 
-        virtual const char* get_model() const OVERRIDE
+        virtual const char* get_model() const APPLESEED_OVERRIDE
         {
             return Model;
         }
@@ -101,7 +101,7 @@ namespace
         virtual bool on_frame_begin(
             const Project&      project,
             const Assembly&     assembly,
-            AbortSwitch*        abort_switch) OVERRIDE
+            AbortSwitch*        abort_switch) APPLESEED_OVERRIDE
         {
             if (!BSDF::on_frame_begin(project, assembly, abort_switch))
                 return false;

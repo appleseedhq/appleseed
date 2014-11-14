@@ -60,7 +60,7 @@ namespace renderer
 // An instance of an assembly.
 //
 
-class DLLSYMBOL AssemblyInstance
+class APPLESEED_DLLSYMBOL AssemblyInstance
   : public Entity
 {
   public:
@@ -68,7 +68,7 @@ class DLLSYMBOL AssemblyInstance
     static foundation::UniqueID get_class_uid();
 
     // Delete this instance.
-    virtual void release() OVERRIDE;
+    virtual void release() APPLESEED_OVERRIDE;
 
     // Return the name of the instantiated assembly.
     const char* get_assembly_name() const;
@@ -124,7 +124,7 @@ class DLLSYMBOL AssemblyInstance
 // Assembly instance factory.
 //
 
-class DLLSYMBOL AssemblyInstanceFactory
+class APPLESEED_DLLSYMBOL AssemblyInstanceFactory
 {
   public:
     // Create a new assembly instance.

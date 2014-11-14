@@ -50,14 +50,14 @@ namespace renderer
 // An array of material factories.
 //
 
-DECLARE_ARRAY(MaterialFactoryArray, IMaterialFactory*);
+APPLESEED_DECLARE_ARRAY(MaterialFactoryArray, IMaterialFactory*);
 
 
 //
 // Material factory registrar.
 //
 
-class DLLSYMBOL MaterialFactoryRegistrar
+class APPLESEED_DLLSYMBOL MaterialFactoryRegistrar
   : public foundation::NonCopyable
 {
   public:

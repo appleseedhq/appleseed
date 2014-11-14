@@ -254,7 +254,7 @@ namespace
         {
         }
 
-        virtual void execute(const size_t thread_index) OVERRIDE
+        virtual void execute(const size_t thread_index) APPLESEED_OVERRIDE
         {
             const uint32 instance = hash_uint32(static_cast<uint32>(m_pass_hash + m_photon_begin));
             MersenneTwister rng(instance);
@@ -529,7 +529,7 @@ namespace
         {
         }
 
-        virtual void execute(const size_t thread_index) OVERRIDE
+        virtual void execute(const size_t thread_index) APPLESEED_OVERRIDE
         {
             const uint32 instance = hash_uint32(static_cast<uint32>(m_pass_hash + m_photon_begin));
             MersenneTwister rng(instance);

@@ -110,7 +110,7 @@ TEST_SUITE(Renderer_Modeling_Entity_EntityVector)
             set_name(name);
         }
 
-        virtual void release() OVERRIDE
+        virtual void release() APPLESEED_OVERRIDE
         {
             m_release_was_called = true;
             delete this;

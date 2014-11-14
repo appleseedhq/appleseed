@@ -340,7 +340,7 @@ endif ()
 if (USE_QMC_SAMPLER)
     set (preprocessor_definitions_common
         ${preprocessor_definitions_common}
-        USE_QMC_SAMPLER
+        APPLESEED_USE_QMC_SAMPLER
     )
 endif ()
 if (USE_SSE)

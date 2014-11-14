@@ -46,7 +46,7 @@ namespace renderer
 // Cornell Box project factory.
 //
 
-class DLLSYMBOL CornellBoxProjectFactory
+class APPLESEED_DLLSYMBOL CornellBoxProjectFactory
 {
   public:
     // Create a new instance of the Cornell Box project.

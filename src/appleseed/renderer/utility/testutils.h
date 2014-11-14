@@ -109,11 +109,11 @@ class BindInputs
     }
 };
 
-class DLLSYMBOL DummyEntity
+class APPLESEED_DLLSYMBOL DummyEntity
   : public Entity
 {
   public:
-    virtual void release() OVERRIDE;
+    virtual void release() APPLESEED_OVERRIDE;
 
   private:
     friend class DummyEntityFactory;
@@ -121,7 +121,7 @@ class DLLSYMBOL DummyEntity
     explicit DummyEntity(const char* name);
 };
 
-class DLLSYMBOL DummyEntityFactory
+class APPLESEED_DLLSYMBOL DummyEntityFactory
   : public foundation::NonCopyable
 {
   public:
@@ -136,16 +136,16 @@ class BoundingBoxObject
         const char*                 name,
         const GAABB3&               bbox);
 
-    virtual void release() OVERRIDE;
+    virtual void release() APPLESEED_OVERRIDE;
 
-    virtual const char* get_model() const OVERRIDE;
+    virtual const char* get_model() const APPLESEED_OVERRIDE;
 
-    virtual GAABB3 compute_local_bbox() const OVERRIDE;
+    virtual GAABB3 compute_local_bbox() const APPLESEED_OVERRIDE;
 
-    virtual foundation::Lazy<RegionKit>& get_region_kit() OVERRIDE;
+    virtual foundation::Lazy<RegionKit>& get_region_kit() APPLESEED_OVERRIDE;
 
-    virtual size_t get_material_slot_count() const OVERRIDE;
-    virtual const char* get_material_slot(const size_t index) const OVERRIDE;
+    virtual size_t get_material_slot_count() const APPLESEED_OVERRIDE;
+    virtual const char* get_material_slot(const size_t index) const APPLESEED_OVERRIDE;
 
   private:
     GAABB3                          m_bbox;

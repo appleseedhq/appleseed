@@ -76,7 +76,7 @@ class AssemblyItem
         ProjectBuilder&             project_builder,
         renderer::ParamArray&       settings);
 
-    virtual QMenu* get_single_item_context_menu() const OVERRIDE;
+    virtual QMenu* get_single_item_context_menu() const APPLESEED_OVERRIDE;
 
     void add_item(renderer::BSDF* bsdf);
     void add_item(renderer::EDF* edf);
@@ -113,12 +113,12 @@ class AssemblyItem
     ObjectCollectionItem*           m_object_collection_item;
     ObjectInstanceCollectionItem*   m_object_instance_collection_item;
 
-    virtual void slot_instantiate() OVERRIDE;
+    virtual void slot_instantiate() APPLESEED_OVERRIDE;
 
     void schedule_instantiate(const std::string& name);
     void do_instantiate(const std::string& name);
 
-    virtual void slot_delete() OVERRIDE;
+    virtual void slot_delete() APPLESEED_OVERRIDE;
 
     void schedule_delete();
     void do_delete();

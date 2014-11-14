@@ -47,7 +47,7 @@ namespace foundation
 // Read an image file using the right reader based on the extension of the image file name.
 //
 
-class DLLSYMBOL GenericImageFileReader
+class APPLESEED_DLLSYMBOL GenericImageFileReader
   : public IImageFileReader
 {
   public:

@@ -43,7 +43,7 @@ namespace foundation
 // Image attributes.
 //
 
-class DLLSYMBOL ImageAttributes
+class APPLESEED_DLLSYMBOL ImageAttributes
   : public StringDictionary
 {
   public:

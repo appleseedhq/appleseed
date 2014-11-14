@@ -47,7 +47,7 @@ namespace foundation
 // PNG image file reader.
 //
 
-class DLLSYMBOL PNGImageFileReader
+class APPLESEED_DLLSYMBOL PNGImageFileReader
   : public IImageFileReader
 {
   public:

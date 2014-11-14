@@ -80,8 +80,8 @@ class ObjectInstanceItem
 
     const renderer::Assembly& get_assembly() const;
 
-    virtual QMenu* get_single_item_context_menu() const OVERRIDE;
-    virtual QMenu* get_multiple_items_context_menu(const QList<ItemBase*>& items) const OVERRIDE;
+    virtual QMenu* get_single_item_context_menu() const APPLESEED_OVERRIDE;
+    virtual QMenu* get_multiple_items_context_menu(const QList<ItemBase*>& items) const APPLESEED_OVERRIDE;
 
     void assign_material(
         const QString&                  page_name,
@@ -110,7 +110,7 @@ class ObjectInstanceItem
 
     void schedule_clear_material(const QVariant& data);
 
-    virtual void slot_delete() OVERRIDE;
+    virtual void slot_delete() APPLESEED_OVERRIDE;
 
     void schedule_delete();
     void do_delete();

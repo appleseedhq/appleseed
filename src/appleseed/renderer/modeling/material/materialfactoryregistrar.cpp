@@ -54,7 +54,7 @@ using namespace std;
 namespace renderer
 {
 
-DEFINE_ARRAY(MaterialFactoryArray);
+APPLESEED_DEFINE_ARRAY(MaterialFactoryArray);
 
 struct MaterialFactoryRegistrar::Impl
 {

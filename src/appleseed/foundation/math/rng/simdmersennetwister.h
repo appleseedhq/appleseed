@@ -46,7 +46,7 @@ namespace foundation
 // Mersenne Twister random number generator.
 //
 
-class DLLSYMBOL SimdMersenneTwister
+class APPLESEED_DLLSYMBOL SimdMersenneTwister
 {
   public:
     // Constructors, seed the generator.
