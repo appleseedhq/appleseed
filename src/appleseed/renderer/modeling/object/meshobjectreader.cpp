@@ -370,6 +370,16 @@ namespace
             }
             else
             {
+                triangle.m_n0 = Triangle::None;
+                triangle.m_n1 = Triangle::None;
+                triangle.m_n2 = Triangle::None;
+            }
+
+            // All vertex normals are mandatory: use the geometric normal if any is missing.
+            if (triangle.m_n0 == Triangle::None ||
+                triangle.m_n1 == Triangle::None ||
+                triangle.m_n2 == Triangle::None)
+            {
                 // Fetch the triangle vertices.
                 const Vector3d v0 = Vector3d(m_objects.back()->get_vertex(triangle.m_v0));
                 const Vector3d v1 = Vector3d(m_objects.back()->get_vertex(triangle.m_v1));
