@@ -27,8 +27,8 @@
 //
 
 // appleseed.renderer headers.
+#include "renderer/utility/dynamicspectrum.h"
 #include "renderer/utility/iostreamop.h"
-#include "renderer/utility/trackingspectrum.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
@@ -40,7 +40,7 @@
 using namespace foundation;
 using namespace renderer;
 
-TEST_SUITE(Renderer_Utility_TrackingSpectrum31f)
+TEST_SUITE(Renderer_Utility_DynamicSpectrum31f)
 {
     static const float SpectrumValues[31] =
     {
@@ -52,28 +52,28 @@ TEST_SUITE(Renderer_Utility_TrackingSpectrum31f)
 
     TEST_CASE(DefaultConstructor_CreatesRGB)
     {
-        const TrackingSpectrum31f s;
+        const DynamicSpectrum31f s;
 
         EXPECT_EQ(3, s.size());
     }
 
     TEST_CASE(ConstructorTakingAnArrayOfValues_CreatesSpectrum)
     {
-        const TrackingSpectrum31f s(SpectrumValues);
+        const DynamicSpectrum31f s(SpectrumValues);
 
         EXPECT_EQ(31, s.size());
     }
 
     TEST_CASE(ConstructorTakingSingleValue_CreatesRGB)
     {
-        const TrackingSpectrum31f s(42.0f);
+        const DynamicSpectrum31f s(42.0f);
 
         EXPECT_EQ(3, s.size());
     }
 
     TEST_CASE(ConstructorTakingColor_CreatesRGB)
     {
-        const TrackingSpectrum31f s(Color3f(1.0f, 2.0f, 3.0f));
+        const DynamicSpectrum31f s(Color3f(1.0f, 2.0f, 3.0f));
 
         EXPECT_EQ(3, s.size());
         EXPECT_EQ(1.0f, s[0]);
@@ -83,7 +83,7 @@ TEST_SUITE(Renderer_Utility_TrackingSpectrum31f)
 
     TEST_CASE(Resize)
     {
-        TrackingSpectrum31f s(Color3f(0.0f));
+        DynamicSpectrum31f s(Color3f(0.0f));
 
         s.resize(31);
 
@@ -92,7 +92,7 @@ TEST_SUITE(Renderer_Utility_TrackingSpectrum31f)
 
     TEST_CASE(Set_GivenRGB_PreservesRGB)
     {
-        TrackingSpectrum31f s(Color3f(0.0f));
+        DynamicSpectrum31f s(Color3f(0.0f));
 
         s.set(42.0f);
 
@@ -101,7 +101,7 @@ TEST_SUITE(Renderer_Utility_TrackingSpectrum31f)
 
     TEST_CASE(Set_GivenSpectrum_PreservesSpectrum)
     {
-        TrackingSpectrum31f s(SpectrumValues);
+        DynamicSpectrum31f s(SpectrumValues);
 
         s.set(42.0f);
 
@@ -110,7 +110,7 @@ TEST_SUITE(Renderer_Utility_TrackingSpectrum31f)
 
     TEST_CASE(Set_GivenRGB_SetsValues)
     {
-        TrackingSpectrum31f s(Color3f(42.0f));
+        DynamicSpectrum31f s(Color3f(42.0f));
 
         s.set(36.0f);
 
@@ -121,7 +121,7 @@ TEST_SUITE(Renderer_Utility_TrackingSpectrum31f)
 
     TEST_CASE(Set_GivenSpectrum_SetsValues)
     {
-        TrackingSpectrum31f s(SpectrumValues);
+        DynamicSpectrum31f s(SpectrumValues);
 
         s.set(36.0f);
 
@@ -131,38 +131,38 @@ TEST_SUITE(Renderer_Utility_TrackingSpectrum31f)
 
     TEST_CASE(Upgrade_GivenRGB_MakesSpectrum)
     {
-        const TrackingSpectrum31f source(Color3f(0.5f));
-        TrackingSpectrum31f dest;
+        const DynamicSpectrum31f source(Color3f(0.5f));
+        DynamicSpectrum31f dest;
 
-        TrackingSpectrum31f::upgrade(source, dest);
+        DynamicSpectrum31f::upgrade(source, dest);
 
         EXPECT_EQ(31, dest.size());
     }
 
     TEST_CASE(Upgrade_GivenSpectrum_CopiesSpectrum)
     {
-        const TrackingSpectrum31f source(SpectrumValues);
-        TrackingSpectrum31f dest;
+        const DynamicSpectrum31f source(SpectrumValues);
+        DynamicSpectrum31f dest;
 
-        TrackingSpectrum31f::upgrade(source, dest);
+        DynamicSpectrum31f::upgrade(source, dest);
 
         EXPECT_EQ(dest, source);
     }
 
     TEST_CASE(OperatorNotEqual_RGBNotEqualSpectrum_ReturnsTrue)
     {
-        const TrackingSpectrum31f lhs(Color3f(42.0f));
-        const TrackingSpectrum31f rhs(SpectrumValues);
+        const DynamicSpectrum31f lhs(Color3f(42.0f));
+        const DynamicSpectrum31f rhs(SpectrumValues);
 
         EXPECT_TRUE(lhs != rhs);
     }
 
     TEST_CASE(OperatorPlus_RGBPlusRGB)
     {
-        const TrackingSpectrum31f lhs(Color3f(0.5f));
-        const TrackingSpectrum31f rhs(Color3f(0.2f));
+        const DynamicSpectrum31f lhs(Color3f(0.5f));
+        const DynamicSpectrum31f rhs(Color3f(0.2f));
 
-        const TrackingSpectrum31f result = lhs + rhs;
+        const DynamicSpectrum31f result = lhs + rhs;
 
         EXPECT_EQ(3, result.size());
         EXPECT_FEQ(0.7f, result[0]);
@@ -172,20 +172,20 @@ TEST_SUITE(Renderer_Utility_TrackingSpectrum31f)
 
     TEST_CASE(OperatorPlus_RGBPlusSpectrum)
     {
-        const TrackingSpectrum31f lhs(Color3f(0.5f));
-        const TrackingSpectrum31f rhs(SpectrumValues);
+        const DynamicSpectrum31f lhs(Color3f(0.5f));
+        const DynamicSpectrum31f rhs(SpectrumValues);
 
-        const TrackingSpectrum31f result = lhs + rhs;
+        const DynamicSpectrum31f result = lhs + rhs;
 
         EXPECT_EQ(31, result.size());
     }
 
     TEST_CASE(OperatorPlus_SpectrumPlusRGB)
     {
-        const TrackingSpectrum31f lhs(SpectrumValues);
-        const TrackingSpectrum31f rhs(Color3f(0.5f));
+        const DynamicSpectrum31f lhs(SpectrumValues);
+        const DynamicSpectrum31f rhs(Color3f(0.5f));
 
-        const TrackingSpectrum31f result = lhs + rhs;
+        const DynamicSpectrum31f result = lhs + rhs;
 
         EXPECT_EQ(31, result.size());
     }

@@ -30,7 +30,7 @@
 #define APPLESEED_RENDERER_UTILITY_IOSTREAMOP_H
 
 // appleseed.renderer headers.
-#include "renderer/utility/trackingspectrum.h"
+#include "renderer/utility/dynamicspectrum.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/iostreamop.h"
@@ -46,9 +46,9 @@ namespace renderer
 // I/O of appleseed.renderer types from/to C++ streams.
 //
 
-// renderer::TrackingSpectrum.
+// renderer::DynamicSpectrum.
 template <typename T, size_t N>
-std::ostream& operator<<(std::ostream& s, const TrackingSpectrum<T, N>& spectrum);
+std::ostream& operator<<(std::ostream& s, const DynamicSpectrum<T, N>& spectrum);
 
 
 //
@@ -56,7 +56,7 @@ std::ostream& operator<<(std::ostream& s, const TrackingSpectrum<T, N>& spectrum
 //
 
 template <typename T, size_t N>
-std::ostream& operator<<(std::ostream& s, const TrackingSpectrum<T, N>& spectrum)
+std::ostream& operator<<(std::ostream& s, const DynamicSpectrum<T, N>& spectrum)
 {
     return foundation::impl::write_sequence(s, spectrum, spectrum.size());
 }
