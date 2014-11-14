@@ -485,9 +485,9 @@ bool Frame::write_aov_images(const char* file_path) const
         for (size_t i = 0; i < impl->m_aov_images->size(); ++i)
         {
             const string aov_name = impl->m_aov_images->get_name(i);
-            const string aov_file_name = base_file_name + "." + aov_name + extension;
-            const string aov_safe_file_name = make_safe_filename(aov_file_name);
-            const string aov_file_path = (directory / aov_safe_file_name).string();
+            const string safe_aov_name = make_safe_filename(aov_name);
+            const string aov_file_name = base_file_name + "." + safe_aov_name + extension;
+            const string aov_file_path = (directory / aov_file_name).string();
 
             // Note: AOVs are always in the linear color space.
             if (!write_image(
