@@ -177,21 +177,20 @@ ExpressionEditorWindow::ExpressionEditorWindow(
 
 void ExpressionEditorWindow::apply_expression()
 {
-    string expression = m_editor->getExpr();
-    DisneyParamExpression se_expression(expression.c_str());
+    const string expression = m_editor->getExpr();
+    const DisneyParamExpression se_expression(expression.c_str());
 
-    if (!se_expression.is_valid())
-    {
-        m_error->show();
-        se_expression.report_error("SeExpression has errors");
-    }
-    else
+    if (se_expression.is_valid())
     {
         m_error->hide();
         RENDERER_LOG_INFO("SeExpression successfully applied.");
         const QString q_expression = QString::fromStdString(expression);
-        if (!q_expression.isEmpty())
-            emit signal_expression_applied(m_widget_name, q_expression);
+        emit signal_expression_applied(m_widget_name, q_expression);
+    }
+    else
+    {
+        m_error->show();
+        se_expression.report_error("SeExpression has errors");
     }
 }
 
