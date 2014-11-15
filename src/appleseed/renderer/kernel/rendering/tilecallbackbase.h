@@ -58,7 +58,7 @@ class TileCallbackBase
         const size_t    x,
         const size_t    y,
         const size_t    width,
-        const size_t    height) OVERRIDE
+        const size_t    height) APPLESEED_OVERRIDE
     {
     }
 
@@ -66,13 +66,13 @@ class TileCallbackBase
     virtual void post_render_tile(
         const Frame*    frame,
         const size_t    tile_x,
-        const size_t    tile_y) OVERRIDE
+        const size_t    tile_y) APPLESEED_OVERRIDE
     {
     }
 
     // This method is called after a whole frame is rendered.
     virtual void post_render(
-        const Frame*    frame) OVERRIDE
+        const Frame*    frame) APPLESEED_OVERRIDE
     {
     }
 };

@@ -64,7 +64,7 @@ class InstanceCollectionItem
   private:
     ParentEntity& m_parent;
 
-    virtual ItemBase* create_item(Entity* entity) OVERRIDE;
+    virtual ItemBase* create_item(Entity* entity) APPLESEED_OVERRIDE;
 };
 
 

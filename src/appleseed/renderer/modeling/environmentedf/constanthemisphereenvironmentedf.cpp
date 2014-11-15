@@ -77,19 +77,19 @@ namespace
             m_inputs.declare("lower_hemi_radiance", InputFormatSpectralIlluminance);
         }
 
-        virtual void release() OVERRIDE
+        virtual void release() APPLESEED_OVERRIDE
         {
             delete this;
         }
 
-        virtual const char* get_model() const OVERRIDE
+        virtual const char* get_model() const APPLESEED_OVERRIDE
         {
             return Model;
         }
 
         virtual bool on_frame_begin(
             const Project&      project,
-            AbortSwitch*        abort_switch) OVERRIDE
+            AbortSwitch*        abort_switch) APPLESEED_OVERRIDE
         {
             if (!EnvironmentEDF::on_frame_begin(project, abort_switch))
                 return false;
@@ -110,7 +110,7 @@ namespace
             const Vector2d&     s,
             Vector3d&           outgoing,
             Spectrum&           value,
-            double&             probability) const OVERRIDE
+            double&             probability) const APPLESEED_OVERRIDE
         {
             outgoing = sample_sphere_uniform(s);
             value =
@@ -123,7 +123,7 @@ namespace
         virtual void evaluate(
             InputEvaluator&     input_evaluator,
             const Vector3d&     outgoing,
-            Spectrum&           value) const OVERRIDE
+            Spectrum&           value) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
             value =
@@ -136,7 +136,7 @@ namespace
             InputEvaluator&     input_evaluator,
             const Vector3d&     outgoing,
             Spectrum&           value,
-            double&             probability) const OVERRIDE
+            double&             probability) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
             value =
@@ -148,14 +148,14 @@ namespace
 
         virtual double evaluate_pdf(
             InputEvaluator&     input_evaluator,
-            const Vector3d&     outgoing) const OVERRIDE
+            const Vector3d&     outgoing) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
             return 1.0 / (4.0 * Pi);
         }
 
       private:
-        DECLARE_INPUT_VALUES(InputValues)
+        APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
             Spectrum    m_upper_hemi_radiance;              // radiance emitted by the upper hemisphere, in W.m^-2.sr^-1
             Spectrum    m_lower_hemi_radiance;              // radiance emitted by the lower hemisphere, in W.m^-2.sr^-1

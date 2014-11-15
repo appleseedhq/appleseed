@@ -209,7 +209,7 @@ namespace
             const size_t            photon_end,
             const size_t            pass_hash,
             const size_t            thread_index,
-#ifdef WITH_OIIO
+#ifdef APPLESEED_WITH_OIIO
             OIIO::TextureSystem&    oiio_texture_system,
 #endif
 #ifdef APPLESEED_WITH_OSL
@@ -243,7 +243,7 @@ namespace
                 m_intersector,
                 m_tracer,
                 m_texture_cache
-#ifdef WITH_OIIO
+#ifdef APPLESEED_WITH_OIIO
                 , oiio_texture_system
 #endif
 #ifdef APPLESEED_WITH_OSL
@@ -254,7 +254,7 @@ namespace
         {
         }
 
-        virtual void execute(const size_t thread_index) OVERRIDE
+        virtual void execute(const size_t thread_index) APPLESEED_OVERRIDE
         {
             const uint32 instance = hash_uint32(static_cast<uint32>(m_pass_hash + m_photon_begin));
             MersenneTwister rng(instance);
@@ -481,7 +481,7 @@ namespace
             const size_t            photon_end,
             const size_t            pass_hash,
             const size_t            thread_index,
-#ifdef WITH_OIIO
+#ifdef APPLESEED_WITH_OIIO
             OIIO::TextureSystem&    oiio_texture_system,
 #endif
 #ifdef APPLESEED_WITH_OSL
@@ -518,7 +518,7 @@ namespace
                 m_intersector,
                 m_tracer,
                 m_texture_cache
-#ifdef WITH_OIIO
+#ifdef APPLESEED_WITH_OIIO
                 , oiio_texture_system
 #endif
 #ifdef APPLESEED_WITH_OSL
@@ -529,7 +529,7 @@ namespace
         {
         }
 
-        virtual void execute(const size_t thread_index) OVERRIDE
+        virtual void execute(const size_t thread_index) APPLESEED_OVERRIDE
         {
             const uint32 instance = hash_uint32(static_cast<uint32>(m_pass_hash + m_photon_begin));
             MersenneTwister rng(instance);
@@ -645,7 +645,7 @@ SPPMPhotonTracer::SPPMPhotonTracer(
     const LightSampler&     light_sampler,
     const TraceContext&     trace_context,
     TextureStore&           texture_store,
-#ifdef WITH_OIIO
+#ifdef APPLESEED_WITH_OIIO
     OIIO::TextureSystem&    oiio_texture_system,
 #endif
 #ifdef APPLESEED_WITH_OSL
@@ -659,7 +659,7 @@ SPPMPhotonTracer::SPPMPhotonTracer(
   , m_texture_store(texture_store)
   , m_total_emitted_photon_count(0)
   , m_total_stored_photon_count(0)
-#ifdef WITH_OIIO
+#ifdef APPLESEED_WITH_OIIO
   , m_oiio_texture_system(oiio_texture_system)
 #endif
 #ifdef APPLESEED_WITH_OSL
@@ -755,7 +755,7 @@ void SPPMPhotonTracer::schedule_light_photon_tracing_jobs(
                 photon_end,
                 pass_hash,
                 thread_index,
-#ifdef WITH_OIIO
+#ifdef APPLESEED_WITH_OIIO
                 m_oiio_texture_system,
 #endif
 #ifdef APPLESEED_WITH_OSL
@@ -798,7 +798,7 @@ void SPPMPhotonTracer::schedule_environment_photon_tracing_jobs(
                 photon_end,
                 pass_hash,
                 thread_index,
-#ifdef WITH_OIIO
+#ifdef APPLESEED_WITH_OIIO
                 m_oiio_texture_system,
 #endif
 #ifdef APPLESEED_WITH_OSL

@@ -65,10 +65,10 @@ struct ExceptionDictionaryItemNotFound
 // A string-to-string dictionary that can cross DLL boundaries.
 //
 
-class DLLSYMBOL StringDictionary
+class APPLESEED_DLLSYMBOL StringDictionary
 {
   public:
-    class DLLSYMBOL const_iterator
+    class APPLESEED_DLLSYMBOL const_iterator
     {
       public:
         // Value type.
@@ -164,10 +164,10 @@ class DLLSYMBOL StringDictionary
 // A string-to-dictionary dictionary that can cross DLL boundaries.
 //
 
-class DLLSYMBOL DictionaryDictionary
+class APPLESEED_DLLSYMBOL DictionaryDictionary
 {
   public:
-    class DLLSYMBOL const_iterator
+    class APPLESEED_DLLSYMBOL const_iterator
     {
       public:
         // Value type.
@@ -264,7 +264,7 @@ class DLLSYMBOL DictionaryDictionary
 // A dictionary that supports nesting and that can cross DLL boundaries.
 //
 
-class DLLSYMBOL Dictionary
+class APPLESEED_DLLSYMBOL Dictionary
 {
   public:
     // Comparison operators.

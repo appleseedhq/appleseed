@@ -76,17 +76,17 @@ namespace
                 RENDERER_LOG_ERROR("%s: invalid regular expression pattern: %s", context.get(), pattern.c_str());
         }
 
-        virtual void release() OVERRIDE
+        virtual void release() APPLESEED_OVERRIDE
         {
             delete this;
         }
 
-        virtual const char* get_model() const OVERRIDE
+        virtual const char* get_model() const APPLESEED_OVERRIDE
         {
             return Model;
         }
 
-        virtual bool applies(const Entity& entity) const OVERRIDE
+        virtual bool applies(const Entity& entity) const APPLESEED_OVERRIDE
         {
             return
                 m_filter.is_valid()

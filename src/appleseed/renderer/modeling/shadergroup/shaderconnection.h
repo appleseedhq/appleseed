@@ -54,12 +54,12 @@ namespace renderer
 // A connection between two OSL shaders.
 //
 
-class DLLSYMBOL ShaderConnection
+class APPLESEED_DLLSYMBOL ShaderConnection
   : public Entity
 {
   public:
     // Delete this instance.
-    virtual void release() OVERRIDE;
+    virtual void release() APPLESEED_OVERRIDE;
 
     // Return the source layer name.
     const char* get_src_layer() const;

@@ -49,7 +49,7 @@ namespace foundation
 // are not yet supported.
 //
 
-class DLLSYMBOL IUnknown
+class APPLESEED_DLLSYMBOL IUnknown
   : public NonCopyable
 {
   public:

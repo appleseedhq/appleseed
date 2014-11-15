@@ -83,7 +83,7 @@ namespace
         virtual void do_post_render_tile(
             const Frame*    frame,
             const size_t    tile_x,
-            const size_t    tile_y) OVERRIDE
+            const size_t    tile_y) APPLESEED_OVERRIDE
         {
             ProgressTileCallback::do_post_render_tile(frame, tile_x, tile_y);
 

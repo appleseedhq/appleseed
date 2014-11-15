@@ -58,7 +58,7 @@ class MaterialCollectionItem
   protected:
     typedef CollectionItem<renderer::Material, renderer::Assembly, AssemblyItem> Base;
 
-    virtual QMenu* get_single_item_context_menu() const OVERRIDE;
+    virtual QMenu* get_single_item_context_menu() const APPLESEED_OVERRIDE;
 
   private slots:
     void slot_create_generic();
@@ -71,7 +71,7 @@ class MaterialCollectionItem
 #endif
 
   private:
-    virtual ItemBase* create_item(renderer::Material* material) OVERRIDE;
+    virtual ItemBase* create_item(renderer::Material* material) APPLESEED_OVERRIDE;
 
     void do_create_material(const char* model);
 

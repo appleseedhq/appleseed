@@ -385,12 +385,12 @@ namespace
         {
         }
 
-        virtual auto_ptr<Entry> clone() const OVERRIDE
+        virtual auto_ptr<Entry> clone() const APPLESEED_OVERRIDE
         {
             return auto_ptr<Entry>(new RayCountStatisticsEntry(*this));
         }
 
-        virtual void merge(const Entry* other) OVERRIDE
+        virtual void merge(const Entry* other) APPLESEED_OVERRIDE
         {
             const RayCountStatisticsEntry* typed_other =
                 cast<RayCountStatisticsEntry>(other);
@@ -399,7 +399,7 @@ namespace
             m_total_ray_count += typed_other->m_total_ray_count;
         }
 
-        virtual string to_string() const OVERRIDE
+        virtual string to_string() const APPLESEED_OVERRIDE
         {
             return pretty_uint(m_ray_count) + " (" + pretty_percent(m_ray_count, m_total_ray_count) + ")";
         }

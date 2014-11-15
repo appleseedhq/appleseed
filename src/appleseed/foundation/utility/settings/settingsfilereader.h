@@ -47,7 +47,7 @@ namespace foundation
 // Settings file reader.
 //
 
-class DLLSYMBOL SettingsFileReader
+class APPLESEED_DLLSYMBOL SettingsFileReader
   : public NonCopyable
 {
   public:

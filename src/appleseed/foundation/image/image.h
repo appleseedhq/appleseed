@@ -53,7 +53,7 @@ namespace foundation
 // Tiles are initially blank.
 //
 
-class DLLSYMBOL Image
+class APPLESEED_DLLSYMBOL Image
   : public ICanvas
   , public IUnknown
 {
@@ -84,18 +84,18 @@ class DLLSYMBOL Image
     virtual ~Image();
 
     // Delete this instance.
-    virtual void release() OVERRIDE;
+    virtual void release() APPLESEED_OVERRIDE;
 
     // Access canvas properties.
-    virtual const CanvasProperties& properties() const OVERRIDE;
+    virtual const CanvasProperties& properties() const APPLESEED_OVERRIDE;
 
     // Direct access to a given tile.
     virtual Tile& tile(
         const size_t        tile_x,
-        const size_t        tile_y) OVERRIDE;
+        const size_t        tile_y) APPLESEED_OVERRIDE;
     virtual const Tile& tile(
         const size_t        tile_x,
-        const size_t        tile_y) const OVERRIDE;
+        const size_t        tile_y) const APPLESEED_OVERRIDE;
 
     // Set a given tile. Ownership of the tile is transfered to the Image class.
     // If a tile already exists at the given coordinates, it gets replaced.

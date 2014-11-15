@@ -50,7 +50,7 @@ namespace renderer
 // Used by the generic frame renderer in multi-pass mode.
 //
 
-class DLLSYMBOL IPassCallback
+class APPLESEED_DLLSYMBOL IPassCallback
   : public foundation::IUnknown
 {
   public:

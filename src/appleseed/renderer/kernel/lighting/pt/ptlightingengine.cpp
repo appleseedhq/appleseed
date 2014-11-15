@@ -168,7 +168,7 @@ namespace
         {
         }
 
-        virtual void release() OVERRIDE
+        virtual void release() APPLESEED_OVERRIDE
         {
             delete this;
         }
@@ -179,7 +179,7 @@ namespace
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
             Spectrum&               radiance,               // output radiance, in W.sr^-1.m^-2
-            SpectrumStack&          aovs) OVERRIDE
+            SpectrumStack&          aovs) APPLESEED_OVERRIDE
         {
             if (m_params.m_next_event_estimation)
             {
@@ -235,7 +235,7 @@ namespace
             m_path_length.insert(path_length);
         }
 
-        virtual StatisticsVector get_statistics() const OVERRIDE
+        virtual StatisticsVector get_statistics() const APPLESEED_OVERRIDE
         {
             Statistics stats;
             stats.insert("path count", m_path_count);

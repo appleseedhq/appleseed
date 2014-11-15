@@ -61,7 +61,7 @@ namespace foundation
 // Reference: openexr/ImfStandardAttributes.h
 //
 
-class DLLSYMBOL EXRImageFileWriter
+class APPLESEED_DLLSYMBOL EXRImageFileWriter
   : public IImageFileWriter
 {
   public:

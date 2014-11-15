@@ -49,7 +49,7 @@ namespace renderer
 // Curve object reader.
 //
 
-class DLLSYMBOL CurveObjectReader
+class APPLESEED_DLLSYMBOL CurveObjectReader
 {
   public:
     // Read a curve object from disk. The filepath is defined in params.

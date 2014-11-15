@@ -52,7 +52,7 @@ namespace foundation
 // Canvas interface.
 //
 
-class DLLSYMBOL ICanvas
+class APPLESEED_DLLSYMBOL ICanvas
   : public NonCopyable
 {
   public:

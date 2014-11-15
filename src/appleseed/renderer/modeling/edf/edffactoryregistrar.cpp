@@ -49,7 +49,7 @@ using namespace std;
 namespace renderer
 {
 
-DEFINE_ARRAY(EDFFactoryArray);
+APPLESEED_DEFINE_ARRAY(EDFFactoryArray);
 
 struct EDFFactoryRegistrar::Impl
 {

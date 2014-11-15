@@ -57,7 +57,7 @@ namespace renderer
 // A scene. Self-contained.
 //
 
-class DLLSYMBOL Scene
+class APPLESEED_DLLSYMBOL Scene
   : public Entity
   , public BaseGroup
 {
@@ -66,7 +66,7 @@ class DLLSYMBOL Scene
     static foundation::UniqueID get_class_uid();
 
     // Delete this instance.
-    virtual void release() OVERRIDE;
+    virtual void release() APPLESEED_OVERRIDE;
 
     // Set the camera.
     void set_camera(foundation::auto_release_ptr<Camera> camera);
@@ -124,7 +124,7 @@ class DLLSYMBOL Scene
 // SceneFactory.
 //
 
-class DLLSYMBOL SceneFactory
+class APPLESEED_DLLSYMBOL SceneFactory
 {
   public:
     // Create a new scene.

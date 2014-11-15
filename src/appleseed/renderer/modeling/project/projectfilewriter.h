@@ -43,7 +43,7 @@ namespace renderer
 // Project file writer.
 //
 
-class DLLSYMBOL ProjectFileWriter
+class APPLESEED_DLLSYMBOL ProjectFileWriter
 {
   public:
     enum Options

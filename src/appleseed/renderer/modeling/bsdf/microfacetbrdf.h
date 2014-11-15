@@ -54,7 +54,7 @@ namespace renderer
 // Microfacet BRDF input values.
 //
 
-DECLARE_INPUT_VALUES(MicrofacetBRDFInputValues)
+APPLESEED_DECLARE_INPUT_VALUES(MicrofacetBRDFInputValues)
 {
     double      m_glossiness;
     double      m_glossiness_multiplier;
@@ -68,23 +68,23 @@ DECLARE_INPUT_VALUES(MicrofacetBRDFInputValues)
 // Microfacet BRDF factory.
 //
 
-class DLLSYMBOL MicrofacetBRDFFactory
+class APPLESEED_DLLSYMBOL MicrofacetBRDFFactory
   : public IBSDFFactory
 {
   public:
     // Return a string identifying this BSDF model.
-    virtual const char* get_model() const OVERRIDE;
+    virtual const char* get_model() const APPLESEED_OVERRIDE;
 
     // Return a human-readable string identifying this BSDF model.
-    virtual const char* get_human_readable_model() const OVERRIDE;
+    virtual const char* get_human_readable_model() const APPLESEED_OVERRIDE;
 
     // Return a set of input metadata for this BSDF model.
-    virtual foundation::DictionaryArray get_input_metadata() const OVERRIDE;
+    virtual foundation::DictionaryArray get_input_metadata() const APPLESEED_OVERRIDE;
 
     // Create a new BSDF instance.
     virtual foundation::auto_release_ptr<BSDF> create(
         const char*         name,
-        const ParamArray&   params) const OVERRIDE;
+        const ParamArray&   params) const APPLESEED_OVERRIDE;
 };
 
 }       // namespace renderer

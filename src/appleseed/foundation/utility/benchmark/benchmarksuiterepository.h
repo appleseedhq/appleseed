@@ -48,7 +48,7 @@ namespace foundation
 // The (unique) benchmark suite repository, as a collection of benchmark suites.
 //
 
-class DLLSYMBOL BenchmarkSuiteRepository
+class APPLESEED_DLLSYMBOL BenchmarkSuiteRepository
   : public Singleton<BenchmarkSuiteRepository>
 {
   public:

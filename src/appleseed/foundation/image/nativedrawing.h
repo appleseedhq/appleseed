@@ -51,7 +51,7 @@ namespace foundation
 // Warning: none of those methods handle pixel format conversion or clipping.
 //
 
-class DLLSYMBOL NativeDrawing
+class APPLESEED_DLLSYMBOL NativeDrawing
 {
   public:
     // Clear an image buffer with a given pixel color.

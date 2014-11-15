@@ -50,7 +50,7 @@ namespace foundation
 // over those inserted earlier).
 //
 
-class DLLSYMBOL SearchPathsImpl
+class APPLESEED_DLLSYMBOL SearchPathsImpl
   : public NonCopyable
 {
   public:

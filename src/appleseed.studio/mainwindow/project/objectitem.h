@@ -59,7 +59,7 @@ class ObjectItem
         AssemblyItem*       parent_item,
         ProjectBuilder&     project_builder);
 
-    virtual QMenu* get_single_item_context_menu() const OVERRIDE;
+    virtual QMenu* get_single_item_context_menu() const APPLESEED_OVERRIDE;
 
   private:
     friend class EntityInstantiationDelayedAction<ObjectItem>;
@@ -69,12 +69,12 @@ class ObjectItem
     AssemblyItem*           m_parent_item;
     ProjectBuilder&         m_project_builder;
 
-    virtual void slot_instantiate() OVERRIDE;
+    virtual void slot_instantiate() APPLESEED_OVERRIDE;
 
     void schedule_instantiate(const std::string& name);
     void do_instantiate(const std::string& name);
 
-    virtual void slot_delete() OVERRIDE;
+    virtual void slot_delete() APPLESEED_OVERRIDE;
 
     void schedule_delete();
     void do_delete();

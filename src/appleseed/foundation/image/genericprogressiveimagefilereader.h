@@ -52,7 +52,7 @@ namespace foundation
 // Generic progressive image file reader interface.
 //
 
-class DLLSYMBOL GenericProgressiveImageFileReader
+class APPLESEED_DLLSYMBOL GenericProgressiveImageFileReader
   : public IProgressiveImageFileReader
 {
   public:

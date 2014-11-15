@@ -49,7 +49,7 @@ namespace renderer
 // Curve object writer.
 //
 
-class DLLSYMBOL CurveObjectWriter
+class APPLESEED_DLLSYMBOL CurveObjectWriter
 {
   public:
     // Write a curve object to disk.

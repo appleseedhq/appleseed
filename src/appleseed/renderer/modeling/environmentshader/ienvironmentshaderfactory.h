@@ -49,7 +49,7 @@ namespace renderer
 // Environment shader factory interface.
 //
 
-class DLLSYMBOL IEnvironmentShaderFactory
+class APPLESEED_DLLSYMBOL IEnvironmentShaderFactory
   : public foundation::NonCopyable
 {
   public:

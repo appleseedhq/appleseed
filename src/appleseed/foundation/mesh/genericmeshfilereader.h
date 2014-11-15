@@ -47,7 +47,7 @@ namespace foundation
 // Read a mesh file using the right reader based on the extension of the mesh file name.
 //
 
-class DLLSYMBOL GenericMeshFileReader
+class APPLESEED_DLLSYMBOL GenericMeshFileReader
   : public IMeshFileReader
 {
   public:

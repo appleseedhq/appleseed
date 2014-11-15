@@ -46,7 +46,7 @@ namespace foundation
 // Mesh file writer interface.
 //
 
-class DLLSYMBOL IMeshFileWriter
+class APPLESEED_DLLSYMBOL IMeshFileWriter
   : public NonCopyable
 {
   public:

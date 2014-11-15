@@ -64,7 +64,7 @@ class EntityCreationDelayedAction
 
     virtual void operator()(
         renderer::MasterRenderer&       master_renderer,
-        renderer::Project&              project) OVERRIDE
+        renderer::Project&              project) APPLESEED_OVERRIDE
     {
         m_parent->create(m_values);
     }
@@ -89,7 +89,7 @@ class EntityEditionDelayedAction
 
     virtual void operator()(
         renderer::MasterRenderer&       master_renderer,
-        renderer::Project&              project) OVERRIDE
+        renderer::Project&              project) APPLESEED_OVERRIDE
     {
         m_parent->edit(m_values);
     }
@@ -114,7 +114,7 @@ class EntityInstantiationDelayedAction
 
     virtual void operator()(
         renderer::MasterRenderer&       master_renderer,
-        renderer::Project&              project) OVERRIDE
+        renderer::Project&              project) APPLESEED_OVERRIDE
     {
         m_parent->do_instantiate(m_name);
     }
@@ -137,7 +137,7 @@ class EntityDeletionDelayedAction
 
     virtual void operator()(
         renderer::MasterRenderer&       master_renderer,
-        renderer::Project&              project) OVERRIDE
+        renderer::Project&              project) APPLESEED_OVERRIDE
     {
         m_parent->do_delete();
     }

@@ -108,7 +108,7 @@ enum ProcessPriority
 // An object to set the priority for the current process.
 //
 
-class DLLSYMBOL ProcessPriorityContext
+class APPLESEED_DLLSYMBOL ProcessPriorityContext
   : public NonCopyable
 {
   public:
@@ -130,7 +130,7 @@ class DLLSYMBOL ProcessPriorityContext
 // An object to set the priority for the current thread.
 //
 
-class DLLSYMBOL ThreadPriorityContext
+class APPLESEED_DLLSYMBOL ThreadPriorityContext
   : public NonCopyable
 {
   public:
@@ -152,7 +152,7 @@ class DLLSYMBOL ThreadPriorityContext
 // An object to configure the current process and thread for accurate microbenchmarking.
 //
 
-class DLLSYMBOL BenchmarkingThreadContext
+class APPLESEED_DLLSYMBOL BenchmarkingThreadContext
   : public NonCopyable
 {
   public:
@@ -201,10 +201,10 @@ class ThreadFunctionWrapper
 //
 
 // Suspend the current thread for a given number of milliseconds.
-DLLSYMBOL void sleep(const uint32 ms);
+APPLESEED_DLLSYMBOL void sleep(const uint32 ms);
 
 // Give up the remainder of the current thread's time slice, to allow other threads to run.
-DLLSYMBOL void yield();
+APPLESEED_DLLSYMBOL void yield();
 
 
 //

@@ -190,7 +190,7 @@ namespace
         {
         }
 
-        virtual void update() OVERRIDE
+        virtual void update() APPLESEED_OVERRIDE
         {
             // Nothing to do.
         }
@@ -210,7 +210,7 @@ namespace
         {
         }
 
-        virtual void update() OVERRIDE
+        virtual void update() APPLESEED_OVERRIDE
         {
             // Nothing to do.
         }
@@ -230,7 +230,7 @@ namespace
         {
         }
 
-        virtual void update() OVERRIDE
+        virtual void update() APPLESEED_OVERRIDE
         {
             introduce_pixel_renderers();
             move_filter_parameters_from_configurations_to_frame();
@@ -321,7 +321,7 @@ namespace
         {
         }
 
-        virtual void update() OVERRIDE
+        virtual void update() APPLESEED_OVERRIDE
         {
             const Scene* scene = m_project.get_scene();
 
@@ -416,7 +416,7 @@ namespace
         {
         }
 
-        virtual void update() OVERRIDE
+        virtual void update() APPLESEED_OVERRIDE
         {
             for (each<ConfigurationContainer> i = m_project.configurations(); i; ++i)
             {
@@ -440,7 +440,7 @@ namespace
         {
         }
 
-        virtual void update() OVERRIDE
+        virtual void update() APPLESEED_OVERRIDE
         {
             const Scene* scene = m_project.get_scene();
 
@@ -635,7 +635,7 @@ namespace
         {
         }
 
-        virtual void update() OVERRIDE
+        virtual void update() APPLESEED_OVERRIDE
         {
             const Scene* scene = m_project.get_scene();
 
@@ -712,7 +712,7 @@ namespace
         {
         }
 
-        virtual void update() OVERRIDE
+        virtual void update() APPLESEED_OVERRIDE
         {
             const Scene* scene = m_project.get_scene();
 

@@ -52,7 +52,7 @@ namespace renderer
 // parameters from a base configuration.
 //
 
-class DLLSYMBOL Configuration
+class APPLESEED_DLLSYMBOL Configuration
   : public Entity
 {
   public:
@@ -60,7 +60,7 @@ class DLLSYMBOL Configuration
     static foundation::UniqueID get_class_uid();
 
     // Delete this instance.
-    virtual void release() OVERRIDE;
+    virtual void release() APPLESEED_OVERRIDE;
 
     // Set the base configuration.
     // A null pointer is a valid value.
@@ -89,7 +89,7 @@ class DLLSYMBOL Configuration
 // Configuration factory.
 //
 
-class DLLSYMBOL ConfigurationFactory
+class APPLESEED_DLLSYMBOL ConfigurationFactory
 {
   public:
     // Create a new empty configuration.
@@ -104,7 +104,7 @@ class DLLSYMBOL ConfigurationFactory
 // Base configuration factory.
 //
 
-class DLLSYMBOL BaseConfigurationFactory
+class APPLESEED_DLLSYMBOL BaseConfigurationFactory
 {
   public:
     // Instantiate the built-in "base_final" configuration.

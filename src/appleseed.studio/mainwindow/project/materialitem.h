@@ -57,7 +57,7 @@ class MaterialItem
     virtual QMenu* get_single_item_context_menu() const;
 
   private:
-    virtual void slot_edit(AttributeEditor* attribute_editor) OVERRIDE;
+    virtual void slot_edit(AttributeEditor* attribute_editor) APPLESEED_OVERRIDE;
 
   public slots:
     void slot_export();

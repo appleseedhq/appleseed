@@ -62,7 +62,7 @@ namespace
         {
         }
 
-        virtual void release() OVERRIDE
+        virtual void release() APPLESEED_OVERRIDE
         {
             delete this;
         }
@@ -71,7 +71,7 @@ namespace
             const size_t    x,
             const size_t    y,
             const size_t    width,
-            const size_t    height) OVERRIDE
+            const size_t    height) APPLESEED_OVERRIDE
         {
             if (!m_tile_callbacks_enabled)
                 return;
@@ -84,7 +84,7 @@ namespace
         virtual void post_render_tile(
             const Frame*    frame,
             const size_t    tile_x,
-            const size_t    tile_y) OVERRIDE
+            const size_t    tile_y) APPLESEED_OVERRIDE
         {
             if (!m_tile_callbacks_enabled)
                 return;
@@ -94,7 +94,7 @@ namespace
         }
 
         virtual void post_render(
-            const Frame*    frame) OVERRIDE
+            const Frame*    frame) APPLESEED_OVERRIDE
         {
             if (!m_tile_callbacks_enabled)
                 return;

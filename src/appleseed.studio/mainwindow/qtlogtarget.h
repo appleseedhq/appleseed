@@ -63,7 +63,7 @@ class QtLogTarget
     explicit QtLogTarget(LogWidget* log_widget);
 
     // Delete this instance.
-    virtual void release() OVERRIDE;
+    virtual void release() APPLESEED_OVERRIDE;
 
     // Write a message.
     virtual void write(
@@ -71,7 +71,7 @@ class QtLogTarget
         const char*                             file,
         const size_t                            line,
         const char*                             header,
-        const char*                             message) OVERRIDE;
+        const char*                             message) APPLESEED_OVERRIDE;
 
   signals:
     void signal_append_item(const QColor& color, const QString& text);

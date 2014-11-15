@@ -109,19 +109,19 @@ namespace
             m_inputs.declare("horizon_shift", InputFormatScalar, "0.0");
         }
 
-        virtual void release() OVERRIDE
+        virtual void release() APPLESEED_OVERRIDE
         {
             delete this;
         }
 
-        virtual const char* get_model() const OVERRIDE
+        virtual const char* get_model() const APPLESEED_OVERRIDE
         {
             return Model;
         }
 
         virtual bool on_frame_begin(
             const Project&      project,
-            AbortSwitch*        abort_switch) OVERRIDE
+            AbortSwitch*        abort_switch) APPLESEED_OVERRIDE
         {
             if (!EnvironmentEDF::on_frame_begin(project, abort_switch))
                 return false;
@@ -159,7 +159,7 @@ namespace
             const Vector2d&     s,
             Vector3d&           outgoing,
             Spectrum&           value,
-            double&             probability) const OVERRIDE
+            double&             probability) const APPLESEED_OVERRIDE
         {
             outgoing = sample_hemisphere_cosine(s);
 
@@ -174,7 +174,7 @@ namespace
         virtual void evaluate(
             InputEvaluator&     input_evaluator,
             const Vector3d&     outgoing,
-            Spectrum&           value) const OVERRIDE
+            Spectrum&           value) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
 
@@ -188,7 +188,7 @@ namespace
             InputEvaluator&     input_evaluator,
             const Vector3d&     outgoing,
             Spectrum&           value,
-            double&             probability) const OVERRIDE
+            double&             probability) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
 
@@ -202,7 +202,7 @@ namespace
 
         virtual double evaluate_pdf(
             InputEvaluator&     input_evaluator,
-            const Vector3d&     outgoing) const OVERRIDE
+            const Vector3d&     outgoing) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
 
@@ -210,7 +210,7 @@ namespace
         }
 
       private:
-        DECLARE_INPUT_VALUES(InputValues)
+        APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
             double  m_sun_theta;                    // sun zenith angle in degrees, 0=zenith
             double  m_sun_phi;                      // degrees

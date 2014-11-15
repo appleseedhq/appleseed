@@ -51,7 +51,7 @@ namespace renderer
 // Base class for all entities with inputs.
 //
 
-class DLLSYMBOL ConnectableEntity
+class APPLESEED_DLLSYMBOL ConnectableEntity
   : public Entity
 {
   public:

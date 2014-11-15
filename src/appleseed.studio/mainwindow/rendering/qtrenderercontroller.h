@@ -53,28 +53,28 @@ class QtRendererController
     QtRendererController();
 
     // Delete this instance.
-    virtual void release() OVERRIDE;
+    virtual void release() APPLESEED_OVERRIDE;
 
     // This method is called before rendering begins.
-    virtual void on_rendering_begin() OVERRIDE;
+    virtual void on_rendering_begin() APPLESEED_OVERRIDE;
 
     // This method is called after rendering has succeeded.
-    virtual void on_rendering_success() OVERRIDE;
+    virtual void on_rendering_success() APPLESEED_OVERRIDE;
 
     // This method is called after rendering was aborted.
-    virtual void on_rendering_abort() OVERRIDE;
+    virtual void on_rendering_abort() APPLESEED_OVERRIDE;
 
     // This method is called before rendering a single frame.
-    virtual void on_frame_begin() OVERRIDE;
+    virtual void on_frame_begin() APPLESEED_OVERRIDE;
 
     // This method is called after rendering a single frame.
-    virtual void on_frame_end() OVERRIDE;
+    virtual void on_frame_end() APPLESEED_OVERRIDE;
 
     // Set the status that will be returned by on_progress().
     void set_status(const Status status);
 
     // This method is called continuously during rendering.
-    virtual Status on_progress() OVERRIDE;
+    virtual Status on_progress() APPLESEED_OVERRIDE;
 
   signals:
     void signal_rendering_begin();

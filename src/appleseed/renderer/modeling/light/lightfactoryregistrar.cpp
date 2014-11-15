@@ -51,7 +51,7 @@ using namespace std;
 namespace renderer
 {
 
-DEFINE_ARRAY(LightFactoryArray);
+APPLESEED_DEFINE_ARRAY(LightFactoryArray);
 
 struct LightFactoryRegistrar::Impl
 {

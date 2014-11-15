@@ -78,19 +78,19 @@ namespace
         {
         }
 
-        virtual void release() OVERRIDE
+        virtual void release() APPLESEED_OVERRIDE
         {
             delete this;
         }
 
-        virtual const char* get_model() const OVERRIDE
+        virtual const char* get_model() const APPLESEED_OVERRIDE
         {
             return Model;
         }
 
         virtual bool on_frame_begin(
             const Project&          project,
-            AbortSwitch*            abort_switch) OVERRIDE
+            AbortSwitch*            abort_switch) APPLESEED_OVERRIDE
         {
             if (!Camera::on_frame_begin(project, abort_switch))
                 return false;
@@ -107,7 +107,7 @@ namespace
         virtual void generate_ray(
             SamplingContext&        sampling_context,
             const Vector2d&         point,
-            ShadingRay&             ray) const OVERRIDE
+            ShadingRay&             ray) const APPLESEED_OVERRIDE
         {
             // Initialize the ray.
             initialize_ray(sampling_context, ray);
@@ -128,7 +128,7 @@ namespace
 
         virtual bool project_camera_space_point(
             const Vector3d&         point,
-            Vector2d&               ndc) const OVERRIDE
+            Vector2d&               ndc) const APPLESEED_OVERRIDE
         {
             // Compute the unit direction vector from the camera position to the point.
             const Vector3d dir = normalize(point);
@@ -148,7 +148,7 @@ namespace
         virtual bool clip_segment(
             const double            time,
             Vector3d&               v0,
-            Vector3d&               v1) const OVERRIDE
+            Vector3d&               v1) const APPLESEED_OVERRIDE
         {
             // No clipping necessary.
             return true;
@@ -156,7 +156,7 @@ namespace
 
         virtual double get_pixel_solid_angle(
             const Frame&            frame,
-            const Vector2d&         point) const OVERRIDE
+            const Vector2d&         point) const APPLESEED_OVERRIDE
         {
             const CanvasProperties& props = frame.image().properties();
             const double half_pixel_width = 0.5 * props.m_rcp_canvas_width;
@@ -175,7 +175,7 @@ namespace
             return 0.5 * norm(cross(q2 - q0, q3 - q1));
         }
 
-        virtual bool is_nonlinear() const OVERRIDE
+        virtual bool is_nonlinear() const APPLESEED_OVERRIDE
         {
             return true;
         }

@@ -48,7 +48,7 @@ using namespace std;
 namespace renderer
 {
 
-DEFINE_ARRAY(EnvironmentShaderFactoryArray);
+APPLESEED_DEFINE_ARRAY(EnvironmentShaderFactoryArray);
 
 struct EnvironmentShaderFactoryRegistrar::Impl
 {

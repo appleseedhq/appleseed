@@ -65,7 +65,7 @@ class OBJMeshFileWriter
     virtual ~OBJMeshFileWriter();
 
     // Write a mesh.
-    virtual void write(const IMeshWalker& walker) OVERRIDE;
+    virtual void write(const IMeshWalker& walker) APPLESEED_OVERRIDE;
 
     // Close the file.
     void close();

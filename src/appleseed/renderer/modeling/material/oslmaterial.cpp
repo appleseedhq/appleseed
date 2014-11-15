@@ -68,12 +68,12 @@ namespace
             m_osl_edf = OSLEDFFactory().create();
         }
 
-        virtual void release() OVERRIDE
+        virtual void release() APPLESEED_OVERRIDE
         {
             delete this;
         }
 
-        virtual const char* get_model() const OVERRIDE
+        virtual const char* get_model() const APPLESEED_OVERRIDE
         {
             return Model;
         }
@@ -81,7 +81,7 @@ namespace
         virtual bool on_frame_begin(
             const Project&              project,
             const Assembly&             assembly,
-            foundation::AbortSwitch*    abort_switch = 0) OVERRIDE
+            foundation::AbortSwitch*    abort_switch = 0) APPLESEED_OVERRIDE
         {
             if (!Material::on_frame_begin(project, assembly, abort_switch))
                 return false;
@@ -105,7 +105,7 @@ namespace
 
         virtual void on_frame_end(
             const Project&              project,
-            const Assembly&             assembly) OVERRIDE
+            const Assembly&             assembly) APPLESEED_OVERRIDE
         {
             Material::on_frame_end(project, assembly);
 
@@ -117,12 +117,12 @@ namespace
             m_shader_group = 0;
         }
 
-        virtual bool has_osl_surface() const OVERRIDE
+        virtual bool has_osl_surface() const APPLESEED_OVERRIDE
         {
             return get_non_empty(m_params, "osl_surface") != 0;
         }
 
-        virtual bool has_emission() const OVERRIDE
+        virtual bool has_emission() const APPLESEED_OVERRIDE
         {
             if (const ShaderGroup* s = get_uncached_osl_surface())
                 return s->has_emission();
@@ -130,7 +130,7 @@ namespace
             return false;
         }
 
-        virtual const EDF* get_uncached_edf() const OVERRIDE
+        virtual const EDF* get_uncached_edf() const APPLESEED_OVERRIDE
         {
             if (has_emission())
                 return m_osl_edf.get();
@@ -142,7 +142,7 @@ namespace
         auto_release_ptr<BSDF>  m_osl_bsdf;
         auto_release_ptr<EDF>   m_osl_edf;
 
-        virtual const ShaderGroup* get_uncached_osl_surface() const OVERRIDE
+        virtual const ShaderGroup* get_uncached_osl_surface() const APPLESEED_OVERRIDE
         {
             const ShaderGroup* sg =
                 static_cast<const ShaderGroup*>(m_inputs.get_entity("osl_surface"));

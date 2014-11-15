@@ -49,7 +49,7 @@ namespace renderer
 // Render layer rule factory interface.
 //
 
-class DLLSYMBOL IRenderLayerRuleFactory
+class APPLESEED_DLLSYMBOL IRenderLayerRuleFactory
   : public foundation::NonCopyable
 {
   public:

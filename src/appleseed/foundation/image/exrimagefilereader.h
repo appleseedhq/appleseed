@@ -47,7 +47,7 @@ namespace foundation
 // OpenEXR image file reader.
 //
 
-class DLLSYMBOL EXRImageFileReader
+class APPLESEED_DLLSYMBOL EXRImageFileReader
   : public IImageFileReader
 {
   public:

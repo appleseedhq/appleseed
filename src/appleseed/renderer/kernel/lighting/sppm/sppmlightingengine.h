@@ -59,10 +59,10 @@ class SPPMLightingEngineFactory
         const SPPMParameters&       params);
 
     // Delete this instance.
-    virtual void release() OVERRIDE;
+    virtual void release() APPLESEED_OVERRIDE;
 
     // Return a new SPPM lighting engine instance.
-    virtual ILightingEngine* create() OVERRIDE;
+    virtual ILightingEngine* create() APPLESEED_OVERRIDE;
 
   private:
     const SPPMParameters            m_params;

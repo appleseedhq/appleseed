@@ -53,7 +53,7 @@ namespace renderer
 // are rendered.
 //
 
-class DLLSYMBOL ITileCallback
+class APPLESEED_DLLSYMBOL ITileCallback
   : public foundation::IUnknown
 {
   public:
@@ -83,7 +83,7 @@ class DLLSYMBOL ITileCallback
 // Interface of a ITileCallback factory that can cross DLL boundaries.
 //
 
-class DLLSYMBOL ITileCallbackFactory
+class APPLESEED_DLLSYMBOL ITileCallbackFactory
   : public foundation::IUnknown
 {
   public:

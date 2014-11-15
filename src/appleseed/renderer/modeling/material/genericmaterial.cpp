@@ -62,12 +62,12 @@ namespace
             m_inputs.declare("displacement_map", InputFormatSpectralReflectance, "");
         }
 
-        virtual void release() OVERRIDE
+        virtual void release() APPLESEED_OVERRIDE
         {
             delete this;
         }
 
-        virtual const char* get_model() const OVERRIDE
+        virtual const char* get_model() const APPLESEED_OVERRIDE
         {
             return Model;
         }
@@ -75,7 +75,7 @@ namespace
         virtual bool on_frame_begin(
             const Project&              project,
             const Assembly&             assembly,
-            foundation::AbortSwitch*    abort_switch = 0) OVERRIDE
+            foundation::AbortSwitch*    abort_switch = 0) APPLESEED_OVERRIDE
         {
             if (!Material::on_frame_begin(project, assembly, abort_switch))
                 return false;
@@ -100,7 +100,7 @@ namespace
 
         virtual void on_frame_end(
             const Project&              project,
-            const Assembly&             assembly) OVERRIDE
+            const Assembly&             assembly) APPLESEED_OVERRIDE
         {
             Material::on_frame_end(project, assembly);
         }

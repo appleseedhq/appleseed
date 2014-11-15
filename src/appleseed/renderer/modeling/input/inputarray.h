@@ -56,14 +56,14 @@ namespace renderer
 // A collection of named and typed inputs.
 //
 
-class DLLSYMBOL InputArray
+class APPLESEED_DLLSYMBOL InputArray
   : public foundation::NonCopyable
 {
   public:
     class iterator;
 
     // Constant iterator.
-    class DLLSYMBOL const_iterator
+    class APPLESEED_DLLSYMBOL const_iterator
     {
       public:
         // Value type.
@@ -114,7 +114,7 @@ class DLLSYMBOL InputArray
     };
 
     // Mutable iterator.
-    class DLLSYMBOL iterator
+    class APPLESEED_DLLSYMBOL iterator
       : public const_iterator
     {
       public:
@@ -209,7 +209,7 @@ class DLLSYMBOL InputArray
 //
 // Usage:
 //
-//     DECLARE_INPUT_VALUES(InputValues)
+//     APPLESEED_DECLARE_INPUT_VALUES(InputValues)
 //     {
 //         Spectrum    m_color;
 //         Alpha       m_alpha;
@@ -217,7 +217,7 @@ class DLLSYMBOL InputArray
 //     };
 //
 
-#define DECLARE_INPUT_VALUES(name) struct APPLESEED_ALIGN(16) name
+#define APPLESEED_DECLARE_INPUT_VALUES(name) struct APPLESEED_ALIGN(16) name
 
 }       // namespace renderer
 

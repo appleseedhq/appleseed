@@ -34,9 +34,9 @@
 #include "main/dllvisibility.h"
 
 #ifdef appleseed_EXPORTS                        // automatically set by CMake
-    #define DLLSYMBOL APPLESEED_DLL_EXPORT
+    #define APPLESEED_DLLSYMBOL APPLESEED_DLL_EXPORT
 #else
-    #define DLLSYMBOL APPLESEED_DLL_IMPORT
+    #define APPLESEED_DLLSYMBOL APPLESEED_DLL_IMPORT
 #endif
 
 #endif  // !APPLESEED_MAIN_DLLSYMBOL_H

@@ -48,7 +48,7 @@ namespace foundation    { class Dictionary; }
 namespace foundation
 {
 
-class DLLSYMBOL BenchmarkAggregator
+class APPLESEED_DLLSYMBOL BenchmarkAggregator
   : public NonCopyable
 {
   public:

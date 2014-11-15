@@ -50,7 +50,7 @@ namespace renderer
 // The trace context is shared amongst threads. All methods are thread-safe.
 //
 
-class DLLSYMBOL TraceContext
+class APPLESEED_DLLSYMBOL TraceContext
   : public foundation::NonCopyable
 {
   public:

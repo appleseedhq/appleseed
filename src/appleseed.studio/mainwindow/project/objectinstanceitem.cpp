@@ -275,7 +275,7 @@ namespace
 
         virtual void operator()(
             MasterRenderer&         master_renderer,
-            Project&                project) OVERRIDE
+            Project&                project) APPLESEED_OVERRIDE
         {
             m_parent->assign_material(m_page_name, m_entity_name, m_data);
         }
@@ -350,7 +350,7 @@ namespace
 
         virtual void operator()(
             MasterRenderer&         master_renderer,
-            Project&                project) OVERRIDE
+            Project&                project) APPLESEED_OVERRIDE
         {
             m_parent->clear_material(m_data);
         }

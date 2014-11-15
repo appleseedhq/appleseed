@@ -59,7 +59,7 @@ namespace detail
         ILogTargetWrap() {}
         ~ILogTargetWrap() {}
 
-        virtual void release() OVERRIDE
+        virtual void release() APPLESEED_OVERRIDE
         {
             delete this;
         }
@@ -69,7 +69,7 @@ namespace detail
             const char*                 file,
             const size_t                line,
             const char*                 header,
-            const char*                 message) OVERRIDE
+            const char*                 message) APPLESEED_OVERRIDE
         {
             // because this can be called from multiple threads
             // we need to lock python here.

@@ -52,7 +52,7 @@ namespace renderer
 // Plugin tile callback.
 //
 
-class DLLSYMBOL Display
+class APPLESEED_DLLSYMBOL Display
   : public Entity
 {
   public:
@@ -65,7 +65,7 @@ class DLLSYMBOL Display
         const ParamArray&               params);
 
     // Delete this instance.
-    virtual void release() OVERRIDE;
+    virtual void release() APPLESEED_OVERRIDE;
 
     void open(const Project& project);
     void close();
@@ -85,7 +85,7 @@ class DLLSYMBOL Display
 // Display factory.
 //
 
-class DLLSYMBOL DisplayFactory
+class APPLESEED_DLLSYMBOL DisplayFactory
 {
   public:
     // Create a new display.

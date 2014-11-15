@@ -87,37 +87,37 @@ namespace
             return m_meshes;
         }
 
-        virtual void begin_mesh(const char* name) OVERRIDE
+        virtual void begin_mesh(const char* name) APPLESEED_OVERRIDE
         {
             m_current_mesh = Mesh();
             m_current_mesh.m_name = name;
         }
 
-        virtual size_t push_vertex(const Vector3d& v) OVERRIDE
+        virtual size_t push_vertex(const Vector3d& v) APPLESEED_OVERRIDE
         {
             m_current_mesh.m_vertices.push_back(v);
             return m_current_mesh.m_vertices.size() - 1;
         }
 
-        virtual size_t push_vertex_normal(const Vector3d& v) OVERRIDE
+        virtual size_t push_vertex_normal(const Vector3d& v) APPLESEED_OVERRIDE
         {
             m_current_mesh.m_vertex_normals.push_back(safe_normalize(v));
             return m_current_mesh.m_vertex_normals.size() - 1;
         }
 
-        virtual size_t push_tex_coords(const Vector2d& v) OVERRIDE
+        virtual size_t push_tex_coords(const Vector2d& v) APPLESEED_OVERRIDE
         {
             m_current_mesh.m_tex_coords.push_back(v);
             return m_current_mesh.m_tex_coords.size() - 1;
         }
 
-        virtual size_t push_material_slot(const char* name) OVERRIDE
+        virtual size_t push_material_slot(const char* name) APPLESEED_OVERRIDE
         {
             m_current_mesh.m_material_slots.push_back(name);
             return m_current_mesh.m_material_slots.size() - 1;
         }
 
-        virtual void begin_face(const size_t vertex_count) OVERRIDE
+        virtual void begin_face(const size_t vertex_count) APPLESEED_OVERRIDE
         {
             m_current_face = Face();
             m_current_face.m_vertices.resize(vertex_count);
@@ -126,35 +126,35 @@ namespace
             m_current_face.m_material = 0;
         }
 
-        virtual void set_face_vertices(const size_t vertices[]) OVERRIDE
+        virtual void set_face_vertices(const size_t vertices[]) APPLESEED_OVERRIDE
         {
             for (size_t i = 0; i < m_current_face.m_vertices.size(); ++i)
                 m_current_face.m_vertices[i] = vertices[i];
         }
 
-        virtual void set_face_vertex_normals(const size_t vertex_normals[]) OVERRIDE
+        virtual void set_face_vertex_normals(const size_t vertex_normals[]) APPLESEED_OVERRIDE
         {
             for (size_t i = 0; i < m_current_face.m_vertex_normals.size(); ++i)
                 m_current_face.m_vertex_normals[i] = vertex_normals[i];
         }
 
-        virtual void set_face_vertex_tex_coords(const size_t tex_coords[]) OVERRIDE
+        virtual void set_face_vertex_tex_coords(const size_t tex_coords[]) APPLESEED_OVERRIDE
         {
             for (size_t i = 0; i < m_current_face.m_vertex_tex_coords.size(); ++i)
                 m_current_face.m_vertex_tex_coords[i] = tex_coords[i];
         }
 
-        virtual void set_face_material(const size_t material) OVERRIDE
+        virtual void set_face_material(const size_t material) APPLESEED_OVERRIDE
         {
             m_current_face.m_material = material;
         }
 
-        virtual void end_face() OVERRIDE
+        virtual void end_face() APPLESEED_OVERRIDE
         {
             m_current_mesh.m_faces.push_back(m_current_face);
         }
 
-        virtual void end_mesh() OVERRIDE
+        virtual void end_mesh() APPLESEED_OVERRIDE
         {
             m_meshes.push_back(m_current_mesh);
         }
@@ -174,47 +174,47 @@ namespace
         {
         }
 
-        virtual const char* get_name() const OVERRIDE
+        virtual const char* get_name() const APPLESEED_OVERRIDE
         {
             return m_mesh.m_name.c_str();
         }
 
-        virtual size_t get_vertex_count() const OVERRIDE
+        virtual size_t get_vertex_count() const APPLESEED_OVERRIDE
         {
             return m_mesh.m_vertices.size();
         }
 
-        virtual Vector3d get_vertex(const size_t i) const OVERRIDE
+        virtual Vector3d get_vertex(const size_t i) const APPLESEED_OVERRIDE
         {
             return m_mesh.m_vertices[i];
         }
 
-        virtual size_t get_vertex_normal_count() const OVERRIDE
+        virtual size_t get_vertex_normal_count() const APPLESEED_OVERRIDE
         {
             return m_mesh.m_vertex_normals.size();
         }
 
-        virtual Vector3d get_vertex_normal(const size_t i) const OVERRIDE
+        virtual Vector3d get_vertex_normal(const size_t i) const APPLESEED_OVERRIDE
         {
             return m_mesh.m_vertex_normals[i];
         }
 
-        virtual size_t get_tex_coords_count() const OVERRIDE
+        virtual size_t get_tex_coords_count() const APPLESEED_OVERRIDE
         {
             return m_mesh.m_tex_coords.size();
         }
 
-        virtual Vector2d get_tex_coords(const size_t i) const OVERRIDE
+        virtual Vector2d get_tex_coords(const size_t i) const APPLESEED_OVERRIDE
         {
             return m_mesh.m_tex_coords[i];
         }
 
-        virtual size_t get_material_slot_count() const OVERRIDE
+        virtual size_t get_material_slot_count() const APPLESEED_OVERRIDE
         {
             return m_mesh.m_material_slots.size();
         }
 
-        virtual const char* get_material_slot(const size_t i) const OVERRIDE
+        virtual const char* get_material_slot(const size_t i) const APPLESEED_OVERRIDE
         {
             return m_mesh.m_material_slots[i].c_str();
         }

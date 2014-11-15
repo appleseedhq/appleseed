@@ -47,7 +47,7 @@ namespace foundation
 // Generic image file writer.
 //
 
-class DLLSYMBOL GenericImageFileWriter
+class APPLESEED_DLLSYMBOL GenericImageFileWriter
   : public IImageFileWriter
 {
   public:

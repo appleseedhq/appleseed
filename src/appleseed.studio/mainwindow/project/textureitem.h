@@ -65,7 +65,7 @@ class TextureItem
 
     BaseGroupItem* m_base_group_item;
 
-    virtual void slot_delete() OVERRIDE;
+    virtual void slot_delete() APPLESEED_OVERRIDE;
 
     void schedule_delete();
     void do_delete();

@@ -84,7 +84,7 @@ void faure_qmc_permutation(
 //
 
 const size_t FaurePermutationTableSize = 100;
-DLLSYMBOL extern const size_t* FaurePermutations[FaurePermutationTableSize];
+APPLESEED_DLLSYMBOL extern const size_t* FaurePermutations[FaurePermutationTableSize];
 
 struct PrimePermutationPair
 {
@@ -92,7 +92,7 @@ struct PrimePermutationPair
     const size_t*   m_perm;
 };
 
-DLLSYMBOL extern const PrimePermutationPair APPLESEED_ALIGN(16) PrimesFaurePermutations[FaurePermutationTableSize];
+APPLESEED_DLLSYMBOL extern const PrimePermutationPair APPLESEED_ALIGN(16) PrimesFaurePermutations[FaurePermutationTableSize];
 
 
 //

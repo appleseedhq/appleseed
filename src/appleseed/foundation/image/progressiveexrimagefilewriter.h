@@ -54,7 +54,7 @@ namespace foundation
 // Progressive OpenEXR image file writer interface.
 //
 
-class DLLSYMBOL ProgressiveEXRImageFileWriter
+class APPLESEED_DLLSYMBOL ProgressiveEXRImageFileWriter
   : public IProgressiveImageFileWriter
 {
   public:

@@ -48,8 +48,8 @@ namespace foundation
 // The array can be passed safely across DLL boundaries.
 //
 
-#define DECLARE_ARRAY(ArrayName, ArrayType)                             \
-    class DLLSYMBOL ArrayName                                           \
+#define APPLESEED_DECLARE_ARRAY(ArrayName, ArrayType)                   \
+    class APPLESEED_DLLSYMBOL ArrayName                                 \
     {                                                                   \
       public:                                                           \
         /* Types. */                                                    \
@@ -106,7 +106,7 @@ namespace foundation
         Impl* impl;                                                     \
     }
 
-#define DEFINE_ARRAY(ArrayName)                                         \
+#define APPLESEED_DEFINE_ARRAY(ArrayName)                               \
     struct ArrayName::Impl                                              \
       : public std::vector<value_type>                                  \
     {                                                                   \

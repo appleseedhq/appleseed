@@ -52,7 +52,7 @@ namespace foundation
 // Progressive PNG image file reader interface.
 //
 
-class DLLSYMBOL ProgressivePNGImageFileReader
+class APPLESEED_DLLSYMBOL ProgressivePNGImageFileReader
   : public IProgressiveImageFileReader
 {
   public:

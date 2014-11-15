@@ -51,7 +51,7 @@ namespace foundation
 // Progressive image file writer interface.
 //
 
-class DLLSYMBOL IProgressiveImageFileWriter
+class APPLESEED_DLLSYMBOL IProgressiveImageFileWriter
   : public NonCopyable
 {
   public:

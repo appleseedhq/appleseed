@@ -51,7 +51,7 @@ namespace foundation
 // A convenient base class for benchmark listeners.
 //
 
-class DLLSYMBOL BenchmarkListenerBase
+class APPLESEED_DLLSYMBOL BenchmarkListenerBase
   : public IBenchmarkListener
 {
   public:

@@ -91,7 +91,7 @@ enum TextureAlphaMode
 // todo: allow to specify the lighting conditions of a texture.
 //
 
-class DLLSYMBOL TextureInstance
+class APPLESEED_DLLSYMBOL TextureInstance
   : public Entity
 {
   public:
@@ -99,7 +99,7 @@ class DLLSYMBOL TextureInstance
     static foundation::UniqueID get_class_uid();
 
     // Delete this instance.
-    virtual void release() OVERRIDE;
+    virtual void release() APPLESEED_OVERRIDE;
 
     // Compute and return the unique signature of this instance.
     virtual foundation::uint64 compute_signature() const;
@@ -170,7 +170,7 @@ class DLLSYMBOL TextureInstance
 // Texture instance factory.
 //
 
-class DLLSYMBOL TextureInstanceFactory
+class APPLESEED_DLLSYMBOL TextureInstanceFactory
 {
   public:
     // Return a set of input metadata for texture instance entities.

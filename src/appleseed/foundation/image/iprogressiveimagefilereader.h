@@ -52,7 +52,7 @@ namespace foundation
 // Progressive image file reader interface.
 //
 
-class DLLSYMBOL IProgressiveImageFileReader
+class APPLESEED_DLLSYMBOL IProgressiveImageFileReader
   : public NonCopyable
 {
   public:

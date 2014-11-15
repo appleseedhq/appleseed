@@ -55,7 +55,7 @@ namespace renderer
 // Base class for renderer::Scene and renderer::Assembly.
 //
 
-class DLLSYMBOL BaseGroup
+class APPLESEED_DLLSYMBOL BaseGroup
 {
   public:
     // Constructor.

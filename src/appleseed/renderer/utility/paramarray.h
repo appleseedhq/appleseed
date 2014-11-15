@@ -55,7 +55,7 @@ namespace renderer
 // A collection of parameters.
 //
 
-class DLLSYMBOL ParamArray
+class APPLESEED_DLLSYMBOL ParamArray
   : public foundation::Dictionary
 {
   public:

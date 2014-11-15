@@ -45,7 +45,7 @@ namespace foundation
 // Message list.
 //
 
-class DLLSYMBOL MessageList
+class APPLESEED_DLLSYMBOL MessageList
   : public NonCopyable
 {
   public:

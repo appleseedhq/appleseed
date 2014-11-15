@@ -50,7 +50,7 @@ namespace
         {
         }
 
-        virtual void release() OVERRIDE
+        virtual void release() APPLESEED_OVERRIDE
         {
             delete this;
         }
@@ -59,7 +59,7 @@ namespace
             const size_t     x,
             const size_t     y,
             const size_t     width,
-            const size_t     height) OVERRIDE
+            const size_t     height) APPLESEED_OVERRIDE
         {
             m_controller->add_pre_render_tile_callback(x, y, width, height);
         }
@@ -67,12 +67,12 @@ namespace
         virtual void post_render_tile(
             const Frame*    frame,
             const size_t    tile_x,
-            const size_t    tile_y) OVERRIDE
+            const size_t    tile_y) APPLESEED_OVERRIDE
         {
             m_controller->add_post_render_tile_callback(frame, tile_x, tile_y);
         }
 
-        virtual void post_render(const Frame* frame) OVERRIDE
+        virtual void post_render(const Frame* frame) APPLESEED_OVERRIDE
         {
             m_controller->add_post_render_tile_callback(frame);
         }

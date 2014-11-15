@@ -47,7 +47,7 @@ namespace foundation
 // A log target that outputs to a string.
 //
 
-class DLLSYMBOL StringLogTarget
+class APPLESEED_DLLSYMBOL StringLogTarget
   : public ILogTarget
 {
   public:
@@ -58,7 +58,7 @@ class DLLSYMBOL StringLogTarget
     ~StringLogTarget();
 
     // Delete this instance.
-    virtual void release() OVERRIDE;
+    virtual void release() APPLESEED_OVERRIDE;
 
     // Write a message.
     virtual void write(
@@ -66,7 +66,7 @@ class DLLSYMBOL StringLogTarget
         const char*                 file,
         const size_t                line,
         const char*                 header,
-        const char*                 message) OVERRIDE;
+        const char*                 message) APPLESEED_OVERRIDE;
 
     // Retrieve the string so far.
     const char* get_string() const;
@@ -77,7 +77,7 @@ class DLLSYMBOL StringLogTarget
 };
 
 // Create an instance of a log target that outputs to a string.
-DLLSYMBOL StringLogTarget* create_string_log_target();
+APPLESEED_DLLSYMBOL StringLogTarget* create_string_log_target();
 
 }       // namespace foundation
 

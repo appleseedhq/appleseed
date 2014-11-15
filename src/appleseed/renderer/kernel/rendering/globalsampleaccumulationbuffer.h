@@ -61,15 +61,15 @@ class GlobalSampleAccumulationBuffer
         const foundation::Filter2f& filter);
 
     // Reset the buffer to its initial state. Thread-safe.
-    virtual void clear() OVERRIDE;
+    virtual void clear() APPLESEED_OVERRIDE;
 
     // Store @samples into the buffer. Thread-safe.
     virtual void store_samples(
         const size_t                sample_count,
-        const Sample                samples[]) OVERRIDE;
+        const Sample                samples[]) APPLESEED_OVERRIDE;
 
     // Develop the buffer to a frame. Thread-safe.
-    virtual void develop_to_frame(Frame& frame) OVERRIDE;
+    virtual void develop_to_frame(Frame& frame) APPLESEED_OVERRIDE;
 
     // Increment the number of samples used for pixel values renormalization. Thread-safe.
     void increment_sample_count(const foundation::uint64 delta_sample_count);

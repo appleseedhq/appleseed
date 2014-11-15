@@ -53,10 +53,10 @@ class QtTileCallbackFactory
         volatile bool&  tile_callbacks_enabled);
 
     // Delete this instance.
-    virtual void release() OVERRIDE;
+    virtual void release() APPLESEED_OVERRIDE;
 
     // Return a new instance of the class.
-    virtual renderer::ITileCallback* create() OVERRIDE;
+    virtual renderer::ITileCallback* create() APPLESEED_OVERRIDE;
 
   private:
     RenderWidget*       m_render_widget;

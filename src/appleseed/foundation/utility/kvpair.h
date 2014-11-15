@@ -47,7 +47,7 @@ namespace foundation
 //
 
 template <typename KeyType, typename ValueType>
-struct DLLSYMBOL KeyValuePair
+struct APPLESEED_DLLSYMBOL KeyValuePair
 {
     const KeyType   m_key;
     const ValueType m_value;

@@ -96,7 +96,7 @@ namespace
             TextureStore&           texture_store,
             ILightingEngineFactory* lighting_engine_factory,
             ShadingEngine&          shading_engine,
-#ifdef WITH_OIIO
+#ifdef APPLESEED_WITH_OIIO
             OIIO::TextureSystem&    oiio_texture_system,
 #endif
 #ifdef APPLESEED_WITH_OSL
@@ -128,7 +128,7 @@ namespace
                 m_intersector,
                 m_tracer,
                 m_texture_cache,
-#ifdef WITH_OIIO
+#ifdef APPLESEED_WITH_OIIO
                 oiio_texture_system,
 #endif
 #ifdef APPLESEED_WITH_OSL
@@ -147,7 +147,7 @@ namespace
             m_lighting_engine->release();
         }
 
-        virtual void release() OVERRIDE
+        virtual void release() APPLESEED_OVERRIDE
         {
             delete this;
         }
@@ -156,7 +156,7 @@ namespace
             SamplingContext&        sampling_context,
             const PixelContext&     pixel_context,
             const Vector2d&         image_point,
-            ShadingResult&          shading_result) OVERRIDE
+            ShadingResult&          shading_result) APPLESEED_OVERRIDE
         {
 #ifdef DEBUG_DISPLAY_TEXTURE_CACHE_PERFORMANCES
 
@@ -281,7 +281,7 @@ namespace
 #endif
         }
 
-        virtual StatisticsVector get_statistics() const OVERRIDE
+        virtual StatisticsVector get_statistics() const APPLESEED_OVERRIDE
         {
             StatisticsVector stats;
             stats.merge(m_texture_cache.get_statistics());
@@ -334,7 +334,7 @@ GenericSampleRendererFactory::GenericSampleRendererFactory(
     TextureStore&           texture_store,
     ILightingEngineFactory* lighting_engine_factory,
     ShadingEngine&          shading_engine,
-#ifdef WITH_OIIO
+#ifdef APPLESEED_WITH_OIIO
     OIIO::TextureSystem&    oiio_texture_system,
 #endif
 #ifdef APPLESEED_WITH_OSL
@@ -347,7 +347,7 @@ GenericSampleRendererFactory::GenericSampleRendererFactory(
   , m_texture_store(texture_store)
   , m_lighting_engine_factory(lighting_engine_factory)
   , m_shading_engine(shading_engine)
-#ifdef WITH_OIIO
+#ifdef APPLESEED_WITH_OIIO
   , m_oiio_texture_system(oiio_texture_system)
 #endif
 #ifdef APPLESEED_WITH_OSL
@@ -373,7 +373,7 @@ ISampleRenderer* GenericSampleRendererFactory::create(
             m_texture_store,
             m_lighting_engine_factory,
             m_shading_engine,
-#ifdef WITH_OIIO
+#ifdef APPLESEED_WITH_OIIO
             m_oiio_texture_system,
 #endif
 #ifdef APPLESEED_WITH_OSL

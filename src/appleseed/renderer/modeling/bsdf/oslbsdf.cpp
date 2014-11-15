@@ -160,12 +160,12 @@ namespace
                     "osl_ggx_btdf");
         }
 
-        virtual void release() OVERRIDE
+        virtual void release() APPLESEED_OVERRIDE
         {
             delete this;
         }
 
-        virtual const char* get_model() const OVERRIDE
+        virtual const char* get_model() const APPLESEED_OVERRIDE
         {
             return "osl_bsdf";
         }
@@ -173,7 +173,7 @@ namespace
         virtual bool on_frame_begin(
             const Project&          project,
             const Assembly&         assembly,
-            AbortSwitch*            abort_switch) OVERRIDE
+            AbortSwitch*            abort_switch) APPLESEED_OVERRIDE
         {
             if (!BSDF::on_frame_begin(project, assembly))
                 return false;
@@ -192,7 +192,7 @@ namespace
 
         virtual void on_frame_end(
             const Project&          project,
-            const Assembly&         assembly) OVERRIDE
+            const Assembly&         assembly) APPLESEED_OVERRIDE
         {
             for (int i = 0; i < NumClosuresIDs; ++i)
             {
@@ -204,7 +204,7 @@ namespace
         }
 
         virtual size_t compute_input_data_size(
-            const Assembly&         assembly) const OVERRIDE
+            const Assembly&         assembly) const APPLESEED_OVERRIDE
         {
             return sizeof(CompositeSurfaceClosure);
         }
@@ -213,7 +213,7 @@ namespace
             const ShadingContext&   shading_context,
             InputEvaluator&         input_evaluator,
             const ShadingPoint&     shading_point,
-            const size_t            offset) const OVERRIDE
+            const size_t            offset) const APPLESEED_OVERRIDE
         {
             CompositeSurfaceClosure* c = reinterpret_cast<CompositeSurfaceClosure*>(input_evaluator.data());
             new (c) CompositeSurfaceClosure(shading_point.get_osl_shader_globals().Ci);

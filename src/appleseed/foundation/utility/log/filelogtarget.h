@@ -49,12 +49,12 @@ namespace foundation
 // A log target that outputs to a file.
 //
 
-class DLLSYMBOL FileLogTarget
+class APPLESEED_DLLSYMBOL FileLogTarget
   : public FileLogTargetBase
 {
   public:
     // Delete this instance.
-    virtual void release() OVERRIDE;
+    virtual void release() APPLESEED_OVERRIDE;
 
     // Write a message.
     virtual void write(
@@ -62,7 +62,7 @@ class DLLSYMBOL FileLogTarget
         const char*                 file,
         const size_t                line,
         const char*                 header,
-        const char*                 message) OVERRIDE;
+        const char*                 message) APPLESEED_OVERRIDE;
 
     bool open(const char* filename);
 
@@ -71,7 +71,7 @@ class DLLSYMBOL FileLogTarget
     bool is_open() const;
 
   private:
-    friend DLLSYMBOL FileLogTarget* create_file_log_target();
+    friend APPLESEED_DLLSYMBOL FileLogTarget* create_file_log_target();
 
     std::FILE* m_file;
 
@@ -83,7 +83,7 @@ class DLLSYMBOL FileLogTarget
 };
 
 // Create an instance of a log target that outputs to a file.
-DLLSYMBOL FileLogTarget* create_file_log_target();
+APPLESEED_DLLSYMBOL FileLogTarget* create_file_log_target();
 
 }       // namespace foundation
 

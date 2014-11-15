@@ -46,7 +46,7 @@ namespace foundation
 // Interface of a test case factory.
 //
 
-class DLLSYMBOL ITestCaseFactory
+class APPLESEED_DLLSYMBOL ITestCaseFactory
   : public NonCopyable
 {
   public:

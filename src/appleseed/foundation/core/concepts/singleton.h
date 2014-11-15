@@ -47,7 +47,7 @@ namespace foundation
 //
 
 template <typename T>
-class DLLSYMBOL Singleton
+class APPLESEED_DLLSYMBOL Singleton
   : public NonCopyable
 {
   public:

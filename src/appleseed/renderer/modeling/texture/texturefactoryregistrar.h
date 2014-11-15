@@ -50,14 +50,14 @@ namespace renderer
 // An array of texture factories.
 //
 
-DECLARE_ARRAY(TextureFactoryArray, ITextureFactory*);
+APPLESEED_DECLARE_ARRAY(TextureFactoryArray, ITextureFactory*);
 
 
 //
 // Texture factory registrar.
 //
 
-class DLLSYMBOL TextureFactoryRegistrar
+class APPLESEED_DLLSYMBOL TextureFactoryRegistrar
   : public foundation::NonCopyable
 {
   public:

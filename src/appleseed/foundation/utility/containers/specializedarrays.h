@@ -47,16 +47,16 @@ namespace foundation
 // Predefined array types.
 //
 
-DECLARE_ARRAY(FloatArray, float);
-DECLARE_ARRAY(DoubleArray, double);
-DECLARE_ARRAY(DictionaryArray, Dictionary);
+APPLESEED_DECLARE_ARRAY(FloatArray, float);
+APPLESEED_DECLARE_ARRAY(DoubleArray, double);
+APPLESEED_DECLARE_ARRAY(DictionaryArray, Dictionary);
 
 
 //
 // An array of strings that can be passed safely across DLL boundaries.
 //
 
-class DLLSYMBOL StringArray
+class APPLESEED_DLLSYMBOL StringArray
 {
   public:
     // Types.

@@ -68,7 +68,7 @@ namespace renderer
 // Pixels in a frame are always expressed in the linear RGB color space.
 //
 
-class DLLSYMBOL Frame
+class APPLESEED_DLLSYMBOL Frame
   : public Entity
 {
   public:
@@ -76,7 +76,7 @@ class DLLSYMBOL Frame
     static foundation::UniqueID get_class_uid();
 
     // Delete this instance.
-    virtual void release() OVERRIDE;
+    virtual void release() APPLESEED_OVERRIDE;
 
     // Print frame settings to the renderer's global logger.
     void print_settings();
@@ -174,7 +174,7 @@ class DLLSYMBOL Frame
 // FrameFactory class implementation.
 //
 
-class DLLSYMBOL FrameFactory
+class APPLESEED_DLLSYMBOL FrameFactory
 {
   public:
     // Return a set of input metadata for frames.

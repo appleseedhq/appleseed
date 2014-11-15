@@ -46,7 +46,7 @@ namespace foundation
 // Settings file writer.
 //
 
-class DLLSYMBOL SettingsFileWriter
+class APPLESEED_DLLSYMBOL SettingsFileWriter
   : public NonCopyable
 {
   public:

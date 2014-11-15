@@ -43,7 +43,7 @@ namespace foundation
 // Console class.
 //
 
-class DLLSYMBOL Console
+class APPLESEED_DLLSYMBOL Console
   : public Singleton<Console>
 {
   public:
@@ -105,7 +105,7 @@ class DLLSYMBOL Console
     ~Console();
 };
 
-DLLSYMBOL Console& console();
+APPLESEED_DLLSYMBOL Console& console();
 
 }       // namespace foundation
 

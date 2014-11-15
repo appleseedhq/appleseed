@@ -55,12 +55,12 @@ class NullBSDF
     {
     }
 
-    virtual void release() OVERRIDE
+    virtual void release() APPLESEED_OVERRIDE
     {
         delete this;
     }
 
-    virtual const char* get_model() const OVERRIDE
+    virtual const char* get_model() const APPLESEED_OVERRIDE
     {
         return "null_bsdf";
     }
@@ -75,7 +75,7 @@ class NullBSDF
         const foundation::Vector3d&     outgoing,
         foundation::Vector3d&           incoming,
         Spectrum&                       value,
-        double&                         probability) const OVERRIDE
+        double&                         probability) const APPLESEED_OVERRIDE
     {
         return Absorption;
     }
@@ -89,7 +89,7 @@ class NullBSDF
         const foundation::Vector3d&     outgoing,
         const foundation::Vector3d&     incoming,
         const int                       modes,
-        Spectrum&                       value) const OVERRIDE
+        Spectrum&                       value) const APPLESEED_OVERRIDE
     {
         return 0.0;
     }
@@ -100,7 +100,7 @@ class NullBSDF
         const foundation::Basis3d&      shading_basis,
         const foundation::Vector3d&     outgoing,
         const foundation::Vector3d&     incoming,
-        const int                       modes) const OVERRIDE
+        const int                       modes) const APPLESEED_OVERRIDE
     {
         return 0.0;
     }
