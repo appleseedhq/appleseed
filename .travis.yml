@@ -2,6 +2,8 @@ language: cpp
 compiler:
   - gcc
 before_install:
+  - sudo service mysql stop
+  - sudo service postgresql stop
   - sudo apt-get -y update
   - sudo apt-cache search boost
   - sudo apt-get install doxygen
