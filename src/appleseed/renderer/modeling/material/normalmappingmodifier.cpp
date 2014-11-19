@@ -60,6 +60,8 @@ Vector3d NormalMappingModifier::evaluate(
     const Vector3d&     dpdu,
     const Vector3d&     dpdv) const
 {
+    assert(is_normalized(n));
+
     // Lookup the normal map.
     Color3f normal_rgb;
     m_map->evaluate(texture_cache, uv, normal_rgb);
@@ -70,7 +72,7 @@ Vector3d NormalMappingModifier::evaluate(
         static_cast<double>(normal_rgb[m_y]) * 2.0 - 1.0,
         static_cast<double>(normal_rgb[3 - m_y]) * 2.0 - 1.0);
 
-    // Transform the normal to world space and normalize it.
+    // Transform the normal to parent space and normalize it.
     const Basis3d basis(n, dpdu);
     return normalize(basis.transform_to_parent(normal));
 }
