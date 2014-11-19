@@ -169,7 +169,7 @@ namespace
 
         virtual double compute_distance_attenuation(
             const Vector3d&         target,
-            const Vector3d&         position) const OVERRIDE
+            const Vector3d&         position) const APPLESEED_OVERRIDE
         {
             return 1.0;
         }
