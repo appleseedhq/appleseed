@@ -167,6 +167,13 @@ namespace
             value = m_radiance;
         }
 
+        virtual double compute_distance_attenuation(
+            const Vector3d&         target,
+            const Vector3d&         position) const OVERRIDE
+        {
+            return 1.0;
+        }
+
       private:
         DECLARE_INPUT_VALUES(InputValues)
         {
