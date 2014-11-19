@@ -692,8 +692,9 @@ void make_curve_projection_transform(
     //         matrix = rot_x * tr;
     //     }
     //
-    // NOTE: This function does not depend on the type of the curve and depends only on the ray.
+    // Note: This function does not depend on the type of the curve, only on the ray.
     //       Hence it's made into a free function.
+    //
 
     const VectorType dir = normalize(ray.m_dir);
     const ValueType d = std::sqrt(dir.x * dir.x + dir.z * dir.z);
