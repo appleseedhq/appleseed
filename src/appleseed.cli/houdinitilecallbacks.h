@@ -53,9 +53,9 @@ class MPlayTileCallbackFactory
         bool                progressive_mode,
         foundation::Logger& logger);
 
-    virtual void release() OVERRIDE;
+    virtual void release() APPLESEED_OVERRIDE;
 
-    virtual renderer::ITileCallback* create() OVERRIDE;
+    virtual renderer::ITileCallback* create() APPLESEED_OVERRIDE;
 
   private:
     std::auto_ptr<renderer::ITileCallback> m_callback;
@@ -70,9 +70,9 @@ class HRmanPipeTileCallbackFactory
         bool                progressive_mode,
         foundation::Logger& logger);
 
-    virtual void release() OVERRIDE;
+    virtual void release() APPLESEED_OVERRIDE;
 
-    virtual renderer::ITileCallback* create() OVERRIDE;
+    virtual renderer::ITileCallback* create() APPLESEED_OVERRIDE;
 
   private:
     std::auto_ptr<renderer::ITileCallback> m_callback;

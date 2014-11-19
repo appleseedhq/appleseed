@@ -43,7 +43,7 @@ namespace foundation
 // The purpose of this class is to gather test execution results.
 //
 
-class DLLSYMBOL TestResult
+class APPLESEED_DLLSYMBOL TestResult
 {
   public:
     // Constructor.

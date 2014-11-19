@@ -49,7 +49,7 @@ namespace foundation
 // be restored when the instance is destructed, when exiting the scope.
 //
 
-class DLLSYMBOL SaveLogFormatterConfig
+class APPLESEED_DLLSYMBOL SaveLogFormatterConfig
   : public NonCopyable
 {
   public:

@@ -52,23 +52,23 @@ namespace renderer
 // Spot light factory.
 //
 
-class DLLSYMBOL SpotLightFactory
+class APPLESEED_DLLSYMBOL SpotLightFactory
   : public ILightFactory
 {
   public:
     // Return a string identifying this light model.
-    virtual const char* get_model() const OVERRIDE;
+    virtual const char* get_model() const APPLESEED_OVERRIDE;
 
     // Return a human-readable string identifying this light model.
-    virtual const char* get_human_readable_model() const OVERRIDE;
+    virtual const char* get_human_readable_model() const APPLESEED_OVERRIDE;
 
     // Return a set of input metadata for this light model.
-    virtual foundation::DictionaryArray get_input_metadata() const OVERRIDE;
+    virtual foundation::DictionaryArray get_input_metadata() const APPLESEED_OVERRIDE;
 
     // Create a new light instance.
     virtual foundation::auto_release_ptr<Light> create(
         const char*         name,
-        const ParamArray&   params) const OVERRIDE;
+        const ParamArray&   params) const APPLESEED_OVERRIDE;
 };
 
 }       // namespace renderer

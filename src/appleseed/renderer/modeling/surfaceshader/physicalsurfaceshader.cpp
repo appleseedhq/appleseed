@@ -120,12 +120,12 @@ namespace
             m_back_lighting_samples = m_params.get_optional<size_t>("back_lighting_samples", 1);
         }
 
-        virtual void release() OVERRIDE
+        virtual void release() APPLESEED_OVERRIDE
         {
             delete this;
         }
 
-        virtual const char* get_model() const OVERRIDE
+        virtual const char* get_model() const APPLESEED_OVERRIDE
         {
             return Model;
         }
@@ -133,7 +133,7 @@ namespace
         virtual bool on_frame_begin(
             const Project&          project,
             const Assembly&         assembly,
-            AbortSwitch*            abort_switch) OVERRIDE
+            AbortSwitch*            abort_switch) APPLESEED_OVERRIDE
         {
             const ImageStack& aov_images = project.get_frame()->aov_images();
 
@@ -148,7 +148,7 @@ namespace
             const PixelContext&     pixel_context,
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
-            ShadingResult&          shading_result) const OVERRIDE
+            ShadingResult&          shading_result) const APPLESEED_OVERRIDE
         {
             // Evaluate the shader inputs.
             InputValues values;
@@ -215,7 +215,7 @@ namespace
         }
 
       private:
-        DECLARE_INPUT_VALUES(InputValues)
+        APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
             double      m_color_multiplier;
             double      m_alpha_multiplier;

@@ -53,7 +53,7 @@ namespace foundation
 //   #endif
 //
 
-class DLLSYMBOL Preprocessor
+class APPLESEED_DLLSYMBOL Preprocessor
   : public NonCopyable
 {
   public:

@@ -55,7 +55,7 @@ class NullLightingEngine
 {
   public:
     // Delete this instance.
-    virtual void release() OVERRIDE
+    virtual void release() APPLESEED_OVERRIDE
     {
         delete this;
     }
@@ -67,7 +67,7 @@ class NullLightingEngine
         const ShadingContext&   shading_context,
         const ShadingPoint&     shading_point,
         Spectrum&               radiance,
-        SpectrumStack&          aovs) OVERRIDE
+        SpectrumStack&          aovs) APPLESEED_OVERRIDE
     {
     }
 };

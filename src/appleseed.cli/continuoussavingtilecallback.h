@@ -54,9 +54,9 @@ class ContinuousSavingTileCallbackFactory
         const std::string&  output_filename,
         foundation::Logger& logger);
 
-    virtual void release() OVERRIDE;
+    virtual void release() APPLESEED_OVERRIDE;
 
-    virtual renderer::ITileCallback* create() OVERRIDE;
+    virtual renderer::ITileCallback* create() APPLESEED_OVERRIDE;
 
   private:
     std::auto_ptr<renderer::ITileCallback> m_callback;

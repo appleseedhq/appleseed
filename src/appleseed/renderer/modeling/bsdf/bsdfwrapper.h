@@ -72,7 +72,7 @@ class BSDFWrapper
         const foundation::Vector3d&     outgoing,
         foundation::Vector3d&           incoming,
         Spectrum&                       value,
-        double&                         probability) const OVERRIDE;
+        double&                         probability) const APPLESEED_OVERRIDE;
 
     virtual double evaluate(
         const void*                     data,
@@ -83,7 +83,7 @@ class BSDFWrapper
         const foundation::Vector3d&     outgoing,
         const foundation::Vector3d&     incoming,
         const int                       modes,
-        Spectrum&                       value) const OVERRIDE;
+        Spectrum&                       value) const APPLESEED_OVERRIDE;
 
     virtual double evaluate_pdf(
         const void*                     data,
@@ -91,7 +91,7 @@ class BSDFWrapper
         const foundation::Basis3d&      shading_basis,
         const foundation::Vector3d&     outgoing,
         const foundation::Vector3d&     incoming,
-        const int                       modes) const OVERRIDE;
+        const int                       modes) const APPLESEED_OVERRIDE;
 };
 
 

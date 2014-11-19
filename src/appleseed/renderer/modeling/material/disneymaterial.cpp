@@ -99,7 +99,7 @@ namespace
             m_texture_system = texture_system;
         }
 
-        virtual bool prep(SeExprFuncNode* node, bool /*wantVec*/) OVERRIDE
+        virtual bool prep(SeExprFuncNode* node, bool /*wantVec*/) APPLESEED_OVERRIDE
         {
             if (node->nargs() != 3)
             {
@@ -127,7 +127,7 @@ namespace
             return true;
         }
 
-        virtual void eval(const SeExprFuncNode* node, SeVec3d& result) const OVERRIDE
+        virtual void eval(const SeExprFuncNode* node, SeVec3d& result) const APPLESEED_OVERRIDE
         {
             SeVec3d u, v;
             node->child(1)->eval(u);
@@ -184,7 +184,7 @@ namespace
             {
             }
 
-            virtual void eval(const SeExprVarNode* /*node*/, SeVec3d& result) OVERRIDE
+            virtual void eval(const SeExprVarNode* /*node*/, SeVec3d& result) APPLESEED_OVERRIDE
             {
                 result[0] = m_val;
             }
@@ -209,7 +209,7 @@ namespace
             m_vars["v"] = Var(0.0);
         }
 
-        SeExprVarRef* resolveVar(const string& name) const OVERRIDE
+        SeExprVarRef* resolveVar(const string& name) const APPLESEED_OVERRIDE
         {
             const map<string, Var>::iterator i = m_vars.find(name);
 
@@ -219,7 +219,7 @@ namespace
             return 0;
         }
 
-        SeExprFunc* resolveFunc(const string& name) const OVERRIDE
+        SeExprFunc* resolveFunc(const string& name) const APPLESEED_OVERRIDE
         {
             if (name == "texture")
             {

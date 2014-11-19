@@ -53,24 +53,24 @@ namespace renderer
 // 2D disk texture factory.
 //
 
-class DLLSYMBOL DiskTexture2dFactory
+class APPLESEED_DLLSYMBOL DiskTexture2dFactory
   : public ITextureFactory
 {
   public:
     // Return a string identifying this texture model.
-    virtual const char* get_model() const OVERRIDE;
+    virtual const char* get_model() const APPLESEED_OVERRIDE;
 
     // Return a human-readable string identifying this texture model.
-    virtual const char* get_human_readable_model() const OVERRIDE;
+    virtual const char* get_human_readable_model() const APPLESEED_OVERRIDE;
 
     // Return a set of input metadata for this texture model.
-    virtual foundation::DictionaryArray get_input_metadata() const OVERRIDE;
+    virtual foundation::DictionaryArray get_input_metadata() const APPLESEED_OVERRIDE;
 
     // Create a new texture instance.
     virtual foundation::auto_release_ptr<Texture> create(
         const char*                     name,
         const ParamArray&               params,
-        const foundation::SearchPaths&  search_paths) const OVERRIDE;
+        const foundation::SearchPaths&  search_paths) const APPLESEED_OVERRIDE;
 };
 
 }       // namespace renderer

@@ -61,7 +61,7 @@ namespace renderer
 // A rendering project.
 //
 
-class DLLSYMBOL Project
+class APPLESEED_DLLSYMBOL Project
   : public Entity
 {
   public:
@@ -69,7 +69,7 @@ class DLLSYMBOL Project
     static foundation::UniqueID get_class_uid();
 
     // Delete this instance.
-    virtual void release() OVERRIDE;
+    virtual void release() APPLESEED_OVERRIDE;
 
     // Set/get the format revision of the project.
     // By default, the format revision is set to 0.
@@ -154,7 +154,7 @@ class DLLSYMBOL Project
 // Project factory.
 //
 
-class DLLSYMBOL ProjectFactory
+class APPLESEED_DLLSYMBOL ProjectFactory
 {
   public:
     // Create a new project.

@@ -146,7 +146,7 @@ namespace
 
         virtual void operator()(
             MasterRenderer&         master_renderer,
-            Project&                project) OVERRIDE
+            Project&                project) APPLESEED_OVERRIDE
         {
             m_parent->import_objects(m_filepaths);
         }

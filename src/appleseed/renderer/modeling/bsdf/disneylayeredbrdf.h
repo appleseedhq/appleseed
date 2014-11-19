@@ -65,27 +65,27 @@ class DisneyLayeredBRDF
 {
   public:
     // Delete this instance.
-    virtual void release() OVERRIDE;
+    virtual void release() APPLESEED_OVERRIDE;
 
     // Return a string identifying the model of this entity.
-    virtual const char* get_model() const OVERRIDE;
+    virtual const char* get_model() const APPLESEED_OVERRIDE;
 
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
     virtual bool on_frame_begin(
         const Project&                  project,
         const Assembly&                 assembly,
-        foundation::AbortSwitch*        abort_switch = 0) OVERRIDE;
+        foundation::AbortSwitch*        abort_switch = 0) APPLESEED_OVERRIDE;
 
     // This method is called once after rendering each frame.
     virtual void on_frame_end(
         const Project&                  project,
-        const Assembly&                 assembly) OVERRIDE;
+        const Assembly&                 assembly) APPLESEED_OVERRIDE;
 
     // Compute the cumulated size in bytes of the values of all inputs of
     // this BSDF and its child BSDFs, if any.
     virtual size_t compute_input_data_size(
-        const Assembly&                 assembly) const OVERRIDE;
+        const Assembly&                 assembly) const APPLESEED_OVERRIDE;
 
     // Evaluate the inputs of this BSDF and of its child BSDFs, if any.
     // Input values are stored in the input evaluator. This method is called
@@ -94,7 +94,7 @@ class DisneyLayeredBRDF
         const ShadingContext&           shading_context,
         InputEvaluator&                 input_evaluator,
         const ShadingPoint&             shading_point,
-        const size_t                    offset = 0) const OVERRIDE;
+        const size_t                    offset = 0) const APPLESEED_OVERRIDE;
 
     // Given an outgoing direction, sample the BSDF and compute the incoming
     // direction, its probability density and the value of the BSDF for this
@@ -110,7 +110,7 @@ class DisneyLayeredBRDF
         const foundation::Vector3d&     outgoing,
         foundation::Vector3d&           incoming,
         Spectrum&                       value,
-        double&                         probability) const OVERRIDE;
+        double&                         probability) const APPLESEED_OVERRIDE;
 
     // Evaluate the BSDF for a given pair of directions. Return the PDF value
     // for this pair of directions. If the returned probability is zero, the
@@ -124,7 +124,7 @@ class DisneyLayeredBRDF
         const foundation::Vector3d&     outgoing,
         const foundation::Vector3d&     incoming,
         const int                       modes,
-        Spectrum&                       value) const OVERRIDE;
+        Spectrum&                       value) const APPLESEED_OVERRIDE;
 
     // Evaluate the PDF for a given pair of directions.
     virtual double evaluate_pdf(
@@ -133,7 +133,7 @@ class DisneyLayeredBRDF
         const foundation::Basis3d&      shading_basis,
         const foundation::Vector3d&     outgoing,
         const foundation::Vector3d&     incoming,
-        const int                       modes) const OVERRIDE;
+        const int                       modes) const APPLESEED_OVERRIDE;
 
   private:
     friend class DisneyMaterial;

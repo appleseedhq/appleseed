@@ -58,7 +58,7 @@ namespace renderer
 // Camera.
 //
 
-class DLLSYMBOL Camera
+class APPLESEED_DLLSYMBOL Camera
   : public ConnectableEntity
 {
   public:
@@ -181,7 +181,7 @@ class DLLSYMBOL Camera
 // common to all camera models.
 //
 
-class DLLSYMBOL CameraFactory
+class APPLESEED_DLLSYMBOL CameraFactory
 {
   public:
     // Return a set of input metadata common to all camera models.

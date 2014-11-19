@@ -49,7 +49,7 @@ namespace renderer
 // Material factory interface.
 //
 
-class DLLSYMBOL IMaterialFactory
+class APPLESEED_DLLSYMBOL IMaterialFactory
   : public foundation::NonCopyable
 {
   public:

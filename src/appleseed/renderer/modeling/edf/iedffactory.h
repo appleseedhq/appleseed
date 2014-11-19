@@ -49,7 +49,7 @@ namespace renderer
 // EDF factory interface.
 //
 
-class DLLSYMBOL IEDFFactory
+class APPLESEED_DLLSYMBOL IEDFFactory
   : public foundation::NonCopyable
 {
   public:

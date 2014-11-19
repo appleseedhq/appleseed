@@ -49,7 +49,7 @@ namespace renderer
 // BSDF factory interface.
 //
 
-class DLLSYMBOL IBSDFFactory
+class APPLESEED_DLLSYMBOL IBSDFFactory
   : public foundation::NonCopyable
 {
   public:

@@ -65,7 +65,7 @@ namespace renderer
 //   * All probability densities are measured with respect to solid angle.
 //
 
-class DLLSYMBOL EDF
+class APPLESEED_DLLSYMBOL EDF
   : public ConnectableEntity
 {
   public:

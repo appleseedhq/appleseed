@@ -56,7 +56,7 @@ namespace renderer
 // Environment.
 //
 
-class DLLSYMBOL Environment
+class APPLESEED_DLLSYMBOL Environment
   : public ConnectableEntity
 {
   public:
@@ -64,7 +64,7 @@ class DLLSYMBOL Environment
     static foundation::UniqueID get_class_uid();
 
     // Delete this instance.
-    virtual void release() OVERRIDE;
+    virtual void release() APPLESEED_OVERRIDE;
 
     // Return a string identifying the model of this environment.
     const char* get_model() const;
@@ -109,7 +109,7 @@ class DLLSYMBOL Environment
 // Environment factory.
 //
 
-class DLLSYMBOL EnvironmentFactory
+class APPLESEED_DLLSYMBOL EnvironmentFactory
 {
   public:
     // Return a string identifying this environment model.

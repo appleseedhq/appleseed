@@ -52,23 +52,23 @@ namespace renderer
 // Constant color surface shader factory.
 //
 
-class DLLSYMBOL ConstantSurfaceShaderFactory
+class APPLESEED_DLLSYMBOL ConstantSurfaceShaderFactory
   : public ISurfaceShaderFactory
 {
   public:
     // Return a string identifying this surface shader model.
-    virtual const char* get_model() const OVERRIDE;
+    virtual const char* get_model() const APPLESEED_OVERRIDE;
 
     // Return a human-readable string identifying this surface shader model.
-    virtual const char* get_human_readable_model() const OVERRIDE;
+    virtual const char* get_human_readable_model() const APPLESEED_OVERRIDE;
 
     // Return a set of input metadata for this surface shader model.
-    virtual foundation::DictionaryArray get_input_metadata() const OVERRIDE;
+    virtual foundation::DictionaryArray get_input_metadata() const APPLESEED_OVERRIDE;
 
     // Create a new surface shader instance.
     virtual foundation::auto_release_ptr<SurfaceShader> create(
         const char*         name,
-        const ParamArray&   params) const OVERRIDE;
+        const ParamArray&   params) const APPLESEED_OVERRIDE;
 };
 
 }       // namespace renderer

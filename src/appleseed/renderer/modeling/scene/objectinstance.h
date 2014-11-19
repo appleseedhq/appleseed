@@ -67,7 +67,7 @@ namespace renderer
 // An array of materials.
 //
 
-DECLARE_ARRAY(MaterialArray, const Material*);
+APPLESEED_DECLARE_ARRAY(MaterialArray, const Material*);
 
 // Return true if at least one material in the array emits light.
 bool has_emitting_materials(const MaterialArray& materials);
@@ -80,7 +80,7 @@ bool uses_alpha_mapping(const MaterialArray& materials);
 // An instance of an object.
 //
 
-class DLLSYMBOL ObjectInstance
+class APPLESEED_DLLSYMBOL ObjectInstance
   : public Entity
 {
   public:
@@ -88,7 +88,7 @@ class DLLSYMBOL ObjectInstance
     static foundation::UniqueID get_class_uid();
 
     // Delete this instance.
-    virtual void release() OVERRIDE;
+    virtual void release() APPLESEED_OVERRIDE;
 
     // Compute and return the unique signature of this instance.
     virtual foundation::uint64 compute_signature() const;
@@ -206,7 +206,7 @@ class DLLSYMBOL ObjectInstance
 // Object instance factory.
 //
 
-class DLLSYMBOL ObjectInstanceFactory
+class APPLESEED_DLLSYMBOL ObjectInstanceFactory
 {
   public:
     // Return a set of input metadata for object instance entities.

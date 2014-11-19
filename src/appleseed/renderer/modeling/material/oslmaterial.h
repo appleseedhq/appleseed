@@ -51,23 +51,23 @@ namespace renderer
 // OSL material factory.
 //
 
-class DLLSYMBOL OSLMaterialFactory
+class APPLESEED_DLLSYMBOL OSLMaterialFactory
   : public IMaterialFactory
 {
   public:
     // Return a string identifying this material model.
-    virtual const char* get_model() const OVERRIDE;
+    virtual const char* get_model() const APPLESEED_OVERRIDE;
 
     // Return a human-readable string identifying this material model.
-    virtual const char* get_human_readable_model() const OVERRIDE;
+    virtual const char* get_human_readable_model() const APPLESEED_OVERRIDE;
 
     // Return a set of input metadata for this material model.
-    virtual foundation::DictionaryArray get_input_metadata() const OVERRIDE;
+    virtual foundation::DictionaryArray get_input_metadata() const APPLESEED_OVERRIDE;
 
     // Create a new material instance.
     virtual foundation::auto_release_ptr<Material> create(
         const char*         name,
-        const ParamArray&   params) const OVERRIDE;
+        const ParamArray&   params) const APPLESEED_OVERRIDE;
 };
 
 }       // namespace renderer

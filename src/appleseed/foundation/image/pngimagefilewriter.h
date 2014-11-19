@@ -66,7 +66,7 @@ namespace foundation
 // Reference: http://www.libpng.org/pub/png/spec/1.2/PNG-Chunks.html
 //
 
-class DLLSYMBOL PNGImageFileWriter
+class APPLESEED_DLLSYMBOL PNGImageFileWriter
   : public IImageFileWriter
 {
   public:

@@ -55,7 +55,7 @@ namespace renderer
 // Object.
 //
 
-class DLLSYMBOL Object
+class APPLESEED_DLLSYMBOL Object
   : public Entity
 {
   public:

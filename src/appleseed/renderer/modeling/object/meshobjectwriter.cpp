@@ -79,69 +79,69 @@ namespace
         {
         }
 
-        virtual const char* get_name() const OVERRIDE
+        virtual const char* get_name() const APPLESEED_OVERRIDE
         {
             return m_object_name.c_str();
         }
 
-        virtual size_t get_vertex_count() const OVERRIDE
+        virtual size_t get_vertex_count() const APPLESEED_OVERRIDE
         {
             return m_object.get_vertex_count();
         }
 
-        virtual Vector3d get_vertex(const size_t i) const OVERRIDE
+        virtual Vector3d get_vertex(const size_t i) const APPLESEED_OVERRIDE
         {
             return Vector3d(m_object.get_vertex(i));
         }
 
-        virtual size_t get_vertex_normal_count() const OVERRIDE
+        virtual size_t get_vertex_normal_count() const APPLESEED_OVERRIDE
         {
             return m_object.get_vertex_normal_count();
         }
 
-        virtual Vector3d get_vertex_normal(const size_t i) const OVERRIDE
+        virtual Vector3d get_vertex_normal(const size_t i) const APPLESEED_OVERRIDE
         {
             return Vector3d(m_object.get_vertex_normal(i));
         }
 
-        virtual size_t get_tex_coords_count() const OVERRIDE
+        virtual size_t get_tex_coords_count() const APPLESEED_OVERRIDE
         {
             return m_object.get_tex_coords_count();
         }
 
-        virtual Vector2d get_tex_coords(const size_t i) const OVERRIDE
+        virtual Vector2d get_tex_coords(const size_t i) const APPLESEED_OVERRIDE
         {
             return Vector2d(m_object.get_tex_coords(i));
         }
 
-        virtual size_t get_material_slot_count() const OVERRIDE
+        virtual size_t get_material_slot_count() const APPLESEED_OVERRIDE
         {
             return m_object.get_material_slot_count();
         }
 
-        virtual const char* get_material_slot(const size_t i) const OVERRIDE
+        virtual const char* get_material_slot(const size_t i) const APPLESEED_OVERRIDE
         {
             return m_object.get_material_slot(i);
         }
 
-        virtual size_t get_face_count() const OVERRIDE
+        virtual size_t get_face_count() const APPLESEED_OVERRIDE
         {
             return m_object.get_triangle_count();
         }
 
-        virtual size_t get_face_vertex_count(const size_t face_index) const OVERRIDE
+        virtual size_t get_face_vertex_count(const size_t face_index) const APPLESEED_OVERRIDE
         {
             return 3;
         }
 
-        virtual size_t get_face_vertex(const size_t face_index, const size_t vertex_index) const OVERRIDE
+        virtual size_t get_face_vertex(const size_t face_index, const size_t vertex_index) const APPLESEED_OVERRIDE
         {
             assert(vertex_index < 3);
             const Triangle& triangle = m_object.get_triangle(face_index);
             return static_cast<size_t>((&triangle.m_v0)[vertex_index]);
         }
 
-        virtual size_t get_face_vertex_normal(const size_t face_index, const size_t vertex_index) const OVERRIDE
+        virtual size_t get_face_vertex_normal(const size_t face_index, const size_t vertex_index) const APPLESEED_OVERRIDE
         {
             assert(vertex_index < 3);
             const Triangle& triangle = m_object.get_triangle(face_index);
@@ -149,7 +149,7 @@ namespace
             return n == Triangle::None ? None : n;
         }
 
-        virtual size_t get_face_tex_coords(const size_t face_index, const size_t vertex_index) const OVERRIDE
+        virtual size_t get_face_tex_coords(const size_t face_index, const size_t vertex_index) const APPLESEED_OVERRIDE
         {
             assert(vertex_index < 3);
             const Triangle& triangle = m_object.get_triangle(face_index);
@@ -157,7 +157,7 @@ namespace
             return n == Triangle::None ? None : n;
         }
 
-        virtual size_t get_face_material(const size_t face_index) const OVERRIDE
+        virtual size_t get_face_material(const size_t face_index) const APPLESEED_OVERRIDE
         {
             return static_cast<size_t>(m_object.get_triangle(face_index).m_pa);
         }

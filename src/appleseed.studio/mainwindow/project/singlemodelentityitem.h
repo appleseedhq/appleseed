@@ -69,7 +69,7 @@ class SingleModelEntityItem
     typedef EntityItem<Entity, ParentEntity, CollectionItem> Base;
     typedef typename renderer::EntityTraits<Entity> EntityTraitsType;
 
-    virtual void slot_edit(AttributeEditor* attribute_editor) OVERRIDE;
+    virtual void slot_edit(AttributeEditor* attribute_editor) APPLESEED_OVERRIDE;
 };
 
 

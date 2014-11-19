@@ -46,7 +46,7 @@ namespace renderer
 // A renderer controller with a time limit.
 //
 
-class DLLSYMBOL TimedRendererController
+class APPLESEED_DLLSYMBOL TimedRendererController
   : public DefaultRendererController
 {
   public:
@@ -57,10 +57,10 @@ class DLLSYMBOL TimedRendererController
     ~TimedRendererController();
 
     // This method is called before rendering a single frame.
-    virtual void on_frame_begin() OVERRIDE;
+    virtual void on_frame_begin() APPLESEED_OVERRIDE;
 
     // This method is called continuously during rendering.
-    virtual Status on_progress() OVERRIDE;
+    virtual Status on_progress() APPLESEED_OVERRIDE;
 
   private:
     struct Impl;

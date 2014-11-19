@@ -52,7 +52,7 @@ END_OSL_INCLUDES
 #endif
 
 // OpenImageIO headers.
-#ifdef WITH_OIIO
+#ifdef APPLESEED_WITH_OIIO
 #include "OpenImageIO/texture.h"
 #endif
 
@@ -88,7 +88,7 @@ class SPPMPassCallback
         const LightSampler&         light_sampler,
         const TraceContext&         trace_context,
         TextureStore&               texture_store,
-#ifdef WITH_OIIO
+#ifdef APPLESEED_WITH_OIIO
         OIIO::TextureSystem&        oiio_texture_system,
 #endif
 #ifdef APPLESEED_WITH_OSL
@@ -97,19 +97,19 @@ class SPPMPassCallback
         const SPPMParameters&       params);
 
     // Delete this instance.
-    virtual void release() OVERRIDE;
+    virtual void release() APPLESEED_OVERRIDE;
 
     // This method is called at the beginning of a pass.
     virtual void pre_render(
         const Frame&                frame,
         foundation::JobQueue&       job_queue,
-        foundation::AbortSwitch&    abort_switch) OVERRIDE;
+        foundation::AbortSwitch&    abort_switch) APPLESEED_OVERRIDE;
 
     // This method is called at the end of a pass.
     virtual void post_render(
         const Frame&                frame,
         foundation::JobQueue&       job_queue,
-        foundation::AbortSwitch&    abort_switch) OVERRIDE;
+        foundation::AbortSwitch&    abort_switch) APPLESEED_OVERRIDE;
 
     // Return the i'th photon.
     const SPPMMonoPhoton& get_mono_photon(const size_t i) const;

@@ -50,7 +50,7 @@ namespace renderer
 // Texture factory interface.
 //
 
-class DLLSYMBOL ITextureFactory
+class APPLESEED_DLLSYMBOL ITextureFactory
   : public foundation::NonCopyable
 {
   public:

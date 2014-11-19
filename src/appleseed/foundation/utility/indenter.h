@@ -43,7 +43,7 @@ namespace foundation
 // Indenter.
 //
 
-class DLLSYMBOL Indenter
+class APPLESEED_DLLSYMBOL Indenter
 {
   public:
     // Constructor. 'tab_size' is the size of one level of indentation.

@@ -51,7 +51,7 @@ namespace foundation
 //   https://131002.net/siphash/siphash.pdf
 //
 
-uint64 DLLSYMBOL siphash24(
+uint64 APPLESEED_DLLSYMBOL siphash24(
     const void*     bytes,
     const size_t    size,
     const uint64    k0,

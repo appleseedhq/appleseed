@@ -149,25 +149,25 @@ namespace
         {
         }
 
-        virtual void resetErrors() OVERRIDE
+        virtual void resetErrors() APPLESEED_OVERRIDE
         {
             m_event_counters.clear();
         }
 
-        virtual void warning(const SAXParseException& e) OVERRIDE
+        virtual void warning(const SAXParseException& e) APPLESEED_OVERRIDE
         {
             ErrorLogger::warning(e);
             m_event_counters.signal_warning();
         }
 
-        virtual void error(const SAXParseException& e) OVERRIDE
+        virtual void error(const SAXParseException& e) APPLESEED_OVERRIDE
         {
             ErrorLogger::error(e);
             m_event_counters.signal_error();
             throw e;    // terminate parsing
         }
 
-        virtual void fatalError(const SAXParseException& e) OVERRIDE
+        virtual void fatalError(const SAXParseException& e) APPLESEED_OVERRIDE
         {
             ErrorLogger::fatalError(e);
             m_event_counters.signal_error();
@@ -416,7 +416,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) OVERRIDE
+        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
         {
             m_name = ElementHandlerBase::get_value(attrs, "name");
             m_value = ElementHandlerBase::get_value(attrs, "value");
@@ -424,7 +424,7 @@ namespace
 
         virtual void characters(
             const XMLCh* const  chars,
-            const XMLSize_t     length) OVERRIDE
+            const XMLSize_t     length) APPLESEED_OVERRIDE
         {
             const string inner_value = transcode(chars);
             if (!m_value.empty() && !inner_value.empty())
@@ -464,11 +464,11 @@ namespace
       : public ElementHandlerBase
     {
       public:
-        virtual void start_element(const Attributes& attrs) OVERRIDE;
+        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE;
 
         virtual void end_child_element(
             const ProjectElementID      element,
-            ElementHandlerType*         handler) OVERRIDE;
+            ElementHandlerType*         handler) APPLESEED_OVERRIDE;
 
       protected:
         ParamArray m_params;
@@ -488,7 +488,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) OVERRIDE
+        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
         {
             ParametrizedElementHandler::start_element(attrs);
 
@@ -566,7 +566,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) OVERRIDE
+        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
         {
             m_matrix = Matrix4d::identity();
 
@@ -619,13 +619,13 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) OVERRIDE
+        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
         {
             m_matrix = Matrix4d::identity();
             clear_keep_memory(m_values);
         }
 
-        virtual void end_element() OVERRIDE
+        virtual void end_element() APPLESEED_OVERRIDE
         {
             if (m_values.size() == 16)
             {
@@ -643,7 +643,7 @@ namespace
 
         virtual void characters(
             const XMLCh* const  chars,
-            const XMLSize_t     length) OVERRIDE
+            const XMLSize_t     length) APPLESEED_OVERRIDE
         {
             get_vector(transcode(chars), m_values, m_context);
         }
@@ -673,7 +673,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) OVERRIDE
+        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
         {
             m_matrix = Matrix4d::identity();
 
@@ -715,7 +715,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) OVERRIDE
+        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
         {
             const Vector3d value = get_vector3(get_value(attrs, "value"), m_context);
             m_matrix = Matrix4d::scaling(value);
@@ -745,7 +745,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) OVERRIDE
+        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
         {
             const Vector3d value = get_vector3(get_value(attrs, "value"), m_context);
             m_matrix = Matrix4d::translation(value);
@@ -775,13 +775,13 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) OVERRIDE
+        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
         {
             m_time = get_scalar(get_value(attrs, "time", "0.0"), m_context);
             m_matrix = Matrix4d::identity();
         }
 
-        virtual void end_element() OVERRIDE
+        virtual void end_element() APPLESEED_OVERRIDE
         {
             try
             {
@@ -797,7 +797,7 @@ namespace
 
         virtual void end_child_element(
             const ProjectElementID      element,
-            ElementHandlerType*         handler) OVERRIDE
+            ElementHandlerType*         handler) APPLESEED_OVERRIDE
         {
             switch (element)
             {
@@ -872,12 +872,12 @@ namespace
       : public Base
     {
       public:
-        virtual void start_element(const Attributes& attrs) OVERRIDE
+        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
         {
             Base::start_element(attrs);
         }
 
-        virtual void end_element() OVERRIDE
+        virtual void end_element() APPLESEED_OVERRIDE
         {
             if (m_transforms.size() > 1)
                 collapse_transforms();
@@ -888,7 +888,7 @@ namespace
 
         virtual void end_child_element(
             const ProjectElementID      element,
-            ElementHandlerType*         handler) OVERRIDE
+            ElementHandlerType*         handler) APPLESEED_OVERRIDE
         {
             switch (element)
             {
@@ -962,14 +962,14 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) OVERRIDE
+        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
         {
             m_values.clear();
         }
 
         virtual void characters(
             const XMLCh* const  chars,
-            const XMLSize_t     length) OVERRIDE
+            const XMLSize_t     length) APPLESEED_OVERRIDE
         {
             get_vector(transcode(chars), m_values, m_context);
         }
@@ -998,7 +998,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) OVERRIDE
+        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
         {
             ParametrizedElementHandler::start_element(attrs);
 
@@ -1009,7 +1009,7 @@ namespace
             m_name = get_value(attrs, "name");
         }
 
-        virtual void end_element() OVERRIDE
+        virtual void end_element() APPLESEED_OVERRIDE
         {
             ParametrizedElementHandler::end_element();
 
@@ -1039,7 +1039,7 @@ namespace
 
         virtual void end_child_element(
             const ProjectElementID      element,
-            ElementHandlerType*         handler) OVERRIDE
+            ElementHandlerType*         handler) APPLESEED_OVERRIDE
         {
             switch (element)
             {
@@ -1086,7 +1086,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) OVERRIDE
+        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
         {
             Base::start_element(attrs);
 
@@ -1096,7 +1096,7 @@ namespace
             m_model = Base::get_value(attrs, "model");
         }
 
-        virtual void end_element() OVERRIDE
+        virtual void end_element() APPLESEED_OVERRIDE
         {
             Base::end_element();
 
@@ -1138,7 +1138,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) OVERRIDE
+        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
         {
             ParametrizedElementHandler::start_element(attrs);
 
@@ -1148,7 +1148,7 @@ namespace
             m_model = get_value(attrs, "model");
         }
 
-        virtual void end_element() OVERRIDE
+        virtual void end_element() APPLESEED_OVERRIDE
         {
             ParametrizedElementHandler::end_element();
 
@@ -1211,7 +1211,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) OVERRIDE
+        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
         {
             Base::start_element(attrs);
 
@@ -1221,7 +1221,7 @@ namespace
             m_texture = get_value(attrs, "texture");
         }
 
-        virtual void end_element() OVERRIDE
+        virtual void end_element() APPLESEED_OVERRIDE
         {
             Base::end_element();
 
@@ -1335,7 +1335,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) OVERRIDE
+        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
         {
             ParametrizedElementHandler::start_element(attrs);
 
@@ -1345,7 +1345,7 @@ namespace
             m_model = get_value(attrs, "model");
         }
 
-        virtual void end_element() OVERRIDE
+        virtual void end_element() APPLESEED_OVERRIDE
         {
             ParametrizedElementHandler::end_element();
 
@@ -1432,7 +1432,7 @@ namespace
         {
         }
 
-        virtual void end_element() OVERRIDE
+        virtual void end_element() APPLESEED_OVERRIDE
         {
             Base::end_element();
 
@@ -1486,7 +1486,7 @@ namespace
         {
         }
 
-        virtual void end_element() OVERRIDE
+        virtual void end_element() APPLESEED_OVERRIDE
         {
             Base::end_element();
 
@@ -1518,7 +1518,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) OVERRIDE
+        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
         {
             ParametrizedElementHandler::start_element(attrs);
 
@@ -1528,7 +1528,7 @@ namespace
             m_model = get_value(attrs, "model");
         }
 
-        virtual void end_element() OVERRIDE
+        virtual void end_element() APPLESEED_OVERRIDE
         {
             ParametrizedElementHandler::end_element();
 
@@ -1608,7 +1608,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) OVERRIDE
+        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
         {
             m_slot = get_value(attrs, "slot");
             m_side = get_value(attrs, "side", "front");
@@ -1660,7 +1660,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) OVERRIDE
+        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
         {
             Base::start_element(attrs);
 
@@ -1672,7 +1672,7 @@ namespace
             m_object = get_value(attrs, "object");
         }
 
-        virtual void end_element() OVERRIDE
+        virtual void end_element() APPLESEED_OVERRIDE
         {
             Base::end_element();
 
@@ -1688,7 +1688,7 @@ namespace
 
         virtual void end_child_element(
             const ProjectElementID          element,
-            ElementHandlerType*             handler) OVERRIDE
+            ElementHandlerType*             handler) APPLESEED_OVERRIDE
         {
             switch (element)
             {
@@ -1749,7 +1749,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) OVERRIDE
+        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
         {
             Base::start_element(attrs);
 
@@ -1759,7 +1759,7 @@ namespace
             m_assembly = get_value(attrs, "assembly");
         }
 
-        virtual void end_element() OVERRIDE
+        virtual void end_element() APPLESEED_OVERRIDE
         {
             Base::end_element();
 
@@ -1802,7 +1802,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) OVERRIDE
+        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
         {
             ParametrizedElementHandler::start_element(attrs);
             m_type = get_value(attrs, "type");
@@ -1851,7 +1851,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) OVERRIDE
+        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
         {
             m_src_layer = get_value(attrs, "src_layer");
             m_src_param = get_value(attrs, "src_param");
@@ -1901,7 +1901,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) OVERRIDE
+        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
         {
             m_name = get_value(attrs, "name");
             m_shader_group = ShaderGroupFactory::create(m_name.c_str());
@@ -1909,7 +1909,7 @@ namespace
 
         virtual void end_child_element(
             const ProjectElementID      element,
-            ElementHandlerType*         handler) OVERRIDE
+            ElementHandlerType*         handler) APPLESEED_OVERRIDE
         {
             switch (element)
             {
@@ -2002,7 +2002,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) OVERRIDE
+        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
         {
             ParametrizedElementHandler::start_element(attrs);
 
@@ -2027,7 +2027,7 @@ namespace
             m_name = get_value(attrs, "name");
         }
 
-        virtual void end_element() OVERRIDE
+        virtual void end_element() APPLESEED_OVERRIDE
         {
             ParametrizedElementHandler::end_element();
 
@@ -2052,7 +2052,7 @@ namespace
 
         virtual void end_child_element(
             const ProjectElementID      element,
-            ElementHandlerType*         handler) OVERRIDE
+            ElementHandlerType*         handler) APPLESEED_OVERRIDE
         {
             switch (element)
             {
@@ -2181,14 +2181,14 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) OVERRIDE
+        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
         {
             ParametrizedElementHandler::start_element(attrs);
 
             m_scene = SceneFactory::create();
         }
 
-        virtual void end_element() OVERRIDE
+        virtual void end_element() APPLESEED_OVERRIDE
         {
             ParametrizedElementHandler::end_element();
 
@@ -2213,7 +2213,7 @@ namespace
 
         virtual void end_child_element(
             const ProjectElementID      element,
-            ElementHandlerType*         handler) OVERRIDE
+            ElementHandlerType*         handler) APPLESEED_OVERRIDE
         {
             assert(m_scene.get());
 
@@ -2351,7 +2351,7 @@ namespace
 
         virtual void end_child_element(
             const ProjectElementID      element,
-            ElementHandlerType*         handler) OVERRIDE
+            ElementHandlerType*         handler) APPLESEED_OVERRIDE
         {
             assert(m_project);
 
@@ -2388,7 +2388,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) OVERRIDE
+        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
         {
             ParametrizedElementHandler::start_element(attrs);
 
@@ -2397,7 +2397,7 @@ namespace
             m_name = get_value(attrs, "name");
         }
 
-        virtual void end_element() OVERRIDE
+        virtual void end_element() APPLESEED_OVERRIDE
         {
             ParametrizedElementHandler::end_element();
 
@@ -2437,7 +2437,7 @@ namespace
 
         virtual void end_child_element(
             const ProjectElementID      element,
-            ElementHandlerType*         handler) OVERRIDE
+            ElementHandlerType*         handler) APPLESEED_OVERRIDE
         {
             assert(m_project);
 
@@ -2480,7 +2480,7 @@ namespace
             m_project = project;
         }
 
-        virtual void start_element(const Attributes& attrs) OVERRIDE
+        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
         {
             ParametrizedElementHandler::start_element(attrs);
 
@@ -2490,7 +2490,7 @@ namespace
             m_base_name = get_value(attrs, "base");
         }
 
-        virtual void end_element() OVERRIDE
+        virtual void end_element() APPLESEED_OVERRIDE
         {
             ParametrizedElementHandler::end_element();
 
@@ -2556,7 +2556,7 @@ namespace
 
         virtual void start_child_element(
             const ProjectElementID      element,
-            ElementHandlerType*         handler) OVERRIDE
+            ElementHandlerType*         handler) APPLESEED_OVERRIDE
         {
             assert(m_project);
 
@@ -2576,7 +2576,7 @@ namespace
 
         virtual void end_child_element(
             const ProjectElementID      element,
-            ElementHandlerType*         handler) OVERRIDE
+            ElementHandlerType*         handler) APPLESEED_OVERRIDE
         {
             assert(m_project);
 
@@ -2617,7 +2617,7 @@ namespace
 
         virtual void characters(
             const XMLCh* const  chars,
-            const XMLSize_t     length) OVERRIDE
+            const XMLSize_t     length) APPLESEED_OVERRIDE
         {
             m_path = trim_both(transcode(chars));
         }
@@ -2649,7 +2649,7 @@ namespace
 
         virtual void end_child_element(
             const ProjectElementID      element,
-            ElementHandlerType*         handler) OVERRIDE
+            ElementHandlerType*         handler) APPLESEED_OVERRIDE
         {
             assert(m_project);
 
@@ -2691,13 +2691,13 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) OVERRIDE
+        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
         {
             ParametrizedElementHandler::start_element(attrs);
             m_name = get_value(attrs, "name");
         }
 
-        virtual void end_element() OVERRIDE
+        virtual void end_element() APPLESEED_OVERRIDE
         {
             ParametrizedElementHandler::end_element();
             m_project->set_display(DisplayFactory::create(m_name.c_str(), m_params));
@@ -2728,7 +2728,7 @@ namespace
         {
         }
 
-        virtual void start_element(const Attributes& attrs) OVERRIDE
+        virtual void start_element(const Attributes& attrs) APPLESEED_OVERRIDE
         {
             ElementHandlerBase::start_element(attrs);
 
@@ -2741,7 +2741,7 @@ namespace
 
         virtual void start_child_element(
             const ProjectElementID      element,
-            ElementHandlerType*         handler) OVERRIDE
+            ElementHandlerType*         handler) APPLESEED_OVERRIDE
         {
             assert(m_project);
 
@@ -2796,7 +2796,7 @@ namespace
 
         virtual void end_child_element(
             const ProjectElementID      element,
-            ElementHandlerType*         handler) OVERRIDE
+            ElementHandlerType*         handler) APPLESEED_OVERRIDE
         {
             assert(m_project);
 
@@ -2919,7 +2919,7 @@ namespace
             {
             }
 
-            virtual auto_ptr<ElementHandlerType> create() OVERRIDE
+            virtual auto_ptr<ElementHandlerType> create() APPLESEED_OVERRIDE
             {
                 return auto_ptr<ElementHandlerType>(
                     new ProjectElementHandler(m_context, m_project));
@@ -2937,7 +2937,7 @@ namespace
             {
             }
 
-            virtual auto_ptr<ElementHandlerType> create() OVERRIDE
+            virtual auto_ptr<ElementHandlerType> create() APPLESEED_OVERRIDE
             {
                 return auto_ptr<ElementHandlerType>(new ElementHandler(m_context));
             }

@@ -1,5 +1,0 @@
-
-surface oren_nayar(float Kd = 1, float roughness = 1, color Cs = 1)
-{
-    Ci = Kd * Cs * oren_nayar(N, roughness);
-}

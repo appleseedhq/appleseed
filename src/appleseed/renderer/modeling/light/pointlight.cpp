@@ -73,12 +73,12 @@ namespace
             m_inputs.declare("radiance_multiplier", InputFormatScalar, "1.0");
         }
 
-        virtual void release() OVERRIDE
+        virtual void release() APPLESEED_OVERRIDE
         {
             delete this;
         }
 
-        virtual const char* get_model() const OVERRIDE
+        virtual const char* get_model() const APPLESEED_OVERRIDE
         {
             return Model;
         }
@@ -86,7 +86,7 @@ namespace
         virtual bool on_frame_begin(
             const Project&      project,
             const Assembly&     assembly,
-            AbortSwitch*        abort_switch) OVERRIDE
+            AbortSwitch*        abort_switch) APPLESEED_OVERRIDE
         {
             if (!Light::on_frame_begin(project, assembly, abort_switch))
                 return false;
@@ -110,7 +110,7 @@ namespace
             Vector3d&           position,
             Vector3d&           outgoing,
             Spectrum&           value,
-            double&             probability) const OVERRIDE
+            double&             probability) const APPLESEED_OVERRIDE
         {
             position = m_position;
             outgoing = sample_sphere_uniform(s);
@@ -123,7 +123,7 @@ namespace
             const Vector3d&     target,
             Vector3d&           position,
             Vector3d&           outgoing,
-            Spectrum&           value) const OVERRIDE
+            Spectrum&           value) const APPLESEED_OVERRIDE
         {
             position = m_position;
             outgoing = normalize(target - position);
@@ -131,7 +131,7 @@ namespace
         }
 
       private:
-        DECLARE_INPUT_VALUES(InputValues)
+        APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
             Spectrum    m_radiance;             // emitted radiance in W.m^-2.sr^-1
             double      m_radiance_multiplier;  // emitted radiance multiplier

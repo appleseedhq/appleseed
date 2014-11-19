@@ -47,7 +47,7 @@ namespace foundation
 // Results of parsing the command line.
 //
 
-class DLLSYMBOL ParseResults
+class APPLESEED_DLLSYMBOL ParseResults
   : public NonCopyable
 {
   public:

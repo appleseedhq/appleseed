@@ -50,14 +50,14 @@ namespace renderer
 // An array of environment EDF factories.
 //
 
-DECLARE_ARRAY(EnvironmentEDFFactoryArray, IEnvironmentEDFFactory*);
+APPLESEED_DECLARE_ARRAY(EnvironmentEDFFactoryArray, IEnvironmentEDFFactory*);
 
 
 //
 // Environment EDF factory registrar.
 //
 
-class DLLSYMBOL EnvironmentEDFFactoryRegistrar
+class APPLESEED_DLLSYMBOL EnvironmentEDFFactoryRegistrar
   : public foundation::NonCopyable
 {
   public:

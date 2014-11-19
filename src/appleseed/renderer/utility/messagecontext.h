@@ -46,7 +46,7 @@ namespace renderer
 // Base class for message contexts.
 //
 
-class DLLSYMBOL MessageContext
+class APPLESEED_DLLSYMBOL MessageContext
 {
   public:
     MessageContext();
@@ -72,7 +72,7 @@ class DLLSYMBOL MessageContext
 // Entity definition message context.
 //
 
-class DLLSYMBOL EntityDefMessageContext
+class APPLESEED_DLLSYMBOL EntityDefMessageContext
   : public MessageContext
 {
   public:

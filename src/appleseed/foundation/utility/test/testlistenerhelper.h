@@ -48,7 +48,7 @@ namespace foundation    { class TestSuite; }
 namespace foundation
 {
 
-class DLLSYMBOL TestListenerHelper
+class APPLESEED_DLLSYMBOL TestListenerHelper
 {
   public:
     // Write a message with formatting to a test listener.

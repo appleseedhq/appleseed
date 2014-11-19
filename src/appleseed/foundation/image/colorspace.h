@@ -72,7 +72,7 @@ enum ColorSpace
 };
 
 // Return a string identifying a color space.
-DLLSYMBOL const char* color_space_name(const ColorSpace color_space);
+APPLESEED_DLLSYMBOL const char* color_space_name(const ColorSpace color_space);
 
 
 //
@@ -327,7 +327,7 @@ Color<T, 3> spectrum_to_ciexyz(
 
 // Convert a spectrum to a color in the CIE XYZ color space using the CIE D65 illuminant
 // and the CIE 1964 10-deg color matching functions.
-DLLSYMBOL void spectrum_to_ciexyz_standard(
+APPLESEED_DLLSYMBOL void spectrum_to_ciexyz_standard(
     const float                 spectrum[],
     float                       ciexyz[3]);
 

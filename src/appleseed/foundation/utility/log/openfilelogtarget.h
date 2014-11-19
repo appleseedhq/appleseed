@@ -46,7 +46,7 @@ namespace foundation
 // Create an instance of a log target that outputs to an open std::FILE.
 //
 
-DLLSYMBOL ILogTarget* create_open_file_log_target(std::FILE* file);
+APPLESEED_DLLSYMBOL ILogTarget* create_open_file_log_target(std::FILE* file);
 
 }       // namespace foundation
 

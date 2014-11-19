@@ -54,7 +54,7 @@ namespace renderer
 // Environment shader.
 //
 
-class DLLSYMBOL EnvironmentShader
+class APPLESEED_DLLSYMBOL EnvironmentShader
   : public ConnectableEntity
 {
   public:

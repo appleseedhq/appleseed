@@ -48,7 +48,7 @@ namespace foundation
 
 // Compute the average Rec. 709 relative luminance of a linear RGB image.
 // Pixels containing NaN values are skipped.
-DLLSYMBOL double compute_average_luminance(const Image& image);
+APPLESEED_DLLSYMBOL double compute_average_luminance(const Image& image);
 
 
 //
@@ -56,7 +56,7 @@ DLLSYMBOL double compute_average_luminance(const Image& image);
 //
 
 // Return whether two images are compatible and thus can be compared.
-DLLSYMBOL bool are_images_compatible(const Image& image1, const Image& image2);
+APPLESEED_DLLSYMBOL bool are_images_compatible(const Image& image1, const Image& image2);
 
 // Exception thrown by comparison functions when two images are incompatible.
 struct ExceptionIncompatibleImages
@@ -66,7 +66,7 @@ struct ExceptionIncompatibleImages
 
 // Compute the Root-Mean-Square deviation between two images.
 // Throws a foundation::ExceptionIncompatibleImages exception if the images are not compatible.
-DLLSYMBOL double compute_rms_deviation(const Image& image1, const Image& image2);
+APPLESEED_DLLSYMBOL double compute_rms_deviation(const Image& image1, const Image& image2);
 
 }       // namespace foundation
 

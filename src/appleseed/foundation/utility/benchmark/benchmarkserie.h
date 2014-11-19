@@ -37,7 +37,7 @@
 namespace foundation
 {
 
-DECLARE_ARRAY(BenchmarkSerie, BenchmarkDataPoint);
+APPLESEED_DECLARE_ARRAY(BenchmarkSerie, BenchmarkDataPoint);
 
 }       // namespace foundation
 

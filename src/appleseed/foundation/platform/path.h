@@ -78,10 +78,10 @@ namespace foundation
 //
 
 // Return the path to the application's executable. NOT thread-safe.
-DLLSYMBOL const char* get_executable_path();
+APPLESEED_DLLSYMBOL const char* get_executable_path();
 
 // Return the path to the directory containing the application's executable. NOT thread-safe.
-DLLSYMBOL const char* get_executable_directory();
+APPLESEED_DLLSYMBOL const char* get_executable_directory();
 
 
 //

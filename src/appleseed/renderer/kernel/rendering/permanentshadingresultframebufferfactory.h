@@ -60,16 +60,16 @@ class PermanentShadingResultFrameBufferFactory
     ~PermanentShadingResultFrameBufferFactory();
 
     // Delete this instance.
-    virtual void release() OVERRIDE;
+    virtual void release() APPLESEED_OVERRIDE;
 
     virtual ShadingResultFrameBuffer* create(
         const Frame&                frame,
         const size_t                tile_x,
         const size_t                tile_y,
-        const foundation::AABB2u&   tile_bbox) OVERRIDE;
+        const foundation::AABB2u&   tile_bbox) APPLESEED_OVERRIDE;
 
     virtual void destroy(
-        ShadingResultFrameBuffer*   framebuffer) OVERRIDE;
+        ShadingResultFrameBuffer*   framebuffer) APPLESEED_OVERRIDE;
 
   private:
     std::vector<ShadingResultFrameBuffer*> m_framebuffers;

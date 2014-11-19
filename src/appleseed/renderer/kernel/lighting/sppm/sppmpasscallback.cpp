@@ -59,7 +59,7 @@ SPPMPassCallback::SPPMPassCallback(
     const LightSampler&     light_sampler,
     const TraceContext&     trace_context,
     TextureStore&           texture_store,
-#ifdef WITH_OIIO
+#ifdef APPLESEED_WITH_OIIO
     OIIO::TextureSystem&    oiio_texture_system,
 #endif
 #ifdef APPLESEED_WITH_OSL
@@ -72,7 +72,7 @@ SPPMPassCallback::SPPMPassCallback(
         light_sampler,
         trace_context,
         texture_store,
-#ifdef WITH_OIIO
+#ifdef APPLESEED_WITH_OIIO
         oiio_texture_system,
 #endif
 #ifdef APPLESEED_WITH_OSL

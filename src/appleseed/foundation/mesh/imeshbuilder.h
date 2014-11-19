@@ -47,7 +47,7 @@ namespace foundation
 // Mesh builder interface.
 //
 
-class DLLSYMBOL IMeshBuilder
+class APPLESEED_DLLSYMBOL IMeshBuilder
   : public NonCopyable
 {
   public:

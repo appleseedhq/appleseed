@@ -65,7 +65,7 @@ namespace foundation
 //
 
 // All blank characters in one string.
-extern DLLSYMBOL const char* Blanks;
+extern APPLESEED_DLLSYMBOL const char* Blanks;
 
 
 //
@@ -99,10 +99,10 @@ T from_string(const char* s);
 //
 
 // Duplicate a C string. The returned string must be freed using free_string().
-DLLSYMBOL char* duplicate_string(const char* s);
+APPLESEED_DLLSYMBOL char* duplicate_string(const char* s);
 
 // Deallocate a C string allocated by duplicate_string().
-DLLSYMBOL void free_string(const char* s);
+APPLESEED_DLLSYMBOL void free_string(const char* s);
 
 // Convert a C string allocated by duplicate_string() to an std::string, and dellocate the C string.
 FORCE_INLINE std::string convert_to_std_string(const char* s);

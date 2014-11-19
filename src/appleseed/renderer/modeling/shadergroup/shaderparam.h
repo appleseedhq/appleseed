@@ -75,12 +75,12 @@ enum OSLParamType
 // A parameter in an OSL shader.
 //
 
-class DLLSYMBOL ShaderParam
+class APPLESEED_DLLSYMBOL ShaderParam
   : public Entity
 {
   public:
     // Delete this instance.
-    virtual void release() OVERRIDE;
+    virtual void release() APPLESEED_OVERRIDE;
 
     // Fix me: std classes cannot be used in DLL-exported classes. (est.)
     std::string get_value_as_string() const;

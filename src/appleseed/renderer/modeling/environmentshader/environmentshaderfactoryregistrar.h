@@ -50,14 +50,14 @@ namespace renderer
 // An array of environment shader factories.
 //
 
-DECLARE_ARRAY(EnvironmentShaderFactoryArray, IEnvironmentShaderFactory*);
+APPLESEED_DECLARE_ARRAY(EnvironmentShaderFactoryArray, IEnvironmentShaderFactory*);
 
 
 //
 // Environment shader factory registrar.
 //
 
-class DLLSYMBOL EnvironmentShaderFactoryRegistrar
+class APPLESEED_DLLSYMBOL EnvironmentShaderFactoryRegistrar
   : public foundation::NonCopyable
 {
   public:

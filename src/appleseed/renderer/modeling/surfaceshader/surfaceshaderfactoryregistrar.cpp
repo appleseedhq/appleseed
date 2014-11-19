@@ -52,7 +52,7 @@ using namespace std;
 namespace renderer
 {
 
-DEFINE_ARRAY(SurfaceShaderFactoryArray);
+APPLESEED_DEFINE_ARRAY(SurfaceShaderFactoryArray);
 
 struct SurfaceShaderFactoryRegistrar::Impl
 {

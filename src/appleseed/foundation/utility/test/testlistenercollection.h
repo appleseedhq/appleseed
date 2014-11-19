@@ -51,7 +51,7 @@ namespace foundation
 // A collection of test listeners.
 //
 
-class DLLSYMBOL TestListenerCollection
+class APPLESEED_DLLSYMBOL TestListenerCollection
   : public ITestListener
 {
   public:

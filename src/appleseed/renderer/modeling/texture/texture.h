@@ -55,7 +55,7 @@ namespace renderer
 // The base class for textures.
 //
 
-class DLLSYMBOL Texture
+class APPLESEED_DLLSYMBOL Texture
   : public Entity
 {
   public:

@@ -49,7 +49,7 @@ class OIIOErrorHandler
   : public OIIO::ErrorHandler
 {
   public:
-    virtual void operator()(int errcode, const std::string &msg) OVERRIDE;
+    virtual void operator()(int errcode, const std::string &msg) APPLESEED_OVERRIDE;
 };
 
 }       // namespace renderer

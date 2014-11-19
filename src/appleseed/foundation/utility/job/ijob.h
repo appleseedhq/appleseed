@@ -46,7 +46,7 @@ namespace foundation
 // Job interface.
 //
 
-class DLLSYMBOL IJob
+class APPLESEED_DLLSYMBOL IJob
   : public NonCopyable
 {
   public:

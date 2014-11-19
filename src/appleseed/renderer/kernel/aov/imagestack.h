@@ -51,7 +51,7 @@ namespace renderer
 // An array of named images.
 //
 
-class DLLSYMBOL ImageStack
+class APPLESEED_DLLSYMBOL ImageStack
   : public foundation::NonCopyable
 {
   public:

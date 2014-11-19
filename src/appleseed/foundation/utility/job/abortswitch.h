@@ -46,7 +46,7 @@ namespace foundation
 // A thread-safe switch to instruct threads to abort their computations.
 //
 
-class DLLSYMBOL AbortSwitch
+class APPLESEED_DLLSYMBOL AbortSwitch
 {
   public:
     // Constructor, clears the abort flag.

@@ -47,7 +47,7 @@ namespace renderer
 // Project file reader.
 //
 
-class DLLSYMBOL ProjectFileReader
+class APPLESEED_DLLSYMBOL ProjectFileReader
 {
   public:
     enum Options

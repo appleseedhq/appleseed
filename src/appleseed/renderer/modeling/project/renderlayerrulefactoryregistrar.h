@@ -50,14 +50,14 @@ namespace renderer
 // An array of render layer rule factories.
 //
 
-DECLARE_ARRAY(RenderLayerRuleFactoryArray, IRenderLayerRuleFactory*);
+APPLESEED_DECLARE_ARRAY(RenderLayerRuleFactoryArray, IRenderLayerRuleFactory*);
 
 
 //
 // Render layer rule factory registrar.
 //
 
-class DLLSYMBOL RenderLayerRuleFactoryRegistrar
+class APPLESEED_DLLSYMBOL RenderLayerRuleFactoryRegistrar
   : public foundation::NonCopyable
 {
   public:

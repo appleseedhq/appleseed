@@ -46,7 +46,7 @@ namespace renderer
 // Default project factory.
 //
 
-class DLLSYMBOL DefaultProjectFactory
+class APPLESEED_DLLSYMBOL DefaultProjectFactory
 {
   public:
     // Create a new instance of the default project.

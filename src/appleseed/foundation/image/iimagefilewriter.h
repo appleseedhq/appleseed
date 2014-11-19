@@ -47,7 +47,7 @@ namespace foundation
 // Image file writer interface.
 //
 
-class DLLSYMBOL IImageFileWriter
+class APPLESEED_DLLSYMBOL IImageFileWriter
   : public NonCopyable
 {
   public:

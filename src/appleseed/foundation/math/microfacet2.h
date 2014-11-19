@@ -303,7 +303,7 @@ class BlinnMDF2
     virtual Vector<T, 3> do_sample(
         const Vector<T, 2>&  s,
         const T              alpha_x,
-        const T              alpha_y) const OVERRIDE
+        const T              alpha_y) const APPLESEED_OVERRIDE
     {
         const T cos_theta = std::pow(T(1.0) - s[0], T(1.0) / (alpha_x + T(2.0)));
         const T sin_theta = std::sqrt(T(1.0) - cos_theta * cos_theta);
@@ -315,7 +315,7 @@ class BlinnMDF2
     virtual T do_eval_D(
         const Vector<T, 3>&  h,
         const T              alpha_x,
-        const T              alpha_y) const OVERRIDE
+        const T              alpha_y) const APPLESEED_OVERRIDE
     {
         return (alpha_x + T(2.0)) * T(RcpTwoPi) * std::pow(this->cos_theta(h), alpha_x);
     }
@@ -323,7 +323,7 @@ class BlinnMDF2
     virtual T do_eval_pdf(
         const Vector<T, 3>&  h,
         const T              alpha_x,
-        const T              alpha_y) const OVERRIDE
+        const T              alpha_y) const APPLESEED_OVERRIDE
     {
         return (alpha_x + T(2.0)) * T(RcpTwoPi) * std::pow(this->cos_theta(h), alpha_x + T(1.0));
     }
@@ -421,7 +421,7 @@ class BeckmannMDF2
     virtual Vector<T, 3> do_sample(
         const Vector<T, 2>&  s,
         const T              alpha_x,
-        const T              alpha_y) const OVERRIDE
+        const T              alpha_y) const APPLESEED_OVERRIDE
     {
         T cos_theta, sin_theta, cos_phi, sin_phi;
 
@@ -448,7 +448,7 @@ class BeckmannMDF2
     virtual T do_eval_D(
         const Vector<T, 3>&  h,
         const T              alpha_x,
-        const T              alpha_y) const OVERRIDE
+        const T              alpha_y) const APPLESEED_OVERRIDE
     {
         if (this->cos_theta(h) == T(0.0))
             return T(0.0);
@@ -481,7 +481,7 @@ class BeckmannMDF2
         const Vector<T, 3>&  outgoing,
         const Vector<T, 3>&  h,
         const T              alpha_x,
-        const T              alpha_y) const OVERRIDE
+        const T              alpha_y) const APPLESEED_OVERRIDE
     {
         return
             MaskingShadowingFunction<T>::G(
@@ -495,7 +495,7 @@ class BeckmannMDF2
     virtual T do_eval_pdf(
         const Vector<T, 3>&  h,
         const T              alpha_x,
-        const T              alpha_y) const OVERRIDE
+        const T              alpha_y) const APPLESEED_OVERRIDE
     {
         if (this->cos_theta(h) == T(0.0))
             return T(0.0);
@@ -604,7 +604,7 @@ class GGXMDF2
     virtual Vector<T, 3> do_sample(
         const Vector<T, 2>&  s,
         const T              alpha_x,
-        const T              alpha_y) const OVERRIDE
+        const T              alpha_y) const APPLESEED_OVERRIDE
     {
         T cos_phi, sin_phi, tan_theta_2;
 
@@ -628,7 +628,7 @@ class GGXMDF2
     virtual T do_eval_D(
         const Vector<T, 3>&  h,
         const T              alpha_x,
-        const T              alpha_y) const OVERRIDE
+        const T              alpha_y) const APPLESEED_OVERRIDE
     {
         const T alpha_x_2 = square(alpha_x);
 
@@ -663,7 +663,7 @@ class GGXMDF2
         const Vector<T, 3>&  outgoing,
         const Vector<T, 3>&  h,
         const T              alpha_x,
-        const T              alpha_y) const OVERRIDE
+        const T              alpha_y) const APPLESEED_OVERRIDE
     {
         return
             MaskingShadowingFunction<T>::G(
@@ -677,7 +677,7 @@ class GGXMDF2
     virtual T do_eval_pdf(
         const Vector<T, 3>&  h,
         const T              alpha_x,
-        const T              alpha_y) const OVERRIDE
+        const T              alpha_y) const APPLESEED_OVERRIDE
     {
         if (this->cos_theta(h) == T(0.0))
             return T(0.0);

@@ -59,21 +59,21 @@ namespace renderer
 // todo: add support for arbitrary polygonal faces.
 //
 
-class DLLSYMBOL MeshObject
+class APPLESEED_DLLSYMBOL MeshObject
   : public Object
 {
   public:
     // Delete this instance.
-    virtual void release() OVERRIDE;
+    virtual void release() APPLESEED_OVERRIDE;
 
     // Return a string identifying the model of this object.
-    virtual const char* get_model() const OVERRIDE;
+    virtual const char* get_model() const APPLESEED_OVERRIDE;
 
     // Compute the local space bounding box of the object over the shutter interval.
-    virtual GAABB3 compute_local_bbox() const OVERRIDE;
+    virtual GAABB3 compute_local_bbox() const APPLESEED_OVERRIDE;
 
     // Return the region kit of the object.
-    virtual foundation::Lazy<RegionKit>& get_region_kit() OVERRIDE;
+    virtual foundation::Lazy<RegionKit>& get_region_kit() APPLESEED_OVERRIDE;
 
     // Insert and access vertices.
     void reserve_vertices(const size_t count);
@@ -128,8 +128,8 @@ class DLLSYMBOL MeshObject
     // Insert and access material slots.
     void reserve_material_slots(const size_t count);
     size_t push_material_slot(const char* name);
-    virtual size_t get_material_slot_count() const OVERRIDE;
-    virtual const char* get_material_slot(const size_t index) const OVERRIDE;
+    virtual size_t get_material_slot_count() const APPLESEED_OVERRIDE;
+    virtual const char* get_material_slot(const size_t index) const APPLESEED_OVERRIDE;
 
   private:
     friend class MeshObjectFactory;
@@ -151,7 +151,7 @@ class DLLSYMBOL MeshObject
 // Mesh object factory.
 //
 
-class DLLSYMBOL MeshObjectFactory
+class APPLESEED_DLLSYMBOL MeshObjectFactory
 {
   public:
     // Return a string identifying this object model.

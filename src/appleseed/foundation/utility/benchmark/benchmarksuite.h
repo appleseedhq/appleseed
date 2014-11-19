@@ -48,7 +48,7 @@ namespace foundation
 // A benchmark suite, as a collection of benchmarks.
 //
 
-class DLLSYMBOL BenchmarkSuite
+class APPLESEED_DLLSYMBOL BenchmarkSuite
   : public NonCopyable
 {
   public:

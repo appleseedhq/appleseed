@@ -45,7 +45,7 @@ namespace foundation
 //
 
 // Factory function.
-DLLSYMBOL ITestListener* create_logger_test_listener(
+APPLESEED_DLLSYMBOL ITestListener* create_logger_test_listener(
     Logger&     logger,
     const bool  verbose = false);
 

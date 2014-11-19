@@ -57,7 +57,7 @@ namespace renderer
 // Surface shader.
 //
 
-class DLLSYMBOL SurfaceShader
+class APPLESEED_DLLSYMBOL SurfaceShader
   : public ConnectableEntity
 {
   public:

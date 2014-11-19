@@ -53,7 +53,7 @@ namespace foundation
 // A test suite, as a collection of tests.
 //
 
-class DLLSYMBOL TestSuite
+class APPLESEED_DLLSYMBOL TestSuite
   : public NonCopyable
 {
   public:

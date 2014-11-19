@@ -82,19 +82,19 @@ namespace
             m_inputs.declare("alpha_value", InputFormatScalar, "1.0");
         }
 
-        virtual void release() OVERRIDE
+        virtual void release() APPLESEED_OVERRIDE
         {
             delete this;
         }
 
-        virtual const char* get_model() const OVERRIDE
+        virtual const char* get_model() const APPLESEED_OVERRIDE
         {
             return Model;
         }
 
         virtual bool on_frame_begin(
             const Project&      project,
-            AbortSwitch*        abort_switch) OVERRIDE
+            AbortSwitch*        abort_switch) APPLESEED_OVERRIDE
         {
             if (!EnvironmentShader::on_frame_begin(project, abort_switch))
                 return false;
@@ -125,7 +125,7 @@ namespace
         virtual void evaluate(
             InputEvaluator&     input_evaluator,
             const Vector3d&     direction,
-            ShadingResult&      shading_result) const OVERRIDE
+            ShadingResult&      shading_result) const APPLESEED_OVERRIDE
         {
             // Initialize the shading result.
             shading_result.m_color_space = ColorSpaceSpectral;
@@ -141,7 +141,7 @@ namespace
         }
 
       private:
-        DECLARE_INPUT_VALUES(InputValues)
+        APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
             double m_alpha_value;
         };

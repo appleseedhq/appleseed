@@ -104,7 +104,7 @@ namespace
             compute_pixel_ordering(frame);
         }
 
-        virtual void release() OVERRIDE
+        virtual void release() APPLESEED_OVERRIDE
         {
             delete this;
         }
@@ -114,7 +114,7 @@ namespace
             const size_t    tile_x,
             const size_t    tile_y,
             const size_t    pass_hash,
-            AbortSwitch&    abort_switch) OVERRIDE
+            AbortSwitch&    abort_switch) APPLESEED_OVERRIDE
         {
             // Retrieve frame properties.
             const CanvasProperties& frame_properties = frame.image().properties();
@@ -217,7 +217,7 @@ namespace
             m_pixel_renderer->on_tile_end(frame, tile, aov_tiles);
         }
 
-        virtual StatisticsVector get_statistics() const OVERRIDE
+        virtual StatisticsVector get_statistics() const APPLESEED_OVERRIDE
         {
             return m_pixel_renderer->get_statistics();
         }

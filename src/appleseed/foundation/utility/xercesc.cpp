@@ -150,7 +150,7 @@ void ErrorLogger::fatalError(const SAXParseException& e)
 {
     ++m_fatal_error_count;
 
-#ifndef WITH_EXTERNAL_XERCES
+#ifndef APPLESEED_WITH_EXTERNAL_XERCES
     switch (e.getOriginalExceptionCode())
     {
       // Using our modified version of Xerces-C++, we can catch the case where

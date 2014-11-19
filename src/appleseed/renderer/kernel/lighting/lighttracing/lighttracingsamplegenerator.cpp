@@ -155,7 +155,7 @@ namespace
             const LightSampler&         light_sampler,
             const size_t                generator_index,
             const size_t                generator_count,
-#ifdef WITH_OIIO
+#ifdef APPLESEED_WITH_OIIO
             OIIO::TextureSystem&        oiio_texture_system,
 #endif
 #ifdef APPLESEED_WITH_OSL
@@ -187,7 +187,7 @@ namespace
                 m_intersector,
                 m_tracer,
                 m_texture_cache,
-#ifdef WITH_OIIO
+#ifdef APPLESEED_WITH_OIIO
                 oiio_texture_system,
 #endif
 #ifdef APPLESEED_WITH_OSL
@@ -203,12 +203,12 @@ namespace
             m_ray_dtime = scene.get_camera()->get_shutter_open_time_interval();
         }
 
-        virtual void release() OVERRIDE
+        virtual void release() APPLESEED_OVERRIDE
         {
             delete this;
         }
 
-        virtual void reset() OVERRIDE
+        virtual void reset() APPLESEED_OVERRIDE
         {
             SampleGeneratorBase::reset();
             m_rng = MersenneTwister();
@@ -217,7 +217,7 @@ namespace
         virtual void generate_samples(
             const size_t                sample_count,
             SampleAccumulationBuffer&   buffer,
-            AbortSwitch&                abort_switch) OVERRIDE
+            AbortSwitch&                abort_switch) APPLESEED_OVERRIDE
         {
             m_light_sample_count = 0;
 
@@ -227,7 +227,7 @@ namespace
                 .increment_sample_count(m_light_sample_count);
         }
 
-        virtual StatisticsVector get_statistics() const OVERRIDE
+        virtual StatisticsVector get_statistics() const APPLESEED_OVERRIDE
         {
             Statistics stats;
             stats.insert("path count", m_path_count);
@@ -516,7 +516,7 @@ namespace
 
         virtual size_t generate_samples(
             const size_t                sequence_index,
-            SampleVector&               samples) OVERRIDE
+            SampleVector&               samples) APPLESEED_OVERRIDE
         {
             SamplingContext sampling_context(
                 m_rng,
@@ -832,7 +832,7 @@ LightTracingSampleGeneratorFactory::LightTracingSampleGeneratorFactory(
     const TraceContext&     trace_context,
     TextureStore&           texture_store,
     const LightSampler&     light_sampler,
-#ifdef WITH_OIIO
+#ifdef APPLESEED_WITH_OIIO
     OIIO::TextureSystem&    oiio_texture_system,
 #endif
 #ifdef APPLESEED_WITH_OSL
@@ -844,7 +844,7 @@ LightTracingSampleGeneratorFactory::LightTracingSampleGeneratorFactory(
   , m_trace_context(trace_context)
   , m_texture_store(texture_store)
   , m_light_sampler(light_sampler)
-#ifdef WITH_OIIO
+#ifdef APPLESEED_WITH_OIIO
   , m_oiio_texture_system(oiio_texture_system)
 #endif
 #ifdef APPLESEED_WITH_OSL
@@ -873,7 +873,7 @@ ISampleGenerator* LightTracingSampleGeneratorFactory::create(
             m_light_sampler,
             generator_index,
             generator_count,
-#ifdef WITH_OIIO
+#ifdef APPLESEED_WITH_OIIO
             m_oiio_texture_system,
 #endif
 #ifdef APPLESEED_WITH_OSL

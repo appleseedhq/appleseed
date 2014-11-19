@@ -51,7 +51,7 @@ namespace foundation
 // Interface of a benchmark listener.
 //
 
-class DLLSYMBOL IBenchmarkListener
+class APPLESEED_DLLSYMBOL IBenchmarkListener
   : public IUnknown
 {
   public:

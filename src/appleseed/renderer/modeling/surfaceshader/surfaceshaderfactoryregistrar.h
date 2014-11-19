@@ -50,14 +50,14 @@ namespace renderer
 // An array of surface shader factories.
 //
 
-DECLARE_ARRAY(SurfaceShaderFactoryArray, ISurfaceShaderFactory*);
+APPLESEED_DECLARE_ARRAY(SurfaceShaderFactoryArray, ISurfaceShaderFactory*);
 
 
 //
 // Surface shader factory registrar.
 //
 
-class DLLSYMBOL SurfaceShaderFactoryRegistrar
+class APPLESEED_DLLSYMBOL SurfaceShaderFactoryRegistrar
   : public foundation::NonCopyable
 {
   public:

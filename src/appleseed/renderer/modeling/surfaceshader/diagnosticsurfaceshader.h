@@ -60,7 +60,7 @@ namespace renderer
 // A shader offering a variety of diagnostic modes.
 //
 
-class DLLSYMBOL DiagnosticSurfaceShader
+class APPLESEED_DLLSYMBOL DiagnosticSurfaceShader
   : public SurfaceShader
 {
   public:
@@ -98,10 +98,10 @@ class DLLSYMBOL DiagnosticSurfaceShader
         const ParamArray&       params);
 
     // Delete this instance.
-    virtual void release() OVERRIDE;
+    virtual void release() APPLESEED_OVERRIDE;
 
     // Return a string identifying the model of this surface shader.
-    virtual const char* get_model() const OVERRIDE;
+    virtual const char* get_model() const APPLESEED_OVERRIDE;
 
     // Evaluate the shading at a given point.
     virtual void evaluate(
@@ -109,7 +109,7 @@ class DLLSYMBOL DiagnosticSurfaceShader
         const PixelContext&     pixel_context,
         const ShadingContext&   shading_context,
         const ShadingPoint&     shading_point,
-        ShadingResult&          shading_result) const OVERRIDE;
+        ShadingResult&          shading_result) const APPLESEED_OVERRIDE;
 
   private:
     ShadingMode m_shading_mode;
@@ -124,23 +124,23 @@ class DLLSYMBOL DiagnosticSurfaceShader
 // Diagnostic surface shader factory.
 //
 
-class DLLSYMBOL DiagnosticSurfaceShaderFactory
+class APPLESEED_DLLSYMBOL DiagnosticSurfaceShaderFactory
   : public ISurfaceShaderFactory
 {
   public:
     // Return a string identifying this surface shader model.
-    virtual const char* get_model() const OVERRIDE;
+    virtual const char* get_model() const APPLESEED_OVERRIDE;
 
     // Return a human-readable string identifying this surface shader model.
-    virtual const char* get_human_readable_model() const OVERRIDE;
+    virtual const char* get_human_readable_model() const APPLESEED_OVERRIDE;
 
     // Return a set of input metadata for this surface shader model.
-    virtual foundation::DictionaryArray get_input_metadata() const OVERRIDE;
+    virtual foundation::DictionaryArray get_input_metadata() const APPLESEED_OVERRIDE;
 
     // Create a new surface shader instance.
     virtual foundation::auto_release_ptr<SurfaceShader> create(
         const char*         name,
-        const ParamArray&   params) const OVERRIDE;
+        const ParamArray&   params) const APPLESEED_OVERRIDE;
 };
 
 }       // namespace renderer

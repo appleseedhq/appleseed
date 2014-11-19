@@ -72,12 +72,12 @@ namespace
             m_inputs.declare("transmittance_multiplier", InputFormatScalar, "1.0");
         }
 
-        virtual void release() OVERRIDE
+        virtual void release() APPLESEED_OVERRIDE
         {
             delete this;
         }
 
-        virtual const char* get_model() const OVERRIDE
+        virtual const char* get_model() const APPLESEED_OVERRIDE
         {
             return Model;
         }

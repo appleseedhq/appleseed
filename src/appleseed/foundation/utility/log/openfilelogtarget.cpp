@@ -60,7 +60,7 @@ namespace
         }
 
         // Delete this instance.
-        virtual void release() OVERRIDE
+        virtual void release() APPLESEED_OVERRIDE
         {
             delete this;
         }
@@ -71,7 +71,7 @@ namespace
             const char*                 file,
             const size_t                line,
             const char*                 header,
-            const char*                 message) OVERRIDE
+            const char*                 message) APPLESEED_OVERRIDE
         {
             write_message(m_file, category, header, message);
         }

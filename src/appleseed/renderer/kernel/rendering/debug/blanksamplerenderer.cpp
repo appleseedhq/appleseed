@@ -56,7 +56,7 @@ namespace
       : public ISampleRenderer
     {
       public:
-        virtual void release() OVERRIDE
+        virtual void release() APPLESEED_OVERRIDE
         {
             delete this;
         }
@@ -65,13 +65,13 @@ namespace
             SamplingContext&    sampling_context,
             const PixelContext& pixel_context,
             const Vector2d&     image_point,
-            ShadingResult&      shading_result) OVERRIDE
+            ShadingResult&      shading_result) APPLESEED_OVERRIDE
         {
             shading_result.set_main_to_transparent_black_linear_rgba();
             shading_result.set_aovs_to_transparent_black_linear_rgba();
         }
 
-        virtual StatisticsVector get_statistics() const OVERRIDE
+        virtual StatisticsVector get_statistics() const APPLESEED_OVERRIDE
         {
             return StatisticsVector();
         }

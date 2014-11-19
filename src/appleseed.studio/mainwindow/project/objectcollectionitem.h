@@ -70,7 +70,7 @@ class ObjectCollectionItem
         ProjectBuilder&             project_builder,
         renderer::ParamArray&       settings);
 
-    virtual QMenu* get_single_item_context_menu() const OVERRIDE;
+    virtual QMenu* get_single_item_context_menu() const APPLESEED_OVERRIDE;
 
     void import_objects(const QStringList& filepaths);
 
@@ -82,7 +82,7 @@ class ObjectCollectionItem
     AssemblyItem*                   m_parent_item;
     renderer::ParamArray&           m_settings;
 
-    virtual ItemBase* create_item(renderer::Object* object) OVERRIDE;
+    virtual ItemBase* create_item(renderer::Object* object) APPLESEED_OVERRIDE;
 
     void schedule_import_objects(const QStringList& filepaths);
 

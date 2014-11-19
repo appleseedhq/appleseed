@@ -87,12 +87,12 @@ namespace
             }
         }
 
-        virtual void release() OVERRIDE
+        virtual void release() APPLESEED_OVERRIDE
         {
             delete this;
         }
 
-        virtual const char* get_model() const OVERRIDE
+        virtual const char* get_model() const APPLESEED_OVERRIDE
         {
             return Model;
         }
@@ -102,7 +102,7 @@ namespace
             const PixelContext&     pixel_context,
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
-            ShadingResult&          shading_result) const OVERRIDE
+            ShadingResult&          shading_result) const APPLESEED_OVERRIDE
         {
             double occlusion;
 

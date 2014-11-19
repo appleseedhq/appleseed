@@ -111,7 +111,7 @@ namespace
             }
         }
 
-        virtual void release() OVERRIDE
+        virtual void release() APPLESEED_OVERRIDE
         {
             delete this;
         }
@@ -119,7 +119,7 @@ namespace
         virtual void on_tile_begin(
             const Frame&                frame,
             Tile&                       tile,
-            TileStack&                  aov_tiles) OVERRIDE
+            TileStack&                  aov_tiles) APPLESEED_OVERRIDE
         {
             m_scratch_fb_half_width = truncate<int>(ceil(frame.get_filter().get_xradius()));
             m_scratch_fb_half_height = truncate<int>(ceil(frame.get_filter().get_yradius()));
@@ -138,7 +138,7 @@ namespace
         virtual void on_tile_end(
             const Frame&                frame,
             Tile&                       tile,
-            TileStack&                  aov_tiles) OVERRIDE
+            TileStack&                  aov_tiles) APPLESEED_OVERRIDE
         {
             if (m_params.m_diagnostics)
             {
@@ -172,7 +172,7 @@ namespace
             const int                   tx,
             const int                   ty,
             SamplingContext::RNGType&   rng,
-            ShadingResultFrameBuffer&   framebuffer) OVERRIDE
+            ShadingResultFrameBuffer&   framebuffer) APPLESEED_OVERRIDE
         {
             const int ix = pixel_context.m_ix;
             const int iy = pixel_context.m_iy;
@@ -301,7 +301,7 @@ namespace
             }
         }
 
-        virtual StatisticsVector get_statistics() const OVERRIDE
+        virtual StatisticsVector get_statistics() const APPLESEED_OVERRIDE
         {
             return m_sample_renderer->get_statistics();
         }

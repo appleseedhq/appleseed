@@ -44,7 +44,7 @@ namespace foundation
 //
 
 const size_t PrimeTableSize = 1000;
-DLLSYMBOL extern const size_t Primes[PrimeTableSize];
+APPLESEED_DLLSYMBOL extern const size_t Primes[PrimeTableSize];
 
 }       // namespace foundation
 

@@ -64,7 +64,7 @@ typedef foundation::FloatArray ColorValueArray;
 // todo: allow to specify the lighting conditions of a color.
 //
 
-class DLLSYMBOL ColorEntity
+class APPLESEED_DLLSYMBOL ColorEntity
   : public Entity
 {
   public:
@@ -72,7 +72,7 @@ class DLLSYMBOL ColorEntity
     static foundation::UniqueID get_class_uid();
 
     // Delete this instance.
-    virtual void release() OVERRIDE;
+    virtual void release() APPLESEED_OVERRIDE;
 
     // Return the color values.
     const ColorValueArray& get_values() const;
@@ -122,7 +122,7 @@ class DLLSYMBOL ColorEntity
 // Color entity factory.
 //
 
-class DLLSYMBOL ColorEntityFactory
+class APPLESEED_DLLSYMBOL ColorEntityFactory
 {
   public:
     // Return a set of input metadata for this color entity model.

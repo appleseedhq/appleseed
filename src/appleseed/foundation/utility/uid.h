@@ -58,7 +58,7 @@ typedef uint64 UniqueID;
 // Base class for uniquely identifiable objects.
 //
 
-class DLLSYMBOL Identifiable
+class APPLESEED_DLLSYMBOL Identifiable
   : public NonCopyable
 {
   public:
@@ -79,7 +79,7 @@ class DLLSYMBOL Identifiable
 // Thread-safe.
 //
 
-DLLSYMBOL UniqueID new_guid();
+APPLESEED_DLLSYMBOL UniqueID new_guid();
 
 
 //

@@ -45,7 +45,7 @@ namespace foundation
 //
 
 // Factory function.
-DLLSYMBOL IBenchmarkListener* create_logger_benchmark_listener(Logger& logger);
+APPLESEED_DLLSYMBOL IBenchmarkListener* create_logger_benchmark_listener(Logger& logger);
 
 }       // namespace foundation
 

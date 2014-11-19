@@ -51,12 +51,12 @@ namespace renderer
 // An entity container providing insertion of deletion of entities.
 //
 
-class DLLSYMBOL EntityMap
+class APPLESEED_DLLSYMBOL EntityMap
   : public foundation::NonCopyable
 {
   public:
     // Mutable iterator.
-    class DLLSYMBOL iterator
+    class APPLESEED_DLLSYMBOL iterator
     {
       public:
         // Iterator category.
@@ -102,7 +102,7 @@ class DLLSYMBOL EntityMap
     };
 
     // Constant iterator.
-    class DLLSYMBOL const_iterator
+    class APPLESEED_DLLSYMBOL const_iterator
     {
       public:
         // Iterator category.

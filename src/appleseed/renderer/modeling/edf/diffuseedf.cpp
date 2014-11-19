@@ -75,12 +75,12 @@ namespace
             m_inputs.declare("radiance_multiplier", InputFormatScalar, "1.0");
         }
 
-        virtual void release() OVERRIDE
+        virtual void release() APPLESEED_OVERRIDE
         {
             delete this;
         }
 
-        virtual const char* get_model() const OVERRIDE
+        virtual const char* get_model() const APPLESEED_OVERRIDE
         {
             return Model;
         }
@@ -88,7 +88,7 @@ namespace
         virtual bool on_frame_begin(
             const Project&      project,
             const Assembly&     assembly,
-            AbortSwitch*        abort_switch) OVERRIDE
+            AbortSwitch*        abort_switch) APPLESEED_OVERRIDE
         {
             if (!EDF::on_frame_begin(project, assembly, abort_switch))
                 return false;
@@ -106,7 +106,7 @@ namespace
             const Vector2d&     s,
             Vector3d&           outgoing,
             Spectrum&           value,
-            double&             probability) const OVERRIDE
+            double&             probability) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(geometric_normal));
 
@@ -126,7 +126,7 @@ namespace
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
-            Spectrum&           value) const OVERRIDE
+            Spectrum&           value) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(geometric_normal));
             assert(is_normalized(outgoing));
@@ -151,7 +151,7 @@ namespace
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
             Spectrum&           value,
-            double&             probability) const OVERRIDE
+            double&             probability) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(geometric_normal));
             assert(is_normalized(outgoing));
@@ -177,7 +177,7 @@ namespace
             const void*         data,
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,
-            const Vector3d&     outgoing) const OVERRIDE
+            const Vector3d&     outgoing) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(geometric_normal));
             assert(is_normalized(outgoing));

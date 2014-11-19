@@ -59,12 +59,12 @@ namespace renderer
 // OSL shader group.
 //
 
-class DLLSYMBOL ShaderGroup
+class APPLESEED_DLLSYMBOL ShaderGroup
   : public ConnectableEntity
 {
   public:
     // Delete this instance.
-    virtual void release() OVERRIDE;
+    virtual void release() APPLESEED_OVERRIDE;
 
     // Return a string identifying the model of this shader group.
     const char* get_model() const;
@@ -149,7 +149,7 @@ class DLLSYMBOL ShaderGroup
 // ShaderGroup factory.
 //
 
-class DLLSYMBOL ShaderGroupFactory
+class APPLESEED_DLLSYMBOL ShaderGroupFactory
 {
   public:
     // Return a string identifying this shader group model.

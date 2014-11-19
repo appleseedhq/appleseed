@@ -72,7 +72,7 @@ class FixedModelEntityItem
         typename EntityTraitsType::FactoryRegistrarType
     > FixedModelEntityEditorFormFactoryType;
   private:
-    virtual void slot_edit(AttributeEditor* attribute_editor) OVERRIDE;
+    virtual void slot_edit(AttributeEditor* attribute_editor) APPLESEED_OVERRIDE;
 };
 
 

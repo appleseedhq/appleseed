@@ -46,7 +46,7 @@ namespace foundation
 // Mesh file reader interface.
 //
 
-class DLLSYMBOL IMeshFileReader
+class APPLESEED_DLLSYMBOL IMeshFileReader
   : public NonCopyable
 {
   public:

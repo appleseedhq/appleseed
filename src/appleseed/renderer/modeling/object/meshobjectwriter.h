@@ -43,7 +43,7 @@ namespace renderer
 // Mesh object writer.
 //
 
-class DLLSYMBOL MeshObjectWriter
+class APPLESEED_DLLSYMBOL MeshObjectWriter
 {
   public:
     // Write a mesh object to disk.

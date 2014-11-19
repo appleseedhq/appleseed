@@ -48,7 +48,7 @@ using namespace std;
 namespace renderer
 {
 
-DEFINE_ARRAY(RenderLayerRuleFactoryArray);
+APPLESEED_DEFINE_ARRAY(RenderLayerRuleFactoryArray);
 
 struct RenderLayerRuleFactoryRegistrar::Impl
 {

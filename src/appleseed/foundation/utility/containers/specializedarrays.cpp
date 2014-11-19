@@ -40,9 +40,9 @@ using namespace std;
 namespace foundation
 {
 
-DEFINE_ARRAY(FloatArray);
-DEFINE_ARRAY(DoubleArray);
-DEFINE_ARRAY(DictionaryArray);
+APPLESEED_DEFINE_ARRAY(FloatArray);
+APPLESEED_DEFINE_ARRAY(DoubleArray);
+APPLESEED_DEFINE_ARRAY(DictionaryArray);
 
 
 //

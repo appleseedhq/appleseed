@@ -38,7 +38,7 @@
 #include "main/dllsymbol.h"
 
 // OpenImageIO headers.
-#ifdef WITH_OIIO
+#ifdef APPLESEED_WITH_OIIO
 #include "OpenImageIO/texture.h"
 #endif
 
@@ -51,7 +51,7 @@ END_OSL_INCLUDES
 #endif
 
 // OpenImageIO headers.
-#ifdef WITH_OIIO
+#ifdef APPLESEED_WITH_OIIO
 #include "OpenImageIO/texture.h"
 #endif
 
@@ -70,7 +70,7 @@ namespace renderer
 // Master renderer, handles rendering of a given project.
 //
 
-class DLLSYMBOL MasterRenderer
+class APPLESEED_DLLSYMBOL MasterRenderer
   : public foundation::NonCopyable
 {
   public:
@@ -111,7 +111,7 @@ class DLLSYMBOL MasterRenderer
     SerialRendererController*       m_serial_renderer_controller;
     ITileCallbackFactory*           m_serial_tile_callback_factory;
 
-#ifdef WITH_OIIO
+#ifdef APPLESEED_WITH_OIIO
     OIIO::TextureSystem*            m_texture_system;
 #endif
 
