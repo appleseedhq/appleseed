@@ -150,9 +150,6 @@ class DLLSYMBOL Material
         const char*                 name,
         const ParamArray&           params);
 
-    // Destructor.
-    virtual ~Material();
-
     const char* get_non_empty(const ParamArray& params, const char* name) const;
 
     bool create_normal_modifier(const MessageContext& context);

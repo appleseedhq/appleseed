@@ -93,20 +93,6 @@ Material::Material(
     m_inputs.declare("surface_shader", InputFormatEntity);
 }
 
-Material::~Material()
-{
-}
-
-const char* Material::get_non_empty(const ParamArray& params, const char* name) const
-{
-    if (!params.strings().exist(name))
-        return 0;
-
-    const char* value = params.strings().get(name);
-
-    return strlen(value) > 0 ? value : 0;
-}
-
 bool Material::has_alpha_map() const
 {
     return get_non_empty(m_params, "alpha_map") != 0;
@@ -173,6 +159,11 @@ const Source* Material::get_uncached_alpha_map() const
     return m_inputs.source("alpha_map");
 }
 
+bool Material::has_emission() const
+{
+    return get_uncached_edf() != 0;
+}
+
 #ifdef APPLESEED_WITH_OSL
 
 bool Material::has_osl_surface() const
@@ -186,6 +177,16 @@ const ShaderGroup* Material::get_uncached_osl_surface() const
 }
 
 #endif
+
+const char* Material::get_non_empty(const ParamArray& params, const char* name) const
+{
+    if (!params.strings().exist(name))
+        return 0;
+
+    const char* value = params.strings().get(name);
+
+    return strlen(value) > 0 ? value : 0;
+}
 
 bool Material::create_normal_modifier(const MessageContext& context)
 {
@@ -234,8 +235,9 @@ bool Material::create_normal_modifier(const MessageContext& context)
     // Create the normal modifier.
     if (displacement_method == "bump")
     {
+        const double offset = m_params.get_optional<double>("bump_offset", 2.0);
         const double amplitude = m_params.get_optional<double>("bump_amplitude", 1.0);
-        m_normal_modifier = new BumpMappingModifier(displacement_map, 2.0, amplitude);
+        m_normal_modifier = new BumpMappingModifier(displacement_map, offset, amplitude);
     }
     else
     {
@@ -247,11 +249,6 @@ bool Material::create_normal_modifier(const MessageContext& context)
     }
 
     return true;
-}
-
-bool Material::has_emission() const
-{
-    return get_uncached_edf() != 0;
 }
 
 }   // namespace renderer
