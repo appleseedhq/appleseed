@@ -40,6 +40,9 @@
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
 
+// Standard headers.
+#include <cassert>
+
 using namespace foundation;
 
 namespace renderer
@@ -78,22 +81,33 @@ Vector3d BumpMappingModifier::evaluate(
     const Vector3d&     dpdu,
     const Vector3d&     dpdv) const
 {
-    // Lookup the bump map.
-    // todo: we don't have ray differentials so our offsets
-    // in the texture are not yet based on du/dx, du/dy etc.
-    double disp, disp_du, disp_dv;
-    m_map->evaluate(texture_cache, uv, disp);
-    m_map->evaluate(texture_cache, uv + Vector2d(m_du, 0.0), disp_du);
-    m_map->evaluate(texture_cache, uv + Vector2d(0.0, m_dv), disp_dv);
+    assert(is_normalized(n));
 
-    const double ddispdu = m_amplitude * (disp_du - disp) * m_rcp_du;
-    const double ddispdv = m_amplitude * (disp_dv - disp) * m_rcp_dv;
+    // Evaluate the displacement function at (u, v).
+    double val;
+    m_map->evaluate(texture_cache, uv, val);
 
-    const Vector3d modified_dpdu = dpdu + ddispdu * n;
-    const Vector3d modified_dpdv = dpdv + ddispdv * n;
-    const Vector3d modified_n = normalize(cross(modified_dpdu, modified_dpdv));
+    // Evaluate the displacement function at (u + delta_u, v).
+    double val_du;
+    m_map->evaluate(texture_cache, Vector2d(uv[0] + m_du, uv[1]), val_du);
 
-    return dot(n, modified_n) > 0.0 ? modified_n : -modified_n;
+    // Evaluate the displacement function at (u, v + delta_v).
+    double val_dv;
+    m_map->evaluate(texture_cache, Vector2d(uv[0], uv[1] + m_dv), val_dv);
+
+    // Compute the partial derivatives of the displacement function d(u, v).
+    const double ddispdu = m_amplitude * (val_du - val) * m_rcp_du;
+    const double ddispdv = m_amplitude * (val_dv - val) * m_rcp_dv;
+
+    // Compute the partial derivatives of the displaced surface p(u, v) + d(u, v) * n.
+    const Vector3d perturbed_dpdu = dpdu + ddispdu * n;
+    const Vector3d perturbed_dpdv = dpdv + ddispdv * n;
+
+    // Compute the perturbed normal.
+    const Vector3d perturbed_n = normalize(cross(perturbed_dpdu, perturbed_dpdv));
+
+    // Make sure the original and perturbed normals lie in the same hemisphere.
+    return dot(n, perturbed_n) > 0.0 ? perturbed_n : -perturbed_n;
 }
 
 }   // namespace renderer
