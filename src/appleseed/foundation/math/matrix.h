@@ -253,8 +253,7 @@ class Matrix<T, 3, 3>
     Matrix(const Imath::Matrix33<T>& rhs);
 
     // Reinterpret this matrix as an Imath::Matrix33.
-    operator Imath::Matrix33<T>&();
-    operator const Imath::Matrix33<T>&() const;
+    operator Imath::Matrix33<T>() const;
 
 #endif
 
@@ -370,8 +369,7 @@ class Matrix<T, 4, 4>
     Matrix(const Imath::Matrix44<T>& rhs);
 
     // Reinterpret this matrix as an Imath::Matrix44.
-    operator Imath::Matrix44<T>&();
-    operator const Imath::Matrix44<T>&() const;
+    operator Imath::Matrix44<T>() const;
 
 #endif
 
@@ -1040,19 +1038,21 @@ inline Matrix<T, 3, 3>::Matrix(const Matrix<U, 3, 3>& rhs)
 template <typename T>
 inline Matrix<T, 3, 3>::Matrix(const Imath::Matrix33<T>& rhs)
 {
-    std::memcpy(m_comp, rhs.x, sizeof(m_comp));
+    for (size_t i = 0; i < 3; ++i)
+        for (size_t j = 0; j < 3; ++j)
+            (*this)(i, j) = rhs[j][i];
 }
 
 template <typename T>
-inline Matrix<T, 3, 3>::operator Imath::Matrix33<T>&()
+inline Matrix<T, 3, 3>::operator Imath::Matrix33<T>() const
 {
-    return reinterpret_cast<Imath::Matrix33<T>&>(*this);
-}
+    Imath::Matrix33<T> result;
 
-template <typename T>
-inline Matrix<T, 3, 3>::operator const Imath::Matrix33<T>&() const
-{
-    return reinterpret_cast<const Imath::Matrix33<T>&>(*this);
+    for (size_t i = 0; i < 3; ++i)
+        for (size_t j = 0; j < 3; ++j)
+            result[i][j] = (*this)(j, i);
+
+    return result;
 }
 
 #endif
@@ -1556,19 +1556,21 @@ inline Matrix<T, 4, 4>::Matrix(const Matrix<U, 4, 4>& rhs)
 template <typename T>
 inline Matrix<T, 4, 4>::Matrix(const Imath::Matrix44<T>& rhs)
 {
-    std::memcpy(m_comp, rhs.x, sizeof(m_comp));
+    for (size_t i = 0; i < 4; ++i)
+        for (size_t j = 0; j < 4; ++j)
+            (*this)(i, j) = rhs[j][i];
 }
 
 template <typename T>
-inline Matrix<T, 4, 4>::operator Imath::Matrix44<T>&()
+inline Matrix<T, 4, 4>::operator Imath::Matrix44<T>() const
 {
-    return reinterpret_cast<Imath::Matrix44<T>&>(*this);
-}
+    Imath::Matrix44<T> result;
 
-template <typename T>
-inline Matrix<T, 4, 4>::operator const Imath::Matrix44<T>&() const
-{
-    return reinterpret_cast<const Imath::Matrix44<T>&>(*this);
+    for (size_t i = 0; i < 4; ++i)
+        for (size_t j = 0; j < 4; ++j)
+            result[i][j] = (*this)(j, i);
+
+    return result;
 }
 
 #endif

@@ -492,20 +492,27 @@ TEST_SUITE(Foundation_Math_Matrix33)
         { Values[6], Values[7], Values[8] }
     };
 
-    TEST_CASE(ConstructFromImathMatrix33)
-    {
-        const Imath::M33d source(ValuesImathFormat);
-        const Matrix3d copy(source);
-
-        EXPECT_EQ(Matrix3d(Values), copy);
-    }
-
-    TEST_CASE(ConvertToImathMatrix33)
+    TEST_CASE(ImathMatrix33Roundtrip)
     {
         const Matrix3d source(Values);
         const Imath::M33d copy(source);
+        const Matrix3d result(copy);
 
-        EXPECT_EQ(Imath::M33d(ValuesImathFormat), copy);
+        EXPECT_EQ(source, result);
+    }
+
+    TEST_CASE(CompareImath33Rotation)
+    {
+        const double angle = deg_to_rad(21.0);
+
+        const Matrix3d rot_z = Matrix3d::rotation_z(angle);
+
+        const Imath::M33d imath_rot_z =
+            Imath::M33d().setRotation(angle);
+
+        const Matrix3d tmp(imath_rot_z);
+
+        EXPECT_EQ(rot_z, tmp);
     }
 
 #endif
@@ -711,20 +718,27 @@ TEST_SUITE(Foundation_Math_Matrix44)
         { Values[12], Values[13], Values[14], Values[15] }
     };
 
-    TEST_CASE(ConstructFromImathMatrix44)
-    {
-        const Imath::M44d source(ValuesImathFormat);
-        const Matrix4d copy(source);
-
-        EXPECT_EQ(Matrix4d(Values), copy);
-    }
-
-    TEST_CASE(ConvertToImathMatrix44)
+    TEST_CASE(ImathMatrix44Roundtrip)
     {
         const Matrix4d source(Values);
         const Imath::M44d copy(source);
+        const Matrix4d result(copy);
 
-        EXPECT_EQ(Imath::M44d(ValuesImathFormat), copy);
+        EXPECT_EQ(source, result);
+    }
+
+    TEST_CASE(CompareImath44RotationX)
+    {
+        const double angle = deg_to_rad(30.0);
+
+        const Matrix4d rot_x = Matrix4d::rotation_x(angle);
+
+        const Imath::M44d imath_rot_x =
+            Imath::M44d().setEulerAngles(Imath::V3d(angle, 0, 0));
+
+        const Matrix4d tmp(imath_rot_x);
+
+        EXPECT_EQ(rot_x, tmp);
     }
 
 #endif
