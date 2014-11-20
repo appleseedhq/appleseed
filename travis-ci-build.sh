@@ -3,7 +3,6 @@
 rm -f CMakeCache.txt
 
 cmake \
-    -D git_tag=1.1.0-travis \
     -D WITH_CLI=ON \
     -D WITH_STUDIO=OFF \
     -D WITH_TOOLS=OFF \
@@ -21,5 +20,5 @@ cmake \
 
 make all install package
 
-# Unit tests (appleseed must be installed to function properly)
+# Unit tests (appleseed must be installed to function properly).
 env LD_LIBRARY_PATH=./travis_install/lib:$LD_LIBRARY_PATH ./travis_install/bin/appleseed.cli --run-unit-tests --verbose-unit-tests
