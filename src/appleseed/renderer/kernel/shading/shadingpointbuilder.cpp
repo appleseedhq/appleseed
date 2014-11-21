@@ -62,12 +62,6 @@ void ShadingPointBuilder::set_geometric_normal(const Vector3d& n)
     m_shading_point.m_members |= ShadingPoint::HasGeometricNormal;
 }
 
-void ShadingPointBuilder::set_shading_normal(const Vector3d& n)
-{
-    m_shading_point.m_shading_normal = n;
-    m_shading_point.m_members |= ShadingPoint::HasShadingNormal;
-}
-
 void ShadingPointBuilder::set_shading_basis(const Basis3d& basis)
 {
     m_shading_point.m_shading_basis = basis;

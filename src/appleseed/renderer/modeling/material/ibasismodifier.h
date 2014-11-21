@@ -27,11 +27,12 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_MATERIAL_INORMALMODIFIER_H
-#define APPLESEED_RENDERER_MODELING_MATERIAL_INORMALMODIFIER_H
+#ifndef APPLESEED_RENDERER_MODELING_MATERIAL_IBASISMODIFIER_H
+#define APPLESEED_RENDERER_MODELING_MATERIAL_IBASISMODIFIER_H
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/math/basis.h"
 #include "foundation/math/vector.h"
 
 // Forward declarations.
@@ -40,20 +41,18 @@ namespace renderer  { class TextureCache; }
 namespace renderer
 {
 
-class INormalModifier
+class IBasisModifier
   : public foundation::NonCopyable
 {
   public:
-    virtual ~INormalModifier() {}
+    virtual ~IBasisModifier() {}
 
-    virtual foundation::Vector3d evaluate(
+    virtual foundation::Basis3d modify(
         TextureCache&                   texture_cache,
-        const foundation::Vector3d&     n,
         const foundation::Vector2d&     uv,
-        const foundation::Vector3d&     dpdu,
-        const foundation::Vector3d&     dpdv) const = 0;
+        const foundation::Basis3d&      basis) const = 0;
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_MATERIAL_INORMALMODIFIER_H
+#endif  // !APPLESEED_RENDERER_MODELING_MATERIAL_IBASISMODIFIER_H
