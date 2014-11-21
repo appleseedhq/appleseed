@@ -46,7 +46,7 @@ namespace foundation    { class AbortSwitch; }
 namespace renderer      { class Assembly; }
 namespace renderer      { class BSDF; }
 namespace renderer      { class EDF; }
-namespace renderer      { class INormalModifier; }
+namespace renderer      { class IBasisModifier; }
 namespace renderer      { class MessageContext; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
@@ -122,8 +122,8 @@ class APPLESEED_DLLSYMBOL Material
     const Source* get_alpha_map() const;
     const Source* get_uncached_alpha_map() const;
 
-    // Return the normal modifier of the material, or 0 if the material doesn't have one.
-    const INormalModifier* get_normal_modifier() const;
+    // Return the basis modifier of the material, or 0 if the material doesn't have one.
+    const IBasisModifier* get_basis_modifier() const;
 
     // Return true if the material emits light.
     virtual bool has_emission() const;
@@ -140,7 +140,7 @@ class APPLESEED_DLLSYMBOL Material
     const BSDF*                     m_bsdf;
     const EDF*                      m_edf;
     const Source*                   m_alpha_map;
-    const INormalModifier*          m_normal_modifier;
+    const IBasisModifier*           m_basis_modifier;
 #ifdef APPLESEED_WITH_OSL
     const ShaderGroup*              m_shader_group;
 #endif
@@ -152,7 +152,7 @@ class APPLESEED_DLLSYMBOL Material
 
     const char* get_non_empty(const ParamArray& params, const char* name) const;
 
-    bool create_normal_modifier(const MessageContext& context);
+    bool create_basis_modifier(const MessageContext& context);
 };
 
 
@@ -185,9 +185,9 @@ inline const Source* Material::get_alpha_map() const
     return m_alpha_map;
 }
 
-inline const INormalModifier* Material::get_normal_modifier() const
+inline const IBasisModifier* Material::get_basis_modifier() const
 {
-    return m_normal_modifier;
+    return m_basis_modifier;
 }
 
 #ifdef APPLESEED_WITH_OSL

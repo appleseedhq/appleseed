@@ -84,7 +84,7 @@ namespace
             m_edf = get_uncached_edf();
 
             const EntityDefMessageContext context("material", this);
-            if (!create_normal_modifier(context))
+            if (!create_basis_modifier(context))
                 return false;
 
             if (m_edf && m_alpha_map)

@@ -40,9 +40,6 @@
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
 
-// Standard headers.
-#include <cassert>
-
 using namespace foundation;
 
 namespace renderer
@@ -74,15 +71,11 @@ BumpMappingModifier::BumpMappingModifier(
     m_rcp_dv = 1.0 / m_dv;
 }
 
-Vector3d BumpMappingModifier::evaluate(
+Basis3d BumpMappingModifier::modify(
     TextureCache&       texture_cache,
-    const Vector3d&     n,
     const Vector2d&     uv,
-    const Vector3d&     dpdu,
-    const Vector3d&     dpdv) const
+    const Basis3d&      basis) const
 {
-    assert(is_normalized(n));
-
     // Evaluate the displacement function at (u, v).
     double val;
     m_map->evaluate(texture_cache, uv, val);
@@ -100,14 +93,20 @@ Vector3d BumpMappingModifier::evaluate(
     const double ddispdv = m_amplitude * (val_dv - val) * m_rcp_dv;
 
     // Compute the partial derivatives of the displaced surface p(u, v) + d(u, v) * n.
-    const Vector3d perturbed_dpdu = dpdu + ddispdu * n;
-    const Vector3d perturbed_dpdv = dpdv + ddispdv * n;
+    const Vector3d perturbed_dpdu = basis.get_tangent_u() + ddispdu * basis.get_normal();
+    const Vector3d perturbed_dpdv = basis.get_tangent_v() + ddispdv * basis.get_normal();
 
     // Compute the perturbed normal.
-    const Vector3d perturbed_n = normalize(cross(perturbed_dpdu, perturbed_dpdv));
+    Vector3d perturbed_n = normalize(cross(perturbed_dpdu, perturbed_dpdv));
 
-    // Make sure the original and perturbed normals lie in the same hemisphere.
-    return dot(n, perturbed_n) > 0.0 ? perturbed_n : -perturbed_n;
+    // Make sure the perturbed normal lies in the same hemisphere as the original one.
+    if (dot(perturbed_n, basis.get_normal()) < 0.0)
+        perturbed_n = -perturbed_n;
+
+    // Construct an orthonormal basis around the perturbed normal.
+    return Basis3d(
+        perturbed_n,
+        perturbed_dpdu);
 }
 
 }   // namespace renderer

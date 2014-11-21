@@ -35,7 +35,7 @@
 #include "renderer/kernel/intersection/intersectionsettings.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/kernel/tessellation/statictessellation.h"
-#include "renderer/modeling/material/inormalmodifier.h"
+#include "renderer/modeling/material/ibasismodifier.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/object/curveobject.h"
 #include "renderer/modeling/object/regionkit.h"
@@ -150,13 +150,13 @@ class ShadingPoint
     // always faces the incoming ray, i.e. dot(ray_dir, geometric_normal) is always positive or null.
     const foundation::Vector3d& get_geometric_normal() const;
 
+    // Return the original world space shading normal at the intersection point.
+    const foundation::Vector3d& get_original_shading_normal() const;
+
     // Return the world space (possibly modified) shading normal at the intersection point.
     // The shading normal is always in the same hemisphere as the geometric normal, but it is
     // not always facing the incoming ray, i.e. dot(ray_dir, shading_normal) may be negative.
     const foundation::Vector3d& get_shading_normal() const;
-
-    // Return the original world space shading normal at the intersection point.
-    const foundation::Vector3d& get_original_shading_normal() const;
 
     // Return a world space orthonormal basis around the (possibly modified) shading normal.
     const foundation::Basis3d& get_shading_basis() const;
@@ -203,10 +203,10 @@ class ShadingPoint
         bool is_animated() const;
 
         OSL::Matrix44 get_transform() const;
-        OSL::Matrix44 get_transform(float t) const;
+        OSL::Matrix44 get_transform(const float t) const;
 
         OSL::Matrix44 get_inverse_transform() const;
-        OSL::Matrix44 get_inverse_transform(float t) const;
+        OSL::Matrix44 get_inverse_transform(const float t) const;
 
         const TransformSequence*        m_assembly_instance_transform;
         const foundation::Transformd*   m_object_instance_transform;
@@ -267,15 +267,14 @@ class ShadingPoint
         HasRefinedPoints                = 1 << 4,
         HasPartialDerivatives           = 1 << 5,
         HasGeometricNormal              = 1 << 6,
-        HasShadingNormal                = 1 << 7,
-        HasOriginalShadingNormal        = 1 << 8,
-        HasShadingBasis                 = 1 << 9,
-        HasWorldSpaceTriangleVertices   = 1 << 10,
-        HasMaterial                     = 1 << 11,
-        HasTriangleVertexTangents       = 1 << 12,
-        HasPointVelocity                = 1 << 13
+        HasOriginalShadingNormal        = 1 << 7,
+        HasShadingBasis                 = 1 << 8,
+        HasWorldSpaceTriangleVertices   = 1 << 9,
+        HasMaterial                     = 1 << 10,
+        HasTriangleVertexTangents       = 1 << 11,
+        HasPointVelocity                = 1 << 12
 #ifdef APPLESEED_WITH_OSL
-        , HasOSLShaderGlobals           = 1 << 14
+        , HasOSLShaderGlobals           = 1 << 13
 #endif
     };
     mutable foundation::uint32          m_members;
@@ -297,10 +296,9 @@ class ShadingPoint
     mutable foundation::Vector3d        m_dpdu;                         // world space partial derivative of the intersection point wrt. U
     mutable foundation::Vector3d        m_dpdv;                         // world space partial derivative of the intersection point wrt. V
     mutable foundation::Vector3d        m_geometric_normal;             // world space geometric normal, unit-length
-    mutable foundation::Vector3d        m_shading_normal;               // world space (possibly modified) shading normal, unit-length
     mutable foundation::Vector3d        m_original_shading_normal;      // original world space shading normal, unit-length
-    mutable ObjectInstance::Side        m_side;                         // side of the surface that was hit
     mutable foundation::Basis3d         m_shading_basis;                // world space orthonormal basis around shading normal
+    mutable ObjectInstance::Side        m_side;                         // side of the surface that was hit
     mutable foundation::Vector3d        m_v0_w, m_v1_w, m_v2_w;         // world space triangle vertices
     mutable foundation::Vector3d        m_point_velocity;               // world space point velocity
     mutable const Material*             m_material;                     // material at intersection point
@@ -529,19 +527,6 @@ inline const foundation::Vector3d& ShadingPoint::get_geometric_normal() const
     return m_geometric_normal;
 }
 
-inline const foundation::Vector3d& ShadingPoint::get_shading_normal() const
-{
-    assert(hit());
-
-    if (!(m_members & HasShadingNormal))
-    {
-        compute_shading_normal();
-        m_members |= HasShadingNormal;
-    }
-
-    return m_shading_normal;
-}
-
 inline const foundation::Vector3d& ShadingPoint::get_original_shading_normal() const
 {
     assert(hit());
@@ -553,6 +538,11 @@ inline const foundation::Vector3d& ShadingPoint::get_original_shading_normal() c
     }
 
     return m_original_shading_normal;
+}
+
+inline const foundation::Vector3d& ShadingPoint::get_shading_normal() const
+{
+    return get_shading_basis().get_normal();
 }
 
 inline const foundation::Basis3d& ShadingPoint::get_shading_basis() const

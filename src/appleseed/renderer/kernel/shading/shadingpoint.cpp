@@ -413,36 +413,6 @@ void ShadingPoint::compute_geometric_normal() const
     }
 }
 
-void ShadingPoint::compute_shading_normal() const
-{
-    // Start with the original shading normal.
-    m_shading_normal = get_original_shading_normal();
-
-    if (m_primitive_type == PrimitiveTriangle)
-    {
-        // Apply the normal modifier if the material has one.
-        const Material* material = get_material();
-        if (material)
-        {
-            const INormalModifier* modifier = material->get_normal_modifier();
-            if (modifier)
-            {
-                m_shading_normal =
-                    modifier->evaluate(
-                        *m_texture_cache,
-                        m_shading_normal,
-                        get_uv(0),
-                        get_dpdu(0),
-                        get_dpdv(0));
-            }
-        }
-
-        // Place the shading normal in the same hemisphere as the geometric normal.
-        if (m_side == ObjectInstance::BackSide)
-            m_shading_normal = -m_shading_normal;
-    }
-}
-
 void ShadingPoint::compute_original_shading_normal() const
 {
     if (m_primitive_type == PrimitiveTriangle)
@@ -474,13 +444,15 @@ void ShadingPoint::compute_original_shading_normal() const
 
 void ShadingPoint::compute_shading_basis() const
 {
-    //
-    // Reference:
-    //
-    //   Physically Based Rendering, first edition, pp. 133
-    //
+    // Compute the unperturbed shading normal.
+    Vector3d sn = get_original_shading_normal();
 
-    // Retrieve or compute the first tangent vector.
+    // Place the unperturbed shading normal in the same hemisphere as the geometric normal.
+    if (get_side() == ObjectInstance::BackSide)
+        sn = -sn;
+
+    // Retrieve or compute the first tangent direction (non-normalized).
+    // Reference: Physically Based Rendering, first edition, pp. 133
     const Vector3d tangent =
         (m_members & HasTriangleVertexTangents) != 0
             ? m_assembly_instance_transform.vector_to_parent(
@@ -490,13 +462,28 @@ void ShadingPoint::compute_shading_basis() const
                       + Vector3d(m_t2) * m_bary[1]))
             : get_dpdu(0);
 
-    // Compute the final tangent vectors.
-    const Vector3d& sn = get_shading_normal();
+    // Construct an orthonormal basis.
     const Vector3d t = normalize(cross(tangent, sn));
     const Vector3d s = normalize(cross(sn, t));
-
-    // Construct an orthonormal basis.
     m_shading_basis.build(sn, s, t);
+
+    // Apply the basis modifier if the material has one.
+    if (m_primitive_type == PrimitiveTriangle)
+    {
+        const Material* material = get_material();
+        if (material)
+        {
+            const IBasisModifier* modifier = material->get_basis_modifier();
+            if (modifier)
+            {
+                m_shading_basis =
+                    modifier->modify(
+                        *m_texture_cache,
+                        get_uv(0),
+                        m_shading_basis);
+            }
+        }
+    }
 }
 
 void ShadingPoint::compute_world_space_triangle_vertices() const
@@ -600,7 +587,7 @@ OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::get_transform() const
     return Matrix4f(transpose(m));
 }
 
-OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::get_transform(float t) const
+OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::get_transform(const float t) const
 {
     const Transformd assembly_xform = m_assembly_instance_transform->evaluate(t);
     const Transformd::MatrixType m(
@@ -620,7 +607,7 @@ OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::get_inverse_transform() cons
     return Matrix4f(transpose(m));
 }
 
-OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::get_inverse_transform(float t) const
+OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::get_inverse_transform(const float t) const
 {
     const Transformd assembly_xform = m_assembly_instance_transform->evaluate(t);
     const Transformd::MatrixType m(

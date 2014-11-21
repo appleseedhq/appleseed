@@ -83,7 +83,7 @@ Material::Material(
   , m_bsdf(0)
   , m_edf(0)
   , m_alpha_map(0)
-  , m_normal_modifier(0)
+  , m_basis_modifier(0)
 #ifdef APPLESEED_WITH_OSL
   , m_shader_group(0)
 #endif
@@ -135,8 +135,8 @@ void Material::on_frame_end(
     m_edf = 0;
     m_alpha_map = 0;
 
-    delete m_normal_modifier;
-    m_normal_modifier = 0;
+    delete m_basis_modifier;
+    m_basis_modifier = 0;
 }
 
 const SurfaceShader* Material::get_uncached_surface_shader() const
@@ -188,9 +188,9 @@ const char* Material::get_non_empty(const ParamArray& params, const char* name) 
     return strlen(value) > 0 ? value : 0;
 }
 
-bool Material::create_normal_modifier(const MessageContext& context)
+bool Material::create_basis_modifier(const MessageContext& context)
 {
-    assert(m_normal_modifier == 0);
+    assert(m_basis_modifier == 0);
 
     // Retrieve the source bound to the displacement map input.
     const Source* displacement_source = m_inputs.source("displacement_map");
@@ -232,12 +232,12 @@ bool Material::create_normal_modifier(const MessageContext& context)
             make_vector("bump", "normal"),
             context);
 
-    // Create the normal modifier.
+    // Create the basis modifier.
     if (displacement_method == "bump")
     {
         const double offset = m_params.get_optional<double>("bump_offset", 2.0);
         const double amplitude = m_params.get_optional<double>("bump_amplitude", 1.0);
-        m_normal_modifier = new BumpMappingModifier(displacement_map, offset, amplitude);
+        m_basis_modifier = new BumpMappingModifier(displacement_map, offset, amplitude);
     }
     else
     {
@@ -245,7 +245,7 @@ bool Material::create_normal_modifier(const MessageContext& context)
             m_params.get_optional<string>("normal_map_up", "z", make_vector("y", "z"), context) == "y"
                 ? NormalMappingModifier::UpVectorY
                 : NormalMappingModifier::UpVectorZ;
-        m_normal_modifier = new NormalMappingModifier(displacement_map, up_vector);
+        m_basis_modifier = new NormalMappingModifier(displacement_map, up_vector);
     }
 
     return true;

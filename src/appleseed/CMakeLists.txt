@@ -1473,9 +1473,9 @@ set (renderer_modeling_material_sources
     renderer/modeling/material/bumpmappingmodifier.h
     renderer/modeling/material/genericmaterial.cpp
     renderer/modeling/material/genericmaterial.h
+    renderer/modeling/material/ibasismodifier.h
     renderer/modeling/material/imaterialfactory.cpp
     renderer/modeling/material/imaterialfactory.h
-    renderer/modeling/material/inormalmodifier.h
     renderer/modeling/material/material.cpp
     renderer/modeling/material/material.h
     renderer/modeling/material/materialfactoryregistrar.cpp

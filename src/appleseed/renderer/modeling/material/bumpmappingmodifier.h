@@ -31,9 +31,10 @@
 #define APPLESEED_RENDERER_MODELING_MATERIAL_BUMPMAPPINGMODIFIER_H
 
 // appleseed.renderer headers.
-#include "renderer/modeling/material/inormalmodifier.h"
+#include "renderer/modeling/material/ibasismodifier.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/basis.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 
@@ -45,7 +46,7 @@ namespace renderer
 {
 
 class BumpMappingModifier
-  : public INormalModifier
+  : public IBasisModifier
 {
   public:
     BumpMappingModifier(
@@ -53,12 +54,10 @@ class BumpMappingModifier
         const double                    offset,
         const double                    amplitude);
 
-    virtual foundation::Vector3d evaluate(
+    virtual foundation::Basis3d modify(
         TextureCache&                   texture_cache,
-        const foundation::Vector3d&     n,
         const foundation::Vector2d&     uv,
-        const foundation::Vector3d&     dpdu,
-        const foundation::Vector3d&     dpdv) const APPLESEED_OVERRIDE;
+        const foundation::Basis3d&      basis) const APPLESEED_OVERRIDE;
 
   private:
     const Source*   m_map;
