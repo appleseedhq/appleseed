@@ -512,7 +512,7 @@ TEST_SUITE(Foundation_Math_Matrix33)
 
         const Matrix3d tmp(imath_rot_z);
 
-        EXPECT_EQ(rot_z, tmp);
+        EXPECT_FEQ(rot_z, tmp);
     }
 
 #endif
@@ -738,7 +738,7 @@ TEST_SUITE(Foundation_Math_Matrix44)
 
         const Matrix4d tmp(imath_rot_x);
 
-        EXPECT_EQ(rot_x, tmp);
+        EXPECT_FEQ(rot_x, tmp);
     }
 
 #endif
