@@ -1363,7 +1363,7 @@ source_group ("renderer\\modeling\\environment" FILES
 )
 
 set (renderer_modeling_environmentedf_sources
-    renderer/modeling/environmentedf/ArHosekSkyModelData.h
+    renderer/modeling/environmentedf/ArHosekSkyModelData_CIEXYZ.h
     renderer/modeling/environmentedf/constantenvironmentedf.cpp
     renderer/modeling/environmentedf/constantenvironmentedf.h
     renderer/modeling/environmentedf/constanthemisphereenvironmentedf.cpp

@@ -72,7 +72,7 @@ namespace
     // Hosek & Wilkie model data.
     //
 
-    #include "renderer/modeling/environmentedf/ArHosekSkyModelData.h"
+    #include "renderer/modeling/environmentedf/ArHosekSkyModelData_CIEXYZ.h"
 
 
     //
