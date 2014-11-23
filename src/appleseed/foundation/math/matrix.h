@@ -1037,22 +1037,26 @@ inline Matrix<T, 3, 3>::Matrix(const Matrix<U, 3, 3>& rhs)
 template <typename T>
 inline Matrix<T, 3, 3>::Matrix(const Imath::Matrix33<T>& rhs)
 {
-    T *p = m_comp;
+    T* p = m_comp;
 
-    for (size_t i = 0; i < 3; ++i)
-        for (size_t j = 0; j < 3; ++j)
+    for (int i = 0; i < 3; ++i)
+    {
+        for (int j = 0; j < 3; ++j)
             *p++ = rhs[j][i];
+    }
 }
 
 template <typename T>
 inline Matrix<T, 3, 3>::operator Imath::Matrix33<T>() const
 {
     Imath::Matrix33<T> result;
-    T *p = &result[0][0];
+    T* p = &result[0][0];
 
     for (size_t i = 0; i < 3; ++i)
+    {
         for (size_t j = 0; j < 3; ++j)
             *p++ = (*this)(j, i);
+    }
 
     return result;
 }
@@ -1558,22 +1562,26 @@ inline Matrix<T, 4, 4>::Matrix(const Matrix<U, 4, 4>& rhs)
 template <typename T>
 inline Matrix<T, 4, 4>::Matrix(const Imath::Matrix44<T>& rhs)
 {
-    T *p = m_comp;
+    T* p = m_comp;
 
-    for (size_t i = 0; i < 4; ++i)
-        for (size_t j = 0; j < 4; ++j)
+    for (int i = 0; i < 4; ++i)
+    {
+        for (int j = 0; j < 4; ++j)
             *p++ = rhs[j][i];
+    }
 }
 
 template <typename T>
 inline Matrix<T, 4, 4>::operator Imath::Matrix44<T>() const
 {
     Imath::Matrix44<T> result;
-    T *p = &result[0][0];
+    T* p = &result[0][0];
 
     for (size_t i = 0; i < 4; ++i)
+    {
         for (size_t j = 0; j < 4; ++j)
             *p++ = (*this)(j, i);
+    }
 
     return result;
 }

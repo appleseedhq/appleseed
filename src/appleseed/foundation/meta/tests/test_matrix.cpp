@@ -734,7 +734,7 @@ TEST_SUITE(Foundation_Math_Matrix44)
         const Matrix4d rot_x = Matrix4d::rotation_x(angle);
 
         const Imath::M44d imath_rot_x =
-            Imath::M44d().setEulerAngles(Imath::V3d(angle, 0, 0));
+            Imath::M44d().setEulerAngles(Imath::V3d(angle, 0.0, 0.0));
 
         const Matrix4d tmp(imath_rot_x);
 
