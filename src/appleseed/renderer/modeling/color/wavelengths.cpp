@@ -113,7 +113,6 @@ void spectral_values_to_spectrum(
         &wavelengths[0]);
 
     // Resample the spectrum to the internal wavelength range.
-    Spectrum spectrum;
     spectrum_to_spectrum(
         input_spectrum_count,
         &wavelengths[0],
