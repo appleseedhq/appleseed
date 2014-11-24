@@ -193,33 +193,33 @@ namespace detail
         bpy::class_<UnalignedMatrix44<T> > X(class_name);
 
         X.def("identity", &UnalignedMatrix44<T>::identity).staticmethod("identity")
-         .def("translation", &UnalignedMatrix44<T>::translation).staticmethod("translation")
-         .def("scaling", &UnalignedMatrix44<T>::scaling).staticmethod("scaling")
-         .def("rotation_x", &UnalignedMatrix44<T>::rotation_x).staticmethod("rotation_x")
-         .def("rotation_y", &UnalignedMatrix44<T>::rotation_y).staticmethod("rotation_y")
-         .def("rotation_z", &UnalignedMatrix44<T>::rotation_z).staticmethod("rotation_z")
-         .def("lookat", &UnalignedMatrix44<T>::lookat).staticmethod("lookat")
-         .def("rotation", rot1).def("rotation", rot2).def("rotation", rot3).staticmethod("rotation")
+            .def("translation", &UnalignedMatrix44<T>::translation).staticmethod("translation")
+            .def("scaling", &UnalignedMatrix44<T>::scaling).staticmethod("scaling")
+            .def("rotation_x", &UnalignedMatrix44<T>::rotation_x).staticmethod("rotation_x")
+            .def("rotation_y", &UnalignedMatrix44<T>::rotation_y).staticmethod("rotation_y")
+            .def("rotation_z", &UnalignedMatrix44<T>::rotation_z).staticmethod("rotation_z")
+            .def("lookat", &UnalignedMatrix44<T>::lookat).staticmethod("lookat")
+            .def("rotation", rot1).def("rotation", rot2).def("rotation", rot3).staticmethod("rotation")
 
-         .def(bpy::init<T>())
-         .def("__init__", bpy::make_constructor(&construct_matrix_from_list<T>))
+            .def(bpy::init<T>())
+            .def("__init__", bpy::make_constructor(&construct_matrix_from_list<T>))
 
-         // operator[]
-         .def("__getitem__", &matrix_indexer<T>::get)
-         .def("__setitem__", &matrix_indexer<T>::set)
+            // operator[]
+            .def("__getitem__", &matrix_indexer<T>::get)
+            .def("__setitem__", &matrix_indexer<T>::set)
 
-         .def("transpose", &transpose_matrix<T>)
-         .def("inverse", &invert_matrix<T>)
+            .def("transpose", &transpose_matrix<T>)
+            .def("inverse", &invert_matrix<T>)
 
-         .def(bpy::self * bpy::self)
-         .def(bpy::self * Vector<T, 4>())
+            .def(bpy::self * bpy::self)
+            .def(bpy::self * Vector<T, 4>())
 
-         // Because of a bug in Boost.Python, this needs the extra self_ns qualification.
-         .def(bpy::self_ns::str(bpy::self))
-         .def(bpy::self_ns::repr(bpy::self))
+            // Because of a bug in Boost.Python, this needs the extra self_ns qualification.
+            .def(bpy::self_ns::str(bpy::self))
+            .def(bpy::self_ns::repr(bpy::self))
 
-         .def("extract_matrix3", &UnalignedMatrix44<T>::extract_matrix3)
-         .def("extract_translation", &UnalignedMatrix44<T>::extract_translation);
+            .def("extract_matrix3", &UnalignedMatrix44<T>::extract_matrix3)
+            .def("extract_translation", &UnalignedMatrix44<T>::extract_translation);
 
         bind_typed_matrix4_extra(X);
     }
