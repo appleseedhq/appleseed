@@ -29,6 +29,9 @@
 
 // Has to be first, to avoid redefinition warnings.
 #include "boost/python/detail/wrap_python.hpp"
+#ifdef APPLESEED_ENABLE_IMATH_INTEROP
+#include "boost/python/implicit.hpp"
+#endif
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
@@ -193,4 +196,27 @@ void bind_vector()
     detail::do_bind_vector<double, 3>("Vector3d");
 
     detail::do_bind_vector<int, 4>("Vector4i");
+
+#ifdef APPLESEED_ENABLE_IMATH_INTEROP
+    bpy::implicitly_convertible<Vector2i, Imath::V2i>();
+    bpy::implicitly_convertible<Imath::V2i, Vector2i>();
+
+    bpy::implicitly_convertible<Vector2f, Imath::V2f>();
+    bpy::implicitly_convertible<Imath::V2f, Vector2f>();
+
+    bpy::implicitly_convertible<Vector2d, Imath::V2d>();
+    bpy::implicitly_convertible<Imath::V2d, Vector2d>();
+
+    bpy::implicitly_convertible<Vector3i, Imath::V3i>();
+    bpy::implicitly_convertible<Imath::V3i, Vector3i>();
+
+    bpy::implicitly_convertible<Vector3f, Imath::V3f>();
+    bpy::implicitly_convertible<Imath::V3f, Vector3f>();
+
+    bpy::implicitly_convertible<Vector3d, Imath::V3d>();
+    bpy::implicitly_convertible<Imath::V3d, Vector3d>();
+
+    bpy::implicitly_convertible<Vector4i, Imath::V4i>();
+    bpy::implicitly_convertible<Imath::V4i, Vector4i>();
+#endif
 }
