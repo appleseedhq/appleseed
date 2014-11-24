@@ -121,16 +121,18 @@ class UnalignedMatrix44
 
     UnalignedMatrix44(const Imath::Matrix44<T>& rhs)
     {
-        Matrix<T, 4, 4> tmp(rhs);
+        T *p = m_data;
 
-        for (size_t i = 0; i < 16; ++i)
-            m_data[i] = tmp[i];
+        for (size_t i = 0; i < 3; ++i)
+        {
+            for (size_t j = 0; j < 3; ++j)
+                *p++ = rhs[j][i];
+        }
     }
 
     operator Imath::Matrix44<T>() const
     {
-        Matrix<T, 4, 4> tmp(as_foundation_matrix());
-        return tmp;
+        return as_foundation_matrix();
     }
 
 #endif
