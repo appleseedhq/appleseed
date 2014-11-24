@@ -35,6 +35,7 @@ find_package (PythonLibs REQUIRED)
 
 # Splitting version string into list.
 string (REGEX MATCHALL "[0123456789]+" PYTHON_VERSION_LIST "${PYTHONLIBS_VERSION_STRING}")
+message (STATUS "PYTHON_VERSION_LIST = ${PYTHON_VERSION_LIST}")
 
 # Accessing major and minor version numbers with the version list we got.
 list (GET PYTHON_VERSION_LIST 0 PYTHON_MAJOR_VERSION)
