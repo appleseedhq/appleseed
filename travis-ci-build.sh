@@ -6,7 +6,7 @@ cmake \
     -D WITH_CLI=ON \
     -D WITH_STUDIO=OFF \
     -D WITH_TOOLS=OFF \
-    -D WITH_PYTHON=OFF \
+    -D WITH_PYTHON=ON \
     -D WITH_ALEMBIC=OFF \
     -D WITH_OSL=OFF \
     -D USE_STATIC_BOOST=OFF \
