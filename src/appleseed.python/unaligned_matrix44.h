@@ -35,8 +35,13 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/matrix.h"
+#include "foundation/math/quaternion.h"
+#include "foundation/math/vector.h"
 #include "foundation/platform/python.h"
 #include "foundation/utility/iostreamop.h"
+
+// Standard headers.
+#include <cstddef>
 
 namespace foundation
 {
@@ -151,22 +156,22 @@ class UnalignedMatrix44
         return Matrix<T, 4, 4>(m_data);
     }
 
-    T operator[](const int index) const
+    T operator[](const size_t index) const
     {
         return m_data[index];
     }
 
-    T& operator[](const int index)
+    T& operator[](const size_t index)
     {
         return m_data[index];
     }
 
-    T operator()(const int row, const int col) const
+    T operator()(const size_t row, const size_t col) const
     {
         return m_data[row * 4 + col];
     }
 
-    T& operator()(const int row, const int col)
+    T& operator()(const size_t row, const size_t col)
     {
         return m_data[row * 4 + col];
     }
