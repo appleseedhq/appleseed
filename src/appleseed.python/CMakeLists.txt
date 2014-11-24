@@ -33,13 +33,19 @@
 
 find_package (PythonLibs REQUIRED)
 
-# Splitting version string into list.
-string (REGEX MATCHALL "[0123456789]+" PYTHON_VERSION_LIST "${PYTHONLIBS_VERSION_STRING}")
-message (STATUS "PY_VERSION_STRING = ${PYTHONLIBS_VERSION_STRING} PY_VERSION_LIST = ${PYTHON_VERSION_LIST}")
+# Try to find Python version.
+if (NOT PYTHONLIBS_VERSION_STRING STREQUAL "")
+    # Splitting version string into list.
+    string (REGEX MATCHALL "[0123456789]+" PYTHON_VERSION_LIST "${PYTHONLIBS_VERSION_STRING}")
 
-# Accessing major and minor version numbers with the version list we got.
-list (GET PYTHON_VERSION_LIST 0 PYTHON_MAJOR_VERSION)
-list (GET PYTHON_VERSION_LIST 1 PYTHON_MINOR_VERSION)
+    # Accessing major and minor version numbers with the version list we got.
+    list (GET PYTHON_VERSION_LIST 0 PYTHON_MAJOR_VERSION)
+    list (GET PYTHON_VERSION_LIST 1 PYTHON_MINOR_VERSION)
+else ()
+    # Default to latest Python 2 release if version string cannot be read.
+    set (PYTHON_MAJOR_VERSION "2")
+    set (PYTHON_MINOR_VERSION "7")
+endif ()
 
 
 #--------------------------------------------------------------------------------------------------
