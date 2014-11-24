@@ -117,7 +117,7 @@ namespace detail
         const ProjectFileWriter*            writer,
         const Project*                      project,
         const char*                         filepath,
-        const ProjectFileWriter::Options    opts)
+        int                                 opts)
     {
         return ProjectFileWriter::write(*project, filepath, opts);
     }
