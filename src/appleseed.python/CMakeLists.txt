@@ -33,16 +33,16 @@
 
 find_package (PythonLibs REQUIRED)
 
-# Try to find Python version.
-if (NOT PYTHONLIBS_VERSION_STRING STREQUAL "")
-    # Splitting version string into list.
-    string (REGEX MATCHALL "[0123456789]+" PYTHON_VERSION_LIST "${PYTHONLIBS_VERSION_STRING}")
+# Splitting version string into list.
+string (REGEX MATCHALL "[0123456789]+" PYTHON_VERSION_LIST "${PYTHONLIBS_VERSION_STRING}")
 
+if (NOT ${PYTHON_VERSION_LIST} STREQUAL "")
     # Accessing major and minor version numbers with the version list we got.
     list (GET PYTHON_VERSION_LIST 0 PYTHON_MAJOR_VERSION)
     list (GET PYTHON_VERSION_LIST 1 PYTHON_MINOR_VERSION)
 else ()
     # Default to latest Python 2 release if version string cannot be read.
+    message (STATUS "Cannot find Python version. Using 2.7 by default")
     set (PYTHON_MAJOR_VERSION "2")
     set (PYTHON_MINOR_VERSION "7")
 endif ()
