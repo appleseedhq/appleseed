@@ -11,4 +11,5 @@ before_install:
   - sudo apt-get install libxerces-c-dev
   - sudo apt-get install libhdf5-serial-dev
   - sudo apt-get install libxext-dev
+  - sudo apt-get install python-dev
 script: ./travis-ci-build.sh
