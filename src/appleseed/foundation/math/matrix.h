@@ -1039,9 +1039,9 @@ inline Matrix<T, 3, 3>::Matrix(const Imath::Matrix33<T>& rhs)
 {
     T* p = m_comp;
 
-    for (size_t i = 0; i < 3; ++i)
+    for (int i = 0; i < 3; ++i)
     {
-        for (size_t j = 0; j < 3; ++j)
+        for (int j = 0; j < 3; ++j)
             *p++ = rhs[j][i];
     }
 }
@@ -1564,9 +1564,9 @@ inline Matrix<T, 4, 4>::Matrix(const Imath::Matrix44<T>& rhs)
 {
     T* p = m_comp;
 
-    for (size_t i = 0; i < 4; ++i)
+    for (int i = 0; i < 4; ++i)
     {
-        for (size_t j = 0; j < 4; ++j)
+        for (int j = 0; j < 4; ++j)
             *p++ = rhs[j][i];
     }
 }
