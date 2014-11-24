@@ -128,9 +128,9 @@ class UnalignedMatrix44
     {
         T *p = m_data;
 
-        for (size_t i = 0; i < 3; ++i)
+        for (int i = 0; i < 3; ++i)
         {
-            for (size_t j = 0; j < 3; ++j)
+            for (int j = 0; j < 3; ++j)
                 *p++ = rhs[j][i];
         }
     }
