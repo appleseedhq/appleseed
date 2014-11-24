@@ -117,4 +117,15 @@ TEST_SUITE(Foundation_Math_Quaternion)
         EXPECT_EQ(Vector3d(1.0, 0.0, 0.0), axis);
         EXPECT_EQ(0.0, angle);
     }
+
+    TEST_CASE(Rotate)
+    {
+        const Vector3d from = normalize(Vector3d(1.0, 1.0, 0.0));
+        const Vector3d to = normalize(Vector3d(1.0, 0.0, 1.0));
+
+        const Quaterniond q = Quaterniond::rotation(from, to);
+        const Vector3d result = rotate(q, from);
+
+        EXPECT_FEQ(to, result);
+    }
 }

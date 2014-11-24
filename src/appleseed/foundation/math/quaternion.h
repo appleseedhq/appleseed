@@ -155,6 +155,9 @@ template <typename T> bool is_normalized(const Quaternion<T>& q, const T eps);
 // Spherical linear interpolation between two unit-length quaternions.
 template <typename T> Quaternion<T> slerp(const Quaternion<T>& p, const Quaternion<T>& q, const T t);
 
+// Rotation of a vector by a quaternion.
+template <typename T> Vector<T, 3> rotate(const Quaternion<T>& q, const Vector<T, 3>& v);
+
 
 //
 // Full specializations for quaternions of type float and double.
@@ -236,7 +239,10 @@ inline Quaternion<T> Quaternion<T>::rotation(
     const VectorType&   from,
     const VectorType&   to)
 {
-    return Quaternion(dot(from, to), cross(from, to));
+    assert(is_normalized(from));
+    assert(is_normalized(to));
+
+    return normalize(Quaternion(dot(from, to) + T(1.0), cross(from, to)));
 }
 
 template <typename T>
@@ -479,6 +485,12 @@ FORCE_INLINE Quaternion<T> slerp(const Quaternion<T>& p, const Quaternion<T>& q,
         sin_theta < Eps
             ? lerp(p, q, t)
             : (std::sin((T(1.0) - t) * theta) * p + std::sin(t * theta) * q) / sin_theta;
+}
+
+template <typename T>
+inline Vector<T, 3> rotate(const Quaternion<T>& q, const Vector<T, 3>& v)
+{
+    return (q * Quaternion<T>(T(0.0), v) * conjugate(q)).v;
 }
 
 }       // namespace foundation
