@@ -86,6 +86,9 @@ void bind_assembly()
         .def("colors", &BaseGroup::colors, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("textures", &BaseGroup::textures, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("texture_instances", &BaseGroup::texture_instances, bpy::return_value_policy<bpy::reference_existing_object>())
+#ifdef APPLESEED_WITH_OSL
+        .def("shader_groups", &BaseGroup::shader_groups, bpy::return_value_policy<bpy::reference_existing_object>())
+#endif
         .def("assemblies", &BaseGroup::assemblies, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("assembly_instances", &BaseGroup::assembly_instances, bpy::return_value_policy<bpy::reference_existing_object>());
 

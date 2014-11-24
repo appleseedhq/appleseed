@@ -35,6 +35,7 @@
 #include "dict2dict.h"
 
 // appleseed.renderer headers.
+#include "renderer/api/display.h"
 #include "renderer/api/frame.h"
 #include "renderer/api/project.h"
 #include "renderer/api/scene.h"
@@ -202,6 +203,8 @@ void bind_project()
 
         .def("set_frame", &Project::set_frame)
         .def("get_frame", &Project::get_frame, bpy::return_value_policy<bpy::reference_existing_object>())
+
+        .def("set_display", &Project::set_display)
 
         .def("configurations", detail::project_get_configs, bpy::return_value_policy<bpy::reference_existing_object>())
 

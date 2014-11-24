@@ -29,6 +29,9 @@
 
 // Has to be first, to avoid redefinition warnings.
 #include "boost/python/detail/wrap_python.hpp"
+#ifdef APPLESEED_ENABLE_IMATH_INTEROP
+#include "boost/python/implicit.hpp"
+#endif
 
 // appleseed.python headers.
 #include "unaligned_matrix44.h"
@@ -226,4 +229,13 @@ void bind_matrix()
 {
     detail::bind_typed_matrix4<float>("Matrix4f");
     detail::bind_typed_matrix4<double>("Matrix4d");
+
+#ifdef APPLESEED_ENABLE_IMATH_INTEROP
+    bpy::implicitly_convertible<UnalignedMatrix44<float>, Imath::M44f>();
+    bpy::implicitly_convertible<Imath::M44f, UnalignedMatrix44<float> >();
+
+    bpy::implicitly_convertible<UnalignedMatrix44<double>, Imath::M44d>();
+    bpy::implicitly_convertible<Imath::M44d, UnalignedMatrix44<double> >();
+#endif
+
 }

@@ -29,6 +29,9 @@
 
 // Has to be first, to avoid redefinition warnings.
 #include "boost/python/detail/wrap_python.hpp"
+#ifdef APPLESEED_ENABLE_IMATH_INTEROP
+#include "boost/python/implicit.hpp"
+#endif
 
 // appleseed.foundation headers.
 #include "foundation/math/quaternion.h"
@@ -156,4 +159,12 @@ void bind_quaternion()
 {
     detail::do_bind_quaternion<float>("Quaternionf");
     detail::do_bind_quaternion<double>("Quaterniond");
+
+#ifdef APPLESEED_ENABLE_IMATH_INTEROP
+    bpy::implicitly_convertible<Quaternionf, Imath::Quatf>();
+    bpy::implicitly_convertible<Imath::Quatf, Quaternionf>();
+
+    bpy::implicitly_convertible<Quaterniond, Imath::Quatd>();
+    bpy::implicitly_convertible<Imath::Quatd, Quaterniond>();
+#endif
 }

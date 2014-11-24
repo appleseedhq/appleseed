@@ -39,6 +39,7 @@ void bind_bbox();
 void bind_bsdf();
 void bind_camera();
 void bind_color();
+void bind_display();
 void bind_edf();
 void bind_entity();
 void bind_environment();
@@ -55,6 +56,9 @@ void bind_project();
 void bind_quaternion();
 void bind_renderer_controller();
 void bind_scene();
+#ifdef APPLESEED_WITH_OSL
+void bind_shader_group();
+#endif
 void bind_surface_shader();
 void bind_texture();
 void bind_tile_callback();
@@ -79,6 +83,9 @@ BOOST_PYTHON_MODULE(_appleseedpython)
     bind_texture();
     bind_bsdf();
     bind_edf();
+#ifdef APPLESEED_WITH_OSL
+    bind_shader_group();
+#endif
     bind_surface_shader();
     bind_material();
     bind_light();
@@ -92,6 +99,7 @@ BOOST_PYTHON_MODULE(_appleseedpython)
 
     bind_image();
     bind_frame();
+    bind_display();
     bind_project();
 
     bind_renderer_controller();

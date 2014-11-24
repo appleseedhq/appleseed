@@ -86,6 +86,7 @@ set (sources
     bind_bsdf.cpp
     bind_camera.cpp
     bind_color.cpp
+    bind_display.cpp
     bind_edf.cpp
     bind_entity.cpp
     bind_environment.cpp
@@ -118,6 +119,11 @@ set (sources
     unaligned_matrix44.h
     unaligned_transformd44.h
 )
+if (WITH_OSL)
+    list (APPEND sources
+        bind_shadergroup.cpp
+    )
+endif ()
 list (APPEND appleseed.python_sources
     ${sources}
 )

@@ -117,6 +117,24 @@ class UnalignedMatrix44
             m_data[i] = static_cast<T>(m[i]);
     }
 
+#ifdef APPLESEED_ENABLE_IMATH_INTEROP
+
+    UnalignedMatrix44(const Imath::Matrix44<T>& rhs)
+    {
+        Matrix<T, 4, 4> tmp(rhs);
+
+        for (int i = 0; i < 16; ++i)
+            m_data[i] = tmp[i];
+    }
+
+    operator Imath::Matrix44<T>() const
+    {
+        Matrix<T, 4, 4> tmp(as_foundation_matrix());
+        return tmp;
+    }
+
+#endif
+
     template <class U>
     UnalignedMatrix44<T>& operator=(const UnalignedMatrix44<U>& m)
     {
