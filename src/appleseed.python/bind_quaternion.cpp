@@ -123,7 +123,7 @@ namespace detail
             .def_readwrite("s", &Quaternion<T>::s)
             .def_readwrite("v", &Quaternion<T>::v)
 
-            // operators
+            // Operators.
             .def(bpy::self + bpy::self)
             .def(bpy::self - bpy::self)
             .def(-bpy::self)
