@@ -69,7 +69,7 @@ namespace renderer
 class NonPhysicalLightInfo
 {
   public:
-    TransformSequence           m_transform_sequence;
+    TransformSequence           m_transform_sequence;           // assembly instance (parent of the light) space to world space
     const Light*                m_light;
 };
 
@@ -150,7 +150,7 @@ class LightSample
 
     // Data for a non-physical light sample.
     const Light*                m_light;
-    foundation::Transformd      m_light_transform;
+    foundation::Transformd      m_light_transform;              // light space to world space transform
 
     // Data common to all sample types.
     double                      m_probability;                  // probability density of this sample
