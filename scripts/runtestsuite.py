@@ -178,7 +178,16 @@ class ReportWriter:
                                     <td>Number of Differing Components</td>
                                     <td>{1} ({2:.2f} %)</td>
                                 </tr>
-""".format(max_diff, num_diff, diff_percents))
+                                <tr>
+                                    <td>Update Reference Image</td>
+                                    <td class="command">{3} "{4}" "{5}"</td>
+                                </tr>
+""".format(max_diff,
+           num_diff,
+           diff_percents,
+           "copy" if os.name == 'nt' else "cp",
+           output_filepath,
+           reference_filepath))
 
         self.file.write("""                            </table>
                         </td>
@@ -238,6 +247,13 @@ class ReportWriter:
             {{
                 max-width: 500px;
                 border: 1px solid #ddd;
+            }}
+
+            .result table.details .command
+            {{
+                font-family: "Courier New", Courier, monospace;
+                font-size: 15px;
+                background-color: #eee;
             }}
         </style>
     </head>
