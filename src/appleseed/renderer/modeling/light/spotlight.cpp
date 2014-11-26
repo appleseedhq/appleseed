@@ -125,11 +125,11 @@ namespace
             Spectrum&           value,
             double&             probability) const APPLESEED_OVERRIDE
         {
-            position = light_transform.point_to_parent(Vector3d(0.0));
+            position = light_transform.get_parent_origin();
             outgoing = light_transform.vector_to_parent(rotate_minus_pi_around_x(sample_cone_uniform(s, m_cos_outer_half_angle)));
             probability = sample_cone_uniform_pdf(m_cos_outer_half_angle);
 
-            const Vector3d axis = normalize(light_transform.vector_to_parent(Vector3d(0.0, 0.0, -1.0)));
+            const Vector3d axis = -normalize(light_transform.get_parent_z());
 
             compute_radiance(input_evaluator, light_transform, axis, outgoing, value);
         }
@@ -142,10 +142,10 @@ namespace
             Vector3d&           outgoing,
             Spectrum&           value) const APPLESEED_OVERRIDE
         {
-            position = light_transform.point_to_parent(Vector3d(0.0));
+            position = light_transform.get_parent_origin();
             outgoing = normalize(target - position);
 
-            const Vector3d axis = normalize(light_transform.vector_to_parent(Vector3d(0.0, 0.0, -1.0)));
+            const Vector3d axis = -normalize(light_transform.get_parent_z());
 
             if (dot(outgoing, axis) > m_cos_outer_half_angle)
                 compute_radiance(input_evaluator, light_transform, axis, outgoing, value);

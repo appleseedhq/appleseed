@@ -120,13 +120,14 @@ namespace
             Spectrum&           value,
             double&             probability) const APPLESEED_OVERRIDE
         {
-            outgoing = normalize(light_transform.vector_to_parent(Vector3d(0.0, 0.0, -1.0)));
+            outgoing = -normalize(light_transform.get_parent_z());
 
             const Basis3d basis(outgoing);
-            const Vector2d point_on_disk = sample_disk_uniform(s);
+            const Vector2d p = m_scene_radius * sample_disk_uniform(s);
             position =
                 basis.transform_to_parent(
-                    m_scene_radius * Vector3d(point_on_disk[0], -1.0, point_on_disk[1]));
+                    Vector3d(p[0], -m_safe_scene_diameter, p[1]));
+
             probability = m_probability;
 
             value = m_values.m_irradiance;
@@ -140,7 +141,7 @@ namespace
             Vector3d&           outgoing,
             Spectrum&           value) const APPLESEED_OVERRIDE
         {
-            outgoing = normalize(light_transform.vector_to_parent(Vector3d(0.0, 0.0, -1.0)));
+            outgoing = -normalize(light_transform.get_parent_z());
             position = target - m_safe_scene_diameter * outgoing;
             value = m_values.m_irradiance;
         }

@@ -443,7 +443,7 @@ namespace
 
             // Create a ray in world space.
             ShadingRay ray;
-            ray.m_org = transform.point_to_parent(Vector3d(0.0));
+            ray.m_org = transform.get_parent_origin();
             ray.m_dir = transform.point_to_parent(film_point) - ray.m_org;
             ray.m_tmin = 0.0;
             ray.m_tmax = numeric_limits<double>::max();

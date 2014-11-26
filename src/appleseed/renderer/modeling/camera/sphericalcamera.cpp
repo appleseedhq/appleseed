@@ -97,7 +97,7 @@ namespace
 
             // Precompute the rays origin in world space if the camera is static.
             if (m_transform_sequence.size() <= 1)
-                m_ray_org = m_transform_sequence.evaluate(0.0).point_to_parent(Vector3d(0.0));
+                m_ray_org = m_transform_sequence.evaluate(0.0).get_parent_origin();
 
             print_settings();
 

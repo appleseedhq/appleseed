@@ -319,8 +319,8 @@ TEST_SUITE(Foundation_Math_TransformInterpolator)
             Transformd transform;
             interpolator.evaluate(t, transform);
 
-            const Vector3d origin = transform.point_to_parent(Vector3d(0.0, 0.0, 0.0));
-            const Vector3d axis = transform.vector_to_parent(Vector3d(0.0, 1.0, 0.0));
+            const Vector3d origin = transform.get_parent_origin();
+            const Vector3d axis = transform.get_parent_y();
 
             file.draw_arrow(origin, origin + axis);
         }

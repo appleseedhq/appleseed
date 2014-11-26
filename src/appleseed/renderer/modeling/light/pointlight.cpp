@@ -112,7 +112,7 @@ namespace
             Spectrum&           value,
             double&             probability) const APPLESEED_OVERRIDE
         {
-            position = light_transform.point_to_parent(Vector3d(0.0));
+            position = light_transform.get_parent_origin();
             outgoing = sample_sphere_uniform(s);
             value = m_values.m_intensity;
             probability = 1.0 / (4.0 * Pi);
@@ -126,7 +126,7 @@ namespace
             Vector3d&           outgoing,
             Spectrum&           value) const APPLESEED_OVERRIDE
         {
-            position = light_transform.point_to_parent(Vector3d(0.0));
+            position = light_transform.get_parent_origin();
             outgoing = normalize(target - position);
             value = m_values.m_intensity;
         }

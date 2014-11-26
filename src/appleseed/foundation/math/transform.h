@@ -58,8 +58,9 @@ template <typename T>
 class Transform
 {
   public:
-    // Matrix and transform types.
+    // Matrix, vector and transform types.
     typedef Matrix<T, 4, 4> MatrixType;
+    typedef Vector<T, 3> VectorType;
     typedef Transform<T> TransformType;
 
     // Constructors.
@@ -109,6 +110,14 @@ class Transform
     // If the bounding box is invalid, it is returned unmodified.
     template <typename U> AABB<U, 3> to_local(const AABB<U, 3>& b) const;
     template <typename U> AABB<U, 3> to_parent(const AABB<U, 3>& b) const;
+
+    // Retrieve the origin in parent space.
+    VectorType get_parent_origin() const;
+
+    // Retrieve the primary axes in parent space.
+    VectorType get_parent_x() const;
+    VectorType get_parent_y() const;
+    VectorType get_parent_z() const;
 
   private:
     template <typename>
@@ -500,6 +509,54 @@ inline AABB<U, 3> Transform<T>::to_parent(const AABB<U, 3>& b) const
     res.insert(point_to_parent(Vector<U, 3>(b[1][0], b[0][1], b[0][2])));
 
     return res;
+}
+
+template <typename T>
+inline typename Transform<T>::VectorType Transform<T>::get_parent_origin() const
+{
+    VectorType res(
+        m_local_to_parent[ 3],
+        m_local_to_parent[ 7],
+        m_local_to_parent[11]);
+
+    const T w = m_local_to_parent[15];
+
+    assert(w != T(0.0));
+
+    if (w != T(1.0))
+        res /= w;
+
+    return res;
+}
+
+template <typename T>
+inline typename Transform<T>::VectorType Transform<T>::get_parent_x() const
+{
+    return
+        VectorType(
+            m_local_to_parent[ 0],
+            m_local_to_parent[ 4],
+            m_local_to_parent[ 8]);
+}
+
+template <typename T>
+inline typename Transform<T>::VectorType Transform<T>::get_parent_y() const
+{
+    return
+        VectorType(
+            m_local_to_parent[ 1],
+            m_local_to_parent[ 5],
+            m_local_to_parent[ 9]);
+}
+
+template <typename T>
+inline typename Transform<T>::VectorType Transform<T>::get_parent_z() const
+{
+    return
+        VectorType(
+            m_local_to_parent[ 2],
+            m_local_to_parent[ 6],
+            m_local_to_parent[10]);
 }
 
 template <typename T>
