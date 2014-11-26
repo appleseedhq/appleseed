@@ -48,7 +48,8 @@ namespace renderer
 // Range of wavelengths used throughout the light simulation.
 //
 
-Spectrum g_light_wavelengths;
+Spectrum g_light_wavelengths_nm;
+Spectrum g_light_wavelengths_um;
 
 namespace
 {
@@ -56,11 +57,14 @@ namespace
     {
         InitializeLightWavelengths()
         {
+            g_light_wavelengths_nm.resize(Spectrum::Samples);
             generate_wavelengths(
                 LowWavelength,
                 HighWavelength,
                 Spectrum::Samples,
-                &g_light_wavelengths[0]);
+                &g_light_wavelengths_nm[0]);
+
+            g_light_wavelengths_um = g_light_wavelengths_nm / 1000.0f;
         }
     };
 
@@ -118,7 +122,7 @@ void spectral_values_to_spectrum(
         &wavelengths[0],
         input_spectrum,
         Spectrum::Samples,
-        &g_light_wavelengths[0],
+        &g_light_wavelengths_nm[0],
         output_spectrum);
 }
 

@@ -66,7 +66,7 @@ namespace renderer
 namespace
 {
     //
-    // Physically-based sun light.
+    // Physically-based Sun light.
     //
     // References:
     //
@@ -79,13 +79,17 @@ namespace
     // The smallest valid turbidity value.
     const double BaseTurbidity = 2.0;
 
+    // Solid angle sustained by the Sun, as seen from Earth (in steradians).
+    // Reference: http://en.wikipedia.org/wiki/Solid_angle#Sun_and_Moon
+    const float SunSolidAngle = 6.87e-5f;
+
     class SunLight
       : public Light
     {
       public:
         SunLight(
-            const char*             name,
-            const ParamArray&       params)
+            const char*         name,
+            const ParamArray&   params)
           : Light(name, params)
         {
             m_inputs.declare("environment_edf", InputFormatEntity, "");
@@ -104,9 +108,9 @@ namespace
         }
 
         virtual bool on_frame_begin(
-            const Project&          project,
-            const Assembly&         assembly,
-            AbortSwitch*            abort_switch) APPLESEED_OVERRIDE
+            const Project&      project,
+            const Assembly&     assembly,
+            AbortSwitch*        abort_switch) APPLESEED_OVERRIDE
         {
             if (!Light::on_frame_begin(project, assembly, abort_switch))
                 return false;
@@ -114,62 +118,71 @@ namespace
             // Evaluate uniform inputs.
             m_inputs.evaluate_uniforms(&m_values);
 
-            // Compute outgoing sun direction.
-            m_outgoing = normalize(get_transform().vector_to_parent(Vector3d(0.0, 0.0, -1.0)));
-
-            // If the sun light is bound to an environment EDF, let it override the sun direction and turbidity.
+            // If the Sun light is bound to an environment EDF, let it override the Sun's direction and turbidity.
             const EnvironmentEDF* env_edf = dynamic_cast<EnvironmentEDF*>(m_inputs.get_entity("environment_edf"));
             if (env_edf)
-                apply_env_edf_overrides(env_edf, m_outgoing, m_values.m_turbidity);
+                apply_env_edf_overrides(env_edf);
 
             // Apply turbidity bias.
             m_values.m_turbidity += BaseTurbidity;
 
-            m_basis.build(m_outgoing);
+            m_scene_radius = project.get_scene()->compute_radius();
+            m_safe_scene_diameter = 1.01 * (2.0 * m_scene_radius);
+            m_surface_area = Pi * m_scene_radius * m_scene_radius;
 
-            compute_sun_radiance(
-                m_outgoing,
-                m_values.m_turbidity,
-                m_values.m_radiance_multiplier,
-                m_radiance);
-
-            m_safe_scene_radius = project.get_scene()->compute_radius();
+            m_probability = 1.0 / m_surface_area;
 
             return true;
         }
 
         virtual void sample(
-            InputEvaluator&         input_evaluator,
-            const Vector2d&         s,
-            Vector3d&               position,
-            Vector3d&               outgoing,
-            Spectrum&               value,
-            double&                 probability) const APPLESEED_OVERRIDE
+            InputEvaluator&     input_evaluator,
+            const Transformd&   light_transform,
+            const Vector2d&     s,
+            Vector3d&           position,
+            Vector3d&           outgoing,
+            Spectrum&           value,
+            double&             probability) const APPLESEED_OVERRIDE
         {
+            outgoing = normalize(light_transform.vector_to_parent(Vector3d(0.0, 0.0, -1.0)));
+
+            const Basis3d basis(outgoing);
             const Vector2d point_on_disk = sample_disk_uniform(s);
             position =
-                m_basis.transform_to_parent(
-                    m_safe_scene_radius * Vector3d(point_on_disk[0], -1.0, point_on_disk[1]));
-            outgoing = m_outgoing;
-            value = m_radiance;
-            probability = RcpPi;
+                basis.transform_to_parent(
+                    m_scene_radius * Vector3d(point_on_disk[0], -1.0, point_on_disk[1]));
+            probability = m_probability;
+
+            compute_sun_radiance(
+                outgoing,
+                m_values.m_turbidity,
+                m_values.m_radiance_multiplier,
+                value);
+            value *= SunSolidAngle;
         }
 
         virtual void evaluate(
-            InputEvaluator&         input_evaluator,
-            const Vector3d&         target,
-            Vector3d&               position,
-            Vector3d&               outgoing,
-            Spectrum&               value) const APPLESEED_OVERRIDE
+            InputEvaluator&     input_evaluator,
+            const Transformd&   light_transform,
+            const Vector3d&     target,
+            Vector3d&           position,
+            Vector3d&           outgoing,
+            Spectrum&           value) const APPLESEED_OVERRIDE
         {
-            position = target - m_safe_scene_radius * m_outgoing;
-            outgoing = m_outgoing;
-            value = m_radiance;
+            outgoing = normalize(light_transform.vector_to_parent(Vector3d(0.0, 0.0, -1.0)));
+            position = target - m_safe_scene_diameter * outgoing;
+
+            compute_sun_radiance(
+                outgoing,
+                m_values.m_turbidity,
+                m_values.m_radiance_multiplier,
+                value);
+            value *= SunSolidAngle;
         }
 
         virtual double compute_distance_attenuation(
-            const Vector3d&         target,
-            const Vector3d&         position) const APPLESEED_OVERRIDE
+            const Vector3d&     target,
+            const Vector3d&     position) const APPLESEED_OVERRIDE
         {
             return 1.0;
         }
@@ -181,18 +194,16 @@ namespace
             double      m_radiance_multiplier;      // emitted radiance multiplier
         };
 
-        InputValues     m_values;
-        Vector3d        m_outgoing;                 // world space
-        Basis3d         m_basis;                    // world space
-        Spectrum        m_radiance;
-        double          m_safe_scene_radius;        // world space
+        double          m_scene_radius;             // world space
+        double          m_safe_scene_diameter;      // world space
+        double          m_surface_area;             // world space
 
-        static void apply_env_edf_overrides(
-            const EnvironmentEDF*   env_edf,
-            Vector3d&               outgoing,
-            double&                 turbidity)
+        InputValues     m_values;
+        double          m_probability;
+
+        void apply_env_edf_overrides(const EnvironmentEDF* env_edf)
         {
-            // Use the sun direction from the EDF if it has one.
+            // Use the Sun direction from the EDF if it has one.
             const Source* sun_theta_src = env_edf->get_inputs().source("sun_theta");
             const Source* sun_phi_src = env_edf->get_inputs().source("sun_phi");
             if (sun_theta_src && sun_theta_src->is_uniform() &&
@@ -201,10 +212,15 @@ namespace
                 double sun_theta, sun_phi;
                 sun_theta_src->evaluate_uniform(sun_theta);
                 sun_phi_src->evaluate_uniform(sun_phi);
-                outgoing = -Vector3d::unit_vector(deg_to_rad(sun_theta), deg_to_rad(sun_phi));
+                set_transform(
+                    Transformd::from_local_to_parent(
+                        Matrix4d::rotation(
+                            Quaterniond::rotation(
+                                Vector3d(0.0, 0.0, -1.0),
+                                -Vector3d::unit_vector(deg_to_rad(sun_theta), deg_to_rad(sun_phi))))));
             }
 
-            // Use the sun turbidity from the EDF if it has one.
+            // Use the Sun turbidity from the EDF if it has one.
             const Source* turbidity_src = env_edf->get_inputs().source("turbidity");
             const Source* turbidity_multiplier_src = env_edf->get_inputs().source("turbidity_multiplier");
             if (turbidity_src && turbidity_src->is_uniform() &&
@@ -212,36 +228,35 @@ namespace
             {
                 double turbidity_multiplier;
                 turbidity_multiplier_src->evaluate_uniform(turbidity_multiplier);
-                turbidity_src->evaluate_uniform(turbidity);
-                turbidity *= turbidity_multiplier;
+                turbidity_src->evaluate_uniform(m_values.m_turbidity);
+                m_values.m_turbidity *= turbidity_multiplier;
             }
         }
 
         static void compute_sun_radiance(
-            const Vector3d&         outgoing,
-            const double            turbidity,
-            const double            radiance_multiplier,
-            Spectrum&               radiance)
+            const Vector3d&     outgoing,
+            const double        turbidity,
+            const double        radiance_multiplier,
+            Spectrum&           radiance)
         {
             // Compute the relative optical mass.
             const float cos_theta = -static_cast<float>(outgoing.y);
             const float theta = acos(cos_theta);
             const float m = 1.0f / (cos_theta + 0.15f * pow(93.885f - rad_to_deg(theta), -1.253f));
 
-            // Compute wavelengths in micrometers.
-            const Spectrum wavelengths = g_light_wavelengths / 1000.0f;
-
             // Compute transmittance due to Rayleigh scattering.
             Spectrum tau_r;
+            tau_r.resize(Spectrum::Samples);
             for (size_t i = 0; i < 31; ++i)
-                tau_r[i] = exp(-0.008735f * m * pow(wavelengths[i], -4.08f));
+                tau_r[i] = exp(-0.008735f * m * pow(g_light_wavelengths_um[i], -4.08f));
 
             // Compute transmittance due to aerosols.
             const float Alpha = 1.3f;               // ratio of small to large particle sizes (0 to 4, typically 1.3)
             const float beta = 0.04608f * static_cast<float>(turbidity) - 0.04586f;
             Spectrum tau_a;
+            tau_a.resize(Spectrum::Samples);
             for (size_t i = 0; i < 31; ++i)
-                tau_a[i] = exp(-beta * m * pow(wavelengths[i], -Alpha));
+                tau_a[i] = exp(-beta * m * pow(g_light_wavelengths_um[i], -Alpha));
 
             // Compute transmittance due to ozone absorption.
             const float L = 0.35f;                  // amount of ozone in cm
@@ -257,24 +272,27 @@ namespace
                 0.036f, 0.028f, 0.023f
             };
             Spectrum tau_o;
+            tau_o.resize(Spectrum::Samples);
             for (size_t i = 0; i < 31; ++i)
                 tau_o[i] = exp(-Ko[i] * L * m);
 
             // Compute transmittance due to mixed gases absorption.
-            static const float Kg[31] =
-            {
-                0.000f, 0.000f, 0.000f, 0.000f,
-                0.000f, 0.000f, 0.000f, 0.000f,
-                0.000f, 0.000f, 0.000f, 0.000f,
-                0.000f, 0.000f, 0.000f, 0.000f,
-                0.000f, 0.000f, 0.000f, 0.000f,
-                0.000f, 0.000f, 0.000f, 0.000f,
-                0.000f, 0.000f, 0.000f, 0.000f,
-                0.000f, 0.000f, 0.000f
-            };
-            Spectrum tau_g;
-            for (size_t i = 0; i < 31; ++i)
-                tau_g[i] = exp(-1.41f * Kg[i] * m / pow(1.0f + 118.93f * Kg[i] * m, 0.45f));
+            // Disabled since all coefficients are zero in the wavelength range of the simulation.
+            // static const float Kg[31] =
+            // {
+            //     0.000f, 0.000f, 0.000f, 0.000f,
+            //     0.000f, 0.000f, 0.000f, 0.000f,
+            //     0.000f, 0.000f, 0.000f, 0.000f,
+            //     0.000f, 0.000f, 0.000f, 0.000f,
+            //     0.000f, 0.000f, 0.000f, 0.000f,
+            //     0.000f, 0.000f, 0.000f, 0.000f,
+            //     0.000f, 0.000f, 0.000f, 0.000f,
+            //     0.000f, 0.000f, 0.000f
+            // };
+            // Spectrum tau_g;
+            // tau_g.resize(Spectrum::Samples);
+            // for (size_t i = 0; i < 31; ++i)
+            //     tau_g[i] = exp(-1.41f * Kg[i] * m / pow(1.0f + 118.93f * Kg[i] * m, 0.45f));
 
             // Compute transmittance due to water vapor absorption.
             const float W = 2.0f;                   // precipitable water vapor in cm
@@ -290,28 +308,32 @@ namespace
                 0.000f, 0.016f, 0.024f
             };
             Spectrum tau_wa;
+            tau_wa.resize(Spectrum::Samples);
             for (size_t i = 0; i < 31; ++i)
                 tau_wa[i] = exp(-0.2385f * Kwa[i] * W * m / pow(1.0f + 20.07f * Kwa[i] * W * m, 0.45f));
 
             // Sun radiance in W.m^-2.sr^-1.um^-1.
+            // The units in the paper are W.cm^-2.sr^-1.um^-1. We must multiply the values
+            // by 10000 to obtain W.m^-2.sr^-1.um^-1. We must then divide them by 1000 to
+            // obtain W.m^-2.sr^-1.nm^-1.
             static const float SunRadianceValues[31] =
             {
-                2112.75f, 2588.82f, 2582.91f, 2423.23f,
-                2676.05f, 2965.83f, 3054.54f, 3005.75f,
-                3066.37f, 2883.04f, 2871.21f, 2782.50f,
-                2710.06f, 2723.36f, 2636.13f, 2550.38f,
-                2506.02f, 2531.16f, 2535.59f, 2513.42f,
-                2463.15f, 2417.32f, 2368.53f, 2321.21f,
-                2282.77f, 2233.98f, 2197.02f, 2152.67f,
-                2109.79f, 2072.83f, 2024.04f
+                21127.5f, 25888.2f, 25829.1f, 24232.3f,
+                26760.5f, 29658.3f, 30545.4f, 30057.5f,
+                30663.7f, 28830.4f, 28712.1f, 27825.0f,
+                27100.6f, 27233.6f, 26361.3f, 25503.8f,
+                25060.2f, 25311.6f, 25355.9f, 25134.2f,
+                24631.5f, 24173.2f, 23685.3f, 23212.1f,
+                22827.7f, 22339.8f, 21970.2f, 21526.7f,
+                21097.9f, 20728.3f, 20240.4f
             };
 
-            // Compute the attenuated radiance of the sun.
+            // Compute the attenuated radiance of the Sun.
             radiance = Spectrum(SunRadianceValues);
             radiance *= tau_r;
             radiance *= tau_a;
             radiance *= tau_o;
-            radiance *= tau_g;
+            // radiance *= tau_g;   // always 1.0
             radiance *= tau_wa;
             radiance *= static_cast<float>(radiance_multiplier);
         }

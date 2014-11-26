@@ -207,14 +207,11 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     Spectrum light_value;
     light->evaluate(
         input_evaluator,
-        sample.m_light_transform.point_to_local(m_point),
+        sample.m_light_transform,
+        m_point,
         emission_position,
         emission_direction,
         light_value);
-
-    // Transform the emission position and direction from assembly space to world space.
-    emission_position = sample.m_light_transform.point_to_parent(emission_position);
-    emission_direction = normalize(sample.m_light_transform.vector_to_parent(emission_direction));
 
     // Compute the incoming direction in world space.
     const Vector3d incoming = -emission_direction;

@@ -38,7 +38,7 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/basis.h"
+#include "foundation/math/distance.h"
 #include "foundation/math/matrix.h"
 #include "foundation/math/sampling.h"
 #include "foundation/math/scalar.h"
@@ -78,8 +78,8 @@ namespace
             const ParamArray&   params)
           : Light(name, params)
         {
-            m_inputs.declare("radiance", InputFormatSpectralIlluminance);
-            m_inputs.declare("radiance_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("intensity", InputFormatSpectralIlluminance);
+            m_inputs.declare("intensity_multiplier", InputFormatScalar, "1.0");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -100,9 +100,9 @@ namespace
             if (!Light::on_frame_begin(project, assembly, abort_switch))
                 return false;
 
-            m_radiance_source = m_inputs.source("radiance");
-            m_radiance_multiplier_source = m_inputs.source("radiance_multiplier");
-            check_non_zero_radiance(m_radiance_source, m_radiance_multiplier_source);
+            m_intensity_source = m_inputs.source("intensity");
+            m_intensity_multiplier_source = m_inputs.source("intensity_multiplier");
+            check_non_zero_radiance(m_intensity_source, m_intensity_multiplier_source);
 
             const double inner_half_angle = deg_to_rad(m_params.get_required<double>("inner_angle", 20.0) / 2.0);
             const double outer_half_angle = deg_to_rad(m_params.get_required<double>("outer_angle", 30.0) / 2.0);
@@ -111,88 +111,98 @@ namespace
             m_cos_inner_half_angle = cos(inner_half_angle);
             m_cos_outer_half_angle = cos(outer_half_angle);
             m_rcp_screen_half_size = 1.0 / tan(outer_half_angle);
-
-            m_transform =
-                Transformd::from_local_to_parent(
-                    Matrix4d::rotation(Vector3d(1.0, 0.0, 0.0), -HalfPi)) *
-                get_transform();
-            m_position = m_transform.point_to_parent(Vector3d(0.0));
-            m_axis = normalize(m_transform.vector_to_parent(Vector3d(0.0, 1.0, 0.0)));
-
-            const Vector3d up = m_transform.vector_to_parent(Vector3d(sin(tilt_angle), 0.0, cos(tilt_angle)));
-            const Vector3d v = -m_axis;
-            const Vector3d u = normalize(cross(up, v));
-            const Vector3d n = cross(v, u);
-
-            m_screen_basis.build(n, u, v);
+            m_up = Vector3d(sin(tilt_angle), cos(tilt_angle), 0.0);
 
             return true;
         }
 
         virtual void sample(
             InputEvaluator&     input_evaluator,
+            const Transformd&   light_transform,
             const Vector2d&     s,
             Vector3d&           position,
             Vector3d&           outgoing,
             Spectrum&           value,
             double&             probability) const APPLESEED_OVERRIDE
         {
-            position = m_position;
-            outgoing = m_transform.vector_to_parent(sample_cone_uniform(s, m_cos_outer_half_angle));
+            position = light_transform.point_to_parent(Vector3d(0.0));
+            outgoing = light_transform.vector_to_parent(rotate_minus_pi_around_x(sample_cone_uniform(s, m_cos_outer_half_angle)));
             probability = sample_cone_uniform_pdf(m_cos_outer_half_angle);
-            compute_radiance(input_evaluator, outgoing, value);
+
+            const Vector3d axis = normalize(light_transform.vector_to_parent(Vector3d(0.0, 0.0, -1.0)));
+
+            compute_radiance(input_evaluator, light_transform, axis, outgoing, value);
         }
 
         virtual void evaluate(
             InputEvaluator&     input_evaluator,
+            const Transformd&   light_transform,
             const Vector3d&     target,
             Vector3d&           position,
             Vector3d&           outgoing,
             Spectrum&           value) const APPLESEED_OVERRIDE
         {
-            position = m_position;
+            position = light_transform.point_to_parent(Vector3d(0.0));
             outgoing = normalize(target - position);
 
-            if (dot(outgoing, m_axis) > m_cos_outer_half_angle)
-                compute_radiance(input_evaluator, outgoing, value);
+            const Vector3d axis = normalize(light_transform.vector_to_parent(Vector3d(0.0, 0.0, -1.0)));
+
+            if (dot(outgoing, axis) > m_cos_outer_half_angle)
+                compute_radiance(input_evaluator, light_transform, axis, outgoing, value);
             else value.set(0.0f);
+        }
+
+        double compute_distance_attenuation(
+            const Vector3d&     target,
+            const Vector3d&     position) const APPLESEED_OVERRIDE
+        {
+            return 1.0 / square_distance(target, position);
         }
 
       private:
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
-            Spectrum    m_radiance;             // emitted radiance in W.m^-2.sr^-1
-            double      m_radiance_multiplier;  // emitted radiance multiplier
+            Spectrum    m_intensity;                // emitted intensity in W.sr^-1
+            double      m_intensity_multiplier;     // emitted intensity multiplier
         };
 
-        const Source*   m_radiance_source;
-        const Source*   m_radiance_multiplier_source;
+        const Source*   m_intensity_source;
+        const Source*   m_intensity_multiplier_source;
 
         double          m_cos_inner_half_angle;
         double          m_cos_outer_half_angle;
         double          m_rcp_screen_half_size;
 
-        Transformd      m_transform;
-        Vector3d        m_position;             // world space
-        Vector3d        m_axis;                 // world space
-        Basis3d         m_screen_basis;         // world space
+        Vector3d        m_up;                       // light space
+
+        static Vector3d rotate_minus_pi_around_x(const Vector3d& v)
+        {
+            return Vector3d(v[0], v[2], -v[1]);
+        }
 
         void compute_radiance(
             InputEvaluator&     input_evaluator,
+            const Transformd&   light_transform,
+            const Vector3d&     axis,
             const Vector3d&     outgoing,
             Spectrum&           radiance) const
         {
-            const double cos_theta = dot(outgoing, m_axis);
+            const Vector3d up = light_transform.vector_to_parent(m_up);
+            const Vector3d v = -axis;
+            const Vector3d u = normalize(cross(up, v));
+            const Vector3d n = cross(v, u);
+
+            const double cos_theta = dot(outgoing, axis);
             assert(cos_theta > m_cos_outer_half_angle);
 
-            const Vector3d d = outgoing / cos_theta - m_axis;
-            const double x = dot(d, m_screen_basis.get_tangent_u()) * m_rcp_screen_half_size;
-            const double y = dot(d, m_screen_basis.get_normal()) * m_rcp_screen_half_size;
+            const Vector3d d = outgoing / cos_theta - axis;
+            const double x = dot(d, u) * m_rcp_screen_half_size;
+            const double y = dot(d, n) * m_rcp_screen_half_size;
             const Vector2d uv(0.5 * (x + 1.0), 0.5 * (y + 1.0));
 
             const InputValues* values = input_evaluator.evaluate<InputValues>(m_inputs, uv);
-            radiance = values->m_radiance;
-            radiance *= static_cast<float>(values->m_radiance_multiplier);
+            radiance = values->m_intensity;
+            radiance *= static_cast<float>(values->m_intensity_multiplier);
 
             if (cos_theta < m_cos_inner_half_angle)
             {
@@ -225,8 +235,8 @@ DictionaryArray SpotLightFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "radiance")
-            .insert("label", "Radiance")
+            .insert("name", "intensity")
+            .insert("label", "Intensity")
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary()
@@ -237,8 +247,8 @@ DictionaryArray SpotLightFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "radiance_multiplier")
-            .insert("label", "Radiance Multiplier")
+            .insert("name", "intensity_multiplier")
+            .insert("label", "Intensity Multiplier")
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))

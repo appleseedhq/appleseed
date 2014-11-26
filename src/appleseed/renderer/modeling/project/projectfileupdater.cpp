@@ -758,6 +758,60 @@ namespace
             }
         }
     };
+
+
+    //
+    // Update from revision 8 to revision 9.
+    //
+
+    class UpdateFromRevision_8
+      : public Updater
+    {
+      public:
+        explicit UpdateFromRevision_8(Project& project)
+          : Updater(project, 8)
+        {
+        }
+
+        virtual void update() APPLESEED_OVERRIDE
+        {
+            const Scene* scene = m_project.get_scene();
+
+            if (scene)
+                rename_radiance_inputs(scene->assemblies());
+        }
+
+      private:
+        void rename_radiance_inputs(AssemblyContainer& assemblies)
+        {
+            for (each<AssemblyContainer> i = assemblies; i; ++i)
+            {
+                rename_radiance_inputs(*i);
+                rename_radiance_inputs(i->assemblies());
+            }
+        }
+
+        void rename_radiance_inputs(Assembly& assembly)
+        {
+            for (each<LightContainer> i = assembly.lights(); i; ++i)
+                rename_radiance_inputs(*i);
+        }
+
+        void rename_radiance_inputs(Light& light)
+        {
+            if (strcmp(light.get_model(), DirectionalLightFactory().get_model()) == 0)
+            {
+                move_if_exist(light, "irradiance", "radiance");
+                move_if_exist(light, "irradiance_multiplier", "radiance_multiplier");
+            }
+            else if (strcmp(light.get_model(), PointLightFactory().get_model()) == 0 ||
+                     strcmp(light.get_model(), SpotLightFactory().get_model()) == 0)
+            {
+                move_if_exist(light, "intensity", "radiance");
+                move_if_exist(light, "intensity_multiplier", "radiance_multiplier");
+            }
+        }
+    };
 }
 
 bool ProjectFileUpdater::update(Project& project, const size_t to_revision)
@@ -789,8 +843,9 @@ bool ProjectFileUpdater::update(Project& project, const size_t to_revision)
       CASE_UPDATE_FROM_REVISION(5);
       CASE_UPDATE_FROM_REVISION(6);
       CASE_UPDATE_FROM_REVISION(7);
+      CASE_UPDATE_FROM_REVISION(8);
 
-      case 8:
+      case 9:
         // Project is up-to-date.
         break;
 

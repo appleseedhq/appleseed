@@ -415,15 +415,12 @@ namespace
             double light_prob;
             light_sample.m_light->sample(
                 input_evaluator,
+                light_sample.m_light_transform,
                 child_sampling_context.next_vector2<2>(),
                 emission_position,
                 emission_direction,
                 light_value,
                 light_prob);
-
-            // Transform the emission position and direction from assembly space to world space.
-            emission_position = light_sample.m_light_transform.point_to_parent(emission_position);
-            emission_direction = normalize(light_sample.m_light_transform.vector_to_parent(emission_direction));
 
             // Compute the initial particle weight.
             Spectrum initial_flux = light_value;

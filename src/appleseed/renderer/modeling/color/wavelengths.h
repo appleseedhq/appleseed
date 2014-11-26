@@ -48,7 +48,8 @@ namespace renderer
 
 const float LowWavelength = 400.0f;         // low wavelength, in nm
 const float HighWavelength = 700.0f;        // high wavelength, in nm
-extern Spectrum g_light_wavelengths;        // wavelengths, in nm
+extern Spectrum g_light_wavelengths_nm;     // wavelengths, in nm
+extern Spectrum g_light_wavelengths_um;     // wavelengths, in um
 
 
 //

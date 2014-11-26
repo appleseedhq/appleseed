@@ -107,24 +107,26 @@ class APPLESEED_DLLSYMBOL Light
     // its probability density and the value of the light for this direction.
     virtual void sample(
         InputEvaluator&                 input_evaluator,
+        const foundation::Transformd&   light_transform,            // light space to world space transform
         const foundation::Vector2d&     s,                          // sample in [0,1)^2
-        foundation::Vector3d&           position,                   // assembly space emission position
-        foundation::Vector3d&           outgoing,                   // assembly space emission direction, unit-length
+        foundation::Vector3d&           position,                   // world space emission position
+        foundation::Vector3d&           outgoing,                   // world space emission direction, unit-length
         Spectrum&                       value,                      // light value
         double&                         probability) const = 0;     // PDF value
 
     // Evaluate the light for a given target point.
     virtual void evaluate(
         InputEvaluator&                 input_evaluator,
-        const foundation::Vector3d&     target,                     // assembly space target point
-        foundation::Vector3d&           position,                   // assembly space emission position
-        foundation::Vector3d&           outgoing,                   // assembly space emission direction, unit-length
+        const foundation::Transformd&   light_transform,            // light space to world space transform
+        const foundation::Vector3d&     target,                     // world space target point
+        foundation::Vector3d&           position,                   // world space emission position
+        foundation::Vector3d&           outgoing,                   // world space emission direction, unit-length
         Spectrum&                       value) const = 0;           // light value
 
     // Compute the distance attenuation of this light.
     virtual double compute_distance_attenuation(
         const foundation::Vector3d&     target,                     // world space target point
-        const foundation::Vector3d&     position) const;            // world space emission position
+        const foundation::Vector3d&     position) const = 0;        // world space emission position
 
   private:
     struct Impl;

@@ -494,7 +494,9 @@ void LightSampler::sample_non_physical_light(
     light_sample.m_light = light_info.m_light;
 
     // Evaluate and store the transform of the light.
-    light_sample.m_light_transform = light_info.m_transform_sequence.evaluate(time);
+    light_sample.m_light_transform =
+          light_info.m_light->get_transform()
+        * light_info.m_transform_sequence.evaluate(time);
 
     // Store the probability density of this light.
     light_sample.m_probability = light_prob;

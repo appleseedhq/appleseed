@@ -73,8 +73,8 @@ namespace
             const ParamArray&   params)
           : Light(name, params)
         {
-            m_inputs.declare("radiance", InputFormatSpectralIlluminance);
-            m_inputs.declare("radiance_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("irradiance", InputFormatSpectralIlluminance);
+            m_inputs.declare("irradiance_multiplier", InputFormatScalar, "1.0");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -95,50 +95,54 @@ namespace
             if (!Light::on_frame_begin(project, assembly, abort_switch))
                 return false;
 
-            if (!check_uniform("radiance") || !check_uniform("radiance_multiplier"))
+            if (!check_uniform("irradiance") || !check_uniform("irradiance_multiplier"))
                 return false;
 
-            check_non_zero_radiance("radiance", "radiance_multiplier");
-
-            m_inputs.evaluate_uniforms(&m_values);
-            m_values.m_radiance *= static_cast<float>(m_values.m_radiance_multiplier);
+            check_non_zero_radiance("irradiance", "irradiance_multiplier");
 
             m_scene_radius = project.get_scene()->compute_radius();
             m_safe_scene_diameter = 1.01 * (2.0 * m_scene_radius);
+            m_surface_area = Pi * m_scene_radius * m_scene_radius;
 
-            m_outgoing = normalize(get_transform().vector_to_parent(Vector3d(0.0, 0.0, -1.0)));
-            m_basis.build(m_outgoing);
+            m_inputs.evaluate_uniforms(&m_values);
+            m_values.m_irradiance *= static_cast<float>(m_values.m_irradiance_multiplier);
+            m_probability = 1.0 / m_surface_area;
 
             return true;
         }
 
         virtual void sample(
             InputEvaluator&     input_evaluator,
+            const Transformd&   light_transform,
             const Vector2d&     s,
             Vector3d&           position,
             Vector3d&           outgoing,
             Spectrum&           value,
             double&             probability) const APPLESEED_OVERRIDE
         {
+            outgoing = normalize(light_transform.vector_to_parent(Vector3d(0.0, 0.0, -1.0)));
+
+            const Basis3d basis(outgoing);
             const Vector2d point_on_disk = sample_disk_uniform(s);
             position =
-                m_basis.transform_to_parent(
+                basis.transform_to_parent(
                     m_scene_radius * Vector3d(point_on_disk[0], -1.0, point_on_disk[1]));
-            outgoing = m_outgoing;
-            value = m_values.m_radiance;
-            probability = RcpPi;
+            probability = m_probability;
+
+            value = m_values.m_irradiance;
         }
 
         virtual void evaluate(
             InputEvaluator&     input_evaluator,
+            const Transformd&   light_transform,
             const Vector3d&     target,
             Vector3d&           position,
             Vector3d&           outgoing,
             Spectrum&           value) const APPLESEED_OVERRIDE
         {
-            position = target - m_safe_scene_diameter * m_outgoing;
-            outgoing = m_outgoing;
-            value = m_values.m_radiance;
+            outgoing = normalize(light_transform.vector_to_parent(Vector3d(0.0, 0.0, -1.0)));
+            position = target - m_safe_scene_diameter * outgoing;
+            value = m_values.m_irradiance;
         }
 
         virtual double compute_distance_attenuation(
@@ -151,15 +155,16 @@ namespace
       private:
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
-            Spectrum    m_radiance;             // emitted radiance in W.m^-2.sr^-1
-            double      m_radiance_multiplier;  // emitted radiance multiplier
+            Spectrum    m_irradiance;               // emitted irradiance in W.m^-2
+            double      m_irradiance_multiplier;    // emitted irradiance multiplier
         };
 
+        double          m_scene_radius;             // world space
+        double          m_safe_scene_diameter;      // world space
+        double          m_surface_area;             // world space
+
         InputValues     m_values;
-        double          m_scene_radius;         // world space
-        double          m_safe_scene_diameter;  // world space
-        Vector3d        m_outgoing;             // world space
-        Basis3d         m_basis;                // world space
+        double          m_probability;
     };
 }
 
@@ -184,8 +189,8 @@ DictionaryArray DirectionalLightFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "radiance")
-            .insert("label", "Radiance")
+            .insert("name", "irradiance")
+            .insert("label", "Irradiance")
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary()
@@ -195,8 +200,8 @@ DictionaryArray DirectionalLightFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "radiance_multiplier")
-            .insert("label", "Radiance Multiplier")
+            .insert("name", "irradiance_multiplier")
+            .insert("label", "Irradiance Multiplier")
             .insert("type", "numeric")
             .insert("min_value", "0.0")
             .insert("max_value", "10.0")

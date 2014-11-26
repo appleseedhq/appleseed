@@ -36,6 +36,7 @@
 #include "renderer/modeling/input/inputevaluator.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/distance.h"
 #include "foundation/math/sampling.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
@@ -69,8 +70,8 @@ namespace
             const ParamArray&   params)
           : Light(name, params)
         {
-            m_inputs.declare("radiance", InputFormatSpectralIlluminance);
-            m_inputs.declare("radiance_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("intensity", InputFormatSpectralIlluminance);
+            m_inputs.declare("intensity_multiplier", InputFormatScalar, "1.0");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -91,54 +92,60 @@ namespace
             if (!Light::on_frame_begin(project, assembly, abort_switch))
                 return false;
 
-            if (!check_uniform("radiance") || !check_uniform("radiance_multiplier"))
+            if (!check_uniform("intensity") || !check_uniform("intensity_multiplier"))
                 return false;
 
-            check_non_zero_radiance("radiance", "radiance_multiplier");
+            check_non_zero_radiance("intensity", "intensity_multiplier");
 
             m_inputs.evaluate_uniforms(&m_values);
-            m_values.m_radiance *= static_cast<float>(m_values.m_radiance_multiplier);
-
-            m_position = get_transform().point_to_parent(Vector3d(0.0));
+            m_values.m_intensity *= static_cast<float>(m_values.m_intensity_multiplier);
 
             return true;
         }
 
         virtual void sample(
             InputEvaluator&     input_evaluator,
+            const Transformd&   light_transform,
             const Vector2d&     s,
             Vector3d&           position,
             Vector3d&           outgoing,
             Spectrum&           value,
             double&             probability) const APPLESEED_OVERRIDE
         {
-            position = m_position;
+            position = light_transform.point_to_parent(Vector3d(0.0));
             outgoing = sample_sphere_uniform(s);
-            value = m_values.m_radiance;
+            value = m_values.m_intensity;
             probability = 1.0 / (4.0 * Pi);
         }
 
         virtual void evaluate(
             InputEvaluator&     input_evaluator,
+            const Transformd&   light_transform,
             const Vector3d&     target,
             Vector3d&           position,
             Vector3d&           outgoing,
             Spectrum&           value) const APPLESEED_OVERRIDE
         {
-            position = m_position;
+            position = light_transform.point_to_parent(Vector3d(0.0));
             outgoing = normalize(target - position);
-            value = m_values.m_radiance;
+            value = m_values.m_intensity;
+        }
+
+        double compute_distance_attenuation(
+            const Vector3d&     target,
+            const Vector3d&     position) const APPLESEED_OVERRIDE
+        {
+            return 1.0 / square_distance(target, position);
         }
 
       private:
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
-            Spectrum    m_radiance;             // emitted radiance in W.m^-2.sr^-1
-            double      m_radiance_multiplier;  // emitted radiance multiplier
+            Spectrum    m_intensity;                // emitted intensity in W.sr^-1
+            double      m_intensity_multiplier;     // emitted intensity multiplier
         };
 
         InputValues     m_values;
-        Vector3d        m_position;             // world space
     };
 }
 
@@ -163,8 +170,8 @@ DictionaryArray PointLightFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "radiance")
-            .insert("label", "Radiance")
+            .insert("name", "intensity")
+            .insert("label", "Intensity")
             .insert("type", "colormap")
             .insert("entity_types",
                 Dictionary()
@@ -174,8 +181,8 @@ DictionaryArray PointLightFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "radiance_multiplier")
-            .insert("label", "Radiance Multiplier")
+            .insert("name", "intensity_multiplier")
+            .insert("label", "Intensity Multiplier")
             .insert("type", "numeric")
             .insert("min_value", "0.0")
             .insert("max_value", "10.0")

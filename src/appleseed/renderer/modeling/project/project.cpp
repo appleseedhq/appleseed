@@ -93,7 +93,7 @@ UniqueID Project::get_class_uid()
 namespace
 {
     // Revision number of the project format.
-    const size_t ProjectFormatRevision = 8;
+    const size_t ProjectFormatRevision = 9;
 }
 
 struct Project::Impl
