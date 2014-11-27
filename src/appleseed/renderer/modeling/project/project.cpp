@@ -189,12 +189,7 @@ void Project::set_display(foundation::auto_release_ptr<Display> display)
     impl->m_display = display;
 }
 
-const Display* Project::get_display() const
-{
-    return impl->m_display.get();
-}
-
-Display* Project::get_display()
+Display* Project::get_display() const
 {
     return impl->m_display.get();
 }

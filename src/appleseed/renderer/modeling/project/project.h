@@ -103,11 +103,7 @@ class APPLESEED_DLLSYMBOL Project
 
     // Access the display.
     // Return 0 if the project does not contain a display.
-    const Display* get_display() const;
-
-    // Access the display.
-    // Return 0 if the project does not contain a display.
-    Display* get_display();
+    Display* get_display() const;
 
     // Add a render layer rule.
     void add_render_layer_rule(foundation::auto_release_ptr<RenderLayerRule> rule);

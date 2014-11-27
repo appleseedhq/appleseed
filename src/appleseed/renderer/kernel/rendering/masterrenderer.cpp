@@ -243,31 +243,26 @@ namespace
     }
 
 #endif
-}
 
-namespace
-{
-
-struct ScopedDisplayClose
-{
-    ScopedDisplayClose(
-        Project&    project,
-        const bool  do_close)
-      : m_project(project)
-      , m_do_close(do_close)
+    struct ScopedDisplayClose
     {
-    }
+        ScopedDisplayClose(
+            const Project&      project,
+            const bool          do_close)
+          : m_project(project)
+          , m_do_close(do_close)
+        {
+        }
 
-    ~ScopedDisplayClose()
-    {
-        if (m_do_close)
-            m_project.get_display()->close();
-    }
+        ~ScopedDisplayClose()
+        {
+            if (m_do_close)
+                m_project.get_display()->close();
+        }
 
-    Project&    m_project;
-    const bool  m_do_close;
-};
-
+        const Project&  m_project;
+        const bool      m_do_close;
+    };
 }
 
 IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence()
@@ -654,20 +649,18 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     //
 
     ITileCallbackFactory* tile_callback_factory = m_tile_callback_factory;
+
     if (tile_callback_factory == 0)
     {
-        if (Display* dpy = m_project.get_display())
+        if (Display* display = m_project.get_display())
         {
-            dpy->open(m_project);
-            tile_callback_factory = dpy->get_tile_callback_factory();
+            display->open(m_project);
+            tile_callback_factory = display->get_tile_callback_factory();
         }
     }
 
-    //
-    // Close the (plugin) display, if needed,
-    // after the frame renderer has been destroyed, at scope exit.
-    //
-    ScopedDisplayClose dpy_close(
+    // If a display plugin was open, close it automatically at scope exit.
+    ScopedDisplayClose display_close(
         m_project,
         (m_tile_callback_factory == 0) && (m_project.get_display() != 0));
 
