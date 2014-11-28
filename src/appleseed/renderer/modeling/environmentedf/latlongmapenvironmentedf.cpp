@@ -188,7 +188,7 @@ namespace
             if (!EnvironmentEDF::on_frame_begin(project, abort_switch))
                 return false;
 
-            check_non_zero_radiance("radiance", "radiance_multiplier");
+            check_non_zero_emission("radiance", "radiance_multiplier");
 
             if (m_importance_sampler.get() == 0)
                 build_importance_map(*project.get_scene(), abort_switch);

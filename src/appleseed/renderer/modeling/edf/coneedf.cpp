@@ -97,7 +97,7 @@ namespace
             if (!EDF::on_frame_begin(project, assembly, abort_switch))
                 return false;
 
-            check_non_zero_radiance("radiance", "radiance_multiplier");
+            check_non_zero_emission("radiance", "radiance_multiplier");
 
             m_cos_half_angle = cos(deg_to_rad(m_params.get_required<double>("angle", 90.0) / 2.0));
 

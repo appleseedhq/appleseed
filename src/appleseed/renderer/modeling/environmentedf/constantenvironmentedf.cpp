@@ -97,7 +97,7 @@ namespace
             if (!check_uniform("radiance"))
                 return false;
 
-            check_non_zero_radiance("radiance");
+            check_non_zero_emission("radiance");
 
             m_inputs.evaluate_uniforms(&m_values);
 

@@ -99,7 +99,7 @@ namespace
                 return false;
 
             if (is_uniform_zero_spectrum("horizon_radiance") && is_uniform_zero_spectrum("zenith_radiance"))
-                warn_zero_radiance();
+                warn_zero_emission();
 
             m_inputs.evaluate_uniforms(&m_values);
 

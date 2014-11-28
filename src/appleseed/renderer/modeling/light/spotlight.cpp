@@ -102,7 +102,7 @@ namespace
 
             m_intensity_source = m_inputs.source("intensity");
             m_intensity_multiplier_source = m_inputs.source("intensity_multiplier");
-            check_non_zero_radiance(m_intensity_source, m_intensity_multiplier_source);
+            check_non_zero_emission(m_intensity_source, m_intensity_multiplier_source);
 
             const double inner_half_angle = deg_to_rad(m_params.get_required<double>("inner_angle", 20.0) / 2.0);
             const double outer_half_angle = deg_to_rad(m_params.get_required<double>("outer_angle", 30.0) / 2.0);

@@ -110,34 +110,34 @@ bool ConnectableEntity::check_uniform(const char* input_name) const
     return false;
 }
 
-void ConnectableEntity::check_non_zero_radiance(const Source* source) const
+void ConnectableEntity::check_non_zero_emission(const Source* source) const
 {
     if (is_uniform_zero_spectrum(source))
-        warn_zero_radiance();
+        warn_zero_emission();
 }
 
-void ConnectableEntity::check_non_zero_radiance(const char* input_name) const
+void ConnectableEntity::check_non_zero_emission(const char* input_name) const
 {
     if (is_uniform_zero_spectrum(input_name))
-        warn_zero_radiance();
+        warn_zero_emission();
 }
 
-void ConnectableEntity::check_non_zero_radiance(const Source* source, const Source* multiplier) const
+void ConnectableEntity::check_non_zero_emission(const Source* source, const Source* multiplier) const
 {
     if (is_uniform_zero(source, multiplier))
-        warn_zero_radiance();
+        warn_zero_emission();
 }
 
-void ConnectableEntity::check_non_zero_radiance(const char* input_name, const char* multiplier_name) const
+void ConnectableEntity::check_non_zero_emission(const char* input_name, const char* multiplier_name) const
 {
     if (is_uniform_zero(input_name, multiplier_name))
-        warn_zero_radiance();
+        warn_zero_emission();
 }
 
-void ConnectableEntity::warn_zero_radiance() const
+void ConnectableEntity::warn_zero_emission() const
 {
     RENDERER_LOG_WARNING(
-        "\"%s\" has a null emitted radiance and will slow down rendering "
+        "\"%s\" does not emit any light and will slow down rendering "
         "without contributing to the lighting.",
         get_name());
 }

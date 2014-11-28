@@ -80,13 +80,13 @@ class APPLESEED_DLLSYMBOL ConnectableEntity
 
     bool check_uniform(const char* input_name) const;
 
-    void check_non_zero_radiance(const Source* source) const;
-    void check_non_zero_radiance(const char* input_name) const;
+    void check_non_zero_emission(const Source* source) const;
+    void check_non_zero_emission(const char* input_name) const;
 
-    void check_non_zero_radiance(const Source* source, const Source* multiplier) const;
-    void check_non_zero_radiance(const char* input_name, const char* multiplier_name) const;
+    void check_non_zero_emission(const Source* source, const Source* multiplier) const;
+    void check_non_zero_emission(const char* input_name, const char* multiplier_name) const;
 
-    void warn_zero_radiance() const;
+    void warn_zero_emission() const;
 };
 
 

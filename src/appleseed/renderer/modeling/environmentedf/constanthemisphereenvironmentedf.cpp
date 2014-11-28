@@ -98,7 +98,7 @@ namespace
                 return false;
 
             if (is_uniform_zero_spectrum("upper_hemi_radiance") && is_uniform_zero_spectrum("lower_hemi_radiance"))
-                warn_zero_radiance();
+                warn_zero_emission();
 
             m_inputs.evaluate_uniforms(&m_values);
 

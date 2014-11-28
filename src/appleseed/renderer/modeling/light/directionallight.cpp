@@ -98,7 +98,7 @@ namespace
             if (!check_uniform("irradiance") || !check_uniform("irradiance_multiplier"))
                 return false;
 
-            check_non_zero_radiance("irradiance", "irradiance_multiplier");
+            check_non_zero_emission("irradiance", "irradiance_multiplier");
 
             m_scene_radius = project.get_scene()->compute_radius();
             m_safe_scene_diameter = 1.01 * (2.0 * m_scene_radius);

@@ -93,7 +93,7 @@ namespace
             if (!EDF::on_frame_begin(project, assembly, abort_switch))
                 return false;
 
-            check_non_zero_radiance("radiance", "radiance_multiplier");
+            check_non_zero_emission("radiance", "radiance_multiplier");
 
             return true;
         }

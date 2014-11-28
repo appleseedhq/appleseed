@@ -95,7 +95,7 @@ namespace
             if (!check_uniform("intensity") || !check_uniform("intensity_multiplier"))
                 return false;
 
-            check_non_zero_radiance("intensity", "intensity_multiplier");
+            check_non_zero_emission("intensity", "intensity_multiplier");
 
             m_inputs.evaluate_uniforms(&m_values);
             m_values.m_intensity *= static_cast<float>(m_values.m_intensity_multiplier);
