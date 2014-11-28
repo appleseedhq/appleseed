@@ -69,10 +69,8 @@ void TimedRendererController::on_frame_begin()
     impl->m_stopwatch.start();
 }
 
-TimedRendererController::Status TimedRendererController::on_progress()
+IRendererController::Status TimedRendererController::get_status() const
 {
-    DefaultRendererController::on_progress();
-
     return
         impl->m_stopwatch.measure().get_seconds() > impl->m_seconds
             ? TerminateRendering

@@ -30,6 +30,8 @@
 // Interface header.
 #include "qtrenderercontroller.h"
 
+using namespace renderer;
+
 namespace appleseed {
 namespace studio {
 
@@ -38,8 +40,8 @@ namespace studio {
 //
 
 QtRendererController::QtRendererController()
-  : m_status(ContinueRendering)
 {
+    set_status(ContinueRendering);
 }
 
 void QtRendererController::release()
@@ -49,54 +51,44 @@ void QtRendererController::release()
 
 void QtRendererController::on_rendering_begin()
 {
-    DefaultRendererController::on_rendering_begin();
-
-    m_status = ContinueRendering;
+    set_status(ContinueRendering);
 
     emit signal_rendering_begin();
 }
 
 void QtRendererController::on_rendering_success()
 {
-    DefaultRendererController::on_rendering_success();
-
     emit signal_rendering_success();
 }
 
 void QtRendererController::on_rendering_abort()
 {
-    DefaultRendererController::on_rendering_abort();
-
     emit signal_rendering_abort();
 }
 
 void QtRendererController::on_frame_begin()
 {
-    DefaultRendererController::on_frame_begin();
+    const Status status = get_status();
 
-    if (m_status == RestartRendering || m_status == ReinitializeRendering)
-        m_status = ContinueRendering;
+    if (status == RestartRendering || status == ReinitializeRendering)
+        set_status(ContinueRendering);
 
     emit signal_frame_begin();
 }
 
 void QtRendererController::on_frame_end()
 {
-    DefaultRendererController::on_frame_end();
-
     emit signal_frame_end();
 }
 
 void QtRendererController::set_status(const Status status)
 {
-    m_status = status;
+    boost_atomic::atomic_write32(&m_status, status);
 }
 
-QtRendererController::Status QtRendererController::on_progress()
+IRendererController::Status QtRendererController::get_status() const
 {
-    DefaultRendererController::on_progress();
-
-    return m_status;
+    return static_cast<Status>(boost_atomic::atomic_read32(&m_status));
 }
 
 }   // namespace studio

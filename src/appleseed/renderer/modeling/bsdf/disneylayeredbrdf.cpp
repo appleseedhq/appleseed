@@ -80,7 +80,7 @@ const char* DisneyLayeredBRDF::get_model() const
 bool DisneyLayeredBRDF::on_frame_begin(
     const Project&              project,
     const Assembly&             assembly,
-    AbortSwitch*                abort_switch)
+    IAbortSwitch*               abort_switch)
 {
     if (!BSDF::on_frame_begin(project, assembly, abort_switch))
         return false;

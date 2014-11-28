@@ -283,7 +283,7 @@ namespace
                 const bool                  print_luminance_stats,
                 const Image*                ref_image,
                 const double                ref_image_avg_lum,
-                AbortSwitch&                abort_switch)
+                IAbortSwitch&               abort_switch)
               : m_frame(frame)
               , m_buffer(buffer)
               , m_print_luminance_stats(print_luminance_stats)
@@ -330,7 +330,7 @@ namespace
             const bool                      m_print_luminance_stats;
             const Image*                    m_ref_image;
             const double                    m_ref_image_avg_lum;
-            AbortSwitch&                    m_abort_switch;
+            IAbortSwitch&                   m_abort_switch;
 
             DefaultWallclockTimer           m_timer;
             uint64                          m_timer_frequency;

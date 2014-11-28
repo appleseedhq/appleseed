@@ -870,7 +870,7 @@ const char* DisneyMaterial::get_model() const
 bool DisneyMaterial::on_frame_begin(
     const Project&          project,
     const Assembly&         assembly,
-    AbortSwitch*            abort_switch)
+    IAbortSwitch*           abort_switch)
 {
     if (!Material::on_frame_begin(project, assembly, abort_switch))
         return false;

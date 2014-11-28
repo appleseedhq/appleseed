@@ -37,7 +37,7 @@
 #include <cstddef>
 
 // Forward declarations.
-namespace foundation    { class AbortSwitch; }
+namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class StatisticsVector; }
 namespace renderer      { class Frame; }
 
@@ -58,7 +58,7 @@ class ITileRenderer
         const size_t                tile_x,
         const size_t                tile_y,
         const size_t                pass_hash,
-        foundation::AbortSwitch&    abort_switch) = 0;
+        foundation::IAbortSwitch&   abort_switch) = 0;
 
     // Retrieve performance statistics.
     virtual foundation::StatisticsVector get_statistics() const = 0;

@@ -133,7 +133,7 @@ namespace
         virtual bool on_frame_begin(
             const Project&          project,
             const Assembly&         assembly,
-            AbortSwitch*            abort_switch) APPLESEED_OVERRIDE
+            IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
         {
             const ImageStack& aov_images = project.get_frame()->aov_images();
 

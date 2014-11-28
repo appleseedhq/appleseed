@@ -59,8 +59,6 @@ namespace detail
 
         virtual void on_rendering_begin() APPLESEED_OVERRIDE
         {
-            m_base_controller.on_rendering_begin();
-
             // Lock Python's global interpreter lock (GIL),
             // it was released in MasterRenderer.render.
             ScopedGILLock lock;
@@ -77,8 +75,6 @@ namespace detail
 
         virtual void on_rendering_success() APPLESEED_OVERRIDE
         {
-            m_base_controller.on_rendering_success();
-
             // Lock Python's global interpreter lock (GIL),
             // it was released in MasterRenderer.render.
             ScopedGILLock lock;
@@ -95,8 +91,6 @@ namespace detail
 
         virtual void on_rendering_abort() APPLESEED_OVERRIDE
         {
-            m_base_controller.on_rendering_abort();
-
             // Lock Python's global interpreter lock (GIL),
             // it was released in MasterRenderer.render.
             ScopedGILLock lock;
@@ -113,8 +107,6 @@ namespace detail
 
         virtual void on_frame_begin() APPLESEED_OVERRIDE
         {
-            m_base_controller.on_frame_begin();
-
             // Lock Python's global interpreter lock (GIL),
             // it was released in MasterRenderer.render.
             ScopedGILLock lock;
@@ -131,8 +123,6 @@ namespace detail
 
         virtual void on_frame_end() APPLESEED_OVERRIDE
         {
-            m_base_controller.on_frame_end();
-
             // Lock Python's global interpreter lock (GIL),
             // it was released in MasterRenderer.render.
             ScopedGILLock lock;
@@ -147,17 +137,31 @@ namespace detail
             }
         }
 
-        virtual Status on_progress() APPLESEED_OVERRIDE
+        virtual void on_progress() APPLESEED_OVERRIDE
         {
-            m_base_controller.on_progress();
-
             // Lock Python's global interpreter lock (GIL),
             // it was released in MasterRenderer.render.
             ScopedGILLock lock;
 
             try
             {
-                return get_override("on_progress")();
+                get_override("on_progress")();
+            }
+            catch (bpy::error_already_set)
+            {
+                PyErr_Print();
+            }
+        }
+
+        virtual Status get_status() const APPLESEED_OVERRIDE
+        {
+            // Lock Python's global interpreter lock (GIL),
+            // it was released in MasterRenderer.render.
+            ScopedGILLock lock;
+
+            try
+            {
+                return get_override("get_status")();
             }
             catch (bpy::error_already_set)
             {
@@ -165,9 +169,6 @@ namespace detail
                 return AbortRendering;
             }
         }
-
-      private:
-        renderer::DefaultRendererController m_base_controller;
     };
 }
 
@@ -186,7 +187,8 @@ void bind_renderer_controller()
         .def("on_rendering_abort", bpy::pure_virtual(&IRendererController::on_rendering_abort))
         .def("on_frame_begin", bpy::pure_virtual(&IRendererController::on_frame_begin))
         .def("on_frame_end", bpy::pure_virtual(&IRendererController::on_frame_end))
-        .def("on_progress", bpy::pure_virtual(&IRendererController::on_progress));
+        .def("on_progress", bpy::pure_virtual(&IRendererController::on_progress))
+        .def("get_status", bpy::pure_virtual(&IRendererController::get_status));
 
     bpy::class_<DefaultRendererController, boost::noncopyable>("DefaultRendererController");
 }

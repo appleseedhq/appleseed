@@ -35,6 +35,10 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
+#include "foundation/platform/thread.h"
+
+// Boost headers.
+#include "boost/cstdint.hpp"
 
 // Qt headers.
 #include <QObject>
@@ -70,11 +74,11 @@ class QtRendererController
     // This method is called after rendering a single frame.
     virtual void on_frame_end() APPLESEED_OVERRIDE;
 
-    // Set the status that will be returned by on_progress().
+    // Store a new status value.
     void set_status(const Status status);
 
-    // This method is called continuously during rendering.
-    virtual Status on_progress() APPLESEED_OVERRIDE;
+    // Return the current rendering status.
+    virtual Status get_status() const APPLESEED_OVERRIDE;
 
   signals:
     void signal_rendering_begin();
@@ -84,7 +88,7 @@ class QtRendererController
     void signal_frame_end();
 
   private:
-    volatile Status m_status;
+    mutable volatile boost::uint32_t m_status;
 };
 
 }       // namespace studio

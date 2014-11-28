@@ -95,7 +95,7 @@ void SPPMPassCallback::release()
 void SPPMPassCallback::pre_render(
     const Frame&            frame,
     JobQueue&               job_queue,
-    AbortSwitch&            abort_switch)
+    IAbortSwitch&           abort_switch)
 {
     RENDERER_LOG_INFO(
         "sppm lookup radius is %f (%s of initial radius).",
@@ -123,7 +123,7 @@ void SPPMPassCallback::pre_render(
 void SPPMPassCallback::post_render(
     const Frame&            frame,
     JobQueue&               job_queue,
-    AbortSwitch&            abort_switch)
+    IAbortSwitch&           abort_switch)
 {
     // Shrink the lookup radius for the next pass.
     const float k = (m_pass_number + m_params.m_alpha) / (m_pass_number + 1);

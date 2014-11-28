@@ -51,7 +51,7 @@
 #include <string>
 
 // Forward declarations.
-namespace foundation    { class AbortSwitch; }
+namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class Assembly; }
 namespace renderer      { class Project; }
 
@@ -96,7 +96,7 @@ namespace
         virtual bool on_frame_begin(
             const Project&      project,
             const Assembly&     assembly,
-            AbortSwitch*        abort_switch) APPLESEED_OVERRIDE
+            IAbortSwitch*       abort_switch) APPLESEED_OVERRIDE
         {
             if (!BSDF::on_frame_begin(project, assembly, abort_switch))
                 return false;

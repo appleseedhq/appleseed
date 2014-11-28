@@ -84,7 +84,7 @@ const char* Environment::get_model() const
 
 bool Environment::on_frame_begin(
     const Project&      project,
-    AbortSwitch*        abort_switch)
+    IAbortSwitch*       abort_switch)
 {
     m_environment_edf = get_uncached_environment_edf();
     m_environment_shader = get_uncached_environment_shader();

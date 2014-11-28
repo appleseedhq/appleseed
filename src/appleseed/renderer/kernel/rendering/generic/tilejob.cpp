@@ -61,7 +61,7 @@ TileJob::TileJob(
     const size_t                tile_x,
     const size_t                tile_y,
     const size_t                pass_hash,
-    AbortSwitch&                abort_switch)
+    IAbortSwitch&               abort_switch)
   : m_tile_renderers(tile_renderers)
   , m_tile_callbacks(tile_callbacks)
   , m_frame(frame)

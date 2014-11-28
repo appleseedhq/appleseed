@@ -41,7 +41,7 @@
 #include "main/dllsymbol.h"
 
 // Forward declarations.
-namespace foundation    { class AbortSwitch; }
+namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class Assembly; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class PixelContext; }
@@ -77,7 +77,7 @@ class APPLESEED_DLLSYMBOL SurfaceShader
     virtual bool on_frame_begin(
         const Project&              project,
         const Assembly&             assembly,
-        foundation::AbortSwitch*    abort_switch = 0);
+        foundation::IAbortSwitch*   abort_switch = 0);
 
     // This method is called once after rendering each frame.
     virtual void on_frame_end(

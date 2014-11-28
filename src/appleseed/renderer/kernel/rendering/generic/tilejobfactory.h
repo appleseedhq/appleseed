@@ -41,8 +41,8 @@
 #include <vector>
 
 // Forward declarations.
-namespace foundation    { class AbortSwitch; }
 namespace foundation    { class CanvasProperties; }
+namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class Frame; }
 namespace renderer      { class TileJob; }
 
@@ -75,7 +75,7 @@ class TileJobFactory
         const TileJob::TileCallbackVector&  tile_callbacks,
         const size_t                        pass_hash,
         TileJobVector&                      tile_jobs,
-        foundation::AbortSwitch&            abort_switch);
+        foundation::IAbortSwitch&           abort_switch);
 
   private:
     foundation::MersenneTwister             m_rng;

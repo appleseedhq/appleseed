@@ -146,7 +146,7 @@ void AssemblyInstance::check_assembly() const
 
 bool AssemblyInstance::on_frame_begin(
     const Project&      project,
-    AbortSwitch*        abort_switch)
+    IAbortSwitch*       abort_switch)
 {
     m_transform_sequence.optimize();
 

@@ -81,7 +81,7 @@ void SerialRendererController::on_frame_end()
     m_controller->on_frame_end();
 }
 
-SerialRendererController::Status SerialRendererController::on_progress()
+void SerialRendererController::on_progress()
 {
     {
         boost::mutex::scoped_lock lock(m_mutex);
@@ -93,7 +93,12 @@ SerialRendererController::Status SerialRendererController::on_progress()
         }
     }
 
-    return m_controller->on_progress();
+    m_controller->on_progress();
+}
+
+IRendererController::Status SerialRendererController::get_status() const
+{
+    return m_controller->get_status();
 }
 
 void SerialRendererController::add_pre_render_tile_callback(

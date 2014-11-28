@@ -59,7 +59,7 @@ void TileJobFactory::create(
     const TileJob::TileCallbackVector&  tile_callbacks,
     const size_t                        pass_hash,
     TileJobVector&                      tile_jobs,
-    AbortSwitch&                        abort_switch)
+    IAbortSwitch&                       abort_switch)
 {
     // Retrieve frame properties.
     const CanvasProperties& props = frame.image().properties();

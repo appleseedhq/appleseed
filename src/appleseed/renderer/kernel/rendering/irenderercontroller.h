@@ -62,6 +62,9 @@ class APPLESEED_DLLSYMBOL IRendererController
     // This method is called after rendering a single frame.
     virtual void on_frame_end() = 0;
 
+    // This method is called continuously during rendering.
+    virtual void on_progress() = 0;
+
     enum Status
     {
         // Continue rendering.
@@ -80,8 +83,8 @@ class APPLESEED_DLLSYMBOL IRendererController
         ReinitializeRendering
     };
 
-    // This method is called continuously during rendering.
-    virtual Status on_progress() = 0;
+    // Return the current rendering status.
+    virtual Status get_status() const = 0;
 };
 
 }       // namespace renderer

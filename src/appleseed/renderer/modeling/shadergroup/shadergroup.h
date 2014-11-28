@@ -47,7 +47,7 @@ BEGIN_OSL_INCLUDES
 END_OSL_INCLUDES
 
 // Forward declarations.
-namespace foundation    { class AbortSwitch; }
+namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class Assembly; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
@@ -86,7 +86,7 @@ class APPLESEED_DLLSYMBOL ShaderGroup
     // Create OSL shader group.
     bool create_osl_shader_group(
         OSL::ShadingSystem&             shading_system,
-        foundation::AbortSwitch*        abort_switch = 0);
+        foundation::IAbortSwitch*       abort_switch = 0);
 
     // Release internal OSL shader group.
     void release_osl_shader_group();

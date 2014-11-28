@@ -80,7 +80,7 @@ double EDF::get_uncached_light_near_start() const
 bool EDF::on_frame_begin(
     const Project&      project,
     const Assembly&     assembly,
-    AbortSwitch*        abort_switch)
+    IAbortSwitch*       abort_switch)
 {
     m_flags = 0;
 

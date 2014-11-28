@@ -126,7 +126,7 @@ class APPLESEED_DLLSYMBOL DisneyMaterial
     virtual bool on_frame_begin(
         const Project&              project,
         const Assembly&             assembly,
-        foundation::AbortSwitch*    abort_switch = 0) APPLESEED_OVERRIDE;
+        foundation::IAbortSwitch*   abort_switch = 0) APPLESEED_OVERRIDE;
 
     // This method is called once after rendering each frame.
     virtual void on_frame_end(

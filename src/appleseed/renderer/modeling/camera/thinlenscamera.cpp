@@ -72,7 +72,7 @@
 #include <vector>
 
 // Forward declarations.
-namespace foundation    { class AbortSwitch; }
+namespace foundation    { class IAbortSwitch; }
 
 using namespace foundation;
 using namespace std;
@@ -167,7 +167,7 @@ namespace
 
         virtual bool on_frame_begin(
             const Project&      project,
-            AbortSwitch*        abort_switch) APPLESEED_OVERRIDE
+            IAbortSwitch*       abort_switch) APPLESEED_OVERRIDE
         {
             if (!Camera::on_frame_begin(project, abort_switch))
                 return false;

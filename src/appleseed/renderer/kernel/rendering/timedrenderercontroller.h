@@ -59,8 +59,8 @@ class APPLESEED_DLLSYMBOL TimedRendererController
     // This method is called before rendering a single frame.
     virtual void on_frame_begin() APPLESEED_OVERRIDE;
 
-    // This method is called continuously during rendering.
-    virtual Status on_progress() APPLESEED_OVERRIDE;
+    // Return the current rendering status.
+    virtual Status get_status() const APPLESEED_OVERRIDE;
 
   private:
     struct Impl;

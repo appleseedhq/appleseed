@@ -102,14 +102,14 @@ ShaderGroupContainer& BaseGroup::shader_groups() const
 
 bool BaseGroup::create_osl_shader_groups(
     OSL::ShadingSystem& shading_system,
-    AbortSwitch*        abort_switch)
+    IAbortSwitch*       abort_switch)
 {
     bool success = true;
 
     for (each<AssemblyContainer> i = assemblies(); i; ++i)
     {
         if (is_aborted(abort_switch))
-            return false;
+            return true;
 
         success = success && i->create_osl_shader_groups(
             shading_system,
@@ -119,7 +119,7 @@ bool BaseGroup::create_osl_shader_groups(
     for (each<ShaderGroupContainer> i = shader_groups(); i; ++i)
     {
         if (is_aborted(abort_switch))
-            return false;
+            return true;
 
         success = success && i->create_osl_shader_group(
             shading_system,

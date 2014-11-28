@@ -415,7 +415,7 @@ bool ObjectInstance::uses_alpha_mapping() const
 bool ObjectInstance::on_frame_begin(
     const Project&          project,
     const Assembly&         assembly,
-    AbortSwitch*            abort_switch)
+    IAbortSwitch*           abort_switch)
 {
     const EntityDefMessageContext context("object instance", this);
 

@@ -30,12 +30,6 @@
 // Interface header.
 #include "defaultrenderercontroller.h"
 
-// appleseed.foundation headers.
-#include "foundation/platform/thread.h"
-#include "foundation/platform/types.h"
-
-using namespace foundation;
-
 namespace renderer
 {
 
@@ -68,11 +62,12 @@ void DefaultRendererController::on_frame_end()
 {
 }
 
-DefaultRendererController::Status DefaultRendererController::on_progress()
+void DefaultRendererController::on_progress()
 {
-    const uint32 PollRate = 250;            // hertz
-    foundation::sleep(1000 / PollRate);     // namespace qualifer required
+}
 
+IRendererController::Status DefaultRendererController::get_status() const
+{
     return ContinueRendering;
 }
 

@@ -252,7 +252,7 @@ void TextureInstance::check_texture() const
 
 bool TextureInstance::on_frame_begin(
     const Project&          project,
-    AbortSwitch*            abort_switch)
+    IAbortSwitch*           abort_switch)
 {
     return true;
 }

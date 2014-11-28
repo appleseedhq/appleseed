@@ -253,7 +253,7 @@ namespace
                 vector<ITileCallback*>&             tile_callbacks,
                 IPassCallback*                      pass_callback,
                 JobQueue&                           job_queue,
-                AbortSwitch&                        abort_switch,
+                IAbortSwitch&                       abort_switch,
                 bool&                               is_rendering)
               : m_frame(frame)
               , m_tile_ordering(tile_ordering)
@@ -321,7 +321,7 @@ namespace
             IPassCallback*                          m_pass_callback;
             const size_t                            m_pass_count;
             JobQueue&                               m_job_queue;
-            AbortSwitch&                            m_abort_switch;
+            IAbortSwitch&                           m_abort_switch;
             bool&                                   m_is_rendering;
             TileJobFactory                          m_tile_job_factory;
         };

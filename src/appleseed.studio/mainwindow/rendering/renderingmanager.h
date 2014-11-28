@@ -41,9 +41,6 @@
 #include "renderer/api/rendering.h"
 #include "renderer/api/utility.h"
 
-// appleseed.foundation headers.
-#include "foundation/utility/job/abortswitch.h"
-
 // Qt headers.
 #include <QBasicTimer>
 #include <QObject>
@@ -146,7 +143,6 @@ class RenderingManager
     std::auto_ptr<QtTileCallbackFactory>        m_tile_callback_factory;
     std::auto_ptr<renderer::MasterRenderer>     m_master_renderer;
     std::auto_ptr<QThread>                      m_master_renderer_thread;
-    foundation::AbortSwitch                     m_abort_switch;
 
     RenderingTimer                              m_rendering_timer;
     QBasicTimer                                 m_render_widget_update_timer;

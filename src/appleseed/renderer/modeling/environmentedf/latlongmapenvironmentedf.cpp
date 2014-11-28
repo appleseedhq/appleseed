@@ -183,7 +183,7 @@ namespace
 
         virtual bool on_frame_begin(
             const Project&      project,
-            AbortSwitch*        abort_switch) APPLESEED_OVERRIDE
+            IAbortSwitch*       abort_switch) APPLESEED_OVERRIDE
         {
             if (!EnvironmentEDF::on_frame_begin(project, abort_switch))
                 return false;
@@ -294,7 +294,7 @@ namespace
 
         auto_ptr<ImageImportanceSamplerType>    m_importance_sampler;
 
-        void build_importance_map(const Scene& scene, AbortSwitch* abort_switch)
+        void build_importance_map(const Scene& scene, IAbortSwitch*abort_switch)
         {
             const Source* radiance_source = m_inputs.source("radiance");
             assert(radiance_source);

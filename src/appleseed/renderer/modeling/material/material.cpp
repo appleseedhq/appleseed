@@ -116,7 +116,7 @@ const char* Material::get_edf_name() const
 bool Material::on_frame_begin(
     const Project&      project,
     const Assembly&     assembly,
-    AbortSwitch*        abort_switch)
+    IAbortSwitch*       abort_switch)
 {
     m_shade_alpha_cutouts = m_params.get_optional<bool>("shade_alpha_cutouts", false);
 

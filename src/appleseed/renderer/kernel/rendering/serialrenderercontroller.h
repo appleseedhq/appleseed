@@ -68,19 +68,19 @@ class SerialRendererController
     virtual void on_rendering_abort() APPLESEED_OVERRIDE;
     virtual void on_frame_begin() APPLESEED_OVERRIDE;
     virtual void on_frame_end() APPLESEED_OVERRIDE;
-
-    virtual Status on_progress() APPLESEED_OVERRIDE;
+    virtual void on_progress() APPLESEED_OVERRIDE;
+    virtual Status get_status() const APPLESEED_OVERRIDE;
 
     void add_pre_render_tile_callback(
-        const size_t    x,
-        const size_t    y,
-        const size_t    width,
-        const size_t    height);
+        const size_t            x,
+        const size_t            y,
+        const size_t            width,
+        const size_t            height);
 
     void add_post_render_tile_callback(
-        const Frame*    frame,
-        const size_t    tile_x,
-        const size_t    tile_y);
+        const Frame*            frame,
+        const size_t            tile_x,
+        const size_t            tile_y);
 
     void add_post_render_tile_callback(const Frame* frame);
 

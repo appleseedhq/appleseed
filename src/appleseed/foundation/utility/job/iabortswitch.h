@@ -5,7 +5,6 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
 // Copyright (c) 2014 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,45 +26,43 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "environmentedf.h"
+#ifndef APPLESEED_FOUNDATION_UTILITY_JOB_IABORTSWITCH_H
+#define APPLESEED_FOUNDATION_UTILITY_JOB_IABORTSWITCH_H
 
-using namespace foundation;
+// appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
 
-namespace renderer
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+namespace foundation
 {
 
 //
-// EnvironmentEDF class implementation.
+// Interface for a thread-safe abort switch.
 //
 
-namespace
+class APPLESEED_DLLSYMBOL IAbortSwitch
+  : public foundation::NonCopyable
 {
-    const UniqueID g_class_uid = new_guid();
+  public:
+    // Destructor.
+    virtual ~IAbortSwitch() {}
+
+    // Check whether the abort flag is set.
+    virtual bool is_aborted() const = 0;
+};
+
+
+//
+// An utility method to check if a nullable abort switch was triggered.
+//
+
+inline bool is_aborted(IAbortSwitch* abort_switch)
+{
+    return abort_switch && abort_switch->is_aborted();
 }
 
-UniqueID EnvironmentEDF::get_class_uid()
-{
-    return g_class_uid;
-}
+}       // namespace foundation
 
-EnvironmentEDF::EnvironmentEDF(
-    const char*         name,
-    const ParamArray&   params)
-  : ConnectableEntity(g_class_uid, params)
-{
-    set_name(name);
-}
-
-bool EnvironmentEDF::on_frame_begin(
-    const Project&      project,
-    IAbortSwitch*       abort_switch)
-{
-    return true;
-}
-
-void EnvironmentEDF::on_frame_end(const Project& project)
-{
-}
-
-}   // namespace renderer
+#endif  // !APPLESEED_FOUNDATION_UTILITY_JOB_IABORTSWITCH_H

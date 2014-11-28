@@ -202,8 +202,7 @@ void RenderingManager::start_rendering(
             *m_project,
             m_params,
             &m_renderer_controller,
-            m_tile_callback_factory.get(),
-            &m_abort_switch));
+            m_tile_callback_factory.get()));
 
     m_master_renderer_thread.reset(
         new MasterRendererThread(m_master_renderer.get()));
@@ -258,20 +257,16 @@ void RenderingManager::abort_rendering()
     RENDERER_LOG_DEBUG("aborting rendering...");
 
     m_renderer_controller.set_status(IRendererController::AbortRendering);
-    m_abort_switch.abort();
 }
 
 void RenderingManager::restart_rendering()
 {
     m_renderer_controller.set_status(IRendererController::RestartRendering);
-
-    // Don't force-abort, the initialization sequence needs to go through anyway.
 }
 
 void RenderingManager::reinitialize_rendering()
 {
     m_renderer_controller.set_status(IRendererController::ReinitializeRendering);
-    m_abort_switch.abort();
 }
 
 void RenderingManager::slot_abort_rendering()

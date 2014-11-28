@@ -171,7 +171,7 @@ namespace
     bool invoke_on_frame_begin(
         const Project&          project,
         EntityCollection&       entities,
-        AbortSwitch*            abort_switch)
+        IAbortSwitch*           abort_switch)
     {
         bool success = true;
 
@@ -191,7 +191,7 @@ namespace
         const Project&          project,
         const Assembly&         assembly,
         EntityCollection&       entities,
-        AbortSwitch*            abort_switch)
+        IAbortSwitch*           abort_switch)
     {
         bool success = true;
 
@@ -228,7 +228,7 @@ namespace
 
 bool Assembly::on_frame_begin(
     const Project&      project,
-    AbortSwitch*        abort_switch)
+    IAbortSwitch*       abort_switch)
 {
     bool success = true;
     success = success && invoke_on_frame_begin(project, texture_instances(), abort_switch);

@@ -78,7 +78,7 @@
 #include <cassert>
 
 // Forward declarations.
-namespace foundation    { class AbortSwitch; }
+namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class LightingConditions; }
 
 using namespace foundation;
@@ -217,7 +217,7 @@ namespace
         virtual void generate_samples(
             const size_t                sample_count,
             SampleAccumulationBuffer&   buffer,
-            AbortSwitch&                abort_switch) APPLESEED_OVERRIDE
+            IAbortSwitch&               abort_switch) APPLESEED_OVERRIDE
         {
             m_light_sample_count = 0;
 

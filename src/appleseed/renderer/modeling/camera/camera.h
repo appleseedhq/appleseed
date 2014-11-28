@@ -44,8 +44,8 @@
 #include "main/dllsymbol.h"
 
 // Forward declarations.
-namespace foundation    { class AbortSwitch; }
 namespace foundation    { class DictionaryArray; }
+namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class Frame; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
@@ -93,7 +93,7 @@ class APPLESEED_DLLSYMBOL Camera
     // Returns true on success, false otherwise.
     virtual bool on_frame_begin(
         const Project&                  project,
-        foundation::AbortSwitch*        abort_switch = 0);
+        foundation::IAbortSwitch*       abort_switch = 0);
 
     // This method is called once after rendering each frame.
     virtual void on_frame_end(const Project& project);

@@ -37,7 +37,7 @@
 #include "main/dllsymbol.h"
 
 // Forward declarations.
-namespace foundation    { class AbortSwitch; }
+namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class JobQueue; }
 namespace renderer      { class Frame; }
 
@@ -58,13 +58,13 @@ class APPLESEED_DLLSYMBOL IPassCallback
     virtual void pre_render(
         const Frame&                frame,
         foundation::JobQueue&       job_queue,
-        foundation::AbortSwitch&    abort_switch) = 0;
+        foundation::IAbortSwitch&   abort_switch) = 0;
 
     // This method is called at the end of a pass.
     virtual void post_render(
         const Frame&                frame,
         foundation::JobQueue&       job_queue,
-        foundation::AbortSwitch&    abort_switch) = 0;
+        foundation::IAbortSwitch&   abort_switch) = 0;
 };
 
 }       // namespace renderer

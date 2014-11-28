@@ -81,7 +81,7 @@ namespace
         virtual bool on_frame_begin(
             const Project&              project,
             const Assembly&             assembly,
-            foundation::AbortSwitch*    abort_switch = 0) APPLESEED_OVERRIDE
+            foundation::IAbortSwitch*   abort_switch = 0) APPLESEED_OVERRIDE
         {
             if (!Material::on_frame_begin(project, assembly, abort_switch))
                 return false;

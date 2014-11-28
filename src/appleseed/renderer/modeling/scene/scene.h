@@ -47,7 +47,7 @@
 #include "main/dllsymbol.h"
 
 // Forward declarations.
-namespace foundation    { class AbortSwitch; }
+namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class Project; }
 
 namespace renderer
@@ -101,7 +101,7 @@ class APPLESEED_DLLSYMBOL Scene
     // Returns true on success, false otherwise.
     bool on_frame_begin(
         const Project&              project,
-        foundation::AbortSwitch*    abort_switch = 0);
+        foundation::IAbortSwitch*   abort_switch = 0);
 
     // Perform post-frame rendering actions.
     void on_frame_end(const Project& project);

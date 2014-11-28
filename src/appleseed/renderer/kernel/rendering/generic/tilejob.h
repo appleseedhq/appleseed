@@ -64,7 +64,7 @@ class TileJob
         const size_t                tile_x,
         const size_t                tile_y,
         const size_t                pass_hash,
-        foundation::AbortSwitch&    abort_switch);
+        foundation::IAbortSwitch&   abort_switch);
 
     // Execute the job.
     virtual void execute(const size_t thread_index);
@@ -76,7 +76,7 @@ class TileJob
     const size_t                    m_tile_x;
     const size_t                    m_tile_y;
     const size_t                    m_pass_hash;
-    foundation::AbortSwitch&        m_abort_switch;
+    foundation::IAbortSwitch&       m_abort_switch;
 };
 
 }       // namespace renderer

@@ -114,7 +114,7 @@ namespace
             const size_t    tile_x,
             const size_t    tile_y,
             const size_t    pass_hash,
-            AbortSwitch&    abort_switch) APPLESEED_OVERRIDE
+            IAbortSwitch&   abort_switch) APPLESEED_OVERRIDE
         {
             // Retrieve frame properties.
             const CanvasProperties& frame_properties = frame.image().properties();

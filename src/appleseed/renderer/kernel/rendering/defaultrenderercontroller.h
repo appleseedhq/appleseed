@@ -69,7 +69,10 @@ class APPLESEED_DLLSYMBOL DefaultRendererController
     virtual void on_frame_end() APPLESEED_OVERRIDE;
 
     // This method is called continuously during rendering.
-    virtual Status on_progress() APPLESEED_OVERRIDE;
+    virtual void on_progress() APPLESEED_OVERRIDE;
+
+    // Return the current rendering status.
+    virtual Status get_status() const APPLESEED_OVERRIDE;
 };
 
 }       // namespace renderer

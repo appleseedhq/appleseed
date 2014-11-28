@@ -51,8 +51,8 @@
 #include <cstddef>
 
 // Forward declarations.
-namespace foundation    { class AbortSwitch; }
 namespace foundation    { class DictionaryArray; }
+namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class StringDictionary; }
 namespace renderer      { class Assembly; }
 namespace renderer      { class Material; }
@@ -170,7 +170,7 @@ class APPLESEED_DLLSYMBOL ObjectInstance
     bool on_frame_begin(
         const Project&              project,
         const Assembly&             assembly,
-        foundation::AbortSwitch*    abort_switch);
+        foundation::IAbortSwitch*   abort_switch);
 
     // This method is called once after rendering each frame.
     void on_frame_end(const Project& project);

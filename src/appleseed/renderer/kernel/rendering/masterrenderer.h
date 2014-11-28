@@ -56,7 +56,7 @@ END_OSL_INCLUDES
 #endif
 
 // Forward declarations.
-namespace foundation    { class AbortSwitch; }
+namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class IFrameRenderer; }
 namespace renderer      { class ITileCallbackFactory; }
 namespace renderer      { class ITileCallback; }
@@ -79,16 +79,14 @@ class APPLESEED_DLLSYMBOL MasterRenderer
         Project&                    project,
         const ParamArray&           params,
         IRendererController*        renderer_controller,
-        ITileCallbackFactory*       tile_callback_factory = 0,
-        foundation::AbortSwitch*    abort_switch = 0);
+        ITileCallbackFactory*       tile_callback_factory = 0);
 
     // Constructor for serial tile callbacks.
     MasterRenderer(
         Project&                    project,
         const ParamArray&           params,
         IRendererController*        renderer_controller,
-        ITileCallback*              tile_callback,
-        foundation::AbortSwitch*    abort_switch = 0);
+        ITileCallback*              tile_callback);
 
     // Destructor.
     ~MasterRenderer();
@@ -105,7 +103,6 @@ class APPLESEED_DLLSYMBOL MasterRenderer
     ParamArray                      m_params;
     IRendererController*            m_renderer_controller;
     ITileCallbackFactory*           m_tile_callback_factory;
-    foundation::AbortSwitch*        m_abort_switch;
 
     // Storage for serial tile callbacks.
     SerialRendererController*       m_serial_renderer_controller;
@@ -127,10 +124,12 @@ class APPLESEED_DLLSYMBOL MasterRenderer
 #ifdef APPLESEED_WITH_OSL
         , OSL::ShadingSystem&       shading_system
 #endif
-        );
+        , foundation::IAbortSwitch& abort_switch);
 
     // Wait until the the frame is completed or rendering is aborted.
-    IRendererController::Status wait_for_event(IFrameRenderer* frame_renderer) const;
+    IRendererController::Status wait_for_event(
+        IFrameRenderer*             frame_renderer,
+        foundation::IAbortSwitch&   abort_switch) const;
 
     // Bind all scene entities inputs. Return true on success, false otherwise.
     bool bind_scene_entities_inputs() const;

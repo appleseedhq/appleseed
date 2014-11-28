@@ -31,7 +31,9 @@
 #define APPLESEED_FOUNDATION_UTILITY_JOB_ABORTSWITCH_H
 
 // appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 #include "foundation/platform/thread.h"
+#include "foundation/utility/job/iabortswitch.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -47,6 +49,7 @@ namespace foundation
 //
 
 class APPLESEED_DLLSYMBOL AbortSwitch
+  : public IAbortSwitch
 {
   public:
     // Constructor, clears the abort flag.
@@ -59,21 +62,11 @@ class APPLESEED_DLLSYMBOL AbortSwitch
     void abort();
 
     // Check whether the abort flag is set.
-    bool is_aborted() const;
+    virtual bool is_aborted() const APPLESEED_OVERRIDE;
 
   private:
     mutable volatile boost::uint32_t m_aborted;
 };
-
-
-//
-// An utility method to check if a nullable abort switch was triggered.
-//
-
-inline bool is_aborted(AbortSwitch* abort_switch)
-{
-    return abort_switch && abort_switch->is_aborted();
-}
 
 
 //

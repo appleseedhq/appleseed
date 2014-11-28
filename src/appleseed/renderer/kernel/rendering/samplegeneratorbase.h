@@ -39,7 +39,7 @@
 #include <vector>
 
 // Forward declarations.
-namespace foundation    { class AbortSwitch; }
+namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class SampleAccumulationBuffer; }
 
 namespace renderer
@@ -64,7 +64,7 @@ class SampleGeneratorBase
     virtual void generate_samples(
         const size_t                sample_count,
         SampleAccumulationBuffer&   buffer,
-        foundation::AbortSwitch&    abort_switch);
+        foundation::IAbortSwitch&   abort_switch);
 
   protected:
     typedef std::vector<Sample> SampleVector;

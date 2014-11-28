@@ -45,7 +45,7 @@
 #include <cstddef>
 
 // Forward declarations.
-namespace foundation    { class AbortSwitch; }
+namespace foundation    { class IAbortSwitch; }
 
 using namespace foundation;
 using namespace std;
@@ -73,7 +73,7 @@ namespace
             const size_t    tile_x,
             const size_t    tile_y,
             const size_t    pass_hash,
-            AbortSwitch&    abort_switch) APPLESEED_OVERRIDE
+            IAbortSwitch&   abort_switch) APPLESEED_OVERRIDE
         {
             Image& image = frame.image();
 

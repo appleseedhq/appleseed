@@ -53,7 +53,7 @@
 #include <cstddef>
 
 // Forward declarations.
-namespace foundation    { class AbortSwitch; }
+namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class Project; }
 
 using namespace foundation;
@@ -93,7 +93,7 @@ namespace
 
         virtual bool on_frame_begin(
             const Project&          project,
-            AbortSwitch*            abort_switch) APPLESEED_OVERRIDE
+            IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
         {
             if (!Camera::on_frame_begin(project, abort_switch))
                 return false;

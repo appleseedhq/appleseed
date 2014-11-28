@@ -48,8 +48,8 @@
 #include <cassert>
 
 // Forward declarations.
-namespace foundation    { class AbortSwitch; }
 namespace foundation    { class DictionaryArray; }
+namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class LightingConditions; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
@@ -137,7 +137,7 @@ class APPLESEED_DLLSYMBOL TextureInstance
     // Returns true on success, false otherwise.
     bool on_frame_begin(
         const Project&                  project,
-        foundation::AbortSwitch*        abort_switch = 0);
+        foundation::IAbortSwitch*       abort_switch = 0);
 
     // This method is called once after rendering each frame.
     void on_frame_end(const Project& project);

@@ -208,7 +208,7 @@ namespace
     bool invoke_on_frame_begin(
         const Project&          project,
         EntityCollection&       entities,
-        AbortSwitch*            abort_switch)
+        IAbortSwitch*           abort_switch)
     {
         bool success = true;
 
@@ -235,7 +235,7 @@ namespace
 
 bool Scene::on_frame_begin(
     const Project&          project,
-    AbortSwitch*            abort_switch)
+    IAbortSwitch*           abort_switch)
 {
     bool success = true;
 

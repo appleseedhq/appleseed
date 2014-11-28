@@ -68,7 +68,7 @@ void SampleGeneratorBase::reset()
 void SampleGeneratorBase::generate_samples(
     const size_t                sample_count,
     SampleAccumulationBuffer&   buffer,
-    AbortSwitch&                abort_switch)
+    IAbortSwitch&               abort_switch)
 {
     assert(sample_count > 0);
 

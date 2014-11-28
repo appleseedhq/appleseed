@@ -42,7 +42,7 @@
 #include "main/dllsymbol.h"
 
 // Forward declarations.
-namespace foundation    { class AbortSwitch; }
+namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class Project; }
 
 namespace renderer

@@ -141,7 +141,7 @@ void ShaderGroup::add_connection(
 
 bool ShaderGroup::create_osl_shader_group(
     OSL::ShadingSystem& shading_system,
-    AbortSwitch*        abort_switch)
+    IAbortSwitch*       abort_switch)
 {
     assert(impl->m_shader_group_ref.get() == 0);
 
@@ -160,7 +160,7 @@ bool ShaderGroup::create_osl_shader_group(
         for (each<ShaderContainer> i = impl->m_shaders; i; ++i)
         {
             if (is_aborted(abort_switch))
-                return false;
+                return true;
 
             if (!i->add(shading_system))
                 return false;
@@ -169,7 +169,7 @@ bool ShaderGroup::create_osl_shader_group(
         for (each<ShaderConnectionContainer> i = impl->m_connections; i; ++i)
         {
             if (is_aborted(abort_switch))
-                return false;
+                return true;
 
             if (!i->add(shading_system))
                 return false;

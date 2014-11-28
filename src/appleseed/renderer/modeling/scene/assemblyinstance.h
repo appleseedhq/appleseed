@@ -48,7 +48,7 @@
 #include <cassert>
 
 // Forward declarations.
-namespace foundation    { class AbortSwitch; }
+namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class Assembly; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
@@ -95,7 +95,7 @@ class APPLESEED_DLLSYMBOL AssemblyInstance
     // Returns true on success, false otherwise.
     bool on_frame_begin(
         const Project&              project,
-        foundation::AbortSwitch*    abort_switch);
+        foundation::IAbortSwitch*   abort_switch);
 
     // This method is called once after rendering each frame.
     void on_frame_end(const Project& project);

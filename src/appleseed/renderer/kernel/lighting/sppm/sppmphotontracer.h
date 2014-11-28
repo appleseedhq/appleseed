@@ -53,7 +53,7 @@ END_OSL_INCLUDES
 #include <cstddef>
 
 // Forward declarations.
-namespace foundation    { class AbortSwitch; }
+namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class JobQueue; }
 namespace renderer      { class LightSampler; }
 namespace renderer      { class Scene; }
@@ -85,7 +85,7 @@ class SPPMPhotonTracer
         SPPMPhotonVector&           photons,
         const size_t                pass_hash,
         foundation::JobQueue&       job_queue,
-        foundation::AbortSwitch&    abort_switch);
+        foundation::IAbortSwitch&   abort_switch);
 
   private:
     const SPPMParameters            m_params;
@@ -108,7 +108,7 @@ class SPPMPhotonTracer
         foundation::JobQueue&       job_queue,
         size_t&                     job_count,
         size_t&                     emitted_photon_count,
-        foundation::AbortSwitch&    abort_switch);
+        foundation::IAbortSwitch&   abort_switch);
 
     void schedule_environment_photon_tracing_jobs(
         SPPMPhotonVector&           photons,
@@ -116,7 +116,7 @@ class SPPMPhotonTracer
         foundation::JobQueue&       job_queue,
         size_t&                     job_count,
         size_t&                     emitted_photon_count,
-        foundation::AbortSwitch&    abort_switch);
+        foundation::IAbortSwitch&   abort_switch);
 };
 
 }       // namespace renderer

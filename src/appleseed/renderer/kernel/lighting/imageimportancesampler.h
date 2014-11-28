@@ -77,7 +77,7 @@ class ImageImportanceSampler
     template <typename ImageSampler>
     void rebuild(
         ImageSampler&               sampler,
-        foundation::AbortSwitch*    abort_switch = 0);
+        foundation::IAbortSwitch*   abort_switch = 0);
 
     // Sample the image and return the coordinates of the chosen pixel
     // as well as its probability density.
@@ -130,7 +130,7 @@ template <typename Payload, typename Importance>
 template <typename ImageSampler>
 void ImageImportanceSampler<Payload, Importance>::rebuild(
     ImageSampler&                   sampler,
-    foundation::AbortSwitch*        abort_switch)
+    foundation::IAbortSwitch*       abort_switch)
 {
     m_cdf_y.clear();
     m_cdf_y.reserve(m_height);

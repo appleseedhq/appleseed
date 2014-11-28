@@ -78,7 +78,7 @@
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/thread.h"
-#include "foundation/utility/job/abortswitch.h"
+#include "foundation/utility/job/iabortswitch.h"
 #include "foundation/utility/searchpaths.h"
 
 // Boost headers.
@@ -106,13 +106,11 @@ MasterRenderer::MasterRenderer(
     Project&                project,
     const ParamArray&       params,
     IRendererController*    renderer_controller,
-    ITileCallbackFactory*   tile_callback_factory,
-    AbortSwitch*            abort_switch)
+    ITileCallbackFactory*   tile_callback_factory)
   : m_project(project)
   , m_params(params)
   , m_renderer_controller(renderer_controller)
   , m_tile_callback_factory(tile_callback_factory)
-  , m_abort_switch(abort_switch)
   , m_serial_renderer_controller(0)
   , m_serial_tile_callback_factory(0)
 #ifdef APPLESEED_WITH_OIIO
@@ -125,11 +123,9 @@ MasterRenderer::MasterRenderer(
     Project&                project,
     const ParamArray&       params,
     IRendererController*    renderer_controller,
-    ITileCallback*          tile_callback,
-    AbortSwitch*            abort_switch)
+    ITileCallback*          tile_callback)
   : m_project(project)
   , m_params(params)
-  , m_abort_switch(abort_switch)
   , m_serial_renderer_controller(new SerialRendererController(renderer_controller, tile_callback))
   , m_serial_tile_callback_factory(new SerialTileCallbackFactory(m_serial_renderer_controller))
 #ifdef APPLESEED_WITH_OIIO
@@ -244,8 +240,9 @@ namespace
 
 #endif
 
-    struct ScopedDisplayClose
+    class ScopedDisplayClose
     {
+      public:
         ScopedDisplayClose(
             const Project&      project,
             const bool          do_close)
@@ -260,8 +257,27 @@ namespace
                 m_project.get_display()->close();
         }
 
+      private:
         const Project&  m_project;
         const bool      m_do_close;
+    };
+
+    class RendererControllerAbortSwitch
+      : public IAbortSwitch
+    {
+      public:
+        explicit RendererControllerAbortSwitch(IRendererController& renderer_controller)
+          : m_renderer_controller(renderer_controller)
+        {
+        }
+
+        virtual bool is_aborted() const APPLESEED_OVERRIDE
+        {
+            return m_renderer_controller.get_status() != IRendererController::ContinueRendering;
+        }
+
+      private:
+        IRendererController& m_renderer_controller;
     };
 }
 
@@ -269,10 +285,6 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
 {
     assert(m_project.get_scene());
     assert(m_project.get_frame());
-
-    // Reset the abort switch.
-    if (m_abort_switch)
-        m_abort_switch->clear();
 
     // Create OpenImageIO's texture system.
 #ifdef APPLESEED_WITH_OIIO
@@ -386,11 +398,15 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
 
     register_closures(*shading_system);
 
-    if (!scene.create_osl_shader_groups(*shading_system, m_abort_switch))
+    RendererControllerAbortSwitch abort_switch(*m_renderer_controller);
+
+    // Compile OSL shaders.
+    if (!scene.create_osl_shader_groups(*shading_system, &abort_switch))
         return IRendererController::AbortRendering;
 
-    if (is_aborted(m_abort_switch))
-        return IRendererController::ContinueRendering;
+    // Don't proceed further if rendering was aborted.
+    if (abort_switch.is_aborted())
+        return m_renderer_controller->get_status();
 
 #endif  // APPLESEED_WITH_OSL
 
@@ -714,7 +730,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
 #ifdef APPLESEED_WITH_OSL
             , *shading_system
 #endif
-            );
+            , abort_switch);
 
     // Print texture store performance statistics.
     RENDERER_LOG_DEBUG("%s", texture_store.get_statistics().to_string().c_str());
@@ -727,7 +743,7 @@ IRendererController::Status MasterRenderer::render_frame_sequence(
 #ifdef APPLESEED_WITH_OSL
     , OSL::ShadingSystem&   shading_system
 #endif
-    )
+    , IAbortSwitch&         abort_switch)
 {
     while (true)
     {
@@ -739,27 +755,26 @@ IRendererController::Status MasterRenderer::render_frame_sequence(
         m_renderer_controller->on_frame_begin();
 
         // Prepare the scene for rendering. Don't proceed if that failed.
-        if (!m_project.get_scene()->on_frame_begin(m_project, m_abort_switch))
+        if (!m_project.get_scene()->on_frame_begin(m_project, &abort_switch))
         {
             m_renderer_controller->on_frame_end();
             return IRendererController::AbortRendering;
         }
 
         // Don't proceed with rendering if scene preparation was aborted.
-        if (is_aborted(m_abort_switch))
+        if (abort_switch.is_aborted())
         {
             m_renderer_controller->on_frame_end();
-            return m_renderer_controller->on_progress();
+            return m_renderer_controller->get_status();
         }
 
 #ifdef APPLESEED_WITH_OSL
-        static_cast<RendererServices*>(shading_system.renderer())
-            ->initialize();
+        static_cast<RendererServices*>(shading_system.renderer())->initialize();
 #endif
 
         frame_renderer->start_rendering();
 
-        const IRendererController::Status status = wait_for_event(frame_renderer);
+        const IRendererController::Status status = wait_for_event(frame_renderer, abort_switch);
 
         switch (status)
         {
@@ -796,21 +811,22 @@ IRendererController::Status MasterRenderer::render_frame_sequence(
     }
 }
 
-IRendererController::Status MasterRenderer::wait_for_event(IFrameRenderer* frame_renderer) const
+IRendererController::Status MasterRenderer::wait_for_event(
+    IFrameRenderer*         frame_renderer,
+    IAbortSwitch&           abort_switch) const
 {
-    while (frame_renderer->is_rendering())
+    while (true)
     {
-        // Make sure to retrieve the status *after* having checked the abort switch.
-        // Clients are required to configure their renderer controller such that it
-        // reports the desired status before they trigger the abort switch.
-        const bool aborted = is_aborted(m_abort_switch);
-        const IRendererController::Status status = m_renderer_controller->on_progress();
+        if (!frame_renderer->is_rendering())
+            return IRendererController::TerminateRendering;
 
-        if (aborted || status != IRendererController::ContinueRendering)
-            return status;
+        if (abort_switch.is_aborted())
+            return m_renderer_controller->get_status();
+
+        m_renderer_controller->on_progress();
+
+        foundation::sleep(1);   // namespace qualifer required
     }
-
-    return IRendererController::TerminateRendering;
 }
 
 bool MasterRenderer::bind_scene_entities_inputs() const

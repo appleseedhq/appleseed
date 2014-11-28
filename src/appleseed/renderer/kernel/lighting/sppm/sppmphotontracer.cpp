@@ -215,7 +215,7 @@ namespace
 #ifdef APPLESEED_WITH_OSL
             OSL::ShadingSystem&     shading_system,
 #endif
-            AbortSwitch&            abort_switch)
+            IAbortSwitch&           abort_switch)
           : m_scene(scene)
           , m_light_sampler(light_sampler)
           , m_texture_cache(texture_store)
@@ -280,7 +280,7 @@ namespace
         const size_t                m_photon_begin;
         const size_t                m_photon_end;
         const size_t                m_pass_hash;
-        AbortSwitch&                m_abort_switch;
+        IAbortSwitch&               m_abort_switch;
         SPPMPhotonVector            m_local_photons;
 #ifdef APPLESEED_WITH_OSL
         OSLShaderGroupExec          m_shadergroup_exec;
@@ -484,7 +484,7 @@ namespace
 #ifdef APPLESEED_WITH_OSL
             OSL::ShadingSystem&     shading_system,
 #endif
-            AbortSwitch&            abort_switch)
+            IAbortSwitch&           abort_switch)
           : m_scene(scene)
           , m_env_edf(*scene.get_environment()->get_environment_edf())
           , m_light_sampler(light_sampler)
@@ -553,7 +553,7 @@ namespace
         const size_t                m_photon_begin;
         const size_t                m_photon_end;
         const size_t                m_pass_hash;
-        AbortSwitch&                m_abort_switch;
+        IAbortSwitch&               m_abort_switch;
         const double                m_safe_scene_radius;
         const double                m_disk_point_prob;
         SPPMPhotonVector            m_local_photons;
@@ -669,7 +669,7 @@ void SPPMPhotonTracer::trace_photons(
     SPPMPhotonVector&       photons,
     const size_t            pass_hash,
     JobQueue&               job_queue,
-    AbortSwitch&            abort_switch)
+    IAbortSwitch&           abort_switch)
 {
     // Start stopwatch.
     Stopwatch<DefaultWallclockTimer> stopwatch;
@@ -728,7 +728,7 @@ void SPPMPhotonTracer::schedule_light_photon_tracing_jobs(
     JobQueue&               job_queue,
     size_t&                 job_count,
     size_t&                 emitted_photon_count,
-    AbortSwitch&            abort_switch)
+    IAbortSwitch&           abort_switch)
 {
     RENDERER_LOG_INFO(
         "tracing %s sppm light %s...",
@@ -771,7 +771,7 @@ void SPPMPhotonTracer::schedule_environment_photon_tracing_jobs(
     JobQueue&               job_queue,
     size_t&                 job_count,
     size_t&                 emitted_photon_count,
-    AbortSwitch&            abort_switch)
+    IAbortSwitch&           abort_switch)
 {
     RENDERER_LOG_INFO(
         "tracing %s sppm environment %s...",

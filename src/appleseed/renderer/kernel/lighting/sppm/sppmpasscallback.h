@@ -61,7 +61,7 @@ END_OSL_INCLUDES
 #include <memory>
 
 // Forward declarations.
-namespace foundation    { class AbortSwitch; }
+namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class JobQueue; }
 namespace renderer      { class Frame; }
 namespace renderer      { class LightSampler; }
@@ -103,13 +103,13 @@ class SPPMPassCallback
     virtual void pre_render(
         const Frame&                frame,
         foundation::JobQueue&       job_queue,
-        foundation::AbortSwitch&    abort_switch) APPLESEED_OVERRIDE;
+        foundation::IAbortSwitch&   abort_switch) APPLESEED_OVERRIDE;
 
     // This method is called at the end of a pass.
     virtual void post_render(
         const Frame&                frame,
         foundation::JobQueue&       job_queue,
-        foundation::AbortSwitch&    abort_switch) APPLESEED_OVERRIDE;
+        foundation::IAbortSwitch&   abort_switch) APPLESEED_OVERRIDE;
 
     // Return the i'th photon.
     const SPPMMonoPhoton& get_mono_photon(const size_t i) const;

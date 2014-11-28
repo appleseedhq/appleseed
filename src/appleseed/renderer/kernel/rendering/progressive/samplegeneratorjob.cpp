@@ -81,7 +81,7 @@ SampleGeneratorJob::SampleGeneratorJob(
     const size_t                job_index,
     const size_t                job_count,
     const size_t                pass,
-    AbortSwitch&                abort_switch)
+    IAbortSwitch&               abort_switch)
   : m_frame(frame)
   , m_buffer(buffer)
   , m_sample_generator(sample_generator)

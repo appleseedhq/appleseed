@@ -59,7 +59,7 @@ EnvironmentShader::EnvironmentShader(
 
 bool EnvironmentShader::on_frame_begin(
     const Project&      project,
-    AbortSwitch*        abort_switch)
+    IAbortSwitch*       abort_switch)
 {
     return true;
 }
