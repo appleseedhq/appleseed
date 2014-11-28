@@ -286,6 +286,9 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     assert(m_project.get_scene());
     assert(m_project.get_frame());
 
+    // Construct an abort switch based on the renderer controller.
+    RendererControllerAbortSwitch abort_switch(*m_renderer_controller);
+
     // Create OpenImageIO's texture system.
 #ifdef APPLESEED_WITH_OIIO
 
@@ -397,8 +400,6 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
 #endif
 
     register_closures(*shading_system);
-
-    RendererControllerAbortSwitch abort_switch(*m_renderer_controller);
 
     // Compile OSL shaders.
     if (!scene.create_osl_shader_groups(*shading_system, &abort_switch))
