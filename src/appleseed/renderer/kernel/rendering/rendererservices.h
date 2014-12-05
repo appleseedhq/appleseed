@@ -281,25 +281,25 @@ class RendererServices
     // Immediately trace a ray from P in the direction R.  Return true
     // if anything hit, otherwise false.
     bool trace(
-        TraceOpt&           options,
-        OSL::ShaderGlobals* sg,
-        const OSL::Vec3&    P,
-        const OSL::Vec3&    dPdx,
-        const OSL::Vec3&    dPdy,
-        const OSL::Vec3&    R,
-        const OSL::Vec3&    dRdx,
-        const OSL::Vec3&    dRdy) APPLESEED_OVERRIDE;
+        TraceOpt&               options,
+        OSL::ShaderGlobals*     sg,
+        const OSL::Vec3&        P,
+        const OSL::Vec3&        dPdx,
+        const OSL::Vec3&        dPdy,
+        const OSL::Vec3&        R,
+        const OSL::Vec3&        dRdx,
+        const OSL::Vec3&        dRdy) APPLESEED_OVERRIDE;
 
     // Get the named message from the renderer and if found then
     // write it into 'val'.  Otherwise, return false.  This is only
     // called for "sourced" messages, not ordinary intra-group messages.
     bool getmessage(
-        OSL::ShaderGlobals* sg,
-        OIIO::ustring       source,
-        OIIO::ustring       name,
-        OIIO::TypeDesc      type,
-        void*               val,
-        bool                derivatives) APPLESEED_OVERRIDE;
+        OSL::ShaderGlobals*     sg,
+        OIIO::ustring           source,
+        OIIO::ustring           name,
+        OIIO::TypeDesc          type,
+        void*                   val,
+        bool                    derivatives) APPLESEED_OVERRIDE;
 
     // Get the named attribute from the renderer and if found then
     // write it into 'val'.  Otherwise, return false.  If no object is
@@ -351,45 +351,45 @@ class RendererServices
   private:
     // This code based on OSL's test renderer.
     typedef bool (RendererServices::*AttrGetterFun)(
-        OSL::ShaderGlobals* sg,
-        bool                derivs,
-        OIIO::ustring       object,
-        OIIO::TypeDesc      type,
-        OIIO::ustring       name,
-        void                *val) const;
+        OSL::ShaderGlobals*     sg,
+        bool                    derivs,
+        OIIO::ustring           object,
+        OIIO::TypeDesc          type,
+        OIIO::ustring           name,
+        void*                   val) const;
 
     typedef boost::unordered_map<OIIO::ustring, AttrGetterFun, OIIO::ustringHash> AttrGetterMapType;
 
-    #define DECLARE_ATTR_GETTER(name)   \
-    bool get_##name(                    \
-        OSL::ShaderGlobals* sg,         \
-        bool                derivs,     \
-        OIIO::ustring       object,     \
-        OIIO::TypeDesc      type,       \
-        OIIO::ustring       name,       \
-        void                *val) const;
+    #define DECLARE_ATTR_GETTER(name)       \
+        bool get_##name(                    \
+            OSL::ShaderGlobals* sg,         \
+            bool                derivs,     \
+            OIIO::ustring       object,     \
+            OIIO::TypeDesc      type,       \
+            OIIO::ustring       name,       \
+            void*               val) const
 
     // Object attributes.
-    DECLARE_ATTR_GETTER(object_instance_id)
-    DECLARE_ATTR_GETTER(object_instance_index)
-    DECLARE_ATTR_GETTER(assembly_instance_id)
+    DECLARE_ATTR_GETTER(object_instance_id);
+    DECLARE_ATTR_GETTER(object_instance_index);
+    DECLARE_ATTR_GETTER(assembly_instance_id);
 
     // Camera attributes.
-    DECLARE_ATTR_GETTER(camera_resolution)
-    DECLARE_ATTR_GETTER(camera_projection)
-    DECLARE_ATTR_GETTER(camera_fov)
-    DECLARE_ATTR_GETTER(camera_pixelaspect)
-    DECLARE_ATTR_GETTER(camera_clip)
-    DECLARE_ATTR_GETTER(camera_clip_near)
-    DECLARE_ATTR_GETTER(camera_clip_far)
-    DECLARE_ATTR_GETTER(camera_shutter)
-    DECLARE_ATTR_GETTER(camera_shutter_open)
-    DECLARE_ATTR_GETTER(camera_shutter_close)
-    DECLARE_ATTR_GETTER(camera_screen_window)
+    DECLARE_ATTR_GETTER(camera_resolution);
+    DECLARE_ATTR_GETTER(camera_projection);
+    DECLARE_ATTR_GETTER(camera_fov);
+    DECLARE_ATTR_GETTER(camera_pixelaspect);
+    DECLARE_ATTR_GETTER(camera_clip);
+    DECLARE_ATTR_GETTER(camera_clip_near);
+    DECLARE_ATTR_GETTER(camera_clip_far);
+    DECLARE_ATTR_GETTER(camera_shutter);
+    DECLARE_ATTR_GETTER(camera_shutter_open);
+    DECLARE_ATTR_GETTER(camera_shutter_close);
+    DECLARE_ATTR_GETTER(camera_screen_window);
 
     // Ray attributes.
-    DECLARE_ATTR_GETTER(ray_depth)
-    DECLARE_ATTR_GETTER(ray_length)
+    DECLARE_ATTR_GETTER(ray_depth);
+    DECLARE_ATTR_GETTER(ray_length);
 
     #undef DECLARE_ATTR_GETTER
 
@@ -400,13 +400,13 @@ class RendererServices
 
     static void log_error(const std::string& message);
 
-    const Project&          m_project;
-    const Camera*           m_camera;
-    OIIO::TextureSystem&    m_texture_sys;
-    const TraceContext&     m_trace_context;
-    TextureStore&           m_texture_store;
-    AttrGetterMapType       m_global_attr_getters;
-    OIIO::ustring           m_cam_projection_str;
+    const Project&              m_project;
+    const Camera*               m_camera;
+    OIIO::TextureSystem&        m_texture_sys;
+    const TraceContext&         m_trace_context;
+    TextureStore&               m_texture_store;
+    AttrGetterMapType           m_global_attr_getters;
+    OIIO::ustring               m_cam_projection_str;
 };
 
 }       // namespace renderer
