@@ -42,14 +42,14 @@ namespace renderer
 {
 
 //
-// An OpenImageIO to appleseed error handler adapter.
+// An OpenImageIO-to-appleseed error handler adapter.
 //
 
 class OIIOErrorHandler
   : public OIIO::ErrorHandler
 {
   public:
-    virtual void operator()(int errcode, const std::string &msg) APPLESEED_OVERRIDE;
+    virtual void operator()(int errcode, const std::string& msg) APPLESEED_OVERRIDE;
 };
 
 }       // namespace renderer
