@@ -74,7 +74,7 @@ namespace renderer
 {
 
 //
-// appleseed's closures IDs.
+// appleseed's closure IDs.
 //
 
 enum ClosureID
@@ -97,11 +97,9 @@ enum ClosureID
 
     // Microfacets shoud always be last.
     MicrofacetID,
-
     MicrofacetBeckmannReflectionID,
     MicrofacetBlinnReflectionID,
     MicrofacetGGXReflectionID,
-
     MicrofacetBeckmannRefractionID,
     MicrofacetGGXRefractionID,
 
@@ -152,7 +150,6 @@ class APPLESEED_ALIGN(16) CompositeSurfaceClosure
     enum { MaxClosureEntries = 8 };
     enum { MaxPoolSize = MaxClosureEntries * (sizeof(boost::mpl::deref<BiggestInputValueType::base>::type) + 16) };
 
-    // Surface
     // m_pool has to be first, because it has to be aligned.
     char                            m_pool[MaxPoolSize];
     void*                           m_input_values[MaxClosureEntries];
@@ -194,6 +191,37 @@ class APPLESEED_ALIGN(16) CompositeSurfaceClosure
         const foundation::Vector3d& tangent,
         const InputValues&          values);
 };
+
+
+//
+// Composite OSL emission closure.
+//
+
+class APPLESEED_ALIGN(16) CompositeEmissionClosure
+  : public foundation::NonCopyable
+{
+  public:
+    explicit CompositeEmissionClosure(const OSL::ClosureColor* ci);
+
+    const DiffuseEDFInputValues& edf_input_values() const;
+
+  private:
+    void process_closure_tree(
+        const OSL::ClosureColor*    closure,
+        const foundation::Color3f&  weight);
+
+    DiffuseEDFInputValues   m_edf_values;
+    foundation::Color3f     m_total_weight;
+};
+
+
+//
+// Utility functions.
+//
+
+void process_transparency_tree(const OSL::ClosureColor* ci, Alpha& alpha);
+float process_holdout_tree(const OSL::ClosureColor* ci);
+void register_closures(OSL::ShadingSystem& shading_system);
 
 
 //
@@ -250,28 +278,6 @@ inline void* CompositeSurfaceClosure::get_closure_input_values(const size_t inde
 
 
 //
-// Composite OSL emission closure.
-//
-
-class APPLESEED_ALIGN(16) CompositeEmissionClosure
-  : public foundation::NonCopyable
-{
-  public:
-    explicit CompositeEmissionClosure(const OSL::ClosureColor* ci);
-
-    const DiffuseEDFInputValues& edf_input_values() const;
-
-  private:
-    void process_closure_tree(
-        const OSL::ClosureColor*    closure,
-        const foundation::Color3f&  weight);
-
-    DiffuseEDFInputValues   m_edf_values;
-    foundation::Color3f     m_total_weight;
-};
-
-
-//
 // CompositeEmissionClosure class implementation.
 //
 
@@ -279,12 +285,6 @@ inline const DiffuseEDFInputValues& CompositeEmissionClosure::edf_input_values()
 {
     return m_edf_values;
 }
-
-
-void process_transparency_tree(const OSL::ClosureColor* ci, Alpha& alpha);
-float process_holdout_tree(const OSL::ClosureColor* ci);
-
-void register_closures(OSL::ShadingSystem& shading_system);
 
 }       // namespace renderer
 

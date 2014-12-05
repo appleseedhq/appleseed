@@ -60,7 +60,6 @@ namespace renderer
 {
 namespace
 {
-
     //
     // Closure parameters.
     //
@@ -613,6 +612,11 @@ void CompositeEmissionClosure::process_closure_tree(
     }
 }
 
+
+//
+// Utility functions implementation.
+//
+
 namespace
 {
     Color3f do_process_closure_id_tree(
@@ -656,13 +660,13 @@ namespace
 void process_transparency_tree(const OSL::ClosureColor* ci, Alpha& alpha)
 {
     // Convert from transparency to opacity.
-    float transp = luminance(do_process_closure_id_tree(ci, TransparentID));
-    alpha.set(1.0f - clamp(transp, 0.0f, 1.0f));
+    const float transparency = saturate(luminance(do_process_closure_id_tree(ci, TransparentID)));
+    alpha.set(1.0f - transparency);
 }
 
 float process_holdout_tree(const OSL::ClosureColor* ci)
 {
-    return clamp(luminance(do_process_closure_id_tree(ci, HoldoutID)), 0.0f, 1.0f);
+    return saturate(luminance(do_process_closure_id_tree(ci, HoldoutID)));
 }
 
 }   // namespace renderer
