@@ -32,6 +32,7 @@
 // appleseed.python headers.
 #include "bind_typed_entity_containers.h"
 #include "dict2dict.h"
+#include "metadata.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/edf.h"
@@ -64,6 +65,7 @@ namespace detail
 void bind_edf()
 {
     bpy::class_<EDF, auto_release_ptr<EDF>, bpy::bases<ConnectableEntity>, boost::noncopyable>("EDF", bpy::no_init)
+        .def("get_input_metadata", &detail::get_entity_input_metadata<EDFFactoryRegistrar>).staticmethod("get_input_metadata")
         .def("__init__", bpy::make_constructor(detail::create_edf))
         ;
 

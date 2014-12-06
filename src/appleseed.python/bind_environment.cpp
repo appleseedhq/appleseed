@@ -32,6 +32,7 @@
 // appleseed.python headers.
 #include "bind_typed_entity_containers.h"
 #include "dict2dict.h"
+#include "metadata.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/environment.h"
@@ -89,12 +90,14 @@ namespace detail
 void bind_environment()
 {
     bpy::class_<EnvironmentEDF, auto_release_ptr<EnvironmentEDF>, bpy::bases<ConnectableEntity>, boost::noncopyable >("EnvironmentEDF", bpy::no_init)
+        .def("get_input_metadata", &detail::get_entity_input_metadata<EnvironmentEDFFactoryRegistrar>).staticmethod("get_input_metadata")
         .def("__init__", bpy::make_constructor(detail::create_environment_edf))
         ;
 
     bind_typed_entity_vector<EnvironmentEDF>("EnvironmentEDFContainer");
 
     bpy::class_<EnvironmentShader, auto_release_ptr<EnvironmentShader>, bpy::bases<ConnectableEntity>, boost::noncopyable >("EnvironmentShader", bpy::no_init)
+        .def("get_input_metadata", &detail::get_entity_input_metadata<EnvironmentShaderFactoryRegistrar>).staticmethod("get_input_metadata")
         .def("__init__", bpy::make_constructor(detail::create_environment_shader))
         ;
 

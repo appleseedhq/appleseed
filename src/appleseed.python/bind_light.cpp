@@ -33,6 +33,7 @@
 // appleseed.python headers.
 #include "bind_typed_entity_containers.h"
 #include "dict2dict.h"
+#include "metadata.h"
 #include "unaligned_transformd44.h"
 
 // appleseed.renderer headers.
@@ -76,6 +77,7 @@ namespace detail
 void bind_light()
 {
     bpy::class_<Light, auto_release_ptr<Light>, bpy::bases<ConnectableEntity>, boost::noncopyable>("Light", bpy::no_init)
+        .def("get_input_metadata", &detail::get_entity_input_metadata<LightFactoryRegistrar>).staticmethod("get_input_metadata")
         .def("__init__", bpy::make_constructor(detail::create_light))
         .def("set_transform", &detail::light_set_transform)
         .def("get_transform", &detail::light_get_transform);

@@ -32,6 +32,7 @@
 // appleseed.python headers.
 #include "bind_typed_entity_containers.h"
 #include "dict2dict.h"
+#include "metadata.h"
 #include "unaligned_transformd44.h"
 
 // appleseed.renderer headers.
@@ -101,6 +102,7 @@ namespace detail
 void bind_texture()
 {
     bpy::class_<Texture, auto_release_ptr<Texture>, bpy::bases<Entity>, boost::noncopyable>("Texture", bpy::no_init)
+        .def("get_input_metadata", &detail::get_entity_input_metadata<TextureFactoryRegistrar>).staticmethod("get_input_metadata")
         .def("__init__", bpy::make_constructor(detail::create_texture));
 
     bind_typed_entity_vector<Texture>("TextureContainer");

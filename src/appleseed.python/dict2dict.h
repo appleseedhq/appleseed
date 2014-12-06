@@ -38,6 +38,7 @@
 
 // Forward declarations.
 namespace foundation    { class Dictionary; }
+namespace foundation    { class DictionaryArray; }
 namespace renderer      { class ParamArray; }
 
 foundation::Dictionary bpy_dict_to_dictionary(const boost::python::dict& d);
@@ -45,5 +46,7 @@ boost::python::dict dictionary_to_bpy_dict(const foundation::Dictionary& dict);
 
 renderer::ParamArray bpy_dict_to_param_array(const boost::python::dict& d);
 boost::python::dict param_array_to_bpy_dict(const renderer::ParamArray& array);
+
+boost::python::list dictionary_array_to_bpy_list(const foundation::DictionaryArray& array);
 
 #endif  // !APPLESEED_PYTHON_DICT2DICT_H

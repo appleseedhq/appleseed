@@ -122,6 +122,7 @@ set (sources
     gil_locks.h
     gil_locks.cpp
     logging.py
+    metadata.h
     module.cpp
     unaligned_matrix44.h
     unaligned_transformd44.h
