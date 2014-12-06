@@ -32,6 +32,7 @@
 // appleseed.python headers.
 #include "bind_typed_entity_containers.h"
 #include "dict2dict.h"
+#include "metadata.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/surfaceshader.h"
@@ -81,6 +82,7 @@ namespace detail
 void bind_surface_shader()
 {
     bpy::class_<SurfaceShader, auto_release_ptr<SurfaceShader>, bpy::bases<ConnectableEntity>, boost::noncopyable>("SurfaceShader", bpy::no_init)
+        .def("get_input_metadata", &detail::get_entity_input_metadata<SurfaceShaderFactoryRegistrar>).staticmethod("get_input_metadata")
         .def("__init__", bpy::make_constructor(detail::create_surface_shader))
         .def("__init__", bpy::make_constructor(detail::create_surface_shader_with_params))
         ;

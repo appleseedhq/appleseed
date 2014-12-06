@@ -31,6 +31,7 @@
 #include "bind_auto_release_ptr.h"
 #include "bind_typed_entity_containers.h"
 #include "dict2dict.h"
+#include "metadata.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/bsdf.h"
@@ -69,6 +70,7 @@ namespace detail
 void bind_bsdf()
 {
     bpy::class_<BSDF, auto_release_ptr<BSDF>, bpy::bases<ConnectableEntity>, boost::noncopyable>("BSDF", bpy::no_init)
+        .def("get_input_metadata", &detail::get_entity_input_metadata<BSDFFactoryRegistrar>).staticmethod("get_input_metadata")
         .def("__init__", bpy::make_constructor(detail::create_bsdf));
 
     bind_typed_entity_vector<BSDF>("BSDFContainer");
