@@ -62,13 +62,9 @@ class MaterialCollectionItem
 
   private slots:
     void slot_create_generic();
-#ifdef APPLESEED_WITH_DISNEY_MATERIAL
     void slot_create_disney();
     void slot_import_disney();
-#endif
-#ifdef APPLESEED_WITH_OSL
     void slot_create_osl();
-#endif
 
   private:
     virtual ItemBase* create_item(renderer::Material* material) APPLESEED_OVERRIDE;

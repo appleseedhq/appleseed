@@ -127,14 +127,16 @@ void MaterialCollectionItem::slot_create_generic()
     do_create_material("generic_material");
 }
 
-#ifdef APPLESEED_WITH_DISNEY_MATERIAL
 void MaterialCollectionItem::slot_create_disney()
 {
+#ifdef APPLESEED_WITH_DISNEY_MATERIAL
     do_create_material("disney_material");
+#endif
 }
 
 void MaterialCollectionItem::slot_import_disney()
 {
+#ifdef APPLESEED_WITH_DISNEY_MATERIAL
     const filesystem::path root_path(Application::get_root_path());
     const string schema_file_path = (root_path / "schemas" / "settings.xsd").string();
 
@@ -207,16 +209,15 @@ void MaterialCollectionItem::slot_import_disney()
         EntityTraits<Material>::insert_entity(material, m_parent);
         m_project_builder.notify_project_modification();
     }
-
-}
 #endif
+}
 
-#ifdef APPLESEED_WITH_OSL
 void MaterialCollectionItem::slot_create_osl()
 {
+#ifdef APPLESEED_WITH_OSL
     do_create_material("osl_material");
-}
 #endif
+}
 
 void MaterialCollectionItem::do_create_material(const char* model)
 {
