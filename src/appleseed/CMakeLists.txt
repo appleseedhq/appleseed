@@ -1053,6 +1053,8 @@ set (renderer_kernel_rendering_sources
     renderer/kernel/rendering/pixelcontext.h
     renderer/kernel/rendering/pixelrendererbase.cpp
     renderer/kernel/rendering/pixelrendererbase.h
+    renderer/kernel/rendering/renderercomponents.cpp
+    renderer/kernel/rendering/renderercomponents.h
     renderer/kernel/rendering/sample.h
     renderer/kernel/rendering/sampleaccumulationbuffer.h
     renderer/kernel/rendering/samplegeneratorbase.cpp
@@ -1069,10 +1071,18 @@ set (renderer_kernel_rendering_sources
     renderer/kernel/rendering/timedrenderercontroller.cpp
     renderer/kernel/rendering/timedrenderercontroller.h
 )
+if (WITH_OIIO)
+    list (APPEND renderer_kernel_rendering_sources
+        renderer/kernel/rendering/oiiocomponents.cpp
+        renderer/kernel/rendering/oiiocomponents.h
+    )
+endif ()
 if (WITH_OSL)
     list (APPEND renderer_kernel_rendering_sources
         renderer/kernel/rendering/oiioerrorhandler.cpp
         renderer/kernel/rendering/oiioerrorhandler.h
+        renderer/kernel/rendering/oslcomponents.cpp
+        renderer/kernel/rendering/oslcomponents.h
         renderer/kernel/rendering/rendererservices.cpp
         renderer/kernel/rendering/rendererservices.h
     )

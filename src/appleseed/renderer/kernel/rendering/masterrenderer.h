@@ -31,36 +31,22 @@
 #define APPLESEED_RENDERER_KERNEL_RENDERING_MASTERRENDERER_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
 #include "renderer/kernel/rendering/irenderercontroller.h"
+#include "renderer/utility/paramarray.h"
+
+// appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// OpenImageIO headers.
-#ifdef APPLESEED_WITH_OIIO
-#include "OpenImageIO/texture.h"
-#endif
-
-// OSL headers.
-#ifdef APPLESEED_WITH_OSL
-#include "foundation/platform/oslheaderguards.h"
-BEGIN_OSL_INCLUDES
-#include "OSL/oslexec.h"
-END_OSL_INCLUDES
-#endif
-
-// OpenImageIO headers.
-#ifdef APPLESEED_WITH_OIIO
-#include "OpenImageIO/texture.h"
-#endif
-
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class IFrameRenderer; }
-namespace renderer      { class ITileCallbackFactory; }
 namespace renderer      { class ITileCallback; }
+namespace renderer      { class ITileCallbackFactory; }
 namespace renderer      { class Project; }
+namespace renderer      { class RendererServices; }
 namespace renderer      { class SerialRendererController; }
 
 namespace renderer
@@ -108,10 +94,6 @@ class APPLESEED_DLLSYMBOL MasterRenderer
     SerialRendererController*       m_serial_renderer_controller;
     ITileCallbackFactory*           m_serial_tile_callback_factory;
 
-#ifdef APPLESEED_WITH_OIIO
-    OIIO::TextureSystem*            m_texture_system;
-#endif
-
     // Render frame sequences, each time reinitializing the rendering components.
     void do_render();
 
@@ -120,16 +102,14 @@ class APPLESEED_DLLSYMBOL MasterRenderer
 
     // Render a frame sequence until the sequence is completed or rendering is aborted.
     IRendererController::Status render_frame_sequence(
-        IFrameRenderer*             frame_renderer
+        IFrameRenderer&             frame_renderer
 #ifdef APPLESEED_WITH_OSL
-        , OSL::ShadingSystem&       shading_system
+        , RendererServices&         renderer_services
 #endif
         , foundation::IAbortSwitch& abort_switch);
 
     // Wait until the the frame is completed or rendering is aborted.
-    IRendererController::Status wait_for_event(
-        IFrameRenderer*             frame_renderer,
-        foundation::IAbortSwitch&   abort_switch) const;
+    IRendererController::Status wait_for_event(IFrameRenderer& frame_renderer) const;
 
     // Bind all scene entities inputs. Return true on success, false otherwise.
     bool bind_scene_entities_inputs() const;

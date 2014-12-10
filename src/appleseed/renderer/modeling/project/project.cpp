@@ -67,7 +67,6 @@
 #include <cassert>
 #include <map>
 #include <memory>
-#include <string>
 #include <vector>
 
 using namespace foundation;
@@ -162,6 +161,14 @@ const char* Project::get_path() const
 SearchPaths& Project::search_paths() const
 {
     return impl->m_search_paths;
+}
+
+string Project::make_search_path_string() const
+{
+    return
+        impl->m_search_paths.has_root_path()
+            ? impl->m_search_paths.to_string(';', true, true)
+            : string();
 }
 
 void Project::set_scene(auto_release_ptr<Scene> scene)
