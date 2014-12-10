@@ -71,11 +71,10 @@ set (exe_linker_flags_common
 set (shared_lib_linker_flags_common
     -Werror                                             # Treat Warnings As Errors
 )
-
 if (USE_SSE)
     set (c_compiler_flags_common
          ${c_compiler_flags_common}
-        -msse                                           # Enable the SSE instruction set
+        -msse                                           # enable the SSE instruction set
         -msse2                                          # enable the SSE 2 instruction set
     )
 endif ()
