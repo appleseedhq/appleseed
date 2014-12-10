@@ -36,6 +36,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
 #include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/string.h"
@@ -224,4 +225,14 @@ ParamArray bpy_dict_to_param_array(const bpy::dict& d)
 bpy::dict param_array_to_bpy_dict(const ParamArray& array)
 {
     return dictionary_to_bpy_dict(array);
+}
+
+bpy::list dictionary_array_to_bpy_list(const DictionaryArray& array)
+{
+    bpy::list dictionaries;
+
+    for (size_t i = 0, e = array.size(); i < e; ++i)
+        dictionaries.append(dictionary_to_bpy_dict(array[i]));
+
+    return dictionaries;
 }

@@ -32,6 +32,7 @@
 
 // appleseed.python headers.
 #include "dict2dict.h"
+#include "metadata.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/camera.h"
@@ -67,6 +68,7 @@ namespace detail
 void bind_camera()
 {
     bpy::class_<Camera, auto_release_ptr<Camera>, bpy::bases<Entity>, boost::noncopyable>("Camera", bpy::no_init)
+        .def("get_input_metadata", &detail::get_entity_input_metadata<CameraFactoryRegistrar>).staticmethod("get_input_metadata")
         .def("__init__", bpy::make_constructor(detail::create_camera))
         .def("get_model", &Camera::get_model)
         .def("transform_sequence", detail::camera_get_transform_sequence, bpy::return_value_policy<bpy::reference_existing_object>())
