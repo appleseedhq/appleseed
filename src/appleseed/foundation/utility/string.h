@@ -410,34 +410,33 @@ std::string to_string(
 //
 
 template <typename T>
-T from_string(const std::string& s)
+T from_string(const char* s)
 {
-    return from_string<T>(s.c_str());
+    return from_string<T>(std::string(s));
 }
 
 template <typename T>
-T from_string(const char* s)
+T from_string(const std::string& s)
 {
-    std::stringstream sstr;
-    sstr << s;
+    std::istringstream istr(s);
 
     T val;
-    sstr >> val;
+    istr >> val;
 
-    if (sstr.fail())
+    if (!istr || !istr.eof())
         throw ExceptionStringConversionError();
 
     return val;
 }
 
 template <>
-inline std::string from_string(const char* s)
+inline std::string from_string(const std::string& s)
 {
     return s;
 }
 
 template <>
-inline bool from_string(const char* s)
+inline bool from_string(const std::string& s)
 {
     const std::string t = lower_case(s);
 
@@ -449,30 +448,28 @@ inline bool from_string(const char* s)
 }
 
 template <>
-inline int8 from_string(const char* s)
+inline int8 from_string(const std::string& s)
 {
-    std::stringstream sstr;
-    sstr << s;
+    std::istringstream istr(s);
 
     int val;
-    sstr >> val;
+    istr >> val;
 
-    if (sstr.fail())
+    if (!istr || !istr.eof())
         throw ExceptionStringConversionError();
 
     return static_cast<int8>(val);
 }
 
 template <>
-inline uint8 from_string(const char* s)
+inline uint8 from_string(const std::string& s)
 {
-    std::stringstream sstr;
-    sstr << s;
+    std::istringstream istr(s);
 
     unsigned int val;
-    sstr >> val;
+    istr >> val;
 
-    if (sstr.fail())
+    if (!istr || !istr.eof())
         throw ExceptionStringConversionError();
 
     return static_cast<uint8>(val);

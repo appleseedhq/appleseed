@@ -289,6 +289,19 @@ TEST_SUITE(Foundation_Utility_String)
         EXPECT_EQ(42, from_string<uint64>("42"));
     }
 
+    TEST_CASE(FromString_GivenIntegerPrecededBySpace_IgnoresSpaceAndReturnsIntegerValue)
+    {
+        EXPECT_EQ(42, from_string<int>(" 42"));
+    }
+
+    TEST_CASE(FromString_GivenIntegerFollowedBySpace_ThrowsExceptionStringConversionError)
+    {
+        EXPECT_EXCEPTION(ExceptionStringConversionError,
+        {
+            from_string<int>("42 ");
+        });
+    }
+
     TEST_CASE(StrcmpNoCaseHandlesEmptyString)
     {
         EXPECT_EQ(0, strcmp_nocase("", ""));
