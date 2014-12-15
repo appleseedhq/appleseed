@@ -188,7 +188,6 @@ DictionaryArray DiskTexture2dFactory::get_input_metadata() const
             .insert("type", "file")
             .insert("file_picker_mode", "open")
             .insert("file_picker_filter", "OpenEXR (*.exr);;PNG (*.png)")
-            .insert("default", "")
             .insert("use", "required"));
 
     metadata.push_back(

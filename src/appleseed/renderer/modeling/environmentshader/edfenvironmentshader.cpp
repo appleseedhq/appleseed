@@ -178,8 +178,7 @@ DictionaryArray EDFEnvironmentShaderFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary()
                     .insert("environment_edf", "Environment EDFs"))
-            .insert("use", "required")
-            .insert("default", ""));
+            .insert("use", "required"));
 
     metadata.push_back(
         Dictionary()

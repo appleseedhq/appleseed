@@ -192,15 +192,23 @@ DictionaryArray SurfaceShaderCollectionFactory::get_input_metadata() const
 
     for (size_t i = 0; i < MaxShaderCount; ++i)
     {
-        metadata.push_back(
-            Dictionary()
-                .insert("name", get_shader_name(i))
-                .insert("label", get_shader_label(i))
-                .insert("type", "entity")
-                .insert("entity_types",
-                    Dictionary().insert("surface_shader", "Surface Shaders"))
-                .insert("default", "")
-                .insert("use", i == 0 ? "required" : "optional"));
+        Dictionary dic;
+        dic.insert("name", get_shader_name(i));
+        dic.insert("label", get_shader_label(i));
+        dic.insert("type", "entity");
+        dic.insert("entity_types", Dictionary().insert("surface_shader", "Surface Shaders"));
+
+        if (i == 0)
+        {
+            dic.insert("use", "required");
+        }
+        else
+        {
+            dic.insert("use", "optional");
+            dic.insert("default", "");
+        }
+
+        metadata.push_back(dic);
     }
 
     return metadata;
