@@ -142,16 +142,17 @@ class AssemblyTree
 
     void update_tree_hierarchy();
     void collect_unique_assemblies(AssemblyVector& assemblies) const;
+    void delete_unused_child_trees(const AssemblyVector& assemblies);
 
     void create_child_trees(const Assembly& assembly);
     void create_region_tree(const Assembly& assembly);
     void create_triangle_tree(const Assembly& assembly);
     void create_curve_tree(const Assembly& assembly);
 
-    void delete_child_trees(const Assembly& assembly);
-    void delete_region_tree(const Assembly& assembly);
-    void delete_triangle_tree(const Assembly& assembly);
-    void delete_curve_tree(const Assembly& assembly);
+    void delete_child_trees(const foundation::UniqueID assembly_id);
+    void delete_region_tree(const foundation::UniqueID assembly_id);
+    void delete_triangle_tree(const foundation::UniqueID assembly_id);
+    void delete_curve_tree(const foundation::UniqueID assembly_id);
 
     void update_region_trees();
     void update_triangle_trees();

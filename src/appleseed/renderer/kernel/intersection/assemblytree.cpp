@@ -53,6 +53,7 @@
 // Standard headers.
 #include <algorithm>
 #include <cstring>
+#include <set>
 #include <utility>
 
 using namespace foundation;
@@ -236,7 +237,10 @@ void AssemblyTree::update_tree_hierarchy()
     AssemblyVector assemblies;
     collect_unique_assemblies(assemblies);
 
-    // Create or rebuild the child tree of each assembly.
+    // Delete child trees of assemblies that no longer exist.
+    delete_unused_child_trees(assemblies);
+
+    // Create or rebuild the child trees of each assembly.
     for (const_each<AssemblyVector> i = assemblies; i; ++i)
     {
         // Retrieve the assembly.
@@ -258,7 +262,7 @@ void AssemblyTree::update_tree_hierarchy()
             }
 
             // The child trees of this assembly are out-of-date: delete them.
-            delete_child_trees(assembly);
+            delete_child_trees(assembly.get_uid());
         }
 
         // Lazily build new child trees.
@@ -287,6 +291,27 @@ void AssemblyTree::collect_unique_assemblies(AssemblyVector& assemblies) const
     assemblies.erase(
         unique(assemblies.begin(), assemblies.end()),
         assemblies.end());
+}
+
+void AssemblyTree::delete_unused_child_trees(const AssemblyVector& assemblies)
+{
+    set<UniqueID> assembly_uids;
+
+    for (const_each<AssemblyVector> i = assemblies; i; ++i)
+        assembly_uids.insert((*i)->get_uid());
+
+    for (AssemblyVersionMap::const_iterator
+            i = m_assembly_versions.begin(),
+            e = m_assembly_versions.end();
+            i != e; )
+    {
+        if (assembly_uids.find(i->first) == assembly_uids.end())
+        {
+            delete_child_trees(i->first);
+            m_assembly_versions.erase(i++);
+        }
+        else ++i;
+    }
 }
 
 namespace
@@ -463,18 +488,16 @@ void AssemblyTree::create_curve_tree(const Assembly& assembly)
     m_curve_trees.insert(make_pair(assembly.get_uid(), curve_tree));
 }
 
-void AssemblyTree::delete_child_trees(const Assembly& assembly)
+void AssemblyTree::delete_child_trees(const UniqueID assembly_id)
 {
-    assembly.is_flushable()
-        ? delete_region_tree(assembly)
-        : delete_triangle_tree(assembly);
-
-    delete_curve_tree(assembly);
+    delete_region_tree(assembly_id);
+    delete_triangle_tree(assembly_id);
+    delete_curve_tree(assembly_id);
 }
 
-void AssemblyTree::delete_region_tree(const Assembly& assembly)
+void AssemblyTree::delete_region_tree(const UniqueID assembly_id)
 {
-    const RegionTreeContainer::iterator it = m_region_trees.find(assembly.get_uid());
+    const RegionTreeContainer::iterator it = m_region_trees.find(assembly_id);
     if (it != m_region_trees.end())
     {
         m_region_tree_repository.release(it->second);
@@ -482,9 +505,9 @@ void AssemblyTree::delete_region_tree(const Assembly& assembly)
     }
 }
 
-void AssemblyTree::delete_triangle_tree(const Assembly& assembly)
+void AssemblyTree::delete_triangle_tree(const UniqueID assembly_id)
 {
-    const TriangleTreeContainer::iterator it = m_triangle_trees.find(assembly.get_uid());
+    const TriangleTreeContainer::iterator it = m_triangle_trees.find(assembly_id);
     if (it != m_triangle_trees.end())
     {
         m_triangle_tree_repository.release(it->second);
@@ -492,9 +515,9 @@ void AssemblyTree::delete_triangle_tree(const Assembly& assembly)
     }
 }
 
-void AssemblyTree::delete_curve_tree(const Assembly& assembly)
+void AssemblyTree::delete_curve_tree(const UniqueID assembly_id)
 {
-    const CurveTreeContainer::iterator it = m_curve_trees.find(assembly.get_uid());
+    const CurveTreeContainer::iterator it = m_curve_trees.find(assembly_id);
     if (it != m_curve_trees.end())
     {
         m_curve_tree_repository.release(it->second);
