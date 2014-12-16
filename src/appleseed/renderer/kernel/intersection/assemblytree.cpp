@@ -300,7 +300,7 @@ void AssemblyTree::delete_unused_child_trees(const AssemblyVector& assemblies)
     for (const_each<AssemblyVector> i = assemblies; i; ++i)
         assembly_uids.insert((*i)->get_uid());
 
-    for (AssemblyVersionMap::const_iterator
+    for (AssemblyVersionMap::iterator
             i = m_assembly_versions.begin(),
             e = m_assembly_versions.end();
             i != e; )
