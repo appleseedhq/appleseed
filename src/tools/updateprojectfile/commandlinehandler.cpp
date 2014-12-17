@@ -35,7 +35,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/log.h"
-#include "foundation/utility/string.h"
 
 using namespace appleseed::shared;
 using namespace foundation;
