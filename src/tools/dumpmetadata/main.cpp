@@ -105,8 +105,8 @@ namespace
     template <typename EntityType>
     void dump_metadata_xml(FILE* file, Indenter& indenter)
     {
-        typedef typename EntityTraits<EntityType> EntityTraits;
-        typedef typename EntityTraits::FactoryRegistrarType FactoryRegistrarType;
+        typedef EntityTraits<EntityType> EntityTraitsType;
+        typedef typename EntityTraitsType::FactoryRegistrarType FactoryRegistrarType;
         typedef typename FactoryRegistrarType::FactoryArrayType FactoryArrayType;
 
         FactoryRegistrarType registrar;
@@ -115,7 +115,7 @@ namespace
         for (size_t i = 0; i < factories.size(); ++i)
         {
             dump_metadata_xml(
-                EntityTraits::get_entity_type_name(),
+                EntityTraitsType::get_entity_type_name(),
                 factories[i]->get_model(),
                 factories[i]->get_input_metadata(),
                 file,
@@ -229,15 +229,15 @@ namespace
         const size_t            section_number,
         FILE*                   file)
     {
-        typedef typename EntityTraits<EntityType> EntityTraits;
-        typedef typename EntityTraits::FactoryRegistrarType FactoryRegistrarType;
+        typedef EntityTraits<EntityType> EntityTraitsType;
+        typedef typename EntityTraitsType::FactoryRegistrarType FactoryRegistrarType;
         typedef typename FactoryRegistrarType::FactoryArrayType FactoryArrayType;
 
         fprintf(
             file,
             "### " FMT_SIZE_T ". Built-in %s Models\n\n",
             section_number,
-            EntityTraits::get_human_readable_entity_type_name());
+            EntityTraitsType::get_human_readable_entity_type_name());
 
         FactoryRegistrarType registrar;
         const FactoryArrayType factories = registrar.get_factories();
