@@ -84,7 +84,6 @@ class CommandLineHandler
     foundation::ValueOptionHandler<std::string>     m_run_unit_benchmarks;
     foundation::FlagOptionHandler                   m_verbose_unit_tests;
     foundation::FlagOptionHandler                   m_benchmark_mode;
-    foundation::FlagOptionHandler                   m_dump_input_metadata;
 
     // Constructor.
     CommandLineHandler();

@@ -5,7 +5,6 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
 // Copyright (c) 2014 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,17 +26,45 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_OBJECT_H
-#define APPLESEED_RENDERER_API_OBJECT_H
+#ifndef APPLESEED_DUMPMETADATA_COMMANDLINEHANDLER_H
+#define APPLESEED_DUMPMETADATA_COMMANDLINEHANDLER_H
 
-// API headers.
-#include "renderer/modeling/object/curveobject.h"
-#include "renderer/modeling/object/curveobjectreader.h"
-#include "renderer/modeling/object/curveobjectwriter.h"
-#include "renderer/modeling/object/meshobject.h"
-#include "renderer/modeling/object/meshobjectreader.h"
-#include "renderer/modeling/object/meshobjectwriter.h"
-#include "renderer/modeling/object/object.h"
-#include "renderer/modeling/object/triangle.h"
+// appleseed.foundation headers.
+#include "foundation/utility/commandlineparser.h"
 
-#endif  // !APPLESEED_RENDERER_API_OBJECT_H
+// appleseed.shared headers.
+#include "application/commandlinehandlerbase.h"
+
+// Standard headers.
+#include <string>
+
+// Forward declarations.
+namespace appleseed { namespace shared { class SuperLogger; } }
+
+namespace appleseed {
+namespace dumpmetadata {
+
+//
+// Command line handler.
+//
+
+class CommandLineHandler
+  : public shared::CommandLineHandlerBase
+{
+  public:
+    foundation::ValueOptionHandler<std::string> m_format;
+
+    // Constructor.
+    CommandLineHandler();
+
+  private:
+    // Emit usage instructions to the logger.
+    virtual void print_program_usage(
+        const char*             program_name,
+        shared::SuperLogger&    logger) const;
+};
+
+}       // namespace dumpmetadata
+}       // namespace appleseed
+
+#endif  // !APPLESEED_DUMPMETADATA_COMMANDLINEHANDLER_H
