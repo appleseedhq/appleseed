@@ -144,7 +144,6 @@ namespace
         dump_metadata_xml<EnvironmentEDF>(file, indenter);
         dump_metadata_xml<EnvironmentShader>(file, indenter);
         dump_metadata_xml<Light>(file, indenter);
-        dump_metadata_xml<Object>(file, indenter);
         dump_metadata_xml<RenderLayerRule>(file, indenter);
         dump_metadata_xml<SurfaceShader>(file, indenter);
         dump_metadata_xml<Texture>(file, indenter);
