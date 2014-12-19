@@ -33,6 +33,9 @@
 // appleseed.studio headers.
 #include "mainwindow/project/entityeditor.h"
 
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
+
 // Standard headers.
 #include <string>
 
@@ -64,7 +67,7 @@ class EntityBrowser<renderer::Project>
   public:
     explicit EntityBrowser(const renderer::Project& scene);
 
-    virtual foundation::StringDictionary get_entities(const std::string& type) const;
+    virtual foundation::StringDictionary get_entities(const std::string& type) const APPLESEED_OVERRIDE;
 
   private:
     const renderer::Project& m_project;
@@ -82,7 +85,7 @@ class EntityBrowser<renderer::BaseGroup>
   public:
     explicit EntityBrowser(const renderer::BaseGroup& base_group);
 
-    virtual foundation::StringDictionary get_entities(const std::string& type) const;
+    virtual foundation::StringDictionary get_entities(const std::string& type) const APPLESEED_OVERRIDE;
 
   private:
     const renderer::BaseGroup& m_base_group;
@@ -100,7 +103,7 @@ class EntityBrowser<renderer::Scene>
   public:
     explicit EntityBrowser(const renderer::Scene& scene);
 
-    virtual foundation::StringDictionary get_entities(const std::string& type) const;
+    virtual foundation::StringDictionary get_entities(const std::string& type) const APPLESEED_OVERRIDE;
 
   private:
     const renderer::Scene& m_scene;
@@ -118,14 +121,10 @@ class EntityBrowser<renderer::Assembly>
   public:
     explicit EntityBrowser(const renderer::Assembly& assembly);
 
-    virtual foundation::StringDictionary get_entities(const std::string& type) const;
+    virtual foundation::StringDictionary get_entities(const std::string& type) const APPLESEED_OVERRIDE;
 
   private:
     const renderer::Assembly& m_assembly;
-
-    foundation::StringDictionary get_entities(
-        const renderer::Assembly&   assembly,
-        const std::string&          type) const;
 };
 
 }       // namespace studio

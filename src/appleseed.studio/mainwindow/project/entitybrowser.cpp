@@ -111,18 +111,10 @@ EntityBrowser<BaseGroup>::EntityBrowser(const BaseGroup& base_group)
 
 StringDictionary EntityBrowser<BaseGroup>::get_entities(const string& type) const
 {
-    if (type == "color")
-    {
-        return build_entity_dictionary(m_base_group.colors());
-    }
-    else if (type == "texture_instance")
-    {
-        return build_entity_dictionary(m_base_group.texture_instances());
-    }
-    else
-    {
-        return StringDictionary();
-    }
+    return
+        type == "color" ? build_entity_dictionary(m_base_group.colors()) :
+        type == "texture_instance" ? build_entity_dictionary(m_base_group.texture_instances()) :
+        StringDictionary();
 }
 
 
@@ -138,18 +130,10 @@ EntityBrowser<Scene>::EntityBrowser(const Scene& scene)
 
 StringDictionary EntityBrowser<Scene>::get_entities(const string& type) const
 {
-    if (type == "environment_edf")
-    {
-        return build_entity_dictionary(m_scene.environment_edfs());
-    }
-    else if (type == "environment_shader")
-    {
-        return build_entity_dictionary(m_scene.environment_shaders());
-    }
-    else
-    {
-        return EntityBrowser<BaseGroup>::get_entities(type);
-    }
+    return
+        type == "environment_edf" ? build_entity_dictionary(m_scene.environment_edfs()) :
+        type == "environment_shader" ? build_entity_dictionary(m_scene.environment_shaders()) :
+        EntityBrowser<BaseGroup>::get_entities(type);
 }
 
 
@@ -165,51 +149,24 @@ EntityBrowser<Assembly>::EntityBrowser(const Assembly& assembly)
 
 StringDictionary EntityBrowser<Assembly>::get_entities(const string& type) const
 {
-    return get_entities(m_assembly, type);
-}
+    StringDictionary entities =
+        type == "bsdf" ? build_entity_dictionary(m_assembly.bsdfs()) :
+        type == "edf" ? build_entity_dictionary(m_assembly.edfs()) :
+        type == "material" ? build_entity_dictionary(m_assembly.materials()) :
+        type == "surface_shader" ? build_entity_dictionary(m_assembly.surface_shaders()) :
+        type == "environment_edf" ? build_entity_dictionary(get_parent_scene(&m_assembly)->environment_edfs()) :
+        type == "environment_shader" ? build_entity_dictionary(get_parent_scene(&m_assembly)->environment_shaders()) :
+        EntityBrowser<BaseGroup>::get_entities(type);
 
-StringDictionary EntityBrowser<Assembly>::get_entities(const Assembly& assembly, const string& type) const
-{
-    StringDictionary entities;
-
-    if (type == "bsdf")
-    {
-        entities = build_entity_dictionary(assembly.bsdfs());
-    }
-    else if (type == "edf")
-    {
-        entities = build_entity_dictionary(assembly.edfs());
-    }
-    else if (type == "material")
-    {
-        entities = build_entity_dictionary(assembly.materials());
-    }
-    else if (type == "surface_shader")
-    {
-        entities = build_entity_dictionary(assembly.surface_shaders());
-    }
-    else if (type == "environment_edf")
-    {
-        entities = build_entity_dictionary(get_parent_scene(&assembly)->environment_edfs());
-    }
-    else if (type == "environment_shader")
-    {
-        entities = build_entity_dictionary(get_parent_scene(&assembly)->environment_shaders());
-    }
-    else
-    {
-        entities = EntityBrowser<BaseGroup>::get_entities(type);
-    }
-
-    const Assembly* parent_assembly = dynamic_cast<const Assembly*>(assembly.get_parent());
+    const Assembly* parent_assembly = dynamic_cast<const Assembly*>(m_assembly.get_parent());
 
     if (parent_assembly)
     {
-        merge_dictionary(entities, get_entities(*parent_assembly, type));
+        merge_dictionary(entities, EntityBrowser<Assembly>(*parent_assembly).get_entities(type));
     }
     else
     {
-        const Scene* parent_scene = dynamic_cast<const Scene*>(assembly.get_parent());
+        const Scene* parent_scene = dynamic_cast<const Scene*>(m_assembly.get_parent());
         assert(parent_scene);
 
         merge_dictionary(entities, EntityBrowser<Scene>(*parent_scene).get_entities(type));
