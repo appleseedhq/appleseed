@@ -95,6 +95,9 @@ inline void shift_angles(
     const T                         theta_shift,
     const T                         phi_shift)
 {
+    using foundation::Pi;
+    using foundation::TwoPi;
+
     theta += theta_shift;
     phi += phi_shift;
 
