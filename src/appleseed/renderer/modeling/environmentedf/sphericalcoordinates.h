@@ -44,25 +44,32 @@ namespace renderer
 // Compute the spherical coordinates of a given direction.
 template <typename T>
 void unit_vector_to_angles(
-    const foundation::Vector<T, 3>& v,          // unit length
-    T&                              theta,      // in [0, Pi]
-    T&                              phi);       // in [-Pi, Pi]
+    const foundation::Vector<T, 3>& v,              // unit length
+    T&                              theta,          // in [0, Pi]
+    T&                              phi);           // in [-Pi, Pi]
+
+template <typename T>
+inline void shift_angles(
+    T&                              theta,          // in [0, Pi]
+    T&                              phi,            // in [-Pi, Pi]
+    const T                         theta_shift,    // arbitrary, in radians
+    const T                         phi_shift);     // arbitrary, in radians
 
 // Convert a given direction from spherical coordinates to [0,1]^2.
 template <typename T>
 void angles_to_unit_square(
-    const T                         theta,      // in [0, Pi]
-    const T                         phi,        // in [-Pi, Pi]
-    T&                              u,          // in [0, 1]
-    T&                              v);         // in [0, 1]
+    const T                         theta,          // in [0, Pi]
+    const T                         phi,            // in [-Pi, Pi]
+    T&                              u,              // in [0, 1]
+    T&                              v);             // in [0, 1]
 
 // Convert a given direction from [0,1]^2 to spherical coordinates.
 template <typename T>
 void unit_square_to_angles(
-    const T                         u,          // in [0, 1]
-    const T                         v,          // in [0, 1]
-    T&                              theta,      // in [0, Pi]
-    T&                              phi);       // in [-Pi, Pi]
+    const T                         u,              // in [0, 1]
+    const T                         v,              // in [0, 1]
+    T&                              theta,          // in [0, Pi]
+    T&                              phi);           // in [-Pi, Pi]
 
 
 //
@@ -79,6 +86,31 @@ inline void unit_vector_to_angles(
 
     theta = static_cast<T>(std::acos(v[1]));
     phi = static_cast<T>(std::atan2(v[2], v[0]));
+}
+
+template <typename T>
+inline void shift_angles(
+    T&                              theta,
+    T&                              phi,
+    const T                         theta_shift,
+    const T                         phi_shift)
+{
+    theta += theta_shift;
+    phi += phi_shift;
+
+    theta = std::fmod(theta, T(Pi));
+
+    if (theta < T(0.0))
+        theta += T(Pi);
+
+    phi += T(Pi);
+
+    phi = std::fmod(phi, T(TwoPi));
+
+    if (phi < T(0.0))
+        phi += T(TwoPi);
+
+    phi -= T(Pi);
 }
 
 template <typename T>

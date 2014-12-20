@@ -103,16 +103,12 @@ namespace
             const Source*   radiance_source,
             const Source*   multiplier_source,
             const size_t    width,
-            const size_t    height,
-            const double    u_shift,
-            const double    v_shift)
+            const size_t    height)
           : m_texture_cache(texture_cache)
           , m_radiance_source(radiance_source)
           , m_multiplier_source(multiplier_source)
           , m_rcp_width(1.0 / width)
           , m_rcp_height(1.0 / height)
-          , m_u_shift(u_shift)
-          , m_v_shift(v_shift)
         {
         }
 
@@ -128,8 +124,8 @@ namespace
             }
 
             const Vector2d uv(
-                (x + 0.5) * m_rcp_width + m_u_shift,
-                1.0 - (y + 0.5) * m_rcp_height + m_v_shift);
+                (x + 0.5) * m_rcp_width,
+                1.0 - (y + 0.5) * m_rcp_height);
 
             m_radiance_source->evaluate(m_texture_cache, uv, payload.m_color);
 
@@ -146,8 +142,6 @@ namespace
         const Source*   m_multiplier_source;
         const double    m_rcp_width;
         const double    m_rcp_height;
-        const double    m_u_shift;
-        const double    m_v_shift;
     };
 
     const char* Model = "latlong_map_environment_edf";
@@ -167,8 +161,8 @@ namespace
             m_inputs.declare("radiance", InputFormatSpectralIlluminance);
             m_inputs.declare("radiance_multiplier", InputFormatScalar, "1.0");
 
-            m_u_shift = m_params.get_optional<double>("horizontal_shift", 0.0) / 360.0;
-            m_v_shift = m_params.get_optional<double>("vertical_shift", 0.0) / 360.0;
+            m_phi_shift = deg_to_rad(m_params.get_optional<double>("horizontal_shift", 0.0));
+            m_theta_shift = deg_to_rad(m_params.get_optional<double>("vertical_shift", 0.0));
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -213,9 +207,12 @@ namespace
             const double u = (payload.m_x + 0.5) * m_rcp_importance_map_width;
             const double v = (y + 0.5) * m_rcp_importance_map_height;
 
-            // Compute the world space emission direction.
+            // Compute the spherical coordinates of the sample.
             double theta, phi;
             unit_square_to_angles(u, v, theta, phi);
+            shift_angles(theta, phi, m_theta_shift, m_phi_shift);
+
+            // Compute the world space emission direction.
             const double cos_theta = cos(theta);
             const double sin_theta = sin(theta);
             const double cos_phi = cos(phi);
@@ -236,12 +233,16 @@ namespace
         {
             assert(is_normalized(outgoing));
 
+            // Compute the spherical coordinates of the outgoing direction.
             double theta, phi;
             unit_vector_to_angles(outgoing, theta, phi);
+            shift_angles(theta, phi, -m_theta_shift, -m_phi_shift);
 
+            // Convert the spherical coordinates to [0,1]^2.
             double u, v;
             angles_to_unit_square(theta, phi, u, v);
 
+            // Compute and return the environment color.
             lookup_environment_map(input_evaluator, u, v, value);
         }
 
@@ -253,14 +254,17 @@ namespace
         {
             assert(is_normalized(outgoing));
 
+            // Compute the spherical coordinates of the outgoing direction.
             double theta, phi;
             unit_vector_to_angles(outgoing, theta, phi);
+            shift_angles(theta, phi, -m_theta_shift, -m_phi_shift);
 
+            // Convert the spherical coordinates to [0,1]^2.
             double u, v;
             angles_to_unit_square(theta, phi, u, v);
 
+            // Compute and return the environment color and the PDF value.
             lookup_environment_map(input_evaluator, u, v, value);
-
             probability = compute_pdf(u, v, theta);
         }
 
@@ -270,24 +274,28 @@ namespace
         {
             assert(is_normalized(outgoing));
 
+            // Compute the spherical coordinates of the outgoing direction.
             double theta, phi;
             unit_vector_to_angles(outgoing, theta, phi);
+            shift_angles(theta, phi, -m_theta_shift, -m_phi_shift);
 
+            // Convert the spherical coordinates to [0,1]^2.
             double u, v;
             angles_to_unit_square(theta, phi, u, v);
 
+            // Compute and return the PDF value.
             return compute_pdf(u, v, theta);
         }
 
       private:
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
-            Spectrum    m_radiance;             // emitted radiance in W.m^-2.sr^-1
-            double      m_radiance_multiplier;  // emitted radiance multiplier
+            Spectrum    m_radiance;                 // emitted radiance in W.m^-2.sr^-1
+            double      m_radiance_multiplier;      // emitted radiance multiplier
         };
 
-        double  m_u_shift;
-        double  m_v_shift;
+        double  m_phi_shift;                        // horizontal shift in radians
+        double  m_theta_shift;                      // vertical shift in radians
 
         size_t  m_importance_map_width;
         size_t  m_importance_map_height;
@@ -336,9 +344,7 @@ namespace
                 radiance_source,
                 m_inputs.source("radiance_multiplier"),
                 m_importance_map_width,
-                m_importance_map_height,
-                m_u_shift,
-                m_v_shift);
+                m_importance_map_height);
 
             m_importance_sampler.reset(
                 new ImageImportanceSamplerType(
@@ -370,10 +376,11 @@ namespace
             const double        v,
             Spectrum&           value) const
         {
-            const Vector2d uv(u + m_u_shift, 1.0 - v + m_v_shift);
+            assert(u >= 0.0 && u < 1.0);
+            assert(v >= 0.0 && v < 1.0);
 
             const InputValues* values =
-                input_evaluator.evaluate<InputValues>(m_inputs, uv);
+                input_evaluator.evaluate<InputValues>(m_inputs, Vector2d(u, 1.0 - v));
 
             value = values->m_radiance;
             value *= static_cast<float>(values->m_radiance_multiplier);
@@ -384,6 +391,9 @@ namespace
             const double        v,
             const double        theta) const
         {
+            assert(u >= 0.0 && u < 1.0);
+            assert(v >= 0.0 && v < 1.0);
+
             // Compute the probability density of this sample in the importance map.
             const size_t x = truncate<size_t>(m_importance_map_width * u);
             const size_t y = truncate<size_t>(m_importance_map_height * v);
