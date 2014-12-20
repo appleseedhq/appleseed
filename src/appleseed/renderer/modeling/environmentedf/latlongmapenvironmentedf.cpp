@@ -89,8 +89,8 @@ namespace
 
     struct Payload
     {
-        uint32      m_x;
-        Color3f     m_color;
+        uint32  m_x;
+        Color3f m_color;
     };
 
     typedef ImageImportanceSampler<Payload, double> ImageImportanceSamplerType;
@@ -216,13 +216,17 @@ namespace
             // Compute the world space emission direction.
             double theta, phi;
             unit_square_to_angles(u, v, theta, phi);
-            outgoing = Vector3d::unit_vector(theta, phi);
+            const double cos_theta = cos(theta);
+            const double sin_theta = sin(theta);
+            const double cos_phi = cos(phi);
+            const double sin_phi = sin(phi);
+            outgoing = Vector3d::unit_vector(cos_theta, sin_theta, cos_phi, sin_phi);
 
             // Return the emitted radiance.
             value = payload.m_color;
 
             // Compute the probability density of this direction.
-            probability = prob_xy * m_probability_scale / sin(theta);
+            probability = prob_xy * m_probability_scale / sin_theta;
         }
 
         virtual void evaluate(
