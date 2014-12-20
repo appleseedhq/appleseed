@@ -204,6 +204,8 @@ namespace
                 pad_right(use, ' ', 9).c_str(),
                 pad_right(label, ' ', 57).c_str());
         }
+
+        fprintf(file, "\n");
     }
 
     void dump_metadata_markdown(
