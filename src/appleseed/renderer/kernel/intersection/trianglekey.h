@@ -47,12 +47,12 @@ class TriangleKey
 {
   public:
     // Constructors.
-    TriangleKey();          // leave all fields uninitialized
+    TriangleKey();      // leave all fields uninitialized
     TriangleKey(
-        const size_t        object_instance_index,
-        const size_t        region_index,
-        const size_t        triangle_index,
-        const size_t        triangle_pa);
+        const size_t    object_instance_index,
+        const size_t    region_index,
+        const size_t    triangle_index,
+        const size_t    triangle_pa);
 
     // Return the index of the object instance within the assembly.
     size_t get_object_instance_index() const;
@@ -67,10 +67,10 @@ class TriangleKey
     size_t get_triangle_pa() const;
 
   private:
-    foundation::uint32      m_object_instance_index;
-    foundation::uint16      m_region_index;
-    foundation::uint16      m_triangle_pa;
-    foundation::uint32      m_triangle_index;
+    foundation::uint32  m_object_instance_index;
+    foundation::uint16  m_region_index;
+    foundation::uint16  m_triangle_pa;
+    foundation::uint32  m_triangle_index;
 };
 
 
@@ -83,10 +83,10 @@ inline TriangleKey::TriangleKey()
 }
 
 inline TriangleKey::TriangleKey(
-    const size_t            object_instance_index,
-    const size_t            region_index,
-    const size_t            triangle_index,
-    const size_t            triangle_pa)
+    const size_t        object_instance_index,
+    const size_t        region_index,
+    const size_t        triangle_index,
+    const size_t        triangle_pa)
   : m_object_instance_index(static_cast<foundation::uint32>(object_instance_index))
   , m_region_index(static_cast<foundation::uint16>(region_index))
   , m_triangle_pa(static_cast<foundation::uint16>(triangle_pa))
