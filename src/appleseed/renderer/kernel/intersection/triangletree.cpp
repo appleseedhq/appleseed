@@ -96,8 +96,8 @@ namespace
     void collect_static_triangles(
         const GAABB3&                   tree_bbox,
         const RegionInfo&               region_info,
+        const ObjectInstance&           object_instance,
         const StaticTriangleTess&       tess,
-        const Transformd&               transform,
         const bool                      save_memory,
         vector<TriangleKey>*            triangle_keys,
         vector<TriangleVertexInfo>*     triangle_vertex_infos,
@@ -105,6 +105,7 @@ namespace
         vector<AABBType>*               triangle_bboxes,
         size_t&                         triangle_vertex_count)
     {
+        const Transformd& transform = object_instance.get_transform();
         const size_t triangle_count = tess.m_primitives.size();
 
         if (save_memory)
@@ -165,7 +166,10 @@ namespace
             if (triangle_vertex_infos)
             {
                 triangle_vertex_infos->push_back(
-                    TriangleVertexInfo(triangle_vertex_count, 0));
+                    TriangleVertexInfo(
+                        triangle_vertex_count,
+                        0,
+                        object_instance.get_vis_flags()));
             }
 
             // Store the triangle vertices.
@@ -187,8 +191,8 @@ namespace
     void collect_moving_triangles(
         const GAABB3&                   tree_bbox,
         const RegionInfo&               region_info,
+        const ObjectInstance&           object_instance,
         const StaticTriangleTess&       tess,
-        const Transformd&               transform,
         const double                    time,
         const bool                      save_memory,
         vector<TriangleKey>*            triangle_keys,
@@ -197,6 +201,7 @@ namespace
         vector<AABBType>*               triangle_bboxes,
         size_t&                         triangle_vertex_count)
     {
+        const Transformd& transform = object_instance.get_transform();
         const size_t motion_segment_count = tess.get_motion_segment_count();
         const size_t triangle_count = tess.m_primitives.size();
 
@@ -276,7 +281,8 @@ namespace
                 triangle_vertex_infos->push_back(
                     TriangleVertexInfo(
                         triangle_vertex_count,
-                        motion_segment_count));
+                        motion_segment_count,
+                        object_instance.get_vis_flags()));
             }
 
             // Store the triangle vertices.
@@ -348,8 +354,8 @@ namespace
                 collect_moving_triangles(
                     arguments.m_bbox,
                     region_info,
+                    *object_instance,
                     tess.ref(),
-                    object_instance->get_transform(),
                     time,
                     save_memory,
                     triangle_keys,
@@ -363,8 +369,8 @@ namespace
                 collect_static_triangles(
                     arguments.m_bbox,
                     region_info,
+                    *object_instance,
                     tess.ref(),
-                    object_instance->get_transform(),
                     save_memory,
                     triangle_keys,
                     triangle_vertex_infos,
@@ -947,7 +953,7 @@ void TriangleTree::store_triangles(
 
             MemoryWriter user_data_writer(&node.get_user_data<uint8>());
 
-            if (leaf_size <= NodeType::MaxUserDataSize - 4)
+            if (leaf_size <= NodeType::MaxUserDataSize - sizeof(uint32))
             {
                 user_data_writer.write<uint32>(~0);
 

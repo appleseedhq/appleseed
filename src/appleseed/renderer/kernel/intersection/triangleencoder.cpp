@@ -57,6 +57,7 @@ size_t TriangleEncoder::compute_size(
         const size_t triangle_index = triangle_indices[item_begin + i];
         const TriangleVertexInfo& vertex_info = triangle_vertex_infos[triangle_index];
 
+        size += sizeof(uint32);         // visibility flags
         size += sizeof(uint32);         // motion segment count
 
         if (vertex_info.m_motion_segment_count == 0)
@@ -80,6 +81,7 @@ void TriangleEncoder::encode(
         const size_t triangle_index = triangle_indices[item_begin + i];
         const TriangleVertexInfo& vertex_info = triangle_vertex_infos[triangle_index];
 
+        writer.write(vertex_info.m_vis_flags);
         writer.write(static_cast<uint32>(vertex_info.m_motion_segment_count));
 
         if (vertex_info.m_motion_segment_count == 0)

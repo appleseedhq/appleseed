@@ -30,6 +30,9 @@
 #ifndef APPLESEED_RENDERER_KERNEL_INTERSECTION_TRIANGLEVERTEXINFO_H
 #define APPLESEED_RENDERER_KERNEL_INTERSECTION_TRIANGLEVERTEXINFO_H
 
+// appleseed.foundation headers.
+#include "foundation/platform/types.h"
+
 // Standard headers.
 #include <cstddef>
 
@@ -43,16 +46,19 @@ namespace renderer
 class TriangleVertexInfo
 {
   public:
-    size_t  m_vertex_index;             // index of the first vertex in the vertex array
-    size_t  m_motion_segment_count;     // number of motion segments for this triangle
+    size_t                          m_vertex_index;             // index of the first vertex in the vertex array
+    size_t                          m_motion_segment_count;     // number of motion segments for this triangle
+    foundation::uint32              m_vis_flags;                // visibility flags of this triangle
 
     TriangleVertexInfo() {}
 
     TriangleVertexInfo(
-        const size_t    vertex_index,
-        const size_t    motion_segment_count)
+        const size_t                vertex_index,
+        const size_t                motion_segment_count,
+        const foundation::uint32    vis_flags)
       : m_vertex_index(vertex_index)
       , m_motion_segment_count(motion_segment_count)
+      , m_vis_flags(vis_flags)
     {
     }
 };

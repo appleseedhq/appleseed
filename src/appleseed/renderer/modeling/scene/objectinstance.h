@@ -96,14 +96,29 @@ class APPLESEED_DLLSYMBOL ObjectInstance
     // Return the name of the instantiated object.
     const char* get_object_name() const;
 
-    // Return the transform of the instance.
+    // Return the transform of this instance.
     const foundation::Transformd& get_transform() const;
+
+    // Return the visibility flags of this instance.
+    foundation::uint32 get_vis_flags() const;
 
     // Find the object bound to this instance.
     Object* find_object() const;
 
     // Compute the parent space bounding box of the instance.
     GAABB3 compute_parent_bbox() const;
+
+    enum RayBiasMethod
+    {
+        RayBiasMethodNone,                  // no ray bias for this object instance
+        RayBiasMethodNormal,                // shift the ray's origin along the surface's geometric normal
+        RayBiasMethodIncomingDirection,     // shift the ray's origin along the incoming ray's direction
+        RayBiasMethodOutgoingDirection      // shift the ray's origin along the outgoing ray's direction
+    };
+
+    // Per-instance ray bias settings. The bias distance is expressed in world space.
+    RayBiasMethod get_ray_bias_method() const;
+    double get_ray_bias_distance() const;
 
     enum Side
     {
@@ -153,18 +168,6 @@ class APPLESEED_DLLSYMBOL ObjectInstance
     // Return true if at least one of the material referenced by this instance has an alpha map set.
     bool uses_alpha_mapping() const;
 
-    enum RayBiasMethod
-    {
-        RayBiasMethodNone,                  // no ray bias for this object instance
-        RayBiasMethodNormal,                // shift the ray's origin along the surface's geometric normal
-        RayBiasMethodIncomingDirection,     // shift the ray's origin along the incoming ray's direction
-        RayBiasMethodOutgoingDirection      // shift the ray's origin along the outgoing ray's direction
-    };
-
-    // Per-instance ray bias settings. The bias distance is expressed in world space.
-    RayBiasMethod get_ray_bias_method() const;
-    double get_ray_bias_distance() const;
-
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
     bool on_frame_begin(
@@ -181,12 +184,13 @@ class APPLESEED_DLLSYMBOL ObjectInstance
     struct Impl;
     Impl* impl;
 
+    foundation::uint32  m_vis_flags;
+    RayBiasMethod       m_ray_bias_method;
+    double              m_ray_bias_distance;
+
     Object*             m_object;
     MaterialArray       m_front_materials;
     MaterialArray       m_back_materials;
-
-    RayBiasMethod       m_ray_bias_method;
-    double              m_ray_bias_distance;
 
     // Constructor.
     ObjectInstance(
@@ -227,10 +231,24 @@ class APPLESEED_DLLSYMBOL ObjectInstanceFactory
 // ObjectInstance class implementation.
 //
 
+inline foundation::uint32 ObjectInstance::get_vis_flags() const
+{
+    return m_vis_flags;
+}
+
+inline ObjectInstance::RayBiasMethod ObjectInstance::get_ray_bias_method() const
+{
+    return m_ray_bias_method;
+}
+
+inline double ObjectInstance::get_ray_bias_distance() const
+{
+    return m_ray_bias_distance;
+}
+
 inline Object& ObjectInstance::get_object() const
 {
     assert(m_object);
-
     return *m_object;
 }
 
@@ -242,16 +260,6 @@ inline const MaterialArray& ObjectInstance::get_front_materials() const
 inline const MaterialArray& ObjectInstance::get_back_materials() const
 {
     return m_back_materials;
-}
-
-inline ObjectInstance::RayBiasMethod ObjectInstance::get_ray_bias_method() const
-{
-    return m_ray_bias_method;
-}
-
-inline double ObjectInstance::get_ray_bias_distance() const
-{
-    return m_ray_bias_distance;
 }
 
 }       // namespace renderer

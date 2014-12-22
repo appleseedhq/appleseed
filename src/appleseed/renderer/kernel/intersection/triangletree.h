@@ -253,7 +253,8 @@ class TriangleLeafProbeVisitor
     // Constructor.
     TriangleLeafProbeVisitor(
         const TriangleTree&                     tree,
-        const double                            time);
+        const double                            ray_time,
+        const foundation::uint32                ray_type);
 
     // Visit a leaf.
     bool visit(
@@ -267,9 +268,10 @@ class TriangleLeafProbeVisitor
         );
 
   private:
-    const TriangleTree&     m_tree;
-    const double            m_time;
-    const bool              m_has_intersection_filters;
+    const TriangleTree&         m_tree;
+    const double                m_ray_time;
+    const foundation::uint32    m_ray_type;
+    const bool                  m_has_intersection_filters;
 };
 
 
@@ -384,6 +386,15 @@ inline bool TriangleLeafVisitor::visit(
     // Sequentially intersect all triangles of the leaf.
     for (size_t i = 0; i < triangle_count; ++i)
     {
+        // Retrieve the triangle's visibility flags.
+        const foundation::uint32 vis_flags = 
+            *reinterpret_cast<const foundation::uint32*>(leaf_data);
+        leaf_data += sizeof(foundation::uint32);
+
+        // Skip this triangle if it isn't visible for this ray.
+        if ((vis_flags & m_shading_point.m_ray.m_type) == 0)
+            continue;
+
         // Retrieve the number of motion segments for this triangle.
         const foundation::uint32 motion_segment_count =
             *reinterpret_cast<const foundation::uint32*>(leaf_data);
@@ -492,9 +503,11 @@ inline void TriangleLeafVisitor::read_hit_triangle_data() const
 
 inline TriangleLeafProbeVisitor::TriangleLeafProbeVisitor(
     const TriangleTree&                     tree,
-    const double                            time)
+    const double                            ray_time,
+    const foundation::uint32                ray_type)
   : m_tree(tree)
-  , m_time(time)
+  , m_ray_time(ray_time)
+  , m_ray_type(ray_type)
   , m_has_intersection_filters(!tree.m_intersection_filters.empty())
 {
 }
@@ -523,6 +536,15 @@ inline bool TriangleLeafProbeVisitor::visit(
     // Sequentially intersect triangles until a hit is found.
     for (size_t i = 0; i < triangle_count; ++i)
     {
+        // Retrieve the triangle's visibility flags.
+        const foundation::uint32 vis_flags = 
+            *reinterpret_cast<const foundation::uint32*>(leaf_data);
+        leaf_data += sizeof(foundation::uint32);
+
+        // Skip this triangle if it isn't visible for this ray.
+        if ((vis_flags & m_ray_type) == 0)
+            continue;
+
         // Retrieve the number of motion segments for this triangle.
         const foundation::uint32 motion_segment_count =
             *reinterpret_cast<const foundation::uint32*>(leaf_data);
@@ -546,13 +568,13 @@ inline bool TriangleLeafProbeVisitor::visit(
         else
         {
             // Retrieve the vertices of the triangle at the two keyframes surrounding the ray time.
-            const size_t prev_index = foundation::truncate<size_t>(m_time * motion_segment_count);
+            const size_t prev_index = foundation::truncate<size_t>(m_ray_time * motion_segment_count);
             const GVector3* prev_vertices = reinterpret_cast<const GVector3*>(leaf_data) + prev_index * 3;
             const GVector3* next_vertices = prev_vertices + 3;
             leaf_data += (motion_segment_count + 1) * 3 * sizeof(GVector3);
 
             // Interpolate triangle vertices.
-            const GScalar k = static_cast<GScalar>(m_time * motion_segment_count - prev_index);
+            const GScalar k = static_cast<GScalar>(m_ray_time * motion_segment_count - prev_index);
             const GVector3 vert0 = foundation::lerp(prev_vertices[0], next_vertices[0], k);
             const GVector3 vert1 = foundation::lerp(prev_vertices[1], next_vertices[1], k);
             const GVector3 vert2 = foundation::lerp(prev_vertices[2], next_vertices[2], k);
