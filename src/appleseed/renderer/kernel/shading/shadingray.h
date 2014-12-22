@@ -59,8 +59,8 @@ class ShadingRay
     typedef foundation::uint16      DepthType;
 
     // Ray types.
-    // This enum needs to be kept in sync with the OSL raytypes attribute
-    // set in MasterRenderer::initialize_and_render_frame_sequence().
+    // This enumeration needs to be kept in sync with the OSL raytypes attribute
+    // set in renderer::OSLComponents' constructor.
     enum Type
     {
         CameraRay                   = 1 << 0,

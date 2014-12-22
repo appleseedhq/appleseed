@@ -86,7 +86,7 @@ OSLComponents::OSLComponents(
     m_shading_system->attribute("commonspace", "world");
     m_shading_system->attribute("statistics:level", 1);
 
-    // This array needs to be kept in sync with the ShadingRay::Type enumeration.
+    // This array needs to be kept in sync with the renderer::ShadingRay::Type enumeration.
     static const char* ray_type_labels[] =
     {
         "camera",
