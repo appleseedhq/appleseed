@@ -284,7 +284,7 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     RendererComponents components(
         m_project,
         m_params,
-        m_tile_callback_factory,
+        tile_callback_factory,
         texture_store
 #ifdef APPLESEED_WITH_OIIO
         , oiio_components.get_texture_system()
