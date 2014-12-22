@@ -244,6 +244,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                         vertex.get_point(),
                         ray.m_dir,
                         ray.m_time,
+                        ray.m_dtime,
                         ray.m_type,
                         ray.m_depth);   // ray depth does not increase when passing through an alpha-mapped surface
 
@@ -362,6 +363,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             vertex.m_shading_point->get_biased_point(incoming),
             incoming,
             ray.m_time,
+            ray.m_dtime,
             bsdf_mode_to_ray_type(bsdf_mode),
             ray.m_depth + 1);
 

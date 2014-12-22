@@ -83,7 +83,7 @@ Tracer::Tracer(
 const ShadingPoint& Tracer::do_trace(
     const Vector3d&             origin,
     const Vector3d&             direction,
-    const double                time,
+    const double                ray_time,
     const ShadingRay::Type      ray_type,
     const ShadingRay::DepthType ray_depth,
     double&                     transmission,
@@ -111,7 +111,7 @@ const ShadingPoint& Tracer::do_trace(
         const ShadingRay ray(
             point,
             direction,
-            time,
+            ray_time,
             m_ray_dtime,
             ray_type,
             ray_depth);         // ray depth does not increase when passing through an alpha-mapped surface
@@ -160,7 +160,7 @@ const ShadingPoint& Tracer::do_trace(
 const ShadingPoint& Tracer::do_trace_between(
     const Vector3d&             origin,
     const Vector3d&             target,
-    const double                time,
+    const double                ray_time,
     const ShadingRay::Type      ray_type,
     const ShadingRay::DepthType ray_depth,
     double&                     transmission,
@@ -190,7 +190,7 @@ const ShadingPoint& Tracer::do_trace_between(
             target - point,
             0.0,                // ray tmin
             1.0 - 1.0e-6,       // ray tmax
-            time,
+            ray_time,
             m_ray_dtime,
             ray_type,
             ray_depth);         // ray depth does not increase when passing through an alpha-mapped surface
@@ -238,9 +238,9 @@ const ShadingPoint& Tracer::do_trace_between(
 }
 
 void Tracer::evaluate_alpha(
-    const Material&     material,
-    const ShadingPoint& shading_point,
-    Alpha&              alpha) const
+    const Material&             material,
+    const ShadingPoint&         shading_point,
+    Alpha&                      alpha) const
 {
     // Init to fully opaque.
     alpha.set(1.0f);

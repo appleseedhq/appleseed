@@ -481,6 +481,7 @@ bool RendererServices::trace(
         options.mindist,
         options.maxdist,
         sg->time,
+        sg->dtime,
         ShadingRay::ProbeRay,
         parent->get_ray().m_depth + 1);
 
