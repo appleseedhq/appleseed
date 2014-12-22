@@ -86,14 +86,14 @@ class ShadingRay
         const double                time,
         const double                dtime,
         const TypeType              type,
-        const DepthType             depth = 0);
+        const DepthType             depth);
     ShadingRay(
         const VectorType&           org,
         const VectorType&           dir,
         const double                time,
         const double                dtime,
         const TypeType              type,
-        const DepthType             depth = 0);
+        const DepthType             depth);
     ShadingRay(
         const VectorType&           org,
         const VectorType&           dir,
@@ -102,7 +102,7 @@ class ShadingRay
         const double                time,
         const double                dtime,
         const TypeType              type,
-        const DepthType             depth = 0);
+        const DepthType             depth);
 };
 
 // Transform a ShadingRay.

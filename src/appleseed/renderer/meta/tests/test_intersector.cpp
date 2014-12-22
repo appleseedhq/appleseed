@@ -118,7 +118,8 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
             2.0,        // tmax
             0.0,        // time
             0.0,        // dtime
-            ShadingRay::CameraRay);
+            ShadingRay::CameraRay,
+            0);         // depth
 
         ShadingPoint shading_point;
         const bool hit = m_intersector.trace(ray, shading_point);
@@ -135,7 +136,8 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
             2.0,        // tmax
             0.0,        // time
             0.0,        // dtime
-            ShadingRay::CameraRay);
+            ShadingRay::CameraRay,
+            0);         // depth
 
         const bool hit = m_intersector.trace_probe(ray);
 

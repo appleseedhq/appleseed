@@ -629,7 +629,8 @@ namespace
                 emission_direction,
                 sampling_context.next_double2(),
                 m_ray_dtime,
-                ShadingRay::LightRay);
+                ShadingRay::LightRay,
+                0);
 
             // Build the path tracer.
             PathVisitor path_visitor(
@@ -701,7 +702,8 @@ namespace
                 emission_direction,
                 sampling_context.next_double2(),
                 m_ray_dtime,
-                ShadingRay::LightRay);
+                ShadingRay::LightRay,
+                0);
 
             // Build the path tracer.
             PathVisitor path_visitor(
@@ -785,7 +787,8 @@ namespace
                 -outgoing,
                 sampling_context.next_double2(),
                 m_ray_dtime,
-                ShadingRay::LightRay);
+                ShadingRay::LightRay,
+                0);
 
             // Build the path tracer.
             PathVisitor path_visitor(
