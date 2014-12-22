@@ -470,10 +470,7 @@ bool RendererServices::trace(
             front,
             back);
 
-        if (sg->N.dot(R) >= 0.0f)
-            PP = front;
-        else
-            PP = back;
+        PP = sg->N.dot(R) >= 0.0f ? front : back;
 
         origin_shading_point = parent;
     }

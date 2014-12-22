@@ -85,6 +85,7 @@ bool Camera::on_frame_begin(
     m_shutter_open_time = m_params.get_optional<double>("shutter_open_time", 0.0);
     m_shutter_close_time = m_params.get_optional<double>("shutter_close_time", 1.0);
     m_shutter_open_time_interval = m_shutter_close_time - m_shutter_open_time;
+
     return true;
 }
 
