@@ -37,6 +37,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/job/iabortswitch.h"
+#include "foundation/utility/countof.h"
 
 // Standard headers.
 #include <string>
@@ -101,9 +102,7 @@ OSLComponents::OSLComponents(
 
     m_shading_system->attribute(
         "raytypes",
-        OSL::TypeDesc(
-            OSL::TypeDesc::STRING,
-            sizeof(ray_type_labels) / sizeof(ray_type_labels[0])),
+        OSL::TypeDesc(OSL::TypeDesc::STRING, countof(ray_type_labels)),
         ray_type_labels);
 
 #ifndef NDEBUG
