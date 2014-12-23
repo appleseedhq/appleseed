@@ -32,10 +32,10 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
-#include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/scene/assembly.h"
+#include "renderer/modeling/scene/visibilityflags.h"
 #ifdef APPLESEED_WITH_OSL
 #include "renderer/modeling/shadergroup/shadergroup.h"
 #endif
@@ -100,37 +100,6 @@ bool uses_alpha_mapping(const MaterialArray& materials)
 namespace
 {
     const UniqueID g_class_uid = new_guid();
-
-    uint32 extract_vis_flags(const ParamArray& params, const MessageContext& message_context)
-    {
-        uint32 flags = 0;
-
-        if (params.get_optional<bool>("camera", true, message_context))
-            flags |= ShadingRay::CameraRay;
-
-        if (params.get_optional<bool>("light", true, message_context))
-            flags |= ShadingRay::LightRay;
-
-        if (params.get_optional<bool>("shadow", true, message_context))
-            flags |= ShadingRay::ShadowRay;
-
-        if (params.get_optional<bool>("transparency", true, message_context))
-            flags |= ShadingRay::TransparencyRay;
-
-        if (params.get_optional<bool>("probe", true, message_context))
-            flags |= ShadingRay::ProbeRay;
-
-        if (params.get_optional<bool>("diffuse", true, message_context))
-            flags |= ShadingRay::DiffuseRay;
-
-        if (params.get_optional<bool>("glossy", true, message_context))
-            flags |= ShadingRay::GlossyRay;
-
-        if (params.get_optional<bool>("specular", true, message_context))
-            flags |= ShadingRay::SpecularRay;
-
-        return flags;
-    }
 }
 
 UniqueID ObjectInstance::get_class_uid()
@@ -167,7 +136,7 @@ ObjectInstance::ObjectInstance(
     const EntityDefMessageContext message_context("object instance", this);
 
     // Retrieve visibility flags.
-    m_vis_flags = extract_vis_flags(params.child("visibility"), message_context);
+    m_vis_flags = parse_vis_flags(params.child("visibility"), message_context);
 
     // Retrieve ray bias method.
     const string ray_bias_method =
@@ -187,6 +156,7 @@ ObjectInstance::ObjectInstance(
     // Retrieve ray bias distance.
     m_ray_bias_distance = params.get_optional<double>("ray_bias_distance", 0.0);
 
+    // No bound object yet.
     m_object = 0;
 }
 

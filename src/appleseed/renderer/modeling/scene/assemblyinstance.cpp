@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/basegroup.h"
+#include "renderer/modeling/scene/visibilityflags.h"
 
 // Standard headers.
 #include <string>
@@ -73,6 +74,12 @@ AssemblyInstance::AssemblyInstance(
 
     impl->m_assembly_name = assembly_name;
 
+    const EntityDefMessageContext message_context("assembly instance", this);
+
+    // Retrieve visibility flags.
+    m_vis_flags = parse_vis_flags(params.child("visibility"), message_context);
+
+    // No bound assembly yet.
     m_assembly = 0;
 }
 

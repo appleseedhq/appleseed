@@ -482,11 +482,9 @@ namespace
             XMLElement element("assembly_instance", m_file, m_indenter);
             element.add_attribute("name", assembly_instance.get_name());
             element.add_attribute("assembly", assembly_instance.get_assembly_name());
-            element.write(
-                !assembly_instance.transform_sequence().empty()
-                    ? XMLElement::HasChildElements
-                    : XMLElement::HasNoContent);
+            element.write(XMLElement::HasChildElements);
 
+            write_params(assembly_instance.get_parameters());
             write_transform_sequence(assembly_instance.transform_sequence());
         }
 

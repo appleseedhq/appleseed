@@ -626,10 +626,15 @@ bool AssemblyLeafVisitor::visit(
 
     for (size_t i = 0; i < assembly_instance_count; ++i)
     {
-        FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(1));
-
         // Retrieve the assembly instance.
         const AssemblyTree::Item& item = items[i];
+        const AssemblyInstance& assembly_instance = *item.m_assembly_instance;
+
+        // Skip this assembly instance if it isn't visible for this ray.
+        if ((assembly_instance.get_vis_flags() & ray.m_type) == 0)
+            continue;
+
+        FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(1));
 
         // Evaluate the transformation of the assembly instance.
         const TransformSequence* assembly_instance_transform_seq =
@@ -641,7 +646,7 @@ bool AssemblyLeafVisitor::visit(
         // Transform the ray to assembly instance space.
         ShadingPoint local_shading_point;
         compute_assembly_instance_ray(
-            *item.m_assembly_instance,
+            assembly_instance,
             assembly_instance_transform,
             m_parent_shading_point,
             ray,
@@ -784,10 +789,15 @@ bool AssemblyLeafProbeVisitor::visit(
 
     for (size_t i = 0; i < assembly_instance_count; ++i)
     {
-        FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(1));
-
         // Retrieve the assembly instance.
         const AssemblyTree::Item& item = items[i];
+        const AssemblyInstance& assembly_instance = *item.m_assembly_instance;
+
+        // Skip this assembly instance if it isn't visible for this ray.
+        if ((assembly_instance.get_vis_flags() & ray.m_type) == 0)
+            continue;
+
+        FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(1));
 
         // Evaluate the transformation of the assembly instance.
         Transformd tmp;
@@ -797,7 +807,7 @@ bool AssemblyLeafProbeVisitor::visit(
         // Transform the ray to assembly instance space.
         ShadingRay local_ray;
         compute_assembly_instance_ray(
-            *item.m_assembly_instance,
+            assembly_instance,
             assembly_instance_transform,
             m_parent_shading_point,
             ray,

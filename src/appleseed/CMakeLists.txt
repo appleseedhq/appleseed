@@ -1604,6 +1604,8 @@ set (renderer_modeling_scene_sources
     renderer/modeling/scene/textureinstance.cpp
     renderer/modeling/scene/textureinstance.h
     renderer/modeling/scene/textureinstancetraits.h
+    renderer/modeling/scene/visibilityflags.cpp
+    renderer/modeling/scene/visibilityflags.h
 )
 list (APPEND appleseed_sources
     ${renderer_modeling_scene_sources}

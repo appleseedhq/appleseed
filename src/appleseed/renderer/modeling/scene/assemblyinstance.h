@@ -38,6 +38,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/uid.h"
 
@@ -77,6 +78,9 @@ class APPLESEED_DLLSYMBOL AssemblyInstance
     TransformSequence& transform_sequence();
     const TransformSequence& transform_sequence() const;
 
+    // Return the visibility flags of this instance.
+    foundation::uint32 get_vis_flags() const;
+
     // Find the assembly bound to this instance.
     Assembly* find_assembly() const;
 
@@ -106,8 +110,9 @@ class APPLESEED_DLLSYMBOL AssemblyInstance
     struct Impl;
     Impl* impl;
 
-    Assembly*                       m_assembly;
-    TransformSequence               m_transform_sequence;
+    foundation::uint32  m_vis_flags;
+    Assembly*           m_assembly;
+    TransformSequence   m_transform_sequence;
 
     // Constructor.
     AssemblyInstance(
@@ -138,6 +143,11 @@ class APPLESEED_DLLSYMBOL AssemblyInstanceFactory
 //
 // AssemblyInstance class implementation.
 //
+
+inline foundation::uint32 AssemblyInstance::get_vis_flags() const
+{
+    return m_vis_flags;
+}
 
 inline TransformSequence& AssemblyInstance::transform_sequence()
 {
