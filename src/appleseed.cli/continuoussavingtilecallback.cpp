@@ -27,6 +27,7 @@
 // THE SOFTWARE.
 //
 
+
 // Interface header.
 #include "continuoussavingtilecallback.h"
 
@@ -41,14 +42,21 @@
 #include "foundation/image/imageattributes.h"
 #include "foundation/image/progressiveexrimagefilewriter.h"
 
+// Boost headers
+#include "boost/filesystem/operations.hpp"
+#include "boost/random/mersenne_twister.hpp"
+#include "boost/thread/mutex.hpp"
+#include "boost/uuid/uuid.hpp"
+#include "boost/uuid/uuid_io.hpp"
+#include "boost/uuid/random_generator.hpp"
+
 // Standard headers.
 #include <cstddef>
-
-// Forward declarations.
-namespace foundation    { class Tile; }
+#include <ctime>
 
 using namespace foundation;
 using namespace renderer;
+using namespace boost;
 using namespace std;
 
 namespace appleseed {
@@ -66,37 +74,32 @@ namespace
       public:
         ContinuousSavingTileCallback(const string& output_filename, Logger& logger)
           : ProgressTileCallback(logger)
-          , m_output_filename(output_filename)
-          , m_exr_writer(&logger)
+          , m_output_path(output_filename)
         {
-        }
-
-        ~ContinuousSavingTileCallback()
-        {
-            m_exr_writer.close();
+            filesystem::path ext = m_output_path.extension();
+            m_tmp_output_path = m_output_path.parent_path();
+            mt19937 rng(time(0));
+            uuids::uuid u = uuids::basic_random_generator<boost::mt19937>(&rng)();
+            string tmp_filename = uuids::to_string(u);
+            tmp_filename.append(ext.string());
+            m_tmp_output_path /= tmp_filename;
         }
 
       private:
-        const string                    m_output_filename;
-        ProgressiveEXRImageFileWriter   m_exr_writer;
+        mutex                           m_mutex;
+        filesystem::path                m_output_path;
+        filesystem::path                m_tmp_output_path;
+        bool                            m_write_tiled_image;
 
         virtual void do_post_render_tile(
             const Frame*    frame,
             const size_t    tile_x,
             const size_t    tile_y) APPLESEED_OVERRIDE
         {
+            mutex::scoped_lock lock(m_mutex);
             ProgressTileCallback::do_post_render_tile(frame, tile_x, tile_y);
-
-            if (!m_exr_writer.is_open())
-            {
-                m_exr_writer.open(
-                    m_output_filename.c_str(),
-                    frame->image().properties(),
-                    ImageAttributes::create_default_attributes());
-            }
-
-            const Tile& tile = frame->image().tile(tile_x, tile_y);
-            m_exr_writer.write_tile(tile, tile_x, tile_y);
+            frame->write_main_image(m_tmp_output_path.c_str());
+            filesystem::rename(m_tmp_output_path, m_output_path);
         }
     };
 }
