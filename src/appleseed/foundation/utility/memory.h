@@ -94,8 +94,28 @@ void shrink_to_fit(Container& container);
 
 
 //
-// Utility class to write typed data to an unstructured memory block.
+// Utility classes to read/write typed data from/to unstructured memory blocks.
 //
+
+class MemoryReader
+{
+  public:
+    explicit MemoryReader(const void* source);
+
+    const void* read(const size_t size);
+
+    template <typename T>
+    const T& read();
+
+    size_t offset() const;
+
+    MemoryReader& operator+=(const isize_t offset);
+    MemoryReader& operator-=(const isize_t offset);
+
+  private:
+    const uint8* const  m_base;
+    const uint8*        m_ptr;
+};
 
 class MemoryWriter
 {
@@ -204,6 +224,47 @@ template <typename Container>
 inline void shrink_to_fit(Container& container)
 {
     Container(container).swap(container);
+}
+
+
+//
+// MemoryReader class implementation.
+//
+
+inline MemoryReader::MemoryReader(const void* source)
+  : m_base(reinterpret_cast<const uint8*>(source))
+  , m_ptr(reinterpret_cast<const uint8*>(source))
+{
+}
+
+inline const void* MemoryReader::read(const size_t size)
+{
+    const void* result = m_ptr;
+    m_ptr += size;
+    return result;
+}
+
+template <typename T>
+inline const T& MemoryReader::read()
+{
+    return *reinterpret_cast<const T*>(read(sizeof(T)));
+}
+
+inline size_t MemoryReader::offset() const
+{
+    return m_ptr - m_base;
+}
+
+inline MemoryReader& MemoryReader::operator+=(const isize_t offset)
+{
+    m_ptr += offset;
+    return *this;
+}
+
+inline MemoryReader& MemoryReader::operator-=(const isize_t offset)
+{
+    m_ptr -= offset;
+    return *this;
 }
 
 

@@ -32,9 +32,12 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/kernel/intersection/intersectionfilter.h"
 #include "renderer/kernel/intersection/triangleencoder.h"
 #include "renderer/kernel/intersection/triangleitemhandler.h"
 #include "renderer/kernel/intersection/trianglevertexinfo.h"
+#include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/kernel/shading/shadingray.h"
 #include "renderer/kernel/tessellation/statictessellation.h"
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/kernel/texturing/texturestore.h"
@@ -52,7 +55,8 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/area.h"
-#include "foundation/math/permutation.h"
+#include "foundation/math/intersection.h"
+#include "foundation/math/scalar.h"
 #include "foundation/math/treeoptimizer.h"
 #include "foundation/platform/system.h"
 #include "foundation/platform/timers.h"
@@ -1296,6 +1300,265 @@ TriangleTreeFactory::TriangleTreeFactory(const TriangleTree::Arguments& argument
 auto_ptr<TriangleTree> TriangleTreeFactory::create()
 {
     return auto_ptr<TriangleTree>(new TriangleTree(m_arguments));
+}
+
+
+//
+// Utility class to convert a triangle to the desired precision if necessary,
+// but avoid any work (in particular, no copy) if the source triangle already
+// has the desired precision and can be used in-place.
+//
+
+namespace impl
+{
+    template <bool CompatibleTypes> struct TriangleReaderImpl;
+
+    // Compatible types: no conversion or copy.
+    template <> struct TriangleReaderImpl<true>
+    {
+        const TriangleType& m_triangle;
+
+        explicit TriangleReaderImpl(const TriangleType& triangle)
+          : m_triangle(triangle)
+        {
+        }
+    };
+
+    // Incompatible types: perform a conversion.
+    template <> struct TriangleReaderImpl<false>
+    {
+        const TriangleType m_triangle;
+
+        explicit TriangleReaderImpl(const GTriangleType& triangle)
+          : m_triangle(triangle)
+        {
+        }
+    };
+
+    typedef TriangleReaderImpl<
+        sizeof(GTriangleType::ValueType) == sizeof(TriangleType::ValueType)
+    > TriangleReader;
+}
+
+
+//
+// TriangleLeafVisitor class implementation.
+//
+
+bool TriangleLeafVisitor::visit(
+    const TriangleTree::NodeType&           node,
+    const Ray3d&                            ray,
+    const RayInfo3d&                        ray_info,
+    double&                                 distance
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+    , bvh::TraversalStatistics&             stats
+#endif
+    )
+{
+    // Retrieve the pointer to the data of this leaf.
+    const uint8* user_data = &node.get_user_data<uint8>();
+    const uint32 leaf_data_index = *reinterpret_cast<const uint32*>(user_data);
+    const uint8* leaf_data =
+        leaf_data_index == ~0
+            ? user_data + sizeof(uint32)                // triangles are stored in the leaf node
+            : &m_tree.m_leaf_data[leaf_data_index];     // triangles are stored in the tree
+    MemoryReader reader(leaf_data);
+
+    // Sequentially intersect all triangles of the leaf.
+    for (size_t triangle_index = node.get_item_index(),
+                triangle_count = node.get_item_count();
+                triangle_count--;
+                triangle_index++)
+    {
+        // Retrieve and check the triangle's visibility flags.
+        const uint32 vis_flags = reader.read<uint32>();
+        if (!(vis_flags & m_shading_point.m_ray.m_type))
+            continue;
+
+        FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(1));
+
+        // Retrieve the number of motion segments for this triangle.
+        const uint32 motion_segment_count = reader.read<uint32>();
+
+        if (motion_segment_count == 0)
+        {
+            // Read the triangle, converting it to the right format if necessary.
+            const GTriangleType& triangle = reader.read<GTriangleType>();
+            const impl::TriangleReader triangle_reader(triangle);
+
+            // Intersect the triangle.
+            double t, u, v;
+            if (triangle_reader.m_triangle.intersect(ray, t, u, v))
+            {
+                // Optionally filter intersections.
+                if (m_has_intersection_filters)
+                {
+                    const TriangleKey& triangle_key = m_tree.m_triangle_keys[triangle_index];
+                    const IntersectionFilter* filter =
+                        m_tree.m_intersection_filters[triangle_key.get_object_instance_index()];
+                    if (filter && !filter->accept(triangle_key, u, v))
+                        continue;
+                }
+
+                m_hit_triangle = &triangle;
+                m_hit_triangle_index = triangle_index;
+                m_shading_point.m_ray.m_tmax = t;
+                m_shading_point.m_bary[0] = u;
+                m_shading_point.m_bary[1] = v;
+            }
+        }
+        else
+        {
+            // Advance to the motion step immediately before the ray time. 
+            const double base_time = m_shading_point.m_ray.m_time * motion_segment_count;
+            const size_t base_index = truncate<size_t>(base_time);
+            reader += base_index * 3 * sizeof(GVector3);
+
+            // Fetch and interpolate the triangle's vertices of the motion steps surrounding the ray time.
+            const GScalar frac = static_cast<GScalar>(base_time - base_index);
+            const GScalar one_minus_frac = GScalar(1.0) - frac;
+            GVector3 v0 = reader.read<GVector3>() * one_minus_frac;
+            GVector3 v1 = reader.read<GVector3>() * one_minus_frac;
+            GVector3 v2 = reader.read<GVector3>() * one_minus_frac;
+            v0 += reader.read<GVector3>() * frac;
+            v1 += reader.read<GVector3>() * frac;
+            v2 += reader.read<GVector3>() * frac;
+
+            // Build the triangle and convert it to the right format if necessary.
+            const GTriangleType triangle(v0, v1, v2);
+            const impl::TriangleReader reader(triangle);
+
+            // Intersect the triangle.
+            double t, u, v;
+            if (reader.m_triangle.intersect(ray, t, u, v))
+            {
+                // Optionally filter intersections.
+                if (m_has_intersection_filters)
+                {
+                    const TriangleKey& triangle_key = m_tree.m_triangle_keys[triangle_index];
+                    const IntersectionFilter* filter =
+                        m_tree.m_intersection_filters[triangle_key.get_object_instance_index()];
+                    if (filter && !filter->accept(triangle_key, u, v))
+                        continue;
+                }
+
+                m_interpolated_triangle = triangle;
+                m_hit_triangle = &m_interpolated_triangle;
+                m_hit_triangle_index = triangle_index;
+                m_shading_point.m_ray.m_tmax = t;
+                m_shading_point.m_bary[0] = u;
+                m_shading_point.m_bary[1] = v;
+            }
+        }
+    }
+
+    // Continue traversal.
+    distance = m_shading_point.m_ray.m_tmax;
+    return true;
+}
+
+void TriangleLeafVisitor::read_hit_triangle_data() const
+{
+    if (m_hit_triangle)
+    {
+        // Record a hit.
+        m_shading_point.m_primitive_type = ShadingPoint::PrimitiveTriangle;
+
+        // Copy the triangle key.
+        const TriangleKey& triangle_key = m_tree.m_triangle_keys[m_hit_triangle_index];
+        m_shading_point.m_object_instance_index = triangle_key.get_object_instance_index();
+        m_shading_point.m_region_index = triangle_key.get_region_index();
+        m_shading_point.m_primitive_index = triangle_key.get_triangle_index();
+
+        // Compute and store the support plane of the hit triangle.
+        const impl::TriangleReader reader(*m_hit_triangle);
+        m_shading_point.m_triangle_support_plane.initialize(reader.m_triangle);
+    }
+}
+
+
+//
+// TriangleLeafProbeVisitor class implementation.
+//
+
+bool TriangleLeafProbeVisitor::visit(
+    const TriangleTree::NodeType&           node,
+    const Ray3d&                            ray,
+    const RayInfo3d&                        ray_info,
+    double&                                 distance
+#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
+    , bvh::TraversalStatistics&             stats
+#endif
+    )
+{
+    // Retrieve the pointer to the data of this leaf.
+    const uint8* user_data = &node.get_user_data<uint8>();
+    const uint32 leaf_data_index = *reinterpret_cast<const uint32*>(user_data);
+    const uint8* leaf_data =
+        leaf_data_index == ~0
+            ? user_data + sizeof(uint32)                // triangles are stored in the leaf node
+            : &m_tree.m_leaf_data[leaf_data_index];     // triangles are stored in the tree
+    MemoryReader reader(leaf_data);
+
+    // Sequentially intersect triangles until a hit is found.
+    for (size_t triangle_count = node.get_item_count(); triangle_count--; )
+    {
+        // Retrieve and check the triangle's visibility flags.
+        const uint32 vis_flags = reader.read<uint32>();
+        if (!(vis_flags & m_ray_type))
+            continue;
+
+        FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(1));
+
+        // Retrieve the number of motion segments for this triangle.
+        const uint32 motion_segment_count = reader.read<uint32>();
+
+        if (motion_segment_count == 0)
+        {
+            // Read the triangle, converting it to the right format if necessary.
+            const GTriangleType& triangle = reader.read<GTriangleType>();
+            const impl::TriangleReader triangle_reader(triangle);
+
+            // Intersect the triangle.
+            if (triangle_reader.m_triangle.intersect(ray))
+            {
+                m_hit = true;
+                return false;
+            }
+        }
+        else
+        {
+            // Advance to the motion step immediately before the ray time. 
+            const double base_time = m_ray_time * motion_segment_count;
+            const size_t base_index = truncate<size_t>(base_time);
+            reader += base_index * 3 * sizeof(GVector3);
+
+            // Fetch and interpolate the triangle's vertices of the motion steps surrounding the ray time.
+            const GScalar frac = static_cast<GScalar>(base_time - base_index);
+            const GScalar one_minus_frac = GScalar(1.0) - frac;
+            GVector3 v0 = reader.read<GVector3>() * one_minus_frac;
+            GVector3 v1 = reader.read<GVector3>() * one_minus_frac;
+            GVector3 v2 = reader.read<GVector3>() * one_minus_frac;
+            v0 += reader.read<GVector3>() * frac;
+            v1 += reader.read<GVector3>() * frac;
+            v2 += reader.read<GVector3>() * frac;
+
+            // Build the triangle and convert it to the right format if necessary.
+            const GTriangleType triangle(v0, v1, v2);
+            const impl::TriangleReader reader(triangle);
+
+            // Intersect the triangle.
+            if (reader.m_triangle.intersect(ray))
+            {
+                m_hit = true;
+                return false;
+            }
+        }
+    }
+
+    // Continue traversal.
+    distance = ray.m_tmax;
+    return true;
 }
 
 }   // namespace renderer

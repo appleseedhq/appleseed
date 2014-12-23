@@ -32,21 +32,17 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/kernel/intersection/intersectionfilter.h"
 #include "renderer/kernel/intersection/intersectionsettings.h"
 #include "renderer/kernel/intersection/probevisitorbase.h"
 #include "renderer/kernel/intersection/regioninfo.h"
 #include "renderer/kernel/intersection/trianglekey.h"
-#include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/kernel/shading/shadingray.h"
+#include "renderer/kernel/intersection/trianglevertexinfo.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/bvh.h"
-#include "foundation/math/intersection.h"
 #include "foundation/math/ray.h"
-#include "foundation/math/scalar.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/alignedvector.h"
 #include "foundation/utility/lazy.h"
@@ -62,9 +58,10 @@
 // Forward declarations.
 namespace foundation    { class Statistics; }
 namespace renderer      { class Assembly; }
+namespace renderer      { class IntersectionFilter; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Scene; }
-namespace renderer      { class TriangleVertexInfo; }
+namespace renderer      { class ShadingPoint; }
 
 namespace renderer
 {
@@ -295,44 +292,6 @@ typedef foundation::bvh::Intersector<
 
 
 //
-// Utility class to convert a triangle to the desired precision if necessary,
-// but avoid any work (in particular, no copy) if the source triangle already
-// has the desired precision and can be used in-place.
-//
-
-namespace impl
-{
-    template <bool CompatibleTypes> struct TriangleReaderImpl;
-
-    // Compatible types: no conversion or copy.
-    template <> struct TriangleReaderImpl<true>
-    {
-        const TriangleType& m_triangle;
-
-        explicit TriangleReaderImpl(const TriangleType& triangle)
-          : m_triangle(triangle)
-        {
-        }
-    };
-
-    // Incompatible types: perform a conversion.
-    template <> struct TriangleReaderImpl<false>
-    {
-        const TriangleType m_triangle;
-
-        explicit TriangleReaderImpl(const GTriangleType& triangle)
-          : m_triangle(triangle)
-        {
-        }
-    };
-
-    typedef TriangleReaderImpl<
-        sizeof(GTriangleType::ValueType) == sizeof(TriangleType::ValueType)
-    > TriangleReader;
-}
-
-
-//
 // TriangleTree class implementation.
 //
 
@@ -352,148 +311,13 @@ inline size_t TriangleTree::get_moving_triangle_count() const
 //
 
 inline TriangleLeafVisitor::TriangleLeafVisitor(
-    const TriangleTree&                     tree,
-    ShadingPoint&                           shading_point)
+    const TriangleTree&         tree,
+    ShadingPoint&               shading_point)
   : m_tree(tree)
   , m_has_intersection_filters(!tree.m_intersection_filters.empty())
   , m_shading_point(shading_point)
   , m_hit_triangle(0)
 {
-}
-
-inline bool TriangleLeafVisitor::visit(
-    const TriangleTree::NodeType&           node,
-    const foundation::Ray3d&                ray,
-    const foundation::RayInfo3d&            ray_info,
-    double&                                 distance
-#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
-    , foundation::bvh::TraversalStatistics& stats
-#endif
-    )
-{
-    // Retrieve the pointer to the data of this leaf.
-    const foundation::uint8* user_data = &node.get_user_data<foundation::uint8>();
-    const foundation::uint32 leaf_data_index =
-        *reinterpret_cast<const foundation::uint32*>(user_data);
-    const foundation::uint8* leaf_data =
-        leaf_data_index == ~0
-            ? user_data + sizeof(foundation::uint32)    // triangles are stored in the leaf node
-            : &m_tree.m_leaf_data[leaf_data_index];     // triangles are stored in the tree
-
-    const size_t triangle_index = node.get_item_index();
-    const size_t triangle_count = node.get_item_count();
-
-    // Sequentially intersect all triangles of the leaf.
-    for (size_t i = 0; i < triangle_count; ++i)
-    {
-        // Retrieve the triangle's visibility flags.
-        const foundation::uint32 vis_flags = 
-            *reinterpret_cast<const foundation::uint32*>(leaf_data);
-        leaf_data += sizeof(foundation::uint32);
-
-        // Skip this triangle if it isn't visible for this ray.
-        if ((vis_flags & m_shading_point.m_ray.m_type) == 0)
-            continue;
-
-        // Retrieve the number of motion segments for this triangle.
-        const foundation::uint32 motion_segment_count =
-            *reinterpret_cast<const foundation::uint32*>(leaf_data);
-        leaf_data += sizeof(foundation::uint32);
-
-        if (motion_segment_count == 0)
-        {
-            // Load the triangle, converting it to the right format if necessary.
-            const GTriangleType* triangle_ptr = reinterpret_cast<const GTriangleType*>(leaf_data);
-            const impl::TriangleReader reader(*triangle_ptr);
-            leaf_data += sizeof(GTriangleType);
-
-            // Intersect the triangle.
-            double t, u, v;
-            if (reader.m_triangle.intersect(ray, t, u, v))
-            {
-                // Optionally filter intersections.
-                if (m_has_intersection_filters)
-                {
-                    const TriangleKey& triangle_key = m_tree.m_triangle_keys[triangle_index + i];
-                    const IntersectionFilter* filter =
-                        m_tree.m_intersection_filters[triangle_key.get_object_instance_index()];
-                    if (filter && !filter->accept(triangle_key, u, v))
-                        continue;
-                }
-
-                m_hit_triangle = triangle_ptr;
-                m_hit_triangle_index = triangle_index + i;
-                m_shading_point.m_ray.m_tmax = t;
-                m_shading_point.m_bary[0] = u;
-                m_shading_point.m_bary[1] = v;
-            }
-        }
-        else
-        {
-            // Retrieve the vertices of the triangle at the two keyframes surrounding the ray time.
-            const size_t prev_index = foundation::truncate<size_t>(m_shading_point.m_ray.m_time * motion_segment_count);
-            const GVector3* prev_vertices = reinterpret_cast<const GVector3*>(leaf_data) + prev_index * 3;
-            const GVector3* next_vertices = prev_vertices + 3;
-            leaf_data += (motion_segment_count + 1) * 3 * sizeof(GVector3);
-
-            // Interpolate triangle vertices.
-            const GScalar k = static_cast<GScalar>(m_shading_point.m_ray.m_time * motion_segment_count - prev_index);
-            const GVector3 vert0 = foundation::lerp(prev_vertices[0], next_vertices[0], k);
-            const GVector3 vert1 = foundation::lerp(prev_vertices[1], next_vertices[1], k);
-            const GVector3 vert2 = foundation::lerp(prev_vertices[2], next_vertices[2], k);
-
-            // Load the triangle, converting it to the right format if necessary.
-            const GTriangleType triangle(vert0, vert1, vert2);
-            const impl::TriangleReader reader(triangle);
-
-            // Intersect the triangle.
-            double t, u, v;
-            if (reader.m_triangle.intersect(ray, t, u, v))
-            {
-                // Optionally filter intersections.
-                if (m_has_intersection_filters)
-                {
-                    const TriangleKey& triangle_key = m_tree.m_triangle_keys[triangle_index + i];
-                    const IntersectionFilter* filter =
-                        m_tree.m_intersection_filters[triangle_key.get_object_instance_index()];
-                    if (filter && !filter->accept(triangle_key, u, v))
-                        continue;
-                }
-
-                m_interpolated_triangle = triangle;
-                m_hit_triangle = &m_interpolated_triangle;
-                m_hit_triangle_index = triangle_index + i;
-                m_shading_point.m_ray.m_tmax = t;
-                m_shading_point.m_bary[0] = u;
-                m_shading_point.m_bary[1] = v;
-            }
-        }
-    }
-
-    FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(triangle_count));
-
-    // Continue traversal.
-    distance = m_shading_point.m_ray.m_tmax;
-    return true;
-}
-
-inline void TriangleLeafVisitor::read_hit_triangle_data() const
-{
-    if (m_hit_triangle)
-    {
-        // Record a hit.
-        m_shading_point.m_primitive_type = ShadingPoint::PrimitiveTriangle;
-
-        // Copy the triangle key.
-        const TriangleKey& triangle_key = m_tree.m_triangle_keys[m_hit_triangle_index];
-        m_shading_point.m_object_instance_index = triangle_key.get_object_instance_index();
-        m_shading_point.m_region_index = triangle_key.get_region_index();
-        m_shading_point.m_primitive_index = triangle_key.get_triangle_index();
-
-        // Compute and store the support plane of the hit triangle.
-        const impl::TriangleReader reader(*m_hit_triangle);
-        m_shading_point.m_triangle_support_plane.initialize(reader.m_triangle);
-    }
 }
 
 
@@ -502,102 +326,14 @@ inline void TriangleLeafVisitor::read_hit_triangle_data() const
 //
 
 inline TriangleLeafProbeVisitor::TriangleLeafProbeVisitor(
-    const TriangleTree&                     tree,
-    const double                            ray_time,
-    const foundation::uint32                ray_type)
+    const TriangleTree&         tree,
+    const double                ray_time,
+    const foundation::uint32    ray_type)
   : m_tree(tree)
   , m_ray_time(ray_time)
   , m_ray_type(ray_type)
   , m_has_intersection_filters(!tree.m_intersection_filters.empty())
 {
-}
-
-inline bool TriangleLeafProbeVisitor::visit(
-    const TriangleTree::NodeType&           node,
-    const foundation::Ray3d&                ray,
-    const foundation::RayInfo3d&            ray_info,
-    double&                                 distance
-#ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
-    , foundation::bvh::TraversalStatistics& stats
-#endif
-    )
-{
-    // Retrieve the pointer to the data of this leaf.
-    const foundation::uint8* user_data = &node.get_user_data<foundation::uint8>();
-    const foundation::uint32 leaf_data_index =
-        *reinterpret_cast<const foundation::uint32*>(user_data);
-    const foundation::uint8* leaf_data =
-        leaf_data_index == ~0
-            ? user_data + sizeof(foundation::uint32)    // triangles are stored in the leaf node
-            : &m_tree.m_leaf_data[leaf_data_index];     // triangles are stored in the tree
-
-    const size_t triangle_count = node.get_item_count();
-
-    // Sequentially intersect triangles until a hit is found.
-    for (size_t i = 0; i < triangle_count; ++i)
-    {
-        // Retrieve the triangle's visibility flags.
-        const foundation::uint32 vis_flags = 
-            *reinterpret_cast<const foundation::uint32*>(leaf_data);
-        leaf_data += sizeof(foundation::uint32);
-
-        // Skip this triangle if it isn't visible for this ray.
-        if ((vis_flags & m_ray_type) == 0)
-            continue;
-
-        // Retrieve the number of motion segments for this triangle.
-        const foundation::uint32 motion_segment_count =
-            *reinterpret_cast<const foundation::uint32*>(leaf_data);
-        leaf_data += sizeof(foundation::uint32);
-
-        if (motion_segment_count == 0)
-        {
-            // Load the triangle, converting it to the right format if necessary.
-            const GTriangleType* triangle_ptr = reinterpret_cast<const GTriangleType*>(leaf_data);
-            const impl::TriangleReader reader(*triangle_ptr);
-            leaf_data += sizeof(GTriangleType);
-
-            // Intersect the triangle.
-            if (reader.m_triangle.intersect(ray))
-            {
-                FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(i + 1));
-                m_hit = true;
-                return false;
-            }
-        }
-        else
-        {
-            // Retrieve the vertices of the triangle at the two keyframes surrounding the ray time.
-            const size_t prev_index = foundation::truncate<size_t>(m_ray_time * motion_segment_count);
-            const GVector3* prev_vertices = reinterpret_cast<const GVector3*>(leaf_data) + prev_index * 3;
-            const GVector3* next_vertices = prev_vertices + 3;
-            leaf_data += (motion_segment_count + 1) * 3 * sizeof(GVector3);
-
-            // Interpolate triangle vertices.
-            const GScalar k = static_cast<GScalar>(m_ray_time * motion_segment_count - prev_index);
-            const GVector3 vert0 = foundation::lerp(prev_vertices[0], next_vertices[0], k);
-            const GVector3 vert1 = foundation::lerp(prev_vertices[1], next_vertices[1], k);
-            const GVector3 vert2 = foundation::lerp(prev_vertices[2], next_vertices[2], k);
-
-            // Load the triangle, converting it to the right format if necessary.
-            const GTriangleType triangle(vert0, vert1, vert2);
-            const impl::TriangleReader reader(triangle);
-
-            // Intersect the triangle.
-            if (reader.m_triangle.intersect(ray))
-            {
-                FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(i + 1));
-                m_hit = true;
-                return false;
-            }
-        }
-    }
-
-    FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(triangle_count));
-
-    // Continue traversal.
-    distance = ray.m_tmax;
-    return true;
 }
 
 }       // namespace renderer

@@ -631,7 +631,7 @@ bool AssemblyLeafVisitor::visit(
         const AssemblyInstance& assembly_instance = *item.m_assembly_instance;
 
         // Skip this assembly instance if it isn't visible for this ray.
-        if ((assembly_instance.get_vis_flags() & ray.m_type) == 0)
+        if (!(assembly_instance.get_vis_flags() & ray.m_type))
             continue;
 
         FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(1));
@@ -794,7 +794,7 @@ bool AssemblyLeafProbeVisitor::visit(
         const AssemblyInstance& assembly_instance = *item.m_assembly_instance;
 
         // Skip this assembly instance if it isn't visible for this ray.
-        if ((assembly_instance.get_vis_flags() & ray.m_type) == 0)
+        if (!(assembly_instance.get_vis_flags() & ray.m_type))
             continue;
 
         FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(1));
