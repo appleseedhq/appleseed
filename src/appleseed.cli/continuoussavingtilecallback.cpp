@@ -37,15 +37,14 @@
 // reading incomplete EXR files (they should).
 //
 // - if APPLESEED_CLI_CONTINUOUSSAVINGTILECALLBACK_TILED is not defined,
-// the tile callback writes a complete EXR image after each tile is renderered.
+// the tile callback writes complete images after each tile is renderered.
 // This is helpful for applications that can't read incomplete images.
 // Because Blenderseed is the biggest user of this tile callback and Blender
 // does not read incomplete EXR files correctly, this is the default mode.
 //
-// PNG files are always written complete, independent of the define.
+// PNG files are always written complete, independent of the define,
+// as PNG does not support tiles.
 //
-
-//#define APPLESEED_CLI_CONTINUOUSSAVINGTILECALLBACK_TILED
 
 // Interface header.
 #include "continuoussavingtilecallback.h"
@@ -95,14 +94,14 @@ namespace
           , m_output_path(output_filename)
 #ifdef APPLESEED_CLI_CONTINUOUSSAVINGTILECALLBACK_TILED
           , m_exr_writer(&logger)
+          , m_write_tiled_image(false)
 #endif
         {
             filesystem::path ext = m_output_path.extension();
 
 #ifdef APPLESEED_CLI_CONTINUOUSSAVINGTILECALLBACK_TILED
+            // Only write tiled images if the format is EXR.
             m_write_tiled_image = ext.string() == ".exr";
-#else
-            m_write_tiled_image = false;
 #endif
             if (!m_write_tiled_image)
             {
