@@ -596,7 +596,7 @@ namespace
         output_ray.m_tmin = input_ray.m_tmin;
         output_ray.m_tmax = input_ray.m_tmax;
         output_ray.m_time = input_ray.m_time;
-        output_ray.m_type = input_ray.m_type;
+        output_ray.m_flags = input_ray.m_flags;
         output_ray.m_depth = input_ray.m_depth;
     }
 }
@@ -631,7 +631,7 @@ bool AssemblyLeafVisitor::visit(
         const AssemblyInstance& assembly_instance = *item.m_assembly_instance;
 
         // Skip this assembly instance if it isn't visible for this ray.
-        if (!(assembly_instance.get_vis_flags() & ray.m_type))
+        if (!(assembly_instance.get_vis_flags() & ray.m_flags))
             continue;
 
         FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(1));
@@ -794,7 +794,7 @@ bool AssemblyLeafProbeVisitor::visit(
         const AssemblyInstance& assembly_instance = *item.m_assembly_instance;
 
         // Skip this assembly instance if it isn't visible for this ray.
-        if (!(assembly_instance.get_vis_flags() & ray.m_type))
+        if (!(assembly_instance.get_vis_flags() & ray.m_flags))
             continue;
 
         FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(1));
@@ -855,7 +855,7 @@ bool AssemblyLeafProbeVisitor::visit(
             {
                 // Check the intersection between the ray and the triangle tree.
                 TriangleTreeProbeIntersector intersector;
-                TriangleLeafProbeVisitor visitor(*triangle_tree, local_ray.m_time, local_ray.m_type);
+                TriangleLeafProbeVisitor visitor(*triangle_tree, local_ray.m_time, local_ray.m_flags);
                 if (triangle_tree->get_moving_triangle_count() > 0)
                 {
                     intersector.intersect_motion(

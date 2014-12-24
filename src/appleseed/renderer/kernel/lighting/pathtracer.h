@@ -43,6 +43,7 @@
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/material/material.h"
+#include "renderer/modeling/scene/visibilityflags.h"
 #ifdef APPLESEED_WITH_OSL
 #include "renderer/modeling/shadergroup/shadergroup.h"
 #endif
@@ -100,7 +101,7 @@ class PathTracer
     const double                m_near_start;
 
     // Determine the appropriate ray type for a given scattering mode.
-    static ShadingRay::Type bsdf_mode_to_ray_type(
+    static VisibilityFlags::Type bsdf_mode_to_ray_flags(
         const BSDF::Mode        mode);
 
     // Determine whether a ray can pass through a surface with a given alpha value.
@@ -245,7 +246,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                         ray.m_dir,
                         ray.m_time,
                         ray.m_dtime,
-                        ray.m_type,
+                        ray.m_flags,
                         ray.m_depth);   // ray depth does not increase when passing through an alpha-mapped surface
 
                     // Trace the ray.
@@ -364,7 +365,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             incoming,
             ray.m_time,
             ray.m_dtime,
-            bsdf_mode_to_ray_type(bsdf_mode),
+            bsdf_mode_to_ray_flags(bsdf_mode),
             ray.m_depth + 1);
 
         // Trace the ray.
@@ -383,17 +384,17 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
 }
 
 template <typename PathVisitor, bool Adjoint>
-inline ShadingRay::Type PathTracer<PathVisitor, Adjoint>::bsdf_mode_to_ray_type(
+inline VisibilityFlags::Type PathTracer<PathVisitor, Adjoint>::bsdf_mode_to_ray_flags(
     const BSDF::Mode            mode)
 {
     switch (mode)
     {
-      case BSDF::Diffuse:   return ShadingRay::DiffuseRay;
-      case BSDF::Glossy:    return ShadingRay::GlossyRay;
-      case BSDF::Specular:  return ShadingRay::SpecularRay;
+      case BSDF::Diffuse:   return VisibilityFlags::DiffuseRay;
+      case BSDF::Glossy:    return VisibilityFlags::GlossyRay;
+      case BSDF::Specular:  return VisibilityFlags::SpecularRay;
       default:
         assert(!"Invalid scattering mode.");
-        return ShadingRay::DiffuseRay;
+        return VisibilityFlags::DiffuseRay;
     }
 }
 

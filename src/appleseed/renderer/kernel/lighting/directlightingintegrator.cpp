@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/pathvertex.h"
 #include "renderer/modeling/light/light.h"
+#include "renderer/modeling/scene/visibilityflags.h"
 
 using namespace foundation;
 using namespace std;
@@ -233,7 +234,7 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
         m_shading_context.get_tracer().trace_between(
             m_shading_point,
             emission_position,
-            ShadingRay::ShadowRay);
+            VisibilityFlags::ShadowRay);
 
     // Discard occluded samples.
     if (transmission == 0.0)

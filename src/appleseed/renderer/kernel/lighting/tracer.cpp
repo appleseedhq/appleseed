@@ -84,7 +84,7 @@ const ShadingPoint& Tracer::do_trace(
     const Vector3d&             origin,
     const Vector3d&             direction,
     const double                ray_time,
-    const ShadingRay::Type      ray_type,
+    const VisibilityFlags::Type ray_flags,
     const ShadingRay::DepthType ray_depth,
     double&                     transmission,
     const ShadingPoint*         parent_shading_point)
@@ -113,7 +113,7 @@ const ShadingPoint& Tracer::do_trace(
             direction,
             ray_time,
             m_ray_dtime,
-            ray_type,
+            ray_flags,
             ray_depth);         // ray depth does not increase when passing through an alpha-mapped surface
 
         // Trace the ray.
@@ -161,7 +161,7 @@ const ShadingPoint& Tracer::do_trace_between(
     const Vector3d&             origin,
     const Vector3d&             target,
     const double                ray_time,
-    const ShadingRay::Type      ray_type,
+    const VisibilityFlags::Type ray_flags,
     const ShadingRay::DepthType ray_depth,
     double&                     transmission,
     const ShadingPoint*         parent_shading_point)
@@ -192,7 +192,7 @@ const ShadingPoint& Tracer::do_trace_between(
             1.0 - 1.0e-6,       // ray tmax
             ray_time,
             m_ray_dtime,
-            ray_type,
+            ray_flags,
             ray_depth);         // ray depth does not increase when passing through an alpha-mapped surface
 
         // Trace the ray.

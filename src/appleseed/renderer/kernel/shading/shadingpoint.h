@@ -44,6 +44,7 @@
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/objectinstance.h"
+#include "renderer/modeling/scene/visibilityflags.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
@@ -336,7 +337,7 @@ class ShadingPoint
 #ifdef APPLESEED_WITH_OSL
     void initialize_osl_shader_globals(
         const ShaderGroup&          sg,
-        const ShadingRay::TypeType  ray_type,
+        const VisibilityFlags::Type ray_flags,
         OSL::RendererServices*      renderer,
         const float                 surface_area = 0.0f) const;
 #endif

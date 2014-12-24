@@ -32,6 +32,9 @@
 // appleseed.foundation headers.
 #include "foundation/platform/types.h"
 
+// Standard headers.
+#include <cstddef>
+
 // Forward declarations.
 namespace renderer  { class MessageContext; }
 namespace renderer  { class ParamArray; }
@@ -39,10 +42,31 @@ namespace renderer  { class ParamArray; }
 namespace renderer
 {
 
-// Parse visibility flags defined in a parameter array and combine them into a bitmask.
-foundation::uint32 parse_vis_flags(
-    const ParamArray&       params,
-    const MessageContext&   message_context);
+class VisibilityFlags
+{
+  public:
+    typedef foundation::uint32 Type;
+
+    enum Values
+    {
+        CameraRay       = 1 << 0,
+        LightRay        = 1 << 1,
+        ShadowRay       = 1 << 2,
+        TransparencyRay = 1 << 3,
+        ProbeRay        = 1 << 4,
+        DiffuseRay      = 1 << 5,
+        GlossyRay       = 1 << 6,
+        SpecularRay     = 1 << 7
+    };
+
+    static const size_t Count;
+    static const char* Names[];
+
+    // Parse visibility flags defined in a dictionary and combine them into a bitmask.
+    static Type parse(
+        const ParamArray&       params,
+        const MessageContext&   message_context);
+};
 
 }       // namespace renderer
 

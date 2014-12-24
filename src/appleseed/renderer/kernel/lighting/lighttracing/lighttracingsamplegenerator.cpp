@@ -59,6 +59,7 @@
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/scene/scene.h"
+#include "renderer/modeling/scene/visibilityflags.h"
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
@@ -451,7 +452,7 @@ namespace
                         m_camera_position,
                         vertex_position,
                         time,
-                        ShadingRay::CameraRay,
+                        VisibilityFlags::CameraRay,
                         ray_depth);
             }
 
@@ -629,7 +630,7 @@ namespace
                 emission_direction,
                 sampling_context.next_double2(),
                 m_ray_dtime,
-                ShadingRay::LightRay,
+                VisibilityFlags::LightRay,
                 0);
 
             // Build the path tracer.
@@ -702,7 +703,7 @@ namespace
                 emission_direction,
                 sampling_context.next_double2(),
                 m_ray_dtime,
-                ShadingRay::LightRay,
+                VisibilityFlags::LightRay,
                 0);
 
             // Build the path tracer.
@@ -787,7 +788,7 @@ namespace
                 -outgoing,
                 sampling_context.next_double2(),
                 m_ray_dtime,
-                ShadingRay::LightRay,
+                VisibilityFlags::LightRay,
                 0);
 
             // Build the path tracer.

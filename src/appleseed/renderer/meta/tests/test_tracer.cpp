@@ -49,6 +49,7 @@
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
+#include "renderer/modeling/scene/visibilityflags.h"
 #include "renderer/modeling/surfaceshader/constantsurfaceshader.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/utility/paramarray.h"
@@ -259,7 +260,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 Vector3d(0.0),
                 Vector3d(1.0, 0.0, 0.0),
                 0.0,
-                ShadingRay::ShadowRay,
+                VisibilityFlags::ShadowRay,
                 0,
                 transmission);
 
@@ -283,7 +284,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 Vector3d(0.0),
                 Vector3d(1.0, 0.0, 0.0),
                 0.0,
-                ShadingRay::ShadowRay,
+                VisibilityFlags::ShadowRay,
                 0);
 
         EXPECT_EQ(1.0, transmission);
@@ -306,7 +307,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
                 0.0,
-                ShadingRay::ShadowRay,
+                VisibilityFlags::ShadowRay,
                 0,
                 transmission);
 
@@ -330,7 +331,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
                 0.0,
-                ShadingRay::ShadowRay,
+                VisibilityFlags::ShadowRay,
                 0);
 
         EXPECT_EQ(1.0, transmission);
@@ -362,7 +363,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(1.0, 0.0, 0.0),
                 0.0,
-                ShadingRay::ShadowRay,
+                VisibilityFlags::ShadowRay,
                 0,
                 transmission);
 
@@ -387,7 +388,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(1.0, 0.0, 0.0),
                 0.0,
-                ShadingRay::ShadowRay,
+                VisibilityFlags::ShadowRay,
                 0);
 
         EXPECT_EQ(0.0, transmission);
@@ -410,7 +411,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
                 0.0,
-                ShadingRay::ShadowRay,
+                VisibilityFlags::ShadowRay,
                 0,
                 transmission);
 
@@ -435,7 +436,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
                 0.0,
-                ShadingRay::ShadowRay,
+                VisibilityFlags::ShadowRay,
                 0);
 
         EXPECT_EQ(0.0, transmission);
@@ -467,7 +468,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(1.0, 0.0, 0.0),
                 0.0,
-                ShadingRay::ShadowRay,
+                VisibilityFlags::ShadowRay,
                 0,
                 transmission);
 
@@ -491,7 +492,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(1.0, 0.0, 0.0),
                 0.0,
-                ShadingRay::ShadowRay,
+                VisibilityFlags::ShadowRay,
                 0);
 
         EXPECT_FEQ(0.5, transmission);
@@ -514,7 +515,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
                 0.0,
-                ShadingRay::ShadowRay,
+                VisibilityFlags::ShadowRay,
                 0,
                 transmission);
 
@@ -538,7 +539,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
                 0.0,
-                ShadingRay::ShadowRay,
+                VisibilityFlags::ShadowRay,
                 0);
 
         EXPECT_FEQ(0.5, transmission);
@@ -571,7 +572,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(1.0, 0.0, 0.0),
                 0.0,
-                ShadingRay::ShadowRay,
+                VisibilityFlags::ShadowRay,
                 0,
                 transmission);
 
@@ -596,7 +597,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(1.0, 0.0, 0.0),
                 0.0,
-                ShadingRay::ShadowRay,
+                VisibilityFlags::ShadowRay,
                 0);
 
         EXPECT_FEQ(0.0, transmission);
@@ -619,7 +620,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
                 0.0,
-                ShadingRay::ShadowRay,
+                VisibilityFlags::ShadowRay,
                 0,
                 transmission);
 
@@ -644,7 +645,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
                 0.0,
-                ShadingRay::ShadowRay,
+                VisibilityFlags::ShadowRay,
                 0);
 
         EXPECT_FEQ(0.0, transmission);
@@ -667,7 +668,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(4.0, 0.0, 0.0),
                 0.0,
-                ShadingRay::ShadowRay,
+                VisibilityFlags::ShadowRay,
                 0,
                 transmission);
 
@@ -691,7 +692,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(4.0, 0.0, 0.0),
                 0.0,
-                ShadingRay::ShadowRay,
+                VisibilityFlags::ShadowRay,
                 0);
 
         EXPECT_FEQ(0.5, transmission);
@@ -724,7 +725,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(1.0, 0.0, 0.0),
                 0.0,
-                ShadingRay::ShadowRay,
+                VisibilityFlags::ShadowRay,
                 0,
                 parent_transmission);
 
@@ -743,7 +744,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             tracer.trace_between(
                 parent_shading_point,
                 Vector3d(4.0, 0.0, 0.0),
-                ShadingRay::ShadowRay);
+                VisibilityFlags::ShadowRay);
 
         EXPECT_EQ(1.0, transmission);
     }
@@ -775,7 +776,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(1.0, 0.0, 0.0),
                 0.0,
-                ShadingRay::ShadowRay,
+                VisibilityFlags::ShadowRay,
                 0,
                 parent_transmission);
 
@@ -794,7 +795,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             tracer.trace_between(
                 parent_shading_point,
                 Vector3d(2.0, 0.0, 0.0),
-                ShadingRay::ShadowRay);
+                VisibilityFlags::ShadowRay);
 
         EXPECT_EQ(1.0, transmission);
     }

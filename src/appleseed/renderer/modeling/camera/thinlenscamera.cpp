@@ -44,6 +44,7 @@
 #include "renderer/modeling/input/texturesource.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/textureinstance.h"
+#include "renderer/modeling/scene/visibilityflags.h"
 #include "renderer/modeling/texture/texture.h"
 #include "renderer/utility/paramarray.h"
 #include "renderer/utility/transformsequence.h"
@@ -448,7 +449,7 @@ namespace
             ray.m_tmin = 0.0;
             ray.m_tmax = numeric_limits<double>::max();
             ray.m_time = time;
-            ray.m_type = ShadingRay::ProbeRay;
+            ray.m_flags = VisibilityFlags::ProbeRay;
             ray.m_depth = 0;
 
             // Trace the ray.

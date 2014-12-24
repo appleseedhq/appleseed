@@ -34,10 +34,10 @@
 #include "renderer/kernel/shading/closures.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/scene.h"
+#include "renderer/modeling/scene/visibilityflags.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/job/iabortswitch.h"
-#include "foundation/utility/countof.h"
 
 // Standard headers.
 #include <string>
@@ -87,23 +87,12 @@ OSLComponents::OSLComponents(
     m_shading_system->attribute("commonspace", "world");
     m_shading_system->attribute("statistics:level", 1);
 
-    // This array needs to be kept in sync with the renderer::ShadingRay::Type enumeration.
-    static const char* ray_type_labels[] =
-    {
-        "camera",
-        "light",
-        "shadow",
-        "transparency",
-        "probe",
-        "diffuse",
-        "glossy",
-        "specular"
-    };
-
     m_shading_system->attribute(
         "raytypes",
-        OSL::TypeDesc(OSL::TypeDesc::STRING, countof(ray_type_labels)),
-        ray_type_labels);
+        OSL::TypeDesc(
+            OSL::TypeDesc::STRING,
+            static_cast<int>(VisibilityFlags::Count)),
+        VisibilityFlags::Names);
 
 #ifndef NDEBUG
     // While debugging, we want all possible outputs.
@@ -113,7 +102,7 @@ OSLComponents::OSLComponents(
     m_shading_system->attribute("clearmemory", 1);
 #endif
 
-    // Register appleseed's closures.
+    // Register appleseed's closures into OSL's shading system.
     register_closures(*m_shading_system);
 }
 

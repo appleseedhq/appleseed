@@ -30,44 +30,58 @@
 #include "visibilityflags.h"
 
 // appleseed.renderer headers.
-#include "renderer/kernel/shading/shadingray.h"
 #include "renderer/utility/messagecontext.h"
 #include "renderer/utility/paramarray.h"
 
-using namespace foundation;
+// appleseed.foundation headers.
+#include "foundation/utility/countof.h"
 
 namespace renderer
 {
 
-uint32 parse_vis_flags(
+const char* VisibilityFlags::Names[] =
+{
+    "camera",
+    "light",
+    "shadow",
+    "transparency",
+    "probe",
+    "diffuse",
+    "glossy",
+    "specular"
+};
+
+const size_t VisibilityFlags::Count = countof(VisibilityFlags::Names);
+
+VisibilityFlags::Type VisibilityFlags::parse(
     const ParamArray&       params,
     const MessageContext&   message_context)
 {
-    uint32 flags = 0;
+    Type flags = 0;
 
     if (params.get_optional<bool>("camera", true, message_context))
-        flags |= ShadingRay::CameraRay;
+        flags |= CameraRay;
 
     if (params.get_optional<bool>("light", true, message_context))
-        flags |= ShadingRay::LightRay;
+        flags |= LightRay;
 
     if (params.get_optional<bool>("shadow", true, message_context))
-        flags |= ShadingRay::ShadowRay;
+        flags |= ShadowRay;
 
     if (params.get_optional<bool>("transparency", true, message_context))
-        flags |= ShadingRay::TransparencyRay;
+        flags |= TransparencyRay;
 
     if (params.get_optional<bool>("probe", true, message_context))
-        flags |= ShadingRay::ProbeRay;
+        flags |= ProbeRay;
 
     if (params.get_optional<bool>("diffuse", true, message_context))
-        flags |= ShadingRay::DiffuseRay;
+        flags |= DiffuseRay;
 
     if (params.get_optional<bool>("glossy", true, message_context))
-        flags |= ShadingRay::GlossyRay;
+        flags |= GlossyRay;
 
     if (params.get_optional<bool>("specular", true, message_context))
-        flags |= ShadingRay::SpecularRay;
+        flags |= SpecularRay;
 
     return flags;
 }

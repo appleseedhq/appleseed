@@ -39,6 +39,7 @@
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/scene.h"
+#include "renderer/modeling/scene/visibilityflags.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/image.h"
@@ -482,7 +483,7 @@ bool RendererServices::trace(
         options.maxdist,
         sg->time,
         sg->dtime,
-        ShadingRay::ProbeRay,
+        VisibilityFlags::ProbeRay,
         parent->get_ray().m_depth + 1);
 
     ShadingPoint shading_point;

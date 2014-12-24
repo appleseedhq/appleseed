@@ -1371,8 +1371,7 @@ bool TriangleLeafVisitor::visit(
                 triangle_index++)
     {
         // Retrieve and check the triangle's visibility flags.
-        const uint32 vis_flags = reader.read<uint32>();
-        if (!(vis_flags & m_shading_point.m_ray.m_type))
+        if (!(reader.read<uint32>() & m_shading_point.m_ray.m_flags))
             continue;
 
         FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(1));
@@ -1504,8 +1503,7 @@ bool TriangleLeafProbeVisitor::visit(
     for (size_t triangle_count = node.get_item_count(); triangle_count--; )
     {
         // Retrieve and check the triangle's visibility flags.
-        const uint32 vis_flags = reader.read<uint32>();
-        if (!(vis_flags & m_ray_type))
+        if (!(reader.read<uint32>() & m_ray_flags))
             continue;
 
         FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(1));

@@ -47,6 +47,7 @@
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
+#include "renderer/modeling/scene/visibilityflags.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exceptionnotimplemented.h"
@@ -81,7 +82,7 @@ void LightSample::make_shading_point(
 
     intersector.manufacture_hit(
         shading_point,
-        ShadingRay(m_point, direction, 0.0, 0.0, 0.0, 0.0, ShadingRay::CameraRay, 0),
+        ShadingRay(m_point, direction, 0.0, 0.0, 0.0, 0.0, VisibilityFlags::CameraRay, 0),
         ShadingPoint::PrimitiveTriangle,    // note: we assume light samples are always on triangles (and not on curves)
         m_triangle->m_assembly_instance,
         m_triangle->m_assembly_instance->transform_sequence().get_earliest_transform(),

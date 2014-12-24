@@ -31,7 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/kernel/shading/shadingray.h"
+#include "renderer/modeling/scene/visibilityflags.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -51,10 +51,6 @@ namespace renderer  { class Tracer; }
 namespace renderer
 {
 
-//
-// OSLShaderGroupExec class.
-//
-
 class OSLShaderGroupExec
   : public foundation::NonCopyable
 {
@@ -69,35 +65,35 @@ class OSLShaderGroupExec
     friend class ShadingContext;
     friend class Tracer;
 
-    OSL::ShadingSystem&         m_osl_shading_system;
-    OSL::PerThreadInfo*         m_osl_thread_info;
-    OSL::ShadingContext*        m_osl_shading_context;
+    OSL::ShadingSystem&     m_osl_shading_system;
+    OSL::PerThreadInfo*     m_osl_thread_info;
+    OSL::ShadingContext*    m_osl_shading_context;
 
     void execute_shading(
-        const ShaderGroup&      shader_group,
-        const ShadingPoint&     shading_point) const;
+        const ShaderGroup&              shader_group,
+        const ShadingPoint&             shading_point) const;
 
     void execute_transparency(
-        const ShaderGroup&      shader_group,
-        const ShadingPoint&     shading_point,
-        Alpha&                  alpha,
-        float*                  holdout = 0) const;
+        const ShaderGroup&              shader_group,
+        const ShadingPoint&             shading_point,
+        Alpha&                          alpha,
+        float*                          holdout = 0) const;
 
     void execute_shadow(
-        const ShaderGroup&      shader_group,
-        const ShadingPoint&     shading_point,
-        Alpha&                  alpha) const;
+        const ShaderGroup&              shader_group,
+        const ShadingPoint&             shading_point,
+        Alpha&                          alpha) const;
 
     void execute_emission(
-        const ShaderGroup&      shader_group,
-        const ShadingPoint&     shading_point,
-        const float             surface_area) const;
+        const ShaderGroup&              shader_group,
+        const ShadingPoint&             shading_point,
+        const float                     surface_area) const;
 
     void do_execute(
-        const ShaderGroup&          shader_group,
-        const ShadingPoint&         shading_point,
-        const ShadingRay::TypeType  ray_type,
-        const float                 surface_area = 0.0f) const;
+        const ShaderGroup&              shader_group,
+        const ShadingPoint&             shading_point,
+        const VisibilityFlags::Type     ray_flags,
+        const float                     surface_area = 0.0f) const;
 };
 
 }       // namespace renderer

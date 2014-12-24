@@ -41,6 +41,7 @@
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
+#include "renderer/modeling/scene/visibilityflags.h"
 #include "renderer/utility/paramarray.h"
 #include "renderer/utility/testutils.h"
 
@@ -114,12 +115,12 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
         const ShadingRay ray(
             Vector3d(0.0, 0.0, 2.0),
             Vector3d(0.0, 0.0, -1.0),
-            0.0,        // tmin
-            2.0,        // tmax
-            0.0,        // time
-            0.0,        // dtime
-            ShadingRay::CameraRay,
-            0);         // depth
+            0.0,                        // tmin
+            2.0,                        // tmax
+            0.0,                        // time
+            0.0,                        // dtime
+            VisibilityFlags::CameraRay,
+            0);                         // depth
 
         ShadingPoint shading_point;
         const bool hit = m_intersector.trace(ray, shading_point);
@@ -132,12 +133,12 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
         const ShadingRay ray(
             Vector3d(0.0, 0.0, 2.0),
             Vector3d(0.0, 0.0, -1.0),
-            0.0,        // tmin
-            2.0,        // tmax
-            0.0,        // time
-            0.0,        // dtime
-            ShadingRay::CameraRay,
-            0);         // depth
+            0.0,                        // tmin
+            2.0,                        // tmax
+            0.0,                        // time
+            0.0,                        // dtime
+            VisibilityFlags::CameraRay,
+            0);                         // depth
 
         const bool hit = m_intersector.trace_probe(ray);
 

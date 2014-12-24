@@ -77,7 +77,7 @@ AssemblyInstance::AssemblyInstance(
     const EntityDefMessageContext message_context("assembly instance", this);
 
     // Retrieve visibility flags.
-    m_vis_flags = parse_vis_flags(params.child("visibility"), message_context);
+    m_vis_flags = VisibilityFlags::parse(params.child("visibility"), message_context);
 
     // No bound assembly yet.
     m_assembly = 0;

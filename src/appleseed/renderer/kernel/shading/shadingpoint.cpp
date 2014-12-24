@@ -618,7 +618,7 @@ OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::get_inverse_transform(const 
 
 void ShadingPoint::initialize_osl_shader_globals(
     const ShaderGroup&          sg,
-    const ShadingRay::TypeType  ray_type,
+    const VisibilityFlags::Type ray_flags,
     OSL::RendererServices*      renderer,
     const float                 surface_area) const
 {
@@ -690,8 +690,8 @@ void ShadingPoint::initialize_osl_shader_globals(
         m_members |= HasOSLShaderGlobals;
     }
 
-    // Always update the raytype and surface area.
-    m_shader_globals.raytype = static_cast<int>(ray_type);
+    // Always update the ray type and surface area.
+    m_shader_globals.raytype = static_cast<int>(ray_flags);
     m_shader_globals.surfacearea = surface_area;
 
     // These are set by OSL when the shader is executed.

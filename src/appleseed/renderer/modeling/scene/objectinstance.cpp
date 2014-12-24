@@ -136,7 +136,7 @@ ObjectInstance::ObjectInstance(
     const EntityDefMessageContext message_context("object instance", this);
 
     // Retrieve visibility flags.
-    m_vis_flags = parse_vis_flags(params.child("visibility"), message_context);
+    m_vis_flags = VisibilityFlags::parse(params.child("visibility"), message_context);
 
     // Retrieve ray bias method.
     const string ray_bias_method =

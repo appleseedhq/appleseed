@@ -37,6 +37,7 @@
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/input/inputevaluator.h"
+#include "renderer/modeling/scene/visibilityflags.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/mis.h"
@@ -148,7 +149,7 @@ void compute_ibl_bsdf_sampling(
             shading_context.get_tracer().trace(
                 shading_point,
                 incoming,
-                ShadingRay::ShadowRay);
+                VisibilityFlags::ShadowRay);
         if (transmission == 0.0)
             continue;
 
@@ -237,7 +238,7 @@ void compute_ibl_environment_sampling(
             shading_context.get_tracer().trace(
                 shading_point,
                 incoming,
-                ShadingRay::ShadowRay);
+                VisibilityFlags::ShadowRay);
         if (transmission == 0.0)
             continue;
 

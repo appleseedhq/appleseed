@@ -35,6 +35,7 @@
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
+#include "renderer/modeling/scene/visibilityflags.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
@@ -73,7 +74,7 @@ double compute_ambient_occlusion(
     ray.m_tmin = 0.0;
     ray.m_tmax = max_distance;
     ray.m_time = shading_point.get_time();
-    ray.m_type = ShadingRay::ProbeRay;
+    ray.m_flags = VisibilityFlags::ProbeRay;
     ray.m_depth = shading_point.get_ray().m_depth + 1;
 
     size_t computed_samples = 0;

@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/kernel/shading/shadingray.h"
+#include "renderer/modeling/scene/visibilityflags.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
@@ -317,7 +318,7 @@ void Camera::initialize_ray(
         ray.m_dtime = m_shutter_open_time_interval;
     }
 
-    ray.m_type = ShadingRay::CameraRay;
+    ray.m_flags = VisibilityFlags::CameraRay;
     ray.m_depth = 0;
 }
 

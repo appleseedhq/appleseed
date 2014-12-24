@@ -37,6 +37,7 @@
 #include "renderer/kernel/intersection/regioninfo.h"
 #include "renderer/kernel/intersection/trianglekey.h"
 #include "renderer/kernel/intersection/trianglevertexinfo.h"
+#include "renderer/modeling/scene/visibilityflags.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -251,7 +252,7 @@ class TriangleLeafProbeVisitor
     TriangleLeafProbeVisitor(
         const TriangleTree&                     tree,
         const double                            ray_time,
-        const foundation::uint32                ray_type);
+        const VisibilityFlags::Type             ray_flags);
 
     // Visit a leaf.
     bool visit(
@@ -267,7 +268,7 @@ class TriangleLeafProbeVisitor
   private:
     const TriangleTree&         m_tree;
     const double                m_ray_time;
-    const foundation::uint32    m_ray_type;
+    const VisibilityFlags::Type m_ray_flags;
     const bool                  m_has_intersection_filters;
 };
 
@@ -328,10 +329,10 @@ inline TriangleLeafVisitor::TriangleLeafVisitor(
 inline TriangleLeafProbeVisitor::TriangleLeafProbeVisitor(
     const TriangleTree&         tree,
     const double                ray_time,
-    const foundation::uint32    ray_type)
+    const VisibilityFlags::Type ray_flags)
   : m_tree(tree)
   , m_ray_time(ray_time)
-  , m_ray_type(ray_type)
+  , m_ray_flags(ray_flags)
   , m_has_intersection_filters(!tree.m_intersection_filters.empty())
 {
 }

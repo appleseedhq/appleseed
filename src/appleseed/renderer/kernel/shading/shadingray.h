@@ -30,6 +30,9 @@
 #ifndef APPLESEED_RENDERER_KERNEL_SHADING_SHADINGRAY_H
 #define APPLESEED_RENDERER_KERNEL_SHADING_SHADINGRAY_H
 
+// appleseed.renderer headers.
+#include "renderer/modeling/scene/visibilityflags.h"
+
 // appleseed.foundation headers.
 #include "foundation/math/ray.h"
 #include "foundation/math/transform.h"
@@ -55,28 +58,12 @@ class ShadingRay
     typedef foundation::Vector3d    VectorType;
     typedef foundation::Ray3d       RayType;
     typedef foundation::RayInfo3d   RayInfoType;
-    typedef foundation::uint16      TypeType;
     typedef foundation::uint16      DepthType;
-
-    // Ray types.
-    // This enumeration needs to be kept in sync with the OSL raytypes attribute
-    // set in renderer::OSLComponents' constructor.
-    enum Type
-    {
-        CameraRay                   = 1 << 0,
-        LightRay                    = 1 << 1,
-        ShadowRay                   = 1 << 2,
-        TransparencyRay             = 1 << 3,
-        ProbeRay                    = 1 << 4,
-        DiffuseRay                  = 1 << 5,
-        GlossyRay                   = 1 << 6,
-        SpecularRay                 = 1 << 7
-    };
 
     // Public members.
     double                          m_time;
     double                          m_dtime;
-    TypeType                        m_type;
+    VisibilityFlags::Type           m_flags;
     DepthType                       m_depth;
 
     // Constructors.
@@ -85,14 +72,14 @@ class ShadingRay
         const RayType&              ray,
         const double                time,
         const double                dtime,
-        const TypeType              type,
+        const VisibilityFlags::Type flags,
         const DepthType             depth);
     ShadingRay(
         const VectorType&           org,
         const VectorType&           dir,
         const double                time,
         const double                dtime,
-        const TypeType              type,
+        const VisibilityFlags::Type flags,
         const DepthType             depth);
     ShadingRay(
         const VectorType&           org,
@@ -101,7 +88,7 @@ class ShadingRay
         const ValueType             tmax,
         const double                time,
         const double                dtime,
-        const TypeType              type,
+        const VisibilityFlags::Type flags,
         const DepthType             depth);
 };
 
@@ -128,12 +115,12 @@ inline ShadingRay::ShadingRay(
     const RayType&                  ray,
     const double                    time,
     const double                    dtime,
-    const TypeType                  type,
+    const VisibilityFlags::Type     flags,
     const DepthType                 depth)
   : RayType(ray)
   , m_time(time)
   , m_dtime(dtime)
-  , m_type(type)
+  , m_flags(flags)
   , m_depth(depth)
 {
 }
@@ -143,12 +130,12 @@ inline ShadingRay::ShadingRay(
     const VectorType&               dir,
     const double                    time,
     const double                    dtime,
-    const TypeType                  type,
+    const VisibilityFlags::Type     flags,
     const DepthType                 depth)
   : RayType(org, dir)
   , m_time(time)
   , m_dtime(dtime)
-  , m_type(type)
+  , m_flags(flags)
   , m_depth(depth)
 {
 }
@@ -160,12 +147,12 @@ inline ShadingRay::ShadingRay(
     const ValueType                 tmax,
     const double                    time,
     const double                    dtime,
-    const TypeType                  type,
+    const VisibilityFlags::Type     flags,
     const DepthType                 depth)
   : RayType(org, dir, tmin, tmax)
   , m_time(time)
   , m_dtime(dtime)
-  , m_type(type)
+  , m_flags(flags)
   , m_depth(depth)
 {
 }
@@ -180,7 +167,7 @@ inline ShadingRay transform_to_local(
             transform.transform_to_local(ray),
             ray.m_time,
             ray.m_dtime,
-            ray.m_type,
+            ray.m_flags,
             ray.m_depth);
 }
 
@@ -194,7 +181,7 @@ inline ShadingRay transform_to_parent(
             transform.transform_to_parent(ray),
             ray.m_time,
             ray.m_dtime,
-            ray.m_type,
+            ray.m_flags,
             ray.m_depth);
 }
 

@@ -430,7 +430,7 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
         m_shading_context.get_tracer().trace(
             m_shading_point,
             incoming,
-            ShadingRay::ShadowRay,
+            VisibilityFlags::ShadowRay,
             weight);
 
     // todo: wouldn't it be more efficient to look the environment up at this point?
@@ -590,7 +590,7 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
         m_shading_context.get_tracer().trace_between(
             m_shading_point,
             sample.m_point,
-            ShadingRay::ShadowRay);
+            VisibilityFlags::ShadowRay);
 
     // Discard occluded samples.
     if (transmission == 0.0)

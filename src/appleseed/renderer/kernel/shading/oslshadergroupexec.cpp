@@ -32,7 +32,11 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/closures.h"
 #include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/shadergroup/shadergroup.h"
+
+// Standard headers.
+#include <cassert>
 
 namespace renderer
 {
@@ -58,25 +62,25 @@ OSLShaderGroupExec::~OSLShaderGroupExec()
 }
 
 void OSLShaderGroupExec::execute_shading(
-    const ShaderGroup&          shader_group,
-    const ShadingPoint&         shading_point) const
+    const ShaderGroup&              shader_group,
+    const ShadingPoint&             shading_point) const
 {
     do_execute(
         shader_group,
         shading_point,
-        shading_point.get_ray().m_type);
+        shading_point.get_ray().m_flags);
 }
 
 void OSLShaderGroupExec::execute_transparency(
-    const ShaderGroup&          shader_group,
-    const ShadingPoint&         shading_point,
-    Alpha&                      alpha,
-    float*                      holdout) const
+    const ShaderGroup&              shader_group,
+    const ShadingPoint&             shading_point,
+    Alpha&                          alpha,
+    float*                          holdout) const
 {
     do_execute(
         shader_group,
         shading_point,
-        ShadingRay::TransparencyRay);
+        VisibilityFlags::TransparencyRay);
 
     process_transparency_tree(shading_point.get_osl_shader_globals().Ci, alpha);
 
@@ -85,42 +89,42 @@ void OSLShaderGroupExec::execute_transparency(
 }
 
 void OSLShaderGroupExec::execute_shadow(
-    const ShaderGroup&      shader_group,
-    const ShadingPoint&     shading_point,
-    Alpha&                  alpha) const
+    const ShaderGroup&              shader_group,
+    const ShadingPoint&             shading_point,
+    Alpha&                          alpha) const
 {
     do_execute(
         shader_group,
         shading_point,
-        ShadingRay::ShadowRay);
+        VisibilityFlags::ShadowRay);
 
     process_transparency_tree(shading_point.get_osl_shader_globals().Ci, alpha);
 }
 
 void OSLShaderGroupExec::execute_emission(
-    const ShaderGroup&          shader_group,
-    const ShadingPoint&         shading_point,
-    const float                 surface_area) const
+    const ShaderGroup&              shader_group,
+    const ShadingPoint&             shading_point,
+    const float                     surface_area) const
 {
     do_execute(
         shader_group,
         shading_point,
-        ShadingRay::LightRay,
+        VisibilityFlags::LightRay,
         surface_area);
 }
 
 void OSLShaderGroupExec::do_execute(
-    const ShaderGroup&          shader_group,
-    const ShadingPoint&         shading_point,
-    const ShadingRay::TypeType  ray_type,
-    const float                 surface_area) const
+    const ShaderGroup&              shader_group,
+    const ShadingPoint&             shading_point,
+    const VisibilityFlags::Type     ray_flags,
+    const float                     surface_area) const
 {
     assert(m_osl_shading_context);
     assert(m_osl_thread_info);
 
     shading_point.initialize_osl_shader_globals(
         shader_group,
-        ray_type,
+        ray_flags,
         m_osl_shading_system.renderer(),
         surface_area);
 
