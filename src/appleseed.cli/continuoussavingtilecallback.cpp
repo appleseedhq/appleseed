@@ -72,24 +72,23 @@ namespace
       : public ProgressTileCallback
     {
       public:
-        ContinuousSavingTileCallback(const string& output_filename, Logger& logger)
+        ContinuousSavingTileCallback(const string& output_path, Logger& logger)
           : ProgressTileCallback(logger)
-          , m_output_path(output_filename)
+          , m_output_path(output_path)
         {
-            filesystem::path ext = m_output_path.extension();
-            m_tmp_output_path = m_output_path.parent_path();
-            mt19937 rng(time(0));
-            uuids::uuid u = uuids::basic_random_generator<boost::mt19937>(&rng)();
-            string tmp_filename = uuids::to_string(u);
-            tmp_filename.append(ext.string());
-            m_tmp_output_path /= tmp_filename;
+            mt19937 rng(static_cast<uint32_t>(time(0)));
+            const uuids::uuid u = uuids::basic_random_generator<boost::mt19937>(&rng)();
+            const filesystem::path ext = m_output_path.extension();
+            const string tmp_filename = uuids::to_string(u) + ext.string();
+
+            m_tmp_output_path = m_output_path.parent_path() / tmp_filename;
         }
 
       private:
-        mutex                           m_mutex;
-        filesystem::path                m_output_path;
-        filesystem::path                m_tmp_output_path;
-        bool                            m_write_tiled_image;
+        mutex               m_mutex;
+        filesystem::path    m_output_path;
+        filesystem::path    m_tmp_output_path;
+        bool                m_write_tiled_image;
 
         virtual void do_post_render_tile(
             const Frame*    frame,
@@ -98,7 +97,7 @@ namespace
         {
             mutex::scoped_lock lock(m_mutex);
             ProgressTileCallback::do_post_render_tile(frame, tile_x, tile_y);
-            frame->write_main_image(m_tmp_output_path.c_str());
+            frame->write_main_image(m_tmp_output_path.string().c_str());
             filesystem::rename(m_tmp_output_path, m_output_path);
         }
     };
@@ -110,9 +109,9 @@ namespace
 //
 
 ContinuousSavingTileCallbackFactory::ContinuousSavingTileCallbackFactory(
-    const string&   output_filename,
+    const string&   output_path,
     Logger&         logger)
-  : m_callback(new ContinuousSavingTileCallback(output_filename, logger))
+  : m_callback(new ContinuousSavingTileCallback(output_path, logger))
 {
 }
 

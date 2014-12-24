@@ -51,7 +51,7 @@ class ContinuousSavingTileCallbackFactory
 {
   public:
     ContinuousSavingTileCallbackFactory(
-        const std::string&  output_filename,
+        const std::string&  output_path,
         foundation::Logger& logger);
 
     virtual void release() APPLESEED_OVERRIDE;
