@@ -42,7 +42,7 @@
 #include "foundation/utility/log.h"
 #include "foundation/utility/otherwise.h"
 
-// Boost headers
+// Boost headers.
 #include "boost/lexical_cast.hpp"
 #include "boost/thread/mutex.hpp"
 
