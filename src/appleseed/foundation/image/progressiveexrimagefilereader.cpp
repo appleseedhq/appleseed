@@ -37,6 +37,7 @@
 #include "foundation/image/exrutils.h"
 #include "foundation/image/pixel.h"
 #include "foundation/image/tile.h"
+#include "foundation/math/scalar.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/log.h"
 #include "foundation/utility/memory.h"
@@ -44,7 +45,9 @@
 // OpenEXR headers.
 #include "foundation/platform/exrheaderguards.h"
 BEGIN_EXR_INCLUDES
+#include "OpenEXR/IexBaseExc.h"
 #include "OpenEXR/ImathBox.h"
+#include "OpenEXR/ImathVec.h"
 #include "OpenEXR/ImfChannelList.h"
 #include "OpenEXR/ImfFrameBuffer.h"
 #include "OpenEXR/ImfHeader.h"

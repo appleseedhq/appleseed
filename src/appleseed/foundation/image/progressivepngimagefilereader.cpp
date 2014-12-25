@@ -35,6 +35,7 @@
 #include "foundation/image/image.h"
 #include "foundation/image/imageattributes.h"
 #include "foundation/image/pngimagefilereader.h"
+#include "foundation/image/tile.h"
 
 // Standard headers.
 #include <cassert>

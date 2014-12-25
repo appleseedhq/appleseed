@@ -32,6 +32,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exceptionioerror.h"
+#include "foundation/image/canvasproperties.h"
 #include "foundation/image/exceptionunsupportedimageformat.h"
 #include "foundation/image/image.h"
 #include "foundation/image/pixel.h"
@@ -42,6 +43,7 @@
 
 // Standard headers.
 #include <csetjmp>
+#include <cstddef>
 #include <cstdio>
 #include <memory>
 

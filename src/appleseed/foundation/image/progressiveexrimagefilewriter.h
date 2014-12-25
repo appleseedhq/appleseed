@@ -31,7 +31,6 @@
 #define APPLESEED_FOUNDATION_IMAGE_PROGRESSIVEEXRIMAGEFILEWRITER_H
 
 // appleseed.foundation headers.
-#include "foundation/core/exceptions/exception.h"
 #include "foundation/image/imageattributes.h"
 #include "foundation/image/iprogressiveimagefilewriter.h"
 
@@ -62,17 +61,17 @@ class APPLESEED_DLLSYMBOL ProgressiveEXRImageFileWriter
     explicit ProgressiveEXRImageFileWriter(Logger* logger = 0);
     explicit ProgressiveEXRImageFileWriter(const size_t thread_count);
     ProgressiveEXRImageFileWriter(
-        Logger*                         logger,
-        const size_t                    thread_count);
+        Logger*                     logger,
+        const size_t                thread_count);
 
     // Destructor.
     ~ProgressiveEXRImageFileWriter();
 
     // Open an image file for writing.
     virtual void open(
-        const char*                     filename,
-        const CanvasProperties&         props,
-        const ImageAttributes&          attrs = ImageAttributes());
+        const char*                 filename,
+        const CanvasProperties&     props,
+        const ImageAttributes&      attrs = ImageAttributes());
 
     // Close the image file.
     virtual void close();
@@ -82,9 +81,9 @@ class APPLESEED_DLLSYMBOL ProgressiveEXRImageFileWriter
 
     // Write a tile to the image file.
     virtual void write_tile(
-        const Tile&                     tile,
-        const size_t                    tile_x,
-        const size_t                    tile_y);
+        const Tile&                 tile,
+        const size_t                tile_x,
+        const size_t                tile_y);
 
   private:
     struct Impl;

@@ -41,7 +41,6 @@
 
 // Forward declarations.
 namespace foundation    { class CanvasProperties; }
-namespace foundation    { class ICanvas; }
 namespace foundation    { class ImageAttributes; }
 namespace foundation    { class Tile; }
 

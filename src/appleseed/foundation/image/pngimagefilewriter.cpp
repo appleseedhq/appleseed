@@ -35,6 +35,7 @@
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
 #include "foundation/image/icanvas.h"
+#include "foundation/image/tile.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/string.h"

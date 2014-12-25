@@ -33,12 +33,6 @@
 // appleseed.foundation headers.
 #include "foundation/image/iprogressiveimagefilereader.h"
 
-// OpenEXR headers.
-#include "foundation/platform/exrheaderguards.h"
-BEGIN_EXR_INCLUDES
-#include "OpenEXR/ImfChannelList.h"
-END_EXR_INCLUDES
-
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
