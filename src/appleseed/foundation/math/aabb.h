@@ -85,11 +85,11 @@ class AABB
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
 
     // Implicit construction from an Imath::Box.
-    AABB(const Imath::Box< typename ImathVecEquivalent<T, N>::Type >& rhs);
+    AABB(const Imath::Box<typename ImathVecEquivalent<T, N>::Type>& rhs);
 
     // Reinterpret this bounding box as an Imath::Box.
-    operator Imath::Box< typename ImathVecEquivalent<T, N>::Type >&();
-    operator const Imath::Box< typename ImathVecEquivalent<T, N>::Type >&() const;
+    operator Imath::Box<typename ImathVecEquivalent<T, N>::Type>&();
+    operator const Imath::Box<typename ImathVecEquivalent<T, N>::Type>&() const;
 
 #endif
 
@@ -231,22 +231,22 @@ inline AABB<T, N>::AABB(const AABB<U, N>& rhs)
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
 
 template <typename T, size_t N>
-inline AABB<T, N>::AABB(const Imath::Box< typename ImathVecEquivalent<T, N>::Type >& rhs)
+inline AABB<T, N>::AABB(const Imath::Box<typename ImathVecEquivalent<T, N>::Type>& rhs)
   : min(rhs.min)
   , max(rhs.max)
 {
 }
 
 template <typename T, size_t N>
-inline AABB<T, N>::operator Imath::Box< typename ImathVecEquivalent<T, N>::Type >&()
+inline AABB<T, N>::operator Imath::Box<typename ImathVecEquivalent<T, N>::Type>&()
 {
-    return reinterpret_cast<Imath::Box< typename ImathVecEquivalent<T, N>::Type >&>(*this);
+    return reinterpret_cast<Imath::Box<typename ImathVecEquivalent<T, N>::Type>&>(*this);
 }
 
 template <typename T, size_t N>
-inline AABB<T, N>::operator const Imath::Box< typename ImathVecEquivalent<T, N>::Type >&() const
+inline AABB<T, N>::operator const Imath::Box<typename ImathVecEquivalent<T, N>::Type>&() const
 {
-    return reinterpret_cast<const Imath::Box< typename ImathVecEquivalent<T, N>::Type >&>(*this);
+    return reinterpret_cast<const Imath::Box<typename ImathVecEquivalent<T, N>::Type>&>(*this);
 }
 
 #endif
