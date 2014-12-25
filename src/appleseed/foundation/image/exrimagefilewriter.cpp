@@ -37,12 +37,14 @@
 #include "foundation/image/exrutils.h"
 #include "foundation/image/icanvas.h"
 #include "foundation/image/pixel.h"
+#include "foundation/image/tile.h"
 
 // OpenEXR headers.
 #include "foundation/platform/exrheaderguards.h"
 BEGIN_EXR_INCLUDES
 #include "OpenEXR/IexBaseExc.h"
 #include "OpenEXR/ImathBox.h"
+#include "OpenEXR/ImathVec.h"
 #include "OpenEXR/ImfChannelList.h"
 #include "OpenEXR/ImfFrameBuffer.h"
 #include "OpenEXR/ImfHeader.h"
@@ -53,6 +55,7 @@ END_EXR_INCLUDES
 
 // Standard headers.
 #include <cassert>
+#include <cstddef>
 
 using namespace Iex;
 using namespace Imath;

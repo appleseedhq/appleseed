@@ -40,7 +40,6 @@
 #include "boost/filesystem/path.hpp"
 
 // Standard headers.
-#include <memory>
 #include <string>
 
 using namespace boost;

@@ -34,6 +34,7 @@
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
 #include "foundation/image/progressiveexrimagefilereader.h"
+#include "foundation/image/tile.h"
 
 // Standard headers.
 #include <cstddef>

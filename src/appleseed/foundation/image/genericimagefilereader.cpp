@@ -39,6 +39,9 @@
 // Boost headers.
 #include "boost/filesystem/path.hpp"
 
+// Standard headers.
+#include <string>
+
 using namespace boost;
 using namespace std;
 

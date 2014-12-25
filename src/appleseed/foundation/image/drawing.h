@@ -31,6 +31,7 @@
 #define APPLESEED_FOUNDATION_IMAGE_DRAWING_H
 
 // appleseed.foundation headers.
+#include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
 #include "foundation/image/image.h"
 #include "foundation/math/vector.h"

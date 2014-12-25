@@ -42,6 +42,7 @@
 // Standard headers.
 #include <cassert>
 #include <memory>
+#include <string>
 
 using namespace boost;
 using namespace std;

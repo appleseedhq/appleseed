@@ -35,7 +35,6 @@
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/icanvas.h"
 #include "foundation/image/pixel.h"
-#include "foundation/image/tile.h"
 #include "foundation/platform/compiler.h"
 
 // appleseed.main headers.
@@ -43,6 +42,9 @@
 
 // Standard headers.
 #include <cstddef>
+
+// Forward declarations.
+namespace foundation    { class Tile; }
 
 namespace foundation
 {

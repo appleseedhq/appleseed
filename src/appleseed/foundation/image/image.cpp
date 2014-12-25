@@ -30,6 +30,10 @@
 // Interface header.
 #include "image.h"
 
+// appleseed.foundation headers.
+#include "foundation/image/tile.h"
+#include "foundation/platform/types.h"
+
 // Standard headers.
 #include <cassert>
 #include <cstring>

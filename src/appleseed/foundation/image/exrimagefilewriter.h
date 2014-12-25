@@ -37,9 +37,6 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// Standard headers.
-#include <cstddef>
-
 // Forward declarations.
 namespace foundation    { class ICanvas; }
 
