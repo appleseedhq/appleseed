@@ -246,7 +246,6 @@ set (foundation_math_sources
     foundation/math/aabb.h
     foundation/math/area.h
     foundation/math/basis.h
-    foundation/math/bestcandidate.h
     foundation/math/bezier.h
     foundation/math/beziercurve.h
     foundation/math/bsp.h
