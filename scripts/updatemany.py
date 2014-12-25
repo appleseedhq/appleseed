@@ -30,8 +30,8 @@
 
 import argparse
 import datetime
-import subprocess
 import os
+import subprocess
 
 
 #--------------------------------------------------------------------------------------------------
