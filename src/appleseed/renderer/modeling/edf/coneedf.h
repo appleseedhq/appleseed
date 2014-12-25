@@ -31,7 +31,7 @@
 #define APPLESEED_RENDERER_MODELING_EDF_CONEEDF_H
 
 // appleseed.renderer headers.
-#include "renderer/modeling/edf/edf.h"
+#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/edf/iedffactory.h"
 #include "renderer/modeling/input/inputarray.h"
 
@@ -44,6 +44,7 @@
 
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
+namespace renderer      { class EDF; }
 namespace renderer      { class ParamArray; }
 
 namespace renderer

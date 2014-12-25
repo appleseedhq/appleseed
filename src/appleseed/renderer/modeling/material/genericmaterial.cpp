@@ -30,6 +30,9 @@
 // Interface header.
 #include "genericmaterial.h"
 
+// appleseed.renderer headers.
+#include "renderer/modeling/material/material.h"
+
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"

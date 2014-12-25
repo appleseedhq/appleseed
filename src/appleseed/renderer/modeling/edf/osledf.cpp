@@ -35,6 +35,7 @@
 #include "renderer/kernel/shading/closures.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/edf/diffuseedf.h"
+#include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/utility/paramarray.h"
 

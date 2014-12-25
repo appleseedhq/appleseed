@@ -32,7 +32,10 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/oslbsdf.h"
+#include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/edf/osledf.h"
+#include "renderer/modeling/input/inputarray.h"
+#include "renderer/modeling/material/material.h"
 #include "renderer/modeling/shadergroup/shadergroup.h"
 
 // appleseed.foundation headers.

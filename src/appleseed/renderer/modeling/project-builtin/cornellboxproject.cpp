@@ -31,22 +31,40 @@
 #include "cornellboxproject.h"
 
 // appleseed.renderer headers.
-// todo: include the required individual renderer headers rather than API headers.
-#include "renderer/api/bsdf.h"
-#include "renderer/api/camera.h"
-#include "renderer/api/color.h"
-#include "renderer/api/edf.h"
-#include "renderer/api/frame.h"
-#include "renderer/api/material.h"
-#include "renderer/api/object.h"
-#include "renderer/api/project.h"
-#include "renderer/api/scene.h"
-#include "renderer/api/surfaceshader.h"
+#include "renderer/global/globaltypes.h"
+#include "renderer/modeling/bsdf/bsdf.h"
+#include "renderer/modeling/bsdf/lambertianbrdf.h"
+#include "renderer/modeling/camera/camera.h"
+#include "renderer/modeling/camera/pinholecamera.h"
+#include "renderer/modeling/color/colorentity.h"
+#include "renderer/modeling/edf/diffuseedf.h"
+#include "renderer/modeling/edf/edf.h"
+#include "renderer/modeling/frame/frame.h"
+#include "renderer/modeling/material/genericmaterial.h"
+#include "renderer/modeling/material/material.h"
+#include "renderer/modeling/object/meshobject.h"
+#include "renderer/modeling/object/object.h"
+#include "renderer/modeling/object/triangle.h"
+#include "renderer/modeling/project/project.h"
+#include "renderer/modeling/scene/assembly.h"
+#include "renderer/modeling/scene/assemblyinstance.h"
+#include "renderer/modeling/scene/containers.h"
+#include "renderer/modeling/scene/objectinstance.h"
+#include "renderer/modeling/scene/scene.h"
+#include "renderer/modeling/surfaceshader/physicalsurfaceshader.h"
+#include "renderer/modeling/surfaceshader/surfaceshader.h"
+#include "renderer/utility/paramarray.h"
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/matrix.h"
 #include "foundation/math/transform.h"
+#include "foundation/math/vector.h"
 #include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/iostreamop.h"
+
+// Standard headers.
+#include <cstddef>
 
 using namespace foundation;
 using namespace std;
@@ -62,7 +80,6 @@ namespace renderer
 //   http://www.graphics.cornell.edu/online/box/data.html
 //
 
-// Create a new instance of the Cornell Box project.
 auto_release_ptr<Project> CornellBoxProjectFactory::create()
 {
     // Input wavelengths for white, green and red reflectances.

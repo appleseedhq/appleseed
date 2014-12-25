@@ -37,6 +37,7 @@
 #include "foundation/image/colorspace.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
+#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/uid.h"
 
@@ -45,7 +46,6 @@
 
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
-namespace foundation    { class FloatArray; }
 namespace renderer      { class ParamArray; }
 
 namespace renderer

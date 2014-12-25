@@ -31,10 +31,11 @@
 #include "ptlightingengine.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
+#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/aov/spectrumstack.h"
 #include "renderer/kernel/lighting/directlightingintegrator.h"
 #include "renderer/kernel/lighting/imagebasedlighting.h"
-#include "renderer/kernel/lighting/lightsampler.h"
 #include "renderer/kernel/lighting/pathtracer.h"
 #include "renderer/kernel/lighting/pathvertex.h"
 #include "renderer/kernel/shading/shadingcontext.h"
@@ -44,24 +45,26 @@
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/input/inputevaluator.h"
-#include "renderer/modeling/material/material.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/utility/stochasticcast.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/basis.h"
 #include "foundation/math/mis.h"
 #include "foundation/math/population.h"
-#include "foundation/utility/memory.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/statistics.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
 #include <algorithm>
+#include <cassert>
+#include <cstddef>
+#include <string>
 
 // Forward declarations.
-namespace renderer  { class EnvironmentEDF; }
+namespace renderer  { class LightSampler; }
 namespace renderer  { class PixelContext; }
+namespace renderer  { class TextureCache; }
 
 using namespace foundation;
 using namespace std;

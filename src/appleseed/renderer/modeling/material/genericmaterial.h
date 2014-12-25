@@ -32,7 +32,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/material/imaterialfactory.h"
-#include "renderer/modeling/material/material.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -43,6 +42,7 @@
 
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
+namespace renderer      { class Material; }
 namespace renderer      { class ParamArray; }
 
 namespace renderer

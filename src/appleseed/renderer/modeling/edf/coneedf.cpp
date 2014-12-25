@@ -31,7 +31,7 @@
 #include "coneedf.h"
 
 // appleseed.renderer headers.
-#include "renderer/global/globaltypes.h"
+#include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/input/inputarray.h"
 
 // appleseed.foundation headers.

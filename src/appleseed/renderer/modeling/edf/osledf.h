@@ -29,11 +29,11 @@
 #ifndef APPLESEED_RENDERER_MODELING_EDF_OSLEDF_H
 #define APPLESEED_RENDERER_MODELING_EDF_OSLEDF_H
 
-// appleseed.renderer headers.
-#include "renderer/modeling/edf/edf.h"
-
 // appleseed.foundation headers.
 #include "foundation/utility/autoreleaseptr.h"
+
+// Forward declarations.
+namespace renderer  { class EDF; }
 
 namespace renderer
 {

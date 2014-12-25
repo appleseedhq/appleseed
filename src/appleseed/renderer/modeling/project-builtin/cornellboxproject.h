@@ -30,8 +30,8 @@
 #ifndef APPLESEED_RENDERER_MODELING_PROJECTBUILTIN_CORNELLBOXPROJECT_H
 #define APPLESEED_RENDERER_MODELING_PROJECTBUILTIN_CORNELLBOXPROJECT_H
 
-// appleseed.renderer headers.
-#include "renderer/global/global.h"
+// appleseed.foundation headers.
+#include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
