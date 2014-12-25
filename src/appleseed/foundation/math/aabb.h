@@ -31,6 +31,7 @@
 #define APPLESEED_FOUNDATION_MATH_AABB_H
 
 // appleseed.foundation headers.
+#include "foundation/math/minmax.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 
