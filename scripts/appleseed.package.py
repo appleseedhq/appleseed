@@ -28,15 +28,11 @@
 # THE SOFTWARE.
 #
 
-# Package builder settings.
-VersionString = "2.3.12"
-SettingsFileName = "appleseed.package.configuration.xml"
-
-# Imports.
-from xml.etree.ElementTree import ElementTree
+from __future__ import print_function
 from distutils import archive_util, dir_util
 from stat import *
 from subprocess import *
+from xml.etree.ElementTree import ElementTree
 import glob
 import os
 import platform
@@ -46,6 +42,14 @@ import sys
 import time
 import traceback
 import zipfile
+
+
+#--------------------------------------------------------------------------------------------------
+# Constants.
+#--------------------------------------------------------------------------------------------------
+
+VERSION = "2.3.12"
+SETTINGS_FILENAME = "appleseed.package.configuration.xml"
 
 
 #--------------------------------------------------------------------------------------------------
@@ -59,8 +63,7 @@ def progress(message):
     print("  " + message + "...")
 
 def fatal(message):
-    print
-    print("FATAL: " + message + ", aborting.")
+    print("\nFATAL: " + message + ", aborting.")
     if sys.exc_info()[0]:
         print(traceback.format_exc())
     sys.exit(1)
@@ -113,12 +116,12 @@ def exe(filepath):
 
 class Settings:
     def load(self):
-        print "Loading settings from " + SettingsFileName + "..."
+        print("Loading settings from " + SETTINGS_FILENAME + "...")
         tree = ElementTree()
         try:
-            tree.parse(SettingsFileName)
+            tree.parse(SETTINGS_FILENAME)
         except IOError:
-            fatal("Failed to load configuration file '" + SettingsFileName + "'")
+            fatal("Failed to load configuration file '" + SETTINGS_FILENAME + "'")
         self.load_values(tree)
         self.print_summary()
 
@@ -133,16 +136,16 @@ class Settings:
         self.package_output_path = self.__get_required(tree, "package_output_path")
 
     def print_summary(self):
-        print
-        print "  Configuration:             " + self.configuration
-        print "  Platform ID:               " + self.platform_id + " (Python says " + os.name + ")"
-        print "  Platform Name:             " + self.platform_name
-        print "  Path to appleseed:         " + self.appleseed_path
-        print "  Path to appleseed headers: " + self.headers_path
-        print "  Path to Qt runtime:        " + self.qt_runtime_path
-        print "  Path to platform runtime:  " + self.platform_runtime_path
-        print "  Output directory:          " + self.package_output_path
-        print
+        print("")
+        print("  Configuration:             " + self.configuration)
+        print("  Platform ID:               " + self.platform_id + " (Python says " + os.name + ")")
+        print("  Platform Name:             " + self.platform_name)
+        print("  Path to appleseed:         " + self.appleseed_path)
+        print("  Path to appleseed headers: " + self.headers_path)
+        print("  Path to Qt runtime:        " + self.qt_runtime_path)
+        print("  Path to platform runtime:  " + self.platform_runtime_path)
+        print("  Output directory:          " + self.package_output_path)
+        print("")
 
     def __get_required(self, tree, key):
         value = tree.findtext(key)
@@ -160,7 +163,7 @@ class PackageInfo:
         self.settings = settings
 
     def load(self):
-        print "Loading package information..."
+        print("Loading package information...")
         self.retrieve_git_tag()
         self.build_package_path()
         self.print_summary()
@@ -175,10 +178,10 @@ class PackageInfo:
         self.package_path = os.path.join(self.settings.package_output_path, self.version, package_name)
 
     def print_summary(self):
-        print
-        print "  Version:                   " + self.version
-        print "  Package path:              " + self.package_path
-        print
+        print("")
+        print("  Version:                   " + self.version)
+        print("  Package path:              " + self.package_path)
+        print("")
 
 
 #--------------------------------------------------------------------------------------------------
@@ -191,11 +194,11 @@ class PackageBuilder:
         self.package_info = package_info
 
     def build_package(self):
-        print "Building package:"
-        print
+        print("Building package:")
+        print("")
         self.orchestrate()
-        print
-        print "The package was successfully built."
+        print("")
+        print("The package was successfully built.")
 
     def orchestrate(self):
         self.remove_leftovers()
@@ -531,8 +534,8 @@ class LinuxPackageBuilder(PackageBuilder):
 #--------------------------------------------------------------------------------------------------
 
 def main():
-    print "appleseed.package version " + VersionString
-    print
+    print("appleseed.package version " + VERSION)
+    print("")
 
     settings = Settings()
     package_info = PackageInfo(settings)
