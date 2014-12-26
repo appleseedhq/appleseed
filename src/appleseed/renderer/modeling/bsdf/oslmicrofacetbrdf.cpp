@@ -130,8 +130,6 @@ namespace
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
             Vector3d&           incoming,
-            Spectrum&           value,
-            double&             probability,
             BSDFSample&         sample) const
         {
             // No reflection below the shading surface.
@@ -170,8 +168,8 @@ namespace
                     values->m_ax,
                     values->m_ay);
 
-            value.set(static_cast<float>(D * G / (4.0 * cos_on * cos_in)));
-            probability = m_mdf->pdf(m, values->m_ax, values->m_ay) / (4.0 * cos_oh);
+            sample.m_value.set(static_cast<float>(D * G / (4.0 * cos_on * cos_in)));
+            sample.m_probability = m_mdf->pdf(m, values->m_ax, values->m_ay) / (4.0 * cos_oh);
             sample.m_mode = BSDFSample::Glossy;
         }
 

@@ -175,8 +175,6 @@ namespace
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
             Vector3d&           incoming,
-            Spectrum&           value,
-            double&             probability,
             BSDFSample&         sample) const
         {
             // Define aliases to match the notations in the paper.
@@ -268,13 +266,13 @@ namespace
             evaluate_fr_spec(*m_mdf.get(), rs, dot_HV, dot_HN, fr_spec);
 
             // Matte component (last equation of section 2.2).
-            value.set(1.0f);
-            value -= specular_albedo_L;
-            value *= matte_albedo;
-            value *= m_s;
+            sample.m_value.set(1.0f);
+            sample.m_value -= specular_albedo_L;
+            sample.m_value *= matte_albedo;
+            sample.m_value *= m_s;
 
             // The final value of the BRDF is the sum of the specular and matte components.
-            value += fr_spec;
+            sample.m_value += fr_spec;
 
             // Evaluate the PDF of the incoming direction for the specular component.
             const double pdf_H = m_mdf->evaluate_pdf(dot_HN);
@@ -286,8 +284,8 @@ namespace
             assert(pdf_matte >= 0.0);
 
             // Evaluate the final PDF.
-            probability = specular_prob * pdf_specular + matte_prob * pdf_matte;
-            assert(probability >= 0.0);
+            sample.m_probability = specular_prob * pdf_specular + matte_prob * pdf_matte;
+            assert(sample.m_probability >= 0.0);
 
             // Set the scattering mode.
             sample.m_mode = mode;

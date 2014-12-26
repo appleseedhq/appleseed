@@ -108,8 +108,6 @@ namespace
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
             Vector3d&           incoming,
-            Spectrum&           value,
-            double&             probability,
             BSDFSample&         sample) const
         {
             // No reflection below the shading surface.
@@ -212,13 +210,13 @@ namespace
             // Evaluate the diffuse component of the BRDF (equation 5).
             const double a = 1.0 - pow5(1.0 - 0.5 * cos_in);
             const double b = 1.0 - pow5(1.0 - 0.5 * cos_on);
-            value = rval.m_kd;
-            value *= static_cast<float>(a * b);
+            sample.m_value = rval.m_kd;
+            sample.m_value *= static_cast<float>(a * b);
 
             // Evaluate the PDF of the diffuse component.
             const double pdf_diffuse = cos_in * RcpPi;
             assert(pdf_diffuse > 0.0);
-            probability = rval.m_pd * pdf_diffuse;
+            sample.m_probability = rval.m_pd * pdf_diffuse;
 
             // Evaluate the glossy component of the BRDF (equation 4).
             const double num = sval.m_kg * pow(cos_hn, exp);
@@ -226,12 +224,12 @@ namespace
             Spectrum glossy;
             fresnel_dielectric_schlick(glossy, rval.m_scaled_rg, cos_oh, values->m_fr_multiplier);
             glossy *= static_cast<float>(num / den);
-            value += glossy;
+            sample.m_value += glossy;
 
             // Evaluate the PDF of the glossy component (equation 8).
             const double pdf_glossy = num / cos_oh;     // omit division by 4 since num = pdf(h) / 4
             assert(pdf_glossy >= 0.0);
-            probability += rval.m_pg * pdf_glossy;
+            sample.m_probability += rval.m_pg * pdf_glossy;
 
             // Set the scattering mode.
             sample.m_mode = mode;

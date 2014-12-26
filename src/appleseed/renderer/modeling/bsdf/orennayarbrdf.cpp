@@ -97,8 +97,6 @@ namespace
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
             Vector3d&           incoming,
-            Spectrum&           value,
-            double&             probability,
             BSDFSample&         sample) const
         {
             // No reflection below the shading surface.
@@ -123,15 +121,15 @@ namespace
             // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
             if (values->m_roughness != 0.0)
-                oren_nayar_qualitative(cos_on, cos_in, values->m_roughness, values->m_reflectance, outgoing, incoming, n, value);
+                oren_nayar_qualitative(cos_on, cos_in, values->m_roughness, values->m_reflectance, outgoing, incoming, n, sample.m_value);
             else
-                value = values->m_reflectance;
+                sample.m_value = values->m_reflectance;
 
-            value *= static_cast<float>(values->m_reflectance_multiplier * RcpPi);
+            sample.m_value *= static_cast<float>(values->m_reflectance_multiplier * RcpPi);
 
             // Compute the probability density of the sampled direction.
-            probability = wi.y * RcpPi;
-            assert(probability > 0.0);
+            sample.m_probability = wi.y * RcpPi;
+            assert(sample.m_probability > 0.0);
 
             // Set the scattering mode.
             sample.m_mode = BSDFSample::Diffuse;

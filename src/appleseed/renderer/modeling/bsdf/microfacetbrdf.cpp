@@ -134,8 +134,6 @@ namespace
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
             Vector3d&           incoming,
-            Spectrum&           value,
-            double&             probability,
             BSDFSample&         sample) const
         {
             // No reflection below the shading surface.
@@ -167,11 +165,11 @@ namespace
 
             // Compute the BRDF value.
             const double g = evaluate_attenuation(cos_on, cos_in, cos_hn, cos_oh);
-            fresnel_dielectric_schlick(value, values->m_reflectance, cos_on, values->m_fr_multiplier);
-            value *= static_cast<float>(mdf_value * g / (4.0 * cos_on * cos_in) * values->m_reflectance_multiplier);
+            fresnel_dielectric_schlick(sample.m_value, values->m_reflectance, cos_on, values->m_fr_multiplier);
+            sample.m_value *= static_cast<float>(mdf_value * g / (4.0 * cos_on * cos_in) * values->m_reflectance_multiplier);
 
             // Compute the PDF value.
-            probability = mdf_pdf / (4.0 * cos_oh);
+            sample.m_probability = mdf_pdf / (4.0 * cos_oh);
 
             // Set the scattering mode.
             sample.m_mode = BSDFSample::Glossy;

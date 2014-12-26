@@ -166,8 +166,6 @@ namespace
             const Basis3d&          shading_basis,
             const Vector3d&         outgoing,
             Vector3d&               incoming,
-            Spectrum&               value,
-            double&                 probability,
             BSDFSample&             sample) const
         {
             assert(m_bsdf[0] && m_bsdf[1]);
@@ -190,8 +188,6 @@ namespace
                 shading_basis,
                 outgoing,
                 incoming,
-                value,
-                probability,
                 sample);
         }
 

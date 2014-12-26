@@ -126,8 +126,6 @@ void compute_ibl_bsdf_sampling(
         // the components only.
         BSDFSample sample;
         Vector3d incoming;
-        Spectrum bsdf_value;
-        double bsdf_prob;
         bsdf.sample(
             sampling_context,
             bsdf_data,
@@ -137,8 +135,6 @@ void compute_ibl_bsdf_sampling(
             shading_basis,
             outgoing,
             incoming,
-            bsdf_value,
-            bsdf_prob,
             sample);
 
         // Filter scattering modes.
@@ -171,13 +167,13 @@ void compute_ibl_bsdf_sampling(
         {
             const double mis_weight =
                 mis_power2(
-                    bsdf_sample_count * bsdf_prob,
+                    bsdf_sample_count * sample.m_probability,
                     env_sample_count * env_prob);
-            env_value *= static_cast<float>(transmission / bsdf_prob * mis_weight);
+            env_value *= static_cast<float>(transmission / sample.m_probability * mis_weight);
         }
 
         // Add the contribution of this sample to the illumination.
-        env_value *= bsdf_value;
+        env_value *= sample.m_value;
         radiance += env_value;
     }
 

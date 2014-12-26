@@ -110,8 +110,6 @@ namespace
             const Basis3d&                  shading_basis,
             const Vector3d&                 outgoing,
             Vector3d&                       incoming,
-            Spectrum&                       value,
-            double&                         probability,
             BSDFSample&                     sample) const
         {
             // Compute the incoming direction in local space.
@@ -121,14 +119,14 @@ namespace
 
             // Transform the incoming direction to parent space.
             incoming = shading_basis.transform_to_parent(wi);
-            probability = evaluate(
+            sample.m_probability = evaluate(
                 values,
                 shading_basis,
                 outgoing,
                 incoming,
-                value);
+                sample.m_value);
 
-            assert(probability > 0.0);
+            assert(sample.m_probability > 0.0);
             sample.m_mode = BSDFSample::Diffuse;
         }
 
@@ -200,8 +198,6 @@ namespace
             const Basis3d&                  shading_basis,
             const Vector3d&                 outgoing,
             Vector3d&                       incoming,
-            Spectrum&                       value,
-            double&                         probability,
             BSDFSample&                     sample) const
         {
             // Compute the incoming direction in local space.
@@ -211,14 +207,14 @@ namespace
 
             // Transform the incoming direction to parent space.
             incoming = shading_basis.transform_to_parent(wi);
-            probability = evaluate(
+            sample.m_probability = evaluate(
                 values,
                 shading_basis,
                 outgoing,
                 incoming,
-                value);
+                sample.m_value);
 
-            assert(probability > 0.0);
+            assert(sample.m_probability > 0.0);
             sample.m_mode = BSDFSample::Diffuse;
         }
 
@@ -406,8 +402,6 @@ namespace
             const Basis3d&          shading_basis,
             const Vector3d&         outgoing,
             Vector3d&               incoming,
-            Spectrum&               value,
-            double&                 probability,
             BSDFSample&             sample) const APPLESEED_OVERRIDE
         {
             const DisneyBRDFInputValues* values =
@@ -428,8 +422,6 @@ namespace
                     shading_basis,
                     outgoing,
                     incoming,
-                    value,
-                    probability,
                     sample);
 
                 return;
@@ -443,8 +435,6 @@ namespace
                     shading_basis,
                     outgoing,
                     incoming,
-                    value,
-                    probability,
                     sample);
 
                 return;
@@ -502,12 +492,12 @@ namespace
             const double cos_oh = dot(outgoing, h);
 
             if (s < cdf[SpecularComponent])
-                specular_f(values, cos_oh, value);
+                specular_f(values, cos_oh, sample.m_value);
             else
-                value.set(static_cast<float>(clearcoat_f(values->m_clearcoat, cos_oh)));
+                sample.m_value.set(static_cast<float>(clearcoat_f(values->m_clearcoat, cos_oh)));
 
-            value *= static_cast<float>((D * G) / (4.0 * cos_on * cos_in));
-            probability = mdf->pdf(m, alpha_x, alpha_y) / (4.0 * cos_oh);
+            sample.m_value *= static_cast<float>((D * G) / (4.0 * cos_on * cos_in));
+            sample.m_probability = mdf->pdf(m, alpha_x, alpha_y) / (4.0 * cos_oh);
             sample.m_mode = BSDFSample::Glossy;
         }
 

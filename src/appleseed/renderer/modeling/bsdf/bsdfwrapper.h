@@ -72,8 +72,6 @@ class BSDFWrapper
         const foundation::Basis3d&      shading_basis,
         const foundation::Vector3d&     outgoing,
         foundation::Vector3d&           incoming,
-        Spectrum&                       value,
-        double&                         probability,
         BSDFSample&                     sample) const APPLESEED_OVERRIDE;
 
     virtual double evaluate(
@@ -119,8 +117,6 @@ void BSDFWrapper<BSDFImpl>::sample(
     const foundation::Basis3d&          shading_basis,
     const foundation::Vector3d&         outgoing,
     foundation::Vector3d&               incoming,
-    Spectrum&                           value,
-    double&                             probability,
     BSDFSample&                         sample) const
 {
     assert(foundation::is_normalized(geometric_normal));
@@ -135,14 +131,12 @@ void BSDFWrapper<BSDFImpl>::sample(
         shading_basis,
         outgoing,
         incoming,
-        value,
-        probability,
         sample);
 
     if (sample.m_mode != BSDFSample::Absorption)
     {
         assert(foundation::is_normalized(incoming));
-        assert(probability == BSDFImpl::DiracDelta || probability > 0.0);
+        assert(sample.m_probability == BSDFImpl::DiracDelta || sample.m_probability > 0.0);
 
         if (cosine_mult)
         {
@@ -151,12 +145,12 @@ void BSDFWrapper<BSDFImpl>::sample(
                 const double cos_on = std::abs(foundation::dot(outgoing, shading_basis.get_normal()));
                 const double cos_ig = std::abs(foundation::dot(incoming, geometric_normal));
                 const double cos_og = std::abs(foundation::dot(outgoing, geometric_normal));
-                value *= static_cast<float>(cos_on * cos_ig / cos_og);
+                sample.m_value *= static_cast<float>(cos_on * cos_ig / cos_og);
             }
             else
             {
                 const double cos_in = std::abs(foundation::dot(incoming, shading_basis.get_normal()));
-                value *= static_cast<float>(cos_in);
+                sample.m_value *= static_cast<float>(cos_in);
             }
         }
     }

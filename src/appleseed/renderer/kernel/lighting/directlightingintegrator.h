@@ -405,8 +405,6 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     // Sample the BSDF.
     BSDFSample sample;
     foundation::Vector3d incoming;
-    Spectrum bsdf_value;
-    double bsdf_prob;
     m_bsdf.sample(
         sampling_context,
         m_bsdf_data,
@@ -416,14 +414,12 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
         m_shading_basis,
         m_outgoing,
         incoming,
-        bsdf_value,
-        bsdf_prob,
         sample);
 
     // Filter scattering modes.
     if (!(m_bsdf_sampling_modes & sample.m_mode))
         return;
-    assert(bsdf_prob != BSDF::DiracDelta);
+    assert(sample.m_probability != BSDF::DiracDelta);
 
     // Trace a ray in the direction of the reflection.
     double weight;
@@ -494,7 +490,7 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     if (square_distance > 0.0)
     {
         // Transform bsdf_prob to surface area measure (Veach: 8.2.2.2 eq. 8.10).
-        const double bsdf_point_prob = bsdf_prob * cos_on / square_distance;
+        const double bsdf_point_prob = sample.m_probability * cos_on / square_distance;
 
         // Compute the probability density wrt. surface area mesure of the light sample.
         const double light_point_prob = m_light_sampler.evaluate_pdf(light_shading_point);
@@ -509,8 +505,8 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     }
 
     // Add the contribution of this sample to the illumination.
-    edf_value *= static_cast<float>(weight / bsdf_prob);
-    edf_value *= bsdf_value;
+    edf_value *= static_cast<float>(weight / sample.m_probability);
+    edf_value *= sample.m_value;
     radiance += edf_value;
     aovs.add(edf->get_render_layer_index(), edf_value);
 }

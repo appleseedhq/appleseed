@@ -74,8 +74,6 @@ class NullBSDF
         const foundation::Basis3d&      shading_basis,
         const foundation::Vector3d&     outgoing,
         foundation::Vector3d&           incoming,
-        Spectrum&                       value,
-        double&                         probability,
         BSDFSample&                     sample) const APPLESEED_OVERRIDE
     {
     }

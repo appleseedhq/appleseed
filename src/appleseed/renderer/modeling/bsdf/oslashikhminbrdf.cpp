@@ -107,8 +107,6 @@ namespace
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
             Vector3d&           incoming,
-            Spectrum&           value,
-            double&             probability,
             BSDFSample&         sample) const
         {
             // No reflection below the shading surface.
@@ -175,11 +173,11 @@ namespace
             // Evaluate the glossy component of the BRDF (equation 4).
             const double num = sval.m_kg * pow(cos_hn, exp);
             const double den = cos_oh * (cos_in + cos_on - cos_in * cos_on);
-            value.set(static_cast<float>(num / den));
+            sample.m_value.set(static_cast<float>(num / den));
 
             // Evaluate the PDF of the glossy component (equation 8).
-            probability = num / cos_oh;     // omit division by 4 since num = pdf(h) / 4
-            assert(probability >= 0.0);
+            sample.m_probability = num / cos_oh;     // omit division by 4 since num = pdf(h) / 4
+            assert(sample.m_probability >= 0.0);
 
             // Set the scattering mode.
             sample.m_mode = BSDFSample::Glossy;

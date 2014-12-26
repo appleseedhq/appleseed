@@ -167,8 +167,6 @@ namespace
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
             Vector3d&           incoming,
-            Spectrum&           value,
-            double&             probability,
             BSDFSample&         sample) const
         {
             const InputValues* values = static_cast<const InputValues*>(data);
@@ -218,7 +216,7 @@ namespace
             v *= square(values->m_to_ior) * D * G;
             const double denom = values->m_to_ior * cos_ih + values->m_from_ior * cos_oh;
             v /= square(denom);
-            value.set(static_cast<float>(v));
+            sample.m_value.set(static_cast<float>(v));
 
             const double ht_norm = norm(values->m_from_ior * outgoing + values->m_to_ior * incoming);
             const double dwh_dwo = refraction_jacobian(
@@ -227,7 +225,7 @@ namespace
                 ht,
                 ht_norm);
 
-            probability = m_mdf->pdf(m, values->m_ax, values->m_ay) * dwh_dwo;
+            sample.m_probability = m_mdf->pdf(m, values->m_ax, values->m_ay) * dwh_dwo;
             sample.m_mode = BSDFSample::Glossy;
         }
 

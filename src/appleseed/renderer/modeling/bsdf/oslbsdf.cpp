@@ -228,8 +228,6 @@ namespace
             const Basis3d&          shading_basis,
             const Vector3d&         outgoing,
             Vector3d&               incoming,
-            Spectrum&               value,
-            double&                 probability,
             BSDFSample&             sample) const
         {
             const CompositeSurfaceClosure* c = reinterpret_cast<const CompositeSurfaceClosure*>(data);
@@ -251,11 +249,9 @@ namespace
                     new_shading_basis,
                     outgoing,
                     incoming,
-                    value,
-                    probability,
                     sample);
 
-                value *= c->get_closure_weight(closure_index);
+                sample.m_value *= c->get_closure_weight(closure_index);
             }
         }
 

@@ -301,8 +301,6 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         // Sample the BSDF.
         BSDFSample sample;
         foundation::Vector3d incoming;
-        Spectrum bsdf_value;
-        double bsdf_prob;
         vertex.m_bsdf->sample(
             sampling_context,
             vertex.m_bsdf_data,
@@ -312,8 +310,6 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             vertex.get_shading_basis(),
             vertex.m_outgoing,
             incoming,
-            bsdf_value,
-            bsdf_prob,
             sample);
 
         if (sample.m_mode == BSDFSample::Absorption)
@@ -323,14 +319,14 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         if (!m_path_visitor.accept_scattering(vertex.m_prev_bsdf_mode, sample.m_mode))
             break;
 
-        vertex.m_prev_bsdf_prob = bsdf_prob;
+        vertex.m_prev_bsdf_prob = sample.m_probability;
         vertex.m_prev_bsdf_mode = sample.m_mode;
 
-        if (bsdf_prob != BSDF::DiracDelta)
-            bsdf_value /= static_cast<float>(bsdf_prob);
+        if (sample.m_probability != BSDF::DiracDelta)
+            sample.m_value /= static_cast<float>(sample.m_probability);
 
         // Update the path throughput.
-        vertex.m_throughput *= bsdf_value;
+        vertex.m_throughput *= sample.m_value;
 
         // Use Russian Roulette to cut the path without introducing bias.
         if (vertex.m_path_length >= m_rr_min_path_length)
@@ -342,7 +338,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             // Compute the probability of extending this path.
             const double scattering_prob =
                 std::min(
-                    static_cast<double>(foundation::max_value(bsdf_value)),
+                    static_cast<double>(foundation::max_value(sample.m_value)),
                     1.0);
 
             // Russian Roulette.
