@@ -48,9 +48,9 @@
 #include <vector>
 
 // Forward declarations.
-namespace renderer      { class ConnectableEntity; }
-namespace renderer      { class Scene; }
-namespace renderer      { class SymbolTable; }
+namespace renderer  { class ConnectableEntity; }
+namespace renderer  { class Scene; }
+namespace renderer  { class SymbolTable; }
 
 namespace renderer
 {

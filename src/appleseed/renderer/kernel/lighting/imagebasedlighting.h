@@ -41,10 +41,10 @@
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer      { class BSDF; }
-namespace renderer      { class EnvironmentEDF; }
-namespace renderer      { class ShadingContext; }
-namespace renderer      { class ShadingPoint; }
+namespace renderer  { class BSDF; }
+namespace renderer  { class EnvironmentEDF; }
+namespace renderer  { class ShadingContext; }
+namespace renderer  { class ShadingPoint; }
 
 namespace renderer
 {

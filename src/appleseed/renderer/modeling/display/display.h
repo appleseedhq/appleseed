@@ -41,8 +41,9 @@
 #include "main/dllsymbol.h"
 
 // Forward declarations.
-namespace foundation    { class IAbortSwitch; }
-namespace renderer      { class Project; }
+namespace renderer  { class ITileCallbackFactory; }
+namespace renderer  { class ParamArray; }
+namespace renderer  { class Project; }
 
 namespace renderer
 {
@@ -60,8 +61,8 @@ class APPLESEED_DLLSYMBOL Display
 
     // Constructor.
     Display(
-        const char*                     name,
-        const ParamArray&               params);
+        const char*         name,
+        const ParamArray&   params);
 
     // Delete this instance.
     virtual void release() APPLESEED_OVERRIDE;
@@ -89,8 +90,8 @@ class APPLESEED_DLLSYMBOL DisplayFactory
   public:
     // Create a new display.
     static foundation::auto_release_ptr<Display> create(
-        const char*             name,
-        const ParamArray&       params);
+        const char*         name,
+        const ParamArray&   params);
 };
 
 }       // namespace renderer

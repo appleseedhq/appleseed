@@ -42,8 +42,8 @@
 #include <memory>
 #include <string>
 
-using namespace std;
 using namespace foundation;
+using namespace std;
 
 namespace renderer
 {
@@ -107,7 +107,7 @@ void Display::open(const Project& project)
     try
     {
         plugin = get_parameters().get("plugin_name");
-        // Add platform dependent extension.
+
 #ifdef _WIN32
         plugin += ".dll";
 #else
@@ -150,13 +150,14 @@ ITileCallbackFactory* Display::get_tile_callback_factory() const
     return 0;
 }
 
+
 //
 // DisplayFactory class implementation.
 //
 
 auto_release_ptr<Display> DisplayFactory::create(
-        const char*             name,
-        const ParamArray&       params)
+    const char*         name,
+    const ParamArray&   params)
 {
     return auto_release_ptr<Display>(new Display(name, params));
 }
