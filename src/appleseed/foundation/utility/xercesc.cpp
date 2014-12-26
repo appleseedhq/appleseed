@@ -30,6 +30,9 @@
 // Interface header.
 #include "xercesc.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/string.h"
+
 using namespace std;
 using namespace xercesc;
 
@@ -194,8 +197,10 @@ void ErrorLogger::print(
     LOG(
         m_logger,
         category,
-        "while reading %s: %s.",
+        "while reading %s, at line %s, column %s: %s.",
         m_input_filepath.c_str(),
+        pretty_uint(e.getLineNumber()).c_str(),
+        pretty_uint(e.getColumnNumber()).c_str(),
         transcode(e.getMessage()).c_str());
 }
 
