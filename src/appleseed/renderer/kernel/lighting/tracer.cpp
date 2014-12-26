@@ -34,14 +34,20 @@
 #include "renderer/global/globallogger.h"
 #ifdef APPLESEED_WITH_OSL
 #include "renderer/kernel/shading/oslshadergroupexec.h"
-#include "renderer/modeling/shadergroup/shadergroup.h"
 #endif
+#include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/scene/scene.h"
+#ifdef APPLESEED_WITH_OSL
+#include "renderer/modeling/shadergroup/shadergroup.h"
+#endif
 
 // appleseed.foundation headers.
 #include "foundation/utility/string.h"
+
+// Standard headers.
+#include <string>
 
 using namespace foundation;
 

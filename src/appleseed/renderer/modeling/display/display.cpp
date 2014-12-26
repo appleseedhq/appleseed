@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/kernel/rendering/itilecallback.h"
 #include "renderer/modeling/project/project.h"
 
 // appleseed.foundation headers.

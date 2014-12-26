@@ -30,11 +30,10 @@
 #define APPLESEED_RENDERER_MODELING_DISPLAY_DISPLAY_H
 
 // appleseed.renderer headers.
-#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/entity/entity.h"
-#include "renderer/kernel/rendering/itilecallback.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/uid.h"
 

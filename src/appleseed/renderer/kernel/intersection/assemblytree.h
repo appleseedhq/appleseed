@@ -31,34 +31,33 @@
 #define APPLESEED_RENDERER_KERNEL_INTERSECTION_ASSEMBLYTREE_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
 #include "renderer/kernel/intersection/curvetree.h"
-#include "renderer/kernel/intersection/intersectionsettings.h"
 #include "renderer/kernel/intersection/probevisitorbase.h"
-#include "renderer/kernel/intersection/regioninfo.h"
 #include "renderer/kernel/intersection/regiontree.h"
 #include "renderer/kernel/intersection/treerepository.h"
 #include "renderer/kernel/intersection/triangletree.h"
 #include "renderer/kernel/shading/shadingray.h"
+#include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/containers.h"
-#include "renderer/modeling/scene/scene.h"
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/bvh.h"
 #include "foundation/utility/alignedvector.h"
-#include "foundation/utility/lazy.h"
+#include "foundation/utility/uid.h"
 #include "foundation/utility/version.h"
 
 // Standard headers.
+#include <cstddef>
 #include <map>
 #include <vector>
 
 // Forward declarations.
 namespace foundation    { class Statistics; }
-namespace renderer      { class Assembly; }
 namespace renderer      { class AssemblyInstance; }
+namespace renderer      { class Scene; }
 namespace renderer      { class ShadingPoint; }
 
 namespace renderer

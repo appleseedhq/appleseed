@@ -31,12 +31,14 @@
 #include "sppmlightingengine.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/aov/spectrumstack.h"
 #include "renderer/kernel/lighting/sppm/sppmpasscallback.h"
+#include "renderer/kernel/lighting/sppm/sppmphoton.h"
+#include "renderer/kernel/lighting/sppm/sppmphotonmap.h"
 #include "renderer/kernel/lighting/directlightingintegrator.h"
-#include "renderer/kernel/lighting/imagebasedlighting.h"
-#include "renderer/kernel/lighting/lightsampler.h"
 #include "renderer/kernel/lighting/pathtracer.h"
+#include "renderer/kernel/lighting/pathvertex.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/bsdf.h"
@@ -44,25 +46,25 @@
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/input/inputevaluator.h"
-#include "renderer/modeling/material/material.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/utility/stochasticcast.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/basis.h"
 #include "foundation/math/knn.h"
-#include "foundation/math/mis.h"
 #include "foundation/math/population.h"
 #include "foundation/math/scalar.h"
-#include "foundation/utility/memory.h"
+#include "foundation/math/vector.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/statistics.h"
 
 // Standard headers.
-#include <algorithm>
+#include <cassert>
+#include <cmath>
+#include <cstddef>
 
 // Forward declarations.
-namespace renderer  { class EnvironmentEDF; }
 namespace renderer  { class PixelContext; }
+namespace renderer  { class TextureCache; }
 
 using namespace foundation;
 using namespace std;

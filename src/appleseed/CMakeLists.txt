@@ -807,7 +807,6 @@ source_group ("renderer\\api" FILES
 )
 
 set (renderer_global_sources
-    renderer/global/global.h
     renderer/global/globallogger.cpp
     renderer/global/globallogger.h
     renderer/global/globaltypes.h

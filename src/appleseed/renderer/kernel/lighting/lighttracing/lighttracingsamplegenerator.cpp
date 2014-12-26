@@ -40,7 +40,6 @@
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/rendering/globalsampleaccumulationbuffer.h"
 #include "renderer/kernel/rendering/sample.h"
-#include "renderer/kernel/rendering/sampleaccumulationbuffer.h"
 #include "renderer/kernel/rendering/samplegeneratorbase.h"
 #ifdef APPLESEED_WITH_OSL
 #include "renderer/kernel/shading/oslshadergroupexec.h"
@@ -48,7 +47,6 @@
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
-#include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/camera/camera.h"
@@ -58,6 +56,7 @@
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/light/light.h"
+#include "renderer/modeling/material/material.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/scene/visibilityflags.h"
 #include "renderer/utility/transformsequence.h"
@@ -66,17 +65,21 @@
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
 #include "foundation/image/image.h"
-#include "foundation/image/regularspectrum.h"
+#include "foundation/math/basis.h"
 #include "foundation/math/population.h"
-#include "foundation/math/qmc.h"
 #include "foundation/math/rng.h"
+#include "foundation/math/sampling.h"
+#include "foundation/math/scalar.h"
+#include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
-#include "foundation/utility/memory.h"
 #include "foundation/utility/statistics.h"
+#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <cassert>
+#include <cmath>
+#include <string>
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }

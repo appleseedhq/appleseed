@@ -35,7 +35,7 @@
 #include "foundation/math/cdf.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
-#include "foundation/utility/job/abortswitch.h"
+#include "foundation/utility/job/iabortswitch.h"
 
 // Standard headers.
 #include <cstddef>

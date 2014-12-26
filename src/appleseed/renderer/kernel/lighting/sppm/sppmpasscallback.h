@@ -66,8 +66,6 @@ namespace foundation    { class JobQueue; }
 namespace renderer      { class Frame; }
 namespace renderer      { class LightSampler; }
 namespace renderer      { class Scene; }
-namespace renderer      { class SPPMMonoPhoton; }
-namespace renderer      { class SPPMPolyPhoton; }
 namespace renderer      { class TextureStore; }
 namespace renderer      { class TraceContext; }
 

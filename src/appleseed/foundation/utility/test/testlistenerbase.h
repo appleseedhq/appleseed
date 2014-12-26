@@ -33,6 +33,7 @@
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/test/itestlistener.h"
+#include "foundation/utility/test/testmessage.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"

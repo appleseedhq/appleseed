@@ -35,6 +35,7 @@
 #include "renderer/kernel/intersection/intersectionsettings.h"
 #include "renderer/kernel/intersection/regiontree.h"
 #include "renderer/kernel/intersection/triangletree.h"
+#include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/tessellation/statictessellation.h"
 #include "renderer/modeling/object/regionkit.h"
 
@@ -51,7 +52,6 @@
 // Forward declarations.
 namespace foundation    { class StatisticsVector; }
 namespace renderer      { class AssemblyInstance; }
-namespace renderer      { class ShadingPoint; }
 namespace renderer      { class ShadingRay; }
 namespace renderer      { class TextureCache; }
 namespace renderer      { class TraceContext; }

@@ -41,7 +41,6 @@
 
 // Forward declarations.
 namespace foundation    { class IFilter; }
-namespace foundation    { class ITestCase; }
 namespace foundation    { class ITestCaseFactory; }
 namespace foundation    { class ITestListener; }
 namespace foundation    { class TestResult; }

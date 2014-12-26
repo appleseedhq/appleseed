@@ -31,8 +31,11 @@
 #define APPLESEED_RENDERER_KERNEL_LIGHTING_DRT_DRTLIGHTINGENGINE_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
 #include "renderer/kernel/lighting/ilightingengine.h"
+#include "renderer/utility/paramarray.h"
+
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 
 // Forward declarations.
 namespace renderer  { class LightSampler; }

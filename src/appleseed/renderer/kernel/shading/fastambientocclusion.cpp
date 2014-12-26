@@ -31,10 +31,13 @@
 #include "fastambientocclusion.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
 #include "renderer/kernel/tessellation/statictessellation.h"
+#include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/object/iregion.h"
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/object/regionkit.h"
+#include "renderer/modeling/object/triangle.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/containers.h"
@@ -43,7 +46,9 @@
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/aabb.h"
 #include "foundation/math/intersection.h"
+#include "foundation/math/ray.h"
 #include "foundation/math/sampling.h"
 #include "foundation/math/transform.h"
 #include "foundation/utility/foreach.h"
@@ -51,6 +56,7 @@
 
 // Standard headers.
 #include <algorithm>
+#include <cassert>
 
 using namespace foundation;
 using namespace std;

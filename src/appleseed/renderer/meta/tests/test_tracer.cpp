@@ -63,6 +63,7 @@
 #include "foundation/math/vector.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/autoreleaseptr.h"
+#include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"
 
 // OpenImageIO headers.

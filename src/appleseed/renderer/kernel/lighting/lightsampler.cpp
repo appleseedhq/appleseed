@@ -43,6 +43,7 @@
 #include "renderer/modeling/object/iregion.h"
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/object/regionkit.h"
+#include "renderer/modeling/object/triangle.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/objectinstance.h"
@@ -50,8 +51,6 @@
 #include "renderer/modeling/scene/visibilityflags.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/exceptions/exceptionnotimplemented.h"
-#include "foundation/math/area.h"
 #include "foundation/math/sampling.h"
 #include "foundation/math/scalar.h"
 #include "foundation/utility/foreach.h"
@@ -59,9 +58,8 @@
 #include "foundation/utility/string.h"
 
 // Standard headers.
-#include <algorithm>
 #include <cassert>
-#include <map>
+#include <string>
 
 using namespace foundation;
 using namespace std;

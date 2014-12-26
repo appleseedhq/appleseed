@@ -51,7 +51,9 @@
 // appleseed.foundation headers.
 #include "foundation/math/mis.h"
 #include "foundation/math/population.h"
+#include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/statistics.h"
 #include "foundation/utility/string.h"
 

@@ -36,7 +36,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/hash.h"
-#include "foundation/utility/job.h"
+#include "foundation/utility/job/iabortswitch.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
