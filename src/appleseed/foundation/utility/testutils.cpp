@@ -40,6 +40,7 @@
 #include "foundation/math/scalar.h"
 
 // Standard headers.
+#include <cassert>
 #include <fstream>
 #include <sstream>
 

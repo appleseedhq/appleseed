@@ -33,6 +33,11 @@
 // appleseed.foundation headers.
 #include "foundation/utility/string.h"
 
+// Xerces-C++ headers.
+#include "xercesc/util/PlatformUtils.hpp"
+#include "xercesc/util/XMLExceptMsgs.hpp"
+#include "xercesc/util/XMLException.hpp"
+
 using namespace std;
 using namespace xercesc;
 
