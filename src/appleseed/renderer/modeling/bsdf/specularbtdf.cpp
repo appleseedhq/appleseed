@@ -95,7 +95,6 @@ namespace
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
-            Vector3d&           incoming,
             BSDFSample&         sample) const
         {
             const InputValues* values = static_cast<const InputValues*>(data);
@@ -109,7 +108,7 @@ namespace
             if (cos_theta_t2 < 0.0)
             {
                 // Total internal reflection: compute the reflected direction and radiance.
-                incoming = reflect(outgoing, shading_normal);
+                sample.m_incoming = reflect(outgoing, shading_normal);
                 sample.m_value = values->m_transmittance;
                 sample.m_value *= static_cast<float>(values->m_transmittance_multiplier);
             }
@@ -132,14 +131,14 @@ namespace
                 if (s < fresnel_reflection)
                 {
                     // Fresnel reflection: compute the reflected direction and radiance.
-                    incoming = reflect(outgoing, shading_normal);
+                    sample.m_incoming = reflect(outgoing, shading_normal);
                     sample.m_value = values->m_reflectance;
                     sample.m_value *= static_cast<float>(values->m_reflectance_multiplier);
                 }
                 else
                 {
                     // Compute the refracted direction.
-                    incoming =
+                    sample.m_incoming =
                         cos_theta_i > 0.0
                             ? (eta * cos_theta_i - cos_theta_t) * shading_normal - eta * outgoing
                             : (eta * cos_theta_i + cos_theta_t) * shading_normal - eta * outgoing;
@@ -153,7 +152,7 @@ namespace
                 }
             }
 
-            const double cos_in = abs(dot(incoming, shading_normal));
+            const double cos_in = abs(dot(sample.m_incoming, shading_normal));
             sample.m_value /= static_cast<float>(cos_in);
 
             // The probability density of the sampled direction is the Dirac delta.

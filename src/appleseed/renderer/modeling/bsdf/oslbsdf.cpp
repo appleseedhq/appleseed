@@ -227,7 +227,6 @@ namespace
             const Vector3d&         geometric_normal,
             const Basis3d&          shading_basis,
             const Vector3d&         outgoing,
-            Vector3d&               incoming,
             BSDFSample&             sample) const
         {
             const CompositeSurfaceClosure* c = reinterpret_cast<const CompositeSurfaceClosure*>(data);
@@ -248,7 +247,6 @@ namespace
                     geometric_normal,
                     new_shading_basis,
                     outgoing,
-                    incoming,
                     sample);
 
                 sample.m_value *= c->get_closure_weight(closure_index);

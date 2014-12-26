@@ -404,7 +404,6 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
 
     // Sample the BSDF.
     BSDFSample sample;
-    foundation::Vector3d incoming;
     m_bsdf.sample(
         sampling_context,
         m_bsdf_data,
@@ -413,7 +412,6 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
         m_geometric_normal,
         m_shading_basis,
         m_outgoing,
-        incoming,
         sample);
 
     // Filter scattering modes.
@@ -426,7 +424,7 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     const ShadingPoint& light_shading_point =
         m_shading_context.get_tracer().trace(
             m_shading_point,
-            incoming,
+            sample.m_incoming,
             VisibilityFlags::ShadowRay,
             weight);
 
@@ -449,7 +447,7 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
         return;
 
     // Cull the samples on the back side of the lights' shading surface.
-    const double cos_on = foundation::dot(-incoming, light_shading_point.get_shading_normal());
+    const double cos_on = foundation::dot(-sample.m_incoming, light_shading_point.get_shading_normal());
     if (cos_on <= 0.0)
         return;
 
@@ -474,7 +472,7 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
         edf_input_evaluator.data(),
         light_shading_point.get_geometric_normal(),
         light_shading_point.get_shading_basis(),
-        -incoming,
+        -sample.m_incoming,
         edf_value,
         edf_prob);
     if (edf_prob == 0.0)

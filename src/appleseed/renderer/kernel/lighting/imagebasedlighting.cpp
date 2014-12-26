@@ -125,7 +125,6 @@ void compute_ibl_bsdf_sampling(
         // afterward. We need a mechanism to indicate that we want the contribution of some of
         // the components only.
         BSDFSample sample;
-        Vector3d incoming;
         bsdf.sample(
             sampling_context,
             bsdf_data,
@@ -134,7 +133,6 @@ void compute_ibl_bsdf_sampling(
             geometric_normal,
             shading_basis,
             outgoing,
-            incoming,
             sample);
 
         // Filter scattering modes.
@@ -145,7 +143,7 @@ void compute_ibl_bsdf_sampling(
         const double transmission =
             shading_context.get_tracer().trace(
                 shading_point,
-                incoming,
+                sample.m_incoming,
                 VisibilityFlags::ShadowRay);
         if (transmission == 0.0)
             continue;
@@ -156,7 +154,7 @@ void compute_ibl_bsdf_sampling(
         double env_prob;
         environment_edf.evaluate(
             input_evaluator,
-            incoming,
+            sample.m_incoming,
             env_value,
             env_prob);
 

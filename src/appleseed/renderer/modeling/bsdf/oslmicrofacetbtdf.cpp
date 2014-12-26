@@ -166,7 +166,6 @@ namespace
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
-            Vector3d&           incoming,
             BSDFSample&         sample) const
         {
             const InputValues* values = static_cast<const InputValues*>(data);
@@ -176,12 +175,13 @@ namespace
             const Vector2d s = sampling_context.next_vector2<2>();
             const Vector3d m = m_mdf->sample(s, values->m_ax, values->m_ay);
             const Vector3d ht = shading_basis.transform_to_parent(m);
+            const double eta = values->m_from_ior / values->m_to_ior;
 
             if (!refract(
                     outgoing,
                     ht,
-                    values->m_from_ior / values->m_to_ior,
-                    incoming))
+                    eta,
+                    sample.m_incoming))
             {
                 // Ignore TIR.
                 return;
@@ -190,12 +190,12 @@ namespace
             // If incoming and outgoing are on the same hemisphere
             // this is not a refraction.
             const Vector3d& n = shading_basis.get_normal();
-            if (dot(incoming, n) * dot(outgoing, n) >= 0.0)
+            if (dot(sample.m_incoming, n) * dot(outgoing, n) >= 0.0)
                 return;
 
             const double G =
                 m_mdf->G(
-                    shading_basis.transform_to_local(incoming),
+                    shading_basis.transform_to_local(sample.m_incoming),
                     shading_basis.transform_to_local(outgoing),
                     m,
                     values->m_ax,
@@ -207,8 +207,8 @@ namespace
             const double D = m_mdf->D(m, values->m_ax, values->m_ay);
 
             const double cos_oh = dot(outgoing, ht);
-            const double cos_ih = dot(incoming, ht);
-            const double cos_in = dot(incoming, n);
+            const double cos_ih = dot(sample.m_incoming, ht);
+            const double cos_in = dot(sample.m_incoming, n);
             const double cos_on = dot(outgoing, n);
 
             // [1] equation 21.
@@ -216,11 +216,16 @@ namespace
             v *= square(values->m_to_ior) * D * G;
             const double denom = values->m_to_ior * cos_ih + values->m_from_ior * cos_oh;
             v /= square(denom);
+
+            // TODO: check for a possibly missing eta^2 factor if adjoint == true.
+            //if (adjoint)
+            //    v *= square(eta);
+
             sample.m_value.set(static_cast<float>(v));
 
-            const double ht_norm = norm(values->m_from_ior * outgoing + values->m_to_ior * incoming);
+            const double ht_norm = norm(values->m_from_ior * outgoing + values->m_to_ior * sample.m_incoming);
             const double dwh_dwo = refraction_jacobian(
-                incoming,
+                sample.m_incoming,
                 values->m_to_ior,
                 ht,
                 ht_norm);

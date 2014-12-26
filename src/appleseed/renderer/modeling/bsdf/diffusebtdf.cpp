@@ -90,7 +90,6 @@ namespace
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
-            Vector3d&           incoming,
             BSDFSample&         sample) const
         {
             // Compute the incoming direction in local space.
@@ -99,7 +98,7 @@ namespace
             const Vector3d wi = sample_hemisphere_cosine(s);
 
             // Transform the incoming direction to parent space.
-            incoming = -shading_basis.transform_to_parent(wi);
+            sample.m_incoming = -shading_basis.transform_to_parent(wi);
 
             // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);

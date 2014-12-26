@@ -106,7 +106,6 @@ namespace
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
-            Vector3d&           incoming,
             BSDFSample&         sample) const
         {
             // No reflection below the shading surface.
@@ -158,11 +157,11 @@ namespace
                         Vector3d::unit_vector(cos_theta, sin_theta, cos_phi, sin_phi));
 
             // Compute the incoming direction in world space.
-            incoming = reflect(outgoing, h);
-            incoming = force_above_surface(incoming, geometric_normal);
+            sample.m_incoming = reflect(outgoing, h);
+            sample.m_incoming = force_above_surface(sample.m_incoming, geometric_normal);
 
             // No reflection below the shading surface.
-            const double cos_in = dot(incoming, shading_normal);
+            const double cos_in = dot(sample.m_incoming, shading_normal);
             if (cos_in < 0.0)
                 return;
 

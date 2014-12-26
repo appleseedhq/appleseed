@@ -109,7 +109,6 @@ namespace
             const DisneyBRDFInputValues*    values,
             const Basis3d&                  shading_basis,
             const Vector3d&                 outgoing,
-            Vector3d&                       incoming,
             BSDFSample&                     sample) const
         {
             // Compute the incoming direction in local space.
@@ -118,12 +117,12 @@ namespace
             const Vector3d wi = sample_hemisphere_cosine(s);
 
             // Transform the incoming direction to parent space.
-            incoming = shading_basis.transform_to_parent(wi);
+            sample.m_incoming = shading_basis.transform_to_parent(wi);
             sample.m_probability = evaluate(
                 values,
                 shading_basis,
                 outgoing,
-                incoming,
+                sample.m_incoming,
                 sample.m_value);
 
             assert(sample.m_probability > 0.0);
@@ -197,7 +196,6 @@ namespace
             const DisneyBRDFInputValues*    values,
             const Basis3d&                  shading_basis,
             const Vector3d&                 outgoing,
-            Vector3d&                       incoming,
             BSDFSample&                     sample) const
         {
             // Compute the incoming direction in local space.
@@ -206,12 +204,12 @@ namespace
             const Vector3d wi = sample_hemisphere_uniform(s);
 
             // Transform the incoming direction to parent space.
-            incoming = shading_basis.transform_to_parent(wi);
+            sample.m_incoming = shading_basis.transform_to_parent(wi);
             sample.m_probability = evaluate(
                 values,
                 shading_basis,
                 outgoing,
-                incoming,
+                sample.m_incoming,
                 sample.m_value);
 
             assert(sample.m_probability > 0.0);
@@ -401,7 +399,6 @@ namespace
             const Vector3d&         geometric_normal,
             const Basis3d&          shading_basis,
             const Vector3d&         outgoing,
-            Vector3d&               incoming,
             BSDFSample&             sample) const APPLESEED_OVERRIDE
         {
             const DisneyBRDFInputValues* values =
@@ -421,7 +418,6 @@ namespace
                     values,
                     shading_basis,
                     outgoing,
-                    incoming,
                     sample);
 
                 return;
@@ -434,7 +430,6 @@ namespace
                     values,
                     shading_basis,
                     outgoing,
-                    incoming,
                     sample);
 
                 return;
@@ -468,10 +463,10 @@ namespace
             const Vector2d s2 = sampling_context.next_vector2<2>();
             const Vector3d m = mdf->sample(s2, alpha_x, alpha_y);
             const Vector3d h = shading_basis.transform_to_parent(m);
-            incoming = reflect(outgoing, h);
+            sample.m_incoming = reflect(outgoing, h);
 
             // No reflection below the shading surface.
-            const double cos_in = dot(incoming, n);
+            const double cos_in = dot(sample.m_incoming, n);
             if (cos_in < 0.0)
                 return;
 
@@ -483,7 +478,7 @@ namespace
 
             const double G =
                 mdf->G(
-                    shading_basis.transform_to_local(incoming),
+                    shading_basis.transform_to_local(sample.m_incoming),
                     shading_basis.transform_to_local(outgoing),
                     m,
                     alpha_gx,

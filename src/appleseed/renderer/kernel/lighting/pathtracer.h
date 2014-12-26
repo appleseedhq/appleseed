@@ -300,7 +300,6 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
 
         // Sample the BSDF.
         BSDFSample sample;
-        foundation::Vector3d incoming;
         vertex.m_bsdf->sample(
             sampling_context,
             vertex.m_bsdf_data,
@@ -309,7 +308,6 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             vertex.get_geometric_normal(),
             vertex.get_shading_basis(),
             vertex.m_outgoing,
-            incoming,
             sample);
 
         if (sample.m_mode == BSDFSample::Absorption)
@@ -359,8 +357,8 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
 
         // Construct the scattered ray.
         const ShadingRay scattered_ray(
-            vertex.m_shading_point->get_biased_point(incoming),
-            incoming,
+            vertex.m_shading_point->get_biased_point(sample.m_incoming),
+            sample.m_incoming,
             ray.m_time,
             ray.m_dtime,
             bsdf_mode_to_ray_flags(sample.m_mode),

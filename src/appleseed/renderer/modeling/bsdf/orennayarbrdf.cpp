@@ -96,7 +96,6 @@ namespace
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
-            Vector3d&           incoming,
             BSDFSample&         sample) const
         {
             // No reflection below the shading surface.
@@ -111,17 +110,17 @@ namespace
             const Vector3d wi = sample_hemisphere_cosine(s);
 
             // Transform the incoming direction to parent space.
-            incoming = shading_basis.transform_to_parent(wi);
+            sample.m_incoming = shading_basis.transform_to_parent(wi);
 
             // No reflection below the shading surface.
-            const double cos_in = dot(incoming, n);
+            const double cos_in = dot(sample.m_incoming, n);
             if (cos_in < 0.0)
                 return;
 
             // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
             if (values->m_roughness != 0.0)
-                oren_nayar_qualitative(cos_on, cos_in, values->m_roughness, values->m_reflectance, outgoing, incoming, n, sample.m_value);
+                oren_nayar_qualitative(cos_on, cos_in, values->m_roughness, values->m_reflectance, outgoing, sample.m_incoming, n, sample.m_value);
             else
                 sample.m_value = values->m_reflectance;
 

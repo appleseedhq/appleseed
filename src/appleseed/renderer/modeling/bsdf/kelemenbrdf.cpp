@@ -174,7 +174,6 @@ namespace
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
-            Vector3d&           incoming,
             BSDFSample&         sample) const
         {
             // Define aliases to match the notations in the paper.
@@ -221,10 +220,10 @@ namespace
                 const Vector3d wi = sample_hemisphere_cosine(Vector2d(s[0], s[1]));
 
                 // Transform the incoming direction to parent space.
-                incoming = shading_basis.transform_to_parent(wi);
+                sample.m_incoming = shading_basis.transform_to_parent(wi);
 
                 // Compute the halfway vector.
-                H = normalize(incoming + V);
+                H = normalize(sample.m_incoming + V);
 
                 dot_LN = wi.y;
                 dot_HN = dot(H, N);
@@ -243,9 +242,9 @@ namespace
                 dot_HV = dot(H, V);
 
                 // The incoming direction is the reflection of V around H.
-                incoming = (dot_HV + dot_HV) * H - V;
+                sample.m_incoming = (dot_HV + dot_HV) * H - V;
 
-                dot_LN = dot(incoming, N);
+                dot_LN = dot(sample.m_incoming, N);
                 dot_HN = local_H.y;
 
                 // No reflection below the shading surface.

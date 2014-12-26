@@ -133,7 +133,6 @@ namespace
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,
             const Vector3d&     outgoing,
-            Vector3d&           incoming,
             BSDFSample&         sample) const
         {
             // No reflection below the shading surface.
@@ -154,12 +153,12 @@ namespace
             if (mdf_pdf == 0.0)
                 return;
             h = shading_basis.transform_to_parent(h);
-            incoming = reflect(outgoing, h);
+            sample.m_incoming = reflect(outgoing, h);
             const double cos_hn = dot(h, n);
             const double cos_oh = dot(outgoing, h);
 
             // No reflection below the shading surface.
-            const double cos_in = dot(incoming, n);
+            const double cos_in = dot(sample.m_incoming, n);
             if (cos_in < 0.0)
                 return;
 
