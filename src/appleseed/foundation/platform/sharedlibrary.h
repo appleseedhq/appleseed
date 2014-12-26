@@ -32,7 +32,6 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/core/exceptions/exception.h"
-#include "foundation/platform/compiler.h"
 
 namespace foundation
 {

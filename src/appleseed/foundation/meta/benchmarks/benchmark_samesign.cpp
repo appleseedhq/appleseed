@@ -33,6 +33,7 @@
 #ifdef APPLESEED_USE_SSE
 #include "foundation/platform/sse.h"
 #endif
+#include "foundation/platform/types.h"
 #include "foundation/utility/benchmark.h"
 #include "foundation/utility/casts.h"
 #include "foundation/utility/otherwise.h"
@@ -49,8 +50,8 @@ BENCHMARK_SUITE(SameSign)
     //
     // Research for this post on Stack Overflow:
     //
-    // "How to efficiently compare the sign of two floating-point values while handling negative zeros"
-    // http://stackoverflow.com/questions/2922619/how-to-efficiently-compare-the-sign-of-two-floating-point-values-while-handling-n
+    //   How to efficiently compare the sign of two floating-point values while handling negative zeros
+    //   http://stackoverflow.com/questions/2922619/how-to-efficiently-compare-the-sign-of-two-floating-point-values-while-handling-n
     //
 
     //

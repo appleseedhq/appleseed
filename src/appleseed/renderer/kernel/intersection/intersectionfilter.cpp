@@ -31,6 +31,7 @@
 #include "intersectionfilter.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/tessellation/statictessellation.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/input/texturesource.h"
@@ -38,17 +39,17 @@
 #include "renderer/modeling/object/iregion.h"
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/object/regionkit.h"
-#include "renderer/modeling/object/triangle.h"
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/textureinstance.h"
 #include "renderer/modeling/texture/texture.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
-#include "foundation/image/color.h"
-#include "foundation/image/tile.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/lazy.h"
+
+// Standard headers.
+#include <memory>
 
 using namespace foundation;
 using namespace std;

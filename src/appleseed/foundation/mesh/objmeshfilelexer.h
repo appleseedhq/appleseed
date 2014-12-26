@@ -31,7 +31,6 @@
 #define APPLESEED_FOUNDATION_MESH_OBJMESHFILELEXER_H
 
 // appleseed.foundation headers.
-#include "foundation/core/exceptions/exception.h"
 #include "foundation/mesh/objmeshfilereader.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/bufferedfile.h"

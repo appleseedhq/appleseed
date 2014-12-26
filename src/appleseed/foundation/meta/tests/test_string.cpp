@@ -29,6 +29,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/rng.h"
+#include "foundation/math/scalar.h"
 #include "foundation/platform/arch.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/iostreamop.h"
@@ -38,6 +39,7 @@
 
 // Standard headers.
 #include <cmath>
+#include <cstddef>
 #include <cstdio>
 #include <cstdlib>
 #include <string>

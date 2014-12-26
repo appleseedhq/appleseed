@@ -31,8 +31,10 @@
 #include "regiontree.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
 #include "renderer/kernel/intersection/regioninfo.h"
 #include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/modeling/entity/entityvector.h"
 #include "renderer/modeling/object/iregion.h"
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/object/regionkit.h"
@@ -42,7 +44,7 @@
 #include "renderer/utility/bbox.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/intersection.h"
+#include "foundation/math/aabb.h"
 #include "foundation/math/split.h"
 #include "foundation/math/transform.h"
 #include "foundation/utility/foreach.h"
@@ -50,6 +52,11 @@
 #include "foundation/utility/string.h"
 
 // Standard headers.
+#include <cassert>
+#include <cmath>
+#include <cstddef>
+#include <limits>
+#include <string>
 #include <utility>
 
 using namespace foundation;

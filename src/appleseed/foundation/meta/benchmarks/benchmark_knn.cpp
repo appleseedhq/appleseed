@@ -43,6 +43,7 @@
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <memory>
 #include <string>
 #include <vector>
 

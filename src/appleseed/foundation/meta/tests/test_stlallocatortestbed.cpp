@@ -29,6 +29,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/alignedallocator.h"
 #include "foundation/utility/poolallocator.h"
 #include "foundation/utility/test.h"
@@ -37,14 +38,15 @@
 #include <complex>
 #include <cstdarg>
 #include <cstddef>
+#include <cstring>
 #include <deque>
 #include <list>
 #include <map>
-#include <memory>
 #include <queue>
 #include <set>
 #include <stack>
 #include <string>
+#include <utility>
 #include <vector>
 
 using namespace foundation;

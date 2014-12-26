@@ -31,19 +31,26 @@
 #define APPLESEED_RENDERER_MODELING_INPUT_INPUTBINDER_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/modeling/entity/entity.h"
 #include "renderer/modeling/entity/entitytraits.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/containers.h"
 
+// appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
+#include "foundation/utility/uid.h"
+
 // Standard headers.
+#include <cassert>
+#include <cstddef>
+#include <string>
 #include <vector>
 
 // Forward declarations.
-namespace renderer      { class ConnectableEntity; }
-namespace renderer      { class Scene; }
-namespace renderer      { class SymbolTable; }
+namespace renderer  { class ConnectableEntity; }
+namespace renderer  { class Scene; }
+namespace renderer  { class SymbolTable; }
 
 namespace renderer
 {

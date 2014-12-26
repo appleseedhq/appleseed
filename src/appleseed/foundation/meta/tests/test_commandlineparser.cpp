@@ -29,6 +29,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/commandlineparser.h"
+#include "foundation/utility/iostreamop.h"
 #include "foundation/utility/makevector.h"
 #include "foundation/utility/test.h"
 

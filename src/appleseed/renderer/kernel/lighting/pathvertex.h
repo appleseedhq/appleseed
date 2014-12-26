@@ -50,6 +50,7 @@ namespace renderer  { class EDF; }
 namespace renderer  { class Material; }
 namespace renderer  { class ShadingContext; }
 namespace renderer  { class ShadingRay; }
+namespace renderer  { class TextureCache; }
 
 namespace renderer
 {

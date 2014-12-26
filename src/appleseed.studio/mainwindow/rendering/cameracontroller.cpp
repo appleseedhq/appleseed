@@ -37,6 +37,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/transform.h"
+#include "foundation/utility/iostreamop.h"
 
 // Qt headers.
 #include <QEvent>

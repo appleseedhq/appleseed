@@ -31,6 +31,7 @@
 #include "progressiveframerenderer.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
 #include "renderer/kernel/rendering/progressive/samplecounter.h"
 #include "renderer/kernel/rendering/progressive/samplegeneratorjob.h"
 #include "renderer/kernel/rendering/framerendererbase.h"
@@ -41,13 +42,18 @@
 #include "renderer/modeling/project/project.h"
 
 // appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/image/analysis.h"
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/genericimagefilereader.h"
 #include "foundation/image/image.h"
+#include "foundation/math/aabb.h"
 #include "foundation/math/fixedsizehistory.h"
+#include "foundation/math/scalar.h"
+#include "foundation/math/vector.h"
 #include "foundation/platform/thread.h"
 #include "foundation/platform/timers.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/job.h"
 #include "foundation/utility/maplefile.h"
@@ -56,6 +62,12 @@
 #include "foundation/utility/string.h"
 
 // Standard headers.
+#include <cassert>
+#include <cmath>
+#include <cstddef>
+#include <limits>
+#include <memory>
+#include <string>
 #include <vector>
 
 using namespace boost;

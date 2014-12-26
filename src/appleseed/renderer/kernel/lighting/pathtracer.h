@@ -39,7 +39,6 @@
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/bsdf/bsdf.h"
-#include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/material/material.h"
@@ -50,7 +49,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/math/basis.h"
+#include "foundation/math/ray.h"
 #include "foundation/math/rr.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/string.h"
@@ -59,9 +58,6 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
-
-// Forward declarations.
-namespace renderer  { class TextureCache; }
 
 namespace renderer
 {

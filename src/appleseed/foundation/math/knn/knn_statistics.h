@@ -33,7 +33,6 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/population.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/statistics.h"
 #include "foundation/utility/string.h"
 

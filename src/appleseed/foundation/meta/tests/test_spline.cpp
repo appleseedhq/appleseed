@@ -34,14 +34,14 @@
 #include "foundation/utility/test.h"
 
 // Standard headers.
-#include <string>
+#include <cstddef>
 #include <vector>
+
+using namespace foundation;
+using namespace std;
 
 TEST_SUITE(Foundation_Math_Spline)
 {
-    using namespace foundation;
-    using namespace std;
-
     TEST_CASE(GenerateMaplePlotFiles)
     {
         // Define knots.

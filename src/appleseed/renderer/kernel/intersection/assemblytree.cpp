@@ -31,27 +31,41 @@
 #include "assemblytree.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
+#include "renderer/global/globaltypes.h"
+#include "renderer/kernel/intersection/intersectionsettings.h"
+#include "renderer/kernel/intersection/regioninfo.h"
 #include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/modeling/entity/entityvector.h"
 #include "renderer/modeling/object/curveobject.h"
 #include "renderer/modeling/object/iregion.h"
 #include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/object/regionkit.h"
-#include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
+#include "renderer/modeling/scene/objectinstance.h"
+#include "renderer/modeling/scene/scene.h"
 #include "renderer/utility/bbox.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/intersection.h"
+#include "foundation/math/beziercurve.h"
 #include "foundation/math/permutation.h"
+#include "foundation/math/ray.h"
+#include "foundation/math/transform.h"
+#include "foundation/math/vector.h"
 #include "foundation/platform/system.h"
 #include "foundation/platform/timers.h"
+#include "foundation/platform/types.h"
+#include "foundation/utility/alignedallocator.h"
+#include "foundation/utility/foreach.h"
+#include "foundation/utility/lazy.h"
 #include "foundation/utility/siphash.h"
 #include "foundation/utility/statistics.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
 #include <algorithm>
+#include <cassert>
 #include <cstring>
 #include <set>
 #include <utility>

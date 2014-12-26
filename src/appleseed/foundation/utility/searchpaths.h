@@ -38,6 +38,7 @@
 #include "main/dllsymbol.h"
 
 // Standard headers.
+#include <cstddef>
 #include <string>
 
 namespace foundation

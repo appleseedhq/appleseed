@@ -66,7 +66,8 @@ namespace foundation
 //
 
 template <typename T>
-struct VectorElementWrapper : public T
+struct VectorElementWrapper
+  : public T
 {
     VectorElementWrapper() {}
     VectorElementWrapper(const T& rhs) : T(rhs) {}
@@ -79,8 +80,10 @@ struct VectorElementWrapper : public T
 #endif
 
 template <typename T>
-struct AlignedVector : public ALIGNED_VECTOR_BASE
+class AlignedVector
+  : public ALIGNED_VECTOR_BASE
 {
+  public:
     typedef ALIGNED_VECTOR_BASE Base;
 
     AlignedVector()

@@ -33,12 +33,10 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/platform/thread.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/log.h"
 
 // Xerces-C++ headers.
-#include "xercesc/framework/MemoryManager.hpp"
 #include "xercesc/sax/ErrorHandler.hpp"
 #include "xercesc/sax/SAXParseException.hpp"
 #include "xercesc/sax2/Attributes.hpp"
@@ -47,6 +45,7 @@
 
 // Standard headers.
 #include <cassert>
+#include <cstddef>
 #include <map>
 #include <memory>
 #include <stack>

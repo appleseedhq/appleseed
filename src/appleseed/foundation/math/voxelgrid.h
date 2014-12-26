@@ -35,10 +35,8 @@
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/utility/typetraits.h"
 
 // Standard headers.
-#include <algorithm>
 #include <cassert>
 #include <cstddef>
 #include <vector>

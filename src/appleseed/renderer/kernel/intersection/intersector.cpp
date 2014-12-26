@@ -34,18 +34,20 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/kernel/intersection/assemblytree.h"
 #include "renderer/kernel/intersection/tracecontext.h"
-#include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
+#include "foundation/utility/cache.h"
 #include "foundation/utility/casts.h"
+#include "foundation/utility/lazy.h"
 #include "foundation/utility/statistics.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
 #include <cassert>
+#include <cmath>
 #include <memory>
 #include <string>
 

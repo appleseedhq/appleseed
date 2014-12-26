@@ -30,6 +30,9 @@
 // Interface header.
 #include "bsp_statistics.h"
 
+// Standard headers.
+#include <string>
+
 namespace foundation {
 namespace bsp {
 

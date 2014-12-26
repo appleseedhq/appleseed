@@ -31,12 +31,14 @@
 #define APPLESEED_RENDERER_KERNEL_AOV_SHADINGFRAGMENTSTACK_H
 
 // appleseed.renderer headers.
+#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/aov/aovsettings.h"
 #include "renderer/kernel/aov/spectrumstack.h"
 #include "renderer/kernel/shading/shadingfragment.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/image/color.h"
 
 // Standard headers.
 #include <cassert>

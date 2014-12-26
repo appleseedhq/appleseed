@@ -41,9 +41,6 @@ BEGIN_EXR_INCLUDES
 END_EXR_INCLUDES
 #endif
 
-// Standard headers.
-#include <cstddef>
-
 TEST_SUITE(Foundation_Math_AABB)
 {
     using namespace foundation;

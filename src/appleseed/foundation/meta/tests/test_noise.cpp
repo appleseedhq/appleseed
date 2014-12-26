@@ -31,6 +31,7 @@
 #include "foundation/image/color.h"
 #include "foundation/image/genericimagefilewriter.h"
 #include "foundation/image/image.h"
+#include "foundation/image/pixel.h"
 #include "foundation/math/noise.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/test.h"

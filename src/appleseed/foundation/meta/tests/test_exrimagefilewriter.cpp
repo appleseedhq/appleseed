@@ -37,10 +37,15 @@
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"
 
+// Standard headers.
+#include <cstddef>
+#include <memory>
+
+using namespace foundation;
+using namespace std;
+
 TEST_SUITE(Foundation_Image_EXRImageFileWriter)
 {
-    using namespace foundation;
-
     static const char* Filename = "unit tests/outputs/test_exrimagefilewriter.exr";
     static const Color4b Reference(50, 100, 150, 42);
 
@@ -64,7 +69,7 @@ TEST_SUITE(Foundation_Image_EXRImageFileWriter)
     {
         generate_test_openexr_file();
 
-        Tile* tile = load_test_openexr_file();
+        auto_ptr<Tile> tile(load_test_openexr_file());
 
         for (size_t i = 0; i < 4; ++i)
         {
@@ -72,7 +77,5 @@ TEST_SUITE(Foundation_Image_EXRImageFileWriter)
             tile->get_pixel(i, c);
             EXPECT_EQ(Reference, c);
         }
-
-        delete tile;
     }
 }

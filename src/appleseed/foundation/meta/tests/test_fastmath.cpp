@@ -30,6 +30,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/fastmath.h"
 #include "foundation/math/scalar.h"
+#include "foundation/platform/compiler.h"
 #ifdef APPLESEED_USE_SSE
 #include "foundation/platform/sse.h"
 #endif
@@ -38,10 +39,10 @@
 #include "foundation/utility/test.h"
 
 // Standard headers.
-#include <algorithm>
 #include <cmath>
 #include <cstddef>
 #include <string>
+#include <vector>
 
 using namespace foundation;
 using namespace std;

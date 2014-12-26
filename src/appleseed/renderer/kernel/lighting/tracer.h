@@ -31,6 +31,7 @@
 #define APPLESEED_RENDERER_KERNEL_LIGHTING_TRACER_H
 
 // appleseed.renderer headers.
+#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/intersection/intersector.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
@@ -44,13 +45,11 @@
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer  { class Intersector; }
 namespace renderer  { class Material;}
 #ifdef APPLESEED_WITH_OSL
 namespace renderer  { class OSLShaderGroupExec; }
 #endif
 namespace renderer  { class Scene; }
-namespace renderer  { class ShadingPoint; }
 namespace renderer  { class TextureCache; }
 
 namespace renderer

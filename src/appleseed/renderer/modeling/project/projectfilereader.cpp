@@ -31,6 +31,8 @@
 #include "projectfilereader.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
+#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdffactoryregistrar.h"
 #include "renderer/modeling/bsdf/ibsdffactory.h"
@@ -63,6 +65,7 @@
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/project/configuration.h"
 #include "renderer/modeling/project/configurationcontainer.h"
+#include "renderer/modeling/project/eventcounters.h"
 #include "renderer/modeling/project/irenderlayerrulefactory.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/project/projectfileupdater.h"
@@ -85,17 +88,24 @@
 #include "renderer/modeling/texture/itexturefactory.h"
 #include "renderer/modeling/texture/texture.h"
 #include "renderer/modeling/texture/texturefactoryregistrar.h"
+#include "renderer/utility/paramarray.h"
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/aabb.h"
 #include "foundation/math/matrix.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
+#include "foundation/math/vector.h"
+#include "foundation/platform/compiler.h"
 #include "foundation/platform/defaulttimers.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/iterators.h"
+#include "foundation/utility/log.h"
 #include "foundation/utility/memory.h"
+#include "foundation/utility/otherwise.h"
 #include "foundation/utility/searchpaths.h"
 #include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
@@ -105,18 +115,20 @@
 #include "xercesc/sax2/Attributes.hpp"
 #include "xercesc/sax2/SAX2XMLReader.hpp"
 #include "xercesc/sax2/XMLReaderFactory.hpp"
-#include "xercesc/util/PlatformUtils.hpp"
 #include "xercesc/util/XMLException.hpp"
+#include "xercesc/util/XMLUni.hpp"
 
 // Boost headers.
 #include "boost/filesystem/path.hpp"
 
 // Standard headers.
+#include <cassert>
+#include <cstddef>
 #include <cstring>
-#include <exception>
 #include <map>
+#include <memory>
 #include <sstream>
-#include <utility>
+#include <string>
 #include <vector>
 
 using namespace foundation;

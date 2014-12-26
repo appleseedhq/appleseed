@@ -41,6 +41,7 @@
 #include "renderer/kernel/tessellation/statictessellation.h"
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/kernel/texturing/texturestore.h"
+#include "renderer/modeling/entity/entity.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/object/iregion.h"
 #include "renderer/modeling/object/object.h"
@@ -57,13 +58,18 @@
 #include "foundation/math/area.h"
 #include "foundation/math/intersection.h"
 #include "foundation/math/scalar.h"
+#include "foundation/math/transform.h"
 #include "foundation/math/treeoptimizer.h"
+#include "foundation/math/vector.h"
 #include "foundation/platform/system.h"
 #include "foundation/platform/timers.h"
+#include "foundation/utility/alignedallocator.h"
+#include "foundation/utility/foreach.h"
 #include "foundation/utility/makevector.h"
 #include "foundation/utility/memory.h"
 #include "foundation/utility/statistics.h"
 #include "foundation/utility/stopwatch.h"
+#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <algorithm>

@@ -40,7 +40,6 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/bvh.h"
-#include "foundation/math/matrix.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/alignedvector.h"
 #include "foundation/utility/lazy.h"

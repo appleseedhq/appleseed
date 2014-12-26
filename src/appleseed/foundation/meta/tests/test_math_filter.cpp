@@ -29,7 +29,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/filter.h"
-#include "foundation/math/fp.h"
 #include "foundation/math/scalar.h"
 #include "foundation/utility/maplefile.h"
 #include "foundation/utility/string.h"

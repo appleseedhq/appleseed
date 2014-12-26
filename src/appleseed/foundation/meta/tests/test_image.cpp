@@ -28,8 +28,10 @@
 //
 
 // appleseed.foundation headers.
+#include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
 #include "foundation/image/image.h"
+#include "foundation/image/pixel.h"
 #include "foundation/image/tile.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"

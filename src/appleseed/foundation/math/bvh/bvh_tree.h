@@ -35,6 +35,7 @@
 
 // Standard headers.
 #include <cstddef>
+#include <vector>
 
 namespace foundation {
 namespace bvh {

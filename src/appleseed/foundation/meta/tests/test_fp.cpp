@@ -30,7 +30,6 @@
 // appleseed.foundation headers.
 #include "foundation/math/fp.h"
 #include "foundation/utility/test.h"
-#include "foundation/utility/typetraits.h"
 
 using namespace foundation;
 

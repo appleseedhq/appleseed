@@ -42,6 +42,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstdlib>
+#include <iterator>
 #include <vector>
 
 using namespace boost;

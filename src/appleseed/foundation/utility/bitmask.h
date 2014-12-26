@@ -45,13 +45,14 @@ namespace foundation
 // A compact 2D array of bits.
 //
 
-struct BitMask2
+class BitMask2
 {
-    size_t              m_width;
-    size_t              m_height;
-    size_t              m_block_width;
-    size_t              m_size;
-    uint8*              m_bits;
+  public:
+    size_t  m_width;
+    size_t  m_height;
+    size_t  m_block_width;
+    size_t  m_size;
+    uint8*  m_bits;
 
     // The constructor does not initialize the content of the bit mask.
     BitMask2(

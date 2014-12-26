@@ -30,14 +30,14 @@
 #ifndef APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFILEREADER_H
 #define APPLESEED_RENDERER_MODELING_PROJECT_PROJECTFILEREADER_H
 
-// appleseed.renderer headers.
-#include "renderer/global/global.h"
-#include "renderer/modeling/project/eventcounters.h"
+// appleseed.foundation headers.
+#include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
 // Forward declarations.
+namespace renderer  { class EventCounters; }
 namespace renderer  { class Project; }
 
 namespace renderer

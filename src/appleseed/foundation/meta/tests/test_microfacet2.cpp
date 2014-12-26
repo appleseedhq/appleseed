@@ -39,7 +39,6 @@
 // Standard headers.
 #include <cmath>
 #include <cstddef>
-#include <string>
 
 using namespace foundation;
 using namespace std;
@@ -188,11 +187,10 @@ TEST_SUITE(Foundation_Math_Microfacet2)
         return integral;
     }
 
-
     //
     // Weak white furnace test.
     //
-    // References:
+    // Reference:
     //
     //   Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs
     //   http://hal.inria.fr/docs/00/96/78/44/PDF/RR-8468.pdf
@@ -239,7 +237,6 @@ TEST_SUITE(Foundation_Math_Microfacet2)
         return integral * G1 * square(angle_step) / cos_thetha_o_4;
     }
 
-
     //
     // Test settings.
     //
@@ -251,7 +248,6 @@ TEST_SUITE(Foundation_Math_Microfacet2)
     const double IntegrationEps = 1.0e-3;
     const double WeakWhiteFurnaceAngleStep = 0.05;
     const double WeakWhiteFurnaceEps = 1.0e-2;
-
 
     //
     // Blinn-Phong MDF.
@@ -333,7 +329,6 @@ TEST_SUITE(Foundation_Math_Microfacet2)
 
         EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
     }
-
 
     //
     // Beckmann MDF.

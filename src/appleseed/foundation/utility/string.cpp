@@ -31,7 +31,6 @@
 #include "string.h"
 
 // Standard headers.
-#include <cstdlib>
 #include <cstring>
 
 using namespace std;

@@ -36,6 +36,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/beziercurve.h"
 #include "foundation/math/intersection.h"
+#include "foundation/math/matrix.h"
 
 // Standard headers.
 #include <cstddef>

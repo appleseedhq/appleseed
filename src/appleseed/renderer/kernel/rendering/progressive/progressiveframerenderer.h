@@ -31,8 +31,11 @@
 #define APPLESEED_RENDERER_KERNEL_RENDERING_PROGRESSIVE_PROGRESSIVEFRAMERENDERER_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
 #include "renderer/kernel/rendering/iframerenderer.h"
+#include "renderer/utility/paramarray.h"
+
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 
 // Forward declarations.
 namespace renderer  { class ISampleGeneratorFactory; }

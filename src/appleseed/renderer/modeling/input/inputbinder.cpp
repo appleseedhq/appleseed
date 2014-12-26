@@ -31,15 +31,19 @@
 #include "inputbinder.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/color/colorentity.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/entity/connectableentity.h"
+#include "renderer/modeling/entity/entitymap.h"
+#include "renderer/modeling/entity/entityvector.h"
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/environmentshader/environmentshader.h"
 #include "renderer/modeling/input/colorsource.h"
+#include "renderer/modeling/input/inputformat.h"
 #include "renderer/modeling/input/scalarsource.h"
 #include "renderer/modeling/input/symbol.h"
 #include "renderer/modeling/input/texturesource.h"
@@ -55,8 +59,10 @@
 #endif
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/modeling/texture/texture.h"
+#include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/string.h"
 

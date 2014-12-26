@@ -28,17 +28,19 @@
 //
 
 // appleseed.foundation headers.
-#include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
 #include "foundation/image/genericimagefilewriter.h"
 #include "foundation/image/image.h"
+#include "foundation/image/pixel.h"
 #include "foundation/math/scalar.h"
+#include "foundation/math/vector.h"
 #include "foundation/math/voxelgrid.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.
 #include <algorithm>
 #include <cmath>
+#include <cstddef>
 
 using namespace foundation;
 using namespace std;

@@ -42,7 +42,11 @@
 #include "renderer/kernel/shading/shadingresult.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/bvh.h"
 #include "foundation/utility/string.h"
+
+// Standard headers.
+#include <string>
 
 using namespace foundation;
 

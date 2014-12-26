@@ -42,7 +42,6 @@
 
 // Forward declarations.
 namespace foundation    { class ITestListener; }
-namespace foundation    { class TestResult; }
 namespace foundation    { class TestSuite; }
 
 namespace foundation

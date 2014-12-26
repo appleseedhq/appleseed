@@ -31,6 +31,7 @@
 #include "loggerbenchmarklistener.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/types.h"
 #include "foundation/utility/benchmark/benchmarklistenerbase.h"
 #include "foundation/utility/benchmark/benchmarksuite.h"
 #include "foundation/utility/benchmark/ibenchmarkcase.h"
@@ -41,7 +42,9 @@
 #include "foundation/utility/test.h"
 
 // Standard headers.
+#include <cassert>
 #include <cstddef>
+#include <ios>
 #include <string>
 #include <vector>
 

@@ -33,6 +33,7 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/aabb.h"
+#include "foundation/math/scalar.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/memory.h"
 
@@ -248,7 +249,6 @@ class SAHCostFunction
 // ExactSAHFunction class implementation.
 //
 
-// Constructor.
 template <typename T>
 ExactSAHFunction<T>::ExactSAHFunction()
 #ifndef NDEBUG
@@ -257,7 +257,6 @@ ExactSAHFunction<T>::ExactSAHFunction()
 {
 }
 
-// Reset the function and set the bounds of the domain.
 template <typename T>
 inline void ExactSAHFunction<T>::reset(
     const ValueType domain_begin,
@@ -277,7 +276,6 @@ inline void ExactSAHFunction<T>::reset(
 #endif
 }
 
-// Insert an interval into the function.
 template <typename T>
 inline void ExactSAHFunction<T>::insert(
     const ValueType interval_begin,
@@ -302,7 +300,6 @@ inline void ExactSAHFunction<T>::insert(
     ++m_interval_count;
 }
 
-// Find the abscissa with the smallest cost, with respect to the SAH.
 template <typename T>
 void ExactSAHFunction<T>::minimize(
     const AABBType& bbox,
@@ -354,7 +351,6 @@ void ExactSAHFunction<T>::minimize(
     }
 }
 
-// Visit the SAH function, useful for debugging.
 template <typename T>
 template <typename Visitor>
 void ExactSAHFunction<T>::visit(
@@ -414,7 +410,6 @@ void ExactSAHFunction<T>::visit(
 // ApproxSAHFunction class implementation.
 //
 
-// Constructor.
 template <typename T, size_t BinCount>
 ApproxSAHFunction<T, BinCount>::ApproxSAHFunction(
     const ValueType domain_begin,
@@ -434,7 +429,6 @@ ApproxSAHFunction<T, BinCount>::ApproxSAHFunction(
     }
 }
 
-// Insert an interval into the function.
 template <typename T, size_t BinCount>
 inline void ApproxSAHFunction<T, BinCount>::insert(
     const ValueType interval_begin,
@@ -468,7 +462,6 @@ inline void ApproxSAHFunction<T, BinCount>::insert(
     ++m_interval_count;
 }
 
-// Find the abscissa with the smallest cost, with respect to the SAH.
 template <typename T, size_t BinCount>
 void ApproxSAHFunction<T, BinCount>::minimize(
     const AABBType& bbox,
@@ -522,7 +515,6 @@ void ApproxSAHFunction<T, BinCount>::minimize(
     min_abscissa = m_domain_begin + min_left_length;
 }
 
-// Visit the SAH function, useful for debugging.
 template <typename T, size_t BinCount>
 template <typename Visitor>
 void ApproxSAHFunction<T, BinCount>::visit(

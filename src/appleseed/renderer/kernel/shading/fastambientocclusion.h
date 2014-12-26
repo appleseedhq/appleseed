@@ -31,15 +31,20 @@
 #define APPLESEED_RENDERER_KERNEL_SHADING_FASTAMBIENTOCCLUSION_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/shading/shadingray.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
+#include "foundation/math/vector.h"
 #include "foundation/math/voxel.h"
 
+// Standard headers.
+#include <cstddef>
+#include <string>
+
 // Forward declarations.
-namespace renderer      { class Scene; }
+namespace renderer  { class Scene; }
 
 namespace renderer
 {

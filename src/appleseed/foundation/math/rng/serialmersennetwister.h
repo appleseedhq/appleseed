@@ -36,9 +36,6 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// Standard headers.
-#include <cstddef>
-
 namespace foundation
 {
 

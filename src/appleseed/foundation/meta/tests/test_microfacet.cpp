@@ -41,6 +41,7 @@
 #include <cmath>
 #include <cstddef>
 #include <string>
+#include <vector>
 
 using namespace foundation;
 using namespace std;

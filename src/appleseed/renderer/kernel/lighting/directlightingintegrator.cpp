@@ -33,7 +33,6 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/lighting/pathvertex.h"
 #include "renderer/modeling/light/light.h"
-#include "renderer/modeling/scene/visibilityflags.h"
 
 using namespace foundation;
 using namespace std;

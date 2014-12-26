@@ -30,6 +30,7 @@
 #include "curvetree.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
 #include "renderer/modeling/object/curveobject.h"
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/scene/assembly.h"
@@ -40,11 +41,17 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exceptionnotimplemented.h"
+#include "foundation/math/beziercurve.h"
+#include "foundation/math/permutation.h"
 #include "foundation/math/transform.h"
 #include "foundation/platform/defaulttimers.h"
 #include "foundation/platform/system.h"
+#include "foundation/utility/alignedallocator.h"
 #include "foundation/utility/makevector.h"
+#include "foundation/utility/memory.h"
+#include "foundation/utility/statistics.h"
 #include "foundation/utility/stopwatch.h"
+#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <cassert>

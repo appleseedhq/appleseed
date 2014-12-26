@@ -31,7 +31,6 @@
 #include "foundation/image/genericimagefilewriter.h"
 #include "foundation/image/image.h"
 #include "foundation/image/pixel.h"
-#include "foundation/math/intersection/rayaabb.h"
 #include "foundation/math/beziercurve.h"
 #include "foundation/math/matrix.h"
 #include "foundation/math/ray.h"

@@ -31,20 +31,23 @@
 #define APPLESEED_RENDERER_KERNEL_INTERSECTION_REGIONTREE_H
 
 // appleseed.renderer headers.
-#include "renderer/global/global.h"
+#include "renderer/global/globaltypes.h"
 #include "renderer/kernel/intersection/intersectionsettings.h"
 #include "renderer/kernel/intersection/probevisitorbase.h"
 #include "renderer/kernel/intersection/triangletree.h"
 #include "renderer/kernel/shading/shadingray.h"
 
 // appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/bsp.h"
 #include "foundation/math/bvh.h"
 #include "foundation/utility/lazy.h"
 #include "foundation/utility/poolallocator.h"
+#include "foundation/utility/uid.h"
 
 // Standard headers.
 #include <map>
+#include <memory>
 
 // Forward declarations.
 namespace renderer  { class Assembly; }

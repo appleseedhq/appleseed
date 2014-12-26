@@ -41,6 +41,7 @@
 // Standard headers.
 #include <cstddef>
 #include <list>
+#include <utility>
 
 // Forward declarations.
 namespace foundation    { class AbortSwitch; }

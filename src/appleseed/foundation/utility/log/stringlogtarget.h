@@ -33,6 +33,7 @@
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/log/ilogtarget.h"
+#include "foundation/utility/log/logmessage.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"

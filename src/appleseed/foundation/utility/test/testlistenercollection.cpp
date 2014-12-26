@@ -31,7 +31,6 @@
 #include "testlistenercollection.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/snprintf.h"
 #include "foundation/utility/foreach.h"
 
 // Standard headers.

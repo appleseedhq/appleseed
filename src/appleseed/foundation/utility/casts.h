@@ -33,9 +33,6 @@
 // Boost headers.
 #include "boost/static_assert.hpp"
 
-// Standard headers.
-#include <cassert>
-
 namespace foundation
 {
 

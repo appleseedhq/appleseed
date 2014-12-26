@@ -32,6 +32,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/test/testlistenerbase.h"
 #include "foundation/utility/test/testsuite.h"
 #include "foundation/utility/foreach.h"

@@ -39,13 +39,15 @@
 #include "foundation/utility/typetraits.h"
 
 // Standard headers.
+#include <algorithm>
+#include <cstddef>
 #include <utility>
+
+using namespace foundation;
+using namespace std;
 
 TEST_SUITE(Foundation_Math_MinMax)
 {
-    using namespace foundation;
-    using namespace std;
-
     TEST_CASE(TestMin)
     {
         EXPECT_EQ(0, min(0, 1, 2));
