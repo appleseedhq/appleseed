@@ -93,7 +93,6 @@ namespace
             const bool          cosine_mult,
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
             BSDFSample&         sample) const
         {
             // Compute the incoming direction in local space.

@@ -142,7 +142,6 @@ void DisneyLayeredBRDF::sample(
     const bool                  cosine_mult,
     const Vector3d&             geometric_normal,
     const Basis3d&              shading_basis,
-    const Vector3d&             outgoing,
     BSDFSample&                 sample) const
 {
     if (m_parent->get_layer_count() == 0)
@@ -155,7 +154,6 @@ void DisneyLayeredBRDF::sample(
         cosine_mult,
         geometric_normal,
         shading_basis,
-        outgoing,
         sample);
 }
 

@@ -106,12 +106,11 @@ namespace
             const bool          cosine_mult,
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
             BSDFSample&         sample) const
         {
             // No reflection below the shading surface.
             const Vector3d& shading_normal = shading_basis.get_normal();
-            const double cos_on = dot(outgoing, shading_normal);
+            const double cos_on = dot(sample.m_outgoing, shading_normal);
             if (cos_on < 0.0)
                 return;
 
@@ -146,7 +145,7 @@ namespace
                 sample.m_incoming = shading_basis.transform_to_parent(wi);
 
                 // Compute the halfway vector in world space.
-                h = normalize(sample.m_incoming + outgoing);
+                h = normalize(sample.m_incoming + sample.m_outgoing);
 
                 // Compute the glossy exponent, needed to evaluate the PDF.
                 const double cos_hn = dot(h, shading_basis.get_normal());
@@ -193,7 +192,7 @@ namespace
                         Vector3d::unit_vector(cos_theta, sin_theta, cos_phi, sin_phi));
 
                 // Compute the incoming direction in world space.
-                sample.m_incoming = reflect(outgoing, h);
+                sample.m_incoming = reflect(sample.m_outgoing, h);
                 sample.m_incoming = force_above_surface(sample.m_incoming, geometric_normal);
             }
 
@@ -203,7 +202,7 @@ namespace
                 return;
 
             // Compute dot products.
-            const double cos_oh = abs(dot(outgoing, h));
+            const double cos_oh = abs(dot(sample.m_outgoing, h));
             const double cos_hn = dot(h, shading_normal);
 
             // Evaluate the diffuse component of the BRDF (equation 5).

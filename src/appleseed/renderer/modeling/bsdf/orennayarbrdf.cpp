@@ -95,12 +95,11 @@ namespace
             const bool          cosine_mult,
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
             BSDFSample&         sample) const
         {
             // No reflection below the shading surface.
             const Vector3d& n = shading_basis.get_normal();
-            const double cos_on = dot(outgoing, n);
+            const double cos_on = dot(sample.m_outgoing, n);
             if (cos_on < 0.0)
                 return;
 
@@ -120,7 +119,17 @@ namespace
             // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
             if (values->m_roughness != 0.0)
-                oren_nayar_qualitative(cos_on, cos_in, values->m_roughness, values->m_reflectance, outgoing, sample.m_incoming, n, sample.m_value);
+            {
+                oren_nayar_qualitative(
+                    cos_on,
+                    cos_in,
+                    values->m_roughness,
+                    values->m_reflectance,
+                    sample.m_outgoing,
+                    sample.m_incoming,
+                    n,
+                    sample.m_value);
+            }
             else
                 sample.m_value = values->m_reflectance;
 

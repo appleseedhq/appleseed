@@ -165,7 +165,6 @@ namespace
             const bool          cosine_mult,
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
             BSDFSample&         sample) const
         {
             const InputValues* values = static_cast<const InputValues*>(data);
@@ -178,7 +177,7 @@ namespace
             const double eta = values->m_from_ior / values->m_to_ior;
 
             if (!refract(
-                    outgoing,
+                    sample.m_outgoing,
                     ht,
                     eta,
                     sample.m_incoming))
@@ -190,13 +189,13 @@ namespace
             // If incoming and outgoing are on the same hemisphere
             // this is not a refraction.
             const Vector3d& n = shading_basis.get_normal();
-            if (dot(sample.m_incoming, n) * dot(outgoing, n) >= 0.0)
+            if (dot(sample.m_incoming, n) * dot(sample.m_outgoing, n) >= 0.0)
                 return;
 
             const double G =
                 m_mdf->G(
                     shading_basis.transform_to_local(sample.m_incoming),
-                    shading_basis.transform_to_local(outgoing),
+                    shading_basis.transform_to_local(sample.m_outgoing),
                     m,
                     values->m_ax,
                     values->m_ay);
@@ -206,10 +205,10 @@ namespace
 
             const double D = m_mdf->D(m, values->m_ax, values->m_ay);
 
-            const double cos_oh = dot(outgoing, ht);
+            const double cos_oh = dot(sample.m_outgoing, ht);
             const double cos_ih = dot(sample.m_incoming, ht);
             const double cos_in = dot(sample.m_incoming, n);
-            const double cos_on = dot(outgoing, n);
+            const double cos_on = dot(sample.m_outgoing, n);
 
             // [1] equation 21.
             double v = abs((cos_ih * cos_oh) / (cos_in * cos_on));
@@ -223,7 +222,7 @@ namespace
 
             sample.m_value.set(static_cast<float>(v));
 
-            const double ht_norm = norm(values->m_from_ior * outgoing + values->m_to_ior * sample.m_incoming);
+            const double ht_norm = norm(values->m_from_ior * sample.m_outgoing + values->m_to_ior * sample.m_incoming);
             const double dwh_dwo = refraction_jacobian(
                 sample.m_incoming,
                 values->m_to_ior,

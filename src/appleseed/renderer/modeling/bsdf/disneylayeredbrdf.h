@@ -93,7 +93,6 @@ class DisneyLayeredBRDF
         const bool                      cosine_mult,
         const foundation::Vector3d&     geometric_normal,
         const foundation::Basis3d&      shading_basis,
-        const foundation::Vector3d&     outgoing,
         BSDFSample&                     sample) const APPLESEED_OVERRIDE;
 
     virtual double evaluate(

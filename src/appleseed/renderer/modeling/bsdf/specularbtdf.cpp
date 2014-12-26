@@ -94,21 +94,20 @@ namespace
             const bool          cosine_mult,
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
             BSDFSample&         sample) const
         {
             const InputValues* values = static_cast<const InputValues*>(data);
 
             const Vector3d& shading_normal = shading_basis.get_normal();
             const double eta = values->m_from_ior / values->m_to_ior;
-            const double cos_theta_i = dot(outgoing, shading_normal);
+            const double cos_theta_i = dot(sample.m_outgoing, shading_normal);
             const double sin_theta_i2 = 1.0 - square(cos_theta_i);
             const double cos_theta_t2 = 1.0 - square(eta) * sin_theta_i2;
 
             if (cos_theta_t2 < 0.0)
             {
                 // Total internal reflection: compute the reflected direction and radiance.
-                sample.m_incoming = reflect(outgoing, shading_normal);
+                sample.m_incoming = reflect(sample.m_outgoing, shading_normal);
                 sample.m_value = values->m_transmittance;
                 sample.m_value *= static_cast<float>(values->m_transmittance_multiplier);
             }
@@ -131,7 +130,7 @@ namespace
                 if (s < fresnel_reflection)
                 {
                     // Fresnel reflection: compute the reflected direction and radiance.
-                    sample.m_incoming = reflect(outgoing, shading_normal);
+                    sample.m_incoming = reflect(sample.m_outgoing, shading_normal);
                     sample.m_value = values->m_reflectance;
                     sample.m_value *= static_cast<float>(values->m_reflectance_multiplier);
                 }
@@ -140,8 +139,8 @@ namespace
                     // Compute the refracted direction.
                     sample.m_incoming =
                         cos_theta_i > 0.0
-                            ? (eta * cos_theta_i - cos_theta_t) * shading_normal - eta * outgoing
-                            : (eta * cos_theta_i + cos_theta_t) * shading_normal - eta * outgoing;
+                            ? (eta * cos_theta_i - cos_theta_t) * shading_normal - eta * sample.m_outgoing
+                            : (eta * cos_theta_i + cos_theta_t) * shading_normal - eta * sample.m_outgoing;
 
                     // Compute the refracted radiance.
                     sample.m_value = values->m_transmittance;

@@ -173,11 +173,10 @@ namespace
             const bool          cosine_mult,
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
             BSDFSample&         sample) const
         {
             // Define aliases to match the notations in the paper.
-            const Vector3d& V = outgoing;
+            const Vector3d& V = sample.m_outgoing;
             const Vector3d& N = shading_basis.get_normal();
 
             // No reflection below the shading surface.

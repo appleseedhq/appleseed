@@ -70,7 +70,6 @@ class BSDFWrapper
         const bool                      cosine_mult,
         const foundation::Vector3d&     geometric_normal,
         const foundation::Basis3d&      shading_basis,
-        const foundation::Vector3d&     outgoing,
         BSDFSample&                     sample) const APPLESEED_OVERRIDE;
 
     virtual double evaluate(
@@ -114,11 +113,10 @@ void BSDFWrapper<BSDFImpl>::sample(
     const bool                          cosine_mult,
     const foundation::Vector3d&         geometric_normal,
     const foundation::Basis3d&          shading_basis,
-    const foundation::Vector3d&         outgoing,
     BSDFSample&                         sample) const
 {
     assert(foundation::is_normalized(geometric_normal));
-    assert(foundation::is_normalized(outgoing));
+    assert(foundation::is_normalized(sample.m_outgoing));
 
     BSDFImpl::sample(
         sampling_context,
@@ -127,7 +125,6 @@ void BSDFWrapper<BSDFImpl>::sample(
         false,
         geometric_normal,
         shading_basis,
-        outgoing,
         sample);
 
     if (sample.m_mode != BSDFSample::Absorption)
@@ -139,9 +136,9 @@ void BSDFWrapper<BSDFImpl>::sample(
         {
             if (adjoint)
             {
-                const double cos_on = std::abs(foundation::dot(outgoing, shading_basis.get_normal()));
+                const double cos_on = std::abs(foundation::dot(sample.m_outgoing, shading_basis.get_normal()));
                 const double cos_ig = std::abs(foundation::dot(sample.m_incoming, geometric_normal));
-                const double cos_og = std::abs(foundation::dot(outgoing, geometric_normal));
+                const double cos_og = std::abs(foundation::dot(sample.m_outgoing, geometric_normal));
                 sample.m_value *= static_cast<float>(cos_on * cos_ig / cos_og);
             }
             else

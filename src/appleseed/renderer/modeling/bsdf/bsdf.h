@@ -160,7 +160,6 @@ class APPLESEED_DLLSYMBOL BSDF
         const bool                  cosine_mult,                // if true, multiply by |cos(incoming, normal)|
         const foundation::Vector3d& geometric_normal,           // world space geometric normal, unit-length
         const foundation::Basis3d&  shading_basis,              // world space orthonormal basis around shading normal
-        const foundation::Vector3d& outgoing,                   // world space outgoing direction, unit-length
         BSDFSample&                 sample) const = 0;
 
     // Evaluate the BSDF for a given pair of directions. Return the PDF value

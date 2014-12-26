@@ -164,7 +164,6 @@ namespace
             const bool              cosine_mult,
             const Vector3d&         geometric_normal,
             const Basis3d&          shading_basis,
-            const Vector3d&         outgoing,
             BSDFSample&             sample) const
         {
             assert(m_bsdf[0] && m_bsdf[1]);
@@ -185,7 +184,6 @@ namespace
                 false,                      // do not multiply by |cos(incoming, normal)|
                 geometric_normal,
                 shading_basis,
-                outgoing,
                 sample);
         }
 

@@ -128,12 +128,11 @@ namespace
             const bool          cosine_mult,
             const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
             BSDFSample&         sample) const
         {
             // No reflection below the shading surface.
             const Vector3d& n = shading_basis.get_normal();
-            const double cos_on = min(dot(outgoing, n), 1.0);
+            const double cos_on = min(dot(sample.m_outgoing, n), 1.0);
             if (cos_on < 0.0)
                 return;
 
@@ -145,8 +144,8 @@ namespace
             const Vector3d m = m_mdf->sample(s, values->m_ax, values->m_ay);
             const Vector3d h = shading_basis.transform_to_parent(m);
 
-            sample.m_incoming = reflect(outgoing, h);
-            const double cos_oh = dot(outgoing, h);
+            sample.m_incoming = reflect(sample.m_outgoing, h);
+            const double cos_oh = dot(sample.m_outgoing, h);
 
             // No reflection below the shading surface.
             const double cos_in = dot(sample.m_incoming, n);
@@ -162,7 +161,7 @@ namespace
             const double G =
                 m_mdf->G(
                     shading_basis.transform_to_local(sample.m_incoming),
-                    shading_basis.transform_to_local(outgoing),
+                    shading_basis.transform_to_local(sample.m_outgoing),
                     m,
                     values->m_ax,
                     values->m_ay);

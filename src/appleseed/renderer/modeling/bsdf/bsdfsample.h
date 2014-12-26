@@ -61,7 +61,7 @@ class APPLESEED_DLLSYMBOL BSDFSample
     };
 
     // Constructor
-    BSDFSample();
+    explicit BSDFSample(const foundation::Vector3d& outgoing);
 
     // Test for the presence of specific scattering modes.
     static bool has_diffuse(const ScatteringMode mode);
@@ -70,6 +70,10 @@ class APPLESEED_DLLSYMBOL BSDFSample
     static bool has_diffuse_or_glossy(const ScatteringMode mode);
     static bool has_glossy_or_specular(const ScatteringMode mode);
 
+    // Input data.
+    foundation::Vector3d    m_outgoing;     // world space outgoing direction, unit-length
+
+    // Output data.
     ScatteringMode          m_mode;         // Scattering mode
     foundation::Vector3d    m_incoming;     // world space incoming direction, unit-length
     Spectrum                m_value;        // BSDF value
@@ -81,8 +85,9 @@ class APPLESEED_DLLSYMBOL BSDFSample
 // BSDFSample class implementation.
 //
 
-inline BSDFSample::BSDFSample()
-  : m_mode(Absorption)
+inline BSDFSample::BSDFSample(const foundation::Vector3d& outgoing)
+  : m_outgoing(outgoing)
+  , m_mode(Absorption)
   , m_value(0.0f)
   , m_probability(0.0)
 {
