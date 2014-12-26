@@ -125,31 +125,26 @@ void compute_ibl_bsdf_sampling(
         // includes the contribution of a specular component since these are explicitly rejected
         // afterward. We need a mechanism to indicate that we want the contribution of some of
         // the components only.
-        Vector3d incoming;
-        Spectrum bsdf_value;
-        double bsdf_prob;
-        const BSDF::Mode bsdf_mode =
-            bsdf.sample(
-                sampling_context,
-                bsdf_data,
-                false,              // not adjoint
-                true,               // multiply by |cos(incoming, normal)|
-                geometric_normal,
-                shading_basis,
-                outgoing,
-                incoming,
-                bsdf_value,
-                bsdf_prob);
+        BSDFSample sample(
+            geometric_normal,
+            shading_basis,
+            outgoing);
+        bsdf.sample(
+            sampling_context,
+            bsdf_data,
+            false,              // not adjoint
+            true,               // multiply by |cos(incoming, normal)|
+            sample);
 
         // Filter scattering modes.
-        if (!(bsdf_sampling_modes & bsdf_mode))
+        if (!(bsdf_sampling_modes & sample.m_mode))
             return;
 
         // Discard occluded samples.
         const double transmission =
             shading_context.get_tracer().trace(
                 shading_point,
-                incoming,
+                sample.m_incoming,
                 VisibilityFlags::ShadowRay);
         if (transmission == 0.0)
             continue;
@@ -160,24 +155,24 @@ void compute_ibl_bsdf_sampling(
         double env_prob;
         environment_edf.evaluate(
             input_evaluator,
-            incoming,
+            sample.m_incoming,
             env_value,
             env_prob);
 
         // Apply all weights, including MIS weight.
-        if (bsdf_mode == BSDF::Specular)
+        if (sample.m_mode == BSDFSample::Specular)
             env_value *= static_cast<float>(transmission);
         else
         {
             const double mis_weight =
                 mis_power2(
-                    bsdf_sample_count * bsdf_prob,
+                    bsdf_sample_count * sample.m_probability,
                     env_sample_count * env_prob);
-            env_value *= static_cast<float>(transmission / bsdf_prob * mis_weight);
+            env_value *= static_cast<float>(transmission / sample.m_probability * mis_weight);
         }
 
         // Add the contribution of this sample to the illumination.
-        env_value *= bsdf_value;
+        env_value *= sample.m_value;
         radiance += env_value;
     }
 

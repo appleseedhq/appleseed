@@ -64,17 +64,17 @@ class PathVertex
   : public foundation::NonCopyable
 {
   public:
-    SamplingContext&        m_sampling_context;
-    const ShadingPoint*     m_shading_point;
-    foundation::Vector3d    m_outgoing;
-    double                  m_cos_on;       // cos(outgoing direction, shading normal)
-    const EDF*              m_edf;
-    const BSDF*             m_bsdf;
-    const void*             m_bsdf_data;
-    size_t                  m_path_length;
-    BSDF::Mode              m_prev_bsdf_mode;
-    double                  m_prev_bsdf_prob;
-    Spectrum                m_throughput;
+    SamplingContext&            m_sampling_context;
+    const ShadingPoint*         m_shading_point;
+    foundation::Vector3d        m_outgoing;
+    double                      m_cos_on;       // cos(outgoing direction, shading normal)
+    const EDF*                  m_edf;
+    const BSDF*                 m_bsdf;
+    const void*                 m_bsdf_data;
+    size_t                      m_path_length;
+    BSDFSample::ScatteringMode  m_prev_bsdf_mode;
+    double                      m_prev_bsdf_prob;
+    Spectrum                    m_throughput;
 
     // Constructor.
     explicit PathVertex(SamplingContext& sampling_context);

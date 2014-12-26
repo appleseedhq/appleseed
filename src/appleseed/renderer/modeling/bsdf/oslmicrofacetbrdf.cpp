@@ -77,7 +77,7 @@ namespace
         OSLMicrofacetBRDFImpl(
             const char*         name,
             const ParamArray&   params)
-          : BSDF(name, Reflective, Glossy, params)
+          : BSDF(name, Reflective, BSDFSample::Glossy, params)
         {
             m_inputs.declare("ax", InputFormatScalar, "0.1");
             m_inputs.declare("ay", InputFormatScalar, "0.1");
@@ -121,23 +121,18 @@ namespace
             return true;
         }
 
-        FORCE_INLINE virtual Mode sample(
+        FORCE_INLINE virtual void sample(
             SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            Vector3d&           incoming,
-            Spectrum&           value,
-            double&             probability) const
+            BSDFSample&         sample) const
         {
             // No reflection below the shading surface.
-            const Vector3d& n = shading_basis.get_normal();
-            const double cos_on = min(dot(outgoing, n), 1.0);
+            const Vector3d& n = sample.m_shading_basis.get_normal();
+            const double cos_on = min(dot(sample.m_outgoing, n), 1.0);
             if (cos_on < 0.0)
-                return Absorption;
+                return;
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
@@ -145,15 +140,15 @@ namespace
             sampling_context.split_in_place(2, 1);
             const Vector2d s = sampling_context.next_vector2<2>();
             const Vector3d m = m_mdf->sample(s, values->m_ax, values->m_ay);
-            const Vector3d h = shading_basis.transform_to_parent(m);
+            const Vector3d h = sample.m_shading_basis.transform_to_parent(m);
 
-            incoming = reflect(outgoing, h);
-            const double cos_oh = dot(outgoing, h);
+            sample.m_incoming = reflect(sample.m_outgoing, h);
+            const double cos_oh = dot(sample.m_outgoing, h);
 
             // No reflection below the shading surface.
-            const double cos_in = dot(incoming, n);
+            const double cos_in = dot(sample.m_incoming, n);
             if (cos_in < 0.0)
-                return Absorption;
+                return;
 
             const double D =
                 m_mdf->D(
@@ -163,15 +158,15 @@ namespace
 
             const double G =
                 m_mdf->G(
-                    shading_basis.transform_to_local(incoming),
-                    shading_basis.transform_to_local(outgoing),
+                    sample.m_shading_basis.transform_to_local(sample.m_incoming),
+                    sample.m_shading_basis.transform_to_local(sample.m_outgoing),
                     m,
                     values->m_ax,
                     values->m_ay);
 
-            value.set(static_cast<float>(D * G / (4.0 * cos_on * cos_in)));
-            probability = m_mdf->pdf(m, values->m_ax, values->m_ay) / (4.0 * cos_oh);
-            return Glossy;
+            sample.m_value.set(static_cast<float>(D * G / (4.0 * cos_on * cos_in)));
+            sample.m_probability = m_mdf->pdf(m, values->m_ax, values->m_ay) / (4.0 * cos_oh);
+            sample.m_mode = BSDFSample::Glossy;
         }
 
         FORCE_INLINE virtual double evaluate(
@@ -185,7 +180,7 @@ namespace
             const int           modes,
             Spectrum&           value) const
         {
-            if (!(modes & Glossy))
+            if (!(modes & BSDFSample::Glossy))
                 return 0.0;
 
             // No reflection below the shading surface.
@@ -226,7 +221,7 @@ namespace
             const Vector3d&     incoming,
             const int           modes) const
         {
-            if (!(modes & Glossy))
+            if (!(modes & BSDFSample::Glossy))
                 return 0.0;
 
             // No reflection below the shading surface.

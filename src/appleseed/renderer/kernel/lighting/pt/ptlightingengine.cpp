@@ -293,19 +293,19 @@ namespace
             }
 
             bool accept_scattering(
-                const BSDF::Mode        prev_bsdf_mode,
-                const BSDF::Mode        bsdf_mode)
+                const BSDFSample::ScatteringMode  prev_bsdf_mode,
+                const BSDFSample::ScatteringMode  bsdf_mode)
             {
-                assert(bsdf_mode != BSDF::Absorption);
+                assert(bsdf_mode != BSDFSample::Absorption);
 
                 if (!m_params.m_enable_caustics)
                 {
                     // Don't follow paths leading to caustics.
-                    if (BSDF::has_diffuse(prev_bsdf_mode) && BSDF::has_glossy_or_specular(bsdf_mode))
+                    if (BSDFSample::has_diffuse(prev_bsdf_mode) && BSDFSample::has_glossy_or_specular(bsdf_mode))
                         return false;
 
                     // Ignore light emission after glossy-to-specular bounces to prevent another class of fireflies.
-                    if (BSDF::has_glossy(prev_bsdf_mode) && BSDF::has_specular(bsdf_mode))
+                    if (BSDFSample::has_glossy(prev_bsdf_mode) && BSDFSample::has_specular(bsdf_mode))
                         m_omit_emitted_light = true;
                 }
 
@@ -363,14 +363,14 @@ namespace
 
             void visit_environment(const PathVertex& vertex)
             {
-                assert(vertex.m_prev_bsdf_mode != BSDF::Absorption);
+                assert(vertex.m_prev_bsdf_mode != BSDFSample::Absorption);
 
                 // Can't look up the environment if there's no environment EDF.
                 if (m_env_edf == 0)
                     return;
 
                 // When IBL is disabled, only specular reflections should contribute here.
-                if (!m_params.m_enable_ibl && vertex.m_prev_bsdf_mode != BSDF::Specular)
+                if (!m_params.m_enable_ibl && vertex.m_prev_bsdf_mode != BSDFSample::Specular)
                     return;
 
                 // Evaluate the environment EDF.
@@ -422,7 +422,7 @@ namespace
             void visit_vertex(const PathVertex& vertex)
             {
                 // Any light contribution after a diffuse or glossy bounce is considered indirect.
-                if (BSDF::has_diffuse_or_glossy(vertex.m_prev_bsdf_mode))
+                if (BSDFSample::has_diffuse_or_glossy(vertex.m_prev_bsdf_mode))
                     m_is_indirect_lighting = true;
 
                 Spectrum vertex_radiance(0.0f);
@@ -431,9 +431,9 @@ namespace
                 if (vertex.m_bsdf)
                 {
                     const int scattering_modes =
-                        !m_params.m_enable_caustics && vertex.m_prev_bsdf_mode == BSDF::Diffuse
-                            ? BSDF::Diffuse
-                            : BSDF::AllScatteringModes;
+                        !m_params.m_enable_caustics && vertex.m_prev_bsdf_mode == BSDFSample::Diffuse
+                            ? BSDFSample::Diffuse
+                            : BSDFSample::AllScatteringModes;
 
                     // Direct lighting.
                     if (m_params.m_enable_dl || vertex.m_path_length > 1)
@@ -606,7 +606,7 @@ namespace
                     emitted_radiance);
 
                 // Multiple importance sampling.
-                if (vertex.m_prev_bsdf_mode != BSDF::Specular)
+                if (vertex.m_prev_bsdf_mode != BSDFSample::Specular)
                 {
                     const double light_sample_count = max(m_params.m_dl_light_sample_count, 1.0);
                     const double mis_weight =
@@ -623,14 +623,14 @@ namespace
 
             void visit_environment(const PathVertex& vertex)
             {
-                assert(vertex.m_prev_bsdf_mode != BSDF::Absorption);
+                assert(vertex.m_prev_bsdf_mode != BSDFSample::Absorption);
 
                 // Can't look up the environment if there's no environment EDF.
                 if (m_env_edf == 0)
                     return;
 
                 // When IBL is disabled, only specular reflections should contribute here.
-                if (!m_params.m_enable_ibl && vertex.m_prev_bsdf_mode != BSDF::Specular)
+                if (!m_params.m_enable_ibl && vertex.m_prev_bsdf_mode != BSDFSample::Specular)
                     return;
 
                 // Evaluate the environment EDF.
@@ -644,7 +644,7 @@ namespace
                     env_prob);
 
                 // Multiple importance sampling.
-                if (vertex.m_prev_bsdf_mode != BSDF::Specular)
+                if (vertex.m_prev_bsdf_mode != BSDFSample::Specular)
                 {
                     assert(vertex.m_prev_bsdf_prob > 0.0);
                     const double env_sample_count = max(m_params.m_ibl_env_sample_count, 1.0);

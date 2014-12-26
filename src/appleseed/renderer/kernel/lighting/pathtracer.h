@@ -98,7 +98,7 @@ class PathTracer
 
     // Determine the appropriate ray type for a given scattering mode.
     static VisibilityFlags::Type bsdf_mode_to_ray_flags(
-        const BSDF::Mode        mode);
+        const BSDFSample::ScatteringMode mode);
 
     // Determine whether a ray can pass through a surface with a given alpha value.
     static bool pass_through(
@@ -159,7 +159,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
     PathVertex vertex(sampling_context);
     vertex.m_shading_point = &shading_point;
     vertex.m_path_length = 1;
-    vertex.m_prev_bsdf_mode = BSDF::Specular;
+    vertex.m_prev_bsdf_mode = BSDFSample::Specular;
     vertex.m_prev_bsdf_prob = BSDF::DiracDelta;
     vertex.m_throughput.set(1.0f);
 
@@ -295,36 +295,32 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             break;
 
         // Sample the BSDF.
-        foundation::Vector3d incoming;
-        Spectrum bsdf_value;
-        double bsdf_prob;
-        const BSDF::Mode bsdf_mode =
-            vertex.m_bsdf->sample(
-                sampling_context,
-                vertex.m_bsdf_data,
-                Adjoint,
-                true,       // multiply by |cos(incoming, normal)|
-                vertex.get_geometric_normal(),
-                vertex.get_shading_basis(),
-                vertex.m_outgoing,
-                incoming,
-                bsdf_value,
-                bsdf_prob);
-        if (bsdf_mode == BSDF::Absorption)
+        BSDFSample sample(
+        vertex.get_geometric_normal(),
+        vertex.get_shading_basis(),
+        vertex.m_outgoing);
+        vertex.m_bsdf->sample(
+            sampling_context,
+            vertex.m_bsdf_data,
+            Adjoint,
+            true,       // multiply by |cos(incoming, normal)|
+            sample);
+
+        if (sample.m_mode == BSDFSample::Absorption)
             break;
 
         // Terminate the path if this scattering event is not accepted.
-        if (!m_path_visitor.accept_scattering(vertex.m_prev_bsdf_mode, bsdf_mode))
+        if (!m_path_visitor.accept_scattering(vertex.m_prev_bsdf_mode, sample.m_mode))
             break;
 
-        vertex.m_prev_bsdf_prob = bsdf_prob;
-        vertex.m_prev_bsdf_mode = bsdf_mode;
+        vertex.m_prev_bsdf_prob = sample.m_probability;
+        vertex.m_prev_bsdf_mode = sample.m_mode;
 
-        if (bsdf_prob != BSDF::DiracDelta)
-            bsdf_value /= static_cast<float>(bsdf_prob);
+        if (sample.m_probability != BSDF::DiracDelta)
+            sample.m_value /= static_cast<float>(sample.m_probability);
 
         // Update the path throughput.
-        vertex.m_throughput *= bsdf_value;
+        vertex.m_throughput *= sample.m_value;
 
         // Use Russian Roulette to cut the path without introducing bias.
         if (vertex.m_path_length >= m_rr_min_path_length)
@@ -336,7 +332,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             // Compute the probability of extending this path.
             const double scattering_prob =
                 std::min(
-                    static_cast<double>(foundation::max_value(bsdf_value)),
+                    static_cast<double>(foundation::max_value(sample.m_value)),
                     1.0);
 
             // Russian Roulette.
@@ -357,11 +353,11 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
 
         // Construct the scattered ray.
         const ShadingRay scattered_ray(
-            vertex.m_shading_point->get_biased_point(incoming),
-            incoming,
+            vertex.m_shading_point->get_biased_point(sample.m_incoming),
+            sample.m_incoming,
             ray.m_time,
             ray.m_dtime,
-            bsdf_mode_to_ray_flags(bsdf_mode),
+            bsdf_mode_to_ray_flags(sample.m_mode),
             ray.m_depth + 1);
 
         // Trace the ray.
@@ -381,13 +377,13 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
 
 template <typename PathVisitor, bool Adjoint>
 inline VisibilityFlags::Type PathTracer<PathVisitor, Adjoint>::bsdf_mode_to_ray_flags(
-    const BSDF::Mode            mode)
+    const BSDFSample::ScatteringMode mode)
 {
     switch (mode)
     {
-      case BSDF::Diffuse:   return VisibilityFlags::DiffuseRay;
-      case BSDF::Glossy:    return VisibilityFlags::GlossyRay;
-      case BSDF::Specular:  return VisibilityFlags::SpecularRay;
+      case BSDFSample::Diffuse:   return VisibilityFlags::DiffuseRay;
+      case BSDFSample::Glossy:    return VisibilityFlags::GlossyRay;
+      case BSDFSample::Specular:  return VisibilityFlags::SpecularRay;
       default:
         assert(!"Invalid scattering mode.");
         return VisibilityFlags::DiffuseRay;

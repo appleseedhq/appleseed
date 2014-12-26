@@ -61,7 +61,7 @@ namespace
         SpecularBRDFImpl(
             const char*         name,
             const ParamArray&   params)
-          : BSDF(name, Reflective, Specular, params)
+          : BSDF(name, Reflective, BSDFSample::Specular, params)
         {
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
@@ -77,43 +77,38 @@ namespace
             return Model;
         }
 
-        FORCE_INLINE virtual Mode sample(
+        FORCE_INLINE virtual void sample(
             SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            Vector3d&           incoming,
-            Spectrum&           value,
-            double&             probability) const
+            BSDFSample&         sample) const
         {
             // No reflection below the shading surface.
-            const Vector3d& shading_normal = shading_basis.get_normal();
-            const double cos_on = dot(outgoing, shading_normal);
+            const Vector3d& shading_normal = sample.m_shading_basis.get_normal();
+            const double cos_on = dot(sample.m_outgoing, shading_normal);
             if (cos_on < 0.0)
-                return Absorption;
+                return;
 
             // Compute the incoming direction.
-            incoming = reflect(outgoing, shading_normal);
-            incoming = force_above_surface(incoming, geometric_normal);
+            sample.m_incoming = reflect(sample.m_outgoing, shading_normal);
+            sample.m_incoming = force_above_surface(sample.m_incoming, sample.m_geometric_normal);
 
             // No reflection below the shading surface.
-            const double cos_in = dot(incoming, shading_normal);
+            const double cos_in = dot(sample.m_incoming, shading_normal);
             if (cos_in < 0.0)
-                return Absorption;
+                return;
 
             // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
-            value = values->m_reflectance;
-            value *= static_cast<float>(values->m_reflectance_multiplier / cos_in);
+            sample.m_value = values->m_reflectance;
+            sample.m_value *= static_cast<float>(values->m_reflectance_multiplier / cos_in);
 
             // The probability density of the sampled direction is the Dirac delta.
-            probability = DiracDelta;
+            sample.m_probability = DiracDelta;
 
-            // Return the scattering mode.
-            return Specular;
+            // Set the scattering mode.
+            sample.m_mode = BSDFSample::Specular;
         }
 
         FORCE_INLINE virtual double evaluate(

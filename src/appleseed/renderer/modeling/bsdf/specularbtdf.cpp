@@ -66,7 +66,7 @@ namespace
         SpecularBTDFImpl(
             const char*         name,
             const ParamArray&   params)
-          : BSDF(name, Transmissive, Specular, params)
+          : BSDF(name, Transmissive, BSDFSample::Specular, params)
         {
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
@@ -87,32 +87,27 @@ namespace
             return Model;
         }
 
-        FORCE_INLINE virtual Mode sample(
+        FORCE_INLINE virtual void sample(
             SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            Vector3d&           incoming,
-            Spectrum&           value,
-            double&             probability) const
+            BSDFSample&         sample) const
         {
             const InputValues* values = static_cast<const InputValues*>(data);
 
-            const Vector3d& shading_normal = shading_basis.get_normal();
+            const Vector3d& shading_normal = sample.m_shading_basis.get_normal();
             const double eta = values->m_from_ior / values->m_to_ior;
-            const double cos_theta_i = dot(outgoing, shading_normal);
+            const double cos_theta_i = dot(sample.m_outgoing, shading_normal);
             const double sin_theta_i2 = 1.0 - square(cos_theta_i);
             const double cos_theta_t2 = 1.0 - square(eta) * sin_theta_i2;
 
             if (cos_theta_t2 < 0.0)
             {
                 // Total internal reflection: compute the reflected direction and radiance.
-                incoming = reflect(outgoing, shading_normal);
-                value = values->m_transmittance;
-                value *= static_cast<float>(values->m_transmittance_multiplier);
+                sample.m_incoming = reflect(sample.m_outgoing, shading_normal);
+                sample.m_value = values->m_transmittance;
+                sample.m_value *= static_cast<float>(values->m_transmittance_multiplier);
             }
             else
             {
@@ -133,35 +128,35 @@ namespace
                 if (s < fresnel_reflection)
                 {
                     // Fresnel reflection: compute the reflected direction and radiance.
-                    incoming = reflect(outgoing, shading_normal);
-                    value = values->m_reflectance;
-                    value *= static_cast<float>(values->m_reflectance_multiplier);
+                    sample.m_incoming = reflect(sample.m_outgoing, shading_normal);
+                    sample.m_value = values->m_reflectance;
+                    sample.m_value *= static_cast<float>(values->m_reflectance_multiplier);
                 }
                 else
                 {
                     // Compute the refracted direction.
-                    incoming =
+                    sample.m_incoming =
                         cos_theta_i > 0.0
-                            ? (eta * cos_theta_i - cos_theta_t) * shading_normal - eta * outgoing
-                            : (eta * cos_theta_i + cos_theta_t) * shading_normal - eta * outgoing;
+                            ? (eta * cos_theta_i - cos_theta_t) * shading_normal - eta * sample.m_outgoing
+                            : (eta * cos_theta_i + cos_theta_t) * shading_normal - eta * sample.m_outgoing;
 
                     // Compute the refracted radiance.
-                    value = values->m_transmittance;
-                    value *=
+                    sample.m_value = values->m_transmittance;
+                    sample.m_value *=
                         adjoint
                             ? static_cast<float>(values->m_transmittance_multiplier)
                             : static_cast<float>(eta * eta * values->m_transmittance_multiplier);
                 }
             }
 
-            const double cos_in = abs(dot(incoming, shading_normal));
-            value /= static_cast<float>(cos_in);
+            const double cos_in = abs(dot(sample.m_incoming, shading_normal));
+            sample.m_value /= static_cast<float>(cos_in);
 
             // The probability density of the sampled direction is the Dirac delta.
-            probability = DiracDelta;
+            sample.m_probability = DiracDelta;
 
-            // Return the scattering mode.
-            return Specular;
+            // Set the scattering mode.
+            sample.m_mode = BSDFSample::Specular;
         }
 
         FORCE_INLINE virtual double evaluate(

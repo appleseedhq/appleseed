@@ -81,7 +81,7 @@ namespace
         OSLBSDFImpl(
             const char*             name,
             const ParamArray&       params)
-          : BSDF(name, AllBSDFTypes, AllScatteringModes, params)
+          : BSDF(name, AllBSDFTypes, BSDFSample::AllScatteringModes, params)
         {
             memset(m_all_bsdfs, 0, sizeof(BSDF*) * NumClosuresIDs);
 
@@ -219,17 +219,12 @@ namespace
             new (c) CompositeSurfaceClosure(shading_point.get_osl_shader_globals().Ci);
         }
 
-        FORCE_INLINE virtual Mode sample(
+        FORCE_INLINE virtual void sample(
             SamplingContext&        sampling_context,
             const void*             data,
             const bool              adjoint,
             const bool              cosine_mult,
-            const Vector3d&         geometric_normal,
-            const Basis3d&          shading_basis,
-            const Vector3d&         outgoing,
-            Vector3d&               incoming,
-            Spectrum&               value,
-            double&                 probability) const
+            BSDFSample&             sample) const
         {
             const CompositeSurfaceClosure* c = reinterpret_cast<const CompositeSurfaceClosure*>(data);
 
@@ -239,29 +234,16 @@ namespace
                 const double s = sampling_context.next_double2();
 
                 const size_t closure_index = c->choose_closure(s);
-                const Basis3d new_shading_basis = make_osl_basis(c, closure_index, shading_basis);
+                sample.m_shading_basis = make_osl_basis(c, closure_index, sample.m_shading_basis);
 
-                const Mode result =
-                    bsdf_to_closure_id(c->get_closure_type(closure_index)).sample(
-                        sampling_context,
-                        c->get_closure_input_values(closure_index),
-                        adjoint,
-                        false,
-                        geometric_normal,
-                        new_shading_basis,
-                        outgoing,
-                        incoming,
-                        value,
-                        probability);
+                bsdf_to_closure_id(c->get_closure_type(closure_index)).sample(
+                    sampling_context,
+                    c->get_closure_input_values(closure_index),
+                    adjoint,
+                    false,
+                    sample);
 
-                value *= c->get_closure_weight(closure_index);
-                return result;
-            }
-            else
-            {
-                value.set(0.0f);
-                probability = 0.0;
-                return Absorption;
+                sample.m_value *= c->get_closure_weight(closure_index);
             }
         }
 

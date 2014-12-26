@@ -70,7 +70,7 @@ namespace
         LambertianBRDFImpl(
             const char*         name,
             const ParamArray&   params)
-          : BSDF(name, Reflective, Diffuse, params)
+          : BSDF(name, Reflective, BSDFSample::Diffuse, params)
         {
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
@@ -86,17 +86,12 @@ namespace
             return Model;
         }
 
-        FORCE_INLINE virtual Mode sample(
+        FORCE_INLINE virtual void sample(
             SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
-            const Vector3d&     geometric_normal,
-            const Basis3d&      shading_basis,
-            const Vector3d&     outgoing,
-            Vector3d&           incoming,
-            Spectrum&           value,
-            double&             probability) const
+            BSDFSample&         sample) const
         {
             // Compute the incoming direction in local space.
             sampling_context.split_in_place(2, 1);
@@ -104,19 +99,19 @@ namespace
             const Vector3d wi = sample_hemisphere_cosine(s);
 
             // Transform the incoming direction to parent space.
-            incoming = shading_basis.transform_to_parent(wi);
+            sample.m_incoming = sample.m_shading_basis.transform_to_parent(wi);
 
             // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
-            value = values->m_reflectance;
-            value *= static_cast<float>(values->m_reflectance_multiplier * RcpPi);
+            sample.m_value = values->m_reflectance;
+            sample.m_value *= static_cast<float>(values->m_reflectance_multiplier * RcpPi);
 
             // Compute the probability density of the sampled direction.
-            probability = wi.y * RcpPi;
-            assert(probability > 0.0);
+            sample.m_probability = wi.y * RcpPi;
+            assert(sample.m_probability > 0.0);
 
-            // Return the scattering mode.
-            return Diffuse;
+            // Set the scattering mode.
+            sample.m_mode = BSDFSample::Diffuse;
         }
 
         FORCE_INLINE virtual double evaluate(
@@ -130,7 +125,7 @@ namespace
             const int           modes,
             Spectrum&           value) const
         {
-            if (!(modes & Diffuse))
+            if (!(modes & BSDFSample::Diffuse))
                 return 0.0;
 
             // No reflection below the shading surface.
@@ -156,7 +151,7 @@ namespace
             const Vector3d&     incoming,
             const int           modes) const
         {
-            if (!(modes & Diffuse))
+            if (!(modes & BSDFSample::Diffuse))
                 return 0.0;
 
             // No reflection below the shading surface.

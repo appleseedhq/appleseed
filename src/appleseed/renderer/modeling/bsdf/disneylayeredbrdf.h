@@ -64,57 +64,35 @@ class DisneyLayeredBRDF
   : public BSDF
 {
   public:
-    // Delete this instance.
     virtual void release() APPLESEED_OVERRIDE;
 
-    // Return a string identifying the model of this entity.
     virtual const char* get_model() const APPLESEED_OVERRIDE;
 
-    // This method is called once before rendering each frame.
-    // Returns true on success, false otherwise.
     virtual bool on_frame_begin(
         const Project&                  project,
         const Assembly&                 assembly,
         foundation::IAbortSwitch*       abort_switch = 0) APPLESEED_OVERRIDE;
 
-    // This method is called once after rendering each frame.
     virtual void on_frame_end(
         const Project&                  project,
         const Assembly&                 assembly) APPLESEED_OVERRIDE;
 
-    // Compute the cumulated size in bytes of the values of all inputs of
-    // this BSDF and its child BSDFs, if any.
     virtual size_t compute_input_data_size(
         const Assembly&                 assembly) const APPLESEED_OVERRIDE;
 
-    // Evaluate the inputs of this BSDF and of its child BSDFs, if any.
-    // Input values are stored in the input evaluator. This method is called
-    // once per shading point and pair of incoming/outgoing directions.
     virtual void evaluate_inputs(
         const ShadingContext&           shading_context,
         InputEvaluator&                 input_evaluator,
         const ShadingPoint&             shading_point,
         const size_t                    offset = 0) const APPLESEED_OVERRIDE;
 
-    // Given an outgoing direction, sample the BSDF and compute the incoming
-    // direction, its probability density and the value of the BSDF for this
-    // pair of directions. Return the scattering mode. If the scattering mode
-    // is Absorption, the BSDF and PDF values are undefined.
-    virtual BSDF::Mode sample(
+    virtual void sample(
         SamplingContext&                sampling_context,
         const void*                     data,
         const bool                      adjoint,
         const bool                      cosine_mult,
-        const foundation::Vector3d&     geometric_normal,
-        const foundation::Basis3d&      shading_basis,
-        const foundation::Vector3d&     outgoing,
-        foundation::Vector3d&           incoming,
-        Spectrum&                       value,
-        double&                         probability) const APPLESEED_OVERRIDE;
+        BSDFSample&                     sample) const APPLESEED_OVERRIDE;
 
-    // Evaluate the BSDF for a given pair of directions. Return the PDF value
-    // for this pair of directions. If the returned probability is zero, the
-    // BSDF value is undefined.
     virtual double evaluate(
         const void*                     data,
         const bool                      adjoint,
@@ -126,7 +104,6 @@ class DisneyLayeredBRDF
         const int                       modes,
         Spectrum&                       value) const APPLESEED_OVERRIDE;
 
-    // Evaluate the PDF for a given pair of directions.
     virtual double evaluate_pdf(
         const void*                     data,
         const foundation::Vector3d&     geometric_normal,
@@ -141,7 +118,6 @@ class DisneyLayeredBRDF
     const DisneyMaterial*               m_parent;
     foundation::auto_release_ptr<BSDF>  m_brdf;
 
-    // Constructor.
     explicit DisneyLayeredBRDF(const DisneyMaterial* parent);
 };
 

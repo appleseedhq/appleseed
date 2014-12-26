@@ -115,10 +115,10 @@ namespace
         }
 
         bool accept_scattering(
-            const BSDF::Mode        prev_bsdf_mode,
-            const BSDF::Mode        bsdf_mode) const
+            const BSDFSample::ScatteringMode prev_bsdf_mode,
+            const BSDFSample::ScatteringMode bsdf_mode) const
         {
-            assert(bsdf_mode != BSDF::Absorption);
+            assert(bsdf_mode != BSDFSample::Absorption);
 
             // Terminate the path at the first vertex if we aren't interested in indirect photons.
             if (!m_store_indirect)
@@ -127,7 +127,7 @@ namespace
             if (!m_store_caustics)
             {
                 // Don't follow paths leading to caustics.
-                if (BSDF::has_glossy_or_specular(bsdf_mode))
+                if (BSDFSample::has_glossy_or_specular(bsdf_mode))
                     return false;
             }
 

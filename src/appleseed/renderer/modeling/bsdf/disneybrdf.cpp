@@ -104,14 +104,10 @@ namespace
     class DisneyDiffuseComponent
     {
       public:
-        BSDF::Mode sample(
+        void sample(
             SamplingContext&                sampling_context,
             const DisneyBRDFInputValues*    values,
-            const Basis3d&                  shading_basis,
-            const Vector3d&                 outgoing,
-            Vector3d&                       incoming,
-            Spectrum&                       value,
-            double&                         probability) const
+            BSDFSample&                     sample) const
         {
             // Compute the incoming direction in local space.
             sampling_context.split_in_place(2, 1);
@@ -119,16 +115,16 @@ namespace
             const Vector3d wi = sample_hemisphere_cosine(s);
 
             // Transform the incoming direction to parent space.
-            incoming = shading_basis.transform_to_parent(wi);
-            probability = evaluate(
+            sample.m_incoming = sample.m_shading_basis.transform_to_parent(wi);
+            sample.m_probability = evaluate(
                 values,
-                shading_basis,
-                outgoing,
-                incoming,
-                value);
+                sample.m_shading_basis,
+                sample.m_outgoing,
+                sample.m_incoming,
+                sample.m_value);
 
-            assert(probability > 0.0);
-            return BSDF::Diffuse;
+            assert(sample.m_probability > 0.0);
+            sample.m_mode = BSDFSample::Diffuse;
         }
 
         double evaluate(
@@ -193,14 +189,10 @@ namespace
     class DisneySheenComponent
     {
       public:
-        BSDF::Mode sample(
+        void sample(
             SamplingContext&                sampling_context,
             const DisneyBRDFInputValues*    values,
-            const Basis3d&                  shading_basis,
-            const Vector3d&                 outgoing,
-            Vector3d&                       incoming,
-            Spectrum&                       value,
-            double&                         probability) const
+            BSDFSample&                     sample) const
         {
             // Compute the incoming direction in local space.
             sampling_context.split_in_place(2, 1);
@@ -208,16 +200,16 @@ namespace
             const Vector3d wi = sample_hemisphere_uniform(s);
 
             // Transform the incoming direction to parent space.
-            incoming = shading_basis.transform_to_parent(wi);
-            probability = evaluate(
+            sample.m_incoming = sample.m_shading_basis.transform_to_parent(wi);
+            sample.m_probability = evaluate(
                 values,
-                shading_basis,
-                outgoing,
-                incoming,
-                value);
+                sample.m_shading_basis,
+                sample.m_outgoing,
+                sample.m_incoming,
+                sample.m_value);
 
-            assert(probability > 0.0);
-            return BSDF::Diffuse;
+            assert(sample.m_probability > 0.0);
+            sample.m_mode = BSDFSample::Diffuse;
         }
 
         double evaluate(
@@ -353,7 +345,7 @@ namespace
         DisneyBRDFImpl(
             const char*             name,
             const ParamArray&       params)
-          : BSDF(name, Reflective, Diffuse | Glossy, params)
+          : BSDF(name, Reflective, BSDFSample::Diffuse | BSDFSample::Glossy, params)
         {
             m_inputs.declare("base_color", InputFormatSpectralReflectance);
             m_inputs.declare("subsurface", InputFormatScalar, "0.0");
@@ -395,17 +387,12 @@ namespace
             values->precompute_tint_color();
         }
 
-        virtual Mode sample(
+        virtual void sample(
             SamplingContext&        sampling_context,
             const void*             data,
             const bool              adjoint,
             const bool              cosine_mult,
-            const Vector3d&         geometric_normal,
-            const Basis3d&          shading_basis,
-            const Vector3d&         outgoing,
-            Vector3d&               incoming,
-            Spectrum&               value,
-            double&                 probability) const APPLESEED_OVERRIDE
+            BSDFSample&             sample) const APPLESEED_OVERRIDE
         {
             const DisneyBRDFInputValues* values =
                 reinterpret_cast<const DisneyBRDFInputValues*>(data);
@@ -419,35 +406,29 @@ namespace
 
             if (s < cdf[DiffuseComponent])
             {
-                return
-                    DisneyDiffuseComponent().sample(
-                        sampling_context,
-                        values,
-                        shading_basis,
-                        outgoing,
-                        incoming,
-                        value,
-                        probability);
+                DisneyDiffuseComponent().sample(
+                    sampling_context,
+                    values,
+                    sample);
+
+                return;
             }
 
             if (s < cdf[SheenComponent])
             {
-                return
-                    DisneySheenComponent().sample(
-                        sampling_context,
-                        values,
-                        shading_basis,
-                        outgoing,
-                        incoming,
-                        value,
-                        probability);
+                DisneySheenComponent().sample(
+                    sampling_context,
+                    values,
+                    sample);
+
+                return;
             }
 
             // No reflection below the shading surface.
-            const Vector3d& n = shading_basis.get_normal();
-            const double cos_on = min(dot(outgoing, n), 1.0);
+            const Vector3d& n = sample.m_shading_basis.get_normal();
+            const double cos_on = min(dot(sample.m_outgoing, n), 1.0);
             if (cos_on < 0.0)
-                return Absorption;
+                return;
 
             const MDF<double>* mdf = 0;
             double alpha_x, alpha_y, alpha_gx, alpha_gy;
@@ -470,13 +451,13 @@ namespace
             sampling_context.split_in_place(2, 1);
             const Vector2d s2 = sampling_context.next_vector2<2>();
             const Vector3d m = mdf->sample(s2, alpha_x, alpha_y);
-            const Vector3d h = shading_basis.transform_to_parent(m);
-            incoming = reflect(outgoing, h);
+            const Vector3d h = sample.m_shading_basis.transform_to_parent(m);
+            sample.m_incoming = reflect(sample.m_outgoing, h);
 
             // No reflection below the shading surface.
-            const double cos_in = dot(incoming, n);
+            const double cos_in = dot(sample.m_incoming, n);
             if (cos_in < 0.0)
-                return Absorption;
+                return;
 
             const double D =
                 mdf->D(
@@ -486,22 +467,22 @@ namespace
 
             const double G =
                 mdf->G(
-                    shading_basis.transform_to_local(incoming),
-                    shading_basis.transform_to_local(outgoing),
+                    sample.m_shading_basis.transform_to_local(sample.m_incoming),
+                    sample.m_shading_basis.transform_to_local(sample.m_outgoing),
                     m,
                     alpha_gx,
                     alpha_gy);
 
-            const double cos_oh = dot(outgoing, h);
+            const double cos_oh = dot(sample.m_outgoing, h);
 
             if (s < cdf[SpecularComponent])
-                specular_f(values, cos_oh, value);
+                specular_f(values, cos_oh, sample.m_value);
             else
-                value.set(static_cast<float>(clearcoat_f(values->m_clearcoat, cos_oh)));
+                sample.m_value.set(static_cast<float>(clearcoat_f(values->m_clearcoat, cos_oh)));
 
-            value *= static_cast<float>((D * G) / (4.0 * cos_on * cos_in));
-            probability = mdf->pdf(m, alpha_x, alpha_y) / (4.0 * cos_oh);
-            return Glossy;
+            sample.m_value *= static_cast<float>((D * G) / (4.0 * cos_on * cos_in));
+            sample.m_probability = mdf->pdf(m, alpha_x, alpha_y) / (4.0 * cos_oh);
+            sample.m_mode = BSDFSample::Glossy;
         }
 
         virtual double evaluate(
@@ -531,7 +512,7 @@ namespace
             value.set(0.0f);
             double pdf = 0.0;
 
-            if (modes & Diffuse)
+            if (modes & BSDFSample::Diffuse)
             {
                 if (weights[DiffuseComponent] != 0.0)
                 {
@@ -556,7 +537,7 @@ namespace
                 }
             }
 
-            if (!(modes & Glossy))
+            if (!(modes & BSDFSample::Glossy))
                 return pdf;
 
             const Vector3d h = normalize(incoming + outgoing);
@@ -638,7 +619,7 @@ namespace
 
             double pdf = 0.0;
 
-            if (modes & Diffuse)
+            if (modes & BSDFSample::Diffuse)
             {
                 if (weights[DiffuseComponent] != 0.0)
                 {
@@ -655,7 +636,7 @@ namespace
                 }
             }
 
-            if (!(modes & Glossy))
+            if (!(modes & BSDFSample::Glossy))
                 return pdf;
 
             // No reflection below the shading surface.

@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/modeling/bsdf/bsdfsample.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
@@ -62,17 +63,12 @@ class BSDFWrapper
         const char*                     name,
         const ParamArray&               params);
 
-    virtual typename BSDFImpl::Mode sample(
+    virtual void sample(
         SamplingContext&                sampling_context,
         const void*                     data,
         const bool                      adjoint,
         const bool                      cosine_mult,
-        const foundation::Vector3d&     geometric_normal,
-        const foundation::Basis3d&      shading_basis,
-        const foundation::Vector3d&     outgoing,
-        foundation::Vector3d&           incoming,
-        Spectrum&                       value,
-        double&                         probability) const APPLESEED_OVERRIDE;
+        BSDFSample&                     sample) const APPLESEED_OVERRIDE;
 
     virtual double evaluate(
         const void*                     data,
@@ -108,57 +104,44 @@ BSDFWrapper<BSDFImpl>::BSDFWrapper(
 }
 
 template <typename BSDFImpl>
-typename BSDFImpl::Mode BSDFWrapper<BSDFImpl>::sample(
+void BSDFWrapper<BSDFImpl>::sample(
     SamplingContext&                    sampling_context,
     const void*                         data,
     const bool                          adjoint,
     const bool                          cosine_mult,
-    const foundation::Vector3d&         geometric_normal,
-    const foundation::Basis3d&          shading_basis,
-    const foundation::Vector3d&         outgoing,
-    foundation::Vector3d&               incoming,
-    Spectrum&                           value,
-    double&                             probability) const
+    BSDFSample&                         sample) const
 {
-    assert(foundation::is_normalized(geometric_normal));
-    assert(foundation::is_normalized(outgoing));
+    assert(foundation::is_normalized(sample.m_geometric_normal));
+    assert(foundation::is_normalized(sample.m_outgoing));
 
-    const typename BSDFImpl::Mode mode =
-        BSDFImpl::sample(
-            sampling_context,
-            data,
-            adjoint,
-            false,
-            geometric_normal,
-            shading_basis,
-            outgoing,
-            incoming,
-            value,
-            probability);
+    BSDFImpl::sample(
+        sampling_context,
+        data,
+        adjoint,
+        false,
+        sample);
 
-    if (mode != BSDFImpl::Absorption)
+    if (sample.m_mode != BSDFSample::Absorption)
     {
-        assert(foundation::is_normalized(incoming));
-        assert(probability == BSDFImpl::DiracDelta || probability > 0.0);
+        assert(foundation::is_normalized(sample.m_incoming));
+        assert(sample.m_probability == BSDFImpl::DiracDelta || sample.m_probability > 0.0);
 
         if (cosine_mult)
         {
             if (adjoint)
             {
-                const double cos_on = std::abs(foundation::dot(outgoing, shading_basis.get_normal()));
-                const double cos_ig = std::abs(foundation::dot(incoming, geometric_normal));
-                const double cos_og = std::abs(foundation::dot(outgoing, geometric_normal));
-                value *= static_cast<float>(cos_on * cos_ig / cos_og);
+                const double cos_on = std::abs(foundation::dot(sample.m_outgoing, sample.m_shading_basis.get_normal()));
+                const double cos_ig = std::abs(foundation::dot(sample.m_incoming, sample.m_geometric_normal));
+                const double cos_og = std::abs(foundation::dot(sample.m_outgoing, sample.m_geometric_normal));
+                sample.m_value *= static_cast<float>(cos_on * cos_ig / cos_og);
             }
             else
             {
-                const double cos_in = std::abs(foundation::dot(incoming, shading_basis.get_normal()));
-                value *= static_cast<float>(cos_in);
+                const double cos_in = std::abs(foundation::dot(sample.m_incoming, sample.m_shading_basis.get_normal()));
+                sample.m_value *= static_cast<float>(cos_in);
             }
         }
     }
-
-    return mode;
 }
 
 template <typename BSDFImpl>
