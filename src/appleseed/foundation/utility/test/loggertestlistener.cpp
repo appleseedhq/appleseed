@@ -85,6 +85,7 @@ namespace
             const char*             test_case_name) APPLESEED_OVERRIDE
         {
             m_case_name_printed = false;
+            LOG_DEBUG(m_logger, "beginning case %s from suite %s", test_case_name, test_suite.get_name());
         }
 
         virtual void end_case(
