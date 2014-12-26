@@ -99,7 +99,7 @@ namespace
             return Model;
         }
 
-        FORCE_INLINE virtual BSDFSample::ScatteringMode sample(
+        FORCE_INLINE virtual void sample(
             SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
@@ -116,14 +116,14 @@ namespace
             const Vector3d& shading_normal = shading_basis.get_normal();
             const double cos_on = dot(outgoing, shading_normal);
             if (cos_on < 0.0)
-                return BSDFSample::Absorption;
+                return;
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
             // Compute reflectance-related values.
             RVal rval;
             if (!compute_rval(rval, values))
-                return BSDFSample::Absorption;
+                return;
 
             // Compute shininess-related values.
             SVal sval;
@@ -203,7 +203,7 @@ namespace
             // No reflection below the shading surface.
             const double cos_in = dot(incoming, shading_normal);
             if (cos_in < 0.0)
-                return BSDFSample::Absorption;
+                return;
 
             // Compute dot products.
             const double cos_oh = abs(dot(outgoing, h));
@@ -233,8 +233,8 @@ namespace
             assert(pdf_glossy >= 0.0);
             probability += rval.m_pg * pdf_glossy;
 
-            // Return the scattering mode.
-            return mode;
+            // Set the scattering mode.
+            sample.m_mode = mode;
         }
 
         FORCE_INLINE virtual double evaluate(

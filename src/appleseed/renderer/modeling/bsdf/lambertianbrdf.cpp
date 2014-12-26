@@ -86,7 +86,7 @@ namespace
             return Model;
         }
 
-        FORCE_INLINE virtual BSDFSample::ScatteringMode sample(
+        FORCE_INLINE virtual void sample(
             SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
@@ -116,8 +116,8 @@ namespace
             probability = wi.y * RcpPi;
             assert(probability > 0.0);
 
-            // Return the scattering mode.
-            return BSDFSample::Diffuse;
+            // Set the scattering mode.
+            sample.m_mode = BSDFSample::Diffuse;
         }
 
         FORCE_INLINE virtual double evaluate(

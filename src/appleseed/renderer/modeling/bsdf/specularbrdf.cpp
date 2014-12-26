@@ -77,7 +77,7 @@ namespace
             return Model;
         }
 
-        FORCE_INLINE virtual BSDFSample::ScatteringMode sample(
+        FORCE_INLINE virtual void sample(
             SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
@@ -94,7 +94,7 @@ namespace
             const Vector3d& shading_normal = shading_basis.get_normal();
             const double cos_on = dot(outgoing, shading_normal);
             if (cos_on < 0.0)
-                return BSDFSample::Absorption;
+                return;
 
             // Compute the incoming direction.
             incoming = reflect(outgoing, shading_normal);
@@ -103,7 +103,7 @@ namespace
             // No reflection below the shading surface.
             const double cos_in = dot(incoming, shading_normal);
             if (cos_in < 0.0)
-                return BSDFSample::Absorption;
+                return;
 
             // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
@@ -113,8 +113,8 @@ namespace
             // The probability density of the sampled direction is the Dirac delta.
             probability = DiracDelta;
 
-            // Return the scattering mode.
-            return BSDFSample::Specular;
+            // Set the scattering mode.
+            sample.m_mode = BSDFSample::Specular;
         }
 
         FORCE_INLINE virtual double evaluate(

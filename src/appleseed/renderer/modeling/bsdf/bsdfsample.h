@@ -60,19 +60,33 @@ class APPLESEED_DLLSYMBOL BSDFSample
         AllScatteringModes  = Diffuse | Glossy | Specular
     };
 
+    // Constructor
+    BSDFSample();
+
     // Test for the presence of specific scattering modes.
     static bool has_diffuse(const ScatteringMode mode);
     static bool has_glossy(const ScatteringMode mode);
     static bool has_specular(const ScatteringMode mode);
     static bool has_diffuse_or_glossy(const ScatteringMode mode);
     static bool has_glossy_or_specular(const ScatteringMode mode);
-  private:
+
+    ScatteringMode          m_mode;         // Scattering mode
+    foundation::Vector3d    m_incoming;     // world space incoming direction, unit-length
+    Spectrum                m_value;        // BSDF value
+    double                  m_probability;  // PDF value
 };
 
 
 //
 // BSDFSample class implementation.
 //
+
+inline BSDFSample::BSDFSample()
+  : m_mode(Absorption)
+  , m_value(0.0f)
+  , m_probability(0.0)
+{
+}
 
 inline bool BSDFSample::has_diffuse(const ScatteringMode mode)
 {

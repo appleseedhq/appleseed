@@ -128,22 +128,21 @@ void compute_ibl_bsdf_sampling(
         Vector3d incoming;
         Spectrum bsdf_value;
         double bsdf_prob;
-        const BSDFSample::ScatteringMode bsdf_mode =
-            bsdf.sample(
-                sampling_context,
-                bsdf_data,
-                false,              // not adjoint
-                true,               // multiply by |cos(incoming, normal)|
-                geometric_normal,
-                shading_basis,
-                outgoing,
-                incoming,
-                bsdf_value,
-                bsdf_prob,
-                sample);
+        bsdf.sample(
+            sampling_context,
+            bsdf_data,
+            false,              // not adjoint
+            true,               // multiply by |cos(incoming, normal)|
+            geometric_normal,
+            shading_basis,
+            outgoing,
+            incoming,
+            bsdf_value,
+            bsdf_prob,
+            sample);
 
         // Filter scattering modes.
-        if (!(bsdf_sampling_modes & bsdf_mode))
+        if (!(bsdf_sampling_modes & sample.m_mode))
             return;
 
         // Discard occluded samples.
@@ -166,7 +165,7 @@ void compute_ibl_bsdf_sampling(
             env_prob);
 
         // Apply all weights, including MIS weight.
-        if (bsdf_mode == BSDFSample::Specular)
+        if (sample.m_mode == BSDFSample::Specular)
             env_value *= static_cast<float>(transmission);
         else
         {

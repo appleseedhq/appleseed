@@ -135,7 +135,7 @@ void DisneyLayeredBRDF::evaluate_inputs(
     values->precompute_tint_color();
 }
 
-BSDFSample::ScatteringMode DisneyLayeredBRDF::sample(
+void DisneyLayeredBRDF::sample(
     SamplingContext&            sampling_context,
     const void*                 data,
     const bool                  adjoint,
@@ -149,13 +149,9 @@ BSDFSample::ScatteringMode DisneyLayeredBRDF::sample(
     BSDFSample&                 sample) const
 {
     if (m_parent->get_layer_count() == 0)
-    {
-        value.set(0.0f);
-        probability = 0.0;
-        return BSDFSample::Absorption;
-    }
+        return;
 
-    return m_brdf->sample(
+    m_brdf->sample(
         sampling_context,
         data,
         adjoint,

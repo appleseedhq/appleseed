@@ -87,7 +87,7 @@ namespace
             return Model;
         }
 
-        FORCE_INLINE virtual BSDFSample::ScatteringMode sample(
+        FORCE_INLINE virtual void sample(
             SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
@@ -161,8 +161,8 @@ namespace
             // The probability density of the sampled direction is the Dirac delta.
             probability = DiracDelta;
 
-            // Return the scattering mode.
-            return BSDFSample::Specular;
+            // Set the scattering mode.
+            sample.m_mode = BSDFSample::Specular;
         }
 
         FORCE_INLINE virtual double evaluate(

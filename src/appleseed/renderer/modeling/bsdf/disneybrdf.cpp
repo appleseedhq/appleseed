@@ -104,7 +104,7 @@ namespace
     class DisneyDiffuseComponent
     {
       public:
-        BSDFSample::ScatteringMode sample(
+        void sample(
             SamplingContext&                sampling_context,
             const DisneyBRDFInputValues*    values,
             const Basis3d&                  shading_basis,
@@ -129,7 +129,7 @@ namespace
                 value);
 
             assert(probability > 0.0);
-            return BSDFSample::Diffuse;
+            sample.m_mode = BSDFSample::Diffuse;
         }
 
         double evaluate(
@@ -194,7 +194,7 @@ namespace
     class DisneySheenComponent
     {
       public:
-        BSDFSample::ScatteringMode sample(
+        void sample(
             SamplingContext&                sampling_context,
             const DisneyBRDFInputValues*    values,
             const Basis3d&                  shading_basis,
@@ -219,7 +219,7 @@ namespace
                 value);
 
             assert(probability > 0.0);
-            return BSDFSample::Diffuse;
+            sample.m_mode = BSDFSample::Diffuse;
         }
 
         double evaluate(
@@ -397,7 +397,7 @@ namespace
             values->precompute_tint_color();
         }
 
-        virtual BSDFSample::ScatteringMode sample(
+        virtual void sample(
             SamplingContext&        sampling_context,
             const void*             data,
             const bool              adjoint,
@@ -422,37 +422,39 @@ namespace
 
             if (s < cdf[DiffuseComponent])
             {
-                return
-                    DisneyDiffuseComponent().sample(
-                        sampling_context,
-                        values,
-                        shading_basis,
-                        outgoing,
-                        incoming,
-                        value,
-                        probability,
-                        sample);
+                DisneyDiffuseComponent().sample(
+                    sampling_context,
+                    values,
+                    shading_basis,
+                    outgoing,
+                    incoming,
+                    value,
+                    probability,
+                    sample);
+
+                return;
             }
 
             if (s < cdf[SheenComponent])
             {
-                return
-                    DisneySheenComponent().sample(
-                        sampling_context,
-                        values,
-                        shading_basis,
-                        outgoing,
-                        incoming,
-                        value,
-                        probability,
-                        sample);
+                DisneySheenComponent().sample(
+                    sampling_context,
+                    values,
+                    shading_basis,
+                    outgoing,
+                    incoming,
+                    value,
+                    probability,
+                    sample);
+
+                return;
             }
 
             // No reflection below the shading surface.
             const Vector3d& n = shading_basis.get_normal();
             const double cos_on = min(dot(outgoing, n), 1.0);
             if (cos_on < 0.0)
-                return BSDFSample::Absorption;
+                return;
 
             const MDF<double>* mdf = 0;
             double alpha_x, alpha_y, alpha_gx, alpha_gy;
@@ -481,7 +483,7 @@ namespace
             // No reflection below the shading surface.
             const double cos_in = dot(incoming, n);
             if (cos_in < 0.0)
-                return BSDFSample::Absorption;
+                return;
 
             const double D =
                 mdf->D(
@@ -506,7 +508,7 @@ namespace
 
             value *= static_cast<float>((D * G) / (4.0 * cos_on * cos_in));
             probability = mdf->pdf(m, alpha_x, alpha_y) / (4.0 * cos_oh);
-            return BSDFSample::Glossy;
+            sample.m_mode = BSDFSample::Glossy;
         }
 
         virtual double evaluate(

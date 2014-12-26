@@ -86,7 +86,7 @@ class DisneyLayeredBRDF
         const ShadingPoint&             shading_point,
         const size_t                    offset = 0) const APPLESEED_OVERRIDE;
 
-    virtual BSDFSample::ScatteringMode sample(
+    virtual void sample(
         SamplingContext&                sampling_context,
         const void*                     data,
         const bool                      adjoint,

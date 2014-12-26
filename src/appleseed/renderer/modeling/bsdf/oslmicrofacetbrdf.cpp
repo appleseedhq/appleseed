@@ -121,7 +121,7 @@ namespace
             return true;
         }
 
-        FORCE_INLINE virtual BSDFSample::ScatteringMode sample(
+        FORCE_INLINE virtual void sample(
             SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
@@ -138,7 +138,7 @@ namespace
             const Vector3d& n = shading_basis.get_normal();
             const double cos_on = min(dot(outgoing, n), 1.0);
             if (cos_on < 0.0)
-                return BSDFSample::Absorption;
+                return;
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
@@ -154,7 +154,7 @@ namespace
             // No reflection below the shading surface.
             const double cos_in = dot(incoming, n);
             if (cos_in < 0.0)
-                return BSDFSample::Absorption;
+                return;
 
             const double D =
                 m_mdf->D(
@@ -172,7 +172,7 @@ namespace
 
             value.set(static_cast<float>(D * G / (4.0 * cos_on * cos_in)));
             probability = m_mdf->pdf(m, values->m_ax, values->m_ay) / (4.0 * cos_oh);
-            return BSDFSample::Glossy;
+            sample.m_mode = BSDFSample::Glossy;
         }
 
         FORCE_INLINE virtual double evaluate(

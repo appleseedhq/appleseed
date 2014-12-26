@@ -407,22 +407,21 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     foundation::Vector3d incoming;
     Spectrum bsdf_value;
     double bsdf_prob;
-    const BSDFSample::ScatteringMode bsdf_mode =
-        m_bsdf.sample(
-            sampling_context,
-            m_bsdf_data,
-            false,                      // not adjoint
-            true,                       // multiply by |cos(incoming, normal)|
-            m_geometric_normal,
-            m_shading_basis,
-            m_outgoing,
-            incoming,
-            bsdf_value,
-            bsdf_prob,
-            sample);
+    m_bsdf.sample(
+        sampling_context,
+        m_bsdf_data,
+        false,                      // not adjoint
+        true,                       // multiply by |cos(incoming, normal)|
+        m_geometric_normal,
+        m_shading_basis,
+        m_outgoing,
+        incoming,
+        bsdf_value,
+        bsdf_prob,
+        sample);
 
     // Filter scattering modes.
-    if (!(m_bsdf_sampling_modes & bsdf_mode))
+    if (!(m_bsdf_sampling_modes & sample.m_mode))
         return;
     assert(bsdf_prob != BSDF::DiracDelta);
 

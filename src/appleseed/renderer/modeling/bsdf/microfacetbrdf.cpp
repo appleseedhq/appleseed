@@ -125,7 +125,7 @@ namespace
             return true;
         }
 
-        FORCE_INLINE virtual BSDFSample::ScatteringMode sample(
+        FORCE_INLINE virtual void sample(
             SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
@@ -142,7 +142,7 @@ namespace
             const Vector3d& n = shading_basis.get_normal();
             const double cos_on = min(dot(outgoing, n), 1.0);
             if (cos_on < 0.0)
-                return BSDFSample::Absorption;
+                return;
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
@@ -154,7 +154,7 @@ namespace
             const double glossiness = values->m_glossiness * values->m_glossiness_multiplier;
             sample_mdf(glossiness, s, h, mdf_value, mdf_pdf);
             if (mdf_pdf == 0.0)
-                return BSDFSample::Absorption;
+                return;
             h = shading_basis.transform_to_parent(h);
             incoming = reflect(outgoing, h);
             const double cos_hn = dot(h, n);
@@ -163,7 +163,7 @@ namespace
             // No reflection below the shading surface.
             const double cos_in = dot(incoming, n);
             if (cos_in < 0.0)
-                return BSDFSample::Absorption;
+                return;
 
             // Compute the BRDF value.
             const double g = evaluate_attenuation(cos_on, cos_in, cos_hn, cos_oh);
@@ -173,7 +173,8 @@ namespace
             // Compute the PDF value.
             probability = mdf_pdf / (4.0 * cos_oh);
 
-            return BSDFSample::Glossy;
+            // Set the scattering mode.
+            sample.m_mode = BSDFSample::Glossy;
         }
 
         FORCE_INLINE virtual double evaluate(

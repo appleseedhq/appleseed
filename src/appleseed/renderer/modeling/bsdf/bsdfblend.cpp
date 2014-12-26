@@ -157,7 +157,7 @@ namespace
                 offset + m_bsdf_data_offset[1]);
         }
 
-        FORCE_INLINE virtual BSDFSample::ScatteringMode sample(
+        FORCE_INLINE virtual void sample(
             SamplingContext&        sampling_context,
             const void*             data,
             const bool              adjoint,
@@ -181,19 +181,18 @@ namespace
             const size_t bsdf_index = s < values->m_weight ? 0 : 1;
 
             // Sample the chosen BSDF.
-            return
-                m_bsdf[bsdf_index]->sample(
-                    sampling_context,
-                    get_bsdf_data(data, bsdf_index),
-                    adjoint,
-                    false,                      // do not multiply by |cos(incoming, normal)|
-                    geometric_normal,
-                    shading_basis,
-                    outgoing,
-                    incoming,
-                    value,
-                    probability,
-                    sample);
+            m_bsdf[bsdf_index]->sample(
+                sampling_context,
+                get_bsdf_data(data, bsdf_index),
+                adjoint,
+                false,                      // do not multiply by |cos(incoming, normal)|
+                geometric_normal,
+                shading_basis,
+                outgoing,
+                incoming,
+                value,
+                probability,
+                sample);
         }
 
         FORCE_INLINE virtual double evaluate(

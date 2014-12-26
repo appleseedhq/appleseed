@@ -63,7 +63,7 @@ class BSDFWrapper
         const char*                     name,
         const ParamArray&               params);
 
-    virtual BSDFSample::ScatteringMode sample(
+    virtual void sample(
         SamplingContext&                sampling_context,
         const void*                     data,
         const bool                      adjoint,
@@ -110,7 +110,7 @@ BSDFWrapper<BSDFImpl>::BSDFWrapper(
 }
 
 template <typename BSDFImpl>
-BSDFSample::ScatteringMode BSDFWrapper<BSDFImpl>::sample(
+void BSDFWrapper<BSDFImpl>::sample(
     SamplingContext&                    sampling_context,
     const void*                         data,
     const bool                          adjoint,
@@ -126,21 +126,20 @@ BSDFSample::ScatteringMode BSDFWrapper<BSDFImpl>::sample(
     assert(foundation::is_normalized(geometric_normal));
     assert(foundation::is_normalized(outgoing));
 
-    const typename BSDFSample::ScatteringMode mode =
-        BSDFImpl::sample(
-            sampling_context,
-            data,
-            adjoint,
-            false,
-            geometric_normal,
-            shading_basis,
-            outgoing,
-            incoming,
-            value,
-            probability,
-            sample);
+    BSDFImpl::sample(
+        sampling_context,
+        data,
+        adjoint,
+        false,
+        geometric_normal,
+        shading_basis,
+        outgoing,
+        incoming,
+        value,
+        probability,
+        sample);
 
-    if (mode != BSDFSample::Absorption)
+    if (sample.m_mode != BSDFSample::Absorption)
     {
         assert(foundation::is_normalized(incoming));
         assert(probability == BSDFImpl::DiracDelta || probability > 0.0);
@@ -161,8 +160,6 @@ BSDFSample::ScatteringMode BSDFWrapper<BSDFImpl>::sample(
             }
         }
     }
-
-    return mode;
 }
 
 template <typename BSDFImpl>

@@ -158,7 +158,7 @@ namespace
             return true;
         }
 
-        FORCE_INLINE virtual BSDFSample::ScatteringMode sample(
+        FORCE_INLINE virtual void sample(
             SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
@@ -186,14 +186,14 @@ namespace
                     incoming))
             {
                 // Ignore TIR.
-                return BSDFSample::Absorption;
+                return;
             }
 
             // If incoming and outgoing are on the same hemisphere
             // this is not a refraction.
             const Vector3d& n = shading_basis.get_normal();
             if (dot(incoming, n) * dot(outgoing, n) >= 0.0)
-                return BSDFSample::Absorption;
+                return;
 
             const double G =
                 m_mdf->G(
@@ -204,7 +204,7 @@ namespace
                     values->m_ay);
 
             if (G == 0.0)
-                return BSDFSample::Absorption;
+                return;
 
             const double D = m_mdf->D(m, values->m_ax, values->m_ay);
 
@@ -228,7 +228,7 @@ namespace
                 ht_norm);
 
             probability = m_mdf->pdf(m, values->m_ax, values->m_ay) * dwh_dwo;
-            return BSDFSample::Glossy;
+            sample.m_mode = BSDFSample::Glossy;
         }
 
         FORCE_INLINE virtual double evaluate(

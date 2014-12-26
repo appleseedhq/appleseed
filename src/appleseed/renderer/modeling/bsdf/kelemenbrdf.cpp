@@ -166,7 +166,7 @@ namespace
             BSDF::on_frame_end(project, assembly);
         }
 
-        FORCE_INLINE virtual BSDFSample::ScatteringMode sample(
+        FORCE_INLINE virtual void sample(
             SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
@@ -186,7 +186,7 @@ namespace
             // No reflection below the shading surface.
             const double dot_VN = dot(V, N);
             if (dot_VN < 0.0)
-                return BSDFSample::Absorption;
+                return;
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
@@ -252,10 +252,10 @@ namespace
 
                 // No reflection below the shading surface.
                 if (dot_LN < 0.0)
-                    return BSDFSample::Absorption;
+                    return;
             }
             else
-                return BSDFSample::Absorption;
+                return;
 
             // Compute the specular albedo for the incoming angle.
             Spectrum specular_albedo_L;
@@ -289,8 +289,8 @@ namespace
             probability = specular_prob * pdf_specular + matte_prob * pdf_matte;
             assert(probability >= 0.0);
 
-            // Return the scattering mode.
-            return mode;
+            // Set the scattering mode.
+            sample.m_mode = mode;
         }
 
         FORCE_INLINE virtual double evaluate(

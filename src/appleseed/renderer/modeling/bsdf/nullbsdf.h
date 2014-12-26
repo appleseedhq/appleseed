@@ -65,7 +65,7 @@ class NullBSDF
         return "null_bsdf";
     }
 
-    virtual BSDFSample::ScatteringMode sample(
+    virtual void sample(
         SamplingContext&                sampling_context,
         const void*                     data,
         const bool                      adjoint,
@@ -78,7 +78,6 @@ class NullBSDF
         double&                         probability,
         BSDFSample&                     sample) const APPLESEED_OVERRIDE
     {
-        return BSDFSample::Absorption;
     }
 
     virtual double evaluate(

@@ -303,28 +303,28 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         foundation::Vector3d incoming;
         Spectrum bsdf_value;
         double bsdf_prob;
-        const BSDFSample::ScatteringMode bsdf_mode =
-            vertex.m_bsdf->sample(
-                sampling_context,
-                vertex.m_bsdf_data,
-                Adjoint,
-                true,       // multiply by |cos(incoming, normal)|
-                vertex.get_geometric_normal(),
-                vertex.get_shading_basis(),
-                vertex.m_outgoing,
-                incoming,
-                bsdf_value,
-                bsdf_prob,
-                sample);
-        if (bsdf_mode == BSDFSample::Absorption)
+        vertex.m_bsdf->sample(
+            sampling_context,
+            vertex.m_bsdf_data,
+            Adjoint,
+            true,       // multiply by |cos(incoming, normal)|
+            vertex.get_geometric_normal(),
+            vertex.get_shading_basis(),
+            vertex.m_outgoing,
+            incoming,
+            bsdf_value,
+            bsdf_prob,
+            sample);
+
+        if (sample.m_mode == BSDFSample::Absorption)
             break;
 
         // Terminate the path if this scattering event is not accepted.
-        if (!m_path_visitor.accept_scattering(vertex.m_prev_bsdf_mode, bsdf_mode))
+        if (!m_path_visitor.accept_scattering(vertex.m_prev_bsdf_mode, sample.m_mode))
             break;
 
         vertex.m_prev_bsdf_prob = bsdf_prob;
-        vertex.m_prev_bsdf_mode = bsdf_mode;
+        vertex.m_prev_bsdf_mode = sample.m_mode;
 
         if (bsdf_prob != BSDF::DiracDelta)
             bsdf_value /= static_cast<float>(bsdf_prob);
@@ -367,7 +367,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             incoming,
             ray.m_time,
             ray.m_dtime,
-            bsdf_mode_to_ray_flags(bsdf_mode),
+            bsdf_mode_to_ray_flags(sample.m_mode),
             ray.m_depth + 1);
 
         // Trace the ray.

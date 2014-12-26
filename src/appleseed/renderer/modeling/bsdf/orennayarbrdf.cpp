@@ -88,7 +88,7 @@ namespace
             return Model;
         }
 
-        FORCE_INLINE virtual BSDFSample::ScatteringMode sample(
+        FORCE_INLINE virtual void sample(
             SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
@@ -105,7 +105,7 @@ namespace
             const Vector3d& n = shading_basis.get_normal();
             const double cos_on = dot(outgoing, n);
             if (cos_on < 0.0)
-                return BSDFSample::Absorption;
+                return;
 
             // Compute the incoming direction in local space.
             sampling_context.split_in_place(2, 1);
@@ -118,7 +118,7 @@ namespace
             // No reflection below the shading surface.
             const double cos_in = dot(incoming, n);
             if (cos_in < 0.0)
-                return BSDFSample::Absorption;
+                return;
 
             // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
@@ -133,8 +133,8 @@ namespace
             probability = wi.y * RcpPi;
             assert(probability > 0.0);
 
-            // Return the scattering mode.
-            return BSDFSample::Diffuse;
+            // Set the scattering mode.
+            sample.m_mode = BSDFSample::Diffuse;
         }
 
         FORCE_INLINE virtual double evaluate(

@@ -153,7 +153,7 @@ class APPLESEED_DLLSYMBOL BSDF
     // direction, its probability density and the value of the BSDF for this
     // pair of directions. Return the scattering mode. If the scattering mode
     // is Absorption, the BSDF and PDF values are undefined.
-    virtual BSDFSample::ScatteringMode sample(
+    virtual void sample(
         SamplingContext&            sampling_context,
         const void*                 data,                       // input values
         const bool                  adjoint,                    // if true, use the adjoint scattering kernel

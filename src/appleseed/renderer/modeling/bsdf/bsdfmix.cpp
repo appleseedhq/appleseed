@@ -158,7 +158,7 @@ namespace
                 offset + m_bsdf_data_offset[1]);
         }
 
-        FORCE_INLINE virtual BSDFSample::ScatteringMode sample(
+        FORCE_INLINE virtual void sample(
             SamplingContext&        sampling_context,
             const void*             data,
             const bool              adjoint,
@@ -180,7 +180,7 @@ namespace
             // Handle absorption.
             const double total_weight = w[0] + w[1];
             if (total_weight == 0.0)
-                return BSDFSample::Absorption;
+                return;
 
             // Choose which of the two BSDFs to sample.
             sampling_context.split_in_place(1, 1);
@@ -188,19 +188,18 @@ namespace
             const size_t bsdf_index = s * total_weight < w[0] ? 0 : 1;
 
             // Sample the chosen BSDF.
-            return
-                m_bsdf[bsdf_index]->sample(
-                    sampling_context,
-                    get_bsdf_data(data, bsdf_index),
-                    adjoint,
-                    false,                      // do not multiply by |cos(incoming, normal)|
-                    geometric_normal,
-                    shading_basis,
-                    outgoing,
-                    incoming,
-                    value,
-                    probability,
-                    sample);
+            m_bsdf[bsdf_index]->sample(
+                sampling_context,
+                get_bsdf_data(data, bsdf_index),
+                adjoint,
+                false,                      // do not multiply by |cos(incoming, normal)|
+                geometric_normal,
+                shading_basis,
+                outgoing,
+                incoming,
+                value,
+                probability,
+                sample);
         }
 
         FORCE_INLINE virtual double evaluate(
