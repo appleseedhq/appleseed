@@ -299,11 +299,11 @@ namespace
                 if (!m_params.m_enable_caustics)
                 {
                     // Don't follow paths leading to caustics.
-                    if (BSDF::has_diffuse(prev_bsdf_mode) && BSDF::has_glossy_or_specular(bsdf_mode))
+                    if (BSDFSample::has_diffuse(prev_bsdf_mode) && BSDFSample::has_glossy_or_specular(bsdf_mode))
                         return false;
 
                     // Ignore light emission after glossy-to-specular bounces to prevent another class of fireflies.
-                    if (BSDF::has_glossy(prev_bsdf_mode) && BSDF::has_specular(bsdf_mode))
+                    if (BSDFSample::has_glossy(prev_bsdf_mode) && BSDFSample::has_specular(bsdf_mode))
                         m_omit_emitted_light = true;
                 }
 
@@ -420,7 +420,7 @@ namespace
             void visit_vertex(const PathVertex& vertex)
             {
                 // Any light contribution after a diffuse or glossy bounce is considered indirect.
-                if (BSDF::has_diffuse_or_glossy(vertex.m_prev_bsdf_mode))
+                if (BSDFSample::has_diffuse_or_glossy(vertex.m_prev_bsdf_mode))
                     m_is_indirect_lighting = true;
 
                 Spectrum vertex_radiance(0.0f);

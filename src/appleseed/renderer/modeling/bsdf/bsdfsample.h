@@ -60,14 +60,12 @@ class APPLESEED_DLLSYMBOL BSDFSample
         AllScatteringModes  = Diffuse | Glossy | Specular
     };
 
-    /*
     // Test for the presence of specific scattering modes.
     static bool has_diffuse(const ScatteringMode mode);
     static bool has_glossy(const ScatteringMode mode);
     static bool has_specular(const ScatteringMode mode);
     static bool has_diffuse_or_glossy(const ScatteringMode mode);
     static bool has_glossy_or_specular(const ScatteringMode mode);
-    */
   private:
 };
 
@@ -75,7 +73,7 @@ class APPLESEED_DLLSYMBOL BSDFSample
 //
 // BSDFSample class implementation.
 //
-/*
+
 inline bool BSDFSample::has_diffuse(const ScatteringMode mode)
 {
     return (mode & Diffuse) != 0;
@@ -100,7 +98,6 @@ inline bool BSDFSample::has_glossy_or_specular(const ScatteringMode mode)
 {
     return (mode & (Glossy | Specular)) != 0;
 }
-*/
 
 }       // namespace renderer
 

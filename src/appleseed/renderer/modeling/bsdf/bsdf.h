@@ -96,13 +96,6 @@ class APPLESEED_DLLSYMBOL BSDF
         AllBSDFTypes        = Reflective | Transmissive
     };
 
-    // Test for the presence of specific scattering modes.
-    static bool has_diffuse(const BSDFSample::ScatteringMode mode);
-    static bool has_glossy(const BSDFSample::ScatteringMode mode);
-    static bool has_specular(const BSDFSample::ScatteringMode mode);
-    static bool has_diffuse_or_glossy(const BSDFSample::ScatteringMode mode);
-    static bool has_glossy_or_specular(const BSDFSample::ScatteringMode mode);
-
     // Use a particular (negative) value as the probability density
     // of the Dirac Delta in order to detect incorrect usages.
     static const double DiracDelta;
@@ -210,31 +203,6 @@ class APPLESEED_DLLSYMBOL BSDF
 //
 // BSDF class implementation.
 //
-
-inline bool BSDF::has_diffuse(const BSDFSample::ScatteringMode mode)
-{
-    return (mode & BSDFSample::Diffuse) != 0;
-}
-
-inline bool BSDF::has_glossy(const BSDFSample::ScatteringMode mode)
-{
-    return (mode & BSDFSample::Glossy) != 0;
-}
-
-inline bool BSDF::has_specular(const BSDFSample::ScatteringMode mode)
-{
-    return (mode & BSDFSample::Specular) != 0;
-}
-
-inline bool BSDF::has_diffuse_or_glossy(const BSDFSample::ScatteringMode mode)
-{
-    return (mode & (BSDFSample::Diffuse | BSDFSample::Glossy)) != 0;
-}
-
-inline bool BSDF::has_glossy_or_specular(const BSDFSample::ScatteringMode mode)
-{
-    return (mode & (BSDFSample::Glossy | BSDFSample::Specular)) != 0;
-}
 
 inline BSDF::Type BSDF::get_type() const
 {

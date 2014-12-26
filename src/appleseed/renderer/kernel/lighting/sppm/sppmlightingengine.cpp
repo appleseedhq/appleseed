@@ -240,7 +240,7 @@ namespace
                 assert(bsdf_mode != BSDFSample::Absorption);
 
                 // No diffuse bounces.
-                if (BSDF::has_diffuse(bsdf_mode))
+                if (BSDFSample::has_diffuse(bsdf_mode))
                     return false;
 
                 return true;

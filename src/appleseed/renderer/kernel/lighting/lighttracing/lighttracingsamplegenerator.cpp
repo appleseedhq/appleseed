@@ -287,7 +287,7 @@ namespace
                 if (!m_params.m_enable_caustics)
                 {
                     // Don't follow paths leading to caustics.
-                    if (BSDF::has_glossy_or_specular(bsdf_mode))
+                    if (BSDFSample::has_glossy_or_specular(bsdf_mode))
                         return false;
                 }
 
