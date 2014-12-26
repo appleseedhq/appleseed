@@ -134,8 +134,6 @@ void compute_ibl_bsdf_sampling(
             bsdf_data,
             false,              // not adjoint
             true,               // multiply by |cos(incoming, normal)|
-            geometric_normal,
-            shading_basis,
             sample);
 
         // Filter scattering modes.
