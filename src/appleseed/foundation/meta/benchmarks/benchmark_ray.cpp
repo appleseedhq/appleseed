@@ -32,6 +32,9 @@
 #include "foundation/math/vector.h"
 #include "foundation/utility/benchmark.h"
 
+// Standard headers.
+#include <cstddef>
+
 using namespace foundation;
 
 BENCHMARK_SUITE(Foundation_Math_RayInfo)

@@ -31,6 +31,7 @@
 #include "foundation/math/rng.h"
 #include "foundation/math/vector.h"
 #include "foundation/math/voxelgrid.h"
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/benchmark.h"
 #include "foundation/utility/memory.h"
 

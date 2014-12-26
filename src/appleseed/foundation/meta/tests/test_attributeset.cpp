@@ -34,6 +34,9 @@
 #include "foundation/utility/numerictype.h"
 #include "foundation/utility/test.h"
 
+// Standard headers.
+#include <cstddef>
+
 TEST_SUITE(Foundation_Utility_AttributeSet)
 {
     using namespace foundation;

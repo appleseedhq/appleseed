@@ -31,7 +31,6 @@
 #ifdef APPLESEED_USE_SSE
 #include "foundation/math/rng/simdmersennetwister.h"
 #endif
-#include "foundation/platform/compiler.h"
 #include "foundation/utility/benchmark.h"
 
 // Standard headers.

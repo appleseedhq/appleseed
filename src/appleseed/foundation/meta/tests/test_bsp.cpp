@@ -34,11 +34,13 @@
 #include "foundation/math/intersection.h"
 #include "foundation/math/ray.h"
 #include "foundation/math/split.h"
+#include "foundation/math/vector.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.
 #include <algorithm>
 #include <cstddef>
+#include <limits>
 #include <memory>
 #include <vector>
 

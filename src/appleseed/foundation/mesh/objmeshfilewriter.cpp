@@ -34,6 +34,7 @@
 #include "foundation/core/exceptions/exceptionioerror.h"
 #include "foundation/core/appleseed.h"
 #include "foundation/mesh/imeshwalker.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/otherwise.h"
 #include "foundation/utility/string.h"
 

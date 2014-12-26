@@ -34,7 +34,6 @@
 #include "foundation/utility/benchmark.h"
 
 // Standard headers.
-#include <cmath>
 #include <cstddef>
 
 using namespace foundation;
