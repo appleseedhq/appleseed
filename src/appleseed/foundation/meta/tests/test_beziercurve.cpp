@@ -26,8 +26,6 @@
 // THE SOFTWARE.
 //
 
-#ifdef TEMPORARILY_DISABLED_TO_CHECK_WHY_TRAVIS_RANDOMLY_KILLS_UNIT_TESTS
-
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
 #include "foundation/image/genericimagefilewriter.h"
@@ -476,5 +474,3 @@ TEST_SUITE(Foundation_Math_BezierCurveIntersector)
         render_curves_to_image(Curves, countof(Curves), "unit tests/outputs/test_beziercurveintersector_bezier3curve_checkboard.png", true);
     }
 }
-
-#endif
