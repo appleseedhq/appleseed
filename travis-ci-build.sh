@@ -2,7 +2,6 @@
 
 mkdir build
 cd build
-rm -f CMakeCache.txt
 
 cmake \
     -D WITH_CLI=ON \
@@ -22,5 +21,4 @@ cmake \
 
 make
 
-# Unit tests (appleseed must be installed to function properly).
 env LD_LIBRARY_PATH=../sandbox/lib/Debug:$LD_LIBRARY_PATH ../sandbox/bin/Debug/appleseed.cli --run-unit-tests --verbose-unit-tests
