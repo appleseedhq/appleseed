@@ -50,8 +50,8 @@ BENCHMARK_SUITE(SameSign)
     //
     // Research for this post on Stack Overflow:
     //
-    // "How to efficiently compare the sign of two floating-point values while handling negative zeros"
-    // http://stackoverflow.com/questions/2922619/how-to-efficiently-compare-the-sign-of-two-floating-point-values-while-handling-n
+    //   How to efficiently compare the sign of two floating-point values while handling negative zeros
+    //   http://stackoverflow.com/questions/2922619/how-to-efficiently-compare-the-sign-of-two-floating-point-values-while-handling-n
     //
 
     //
