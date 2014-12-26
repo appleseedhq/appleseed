@@ -174,15 +174,8 @@ namespace
             const Vector3d ht = sample.m_shading_basis.transform_to_parent(m);
             const double eta = values->m_from_ior / values->m_to_ior;
 
-            if (!refract(
-                    sample.m_outgoing,
-                    ht,
-                    eta,
-                    sample.m_incoming))
-            {
-                // Ignore TIR.
-                return;
-            }
+            if (!refract(sample.m_outgoing, ht, eta, sample.m_incoming))
+                return; // Ignore TIR.
 
             // If incoming and outgoing are on the same hemisphere
             // this is not a refraction.
@@ -211,7 +204,8 @@ namespace
             // [1] equation 21.
             double v = abs((cos_ih * cos_oh) / (cos_in * cos_on));
             v *= square(values->m_to_ior) * D * G;
-            const double denom = values->m_to_ior * cos_ih + values->m_from_ior * cos_oh;
+            const double denom =
+                values->m_to_ior * cos_ih + values->m_from_ior * cos_oh;
             v /= square(denom);
 
             // TODO: check for a possibly missing eta^2 factor if adjoint == true.
@@ -220,14 +214,17 @@ namespace
 
             sample.m_value.set(static_cast<float>(v));
 
-            const double ht_norm = norm(values->m_from_ior * sample.m_outgoing + values->m_to_ior * sample.m_incoming);
-            const double dwh_dwo = refraction_jacobian(
-                sample.m_incoming,
-                values->m_to_ior,
-                ht,
-                ht_norm);
+            const double ht_norm =
+                    norm(values->m_from_ior * sample.m_outgoing + values->m_to_ior * sample.m_incoming);
+            const double dwh_dwo =
+                refraction_jacobian(
+                    sample.m_incoming,
+                    values->m_to_ior,
+                    ht,
+                    ht_norm);
 
-            sample.m_probability = m_mdf->pdf(m, values->m_ax, values->m_ay) * dwh_dwo;
+            sample.m_probability =
+                m_mdf->pdf(m, values->m_ax, values->m_ay) * dwh_dwo;
             sample.m_mode = BSDFSample::Glossy;
         }
 
