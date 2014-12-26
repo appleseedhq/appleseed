@@ -145,7 +145,8 @@ BSDFSample::ScatteringMode DisneyLayeredBRDF::sample(
     const Vector3d&             outgoing,
     Vector3d&                   incoming,
     Spectrum&                   value,
-    double&                     probability) const
+    double&                     probability,
+    BSDFSample&                 sample) const
 {
     if (m_parent->get_layer_count() == 0)
     {
@@ -164,7 +165,8 @@ BSDFSample::ScatteringMode DisneyLayeredBRDF::sample(
         outgoing,
         incoming,
         value,
-        probability);
+        probability,
+        sample);
 }
 
 double DisneyLayeredBRDF::evaluate(

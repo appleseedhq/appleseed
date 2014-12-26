@@ -108,7 +108,8 @@ namespace
             const Vector3d&     outgoing,
             Vector3d&           incoming,
             Spectrum&           value,
-            double&             probability) const
+            double&             probability,
+            BSDFSample&         sample) const
         {
             // No reflection below the shading surface.
             const Vector3d& shading_normal = shading_basis.get_normal();

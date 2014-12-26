@@ -403,6 +403,7 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     assert(m_light_sampler.get_emitting_triangle_count() > 0);
 
     // Sample the BSDF.
+    BSDFSample sample;
     foundation::Vector3d incoming;
     Spectrum bsdf_value;
     double bsdf_prob;
@@ -417,7 +418,8 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
             m_outgoing,
             incoming,
             bsdf_value,
-            bsdf_prob);
+            bsdf_prob,
+            sample);
 
     // Filter scattering modes.
     if (!(m_bsdf_sampling_modes & bsdf_mode))

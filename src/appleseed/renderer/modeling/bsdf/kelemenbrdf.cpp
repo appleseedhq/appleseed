@@ -176,7 +176,8 @@ namespace
             const Vector3d&     outgoing,
             Vector3d&           incoming,
             Spectrum&           value,
-            double&             probability) const
+            double&             probability,
+            BSDFSample&         sample) const
         {
             // Define aliases to match the notations in the paper.
             const Vector3d& V = outgoing;

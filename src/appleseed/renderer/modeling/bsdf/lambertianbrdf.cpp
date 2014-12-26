@@ -96,7 +96,8 @@ namespace
             const Vector3d&     outgoing,
             Vector3d&           incoming,
             Spectrum&           value,
-            double&             probability) const
+            double&             probability,
+            BSDFSample&         sample) const
         {
             // Compute the incoming direction in local space.
             sampling_context.split_in_place(2, 1);

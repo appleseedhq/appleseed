@@ -124,6 +124,7 @@ void compute_ibl_bsdf_sampling(
         // includes the contribution of a specular component since these are explicitly rejected
         // afterward. We need a mechanism to indicate that we want the contribution of some of
         // the components only.
+        BSDFSample sample;
         Vector3d incoming;
         Spectrum bsdf_value;
         double bsdf_prob;
@@ -138,7 +139,8 @@ void compute_ibl_bsdf_sampling(
                 outgoing,
                 incoming,
                 bsdf_value,
-                bsdf_prob);
+                bsdf_prob,
+                sample);
 
         // Filter scattering modes.
         if (!(bsdf_sampling_modes & bsdf_mode))

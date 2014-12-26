@@ -168,7 +168,8 @@ namespace
             const Vector3d&         outgoing,
             Vector3d&               incoming,
             Spectrum&               value,
-            double&                 probability) const
+            double&                 probability,
+            BSDFSample&             sample) const
         {
             assert(m_bsdf[0] && m_bsdf[1]);
 
@@ -198,7 +199,8 @@ namespace
                     outgoing,
                     incoming,
                     value,
-                    probability);
+                    probability,
+                    sample);
         }
 
         FORCE_INLINE virtual double evaluate(

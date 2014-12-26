@@ -111,7 +111,8 @@ namespace
             const Vector3d&                 outgoing,
             Vector3d&                       incoming,
             Spectrum&                       value,
-            double&                         probability) const
+            double&                         probability,
+            BSDFSample&                     sample) const
         {
             // Compute the incoming direction in local space.
             sampling_context.split_in_place(2, 1);
@@ -200,7 +201,8 @@ namespace
             const Vector3d&                 outgoing,
             Vector3d&                       incoming,
             Spectrum&                       value,
-            double&                         probability) const
+            double&                         probability,
+            BSDFSample&                     sample) const
         {
             // Compute the incoming direction in local space.
             sampling_context.split_in_place(2, 1);
@@ -405,7 +407,8 @@ namespace
             const Vector3d&         outgoing,
             Vector3d&               incoming,
             Spectrum&               value,
-            double&                 probability) const APPLESEED_OVERRIDE
+            double&                 probability,
+            BSDFSample&             sample) const APPLESEED_OVERRIDE
         {
             const DisneyBRDFInputValues* values =
                 reinterpret_cast<const DisneyBRDFInputValues*>(data);
@@ -427,7 +430,8 @@ namespace
                         outgoing,
                         incoming,
                         value,
-                        probability);
+                        probability,
+                        sample);
             }
 
             if (s < cdf[SheenComponent])
@@ -440,7 +444,8 @@ namespace
                         outgoing,
                         incoming,
                         value,
-                        probability);
+                        probability,
+                        sample);
             }
 
             // No reflection below the shading surface.

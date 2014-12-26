@@ -73,7 +73,8 @@ class BSDFWrapper
         const foundation::Vector3d&     outgoing,
         foundation::Vector3d&           incoming,
         Spectrum&                       value,
-        double&                         probability) const APPLESEED_OVERRIDE;
+        double&                         probability,
+        BSDFSample&                     sample) const APPLESEED_OVERRIDE;
 
     virtual double evaluate(
         const void*                     data,
@@ -119,7 +120,8 @@ BSDFSample::ScatteringMode BSDFWrapper<BSDFImpl>::sample(
     const foundation::Vector3d&         outgoing,
     foundation::Vector3d&               incoming,
     Spectrum&                           value,
-    double&                             probability) const
+    double&                             probability,
+    BSDFSample&                         sample) const
 {
     assert(foundation::is_normalized(geometric_normal));
     assert(foundation::is_normalized(outgoing));
@@ -135,7 +137,8 @@ BSDFSample::ScatteringMode BSDFWrapper<BSDFImpl>::sample(
             outgoing,
             incoming,
             value,
-            probability);
+            probability,
+            sample);
 
     if (mode != BSDFSample::Absorption)
     {

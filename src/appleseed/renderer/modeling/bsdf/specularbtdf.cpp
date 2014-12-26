@@ -97,7 +97,8 @@ namespace
             const Vector3d&     outgoing,
             Vector3d&           incoming,
             Spectrum&           value,
-            double&             probability) const
+            double&             probability,
+            BSDFSample&         sample) const
         {
             const InputValues* values = static_cast<const InputValues*>(data);
 

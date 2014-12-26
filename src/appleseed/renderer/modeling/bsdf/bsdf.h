@@ -163,7 +163,8 @@ class APPLESEED_DLLSYMBOL BSDF
         const foundation::Vector3d& outgoing,                   // world space outgoing direction, unit-length
         foundation::Vector3d&       incoming,                   // world space incoming direction, unit-length
         Spectrum&                   value,                      // BSDF value, or BSDF value * |cos(incoming, normal)|
-        double&                     probability) const = 0;     // PDF value
+        double&                     probability,                // PDF value
+        BSDFSample&                 sample) const = 0;
 
     // Evaluate the BSDF for a given pair of directions. Return the PDF value
     // for this pair of directions. If the returned probability is zero, the

@@ -299,6 +299,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             break;
 
         // Sample the BSDF.
+        BSDFSample sample;
         foundation::Vector3d incoming;
         Spectrum bsdf_value;
         double bsdf_prob;
@@ -313,7 +314,8 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                 vertex.m_outgoing,
                 incoming,
                 bsdf_value,
-                bsdf_prob);
+                bsdf_prob,
+                sample);
         if (bsdf_mode == BSDFSample::Absorption)
             break;
 

@@ -75,7 +75,8 @@ class NullBSDF
         const foundation::Vector3d&     outgoing,
         foundation::Vector3d&           incoming,
         Spectrum&                       value,
-        double&                         probability) const APPLESEED_OVERRIDE
+        double&                         probability,
+        BSDFSample&                     sample) const APPLESEED_OVERRIDE
     {
         return BSDFSample::Absorption;
     }
