@@ -171,12 +171,11 @@ namespace
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
-            const Basis3d&      shading_basis,
             BSDFSample&         sample) const
         {
             // Define aliases to match the notations in the paper.
             const Vector3d& V = sample.m_outgoing;
-            const Vector3d& N = shading_basis.get_normal();
+            const Vector3d& N = sample.m_shading_basis.get_normal();
 
             // No reflection below the shading surface.
             const double dot_VN = dot(V, N);
@@ -218,7 +217,7 @@ namespace
                 const Vector3d wi = sample_hemisphere_cosine(Vector2d(s[0], s[1]));
 
                 // Transform the incoming direction to parent space.
-                sample.m_incoming = shading_basis.transform_to_parent(wi);
+                sample.m_incoming = sample.m_shading_basis.transform_to_parent(wi);
 
                 // Compute the halfway vector.
                 H = normalize(sample.m_incoming + V);
@@ -235,7 +234,7 @@ namespace
                 const Vector3d local_H = m_mdf->sample(Vector2d(s[0], s[1]));
 
                 // Transform the halfway vector to parent space.
-                H = shading_basis.transform_to_parent(local_H);
+                H = sample.m_shading_basis.transform_to_parent(local_H);
 
                 dot_HV = dot(H, V);
 

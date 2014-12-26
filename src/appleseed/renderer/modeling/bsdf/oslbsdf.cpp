@@ -224,7 +224,6 @@ namespace
             const void*             data,
             const bool              adjoint,
             const bool              cosine_mult,
-            const Basis3d&          shading_basis,
             BSDFSample&             sample) const
         {
             const CompositeSurfaceClosure* c = reinterpret_cast<const CompositeSurfaceClosure*>(data);
@@ -235,14 +234,13 @@ namespace
                 const double s = sampling_context.next_double2();
 
                 const size_t closure_index = c->choose_closure(s);
-                const Basis3d new_shading_basis = make_osl_basis(c, closure_index, shading_basis);
+                sample.m_shading_basis = make_osl_basis(c, closure_index, sample.m_shading_basis);
 
                 bsdf_to_closure_id(c->get_closure_type(closure_index)).sample(
                     sampling_context,
                     c->get_closure_input_values(closure_index),
                     adjoint,
                     false,
-                    new_shading_basis,
                     sample);
 
                 sample.m_value *= c->get_closure_weight(closure_index);

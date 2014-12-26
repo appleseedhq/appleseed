@@ -92,12 +92,11 @@ namespace
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
-            const Basis3d&      shading_basis,
             BSDFSample&         sample) const
         {
             const InputValues* values = static_cast<const InputValues*>(data);
 
-            const Vector3d& shading_normal = shading_basis.get_normal();
+            const Vector3d& shading_normal = sample.m_shading_basis.get_normal();
             const double eta = values->m_from_ior / values->m_to_ior;
             const double cos_theta_i = dot(sample.m_outgoing, shading_normal);
             const double sin_theta_i2 = 1.0 - square(cos_theta_i);

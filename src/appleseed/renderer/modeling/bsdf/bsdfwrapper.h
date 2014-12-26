@@ -68,7 +68,6 @@ class BSDFWrapper
         const void*                     data,
         const bool                      adjoint,
         const bool                      cosine_mult,
-        const foundation::Basis3d&      shading_basis,
         BSDFSample&                     sample) const APPLESEED_OVERRIDE;
 
     virtual double evaluate(
@@ -110,7 +109,6 @@ void BSDFWrapper<BSDFImpl>::sample(
     const void*                         data,
     const bool                          adjoint,
     const bool                          cosine_mult,
-    const foundation::Basis3d&          shading_basis,
     BSDFSample&                         sample) const
 {
     assert(foundation::is_normalized(sample.m_geometric_normal));
@@ -121,7 +119,6 @@ void BSDFWrapper<BSDFImpl>::sample(
         data,
         adjoint,
         false,
-        shading_basis,
         sample);
 
     if (sample.m_mode != BSDFSample::Absorption)
@@ -133,14 +130,14 @@ void BSDFWrapper<BSDFImpl>::sample(
         {
             if (adjoint)
             {
-                const double cos_on = std::abs(foundation::dot(sample.m_outgoing, shading_basis.get_normal()));
+                const double cos_on = std::abs(foundation::dot(sample.m_outgoing, sample.m_shading_basis.get_normal()));
                 const double cos_ig = std::abs(foundation::dot(sample.m_incoming, sample.m_geometric_normal));
                 const double cos_og = std::abs(foundation::dot(sample.m_outgoing, sample.m_geometric_normal));
                 sample.m_value *= static_cast<float>(cos_on * cos_ig / cos_og);
             }
             else
             {
-                const double cos_in = std::abs(foundation::dot(sample.m_incoming, shading_basis.get_normal()));
+                const double cos_in = std::abs(foundation::dot(sample.m_incoming, sample.m_shading_basis.get_normal()));
                 sample.m_value *= static_cast<float>(cos_in);
             }
         }

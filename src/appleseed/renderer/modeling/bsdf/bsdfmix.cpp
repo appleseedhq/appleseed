@@ -163,7 +163,6 @@ namespace
             const void*             data,
             const bool              adjoint,
             const bool              cosine_mult,
-            const Basis3d&          shading_basis,
             BSDFSample&             sample) const
         {
             assert(m_bsdf[0] && m_bsdf[1]);
@@ -188,7 +187,6 @@ namespace
                 get_bsdf_data(data, bsdf_index),
                 adjoint,
                 false,                      // do not multiply by |cos(incoming, normal)|
-                shading_basis,
                 sample);
         }
 

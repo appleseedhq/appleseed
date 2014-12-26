@@ -163,7 +163,6 @@ namespace
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
-            const Basis3d&      shading_basis,
             BSDFSample&         sample) const
         {
             const InputValues* values = static_cast<const InputValues*>(data);
@@ -172,7 +171,7 @@ namespace
             sampling_context.split_in_place(2, 1);
             const Vector2d s = sampling_context.next_vector2<2>();
             const Vector3d m = m_mdf->sample(s, values->m_ax, values->m_ay);
-            const Vector3d ht = shading_basis.transform_to_parent(m);
+            const Vector3d ht = sample.m_shading_basis.transform_to_parent(m);
             const double eta = values->m_from_ior / values->m_to_ior;
 
             if (!refract(
@@ -187,14 +186,14 @@ namespace
 
             // If incoming and outgoing are on the same hemisphere
             // this is not a refraction.
-            const Vector3d& n = shading_basis.get_normal();
+            const Vector3d& n = sample.m_shading_basis.get_normal();
             if (dot(sample.m_incoming, n) * dot(sample.m_outgoing, n) >= 0.0)
                 return;
 
             const double G =
                 m_mdf->G(
-                    shading_basis.transform_to_local(sample.m_incoming),
-                    shading_basis.transform_to_local(sample.m_outgoing),
+                    sample.m_shading_basis.transform_to_local(sample.m_incoming),
+                    sample.m_shading_basis.transform_to_local(sample.m_outgoing),
                     m,
                     values->m_ax,
                     values->m_ay);

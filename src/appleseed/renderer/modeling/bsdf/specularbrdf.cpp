@@ -82,11 +82,10 @@ namespace
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
-            const Basis3d&      shading_basis,
             BSDFSample&         sample) const
         {
             // No reflection below the shading surface.
-            const Vector3d& shading_normal = shading_basis.get_normal();
+            const Vector3d& shading_normal = sample.m_shading_basis.get_normal();
             const double cos_on = dot(sample.m_outgoing, shading_normal);
             if (cos_on < 0.0)
                 return;

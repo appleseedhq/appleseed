@@ -93,11 +93,10 @@ namespace
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
-            const Basis3d&      shading_basis,
             BSDFSample&         sample) const
         {
             // No reflection below the shading surface.
-            const Vector3d& n = shading_basis.get_normal();
+            const Vector3d& n = sample.m_shading_basis.get_normal();
             const double cos_on = dot(sample.m_outgoing, n);
             if (cos_on < 0.0)
                 return;
@@ -108,7 +107,7 @@ namespace
             const Vector3d wi = sample_hemisphere_cosine(s);
 
             // Transform the incoming direction to parent space.
-            sample.m_incoming = shading_basis.transform_to_parent(wi);
+            sample.m_incoming = sample.m_shading_basis.transform_to_parent(wi);
 
             // No reflection below the shading surface.
             const double cos_in = dot(sample.m_incoming, n);

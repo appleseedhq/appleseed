@@ -130,11 +130,10 @@ namespace
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
-            const Basis3d&      shading_basis,
             BSDFSample&         sample) const
         {
             // No reflection below the shading surface.
-            const Vector3d& n = shading_basis.get_normal();
+            const Vector3d& n = sample.m_shading_basis.get_normal();
             const double cos_on = min(dot(sample.m_outgoing, n), 1.0);
             if (cos_on < 0.0)
                 return;
@@ -150,7 +149,7 @@ namespace
             sample_mdf(glossiness, s, h, mdf_value, mdf_pdf);
             if (mdf_pdf == 0.0)
                 return;
-            h = shading_basis.transform_to_parent(h);
+            h = sample.m_shading_basis.transform_to_parent(h);
             sample.m_incoming = reflect(sample.m_outgoing, h);
             const double cos_hn = dot(h, n);
             const double cos_oh = dot(sample.m_outgoing, h);

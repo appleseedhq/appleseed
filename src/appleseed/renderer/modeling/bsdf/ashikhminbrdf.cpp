@@ -104,11 +104,10 @@ namespace
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
-            const Basis3d&      shading_basis,
             BSDFSample&         sample) const
         {
             // No reflection below the shading surface.
-            const Vector3d& shading_normal = shading_basis.get_normal();
+            const Vector3d& shading_normal = sample.m_shading_basis.get_normal();
             const double cos_on = dot(sample.m_outgoing, shading_normal);
             if (cos_on < 0.0)
                 return;
@@ -141,15 +140,15 @@ namespace
                 const Vector3d wi = sample_hemisphere_cosine(Vector2d(s[0], s[1]));
 
                 // Transform the incoming direction to parent space.
-                sample.m_incoming = shading_basis.transform_to_parent(wi);
+                sample.m_incoming = sample.m_shading_basis.transform_to_parent(wi);
 
                 // Compute the halfway vector in world space.
                 h = normalize(sample.m_incoming + sample.m_outgoing);
 
                 // Compute the glossy exponent, needed to evaluate the PDF.
-                const double cos_hn = dot(h, shading_basis.get_normal());
-                const double cos_hu = dot(h, shading_basis.get_tangent_u());
-                const double cos_hv = dot(h, shading_basis.get_tangent_v());
+                const double cos_hn = dot(h, sample.m_shading_basis.get_normal());
+                const double cos_hu = dot(h, sample.m_shading_basis.get_tangent_u());
+                const double cos_hv = dot(h, sample.m_shading_basis.get_tangent_v());
                 const double exp_den = 1.0 - cos_hn * cos_hn;
                 const double exp_u = values->m_nu * cos_hu * cos_hu;
                 const double exp_v = values->m_nv * cos_hv * cos_hv;
@@ -187,7 +186,7 @@ namespace
                 const double sin_theta = sqrt(1.0 - cos_theta * cos_theta);
 
                 // Compute the halfway vector in world space.
-                h = shading_basis.transform_to_parent(
+                h = sample.m_shading_basis.transform_to_parent(
                         Vector3d::unit_vector(cos_theta, sin_theta, cos_phi, sin_phi));
 
                 // Compute the incoming direction in world space.
