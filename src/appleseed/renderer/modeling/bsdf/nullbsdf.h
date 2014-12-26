@@ -70,7 +70,6 @@ class NullBSDF
         const void*                     data,
         const bool                      adjoint,
         const bool                      cosine_mult,
-        const foundation::Vector3d&     geometric_normal,
         const foundation::Basis3d&      shading_basis,
         BSDFSample&                     sample) const APPLESEED_OVERRIDE
     {

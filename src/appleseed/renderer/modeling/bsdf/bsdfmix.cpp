@@ -163,7 +163,6 @@ namespace
             const void*             data,
             const bool              adjoint,
             const bool              cosine_mult,
-            const Vector3d&         geometric_normal,
             const Basis3d&          shading_basis,
             BSDFSample&             sample) const
         {
@@ -189,7 +188,6 @@ namespace
                 get_bsdf_data(data, bsdf_index),
                 adjoint,
                 false,                      // do not multiply by |cos(incoming, normal)|
-                geometric_normal,
                 shading_basis,
                 sample);
         }

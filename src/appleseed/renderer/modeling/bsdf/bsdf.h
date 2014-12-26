@@ -158,7 +158,6 @@ class APPLESEED_DLLSYMBOL BSDF
         const void*                 data,                       // input values
         const bool                  adjoint,                    // if true, use the adjoint scattering kernel
         const bool                  cosine_mult,                // if true, multiply by |cos(incoming, normal)|
-        const foundation::Vector3d& geometric_normal,           // world space geometric normal, unit-length
         const foundation::Basis3d&  shading_basis,              // world space orthonormal basis around shading normal
         BSDFSample&                 sample) const = 0;
 

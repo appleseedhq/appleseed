@@ -82,7 +82,6 @@ namespace
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
-            const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,
             BSDFSample&         sample) const
         {
@@ -94,7 +93,7 @@ namespace
 
             // Compute the incoming direction.
             sample.m_incoming = reflect(sample.m_outgoing, shading_normal);
-            sample.m_incoming = force_above_surface(sample.m_incoming, geometric_normal);
+            sample.m_incoming = force_above_surface(sample.m_incoming, sample.m_geometric_normal);
 
             // No reflection below the shading surface.
             const double cos_in = dot(sample.m_incoming, shading_normal);

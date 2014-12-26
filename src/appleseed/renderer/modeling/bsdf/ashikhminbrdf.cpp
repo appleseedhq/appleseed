@@ -104,7 +104,6 @@ namespace
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
-            const Vector3d&     geometric_normal,
             const Basis3d&      shading_basis,
             BSDFSample&         sample) const
         {
@@ -193,7 +192,7 @@ namespace
 
                 // Compute the incoming direction in world space.
                 sample.m_incoming = reflect(sample.m_outgoing, h);
-                sample.m_incoming = force_above_surface(sample.m_incoming, geometric_normal);
+                sample.m_incoming = force_above_surface(sample.m_incoming, sample.m_geometric_normal);
             }
 
             // No reflection below the shading surface.
