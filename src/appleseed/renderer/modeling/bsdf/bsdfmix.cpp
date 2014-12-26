@@ -75,7 +75,7 @@ namespace
         BSDFMixImpl(
             const char*             name,
             const ParamArray&       params)
-          : BSDF(name, Reflective, AllScatteringModes, params)
+          : BSDF(name, Reflective, BSDFSample::AllScatteringModes, params)
         {
             m_inputs.declare("weight0", InputFormatScalar);
             m_inputs.declare("weight1", InputFormatScalar);
@@ -132,7 +132,7 @@ namespace
         }
 
         virtual void evaluate_inputs(
-            const ShadingContext&   shading_context,            
+            const ShadingContext&   shading_context,
             InputEvaluator&         input_evaluator,
             const ShadingPoint&     shading_point,
             const size_t            offset) const APPLESEED_OVERRIDE
@@ -142,15 +142,15 @@ namespace
             BSDF::evaluate_inputs(
                 shading_context,
                 input_evaluator,
-                shading_point, 
+                shading_point,
                 offset);
 
             m_bsdf[0]->evaluate_inputs(
                 shading_context,
-                input_evaluator, 
+                input_evaluator,
                 shading_point,
                 offset + m_bsdf_data_offset[0]);
-            
+
             m_bsdf[1]->evaluate_inputs(
                 shading_context,
                 input_evaluator,
@@ -158,7 +158,7 @@ namespace
                 offset + m_bsdf_data_offset[1]);
         }
 
-        FORCE_INLINE virtual Mode sample(
+        FORCE_INLINE virtual BSDFSample::ScatteringMode sample(
             SamplingContext&        sampling_context,
             const void*             data,
             const bool              adjoint,
@@ -179,7 +179,7 @@ namespace
             // Handle absorption.
             const double total_weight = w[0] + w[1];
             if (total_weight == 0.0)
-                return Absorption;
+                return BSDFSample::Absorption;
 
             // Choose which of the two BSDFs to sample.
             sampling_context.split_in_place(1, 1);

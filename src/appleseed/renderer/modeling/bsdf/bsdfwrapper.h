@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/modeling/bsdf/bsdfsample.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
@@ -62,7 +63,7 @@ class BSDFWrapper
         const char*                     name,
         const ParamArray&               params);
 
-    virtual typename BSDFImpl::Mode sample(
+    virtual BSDFSample::ScatteringMode sample(
         SamplingContext&                sampling_context,
         const void*                     data,
         const bool                      adjoint,
@@ -108,7 +109,7 @@ BSDFWrapper<BSDFImpl>::BSDFWrapper(
 }
 
 template <typename BSDFImpl>
-typename BSDFImpl::Mode BSDFWrapper<BSDFImpl>::sample(
+BSDFSample::ScatteringMode BSDFWrapper<BSDFImpl>::sample(
     SamplingContext&                    sampling_context,
     const void*                         data,
     const bool                          adjoint,
@@ -123,7 +124,7 @@ typename BSDFImpl::Mode BSDFWrapper<BSDFImpl>::sample(
     assert(foundation::is_normalized(geometric_normal));
     assert(foundation::is_normalized(outgoing));
 
-    const typename BSDFImpl::Mode mode =
+    const typename BSDFSample::ScatteringMode mode =
         BSDFImpl::sample(
             sampling_context,
             data,
@@ -136,7 +137,7 @@ typename BSDFImpl::Mode BSDFWrapper<BSDFImpl>::sample(
             value,
             probability);
 
-    if (mode != BSDFImpl::Absorption)
+    if (mode != BSDFSample::Absorption)
     {
         assert(foundation::is_normalized(incoming));
         assert(probability == BSDFImpl::DiracDelta || probability > 0.0);

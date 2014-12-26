@@ -71,7 +71,7 @@ namespace
         OrenNayarBRDFImpl(
             const char*         name,
             const ParamArray&   params)
-          : BSDF(name, Reflective, Diffuse, params)
+          : BSDF(name, Reflective, BSDFSample::Diffuse, params)
         {
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
@@ -88,7 +88,7 @@ namespace
             return Model;
         }
 
-        FORCE_INLINE virtual Mode sample(
+        FORCE_INLINE virtual BSDFSample::ScatteringMode sample(
             SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
@@ -104,7 +104,7 @@ namespace
             const Vector3d& n = shading_basis.get_normal();
             const double cos_on = dot(outgoing, n);
             if (cos_on < 0.0)
-                return Absorption;
+                return BSDFSample::Absorption;
 
             // Compute the incoming direction in local space.
             sampling_context.split_in_place(2, 1);
@@ -117,7 +117,7 @@ namespace
             // No reflection below the shading surface.
             const double cos_in = dot(incoming, n);
             if (cos_in < 0.0)
-                return Absorption;
+                return BSDFSample::Absorption;
 
             // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
@@ -133,7 +133,7 @@ namespace
             assert(probability > 0.0);
 
             // Return the scattering mode.
-            return Diffuse;
+            return BSDFSample::Diffuse;
         }
 
         FORCE_INLINE virtual double evaluate(
@@ -147,7 +147,7 @@ namespace
             const int           modes,
             Spectrum&           value) const
         {
-            if (!(modes & Diffuse))
+            if (!(modes & BSDFSample::Diffuse))
                 return 0.0;
 
             // No reflection below the shading surface.
@@ -177,7 +177,7 @@ namespace
             const Vector3d&     incoming,
             const int           modes) const
         {
-            if (!(modes & Diffuse))
+            if (!(modes & BSDFSample::Diffuse))
                 return 0.0;
 
             // No reflection below the shading surface.

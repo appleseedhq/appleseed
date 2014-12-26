@@ -79,7 +79,7 @@ namespace
         MicrofacetBRDFImpl(
             const char*         name,
             const ParamArray&   params)
-          : BSDF(name, Reflective, Glossy, params)
+          : BSDF(name, Reflective, BSDFSample::Glossy, params)
         {
             m_inputs.declare("glossiness", InputFormatScalar);
             m_inputs.declare("glossiness_multiplier", InputFormatScalar, "1.0");
@@ -125,7 +125,7 @@ namespace
             return true;
         }
 
-        FORCE_INLINE virtual Mode sample(
+        FORCE_INLINE virtual BSDFSample::ScatteringMode sample(
             SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
@@ -141,7 +141,7 @@ namespace
             const Vector3d& n = shading_basis.get_normal();
             const double cos_on = min(dot(outgoing, n), 1.0);
             if (cos_on < 0.0)
-                return Absorption;
+                return BSDFSample::Absorption;
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
@@ -153,7 +153,7 @@ namespace
             const double glossiness = values->m_glossiness * values->m_glossiness_multiplier;
             sample_mdf(glossiness, s, h, mdf_value, mdf_pdf);
             if (mdf_pdf == 0.0)
-                return Absorption;
+                return BSDFSample::Absorption;
             h = shading_basis.transform_to_parent(h);
             incoming = reflect(outgoing, h);
             const double cos_hn = dot(h, n);
@@ -162,7 +162,7 @@ namespace
             // No reflection below the shading surface.
             const double cos_in = dot(incoming, n);
             if (cos_in < 0.0)
-                return Absorption;
+                return BSDFSample::Absorption;
 
             // Compute the BRDF value.
             const double g = evaluate_attenuation(cos_on, cos_in, cos_hn, cos_oh);
@@ -172,7 +172,7 @@ namespace
             // Compute the PDF value.
             probability = mdf_pdf / (4.0 * cos_oh);
 
-            return Glossy;
+            return BSDFSample::Glossy;
         }
 
         FORCE_INLINE virtual double evaluate(
@@ -186,7 +186,7 @@ namespace
             const int           modes,
             Spectrum&           value) const
         {
-            if (!(modes & Glossy))
+            if (!(modes & BSDFSample::Glossy))
                 return 0.0;
 
             // No reflection below the shading surface.
@@ -225,7 +225,7 @@ namespace
             const Vector3d&     incoming,
             const int           modes) const
         {
-            if (!(modes & Glossy))
+            if (!(modes & BSDFSample::Glossy))
                 return 0.0;
 
             // No reflection below the shading surface.

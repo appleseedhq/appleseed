@@ -61,7 +61,7 @@ namespace
         SpecularBRDFImpl(
             const char*         name,
             const ParamArray&   params)
-          : BSDF(name, Reflective, Specular, params)
+          : BSDF(name, Reflective, BSDFSample::Specular, params)
         {
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
@@ -77,7 +77,7 @@ namespace
             return Model;
         }
 
-        FORCE_INLINE virtual Mode sample(
+        FORCE_INLINE virtual BSDFSample::ScatteringMode sample(
             SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
@@ -93,7 +93,7 @@ namespace
             const Vector3d& shading_normal = shading_basis.get_normal();
             const double cos_on = dot(outgoing, shading_normal);
             if (cos_on < 0.0)
-                return Absorption;
+                return BSDFSample::Absorption;
 
             // Compute the incoming direction.
             incoming = reflect(outgoing, shading_normal);
@@ -102,7 +102,7 @@ namespace
             // No reflection below the shading surface.
             const double cos_in = dot(incoming, shading_normal);
             if (cos_in < 0.0)
-                return Absorption;
+                return BSDFSample::Absorption;
 
             // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
@@ -113,7 +113,7 @@ namespace
             probability = DiracDelta;
 
             // Return the scattering mode.
-            return Specular;
+            return BSDFSample::Specular;
         }
 
         FORCE_INLINE virtual double evaluate(

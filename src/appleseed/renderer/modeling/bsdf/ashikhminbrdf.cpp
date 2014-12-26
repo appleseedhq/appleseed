@@ -78,7 +78,7 @@ namespace
         AshikhminBRDFImpl(
             const char*         name,
             const ParamArray&   params)
-          : BSDF(name, Reflective, Diffuse | Glossy, params)
+          : BSDF(name, Reflective, BSDFSample::Diffuse | BSDFSample::Glossy, params)
         {
             m_inputs.declare("diffuse_reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("diffuse_reflectance_multiplier", InputFormatScalar, "1.0");
@@ -99,7 +99,7 @@ namespace
             return Model;
         }
 
-        FORCE_INLINE virtual Mode sample(
+        FORCE_INLINE virtual BSDFSample::ScatteringMode sample(
             SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
@@ -115,14 +115,14 @@ namespace
             const Vector3d& shading_normal = shading_basis.get_normal();
             const double cos_on = dot(outgoing, shading_normal);
             if (cos_on < 0.0)
-                return Absorption;
+                return BSDFSample::Absorption;
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
             // Compute reflectance-related values.
             RVal rval;
             if (!compute_rval(rval, values))
-                return Absorption;
+                return BSDFSample::Absorption;
 
             // Compute shininess-related values.
             SVal sval;
@@ -132,14 +132,14 @@ namespace
             sampling_context.split_in_place(3, 1);
             const Vector3d s = sampling_context.next_vector2<3>();
 
-            Mode mode;
+            BSDFSample::ScatteringMode mode;
             Vector3d h;
             double exp;
 
             // Select a component and sample it to compute the incoming direction.
             if (s[2] < rval.m_pd)
             {
-                mode = Diffuse;
+                mode = BSDFSample::Diffuse;
 
                 // Compute the incoming direction in local space.
                 const Vector3d wi = sample_hemisphere_cosine(Vector2d(s[0], s[1]));
@@ -161,7 +161,7 @@ namespace
             }
             else
             {
-                mode = Glossy;
+                mode = BSDFSample::Glossy;
 
                 double cos_phi, sin_phi;
 
@@ -202,7 +202,7 @@ namespace
             // No reflection below the shading surface.
             const double cos_in = dot(incoming, shading_normal);
             if (cos_in < 0.0)
-                return Absorption;
+                return BSDFSample::Absorption;
 
             // Compute dot products.
             const double cos_oh = abs(dot(outgoing, h));
@@ -277,7 +277,7 @@ namespace
             const double cos_hu = dot(h, shading_basis.get_tangent_u());
             const double cos_hv = dot(h, shading_basis.get_tangent_v());
 
-            if (modes & Diffuse)
+            if (modes & BSDFSample::Diffuse)
             {
                 // Evaluate the diffuse component of the BRDF (equation 5).
                 const double a = 1.0 - pow5(1.0 - 0.5 * cos_in);
@@ -292,7 +292,7 @@ namespace
                 probability += rval.m_pd * pdf_diffuse;
             }
 
-            if (modes & Glossy)
+            if (modes & BSDFSample::Glossy)
             {
                 // Evaluate the glossy component of the BRDF (equation 4).
                 const double exp_num_u = values->m_nu * cos_hu * cos_hu;
@@ -352,7 +352,7 @@ namespace
             const double cos_hu = dot(h, shading_basis.get_tangent_u());
             const double cos_hv = dot(h, shading_basis.get_tangent_v());
 
-            if (modes & Diffuse)
+            if (modes & BSDFSample::Diffuse)
             {
                 // Evaluate the PDF of the diffuse component.
                 const double pdf_diffuse = cos_in * RcpPi;
@@ -360,7 +360,7 @@ namespace
                 probability += pdf_diffuse;
             }
 
-            if (modes & Glossy)
+            if (modes & BSDFSample::Glossy)
             {
                 // Evaluate the PDF for the halfway vector (equation 6).
                 const double exp_num_u = values->m_nu * cos_hu * cos_hu;

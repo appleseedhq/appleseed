@@ -127,7 +127,7 @@ void compute_ibl_bsdf_sampling(
         Vector3d incoming;
         Spectrum bsdf_value;
         double bsdf_prob;
-        const BSDF::Mode bsdf_mode =
+        const BSDFSample::ScatteringMode bsdf_mode =
             bsdf.sample(
                 sampling_context,
                 bsdf_data,
@@ -164,7 +164,7 @@ void compute_ibl_bsdf_sampling(
             env_prob);
 
         // Apply all weights, including MIS weight.
-        if (bsdf_mode == BSDF::Specular)
+        if (bsdf_mode == BSDFSample::Specular)
             env_value *= static_cast<float>(transmission);
         else
         {

@@ -279,10 +279,10 @@ namespace
             }
 
             bool accept_scattering(
-                const BSDF::Mode            prev_bsdf_mode,
-                const BSDF::Mode            bsdf_mode) const
+                const BSDFSample::ScatteringMode  prev_bsdf_mode,
+                const BSDFSample::ScatteringMode  bsdf_mode) const
             {
-                assert(bsdf_mode != BSDF::Absorption);
+                assert(bsdf_mode != BSDFSample::Absorption);
 
                 if (!m_params.m_enable_caustics)
                 {
@@ -414,7 +414,7 @@ namespace
                         vertex.get_shading_basis(),
                         vertex.m_outgoing,              // outgoing (toward the light in this context)
                         vertex_to_camera,               // incoming
-                        BSDF::AllScatteringModes,       // todo: likely incorrect
+                        BSDFSample::AllScatteringModes, // todo: likely incorrect
                         bsdf_value);
                 if (bsdf_prob == 0.0)
                     return;

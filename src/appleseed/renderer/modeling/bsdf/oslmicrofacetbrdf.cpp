@@ -77,7 +77,7 @@ namespace
         OSLMicrofacetBRDFImpl(
             const char*         name,
             const ParamArray&   params)
-          : BSDF(name, Reflective, Glossy, params)
+          : BSDF(name, Reflective, BSDFSample::Glossy, params)
         {
             m_inputs.declare("ax", InputFormatScalar, "0.1");
             m_inputs.declare("ay", InputFormatScalar, "0.1");
@@ -121,7 +121,7 @@ namespace
             return true;
         }
 
-        FORCE_INLINE virtual Mode sample(
+        FORCE_INLINE virtual BSDFSample::ScatteringMode sample(
             SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
@@ -137,7 +137,7 @@ namespace
             const Vector3d& n = shading_basis.get_normal();
             const double cos_on = min(dot(outgoing, n), 1.0);
             if (cos_on < 0.0)
-                return Absorption;
+                return BSDFSample::Absorption;
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
@@ -153,7 +153,7 @@ namespace
             // No reflection below the shading surface.
             const double cos_in = dot(incoming, n);
             if (cos_in < 0.0)
-                return Absorption;
+                return BSDFSample::Absorption;
 
             const double D =
                 m_mdf->D(
@@ -171,7 +171,7 @@ namespace
 
             value.set(static_cast<float>(D * G / (4.0 * cos_on * cos_in)));
             probability = m_mdf->pdf(m, values->m_ax, values->m_ay) / (4.0 * cos_oh);
-            return Glossy;
+            return BSDFSample::Glossy;
         }
 
         FORCE_INLINE virtual double evaluate(
@@ -185,7 +185,7 @@ namespace
             const int           modes,
             Spectrum&           value) const
         {
-            if (!(modes & Glossy))
+            if (!(modes & BSDFSample::Glossy))
                 return 0.0;
 
             // No reflection below the shading surface.
@@ -226,7 +226,7 @@ namespace
             const Vector3d&     incoming,
             const int           modes) const
         {
-            if (!(modes & Glossy))
+            if (!(modes & BSDFSample::Glossy))
                 return 0.0;
 
             // No reflection below the shading surface.

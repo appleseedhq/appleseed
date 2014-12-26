@@ -60,7 +60,7 @@ namespace
 }
 
 DisneyLayeredBRDF::DisneyLayeredBRDF(const DisneyMaterial* parent)
-  : BSDF("disney_layered_brdf", Reflective, Diffuse | Glossy, ParamArray())
+  : BSDF("disney_layered_brdf", Reflective, BSDFSample::Diffuse | BSDFSample::Glossy, ParamArray())
   , m_parent(parent)
   , m_brdf(DisneyBRDFFactory().create("disney_brdf", ParamArray()))
 {
@@ -135,7 +135,7 @@ void DisneyLayeredBRDF::evaluate_inputs(
     values->precompute_tint_color();
 }
 
-BSDF::Mode DisneyLayeredBRDF::sample(
+BSDFSample::ScatteringMode DisneyLayeredBRDF::sample(
     SamplingContext&            sampling_context,
     const void*                 data,
     const bool                  adjoint,
@@ -151,7 +151,7 @@ BSDF::Mode DisneyLayeredBRDF::sample(
     {
         value.set(0.0f);
         probability = 0.0;
-        return Absorption;
+        return BSDFSample::Absorption;
     }
 
     return m_brdf->sample(

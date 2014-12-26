@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/modeling/bsdf/bsdfsample.h"
 #include "renderer/modeling/entity/connectableentity.h"
 
 // appleseed.foundation headers.
@@ -95,22 +96,12 @@ class APPLESEED_DLLSYMBOL BSDF
         AllBSDFTypes        = Reflective | Transmissive
     };
 
-    // Scattering modes.
-    enum Mode
-    {
-        Absorption          = 0,
-        Diffuse             = 1 << 0,
-        Glossy              = 1 << 1,
-        Specular            = 1 << 2,
-        AllScatteringModes  = Diffuse | Glossy | Specular
-    };
-
     // Test for the presence of specific scattering modes.
-    static bool has_diffuse(const Mode mode);
-    static bool has_glossy(const Mode mode);
-    static bool has_specular(const Mode mode);
-    static bool has_diffuse_or_glossy(const Mode mode);
-    static bool has_glossy_or_specular(const Mode mode);
+    static bool has_diffuse(const BSDFSample::ScatteringMode mode);
+    static bool has_glossy(const BSDFSample::ScatteringMode mode);
+    static bool has_specular(const BSDFSample::ScatteringMode mode);
+    static bool has_diffuse_or_glossy(const BSDFSample::ScatteringMode mode);
+    static bool has_glossy_or_specular(const BSDFSample::ScatteringMode mode);
 
     // Use a particular (negative) value as the probability density
     // of the Dirac Delta in order to detect incorrect usages.
@@ -169,7 +160,7 @@ class APPLESEED_DLLSYMBOL BSDF
     // direction, its probability density and the value of the BSDF for this
     // pair of directions. Return the scattering mode. If the scattering mode
     // is Absorption, the BSDF and PDF values are undefined.
-    virtual Mode sample(
+    virtual BSDFSample::ScatteringMode sample(
         SamplingContext&            sampling_context,
         const void*                 data,                       // input values
         const bool                  adjoint,                    // if true, use the adjoint scattering kernel
@@ -220,29 +211,29 @@ class APPLESEED_DLLSYMBOL BSDF
 // BSDF class implementation.
 //
 
-inline bool BSDF::has_diffuse(const Mode mode)
+inline bool BSDF::has_diffuse(const BSDFSample::ScatteringMode mode)
 {
-    return (mode & Diffuse) != 0;
+    return (mode & BSDFSample::Diffuse) != 0;
 }
 
-inline bool BSDF::has_glossy(const Mode mode)
+inline bool BSDF::has_glossy(const BSDFSample::ScatteringMode mode)
 {
-    return (mode & Glossy) != 0;
+    return (mode & BSDFSample::Glossy) != 0;
 }
 
-inline bool BSDF::has_specular(const Mode mode)
+inline bool BSDF::has_specular(const BSDFSample::ScatteringMode mode)
 {
-    return (mode & Specular) != 0;
+    return (mode & BSDFSample::Specular) != 0;
 }
 
-inline bool BSDF::has_diffuse_or_glossy(const Mode mode)
+inline bool BSDF::has_diffuse_or_glossy(const BSDFSample::ScatteringMode mode)
 {
-    return (mode & (Diffuse | Glossy)) != 0;
+    return (mode & (BSDFSample::Diffuse | BSDFSample::Glossy)) != 0;
 }
 
-inline bool BSDF::has_glossy_or_specular(const Mode mode)
+inline bool BSDF::has_glossy_or_specular(const BSDFSample::ScatteringMode mode)
 {
-    return (mode & (Glossy | Specular)) != 0;
+    return (mode & (BSDFSample::Glossy | BSDFSample::Specular)) != 0;
 }
 
 inline BSDF::Type BSDF::get_type() const
@@ -257,27 +248,27 @@ inline int BSDF::get_modes() const
 
 inline bool BSDF::is_purely_diffuse() const
 {
-    return m_modes == Diffuse;
+    return m_modes == BSDFSample::Diffuse;
 }
 
 inline bool BSDF::is_purely_glossy() const
 {
-    return m_modes == Glossy;
+    return m_modes == BSDFSample::Glossy;
 }
 
 inline bool BSDF::is_purely_specular() const
 {
-    return m_modes == Specular;
+    return m_modes == BSDFSample::Specular;
 }
 
 inline bool BSDF::is_purely_diffuse_or_glossy() const
 {
-    return m_modes == (Diffuse | Glossy);
+    return m_modes == (BSDFSample::Diffuse | BSDFSample::Glossy);
 }
 
 inline bool BSDF::is_purely_glossy_or_specular() const
 {
-    return m_modes == (Glossy | Specular);
+    return m_modes == (BSDFSample::Glossy | BSDFSample::Specular);
 }
 
 inline foundation::Vector3d BSDF::force_above_surface(

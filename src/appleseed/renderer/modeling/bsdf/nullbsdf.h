@@ -51,7 +51,7 @@ class NullBSDF
 {
   public:
     NullBSDF()
-      : BSDF("null_bsdf", Reflective, Absorption, ParamArray())
+      : BSDF("null_bsdf", Reflective, BSDFSample::Absorption, ParamArray())
     {
     }
 
@@ -65,7 +65,7 @@ class NullBSDF
         return "null_bsdf";
     }
 
-    virtual Mode sample(
+    virtual BSDFSample::ScatteringMode sample(
         SamplingContext&                sampling_context,
         const void*                     data,
         const bool                      adjoint,
@@ -77,7 +77,7 @@ class NullBSDF
         Spectrum&                       value,
         double&                         probability) const APPLESEED_OVERRIDE
     {
-        return Absorption;
+        return BSDFSample::Absorption;
     }
 
     virtual double evaluate(

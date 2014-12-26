@@ -406,7 +406,7 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     foundation::Vector3d incoming;
     Spectrum bsdf_value;
     double bsdf_prob;
-    const BSDF::Mode bsdf_mode =
+    const BSDFSample::ScatteringMode bsdf_mode =
         m_bsdf.sample(
             sampling_context,
             m_bsdf_data,

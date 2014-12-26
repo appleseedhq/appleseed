@@ -114,7 +114,7 @@ namespace
         OSLMicrofacetBTDFImpl(
             const char*         name,
             const ParamArray&   params)
-          : BSDF(name, Transmissive, Glossy, params)
+          : BSDF(name, Transmissive, BSDFSample::Glossy, params)
         {
             m_inputs.declare("ax", InputFormatScalar, "0.05");
             m_inputs.declare("ay", InputFormatScalar, "0.05");
@@ -158,7 +158,7 @@ namespace
             return true;
         }
 
-        FORCE_INLINE virtual Mode sample(
+        FORCE_INLINE virtual BSDFSample::ScatteringMode sample(
             SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
@@ -185,14 +185,14 @@ namespace
                     incoming))
             {
                 // Ignore TIR.
-                return Absorption;
+                return BSDFSample::Absorption;
             }
 
             // If incoming and outgoing are on the same hemisphere
             // this is not a refraction.
             const Vector3d& n = shading_basis.get_normal();
             if (dot(incoming, n) * dot(outgoing, n) >= 0.0)
-                return Absorption;
+                return BSDFSample::Absorption;
 
             const double G =
                 m_mdf->G(
@@ -203,7 +203,7 @@ namespace
                     values->m_ay);
 
             if (G == 0.0)
-                return Absorption;
+                return BSDFSample::Absorption;
 
             const double D = m_mdf->D(m, values->m_ax, values->m_ay);
 
@@ -211,7 +211,7 @@ namespace
             const double cos_ih = dot(incoming, ht);
             const double cos_in = dot(incoming, n);
             const double cos_on = dot(outgoing, n);
- 
+
             // [1] equation 21.
             double v = abs((cos_ih * cos_oh) / (cos_in * cos_on));
             v *= square(values->m_to_ior) * D * G;
@@ -227,7 +227,7 @@ namespace
                 ht_norm);
 
             probability = m_mdf->pdf(m, values->m_ax, values->m_ay) * dwh_dwo;
-            return Glossy;
+            return BSDFSample::Glossy;
         }
 
         FORCE_INLINE virtual double evaluate(
@@ -241,14 +241,14 @@ namespace
             const int           modes,
             Spectrum&           value) const
         {
-            if (!(modes & Glossy))
+            if (!(modes & BSDFSample::Glossy))
                 return 0.0;
 
             // If incoming and outgoing are on the same hemisphere
             // this is not a refraction.
             const Vector3d& n = shading_basis.get_normal();
             if (dot(incoming, n) * dot(outgoing, n) >= 0.0)
-                return Absorption;
+                return 0.0;
 
             const InputValues* values = static_cast<const InputValues*>(data);
 
@@ -280,7 +280,7 @@ namespace
             const double cos_ih = dot(incoming, ht);
             const double cos_in = dot(incoming, n);
             const double cos_on = dot(outgoing, n);
- 
+
             // [1] equation 21.
             double v = abs((cos_ih * cos_oh) / (cos_in * cos_on));
             v *= square(values->m_to_ior) * D * G;
@@ -305,14 +305,14 @@ namespace
             const Vector3d&     incoming,
             const int           modes) const
         {
-            if (!(modes & Glossy))
+            if (!(modes & BSDFSample::Glossy))
                 return 0.0;
 
             // If incoming and outgoing are on the same hemisphere
             // this is not a refraction.
             const Vector3d& n = shading_basis.get_normal();
             if (dot(incoming, n) * dot(outgoing, n) >= 0.0)
-                return Absorption;
+                return 0.0;
 
             const InputValues* values = static_cast<const InputValues*>(data);
 

@@ -100,7 +100,7 @@ class DisneyLayeredBRDF
     // direction, its probability density and the value of the BSDF for this
     // pair of directions. Return the scattering mode. If the scattering mode
     // is Absorption, the BSDF and PDF values are undefined.
-    virtual BSDF::Mode sample(
+    virtual BSDFSample::ScatteringMode sample(
         SamplingContext&                sampling_context,
         const void*                     data,
         const bool                      adjoint,

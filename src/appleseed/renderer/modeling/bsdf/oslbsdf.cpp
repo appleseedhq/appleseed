@@ -81,7 +81,7 @@ namespace
         OSLBSDFImpl(
             const char*             name,
             const ParamArray&       params)
-          : BSDF(name, AllBSDFTypes, AllScatteringModes, params)
+          : BSDF(name, AllBSDFTypes, BSDFSample::AllScatteringModes, params)
         {
             memset(m_all_bsdfs, 0, sizeof(BSDF*) * NumClosuresIDs);
 
@@ -219,7 +219,7 @@ namespace
             new (c) CompositeSurfaceClosure(shading_point.get_osl_shader_globals().Ci);
         }
 
-        FORCE_INLINE virtual Mode sample(
+        FORCE_INLINE virtual BSDFSample::ScatteringMode sample(
             SamplingContext&        sampling_context,
             const void*             data,
             const bool              adjoint,
@@ -241,7 +241,7 @@ namespace
                 const size_t closure_index = c->choose_closure(s);
                 const Basis3d new_shading_basis = make_osl_basis(c, closure_index, shading_basis);
 
-                const Mode result =
+                const BSDFSample::ScatteringMode result =
                     bsdf_to_closure_id(c->get_closure_type(closure_index)).sample(
                         sampling_context,
                         c->get_closure_input_values(closure_index),
@@ -261,7 +261,7 @@ namespace
             {
                 value.set(0.0f);
                 probability = 0.0;
-                return Absorption;
+                return BSDFSample::Absorption;
             }
         }
 

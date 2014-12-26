@@ -66,7 +66,7 @@ namespace
         SpecularBTDFImpl(
             const char*         name,
             const ParamArray&   params)
-          : BSDF(name, Transmissive, Specular, params)
+          : BSDF(name, Transmissive, BSDFSample::Specular, params)
         {
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("reflectance_multiplier", InputFormatScalar, "1.0");
@@ -87,7 +87,7 @@ namespace
             return Model;
         }
 
-        FORCE_INLINE virtual Mode sample(
+        FORCE_INLINE virtual BSDFSample::ScatteringMode sample(
             SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
@@ -161,7 +161,7 @@ namespace
             probability = DiracDelta;
 
             // Return the scattering mode.
-            return Specular;
+            return BSDFSample::Specular;
         }
 
         FORCE_INLINE virtual double evaluate(
