@@ -41,6 +41,7 @@
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <cstdio>
 #include <vector>
 
 DECLARE_TEST_CASE(Foundation_Math_Triangulator, ComputePolygonOrientation_GivenLowestLeftmostTriangleIsValid_ReturnsCorrectOrientation);

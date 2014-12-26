@@ -32,14 +32,12 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exceptionioerror.h"
-#include "foundation/core/exceptions/exceptionnotimplemented.h"
 #include "foundation/math/vector.h"
 #include "foundation/mesh/imeshbuilder.h"
 #include "foundation/mesh/objmeshfilelexer.h"
 #include "foundation/utility/memory.h"
 
 // Standard headers.
-#include <cassert>
 #include <cstring>
 #include <map>
 #include <utility>

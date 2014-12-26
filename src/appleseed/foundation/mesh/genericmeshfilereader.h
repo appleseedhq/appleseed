@@ -32,7 +32,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/mesh/imeshfilereader.h"
-#include "foundation/mesh/objmeshfilereader.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"

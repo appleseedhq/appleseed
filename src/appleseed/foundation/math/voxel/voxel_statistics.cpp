@@ -30,6 +30,9 @@
 // Interface header.
 #include "voxel_statistics.h"
 
+// Standard headers.
+#include <string>
+
 namespace foundation {
 namespace voxel {
 

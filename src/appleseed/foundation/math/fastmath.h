@@ -31,7 +31,6 @@
 #define APPLESEED_FOUNDATION_MATH_FASTMATH_H
 
 // appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
 #ifdef APPLESEED_USE_SSE
 #include "foundation/platform/sse.h"
 #endif
@@ -41,7 +40,7 @@
 
 // Standard headers.
 #include <cassert>
-#include <cmath>
+#include <cstddef>
 
 namespace foundation
 {
@@ -342,7 +341,6 @@ inline __m128 fast_log2(const __m128 x)
 inline __m128 faster_log2(const __m128 x)
 {
     const union { __m128 f; __m128i i; } vx = { x };
-
     const __m128 y = _mm_mul_ps(_mm_cvtepi32_ps(vx.i), _mm_set1_ps(1.1920928955078125e-7f));
 
     return _mm_sub_ps(y, _mm_set1_ps(126.94269504f));
@@ -368,7 +366,6 @@ inline __m128 faster_log(const __m128 x)
     // Inlined version of _mm_mul_ps(_mm_set1_ps(0.69314718f), faster_log2(x)).
 
     const union { __m128 f; __m128i i; } vx = { x };
-
     const __m128 y = _mm_mul_ps(_mm_cvtepi32_ps(vx.i), _mm_set1_ps(8.2629582881927490e-8f));
 
     return _mm_sub_ps(y, _mm_set1_ps(87.989971088f));

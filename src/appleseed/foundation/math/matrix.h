@@ -50,13 +50,9 @@ END_EXR_INCLUDES
 #endif
 
 // Standard headers.
-#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <cstddef>
-#ifdef APPLESEED_ENABLE_IMATH_INTEROP
-#include <cstring>
-#endif
 
 namespace foundation
 {
