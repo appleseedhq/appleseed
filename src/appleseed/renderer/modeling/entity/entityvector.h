@@ -66,7 +66,7 @@ class APPLESEED_DLLSYMBOL EntityVector
         typedef Entity value_type;
         typedef value_type& reference;
         typedef value_type* pointer;
-        typedef ptrdiff_t difference_type;
+        typedef std::ptrdiff_t difference_type;
 
         // Constructors.
         iterator();
@@ -112,7 +112,7 @@ class APPLESEED_DLLSYMBOL EntityVector
         typedef Entity value_type;
         typedef const value_type& reference;
         typedef const value_type* pointer;
-        typedef ptrdiff_t difference_type;
+        typedef std::ptrdiff_t difference_type;
 
         // Constructors.
         const_iterator();

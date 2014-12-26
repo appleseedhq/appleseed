@@ -74,7 +74,7 @@ extern APPLESEED_DLLSYMBOL const char* Blanks;
 
 // Exception thrown by the utility function foundation::from_string()
 // when an error occurred when converting a value to a string.
-struct ExceptionStringConversionError : public Exception {};
+class ExceptionStringConversionError : public Exception {};
 
 // Convert a value to a string.
 template <typename T>

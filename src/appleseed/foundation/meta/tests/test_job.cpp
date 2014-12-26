@@ -28,6 +28,7 @@
 //
 
 // appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 #include "foundation/platform/timers.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/job/abortswitch.h"
@@ -51,7 +52,7 @@ namespace
     struct EmptyJob
       : public IJob
     {
-        virtual void execute(const size_t thread_index)
+        virtual void execute(const size_t thread_index) APPLESEED_OVERRIDE
         {
         }
     };
@@ -65,7 +66,7 @@ namespace
         {
         }
 
-        virtual void execute(const size_t thread_index)
+        virtual void execute(const size_t thread_index) APPLESEED_OVERRIDE
         {
             ++m_execution_count;
         }
@@ -120,7 +121,7 @@ TEST_SUITE(Foundation_Utility_Job_JobQueue)
             ++m_destruction_count;
         }
 
-        virtual void execute(const size_t thread_index)
+        virtual void execute(const size_t thread_index) APPLESEED_OVERRIDE
         {
         }
 
@@ -321,7 +322,7 @@ TEST_SUITE(Foundation_Utility_Job_JobManager)
         {
         }
 
-        virtual void execute(const size_t thread_index)
+        virtual void execute(const size_t thread_index) APPLESEED_OVERRIDE
         {
             m_job_queue.schedule(
                 new JobNotifyingAboutExecution(m_execution_count));
@@ -406,7 +407,7 @@ TEST_SUITE(Foundation_Utility_Job_WorkerThread)
     struct JobThrowingBadAllocException
       : public IJob
     {
-        virtual void execute(const size_t thread_index)
+        virtual void execute(const size_t thread_index) APPLESEED_OVERRIDE
         {
             throw bad_alloc();
         }

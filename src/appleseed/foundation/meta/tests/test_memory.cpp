@@ -28,6 +28,7 @@
 //
 
 // appleseed.foundation headers.
+#include "foundation/math/rng.h"
 #include "foundation/utility/alignedallocator.h"
 #include "foundation/utility/memory.h"
 #include "foundation/utility/test.h"
@@ -35,7 +36,6 @@
 // Standard headers.
 #include <cstddef>
 #include <cstdlib>
-#include <ctime>
 #include <vector>
 
 using namespace foundation;
@@ -139,17 +139,16 @@ TEST_SUITE(Foundation_Utility_Memory)
     {
         const size_t AllocationCount = 100;
 
-        srand((unsigned)time(0));
-
         bool aligned = true;
         void* pointers[AllocationCount];
 
+        MersenneTwister rng;
+
         for (size_t i = 0; i < AllocationCount; ++i)
         {
-            const size_t alloc_size = rand() % 1001;
+            const size_t alloc_size = rand_int1(rng, 1, 1024);
             pointers[i] = malloc(alloc_size);
-            if (!is_aligned(pointers[i], 16))
-                aligned = false;
+            aligned = aligned && is_aligned(pointers[i], 16);
         }
 
         for (size_t i = 0; i < AllocationCount; ++i)

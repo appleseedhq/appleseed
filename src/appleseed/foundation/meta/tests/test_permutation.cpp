@@ -37,11 +37,11 @@
 #include <cstdlib>
 #include <cstring>
 
+using namespace foundation;
+using namespace std;
+
 TEST_SUITE(Foundation_Math_Permutation)
 {
-    using namespace foundation;
-    using namespace std;
-
     TEST_CASE(TestIsPermutationOnValidPermutation1)
     {
         const size_t Size = 5;
