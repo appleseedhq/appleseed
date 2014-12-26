@@ -296,9 +296,9 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
 
         // Sample the BSDF.
         BSDFSample sample(
-        vertex.get_geometric_normal(),
-        vertex.get_shading_basis(),
-        vertex.m_outgoing);
+            vertex.get_geometric_normal(),
+            vertex.get_shading_basis(),
+            vertex.m_outgoing);
         vertex.m_bsdf->sample(
             sampling_context,
             vertex.m_bsdf_data,

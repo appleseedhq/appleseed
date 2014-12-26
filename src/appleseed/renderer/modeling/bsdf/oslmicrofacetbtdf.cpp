@@ -215,7 +215,7 @@ namespace
             sample.m_value.set(static_cast<float>(v));
 
             const double ht_norm =
-                    norm(values->m_from_ior * sample.m_outgoing + values->m_to_ior * sample.m_incoming);
+                norm(values->m_from_ior * sample.m_outgoing + values->m_to_ior * sample.m_incoming);
             const double dwh_dwo =
                 refraction_jacobian(
                     sample.m_incoming,
