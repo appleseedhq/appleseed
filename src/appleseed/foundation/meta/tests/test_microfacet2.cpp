@@ -39,7 +39,6 @@
 // Standard headers.
 #include <cmath>
 #include <cstddef>
-#include <string>
 
 using namespace foundation;
 using namespace std;

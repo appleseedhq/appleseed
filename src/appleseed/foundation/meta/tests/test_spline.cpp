@@ -34,7 +34,7 @@
 #include "foundation/utility/test.h"
 
 // Standard headers.
-#include <string>
+#include <cstddef>
 #include <vector>
 
 TEST_SUITE(Foundation_Math_Spline)

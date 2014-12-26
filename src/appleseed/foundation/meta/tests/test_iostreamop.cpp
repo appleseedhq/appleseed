@@ -38,6 +38,9 @@
 #include <iomanip>
 #include <sstream>
 
+// Forward declarations.
+namespace foundation    { class ExceptionStringConversionError; }
+
 using namespace foundation;
 using namespace std;
 

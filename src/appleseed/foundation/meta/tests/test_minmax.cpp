@@ -39,6 +39,8 @@
 #include "foundation/utility/typetraits.h"
 
 // Standard headers.
+#include <algorithm>
+#include <cstddef>
 #include <utility>
 
 TEST_SUITE(Foundation_Math_MinMax)

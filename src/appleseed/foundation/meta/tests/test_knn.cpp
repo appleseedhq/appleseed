@@ -40,6 +40,7 @@
 
 // Standard headers.
 #include <algorithm>
+#include <cassert>
 #include <cstddef>
 #include <vector>
 

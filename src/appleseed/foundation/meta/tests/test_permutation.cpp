@@ -35,6 +35,7 @@
 // Standard headers.
 #include <cstddef>
 #include <cstdlib>
+#include <cstring>
 
 TEST_SUITE(Foundation_Math_Permutation)
 {

@@ -29,6 +29,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/matrix.h"
+#include "foundation/math/ray.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"

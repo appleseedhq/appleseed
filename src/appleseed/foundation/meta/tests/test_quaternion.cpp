@@ -29,6 +29,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/quaternion.h"
+#include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"

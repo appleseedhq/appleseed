@@ -33,7 +33,6 @@
 
 // Standard headers.
 #include <memory>
-#include <string>
 
 using namespace foundation;
 using namespace std;

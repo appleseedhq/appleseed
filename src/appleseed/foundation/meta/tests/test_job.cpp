@@ -41,6 +41,7 @@
 // Standard headers.
 #include <cstddef>
 #include <exception>
+#include <utility>
 
 using namespace foundation;
 using namespace std;

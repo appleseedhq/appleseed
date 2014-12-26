@@ -32,6 +32,7 @@
 #include "foundation/math/qmc.h"
 #include "foundation/math/rng.h"
 #include "foundation/math/sampling.h"
+#include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/string.h"
@@ -42,6 +43,7 @@
 // Standard headers.
 #include <cmath>
 #include <cstddef>
+#include <string>
 #include <vector>
 
 using namespace foundation;
