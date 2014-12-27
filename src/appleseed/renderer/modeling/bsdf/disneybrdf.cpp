@@ -115,16 +115,17 @@ namespace
             const Vector3d wi = sample_hemisphere_cosine(s);
 
             // Transform the incoming direction to parent space.
-            sample.m_incoming = sample.m_shading_basis.transform_to_parent(wi);
-            sample.m_probability = evaluate(
-                values,
-                sample.m_shading_basis,
-                sample.m_outgoing,
-                sample.m_incoming,
-                sample.m_value);
+            sample.set_incoming(sample.get_shading_basis().transform_to_parent(wi));
+            sample.set_probability(
+                evaluate(
+                    values,
+                    sample.get_shading_basis(),
+                    sample.get_outgoing(),
+                    sample.get_incoming(),
+                    sample.get_value()));
 
-            assert(sample.m_probability > 0.0);
-            sample.m_mode = BSDFSample::Diffuse;
+            assert(sample.get_probability() > 0.0);
+            sample.set_mode(BSDFSample::Diffuse);
         }
 
         double evaluate(
@@ -200,16 +201,17 @@ namespace
             const Vector3d wi = sample_hemisphere_uniform(s);
 
             // Transform the incoming direction to parent space.
-            sample.m_incoming = sample.m_shading_basis.transform_to_parent(wi);
-            sample.m_probability = evaluate(
-                values,
-                sample.m_shading_basis,
-                sample.m_outgoing,
-                sample.m_incoming,
-                sample.m_value);
+            sample.set_incoming(sample.get_shading_basis().transform_to_parent(wi));
+            sample.set_probability(
+                evaluate(
+                    values,
+                    sample.get_shading_basis(),
+                    sample.get_outgoing(),
+                    sample.get_incoming(),
+                    sample.get_value()));
 
-            assert(sample.m_probability > 0.0);
-            sample.m_mode = BSDFSample::Diffuse;
+            assert(sample.get_probability() > 0.0);
+            sample.set_mode(BSDFSample::Diffuse);
         }
 
         double evaluate(
@@ -425,8 +427,8 @@ namespace
             }
 
             // No reflection below the shading surface.
-            const Vector3d& n = sample.m_shading_basis.get_normal();
-            const double cos_on = min(dot(sample.m_outgoing, n), 1.0);
+            const Vector3d& n = sample.get_normal();
+            const double cos_on = min(dot(sample.get_outgoing(), n), 1.0);
             if (cos_on < 0.0)
                 return;
 
@@ -451,11 +453,11 @@ namespace
             sampling_context.split_in_place(2, 1);
             const Vector2d s2 = sampling_context.next_vector2<2>();
             const Vector3d m = mdf->sample(s2, alpha_x, alpha_y);
-            const Vector3d h = sample.m_shading_basis.transform_to_parent(m);
-            sample.m_incoming = reflect(sample.m_outgoing, h);
+            const Vector3d h = sample.get_shading_basis().transform_to_parent(m);
+            sample.set_incoming(reflect(sample.get_outgoing(), h));
 
             // No reflection below the shading surface.
-            const double cos_in = dot(sample.m_incoming, n);
+            const double cos_in = dot(sample.get_incoming(), n);
             if (cos_in < 0.0)
                 return;
 
@@ -467,22 +469,22 @@ namespace
 
             const double G =
                 mdf->G(
-                    sample.m_shading_basis.transform_to_local(sample.m_incoming),
-                    sample.m_shading_basis.transform_to_local(sample.m_outgoing),
+                    sample.get_shading_basis().transform_to_local(sample.get_incoming()),
+                    sample.get_shading_basis().transform_to_local(sample.get_outgoing()),
                     m,
                     alpha_gx,
                     alpha_gy);
 
-            const double cos_oh = dot(sample.m_outgoing, h);
+            const double cos_oh = dot(sample.get_outgoing(), h);
 
             if (s < cdf[SpecularComponent])
-                specular_f(values, cos_oh, sample.m_value);
+                specular_f(values, cos_oh, sample.get_value());
             else
-                sample.m_value.set(static_cast<float>(clearcoat_f(values->m_clearcoat, cos_oh)));
+                sample.get_value().set(static_cast<float>(clearcoat_f(values->m_clearcoat, cos_oh)));
 
-            sample.m_value *= static_cast<float>((D * G) / (4.0 * cos_on * cos_in));
-            sample.m_probability = mdf->pdf(m, alpha_x, alpha_y) / (4.0 * cos_oh);
-            sample.m_mode = BSDFSample::Glossy;
+            sample.get_value() *= static_cast<float>((D * G) / (4.0 * cos_on * cos_in));
+            sample.set_probability(mdf->pdf(m, alpha_x, alpha_y) / (4.0 * cos_oh));
+            sample.set_mode(BSDFSample::Glossy);
         }
 
         virtual double evaluate(

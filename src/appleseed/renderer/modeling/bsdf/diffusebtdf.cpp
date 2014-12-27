@@ -95,19 +95,19 @@ namespace
             const Vector3d wi = sample_hemisphere_cosine(s);
 
             // Transform the incoming direction to parent space.
-            sample.m_incoming = -sample.m_shading_basis.transform_to_parent(wi);
+            sample.set_incoming(-sample.get_shading_basis().transform_to_parent(wi));
 
             // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
-            sample.m_value = values->m_transmittance;
-            sample.m_value *= static_cast<float>(values->m_transmittance_multiplier * RcpPi);
+            sample.get_value() = values->m_transmittance;
+            sample.get_value() *= static_cast<float>(values->m_transmittance_multiplier * RcpPi);
 
             // Compute the probability density of the sampled direction.
-            sample.m_probability = wi.y * RcpPi;
-            assert(sample.m_probability > 0.0);
+            sample.set_probability(wi.y * RcpPi);
+            assert(sample.get_probability() > 0.0);
 
             // Set the scattering mode.
-            sample.m_mode = BSDFSample::Diffuse;
+            sample.set_mode(BSDFSample::Diffuse);
         }
 
         FORCE_INLINE virtual double evaluate(

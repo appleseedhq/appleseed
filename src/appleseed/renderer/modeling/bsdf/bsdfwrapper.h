@@ -111,8 +111,8 @@ void BSDFWrapper<BSDFImpl>::sample(
     const bool                          cosine_mult,
     BSDFSample&                         sample) const
 {
-    assert(foundation::is_normalized(sample.m_geometric_normal));
-    assert(foundation::is_normalized(sample.m_outgoing));
+    assert(foundation::is_normalized(sample.get_geometric_normal()));
+    assert(foundation::is_normalized(sample.get_outgoing()));
 
     BSDFImpl::sample(
         sampling_context,
@@ -121,24 +121,24 @@ void BSDFWrapper<BSDFImpl>::sample(
         false,
         sample);
 
-    if (sample.m_mode != BSDFSample::Absorption)
+    if (sample.get_mode() != BSDFSample::Absorption)
     {
-        assert(foundation::is_normalized(sample.m_incoming));
-        assert(sample.m_probability == BSDFImpl::DiracDelta || sample.m_probability > 0.0);
+        assert(foundation::is_normalized(sample.get_incoming()));
+        assert(sample.get_probability() == BSDFImpl::DiracDelta || sample.get_probability() > 0.0);
 
         if (cosine_mult)
         {
             if (adjoint)
             {
-                const double cos_on = std::abs(foundation::dot(sample.m_outgoing, sample.m_shading_basis.get_normal()));
-                const double cos_ig = std::abs(foundation::dot(sample.m_incoming, sample.m_geometric_normal));
-                const double cos_og = std::abs(foundation::dot(sample.m_outgoing, sample.m_geometric_normal));
-                sample.m_value *= static_cast<float>(cos_on * cos_ig / cos_og);
+                const double cos_on = std::abs(foundation::dot(sample.get_outgoing(), sample.get_normal()));
+                const double cos_ig = std::abs(foundation::dot(sample.get_incoming(), sample.get_geometric_normal()));
+                const double cos_og = std::abs(foundation::dot(sample.get_outgoing(), sample.get_geometric_normal()));
+                sample.get_value() *= static_cast<float>(cos_on * cos_ig / cos_og);
             }
             else
             {
-                const double cos_in = std::abs(foundation::dot(sample.m_incoming, sample.m_shading_basis.get_normal()));
-                sample.m_value *= static_cast<float>(cos_in);
+                const double cos_in = std::abs(foundation::dot(sample.get_incoming(), sample.get_normal()));
+                sample.get_value() *= static_cast<float>(cos_in);
             }
         }
     }

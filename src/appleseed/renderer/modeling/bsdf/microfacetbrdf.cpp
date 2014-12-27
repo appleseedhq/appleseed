@@ -133,8 +133,8 @@ namespace
             BSDFSample&         sample) const
         {
             // No reflection below the shading surface.
-            const Vector3d& n = sample.m_shading_basis.get_normal();
-            const double cos_on = min(dot(sample.m_outgoing, n), 1.0);
+            const Vector3d& n = sample.get_normal();
+            const double cos_on = min(dot(sample.get_outgoing(), n), 1.0);
             if (cos_on < 0.0)
                 return;
 
@@ -149,26 +149,26 @@ namespace
             sample_mdf(glossiness, s, h, mdf_value, mdf_pdf);
             if (mdf_pdf == 0.0)
                 return;
-            h = sample.m_shading_basis.transform_to_parent(h);
-            sample.m_incoming = reflect(sample.m_outgoing, h);
+            h = sample.get_shading_basis().transform_to_parent(h);
+            sample.set_incoming(reflect(sample.get_outgoing(), h));
             const double cos_hn = dot(h, n);
-            const double cos_oh = dot(sample.m_outgoing, h);
+            const double cos_oh = dot(sample.get_outgoing(), h);
 
             // No reflection below the shading surface.
-            const double cos_in = dot(sample.m_incoming, n);
+            const double cos_in = dot(sample.get_incoming(), n);
             if (cos_in < 0.0)
                 return;
 
             // Compute the BRDF value.
             const double g = evaluate_attenuation(cos_on, cos_in, cos_hn, cos_oh);
-            fresnel_dielectric_schlick(sample.m_value, values->m_reflectance, cos_on, values->m_fr_multiplier);
-            sample.m_value *= static_cast<float>(mdf_value * g / (4.0 * cos_on * cos_in) * values->m_reflectance_multiplier);
+            fresnel_dielectric_schlick(sample.get_value(), values->m_reflectance, cos_on, values->m_fr_multiplier);
+            sample.get_value() *= static_cast<float>(mdf_value * g / (4.0 * cos_on * cos_in) * values->m_reflectance_multiplier);
 
             // Compute the PDF value.
-            sample.m_probability = mdf_pdf / (4.0 * cos_oh);
+            sample.set_probability(mdf_pdf / (4.0 * cos_oh));
 
             // Set the scattering mode.
-            sample.m_mode = BSDFSample::Glossy;
+            sample.set_mode(BSDFSample::Glossy);
         }
 
         FORCE_INLINE virtual double evaluate(

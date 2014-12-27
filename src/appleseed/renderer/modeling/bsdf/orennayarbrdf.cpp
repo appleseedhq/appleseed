@@ -96,8 +96,8 @@ namespace
             BSDFSample&         sample) const
         {
             // No reflection below the shading surface.
-            const Vector3d& n = sample.m_shading_basis.get_normal();
-            const double cos_on = dot(sample.m_outgoing, n);
+            const Vector3d& n = sample.get_normal();
+            const double cos_on = dot(sample.get_outgoing(), n);
             if (cos_on < 0.0)
                 return;
 
@@ -107,10 +107,10 @@ namespace
             const Vector3d wi = sample_hemisphere_cosine(s);
 
             // Transform the incoming direction to parent space.
-            sample.m_incoming = sample.m_shading_basis.transform_to_parent(wi);
+            sample.set_incoming(sample.get_shading_basis().transform_to_parent(wi));
 
             // No reflection below the shading surface.
-            const double cos_in = dot(sample.m_incoming, n);
+            const double cos_in = dot(sample.get_incoming(), n);
             if (cos_in < 0.0)
                 return;
 
@@ -123,22 +123,22 @@ namespace
                     cos_in,
                     values->m_roughness,
                     values->m_reflectance,
-                    sample.m_outgoing,
-                    sample.m_incoming,
+                    sample.get_outgoing(),
+                    sample.get_incoming(),
                     n,
-                    sample.m_value);
+                    sample.get_value());
             }
             else
-                sample.m_value = values->m_reflectance;
+                sample.get_value() = values->m_reflectance;
 
-            sample.m_value *= static_cast<float>(values->m_reflectance_multiplier * RcpPi);
+            sample.get_value() *= static_cast<float>(values->m_reflectance_multiplier * RcpPi);
 
             // Compute the probability density of the sampled direction.
-            sample.m_probability = wi.y * RcpPi;
-            assert(sample.m_probability > 0.0);
+            sample.set_probability(wi.y * RcpPi);
+            assert(sample.get_probability() > 0.0);
 
             // Set the scattering mode.
-            sample.m_mode = BSDFSample::Diffuse;
+            sample.set_mode(BSDFSample::Diffuse);
         }
 
         FORCE_INLINE virtual double evaluate(

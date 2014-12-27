@@ -306,21 +306,21 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             true,       // multiply by |cos(incoming, normal)|
             sample);
 
-        if (sample.m_mode == BSDFSample::Absorption)
+        if (sample.get_mode() == BSDFSample::Absorption)
             break;
 
         // Terminate the path if this scattering event is not accepted.
-        if (!m_path_visitor.accept_scattering(vertex.m_prev_bsdf_mode, sample.m_mode))
+        if (!m_path_visitor.accept_scattering(vertex.m_prev_bsdf_mode, sample.get_mode()))
             break;
 
-        vertex.m_prev_bsdf_prob = sample.m_probability;
-        vertex.m_prev_bsdf_mode = sample.m_mode;
+        vertex.m_prev_bsdf_prob = sample.get_probability();
+        vertex.m_prev_bsdf_mode = sample.get_mode();
 
-        if (sample.m_probability != BSDF::DiracDelta)
-            sample.m_value /= static_cast<float>(sample.m_probability);
+        if (sample.get_probability() != BSDF::DiracDelta)
+            sample.get_value() /= static_cast<float>(sample.get_probability());
 
         // Update the path throughput.
-        vertex.m_throughput *= sample.m_value;
+        vertex.m_throughput *= sample.get_value();
 
         // Use Russian Roulette to cut the path without introducing bias.
         if (vertex.m_path_length >= m_rr_min_path_length)
@@ -332,7 +332,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             // Compute the probability of extending this path.
             const double scattering_prob =
                 std::min(
-                    static_cast<double>(foundation::max_value(sample.m_value)),
+                    static_cast<double>(foundation::max_value(sample.get_value())),
                     1.0);
 
             // Russian Roulette.
@@ -353,11 +353,11 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
 
         // Construct the scattered ray.
         const ShadingRay scattered_ray(
-            vertex.m_shading_point->get_biased_point(sample.m_incoming),
-            sample.m_incoming,
+            vertex.m_shading_point->get_biased_point(sample.get_incoming()),
+            sample.get_incoming(),
             ray.m_time,
             ray.m_dtime,
-            bsdf_mode_to_ray_flags(sample.m_mode),
+            bsdf_mode_to_ray_flags(sample.get_mode()),
             ray.m_depth + 1);
 
         // Trace the ray.
