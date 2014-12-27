@@ -167,15 +167,14 @@ namespace
         }
 
         FORCE_INLINE virtual void sample(
-            SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
             BSDFSample&         sample) const
         {
             // Define aliases to match the notations in the paper.
-            const Vector3d& V = sample.m_outgoing;
-            const Vector3d& N = sample.m_shading_basis.get_normal();
+            const Vector3d& V = sample.get_outgoing();
+            const Vector3d& N = sample.get_normal();
 
             // No reflection below the shading surface.
             const double dot_VN = dot(V, N);
@@ -201,8 +200,8 @@ namespace
             const double matte_prob = average_value(matte_albedo);
 
             // Generate a uniform sample in [0,1)^3.
-            sampling_context.split_in_place(3, 1);
-            const Vector3d s = sampling_context.next_vector2<3>();
+            sample.get_sampling_context().split_in_place(3, 1);
+            const Vector3d s = sample.get_sampling_context().next_vector2<3>();
 
             BSDFSample::ScatteringMode mode;
             Vector3d H;
@@ -217,10 +216,10 @@ namespace
                 const Vector3d wi = sample_hemisphere_cosine(Vector2d(s[0], s[1]));
 
                 // Transform the incoming direction to parent space.
-                sample.m_incoming = sample.m_shading_basis.transform_to_parent(wi);
+                sample.set_incoming(sample.get_shading_basis().transform_to_parent(wi));
 
                 // Compute the halfway vector.
-                H = normalize(sample.m_incoming + V);
+                H = normalize(sample.get_incoming() + V);
 
                 dot_LN = wi.y;
                 dot_HN = dot(H, N);
@@ -234,14 +233,14 @@ namespace
                 const Vector3d local_H = m_mdf->sample(Vector2d(s[0], s[1]));
 
                 // Transform the halfway vector to parent space.
-                H = sample.m_shading_basis.transform_to_parent(local_H);
+                H = sample.get_shading_basis().transform_to_parent(local_H);
 
                 dot_HV = dot(H, V);
 
                 // The incoming direction is the reflection of V around H.
-                sample.m_incoming = (dot_HV + dot_HV) * H - V;
+                sample.set_incoming((dot_HV + dot_HV) * H - V);
 
-                dot_LN = dot(sample.m_incoming, N);
+                dot_LN = dot(sample.get_incoming(), N);
                 dot_HN = local_H.y;
 
                 // No reflection below the shading surface.
@@ -262,13 +261,13 @@ namespace
             evaluate_fr_spec(*m_mdf.get(), rs, dot_HV, dot_HN, fr_spec);
 
             // Matte component (last equation of section 2.2).
-            sample.m_value.set(1.0f);
-            sample.m_value -= specular_albedo_L;
-            sample.m_value *= matte_albedo;
-            sample.m_value *= m_s;
+            sample.get_value().set(1.0f);
+            sample.get_value() -= specular_albedo_L;
+            sample.get_value() *= matte_albedo;
+            sample.get_value() *= m_s;
 
             // The final value of the BRDF is the sum of the specular and matte components.
-            sample.m_value += fr_spec;
+            sample.get_value() += fr_spec;
 
             // Evaluate the PDF of the incoming direction for the specular component.
             const double pdf_H = m_mdf->evaluate_pdf(dot_HN);
@@ -280,11 +279,11 @@ namespace
             assert(pdf_matte >= 0.0);
 
             // Evaluate the final PDF.
-            sample.m_probability = specular_prob * pdf_specular + matte_prob * pdf_matte;
-            assert(sample.m_probability >= 0.0);
+            sample.set_probability(specular_prob * pdf_specular + matte_prob * pdf_matte);
+            assert(sample.get_probability() >= 0.0);
 
             // Set the scattering mode.
-            sample.m_mode = mode;
+            sample.set_mode(mode);
         }
 
         FORCE_INLINE virtual double evaluate(

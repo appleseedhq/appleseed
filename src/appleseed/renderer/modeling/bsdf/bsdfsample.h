@@ -60,11 +60,42 @@ class APPLESEED_DLLSYMBOL BSDFSample
         AllScatteringModes  = Diffuse | Glossy | Specular
     };
 
-    // Constructor
+    // Constructor.
     BSDFSample(
+        SamplingContext&            sampling_context,
         const foundation::Vector3d& geometric_normal,
         const foundation::Basis3d&  shading_basis,
         const foundation::Vector3d& outgoing);
+
+    // Input fields.
+
+    SamplingContext& get_sampling_context();
+
+    const foundation::Vector3d& get_geometric_normal() const;
+
+    const foundation::Vector3d& get_normal() const;
+
+    const foundation::Vector3d& get_outgoing() const;
+
+    // Input / Output fields.
+
+    const foundation::Basis3d& get_shading_basis() const;
+    void set_new_shading_basis(const foundation::Basis3d& new_basis);
+    bool has_new_shading_basis() const;
+
+    // Output fields.
+
+    ScatteringMode get_mode() const;
+    void set_mode(const ScatteringMode mode);
+
+    const foundation::Vector3d& get_incoming() const;
+    void set_incoming(const foundation::Vector3d& incoming);
+
+    double get_probability() const;
+    void set_probability(const double probability);
+
+    const Spectrum& get_value() const;
+    Spectrum& get_value();
 
     // Test for the presence of specific scattering modes.
     static bool has_diffuse(const ScatteringMode mode);
@@ -73,16 +104,16 @@ class APPLESEED_DLLSYMBOL BSDFSample
     static bool has_diffuse_or_glossy(const ScatteringMode mode);
     static bool has_glossy_or_specular(const ScatteringMode mode);
 
-    // Input data.
-    foundation::Vector3d    m_geometric_normal; // world space geometric normal, unit-length
-    foundation::Basis3d     m_shading_basis;    // world space orthonormal basis around shading normal
-    foundation::Vector3d    m_outgoing;         // world space outgoing direction, unit-length
-
-    // Output data.
-    ScatteringMode          m_mode;             // Scattering mode
-    foundation::Vector3d    m_incoming;         // world space incoming direction, unit-length
-    Spectrum                m_value;            // BSDF value
-    double                  m_probability;      // PDF value
+  private:
+    SamplingContext&        m_sampling_context; // sampling context used to sample BSDFs.
+    foundation::Vector3d    m_geometric_normal; // world space geometric normal, unit-length.
+    foundation::Vector3d    m_outgoing;         // world space outgoing direction, unit-length.
+    foundation::Basis3d     m_shading_basis;    // world space orthonormal basis around shading normal.
+    bool                    m_has_new_basis;    // true if the sample method sets a new shading basis (OSL).
+    ScatteringMode          m_mode;             // scattering mode.
+    foundation::Vector3d    m_incoming;         // world space incoming direction, unit-length.
+    double                  m_probability;      // PDF value.
+    Spectrum                m_value;            // BSDF value.
 };
 
 
@@ -91,16 +122,95 @@ class APPLESEED_DLLSYMBOL BSDFSample
 //
 
 inline BSDFSample::BSDFSample(
+    SamplingContext&            sampling_context,
     const foundation::Vector3d& geometric_normal,
     const foundation::Basis3d&  shading_basis,
     const foundation::Vector3d& outgoing)
-  : m_geometric_normal(geometric_normal)
+  : m_sampling_context(sampling_context)
+  , m_geometric_normal(geometric_normal)
   , m_shading_basis(shading_basis)
+  , m_has_new_basis(false)
   , m_outgoing(outgoing)
   , m_mode(Absorption)
   , m_value(0.0f)
   , m_probability(0.0)
 {
+}
+
+inline SamplingContext& BSDFSample::get_sampling_context()
+{
+    return m_sampling_context;
+}
+
+inline const foundation::Vector3d& BSDFSample::get_geometric_normal() const
+{
+    return m_geometric_normal;
+}
+
+inline const foundation::Vector3d& BSDFSample::get_normal() const
+{
+    return m_shading_basis.get_normal();
+}
+
+inline const foundation::Vector3d& BSDFSample::get_outgoing() const
+{
+    return m_outgoing;
+}
+
+inline const foundation::Basis3d& BSDFSample::get_shading_basis() const
+{
+    return m_shading_basis;
+}
+
+inline void BSDFSample::set_new_shading_basis(const foundation::Basis3d& new_basis)
+{
+    m_shading_basis = new_basis;
+    m_has_new_basis = true;
+}
+
+inline bool BSDFSample::has_new_shading_basis() const
+{
+    return m_has_new_basis;
+}
+
+inline BSDFSample::ScatteringMode BSDFSample::get_mode() const
+{
+    return m_mode;
+}
+
+inline void BSDFSample::set_mode(const ScatteringMode mode)
+{
+    m_mode = mode;
+}
+
+inline const foundation::Vector3d& BSDFSample::get_incoming() const
+{
+    return m_incoming;
+}
+
+inline void BSDFSample::set_incoming(const foundation::Vector3d& incoming)
+{
+    m_incoming = incoming;
+}
+
+inline double BSDFSample::get_probability() const
+{
+    return m_probability;
+}
+
+inline void BSDFSample::set_probability(const double probability)
+{
+    m_probability = probability;
+}
+
+inline const Spectrum& BSDFSample::get_value() const
+{
+    return m_value;
+}
+
+inline Spectrum& BSDFSample::get_value()
+{
+    return m_value;
 }
 
 inline bool BSDFSample::has_diffuse(const ScatteringMode mode)
