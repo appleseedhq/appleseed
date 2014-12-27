@@ -88,7 +88,6 @@ namespace
         }
 
         FORCE_INLINE virtual void sample(
-            SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
@@ -122,8 +121,8 @@ namespace
                     cos_theta_t);
                 fresnel_reflection *= values->m_fresnel_multiplier;
 
-                sampling_context.split_in_place(1, 1);
-                const double s = sampling_context.next_double2();
+                sample.get_sampling_context().split_in_place(1, 1);
+                const double s = sample.get_sampling_context().next_double2();
 
                 if (s < fresnel_reflection)
                 {

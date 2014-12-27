@@ -62,11 +62,14 @@ class APPLESEED_DLLSYMBOL BSDFSample
 
     // Constructor.
     BSDFSample(
+        SamplingContext&            sampling_context,
         const foundation::Vector3d& geometric_normal,
         const foundation::Basis3d&  shading_basis,
         const foundation::Vector3d& outgoing);
 
     // Input fields.
+
+    SamplingContext& get_sampling_context();
 
     const foundation::Vector3d& get_geometric_normal() const;
 
@@ -102,14 +105,15 @@ class APPLESEED_DLLSYMBOL BSDFSample
     static bool has_glossy_or_specular(const ScatteringMode mode);
 
   private:
-    foundation::Vector3d    m_geometric_normal; // world space geometric normal, unit-length
-    foundation::Vector3d    m_outgoing;         // world space outgoing direction, unit-length
-    foundation::Basis3d     m_shading_basis;    // world space orthonormal basis around shading normal
+    SamplingContext&        m_sampling_context; // sampling context used to sample BSDFs.
+    foundation::Vector3d    m_geometric_normal; // world space geometric normal, unit-length.
+    foundation::Vector3d    m_outgoing;         // world space outgoing direction, unit-length.
+    foundation::Basis3d     m_shading_basis;    // world space orthonormal basis around shading normal.
     bool                    m_has_new_basis;    // true if the sample method sets a new shading basis (OSL).
-    ScatteringMode          m_mode;             // scattering mode
-    foundation::Vector3d    m_incoming;         // world space incoming direction, unit-length
-    double                  m_probability;      // PDF value
-    Spectrum                m_value;            // BSDF value
+    ScatteringMode          m_mode;             // scattering mode.
+    foundation::Vector3d    m_incoming;         // world space incoming direction, unit-length.
+    double                  m_probability;      // PDF value.
+    Spectrum                m_value;            // BSDF value.
 };
 
 
@@ -118,10 +122,12 @@ class APPLESEED_DLLSYMBOL BSDFSample
 //
 
 inline BSDFSample::BSDFSample(
-        const foundation::Vector3d& geometric_normal,
+    SamplingContext&            sampling_context,
+    const foundation::Vector3d& geometric_normal,
     const foundation::Basis3d&  shading_basis,
     const foundation::Vector3d& outgoing)
-  : m_geometric_normal(geometric_normal)
+  : m_sampling_context(sampling_context)
+  , m_geometric_normal(geometric_normal)
   , m_shading_basis(shading_basis)
   , m_has_new_basis(false)
   , m_outgoing(outgoing)
@@ -129,6 +135,11 @@ inline BSDFSample::BSDFSample(
   , m_value(0.0f)
   , m_probability(0.0)
 {
+}
+
+inline SamplingContext& BSDFSample::get_sampling_context()
+{
+    return m_sampling_context;
 }
 
 inline const foundation::Vector3d& BSDFSample::get_geometric_normal() const

@@ -105,13 +105,12 @@ namespace
     {
       public:
         void sample(
-            SamplingContext&                sampling_context,
             const DisneyBRDFInputValues*    values,
             BSDFSample&                     sample) const
         {
             // Compute the incoming direction in local space.
-            sampling_context.split_in_place(2, 1);
-            const Vector2d s = sampling_context.next_vector2<2>();
+            sample.get_sampling_context().split_in_place(2, 1);
+            const Vector2d s = sample.get_sampling_context().next_vector2<2>();
             const Vector3d wi = sample_hemisphere_cosine(s);
 
             // Transform the incoming direction to parent space.
@@ -191,13 +190,12 @@ namespace
     {
       public:
         void sample(
-            SamplingContext&                sampling_context,
             const DisneyBRDFInputValues*    values,
             BSDFSample&                     sample) const
         {
             // Compute the incoming direction in local space.
-            sampling_context.split_in_place(2, 1);
-            const Vector2d s = sampling_context.next_vector2<2>();
+            sample.get_sampling_context().split_in_place(2, 1);
+            const Vector2d s = sample.get_sampling_context().next_vector2<2>();
             const Vector3d wi = sample_hemisphere_uniform(s);
 
             // Transform the incoming direction to parent space.
@@ -390,7 +388,6 @@ namespace
         }
 
         virtual void sample(
-            SamplingContext&        sampling_context,
             const void*             data,
             const bool              adjoint,
             const bool              cosine_mult,
@@ -403,13 +400,12 @@ namespace
             compute_component_cdf(values, cdf);
 
             // Choose which of the components to sample.
-            sampling_context.split_in_place(1, 1);
-            const double s = sampling_context.next_double2();
+            sample.get_sampling_context().split_in_place(1, 1);
+            const double s = sample.get_sampling_context().next_double2();
 
             if (s < cdf[DiffuseComponent])
             {
                 DisneyDiffuseComponent().sample(
-                    sampling_context,
                     values,
                     sample);
 
@@ -419,7 +415,6 @@ namespace
             if (s < cdf[SheenComponent])
             {
                 DisneySheenComponent().sample(
-                    sampling_context,
                     values,
                     sample);
 
@@ -450,8 +445,8 @@ namespace
             }
 
             // Compute the incoming direction by sampling the MDF.
-            sampling_context.split_in_place(2, 1);
-            const Vector2d s2 = sampling_context.next_vector2<2>();
+            sample.get_sampling_context().split_in_place(2, 1);
+            const Vector2d s2 = sample.get_sampling_context().next_vector2<2>();
             const Vector3d m = mdf->sample(s2, alpha_x, alpha_y);
             const Vector3d h = sample.get_shading_basis().transform_to_parent(m);
             sample.set_incoming(reflect(sample.get_outgoing(), h));

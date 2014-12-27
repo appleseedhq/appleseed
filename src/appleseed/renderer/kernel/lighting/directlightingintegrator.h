@@ -405,11 +405,11 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
 
     // Sample the BSDF.
     BSDFSample sample(
+        sampling_context,
         m_geometric_normal,
         m_shading_basis,
         m_outgoing);
     m_bsdf.sample(
-        sampling_context,
         m_bsdf_data,
         false,                      // not adjoint
         true,                       // multiply by |cos(incoming, normal)|

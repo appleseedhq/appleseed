@@ -64,7 +64,6 @@ class BSDFWrapper
         const ParamArray&               params);
 
     virtual void sample(
-        SamplingContext&                sampling_context,
         const void*                     data,
         const bool                      adjoint,
         const bool                      cosine_mult,
@@ -105,7 +104,6 @@ BSDFWrapper<BSDFImpl>::BSDFWrapper(
 
 template <typename BSDFImpl>
 void BSDFWrapper<BSDFImpl>::sample(
-    SamplingContext&                    sampling_context,
     const void*                         data,
     const bool                          adjoint,
     const bool                          cosine_mult,
@@ -115,7 +113,6 @@ void BSDFWrapper<BSDFImpl>::sample(
     assert(foundation::is_normalized(sample.get_outgoing()));
 
     BSDFImpl::sample(
-        sampling_context,
         data,
         adjoint,
         false,

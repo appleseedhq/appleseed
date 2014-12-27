@@ -296,11 +296,11 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
 
         // Sample the BSDF.
         BSDFSample sample(
+            sampling_context,
             vertex.get_geometric_normal(),
             vertex.get_shading_basis(),
             vertex.m_outgoing);
         vertex.m_bsdf->sample(
-            sampling_context,
             vertex.m_bsdf_data,
             Adjoint,
             true,       // multiply by |cos(incoming, normal)|

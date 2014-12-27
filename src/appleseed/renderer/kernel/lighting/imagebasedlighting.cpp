@@ -126,11 +126,11 @@ void compute_ibl_bsdf_sampling(
         // afterward. We need a mechanism to indicate that we want the contribution of some of
         // the components only.
         BSDFSample sample(
+            sampling_context,
             geometric_normal,
             shading_basis,
             outgoing);
         bsdf.sample(
-            sampling_context,
             bsdf_data,
             false,              // not adjoint
             true,               // multiply by |cos(incoming, normal)|

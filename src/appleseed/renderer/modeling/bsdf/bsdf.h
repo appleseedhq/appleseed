@@ -154,7 +154,6 @@ class APPLESEED_DLLSYMBOL BSDF
     // pair of directions. Return the scattering mode. If the scattering mode
     // is Absorption, the BSDF and PDF values are undefined.
     virtual void sample(
-        SamplingContext&            sampling_context,
         const void*                 data,                       // input values
         const bool                  adjoint,                    // if true, use the adjoint scattering kernel
         const bool                  cosine_mult,                // if true, multiply by |cos(incoming, normal)|
