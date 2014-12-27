@@ -99,19 +99,7 @@ class DirectLightingIntegrator
         const double    q1,
         const double    q2);
 
-    // Constructors.
-    DirectLightingIntegrator(
-        const ShadingContext&           shading_context,
-        const LightSampler&             light_sampler,
-        const ShadingPoint&             shading_point,
-        const foundation::Vector3d&     outgoing,                   // world space outgoing direction, unit-length
-        const BSDF&                     bsdf,
-        const void*                     bsdf_data,
-        const int                       bsdf_sampling_modes,        // permitted scattering modes during BSDF sampling
-        const int                       light_sampling_modes,       // permitted scattering modes during environment sampling
-        const size_t                    bsdf_sample_count,          // number of samples in BSDF sampling
-        const size_t                    light_sample_count,         // number of samples in light sampling
-        const bool                      indirect);                  // are we computing indirect lighting?
+    // Constructor.
     DirectLightingIntegrator(
         const ShadingContext&           shading_context,
         const LightSampler&             light_sampler,
