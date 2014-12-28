@@ -136,6 +136,10 @@ void compute_ibl_bsdf_sampling(
             true,               // multiply by |cos(incoming, normal)|
             sample);
 
+        // Update the ShadingPoint basis if needed, for OSL shaders.
+        if (sample.has_new_shading_basis())
+            shading_point.set_new_shading_basis(sample.get_shading_basis());
+
         // Filter scattering modes.
         if (!(bsdf_sampling_modes & sample.get_mode()))
             return;
