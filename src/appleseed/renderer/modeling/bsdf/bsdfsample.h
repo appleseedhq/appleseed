@@ -99,13 +99,13 @@ class BSDFSample
     static bool has_glossy_or_specular(const ScatteringMode mode);
 
   private:
-    const ShadingPoint&     m_shading_point;    // shading point at which the sampling is done
-    SamplingContext&        m_sampling_context; // sampling context used to sample BSDFs
-    foundation::Vector3d    m_outgoing;         // world space outgoing direction, unit-length
-    ScatteringMode          m_mode;             // scattering mode
-    foundation::Vector3d    m_incoming;         // world space incoming direction, unit-length
-    double                  m_probability;      // PDF value
-    Spectrum                m_value;            // BSDF value
+    const ShadingPoint&     m_shading_point;        // shading point at which the sampling is done
+    SamplingContext&        m_sampling_context;     // sampling context used to sample BSDFs
+    foundation::Vector3d    m_outgoing;             // world space outgoing direction, unit-length
+    ScatteringMode          m_mode;                 // scattering mode
+    foundation::Vector3d    m_incoming;             // world space incoming direction, unit-length
+    double                  m_probability;          // PDF value
+    Spectrum                m_value;                // BSDF value
 };
 
 

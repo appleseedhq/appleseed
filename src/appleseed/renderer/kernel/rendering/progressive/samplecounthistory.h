@@ -27,57 +27,73 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_FIXEDSIZEHISTORY_H
-#define APPLESEED_FOUNDATION_MATH_FIXEDSIZEHISTORY_H
+#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_PROGRESSIVE_SAMPLECOUNTHISTORY_H
+#define APPLESEED_RENDERER_KERNEL_RENDERING_PROGRESSIVE_SAMPLECOUNTHISTORY_H
+
+// appleseed.foundation headers.
+#include "foundation/platform/types.h"
 
 // Standard headers.
+#include <cassert>
 #include <cstddef>
 
-namespace foundation
+namespace renderer
 {
 
-template <typename T, size_t N>
-class FixedSizeHistory
+template <size_t N>
+class SampleCountHistory
 {
   public:
-    FixedSizeHistory()
+    SampleCountHistory()
       : m_size(0)
+      , m_first(0)
       , m_index(0)
     {
     }
 
-    size_t size() const
+    void insert(const double time, const foundation::uint64 value)
     {
-        return m_size;
-    }
+        m_index = m_first;
 
-    void insert(const T val)
-    {
-        m_history[m_index++] = val;
+        m_records[m_index].m_time = time;
+        m_records[m_index].m_value = value;
 
-        if (m_index == N)
-            m_index = 0;
+        m_first = (m_first + 1) % N;
 
         if (m_size < N)
             ++m_size;
     }
 
-    T compute_average() const
+    double get_samples_per_second() const
     {
-        T sum = T(0);
+        if (m_size == 0)
+            return 0.0;
 
-        for (size_t i = 0; i < m_size; ++i)
-            sum += m_history[i];
+        const Record* first = &m_records[m_size < N ? 0 : m_first];
+        const Record* last = &m_records[m_index];
 
-        return m_size > 0 ? sum / m_size : T(0);
+        assert(last->m_value >= first->m_value);
+        assert(last->m_time >= first->m_time);
+
+        const foundation::uint64 delta_value = last->m_value - first->m_value;
+        const double delta_time = last->m_time - first->m_time;
+
+        return delta_time > 0.0 ? delta_value / delta_time : 0.0;
     }
 
   private:
-    T       m_history[N];
+    struct Record
+    {
+        double              m_time;
+        foundation::uint64  m_value;
+    };
+
+    Record  m_records[N];
     size_t  m_size;
+    size_t  m_first;
     size_t  m_index;
 };
 
-}       // namespace foundation
+}       // namespace renderer
 
-#endif  // !APPLESEED_FOUNDATION_MATH_FIXEDSIZEHISTORY_H
+#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_PROGRESSIVE_SAMPLECOUNTHISTORY_H

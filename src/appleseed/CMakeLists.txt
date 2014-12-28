@@ -255,7 +255,6 @@ set (foundation_math_sources
     foundation/math/distance.h
     foundation/math/fastmath.h
     foundation/math/filter.h
-    foundation/math/fixedsizehistory.h
     foundation/math/fp.h
     foundation/math/fresnel.h
     foundation/math/frustum.h
@@ -396,7 +395,6 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_exrimagefilewriter.cpp
     foundation/meta/tests/test_fastmath.cpp
     foundation/meta/tests/test_filteredtile.cpp
-    foundation/meta/tests/test_fixedsizehistory.cpp
     foundation/meta/tests/test_fp.cpp
     foundation/meta/tests/test_fresnel.cpp
     foundation/meta/tests/test_frustum.cpp
@@ -1012,6 +1010,7 @@ set (renderer_kernel_rendering_progressive_sources
     renderer/kernel/rendering/progressive/progressiveframerenderer.h
     renderer/kernel/rendering/progressive/samplecounter.cpp
     renderer/kernel/rendering/progressive/samplecounter.h
+    renderer/kernel/rendering/progressive/samplecounthistory.h
     renderer/kernel/rendering/progressive/samplegeneratorjob.cpp
     renderer/kernel/rendering/progressive/samplegeneratorjob.h
 )
@@ -1191,6 +1190,7 @@ set (renderer_meta_tests_sources
     renderer/meta/tests/test_projectfilereader.cpp
     renderer/meta/tests/test_projectfilewriter.cpp
     renderer/meta/tests/test_samplecounter.cpp
+    renderer/meta/tests/test_samplecounthistory.cpp
     renderer/meta/tests/test_scene.cpp
     renderer/meta/tests/test_shadingresult.cpp
     renderer/meta/tests/test_sphericalcamera.cpp
