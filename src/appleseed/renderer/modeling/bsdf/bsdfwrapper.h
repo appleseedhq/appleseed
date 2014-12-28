@@ -118,7 +118,7 @@ void BSDFWrapper<BSDFImpl>::sample(
         false,
         sample);
 
-    if (sample.get_mode() != BSDFSample::Absorption)
+    if (sample.is_absorption())
     {
         assert(foundation::is_normalized(sample.get_incoming()));
         assert(sample.get_probability() == BSDFImpl::DiracDelta || sample.get_probability() > 0.0);
@@ -130,12 +130,12 @@ void BSDFWrapper<BSDFImpl>::sample(
                 const double cos_on = std::abs(foundation::dot(sample.get_outgoing(), sample.get_normal()));
                 const double cos_ig = std::abs(foundation::dot(sample.get_incoming(), sample.get_geometric_normal()));
                 const double cos_og = std::abs(foundation::dot(sample.get_outgoing(), sample.get_geometric_normal()));
-                sample.get_value() *= static_cast<float>(cos_on * cos_ig / cos_og);
+                sample.value() *= static_cast<float>(cos_on * cos_ig / cos_og);
             }
             else
             {
                 const double cos_in = std::abs(foundation::dot(sample.get_incoming(), sample.get_normal()));
-                sample.get_value() *= static_cast<float>(cos_in);
+                sample.value() *= static_cast<float>(cos_in);
             }
         }
     }

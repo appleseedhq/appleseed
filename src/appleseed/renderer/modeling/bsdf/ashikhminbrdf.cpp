@@ -206,8 +206,8 @@ namespace
             // Evaluate the diffuse component of the BRDF (equation 5).
             const double a = 1.0 - pow5(1.0 - 0.5 * cos_in);
             const double b = 1.0 - pow5(1.0 - 0.5 * cos_on);
-            sample.get_value() = rval.m_kd;
-            sample.get_value() *= static_cast<float>(a * b);
+            sample.value() = rval.m_kd;
+            sample.value() *= static_cast<float>(a * b);
 
             // Evaluate the PDF of the diffuse component.
             const double pdf_diffuse = cos_in * RcpPi;
@@ -220,7 +220,7 @@ namespace
             Spectrum glossy;
             fresnel_dielectric_schlick(glossy, rval.m_scaled_rg, cos_oh, values->m_fr_multiplier);
             glossy *= static_cast<float>(num / den);
-            sample.get_value() += glossy;
+            sample.value() += glossy;
 
             // Evaluate the PDF of the glossy component (equation 8).
             const double pdf_glossy = num / cos_oh;     // omit division by 4 since num = pdf(h) / 4

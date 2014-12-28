@@ -351,7 +351,7 @@ void DisneyMaterialCustomUI::create_layer_layout(const string& layer_name)
 
 string DisneyMaterialCustomUI::unique_layer_name()
 {
-    return "layer" + to_string(++m_num_created_layers);
+    return "layer" + foundation::to_string(++m_num_created_layers);
 }
 
 string DisneyMaterialCustomUI::texture_to_expression(const QString& path)

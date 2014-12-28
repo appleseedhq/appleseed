@@ -261,13 +261,13 @@ namespace
             evaluate_fr_spec(*m_mdf.get(), rs, dot_HV, dot_HN, fr_spec);
 
             // Matte component (last equation of section 2.2).
-            sample.get_value().set(1.0f);
-            sample.get_value() -= specular_albedo_L;
-            sample.get_value() *= matte_albedo;
-            sample.get_value() *= m_s;
+            sample.value().set(1.0f);
+            sample.value() -= specular_albedo_L;
+            sample.value() *= matte_albedo;
+            sample.value() *= m_s;
 
             // The final value of the BRDF is the sum of the specular and matte components.
-            sample.get_value() += fr_spec;
+            sample.value() += fr_spec;
 
             // Evaluate the PDF of the incoming direction for the specular component.
             const double pdf_H = m_mdf->evaluate_pdf(dot_HN);

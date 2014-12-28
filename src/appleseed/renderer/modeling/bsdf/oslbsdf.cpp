@@ -233,7 +233,7 @@ namespace
                 const double s = sample.get_sampling_context().next_double2();
 
                 const size_t closure_index = c->choose_closure(s);
-                sample.set_new_shading_basis(make_osl_basis(c, closure_index, sample.get_shading_basis()));
+                sample.set_shading_basis(make_osl_basis(c, closure_index, sample.get_shading_basis()));
                 bsdf_to_closure_id(
                     c->get_closure_type(closure_index)).sample(
                         c->get_closure_input_values(closure_index),
@@ -241,7 +241,7 @@ namespace
                         false,
                         sample);
 
-                sample.get_value() *= c->get_closure_weight(closure_index);
+                sample.value() *= c->get_closure_weight(closure_index);
             }
         }
 

@@ -163,7 +163,7 @@ namespace
                     values->m_ax,
                     values->m_ay);
 
-            sample.get_value().set(static_cast<float>(D * G / (4.0 * cos_on * cos_in)));
+            sample.value().set(static_cast<float>(D * G / (4.0 * cos_on * cos_in)));
             sample.set_probability(m_mdf->pdf(m, values->m_ax, values->m_ay) / (4.0 * cos_oh));
             sample.set_mode(BSDFSample::Glossy);
         }
