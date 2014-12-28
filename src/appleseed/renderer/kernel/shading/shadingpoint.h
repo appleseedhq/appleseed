@@ -104,13 +104,11 @@ class ShadingPoint
     // Reset the shading point to its initial state (no intersection).
     void clear();
 
-    // Replace the ray stored in the shading point.
-    void set_ray(const ShadingRay& ray);
-
     // Return the scene that was tested for intersection.
     const Scene& get_scene() const;
 
-    // Return the world space ray that was cast through the scene.
+    // Set/get the world space ray that was cast through the scene.
+    void set_ray(const ShadingRay& ray);
     const ShadingRay& get_ray() const;
 
     // Return the time stored in the ray.
@@ -159,11 +157,9 @@ class ShadingPoint
     // not always facing the incoming ray, i.e. dot(ray_dir, shading_normal) may be negative.
     const foundation::Vector3d& get_shading_normal() const;
 
-    // Return a world space orthonormal basis around the (possibly modified) shading normal.
-    const foundation::Basis3d& get_shading_basis() const;
-
-    // Updates the shading basis. This is used by OSL shaders.
+    // Set/get the world space orthonormal basis around the (possibly modified) shading normal.
     void set_shading_basis(const foundation::Basis3d& basis) const;
+    const foundation::Basis3d& get_shading_basis() const;
 
     // Return the side of the surface that was hit.
     ObjectInstance::Side get_side() const;
@@ -385,15 +381,15 @@ FORCE_INLINE void ShadingPoint::clear()
     m_members = 0;
 }
 
-inline void ShadingPoint::set_ray(const ShadingRay& ray)
-{
-    m_ray = ray;
-}
-
 inline const Scene& ShadingPoint::get_scene() const
 {
     assert(m_scene);
     return *m_scene;
+}
+
+inline void ShadingPoint::set_ray(const ShadingRay& ray)
+{
+    m_ray = ray;
 }
 
 inline const ShadingRay& ShadingPoint::get_ray() const
@@ -549,6 +545,14 @@ inline const foundation::Vector3d& ShadingPoint::get_shading_normal() const
     return get_shading_basis().get_normal();
 }
 
+inline void ShadingPoint::set_shading_basis(const foundation::Basis3d& basis) const
+{
+    assert(hit());
+
+    m_shading_basis = basis;
+    m_members |= HasShadingBasis;
+}
+
 inline const foundation::Basis3d& ShadingPoint::get_shading_basis() const
 {
     assert(hit());
@@ -560,14 +564,6 @@ inline const foundation::Basis3d& ShadingPoint::get_shading_basis() const
     }
 
     return m_shading_basis;
-}
-
-inline void ShadingPoint::set_shading_basis(const foundation::Basis3d& basis) const
-{
-    assert(hit());
-    assert(m_members & HasShadingBasis);
-
-    m_shading_basis = basis;
 }
 
 inline ObjectInstance::Side ShadingPoint::get_side() const
