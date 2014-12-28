@@ -95,7 +95,7 @@ namespace
         {
             const InputValues* values = static_cast<const InputValues*>(data);
 
-            const Vector3d& shading_normal = sample.get_normal();
+            const Vector3d& shading_normal = sample.get_shading_normal();
             const double eta = values->m_from_ior / values->m_to_ior;
             const double cos_theta_i = dot(sample.get_outgoing(), shading_normal);
             const double sin_theta_i2 = 1.0 - square(cos_theta_i);

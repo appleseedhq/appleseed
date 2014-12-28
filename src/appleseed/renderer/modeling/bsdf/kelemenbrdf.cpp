@@ -174,7 +174,7 @@ namespace
         {
             // Define aliases to match the notations in the paper.
             const Vector3d& V = sample.get_outgoing();
-            const Vector3d& N = sample.get_normal();
+            const Vector3d& N = sample.get_shading_normal();
 
             // No reflection below the shading surface.
             const double dot_VN = dot(V, N);

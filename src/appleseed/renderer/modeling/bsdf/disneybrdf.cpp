@@ -416,7 +416,7 @@ namespace
             }
 
             // No reflection below the shading surface.
-            const Vector3d& n = sample.get_normal();
+            const Vector3d& n = sample.get_shading_normal();
             const double cos_on = min(dot(sample.get_outgoing(), n), 1.0);
             if (cos_on < 0.0)
                 return;
