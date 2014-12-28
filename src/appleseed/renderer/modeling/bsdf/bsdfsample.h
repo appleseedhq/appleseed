@@ -138,7 +138,7 @@ inline const foundation::Vector3d& BSDFSample::get_geometric_normal() const
 
 inline const foundation::Vector3d& BSDFSample::get_normal() const
 {
-    return m_shading_point.get_shading_basis().get_normal();
+    return m_shading_point.get_shading_normal();
 }
 
 inline const foundation::Vector3d& BSDFSample::get_outgoing() const
