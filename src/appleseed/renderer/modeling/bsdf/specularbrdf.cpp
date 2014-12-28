@@ -78,37 +78,36 @@ namespace
         }
 
         FORCE_INLINE virtual void sample(
-            SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
             BSDFSample&         sample) const
         {
             // No reflection below the shading surface.
-            const Vector3d& shading_normal = sample.m_shading_basis.get_normal();
-            const double cos_on = dot(sample.m_outgoing, shading_normal);
+            const Vector3d& shading_normal = sample.get_normal();
+            const double cos_on = dot(sample.get_outgoing(), shading_normal);
             if (cos_on < 0.0)
                 return;
 
             // Compute the incoming direction.
-            sample.m_incoming = reflect(sample.m_outgoing, shading_normal);
-            sample.m_incoming = force_above_surface(sample.m_incoming, sample.m_geometric_normal);
+            sample.set_incoming(reflect(sample.get_outgoing(), shading_normal));
+            sample.set_incoming(force_above_surface(sample.get_incoming(), sample.get_geometric_normal()));
 
             // No reflection below the shading surface.
-            const double cos_in = dot(sample.m_incoming, shading_normal);
+            const double cos_in = dot(sample.get_incoming(), shading_normal);
             if (cos_in < 0.0)
                 return;
 
             // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
-            sample.m_value = values->m_reflectance;
-            sample.m_value *= static_cast<float>(values->m_reflectance_multiplier / cos_in);
+            sample.get_value() = values->m_reflectance;
+            sample.get_value() *= static_cast<float>(values->m_reflectance_multiplier / cos_in);
 
             // The probability density of the sampled direction is the Dirac delta.
-            sample.m_probability = DiracDelta;
+            sample.set_probability(DiracDelta);
 
             // Set the scattering mode.
-            sample.m_mode = BSDFSample::Specular;
+            sample.set_mode(BSDFSample::Specular);
         }
 
         FORCE_INLINE virtual double evaluate(

@@ -66,7 +66,6 @@ class NullBSDF
     }
 
     virtual void sample(
-        SamplingContext&                sampling_context,
         const void*                     data,
         const bool                      adjoint,
         const bool                      cosine_mult,

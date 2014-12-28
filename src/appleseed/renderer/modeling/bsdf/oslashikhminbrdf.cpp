@@ -99,15 +99,14 @@ namespace
         }
 
         FORCE_INLINE virtual void sample(
-            SamplingContext&    sampling_context,
             const void*         data,
             const bool          adjoint,
             const bool          cosine_mult,
             BSDFSample&         sample) const
         {
             // No reflection below the shading surface.
-            const Vector3d& shading_normal = sample.m_shading_basis.get_normal();
-            const double cos_on = dot(sample.m_outgoing, shading_normal);
+            const Vector3d& shading_normal = sample.get_normal();
+            const double cos_on = dot(sample.get_outgoing(), shading_normal);
             if (cos_on < 0.0)
                 return;
 
@@ -117,8 +116,8 @@ namespace
             SVal sval;
             compute_sval(sval, values->m_nu, values->m_nv);
 
-            sampling_context.split_in_place(2, 1);
-            const Vector2d s = sampling_context.next_vector2<2>();
+            sample.get_sampling_context().split_in_place(2, 1);
+            const Vector2d s = sample.get_sampling_context().next_vector2<2>();
 
             Vector3d h;
             double exp;
@@ -150,33 +149,33 @@ namespace
             const double sin_theta = sqrt(1.0 - cos_theta * cos_theta);
 
             // Compute the halfway vector in world space.
-            h = sample.m_shading_basis.transform_to_parent(
+            h = sample.get_shading_basis().transform_to_parent(
                         Vector3d::unit_vector(cos_theta, sin_theta, cos_phi, sin_phi));
 
             // Compute the incoming direction in world space.
-            sample.m_incoming = reflect(sample.m_outgoing, h);
-            sample.m_incoming = force_above_surface(sample.m_incoming, sample.m_geometric_normal);
+            sample.set_incoming(reflect(sample.get_outgoing(), h));
+            sample.set_incoming(force_above_surface(sample.get_incoming(), sample.get_geometric_normal()));
 
             // No reflection below the shading surface.
-            const double cos_in = dot(sample.m_incoming, shading_normal);
+            const double cos_in = dot(sample.get_incoming(), shading_normal);
             if (cos_in < 0.0)
                 return;
 
             // Compute dot products.
-            const double cos_oh = abs(dot(sample.m_outgoing, h));
+            const double cos_oh = abs(dot(sample.get_outgoing(), h));
             const double cos_hn = dot(h, shading_normal);
 
             // Evaluate the glossy component of the BRDF (equation 4).
             const double num = sval.m_kg * pow(cos_hn, exp);
             const double den = cos_oh * (cos_in + cos_on - cos_in * cos_on);
-            sample.m_value.set(static_cast<float>(num / den));
+            sample.get_value().set(static_cast<float>(num / den));
 
             // Evaluate the PDF of the glossy component (equation 8).
-            sample.m_probability = num / cos_oh;     // omit division by 4 since num = pdf(h) / 4
-            assert(sample.m_probability >= 0.0);
+            sample.set_probability(num / cos_oh);     // omit division by 4 since num = pdf(h) / 4
+            assert(sample.get_probability() >= 0.0);
 
             // Set the scattering mode.
-            sample.m_mode = BSDFSample::Glossy;
+            sample.set_mode(BSDFSample::Glossy);
         }
 
         FORCE_INLINE virtual double evaluate(

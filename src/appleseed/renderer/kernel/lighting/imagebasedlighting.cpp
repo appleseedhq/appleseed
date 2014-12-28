@@ -126,25 +126,25 @@ void compute_ibl_bsdf_sampling(
         // afterward. We need a mechanism to indicate that we want the contribution of some of
         // the components only.
         BSDFSample sample(
+            sampling_context,
             geometric_normal,
             shading_basis,
             outgoing);
         bsdf.sample(
-            sampling_context,
             bsdf_data,
             false,              // not adjoint
             true,               // multiply by |cos(incoming, normal)|
             sample);
 
         // Filter scattering modes.
-        if (!(bsdf_sampling_modes & sample.m_mode))
+        if (!(bsdf_sampling_modes & sample.get_mode()))
             return;
 
         // Discard occluded samples.
         const double transmission =
             shading_context.get_tracer().trace(
                 shading_point,
-                sample.m_incoming,
+                sample.get_incoming(),
                 VisibilityFlags::ShadowRay);
         if (transmission == 0.0)
             continue;
@@ -155,24 +155,24 @@ void compute_ibl_bsdf_sampling(
         double env_prob;
         environment_edf.evaluate(
             input_evaluator,
-            sample.m_incoming,
+            sample.get_incoming(),
             env_value,
             env_prob);
 
         // Apply all weights, including MIS weight.
-        if (sample.m_mode == BSDFSample::Specular)
+        if (sample.get_mode() == BSDFSample::Specular)
             env_value *= static_cast<float>(transmission);
         else
         {
             const double mis_weight =
                 mis_power2(
-                    bsdf_sample_count * sample.m_probability,
+                    bsdf_sample_count * sample.get_probability(),
                     env_sample_count * env_prob);
-            env_value *= static_cast<float>(transmission / sample.m_probability * mis_weight);
+            env_value *= static_cast<float>(transmission / sample.get_probability() * mis_weight);
         }
 
         // Add the contribution of this sample to the illumination.
-        env_value *= sample.m_value;
+        env_value *= sample.get_value();
         radiance += env_value;
     }
 
