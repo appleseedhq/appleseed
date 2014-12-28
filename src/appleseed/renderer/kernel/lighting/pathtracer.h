@@ -313,6 +313,10 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         if (!m_path_visitor.accept_scattering(vertex.m_prev_bsdf_mode, sample.get_mode()))
             break;
 
+        // Update the ShadingPoint basis if needed, for OSL shaders.
+        if (sample.has_new_shading_basis())
+            vertex.m_shading_point->set_new_shading_basis(sample.get_shading_basis());
+
         vertex.m_prev_bsdf_prob = sample.get_probability();
         vertex.m_prev_bsdf_mode = sample.get_mode();
 

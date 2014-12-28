@@ -408,6 +408,10 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
         return;
     assert(sample.get_probability() != BSDF::DiracDelta);
 
+    // Update the ShadingPoint basis if needed, for OSL shaders.
+    if (sample.has_new_shading_basis())
+        m_shading_point.set_new_shading_basis(sample.get_shading_basis());
+
     // Trace a ray in the direction of the reflection.
     double weight;
     const ShadingPoint& light_shading_point =
