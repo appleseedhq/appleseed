@@ -125,12 +125,12 @@ namespace
                     sample.get_outgoing(),
                     sample.get_incoming(),
                     n,
-                    sample.get_value());
+                    sample.value());
             }
             else
-                sample.get_value() = values->m_reflectance;
+                sample.value() = values->m_reflectance;
 
-            sample.get_value() *= static_cast<float>(values->m_reflectance_multiplier * RcpPi);
+            sample.value() *= static_cast<float>(values->m_reflectance_multiplier * RcpPi);
 
             // Compute the probability density of the sampled direction.
             sample.set_probability(wi.y * RcpPi);

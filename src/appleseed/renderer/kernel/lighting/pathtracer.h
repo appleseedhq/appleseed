@@ -296,9 +296,8 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
 
         // Sample the BSDF.
         BSDFSample sample(
+            *vertex.m_shading_point,
             sampling_context,
-            vertex.get_geometric_normal(),
-            vertex.get_shading_basis(),
             vertex.m_outgoing);
         vertex.m_bsdf->sample(
             vertex.m_bsdf_data,
@@ -306,25 +305,21 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             true,       // multiply by |cos(incoming, normal)|
             sample);
 
-        if (sample.get_mode() == BSDFSample::Absorption)
+        if (sample.is_absorption())
             break;
 
         // Terminate the path if this scattering event is not accepted.
         if (!m_path_visitor.accept_scattering(vertex.m_prev_bsdf_mode, sample.get_mode()))
             break;
 
-        // Update the ShadingPoint basis if needed, for OSL shaders.
-        if (sample.has_new_shading_basis())
-            vertex.m_shading_point->set_new_shading_basis(sample.get_shading_basis());
-
         vertex.m_prev_bsdf_prob = sample.get_probability();
         vertex.m_prev_bsdf_mode = sample.get_mode();
 
         if (sample.get_probability() != BSDF::DiracDelta)
-            sample.get_value() /= static_cast<float>(sample.get_probability());
+            sample.value() /= static_cast<float>(sample.get_probability());
 
         // Update the path throughput.
-        vertex.m_throughput *= sample.get_value();
+        vertex.m_throughput *= sample.value();
 
         // Use Russian Roulette to cut the path without introducing bias.
         if (vertex.m_path_length >= m_rr_min_path_length)
@@ -336,7 +331,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             // Compute the probability of extending this path.
             const double scattering_prob =
                 std::min(
-                    static_cast<double>(foundation::max_value(sample.get_value())),
+                    static_cast<double>(foundation::max_value(sample.value())),
                     1.0);
 
             // Russian Roulette.

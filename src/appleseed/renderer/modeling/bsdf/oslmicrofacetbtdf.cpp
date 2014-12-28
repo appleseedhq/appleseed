@@ -212,7 +212,7 @@ namespace
             //if (adjoint)
             //    v *= square(eta);
 
-            sample.get_value().set(static_cast<float>(v));
+            sample.value().set(static_cast<float>(v));
 
             const double ht_norm =
                 norm(values->m_from_ior * sample.get_outgoing() + values->m_to_ior * incoming);

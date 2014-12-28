@@ -121,7 +121,7 @@ namespace
                     sample.get_shading_basis(),
                     sample.get_outgoing(),
                     sample.get_incoming(),
-                    sample.get_value()));
+                    sample.value()));
 
             assert(sample.get_probability() > 0.0);
             sample.set_mode(BSDFSample::Diffuse);
@@ -206,7 +206,7 @@ namespace
                     sample.get_shading_basis(),
                     sample.get_outgoing(),
                     sample.get_incoming(),
-                    sample.get_value()));
+                    sample.value()));
 
             assert(sample.get_probability() > 0.0);
             sample.set_mode(BSDFSample::Diffuse);
@@ -405,19 +405,13 @@ namespace
 
             if (s < cdf[DiffuseComponent])
             {
-                DisneyDiffuseComponent().sample(
-                    values,
-                    sample);
-
+                DisneyDiffuseComponent().sample(values, sample);
                 return;
             }
 
             if (s < cdf[SheenComponent])
             {
-                DisneySheenComponent().sample(
-                    values,
-                    sample);
-
+                DisneySheenComponent().sample(values, sample);
                 return;
             }
 
@@ -473,11 +467,11 @@ namespace
             const double cos_oh = dot(sample.get_outgoing(), h);
 
             if (s < cdf[SpecularComponent])
-                specular_f(values, cos_oh, sample.get_value());
+                specular_f(values, cos_oh, sample.value());
             else
-                sample.get_value().set(static_cast<float>(clearcoat_f(values->m_clearcoat, cos_oh)));
+                sample.value().set(static_cast<float>(clearcoat_f(values->m_clearcoat, cos_oh)));
 
-            sample.get_value() *= static_cast<float>((D * G) / (4.0 * cos_on * cos_in));
+            sample.value() *= static_cast<float>((D * G) / (4.0 * cos_on * cos_in));
             sample.set_probability(mdf->pdf(m, alpha_x, alpha_y) / (4.0 * cos_oh));
             sample.set_mode(BSDFSample::Glossy);
         }

@@ -98,8 +98,8 @@ namespace
 
             // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
-            sample.get_value() = values->m_transmittance;
-            sample.get_value() *= static_cast<float>(values->m_transmittance_multiplier * RcpPi);
+            sample.value() = values->m_transmittance;
+            sample.value() *= static_cast<float>(values->m_transmittance_multiplier * RcpPi);
 
             // Compute the probability density of the sampled direction.
             sample.set_probability(wi.y * RcpPi);

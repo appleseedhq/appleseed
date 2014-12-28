@@ -100,8 +100,8 @@ namespace
 
             // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
-            sample.get_value() = values->m_reflectance;
-            sample.get_value() *= static_cast<float>(values->m_reflectance_multiplier / cos_in);
+            sample.value() = values->m_reflectance;
+            sample.value() *= static_cast<float>(values->m_reflectance_multiplier / cos_in);
 
             // The probability density of the sampled direction is the Dirac delta.
             sample.set_probability(DiracDelta);

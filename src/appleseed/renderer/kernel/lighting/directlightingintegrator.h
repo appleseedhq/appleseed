@@ -99,7 +99,19 @@ class DirectLightingIntegrator
         const double    q1,
         const double    q2);
 
-    // Constructor.
+    // Constructors.
+    DirectLightingIntegrator(
+        const ShadingContext&           shading_context,
+        const LightSampler&             light_sampler,
+        const ShadingPoint&             shading_point,
+        const foundation::Vector3d&     outgoing,                   // world space outgoing direction, unit-length
+        const BSDF&                     bsdf,
+        const void*                     bsdf_data,
+        const int                       bsdf_sampling_modes,        // permitted scattering modes during BSDF sampling
+        const int                       light_sampling_modes,       // permitted scattering modes during environment sampling
+        const size_t                    bsdf_sample_count,          // number of samples in BSDF sampling
+        const size_t                    light_sample_count,         // number of samples in light sampling
+        const bool                      indirect);                  // are we computing indirect lighting?
     DirectLightingIntegrator(
         const ShadingContext&           shading_context,
         const LightSampler&             light_sampler,
@@ -393,9 +405,8 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
 
     // Sample the BSDF.
     BSDFSample sample(
+        m_shading_point,
         sampling_context,
-        m_geometric_normal,
-        m_shading_basis,
         m_outgoing);
     m_bsdf.sample(
         m_bsdf_data,
@@ -407,10 +418,6 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     if (!(m_bsdf_sampling_modes & sample.get_mode()))
         return;
     assert(sample.get_probability() != BSDF::DiracDelta);
-
-    // Update the ShadingPoint basis if needed, for OSL shaders.
-    if (sample.has_new_shading_basis())
-        m_shading_point.set_new_shading_basis(sample.get_shading_basis());
 
     // Trace a ray in the direction of the reflection.
     double weight;
@@ -497,7 +504,7 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
 
     // Add the contribution of this sample to the illumination.
     edf_value *= static_cast<float>(weight / sample.get_probability());
-    edf_value *= sample.get_value();
+    edf_value *= sample.value();
     radiance += edf_value;
     aovs.add(edf->get_render_layer_index(), edf_value);
 }

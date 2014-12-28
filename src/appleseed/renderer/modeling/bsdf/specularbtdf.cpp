@@ -105,8 +105,8 @@ namespace
             {
                 // Total internal reflection: compute the reflected direction and radiance.
                 sample.set_incoming(reflect(sample.get_outgoing(), shading_normal));
-                sample.get_value() = values->m_transmittance;
-                sample.get_value() *= static_cast<float>(values->m_transmittance_multiplier);
+                sample.value() = values->m_transmittance;
+                sample.value() *= static_cast<float>(values->m_transmittance_multiplier);
             }
             else
             {
@@ -128,8 +128,8 @@ namespace
                 {
                     // Fresnel reflection: compute the reflected direction and radiance.
                     sample.set_incoming(reflect(sample.get_outgoing(), shading_normal));
-                    sample.get_value() = values->m_reflectance;
-                    sample.get_value() *= static_cast<float>(values->m_reflectance_multiplier);
+                    sample.value() = values->m_reflectance;
+                    sample.value() *= static_cast<float>(values->m_reflectance_multiplier);
                 }
                 else
                 {
@@ -140,8 +140,8 @@ namespace
                             : (eta * cos_theta_i + cos_theta_t) * shading_normal - eta * sample.get_outgoing());
 
                     // Compute the refracted radiance.
-                    sample.get_value() = values->m_transmittance;
-                    sample.get_value() *=
+                    sample.value() = values->m_transmittance;
+                    sample.value() *=
                         adjoint
                             ? static_cast<float>(values->m_transmittance_multiplier)
                             : static_cast<float>(eta * eta * values->m_transmittance_multiplier);
@@ -149,7 +149,7 @@ namespace
             }
 
             const double cos_in = abs(dot(sample.get_incoming(), shading_normal));
-            sample.get_value() /= static_cast<float>(cos_in);
+            sample.value() /= static_cast<float>(cos_in);
 
             // The probability density of the sampled direction is the Dirac delta.
             sample.set_probability(DiracDelta);

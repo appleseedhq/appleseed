@@ -113,9 +113,6 @@ void compute_ibl_bsdf_sampling(
 {
     assert(is_normalized(outgoing));
 
-    const Vector3d& geometric_normal = shading_point.get_geometric_normal();
-    const Basis3d& shading_basis = shading_point.get_shading_basis();
-
     radiance.set(0.0f);
 
     for (size_t i = 0; i < bsdf_sample_count; ++i)
@@ -126,19 +123,14 @@ void compute_ibl_bsdf_sampling(
         // afterward. We need a mechanism to indicate that we want the contribution of some of
         // the components only.
         BSDFSample sample(
+            shading_point,
             sampling_context,
-            geometric_normal,
-            shading_basis,
             outgoing);
         bsdf.sample(
             bsdf_data,
             false,              // not adjoint
             true,               // multiply by |cos(incoming, normal)|
             sample);
-
-        // Update the ShadingPoint basis if needed, for OSL shaders.
-        if (sample.has_new_shading_basis())
-            shading_point.set_new_shading_basis(sample.get_shading_basis());
 
         // Filter scattering modes.
         if (!(bsdf_sampling_modes & sample.get_mode()))
@@ -164,7 +156,7 @@ void compute_ibl_bsdf_sampling(
             env_prob);
 
         // Apply all weights, including MIS weight.
-        if (sample.get_mode() == BSDFSample::Specular)
+        if (sample.is_specular())
             env_value *= static_cast<float>(transmission);
         else
         {
@@ -176,7 +168,7 @@ void compute_ibl_bsdf_sampling(
         }
 
         // Add the contribution of this sample to the illumination.
-        env_value *= sample.get_value();
+        env_value *= sample.value();
         radiance += env_value;
     }
 

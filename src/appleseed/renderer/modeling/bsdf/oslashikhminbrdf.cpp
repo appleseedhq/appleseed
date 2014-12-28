@@ -168,7 +168,7 @@ namespace
             // Evaluate the glossy component of the BRDF (equation 4).
             const double num = sval.m_kg * pow(cos_hn, exp);
             const double den = cos_oh * (cos_in + cos_on - cos_in * cos_on);
-            sample.get_value().set(static_cast<float>(num / den));
+            sample.value().set(static_cast<float>(num / den));
 
             // Evaluate the PDF of the glossy component (equation 8).
             sample.set_probability(num / cos_oh);     // omit division by 4 since num = pdf(h) / 4

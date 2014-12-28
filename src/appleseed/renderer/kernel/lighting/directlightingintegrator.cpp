@@ -40,6 +40,38 @@ using namespace std;
 namespace renderer
 {
 
+
+DirectLightingIntegrator::DirectLightingIntegrator(
+    const ShadingContext&       shading_context,
+    const LightSampler&         light_sampler,
+    const ShadingPoint&         shading_point,
+    const Vector3d&             outgoing,
+    const BSDF&                 bsdf,
+    const void*                 bsdf_data,
+    const int                   bsdf_sampling_modes,
+    const int                   light_sampling_modes,
+    const size_t                bsdf_sample_count,
+    const size_t                light_sample_count,
+    const bool                  indirect)
+  : m_shading_context(shading_context)
+  , m_light_sampler(light_sampler)
+  , m_shading_point(shading_point)
+  , m_point(shading_point.get_point())
+  , m_geometric_normal(shading_point.get_geometric_normal())
+  , m_shading_basis(shading_point.get_shading_basis())
+  , m_time(shading_point.get_time())
+  , m_outgoing(outgoing)
+  , m_bsdf(bsdf)
+  , m_bsdf_data(bsdf_data)
+  , m_bsdf_sampling_modes(bsdf_sampling_modes)
+  , m_light_sampling_modes(light_sampling_modes)
+  , m_bsdf_sample_count(bsdf_sample_count)
+  , m_light_sample_count(light_sample_count)
+  , m_indirect(indirect)
+{
+    assert(is_normalized(outgoing));
+}
+
 DirectLightingIntegrator::DirectLightingIntegrator(
     const ShadingContext&       shading_context,
     const LightSampler&         light_sampler,

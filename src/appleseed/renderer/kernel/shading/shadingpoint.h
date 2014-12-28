@@ -162,7 +162,8 @@ class ShadingPoint
     // Return a world space orthonormal basis around the (possibly modified) shading normal.
     const foundation::Basis3d& get_shading_basis() const;
 
-    void set_new_shading_basis(const foundation::Basis3d& basis) const;
+    // Updates the shading basis. This is used by OSL shaders.
+    void set_shading_basis(const foundation::Basis3d& basis) const;
 
     // Return the side of the surface that was hit.
     ObjectInstance::Side get_side() const;
@@ -561,7 +562,7 @@ inline const foundation::Basis3d& ShadingPoint::get_shading_basis() const
     return m_shading_basis;
 }
 
-inline void ShadingPoint::set_new_shading_basis(const foundation::Basis3d& basis) const
+inline void ShadingPoint::set_shading_basis(const foundation::Basis3d& basis) const
 {
     assert(hit());
     assert(m_members & HasShadingBasis);
