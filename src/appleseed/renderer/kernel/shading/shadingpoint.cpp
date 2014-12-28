@@ -638,7 +638,7 @@ void ShadingPoint::initialize_osl_shader_globals(
         m_shader_globals.dIdx = OSL::Vec3(0.0f, 0.0f, 0.0f);
         m_shader_globals.dIdy = OSL::Vec3(0.0f, 0.0f, 0.0f);
 
-        m_shader_globals.N = Vector3f(get_shading_normal());
+        m_shader_globals.N = Vector3f(get_original_shading_normal());
         m_shader_globals.Ng = Vector3f(get_geometric_normal());
 
         const Vector2d& uv = get_uv(0);

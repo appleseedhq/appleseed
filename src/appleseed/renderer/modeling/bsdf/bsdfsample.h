@@ -36,9 +36,6 @@
 #include "foundation/math/basis.h"
 #include "foundation/math/vector.h"
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 // Standard headers.
 #include <cstddef>
 
@@ -47,7 +44,7 @@
 namespace renderer
 {
 
-class APPLESEED_DLLSYMBOL BSDFSample
+class BSDFSample
 {
   public:
     // Scattering modes.
