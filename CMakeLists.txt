@@ -76,7 +76,7 @@ option (WITH_CLI                "Build appleseed.cli"                           
 option (WITH_STUDIO             "Build appleseed.studio"                                ON)
 option (WITH_TOOLS              "Build appleseed tools"                                 ON)
 option (WITH_PYTHON             "Build Python bindings"                                 ON)
-option (WITH_ALEMBIC            "Build Alembic support"                                 ON)
+option (WITH_ALEMBIC            "Build Alembic support"                                 OFF)
 option (WITH_OSL                "Build OSL support"                                     OFF)
 option (WITH_DISNEY_MATERIAL    "Build Disney material"                                 OFF)
 
