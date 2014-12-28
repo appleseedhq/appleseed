@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/kernel/rendering/progressive/samplecounter.h"
+#include "renderer/kernel/rendering/progressive/samplecounthistory.h"
 #include "renderer/kernel/rendering/progressive/samplegeneratorjob.h"
 #include "renderer/kernel/rendering/framerendererbase.h"
 #include "renderer/kernel/rendering/isamplegenerator.h"
@@ -48,7 +49,6 @@
 #include "foundation/image/genericimagefilereader.h"
 #include "foundation/image/image.h"
 #include "foundation/math/aabb.h"
-#include "foundation/math/fixedsizehistory.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/thread.h"
@@ -302,24 +302,29 @@ namespace
               , m_ref_image(ref_image)
               , m_ref_image_avg_lum(ref_image_avg_lum)
               , m_abort_switch(abort_switch)
-              , m_timer_frequency(m_timer.frequency())
-              , m_last_time(m_timer.read())
-              , m_last_sample_count(0)
+              , m_rcp_timer_frequency(1.0 / m_timer.frequency())
+              , m_last_time(m_timer.read() * m_rcp_timer_frequency)
             {
+                const Vector2u crop_window_extent = m_frame.get_crop_window().extent();
+                const size_t pixel_count = (crop_window_extent.x + 1) * (crop_window_extent.y + 1);
+                m_rcp_pixel_count = 1.0 / pixel_count;
             }
 
             void operator()()
             {
                 while (!m_abort_switch.is_aborted())
                 {
-                    const uint64 time = m_timer.read();
-                    const uint64 elapsed_ticks = time - m_last_time;
-                    const double elapsed_seconds = static_cast<double>(elapsed_ticks) / m_timer_frequency;
+                    const double time = m_timer.read() * m_rcp_timer_frequency;
+                    const double elapsed_seconds = time - m_last_time;
 
                     if (elapsed_seconds >= 1.0)
                     {
-                        print_and_record_statistics(elapsed_seconds);
                         m_last_time = time;
+
+                        record_and_print_perf_stats(time);
+
+                        if (m_print_luminance_stats || m_ref_image)
+                            record_and_print_convergence_stats();
                     }
 
                     foundation::sleep(5);   // needs full qualification
@@ -345,45 +350,31 @@ namespace
             IAbortSwitch&                   m_abort_switch;
 
             DefaultWallclockTimer           m_timer;
-            uint64                          m_timer_frequency;
-            uint64                          m_last_time;
+            double                          m_rcp_timer_frequency;
+            double                          m_last_time;
 
-            uint64                          m_last_sample_count;
-            FixedSizeHistory<double, 16>    m_sps_count_history;    // samples per second history
+            double                          m_rcp_pixel_count;
+            SampleCountHistory<128>         m_sample_count_history;
+
             vector<double>                  m_spp_count_history;    // samples per pixel history
             vector<double>                  m_rmsd_history;         // RMS deviation history
 
-            void print_and_record_statistics(const double elapsed_seconds)
+            void record_and_print_perf_stats(const double time)
             {
-                print_performance_statistics(elapsed_seconds);
+                const uint64 samples = m_buffer.get_sample_count();
+                m_sample_count_history.insert(time, samples);
 
-                if (m_print_luminance_stats || m_ref_image)
-                    print_and_record_convergence_statistics();
-            }
-
-            void print_performance_statistics(const double elapsed_seconds)
-            {
-                const Vector2u crop_window_extent = m_frame.get_crop_window().extent();
-                const size_t pixel_count = (crop_window_extent.x + 1) * (crop_window_extent.y + 1);
-
-                const uint64 new_sample_count = m_buffer.get_sample_count();
-                const double spp_count = static_cast<double>(new_sample_count) / pixel_count;
-                const double sps_count = static_cast<double>(new_sample_count - m_last_sample_count) / elapsed_seconds;
-
-                m_sps_count_history.insert(sps_count);
-
-                const uint64 avg_sps_count = truncate<uint64>(m_sps_count_history.compute_average());
+                const double samples_per_pixel = samples * m_rcp_pixel_count;
+                const uint64 samples_per_second = truncate<uint64>(m_sample_count_history.get_samples_per_second());
 
                 RENDERER_LOG_INFO(
                     "%s samples, %s samples/pixel, %s samples/second",
-                    pretty_uint(new_sample_count).c_str(),
-                    pretty_scalar(spp_count).c_str(),
-                    pretty_uint(avg_sps_count).c_str());
-
-                m_last_sample_count = new_sample_count;
+                    pretty_uint(samples).c_str(),
+                    pretty_scalar(samples_per_pixel).c_str(),
+                    pretty_uint(samples_per_second).c_str());
             }
 
-            void print_and_record_convergence_statistics()
+            void record_and_print_convergence_stats()
             {
                 assert(m_print_luminance_stats || m_ref_image);
 
@@ -408,19 +399,15 @@ namespace
 
                 if (m_ref_image)
                 {
-                    if (m_print_luminance_stats)
-                        output += ", ";
-
-                    const double spp_count =
-                          static_cast<double>(m_buffer.get_sample_count())
-                        / m_frame.image().properties().m_pixel_count;
-
+                    const double samples_per_pixel = m_buffer.get_sample_count() * m_rcp_pixel_count;
                     const double rmsd = compute_rms_deviation(current_image, *m_ref_image);
 
-                    output += "rms deviation " + pretty_scalar(rmsd, 6);
-
-                    m_spp_count_history.push_back(spp_count);
+                    m_spp_count_history.push_back(samples_per_pixel);
                     m_rmsd_history.push_back(rmsd);
+
+                    if (m_print_luminance_stats)
+                        output += ", ";
+                    output += "rms deviation " + pretty_scalar(rmsd, 6);
                 }
 
                 RENDERER_LOG_DEBUG("%s", output.c_str());
