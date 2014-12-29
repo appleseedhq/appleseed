@@ -180,20 +180,14 @@ class MDF
         const T             alpha_x,
         const T             alpha_y)
     {
-        if (alpha_x == alpha_y)
+        if (alpha_x == alpha_y || sin_theta == T(0.0))
         {
             return T(1.0) / square(alpha_x);
         }
 
-        if (sin_theta != T(0.0))
-        {
-            const T cos_phi_2_ax_2 = square(h.x / sin_theta) / square(alpha_x);
-            const T sin_phi_2_ay_2 = square(h.z / sin_theta) / square(alpha_y);
-            return cos_phi_2_ax_2 + sin_phi_2_ay_2;
-        }
-
-        // Choose some arbitrary phi angle (0).
-        return T(1.0) / square(alpha_x);
+        const T cos_phi_2_ax_2 = square(h.x / sin_theta) / square(alpha_x);
+        const T sin_phi_2_ay_2 = square(h.z / sin_theta) / square(alpha_y);
+        return cos_phi_2_ax_2 + sin_phi_2_ay_2;
     }
 
     static T projected_roughness(
@@ -319,7 +313,7 @@ class BlinnMDF2
         const T cos_theta = std::pow(T(1.0) - s[0], T(1.0) / (alpha_x + T(2.0)));
         const T sin_theta = std::sqrt(T(1.0) - cos_theta * cos_theta);
         T cos_phi, sin_phi;
-        this->sample_phi(s[1], cos_phi, sin_phi);
+        MDF<T>::sample_phi(s[1], cos_phi, sin_phi);
         return Vector<T, 3>::unit_vector(cos_theta, sin_theta, cos_phi, sin_phi);
     }
 
@@ -328,7 +322,7 @@ class BlinnMDF2
         const T              alpha_x,
         const T              alpha_y) const APPLESEED_OVERRIDE
     {
-        return (alpha_x + T(2.0)) * T(RcpTwoPi) * std::pow(this->cos_theta(h), alpha_x);
+        return (alpha_x + T(2.0)) * T(RcpTwoPi) * std::pow(MDF<T>::cos_theta(h), alpha_x);
     }
 
     virtual T do_eval_pdf(
@@ -336,7 +330,7 @@ class BlinnMDF2
         const T              alpha_x,
         const T              alpha_y) const APPLESEED_OVERRIDE
     {
-        return (alpha_x + T(2.0)) * T(RcpTwoPi) * std::pow(this->cos_theta(h), alpha_x + T(1.0));
+        return (alpha_x + T(2.0)) * T(RcpTwoPi) * std::pow(MDF<T>::cos_theta(h), alpha_x + T(1.0));
     }
 
     virtual T do_eval_G(
@@ -436,25 +430,23 @@ class BeckmannMDF2
         const T              alpha_x,
         const T              alpha_y) const APPLESEED_OVERRIDE
     {
-        T cos_theta, sin_theta, cos_phi, sin_phi;
+        T cos_theta, sin_theta, cos_phi, sin_phi, tan_theta_2;
 
         if (alpha_x != alpha_y)
         {
-            this->sample_phi(s[1], alpha_x, alpha_y, cos_phi, sin_phi);
+            MDF<T>::sample_phi(s[1], alpha_x, alpha_y, cos_phi, sin_phi);
             const T tmp = square(cos_phi / alpha_x) + square(sin_phi / alpha_y);
-            const T tan_theta_2 = -std::log(T(1.0) - s[0]) / tmp;
-            cos_theta = T(1.0) / std::sqrt(T(1) + tan_theta_2);
-            sin_theta = cos_theta * std::sqrt(tan_theta_2);
+            tan_theta_2 = -std::log(T(1.0) - s[0]) / tmp;
         }
         else
         {
-            this->sample_phi(s[1], cos_phi, sin_phi);
+            MDF<T>::sample_phi(s[1], cos_phi, sin_phi);
             const T alpha_x_2 = square(alpha_x);
-            const T tan_theta_2 = alpha_x_2 * (-std::log(T(1.0) - s[0]));
-            cos_theta = T(1.0) / std::sqrt(T(1.0) + tan_theta_2);
-            sin_theta = cos_theta * std::sqrt(tan_theta_2);
+            tan_theta_2 = alpha_x_2 * (-std::log(T(1.0) - s[0]));
         }
 
+        cos_theta = T(1.0) / std::sqrt(T(1) + tan_theta_2);
+        sin_theta = cos_theta * std::sqrt(tan_theta_2);
         return Vector<T, 3>::unit_vector(cos_theta, sin_theta, cos_phi, sin_phi);
     }
 
@@ -463,16 +455,16 @@ class BeckmannMDF2
         const T              alpha_x,
         const T              alpha_y) const APPLESEED_OVERRIDE
     {
-        if (this->cos_theta(h) == T(0.0))
+        if (MDF<T>::cos_theta(h) == T(0.0))
             return T(0.0);
 
-        const T cos_theta_2 = square(this->cos_theta(h));
+        const T cos_theta_2 = square(MDF<T>::cos_theta(h));
         const T cos_theta_4 = square(cos_theta_2);
         const T tan_theta_2 = (T(1.0) - cos_theta_2) / cos_theta_2;
 
-        const T A = this->stretched_roughness(
+        const T A = MDF<T>::stretched_roughness(
             h,
-            this->sin_theta(h),
+            MDF<T>::sin_theta(h),
             alpha_x,
             alpha_y);
 
@@ -484,7 +476,7 @@ class BeckmannMDF2
         const T              alpha_x,
         const T              alpha_y) const APPLESEED_OVERRIDE
     {
-        return do_eval_D(h, alpha_x, alpha_y) * this->cos_theta(h);
+        return do_eval_D(h, alpha_x, alpha_y) * MDF<T>::cos_theta(h);
     }
 
     virtual T do_eval_G(
@@ -576,13 +568,13 @@ class GGXMDF2
 
         if (alpha_x != alpha_y)
         {
-            this->sample_phi(s[1], alpha_x, alpha_y, cos_phi, sin_phi);
+            MDF<T>::sample_phi(s[1], alpha_x, alpha_y, cos_phi, sin_phi);
             const T tmp = square(cos_phi / alpha_x) + square(sin_phi / alpha_y);
             tan_theta_2 = s[0] / ((T(1.0) - s[0]) * tmp);
         }
         else
         {
-            this->sample_phi(s[1], cos_phi, sin_phi);
+            MDF<T>::sample_phi(s[1], cos_phi, sin_phi);
             tan_theta_2 = square(alpha_x) * s[0] / (T(1.0) - s[0]);
         }
 
@@ -598,7 +590,7 @@ class GGXMDF2
     {
         const T alpha_x_2 = square(alpha_x);
 
-        const T cos_theta = this->cos_theta(h);
+        const T cos_theta = MDF<T>::cos_theta(h);
 
         if (cos_theta == T(0.0))
             return alpha_x_2 * T(RcpPi);
@@ -607,9 +599,9 @@ class GGXMDF2
         const T cos_theta_4 = square(cos_theta_2);
         const T tan_theta_2 = (T(1.0) - cos_theta_2) / cos_theta_2;
 
-        const T A = this->stretched_roughness(
+        const T A = MDF<T>::stretched_roughness(
             h,
-            this->sin_theta(h),
+            MDF<T>::sin_theta(h),
             alpha_x,
             alpha_y);
 
@@ -622,7 +614,7 @@ class GGXMDF2
         const T              alpha_x,
         const T              alpha_y) const APPLESEED_OVERRIDE
     {
-        return do_eval_D(h, alpha_x, alpha_y) * this->cos_theta(h);
+        return do_eval_D(h, alpha_x, alpha_y) * MDF<T>::cos_theta(h);
     }
 
     virtual T do_eval_G(
