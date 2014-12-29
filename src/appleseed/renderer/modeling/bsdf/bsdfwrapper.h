@@ -118,7 +118,7 @@ void BSDFWrapper<BSDFImpl>::sample(
         false,
         sample);
 
-    if (sample.is_absorption())
+    if (!sample.is_absorption())
     {
         assert(foundation::is_normalized(sample.get_incoming()));
         assert(sample.get_probability() == BSDFImpl::DiracDelta || sample.get_probability() > 0.0);
