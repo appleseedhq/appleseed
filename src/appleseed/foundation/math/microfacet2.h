@@ -180,6 +180,11 @@ class MDF
         const T             alpha_x,
         const T             alpha_y)
     {
+        if (alpha_x == alpha_y)
+        {
+            return T(1.0) / square(alpha_x);
+        }
+
         if (sin_theta != T(0.0))
         {
             const T cos_phi_2_ax_2 = square(h.x / sin_theta) / square(alpha_x);
@@ -464,24 +469,14 @@ class BeckmannMDF2
         const T cos_theta_2 = square(this->cos_theta(h));
         const T cos_theta_4 = square(cos_theta_2);
         const T tan_theta_2 = (T(1.0) - cos_theta_2) / cos_theta_2;
-        const T alpha_x_2 = square(alpha_x);
 
-        if (alpha_x != alpha_y)
-        {
-            const T A = this->stretched_roughness(
-                h,
-                this->sin_theta(h),
-                alpha_x,
-                alpha_y);
+        const T A = this->stretched_roughness(
+            h,
+            this->sin_theta(h),
+            alpha_x,
+            alpha_y);
 
-            const T denom = Pi * alpha_x * alpha_y * cos_theta_4;
-            return std::exp(-tan_theta_2 * A) / denom;
-        }
-        else
-        {
-            // Note: in [2] there's a missing Pi factor in the denominator.
-            return std::exp(-tan_theta_2 / alpha_x_2) / (alpha_x_2 * T(Pi) * cos_theta_4);
-        }
+        return std::exp(-tan_theta_2 * A) / (T(Pi) * alpha_x * alpha_y * cos_theta_4);
     }
 
     virtual T do_eval_pdf(
