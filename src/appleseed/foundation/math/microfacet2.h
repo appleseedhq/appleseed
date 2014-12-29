@@ -185,8 +185,8 @@ class MDF
             return T(1.0) / square(alpha_x);
         }
 
-        const T cos_phi_2_ax_2 = square(h.x / sin_theta) / square(alpha_x);
-        const T sin_phi_2_ay_2 = square(h.z / sin_theta) / square(alpha_y);
+        const T cos_phi_2_ax_2 = square(h.x / (sin_theta * alpha_x));
+        const T sin_phi_2_ay_2 = square(h.z / (sin_theta * alpha_y));
         return cos_phi_2_ax_2 + sin_phi_2_ay_2;
     }
 
@@ -201,8 +201,8 @@ class MDF
             return alpha_x;
         }
 
-        const T cos_phi_2_ax_2 = square(h.x / sin_theta) * square(alpha_x);
-        const T sin_phi_2_ay_2 = square(h.z / sin_theta) * square(alpha_y);
+        const T cos_phi_2_ax_2 = square((h.x * alpha_x) / sin_theta);
+        const T sin_phi_2_ay_2 = square((h.z * alpha_y) / sin_theta);
         return std::sqrt(cos_phi_2_ax_2 + sin_phi_2_ay_2);
     }
 
@@ -402,7 +402,7 @@ class BeckmannSmithMaskingShadowing
             return T(1.0);
 
         const T alpha = MDF<T>::projected_roughness(v, sin_theta, alpha_x, alpha_y);
-        const T a = T(1.0) / alpha * tan_theta;
+        const T a = tan_theta / alpha;
 
         if (a < T(1.6))
         {
@@ -411,7 +411,6 @@ class BeckmannSmithMaskingShadowing
         }
 
         return T(1.0);
-
     }
 };
 
@@ -539,7 +538,7 @@ class GGXSmithMaskingShadowing
         const T cos_theta = std::abs(v.y);
         const T cos_theta_2 = square(cos_theta);
         const T sin_theta = MDF<T>::sin_theta(v);
-        const T tan_theta_2 = (square(sin_theta)) / cos_theta_2;
+        const T tan_theta_2 = square(sin_theta) / cos_theta_2;
 
         if (tan_theta_2 == T(0.0))
             return T(1.0);
