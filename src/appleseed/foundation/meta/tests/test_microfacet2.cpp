@@ -659,4 +659,33 @@ TEST_SUITE(Foundation_Math_Microfacet2)
 
         EXPECT_FEQ_EPS(1.0, integral, WeakWhiteFurnaceEps);
     }
+
+    //
+    // Ward MDF.
+    //
+
+    TEST_CASE(WardMDF2_Evaluate_ReturnsNonNegativeValues)
+    {
+        const WardMDF2<double> mdf;
+
+        EXPECT_TRUE(is_positive(mdf, 0.5, 0.5, PositivityTestSampleCount));
+    }
+
+    TEST_CASE(WardMDF2_Evaluate_GivenCosThetaIsZero_ReturnsZero)
+    {
+        const WardMDF2<double> mdf;
+
+        const double limit = mdf.D(Vector3d(0.0), 0.5, 0.5);
+
+        EXPECT_FEQ(0.0, limit);
+    }
+
+    TEST_CASE(WardMDF2_EvaluatePDF_GivenCosThetaIsZero_ReturnsZero)
+    {
+        const WardMDF2<double> mdf;
+
+        const double limit = mdf.pdf(Vector3d(0.0), 0.5, 0.5);
+
+        EXPECT_FEQ(0.0, limit);
+    }
 }
