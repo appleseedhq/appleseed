@@ -455,10 +455,12 @@ class BeckmannMDF2
         const T              alpha_x,
         const T              alpha_y) const APPLESEED_OVERRIDE
     {
-        if (MDF<T>::cos_theta(h) == T(0.0))
+        const T cos_theta = MDF<T>::cos_theta(h);
+
+        if (cos_theta == T(0.0))
             return T(0.0);
 
-        const T cos_theta_2 = square(MDF<T>::cos_theta(h));
+        const T cos_theta_2 = square(cos_theta);
         const T cos_theta_4 = square(cos_theta_2);
         const T tan_theta_2 = (T(1.0) - cos_theta_2) / cos_theta_2;
 
@@ -588,12 +590,10 @@ class GGXMDF2
         const T              alpha_x,
         const T              alpha_y) const APPLESEED_OVERRIDE
     {
-        const T alpha_x_2 = square(alpha_x);
-
         const T cos_theta = MDF<T>::cos_theta(h);
 
         if (cos_theta == T(0.0))
-            return alpha_x_2 * T(RcpPi);
+            return square(alpha_x) * T(RcpPi);
 
         const T cos_theta_2 = square(cos_theta);
         const T cos_theta_4 = square(cos_theta_2);
