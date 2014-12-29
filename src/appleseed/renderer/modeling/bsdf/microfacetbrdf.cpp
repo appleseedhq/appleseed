@@ -39,7 +39,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
 #include "foundation/math/fresnel.h"
-#include "foundation/math/microfacet.h"
+#include "foundation/math/microfacet2.h"
 #include "foundation/math/minmax.h"
 #include "foundation/math/sampling.h"
 #include "foundation/math/vector.h"
@@ -195,15 +195,16 @@ namespace
 
             // Compute the halfway vector in world space.
             const Vector3d h = normalize(incoming + outgoing);
-            const double cos_hn = dot(h, n);
-            const double cos_oh = dot(outgoing, h);
 
             // Evaluate the MDF.
             double mdf_value, mdf_pdf;
             const double glossiness = values->m_glossiness * values->m_glossiness_multiplier;
-            evaluate_mdf(glossiness, cos_hn, mdf_value, mdf_pdf);
+            const Vector3d m = shading_basis.transform_to_local(h);
+            evaluate_mdf(glossiness, m, mdf_value, mdf_pdf);
 
             // Compute the BRDF value.
+            const double cos_hn = dot(h, n);
+            const double cos_oh = dot(outgoing, h);
             const double g = evaluate_attenuation(cos_on, cos_in, cos_hn, cos_oh);
             fresnel_dielectric_schlick(value, values->m_reflectance, cos_on, values->m_fr_multiplier);
             value *= static_cast<float>(mdf_value * g / (4.0 * cos_on * cos_in) * values->m_reflectance_multiplier);
@@ -234,12 +235,12 @@ namespace
 
             // Compute the halfway vector in world space.
             const Vector3d h = normalize(incoming + outgoing);
-            const double cos_hn = dot(h, n);
             const double cos_oh = dot(outgoing, h);
 
             // Compute and return the PDF value.
             const double glossiness = values->m_glossiness * values->m_glossiness_multiplier;
-            return evaluate_mdf_pdf(glossiness, cos_hn) / (4.0 * cos_oh);
+            const Vector3d m = shading_basis.transform_to_local(h);
+            return evaluate_mdf_pdf(glossiness, m) / (4.0 * cos_oh);
         }
 
       private:
@@ -255,33 +256,15 @@ namespace
 
         MDF             m_mdf;
 
-        struct RemappedBlinnMDF
-          : public BlinnMDF<double>
+        const double blinn_glossiness_to_roughness(const double glossiness) const
         {
-            explicit RemappedBlinnMDF(const double g)
-              : BlinnMDF<double>(100.0 * pow_int(g, 3) + 9900.0 * pow(g, 30.0)) {}
-        };
+            return 100.0 * pow_int(glossiness, 3) + 9900.0 * pow(glossiness, 30.0);
+        }
 
-        struct RemappedBeckmannMDF
-          : public BeckmannMDF<double>
+        const double glossiness_to_roughness(const double glossiness) const
         {
-            explicit RemappedBeckmannMDF(const double g)
-              : BeckmannMDF<double>(max(1.0 - g, 1.0e-6)) {}
-        };
-
-        struct RemappedWardMDF
-          : public WardMDF<double>
-        {
-            explicit RemappedWardMDF(const double g)
-              : WardMDF<double>(max(1.0 - g, 1.0e-6)) {}
-        };
-
-        struct RemappedGGXMDF
-          : public GGXMDF<double>
-        {
-            explicit RemappedGGXMDF(const double g)
-              : GGXMDF<double>(max(1.0 - g, 1.0e-6)) {}
-        };
+            return max(1.0 - glossiness, 1.0e-6);
+        }
 
         void sample_mdf(
             const double        glossiness,
@@ -294,37 +277,41 @@ namespace
             {
               case Blinn:
                 {
-                    RemappedBlinnMDF mdf(glossiness);
-                    direction = mdf.sample(s);
-                    value = mdf.evaluate(direction.y);
-                    pdf = mdf.evaluate_pdf(direction.y);
+                    const double alpha = blinn_glossiness_to_roughness(glossiness);
+                    BlinnMDF2<double> mdf;
+                    direction = mdf.sample(s, alpha, alpha);
+                    value = mdf.D(direction, alpha, alpha);
+                    pdf = mdf.pdf(direction, alpha, alpha);
                 }
                 break;
 
               case Beckmann:
                 {
-                    RemappedBeckmannMDF mdf(glossiness);
-                    direction = mdf.sample(s);
-                    value = mdf.evaluate(direction.y);
-                    pdf = mdf.evaluate_pdf(direction.y);
+                    const double alpha = glossiness_to_roughness(glossiness);
+                    BeckmannMDF2<double> mdf;
+                    direction = mdf.sample(s, alpha, alpha);
+                    value = mdf.D(direction, alpha, alpha);
+                    pdf = mdf.pdf(direction, alpha, alpha);
                 }
                 break;
 
               case Ward:
                 {
-                    RemappedWardMDF mdf(glossiness);
-                    direction = mdf.sample(s);
-                    value = mdf.evaluate(direction.y);
-                    pdf = mdf.evaluate_pdf(direction.y);
+                    const double alpha = max(1.0 - glossiness, 1.0e-6);
+                    WardMDF2<double> mdf;
+                    direction = mdf.sample(s, alpha, alpha);
+                    value = mdf.D(direction, alpha, alpha);
+                    pdf = mdf.pdf(direction, alpha, alpha);
                 }
                 break;
 
               case GGX:
                 {
-                    RemappedGGXMDF mdf(glossiness);
-                    direction = mdf.sample(s);
-                    value = mdf.evaluate(direction.y);
-                    pdf = mdf.evaluate_pdf(direction.y);
+                    const double alpha = max(1.0 - glossiness, 1.0e-6);
+                    GGXMDF2<double> mdf;
+                    direction = mdf.sample(s, alpha, alpha);
+                    value = mdf.D(direction, alpha, alpha);
+                    pdf = mdf.pdf(direction, alpha, alpha);
                 }
                 break;
 
@@ -334,7 +321,7 @@ namespace
 
         void evaluate_mdf(
             const double        glossiness,
-            const double        cos_hn,
+            const Vector3d&     m,
             double&             value,
             double&             pdf) const
         {
@@ -342,33 +329,37 @@ namespace
             {
               case Blinn:
                 {
-                    RemappedBlinnMDF mdf(glossiness);
-                    value = mdf.evaluate(cos_hn);
-                    pdf = mdf.evaluate_pdf(cos_hn);
+                    const double alpha = blinn_glossiness_to_roughness(glossiness);
+                    BlinnMDF2<double> mdf;
+                    value = mdf.D(m, alpha, alpha);
+                    pdf = mdf.pdf(m, alpha, alpha);
                 }
                 break;
 
               case Beckmann:
                 {
-                    RemappedBeckmannMDF mdf(glossiness);
-                    value = mdf.evaluate(cos_hn);
-                    pdf = mdf.evaluate_pdf(cos_hn);
+                    const double alpha = glossiness_to_roughness(glossiness);
+                    BeckmannMDF2<double> mdf;
+                    value = mdf.D(m, alpha, alpha);
+                    pdf = mdf.pdf(m, alpha, alpha);
                 }
                 break;
 
               case Ward:
                 {
-                    RemappedWardMDF mdf(glossiness);
-                    value = mdf.evaluate(cos_hn);
-                    pdf = mdf.evaluate_pdf(cos_hn);
+                    const double alpha = glossiness_to_roughness(glossiness);
+                    WardMDF2<double> mdf;
+                    value = mdf.D(m, alpha, alpha);
+                    pdf = mdf.pdf(m, alpha, alpha);
                 }
                 break;
 
               case GGX:
                 {
-                    RemappedGGXMDF mdf(glossiness);
-                    value = mdf.evaluate(cos_hn);
-                    pdf = mdf.evaluate_pdf(cos_hn);
+                    const double alpha = glossiness_to_roughness(glossiness);
+                    GGXMDF2<double> mdf;
+                    value = mdf.D(m, alpha, alpha);
+                    pdf = mdf.pdf(m, alpha, alpha);
                 }
                 break;
 
@@ -378,32 +369,36 @@ namespace
 
         double evaluate_mdf_pdf(
             const double        glossiness,
-            const double        cos_hn) const
+            const Vector3d&     m) const
         {
             switch (m_mdf)
             {
               case Blinn:
                 {
-                    RemappedBlinnMDF mdf(glossiness);
-                    return mdf.evaluate_pdf(cos_hn);
+                    const double alpha = blinn_glossiness_to_roughness(glossiness);
+                    BlinnMDF2<double> mdf;
+                    return mdf.pdf(m, alpha, alpha);
                 }
 
               case Beckmann:
                 {
-                    RemappedBeckmannMDF mdf(glossiness);
-                    return mdf.evaluate_pdf(cos_hn);
+                    const double alpha = glossiness_to_roughness(glossiness);
+                    BeckmannMDF2<double> mdf;
+                    return mdf.pdf(m, alpha, alpha);
                 }
 
               case Ward:
                 {
-                    RemappedWardMDF mdf(glossiness);
-                    return mdf.evaluate_pdf(cos_hn);
+                    const double alpha = glossiness_to_roughness(glossiness);
+                    WardMDF2<double> mdf;
+                    return mdf.pdf(m, alpha, alpha);
                 }
 
               case GGX:
                 {
-                    RemappedGGXMDF mdf(glossiness);
-                    return mdf.evaluate_pdf(cos_hn);
+                    const double alpha = glossiness_to_roughness(glossiness);
+                    GGXMDF2<double> mdf;
+                    return mdf.pdf(m, alpha, alpha);
                 }
 
               default:
