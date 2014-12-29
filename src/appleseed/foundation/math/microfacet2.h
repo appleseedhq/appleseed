@@ -605,23 +605,16 @@ class GGXMDF2
 
         const T cos_theta_2 = square(cos_theta);
         const T cos_theta_4 = square(cos_theta_2);
-
-        if (alpha_x != alpha_y)
-        {
-            const T sin_theta = this->sin_theta(h);
-            const T A = this->stretched_roughness(
-                h,
-                sin_theta,
-                alpha_x,
-                alpha_y);
-
-            const T tan_theta_2 = square(sin_theta) / cos_theta_2;
-            const T tmp = T(1.0) + tan_theta_2 * A;
-            return T(1.0) / (T(Pi) * alpha_x * alpha_y * cos_theta_4 * square(tmp));
-        }
-
         const T tan_theta_2 = (T(1.0) - cos_theta_2) / cos_theta_2;
-        return alpha_x_2 / (T(Pi) * cos_theta_4 * square(alpha_x_2 + tan_theta_2));
+
+        const T A = this->stretched_roughness(
+            h,
+            this->sin_theta(h),
+            alpha_x,
+            alpha_y);
+
+        const T tmp = T(1.0) + tan_theta_2 * A;
+        return T(1.0) / (T(Pi) * alpha_x * alpha_y * cos_theta_4 * square(tmp));
     }
 
     virtual T do_eval_pdf(
