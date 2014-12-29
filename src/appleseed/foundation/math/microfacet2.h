@@ -338,7 +338,7 @@ class BlinnMDF2
         const Vector<T, 3>&  outgoing,
         const Vector<T, 3>&  h,
         const T              alpha_x,
-        const T              alpha_y) const
+        const T              alpha_y) const APPLESEED_OVERRIDE
     {
         return
             TorranceSparrowMaskingShadowing<T>::G(
@@ -625,6 +625,86 @@ class GGXMDF2
     {
         return
             GGXSmithMaskingShadowing<T>::G(
+                incoming,
+                outgoing,
+                h,
+                alpha_x,
+                alpha_y);
+    }
+};
+
+
+//
+// Ward Microfacet Distribution Function.
+//
+// Reference:
+//
+//   A Microfacet Based Coupled Specular-Matte BRDF Model with Importance Sampling
+//   http://sirkan.iit.bme.hu/~szirmay/scook.pdf
+//
+// Note: not a true MDF as it integrates to values less than 1!
+//
+
+template <typename T>
+class WardMDF2
+  : public MDF<T>
+{
+  public:
+    typedef boost::mpl::bool_<false> IsAnisotropicType;
+
+    WardMDF2() {}
+
+  private:
+    virtual Vector<T, 3> do_sample(
+        const Vector<T, 2>&  s,
+        const T              alpha_x,
+        const T              alpha_y) const APPLESEED_OVERRIDE
+    {
+        const T tan_alpha_2 = square(alpha_x) * (-std::log(T(1.0) - s[0]));
+        const T cos_alpha = T(1.0) / std::sqrt(T(1.0) + tan_alpha_2);
+        const T sin_alpha = cos_alpha * std::sqrt(tan_alpha_2);
+        const T phi = TwoPi * s[1];
+
+        return Vector<T, 3>::unit_vector(cos_alpha, sin_alpha, std::cos(phi), std::sin(phi));
+    }
+
+    virtual T do_eval_D(
+        const Vector<T, 3>&  h,
+        const T              alpha_x,
+        const T              alpha_y) const APPLESEED_OVERRIDE
+    {
+        const T cos_theta = MDF<T>::cos_theta(h);
+
+        assert(cos_theta >= T(0.0));
+
+        if (cos_theta == T(0.0))
+            return T(0.0);
+
+        const T cos_theta_2 = cos_theta * cos_theta;
+        const T cos_theta_3 = cos_theta * cos_theta_2;
+        const T tan_alpha_2 = (T(1.0) - cos_theta_2) / cos_theta_2;
+
+        const T alpha_x2 = square(alpha_x);
+        return std::exp(-tan_alpha_2 / alpha_x2) / (alpha_x2 * T(Pi) * cos_theta_3);
+    }
+
+    virtual T do_eval_pdf(
+        const Vector<T, 3>&  h,
+        const T              alpha_x,
+        const T              alpha_y) const APPLESEED_OVERRIDE
+    {
+        return do_eval_D(h, alpha_x, alpha_y);
+    }
+
+    virtual T do_eval_G(
+        const Vector<T, 3>&  incoming,
+        const Vector<T, 3>&  outgoing,
+        const Vector<T, 3>&  h,
+        const T              alpha_x,
+        const T              alpha_y) const APPLESEED_OVERRIDE
+    {
+        return
+            TorranceSparrowMaskingShadowing<T>::G(
                 incoming,
                 outgoing,
                 h,
