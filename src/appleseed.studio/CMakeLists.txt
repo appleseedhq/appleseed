@@ -191,7 +191,6 @@ set (mainwindow_project_sources
     mainwindow/project/tools.cpp
     mainwindow/project/tools.h
 )
-
 if (WITH_DISNEY_MATERIAL)
     list (APPEND mainwindow_project_sources
         mainwindow/project/expressioneditorwindow.cpp
@@ -203,7 +202,6 @@ if (WITH_DISNEY_MATERIAL)
         mainwindow/project/disneymateriallayerui.h
     )
 endif ()
-
 list (APPEND appleseed.studio_sources
     ${mainwindow_project_sources}
 )
