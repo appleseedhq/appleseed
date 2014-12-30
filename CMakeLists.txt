@@ -625,15 +625,3 @@ install (
     DESTINATION include
     FILES_MATCHING PATTERN "*.h"
 )
-
-
-#--------------------------------------------------------------------------------------------------
-# Packaging with CPack.
-#--------------------------------------------------------------------------------------------------
-
-set (CPACK_PACKAGE_VENDOR "appleseedhq")
-set (CPACK_PACKAGE_VERSION_MAJOR ${appleseed_version_major})
-set (CPACK_PACKAGE_VERSION_MINOR ${appleseed_version_minor})
-set (CPACK_PACKAGE_VERSION_PATCH ${appleseed_version_patch})
-
-include (CPack)
