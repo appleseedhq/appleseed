@@ -248,78 +248,6 @@ namespace
 
 
     //
-    // Berry microfacet distribution function, used in the clearcoat layer.
-    //
-
-    template <typename T>
-    class BerryMDF2
-      : public MDF<T>
-    {
-      public:
-        typedef boost::mpl::bool_<false> IsAnisotropicType;
-
-        BerryMDF2() {}
-
-      private:
-        virtual Vector<T, 3> do_sample(
-            const Vector<T, 2>&  s,
-            const T              alpha_x,
-            const T              alpha_y) const APPLESEED_OVERRIDE
-        {
-            const T alpha_x_2 = square(alpha_x);
-            const T a = T(1.0) - pow(alpha_x_2, T(1.0) - s[0]);
-            const T cos_theta = sqrt(a / (T(1.0) - alpha_x_2));
-            const T sin_theta = sqrt(T(1.0) - square(cos_theta));
-            T cos_phi, sin_phi;
-            this->sample_phi(s[1], cos_phi, sin_phi);
-            return Vector<T, 3>::unit_vector(cos_theta, sin_theta, cos_phi, sin_phi);
-        }
-
-        virtual T do_eval_D(
-            const Vector<T, 3>&  h,
-            const T              alpha_x,
-            const T              alpha_y) const APPLESEED_OVERRIDE
-        {
-            const T alpha_x_2 = square(alpha_x);
-            const T cos_theta_2 = square(this->cos_theta(h));
-            const T a = (alpha_x_2 - T(1.0)) / (T(Pi) * log(alpha_x_2));
-            const T b = (T(1.0) / (T(1.0) + (alpha_x_2 - T(1.0)) * cos_theta_2));
-            return a * b;
-        }
-
-        virtual T do_eval_G(
-            const Vector<T, 3>&  incoming,
-            const Vector<T, 3>&  outgoing,
-            const Vector<T, 3>&  h,
-            const T              alpha_x,
-            const T              alpha_y) const APPLESEED_OVERRIDE
-        {
-            return
-                GGXSmithMaskingShadowing<T>::G(
-                    incoming,
-                    outgoing,
-                    h,
-                    alpha_x,
-                    alpha_y);
-        }
-
-        virtual T do_eval_pdf(
-            const Vector<T, 3>&  h,
-            const T              alpha_x,
-            const T              alpha_y) const APPLESEED_OVERRIDE
-        {
-            if (this->cos_theta(h) == T(0.0))
-                return T(0.0);
-
-            const T alpha_x_2 = square(alpha_x);
-            const T a = (alpha_x_2 - T(1.0)) / (T(Pi) * log(alpha_x_2));
-            const T b = (T(1.0) / (T(1.0) + (alpha_x_2 - T(1.0)) * this->cos_theta(h)));
-            return a * b;
-        }
-    };
-
-
-    //
     // Disney BRDF implementation.
     //
 
@@ -439,9 +367,10 @@ namespace
             }
 
             // Compute the incoming direction by sampling the MDF.
-            sample.get_sampling_context().split_in_place(2, 1);
-            const Vector2d s2 = sample.get_sampling_context().next_vector2<2>();
-            const Vector3d m = mdf->sample(s2, alpha_x, alpha_y);
+            sample.get_sampling_context().split_in_place(3, 1);
+            const Vector3d s2 = sample.get_sampling_context().next_vector2<3>();
+            const Vector3d wo = sample.get_shading_basis().transform_to_local(sample.get_outgoing());
+            const Vector3d m = mdf->sample(wo, s2, alpha_x, alpha_y);
             const Vector3d h = sample.get_shading_basis().transform_to_parent(m);
             sample.set_incoming(reflect(sample.get_outgoing(), h));
 
@@ -459,7 +388,7 @@ namespace
             const double G =
                 mdf->G(
                     sample.get_shading_basis().transform_to_local(sample.get_incoming()),
-                    sample.get_shading_basis().transform_to_local(sample.get_outgoing()),
+                    wo,
                     m,
                     alpha_gx,
                     alpha_gy);
@@ -472,7 +401,7 @@ namespace
                 sample.value().set(static_cast<float>(clearcoat_f(values->m_clearcoat, cos_oh)));
 
             sample.value() *= static_cast<float>((D * G) / (4.0 * cos_on * cos_in));
-            sample.set_probability(mdf->pdf(m, alpha_x, alpha_y) / (4.0 * cos_oh));
+            sample.set_probability(mdf->pdf(wo, m, alpha_x, alpha_y) / (4.0 * cos_oh));
             sample.set_mode(BSDFSample::Glossy);
         }
 
@@ -561,7 +490,7 @@ namespace
                 specular_value *= static_cast<float>(D * G / (4.0 * cos_on * cos_in));
                 value += specular_value;
 
-                pdf += m_specular_mdf.pdf(m, alpha_x, alpha_y)  / (4.0 * cos_oh) * weights[SpecularComponent];
+                pdf += m_specular_mdf.pdf(wo, m, alpha_x, alpha_y)  / (4.0 * cos_oh) * weights[SpecularComponent];
             }
 
             if (weights[CleatcoatComponent] != 0.0)
@@ -588,7 +517,7 @@ namespace
                 clearcoat_value.set(static_cast<float>(D * G * F / (4.0 * cos_on * cos_in)));
                 value += clearcoat_value;
 
-                pdf += m_clearcoat_mdf.pdf(m, alpha, alpha)  / (4.0 * cos_oh) * weights[CleatcoatComponent];
+                pdf += m_clearcoat_mdf.pdf(wo, m, alpha, alpha)  / (4.0 * cos_oh) * weights[CleatcoatComponent];
             }
 
             return pdf;
@@ -641,17 +570,19 @@ namespace
             const Vector3d hl = shading_basis.transform_to_local(h);
             const double cos_oh = dot(outgoing, h);
 
+            const Vector3d wo = shading_basis.transform_to_local(outgoing);
+
             if (weights[SpecularComponent] != 0.0)
             {
                 double alpha_x, alpha_y;
                 specular_roughness(values, alpha_x, alpha_y);
-                pdf += m_specular_mdf.pdf(hl, alpha_x, alpha_y) / (4.0 * cos_oh) * weights[SpecularComponent];
+                pdf += m_specular_mdf.pdf(wo, hl, alpha_x, alpha_y) / (4.0 * cos_oh) * weights[SpecularComponent];
             }
 
             if (weights[CleatcoatComponent] != 0.0)
             {
                 const double alpha = clearcoat_roughness(values);
-                pdf += m_specular_mdf.pdf(hl, alpha, alpha) / (4.0 * cos_oh) * weights[CleatcoatComponent];
+                pdf += m_specular_mdf.pdf(wo, hl, alpha, alpha) / (4.0 * cos_oh) * weights[CleatcoatComponent];
             }
 
             return pdf;

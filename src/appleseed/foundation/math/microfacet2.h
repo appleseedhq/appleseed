@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014 Francois Beaune, The appleseedhq Organization
 // Copyright (c) 2014-2015 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -39,6 +39,7 @@
 
 // Boost headers.
 #include "boost/math/special_functions/erf.hpp"
+#include "boost/math/special_functions/sign.hpp"
 #include "boost/mpl/bool.hpp"
 
 // Standard headers.
@@ -46,8 +47,13 @@
 #include <cassert>
 #include <cmath>
 
+
 namespace foundation
 {
+
+//
+// MDF: Base class for microfacet distribution functions.
+//
 
 template <typename T>
 class MDF
@@ -60,24 +66,6 @@ class MDF
 
     virtual ~MDF() {}
 
-    Vector<T, 3> sample(
-        const Vector<T, 2>&  s,
-        const T              alpha_x,
-        const T              alpha_y) const
-    {
-        // Preconditions.
-        assert(s[0] >= T(0.0));
-        assert(s[0] <  T(1.0));
-        assert(s[1] >= T(0.0));
-        assert(s[1] <  T(1.0));
-
-        const Vector<T, 3> result = do_sample(s, alpha_x, alpha_y);
-
-        // Postconditions.
-        assert(is_normalized(result));
-        return result;
-    }
-
     T D(
         const Vector<T, 3>&  h,
         const T              alpha_x,
@@ -85,23 +73,10 @@ class MDF
     {
         // Preconditions.
         assert(cos_theta(h) >= T(0.0));
+        assert(alpha_x > T(0.0));
+        assert(alpha_y > T(0.0));
 
         const T result = do_eval_D(h, alpha_x, alpha_y);
-
-        // Postconditions.
-        assert(result >= T(0.0));
-        return result;
-    }
-
-    T pdf(
-        const Vector<T, 3>&  h,
-        const T              alpha_x,
-        const T              alpha_y) const
-    {
-        // Preconditions.
-        assert(cos_theta(h) >= T(0.0));
-
-        const T result = do_eval_pdf(h, alpha_x, alpha_y);
 
         // Postconditions.
         assert(result >= T(0.0));
@@ -115,12 +90,78 @@ class MDF
         const T              alpha_x,
         const T              alpha_y) const
     {
+        // Preconditions.
+        assert(alpha_x > T(0.0));
+        assert(alpha_y > T(0.0));
+
         const T result = do_eval_G(incoming, outgoing, h, alpha_x, alpha_y);
 
         // Postconditions.
         assert(result >= T(0.0));
         return result;
     }
+
+    T G1(
+        const Vector<T, 3>&  v,
+        const Vector<T, 3>&  m,
+        const T              alpha_x,
+        const T              alpha_y) const
+    {
+        // Preconditions.
+        assert(alpha_x > T(0.0));
+        assert(alpha_y > T(0.0));
+
+        const T result = do_eval_G1(v, m, alpha_x, alpha_y);
+
+        // Postconditions.
+        assert(result >= T(0.0));
+        return result;
+    }
+
+    Vector<T, 3> sample(
+        const Vector<T, 3>&  v,
+        const Vector<T, 3>&  s,
+        const T              alpha_x,
+        const T              alpha_y) const
+    {
+        // Preconditions.
+        assert(s[0] >= T(0.0));
+        assert(s[0] <  T(1.0));
+        assert(s[1] >= T(0.0));
+        assert(s[1] <  T(1.0));
+        assert(s[2] >= T(0.0));
+        assert(s[2] <  T(1.0));
+        assert(is_normalized(v));
+        assert(alpha_x > T(0.0));
+        assert(alpha_y > T(0.0));
+
+        const Vector<T, 3> result = do_sample(v, s, alpha_x, alpha_y);
+
+        // Postconditions.
+        assert(is_normalized(result));
+        return result;
+    }
+
+    T pdf(
+        const Vector<T, 3>&  v,
+        const Vector<T, 3>&  h,
+        const T              alpha_x,
+        const T              alpha_y) const
+    {
+        // Preconditions.
+        assert(is_normalized(v));
+        assert(cos_theta(h) >= T(0.0));
+        assert(alpha_x > T(0.0));
+        assert(alpha_y > T(0.0));
+
+        const T result = do_eval_pdf(v, h, alpha_x, alpha_y);
+
+        // Postconditions.
+        assert(result >= T(0.0));
+        return result;
+    }
+
+  protected:
 
     // Utility functions.
 
@@ -129,24 +170,9 @@ class MDF
         return v.y;
     }
 
-    static T sin_theta_2(const Vector<T, 3>& v)
-    {
-        return T(1.0) - square(cos_theta(v));
-    }
-
     static T sin_theta(const Vector<T, 3>& v)
     {
-        return std::sqrt(std::max(T(0.0), sin_theta_2(v)));
-    }
-
-    static T cos_phi(const Vector<T, 3>& v)
-    {
-        return v.x / sin_theta(v);
-    }
-
-    static T sin_phi(const Vector<T, 3>& v)
-    {
-        return v.z / sin_theta(v);
+        return std::sqrt(std::max(T(0.0), T(1.0) - square(cos_theta(v))));
     }
 
     static void sample_phi(
@@ -181,9 +207,7 @@ class MDF
         const T             alpha_y)
     {
         if (alpha_x == alpha_y || sin_theta == T(0.0))
-        {
             return T(1.0) / square(alpha_x);
-        }
 
         const T cos_phi_2_ax_2 = square(h.x / (sin_theta * alpha_x));
         const T sin_phi_2_ay_2 = square(h.z / (sin_theta * alpha_y));
@@ -197,27 +221,116 @@ class MDF
         const T             alpha_y)
     {
         if (alpha_x == alpha_y || sin_theta == T(0.0))
-        {
             return alpha_x;
-        }
 
         const T cos_phi_2_ax_2 = square((h.x * alpha_x) / sin_theta);
         const T sin_phi_2_ay_2 = square((h.z * alpha_y) / sin_theta);
         return std::sqrt(cos_phi_2_ax_2 + sin_phi_2_ay_2);
     }
 
-  private:
-    virtual Vector<T, 3> do_sample(
-        const Vector<T, 2>&  s,
-        const T              alpha_x,
-        const T              alpha_y) const = 0;
+    static T v_cavity_G1(
+        const Vector<T, 3>&  v,
+        const Vector<T, 3>&  h)
+    {
+        if (v.y <= T(0.0))
+            return T(0.0);
 
-    virtual T do_eval_D(
+        if (dot(v, h) <= T(0.0))
+            return T(0.0);
+
+        const T cos_vh = std::fabs(dot(v, h));
+        if (cos_vh == T(0.0))
+            return T(0.0);
+
+        return std::min(T(1.0), T(2.0) * std::fabs(h.y * v.y) / cos_vh);
+    }
+
+    static T v_cavity_G(
+        const Vector<T, 3>&  incoming,
+        const Vector<T, 3>&  outgoing,
+        const Vector<T, 3>&  h)
+    {
+        const T G1i = v_cavity_G1(incoming, h);
+        const T G1o = v_cavity_G1(outgoing, h);
+
+        if (incoming.y >= T(0.0))
+            return std::min(G1i, G1o);
+
+        return std::max(G1i + G1o - T(1.0), T(0.0));
+    }
+
+    static Vector<T, 3> v_cavity_choose_microfacet_normal(
+        const Vector<T, 3>&  v,
+        const Vector<T, 3>&  h,
+        const T              s)
+    {
+        Vector<T, 3> hm(-h[0], h[1], -h[2]);
+        const T dot_vh  = std::max(dot(v, h), T(0.0));
+        const T dot_vhm = std::max(dot(v, hm), T(0.0));
+
+        const T w = dot_vh != T(0.0) ? dot_vh / (dot_vh + dot_vhm) : T(0.0);
+        return s < w ? h : hm;
+    }
+
+    template <typename Distribution>
+    static Vector<T, 3> sample_visible_normals(
+        const Distribution&  mdf,
+        const Vector<T, 3>&  v,
+        const Vector<T, 3>&  s,
+        const T              alpha_x,
+        const T              alpha_y)
+    {
+        // Stretch incident.
+        Vector<T, 3> stretched(
+            v[0] * alpha_x,
+            v[1],
+            v[2] * alpha_y);
+
+        stretched = normalize(stretched);
+
+        const T cos_theta = stretched[1];
+        const T phi =
+            stretched[1] < T(0.99999) ? std::atan2(stretched[2], stretched[0]) : T(0.0);
+
+        // Sample slope.
+        Vector<T, 2> slope = mdf.do_sample_11(cos_theta, s);
+
+        // Rotate.
+        const T cos_phi = std::cos(phi);
+        const T sin_phi = std::sin(phi);
+
+        slope = Vector<T, 2>(
+            cos_phi * slope[0] - sin_phi * slope[1],
+            sin_phi * slope[0] + cos_phi * slope[1]);
+
+        // Stretch and normalize.
+        Vector<T, 3> m(
+            alpha_x * slope[0],
+            T(1.0),
+            alpha_y * slope[1]);
+        return normalize(m);
+    }
+
+    template <typename Distribution>
+    static T do_eval_Dw(
+        const Distribution&  mdf,
+        const Vector<T, 3>&  v,
         const Vector<T, 3>&  h,
         const T              alpha_x,
-        const T              alpha_y) const = 0;
+        const T              alpha_y)
+    {
+        if (cos_theta(v) == T(0.0))
+            return T(0.0);
 
-    virtual T do_eval_pdf(
+        return
+            mdf.do_eval_G1(v, h, alpha_x, alpha_y) *
+            std::fabs(dot(v, h)) *
+            mdf.do_eval_D(h, alpha_x, alpha_y) /
+            std::fabs(cos_theta(v));
+    }
+
+  private:
+    virtual T do_eval_D(
         const Vector<T, 3>&  h,
         const T              alpha_x,
         const T              alpha_y) const = 0;
@@ -228,59 +341,24 @@ class MDF
         const Vector<T, 3>&  h,
         const T              alpha_x,
         const T              alpha_y) const = 0;
-};
 
+    virtual T do_eval_G1(
+        const Vector<T, 3>&  v,
+        const Vector<T, 3>&  m,
+        const T              alpha_x,
+        const T              alpha_y) const = 0;
 
+    virtual Vector<T, 3> do_sample(
+        const Vector<T, 3>&  v,
+        const Vector<T, 3>&  s,
+        const T              alpha_x,
+        const T              alpha_y) const = 0;
 
-//
-// Torrance-Sparrow Masking Shadowing Function.
-//
-// References:
-//
-//   [1] Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs
-//       http://hal.inria.fr/docs/00/96/78/44/PDF/RR-8468.pdf
-//
-//   [2] Importance Sampling Microfacet-Based BSDFs using the Distribution of Visible Normals
-//       http://hal.inria.fr/docs/01/00/66/20/PDF/article.pdf
-//
-
-template <typename T>
-class TorranceSparrowMaskingShadowing
-{
-  public:
-    TorranceSparrowMaskingShadowing() {}
-
-    // incoming and outgoing are in shading basis space.
-    static T G(
-        const Vector<T, 3>&  incoming,
-        const Vector<T, 3>&  outgoing,
+    virtual T do_eval_pdf(
+        const Vector<T, 3>&  v,
         const Vector<T, 3>&  h,
         const T              alpha_x,
-        const T              alpha_y)
-    {
-        if (incoming.y >= T(0.0))
-            return std::min(G1(incoming, h), G1(outgoing, h));
-
-        return std::max(G1(incoming, h) + G1(outgoing, h) - T(1.0), T(0.0));
-    }
-
-  private:
-    static T G1(
-        const Vector<T, 3>&  v,
-        const Vector<T, 3>&  h)
-    {
-        if (v.y <= T(0.0))
-            return T(0.0);
-
-        if (dot(v, h) <= T(0.0))
-            return T(0.0);
-
-        const T cos_vh = std::abs(dot(v, h));
-        if (cos_vh == T(0.0))
-            return T(0.0);
-
-        return std::min(T(1.0), T(2.0) * std::abs(h.y) * std::abs(v.y) / cos_vh);
-    }
+        const T              alpha_y) const = 0;
 };
 
 
@@ -294,6 +372,9 @@ class TorranceSparrowMaskingShadowing
 //   Microfacet Models for Refraction through Rough Surfaces
 //   http://www.cs.cornell.edu/~srm/publications/EGSR07-btdf.pdf
 //
+//   Importance Sampling Microfacet-Based BSDFs using the Distribution of Visible Normals.
+//   https://hal.inria.fr/hal-00996995/en
+//
 
 template <typename T>
 class BlinnMDF2
@@ -305,17 +386,7 @@ class BlinnMDF2
     BlinnMDF2() {}
 
   private:
-    virtual Vector<T, 3> do_sample(
-        const Vector<T, 2>&  s,
-        const T              alpha_x,
-        const T              alpha_y) const APPLESEED_OVERRIDE
-    {
-        const T cos_theta = std::pow(T(1.0) - s[0], T(1.0) / (alpha_x + T(2.0)));
-        const T sin_theta = std::sqrt(T(1.0) - cos_theta * cos_theta);
-        T cos_phi, sin_phi;
-        MDF<T>::sample_phi(s[1], cos_phi, sin_phi);
-        return Vector<T, 3>::unit_vector(cos_theta, sin_theta, cos_phi, sin_phi);
-    }
+    friend class MDF<T>;
 
     virtual T do_eval_D(
         const Vector<T, 3>&  h,
@@ -325,14 +396,6 @@ class BlinnMDF2
         return (alpha_x + T(2.0)) * T(RcpTwoPi) * std::pow(MDF<T>::cos_theta(h), alpha_x);
     }
 
-    virtual T do_eval_pdf(
-        const Vector<T, 3>&  h,
-        const T              alpha_x,
-        const T              alpha_y) const APPLESEED_OVERRIDE
-    {
-        return (alpha_x + T(2.0)) * T(RcpTwoPi) * std::pow(MDF<T>::cos_theta(h), alpha_x + T(1.0));
-    }
-
     virtual T do_eval_G(
         const Vector<T, 3>&  incoming,
         const Vector<T, 3>&  outgoing,
@@ -340,10 +403,44 @@ class BlinnMDF2
         const T              alpha_x,
         const T              alpha_y) const APPLESEED_OVERRIDE
     {
+        return MDF<T>::v_cavity_G(incoming, outgoing, h);
+    }
+
+    T do_eval_G1(
+        const Vector<T, 3>&  v,
+        const Vector<T, 3>&  m,
+        const T              alpha_x,
+        const T              alpha_y) const APPLESEED_OVERRIDE
+    {
+        return MDF<T>::v_cavity_G1(v, m);
+    }
+
+    virtual Vector<T, 3> do_sample(
+        const Vector<T, 3>&  v,
+        const Vector<T, 3>&  s,
+        const T              alpha_x,
+        const T              alpha_y) const APPLESEED_OVERRIDE
+    {
+        const T cos_theta = std::pow(T(1.0) - s[0], T(1.0) / (alpha_x + T(2.0)));
+        const T sin_theta = std::sqrt(T(1.0) - cos_theta * cos_theta);
+        T cos_phi, sin_phi;
+        MDF<T>::sample_phi(s[1], cos_phi, sin_phi);
+        const Vector<T, 3> h =
+            Vector<T, 3>::unit_vector(cos_theta, sin_theta, cos_phi, sin_phi);
+
+        return MDF<T>::v_cavity_choose_microfacet_normal(v, h, s[2]);
+    }
+
+    virtual T do_eval_pdf(
+        const Vector<T, 3>&  v,
+        const Vector<T, 3>&  h,
+        const T              alpha_x,
+        const T              alpha_y) const APPLESEED_OVERRIDE
+    {
         return
-            TorranceSparrowMaskingShadowing<T>::G(
-                incoming,
-                outgoing,
+            MDF<T>::do_eval_Dw(
+                *this,
+                v,
                 h,
                 alpha_x,
                 alpha_y);
@@ -367,52 +464,13 @@ class BlinnMDF2
 //   [4] Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs
 //       http://hal.inria.fr/docs/00/96/78/44/PDF/RR-8468.pdf
 //
+//   [5] Importance Sampling Microfacet-Based BSDFs using the Distribution of Visible Normals.
+//       https://hal.inria.fr/hal-00996995/en
+//
+//   [6] An Improved Visible Normal Sampling Routine for the Beckmann Distribution.
+//       http://www.mitsuba-renderer.org/~wenzel/files/visnormal.pdf
 //
 
-template <typename T>
-class BeckmannSmithMaskingShadowing
-{
-  public:
-    BeckmannSmithMaskingShadowing() {}
-
-    static T G(
-        const Vector<T, 3>&  incoming,
-        const Vector<T, 3>&  outgoing,
-        const Vector<T, 3>&  h,
-        const T              alpha_x,
-        const T              alpha_y)
-    {
-        return G1(outgoing, h, alpha_x, alpha_y) * G1(incoming, h, alpha_x, alpha_y);
-    }
-
-    static T G1(
-        const Vector<T, 3>&  v,
-        const Vector<T, 3>&  m,
-        const T              alpha_x,
-        const T              alpha_y)
-    {
-        if (dot(v, m) * v.y <= T(0.0))
-            return T(0.0);
-
-        const T cos_theta = MDF<T>::cos_theta(v);
-        const T sin_theta = MDF<T>::sin_theta(v);
-        const T tan_theta = sin_theta / cos_theta;
-
-        if (tan_theta == T(0.0))
-            return T(1.0);
-
-        const T alpha = MDF<T>::projected_roughness(v, sin_theta, alpha_x, alpha_y);
-        const T a = tan_theta / alpha;
-
-        if (a < T(1.6))
-        {
-            const T a2 = square(a);
-            return (T(3.535) * a + T(2.181) * a2) / (T(1.0) + T(2.276) * a + T(2.577) * a2);
-        }
-
-        return T(1.0);
-    }
-};
 
 template <typename T>
 class BeckmannMDF2
@@ -424,30 +482,7 @@ class BeckmannMDF2
     BeckmannMDF2() {}
 
   private:
-    virtual Vector<T, 3> do_sample(
-        const Vector<T, 2>&  s,
-        const T              alpha_x,
-        const T              alpha_y) const APPLESEED_OVERRIDE
-    {
-        T cos_theta, sin_theta, cos_phi, sin_phi, tan_theta_2;
-
-        if (alpha_x != alpha_y)
-        {
-            MDF<T>::sample_phi(s[1], alpha_x, alpha_y, cos_phi, sin_phi);
-            const T tmp = square(cos_phi / alpha_x) + square(sin_phi / alpha_y);
-            tan_theta_2 = -std::log(T(1.0) - s[0]) / tmp;
-        }
-        else
-        {
-            MDF<T>::sample_phi(s[1], cos_phi, sin_phi);
-            const T alpha_x_2 = square(alpha_x);
-            tan_theta_2 = alpha_x_2 * (-std::log(T(1.0) - s[0]));
-        }
-
-        cos_theta = T(1.0) / std::sqrt(T(1) + tan_theta_2);
-        sin_theta = cos_theta * std::sqrt(tan_theta_2);
-        return Vector<T, 3>::unit_vector(cos_theta, sin_theta, cos_phi, sin_phi);
-    }
+    friend class MDF<T>;
 
     virtual T do_eval_D(
         const Vector<T, 3>&  h,
@@ -472,14 +507,6 @@ class BeckmannMDF2
         return std::exp(-tan_theta_2 * A) / (T(Pi) * alpha_x * alpha_y * cos_theta_4);
     }
 
-    virtual T do_eval_pdf(
-        const Vector<T, 3>&  h,
-        const T              alpha_x,
-        const T              alpha_y) const APPLESEED_OVERRIDE
-    {
-        return do_eval_D(h, alpha_x, alpha_y) * MDF<T>::cos_theta(h);
-    }
-
     virtual T do_eval_G(
         const Vector<T, 3>&  incoming,
         const Vector<T, 3>&  outgoing,
@@ -488,12 +515,144 @@ class BeckmannMDF2
         const T              alpha_y) const APPLESEED_OVERRIDE
     {
         return
-            BeckmannSmithMaskingShadowing<T>::G(
-                incoming,
-                outgoing,
+            do_eval_G1(outgoing, h, alpha_x, alpha_y) *
+            do_eval_G1(incoming, h, alpha_x, alpha_y);
+    }
+
+    virtual T do_eval_G1(
+        const Vector<T, 3>&  v,
+        const Vector<T, 3>&  m,
+        const T              alpha_x,
+        const T              alpha_y) const APPLESEED_OVERRIDE
+    {
+        if (dot(v, m) * v.y <= T(0.0))
+            return T(0.0);
+
+        const T cos_theta = MDF<T>::cos_theta(v);
+
+        if (cos_theta == T(0.0))
+            return T(1.0);
+
+        const T sin_theta = MDF<T>::sin_theta(v);
+        const T tan_theta = std::fabs(sin_theta / cos_theta);
+
+        const T alpha =
+            MDF<T>::projected_roughness(
+                v,
+                sin_theta,
+                alpha_x,
+                alpha_y);
+
+        const T a = tan_theta / alpha;
+
+        if (a < T(1.6))
+        {
+            const T a2 = square(a);
+            return (T(3.535) * a + T(2.181) * a2) / (T(1.0) + T(2.276) * a + T(2.577) * a2);
+        }
+
+        return T(1.0);
+    }
+
+    virtual Vector<T, 3> do_sample(
+        const Vector<T, 3>&  v,
+        const Vector<T, 3>&  s,
+        const T              alpha_x,
+        const T              alpha_y) const APPLESEED_OVERRIDE
+    {
+        return
+            MDF<T>::sample_visible_normals(
+                *this,
+                v,
+                s,
+                alpha_x,
+                alpha_y);
+    }
+
+    virtual T do_eval_pdf(
+        const Vector<T, 3>&  v,
+        const Vector<T, 3>&  h,
+        const T              alpha_x,
+        const T              alpha_y) const APPLESEED_OVERRIDE
+    {
+        return
+            MDF<T>::do_eval_Dw(
+                *this,
+                v,
                 h,
                 alpha_x,
                 alpha_y);
+    }
+
+    // This code comes from OpenShadingLanguage test render.
+    Vector<T, 2> do_sample_11(
+        const T             cos_theta,
+        const Vector<T, 3>& s) const
+    {
+        const T ct = std::max(cos_theta, T(1e-6));
+        const T tan_theta = std::sqrt(T(1.0) - square(ct)) / ct;
+        const T cot_theta = T(1.0) / tan_theta;
+
+        // Sample slope X:
+        // compute a coarse approximation using the approximation:
+        // exp(-ierf(x)^2) ~= 1 - x * x
+        // solve y = 1 + b + K * (1 - b * b).
+
+        const T c = erf(cot_theta);
+        const T K = tan_theta / std::sqrt(Pi);
+        const T y_approx = s[0] * (T(1.0) + c + K * (1 - c * c));
+        const T y_exact  = s[0] * (T(1.0) + c + K * std::exp(-square(cot_theta)));
+        T b = K > T(0.0)
+            ? (T(0.5) - std::sqrt(K * (K - y_approx + T(1.0)) + T(0.25))) / K
+            : y_approx - T(1.0);
+
+        // Perform newton step to refine toward the true root.
+        T inv_erf = erf_inv(b);
+        T value  = T(1.0) + b + K * std::exp(-square(inv_erf)) - y_exact;
+
+        // Check if we are close enough already.
+        // This also avoids NaNs as we get close to the root.
+        Vector2d slope;
+
+        if (std::fabs(value) > T(1e-6))
+        {
+            b -= value / (T(1.0) - inv_erf * tan_theta); // newton step 1
+            T inv_erf = erf_inv(b);
+            value = T(1.0) + b + K * std::exp(-square(inv_erf)) - y_exact;
+            b -= value / (T(1.0) - inv_erf * tan_theta); // newton step 2
+            // Compute the slope from the refined value
+            slope[0] = erf_inv(b);
+        }
+        else
+        {
+            // we are close enough already
+            slope[0] = inv_erf;
+        }
+
+        // Sample slope Y
+        slope[1] = erf_inv(T(2.0) * s[1] - T(1.0));
+        return slope;
+    }
+
+    typedef boost::math::policies::policy<
+#ifndef NDEBUG
+//       boost::math::policies::error_policy_type<boost::math::policies::ignore_error>,
+#endif
+        boost::math::policies::promote_float<false>,
+        boost::math::policies::digits10<6>
+    > ErfPolicyType;
+
+    static T erf(const T x)
+    {
+        return boost::math::erf(x, ErfPolicyType());
+    }
+
+    static T erf_inv(T x)
+    {
+        if (std::fabs(x) == T(1.0))
+            x -= boost::math::copysign(T(1e-5), x);
+
+        return boost::math::erf_inv(x, ErfPolicyType());
     }
 };
 
@@ -509,46 +668,9 @@ class BeckmannMDF2
 //   [2] Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs
 //       http://hal.inria.fr/docs/00/96/78/44/PDF/RR-8468.pdf
 //
-
-template <typename T>
-class GGXSmithMaskingShadowing
-{
-  public:
-    GGXSmithMaskingShadowing() {}
-
-    static T G(
-        const Vector<T, 3>&  incoming,
-        const Vector<T, 3>&  outgoing,
-        const Vector<T, 3>&  h,
-        const T              alpha_x,
-        const T              alpha_y)
-    {
-        return G1(outgoing, h, alpha_x, alpha_y) * G1(incoming, h, alpha_x, alpha_y);
-    }
-
-    static T G1(
-        const Vector<T, 3>&  v,
-        const Vector<T, 3>&  m,
-        const T              alpha_x,
-        const T              alpha_y)
-    {
-        if (dot(v, m) * v.y <= T(0.0))
-            return T(0.0);
-
-        const T cos_theta = std::abs(v.y);
-        const T cos_theta_2 = square(cos_theta);
-        const T sin_theta = MDF<T>::sin_theta(v);
-        const T tan_theta_2 = square(sin_theta) / cos_theta_2;
-
-        if (tan_theta_2 == T(0.0))
-            return T(1.0);
-
-        const T alpha = MDF<T>::projected_roughness(v, sin_theta, alpha_x, alpha_y);
-        const T a2_rcp = square(alpha) * tan_theta_2;
-        const T lambda = (T(-1.0) + std::sqrt(T(1.0) + a2_rcp)) * T(0.5);
-        return T(1.0) / (T(1.0) + lambda);
-    }
-};
+//   [3] Importance Sampling Microfacet-Based BSDFs using the Distribution of Visible Normals.
+//       https://hal.inria.fr/hal-00996995/en
+//
 
 template <typename T>
 class GGXMDF2
@@ -560,29 +682,7 @@ class GGXMDF2
     GGXMDF2() {}
 
   private:
-    virtual Vector<T, 3> do_sample(
-        const Vector<T, 2>&  s,
-        const T              alpha_x,
-        const T              alpha_y) const APPLESEED_OVERRIDE
-    {
-        T cos_phi, sin_phi, tan_theta_2;
-
-        if (alpha_x != alpha_y)
-        {
-            MDF<T>::sample_phi(s[1], alpha_x, alpha_y, cos_phi, sin_phi);
-            const T tmp = square(cos_phi / alpha_x) + square(sin_phi / alpha_y);
-            tan_theta_2 = s[0] / ((T(1.0) - s[0]) * tmp);
-        }
-        else
-        {
-            MDF<T>::sample_phi(s[1], cos_phi, sin_phi);
-            tan_theta_2 = square(alpha_x) * s[0] / (T(1.0) - s[0]);
-        }
-
-        const T cos_theta = T(1.0) / std::sqrt(T(1.0) + tan_theta_2);
-        const T sin_theta = std::sqrt(T(1.0) - square(cos_theta));
-        return Vector<T, 3>::unit_vector(cos_theta, sin_theta, cos_phi, sin_phi);
-    }
+    friend class MDF<T>;
 
     virtual T do_eval_D(
         const Vector<T, 3>&  h,
@@ -608,14 +708,6 @@ class GGXMDF2
         return T(1.0) / (T(Pi) * alpha_x * alpha_y * cos_theta_4 * square(tmp));
     }
 
-    virtual T do_eval_pdf(
-        const Vector<T, 3>&  h,
-        const T              alpha_x,
-        const T              alpha_y) const APPLESEED_OVERRIDE
-    {
-        return do_eval_D(h, alpha_x, alpha_y) * MDF<T>::cos_theta(h);
-    }
-
     virtual T do_eval_G(
         const Vector<T, 3>&  incoming,
         const Vector<T, 3>&  outgoing,
@@ -624,12 +716,118 @@ class GGXMDF2
         const T              alpha_y) const APPLESEED_OVERRIDE
     {
         return
-            GGXSmithMaskingShadowing<T>::G(
-                incoming,
-                outgoing,
+            do_eval_G1(outgoing, h, alpha_x, alpha_y) *
+            do_eval_G1(incoming, h, alpha_x, alpha_y);
+    }
+
+    virtual T do_eval_G1(
+        const Vector<T, 3>&  v,
+        const Vector<T, 3>&  m,
+        const T              alpha_x,
+        const T              alpha_y) const APPLESEED_OVERRIDE
+    {
+        if (dot(v, m) * v.y <= T(0.0))
+            return T(0.0);
+
+        const T cos_theta = std::fabs(v.y);
+        const T cos_theta_2 = square(cos_theta);
+        const T sin_theta = MDF<T>::sin_theta(v);
+        const T tan_theta_2 = square(sin_theta) / cos_theta_2;
+
+        if (tan_theta_2 == T(0.0))
+            return T(1.0);
+
+        const T alpha =
+            MDF<T>::projected_roughness(
+                v,
+                sin_theta,
+                alpha_x,
+                alpha_y);
+
+        const T a2_rcp = square(alpha) * tan_theta_2;
+        const T lambda = (T(-1.0) + std::sqrt(T(1.0) + a2_rcp)) * T(0.5);
+        return T(1.0) / (T(1.0) + lambda);
+    }
+
+    virtual Vector<T, 3> do_sample(
+        const Vector<T, 3>&  v,
+        const Vector<T, 3>&  s,
+        const T              alpha_x,
+        const T              alpha_y) const APPLESEED_OVERRIDE
+    {
+        return
+            MDF<T>::sample_visible_normals(
+                *this,
+                v,
+                s,
+                alpha_x,
+                alpha_y);
+    }
+
+    virtual T do_eval_pdf(
+        const Vector<T, 3>&  v,
+        const Vector<T, 3>&  h,
+        const T              alpha_x,
+        const T              alpha_y) const APPLESEED_OVERRIDE
+    {
+        return
+            MDF<T>::do_eval_Dw(
+                *this,
+                v,
                 h,
                 alpha_x,
                 alpha_y);
+    }
+
+    // Adapted from the sample code provided in [3].
+    Vector<T, 2> do_sample_11(
+        const T             cos_theta,
+        const Vector<T, 3>& s) const
+    {
+        const T sin_theta = std::sqrt(T(1.0) - square(cos_theta));
+
+        // Special case (normal incidence).
+        if (sin_theta < T(1e-4))
+        {
+            const T r = std::sqrt(s[0] / (T(1.0) - s[0]));
+            const T cos_phi = std::cos(TwoPi * s[1]);
+            const T sin_phi = std::sin(TwoPi * s[1]);
+            return Vector<T, 2>(r * cos_phi, r * sin_phi);
+        }
+
+        Vector<T, 2> slope;
+
+        // Precomputations.
+        const T tan_theta = sin_theta / cos_theta;
+        const T rcp_tan_theta = T(1.0) / tan_theta;
+        const T G1 = T(2.0) / (T(1.0) + std::sqrt(T(1.0) + T(1.0) / square(rcp_tan_theta)));
+
+        // Sample slope x.
+        T A = T(2.0) * s[0] / G1 - T(1.0);
+
+        // Avoid a division by zero.
+        if (std::fabs(A) == T(1.0))
+            A -= boost::math::copysign(T(1e-4), A);
+
+        const T tmp = T(1.0) / (square(A) - T(1.0));
+        const T tan_theta2 = square(tan_theta);
+        const T D = std::sqrt(tan_theta2 * square(tmp) - (square(A) - tan_theta2) * tmp);
+        const T slope_x_1 = tan_theta * tmp - D;
+        const T slope_x_2 = tan_theta * tmp + D;
+
+        if (A < T(0.0) || slope_x_2 > rcp_tan_theta)
+            slope[0] = slope_x_1;
+        else
+            slope[0] = slope_x_2;
+
+        // Sample slope y.
+        const T z =
+            (s[1] * (s[1] * (s[1] * T(0.27385) - T(0.73369)) + T(0.46341))) /
+            (s[1] * (s[1] * (s[1] * T(0.093073) + T(0.309420)) - T(1.0)) + T(0.597999));
+
+        const T S = s[2] > T(0.5) ? T(1.0) : T(-1.0);
+        slope[1] = S * z * std::sqrt(T(1.0) + square(slope[0]));
+        return slope;
     }
 };
 
@@ -655,19 +853,6 @@ class WardMDF2
     WardMDF2() {}
 
   private:
-    virtual Vector<T, 3> do_sample(
-        const Vector<T, 2>&  s,
-        const T              alpha_x,
-        const T              alpha_y) const APPLESEED_OVERRIDE
-    {
-        const T tan_alpha_2 = square(alpha_x) * (-std::log(T(1.0) - s[0]));
-        const T cos_alpha = T(1.0) / std::sqrt(T(1.0) + tan_alpha_2);
-        const T sin_alpha = cos_alpha * std::sqrt(tan_alpha_2);
-        const T phi = TwoPi * s[1];
-
-        return Vector<T, 3>::unit_vector(cos_alpha, sin_alpha, std::cos(phi), std::sin(phi));
-    }
-
     virtual T do_eval_D(
         const Vector<T, 3>&  h,
         const T              alpha_x,
@@ -688,12 +873,74 @@ class WardMDF2
         return std::exp(-tan_alpha_2 / alpha_x2) / (alpha_x2 * T(Pi) * cos_theta_3);
     }
 
+    virtual T do_eval_G(
+        const Vector<T, 3>&  incoming,
+        const Vector<T, 3>&  outgoing,
+        const Vector<T, 3>&  h,
+        const T              alpha_x,
+        const T              alpha_y) const APPLESEED_OVERRIDE
+    {
+        return MDF<T>::v_cavity_G(incoming, outgoing, h);
+    }
+
+    virtual T do_eval_G1(
+        const Vector<T, 3>&  v,
+        const Vector<T, 3>&  m,
+        const T              alpha_x,
+        const T              alpha_y) const APPLESEED_OVERRIDE
+    {
+        return MDF<T>::v_cavity_G1(v, m);
+    }
+
+    virtual Vector<T, 3> do_sample(
+        const Vector<T, 3>&  v,
+        const Vector<T, 3>&  s,
+        const T              alpha_x,
+        const T              alpha_y) const APPLESEED_OVERRIDE
+    {
+        const T tan_alpha_2 = square(alpha_x) * (-std::log(T(1.0) - s[0]));
+        const T cos_alpha = T(1.0) / std::sqrt(T(1.0) + tan_alpha_2);
+        const T sin_alpha = cos_alpha * std::sqrt(tan_alpha_2);
+        const T phi = TwoPi * s[1];
+
+        return Vector<T, 3>::unit_vector(cos_alpha, sin_alpha, std::cos(phi), std::sin(phi));
+    }
+
     virtual T do_eval_pdf(
+        const Vector<T, 3>&  v,
         const Vector<T, 3>&  h,
         const T              alpha_x,
         const T              alpha_y) const APPLESEED_OVERRIDE
     {
         return do_eval_D(h, alpha_x, alpha_y);
+    }
+};
+
+//
+// Berry microfacet distribution function.
+// It's used in the Disney BRDF clearcoat layer.
+//
+
+template <typename T>
+class BerryMDF2
+  : public MDF<T>
+{
+  public:
+    typedef boost::mpl::bool_<false> IsAnisotropicType;
+
+    BerryMDF2() {}
+
+  private:
+    virtual T do_eval_D(
+        const Vector<T, 3>&  h,
+        const T              alpha_x,
+        const T              alpha_y) const APPLESEED_OVERRIDE
+    {
+        const T alpha_x_2 = square(alpha_x);
+        const T cos_theta_2 = square(MDF<T>::cos_theta(h));
+        const T a = (alpha_x_2 - T(1.0)) / (T(Pi) * std::log(alpha_x_2));
+        const T b = (T(1.0) / (T(1.0) + (alpha_x_2 - T(1.0)) * cos_theta_2));
+        return a * b;
     }
 
     virtual T do_eval_G(
@@ -704,12 +951,55 @@ class WardMDF2
         const T              alpha_y) const APPLESEED_OVERRIDE
     {
         return
-            TorranceSparrowMaskingShadowing<T>::G(
-                incoming,
-                outgoing,
-                h,
-                alpha_x,
-                alpha_y);
+            do_eval_G1(outgoing, h, alpha_x, alpha_y) *
+            do_eval_G1(incoming, h, alpha_x, alpha_y);
+    }
+
+    virtual T do_eval_G1(
+        const Vector<T, 3>&  v,
+        const Vector<T, 3>&  m,
+        const T              alpha_x,
+        const T              alpha_y) const APPLESEED_OVERRIDE
+    {
+        if (dot(v, m) * v.y <= T(0.0))
+            return T(0.0);
+
+        const T cos_theta = std::fabs(v.y);
+        const T cos_theta_2 = square(cos_theta);
+        const T sin_theta = MDF<T>::sin_theta(v);
+        const T tan_theta_2 = square(sin_theta) / cos_theta_2;
+
+        if (tan_theta_2 == T(0.0))
+            return T(1.0);
+
+        const T a2_rcp = square(alpha_x) * tan_theta_2;
+        const T lambda = (T(-1.0) + std::sqrt(T(1.0) + a2_rcp)) * T(0.5);
+        return T(1.0) / (T(1.0) + lambda);
+    }
+
+    virtual Vector<T, 3> do_sample(
+        const Vector<T, 3>&  v,
+        const Vector<T, 3>&  s,
+        const T              alpha_x,
+        const T              alpha_y) const APPLESEED_OVERRIDE
+    {
+        const T alpha_x_2 = square(alpha_x);
+        const T a = T(1.0) - std::pow(alpha_x_2, T(1.0) - s[0]);
+        const T cos_theta = std::sqrt(a / (T(1.0) - alpha_x_2));
+        const T sin_theta  = std::sqrt(T(1.0) - square(cos_theta));
+
+        T cos_phi, sin_phi;
+        MDF<T>::sample_phi(s[1], cos_phi, sin_phi);
+        return Vector<T, 3>::unit_vector(cos_theta, sin_theta, cos_phi, sin_phi);
+    }
+
+    virtual T do_eval_pdf(
+        const Vector<T, 3>&  v,
+        const Vector<T, 3>&  h,
+        const T              alpha_x,
+        const T              alpha_y) const APPLESEED_OVERRIDE
+    {
+        return do_eval_D(h, alpha_x, alpha_y) * MDF<T>::cos_theta(h);
     }
 };
 
