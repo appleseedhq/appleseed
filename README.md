@@ -1,4 +1,4 @@
-# appleseed [![Build Status](https://travis-ci.org/appleseedhq/appleseed.svg?branch=master)](https://travis-ci.org/appleseedhq/appleseed)
+appleseed [![Build Status](https://travis-ci.org/appleseedhq/appleseed.svg?branch=master)](https://travis-ci.org/appleseedhq/appleseed)
 ===========
 
 ### About
