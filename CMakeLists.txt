@@ -555,36 +555,6 @@ endif ()
 
 
 #--------------------------------------------------------------------------------------------------
-# Devkit preparation (for installation).
-#--------------------------------------------------------------------------------------------------
-
-if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    file (GLOB_RECURSE DEVKIT_APPLESEED_INCLUDE RELATIVE ${PROJECT_SOURCE_DIR} "appleseed/*.h")
-    file (GLOB_RECURSE DEVKIT_APPLESEED_SHARED_INCLUDE RELATIVE ${PROJECT_SOURCE_DIR} "appleseed.shared/*.h")
-
-    # Archives creation.
-    execute_process (
-        COMMAND ${CMAKE_COMMAND} -E tar cf ${CMAKE_BINARY_DIR}/appleseed_include.tar ${DEVKIT_APPLESEED_INCLUDE}
-        COMMAND ${CMAKE_COMMAND} -E tar cf ${CMAKE_BINARY_DIR}/appleseed_shared_include.tar ${DEVKIT_APPLESEED_SHARED_INCLUDE}
-        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-    )
-
-    # Create devkit staging area.
-    execute_process (
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/extras/devkit/include
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/extras/devkit/lib/${CMAKE_BUILD_TYPE}
-    )
-
-    # Archives extraction in preparation for installation commands.
-    execute_process (
-        COMMAND ${CMAKE_COMMAND} -E tar xf ${CMAKE_BINARY_DIR}/appleseed_include.tar
-        COMMAND ${CMAKE_COMMAND} -E tar xf ${CMAKE_BINARY_DIR}/appleseed_shared_include.tar
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/extras/devkit/include
-    )
-endif ()
-
-
-#--------------------------------------------------------------------------------------------------
 # Installation.
 #--------------------------------------------------------------------------------------------------
 
@@ -655,26 +625,6 @@ install (
     DESTINATION include
     FILES_MATCHING PATTERN "*.h"
 )
-
-if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    install (
-        DIRECTORY
-            ${CMAKE_BINARY_DIR}/extras/devkit/include
-        DESTINATION extras/devkit
-    )
-
-    install (
-        DIRECTORY
-            ${CMAKE_SOURCE_DIR}/sandbox/extras/devkit/cmake
-        DESTINATION extras/devkit
-    )
-
-    install (
-        DIRECTORY
-            ${CMAKE_SOURCE_DIR}/sandbox/extras/devkit/sample
-        DESTINATION extras/devkit
-    )
-endif ()
 
 
 #--------------------------------------------------------------------------------------------------
