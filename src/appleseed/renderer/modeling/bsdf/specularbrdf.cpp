@@ -84,7 +84,7 @@ namespace
             BSDFSample&         sample) const
         {
             // No reflection below the shading surface.
-            const Vector3d& shading_normal = sample.get_normal();
+            const Vector3d& shading_normal = sample.get_shading_normal();
             const double cos_on = dot(sample.get_outgoing(), shading_normal);
             if (cos_on < 0.0)
                 return;

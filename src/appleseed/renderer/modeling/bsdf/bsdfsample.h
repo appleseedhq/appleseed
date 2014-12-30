@@ -65,7 +65,7 @@ class BSDFSample
 
     const foundation::Vector3d& get_geometric_normal() const;
 
-    const foundation::Vector3d& get_normal() const;
+    const foundation::Vector3d& get_shading_normal() const;
 
     const foundation::Vector3d& get_outgoing() const;
 
@@ -136,7 +136,7 @@ inline const foundation::Vector3d& BSDFSample::get_geometric_normal() const
     return m_shading_point.get_geometric_normal();
 }
 
-inline const foundation::Vector3d& BSDFSample::get_normal() const
+inline const foundation::Vector3d& BSDFSample::get_shading_normal() const
 {
     return m_shading_point.get_shading_normal();
 }

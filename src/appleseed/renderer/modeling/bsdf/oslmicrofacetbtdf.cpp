@@ -179,7 +179,7 @@ namespace
 
             // If incoming and outgoing are on the same hemisphere
             // this is not a refraction.
-            const Vector3d& n = sample.get_normal();
+            const Vector3d& n = sample.get_shading_normal();
             if (dot(incoming, n) * dot(sample.get_outgoing(), n) >= 0.0)
                 return;
 
