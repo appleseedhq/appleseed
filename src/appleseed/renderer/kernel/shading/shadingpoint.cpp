@@ -627,29 +627,23 @@ void ShadingPoint::initialize_osl_shader_globals(
 
     if (!(m_members & HasOSLShaderGlobals))
     {
+        memset(&m_shader_globals, 0, sizeof(OSL::ShaderGlobals));
+
         const ShadingRay& ray(get_ray());
 
         m_shader_globals.P = Vector3f(get_point());
-        m_shader_globals.dPdx = OSL::Vec3(0.0f, 0.0f, 0.0f);
-        m_shader_globals.dPdy = OSL::Vec3(0.0f, 0.0f, 0.0f);
-        m_shader_globals.dPdz = OSL::Vec3(0.0f, 0.0f, 0.0f);
-
         m_shader_globals.I = Vector3f(normalize(ray.m_dir));
-        m_shader_globals.dIdx = OSL::Vec3(0.0f, 0.0f, 0.0f);
-        m_shader_globals.dIdy = OSL::Vec3(0.0f, 0.0f, 0.0f);
 
-        m_shader_globals.N = Vector3f(get_original_shading_normal());
+        m_shader_globals.N = get_side() == ObjectInstance::FrontSide
+            ?  Vector3f(get_original_shading_normal())
+            : -Vector3f(get_original_shading_normal());
+
         m_shader_globals.Ng = Vector3f(get_geometric_normal());
 
         const Vector2d& uv = get_uv(0);
 
         m_shader_globals.u = static_cast<float>(uv[0]);
-        m_shader_globals.dudx = 0.0f;
-        m_shader_globals.dudy = 0.0f;
-
         m_shader_globals.v = static_cast<float>(uv[1]);
-        m_shader_globals.dvdx = 0.0f;
-        m_shader_globals.dvdy = 0.0f;
 
         m_shader_globals.dPdu = Vector3f(get_dpdu(0));
         m_shader_globals.dPdv = Vector3f(get_dpdv(0));
@@ -662,18 +656,12 @@ void ShadingPoint::initialize_osl_shader_globals(
                 ? Vector3f(get_point_velocity())
                 : Vector3f(0.0f);
 
-        m_shader_globals.Ps = OSL::Vec3(0.0f, 0.0f, 0.0f);
-        m_shader_globals.dPsdx = OSL::Vec3(0.0f, 0.0f, 0.0f);
-        m_shader_globals.dPsdy = OSL::Vec3(0.0f, 0.0f, 0.0f);
-
         m_shader_globals.renderer = renderer;
         m_shader_globals.renderstate =
             const_cast<void*>(reinterpret_cast<const void*>(this));
 
-        memset(reinterpret_cast<void*>(&m_osl_trace_data), 0, sizeof(OSLTraceData));
-        m_shader_globals.tracedata = reinterpret_cast<void*>(&m_osl_trace_data);
-
-        m_shader_globals.objdata = 0;
+        memset(&m_osl_trace_data, 0, sizeof(OSLTraceData));
+        m_shader_globals.tracedata = &m_osl_trace_data;
 
         m_obj_transform_info.m_assembly_instance_transform =
             m_assembly_instance_transform_seq;
@@ -682,9 +670,6 @@ void ShadingPoint::initialize_osl_shader_globals(
 
         m_shader_globals.object2common = reinterpret_cast<OSL::TransformationPtr>(&m_obj_transform_info);
 
-        m_shader_globals.shader2common = 0;
-
-        m_shader_globals.flipHandedness = 0;
         m_shader_globals.backfacing = get_side() == ObjectInstance::FrontSide ? 0 : 1;
 
         m_members |= HasOSLShaderGlobals;
