@@ -58,7 +58,7 @@ PROJECT_LOGO           = @PROJECT_SOURCE_DIR@/resources/logo/appleseed-doxygen-l
 # entered, it will be relative to the location where doxygen was started. If
 # left blank the current directory will be used.
 
-OUTPUT_DIRECTORY       = @PROJECT_SOURCE_DIR@/sandbox/documentation/apireference
+OUTPUT_DIRECTORY       = @PROJECT_SOURCE_DIR@/sandbox/documentation/api
 
 # If the CREATE_SUBDIRS tag is set to YES, then doxygen will create 4096 sub-
 # directories (in 2 levels) under the output directory of each output format and

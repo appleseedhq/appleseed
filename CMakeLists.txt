@@ -542,7 +542,7 @@ if (DOXYGEN_FOUND)
     add_custom_target (
         doc ${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/appleseed.doxyfile
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-        COMMENT "Generating documentation with Doxygen" VERBATIM
+        COMMENT "Generating API Reference with Doxygen" VERBATIM
     )
 endif ()
 
