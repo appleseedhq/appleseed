@@ -593,9 +593,9 @@ endif ()
 
 install (
     DIRECTORY
-        sandbox/extras
         sandbox/docs
         sandbox/images
+        sandbox/samples
         sandbox/share
         sandbox/tests
     DESTINATION .
