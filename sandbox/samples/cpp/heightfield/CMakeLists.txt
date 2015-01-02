@@ -48,7 +48,7 @@ link_directories (${Boost_LIBRARY_DIRS})
 
 if (MSVC)
     add_definitions (/D "_CRT_SECURE_NO_WARNINGS")
-endif (MSVC)
+endif ()
 
 add_executable (heightfield heightfield.cpp)
 
