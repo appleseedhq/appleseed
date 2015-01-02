@@ -30,22 +30,30 @@
 
 cmake_minimum_required (VERSION 2.8 FATAL_ERROR)
 
-project (appleseed_sample)
+project (basic)
+
+set (CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/../../../share/cmake/Modules;${PROJECT_SOURCE_DIR}/../../../../src/cmake/Modules)
 
 find_package (Appleseed)
-find_package (ILMBase)
 find_package (Boost)
+find_package (Imath)
+find_package (OpenEXR)
 
-include_directories (${ILMBASE_INCLUDE_DIRS})
 include_directories (${APPLESEED_INCLUDE_DIRS})
 include_directories (${Boost_INCLUDE_DIR})
+include_directories (${IMATH_INCLUDE_DIRS})
+include_directories (${OPENEXR_INCLUDE_DIRS})
 
-add_executable (sample
-    half.cpp
-    sample.cpp
-)
+link_directories (${Boost_LIBRARY_DIRS})
 
-target_link_libraries (sample
-    ${Appleseed_appleseed_LIBRARY}
-    ${Appleseed_appleseed_shared_LIBRARY}
+if (MSVC)
+    add_definitions (/D "_CRT_SECURE_NO_WARNINGS")
+endif (MSVC)
+
+add_executable (basic basic.cpp)
+
+target_link_libraries (basic
+    ${APPLESEED_LIBRARIES}
+    ${IMATH_LIBRARIES}
+    ${OPENEXR_LIBRARIES}
 )

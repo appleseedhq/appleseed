@@ -168,20 +168,20 @@ class ProjectBuilder
         // Light
         //------------------------------------------------------------------------
 
-        static const float LightRadiance[] = { 1.0f, 1.0f, 1.0f };
+        static const float LightIrradiance[] = { 1.0f, 1.0f, 1.0f };
         assembly->colors().insert(
             ColorEntityFactory::create(
-                "light_radiance",
+                "light_irradiance",
                 ParamArray()
                     .insert("color_space", "srgb")
                     .insert("multiplier", "6.0"),
-                ColorValueArray(3, LightRadiance)));
+                ColorValueArray(3, LightIrradiance)));
 
         auto_release_ptr<Light> light(
             DirectionalLightFactory().create(
                 "sun_light",
                 ParamArray()
-                    .insert("radiance", "light_radiance")));
+                    .insert("irradiance", "light_irradiance")));
         light->set_transform(
             Transformd::from_local_to_parent(
                 Matrix4d::rotation_x(deg_to_rad(-30.0))));
@@ -298,7 +298,7 @@ class SingleBakedMeshProjectBuilder
         Project&            project,
         Assembly&           assembly,
         const size_t        image_width,
-        const size_t        image_height) OVERRIDE
+        const size_t        image_height) APPLESEED_OVERRIDE
     {
         assembly.textures().insert(
             DiskTexture2dFactory().create(
@@ -373,7 +373,7 @@ class SingleBakedMeshProjectBuilder
         const double        fx,
         const double        fz,
         const Color3b&      color,
-        const Transformd&   transform) OVERRIDE
+        const Transformd&   transform) APPLESEED_OVERRIDE
     {
         // Push vertices.
         const size_t base_vertex_index = m_mesh->get_vertex_count();
@@ -412,7 +412,7 @@ class SingleBakedMeshProjectBuilder
         }
     }
 
-    virtual void finalize_assembly(Assembly& assembly) OVERRIDE
+    virtual void finalize_assembly(Assembly& assembly) APPLESEED_OVERRIDE
     {
         // Insert the baked mesh object into the assembly.
         assembly.objects().insert(auto_release_ptr<Object>(m_mesh));
@@ -437,7 +437,7 @@ class InstancesProjectBuilder
         Project&            project,
         Assembly&           assembly,
         const size_t        image_width,
-        const size_t        image_height) OVERRIDE
+        const size_t        image_height) APPLESEED_OVERRIDE
     {
         assembly.surface_shaders().insert(
             PhysicalSurfaceShaderFactory().create(
@@ -465,7 +465,7 @@ class InstancesProjectBuilder
         const double        fx,
         const double        fz,
         const Color3b&      color,
-        const Transformd&   transform) OVERRIDE
+        const Transformd&   transform) APPLESEED_OVERRIDE
     {
         const string color_suffix = color_to_string(color);
         const string color_name = "color_" + color_suffix;
@@ -536,7 +536,7 @@ class InstancesProjectBuilder
         assembly.assembly_instances().insert(cube_assembly_inst);
     }
 
-    virtual void finalize_assembly(Assembly& assembly) OVERRIDE
+    virtual void finalize_assembly(Assembly& assembly) APPLESEED_OVERRIDE
     {
     }
 

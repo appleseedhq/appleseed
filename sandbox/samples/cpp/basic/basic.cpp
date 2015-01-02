@@ -159,11 +159,11 @@ asf::auto_release_ptr<asr::Project> build_project()
     // Light
     //------------------------------------------------------------------------
 
-    // Create a color called "light_radiance" and insert it into the assembly.
+    // Create a color called "light_intensity" and insert it into the assembly.
     static const float LightRadiance[] = { 1.0f, 1.0f, 1.0f };
     assembly->colors().insert(
         asr::ColorEntityFactory::create(
-            "light_radiance",
+            "light_intensity",
             asr::ParamArray()
                 .insert("color_space", "srgb")
                 .insert("multiplier", "30.0"),
@@ -174,7 +174,7 @@ asf::auto_release_ptr<asr::Project> build_project()
         asr::PointLightFactory().create(
             "light",
             asr::ParamArray()
-                .insert("radiance", "light_radiance")));
+                .insert("intensity", "light_intensity")));
     light->set_transform(
         asf::Transformd::from_local_to_parent(
             asf::Matrix4d::translation(asf::Vector3d(0.6, 2.0, 1.0))));
