@@ -26,47 +26,55 @@
 # THE SOFTWARE.
 #
 
-# Find Open Shading Language.
+
 #
-# This module defines:
-#  OSL_INCLUDE_DIRS     - where to find OSL includes.
-#  OSL_LIBRARIES        - List of libraries when using OSL.
-#  OSL_COMPILER         - oslc binary
-#  OSL_QUERY_INFO       - oslinfo binary
-#  OSL_MAKETX           - OpenImageIO's maketx binary
-#  OSL_FOUND            - True if OSL found.
+# Find OSL headers and libraries.
+#
+# This module defines the following variables:
+#
+#   OSL_FOUND           True if OSL was found
+#   OSL_INCLUDE_DIRS    Where to find OSL header files
+#   OSL_LIBRARIES       List of OSL libraries to link against
+#   OSL_COMPILER        Path to oslc binary
+#   OSL_QUERY_INFO      Path to oslinfo binary
+#   OSL_MAKETX          Path to OpenImageIO's maketx binary
+#
 
-# Look for the header file.
-find_path(OSL_INCLUDE_DIR NAMES OSL/oslexec.h)
+include (FindPackageHandleStandardArgs)
 
-# Look for the libraries.
-find_library(OSL_EXEC_LIBRARY NAMES oslexec)
-find_library(OSL_COMP_LIBRARY NAMES oslcomp)
-find_library(OSL_QUERY_LIBRARY NAMES oslquery)
+find_path (OSL_INCLUDE_DIR NAMES OSL/oslexec.h)
 
-# Look for the binaries.
-find_program(OSL_COMPILER NAMES oslc)
-find_program(OSL_QUERY_INFO NAMES oslinfo)
-find_program(OSL_MAKETX NAMES maketx)
+find_library (OSL_EXEC_LIBRARY NAMES oslexec)
+find_library (OSL_COMP_LIBRARY NAMES oslcomp)
+find_library (OSL_QUERY_LIBRARY NAMES oslquery)
 
-# handle the QUIETLY and REQUIRED arguments and set OSL_FOUND to TRUE if
-# all listed variables are TRUE
-include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(OSL DEFAULT_MSG OSL_INCLUDE_DIR
-                                                  OSL_EXEC_LIBRARY
-                                                  OSL_COMP_LIBRARY
-                                                  OSL_QUERY_LIBRARY
-                                                  OSL_COMPILER
-                                                  OSL_QUERY_INFO
-                                                  OSL_MAKETX)
+find_program (OSL_COMPILER NAMES oslc)
+find_program (OSL_QUERY_INFO NAMES oslinfo)
+find_program (OSL_MAKETX NAMES maketx)
 
-# Copy the results to the output variables.
-if(OSL_FOUND)
-    set(OSL_LIBRARIES ${OSL_EXEC_LIBRARY} ${OSL_COMP_LIBRARY} ${OSL_QUERY_LIBRARY})
-    set(OSL_INCLUDE_DIRS ${OSL_INCLUDE_DIR})
-else(OSL_FOUND)
-    set(OSL_LIBRARIES)
-    set(OSL_INCLUDE_DIRS)
-endif(OSL_FOUND)
+# Handle the QUIETLY and REQUIRED arguments and set OSL_FOUND.
+find_package_handle_standard_args (OSL DEFAULT_MSG
+    OSL_INCLUDE_DIR
+    OSL_EXEC_LIBRARY
+    OSL_COMP_LIBRARY
+    OSL_QUERY_LIBRARY
+    OSL_COMPILER
+    OSL_QUERY_INFO
+    OSL_MAKETX
+)
 
-mark_as_advanced(OSL_INCLUDE_DIR OSL_EXEC_LIBRARY OSL_COMP_LIBRARY OSL_QUERY_LIBRARY)
+# Set the output variables.
+if (OSL_FOUND)
+    set (OSL_INCLUDE_DIRS ${OSL_INCLUDE_DIR})
+    set (OSL_LIBRARIES ${OSL_EXEC_LIBRARY} ${OSL_COMP_LIBRARY} ${OSL_QUERY_LIBRARY})
+else ()
+    set (OSL_INCLUDE_DIRS)
+    set (OSL_LIBRARIES)
+endif ()
+
+mark_as_advanced (
+    OSL_INCLUDE_DIR
+    OSL_EXEC_LIBRARY
+    OSL_COMP_LIBRARY
+    OSL_QUERY_LIBRARY
+)

@@ -26,31 +26,39 @@
 # THE SOFTWARE.
 #
 
-# Find SeExpr headers and libraries.
+
 #
-# This module defines:
-#  SEEXPREDITOR_INCLUDE_DIRS - where to find SEEXPREDITOR includes.
-#  SEEXPREDITOR_LIBRARIES    - List of libraries when using SEEXPREDITOR.
-#  SEEXPREDITOR_FOUND        - True if SEEXPREDITOR found.
+# Find SeExprEditor headers and libraries.
+#
+# This module defines the following variables:
+#
+#   SEEXPREDITOR_FOUND          True if SeExprEditor was found
+#   SEEXPREDITOR_INCLUDE_DIRS   Where to find SeExprEditor header files
+#   SEEXPREDITOR_LIBRARIES      List of SeExprEditor libraries to link against
+#
 
-# Look for the header file.
-FIND_PATH( SEEXPREDITOR_INCLUDE_DIR NAMES SeExprEditor/SeExprEditor.h)
+include (FindPackageHandleStandardArgs)
 
-# Look for the library.
-FIND_LIBRARY( SEEXPREDITOR_LIBRARY NAMES SeExprEditor)
+find_path (SEEXPREDITOR_INCLUDE_DIR NAMES SeExprEditor/SeExprEditor.h)
 
-# handle the QUIETLY and REQUIRED arguments and set SEEXPREDITOR_FOUND to TRUE if
-# all listed variables are TRUE
-INCLUDE( FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS( SEEXPREDITOR DEFAULT_MSG SEEXPREDITOR_LIBRARY SEEXPREDITOR_INCLUDE_DIR)
+find_library (SEEXPREDITOR_LIBRARY NAMES SeExprEditor)
 
-# Copy the results to the output variables.
-IF( SEEXPREDITOR_FOUND)
-    SET( SEEXPREDITOR_LIBRARIES ${SEEXPREDITOR_LIBRARY})
-    SET( SEEXPREDITOR_INCLUDE_DIRS ${SEEXPR_INCLUDE_DIR})
-ELSE()
-    SET( SEEXPREDITOR_LIBRARIES)
-    SET( SEEXPREDITOR_INCLUDE_DIRS)
-ENDIF()
+# Handle the QUIETLY and REQUIRED arguments and set SEEXPREDITOR_FOUND.
+find_package_handle_standard_args (SEEXPREDITOR DEFAULT_MSG
+    SEEXPREDITOR_INCLUDE_DIR
+    SEEXPREDITOR_LIBRARY
+)
 
-MARK_AS_ADVANCED( SEEXPREDITOR_INCLUDE_DIR SEEXPREDITOR_LIBRARY)
+# Set the output variables.
+if (SEEXPREDITOR_FOUND)
+    set (SEEXPREDITOR_INCLUDE_DIRS ${SEEXPR_INCLUDE_DIR})
+    set (SEEXPREDITOR_LIBRARIES ${SEEXPREDITOR_LIBRARY})
+else ()
+    set (SEEXPREDITOR_INCLUDE_DIRS)
+    set (SEEXPREDITOR_LIBRARIES)
+endif ()
+
+mark_as_advanced (
+    SEEXPREDITOR_INCLUDE_DIR
+    SEEXPREDITOR_LIBRARY
+)

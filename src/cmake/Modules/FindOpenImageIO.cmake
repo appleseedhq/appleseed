@@ -26,31 +26,39 @@
 # THE SOFTWARE.
 #
 
-# Find OPENIMAGEIO headers and libraries.
+
 #
-# This module defines:
-#  OPENIMAGEIO_INCLUDE_DIRS - where to find OpenImageIO uncludes.
-#  OPENIMAGEIO_LIBRARIES    - List of libraries when using OpenImageIO.
-#  OPENIMAGEIO_FOUND        - True if OpenImageIO found.
+# Find OpenImageIO headers and libraries.
+#
+# This module defines the following variables:
+#
+#   OPENIMAGEIO_FOUND           True if OpenImageIO was found
+#   OPENIMAGEIO_INCLUDE_DIRS    Where to find OpenImageIO header files
+#   OPENIMAGEIO_LIBRARIES       List of OpenImageIO libraries to link against
+#
 
-# Look for the header file.
-find_path( OPENIMAGEIO_INCLUDE_DIR NAMES OpenImageIO/imageio.h)
+include (FindPackageHandleStandardArgs)
 
-# Look for the library.
-find_library( OPENIMAGEIO_LIBRARY NAMES OpenImageIO)
+find_path (OPENIMAGEIO_INCLUDE_DIR NAMES OpenImageIO/imageio.h)
 
-# handle the QUIETLY and REQUIRED arguments and set OPENIMAGEIO_FOUND to TRUE if
-# all listed variables are TRUE
-include( FindPackageHandleStandardArgs)
-find_package_handle_standard_args( OPENIMAGEIO DEFAULT_MSG OPENIMAGEIO_LIBRARY OPENIMAGEIO_INCLUDE_DIR)
+find_library (OPENIMAGEIO_LIBRARY NAMES OpenImageIO)
 
-# Copy the results to the output variables.
-if( OPENIMAGEIO_FOUND)
-    set( OPENIMAGEIO_LIBRARIES ${OPENIMAGEIO_LIBRARY})
-    set( OPENIMAGEIO_INCLUDE_DIRS ${OPENIMAGEIO_INCLUDE_DIR})
-else( OPENIMAGEIO_FOUND)
-    set( OPENIMAGEIO_LIBRARIES)
-    set( OPENIMAGEIO_INCLUDE_DIRS)
-endif()
+# Handle the QUIETLY and REQUIRED arguments and set OPENIMAGEIO_FOUND.
+find_package_handle_standard_args (OPENIMAGEIO DEFAULT_MSG
+    OPENIMAGEIO_INCLUDE_DIR
+    OPENIMAGEIO_LIBRARY
+)
 
-mark_as_advanced( OPENIMAGEIO_INCLUDE_DIR OPENIMAGEIO_LIBRARY)
+# Set the output variables.
+if (OPENIMAGEIO_FOUND)
+    set (OPENIMAGEIO_INCLUDE_DIRS ${OPENIMAGEIO_INCLUDE_DIR})
+    set (OPENIMAGEIO_LIBRARIES ${OPENIMAGEIO_LIBRARY})
+else ()
+    set (OPENIMAGEIO_INCLUDE_DIRS)
+    set (OPENIMAGEIO_LIBRARIES)
+endif ()
+
+mark_as_advanced (
+    OPENIMAGEIO_INCLUDE_DIR
+    OPENIMAGEIO_LIBRARY
+)

@@ -28,32 +28,42 @@
 
 
 #
-# Find appleseed's headers and libraries.
+# Find appleseed headers and libraries.
 #
-# This module defines:
+# This module requires the following variables to be defined:
 #
-#   APPLESEED_INCLUDE_DIRS - Where to find appleseed header files
-#   APPLESEED_LIBRARIES    - List of libraries when using appleseed
-#   APPLESEED_FOUND        - True if appleseed was found
+#   APPLESEED_INCLUDE_DIR   Path to the src/appleseed directory
+#   APPLESEED_LIBRARY       Path to the appleseed library file
+#
+# This module defines the following variables:
+#
+#   APPLESEED_FOUND         True if appleseed was found
+#   APPLESEED_INCLUDE_DIRS  Where to find appleseed header files
+#   APPLESEED_LIBRARIES     List of appleseed libraries to link against
 #
 
-# Look for a core header file.
-FIND_PATH (APPLESEED_INCLUDE_DIR NAMES renderer/api/project.h)
+include (FindPackageHandleStandardArgs)
 
-# Look for the library.
-FIND_LIBRARY (APPLESEED_LIBRARY NAMES appleseed)
+find_path (APPLESEED_INCLUDE_DIR NAMES renderer/api/project.h)
 
-# Handle the QUIETLY and REQUIRED arguments and set APPLESEED_FOUND to TRUE if all listed variables are TRUE.
-INCLUDE (FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS (APPLESEED DEFAULT_MSG APPLESEED_LIBRARY APPLESEED_INCLUDE_DIR)
+find_library (APPLESEED_LIBRARY NAMES appleseed)
 
-# Copy the results to the output variables.
-IF (APPLESEED_FOUND)
-    SET (APPLESEED_LIBRARIES ${APPLESEED_LIBRARY})
-    SET (APPLESEED_INCLUDE_DIRS ${APPLESEED_INCLUDE_DIR})
-ELSE ()
-    SET (APPLESEED_LIBRARIES)
-    SET (APPLESEED_INCLUDE_DIRS)
-ENDIF ()
+# Handle the QUIETLY and REQUIRED arguments and set APPLESEED_FOUND.
+find_package_handle_standard_args (APPLESEED DEFAULT_MSG
+    APPLESEED_INCLUDE_DIR
+    APPLESEED_LIBRARY
+)
 
-MARK_AS_ADVANCED (APPLESEED_LIBRARY APPLESEED_INCLUDE_DIR)
+# Set the output variables.
+if (APPLESEED_FOUND)
+    set (APPLESEED_INCLUDE_DIRS ${APPLESEED_INCLUDE_DIR})
+    set (APPLESEED_LIBRARIES ${APPLESEED_LIBRARY})
+else ()
+    set (APPLESEED_INCLUDE_DIRS)
+    set (APPLESEED_LIBRARIES)
+endif ()
+
+mark_as_advanced (
+    APPLESEED_INCLUDE_DIR
+    APPLESEED_LIBRARY
+)

@@ -26,31 +26,39 @@
 # THE SOFTWARE.
 #
 
+
+#
 # Find SeExpr headers and libraries.
 #
-# This module defines:
-#  SEEXPR_INCLUDE_DIRS - where to find SEEXPR uncludes.
-#  SEEXPR_LIBRARIES    - List of libraries when using SEEXPR.
-#  SEEXPR_FOUND        - True if SEEXPR found.
+# This module defines the following variables:
+#
+#   SEEXPR_FOUND            True if SeExpr was found
+#   SEEXPR_INCLUDE_DIRS     Where to find SeExpr header files
+#   SEEXPR_LIBRARIES        List of SeExpr libraries to link against
+#
 
-# Look for the header file.
-FIND_PATH( SEEXPR_INCLUDE_DIR NAMES SeExpression.h)
+include (FindPackageHandleStandardArgs)
 
-# Look for the library.
-FIND_LIBRARY( SEEXPR_LIBRARY NAMES SeExpr)
+find_path (SEEXPR_INCLUDE_DIR NAMES SeExpression.h)
 
-# handle the QUIETLY and REQUIRED arguments and set SEEXPR_FOUND to TRUE if
-# all listed variables are TRUE
-INCLUDE( FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS( SEEXPR DEFAULT_MSG SEEXPR_LIBRARY SEEXPR_INCLUDE_DIR)
+find_library (SEEXPR_LIBRARY NAMES SeExpr)
 
-# Copy the results to the output variables.
-IF( SEEXPR_FOUND)
-    SET( SEEXPR_LIBRARIES ${SEEXPR_LIBRARY})
-    SET( SEEXPR_INCLUDE_DIRS ${SEEXPR_INCLUDE_DIR})
-ELSE()
-    SET( SEEXPR_LIBRARIES)
-    SET( SEEXPR_INCLUDE_DIRS)
-ENDIF()
+# Handle the QUIETLY and REQUIRED arguments and set SEEXPR_FOUND.
+find_package_handle_standard_args (SEEXPR DEFAULT_MSG
+    SEEXPR_INCLUDE_DIR
+    SEEXPR_LIBRARY
+)
 
-MARK_AS_ADVANCED( SEEXPR_INCLUDE_DIR SEEXPR_LIBRARY)
+# Set the output variables.
+if (SEEXPR_FOUND)
+    set (SEEXPR_INCLUDE_DIRS ${SEEXPR_INCLUDE_DIR})
+    set (SEEXPR_LIBRARIES ${SEEXPR_LIBRARY})
+else ()
+    set (SEEXPR_INCLUDE_DIRS)
+    set (SEEXPR_LIBRARIES)
+endif ()
+
+mark_as_advanced (
+    SEEXPR_INCLUDE_DIR
+    SEEXPR_LIBRARY
+)

@@ -26,28 +26,39 @@
 # THE SOFTWARE.
 #
 
-# Find Xerces-C includes and libraries.
+
 #
-# This module defines:
-#  XERCES_INCLUDE_DIRS
-#  XERCES_LIBRARIES
-#  XERCES_FOUND
+# Find Xerces-C headers and libraries.
+#
+# This module defines the following variables:
+#
+#   XERCES_FOUND            True if Xerces-C was found
+#   XERCES_INCLUDE_DIRS     Where to find Xerces-C header files
+#   XERCES_LIBRARIES        List of Xerces-C libraries to link against
+#
 
-find_path(XERCES_INCLUDE_DIR NAMES xercesc/parsers/SAXParser.hpp)
+include (FindPackageHandleStandardArgs)
 
-find_library(XERCES_LIBRARY NAMES xerces-c)
+find_path (XERCES_INCLUDE_DIR NAMES xercesc/parsers/SAXParser.hpp)
 
-# handle the QUIETLY and REQUIRED arguments and set XERCES_FOUND to TRUE if
-# all listed variables are TRUE
-include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(XERCES DEFAULT_MSG XERCES_LIBRARY XERCES_INCLUDE_DIR)
+find_library (XERCES_LIBRARY NAMES xerces-c)
 
-if(XERCES_FOUND)
-  set(XERCES_LIBRARIES ${XERCES_LIBRARY})
-  set(XERCES_INCLUDE_DIRS ${XERCES_INCLUDE_DIR})
-endif(XERCES_FOUND)
+# Handle the QUIETLY and REQUIRED arguments and set XERCES_FOUND.
+find_package_handle_standard_args (XERCES DEFAULT_MSG
+    XERCES_INCLUDE_DIR
+    XERCES_LIBRARY
+)
 
-mark_as_advanced(
-  XERCES_INCLUDE_DIR
-  XERCES_LIBRARY
+# Set the output variables.
+if (XERCES_FOUND)
+    set (XERCES_INCLUDE_DIRS ${XERCES_INCLUDE_DIR})
+    set (XERCES_LIBRARIES ${XERCES_LIBRARY})
+else ()
+    set (XERCES_INCLUDE_DIRS)
+    set (XERCES_LIBRARIES)
+endif ()
+
+mark_as_advanced (
+    XERCES_INCLUDE_DIR
+    XERCES_LIBRARY
 )

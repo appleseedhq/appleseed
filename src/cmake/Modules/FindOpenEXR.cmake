@@ -26,38 +26,42 @@
 # THE SOFTWARE.
 #
 
-# Find OPENEXR headers and libraries.
+
 #
-# This module defines:
-#  OPENEXR_INCLUDE_DIRS - where to find OPENEXR uncludes.
-#  OPENEXR_LIBRARIES    - List of libraries when using OPENEXR.
-#  OPENEXR_FOUND        - True if OPENEXR found.
+# Find OpenEXR headers and libraries.
+#
+# This module defines the following variables:
+#
+#   OPENEXR_FOUND           True if OpenEXR was found
+#   OPENEXR_INCLUDE_DIRS    Where to find OpenEXR header files
+#   OPENEXR_LIBRARIES       List of OpenEXR libraries to link against
+#
 
-# Look for the header file.
-find_path( OPENEXR_INCLUDE_DIR NAMES OpenEXR/ImfHeader.h)
+include (FindPackageHandleStandardArgs)
 
-# Look for the libraries.
-find_library( OPENEXR_IMF_LIBRARY NAMES IlmImf)
-find_library( OPENEXR_THREADS_LIBRARY NAMES IlmThread)
+find_path (OPENEXR_INCLUDE_DIR NAMES OpenEXR/ImfHeader.h)
 
-# handle the QUIETLY and REQUIRED arguments and set OPENEXR_FOUND to TRUE if
-# all listed variables are TRUE
-include( FindPackageHandleStandardArgs)
-find_package_handle_standard_args( OPENEXR DEFAULT_MSG  OPENEXR_INCLUDE_DIR
-                                                        OPENEXR_IMF_LIBRARY
-                                                        OPENEXR_THREADS_LIBRARY
-                                                        )
+find_library (OPENEXR_IMF_LIBRARY NAMES IlmImf)
+find_library (OPENEXR_THREADS_LIBRARY NAMES IlmThread)
 
-# Copy the results to the output variables.
-if( OPENEXR_FOUND)
-    set( OPENEXR_LIBRARIES  ${OPENEXR_IMF_LIBRARY} ${OPENEXR_THREADS_LIBRARY})
-    set( OPENEXR_INCLUDE_DIRS ${OPENEXR_INCLUDE_DIR})
-else( OPENEXR_FOUND)
-    set( OPENEXR_LIBRARIES)
-    set( OPENEXR_INCLUDE_DIRS)
-endif( OPENEXR_FOUND)
+# Handle the QUIETLY and REQUIRED arguments and set OPENEXR_FOUND.
+find_package_handle_standard_args (OPENEXR DEFAULT_MSG
+    OPENEXR_INCLUDE_DIR
+    OPENEXR_IMF_LIBRARY
+    OPENEXR_THREADS_LIBRARY
+)
 
-mark_as_advanced( OPENEXR_IMF_LIBRARY
-                  OPENEXR_INCLUDE_DIR
-                  OPENEXR_THREADS_LIBRARY
-                  )
+# Set the output variables.
+if (OPENEXR_FOUND)
+    set (OPENEXR_INCLUDE_DIRS ${OPENEXR_INCLUDE_DIR})
+    set (OPENEXR_LIBRARIES  ${OPENEXR_IMF_LIBRARY} ${OPENEXR_THREADS_LIBRARY})
+else ()
+    set (OPENEXR_INCLUDE_DIRS)
+    set (OPENEXR_LIBRARIES)
+endif ()
+
+mark_as_advanced (
+    OPENEXR_INCLUDE_DIR
+    OPENEXR_IMF_LIBRARY
+    OPENEXR_THREADS_LIBRARY
+)

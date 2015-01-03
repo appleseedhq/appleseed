@@ -26,44 +26,49 @@
 # THE SOFTWARE.
 #
 
+
+#
 # Find Imath headers and libraries.
 #
-# This module defines:
-#  IMATH_INCLUDE_DIRS - where to find IMATH uncludes.
-#  IMATH_LIBRARIES    - List of libraries when using IMATH.
-#  IMATH_FOUND        - True if IMATH found.
+# This module defines the following variables:
+#
+#   IMATH_FOUND         True if Imath was found
+#   IMATH_INCLUDE_DIRS  Where to find Imath header files
+#   IMATH_LIBRARIES     List of Imath libraries to link against
+#
 
-# Look for the header file.
-find_path( IMATH_INCLUDE_DIR NAMES OpenEXR/ImathVec.h)
+include (FindPackageHandleStandardArgs)
 
-# Look for the libraries.
-find_library( IMATH_HALF_LIBRARY NAMES Half)
-find_library( IMATH_IEX_LIBRARY NAMES Iex)
-find_library( IMATH_MATH_LIBRARY NAMES Imath)
+find_path (IMATH_INCLUDE_DIR NAMES OpenEXR/ImathVec.h)
 
-# handle the QUIETLY and REQUIRED arguments and set IMATH_FOUND to TRUE if
-# all listed variables are TRUE
-include( FindPackageHandleStandardArgs)
-find_package_handle_standard_args( IMATH DEFAULT_MSG    IMATH_HALF_LIBRARY
-                                                        IMATH_IEX_LIBRARY
-                                                        IMATH_MATH_LIBRARY
-                                                        IMATH_INCLUDE_DIR
-                                                        )
-# Copy the results to the output variables.
-if( IMATH_FOUND)
-    set( IMATH_LIBRARIES ${IMATH_HALF_LIBRARY}
-                         ${IMATH_IEX_LIBRARY}
-                         ${IMATH_MATH_LIBRARY}
-                         )
+find_library (IMATH_HALF_LIBRARY NAMES Half)
+find_library (IMATH_IEX_LIBRARY NAMES Iex)
+find_library (IMATH_MATH_LIBRARY NAMES Imath)
 
-    set( IMATH_INCLUDE_DIRS ${IMATH_INCLUDE_DIR})
-else( IMATH_FOUND)
-    set( IMATH_LIBRARIES)
-    set( IMATH_INCLUDE_DIRS)
-endif( IMATH_FOUND)
+# Handle the QUIETLY and REQUIRED arguments and set IMATH_FOUND.
+find_package_handle_standard_args (IMATH DEFAULT_MSG
+    IMATH_INCLUDE_DIR
+    IMATH_HALF_LIBRARY
+    IMATH_IEX_LIBRARY
+    IMATH_MATH_LIBRARY
+)
 
-mark_as_advanced( IMATH_HALF_LIBRARY
-                  IMATH_IEX_LIBRARY
-                  IMATH_MATH_LIBRARY
-                  IMATH_INCLUDE_DIR
-                  )
+# Set the output variables.
+if (IMATH_FOUND)
+    set (IMATH_INCLUDE_DIRS ${IMATH_INCLUDE_DIR})
+    set (IMATH_LIBRARIES
+        ${IMATH_HALF_LIBRARY}
+        ${IMATH_IEX_LIBRARY}
+        ${IMATH_MATH_LIBRARY}
+    )
+else ()
+    set (IMATH_INCLUDE_DIRS)
+    set (IMATH_LIBRARIES)
+endif ()
+
+mark_as_advanced (
+    IMATH_INCLUDE_DIR
+    IMATH_HALF_LIBRARY
+    IMATH_IEX_LIBRARY
+    IMATH_MATH_LIBRARY
+)
