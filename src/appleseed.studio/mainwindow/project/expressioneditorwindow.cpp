@@ -312,8 +312,9 @@ void ExpressionEditorWindow::slot_show_examples()
 void ExpressionEditorWindow::slot_show_help()
 {
     filesystem::path docs_path = Application::get_root_path();
-    docs_path /= "documentation/seexpr/userdoc.html";
-    QString docs_file = QString::fromStdString(docs_path.string());
+    docs_path /= "docs/seexpr/userdoc.html";
+
+    const QString docs_file = QString::fromStdString(docs_path.string());
     QDesktopServices::openUrl(QUrl::fromLocalFile(docs_file));
 }
 
@@ -326,9 +327,9 @@ string ExpressionEditorWindow::get_project_path() const
     return file_root_path.string();
 }
 
-void ExpressionEditorWindow::closeEvent(QCloseEvent *e)
+void ExpressionEditorWindow::closeEvent(QCloseEvent* e)
 {
-    emit editor_closed();
+    emit signal_editor_closed();
     e->accept();
 }
 

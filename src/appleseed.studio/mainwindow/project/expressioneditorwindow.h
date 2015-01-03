@@ -39,9 +39,9 @@
 // Forward declarations.
 namespace renderer  { class Project; }
 namespace Ui        { class ExpressionEditorWindow; }
-class SeExprEditor;
-class SeExprEdBrowser;
 class QLabel;
+class SeExprEdBrowser;
+class SeExprEditor;
 
 namespace appleseed {
 namespace studio {
@@ -73,8 +73,8 @@ class ExpressionEditorWindow
 
   signals:
     void signal_expression_applied(const QString& widget_name, const QString& expression);
+    void signal_editor_closed();
 
-    void editor_closed();
   protected:
     virtual void closeEvent(QCloseEvent* e);
 

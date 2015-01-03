@@ -234,7 +234,7 @@ void DisneyMaterialCustomUI::slot_open_expression_editor(const QString& widget_n
 
     connect(
         expression_editor_window,
-        SIGNAL(editor_closed()),
+        SIGNAL(signal_editor_closed()),
         SLOT(slot_expression_editor_closed()));
 
     // Disable all layers widgets to prevent inconsistencies
