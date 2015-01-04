@@ -99,7 +99,7 @@ namespace
 
 
     //
-    // DisneyDiffuseComponent: diffuse part of Disney BRDF.
+    // Diffuse component of the Disney BRDF.
     //
 
     class DisneyDiffuseComponent
@@ -184,7 +184,7 @@ namespace
 
 
     //
-    // DisneySheenComponent: sheen part of Disney BRDF.
+    // Sheen component of the Disney BRDF.
     //
 
     class DisneySheenComponent
@@ -248,8 +248,7 @@ namespace
 
 
     //
-    // Berry microfacet distribution function.
-    // It's used in the clearcoat layer.
+    // Berry microfacet distribution function, used in the clearcoat layer.
     //
 
     template <typename T>
@@ -270,7 +269,7 @@ namespace
             const T alpha_x_2 = square(alpha_x);
             const T a = T(1.0) - pow(alpha_x_2, T(1.0) - s[0]);
             const T cos_theta = sqrt(a / (T(1.0) - alpha_x_2));
-            const T sin_theta  = sqrt(T(1.0) - square(cos_theta));
+            const T sin_theta = sqrt(T(1.0) - square(cos_theta));
             T cos_phi, sin_phi;
             this->sample_phi(s[1], cos_phi, sin_phi);
             return Vector<T, 3>::unit_vector(cos_theta, sin_theta, cos_phi, sin_phi);
