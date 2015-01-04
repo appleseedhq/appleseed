@@ -71,6 +71,7 @@ TEST_SUITE(Foundation_Image_FilteredTile)
     void test(const char* filepath, const Filter& filter)
     {
         FilteredTile tile(5, 6, 1, filter);
+        tile.clear();
 
         const float values[1] = { 1.0f };
         tile.add(2.5, 3.0, values);
@@ -78,27 +79,27 @@ TEST_SUITE(Foundation_Image_FilteredTile)
         dump(filepath, tile);
     }
 
-    TEST_CASE(BoxFilter_Radius0Dot5)
+    TEST_CASE(BoxFilter_Radius_0_5)
     {
         const BoxFilter2<float> filter(0.5f, 0.5f);
-        test("unit tests/outputs/test_filteredtile_boxfilter_radius0dot5.txt", filter);
+        test("unit tests/outputs/test_filteredtile_boxfilter_radius_0_5.txt", filter);
     }
 
-    TEST_CASE(BoxFilter_Radius1Dot0)
+    TEST_CASE(BoxFilter_Radius_1_0)
     {
         const BoxFilter2<float> filter(1.0f, 1.0f);
-        test("unit tests/outputs/test_filteredtile_boxfilter_radius1dot0.txt", filter);
+        test("unit tests/outputs/test_filteredtile_boxfilter_radius_1_0.txt", filter);
     }
 
-    TEST_CASE(BoxFilter_Radius1Dot5)
+    TEST_CASE(BoxFilter_Radius_1_5)
     {
         const BoxFilter2<float> filter(1.5f, 1.5f);
-        test("unit tests/outputs/test_filteredtile_boxfilter_radius1dot5.txt", filter);
+        test("unit tests/outputs/test_filteredtile_boxfilter_radius_1_5.txt", filter);
     }
 
-    TEST_CASE(BoxFilter_Radius2Dot0)
+    TEST_CASE(BoxFilter_Radius_2_0)
     {
         const BoxFilter2<float> filter(2.0f, 2.0f);
-        test("unit tests/outputs/test_filteredtile_boxfilter_radius2dot0.txt", filter);
+        test("unit tests/outputs/test_filteredtile_boxfilter_radius_2_0.txt", filter);
     }
 }
