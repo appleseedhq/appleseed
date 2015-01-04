@@ -336,6 +336,7 @@ namespace
                 if (!m_rmsd_history.empty())
                 {
                     GnuplotFile plotfile;
+                    plotfile.set_xlabel("Samples per Pixel");
                     plotfile
                         .new_plot()
                         .set_points(m_rmsd_history)

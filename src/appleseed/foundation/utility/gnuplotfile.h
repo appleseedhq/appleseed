@@ -69,6 +69,8 @@ class GnuplotFile
     };
 
     GnuplotFile& set_title(const std::string& title);
+    GnuplotFile& set_xlabel(const std::string& label);
+    GnuplotFile& set_ylabel(const std::string& label);
 
     Plot& new_plot();
 
@@ -76,6 +78,8 @@ class GnuplotFile
 
   private:
     std::string         m_title;
+    std::string         m_xlabel;
+    std::string         m_ylabel;
     std::vector<Plot>   m_plots;
 };
 

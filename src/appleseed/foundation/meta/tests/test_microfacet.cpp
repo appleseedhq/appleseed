@@ -202,6 +202,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
 
         GnuplotFile plotfile;
         plotfile.set_title(mdf_name + " Microfacet Distribution Function");
+        plotfile.set_xlabel("Angle (degrees)");
 
         plotfile
             .new_plot()

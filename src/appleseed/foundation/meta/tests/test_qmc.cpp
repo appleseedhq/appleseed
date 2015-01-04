@@ -411,6 +411,7 @@ TEST_SUITE(Foundation_Math_QMC)
 
         GnuplotFile plotfile;
         plotfile.set_title("RMS Deviation");
+        plotfile.set_xlabel("Samples");
         plotfile
             .new_plot()
             .set_points(rng_rmsd)

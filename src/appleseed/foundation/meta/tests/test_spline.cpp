@@ -64,7 +64,7 @@ TEST_SUITE(Foundation_Math_Spline)
         knot_x.push_back( 50.0);  knot_y.push_back(1.0);
         knot_x.push_back(100.0);  knot_y.push_back(0.0);
 
-        // Compute output point abscissa.
+        // Compute output points abscissa.
         const size_t N = 1000;
         const double b = knot_x.front();
         const double e = knot_x.back();
@@ -113,7 +113,7 @@ TEST_SUITE(Foundation_Math_Spline)
             plotfile
                 .new_plot()
                 .set_points(zip(&point_x[0], &point_y[0], point_x.size()))
-                .set_title("Tension = 0.0")
+                .set_title("Tension=0.0")
                 .set_color("red");
         }
 
@@ -141,7 +141,7 @@ TEST_SUITE(Foundation_Math_Spline)
             plotfile
                 .new_plot()
                 .set_points(zip(&point_x[0], &point_y[0], point_x.size()))
-                .set_title("Tension = 0.5")
+                .set_title("Tension=0.5")
                 .set_color("green");
         }
 
@@ -169,7 +169,7 @@ TEST_SUITE(Foundation_Math_Spline)
             plotfile
                 .new_plot()
                 .set_points(zip(&point_x[0], &point_y[0], point_x.size()))
-                .set_title("Tension = 1.0")
+                .set_title("Tension=1.0")
                 .set_color("blue");
         }
 

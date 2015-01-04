@@ -125,6 +125,18 @@ GnuplotFile& GnuplotFile::set_title(const string& title)
     return *this;
 }
 
+GnuplotFile& GnuplotFile::set_xlabel(const string& label)
+{
+    m_xlabel = label;
+    return *this;
+}
+
+GnuplotFile& GnuplotFile::set_ylabel(const string& label)
+{
+    m_ylabel = label;
+    return *this;
+}
+
 GnuplotFile::Plot& GnuplotFile::new_plot()
 {
     m_plots.push_back(Plot());
@@ -140,6 +152,12 @@ bool GnuplotFile::write(const string& filepath) const
 
     if (!m_title.empty())
         file << "set title \"" << m_title << "\"" << endl;
+
+    if (!m_xlabel.empty())
+        file << "set xlabel \"" << m_xlabel << "\"" << endl;
+
+    if (!m_ylabel.empty())
+        file << "set ylabel \"" << m_ylabel << "\"" << endl;
 
     if (!m_plots.empty())
     {

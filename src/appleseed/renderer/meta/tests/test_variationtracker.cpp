@@ -129,6 +129,7 @@ TEST_SUITE(Renderer_Kernel_Rendering_Final_VariationTracker)
         }
 
         GnuplotFile plotfile;
+        plotfile.set_xlabel("Samples");
         plotfile
             .new_plot()
             .set_points(mean)

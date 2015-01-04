@@ -701,6 +701,7 @@ TEST_SUITE(Foundation_Image_ColorSpace)
 
             GnuplotFile plotfile;
             plotfile.set_title("White Spectrum");
+            plotfile.set_xlabel("Wavelength (nm)");
             plotfile
                 .new_plot()
                 .set_points(zip(&InputSpectrumWavelength[0], &InputWhiteSpectrum[0], InputSpectrumCount))
@@ -727,6 +728,7 @@ TEST_SUITE(Foundation_Image_ColorSpace)
 
             GnuplotFile plotfile;
             plotfile.set_title("Green Spectrum");
+            plotfile.set_xlabel("Wavelength (nm)");
             plotfile
                 .new_plot()
                 .set_points(zip(&InputSpectrumWavelength[0], &InputGreenSpectrum[0], InputSpectrumCount))
@@ -753,6 +755,7 @@ TEST_SUITE(Foundation_Image_ColorSpace)
 
             GnuplotFile plotfile;
             plotfile.set_title("Red Spectrum");
+            plotfile.set_xlabel("Wavelength (nm)");
             plotfile
                 .new_plot()
                 .set_points(zip(&InputSpectrumWavelength[0], &InputRedSpectrum[0], InputSpectrumCount))
@@ -779,6 +782,7 @@ TEST_SUITE(Foundation_Image_ColorSpace)
 
             GnuplotFile plotfile;
             plotfile.set_title("Camera Response");
+            plotfile.set_xlabel("Wavelength (nm)");
             plotfile
                 .new_plot()
                 .set_points(zip(&InputCameraResponseWavelength[0], &InputCameraResponse[0], InputCameraResponseCount))
@@ -805,6 +809,7 @@ TEST_SUITE(Foundation_Image_ColorSpace)
 
             GnuplotFile plotfile;
             plotfile.set_title("Light Source Emission Spectrum");
+            plotfile.set_xlabel("Wavelength (nm)");
             plotfile
                 .new_plot()
                 .set_points(zip(&InputSourceSpectrumWavelength[0], &InputSourceSpectrum[0], InputSourceSpectrumCount))
