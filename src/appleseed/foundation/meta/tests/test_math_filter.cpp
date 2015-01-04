@@ -30,7 +30,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/filter.h"
 #include "foundation/math/scalar.h"
-#include "foundation/utility/maplefile.h"
+#include "foundation/utility/gnuplotfile.h"
 #include "foundation/utility/string.h"
 #include "foundation/utility/test.h"
 
@@ -60,30 +60,28 @@ namespace
     }
 
     void plot(
-        const string&   filename,
-        const string&   legend,
+        const string&   filepath,
+        const string&   title,
         const Filter2d& filter)
     {
         const double r = filter.get_xradius();
 
-        vector<double> abscissas, values;
         const size_t PointCount = 256;
-
-        abscissas.reserve(PointCount);
-        values.reserve(PointCount);
+        vector<Vector2d> points(PointCount);
 
         for (size_t i = 0; i < PointCount; ++i)
         {
             const double x = fit<size_t, double>(i, 0, PointCount, -r - 1.0, r + 1.0);
             const double value = x < -r || x > r ? 0.0 : filter.evaluate(x, 0.0);
-
-            abscissas.push_back(x);
-            values.push_back(value);
+            points[i] = Vector2d(x, value);
         }
 
-        MapleFile file(filename);
-        file.define("values", abscissas, values);
-        file.plot("values", legend + ", radius=" + to_string(r));
+        GnuplotFile plotfile;
+        plotfile
+            .new_plot()
+            .set_points(points)
+            .set_title(title + ", radius=" + pretty_scalar(r, 1));
+        plotfile.write(filepath);
     }
 }
 
@@ -102,7 +100,7 @@ TEST_SUITE(Foundation_Math_Filter_BoxFilter2)
         const BoxFilter2<double> filter(2.0, 3.0);
 
         plot(
-            "unit tests/outputs/test_math_filter_boxfilter2.mpl",
+            "unit tests/outputs/test_math_filter_boxfilter2.gnuplot",
             "Box Filter",
             filter);
     }
@@ -122,7 +120,7 @@ TEST_SUITE(Foundation_Math_Filter_TriangleFilter2)
         const TriangleFilter2<double> filter(2.0, 3.0);
 
         plot(
-            "unit tests/outputs/test_math_filter_trianglefilter2.mpl",
+            "unit tests/outputs/test_math_filter_trianglefilter2.gnuplot",
             "Triangle Filter",
             filter);
     }
@@ -144,8 +142,8 @@ TEST_SUITE(Foundation_Math_Filter_GaussianFilter2)
         const GaussianFilter2<double> filter(2.0, 3.0, Alpha);
 
         plot(
-            "unit tests/outputs/test_math_filter_gaussianfilter2.mpl",
-            "Gaussian Filter, alpha=" + to_string(Alpha),
+            "unit tests/outputs/test_math_filter_gaussianfilter2.gnuplot",
+            "Gaussian Filter, alpha=" + pretty_scalar(Alpha, 1),
             filter);
     }
 }
@@ -167,8 +165,8 @@ TEST_SUITE(Foundation_Math_Filter_MitchellFilter2)
         const MitchellFilter2<double> filter(2.0, 3.0, B, C);
 
         plot(
-            "unit tests/outputs/test_math_filter_mitchellfilter2.mpl",
-            "Mitchell Filter, B=" + to_string(B) + ", C=" + to_string(C),
+            "unit tests/outputs/test_math_filter_mitchellfilter2.gnuplot",
+            "Mitchell Filter, B=" + pretty_scalar(B, 1) + ", C=" + pretty_scalar(C, 1),
             filter);
     }
 }
@@ -189,8 +187,8 @@ TEST_SUITE(Foundation_Math_Filter_LanczosFilter2)
         const LanczosFilter2<double> filter(2.0, 3.0, Tau);
 
         plot(
-            "unit tests/outputs/test_math_filter_lanczosfilter2.mpl",
-            "Lanczos Filter, tau=" + to_string(Tau),
+            "unit tests/outputs/test_math_filter_lanczosfilter2.gnuplot",
+            "Lanczos Filter, tau=" + pretty_scalar(Tau, 1),
             filter);
     }
 }
@@ -209,7 +207,7 @@ TEST_SUITE(Foundation_Math_Filter_BlackmanHarrisFilter2)
         const BlackmanHarrisFilter2<double> filter(2.0, 3.0);
 
         plot(
-            "unit tests/outputs/test_math_filter_blackmanharrisfilter2.mpl",
+            "unit tests/outputs/test_math_filter_blackmanharrisfilter2.gnuplot",
             "Blackman-Harris Filter",
             filter);
     }

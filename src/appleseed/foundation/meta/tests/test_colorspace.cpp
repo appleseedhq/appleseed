@@ -31,13 +31,14 @@
 #include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
 #include "foundation/image/regularspectrum.h"
+#include "foundation/math/vector.h"
+#include "foundation/utility/gnuplotfile.h"
 #include "foundation/utility/iostreamop.h"
-#include "foundation/utility/makevector.h"
-#include "foundation/utility/maplefile.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.
 #include <cstddef>
+#include <vector>
 
 using namespace foundation;
 using namespace std;
@@ -261,7 +262,20 @@ TEST_SUITE(Foundation_Image_ColorSpace)
             1.0e-6f);
     }
 
-    TEST_CASE(GenerateMaplePlotFilesToVisualizeSpectrumResampling)
+    vector<Vector2d> zip(const double x[], const double y[], const size_t count)
+    {
+        vector<Vector2d> points(count);
+
+        for (size_t i = 0; i < count; ++i)
+        {
+            points[i].x = x[i];
+            points[i].y = y[i];
+        }
+
+        return points;
+    }
+
+    TEST_CASE(GeneratePlotFilesToVisualizeSpectrumResampling)
     {
         // Input wavelengths for white, green and red spectra.
         static const size_t InputSpectrumCount = 76;
@@ -674,141 +688,134 @@ TEST_SUITE(Foundation_Image_ColorSpace)
 
         typedef RegularSpectrum<double, OutputCount> Spectrum;
 
-        // Compute new white spectrum.
-        Spectrum white_spectrum;
-        spectrum_to_spectrum(
-            InputSpectrumCount,
-            InputSpectrumWavelength,
-            InputWhiteSpectrum,
-            OutputCount,
-            OutputWavelength,
-            &white_spectrum[0]);
-
-        // Compute new green spectrum.
-        Spectrum green_spectrum;
-        spectrum_to_spectrum(
-            InputSpectrumCount,
-            InputSpectrumWavelength,
-            InputGreenSpectrum,
-            OutputCount,
-            OutputWavelength,
-            &green_spectrum[0]);
-
-        // Compute new red spectrum.
-        Spectrum red_spectrum;
-        spectrum_to_spectrum(
-            InputSpectrumCount,
-            InputSpectrumWavelength,
-            InputRedSpectrum,
-            OutputCount,
-            OutputWavelength,
-            &red_spectrum[0]);
-
-        // Compute new camera response.
-        Spectrum camera_response;
-        spectrum_to_spectrum(
-            InputCameraResponseCount,
-            InputCameraResponseWavelength,
-            InputCameraResponse,
-            OutputCount,
-            OutputWavelength,
-            &camera_response[0]);
-
-        // Compute new light source emission spectrum.
-        Spectrum source_spectrum;
-        spectrum_to_spectrum(
-            InputSourceSpectrumCount,
-            InputSourceSpectrumWavelength,
-            InputSourceSpectrum,
-            OutputCount,
-            OutputWavelength,
-            &source_spectrum[0]);
-
-        // Open Maple file for writing.
-        MapleFile maple_file("unit tests/outputs/test_colorspace.mpl");
-
-        // Initialize.
-        maple_file.restart();
-        maple_file.with("CurveFitting");
-
         // White spectrum.
-        maple_file.define(
-            "input_white_spectrum",
-            InputSpectrumCount,
-            &InputSpectrumWavelength[0],
-            &InputWhiteSpectrum[0]);
-        maple_file.define(
-            "output_white_spectrum",
-            OutputCount,
-            &OutputWavelength[0],
-            &white_spectrum[0]);
-        maple_file.plot(
-            make_vector(
-                MaplePlotDef("input_white_spectrum").set_legend("white spectrum [input]").set_color("gray"),
-                MaplePlotDef("output_white_spectrum").set_legend("white spectrum [output]").set_color("red")));
+        {
+            Spectrum white_spectrum;
+            spectrum_to_spectrum(
+                InputSpectrumCount,
+                InputSpectrumWavelength,
+                InputWhiteSpectrum,
+                OutputCount,
+                OutputWavelength,
+                &white_spectrum[0]);
+
+            GnuplotFile plotfile;
+            plotfile.set_title("White Spectrum");
+            plotfile
+                .new_plot()
+                .set_points(zip(&InputSpectrumWavelength[0], &InputWhiteSpectrum[0], InputSpectrumCount))
+                .set_title("Input")
+                .set_color("gray");
+            plotfile
+                .new_plot()
+                .set_points(zip(&OutputWavelength[0], &white_spectrum[0], OutputCount))
+                .set_title("Output")
+                .set_color("red");
+            plotfile.write("unit tests/outputs/test_colorspace_white.gnuplot");
+        }
 
         // Green spectrum.
-        maple_file.define(
-            "input_green_spectrum",
-            InputSpectrumCount,
-            &InputSpectrumWavelength[0],
-            &InputGreenSpectrum[0]);
-        maple_file.define(
-            "output_green_spectrum",
-            OutputCount,
-            &OutputWavelength[0],
-            &green_spectrum[0]);
-        maple_file.plot(
-            make_vector(
-                MaplePlotDef("input_green_spectrum").set_legend("green spectrum [input]").set_color("gray"),
-                MaplePlotDef("output_green_spectrum").set_legend("green spectrum [output]").set_color("red")));
+        {
+            Spectrum green_spectrum;
+            spectrum_to_spectrum(
+                InputSpectrumCount,
+                InputSpectrumWavelength,
+                InputGreenSpectrum,
+                OutputCount,
+                OutputWavelength,
+                &green_spectrum[0]);
+
+            GnuplotFile plotfile;
+            plotfile.set_title("Green Spectrum");
+            plotfile
+                .new_plot()
+                .set_points(zip(&InputSpectrumWavelength[0], &InputGreenSpectrum[0], InputSpectrumCount))
+                .set_title("Input")
+                .set_color("gray");
+            plotfile
+                .new_plot()
+                .set_points(zip(&OutputWavelength[0], &green_spectrum[0], OutputCount))
+                .set_title("Output")
+                .set_color("red");
+            plotfile.write("unit tests/outputs/test_colorspace_green.gnuplot");
+        }
 
         // Red spectrum.
-        maple_file.define(
-            "input_red_spectrum",
-            InputSpectrumCount,
-            &InputSpectrumWavelength[0],
-            &InputRedSpectrum[0]);
-        maple_file.define(
-            "output_red_spectrum",
-            OutputCount,
-            &OutputWavelength[0],
-            &red_spectrum[0]);
-        maple_file.plot(
-            make_vector(
-                MaplePlotDef("input_red_spectrum").set_legend("red spectrum [input]").set_color("gray"),
-                MaplePlotDef("output_red_spectrum").set_legend("red spectrum [output]").set_color("red")));
+        {
+            Spectrum red_spectrum;
+            spectrum_to_spectrum(
+                InputSpectrumCount,
+                InputSpectrumWavelength,
+                InputRedSpectrum,
+                OutputCount,
+                OutputWavelength,
+                &red_spectrum[0]);
+
+            GnuplotFile plotfile;
+            plotfile.set_title("Red Spectrum");
+            plotfile
+                .new_plot()
+                .set_points(zip(&InputSpectrumWavelength[0], &InputRedSpectrum[0], InputSpectrumCount))
+                .set_title("Input")
+                .set_color("gray");
+            plotfile
+                .new_plot()
+                .set_points(zip(&OutputWavelength[0], &red_spectrum[0], OutputCount))
+                .set_title("Output")
+                .set_color("red");
+            plotfile.write("unit tests/outputs/test_colorspace_red.gnuplot");
+        }
 
         // Camera response.
-        maple_file.define(
-            "input_camera_response",
-            InputCameraResponseCount,
-            &InputCameraResponseWavelength[0],
-            &InputCameraResponse[0]);
-        maple_file.define(
-            "output_camera_response",
-            OutputCount,
-            &OutputWavelength[0],
-            &camera_response[0]);
-        maple_file.plot(
-            make_vector(
-                MaplePlotDef("input_camera_response").set_legend("camera response [input]").set_color("gray"),
-                MaplePlotDef("output_camera_response").set_legend("camera response [output]").set_color("red")));
+        {
+            Spectrum camera_response;
+            spectrum_to_spectrum(
+                InputCameraResponseCount,
+                InputCameraResponseWavelength,
+                InputCameraResponse,
+                OutputCount,
+                OutputWavelength,
+                &camera_response[0]);
+
+            GnuplotFile plotfile;
+            plotfile.set_title("Camera Response");
+            plotfile
+                .new_plot()
+                .set_points(zip(&InputCameraResponseWavelength[0], &InputCameraResponse[0], InputCameraResponseCount))
+                .set_title("Input")
+                .set_color("gray");
+            plotfile
+                .new_plot()
+                .set_points(zip(&OutputWavelength[0], &camera_response[0], OutputCount))
+                .set_title("Output")
+                .set_color("red");
+            plotfile.write("unit tests/outputs/test_colorspace_camera.gnuplot");
+        }
 
         // Light source emission spectrum.
-        maple_file.define(
-            "input_source_spectrum",
-            InputSourceSpectrumCount,
-            &InputSourceSpectrumWavelength[0],
-            &InputSourceSpectrum[0]);
-        maple_file.define(
-            "output_source_spectrum",
-            OutputCount,
-            &OutputWavelength[0],
-            &source_spectrum[0]);
-        maple_file.plot(
-            make_vector(
-                MaplePlotDef("input_source_spectrum").set_legend("light source emission spectrum [input]").set_color("gray"),
-                MaplePlotDef("output_source_spectrum").set_legend("light source emission spectrum [output]").set_color("red")));
+        {
+            Spectrum source_spectrum;
+            spectrum_to_spectrum(
+                InputSourceSpectrumCount,
+                InputSourceSpectrumWavelength,
+                InputSourceSpectrum,
+                OutputCount,
+                OutputWavelength,
+                &source_spectrum[0]);
+
+            GnuplotFile plotfile;
+            plotfile.set_title("Light Source Emission Spectrum");
+            plotfile
+                .new_plot()
+                .set_points(zip(&InputSourceSpectrumWavelength[0], &InputSourceSpectrum[0], InputSourceSpectrumCount))
+                .set_title("Input")
+                .set_color("gray");
+            plotfile
+                .new_plot()
+                .set_points(zip(&OutputWavelength[0], &source_spectrum[0], OutputCount))
+                .set_title("Output")
+                .set_color("red");
+            plotfile.write("unit tests/outputs/test_colorspace_light.gnuplot");
+        }
     }
 }

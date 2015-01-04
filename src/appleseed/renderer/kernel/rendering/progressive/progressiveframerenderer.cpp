@@ -55,8 +55,8 @@
 #include "foundation/platform/timers.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/foreach.h"
+#include "foundation/utility/gnuplotfile.h"
 #include "foundation/utility/job.h"
-#include "foundation/utility/maplefile.h"
 #include "foundation/utility/searchpaths.h"
 #include "foundation/utility/statistics.h"
 #include "foundation/utility/string.h"
@@ -333,11 +333,14 @@ namespace
 
             void write_rms_deviation_file() const
             {
-                if (!m_spp_count_history.empty())
+                if (!m_rmsd_history.empty())
                 {
-                    MapleFile file("RMS Deviation.mpl");
-                    file.define("rmsd", m_spp_count_history, m_rmsd_history);
-                    file.plot("rmsd", "RMS Deviation");
+                    GnuplotFile plotfile;
+                    plotfile
+                        .new_plot()
+                        .set_points(m_rmsd_history)
+                        .set_title("RMS Deviation");
+                    plotfile.write("rms_deviation.gnuplot");
                 }
             }
 
@@ -355,9 +358,7 @@ namespace
 
             double                          m_rcp_pixel_count;
             SampleCountHistory<128>         m_sample_count_history;
-
-            vector<double>                  m_spp_count_history;    // samples per pixel history
-            vector<double>                  m_rmsd_history;         // RMS deviation history
+            vector<Vector2d>                m_rmsd_history;             // RMS deviation history
 
             void record_and_print_perf_stats(const double time)
             {
@@ -402,8 +403,7 @@ namespace
                     const double samples_per_pixel = m_buffer.get_sample_count() * m_rcp_pixel_count;
                     const double rmsd = compute_rms_deviation(current_image, *m_ref_image);
 
-                    m_spp_count_history.push_back(samples_per_pixel);
-                    m_rmsd_history.push_back(rmsd);
+                    m_rmsd_history.push_back(Vector2d(samples_per_pixel, rmsd));
 
                     if (m_print_luminance_stats)
                         output += ", ";

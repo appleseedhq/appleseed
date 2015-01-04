@@ -28,9 +28,10 @@
 //
 
 // appleseed.foundation headers.
+#include "foundation/math/scalar.h"
 #include "foundation/math/spline.h"
-#include "foundation/utility/makevector.h"
-#include "foundation/utility/maplefile.h"
+#include "foundation/math/vector.h"
+#include "foundation/utility/gnuplotfile.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.
@@ -42,7 +43,20 @@ using namespace std;
 
 TEST_SUITE(Foundation_Math_Spline)
 {
-    TEST_CASE(GenerateMaplePlotFiles)
+    vector<Vector2d> zip(const double x[], const double y[], const size_t count)
+    {
+        vector<Vector2d> points(count);
+
+        for (size_t i = 0; i < count; ++i)
+        {
+            points[i].x = x[i];
+            points[i].y = y[i];
+        }
+
+        return points;
+    }
+
+    TEST_CASE(GeneratePlotFiles)
     {
         // Define knots.
         vector<double> knot_x, knot_y;
@@ -52,42 +66,41 @@ TEST_SUITE(Foundation_Math_Spline)
 
         // Compute output point abscissa.
         const size_t N = 1000;
-        vector<double> point_x;
         const double b = knot_x.front();
         const double e = knot_x.back();
+        vector<double> point_x;
         for (size_t i = 0; i < N; ++i)
-        {
-            const double t = static_cast<double>(i) / (N - 1);
-            point_x.push_back(b + t * (e - b));
-        }
+            point_x.push_back(fit<size_t, double>(i, 0, N - 1, b, e));
 
-        // Open Maple file for writing.
-        MapleFile maple_file("unit tests/outputs/test_spline.mpl");
-
-        // Initialize.
-        maple_file.restart();
-        maple_file.with("CurveFitting");
+        GnuplotFile plotfile;
 
         // Knots.
-        maple_file.define("knots", knot_x, knot_y);
+        plotfile
+            .new_plot()
+            .set_points(zip(&knot_x[0], &knot_y[0], knot_x.size()))
+            .set_title("Knots")
+            .set_color("gray");
 
-        // Reference spline.
-        maple_file.print("ref:=Spline(knots,x,degree=3):\n");
-        maple_file.print(
-            "plot([knots,ref(x)],x=%f..%f,color=[gray,black],"
-            "legend=[\"knots\",\"reference\"]);\n",
-            b, e);
+        // Reference.
+        plotfile
+            .new_plot()
+            .set_points(zip(&knot_x[0], &knot_y[0], knot_x.size()))
+            .set_title("Reference")
+            .set_color("black")
+            .set_smoothing("csplines");
 
         // Tension = 0.0
         {
             vector<double> knot_d(knot_x.size());
             vector<double> point_y(point_x.size());
+
             compute_cardinal_spline_tangents(
                 knot_x.size(),
                 &knot_x[0],
                 &knot_y[0],
                 0.0,
                 &knot_d[0]);
+
             cubic_hermite_spline(
                 knot_x.size(),
                 &knot_x[0],
@@ -96,23 +109,26 @@ TEST_SUITE(Foundation_Math_Spline)
                 point_x.size(),
                 &point_x[0],
                 &point_y[0]);
-            maple_file.define("output1", point_x, point_y);
-            maple_file.plot(
-                make_vector(
-                    MaplePlotDef("knots").set_legend("knots").set_color("gray"),
-                    MaplePlotDef("output1").set_legend("spline for tension 0.0").set_color("red")));
+
+            plotfile
+                .new_plot()
+                .set_points(zip(&point_x[0], &point_y[0], point_x.size()))
+                .set_title("Tension = 0.0")
+                .set_color("red");
         }
 
         // Tension = 0.5
         {
             vector<double> knot_d(knot_x.size());
             vector<double> point_y(point_x.size());
+
             compute_cardinal_spline_tangents(
                 knot_x.size(),
                 &knot_x[0],
                 &knot_y[0],
                 0.5,
                 &knot_d[0]);
+
             cubic_hermite_spline(
                 knot_x.size(),
                 &knot_x[0],
@@ -121,23 +137,26 @@ TEST_SUITE(Foundation_Math_Spline)
                 point_x.size(),
                 &point_x[0],
                 &point_y[0]);
-            maple_file.define("output2", point_x, point_y);
-            maple_file.plot(
-                make_vector(
-                    MaplePlotDef("knots").set_legend("knots").set_color("gray"),
-                    MaplePlotDef("output2").set_legend("spline for tension 0.5").set_color("red")));
+
+            plotfile
+                .new_plot()
+                .set_points(zip(&point_x[0], &point_y[0], point_x.size()))
+                .set_title("Tension = 0.5")
+                .set_color("green");
         }
 
         // Tension = 1.0
         {
             vector<double> knot_d(knot_x.size());
             vector<double> point_y(point_x.size());
+
             compute_cardinal_spline_tangents(
                 knot_x.size(),
                 &knot_x[0],
                 &knot_y[0],
                 1.0,
                 &knot_d[0]);
+
             cubic_hermite_spline(
                 knot_x.size(),
                 &knot_x[0],
@@ -146,22 +165,14 @@ TEST_SUITE(Foundation_Math_Spline)
                 point_x.size(),
                 &point_x[0],
                 &point_y[0]);
-            maple_file.define("output3", point_x, point_y);
-            maple_file.plot(
-                make_vector(
-                    MaplePlotDef("knots").set_legend("knots").set_color("gray"),
-                    MaplePlotDef("output3").set_legend("spline for tension 1.0").set_color("red")));
+
+            plotfile
+                .new_plot()
+                .set_points(zip(&point_x[0], &point_y[0], point_x.size()))
+                .set_title("Tension = 1.0")
+                .set_color("blue");
         }
 
-        // Comparative plots.
-        maple_file.plot(
-            make_vector(
-                MaplePlotDef("output1").set_legend("spline for tension 0.0").set_color("red"),
-                MaplePlotDef("output2").set_legend("spline for tension 0.5").set_color("green"),
-                MaplePlotDef("output3").set_legend("spline for tension 1.0").set_color("blue")));
-        maple_file.print(
-            "plot([ref(x),output1,output3],x=%f..%f,color=[black,red,blue],"
-            "legend=[\"reference\",\"spline for tension 0.0\",\"spline for tension 1.0\"]);\n",
-            b, e);
+        plotfile.write("unit tests/outputs/test_spline.gnuplot");
     }
 }

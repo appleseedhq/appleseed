@@ -38,8 +38,7 @@
 #include "foundation/math/rng.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
-#include "foundation/utility/makevector.h"
-#include "foundation/utility/maplefile.h"
+#include "foundation/utility/gnuplotfile.h"
 #include "foundation/utility/string.h"
 #include "foundation/utility/test.h"
 #include "foundation/utility/testutils.h"
@@ -395,9 +394,8 @@ TEST_SUITE(Foundation_Math_QMC)
         double rng_area = 0.0;
         double qmc_area = 0.0;
 
-        vector<double> abscissa;
-        vector<double> rng_rmsd;
-        vector<double> qmc_rmsd;
+        vector<Vector2d> rng_rmsd(SampleCount);
+        vector<Vector2d> qmc_rmsd(SampleCount);
 
         for (size_t i = 0; i < SampleCount; ++i)
         {
@@ -407,18 +405,23 @@ TEST_SUITE(Foundation_Math_QMC)
             const double n = static_cast<double>(i + 1);
             const double v = Pi / n;
 
-            abscissa.push_back(n);
-            rng_rmsd.push_back(abs(rng_area * v - ExactArea));
-            qmc_rmsd.push_back(abs(qmc_area * v - ExactArea));
+            rng_rmsd[i] = Vector2d(n, abs(rng_area * v - ExactArea));
+            qmc_rmsd[i] = Vector2d(n, abs(qmc_area * v - ExactArea));
         }
 
-        MapleFile file("unit tests/outputs/test_qmc_integrate1dfunction.mpl");
-        file.define("rng_rmsd", abscissa, rng_rmsd);
-        file.define("qmc_rmsd", abscissa, qmc_rmsd);
-        file.plot(
-            make_vector(
-                MaplePlotDef("rng_rmsd").set_legend("RMS Deviation (RNG)").set_color("blue"),
-                MaplePlotDef("qmc_rmsd").set_legend("RMS Deviation (QMC)").set_color("red")));
+        GnuplotFile plotfile;
+        plotfile.set_title("RMS Deviation");
+        plotfile
+            .new_plot()
+            .set_points(rng_rmsd)
+            .set_title("RNG")
+            .set_color("blue");
+        plotfile
+            .new_plot()
+            .set_points(qmc_rmsd)
+            .set_title("QMC")
+            .set_color("red");
+        plotfile.write("unit tests/outputs/test_qmc_integrate1dfunction.gnuplot");
     }
 
 #if 0

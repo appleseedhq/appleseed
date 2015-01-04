@@ -32,7 +32,8 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/rng.h"
-#include "foundation/utility/maplefile.h"
+#include "foundation/math/vector.h"
+#include "foundation/utility/gnuplotfile.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.
@@ -108,11 +109,11 @@ TEST_SUITE(Renderer_Kernel_Rendering_Final_VariationTracker)
         EXPECT_FEQ(1.0f / 3.0f, tracker.get_variation());
     }
 
-    TEST_CASE(Visualize)
+    TEST_CASE(GeneratePlotFile)
     {
         MersenneTwister rng;
         VariationTracker tracker;
-        vector<float> samples, mean, variation;
+        vector<Vector2f> mean, variation;
 
         for (size_t i = 0; i < 1024; ++i)
         {
@@ -121,15 +122,21 @@ TEST_SUITE(Renderer_Kernel_Rendering_Final_VariationTracker)
 
             tracker.insert(rand_float1(rng));
 
-            samples.push_back(static_cast<float>(i));
-            mean.push_back(tracker.get_mean());
-            variation.push_back(tracker.get_variation());
+            const float s = static_cast<float>(i);
+
+            mean.push_back(Vector2f(s, tracker.get_mean()));
+            variation.push_back(Vector2f(s, tracker.get_variation()));
         }
 
-        MapleFile file("unit tests/outputs/test_variationtracker.mpl");
-        file.define("mean", samples, mean);
-        file.define("variation", samples, variation);
-        file.plot("variation", "Variation");
-        file.plot("mean", "Mean");
+        GnuplotFile plotfile;
+        plotfile
+            .new_plot()
+            .set_points(mean)
+            .set_title("Mean");
+        plotfile
+            .new_plot()
+            .set_points(variation)
+            .set_title("Variation");
+        plotfile.write("unit tests/outputs/test_variationtracker.gnuplot");
     }
 }

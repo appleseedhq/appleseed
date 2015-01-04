@@ -47,8 +47,7 @@
 #include "foundation/math/vector.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
-#include "foundation/utility/makevector.h"
-#include "foundation/utility/maplefile.h"
+#include "foundation/utility/gnuplotfile.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
@@ -60,6 +59,7 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include <vector>
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
@@ -152,6 +152,7 @@ namespace
             m_s.set(1.0f);
             m_s /= s_denom;
 
+            // Generate plot files for debug purposes.
             // plot_specular_albedo_curves();
 
             return true;
@@ -596,84 +597,79 @@ namespace
 
         static void plot_specular_albedo_curves()
         {
-            MapleFile file("albedo.mpl");
-
-            plot_specular_albedo_curve(file, 0.8, Spectrum(1.0f));
-            plot_specular_albedo_curve(file, 0.4, Spectrum(1.0f));
-            plot_specular_albedo_curve(file, 0.03, Spectrum(1.0f));
-            plot_specular_albedo_curve(file, 1.0e-6, Spectrum(1.0f));
+            plot_specular_albedo_curve(0.8, Spectrum(1.0f));
+            plot_specular_albedo_curve(0.4, Spectrum(1.0f));
+            plot_specular_albedo_curve(0.03, Spectrum(1.0f));
+            plot_specular_albedo_curve(1.0e-6, Spectrum(1.0f));
         }
 
         static void plot_specular_albedo_curve(
-            MapleFile&          file,
             const double        m,
             const Spectrum&     rs)
         {
-            stringstream sstr;
-            sstr << fixed << m;
-            const string suffix = "_" + replace(sstr.str(), ".", "_");
-
-            generate_specular_albedo_plot_data(file, "ward_" + suffix, WardMDF<double>(m), rs);
-            generate_specular_albedo_plot_data(file, "beckmann_" + suffix, BeckmannMDF<double>(m), rs);
-
-            file.plot(
-                make_vector(
-                    MaplePlotDef("ward_" + suffix)
-                        .set_legend("Specular Albedo with Ward MDF for m=" + to_string(m))
-                        .set_style("point")
-                        .set_color("black"),
-                    MaplePlotDef("ward_" + suffix + "_reconstruction")
-                        .set_legend("Specular Albedo Reconstruction with Ward MDF for m=" + to_string(m))
-                        .set_style("line")
-                        .set_color("red"),
-                    MaplePlotDef("beckmann_" + suffix)
-                        .set_legend("Specular Albedo with Beckmann MDF for m=" + to_string(m))
-                        .set_style("point")
-                        .set_color("black"),
-                    MaplePlotDef("beckmann_" + suffix + "_reconstruction")
-                        .set_legend("Specular Albedo Reconstruction with Beckmann MDF for m=" + to_string(m))
-                        .set_style("line")
-                        .set_color("blue")));
+            generate_specular_albedo_plot_data("Ward", m, WardMDF<double>(m), rs);
+            generate_specular_albedo_plot_data("Beckmann", m, BeckmannMDF<double>(m), rs);
         }
 
         template <typename MDF>
         static void generate_specular_albedo_plot_data(
-            MapleFile&          file,
-            const string&       name,
+            const string&       mdf_name,
+            const double        m,
             const MDF&          mdf,
             const Spectrum&     rs)
         {
             Spectrum a_spec[AlbedoTableSize];
             compute_specular_albedo(mdf, rs, a_spec);
 
-            double angle[AlbedoTableSize];
-            double albedo[AlbedoTableSize];
+            vector<Vector2d> tabulated_albedos(AlbedoTableSize);
 
             for (size_t i = 0; i < AlbedoTableSize; ++i)
             {
                 const double cos_angle = static_cast<double>(i) / (AlbedoTableSize - 1);
-
-                angle[i] = acos(cos_angle);
-                albedo[i] = average_value(a_spec[i]);
+                const double angle = acos(cos_angle);
+                const double albedo = average_value(a_spec[i]);
+                tabulated_albedos[i] = Vector2d(angle, albedo);
             }
 
             const size_t PointCount = 256;
-            double reconstruction_angle[PointCount];
-            double reconstruction_albedo[PointCount];
+            vector<Vector2d> reconstructed_albedos(PointCount);
 
             for (size_t i = 0; i < PointCount; ++i)
             {
                 const double cos_angle = static_cast<double>(i) / (PointCount - 1);
+                const double angle = acos(cos_angle);
 
-                Spectrum rec_albedo;
-                evaluate_a_spec(a_spec, cos_angle, rec_albedo);
+                Spectrum albedo_sample;
+                evaluate_a_spec(a_spec, cos_angle, albedo_sample);
 
-                reconstruction_angle[i] = acos(cos_angle);
-                reconstruction_albedo[i] = average_value(rec_albedo);
+                const double albedo = average_value(albedo_sample);
+                reconstructed_albedos[i] = Vector2d(angle, albedo);
             }
 
-            file.define(name, AlbedoTableSize, angle, albedo);
-            file.define(name + "_reconstruction", PointCount, reconstruction_angle, reconstruction_albedo);
+            GnuplotFile plotfile;
+            plotfile.set_title("Specular Albedo using " + mdf_name + " Microfacet Distribution Function with m=" + to_string(m));
+
+            plotfile
+                .new_plot()
+                .set_points(tabulated_albedos)
+                .set_title("Tabulated")
+                .set_style("points pointtype 13")
+                .set_color("black");
+
+            plotfile
+                .new_plot()
+                .set_points(reconstructed_albedos)
+                .set_title("Reconstruction")
+                .set_style("lines")
+                .set_color("blue");
+
+            stringstream filename;
+            filename << "kelemen_albedo";
+            filename << "_" << lower_case(mdf_name);
+            filename << "_" << replace(to_string(m), ".", "_");
+            filename << ".gnuplot";
+
+            plotfile.write(filename.str());
         }
     };
 

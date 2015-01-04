@@ -30,12 +30,13 @@
 // appleseed.foundation headers.
 #include "foundation/math/fastmath.h"
 #include "foundation/math/scalar.h"
+#include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 #ifdef APPLESEED_USE_SSE
 #include "foundation/platform/sse.h"
 #endif
 #include "foundation/utility/countof.h"
-#include "foundation/utility/maplefile.h"
+#include "foundation/utility/gnuplotfile.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.
@@ -70,14 +71,7 @@ TEST_SUITE(Foundation_Math_FastMath)
 
         for (size_t i = 0; i < step_count; ++i)
         {
-            const T x =
-                fit<T>(
-                    static_cast<T>(i),
-                    static_cast<T>(0),
-                    static_cast<T>(step_count - 1),
-                    low,
-                    high);
-
+            const T x = fit<size_t, T>(i, 0, step_count - 1, low, high);
             const T ref_value = ref(x);
             const T value = func(x);
             const T error = compute_relative_error(ref_value, value);
@@ -103,15 +97,7 @@ TEST_SUITE(Foundation_Math_FastMath)
             SSE_ALIGN T x[4];
 
             for (size_t j = 0; j < 4; ++j)
-            {
-                x[j] =
-                    fit<T>(
-                        static_cast<T>(i + j),
-                        static_cast<T>(0),
-                        static_cast<T>(step_count - 1),
-                        low,
-                        high);
-            }
+                x[j] = fit<size_t, T>(i + j, 0, step_count - 1, low, high);
 
             SSE_ALIGN T ref_values[4] = { x[0], x[1], x[2], x[3] };
             ref(ref_values);
@@ -132,56 +118,41 @@ TEST_SUITE(Foundation_Math_FastMath)
     template <typename Function>
     struct FuncDef
     {
-        string      m_name;
-        string      m_legend;
+        string      m_title;
         string      m_color;
         Function    m_function;
     };
 
     template <typename T, typename Function>
     void plot_functions(
-        const string&           filename,
+        const string&           filepath,
         const FuncDef<Function> functions[],
         const size_t            function_count,
         const T                 low,
         const T                 high,
         const size_t            step_count)
     {
-        MapleFile file(filename);
-
-        vector<MaplePlotDef> plot_defs;
-        plot_defs.reserve(function_count);
+        GnuplotFile plotfile;
 
         for (size_t f = 0; f < function_count; ++f)
         {
-            vector<float> xs, ys;
-
-            xs.reserve(step_count);
-            ys.reserve(step_count);
+            vector<Vector<T, 2> > points(step_count);
 
             for (size_t i = 0; i < step_count; ++i)
             {
-                const T x =
-                    fit<T>(
-                        static_cast<T>(i),
-                        static_cast<T>(0),
-                        static_cast<T>(step_count - 1),
-                        low,
-                        high);
-
-                xs.push_back(x);
-                ys.push_back(functions[f].m_function(x));
+                const T x = fit<size_t, T>(i, 0, step_count - 1, low, high);
+                const T y = functions[f].m_function(x);
+                points[i] = Vector2f(x, y);
             }
 
-            file.define(functions[f].m_name, xs, ys);
-
-            MaplePlotDef plot_def(functions[f].m_name);
-            plot_def.set_legend(functions[f].m_legend);
-            plot_def.set_color(functions[f].m_color);
-            plot_defs.push_back(plot_def);
+            plotfile
+                .new_plot()
+                .set_points(points)
+                .set_title(functions[f].m_title)
+                .set_color(functions[f].m_color);
         }
 
-        file.plot(plot_defs);
+        plotfile.write(filepath);
     }
 
     // Pow2(x).
@@ -253,13 +224,13 @@ TEST_SUITE(Foundation_Math_FastMath)
     {
         const FuncDef<float (*)(float)> functions[] =
         {
-            { "scalar_std_pow2", "std::pow[2]", "black", scalar_std_pow2 },
-            { "scalar_fast_pow2", "foundation::fast_pow2", "green", fast_pow2 },
-            { "scalar_faster_pow2", "foundation::faster_pow2", "red", faster_pow2 }
+            { "std::pow[2]", "black", scalar_std_pow2 },
+            { "foundation::fast_pow2", "green", fast_pow2 },
+            { "foundation::faster_pow2", "red", faster_pow2 }
         };
 
         plot_functions(
-            "unit tests/outputs/test_fastmath_pow2.mpl",
+            "unit tests/outputs/test_fastmath_pow2.gnuplot",
             functions,
             countof(functions),
             0.0f,
@@ -336,13 +307,13 @@ TEST_SUITE(Foundation_Math_FastMath)
     {
         const FuncDef<float (*)(float)> functions[] =
         {
-            { "scalar_std_log2", "std::log[2]", "black", scalar_std_log2 },
-            { "scalar_fast_log2", "foundation::fast_log2", "green", fast_log2 },
-            { "scalar_faster_log2", "foundation::faster_log2", "red", faster_log2 }
+            { "std::log[2]", "black", scalar_std_log2 },
+            { "foundation::fast_log2", "green", fast_log2 },
+            { "foundation::faster_log2", "red", faster_log2 }
         };
 
         plot_functions(
-            "unit tests/outputs/test_fastmath_log2.mpl",
+            "unit tests/outputs/test_fastmath_log2.gnuplot",
             functions,
             countof(functions),
             1.0e-2f,
@@ -441,13 +412,13 @@ TEST_SUITE(Foundation_Math_FastMath)
     {
         const FuncDef<float (*)(float)> functions[] =
         {
-            { "scalar_std_pow", "std::pow", "black", scalar_std_pow },
-            { "scalar_fast_pow", "foundation::fast_pow", "green", scalar_fast_pow },
-            { "scalar_faster_pow", "foundation::faster_pow", "red", scalar_faster_pow }
+            { "std::pow", "black", scalar_std_pow },
+            { "foundation::fast_pow", "green", scalar_fast_pow },
+            { "foundation::faster_pow", "red", scalar_faster_pow }
         };
 
         plot_functions(
-            "unit tests/outputs/test_fastmath_pow.mpl",
+            "unit tests/outputs/test_fastmath_pow.gnuplot",
             functions,
             countof(functions),
             1.0e-2f,
@@ -519,13 +490,13 @@ TEST_SUITE(Foundation_Math_FastMath)
     {
         const FuncDef<float (*)(float)> functions[] =
         {
-            { "scalar_std_log", "std::log", "black", log },
-            { "scalar_fast_log", "foundation::fast_log", "green", fast_log },
-            { "scalar_faster_log", "foundation::faster_log", "red", faster_log }
+            { "std::log", "black", log },
+            { "foundation::fast_log", "green", fast_log },
+            { "foundation::faster_log", "red", faster_log }
         };
 
         plot_functions(
-            "unit tests/outputs/test_fastmath_log.mpl",
+            "unit tests/outputs/test_fastmath_log.gnuplot",
             functions,
             countof(functions),
             1.0e-2f,
@@ -597,13 +568,13 @@ TEST_SUITE(Foundation_Math_FastMath)
     {
         const FuncDef<float (*)(float)> functions[] =
         {
-            { "scalar_std_exp", "std::exp", "black", exp },
-            { "scalar_fast_exp", "foundation::fast_exp", "green", fast_exp },
-            { "scalar_faster_exp", "foundation::faster_exp", "red", faster_exp }
+            { "std::exp", "black", exp },
+            { "foundation::fast_exp", "green", fast_exp },
+            { "foundation::faster_exp", "red", faster_exp }
         };
 
         plot_functions(
-            "unit tests/outputs/test_fastmath_exp.mpl",
+            "unit tests/outputs/test_fastmath_exp.gnuplot",
             functions,
             countof(functions),
             0.0f,

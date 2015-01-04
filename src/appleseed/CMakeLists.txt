@@ -692,6 +692,8 @@ set (foundation_utility_sources
     foundation/utility/countof.h
     foundation/utility/filter.h
     foundation/utility/foreach.h
+    foundation/utility/gnuplotfile.cpp
+    foundation/utility/gnuplotfile.h
     foundation/utility/indenter.cpp
     foundation/utility/indenter.h
     foundation/utility/iostreamop.h
@@ -701,8 +703,6 @@ set (foundation_utility_sources
     foundation/utility/lazy.h
     foundation/utility/log.h
     foundation/utility/makevector.h
-    foundation/utility/maplefile.cpp
-    foundation/utility/maplefile.h
     foundation/utility/memory.cpp
     foundation/utility/memory.h
     foundation/utility/numerictype.h

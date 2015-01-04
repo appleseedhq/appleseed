@@ -33,13 +33,14 @@
 #include "foundation/math/qmc.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
-#include "foundation/utility/makevector.h"
-#include "foundation/utility/maplefile.h"
+#include "foundation/utility/gnuplotfile.h"
+#include "foundation/utility/string.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.
 #include <cmath>
 #include <cstddef>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -170,29 +171,23 @@ TEST_SUITE(Foundation_Math_Microfacet)
 
     template <typename MDF>
     void plot(
-        MapleFile&      file,
-        const string&   name,
+        const string&   mdf_name,
+        const double    mdf_param,
         const MDF&      mdf,
         const size_t    point_count,
         const size_t    sample_count)
     {
-        vector<double> angles(point_count);
-        vector<double> densities(point_count);
+        vector<Vector2d> densities(point_count);
 
         for (size_t i = 0; i < point_count; ++i)
         {
-            const double angle =
-                fit(
-                    static_cast<double>(i), 0.0, static_cast<double>(point_count - 1),
-                    -HalfPi, +HalfPi);
+            const double angle = fit<size_t, double>(i, 0, point_count - 1, -HalfPi, +HalfPi);
             const double cos_angle = cos(angle);
-
-            angles[i] = rad_to_deg(angle);
-            densities[i] = mdf.evaluate(cos_angle) * cos_angle;
+            const double density = mdf.evaluate(cos_angle) * cos_angle;
+            densities[i] = Vector2d(rad_to_deg(angle), density);
         }
 
-        vector<double> angle_samples(sample_count);
-        vector<double> density_samples(sample_count);
+        vector<Vector2d> samples(sample_count);
 
         for (size_t i = 0; i < sample_count; ++i)
         {
@@ -201,22 +196,34 @@ TEST_SUITE(Foundation_Math_Microfacet)
             const Vector3d w = mdf.sample(s);
             const double cos_angle = w.y;
             const double angle = acos(cos_angle) * (w.x < 0.0 ? -1.0 : 1.0);
-
-            angle_samples[i] = rad_to_deg(angle);
-            density_samples[i] = mdf.evaluate(cos_angle) * cos_angle;
+            const double density = mdf.evaluate(cos_angle) * cos_angle;
+            samples[i] = Vector2d(rad_to_deg(angle), density);
         }
 
-        file.define(name, angles, densities);
-        file.define(name + "_samples", angle_samples, density_samples);
+        GnuplotFile plotfile;
+        plotfile.set_title(mdf_name + " Microfacet Distribution Function");
 
-        file.plot(
-            make_vector(
-                MaplePlotDef(name)
-                    .set_legend("Microfacet Distribution Function (" + name + ")"),
-                MaplePlotDef(name + "_samples")
-                    .set_legend("Integration Samples")
-                    .set_style("point")
-                    .set_color("red")));
+        plotfile
+            .new_plot()
+            .set_points(densities)
+            .set_title("Density")
+            .set_color("black")
+            .set_style("lines");
+
+        plotfile
+            .new_plot()
+            .set_points(samples)
+            .set_title("Integration Samples")
+            .set_color("red")
+            .set_style("points pointtype 13");
+
+        stringstream filename;
+        filename << "test_microfacet";
+        filename << "_" << lower_case(mdf_name);
+        filename << "_" << replace(pretty_scalar(mdf_param, 1), ".", "_");
+        filename << ".gnuplot";
+
+        plotfile.write("unit tests/outputs/" + filename.str());
     }
 
 
@@ -310,11 +317,9 @@ TEST_SUITE(Foundation_Math_Microfacet)
 
     TEST_CASE(BlinnMDF_GeneratePlotFiles)
     {
-        MapleFile file("unit tests/outputs/test_microfacet_blinn.mpl");
-
-        plot(file, "blinn_1",  BlinnMDF<double>( 1.0), FunctionPlotSampleCount, FunctionSamplingSampleCount);
-        plot(file, "blinn_10", BlinnMDF<double>(10.0), FunctionPlotSampleCount, FunctionSamplingSampleCount);
-        plot(file, "blinn_50", BlinnMDF<double>(50.0), FunctionPlotSampleCount, FunctionSamplingSampleCount);
+        plot("Blinn",  1.0, BlinnMDF<double>( 1.0), FunctionPlotSampleCount, FunctionSamplingSampleCount);
+        plot("Blinn", 10.0, BlinnMDF<double>(10.0), FunctionPlotSampleCount, FunctionSamplingSampleCount);
+        plot("Blinn", 50.0, BlinnMDF<double>(50.0), FunctionPlotSampleCount, FunctionSamplingSampleCount);
     }
 
 
@@ -397,11 +402,9 @@ TEST_SUITE(Foundation_Math_Microfacet)
 
     TEST_CASE(BeckmannMDF_GeneratePlotFiles)
     {
-        MapleFile file("unit tests/outputs/test_microfacet_beckmann.mpl");
-
-        plot(file, "beckmann_0_1", BeckmannMDF<double>(0.1), FunctionPlotSampleCount, FunctionSamplingSampleCount);
-        plot(file, "beckmann_0_5", BeckmannMDF<double>(0.5), FunctionPlotSampleCount, FunctionSamplingSampleCount);
-        plot(file, "beckmann_1_0", BeckmannMDF<double>(1.0), FunctionPlotSampleCount, FunctionSamplingSampleCount);
+        plot("Beckmann", 0.1, BeckmannMDF<double>(0.1), FunctionPlotSampleCount, FunctionSamplingSampleCount);
+        plot("Beckmann", 0.5, BeckmannMDF<double>(0.5), FunctionPlotSampleCount, FunctionSamplingSampleCount);
+        plot("Beckmann", 1.0, BeckmannMDF<double>(1.0), FunctionPlotSampleCount, FunctionSamplingSampleCount);
     }
 
 
@@ -436,11 +439,9 @@ TEST_SUITE(Foundation_Math_Microfacet)
 
     TEST_CASE(WardMDF_GeneratePlotFiles)
     {
-        MapleFile file("unit tests/outputs/test_microfacet_ward.mpl");
-
-        plot(file, "ward_0_1", WardMDF<double>(0.1), FunctionPlotSampleCount, FunctionSamplingSampleCount);
-        plot(file, "ward_0_5", WardMDF<double>(0.5), FunctionPlotSampleCount, FunctionSamplingSampleCount);
-        plot(file, "ward_1_0", WardMDF<double>(1.0), FunctionPlotSampleCount, FunctionSamplingSampleCount);
+        plot("Ward", 0.1, WardMDF<double>(0.1), FunctionPlotSampleCount, FunctionSamplingSampleCount);
+        plot("Ward", 0.5, WardMDF<double>(0.5), FunctionPlotSampleCount, FunctionSamplingSampleCount);
+        plot("Ward", 1.0, WardMDF<double>(1.0), FunctionPlotSampleCount, FunctionSamplingSampleCount);
     }
 
 
@@ -525,10 +526,8 @@ TEST_SUITE(Foundation_Math_Microfacet)
 
     TEST_CASE(GGXMDF_GeneratePlotFiles)
     {
-        MapleFile file("unit tests/outputs/test_microfacet_ggx.mpl");
-
-        plot(file, "ggx_0_1", GGXMDF<double>(0.1), FunctionPlotSampleCount, FunctionSamplingSampleCount);
-        plot(file, "ggx_0_5", GGXMDF<double>(0.5), FunctionPlotSampleCount, FunctionSamplingSampleCount);
-        plot(file, "ggx_2_0", GGXMDF<double>(2.0), FunctionPlotSampleCount, FunctionSamplingSampleCount);
+        plot("GGX", 0.1, GGXMDF<double>(0.1), FunctionPlotSampleCount, FunctionSamplingSampleCount);
+        plot("GGX", 0.5, GGXMDF<double>(0.5), FunctionPlotSampleCount, FunctionSamplingSampleCount);
+        plot("GGX", 2.0, GGXMDF<double>(2.0), FunctionPlotSampleCount, FunctionSamplingSampleCount);
     }
 }
