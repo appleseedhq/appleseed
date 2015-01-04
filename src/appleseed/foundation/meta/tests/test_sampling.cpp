@@ -41,6 +41,7 @@
 #include "foundation/utility/vpythonfile.h"
 
 // Standard headers.
+#include <cassert>
 #include <cmath>
 #include <cstddef>
 #include <string>
@@ -209,6 +210,42 @@ TEST_SUITE(Foundation_Math_Sampling_Mappings)
         return Vector<T, 2>(0.5) + T(0.4) * p;
     }
 
+    template <typename T>
+    T sample_hemisphere_uniform_pdf(const Vector<T, 3>& dir)
+    {
+        return T(RcpTwoPi);
+    }
+
+    template <typename T>
+    T sample_hemisphere_cosine_pdf(const Vector<T, 3>& dir)
+    {
+        return dir.y * T(RcpPi);
+    }
+
+    template <typename T>
+    Vector<T, 3> sample_hemisphere_cosine_power_10(const Vector<T, 2>& s)
+    {
+        return sample_hemisphere_cosine_power(s, T(10.0));
+    }
+
+    template <typename T>
+    T sample_hemisphere_cosine_power_10_pdf(const Vector<T, 3>& dir)
+    {
+        return sample_hemisphere_cosine_power_pdf(dir.y, T(10.0));
+    }
+
+    template <typename T>
+    Vector<T, 3> sample_cone_uniform_30deg(const Vector<T, 2>& s)
+    {
+        return sample_cone_uniform(s, cos(deg_to_rad(30.0)));
+    }
+
+    template <typename T>
+    T sample_cone_uniform_30deg_pdf(const Vector<T, 3>& dir)
+    {
+        return sample_cone_uniform_pdf(cos(deg_to_rad(30.0)));
+    }
+
     template <typename SamplingFunction>
     void visualize_2d_function_as_image(
         const string&       filename,
@@ -265,15 +302,9 @@ TEST_SUITE(Foundation_Math_Sampling_Mappings)
     TEST_CASE(SampleHemisphereCosinePower1_GenerateVPythonProgram)
     {
         visualize_3d_function_as_vpython_program(
-            "unit tests/outputs/test_sampling_sample_hemisphere_cosine_power_1.py",
+            "unit tests/outputs/test_sampling_sample_hemisphere_cosine.py",
             sample_hemisphere_cosine<double>,
             512);
-    }
-
-    template <typename T>
-    Vector<T, 3> sample_hemisphere_cosine_power_10(const Vector<T, 2>& s)
-    {
-        return sample_hemisphere_cosine_power(s, T(10.0));
     }
 
     TEST_CASE(SampleHemisphereCosinePowerN_GenerateVPythonProgram)
@@ -300,17 +331,11 @@ TEST_SUITE(Foundation_Math_Sampling_Mappings)
             256);
     }
 
-    template <typename T>
-    Vector<T, 3> sample_cone_uniform(const Vector<T, 2>& s)
-    {
-        return sample_cone_uniform(s, cos(deg_to_rad(30.0)));
-    }
-
     TEST_CASE(SampleConeUniform_GenerateVPythonProgram)
     {
         visualize_3d_function_as_vpython_program(
-            "unit tests/outputs/test_sampling_sample_cone_uniform.py",
-            sample_cone_uniform<double>,
+            "unit tests/outputs/test_sampling_sample_cone_uniform_30deg.py",
+            sample_cone_uniform_30deg<double>,
             256);
     }
 
@@ -344,5 +369,78 @@ TEST_SUITE(Foundation_Math_Sampling_Mappings)
             "unit tests/outputs/test_sampling_sample_regular_polygon_uniform.png",
             512, 512,
             points);
+    }
+
+    template <typename F, typename Sample, typename PDF>
+    double integrate(
+        F&              f,
+        Sample&         sample,
+        PDF&            pdf,
+        const size_t    sample_count)
+    {
+        double integral = 0.0;
+
+        MersenneTwister rng;
+
+        for (size_t i = 0; i < sample_count; ++i)
+        {
+            const Vector2d s = rand_vector2<Vector2d>(rng);
+            const Vector3d dir = sample(s);
+            integral += f(dir) / pdf(dir);
+        }
+
+        return integral / sample_count;
+    }
+
+    // Function to integrate.
+    double func(const Vector3d& dir)
+    {
+        assert(dir.y >= 0.0);
+        return pow_int(dir.y, 5);
+    }
+
+    // Value of the integral of func() over the hemisphere.
+    const double ExpectedIntegralValue = Pi / 3;
+
+    TEST_CASE(Integration_UniformHemisphereSampling)
+    {
+        const size_t SampleCount = 1000000;
+
+        const double value =
+            integrate(
+                func,
+                sample_hemisphere_uniform<double>,
+                sample_hemisphere_uniform_pdf<double>,
+                SampleCount);
+
+        EXPECT_FEQ_EPS(ExpectedIntegralValue, value, 1.0e-3);
+    }
+
+    TEST_CASE(Integration_CosineHemisphereSampling)
+    {
+        const size_t SampleCount = 1000000;
+
+        const double value =
+            integrate(
+                func,
+                sample_hemisphere_cosine<double>,
+                sample_hemisphere_cosine_pdf<double>,
+                SampleCount);
+
+        EXPECT_FEQ_EPS(ExpectedIntegralValue, value, 1.0e-5);
+    }
+
+    TEST_CASE(Integration_CosinePowerHemisphereSampling)
+    {
+        const size_t SampleCount = 1000000;
+
+        const double value =
+            integrate(
+                func,
+                sample_hemisphere_cosine_power_10<double>,
+                sample_hemisphere_cosine_power_10_pdf<double>,
+                SampleCount);
+
+        EXPECT_FEQ_EPS(ExpectedIntegralValue, value, 1.0e-2);
     }
 }
