@@ -133,7 +133,7 @@ GnuplotFile::Plot& GnuplotFile::new_plot()
 
 bool GnuplotFile::write(const string& filepath) const
 {
-    ofstream file(filepath);
+    ofstream file(filepath.c_str());
 
     if (!file.is_open())
         return false;
