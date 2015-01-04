@@ -198,10 +198,10 @@ namespace
             const Vector2d s = sample.get_sampling_context().next_vector2<2>();
 
             const double phi = TwoPi * s[0];
-            const double cos_theta = 1.0 - std::pow(s[1], 1.0 / 6.0);
-            const double sin_theta = std::sqrt(1.0 - square(cos_theta));
+            const double cos_theta = - pow(1.0 - s[1], 1.0 / 6.0) + 1.0;
+            const double sin_theta = sqrt(1.0 - square(cos_theta));
 
-            Vector3d wi =
+            const Vector3d wi =
                 Vector3d::unit_vector(
                     cos_theta,
                     sin_theta,
@@ -254,8 +254,7 @@ namespace
             const Vector3d&                 incoming) const
         {
             const Vector3d h(normalize(incoming + outgoing));
-            const double cos_ih = dot(incoming, h);
-            return 6.0 * schlick_fresnel(cos_ih);
+            return 6.0 * schlick_fresnel(dot(incoming, h)) * RcpTwoPi;
         }
     };
 
@@ -521,23 +520,27 @@ namespace
             {
                 if (weights[DiffuseComponent] != 0.0)
                 {
-                    pdf += DisneyDiffuseComponent().evaluate(
-                        values,
-                        shading_basis,
-                        outgoing,
-                        incoming,
-                        value) * weights[DiffuseComponent];
+                    pdf +=
+                        weights[DiffuseComponent] *
+                        DisneyDiffuseComponent().evaluate(
+                            values,
+                            shading_basis,
+                            outgoing,
+                            incoming,
+                            value);
                 }
 
                 if (weights[SheenComponent] != 0.0)
                 {
                     Spectrum sheen;
-                    pdf += DisneySheenComponent().evaluate(
-                        values,
-                        shading_basis,
-                        outgoing,
-                        incoming,
-                        sheen) * weights[SheenComponent];
+                    pdf +=
+                        weights[SheenComponent] *
+                        DisneySheenComponent().evaluate(
+                            values,
+                            shading_basis,
+                            outgoing,
+                            incoming,
+                            sheen);
                     value += sheen;
                 }
             }
