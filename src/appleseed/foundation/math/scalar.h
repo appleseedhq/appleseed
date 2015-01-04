@@ -67,14 +67,14 @@ namespace foundation
 
 // Various constants in double precision.
 static const double Pi          = 3.1415926535897932;
-static const double TwoPi       = 6.2831853071795865;
-static const double HalfPi      = 1.5707963267948966;
-static const double RcpPi       = 0.3183098861837907;
-static const double RcpTwoPi    = 0.1591549430918953;
-static const double RcpHalfPi   = 0.6366197723675813;
-static const double RcpPiSq     = 0.1013211836423377;
-static const double SqrtPi      = 1.7724538509055160;
-static const double SqrtTwo     = 1.4142135623730950;
+static const double TwoPi       = 6.2831853071795865;   // 2 * Pi
+static const double HalfPi      = 1.5707963267948966;   // Pi / 2
+static const double RcpPi       = 0.3183098861837907;   // 1 / Pi
+static const double RcpTwoPi    = 0.1591549430918953;   // 1 / (2 * Pi)
+static const double RcpHalfPi   = 0.6366197723675813;   // 1 / (Pi/2) = 2 / Pi
+static const double RcpPiSq     = 0.1013211836423377;   // 1 / (Pi^2) = (1 / Pi)^2
+static const double SqrtPi      = 1.7724538509055160;   // sqrt(Pi)
+static const double SqrtTwo     = 1.4142135623730950;   // sqrt(2)
 
 
 //
