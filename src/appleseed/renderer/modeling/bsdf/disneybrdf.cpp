@@ -65,7 +65,8 @@ namespace
     {
         const double m = saturate(1.0 - u);
         const double m2 = square(m);
-        return square(m2) * m;
+        const double m4 = square(m2);
+        return m4 * m;
     }
 
     void mix_spectra(
