@@ -196,10 +196,22 @@ namespace
             // Compute the incoming direction in local space.
             sample.get_sampling_context().split_in_place(2, 1);
             const Vector2d s = sample.get_sampling_context().next_vector2<2>();
-            const Vector3d wi = sample_hemisphere_uniform(s);
+
+            const double phi = TwoPi * s[0];
+            const double cos_theta = 1.0 - std::pow(s[1], 1.0 / 6.0);
+            const double sin_theta = std::sqrt(1.0 - square(cos_theta));
+
+            Vector3d wi =
+                Vector3d::unit_vector(
+                    cos_theta,
+                    sin_theta,
+                    std::cos(phi),
+                    std::sin(phi));
 
             // Transform the incoming direction to parent space.
-            sample.set_incoming(sample.get_shading_basis().transform_to_parent(wi));
+            sample.set_incoming(
+                sample.get_shading_basis().transform_to_parent(wi));
+
             sample.set_probability(
                 evaluate(
                     values,
@@ -234,14 +246,16 @@ namespace
             value *= static_cast<float>(fh * values->m_sheen * (1.0 - values->m_metallic));
 
             // Return the probability density of the sampled direction.
-            return evaluate_pdf(shading_basis, incoming);
+            return evaluate_pdf(outgoing, incoming);
         }
 
         double evaluate_pdf(
-            const Basis3d&                  shading_basis,
+            const Vector3d&                 outgoing,
             const Vector3d&                 incoming) const
         {
-            return RcpTwoPi;
+            const Vector3d h(normalize(incoming + outgoing));
+            const double cos_ih = dot(incoming, h);
+            return 6.0 * schlick_fresnel(cos_ih);
         }
     };
 
@@ -614,16 +628,18 @@ namespace
             {
                 if (weights[DiffuseComponent] != 0.0)
                 {
-                    pdf += DisneyDiffuseComponent().evaluate_pdf(
-                        shading_basis,
-                        incoming) * weights[DiffuseComponent];
+                    pdf +=
+                        DisneyDiffuseComponent().evaluate_pdf(
+                            shading_basis,
+                            incoming) * weights[DiffuseComponent];
                 }
 
                 if (weights[SheenComponent] != 0.0)
                 {
-                    pdf += DisneySheenComponent().evaluate_pdf(
-                        shading_basis,
-                        incoming) * weights[SheenComponent];
+                    pdf +=
+                        DisneySheenComponent().evaluate_pdf(
+                            outgoing,
+                            incoming) * weights[SheenComponent];
                 }
             }
 
