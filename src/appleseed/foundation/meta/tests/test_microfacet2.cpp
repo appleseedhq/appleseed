@@ -32,6 +32,8 @@
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/microfacet2.h"
 #include "foundation/math/qmc.h"
+#include "foundation/math/rng.h"
+#include "foundation/math/rng/distribution.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/test.h"
@@ -39,6 +41,7 @@
 // Standard headers.
 #include <cmath>
 #include <cstddef>
+
 
 using namespace foundation;
 using namespace std;
@@ -102,48 +105,90 @@ TEST_SUITE(Foundation_Math_Microfacet2)
     //   http://hal.inria.fr/docs/00/96/78/44/PDF/RR-8468.pdf
     //
 
-    template <typename MDF>
-    double weak_white_furnace_test(
-        const MDF&      mdf,
-        const double    theta_o,
-        const double    phi_o,
-        const double    alpha_x,
-        const double    alpha_y,
-        const double    angle_step)
+    struct weak_white_furnace_test_result
     {
-        const Vector3d v = Vector3d::unit_vector(theta_o, phi_o);
-        const double cos_thetha_o_4 = std::fabs(4.0 * v.y);
-        const double G1 = mdf.G1(v, Vector3d(0.0, 1.0, 0.0), alpha_x, alpha_y);
+        size_t m_valid_runs;
+        double m_min_G1;
+        double m_max_G1;
+        double m_min_result;
+        double m_max_result;
+        double m_avg_result;
+    };
 
-        double integral = 0.0;
+    template <typename MDF>
+    void weak_white_furnace_test(
+        size_t                          num_runs,
+        const double                    alpha_x,
+        const double                    alpha_y,
+        const double                    angle_step,
+        weak_white_furnace_test_result& result)
+    {
+        result.m_valid_runs = 0;
+        result.m_min_G1 =  numeric_limits<double>::max();
+        result.m_max_G1 = -numeric_limits<double>::max();
+        result.m_min_result =  numeric_limits<double>::max();
+        result.m_max_result = -numeric_limits<double>::max();
+        result.m_avg_result = 0.0;
 
-        for (double theta = 0.0; theta < Pi; theta += angle_step)
+        MDF mdf;
+
+        for (size_t i = 0; i < num_runs; ++i)
         {
-            const double cos_theta = std::cos(theta);
-            const double sin_theta = std::sin(theta);
+            static const size_t Bases[] = { 2 };
+            const Vector2d s = hammersley_sequence<double, 2>(Bases, i, num_runs);
+            const Vector3d v = sample_hemisphere_uniform(s);
+            const double G1 = mdf.G1(v, Vector3d(0.0, 1.0, 0.0), alpha_x, alpha_y);
 
-            for (double phi = 0.0; phi < TwoPi; phi += angle_step)
+            if (G1 == 0.0)
+                continue;
+
+            result.m_min_G1 = std::min(result.m_min_G1, G1);
+            result.m_max_G1 = std::max(result.m_max_G1, G1);
+
+            const double cos_thetha_o_4 = std::abs(4.0 * v.y);
+
+            double integral = 0.0;
+
+            for (double theta = 0.0; theta < Pi; theta += angle_step)
             {
-                const double cos_phi = std::cos(phi);
-                const double sin_phi = std::sin(phi);
+                const double cos_theta = std::cos(theta);
+                const double sin_theta = std::sin(theta);
 
-                const Vector3d l =
-                    Vector3d::unit_vector(
-                        cos_theta,
-                        sin_theta,
-                        cos_phi,
-                        sin_phi);
+                for (double phi = 0.0; phi < TwoPi; phi += angle_step)
+                {
+                    const double cos_phi = std::cos(phi);
+                    const double sin_phi = std::sin(phi);
 
-                const Vector3d h = normalize(v + l);
+                    const Vector3d l =
+                        Vector3d::unit_vector(
+                            cos_theta,
+                            sin_theta,
+                            cos_phi,
+                            sin_phi);
 
-                if (h.y > 0.0)
-                    integral += sin_theta * mdf.D(h, alpha_x, alpha_y);
+                    const Vector3d h = normalize(v + l);
+
+                    if (h.y > 0.0)
+                        integral += sin_theta * mdf.D(h, alpha_x, alpha_y) * G1 / cos_thetha_o_4;
+                }
             }
+
+            // Result should be 1.
+            integral *= square(angle_step);
+
+            result.m_min_result = std::min(result.m_min_result, integral);
+            result.m_max_result = std::max(result.m_max_result, integral);
+            result.m_avg_result += integral;
+            ++result.m_valid_runs;
         }
 
-        // Result should be 1.
-        return integral * G1 * square(angle_step) / cos_thetha_o_4;
+        if (result.m_valid_runs)
+            result.m_avg_result /= static_cast<double>(result.m_valid_runs);
     }
+
+#define EXPECT_WEAK_WHITE_FURNACE_PASS(result) \
+    EXPECT_NEQ(result.m_min_G1, result.m_max_G1); \
+    EXPECT_FEQ_EPS(1.0, result.m_avg_result, WeakWhiteFurnaceEps);
 
     //
     // Test settings.
@@ -154,8 +199,9 @@ TEST_SUITE(Foundation_Math_Microfacet2)
     const size_t FunctionPlotSampleCount = 256;
     const size_t FunctionSamplingSampleCount = 64;
     const double IntegrationEps = 1.0e-3;
+    const size_t WeakWhiteFurnaceRuns = 256;
     const double WeakWhiteFurnaceAngleStep = 0.05;
-    const double WeakWhiteFurnaceEps = 1.0e-2;
+    const double WeakWhiteFurnaceEps = 0.05;
 
     //
     // Blinn-Phong MDF.
@@ -187,18 +233,16 @@ TEST_SUITE(Foundation_Math_Microfacet2)
 
     TEST_CASE(BlinnMDF2_WeakWhiteFurnace)
     {
-        const double integral =
-            weak_white_furnace_test(
-                BlinnMDF2<double>(),
-                Pi / 5.0,
-                Pi / 3.0,
-                57,
-                57,
-                WeakWhiteFurnaceAngleStep);
+        weak_white_furnace_test_result result;
+        weak_white_furnace_test<BlinnMDF2<double> >(
+            WeakWhiteFurnaceRuns,
+            57.0,
+            57.0,
+            WeakWhiteFurnaceAngleStep,
+            result);
 
-        EXPECT_FEQ_EPS(1.0, integral, WeakWhiteFurnaceEps);
+        EXPECT_WEAK_WHITE_FURNACE_PASS(result)
     }
-
 
     //
     // Beckmann MDF.
@@ -231,31 +275,30 @@ TEST_SUITE(Foundation_Math_Microfacet2)
 
     TEST_CASE(BeckmannMDF2_Isotropic_WeakWhiteFurnace)
     {
-        const double integral =
-            weak_white_furnace_test(
-                BeckmannMDF2<double>(),
-                Pi / 7.0,
-                0,
-                0.25,
-                0.25,
-                WeakWhiteFurnaceAngleStep);
+        weak_white_furnace_test_result result;
+        weak_white_furnace_test<BeckmannMDF2<double> >(
+            WeakWhiteFurnaceRuns,
+            0.25,
+            0.25,
+            WeakWhiteFurnaceAngleStep,
+            result);
 
-        EXPECT_FEQ_EPS(1.0, integral, WeakWhiteFurnaceEps);
+        EXPECT_WEAK_WHITE_FURNACE_PASS(result)
     }
 
     TEST_CASE(BeckmannMDF2_Anisotropic_WeakWhiteFurnace)
     {
-        const double integral =
-            weak_white_furnace_test(
-                BeckmannMDF2<double>(),
-                Pi / 5.0,
-                Pi / 8.0,
-                0.25,
-                0.5,
-                WeakWhiteFurnaceAngleStep);
+        weak_white_furnace_test_result result;
+        weak_white_furnace_test<BeckmannMDF2<double> >(
+            WeakWhiteFurnaceRuns,
+            0.25,
+            0.5,
+            WeakWhiteFurnaceAngleStep,
+            result);
 
-        EXPECT_FEQ_EPS(1.0, integral, WeakWhiteFurnaceEps);
+        EXPECT_WEAK_WHITE_FURNACE_PASS(result)
     }
+
 
     //
     // GGX MDF.
@@ -290,30 +333,28 @@ TEST_SUITE(Foundation_Math_Microfacet2)
 
     TEST_CASE(GGXMDF2_Isotropic_WeakWhiteFurnace)
     {
-        const double integral =
-            weak_white_furnace_test(
-                GGXMDF2<double>(),
-                Pi / 6.0,
-                Pi / 3.0,
-                0.35,
-                0.35,
-                WeakWhiteFurnaceAngleStep);
+        weak_white_furnace_test_result result;
+        weak_white_furnace_test<GGXMDF2<double> >(
+            WeakWhiteFurnaceRuns,
+            0.35,
+            0.35,
+            WeakWhiteFurnaceAngleStep,
+            result);
 
-        EXPECT_FEQ_EPS(1.0, integral, WeakWhiteFurnaceEps);
+        EXPECT_WEAK_WHITE_FURNACE_PASS(result)
     }
 
     TEST_CASE(GGXMDF2_Anisotropic_WeakWhiteFurnace)
     {
-        const double integral =
-            weak_white_furnace_test(
-                GGXMDF2<double>(),
-                Pi / 5.0,
-                Pi / 8.0,
-                0.25,
-                0.5,
-                WeakWhiteFurnaceAngleStep);
+        weak_white_furnace_test_result result;
+        weak_white_furnace_test<GGXMDF2<double> >(
+            WeakWhiteFurnaceRuns,
+            0.25,
+            0.5,
+            WeakWhiteFurnaceAngleStep,
+            result);
 
-        EXPECT_FEQ_EPS(1.0, integral, WeakWhiteFurnaceEps);
+        EXPECT_WEAK_WHITE_FURNACE_PASS(result)
     }
 
     //
