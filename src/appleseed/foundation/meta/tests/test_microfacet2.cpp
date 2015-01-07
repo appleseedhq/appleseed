@@ -107,7 +107,6 @@ TEST_SUITE(Foundation_Math_Microfacet2)
 
     struct weak_white_furnace_test_result
     {
-        size_t m_valid_runs;
         double m_min_G1;
         double m_max_G1;
         double m_min_result;
@@ -123,7 +122,6 @@ TEST_SUITE(Foundation_Math_Microfacet2)
         const double                    angle_step,
         weak_white_furnace_test_result& result)
     {
-        result.m_valid_runs = 0;
         result.m_min_G1 =  numeric_limits<double>::max();
         result.m_max_G1 = -numeric_limits<double>::max();
         result.m_min_result =  numeric_limits<double>::max();
@@ -138,9 +136,6 @@ TEST_SUITE(Foundation_Math_Microfacet2)
             const Vector2d s = hammersley_sequence<double, 2>(Bases, i, num_runs);
             const Vector3d v = sample_hemisphere_uniform(s);
             const double G1 = mdf.G1(v, Vector3d(0.0, 1.0, 0.0), alpha_x, alpha_y);
-
-            if (G1 == 0.0)
-                continue;
 
             result.m_min_G1 = std::min(result.m_min_G1, G1);
             result.m_max_G1 = std::max(result.m_max_G1, G1);
@@ -179,11 +174,9 @@ TEST_SUITE(Foundation_Math_Microfacet2)
             result.m_min_result = std::min(result.m_min_result, integral);
             result.m_max_result = std::max(result.m_max_result, integral);
             result.m_avg_result += integral;
-            ++result.m_valid_runs;
         }
 
-        if (result.m_valid_runs)
-            result.m_avg_result /= static_cast<double>(result.m_valid_runs);
+        result.m_avg_result /= static_cast<double>(num_runs);
     }
 
 #define EXPECT_WEAK_WHITE_FURNACE_PASS(result) \
@@ -202,6 +195,7 @@ TEST_SUITE(Foundation_Math_Microfacet2)
     const size_t WeakWhiteFurnaceRuns = 256;
     const double WeakWhiteFurnaceAngleStep = 0.05;
     const double WeakWhiteFurnaceEps = 0.05;
+
 
     //
     // Blinn-Phong MDF.
@@ -231,18 +225,6 @@ TEST_SUITE(Foundation_Math_Microfacet2)
         EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
     }
 
-    TEST_CASE(BlinnMDF2_WeakWhiteFurnace)
-    {
-        weak_white_furnace_test_result result;
-        weak_white_furnace_test<BlinnMDF2<double> >(
-            WeakWhiteFurnaceRuns,
-            57.0,
-            57.0,
-            WeakWhiteFurnaceAngleStep,
-            result);
-
-        EXPECT_WEAK_WHITE_FURNACE_PASS(result)
-    }
 
     //
     // Beckmann MDF.
