@@ -531,7 +531,6 @@ class BeckmannMDF2
             return T(1.0);
 
         const T sin_theta = MDF<T>::sin_theta(v);
-        const T tan_theta = std::abs(sin_theta / cos_theta);
 
         const T alpha =
             MDF<T>::projected_roughness(
@@ -540,7 +539,8 @@ class BeckmannMDF2
                 alpha_x,
                 alpha_y);
 
-        const T a = tan_theta / alpha;
+        const T tan_theta = std::abs(sin_theta / cos_theta);
+        const T a = 1.0 / (alpha * tan_theta);
 
         if (a < T(1.6))
         {
