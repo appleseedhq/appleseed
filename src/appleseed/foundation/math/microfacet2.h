@@ -247,13 +247,7 @@ class MDF
         const Vector<T, 3>&  outgoing,
         const Vector<T, 3>&  h)
     {
-        const T G1i = v_cavity_G1(incoming, h);
-        const T G1o = v_cavity_G1(outgoing, h);
-
-        if (incoming.y >= T(0.0))
-            return std::min(G1i, G1o);
-
-        return std::max(G1i + G1o - T(1.0), T(0.0));
+        return std::min(v_cavity_G1(incoming, h), v_cavity_G1(outgoing, h));
     }
 
     static Vector<T, 3> v_cavity_choose_microfacet_normal(
