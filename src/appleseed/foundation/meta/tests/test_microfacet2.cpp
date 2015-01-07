@@ -32,8 +32,6 @@
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/microfacet2.h"
 #include "foundation/math/qmc.h"
-#include "foundation/math/rng.h"
-#include "foundation/math/rng/distribution.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/test.h"
@@ -41,7 +39,6 @@
 // Standard headers.
 #include <cmath>
 #include <cstddef>
-
 
 using namespace foundation;
 using namespace std;
@@ -181,6 +178,8 @@ TEST_SUITE(Foundation_Math_Microfacet2)
 
 #define EXPECT_WEAK_WHITE_FURNACE_PASS(result) \
     EXPECT_NEQ(result.m_min_G1, result.m_max_G1); \
+    EXPECT_FEQ_EPS(1.0, result.m_min_result, WeakWhiteFurnaceEps); \
+    EXPECT_FEQ_EPS(1.0, result.m_max_result, WeakWhiteFurnaceEps); \
     EXPECT_FEQ_EPS(1.0, result.m_avg_result, WeakWhiteFurnaceEps);
 
     //
@@ -192,8 +191,8 @@ TEST_SUITE(Foundation_Math_Microfacet2)
     const size_t FunctionPlotSampleCount = 256;
     const size_t FunctionSamplingSampleCount = 64;
     const double IntegrationEps = 1.0e-3;
-    const size_t WeakWhiteFurnaceRuns = 256;
-    const double WeakWhiteFurnaceAngleStep = 0.05;
+    const size_t WeakWhiteFurnaceRuns = 128;
+    const double WeakWhiteFurnaceAngleStep = 0.0125;
     const double WeakWhiteFurnaceEps = 0.05;
 
 
@@ -260,8 +259,8 @@ TEST_SUITE(Foundation_Math_Microfacet2)
         weak_white_furnace_test_result result;
         weak_white_furnace_test<BeckmannMDF2<double> >(
             WeakWhiteFurnaceRuns,
-            0.25,
-            0.25,
+            0.6,
+            0.6,
             WeakWhiteFurnaceAngleStep,
             result);
 
