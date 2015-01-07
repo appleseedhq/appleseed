@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
 // Copyright (c) 2014-2015 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -46,7 +45,6 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
-
 
 namespace foundation
 {
@@ -238,11 +236,11 @@ class MDF
         if (dot(v, h) <= T(0.0))
             return T(0.0);
 
-        const T cos_vh = std::fabs(dot(v, h));
+        const T cos_vh = std::abs(dot(v, h));
         if (cos_vh == T(0.0))
             return T(0.0);
 
-        return std::min(T(1.0), T(2.0) * std::fabs(h.y * v.y) / cos_vh);
+        return std::min(T(1.0), T(2.0) * std::abs(h.y * v.y) / cos_vh);
     }
 
     static T v_cavity_G(
@@ -264,7 +262,7 @@ class MDF
         const Vector<T, 3>&  h,
         const T              s)
     {
-        Vector<T, 3> hm(-h[0], h[1], -h[2]);
+        const Vector<T, 3> hm(-h[0], h[1], -h[2]);
         const T dot_vh  = std::max(dot(v, h), T(0.0));
         const T dot_vhm = std::max(dot(v, hm), T(0.0));
 
@@ -324,9 +322,9 @@ class MDF
 
         return
             mdf.do_eval_G1(v, h, alpha_x, alpha_y) *
-            std::fabs(dot(v, h)) *
+            std::abs(dot(v, h)) *
             mdf.do_eval_D(h, alpha_x, alpha_y) /
-            std::fabs(cos_theta(v));
+            std::abs(cos_theta(v));
     }
 
   private:
@@ -534,7 +532,7 @@ class BeckmannMDF2
             return T(1.0);
 
         const T sin_theta = MDF<T>::sin_theta(v);
-        const T tan_theta = std::fabs(sin_theta / cos_theta);
+        const T tan_theta = std::abs(sin_theta / cos_theta);
 
         const T alpha =
             MDF<T>::projected_roughness(
@@ -606,38 +604,32 @@ class BeckmannMDF2
             ? (T(0.5) - std::sqrt(K * (K - y_approx + T(1.0)) + T(0.25))) / K
             : y_approx - T(1.0);
 
-        // Perform newton step to refine toward the true root.
+        // Perform a Newton step to refine toward the true root.
         T inv_erf = erf_inv(b);
-        T value  = T(1.0) + b + K * std::exp(-square(inv_erf)) - y_exact;
+        T value = T(1.0) + b + K * std::exp(-square(inv_erf)) - y_exact;
 
         // Check if we are close enough already.
         // This also avoids NaNs as we get close to the root.
         Vector2d slope;
 
-        if (std::fabs(value) > T(1e-6))
+        if (std::abs(value) > T(1e-6))
         {
             b -= value / (T(1.0) - inv_erf * tan_theta); // newton step 1
-            T inv_erf = erf_inv(b);
+            inv_erf = erf_inv(b);
             value = T(1.0) + b + K * std::exp(-square(inv_erf)) - y_exact;
             b -= value / (T(1.0) - inv_erf * tan_theta); // newton step 2
             // Compute the slope from the refined value
             slope[0] = erf_inv(b);
         }
         else
-        {
-            // we are close enough already
             slope[0] = inv_erf;
-        }
 
-        // Sample slope Y
+        // Sample slope Y.
         slope[1] = erf_inv(T(2.0) * s[1] - T(1.0));
         return slope;
     }
 
     typedef boost::math::policies::policy<
-#ifndef NDEBUG
-//       boost::math::policies::error_policy_type<boost::math::policies::ignore_error>,
-#endif
         boost::math::policies::promote_float<false>,
         boost::math::policies::digits10<6>
     > ErfPolicyType;
@@ -649,7 +641,7 @@ class BeckmannMDF2
 
     static T erf_inv(T x)
     {
-        if (std::fabs(x) == T(1.0))
+        if (std::abs(x) == T(1.0))
             x -= boost::math::copysign(T(1e-5), x);
 
         return boost::math::erf_inv(x, ErfPolicyType());
@@ -729,7 +721,7 @@ class GGXMDF2
         if (dot(v, m) * v.y <= T(0.0))
             return T(0.0);
 
-        const T cos_theta = std::fabs(v.y);
+        const T cos_theta = std::abs(v.y);
         const T cos_theta_2 = square(cos_theta);
         const T sin_theta = MDF<T>::sin_theta(v);
         const T tan_theta_2 = square(sin_theta) / cos_theta_2;
@@ -806,7 +798,7 @@ class GGXMDF2
         T A = T(2.0) * s[0] / G1 - T(1.0);
 
         // Avoid a division by zero.
-        if (std::fabs(A) == T(1.0))
+        if (std::abs(A) == T(1.0))
             A -= boost::math::copysign(T(1e-4), A);
 
         const T tmp = T(1.0) / (square(A) - T(1.0));
@@ -964,7 +956,7 @@ class BerryMDF2
         if (dot(v, m) * v.y <= T(0.0))
             return T(0.0);
 
-        const T cos_theta = std::fabs(v.y);
+        const T cos_theta = std::abs(v.y);
         const T cos_theta_2 = square(cos_theta);
         const T sin_theta = MDF<T>::sin_theta(v);
         const T tan_theta_2 = square(sin_theta) / cos_theta_2;
