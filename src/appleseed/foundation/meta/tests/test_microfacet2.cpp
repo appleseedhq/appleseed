@@ -108,7 +108,6 @@ TEST_SUITE(Foundation_Math_Microfacet2)
         double m_max_G1;
         double m_min_result;
         double m_max_result;
-        double m_avg_result;
     };
 
     template <typename MDF>
@@ -123,7 +122,6 @@ TEST_SUITE(Foundation_Math_Microfacet2)
         result.m_max_G1 = -numeric_limits<double>::max();
         result.m_min_result =  numeric_limits<double>::max();
         result.m_max_result = -numeric_limits<double>::max();
-        result.m_avg_result = 0.0;
 
         MDF mdf;
 
@@ -170,17 +168,13 @@ TEST_SUITE(Foundation_Math_Microfacet2)
 
             result.m_min_result = std::min(result.m_min_result, integral);
             result.m_max_result = std::max(result.m_max_result, integral);
-            result.m_avg_result += integral;
         }
-
-        result.m_avg_result /= static_cast<double>(num_runs);
     }
 
 #define EXPECT_WEAK_WHITE_FURNACE_PASS(result) \
     EXPECT_NEQ(result.m_min_G1, result.m_max_G1); \
     EXPECT_FEQ_EPS(1.0, result.m_min_result, WeakWhiteFurnaceEps); \
-    EXPECT_FEQ_EPS(1.0, result.m_max_result, WeakWhiteFurnaceEps); \
-    EXPECT_FEQ_EPS(1.0, result.m_avg_result, WeakWhiteFurnaceEps);
+    EXPECT_FEQ_EPS(1.0, result.m_max_result, WeakWhiteFurnaceEps);
 
     //
     // Test settings.
