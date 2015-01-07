@@ -136,9 +136,10 @@ namespace
             const InputValues* values = static_cast<const InputValues*>(data);
 
             // Compute the incoming direction by sampling the MDF.
-            sample.get_sampling_context().split_in_place(2, 1);
-            const Vector2d s = sample.get_sampling_context().next_vector2<2>();
-            const Vector3d m = m_mdf->sample(s, values->m_ax, values->m_ay);
+            sample.get_sampling_context().split_in_place(3, 1);
+            const Vector3d s = sample.get_sampling_context().next_vector2<3>();
+            const Vector3d wo = sample.get_shading_basis().transform_to_local(sample.get_outgoing());
+            const Vector3d m = m_mdf->sample(wo, s, values->m_ax, values->m_ay);
             const Vector3d h = sample.get_shading_basis().transform_to_parent(m);
 
             sample.set_incoming(reflect(sample.get_outgoing(), h));
@@ -158,13 +159,13 @@ namespace
             const double G =
                 m_mdf->G(
                     sample.get_shading_basis().transform_to_local(sample.get_incoming()),
-                    sample.get_shading_basis().transform_to_local(sample.get_outgoing()),
+                    wo,
                     m,
                     values->m_ax,
                     values->m_ay);
 
             sample.value().set(static_cast<float>(D * G / (4.0 * cos_on * cos_in)));
-            sample.set_probability(m_mdf->pdf(m, values->m_ax, values->m_ay) / (4.0 * cos_oh));
+            sample.set_probability(m_mdf->pdf(wo, m, values->m_ax, values->m_ay) / (4.0 * cos_oh));
             sample.set_mode(BSDFSample::Glossy);
         }
 
@@ -199,17 +200,18 @@ namespace
                     values->m_ax,
                     values->m_ay);
 
+            const Vector3d wo = shading_basis.transform_to_local(outgoing);
             const double G =
                 m_mdf->G(
-                    shading_basis.transform_to_local(outgoing),
                     shading_basis.transform_to_local(incoming),
+                    wo,
                     m,
                     values->m_ax,
                     values->m_ay);
 
             const double cos_oh = dot(outgoing, h);
             value.set(static_cast<float>(D * G / (4.0 * cos_on * cos_in)));
-            return m_mdf->pdf(m, values->m_ax, values->m_ay) / (4.0 * cos_oh);
+            return m_mdf->pdf(wo, m, values->m_ax, values->m_ay) / (4.0 * cos_oh);
         }
 
         FORCE_INLINE virtual double evaluate_pdf(
@@ -236,6 +238,7 @@ namespace
             const double cos_oh = dot(outgoing, h);
             return
                 m_mdf->pdf(
+                    shading_basis.transform_to_local(outgoing),
                     shading_basis.transform_to_local(h),
                     values->m_ax,
                     values->m_ay) / (4.0 * cos_oh);

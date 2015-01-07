@@ -68,7 +68,7 @@ TEST_SUITE(Foundation_Math_Microfacet2)
     }
 
     template <typename MDF>
-    typename MDF::ValueType integrate_quadrature(
+    typename MDF::ValueType integrate(
         const MDF&                      mdf,
         const typename MDF::ValueType   alpha,
         const size_t                    sample_count)
@@ -92,100 +92,6 @@ TEST_SUITE(Foundation_Math_Microfacet2)
         return integral;
     }
 
-    template <typename T>
-    struct UniformHemisphereSampler
-    {
-        Vector<T, 3> sample(
-            const Vector<T, 2>& s,
-            const T             alpha_x,
-            const T             alpha_y) const
-        {
-            return sample_hemisphere_uniform(s);
-        }
-
-        T pdf(
-            const Vector<T, 3>& v,
-            const T             alpha_x,
-            const T             alpha_y) const
-        {
-            return RcpTwoPi;
-        }
-    };
-
-    template <typename T>
-    struct CosineHemisphereSampler
-    {
-        Vector<T, 3> sample(
-            const Vector<T, 2>& s,
-            const T             alpha_x,
-            const T             alpha_y) const
-        {
-            return sample_hemisphere_cosine(s);
-        }
-
-        T pdf(
-            const Vector<T, 3>& v,
-            const T             alpha_x,
-            const T             alpha_y) const
-        {
-            return v.y * RcpPi;
-        }
-    };
-
-    template <typename T, typename MDF>
-    struct ImportanceSampler
-    {
-        const MDF&  m_mdf;
-
-        explicit ImportanceSampler(const MDF&  mdf)
-          : m_mdf(mdf)
-        {
-        }
-
-        Vector<T, 3> sample(
-            const Vector<T, 2>& s,
-            const T             alpha_x,
-            const T             alpha_y) const
-        {
-            return m_mdf.sample(s, alpha_x, alpha_y);
-        }
-
-        T pdf(
-            const Vector<T, 3>& v,
-            const T             alpha_x,
-            const T             alpha_y) const
-        {
-            return m_mdf.pdf(v, alpha_x, alpha_y);
-        }
-    };
-
-    template <typename MDF, typename Sampler>
-    double integrate_sampling(
-        const MDF&      mdf,
-        const double    alpha_x,
-        const double    alpha_y,
-        const Sampler&  sampler,
-        const size_t    sample_count)
-    {
-        double integral = 0.0;
-
-        for (size_t i = 0; i < sample_count; ++i)
-        {
-            static const size_t Bases[] = { 2 };
-            const Vector2d s = hammersley_sequence<double, 2>(Bases, i, sample_count);
-
-            const Vector3d w = sampler.sample(s, alpha_x, alpha_y);
-            const double pdf = sampler.pdf(w, alpha_x, alpha_y);
-            const double value = mdf.D(w, alpha_x, alpha_y);
-            const double sample = value / pdf;
-
-            integral += sample * w.y;
-        }
-
-        integral /= static_cast<double>(sample_count);
-
-        return integral;
-    }
 
     //
     // Weak white furnace test.
@@ -196,10 +102,9 @@ TEST_SUITE(Foundation_Math_Microfacet2)
     //   http://hal.inria.fr/docs/00/96/78/44/PDF/RR-8468.pdf
     //
 
-    template <typename MDF, typename G>
+    template <typename MDF>
     double weak_white_furnace_test(
         const MDF&      mdf,
-        const G&        g,
         const double    theta_o,
         const double    phi_o,
         const double    alpha_x,
@@ -207,29 +112,32 @@ TEST_SUITE(Foundation_Math_Microfacet2)
         const double    angle_step)
     {
         const Vector3d v = Vector3d::unit_vector(theta_o, phi_o);
-        const double cos_thetha_o_4 = abs(4.0 * v.y);
-        const double G1 = g.G1(v, Vector3d(0, 1, 0), alpha_x, alpha_y);
+        const double cos_thetha_o_4 = std::fabs(4.0 * v.y);
+        const double G1 = mdf.G1(v, Vector3d(0.0, 1.0, 0.0), alpha_x, alpha_y);
 
         double integral = 0.0;
 
-        for (double theta = 0; theta < Pi; theta += angle_step)
+        for (double theta = 0.0; theta < Pi; theta += angle_step)
         {
-            const double cos_theta = cos(theta);
-            const double sin_theta = sin(theta);
+            const double cos_theta = std::cos(theta);
+            const double sin_theta = std::sin(theta);
 
-            for (double phi = 0; phi < TwoPi; phi += angle_step)
+            for (double phi = 0.0; phi < TwoPi; phi += angle_step)
             {
-                const double cos_phi = cos(phi);
-                const double sin_phi = sin(phi);
+                const double cos_phi = std::cos(phi);
+                const double sin_phi = std::sin(phi);
 
-                const Vector3d l = Vector3d::unit_vector(cos_theta, sin_theta, cos_phi, sin_phi);
+                const Vector3d l =
+                    Vector3d::unit_vector(
+                        cos_theta,
+                        sin_theta,
+                        cos_phi,
+                        sin_phi);
+
                 const Vector3d h = normalize(v + l);
 
                 if (h.y > 0.0)
-                {
-                    const double D = mdf.D(h, alpha_x, alpha_y);
-                    integral += sin_theta * D;
-                }
+                    integral += sin_theta * mdf.D(h, alpha_x, alpha_y);
             }
         }
 
@@ -268,67 +176,29 @@ TEST_SUITE(Foundation_Math_Microfacet2)
         EXPECT_FEQ(0.0, limit);
     }
 
-    TEST_CASE(BlinnMDF2_EvaluatePDF_GivenCosThetaIsZero_ReturnsZero)
-    {
-        const BlinnMDF2<double> mdf;
-        const double limit = mdf.pdf(Vector3d(0.0), 10.0, 10.0);
-
-        EXPECT_FEQ(0.0, limit);
-    }
-
-    TEST_CASE(BlinnMDF2_IntegratedViaQuadrature_EqualsOne)
+    TEST_CASE(BlinnMDF2_Integral_EqualsOne)
     {
         const BlinnMDF2<double> mdf;
 
-        const double integral = integrate_quadrature(mdf, 10.0, IntegrationSampleCount);
+        const double integral = integrate(mdf, 10.0, IntegrationSampleCount);
 
         EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
     }
 
-    TEST_CASE(BlinnMDF2_IntegratedViaUniformSampling_EqualsOne)
+    TEST_CASE(BlinnMDF2_WeakWhiteFurnace)
     {
-        const BlinnMDF2<double> mdf;
-
         const double integral =
-            integrate_sampling(
-                mdf,
-                10.0,
-                10.0,
-                UniformHemisphereSampler<double>(),
-                IntegrationSampleCount);
+            weak_white_furnace_test(
+                BlinnMDF2<double>(),
+                Pi / 5.0,
+                Pi / 3.0,
+                57,
+                57,
+                WeakWhiteFurnaceAngleStep);
 
-        EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
+        EXPECT_FEQ_EPS(1.0, integral, WeakWhiteFurnaceEps);
     }
 
-    TEST_CASE(BlinnMDF2_IntegratedViaCosineWeightedSampling_EqualsOne)
-    {
-        const BlinnMDF2<double> mdf;
-
-        const double integral =
-            integrate_sampling(
-                mdf,
-                10.0,
-                10.0,
-                CosineHemisphereSampler<double>(),
-                IntegrationSampleCount);
-
-        EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
-    }
-
-    TEST_CASE(BlinnMDF2_IntegratedViaImportanceSampling_EqualsOne)
-    {
-        const BlinnMDF2<double> mdf;
-
-        const double integral =
-            integrate_sampling(
-                mdf,
-                10.0,
-                10.0,
-                ImportanceSampler<double, BlinnMDF2<double> >(mdf),
-                IntegrationSampleCount);
-
-        EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
-    }
 
     //
     // Beckmann MDF.
@@ -350,123 +220,20 @@ TEST_SUITE(Foundation_Math_Microfacet2)
         EXPECT_FEQ(0.0, limit);
     }
 
-    TEST_CASE(BeckmannMDF2_EvaluatePDF_GivenCosThetaIsZero_ReturnsZero)
+    TEST_CASE(BeckmannMDF2_Integral_EqualsOne)
     {
         const BeckmannMDF2<double> mdf;
 
-        const double limit = mdf.pdf(Vector3d(0.0), 0.5, 0.5);
-
-        EXPECT_FEQ(0.0, limit);
-    }
-
-    TEST_CASE(BeckmannMDF2_IntegratedViaQuadrature_EqualsOne)
-    {
-        const BeckmannMDF2<double> mdf;
-
-        const double integral = integrate_quadrature(mdf, 0.5, IntegrationSampleCount);
+        const double integral = integrate(mdf, 0.5, IntegrationSampleCount);
 
         EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
     }
 
-    TEST_CASE(BeckmannMDF2_IntegratedViaUniformSampling_EqualsOne)
+    TEST_CASE(BeckmannMDF2_Isotropic_WeakWhiteFurnace)
     {
-        const BeckmannMDF2<double> mdf;
-
-        const double integral =
-            integrate_sampling(
-                mdf,
-                0.5,
-                0.5,
-                UniformHemisphereSampler<double>(),
-                IntegrationSampleCount);
-
-        EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
-    }
-
-    TEST_CASE(BeckmannMDF2_Anisotropic_IntegratedViaUniformSampling_EqualsOne)
-    {
-        const BeckmannMDF2<double> mdf;
-
-        const double integral =
-            integrate_sampling(
-                mdf,
-                0.6,
-                0.2,
-                UniformHemisphereSampler<double>(),
-                IntegrationSampleCount);
-
-        EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
-    }
-
-    TEST_CASE(BeckmannMDF2_IntegratedViaCosineWeightedSampling_EqualsOne)
-    {
-        const BeckmannMDF2<double> mdf;
-
-        const double integral =
-            integrate_sampling(
-                mdf,
-                0.5,
-                0.5,
-                CosineHemisphereSampler<double>(),
-                IntegrationSampleCount);
-
-        EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
-    }
-
-    TEST_CASE(BeckmannMDF2_Anisotropic_IntegratedViaCosineWeightedSampling_EqualsOne)
-    {
-        const BeckmannMDF2<double> mdf;
-
-        const double integral =
-            integrate_sampling(
-                mdf,
-                0.2,
-                0.6,
-                CosineHemisphereSampler<double>(),
-                IntegrationSampleCount);
-
-        EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
-    }
-
-    TEST_CASE(BeckmannMDF2_IntegratedViaImportanceSampling_EqualsOne)
-    {
-        const BeckmannMDF2<double> mdf;
-
-        const double integral =
-            integrate_sampling(
-                mdf,
-                0.5,
-                0.5,
-                ImportanceSampler<double, BeckmannMDF2<double> >(mdf),
-                IntegrationSampleCount);
-
-        EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
-    }
-
-    TEST_CASE(BeckmannMDF2_Anisotropic_IntegratedViaImportanceSampling_EqualsOne)
-    {
-        const BeckmannMDF2<double> mdf;
-
-        const double integral =
-            integrate_sampling(
-                mdf,
-                0.7,
-                0.2,
-                ImportanceSampler<double, BeckmannMDF2<double> >(mdf),
-                IntegrationSampleCount);
-
-        EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
-    }
-
-    TEST_CASE(BeckmannMDF2_Isotropic_SmithWeakWhiteFurnace)
-    {
-        const BeckmannSmithMaskingShadowing<double> g;
-        const BeckmannMDF2<double> mdf;
-
         const double integral =
             weak_white_furnace_test(
-                mdf,
-                g,
+                BeckmannMDF2<double>(),
                 Pi / 7.0,
                 0,
                 0.25,
@@ -476,15 +243,11 @@ TEST_SUITE(Foundation_Math_Microfacet2)
         EXPECT_FEQ_EPS(1.0, integral, WeakWhiteFurnaceEps);
     }
 
-    TEST_CASE(BeckmannMDF2_Anisotropic_SmithWeakWhiteFurnace)
+    TEST_CASE(BeckmannMDF2_Anisotropic_WeakWhiteFurnace)
     {
-        const BeckmannSmithMaskingShadowing<double> g;
-        const BeckmannMDF2<double> mdf;
-
         const double integral =
             weak_white_furnace_test(
-                mdf,
-                g,
+                BeckmannMDF2<double>(),
                 Pi / 5.0,
                 Pi / 8.0,
                 0.25,
@@ -516,123 +279,20 @@ TEST_SUITE(Foundation_Math_Microfacet2)
         EXPECT_FEQ(ExpectedLimit, limit);
     }
 
-    TEST_CASE(GGXMDF2_EvaluatePDF_GivenCosThetaIsZero_ReturnsZero)
+    TEST_CASE(GGXMDF2_Integral_EqualsOne)
     {
         const GGXMDF2<double> mdf;
 
-        const double limit = mdf.pdf(Vector3d(0.0), 0.5, 0.5);
-
-        EXPECT_FEQ(0.0, limit);
-    }
-
-    TEST_CASE(GGXMDF2_IntegratedViaQuadrature_EqualsOne)
-    {
-        const GGXMDF2<double> mdf;
-
-        const double integral = integrate_quadrature(mdf, 0.5, IntegrationSampleCount);
+        const double integral = integrate(mdf, 0.5, IntegrationSampleCount);
 
         EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
     }
 
-    TEST_CASE(GGXMDF2_IntegratedViaUniformSampling_EqualsOne)
+    TEST_CASE(GGXMDF2_Isotropic_WeakWhiteFurnace)
     {
-        const GGXMDF2<double> mdf;
-
-        const double integral =
-            integrate_sampling(
-                mdf,
-                0.5,
-                0.5,
-                UniformHemisphereSampler<double>(),
-                IntegrationSampleCount);
-
-        EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
-    }
-
-    TEST_CASE(GGXMDF2_Anisotropic_IntegratedViaUniformSampling_EqualsOne)
-    {
-        const GGXMDF2<double> mdf;
-
-        const double integral =
-            integrate_sampling(
-                mdf,
-                0.6,
-                0.2,
-                UniformHemisphereSampler<double>(),
-                IntegrationSampleCount);
-
-        EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
-    }
-
-    TEST_CASE(GGXMDF2_IntegratedViaCosineWeightedSampling_EqualsOne)
-    {
-        const GGXMDF2<double> mdf;
-
-        const double integral =
-            integrate_sampling(
-                mdf,
-                0.5,
-                0.5,
-                CosineHemisphereSampler<double>(),
-                IntegrationSampleCount);
-
-        EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
-    }
-
-    TEST_CASE(GGXMDF2_Anisotropic_IntegratedViaCosineWeightedSampling_EqualsOne)
-    {
-        const GGXMDF2<double> mdf;
-
-        const double integral =
-            integrate_sampling(
-                mdf,
-                0.2,
-                0.6,
-                CosineHemisphereSampler<double>(),
-                IntegrationSampleCount);
-
-        EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
-    }
-
-    TEST_CASE(GGXMDF2_IntegratedViaImportanceSampling_EqualsOne)
-    {
-        const GGXMDF2<double> mdf;
-
-        const double integral =
-            integrate_sampling(
-                mdf,
-                0.5,
-                0.5,
-                ImportanceSampler<double, GGXMDF2<double> >(mdf),
-                IntegrationSampleCount);
-
-        EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
-    }
-
-    TEST_CASE(GGXMDF2_Anisotropic_IntegratedViaImportanceSampling_EqualsOne)
-    {
-        const GGXMDF2<double> mdf;
-
-        const double integral =
-            integrate_sampling(
-                mdf,
-                0.7,
-                0.2,
-                ImportanceSampler<double, GGXMDF2<double> >(mdf),
-                IntegrationSampleCount);
-
-        EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
-    }
-
-    TEST_CASE(GGXMDF2_Isotropic_SmithWeakWhiteFurnace)
-    {
-        const GGXSmithMaskingShadowing<double> g;
-        const GGXMDF2<double> mdf;
-
         const double integral =
             weak_white_furnace_test(
-                mdf,
-                g,
+                GGXMDF2<double>(),
                 Pi / 6.0,
                 Pi / 3.0,
                 0.35,
@@ -642,15 +302,11 @@ TEST_SUITE(Foundation_Math_Microfacet2)
         EXPECT_FEQ_EPS(1.0, integral, WeakWhiteFurnaceEps);
     }
 
-    TEST_CASE(GGXMDF2_Anisotropic_SmithWeakWhiteFurnace)
+    TEST_CASE(GGXMDF2_Anisotropic_WeakWhiteFurnace)
     {
-        const GGXSmithMaskingShadowing<double> g;
-        const GGXMDF2<double> mdf;
-
         const double integral =
             weak_white_furnace_test(
-                mdf,
-                g,
+                GGXMDF2<double>(),
                 Pi / 5.0,
                 Pi / 8.0,
                 0.25,
@@ -680,12 +336,24 @@ TEST_SUITE(Foundation_Math_Microfacet2)
         EXPECT_FEQ(0.0, limit);
     }
 
-    TEST_CASE(WardMDF2_EvaluatePDF_GivenCosThetaIsZero_ReturnsZero)
+
+    //
+    // Berry MDF.
+    //
+
+    TEST_CASE(BerryMDF2_Evaluate_ReturnsNonNegativeValues)
     {
-        const WardMDF2<double> mdf;
+        const BerryMDF2<double> mdf;
 
-        const double limit = mdf.pdf(Vector3d(0.0), 0.5, 0.5);
+        EXPECT_TRUE(is_positive(mdf, 10.0, 10.0, PositivityTestSampleCount));
+    }
 
-        EXPECT_FEQ(0.0, limit);
+    TEST_CASE(BerryMDF2_Integral_EqualsOne)
+    {
+        const BerryMDF2<double> mdf;
+
+        const double integral = integrate(mdf, 10.0, IntegrationSampleCount);
+
+        EXPECT_FEQ_EPS(1.0, integral, IntegrationEps);
     }
 }

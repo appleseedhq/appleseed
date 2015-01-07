@@ -167,9 +167,10 @@ namespace
             const InputValues* values = static_cast<const InputValues*>(data);
 
             // Compute the incoming direction by sampling the MDF.
-            sample.get_sampling_context().split_in_place(2, 1);
-            const Vector2d s = sample.get_sampling_context().next_vector2<2>();
-            const Vector3d m = m_mdf->sample(s, values->m_ax, values->m_ay);
+            sample.get_sampling_context().split_in_place(3, 1);
+            const Vector3d s = sample.get_sampling_context().next_vector2<3>();
+            const Vector3d wo = sample.get_shading_basis().transform_to_local(sample.get_outgoing());
+            const Vector3d m = m_mdf->sample(wo, s, values->m_ax, values->m_ay);
             const Vector3d ht = sample.get_shading_basis().transform_to_parent(m);
             const double eta = values->m_from_ior / values->m_to_ior;
 
@@ -186,7 +187,7 @@ namespace
             const double G =
                 m_mdf->G(
                     sample.get_shading_basis().transform_to_local(incoming),
-                    sample.get_shading_basis().transform_to_local(sample.get_outgoing()),
+                    wo,
                     m,
                     values->m_ax,
                     values->m_ay);
@@ -224,7 +225,7 @@ namespace
                     ht_norm);
 
             sample.set_incoming(incoming);
-            sample.set_probability(m_mdf->pdf(m, values->m_ax, values->m_ay) * dwh_dwo);
+            sample.set_probability(m_mdf->pdf(wo, m, values->m_ax, values->m_ay) * dwh_dwo);
             sample.set_mode(BSDFSample::Glossy);
         }
 
@@ -260,11 +261,11 @@ namespace
                 ht_norm);
 
             const Vector3d m = shading_basis.transform_to_local(ht);
-
+            const Vector3d wo = shading_basis.transform_to_local(outgoing);
             const double G =
                 m_mdf->G(
                     shading_basis.transform_to_local(incoming),
-                    shading_basis.transform_to_local(outgoing),
+                    wo,
                     m,
                     values->m_ax,
                     values->m_ay);
@@ -292,7 +293,7 @@ namespace
                 ht,
                 ht_norm);
 
-            return m_mdf->pdf(m, values->m_ax, values->m_ay) * dwh_dwo;
+            return m_mdf->pdf(wo, m, values->m_ax, values->m_ay) * dwh_dwo;
         }
 
         FORCE_INLINE virtual double evaluate_pdf(
@@ -330,7 +331,11 @@ namespace
                 ht,
                 ht_norm);
 
-            return m_mdf->pdf(m, values->m_ax, values->m_ay) * dwh_dwo;
+            return m_mdf->pdf(
+                shading_basis.transform_to_local(outgoing),
+                m,
+                values->m_ax,
+                values->m_ay) * dwh_dwo;
         }
 
       private:
