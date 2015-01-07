@@ -38,7 +38,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
-#include "foundation/math/microfacet2.h"
+#include "foundation/math/microfacet.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/makevector.h"
@@ -148,9 +148,9 @@ namespace
                     context);
 
             if (mdf == "beckmann")
-                m_mdf.reset(new BeckmannMDF2<double>());
+                m_mdf.reset(new BeckmannMDF<double>());
             else if (mdf == "ggx")
-                m_mdf.reset(new GGXMDF2<double>());
+                m_mdf.reset(new GGXMDF<double>());
             else
                 return false;
 
