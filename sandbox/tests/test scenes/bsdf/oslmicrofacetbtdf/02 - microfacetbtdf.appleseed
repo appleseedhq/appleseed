@@ -58,9 +58,9 @@
             </edf>
             <shader_group name="glass_shadergroup">
                 <shader type="surface" name="glass" layer="glass_layer1">
-                    <parameter name="distribution" value="string ggx" />
+                    <parameter name="distribution" value="string beckmann" />
                     <parameter name="ior" value="float 1.5" />
-                    <parameter name="roughness" value="float 0.075" />
+                    <parameter name="roughness" value="float 0.025" />
                 </shader>
             </shader_group>
             <surface_shader name="glass_surface_shader" model="physical_surface_shader">
