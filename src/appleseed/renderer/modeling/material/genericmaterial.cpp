@@ -183,7 +183,9 @@ DictionaryArray GenericMaterialFactory::get_input_metadata() const
         Dictionary()
             .insert("name", "bump_amplitude")
             .insert("label", "Bump Amplitude")
-            .insert("type", "text")
+            .insert("type", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "1.0")
             .insert("use", "optional")
             .insert("default", "1.0"));
 
