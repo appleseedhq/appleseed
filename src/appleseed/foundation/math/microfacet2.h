@@ -247,13 +247,7 @@ class MDF
         const Vector<T, 3>&  outgoing,
         const Vector<T, 3>&  h)
     {
-        const T G1i = v_cavity_G1(incoming, h);
-        const T G1o = v_cavity_G1(outgoing, h);
-
-        if (incoming.y >= T(0.0))
-            return std::min(G1i, G1o);
-
-        return std::max(G1i + G1o - T(1.0), T(0.0));
+        return std::min(v_cavity_G1(incoming, h), v_cavity_G1(outgoing, h));
     }
 
     static Vector<T, 3> v_cavity_choose_microfacet_normal(
@@ -531,7 +525,6 @@ class BeckmannMDF2
             return T(1.0);
 
         const T sin_theta = MDF<T>::sin_theta(v);
-        const T tan_theta = std::abs(sin_theta / cos_theta);
 
         const T alpha =
             MDF<T>::projected_roughness(
@@ -540,7 +533,8 @@ class BeckmannMDF2
                 alpha_x,
                 alpha_y);
 
-        const T a = tan_theta / alpha;
+        const T tan_theta = std::abs(sin_theta / cos_theta);
+        const T a = 1.0 / (alpha * tan_theta);
 
         if (a < T(1.6))
         {
