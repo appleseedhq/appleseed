@@ -33,7 +33,6 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/texture/disktexture2d.h"
 #include "renderer/modeling/texture/itexturefactory.h"
-#include "renderer/modeling/texture/writabletexture2d.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
@@ -60,7 +59,6 @@ TextureFactoryRegistrar::TextureFactoryRegistrar()
   : impl(new Impl())
 {
     register_factory(auto_ptr<FactoryType>(new DiskTexture2dFactory()));
-    register_factory(auto_ptr<FactoryType>(new WritableTexture2dFactory()));
 }
 
 TextureFactoryRegistrar::~TextureFactoryRegistrar()
