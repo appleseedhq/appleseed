@@ -351,9 +351,12 @@ const char* SunLightFactory::get_model() const
     return Model;
 }
 
-const char* SunLightFactory::get_human_readable_model() const
+Dictionary SunLightFactory::get_model_metadata() const
 {
-    return "Sun Light";
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "Sun Light");
 }
 
 DictionaryArray SunLightFactory::get_input_metadata() const

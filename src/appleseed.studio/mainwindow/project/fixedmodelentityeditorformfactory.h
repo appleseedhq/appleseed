@@ -90,7 +90,8 @@ void FixedModelEntityEditorFormFactory<FactoryRegistrar>::update(
 
     // We insert only the current model, so the model of the entity cannot be changed.
     foundation::Dictionary model_items;
-    model_items.insert(factory->get_human_readable_model(), m_model.c_str());
+    model_items.insert(factory->get_model_metadata().get("label"), m_model);
+
     metadata.push_back(
         foundation::Dictionary()
             .insert("name", ModelParameter)
@@ -98,7 +99,7 @@ void FixedModelEntityEditorFormFactory<FactoryRegistrar>::update(
             .insert("type", "enumeration")
             .insert("items", model_items)
             .insert("use", "required")
-            .insert("default", m_model.c_str())
+            .insert("default", m_model)
             .insert("on_change", "rebuild_form"));
 
     add_input_metadata(

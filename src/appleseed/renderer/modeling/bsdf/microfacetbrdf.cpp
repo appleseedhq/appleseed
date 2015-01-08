@@ -437,9 +437,12 @@ const char* MicrofacetBRDFFactory::get_model() const
     return Model;
 }
 
-const char* MicrofacetBRDFFactory::get_human_readable_model() const
+Dictionary MicrofacetBRDFFactory::get_model_metadata() const
 {
-    return "Microfacet BRDF";
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "Microfacet BRDF");
 }
 
 DictionaryArray MicrofacetBRDFFactory::get_input_metadata() const

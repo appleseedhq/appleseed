@@ -41,6 +41,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
 
 // Forward declarations.
@@ -157,9 +158,12 @@ const char* AOSurfaceShaderFactory::get_model() const
     return Model;
 }
 
-const char* AOSurfaceShaderFactory::get_human_readable_model() const
+Dictionary AOSurfaceShaderFactory::get_model_metadata() const
 {
-    return "Ambient Occlusion";
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "Ambient Occlusion");
 }
 
 DictionaryArray AOSurfaceShaderFactory::get_input_metadata() const

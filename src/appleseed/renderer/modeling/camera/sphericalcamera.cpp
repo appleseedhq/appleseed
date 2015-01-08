@@ -212,9 +212,12 @@ const char* SphericalCameraFactory::get_model() const
     return Model;
 }
 
-const char* SphericalCameraFactory::get_human_readable_model() const
+Dictionary SphericalCameraFactory::get_model_metadata() const
 {
-    return "Spherical Camera";
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "Spherical Camera");
 }
 
 DictionaryArray SphericalCameraFactory::get_input_metadata() const

@@ -152,9 +152,12 @@ const char* SpecularBRDFFactory::get_model() const
     return Model;
 }
 
-const char* SpecularBRDFFactory::get_human_readable_model() const
+Dictionary SpecularBRDFFactory::get_model_metadata() const
 {
-    return "Specular BRDF";
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "Specular BRDF");
 }
 
 DictionaryArray SpecularBRDFFactory::get_input_metadata() const

@@ -42,6 +42,7 @@
 #include "main/dllsymbol.h"
 
 // Forward declarations.
+namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }
 namespace renderer      { class ParamArray; }
 
@@ -59,10 +60,10 @@ class APPLESEED_DLLSYMBOL PointLightFactory
     // Return a string identifying this light model.
     virtual const char* get_model() const APPLESEED_OVERRIDE;
 
-    // Return a human-readable string identifying this light model.
-    virtual const char* get_human_readable_model() const APPLESEED_OVERRIDE;
+    // Return metadata for this light model.
+    virtual foundation::Dictionary get_model_metadata() const APPLESEED_OVERRIDE;
 
-    // Return a set of input metadata for this light model.
+    // Return metadata for the inputs of this light model.
     virtual foundation::DictionaryArray get_input_metadata() const APPLESEED_OVERRIDE;
 
     // Create a new light instance.

@@ -211,9 +211,12 @@ const char* ConeEDFFactory::get_model() const
     return Model;
 }
 
-const char* ConeEDFFactory::get_human_readable_model() const
+Dictionary ConeEDFFactory::get_model_metadata() const
 {
-    return "Cone EDF";
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "Cone EDF");
 }
 
 DictionaryArray ConeEDFFactory::get_input_metadata() const

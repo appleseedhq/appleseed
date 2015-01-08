@@ -43,6 +43,7 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/containers/specializedarrays.h"
 
 // Standard headers.
 #include <cassert>
@@ -181,9 +182,12 @@ const char* MirrorBallMapEnvironmentEDFFactory::get_model() const
     return Model;
 }
 
-const char* MirrorBallMapEnvironmentEDFFactory::get_human_readable_model() const
+Dictionary MirrorBallMapEnvironmentEDFFactory::get_model_metadata() const
 {
-    return "Mirror Ball Map Environment EDF";
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "Mirror Ball Map Environment EDF");
 }
 
 DictionaryArray MirrorBallMapEnvironmentEDFFactory::get_input_metadata() const

@@ -58,7 +58,7 @@ class APPLESEED_DLLSYMBOL DisneyParamExpression
   : public foundation::NonCopyable
 {
   public:
-    DisneyParamExpression(const char* expr);
+    explicit DisneyParamExpression(const char* expr);
     ~DisneyParamExpression();
 
     bool is_valid() const;
@@ -136,8 +136,8 @@ class APPLESEED_DLLSYMBOL DisneyMaterial
     std::size_t get_layer_count() const;
 
     const DisneyMaterialLayer& get_layer(
-        const std::size_t index,
-        const std::size_t thread_index = ~0) const;
+        const std::size_t           index,
+        const std::size_t           thread_index = ~0) const;
 
   private:
     friend class DisneyMaterialFactory;
@@ -166,10 +166,10 @@ class APPLESEED_DLLSYMBOL DisneyMaterialFactory
     // Return a string identifying this material model.
     virtual const char* get_model() const APPLESEED_OVERRIDE;
 
-    // Return a human-readable string identifying this material model.
-    virtual const char* get_human_readable_model() const APPLESEED_OVERRIDE;
+    // Return metadata for this material model.
+    virtual foundation::Dictionary get_model_metadata() const APPLESEED_OVERRIDE;
 
-    // Return a set of input metadata for this material model.
+    // Return metadata for the inputs of this material model.
     virtual foundation::DictionaryArray get_input_metadata() const APPLESEED_OVERRIDE;
 
     // Create a new material instance.

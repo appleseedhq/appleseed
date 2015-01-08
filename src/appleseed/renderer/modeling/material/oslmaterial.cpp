@@ -169,9 +169,12 @@ const char* OSLMaterialFactory::get_model() const
     return "osl_material";
 }
 
-const char* OSLMaterialFactory::get_human_readable_model() const
+Dictionary OSLMaterialFactory::get_model_metadata() const
 {
-    return "OSL Material";
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "OSL Material");
 }
 
 DictionaryArray OSLMaterialFactory::get_input_metadata() const

@@ -42,6 +42,7 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/containers/specializedarrays.h"
 
 // Standard headers.
 #include <cassert>
@@ -182,9 +183,12 @@ const char* GradientEnvironmentEDFFactory::get_model() const
     return Model;
 }
 
-const char* GradientEnvironmentEDFFactory::get_human_readable_model() const
+Dictionary GradientEnvironmentEDFFactory::get_model_metadata() const
 {
-    return "Gradient Environment EDF";
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "Gradient Environment EDF");
 }
 
 DictionaryArray GradientEnvironmentEDFFactory::get_input_metadata() const

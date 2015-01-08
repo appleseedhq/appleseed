@@ -160,9 +160,12 @@ const char* ConstantSurfaceShaderFactory::get_model() const
     return Model;
 }
 
-const char* ConstantSurfaceShaderFactory::get_human_readable_model() const
+Dictionary ConstantSurfaceShaderFactory::get_model_metadata() const
 {
-    return "Constant";
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "Constant");
 }
 
 DictionaryArray ConstantSurfaceShaderFactory::get_input_metadata() const

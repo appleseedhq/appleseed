@@ -262,9 +262,12 @@ const char* OSLMicrofacetBRDFFactory::get_model() const
     return Model;
 }
 
-const char* OSLMicrofacetBRDFFactory::get_human_readable_model() const
+Dictionary OSLMicrofacetBRDFFactory::get_model_metadata() const
 {
-    return "OSL Microfacet BRDF";
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "OSL Microfacet BRDF");
 }
 
 DictionaryArray OSLMicrofacetBRDFFactory::get_input_metadata() const

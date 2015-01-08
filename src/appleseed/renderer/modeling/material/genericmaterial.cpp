@@ -120,9 +120,12 @@ const char* GenericMaterialFactory::get_model() const
     return Model;
 }
 
-const char* GenericMaterialFactory::get_human_readable_model() const
+Dictionary GenericMaterialFactory::get_model_metadata() const
 {
-    return "Generic Material";
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "Generic Material");
 }
 
 DictionaryArray GenericMaterialFactory::get_input_metadata() const

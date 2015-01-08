@@ -172,9 +172,13 @@ const char* DiskTexture2dFactory::get_model() const
     return Model;
 }
 
-const char* DiskTexture2dFactory::get_human_readable_model() const
+Dictionary DiskTexture2dFactory::get_model_metadata() const
 {
-    return "2D Texture File";
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "2D Texture File")
+            .insert("default_model", "true");
 }
 
 DictionaryArray DiskTexture2dFactory::get_input_metadata() const

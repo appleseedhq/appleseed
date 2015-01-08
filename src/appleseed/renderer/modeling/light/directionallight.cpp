@@ -179,9 +179,12 @@ const char* DirectionalLightFactory::get_model() const
     return Model;
 }
 
-const char* DirectionalLightFactory::get_human_readable_model() const
+Dictionary DirectionalLightFactory::get_model_metadata() const
 {
-    return "Directional Light";
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "Directional Light");
 }
 
 DictionaryArray DirectionalLightFactory::get_input_metadata() const

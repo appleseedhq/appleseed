@@ -686,9 +686,12 @@ const char* KelemenBRDFFactory::get_model() const
     return Model;
 }
 
-const char* KelemenBRDFFactory::get_human_readable_model() const
+Dictionary KelemenBRDFFactory::get_model_metadata() const
 {
-    return "Kelemen BRDF";
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "Kelemen BRDF");
 }
 
 DictionaryArray KelemenBRDFFactory::get_input_metadata() const

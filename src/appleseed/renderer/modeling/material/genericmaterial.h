@@ -41,6 +41,7 @@
 #include "main/dllsymbol.h"
 
 // Forward declarations.
+namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }
 namespace renderer      { class Material; }
 namespace renderer      { class ParamArray; }
@@ -59,10 +60,10 @@ class APPLESEED_DLLSYMBOL GenericMaterialFactory
     // Return a string identifying this material model.
     virtual const char* get_model() const APPLESEED_OVERRIDE;
 
-    // Return a human-readable string identifying this material model.
-    virtual const char* get_human_readable_model() const APPLESEED_OVERRIDE;
+    // Return metadata for this material model.
+    virtual foundation::Dictionary get_model_metadata() const APPLESEED_OVERRIDE;
 
-    // Return a set of input metadata for this material model.
+    // Return metadata for the inputs of this material model.
     virtual foundation::DictionaryArray get_input_metadata() const APPLESEED_OVERRIDE;
 
     // Create a new material instance.

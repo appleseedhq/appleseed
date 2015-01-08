@@ -46,6 +46,7 @@
 #include <cstddef>
 
 // Forward declarations.
+namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class PixelContext; }
@@ -131,10 +132,10 @@ class APPLESEED_DLLSYMBOL DiagnosticSurfaceShaderFactory
     // Return a string identifying this surface shader model.
     virtual const char* get_model() const APPLESEED_OVERRIDE;
 
-    // Return a human-readable string identifying this surface shader model.
-    virtual const char* get_human_readable_model() const APPLESEED_OVERRIDE;
+    // Return metadata for this surface shader model.
+    virtual foundation::Dictionary get_model_metadata() const APPLESEED_OVERRIDE;
 
-    // Return a set of input metadata for this surface shader model.
+    // Return metadata for the inputs of this surface shader model.
     virtual foundation::DictionaryArray get_input_metadata() const APPLESEED_OVERRIDE;
 
     // Create a new surface shader instance.

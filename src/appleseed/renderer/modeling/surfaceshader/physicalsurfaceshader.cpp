@@ -373,9 +373,13 @@ const char* PhysicalSurfaceShaderFactory::get_model() const
     return Model;
 }
 
-const char* PhysicalSurfaceShaderFactory::get_human_readable_model() const
+Dictionary PhysicalSurfaceShaderFactory::get_model_metadata() const
 {
-    return "Physical";
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "Physical")
+            .insert("default_model", "true");
 }
 
 DictionaryArray PhysicalSurfaceShaderFactory::get_input_metadata() const

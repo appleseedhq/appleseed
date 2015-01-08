@@ -38,6 +38,7 @@
 #include "main/dllsymbol.h"
 
 // Forward declarations.
+namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }
 namespace renderer      { class Camera; }
 namespace renderer      { class ParamArray; }
@@ -59,10 +60,10 @@ class APPLESEED_DLLSYMBOL ICameraFactory
     // Return a string identifying this camera model.
     virtual const char* get_model() const = 0;
 
-    // Return a human-readable string identifying this camera model.
-    virtual const char* get_human_readable_model() const = 0;
+    // Return metadata for this camera model.
+    virtual foundation::Dictionary get_model_metadata() const = 0;
 
-    // Return a set of input metadata for this camera model.
+    // Return metadata for the inputs of this camera model.
     virtual foundation::DictionaryArray get_input_metadata() const = 0;
 
     // Create a new camera instance.

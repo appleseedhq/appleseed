@@ -207,9 +207,13 @@ const char* DiffuseEDFFactory::get_model() const
     return Model;
 }
 
-const char* DiffuseEDFFactory::get_human_readable_model() const
+Dictionary DiffuseEDFFactory::get_model_metadata() const
 {
-    return "Diffuse EDF";
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "Diffuse EDF")
+            .insert("default_model", "true");
 }
 
 DictionaryArray DiffuseEDFFactory::get_input_metadata() const

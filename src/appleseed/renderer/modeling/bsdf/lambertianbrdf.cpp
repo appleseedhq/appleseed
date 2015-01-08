@@ -179,9 +179,12 @@ const char* LambertianBRDFFactory::get_model() const
     return Model;
 }
 
-const char* LambertianBRDFFactory::get_human_readable_model() const
+Dictionary LambertianBRDFFactory::get_model_metadata() const
 {
-    return "Lambertian BRDF";
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "Lambertian BRDF");
 }
 
 DictionaryArray LambertianBRDFFactory::get_input_metadata() const

@@ -161,9 +161,13 @@ const char* EDFEnvironmentShaderFactory::get_model() const
     return Model;
 }
 
-const char* EDFEnvironmentShaderFactory::get_human_readable_model() const
+Dictionary EDFEnvironmentShaderFactory::get_model_metadata() const
 {
-    return "Environment EDF-Based Environment Shader";
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "Environment EDF-Based Environment Shader")
+            .insert("default_model", "true");
 }
 
 DictionaryArray EDFEnvironmentShaderFactory::get_input_metadata() const

@@ -41,6 +41,7 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/containers/specializedarrays.h"
 
 // Standard headers.
 #include <cassert>
@@ -175,9 +176,12 @@ const char* ConstantHemisphereEnvironmentEDFFactory::get_model() const
     return Model;
 }
 
-const char* ConstantHemisphereEnvironmentEDFFactory::get_human_readable_model() const
+Dictionary ConstantHemisphereEnvironmentEDFFactory::get_model_metadata() const
 {
-    return "Per-Hemisphere Constant Environment EDF";
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "Per-Hemisphere Constant Environment EDF");
 }
 
 DictionaryArray ConstantHemisphereEnvironmentEDFFactory::get_input_metadata() const

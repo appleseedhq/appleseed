@@ -48,6 +48,7 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/containers/specializedarrays.h"
 
 // Standard headers.
 #include <cassert>
@@ -436,9 +437,12 @@ const char* PreethamEnvironmentEDFFactory::get_model() const
     return Model;
 }
 
-const char* PreethamEnvironmentEDFFactory::get_human_readable_model() const
+Dictionary PreethamEnvironmentEDFFactory::get_model_metadata() const
 {
-    return "Preetham Environment EDF";
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "Preetham Environment EDF");
 }
 
 DictionaryArray PreethamEnvironmentEDFFactory::get_input_metadata() const

@@ -255,9 +255,12 @@ const char* OrenNayarBRDFFactory::get_model() const
     return Model;
 }
 
-const char* OrenNayarBRDFFactory::get_human_readable_model() const
+Dictionary OrenNayarBRDFFactory::get_model_metadata() const
 {
-    return "Oren-Nayar BRDF";
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "Oren-Nayar BRDF");
 }
 
 DictionaryArray OrenNayarBRDFFactory::get_input_metadata() const

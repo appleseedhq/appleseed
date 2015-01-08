@@ -690,9 +690,13 @@ const char* DisneyBRDFFactory::get_model() const
     return Model;
 }
 
-const char* DisneyBRDFFactory::get_human_readable_model() const
+Dictionary DisneyBRDFFactory::get_model_metadata() const
 {
-    return "Disney BRDF";
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "Disney BRDF")
+            .insert("default_model", "true");
 }
 
 DictionaryArray DisneyBRDFFactory::get_input_metadata() const

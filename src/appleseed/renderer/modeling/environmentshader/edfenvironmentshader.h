@@ -41,6 +41,7 @@
 #include "main/dllsymbol.h"
 
 // Forward declarations.
+namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }
 namespace renderer      { class EnvironmentShader; }
 namespace renderer      { class ParamArray; }
@@ -59,10 +60,10 @@ class APPLESEED_DLLSYMBOL EDFEnvironmentShaderFactory
     // Return a string identifying this environment shader model.
     virtual const char* get_model() const APPLESEED_OVERRIDE;
 
-    // Return a human-readable string identifying this environment shader model.
-    virtual const char* get_human_readable_model() const APPLESEED_OVERRIDE;
+    // Return metadata for this environment shader model.
+    virtual foundation::Dictionary get_model_metadata() const APPLESEED_OVERRIDE;
 
-    // Return a set of input metadata for this environment shader model.
+    // Return metadata for the inputs of this environment shader model.
     virtual foundation::DictionaryArray get_input_metadata() const APPLESEED_OVERRIDE;
 
     // Create a new environment shader instance.

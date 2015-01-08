@@ -358,9 +358,12 @@ const char* BSDFMixFactory::get_model() const
     return Model;
 }
 
-const char* BSDFMixFactory::get_human_readable_model() const
+Dictionary BSDFMixFactory::get_model_metadata() const
 {
-    return "BSDF Mix";
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "BSDF Mix");
 }
 
 DictionaryArray BSDFMixFactory::get_input_metadata() const

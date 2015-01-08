@@ -37,6 +37,7 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/filter/regexfilter.h"
 
@@ -109,9 +110,13 @@ const char* RegExRenderLayerRuleFactory::get_model() const
     return Model;
 }
 
-const char* RegExRenderLayerRuleFactory::get_human_readable_model() const
+Dictionary RegExRenderLayerRuleFactory::get_model_metadata() const
 {
-    return "Regular Expression";
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "Regular Expression")
+            .insert("default_model", "true");
 }
 
 DictionaryArray RegExRenderLayerRuleFactory::get_input_metadata() const

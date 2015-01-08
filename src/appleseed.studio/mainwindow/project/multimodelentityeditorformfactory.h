@@ -111,18 +111,24 @@ std::string MultiModelEntityEditorFormFactory<FactoryRegistrar>::add_model_widge
         m_factory_registrar.get_factories();
 
     foundation::Dictionary model_items;
+    std::string default_model;
+
     for (size_t i = 0; i < factories.size(); ++i)
     {
-        model_items.insert(
-            factories[i]->get_human_readable_model(),
-            factories[i]->get_model());
+        const foundation::Dictionary model_metadata = factories[i]->get_model_metadata();
+        const std::string model_name = model_metadata.get("name");
+
+        model_items.insert(model_metadata.get("label"), model_name);
+
+        if (model_metadata.strings().exist("default_model") &&
+            model_metadata.get<bool>("default_model"))
+            default_model = model_name;
     }
 
-    const std::string model =
-        get_value(
-            values,
-            ModelParameter,
-            factories.empty() ? "" : factories[0]->get_model());
+    if (default_model.empty())
+        default_model = factories[0]->get_model();
+
+    const std::string model = get_value(values, ModelParameter, default_model);
 
     metadata.push_back(
         foundation::Dictionary()

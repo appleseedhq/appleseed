@@ -956,9 +956,13 @@ const char* DisneyMaterialFactory::get_model() const
     return Model;
 }
 
-const char* DisneyMaterialFactory::get_human_readable_model() const
+Dictionary DisneyMaterialFactory::get_model_metadata() const
 {
-    return "Disney Material";
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "Disney Material")
+            .insert("default_model", "true");
 }
 
 DictionaryArray DisneyMaterialFactory::get_input_metadata() const

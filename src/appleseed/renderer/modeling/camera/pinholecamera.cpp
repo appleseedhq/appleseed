@@ -246,9 +246,13 @@ const char* PinholeCameraFactory::get_model() const
     return Model;
 }
 
-const char* PinholeCameraFactory::get_human_readable_model() const
+Dictionary PinholeCameraFactory::get_model_metadata() const
 {
-    return "Pinhole Camera";
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "Pinhole Camera")
+            .insert("default_model", "true");
 }
 
 DictionaryArray PinholeCameraFactory::get_input_metadata() const

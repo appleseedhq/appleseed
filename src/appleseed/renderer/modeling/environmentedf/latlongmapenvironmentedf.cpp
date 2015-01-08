@@ -58,6 +58,7 @@
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/job/abortswitch.h"
 
 // Standard headers.
@@ -415,9 +416,12 @@ const char* LatLongMapEnvironmentEDFFactory::get_model() const
     return Model;
 }
 
-const char* LatLongMapEnvironmentEDFFactory::get_human_readable_model() const
+Dictionary LatLongMapEnvironmentEDFFactory::get_model_metadata() const
 {
-    return "Latitude-Longitude Map Environment EDF";
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "Latitude-Longitude Map Environment EDF");
 }
 
 DictionaryArray LatLongMapEnvironmentEDFFactory::get_input_metadata() const

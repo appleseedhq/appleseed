@@ -48,6 +48,7 @@
 #include "foundation/math/minmax.h"
 #include "foundation/math/scalar.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
 
 // Standard headers.
@@ -457,9 +458,12 @@ const char* DiagnosticSurfaceShaderFactory::get_model() const
     return Model;
 }
 
-const char* DiagnosticSurfaceShaderFactory::get_human_readable_model() const
+Dictionary DiagnosticSurfaceShaderFactory::get_model_metadata() const
 {
-    return "Diagnostics";
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "Diagnostics");
 }
 
 DictionaryArray DiagnosticSurfaceShaderFactory::get_input_metadata() const

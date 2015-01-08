@@ -64,7 +64,7 @@ namespace
     // OSL Ashikhmin-Shirley BRDF.
     //
     // Simplified version of the Ashikhmin-Shirley model used in OSL shaders.
-    // It ignores the diffuse component and fresnel term.
+    // It ignores the diffuse component and Fresnel term.
     //
     // References:
     //
@@ -344,14 +344,18 @@ const char* OSLAshikhminBRDFFactory::get_model() const
     return Model;
 }
 
-const char* OSLAshikhminBRDFFactory::get_human_readable_model() const
+Dictionary OSLAshikhminBRDFFactory::get_model_metadata() const
 {
-    return "OSL Ashikhmin-Shirley BRDF";
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "OSL Ashikhmin-Shirley BRDF");
 }
 
 DictionaryArray OSLAshikhminBRDFFactory::get_input_metadata() const
 {
     DictionaryArray metadata;
+
     metadata.push_back(
         Dictionary()
             .insert("name", "shininess_u")

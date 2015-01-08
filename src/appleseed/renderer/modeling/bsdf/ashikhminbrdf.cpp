@@ -490,9 +490,12 @@ const char* AshikhminBRDFFactory::get_model() const
     return Model;
 }
 
-const char* AshikhminBRDFFactory::get_human_readable_model() const
+Dictionary AshikhminBRDFFactory::get_model_metadata() const
 {
-    return "Ashikhmin-Shirley BRDF";
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "Ashikhmin-Shirley BRDF");
 }
 
 DictionaryArray AshikhminBRDFFactory::get_input_metadata() const

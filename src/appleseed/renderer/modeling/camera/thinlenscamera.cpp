@@ -534,9 +534,12 @@ const char* ThinLensCameraFactory::get_model() const
     return Model;
 }
 
-const char* ThinLensCameraFactory::get_human_readable_model() const
+Dictionary ThinLensCameraFactory::get_model_metadata() const
 {
-    return "Thin Lens Camera";
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "Thin Lens Camera");
 }
 
 DictionaryArray ThinLensCameraFactory::get_input_metadata() const

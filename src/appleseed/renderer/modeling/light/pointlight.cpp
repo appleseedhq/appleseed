@@ -159,9 +159,13 @@ const char* PointLightFactory::get_model() const
     return Model;
 }
 
-const char* PointLightFactory::get_human_readable_model() const
+Dictionary PointLightFactory::get_model_metadata() const
 {
-    return "Point Light";
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "Point Light")
+            .insert("default_model", "true");
 }
 
 DictionaryArray PointLightFactory::get_input_metadata() const

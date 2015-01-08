@@ -336,9 +336,12 @@ const char* BSDFBlendFactory::get_model() const
     return Model;
 }
 
-const char* BSDFBlendFactory::get_human_readable_model() const
+Dictionary BSDFBlendFactory::get_model_metadata() const
 {
-    return "BSDF Blend";
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "BSDF Blend");
 }
 
 DictionaryArray BSDFBlendFactory::get_input_metadata() const

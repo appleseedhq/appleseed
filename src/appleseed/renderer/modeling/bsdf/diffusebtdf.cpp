@@ -169,9 +169,12 @@ const char* DiffuseBTDFFactory::get_model() const
     return Model;
 }
 
-const char* DiffuseBTDFFactory::get_human_readable_model() const
+Dictionary DiffuseBTDFFactory::get_model_metadata() const
 {
-    return "Diffuse BTDF";
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "Diffuse BTDF");
 }
 
 DictionaryArray DiffuseBTDFFactory::get_input_metadata() const

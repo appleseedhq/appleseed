@@ -181,9 +181,12 @@ const char* SurfaceShaderCollectionFactory::get_model() const
     return Model;
 }
 
-const char* SurfaceShaderCollectionFactory::get_human_readable_model() const
+Dictionary SurfaceShaderCollectionFactory::get_model_metadata() const
 {
-    return "Collection";
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "Collection");
 }
 
 DictionaryArray SurfaceShaderCollectionFactory::get_input_metadata() const

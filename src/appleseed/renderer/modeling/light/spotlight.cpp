@@ -224,9 +224,12 @@ const char* SpotLightFactory::get_model() const
     return Model;
 }
 
-const char* SpotLightFactory::get_human_readable_model() const
+Dictionary SpotLightFactory::get_model_metadata() const
 {
-    return "Spot Light";
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "Spot Light");
 }
 
 DictionaryArray SpotLightFactory::get_input_metadata() const

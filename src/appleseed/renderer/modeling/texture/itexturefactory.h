@@ -38,6 +38,7 @@
 #include "main/dllsymbol.h"
 
 // Forward declarations.
+namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }
 namespace foundation    { class SearchPaths; }
 namespace renderer      { class ParamArray; }
@@ -60,10 +61,10 @@ class APPLESEED_DLLSYMBOL ITextureFactory
     // Return a string identifying this texture model.
     virtual const char* get_model() const = 0;
 
-    // Return a human-readable string identifying this texture model.
-    virtual const char* get_human_readable_model() const = 0;
+    // Return metadata for this texture model.
+    virtual foundation::Dictionary get_model_metadata() const = 0;
 
-    // Return a set of input metadata for this texture model.
+    // Return metadata for the inputs of this texture model.
     virtual foundation::DictionaryArray get_input_metadata() const = 0;
 
     // Create a new texture instance.

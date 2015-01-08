@@ -48,6 +48,7 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/containers/specializedarrays.h"
 
 // Standard headers.
 #include <algorithm>
@@ -448,9 +449,13 @@ const char* HosekEnvironmentEDFFactory::get_model() const
     return Model;
 }
 
-const char* HosekEnvironmentEDFFactory::get_human_readable_model() const
+Dictionary HosekEnvironmentEDFFactory::get_model_metadata() const
 {
-    return "Hosek Environment EDF";
+    return
+        Dictionary()
+            .insert("name", Model)
+            .insert("label", "Hosek-Wilkie Environment EDF")
+            .insert("default_model", "true");
 }
 
 DictionaryArray HosekEnvironmentEDFFactory::get_input_metadata() const
