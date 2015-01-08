@@ -122,6 +122,7 @@ void DisneyMaterialLayerUI::mousePressEvent(QMouseEvent* event)
             break;
         }
     }
+
     setObjectName("selected_material_editor_layer");
     style()->unpolish(this);
     style()->polish(this);
@@ -187,13 +188,13 @@ void DisneyMaterialLayerUI::fold_layer(const bool update)
     style()->unpolish(label);
     style()->polish(label);
 
-    // Update model
+    // Update model.
     layer_params.insert("folded", is_folded);
 }
 
 void DisneyMaterialLayerUI::slot_delete_layer()
 {
-    // Remove model
+    // Remove model.
     string layer_rename = m_entity_editor->m_renames.get(m_layer_name.c_str());
     Dictionary& deleted_layer = m_entity_editor->m_values.dictionary(layer_rename);
     size_t deleted_layer_number = deleted_layer.get<size_t>("layer_number");

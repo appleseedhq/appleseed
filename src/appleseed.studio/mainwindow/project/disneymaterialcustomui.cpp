@@ -115,7 +115,7 @@ void DisneyMaterialCustomUI::create_custom_widgets(
 
     // New layer button.
     // Use blanks for spacing between icon and text, as there does not appear to be a better option.
-    QIcon add_icon = QIcon(":/widgets/big_add.png");
+    const QIcon add_icon = QIcon(":/widgets/big_add.png");
     m_add_layer_button = new QPushButton(add_icon, "   Add New Layer");
     m_add_layer_button->setObjectName("add_material_editor_layer");
     m_form_layout->addWidget(m_add_layer_button);
@@ -513,10 +513,10 @@ void DisneyMaterialCustomUI::add_layer(const bool update, const Dictionary& para
 {
     DictionaryArray layer_metadata = DisneyMaterialLayer::get_input_metadata();
 
-    string layer_name = unique_layer_name();
-
-    if (parameters.strings().exist("layer_name"))
-        layer_name = parameters.strings().get<string>("layer_name");
+    string layer_name =
+        parameters.strings().exist("layer_name")
+            ? parameters.strings().get<string>("layer_name")
+            : unique_layer_name();
 
     // Change layer name until is certainly unique.
     while (update && m_values.dictionaries().exist(layer_name))
@@ -526,7 +526,7 @@ void DisneyMaterialCustomUI::add_layer(const bool update, const Dictionary& para
 
     Dictionary layer_params;
     if (update)
-        layer_params.insert("layer_number", m_values.dictionaries().size()+1);
+        layer_params.insert("layer_number", m_values.dictionaries().size() + 1);
 
     for (size_t i = 0; i < layer_metadata.size(); ++i)
     {
@@ -550,8 +550,7 @@ void DisneyMaterialCustomUI::add_layer(const bool update, const Dictionary& para
         {
             if (!metadata.dictionaries().empty())
             {
-                const Dictionary entity_types = metadata.dictionaries().get("entity_types");
-                if (entity_types.strings().exist("color"))
+                if (metadata.dictionaries().get("entity_types").strings().exist("color"))
                     create_color_input_widgets(metadata, layer_name);
                 else
                     create_colormap_input_widgets(metadata, layer_name);
