@@ -333,7 +333,7 @@ void ExpressionEditorWindow::closeEvent(QCloseEvent* e)
     e->accept();
 }
 
-}       // namespace studio
-}       // namespace appleseed
+}   // namespace studio
+}   // namespace appleseed
 
 #include "mainwindow/project/moc_cpp_expressioneditorwindow.cxx"

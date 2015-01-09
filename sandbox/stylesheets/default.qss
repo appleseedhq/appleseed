@@ -1048,11 +1048,6 @@ QWidget#unfolded_label
  * SeExpr Expression Editor.
  */
 
-QWidget#seexpr_controls
-{
-    border: 2px solid BORDER_COLOR;
-}
-
 QTextEdit#expression_editor
 {
     background-color: INPUT_BACKGROUND_COLOR;
