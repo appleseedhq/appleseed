@@ -72,6 +72,47 @@ namespace renderer
 
 namespace
 {
+
+    template <typename T>
+    class WardMDFAdapter
+    {
+      public:
+        explicit WardMDFAdapter(const T alpha)
+            : m_alpha(alpha)
+        {
+        }
+
+        Vector<T, 3> sample(const Vector<T, 2>& s) const
+        {
+            return WardMDF<T>().sample(
+                Vector<T, 3>(0.0, 0.0, 0.0),
+                Vector<T, 3>(s[0], s[1], 0.0),
+                m_alpha,
+                m_alpha);
+        }
+
+        T evaluate(const T cos_alpha) const
+        {
+            return WardMDF<T>().D(
+                Vector<T, 3>(0.0, cos_alpha, 0.0),
+                m_alpha,
+                m_alpha);
+        }
+
+        T evaluate_pdf(const T cos_alpha) const
+        {
+            return WardMDF<T>().pdf(
+                Vector<T, 3>(0.0, 0.0, 0.0),
+                Vector<T, 3>(0.0, cos_alpha, 0.0),
+                m_alpha,
+                m_alpha);
+        }
+
+      private:
+        const T m_alpha;
+    };
+
+
     //
     // Kelemen BRDF.
     //
@@ -134,7 +175,7 @@ namespace
                 static_cast<const InputValues*>(input_evaluator.evaluate(m_inputs));
 
             // Construct the Microfacet Distribution Function.
-            m_mdf.reset(new MDF(max(values->m_roughness, 1.0e-6)));
+            m_mdf.reset(new MDFType(max(values->m_roughness, 1.0e-6)));
 
             // Precompute the specular albedo curve.
             Spectrum rs(values->m_rs);
@@ -444,9 +485,9 @@ namespace
             double              m_roughness;                    // technically, root-mean-square of the microfacets slopes
         };
 
-        typedef WardMDF<double> MDF;
+        typedef WardMDFAdapter<double> MDFType;
 
-        auto_ptr<MDF>           m_mdf;                          // Microfacet Distribution Function
+        auto_ptr<MDFType>       m_mdf;                          // Microfacet Distribution Function
         Spectrum                m_a_spec[AlbedoTableSize];      // albedo of the specular component as V varies
         Spectrum                m_s;                            // normalization constant for the matte component
 
@@ -607,8 +648,10 @@ namespace
             const double        m,
             const Spectrum&     rs)
         {
-            generate_specular_albedo_plot_data("Ward", m, WardMDF<double>(m), rs);
-            generate_specular_albedo_plot_data("Beckmann", m, BeckmannMDF<double>(m), rs);
+            generate_specular_albedo_plot_data("Ward", m, WardMDFAdapter<double>(m), rs);
+
+            // TODO: not really sure what to do with this... (est.)
+            //generate_specular_albedo_plot_data("Beckmann", m, BeckmannMDF<double>(m), rs);
         }
 
         template <typename MDF>
