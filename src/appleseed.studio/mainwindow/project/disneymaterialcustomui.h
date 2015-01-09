@@ -29,30 +29,30 @@
 #ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_DISNEYMATERIALCUSTOMUI_H
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_DISNEYMATERIALCUSTOMUI_H
 
-// appleseed.foundation headers.
-#include "foundation/utility/containers/specializedarrays.h"
-
-// appleseed.renderer headers.
-#include "renderer/utility/paramarray.h"
-
 // appleseed.studio headers.
-#include "mainwindow/project/entityeditor.h"
+#include "mainwindow/project/customentityui.h"
+#include "utility/inputwidgetproxies.h"
+
+// appleseed.foundation headers.
+#include "foundation/utility/containers/dictionary.h"
 
 // Standard headers.
+#include <cstddef>
 #include <string>
 #include <vector>
 
 // Qt headers.
-#include <QLineEdit>
 #include <QObject>
-#include <QWidget>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class LineEditForwarder; } }
 namespace appleseed { namespace studio { class DisneyMaterialLayerUI; } }
+namespace appleseed { namespace studio { class LineEditForwarder; } }
+namespace renderer  { class Project; }
+class QFormLayout;
 class QPushButton;
 class QSignalMapper;
 class QVBoxLayout;
+class QWidget;
 
 namespace appleseed {
 namespace studio {
@@ -84,6 +84,8 @@ class DisneyMaterialCustomUI
     void slot_expression_editor_closed();
 
   private:
+    friend class DisneyMaterialLayerUI;
+
     void create_connections();
     void create_buttons_connections(const QString& widget_name);
     void create_parameters_layout();
@@ -99,34 +101,32 @@ class DisneyMaterialCustomUI
 
     void create_texture_and_expr_buttons();
 
-    void add_layer(const bool update, const foundation::Dictionary& parameters = foundation::Dictionary());
+    void add_layer(const bool update, const foundation::Dictionary& parameters);
     void layer_deleted(DisneyMaterialLayerUI* layer);
 
-    std::vector<QWidget*>               m_layers_widgets;
+    std::vector<QWidget*>       m_layers_widgets;
 
-    QWidget*                            m_parent;
-    const renderer::Project&            m_project;
-    QWidget*                            m_group_widget;
-    QWidget*                            m_selected_layer_widget;
-    DisneyMaterialLayerUI*              m_last_layer;
-    QPushButton*                        m_add_layer_button;
-    LineEditForwarder*                  m_line_edit;
-    QPushButton*                        m_texture_button;
-    QPushButton*                        m_expression_button;
-    QFormLayout*                        m_group_layout;
-    QVBoxLayout*                        m_form_layout;
-    size_t                              m_num_created_layers;
+    QWidget*                    m_parent;
+    const renderer::Project&    m_project;
+    QWidget*                    m_group_widget;
+    QWidget*                    m_selected_layer_widget;
+    DisneyMaterialLayerUI*      m_last_layer;
+    QPushButton*                m_add_layer_button;
+    LineEditForwarder*          m_line_edit;
+    QPushButton*                m_texture_button;
+    QPushButton*                m_expression_button;
+    QFormLayout*                m_group_layout;
+    QVBoxLayout*                m_form_layout;
+    size_t                      m_num_created_layers;
 
-    QSignalMapper*                      m_color_picker_signal_mapper;
-    QSignalMapper*                      m_file_picker_signal_mapper;
-    QSignalMapper*                      m_expression_editor_signal_mapper;
-    QSignalMapper*                      m_line_edit_signal_mapper;
+    QSignalMapper*              m_color_picker_signal_mapper;
+    QSignalMapper*              m_file_picker_signal_mapper;
+    QSignalMapper*              m_expression_editor_signal_mapper;
+    QSignalMapper*              m_line_edit_signal_mapper;
 
-    InputWidgetProxyCollection          m_widget_proxies;
-    foundation::Dictionary              m_renames;
-    foundation::Dictionary              m_values;
-
-    friend class DisneyMaterialLayerUI;
+    InputWidgetProxyCollection  m_widget_proxies;
+    foundation::Dictionary      m_renames;
+    foundation::Dictionary      m_values;
 };
 
 }       // namespace studio

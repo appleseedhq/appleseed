@@ -32,13 +32,22 @@
 // appleseed.studio headers.
 #include "mainwindow/project/disneymaterialcustomui.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/containers/dictionary.h"
+#include "foundation/utility/foreach.h"
+
 // Qt headers.
 #include <QFormLayout>
+#include <QHBoxLayout>
+#include <QLayoutItem>
 #include <QStyle>
 #include <Qt>
 #include <QToolButton>
 #include <QVBoxLayout>
 #include <QWidget>
+
+// Standard headers.
+#include <cstddef>
 
 using namespace foundation;
 using namespace std;
@@ -51,10 +60,12 @@ DisneyMaterialLayerUI::DisneyMaterialLayerUI(
     DisneyMaterialCustomUI*     entity_editor,
     QVBoxLayout*                parent_layout,
     QWidget*                    parent)
-  : m_layer_name(layer_name)
+  : QFrame(parent)
+  , m_layer_name(layer_name)
   , m_entity_editor(entity_editor)
-  , QFrame(parent)
   , m_parent_layout(parent_layout)
+  , m_fold_icon(":/widgets/layer_fold.png")
+  , m_unfold_icon(":/widgets/layer_unfold.png")
 {
     setObjectName("material_editor_layer");
 
@@ -76,10 +87,8 @@ DisneyMaterialLayerUI::DisneyMaterialLayerUI(
     layout->addLayout(m_inner_layout);
 
     // Folding button.
-    m_fold_arrow_disabled = QIcon(":/widgets/header_arrow_down_disabled.png");
-    m_fold_arrow_enabled = QIcon(":/widgets/scrollbar_arrow_right_disabled.png");
     m_fold_button = new QToolButton(button_box);
-    m_fold_button->setIcon(m_fold_arrow_disabled);
+    m_fold_button->setIcon(m_fold_icon);
     button_box_layout->addWidget(m_fold_button);
     connect(m_fold_button, SIGNAL(clicked()), this, SLOT(slot_fold()));
 
@@ -129,7 +138,7 @@ void DisneyMaterialLayerUI::mousePressEvent(QMouseEvent* event)
 
 void DisneyMaterialLayerUI::mouseDoubleClickEvent(QMouseEvent* event)
 {
-    fold_layer(true);
+    toggle_fold_layer_status();
 }
 
 QFormLayout* DisneyMaterialLayerUI::get_layout()
@@ -137,28 +146,48 @@ QFormLayout* DisneyMaterialLayerUI::get_layout()
     return m_inner_layout;
 }
 
-void DisneyMaterialLayerUI::fold_layer(const bool update)
+string DisneyMaterialLayerUI::get_layer_name() const
 {
-    const string current_layer_name = m_entity_editor->m_renames.get(m_layer_name.c_str());
-    Dictionary& layer_params = m_entity_editor->m_values.dictionaries().get(current_layer_name);
+    return m_entity_editor->m_renames.get(m_layer_name.c_str());
+}
 
-    bool is_folded = layer_params.get<bool>("folded");
-    if (update)
-        is_folded = !is_folded;
+Dictionary& DisneyMaterialLayerUI::get_layer_params()
+{
+    return m_entity_editor->m_values.dictionaries().get(get_layer_name());
+}
 
-    if (!is_folded)
+void DisneyMaterialLayerUI::toggle_fold_layer_status()
+{
+    // Update model.
+    Dictionary& layer_params = get_layer_params();
+    bool folded = layer_params.get<bool>("folded");
+    folded = !folded;
+    layer_params.insert("folded", folded);
+
+    // Update UI.
+    update_ui_for_fold_status(folded);
+}
+
+void DisneyMaterialLayerUI::apply_layer_fold_status()
+{
+    update_ui_for_fold_status(get_layer_params().get<bool>("folded"));
+}
+
+void DisneyMaterialLayerUI::update_ui_for_fold_status(const bool folded)
+{
+    if (!folded)
     {
         m_inner_layout->setSpacing(7);
         m_inner_layout->removeWidget(m_spacer);
         m_spacer->hide();
-        m_fold_button->setIcon(m_fold_arrow_disabled);
+        m_fold_button->setIcon(m_fold_icon);
     }
 
     for (int i = 2; i < m_inner_layout->count(); ++i)
     {
         QWidget* widget = m_inner_layout->itemAt(i)->widget();
         if (widget)
-            is_folded ? widget->hide() : widget->show();
+            folded ? widget->hide() : widget->show();
 
         QLayout* vertical_layout = m_inner_layout->itemAt(i)->layout();
         if (vertical_layout)
@@ -166,33 +195,30 @@ void DisneyMaterialLayerUI::fold_layer(const bool update)
             for (int j = 0; j < vertical_layout->count(); ++j)
             {
                 QWidget* widget = vertical_layout->itemAt(j)->widget();
-                is_folded ? widget->hide() : widget->show();
+                folded ? widget->hide() : widget->show();
             }
         }
     }
 
-    if (is_folded)
+    if (folded)
     {
         m_inner_layout->setSpacing(0);
         m_inner_layout->addWidget(m_spacer);
         m_spacer->show();
-        m_fold_button->setIcon(m_fold_arrow_enabled);
+        m_fold_button->setIcon(m_unfold_icon);
     }
 
     // Add extra margin to shown labels when folded.
     QWidget* label = m_inner_layout->itemAt(0)->widget();
-    label->setObjectName(is_folded ? "folded_label" : "unfolded_label");
+    label->setObjectName(folded ? "folded_label" : "unfolded_label");
     style()->unpolish(label);
     style()->polish(label);
-
-    // Update model.
-    layer_params.insert("folded", is_folded);
 }
 
 void DisneyMaterialLayerUI::slot_delete_layer()
 {
     // Remove model.
-    string layer_rename = m_entity_editor->m_renames.get(m_layer_name.c_str());
+    string layer_rename = get_layer_name();
     Dictionary& deleted_layer = m_entity_editor->m_values.dictionary(layer_rename);
     size_t deleted_layer_number = deleted_layer.get<size_t>("layer_number");
     m_entity_editor->m_values.dictionaries().remove(layer_rename);
@@ -208,7 +234,7 @@ void DisneyMaterialLayerUI::slot_delete_layer()
 
     m_entity_editor->layer_deleted(this);
     m_entity_editor->emit_signal_custom_applied();
-    delete this;
+    this->deleteLater();
 }
 
 void DisneyMaterialLayerUI::update_model(const int new_position, const int offset)
@@ -285,7 +311,7 @@ void DisneyMaterialLayerUI::slot_move_layer_down()
 
 void DisneyMaterialLayerUI::slot_fold()
 {
-    fold_layer(true);
+    toggle_fold_layer_status();
 }
 
 }   // namespace studio

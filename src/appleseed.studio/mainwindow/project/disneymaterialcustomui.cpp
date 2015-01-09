@@ -40,10 +40,11 @@
 #include "utility/mousewheelfocuseventfilter.h"
 
 // appleseed.renderer headers.
+#include "renderer/api/material.h"
 #include "renderer/api/project.h"
-#include "renderer/modeling/material/disneymaterial.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/utility/searchpaths.h"
 
 // Qt headers.
@@ -55,9 +56,9 @@
 #include <QPushButton>
 #include <QSignalMapper>
 #include <QString>
-#include <QVBoxLayout>
 #include <Qt>
 #include <QToolButton>
+#include <QVBoxLayout>
 
 // Boost headers.
 #include "boost/algorithm/string.hpp"
@@ -115,7 +116,7 @@ void DisneyMaterialCustomUI::create_custom_widgets(
 
     // New layer button.
     // Use blanks for spacing between icon and text, as there does not appear to be a better option.
-    const QIcon add_icon = QIcon(":/widgets/big_add.png");
+    const QIcon add_icon(":/widgets/layer_add.png");
     m_add_layer_button = new QPushButton(add_icon, "   Add New Layer");
     m_add_layer_button->setObjectName("add_material_editor_layer");
     m_form_layout->addWidget(m_add_layer_button);
@@ -146,7 +147,7 @@ Dictionary DisneyMaterialCustomUI::get_values() const
 
 void DisneyMaterialCustomUI::slot_add_layer()
 {
-    add_layer(true);
+    add_layer(true, Dictionary());
 }
 
 void DisneyMaterialCustomUI::slot_open_color_picker(const QString& widget_name)
@@ -578,7 +579,7 @@ void DisneyMaterialCustomUI::add_layer(const bool update, const Dictionary& para
     if (!current_layer.strings().exist("folded"))
         current_layer.insert("folded", false);
 
-    m_last_layer->fold_layer(false);
+    m_last_layer->apply_layer_fold_status();
 
     emit_signal_custom_applied();
 }

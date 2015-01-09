@@ -29,9 +29,6 @@
 #ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_DISNEYMATERIALLAYERUI_H
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_DISNEYMATERIALLAYERUI_H
 
-// appleseed.studio headers.
-#include "mainwindow/project/entityeditor.h"
-
 // Standard headers.
 #include <string>
 
@@ -41,10 +38,13 @@
 #include <QObject>
 
 // Forward declarations
-namespace appleseed { namespace studio { class DisneyMaterialCustomUI; } }
+namespace appleseed     { namespace studio { class DisneyMaterialCustomUI; } }
+namespace foundation    { class Dictionary; }
+class QFormLayout;
+class QMouseEvent;
+class QToolButton;
 class QVBoxLayout;
 class QWidget;
-class QToolButton;
 
 namespace appleseed {
 namespace studio {
@@ -66,8 +66,13 @@ class DisneyMaterialLayerUI
     QFormLayout* get_layout();
 
   private:
+    std::string get_layer_name() const;
+    foundation::Dictionary& get_layer_params();
+
     void update_model(const int new_position, const int offset);
-    void fold_layer(const bool update);
+    void toggle_fold_layer_status();
+    void apply_layer_fold_status();
+    void update_ui_for_fold_status(const bool folded);
 
   private slots:
     void slot_delete_layer();
@@ -76,21 +81,20 @@ class DisneyMaterialLayerUI
     void slot_fold();
 
   private:
+    friend class DisneyMaterialCustomUI;
+
     const std::string           m_layer_name;
     DisneyMaterialCustomUI*     m_entity_editor;
+    QVBoxLayout*                m_parent_layout;
+    const QIcon                 m_fold_icon;
+    const QIcon                 m_unfold_icon;
 
     QFormLayout*                m_inner_layout;
-    QVBoxLayout*                m_parent_layout;
     QWidget*                    m_spacer;
     QToolButton*                m_fold_button;
-    QIcon                       m_fold_arrow_enabled;
-    QIcon                       m_fold_arrow_disabled;
-
-    friend class DisneyMaterialCustomUI;
 };
 
 }       // namespace studio
 }       // namespace appleseed
 
 #endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_DISNEYMATERIALLAYERUI_H
-
