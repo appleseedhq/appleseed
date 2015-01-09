@@ -56,10 +56,10 @@ class DisneyMaterialLayerUI
 
   public:
     DisneyMaterialLayerUI(
-        const std::string&          layer_name,
-        DisneyMaterialCustomUI*     entity_editor,
-        QVBoxLayout*                parent_layout,
-        QWidget*                    parent = 0);
+        const std::string&      layer_name,
+        DisneyMaterialCustomUI* entity_editor,
+        QVBoxLayout*            parent_layout,
+        QWidget*                parent = 0);
 
     void mousePressEvent(QMouseEvent* event);
     void mouseDoubleClickEvent(QMouseEvent* event);

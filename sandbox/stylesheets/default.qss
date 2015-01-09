@@ -1165,7 +1165,7 @@ QLabel#error
 QWidget#folded_label
 {
     min-width: 105px;
-    qproperty-alignment: AlignRight;
+    qproperty-alignment: 'AlignRight';
     qproperty-margin: 3;
     qproperty-indent: 4;
 }

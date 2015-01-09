@@ -76,15 +76,12 @@ DisneyMaterialLayerUI::DisneyMaterialLayerUI(
     QVBoxLayout* layout = new QVBoxLayout(this);
     m_parent_layout->insertWidget(m_parent_layout->count() - 2, this);
 
+    // Container for the layer buttons.
     QWidget* button_box = new QWidget(this);
     QHBoxLayout* button_box_layout = new QHBoxLayout(button_box);
     button_box_layout->setSpacing(0);
     button_box_layout->setMargin(0);
     layout->addWidget(button_box);
-
-    m_inner_layout = new QFormLayout();
-    m_inner_layout->setSpacing(7);
-    layout->addLayout(m_inner_layout);
 
     // Folding button.
     m_fold_button = new QToolButton(button_box);
@@ -92,29 +89,31 @@ DisneyMaterialLayerUI::DisneyMaterialLayerUI(
     button_box_layout->addWidget(m_fold_button);
     connect(m_fold_button, SIGNAL(clicked()), this, SLOT(slot_fold()));
 
-    // Place the following buttons on the right side.
+    // Place the other buttons on the right side.
     button_box_layout->addStretch(1);
 
-    // Up button.
-    QIcon arrow_up = QIcon(":icons/layer_arrow_up.png");
+    // Move Up button.
     QToolButton* up_button = new QToolButton(button_box);
-    up_button->setIcon(arrow_up);
+    up_button->setIcon(QIcon(":widgets/layer_move_up.png"));
     button_box_layout->addWidget(up_button);
     connect(up_button, SIGNAL(clicked()), this, SLOT(slot_move_layer_up()));
 
-    // Down button.
-    QIcon arrow_down = QIcon(":icons/layer_arrow_down.png");
+    // Move Down button.
     QToolButton* down_button = new QToolButton(button_box);
-    down_button->setIcon(arrow_down);
+    down_button->setIcon(QIcon(":widgets/layer_move_down.png"));
     button_box_layout->addWidget(down_button);
     connect(down_button, SIGNAL(clicked()), this, SLOT(slot_move_layer_down()));
 
-    // Close button.
-    QIcon close = QIcon(":/icons/close.png");
-    QToolButton* close_button = new QToolButton(button_box);
-    close_button->setIcon(close);
-    button_box_layout->addWidget(close_button);
-    connect(close_button, SIGNAL(clicked()), this, SLOT(slot_delete_layer()));
+    // Remove button.
+    QToolButton* remove_button = new QToolButton(button_box);
+    remove_button->setIcon(QIcon(":/widgets/layer_remove.png"));
+    button_box_layout->addWidget(remove_button);
+    connect(remove_button, SIGNAL(clicked()), this, SLOT(slot_delete_layer()));
+
+    // Layout for the layer's content.
+    m_inner_layout = new QFormLayout();
+    m_inner_layout->setSpacing(7);
+    layout->addLayout(m_inner_layout);
 }
 
 void DisneyMaterialLayerUI::mousePressEvent(QMouseEvent* event)
@@ -185,17 +184,19 @@ void DisneyMaterialLayerUI::update_ui_for_fold_status(const bool folded)
 
     for (int i = 2; i < m_inner_layout->count(); ++i)
     {
-        QWidget* widget = m_inner_layout->itemAt(i)->widget();
-        if (widget)
-            folded ? widget->hide() : widget->show();
+        QLayoutItem* item = m_inner_layout->itemAt(i);
 
-        QLayout* vertical_layout = m_inner_layout->itemAt(i)->layout();
+        QWidget* widget = item->widget();
+        if (widget)
+            widget->setShown(!folded);
+
+        QLayout* vertical_layout = item->layout();
         if (vertical_layout)
         {
             for (int j = 0; j < vertical_layout->count(); ++j)
             {
                 QWidget* widget = vertical_layout->itemAt(j)->widget();
-                folded ? widget->hide() : widget->show();
+                widget->setShown(!folded);
             }
         }
     }
@@ -218,16 +219,16 @@ void DisneyMaterialLayerUI::update_ui_for_fold_status(const bool folded)
 void DisneyMaterialLayerUI::slot_delete_layer()
 {
     // Remove model.
-    string layer_rename = get_layer_name();
-    Dictionary& deleted_layer = m_entity_editor->m_values.dictionary(layer_rename);
-    size_t deleted_layer_number = deleted_layer.get<size_t>("layer_number");
+    const string layer_rename = get_layer_name();
+    const Dictionary& deleted_layer = m_entity_editor->m_values.dictionary(layer_rename);
+    const size_t deleted_layer_number = deleted_layer.get<size_t>("layer_number");
     m_entity_editor->m_values.dictionaries().remove(layer_rename);
 
     // Shift remaining layer numbers.
     for (const_each<DictionaryDictionary> i = m_entity_editor->m_values.dictionaries(); i; ++i)
     {
         Dictionary& layer_params = m_entity_editor->m_values.dictionary(i->name());
-        size_t layer_number = layer_params.get<size_t>("layer_number");
+        const size_t layer_number = layer_params.get<size_t>("layer_number");
         if (layer_number > deleted_layer_number)
             layer_params.insert("layer_number", layer_number - 1);
     }
