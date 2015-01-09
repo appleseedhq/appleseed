@@ -78,7 +78,7 @@ namespace
     {
       public:
         explicit WardMDFAdapter(const T alpha)
-            : m_alpha(alpha)
+          : m_alpha(alpha)
         {
         }
 

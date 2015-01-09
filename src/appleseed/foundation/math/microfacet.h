@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_MICROFACET2_H
-#define APPLESEED_FOUNDATION_MATH_MICROFACET2_H
+#ifndef APPLESEED_FOUNDATION_MATH_MICROFACET_H
+#define APPLESEED_FOUNDATION_MATH_MICROFACET_H
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
@@ -820,9 +820,6 @@ class GGXMDF
         const T tan_theta = sin_theta / cos_theta;
         const T tan_theta2 = square(tan_theta);
         const T cot_theta = T(1.0) / tan_theta;
-
-        //const T lambda = (T(-1.0) + std::sqrt(T(1.0) + tan_theta2)) * T(0.5);
-        //const T G1 = T(1.0) / (T(1.0) + lambda);
         const T G1 = T(2.0) / (T(1.0) + std::sqrt(T(1.0) + tan_theta2));
 
         // Sample slope x.
@@ -1026,4 +1023,4 @@ class BerryMDF
 
 }       // namespace foundation
 
-#endif  // !APPLESEED_FOUNDATION_MATH_MICROFACET2_H
+#endif  // !APPLESEED_FOUNDATION_MATH_MICROFACET_H
