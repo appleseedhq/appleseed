@@ -29,6 +29,9 @@
 #ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_DISNEYMATERIALLAYERUI_H
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_DISNEYMATERIALLAYERUI_H
 
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
+
 // Standard headers.
 #include <string>
 
@@ -61,9 +64,9 @@ class DisneyMaterialLayerUI
         QVBoxLayout*            parent_layout,
         QWidget*                parent = 0);
 
-    void mousePressEvent(QMouseEvent* event);
-    void mouseDoubleClickEvent(QMouseEvent* event);
     QFormLayout* get_layout();
+
+    virtual void mouseDoubleClickEvent(QMouseEvent* event) APPLESEED_OVERRIDE;
 
   private:
     std::string get_layer_name() const;
@@ -89,9 +92,9 @@ class DisneyMaterialLayerUI
     const QIcon                 m_fold_icon;
     const QIcon                 m_unfold_icon;
 
+    QToolButton*                m_fold_button;
     QFormLayout*                m_inner_layout;
     QWidget*                    m_spacer;
-    QToolButton*                m_fold_button;
 };
 
 }       // namespace studio

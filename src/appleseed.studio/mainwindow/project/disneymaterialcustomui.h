@@ -88,7 +88,6 @@ class DisneyMaterialCustomUI
 
     void create_connections();
     void create_buttons_connections(const QString& widget_name);
-    void create_parameters_layout();
     void create_layer_layout(const std::string& layer_name);
 
     std::string unique_layer_name();

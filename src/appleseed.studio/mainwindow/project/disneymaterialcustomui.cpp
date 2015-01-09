@@ -96,13 +96,13 @@ void DisneyMaterialCustomUI::create_custom_widgets(
 {
     m_parent = layout->parentWidget();
 
-    // Resize if has EntityEditorWidget ancestor.
+    // Resize if it has an EntityEditorWidget ancestor.
     QWidget* parent = m_parent;
     while (parent != 0)
     {
-        if (parent->objectName().toStdString() == "EntityEditorWindow")
+        if (parent->objectName() == "EntityEditorWindow")
         {
-            parent->resize(500, 630);
+            parent->resize(800, 800);
             break;
         }
         parent = parent->parentWidget();
@@ -114,11 +114,8 @@ void DisneyMaterialCustomUI::create_custom_widgets(
     // Copy values.
     m_values = values;
 
-    // New layer button.
-    // Use blanks for spacing between icon and text, as there does not appear to be a better option.
-    const QIcon add_icon(":/widgets/layer_add.png");
-    m_add_layer_button = new QPushButton(add_icon, "   Add New Layer");
-    m_add_layer_button->setObjectName("add_material_editor_layer");
+    // Add New Layer button.
+    m_add_layer_button = new QPushButton("Add New Layer");
     m_form_layout->addWidget(m_add_layer_button);
     connect(m_add_layer_button, SIGNAL(clicked()), this, SLOT(slot_add_layer()));
 
@@ -156,10 +153,7 @@ void DisneyMaterialCustomUI::slot_open_color_picker(const QString& widget_name)
     const string color_expression = proxy->get();
     const QColor initial_color = ColorExpressionProxy::expression_to_qcolor(color_expression);
 
-    QColorDialog* dialog =
-        new QColorDialog(
-            initial_color,
-            m_parent);
+    QColorDialog* dialog = new QColorDialog(initial_color, m_parent);
     dialog->setWindowTitle("Pick Color");
     dialog->setOptions(QColorDialog::DontUseNativeDialog);
 
@@ -330,15 +324,6 @@ void DisneyMaterialCustomUI::create_buttons_connections(const QString& widget_na
 
     auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(m_line_edit));
     m_widget_proxies.insert(widget_name.toStdString(), widget_proxy);
-}
-
-void DisneyMaterialCustomUI::create_parameters_layout()
-{
-    m_group_widget = new QWidget();
-    m_group_widget->setObjectName("disney");
-    m_group_layout = new QFormLayout(m_group_widget);
-
-    m_form_layout->addWidget(m_group_widget);
 }
 
 void DisneyMaterialCustomUI::create_layer_layout(const string& layer_name)

@@ -69,10 +69,6 @@ DisneyMaterialLayerUI::DisneyMaterialLayerUI(
 {
     setObjectName("material_editor_layer");
 
-    m_spacer = new QWidget();
-    QHBoxLayout* spacer_layout = new QHBoxLayout(m_spacer);
-    spacer_layout->setSpacing(0);
-
     QVBoxLayout* layout = new QVBoxLayout(this);
     m_parent_layout->insertWidget(m_parent_layout->count() - 2, this);
 
@@ -114,35 +110,21 @@ DisneyMaterialLayerUI::DisneyMaterialLayerUI(
     m_inner_layout = new QFormLayout();
     m_inner_layout->setSpacing(7);
     layout->addLayout(m_inner_layout);
-}
 
-void DisneyMaterialLayerUI::mousePressEvent(QMouseEvent* event)
-{
-    for (int i = 1; i < m_parent_layout->count() - 2; ++i)
-    {
-        QWidget* widget = m_parent_layout->itemAt(i)->widget();
-        if (widget->objectName() == "selected_material_editor_layer")
-        {
-            widget->setObjectName("material_editor_layer");
-            style()->unpolish(widget);
-            style()->polish(widget);
-            break;
-        }
-    }
-
-    setObjectName("selected_material_editor_layer");
-    style()->unpolish(this);
-    style()->polish(this);
-}
-
-void DisneyMaterialLayerUI::mouseDoubleClickEvent(QMouseEvent* event)
-{
-    toggle_fold_layer_status();
+    // A spacer widget inserted below the label when the layer is folded.
+    m_spacer = new QWidget();
+    QHBoxLayout* spacer_layout = new QHBoxLayout(m_spacer);
+    spacer_layout->setSpacing(0);
 }
 
 QFormLayout* DisneyMaterialLayerUI::get_layout()
 {
     return m_inner_layout;
+}
+
+void DisneyMaterialLayerUI::mouseDoubleClickEvent(QMouseEvent* event)
+{
+    toggle_fold_layer_status();
 }
 
 string DisneyMaterialLayerUI::get_layer_name() const
