@@ -146,7 +146,8 @@ void EntityEditor::create_connections()
 
     if (m_custom_ui.get())
     {
-        connect(m_custom_ui.get(), SIGNAL(signal_custom_applied()),
+        connect(
+            m_custom_ui.get(), SIGNAL(signal_custom_applied()),
             SLOT(slot_apply()));
     }
 }
@@ -166,9 +167,7 @@ void EntityEditor::rebuild_form(const Dictionary& values)
         create_input_widgets(*i);
 
     if (m_custom_ui.get())
-    {
         m_custom_ui->create_custom_widgets(m_top_layout, values);
-    }
 }
 
 Dictionary EntityEditor::get_input_metadata(const string& name) const

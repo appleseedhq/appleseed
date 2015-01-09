@@ -56,18 +56,17 @@ DisneyMaterialLayerUI::DisneyMaterialLayerUI(
   , QFrame(parent)
   , m_parent_layout(parent_layout)
 {
-
     setObjectName("material_editor_layer");
 
     m_spacer = new QWidget();
     QHBoxLayout* spacer_layout = new QHBoxLayout(m_spacer);
     spacer_layout->setSpacing(0);
 
-    QVBoxLayout *layout = new QVBoxLayout(this);
+    QVBoxLayout* layout = new QVBoxLayout(this);
     m_parent_layout->insertWidget(m_parent_layout->count() - 2, this);
 
-    QWidget *button_box = new QWidget(this);
-    QHBoxLayout *button_box_layout = new QHBoxLayout(button_box);
+    QWidget* button_box = new QWidget(this);
+    QHBoxLayout* button_box_layout = new QHBoxLayout(button_box);
     button_box_layout->setSpacing(0);
     button_box_layout->setMargin(0);
     layout->addWidget(button_box);
@@ -84,6 +83,7 @@ DisneyMaterialLayerUI::DisneyMaterialLayerUI(
     button_box_layout->addWidget(m_fold_button);
     connect(m_fold_button, SIGNAL(clicked()), this, SLOT(slot_fold()));
 
+    // Place the following buttons on the right side.
     button_box_layout->addStretch(1);
 
     // Up button.
@@ -112,8 +112,7 @@ void DisneyMaterialLayerUI::mousePressEvent(QMouseEvent* event)
 {
     for (int i = 1; i < m_parent_layout->count() - 2; ++i)
     {
-        QLayoutItem* layout_item = m_parent_layout->itemAt(i);
-        QWidget* widget = layout_item->widget();
+        QWidget* widget = m_parent_layout->itemAt(i)->widget();
         if (widget->objectName() == "selected_material_editor_layer")
         {
             widget->setObjectName("material_editor_layer");
@@ -155,7 +154,7 @@ void DisneyMaterialLayerUI::fold_layer(const bool update)
         m_fold_button->setIcon(m_fold_arrow_disabled);
     }
 
-    for (int i=2; i<m_inner_layout->count(); ++i)
+    for (int i = 2; i < m_inner_layout->count(); ++i)
     {
         QWidget* widget = m_inner_layout->itemAt(i)->widget();
         if (widget)
@@ -164,7 +163,7 @@ void DisneyMaterialLayerUI::fold_layer(const bool update)
         QLayout* vertical_layout = m_inner_layout->itemAt(i)->layout();
         if (vertical_layout)
         {
-            for (int j=0; j<vertical_layout->count(); ++j)
+            for (int j = 0; j < vertical_layout->count(); ++j)
             {
                 QWidget* widget = vertical_layout->itemAt(j)->widget();
                 is_folded ? widget->hide() : widget->show();
@@ -182,9 +181,7 @@ void DisneyMaterialLayerUI::fold_layer(const bool update)
 
     // Add extra margin to shown labels when folded.
     QWidget* label = m_inner_layout->itemAt(0)->widget();
-    is_folded ?
-        label->setObjectName("folded_label") :
-        label->setObjectName("unfolded_label");
+    label->setObjectName(is_folded ? "folded_label" : "unfolded_label");
     style()->unpolish(label);
     style()->polish(label);
 
@@ -241,16 +238,17 @@ void DisneyMaterialLayerUI::update_model(const int new_position, const int offse
 void DisneyMaterialLayerUI::slot_move_layer_up()
 {
     int new_position = 0;
+
     // Update interface.
-    for (int i=1; i<m_parent_layout->count(); ++i)
+    for (int i = 1; i < m_parent_layout->count(); ++i)
     {
         QLayoutItem* layout_item = m_parent_layout->itemAt(i);
-        if (this == layout_item->widget())
+        if (layout_item->widget() == this)
         {
             if (i > 1)
             {
                 m_parent_layout->takeAt(i);
-                new_position = i-1;
+                new_position = i - 1;
                 m_parent_layout->insertWidget(new_position, this);
             }
             break;
@@ -264,16 +262,17 @@ void DisneyMaterialLayerUI::slot_move_layer_up()
 void DisneyMaterialLayerUI::slot_move_layer_down()
 {
     int new_position = 0;
+
     // Update interface.
-    for (int i=1; i<m_parent_layout->count(); ++i)
+    for (int i = 1; i < m_parent_layout->count(); ++i)
     {
         QLayoutItem* layout_item = m_parent_layout->itemAt(i);
-        if (this == layout_item->widget())
+        if (layout_item->widget() == this)
         {
-            if (i < m_parent_layout->count()-3)
+            if (i < m_parent_layout->count() - 3)
             {
                 m_parent_layout->takeAt(i);
-                new_position = i+1;
+                new_position = i + 1;
                 m_parent_layout->insertWidget(new_position, this);
             }
             break;
@@ -289,5 +288,5 @@ void DisneyMaterialLayerUI::slot_fold()
     fold_layer(true);
 }
 
-}       // namespace studio
-}       // namespace appleseed
+}   // namespace studio
+}   // namespace appleseed
