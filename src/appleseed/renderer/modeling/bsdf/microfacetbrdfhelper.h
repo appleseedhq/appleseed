@@ -34,6 +34,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
+#include "foundation/math/vector.h"
 
 // Standard headers.
 #include <algorithm>
@@ -46,7 +47,6 @@ template <typename T>
 class MicrofacetBRDFHelper
 {
   public:
-
     typedef foundation::Vector<T, 3>    VectorType;
     typedef foundation::Basis3<T>       BasisType;
 
@@ -61,7 +61,7 @@ class MicrofacetBRDFHelper
         BSDFSample& sample)
     {
         const VectorType& n = sample.get_shading_normal();
-        const T cos_on = std::min(dot(sample.get_outgoing(), n), T(1.0));
+        const T cos_on = std::min(foundation::dot(sample.get_outgoing(), n), T(1.0));
         if (cos_on < T(0.0))
             return;
 
@@ -72,11 +72,11 @@ class MicrofacetBRDFHelper
         const VectorType m = mdf.sample(wo, s, alpha_x, alpha_y);
         const VectorType h = sample.get_shading_basis().transform_to_parent(m);
 
-        sample.set_incoming(reflect(sample.get_outgoing(), h));
-        const T cos_oh = dot(sample.get_outgoing(), h);
+        sample.set_incoming(foundation::reflect(sample.get_outgoing(), h));
+        const T cos_oh = foundation::dot(sample.get_outgoing(), h);
 
         // No reflection below the shading surface.
-        const T cos_in = dot(sample.get_incoming(), n);
+        const T cos_in = foundation::dot(sample.get_incoming(), n);
         if (cos_in < T(0.0))
             return;
 
@@ -115,12 +115,12 @@ class MicrofacetBRDFHelper
 
         // No reflection below the shading surface.
         const VectorType& n = shading_basis.get_normal();
-        const T cos_in = dot(incoming, n);
-        const T cos_on = std::min(dot(outgoing, n), T(1.0));
+        const T cos_in = foundation::dot(incoming, n);
+        const T cos_on = std::min(foundation::dot(outgoing, n), T(1.0));
         if (cos_in < T(0.0) || cos_on < T(0.0))
             return T(0.0);
 
-        const VectorType h = normalize(incoming + outgoing);
+        const VectorType h = foundation::normalize(incoming + outgoing);
         const VectorType m = shading_basis.transform_to_local(h);
         const T D = mdf.D(m, alpha_x, alpha_y);
 
@@ -133,7 +133,7 @@ class MicrofacetBRDFHelper
                 g_alpha_x,
                 g_alpha_y);
 
-        const T cos_oh = dot(outgoing, h);
+        const T cos_oh = foundation::dot(outgoing, h);
         f(outgoing, h, shading_basis.get_normal(), value);
         value *= static_cast<float>(D * G / (T(4.0) * cos_on * cos_in));
         return mdf.pdf(wo, m, alpha_x, alpha_y) / (T(4.0) * cos_oh);
@@ -154,13 +154,13 @@ class MicrofacetBRDFHelper
 
         // No reflection below the shading surface.
         const VectorType& n = shading_basis.get_normal();
-        const T cos_in = dot(incoming, n);
-        const T cos_on = std::min(dot(outgoing, n), T(1.0));
+        const T cos_in = foundation::dot(incoming, n);
+        const T cos_on = std::min(foundation::dot(outgoing, n), T(1.0));
         if (cos_in < T(0.0) || cos_on < T(0.0))
             return T(0.0);
 
-        const VectorType h = normalize(incoming + outgoing);
-        const T cos_oh = dot(outgoing, h);
+        const VectorType h = foundation::normalize(incoming + outgoing);
+        const T cos_oh = foundation::dot(outgoing, h);
         return
             mdf.pdf(
                 shading_basis.transform_to_local(outgoing),
