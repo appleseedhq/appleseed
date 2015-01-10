@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
+#include "renderer/modeling/bsdf/microfacetbrdfhelper.h"
 #include "renderer/utility/messagecontext.h"
 #include "renderer/utility/paramarray.h"
 
@@ -66,6 +67,34 @@ namespace renderer
 
 namespace
 {
+
+    struct FresnelDielectricSchlickFun
+    {
+        FresnelDielectricSchlickFun(
+            const Spectrum& reflectance,
+            const double    fr_multiplier)
+          : m_reflectance(reflectance)
+          , m_fr_multiplier(fr_multiplier)
+        {
+        }
+
+        void operator()(
+            const Vector3d& o,
+            const Vector3d& h,
+            const Vector3d& n,
+            Spectrum&       value) const
+        {
+            fresnel_dielectric_schlick(
+                value,
+                m_reflectance,
+                dot(o, n),
+                m_fr_multiplier);
+        }
+
+        const Spectrum& m_reflectance;
+        const double    m_fr_multiplier;
+    };
+
     //
     // Microfacet BRDF.
     //
@@ -131,50 +160,69 @@ namespace
             const bool          cosine_mult,
             BSDFSample&         sample) const
         {
-            // No reflection below the shading surface.
-            const Vector3d& n = sample.get_shading_normal();
-            const double cos_on = min(dot(sample.get_outgoing(), n), 1.0);
-            if (cos_on < 0.0)
-                return;
-
             const InputValues* values = static_cast<const InputValues*>(data);
-
-            // Compute the incoming direction by sampling the MDF.
-            sample.get_sampling_context().split_in_place(3, 1);
-            const Vector3d s = sample.get_sampling_context().next_vector2<3>();
-            const Vector3d wo = sample.get_shading_basis().transform_to_local(sample.get_outgoing());
-            Vector3d m;
-            double mdf_value, mdf_pdf;
             const double glossiness = values->m_glossiness * values->m_glossiness_multiplier;
-            sample_mdf(s, wo, glossiness, m, mdf_value, mdf_pdf);
-            if (mdf_pdf == 0.0)
-                return;
 
-            const Vector3d h = sample.get_shading_basis().transform_to_parent(m);
-            sample.set_incoming(reflect(sample.get_outgoing(), h));
-            const double cos_oh = dot(sample.get_outgoing(), h);
+            switch (m_mdf)
+            {
+              case Blinn:
+                {
+                    const double e = glossiness_to_blinn_exponent(glossiness);
+                    MicrofacetBRDFHelper<double>::sample(
+                        BlinnMDF<double>(),
+                        e,
+                        e,
+                        e,
+                        e,
+                        FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
+                        sample);
+                }
+                break;
 
-            // No reflection below the shading surface.
-            const double cos_in = dot(sample.get_incoming(), n);
-            if (cos_in < 0.0)
-                return;
+              case Beckmann:
+                {
+                    const double a = glossiness_to_roughness(glossiness);
+                    MicrofacetBRDFHelper<double>::sample(
+                        BeckmannMDF<double>(),
+                        a,
+                        a,
+                        a,
+                        a,
+                        FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
+                        sample);
+                }
+                break;
 
-            // Compute the BRDF value.
-            const double g =
-                evaluate_attenuation(
-                    sample.get_shading_basis().transform_to_local(sample.get_incoming()),
-                    wo,
-                    m,
-                    glossiness);
+              case Ward:
+                {
+                    const double a = glossiness_to_roughness(glossiness);
+                    MicrofacetBRDFHelper<double>::sample(
+                        WardMDF<double>(),
+                        a,
+                        a,
+                        a,
+                        a,
+                        FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
+                        sample);
+                }
+                break;
 
-            fresnel_dielectric_schlick(sample.value(), values->m_reflectance, cos_on, values->m_fr_multiplier);
-            sample.value() *= static_cast<float>(mdf_value * g / (4.0 * cos_on * cos_in) * values->m_reflectance_multiplier);
+              case GGX:
+                {
+                    const double a = glossiness_to_roughness(glossiness);
+                    MicrofacetBRDFHelper<double>::sample(
+                        GGXMDF<double>(),
+                        a,
+                        a,
+                        a,
+                        a,
+                        FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
+                        sample);
+                }
+                break;
 
-            // Compute the PDF value.
-            sample.set_probability(mdf_pdf / (4.0 * cos_oh));
-
-            // Set the scattering mode.
-            sample.set_mode(BSDFSample::Glossy);
+              assert_otherwise;
+            }
         }
 
         FORCE_INLINE virtual double evaluate(
@@ -188,42 +236,85 @@ namespace
             const int           modes,
             Spectrum&           value) const
         {
-            if (!(modes & BSDFSample::Glossy))
-                return 0.0;
-
-            // No reflection below the shading surface.
-            const Vector3d& n = shading_basis.get_normal();
-            const double cos_in = dot(incoming, n);
-            const double cos_on = min(dot(outgoing, n), 1.0);
-            if (cos_in < 0.0 || cos_on < 0.0)
-                return 0.0;
-
             const InputValues* values = static_cast<const InputValues*>(data);
-
-            // Compute the halfway vector in world space.
-            const Vector3d h = normalize(incoming + outgoing);
-            const double cos_oh = dot(outgoing, h);
-
-            // Evaluate the MDF.
-            double mdf_value, mdf_pdf;
             const double glossiness = values->m_glossiness * values->m_glossiness_multiplier;
-            const Vector3d wo = shading_basis.transform_to_local(outgoing);
-            const Vector3d m = shading_basis.transform_to_local(h);
-            evaluate_mdf(wo, m, glossiness, mdf_value, mdf_pdf);
 
-            // Compute the BRDF value.
-            const double g =
-                evaluate_attenuation(
-                    shading_basis.transform_to_local(incoming),
-                    wo,
-                    m,
-                    glossiness);
+            switch (m_mdf)
+            {
+              case Blinn:
+                {
+                    const double e = glossiness_to_blinn_exponent(glossiness);
+                    return MicrofacetBRDFHelper<double>::evaluate(
+                        BlinnMDF<double>(),
+                        e,
+                        e,
+                        e,
+                        e,
+                        shading_basis,
+                        outgoing,
+                        incoming,
+                        modes,
+                        FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
+                        value);
+                }
+                break;
 
-            fresnel_dielectric_schlick(value, values->m_reflectance, cos_on, values->m_fr_multiplier);
-            value *= static_cast<float>(mdf_value * g / (4.0 * cos_on * cos_in) * values->m_reflectance_multiplier);
+              case Beckmann:
+                {
+                    const double a = glossiness_to_roughness(glossiness);
+                    return MicrofacetBRDFHelper<double>::evaluate(
+                        BeckmannMDF<double>(),
+                        a,
+                        a,
+                        a,
+                        a,
+                        shading_basis,
+                        outgoing,
+                        incoming,
+                        modes,
+                        FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
+                        value);
+                }
+                break;
 
-            // Compute and return the PDF value.
-            return mdf_pdf / (4.0 * cos_oh);
+              case Ward:
+                {
+                    const double a = glossiness_to_roughness(glossiness);
+                    return MicrofacetBRDFHelper<double>::evaluate(
+                        WardMDF<double>(),
+                        a,
+                        a,
+                        a,
+                        a,
+                        shading_basis,
+                        outgoing,
+                        incoming,
+                        modes,
+                        FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
+                        value);
+                }
+                break;
+
+              case GGX:
+                {
+                    const double a = glossiness_to_roughness(glossiness);
+                    return MicrofacetBRDFHelper<double>::evaluate(
+                        GGXMDF<double>(),
+                        a,
+                        a,
+                        a,
+                        a,
+                        shading_basis,
+                        outgoing,
+                        incoming,
+                        modes,
+                        FresnelDielectricSchlickFun(values->m_reflectance, values->m_fr_multiplier),
+                        value);
+                }
+                break;
+
+              assert_otherwise;
+            }
         }
 
         FORCE_INLINE virtual double evaluate_pdf(
@@ -234,34 +325,80 @@ namespace
             const Vector3d&     incoming,
             const int           modes) const
         {
-            if (!(modes & BSDFSample::Glossy))
-                return 0.0;
-
-            // No reflection below the shading surface.
-            const Vector3d& n = shading_basis.get_normal();
-            const double cos_in = dot(incoming, n);
-            const double cos_on = min(dot(outgoing, n), 1.0);
-            if (cos_in < 0.0 || cos_on < 0.0)
-                return 0.0;
-
             const InputValues* values = static_cast<const InputValues*>(data);
-
-            // Compute the halfway vector in world space.
-            const Vector3d h = normalize(incoming + outgoing);
-            const double cos_hn = dot(h, n);
-            const double cos_oh = dot(outgoing, h);
-
-            // Compute and return the PDF value.
             const double glossiness = values->m_glossiness * values->m_glossiness_multiplier;
 
-            return evaluate_mdf_pdf(
-                shading_basis.transform_to_local(outgoing),
-                shading_basis.transform_to_local(h),
-                glossiness) / (4.0 * cos_oh);
+            switch (m_mdf)
+            {
+              case Blinn:
+                {
+                    const double e = glossiness_to_blinn_exponent(glossiness);
+                    return MicrofacetBRDFHelper<double>::pdf(
+                        BlinnMDF<double>(),
+                        e,
+                        e,
+                        shading_basis,
+                        outgoing,
+                        incoming,
+                        modes);
+                }
+                break;
+
+              case Beckmann:
+                {
+                    const double a = glossiness_to_roughness(glossiness);
+                    return MicrofacetBRDFHelper<double>::pdf(
+                        BeckmannMDF<double>(),
+                        a,
+                        a,
+                        shading_basis,
+                        outgoing,
+                        incoming,
+                        modes);
+                }
+                break;
+
+              case Ward:
+                {
+                    const double a = glossiness_to_roughness(glossiness);
+                    return MicrofacetBRDFHelper<double>::pdf(
+                        WardMDF<double>(),
+                        a,
+                        a,
+                        shading_basis,
+                        outgoing,
+                        incoming,
+                        modes);
+                }
+                break;
+
+              case GGX:
+                {
+                    const double a = glossiness_to_roughness(glossiness);
+                    return MicrofacetBRDFHelper<double>::pdf(
+                        GGXMDF<double>(),
+                        a,
+                        a,
+                        shading_basis,
+                        outgoing,
+                        incoming,
+                        modes);
+                }
+                break;
+
+              assert_otherwise;
+            }
         }
 
       private:
-        typedef MicrofacetBRDFInputValues InputValues;
+        APPLESEED_DECLARE_INPUT_VALUES(InputValues)
+        {
+            double      m_glossiness;
+            double      m_glossiness_multiplier;
+            Spectrum    m_reflectance;
+            double      m_reflectance_multiplier;
+            double      m_fr_multiplier;            // Fresnel multiplier
+        };
 
         enum MDF
         {
@@ -281,194 +418,6 @@ namespace
         double glossiness_to_roughness(const double g) const
         {
             return max(1.0 - g, 1.0e-6);
-        }
-
-        void sample_mdf(
-            const Vector3d&     s,
-            const Vector3d&     v,
-            const double        glossiness,
-            Vector3d&           direction,
-            double&             value,
-            double&             pdf) const
-        {
-            switch (m_mdf)
-            {
-              case Blinn:
-                {
-                    const double e = glossiness_to_blinn_exponent(glossiness);
-                    const BlinnMDF<double> mdf;
-                    direction = mdf.sample(v, s, e, e);
-                    value = mdf.D(direction, e, e);
-                    pdf = mdf.pdf(v, direction, e, e);
-                }
-                break;
-
-              case Beckmann:
-                {
-                    const double a = glossiness_to_roughness(glossiness);
-                    const BeckmannMDF<double> mdf;
-                    direction = mdf.sample(v, s, a, a);
-                    value = mdf.D(direction, a, a);
-                    pdf = mdf.pdf(v, direction, a, a);
-                }
-                break;
-
-              case Ward:
-                {
-                    const double a = glossiness_to_roughness(glossiness);
-                    const WardMDF<double> mdf;
-                    direction = mdf.sample(v, s, a, a);
-                    value = mdf.D(direction, a, a);
-                    pdf = mdf.pdf(v, direction, a, a);
-                }
-                break;
-
-              case GGX:
-                {
-                    const double a = glossiness_to_roughness(glossiness);
-                    const GGXMDF<double> mdf;
-                    direction = mdf.sample(v, s, a, a);
-                    value = mdf.D(direction, a, a);
-                    pdf = mdf.pdf(v, direction, a, a);
-                }
-                break;
-
-              assert_otherwise;
-            }
-        }
-
-        void evaluate_mdf(
-            const Vector3d&     v,
-            const Vector3d&     h,
-            const double        glossiness,
-            double&             value,
-            double&             pdf) const
-        {
-            switch (m_mdf)
-            {
-              case Blinn:
-                {
-                    const double e = glossiness_to_blinn_exponent(glossiness);
-                    const BlinnMDF<double> mdf;
-                    value = mdf.D(h, e, e);
-                    pdf = mdf.pdf(v, h, e, e);
-                }
-                break;
-
-              case Beckmann:
-                {
-                    const double a = glossiness_to_roughness(glossiness);
-                    const BeckmannMDF<double> mdf;
-                    value = mdf.D(h, a, a);
-                    pdf = mdf.pdf(v, h, a, a);
-                }
-                break;
-
-              case Ward:
-                {
-                    const double a = glossiness_to_roughness(glossiness);
-                    const WardMDF<double> mdf;
-                    value = mdf.D(h, a, a);
-                    pdf = mdf.pdf(v, h, a, a);
-                }
-                break;
-
-              case GGX:
-                {
-                    const double a = glossiness_to_roughness(glossiness);
-                    const GGXMDF<double> mdf;
-                    value = mdf.D(h, a, a);
-                    pdf = mdf.pdf(v, h, a, a);
-                }
-                break;
-
-              assert_otherwise;
-            }
-        }
-
-        double evaluate_mdf_pdf(
-            const Vector3d&     v,
-            const Vector3d&     h,
-            const double        glossiness) const
-        {
-            switch (m_mdf)
-            {
-              case Blinn:
-                {
-                    const double e = glossiness_to_blinn_exponent(glossiness);
-                    const BlinnMDF<double> mdf;
-                    return mdf.pdf(v, h, e, e);
-                }
-
-              case Beckmann:
-                {
-                    const double a = glossiness_to_roughness(glossiness);
-                    const BeckmannMDF<double> mdf;
-                    return mdf.pdf(v, h, a, a);
-                }
-
-              case Ward:
-                {
-                    const double a = glossiness_to_roughness(glossiness);
-                    const WardMDF<double> mdf;
-                    return mdf.pdf(v, h, a, a);
-                }
-
-              case GGX:
-                {
-                    const double a = glossiness_to_roughness(glossiness);
-                    const GGXMDF<double> mdf;
-                    return mdf.pdf(v, h, a, a);
-                }
-
-              assert_otherwise;
-            }
-
-            // To keep some compilers happy.
-            return 0.0;
-        }
-
-        double evaluate_attenuation(
-            const Vector3d& wi,
-            const Vector3d& wo,
-            const Vector3d& h,
-            const double    glossiness) const
-        {
-            switch (m_mdf)
-            {
-              case Blinn:
-                {
-                    const double e = glossiness_to_blinn_exponent(glossiness);
-                    const BlinnMDF<double> mdf;
-                    return mdf.G(wi, wo, h, e, e);
-                }
-
-              case Beckmann:
-                {
-                    const double a = glossiness_to_roughness(glossiness);
-                    const BeckmannMDF<double> mdf;
-                    return mdf.G(wi, wo, h, a, a);
-                }
-
-              case Ward:
-                {
-                    const double a = glossiness_to_roughness(glossiness);
-                    const WardMDF<double> mdf;
-                    return mdf.G(wi, wo, h, a, a);
-                }
-
-              case GGX:
-                {
-                    const double a = glossiness_to_roughness(glossiness);
-                    const GGXMDF<double> mdf;
-                    return mdf.G(wi, wo, h, a, a);
-                }
-
-              assert_otherwise;
-            }
-
-            // To keep some compilers happy.
-            return 0.0;
         }
     };
 
