@@ -584,7 +584,7 @@ OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::get_transform() const
     const Transformd::MatrixType m(
         m_object_instance_transform->get_local_to_parent() * assembly_xform.get_local_to_parent());
 
-    return Matrix4f(transpose(m));
+    return Matrix4f(m);
 }
 
 OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::get_transform(const float t) const
@@ -593,7 +593,7 @@ OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::get_transform(const float t)
     const Transformd::MatrixType m(
         m_object_instance_transform->get_local_to_parent() * assembly_xform.get_local_to_parent());
 
-    return Matrix4f(transpose(m));
+    return Matrix4f(m);
 }
 
 OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::get_inverse_transform() const
@@ -604,7 +604,7 @@ OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::get_inverse_transform() cons
     const Transformd::MatrixType m(
         m_object_instance_transform->get_parent_to_local() * assembly_xform.get_parent_to_local());
 
-    return Matrix4f(transpose(m));
+    return Matrix4f(m);
 }
 
 OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::get_inverse_transform(const float t) const
@@ -613,7 +613,7 @@ OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::get_inverse_transform(const 
     const Transformd::MatrixType m(
         m_object_instance_transform->get_parent_to_local() * assembly_xform.get_parent_to_local());
 
-    return Matrix4f(transpose(m));
+    return Matrix4f(m);
 }
 
 void ShadingPoint::initialize_osl_shader_globals(
