@@ -201,7 +201,8 @@ void EntityEditor::create_input_widgets(const Dictionary& metadata)
     assert(widget_proxy.get());
 
     const bool rebuild_form =
-        metadata.strings().exist("on_change") && metadata.get<string>("on_change") == "rebuild_form";
+        metadata.strings().exist("on_change") &&
+        metadata.get<string>("on_change") == "rebuild_form";
 
     connect(
         widget_proxy.get(),

@@ -1,9 +1,10 @@
 
+//
+// This source file is part of appleseed.
 // Visit http://appleseedhq.net/ for additional information and resources.
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
 // Copyright (c) 2014-2015 Marius Avram, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -43,13 +44,16 @@ namespace studio {
 //
 // Updates the value of LineEdit associated with the given DoubleSlider.
 //
+
 class LineEditDoubleSliderAdaptor
   : public QObject
 {
     Q_OBJECT
 
   public:
-    LineEditDoubleSliderAdaptor(QLineEdit* line_edit, DoubleSlider* slider);
+    LineEditDoubleSliderAdaptor(
+        QLineEdit*      line_edit,
+        DoubleSlider*   slider);
 
   public slots:
     void slot_set_line_edit_value(const double value);
@@ -63,16 +67,20 @@ class LineEditDoubleSliderAdaptor
     void adjust_slider(const double new_value);
 };
 
+
 //
 // Adds extra information to the signal emitted when the color changes.
 //
+
 class ForwardColorChangedSignal
   : public QObject
 {
     Q_OBJECT
 
   public:
-    ForwardColorChangedSignal(QObject* parent, const QString& widget_name);
+    ForwardColorChangedSignal(
+        QObject*        parent,
+        const QString&  widget_name);
 
   public slots:
     void slot_color_changed(const QColor& color);
@@ -84,16 +92,20 @@ class ForwardColorChangedSignal
     const QString m_widget_name;
 };
 
+
 //
 // Simplifies information passed by the signal emitted on QLineEdit change.
 //
+
 class LineEditForwarder
   : public QLineEdit
 {
     Q_OBJECT
 
   public:
-    LineEditForwarder(const QString& contents, QWidget* parent = 0);
+    LineEditForwarder(
+        const QString&  contents,
+        QWidget*        parent = 0);
 
   public slots:
     void slot_text_changed(const QString& text);
@@ -105,4 +117,4 @@ class LineEditForwarder
 }       // namespace studio
 }       // namespace appleseed
 
-#endif
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYEDITORUTILS_H

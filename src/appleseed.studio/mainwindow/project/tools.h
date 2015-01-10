@@ -60,14 +60,14 @@ namespace studio {
 
 template <typename EntityContainer>
 std::string get_name_suggestion(
-    const std::string&                          prefix,
-    const EntityContainer&                      entities);
+    const std::string&      prefix,
+    const EntityContainer&  entities);
 
 std::string get_entity_name_dialog(
-    QWidget*                                    parent,
-    const std::string&                          title,
-    const std::string&                          label,
-    const std::string&                          text);
+    QWidget*                parent,
+    const std::string&      title,
+    const std::string&      label,
+    const std::string&      text);
 
 void open_entity_editor(
     QWidget*                                        parent,

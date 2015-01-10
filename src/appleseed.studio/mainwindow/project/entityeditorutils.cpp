@@ -42,8 +42,8 @@ namespace studio {
 //
 
 LineEditDoubleSliderAdaptor::LineEditDoubleSliderAdaptor(
-    QLineEdit* line_edit,
-    DoubleSlider* slider)
+    QLineEdit*      line_edit,
+    DoubleSlider*   slider)
   : QObject(line_edit)
   , m_line_edit(line_edit)
   , m_slider(slider)
@@ -94,12 +94,14 @@ void LineEditDoubleSliderAdaptor::adjust_slider(const double new_value)
     m_slider->setPageStep(new_max / 10.0);
 }
 
+
 //
 // ForwardColorChangedSignal class implementation.
 //
+
 ForwardColorChangedSignal::ForwardColorChangedSignal(
-    QObject* parent,
-    const QString& widget_name)
+    QObject*        parent,
+    const QString&  widget_name)
   : QObject(parent)
   , m_widget_name(widget_name)
 {
@@ -110,12 +112,14 @@ void ForwardColorChangedSignal::slot_color_changed(const QColor& color)
     emit signal_color_changed(m_widget_name, color);
 }
 
+
 //
 // LineEditForwarder class implementation.
 //
+
 LineEditForwarder::LineEditForwarder(
-    const QString& contents,
-    QWidget* parent)
+    const QString&  contents,
+    QWidget*        parent)
   : QLineEdit(contents, parent)
 {
     connect(this, SIGNAL(textChanged(const QString&)),
@@ -127,5 +131,5 @@ void LineEditForwarder::slot_text_changed(const QString& text)
     emit signal_text_changed();
 }
 
-}       // namespace studio
-}       // namespace appleseed
+}   // namespace studio
+}   // namespace appleseed
