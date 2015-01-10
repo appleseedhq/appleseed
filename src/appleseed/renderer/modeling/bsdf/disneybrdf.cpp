@@ -39,7 +39,7 @@
 #include "foundation/image/colorspace.h"
 #include "foundation/math/basis.h"
 #include "foundation/math/fresnel.h"
-#include "foundation/math/microfacet2.h"
+#include "foundation/math/microfacet.h"
 #include "foundation/math/sampling.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
@@ -591,8 +591,8 @@ namespace
       private:
         typedef DisneyBRDFInputValues InputValues;
 
-        const GGXMDF2<double>   m_specular_mdf;
-        const BerryMDF2<double> m_clearcoat_mdf;
+        const GGXMDF<double>   m_specular_mdf;
+        const BerryMDF<double> m_clearcoat_mdf;
 
         void compute_component_weights(
             const DisneyBRDFInputValues*    values,

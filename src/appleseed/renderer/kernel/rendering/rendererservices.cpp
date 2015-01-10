@@ -358,7 +358,7 @@ bool RendererServices::get_matrix(
         Transformd tmp;
         const Transformd& transform =
                 m_camera->transform_sequence().evaluate(time, tmp);
-        result = Matrix4f(transpose(transform.get_local_to_parent()));
+        result = Matrix4f(transform.get_local_to_parent());
         return true;
     }
 
@@ -376,7 +376,7 @@ bool RendererServices::get_inverse_matrix(
         Transformd tmp;
         const Transformd& transform =
                 m_camera->transform_sequence().evaluate(time, tmp);
-        result = Matrix4f(transpose(transform.get_parent_to_local()));
+        result = Matrix4f(transform.get_parent_to_local());
         return true;
     }
 
@@ -399,7 +399,7 @@ bool RendererServices::get_matrix(
 
         const Transformd& tmp =
             m_camera->transform_sequence().get_earliest_transform();
-        result = Matrix4f(transpose(tmp.get_local_to_parent()));
+        result = Matrix4f(tmp.get_local_to_parent());
         return true;
     }
 
@@ -418,7 +418,7 @@ bool RendererServices::get_inverse_matrix(
 
         const Transformd& tmp =
             m_camera->transform_sequence().get_earliest_transform();
-        result = Matrix4f(transpose(tmp.get_parent_to_local()));
+        result = Matrix4f(tmp.get_parent_to_local());
         return true;
     }
 
