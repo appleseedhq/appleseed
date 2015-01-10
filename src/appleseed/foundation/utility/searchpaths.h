@@ -102,8 +102,8 @@ class SearchPaths
     // Constructor.
     SearchPaths();
 
-    // Constructor. Initializes searchpaths with the
-    // contents of the specified environment variable.
+    // Constructor. Initializes search paths with the contents of the specified
+    // environment variable.
     explicit SearchPaths(const char* envvar);
 
     // Set the root path that is used to resolve relative paths.
@@ -127,8 +127,8 @@ class SearchPaths
     // this file is returned. Otherwise the input path is returned.
     std::string qualify(const std::string& filepath) const;
 
-    // Return a string with all the searchpaths separated by the
-    // specified separator, optionally making them absolute and / or in reverse order.
+    // Return a string with all the search paths separated by the specified separator,
+    // optionally making them absolute and/or listing them in reverse order.
     std::string to_string(
         const char separator = ':',
         const bool make_paths_absolute = true,
