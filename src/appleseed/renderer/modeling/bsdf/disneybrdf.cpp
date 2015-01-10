@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
+#include "renderer/modeling/bsdf/microfacetbrdfhelper.h"
 #include "renderer/modeling/color/colorspace.h"
 #include "renderer/modeling/color/wavelengths.h"
 #include "renderer/modeling/input/inputevaluator.h"
@@ -96,6 +97,49 @@ namespace
                 result[i] = one_minus_t * up_a[i] + t * up_b[i];
         }
     }
+
+    struct DisneySpecularFresnelFun
+    {
+        explicit DisneySpecularFresnelFun(
+            const DisneyBRDFInputValues& values)
+          : m_values(values)
+        {
+        }
+
+        void operator()(
+            const Vector3d& o,
+            const Vector3d& h,
+            const Vector3d& n,
+            Spectrum&       value) const
+        {
+            mix_spectra(Color3f(1.0f), m_values.m_tint_color, static_cast<float>(m_values.m_specular_tint), value);
+            value *= static_cast<float>(m_values.m_specular * 0.08);
+            mix_spectra(value, m_values.m_base_color, static_cast<float>(m_values.m_metallic), value);
+            mix_spectra(value, Color3f(1.0f), static_cast<float>(schlick_fresnel(dot(o, h))), value);
+        }
+
+        const DisneyBRDFInputValues& m_values;
+    };
+
+    struct DisneyClearcoatFresnelFun
+    {
+        explicit DisneyClearcoatFresnelFun(
+            const DisneyBRDFInputValues& values)
+          : m_values(values)
+        {
+        }
+
+        void operator()(
+            const Vector3d& o,
+            const Vector3d& h,
+            const Vector3d& n,
+            Spectrum&       value) const
+        {
+            value.set(mix(0.04, 1.0, schlick_fresnel(dot(o, h))) * 0.25 * m_values.m_clearcoat);
+        }
+
+        const DisneyBRDFInputValues& m_values;
+    };
 
 
     //
@@ -332,77 +376,34 @@ namespace
             const double s = sample.get_sampling_context().next_double2();
 
             if (s < cdf[DiffuseComponent])
-            {
                 DisneyDiffuseComponent().sample(values, sample);
-                return;
-            }
-
-            if (s < cdf[SheenComponent])
-            {
+            else if (s < cdf[SheenComponent])
                 DisneySheenComponent().sample(values, sample);
-                return;
-            }
-
-            // No reflection below the shading surface.
-            const Vector3d& n = sample.get_shading_normal();
-            const double cos_on = min(dot(sample.get_outgoing(), n), 1.0);
-            if (cos_on < 0.0)
-                return;
-
-            const MDF<double>* mdf = 0;
-            double alpha_x, alpha_y, alpha_gx, alpha_gy;
-
-            if (s < cdf[SpecularComponent])
+            else if (s < cdf[SpecularComponent])
             {
-                mdf = &m_specular_mdf;
+                double alpha_x, alpha_y;
                 specular_roughness(values, alpha_x, alpha_y);
-                alpha_gx = alpha_x;
-                alpha_gy = alpha_y;
-            }
-            else
-            {
-                mdf = &m_clearcoat_mdf;
-                alpha_x = alpha_y = clearcoat_roughness(values);
-                alpha_gx = alpha_gy = 0.25;
-            }
-
-            // Compute the incoming direction by sampling the MDF.
-            sample.get_sampling_context().split_in_place(3, 1);
-            const Vector3d s2 = sample.get_sampling_context().next_vector2<3>();
-            const Vector3d wo = sample.get_shading_basis().transform_to_local(sample.get_outgoing());
-            const Vector3d m = mdf->sample(wo, s2, alpha_x, alpha_y);
-            const Vector3d h = sample.get_shading_basis().transform_to_parent(m);
-            sample.set_incoming(reflect(sample.get_outgoing(), h));
-
-            // No reflection below the shading surface.
-            const double cos_in = dot(sample.get_incoming(), n);
-            if (cos_in < 0.0)
-                return;
-
-            const double D =
-                mdf->D(
-                    m,
+                MicrofacetBRDFHelper<double>::sample(
+                    GGXMDF<double>(),
                     alpha_x,
-                    alpha_y);
-
-            const double G =
-                mdf->G(
-                    sample.get_shading_basis().transform_to_local(sample.get_incoming()),
-                    wo,
-                    m,
-                    alpha_gx,
-                    alpha_gy);
-
-            const double cos_oh = dot(sample.get_outgoing(), h);
-
-            if (s < cdf[SpecularComponent])
-                specular_f(values, cos_oh, sample.value());
-            else
-                sample.value().set(static_cast<float>(clearcoat_f(values->m_clearcoat, cos_oh)));
-
-            sample.value() *= static_cast<float>((D * G) / (4.0 * cos_on * cos_in));
-            sample.set_probability(mdf->pdf(wo, m, alpha_x, alpha_y) / (4.0 * cos_oh));
-            sample.set_mode(BSDFSample::Glossy);
+                    alpha_y,
+                    alpha_x,
+                    alpha_y,
+                    DisneySpecularFresnelFun(*values),
+                    sample);
+            }
+            else //if (s < cdf[CleatcoatComponent])
+            {
+                const double alpha = clearcoat_roughness(values);
+                MicrofacetBRDFHelper<double>::sample(
+                    BerryMDF<double>(),
+                    alpha,
+                    alpha,
+                    0.25,
+                    0.25,
+                    DisneyClearcoatFresnelFun(*values),
+                    sample);
+            }
         }
 
         virtual double evaluate(
@@ -457,67 +458,46 @@ namespace
                 }
             }
 
-            if (!(modes & BSDFSample::Glossy))
-                return pdf;
-
-            const Vector3d h = normalize(incoming + outgoing);
-            const Vector3d m = shading_basis.transform_to_local(h);
-            const Vector3d wi = shading_basis.transform_to_local(incoming);
-            const Vector3d wo = shading_basis.transform_to_local(outgoing);
-            const double cos_oh = dot(outgoing, h);
-
-            if (weights[SpecularComponent] != 0.0)
+            if (modes & BSDFSample::Glossy)
             {
-                double alpha_x, alpha_y;
-                specular_roughness(values, alpha_x, alpha_y);
-
-                const double D =
-                    m_specular_mdf.D(
-                        m,
+                if (weights[SpecularComponent] != 0.0)
+                {
+                    Spectrum spec;
+                    double alpha_x, alpha_y;
+                    specular_roughness(values, alpha_x, alpha_y);
+                    pdf += MicrofacetBRDFHelper<double>::evaluate(
+                        GGXMDF<double>(),
                         alpha_x,
-                        alpha_y);
-
-                const double G =
-                    m_specular_mdf.G(
-                        wo,
-                        wi,
-                        m,
+                        alpha_y,
                         alpha_x,
-                        alpha_y);
+                        alpha_y,
+                        shading_basis,
+                        outgoing,
+                        incoming,
+                        modes,
+                        DisneySpecularFresnelFun(*values),
+                        spec) * weights[SpecularComponent];
+                    value += spec;
+                }
 
-                Spectrum specular_value;
-                specular_f(values, cos_oh, specular_value);
-                specular_value *= static_cast<float>(D * G / (4.0 * cos_on * cos_in));
-                value += specular_value;
-
-                pdf += m_specular_mdf.pdf(wo, m, alpha_x, alpha_y)  / (4.0 * cos_oh) * weights[SpecularComponent];
-            }
-
-            if (weights[CleatcoatComponent] != 0.0)
-            {
-                const double alpha = clearcoat_roughness(values);
-
-                const double D =
-                    m_clearcoat_mdf.D(
-                        m,
+                if (weights[CleatcoatComponent] != 0.0)
+                {
+                    Spectrum clear;
+                    const double alpha = clearcoat_roughness(values);
+                    pdf += MicrofacetBRDFHelper<double>::evaluate(
+                        BerryMDF<double>(),
                         alpha,
-                        alpha);
-
-                const double G =
-                    m_clearcoat_mdf.G(
-                        wo,
-                        wi,
-                        m,
+                        alpha,
                         0.25,
-                        0.25);
-
-                const double F = clearcoat_f(values->m_clearcoat, cos_oh);
-
-                Spectrum clearcoat_value;
-                clearcoat_value.set(static_cast<float>(D * G * F / (4.0 * cos_on * cos_in)));
-                value += clearcoat_value;
-
-                pdf += m_clearcoat_mdf.pdf(wo, m, alpha, alpha)  / (4.0 * cos_oh) * weights[CleatcoatComponent];
+                        0.25,
+                        shading_basis,
+                        outgoing,
+                        incoming,
+                        modes,
+                        DisneyClearcoatFresnelFun(*values),
+                        clear) * weights[CleatcoatComponent];
+                    value += clear;
+                }
             }
 
             return pdf;
@@ -556,33 +536,34 @@ namespace
                 }
             }
 
-            if (!(modes & BSDFSample::Glossy))
-                return pdf;
-
-            // No reflection below the shading surface.
-            const Vector3d& n = shading_basis.get_normal();
-            const double cos_in = dot(incoming, n);
-            const double cos_on = min(dot(outgoing, n), 1.0);
-            if (cos_in < 0.0 || cos_on < 0.0)
-                return pdf;
-
-            const Vector3d h = normalize(incoming + outgoing);
-            const Vector3d hl = shading_basis.transform_to_local(h);
-            const double cos_oh = dot(outgoing, h);
-
-            const Vector3d wo = shading_basis.transform_to_local(outgoing);
-
-            if (weights[SpecularComponent] != 0.0)
+            if (modes & BSDFSample::Glossy)
             {
-                double alpha_x, alpha_y;
-                specular_roughness(values, alpha_x, alpha_y);
-                pdf += m_specular_mdf.pdf(wo, hl, alpha_x, alpha_y) / (4.0 * cos_oh) * weights[SpecularComponent];
-            }
+                if (weights[SpecularComponent] != 0.0)
+                {
+                    double alpha_x, alpha_y;
+                    specular_roughness(values, alpha_x, alpha_y);
+                    pdf += MicrofacetBRDFHelper<double>::pdf(
+                        GGXMDF<double>(),
+                        alpha_x,
+                        alpha_y,
+                        shading_basis,
+                        outgoing,
+                        incoming,
+                        modes) * weights[SpecularComponent];
+                }
 
-            if (weights[CleatcoatComponent] != 0.0)
-            {
-                const double alpha = clearcoat_roughness(values);
-                pdf += m_specular_mdf.pdf(wo, hl, alpha, alpha) / (4.0 * cos_oh) * weights[CleatcoatComponent];
+                if (weights[CleatcoatComponent] != 0.0)
+                {
+                    const double alpha = clearcoat_roughness(values);
+                    pdf += MicrofacetBRDFHelper<double>::pdf(
+                        BerryMDF<double>(),
+                        alpha,
+                        alpha,
+                        shading_basis,
+                        outgoing,
+                        incoming,
+                        modes) * weights[CleatcoatComponent];
+                }
             }
 
             return pdf;
@@ -590,9 +571,6 @@ namespace
 
       private:
         typedef DisneyBRDFInputValues InputValues;
-
-        const GGXMDF<double>   m_specular_mdf;
-        const BerryMDF<double> m_clearcoat_mdf;
 
         void compute_component_weights(
             const DisneyBRDFInputValues*    values,
@@ -640,25 +618,9 @@ namespace
             alpha_y = max(0.001, square(values->m_roughness) * aspect);
         }
 
-        void specular_f(
-            const DisneyBRDFInputValues*    values,
-            const double                    cos_oh,
-            Spectrum&                       f) const
-        {
-            mix_spectra(Color3f(1.0f), values->m_tint_color, static_cast<float>(values->m_specular_tint), f);
-            f *= static_cast<float>(values->m_specular * 0.08);
-            mix_spectra(f, values->m_base_color, static_cast<float>(values->m_metallic), f);
-            mix_spectra(f, Color3f(1.0f), static_cast<float>(schlick_fresnel(cos_oh)), f);
-        }
-
         double clearcoat_roughness(const DisneyBRDFInputValues* values) const
         {
             return mix(0.1, 0.001, values->m_clearcoat_gloss);
-        }
-
-        double clearcoat_f(const double clearcoat, const double cos_oh) const
-        {
-            return mix(0.04, 1.0, schlick_fresnel(cos_oh)) * 0.25 * clearcoat;
         }
     };
 
