@@ -52,10 +52,10 @@ EntityEditorFormFactoryBase::EntityEditorFormFactoryBase(const string& entity_na
 }
 
 void EntityEditorFormFactoryBase::add_name_input_metadata(
-    const Dictionary&                   values,
+    const Dictionary&                   input_values,
     InputMetadataCollection&            metadata) const
 {
-    const string name = get_value(values, NameParameter, m_entity_name);
+    const string name = get_value(input_values, NameParameter, m_entity_name);
 
     metadata.push_back(
         Dictionary()
@@ -68,19 +68,19 @@ void EntityEditorFormFactoryBase::add_name_input_metadata(
 }
 
 void EntityEditorFormFactoryBase::add_input_metadata(
-    const DictionaryArray&              widgets,
-    const Dictionary&                   values,
+    const DictionaryArray&              input_metadata,
+    const Dictionary&                   input_values,
     InputMetadataCollection&            metadata) const
 {
-    for (size_t i = 0; i < widgets.size(); ++i)
+    for (size_t i = 0; i < input_metadata.size(); ++i)
     {
-        Dictionary widget = widgets[i];
-        const string widget_name = widget.get<string>("name");
+        Dictionary im = input_metadata[i];
 
-        if (values.strings().exist(widget_name))
-            widget.insert("default", values.get<string>(widget_name));
+        const string widget_name = im.get<string>("name");
+        if (input_values.strings().exist(widget_name))
+            im.insert("default", input_values.get<string>(widget_name));
 
-        metadata.push_back(widget);
+        metadata.push_back(im);
     }
 }
 

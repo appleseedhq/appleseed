@@ -56,12 +56,12 @@ class EntityEditorFormFactoryBase
     explicit EntityEditorFormFactoryBase(const std::string& entity_name);
 
     void add_name_input_metadata(
-        const foundation::Dictionary&       values,
+        const foundation::Dictionary&       input_values,
         InputMetadataCollection&            metadata) const;
 
     void add_input_metadata(
-        const foundation::DictionaryArray&  widgets,
-        const foundation::Dictionary&       values,
+        const foundation::DictionaryArray&  input_metadata,
+        const foundation::Dictionary&       input_values,
         InputMetadataCollection&            metadata) const;
 
   private:
