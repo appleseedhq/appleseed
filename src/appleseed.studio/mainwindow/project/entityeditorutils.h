@@ -33,10 +33,10 @@
 #include <QLineEdit>
 #include <QObject>
 #include <QString>
-#include <QWidget>
 
 // Forward declarations.
 namespace appleseed { namespace studio { class DoubleSlider; } }
+class QWidget;
 
 namespace appleseed {
 namespace studio {

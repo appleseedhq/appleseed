@@ -32,6 +32,7 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/entitybrowserwindow.h"
+#include "mainwindow/project/entityeditorutils.h"
 #include "utility/doubleslider.h"
 #include "utility/interop.h"
 #include "utility/miscellaneous.h"
@@ -245,74 +246,6 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_text_input_widgets(const Dictio
         widget_proxy->set(metadata.strings().get<string>("default"));
 
     return widget_proxy;
-}
-
-namespace
-{
-    class LineEditDoubleSliderAdaptor
-      : public QObject
-    {
-        Q_OBJECT
-
-      public:
-        LineEditDoubleSliderAdaptor(QLineEdit* line_edit, DoubleSlider* slider)
-          : QObject(line_edit)
-          , m_line_edit(line_edit)
-          , m_slider(slider)
-        {
-        }
-
-      public slots:
-        void slot_set_line_edit_value(const double value)
-        {
-            // Don't block signals here, for live edit to work we want the line edit to signal changes.
-            m_line_edit->setText(QString("%1").arg(value));
-        }
-
-        void slot_set_slider_value(const QString& value)
-        {
-            m_slider->blockSignals(true);
-
-            const double new_value = value.toDouble();
-
-            // Adjust range if the new value is outside the current range.
-            if (new_value < m_slider->minimum() ||
-                new_value > m_slider->maximum())
-                adjust_slider(new_value);
-
-            m_slider->setValue(new_value);
-            m_slider->blockSignals(false);
-        }
-
-        void slot_apply_slider_value()
-        {
-            m_slider->blockSignals(true);
-
-            const double new_value = m_line_edit->text().toDouble();
-
-            // Adjust range if the new value is outside the current range,
-            // or if a value of a significantly smaller magnitude was entered.
-            if (new_value < m_slider->minimum() ||
-                new_value > m_slider->maximum() ||
-                abs(new_value) < (m_slider->maximum() - m_slider->minimum()) / 3.0)
-                adjust_slider(new_value);
-
-            m_slider->setValue(new_value);
-            m_slider->blockSignals(false);
-        }
-
-      private:
-        QLineEdit*      m_line_edit;
-        DoubleSlider*   m_slider;
-
-        void adjust_slider(const double new_value)
-        {
-            const double new_min = new_value >= 0.0 ? 0.0 : -2.0 * abs(new_value);
-            const double new_max = new_value == 0.0 ? 1.0 : +2.0 * abs(new_value);
-            m_slider->setRange(new_min, new_max);
-            m_slider->setPageStep((new_max - new_min) / 10.0);
-        }
-    };
 }
 
 auto_ptr<IInputWidgetProxy> EntityEditor::create_numeric_input_widgets(const Dictionary& metadata)

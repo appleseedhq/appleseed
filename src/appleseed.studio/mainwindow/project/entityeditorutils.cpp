@@ -32,7 +32,11 @@
 #include "utility/doubleslider.h"
 #include "utility/interop.h"
 
+// Standard headers.
+#include <cmath>
+
 using namespace foundation;
+using namespace std;
 
 namespace appleseed {
 namespace studio {
@@ -63,8 +67,9 @@ void LineEditDoubleSliderAdaptor::slot_set_slider_value(const QString& value)
 
     const double new_value = value.toDouble();
 
-    // Adjust range max if the new value is greater than current range max.
-    if (new_value > m_slider->maximum())
+    // Adjust range if the new value is outside the current range.
+    if (new_value < m_slider->minimum() ||
+        new_value > m_slider->maximum())
         adjust_slider(new_value);
 
     m_slider->setValue(new_value);
@@ -77,10 +82,11 @@ void LineEditDoubleSliderAdaptor::slot_apply_slider_value()
 
     const double new_value = m_line_edit->text().toDouble();
 
-    // Adjust range max if the new value is greater than current range max
-    // or less than a certain percentage of current range max.
-    if (new_value > m_slider->maximum() ||
-        new_value < lerp(m_slider->minimum(), m_slider->maximum(), 1.0 / 3))
+    // Adjust range if the new value is outside the current range,
+    // or if a value of a significantly smaller magnitude was entered.
+    if (new_value < m_slider->minimum() ||
+        new_value > m_slider->maximum() ||
+        abs(new_value) < (m_slider->maximum() - m_slider->minimum()) / 3.0)
         adjust_slider(new_value);
 
     m_slider->setValue(new_value);
@@ -89,9 +95,10 @@ void LineEditDoubleSliderAdaptor::slot_apply_slider_value()
 
 void LineEditDoubleSliderAdaptor::adjust_slider(const double new_value)
 {
-    const double new_max = 2.0 * new_value;
-    m_slider->setRange(0.0, new_max);
-    m_slider->setPageStep(new_max / 10.0);
+    const double new_min = new_value >= 0.0 ? 0.0 : -2.0 * abs(new_value);
+    const double new_max = new_value == 0.0 ? 1.0 : +2.0 * abs(new_value);
+    m_slider->setRange(new_min, new_max);
+    m_slider->setPageStep((new_max - new_min) / 10.0);
 }
 
 
@@ -122,8 +129,10 @@ LineEditForwarder::LineEditForwarder(
     QWidget*        parent)
   : QLineEdit(contents, parent)
 {
-    connect(this, SIGNAL(textChanged(const QString&)),
-            this, SLOT(slot_text_changed(const QString&)));
+    connect(
+        this,
+        SIGNAL(textChanged(const QString&)),
+        SLOT(slot_text_changed(const QString&)));
 }
 
 void LineEditForwarder::slot_text_changed(const QString& text)
