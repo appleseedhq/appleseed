@@ -583,34 +583,6 @@ void EntityEditor::slot_entity_browser_accept(QString widget_name, QString page_
     qobject_cast<QWidget*>(sender()->parent())->close();
 }
 
-namespace
-{
-    class ForwardColorChangedSignal
-      : public QObject
-    {
-        Q_OBJECT
-
-      public:
-        ForwardColorChangedSignal(QObject* parent, const QString& widget_name)
-          : QObject(parent)
-          , m_widget_name(widget_name)
-        {
-        }
-
-      public slots:
-        void slot_color_changed(const QColor& color)
-        {
-            emit signal_color_changed(m_widget_name, color);
-        }
-
-      signals:
-        void signal_color_changed(const QString& widget_name, const QColor& color);
-
-      private:
-        const QString m_widget_name;
-    };
-}
-
 void EntityEditor::slot_open_color_picker(const QString& widget_name)
 {
     IInputWidgetProxy* widget_proxy = m_widget_proxies.get(widget_name.toStdString());
