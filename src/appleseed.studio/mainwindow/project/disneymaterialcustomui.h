@@ -34,6 +34,7 @@
 #include "utility/inputwidgetproxies.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/containers/dictionary.h"
 
 // Standard headers.
@@ -67,9 +68,9 @@ class DisneyMaterialCustomUI
 
     virtual void  create_custom_widgets(
         QVBoxLayout*                    layout,
-        const foundation::Dictionary&   values);
+        const foundation::Dictionary&   values) APPLESEED_OVERRIDE;
 
-    virtual foundation::Dictionary get_values() const;
+    virtual foundation::Dictionary get_values() const APPLESEED_OVERRIDE;
 
   private slots:
     void slot_add_layer();
