@@ -114,6 +114,7 @@ EntityEditor::EntityEditor(
 Dictionary EntityEditor::get_values() const
 {
     Dictionary values;
+
     if (m_custom_ui.get())
         values = m_custom_ui->get_values();
 
@@ -155,15 +156,15 @@ void EntityEditor::create_connections()
 
 void EntityEditor::rebuild_form(const Dictionary& values)
 {
+    // The mappings were removed when the widgets were deleted.
     clear_layout(m_top_layout);
-    create_form_layout();
-
     m_widget_proxies.clear();
 
-    // The mappings were removed when the widgets were deleted.
-
+    // Collect input metadata.
     m_form_factory->update(values, m_input_metadata);
 
+    // Create corresponding input widgets.
+    create_form_layout();
     for (const_each<InputMetadataCollection> i = m_input_metadata; i; ++i)
         create_input_widgets(*i);
 

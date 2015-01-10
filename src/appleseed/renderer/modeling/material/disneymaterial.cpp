@@ -810,25 +810,29 @@ struct DisneyMaterial::Impl
 {
     typedef vector<DisneyMaterialLayer> DisneyMaterialLayerContainer;
 
-    static const int MaxTLSThreads = 256;
+    static const size_t MaxThreadCount = 256;
+
+    DisneyMaterialLayerContainer                m_layers;
+    auto_ptr<DisneyLayeredBRDF>                 m_brdf;
+    mutable TLS<DisneyMaterialLayerContainer*>  m_per_thread_layers;
 
     explicit Impl(const DisneyMaterial* parent)
       : m_brdf(new DisneyLayeredBRDF(parent))
-      , m_per_thread_layers(MaxTLSThreads)
+      , m_per_thread_layers(MaxThreadCount)
     {
-        for (size_t i = 0; i < MaxTLSThreads; ++i)
+        for (size_t i = 0; i < MaxThreadCount; ++i)
             m_per_thread_layers[i] = 0;
     }
 
     ~Impl()
     {
-        for (size_t i = 0; i < MaxTLSThreads; ++i)
+        for (size_t i = 0; i < MaxThreadCount; ++i)
             assert(m_per_thread_layers[i] == 0);
     }
 
     void clear_per_thread_layers()
     {
-        for (size_t i = 0; i < MaxTLSThreads; ++i)
+        for (size_t i = 0; i < MaxThreadCount; ++i)
         {
             if (m_per_thread_layers[i])
             {
@@ -838,10 +842,6 @@ struct DisneyMaterial::Impl
         }
 
     }
-
-    DisneyMaterialLayerContainer                m_layers;
-    auto_ptr<DisneyLayeredBRDF>                 m_brdf;
-    mutable TLS<DisneyMaterialLayerContainer*>  m_per_thread_layers;
 };
 
 DisneyMaterial::DisneyMaterial(
@@ -921,7 +921,7 @@ const DisneyMaterialLayer& DisneyMaterial::get_layer(
 
     if (thread_index != ~0)
     {
-        assert(thread_index < Impl::MaxTLSThreads);
+        assert(thread_index < Impl::MaxThreadCount);
 
         if (!impl->m_per_thread_layers[thread_index])
         {

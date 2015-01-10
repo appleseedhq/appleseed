@@ -134,6 +134,7 @@ class EntityEditor
 
     foundation::Dictionary get_input_metadata(const std::string& name) const;
 
+    // Create one or multiple widgets given the definition of one input.
     void create_input_widgets(const foundation::Dictionary& definition);
 
     std::auto_ptr<IInputWidgetProxy> create_text_input_widgets(const foundation::Dictionary& definition);
