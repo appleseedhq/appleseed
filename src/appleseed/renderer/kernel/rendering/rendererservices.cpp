@@ -53,41 +53,38 @@ using namespace std;
 namespace renderer
 {
 
-// Globals used by RendererServices.
-namespace
-{
-
-OIIO::TypeDesc g_float_array2_typedesc(OIIO::TypeDesc::FLOAT, 2);
-OIIO::TypeDesc g_float_array4_typedesc(OIIO::TypeDesc::FLOAT, 4);
-OIIO::TypeDesc g_int_array2_typedesc(OIIO::TypeDesc::INT, 2);
-
-OIIO::ustring g_empty_ustr;
-OIIO::ustring g_perspective_ustr("perspective");
-OIIO::ustring g_spherical_ustr("spherical");
-OIIO::ustring g_unknown_proj_ustr("unknown");
-OIIO::ustring g_trace_ustr("trace");
-OIIO::ustring g_hit_ustr("hit");
-OIIO::ustring g_hitdist_ustr("hitdist");
-OIIO::ustring g_N_ustr("N");
-OIIO::ustring g_Ng_ustr("Ng");
-OIIO::ustring g_P_ustr("P");
-OIIO::ustring g_u_ustr("u");
-OIIO::ustring g_v_ustr("v");
-
-// Coordinate systems
-OIIO::ustring g_camera_ustr("camera");
-OIIO::ustring g_common_ustr("common");
-OIIO::ustring g_NDC_ustr("NDC");
-OIIO::ustring g_raster_ustr("raster");
-OIIO::ustring g_screen_ustr("screen");
-OIIO::ustring g_shader_usrt("shader");
-OIIO::ustring g_world_ustr("world");
-
-}
-
 //
 // RendererServices class implementation.
 //
+
+namespace
+{
+    OIIO::TypeDesc g_float_array2_typedesc(OIIO::TypeDesc::FLOAT, 2);
+    OIIO::TypeDesc g_float_array4_typedesc(OIIO::TypeDesc::FLOAT, 4);
+    OIIO::TypeDesc g_int_array2_typedesc(OIIO::TypeDesc::INT, 2);
+
+    OIIO::ustring g_empty_ustr;
+    OIIO::ustring g_perspective_ustr("perspective");
+    OIIO::ustring g_spherical_ustr("spherical");
+    OIIO::ustring g_unknown_proj_ustr("unknown");
+    OIIO::ustring g_trace_ustr("trace");
+    OIIO::ustring g_hit_ustr("hit");
+    OIIO::ustring g_hitdist_ustr("hitdist");
+    OIIO::ustring g_N_ustr("N");
+    OIIO::ustring g_Ng_ustr("Ng");
+    OIIO::ustring g_P_ustr("P");
+    OIIO::ustring g_u_ustr("u");
+    OIIO::ustring g_v_ustr("v");
+
+    // Coordinate systems.
+    OIIO::ustring g_camera_ustr("camera");
+    OIIO::ustring g_common_ustr("common");
+    OIIO::ustring g_NDC_ustr("NDC");
+    OIIO::ustring g_raster_ustr("raster");
+    OIIO::ustring g_screen_ustr("screen");
+    OIIO::ustring g_shader_usrt("shader");
+    OIIO::ustring g_world_ustr("world");
+}
 
 RendererServices::RendererServices(
     const Project&          project,
@@ -357,7 +354,7 @@ bool RendererServices::get_matrix(
     {
         Transformd tmp;
         const Transformd& transform =
-                m_camera->transform_sequence().evaluate(time, tmp);
+            m_camera->transform_sequence().evaluate(time, tmp);
         result = Matrix4f(transform.get_local_to_parent());
         return true;
     }
@@ -366,16 +363,16 @@ bool RendererServices::get_matrix(
 }
 
 bool RendererServices::get_inverse_matrix(
-    OSL::ShaderGlobals* sg,
-    OSL::Matrix44&      result,
-    OSL::ustring        to,
-    float               time)
+    OSL::ShaderGlobals*     sg,
+    OSL::Matrix44&          result,
+    OSL::ustring            to,
+    float                   time)
 {
     if (to == g_camera_ustr)
     {
         Transformd tmp;
         const Transformd& transform =
-                m_camera->transform_sequence().evaluate(time, tmp);
+            m_camera->transform_sequence().evaluate(time, tmp);
         result = Matrix4f(transform.get_parent_to_local());
         return true;
     }
@@ -407,9 +404,9 @@ bool RendererServices::get_matrix(
 }
 
 bool RendererServices::get_inverse_matrix(
-    OSL::ShaderGlobals* sg,
-    OSL::Matrix44&      result,
-    OSL::ustring        to)
+    OSL::ShaderGlobals*     sg,
+    OSL::Matrix44&          result,
+    OSL::ustring            to)
 {
     if (to == g_camera_ustr)
     {
@@ -442,14 +439,14 @@ bool RendererServices::transform_points(
 }
 
 bool RendererServices::trace(
-    TraceOpt&           options,
-    OSL::ShaderGlobals* sg,
-    const OSL::Vec3&    P,
-    const OSL::Vec3&    dPdx,
-    const OSL::Vec3&    dPdy,
-    const OSL::Vec3&    R,
-    const OSL::Vec3&    dRdx,
-    const OSL::Vec3&    dRdy)
+    TraceOpt&               options,
+    OSL::ShaderGlobals*     sg,
+    const OSL::Vec3&        P,
+    const OSL::Vec3&        dPdx,
+    const OSL::Vec3&        dPdy,
+    const OSL::Vec3&        R,
+    const OSL::Vec3&        dRdx,
+    const OSL::Vec3&        dRdy)
 {
     TextureCache texture_cache(m_texture_store);
     Intersector intersector(m_trace_context, texture_cache);
@@ -514,12 +511,12 @@ bool RendererServices::trace(
 }
 
 bool RendererServices::getmessage(
-    OSL::ShaderGlobals* sg,
-    OIIO::ustring       source,
-    OIIO::ustring       name,
-    OIIO::TypeDesc      type,
-    void*               val,
-    bool                derivatives)
+    OSL::ShaderGlobals*     sg,
+    OIIO::ustring           source,
+    OIIO::ustring           name,
+    OIIO::TypeDesc          type,
+    void*                   val,
+    bool                    derivatives)
 {
     const ShadingPoint::OSLTraceData* trace_data =
         reinterpret_cast<ShadingPoint::OSLTraceData*>(sg->tracedata);
@@ -855,7 +852,7 @@ void RendererServices::clear_attr_derivatives(
     }
 }
 
-void RendererServices::log_error(const std::string& message)
+void RendererServices::log_error(const string& message)
 {
     if (!message.empty())
         RENDERER_LOG_ERROR("%s", message.c_str());
