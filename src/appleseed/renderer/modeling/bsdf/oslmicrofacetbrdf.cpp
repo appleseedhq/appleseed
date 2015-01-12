@@ -33,6 +33,7 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
+#include "renderer/modeling/bsdf/microfacetbrdfhelper.h"
 #include "renderer/utility/messagecontext.h"
 #include "renderer/utility/paramarray.h"
 
@@ -62,6 +63,18 @@ namespace renderer
 
 namespace
 {
+
+    struct NoFresnel
+    {
+        void operator()(
+            const Vector3d& o,
+            const Vector3d& h,
+            const Vector3d& n,
+            Spectrum&       value) const
+        {
+            value.set(1.0f);
+        }
+    };
 
     //
     // OSLMicrofacet BRDF.
@@ -126,46 +139,15 @@ namespace
             const bool          cosine_mult,
             BSDFSample&         sample) const
         {
-            // No reflection below the shading surface.
-            const Vector3d& n = sample.get_shading_normal();
-            const double cos_on = min(dot(sample.get_outgoing(), n), 1.0);
-            if (cos_on < 0.0)
-                return;
-
             const InputValues* values = static_cast<const InputValues*>(data);
-
-            // Compute the incoming direction by sampling the MDF.
-            sample.get_sampling_context().split_in_place(3, 1);
-            const Vector3d s = sample.get_sampling_context().next_vector2<3>();
-            const Vector3d wo = sample.get_shading_basis().transform_to_local(sample.get_outgoing());
-            const Vector3d m = m_mdf->sample(wo, s, values->m_ax, values->m_ay);
-            const Vector3d h = sample.get_shading_basis().transform_to_parent(m);
-
-            sample.set_incoming(reflect(sample.get_outgoing(), h));
-            const double cos_oh = dot(sample.get_outgoing(), h);
-
-            // No reflection below the shading surface.
-            const double cos_in = dot(sample.get_incoming(), n);
-            if (cos_in < 0.0)
-                return;
-
-            const double D =
-                m_mdf->D(
-                    m,
-                    values->m_ax,
-                    values->m_ay);
-
-            const double G =
-                m_mdf->G(
-                    sample.get_shading_basis().transform_to_local(sample.get_incoming()),
-                    wo,
-                    m,
-                    values->m_ax,
-                    values->m_ay);
-
-            sample.value().set(static_cast<float>(D * G / (4.0 * cos_on * cos_in)));
-            sample.set_probability(m_mdf->pdf(wo, m, values->m_ax, values->m_ay) / (4.0 * cos_oh));
-            sample.set_mode(BSDFSample::Glossy);
+            MicrofacetBRDFHelper<double>::sample(
+                *m_mdf,
+                values->m_ax,
+                values->m_ay,
+                values->m_ax,
+                values->m_ay,
+                NoFresnel(),
+                sample);
         }
 
         FORCE_INLINE virtual double evaluate(
@@ -179,38 +161,19 @@ namespace
             const int           modes,
             Spectrum&           value) const
         {
-            if (!(modes & BSDFSample::Glossy))
-                return 0.0;
-
-            // No reflection below the shading surface.
-            const Vector3d& n = shading_basis.get_normal();
-            const double cos_in = dot(incoming, n);
-            const double cos_on = min(dot(outgoing, n), 1.0);
-            if (cos_in < 0.0 || cos_on < 0.0)
-                return 0.0;
-
             const InputValues* values = static_cast<const InputValues*>(data);
-
-            const Vector3d h = normalize(incoming + outgoing);
-            const Vector3d m = shading_basis.transform_to_local(h);
-            const double D =
-                m_mdf->D(
-                    m,
-                    values->m_ax,
-                    values->m_ay);
-
-            const Vector3d wo = shading_basis.transform_to_local(outgoing);
-            const double G =
-                m_mdf->G(
-                    shading_basis.transform_to_local(incoming),
-                    wo,
-                    m,
-                    values->m_ax,
-                    values->m_ay);
-
-            const double cos_oh = dot(outgoing, h);
-            value.set(static_cast<float>(D * G / (4.0 * cos_on * cos_in)));
-            return m_mdf->pdf(wo, m, values->m_ax, values->m_ay) / (4.0 * cos_oh);
+            return MicrofacetBRDFHelper<double>::evaluate(
+                *m_mdf,
+                values->m_ax,
+                values->m_ay,
+                values->m_ax,
+                values->m_ay,
+                shading_basis,
+                outgoing,
+                incoming,
+                modes,
+                NoFresnel(),
+                value);
         }
 
         FORCE_INLINE virtual double evaluate_pdf(
@@ -221,26 +184,15 @@ namespace
             const Vector3d&     incoming,
             const int           modes) const
         {
-            if (!(modes & BSDFSample::Glossy))
-                return 0.0;
-
-            // No reflection below the shading surface.
-            const Vector3d& n = shading_basis.get_normal();
-            const double cos_in = dot(incoming, n);
-            const double cos_on = min(dot(outgoing, n), 1.0);
-            if (cos_in < 0.0 || cos_on < 0.0)
-                return 0.0;
-
             const InputValues* values = static_cast<const InputValues*>(data);
-
-            const Vector3d h = normalize(incoming + outgoing);
-            const double cos_oh = dot(outgoing, h);
-            return
-                m_mdf->pdf(
-                    shading_basis.transform_to_local(outgoing),
-                    shading_basis.transform_to_local(h),
-                    values->m_ax,
-                    values->m_ay) / (4.0 * cos_oh);
+            return MicrofacetBRDFHelper<double>::pdf(
+                *m_mdf,
+                values->m_ax,
+                values->m_ay,
+                shading_basis,
+                outgoing,
+                incoming,
+                modes);
         }
 
       private:

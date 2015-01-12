@@ -52,20 +52,6 @@ namespace renderer
 {
 
 //
-// Microfacet BRDF input values.
-//
-
-APPLESEED_DECLARE_INPUT_VALUES(MicrofacetBRDFInputValues)
-{
-    double      m_glossiness;
-    double      m_glossiness_multiplier;
-    Spectrum    m_reflectance;
-    double      m_reflectance_multiplier;
-    double      m_fr_multiplier;            // Fresnel multiplier
-};
-
-
-//
 // Microfacet BRDF factory.
 //
 
