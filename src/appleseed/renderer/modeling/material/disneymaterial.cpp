@@ -229,6 +229,7 @@ namespace
                 m_functions.push_back(texture_function);
                 return texture_function;
             }
+
             return SeExpression::resolveFunc(name);
         }
 
@@ -563,18 +564,19 @@ bool DisneyMaterialLayer::operator<(const DisneyMaterialLayer& other) const
 
 bool DisneyMaterialLayer::prepare_expressions() const
 {
-    return  impl->m_mask.prepare() &&
-            impl->m_base_color.prepare() &&
-            impl->m_subsurface.prepare() &&
-            impl->m_metallic.prepare() &&
-            impl->m_specular.prepare() &&
-            impl->m_specular_tint.prepare() &&
-            impl->m_anisotropic.prepare() &&
-            impl->m_roughness.prepare() &&
-            impl->m_sheen.prepare() &&
-            impl->m_sheen_tint.prepare() &&
-            impl->m_clearcoat.prepare() &&
-            impl->m_clearcoat_gloss.prepare();
+    return
+        impl->m_mask.prepare() &&
+        impl->m_base_color.prepare() &&
+        impl->m_subsurface.prepare() &&
+        impl->m_metallic.prepare() &&
+        impl->m_specular.prepare() &&
+        impl->m_specular_tint.prepare() &&
+        impl->m_anisotropic.prepare() &&
+        impl->m_roughness.prepare() &&
+        impl->m_sheen.prepare() &&
+        impl->m_sheen_tint.prepare() &&
+        impl->m_clearcoat.prepare() &&
+        impl->m_clearcoat_gloss.prepare();
 }
 
 void DisneyMaterialLayer::evaluate_expressions(
@@ -648,9 +650,9 @@ DictionaryArray DisneyMaterialLayer::get_input_metadata()
     metadata.push_back(
         Dictionary()
             .insert("name", "layer_name")
-            .insert("label", "Layer name")
+            .insert("label", "Layer Name")
             .insert("type", "text")
-            .insert("default", "layer1"));
+            .insert("use", "required"));
 
     metadata.push_back(
         Dictionary()
@@ -772,28 +774,6 @@ DictionaryArray DisneyMaterialLayer::get_input_metadata()
             .insert("default", "1.0"));
 
     return metadata;
-}
-
-Dictionary DisneyMaterialLayer::get_default_values()
-{
-    Dictionary layer_params;
-
-    DictionaryArray metadata = get_input_metadata();
-
-    for (size_t i = 0; i < metadata.size(); ++i)
-    {
-        const Dictionary& parameter = metadata[i];
-        const string name = parameter.get<string>("name");
-        const string default_value = parameter.get<string>("default");
-        layer_params.insert(name, default_value);
-    }
-
-    layer_params.insert("layer_number", 1);
-
-    Dictionary values;
-    values.insert("layer1", layer_params);
-
-    return values;
 }
 
 

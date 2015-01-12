@@ -29,24 +29,31 @@
 #ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_DISNEYMATERIALLAYERUI_H
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_DISNEYMATERIALLAYERUI_H
 
-// appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
+// appleseed.studio headers.
+#include "utility/inputwidgetproxies.h"
 
-// Standard headers.
-#include <string>
+// appleseed.foundation headers.
+#include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/platform/compiler.h"
 
 // Qt headers.
 #include <QFrame>
 #include <QIcon>
 #include <QObject>
 
-// Forward declarations
-namespace appleseed     { namespace studio { class DisneyMaterialCustomUI; } }
+// Standard headers.
+#include <memory>
+#include <string>
+
+// Forward declarations.
 namespace foundation    { class Dictionary; }
+namespace renderer      { class Project; }
+class QColor;
 class QFormLayout;
 class QMouseEvent;
+class QSignalMapper;
+class QString;
 class QToolButton;
-class QVBoxLayout;
 class QWidget;
 
 namespace appleseed {
@@ -59,42 +66,67 @@ class DisneyMaterialLayerUI
 
   public:
     DisneyMaterialLayerUI(
-        const std::string&      layer_name,
-        DisneyMaterialCustomUI* entity_editor,
-        QVBoxLayout*            parent_layout,
-        QWidget*                parent = 0);
+        const renderer::Project&        project, 
+        const foundation::Dictionary&   values,
+        QWidget*                        parent = 0);
 
-    QFormLayout* get_layout();
+    foundation::Dictionary get_values() const;
 
     virtual void mouseDoubleClickEvent(QMouseEvent* event) APPLESEED_OVERRIDE;
 
-  private:
-    std::string get_layer_name() const;
-    foundation::Dictionary& get_layer_params();
-
-    void update_model(const int new_position, const int offset);
-    void toggle_fold_layer_status();
-    void apply_layer_fold_status();
-    void update_ui_for_fold_status(const bool folded);
+  signals:
+    void signal_move_layer_up(QWidget* layer_widget);
+    void signal_move_layer_down(QWidget* layer_widget);
+    void signal_delete_layer(QWidget* layer_widget);
+    void signal_apply();
 
   private slots:
-    void slot_delete_layer();
+    void slot_fold_unfold_layer();
     void slot_move_layer_up();
     void slot_move_layer_down();
-    void slot_fold();
+    void slot_delete_layer();
+
+    void slot_open_color_picker(const QString& widget_name);
+    void slot_color_changed(const QString& widget_name, const QColor& color);
+
+    void slot_open_file_picker(const QString& widget_name);
+
+    void slot_open_expression_editor(const QString& widget_name);
+    void slot_expression_changed(const QString& widget_name, const QString& expression);
 
   private:
-    friend class DisneyMaterialCustomUI;
+    const renderer::Project&            m_project;
+    const foundation::DictionaryArray   m_input_metadata;
 
-    const std::string           m_layer_name;
-    DisneyMaterialCustomUI*     m_entity_editor;
-    QVBoxLayout*                m_parent_layout;
-    const QIcon                 m_fold_icon;
-    const QIcon                 m_unfold_icon;
+    const QIcon                         m_fold_icon;
+    const QIcon                         m_unfold_icon;
 
-    QToolButton*                m_fold_button;
-    QFormLayout*                m_inner_layout;
-    QWidget*                    m_spacer;
+    QToolButton*                        m_fold_unfold_button;
+    QWidget*                            m_header_widget;
+    QFormLayout*                        m_header_layout;
+    QWidget*                            m_content_widget;
+    QFormLayout*                        m_content_layout;
+
+    InputWidgetProxyCollection          m_widget_proxies;
+
+    QSignalMapper*                      m_color_picker_signal_mapper;
+    QSignalMapper*                      m_file_picker_signal_mapper;
+    QSignalMapper*                      m_expression_editor_signal_mapper;
+
+    bool                                m_is_folded;
+
+    void create_layer_ui();
+    void create_input_widgets(const foundation::Dictionary& values);
+
+    std::auto_ptr<IInputWidgetProxy> create_text_input_widgets(const foundation::Dictionary& metadata);
+    std::auto_ptr<IInputWidgetProxy> create_color_input_widgets(const foundation::Dictionary& metadata);
+    std::auto_ptr<IInputWidgetProxy> create_colormap_input_widgets(const foundation::Dictionary& metadata);
+
+    QWidget* create_texture_button(const std::string& name);
+    QWidget* create_expression_button(const std::string& name);
+
+    void fold();
+    void unfold();
 };
 
 }       // namespace studio

@@ -91,6 +91,8 @@ class LineEditProxy
   public:
     explicit LineEditProxy(QLineEdit* line_edit);
 
+    QLineEdit* get_widget() const;
+
     virtual void set(const std::string& value) APPLESEED_OVERRIDE;
     virtual std::string get() const APPLESEED_OVERRIDE;
 
@@ -108,6 +110,8 @@ class SpinBoxProxy
 {
   public:
     explicit SpinBoxProxy(QSpinBox* spinbox);
+
+    QSpinBox* get_widget() const;
 
     virtual void set(const std::string& value) APPLESEED_OVERRIDE;
     virtual std::string get() const APPLESEED_OVERRIDE;
@@ -127,6 +131,8 @@ class DoubleSpinBoxProxy
   public:
     explicit DoubleSpinBoxProxy(QDoubleSpinBox* spinbox);
 
+    QDoubleSpinBox* get_widget() const;
+
     virtual void set(const std::string& value) APPLESEED_OVERRIDE;
     virtual std::string get() const APPLESEED_OVERRIDE;
 
@@ -144,6 +150,8 @@ class CheckBoxProxy
 {
   public:
     explicit CheckBoxProxy(QCheckBox* checkbox);
+
+    QCheckBox* get_widget() const;
 
     virtual void set(const std::string& value) APPLESEED_OVERRIDE;
     virtual std::string get() const APPLESEED_OVERRIDE;
@@ -163,6 +171,8 @@ class GroupBoxProxy
   public:
     explicit GroupBoxProxy(QGroupBox* groupbox);
 
+    QGroupBox* get_widget() const;
+
     virtual void set(const std::string& value) APPLESEED_OVERRIDE;
     virtual std::string get() const APPLESEED_OVERRIDE;
 
@@ -180,6 +190,8 @@ class RadioButtonProxy
 {
   public:
     explicit RadioButtonProxy(QRadioButton* radio_button);
+
+    QRadioButton* get_widget() const;
 
     virtual void set(const std::string& value) APPLESEED_OVERRIDE;
     virtual std::string get() const APPLESEED_OVERRIDE;
@@ -199,6 +211,8 @@ class ComboBoxProxy
   public:
     explicit ComboBoxProxy(QComboBox* combobox);
 
+    QComboBox* get_widget() const;
+
     virtual void set(const std::string& value) APPLESEED_OVERRIDE;
     virtual std::string get() const APPLESEED_OVERRIDE;
 
@@ -215,7 +229,10 @@ class ColorPickerProxy
   : public IInputWidgetProxy
 {
   public:
-    explicit ColorPickerProxy(QLineEdit* line_edit, QToolButton* picker_button);
+    ColorPickerProxy(QLineEdit* line_edit, QToolButton* picker_button);
+
+    QLineEdit* get_line_edit() const;
+    QToolButton* get_picker_button() const;
 
     virtual void set(const std::string& value) APPLESEED_OVERRIDE;
     void set(const std::string& value, const std::string& wavelength_range);
@@ -230,6 +247,7 @@ class ColorPickerProxy
     QToolButton*    m_picker_button;
 };
 
+
 //
 // ColorExpression proxy.
 //
@@ -238,7 +256,10 @@ class ColorExpressionProxy
   : public IInputWidgetProxy
 {
   public:
-    explicit ColorExpressionProxy(QLineEdit* line_edit, QToolButton* picker_button);
+    ColorExpressionProxy(QLineEdit* line_edit, QToolButton* picker_button);
+
+    QLineEdit* get_line_edit() const;
+    QToolButton* get_picker_button() const;
 
     virtual void set(const std::string& value) APPLESEED_OVERRIDE;
     virtual std::string get() const APPLESEED_OVERRIDE;
@@ -250,6 +271,7 @@ class ColorExpressionProxy
     QLineEdit*      m_line_edit;
     QToolButton*    m_picker_button;
 };
+
 
 //
 // A collection of named proxies.

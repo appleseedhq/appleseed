@@ -3,7 +3,7 @@
  <class>EntityEditorWindow</class>
  <widget class="QWidget" name="EntityEditorWindow">
   <property name="windowModality">
-   <enum>Qt::NonModal</enum>
+   <enum>Qt::ApplicationModal</enum>
   </property>
   <property name="geometry">
    <rect>

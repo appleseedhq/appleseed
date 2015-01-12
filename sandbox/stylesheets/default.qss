@@ -1019,33 +1019,7 @@ appleseed--studio--FoldablePanelWidget > QFrame[hasFrame="true"]
 
 
 /*
- * Disney Material Editor.
- */
-
-QWidget#material_editor_layer
-{
-    border: BORDER_STYLE;
-}
-
-QWidget#folded_label
-{
-    min-width: 105px;
-    qproperty-alignment: 'AlignRight';
-    qproperty-margin: 3;
-    qproperty-indent: 4;
-}
-
-QWidget#unfolded_label
-{
-    min-width: 0px;
-    qproperty-alignment: 'AlignLeft | AlignCenter';
-    qproperty-margin: 0;
-    qproperty-indent: 0;
-}
-
-
-/*
- * SeExpr Expression Editor.
+ * Expression Editor.
  */
 
 QTextEdit#expression_editor

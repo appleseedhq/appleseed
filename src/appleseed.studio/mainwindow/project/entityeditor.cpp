@@ -149,7 +149,7 @@ void EntityEditor::create_connections()
     if (m_custom_ui.get())
     {
         connect(
-            m_custom_ui.get(), SIGNAL(signal_custom_applied()),
+            m_custom_ui.get(), SIGNAL(signal_apply()),
             SLOT(slot_apply()));
     }
 }
@@ -169,7 +169,7 @@ void EntityEditor::rebuild_form(const Dictionary& values)
         create_input_widgets(*i);
 
     if (m_custom_ui.get())
-        m_custom_ui->create_custom_widgets(m_top_layout, values);
+        m_custom_ui->create_widgets(m_top_layout, values);
 }
 
 Dictionary EntityEditor::get_input_metadata(const string& name) const
@@ -187,18 +187,19 @@ Dictionary EntityEditor::get_input_metadata(const string& name) const
 
 void EntityEditor::create_input_widgets(const Dictionary& metadata)
 {
-    const string name = metadata.get<string>("name");
-    const string type = metadata.get<string>("type");
+    const string input_name = metadata.get<string>("name");
+    const string input_type = metadata.get<string>("type");
 
     auto_ptr<IInputWidgetProxy> widget_proxy =
-        type == "text" ? create_text_input_widgets(metadata) :
-        type == "numeric" ? create_numeric_input_widgets(metadata) :
-        type == "colormap" ? create_colormap_input_widgets(metadata) :
-        type == "boolean" ? create_boolean_input_widgets(metadata) :
-        type == "enumeration" ? create_enumeration_input_widgets(metadata) :
-        type == "entity" ? create_entity_input_widgets(metadata) :
-        type == "color" ? create_color_input_widgets(metadata) :
-        type == "file" ? create_file_input_widgets(metadata) : auto_ptr<IInputWidgetProxy>(0);
+        input_type == "text" ? create_text_input_widgets(metadata) :
+        input_type == "numeric" ? create_numeric_input_widgets(metadata) :
+        input_type == "colormap" ? create_colormap_input_widgets(metadata) :
+        input_type == "boolean" ? create_boolean_input_widgets(metadata) :
+        input_type == "enumeration" ? create_enumeration_input_widgets(metadata) :
+        input_type == "entity" ? create_entity_input_widgets(metadata) :
+        input_type == "color" ? create_color_input_widgets(metadata) :
+        input_type == "file" ? create_file_input_widgets(metadata) :
+        auto_ptr<IInputWidgetProxy>(0);
 
     assert(widget_proxy.get());
 
@@ -211,7 +212,7 @@ void EntityEditor::create_input_widgets(const Dictionary& metadata)
         SIGNAL(signal_changed()),
         rebuild_form ? SLOT(slot_rebuild_form()) : SLOT(slot_apply()));
 
-    m_widget_proxies.insert(name, widget_proxy);
+    m_widget_proxies.insert(input_name, widget_proxy);
 }
 
 namespace
@@ -576,9 +577,9 @@ void EntityEditor::slot_open_entity_browser(const QString& widget_name)
 
 void EntityEditor::slot_entity_browser_accept(QString widget_name, QString page_name, QString entity_name)
 {
-    IInputWidgetProxy* proxy = m_widget_proxies.get(widget_name.toStdString());
-    proxy->set(entity_name.toStdString());
-    proxy->emit_signal_changed();
+    IInputWidgetProxy* widget_proxy = m_widget_proxies.get(widget_name.toStdString());
+    widget_proxy->set(entity_name.toStdString());
+    widget_proxy->emit_signal_changed();
 
     // Close the entity browser.
     qobject_cast<QWidget*>(sender()->parent())->close();
@@ -590,7 +591,8 @@ void EntityEditor::slot_open_color_picker(const QString& widget_name)
 
     const string wavelength_range = m_widget_proxies.get("wavelength_range")->get();
 
-    const Color3d initial_color = ColorPickerProxy::get_color_from_string(widget_proxy->get(), wavelength_range);
+    const Color3d initial_color =
+        ColorPickerProxy::get_color_from_string(widget_proxy->get(), wavelength_range);
 
     QColorDialog* dialog =
         new QColorDialog(
@@ -613,9 +615,9 @@ void EntityEditor::slot_open_color_picker(const QString& widget_name)
 
 void EntityEditor::slot_color_changed(const QString& widget_name, const QColor& color)
 {
-    IInputWidgetProxy* proxy = m_widget_proxies.get(widget_name.toStdString());
-    proxy->set(to_string(qcolor_to_color<Color3d>(color)));
-    proxy->emit_signal_changed();
+    IInputWidgetProxy* widget_proxy = m_widget_proxies.get(widget_name.toStdString());
+    widget_proxy->set(to_string(qcolor_to_color<Color3d>(color)));
+    widget_proxy->emit_signal_changed();
 }
 
 void EntityEditor::slot_open_file_picker(const QString& widget_name)

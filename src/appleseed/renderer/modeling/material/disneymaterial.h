@@ -95,8 +95,6 @@ class APPLESEED_DLLSYMBOL DisneyMaterialLayer
 
     static foundation::DictionaryArray get_input_metadata();
 
-    static foundation::Dictionary get_default_values();
-
   private:
     friend class DisneyMaterial;
 

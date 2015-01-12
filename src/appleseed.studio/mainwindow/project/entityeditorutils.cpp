@@ -32,6 +32,9 @@
 #include "utility/doubleslider.h"
 #include "utility/interop.h"
 
+// Qt headers.
+#include <QLineEdit>
+
 // Standard headers.
 #include <cmath>
 
@@ -42,7 +45,7 @@ namespace appleseed {
 namespace studio {
 
 //
-// LineEditDoubleSliderAdaptor class implementation
+// LineEditDoubleSliderAdaptor class implementation.
 //
 
 LineEditDoubleSliderAdaptor::LineEditDoubleSliderAdaptor(
@@ -117,27 +120,6 @@ ForwardColorChangedSignal::ForwardColorChangedSignal(
 void ForwardColorChangedSignal::slot_color_changed(const QColor& color)
 {
     emit signal_color_changed(m_widget_name, color);
-}
-
-
-//
-// LineEditForwarder class implementation.
-//
-
-LineEditForwarder::LineEditForwarder(
-    const QString&  contents,
-    QWidget*        parent)
-  : QLineEdit(contents, parent)
-{
-    connect(
-        this,
-        SIGNAL(textChanged(const QString&)),
-        SLOT(slot_text_changed(const QString&)));
-}
-
-void LineEditForwarder::slot_text_changed(const QString& text)
-{
-    emit signal_text_changed();
 }
 
 }   // namespace studio

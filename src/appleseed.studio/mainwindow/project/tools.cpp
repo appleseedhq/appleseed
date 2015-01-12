@@ -35,11 +35,8 @@
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/searchpaths.h"
 
 // Qt headers.
-#include <QDir>
-#include <QFileInfo>
 #include <QInputDialog>
 #include <QLineEdit>
 #include <QMessageBox>
@@ -165,72 +162,6 @@ void open_entity_editor(
         slot_apply,
         slot_accept,
         slot_cancel);
-}
-
-namespace
-{
-
-    bool find_path_in_dir(
-        const QString&  filename,
-        const QDir&     dir,
-        QString&        result)
-    {
-        result = dir.relativeFilePath(filename);
-
-        // Ignore paths that go up the directory hierarchy.
-        if (result.startsWith(".."))
-            return false;
-
-        const QFileInfo relative_file_info(result);
-        if (relative_file_info.isRelative())
-            return true;
-
-        return false;
-    }
-
-}
-
-QString find_path_in_searchpaths(const SearchPaths& s, const QString& filename)
-{
-    const QFileInfo file_info(filename);
-    assert(file_info.isAbsolute());
-
-    for (size_t i = 0, e = s.size(); i < e; ++i)
-    {
-        // Iterate in reverse order, to match search paths priorities.
-        const size_t index = s.size() - 1 - i;
-        QString search_path(QString::fromStdString(s[index]));
-        const QFileInfo search_path_info(search_path);
-
-        if (search_path_info.isRelative())
-        {
-            assert(s.has_root_path());
-
-            search_path = QDir::cleanPath(
-                QString::fromStdString(s.get_root_path()) +
-                QDir::separator() +
-                search_path);
-        }
-
-        const QDir search_dir(search_path);
-        QString relative_path;
-
-        if (find_path_in_dir(filename, search_dir, relative_path))
-            return relative_path;
-    }
-
-    if (s.has_root_path())
-    {
-        const QDir root_dir(QString::fromStdString(s.get_root_path()));
-        assert(root_dir.isAbsolute());
-
-        QString relative_path;
-
-        if (find_path_in_dir(filename, root_dir, relative_path))
-            return relative_path;
-    }
-
-    return filename;
 }
 
 void show_warning_message_box(const string& title, const string& text)

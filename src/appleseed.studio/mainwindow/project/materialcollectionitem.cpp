@@ -110,6 +110,7 @@ QMenu* MaterialCollectionItem::get_single_item_context_menu() const
     menu->addAction("Create Disney Material...", this, SLOT(slot_create_disney()));
     menu->addAction("Import Disney Material...", this, SLOT(slot_import_disney()));
 #endif
+
     return menu;
 }
 
@@ -199,10 +200,10 @@ void MaterialCollectionItem::slot_import_disney()
             }
         }
 
-        DisneyMaterialFactory factory;
-        auto_release_ptr<Material> material = factory.create(name.c_str(), parameters);
+        auto_release_ptr<Material> material =
+            DisneyMaterialFactory().create(name.c_str(), parameters);
 
-        int index = find_sorted_position(this, name.c_str());
+        const int index = find_sorted_position(this, name.c_str());
         ItemBase* item = create_item(material.get());
         insertChild(index, item);
 
@@ -244,15 +245,12 @@ void MaterialCollectionItem::do_create_material(const char* model)
         new EntityBrowser<Assembly>(Base::m_parent));
 
     auto_ptr<CustomEntityUI> custom_entity_ui;
-    Dictionary values;
 
 #ifdef APPLESEED_WITH_DISNEY_MATERIAL
     if (strcmp(model, "disney_material") == 0)
     {
-        custom_entity_ui = auto_ptr<CustomEntityUI>(
+        custom_entity_ui.reset(
             new DisneyMaterialCustomUI(Base::m_project_builder.get_project()));
-
-        values = DisneyMaterialLayer::get_default_values();
     }
 #endif
 
@@ -263,7 +261,7 @@ void MaterialCollectionItem::do_create_material(const char* model)
         form_factory,
         entity_browser,
         custom_entity_ui,
-        values,
+        Dictionary(),
         this,
         SLOT(slot_create_applied(foundation::Dictionary)),
         SLOT(slot_create_accepted(foundation::Dictionary)),

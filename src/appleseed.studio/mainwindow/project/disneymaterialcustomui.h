@@ -31,27 +31,22 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/customentityui.h"
-#include "utility/inputwidgetproxies.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
-#include "foundation/utility/containers/dictionary.h"
 
 // Standard headers.
 #include <cstddef>
-#include <string>
 #include <vector>
 
 // Qt headers.
 #include <QObject>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class DisneyMaterialLayerUI; } }
-namespace appleseed { namespace studio { class LineEditForwarder; } }
-namespace renderer  { class Project; }
-class QFormLayout;
+namespace appleseed     { namespace studio { class DisneyMaterialLayerUI; } }
+namespace foundation    { class Dictionary; }
+namespace renderer      { class Project; }
 class QPushButton;
-class QSignalMapper;
 class QVBoxLayout;
 class QWidget;
 
@@ -66,7 +61,7 @@ class DisneyMaterialCustomUI
   public:
     explicit DisneyMaterialCustomUI(const renderer::Project& project);
 
-    virtual void  create_custom_widgets(
+    virtual void create_widgets(
         QVBoxLayout*                    layout,
         const foundation::Dictionary&   values) APPLESEED_OVERRIDE;
 
@@ -74,59 +69,22 @@ class DisneyMaterialCustomUI
 
   private slots:
     void slot_add_layer();
-
-    void slot_open_color_picker(const QString& widget_name);
-    void slot_color_changed(const QString& widget_name, const QColor& color);
-
-    void slot_open_file_picker(const QString& widget_name);
-    void slot_open_expression_editor(const QString& widget_name);
-    void slot_expression_changed(const QString& widget_name, const QString& expression);
-    void slot_line_edit_changed(const QString& widget_name);
-    void slot_expression_editor_closed();
+    void slot_move_layer_up(QWidget* layer_widget);
+    void slot_move_layer_down(QWidget* layer_widget);
+    void slot_delete_layer(QWidget* layer_widget);
 
   private:
-    friend class DisneyMaterialLayerUI;
+    const renderer::Project&            m_project;
+    QWidget*                            m_parent;
+    QVBoxLayout*                        m_layout;
 
-    void create_connections();
-    void create_buttons_connections(const QString& widget_name);
-    void create_layer_layout(const std::string& layer_name);
+    std::vector<DisneyMaterialLayerUI*> m_layers;
+    size_t                              m_num_created_layers;
+    QPushButton*                        m_add_layer_button;
 
-    std::string unique_layer_name();
-    std::string texture_to_expression(const QString& path);
-    static std::string expression_to_texture(const std::string& expr);
-
-    void create_text_input_widgets(const foundation::Dictionary& parameter, const std::string& group_name);
-    void create_color_input_widgets(const foundation::Dictionary& parameters, const std::string& group_name);
-    void create_colormap_input_widgets(const foundation::Dictionary& parameters, const std::string& group_name);
-
-    void create_texture_and_expr_buttons();
-
-    void add_layer(const bool update, const foundation::Dictionary& parameters);
-    void layer_deleted(DisneyMaterialLayerUI* layer);
-
-    std::vector<QWidget*>       m_layers_widgets;
-
-    QWidget*                    m_parent;
-    const renderer::Project&    m_project;
-    QWidget*                    m_group_widget;
-    QWidget*                    m_selected_layer_widget;
-    DisneyMaterialLayerUI*      m_last_layer;
-    QPushButton*                m_add_layer_button;
-    LineEditForwarder*          m_line_edit;
-    QPushButton*                m_texture_button;
-    QPushButton*                m_expression_button;
-    QFormLayout*                m_group_layout;
-    QVBoxLayout*                m_form_layout;
-    size_t                      m_num_created_layers;
-
-    QSignalMapper*              m_color_picker_signal_mapper;
-    QSignalMapper*              m_file_picker_signal_mapper;
-    QSignalMapper*              m_expression_editor_signal_mapper;
-    QSignalMapper*              m_line_edit_signal_mapper;
-
-    InputWidgetProxyCollection  m_widget_proxies;
-    foundation::Dictionary      m_renames;
-    foundation::Dictionary      m_values;
+    size_t find_layer_index_by_widget(const QWidget* layer_widget) const;
+    foundation::Dictionary make_new_layer_values();
+    void append_new_layer(const foundation::Dictionary& layer_values);
 };
 
 }       // namespace studio

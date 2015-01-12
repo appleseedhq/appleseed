@@ -34,6 +34,7 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/tools.h"
+#include "utility/miscellaneous.h"
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
@@ -65,6 +66,7 @@
 #include <QScrollArea>
 #include <QShortcut>
 #include <QString>
+#include <Qt>
 #include <QVBoxLayout>
 
 // Boost headers.
@@ -97,16 +99,19 @@ ExpressionEditorWindow::ExpressionEditorWindow(
   , m_show_examples(false)
 {
     m_ui->setupUi(this);
-    setWindowFlags(Qt::Tool);
+
     setAttribute(Qt::WA_DeleteOnClose);
+    setWindowFlags(Qt::Tool);
+
     QHBoxLayout* root_layout = new QHBoxLayout(m_ui->scrollarea);
+
     QVBoxLayout* left_layout = new QVBoxLayout();
     QVBoxLayout* right_layout = new QVBoxLayout();
     root_layout->addLayout(left_layout);
     root_layout->addLayout(right_layout);
 
     // Expression controls.
-    SeExprEdControlCollection *controls = new SeExprEdControlCollection();
+    SeExprEdControlCollection* controls = new SeExprEdControlCollection();
     QScrollArea* controls_scrollarea = new QScrollArea(this);
     controls_scrollarea->setObjectName("expression_controls");
     controls_scrollarea->setMinimumHeight(200);
@@ -149,7 +154,7 @@ ExpressionEditorWindow::ExpressionEditorWindow(
     m_editor->setExpr(expression, true);
     left_layout->addWidget(m_editor);
 
-    m_error = new QLabel("SeExpression has errors. View log for details.");
+    m_error = new QLabel("Expression has errors. View log for details.");
     m_error->setObjectName("error");
     m_error->hide();
     left_layout->addWidget(m_error);
@@ -167,12 +172,13 @@ ExpressionEditorWindow::ExpressionEditorWindow(
     m_ui->buttonbox_layout->setStretch(0, 1);
     m_ui->buttonbox_layout->setStretch(1, 0);
 
-    QPushButton* apply_button = m_ui->buttonbox->button(QDialogButtonBox::Apply);
-
     // Create connections.
     connect(m_ui->buttonbox, SIGNAL(accepted()), SLOT(slot_accept()));
-    connect(apply_button, SIGNAL(clicked()), SLOT(slot_apply()));
     connect(m_ui->buttonbox, SIGNAL(rejected()), SLOT(slot_cancel()));
+    connect(m_ui->buttonbox->button(QDialogButtonBox::Apply), SIGNAL(clicked()), SLOT(slot_apply()));
+    connect(
+        create_window_local_shortcut(this, Qt::Key_Escape), SIGNAL(activated()),
+        this, SLOT(close()));
 }
 
 void ExpressionEditorWindow::apply_expression()
@@ -183,14 +189,14 @@ void ExpressionEditorWindow::apply_expression()
     if (se_expression.is_valid())
     {
         m_error->hide();
-        RENDERER_LOG_INFO("SeExpression successfully applied.");
+        RENDERER_LOG_INFO("Expression successfully applied.");
         const QString q_expression = QString::fromStdString(expression);
         emit signal_expression_applied(m_widget_name, q_expression);
     }
     else
     {
         m_error->show();
-        se_expression.report_error("SeExpression has errors");
+        se_expression.report_error("Expression has errors");
     }
 }
 
@@ -212,7 +218,7 @@ void ExpressionEditorWindow::slot_cancel()
 
 void ExpressionEditorWindow::slot_clear_expression()
 {
-    m_editor->setExpr("");
+    m_editor->setExpr(string());
 }
 
 void ExpressionEditorWindow::slot_save_script()
@@ -292,6 +298,7 @@ void ExpressionEditorWindow::slot_load_script()
 void ExpressionEditorWindow::slot_show_examples()
 {
     m_show_examples = !m_show_examples;
+
     if (m_show_examples)
     {
         if (width() < 800)
@@ -323,7 +330,6 @@ string ExpressionEditorWindow::get_project_path() const
     const filesystem::path project_root_path = filesystem::path(m_project.get_path()).parent_path();
     const filesystem::path file_path = absolute("script.se", project_root_path);
     const filesystem::path file_root_path = file_path.parent_path();
-
     return file_root_path.string();
 }
 

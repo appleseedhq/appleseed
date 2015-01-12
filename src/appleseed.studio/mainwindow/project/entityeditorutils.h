@@ -30,13 +30,13 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYEDITORUTILS_H
 
 // Qt headers.
-#include <QLineEdit>
 #include <QObject>
 #include <QString>
 
 // Forward declarations.
 namespace appleseed { namespace studio { class DoubleSlider; } }
-class QWidget;
+class QColor;
+class QLineEdit;
 
 namespace appleseed {
 namespace studio {
@@ -90,28 +90,6 @@ class ForwardColorChangedSignal
 
   private:
     const QString m_widget_name;
-};
-
-
-//
-// Simplifies information passed by the signal emitted on QLineEdit change.
-//
-
-class LineEditForwarder
-  : public QLineEdit
-{
-    Q_OBJECT
-
-  public:
-    LineEditForwarder(
-        const QString&  contents,
-        QWidget*        parent = 0);
-
-  public slots:
-    void slot_text_changed(const QString& text);
-
-  signals:
-    void signal_text_changed();
 };
 
 }       // namespace studio

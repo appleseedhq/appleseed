@@ -31,46 +31,22 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/disneymateriallayerui.h"
-#include "mainwindow/project/entityeditorutils.h"
-#include "mainwindow/project/expressioneditorwindow.h"
-#include "mainwindow/project/tools.h"
-#include "utility/doubleslider.h"
-#include "utility/interop.h"
-#include "utility/miscellaneous.h"
-#include "utility/mousewheelfocuseventfilter.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/material.h"
-#include "renderer/api/project.h"
 
 // appleseed.foundation headers.
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
-#include "foundation/utility/searchpaths.h"
 
 // Qt headers.
-#include <QColorDialog>
-#include <QFileDialog>
-#include <QFormLayout>
-#include <QHBoxLayout>
-#include <QLabel>
 #include <QPushButton>
-#include <QSignalMapper>
-#include <QString>
-#include <Qt>
-#include <QToolButton>
 #include <QVBoxLayout>
-
-// Boost headers.
-#include "boost/algorithm/string.hpp"
-#include "boost/algorithm/string/split.hpp"
-#include "boost/filesystem/operations.hpp"
-#include "boost/filesystem/path.hpp"
 
 // Standard headers.
 #include <algorithm>
-#include <sstream>
+#include <cassert>
 
-using namespace boost;
 using namespace foundation;
 using namespace renderer;
 using namespace std;
@@ -78,505 +54,195 @@ using namespace std;
 namespace appleseed {
 namespace studio {
 
+//
+// DisneyMaterialCustomUI class implementation.
+//
+
+namespace
+{
+    int get_layer_number(const Dictionary& values)
+    {
+        return
+            values.strings().exist("layer_number")
+                ? values.get<int>("layer_number")
+                : 0;
+    }
+
+    struct LayerDefinitionOrderPredicate
+    {
+        bool operator()(const Dictionary& lhs, const Dictionary& rhs) const
+        {
+            return get_layer_number(lhs) < get_layer_number(rhs);
+        }
+    };
+
+    vector<Dictionary> collect_layer_definitions(const Dictionary& values)
+    {
+        vector<Dictionary> layer_definitions;
+
+        for (const_each<DictionaryDictionary> i = values.dictionaries(); i; ++i)
+            layer_definitions.push_back(i->value());
+
+        sort(
+            layer_definitions.begin(),
+            layer_definitions.end(),
+            LayerDefinitionOrderPredicate());
+
+        return layer_definitions;
+    }
+}
+
 DisneyMaterialCustomUI::DisneyMaterialCustomUI(const Project& project)
   : m_project(project)
   , m_parent(0)
+  , m_layout(0)
   , m_num_created_layers(0)
-  , m_selected_layer_widget(0)
-  , m_color_picker_signal_mapper(new QSignalMapper(this))
-  , m_file_picker_signal_mapper(new QSignalMapper(this))
-  , m_expression_editor_signal_mapper(new QSignalMapper(this))
-  , m_line_edit_signal_mapper(new QSignalMapper(this))
 {
 }
 
-void DisneyMaterialCustomUI::create_custom_widgets(
+void DisneyMaterialCustomUI::create_widgets(
     QVBoxLayout*        layout,
     const Dictionary&   values)
 {
     m_parent = layout->parentWidget();
-
-    // Resize if it has an EntityEditorWidget ancestor.
-    QWidget* parent = m_parent;
-    while (parent != 0)
-    {
-        if (parent->objectName() == "EntityEditorWindow")
-        {
-            parent->resize(800, 800);
-            break;
-        }
-        parent = parent->parentWidget();
-    }
-
-    m_form_layout = layout;
-    m_form_layout->setSpacing(5);
-
-    // Copy values.
-    m_values = values;
+    m_layout = layout;
 
     // Add New Layer button.
     m_add_layer_button = new QPushButton("Add New Layer");
-    m_form_layout->addWidget(m_add_layer_button);
+    m_layout->addWidget(m_add_layer_button);
     connect(m_add_layer_button, SIGNAL(clicked()), this, SLOT(slot_add_layer()));
 
-    // Stretch at the end.
-    m_form_layout->addStretch(1);
+    // Stretcher at the bottom.
+    m_layout->addStretch(1);
 
-    // Build layers.
-    for (size_t i = 1; i <= m_values.dictionaries().size(); ++i)
+    const vector<Dictionary> layer_definitions = collect_layer_definitions(values);
+
+    if (layer_definitions.empty())
     {
-        for (const_each<DictionaryDictionary> d = m_values.dictionaries(); d; ++d)
-        {
-            const size_t layer_number = d->value().get<size_t>("layer_number");
-            if (layer_number == i)
-                add_layer(false, d->value());
-        }
+        // Insert the initial layer.
+        append_new_layer(make_new_layer_values());
     }
-
-    // Recreate connections.
-    create_connections();
+    else
+    {
+        for (const_each<vector<Dictionary> > i = layer_definitions; i; ++i)
+            append_new_layer(*i);
+    }
 }
 
 Dictionary DisneyMaterialCustomUI::get_values() const
 {
-    return m_values;
+    Dictionary values;
+
+    for (size_t i = 0; i < m_layers.size(); ++i)
+    {
+        Dictionary layer_values = m_layers[i]->get_values();
+
+        values.insert(
+            layer_values.get<string>("layer_name"),
+            layer_values.insert("layer_number", i));
+    }
+
+    return values;
 }
 
 void DisneyMaterialCustomUI::slot_add_layer()
 {
-    add_layer(true, Dictionary());
+    append_new_layer(make_new_layer_values());
+
+    emit signal_apply();
 }
 
-void DisneyMaterialCustomUI::slot_open_color_picker(const QString& widget_name)
+void DisneyMaterialCustomUI::slot_move_layer_up(QWidget* layer_widget)
 {
-    IInputWidgetProxy* proxy = m_widget_proxies.get(widget_name.toStdString());
-    const string color_expression = proxy->get();
-    const QColor initial_color = ColorExpressionProxy::expression_to_qcolor(color_expression);
+    const size_t layer_index = find_layer_index_by_widget(layer_widget);
 
-    QColorDialog* dialog = new QColorDialog(initial_color, m_parent);
-    dialog->setWindowTitle("Pick Color");
-    dialog->setOptions(QColorDialog::DontUseNativeDialog);
-
-    ForwardColorChangedSignal* forward_signal =
-        new ForwardColorChangedSignal(dialog, widget_name);
-    connect(
-        dialog, SIGNAL(currentColorChanged(const QColor&)),
-        forward_signal, SLOT(slot_color_changed(const QColor&)));
-    connect(
-        forward_signal, SIGNAL(signal_color_changed(const QString&, const QColor&)),
-        SLOT(slot_color_changed(const QString&, const QColor&)));
-
-    dialog->exec();
-}
-
-void DisneyMaterialCustomUI::slot_color_changed(const QString& widget_name, const QColor& color)
-{
-    IInputWidgetProxy* proxy = m_widget_proxies.get(widget_name.toStdString());
-    proxy->set(ColorExpressionProxy::qcolor_to_expression(color));
-    proxy->emit_signal_changed();
-}
-
-void DisneyMaterialCustomUI::slot_open_file_picker(const QString& widget_name)
-{
-    IInputWidgetProxy* widget_proxy = m_widget_proxies.get(widget_name.toStdString());
-
-    const filesystem::path project_root_path = filesystem::path(m_project.get_path()).parent_path();
-    const filesystem::path file_path = absolute(expression_to_texture(widget_proxy->get()), project_root_path);
-    const filesystem::path file_root_path = file_path.parent_path();
-
-    QFileDialog::Options options;
-    QString selected_filter;
-
-    // TODO: refactor file_picker_filter extensions
-    const QString file_picker_filter("OpenEXR (*.exr);;PNG (*.png);;All Files (*.*)");
-    QString filepath =
-        QFileDialog::getOpenFileName(
-            m_parent,
-            "Open...",
-            QString::fromStdString(file_root_path.string()),
-            file_picker_filter,
-            &selected_filter,
-            options);
-
-    if (!filepath.isEmpty())
+    if (layer_index > 0)
     {
-        const QString native_path = QDir::toNativeSeparators(filepath);
-        widget_proxy->set(texture_to_expression(native_path));
+        swap(m_layers[layer_index], m_layers[layer_index - 1]);
+
+        const int layer_widget_index = m_layout->indexOf(layer_widget);
+        m_layout->takeAt(layer_widget_index);
+        m_layout->insertWidget(layer_widget_index - 1, layer_widget);
     }
 }
 
-void DisneyMaterialCustomUI::slot_open_expression_editor(const QString& widget_name)
+void DisneyMaterialCustomUI::slot_move_layer_down(QWidget* layer_widget)
 {
-    IInputWidgetProxy* proxy = m_widget_proxies.get(widget_name.toStdString());
-    string expression = proxy->get();
+    const size_t layer_index = find_layer_index_by_widget(layer_widget);
 
-    // If widget has a double convert it to valid expression.
-    double value;
-    istringstream sstream(expression);
-    if ((sstream >> value))
-        expression = sstream.str();
-
-    ExpressionEditorWindow* expression_editor_window =
-        new ExpressionEditorWindow(
-            m_project,
-            widget_name,
-            expression,
-            m_parent);
-
-    connect(
-        expression_editor_window, SIGNAL(signal_expression_applied(const QString&, const QString&)),
-        SLOT(slot_expression_changed(const QString&, const QString&)));
-
-    connect(
-        expression_editor_window,
-        SIGNAL(signal_editor_closed()),
-        SLOT(slot_expression_editor_closed()));
-
-    // Disable all layers widgets to prevent inconsistencies
-    // between the layer widgets and the expression editor
-    // while the expression editor is visible.
+    if (layer_index < m_layers.size() - 1)
     {
-        for (each<vector<QWidget*> > i = m_layers_widgets; i; ++i)
-            (*i)->setEnabled(false);
+        swap(m_layers[layer_index], m_layers[layer_index + 1]);
 
-        m_add_layer_button->setEnabled(false);
+        const int layer_widget_index = m_layout->indexOf(layer_widget);
+        m_layout->takeAt(layer_widget_index);
+        m_layout->insertWidget(layer_widget_index + 1, layer_widget);
+    }
+}
+
+void DisneyMaterialCustomUI::slot_delete_layer(QWidget* layer_widget)
+{
+    const size_t layer_index = find_layer_index_by_widget(layer_widget);
+
+    m_layers.erase(m_layers.begin() + layer_index);
+
+    m_layout->removeWidget(layer_widget);
+    layer_widget->deleteLater();
+}
+
+size_t DisneyMaterialCustomUI::find_layer_index_by_widget(const QWidget* layer_widget) const
+{
+    for (size_t i = 0; i < m_layers.size(); ++i)
+    {
+        if (m_layers[i] == layer_widget)
+            return i;
     }
 
-    expression_editor_window->show();
+    assert(!"Could not find layer widget.");
+    return ~0;
 }
 
-void DisneyMaterialCustomUI::slot_expression_changed(
-    const QString& widget_name,
-    const QString& expression)
+Dictionary DisneyMaterialCustomUI::make_new_layer_values()
 {
-    IInputWidgetProxy* proxy = m_widget_proxies.get(widget_name.toStdString());
-    proxy->set(expression.toStdString());
-    proxy->emit_signal_changed();
-}
+    Dictionary values;
 
-void DisneyMaterialCustomUI::slot_line_edit_changed(const QString& widget_name)
-{
-    IInputWidgetProxy* proxy = m_widget_proxies.get(widget_name.toStdString());
+    const DictionaryArray input_metadata = DisneyMaterialLayer::get_input_metadata();
 
-    vector<string> widget_tokens;
-    tokenize(widget_name.toStdString(), ";", widget_tokens);
-
-    const string& initial_layer_name = widget_tokens[0];
-    const string& parameter = widget_tokens[1];
-    string layer_name = m_renames.get(initial_layer_name.c_str());
-
-    // Handle layer rename.
-    if (parameter == "layer_name")
+    for (size_t i = 0; i < input_metadata.size(); ++i)
     {
-        const Dictionary old_layer_params = m_values.dictionary(layer_name);
-        const string new_layer_name = proxy->get();
-        m_renames.insert(initial_layer_name, new_layer_name);
-        m_values.dictionaries().remove(layer_name);
-        m_values.insert(new_layer_name, old_layer_params);
-        layer_name = new_layer_name;
+        const Dictionary& im = input_metadata[i];
+        const string input_name = im.get<string>("name");
+        const string input_value =
+            input_name == "layer_name"
+                ? "layer" + to_string(++m_num_created_layers)
+                : im.get<string>("default");
+        values.insert(input_name, input_value);
     }
 
-    // Handle generic line edit change.
-    Dictionary& layer_params = m_values.dictionary(layer_name);
-    layer_params.insert(parameter, proxy->get());
-
-    emit_signal_custom_applied();
+    return values;
 }
 
-void DisneyMaterialCustomUI::slot_expression_editor_closed()
+void DisneyMaterialCustomUI::append_new_layer(const Dictionary& values)
 {
-    // Enable again all layers widgets when the expression editor is closed.
-    for (each<vector<QWidget*> > i = m_layers_widgets; i; ++i)
-        (*i)->setEnabled(true);
-
-    m_add_layer_button->setEnabled(true);
-}
-
-void DisneyMaterialCustomUI::create_connections()
-{
-    connect(
-        m_color_picker_signal_mapper, SIGNAL(mapped(const QString&)),
-        SLOT(slot_open_color_picker(const QString&)));
+    DisneyMaterialLayerUI* layer_widget =
+        new DisneyMaterialLayerUI(m_project, values, m_parent);
 
     connect(
-        m_file_picker_signal_mapper, SIGNAL(mapped(const QString&)),
-        SLOT(slot_open_file_picker(const QString&)));
-
+        layer_widget, SIGNAL(signal_move_layer_up(QWidget*)),
+        this, SLOT(slot_move_layer_up(QWidget*)));
     connect(
-        m_expression_editor_signal_mapper, SIGNAL(mapped(const QString&)),
-        SLOT(slot_open_expression_editor(const QString&)));
-
+        layer_widget, SIGNAL(signal_move_layer_down(QWidget*)),
+        this, SLOT(slot_move_layer_down(QWidget*)));
     connect(
-        m_line_edit_signal_mapper, SIGNAL(mapped(const QString&)),
-        SLOT(slot_line_edit_changed(const QString&)));
-}
-
-void DisneyMaterialCustomUI::create_buttons_connections(const QString& widget_name)
-{
-    connect(m_line_edit, SIGNAL(signal_text_changed()), m_line_edit_signal_mapper, SLOT(map()));
-    m_line_edit_signal_mapper->setMapping(m_line_edit, widget_name);
-
-    connect(m_texture_button, SIGNAL(clicked()), m_file_picker_signal_mapper, SLOT(map()));
-    m_file_picker_signal_mapper->setMapping(m_texture_button, widget_name);
-
-    connect(m_expression_button, SIGNAL(clicked()), m_expression_editor_signal_mapper, SLOT(map()));
-    m_expression_editor_signal_mapper->setMapping(m_expression_button, widget_name);
-
-    auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(m_line_edit));
-    m_widget_proxies.insert(widget_name.toStdString(), widget_proxy);
-}
-
-void DisneyMaterialCustomUI::create_layer_layout(const string& layer_name)
-{
-    m_last_layer = new DisneyMaterialLayerUI(layer_name, this, m_form_layout);
-    m_group_layout = m_last_layer->get_layout();
-    m_group_widget = m_last_layer;
-
-    m_layers_widgets.push_back(m_group_widget);
-}
-
-string DisneyMaterialCustomUI::unique_layer_name()
-{
-    return "layer" + foundation::to_string(++m_num_created_layers);
-}
-
-string DisneyMaterialCustomUI::texture_to_expression(const QString& path)
-{
-    const SearchPaths& search_paths = m_project.search_paths();
-    const QString relative_path = find_path_in_searchpaths(search_paths, path);
-    const QString texture_expression = QString("texture(\"%1\", $u, $v)").arg(relative_path);
-    return texture_expression.toStdString();
-}
-
-string DisneyMaterialCustomUI::expression_to_texture(const string& expr)
-{
-    // TODO: refactor as soon as possible
-    string expression = trim_both(expr, " \r\n");
-    vector<string> tokens;
-    tokenize(expression, "()", tokens);
-    if (tokens.size() != 2)
-        return string();
-
-    if (trim_both(tokens[0]) != "texture")
-        return string();
-
-    string inner_content = tokens[1];
-    tokens.clear();
-    tokenize(inner_content, ",", tokens);
-    if (tokens.size() != 3)
-        return string();
-
-    if (trim_both(tokens[1]) != "$u")
-        return string();
-
-    if (trim_both(tokens[2]) != "$v")
-        return string();
-
-    return trim_both(tokens[0], " \"");
-}
-
-void DisneyMaterialCustomUI::create_text_input_widgets(
-    const Dictionary&   parameters,
-    const string&       group_name)
-{
-    const string label_name = parameters.get<string>("label") + ":";
-    const string parameter_name = parameters.get<string>("name");
-    const string value = parameters.get<string>("default");
-    m_line_edit = new LineEditForwarder(value.c_str(), m_group_widget);
-
-    const QString name = QString::fromStdString(group_name + ";" + parameter_name);
-    connect(m_line_edit, SIGNAL(signal_text_changed()), m_line_edit_signal_mapper, SLOT(map()));
-    m_line_edit_signal_mapper->setMapping(m_line_edit, name);
-
-    auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(m_line_edit));
-    m_widget_proxies.insert(name.toStdString(), widget_proxy);
-
-    QHBoxLayout* layout = new QHBoxLayout();
-    layout->setSpacing(6);
-    layout->addWidget(m_line_edit);
-
-    m_group_layout->addRow(QString::fromStdString(label_name), layout);
-}
-
-void DisneyMaterialCustomUI::create_color_input_widgets(
-    const Dictionary&   parameters,
-    const string&       group_name)
-{
-    const string label_name = parameters.get<string>("label") + ":";
-    const string parameter_name = parameters.get<string>("name");
-    const string value = parameters.get<string>("default");
-
-    m_line_edit = new LineEditForwarder(value.c_str(), m_group_widget);
-
-    const QString name = QString::fromStdString(group_name + ";" + parameter_name);
-    QToolButton* picker_button = new QToolButton(m_group_widget);
-    picker_button->setObjectName("ColorPicker");
-    ColorPickerProxy picker_proxy(m_line_edit, picker_button);
-
-    create_texture_and_expr_buttons();
-
-    QString picker_name = QString::fromStdString(group_name + "_color_expression");
-    connect(picker_button, SIGNAL(clicked()), m_color_picker_signal_mapper, SLOT(map()));
-    m_color_picker_signal_mapper->setMapping(picker_button, picker_name);
-    auto_ptr<IInputWidgetProxy> widget_proxy(new ColorExpressionProxy(m_line_edit, picker_button));
-    widget_proxy->set(value);
-    m_widget_proxies.insert(picker_name.toStdString(), widget_proxy);
-
-    create_buttons_connections(name);
-
-    QHBoxLayout* layout = new QHBoxLayout();
-    layout->setSpacing(6);
-    layout->addWidget(m_line_edit);
-    layout->addWidget(picker_button);
-    layout->addWidget(m_texture_button);
-    layout->addWidget(m_expression_button);
-
-    m_group_layout->addRow(QString::fromStdString(label_name), layout);
-}
-
-void DisneyMaterialCustomUI::create_colormap_input_widgets(
-    const Dictionary&   parameters,
-    const string&       group_name)
-{
-    const string label_name = parameters.get<string>("label") + ":";
-    const string parameter_name = parameters.get<string>("name");
-    const string value = parameters.get<string>("default");
-
-    m_line_edit = new LineEditForwarder(value.c_str(), m_group_widget);
-
-    const double MinValue = 0.0;
-    const double MaxValue = 1.0;
-
-    DoubleSlider* slider = new DoubleSlider(Qt::Horizontal, m_group_widget);
-    slider->setRange(MinValue, MaxValue);
-    slider->setPageStep((MaxValue - MinValue) / 10.0);
-    slider->setMaximumWidth(100);
-
-    new MouseWheelFocusEventFilter(slider);
-
-    // Connect the line edit and the slider together.
-    LineEditDoubleSliderAdaptor* adaptor =
-        new LineEditDoubleSliderAdaptor(m_line_edit, slider);
+        layer_widget, SIGNAL(signal_delete_layer(QWidget*)),
+        this, SLOT(slot_delete_layer(QWidget*)));
     connect(
-        slider, SIGNAL(valueChanged(const double)),
-        adaptor, SLOT(slot_set_line_edit_value(const double)));
-    connect(
-        m_line_edit, SIGNAL(textChanged(const QString&)),
-        adaptor, SLOT(slot_set_slider_value(const QString&)));
-    connect(
-        m_line_edit, SIGNAL(editingFinished()),
-        adaptor, SLOT(slot_apply_slider_value()));
+        layer_widget, SIGNAL(signal_apply()),
+        this, SIGNAL(signal_apply()));
 
-    const QString name = QString::fromStdString(group_name + ";" + parameter_name);
+    m_layers.push_back(layer_widget);
 
-    create_texture_and_expr_buttons();
-    create_buttons_connections(name);
-
-    QHBoxLayout* layout = new QHBoxLayout();
-    layout->setSpacing(6);
-    layout->addWidget(m_line_edit);
-    layout->addWidget(slider);
-    layout->addWidget(m_texture_button);
-    layout->addWidget(m_expression_button);
-
-    m_group_layout->addRow(QString::fromStdString(label_name), layout);
-}
-
-void DisneyMaterialCustomUI::create_texture_and_expr_buttons()
-{
-    const QIcon texture_icon = QIcon(":/icons/disney_texture.png");
-    m_texture_button = new QPushButton(texture_icon, QString(), m_group_widget);
-    m_texture_button->setFlat(true);
-    m_texture_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-
-    const QIcon expression_icon = QIcon(":/icons/disney_expr.png");
-    m_expression_button = new QPushButton(expression_icon, QString(), m_group_widget);
-    m_expression_button->setFlat(true);
-    m_expression_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-}
-
-void DisneyMaterialCustomUI::add_layer(const bool update, const Dictionary& parameters)
-{
-    DictionaryArray layer_metadata = DisneyMaterialLayer::get_input_metadata();
-
-    string layer_name =
-        parameters.strings().exist("layer_name")
-            ? parameters.strings().get<string>("layer_name")
-            : unique_layer_name();
-
-    // Change layer name until is certainly unique.
-    while (update && m_values.dictionaries().exist(layer_name))
-        layer_name = unique_layer_name();
-
-    create_layer_layout(layer_name);
-
-    Dictionary layer_params;
-    if (update)
-        layer_params.insert("layer_number", m_values.dictionaries().size() + 1);
-
-    for (size_t i = 0; i < layer_metadata.size(); ++i)
-    {
-        Dictionary metadata = layer_metadata[i];
-        const string type = metadata.get<string>("type");
-        const string name = metadata.get<string>("name");
-
-        // Change default value to existing value.
-        string default_value =
-            parameters.strings().exist(name)
-                ? parameters.get(name.c_str())
-                : metadata.get<string>("default");
-
-        // Change default name in metadata.
-        if (name == "layer_name")
-            default_value = layer_name;
-
-        metadata.insert("default", default_value);
-
-        if (type == "colormap")
-        {
-            if (!metadata.dictionaries().empty())
-            {
-                if (metadata.dictionaries().get("entity_types").strings().exist("color"))
-                    create_color_input_widgets(metadata, layer_name);
-                else
-                    create_colormap_input_widgets(metadata, layer_name);
-            }
-            else
-            {
-                create_colormap_input_widgets(metadata, layer_name);
-            }
-        }
-        else if (type == "text")
-        {
-            create_text_input_widgets(metadata, layer_name);
-        }
-
-        if (update)
-            layer_params.insert(name, default_value);
-    }
-
-    if (update)
-        m_values.insert(layer_name, layer_params);
-    m_renames.insert(layer_name, layer_name);
-
-    // Add default folded value.
-    Dictionary& current_layer = m_values.dictionaries().get(layer_name);
-    if (!current_layer.strings().exist("folded"))
-        current_layer.insert("folded", false);
-
-    m_last_layer->apply_layer_fold_status();
-
-    emit_signal_custom_applied();
-}
-
-void DisneyMaterialCustomUI::layer_deleted(DisneyMaterialLayerUI* layer)
-{
-    m_layers_widgets.erase(
-        remove(
-            m_layers_widgets.begin(),
-            m_layers_widgets.end(),
-            layer),
-        m_layers_widgets.end());
+    m_layout->insertWidget(m_layout->count() - 2, layer_widget);
 }
 
 }   // namespace studio

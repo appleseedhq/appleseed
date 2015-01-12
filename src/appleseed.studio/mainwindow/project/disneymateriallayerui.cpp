@@ -30,63 +30,112 @@
 #include "disneymateriallayerui.h"
 
 // appleseed.studio headers.
-#include "mainwindow/project/disneymaterialcustomui.h"
+#include "mainwindow/project/entityeditorutils.h"
+#include "mainwindow/project/expressioneditorwindow.h"
+#include "utility/doubleslider.h"
+#include "utility/interop.h"
+#include "utility/miscellaneous.h"
+#include "utility/mousewheelfocuseventfilter.h"
+
+// appleseed.renderer headers.
+#include "renderer/api/material.h"
+#include "renderer/api/project.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/foreach.h"
+#include "foundation/utility/searchpaths.h"
 
 // Qt headers.
+#include <QColor>
+#include <QColorDialog>
+#include <QDir>
+#include <QFileDialog>
+#include <QFileInfo>
 #include <QFormLayout>
 #include <QHBoxLayout>
-#include <QLayoutItem>
-#include <QStyle>
+#include <QLineEdit>
+#include <QSignalMapper>
 #include <Qt>
 #include <QToolButton>
+#include <QVariant>
 #include <QVBoxLayout>
 #include <QWidget>
 
+// Boost headers.
+#include "boost/filesystem/operations.hpp"
+#include "boost/filesystem/path.hpp"
+
 // Standard headers.
+#include <cassert>
 #include <cstddef>
 
+using namespace boost;
 using namespace foundation;
+using namespace renderer;
 using namespace std;
 
 namespace appleseed {
 namespace studio {
 
 DisneyMaterialLayerUI::DisneyMaterialLayerUI(
-    const string&               layer_name,
-    DisneyMaterialCustomUI*     entity_editor,
-    QVBoxLayout*                parent_layout,
-    QWidget*                    parent)
+    const Project&      project,
+    const Dictionary&   values,
+    QWidget*            parent)
   : QFrame(parent)
-  , m_layer_name(layer_name)
-  , m_entity_editor(entity_editor)
-  , m_parent_layout(parent_layout)
+  , m_project(project)
+  , m_input_metadata(DisneyMaterialLayer::get_input_metadata())
   , m_fold_icon(":/widgets/layer_fold.png")
   , m_unfold_icon(":/widgets/layer_unfold.png")
+  , m_color_picker_signal_mapper(new QSignalMapper(this))
+  , m_file_picker_signal_mapper(new QSignalMapper(this))
+  , m_expression_editor_signal_mapper(new QSignalMapper(this))
+  , m_is_folded(values.strings().exist("layer_folded") && values.get<bool>("layer_folded"))
 {
-    setObjectName("material_editor_layer");
+    setProperty("hasFrame", true);
 
+    create_layer_ui();
+    create_input_widgets(values);
+
+    connect(
+        m_color_picker_signal_mapper, SIGNAL(mapped(const QString&)),
+        SLOT(slot_open_color_picker(const QString&)));
+
+    connect(
+        m_file_picker_signal_mapper, SIGNAL(mapped(const QString&)),
+        SLOT(slot_open_file_picker(const QString&)));
+
+    connect(
+        m_expression_editor_signal_mapper, SIGNAL(mapped(const QString&)),
+        SLOT(slot_open_expression_editor(const QString&)));
+
+    if (m_is_folded)
+        fold();
+}
+
+void DisneyMaterialLayerUI::create_layer_ui()
+{
+    // Top-level layout of the layer
     QVBoxLayout* layout = new QVBoxLayout(this);
-    m_parent_layout->insertWidget(m_parent_layout->count() - 2, this);
 
-    // Container for the layer buttons.
+    // Container widget for the layer buttons.
     QWidget* button_box = new QWidget(this);
     QHBoxLayout* button_box_layout = new QHBoxLayout(button_box);
     button_box_layout->setSpacing(0);
     button_box_layout->setMargin(0);
     layout->addWidget(button_box);
 
-    // Folding button.
-    m_fold_button = new QToolButton(button_box);
-    m_fold_button->setIcon(m_fold_icon);
-    button_box_layout->addWidget(m_fold_button);
-    connect(m_fold_button, SIGNAL(clicked()), this, SLOT(slot_fold()));
+    // Fold button.
+    m_fold_unfold_button = new QToolButton(button_box);
+    m_fold_unfold_button->setIcon(m_fold_icon);
+    button_box_layout->addWidget(m_fold_unfold_button);
+    connect(m_fold_unfold_button, SIGNAL(clicked()), this, SLOT(slot_fold_unfold_layer()));
 
-    // Place the other buttons on the right side.
-    button_box_layout->addStretch(1);
+    // Layer header (only visible when the layer is folded).
+    m_header_widget = new QWidget(button_box);
+    m_header_widget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    m_header_layout = new QFormLayout(m_header_widget);
+    m_header_layout->setSpacing(7);
+    button_box_layout->addWidget(m_header_widget);
 
     // Move Up button.
     QToolButton* up_button = new QToolButton(button_box);
@@ -106,195 +155,459 @@ DisneyMaterialLayerUI::DisneyMaterialLayerUI(
     button_box_layout->addWidget(remove_button);
     connect(remove_button, SIGNAL(clicked()), this, SLOT(slot_delete_layer()));
 
-    // Layout for the layer's content.
-    m_inner_layout = new QFormLayout();
-    m_inner_layout->setSpacing(7);
-    layout->addLayout(m_inner_layout);
-
-    // A spacer widget inserted below the label when the layer is folded.
-    m_spacer = new QWidget();
-    QHBoxLayout* spacer_layout = new QHBoxLayout(m_spacer);
-    spacer_layout->setSpacing(0);
+    // Container widget for the layer contents.
+    m_content_widget = new QWidget(this);
+    m_content_layout = new QFormLayout(m_content_widget);
+    m_content_layout->setLabelAlignment(Qt::AlignRight);
+    m_content_layout->setSpacing(10);
+    m_content_layout->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
+    layout->addWidget(m_content_widget);
 }
 
-QFormLayout* DisneyMaterialLayerUI::get_layout()
+void DisneyMaterialLayerUI::create_input_widgets(const Dictionary& values)
 {
-    return m_inner_layout;
+    for (size_t i = 0; i < m_input_metadata.size(); ++i)
+    {
+        Dictionary im = m_input_metadata[i];
+
+        const string input_name = im.get<string>("name");
+        const string input_type = im.get<string>("type");
+
+        if (values.strings().exist(input_name))
+            im.insert("default", values.get(input_name.c_str()));
+
+        auto_ptr<IInputWidgetProxy> widget_proxy =
+            input_type == "colormap" ?
+                im.dictionaries().exist("entity_types") &&
+                im.dictionaries().get("entity_types").strings().exist("color")
+                    ? create_color_input_widgets(im)
+                    : create_colormap_input_widgets(im) :
+            input_type == "text" ? create_text_input_widgets(im) :
+            auto_ptr<IInputWidgetProxy>(0);
+
+        assert(widget_proxy.get());
+
+        connect(widget_proxy.get(), SIGNAL(signal_changed()), SIGNAL(signal_apply()));
+
+        m_widget_proxies.insert(input_name, widget_proxy);
+    }
+}
+
+Dictionary DisneyMaterialLayerUI::get_values() const
+{
+    return
+        m_widget_proxies
+            .get_values()
+            .insert("layer_folded", m_is_folded);
 }
 
 void DisneyMaterialLayerUI::mouseDoubleClickEvent(QMouseEvent* event)
 {
-    toggle_fold_layer_status();
+    slot_fold_unfold_layer();
 }
 
-string DisneyMaterialLayerUI::get_layer_name() const
+void DisneyMaterialLayerUI::slot_fold_unfold_layer()
 {
-    return m_entity_editor->m_renames.get(m_layer_name.c_str());
-}
-
-Dictionary& DisneyMaterialLayerUI::get_layer_params()
-{
-    return m_entity_editor->m_values.dictionaries().get(get_layer_name());
-}
-
-void DisneyMaterialLayerUI::toggle_fold_layer_status()
-{
-    // Update model.
-    Dictionary& layer_params = get_layer_params();
-    bool folded = layer_params.get<bool>("folded");
-    folded = !folded;
-    layer_params.insert("folded", folded);
-
-    // Update UI.
-    update_ui_for_fold_status(folded);
-}
-
-void DisneyMaterialLayerUI::apply_layer_fold_status()
-{
-    update_ui_for_fold_status(get_layer_params().get<bool>("folded"));
-}
-
-void DisneyMaterialLayerUI::update_ui_for_fold_status(const bool folded)
-{
-    if (!folded)
-    {
-        m_inner_layout->setSpacing(7);
-        m_inner_layout->removeWidget(m_spacer);
-        m_spacer->hide();
-        m_fold_button->setIcon(m_fold_icon);
-    }
-
-    for (int i = 2; i < m_inner_layout->count(); ++i)
-    {
-        QLayoutItem* item = m_inner_layout->itemAt(i);
-
-        QWidget* widget = item->widget();
-        if (widget)
-            widget->setShown(!folded);
-
-        QLayout* vertical_layout = item->layout();
-        if (vertical_layout)
-        {
-            for (int j = 0; j < vertical_layout->count(); ++j)
-            {
-                QWidget* widget = vertical_layout->itemAt(j)->widget();
-                widget->setShown(!folded);
-            }
-        }
-    }
-
-    if (folded)
-    {
-        m_inner_layout->setSpacing(0);
-        m_inner_layout->addWidget(m_spacer);
-        m_spacer->show();
-        m_fold_button->setIcon(m_unfold_icon);
-    }
-
-    // Add extra margin to shown labels when folded.
-    QWidget* label = m_inner_layout->itemAt(0)->widget();
-    label->setObjectName(folded ? "folded_label" : "unfolded_label");
-    style()->unpolish(label);
-    style()->polish(label);
-}
-
-void DisneyMaterialLayerUI::slot_delete_layer()
-{
-    // Remove model.
-    const string layer_rename = get_layer_name();
-    const Dictionary& deleted_layer = m_entity_editor->m_values.dictionary(layer_rename);
-    const size_t deleted_layer_number = deleted_layer.get<size_t>("layer_number");
-    m_entity_editor->m_values.dictionaries().remove(layer_rename);
-
-    // Shift remaining layer numbers.
-    for (const_each<DictionaryDictionary> i = m_entity_editor->m_values.dictionaries(); i; ++i)
-    {
-        Dictionary& layer_params = m_entity_editor->m_values.dictionary(i->name());
-        const size_t layer_number = layer_params.get<size_t>("layer_number");
-        if (layer_number > deleted_layer_number)
-            layer_params.insert("layer_number", layer_number - 1);
-    }
-
-    m_entity_editor->layer_deleted(this);
-    m_entity_editor->emit_signal_custom_applied();
-    this->deleteLater();
-}
-
-void DisneyMaterialLayerUI::update_model(const int new_position, const int offset)
-{
-    if (new_position > 0)
-    {
-        string previous_layer_name, next_layer_name;
-        for (const_each<DictionaryDictionary> i = m_entity_editor->m_values.dictionaries(); i; ++i)
-        {
-            Dictionary& layer_params = m_entity_editor->m_values.dictionary(i->name());
-            size_t layer_number = layer_params.get<size_t>("layer_number");
-            if (layer_number == new_position - 1 + offset)
-                previous_layer_name = i->name();
-            else if (layer_number == new_position + offset)
-                next_layer_name = i->name();
-        }
-        m_entity_editor->m_values
-            .dictionary(previous_layer_name)
-            .insert("layer_number", new_position + offset);
-        m_entity_editor->m_values
-            .dictionary(next_layer_name)
-            .insert("layer_number", new_position - 1 + offset);
-        m_entity_editor->emit_signal_custom_applied();
-    }
+    m_is_folded = !m_is_folded;
+    m_is_folded ? fold() : unfold();
 }
 
 void DisneyMaterialLayerUI::slot_move_layer_up()
 {
-    int new_position = 0;
-
-    // Update interface.
-    for (int i = 1; i < m_parent_layout->count(); ++i)
-    {
-        QLayoutItem* layout_item = m_parent_layout->itemAt(i);
-        if (layout_item->widget() == this)
-        {
-            if (i > 1)
-            {
-                m_parent_layout->takeAt(i);
-                new_position = i - 1;
-                m_parent_layout->insertWidget(new_position, this);
-            }
-            break;
-        }
-    }
-
-    // Update model.
-    update_model(new_position, 1);
+    emit signal_move_layer_up(this);
 }
 
 void DisneyMaterialLayerUI::slot_move_layer_down()
 {
-    int new_position = 0;
-
-    // Update interface.
-    for (int i = 1; i < m_parent_layout->count(); ++i)
-    {
-        QLayoutItem* layout_item = m_parent_layout->itemAt(i);
-        if (layout_item->widget() == this)
-        {
-            if (i < m_parent_layout->count() - 3)
-            {
-                m_parent_layout->takeAt(i);
-                new_position = i + 1;
-                m_parent_layout->insertWidget(new_position, this);
-            }
-            break;
-        }
-    }
-
-    // Update model.
-    update_model(new_position, 0);
+    emit signal_move_layer_down(this);
 }
 
-void DisneyMaterialLayerUI::slot_fold()
+void DisneyMaterialLayerUI::slot_delete_layer()
 {
-    toggle_fold_layer_status();
+    emit signal_delete_layer(this);
+}
+
+void DisneyMaterialLayerUI::slot_open_color_picker(const QString& widget_name)
+{
+    IInputWidgetProxy* widget_proxy = m_widget_proxies.get(widget_name.toStdString());
+
+    const string color_expression = widget_proxy->get();
+    const QColor initial_color = ColorExpressionProxy::expression_to_qcolor(widget_proxy->get());
+
+    QColorDialog* dialog = new QColorDialog(initial_color, m_content_widget);
+    dialog->setWindowTitle("Pick Color");
+    dialog->setOptions(QColorDialog::DontUseNativeDialog);
+
+    ForwardColorChangedSignal* forward_signal =
+        new ForwardColorChangedSignal(dialog, widget_name);
+    connect(
+        dialog, SIGNAL(currentColorChanged(const QColor&)),
+        forward_signal, SLOT(slot_color_changed(const QColor&)));
+    connect(
+        forward_signal, SIGNAL(signal_color_changed(const QString&, const QColor&)),
+        SLOT(slot_color_changed(const QString&, const QColor&)));
+
+    dialog->exec();
+}
+
+void DisneyMaterialLayerUI::slot_color_changed(const QString& widget_name, const QColor& color)
+{
+    IInputWidgetProxy* widget_proxy = m_widget_proxies.get(widget_name.toStdString());
+    widget_proxy->set(ColorExpressionProxy::qcolor_to_expression(color));
+    widget_proxy->emit_signal_changed();
+}
+
+namespace
+{
+    bool find_path_in_dir(
+        const QString&  filename,
+        const QDir&     dir,
+        QString&        result)
+    {
+        result = dir.relativeFilePath(filename);
+
+        // Ignore paths that go up the directory hierarchy.
+        if (result.startsWith(".."))
+            return false;
+
+        const QFileInfo relative_file_info(result);
+        if (relative_file_info.isRelative())
+            return true;
+
+        return false;
+    }
+
+    QString find_path_in_search_paths(const SearchPaths& s, const QString& filename)
+    {
+        const QFileInfo file_info(filename);
+        assert(file_info.isAbsolute());
+
+        for (size_t i = 0; i < s.size(); ++i)
+        {
+            // Iterate in reverse order, to match search paths priorities.
+            QString search_path(QString::fromStdString(s[s.size() - 1 - i]));
+            const QFileInfo search_path_info(search_path);
+
+            if (search_path_info.isRelative())
+            {
+                assert(s.has_root_path());
+
+                search_path =
+                    QDir::cleanPath(
+                        QString::fromStdString(s.get_root_path()) +
+                        QDir::separator() +
+                        search_path);
+            }
+
+            const QDir search_dir(search_path);
+            QString relative_path;
+
+            if (find_path_in_dir(filename, search_dir, relative_path))
+                return relative_path;
+        }
+
+        if (s.has_root_path())
+        {
+            const QDir root_dir(QString::fromStdString(s.get_root_path()));
+            assert(root_dir.isAbsolute());
+
+            QString relative_path;
+
+            if (find_path_in_dir(filename, root_dir, relative_path))
+                return relative_path;
+        }
+
+        return filename;
+    }
+
+    string texture_to_expression(const SearchPaths& search_paths, const QString& path)
+    {
+        const QString relative_path = find_path_in_search_paths(search_paths, path);
+        const QString texture_expression = QString("texture(\"%1\", $u, $v)").arg(relative_path);
+        return texture_expression.toStdString();
+    }
+
+    string expression_to_texture(const string& expr)
+    {
+        // TODO: refactor as soon as possible
+        string expression = trim_both(expr, " \r\n");
+        vector<string> tokens;
+        tokenize(expression, "()", tokens);
+        if (tokens.size() != 2)
+            return string();
+
+        if (trim_both(tokens[0]) != "texture")
+            return string();
+
+        string inner_content = tokens[1];
+        tokens.clear();
+        tokenize(inner_content, ",", tokens);
+        if (tokens.size() != 3)
+            return string();
+
+        if (trim_both(tokens[1]) != "$u")
+            return string();
+
+        if (trim_both(tokens[2]) != "$v")
+            return string();
+
+        return trim_both(tokens[0], " \"");
+    }
+}
+
+void DisneyMaterialLayerUI::slot_open_file_picker(const QString& widget_name)
+{
+    IInputWidgetProxy* widget_proxy = m_widget_proxies.get(widget_name.toStdString());
+
+    const filesystem::path project_root_path = filesystem::path(m_project.get_path()).parent_path();
+    const filesystem::path file_path = absolute(expression_to_texture(widget_proxy->get()), project_root_path);
+    const filesystem::path file_root_path = file_path.parent_path();
+
+    QFileDialog::Options options;
+    QString selected_filter;
+
+    // todo: factorize filter string.
+    const QString file_picker_filter("OpenEXR (*.exr);;PNG (*.png);;All Files (*.*)");
+    QString filepath =
+        QFileDialog::getOpenFileName(
+            m_content_widget,
+            "Open...",
+            QString::fromStdString(file_root_path.string()),
+            file_picker_filter,
+            &selected_filter,
+            options);
+
+    if (!filepath.isEmpty())
+    {
+        const QString native_path = QDir::toNativeSeparators(filepath);
+        widget_proxy->set(texture_to_expression(m_project.search_paths(), native_path));
+    }
+}
+
+void DisneyMaterialLayerUI::slot_open_expression_editor(const QString& widget_name)
+{
+    IInputWidgetProxy* widget_proxy = m_widget_proxies.get(widget_name.toStdString());
+
+    ExpressionEditorWindow* expression_editor_window =
+        new ExpressionEditorWindow(
+            m_project,
+            widget_name,
+            widget_proxy->get(),
+            m_content_widget);
+
+    connect(
+        expression_editor_window,
+        SIGNAL(signal_expression_applied(const QString&, const QString&)),
+        SLOT(slot_expression_changed(const QString&, const QString&)));
+
+    expression_editor_window->show();
+    expression_editor_window->activateWindow();
+}
+
+void DisneyMaterialLayerUI::slot_expression_changed(
+    const QString& widget_name,
+    const QString& expression)
+{
+    IInputWidgetProxy* widget_proxy = m_widget_proxies.get(widget_name.toStdString());
+    widget_proxy->set(expression.toStdString());
+    widget_proxy->emit_signal_changed();
+}
+
+namespace
+{
+    QString get_label_text(const Dictionary& metadata)
+    {
+        return metadata.get<QString>("label") + ":";
+    }
+
+    bool should_be_focused(const Dictionary& metadata)
+    {
+        return
+            metadata.strings().exist("focus") &&
+            metadata.strings().get<bool>("focus");
+    }
+}
+
+auto_ptr<IInputWidgetProxy> DisneyMaterialLayerUI::create_text_input_widgets(const Dictionary& metadata)
+{
+    QLineEdit* line_edit = new QLineEdit(m_content_widget);
+
+    if (should_be_focused(metadata))
+    {
+        line_edit->selectAll();
+        line_edit->setFocus();
+    }
+
+    m_content_layout->addRow(get_label_text(metadata), line_edit);
+
+    auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
+
+    if (metadata.strings().exist("default"))
+        widget_proxy->set(metadata.strings().get<string>("default"));
+
+    return widget_proxy;
+}
+
+auto_ptr<IInputWidgetProxy> DisneyMaterialLayerUI::create_color_input_widgets(const Dictionary& metadata)
+{
+    QLineEdit* line_edit = new QLineEdit(m_content_widget);
+
+    QToolButton* picker_button = new QToolButton(m_content_widget);
+    picker_button->setObjectName("ColorPicker");
+    connect(picker_button, SIGNAL(clicked()), m_color_picker_signal_mapper, SLOT(map()));
+
+    const string name = metadata.get<string>("name");
+    m_color_picker_signal_mapper->setMapping(picker_button, QString::fromStdString(name));
+
+    if (should_be_focused(metadata))
+    {
+        line_edit->selectAll();
+        line_edit->setFocus();
+    }
+
+    QHBoxLayout* layout = new QHBoxLayout();
+    layout->setSpacing(6);
+    layout->addWidget(line_edit);
+    layout->addWidget(picker_button);
+    layout->addWidget(create_texture_button(name));
+    layout->addWidget(create_expression_button(name));
+    m_content_layout->addRow(get_label_text(metadata), layout);
+
+    auto_ptr<ColorExpressionProxy> widget_proxy(new ColorExpressionProxy(line_edit, picker_button));
+
+    if (metadata.strings().exist("default"))
+        widget_proxy->set(metadata.strings().get<string>("default"));
+
+    return widget_proxy;
+}
+
+auto_ptr<IInputWidgetProxy> DisneyMaterialLayerUI::create_colormap_input_widgets(const Dictionary& metadata)
+{
+    QLineEdit* line_edit = new QLineEdit(m_content_widget);
+    line_edit->setMaximumWidth(120);
+
+    const double MinValue = 0.0;
+    const double MaxValue = 1.0;
+
+    DoubleSlider* slider = new DoubleSlider(Qt::Horizontal, m_content_widget);
+    slider->setRange(MinValue, MaxValue);
+    slider->setPageStep((MaxValue - MinValue) / 10.0);
+
+    new MouseWheelFocusEventFilter(slider);
+
+    // Connect the line edit and the slider together.
+    LineEditDoubleSliderAdaptor* adaptor =
+        new LineEditDoubleSliderAdaptor(line_edit, slider);
+    connect(
+        slider, SIGNAL(valueChanged(const double)),
+        adaptor, SLOT(slot_set_line_edit_value(const double)));
+    connect(
+        line_edit, SIGNAL(textChanged(const QString&)),
+        adaptor, SLOT(slot_set_slider_value(const QString&)));
+    connect(
+        line_edit, SIGNAL(editingFinished()),
+        adaptor, SLOT(slot_apply_slider_value()));
+
+    connect(slider, SIGNAL(valueChanged(int)), SIGNAL(signal_apply()));
+
+    if (should_be_focused(metadata))
+    {
+        line_edit->selectAll();
+        line_edit->setFocus();
+    }
+
+    const string name = metadata.get<string>("name");
+
+    QHBoxLayout* layout = new QHBoxLayout();
+    layout->setSpacing(6);
+    layout->addWidget(line_edit);
+    layout->addWidget(slider);
+    layout->addWidget(create_texture_button(name));
+    layout->addWidget(create_expression_button(name));
+    m_content_layout->addRow(get_label_text(metadata), layout);
+
+    auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
+
+    if (metadata.strings().exist("default"))
+        widget_proxy->set(metadata.strings().get<string>("default"));
+
+    return widget_proxy;
+}
+
+QWidget* DisneyMaterialLayerUI::create_texture_button(const string& name)
+{
+    QToolButton* texture_button = new QToolButton(m_content_widget);
+    texture_button->setIcon(QIcon(":/icons/disney_texture.png"));
+    texture_button->setToolTip("Bind Texture...");
+
+    connect(texture_button, SIGNAL(clicked()), m_file_picker_signal_mapper, SLOT(map()));
+    m_file_picker_signal_mapper->setMapping(texture_button, QString::fromStdString(name));
+
+    return texture_button;
+}
+
+QWidget* DisneyMaterialLayerUI::create_expression_button(const string& name)
+{
+    QToolButton* expression_button = new QToolButton(m_content_widget);
+    expression_button->setIcon(QIcon(":/icons/disney_expr.png"));
+    expression_button->setToolTip("Bind Expression...");
+
+    connect(expression_button, SIGNAL(clicked()), m_expression_editor_signal_mapper, SLOT(map()));
+    m_expression_editor_signal_mapper->setMapping(expression_button, QString::fromStdString(name));
+
+    return expression_button;
+}
+
+namespace
+{
+    QString get_layer_name_label(const DictionaryArray& input_metadata)
+    {
+        for (size_t i = 0; i < input_metadata.size(); ++i)
+        {
+            if (input_metadata[i].get<string>("name") == "layer_name")
+                return get_label_text(input_metadata[i]);
+        }
+
+        assert(!"Could not find layer name input metadata.");
+        return QString();
+    }
+}
+
+void DisneyMaterialLayerUI::fold()
+{
+    // Hide the layer's content.
+    m_content_widget->setVisible(false);
+
+    // Use dynamic_cast<> solely to allow checking that we indeed have a LineEditProxy.
+    LineEditProxy* layer_name_proxy =
+        dynamic_cast<LineEditProxy*>(m_widget_proxies.get("layer_name"));
+    assert(layer_name_proxy);
+
+    // Show the layer's name in the header.
+    QLineEdit* name_line_edit = new QLineEdit(m_header_widget);
+    name_line_edit->setText(
+        QString::fromStdString(layer_name_proxy->get()));
+    connect(
+        name_line_edit, SIGNAL(textChanged(const QString&)),
+        layer_name_proxy->get_widget(), SLOT(setText(const QString&)));
+    m_header_layout->addRow(
+        get_layer_name_label(m_input_metadata),
+        name_line_edit);
+
+    // Update the icon of the fold/unfold button.
+    m_fold_unfold_button->setIcon(m_unfold_icon);
+}
+
+void DisneyMaterialLayerUI::unfold()
+{
+    // Show the layer's content.
+    m_content_widget->setVisible(true);
+
+    // Hide the layer's name in the header.
+    clear_layout(m_header_widget->layout());
+
+    // Update the icon of the fold/unfold button.
+    m_fold_unfold_button->setIcon(m_fold_icon);
 }
 
 }   // namespace studio

@@ -29,13 +29,11 @@
 #ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_CUSTOMENTITYUI_H
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_CUSTOMENTITYUI_H
 
-// appleseed.foundation headers.
-#include "foundation/utility/containers/dictionary.h"
-
 // Qt headers.
 #include <QObject>
 
 // Forward declarations.
+namespace foundation    { class Dictionary; }
 class QVBoxLayout;
 
 namespace appleseed {
@@ -47,17 +45,14 @@ class CustomEntityUI
     Q_OBJECT
 
   public:
-    virtual void create_custom_widgets(
+    virtual void create_widgets(
         QVBoxLayout*                    layout,
         const foundation::Dictionary&   values) = 0;
 
     virtual foundation::Dictionary get_values() const = 0;
 
-  protected:
-    void emit_signal_custom_applied();
-
   signals:
-    void signal_custom_applied();
+    void signal_apply();
 };
 
 }       // namespace studio
