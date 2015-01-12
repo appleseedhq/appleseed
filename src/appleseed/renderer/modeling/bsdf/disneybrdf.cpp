@@ -135,7 +135,9 @@ namespace
             const Vector3d& n,
             Spectrum&       value) const
         {
-            value.set(mix(0.04, 1.0, schlick_fresnel(dot(o, h))) * 0.25 * m_values.m_clearcoat);
+            value.set(
+                static_cast<float>(
+                    mix(0.04, 1.0, schlick_fresnel(dot(o, h))) * 0.25 * m_values.m_clearcoat));
         }
 
         const DisneyBRDFInputValues& m_values;
