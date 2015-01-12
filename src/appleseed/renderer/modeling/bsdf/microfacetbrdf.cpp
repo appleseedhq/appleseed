@@ -313,7 +313,9 @@ namespace
                 }
                 break;
 
-              assert_otherwise;
+              default:
+                 assert(false);
+                 return 0.0;
             }
         }
 
@@ -386,7 +388,9 @@ namespace
                 }
                 break;
 
-              assert_otherwise;
+              default:
+                 assert(false);
+                 return 0.0;
             }
         }
 
