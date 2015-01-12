@@ -473,7 +473,7 @@ auto_ptr<IInputWidgetProxy> DisneyMaterialLayerUI::create_color_input_widgets(co
     layout->addWidget(create_expression_button(name));
     m_content_layout->addRow(get_label_text(metadata), layout);
 
-    auto_ptr<ColorExpressionProxy> widget_proxy(new ColorExpressionProxy(line_edit, picker_button));
+    auto_ptr<IInputWidgetProxy> widget_proxy(new ColorExpressionProxy(line_edit, picker_button));
 
     if (metadata.strings().exist("default"))
         widget_proxy->set(metadata.strings().get<string>("default"));
