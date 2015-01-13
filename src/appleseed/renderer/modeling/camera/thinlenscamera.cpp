@@ -601,7 +601,7 @@ DictionaryArray ThinLensCameraFactory::get_input_metadata() const
             .insert("name", "focal_distance")
             .insert("label", "Focal Distance")
             .insert("type", "text")
-            .insert("use", "required")
+            .insert("use", "optional")
             .insert("default", "1.0"));
 
     metadata.push_back(
@@ -609,7 +609,8 @@ DictionaryArray ThinLensCameraFactory::get_input_metadata() const
             .insert("name", "autofocus_target")
             .insert("label", "Autofocus Target")
             .insert("type", "text")
-            .insert("use", "required"));
+            .insert("use", "optional")
+            .insert("default", "0.5 0.5"));
 
     metadata.push_back(
         Dictionary()
