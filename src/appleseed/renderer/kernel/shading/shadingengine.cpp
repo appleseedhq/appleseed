@@ -89,27 +89,14 @@ void ShadingEngine::shade_hit_point(
     const ShadingPoint&     shading_point,
     ShadingResult&          shading_result) const
 {
+    // Compute the alpha channel of the main output.
+    shading_result.m_main.m_alpha = shading_point.get_alpha();
+
     // Retrieve the material of the intersected surface.
     const Material* material = shading_point.get_material();
 
-    // Compute the alpha channel of the main output.
-    if (material && material->get_alpha_map())
-    {
-        // There is an alpha map: evaluate it.
-        material->get_alpha_map()->evaluate(
-            shading_context.get_texture_cache(),
-            shading_point.get_uv(0),
-            shading_result.m_main.m_alpha);
-    }
-    else
-    {
-        // No material or no alpha map: solid sample.
-        shading_result.m_main.m_alpha = Alpha(1.0f);
-    }
-
 #ifdef APPLESEED_WITH_OSL
-
-    // Apply OSL transparency.
+    // Apply OSL transparency if needed.
     if (material && material->get_osl_surface() && material->get_osl_surface()->has_transparency())
     {
         Alpha alpha;
@@ -119,14 +106,10 @@ void ShadingEngine::shade_hit_point(
             alpha);
         shading_result.m_main.m_alpha *= alpha;
     }
-
 #endif
 
-    // At this point, we can't have a fully transparent sample and yet have no material.
-    assert(shading_result.m_main.m_alpha[0] > 0.0f || material);
-
     // Shade the sample if it isn't fully transparent.
-    if (shading_result.m_main.m_alpha[0] > 0.0f || material->shade_alpha_cutouts())
+    if (shading_result.m_main.m_alpha[0] > 0.0f || shading_point.shade_alpha_cutouts())
     {
         // Use the diagnostic surface shader if there is one.
         const SurfaceShader* surface_shader = m_diagnostic_surface_shader.get();

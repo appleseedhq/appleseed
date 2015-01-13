@@ -81,7 +81,7 @@ namespace
             if (alpha_source == "color")
                 m_alpha_source = AlphaSourceColor;
             else if (alpha_source == "material")
-                m_alpha_source = AlphaSourceMaterial;
+                m_alpha_source = AlphaSourceObjectAndMaterial;
             else
             {
                 RENDERER_LOG_ERROR(
@@ -143,7 +143,7 @@ namespace
         enum AlphaSource
         {
             AlphaSourceColor,
-            AlphaSourceMaterial
+            AlphaSourceObjectAndMaterial
         };
 
         AlphaSource     m_alpha_source;
@@ -192,7 +192,7 @@ DictionaryArray ConstantSurfaceShaderFactory::get_input_metadata() const
             .insert("items",
                 Dictionary()
                     .insert("Alpha channel of the color", "color")
-                    .insert("Alpha map of the material", "material"))
+                    .insert("Alpha map of the object and material", "material"))
             .insert("use", "optional")
             .insert("default", "color"));
 

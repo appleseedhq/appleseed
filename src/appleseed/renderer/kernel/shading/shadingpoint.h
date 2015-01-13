@@ -197,6 +197,12 @@ class ShadingPoint
     // Return the index of the primitive attribute.
     size_t get_primitive_attribute_index() const;
 
+    // Return the opacity at the intersection point.
+    const Alpha& get_alpha() const;
+
+    // Return whether surface shaders should be invoked for fully transparent shading points.
+    bool shade_alpha_cutouts() const;
+
 #ifdef APPLESEED_WITH_OSL
     struct OSLObjectTransformInfo
     {
@@ -272,9 +278,10 @@ class ShadingPoint
         HasWorldSpaceTriangleVertices   = 1 << 9,
         HasMaterial                     = 1 << 10,
         HasTriangleVertexTangents       = 1 << 11,
-        HasPointVelocity                = 1 << 12
+        HasPointVelocity                = 1 << 12,
+        HasAlpha                        = 1 << 13
 #ifdef APPLESEED_WITH_OSL
-        , HasOSLShaderGlobals           = 1 << 13
+        , HasOSLShaderGlobals           = 1 << 14
 #endif
     };
     mutable foundation::uint32          m_members;
@@ -302,6 +309,8 @@ class ShadingPoint
     mutable foundation::Vector3d        m_v0_w, m_v1_w, m_v2_w;         // world space triangle vertices
     mutable foundation::Vector3d        m_point_velocity;               // world space point velocity
     mutable const Material*             m_material;                     // material at intersection point
+    mutable Alpha                       m_alpha;                        // opacity at intersection point
+    mutable bool                        m_shade_alpha_cutouts;
 
     // Data required to avoid self-intersections.
     mutable foundation::Vector3d        m_asm_geo_normal;               // assembly instance space geometric normal to hit triangle
@@ -332,6 +341,8 @@ class ShadingPoint
     void compute_shading_basis() const;
     void compute_world_space_triangle_vertices() const;
     void compute_point_velocity() const;
+
+    void compute_alpha() const;
 
 #ifdef APPLESEED_WITH_OSL
     void initialize_osl_shader_globals(
@@ -625,6 +636,12 @@ inline const Material* ShadingPoint::get_material() const
                 m_material = materials[m_primitive_pa];
         }
 
+        m_shade_alpha_cutouts = m_object->shade_alpha_cutouts();
+
+        if (m_material)
+            m_shade_alpha_cutouts =
+                m_shade_alpha_cutouts || m_material->shade_alpha_cutouts();
+
         // The material at the intersection point is now available.
         m_members |= HasMaterial;
     }
@@ -682,6 +699,25 @@ inline size_t ShadingPoint::get_primitive_attribute_index() const
     assert(hit());
     cache_source_geometry();
     return static_cast<size_t>(m_primitive_pa);
+}
+
+inline const Alpha& ShadingPoint::get_alpha() const
+{
+    if (!(m_members & HasAlpha))
+    {
+        compute_alpha();
+        m_members |= HasAlpha;
+    }
+
+    return m_alpha;
+}
+
+inline bool ShadingPoint::shade_alpha_cutouts() const
+{
+    if (!(m_members & HasMaterial))
+        get_material();
+
+    return m_shade_alpha_cutouts;
 }
 
 inline void ShadingPoint::cache_source_geometry() const

@@ -69,6 +69,22 @@ class APPLESEED_DLLSYMBOL MeshObject
     // Return a string identifying the model of this object.
     virtual const char* get_model() const APPLESEED_OVERRIDE;
 
+    // This method is called once before rendering each frame.
+    // Returns true on success, false otherwise.
+    virtual bool on_frame_begin(
+        const Project&              project,
+        const Assembly&             assembly,
+        foundation::IAbortSwitch*   abort_switch = 0) APPLESEED_OVERRIDE;
+
+    // This method is called once after rendering each frame.
+    virtual void on_frame_end(const Project& project) APPLESEED_OVERRIDE;
+
+    // Return true if this object has an alpha map.
+    virtual bool has_alpha_map() const APPLESEED_OVERRIDE;
+
+    // Return the source bound to the alpha map input, or 0 if the object doesn't have an alpha map.
+    virtual const Source* get_uncached_alpha_map() const APPLESEED_OVERRIDE;
+
     // Compute the local space bounding box of the object over the shutter interval.
     virtual GAABB3 compute_local_bbox() const APPLESEED_OVERRIDE;
 

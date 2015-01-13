@@ -340,6 +340,16 @@ void InputBinder::bind_assembly_entities_inputs(
             *i);
     }
 
+    // Bind objects inputs.
+    for (each<ObjectContainer> i = assembly.objects(); i; ++i)
+    {
+        bind_assembly_entity_inputs(
+            scene,
+            scene_symbols,
+            SymbolTable::symbol_name(SymbolTable::SymbolObject),
+            *i);
+    }
+
     // Bind objects to object instances. This must be done before binding materials.
     for (each<ObjectInstanceContainer> i = assembly.object_instances(); i; ++i)
     {

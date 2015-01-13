@@ -52,9 +52,33 @@ UniqueID Object::get_class_uid()
 Object::Object(
     const char*         name,
     const ParamArray&   params)
-  : Entity(g_class_uid, params)
+  : ConnectableEntity(g_class_uid, params)
+  , m_alpha_map(0)
+  , m_shade_alpha_cutouts(false)
 {
     set_name(name);
+}
+
+bool Object::on_frame_begin(
+    const Project&  project,
+    const Assembly& assembly,
+    IAbortSwitch*   abort_switch)
+{
+    return true;
+}
+
+void Object::on_frame_end(const Project& project)
+{
+}
+
+bool Object::has_alpha_map() const
+{
+    return false;
+}
+
+const Source* Object::get_uncached_alpha_map() const
+{
+    return 0;
 }
 
 }   // namespace renderer
