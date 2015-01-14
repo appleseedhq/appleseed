@@ -41,13 +41,14 @@ namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 
-namespace detail
+namespace
 {
-    auto_release_ptr<SurfaceShader> create_surface_shader(const std::string& surf_type,
-                                                          const std::string& name)
+    auto_release_ptr<SurfaceShader> create_surface_shader(
+        const std::string& model,
+        const std::string& name)
     {
         SurfaceShaderFactoryRegistrar factories;
-        const ISurfaceShaderFactory* factory = factories.lookup(surf_type.c_str());
+        const ISurfaceShaderFactory* factory = factories.lookup(model.c_str());
 
         if (factory)
             return factory->create(name.c_str(), ParamArray());
@@ -60,12 +61,13 @@ namespace detail
         return auto_release_ptr<SurfaceShader>();
     }
 
-    auto_release_ptr<SurfaceShader> create_surface_shader_with_params(const std::string& surf_type,
-                                                                      const std::string& name,
-                                                                      const bpy::dict& params)
+    auto_release_ptr<SurfaceShader> create_surface_shader_with_params(
+        const std::string&    model,
+        const std::string&    name,
+        const bpy::dict&      params)
     {
         SurfaceShaderFactoryRegistrar factories;
-        const ISurfaceShaderFactory* factory = factories.lookup(surf_type.c_str());
+        const ISurfaceShaderFactory* factory = factories.lookup(model.c_str());
 
         if (factory)
             return factory->create(name.c_str(), bpy_dict_to_param_array(params));
@@ -83,8 +85,9 @@ void bind_surface_shader()
 {
     bpy::class_<SurfaceShader, auto_release_ptr<SurfaceShader>, bpy::bases<ConnectableEntity>, boost::noncopyable>("SurfaceShader", bpy::no_init)
         .def("get_input_metadata", &detail::get_entity_input_metadata<SurfaceShaderFactoryRegistrar>).staticmethod("get_input_metadata")
-        .def("__init__", bpy::make_constructor(detail::create_surface_shader))
-        .def("__init__", bpy::make_constructor(detail::create_surface_shader_with_params))
+        .def("__init__", bpy::make_constructor(create_surface_shader))
+        .def("__init__", bpy::make_constructor(create_surface_shader_with_params))
+        .def("get_model", &SurfaceShader::get_model)
         ;
 
     bind_typed_entity_vector<SurfaceShader>("SurfaceShaderContainer");

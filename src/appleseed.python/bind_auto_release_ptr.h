@@ -37,16 +37,18 @@
 #include "foundation/platform/python.h"
 #include "foundation/utility/autoreleaseptr.h"
 
-namespace boost {
-namespace python {
+namespace boost
+{
+namespace python
+{
 
 template <class T> struct pointee<foundation::auto_release_ptr<T> >
 {
     typedef T type;
 };
 
-}       // namespace python
-}       // namespace boost
+}
+}
 
 namespace foundation
 {
@@ -57,6 +59,6 @@ T* get_pointer(const auto_release_ptr<T>& p)
     return p.get();
 }
 
-}       // namespace foundation
+}
 
 #endif  // !APPLESEED_PYTHON_BIND_AUTO_RELEASE_PTR_H

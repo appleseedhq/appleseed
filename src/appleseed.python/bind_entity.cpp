@@ -51,7 +51,7 @@ namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 
-namespace detail
+namespace
 {
     Entity* get_entity_vec_item(EntityVector& vec, const int relative_index)
     {
@@ -97,35 +97,35 @@ void bind_entity()
         .def("get_name", &Entity::get_name)
         .def("set_name", &Entity::set_name)
 
-        .def("get_parameters", detail::entity_get_parameters)
-        .def("set_parameters", detail::entity_set_parameters)
+        .def("get_parameters", entity_get_parameters)
+        .def("set_parameters", entity_set_parameters)
 
         .def("set_render_layer_index", &Entity::set_render_layer_index)
-        .def("get_render_layer_index", &Entity::get_render_layer_index);
+        .def("get_render_layer_index", &Entity::get_render_layer_index)
+        ;
 
     bpy::class_<ConnectableEntity, auto_release_ptr<ConnectableEntity>, bpy::bases<Entity>, boost::noncopyable>("ConnectableEntity", bpy::no_init);
 
     bpy::class_<EntityVector, boost::noncopyable>("EntityVector")
         .def("clear", &EntityVector::clear)
         .def("__len__", &EntityVector::size)
-        .def("__getitem__", detail::get_entity_vec_item, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("__getitem__", get_entity_vec_item, bpy::return_value_policy<bpy::reference_existing_object>())
 
         .def("insert", &EntityVector::insert)
         .def("remove", &EntityVector::remove)
 
-        .def("__iter__", bpy::iterator<EntityVector>());
+        .def("__iter__", bpy::iterator<EntityVector>())
+        ;
 
     bpy::class_<EntityMap, boost::noncopyable>("EntityMap")
         .def("clear", &EntityMap::clear)
         .def("__len__", &EntityMap::size)
-        .def("__getitem__", detail::get_entity_map_item, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("__getitem__", get_entity_map_item, bpy::return_value_policy<bpy::reference_existing_object>())
 
         .def("insert", &EntityMap::insert)
         .def("remove", &EntityMap::remove)
 
         .def("get_by_uid", &EntityMap::get_by_uid, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("get_by_name", &EntityMap::get_by_name, bpy::return_value_policy<bpy::reference_existing_object>())
-
-        //.def("__iter__", bpy::iterator<EntityMap>())
         ;
 }

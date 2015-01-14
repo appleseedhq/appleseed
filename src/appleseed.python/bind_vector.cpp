@@ -44,7 +44,7 @@
 namespace bpy = boost::python;
 using namespace foundation;
 
-namespace detail
+namespace
 {
     template <typename T, std::size_t N>
     Vector<T, N>* construct_vec_from_list(bpy::list l)
@@ -73,14 +73,16 @@ namespace detail
     }
 
     template <class T, std::size_t N>
-    struct vector_constructor {};
+    struct vector_helper {};
 
     template <class T>
-    struct vector_constructor<T, 2>
+    struct vector_helper<T, 2>
     {
-        static Vector<T, 2>* construct(T x, T y)
+        typedef Vector<T, 2> VectorType;
+
+        static VectorType* construct(T x, T y)
         {
-            Vector<T, 2>* r = new Vector<T, 2>();
+            Vector<T, 2>* r = new VectorType();
             (*r)[0] = x;
             (*r)[1] = y;
             return r;
@@ -88,11 +90,13 @@ namespace detail
     };
 
     template <class T>
-    struct vector_constructor<T, 3>
+    struct vector_helper<T, 3>
     {
-        static Vector<T, 3>* construct(T x, T y, T z)
+        typedef Vector<T, 3> VectorType;
+
+        static VectorType* construct(T x, T y, T z)
         {
-            Vector<T, 3>* r = new Vector<T, 3>();
+            Vector<T, 3>* r = new VectorType();
             (*r)[0] = x;
             (*r)[1] = y;
             (*r)[2] = z;
@@ -101,11 +105,13 @@ namespace detail
     };
 
     template <class T>
-    struct vector_constructor<T, 4>
+    struct vector_helper<T, 4>
     {
-        static Vector<T, 4>* construct(T x, T y, T z, T w)
+        typedef Vector<T, 4> VectorType;
+
+        static VectorType* construct(T x, T y, T z, T w)
         {
-            Vector<T, 4>* r = new Vector<T, 4>();
+            VectorType* r = new VectorType();
             (*r)[0] = x;
             (*r)[1] = y;
             (*r)[2] = z;
@@ -154,7 +160,7 @@ namespace detail
         bpy::class_<Vector<T, N> >(class_name)
             .def(bpy::init<>())
             .def(bpy::init<T>())
-            .def("__init__", bpy::make_constructor(&vector_constructor<T, N>::construct))
+            .def("__init__", bpy::make_constructor(&vector_helper<T, N>::construct))
             .def("__init__", bpy::make_constructor(&construct_vec_from_list<T, N>))
 
             // operator[]
@@ -186,15 +192,15 @@ namespace detail
 
 void bind_vector()
 {
-    detail::do_bind_vector<int, 2>("Vector2i");
-    detail::do_bind_vector<float, 2>("Vector2f");
-    detail::do_bind_vector<double, 2>("Vector2d");
+    do_bind_vector<int, 2>("Vector2i");
+    do_bind_vector<float, 2>("Vector2f");
+    do_bind_vector<double, 2>("Vector2d");
 
-    detail::do_bind_vector<int, 3>("Vector3i");
-    detail::do_bind_vector<float, 3>("Vector3f");
-    detail::do_bind_vector<double, 3>("Vector3d");
+    do_bind_vector<int, 3>("Vector3i");
+    do_bind_vector<float, 3>("Vector3f");
+    do_bind_vector<double, 3>("Vector3d");
 
-    detail::do_bind_vector<int, 4>("Vector4i");
+    do_bind_vector<int, 4>("Vector4i");
 
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
     bpy::implicitly_convertible<Vector2i, Imath::V2i>();
@@ -214,8 +220,5 @@ void bind_vector()
 
     bpy::implicitly_convertible<Vector3d, Imath::V3d>();
     bpy::implicitly_convertible<Imath::V3d, Vector3d>();
-
-    bpy::implicitly_convertible<Vector4i, Imath::V4i>();
-    bpy::implicitly_convertible<Imath::V4i, Vector4i>();
 #endif
 }

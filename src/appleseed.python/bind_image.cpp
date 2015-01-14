@@ -50,7 +50,7 @@ namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 
-namespace detail
+namespace
 {
     Tile* copy_tile(const Tile* source)
     {
@@ -110,7 +110,8 @@ void bind_image()
         .value("UInt32", PixelFormatUInt32)
         .value("Half",   PixelFormatHalf)
         .value("Float",  PixelFormatFloat)
-        .value("Double", PixelFormatDouble);
+        .value("Double", PixelFormatDouble)
+        ;
 
     bpy::class_<CanvasProperties, boost::noncopyable>("CanvasProperties", bpy::no_init)
         .def_readonly("canvas_width", &CanvasProperties::m_canvas_width)
@@ -129,32 +130,36 @@ void bind_image()
         .def_readonly("pixel_count", &CanvasProperties::m_pixel_count)
         .def_readonly("pixel_size", &CanvasProperties::m_pixel_size)
         .def("get_tile_width", &CanvasProperties::get_tile_width)
-        .def("get_tile_height", &CanvasProperties::get_tile_height);
+        .def("get_tile_height", &CanvasProperties::get_tile_height)
+        ;
 
     bpy::class_<Tile, boost::noncopyable>("Tile", bpy::init<size_t, size_t, size_t, PixelFormat>())
-        .def("__copy__", detail::copy_tile, bpy::return_value_policy<bpy::manage_new_object>())
-        .def("__deepcopy__", detail::deepcopy_tile, bpy::return_value_policy<bpy::manage_new_object>())
+        .def("__copy__", copy_tile, bpy::return_value_policy<bpy::manage_new_object>())
+        .def("__deepcopy__", deepcopy_tile, bpy::return_value_policy<bpy::manage_new_object>())
         .def("get_pixel_format", &Tile::get_pixel_format)
         .def("get_width", &Tile::get_width)
         .def("get_height", &Tile::get_height)
         .def("get_channel_count", &Tile::get_channel_count)
         .def("get_pixel_count", &Tile::get_pixel_count)
         .def("get_size", &Tile::get_size)
-        .def("copy_data_to", detail::copy_tile_data_to_py_array);   // todo: maybe this needs a better name
+        .def("copy_data_to", copy_tile_data_to_py_array)   // todo: maybe this needs a better name
+        ;
 
     const Tile& (Image::*image_get_tile)(const size_t, const size_t) const = &Image::tile;
 
     bpy::class_<Image, boost::noncopyable>("Image", bpy::no_init)
-        .def("__copy__", detail::copy_image, bpy::return_value_policy<bpy::manage_new_object>())
-        .def("__deepcopy__", detail::copy_image, bpy::return_value_policy<bpy::manage_new_object>())
+        .def("__copy__", copy_image, bpy::return_value_policy<bpy::manage_new_object>())
+        .def("__deepcopy__", copy_image, bpy::return_value_policy<bpy::manage_new_object>())
         .def("properties", &Image::properties, bpy::return_value_policy<bpy::reference_existing_object>())
-        .def("tile", image_get_tile, bpy::return_value_policy<bpy::reference_existing_object>());
+        .def("tile", image_get_tile, bpy::return_value_policy<bpy::reference_existing_object>())
+        ;
 
     const Image& (ImageStack::*image_stack_get_image)(const size_t) const = &ImageStack::get_image;
 
     bpy::class_<ImageStack, boost::noncopyable>("ImageStack", bpy::no_init)
         .def("empty", &ImageStack::empty)
         .def("size", &ImageStack::size)
-        .def("get_name", detail::image_stack_get_name)
-        .def("get_image", image_stack_get_image, bpy::return_value_policy<bpy::reference_existing_object>());
+        .def("get_name", image_stack_get_name)
+        .def("get_image", image_stack_get_image, bpy::return_value_policy<bpy::reference_existing_object>())
+        ;
 }

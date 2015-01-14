@@ -50,7 +50,7 @@ namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 
-namespace detail
+namespace
 {
     struct ILogTargetWrap
       : public ILogTarget
@@ -120,25 +120,28 @@ namespace detail
 
 void bind_logger()
 {
-    bpy::class_<detail::ILogTargetWrap, boost::shared_ptr<detail::ILogTargetWrap>, boost::noncopyable>("ILogTarget")
-        .def("write", bpy::pure_virtual(&ILogTarget::write));
+    bpy::class_<ILogTargetWrap, boost::shared_ptr<ILogTargetWrap>, boost::noncopyable>("ILogTarget")
+        .def("write", bpy::pure_virtual(&ILogTarget::write))
+        ;
 
     bpy::enum_<LogMessage::Category>("LogMessageCategory")
         .value("Info", LogMessage::Info)
         .value("Debug", LogMessage::Debug)
         .value("Warning", LogMessage::Warning)
         .value("Error", LogMessage::Error)
-        .value("Fatal", LogMessage::Fatal);
+        .value("Fatal", LogMessage::Fatal)
+        ;
 
     bpy::class_<Logger, boost::noncopyable>("Logger", bpy::no_init)
         .def("set_enabled", &Logger::set_enabled)
         .def("reset_all_formats", &Logger::reset_all_formats)
         .def("reset_format", &Logger::reset_format)
-        .def("set_all_formats", detail::logger_set_all_formats)
-        .def("set_format", detail::logger_set_format)
+        .def("set_all_formats", logger_set_all_formats)
+        .def("set_format", logger_set_format)
         .def("get_format", &Logger::get_format)
-        .def("add_target", detail::logger_add_target)
-        .def("remove_target", detail::logger_remove_target);
+        .def("add_target", logger_add_target)
+        .def("remove_target", logger_remove_target)
+        ;
 
-    bpy::def("global_logger", &detail::get_global_logger, bpy::return_value_policy<bpy::reference_existing_object>());
+    bpy::def("global_logger", &get_global_logger, bpy::return_value_policy<bpy::reference_existing_object>());
 }

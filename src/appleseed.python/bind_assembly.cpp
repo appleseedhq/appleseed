@@ -48,7 +48,7 @@ namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 
-namespace detail
+namespace
 {
     auto_release_ptr<Assembly> create_assembly(const std::string& name)
     {
@@ -78,6 +78,11 @@ namespace detail
     {
         return instance->transform_sequence();
     }
+
+    std::string get_assembly_name(AssemblyInstance *instance)
+    {
+        return instance->get_assembly_name();
+    }
 }
 
 void bind_assembly()
@@ -90,11 +95,12 @@ void bind_assembly()
         .def("shader_groups", &BaseGroup::shader_groups, bpy::return_value_policy<bpy::reference_existing_object>())
 #endif
         .def("assemblies", &BaseGroup::assemblies, bpy::return_value_policy<bpy::reference_existing_object>())
-        .def("assembly_instances", &BaseGroup::assembly_instances, bpy::return_value_policy<bpy::reference_existing_object>());
+        .def("assembly_instances", &BaseGroup::assembly_instances, bpy::return_value_policy<bpy::reference_existing_object>())
+        ;
 
     bpy::class_<Assembly, auto_release_ptr<Assembly>, bpy::bases<Entity, BaseGroup>, boost::noncopyable>("Assembly", bpy::no_init)
-        .def("__init__", bpy::make_constructor(detail::create_assembly))
-        .def("__init__", bpy::make_constructor(detail::create_assembly_with_params))
+        .def("__init__", bpy::make_constructor(create_assembly))
+        .def("__init__", bpy::make_constructor(create_assembly_with_params))
         .def("bsdfs", &Assembly::bsdfs, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("edfs", &Assembly::edfs, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("surface_shaders", &Assembly::surface_shaders, bpy::return_value_policy<bpy::reference_existing_object>())
@@ -103,15 +109,20 @@ void bind_assembly()
         .def("objects", &Assembly::objects, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("object_instances", &Assembly::object_instances, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("compute_local_bbox", &Assembly::compute_local_bbox)
-        .def("compute_non_hierarchical_local_bbox", &Assembly::compute_local_bbox);
+        .def("compute_non_hierarchical_local_bbox", &Assembly::compute_local_bbox)
+        ;
 
     bind_typed_entity_map<Assembly>("AssemblyContainer");
 
     bpy::class_<AssemblyInstance, auto_release_ptr<AssemblyInstance>, bpy::bases<Entity>, boost::noncopyable>("AssemblyInstance", bpy::no_init)
-        .def("__init__", bpy::make_constructor(detail::create_assembly_instance))
-        .def("transform_sequence", detail::get_transform_sequence, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("__init__", bpy::make_constructor(create_assembly_instance))
+        .def("transform_sequence", get_transform_sequence, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("get_vis_flags", &AssemblyInstance::get_vis_flags)
         .def("compute_parent_bbox", &AssemblyInstance::compute_parent_bbox)
-        .def("get_assembly", &AssemblyInstance::get_assembly, bpy::return_value_policy<bpy::reference_existing_object>());
+        .def("get_assembly", &AssemblyInstance::get_assembly, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("get_assembly_name", &get_assembly_name)
+        .def("find_assembly", &AssemblyInstance::find_assembly, bpy::return_value_policy<bpy::reference_existing_object>())
+        ;
 
     bind_typed_entity_map<AssemblyInstance>("AssemblyInstanceContainer");
 }

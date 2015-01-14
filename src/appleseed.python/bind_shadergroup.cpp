@@ -45,7 +45,7 @@ namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 
-namespace detail
+namespace
 {
     auto_release_ptr<ShaderGroup> create_shader_group(const std::string& name)
     {
@@ -66,9 +66,10 @@ namespace detail
 void bind_shader_group()
 {
     bpy::class_<ShaderGroup, auto_release_ptr<ShaderGroup>, bpy::bases<Entity>, boost::noncopyable>("ShaderGroup", bpy::no_init)
-        .def("__init__", bpy::make_constructor(detail::create_shader_group))
-        .def("add_shader", detail::add_shader)
-        .def("add_connection", &ShaderGroup::add_connection);
+        .def("__init__", bpy::make_constructor(create_shader_group))
+        .def("add_shader", add_shader)
+        .def("add_connection", &ShaderGroup::add_connection)
+        ;
 
     bind_typed_entity_vector<ShaderGroup>("ShaderGroupContainer");
 }

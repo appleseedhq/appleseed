@@ -49,7 +49,7 @@ namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 
-namespace detail
+namespace
 {
     auto_release_ptr<MeshObject> create_mesh_obj(
         const std::string&  name,
@@ -126,10 +126,11 @@ void bind_mesh_object()
         .def_readwrite("a0", &Triangle::m_a0)
         .def_readwrite("a1", &Triangle::m_a1)
         .def_readwrite("a2", &Triangle::m_a2)
-        .def_readwrite("pa", &Triangle::m_pa);
+        .def_readwrite("pa", &Triangle::m_pa)
+        ;
 
     bpy::class_<MeshObject, auto_release_ptr<MeshObject>, bpy::bases<Object>, boost::noncopyable>("MeshObject", bpy::no_init)
-        .def("__init__", bpy::make_constructor(detail::create_mesh_obj))
+        .def("__init__", bpy::make_constructor(create_mesh_obj))
 
         .def("reserve_vertices", &MeshObject::reserve_vertices)
         .def("push_vertex", &MeshObject::push_vertex)
@@ -155,13 +156,16 @@ void bind_mesh_object()
 
         .def("set_vertex_pose", &MeshObject::set_vertex_pose)
         .def("get_vertex_pose", &MeshObject::get_vertex_pose)
-        .def("clear_vertex_poses", &MeshObject::clear_vertex_poses);
+        .def("clear_vertex_poses", &MeshObject::clear_vertex_poses)
+        ;
 
     boost::python::implicitly_convertible<auto_release_ptr<MeshObject>, auto_release_ptr<Object> >();
 
     bpy::class_<MeshObjectReader>("MeshObjectReader", bpy::no_init)
-        .def("read", detail::read_mesh_objects).staticmethod("read");
+        .def("read", read_mesh_objects).staticmethod("read")
+        ;
 
     bpy::class_<MeshObjectWriter>("MeshObjectWriter", bpy::no_init)
-        .def("write", detail::write_mesh_object).staticmethod("write");
+        .def("write", write_mesh_object).staticmethod("write")
+        ;
 }
