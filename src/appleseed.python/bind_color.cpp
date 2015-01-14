@@ -50,7 +50,7 @@ namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 
-namespace detail
+namespace
 {
     ColorValueArray color_value_array_from_bpy_list(const bpy::list& vals)
     {
@@ -84,7 +84,9 @@ namespace detail
         return result;
     }
 
-    auto_release_ptr<ColorEntity> create_color_entity(const std::string& name, const bpy::dict& params)
+    auto_release_ptr<ColorEntity> create_color_entity(
+        const std::string&  name,
+        const bpy::dict&    params)
     {
         return ColorEntityFactory::create(name.c_str(), bpy_dict_to_param_array(params));
     }
@@ -135,11 +137,11 @@ void bind_color()
         .value("Spectral", ColorSpaceSpectral);
 
     bpy::class_<ColorEntity, auto_release_ptr<ColorEntity>, bpy::bases<Entity>, boost::noncopyable>("ColorEntity", bpy::no_init)
-        .def("__init__", bpy::make_constructor(detail::create_color_entity))
-        .def("__init__", bpy::make_constructor(detail::create_color_entity_vals))
-        .def("__init__", bpy::make_constructor(detail::create_color_entity_vals_alpha))
-        .def("get_values", detail::color_entity_get_vals)
-        .def("get_alpha", detail::color_entity_get_alpha)
+        .def("__init__", bpy::make_constructor(create_color_entity))
+        .def("__init__", bpy::make_constructor(create_color_entity_vals))
+        .def("__init__", bpy::make_constructor(create_color_entity_vals_alpha))
+        .def("get_values", color_entity_get_vals)
+        .def("get_alpha", color_entity_get_alpha)
         .def("get_color_space", &ColorEntity::get_color_space)
         .def("get_wavelength_range", &ColorEntity::get_wavelength_range, bpy::return_value_policy<bpy::copy_const_reference>())
         .def("get_multiplier", &ColorEntity::get_multiplier);

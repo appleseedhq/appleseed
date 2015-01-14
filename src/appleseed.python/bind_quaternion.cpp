@@ -41,7 +41,7 @@
 namespace bpy = boost::python;
 using namespace foundation;
 
-namespace detail
+namespace
 {
     template <class T>
     T quat_dot_prod(const Quaternion<T>& a, const Quaternion<T>& b)
@@ -157,8 +157,8 @@ namespace detail
 
 void bind_quaternion()
 {
-    detail::do_bind_quaternion<float>("Quaternionf");
-    detail::do_bind_quaternion<double>("Quaterniond");
+    do_bind_quaternion<float>("Quaternionf");
+    do_bind_quaternion<double>("Quaterniond");
 
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
     bpy::implicitly_convertible<Quaternionf, Imath::Quatf>();

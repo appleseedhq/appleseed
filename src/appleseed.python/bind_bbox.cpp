@@ -38,7 +38,7 @@
 namespace bpy = boost::python;
 using namespace foundation;
 
-namespace detail
+namespace
 {
     template <typename T>
     void bind_aabb3(const char* class_name)
@@ -49,12 +49,13 @@ namespace detail
 
             // Because of a bug in Boost.Python, this needs the extra self_ns qualification.
             .def(bpy::self_ns::str(bpy::self))
-            .def(bpy::self_ns::repr(bpy::self));
+            .def(bpy::self_ns::repr(bpy::self))
+            ;
     }
 }
 
 void bind_bbox()
 {
-    detail::bind_aabb3<float>("AABB3f");
-    detail::bind_aabb3<double>("AABB3d");
+    bind_aabb3<float>("AABB3f");
+    bind_aabb3<double>("AABB3d");
 }

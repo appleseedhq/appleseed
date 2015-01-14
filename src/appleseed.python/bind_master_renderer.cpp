@@ -48,7 +48,7 @@ namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 
-namespace detail
+namespace
 {
     std::auto_ptr<MasterRenderer> create_master_renderer(
         Project*                project,
@@ -101,9 +101,10 @@ namespace detail
 void bind_master_renderer()
 {
     bpy::class_<MasterRenderer, std::auto_ptr<MasterRenderer>, boost::noncopyable>("MasterRenderer", bpy::no_init)
-        .def("__init__", bpy::make_constructor(detail::create_master_renderer))
-        .def("__init__", bpy::make_constructor(detail::create_master_renderer_with_tile_callback))
-        .def("get_parameters", detail::master_renderer_get_parameters)
-        .def("set_parameters", detail::master_renderer_set_parameters)
-        .def("render", detail::master_renderer_render);
+        .def("__init__", bpy::make_constructor(create_master_renderer))
+        .def("__init__", bpy::make_constructor(create_master_renderer_with_tile_callback))
+        .def("get_parameters", master_renderer_get_parameters)
+        .def("set_parameters", master_renderer_set_parameters)
+        .def("render", master_renderer_render)
+        ;
 }

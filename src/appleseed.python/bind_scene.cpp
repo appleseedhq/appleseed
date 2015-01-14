@@ -37,7 +37,7 @@ namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 
-namespace detail
+namespace
 {
     auto_release_ptr<Scene> create_scene()
     {
@@ -48,7 +48,7 @@ namespace detail
 void bind_scene()
 {
     bpy::class_<Scene, auto_release_ptr<Scene>, bpy::bases<Entity, BaseGroup>, boost::noncopyable>("Scene", bpy::no_init)
-        .def("__init__", bpy::make_constructor(detail::create_scene))
+        .def("__init__", bpy::make_constructor(create_scene))
         .def("get_uid", &Identifiable::get_uid)
         .def("set_camera", &Scene::set_camera)
         .def("get_camera", &Scene::get_camera, bpy::return_value_policy<bpy::reference_existing_object>())

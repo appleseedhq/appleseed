@@ -42,7 +42,7 @@
 namespace bpy = boost::python;
 using namespace foundation;
 
-namespace detail
+namespace
 {
     template <typename T>
     UnalignedMatrix44<T>* construct_matrix_from_list(bpy::list l)
@@ -159,13 +159,13 @@ namespace detail
         }
     };
 
-    template <class T>
+    template <typename T>
     UnalignedMatrix44<T> transpose_matrix(const UnalignedMatrix44<T>& mat)
     {
         return UnalignedMatrix44<T>(transpose(mat.as_foundation_matrix()));
     }
 
-    template <class T>
+    template <typename T>
     bpy::tuple matrix_extract_euler_angles(const UnalignedMatrix44<T>& mat)
     {
         T yaw, pitch, roll;
@@ -183,7 +183,7 @@ namespace detail
         X.def(bpy::init<UnalignedMatrix44<float> >());
     }
 
-    template <class T>
+    template <typename T>
     void bind_typed_matrix4(const char* class_name)
     {
         UnalignedMatrix44<T>(*rot1)(T, T, T) = &UnalignedMatrix44<T>::rotation;
@@ -219,7 +219,8 @@ namespace detail
             .def(bpy::self_ns::repr(bpy::self))
 
             .def("extract_matrix3", &UnalignedMatrix44<T>::extract_matrix3)
-            .def("extract_translation", &UnalignedMatrix44<T>::extract_translation);
+            .def("extract_translation", &UnalignedMatrix44<T>::extract_translation)
+            ;
 
         bind_typed_matrix4_extra(X);
     }
@@ -227,8 +228,8 @@ namespace detail
 
 void bind_matrix()
 {
-    detail::bind_typed_matrix4<float>("Matrix4f");
-    detail::bind_typed_matrix4<double>("Matrix4d");
+    bind_typed_matrix4<float>("Matrix4f");
+    bind_typed_matrix4<double>("Matrix4d");
 
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
     bpy::implicitly_convertible<UnalignedMatrix44<float>, Imath::M44f>();
@@ -237,5 +238,4 @@ void bind_matrix()
     bpy::implicitly_convertible<UnalignedMatrix44<double>, Imath::M44d>();
     bpy::implicitly_convertible<Imath::M44d, UnalignedMatrix44<double> >();
 #endif
-
 }

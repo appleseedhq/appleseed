@@ -44,7 +44,7 @@ namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 
-namespace detail
+namespace
 {
 
 auto_release_ptr<Display> create_display(
@@ -59,5 +59,6 @@ auto_release_ptr<Display> create_display(
 void bind_display()
 {
     bpy::class_<Display, auto_release_ptr<Display>, bpy::bases<Entity>, boost::noncopyable>("Display", bpy::no_init)
-        .def("__init__", bpy::make_constructor(detail::create_display));
+        .def("__init__", bpy::make_constructor(create_display))
+        ;
 }

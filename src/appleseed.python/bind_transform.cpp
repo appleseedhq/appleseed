@@ -43,7 +43,7 @@ namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 
-namespace detail
+namespace
 {
     void transform_seq_set_transform(
         TransformSequence*              seq,
@@ -65,6 +65,22 @@ namespace detail
         Transformd xform;
         seq->get_transform(index, time, xform);
         return bpy::make_tuple(time, UnalignedTransformd44(xform));
+    }
+
+    bpy::list transform_seq_as_list(const TransformSequence* seq)
+    {
+        bpy::list result;
+
+        for (size_t i = 0, e = seq->size(); i < e; ++i)
+        {
+            double time;
+            Transformd xform;
+            seq->get_transform(i, time, xform);
+            bpy::tuple t = bpy::make_tuple(time, UnalignedTransformd44(xform));
+            result.append(t);
+        }
+
+        return result;
     }
 
     UnalignedTransformd44 transform_seq_get_earliest(const TransformSequence* seq)
@@ -131,11 +147,14 @@ void bind_transform()
         .def(bpy::self_ns::repr(bpy::self));
 
     bpy::class_<TransformSequence, boost::noncopyable>("TransformSequence", bpy::no_init)
-        .def("set_transform", &detail::transform_seq_set_transform)
-        .def("get_transform", &detail::transform_seq_get_transform)
-        .def("get_earliest_transform", &detail::transform_seq_get_earliest)
+        .def("set_transform", &transform_seq_set_transform)
+        .def("get_transform", &transform_seq_get_transform)
+        .def("get_earliest_transform", &transform_seq_get_earliest)
 
         .def("empty", &TransformSequence::empty)
         .def("size", &TransformSequence::size)
-        .def("clear", &TransformSequence::clear);
+        .def("clear", &TransformSequence::clear)
+
+        .def("transforms", &transform_seq_as_list)
+        ;
 }
