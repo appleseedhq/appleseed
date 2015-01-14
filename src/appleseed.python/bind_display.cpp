@@ -27,10 +27,15 @@
 // THE SOFTWARE.
 //
 
-// Has to be first, to avoid redefinition warnings.
-#include "bind_auto_release_ptr.h"
+// Boost headers.
+#include "foundation/platform/pythonheaderguards.h"
+BEGIN_PYTHON_INCLUDES
+#include "boost/python/detail/wrap_python.hpp"  // has to be first, to avoid redefinition warnings
+#include "boost/python.hpp"
+END_PYTHON_INCLUDES
 
 // appleseed.python headers.
+#include "bind_auto_release_ptr.h"
 #include "dict2dict.h"
 
 // appleseed.renderer headers.

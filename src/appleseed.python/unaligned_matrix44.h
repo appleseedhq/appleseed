@@ -30,14 +30,17 @@
 #ifndef APPLESEED_PYTHON_UNALIGNED_MATRIX44_H
 #define APPLESEED_PYTHON_UNALIGNED_MATRIX44_H
 
-// Has to be first, to avoid redefinition warnings.
-#include "boost/python/detail/wrap_python.hpp"
+// Boost headers.
+#include "foundation/platform/pythonheaderguards.h"
+BEGIN_PYTHON_INCLUDES
+#include "boost/python/detail/wrap_python.hpp"  // has to be first, to avoid redefinition warnings
+#include "boost/python.hpp"
+END_PYTHON_INCLUDES
 
 // appleseed.foundation headers.
 #include "foundation/math/matrix.h"
 #include "foundation/math/quaternion.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/python.h"
 #include "foundation/utility/iostreamop.h"
 
 // Standard headers.

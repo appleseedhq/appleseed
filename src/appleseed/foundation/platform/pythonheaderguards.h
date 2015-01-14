@@ -27,13 +27,24 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_PLATFORM_PYTHON_H
-#define APPLESEED_FOUNDATION_PLATFORM_PYTHON_H
+#ifndef APPLESEED_FOUNDATION_PLATFORM_PYTHONHEADERGUARDS_H
+#define APPLESEED_FOUNDATION_PLATFORM_PYTHONHEADERGUARDS_H
 
-// Boost headers.
-#pragma warning (push)
-#pragma warning (disable : 4244)    // conversion from 'Py_ssize_t' to 'unsigned int', possible loss of data
-#include "boost/python.hpp"
-#pragma warning (pop)
+#if defined _MSC_VER
 
-#endif  // !APPLESEED_FOUNDATION_PLATFORM_PYTHON_H
+    // C4244: conversion from 'Py_ssize_t' to 'unsigned int', possible loss of data
+    #define BEGIN_PYTHON_INCLUDES           \
+        __pragma(warning(push))             \
+        __pragma(warning(disable: 4244))
+
+    #define END_PYTHON_INCLUDES             \
+        __pragma(warning(pop))
+
+#else
+
+    #define BEGIN_PYTHON_INCLUDES
+    #define END_PYTHON_INCLUDES
+
+#endif
+
+#endif  // !APPLESEED_FOUNDATION_PLATFORM_PYTHONHEADERGUARDS_H

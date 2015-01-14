@@ -127,20 +127,17 @@ class UnalignedTransformd44
     {
         Vector<T, 3> res;
 
-        res.x = static_cast<T>(
-                    m_local_to_parent[ 0] * n.x +
-                    m_local_to_parent[ 4] * n.y +
-                    m_local_to_parent[ 8] * n.z);
+        res.x = static_cast<T>(m_local_to_parent[ 0] * n.x +
+                               m_local_to_parent[ 4] * n.y +
+                               m_local_to_parent[ 8] * n.z);
 
-        res.y = static_cast<T>(
-                    m_local_to_parent[ 1] * n.x +
-                    m_local_to_parent[ 5] * n.y +
-                    m_local_to_parent[ 9] * n.z);
+        res.y = static_cast<T>(m_local_to_parent[ 1] * n.x +
+                               m_local_to_parent[ 5] * n.y +
+                               m_local_to_parent[ 9] * n.z);
 
-        res.z = static_cast<T>(
-                    m_local_to_parent[ 2] * n.x +
-                    m_local_to_parent[ 6] * n.y +
-                    m_local_to_parent[10] * n.z);
+        res.z = static_cast<T>(m_local_to_parent[ 2] * n.x +
+                               m_local_to_parent[ 6] * n.y +
+                               m_local_to_parent[10] * n.z);
 
         return res;
     }
@@ -150,20 +147,17 @@ class UnalignedTransformd44
     {
         Vector<T, 3> res;
 
-        res.x = static_cast<T>(
-                    m_parent_to_local[ 0] * n.x +
-                    m_parent_to_local[ 4] * n.y +
-                    m_parent_to_local[ 8] * n.z);
+        res.x = static_cast<T>(m_parent_to_local[ 0] * n.x +
+                               m_parent_to_local[ 4] * n.y +
+                               m_parent_to_local[ 8] * n.z);
 
-        res.y = static_cast<T>(
-                    m_parent_to_local[ 1] * n.x +
-                    m_parent_to_local[ 5] * n.y +
-                    m_parent_to_local[ 9] * n.z);
+        res.y = static_cast<T>(m_parent_to_local[ 1] * n.x +
+                               m_parent_to_local[ 5] * n.y +
+                               m_parent_to_local[ 9] * n.z);
 
-        res.z = static_cast<T>(
-                    m_parent_to_local[ 2] * n.x +
-                    m_parent_to_local[ 6] * n.y +
-                    m_parent_to_local[10] * n.z);
+        res.z = static_cast<T>(m_parent_to_local[ 2] * n.x +
+                               m_parent_to_local[ 6] * n.y +
+                               m_parent_to_local[10] * n.z);
 
         return res;
     }
