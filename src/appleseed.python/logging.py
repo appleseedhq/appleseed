@@ -30,10 +30,10 @@
 from sys import hexversion as appleseed_python_hexversion
 
 if appleseed_python_hexversion < 0x030000F0:
-    # Python 2.X
+    # Python 2.x
     from _appleseedpython import ILogTarget
 else:
-    # Python 3.X
+    # Python 3.x
     from ._appleseedpython import ILogTarget
 
 class ConsoleLogTarget(ILogTarget):
