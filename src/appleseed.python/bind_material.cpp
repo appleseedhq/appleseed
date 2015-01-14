@@ -44,9 +44,11 @@ using namespace foundation;
 using namespace renderer;
 using namespace std;
 
-namespace detail
+namespace
 {
-    auto_release_ptr<Material> create_material(const string& name, const bpy::dict& params)
+    auto_release_ptr<Material> create_material(
+        const string&   name,
+        const bpy::dict& params)
     {
         return GenericMaterialFactory().create(name.c_str(), bpy_dict_to_param_array(params));
     }
@@ -56,7 +58,9 @@ void bind_material()
 {
     bpy::class_<Material, auto_release_ptr<Material>, bpy::bases<ConnectableEntity>, boost::noncopyable>("Material", bpy::no_init)
         .def("get_input_metadata", &detail::get_entity_input_metadata<MaterialFactoryRegistrar>).staticmethod("get_input_metadata")
-        .def("__init__", bpy::make_constructor(detail::create_material));
+        .def("__init__", bpy::make_constructor(create_material))
+        .def("get_model", &Material::get_model)
+        ;
 
     bind_typed_entity_vector<Material>("MaterialContainer");
 }

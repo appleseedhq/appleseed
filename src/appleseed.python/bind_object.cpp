@@ -46,7 +46,7 @@ namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 
-namespace detail
+namespace
 {
     void bpy_list_to_string_array(const bpy::list& l, StringArray& strings)
     {
@@ -63,6 +63,16 @@ namespace detail
 
             strings.push_back(ex());
         }
+    }
+
+    bpy::list obj_material_slots(const Object* obj)
+    {
+        bpy::list result;
+
+        for (size_t i = 0, e = obj->get_material_slot_count(); i < e; ++i)
+            result.append(obj->get_material_slot(i));
+
+        return result;
     }
 
     auto_release_ptr<ObjectInstance> create_obj_instance_with_back_mat(
@@ -109,16 +119,20 @@ namespace detail
 void bind_object()
 {
     bpy::class_<Object, auto_release_ptr<Object>, bpy::bases<Entity>, boost::noncopyable>("Object", bpy::no_init)
-        .def("compute_local_bbox", &Object::compute_local_bbox);
+        .def("get_model", &Object::get_model)
+        .def("compute_local_bbox", &Object::compute_local_bbox)
+        .def("material_slots", &obj_material_slots)
+        ;
 
     bind_typed_entity_vector<Object>("ObjectContainer");
 
     bpy::class_<ObjectInstance, auto_release_ptr<ObjectInstance>, bpy::bases<Entity>, boost::noncopyable>("ObjectInstance", bpy::no_init)
-        .def("__init__", bpy::make_constructor(detail::create_obj_instance))
-        .def("__init__", bpy::make_constructor(detail::create_obj_instance_with_back_mat))
+        .def("__init__", bpy::make_constructor(create_obj_instance))
+        .def("__init__", bpy::make_constructor(create_obj_instance_with_back_mat))
         .def("get_object", &ObjectInstance::get_object, bpy::return_value_policy<bpy::reference_existing_object>())
-        .def("get_transform", &detail::obj_inst_get_transform)
-        .def("compute_parent_bbox", &ObjectInstance::compute_parent_bbox);
+        .def("get_transform", &obj_inst_get_transform)
+        .def("compute_parent_bbox", &ObjectInstance::compute_parent_bbox)
+        ;
 
     bind_typed_entity_vector<ObjectInstance>("ObjectInstanceContainer");
 }

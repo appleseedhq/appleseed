@@ -46,11 +46,11 @@ namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 
-namespace detail
+namespace
 {
-    auto_release_ptr<BSDF> create_bsdf(const std::string& bsdf_type,
-                                       const std::string& name,
-                                       const bpy::dict& params)
+    auto_release_ptr<BSDF> create_bsdf(const std::string&   bsdf_type,
+                                       const std::string&   name,
+                                       const bpy::dict&     params)
     {
         BSDFFactoryRegistrar factories;
         const IBSDFFactory* factory = factories.lookup(bsdf_type.c_str());
@@ -71,7 +71,9 @@ void bind_bsdf()
 {
     bpy::class_<BSDF, auto_release_ptr<BSDF>, bpy::bases<ConnectableEntity>, boost::noncopyable>("BSDF", bpy::no_init)
         .def("get_input_metadata", &detail::get_entity_input_metadata<BSDFFactoryRegistrar>).staticmethod("get_input_metadata")
-        .def("__init__", bpy::make_constructor(detail::create_bsdf));
+        .def("__init__", bpy::make_constructor(create_bsdf))
+        .def("get_model", &BSDF::get_model)
+        ;
 
     bind_typed_entity_vector<BSDF>("BSDFContainer");
 }

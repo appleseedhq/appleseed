@@ -45,9 +45,11 @@ namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 
-namespace detail
+namespace
 {
-    auto_release_ptr<Frame> create_frame(const std::string& name, const bpy::dict& params)
+    auto_release_ptr<Frame> create_frame(
+        const std::string&  name,
+        const bpy::dict&    params)
     {
         return FrameFactory::create(name.c_str(), bpy_dict_to_param_array(params));
     }
@@ -81,16 +83,17 @@ namespace detail
 void bind_frame()
 {
     bpy::class_<Frame, auto_release_ptr<Frame>, bpy::bases<Entity>, boost::noncopyable>("Frame", bpy::no_init)
-        .def("__init__", bpy::make_constructor(detail::create_frame))
+        .def("__init__", bpy::make_constructor(create_frame))
 
         .def("image", &Frame::image, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("aov_images", &Frame::aov_images, bpy::return_value_policy<bpy::reference_existing_object>())
 
-        .def("transform_tile_to_output_color_space", detail::transform_tile_to_output_color_space)
-        .def("transform_image_to_output_color_space", detail::transform_image_to_output_color_space)
+        .def("transform_tile_to_output_color_space", transform_tile_to_output_color_space)
+        .def("transform_image_to_output_color_space", transform_image_to_output_color_space)
 
         .def("clear_main_image", &Frame::clear_main_image)
         .def("write_main_image", &Frame::write_main_image)
         .def("write_aov_images", &Frame::write_aov_images)
-        .def("archive", detail::archive_frame);
+        .def("archive", archive_frame)
+        ;
 }

@@ -46,7 +46,7 @@ namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 
-namespace detail
+namespace
 {
     auto_release_ptr<Texture> create_texture(
         const std::string&              texture_type,
@@ -97,18 +97,27 @@ namespace detail
                 texture_name.c_str(),
                 transform.as_foundation_transform());
     }
+
+    UnalignedTransformd44 texture_inst_get_transform(const TextureInstance* tx)
+    {
+        return UnalignedTransformd44(tx->get_transform());
+    }
 }
 
 void bind_texture()
 {
     bpy::class_<Texture, auto_release_ptr<Texture>, bpy::bases<Entity>, boost::noncopyable>("Texture", bpy::no_init)
         .def("get_input_metadata", &detail::get_entity_input_metadata<TextureFactoryRegistrar>).staticmethod("get_input_metadata")
-        .def("__init__", bpy::make_constructor(detail::create_texture));
+        .def("__init__", bpy::make_constructor(create_texture))
+        .def("get_model", &Texture::get_model)
+        ;
 
     bind_typed_entity_vector<Texture>("TextureContainer");
 
     bpy::class_<TextureInstance, auto_release_ptr<TextureInstance>, bpy::bases<Entity>, boost::noncopyable>("TextureInstance", bpy::no_init)
-        .def("__init__", bpy::make_constructor(detail::create_texture_instance));
+        .def("__init__", bpy::make_constructor(create_texture_instance))
+        .def("get_transform", &texture_inst_get_transform)
+        ;
 
     bind_typed_entity_vector<TextureInstance>("TextureInstanceContainer");
 }

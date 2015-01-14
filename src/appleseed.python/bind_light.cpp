@@ -43,11 +43,11 @@ namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 
-namespace detail
+namespace
 {
     auto_release_ptr<Light> create_light(const std::string& light_type,
                                          const std::string& name,
-                                         const bpy::dict& params)
+                                         const bpy::dict&   params)
     {
         LightFactoryRegistrar factories;
         const ILightFactory* factory = factories.lookup(light_type.c_str());
@@ -78,9 +78,11 @@ void bind_light()
 {
     bpy::class_<Light, auto_release_ptr<Light>, bpy::bases<ConnectableEntity>, boost::noncopyable>("Light", bpy::no_init)
         .def("get_input_metadata", &detail::get_entity_input_metadata<LightFactoryRegistrar>).staticmethod("get_input_metadata")
-        .def("__init__", bpy::make_constructor(detail::create_light))
-        .def("set_transform", &detail::light_set_transform)
-        .def("get_transform", &detail::light_get_transform);
+        .def("__init__", bpy::make_constructor(create_light))
+        .def("get_model", &Light::get_model)
+        .def("set_transform", &light_set_transform)
+        .def("get_transform", &light_get_transform)
+        ;
 
     bind_typed_entity_vector<Light>("LightContainer");
 }

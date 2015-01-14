@@ -41,9 +41,12 @@ namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 
-namespace detail
+namespace
 {
-    auto_release_ptr<Camera> create_camera(const std::string& camera_type, const std::string& name, const bpy::dict& params)
+    auto_release_ptr<Camera> create_camera(
+        const std::string&  camera_type,
+        const std::string&  name,
+        const bpy::dict&    params)
     {
         CameraFactoryRegistrar factories;
         const ICameraFactory* factory = factories.lookup(camera_type.c_str());
@@ -69,10 +72,11 @@ void bind_camera()
 {
     bpy::class_<Camera, auto_release_ptr<Camera>, bpy::bases<Entity>, boost::noncopyable>("Camera", bpy::no_init)
         .def("get_input_metadata", &detail::get_entity_input_metadata<CameraFactoryRegistrar>).staticmethod("get_input_metadata")
-        .def("__init__", bpy::make_constructor(detail::create_camera))
+        .def("__init__", bpy::make_constructor(create_camera))
         .def("get_model", &Camera::get_model)
-        .def("transform_sequence", detail::camera_get_transform_sequence, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("transform_sequence", camera_get_transform_sequence, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("get_shutter_open_time", &Camera::get_shutter_open_time)
         .def("get_shutter_close_time", &Camera::get_shutter_close_time)
-        .def("get_shutter_middle_time", &Camera::get_shutter_middle_time);
+        .def("get_shutter_middle_time", &Camera::get_shutter_middle_time)
+        ;
 }

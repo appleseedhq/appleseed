@@ -45,7 +45,7 @@ namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 
-namespace detail
+namespace
 {
     class ITileCallbackWrapper
       : public ITileCallback
@@ -109,7 +109,7 @@ namespace detail
 
 void bind_tile_callback()
 {
-    bpy::class_<detail::ITileCallbackWrapper, boost::noncopyable>("ITileCallback")
+    bpy::class_<ITileCallbackWrapper, boost::noncopyable>("ITileCallback")
         .def("pre_render", bpy::pure_virtual(&ITileCallback::pre_render))
         .def("post_render_tile", bpy::pure_virtual(&ITileCallback::post_render_tile))
         .def("post_render", bpy::pure_virtual(&ITileCallback::post_render));

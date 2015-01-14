@@ -41,11 +41,11 @@ namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 
-namespace detail
+namespace
 {
     auto_release_ptr<EDF> create_edf(const std::string& edf_type,
                                      const std::string& name,
-                                     const bpy::dict& params)
+                                     const bpy::dict&   params)
     {
         EDFFactoryRegistrar factories;
         const IEDFFactory* factory = factories.lookup(edf_type.c_str());
@@ -66,7 +66,8 @@ void bind_edf()
 {
     bpy::class_<EDF, auto_release_ptr<EDF>, bpy::bases<ConnectableEntity>, boost::noncopyable>("EDF", bpy::no_init)
         .def("get_input_metadata", &detail::get_entity_input_metadata<EDFFactoryRegistrar>).staticmethod("get_input_metadata")
-        .def("__init__", bpy::make_constructor(detail::create_edf))
+        .def("__init__", bpy::make_constructor(create_edf))
+        .def("get_model", &EDF::get_model)
         ;
 
     bind_typed_entity_vector<EDF>("EDFContainer");

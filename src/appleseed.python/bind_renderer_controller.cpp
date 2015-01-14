@@ -45,7 +45,7 @@ namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 
-namespace detail
+namespace
 {
     class IRendererControllerWrapper
       : public IRendererController
@@ -179,16 +179,18 @@ void bind_renderer_controller()
         .value("TerminateRendering", IRendererController::TerminateRendering)
         .value("AbortRendering", IRendererController::AbortRendering)
         .value("RestartRendering", IRendererController::RestartRendering)
-        .value("ReinitializeRendering", IRendererController::ReinitializeRendering);
+        .value("ReinitializeRendering", IRendererController::ReinitializeRendering)
+        ;
 
-    bpy::class_<detail::IRendererControllerWrapper, boost::noncopyable>("IRendererController")
+    bpy::class_<IRendererControllerWrapper, boost::noncopyable>("IRendererController")
         .def("on_rendering_begin", bpy::pure_virtual(&IRendererController::on_rendering_begin))
         .def("on_rendering_success", bpy::pure_virtual(&IRendererController::on_rendering_success))
         .def("on_rendering_abort", bpy::pure_virtual(&IRendererController::on_rendering_abort))
         .def("on_frame_begin", bpy::pure_virtual(&IRendererController::on_frame_begin))
         .def("on_frame_end", bpy::pure_virtual(&IRendererController::on_frame_end))
         .def("on_progress", bpy::pure_virtual(&IRendererController::on_progress))
-        .def("get_status", bpy::pure_virtual(&IRendererController::get_status));
+        .def("get_status", bpy::pure_virtual(&IRendererController::get_status))
+        ;
 
     bpy::class_<DefaultRendererController, boost::noncopyable>("DefaultRendererController");
 }
