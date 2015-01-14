@@ -1376,17 +1376,23 @@ bool TriangleLeafVisitor::visit(
                 triangle_count--;
                 triangle_index++)
     {
-        // Retrieve and check the triangle's visibility flags.
-        if (!(reader.read<uint32>() & m_shading_point.m_ray.m_flags))
-            continue;
-
         FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(1));
+
+        // Retrieve the triangle's visibility flags.
+        const uint32 vis_flags = reader.read<uint32>();
 
         // Retrieve the number of motion segments for this triangle.
         const uint32 motion_segment_count = reader.read<uint32>();
 
         if (motion_segment_count == 0)
         {
+            // Check visibility flags.
+            if (!(vis_flags & m_shading_point.m_ray.m_flags))
+            {
+                reader += sizeof(GTriangleType);
+                continue;
+            }
+
             // Read the triangle, converting it to the right format if necessary.
             const GTriangleType& triangle = reader.read<GTriangleType>();
             const impl::TriangleReader triangle_reader(triangle);
@@ -1414,6 +1420,13 @@ bool TriangleLeafVisitor::visit(
         }
         else
         {
+            // Check visibility flags.
+            if (!(vis_flags & m_shading_point.m_ray.m_flags))
+            {
+                reader += (motion_segment_count + 1) * 3 * sizeof(GVector3);
+                continue;
+            }
+
             // Advance to the motion step immediately before the ray time. 
             const double base_time = m_shading_point.m_ray.m_time * motion_segment_count;
             const size_t base_index = truncate<size_t>(base_time);
@@ -1508,17 +1521,23 @@ bool TriangleLeafProbeVisitor::visit(
     // Sequentially intersect triangles until a hit is found.
     for (size_t triangle_count = node.get_item_count(); triangle_count--; )
     {
-        // Retrieve and check the triangle's visibility flags.
-        if (!(reader.read<uint32>() & m_ray_flags))
-            continue;
-
         FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(1));
+
+        // Retrieve the triangle's visibility flags.
+        const uint32 vis_flags = reader.read<uint32>();
 
         // Retrieve the number of motion segments for this triangle.
         const uint32 motion_segment_count = reader.read<uint32>();
 
         if (motion_segment_count == 0)
         {
+            // Check visibility flags.
+            if (!(vis_flags & m_ray_flags))
+            {
+                reader += sizeof(GTriangleType);
+                continue;
+            }
+
             // Read the triangle, converting it to the right format if necessary.
             const GTriangleType& triangle = reader.read<GTriangleType>();
             const impl::TriangleReader triangle_reader(triangle);
@@ -1532,6 +1551,13 @@ bool TriangleLeafProbeVisitor::visit(
         }
         else
         {
+            // Check visibility flags.
+            if (!(vis_flags & m_ray_flags))
+            {
+                reader += (motion_segment_count + 1) * 3 * sizeof(GVector3);
+                continue;
+            }
+
             // Advance to the motion step immediately before the ray time. 
             const double base_time = m_ray_time * motion_segment_count;
             const size_t base_index = truncate<size_t>(base_time);
