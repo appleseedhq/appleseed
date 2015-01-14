@@ -80,12 +80,9 @@ namespace
     {
         typedef Vector<T, 2> VectorType;
 
-        static VectorType* construct(T x, T y)
+        static VectorType* construct(const T x, const T y)
         {
-            Vector<T, 2>* r = new VectorType();
-            (*r)[0] = x;
-            (*r)[1] = y;
-            return r;
+            return new VectorType(x, y);
         }
     };
 
@@ -94,13 +91,9 @@ namespace
     {
         typedef Vector<T, 3> VectorType;
 
-        static VectorType* construct(T x, T y, T z)
+        static VectorType* construct(const T x, const T y, const T z)
         {
-            Vector<T, 3>* r = new VectorType();
-            (*r)[0] = x;
-            (*r)[1] = y;
-            (*r)[2] = z;
-            return r;
+            return new VectorType(x, y, z);
         }
     };
 
@@ -109,14 +102,9 @@ namespace
     {
         typedef Vector<T, 4> VectorType;
 
-        static VectorType* construct(T x, T y, T z, T w)
+        static VectorType* construct(const T x, const T y, const T z, const T w)
         {
-            VectorType* r = new VectorType();
-            (*r)[0] = x;
-            (*r)[1] = y;
-            (*r)[2] = z;
-            (*r)[3] = w;
-            return r;
+            return new VectorType(x, y, z, w);
         }
     };
 
@@ -186,7 +174,8 @@ namespace
 
             // Because of a bug in Boost.Python, this needs the extra self_ns qualification.
             .def(bpy::self_ns::str(bpy::self))
-            .def(bpy::self_ns::repr(bpy::self));
+            .def(bpy::self_ns::repr(bpy::self))
+            ;
     }
 }
 

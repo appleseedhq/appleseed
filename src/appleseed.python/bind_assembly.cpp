@@ -79,7 +79,7 @@ namespace
         return instance->transform_sequence();
     }
 
-    std::string get_assembly_name(AssemblyInstance *instance)
+    std::string get_assembly_name(AssemblyInstance* instance)
     {
         return instance->get_assembly_name();
     }

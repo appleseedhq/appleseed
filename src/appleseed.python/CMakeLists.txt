@@ -178,6 +178,7 @@ include_directories (
 
 apply_preprocessor_definitions (appleseed.python)
 
+
 append_custom_preprocessor_definitions (appleseed.python
     APPLESEED_ENABLE_IMATH_INTEROP
 )
