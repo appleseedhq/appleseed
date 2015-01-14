@@ -102,6 +102,11 @@ namespace
     {
         return UnalignedTransformd44(tx->get_transform());
     }
+
+    std::string texture_inst_get_texture_name(const TextureInstance* tx)
+    {
+        return tx->get_texture_name();
+    }
 }
 
 void bind_texture()
@@ -117,6 +122,8 @@ void bind_texture()
     bpy::class_<TextureInstance, auto_release_ptr<TextureInstance>, bpy::bases<Entity>, boost::noncopyable>("TextureInstance", bpy::no_init)
         .def("__init__", bpy::make_constructor(create_texture_instance))
         .def("get_transform", &texture_inst_get_transform)
+        .def("get_texture_name", &texture_inst_get_texture_name)
+        .def("find_texture", &TextureInstance::find_texture, bpy::return_value_policy<bpy::reference_existing_object>())
         ;
 
     bind_typed_entity_vector<TextureInstance>("TextureInstanceContainer");

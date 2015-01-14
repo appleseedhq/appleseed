@@ -114,6 +114,11 @@ namespace
     {
         return UnalignedTransformd44(obj->get_transform());
     }
+
+    std::string obj_inst_get_obj_name(const ObjectInstance* obj)
+    {
+        return obj->get_object_name();
+    }
 }
 
 void bind_object()
@@ -129,9 +134,10 @@ void bind_object()
     bpy::class_<ObjectInstance, auto_release_ptr<ObjectInstance>, bpy::bases<Entity>, boost::noncopyable>("ObjectInstance", bpy::no_init)
         .def("__init__", bpy::make_constructor(create_obj_instance))
         .def("__init__", bpy::make_constructor(create_obj_instance_with_back_mat))
-        .def("get_object", &ObjectInstance::get_object, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("get_object_name", &obj_inst_get_obj_name)
+        .def("find_object", &ObjectInstance::find_object, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("get_transform", &obj_inst_get_transform)
-        .def("compute_parent_bbox", &ObjectInstance::compute_parent_bbox)
+        .def("bbox", &ObjectInstance::compute_parent_bbox)
         ;
 
     bind_typed_entity_vector<ObjectInstance>("ObjectInstanceContainer");

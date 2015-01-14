@@ -119,7 +119,6 @@ void bind_assembly()
         .def("transform_sequence", get_transform_sequence, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("get_vis_flags", &AssemblyInstance::get_vis_flags)
         .def("compute_parent_bbox", &AssemblyInstance::compute_parent_bbox)
-        .def("get_assembly", &AssemblyInstance::get_assembly, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("get_assembly_name", &get_assembly_name)
         .def("find_assembly", &AssemblyInstance::find_assembly, bpy::return_value_policy<bpy::reference_existing_object>())
         ;

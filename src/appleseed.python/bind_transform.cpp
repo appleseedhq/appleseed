@@ -146,7 +146,8 @@ void bind_transform()
         .def(bpy::self_ns::str(bpy::self))
         .def(bpy::self_ns::repr(bpy::self));
 
-    bpy::class_<TransformSequence, boost::noncopyable>("TransformSequence", bpy::no_init)
+    bpy::class_<TransformSequence>("TransformSequence")
+        .def(bpy::init<>())
         .def("set_transform", &transform_seq_set_transform)
         .def("get_transform", &transform_seq_get_transform)
         .def("get_earliest_transform", &transform_seq_get_earliest)
@@ -156,5 +157,7 @@ void bind_transform()
         .def("clear", &TransformSequence::clear)
 
         .def("transforms", &transform_seq_as_list)
+
+        .def(bpy::self * bpy::self)
         ;
 }
