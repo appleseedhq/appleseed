@@ -27,23 +27,47 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_PYTHON_DICT2DICT_H
-#define APPLESEED_PYTHON_DICT2DICT_H
-
 // appleseed.python headers.
 #include "pyseed.h" // has to be first, to avoid redefinition warnings
+#include "bindentitycontainers.h"
+#include "dict2dict.h"
+#include "metadata.h"
 
-// Forward declarations.
-namespace foundation    { class Dictionary; }
-namespace foundation    { class DictionaryArray; }
-namespace renderer      { class ParamArray; }
+// appleseed.renderer headers.
+#include "renderer/api/edf.h"
 
-foundation::Dictionary bpy_dict_to_dictionary(const boost::python::dict& d);
-boost::python::dict dictionary_to_bpy_dict(const foundation::Dictionary& dict);
+namespace bpy = boost::python;
+using namespace foundation;
+using namespace renderer;
 
-renderer::ParamArray bpy_dict_to_param_array(const boost::python::dict& d);
-boost::python::dict param_array_to_bpy_dict(const renderer::ParamArray& array);
+namespace
+{
+    auto_release_ptr<EDF> create_edf(const std::string& edf_type,
+                                     const std::string& name,
+                                     const bpy::dict&   params)
+    {
+        EDFFactoryRegistrar factories;
+        const IEDFFactory* factory = factories.lookup(edf_type.c_str());
 
-boost::python::list dictionary_array_to_bpy_list(const foundation::DictionaryArray& array);
+        if (factory)
+            return factory->create(name.c_str(), bpy_dict_to_param_array(params));
+        else
+        {
+            PyErr_SetString(PyExc_RuntimeError, "EDF type not found");
+            bpy::throw_error_already_set();
+        }
 
-#endif  // !APPLESEED_PYTHON_DICT2DICT_H
+        return auto_release_ptr<EDF>();
+    }
+}
+
+void bind_edf()
+{
+    bpy::class_<EDF, auto_release_ptr<EDF>, bpy::bases<ConnectableEntity>, boost::noncopyable>("EDF", bpy::no_init)
+        .def("get_input_metadata", &detail::get_entity_input_metadata<EDFFactoryRegistrar>).staticmethod("get_input_metadata")
+        .def("__init__", bpy::make_constructor(create_edf))
+        .def("get_model", &EDF::get_model)
+        ;
+
+    bind_typed_entity_vector<EDF>("EDFContainer");
+}

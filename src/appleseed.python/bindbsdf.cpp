@@ -27,23 +27,50 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_PYTHON_DICT2DICT_H
-#define APPLESEED_PYTHON_DICT2DICT_H
-
 // appleseed.python headers.
 #include "pyseed.h" // has to be first, to avoid redefinition warnings
+#include "bindentitycontainers.h"
+#include "dict2dict.h"
+#include "metadata.h"
 
-// Forward declarations.
-namespace foundation    { class Dictionary; }
-namespace foundation    { class DictionaryArray; }
-namespace renderer      { class ParamArray; }
+// appleseed.renderer headers.
+#include "renderer/api/bsdf.h"
 
-foundation::Dictionary bpy_dict_to_dictionary(const boost::python::dict& d);
-boost::python::dict dictionary_to_bpy_dict(const foundation::Dictionary& dict);
+// Standard headers.
+#include <string>
 
-renderer::ParamArray bpy_dict_to_param_array(const boost::python::dict& d);
-boost::python::dict param_array_to_bpy_dict(const renderer::ParamArray& array);
+namespace bpy = boost::python;
+using namespace foundation;
+using namespace renderer;
 
-boost::python::list dictionary_array_to_bpy_list(const foundation::DictionaryArray& array);
+namespace
+{
+    auto_release_ptr<BSDF> create_bsdf(const std::string&   bsdf_type,
+                                       const std::string&   name,
+                                       const bpy::dict&     params)
+    {
+        BSDFFactoryRegistrar factories;
+        const IBSDFFactory* factory = factories.lookup(bsdf_type.c_str());
 
-#endif  // !APPLESEED_PYTHON_DICT2DICT_H
+        if (factory)
+            return factory->create(name.c_str(), bpy_dict_to_param_array(params));
+        else
+        {
+            PyErr_SetString(PyExc_RuntimeError, "BSDF type not found");
+            bpy::throw_error_already_set();
+        }
+
+        return auto_release_ptr<BSDF>();
+    }
+}
+
+void bind_bsdf()
+{
+    bpy::class_<BSDF, auto_release_ptr<BSDF>, bpy::bases<ConnectableEntity>, boost::noncopyable>("BSDF", bpy::no_init)
+        .def("get_input_metadata", &detail::get_entity_input_metadata<BSDFFactoryRegistrar>).staticmethod("get_input_metadata")
+        .def("__init__", bpy::make_constructor(create_bsdf))
+        .def("get_model", &BSDF::get_model)
+        ;
+
+    bind_typed_entity_vector<BSDF>("BSDFContainer");
+}

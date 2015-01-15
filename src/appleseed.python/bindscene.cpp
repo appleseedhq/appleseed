@@ -27,23 +27,36 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_PYTHON_DICT2DICT_H
-#define APPLESEED_PYTHON_DICT2DICT_H
-
 // appleseed.python headers.
 #include "pyseed.h" // has to be first, to avoid redefinition warnings
 
-// Forward declarations.
-namespace foundation    { class Dictionary; }
-namespace foundation    { class DictionaryArray; }
-namespace renderer      { class ParamArray; }
+// appleseed.renderer headers.
+#include "renderer/modeling/scene/scene.h"
 
-foundation::Dictionary bpy_dict_to_dictionary(const boost::python::dict& d);
-boost::python::dict dictionary_to_bpy_dict(const foundation::Dictionary& dict);
+namespace bpy = boost::python;
+using namespace foundation;
+using namespace renderer;
 
-renderer::ParamArray bpy_dict_to_param_array(const boost::python::dict& d);
-boost::python::dict param_array_to_bpy_dict(const renderer::ParamArray& array);
+namespace
+{
+    auto_release_ptr<Scene> create_scene()
+    {
+        return SceneFactory::create();
+    }
+}
 
-boost::python::list dictionary_array_to_bpy_list(const foundation::DictionaryArray& array);
-
-#endif  // !APPLESEED_PYTHON_DICT2DICT_H
+void bind_scene()
+{
+    bpy::class_<Scene, auto_release_ptr<Scene>, bpy::bases<Entity, BaseGroup>, boost::noncopyable>("Scene", bpy::no_init)
+        .def("__init__", bpy::make_constructor(create_scene))
+        .def("get_uid", &Identifiable::get_uid)
+        .def("set_camera", &Scene::set_camera)
+        .def("get_camera", &Scene::get_camera, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("get_environment", &Scene::get_environment, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("set_environment", &Scene::set_environment)
+        .def("environment_edfs", &Scene::environment_edfs, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("environment_shaders", &Scene::environment_shaders, bpy::return_value_policy<bpy::reference_existing_object>())
+        .def("compute_bbox", &Scene::compute_bbox)
+        .def("compute_radius", &Scene::compute_radius)
+        ;
+}

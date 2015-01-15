@@ -27,23 +27,36 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_PYTHON_DICT2DICT_H
-#define APPLESEED_PYTHON_DICT2DICT_H
-
 // appleseed.python headers.
 #include "pyseed.h" // has to be first, to avoid redefinition warnings
 
-// Forward declarations.
-namespace foundation    { class Dictionary; }
-namespace foundation    { class DictionaryArray; }
-namespace renderer      { class ParamArray; }
+// appleseed.renderer headers.
+#include "renderer/api/log.h"
+#include "renderer/modeling/project/eventcounters.h"
 
-foundation::Dictionary bpy_dict_to_dictionary(const boost::python::dict& d);
-boost::python::dict dictionary_to_bpy_dict(const foundation::Dictionary& dict);
+namespace bpy = boost::python;
+using namespace foundation;
+using namespace renderer;
 
-renderer::ParamArray bpy_dict_to_param_array(const boost::python::dict& d);
-boost::python::dict param_array_to_bpy_dict(const renderer::ParamArray& array);
+void bind_utility()
+{
+    bpy::class_<EventCounters, boost::noncopyable>("EventCounters")
+        .def("clear", &EventCounters::clear)
+        .def("signal_warning", &EventCounters::signal_warning)
+        .def("signal_warnings", &EventCounters::signal_warnings)
+        .def("signal_error", &EventCounters::signal_error)
+        .def("signal_errors", &EventCounters::signal_errors)
+        .def("get_warning_count", &EventCounters::get_warning_count)
+        .def("get_error_count", &EventCounters::get_error_count)
+        .def("has_errors", &EventCounters::has_errors)
+        ;
 
-boost::python::list dictionary_array_to_bpy_list(const foundation::DictionaryArray& array);
+    bpy::class_<ILogTarget, boost::noncopyable>("ILogTarget", bpy::no_init);
 
-#endif  // !APPLESEED_PYTHON_DICT2DICT_H
+    bpy::class_<Logger, boost::noncopyable>("Logger", bpy::no_init)
+        .def("set_enabled", &Logger::set_enabled)
+        .def("add_target", &Logger::add_target)
+        ;
+
+    bpy::def("global_logger", global_logger, bpy::return_value_policy<bpy::reference_existing_object>());
+}

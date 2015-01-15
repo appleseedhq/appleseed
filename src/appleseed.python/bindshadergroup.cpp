@@ -27,23 +27,47 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_PYTHON_DICT2DICT_H
-#define APPLESEED_PYTHON_DICT2DICT_H
-
 // appleseed.python headers.
 #include "pyseed.h" // has to be first, to avoid redefinition warnings
+#include "bindentitycontainers.h"
+#include "dict2dict.h"
 
-// Forward declarations.
-namespace foundation    { class Dictionary; }
-namespace foundation    { class DictionaryArray; }
-namespace renderer      { class ParamArray; }
+// appleseed.renderer headers.
+#include "renderer/api/shadergroup.h"
 
-foundation::Dictionary bpy_dict_to_dictionary(const boost::python::dict& d);
-boost::python::dict dictionary_to_bpy_dict(const foundation::Dictionary& dict);
+// Standard headers.
+#include <cstddef>
+#include <string>
 
-renderer::ParamArray bpy_dict_to_param_array(const boost::python::dict& d);
-boost::python::dict param_array_to_bpy_dict(const renderer::ParamArray& array);
+namespace bpy = boost::python;
+using namespace foundation;
+using namespace renderer;
 
-boost::python::list dictionary_array_to_bpy_list(const foundation::DictionaryArray& array);
+namespace
+{
+    auto_release_ptr<ShaderGroup> create_shader_group(const std::string& name)
+    {
+        return ShaderGroupFactory::create(name.c_str());
+    }
 
-#endif  // !APPLESEED_PYTHON_DICT2DICT_H
+    void add_shader(
+        ShaderGroup*        sg,
+        const std::string&  type,
+        const std::string&  name,
+        const std::string&  layer,
+        bpy::dict           params)
+    {
+        sg->add_shader(type.c_str(), name.c_str(), layer.c_str(), bpy_dict_to_param_array(params));
+    }
+}
+
+void bind_shader_group()
+{
+    bpy::class_<ShaderGroup, auto_release_ptr<ShaderGroup>, bpy::bases<Entity>, boost::noncopyable>("ShaderGroup", bpy::no_init)
+        .def("__init__", bpy::make_constructor(create_shader_group))
+        .def("add_shader", add_shader)
+        .def("add_connection", &ShaderGroup::add_connection)
+        ;
+
+    bind_typed_entity_vector<ShaderGroup>("ShaderGroupContainer");
+}

@@ -27,23 +27,49 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_PYTHON_DICT2DICT_H
-#define APPLESEED_PYTHON_DICT2DICT_H
+#ifndef APPLESEED_PYTHON_PYSEED_H
+#define APPLESEED_PYTHON_PYSEED_H
 
-// appleseed.python headers.
-#include "pyseed.h" // has to be first, to avoid redefinition warnings
+#if defined _MSC_VER
+    // C4244: conversion from 'Py_ssize_t' to 'unsigned int', possible loss of data
+    __pragma(warning(push))             \
+    __pragma(warning(disable: 4244))
+#endif
 
-// Forward declarations.
-namespace foundation    { class Dictionary; }
-namespace foundation    { class DictionaryArray; }
-namespace renderer      { class ParamArray; }
+// Python headers (has to be first, to avoid redefinition warnings)
+#include "Python.h"
 
-foundation::Dictionary bpy_dict_to_dictionary(const boost::python::dict& d);
-boost::python::dict dictionary_to_bpy_dict(const foundation::Dictionary& dict);
+// Boost headers.
+#include "boost/python.hpp"
 
-renderer::ParamArray bpy_dict_to_param_array(const boost::python::dict& d);
-boost::python::dict param_array_to_bpy_dict(const renderer::ParamArray& array);
+// appleseed.foundation headers.
+#include "foundation/utility/autoreleaseptr.h"
 
-boost::python::list dictionary_array_to_bpy_list(const foundation::DictionaryArray& array);
+namespace boost {
+namespace python {
 
-#endif  // !APPLESEED_PYTHON_DICT2DICT_H
+template <class T>
+struct pointee<foundation::auto_release_ptr<T> >
+{
+    typedef T type;
+};
+
+}       // namespace python
+}       // namespace boost
+
+namespace foundation
+{
+
+template <class T>
+T* get_pointer(const auto_release_ptr<T>& p)
+{
+    return p.get();
+}
+
+}       // namespace foundation
+
+#if defined _MSC_VER
+    __pragma(warning(pop))
+#endif
+
+#endif  // !APPLESEED_PYTHON_PYTHON_H

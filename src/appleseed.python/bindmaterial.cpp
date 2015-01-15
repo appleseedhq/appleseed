@@ -27,23 +27,40 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_PYTHON_DICT2DICT_H
-#define APPLESEED_PYTHON_DICT2DICT_H
-
 // appleseed.python headers.
 #include "pyseed.h" // has to be first, to avoid redefinition warnings
+#include "bindentitycontainers.h"
+#include "dict2dict.h"
+#include "metadata.h"
 
-// Forward declarations.
-namespace foundation    { class Dictionary; }
-namespace foundation    { class DictionaryArray; }
-namespace renderer      { class ParamArray; }
+// appleseed.renderer headers.
+#include "renderer/api/material.h"
 
-foundation::Dictionary bpy_dict_to_dictionary(const boost::python::dict& d);
-boost::python::dict dictionary_to_bpy_dict(const foundation::Dictionary& dict);
+// Standard headers.
+#include <string>
 
-renderer::ParamArray bpy_dict_to_param_array(const boost::python::dict& d);
-boost::python::dict param_array_to_bpy_dict(const renderer::ParamArray& array);
+namespace bpy = boost::python;
+using namespace foundation;
+using namespace renderer;
+using namespace std;
 
-boost::python::list dictionary_array_to_bpy_list(const foundation::DictionaryArray& array);
+namespace
+{
+    auto_release_ptr<Material> create_material(
+        const string&   name,
+        const bpy::dict& params)
+    {
+        return GenericMaterialFactory().create(name.c_str(), bpy_dict_to_param_array(params));
+    }
+}
 
-#endif  // !APPLESEED_PYTHON_DICT2DICT_H
+void bind_material()
+{
+    bpy::class_<Material, auto_release_ptr<Material>, bpy::bases<ConnectableEntity>, boost::noncopyable>("Material", bpy::no_init)
+        .def("get_input_metadata", &detail::get_entity_input_metadata<MaterialFactoryRegistrar>).staticmethod("get_input_metadata")
+        .def("__init__", bpy::make_constructor(create_material))
+        .def("get_model", &Material::get_model)
+        ;
+
+    bind_typed_entity_vector<Material>("MaterialContainer");
+}
