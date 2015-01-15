@@ -36,10 +36,8 @@
     __pragma(warning(disable: 4244))
 #endif
 
-// Python headers (has to be first, to avoid redefinition warnings)
-#include "Python.h"
-
 // Boost headers.
+#include "boost/python/detail/wrap_python.hpp"  // has to be first, to avoid redefinition warnings
 #include "boost/python.hpp"
 
 // appleseed.foundation headers.
@@ -72,4 +70,4 @@ T* get_pointer(const auto_release_ptr<T>& p)
     __pragma(warning(pop))
 #endif
 
-#endif  // !APPLESEED_PYTHON_PYTHON_H
+#endif  // !APPLESEED_PYTHON_PYSEED_H
