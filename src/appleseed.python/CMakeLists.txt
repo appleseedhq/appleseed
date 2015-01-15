@@ -88,49 +88,49 @@ endif ()
 
 set (sources
     __init__.py
-    bind_assembly.cpp
-    bind_auto_release_ptr.h
-    bind_bbox.cpp
-    bind_bsdf.cpp
-    bind_camera.cpp
-    bind_color.cpp
-    bind_display.cpp
-    bind_edf.cpp
-    bind_entity.cpp
-    bind_environment.cpp
-    bind_frame.cpp
-    bind_image.cpp
-    bind_light.cpp
-    bind_logger.cpp
-    bind_master_renderer.cpp
-    bind_material.cpp
-    bind_matrix.cpp
-    bind_mesh_object.cpp
-    bind_object.cpp
-    bind_project.cpp
-    bind_quaternion.cpp
-    bind_renderer_controller.cpp
-    bind_scene.cpp
-    bind_surface_shader.cpp
-    bind_texture.cpp
-    bind_tile_callback.cpp
-    bind_transform.cpp
-    bind_typed_entity_containers.h
-    bind_utility.cpp
-    bind_vector.cpp
+    bindassembly.cpp
+    bindbbox.cpp
+    bindbsdf.cpp
+    bindcamera.cpp
+    bindcolor.cpp
+    binddisplay.cpp
+    bindedf.cpp
+    bindentity.cpp
+    bindentitycontainers.h
+    bindenvironment.cpp
+    bindframe.cpp
+    bindimage.cpp
+    bindlight.cpp
+    bindlogger.cpp
+    bindmasterrenderer.cpp
+    bindmaterial.cpp
+    bindmatrix.cpp
+    bindmeshobject.cpp
+    bindobject.cpp
+    bindproject.cpp
+    bindquaternion.cpp
+    bindrenderercontroller.cpp
+    bindscene.cpp
+    bindsurfaceshader.cpp
+    bindtexture.cpp
+    bindtilecallback.cpp
+    bindtransform.cpp
+    bindutility.cpp
+    bindvector.cpp
     dict2dict.cpp
     dict2dict.h
-    gil_locks.h
-    gil_locks.cpp
+    gillocks.h
+    gillocks.cpp
     logging.py
     metadata.h
     module.cpp
-    unaligned_matrix44.h
-    unaligned_transformd44.h
+    pyseed.h
+    unalignedmatrix44.h
+    unalignedtransformd44.h
 )
 if (WITH_OSL)
     list (APPEND sources
-        bind_shadergroup.cpp
+        bindshadergroup.cpp
     )
 endif ()
 list (APPEND appleseed.python_sources

@@ -27,23 +27,41 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_PYTHON_DICT2DICT_H
-#define APPLESEED_PYTHON_DICT2DICT_H
+#ifndef APPLESEED_PYTHON_GILLOCKS_H
+#define APPLESEED_PYTHON_GILLOCKS_H
 
 // appleseed.python headers.
 #include "pyseed.h" // has to be first, to avoid redefinition warnings
 
-// Forward declarations.
-namespace foundation    { class Dictionary; }
-namespace foundation    { class DictionaryArray; }
-namespace renderer      { class ParamArray; }
+// appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
 
-foundation::Dictionary bpy_dict_to_dictionary(const boost::python::dict& d);
-boost::python::dict dictionary_to_bpy_dict(const foundation::Dictionary& dict);
+// This class locks Python's Global interpreter lock on construction
+// and unlocks it on destruction. A classic lock.
+class ScopedGILLock
+  : public foundation::NonCopyable
+{
+  public:
+    ScopedGILLock();
+    ~ScopedGILLock();
 
-renderer::ParamArray bpy_dict_to_param_array(const boost::python::dict& d);
-boost::python::dict param_array_to_bpy_dict(const renderer::ParamArray& array);
+  private:
+    bool                m_threads_initialized;
+    PyGILState_STATE    m_state;
+};
 
-boost::python::list dictionary_array_to_bpy_list(const foundation::DictionaryArray& array);
+// This class unlocks Python's Global interpreter lock on construction
+// and locks it on destruction. An inverted lock -> unlock.
+class ScopedGILUnlock
+  : public foundation::NonCopyable
+{
+  public:
+    ScopedGILUnlock();
+    ~ScopedGILUnlock();
 
-#endif  // !APPLESEED_PYTHON_DICT2DICT_H
+  private:
+    bool                m_threads_initialized;
+    PyThreadState*      m_state;
+};
+
+#endif  // !APPLESEED_PYTHON_GILLOCKS_H

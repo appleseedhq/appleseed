@@ -27,23 +27,34 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_PYTHON_DICT2DICT_H
-#define APPLESEED_PYTHON_DICT2DICT_H
-
 // appleseed.python headers.
 #include "pyseed.h" // has to be first, to avoid redefinition warnings
 
-// Forward declarations.
-namespace foundation    { class Dictionary; }
-namespace foundation    { class DictionaryArray; }
-namespace renderer      { class ParamArray; }
+// appleseed.foundation headers.
+#include "foundation/math/aabb.h"
+#include "foundation/utility/iostreamop.h"
 
-foundation::Dictionary bpy_dict_to_dictionary(const boost::python::dict& d);
-boost::python::dict dictionary_to_bpy_dict(const foundation::Dictionary& dict);
+namespace bpy = boost::python;
+using namespace foundation;
 
-renderer::ParamArray bpy_dict_to_param_array(const boost::python::dict& d);
-boost::python::dict param_array_to_bpy_dict(const renderer::ParamArray& array);
+namespace
+{
+    template <typename T>
+    void bind_aabb3(const char* class_name)
+    {
+        bpy::class_<AABB<T, 3> >(class_name)
+            .def_readwrite("min", &AABB<T, 3>::min)
+            .def_readwrite("max", &AABB<T, 3>::max)
 
-boost::python::list dictionary_array_to_bpy_list(const foundation::DictionaryArray& array);
+            // Because of a bug in Boost.Python, this needs the extra self_ns qualification.
+            .def(bpy::self_ns::str(bpy::self))
+            .def(bpy::self_ns::repr(bpy::self))
+            ;
+    }
+}
 
-#endif  // !APPLESEED_PYTHON_DICT2DICT_H
+void bind_bbox()
+{
+    bind_aabb3<float>("AABB3f");
+    bind_aabb3<double>("AABB3d");
+}

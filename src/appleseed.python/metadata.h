@@ -29,19 +29,13 @@
 #ifndef APPLESEED_PYTHON_METADATA_H
 #define APPLESEED_PYTHON_METADATA_H
 
-// Boost headers.
-#include "foundation/platform/pythonheaderguards.h"
-BEGIN_PYTHON_INCLUDES
-#include "boost/python/detail/wrap_python.hpp"  // has to be first, to avoid redefinition warnings
-#include "boost/python.hpp"
-END_PYTHON_INCLUDES
+// appleseed.python headers.
+#include "pyseed.h" // has to be first, to avoid redefinition warnings
+#include "dict2dict.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
-
-// appleseed.python headers.
-#include "dict2dict.h"
 
 namespace detail
 {

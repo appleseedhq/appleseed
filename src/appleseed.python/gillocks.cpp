@@ -27,23 +27,31 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_PYTHON_DICT2DICT_H
-#define APPLESEED_PYTHON_DICT2DICT_H
+// Interface header.
+#include "gillocks.h"
 
-// appleseed.python headers.
-#include "pyseed.h" // has to be first, to avoid redefinition warnings
+ScopedGILLock::ScopedGILLock()
+  : m_threads_initialized(PyEval_ThreadsInitialized() ? true : false)
+{
+    if (m_threads_initialized)
+        m_state = PyGILState_Ensure();
+}
 
-// Forward declarations.
-namespace foundation    { class Dictionary; }
-namespace foundation    { class DictionaryArray; }
-namespace renderer      { class ParamArray; }
+ScopedGILLock::~ScopedGILLock()
+{
+    if (m_threads_initialized)
+        PyGILState_Release(m_state);
+}
 
-foundation::Dictionary bpy_dict_to_dictionary(const boost::python::dict& d);
-boost::python::dict dictionary_to_bpy_dict(const foundation::Dictionary& dict);
+ScopedGILUnlock::ScopedGILUnlock()
+  : m_threads_initialized(PyEval_ThreadsInitialized() ? true : false)
+{
+    if (m_threads_initialized)
+        m_state = PyEval_SaveThread();
+}
 
-renderer::ParamArray bpy_dict_to_param_array(const boost::python::dict& d);
-boost::python::dict param_array_to_bpy_dict(const renderer::ParamArray& array);
-
-boost::python::list dictionary_array_to_bpy_list(const foundation::DictionaryArray& array);
-
-#endif  // !APPLESEED_PYTHON_DICT2DICT_H
+ScopedGILUnlock::~ScopedGILUnlock()
+{
+    if (m_threads_initialized)
+        PyEval_RestoreThread(m_state);
+}
