@@ -175,4 +175,4 @@ inline std::ostream& operator<<(std::ostream& s, const UnalignedTransformd44& xf
 
 }       // namespace foundation
 
-#endif  // !APPLESEED_PYTHON_UNALIGNEDTRANSFORM44_H
+#endif  // !APPLESEED_PYTHON_UNALIGNEDTRANSFORMD44_H

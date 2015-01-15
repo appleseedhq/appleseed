@@ -57,4 +57,4 @@ namespace detail
     }
 }
 
-#endif  // !APPLESEED_PYTHON_BIND_TYPED_ENTITY_CONTAINERS_H
+#endif  // !APPLESEED_PYTHON_METADATA_H

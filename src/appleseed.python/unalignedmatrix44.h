@@ -272,4 +272,4 @@ std::ostream& operator<<(std::ostream& s, const UnalignedMatrix44<T>& matrix)
 
 }       // namespace foundation
 
-#endif  // !APPLESEED_PYTHON_UNALIGNED_MATRIX44_H
+#endif  // !APPLESEED_PYTHON_UNALIGNEDMATRIX44_H
