@@ -27,8 +27,12 @@
 // THE SOFTWARE.
 //
 
-// Has to be first, to avoid redefinition warnings.
-#include "boost/python/detail/wrap_python.hpp"
+// Boost headers.
+#include "foundation/platform/pythonheaderguards.h"
+BEGIN_PYTHON_INCLUDES
+#include "boost/python/detail/wrap_python.hpp"  // has to be first, to avoid redefinition warnings
+#include "boost/python.hpp"
+END_PYTHON_INCLUDES
 
 // appleseed.python headers.
 #include "dict2dict.h"
@@ -37,9 +41,6 @@
 // appleseed.renderer headers.
 #include "renderer/api/project.h"
 #include "renderer/api/rendering.h"
-
-// appleseed.foundation headers.
-#include "foundation/platform/python.h"
 
 // Standard headers.
 #include <memory>

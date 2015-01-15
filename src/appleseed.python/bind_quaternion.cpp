@@ -27,15 +27,15 @@
 // THE SOFTWARE.
 //
 
-// Has to be first, to avoid redefinition warnings.
-#include "boost/python/detail/wrap_python.hpp"
-#ifdef APPLESEED_ENABLE_IMATH_INTEROP
-#include "boost/python/implicit.hpp"
-#endif
+// Boost headers.
+#include "foundation/platform/pythonheaderguards.h"
+BEGIN_PYTHON_INCLUDES
+#include "boost/python/detail/wrap_python.hpp"  // has to be first, to avoid redefinition warnings
+#include "boost/python.hpp"
+END_PYTHON_INCLUDES
 
 // appleseed.foundation headers.
 #include "foundation/math/quaternion.h"
-#include "foundation/platform/python.h"
 #include "foundation/utility/iostreamop.h"
 
 namespace bpy = boost::python;

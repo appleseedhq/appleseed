@@ -30,8 +30,12 @@
 #ifndef APPLESEED_PYTHON_BIND_TYPED_ENTITY_CONTAINERS_H
 #define APPLESEED_PYTHON_BIND_TYPED_ENTITY_CONTAINERS_H
 
-// Has to be first, to avoid redefinition warnings.
-#include "boost/python/detail/wrap_python.hpp"
+// Boost headers.
+#include "foundation/platform/pythonheaderguards.h"
+BEGIN_PYTHON_INCLUDES
+#include "boost/python/detail/wrap_python.hpp"  // has to be first, to avoid redefinition warnings
+#include "boost/python.hpp"
+END_PYTHON_INCLUDES
 
 // appleseed.python headers.
 #include "dict2dict.h"
@@ -39,9 +43,6 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entitymap.h"
 #include "renderer/modeling/entity/entityvector.h"
-
-// appleseed.foundation headers.
-#include "foundation/platform/python.h"
 
 // Standard headers.
 #include <cstddef>
