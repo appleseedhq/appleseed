@@ -117,6 +117,26 @@ namespace
     {
         return obj->get_object_name();
     }
+
+    bpy::dict material_mappings_to_dict(const StringDictionary& mappings)
+    {
+        bpy::dict result;
+
+        for (const_each<StringDictionary> it = mappings; it; ++it)
+            result[it->name()] = it->value();
+
+        return result;
+    }
+
+    bpy::dict obj_inst_get_front_material_mappings(const ObjectInstance* obj)
+    {
+        return material_mappings_to_dict(obj->get_front_material_mappings());
+    }
+
+    bpy::dict obj_inst_get_back_material_mappings(const ObjectInstance* obj)
+    {
+        return material_mappings_to_dict(obj->get_back_material_mappings());
+    }
 }
 
 void bind_object()
@@ -136,6 +156,8 @@ void bind_object()
         .def("find_object", &ObjectInstance::find_object, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("get_transform", &obj_inst_get_transform)
         .def("bbox", &ObjectInstance::compute_parent_bbox)
+        .def("get_front_material_mappings", &obj_inst_get_front_material_mappings)
+        .def("get_back_material_mappings", &obj_inst_get_back_material_mappings)
         ;
 
     bind_typed_entity_vector<ObjectInstance>("ObjectInstanceContainer");
