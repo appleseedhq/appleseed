@@ -110,16 +110,39 @@ namespace
 
 void bind_texture()
 {
+    bpy::enum_<TextureAddressingMode>("TextureAddressingMode")
+        .value("Clamp", TextureAddressingClamp)
+        .value("Wrap", TextureAddressingWrap)
+        ;
+
+    bpy::enum_<TextureFilteringMode>("TextureFilteringMode")
+        .value("Nearest", TextureFilteringNearest)
+        .value("Bilinear", TextureFilteringBilinear)
+        .value("Bicubic", TextureFilteringBicubic)
+        .value("Feline", TextureFilteringFeline)
+        .value("EWA", TextureFilteringEWA)
+        ;
+
+    bpy::enum_<TextureAlphaMode>("TextureAlphaMode")
+        .value("AlphaChannel", TextureAlphaModeAlphaChannel)
+        .value("Luminance", TextureAlphaModeLuminance)
+        .value("Detect", TextureAlphaModeDetect)
+        ;
+
     bpy::class_<Texture, auto_release_ptr<Texture>, bpy::bases<Entity>, boost::noncopyable>("Texture", bpy::no_init)
         .def("get_input_metadata", &detail::get_entity_input_metadata<TextureFactoryRegistrar>).staticmethod("get_input_metadata")
         .def("__init__", bpy::make_constructor(create_texture))
         .def("get_model", &Texture::get_model)
+        .def("get_color_space", &Texture::get_color_space)
         ;
 
     bind_typed_entity_vector<Texture>("TextureContainer");
 
     bpy::class_<TextureInstance, auto_release_ptr<TextureInstance>, bpy::bases<Entity>, boost::noncopyable>("TextureInstance", bpy::no_init)
         .def("__init__", bpy::make_constructor(create_texture_instance))
+        .def("get_addressing_mode", &TextureInstance::get_addressing_mode)
+        .def("get_alpha_mode", &TextureInstance::get_alpha_mode)
+        .def("get_filtering_mode", &TextureInstance::get_filtering_mode)
         .def("get_transform", &texture_inst_get_transform)
         .def("get_texture_name", &texture_inst_get_texture_name)
         .def("find_texture", &TextureInstance::find_texture, bpy::return_value_policy<bpy::reference_existing_object>())
