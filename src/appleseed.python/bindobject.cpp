@@ -34,7 +34,6 @@
 #include "unalignedtransformd44.h"
 
 // appleseed.renderer headers.
-#include "renderer/api/material.h"
 #include "renderer/api/object.h"
 #include "renderer/api/scene.h"
 
