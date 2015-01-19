@@ -122,30 +122,16 @@ endif ()
 
 
 #--------------------------------------------------------------------------------------------------
-# Extract version string and version components from Git repository.
+# Auto-generate version header.
 #--------------------------------------------------------------------------------------------------
 
-# Extract version string from Git repository.
-execute_process (
-    COMMAND ${git_command} describe --long
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    RESULT_VARIABLE git_describe_result
-    OUTPUT_VARIABLE appleseed_version_string
-    ERROR_QUIET
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-)
+set (appleseed_version_major 1)
+set (appleseed_version_minor 1)
+set (appleseed_version_patch 0)
+set (appleseed_version_alpha 24)
 
-# Use dummy version string if 'git describe' command failed (e.g. when building from a source dump).
-if (NOT ${git_describe_result} EQUAL 0)
-    set (appleseed_version_string "0.0.0")
-endif ()
-
-# Extract version components from version string.
-string (REGEX MATCHALL "[0-9]+" appleseed_version_components ${appleseed_version_string})
-list (GET appleseed_version_components 0 appleseed_version_major)
-list (GET appleseed_version_components 1 appleseed_version_minor)
-list (GET appleseed_version_components 2 appleseed_version_patch)
-
+configure_file (${PROJECT_SOURCE_DIR}/src/appleseed/renderer/api/version.h.in
+                ${PROJECT_SOURCE_DIR}/src/appleseed/renderer/api/version.h)
 
 #--------------------------------------------------------------------------------------------------
 # Boost libraries.
@@ -322,7 +308,6 @@ endif ()
 # Definitions common to all configurations.
 set (preprocessor_definitions_common
     ${preprocessor_definitions_common}
-    APPLESEED_VERSION_STRING="${appleseed_version_string}"
 )
 if (is_x86)
     set (preprocessor_definitions_common
