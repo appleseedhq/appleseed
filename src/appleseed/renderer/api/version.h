@@ -29,22 +29,7 @@
 #ifndef APPLESEED_RENDERER_API_VERSION_H
 #define APPLESEED_RENDERER_API_VERSION_H
 
-#define APPLESEED_VERSION_MAJOR ${appleseed_version_major}
-#define APPLESEED_VERSION_MINOR ${appleseed_version_minor}
-#define APPLESEED_VERSION_PATCH ${appleseed_version_patch}
-#define APPLESEED_VERSION_ALPHA ${appleseed_version_alpha}
-
-#define APPLESEED_VERSION \
-    APPLESEED_VERSION_MAJOR * 10000 + \
-    APPLESEED_VERSION_MINOR * 100 + \
-    APPLESEED_VERSION_PATCH
-
-#if APPLESEED_VERSION_ALPHA != 0
-    #define APPLESEED_VERSION_STRING  \
-        "${appleseed_version_major}.${appleseed_version_minor}.${appleseed_version_patch}-alpha-${appleseed_version_alpha}"
-#else
-    #define APPLESEED_VERSION_STRING  \
-        "${appleseed_version_major}.${appleseed_version_minor}.${appleseed_version_patch}"
-#endif
+// API headers.
+#include "foundation/core/version.h"
 
 #endif  // !APPLESEED_RENDERER_API_VERSION_H

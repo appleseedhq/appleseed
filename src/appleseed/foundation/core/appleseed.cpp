@@ -30,8 +30,8 @@
 // Interface header.
 #include "appleseed.h"
 
-// appleseed.renderer headers.
-#include "renderer/api/version.h"
+// appleseed.foundation headers.
+#include "foundation/core/version.h"
 
 // Standard headers.
 #include <cstdio>
