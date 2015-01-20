@@ -788,6 +788,7 @@ set (renderer_api_sources
     renderer/api/texture.h
     renderer/api/trace.h
     renderer/api/utility.h
+    renderer/api/version.h
 )
 if (WITH_OSL)
     list (APPEND renderer_api_sources
