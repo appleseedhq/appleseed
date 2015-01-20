@@ -29,10 +29,10 @@
 #ifndef APPLESEED_FOUNDATION_CORE_VERSION_H
 #define APPLESEED_FOUNDATION_CORE_VERSION_H
 
-#define APPLESEED_VERSION_MAJOR         ${appleseed_version_major}
-#define APPLESEED_VERSION_MINOR         ${appleseed_version_minor}
-#define APPLESEED_VERSION_PATCH         ${appleseed_version_patch}
-#define APPLESEED_VERSION_RELEASE_TYPE  "${appleseed_version_release_type}"
+#define APPLESEED_VERSION_MAJOR     ${appleseed_version_major}
+#define APPLESEED_VERSION_MINOR     ${appleseed_version_minor}
+#define APPLESEED_VERSION_PATCH     ${appleseed_version_patch}
+#define APPLESEED_VERSION_MATURITY  "${appleseed_version_maturity}"
 
 #define APPLESEED_VERSION \
     APPLESEED_VERSION_MAJOR * 10000 + \
@@ -40,6 +40,6 @@
     APPLESEED_VERSION_PATCH
 
 #define APPLESEED_VERSION_STRING  \
-    "${appleseed_version_major}.${appleseed_version_minor}.${appleseed_version_patch}-${appleseed_version_release_type}"
+    "${appleseed_version_major}.${appleseed_version_minor}.${appleseed_version_patch}-${appleseed_version_maturity}"
 
 #endif  // !APPLESEED_FOUNDATION_CORE_VERSION_H

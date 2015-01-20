@@ -125,10 +125,10 @@ endif ()
 # Auto-generate version header.
 #--------------------------------------------------------------------------------------------------
 
-set (appleseed_version_major        1)
-set (appleseed_version_minor        1)
-set (appleseed_version_patch        1)
-set (appleseed_version_release_type alpha)
+set (appleseed_version_major    1)
+set (appleseed_version_minor    1)
+set (appleseed_version_patch    1)
+set (appleseed_version_maturity alpha)
 
 configure_file (${PROJECT_SOURCE_DIR}/src/appleseed/foundation/core/version.h.in
                 ${PROJECT_SOURCE_DIR}/src/appleseed/foundation/core/version.h)
