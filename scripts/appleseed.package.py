@@ -266,10 +266,14 @@ class PackageBuilder:
         progress("Adding headers to staging directory")
         safe_make_directory("appleseed/include")
 
-        ignore_files = shutil.ignore_patterns("*.cpp", "*.c", "*.xsd", "stdosl.h", "oslutil.h", "snprintf")
+        ignore_files = shutil.ignore_patterns("*.cpp", "*.c", "*.xsd", "stdosl.h", "oslutil.h", "snprintf", "version.h.in")
         shutil.copytree(os.path.join(self.settings.headers_path, "foundation"), "appleseed/include/foundation", ignore = ignore_files)
         shutil.copytree(os.path.join(self.settings.headers_path, "main"), "appleseed/include/main", ignore = ignore_files)
         shutil.copytree(os.path.join(self.settings.headers_path, "renderer"), "appleseed/include/renderer", ignore = ignore_files)
+
+        shutil.copy(os.path.join(self.settings.appleseed_path, "sandbox/shaders", "stdosl.h"), "appleseed/shaders/")
+        shutil.copy(os.path.join(self.settings.appleseed_path, "sandbox/shaders", "oslutil.h"), "appleseed/shaders/")
+
 
     def add_scripts_to_stage(self):
         progress("Adding scripts to staging directory")
