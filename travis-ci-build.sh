@@ -20,4 +20,9 @@ cmake \
 
 make
 
-env LD_LIBRARY_PATH=../sandbox/lib/Debug:$LD_LIBRARY_PATH ../sandbox/bin/Debug/appleseed.cli --run-unit-tests --verbose-unit-tests
+# Enable stack traces
+export LD_PRELOAD=/lib/x86_64-linux-gnu/libSegFault.so
+
+# Run unit tests
+export LD_LIBRARY_PATH=../sandbox/lib/Debug:$LD_LIBRARY_PATH
+../sandbox/bin/Debug/appleseed.cli --run-unit-tests --verbose-unit-tests
