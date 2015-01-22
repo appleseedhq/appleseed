@@ -209,6 +209,7 @@ add_copy_py_file_to_sandbox_py_module_command (${PROJECT_SOURCE_DIR}/src/applese
 # Installation.
 #--------------------------------------------------------------------------------------------------
 
-install (TARGETS appleseed.python
-    DESTINATION bin
-)
+set (py_module_dst "lib/python${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION}/appleseed")
+install (FILES __init__.py DESTINATION ${py_module_dst})
+install (FILES logging.py DESTINATION ${py_module_dst})
+install (TARGETS appleseed.python DESTINATION ${py_module_dst})

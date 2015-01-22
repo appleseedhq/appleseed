@@ -537,12 +537,6 @@ endif ()
 #--------------------------------------------------------------------------------------------------
 
 install (
-    PROGRAMS
-        scripts/run-appleseed.sh
-    DESTINATION bin
-)
-
-install (
     FILES
         scripts/convertmany.py
         scripts/rendermanager.py
@@ -579,11 +573,21 @@ endif ()
 install (
     DIRECTORY
         sandbox/docs
-        sandbox/images
         sandbox/samples
         sandbox/share
-        sandbox/tests
     DESTINATION .
+)
+
+install (
+    CODE "FILE (MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/images)"
+    CODE "FILE (MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/images/autosave)"
+)
+
+install (
+    DIRECTORY
+        "sandbox/tests/unit benchmarks"
+        "sandbox/tests/unit tests"
+    DESTINATION tests
 )
 
 install (
