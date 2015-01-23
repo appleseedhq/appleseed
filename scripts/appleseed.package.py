@@ -357,7 +357,6 @@ class MacPackageBuilder(PackageBuilder):
         self.add_dependencies_to_stage()
         self.fixup_binaries()
         self.create_qt_conf_file()
-        self.copy_run_script()
         safe_delete_file("appleseed/bin/.DS_Store")
 
     def fixup_binaries(self):
@@ -429,12 +428,6 @@ class MacPackageBuilder(PackageBuilder):
     def create_qt_conf_file(self):
         safe_make_directory("appleseed/bin/Contents/Resources")
         open("appleseed/bin/Contents/Resources/qt.conf", "w").close()
-
-    def copy_run_script(self):
-        script_filename = "run-appleseed.sh"
-        dest_path = os.path.join("appleseed", "bin")
-        shutil.copy(script_filename, dest_path)
-        self.make_executable(os.path.join(dest_path, script_filename))
 
     def make_executable(self, filepath):
         mode = os.stat(filepath)[ST_MODE]
