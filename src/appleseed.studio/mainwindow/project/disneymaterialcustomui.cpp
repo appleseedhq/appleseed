@@ -164,6 +164,8 @@ void DisneyMaterialCustomUI::slot_move_layer_up(QWidget* layer_widget)
         m_layout->takeAt(layer_widget_index);
         m_layout->insertWidget(layer_widget_index - 1, layer_widget);
     }
+
+    emit signal_apply();
 }
 
 void DisneyMaterialCustomUI::slot_move_layer_down(QWidget* layer_widget)
@@ -178,6 +180,8 @@ void DisneyMaterialCustomUI::slot_move_layer_down(QWidget* layer_widget)
         m_layout->takeAt(layer_widget_index);
         m_layout->insertWidget(layer_widget_index + 1, layer_widget);
     }
+
+    emit signal_apply();
 }
 
 void DisneyMaterialCustomUI::slot_delete_layer(QWidget* layer_widget)
@@ -188,6 +192,8 @@ void DisneyMaterialCustomUI::slot_delete_layer(QWidget* layer_widget)
 
     m_layout->removeWidget(layer_widget);
     layer_widget->deleteLater();
+
+    emit signal_apply();
 }
 
 size_t DisneyMaterialCustomUI::find_layer_index_by_widget(const QWidget* layer_widget) const
