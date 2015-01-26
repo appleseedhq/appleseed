@@ -63,37 +63,6 @@ namespace renderer
 namespace
 {
 
-    Vector3d half_refraction_vector(
-        const Vector3d& outgoing,
-        const Vector3d& incoming,
-        const Vector3d& normal,
-        const double    from_ior,
-        const double    to_ior,
-        double&         ht_norm)
-    {
-        // [1] equation 16.
-        Vector3d ht = -(from_ior * outgoing + to_ior * incoming);
-        ht_norm = norm(ht);
-        ht /= ht_norm;
-
-        // Flip the half vector to be on the same side as the normal.
-        if (dot(ht, normal) < 0.0)
-            ht = -ht;
-
-        return ht;
-    }
-
-    double refraction_jacobian(
-        const Vector3d& incoming,
-        const double    to_ior,
-        const Vector3d& h,
-        const double    hnorm)
-    {
-        // [1] equation 17.
-        return abs(square(to_ior) * dot(incoming, h) / square(hnorm));
-    }
-
-
     //
     // OSLMicrofacet BTDF.
     //
@@ -196,23 +165,18 @@ namespace
 
             const double D = m_mdf->D(m, values->m_ax, values->m_ay);
 
-            const double cos_oh = dot(sample.get_outgoing(), ht);
-            const double cos_ih = dot(incoming, ht);
-            const double cos_in = dot(incoming, n);
-            const double cos_on = dot(sample.get_outgoing(), n);
-
-            // [1] equation 21.
-            double v = abs((cos_ih * cos_oh) / (cos_in * cos_on));
-            v *= square(values->m_to_ior) * D * G;
-            const double denom =
-                values->m_to_ior * cos_ih + values->m_from_ior * cos_oh;
-            v /= square(denom);
-
-            // TODO: check for a possibly missing eta^2 factor if adjoint == true.
-            //if (adjoint)
-            //    v *= square(eta);
-
-            sample.value().set(static_cast<float>(v));
+            sample.value().set(
+                static_cast<float>(
+                    refraction_term(
+                        sample.get_outgoing(),
+                        incoming,
+                        n,
+                        ht,
+                        values->m_from_ior,
+                        values->m_to_ior,
+                        D,
+                        G,
+                        adjoint)));
 
             const double ht_norm =
                 norm(values->m_from_ior * sample.get_outgoing() + values->m_to_ior * incoming);
@@ -274,17 +238,18 @@ namespace
 
             const double D = m_mdf->D(m, values->m_ax, values->m_ay);
 
-            const double cos_oh = dot(outgoing, ht);
-            const double cos_ih = dot(incoming, ht);
-            const double cos_in = dot(incoming, n);
-            const double cos_on = dot(outgoing, n);
-
-            // [1] equation 21.
-            double v = abs((cos_ih * cos_oh) / (cos_in * cos_on));
-            v *= square(values->m_to_ior) * D * G;
-            const double denom = values->m_to_ior * cos_ih + values->m_from_ior * cos_oh;
-            v /= square(denom);
-            value.set(static_cast<float>(v));
+            value.set(
+                static_cast<float>(
+                    refraction_term(
+                        outgoing,
+                        incoming,
+                        n,
+                        ht,
+                        values->m_from_ior,
+                        values->m_to_ior,
+                        D,
+                        G,
+                        adjoint)));
 
             const double dwh_dwo = refraction_jacobian(
                 incoming,
@@ -341,6 +306,65 @@ namespace
         typedef OSLMicrofacetBTDFInputValues InputValues;
 
         auto_ptr<MDF<double> > m_mdf;
+
+        static Vector3d half_refraction_vector(
+            const Vector3d& outgoing,
+            const Vector3d& incoming,
+            const Vector3d& normal,
+            const double    from_ior,
+            const double    to_ior,
+            double&         ht_norm)
+        {
+            // [1] equation 16.
+            Vector3d ht = -(from_ior * outgoing + to_ior * incoming);
+            ht_norm = norm(ht);
+            ht /= ht_norm;
+
+            // Flip the half vector to be on the same side as the normal.
+            if (dot(ht, normal) < 0.0)
+                ht = -ht;
+
+            return ht;
+        }
+
+        static double refraction_jacobian(
+            const Vector3d& incoming,
+            const double    to_ior,
+            const Vector3d& h,
+            const double    hnorm)
+        {
+            // [1] equation 17.
+            return abs(square(to_ior) * dot(incoming, h) / square(hnorm));
+        }
+
+        static double refraction_term(
+            const Vector3d& outgoing,
+            const Vector3d& incoming,
+            const Vector3d& n,
+            const Vector3d& ht,
+            const double from_ior,
+            const double to_ior,
+            const double D,
+            const double G,
+            bool adjoint)
+        {
+            const double cos_oh = dot(outgoing, ht);
+            const double cos_ih = dot(incoming, ht);
+            const double cos_in = dot(incoming, n);
+            const double cos_on = dot(outgoing, n);
+
+            // [1] equation 21.
+            double v = abs((cos_ih * cos_oh) / (cos_in * cos_on));
+            v *= square(to_ior) * D * G;
+            const double denom = to_ior * cos_ih + from_ior * cos_oh;
+            v /= square(denom);
+
+            // TODO: check for a possibly missing eta^2 factor if adjoint != true.
+            //if (!adjoint)
+            //    v *= square(eta);
+
+            return v;
+        }
     };
 
     typedef BSDFWrapper<OSLMicrofacetBTDFImpl> OSLMicrofacetBTDF;
