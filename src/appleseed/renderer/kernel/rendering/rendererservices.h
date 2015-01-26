@@ -390,6 +390,7 @@ class RendererServices
     // Ray attributes.
     DECLARE_ATTR_GETTER(ray_depth);
     DECLARE_ATTR_GETTER(ray_length);
+    DECLARE_ATTR_GETTER(ray_ior);
 
     #undef DECLARE_ATTR_GETTER
 
