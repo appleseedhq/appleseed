@@ -113,6 +113,7 @@ RendererServices::RendererServices(
     m_global_attr_getters[OIIO::ustring("camera:shutter_close")] = &RendererServices::get_camera_shutter_close;
     m_global_attr_getters[OIIO::ustring("path:ray_depth")] = &RendererServices::get_ray_depth;
     m_global_attr_getters[OIIO::ustring("path:ray_length")] = &RendererServices::get_ray_length;
+    m_global_attr_getters[OIIO::ustring("path:ray_ior")] = &RendererServices::get_ray_ior;
 }
 
 void RendererServices::initialize()
@@ -826,6 +827,18 @@ IMPLEMENT_ATTR_GETTER(ray_length)
 
         reinterpret_cast<float*>(val)[0] =
             static_cast<float>(norm(shading_point->get_ray().m_org - shading_point->get_point()));
+        clear_attr_derivatives(derivs, type, val);
+        return true;
+    }
+
+    return false;
+}
+
+IMPLEMENT_ATTR_GETTER(ray_ior)
+{
+    if (type == OIIO::TypeDesc::TypeFloat)
+    {
+        reinterpret_cast<float*>(val)[0] = 1.0f;
         clear_attr_derivatives(derivs, type, val);
         return true;
     }
