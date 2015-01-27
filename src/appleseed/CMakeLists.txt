@@ -61,6 +61,7 @@ source_group ("foundation\\core\\exceptions" FILES
 set (foundation_core_sources
     foundation/core/appleseed.cpp
     foundation/core/appleseed.h
+    foundation/core/version.h
     foundation/core/version.h.in
 )
 list (APPEND appleseed_sources
