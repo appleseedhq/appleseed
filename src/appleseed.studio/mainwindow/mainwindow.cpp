@@ -652,6 +652,9 @@ void MainWindow::set_file_widgets_enabled(const bool is_enabled)
     m_ui->action_file_save_project->setEnabled(is_enabled && is_project_open);
     m_action_save_project->setEnabled(is_enabled && is_project_open);
     m_ui->action_file_save_project_as->setEnabled(is_enabled && is_project_open);
+
+    // File -> Exit.
+    m_ui->action_file_exit->setEnabled(is_enabled);
 }
 
 void MainWindow::set_project_explorer_enabled(const bool is_enabled)
@@ -831,6 +834,10 @@ namespace
 
 bool MainWindow::can_close_project()
 {
+    // Project being loaded: can't close.
+    if (m_project_manager.is_project_loading())
+        return false;
+
     // No project open: no problem.
     if (!m_project_manager.is_project_open())
         return true;
