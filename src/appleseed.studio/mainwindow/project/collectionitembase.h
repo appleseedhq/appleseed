@@ -88,7 +88,8 @@ class CollectionItemBase
         const QString&              title,
         ProjectBuilder&             project_builder);
 
-    void add_item(Entity* entity);
+    ItemBase* add_item(Entity* entity);
+
     template <typename EntityContainer> void add_items(EntityContainer& items);
 
   protected:
@@ -96,7 +97,7 @@ class CollectionItemBase
 
     void initialize();
 
-    void add_item(const int index, Entity* entity);
+    ItemBase* add_item(const int index, Entity* entity);
 
     virtual ItemBase* create_item(Entity* entity);
 };
@@ -139,11 +140,11 @@ void CollectionItemBase<Entity>::initialize()
 }
 
 template <typename Entity>
-void CollectionItemBase<Entity>::add_item(Entity* entity)
+ItemBase* CollectionItemBase<Entity>::add_item(Entity* entity)
 {
     assert(entity);
 
-    add_item(find_sorted_position(this, entity->get_name()), entity);
+    return add_item(find_sorted_position(this, entity->get_name()), entity);
 }
 
 template <typename Entity>
@@ -155,13 +156,14 @@ void CollectionItemBase<Entity>::add_items(EntityContainer& entities)
 }
 
 template <typename Entity>
-void CollectionItemBase<Entity>::add_item(const int index, Entity* entity)
+ItemBase* CollectionItemBase<Entity>::add_item(const int index, Entity* entity)
 {
     assert(entity);
 
     ItemBase* item = create_item(entity);
-
     insertChild(index, item);
+
+    return item;
 }
 
 template <typename Entity>

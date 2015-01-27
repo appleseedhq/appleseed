@@ -91,6 +91,8 @@ class AssemblyItem
     ObjectCollectionItem& get_object_collection_item() const;
     ObjectInstanceCollectionItem& get_object_instance_collection_item() const;
 
+    void instantiate(const std::string& name);
+
   private:
     friend class EntityInstantiationDelayedAction<AssemblyItem>;
     friend class EntityDeletionDelayedAction<AssemblyItem>;

@@ -89,7 +89,8 @@ QMenu* AssemblyCollectionItem::get_single_item_context_menu() const
 
 void AssemblyCollectionItem::slot_create()
 {
-    const string assembly_name_suggestion = get_name_suggestion("assembly", m_parent.assemblies());
+    const string assembly_name_suggestion =
+        get_name_suggestion("assembly", m_parent.assemblies());
 
     const string assembly_name =
         get_entity_name_dialog(
@@ -103,9 +104,17 @@ void AssemblyCollectionItem::slot_create()
         auto_release_ptr<Assembly> assembly(
             AssemblyFactory::create(assembly_name.c_str(), ParamArray()));
 
-        m_parent_item->add_item(assembly.get());
+        AssemblyItem* assembly_item =
+            static_cast<AssemblyItem*>(m_parent_item->add_item(assembly.get()));
 
         m_parent.assemblies().insert(assembly);
+
+        const string assembly_instance_name =
+            get_name_suggestion(
+                assembly_name + "_inst",
+                m_parent.assembly_instances());
+
+        assembly_item->instantiate(assembly_instance_name);
 
         m_project_builder.notify_project_modification();
     }
