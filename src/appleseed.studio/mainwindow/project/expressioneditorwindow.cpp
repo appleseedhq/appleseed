@@ -254,6 +254,7 @@ void ExpressionEditorWindow::slot_save_script()
                 "Failed to save the expression script file " + m_script_filepath + ".");
             return;
         }
+
         script_file << m_editor->getExpr();
         script_file.close();
     }
@@ -277,7 +278,7 @@ void ExpressionEditorWindow::slot_load_script()
     {
         filepath = QDir::toNativeSeparators(filepath);
 
-        // Read script and set it as an expression.
+        // Open script file.
         ifstream script_file(filepath.toStdString().c_str());
         if (!script_file.is_open())
         {
@@ -286,10 +287,13 @@ void ExpressionEditorWindow::slot_load_script()
                 "Failed to load the expression script file " + filepath.toStdString() + ".");
             return;
         }
+
+        // Read script file into memory.
         stringstream script_buffer;
         script_buffer << script_file.rdbuf();
         script_file.close();
 
+        // Set script as expression.
         m_editor->setExpr(script_buffer.str());
         apply_expression();
     }
