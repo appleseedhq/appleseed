@@ -166,14 +166,15 @@ void MaterialItem::slot_export()
             filepath.append(".dmt");
 
         filepath = QDir::toNativeSeparators(filepath);
-        SettingsFileWriter writer;
+
         ParamArray parameters = m_entity->get_parameters();
         parameters.insert("__name", m_entity->get_name());
         parameters.insert("__model", m_entity->get_model());
 
+        SettingsFileWriter writer;
         if (!writer.write(filepath.toStdString().c_str(), parameters))
         {
-            show_warning_message_box(
+            show_error_message_box(
                 "Exporting Error",
                 "Failed to export the Disney Material file " + filepath.toStdString());
         }

@@ -249,7 +249,7 @@ void ExpressionEditorWindow::slot_save_script()
         ofstream script_file(m_script_filepath.c_str());
         if (!script_file.is_open())
         {
-            show_warning_message_box(
+            show_error_message_box(
                 "Saving Error",
                 "Failed to save the expression script file " + m_script_filepath + ".");
             return;
@@ -281,7 +281,7 @@ void ExpressionEditorWindow::slot_load_script()
         ifstream script_file(filepath.toStdString().c_str());
         if (!script_file.is_open())
         {
-            show_warning_message_box(
+            show_error_message_box(
                 "Loading Error",
                 "Failed to load the expression script file " + filepath.toStdString() + ".");
             return;

@@ -164,11 +164,11 @@ void open_entity_editor(
         slot_cancel);
 }
 
-void show_warning_message_box(const string& title, const string& text)
+void show_error_message_box(const string& title, const string& text)
 {
     QMessageBox msgbox;
     msgbox.setWindowTitle(QString::fromStdString(title));
-    msgbox.setIcon(QMessageBox::Warning);
+    msgbox.setIcon(QMessageBox::Critical);
     msgbox.setText(QString::fromStdString(text));
     msgbox.setStandardButtons(QMessageBox::Ok);
     msgbox.exec();

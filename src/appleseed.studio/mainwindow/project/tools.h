@@ -100,7 +100,7 @@ void open_entity_editor(
     const char*                                     slot_accept,
     const char*                                     slot_cancel);
 
-void show_warning_message_box(const std::string& title, const std::string& text);
+void show_error_message_box(const std::string& title, const std::string& text);
 
 
 //
