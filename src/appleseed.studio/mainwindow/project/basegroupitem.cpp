@@ -73,19 +73,6 @@ BaseGroupItem::BaseGroupItem(
     add_items(base_group, project_builder, settings);
 }
 
-QMenu* BaseGroupItem::get_single_item_context_menu() const
-{
-    QMenu* menu = ItemBase::get_single_item_context_menu();
-
-    menu->addSeparator();
-    menu->addAction("Import Textures...", m_texture_collection_item, SLOT(slot_import_textures()));
-
-    menu->addSeparator();
-    menu->addAction("Create Assembly...", m_assembly_collection_item, SLOT(slot_create()));
-
-    return menu;
-}
-
 void BaseGroupItem::add_item(ColorEntity* color)
 {
     m_color_collection_item->add_item(color);
