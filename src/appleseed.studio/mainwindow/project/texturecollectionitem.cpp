@@ -153,6 +153,7 @@ void TextureCollectionItem::slot_import_textures()
         LAST_DIRECTORY_SETTINGS_KEY,
         path.parent_path().string());
 
+    // todo: schedule creation of texture and texture instances when rendering.
     for (int i = 0; i < filepaths.size(); ++i)
     {
         const string filepath = QDir::toNativeSeparators(filepaths[i]).toStdString();

@@ -99,6 +99,7 @@ void AssemblyCollectionItem::slot_create()
             "Assembly Name:",
             assembly_name_suggestion);
 
+    // todo: schedule creation of assembly when rendering.
     if (!assembly_name.empty())
     {
         auto_release_ptr<Assembly> assembly(
