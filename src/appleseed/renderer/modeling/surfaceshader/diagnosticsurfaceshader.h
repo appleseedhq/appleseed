@@ -68,6 +68,7 @@ class APPLESEED_DLLSYMBOL DiagnosticSurfaceShader
     // Available shading modes.
     enum ShadingMode
     {
+        Color,                      // shade according to the surface's base color
         Coverage,                   // shade according to pixel coverage
         Barycentric,                // shade according to barycentric coordinates
         UV,                         // shade according to UV coordinates

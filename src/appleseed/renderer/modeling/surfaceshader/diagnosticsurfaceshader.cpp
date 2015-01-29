@@ -35,8 +35,10 @@
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingresult.h"
+#include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/input/inputarray.h"
+#include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/utility/transformsequence.h"
@@ -47,6 +49,7 @@
 #include "foundation/math/hash.h"
 #include "foundation/math/minmax.h"
 #include "foundation/math/scalar.h"
+#include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
@@ -71,6 +74,7 @@ namespace
 const KeyValuePair<const char*, DiagnosticSurfaceShader::ShadingMode>
     DiagnosticSurfaceShader::ShadingModeValues[] =
 {
+    { "color",                      Color },
     { "coverage",                   Coverage },
     { "barycentric",                Barycentric },
     { "uv",                         UV },
@@ -94,6 +98,7 @@ const KeyValuePair<const char*, DiagnosticSurfaceShader::ShadingMode>
 
 const KeyValuePair<const char*, const char*> DiagnosticSurfaceShader::ShadingModeNames[] =
 {
+    { "color",                      "Color" },
     { "coverage",                   "Coverage" },
     { "barycentric",                "Barycentric Coordinates" },
     { "uv",                         "UV Coordinates" },
@@ -200,6 +205,39 @@ void DiagnosticSurfaceShader::evaluate(
 {
     switch (m_shading_mode)
     {
+      case Color:
+        {
+            const Material* material = shading_point.get_material();
+            if (material)
+            {
+                const BSDF* bsdf = material->get_bsdf();
+                if (bsdf)
+                {
+                    InputEvaluator input_evaluator(shading_context.get_texture_cache());
+                    bsdf->evaluate_inputs(
+                        shading_context,
+                        input_evaluator,
+                        shading_point);
+
+                    const Vector3d direction = -normalize(shading_point.get_ray().m_dir);
+
+                    bsdf->evaluate(
+                        input_evaluator.data(),
+                        false,
+                        false,
+                        shading_point.get_geometric_normal(),
+                        shading_point.get_shading_basis(),
+                        direction,
+                        direction,
+                        BSDFSample::AllScatteringModes,
+                        shading_result.m_main.m_color);
+
+                    shading_result.m_color_space = ColorSpaceSpectral;
+                }
+            }
+        }
+        break;
+
       case Coverage:
         shading_result.set_main_to_linear_rgb(Color3f(1.0f));
         break;
