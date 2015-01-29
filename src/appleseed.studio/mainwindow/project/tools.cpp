@@ -32,6 +32,8 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/entityeditorwindow.h"
+#include "utility/doubleslider.h"
+#include "utility/interop.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
@@ -42,6 +44,9 @@
 #include <QMessageBox>
 #include <QObject>
 #include <QString>
+
+// Standard headers.
+#include <cmath>
 
 using namespace foundation;
 using namespace renderer;
@@ -172,6 +177,85 @@ void show_error_message_box(const string& title, const string& text)
     msgbox.setText(QString::fromStdString(text));
     msgbox.setStandardButtons(QMessageBox::Ok);
     msgbox.exec();
+}
+
+
+//
+// LineEditDoubleSliderAdaptor class implementation.
+//
+
+LineEditDoubleSliderAdaptor::LineEditDoubleSliderAdaptor(
+    QLineEdit*      line_edit,
+    DoubleSlider*   slider)
+  : QObject(line_edit)
+  , m_line_edit(line_edit)
+  , m_slider(slider)
+{
+    slot_set_slider_value(m_line_edit->text());
+}
+
+void LineEditDoubleSliderAdaptor::slot_set_line_edit_value(const double value)
+{
+    // Don't block signals here, for live edit to work we want the line edit to signal changes.
+    m_line_edit->setText(QString("%1").arg(value));
+}
+
+void LineEditDoubleSliderAdaptor::slot_set_slider_value(const QString& value)
+{
+    m_slider->blockSignals(true);
+
+    const double new_value = value.toDouble();
+
+    // Adjust range if the new value is outside the current range.
+    if (new_value < m_slider->minimum() ||
+        new_value > m_slider->maximum())
+        adjust_slider(new_value);
+
+    m_slider->setValue(new_value);
+    m_slider->blockSignals(false);
+}
+
+void LineEditDoubleSliderAdaptor::slot_apply_slider_value()
+{
+    m_slider->blockSignals(true);
+
+    const double new_value = m_line_edit->text().toDouble();
+
+    // Adjust range if the new value is outside the current range,
+    // or if a value of a significantly smaller magnitude was entered.
+    if (new_value < m_slider->minimum() ||
+        new_value > m_slider->maximum() ||
+        abs(new_value) < (m_slider->maximum() - m_slider->minimum()) / 3.0)
+        adjust_slider(new_value);
+
+    m_slider->setValue(new_value);
+    m_slider->blockSignals(false);
+}
+
+void LineEditDoubleSliderAdaptor::adjust_slider(const double new_value)
+{
+    const double new_min = new_value >= 0.0 ? 0.0 : -2.0 * abs(new_value);
+    const double new_max = new_value == 0.0 ? 1.0 : +2.0 * abs(new_value);
+    m_slider->setRange(new_min, new_max);
+    m_slider->setPageStep((new_max - new_min) / 10.0);
+}
+
+
+//
+// ForwardColorChangedSignal class implementation.
+//
+
+ForwardColorChangedSignal::ForwardColorChangedSignal(
+    QObject*        parent,
+    const QString&  widget_name)
+  : QObject(parent)
+  , m_widget_name(widget_name)
+{
+}
+
+void ForwardColorChangedSignal::slot_color_changed(const QColor& color)
+{
+    emit signal_color_changed(m_widget_name, color);
 }
 
 }   // namespace studio

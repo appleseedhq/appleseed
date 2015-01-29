@@ -40,14 +40,20 @@
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/string.h"
 
+// Qt headers.
+#include <QObject>
+#include <QString>
+
 // Standard headers.
 #include <memory>
 #include <string>
 
 // Forward declarations.
+namespace appleseed     { namespace studio { class DoubleSlider; } }
 namespace foundation    { class Dictionary; }
 namespace renderer      { class Project; }
-class QObject;
+class QColor;
+class QLineEdit;
 class QWidget;
 
 namespace appleseed {
@@ -101,6 +107,58 @@ void open_entity_editor(
     const char*                                     slot_cancel);
 
 void show_error_message_box(const std::string& title, const std::string& text);
+
+
+//
+// Updates the value of LineEdit associated with the given DoubleSlider.
+//
+
+class LineEditDoubleSliderAdaptor
+  : public QObject
+{
+    Q_OBJECT
+
+  public:
+    LineEditDoubleSliderAdaptor(
+        QLineEdit*      line_edit,
+        DoubleSlider*   slider);
+
+  public slots:
+    void slot_set_line_edit_value(const double value);
+    void slot_set_slider_value(const QString& value);
+    void slot_apply_slider_value();
+
+  private:
+    QLineEdit*      m_line_edit;
+    DoubleSlider*   m_slider;
+
+    void adjust_slider(const double new_value);
+};
+
+
+//
+// Adds extra information to the signal emitted when the color changes.
+//
+
+class ForwardColorChangedSignal
+  : public QObject
+{
+    Q_OBJECT
+
+  public:
+    ForwardColorChangedSignal(
+        QObject*        parent,
+        const QString&  widget_name);
+
+  public slots:
+    void slot_color_changed(const QColor& color);
+
+  signals:
+    void signal_color_changed(const QString& widget_name, const QColor& color);
+
+  private:
+    const QString m_widget_name;
+};
 
 
 //

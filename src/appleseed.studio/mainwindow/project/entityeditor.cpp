@@ -32,7 +32,7 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/entitybrowserwindow.h"
-#include "mainwindow/project/entityeditorutils.h"
+#include "mainwindow/project/tools.h"
 #include "utility/doubleslider.h"
 #include "utility/interop.h"
 #include "utility/miscellaneous.h"
