@@ -633,7 +633,7 @@ namespace
             PathVisitor path_visitor(
                 initial_flux,
                 m_params,
-                m_params.m_enable_ibl,
+                true,
                 cast_indirect_light,
                 m_params.m_enable_caustics,
                 m_local_photons);
@@ -708,7 +708,7 @@ void SPPMPhotonTracer::trace_photons(
             emitted_photon_count,
             abort_switch);
     }
-    if (m_scene.get_environment()->get_environment_edf())
+    if (m_params.m_enable_ibl && m_scene.get_environment()->get_environment_edf())
     {
         schedule_environment_photon_tracing_jobs(
             photons,
