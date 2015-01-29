@@ -42,7 +42,7 @@ namespace studio {
 
 extern const QString g_bitmap_files_filter;
 
-// Disable the blue focus rectangle of certain widgets. Mac OS X only.
+// Disable the blue focus rectangle of certain widgets. OS X only.
 void disable_osx_focus_rect(QWidget* widget);
 
 // Set the minimum width of a QMessageBox.

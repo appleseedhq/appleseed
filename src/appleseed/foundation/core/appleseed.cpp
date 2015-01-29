@@ -52,7 +52,7 @@ const char* Appleseed::get_lib_name()
 
     return "appleseed.dll";
 
-// Mac OS X.
+// OS X.
 #elif defined __APPLE__
 
     return "libappleseed.dylib";

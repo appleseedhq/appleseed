@@ -94,7 +94,7 @@ namespace foundation
 //
 // A qualifier to specify the alignment of a variable, a structure member or a structure.
 // Named APPLESEED_ALIGN instead of simply ALIGN to prevent a collision with the ALIGN
-// macro defined in /usr/include/i386/param.h on Mac OS X (and possibly other platforms).
+// macro defined in /usr/include/i386/param.h on OS X (and possibly other platforms).
 //
 // SSE_ALIGN aligns on a 16-byte boundary as required by SSE load/store instructions.
 //

@@ -74,7 +74,7 @@ const char* get_executable_path()
 		        sizeof(path));
         assert(result);
 
-// Mac OS X.
+// OS X.
 #elif defined __APPLE__
 
         uint32 path_len = MAXPATHLEN;
