@@ -204,32 +204,29 @@ namespace
             const LightSampler&     light_sampler,
             const TraceContext&     trace_context,
             TextureStore&           texture_store,
-            const SPPMParameters&   params,
-            SPPMPhotonVector&       global_photons,
-            const size_t            photon_begin,
-            const size_t            photon_end,
-            const size_t            pass_hash,
-            const size_t            thread_index,
 #ifdef APPLESEED_WITH_OIIO
             OIIO::TextureSystem&    oiio_texture_system,
 #endif
 #ifdef APPLESEED_WITH_OSL
             OSL::ShadingSystem&     shading_system,
 #endif
+            const SPPMParameters&   params,
+            SPPMPhotonVector&       global_photons,
+            const size_t            photon_begin,
+            const size_t            photon_end,
+            const size_t            pass_hash,
             IAbortSwitch&           abort_switch)
           : m_scene(scene)
           , m_light_sampler(light_sampler)
           , m_texture_cache(texture_store)
           , m_intersector(trace_context, m_texture_cache)
-          , m_params(params)
-          , m_global_photons(global_photons)
-          , m_photon_begin(photon_begin)
-          , m_photon_end(photon_end)
-          , m_pass_hash(pass_hash)
-          , m_abort_switch(abort_switch)
+#ifdef APPLESEED_WITH_OIIO
+          , m_oiio_texture_system(oiio_texture_system)
+#endif
 #ifdef APPLESEED_WITH_OSL
           , m_shadergroup_exec(shading_system)
 #endif
+          , m_params(params)
           , m_tracer(
                 m_scene,
                 m_intersector,
@@ -240,23 +237,29 @@ namespace
                 m_params.m_transparency_threshold,
                 m_params.m_max_iterations,
                 false)
-          , m_shading_context(
-                m_intersector,
-                m_tracer,
-                m_texture_cache
-#ifdef APPLESEED_WITH_OIIO
-                , oiio_texture_system
-#endif
-#ifdef APPLESEED_WITH_OSL
-                , m_shadergroup_exec
-#endif
-                , thread_index)
+          , m_global_photons(global_photons)
+          , m_photon_begin(photon_begin)
+          , m_photon_end(photon_end)
+          , m_pass_hash(pass_hash)
+          , m_abort_switch(abort_switch)
           , m_ray_dtime(scene.get_camera()->get_shutter_open_time_interval())
         {
         }
 
         virtual void execute(const size_t thread_index) APPLESEED_OVERRIDE
         {
+            const ShadingContext shading_context(
+                m_intersector,
+                m_tracer,
+                m_texture_cache,
+#ifdef APPLESEED_WITH_OIIO
+                m_oiio_texture_system,
+#endif
+#ifdef APPLESEED_WITH_OSL
+                m_shadergroup_exec,
+#endif
+                thread_index);
+
             const uint32 instance = hash_uint32(static_cast<uint32>(m_pass_hash + m_photon_begin));
             MersenneTwister rng(instance);
             SamplingContext sampling_context(
@@ -266,7 +269,7 @@ namespace
                 instance);          // initial instance number
 
             for (size_t i = m_photon_begin; i < m_photon_end && !m_abort_switch.is_aborted(); ++i)
-                trace_light_photon(sampling_context);
+                trace_light_photon(shading_context, sampling_context);
 
             m_global_photons.append(m_local_photons);
         }
@@ -276,21 +279,24 @@ namespace
         const LightSampler&         m_light_sampler;
         TextureCache                m_texture_cache;
         Intersector                 m_intersector;
+#ifdef APPLESEED_WITH_OIIO
+        OIIO::TextureSystem&        m_oiio_texture_system;
+#endif
+#ifdef APPLESEED_WITH_OSL
+        OSLShaderGroupExec          m_shadergroup_exec;
+#endif
         const SPPMParameters        m_params;
+        Tracer                      m_tracer;
         SPPMPhotonVector&           m_global_photons;
         const size_t                m_photon_begin;
         const size_t                m_photon_end;
         const size_t                m_pass_hash;
         IAbortSwitch&               m_abort_switch;
         SPPMPhotonVector            m_local_photons;
-#ifdef APPLESEED_WITH_OSL
-        OSLShaderGroupExec          m_shadergroup_exec;
-#endif
-        Tracer                      m_tracer;
-        ShadingContext              m_shading_context;
         double                      m_ray_dtime;
 
         void trace_light_photon(
+            const ShadingContext&   shading_context,
             SamplingContext&        sampling_context)
         {
             LightSample light_sample;
@@ -299,18 +305,21 @@ namespace
             if (light_sample.m_triangle)
             {
                 trace_emitting_triangle_photon(
+                    shading_context,
                     sampling_context,
                     light_sample);
             }
             else
             {
                 trace_non_physical_light_photon(
+                    shading_context,
                     sampling_context,
                     light_sample);
             }
         }
 
         void trace_emitting_triangle_photon(
+            const ShadingContext&   shading_context,
             SamplingContext&        sampling_context,
             LightSample&            light_sample)
         {
@@ -331,13 +340,13 @@ namespace
             light_sample.make_shading_point(
                 shading_point,
                 light_sample.m_shading_normal,
-                m_shading_context.get_intersector());
+                shading_context.get_intersector());
 #ifdef APPLESEED_WITH_OSL
             if (const ShaderGroup* sg = material->get_osl_surface())
             {
                 // TODO: get object area somehow.
                 const float surface_area = 0.0f;
-                m_shading_context.execute_osl_emission(*sg, shading_point, surface_area);
+                shading_context.execute_osl_emission(*sg, shading_point, surface_area);
             }
 #endif
             edf->evaluate_inputs(input_evaluator, shading_point);
@@ -400,12 +409,13 @@ namespace
             // Trace the photon path.
             path_tracer.trace(
                 child_sampling_context,
-                m_shading_context,
+                shading_context,
                 ray,
                 &parent_shading_point);
         }
 
         void trace_non_physical_light_photon(
+            const ShadingContext&   shading_context,
             SamplingContext&        sampling_context,
             const LightSample&      light_sample)
         {
@@ -456,7 +466,7 @@ namespace
             // Trace the photon path.
             path_tracer.trace(
                 child_sampling_context,
-                m_shading_context,
+                shading_context,
                 ray);
         }
     };
@@ -475,35 +485,30 @@ namespace
             const LightSampler&     light_sampler,
             const TraceContext&     trace_context,
             TextureStore&           texture_store,
-            const SPPMParameters&   params,
-            SPPMPhotonVector&       global_photons,
-            const size_t            photon_begin,
-            const size_t            photon_end,
-            const size_t            pass_hash,
-            const size_t            thread_index,
 #ifdef APPLESEED_WITH_OIIO
             OIIO::TextureSystem&    oiio_texture_system,
 #endif
 #ifdef APPLESEED_WITH_OSL
             OSL::ShadingSystem&     shading_system,
 #endif
+            const SPPMParameters&   params,
+            SPPMPhotonVector&       global_photons,
+            const size_t            photon_begin,
+            const size_t            photon_end,
+            const size_t            pass_hash,
             IAbortSwitch&           abort_switch)
           : m_scene(scene)
           , m_env_edf(*scene.get_environment()->get_environment_edf())
           , m_light_sampler(light_sampler)
           , m_texture_cache(texture_store)
           , m_intersector(trace_context, m_texture_cache)
-          , m_params(params)
-          , m_global_photons(global_photons)
-          , m_photon_begin(photon_begin)
-          , m_photon_end(photon_end)
-          , m_pass_hash(pass_hash)
-          , m_abort_switch(abort_switch)
-          , m_safe_scene_radius(scene.compute_radius() * (1.0 + 1.0e-3))
-          , m_disk_point_prob(1.0 / (Pi * square(m_safe_scene_radius)))
+#ifdef APPLESEED_WITH_OIIO
+          , m_oiio_texture_system(oiio_texture_system)
+#endif
 #ifdef APPLESEED_WITH_OSL
           , m_shadergroup_exec(shading_system)
 #endif
+          , m_params(params)
           , m_tracer(
                 m_scene,
                 m_intersector,
@@ -514,23 +519,31 @@ namespace
                 m_params.m_transparency_threshold,
                 m_params.m_max_iterations,
                 false)
-          , m_shading_context(
-                m_intersector,
-                m_tracer,
-                m_texture_cache
-#ifdef APPLESEED_WITH_OIIO
-                , oiio_texture_system
-#endif
-#ifdef APPLESEED_WITH_OSL
-                , m_shadergroup_exec
-#endif
-                , thread_index)
+          , m_global_photons(global_photons)
+          , m_photon_begin(photon_begin)
+          , m_photon_end(photon_end)
+          , m_pass_hash(pass_hash)
+          , m_abort_switch(abort_switch)
+          , m_safe_scene_radius(scene.compute_radius() * (1.0 + 1.0e-3))
+          , m_disk_point_prob(1.0 / (Pi * square(m_safe_scene_radius)))
           , m_ray_dtime(scene.get_camera()->get_shutter_open_time_interval())
         {
         }
 
         virtual void execute(const size_t thread_index) APPLESEED_OVERRIDE
         {
+            const ShadingContext shading_context(
+                m_intersector,
+                m_tracer,
+                m_texture_cache,
+#ifdef APPLESEED_WITH_OIIO
+                m_oiio_texture_system,
+#endif
+#ifdef APPLESEED_WITH_OSL
+                m_shadergroup_exec,
+#endif
+                thread_index);
+
             const uint32 instance = hash_uint32(static_cast<uint32>(m_pass_hash + m_photon_begin));
             MersenneTwister rng(instance);
             SamplingContext sampling_context(
@@ -540,7 +553,7 @@ namespace
                 instance);          // initial instance number
 
             for (size_t i = m_photon_begin; i < m_photon_end && !m_abort_switch.is_aborted(); ++i)
-                trace_env_photon(sampling_context);
+                trace_env_photon(shading_context, sampling_context);
 
             m_global_photons.append(m_local_photons);
         }
@@ -551,7 +564,14 @@ namespace
         const LightSampler&         m_light_sampler;
         TextureCache                m_texture_cache;
         Intersector                 m_intersector;
+#ifdef APPLESEED_WITH_OIIO
+        OIIO::TextureSystem&        m_oiio_texture_system;
+#endif
+#ifdef APPLESEED_WITH_OSL
+        OSLShaderGroupExec          m_shadergroup_exec;
+#endif
         const SPPMParameters        m_params;
+        Tracer                      m_tracer;
         SPPMPhotonVector&           m_global_photons;
         const size_t                m_photon_begin;
         const size_t                m_photon_end;
@@ -560,14 +580,10 @@ namespace
         const double                m_safe_scene_radius;
         const double                m_disk_point_prob;
         SPPMPhotonVector            m_local_photons;
-#ifdef APPLESEED_WITH_OSL
-        OSLShaderGroupExec          m_shadergroup_exec;
-#endif
-        Tracer                      m_tracer;
-        ShadingContext              m_shading_context;
         double                      m_ray_dtime;
 
         void trace_env_photon(
+            const ShadingContext&   shading_context,
             SamplingContext&        sampling_context)
         {
             // Sample the environment.
@@ -630,7 +646,7 @@ namespace
             // Trace the photon path.
             path_tracer.trace(
                 child_sampling_context,
-                m_shading_context,
+                shading_context,
                 ray);
         }
     };
@@ -739,7 +755,7 @@ void SPPMPhotonTracer::schedule_light_photon_tracing_jobs(
         pretty_uint(m_params.m_light_photon_count).c_str(),
         m_params.m_light_photon_count > 1 ? "photons" : "photon");
 
-    for (size_t i = 0, thread_index = 0; i < m_params.m_light_photon_count; i += m_params.m_photon_packet_size, ++thread_index)
+    for (size_t i = 0; i < m_params.m_light_photon_count; i += m_params.m_photon_packet_size)
     {
         const size_t photon_begin = i;
         const size_t photon_end = min(i + m_params.m_photon_packet_size, m_params.m_light_photon_count);
@@ -750,18 +766,17 @@ void SPPMPhotonTracer::schedule_light_photon_tracing_jobs(
                 m_light_sampler,
                 m_trace_context,
                 m_texture_store,
-                m_params,
-                photons,
-                photon_begin,
-                photon_end,
-                pass_hash,
-                thread_index,
 #ifdef APPLESEED_WITH_OIIO
                 m_oiio_texture_system,
 #endif
 #ifdef APPLESEED_WITH_OSL
                 m_shading_system,
 #endif
+                m_params,
+                photons,
+                photon_begin,
+                photon_end,
+                pass_hash,
                 abort_switch));
 
         ++job_count;
@@ -782,7 +797,7 @@ void SPPMPhotonTracer::schedule_environment_photon_tracing_jobs(
         pretty_uint(m_params.m_env_photon_count).c_str(),
         m_params.m_env_photon_count > 1 ? "photons" : "photon");
 
-    for (size_t i = 0, thread_index = 0; i < m_params.m_env_photon_count; i += m_params.m_photon_packet_size, ++thread_index)
+    for (size_t i = 0; i < m_params.m_env_photon_count; i += m_params.m_photon_packet_size)
     {
         const size_t photon_begin = i;
         const size_t photon_end = min(i + m_params.m_photon_packet_size, m_params.m_env_photon_count);
@@ -793,18 +808,17 @@ void SPPMPhotonTracer::schedule_environment_photon_tracing_jobs(
                 m_light_sampler,
                 m_trace_context,
                 m_texture_store,
-                m_params,
-                photons,
-                photon_begin,
-                photon_end,
-                pass_hash,
-                thread_index,
 #ifdef APPLESEED_WITH_OIIO
                 m_oiio_texture_system,
 #endif
 #ifdef APPLESEED_WITH_OSL
                 m_shading_system,
 #endif
+                m_params,
+                photons,
+                photon_begin,
+                photon_end,
+                pass_hash,
                 abort_switch));
 
         ++job_count;
