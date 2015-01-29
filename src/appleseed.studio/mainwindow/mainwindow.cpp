@@ -73,6 +73,7 @@
 #include <QCloseEvent>
 #include <QDir>
 #include <QFileDialog>
+#include <QFileInfo>
 #include <QFileSystemWatcher>
 #include <QIcon>
 #include <QLabel>
@@ -1203,6 +1204,9 @@ void MainWindow::slot_save_project_as()
 
     if (!filepath.isEmpty())
     {
+        if (QFileInfo(filepath).suffix().isEmpty())
+            filepath += ".appleseed";
+
         filepath = QDir::toNativeSeparators(filepath);
 
         const filesystem::path path(filepath.toStdString());
@@ -1509,7 +1513,7 @@ namespace
                 parent,
                 caption,
                 dir,
-                "Image Files (*.exr;*.png);;All Files (*.*)",
+                g_bitmap_files_filter,
                 &selected_filter,
                 options);
 

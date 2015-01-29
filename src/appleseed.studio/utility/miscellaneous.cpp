@@ -38,11 +38,14 @@
 #include <QMessageBox>
 #include <QShortcut>
 #include <QSpacerItem>
+#include <QString>
 #include <Qt>
 #include <QWidget>
 
 namespace appleseed {
 namespace studio {
+
+const QString g_bitmap_files_filter = "Bitmap Files (*.png;*.exr);;OpenEXR (*.exr);;PNG (*.png);;All Files (*.*)";
 
 void disable_osx_focus_rect(QWidget* widget)
 {

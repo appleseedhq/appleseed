@@ -36,6 +36,7 @@
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/textureitem.h"
 #include "utility/interop.h"
+#include "utility/miscellaneous.h"
 #include "utility/settingskeys.h"
 
 // appleseed.renderer headers.
@@ -139,7 +140,7 @@ void TextureCollectionItem::slot_import_textures()
             treeWidget(),
             "Import Textures...",
             m_settings.get_path_optional<QString>(LAST_DIRECTORY_SETTINGS_KEY),
-            "Texture Files (*.png;*.exr);;All Files (*.*)",
+            g_bitmap_files_filter,
             &selected_filter,
             options);
 

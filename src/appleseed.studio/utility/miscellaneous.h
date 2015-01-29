@@ -34,10 +34,13 @@
 class QLayout;
 class QMessageBox;
 class QShortcut;
+class QString;
 class QWidget;
 
 namespace appleseed {
 namespace studio {
+
+extern const QString g_bitmap_files_filter;
 
 // Disable the blue focus rectangle of certain widgets. Mac OS X only.
 void disable_osx_focus_rect(QWidget* widget);

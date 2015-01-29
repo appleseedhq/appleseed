@@ -46,6 +46,7 @@
 
 // Qt headers.
 #include <QFileDialog>
+#include <QFileInfo>
 #include <QMenu>
 #include <QString>
 
@@ -156,14 +157,14 @@ void MaterialItem::slot_export()
             0,
             "Export...",
             QString::fromStdString(file_root_path.string()),
-            "Disney Material (*.dmt)",
+            "Disney Materials (*.dmt)",
             &selected_filter,
             options);
 
     if (!filepath.isEmpty())
     {
-        if (!filepath.endsWith(".dmt"))
-            filepath.append(".dmt");
+        if (QFileInfo(filepath).suffix().isEmpty())
+            filepath += ".dmt";
 
         filepath = QDir::toNativeSeparators(filepath);
 
@@ -181,5 +182,5 @@ void MaterialItem::slot_export()
     }
 }
 
-}       // namespace studio
-}       // namespace appleseed
+}   // namespace studio
+}   // namespace appleseed
