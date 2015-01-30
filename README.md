@@ -21,7 +21,7 @@ User and developer documentation can be found in the [wiki](https://github.com/a
 * [appleseed-dev Google Group](http://groups.google.com/group/appleseed-dev)
 * [appleseed on Twitter](https://twitter.com/appleseedhq)
 * [appleseed on Vimeo](https://vimeo.com/appleseedhq)
-* [appleseed on Ohloh](https://www.ohloh.net/p/appleseedhq)
+* [appleseed on Open Hub](https://www.openhub.net/p/appleseedhq)
 * [appleseed on Woboq](http://code.woboq.org/appleseed/appleseed/)
 
 ### Screenshots
