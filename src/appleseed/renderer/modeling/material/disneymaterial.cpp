@@ -388,7 +388,7 @@ class DisneyLayerParam
         m_is_constant = m_expression.isConstant();
         if (m_is_constant)
         {
-            SeVec3d result = m_expression.evaluate();
+            const SeVec3d result = m_expression.evaluate();
             m_constant_value = Color3d(result[0], result[1], result[2]);
             return true;
         }

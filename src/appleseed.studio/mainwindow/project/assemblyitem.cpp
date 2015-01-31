@@ -218,6 +218,14 @@ AssemblyItem::ObjectInstanceCollectionItem& AssemblyItem::get_object_instance_co
     return *m_object_instance_collection_item;
 }
 
+void AssemblyItem::instantiate(const string& name)
+{
+    if (m_project_builder.get_rendering_manager().is_rendering())
+        schedule_instantiate(name);
+    else
+        do_instantiate(name);
+}
+
 void AssemblyItem::slot_instantiate()
 {
     const string instance_name_suggestion =
@@ -233,12 +241,16 @@ void AssemblyItem::slot_instantiate()
             instance_name_suggestion);
 
     if (!instance_name.empty())
-    {
-        if (m_project_builder.get_rendering_manager().is_rendering())
-            schedule_instantiate(instance_name);
-        else
-            do_instantiate(instance_name);
-    }
+        instantiate(instance_name);
+}
+
+void AssemblyItem::schedule_instantiate(const string& name)
+{
+    m_project_builder.get_rendering_manager().push_delayed_action(
+        auto_ptr<RenderingManager::IDelayedAction>(
+            new EntityInstantiationDelayedAction<AssemblyItem>(this, name)));
+
+    m_project_builder.get_rendering_manager().reinitialize_rendering();
 }
 
 void AssemblyItem::do_instantiate(const string& name)
@@ -254,15 +266,6 @@ void AssemblyItem::do_instantiate(const string& name)
 
     m_project_builder.get_project().get_scene()->bump_version_id();
     m_project_builder.notify_project_modification();
-}
-
-void AssemblyItem::schedule_instantiate(const string& name)
-{
-    m_project_builder.get_rendering_manager().push_delayed_action(
-        auto_ptr<RenderingManager::IDelayedAction>(
-            new EntityInstantiationDelayedAction<AssemblyItem>(this, name)));
-
-    m_project_builder.get_rendering_manager().reinitialize_rendering();
 }
 
 template <typename Entity, typename EntityContainer>

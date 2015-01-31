@@ -73,42 +73,29 @@ BaseGroupItem::BaseGroupItem(
     add_items(base_group, project_builder, settings);
 }
 
-QMenu* BaseGroupItem::get_single_item_context_menu() const
+ItemBase* BaseGroupItem::add_item(ColorEntity* color)
 {
-    QMenu* menu = ItemBase::get_single_item_context_menu();
-
-    menu->addSeparator();
-    menu->addAction("Import Textures...", m_texture_collection_item, SLOT(slot_import_textures()));
-
-    menu->addSeparator();
-    menu->addAction("Create Assembly...", m_assembly_collection_item, SLOT(slot_create()));
-
-    return menu;
+    return m_color_collection_item->add_item(color);
 }
 
-void BaseGroupItem::add_item(ColorEntity* color)
+ItemBase* BaseGroupItem::add_item(Texture* texture)
 {
-    m_color_collection_item->add_item(color);
+    return m_texture_collection_item->add_item(texture);
 }
 
-void BaseGroupItem::add_item(Texture* texture)
+ItemBase* BaseGroupItem::add_item(TextureInstance* texture_instance)
 {
-    m_texture_collection_item->add_item(texture);
+    return m_texture_instance_collection_item->add_item(texture_instance);
 }
 
-void BaseGroupItem::add_item(TextureInstance* texture_instance)
+ItemBase* BaseGroupItem::add_item(renderer::Assembly* assembly)
 {
-    m_texture_instance_collection_item->add_item(texture_instance);
+    return m_assembly_collection_item->add_item(assembly);
 }
 
-void BaseGroupItem::add_item(renderer::Assembly* assembly)
+ItemBase* BaseGroupItem::add_item(renderer::AssemblyInstance* assembly_instance)
 {
-    m_assembly_collection_item->add_item(assembly);
-}
-
-void BaseGroupItem::add_item(renderer::AssemblyInstance* assembly_instance)
-{
-    m_assembly_instance_collection_item->add_item(assembly_instance);
+    return m_assembly_instance_collection_item->add_item(assembly_instance);
 }
 
 BaseGroupItem::ColorCollectionItem& BaseGroupItem::get_color_collection_item() const

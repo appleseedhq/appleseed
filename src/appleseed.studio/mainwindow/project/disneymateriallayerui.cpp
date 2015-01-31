@@ -30,8 +30,8 @@
 #include "disneymateriallayerui.h"
 
 // appleseed.studio headers.
-#include "mainwindow/project/entityeditorutils.h"
 #include "mainwindow/project/expressioneditorwindow.h"
+#include "mainwindow/project/tools.h"
 #include "utility/doubleslider.h"
 #include "utility/interop.h"
 #include "utility/miscellaneous.h"
@@ -366,21 +366,21 @@ void DisneyMaterialLayerUI::slot_open_file_picker(const QString& widget_name)
     QFileDialog::Options options;
     QString selected_filter;
 
-    // todo: factorize filter string.
-    const QString file_picker_filter("OpenEXR (*.exr);;PNG (*.png);;All Files (*.*)");
     QString filepath =
         QFileDialog::getOpenFileName(
             m_content_widget,
-            "Open...",
+            "Pick Texture File...",
             QString::fromStdString(file_root_path.string()),
-            file_picker_filter,
+            g_bitmap_files_filter,
             &selected_filter,
             options);
 
     if (!filepath.isEmpty())
     {
-        const QString native_path = QDir::toNativeSeparators(filepath);
-        widget_proxy->set(texture_to_expression(m_project.search_paths(), native_path));
+        widget_proxy->set(
+            texture_to_expression(
+                m_project.search_paths(),
+                QDir::toNativeSeparators(filepath)));
     }
 }
 

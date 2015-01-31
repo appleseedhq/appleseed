@@ -90,7 +90,7 @@ void ProjectItem::expand()
 {
     setExpanded(true);
 
-    m_scene_item->setExpanded(true);
+    m_scene_item->expand();
     m_output_item->setExpanded(true);
 }
 

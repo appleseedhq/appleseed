@@ -120,6 +120,7 @@ ItemBase* MaterialCollectionItem::create_item(Material* material)
 
     ItemBase* item = new MaterialItem(material, m_parent, this, m_project_builder);
     m_project_builder.get_item_registry().insert(material->get_uid(), item);
+
     return item;
 }
 
@@ -161,17 +162,19 @@ void MaterialCollectionItem::slot_import_disney()
     if (!filepath.isEmpty())
     {
         filepath = QDir::toNativeSeparators(filepath);
+
         SettingsFileReader reader(global_logger());
         ParamArray parameters;
-        bool result = reader.read(
-            filepath.toStdString().c_str(),
-            schema_file_path.c_str(),
-            parameters);
+        const bool result =
+            reader.read(
+                filepath.toStdString().c_str(),
+                schema_file_path.c_str(),
+                parameters);
 
         if (!result)
         {
-            show_warning_message_box(
-                "Importing error",
+            show_error_message_box(
+                "Importing Error",
                 "Failed to import the Disney Material file " + filepath.toStdString());
             return;
         }
@@ -183,19 +186,19 @@ void MaterialCollectionItem::slot_import_disney()
 
         if (model != "disney_material")
         {
-            show_warning_message_box(
-                "Importing error",
-                "Model " + model + " from material file not supported.");
+            show_error_message_box(
+                "Importing Error",
+                "Material model " + model + " is not supported.");
             return;
         }
 
-        for (each<MaterialContainer> i = m_parent.materials(); i; ++i)
+        for (const_each<MaterialContainer> i = m_parent.materials(); i; ++i)
         {
             if (strcmp(i->get_name(), name.c_str()) == 0)
             {
-                show_warning_message_box(
-                    "Importing error",
-                    "Material named " + name + " already exists.");
+                show_error_message_box(
+                    "Importing Error",
+                    "A material named " + name + " already exists.");
                 return;
             }
         }
@@ -203,11 +206,10 @@ void MaterialCollectionItem::slot_import_disney()
         auto_release_ptr<Material> material =
             DisneyMaterialFactory().create(name.c_str(), parameters);
 
-        const int index = find_sorted_position(this, name.c_str());
-        ItemBase* item = create_item(material.get());
-        insertChild(index, item);
+        add_item(material.get());
 
         EntityTraits<Material>::insert_entity(material, m_parent);
+
         m_project_builder.notify_project_modification();
     }
 #endif

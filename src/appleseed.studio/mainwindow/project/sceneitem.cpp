@@ -32,6 +32,8 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/assemblycollectionitem.h"
+#include "mainwindow/project/assemblyinstanceitem.h"
+#include "mainwindow/project/instancecollectionitem.h"
 #include "mainwindow/project/multimodelcollectionitem.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/singlemodelcollectionitem.h"
@@ -121,6 +123,17 @@ SceneItem::SceneItem(
                 this,
                 project_builder));
     m_environment_shader_collection_item->add_items(scene.environment_shaders());
+}
+
+void SceneItem::expand()
+{
+    setExpanded(true);
+
+    get_assembly_collection_item().setExpanded(true);
+    get_assembly_instance_collection_item().setExpanded(true);
+
+    if (get_assembly_collection_item().childCount() == 1)
+        get_assembly_collection_item().child(0)->setExpanded(true);
 }
 
 QMenu* SceneItem::get_single_item_context_menu() const

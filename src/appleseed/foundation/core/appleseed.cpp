@@ -30,6 +30,9 @@
 // Interface header.
 #include "appleseed.h"
 
+// appleseed.foundation headers.
+#include "foundation/core/version.h"
+
 // Standard headers.
 #include <cstdio>
 
@@ -49,7 +52,7 @@ const char* Appleseed::get_lib_name()
 
     return "appleseed.dll";
 
-// Mac OS X.
+// OS X.
 #elif defined __APPLE__
 
     return "libappleseed.dylib";

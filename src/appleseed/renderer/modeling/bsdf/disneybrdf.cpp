@@ -593,10 +593,13 @@ namespace
                 weights[SpecularComponent] +
                 weights[CleatcoatComponent];
 
+            if (total_weight == 0.0)
+                return;
+
             const double total_weight_rcp = 1.0 / total_weight;
-            weights[DiffuseComponent] *= total_weight_rcp;
-            weights[SheenComponent] *= total_weight_rcp;
-            weights[SpecularComponent] *= total_weight_rcp;
+            weights[DiffuseComponent]   *= total_weight_rcp;
+            weights[SheenComponent]     *= total_weight_rcp;
+            weights[SpecularComponent]  *= total_weight_rcp;
             weights[CleatcoatComponent] *= total_weight_rcp;
         }
 
@@ -605,9 +608,9 @@ namespace
             double                          cdf[NumComponents]) const
         {
             compute_component_weights(values, cdf);
-            cdf[SheenComponent] += cdf[DiffuseComponent];
-            cdf[SpecularComponent] += cdf[SheenComponent];
-            cdf[CleatcoatComponent] = 1.0;
+            cdf[SheenComponent]     += cdf[DiffuseComponent];
+            cdf[SpecularComponent]  += cdf[SheenComponent];
+            cdf[CleatcoatComponent] += cdf[SpecularComponent];
         }
 
         void specular_roughness(

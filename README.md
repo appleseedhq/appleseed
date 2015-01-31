@@ -1,9 +1,11 @@
 appleseed [![Build Status](https://travis-ci.org/appleseedhq/appleseed.svg?branch=master)](https://travis-ci.org/appleseedhq/appleseed)
 =========
 
-### About
+### About appleseed
 
-appleseed is a modern, physically-based open source final frame renderer. Started in 2009, it has grown into a robust production rendering toolset and has been battle-tested on several projects such as TV documentaries, ads, promotional videos and animation shorts.
+appleseed is a modern, open source, physically-based rendering engine designed to produce photorealistic images, animations and visual effects. It provides individuals and small studios with an efficient, reliable suite of tools built on robust foundations and open technologies.
+
+Started in 2009, it has grown into a robust production rendering toolset and has been battle-tested on several projects such as TV documentaries, ads, promotional videos and animation shorts.
 
 appleseed is available under the [MIT license](http://en.wikipedia.org/wiki/MIT_License).
 
@@ -13,7 +15,7 @@ More information at http://appleseedhq.net/.
 
 Check out our [detailed build instructions](https://github.com/appleseedhq/appleseed/wiki/Building-appleseed) to build appleseed from source.
 
-User and developer documentation can be found in the [wiki](https://github.com/appleseedhq/appleseed/wiki).
+Developer and contributor documentation can be found in the [wiki](https://github.com/appleseedhq/appleseed/wiki).
 
 ### On the Web
 
@@ -21,7 +23,7 @@ User and developer documentation can be found in the [wiki](https://github.com/a
 * [appleseed-dev Google Group](http://groups.google.com/group/appleseed-dev)
 * [appleseed on Twitter](https://twitter.com/appleseedhq)
 * [appleseed on Vimeo](https://vimeo.com/appleseedhq)
-* [appleseed on Ohloh](https://www.ohloh.net/p/appleseedhq)
+* [appleseed on Open Hub](https://www.openhub.net/p/appleseedhq)
 * [appleseed on Woboq](http://code.woboq.org/appleseed/appleseed/)
 
 ### Screenshots

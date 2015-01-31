@@ -6,11 +6,11 @@ surface glass(float eta = 1.5)
 	if (backfacing())
 	{
 		from_ior = eta;
-		to_ior = 1.0;
+		getattribute("path:ray_ior", to_ior);
 	}
 	else
 	{
-		from_ior = 1.0;
+		getattribute("path:ray_ior", from_ior);
 		to_ior = eta;
 	}
 

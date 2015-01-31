@@ -94,6 +94,9 @@ class ProjectManager
     // Return true if a project is open, false otherwise.
     bool is_project_open() const;
 
+    // Return true if a project is being loaded, false otherwise.
+    bool is_project_loading() const;
+
     // Return a string that is appropriate to identify the project.
     // A project must be open.
     std::string get_project_display_name() const;
@@ -116,6 +119,7 @@ class ProjectManager
   private:
     foundation::auto_release_ptr<renderer::Project> m_project;
 
+    bool                    m_is_loading;
     bool                    m_dirty_flag;
 
     QString                 m_async_io_filepath;

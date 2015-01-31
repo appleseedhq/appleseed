@@ -60,6 +60,7 @@
 #include <QCloseEvent>
 #include <QDesktopServices>
 #include <QFileDialog>
+#include <QFileInfo>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QPushButton>
@@ -223,11 +224,11 @@ void ExpressionEditorWindow::slot_clear_expression()
 
 void ExpressionEditorWindow::slot_save_script()
 {
-    QFileDialog::Options options;
-    QString selected_filter;
-
     if (m_script_filepath.empty())
     {
+        QFileDialog::Options options;
+        QString selected_filter;
+
         QString filepath =
             QFileDialog::getSaveFileName(
                 this,
@@ -239,7 +240,11 @@ void ExpressionEditorWindow::slot_save_script()
 
         if (!filepath.isEmpty())
         {
+            if (QFileInfo(filepath).suffix().isEmpty())
+                filepath += ".se";
+
             filepath = QDir::toNativeSeparators(filepath);
+
             m_script_filepath = filepath.toStdString();
         }
     }
@@ -247,13 +252,15 @@ void ExpressionEditorWindow::slot_save_script()
     if (!m_script_filepath.empty())
     {
         ofstream script_file(m_script_filepath.c_str());
+
         if (!script_file.is_open())
         {
-            show_warning_message_box(
+            show_error_message_box(
                 "Saving Error",
                 "Failed to save the expression script file " + m_script_filepath + ".");
             return;
         }
+
         script_file << m_editor->getExpr();
         script_file.close();
     }
@@ -277,19 +284,22 @@ void ExpressionEditorWindow::slot_load_script()
     {
         filepath = QDir::toNativeSeparators(filepath);
 
-        // Read script and set it as an expression.
+        // Open script file.
         ifstream script_file(filepath.toStdString().c_str());
         if (!script_file.is_open())
         {
-            show_warning_message_box(
+            show_error_message_box(
                 "Loading Error",
                 "Failed to load the expression script file " + filepath.toStdString() + ".");
             return;
         }
+
+        // Read script file into memory.
         stringstream script_buffer;
         script_buffer << script_file.rdbuf();
         script_file.close();
 
+        // Set script as expression.
         m_editor->setExpr(script_buffer.str());
         apply_expression();
     }

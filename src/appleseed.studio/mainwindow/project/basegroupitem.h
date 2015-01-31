@@ -34,7 +34,6 @@
 #include "mainwindow/project/itembase.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
 #include "foundation/utility/uid.h"
 
 // Forward declarations.
@@ -75,13 +74,11 @@ class BaseGroupItem
         ProjectBuilder&                 project_builder,
         renderer::ParamArray&           settings);
 
-    virtual QMenu* get_single_item_context_menu() const APPLESEED_OVERRIDE;
-
-    void add_item(renderer::ColorEntity* color);
-    void add_item(renderer::Texture* texture);
-    void add_item(renderer::TextureInstance* texture_instance);
-    void add_item(renderer::Assembly* assembly);
-    void add_item(renderer::AssemblyInstance* assembly_instance);
+    ItemBase* add_item(renderer::ColorEntity* color);
+    ItemBase* add_item(renderer::Texture* texture);
+    ItemBase* add_item(renderer::TextureInstance* texture_instance);
+    ItemBase* add_item(renderer::Assembly* assembly);
+    ItemBase* add_item(renderer::AssemblyInstance* assembly_instance);
 
     typedef SingleModelCollectionItem<renderer::ColorEntity, renderer::BaseGroup, BaseGroupItem> ColorCollectionItem;
     typedef InstanceCollectionItem<renderer::AssemblyInstance, AssemblyInstanceItem, renderer::BaseGroup> AssemblyInstanceCollectionItem;

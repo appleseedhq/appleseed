@@ -53,7 +53,8 @@ namespace studio {
 //
 
 ProjectManager::ProjectManager()
-  : m_dirty_flag(false)
+  : m_is_loading(false)
+  , m_dirty_flag(false)
 {
     connect(
         &m_async_io_future_watcher, SIGNAL(finished()),
@@ -68,6 +69,8 @@ void ProjectManager::create_project()
 
 void ProjectManager::load_project(const string& filepath)
 {
+    m_is_loading = true;
+
     m_async_io_filepath = QString::fromStdString(filepath);
 
     m_async_io_future_watcher.setFuture(
@@ -110,6 +113,11 @@ bool ProjectManager::is_project_open() const
     return m_project.get() != 0;
 }
 
+bool ProjectManager::is_project_loading() const
+{
+    return m_is_loading;
+}
+
 string ProjectManager::get_project_display_name() const
 {
     assert(m_project.get());
@@ -142,6 +150,8 @@ bool ProjectManager::is_project_dirty() const
 
 void ProjectManager::slot_load_project_async_complete()
 {
+    m_is_loading = false;
+
     // Can't use qobject_cast<>: https://bugreports.qt-project.org/browse/QTBUG-10727.
     const bool successful =
         static_cast<QFutureWatcher<bool>*>(sender())->future().result();

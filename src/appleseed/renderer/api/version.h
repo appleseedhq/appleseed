@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2015 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,35 +26,10 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_UTILITY_MISCELLANEOUS_H
-#define APPLESEED_STUDIO_UTILITY_MISCELLANEOUS_H
+#ifndef APPLESEED_RENDERER_API_VERSION_H
+#define APPLESEED_RENDERER_API_VERSION_H
 
-// Forward declarations.
-class QLayout;
-class QMessageBox;
-class QShortcut;
-class QString;
-class QWidget;
+// API headers.
+#include "foundation/core/version.h"
 
-namespace appleseed {
-namespace studio {
-
-extern const QString g_bitmap_files_filter;
-
-// Disable the blue focus rectangle of certain widgets. OS X only.
-void disable_osx_focus_rect(QWidget* widget);
-
-// Set the minimum width of a QMessageBox.
-void set_minimum_width(QMessageBox& msgbox, const int minimum_width);
-
-// Create a keyboard shortcut that is active for a given window and its
-// child widgets, but not for its top-level children like subwindows.
-QShortcut* create_window_local_shortcut(QWidget* parent, const int key);
-
-// Remove all widgets and sub-layouts from a layout.
-void clear_layout(QLayout* layout);
-
-}       // namespace studio
-}       // namespace appleseed
-
-#endif  // !APPLESEED_STUDIO_UTILITY_MISCELLANEOUS_H
+#endif  // !APPLESEED_RENDERER_API_VERSION_H

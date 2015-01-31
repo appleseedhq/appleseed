@@ -649,9 +649,6 @@ namespace
             const Spectrum&     rs)
         {
             generate_specular_albedo_plot_data("Ward", m, WardMDFAdapter<double>(m), rs);
-
-            // TODO: not really sure what to do with this... (est.)
-            //generate_specular_albedo_plot_data("Beckmann", m, BeckmannMDF<double>(m), rs);
         }
 
         template <typename MDF>

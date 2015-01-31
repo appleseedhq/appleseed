@@ -59,7 +59,7 @@ namespace foundation
 #if defined _WIN32
     #define FOUNDATION_MAX_PATH_LENGTH  MAX_PATH
 
-// Mac OS X.
+// OS X.
 #elif defined __APPLE__
     #define FOUNDATION_MAX_PATH_LENGTH  MAXPATHLEN
 
