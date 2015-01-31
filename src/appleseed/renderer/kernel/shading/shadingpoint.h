@@ -638,9 +638,8 @@ inline const Material* ShadingPoint::get_material() const
 
         m_shade_alpha_cutouts = m_object->shade_alpha_cutouts();
 
-        if (m_material)
-            m_shade_alpha_cutouts =
-                m_shade_alpha_cutouts || m_material->shade_alpha_cutouts();
+        if (m_material && m_material->shade_alpha_cutouts())
+            m_shade_alpha_cutouts = true;
 
         // The material at the intersection point is now available.
         m_members |= HasMaterial;
@@ -714,9 +713,7 @@ inline const Alpha& ShadingPoint::get_alpha() const
 
 inline bool ShadingPoint::shade_alpha_cutouts() const
 {
-    if (!(m_members & HasMaterial))
-        get_material();
-
+    get_material();
     return m_shade_alpha_cutouts;
 }
 

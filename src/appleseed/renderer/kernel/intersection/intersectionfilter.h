@@ -131,8 +131,8 @@ class IntersectionFilter
 
     foundation::uint64                  m_obj_alpha_map_signature;
     AlphaMask*                          m_obj_alpha_mask;
-    std::vector<foundation::uint64>     m_alpha_map_signatures;
-    std::vector<AlphaMask*>             m_alpha_masks;
+    std::vector<foundation::uint64>     m_material_alpha_map_signatures;
+    std::vector<AlphaMask*>             m_material_alpha_masks;
     std::vector<foundation::Vector2f>   m_uv;
 
     template <typename EntityType>
@@ -169,7 +169,7 @@ inline bool IntersectionFilter::accept(
     if (u != u || v != v)
         return true;
 
-    const AlphaMask* mtl_alpha_mask = m_alpha_masks[triangle_key.get_triangle_pa()];
+    const AlphaMask* mtl_alpha_mask = m_material_alpha_masks[triangle_key.get_triangle_pa()];
 
     if (m_obj_alpha_mask || mtl_alpha_mask)
     {

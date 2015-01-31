@@ -47,8 +47,12 @@
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer  { class ParamArray; }
-namespace renderer  { class Triangle; }
+namespace foundation    { class IAbortSwitch; }
+namespace renderer      { class Assembly; }
+namespace renderer      { class ParamArray; }
+namespace renderer      { class Project; }
+namespace renderer      { class Source; }
+namespace renderer      { class Triangle; }
 
 namespace renderer
 {

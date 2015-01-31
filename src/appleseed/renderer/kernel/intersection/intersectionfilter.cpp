@@ -121,8 +121,8 @@ IntersectionFilter::IntersectionFilter(
   , m_obj_alpha_map_signature(0)
 {
     // Initialize the material -> alpha mask mapping.
-    m_alpha_map_signatures.assign(materials.size(), 0);
-    m_alpha_masks.assign(materials.size(), 0);
+    m_material_alpha_map_signatures.assign(materials.size(), 0);
+    m_material_alpha_masks.assign(materials.size(), 0);
 
     // Create alpha masks.
     update(object, materials, texture_cache);
@@ -139,8 +139,8 @@ IntersectionFilter::~IntersectionFilter()
 {
     delete m_obj_alpha_mask;
 
-    for (size_t i = 0; i < m_alpha_masks.size(); ++i)
-        delete m_alpha_masks[i];
+    for (size_t i = 0; i < m_material_alpha_masks.size(); ++i)
+        delete m_material_alpha_masks[i];
 }
 
 namespace
@@ -208,8 +208,8 @@ void IntersectionFilter::update(
     const MaterialArray&    materials,
     TextureCache&           texture_cache)
 {
-    assert(m_alpha_map_signatures.size() == materials.size());
-    assert(m_alpha_masks.size() == materials.size());
+    assert(m_material_alpha_map_signatures.size() == materials.size());
+    assert(m_material_alpha_masks.size() == materials.size());
 
     do_update(object, texture_cache, m_obj_alpha_mask, m_obj_alpha_map_signature);
 
@@ -220,11 +220,11 @@ void IntersectionFilter::update(
             do_update(
                 *material,
                 texture_cache,
-                m_alpha_masks[i],
-                m_alpha_map_signatures[i]);
+                m_material_alpha_masks[i],
+                m_material_alpha_map_signatures[i]);
         }
         else
-            delete_and_clear(m_alpha_masks[i]);
+            delete_and_clear(m_material_alpha_masks[i]);
     }
 }
 
@@ -233,9 +233,9 @@ bool IntersectionFilter::has_alpha_masks() const
     if (m_obj_alpha_mask)
         return true;
 
-    for (size_t i = 0; i < m_alpha_masks.size(); ++i)
+    for (size_t i = 0; i < m_material_alpha_masks.size(); ++i)
     {
-        if (m_alpha_masks[i])
+        if (m_material_alpha_masks[i])
             return true;
     }
 
@@ -247,12 +247,12 @@ size_t IntersectionFilter::get_masks_memory_size() const
     size_t size = 0;
 
     if (m_obj_alpha_mask)
-        size = m_obj_alpha_mask->get_memory_size();
+        size += m_obj_alpha_mask->get_memory_size();
 
-    for (size_t i = 0; i < m_alpha_masks.size(); ++i)
+    for (size_t i = 0; i < m_material_alpha_masks.size(); ++i)
     {
-        if (m_alpha_masks[i])
-            size += m_alpha_masks[i]->get_memory_size();
+        if (m_material_alpha_masks[i])
+            size += m_material_alpha_masks[i]->get_memory_size();
     }
 
     return size;

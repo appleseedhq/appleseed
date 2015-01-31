@@ -151,10 +151,10 @@ bool MeshObject::has_alpha_map() const
 
     const char* value = m_params.strings().get("alpha_map");
 
-    return strlen(value) > 0 ? value : 0;
+    return strlen(value) > 0;
 }
 
-const Source*MeshObject::get_uncached_alpha_map() const
+const Source* MeshObject::get_uncached_alpha_map() const
 {
     return m_inputs.source("alpha_map");
 }

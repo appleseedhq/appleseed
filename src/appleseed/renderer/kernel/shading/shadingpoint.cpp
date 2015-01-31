@@ -31,8 +31,8 @@
 #include "shadingpoint.h"
 
 // appleseed.renderer headers.
-#include "renderer/modeling/input/source.h"
 #include "renderer/kernel/intersection/intersector.h"
+#include "renderer/modeling/input/source.h"
 #include "renderer/modeling/object/iregion.h"
 #include "renderer/modeling/object/object.h"
 #ifdef APPLESEED_WITH_OSL
@@ -600,6 +600,7 @@ void ShadingPoint::compute_alpha() const
     else
     {
         assert(m_primitive_type == PrimitiveCurve1 || m_primitive_type == PrimitiveCurve3);
+        // TODO: interpolate per vertex alpha for curves here...
     }
 }
 

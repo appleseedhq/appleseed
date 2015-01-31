@@ -192,7 +192,7 @@ DictionaryArray ConstantSurfaceShaderFactory::get_input_metadata() const
             .insert("items",
                 Dictionary()
                     .insert("Alpha channel of the color", "color")
-                    .insert("Alpha map of the object and material", "material"))
+                    .insert("Alpha map of the object and/or material", "material"))
             .insert("use", "optional")
             .insert("default", "color"));
 
