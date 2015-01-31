@@ -1058,17 +1058,19 @@ namespace
 
         bool has_alpha_maps() const
         {
+            // Use the uncached versions of get_alpha_map() since at this point
+            // on_frame_begin() hasn't been called on the object or materials,
+            // when intersection filters are updated on existing triangle trees
+            // prior to rendering.
+
+            if (m_object->get_uncached_alpha_map())
+                return true;
+
             const size_t material_count = m_materials.size();
 
             for (size_t i = 0; i < material_count; ++i)
             {
-                const Material* material = m_materials[i];
-
-                // Use the uncached version of get_alpha_map() since at this point
-                // on_frame_begin() hasn't been called on the materials, when
-                // intersection filters are updated on existing triangle trees
-                // prior to rendering.
-                if (material && material->get_uncached_alpha_map())
+                if (m_materials[i] && m_materials[i]->get_uncached_alpha_map())
                     return true;
             }
 
@@ -1154,7 +1156,7 @@ namespace
             const IntersectionFilterRepository::const_iterator it = filters.find(filter_key_hash);
             if (it != filters.end())
             {
-                it->second->update(filter_key.m_materials, texture_cache);
+                it->second->update(*filter_key.m_object, filter_key.m_materials, texture_cache);
                 RENDERER_LOG_DEBUG(
                     "updated intersection filter with filter key hash 0x" FMT_UINT64_HEX ".",
                     filter_key_hash);
@@ -1427,7 +1429,7 @@ bool TriangleLeafVisitor::visit(
                 continue;
             }
 
-            // Advance to the motion step immediately before the ray time. 
+            // Advance to the motion step immediately before the ray time.
             const double base_time = m_shading_point.m_ray.m_time * motion_segment_count;
             const size_t base_index = truncate<size_t>(base_time);
             reader += base_index * 3 * sizeof(GVector3);
@@ -1558,7 +1560,7 @@ bool TriangleLeafProbeVisitor::visit(
                 continue;
             }
 
-            // Advance to the motion step immediately before the ray time. 
+            // Advance to the motion step immediately before the ray time.
             const double base_time = m_ray_time * motion_segment_count;
             const size_t base_index = truncate<size_t>(base_time);
             reader += base_index * 3 * sizeof(GVector3);

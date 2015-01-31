@@ -117,13 +117,15 @@ IntersectionFilter::IntersectionFilter(
     Object&                 object,
     const MaterialArray&    materials,
     TextureCache&           texture_cache)
+  : m_obj_alpha_mask(0)
+  , m_obj_alpha_map_signature(0)
 {
     // Initialize the material -> alpha mask mapping.
-    m_alpha_map_signatures.assign(materials.size(), 0);
-    m_alpha_masks.assign(materials.size(), 0);
+    m_material_alpha_map_signatures.assign(materials.size(), 0);
+    m_material_alpha_masks.assign(materials.size(), 0);
 
     // Create alpha masks.
-    update(materials, texture_cache);
+    update(object, materials, texture_cache);
 
     if (has_alpha_masks())
     {
@@ -135,8 +137,10 @@ IntersectionFilter::IntersectionFilter(
 
 IntersectionFilter::~IntersectionFilter()
 {
-    for (size_t i = 0; i < m_alpha_masks.size(); ++i)
-        delete m_alpha_masks[i];
+    delete m_obj_alpha_mask;
+
+    for (size_t i = 0; i < m_material_alpha_masks.size(); ++i)
+        delete m_material_alpha_masks[i];
 }
 
 namespace
@@ -149,74 +153,89 @@ namespace
     }
 }
 
+template <typename EntityType>
+void IntersectionFilter::do_update(
+    const EntityType&               entity,
+    TextureCache&                   texture_cache,
+    IntersectionFilter::AlphaMask*& mask,
+    uint64&                         signature)
+{
+    // Intersection filters would prevent shading fully transparent shading points,
+    // so don't create one if shading fully transparent shading points is enabled.
+    if (entity.shade_alpha_cutouts())
+        delete_and_clear(mask);
+
+    // Use the uncached version of get_alpha_map() since at this point
+    // on_frame_begin() hasn't been called on the materials, when
+    // intersection filters are updated on existing triangle trees
+    // prior to rendering.
+    const Source* alpha_map = entity.get_uncached_alpha_map();
+
+    if (alpha_map == 0)
+    {
+        delete_and_clear(mask);
+        return;
+    }
+
+    // Don't do anything if there is already an alpha mask and it is up-to-date.
+    const uint64 alpha_map_sig = alpha_map->compute_signature();
+    if (mask != 0 && alpha_map_sig == signature)
+        return;
+
+    // Build the alpha mask.
+    double transparency;
+    auto_ptr<AlphaMask> alpha_mask(
+        create_alpha_mask(
+            alpha_map,
+            texture_cache,
+            transparency));
+
+    // Discard the alpha mask if it's mostly opaque.
+    if (transparency < 5.0 / 100)
+    {
+        delete_and_clear(mask);
+        return;
+    }
+
+    // Store the alpha mask.
+    delete mask;
+    mask = alpha_mask.release();
+    signature = alpha_map_sig;
+}
+
 void IntersectionFilter::update(
+    const Object&           object,
     const MaterialArray&    materials,
     TextureCache&           texture_cache)
 {
-    assert(m_alpha_map_signatures.size() == materials.size());
-    assert(m_alpha_masks.size() == materials.size());
+    assert(m_material_alpha_map_signatures.size() == materials.size());
+    assert(m_material_alpha_masks.size() == materials.size());
+
+    do_update(object, texture_cache, m_obj_alpha_mask, m_obj_alpha_map_signature);
 
     for (size_t i = 0; i < materials.size(); ++i)
     {
-        // Retrieve the material.
-        const Material* material = materials[i];
-        if (material == 0)
+        if (const Material* material = materials[i])
         {
-            delete_and_clear(m_alpha_masks[i]);
-            continue;
-        }
-
-        // Intersection filters would prevent shading fully transparent shading points,
-        // so don't create one if shading fully transparent shading points is enabled.
-        if (material->shade_alpha_cutouts())
-        {
-            delete_and_clear(m_alpha_masks[i]);
-            continue;
-        }
-
-        // Use the uncached version of get_alpha_map() since at this point
-        // on_frame_begin() hasn't been called on the materials, when
-        // intersection filters are updated on existing triangle trees
-        // prior to rendering.
-        const Source* alpha_map = material->get_uncached_alpha_map();
-        if (alpha_map == 0)
-        {
-            delete_and_clear(m_alpha_masks[i]);
-            continue;
-        }
-
-        // Don't do anything if there is already an alpha mask and it is up-to-date.
-        const uint64 alpha_map_sig = alpha_map->compute_signature();
-        if (m_alpha_masks[i] != 0 && alpha_map_sig == m_alpha_map_signatures[i])
-            continue;
-
-        // Build the alpha mask.
-        double transparency;
-        auto_ptr<AlphaMask> alpha_mask(
-            create_alpha_mask(
-                alpha_map,
+            do_update(
+                *material,
                 texture_cache,
-                transparency));
-
-        // Discard the alpha mask if it's mostly opaque.
-        if (transparency < 5.0 / 100)
-        {
-            delete_and_clear(m_alpha_masks[i]);
-            continue;
+                m_material_alpha_masks[i],
+                m_material_alpha_map_signatures[i]);
         }
-
-        // Store the alpha mask.
-        delete m_alpha_masks[i];
-        m_alpha_masks[i] = alpha_mask.release();
-        m_alpha_map_signatures[i] = alpha_map_sig;
+        else
+            delete_and_clear(m_material_alpha_masks[i]);
     }
 }
 
 bool IntersectionFilter::has_alpha_masks() const
 {
-    for (size_t i = 0; i < m_alpha_masks.size(); ++i)
+    if (m_obj_alpha_mask)
+        return true;
+
+    for (size_t i = 0; i < m_material_alpha_masks.size(); ++i)
     {
-        if (m_alpha_masks[i])
+        if (m_material_alpha_masks[i])
             return true;
     }
 
@@ -227,10 +246,13 @@ size_t IntersectionFilter::get_masks_memory_size() const
 {
     size_t size = 0;
 
-    for (size_t i = 0; i < m_alpha_masks.size(); ++i)
+    if (m_obj_alpha_mask)
+        size += m_obj_alpha_mask->get_memory_size();
+
+    for (size_t i = 0; i < m_material_alpha_masks.size(); ++i)
     {
-        if (m_alpha_masks[i])
-            size += m_alpha_masks[i]->get_memory_size();
+        if (m_material_alpha_masks[i])
+            size += m_material_alpha_masks[i]->get_memory_size();
     }
 
     return size;

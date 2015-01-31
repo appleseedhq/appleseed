@@ -248,19 +248,10 @@ void Tracer::evaluate_alpha(
     const ShadingPoint&         shading_point,
     Alpha&                      alpha) const
 {
-    // Init to fully opaque.
-    alpha.set(1.0f);
-
-    // Evaluate the alpha map at the shading point.
-    if (const Source* alpha_map = material.get_alpha_map())
-    {
-        alpha_map->evaluate(
-            m_texture_cache,
-            shading_point.get_uv(0),
-            alpha);
-    }
+    alpha = shading_point.get_alpha();
 
 #ifdef APPLESEED_WITH_OSL
+    // Apply OSL transparency if needed.
     if (const ShaderGroup* sg = material.get_osl_surface())
     {
         if (sg->has_transparency())

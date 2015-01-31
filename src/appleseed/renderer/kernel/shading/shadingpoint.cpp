@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/intersection/intersector.h"
+#include "renderer/modeling/input/source.h"
 #include "renderer/modeling/object/iregion.h"
 #include "renderer/modeling/object/object.h"
 #ifdef APPLESEED_WITH_OSL
@@ -562,6 +563,44 @@ void ShadingPoint::compute_point_velocity() const
             // Transform to world space.
             m_point_velocity = m_assembly_instance_transform.vector_to_parent(m_point_velocity);
         }
+    }
+}
+
+void ShadingPoint::compute_alpha() const
+{
+    m_alpha.set(1.0f);
+
+    if (m_primitive_type == PrimitiveTriangle)
+    {
+        if (const Source* alpha_map = get_object().get_alpha_map())
+        {
+            Alpha a;
+            alpha_map->evaluate(
+                *m_texture_cache,
+                get_uv(0),
+                a);
+
+            m_alpha *= a;
+        }
+
+        if (const Material* material = get_material())
+        {
+            if (const Source* alpha_map = material->get_alpha_map())
+            {
+                Alpha a;
+                alpha_map->evaluate(
+                    *m_texture_cache,
+                    get_uv(0),
+                    a);
+
+                m_alpha *= a;
+            }
+        }
+    }
+    else
+    {
+        assert(m_primitive_type == PrimitiveCurve1 || m_primitive_type == PrimitiveCurve3);
+        // TODO: interpolate per vertex alpha for curves here...
     }
 }
 

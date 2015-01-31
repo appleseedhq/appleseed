@@ -197,67 +197,45 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         // Handle alpha mapping.
         if (vertex.m_path_length > 1)
         {
-            bool has_transparency = material->get_alpha_map() ? true : false;
+            Alpha alpha = vertex.m_shading_point->get_alpha();
 
 #ifdef APPLESEED_WITH_OSL
-            if (!has_transparency)
+            // Apply OSL transparency if needed.
+            if (material->get_osl_surface() && material->get_osl_surface()->has_transparency())
             {
-                has_transparency =
-                    material->get_osl_surface() && material->get_osl_surface()->has_transparency();
+                Alpha a;
+                shading_context.execute_osl_transparency(
+                    *material->get_osl_surface(),
+                    *vertex.m_shading_point,
+                    a);
+
+                alpha *= a;
             }
 #endif
 
-            if (has_transparency)
+            if (pass_through(sampling_context, alpha))
             {
-                Alpha alpha;
+                // Construct a ray that continues in the same direction as the incoming ray.
+                const ShadingRay cutoff_ray(
+                    vertex.get_point(),
+                    ray.m_dir,
+                    ray.m_time,
+                    ray.m_dtime,
+                    ray.m_flags,
+                    ray.m_depth);   // ray depth does not increase when passing through an alpha-mapped surface
 
-                if (material->get_alpha_map())
-                {
-                    // Evaluate the alpha map at the shading point.
-                    material->get_alpha_map()->evaluate(
-                        shading_context.get_texture_cache(),
-                        vertex.get_uv(0),
-                        alpha);
-                }
+                // Trace the ray.
+                shading_points[shading_point_index].clear();
+                shading_context.get_intersector().trace(
+                    cutoff_ray,
+                    shading_points[shading_point_index],
+                    vertex.m_shading_point);
 
-#ifdef APPLESEED_WITH_OSL
-                if (material->get_osl_surface() && material->get_osl_surface()->has_transparency())
-                {
-                    // Evaluate the OSL shader at the shading point.
-                    Alpha a;
-                    shading_context.execute_osl_transparency(
-                        *material->get_osl_surface(),
-                        *vertex.m_shading_point,
-                        a);
+                // Update the pointers to the shading points.
+                vertex.m_shading_point = &shading_points[shading_point_index];
+                shading_point_index = 1 - shading_point_index;
 
-                    alpha *= a;
-                }
-#endif
-
-                if (pass_through(sampling_context, alpha))
-                {
-                    // Construct a ray that continues in the same direction as the incoming ray.
-                    const ShadingRay cutoff_ray(
-                        vertex.get_point(),
-                        ray.m_dir,
-                        ray.m_time,
-                        ray.m_dtime,
-                        ray.m_flags,
-                        ray.m_depth);   // ray depth does not increase when passing through an alpha-mapped surface
-
-                    // Trace the ray.
-                    shading_points[shading_point_index].clear();
-                    shading_context.get_intersector().trace(
-                        cutoff_ray,
-                        shading_points[shading_point_index],
-                        vertex.m_shading_point);
-
-                    // Update the pointers to the shading points.
-                    vertex.m_shading_point = &shading_points[shading_point_index];
-                    shading_point_index = 1 - shading_point_index;
-
-                    continue;
-                }
+                continue;
             }
         }
 
