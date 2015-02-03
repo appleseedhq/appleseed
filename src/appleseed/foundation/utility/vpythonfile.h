@@ -84,12 +84,6 @@ class VPythonFile
         const char*         color = "white",
         const double        thickness = 0.001);
 
-    // Output a bounding box.
-    void draw_aabb(
-        const AABB3d&       bbox,
-        const char*         color = "white",
-        const double        thickness = 0.001);
-
     // Output an arrow.
     void draw_arrow(
         const Vector3d&     from,
@@ -99,6 +93,19 @@ class VPythonFile
 
     // Output the canonical axes.
     void draw_axes(const double shaft_width = 0.001);
+
+    // Output a bounding box.
+    void draw_aabb(
+        const AABB3d&       bbox,
+        const char*         color = "white",
+        const double        thickness = 0.001);
+
+    // Output a triangle.
+    void draw_triangle(
+        const Vector3d&     v0,
+        const Vector3d&     v1,
+        const Vector3d&     v2,
+        const char*         color = "white");
 
   private:
     std::FILE* m_file;

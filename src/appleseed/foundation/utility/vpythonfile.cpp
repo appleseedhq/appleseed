@@ -134,6 +134,30 @@ void VPythonFile::draw_unit_square(
         color);
 }
 
+void VPythonFile::draw_arrow(
+    const Vector3d&     from,
+    const Vector3d&     to,
+    const char*         color,
+    const double        shaft_width)
+{
+    const Vector3d axis = to - from;
+
+    fprintf(
+        m_file,
+        "arrow(pos=(%f,%f,%f), axis=(%f,%f,%f), shaftwidth=%f, fixedwidth=True, color=color.%s)\n",
+        from.x, from.y, from.z,
+        axis.x, axis.y, axis.z,
+        shaft_width,
+        color);
+}
+
+void VPythonFile::draw_axes(const double shaft_width)
+{
+    draw_arrow(Vector3d(0.0), Vector3d(1.0, 0.0, 0.0), "red", shaft_width);
+    draw_arrow(Vector3d(0.0), Vector3d(0.0, 1.0, 0.0), "green", shaft_width);
+    draw_arrow(Vector3d(0.0), Vector3d(0.0, 0.0, 1.0), "blue", shaft_width);
+}
+
 void VPythonFile::draw_aabb(
     const AABB3d&       bbox,
     const char*         color,
@@ -194,28 +218,19 @@ void VPythonFile::draw_aabb(
         color);
 }
 
-void VPythonFile::draw_arrow(
-    const Vector3d&     from,
-    const Vector3d&     to,
-    const char*         color,
-    const double        shaft_width)
+void VPythonFile::draw_triangle(
+    const Vector3d&     v0,
+    const Vector3d&     v1,
+    const Vector3d&     v2,
+    const char*         color)
 {
-    const Vector3d axis = to - from;
-
     fprintf(
         m_file,
-        "arrow(pos=(%f,%f,%f), axis=(%f,%f,%f), shaftwidth=%f, fixedwidth=True, color=color.%s)\n",
-        from.x, from.y, from.z,
-        axis.x, axis.y, axis.z,
-        shaft_width,
+        "faces(pos=[(%f,%f,%f),(%f,%f,%f),(%f,%f,%f)], color=color.%s)\n",
+        v0.x, v0.y, v0.z,
+        v1.x, v1.y, v1.z,
+        v2.x, v2.y, v2.z,
         color);
-}
-
-void VPythonFile::draw_axes(const double shaft_width)
-{
-    draw_arrow(Vector3d(0.0), Vector3d(1.0, 0.0, 0.0), "red", shaft_width);
-    draw_arrow(Vector3d(0.0), Vector3d(0.0, 1.0, 0.0), "green", shaft_width);
-    draw_arrow(Vector3d(0.0), Vector3d(0.0, 0.0, 1.0), "blue", shaft_width);
 }
 
 }   // namespace foundation
