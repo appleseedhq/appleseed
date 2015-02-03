@@ -66,6 +66,7 @@ class IntersectionFilter
     ~IntersectionFilter();
 
     void update(
+        const Object&           object,
         const MaterialArray&    materials,
         TextureCache&           texture_cache);
 
@@ -112,6 +113,11 @@ class IntersectionFilter
             return m_bitmask.is_set(ix, iy);
         }
 
+        bool is_transparent(const foundation::Vector2d& uv) const
+        {
+            return !is_opaque(uv);
+        }
+
         size_t get_memory_size() const
         {
             return m_bitmask.get_memory_size();
@@ -123,9 +129,18 @@ class IntersectionFilter
         foundation::BitMask2    m_bitmask;
     };
 
-    std::vector<foundation::uint64>     m_alpha_map_signatures;
-    std::vector<AlphaMask*>             m_alpha_masks;
+    foundation::uint64                  m_obj_alpha_map_signature;
+    AlphaMask*                          m_obj_alpha_mask;
+    std::vector<foundation::uint64>     m_material_alpha_map_signatures;
+    std::vector<AlphaMask*>             m_material_alpha_masks;
     std::vector<foundation::Vector2f>   m_uv;
+
+    template <typename EntityType>
+    static void do_update(
+        const EntityType&               entity,
+        TextureCache&                   texture_cache,
+        IntersectionFilter::AlphaMask*& mask,
+        foundation::uint64&             signature);
 
     static AlphaMask* create_alpha_mask(
         const Source*           alpha_map,
@@ -145,11 +160,6 @@ inline bool IntersectionFilter::accept(
 {
     assert(triangle_key.get_region_index() == 0);
 
-    const AlphaMask* alpha_mask = m_alpha_masks[triangle_key.get_triangle_pa()];
-
-    if (alpha_mask == 0)
-        return true;
-
     // Don't use the alpha mask if the UV coordinates are indefinite.
     // This can happen in rare circumstances, when hitting degenerate
     // or nearly degenerate geometry. Since we cannot guarantee to
@@ -159,17 +169,28 @@ inline bool IntersectionFilter::accept(
     if (u != u || v != v)
         return true;
 
-    const size_t triangle_index = triangle_key.get_triangle_index();
+    const AlphaMask* mtl_alpha_mask = m_material_alpha_masks[triangle_key.get_triangle_pa()];
 
-    const float fu = static_cast<float>(u);
-    const float fv = static_cast<float>(v);
+    if (m_obj_alpha_mask || mtl_alpha_mask)
+    {
+        const size_t triangle_index = triangle_key.get_triangle_index();
 
-    const foundation::Vector2f uv =
-          m_uv[triangle_index * 3 + 0] * (1.0f - fu - fv)
-        + m_uv[triangle_index * 3 + 1] * fu
-        + m_uv[triangle_index * 3 + 2] * fv;
+        const float fu = static_cast<float>(u);
+        const float fv = static_cast<float>(v);
 
-    return alpha_mask->is_opaque(uv);
+        const foundation::Vector2f uv =
+              m_uv[triangle_index * 3 + 0] * (1.0f - fu - fv)
+            + m_uv[triangle_index * 3 + 1] * fu
+            + m_uv[triangle_index * 3 + 2] * fv;
+
+        if (m_obj_alpha_mask && m_obj_alpha_mask->is_transparent(uv))
+            return false;
+
+        if (mtl_alpha_mask)
+            return mtl_alpha_mask->is_opaque(uv);
+    }
+
+    return true;
 }
 
 }       // namespace renderer
