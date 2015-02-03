@@ -31,8 +31,10 @@
 #define APPLESEED_FOUNDATION_MATH_SAMPLING_H
 
 // Interface headers.
+#include "foundation/math/sampling/imageimportancesampler.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/sampling/qmcsamplingcontext.h"
 #include "foundation/math/sampling/rngsamplingcontext.h"
+#include "foundation/math/sampling/sphericalimportancesampler.h"
 
 #endif  // !APPLESEED_FOUNDATION_MATH_SAMPLING_H

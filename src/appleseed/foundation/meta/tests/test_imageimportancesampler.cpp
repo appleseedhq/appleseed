@@ -27,10 +27,6 @@
 // THE SOFTWARE.
 //
 
-// appleseed.renderer headers.
-#include "renderer/kernel/lighting/imageimportancesampler.h"
-#include "renderer/utility/testutils.h"
-
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
@@ -39,6 +35,7 @@
 #include "foundation/image/genericimagefilereader.h"
 #include "foundation/image/genericimagefilewriter.h"
 #include "foundation/image/image.h"
+#include "foundation/math/sampling/imageimportancesampler.h"
 #include "foundation/math/qmc.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/test.h"
@@ -49,10 +46,9 @@
 #include <memory>
 
 using namespace foundation;
-using namespace renderer;
 using namespace std;
 
-TEST_SUITE(Renderer_Kernel_Lighting_ImageImportanceSampler)
+TEST_SUITE(Foundation_Math_Sampling_ImageImportanceSampler)
 {
     class HorizontalGradientSampler
     {

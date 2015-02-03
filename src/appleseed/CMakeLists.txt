@@ -217,6 +217,7 @@ source_group ("foundation\\math\\rng" FILES
 )
 
 set (foundation_math_sampling_sources
+    foundation/math/sampling/imageimportancesampler.h
     foundation/math/sampling/mappings.h
     foundation/math/sampling/qmcsamplingcontext.h
     foundation/math/sampling/rngsamplingcontext.h
@@ -401,6 +402,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_fresnel.cpp
     foundation/meta/tests/test_frustum.cpp
     foundation/meta/tests/test_image.cpp
+    foundation/meta/tests/test_imageimportancesampler.cpp
     foundation/meta/tests/test_intersection.cpp
     foundation/meta/tests/test_iostreamop.cpp
     foundation/meta/tests/test_job.cpp
@@ -937,7 +939,6 @@ set (renderer_kernel_lighting_sources
     renderer/kernel/lighting/ilightingengine.h
     renderer/kernel/lighting/imagebasedlighting.cpp
     renderer/kernel/lighting/imagebasedlighting.h
-    renderer/kernel/lighting/imageimportancesampler.h
     renderer/kernel/lighting/lightsampler.cpp
     renderer/kernel/lighting/lightsampler.h
     renderer/kernel/lighting/pathtracer.h
@@ -1181,7 +1182,6 @@ set (renderer_meta_tests_sources
     renderer/meta/tests/test_entityvector.cpp
     renderer/meta/tests/test_environmentedf.cpp
     renderer/meta/tests/test_frame.cpp
-    renderer/meta/tests/test_imageimportancesampler.cpp
     renderer/meta/tests/test_imagetools.cpp
     renderer/meta/tests/test_inputarray.cpp
     renderer/meta/tests/test_intersector.cpp
