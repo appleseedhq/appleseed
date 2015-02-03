@@ -32,6 +32,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
+#include "foundation/math/sphericaltriangle.h"
 #include "foundation/math/vector.h"
 
 // Standard headers.
@@ -137,6 +138,15 @@ Vector<T, 2> sample_regular_polygon_uniform(
     const Vector<T, 3>& s,
     const size_t        vertex_count,
     const Vector<T, 2>  vertices[]);
+
+// Map a uniform sample in [0,1)^2 to a point on the surface of a spherical
+// triangle on the unit sphere.
+template <typename T>
+Vector<T, 3> sample_spherical_triangle_uniform(
+    const Vector<T, 3>& v0,
+    const Vector<T, 3>& v1,
+    const Vector<T, 3>& v2,
+    const Vector<T, 2>& eta);
 
 
 //
@@ -351,6 +361,50 @@ inline Vector<T, 2> sample_regular_polygon_uniform(
     const T b1 = s[2] * sqrt_s1;
 
     return b0 * v0 + b1 * v1;
+}
+
+template <typename T>
+Vector<T, 3> sample_spherical_triangle_uniform(
+    const Vector<T, 3>& A,
+    const Vector<T, 3>& B,
+    const Vector<T, 3>& C,
+    const Vector<T, 2>& eta)
+{
+    // Compute the edge lengths of the triangle.
+    T a, b, c;
+    compute_spherical_triangle_edge_lengths(A, B, C, a, b, c);
+
+    // Compute the interior angles of the triangle.
+    T alpha, beta, gamma;
+    compute_spherical_triangle_interior_angles(a, b, c, alpha, beta, gamma);
+
+    // Compute the area of the spherical triangle.
+    const T area = compute_spherical_triangle_area(alpha, beta, gamma);
+
+    // Use one random variable to select the new area.
+    const T area_hat = eta[0] * area;
+
+    // Save the sine and cosine of the angle phi.
+    const T s = std::sin(area_hat - alpha);
+    const T t = std::cos(area_hat - alpha);
+
+    // Compute the pair (u, v) that determines beta_hat.
+    const T u = t - std::cos(alpha);
+    const T v = s + std::sin(alpha) * std::cos(c);
+
+    // Let q be the cosine of the new edge length b_hat.
+    const T q_num = (v * t - u * s) * std::cos(alpha) - v;
+    const T q_den = (v * s + u * t) * std::sin(alpha);
+    const T q = clamp(q_num / q_den, T(-1.0), T(1.0));
+
+    // Compute the third vertex of the sub-triangle.
+    const Vector3d C_hat = q * A + std::sqrt(T(1.0) - q * q) * normalize(C - dot(C, A) * A);
+
+    // Use the other random variable to select cos(theta).
+    const T z = T(1.0) - eta[1] * (T(1.0) - dot(C_hat, B));
+
+    // Construct the corresponding point on the sphere.
+    return z * B + std::sqrt(T(1.0) - z * z) * normalize(C_hat - dot(C_hat, B) * B);
 }
 
 }       // namespace foundation
