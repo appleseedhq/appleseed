@@ -220,6 +220,7 @@ set (foundation_math_sampling_sources
     foundation/math/sampling/mappings.h
     foundation/math/sampling/qmcsamplingcontext.h
     foundation/math/sampling/rngsamplingcontext.h
+    foundation/math/sampling/sphericalimportancesampler.h
 )
 list (APPEND appleseed_sources
     ${foundation_math_sampling_sources}
@@ -434,6 +435,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_sharedlibrary.cpp
     foundation/meta/tests/test_siphash.cpp
     foundation/meta/tests/test_snprintf.cpp
+    foundation/meta/tests/test_sphericalimportancesampler.cpp
     foundation/meta/tests/test_spline.cpp
     foundation/meta/tests/test_statistics.cpp
     foundation/meta/tests/test_stlallocatortestbed.cpp

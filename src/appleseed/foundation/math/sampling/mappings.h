@@ -370,11 +370,11 @@ Vector<T, 3> sample_spherical_triangle_uniform(
     const Vector<T, 3>& C,
     const Vector<T, 2>& eta)
 {
-    // Compute the edge lengths of the triangle.
+    // Compute the arc lengths of the sides of the spherical triangle.
     T a, b, c;
     compute_spherical_triangle_edge_lengths(A, B, C, a, b, c);
 
-    // Compute the interior angles of the triangle.
+    // Compute the interior angles of the spherical triangle.
     T alpha, beta, gamma;
     compute_spherical_triangle_interior_angles(a, b, c, alpha, beta, gamma);
 
