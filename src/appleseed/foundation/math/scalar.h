@@ -75,6 +75,7 @@ static const double RcpHalfPi   = 0.6366197723675813;   // 1 / (Pi/2) = 2 / Pi
 static const double RcpPiSq     = 0.1013211836423377;   // 1 / (Pi^2) = (1 / Pi)^2
 static const double SqrtPi      = 1.7724538509055160;   // sqrt(Pi)
 static const double SqrtTwo     = 1.4142135623730950;   // sqrt(2)
+static const double GoldenRatio = 1.6180339887498948;   // (1 + sqrt(5)) / 2
 
 
 //
