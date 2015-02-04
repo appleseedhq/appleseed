@@ -42,7 +42,6 @@
 
 // Standard headers.
 #include <algorithm>
-#include <cassert>
 #include <cstddef>
 #include <cstdio>
 #include <cmath>
@@ -61,7 +60,7 @@ class SphericalImportanceSampler
 
     Vector<T, 3> sample(const Vector<T, 3>& s) const;
 
-    void dump_as_obj(const char* filepath) const;
+    bool dump_as_obj(const char* filepath) const;
     void dump_to_vpython_file(VPythonFile& file) const;
 
   private:
@@ -93,7 +92,7 @@ class SphericalImportanceSampler
 
 
 //
-// Implementation.
+// SphericalImportanceSampler class implementation.
 //
 // References:
 //
@@ -125,10 +124,12 @@ Vector<T, 3> SphericalImportanceSampler<T>::sample(const Vector<T, 3>& s) const
 }
 
 template <typename T>
-void SphericalImportanceSampler<T>::dump_as_obj(const char* filepath) const
+bool SphericalImportanceSampler<T>::dump_as_obj(const char* filepath) const
 {
     std::FILE* file = std::fopen(filepath, "wt");
-    assert(file);
+
+    if (file == 0)
+        return false;
 
     for (size_t i = 0; i < m_verts.size(); ++i)
     {
@@ -146,6 +147,8 @@ void SphericalImportanceSampler<T>::dump_as_obj(const char* filepath) const
     }
 
     std::fclose(file);
+
+    return true;
 }
 
 template <typename T>

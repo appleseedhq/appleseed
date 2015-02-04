@@ -30,6 +30,7 @@
 #include "foundation/math/sampling/sphericalimportancesampler.h"
 #include "foundation/math/qmc.h"
 #include "foundation/math/vector.h"
+#include "foundation/utility/test.h"
 #include "foundation/utility/vpythonfile.h"
 
 // Standard headers.
@@ -43,7 +44,7 @@ TEST_SUITE(Foundation_Math_Sampling_SphericalImportanceSampler)
     {
         const SphericalImportanceSampler<double> sampler(2);
 
-        sampler.dump_as_obj("unit tests/outputs/test_sphericalimportancesampler.obj");
+        EXPECT_TRUE(sampler.dump_as_obj("unit tests/outputs/test_sphericalimportancesampler.obj"));
 
         VPythonFile file("unit tests/outputs/test_sphericalimportancesampler.py");
         file.draw_axes();
