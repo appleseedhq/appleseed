@@ -51,7 +51,7 @@
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
-#include "foundation/math/sampling.h"
+#include "foundation/math/sampling/imageimportancesampler.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"

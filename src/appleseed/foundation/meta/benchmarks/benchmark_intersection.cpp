@@ -28,11 +28,11 @@
 //
 
 // appleseed.foundation headers.
+#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/intersection.h"
 #include "foundation/math/ray.h"
 #include "foundation/math/rng.h"
-#include "foundation/math/sampling.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/benchmark.h"

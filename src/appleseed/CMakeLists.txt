@@ -285,7 +285,6 @@ set (foundation_math_sources
     foundation/math/root.h
     foundation/math/rr.h
     foundation/math/sah.h
-    foundation/math/sampling.h
     foundation/math/scalar.h
     foundation/math/sphericaltriangle.h
     foundation/math/spline.h

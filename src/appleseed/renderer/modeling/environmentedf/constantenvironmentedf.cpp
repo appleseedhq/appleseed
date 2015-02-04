@@ -37,7 +37,7 @@
 #include "renderer/modeling/input/source.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/sampling.h"
+#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"

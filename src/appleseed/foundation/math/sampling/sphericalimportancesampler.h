@@ -31,9 +31,9 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/area.h"
 #include "foundation/math/cdf.h"
-#include "foundation/math/sampling.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/sphericaltriangle.h"
 #include "foundation/math/vector.h"
