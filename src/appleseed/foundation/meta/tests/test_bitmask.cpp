@@ -28,7 +28,8 @@
 //
 
 // appleseed.foundation headers.
-#include "foundation/math/rng.h"
+#include "foundation/math/rng/distribution.h"
+#include "foundation/math/rng/mersennetwister.h"
 #include "foundation/utility/bitmask.h"
 #include "foundation/utility/test.h"
 

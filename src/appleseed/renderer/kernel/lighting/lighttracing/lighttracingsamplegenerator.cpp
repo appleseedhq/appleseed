@@ -65,10 +65,9 @@
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
 #include "foundation/image/image.h"
+#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/basis.h"
 #include "foundation/math/population.h"
-#include "foundation/math/rng.h"
-#include "foundation/math/sampling.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
@@ -215,7 +214,7 @@ namespace
         virtual void reset() APPLESEED_OVERRIDE
         {
             SampleGeneratorBase::reset();
-            m_rng = MersenneTwister();
+            m_rng = SamplingContext::RNGType();
         }
 
         virtual void generate_samples(
@@ -509,7 +508,7 @@ namespace
         Tracer                          m_tracer;
         const ShadingContext            m_shading_context;
 
-        MersenneTwister                 m_rng;
+        SamplingContext::RNGType        m_rng;
 
         uint64                          m_light_sample_count;
 

@@ -51,9 +51,10 @@
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
+#include "foundation/math/sampling/imageimportancesampler.h"
+#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/frustum.h"
 #include "foundation/math/matrix.h"
-#include "foundation/math/sampling.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"

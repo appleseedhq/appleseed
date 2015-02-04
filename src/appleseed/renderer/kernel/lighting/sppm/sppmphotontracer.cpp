@@ -57,9 +57,9 @@
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/basis.h"
 #include "foundation/math/hash.h"
-#include "foundation/math/rng.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
@@ -261,7 +261,7 @@ namespace
                 thread_index);
 
             const uint32 instance = hash_uint32(static_cast<uint32>(m_pass_hash + m_photon_begin));
-            MersenneTwister rng(instance);
+            SamplingContext::RNGType rng(instance);
             SamplingContext sampling_context(
                 rng,
                 4,                  // number of dimensions
@@ -545,7 +545,7 @@ namespace
                 thread_index);
 
             const uint32 instance = hash_uint32(static_cast<uint32>(m_pass_hash + m_photon_begin));
-            MersenneTwister rng(instance);
+            SamplingContext::RNGType rng(instance);
             SamplingContext sampling_context(
                 rng,
                 2,                  // number of dimensions

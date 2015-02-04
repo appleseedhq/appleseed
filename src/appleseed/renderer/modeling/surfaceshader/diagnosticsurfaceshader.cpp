@@ -45,6 +45,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
+#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/distance.h"
 #include "foundation/math/hash.h"
 #include "foundation/math/minmax.h"

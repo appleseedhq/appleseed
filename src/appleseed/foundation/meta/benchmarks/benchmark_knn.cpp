@@ -28,8 +28,10 @@
 //
 
 // appleseed.foundation headers.
+#include "foundation/math/rng/distribution.h"
+#include "foundation/math/rng/mersennetwister.h"
+#include "foundation/math/rng/xorshift.h"
 #include "foundation/math/knn.h"
-#include "foundation/math/rng.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/timers.h"
 #include "foundation/platform/types.h"

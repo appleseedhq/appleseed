@@ -58,7 +58,6 @@
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
 #include "foundation/math/matrix.h"
-#include "foundation/math/rng.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/containers/dictionary.h"
@@ -195,18 +194,17 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
     struct Fixture
       : public BindInputs<Base>
     {
-        TraceContext        m_trace_context;
-        TextureStore        m_texture_store;
-        TextureCache        m_texture_cache;
-        Intersector         m_intersector;
-        MersenneTwister     m_rng;
+        TraceContext                            m_trace_context;
+        TextureStore                            m_texture_store;
+        TextureCache                            m_texture_cache;
+        Intersector                             m_intersector;
 #ifdef APPLESEED_WITH_OIIO
-        boost::shared_ptr<OIIO::TextureSystem> m_texture_system;
+        boost::shared_ptr<OIIO::TextureSystem>  m_texture_system;
 #endif
 #ifdef APPLESEED_WITH_OSL
-        boost::shared_ptr<RendererServices>    m_renderer_services;
-        boost::shared_ptr<OSL::ShadingSystem>  m_shading_system;
-        boost::shared_ptr<OSLShaderGroupExec>  m_shading_group_exec;
+        boost::shared_ptr<RendererServices>     m_renderer_services;
+        boost::shared_ptr<OSL::ShadingSystem>   m_shading_system;
+        boost::shared_ptr<OSLShaderGroupExec>   m_shading_group_exec;
 #endif
 
         Fixture()

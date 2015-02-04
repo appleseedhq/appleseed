@@ -28,10 +28,11 @@
 //
 
 // appleseed.foundation headers.
+#include "foundation/math/rng/mersennetwister.h"
+#include "foundation/math/sampling/mappings.h"
+#include "foundation/math/sampling/qmcsamplingcontext.h"
 #include "foundation/math/fp.h"
 #include "foundation/math/qmc.h"
-#include "foundation/math/rng.h"
-#include "foundation/math/sampling.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/iostreamop.h"

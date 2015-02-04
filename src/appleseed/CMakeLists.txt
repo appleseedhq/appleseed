@@ -281,11 +281,9 @@ set (foundation_math_sources
     foundation/math/qmc.h
     foundation/math/quaternion.h
     foundation/math/ray.h
-    foundation/math/rng.h
     foundation/math/root.h
     foundation/math/rr.h
     foundation/math/sah.h
-    foundation/math/sampling.h
     foundation/math/scalar.h
     foundation/math/sphericaltriangle.h
     foundation/math/spline.h

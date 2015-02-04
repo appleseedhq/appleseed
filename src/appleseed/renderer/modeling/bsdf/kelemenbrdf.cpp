@@ -39,6 +39,7 @@
 #include "renderer/modeling/input/uniforminputevaluator.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/basis.h"
 #include "foundation/math/fresnel.h"
 #include "foundation/math/microfacet.h"

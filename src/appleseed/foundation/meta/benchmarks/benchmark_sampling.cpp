@@ -28,8 +28,10 @@
 //
 
 // appleseed.foundation headers.
-#include "foundation/math/rng.h"
-#include "foundation/math/sampling.h"
+#include "foundation/math/rng/distribution.h"
+#include "foundation/math/rng/mersennetwister.h"
+#include "foundation/math/sampling/mappings.h"
+#include "foundation/math/sampling/qmcsamplingcontext.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/benchmark.h"
 
@@ -44,7 +46,6 @@ BENCHMARK_SUITE(Foundation_Math_Sampling_QMCSamplingContext)
     struct Fixture
     {
         typedef MersenneTwister RNG;
-        typedef QMCSamplingContext<RNG> QMCSamplingContextType;
 
         RNG         m_rng;
         Vector2d    m_v;
@@ -58,7 +59,7 @@ BENCHMARK_SUITE(Foundation_Math_Sampling_QMCSamplingContext)
     BENCHMARK_CASE_F(BenchmarkTrajectory, Fixture)
     {
         const size_t InitialInstance = 1234567;
-        QMCSamplingContextType context(m_rng, 1, InitialInstance, InitialInstance);
+        QMCSamplingContext<RNG> context(m_rng, 1, InitialInstance, InitialInstance);
 
         for (size_t i = 0; i < 32; ++i)
         {

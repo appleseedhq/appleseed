@@ -46,10 +46,10 @@
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/intersection.h"
 #include "foundation/math/ray.h"
-#include "foundation/math/sampling.h"
 #include "foundation/math/transform.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/lazy.h"

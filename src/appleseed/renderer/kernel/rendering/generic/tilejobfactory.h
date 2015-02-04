@@ -34,7 +34,7 @@
 #include "renderer/kernel/rendering/generic/tilejob.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/rng.h"
+#include "foundation/math/rng/mersennetwister.h"
 
 // Standard headers.
 #include <cstddef>

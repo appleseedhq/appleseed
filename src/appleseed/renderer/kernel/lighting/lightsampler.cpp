@@ -51,7 +51,7 @@
 #include "renderer/modeling/scene/visibilityflags.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/sampling.h"
+#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/lazy.h"

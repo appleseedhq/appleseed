@@ -28,8 +28,9 @@
 //
 
 // appleseed.foundation headers.
+#include "foundation/math/rng/distribution.h"
+#include "foundation/math/rng/xorshift.h"
 #include "foundation/math/cdf.h"
-#include "foundation/math/rng.h"
 #include "foundation/utility/benchmark.h"
 
 // Standard headers.
