@@ -31,7 +31,7 @@
 #define APPLESEED_FOUNDATION_MATH_SAMPLING_RNGSAMPLINGCONTEXT_H
 
 // appleseed.foundation headers.
-#include "foundation/math/rng.h"
+#include "foundation/math/rng/distribution.h"
 #include "foundation/math/vector.h"
 
 // Standard headers.

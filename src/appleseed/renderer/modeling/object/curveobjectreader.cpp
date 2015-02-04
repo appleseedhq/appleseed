@@ -36,10 +36,11 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/rng/distribution.h"
+#include "foundation/math/rng/mersennetwister.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/qmc.h"
-#include "foundation/math/rng.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/defaulttimers.h"

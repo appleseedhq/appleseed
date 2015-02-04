@@ -31,8 +31,8 @@
 #include "noise.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/rng/mersennetwister.h"
 #include "foundation/math/permutation.h"
-#include "foundation/math/rng.h"
 
 namespace foundation
 {

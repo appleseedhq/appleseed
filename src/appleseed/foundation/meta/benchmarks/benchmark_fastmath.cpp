@@ -28,8 +28,9 @@
 //
 
 // appleseed.foundation headers.
+#include "foundation/math/rng/distribution.h"
+#include "foundation/math/rng/mersennetwister.h"
 #include "foundation/math/fastmath.h"
-#include "foundation/math/rng.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/benchmark.h"
 

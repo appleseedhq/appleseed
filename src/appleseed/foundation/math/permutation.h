@@ -31,7 +31,7 @@
 #define APPLESEED_FOUNDATION_MATH_PERMUTATION_H
 
 // appleseed.foundation headers.
-#include "foundation/math/rng.h"
+#include "foundation/math/rng/distribution.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
 

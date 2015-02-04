@@ -35,6 +35,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
+#include "foundation/math/rng/mersennetwister.h"
 #ifdef APPLESEED_USE_QMC_SAMPLER
 #include "foundation/math/sampling/qmcsamplingcontext.h"
 #else
@@ -42,7 +43,6 @@
 #endif
 #include "foundation/math/aabb.h"
 #include "foundation/math/ray.h"
-#include "foundation/math/rng.h"
 #include "foundation/math/vector.h"
 
 namespace renderer

@@ -48,7 +48,6 @@
 #include "foundation/image/image.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/hash.h"
-#include "foundation/math/rng.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/types.h"

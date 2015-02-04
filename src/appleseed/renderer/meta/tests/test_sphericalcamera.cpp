@@ -36,7 +36,6 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/rng.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/iostreamop.h"
@@ -56,7 +55,7 @@ TEST_SUITE(Renderer_Modeling_Camera_SphericalCamera)
 
         camera->on_frame_begin(project.ref());
 
-        MersenneTwister rng;
+        SamplingContext::RNGType rng;
         SamplingContext sampling_context(rng);
 
         ShadingRay ray;

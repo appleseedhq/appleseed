@@ -29,7 +29,8 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
-#include "foundation/math/rng.h"
+#include "foundation/math/rng/distribution.h"
+#include "foundation/math/rng/lcg.h"
 #include "foundation/utility/cache.h"
 #include "foundation/utility/test.h"
 

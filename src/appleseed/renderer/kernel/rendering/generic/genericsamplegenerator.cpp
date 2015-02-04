@@ -46,7 +46,6 @@
 #include "foundation/image/image.h"
 #include "foundation/math/population.h"
 #include "foundation/math/qmc.h"
-#include "foundation/math/rng.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
@@ -100,7 +99,7 @@ namespace
         virtual void reset() APPLESEED_OVERRIDE
         {
             SampleGeneratorBase::reset();
-            m_rng = MersenneTwister();
+            m_rng = SamplingContext::RNGType();
         }
 
         virtual StatisticsVector get_statistics() const APPLESEED_OVERRIDE
@@ -126,7 +125,7 @@ namespace
         const int                           m_window_height;
         const LightingConditions&           m_lighting_conditions;
         auto_release_ptr<ISampleRenderer>   m_sample_renderer;
-        MersenneTwister                     m_rng;
+        SamplingContext::RNGType            m_rng;
 
         const double                        m_window_width_next_pow2;
         const double                        m_window_height_next_pow3;

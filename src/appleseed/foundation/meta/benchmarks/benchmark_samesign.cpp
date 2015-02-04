@@ -28,7 +28,8 @@
 //
 
 // appleseed.foundation headers.
-#include "foundation/math/rng.h"
+#include "foundation/math/rng/distribution.h"
+#include "foundation/math/rng/mersennetwister.h"
 #include "foundation/platform/compiler.h"
 #ifdef APPLESEED_USE_SSE
 #include "foundation/platform/sse.h"

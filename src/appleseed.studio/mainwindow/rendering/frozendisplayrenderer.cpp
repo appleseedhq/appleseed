@@ -43,7 +43,6 @@
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
 #include "foundation/image/tile.h"
-#include "foundation/math/rng.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
 #include "foundation/platform/types.h"
@@ -94,7 +93,7 @@ namespace
 
 void FrozenDisplayRenderer::capture()
 {
-    MersenneTwister rng;
+    SamplingContext::RNGType rng;
     SamplingContext sampling_context(
         rng,
         2,      // number of dimensions
