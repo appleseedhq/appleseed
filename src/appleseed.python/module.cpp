@@ -30,6 +30,9 @@
 // appleseed.python headers.
 #include "pyseed.h" // has to be first, to avoid redefinition warnings
 
+// appleseed.renderer headers.
+#include "renderer/api/version.h"
+
 // Forward declarations.
 void bind_assembly();
 void bind_bbox();
@@ -65,6 +68,13 @@ void bind_vector();
 
 BOOST_PYTHON_MODULE(_appleseedpython)
 {
+    boost::python::scope().attr("APPLESEED_VERSION") = APPLESEED_VERSION;
+    boost::python::scope().attr("APPLESEED_VERSION_MAJOR") = APPLESEED_VERSION_MAJOR;
+    boost::python::scope().attr("APPLESEED_VERSION_MINOR") = APPLESEED_VERSION_MINOR;
+    boost::python::scope().attr("APPLESEED_VERSION_PATCH") = APPLESEED_VERSION_PATCH;
+    boost::python::scope().attr("APPLESEED_VERSION_MATURITY") = APPLESEED_VERSION_MATURITY;
+    boost::python::scope().attr("APPLESEED_VERSION_STRING") = APPLESEED_VERSION_STRING;
+
     bind_utility();
     bind_logger();
 
