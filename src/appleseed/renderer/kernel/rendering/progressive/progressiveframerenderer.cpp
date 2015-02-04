@@ -51,6 +51,7 @@
 #include "foundation/math/aabb.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
+#include "foundation/platform/compiler.h"
 #include "foundation/platform/thread.h"
 #include "foundation/platform/timers.h"
 #include "foundation/platform/types.h"
@@ -179,19 +180,19 @@ namespace
                 (*i)->release();
         }
 
-        virtual void release()
+        virtual void release() APPLESEED_OVERRIDE
         {
             delete this;
         }
 
-        virtual void render()
+        virtual void render() APPLESEED_OVERRIDE
         {
             start_rendering();
 
             m_job_queue.wait_until_completion();
         }
 
-        virtual void start_rendering()
+        virtual void start_rendering() APPLESEED_OVERRIDE
         {
             assert(!is_rendering());
             assert(!m_job_queue.has_scheduled_or_running_jobs());
@@ -237,7 +238,7 @@ namespace
             m_statistics_thread.reset(new thread(wrapper));
         }
 
-        virtual void stop_rendering()
+        virtual void stop_rendering() APPLESEED_OVERRIDE
         {
             // First, delete scheduled jobs to prevent worker threads from picking them up.
             m_job_queue.clear_scheduled_jobs();
@@ -252,7 +253,7 @@ namespace
             m_job_queue.wait_until_completion();
         }
 
-        virtual void terminate_rendering()
+        virtual void terminate_rendering() APPLESEED_OVERRIDE
         {
             stop_rendering();
 
@@ -263,7 +264,7 @@ namespace
             print_sample_generators_stats();
         }
 
-        virtual bool is_rendering() const
+        virtual bool is_rendering() const APPLESEED_OVERRIDE
         {
             return m_job_queue.has_scheduled_or_running_jobs();
         }
