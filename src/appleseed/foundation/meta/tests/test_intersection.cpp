@@ -28,8 +28,10 @@
 //
 
 // appleseed.foundation headers.
+#include "foundation/math/intersection/rayaabb.h"
+#include "foundation/math/intersection/raytrianglemt.h"
+#include "foundation/math/intersection/raytrianglessk.h"
 #include "foundation/math/aabb.h"
-#include "foundation/math/intersection.h"
 #include "foundation/math/ray.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/test.h"

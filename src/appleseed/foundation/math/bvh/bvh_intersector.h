@@ -33,7 +33,7 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/bvh/bvh_statistics.h"
-#include "foundation/math/intersection.h"
+#include "foundation/math/intersection/rayaabb.h"
 #include "foundation/math/ray.h"
 #include "foundation/math/scalar.h"
 #ifdef APPLESEED_USE_SSE

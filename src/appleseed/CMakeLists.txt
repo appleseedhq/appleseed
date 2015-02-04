@@ -262,7 +262,6 @@ set (foundation_math_sources
     foundation/math/fresnel.h
     foundation/math/frustum.h
     foundation/math/hash.h
-    foundation/math/intersection.h
     foundation/math/knn.h
     foundation/math/matrix.h
     foundation/math/microfacet.h

@@ -34,7 +34,7 @@
 #include "renderer/kernel/intersection/trianglevertexinfo.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/intersection.h"
+#include "foundation/math/intersection/aabbtriangle.h"
 #ifdef APPLESEED_USE_SSE
 #include "foundation/platform/sse.h"
 #endif

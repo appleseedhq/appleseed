@@ -40,7 +40,6 @@
 #endif
 
 // appleseed.foundation headers.
-#include "foundation/math/intersection.h"
 #include "foundation/math/scalar.h"
 #include "foundation/utility/attributeset.h"
 #include "foundation/utility/otherwise.h"
@@ -603,6 +602,7 @@ void ShadingPoint::compute_alpha() const
         // TODO: interpolate per vertex alpha for curves here...
     }
 }
+
 
 #ifdef APPLESEED_WITH_OSL
 

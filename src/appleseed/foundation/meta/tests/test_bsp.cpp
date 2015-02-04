@@ -29,9 +29,9 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/math/intersection/rayaabb.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/bsp.h"
-#include "foundation/math/intersection.h"
 #include "foundation/math/ray.h"
 #include "foundation/math/split.h"
 #include "foundation/math/vector.h"
