@@ -266,32 +266,28 @@ void Camera::extract_focal_distance(
     }
 }
 
-Pyramid3d Camera::compute_view_frustum(
+Camera::Frustum Camera::compute_view_frustum(
     const Vector2d&     film_dimensions,
     const double        focal_length)
 {
     const double half_film_width = 0.5 * film_dimensions[0];
     const double half_film_height = 0.5 * film_dimensions[1];
 
-    Pyramid3d pyramid;
+    Frustum frustum;
 
-    pyramid.set_plane(
-        Pyramid3d::TopPlane,
-        normalize(Vector3d(0.0, focal_length, half_film_height)));
+    // Top plane.
+    frustum.set_plane(0, normalize(Vector3d(0.0, focal_length, half_film_height)));
 
-    pyramid.set_plane(
-        Pyramid3d::BottomPlane,
-        normalize(Vector3d(0.0, -focal_length, half_film_height)));
+    // Bottom plane.
+    frustum.set_plane(1, normalize(Vector3d(0.0, -focal_length, half_film_height)));
 
-    pyramid.set_plane(
-        Pyramid3d::LeftPlane,
-        normalize(Vector3d(-focal_length, 0.0, half_film_width)));
+    // Left plane.
+    frustum.set_plane(2, normalize(Vector3d(-focal_length, 0.0, half_film_width)));
 
-    pyramid.set_plane(
-        Pyramid3d::RightPlane,
-        normalize(Vector3d(focal_length, 0.0, half_film_width)));
+    // Right plane.
+    frustum.set_plane(3, normalize(Vector3d(focal_length, 0.0, half_film_width)));
 
-    return pyramid;
+    return frustum;
 }
 
 void Camera::initialize_ray(

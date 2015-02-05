@@ -35,7 +35,7 @@
 
 using namespace foundation;
 
-TEST_SUITE(Foundation_Math_Pyramid3)
+TEST_SUITE(Foundation_Math_Frustum)
 {
     TEST_CASE(Clip_GivenSegmentParallelToPlaneInsideNegativeHalfSpace_ReturnsTrueAndLeavesSegmentUnchanged)
     {
@@ -44,7 +44,7 @@ TEST_SUITE(Foundation_Math_Pyramid3)
         const Vector3d OriginalB(-1.0, 0.0, -1.0);
 
         Vector3d a = OriginalA, b = OriginalB;
-        const bool inside = Pyramid3d::clip(N, a, b);
+        const bool inside = Frustum<double, 4>::clip(N, a, b);
 
         EXPECT_TRUE(inside);
         EXPECT_EQ(OriginalA, a);
@@ -58,7 +58,7 @@ TEST_SUITE(Foundation_Math_Pyramid3)
         const Vector3d OriginalB(1.0, 0.0, -1.0);
 
         Vector3d a = OriginalA, b = OriginalB;
-        const bool inside = Pyramid3d::clip(N, a, b);
+        const bool inside = Frustum<double, 4>::clip(N, a, b);
 
         EXPECT_FALSE(inside);
         EXPECT_EQ(OriginalA, a);
@@ -72,7 +72,7 @@ TEST_SUITE(Foundation_Math_Pyramid3)
         const Vector3d OriginalB(-1.0, 0.0, 0.0);
 
         Vector3d a = OriginalA, b = OriginalB;
-        const bool inside = Pyramid3d::clip(N, a, b);
+        const bool inside = Frustum<double, 4>::clip(N, a, b);
 
         EXPECT_TRUE(inside);
         EXPECT_EQ(OriginalA, a);
@@ -86,7 +86,7 @@ TEST_SUITE(Foundation_Math_Pyramid3)
         const Vector3d OriginalB(-2.0, 0.0, 0.0);
 
         Vector3d a = OriginalA, b = OriginalB;
-        const bool inside = Pyramid3d::clip(N, a, b);
+        const bool inside = Frustum<double, 4>::clip(N, a, b);
 
         EXPECT_TRUE(inside);
         EXPECT_EQ(OriginalA, a);
@@ -100,7 +100,7 @@ TEST_SUITE(Foundation_Math_Pyramid3)
         const Vector3d OriginalB(1.0, 0.0, 0.0);
 
         Vector3d a = OriginalA, b = OriginalB;
-        const bool inside = Pyramid3d::clip(N, a, b);
+        const bool inside = Frustum<double, 4>::clip(N, a, b);
 
         EXPECT_FALSE(inside);
         EXPECT_EQ(OriginalA, a);
@@ -114,7 +114,7 @@ TEST_SUITE(Foundation_Math_Pyramid3)
         const Vector3d OriginalB(2.0, 0.0, 0.0);
 
         Vector3d a = OriginalA, b = OriginalB;
-        const bool inside = Pyramid3d::clip(N, a, b);
+        const bool inside = Frustum<double, 4>::clip(N, a, b);
 
         EXPECT_FALSE(inside);
         EXPECT_EQ(OriginalA, a);
@@ -128,25 +128,25 @@ TEST_SUITE(Foundation_Math_Pyramid3)
         const Vector3d OriginalB(+1.0, 0.0, 0.0);
 
         Vector3d a = OriginalA, b = OriginalB;
-        const bool inside = Pyramid3d::clip(N, a, b);
+        const bool inside = Frustum<double, 4>::clip(N, a, b);
 
         EXPECT_TRUE(inside);
         EXPECT_EQ(OriginalA, a);
         EXPECT_FEQ(Vector3d(0.0, 0.0, 0.0), b);
     }
 
-    TEST_CASE(Clip_GivenSegment_ReturnsTrueAndClipSegmentAgainstPyramid)
+    TEST_CASE(Clip_GivenSegment_ReturnsTrueAndClipSegmentAgainstFrustum)
     {
-        Pyramid3d pyramid;
-        pyramid.set_plane(Pyramid3d::TopPlane, normalize(Vector3d(0.0, 1.0, 1.0)));
-        pyramid.set_plane(Pyramid3d::BottomPlane, normalize(Vector3d(0.0, -1.0, 1.0)));
-        pyramid.set_plane(Pyramid3d::LeftPlane, normalize(Vector3d(-1.0, 0.0, 1.0)));
-        pyramid.set_plane(Pyramid3d::RightPlane, normalize(Vector3d(1.0, 0.0, 1.0)));
+        Frustum<double, 4> frustum;
+        frustum.set_plane(0, normalize(Vector3d(0.0, 1.0, 1.0)));
+        frustum.set_plane(1, normalize(Vector3d(0.0, -1.0, 1.0)));
+        frustum.set_plane(2, normalize(Vector3d(-1.0, 0.0, 1.0)));
+        frustum.set_plane(3, normalize(Vector3d(1.0, 0.0, 1.0)));
 
         Vector3d a(-3.0, 0.0, -1.0);
         Vector3d b(+3.0, 0.0, -1.0);
 
-        const bool inside = pyramid.clip(a, b);
+        const bool inside = frustum.clip(a, b);
 
         EXPECT_TRUE(inside);
         EXPECT_EQ(Vector3d(-1.0, 0.0, -1.0), a);

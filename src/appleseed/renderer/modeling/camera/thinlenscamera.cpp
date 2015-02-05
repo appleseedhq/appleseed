@@ -365,7 +365,7 @@ namespace
         double              m_diaphragm_tilt_angle;     // tilt angle of the diaphragm in radians
 
         // Precomputed values.
-        Pyramid3d           m_view_frustum;             // view frustum in world space
+        Frustum             m_view_frustum;             // view frustum in world space
         double              m_rcp_film_width;           // film width reciprocal in camera space
         double              m_rcp_film_height;          // film height reciprocal in camera space
         double              m_lens_radius;              // radius of the lens in camera space

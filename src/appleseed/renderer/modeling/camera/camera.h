@@ -136,6 +136,8 @@ class APPLESEED_DLLSYMBOL Camera
     virtual bool is_nonlinear() const;
 
   protected:
+    typedef foundation::Frustum<double, 4> Frustum;
+
     TransformSequence   m_transform_sequence;
     double              m_shutter_open_time;
     double              m_shutter_close_time;
@@ -157,7 +159,7 @@ class APPLESEED_DLLSYMBOL Camera
         double&                         focal_distance) const;
 
     // Utility function to compute the view frustum of a camera in camera space.
-    static foundation::Pyramid3d compute_view_frustum(
+    static Frustum compute_view_frustum(
         const foundation::Vector2d&     film_dimensions,
         const double                    focal_length);
 

@@ -41,31 +41,23 @@ namespace foundation
 {
 
 //
-// A view pyramid defined by the intersection of four negative half spaces.
+// A frustum defined by the intersection of three or more negative half spaces.
 // Half spaces are defined by the normal vector to their plane. The points
 // inside the planes are considered to be part of the negative half spaces.
 //
 
-template <typename T>
-class Pyramid3
+template <typename T, size_t N>
+class Frustum
 {
   public:
     typedef T ValueType;
     typedef Vector<T, 3> VectorType;
 
-    enum Plane
-    {
-        TopPlane    = 0,
-        BottomPlane = 1,
-        LeftPlane   = 2,
-        RightPlane  = 3
-    };
+    // Set a given plane of the frustum. n must be normalized.
+    void set_plane(const size_t plane, const VectorType& n);
 
-    // Set a given plane of the pyramid. n must be normalized.
-    void set_plane(const Plane plane, const VectorType& n);
-
-    // Get a given plane of the pyramid.
-    const VectorType& get_plane(const Plane plane) const;
+    // Get a given plane of the frustum.
+    const VectorType& get_plane(const size_t plane) const;
 
     // Clip a line segment against a plane. n must be normalized.
     // Returns false if the line segment was entirely clipped away.
@@ -74,61 +66,38 @@ class Pyramid3
         VectorType&         a,
         VectorType&         b);
 
-    // Clip a line segment against the pyramid.
+    // Clip a line segment against the frustum.
     // Returns false if the line segment was entirely clipped away.
     bool clip(VectorType& a, VectorType& b) const;
 
   private:
-    VectorType  m_planes[4];
+    VectorType  m_planes[N];
 };
 
 
 //
-// Full specializations.
+// Frustum class implementation.
 //
 
-typedef Pyramid3<float> Pyramid3f;
-typedef Pyramid3<double> Pyramid3d;
-
-
-//
-// A view frustum defined by six planes containing the origin.
-// todo: implement.
-//
-
-template <typename T>
-class Frustum3
+template <typename T, size_t N>
+inline void Frustum<T, N>::set_plane(const size_t plane, const VectorType& n)
 {
-};
-
-
-//
-// Full specializations.
-//
-
-typedef Frustum3<float> Frustum3f;
-typedef Frustum3<double> Frustum3d;
-
-
-//
-// Pyramid3 class implementation.
-//
-
-template <typename T>
-inline void Pyramid3<T>::set_plane(const Plane plane, const VectorType& n)
-{
+    assert(plane < N);
     assert(is_normalized(n));
+
     m_planes[plane] = n;
 }
 
-template <typename T>
-inline const Vector<T, 3>& Pyramid3<T>::get_plane(const Plane plane) const
+template <typename T, size_t N>
+inline const Vector<T, 3>& Frustum<T, N>::get_plane(const size_t plane) const
 {
+    assert(plane < N);
+
     return m_planes[plane];
 }
 
-template <typename T>
-inline bool Pyramid3<T>::clip(
+template <typename T, size_t N>
+inline bool Frustum<T, N>::clip(
     const VectorType&   n,
     VectorType&         a,
     VectorType&         b)
@@ -157,10 +126,10 @@ inline bool Pyramid3<T>::clip(
     return true;
 }
 
-template <typename T>
-inline bool Pyramid3<T>::clip(VectorType& a, VectorType& b) const
+template <typename T, size_t N>
+inline bool Frustum<T, N>::clip(VectorType& a, VectorType& b) const
 {
-    for (size_t i = 0; i < 4; ++i)
+    for (size_t i = 0; i < N; ++i)
     {
         if (!clip(m_planes[i], a, b))
             return false;
