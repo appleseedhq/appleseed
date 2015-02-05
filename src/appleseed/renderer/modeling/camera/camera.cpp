@@ -109,11 +109,6 @@ bool Camera::project_point(
     return project_camera_space_point(point_camera, ndc);
 }
 
-bool Camera::is_nonlinear() const
-{
-    return false;
-}
-
 Vector2d Camera::extract_film_dimensions() const
 {
     const Vector2d DefaultFilmDimensions(0.025, 0.025);     // in meters

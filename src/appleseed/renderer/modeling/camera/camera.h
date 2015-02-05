@@ -132,9 +132,6 @@ class APPLESEED_DLLSYMBOL Camera
         const Frame&                    frame,
         const foundation::Vector2d&     point) const = 0;
 
-    // Return true if the camera projection is not linear.
-    virtual bool is_nonlinear() const;
-
   protected:
     typedef foundation::Frustum<double, 4> Frustum;
 
