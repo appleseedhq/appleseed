@@ -32,6 +32,9 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/core/exceptions/exception.h"
+#ifdef _WIN32
+#include "foundation/platform/windows.h"
+#endif
 
 namespace foundation
 {
@@ -84,8 +87,11 @@ class SharedLibrary
     void* get_symbol(const char* name, const bool no_throw = true) const;
 
   private:
-    struct Impl;
-    Impl* impl;
+#ifdef _WIN32
+    HMODULE m_handle;
+#else
+    void*   m_handle;
+#endif
 };
 
 }       // namespace foundation
