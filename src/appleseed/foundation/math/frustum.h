@@ -51,27 +51,35 @@ class Frustum
 {
   public:
     typedef T ValueType;
-    typedef Vector<T, 3> VectorType;
 
-    // Set a given plane of the frustum. n must be normalized.
-    void set_plane(const size_t plane, const VectorType& n);
+    // Set a given plane of the frustum.
+    void set_plane(
+        const size_t        index,
+        const Vector<T, 4>& plane);
+    void set_plane(
+        const size_t        index,
+        const Vector<T, 3>& normal);    // unit-length
 
     // Get a given plane of the frustum.
-    const VectorType& get_plane(const size_t plane) const;
-
-    // Clip a line segment against a plane. n must be normalized.
-    // Returns false if the line segment was entirely clipped away.
-    static bool clip(
-        const VectorType&   n,
-        VectorType&         a,
-        VectorType&         b);
+    const Vector<T, 4>& get_plane(const size_t index) const;
 
     // Clip a line segment against the frustum.
     // Returns false if the line segment was entirely clipped away.
-    bool clip(VectorType& a, VectorType& b) const;
+    bool clip(Vector<T, 3>& a, Vector<T, 3>& b) const;
+
+    // Clip a line segment against a plane.
+    // Returns false if the line segment was entirely clipped away.
+    static bool clip(
+        const Vector<T, 4>& plane,
+        Vector<T, 3>&       a,
+        Vector<T, 3>&       b);
+    static bool clip(
+        const Vector<T, 3>& normal,     // unit-length
+        Vector<T, 3>&       a,
+        Vector<T, 3>&       b);
 
   private:
-    VectorType  m_planes[N];
+    Vector<T, 4> m_planes[N];
 };
 
 
@@ -80,60 +88,102 @@ class Frustum
 //
 
 template <typename T, size_t N>
-inline void Frustum<T, N>::set_plane(const size_t plane, const VectorType& n)
+inline void Frustum<T, N>::set_plane(
+    const size_t        index,
+    const Vector<T, 4>& plane)
 {
-    assert(plane < N);
-    assert(is_normalized(n));
-
-    m_planes[plane] = n;
+    assert(index < N);
+    m_planes[index] = plane;
 }
 
 template <typename T, size_t N>
-inline const Vector<T, 3>& Frustum<T, N>::get_plane(const size_t plane) const
+inline void Frustum<T, N>::set_plane(
+    const size_t        index,
+    const Vector<T, 3>& normal)
 {
-    assert(plane < N);
-
-    return m_planes[plane];
+    assert(index < N);
+    m_planes[index] = Vector4d(normal.x, normal.y, normal.z, T(0.0));
 }
 
 template <typename T, size_t N>
-inline bool Frustum<T, N>::clip(
-    const VectorType&   n,
-    VectorType&         a,
-    VectorType&         b)
+inline const Vector<T, 4>& Frustum<T, N>::get_plane(const size_t index) const
 {
-    assert(is_normalized(n));
-
-    const ValueType dot_an = dot(a, n);
-    const ValueType dot_bn = dot(b, n);
-
-    if (dot_an > ValueType(0.0) && dot_bn > ValueType(0.0))
-        return false;
-
-    if (dot_an <= ValueType(0.0) && dot_bn <= ValueType(0.0))
-        return true;
-
-    if (dot_an == dot_bn)
-        return dot_an <= ValueType(0.0);
-
-    const ValueType t = dot_an / (dot_an - dot_bn);
-    const VectorType hit = a + t * (b - a);
-
-    if (dot_an > ValueType(0.0))
-        a = hit;
-    else b = hit;
-
-    return true;
+    assert(index < N);
+    return m_planes[index];
 }
 
 template <typename T, size_t N>
-inline bool Frustum<T, N>::clip(VectorType& a, VectorType& b) const
+inline bool Frustum<T, N>::clip(Vector<T, 3>& a, Vector<T, 3>& b) const
 {
     for (size_t i = 0; i < N; ++i)
     {
         if (!clip(m_planes[i], a, b))
             return false;
     }
+
+    return true;
+}
+
+template <typename T, size_t N>
+inline bool Frustum<T, N>::clip(
+    const Vector<T, 4>& plane,
+    Vector<T, 3>&       a,
+    Vector<T, 3>&       b)
+{
+    const Vector<T, 3> n(plane[0], plane[1], plane[2]);
+
+    const T dot_an = dot(a, n) + plane[3];
+    const T dot_bn = dot(b, n) + plane[3];
+
+    if (dot_an * dot_bn > T(0.0))
+    {
+        // The segment is entirely on one side of the plane.
+        return dot_an <= T(0.0);
+    }
+
+    if (dot_an == dot_bn)
+    {
+        // The segment is parallel to the plane.
+        return dot_an <= T(0.0);
+    }
+
+    const T t = dot_an / (dot_an - dot_bn);
+    const Vector<T, 3> p = a + t * (b - a);
+
+    if (dot_an > T(0.0))
+        a = p;
+    else b = p;
+
+    return true;
+}
+
+template <typename T, size_t N>
+inline bool Frustum<T, N>::clip(
+    const Vector<T, 3>& normal,
+    Vector<T, 3>&       a,
+    Vector<T, 3>&       b)
+{
+    const T dot_an = dot(a, normal);
+    const T dot_bn = dot(b, normal);
+
+    if (dot_an * dot_bn > T(0.0))
+    {
+        // The segment is entirely on one side of the plane.
+        return dot_an <= T(0.0);
+    }
+
+    if (dot_an == dot_bn)
+    {
+        // The segment is parallel to the plane.
+        return dot_an <= T(0.0);
+    }
+
+    const T t = dot_an / (dot_an - dot_bn);
+    const Vector<T, 3> p = a + t * (b - a);
+
+    if (dot_an > T(0.0))
+        a = p;
+    else b = p;
 
     return true;
 }

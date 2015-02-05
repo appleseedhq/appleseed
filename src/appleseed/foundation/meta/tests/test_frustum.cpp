@@ -121,7 +121,7 @@ TEST_SUITE(Foundation_Math_Frustum)
         EXPECT_EQ(OriginalB, b);
     }
 
-    TEST_CASE(Clip_GivenSegmentStraddlingPlane_ReturnsTrueAndClipSegmentAgainstPlane)
+    TEST_CASE(Clip_GivenSegmentStraddlingPlane1_ReturnsTrueAndClipSegmentAgainstPlane)
     {
         const Vector3d N(1.0, 0.0, 0.0);
         const Vector3d OriginalA(-1.0, 0.0, 0.0);
@@ -133,6 +133,20 @@ TEST_SUITE(Foundation_Math_Frustum)
         EXPECT_TRUE(inside);
         EXPECT_EQ(OriginalA, a);
         EXPECT_FEQ(Vector3d(0.0, 0.0, 0.0), b);
+    }
+
+    TEST_CASE(Clip_GivenSegmentStraddlingPlane2_ReturnsTrueAndClipSegmentAgainstPlane)
+    {
+        const Vector3d N(1.0, 0.0, 0.0);
+        const Vector3d OriginalA(+1.0, 0.0, 0.0);
+        const Vector3d OriginalB(-1.0, 0.0, 0.0);
+
+        Vector3d a = OriginalA, b = OriginalB;
+        const bool inside = Frustum<double, 4>::clip(N, a, b);
+
+        EXPECT_TRUE(inside);
+        EXPECT_FEQ(Vector3d(0.0, 0.0, 0.0), a);
+        EXPECT_EQ(OriginalB, b);
     }
 
     TEST_CASE(Clip_GivenSegment_ReturnsTrueAndClipSegmentAgainstFrustum)
