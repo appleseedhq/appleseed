@@ -51,6 +51,7 @@
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
+#include "foundation/math/intersection/frustumsegment.h"
 #include "foundation/math/sampling/imageimportancesampler.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/frustum.h"
@@ -330,7 +331,7 @@ namespace
             Vector3d v1_camera = transform.point_to_local(v1);
 
             // Clip the segment against the view frustum.
-            if (m_view_frustum.clip(v0_camera, v1_camera))
+            if (clip(m_view_frustum, v0_camera, v1_camera))
             {
                 v0 = transform.point_to_parent(v0_camera);
                 v1 = transform.point_to_parent(v1_camera);
