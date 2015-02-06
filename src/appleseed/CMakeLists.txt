@@ -165,6 +165,9 @@ source_group ("foundation\\math\\bvh" FILES
 
 set (foundation_math_intersection_sources
     foundation/math/intersection/aabbtriangle.h
+    foundation/math/intersection/frustumaabb.h
+    foundation/math/intersection/frustumsegment.h
+    foundation/math/intersection/planesegment.h
     foundation/math/intersection/rayaabb.h
     foundation/math/intersection/rayplane.h
     foundation/math/intersection/raysphere.h
@@ -397,10 +400,13 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_filteredtile.cpp
     foundation/meta/tests/test_fp.cpp
     foundation/meta/tests/test_fresnel.cpp
-    foundation/meta/tests/test_frustum.cpp
     foundation/meta/tests/test_image.cpp
     foundation/meta/tests/test_imageimportancesampler.cpp
-    foundation/meta/tests/test_intersection.cpp
+    foundation/meta/tests/test_intersection_frustumaabb.cpp
+    foundation/meta/tests/test_intersection_frustumsegment.cpp
+    foundation/meta/tests/test_intersection_planesegment.cpp
+    foundation/meta/tests/test_intersection_rayaabb.cpp
+    foundation/meta/tests/test_intersection_raytriangle.cpp
     foundation/meta/tests/test_iostreamop.cpp
     foundation/meta/tests/test_job.cpp
     foundation/meta/tests/test_knn.cpp

@@ -42,8 +42,8 @@ namespace foundation
 
 //
 // A frustum defined by the intersection of three or more negative half spaces.
-// Half spaces are defined by the normal vector to their plane. The points
-// inside the planes are considered to be part of the negative half spaces.
+// Half spaces are defined by the normal vector to their plane. The planes
+// themselves are considered to belong to the negative half spaces.
 //
 
 template <typename T, size_t N>
@@ -63,21 +63,6 @@ class Frustum
     // Get a given plane of the frustum.
     const Vector<T, 4>& get_plane(const size_t index) const;
 
-    // Clip a line segment against the frustum.
-    // Returns false if the line segment was entirely clipped away.
-    bool clip(Vector<T, 3>& a, Vector<T, 3>& b) const;
-
-    // Clip a line segment against a plane.
-    // Returns false if the line segment was entirely clipped away.
-    static bool clip(
-        const Vector<T, 4>& plane,
-        Vector<T, 3>&       a,
-        Vector<T, 3>&       b);
-    static bool clip(
-        const Vector<T, 3>& normal,     // unit-length
-        Vector<T, 3>&       a,
-        Vector<T, 3>&       b);
-
   private:
     Vector<T, 4> m_planes[N];
 };
@@ -93,6 +78,7 @@ inline void Frustum<T, N>::set_plane(
     const Vector<T, 4>& plane)
 {
     assert(index < N);
+
     m_planes[index] = plane;
 }
 
@@ -102,6 +88,8 @@ inline void Frustum<T, N>::set_plane(
     const Vector<T, 3>& normal)
 {
     assert(index < N);
+    assert(is_normalized(normal));
+
     m_planes[index] = Vector4d(normal.x, normal.y, normal.z, T(0.0));
 }
 
@@ -109,83 +97,8 @@ template <typename T, size_t N>
 inline const Vector<T, 4>& Frustum<T, N>::get_plane(const size_t index) const
 {
     assert(index < N);
+
     return m_planes[index];
-}
-
-template <typename T, size_t N>
-inline bool Frustum<T, N>::clip(Vector<T, 3>& a, Vector<T, 3>& b) const
-{
-    for (size_t i = 0; i < N; ++i)
-    {
-        if (!clip(m_planes[i], a, b))
-            return false;
-    }
-
-    return true;
-}
-
-template <typename T, size_t N>
-inline bool Frustum<T, N>::clip(
-    const Vector<T, 4>& plane,
-    Vector<T, 3>&       a,
-    Vector<T, 3>&       b)
-{
-    const Vector<T, 3> n(plane[0], plane[1], plane[2]);
-
-    const T dot_an = dot(a, n) + plane[3];
-    const T dot_bn = dot(b, n) + plane[3];
-
-    if (dot_an * dot_bn > T(0.0))
-    {
-        // The segment is entirely on one side of the plane.
-        return dot_an <= T(0.0);
-    }
-
-    if (dot_an == dot_bn)
-    {
-        // The segment is parallel to the plane.
-        return dot_an <= T(0.0);
-    }
-
-    const T t = dot_an / (dot_an - dot_bn);
-    const Vector<T, 3> p = a + t * (b - a);
-
-    if (dot_an > T(0.0))
-        a = p;
-    else b = p;
-
-    return true;
-}
-
-template <typename T, size_t N>
-inline bool Frustum<T, N>::clip(
-    const Vector<T, 3>& normal,
-    Vector<T, 3>&       a,
-    Vector<T, 3>&       b)
-{
-    const T dot_an = dot(a, normal);
-    const T dot_bn = dot(b, normal);
-
-    if (dot_an * dot_bn > T(0.0))
-    {
-        // The segment is entirely on one side of the plane.
-        return dot_an <= T(0.0);
-    }
-
-    if (dot_an == dot_bn)
-    {
-        // The segment is parallel to the plane.
-        return dot_an <= T(0.0);
-    }
-
-    const T t = dot_an / (dot_an - dot_bn);
-    const Vector<T, 3> p = a + t * (b - a);
-
-    if (dot_an > T(0.0))
-        a = p;
-    else b = p;
-
-    return true;
 }
 
 }       // namespace foundation
