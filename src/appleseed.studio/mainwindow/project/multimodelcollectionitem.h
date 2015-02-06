@@ -42,6 +42,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/api/entity.h"
+#include "renderer/api/scene.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"

@@ -1180,6 +1180,7 @@ source_group ("renderer\\meta\\benchmarks" FILES
 set (renderer_meta_tests_sources
     renderer/meta/tests/test_assembly.cpp
     renderer/meta/tests/test_bsdfmix.cpp
+    renderer/meta/tests/test_containers.cpp
     renderer/meta/tests/test_dynamicspectrum.cpp
     renderer/meta/tests/test_entitymap.cpp
     renderer/meta/tests/test_entityvector.cpp

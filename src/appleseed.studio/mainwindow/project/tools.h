@@ -33,13 +33,6 @@
 // appleseed.studio headers.
 #include "mainwindow/project/entityeditor.h"
 
-// appleseed.renderer headers.
-#include "renderer/api/entity.h"
-
-// appleseed.foundation headers.
-#include "foundation/utility/foreach.h"
-#include "foundation/utility/string.h"
-
 // Qt headers.
 #include <QObject>
 #include <QString>
@@ -58,11 +51,6 @@ class QWidget;
 
 namespace appleseed {
 namespace studio {
-
-template <typename EntityContainer>
-std::string get_name_suggestion(
-    const std::string&      prefix,
-    const EntityContainer&  entities);
 
 std::string get_entity_name_dialog(
     QWidget*                parent,
@@ -159,44 +147,6 @@ class ForwardColorChangedSignal
   private:
     const QString m_widget_name;
 };
-
-
-//
-// Implementation.
-//
-
-template <typename EntityContainer>
-std::string get_name_suggestion(
-    const std::string&      prefix,
-    const EntityContainer&  entities)
-{
-    int max_number = 0;
-
-    for (foundation::const_each<EntityContainer> i = entities; i; ++i)
-    {
-        const renderer::Entity& entity = *i;
-
-        const std::string entity_name = entity.get_name();
-        const std::string entity_name_prefix = entity_name.substr(0, prefix.size());
-
-        if (entity_name_prefix == prefix)
-        {
-            try
-            {
-                const std::string entity_name_suffix = entity_name.substr(prefix.size());
-                const int number = foundation::from_string<int>(entity_name_suffix);
-
-                if (max_number < number)
-                    max_number = number;
-            }
-            catch (const foundation::ExceptionStringConversionError&)
-            {
-            }
-        }
-    }
-
-    return prefix + foundation::to_string(max_number + 1);
-}
 
 }       // namespace studio
 }       // namespace appleseed

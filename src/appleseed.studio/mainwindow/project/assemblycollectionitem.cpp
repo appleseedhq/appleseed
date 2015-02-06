@@ -38,6 +38,7 @@
 #include "mainwindow/project/tools.h"
 
 // appleseed.renderer headers.
+#include "renderer/api/scene.h"
 #include "renderer/api/utility.h"
 
 // appleseed.foundation headers.

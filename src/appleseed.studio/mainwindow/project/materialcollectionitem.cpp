@@ -30,11 +30,6 @@
 // Interface header.
 #include "materialcollectionitem.h"
 
-// appleseed.renderer headers.
-#ifdef APPLESEED_WITH_DISNEY_MATERIAL
-#include "renderer/modeling/material/disneymaterial.h"
-#endif
-
 // appleseed.studio headers.
 #include "mainwindow/project/assemblyitem.h"
 #ifdef APPLESEED_WITH_DISNEY_MATERIAL
@@ -45,6 +40,12 @@
 #include "mainwindow/project/fixedmodelentityitem.h"
 #include "mainwindow/project/materialitem.h"
 #include "mainwindow/project/tools.h"
+
+// appleseed.renderer headers.
+#ifdef APPLESEED_WITH_DISNEY_MATERIAL
+#include "renderer/modeling/material/disneymaterial.h"
+#endif
+#include "renderer/api/scene.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/settings/settingsfilereader.h"

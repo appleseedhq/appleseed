@@ -31,12 +31,15 @@
 #define APPLESEED_RENDERER_MODELING_SCENE_CONTAINERS_H
 
 // appleseed.renderer headers.
+#include "renderer/modeling/entity/entity.h"
 #include "renderer/modeling/entity/entitymap.h"
 #include "renderer/modeling/entity/entityvector.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/stringexception.h"
+#include "foundation/utility/foreach.h"
+#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <string>
@@ -101,8 +104,8 @@ class ExceptionUnknownEntity
 {
   public:
     explicit ExceptionUnknownEntity(
-        const char*     entity_name,
-        const Entity*   context = 0);
+        const char*         entity_name,
+        const Entity*       context = 0);
 
     virtual ~ExceptionUnknownEntity() throw() {}
 
@@ -121,9 +124,9 @@ class ExceptionUnknownEntity
 
 template <typename T, typename Container>
 T* get_required_entity(
-    const Container&    container,
-    const ParamArray&   params,
-    const std::string&  param_name);
+    const Container&        container,
+    const ParamArray&       params,
+    const std::string&      param_name);
 
 
 //
@@ -134,9 +137,19 @@ T* get_required_entity(
 
 template <typename T, typename Container>
 T* get_optional_entity(
-    const Container&    container,
-    const ParamArray&   params,
-    const std::string&  param_name);
+    const Container&        container,
+    const ParamArray&       params,
+    const std::string&      param_name);
+
+
+//
+// Generate a new name for an entity in a collection.
+//
+
+template <typename EntityContainer>
+std::string get_name_suggestion(
+    const std::string&      prefix,
+    const EntityContainer&  entities);
 
 
 //
@@ -145,9 +158,9 @@ T* get_optional_entity(
 
 template <typename T, typename Container>
 T* get_required_entity(
-    const Container&    container,
-    const ParamArray&   params,
-    const std::string&  param_name)
+    const Container&        container,
+    const ParamArray&       params,
+    const std::string&      param_name)
 {
     const std::string entity_name =
         params.get_required<std::string>(param_name.c_str(), std::string());
@@ -165,9 +178,9 @@ T* get_required_entity(
 
 template <typename T, typename Container>
 T* get_optional_entity(
-    const Container&    container,
-    const ParamArray&   params,
-    const std::string&  param_name)
+    const Container&        container,
+    const ParamArray&       params,
+    const std::string&      param_name)
 {
     const std::string entity_name =
         params.get_optional<std::string>(param_name.c_str(), std::string());
@@ -181,6 +194,39 @@ T* get_optional_entity(
         throw ExceptionUnknownEntity(entity_name.c_str());
 
     return entity;
+}
+
+template <typename EntityContainer>
+std::string get_name_suggestion(
+    const std::string&      prefix,
+    const EntityContainer&  entities)
+{
+    int max_number = 0;
+
+    for (foundation::const_each<EntityContainer> i = entities; i; ++i)
+    {
+        const renderer::Entity& entity = *i;
+
+        const std::string entity_name = entity.get_name();
+        const std::string entity_name_prefix = entity_name.substr(0, prefix.size());
+
+        if (entity_name_prefix == prefix)
+        {
+            try
+            {
+                const std::string entity_name_suffix = entity_name.substr(prefix.size());
+                const int number = foundation::from_string<int>(entity_name_suffix);
+
+                if (max_number < number)
+                    max_number = number;
+            }
+            catch (const foundation::ExceptionStringConversionError&)
+            {
+            }
+        }
+    }
+
+    return prefix + foundation::to_string(max_number + 1);
 }
 
 }       // namespace renderer

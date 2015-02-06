@@ -27,26 +27,22 @@
 // THE SOFTWARE.
 //
 
-// appleseed.studio headers.
-#include "mainwindow/project/tools.h"
-
 // appleseed.renderer headers.
-#include "renderer/api/entity.h"
-#include "renderer/api/utility.h"
+#include "renderer/modeling/entity/entityvector.h"
+#include "renderer/modeling/scene/containers.h"
+#include "renderer/utility/testutils.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.
 #include <string>
 
-using namespace appleseed::studio;
 using namespace foundation;
 using namespace renderer;
 using namespace std;
 
-TEST_SUITE(Studio_MainWindow_Project_Tools)
+TEST_SUITE(Renderer_Modeling_Scene_Containers)
 {
     typedef TypedEntityVector<DummyEntity> DummyEntityVector;
 
