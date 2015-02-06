@@ -29,11 +29,6 @@
 // Interface header.
 #include "sharedlibrary.h"
 
-// appleseed.foundation headers.
-#ifdef _WIN32
-#include "foundation/platform/windows.h"
-#endif
-
 // Standard headers.
 #include <string>
 
@@ -81,103 +76,65 @@ ExceptionSharedLibCannotGetSymbol::ExceptionSharedLibCannotGetSymbol(
 }
 
 
-// ------------------------------------------------------------------------------------------------
-// Windows.
-// ------------------------------------------------------------------------------------------------
-
-#ifdef _WIN32
-
-struct SharedLibrary::Impl
-{
-    HMODULE m_handle;
-
-    explicit Impl(const char* path)
-    {
-        m_handle = LoadLibraryA(path);
-
-        if (m_handle == 0)
-        {
-            throw ExceptionCannotLoadSharedLib(
-                path,
-                get_windows_last_error_message().c_str());
-        }
-    }
-
-    ~Impl()
-    {
-        FreeLibrary(m_handle);
-    }
-
-    void* get_symbol(const char* name, bool no_throw) const
-    {
-        void* symbol = GetProcAddress(m_handle, name);
-
-        if (symbol == 0 && !no_throw)
-        {
-            throw ExceptionSharedLibCannotGetSymbol(
-                name,
-                get_windows_last_error_message().c_str());
-        }
-
-        return symbol;
-    }
-};
-
-
-// ------------------------------------------------------------------------------------------------
-// Unix.
-// ------------------------------------------------------------------------------------------------
-
-#else
-
-struct SharedLibrary::Impl
-{
-    void* m_handle;
-
-    explicit Impl(const char* path)
-    {
-        m_handle = dlopen(path, RTLD_NOW | RTLD_GLOBAL);
-
-        if (m_handle == 0)
-            throw ExceptionCannotLoadSharedLib(path, dlerror());
-    }
-
-    ~Impl()
-    {
-        dlclose(m_handle);
-    }
-
-    void* get_symbol(const char* name, const bool no_throw) const
-    {
-        void* symbol = dlsym(m_handle, name);
-
-        if (symbol == 0 && !no_throw)
-            throw ExceptionSharedLibCannotGetSymbol(name, dlerror());
-
-        return symbol;
-    }
-};
-
-#endif
-
-
 //
 // SharedLibrary class implementation.
 //
 
-SharedLibrary::SharedLibrary(const char* path)
-  : impl(new Impl(path))
+namespace
 {
+
+string get_last_error_message()
+{
+#ifdef _WIN32
+    return get_windows_last_error_message();
+#else
+    return dlerror();
+#endif
+}
+
+}
+
+SharedLibrary::SharedLibrary(const char* path)
+{
+#ifdef _WIN32
+    m_handle = LoadLibraryA(path);
+#else
+    m_handle = dlopen(path, RTLD_NOW | RTLD_GLOBAL);
+#endif
+
+    if (m_handle == 0)
+    {
+        throw ExceptionCannotLoadSharedLib(
+            path,
+            get_last_error_message().c_str());
+    }
 }
 
 SharedLibrary::~SharedLibrary()
 {
-    delete impl;
+#ifdef _WIN32
+    FreeLibrary(m_handle);
+#else
+    dlclose(m_handle);
+#endif
 }
 
 void* SharedLibrary::get_symbol(const char* name, const bool no_throw) const
 {
-    return impl->get_symbol(name, no_throw);
+#ifdef _WIN32
+    void* symbol = GetProcAddress(m_handle, name);
+#else
+    void* symbol = dlsym(m_handle, name);
+#endif
+
+    if (symbol == 0 && !no_throw)
+    {
+        throw ExceptionSharedLibCannotGetSymbol(
+            name,
+            get_last_error_message().c_str());
+    }
+
+    return symbol;
 }
 
 }   // namespace foundation

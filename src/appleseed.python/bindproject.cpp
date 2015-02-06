@@ -149,12 +149,22 @@ namespace
         return param_array_to_bpy_dict(params);
     }
 
-    bpy::object project_file_reader_read(
+    bpy::object project_file_reader_read_default_opts(
         ProjectFileReader*                  reader,
         const char*                         project_filename,
         const char*                         schema_filename)
     {
         auto_release_ptr<Project> project(reader->read(project_filename, schema_filename));
+        return bpy::object(project);
+    }
+
+    bpy::object project_file_reader_read_with_opts(
+        ProjectFileReader*                  reader,
+        const char*                         project_filename,
+        const char*                         schema_filename,
+        ProjectFileReader::Options          opts)
+    {
+        auto_release_ptr<Project> project(reader->read(project_filename, schema_filename, opts));
         return bpy::object(project);
     }
 
@@ -209,8 +219,15 @@ void bind_project()
         .def("create_aov_images", &Project::create_aov_images)
         ;
 
+    bpy::enum_<ProjectFileReader::Options>("ProjectFileReaderOptions")
+        .value("Defaults", ProjectFileReader::Defaults)
+        .value("OmitReadingMeshFiles", ProjectFileReader::OmitReadingMeshFiles)
+        .value("OmitProjectFileUpdate", ProjectFileReader::OmitProjectFileUpdate)
+        ;
+
     bpy::class_<ProjectFileReader>("ProjectFileReader")
-        .def("read", &project_file_reader_read)
+        .def("read", &project_file_reader_read_default_opts)
+        .def("read", &project_file_reader_read_with_opts)
         .def("load_builtin", &project_file_reader_load_builtin)
         ;
 
