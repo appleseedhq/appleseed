@@ -60,7 +60,8 @@ class APPLESEED_DLLSYMBOL ScenePicker
     struct PickingResult
     {
         bool                            m_hit;
-        double                          m_distance;
+        foundation::Vector3d            m_point;                // world space
+        double                          m_distance;             // world space
         ShadingPoint::PrimitiveType     m_primitive_type;
 
         const Camera*                   m_camera;
