@@ -129,7 +129,7 @@ void MultiModelCollectionItem<Entity, ParentEntity, ParentItem>::slot_create()
         EntityTraits::get_human_readable_entity_type_name();
 
     const std::string name_suggestion =
-        get_name_suggestion(
+        make_unique_name(
             EntityTraits::get_entity_type_name(),
             EntityTraits::get_entity_container(Base::m_parent));
 

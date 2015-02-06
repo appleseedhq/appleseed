@@ -43,6 +43,7 @@
 
 // Standard headers.
 #include <string>
+#include <vector>
 
 // Forward declarations.
 namespace renderer  { class Assembly; }
@@ -147,9 +148,17 @@ T* get_optional_entity(
 //
 
 template <typename EntityContainer>
-std::string get_name_suggestion(
-    const std::string&      prefix,
-    const EntityContainer&  entities);
+std::vector<std::string> collect_entity_names(
+    const EntityContainer&          entities);
+
+template <typename EntityContainer>
+std::string make_unique_name(
+    const std::string&              prefix,
+    const EntityContainer&          entities);
+
+std::string make_unique_name(
+    const std::string&              prefix,
+    const std::vector<std::string>& entity_names);
 
 
 //
@@ -197,17 +206,39 @@ T* get_optional_entity(
 }
 
 template <typename EntityContainer>
-std::string get_name_suggestion(
-    const std::string&      prefix,
-    const EntityContainer&  entities)
+std::vector<std::string> collect_entity_names(
+    const EntityContainer&          entities)
+{
+    std::vector<std::string> names;
+
+    names.reserve(entities.size());
+
+    for (foundation::const_each<EntityContainer> i = entities; i; ++i)
+        names.push_back(i->get_name());
+
+    return names;
+}
+
+template <typename EntityContainer>
+std::string make_unique_name(
+    const std::string&              prefix,
+    const EntityContainer&          entities)
+{
+    return
+        make_unique_name(
+            prefix,
+            collect_entity_names(entities));
+}
+
+inline std::string make_unique_name(
+    const std::string&              prefix,
+    const std::vector<std::string>& entity_names)
 {
     int max_number = 0;
 
-    for (foundation::const_each<EntityContainer> i = entities; i; ++i)
+    for (size_t i = 0; i < entity_names.size(); ++i)
     {
-        const renderer::Entity& entity = *i;
-
-        const std::string entity_name = entity.get_name();
+        const std::string& entity_name = entity_names[i];
         const std::string entity_name_prefix = entity_name.substr(0, prefix.size());
 
         if (entity_name_prefix == prefix)

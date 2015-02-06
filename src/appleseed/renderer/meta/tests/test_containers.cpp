@@ -38,7 +38,6 @@
 // Standard headers.
 #include <string>
 
-using namespace foundation;
 using namespace renderer;
 using namespace std;
 
@@ -46,52 +45,52 @@ TEST_SUITE(Renderer_Modeling_Scene_Containers)
 {
     typedef TypedEntityVector<DummyEntity> DummyEntityVector;
 
-    TEST_CASE(GetNameSuggestion_GivenZeroEntity_ReturnsNameWithFirstSuffix)
+    TEST_CASE(MakeUniqueName_GivenZeroEntity_ReturnsNameWithFirstSuffix)
     {
         DummyEntityVector entities;
 
-        const string result = get_name_suggestion("assembly", entities);
+        const string result = make_unique_name("assembly", entities);
 
         EXPECT_EQ("assembly1", result);
     }
 
-    TEST_CASE(GetNameSuggestion_GivenTwoEntitiesWithMatchingPrefixes_ReturnsNameWithNextSuffix)
+    TEST_CASE(MakeUniqueName_GivenTwoEntitiesWithMatchingPrefixes_ReturnsNameWithNextSuffix)
     {
         DummyEntityVector entities;
         entities.insert(DummyEntityFactory::create("assembly3"));
         entities.insert(DummyEntityFactory::create("assembly1"));
 
-        const string result = get_name_suggestion("assembly", entities);
+        const string result = make_unique_name("assembly", entities);
 
         EXPECT_EQ("assembly4", result);
     }
 
-    TEST_CASE(GetNameSuggestion_GivenEntityWithNegativeSuffix_ReturnsNameWithFirstSuffix)
+    TEST_CASE(MakeUniqueName_GivenEntityWithNegativeSuffix_ReturnsNameWithFirstSuffix)
     {
         DummyEntityVector entities;
         entities.insert(DummyEntityFactory::create("assembly-5"));
 
-        const string result = get_name_suggestion("assembly", entities);
+        const string result = make_unique_name("assembly", entities);
 
         EXPECT_EQ("assembly1", result);
     }
 
-    TEST_CASE(GetNameSuggestion_GivenOneEntityWithNonMatchingPrefix_ReturnsNameWithFirstSuffix)
+    TEST_CASE(MakeUniqueName_GivenOneEntityWithNonMatchingPrefix_ReturnsNameWithFirstSuffix)
     {
         DummyEntityVector entities;
         entities.insert(DummyEntityFactory::create("object"));
 
-        const string result = get_name_suggestion("assembly", entities);
+        const string result = make_unique_name("assembly", entities);
 
         EXPECT_EQ("assembly1", result);
     }
 
-    TEST_CASE(GetNameSuggestion_GivenOneEntityWithNonNumericSuffix_ReturnsNameWithFirstSuffix)
+    TEST_CASE(MakeUniqueName_GivenOneEntityWithNonNumericSuffix_ReturnsNameWithFirstSuffix)
     {
         DummyEntityVector entities;
         entities.insert(DummyEntityFactory::create("assembly_instance"));
 
-        const string result = get_name_suggestion("assembly", entities);
+        const string result = make_unique_name("assembly", entities);
 
         EXPECT_EQ("assembly1", result);
     }

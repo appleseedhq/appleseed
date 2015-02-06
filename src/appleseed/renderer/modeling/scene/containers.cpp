@@ -30,9 +30,6 @@
 // Interface header.
 #include "containers.h"
 
-// appleseed.renderer headers.
-#include "renderer/modeling/entity/entity.h"
-
 using namespace foundation;
 using namespace std;
 

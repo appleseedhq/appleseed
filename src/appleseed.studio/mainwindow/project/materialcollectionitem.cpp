@@ -232,7 +232,7 @@ void MaterialCollectionItem::do_create_material(const char* model)
         EntityTraits::get_human_readable_entity_type_name();
 
     const string name_suggestion =
-        get_name_suggestion(
+        make_unique_name(
             EntityTraits::get_entity_type_name(),
             EntityTraits::get_entity_container(Base::m_parent));
 

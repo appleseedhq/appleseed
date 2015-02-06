@@ -37,6 +37,7 @@
 
 // Standard headers.
 #include <cstddef>
+#include <string>
 #include <vector>
 
 // Qt headers.
@@ -79,10 +80,10 @@ class DisneyMaterialCustomUI
     QVBoxLayout*                        m_layout;
 
     std::vector<DisneyMaterialLayerUI*> m_layers;
-    size_t                              m_num_created_layers;
     QPushButton*                        m_add_layer_button;
 
     size_t find_layer_index_by_widget(const QWidget* layer_widget) const;
+    std::vector<std::string> collect_layer_names() const;
     foundation::Dictionary make_new_layer_values();
     void append_new_layer(const foundation::Dictionary& layer_values);
 };

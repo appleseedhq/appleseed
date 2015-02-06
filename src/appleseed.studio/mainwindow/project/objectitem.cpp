@@ -135,7 +135,7 @@ QMenu* ObjectItem::get_single_item_context_menu() const
 void ObjectItem::slot_instantiate()
 {
     const string instance_name_suggestion =
-        get_name_suggestion(
+        make_unique_name(
             string(m_entity->get_name()) + "_inst",
             m_parent.object_instances());
 
