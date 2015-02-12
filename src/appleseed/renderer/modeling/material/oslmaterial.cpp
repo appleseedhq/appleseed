@@ -114,7 +114,7 @@ namespace
 
             m_osl_bsdf->on_frame_end(project, assembly);
 
-            if (m_shader_group->has_emission())
+            if (m_shader_group && m_shader_group->has_emission())
                 m_osl_edf->on_frame_end(project, assembly);
 
             m_shader_group = 0;
@@ -151,10 +151,10 @@ namespace
                 static_cast<const ShaderGroup*>(m_inputs.get_entity("osl_surface"));
 
             // Skip invalid shader groups.
-            if (!sg->valid())
-                return 0;
+            if (sg && sg->valid())
+                return sg;
 
-            return sg;
+            return 0;
         }
     };
 }
