@@ -59,11 +59,6 @@ class APPLESEED_DLLSYMBOL Display
     // Return the unique ID of this class of entities.
     static foundation::UniqueID get_class_uid();
 
-    // Constructor.
-    Display(
-        const char*         name,
-        const ParamArray&   params);
-
     // Delete this instance.
     virtual void release() APPLESEED_OVERRIDE;
 
@@ -74,8 +69,15 @@ class APPLESEED_DLLSYMBOL Display
     ITileCallbackFactory* get_tile_callback_factory() const;
 
   private:
+    friend class DisplayFactory;
+
     struct Impl;
     Impl* impl;
+
+    // Constructor.
+    Display(
+        const char*         name,
+        const ParamArray&   params);
 
     // Destructor.
     ~Display();

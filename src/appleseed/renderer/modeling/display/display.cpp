@@ -33,6 +33,7 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/kernel/rendering/itilecallback.h"
 #include "renderer/modeling/project/project.h"
+#include "renderer/utility/plugin.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/sharedlibrary.h"
@@ -67,7 +68,7 @@ struct Display::Impl
     Impl(
         const char*         plugin_path,
         const ParamArray&   params)
-      : m_plugin(new SharedLibrary(plugin_path))
+      : m_plugin(PluginCache::load(plugin_path))
     {
         typedef ITileCallbackFactory*(*CreateFnType)(const ParamArray*);
 
@@ -77,7 +78,7 @@ struct Display::Impl
         m_tile_callback_factory.reset(create_fn(&params));
     }
 
-    auto_ptr<SharedLibrary>                 m_plugin;
+    auto_release_ptr<Plugin>                m_plugin;
     auto_release_ptr<ITileCallbackFactory>  m_tile_callback_factory;
 };
 
@@ -118,7 +119,7 @@ void Display::open(const Project& project)
     }
     catch (const ExceptionDictionaryItemNotFound&)
     {
-        RENDERER_LOG_FATAL("%s", "cannot open display: bad parameters.");
+        RENDERER_LOG_FATAL("%s", "cannot open display: missing plugin_name parameter.");
         return;
     }
 
@@ -130,9 +131,13 @@ void Display::open(const Project& project)
     {
         RENDERER_LOG_FATAL("cannot open display: %s", e.what());
     }
+    catch (const ExceptionPluginInitializationFailed&)
+    {
+        RENDERER_LOG_FATAL("initialization of display plugin %s failed", plugin.c_str());
+    }
     catch (const ExceptionSharedLibCannotGetSymbol& e)
     {
-        RENDERER_LOG_FATAL("cannot open display: %s", e.what());
+        RENDERER_LOG_FATAL("cannot load symbol %s from display plugin", e.what());
     }
 }
 
