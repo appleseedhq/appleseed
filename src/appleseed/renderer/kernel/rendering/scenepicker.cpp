@@ -106,6 +106,10 @@ ScenePicker::PickingResult ScenePicker::pick(const Vector2d& ndc) const
 
     PickingResult result;
     result.m_hit = hit;
+    result.m_point =
+        hit
+            ? shading_point.get_point()
+            : Vector3d(0.0);
     result.m_distance =
         hit
             ? shading_point.get_distance() * norm(ray.m_dir)

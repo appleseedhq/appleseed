@@ -229,6 +229,7 @@ void ScenePickingHandler::pick(const QPoint& point)
     sstr << "picking details:" << endl;
     sstr << "  pixel coords     " << pix.x << ", " << pix.y << endl;
     sstr << "  ndc coords       " << ndc.x << ", " << ndc.y << endl;
+    sstr << "  world coords     " << result.m_point.x << ", " << result.m_point.y << ", " << result.m_point.z << endl;
     sstr << "  depth            " << result.m_distance << endl;
     sstr << "  primitive type   " << get_primitive_type_name(result.m_primitive_type) << endl;
 
