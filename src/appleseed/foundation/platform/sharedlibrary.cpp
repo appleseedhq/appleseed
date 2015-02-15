@@ -49,7 +49,6 @@ namespace foundation
 ExceptionCannotLoadSharedLib::ExceptionCannotLoadSharedLib(
     const char* path,
     const char* error_msg)
-  : Exception()
 {
     string err("Cannot load shared library ");
     err += path;
@@ -66,7 +65,6 @@ ExceptionCannotLoadSharedLib::ExceptionCannotLoadSharedLib(
 ExceptionSharedLibCannotGetSymbol::ExceptionSharedLibCannotGetSymbol(
     const char* symbol_name,
     const char* error_msg)
-  : Exception()
 {
     string err("Cannot get symbol ");
     err += symbol_name;

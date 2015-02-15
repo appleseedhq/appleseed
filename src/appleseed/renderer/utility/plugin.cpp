@@ -33,7 +33,7 @@
 #include "renderer/global/globallogger.h"
 
 // appleseed.foundation headers.
-#include <foundation/platform/sharedlibrary.h>
+#include "foundation/platform/sharedlibrary.h"
 
 // boost headers.
 #include <boost/shared_ptr.hpp>
@@ -59,7 +59,6 @@ namespace renderer
 //
 
 ExceptionPluginInitializationFailed::ExceptionPluginInitializationFailed()
-  : Exception()
 {
     set_what("Plugin initialization failed");
 }
@@ -80,10 +79,10 @@ struct Plugin::Impl
     shared_ptr<SharedLibrary> m_library;
 };
 
-Plugin::Plugin(Impl *i)
-  : impl(i)
+Plugin::Plugin(Impl *impl)
 {
     assert(impl);
+    this->impl = impl;
 }
 
 Plugin::~Plugin()
@@ -133,7 +132,7 @@ struct PluginDeleter
 
 }
 
-auto_release_ptr<Plugin> PluginCache::load(const char *path)
+auto_release_ptr<Plugin> PluginCache::load(const char* path)
 {
     lock_guard<mutex> lock(g_plugin_cache_mutex);
 
@@ -149,9 +148,7 @@ auto_release_ptr<Plugin> PluginCache::load(const char *path)
     }
 
     // If this plugin is not in the cache, load the shared lib.
-    shared_ptr<SharedLibrary> lib(
-        new SharedLibrary(path),
-        PluginDeleter());
+    shared_ptr<SharedLibrary> lib(new SharedLibrary(path), PluginDeleter());
 
     // Try to call the initialization function if defined.
     Plugin::InitPluginFnType init_fn =
@@ -164,9 +161,9 @@ auto_release_ptr<Plugin> PluginCache::load(const char *path)
             throw ExceptionPluginInitializationFailed();
     }
 
-    Plugin::Impl *i = new Plugin::Impl(lib);
+    Plugin::Impl *impl = new Plugin::Impl(lib);
     g_plugin_cache[path] = weak_ptr<SharedLibrary>(lib);
-    return auto_release_ptr<Plugin>(new Plugin(i));
+    return auto_release_ptr<Plugin>(new Plugin(impl));
 }
 
 }   // namespace renderer

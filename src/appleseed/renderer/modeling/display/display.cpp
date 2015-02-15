@@ -101,7 +101,7 @@ void Display::release()
     delete this;
 }
 
-void Display::open(const Project& project)
+bool Display::open(const Project& project)
 {
     string plugin;
 
@@ -119,8 +119,8 @@ void Display::open(const Project& project)
     }
     catch (const ExceptionDictionaryItemNotFound&)
     {
-        RENDERER_LOG_FATAL("%s", "cannot open display: missing plugin_name parameter.");
-        return;
+        RENDERER_LOG_ERROR("%s", "cannot open display: missing plugin_name parameter.");
+        return false;
     }
 
     try
@@ -129,16 +129,21 @@ void Display::open(const Project& project)
     }
     catch (const ExceptionCannotLoadSharedLib& e)
     {
-        RENDERER_LOG_FATAL("cannot open display: %s", e.what());
+        RENDERER_LOG_ERROR("cannot open display: %s", e.what());
+        return false;
     }
     catch (const ExceptionPluginInitializationFailed&)
     {
-        RENDERER_LOG_FATAL("initialization of display plugin %s failed", plugin.c_str());
+        RENDERER_LOG_ERROR("initialization of display plugin %s failed", plugin.c_str());
+        return false;
     }
     catch (const ExceptionSharedLibCannotGetSymbol& e)
     {
-        RENDERER_LOG_FATAL("cannot load symbol %s from display plugin", e.what());
+        RENDERER_LOG_ERROR("cannot load symbol %s from display plugin", e.what());
+        return false;
     }
+
+    return true;
 }
 
 void Display::close()

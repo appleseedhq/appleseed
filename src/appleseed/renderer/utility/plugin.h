@@ -29,14 +29,10 @@
 #ifndef APPLESEED_RENDERER_UTILITY_PLUGIN_H
 #define APPLESEED_RENDERER_UTILITY_PLUGIN_H
 
-// appleseed.renderer headers.
-
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/core/exceptions/exception.h"
 #include "foundation/utility/autoreleaseptr.h"
-
-// Standard headers.
 
 namespace renderer
 {
@@ -52,7 +48,6 @@ class ExceptionPluginInitializationFailed
     // Constructor.
     ExceptionPluginInitializationFailed();
 };
-
 
 class Plugin
   : public foundation::NonCopyable
@@ -72,10 +67,10 @@ class Plugin
     friend class PluginCache;
 
     struct Impl;
-    Impl *impl;
+    Impl* impl;
 
     // Constructor.
-    explicit Plugin(Impl *i);
+    explicit Plugin(Impl* impl);
 
     // Destructor.
     ~Plugin();
@@ -85,7 +80,7 @@ class Plugin
 class PluginCache
 {
   public:
-    static foundation::auto_release_ptr<Plugin> load(const char *path);
+    static foundation::auto_release_ptr<Plugin> load(const char* path);
 };
 
 }       // namespace renderer

@@ -62,7 +62,7 @@ class APPLESEED_DLLSYMBOL Display
     // Delete this instance.
     virtual void release() APPLESEED_OVERRIDE;
 
-    void open(const Project& project);
+    bool open(const Project& project);
     void close();
 
     // Return the tile callback factory.
