@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2015 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2015 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,76 +26,63 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_DISPLAY_DISPLAY_H
-#define APPLESEED_RENDERER_MODELING_DISPLAY_DISPLAY_H
-
-// appleseed.renderer headers.
-#include "renderer/modeling/entity/entity.h"
+#ifndef APPLESEED_RENDERER_UTILITY_PLUGIN_H
+#define APPLESEED_RENDERER_UTILITY_PLUGIN_H
 
 // appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
+#include "foundation/core/concepts/noncopyable.h"
+#include "foundation/core/exceptions/exception.h"
 #include "foundation/utility/autoreleaseptr.h"
-#include "foundation/utility/uid.h"
-
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
-// Forward declarations.
-namespace renderer  { class ITileCallbackFactory; }
-namespace renderer  { class ParamArray; }
-namespace renderer  { class Project; }
 
 namespace renderer
 {
 
 //
-// Plugin tile callback.
+// Exception thrown when plugin initialization function fails.
 //
 
-class APPLESEED_DLLSYMBOL Display
-  : public Entity
+class ExceptionPluginInitializationFailed
+  : public foundation::Exception
 {
   public:
-    // Return the unique ID of this class of entities.
-    static foundation::UniqueID get_class_uid();
+    // Constructor.
+    ExceptionPluginInitializationFailed();
+};
+
+class Plugin
+  : public foundation::NonCopyable
+{
+  public:
+
+    typedef bool(*InitPluginFnType)();
+    typedef void(*UnInitPluginFnType)();
 
     // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    void release();
 
-    bool open(const Project& project);
-    void close();
-
-    // Return the tile callback factory.
-    ITileCallbackFactory* get_tile_callback_factory() const;
+    // Get a symbol from the plugin.
+    void* get_symbol(const char* name, const bool no_throw = true) const;
 
   private:
-    friend class DisplayFactory;
+    friend class PluginCache;
 
     struct Impl;
     Impl* impl;
 
     // Constructor.
-    Display(
-        const char*         name,
-        const ParamArray&   params);
+    explicit Plugin(Impl* impl);
 
     // Destructor.
-    ~Display();
+    ~Plugin();
 };
 
-//
-// Display factory.
-//
 
-class APPLESEED_DLLSYMBOL DisplayFactory
+class PluginCache
 {
   public:
-    // Create a new display.
-    static foundation::auto_release_ptr<Display> create(
-        const char*         name,
-        const ParamArray&   params);
+    static foundation::auto_release_ptr<Plugin> load(const char* path);
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_DISPLAY_DISPLAY_H
+#endif  // !APPLESEED_RENDERER_UTILITY_PLUGIN_H

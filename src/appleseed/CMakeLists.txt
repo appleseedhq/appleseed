@@ -1691,6 +1691,8 @@ set (renderer_utility_sources
     renderer/utility/messagecontext.h
     renderer/utility/paramarray.cpp
     renderer/utility/paramarray.h
+    renderer/utility/plugin.cpp
+    renderer/utility/plugin.h
     renderer/utility/stochasticcast.h
     renderer/utility/testutils.cpp
     renderer/utility/testutils.h
