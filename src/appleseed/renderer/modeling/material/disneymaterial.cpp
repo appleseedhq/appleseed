@@ -33,6 +33,7 @@
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/disneybrdf.h"
 #include "renderer/modeling/bsdf/disneylayeredbrdf.h"
+#include "renderer/modeling/scene/containers.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
@@ -490,13 +491,18 @@ class DisneyLayerParam
 // DisneyMaterialLayer class implementation.
 //
 
+namespace
+{
+    const UniqueID g_disney_material_layer_class_uid = new_guid();
+}
+
 struct DisneyMaterialLayer::Impl
 {
     Impl(
         const char*         name,
         const Dictionary&   params)
       : m_name(name)
-      , m_layer_number(params.get<size_t>("layer_number"))
+      , m_layer_number(params.get<int>("layer_number"))
       , m_mask("mask", params, false)
       , m_base_color("base_color", params, true)
       , m_subsurface("subsurface", params, false)
@@ -513,7 +519,7 @@ struct DisneyMaterialLayer::Impl
     }
 
     const string        m_name;
-    const size_t        m_layer_number;
+    const int           m_layer_number;
     DisneyLayerParam    m_mask;
     DisneyLayerParam    m_base_color;
     DisneyLayerParam    m_subsurface;
@@ -531,7 +537,14 @@ struct DisneyMaterialLayer::Impl
 DisneyMaterialLayer::DisneyMaterialLayer(
     const char*             name,
     const Dictionary&       params)
-  : impl(new Impl(name, params))
+  : Entity(g_disney_material_layer_class_uid, params)
+  , impl(new Impl(name, params))
+{
+}
+
+DisneyMaterialLayer::DisneyMaterialLayer(const DisneyMaterialLayer& other)
+  : Entity(other.m_class_uid, other.m_params)
+  , impl(new Impl(*other.impl))
 {
 }
 
@@ -540,9 +553,9 @@ DisneyMaterialLayer::~DisneyMaterialLayer()
     delete impl;
 }
 
-DisneyMaterialLayer::DisneyMaterialLayer(const DisneyMaterialLayer& other)
-  : impl(new Impl(*other.impl))
+void DisneyMaterialLayer::release()
 {
+    delete this;
 }
 
 DisneyMaterialLayer& DisneyMaterialLayer::operator=(const DisneyMaterialLayer& other)
@@ -560,6 +573,11 @@ void DisneyMaterialLayer::swap(DisneyMaterialLayer& other)
 bool DisneyMaterialLayer::operator<(const DisneyMaterialLayer& other) const
 {
     return impl->m_layer_number < other.impl->m_layer_number;
+}
+
+int DisneyMaterialLayer::get_layer_number() const
+{
+    return impl->m_layer_number;
 }
 
 bool DisneyMaterialLayer::prepare_expressions() const
@@ -592,55 +610,65 @@ void DisneyMaterialLayer::evaluate_expressions(
 
     base_color = lerp(base_color, impl->m_base_color.evaluate(shading_point, texture_system), mask);
 
-    values.m_subsurface = lerp(
-        values.m_subsurface,
-        saturate(impl->m_subsurface.evaluate(shading_point, texture_system)[0]),
-        mask);
+    values.m_subsurface =
+        lerp(
+            values.m_subsurface,
+            saturate(impl->m_subsurface.evaluate(shading_point, texture_system)[0]),
+            mask);
 
-    values.m_metallic = lerp(
-        values.m_metallic,
-        saturate(impl->m_metallic.evaluate(shading_point, texture_system)[0]),
-        mask);
+    values.m_metallic =
+        lerp(
+            values.m_metallic,
+            saturate(impl->m_metallic.evaluate(shading_point, texture_system)[0]),
+            mask);
 
-    values.m_specular = lerp(
-        values.m_specular,
-        max(impl->m_specular.evaluate(shading_point, texture_system)[0], 0.0),
-        mask);
+    values.m_specular =
+        lerp(
+            values.m_specular,
+            max(impl->m_specular.evaluate(shading_point, texture_system)[0], 0.0),
+            mask);
 
-    values.m_specular_tint = lerp(
-        values.m_specular_tint,
-        saturate(impl->m_specular_tint.evaluate(shading_point, texture_system)[0]),
-        mask);
+    values.m_specular_tint =
+        lerp(
+            values.m_specular_tint,
+            saturate(impl->m_specular_tint.evaluate(shading_point, texture_system)[0]),
+            mask);
 
-    values.m_anisotropic = lerp(
-        values.m_anisotropic,
-        saturate(impl->m_anisotropic.evaluate(shading_point, texture_system)[0]),
-        mask);
+    values.m_anisotropic =
+        lerp(
+            values.m_anisotropic,
+            saturate(impl->m_anisotropic.evaluate(shading_point, texture_system)[0]),
+            mask);
 
-    values.m_roughness = lerp(
-        values.m_roughness,
-        clamp(impl->m_roughness.evaluate(shading_point, texture_system)[0], 0.001, 1.0),
-        mask);
+    values.m_roughness =
+        lerp(
+            values.m_roughness,
+            clamp(impl->m_roughness.evaluate(shading_point, texture_system)[0], 0.001, 1.0),
+            mask);
 
-    values.m_sheen = lerp(
-        values.m_sheen,
-        impl->m_sheen.evaluate(shading_point, texture_system)[0],
-        mask);
+    values.m_sheen =
+        lerp(
+            values.m_sheen,
+            impl->m_sheen.evaluate(shading_point, texture_system)[0],
+            mask);
 
-    values.m_sheen_tint = lerp(
-        values.m_sheen_tint,
-        saturate(impl->m_sheen_tint.evaluate(shading_point, texture_system)[0]),
-        mask);
+    values.m_sheen_tint =
+        lerp(
+            values.m_sheen_tint,
+            saturate(impl->m_sheen_tint.evaluate(shading_point, texture_system)[0]),
+            mask);
 
-    values.m_clearcoat = lerp(
-        values.m_clearcoat,
-        impl->m_clearcoat.evaluate(shading_point, texture_system)[0],
-        mask);
+    values.m_clearcoat =
+        lerp(
+            values.m_clearcoat,
+            impl->m_clearcoat.evaluate(shading_point, texture_system)[0],
+            mask);
 
-    values.m_clearcoat_gloss = lerp(
-        values.m_clearcoat_gloss,
-        saturate(impl->m_clearcoat_gloss.evaluate(shading_point, texture_system)[0]),
-        mask);
+    values.m_clearcoat_gloss =
+        lerp(
+            values.m_clearcoat_gloss,
+            saturate(impl->m_clearcoat_gloss.evaluate(shading_point, texture_system)[0]),
+            mask);
 }
 
 DictionaryArray DisneyMaterialLayer::get_input_metadata()
@@ -671,7 +699,7 @@ DictionaryArray DisneyMaterialLayer::get_input_metadata()
                     .insert("color", "Colors")
                     .insert("texture_instance", "Textures"))
             .insert("use", "required")
-            .insert("default", "[0.5, 0.5, 0.5]"));
+            .insert("default", "[0.9, 0.9, 0.9]"));
 
     metadata.push_back(
         Dictionary()
@@ -701,7 +729,7 @@ DictionaryArray DisneyMaterialLayer::get_input_metadata()
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "optional")
-            .insert("default", "0.5"));
+            .insert("default", "0.0"));
 
     metadata.push_back(
         Dictionary()
@@ -776,6 +804,28 @@ DictionaryArray DisneyMaterialLayer::get_input_metadata()
     return metadata;
 }
 
+// todo: this is actually completely generic, could be moved somewhere more central.
+Dictionary DisneyMaterialLayer::get_default_values()
+{
+    Dictionary values;
+
+    const DictionaryArray input_metadata = get_input_metadata();
+
+    for (size_t i = 0; i < input_metadata.size(); ++i)
+    {
+        const Dictionary& im = input_metadata[i];
+        const string input_name = im.get<string>("name");
+
+        if (im.strings().exist("default"))
+        {
+            const string input_value = im.get<string>("default");
+            values.insert(input_name, input_value);
+        }
+    }
+
+    return values;
+}
+
 
 //
 // DisneyMaterial class implementation.
@@ -847,6 +897,19 @@ const char* DisneyMaterial::get_model() const
     return Model;
 }
 
+Dictionary DisneyMaterial::get_new_layer_values() const
+{
+    int layer_number = 0;
+
+    for (const_each<Impl::DisneyMaterialLayerContainer> i = impl->m_layers; i; ++i)
+        layer_number = max(layer_number, i->get_layer_number());
+
+    return
+        DisneyMaterialLayer::get_default_values()
+            .insert("layer_name", make_unique_name("layer", impl->m_layers))
+            .insert("layer_number", layer_number);
+}
+
 bool DisneyMaterial::on_frame_begin(
     const Project&          project,
     const Assembly&         assembly,
@@ -862,8 +925,12 @@ bool DisneyMaterial::on_frame_begin(
     }
     // TODO: be more specific about what we catch here,
     // once we know what can be thrown. (est.)
-    catch (...)
+    catch (const Exception& e)
     {
+        RENDERER_LOG_ERROR(
+            "while preparing material \"%s\": %s.",
+            get_path().c_str(),
+            e.what());
         return false;
     }
 

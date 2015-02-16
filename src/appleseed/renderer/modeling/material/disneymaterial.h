@@ -58,7 +58,10 @@ class APPLESEED_DLLSYMBOL DisneyParamExpression
   : public foundation::NonCopyable
 {
   public:
+    // Constructor.
     explicit DisneyParamExpression(const char* expr);
+
+    // Destructor.
     ~DisneyParamExpression();
 
     bool is_valid() const;
@@ -75,15 +78,23 @@ class APPLESEED_DLLSYMBOL DisneyParamExpression
 };
 
 class APPLESEED_DLLSYMBOL DisneyMaterialLayer
+  : public Entity
 {
   public:
+    // Constructor.
     DisneyMaterialLayer(const DisneyMaterialLayer& other);
 
+    // Destructor.
     ~DisneyMaterialLayer();
+
+    // Delete this instance.
+    virtual void release() APPLESEED_OVERRIDE;
 
     DisneyMaterialLayer& operator=(const DisneyMaterialLayer& other);
 
     bool operator<(const DisneyMaterialLayer& other) const;
+
+    int get_layer_number() const;
 
     bool prepare_expressions() const;
 
@@ -94,6 +105,8 @@ class APPLESEED_DLLSYMBOL DisneyMaterialLayer
         DisneyBRDFInputValues&  values) const;
 
     static foundation::DictionaryArray get_input_metadata();
+
+    static foundation::Dictionary get_default_values();
 
   private:
     friend class DisneyMaterial;
@@ -136,6 +149,8 @@ class APPLESEED_DLLSYMBOL DisneyMaterial
     const DisneyMaterialLayer& get_layer(
         const std::size_t           index,
         const std::size_t           thread_index = ~0) const;
+
+    foundation::Dictionary get_new_layer_values() const;
 
   private:
     friend class DisneyMaterialFactory;
