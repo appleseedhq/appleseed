@@ -33,9 +33,7 @@
 #ifndef STDOSL_H
 #define STDOSL_H
 
-// appleseed specific
-#define APPLESEED_OSL
-
+// appleseed version
 #define APPLESEED_VERSION_MAJOR     ${appleseed_version_major}
 #define APPLESEED_VERSION_MINOR     ${appleseed_version_minor}
 #define APPLESEED_VERSION_PATCH     ${appleseed_version_patch}
