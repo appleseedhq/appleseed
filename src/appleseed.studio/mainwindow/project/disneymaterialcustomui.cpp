@@ -96,7 +96,6 @@ DisneyMaterialCustomUI::DisneyMaterialCustomUI(const Project& project)
   : m_project(project)
   , m_parent(0)
   , m_layout(0)
-  , m_num_created_layers(0)
 {
 }
 
@@ -208,24 +207,21 @@ size_t DisneyMaterialCustomUI::find_layer_index_by_widget(const QWidget* layer_w
     return ~0;
 }
 
+vector<string> DisneyMaterialCustomUI::collect_layer_names() const
+{
+    vector<string> names;
+
+    for (size_t i = 0; i < m_layers.size(); ++i)
+        names.push_back(m_layers[i]->get_values().get<string>("layer_name"));
+
+    return names;
+}
+
 Dictionary DisneyMaterialCustomUI::make_new_layer_values()
 {
-    Dictionary values;
-
-    const DictionaryArray input_metadata = DisneyMaterialLayer::get_input_metadata();
-
-    for (size_t i = 0; i < input_metadata.size(); ++i)
-    {
-        const Dictionary& im = input_metadata[i];
-        const string input_name = im.get<string>("name");
-        const string input_value =
-            input_name == "layer_name"
-                ? "layer" + to_string(++m_num_created_layers)
-                : im.get<string>("default");
-        values.insert(input_name, input_value);
-    }
-
-    return values;
+    return
+        DisneyMaterialLayer::get_default_values()
+            .insert("layer_name", make_unique_name("layer", collect_layer_names()));
 }
 
 void DisneyMaterialCustomUI::append_new_layer(const Dictionary& values)

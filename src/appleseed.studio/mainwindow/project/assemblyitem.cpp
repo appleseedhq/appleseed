@@ -229,7 +229,7 @@ void AssemblyItem::instantiate(const string& name)
 void AssemblyItem::slot_instantiate()
 {
     const string instance_name_suggestion =
-        get_name_suggestion(
+        make_unique_name(
             string(m_assembly.get_name()) + "_inst",
             m_parent.assembly_instances());
 

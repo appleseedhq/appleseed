@@ -41,7 +41,7 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// OpenImageIO headers
+// OpenImageIO headers.
 #include "OpenImageIO/texture.h"
 
 // Forward declarations.
@@ -101,7 +101,7 @@ class APPLESEED_DLLSYMBOL DisneyMaterialLayer
     struct Impl;
     Impl* impl;
 
-    // Constructor
+    // Constructor.
     DisneyMaterialLayer(
         const char*                     name,
         const foundation::Dictionary&   params);

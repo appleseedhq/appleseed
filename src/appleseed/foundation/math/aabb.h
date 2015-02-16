@@ -147,6 +147,12 @@ class AABB
     VectorType extent() const;
     ValueType extent(const size_t dim) const;
 
+    // Return the diameter of the bounding box.
+    ValueType diameter() const;
+
+    // Return the radius of the bounding box.
+    ValueType radius() const;
+
     // Return the volume of the bounding box.
     T volume() const;
 
@@ -484,6 +490,22 @@ inline T AABB<T, N>::extent(const size_t dim) const
     assert(is_valid());
 
     return max[dim] - min[dim];
+}
+
+template <typename T, size_t N>
+inline T AABB<T, N>::diameter() const
+{
+    assert(is_valid());
+
+    return norm(extent());
+}
+
+template <typename T, size_t N>
+inline T AABB<T, N>::radius() const
+{
+    assert(is_valid());
+
+    return T(0.5) * diameter();
 }
 
 template <typename T, size_t N>

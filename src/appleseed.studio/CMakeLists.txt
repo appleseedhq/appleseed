@@ -267,7 +267,6 @@ source_group ("mainwindow" FILES
 set (meta_tests_sources
     meta/tests/test_interop.cpp
     meta/tests/test_projectmanager.cpp
-    meta/tests/test_tools.cpp
 )
 list (APPEND appleseed.studio_sources
     ${meta_tests_sources}

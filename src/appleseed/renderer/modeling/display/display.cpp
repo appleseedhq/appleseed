@@ -33,6 +33,7 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/kernel/rendering/itilecallback.h"
 #include "renderer/modeling/project/project.h"
+#include "renderer/utility/plugin.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/sharedlibrary.h"
@@ -67,7 +68,7 @@ struct Display::Impl
     Impl(
         const char*         plugin_path,
         const ParamArray&   params)
-      : m_plugin(new SharedLibrary(plugin_path))
+      : m_plugin(PluginCache::load(plugin_path))
     {
         typedef ITileCallbackFactory*(*CreateFnType)(const ParamArray*);
 
@@ -77,7 +78,7 @@ struct Display::Impl
         m_tile_callback_factory.reset(create_fn(&params));
     }
 
-    auto_ptr<SharedLibrary>                 m_plugin;
+    auto_release_ptr<Plugin>                m_plugin;
     auto_release_ptr<ITileCallbackFactory>  m_tile_callback_factory;
 };
 
@@ -100,7 +101,7 @@ void Display::release()
     delete this;
 }
 
-void Display::open(const Project& project)
+bool Display::open(const Project& project)
 {
     string plugin;
 
@@ -118,8 +119,8 @@ void Display::open(const Project& project)
     }
     catch (const ExceptionDictionaryItemNotFound&)
     {
-        RENDERER_LOG_FATAL("%s", "cannot open display: bad parameters.");
-        return;
+        RENDERER_LOG_ERROR("%s", "cannot open display: missing plugin_name parameter.");
+        return false;
     }
 
     try
@@ -128,12 +129,21 @@ void Display::open(const Project& project)
     }
     catch (const ExceptionCannotLoadSharedLib& e)
     {
-        RENDERER_LOG_FATAL("cannot open display: %s", e.what());
+        RENDERER_LOG_ERROR("cannot open display: %s", e.what());
+        return false;
+    }
+    catch (const ExceptionPluginInitializationFailed&)
+    {
+        RENDERER_LOG_ERROR("initialization of display plugin %s failed", plugin.c_str());
+        return false;
     }
     catch (const ExceptionSharedLibCannotGetSymbol& e)
     {
-        RENDERER_LOG_FATAL("cannot open display: %s", e.what());
+        RENDERER_LOG_ERROR("cannot load symbol %s from display plugin", e.what());
+        return false;
     }
+
+    return true;
 }
 
 void Display::close()

@@ -1180,6 +1180,7 @@ source_group ("renderer\\meta\\benchmarks" FILES
 set (renderer_meta_tests_sources
     renderer/meta/tests/test_assembly.cpp
     renderer/meta/tests/test_bsdfmix.cpp
+    renderer/meta/tests/test_containers.cpp
     renderer/meta/tests/test_dynamicspectrum.cpp
     renderer/meta/tests/test_entitymap.cpp
     renderer/meta/tests/test_entityvector.cpp
@@ -1690,6 +1691,8 @@ set (renderer_utility_sources
     renderer/utility/messagecontext.h
     renderer/utility/paramarray.cpp
     renderer/utility/paramarray.h
+    renderer/utility/plugin.cpp
+    renderer/utility/plugin.h
     renderer/utility/stochasticcast.h
     renderer/utility/testutils.cpp
     renderer/utility/testutils.h

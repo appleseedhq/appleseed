@@ -30,11 +30,6 @@
 // Interface header.
 #include "materialcollectionitem.h"
 
-// appleseed.renderer headers.
-#ifdef APPLESEED_WITH_DISNEY_MATERIAL
-#include "renderer/modeling/material/disneymaterial.h"
-#endif
-
 // appleseed.studio headers.
 #include "mainwindow/project/assemblyitem.h"
 #ifdef APPLESEED_WITH_DISNEY_MATERIAL
@@ -45,6 +40,12 @@
 #include "mainwindow/project/fixedmodelentityitem.h"
 #include "mainwindow/project/materialitem.h"
 #include "mainwindow/project/tools.h"
+
+// appleseed.renderer headers.
+#ifdef APPLESEED_WITH_DISNEY_MATERIAL
+#include "renderer/modeling/material/disneymaterial.h"
+#endif
+#include "renderer/api/scene.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/settings/settingsfilereader.h"
@@ -231,7 +232,7 @@ void MaterialCollectionItem::do_create_material(const char* model)
         EntityTraits::get_human_readable_entity_type_name();
 
     const string name_suggestion =
-        get_name_suggestion(
+        make_unique_name(
             EntityTraits::get_entity_type_name(),
             EntityTraits::get_entity_container(Base::m_parent));
 

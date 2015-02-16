@@ -245,7 +245,9 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
 #ifdef APPLESEED_WITH_OIIO
 
     // Initialize OIIO.
-    OIIOComponents oiio_components(m_project, m_params);
+    OIIOComponents oiio_components(
+        m_project,
+        m_params.child("texture_store"));
 
 #endif
 
@@ -274,7 +276,9 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     {
         if (Display* display = m_project.get_display())
         {
-            display->open(m_project);
+            if (!display->open(m_project))
+                return IRendererController::AbortRendering;
+
             close_display.set_display(display);
             tile_callback_factory = display->get_tile_callback_factory();
         }
