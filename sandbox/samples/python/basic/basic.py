@@ -195,6 +195,10 @@ class RendererController(asr.IRendererController):
 
     # This method is called continuously during rendering.
     def on_progress(self):
+        pass
+
+    #  Return the current rendering status.
+    def get_status(self):
         if self.__abort:
             return asr.IRenderControllerStatus.AbortRendering
         else:
@@ -224,7 +228,7 @@ class RenderThread(threading.Thread):
     def run(self):
         self.__renderer.render()
 
-RENDER_ON_THREAD = False
+RENDER_ON_THREAD = True
 
 def main():
     # Create a log target that outputs to stderr, and binds it to the renderer's global logger.
