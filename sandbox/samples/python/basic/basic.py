@@ -97,12 +97,12 @@ def build_project():
     # Light
     #------------------------------------------------------------------------
 
-    # Create a color called "light_radiance" and insert it into the assembly.
+    # Create a color called "light_intensity" and insert it into the assembly.
     LightRadiance = [1.0, 1.0, 1.0]
-    assembly.colors().insert(asr.ColorEntity("light_radiance", { 'color_space' : 'srgb', 'multiplier' : 30.0 }, LightRadiance))
+    assembly.colors().insert(asr.ColorEntity("light_intensity", { 'color_space' : 'srgb', 'multiplier' : 30.0 }, LightRadiance))
 
     # Create a point light called "light" and insert it into the assembly.
-    light = asr.Light("point_light", "light", { 'radiance' : 'light_radiance' })
+    light = asr.Light("point_light", "light", { 'intensity' : 'light_intensity' })
     light.set_transform(asr.Transformd(asr.Matrix4d.translation(asr.Vector3d(0.6, 2.0, 1.0))))
     assembly.lights().insert(light)
 
