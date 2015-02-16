@@ -34,9 +34,16 @@
 #define STDOSL_H
 
 // appleseed specific
-#ifndef __APPLESEED_OSL__
 #define __APPLESEED_OSL__
-#endif
+
+#define APPLESEED_VERSION_MAJOR     ${appleseed_version_major}
+#define APPLESEED_VERSION_MINOR     ${appleseed_version_minor}
+#define APPLESEED_VERSION_PATCH     ${appleseed_version_patch}
+
+#define APPLESEED_VERSION               \
+    APPLESEED_VERSION_MAJOR * 10000 +   \
+    APPLESEED_VERSION_MINOR * 100 +     \
+    APPLESEED_VERSION_PATCH
 
 #ifndef M_PI
 #define M_PI       3.1415926535897932        /* pi */
