@@ -70,16 +70,16 @@ ExceptionPluginInitializationFailed::ExceptionPluginInitializationFailed()
 
 struct Plugin::Impl
 {
-    explicit Impl(shared_ptr<SharedLibrary> p)
+    explicit Impl(boost::shared_ptr<SharedLibrary> p)
       : m_library(p)
     {
         assert(m_library);
     }
 
-    shared_ptr<SharedLibrary> m_library;
+    boost::shared_ptr<SharedLibrary> m_library;
 };
 
-Plugin::Plugin(Impl *impl)
+Plugin::Plugin(Impl* impl)
 {
     assert(impl);
     this->impl = impl;
@@ -100,36 +100,34 @@ void* Plugin::get_symbol(const char* name, const bool no_throw) const
     return impl->m_library->get_symbol(name, no_throw);
 }
 
+
 //
 // PluginCache class implementation.
 //
 
 namespace
 {
+    typedef std::map<string, boost::weak_ptr<SharedLibrary> > PluginCacheType;
 
-typedef std::map<string, weak_ptr<SharedLibrary> > PluginCacheType;
-PluginCacheType g_plugin_cache;
+    PluginCacheType g_plugin_cache;
+    mutex g_plugin_cache_mutex;
 
-mutex g_plugin_cache_mutex;
-
-struct PluginDeleter
-{
-    void operator()(SharedLibrary *p)
+    struct PluginDeleter
     {
-        lock_guard<mutex> lock(g_plugin_cache_mutex);
+        void operator()(SharedLibrary* p)
+        {
+            lock_guard<mutex> lock(g_plugin_cache_mutex);
 
-        // Try to call the plugin uninitialize function if defined.
-        Plugin::UnInitPluginFnType uninit_fn =
-            reinterpret_cast<Plugin::UnInitPluginFnType>(
-                p->get_symbol("uninitialize_plugin"));
+            // Try to call the plugin uninitialize function if defined.
+            Plugin::UnInitPluginFnType uninit_fn =
+                reinterpret_cast<Plugin::UnInitPluginFnType>(
+                    p->get_symbol("uninitialize_plugin"));
+            if (uninit_fn)
+                uninit_fn();
 
-        if (uninit_fn)
-            uninit_fn();
-
-        delete p;
-    }
-};
-
+            delete p;
+        }
+    };
 }
 
 auto_release_ptr<Plugin> PluginCache::load(const char* path)
@@ -140,29 +138,28 @@ auto_release_ptr<Plugin> PluginCache::load(const char* path)
     PluginCacheType::iterator it = g_plugin_cache.find(path);
     if (it != g_plugin_cache.end())
     {
-        if (shared_ptr<SharedLibrary> lib = it->second.lock())
+        if (boost::shared_ptr<SharedLibrary> lib = it->second.lock())
         {
-            Plugin::Impl *i = new Plugin::Impl(lib);
-            return auto_release_ptr<Plugin>(new Plugin(i));
+            Plugin::Impl* impl = new Plugin::Impl(lib);
+            return auto_release_ptr<Plugin>(new Plugin(impl));
         }
     }
 
     // If this plugin is not in the cache, load the shared lib.
-    shared_ptr<SharedLibrary> lib(new SharedLibrary(path), PluginDeleter());
+    boost::shared_ptr<SharedLibrary> lib(new SharedLibrary(path), PluginDeleter());
 
     // Try to call the initialization function if defined.
     Plugin::InitPluginFnType init_fn =
         reinterpret_cast<Plugin::InitPluginFnType>(
             lib->get_symbol("initialize_plugin"));
-
     if (init_fn)
     {
         if (!init_fn())
             throw ExceptionPluginInitializationFailed();
     }
 
-    Plugin::Impl *impl = new Plugin::Impl(lib);
-    g_plugin_cache[path] = weak_ptr<SharedLibrary>(lib);
+    Plugin::Impl* impl = new Plugin::Impl(lib);
+    g_plugin_cache[path] = boost::weak_ptr<SharedLibrary>(lib);
     return auto_release_ptr<Plugin>(new Plugin(impl));
 }
 
