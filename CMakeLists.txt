@@ -126,7 +126,7 @@ endif ()
 
 
 #--------------------------------------------------------------------------------------------------
-# Auto-generate version header.
+# Auto-generate version headers.
 #--------------------------------------------------------------------------------------------------
 
 set (appleseed_version_major    1)
@@ -136,6 +136,11 @@ set (appleseed_version_maturity beta)
 
 configure_file (${PROJECT_SOURCE_DIR}/src/appleseed/foundation/core/version.h.in
                 ${PROJECT_SOURCE_DIR}/src/appleseed/foundation/core/version.h)
+
+if (WITH_OSL)
+    configure_file (${PROJECT_SOURCE_DIR}/src/appleseed/renderer/kernel/shading/stdosl.h.in
+                    ${PROJECT_SOURCE_DIR}/src/appleseed/renderer/kernel/shading/stdosl.h)
+endif ()
 
 #--------------------------------------------------------------------------------------------------
 # Boost libraries.
