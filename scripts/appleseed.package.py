@@ -442,7 +442,7 @@ class MacPackageBuilder(PackageBuilder):
 class LinuxPackageBuilder(PackageBuilder):
     def __init__(self, settings, package_info):
         PackageBuilder.__init__(self, settings, package_info)
-        self.system_libs_prefixes = ["linux", "librt", "libpthread", "libGL", "libX", "libselinux", "libICE", "libSM", "libdl", "libm.so", "libgcc", "libc.so", "/lib64/ld-linux-", "libstdc++", "libxcb", "libdrm", "libnsl", "libuuid", "libgthread", "libglib", "libgobject", "libglapi", "libffi", "libfontconfig", "libpython"]
+        self.system_libs_prefixes = ["linux", "librt", "libpthread", "libGL", "libX", "libselinux", "libICE", "libSM", "libdl", "libm.so", "libgcc", "libc.so", "/lib64/ld-linux-", "libstdc++", "libxcb", "libdrm", "libnsl", "libuuid", "libgthread", "libglib", "libgobject", "libglapi", "libffi", "libfontconfig", "libutil", "libpython"]
 
     def alterate_stage(self):
         self.make_executable(os.path.join("appleseed/bin", "maketx"))
