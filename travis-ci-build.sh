@@ -42,6 +42,9 @@ cmake \
     -D OSL_COMP_LIBRARY=$DEPSDIR/lib/liboslcomp.so \
     -D OSL_EXEC_LIBRARY=$DEPSDIR/lib/liboslexec.so \
     -D OSL_QUERY_LIBRARY=$DEPSDIR/lib/liboslquery.so \
+    -D OSL_COMPILER=$DEPSDIR/bin/oslc \
+    -D OSL_MAKETX=$DEPSDIR/bin/maketx \
+    -D OSL_QUERY_INFO=$DEPSDIR/bin/oslinfo \
     -D USE_EXTERNAL_ZLIB=ON \
     -D USE_EXTERNAL_PNG=ON \
     -D USE_EXTERNAL_XERCES=ON \
