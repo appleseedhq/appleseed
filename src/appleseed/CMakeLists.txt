@@ -1804,7 +1804,7 @@ if (WITH_OSL)
     endforeach ()
 
     # Copy OSL and OIIO tools to the sandbox.
-    if (USE_EXTERNAL_SEEXPR)
+    if (USE_EXTERNAL_OSL)
         add_custom_command (TARGET appleseed POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy ${OSL_COMPILER} ${PROJECT_SOURCE_DIR}/sandbox/bin/
         )
