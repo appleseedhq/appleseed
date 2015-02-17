@@ -36,7 +36,7 @@ cmake \
     -D OPENEXR_IMF_LIBRARY=$DEPSDIR/lib/libIlmImf-2_2.so.22 \
     -D USE_EXTERNAL_SEEXPR=ON \
     -D SEEXPR_INCLUDE_DIR=$DEPSDIR/include \
-    -D SEEXPR_LIBRARY=$DEPSDIR/libSeExpr.so \
+    -D SEEXPR_LIBRARY=$DEPSDIR/lib/libSeExpr.so \
     -D USE_EXTERNAL_OIIO=ON \
     -D OPENIMAGEIO_INCLUDE_DIR=$DEPSDIR/include \
     -D OPENIMAGEIO_LIBRARY=$DEPSDIR/lib/libOpenImageIO.so.1.6 \
