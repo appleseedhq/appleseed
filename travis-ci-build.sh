@@ -9,16 +9,18 @@ mkdir build
 cd build
 
 cmake \
-    -D WITH_CLI=ON \
+    -D WITH_CLI=OFF \
     -D WITH_STUDIO=OFF \
     -D WITH_TOOLS=OFF \
     -D WITH_ALEMBIC=OFF \
     -D WITH_PYTHON=OFF \
+    -D WITH_DISNEY_MATERIAL=ON \
+    -D WITH_OSL=ON \
     -D Boost_USE_STATIC_LIBS=OFF \
     -D BOOST_INCLUDEDIR=$DEPSDIR/include/boost_1_55_0 \
     -D BOOST_LIBRARYDIR=$DEPSDIR/lib/ \
     -D Boost_CHRONO_LIBRARY_DEBUG=$DEPSDIR/lib/libboost_chrono-gcc48-mt-1_55.so.1.55.0 \
-    -D Boost_DATE_TIME_LIBRARY_DEBUG=$DEPSDIR/lib/libboost_datet_ime-gcc48-mt-1_55.so.1.55.0 \
+    -D Boost_DATE_TIME_LIBRARY_DEBUG=$DEPSDIR/lib/libboost_date_time-gcc48-mt-1_55.so.1.55.0 \
     -D Boost_FILESYSTEM_LIBRARY_DEBUG=$DEPSDIR/lib/libboost_filesystem-gcc48-mt-1_55.so.1.55.0 \
     -D Boost_REGEX_LIBRARY_DEBUG=$DEPSDIR/lib/libboost_regex-gcc48-mt-1_55.so.1.55.0 \
     -D Boost_SYSTEM_LIBRARY_DEBUG=$DEPSDIR/lib/libboost_system-gcc48-mt-1_55.so.1.55.0 \
@@ -32,6 +34,14 @@ cmake \
     -D OPENEXR_INCLUDE_DIR=$DEPSDIR/include \
     -D OPENEXR_THREADS_LIBRARY=$DEPSDIR/lib/libIlmThread-2_2.so.12 \
     -D OPENEXR_IMF_LIBRARY=$DEPSDIR/lib/libIlmImf-2_2.so.22 \
+    -D USE_EXTERNAL_OIIO=ON \
+    -D OPENIMAGEIO_INCLUDE_DIR=$DEPSDIR/include \
+    -D OPENIMAGEIO_LIBRARY=$DEPSDIR/lib/libOpenImageIO.so.1.6 \
+    -D USE_EXTERNAL_OSL=ON \
+    -D OSL_INCLUDE_DIR=$DEPSDIR/include \
+    -D OSL_COMP_LIBRARY=$DEPSDIR/lib/liboslcomp.so \
+    -D OSL_EXEC_LIBRARY=$DEPSDIR/lib/liboslexec.so \
+    -D OSL_QUERY_LIBRARY=$DEPSDIR/lib/liboslquery.so \
     -D USE_EXTERNAL_ZLIB=ON \
     -D USE_EXTERNAL_PNG=ON \
     -D USE_EXTERNAL_XERCES=ON \
