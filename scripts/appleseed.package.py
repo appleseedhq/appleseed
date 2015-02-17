@@ -442,7 +442,7 @@ class MacPackageBuilder(PackageBuilder):
 class LinuxPackageBuilder(PackageBuilder):
     def __init__(self, settings, package_info):
         PackageBuilder.__init__(self, settings, package_info)
-        self.system_libs_prefixes = ["linux", "librt", "libpthread", "libGL", "libX", "libselinux", "libICE", "libSM", "libdl", "libm.so", "libgcc", "libc.so", "/lib64/ld-linux-", "libstdc++", "libxcb", "libdrm", "libnsl", "libuuid", "libgthread", "libglib", "libgobject", "libglapi", "libffi", "libfontconfig"]
+        self.system_libs_prefixes = ["linux", "librt", "libpthread", "libGL", "libX", "libselinux", "libICE", "libSM", "libdl", "libm.so", "libgcc", "libc.so", "/lib64/ld-linux-", "libstdc++", "libxcb", "libdrm", "libnsl", "libuuid", "libgthread", "libglib", "libgobject", "libglapi", "libffi", "libfontconfig", "libpython"]
 
     def alterate_stage(self):
         self.make_executable(os.path.join("appleseed/bin", "maketx"))
@@ -460,6 +460,11 @@ class LinuxPackageBuilder(PackageBuilder):
             for f in filenames:
                 if not f.endswith(".py"):
                     bin_libs = bin_libs.union(self.get_dependencies_for_file(os.path.join("appleseed/bin", f)))
+
+        # get shared libs needed by appleseed.python.
+        for dirpath, dirnames, filenames in os.walk("appleseed/lib"):
+            if '_appleseedpython.so' in filenames:
+                bin_libs = bin_libs.union(self.get_dependencies_for_file(os.path.join(dirpath, "_appleseedpython.so")))
 
         # get shared libs needed by libraries.
         lib_libs = set()
