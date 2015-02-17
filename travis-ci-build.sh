@@ -9,7 +9,7 @@ mkdir build
 cd build
 
 cmake \
-    -D WITH_CLI=OFF \
+    -D WITH_CLI=ON \
     -D WITH_STUDIO=OFF \
     -D WITH_TOOLS=OFF \
     -D WITH_ALEMBIC=OFF \
