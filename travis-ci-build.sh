@@ -1,5 +1,7 @@
 #!/bin/sh
 
+git clone https://github.com/appleseedhq/travis_linux_deps.git
+
 mkdir build
 cd build
 
@@ -20,4 +22,5 @@ cmake \
 
 make
 
-env LD_LIBRARY_PATH=../sandbox/lib/Debug:$LD_LIBRARY_PATH ../sandbox/bin/Debug/appleseed.cli --run-unit-tests --verbose-unit-tests
+export LD_LIBRARY_PATH=../sandbox/lib/Debug:$LD_LIBRARY_PATH
+../sandbox/bin/Debug/appleseed.cli --run-unit-tests --verbose-unit-tests
