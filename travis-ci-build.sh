@@ -56,5 +56,5 @@ cmake \
 
 make
 
-export LD_LIBRARY_PATH=../sandbox/lib/Debug:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=$DEPSDIR/lib:../sandbox/lib/Debug:$LD_LIBRARY_PATH
 ../sandbox/bin/Debug/appleseed.cli --run-unit-tests --verbose-unit-tests
