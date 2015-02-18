@@ -2,8 +2,8 @@
 
 THISDIR=`pwd`
 
-git clone https://github.com/appleseedhq/travis_linux_deps.git
-DEPSDIR=$THISDIR/travis_linux_deps
+git clone https://github.com/appleseedhq/travis-linux-deps.git
+DEPSDIR=$THISDIR/travis-linux-deps
 
 mkdir build
 cd build
