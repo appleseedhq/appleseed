@@ -13,7 +13,7 @@ cmake \
     -D WITH_STUDIO=OFF \
     -D WITH_TOOLS=OFF \
     -D WITH_ALEMBIC=OFF \
-    -D WITH_PYTHON=OFF \
+    -D WITH_PYTHON=ON \
     -D WITH_DISNEY_MATERIAL=ON \
     -D WITH_OSL=ON \
     -D Boost_USE_STATIC_LIBS=OFF \
@@ -22,6 +22,7 @@ cmake \
     -D Boost_CHRONO_LIBRARY_DEBUG=$DEPSDIR/lib/libboost_chrono-gcc48-mt-1_55.so.1.55.0 \
     -D Boost_DATE_TIME_LIBRARY_DEBUG=$DEPSDIR/lib/libboost_date_time-gcc48-mt-1_55.so.1.55.0 \
     -D Boost_FILESYSTEM_LIBRARY_DEBUG=$DEPSDIR/lib/libboost_filesystem-gcc48-mt-1_55.so.1.55.0 \
+    -D Boost_PYTHON_LIBRARY_DEBUG=$DEPSDIR/lib/libboost_python-gcc48-mt-1_55.so.1.55.0 \
     -D Boost_REGEX_LIBRARY_DEBUG=$DEPSDIR/lib/libboost_regex-gcc48-mt-1_55.so.1.55.0 \
     -D Boost_SYSTEM_LIBRARY_DEBUG=$DEPSDIR/lib/libboost_system-gcc48-mt-1_55.so.1.55.0 \
     -D Boost_THREAD_LIBRARY_DEBUG=$DEPSDIR/lib/libboost_thread-gcc48-mt-1_55.so.1.55.0 \
@@ -48,6 +49,8 @@ cmake \
     -D OSL_COMPILER=$DEPSDIR/bin/oslc \
     -D OSL_MAKETX=$DEPSDIR/bin/maketx \
     -D OSL_QUERY_INFO=$DEPSDIR/bin/oslinfo \
+    -D PYTHON_INCLUDE_DIR=$DEPSDIR/include/python2.7 \
+    -D PYTHON_LIBRARY=$DEPSDIR/lib/libpython2.7.so \
     -D USE_EXTERNAL_ZLIB=ON \
     -D USE_EXTERNAL_PNG=ON \
     -D USE_EXTERNAL_XERCES=ON \
