@@ -51,7 +51,7 @@ cmake \
     -D OSL_MAKETX=$DEPSDIR/bin/maketx \
     -D OSL_QUERY_INFO=$DEPSDIR/bin/oslinfo \
     -D PYTHON_INCLUDE_DIR=$DEPSDIR/include/python2.7 \
-    -D PYTHON_LIBRARY=$DEPSDIR/lib/libpython2.7.so \
+    -D PYTHON_LIBRARY=$DEPSDIR/lib/libpython2.7.so.1.0 \
     -D USE_EXTERNAL_ZLIB=ON \
     -D USE_EXTERNAL_PNG=ON \
     -D USE_EXTERNAL_XERCES=ON \
