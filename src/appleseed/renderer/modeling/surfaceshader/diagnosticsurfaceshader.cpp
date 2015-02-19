@@ -208,6 +208,8 @@ void DiagnosticSurfaceShader::evaluate(
     {
       case Color:
         {
+            shading_result.set_main_to_opaque_pink_linear_rgba();
+
             const Material* material = shading_point.get_material();
             if (material)
             {
