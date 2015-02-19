@@ -378,6 +378,7 @@ namespace
                 Spectrum env_radiance;
                 double env_prob;
                 m_env_edf->evaluate(
+                    m_shading_context,
                     input_evaluator,
                     -vertex.m_outgoing,
                     env_radiance,
@@ -638,6 +639,7 @@ namespace
                 Spectrum env_radiance;
                 double env_prob;
                 m_env_edf->evaluate(
+                    m_shading_context,
                     input_evaluator,
                     -vertex.m_outgoing,
                     env_radiance,

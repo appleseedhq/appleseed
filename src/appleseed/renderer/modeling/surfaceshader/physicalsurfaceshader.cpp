@@ -344,7 +344,7 @@ namespace
                     const ShadingRay& ray = shading_point.get_ray();
                     const Vector3d direction = normalize(ray.m_dir);
                     ShadingResult sky;
-                    environment_shader->evaluate(input_evaluator, direction, sky);
+                    environment_shader->evaluate(shading_context, input_evaluator, direction, sky);
                     sky_color = sky.m_main.m_color;
                 }
                 else sky_color.set(0.0f);

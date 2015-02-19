@@ -29,6 +29,13 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/intersection/intersector.h"
+#include "renderer/kernel/lighting/tracer.h"
+#ifdef APPLESEED_WITH_OSL
+#include "renderer/kernel/rendering/rendererservices.h"
+#include "renderer/kernel/shading/oslshadergroupexec.h"
+#endif
+#include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/environmentedf/constantenvironmentedf.h"
@@ -53,6 +60,23 @@
 #include "foundation/math/vector.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/test.h"
+
+// OSL headers.
+#ifdef APPLESEED_WITH_OSL
+#include "foundation/platform/oslheaderguards.h"
+BEGIN_OSL_INCLUDES
+#include "OSL/oslexec.h"
+END_OSL_INCLUDES
+#endif
+
+// OpenImageIO headers.
+#ifdef APPLESEED_WITH_OIIO
+#include "OpenImageIO/texture.h"
+#endif
+
+// Boost headers.
+#include "boost/bind.hpp"
+#include "boost/shared_ptr.hpp"
 
 // Standard headers.
 #include <cassert>
@@ -162,6 +186,50 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
 
             TextureStore texture_store(m_scene);
             TextureCache texture_cache(texture_store);
+
+#ifdef APPLESEED_WITH_OIIO
+            boost::shared_ptr<OIIO::TextureSystem> texture_system(
+                OIIO::TextureSystem::create(),
+                boost::bind(&OIIO::TextureSystem::destroy, _1));
+#endif
+#ifdef APPLESEED_WITH_OSL
+            RendererServices renderer_services(
+                m_project,
+                *texture_system,
+                texture_store);
+
+            boost::shared_ptr<OSL::ShadingSystem> shading_system(
+                new OSL::ShadingSystem(&renderer_services, texture_system.get()));
+#endif
+
+            Intersector intersector(
+                m_project.get_trace_context(),
+                texture_cache);
+
+    #ifdef APPLESEED_WITH_OSL
+            OSLShaderGroupExec sg_exec(*shading_system);
+    #endif
+            Tracer tracer(
+                m_scene,
+                intersector,
+                texture_cache
+    #ifdef APPLESEED_WITH_OSL
+                , sg_exec
+    #endif
+                );
+
+            ShadingContext shading_context(
+                intersector,
+                tracer,
+                texture_cache
+    #ifdef APPLESEED_WITH_OIIO
+                , *texture_system
+    #endif
+    #ifdef APPLESEED_WITH_OSL
+                , sg_exec
+    #endif
+                , 0);
+
             InputEvaluator input_evaluator(texture_cache);
 
             Vector3d outgoing;
@@ -169,6 +237,7 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
             double probability1;
 
             env_edf.sample(
+                shading_context,
                 input_evaluator,
                 Vector2d(0.3, 0.7),
                 outgoing,
@@ -178,6 +247,7 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
             Spectrum value2;
 
             env_edf.evaluate(
+                shading_context,
                 input_evaluator,
                 outgoing,
                 value2);

@@ -150,6 +150,7 @@ void compute_ibl_bsdf_sampling(
         Spectrum env_value;
         double env_prob;
         environment_edf.evaluate(
+            shading_context,
             input_evaluator,
             sample.get_incoming(),
             env_value,
@@ -213,6 +214,7 @@ void compute_ibl_environment_sampling(
         Spectrum env_value;
         double env_prob;
         environment_edf.sample(
+            shading_context,
             input_evaluator,
             s,
             incoming,

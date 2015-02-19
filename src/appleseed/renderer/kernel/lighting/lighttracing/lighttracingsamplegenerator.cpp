@@ -757,6 +757,7 @@ namespace
             Spectrum env_edf_value;
             double env_edf_prob;
             env_edf->sample(
+                m_shading_context,
                 input_evaluator,
                 sampling_context.next_vector2<2>(),
                 outgoing,               // points toward the environment
