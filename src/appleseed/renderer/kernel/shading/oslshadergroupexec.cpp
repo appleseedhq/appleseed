@@ -116,8 +116,8 @@ void OSLShaderGroupExec::execute_emission(
 }
 
 Color3f OSLShaderGroupExec::execute_background(
-    const ShaderGroup&  shader_group,
-    const Vector3d&     outgoing) const
+    const ShaderGroup&              shader_group,
+    const Vector3d&                 outgoing) const
 {
     assert(m_osl_shading_context);
     assert(m_osl_thread_info);
