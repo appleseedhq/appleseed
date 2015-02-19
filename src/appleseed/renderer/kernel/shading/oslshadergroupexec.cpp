@@ -38,6 +38,8 @@
 // Standard headers.
 #include <cassert>
 
+using namespace foundation;
+
 namespace renderer
 {
 
@@ -111,6 +113,27 @@ void OSLShaderGroupExec::execute_emission(
         shading_point,
         VisibilityFlags::LightRay,
         surface_area);
+}
+
+Color3f OSLShaderGroupExec::execute_background(
+    const ShaderGroup&  shader_group,
+    const Vector3d&     outgoing) const
+{
+    assert(m_osl_shading_context);
+    assert(m_osl_thread_info);
+
+    OSL::ShaderGlobals sg;
+    memset(&sg, 0, sizeof(OSL::ShaderGlobals));
+    sg.I = Vector3f(outgoing);
+    sg.renderer = m_osl_shading_system.renderer();
+    sg.raytype = VisibilityFlags::CameraRay;
+
+    m_osl_shading_system.execute(
+        *m_osl_shading_context,
+        *shader_group.shader_group_ref(),
+        sg);
+
+    return process_background_tree(sg.Ci);
 }
 
 void OSLShaderGroupExec::do_execute(

@@ -35,6 +35,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/image/color.h"
 
 // OSL headers.
 #include "foundation/platform/oslheaderguards.h"
@@ -88,6 +89,10 @@ class OSLShaderGroupExec
         const ShaderGroup&              shader_group,
         const ShadingPoint&             shading_point,
         const float                     surface_area) const;
+
+    foundation::Color3f execute_background(
+        const ShaderGroup&          shader_group,
+        const foundation::Vector3d& outgoing) const;
 
     void do_execute(
         const ShaderGroup&              shader_group,
