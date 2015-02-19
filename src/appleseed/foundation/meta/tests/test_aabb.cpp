@@ -388,6 +388,24 @@ TEST_SUITE(Foundation_Math_AABB)
         EXPECT_FEQ(Vector3d(5.0, 7.0, 9.0), bbox.extent());
     }
 
+    TEST_CASE(TestDiameter)
+    {
+        const AABB3d bbox(
+            Vector3d(-1.0, -2.0, -3.0),
+            Vector3d(4.0, 5.0, 6.0));
+
+        EXPECT_FEQ(sqrt(5.0 * 5.0 + 7.0 * 7.0 + 9.0 * 9.0), bbox.diameter());
+    }
+
+    TEST_CASE(TestRadius)
+    {
+        const AABB3d bbox(
+            Vector3d(-1.0, -2.0, -3.0),
+            Vector3d(4.0, 5.0, 6.0));
+
+        EXPECT_FEQ(sqrt(5.0 * 5.0 + 7.0 * 7.0 + 9.0 * 9.0) / 2.0, bbox.radius());
+    }
+
     TEST_CASE(TestVolume)
     {
         const AABB3d bbox(
