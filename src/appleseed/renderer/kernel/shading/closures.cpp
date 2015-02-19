@@ -669,6 +669,11 @@ float process_holdout_tree(const OSL::ClosureColor* ci)
     return saturate(luminance(do_process_closure_id_tree(ci, HoldoutID)));
 }
 
+Color3f process_background_tree(const OSL::ClosureColor* ci)
+{
+    return do_process_closure_id_tree(ci, BackgroundID);
+}
+
 }   // namespace renderer
 
 // We want to reuse OSL macros to declare closure params and register the closures.
