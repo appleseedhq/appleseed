@@ -56,6 +56,8 @@ namespace renderer
 // Assembly class implementation.
 //
 
+const char* Model = "assembly";
+
 namespace
 {
     const UniqueID g_class_uid = new_guid();
@@ -108,6 +110,11 @@ Assembly::~Assembly()
 void Assembly::release()
 {
     delete this;
+}
+
+const char* Assembly::get_model() const
+{
+    return Model;
 }
 
 BSDFContainer& Assembly::bsdfs() const
@@ -262,6 +269,11 @@ void Assembly::on_frame_end(const Project& project)
 //
 // AssemblyFactory class implementation.
 //
+
+const char* AssemblyFactory::get_model()
+{
+    return Model;
+}
 
 auto_release_ptr<Assembly> AssemblyFactory::create(
     const char*         name,

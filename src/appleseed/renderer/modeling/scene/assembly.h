@@ -62,6 +62,9 @@ class APPLESEED_DLLSYMBOL Assembly
   , public BaseGroup
 {
   public:
+    // Return a string identifying the model of this entity.
+    virtual const char* get_model() const;
+
     // Return the unique ID of this class of entities.
     static foundation::UniqueID get_class_uid();
 
@@ -132,9 +135,15 @@ class APPLESEED_DLLSYMBOL Assembly
 // Assembly factory.
 //
 
+// To preserve API compatibility, this class
+// does not derive from IAssemblyFactory.
+
 class APPLESEED_DLLSYMBOL AssemblyFactory
 {
   public:
+    // Return a string identifying this assembly model.
+    static const char* get_model();
+
     // Create a new assembly.
     static foundation::auto_release_ptr<Assembly> create(
         const char*         name,

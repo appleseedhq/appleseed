@@ -178,6 +178,7 @@
                     <xsd:element name="assembly_instance" type="assembly_instance"/>
                 </xsd:choice>
                 <xsd:attribute name="name" type="xsd:string" use="required"/>
+                <xsd:attribute name="model" type="xsd:string" use="optional"/>
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
