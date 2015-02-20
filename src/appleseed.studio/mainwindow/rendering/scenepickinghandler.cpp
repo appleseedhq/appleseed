@@ -31,6 +31,7 @@
 #include "scenepickinghandler.h"
 
 // appleseed.studio headers.
+#include "mainwindow/project/itembase.h"
 #include "mainwindow/project/projectexplorer.h"
 #include "utility/mousecoordinatestracker.h"
 
@@ -57,6 +58,7 @@
 #include <QComboBox>
 #include <QEvent>
 #include <QLabel>
+#include <QMenu>
 #include <QMouseEvent>
 #include <QString>
 #include <Qt>
@@ -129,11 +131,23 @@ bool ScenePickingHandler::eventFilter(QObject* object, QEvent* event)
       case QEvent::MouseButtonPress:
         {
             const QMouseEvent* mouse_event = static_cast<QMouseEvent*>(event);
-            if (mouse_event->button() == Qt::LeftButton &&
-                !(mouse_event->modifiers() & (Qt::AltModifier | Qt::ShiftModifier | Qt::ControlModifier)))
+            if (!(mouse_event->modifiers() & (Qt::AltModifier | Qt::ShiftModifier | Qt::ControlModifier)))
             {
-                pick(mouse_event->pos());
-                return true;
+                if (mouse_event->button() == Qt::LeftButton)
+                {
+                    pick(mouse_event->pos());
+                    return true;
+                }
+                else if (mouse_event->button() == Qt::RightButton)
+                {
+                    ItemBase* item = pick(mouse_event->pos());
+                    if (item)
+                    {
+                        QMenu* menu = item->get_single_item_context_menu();
+                        menu->exec(mouse_event->globalPos());
+                    }
+                    return true;
+                }
             }
         }
         break;
@@ -210,12 +224,12 @@ namespace
     }
 }
 
-void ScenePickingHandler::pick(const QPoint& point)
+ItemBase* ScenePickingHandler::pick(const QPoint& point)
 {
     if (!m_project.has_trace_context())
     {
         RENDERER_LOG_INFO("the scene must be rendering or must have been rendered at least once for picking to be available.");
-        return;
+        return 0;
     }
 
     const Vector2i pix = m_mouse_tracker.widget_to_pixel(point);
@@ -250,11 +264,21 @@ void ScenePickingHandler::pick(const QPoint& point)
 
     const Entity* picked_entity = get_picked_entity(result, picking_mode);
 
+    ItemBase* item;
+
     if (picked_entity)
-        m_project_explorer.highlight_entity(picked_entity->get_uid());
-    else m_project_explorer.clear_highlighting();
+    {
+        item = m_project_explorer.highlight_entity(picked_entity->get_uid());
+    }
+    else
+    {
+        m_project_explorer.clear_highlighting();
+        item = 0;
+    }
 
     emit signal_entity_picked();
+
+    return item;
 }
 
 void ScenePickingHandler::set_rgba_label(const QPoint& point) const

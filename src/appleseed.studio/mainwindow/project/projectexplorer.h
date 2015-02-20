@@ -47,6 +47,7 @@
 
 // Forward declarations.
 namespace appleseed { namespace studio { class AttributeEditor; } }
+namespace appleseed { namespace studio { class ItemBase; } }
 namespace appleseed { namespace studio { class RenderingManager; } }
 namespace renderer  { class ParamArray; }
 namespace renderer  { class Project; }
@@ -78,7 +79,7 @@ class ProjectExplorer
     void filter_items(const QString& pattern) const;
 
     void clear_highlighting() const;
-    void highlight_entity(const foundation::UniqueID uid) const;
+    ItemBase* highlight_entity(const foundation::UniqueID uid) const;
 
   signals:
     void signal_project_modified() const;

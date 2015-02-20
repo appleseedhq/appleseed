@@ -34,6 +34,7 @@
 #include <QObject>
 
 // Forward declarations.
+namespace appleseed { namespace studio { class ItemBase; } }
 namespace appleseed { namespace studio { class MouseCoordinatesTracker; } }
 namespace appleseed { namespace studio { class ProjectExplorer; } }
 namespace renderer  { class Project; }
@@ -84,7 +85,7 @@ class ScenePickingHandler
 
     virtual bool eventFilter(QObject* object, QEvent* event);
 
-    void pick(const QPoint& point);
+    ItemBase* pick(const QPoint& point);
     void set_rgba_label(const QPoint& point) const;
 };
 

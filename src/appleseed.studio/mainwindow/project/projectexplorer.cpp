@@ -138,7 +138,16 @@ void ProjectExplorer::clear_highlighting() const
     m_tree_widget->clearSelection();
 }
 
-void ProjectExplorer::highlight_entity(const UniqueID uid) const
+namespace
+{
+    void expand_parents(QTreeWidgetItem* item)
+    {
+        while ((item = item->parent()))
+            item->setExpanded(true);
+    }
+}
+
+ItemBase* ProjectExplorer::highlight_entity(const UniqueID uid) const
 {
     clear_highlighting();
 
@@ -152,12 +161,11 @@ void ProjectExplorer::highlight_entity(const UniqueID uid) const
         m_tree_widget->horizontalScrollBar()->setValue(r.x());
 
         item->setSelected(true);
-
-        while ((item = item->parent()))
-            item->setExpanded(true);
-
+        expand_parents(item);
         m_tree_widget->setFocus();
     }
+
+    return static_cast<ItemBase*>(item);
 }
 
 QMenu* ProjectExplorer::build_single_item_context_menu(QTreeWidgetItem* item) const
