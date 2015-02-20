@@ -106,12 +106,12 @@ class APPLESEED_DLLSYMBOL Assembly
 
     // Perform pre-frame rendering actions.
     // Returns true on success, false otherwise.
-    bool on_frame_begin(
+    virtual bool on_frame_begin(
         const Project&              project,
         foundation::IAbortSwitch*   abort_switch = 0);
 
     // Perform post-frame rendering actions.
-    void on_frame_end(const Project& project);
+    virtual void on_frame_end(const Project& project);
 
   private:
     friend class AssemblyFactory;
