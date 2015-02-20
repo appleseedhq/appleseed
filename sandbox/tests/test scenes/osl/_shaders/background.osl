@@ -1,0 +1,6 @@
+
+surface background()
+{
+    vector dir = normalize(I);
+    Ci = color(fabs(dir[0]), fabs(dir[1]), fabs(dir[2])) * background();
+}
