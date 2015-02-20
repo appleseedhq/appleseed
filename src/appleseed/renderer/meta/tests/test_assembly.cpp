@@ -61,7 +61,7 @@ TEST_SUITE(Renderer_Modeling_Scene_Assembly)
             // Inner assembly.
 
             auto_release_ptr<Assembly> inner_assembly(
-                AssemblyFactory::create("inner_assembly", ParamArray()));
+                AssemblyFactory().create("inner_assembly", ParamArray()));
 
             inner_assembly->objects().insert(
                 auto_release_ptr<Object>(
@@ -92,7 +92,7 @@ TEST_SUITE(Renderer_Modeling_Scene_Assembly)
             // Outer assembly.
 
             auto_release_ptr<Assembly> outer_assembly(
-                AssemblyFactory::create(
+                AssemblyFactory().create(
                     "outer_assembly",
                     ParamArray()));
 

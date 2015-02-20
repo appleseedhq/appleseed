@@ -58,7 +58,7 @@ TestFixtureBaseProjectHolder::TestFixtureBaseProjectHolder()
     m_project->set_scene(SceneFactory::create());
 
     m_project->get_scene()->assemblies().insert(
-        AssemblyFactory::create("assembly", ParamArray()));
+        AssemblyFactory().create("assembly", ParamArray()));
 };
 
 Project& TestFixtureBaseProjectHolder::get_project()

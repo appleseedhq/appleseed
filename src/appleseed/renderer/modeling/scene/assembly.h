@@ -35,6 +35,7 @@
 #include "renderer/modeling/entity/entity.h"
 #include "renderer/modeling/scene/basegroup.h"
 #include "renderer/modeling/scene/containers.h"
+#include "renderer/modeling/scene/iassemblyfactory.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -62,6 +63,9 @@ class APPLESEED_DLLSYMBOL Assembly
   , public BaseGroup
 {
   public:
+    // Return a string identifying the model of this entity.
+    virtual const char* get_model() const;
+
     // Return the unique ID of this class of entities.
     static foundation::UniqueID get_class_uid();
 
@@ -132,13 +136,18 @@ class APPLESEED_DLLSYMBOL Assembly
 // Assembly factory.
 //
 
+
 class APPLESEED_DLLSYMBOL AssemblyFactory
+  : public IAssemblyFactory
 {
   public:
+    // Return a string identifying this assembly model.
+    virtual const char* get_model() const APPLESEED_OVERRIDE;
+
     // Create a new assembly.
-    static foundation::auto_release_ptr<Assembly> create(
+    virtual foundation::auto_release_ptr<Assembly> create(
         const char*         name,
-        const ParamArray&   params = ParamArray());
+        const ParamArray&   params = ParamArray()) const APPLESEED_OVERRIDE;
 };
 
 

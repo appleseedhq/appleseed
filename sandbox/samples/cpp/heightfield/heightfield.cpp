@@ -89,7 +89,7 @@ class ProjectBuilder
         project->search_paths().push_back("data");
 
         auto_release_ptr<Scene> scene(SceneFactory::create());
-        auto_release_ptr<Assembly> assembly(AssemblyFactory::create("assembly"));
+        auto_release_ptr<Assembly> assembly(AssemblyFactory().create("assembly"));
 
         //------------------------------------------------------------------------
         // Geometry
@@ -510,7 +510,7 @@ class InstancesProjectBuilder
         const string coordinates_suffix = coordinates_to_string(ix, iy);
         const string cube_assembly_name = "assembly_" + coordinates_suffix;
         auto_release_ptr<Assembly> cube_assembly(
-            AssemblyFactory::create(cube_assembly_name.c_str()));
+            AssemblyFactory().create(cube_assembly_name.c_str()));
 
         // Instantiate the cube mesh object (from the parent assembly) into this assembly.
         cube_assembly->object_instances().insert(

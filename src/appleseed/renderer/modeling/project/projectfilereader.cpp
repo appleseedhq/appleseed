@@ -74,8 +74,10 @@
 #include "renderer/modeling/project-builtin/cornellboxproject.h"
 #include "renderer/modeling/project-builtin/defaultproject.h"
 #include "renderer/modeling/scene/assembly.h"
+#include "renderer/modeling/scene/assemblyfactoryregistrar.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/containers.h"
+#include "renderer/modeling/scene/iassemblyfactory.h"
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/scene/textureinstance.h"
@@ -2037,29 +2039,44 @@ namespace
 #endif
 
             m_name = get_value(attrs, "name");
+            m_model = get_value(attrs, "model", AssemblyFactory().get_model());
         }
 
         virtual void end_element() APPLESEED_OVERRIDE
         {
             ParametrizedElementHandler::end_element();
 
-            m_assembly = AssemblyFactory::create(m_name.c_str(), m_params);
+            const AssemblyFactoryRegistrar factories;
+            const IAssemblyFactory *factory = factories.lookup(m_model.c_str());
 
-            m_assembly->assemblies().swap(m_assemblies);
-            m_assembly->assembly_instances().swap(m_assembly_instances);
-            m_assembly->bsdfs().swap(m_bsdfs);
-            m_assembly->colors().swap(m_colors);
-            m_assembly->edfs().swap(m_edfs);
-            m_assembly->lights().swap(m_lights);
-            m_assembly->materials().swap(m_materials);
-            m_assembly->objects().swap(m_objects);
-            m_assembly->object_instances().swap(m_object_instances);
-            m_assembly->surface_shaders().swap(m_surface_shaders);
-            m_assembly->textures().swap(m_textures);
-            m_assembly->texture_instances().swap(m_texture_instances);
+            if (factory)
+            {
+                m_assembly = factory->create(m_name.c_str(), m_params);
+
+                m_assembly->assemblies().swap(m_assemblies);
+                m_assembly->assembly_instances().swap(m_assembly_instances);
+                m_assembly->bsdfs().swap(m_bsdfs);
+                m_assembly->colors().swap(m_colors);
+                m_assembly->edfs().swap(m_edfs);
+                m_assembly->lights().swap(m_lights);
+                m_assembly->materials().swap(m_materials);
+                m_assembly->objects().swap(m_objects);
+                m_assembly->object_instances().swap(m_object_instances);
+                m_assembly->surface_shaders().swap(m_surface_shaders);
+                m_assembly->textures().swap(m_textures);
+                m_assembly->texture_instances().swap(m_texture_instances);
 #ifdef APPLESEED_WITH_OSL
-            m_assembly->shader_groups().swap(m_shader_groups);
+                m_assembly->shader_groups().swap(m_shader_groups);
 #endif
+            }
+            else
+            {
+                RENDERER_LOG_ERROR(
+                    "while defining assembly \"%s\": invalid model \"%s\".",
+                    m_name.c_str(),
+                    m_model.c_str());
+                m_context.get_event_counters().signal_error();
+            }
         }
 
         virtual void end_child_element(
@@ -2162,6 +2179,7 @@ namespace
       private:
         auto_release_ptr<Assembly>  m_assembly;
         string                      m_name;
+        string                      m_model;
         AssemblyContainer           m_assemblies;
         AssemblyInstanceContainer   m_assembly_instances;
         BSDFContainer               m_bsdfs;

@@ -101,7 +101,7 @@ void AssemblyCollectionItem::slot_create()
     if (!assembly_name.empty())
     {
         auto_release_ptr<Assembly> assembly(
-            AssemblyFactory::create(assembly_name.c_str(), ParamArray()));
+            AssemblyFactory().create(assembly_name.c_str(), ParamArray()));
 
         AssemblyItem* assembly_item =
             static_cast<AssemblyItem*>(m_parent_item->add_item(assembly.get()));
