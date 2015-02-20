@@ -1121,7 +1121,6 @@ if (WITH_OSL)
         renderer/kernel/shading/oslshadergroupexec.cpp
         renderer/kernel/shading/oslshadergroupexec.h
         renderer/kernel/shading/oslutil.h
-        renderer/kernel/shading/stdosl.h
     )
 endif ()
 list (APPEND appleseed_sources
@@ -1403,6 +1402,12 @@ set (renderer_modeling_environmentedf_sources
     renderer/modeling/environmentedf/preethamenvironmentedf.h
     renderer/modeling/environmentedf/sphericalcoordinates.h
 )
+if (WITH_OSL)
+    list (APPEND appleseed_sources
+        renderer/modeling/environmentedf/oslenvironmentedf.cpp
+        renderer/modeling/environmentedf/oslenvironmentedf.h
+    )
+endif ()
 list (APPEND appleseed_sources
     ${renderer_modeling_environmentedf_sources}
 )
@@ -1807,7 +1812,7 @@ if (WITH_OSL)
     endforeach ()
 
     # Copy OSL and OIIO tools to the sandbox.
-    if (USE_EXTERNAL_SEEXPR)
+    if (USE_EXTERNAL_OSL)
         add_custom_command (TARGET appleseed POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy ${OSL_COMPILER} ${PROJECT_SOURCE_DIR}/sandbox/bin/
         )

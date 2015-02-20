@@ -42,6 +42,7 @@
 #include "renderer/modeling/scene/visibilityflags.h"
 
 // appleseed.foundation headers.
+#include "foundation/core/version.h"
 #include "foundation/image/image.h"
 
 // Standard headers.
@@ -114,6 +115,10 @@ RendererServices::RendererServices(
     m_global_attr_getters[OIIO::ustring("path:ray_depth")] = &RendererServices::get_ray_depth;
     m_global_attr_getters[OIIO::ustring("path:ray_length")] = &RendererServices::get_ray_length;
     m_global_attr_getters[OIIO::ustring("path:ray_ior")] = &RendererServices::get_ray_ior;
+    m_global_attr_getters[OIIO::ustring("appleseed:version_major")] = &RendererServices::get_appleseed_version_major;
+    m_global_attr_getters[OIIO::ustring("appleseed:version_minor")] = &RendererServices::get_appleseed_version_minor;
+    m_global_attr_getters[OIIO::ustring("appleseed:version_patch")] = &RendererServices::get_appleseed_version_patch;
+    m_global_attr_getters[OIIO::ustring("appleseed:version")] = &RendererServices::get_appleseed_version;
 }
 
 void RendererServices::initialize()
@@ -839,6 +844,54 @@ IMPLEMENT_ATTR_GETTER(ray_ior)
     if (type == OIIO::TypeDesc::TypeFloat)
     {
         reinterpret_cast<float*>(val)[0] = 1.0f;
+        clear_attr_derivatives(derivs, type, val);
+        return true;
+    }
+
+    return false;
+}
+
+IMPLEMENT_ATTR_GETTER(appleseed_version_major)
+{
+    if (type == OIIO::TypeDesc::TypeInt)
+    {
+        reinterpret_cast<int*>(val)[0] = APPLESEED_VERSION_MAJOR;
+        clear_attr_derivatives(derivs, type, val);
+        return true;
+    }
+
+    return false;
+}
+
+IMPLEMENT_ATTR_GETTER(appleseed_version_minor)
+{
+    if (type == OIIO::TypeDesc::TypeInt)
+    {
+        reinterpret_cast<int*>(val)[0] = APPLESEED_VERSION_MINOR;
+        clear_attr_derivatives(derivs, type, val);
+        return true;
+    }
+
+    return false;
+}
+
+IMPLEMENT_ATTR_GETTER(appleseed_version_patch)
+{
+    if (type == OIIO::TypeDesc::TypeInt)
+    {
+        reinterpret_cast<int*>(val)[0] = APPLESEED_VERSION_PATCH;
+        clear_attr_derivatives(derivs, type, val);
+        return true;
+    }
+
+    return false;
+}
+
+IMPLEMENT_ATTR_GETTER(appleseed_version)
+{
+    if (type == OIIO::TypeDesc::TypeInt)
+    {
+        reinterpret_cast<int*>(val)[0] = APPLESEED_VERSION;
         clear_attr_derivatives(derivs, type, val);
         return true;
     }

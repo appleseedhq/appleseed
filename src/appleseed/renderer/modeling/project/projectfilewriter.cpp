@@ -885,6 +885,9 @@ namespace
                 !scene.environment_edfs().empty() ||
                 !scene.environment_shaders().empty() ||
                 scene.get_environment() != 0 ||
+#ifdef APPLESEED_WITH_OSL
+                !scene.shader_groups().empty() ||
+#endif
                 !scene.assemblies().empty() ||
                 !scene.assembly_instances().empty()
                     ? XMLElement::HasChildElements
@@ -904,6 +907,9 @@ namespace
             if (scene.get_environment())
                 write(*scene.get_environment());
 
+#ifdef APPLESEED_WITH_OSL
+            write_collection(scene.shader_groups());
+#endif
             write_collection(scene.assemblies());
             write_collection(scene.assembly_instances());
         }
@@ -933,7 +939,6 @@ namespace
         }
 
 #ifdef APPLESEED_WITH_OSL
-
         // Write a <shader> parameter.
         void write(const ShaderParam& param)
         {
@@ -980,7 +985,6 @@ namespace
             for (const_each<ShaderConnectionContainer> i = shader_group.shader_connections(); i; ++i)
                 write(*i);
         }
-
 #endif
 
         // Write a <surface_shader> element.

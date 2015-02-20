@@ -36,6 +36,8 @@
 #include "renderer/modeling/shadergroup/shadergroup.h"
 #endif
 
+using namespace foundation;
+
 namespace renderer
 {
 
@@ -115,6 +117,16 @@ void ShadingContext::execute_osl_emission(
         shader_group,
         shading_point,
         surface_area);
+}
+
+void ShadingContext::execute_osl_background(
+    const ShaderGroup&  shader_group,
+    const Vector3d&     outgoing,
+    Spectrum&           value) const
+{
+    value = m_shadergroup_exec.execute_background(
+        shader_group,
+        outgoing);
 }
 
 #endif

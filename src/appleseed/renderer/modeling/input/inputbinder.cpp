@@ -145,6 +145,9 @@ void InputBinder::build_scene_symbol_table(
         insert_entities(symbols, scene.environment_edfs(), SymbolTable::SymbolEnvironmentEDF);
         insert_entities(symbols, scene.environment_shaders(), SymbolTable::SymbolEnvironmentShader);
 
+#ifdef APPLESEED_WITH_OSL
+        insert_entities(symbols, scene.shader_groups(), SymbolTable::SymbolShaderGroup);
+#endif
         if (scene.get_environment())
             symbols.insert(scene.get_environment()->get_name(), SymbolTable::SymbolEnvironment);
 
@@ -544,6 +547,9 @@ bool InputBinder::try_bind_scene_entity_to_input(
           BIND(SymbolTable::SymbolColor, scene.colors());
           BIND(SymbolTable::SymbolTexture, scene.textures());
           BIND(SymbolTable::SymbolTextureInstance, scene.texture_instances());
+#ifdef APPLESEED_WITH_OSL
+          BIND(SymbolTable::SymbolShaderGroup, scene.shader_groups());
+#endif
           BIND(SymbolTable::SymbolEnvironmentEDF, scene.environment_edfs());
           BIND(SymbolTable::SymbolEnvironmentShader, scene.environment_shaders());
         }

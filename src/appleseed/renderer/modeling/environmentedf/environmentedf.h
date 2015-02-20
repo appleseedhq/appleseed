@@ -46,6 +46,7 @@ namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class InputEvaluator; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
+namespace renderer      { class ShadingContext; }
 
 namespace renderer
 {
@@ -85,6 +86,7 @@ class APPLESEED_DLLSYMBOL EnvironmentEDF
     // Sample the EDF and compute the emission direction, its probability
     // density and the value of the EDF for this direction.
     virtual void sample(
+        const ShadingContext&       shading_context,
         InputEvaluator&             input_evaluator,
         const foundation::Vector2d& s,                          // sample in [0,1)^2
         foundation::Vector3d&       outgoing,                   // world space emission direction, unit-length
@@ -93,10 +95,12 @@ class APPLESEED_DLLSYMBOL EnvironmentEDF
 
     // Evaluate the EDF for a given emission direction.
     virtual void evaluate(
+        const ShadingContext&       shading_context,
         InputEvaluator&             input_evaluator,
         const foundation::Vector3d& outgoing,                   // world space emission direction, unit-length
         Spectrum&                   value) const = 0;           // EDF value for this direction
     virtual void evaluate(
+        const ShadingContext&       shading_context,
         InputEvaluator&             input_evaluator,
         const foundation::Vector3d& outgoing,                   // world space emission direction, unit-length
         Spectrum&                   value,                      // EDF value for this direction

@@ -45,6 +45,7 @@ namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class InputEvaluator; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
+namespace renderer      { class ShadingContext; }
 namespace renderer      { class ShadingResult; }
 
 namespace renderer
@@ -80,6 +81,7 @@ class APPLESEED_DLLSYMBOL EnvironmentShader
 
     // Evaluate the environment for a given unit-length direction.
     virtual void evaluate(
+        const ShadingContext&       shading_context,
         InputEvaluator&             input_evaluator,
         const foundation::Vector3d& direction,                      // world space direction, pointing toward the environment
         ShadingResult&              shading_result) const = 0;

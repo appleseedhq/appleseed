@@ -4,9 +4,9 @@ compiler:
 before_install:
   - sudo service mysql stop
   - sudo service postgresql stop
+  - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
   - sudo apt-get -y update
-  - sudo apt-cache search boost
-  - sudo apt-get install libboost1.48-all-dev
+  - if [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.8; fi
+  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
   - sudo apt-get install libxerces-c-dev
-  - sudo apt-get install python-dev
 script: ./travis-ci-build.sh

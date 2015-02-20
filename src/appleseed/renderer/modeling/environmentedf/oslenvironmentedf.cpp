@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2015 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,13 +27,14 @@
 //
 
 // Interface header.
-#include "constantenvironmentedf.h"
+#include "oslenvironmentedf.h"
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/input/inputarray.h"
-#include "renderer/modeling/input/source.h"
+#include "renderer/modeling/shadergroup/shadergroup.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/sampling/mappings.h"
@@ -46,6 +46,8 @@
 
 // Standard headers.
 #include <cassert>
+#include <cstring>
+#include <string>
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
@@ -61,21 +63,23 @@ namespace renderer
 namespace
 {
     //
-    // Constant-emittance environment EDF.
+    // OSL environment EDF.
+    //
+    // todo: importance sampling
     //
 
-    const char* Model = "constant_environment_edf";
+    const char* Model = "osl_environment_edf";
 
-    class ConstantEnvironmentEDF
+    class OSLEnvironmentEDF
       : public EnvironmentEDF
     {
       public:
-        ConstantEnvironmentEDF(
+        OSLEnvironmentEDF(
             const char*         name,
             const ParamArray&   params)
           : EnvironmentEDF(name, params)
         {
-            m_inputs.declare("radiance", InputFormatSpectralIlluminance);
+            m_inputs.declare("osl_background", InputFormatEntity, "");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -95,14 +99,15 @@ namespace
             if (!EnvironmentEDF::on_frame_begin(project, abort_switch))
                 return false;
 
-            if (!check_uniform("radiance"))
-                return false;
-
-            check_non_zero_emission("radiance");
-
-            m_inputs.evaluate_uniforms(&m_values);
+            m_shader_group =
+                static_cast<ShaderGroup*>(m_inputs.get_entity("osl_background"));
 
             return true;
+        }
+
+        virtual void on_frame_end(const Project& project) APPLESEED_OVERRIDE
+        {
+            m_shader_group = 0;
         }
 
         virtual void sample(
@@ -114,7 +119,7 @@ namespace
             double&                 probability) const APPLESEED_OVERRIDE
         {
             outgoing = sample_sphere_uniform(s);
-            value = m_values.m_radiance;
+            evaluate(shading_context, input_evaluator, outgoing, value);
             probability = 1.0 / (4.0 * Pi);
         }
 
@@ -125,7 +130,11 @@ namespace
             Spectrum&               value) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
-            value = m_values.m_radiance;
+
+            if (m_shader_group)
+                shading_context.execute_osl_background(*m_shader_group, outgoing, value);
+            else
+                value.set(0.0f);
         }
 
         virtual void evaluate(
@@ -136,8 +145,9 @@ namespace
             double&                 probability) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
-            value = m_values.m_radiance;
-            probability = 1.0 / (4.0 * Pi);
+
+            evaluate(shading_context, input_evaluator, outgoing, value);
+            probability = evaluate_pdf(input_evaluator, outgoing);
         }
 
         virtual double evaluate_pdf(
@@ -145,61 +155,57 @@ namespace
             const Vector3d&     outgoing) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
+
             return 1.0 / (4.0 * Pi);
         }
 
       private:
-        APPLESEED_DECLARE_INPUT_VALUES(InputValues)
-        {
-            Spectrum    m_radiance;             // emitted radiance in W.m^-2.sr^-1
-        };
-
-        InputValues     m_values;
+        ShaderGroup* m_shader_group;
     };
 }
 
 
 //
-// ConstantEnvironmentEDFFactory class implementation.
+// OSLEnvironmentEDFFactory class implementation.
 //
 
-const char* ConstantEnvironmentEDFFactory::get_model() const
+const char* OSLEnvironmentEDFFactory::get_model() const
 {
     return Model;
 }
 
-Dictionary ConstantEnvironmentEDFFactory::get_model_metadata() const
+Dictionary OSLEnvironmentEDFFactory::get_model_metadata() const
 {
     return
         Dictionary()
             .insert("name", Model)
-            .insert("label", "Constant Environment EDF");
+            .insert("label", "OSL Environment EDF");
 }
 
-DictionaryArray ConstantEnvironmentEDFFactory::get_input_metadata() const
+DictionaryArray OSLEnvironmentEDFFactory::get_input_metadata() const
 {
     DictionaryArray metadata;
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "radiance")
-            .insert("label", "Radiance")
-            .insert("type", "colormap")
+            .insert("name", "osl_background")
+            .insert("label", "OSL Background")
+            .insert("type", "entity")
             .insert("entity_types",
-                Dictionary().insert("color", "Colors"))
-            .insert("use", "required")
-            .insert("default", "1.0"));
+                Dictionary()
+                    .insert("shader_group", "Shader Groups"))
+            .insert("use", "optional"));
 
     return metadata;
 }
 
-auto_release_ptr<EnvironmentEDF> ConstantEnvironmentEDFFactory::create(
+auto_release_ptr<EnvironmentEDF> OSLEnvironmentEDFFactory::create(
     const char*         name,
     const ParamArray&   params) const
 {
     return
         auto_release_ptr<EnvironmentEDF>(
-            new ConstantEnvironmentEDF(name, params));
+            new OSLEnvironmentEDF(name, params));
 }
 
 }   // namespace renderer

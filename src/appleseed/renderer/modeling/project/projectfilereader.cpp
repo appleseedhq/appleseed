@@ -2308,6 +2308,13 @@ namespace
                     static_cast<TextureInstanceElementHandler*>(handler)->get_texture_instance());
                 break;
 
+#ifdef APPLESEED_WITH_OSL
+              case ElementShaderGroup:
+                insert(
+                    m_scene->shader_groups(),
+                    static_cast<ShaderGroupElementHandler*>(handler)->get_shader_group());
+                break;
+#endif
               default:
                 ParametrizedElementHandler::end_child_element(element, handler);
                 break;

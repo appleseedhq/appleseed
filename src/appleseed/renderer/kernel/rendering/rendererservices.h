@@ -392,6 +392,12 @@ class RendererServices
     DECLARE_ATTR_GETTER(ray_length);
     DECLARE_ATTR_GETTER(ray_ior);
 
+    // Appleseed version attributes
+    DECLARE_ATTR_GETTER(appleseed_version_major);
+    DECLARE_ATTR_GETTER(appleseed_version_minor);
+    DECLARE_ATTR_GETTER(appleseed_version_patch);
+    DECLARE_ATTR_GETTER(appleseed_version);
+
     #undef DECLARE_ATTR_GETTER
 
     static void clear_attr_derivatives(
