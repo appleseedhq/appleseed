@@ -66,8 +66,8 @@ struct Light::Impl
 };
 
 Light::Light(
-    const char*         name,
-    const ParamArray&   params)
+    const char*             name,
+    const ParamArray&       params)
   : ConnectableEntity(g_class_uid, params)
   , impl(new Impl())
   , m_flags(0)
@@ -97,9 +97,9 @@ const Transformd& Light::get_transform() const
 }
 
 bool Light::on_frame_begin(
-    const Project&      project,
-    const Assembly&     assembly,
-    IAbortSwitch*       abort_switch)
+    const Project&          project,
+    const Assembly&         assembly,
+    IAbortSwitch*           abort_switch)
 {
     m_flags = 0;
 
@@ -117,9 +117,31 @@ bool Light::on_frame_begin(
 }
 
 void Light::on_frame_end(
-    const Project&      project,
-    const Assembly&     assembly)
+    const Project&          project,
+    const Assembly&         assembly)
 {
+}
+
+void Light::sample(
+    InputEvaluator&         input_evaluator,
+    const Transformd&       light_transform,
+    const Vector2d&         s,
+    const LightTargetArray& targets,
+    Vector3d&               position,
+    Vector3d&               outgoing,
+    Spectrum&               value,
+    double&                 probability) const
+{
+    // By default we ignore the light targets.
+    return
+        sample(
+            input_evaluator,
+            light_transform,
+            s,
+            position,
+            outgoing,
+            value,
+            probability);
 }
 
 }   // namespace renderer

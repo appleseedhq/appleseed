@@ -57,6 +57,5 @@ void bind_scene()
         .def("environment_edfs", &Scene::environment_edfs, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("environment_shaders", &Scene::environment_shaders, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("compute_bbox", &Scene::compute_bbox)
-        .def("compute_radius", &Scene::compute_radius)
         ;
 }

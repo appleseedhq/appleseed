@@ -37,6 +37,7 @@
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/input/source.h"
+#include "renderer/modeling/light/lighttarget.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/scene.h"
 
@@ -88,8 +89,8 @@ namespace
     {
       public:
         SunLight(
-            const char*         name,
-            const ParamArray&   params)
+            const char*             name,
+            const ParamArray&       params)
           : Light(name, params)
         {
             m_inputs.declare("environment_edf", InputFormatEntity, "");
@@ -108,9 +109,9 @@ namespace
         }
 
         virtual bool on_frame_begin(
-            const Project&      project,
-            const Assembly&     assembly,
-            IAbortSwitch*       abort_switch) APPLESEED_OVERRIDE
+            const Project&          project,
+            const Assembly&         assembly,
+            IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
         {
             if (!Light::on_frame_begin(project, assembly, abort_switch))
                 return false;
@@ -126,49 +127,84 @@ namespace
             // Apply turbidity bias.
             m_values.m_turbidity += BaseTurbidity;
 
-            m_scene_radius = project.get_scene()->compute_radius();
+            const GAABB3 scene_bbox = project.get_scene()->compute_bbox();
+            m_scene_center = scene_bbox.center();
+            m_scene_radius = scene_bbox.radius();
             m_safe_scene_diameter = 1.01 * (2.0 * m_scene_radius);
-            m_surface_area = Pi * m_scene_radius * m_scene_radius;
-
-            m_probability = 1.0 / m_surface_area;
 
             return true;
         }
 
         virtual void sample(
-            InputEvaluator&     input_evaluator,
-            const Transformd&   light_transform,
-            const Vector2d&     s,
-            Vector3d&           position,
-            Vector3d&           outgoing,
-            Spectrum&           value,
-            double&             probability) const APPLESEED_OVERRIDE
+            InputEvaluator&         input_evaluator,
+            const Transformd&       light_transform,
+            const Vector2d&         s,
+            Vector3d&               position,
+            Vector3d&               outgoing,
+            Spectrum&               value,
+            double&                 probability) const APPLESEED_OVERRIDE
         {
-            outgoing = -normalize(light_transform.get_parent_z());
-
-            const Basis3d basis(outgoing);
-            const Vector2d p = m_scene_radius * sample_disk_uniform(s);
-            position =
-                basis.transform_to_parent(
-                    Vector3d(p[0], -m_safe_scene_diameter, p[1]));
-
-            probability = m_probability;
-
-            compute_sun_radiance(
+            sample_disk(
+                light_transform,
+                s,
+                m_scene_center,
+                m_scene_radius,
+                position,
                 outgoing,
-                m_values.m_turbidity,
-                m_values.m_radiance_multiplier,
-                value);
-            value *= SunSolidAngle;
+                value,
+                probability);
+        }
+
+        virtual void sample(
+            InputEvaluator&         input_evaluator,
+            const Transformd&       light_transform,
+            const Vector2d&         s,
+            const LightTargetArray& targets,
+            Vector3d&               position,
+            Vector3d&               outgoing,
+            Spectrum&               value,
+            double&                 probability) const APPLESEED_OVERRIDE
+        {
+            const size_t target_count = targets.size();
+
+            if (target_count > 0)
+            {
+                const double x = s[0] * target_count;
+                const size_t target_index = truncate<size_t>(x);
+                const Vector2d target_s(x - target_index, s[1]);
+                const LightTarget& target = targets[target_index];
+
+                sample_disk(
+                    light_transform,
+                    target_s,
+                    target.get_center(),
+                    target.get_radius(),
+                    position,
+                    outgoing,
+                    value,
+                    probability);
+            }
+            else
+            {
+                sample_disk(
+                    light_transform,
+                    s,
+                    m_scene_center,
+                    m_scene_radius,
+                    position,
+                    outgoing,
+                    value,
+                    probability);
+            }
         }
 
         virtual void evaluate(
-            InputEvaluator&     input_evaluator,
-            const Transformd&   light_transform,
-            const Vector3d&     target,
-            Vector3d&           position,
-            Vector3d&           outgoing,
-            Spectrum&           value) const APPLESEED_OVERRIDE
+            InputEvaluator&         input_evaluator,
+            const Transformd&       light_transform,
+            const Vector3d&         target,
+            Vector3d&               position,
+            Vector3d&               outgoing,
+            Spectrum&               value) const APPLESEED_OVERRIDE
         {
             outgoing = -normalize(light_transform.get_parent_z());
             position = target - m_safe_scene_diameter * outgoing;
@@ -178,12 +214,13 @@ namespace
                 m_values.m_turbidity,
                 m_values.m_radiance_multiplier,
                 value);
+
             value *= SunSolidAngle;
         }
 
         virtual double compute_distance_attenuation(
-            const Vector3d&     target,
-            const Vector3d&     position) const APPLESEED_OVERRIDE
+            const Vector3d&         target,
+            const Vector3d&         position) const APPLESEED_OVERRIDE
         {
             return 1.0;
         }
@@ -195,12 +232,11 @@ namespace
             double      m_radiance_multiplier;      // emitted radiance multiplier
         };
 
+        Vector3d        m_scene_center;             // world space
         double          m_scene_radius;             // world space
         double          m_safe_scene_diameter;      // world space
-        double          m_surface_area;             // world space
 
         InputValues     m_values;
-        double          m_probability;
 
         void apply_env_edf_overrides(const EnvironmentEDF* env_edf)
         {
@@ -235,10 +271,10 @@ namespace
         }
 
         static void compute_sun_radiance(
-            const Vector3d&     outgoing,
-            const double        turbidity,
-            const double        radiance_multiplier,
-            Spectrum&           radiance)
+            const Vector3d&         outgoing,
+            const double            turbidity,
+            const double            radiance_multiplier,
+            Spectrum&               radiance)
         {
             // Compute the relative optical mass.
             const float cos_theta = -static_cast<float>(outgoing.y);
@@ -337,6 +373,38 @@ namespace
             // radiance *= tau_g;   // always 1.0
             radiance *= tau_wa;
             radiance *= static_cast<float>(radiance_multiplier);
+        }
+
+        void sample_disk(
+            const Transformd&       light_transform,
+            const Vector2d&         s,
+            const Vector3d&         disk_center,
+            const double            disk_radius,
+            Vector3d&               position,
+            Vector3d&               outgoing,
+            Spectrum&               value,
+            double&                 probability) const
+        {
+            outgoing = -normalize(light_transform.get_parent_z());
+
+            const Basis3d basis(outgoing);
+            const Vector2d p = sample_disk_uniform(s);
+
+            position =
+                  disk_center
+                - m_safe_scene_diameter * basis.get_normal()
+                + disk_radius * p[0] * basis.get_tangent_u()
+                + disk_radius * p[1] * basis.get_tangent_v();
+
+            probability = 1.0 / (Pi * disk_radius * disk_radius);
+
+            compute_sun_radiance(
+                outgoing,
+                m_values.m_turbidity,
+                m_values.m_radiance_multiplier,
+                value);
+
+            value *= SunSolidAngle;
         }
     };
 }

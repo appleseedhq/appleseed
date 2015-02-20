@@ -51,7 +51,11 @@
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/input/inputevaluator.h"
 #include "renderer/modeling/light/light.h"
+#include "renderer/modeling/light/lighttarget.h"
+#include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
+#include "renderer/modeling/scene/containers.h"
+#include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/scene/visibilityflags.h"
 #include "renderer/utility/transformsequence.h"
@@ -66,6 +70,7 @@
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/timers.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/foreach.h"
 #include "foundation/utility/job.h"
 #include "foundation/utility/statistics.h"
 #include "foundation/utility/stopwatch.h"
@@ -201,6 +206,7 @@ namespace
       public:
         LightPhotonTracingJob(
             const Scene&            scene,
+            const LightTargetArray& photon_targets,
             const LightSampler&     light_sampler,
             const TraceContext&     trace_context,
             TextureStore&           texture_store,
@@ -217,6 +223,7 @@ namespace
             const size_t            pass_hash,
             IAbortSwitch&           abort_switch)
           : m_scene(scene)
+          , m_photon_targets(photon_targets)
           , m_light_sampler(light_sampler)
           , m_texture_cache(texture_store)
           , m_intersector(trace_context, m_texture_cache)
@@ -276,6 +283,7 @@ namespace
 
       private:
         const Scene&                m_scene;
+        const LightTargetArray&     m_photon_targets;
         const LightSampler&         m_light_sampler;
         TextureCache                m_texture_cache;
         Intersector                 m_intersector;
@@ -429,6 +437,7 @@ namespace
                 input_evaluator,
                 light_sample.m_light_transform,
                 child_sampling_context.next_vector2<2>(),
+                m_photon_targets,
                 emission_position,
                 emission_direction,
                 light_value,
@@ -482,6 +491,7 @@ namespace
       public:
         EnvironmentPhotonTracingJob(
             const Scene&            scene,
+            const LightTargetArray& photon_targets,
             const LightSampler&     light_sampler,
             const TraceContext&     trace_context,
             TextureStore&           texture_store,
@@ -498,6 +508,7 @@ namespace
             const size_t            pass_hash,
             IAbortSwitch&           abort_switch)
           : m_scene(scene)
+          , m_photon_targets(photon_targets)
           , m_env_edf(*scene.get_environment()->get_environment_edf())
           , m_light_sampler(light_sampler)
           , m_texture_cache(texture_store)
@@ -524,10 +535,12 @@ namespace
           , m_photon_end(photon_end)
           , m_pass_hash(pass_hash)
           , m_abort_switch(abort_switch)
-          , m_safe_scene_radius(scene.compute_radius() * (1.0 + 1.0e-3))
-          , m_disk_point_prob(1.0 / (Pi * square(m_safe_scene_radius)))
           , m_ray_dtime(scene.get_camera()->get_shutter_open_time_interval())
         {
+            const GAABB3 scene_bbox = m_scene.compute_bbox();
+            m_scene_center = scene_bbox.center();
+            m_scene_radius = scene_bbox.radius();
+            m_safe_scene_diameter = 1.01 * (2.0 * m_scene_radius);
         }
 
         virtual void execute(const size_t thread_index) APPLESEED_OVERRIDE
@@ -560,6 +573,7 @@ namespace
 
       private:
         const Scene&                m_scene;
+        const LightTargetArray&     m_photon_targets;
         const EnvironmentEDF&       m_env_edf;
         const LightSampler&         m_light_sampler;
         TextureCache                m_texture_cache;
@@ -577,10 +591,12 @@ namespace
         const size_t                m_photon_end;
         const size_t                m_pass_hash;
         IAbortSwitch&               m_abort_switch;
-        const double                m_safe_scene_radius;
-        const double                m_disk_point_prob;
         SPPMPhotonVector            m_local_photons;
-        double                      m_ray_dtime;
+        const double                m_ray_dtime;
+
+        Vector3d                    m_scene_center;         // world space
+        double                      m_scene_radius;         // world space
+        double                      m_safe_scene_diameter;  // world space
 
         void trace_env_photon(
             const ShadingContext&   shading_context,
@@ -598,25 +614,43 @@ namespace
                 env_edf_value,
                 env_edf_prob);
 
-            // Compute the center of the tangent disk.
-            const Vector3d disk_center = m_safe_scene_radius * outgoing;
-
-            // Uniformly sample the tangent disk.
             SamplingContext child_sampling_context = sampling_context.split(2, 1);
-            const Vector2d disk_point =
-                m_safe_scene_radius *
-                sample_disk_uniform(child_sampling_context.next_vector2<2>());
+            Vector2d s = child_sampling_context.next_vector2<2>();
+
+            // Compute the center and radius of the target disk.
+            Vector3d disk_center;
+            double disk_radius;
+            const size_t target_count = m_photon_targets.size();
+            if (target_count > 0)
+            {
+                const double x = s[0] * target_count;
+                const size_t target_index = truncate<size_t>(x);
+                s[0] = x - target_index;
+
+                const LightTarget& target = m_photon_targets[target_index];
+                disk_center = target.get_center();
+                disk_radius = target.get_radius();
+            }
+            else
+            {
+                disk_center = m_scene_center;
+                disk_radius = m_scene_radius;
+            }
 
             // Compute the origin of the photon ray.
             const Basis3d basis(-outgoing);
+            const Vector2d p = sample_disk_uniform(s);
             const Vector3d ray_origin =
-                disk_center +
-                disk_point[0] * basis.get_tangent_u() +
-                disk_point[1] * basis.get_tangent_v();
+                  disk_center
+                - m_safe_scene_diameter * basis.get_normal()
+                + disk_radius * p[0] * basis.get_tangent_u() +
+                + disk_radius * p[1] * basis.get_tangent_v();
+
+            const double disk_point_prob = 1.0 / (Pi * disk_radius * disk_radius);
 
             // Compute the initial particle weight.
             Spectrum initial_flux = env_edf_value;
-            initial_flux /= static_cast<float>(m_disk_point_prob * env_edf_prob * m_params.m_env_photon_count);
+            initial_flux /= static_cast<float>(disk_point_prob * env_edf_prob * m_params.m_env_photon_count);
 
             // Build the photon ray.
             child_sampling_context.split_in_place(1, 1);
@@ -685,6 +719,64 @@ SPPMPhotonTracer::SPPMPhotonTracer(
 {
 }
 
+namespace
+{
+    void collect_photon_targets(
+        const Assembly&                     assembly,
+        const Transformd&                   assembly_inst_transform,
+        LightTargetArray&                   photon_targets)
+    {
+        for (const_each<ObjectInstanceContainer> i = assembly.object_instances(); i; ++i)
+        {
+            const ObjectInstance& object_instance = *i;
+
+            if (object_instance.get_parameters().get_optional<bool>("photon_target", false))
+            {
+                const Transformd object_inst_transform =
+                    object_instance.get_transform() * assembly_inst_transform;
+
+                const LightTarget target(
+                    object_inst_transform.to_parent(
+                        object_instance.get_object().compute_local_bbox()));
+
+                photon_targets.push_back(target);
+            }
+        }
+    }
+
+    void collect_photon_targets(
+        const AssemblyInstanceContainer&    assembly_instances,
+        const Transformd&                   parent_transform,
+        LightTargetArray&                   photon_targets)
+    {
+        for (const_each<AssemblyInstanceContainer> i = assembly_instances; i; ++i)
+        {
+            // Retrieve the assembly instance.
+            const AssemblyInstance& assembly_instance = *i;
+
+            // Retrieve the assembly.
+            const Assembly& assembly = assembly_instance.get_assembly();
+
+            // Compute the cumulated transform sequence of this assembly instance.
+            // todo: consider the photon targets throughout the entire time interval.
+            const Transformd cumulated_transform =
+                assembly_instance.transform_sequence().get_earliest_transform() * parent_transform;
+
+            // Recurse into child assembly instances.
+            collect_photon_targets(
+                assembly.assembly_instances(),
+                cumulated_transform,
+                photon_targets);
+
+            // Collect the photon targets of this assembly instance.
+            collect_photon_targets(
+                assembly,
+                cumulated_transform,
+                photon_targets);
+        }
+    }
+}
+
 void SPPMPhotonTracer::trace_photons(
     SPPMPhotonVector&       photons,
     const size_t            pass_hash,
@@ -695,12 +787,20 @@ void SPPMPhotonTracer::trace_photons(
     Stopwatch<DefaultWallclockTimer> stopwatch;
     stopwatch.start();
 
+    // Collect photon targets.
+    LightTargetArray photon_targets;
+    collect_photon_targets(
+        m_scene.assembly_instances(),
+        Transformd::identity(),
+        photon_targets);
+
     // Schedule photon tracing jobs.
     size_t job_count = 0;
     size_t emitted_photon_count = 0;
     if (m_light_sampler.has_lights_or_emitting_triangles())
     {
         schedule_light_photon_tracing_jobs(
+            photon_targets,
             photons,
             pass_hash,
             job_queue,
@@ -711,6 +811,7 @@ void SPPMPhotonTracer::trace_photons(
     if (m_params.m_enable_ibl && m_scene.get_environment()->get_environment_edf())
     {
         schedule_environment_photon_tracing_jobs(
+            photon_targets,
             photons,
             pass_hash,
             job_queue,
@@ -743,6 +844,7 @@ void SPPMPhotonTracer::trace_photons(
 }
 
 void SPPMPhotonTracer::schedule_light_photon_tracing_jobs(
+    const LightTargetArray& photon_targets,
     SPPMPhotonVector&       photons,
     const size_t            pass_hash,
     JobQueue&               job_queue,
@@ -763,6 +865,7 @@ void SPPMPhotonTracer::schedule_light_photon_tracing_jobs(
         job_queue.schedule(
             new LightPhotonTracingJob(
                 m_scene,
+                photon_targets,
                 m_light_sampler,
                 m_trace_context,
                 m_texture_store,
@@ -785,6 +888,7 @@ void SPPMPhotonTracer::schedule_light_photon_tracing_jobs(
 }
 
 void SPPMPhotonTracer::schedule_environment_photon_tracing_jobs(
+    const LightTargetArray& photon_targets,
     SPPMPhotonVector&       photons,
     const size_t            pass_hash,
     JobQueue&               job_queue,
@@ -805,6 +909,7 @@ void SPPMPhotonTracer::schedule_environment_photon_tracing_jobs(
         job_queue.schedule(
             new EnvironmentPhotonTracingJob(
                 m_scene,
+                photon_targets,
                 m_light_sampler,
                 m_trace_context,
                 m_texture_store,

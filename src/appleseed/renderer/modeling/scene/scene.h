@@ -91,9 +91,6 @@ class APPLESEED_DLLSYMBOL Scene
     // Compute and return the bounding box of the scene.
     GAABB3 compute_bbox() const;
 
-    // Compute and return the radius of the scene.
-    double compute_radius() const;
-
     // Return true if at least one of the object instance references a material with an alpha map set.
     bool uses_alpha_mapping() const;
 

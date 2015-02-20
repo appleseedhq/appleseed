@@ -34,6 +34,7 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/inputevaluator.h"
+#include "renderer/modeling/light/lighttarget.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/scene.h"
 
@@ -45,6 +46,9 @@
 #include "foundation/math/vector.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
+
+// Standard headers.
+#include <cstddef>
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
@@ -69,8 +73,8 @@ namespace
     {
       public:
         DirectionalLight(
-            const char*         name,
-            const ParamArray&   params)
+            const char*             name,
+            const ParamArray&       params)
           : Light(name, params)
         {
             m_inputs.declare("irradiance", InputFormatSpectralIlluminance);
@@ -88,9 +92,9 @@ namespace
         }
 
         virtual bool on_frame_begin(
-            const Project&      project,
-            const Assembly&     assembly,
-            IAbortSwitch*       abort_switch) APPLESEED_OVERRIDE
+            const Project&          project,
+            const Assembly&         assembly,
+            IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
         {
             if (!Light::on_frame_begin(project, assembly, abort_switch))
                 return false;
@@ -100,46 +104,87 @@ namespace
 
             check_non_zero_emission("irradiance", "irradiance_multiplier");
 
-            m_scene_radius = project.get_scene()->compute_radius();
+            const GAABB3 scene_bbox = project.get_scene()->compute_bbox();
+            m_scene_center = scene_bbox.center();
+            m_scene_radius = scene_bbox.radius();
             m_safe_scene_diameter = 1.01 * (2.0 * m_scene_radius);
-            m_surface_area = Pi * m_scene_radius * m_scene_radius;
 
             m_inputs.evaluate_uniforms(&m_values);
             m_values.m_irradiance *= static_cast<float>(m_values.m_irradiance_multiplier);
-            m_probability = 1.0 / m_surface_area;
 
             return true;
         }
 
         virtual void sample(
-            InputEvaluator&     input_evaluator,
-            const Transformd&   light_transform,
-            const Vector2d&     s,
-            Vector3d&           position,
-            Vector3d&           outgoing,
-            Spectrum&           value,
-            double&             probability) const APPLESEED_OVERRIDE
+            InputEvaluator&         input_evaluator,
+            const Transformd&       light_transform,
+            const Vector2d&         s,
+            Vector3d&               position,
+            Vector3d&               outgoing,
+            Spectrum&               value,
+            double&                 probability) const APPLESEED_OVERRIDE
         {
-            outgoing = -normalize(light_transform.get_parent_z());
+            sample_disk(
+                light_transform,
+                s,
+                m_scene_center,
+                m_scene_radius,
+                position,
+                outgoing,
+                value,
+                probability);
+        }
 
-            const Basis3d basis(outgoing);
-            const Vector2d p = m_scene_radius * sample_disk_uniform(s);
-            position =
-                basis.transform_to_parent(
-                    Vector3d(p[0], -m_safe_scene_diameter, p[1]));
+        virtual void sample(
+            InputEvaluator&         input_evaluator,
+            const Transformd&       light_transform,
+            const Vector2d&         s,
+            const LightTargetArray& targets,
+            Vector3d&               position,
+            Vector3d&               outgoing,
+            Spectrum&               value,
+            double&                 probability) const APPLESEED_OVERRIDE
+        {
+            const size_t target_count = targets.size();
 
-            probability = m_probability;
+            if (target_count > 0)
+            {
+                const double x = s[0] * target_count;
+                const size_t target_index = truncate<size_t>(x);
+                const Vector2d target_s(x - target_index, s[1]);
+                const LightTarget& target = targets[target_index];
 
-            value = m_values.m_irradiance;
+                sample_disk(
+                    light_transform,
+                    target_s,
+                    target.get_center(),
+                    target.get_radius(),
+                    position,
+                    outgoing,
+                    value,
+                    probability);
+            }
+            else
+            {
+                sample_disk(
+                    light_transform,
+                    s,
+                    m_scene_center,
+                    m_scene_radius,
+                    position,
+                    outgoing,
+                    value,
+                    probability);
+            }
         }
 
         virtual void evaluate(
-            InputEvaluator&     input_evaluator,
-            const Transformd&   light_transform,
-            const Vector3d&     target,
-            Vector3d&           position,
-            Vector3d&           outgoing,
-            Spectrum&           value) const APPLESEED_OVERRIDE
+            InputEvaluator&         input_evaluator,
+            const Transformd&       light_transform,
+            const Vector3d&         target,
+            Vector3d&               position,
+            Vector3d&               outgoing,
+            Spectrum&               value) const APPLESEED_OVERRIDE
         {
             outgoing = -normalize(light_transform.get_parent_z());
             position = target - m_safe_scene_diameter * outgoing;
@@ -147,8 +192,8 @@ namespace
         }
 
         virtual double compute_distance_attenuation(
-            const Vector3d&     target,
-            const Vector3d&     position) const APPLESEED_OVERRIDE
+            const Vector3d&         target,
+            const Vector3d&         position) const APPLESEED_OVERRIDE
         {
             return 1.0;
         }
@@ -160,12 +205,37 @@ namespace
             double      m_irradiance_multiplier;    // emitted irradiance multiplier
         };
 
+        Vector3d        m_scene_center;             // world space
         double          m_scene_radius;             // world space
         double          m_safe_scene_diameter;      // world space
-        double          m_surface_area;             // world space
 
         InputValues     m_values;
-        double          m_probability;
+
+        void sample_disk(
+            const Transformd&       light_transform,
+            const Vector2d&         s,
+            const Vector3d&         disk_center,
+            const double            disk_radius,
+            Vector3d&               position,
+            Vector3d&               outgoing,
+            Spectrum&               value,
+            double&                 probability) const
+        {
+            outgoing = -normalize(light_transform.get_parent_z());
+
+            const Basis3d basis(outgoing);
+            const Vector2d p = sample_disk_uniform(s);
+
+            position =
+                  disk_center
+                - m_safe_scene_diameter * basis.get_normal()
+                + disk_radius * p[0] * basis.get_tangent_u()
+                + disk_radius * p[1] * basis.get_tangent_v();
+
+            value = m_values.m_irradiance;
+
+            probability = 1.0 / (Pi * disk_radius * disk_radius);
+        }
     };
 }
 

@@ -1470,6 +1470,8 @@ set (renderer_modeling_light_sources
     renderer/modeling/light/light.h
     renderer/modeling/light/lightfactoryregistrar.cpp
     renderer/modeling/light/lightfactoryregistrar.h
+    renderer/modeling/light/lighttarget.cpp
+    renderer/modeling/light/lighttarget.h
     renderer/modeling/light/lighttraits.h
     renderer/modeling/light/pointlight.cpp
     renderer/modeling/light/pointlight.h

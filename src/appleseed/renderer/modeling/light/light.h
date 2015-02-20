@@ -46,6 +46,7 @@
 namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class Assembly; }
 namespace renderer      { class InputEvaluator; }
+namespace renderer      { class LightTargetArray; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 
@@ -113,6 +114,15 @@ class APPLESEED_DLLSYMBOL Light
         foundation::Vector3d&           outgoing,                   // world space emission direction, unit-length
         Spectrum&                       value,                      // light value
         double&                         probability) const = 0;     // PDF value
+    virtual void sample(
+        InputEvaluator&                 input_evaluator,
+        const foundation::Transformd&   light_transform,            // light space to world space transform
+        const foundation::Vector2d&     s,                          // sample in [0,1)^2
+        const LightTargetArray&         targets,
+        foundation::Vector3d&           position,                   // world space emission position
+        foundation::Vector3d&           outgoing,                   // world space emission direction, unit-length
+        Spectrum&                       value,                      // light value
+        double&                         probability) const;         // PDF value
 
     // Evaluate the light for a given target point.
     virtual void evaluate(

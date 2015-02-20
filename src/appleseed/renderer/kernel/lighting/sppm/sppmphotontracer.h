@@ -56,6 +56,7 @@ END_OSL_INCLUDES
 namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class JobQueue; }
 namespace renderer      { class LightSampler; }
+namespace renderer      { class LightTargetArray; }
 namespace renderer      { class Scene; }
 namespace renderer      { class SPPMPhotonVector; }
 namespace renderer      { class TextureStore; }
@@ -103,6 +104,7 @@ class SPPMPhotonTracer
 #endif
 
     void schedule_light_photon_tracing_jobs(
+        const LightTargetArray&     photon_targets,
         SPPMPhotonVector&           photons,
         const size_t                pass_hash,
         foundation::JobQueue&       job_queue,
@@ -111,6 +113,7 @@ class SPPMPhotonTracer
         foundation::IAbortSwitch&   abort_switch);
 
     void schedule_environment_photon_tracing_jobs(
+        const LightTargetArray&     photon_targets,
         SPPMPhotonVector&           photons,
         const size_t                pass_hash,
         foundation::JobQueue&       job_queue,

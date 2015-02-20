@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/global/globaltypes.h"
 #include "renderer/modeling/scene/scene.h"
 
 // appleseed.foundation headers.
@@ -82,7 +83,7 @@ SPPMPassCallback::SPPMPassCallback(
   , m_pass_number(0)
 {
     // Compute the initial lookup radius.
-    const float scene_diameter = static_cast<float>(2.0 * scene.compute_radius());
+    const float scene_diameter = static_cast<float>(scene.compute_bbox().diameter());
     const float diameter_factor = m_params.m_initial_radius_percents / 100.0f;
     m_initial_lookup_radius = m_lookup_radius = scene_diameter * diameter_factor;
 }

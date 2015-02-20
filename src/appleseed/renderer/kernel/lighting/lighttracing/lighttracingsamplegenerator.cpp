@@ -169,8 +169,6 @@ namespace
           , m_params(params)
           , m_scene(scene)
           , m_frame(frame)
-          , m_safe_scene_radius(scene.compute_radius() * (1.0 + 1.0e-3))
-          , m_disk_point_prob(1.0 / (Pi * square(m_safe_scene_radius)))
           , m_light_sampler(light_sampler)
           , m_texture_cache(texture_store)
           , m_intersector(trace_context, m_texture_cache, m_params.m_report_self_intersections)
@@ -202,8 +200,13 @@ namespace
                 m_params.m_max_iterations)
           , m_light_sample_count(0)
           , m_path_count(0)
+          , m_ray_dtime(scene.get_camera()->get_shutter_open_time_interval())
         {
-            m_ray_dtime = scene.get_camera()->get_shutter_open_time_interval();
+            const GAABB3 scene_bbox = m_scene.compute_bbox();
+            m_scene_center = scene_bbox.center();
+            m_scene_radius = scene_bbox.radius();
+            m_safe_scene_diameter = 1.01 * (2.0 * m_scene_radius);
+            m_disk_point_prob = 1.0 / (Pi * m_scene_radius * m_scene_radius);
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -496,8 +499,10 @@ namespace
         const Frame&                    m_frame;
 
         // Preserve order.
-        const double                    m_safe_scene_radius;    // radius of the scene's bounding sphere + small safety margin
-        const double                    m_disk_point_prob;
+        Vector3d                        m_scene_center;         // world space
+        double                          m_scene_radius;         // world space
+        double                          m_safe_scene_diameter;  // world space
+        double                          m_disk_point_prob;
 
         const LightSampler&             m_light_sampler;
         TextureCache                    m_texture_cache;
@@ -515,7 +520,7 @@ namespace
         uint64                          m_path_count;
         Population<uint64>              m_path_length;
 
-        double                          m_ray_dtime;
+        const double                    m_ray_dtime;
 
         virtual size_t generate_samples(
             const size_t                sequence_index,
@@ -763,21 +768,19 @@ namespace
                 env_edf_value,
                 env_edf_prob);
 
-            // Compute the center of the tangent disk.
-            const Vector3d disk_center = m_safe_scene_radius * outgoing;
-
             // Uniformly sample the tangent disk.
             sampling_context.split_in_place(2, 1);
-            const Vector2d disk_point =
-                m_safe_scene_radius *
-                sample_disk_uniform(sampling_context.next_vector2<2>());
+            const Vector2d p =
+                  m_scene_radius
+                * sample_disk_uniform(sampling_context.next_vector2<2>());
 
             // Compute the origin of the light ray.
             const Basis3d basis(-outgoing);
             const Vector3d ray_origin =
-                disk_center +
-                disk_point[0] * basis.get_tangent_u() +
-                disk_point[1] * basis.get_tangent_v();
+                  m_scene_center
+                - m_safe_scene_diameter * basis.get_normal()
+                + p[0] * basis.get_tangent_u() +
+                + p[1] * basis.get_tangent_v();
 
             // Compute the initial particle weight.
             Spectrum initial_flux = env_edf_value;

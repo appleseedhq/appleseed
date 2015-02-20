@@ -30,7 +30,6 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/object/object.h"
-#include "renderer/modeling/object/triangle.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/objectinstance.h"
@@ -42,30 +41,27 @@
 // appleseed.foundation headers.
 #include "foundation/math/matrix.h"
 #include "foundation/math/transform.h"
+#include "foundation/math/vector.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/autoreleaseptr.h"
+#include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"
-
-// Standard headers.
-#include <cmath>
-#include <cstddef>
 
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 TEST_SUITE(Renderer_Modeling_Scene_Scene)
 {
-    TEST_CASE(ComputeRadius_GivenEmptyScene_ReturnsZero)
+    TEST_CASE(ComputeBbox_GivenEmptyScene_ReturnsInvalidBoundingBox)
     {
         auto_release_ptr<Scene> scene(SceneFactory::create());
 
-        const double radius = scene->compute_radius();
+        const GAABB3 bbox = scene->compute_bbox();
 
-        EXPECT_EQ(0.0, radius);
+        EXPECT_FALSE(bbox.is_valid());
     }
 
-    TEST_CASE(ComputeRadius_GivenSceneWithOneAssemblyInstance_ReturnsRadius)
+    TEST_CASE(ComputeBbox_GivenSceneWithOneAssemblyInstance_ReturnsBoundingBox)
     {
         // Create a scene.
         auto_release_ptr<Scene> scene(SceneFactory::create());
@@ -79,7 +75,7 @@ TEST_SUITE(Renderer_Modeling_Scene_Scene)
             auto_release_ptr<Object>(
                 new BoundingBoxObject(
                     "object",
-                    GAABB3(GVector3(-1.0), GVector3(1.0)))));
+                    GAABB3(GVector3(-1.0), GVector3(+1.0)))));
 
         // Create an instance of the object.
         assembly->object_instances().insert(
@@ -106,8 +102,9 @@ TEST_SUITE(Renderer_Modeling_Scene_Scene)
         scene->assemblies().insert(assembly);
         scene->assembly_instances().insert(assembly_instance);
 
-        const double radius = scene->compute_radius();
+        const GAABB3 bbox = scene->compute_bbox();
 
-        EXPECT_FEQ(10.0 * sqrt(3.0) + sqrt(3.0), radius);
+        EXPECT_FEQ(GVector3( -9.0), bbox.min);
+        EXPECT_FEQ(GVector3(+11.0), bbox.max);
     }
 }

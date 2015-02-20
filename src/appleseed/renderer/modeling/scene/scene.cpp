@@ -45,9 +45,6 @@
 #include "foundation/utility/foreach.h"
 
 // Standard headers.
-#include <algorithm>
-#include <cmath>
-#include <cstddef>
 #include <set>
 
 using namespace foundation;
@@ -145,25 +142,6 @@ GAABB3 Scene::compute_bbox() const
     return compute_parent_bbox<GAABB3>(instances.begin(), instances.end());
 }
 
-double Scene::compute_radius() const
-{
-    double square_radius = 0.0;
-    const GAABB3 bbox = compute_bbox();
-
-    if (bbox.is_valid())
-    {
-        for (size_t i = 0; i < 8; ++i)
-        {
-            const double square_distance =
-                static_cast<double>(square_norm(bbox.compute_corner(i)));
-
-            square_radius = max(square_radius, square_distance);
-        }
-    }
-
-    return sqrt(square_radius);
-}
-
 namespace
 {
     bool assembly_uses_alpha_mapping(const Assembly& assembly, set<UniqueID>& visited_assemblies)
@@ -206,9 +184,9 @@ namespace
 {
     template <typename EntityCollection>
     bool invoke_on_frame_begin(
-        const Project&          project,
-        EntityCollection&       entities,
-        IAbortSwitch*           abort_switch)
+        const Project&      project,
+        EntityCollection&   entities,
+        IAbortSwitch*       abort_switch)
     {
         bool success = true;
 
@@ -225,8 +203,8 @@ namespace
 
     template <typename EntityCollection>
     void invoke_on_frame_end(
-        const Project&          project,
-        EntityCollection&       entities)
+        const Project&      project,
+        EntityCollection&   entities)
     {
         for (each<EntityCollection> i = entities; i; ++i)
             i->on_frame_end(project);
