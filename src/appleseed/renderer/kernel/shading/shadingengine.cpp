@@ -178,6 +178,7 @@ void ShadingEngine::shade_environment(
         const ShadingRay& ray = shading_point.get_ray();
         const Vector3d direction = normalize(ray.m_dir);
         environment_shader->evaluate(
+            shading_context,
             input_evaluator,
             direction,
             shading_result);

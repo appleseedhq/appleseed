@@ -107,11 +107,12 @@ namespace
         }
 
         virtual void sample(
-            InputEvaluator&     input_evaluator,
-            const Vector2d&     s,
-            Vector3d&           outgoing,
-            Spectrum&           value,
-            double&             probability) const APPLESEED_OVERRIDE
+            const ShadingContext&   shading_context,
+            InputEvaluator&         input_evaluator,
+            const Vector2d&         s,
+            Vector3d&               outgoing,
+            Spectrum&               value,
+            double&                 probability) const APPLESEED_OVERRIDE
         {
             outgoing = sample_sphere_uniform(s);
             value =
@@ -122,9 +123,10 @@ namespace
         }
 
         virtual void evaluate(
-            InputEvaluator&     input_evaluator,
-            const Vector3d&     outgoing,
-            Spectrum&           value) const APPLESEED_OVERRIDE
+            const ShadingContext&   shading_context,
+            InputEvaluator&         input_evaluator,
+            const Vector3d&         outgoing,
+            Spectrum&               value) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
             value =
@@ -134,10 +136,11 @@ namespace
         }
 
         virtual void evaluate(
-            InputEvaluator&     input_evaluator,
-            const Vector3d&     outgoing,
-            Spectrum&           value,
-            double&             probability) const APPLESEED_OVERRIDE
+            const ShadingContext&   shading_context,
+            InputEvaluator&         input_evaluator,
+            const Vector3d&         outgoing,
+            Spectrum&               value,
+            double&                 probability) const APPLESEED_OVERRIDE
         {
             assert(is_normalized(outgoing));
             value =

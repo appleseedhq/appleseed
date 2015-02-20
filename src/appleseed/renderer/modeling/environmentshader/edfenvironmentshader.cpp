@@ -123,9 +123,10 @@ namespace
         }
 
         virtual void evaluate(
-            InputEvaluator&     input_evaluator,
-            const Vector3d&     direction,
-            ShadingResult&      shading_result) const APPLESEED_OVERRIDE
+            const ShadingContext&   shading_context,
+            InputEvaluator&         input_evaluator,
+            const Vector3d&         direction,
+            ShadingResult&          shading_result) const APPLESEED_OVERRIDE
         {
             // Initialize the shading result.
             shading_result.m_color_space = ColorSpaceSpectral;
@@ -135,6 +136,7 @@ namespace
 
             // Evaluate the environment EDF and store the radiance into the shading result.
             m_env_edf->evaluate(
+                shading_context,
                 input_evaluator,
                 direction,
                 shading_result.m_main.m_color);
