@@ -2210,12 +2210,15 @@ namespace
 
             if (scene_bbox.is_valid())
             {
+                const Vector3d scene_center = scene_bbox.center();
+
                 RENDERER_LOG_INFO(
                     "scene bounding box: (%f, %f, %f)-(%f, %f, %f).\n"
-                    "scene diameter: %f.",
+                    "scene bounding sphere: center (%f, %f, %f), diameter %f.",
                     scene_bbox.min[0], scene_bbox.min[1], scene_bbox.min[2],
                     scene_bbox.max[0], scene_bbox.max[1], scene_bbox.max[2],
-                    2.0 * m_scene->compute_radius());
+                    scene_center[0], scene_center[1], scene_center[2],
+                    scene_bbox.diameter());
             }
             else
             {
