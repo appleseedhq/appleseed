@@ -1402,6 +1402,12 @@ set (renderer_modeling_environmentedf_sources
     renderer/modeling/environmentedf/preethamenvironmentedf.h
     renderer/modeling/environmentedf/sphericalcoordinates.h
 )
+if (WITH_OSL)
+    list (APPEND appleseed_sources
+        renderer/modeling/environmentedf/oslenvironmentedf.cpp
+        renderer/modeling/environmentedf/oslenvironmentedf.h
+    )
+endif ()
 list (APPEND appleseed_sources
     ${renderer_modeling_environmentedf_sources}
 )

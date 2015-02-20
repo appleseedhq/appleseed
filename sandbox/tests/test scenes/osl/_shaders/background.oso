@@ -1,0 +1,34 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.6.2dev
+surface background
+global	vector	I	%read{0,0} %write{2147483647,-1}
+global	closure color	Ci	%read{2147483647,-1} %write{9,9}
+local	vector	dir	%read{2,6} %write{0,0}
+temp	closure color	$tmp1	%read{9,9} %write{1,1}
+const	string	$const1	"background"		%read{1,1} %write{2147483647,-1}
+temp	color	$tmp2	%read{9,9} %write{8,8}
+temp	float	$tmp3	%read{8,8} %write{3,3}
+const	int	$const2	0		%read{2,2} %write{2147483647,-1}
+temp	float	$tmp4	%read{3,3} %write{2,2}
+temp	float	$tmp5	%read{8,8} %write{5,5}
+const	int	$const3	1		%read{4,4} %write{2147483647,-1}
+temp	float	$tmp6	%read{5,5} %write{4,4}
+temp	float	$tmp7	%read{8,8} %write{7,7}
+const	int	$const4	2		%read{6,6} %write{2147483647,-1}
+temp	float	$tmp8	%read{7,7} %write{6,6}
+code ___main___
+# background.osl:4
+#     vector dir = normalize(I);
+	normalize	dir I 	%filename{"background.osl"} %line{4} %argrw{"wr"}
+# background.osl:5
+#     Ci = color(fabs(dir[0]), fabs(dir[1]), fabs(dir[2])) * background();
+	closure		$tmp1 $const1 	%line{5} %argrw{"wr"}
+	compref		$tmp4 dir $const2 	%argrw{"wrr"}
+	fabs		$tmp3 $tmp4 	%argrw{"wr"}
+	compref		$tmp6 dir $const3 	%argrw{"wrr"}
+	fabs		$tmp5 $tmp6 	%argrw{"wr"}
+	compref		$tmp8 dir $const4 	%argrw{"wrr"}
+	fabs		$tmp7 $tmp8 	%argrw{"wr"}
+	color		$tmp2 $tmp3 $tmp5 $tmp7 	%argrw{"wrrr"}
+	mul		Ci $tmp1 $tmp2 	%argrw{"wrr"}
+	end
