@@ -47,29 +47,6 @@ using namespace std;
 namespace renderer
 {
 
-namespace
-{
-
-class IAssemblyAssemblyFactoryAdapter
-  : public IAssemblyFactory
-{
-  public:
-    virtual const char* get_model() const APPLESEED_OVERRIDE
-    {
-        return AssemblyFactory::get_model();
-    }
-
-    // Create a new assembly.
-    virtual foundation::auto_release_ptr<Assembly> create(
-        const char*         name,
-        const ParamArray&   params = ParamArray()) const APPLESEED_OVERRIDE
-    {
-        return AssemblyFactory::create(name, params);
-    }
-};
-
-}
-
 APPLESEED_DEFINE_ARRAY(AssemblyFactoryArray);
 
 struct AssemblyFactoryRegistrar::Impl
@@ -80,7 +57,7 @@ struct AssemblyFactoryRegistrar::Impl
 AssemblyFactoryRegistrar::AssemblyFactoryRegistrar()
   : impl(new Impl())
 {
-    register_factory(auto_ptr<FactoryType>(new IAssemblyAssemblyFactoryAdapter()));
+    register_factory(auto_ptr<FactoryType>(new AssemblyFactory()));
 }
 
 AssemblyFactoryRegistrar::~AssemblyFactoryRegistrar()

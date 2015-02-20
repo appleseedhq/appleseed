@@ -53,7 +53,7 @@ APPLESEED_DECLARE_ARRAY(AssemblyFactoryArray, IAssemblyFactory*);
 
 
 //
-// Environment EDF factory registrar.
+// Assembly factory registrar.
 //
 
 class APPLESEED_DLLSYMBOL AssemblyFactoryRegistrar

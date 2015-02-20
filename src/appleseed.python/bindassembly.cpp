@@ -49,14 +49,14 @@ namespace
 {
     auto_release_ptr<Assembly> create_assembly(const std::string& name)
     {
-        return AssemblyFactory::create(name.c_str(), ParamArray());
+        return AssemblyFactory().create(name.c_str(), ParamArray());
     }
 
     auto_release_ptr<Assembly> create_assembly_with_params(
         const std::string&  name,
         const bpy::dict&    params)
     {
-        return AssemblyFactory::create(name.c_str(), bpy_dict_to_param_array(params));
+        return AssemblyFactory().create(name.c_str(), bpy_dict_to_param_array(params));
     }
 
     auto_release_ptr<Assembly> create_assembly_with_model_and_params(

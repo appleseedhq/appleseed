@@ -2039,7 +2039,7 @@ namespace
 #endif
 
             m_name = get_value(attrs, "name");
-            m_model = get_value(attrs, "model", AssemblyFactory::get_model());
+            m_model = get_value(attrs, "model", AssemblyFactory().get_model());
         }
 
         virtual void end_element() APPLESEED_OVERRIDE

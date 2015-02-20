@@ -38,8 +38,6 @@
 
 // Forward declarations.
 namespace renderer      { class Assembly; }
-namespace foundation    { class Dictionary; }
-namespace foundation    { class DictionaryArray; }
 namespace renderer      { class ParamArray; }
 
 namespace renderer

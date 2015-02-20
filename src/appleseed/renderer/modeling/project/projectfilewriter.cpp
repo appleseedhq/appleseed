@@ -440,7 +440,7 @@ namespace
 
             // Don't write the assembly model for normal assemblies
             // to preserve compatibility with older appleseed versions.
-            if (strcmp(assembly.get_model(), AssemblyFactory::get_model()) != 0)
+            if (strcmp(assembly.get_model(), AssemblyFactory().get_model()) != 0)
                 element.add_attribute("model", assembly.get_model());
 
             element.write(

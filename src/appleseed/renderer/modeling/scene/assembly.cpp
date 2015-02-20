@@ -56,7 +56,7 @@ namespace renderer
 // Assembly class implementation.
 //
 
-const char* Model = "assembly";
+const char* Model = "generic_assembly";
 
 namespace
 {
@@ -270,14 +270,14 @@ void Assembly::on_frame_end(const Project& project)
 // AssemblyFactory class implementation.
 //
 
-const char* AssemblyFactory::get_model()
+const char* AssemblyFactory::get_model() const
 {
     return Model;
 }
 
 auto_release_ptr<Assembly> AssemblyFactory::create(
     const char*         name,
-    const ParamArray&   params)
+    const ParamArray&   params) const
 {
     return auto_release_ptr<Assembly>(new Assembly(name, params));
 }
