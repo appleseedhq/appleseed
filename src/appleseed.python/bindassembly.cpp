@@ -34,7 +34,9 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/scene/assembly.h"
+#include "renderer/modeling/scene/assemblyfactoryregistrar.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
+#include "renderer/modeling/scene/iassemblyfactory.h"
 
 // Standard headers.
 #include <string>
@@ -55,6 +57,25 @@ namespace
         const bpy::dict&    params)
     {
         return AssemblyFactory::create(name.c_str(), bpy_dict_to_param_array(params));
+    }
+
+    auto_release_ptr<Assembly> create_assembly_with_model_and_params(
+        const std::string&  model,
+        const std::string&  name,
+        const bpy::dict&    params)
+    {
+        AssemblyFactoryRegistrar factories;
+        const IAssemblyFactory* factory = factories.lookup(model.c_str());
+
+        if (factory)
+            return factory->create(name.c_str(), bpy_dict_to_param_array(params));
+        else
+        {
+            PyErr_SetString(PyExc_RuntimeError, "Assembly model not found");
+            bpy::throw_error_already_set();
+        }
+
+        return auto_release_ptr<Assembly>();
     }
 
     auto_release_ptr<AssemblyInstance> create_assembly_instance(
@@ -96,6 +117,7 @@ void bind_assembly()
     bpy::class_<Assembly, auto_release_ptr<Assembly>, bpy::bases<Entity, BaseGroup>, boost::noncopyable>("Assembly", bpy::no_init)
         .def("__init__", bpy::make_constructor(create_assembly))
         .def("__init__", bpy::make_constructor(create_assembly_with_params))
+        .def("__init__", bpy::make_constructor(create_assembly_with_model_and_params))
         .def("bsdfs", &Assembly::bsdfs, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("edfs", &Assembly::edfs, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("surface_shaders", &Assembly::surface_shaders, bpy::return_value_policy<bpy::reference_existing_object>())
