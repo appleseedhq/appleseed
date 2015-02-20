@@ -49,7 +49,7 @@ namespace renderer
 {
 
 //
-//  environment EDF factory.
+//  OSL environment EDF factory.
 //
 
 class APPLESEED_DLLSYMBOL OSLEnvironmentEDFFactory
