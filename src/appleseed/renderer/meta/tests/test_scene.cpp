@@ -68,7 +68,7 @@ TEST_SUITE(Renderer_Modeling_Scene_Scene)
 
         // Create an assembly.
         auto_release_ptr<Assembly> assembly(
-            AssemblyFactory::create("assembly", ParamArray()));
+            AssemblyFactory().create("assembly", ParamArray()));
 
         // Create an object.
         assembly->objects().insert(

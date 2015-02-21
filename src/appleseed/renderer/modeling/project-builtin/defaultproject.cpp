@@ -62,7 +62,7 @@ auto_release_ptr<Project> DefaultProjectFactory::create()
     auto_release_ptr<Scene> scene(SceneFactory::create());
 
     // Create an assembly.
-    auto_release_ptr<Assembly> assembly(AssemblyFactory::create("assembly"));
+    auto_release_ptr<Assembly> assembly(AssemblyFactory().create("assembly"));
 
     // Create an instance of the assembly and insert it into the scene.
     scene->assembly_instances().insert(

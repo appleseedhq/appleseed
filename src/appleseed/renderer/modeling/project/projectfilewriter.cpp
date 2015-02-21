@@ -437,6 +437,12 @@ namespace
         {
             XMLElement element("assembly", m_file, m_indenter);
             element.add_attribute("name", assembly.get_name());
+
+            // Don't write the assembly model for normal assemblies
+            // to preserve compatibility with older appleseed versions.
+            if (strcmp(assembly.get_model(), AssemblyFactory().get_model()) != 0)
+                element.add_attribute("model", assembly.get_model());
+
             element.write(
                 !assembly.get_parameters().empty() ||
                 !assembly.colors().empty() ||

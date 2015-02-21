@@ -342,7 +342,7 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileWriter)
 
         auto_release_ptr<Object> object(MeshObjectFactory::create("bunny", object_params));
 
-        auto_release_ptr<Assembly> assembly(AssemblyFactory::create("assembly", ParamArray()));
+        auto_release_ptr<Assembly> assembly(AssemblyFactory().create("assembly", ParamArray()));
         assembly->objects().insert(object);
 
         m_project->get_scene()->assemblies().insert(assembly);

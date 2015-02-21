@@ -114,7 +114,7 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
 #endif
 
         scene.assemblies().insert(
-            AssemblyFactory::create("assembly", ParamArray()));
+            AssemblyFactory().create("assembly", ParamArray()));
 
         Assembly& assembly = *scene.assemblies().get_by_name("assembly");
 

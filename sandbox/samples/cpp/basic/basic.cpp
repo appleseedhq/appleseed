@@ -84,7 +84,7 @@ asf::auto_release_ptr<asr::Project> build_project()
 
     // Create an assembly.
     asf::auto_release_ptr<asr::Assembly> assembly(
-        asr::AssemblyFactory::create(
+        asr::AssemblyFactory().create(
             "assembly",
             asr::ParamArray()));
 

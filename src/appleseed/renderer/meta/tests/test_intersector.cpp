@@ -66,7 +66,7 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
           : m_scene(SceneFactory::create())
         {
             auto_release_ptr<Assembly> assembly(
-                AssemblyFactory::create("assembly", ParamArray()));
+                AssemblyFactory().create("assembly", ParamArray()));
 
             assembly->objects().insert(
                 auto_release_ptr<Object>(

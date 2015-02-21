@@ -99,7 +99,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             m_scene = m_project->get_scene();
 
             m_scene->assemblies().insert(
-                AssemblyFactory::create("assembly", ParamArray()));
+                AssemblyFactory().create("assembly", ParamArray()));
             m_assembly = m_scene->assemblies().get_by_name("assembly");
 
             m_scene->assembly_instances().insert(

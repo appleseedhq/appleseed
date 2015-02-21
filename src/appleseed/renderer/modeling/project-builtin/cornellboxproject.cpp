@@ -465,7 +465,7 @@ auto_release_ptr<Project> CornellBoxProjectFactory::create()
 
     // Create an assembly.
     auto_release_ptr<Assembly> assembly(
-        AssemblyFactory::create("assembly", ParamArray()));
+        AssemblyFactory().create("assembly", ParamArray()));
 
     // Create white reflectance.
     {
