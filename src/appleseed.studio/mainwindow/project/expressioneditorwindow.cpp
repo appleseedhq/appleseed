@@ -35,6 +35,7 @@
 // appleseed.studio headers.
 #include "mainwindow/project/tools.h"
 #include "utility/miscellaneous.h"
+#include "utility/settingskeys.h"
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
@@ -59,7 +60,6 @@
 // Qt headers.
 #include <QCloseEvent>
 #include <QDesktopServices>
-#include <QFileDialog>
 #include <QFileInfo>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -89,12 +89,14 @@ namespace appleseed {
 namespace studio {
 
 ExpressionEditorWindow::ExpressionEditorWindow(
+    QWidget*        parent,
     const Project&  project,
+    ParamArray&     settings,
     const QString&  widget_name,
-    const string&   expression,
-    QWidget*        parent)
+    const string&   expression)
   : QWidget(parent)
   , m_project(project)
+  , m_settings(settings)
   , m_widget_name(widget_name)
   , m_ui(new Ui::ExpressionEditorWindow())
   , m_show_examples(false)
@@ -226,17 +228,13 @@ void ExpressionEditorWindow::slot_save_script()
 {
     if (m_script_filepath.empty())
     {
-        QFileDialog::Options options;
-        QString selected_filter;
-
         QString filepath =
-            QFileDialog::getSaveFileName(
+            get_save_filename(
                 this,
                 "Save As...",
-                QString::fromStdString(get_project_path()),
                 "Expression Scripts (*.se)",
-                &selected_filter,
-                options);
+                m_settings,
+                SETTINGS_FILE_DIALOG_MATERIALS);
 
         if (!filepath.isEmpty())
         {
@@ -268,17 +266,13 @@ void ExpressionEditorWindow::slot_save_script()
 
 void ExpressionEditorWindow::slot_load_script()
 {
-    QFileDialog::Options options;
-    QString selected_filter;
-
     QString filepath =
-        QFileDialog::getOpenFileName(
+        get_open_filename(
             this,
             "Open...",
-            QString::fromStdString(get_project_path()),
             "Expression Scripts (*.se);;All Files (*.*)",
-            &selected_filter,
-            options);
+            m_settings,
+            SETTINGS_FILE_DIALOG_MATERIALS);
 
     if (!filepath.isEmpty())
     {
@@ -333,14 +327,6 @@ void ExpressionEditorWindow::slot_show_help()
 
     const QString docs_file = QString::fromStdString(docs_path.string());
     QDesktopServices::openUrl(QUrl::fromLocalFile(docs_file));
-}
-
-string ExpressionEditorWindow::get_project_path() const
-{
-    const filesystem::path project_root_path = filesystem::path(m_project.get_path()).parent_path();
-    const filesystem::path file_path = absolute("script.se", project_root_path);
-    const filesystem::path file_root_path = file_path.parent_path();
-    return file_root_path.string();
 }
 
 void ExpressionEditorWindow::closeEvent(QCloseEvent* e)

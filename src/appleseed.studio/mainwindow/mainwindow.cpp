@@ -72,7 +72,6 @@
 #include <QApplication>
 #include <QCloseEvent>
 #include <QDir>
-#include <QFileDialog>
 #include <QFileInfo>
 #include <QFileSystemWatcher>
 #include <QIcon>
@@ -176,12 +175,6 @@ void MainWindow::open_project(const QString& filepath)
     set_file_widgets_enabled(false);
     set_project_explorer_enabled(false);
     set_rendering_widgets_enabled(false, false);
-
-    const filesystem::path path(filepath.toStdString());
-
-    m_settings.insert_path(
-        SETTINGS_LAST_DIRECTORY,
-        path.parent_path().string());
 
     m_project_manager.load_project(filepath.toAscii().constData());
 }
@@ -1071,17 +1064,13 @@ void MainWindow::slot_open_project()
     if (!can_close_project())
         return;
 
-    QFileDialog::Options options;
-    QString selected_filter;
-
     QString filepath =
-        QFileDialog::getOpenFileName(
+        get_open_filename(
             this,
             "Open...",
-            m_settings.get_path_optional<QString>(SETTINGS_LAST_DIRECTORY),
             "Project Files (*.appleseed);;All Files (*.*)",
-            &selected_filter,
-            options);
+            m_settings,
+            SETTINGS_FILE_DIALOG_PROJECTS);
 
     if (!filepath.isEmpty())
     {
@@ -1190,17 +1179,13 @@ void MainWindow::slot_save_project_as()
 {
     assert(m_project_manager.is_project_open());
 
-    QFileDialog::Options options;
-    QString selected_filter;
-
     QString filepath =
-        QFileDialog::getSaveFileName(
+        get_save_filename(
             this,
             "Save As...",
-            m_settings.get_path_optional<QString>(SETTINGS_LAST_DIRECTORY),
             "Project Files (*.appleseed)",
-            &selected_filter,
-            options);
+            m_settings,
+            SETTINGS_FILE_DIALOG_PROJECTS);
 
     if (!filepath.isEmpty())
     {
@@ -1208,12 +1193,6 @@ void MainWindow::slot_save_project_as()
             filepath += ".appleseed";
 
         filepath = QDir::toNativeSeparators(filepath);
-
-        const filesystem::path path(filepath.toStdString());
-
-        m_settings.insert_path(
-            SETTINGS_LAST_DIRECTORY,
-            path.parent_path().string());
 
         if (m_project_file_watcher)
             stop_watching_project_file();
@@ -1500,22 +1479,18 @@ void MainWindow::slot_render_widget_context_menu(const QPoint& point)
 
 namespace
 {
-    QString ask_image_save_file_path(
+    QString ask_frame_save_file_path(
         QWidget*        parent,
         const QString&  caption,
-        const QString&  dir)
+        ParamArray&     settings)
     {
-        QFileDialog::Options options;
-        QString selected_filter;
-
         QString filepath =
-            QFileDialog::getSaveFileName(
+            get_save_filename(
                 parent,
                 caption,
-                dir,
                 g_bitmap_files_filter,
-                &selected_filter,
-                options);
+                settings,
+                SETTINGS_FILE_DIALOG_FRAMES);
 
         if (!filepath.isEmpty())
         {
@@ -1535,10 +1510,7 @@ void MainWindow::slot_save_frame()
     assert(!m_rendering_manager.is_rendering());
 
     const QString filepath =
-        ask_image_save_file_path(
-            this,
-            "Save Frame As...",
-            m_settings.get_path_optional<QString>(SETTINGS_LAST_DIRECTORY));
+        ask_frame_save_file_path(this, "Save Frame As...", m_settings);
 
     if (filepath.isEmpty())
         return;
@@ -1553,10 +1525,7 @@ void MainWindow::slot_save_all_aovs()
     assert(!m_rendering_manager.is_rendering());
 
     const QString filepath =
-        ask_image_save_file_path(
-            this,
-            "Save All AOVs As...",
-            m_settings.get_path_optional<QString>(SETTINGS_LAST_DIRECTORY));
+        ask_frame_save_file_path(this, "Save All AOVs As...", m_settings);
 
     if (filepath.isEmpty())
         return;

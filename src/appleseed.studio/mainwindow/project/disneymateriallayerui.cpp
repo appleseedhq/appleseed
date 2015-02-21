@@ -36,6 +36,7 @@
 #include "utility/interop.h"
 #include "utility/miscellaneous.h"
 #include "utility/mousewheelfocuseventfilter.h"
+#include "utility/settingskeys.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/material.h"
@@ -49,7 +50,6 @@
 #include <QColor>
 #include <QColorDialog>
 #include <QDir>
-#include <QFileDialog>
 #include <QFileInfo>
 #include <QFormLayout>
 #include <QHBoxLayout>
@@ -78,11 +78,13 @@ namespace appleseed {
 namespace studio {
 
 DisneyMaterialLayerUI::DisneyMaterialLayerUI(
+    QWidget*            parent,
     const Project&      project,
-    const Dictionary&   values,
-    QWidget*            parent)
+    ParamArray&         settings,
+    const Dictionary&   values)
   : QFrame(parent)
   , m_project(project)
+  , m_settings(settings)
   , m_input_metadata(DisneyMaterialLayer::get_input_metadata())
   , m_fold_icon(":/widgets/layer_fold.png")
   , m_unfold_icon(":/widgets/layer_unfold.png")
@@ -326,57 +328,21 @@ namespace
         const QString texture_expression = QString("texture(\"%1\", $u, $v)").arg(relative_path);
         return texture_expression.toStdString();
     }
-
-    string expression_to_texture(const string& expr)
-    {
-        // TODO: refactor as soon as possible
-        string expression = trim_both(expr, " \r\n");
-        vector<string> tokens;
-        tokenize(expression, "()", tokens);
-        if (tokens.size() != 2)
-            return string();
-
-        if (trim_both(tokens[0]) != "texture")
-            return string();
-
-        string inner_content = tokens[1];
-        tokens.clear();
-        tokenize(inner_content, ",", tokens);
-        if (tokens.size() != 3)
-            return string();
-
-        if (trim_both(tokens[1]) != "$u")
-            return string();
-
-        if (trim_both(tokens[2]) != "$v")
-            return string();
-
-        return trim_both(tokens[0], " \"");
-    }
 }
 
 void DisneyMaterialLayerUI::slot_open_file_picker(const QString& widget_name)
 {
-    IInputWidgetProxy* widget_proxy = m_widget_proxies.get(widget_name.toStdString());
-
-    const filesystem::path project_root_path = filesystem::path(m_project.get_path()).parent_path();
-    const filesystem::path file_path = absolute(expression_to_texture(widget_proxy->get()), project_root_path);
-    const filesystem::path file_root_path = file_path.parent_path();
-
-    QFileDialog::Options options;
-    QString selected_filter;
-
     QString filepath =
-        QFileDialog::getOpenFileName(
+        get_open_filename(
             m_content_widget,
             "Pick Texture File...",
-            QString::fromStdString(file_root_path.string()),
             compute_oiio_files_filter(),
-            &selected_filter,
-            options);
+            m_settings,
+            SETTINGS_FILE_DIALOG_TEXTURES);
 
     if (!filepath.isEmpty())
     {
+        IInputWidgetProxy* widget_proxy = m_widget_proxies.get(widget_name.toStdString());
         widget_proxy->set(
             texture_to_expression(
                 m_project.search_paths(),
@@ -390,10 +356,11 @@ void DisneyMaterialLayerUI::slot_open_expression_editor(const QString& widget_na
 
     ExpressionEditorWindow* expression_editor_window =
         new ExpressionEditorWindow(
+            m_content_widget,
             m_project,
+            m_settings,
             widget_name,
-            widget_proxy->get(),
-            m_content_widget);
+            widget_proxy->get());
 
     connect(
         expression_editor_window,

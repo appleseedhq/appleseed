@@ -40,6 +40,8 @@
 #include "mainwindow/project/fixedmodelentityitem.h"
 #include "mainwindow/project/materialitem.h"
 #include "mainwindow/project/tools.h"
+#include "utility/miscellaneous.h"
+#include "utility/settingskeys.h"
 
 // appleseed.renderer headers.
 #ifdef APPLESEED_WITH_DISNEY_MATERIAL
@@ -54,7 +56,6 @@
 #include "application/application.h"
 
 // Qt headers.
-#include <QFileDialog>
 #include <QString>
 
 // Boost headers.
@@ -119,7 +120,14 @@ ItemBase* MaterialCollectionItem::create_item(Material* material)
 {
     assert(material);
 
-    ItemBase* item = new MaterialItem(material, m_parent, this, m_project_builder);
+    ItemBase* item =
+        new MaterialItem(
+            material,
+            m_parent,
+            this,
+            m_project_builder,
+            m_settings);
+
     m_project_builder.get_item_registry().insert(material->get_uid(), item);
 
     return item;
@@ -148,17 +156,13 @@ void MaterialCollectionItem::slot_import_disney()
     const filesystem::path file_path = absolute("material.dmt", project_root_path);
     const filesystem::path file_root_path = file_path.parent_path();
 
-    QFileDialog::Options options;
-    QString selected_filter;
-
     QString filepath =
-        QFileDialog::getOpenFileName(
+        get_open_filename(
             0,
             "Import...",
-            QString::fromStdString(file_root_path.string()),
             "Disney Material (*.dmt);;All Files (*.*)",
-            &selected_filter,
-            options);
+            m_settings,
+            SETTINGS_FILE_DIALOG_MATERIALS);
 
     if (!filepath.isEmpty())
     {
@@ -253,7 +257,9 @@ void MaterialCollectionItem::do_create_material(const char* model)
     if (strcmp(model, "disney_material") == 0)
     {
         custom_entity_ui.reset(
-            new DisneyMaterialCustomUI(Base::m_project_builder.get_project()));
+            new DisneyMaterialCustomUI(
+                Base::m_project_builder.get_project(),
+                m_settings));
     }
 #endif
 

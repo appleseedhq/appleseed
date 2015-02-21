@@ -30,6 +30,13 @@
 // Interface header.
 #include "miscellaneous.h"
 
+// appleseed.studio headers.
+#include "utility/interop.h"
+#include "utility/settingskeys.h"
+
+// appleseed.renderer headers.
+#include "renderer/utility/paramarray.h"
+
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/string.h"
@@ -40,6 +47,8 @@
 #endif
 
 // Qt headers.
+#include <QDir>
+#include <QFileInfo>
 #include <QGridLayout>
 #include <QKeySequence>
 #include <QLayout>
@@ -48,6 +57,7 @@
 #include <QShortcut>
 #include <QSpacerItem>
 #include <QString>
+#include <QStringList>
 #include <Qt>
 #include <QWidget>
 
@@ -57,6 +67,7 @@
 #include <vector>
 
 using namespace foundation;
+using namespace renderer;
 using namespace std;
 
 namespace appleseed {
@@ -103,6 +114,118 @@ QString compute_oiio_files_filter()
 }
 
 #endif
+
+namespace
+{
+    QString get_value(const ParamArray& settings, const QString& key)
+    {
+        return settings.get_path_optional<QString>(key.toAscii().constData());
+    }
+
+    void set_value(ParamArray& settings, const QString& key, const QString& value)
+    {
+        settings.insert_path(key.toAscii().constData(), value);
+    }
+}
+
+QString get_open_filename(
+    QWidget*                parent,
+    const QString&          caption,
+    const QString&          filter,
+    ParamArray&             settings,
+    const QString&          settings_key,
+    QFileDialog::Options    options)
+{
+    const QString dir = get_value(settings, settings_key + SETTINGS_LAST_DIRECTORY);
+    QString selected_filter = get_value(settings, settings_key + SETTINGS_SELECTED_FILTER);
+
+    const QString filepath =
+        QFileDialog::getOpenFileName(
+            parent,
+            caption,
+            dir,
+            filter,
+            &selected_filter,
+            options);
+
+    set_value(settings, settings_key + SETTINGS_SELECTED_FILTER, selected_filter);
+
+    if (!filepath.isEmpty())
+    {
+        set_value(
+            settings,
+            settings_key + SETTINGS_LAST_DIRECTORY,
+            QDir::toNativeSeparators(QFileInfo(filepath).path()));
+    }
+
+    return filepath;
+}
+
+QStringList get_open_filenames(
+    QWidget*                parent,
+    const QString&          caption,
+    const QString&          filter,
+    ParamArray&             settings,
+    const QString&          settings_key,
+    QFileDialog::Options    options)
+{
+    const QString dir = get_value(settings, settings_key + SETTINGS_LAST_DIRECTORY);
+    QString selected_filter = get_value(settings, settings_key + SETTINGS_SELECTED_FILTER);
+
+    const QStringList filepaths =
+        QFileDialog::getOpenFileNames(
+            parent,
+            caption,
+            dir,
+            filter,
+            &selected_filter,
+            options);
+
+    set_value(settings, settings_key + SETTINGS_SELECTED_FILTER, selected_filter);
+
+    if (!filepaths.isEmpty())
+    {
+        set_value(
+            settings,
+            settings_key + SETTINGS_LAST_DIRECTORY,
+            QDir::toNativeSeparators(QFileInfo(filepaths.first()).path()));
+    }
+
+    return filepaths;
+}
+
+QString get_save_filename(
+    QWidget*                parent,
+    const QString&          caption,
+    const QString&          filter,
+    ParamArray&             settings,
+    const QString&          settings_key,
+    QFileDialog::Options    options)
+{
+    const QString dir = get_value(settings, settings_key + SETTINGS_LAST_DIRECTORY);
+    QString selected_filter = get_value(settings, settings_key + SETTINGS_SELECTED_FILTER);
+
+    const QString filepath =
+        QFileDialog::getSaveFileName(
+            parent,
+            caption,
+            dir,
+            filter,
+            &selected_filter,
+            options);
+
+    set_value(settings, settings_key + SETTINGS_SELECTED_FILTER, selected_filter);
+
+    if (!filepath.isEmpty())
+    {
+        set_value(
+            settings,
+            settings_key + SETTINGS_LAST_DIRECTORY,
+            QDir::toNativeSeparators(QFileInfo(filepath).path()));
+    }
+
+    return filepath;
+}
 
 void disable_osx_focus_rect(QWidget* widget)
 {

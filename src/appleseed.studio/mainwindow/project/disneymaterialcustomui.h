@@ -46,6 +46,7 @@
 // Forward declarations.
 namespace appleseed     { namespace studio { class DisneyMaterialLayerUI; } }
 namespace foundation    { class Dictionary; }
+namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 class QPushButton;
 class QVBoxLayout;
@@ -60,7 +61,9 @@ class DisneyMaterialCustomUI
     Q_OBJECT
 
   public:
-    explicit DisneyMaterialCustomUI(const renderer::Project& project);
+    DisneyMaterialCustomUI(
+        const renderer::Project&        project,
+        renderer::ParamArray&           settings);
 
     virtual void create_widgets(
         QVBoxLayout*                    layout,
@@ -76,6 +79,7 @@ class DisneyMaterialCustomUI
 
   private:
     const renderer::Project&            m_project;
+    renderer::ParamArray&               m_settings;
     QWidget*                            m_parent;
     QVBoxLayout*                        m_layout;
 

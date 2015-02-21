@@ -36,7 +36,7 @@
 #include "mainwindow/project/objectitem.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/rendering/renderingmanager.h"
-#include "utility/interop.h"
+#include "utility/miscellaneous.h"
 #include "utility/settingskeys.h"
 
 // appleseed.renderer headers.
@@ -51,7 +51,6 @@
 
 // Qt headers.
 #include <QDir>
-#include <QFileDialog>
 #include <QMenu>
 #include <QString>
 #include <QStringList>
@@ -102,32 +101,20 @@ QMenu* ObjectCollectionItem::get_single_item_context_menu() const
 
 void ObjectCollectionItem::slot_import_objects()
 {
-    QFileDialog::Options options;
-    QString selected_filter;
-
     const QStringList filepaths =
-        QFileDialog::getOpenFileNames(
+        get_open_filenames(
             treeWidget(),
             "Import Objects...",
-            m_settings.get_path_optional<QString>(SETTINGS_LAST_DIRECTORY),
-            "Geometry Files (*.abc; *.binarymesh; *.obj);;All Files (*.*)",
-            &selected_filter,
-            options);
+            "Geometry Files (*.abc;*.binarymesh;*.obj);;All Files (*.*)",
+            m_settings,
+            SETTINGS_FILE_DIALOG_GEOMETRY);
 
     if (filepaths.empty())
         return;
 
-    const filesystem::path path(
-        QDir::toNativeSeparators(filepaths.first()).toStdString());
-
-    m_settings.insert_path(
-        SETTINGS_LAST_DIRECTORY,
-        path.parent_path().string());
-
     if (m_project_builder.get_rendering_manager().is_rendering())
         schedule_import_objects(filepaths);
     else import_objects(filepaths);
-
 }
 
 namespace

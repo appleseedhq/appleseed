@@ -38,6 +38,7 @@ namespace appleseed { namespace studio { class MaterialCollectionItem; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace renderer  { class Assembly; }
 namespace renderer  { class Material; }
+namespace renderer  { class ParamArray; }
 
 namespace appleseed {
 namespace studio {
@@ -52,15 +53,18 @@ class MaterialItem
         renderer::Material*         entity,
         renderer::Assembly&         parent,
         MaterialCollectionItem*     collection_item,
-        ProjectBuilder&             project_builder);
+        ProjectBuilder&             project_builder,
+        renderer::ParamArray&       settings);
 
-    virtual QMenu* get_single_item_context_menu() const;
-
-  private:
-    virtual void slot_edit(AttributeEditor* attribute_editor) APPLESEED_OVERRIDE;
+    virtual QMenu* get_single_item_context_menu() const APPLESEED_OVERRIDE;
 
   public slots:
     void slot_export();
+
+  private:
+    renderer::ParamArray&   m_settings;
+
+    virtual void slot_edit(AttributeEditor* attribute_editor) APPLESEED_OVERRIDE;
 };
 
 }       // namespace studio

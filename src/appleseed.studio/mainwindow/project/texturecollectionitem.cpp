@@ -50,7 +50,6 @@
 
 // Qt headers.
 #include <QDir>
-#include <QFileDialog>
 #include <QMenu>
 #include <QString>
 #include <QStringList>
@@ -132,27 +131,19 @@ namespace
 
 void TextureCollectionItem::slot_import_textures()
 {
-    QFileDialog::Options options;
-    QString selected_filter;
-
     const QStringList filepaths =
-        QFileDialog::getOpenFileNames(
+        get_open_filenames(
             treeWidget(),
             "Import Textures...",
-            m_settings.get_path_optional<QString>(SETTINGS_LAST_DIRECTORY),
             g_bitmap_files_filter,
-            &selected_filter,
-            options);
+            m_settings,
+            SETTINGS_FILE_DIALOG_TEXTURES);
 
     if (filepaths.empty())
         return;
 
     const filesystem::path path(
         QDir::toNativeSeparators(filepaths.first()).toStdString());
-
-    m_settings.insert_path(
-        SETTINGS_LAST_DIRECTORY,
-        path.parent_path().string());
 
     // todo: schedule creation of texture and texture instances when rendering.
     for (int i = 0; i < filepaths.size(); ++i)
@@ -170,8 +161,7 @@ void TextureCollectionItem::slot_import_textures()
 
     }
 
-    if (!filepaths.empty())
-        m_project_builder.notify_project_modification();
+    m_project_builder.notify_project_modification();
 }
 
 ItemBase* TextureCollectionItem::create_item(Texture* texture)

@@ -30,11 +30,16 @@
 #ifndef APPLESEED_STUDIO_UTILITY_MISCELLANEOUS_H
 #define APPLESEED_STUDIO_UTILITY_MISCELLANEOUS_H
 
+// Qt headers.
+#include <QFileDialog>
+
 // Forward declarations.
+namespace renderer  { class ParamArray; }
 class QLayout;
 class QMessageBox;
 class QShortcut;
 class QString;
+class QStringList;
 class QWidget;
 
 namespace appleseed {
@@ -49,6 +54,30 @@ extern const QString g_bitmap_files_filter;
 QString compute_oiio_files_filter();
 
 #endif
+
+QString get_open_filename(
+    QWidget*                parent,
+    const QString&          caption,
+    const QString&          filter,
+    renderer::ParamArray&   settings,
+    const QString&          settings_key,
+    QFileDialog::Options    options = 0);
+
+QStringList get_open_filenames(
+    QWidget*                parent,
+    const QString&          caption,
+    const QString&          filter,
+    renderer::ParamArray&   settings,
+    const QString&          settings_key,
+    QFileDialog::Options    options = 0);
+
+QString get_save_filename(
+    QWidget*                parent,
+    const QString&          caption,
+    const QString&          filter,
+    renderer::ParamArray&   settings,
+    const QString&          settings_key,
+    QFileDialog::Options    options = 0);
 
 // Disable the blue focus rectangle of certain widgets. OS X only.
 void disable_osx_focus_rect(QWidget* widget);

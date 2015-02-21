@@ -35,6 +35,8 @@
 #include "mainwindow/project/disneymaterialcustomui.h"
 #endif
 #include "mainwindow/project/tools.h"
+#include "utility/miscellaneous.h"
+#include "utility/settingskeys.h"
 
 // appleseed.renderer headers.
 #ifdef APPLESEED_WITH_DISNEY_MATERIAL
@@ -45,7 +47,6 @@
 #include "foundation/utility/settings/settingsfilewriter.h"
 
 // Qt headers.
-#include <QFileDialog>
 #include <QFileInfo>
 #include <QMenu>
 #include <QString>
@@ -66,8 +67,10 @@ MaterialItem::MaterialItem(
     Material*                   entity,
     Assembly&                   parent,
     MaterialCollectionItem*     collection_item,
-    ProjectBuilder&             project_builder)
+    ProjectBuilder&             project_builder,
+    ParamArray&                 settings)
   : FixedModelEntityItem<Material, Assembly, MaterialCollectionItem>(entity, parent, collection_item, project_builder)
+  , m_settings(settings)
 {
 }
 
@@ -104,11 +107,12 @@ void MaterialItem::slot_edit(AttributeEditor* attribute_editor)
         custom_entity_ui =
             auto_ptr<CustomEntityUI>(
                 new DisneyMaterialCustomUI(
-                    Base::m_project_builder.get_project()));
+                    Base::m_project_builder.get_project(),
+                    m_settings));
     }
 #endif
 
-    foundation::Dictionary values =
+    Dictionary values =
         EntityTraitsType::get_entity_values(m_entity);
 
     if (attribute_editor)
@@ -149,17 +153,13 @@ void MaterialItem::slot_export()
     const filesystem::path file_path = absolute("material.dmt", project_root_path);
     const filesystem::path file_root_path = file_path.parent_path();
 
-    QFileDialog::Options options;
-    QString selected_filter;
-
     QString filepath =
-        QFileDialog::getSaveFileName(
+        get_save_filename(
             0,
             "Export...",
-            QString::fromStdString(file_root_path.string()),
             "Disney Materials (*.dmt)",
-            &selected_filter,
-            options);
+            m_settings,
+            SETTINGS_FILE_DIALOG_MATERIALS);
 
     if (!filepath.isEmpty())
     {

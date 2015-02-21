@@ -37,6 +37,7 @@
 #include <string>
 
 // Forward declarations.
+namespace renderer  { class ParamArray; }
 namespace renderer  { class Project; }
 namespace Ui        { class ExpressionEditorWindow; }
 class QLabel;
@@ -53,10 +54,11 @@ class ExpressionEditorWindow
 
   public:
     ExpressionEditorWindow(
+        QWidget*                    parent,
         const renderer::Project&    project,
+        renderer::ParamArray&       settings,
         const QString&              widget_name,
-        const std::string&          expression,
-        QWidget*                    parent = 0);
+        const std::string&          expression);
 
     void apply_expression();
 
@@ -79,10 +81,9 @@ class ExpressionEditorWindow
     virtual void closeEvent(QCloseEvent* e);
 
   private:
-    std::string get_project_path() const;
-
     Ui::ExpressionEditorWindow*     m_ui;
     const renderer::Project&        m_project;
+    renderer::ParamArray&           m_settings;
     const QString                   m_widget_name;
     SeExprEditor*                   m_editor;
     SeExprEdBrowser*                m_browser;

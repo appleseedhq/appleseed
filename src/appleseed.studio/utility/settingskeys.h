@@ -32,8 +32,16 @@
 
 // Defines are sometimes more convenient than C++ constants...
 
-#define SETTINGS_LAST_DIRECTORY                     "ui.filedialog.lastdirectory"
+#define SETTINGS_LAST_DIRECTORY                     ".last_directory"
+#define SETTINGS_SELECTED_FILTER                    ".selected_filter"
+
+#define SETTINGS_FILE_DIALOG_FRAMES                 "ui.file_dialog.frames"
+#define SETTINGS_FILE_DIALOG_GEOMETRY               "ui.file_dialog.geometry"
+#define SETTINGS_FILE_DIALOG_MATERIALS              "ui.file_dialog.materials"
+#define SETTINGS_FILE_DIALOG_PROJECTS               "ui.file_dialog.projects"
+#define SETTINGS_FILE_DIALOG_TEXTURES               "ui.file_dialog.textures"
+
 #define SETTINGS_RENDER_REGION_TRIGGERS_RENDERING   "ui.render_region.triggers_rendering"
-#define SETTINGS_WATCH_FILE_CHANGES                 "watch_file_changes"
+#define SETTINGS_WATCH_FILE_CHANGES                 "ui.watch_file_changes"
 
 #endif  // !APPLESEED_STUDIO_UTILITY_SETTINGSKEYS_H

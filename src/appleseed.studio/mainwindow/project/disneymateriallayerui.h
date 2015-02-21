@@ -47,6 +47,7 @@
 
 // Forward declarations.
 namespace foundation    { class Dictionary; }
+namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 class QColor;
 class QFormLayout;
@@ -66,9 +67,10 @@ class DisneyMaterialLayerUI
 
   public:
     DisneyMaterialLayerUI(
-        const renderer::Project&        project, 
-        const foundation::Dictionary&   values,
-        QWidget*                        parent = 0);
+        QWidget*                        parent,
+        const renderer::Project&        project,
+        renderer::ParamArray&           settings,
+        const foundation::Dictionary&   values);
 
     foundation::Dictionary get_values() const;
 
@@ -96,6 +98,7 @@ class DisneyMaterialLayerUI
 
   private:
     const renderer::Project&            m_project;
+    renderer::ParamArray&               m_settings;
     const foundation::DictionaryArray   m_input_metadata;
 
     const QIcon                         m_fold_icon;

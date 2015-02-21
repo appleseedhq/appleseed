@@ -92,8 +92,11 @@ namespace
     }
 }
 
-DisneyMaterialCustomUI::DisneyMaterialCustomUI(const Project& project)
+DisneyMaterialCustomUI::DisneyMaterialCustomUI(
+    const Project&      project,
+    ParamArray&         settings)
   : m_project(project)
+  , m_settings(settings)
   , m_parent(0)
   , m_layout(0)
 {
@@ -227,7 +230,7 @@ Dictionary DisneyMaterialCustomUI::make_new_layer_values()
 void DisneyMaterialCustomUI::append_new_layer(const Dictionary& values)
 {
     DisneyMaterialLayerUI* layer_widget =
-        new DisneyMaterialLayerUI(m_project, values, m_parent);
+        new DisneyMaterialLayerUI(m_parent, m_project, m_settings, values);
 
     connect(
         layer_widget, SIGNAL(signal_move_layer_up(QWidget*)),
