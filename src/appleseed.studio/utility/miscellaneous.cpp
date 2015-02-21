@@ -30,6 +30,15 @@
 // Interface header.
 #include "miscellaneous.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/foreach.h"
+#include "foundation/utility/string.h"
+
+// OpenImageIO headers.
+#ifdef APPLESEED_WITH_OIIO
+#include "OpenImageIO/imageio.h"
+#endif
+
 // Qt headers.
 #include <QGridLayout>
 #include <QKeySequence>
@@ -42,10 +51,58 @@
 #include <Qt>
 #include <QWidget>
 
+// Standard headers.
+#include <sstream>
+#include <string>
+#include <vector>
+
+using namespace foundation;
+using namespace std;
+
 namespace appleseed {
 namespace studio {
 
 const QString g_bitmap_files_filter = "Bitmap Files (*.png;*.exr);;OpenEXR (*.exr);;PNG (*.png);;All Files (*.*)";
+
+#ifdef APPLESEED_WITH_OIIO
+
+QString compute_oiio_files_filter()
+{
+    stringstream sstr;
+
+    string extensions;
+    OIIO::getattribute("extension_list", extensions);
+
+    vector<string> formats;
+    split(extensions, ";", formats);
+
+    for (const_each<vector<string> > i = formats; i; ++i)
+    {
+        const string::size_type sep = i->find_first_of(':');
+        const string format = i->substr(0, sep);
+        const string extlist = i->substr(sep + 1);
+
+        vector<string> exts;
+        split(extlist, ",", exts);
+
+        sstr << upper_case(format) << " Files (";
+
+        for (const_each<vector<string> > e = exts; e; ++e)
+        {
+            if (e.it() != exts.begin())
+                sstr << ";";
+            sstr << "*." << *e;
+        }
+
+        sstr << ");;";
+    }
+
+    sstr << "All Files (*.*)";
+
+    return QString::fromStdString(sstr.str());
+}
+
+#endif
 
 void disable_osx_focus_rect(QWidget* widget)
 {

@@ -40,7 +40,15 @@ class QWidget;
 namespace appleseed {
 namespace studio {
 
+// File dialog filter string for bitmap files supported by appleseed's own image subsystem.
 extern const QString g_bitmap_files_filter;
+
+#ifdef APPLESEED_WITH_OIIO
+
+// Compute and return the file dialog filter string for bitmap files supported by OpenImageIO.
+QString compute_oiio_files_filter();
+
+#endif
 
 // Disable the blue focus rectangle of certain widgets. OS X only.
 void disable_osx_focus_rect(QWidget* widget);
