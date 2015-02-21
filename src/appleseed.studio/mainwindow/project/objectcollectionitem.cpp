@@ -109,7 +109,7 @@ void ObjectCollectionItem::slot_import_objects()
         QFileDialog::getOpenFileNames(
             treeWidget(),
             "Import Objects...",
-            m_settings.get_path_optional<QString>(LAST_DIRECTORY_SETTINGS_KEY),
+            m_settings.get_path_optional<QString>(SETTINGS_LAST_DIRECTORY),
             "Geometry Files (*.abc; *.binarymesh; *.obj);;All Files (*.*)",
             &selected_filter,
             options);
@@ -121,7 +121,7 @@ void ObjectCollectionItem::slot_import_objects()
         QDir::toNativeSeparators(filepaths.first()).toStdString());
 
     m_settings.insert_path(
-        LAST_DIRECTORY_SETTINGS_KEY,
+        SETTINGS_LAST_DIRECTORY,
         path.parent_path().string());
 
     if (m_project_builder.get_rendering_manager().is_rendering())

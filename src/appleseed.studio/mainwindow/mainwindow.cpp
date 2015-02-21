@@ -180,7 +180,7 @@ void MainWindow::open_project(const QString& filepath)
     const filesystem::path path(filepath.toStdString());
 
     m_settings.insert_path(
-        LAST_DIRECTORY_SETTINGS_KEY,
+        SETTINGS_LAST_DIRECTORY,
         path.parent_path().string());
 
     m_project_manager.load_project(filepath.toAscii().constData());
@@ -1078,7 +1078,7 @@ void MainWindow::slot_open_project()
         QFileDialog::getOpenFileName(
             this,
             "Open...",
-            m_settings.get_path_optional<QString>(LAST_DIRECTORY_SETTINGS_KEY),
+            m_settings.get_path_optional<QString>(SETTINGS_LAST_DIRECTORY),
             "Project Files (*.appleseed);;All Files (*.*)",
             &selected_filter,
             options);
@@ -1197,7 +1197,7 @@ void MainWindow::slot_save_project_as()
         QFileDialog::getSaveFileName(
             this,
             "Save As...",
-            m_settings.get_path_optional<QString>(LAST_DIRECTORY_SETTINGS_KEY),
+            m_settings.get_path_optional<QString>(SETTINGS_LAST_DIRECTORY),
             "Project Files (*.appleseed)",
             &selected_filter,
             options);
@@ -1212,7 +1212,7 @@ void MainWindow::slot_save_project_as()
         const filesystem::path path(filepath.toStdString());
 
         m_settings.insert_path(
-            LAST_DIRECTORY_SETTINGS_KEY,
+            SETTINGS_LAST_DIRECTORY,
             path.parent_path().string());
 
         if (m_project_file_watcher)
@@ -1244,7 +1244,7 @@ void MainWindow::slot_toggle_project_file_watcher(const bool checked)
     else disable_project_file_watcher();
 
     m_settings.insert_path(
-        WATCH_FILE_CHANGES_SETTINGS_KEY,
+        SETTINGS_WATCH_FILE_CHANGES,
         m_project_file_watcher != 0);
 }
 
@@ -1279,7 +1279,7 @@ void MainWindow::slot_load_settings()
         RENDERER_LOG_INFO("successfully loaded settings from %s.", settings_file_path.c_str());
         m_settings = settings;
 
-        if (m_settings.get_optional<bool>(WATCH_FILE_CHANGES_SETTINGS_KEY))
+        if (m_settings.get_optional<bool>(SETTINGS_WATCH_FILE_CHANGES))
         {
             m_action_toggle_project_watcher->setChecked(true);
             enable_project_file_watcher();
@@ -1472,7 +1472,7 @@ void MainWindow::slot_set_render_region(const QRect& rect)
         auto_ptr<RenderingManager::IDelayedAction>(
             new SetRenderRegionDelayedAction(rect)));
 
-    if (m_settings.get_path_optional<bool>(RENDER_REGION_TRIGGERS_RENDERING_SETTINGS_KEY))
+    if (m_settings.get_path_optional<bool>(SETTINGS_RENDER_REGION_TRIGGERS_RENDERING))
     {
         if (m_rendering_manager.is_rendering())
             m_rendering_manager.reinitialize_rendering();
@@ -1538,7 +1538,7 @@ void MainWindow::slot_save_frame()
         ask_image_save_file_path(
             this,
             "Save Frame As...",
-            m_settings.get_path_optional<QString>(LAST_DIRECTORY_SETTINGS_KEY));
+            m_settings.get_path_optional<QString>(SETTINGS_LAST_DIRECTORY));
 
     if (filepath.isEmpty())
         return;
@@ -1556,7 +1556,7 @@ void MainWindow::slot_save_all_aovs()
         ask_image_save_file_path(
             this,
             "Save All AOVs As...",
-            m_settings.get_path_optional<QString>(LAST_DIRECTORY_SETTINGS_KEY));
+            m_settings.get_path_optional<QString>(SETTINGS_LAST_DIRECTORY));
 
     if (filepath.isEmpty())
         return;
