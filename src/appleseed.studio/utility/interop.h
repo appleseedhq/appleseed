@@ -143,6 +143,12 @@ namespace foundation
 {
 
 template <>
+inline std::string to_string(const QString& s)
+{
+    return s.toStdString();
+}
+
+template <>
 inline QString from_string(const std::string& s)
 {
     return QString::fromStdString(s);
