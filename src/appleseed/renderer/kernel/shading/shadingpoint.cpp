@@ -114,9 +114,10 @@ void ShadingPoint::fetch_triangle_source_geometry() const
     else
     {
         // UV set #0 doesn't exist, or this triangle doesn't have vertex attributes.
-        m_v0_uv = GVector2(0.0);
-        m_v1_uv = GVector2(0.0);
-        m_v2_uv = GVector2(0.0);
+        // Make sure ShadingPoint::get_uv() simply returns the barycentric coordinates.
+        m_v0_uv = GVector2(0.0, 0.0);
+        m_v1_uv = GVector2(1.0, 0.0);
+        m_v2_uv = GVector2(0.0, 1.0);
     }
 
     // Copy the object instance space triangle vertices.
