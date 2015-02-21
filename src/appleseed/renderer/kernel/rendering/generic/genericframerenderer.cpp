@@ -210,7 +210,7 @@ namespace
             static TileJobFactory::TileOrdering get_tile_ordering(const ParamArray& params)
             {
                 const string tile_ordering =
-                    params.get_optional<string>("tile_ordering", "hilbert");
+                    params.get_optional<string>("tile_ordering", "spiral");
 
                 if (tile_ordering == "linear")
                 {
