@@ -214,8 +214,8 @@ void DiagnosticSurfaceShader::evaluate(
             if (material)
             {
 #ifdef APPLESEED_WITH_OSL
-                // Execute the OSL shader, if we have one.
-                if (material && material->get_osl_surface())
+                // Execute the OSL shader if there is one.
+                if (material->get_osl_surface())
                 {
                     shading_context.execute_osl_shading(
                         *material->get_osl_surface(),
