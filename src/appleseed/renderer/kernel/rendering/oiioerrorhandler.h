@@ -32,7 +32,7 @@
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 
-// OIIO headers.
+// OpenImageIO headers.
 #include "OpenImageIO/errorhandler.h"
 
 // Standard headers.

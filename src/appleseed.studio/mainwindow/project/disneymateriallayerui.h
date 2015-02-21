@@ -33,8 +33,8 @@
 #include "utility/inputwidgetproxies.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/containers/specializedarrays.h"
 #include "foundation/platform/compiler.h"
+#include "foundation/utility/containers/specializedarrays.h"
 
 // Qt headers.
 #include <QFrame>
