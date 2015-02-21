@@ -81,7 +81,7 @@ class GenericFrameRendererFactory
     ITileRendererFactory*       m_tile_renderer_factory;
     ITileCallbackFactory*       m_tile_callback_factory;    // may be 0
     IPassCallback*              m_pass_callback;            // may be 0
-    ParamArray                  m_params;
+    const ParamArray            m_params;
 };
 
 }       // namespace renderer

@@ -71,7 +71,7 @@ class GenericTileRendererFactory
     const Frame&                            m_frame;
     IPixelRendererFactory*                  m_pixel_renderer_factory;
     IShadingResultFrameBufferFactory*       m_framebuffer_factory;
-    ParamArray                              m_params;
+    const ParamArray                        m_params;
 };
 
 }       // namespace renderer
