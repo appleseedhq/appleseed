@@ -262,7 +262,7 @@ void ProjectExplorer::slot_delete_item()
     if (!are_same_class_uid(items))
         return;
 
-    items.first()->slot_delete_multiple(items);
+    items.first()->delete_multiple(items);
 }
 
 }   // namespace studio

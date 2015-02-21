@@ -130,6 +130,12 @@ QMenu* ItemBase::get_multiple_items_context_menu(const QList<ItemBase*>& items) 
     return menu;
 }
 
+void ItemBase::delete_multiple(const QList<ItemBase*>& items)
+{
+    for (int i = 0; i < items.size(); ++i)
+        items[i]->slot_delete();
+}
+
 void ItemBase::slot_edit(AttributeEditor* attribute_editor)
 {
 }
@@ -142,15 +148,22 @@ void ItemBase::slot_delete()
 {
 }
 
-void ItemBase::slot_delete_multiple(QList<ItemBase*> items)
+void ItemBase::slot_delete_multiple()
+{
+    delete_multiple(get_action_items());
+}
+
+QList<ItemBase*> ItemBase::get_action_items()
 {
     QAction* action = qobject_cast<QAction*>(sender());
 
     if (action && !action->data().isNull())
-        items = action->data().value<QList<ItemBase*> >();
+        return action->data().value<QList<ItemBase*> >();
 
-    for (int i = 0; i < items.size(); ++i)
-        items[i]->slot_delete();
+    QList<ItemBase*> items;
+    items.append(this);
+
+    return items;
 }
 
 }   // namespace studio

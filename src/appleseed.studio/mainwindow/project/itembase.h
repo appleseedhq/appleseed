@@ -73,11 +73,16 @@ class ItemBase
     virtual QMenu* get_single_item_context_menu() const;
     virtual QMenu* get_multiple_items_context_menu(const QList<ItemBase*>& items) const;
 
+    void delete_multiple(const QList<ItemBase*>& items);
+
   public slots:
     virtual void slot_edit(AttributeEditor* attribute_editor = 0);
     virtual void slot_instantiate();
     virtual void slot_delete();
-    virtual void slot_delete_multiple(QList<ItemBase*> items = QList<ItemBase*>());
+    virtual void slot_delete_multiple();
+
+  protected:
+    QList<ItemBase*> get_action_items();
 
   private:
     const foundation::UniqueID  m_class_uid;
