@@ -35,7 +35,7 @@
 // appleseed.foundation headers.
 #include "foundation/platform/sharedlibrary.h"
 
-// boost headers.
+// Boost headers.
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/locks.hpp>
 #include <boost/thread/mutex.hpp>
@@ -107,7 +107,7 @@ void* Plugin::get_symbol(const char* name, const bool no_throw) const
 
 namespace
 {
-    typedef std::map<string, boost::weak_ptr<SharedLibrary> > PluginCacheType;
+    typedef map<string, boost::weak_ptr<SharedLibrary> > PluginCacheType;
 
     PluginCacheType g_plugin_cache;
     mutex g_plugin_cache_mutex;
