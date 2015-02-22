@@ -68,17 +68,9 @@ const char* Appleseed::get_lib_name()
 const char* Appleseed::get_lib_version()
 {
 #ifdef APPLESEED_USE_SSE
-    #ifdef APPLESEED_USE_QMC_SAMPLER
-        return APPLESEED_VERSION_STRING " (SSE, QMC)";
-    #else
-        return APPLESEED_VERSION_STRING " (SSE)";
-    #endif
+    return APPLESEED_VERSION_STRING " (SSE)";
 #else
-    #ifdef APPLESEED_USE_QMC_SAMPLER
-        return APPLESEED_VERSION_STRING " (QMC)";
-    #else
-        return APPLESEED_VERSION_STRING;
-    #endif
+    return APPLESEED_VERSION_STRING;
 #endif
 }
 

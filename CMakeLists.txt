@@ -89,7 +89,6 @@ option (USE_STATIC_OIIO         "Use static OpenImageIO libraries"              
 option (USE_STATIC_OSL          "Use static OpenShadingLanguage libraries"              ON)
 
 option (USE_SSE                 "Use SSE and SSE 2 instruction sets"                    ON)
-option (USE_QMC_SAMPLER         "Use QMC sampler (possible software patent issues)"     OFF)
 
 option (HIDE_SYMBOLS            "When using gcc, hide symbols not on the public API"    ON)
 
@@ -322,12 +321,6 @@ if (is_x86)
     set (preprocessor_definitions_common
         ${preprocessor_definitions_common}
         APPLESEED_X86
-    )
-endif ()
-if (USE_QMC_SAMPLER)
-    set (preprocessor_definitions_common
-        ${preprocessor_definitions_common}
-        APPLESEED_USE_QMC_SAMPLER
     )
 endif ()
 if (USE_SSE)
