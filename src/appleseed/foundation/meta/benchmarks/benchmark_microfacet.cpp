@@ -29,7 +29,8 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/microfacet.h"
-#include "foundation/math/rng.h"
+#include "foundation/math/rng/distribution.h"
+#include "foundation/math/rng/lcg.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/benchmark.h"
 
@@ -53,127 +54,119 @@ BENCHMARK_SUITE(Foundation_Math_Microfacet)
     // Blinn-Phong MDF.
     //
 
-    template <typename DummyType>
-    struct BlinnMDFFixture
-      : public FixtureBase<DummyType>
+    BENCHMARK_CASE_F(BlinnMDF_Sample, FixtureBase<Vector3d>)
     {
-        BlinnMDF<double> m_mdf;
+        Vector3d s;
+        s[0] = rand_double2(m_rng);
+        s[1] = rand_double2(m_rng);
+        s[2] = rand_double2(m_rng);
 
-        BlinnMDFFixture()
-          : m_mdf(10.0)
-        {
-        }
-    };
+        m_dummy += BlinnMDF<double>().sample(
+            normalize(Vector3d(0.1, 0.2, 0.3)),
+            s,
+            10.0,
+            10.0);
+    }
 
-    BENCHMARK_CASE_F(BlinnMDF_Sample, BlinnMDFFixture<Vector3d>)
+    BENCHMARK_CASE_F(BlinnMDF_Evaluate, FixtureBase<double>)
     {
         Vector2d s;
         s[0] = rand_double2(m_rng);
         s[1] = rand_double2(m_rng);
 
-        m_dummy += m_mdf.sample(s);
-    }
-
-    BENCHMARK_CASE_F(BlinnMDF_Evaluate, BlinnMDFFixture<double>)
-    {
-        const double s = rand_double2(m_rng);
-
-        m_dummy += m_mdf.evaluate(s);
+        m_dummy += BlinnMDF<double>().D(
+            normalize(Vector3d(s[0], 0.5, s[1])),
+            0.5,
+            0.5);
     }
 
     //
     // Beckmann MDF.
     //
 
-    template <typename DummyType>
-    struct BeckmannMDFFixture
-      : public FixtureBase<DummyType>
+    BENCHMARK_CASE_F(BeckmannMDF_Sample, FixtureBase<Vector3d>)
     {
-        BeckmannMDF<double> m_mdf;
+        Vector3d s;
+        s[0] = rand_double2(m_rng);
+        s[1] = rand_double2(m_rng);
+        s[2] = rand_double2(m_rng);
 
-        BeckmannMDFFixture()
-          : m_mdf(0.5)
-        {
-        }
-    };
+        m_dummy += BeckmannMDF<double>().sample(
+            normalize(Vector3d(0.1, 0.2, 0.3)),
+            s,
+            0.5,
+            0.5);
+    }
 
-    BENCHMARK_CASE_F(BeckmannMDF_Sample, BeckmannMDFFixture<Vector3d>)
+    BENCHMARK_CASE_F(BeckmannMDF_Evaluate, FixtureBase<double>)
     {
         Vector2d s;
         s[0] = rand_double2(m_rng);
         s[1] = rand_double2(m_rng);
 
-        m_dummy += m_mdf.sample(s);
-    }
-
-    BENCHMARK_CASE_F(BeckmannMDF_Evaluate, BeckmannMDFFixture<double>)
-    {
-        const double s = rand_double2(m_rng);
-
-        m_dummy += m_mdf.evaluate(s);
+        m_dummy += BeckmannMDF<double>().D(
+            normalize(Vector3d(s[0], 0.5, s[1])),
+            0.5,
+            0.5);
     }
 
     //
     // Ward MDF.
     //
 
-    template <typename DummyType>
-    struct WardMDFFixture
-      : public FixtureBase<DummyType>
+    BENCHMARK_CASE_F(WardMDF_Sample, FixtureBase<Vector3d>)
     {
-        WardMDF<double> m_mdf;
+        Vector3d s;
+        s[0] = rand_double2(m_rng);
+        s[1] = rand_double2(m_rng);
+        s[2] = rand_double2(m_rng);
 
-        WardMDFFixture()
-          : m_mdf(0.5)
-        {
-        }
-    };
+        m_dummy += WardMDF<double>().sample(
+            normalize(Vector3d(0.1, 0.2, 0.3)),
+            s,
+            0.5,
+            0.5);
+    }
 
-    BENCHMARK_CASE_F(WardMDF_Sample, WardMDFFixture<Vector3d>)
+    BENCHMARK_CASE_F(WardMDF_Evaluate, FixtureBase<double>)
     {
         Vector2d s;
         s[0] = rand_double2(m_rng);
         s[1] = rand_double2(m_rng);
 
-        m_dummy += m_mdf.sample(s);
-    }
-
-    BENCHMARK_CASE_F(WardMDF_Evaluate, WardMDFFixture<double>)
-    {
-        const double s = rand_double2(m_rng);
-
-        m_dummy += m_mdf.evaluate(s);
+        m_dummy += WardMDF<double>().D(
+            normalize(Vector3d(s[0], 0.5, s[1])),
+            0.5,
+            0.5);
     }
 
     //
     // GGX MDF.
     //
 
-    template <typename DummyType>
-    struct GGXMDFFixture
-      : public FixtureBase<DummyType>
+    BENCHMARK_CASE_F(GGXMDF_Sample, FixtureBase<Vector3d>)
     {
-        GGXMDF<double> m_mdf;
+        Vector3d s;
+        s[0] = rand_double2(m_rng);
+        s[1] = rand_double2(m_rng);
+        s[2] = rand_double2(m_rng);
 
-        GGXMDFFixture()
-          : m_mdf(0.5)
-        {
-        }
-    };
+        m_dummy += GGXMDF<double>().sample(
+            normalize(Vector3d(0.1, 0.2, 0.3)),
+            s,
+            0.5,
+            0.5);
+    }
 
-    BENCHMARK_CASE_F(GGXMDF_Sample, GGXMDFFixture<Vector3d>)
+    BENCHMARK_CASE_F(GGXMDF_Evaluate, FixtureBase<double>)
     {
         Vector2d s;
         s[0] = rand_double2(m_rng);
         s[1] = rand_double2(m_rng);
 
-        m_dummy += m_mdf.sample(s);
-    }
-
-    BENCHMARK_CASE_F(GGXMDF_Evaluate, GGXMDFFixture<double>)
-    {
-        const double s = rand_double2(m_rng);
-
-        m_dummy += m_mdf.evaluate(s);
+        m_dummy += GGXMDF<double>().D(
+            normalize(Vector3d(s[0], 0.5, s[1])),
+            0.5,
+            0.5);
     }
 }
