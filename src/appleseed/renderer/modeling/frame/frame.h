@@ -101,6 +101,7 @@ class APPLESEED_DLLSYMBOL Frame
 
     // Set/get the crop window. The crop window is inclusive on all sides.
     void reset_crop_window();
+    bool has_crop_window() const;
     void set_crop_window(const foundation::AABB2u& crop_window);
     const foundation::AABB2u& get_crop_window() const;
 

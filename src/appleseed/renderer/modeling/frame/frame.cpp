@@ -217,6 +217,15 @@ void Frame::reset_crop_window()
     m_params.strings().remove("crop_window");
 }
 
+bool Frame::has_crop_window() const
+{
+    return
+        impl->m_crop_window.min.x > 0 ||
+        impl->m_crop_window.min.y > 0 ||
+        impl->m_crop_window.max.x < impl->m_frame_width - 1 ||
+        impl->m_crop_window.max.y < impl->m_frame_height - 1;
+}
+
 void Frame::set_crop_window(const AABB2u& crop_window)
 {
     impl->m_crop_window = crop_window;
