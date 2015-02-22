@@ -268,15 +268,15 @@ ItemBase* ScenePickingHandler::pick(const QPoint& point)
 
     if (picked_entity)
     {
-        item = m_project_explorer.highlight_entity(picked_entity->get_uid());
+        item = m_project_explorer.select_entity(picked_entity->get_uid());
     }
     else
     {
-        m_project_explorer.clear_highlighting();
+        m_project_explorer.clear_selection();
         item = 0;
     }
 
-    emit signal_entity_picked();
+    emit signal_entity_picked(picked_entity);
 
     return item;
 }

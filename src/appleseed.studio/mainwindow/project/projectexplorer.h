@@ -78,8 +78,8 @@ class ProjectExplorer
 
     void filter_items(const QString& pattern) const;
 
-    void clear_highlighting() const;
-    ItemBase* highlight_entity(const foundation::UniqueID uid) const;
+    void clear_selection() const;
+    ItemBase* select_entity(const foundation::UniqueID uid) const;
 
   signals:
     void signal_project_modified() const;

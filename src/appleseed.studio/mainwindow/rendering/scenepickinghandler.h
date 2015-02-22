@@ -37,6 +37,7 @@
 namespace appleseed { namespace studio { class ItemBase; } }
 namespace appleseed { namespace studio { class MouseCoordinatesTracker; } }
 namespace appleseed { namespace studio { class ProjectExplorer; } }
+namespace renderer  { class Entity; }
 namespace renderer  { class Project; }
 class QComboBox;
 class QEvent;
@@ -69,7 +70,7 @@ class ScenePickingHandler
     void set_enabled(const bool enabled);
 
   signals:
-    void signal_entity_picked();
+    void signal_entity_picked(const renderer::Entity* entity);
 
   private:
     QWidget*                                m_widget;

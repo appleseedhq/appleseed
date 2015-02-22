@@ -50,6 +50,7 @@
 // Forward declarations.
 namespace appleseed { namespace studio { class ProjectExplorer; } }
 namespace appleseed { namespace studio { class RenderWidget; } }
+namespace renderer  { class Entity; }
 namespace renderer  { class Project; }
 class QComboBox;
 class QLabel;
@@ -103,7 +104,7 @@ class RenderTab
     void signal_render_widget_context_menu(const QPoint& point);
     void signal_reset_zoom();
     void signal_clear_frame();
-    void signal_entity_picked();
+    void signal_entity_picked(const renderer::Entity* entity);
 
   private slots:
     void slot_render_widget_context_menu(const QPoint& point);

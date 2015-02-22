@@ -32,6 +32,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
+#include "foundation/platform/compiler.h"
 #include "foundation/ui/cameracontroller.h"
 
 // Qt headers.
@@ -39,7 +40,6 @@
 
 // Forward declarations.
 namespace renderer  { class Scene; }
-
 class QEvent;
 class QMouseEvent;
 class QWidget;
@@ -71,15 +71,14 @@ class CameraController
   private:
     typedef foundation::CameraController<double> ControllerType;
 
-    QWidget*            m_render_widget;
-    renderer::Scene*    m_scene;
-    ControllerType      m_controller;
-
-    virtual bool eventFilter(QObject* object, QEvent* event);
+    QWidget*                m_render_widget;
+    renderer::Scene*        m_scene;
+    ControllerType          m_controller;
 
     void configure_controller(const renderer::Scene* scene);
 
     foundation::Vector2d get_mouse_position(const QMouseEvent* event) const;
+    virtual bool eventFilter(QObject* object, QEvent* event) APPLESEED_OVERRIDE;
 
     bool handle_mouse_button_press_event(const QMouseEvent* event);
     bool handle_mouse_button_release_event(const QMouseEvent* event);

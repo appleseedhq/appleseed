@@ -133,7 +133,7 @@ void ProjectExplorer::filter_items(const QString& pattern) const
         do_filter_items(m_tree_widget->topLevelItem(i), regexp);
 }
 
-void ProjectExplorer::clear_highlighting() const
+void ProjectExplorer::clear_selection() const
 {
     m_tree_widget->clearSelection();
 }
@@ -147,9 +147,9 @@ namespace
     }
 }
 
-ItemBase* ProjectExplorer::highlight_entity(const UniqueID uid) const
+ItemBase* ProjectExplorer::select_entity(const UniqueID uid) const
 {
-    clear_highlighting();
+    clear_selection();
 
     QTreeWidgetItem* item = m_project_builder.get_item_registry().get_item(uid);
 

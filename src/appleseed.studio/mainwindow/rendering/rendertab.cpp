@@ -340,7 +340,7 @@ void RenderTab::recreate_handlers()
             m_scroll_area,
             m_render_widget));
 
-    // Handler for camera panning with the mouse.
+    // Handler for panning the render widget with the mouse.
     m_pan_handler.reset(
         new ScrollAreaPanHandler(
             m_scroll_area));
@@ -364,8 +364,8 @@ void RenderTab::recreate_handlers()
             m_project_explorer,
             m_project));
     connect(
-        m_picking_handler.get(), SIGNAL(signal_entity_picked()),
-        SIGNAL(signal_entity_picked()));
+        m_picking_handler.get(), SIGNAL(signal_entity_picked(const renderer::Entity*)),
+        SIGNAL(signal_entity_picked(const renderer::Entity*)));
 
     // Handler for setting render regions with the mouse.
     m_render_region_handler.reset(

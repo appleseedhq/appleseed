@@ -780,7 +780,7 @@ void MainWindow::add_render_widget(const QString& label)
         render_tab, SIGNAL(signal_clear_frame()),
         SLOT(slot_clear_frame()));
     connect(
-        render_tab, SIGNAL(signal_entity_picked()),
+        render_tab, SIGNAL(signal_entity_picked(const renderer::Entity*)),
         SLOT(slot_clear_filter()));
 
     // Add the render tab to the tab bar.
