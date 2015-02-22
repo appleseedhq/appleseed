@@ -225,14 +225,10 @@ namespace
                         values[1] *= rcp_alpha;
                         values[2] *= rcp_alpha;
                     }
-                }
-                else
-                {
-                    values.set(0.0f);
-                }
 
-                color_tile.set_pixel(x, y, Color4f(&values[0]));
-                depth_tile.set_component(x, y, 0, values[4]);
+                    color_tile.set_pixel(x, y, Color4f(&values[0]));
+                    depth_tile.set_component(x, y, 0, values[4]);
+                }
             }
         }
     }
