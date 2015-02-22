@@ -197,37 +197,57 @@ namespace
         const AABB2u&           crop_window,
         const bool              undo_premultiplied_alpha)
     {
-        const size_t tile_width = color_tile.get_width();
-        const size_t tile_height = color_tile.get_height();
-        const size_t level_width = level.get_width();
-        const size_t level_height = level.get_height();
+        const AABB2u r =
+            AABB2u::intersect(
+                AABB2u(
+                    Vector2u(origin_x, origin_y),
+                    Vector2u(origin_x + color_tile.get_width(), origin_y + color_tile.get_height())),
+                crop_window);
 
-        for (size_t y = 0; y < tile_height; ++y)
+        if (undo_premultiplied_alpha)
         {
-            for (size_t x = 0; x < tile_width; ++x)
+            for (size_t iy = r.min.y; iy < r.max.y; ++iy)
             {
-                Color<float, 5> values;
+                const size_t level_width = level.get_width();
+                const size_t src_y = (iy * level.get_height() / image_height) * level_width;
+                const size_t dest_y = (iy - origin_y) * color_tile.get_width() - origin_x;
 
-                const size_t ix = origin_x + x;
-                const size_t iy = origin_y + y;
-
-                if (crop_window.contains(Vector2u(ix, iy)))
+                for (size_t ix = r.min.x; ix < r.max.x; ++ix)
                 {
+                    Color<float, 5> values;
+
                     level.get_pixel(
-                        ix * level_width / image_width,
-                        iy * level_height / image_height,
+                        src_y + ix * level_width / image_width,
                         &values[0]);
 
-                    if (undo_premultiplied_alpha)
-                    {
-                        const float rcp_alpha = values[3] == 0.0f ? 0.0f : 1.0f / values[3];
-                        values[0] *= rcp_alpha;
-                        values[1] *= rcp_alpha;
-                        values[2] *= rcp_alpha;
-                    }
+                    const float rcp_alpha = values[3] == 0.0f ? 0.0f : 1.0f / values[3];
+                    values[0] *= rcp_alpha;
+                    values[1] *= rcp_alpha;
+                    values[2] *= rcp_alpha;
 
-                    color_tile.set_pixel(x, y, Color4f(&values[0]));
-                    depth_tile.set_component(x, y, 0, values[4]);
+                    color_tile.set_pixel<float>(dest_y + ix, &values[0]);
+                    depth_tile.set_component(dest_y + ix, 0, values[4]);
+                }
+            }
+        }
+        else
+        {
+            for (size_t iy = r.min.y; iy < r.max.y; ++iy)
+            {
+                const size_t level_width = level.get_width();
+                const size_t src_y = (iy * level.get_height() / image_height) * level_width;
+                const size_t dest_y = (iy - origin_y) * color_tile.get_width() - origin_x;
+
+                for (size_t ix = r.min.x; ix < r.max.x; ++ix)
+                {
+                    Color<float, 5> values;
+
+                    level.get_pixel(
+                        src_y + ix * level_width / image_width,
+                        &values[0]);
+
+                    color_tile.set_pixel<float>(dest_y + ix, &values[0]);
+                    depth_tile.set_component(dest_y + ix, 0, values[4]);
                 }
             }
         }
