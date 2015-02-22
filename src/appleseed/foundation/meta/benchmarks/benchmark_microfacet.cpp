@@ -76,8 +76,8 @@ BENCHMARK_SUITE(Foundation_Math_Microfacet)
 
         m_dummy += BlinnMDF<double>().D(
             normalize(Vector3d(s[0], 0.5, s[1])),
-            0.5,
-            0.5);
+            10.0,
+            10.0);
     }
 
     //
