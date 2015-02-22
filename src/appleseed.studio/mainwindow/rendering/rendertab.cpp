@@ -334,7 +334,7 @@ void RenderTab::create_scrollarea()
 
 void RenderTab::recreate_handlers()
 {
-    // Handler to handle zooming the render widget in and out with the keyboard or the mouse wheel.
+    // Handler for zooming the render widget in and out with the keyboard or the mouse wheel.
     m_zoom_handler.reset(
         new WidgetZoomHandler(
             m_scroll_area,
@@ -345,7 +345,7 @@ void RenderTab::recreate_handlers()
         new ScrollAreaPanHandler(
             m_scroll_area));
 
-    // Handler for camera tracking with the mouse.
+    // Handler for tracking and displaying mouse coordinates.
     m_mouse_tracker.reset(
         new MouseCoordinatesTracker(
             m_render_widget,
@@ -367,7 +367,7 @@ void RenderTab::recreate_handlers()
         m_picking_handler.get(), SIGNAL(signal_entity_picked()),
         SIGNAL(signal_entity_picked()));
 
-    // Handler for defining render regions with the mouse.
+    // Handler for setting render regions with the mouse.
     m_render_region_handler.reset(
         new RenderRegionHandler(
             m_render_widget,
