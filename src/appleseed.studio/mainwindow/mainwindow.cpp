@@ -966,10 +966,12 @@ void MainWindow::start_rendering(const bool interactive)
     set_project_explorer_enabled(true);
     set_rendering_widgets_enabled(true, true);
 
-    // Internally, clear the main image to transparent black and delete all AOV images.
     Project* project = m_project_manager.get_project();
-    project->get_frame()->clear_main_image();
-    project->get_frame()->aov_images().clear();
+    Frame* frame = project->get_frame();
+
+    // Internally, clear the main image to transparent black and delete all AOV images.
+    frame->clear_main_image();
+    frame->aov_images().clear();
 
     // In the UI, darken all render widgets.
     for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
