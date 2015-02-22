@@ -42,6 +42,7 @@
 #include "renderer/api/frame.h"
 #include "renderer/api/project.h"
 #include "renderer/api/scene.h"
+#include "renderer/api/utility.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/analysis.h"
@@ -407,6 +408,7 @@ void RenderingManager::slot_camera_change_begin()
         m_tile_callbacks_enabled = false;
         m_frozen_display_renderer.reset(
             new FrozenDisplayRenderer(
+                get_sampling_context_mode(m_params),
                 *m_project->get_scene()->get_camera(),
                 *m_project->get_frame(),
                 *m_render_widget));

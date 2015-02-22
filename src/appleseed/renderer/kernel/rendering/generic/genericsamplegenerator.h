@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/rendering/isamplegenerator.h"
+#include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -54,7 +55,8 @@ class GenericSampleGeneratorFactory
     // Constructor.
     GenericSampleGeneratorFactory(
         const Frame&            frame,
-        ISampleRendererFactory* sample_renderer_factory);
+        ISampleRendererFactory* sample_renderer_factory,
+        const ParamArray&       params);
 
     // Delete this instance.
     virtual void release() APPLESEED_OVERRIDE;
@@ -70,6 +72,7 @@ class GenericSampleGeneratorFactory
   private:
     const Frame&                m_frame;
     ISampleRendererFactory*     m_sample_renderer_factory;
+    const ParamArray            m_params;
 };
 
 }       // namespace renderer

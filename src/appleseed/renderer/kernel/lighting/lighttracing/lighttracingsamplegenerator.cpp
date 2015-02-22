@@ -59,6 +59,7 @@
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/scene/visibilityflags.h"
+#include "renderer/utility/samplingmode.h"
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
@@ -109,18 +110,21 @@ namespace
       public:
         struct Parameters
         {
-            const bool      m_enable_ibl;                   // is image-based lighting enabled?
-            const bool      m_enable_caustics;              // are caustics enabled?
+            const SamplingContext::Mode m_sampling_mode;
 
-            const float     m_transparency_threshold;
-            const size_t    m_max_iterations;
-            const bool      m_report_self_intersections;
+            const bool                  m_enable_ibl;                   // is image-based lighting enabled?
+            const bool                  m_enable_caustics;              // are caustics enabled?
 
-            const size_t    m_max_path_length;              // maximum path length, ~0 for unlimited
-            const size_t    m_rr_min_path_length;           // minimum path length before Russian Roulette kicks in, ~0 for unlimited
+            const float                 m_transparency_threshold;
+            const size_t                m_max_iterations;
+            const bool                  m_report_self_intersections;
+
+            const size_t                m_max_path_length;              // maximum path length, ~0 for unlimited
+            const size_t                m_rr_min_path_length;           // minimum path length before Russian Roulette kicks in, ~0 for unlimited
 
             explicit Parameters(const ParamArray& params)
-              : m_enable_ibl(params.get_optional<bool>("enable_ibl", true))
+              : m_sampling_mode(get_sampling_context_mode(params))
+              , m_enable_ibl(params.get_optional<bool>("enable_ibl", true))
               , m_enable_caustics(params.get_optional<bool>("enable_caustics", true))
               , m_transparency_threshold(params.get_optional<float>("transparency_threshold", 0.001f))
               , m_max_iterations(params.get_optional<size_t>("max_iterations", 1000))
@@ -528,6 +532,7 @@ namespace
         {
             SamplingContext sampling_context(
                 m_rng,
+                m_params.m_sampling_mode,
                 0,
                 sequence_index,
                 sequence_index);

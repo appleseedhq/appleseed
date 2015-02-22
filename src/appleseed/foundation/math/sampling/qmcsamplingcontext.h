@@ -73,15 +73,23 @@ class QMCSamplingContext
     // Random number generator type.
     typedef RNG RNGType;
 
+    // This sampler can operate in two modes:
+    //   1. In QMC mode, it uses possibly patent-encumbered techniques.
+    //   2. In RNG mode, it works like RNGSamplingContext and sticks to random sampling.
+    enum Mode { QMCMode, RNGMode };
+
     // Construct a sampling context of dimension 0. It cannot be used
     // directly; only child contexts obtained by splitting can.
-    explicit QMCSamplingContext(RNG& rng);
+    QMCSamplingContext(
+        RNG&            rng,
+        const Mode      mode);
 
     // Construct a sampling context for a given number of dimensions
     // and samples. Set sample_count to 0 if the required number of
     // samples is unknown or infinite.
     QMCSamplingContext(
         RNG&            rng,
+        const Mode      mode,
         const size_t    dimension,
         const size_t    sample_count,
         const size_t    instance = 0);
@@ -132,6 +140,7 @@ class QMCSamplingContext
     typedef Vector<double, 4> VectorType;
 
     RNG&        m_rng;
+    Mode        m_mode;
 
     size_t      m_base_dimension;
     size_t      m_base_instance;
@@ -144,6 +153,7 @@ class QMCSamplingContext
 
     QMCSamplingContext(
         RNG&            rng,
+        const Mode      mode,
         const size_t    base_dimension,
         const size_t    base_instance,
         const size_t    dimension,
@@ -161,8 +171,11 @@ class QMCSamplingContext
 //
 
 template <typename RNG>
-inline QMCSamplingContext<RNG>::QMCSamplingContext(RNG& rng)
+inline QMCSamplingContext<RNG>::QMCSamplingContext(
+    RNG&                rng,
+    const Mode          mode)
   : m_rng(rng)
+  , m_mode(mode)
   , m_base_dimension(0)
   , m_base_instance(0)
   , m_dimension(0)
@@ -175,10 +188,12 @@ inline QMCSamplingContext<RNG>::QMCSamplingContext(RNG& rng)
 template <typename RNG>
 inline QMCSamplingContext<RNG>::QMCSamplingContext(
     RNG&                rng,
+    const Mode          mode,
     const size_t        dimension,
     const size_t        sample_count,
     const size_t        instance)
   : m_rng(rng)
+  , m_mode(mode)
   , m_base_dimension(0)
   , m_base_instance(0)
   , m_dimension(dimension)
@@ -192,11 +207,13 @@ inline QMCSamplingContext<RNG>::QMCSamplingContext(
 template <typename RNG>
 inline QMCSamplingContext<RNG>::QMCSamplingContext(
     RNG&                rng,
+    const Mode          mode,
     const size_t        base_dimension,
     const size_t        base_instance,
     const size_t        dimension,
     const size_t        sample_count)
   : m_rng(rng)
+  , m_mode(mode)
   , m_base_dimension(base_dimension)
   , m_base_instance(base_instance)
   , m_dimension(dimension)
@@ -205,19 +222,22 @@ inline QMCSamplingContext<RNG>::QMCSamplingContext(
 {
     assert(dimension <= VectorType::Dimension);
 
-    compute_offset();
+    if (m_mode == QMCMode)
+        compute_offset();
 }
 
 template <typename RNG> inline
 QMCSamplingContext<RNG>&
 QMCSamplingContext<RNG>::operator=(const QMCSamplingContext& rhs)
 {
+    m_mode = rhs.m_mode;
     m_base_dimension = rhs.m_base_dimension;
     m_base_instance = rhs.m_base_instance;
     m_dimension = rhs.m_dimension;
     m_sample_count = rhs.m_sample_count;
     m_instance = rhs.m_instance;
     m_offset = rhs.m_offset;
+
     return *this;
 }
 
@@ -229,6 +249,7 @@ inline QMCSamplingContext<RNG> QMCSamplingContext<RNG>::split(
     return
         QMCSamplingContext(
             m_rng,
+            m_mode,
             m_base_dimension + m_dimension,         // dimension allocation
             m_base_instance + m_instance,           // decorrelation by generalization
             dimension,
@@ -249,7 +270,8 @@ inline void QMCSamplingContext<RNG>::split_in_place(
     m_sample_count = sample_count;
     m_instance = 0;
 
-    compute_offset();
+    if (m_mode == QMCMode)
+        compute_offset();
 }
 
 template <typename RNG>
@@ -317,24 +339,32 @@ inline void QMCSamplingContext<RNG>::next_vector2(const size_t n, double v[])
     assert(n == m_dimension);
     assert(n <= PrimeTableSize);
 
-    if (m_instance < PrecomputedHaltonSequenceSize)
+    if (m_mode == QMCMode)
     {
-        for (size_t i = 0; i < n; ++i)
+        if (m_instance < PrecomputedHaltonSequenceSize)
         {
-            v[i] = PrecomputedHaltonSequence[m_instance * 4 + i];
-            v[i] = rotate(v[i], m_offset[i]);
+            for (size_t i = 0; i < n; ++i)
+            {
+                v[i] = PrecomputedHaltonSequence[m_instance * 4 + i];
+                v[i] = rotate(v[i], m_offset[i]);
+            }
+        }
+        else
+        {
+            v[0] = radical_inverse_base2<double>(m_instance);
+            v[0] = rotate(v[0], m_offset[0]);
+
+            for (size_t i = 1; i < n; ++i)
+            {
+                v[i] = fast_radical_inverse<double>(i, m_instance);
+                v[i] = rotate(v[i], m_offset[i]);
+            }
         }
     }
     else
     {
-        v[0] = radical_inverse_base2<double>(m_instance);
-        v[0] = rotate(v[0], m_offset[0]);
-
-        for (size_t i = 1; i < n; ++i)
-        {
-            v[i] = fast_radical_inverse<double>(i, m_instance);
-            v[i] = rotate(v[i], m_offset[i]);
-        }
+        for (size_t i = 0; i < n; ++i)
+            v[i] = rand_double2(m_rng);
     }
 
     ++m_instance;

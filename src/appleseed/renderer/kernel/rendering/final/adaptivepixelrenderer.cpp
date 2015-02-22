@@ -44,6 +44,7 @@
 #include "renderer/kernel/shading/shadingfragment.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/frame/frame.h"
+#include "renderer/utility/samplingmode.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
@@ -187,9 +188,10 @@ namespace
                     static_cast<uint32>(iy * frame_width + ix));
             SamplingContext sampling_context(
                 rng,
-                2,                      // number of dimensions
-                0,                      // number of samples -- unknown
-                instance);              // initial instance number
+                m_params.m_sampling_mode,
+                2,                          // number of dimensions
+                0,                          // number of samples -- unknown
+                instance);                  // initial instance number
 
             VariationTracker trackers[3];
 
@@ -308,13 +310,15 @@ namespace
       private:
         struct Parameters
         {
-            const size_t    m_min_samples;
-            const size_t    m_max_samples;
-            const float     m_max_variation;
-            const bool      m_diagnostics;
+            const SamplingContext::Mode     m_sampling_mode;
+            const size_t                    m_min_samples;
+            const size_t                    m_max_samples;
+            const float                     m_max_variation;
+            const bool                      m_diagnostics;
 
             explicit Parameters(const ParamArray& params)
-              : m_min_samples(params.get_required<size_t>("min_samples", 1))
+              : m_sampling_mode(get_sampling_context_mode(params))
+              , m_min_samples(params.get_required<size_t>("min_samples", 1))
               , m_max_samples(params.get_required<size_t>("max_samples", 1))
               , m_max_variation(pow(10.0f, -params.get_optional<float>("quality", 2.0f)))
               , m_diagnostics(params.get_optional<bool>("enable_diagnostics"))

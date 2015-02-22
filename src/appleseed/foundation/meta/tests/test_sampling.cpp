@@ -59,7 +59,7 @@ TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext)
     TEST_CASE(InitialStateIsCorrect)
     {
         RNG rng;
-        SamplingContext context(rng, 2, 64, 7);
+        SamplingContext context(rng, SamplingContext::QMCMode, 2, 64, 7);
 
         EXPECT_EQ(0, context.m_base_dimension);
         EXPECT_EQ(0, context.m_base_instance);
@@ -71,11 +71,11 @@ TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext)
     TEST_CASE(TestAssignmentOperator)
     {
         RNG rng;
-        SamplingContext original_parent(rng, 2, 64, 7);
+        SamplingContext original_parent(rng, SamplingContext::QMCMode, 2, 64, 7);
         SamplingContext original = original_parent.split(3, 16);
         original.set_instance(6);
 
-        SamplingContext copy(rng, 4, 16, 9);
+        SamplingContext copy(rng, SamplingContext::QMCMode, 4, 16, 9);
         copy = original;
 
         EXPECT_EQ(2, copy.m_base_dimension);
@@ -87,7 +87,7 @@ TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext)
     TEST_CASE(TestSplitting)
     {
         RNG rng;
-        SamplingContext context(rng, 2, 64, 7);
+        SamplingContext context(rng, SamplingContext::QMCMode, 2, 64, 7);
         SamplingContext child_context = context.split(3, 16);
 
         EXPECT_EQ(2, child_context.m_base_dimension);
@@ -99,7 +99,7 @@ TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext)
     TEST_CASE(TestDoubleSplitting)
     {
         RNG rng;
-        SamplingContext context(rng, 2, 64, 7);
+        SamplingContext context(rng, SamplingContext::QMCMode, 2, 64, 7);
         SamplingContext child_context = context.split(3, 16);
         SamplingContext child_child_context = child_context.split(4, 8);
 
@@ -134,7 +134,12 @@ TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext_DirectIlluminationSimulat
         const size_t                light_sample_count)
     {
         RNG rng;
-        SamplingContext sampling_context(rng, 2, pixel_sample_count, 0);
+        SamplingContext sampling_context(
+            rng,
+            SamplingContext::QMCMode,
+            2,
+            pixel_sample_count,
+            0);
 
         vector<Vector2d> pixel_samples;
         vector<Vector2d> light_samples;

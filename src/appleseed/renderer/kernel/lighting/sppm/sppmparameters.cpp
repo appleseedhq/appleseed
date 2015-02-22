@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/utility/paramarray.h"
+#include "renderer/utility/samplingmode.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/makevector.h"
@@ -90,7 +91,8 @@ namespace
 }
 
 SPPMParameters::SPPMParameters(const ParamArray& params)
-  : m_photon_type(get_photon_type(params, "photon_type", "mono"))
+  : m_sampling_mode(get_sampling_context_mode(params))
+  , m_photon_type(get_photon_type(params, "photon_type", "mono"))
   , m_dl_mode(get_mode(params, "dl_mode", "rt"))
   , m_enable_ibl(params.get_optional<bool>("enable_ibl", true))
   , m_enable_caustics(params.get_optional<bool>("enable_caustics", true))

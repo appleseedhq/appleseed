@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2015 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,14 +26,10 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_UTILITY_H
-#define APPLESEED_RENDERER_API_UTILITY_H
+#ifndef APPLESEED_RENDERER_API_TYPES_H
+#define APPLESEED_RENDERER_API_TYPES_H
 
 // API headers.
-#include "renderer/utility/bbox.h"
-#include "renderer/utility/paramarray.h"
-#include "renderer/utility/samplingmode.h"
-#include "renderer/utility/testutils.h"
-#include "renderer/utility/transformsequence.h"
+#include "renderer/global/globaltypes.h"
 
-#endif  // !APPLESEED_RENDERER_API_UTILITY_H
+#endif  // !APPLESEED_RENDERER_API_TYPES_H

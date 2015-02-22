@@ -271,9 +271,10 @@ namespace
             SamplingContext::RNGType rng(instance);
             SamplingContext sampling_context(
                 rng,
-                4,                  // number of dimensions
-                0,                  // number of samples -- unknown
-                instance);          // initial instance number
+                m_params.m_sampling_mode,
+                4,                          // number of dimensions
+                0,                          // number of samples -- unknown
+                instance);                  // initial instance number
 
             for (size_t i = m_photon_begin; i < m_photon_end && !m_abort_switch.is_aborted(); ++i)
                 trace_light_photon(shading_context, sampling_context);
@@ -561,9 +562,10 @@ namespace
             SamplingContext::RNGType rng(instance);
             SamplingContext sampling_context(
                 rng,
-                2,                  // number of dimensions
-                0,                  // number of samples -- unknown
-                instance);          // initial instance number
+                m_params.m_sampling_mode,
+                2,                          // number of dimensions
+                0,                          // number of samples -- unknown
+                instance);                  // initial instance number
 
             for (size_t i = m_photon_begin; i < m_photon_end && !m_abort_switch.is_aborted(); ++i)
                 trace_env_photon(shading_context, sampling_context);

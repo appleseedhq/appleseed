@@ -63,10 +63,12 @@ namespace appleseed {
 namespace studio {
 
 FrozenDisplayRenderer::FrozenDisplayRenderer(
-    const Camera&   camera,
-    const Frame&    frame,
-    RenderWidget&   render_widget)
-  : m_camera(camera)
+    const SamplingContext::Mode sampling_mode,
+    const Camera&               camera,
+    const Frame&                frame,
+    RenderWidget&               render_widget)
+  : m_sampling_mode(sampling_mode)
+  , m_camera(camera)
   , m_frame(frame)
   , m_frame_props(frame.image().properties())
   , m_color_image(frame.image())
@@ -96,9 +98,10 @@ void FrozenDisplayRenderer::capture()
     SamplingContext::RNGType rng;
     SamplingContext sampling_context(
         rng,
-        2,      // number of dimensions
-        0,      // number of samples -- unknown
-        0);     // initial instance number
+        m_sampling_mode,
+        2,                  // number of dimensions
+        0,                  // number of samples -- unknown
+        0);                 // initial instance number
 
     size_t point_index = 0;
 

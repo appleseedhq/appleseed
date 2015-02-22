@@ -29,6 +29,9 @@
 #ifndef APPLESEED_STUDIO_MAINWINDOW_RENDERING_FROZENDISPLAYRENDERER_H
 #define APPLESEED_STUDIO_MAINWINDOW_RENDERING_FROZENDISPLAYRENDERER_H
 
+// appleseed.renderer headers.
+#include "renderer/api/types.h"
+
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
 #include "foundation/math/vector.h"
@@ -50,20 +53,22 @@ class FrozenDisplayRenderer
 {
   public:
     FrozenDisplayRenderer(
-        const renderer::Camera&         camera,
-        const renderer::Frame&          frame,
-        RenderWidget&                   render_widget);
+        const renderer::SamplingContext::Mode   sampling_mode,
+        const renderer::Camera&                 camera,
+        const renderer::Frame&                  frame,
+        RenderWidget&                           render_widget);
 
     void capture();
     void render();
 
   private:
-    const renderer::Camera&             m_camera;
-    const renderer::Frame&              m_frame;
-    const foundation::CanvasProperties& m_frame_props;
-    foundation::Image&                  m_color_image;
-    foundation::Image&                  m_depth_image;
-    RenderWidget&                       m_render_widget;
+    const renderer::SamplingContext::Mode       m_sampling_mode;
+    const renderer::Camera&                     m_camera;
+    const renderer::Frame&                      m_frame;
+    const foundation::CanvasProperties&         m_frame_props;
+    foundation::Image&                          m_color_image;
+    foundation::Image&                          m_depth_image;
+    RenderWidget&                               m_render_widget;
 
     struct RenderPoint
     {
@@ -71,8 +76,8 @@ class FrozenDisplayRenderer
         foundation::Color3b     m_color;
     };
 
-    std::vector<RenderPoint>            m_points;
-    std::vector<float>                  m_zbuffer;
+    std::vector<RenderPoint>                    m_points;
+    std::vector<float>                          m_zbuffer;
 };
 
 }       // namespace studio

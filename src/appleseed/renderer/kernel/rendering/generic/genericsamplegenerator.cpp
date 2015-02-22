@@ -40,6 +40,7 @@
 #include "renderer/kernel/shading/shadingfragment.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/frame/frame.h"
+#include "renderer/utility/samplingmode.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
@@ -74,9 +75,11 @@ namespace
         GenericSampleGenerator(
             const Frame&                    frame,
             ISampleRendererFactory*         sample_renderer_factory,
+            const ParamArray&               params,
             const size_t                    generator_index,
             const size_t                    generator_count)
           : SampleGeneratorBase(generator_index, generator_count)
+          , m_params(params)
           , m_frame(frame)
           , m_canvas_width(frame.image().properties().m_canvas_width)
           , m_canvas_height(frame.image().properties().m_canvas_height)
@@ -116,6 +119,17 @@ namespace
         }
 
       private:
+        struct Parameters
+        {
+            const SamplingContext::Mode     m_sampling_mode;
+
+            explicit Parameters(const ParamArray& params)
+              : m_sampling_mode(get_sampling_context_mode(params))
+            {
+            }
+        };
+
+        const Parameters                    m_params;
         const Frame&                        m_frame;
         const size_t                        m_canvas_width;
         const size_t                        m_canvas_height;
@@ -165,6 +179,7 @@ namespace
             // corresponding to the Halton sequence used for the sample positions.
             SamplingContext sampling_context(
                 m_rng,
+                m_params.m_sampling_mode,
                 2,                          // number of dimensions
                 sequence_index,             // number of samples
                 sequence_index);            // initial instance number
@@ -206,9 +221,11 @@ namespace
 
 GenericSampleGeneratorFactory::GenericSampleGeneratorFactory(
     const Frame&            frame,
-    ISampleRendererFactory* sample_renderer_factory)
+    ISampleRendererFactory* sample_renderer_factory,
+    const ParamArray&       params)
   : m_frame(frame)
   , m_sample_renderer_factory(sample_renderer_factory)
+  , m_params(params)
 {
 }
 
@@ -225,6 +242,7 @@ ISampleGenerator* GenericSampleGeneratorFactory::create(
         new GenericSampleGenerator(
             m_frame,
             m_sample_renderer_factory,
+            m_params,
             generator_index,
             generator_count);
 }

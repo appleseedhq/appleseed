@@ -796,6 +796,7 @@ set (renderer_api_sources
     renderer/api/surfaceshader.h
     renderer/api/texture.h
     renderer/api/trace.h
+    renderer/api/types.h
     renderer/api/utility.h
     renderer/api/version.h
 )
@@ -1703,6 +1704,7 @@ set (renderer_utility_sources
     renderer/utility/paramarray.h
     renderer/utility/plugin.cpp
     renderer/utility/plugin.h
+    renderer/utility/samplingmode.h
     renderer/utility/stochasticcast.h
     renderer/utility/testutils.cpp
     renderer/utility/testutils.h

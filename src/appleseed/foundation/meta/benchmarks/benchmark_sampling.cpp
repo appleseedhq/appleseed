@@ -32,6 +32,7 @@
 #include "foundation/math/rng/mersennetwister.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/sampling/qmcsamplingcontext.h"
+#include "foundation/math/sampling/rngsamplingcontext.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/benchmark.h"
 
@@ -41,25 +42,69 @@
 using namespace foundation;
 using namespace std;
 
-BENCHMARK_SUITE(Foundation_Math_Sampling_QMCSamplingContext)
+namespace
 {
-    struct Fixture
+    struct SamplingContextFixture
     {
         typedef MersenneTwister RNG;
 
         RNG         m_rng;
         Vector2d    m_v;
 
-        Fixture()
+        SamplingContextFixture()
           : m_v(0.0)
         {
         }
     };
+}
 
-    BENCHMARK_CASE_F(BenchmarkTrajectory, Fixture)
+BENCHMARK_SUITE(Foundation_Math_Sampling_RNGSamplingContext)
+{
+    BENCHMARK_CASE_F(BenchmarkTrajectory, SamplingContextFixture)
     {
         const size_t InitialInstance = 1234567;
-        QMCSamplingContext<RNG> context(m_rng, 1, InitialInstance, InitialInstance);
+        RNGSamplingContext<RNG> context(
+            m_rng,
+            1,
+            InitialInstance,
+            InitialInstance);
+
+        for (size_t i = 0; i < 32; ++i)
+        {
+            context.split_in_place(2, 1);
+            m_v += context.next_vector2<2>();
+        }
+    }
+}
+
+BENCHMARK_SUITE(Foundation_Math_Sampling_QMCSamplingContext)
+{
+    BENCHMARK_CASE_F(BenchmarkTrajectory_RNGMode, SamplingContextFixture)
+    {
+        const size_t InitialInstance = 1234567;
+        QMCSamplingContext<RNG> context(
+            m_rng,
+            QMCSamplingContext<RNG>::RNGMode,
+            1,
+            InitialInstance,
+            InitialInstance);
+
+        for (size_t i = 0; i < 32; ++i)
+        {
+            context.split_in_place(2, 1);
+            m_v += context.next_vector2<2>();
+        }
+    }
+
+    BENCHMARK_CASE_F(BenchmarkTrajectory_QMCMode, SamplingContextFixture)
+    {
+        const size_t InitialInstance = 1234567;
+        QMCSamplingContext<RNG> context(
+            m_rng,
+            QMCSamplingContext<RNG>::QMCMode,
+            1,
+            InitialInstance,
+            InitialInstance);
 
         for (size_t i = 0; i < 32; ++i)
         {

@@ -56,7 +56,7 @@ TEST_SUITE(Renderer_Modeling_Camera_SphericalCamera)
         camera->on_frame_begin(project.ref());
 
         SamplingContext::RNGType rng;
-        SamplingContext sampling_context(rng);
+        SamplingContext sampling_context(rng, SamplingContext::QMCMode);
 
         ShadingRay ray;
         camera->generate_ray(sampling_context, Vector2d(1.0, 1.0), ray);

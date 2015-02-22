@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2015 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,14 +26,36 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_UTILITY_H
-#define APPLESEED_RENDERER_API_UTILITY_H
+#ifndef APPLESEED_RENDERER_UTILITY_SAMPLINGMODE_H
+#define APPLESEED_RENDERER_UTILITY_SAMPLINGMODE_H
 
-// API headers.
-#include "renderer/utility/bbox.h"
+// appleseed.renderer headers.
+#include "renderer/global/globaltypes.h"
 #include "renderer/utility/paramarray.h"
-#include "renderer/utility/samplingmode.h"
-#include "renderer/utility/testutils.h"
-#include "renderer/utility/transformsequence.h"
 
-#endif  // !APPLESEED_RENDERER_API_UTILITY_H
+// appleseed.foundation headers.
+#include "foundation/utility/makevector.h"
+
+// Standard headers.
+#include <string>
+
+namespace renderer
+{
+
+inline SamplingContext::Mode get_sampling_context_mode(const ParamArray& params)
+{
+    const std::string sampling_mode =
+        params.get_required<std::string>(
+            "sampling_mode",
+            "rng",
+            foundation::make_vector("rng", "qmc"));
+
+    return
+        sampling_mode == "rng"
+            ? SamplingContext::RNGMode
+            : SamplingContext::QMCMode;
+}
+
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_UTILITY_SAMPLINGMODE_H

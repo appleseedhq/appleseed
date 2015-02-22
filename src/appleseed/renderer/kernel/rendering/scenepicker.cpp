@@ -88,7 +88,7 @@ ScenePicker::~ScenePicker()
 ScenePicker::PickingResult ScenePicker::pick(const Vector2d& ndc) const
 {
     SamplingContext::RNGType rng;
-    SamplingContext sampling_context(rng);
+    SamplingContext sampling_context(rng, SamplingContext::QMCMode);
 
     const Scene& scene = impl->m_trace_context.get_scene();
     const Camera* camera = scene.get_camera();

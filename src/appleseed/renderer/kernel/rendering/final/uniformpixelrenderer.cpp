@@ -42,6 +42,7 @@
 #include "renderer/kernel/rendering/shadingresultframebuffer.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/frame/frame.h"
+#include "renderer/utility/samplingmode.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
@@ -132,9 +133,10 @@ namespace
                 const size_t instance = hash_uint32(static_cast<uint32>(pass_hash + iy * frame_width + ix));
                 SamplingContext sampling_context(
                     rng,
-                    2,                  // number of dimensions
-                    0,                  // number of samples -- unknown
-                    instance);          // initial instance number
+                    m_params.m_sampling_mode,
+                    2,                          // number of dimensions
+                    0,                          // number of samples -- unknown
+                    instance);                  // initial instance number
 
                 for (size_t i = 0; i < m_sample_count; ++i)
                 {
@@ -189,9 +191,10 @@ namespace
                         // initial dimension is set to 0 or 2.
                         SamplingContext sampling_context(
                             rng,
-                            1,              // number of dimensions
-                            instance,       // number of samples
-                            instance);      // initial instance number -- end of sequence
+                            m_params.m_sampling_mode,
+                            1,                          // number of dimensions
+                            instance,                   // number of samples
+                            instance);                  // initial instance number -- end of sequence
 
                         // Render the sample.
                         ShadingResult shading_result(aov_count);
@@ -223,12 +226,14 @@ namespace
       private:
         struct Parameters
         {
-            const size_t    m_samples;
-            const bool      m_force_aa;
-            const bool      m_decorrelate;
+            const SamplingContext::Mode     m_sampling_mode;
+            const size_t                    m_samples;
+            const bool                      m_force_aa;
+            const bool                      m_decorrelate;
 
             explicit Parameters(const ParamArray& params)
-              : m_samples(params.get_required<size_t>("samples", 1))
+              : m_sampling_mode(get_sampling_context_mode(params))
+              , m_samples(params.get_required<size_t>("samples", 1))
               , m_force_aa(params.get_optional<bool>("force_antialiasing", false))
               , m_decorrelate(params.get_optional<bool>("decorrelate_pixels", true))
             {
