@@ -74,7 +74,7 @@ RenderTab::RenderTab(
     create_toolbar();
     create_scrollarea();
 
-    setObjectName(QString::fromUtf8("render_widget_tab"));
+    setObjectName("render_widget_tab");
     setLayout(new QGridLayout());
     layout()->setSpacing(0);
     layout()->setMargin(0);
@@ -183,7 +183,7 @@ void RenderTab::create_toolbar()
 {
     // Create the render toolbar.
     m_toolbar = new QToolBar();
-    m_toolbar->setObjectName(QString::fromUtf8("render_toolbar"));
+    m_toolbar->setObjectName("render_toolbar");
     m_toolbar->setIconSize(QSize(18, 18));
 
     // Create the Save Image button in the render toolbar.
@@ -269,13 +269,13 @@ void RenderTab::create_toolbar()
 
     // Create the label preceding the picking mode combobox.
     QLabel* picking_mode_label = new QLabel("Picking Mode:");
-    picking_mode_label->setObjectName(QString::fromUtf8("picking_mode_label"));
+    picking_mode_label->setObjectName("picking_mode_label");
     m_toolbar->addWidget(picking_mode_label);
 
     // Create the picking mode combobox.
     // The combo will be populated by the ScenePickingHandler instantiated below.
     m_picking_mode_combo = new QComboBox();
-    m_picking_mode_combo->setObjectName(QString::fromUtf8("picking_mode_combo"));
+    m_picking_mode_combo->setObjectName("picking_mode_combo");
     m_toolbar->addWidget(m_picking_mode_combo);
 
     // Add stretchy spacer.
@@ -287,7 +287,7 @@ void RenderTab::create_toolbar()
     // Create a label to display various information such as mouse coordinates, etc.
     m_info_label = new QLabel();
     m_info_label->setScaledContents(true);
-    m_info_label->setObjectName(QString::fromUtf8("info_label"));
+    m_info_label->setObjectName("info_label");
     m_toolbar->addWidget(m_info_label);
 
     m_toolbar->addSeparator();
@@ -295,23 +295,23 @@ void RenderTab::create_toolbar()
     // Create labels to display RGBA values.
 
     m_r_label = new QLabel();
+    m_r_label->setObjectName("r_label");
     m_r_label->setScaledContents(true);
-    m_r_label->setObjectName(QString::fromUtf8("r_label"));
     m_toolbar->addWidget(m_r_label);
 
     m_g_label = new QLabel();
+    m_g_label->setObjectName("g_label");
     m_g_label->setScaledContents(true);
-    m_g_label->setObjectName(QString::fromUtf8("g_label"));
     m_toolbar->addWidget(m_g_label);
 
     m_b_label = new QLabel();
+    m_b_label->setObjectName("b_label");
     m_b_label->setScaledContents(true);
-    m_b_label->setObjectName(QString::fromUtf8("b_label"));
     m_toolbar->addWidget(m_b_label);
 
     m_a_label = new QLabel();
+    m_a_label->setObjectName("a_label");
     m_a_label->setScaledContents(true);
-    m_a_label->setObjectName(QString::fromUtf8("a_label"));
     m_toolbar->addWidget(m_a_label);
 }
 
@@ -319,7 +319,7 @@ void RenderTab::create_scrollarea()
 {
     // Encapsulate the render widget into another widget that adds a margin around it.
     QWidget* render_widget_wrapper = new QWidget();
-    render_widget_wrapper->setObjectName(QString::fromUtf8("render_widget_wrapper"));
+    render_widget_wrapper->setObjectName("render_widget_wrapper");
     render_widget_wrapper->setLayout(new QGridLayout());
     render_widget_wrapper->layout()->setSizeConstraint(QLayout::SetFixedSize);
     render_widget_wrapper->layout()->setContentsMargins(20, 20, 20, 20);
