@@ -524,12 +524,12 @@ void ObjectInstanceItem::update_style()
     if (m_entity->get_front_material_mappings().empty() &&
         m_entity->get_back_material_mappings().empty())
     {
-        setTextColor(0, QColor(255, 0, 255, 255));
+        setForeground(0, QColor(255, 0, 255, 255));
     }
     else
     {
         // Remove the color overload. Not sure this is the easiest way to do it.
-        setData(0, Qt::TextColorRole, QVariant());
+        setData(0, Qt::ForegroundRole, QVariant());
     }
 }
 
