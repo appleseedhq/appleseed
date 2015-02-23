@@ -102,30 +102,38 @@ ScenePicker::PickingResult ScenePicker::pick(const Vector2d& ndc) const
     ShadingPoint shading_point;
     impl->m_intersector.trace(ray, shading_point);
 
-    const bool hit = shading_point.hit();
-
     PickingResult result;
-    result.m_hit = hit;
-    result.m_point =
-        hit
-            ? shading_point.get_point()
-            : Vector3d(0.0);
-    result.m_distance =
-        hit
-            ? shading_point.get_distance() * norm(ray.m_dir)
-            : numeric_limits<double>::max();
+    result.m_hit = shading_point.hit();
     result.m_primitive_type = shading_point.get_primitive_type();
+
+    if (result.m_hit)
+    {
+        result.m_point = shading_point.get_point();
+        result.m_distance = shading_point.get_distance() * norm(ray.m_dir);
+        result.m_assembly_instance_transform = shading_point.get_assembly_instance_transform();
+        result.m_assembly_instance = &shading_point.get_assembly_instance();
+        result.m_assembly = &shading_point.get_assembly();
+        result.m_object_instance = &shading_point.get_object_instance();
+        result.m_object = &shading_point.get_object();
+    }
+    else
+    {
+        result.m_point = Vector3d(0.0);
+        result.m_distance = numeric_limits<double>::max();
+        result.m_assembly_instance_transform = Transformd::identity();
+        result.m_assembly_instance = 0;
+        result.m_assembly = 0;
+        result.m_object_instance = 0;
+        result.m_object = 0;
+    }
+
     result.m_camera = camera;
-    result.m_assembly_instance = hit ? &shading_point.get_assembly_instance() : 0;
-    result.m_assembly = hit ? &shading_point.get_assembly() : 0;
-    result.m_object_instance = hit ? &shading_point.get_object_instance() : 0;
-    result.m_object = hit ? &shading_point.get_object() : 0;
     result.m_material = 0;
     result.m_surface_shader = 0;
     result.m_bsdf = 0;
     result.m_edf = 0;
 
-    if (hit)
+    if (result.m_hit)
     {
         const size_t pa_index = shading_point.get_primitive_attribute_index();
 

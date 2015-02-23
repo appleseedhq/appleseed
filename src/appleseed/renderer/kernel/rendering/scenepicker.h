@@ -34,6 +34,7 @@
 #include "renderer/kernel/shading/shadingpoint.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 
 // appleseed.main headers.
@@ -63,6 +64,7 @@ class APPLESEED_DLLSYMBOL ScenePicker
         foundation::Vector3d            m_point;                // world space
         double                          m_distance;             // world space
         ShadingPoint::PrimitiveType     m_primitive_type;
+        foundation::Transformd          m_assembly_instance_transform;
 
         const Camera*                   m_camera;
         const AssemblyInstance*         m_assembly_instance;
