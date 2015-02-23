@@ -132,6 +132,8 @@ namespace
             m_scene_radius = scene_bbox.radius();
             m_safe_scene_diameter = 1.01 * (2.0 * m_scene_radius);
 
+            precompute_constants();
+
             return true;
         }
 
@@ -238,6 +240,9 @@ namespace
 
         InputValues     m_values;
 
+        Spectrum        m_k1;
+        Spectrum        m_k2;
+
         void apply_env_edf_overrides(const EnvironmentEDF* env_edf)
         {
             // Use the Sun direction from the EDF if it has one.
@@ -270,11 +275,24 @@ namespace
             }
         }
 
-        static void compute_sun_radiance(
+        void precompute_constants()
+        {
+            m_k1.resize(Spectrum::Samples);
+            for (size_t i = 0; i < Spectrum::Samples; ++i)
+                m_k1[i] = -0.008735f * pow(g_light_wavelengths_um[i], -4.08f);
+
+            const float Alpha = 1.3f;               // ratio of small to large particle sizes (0 to 4, typically 1.3)
+
+            m_k2.resize(Spectrum::Samples);
+            for (size_t i = 0; i < Spectrum::Samples; ++i)
+                m_k2[i] = pow(g_light_wavelengths_um[i], -Alpha);
+        }
+
+        void compute_sun_radiance(
             const Vector3d&         outgoing,
             const double            turbidity,
             const double            radiance_multiplier,
-            Spectrum&               radiance)
+            Spectrum&               radiance) const
         {
             // Compute the relative optical mass.
             const float cos_theta = -static_cast<float>(outgoing.y);
@@ -285,15 +303,14 @@ namespace
             Spectrum tau_r;
             tau_r.resize(Spectrum::Samples);
             for (size_t i = 0; i < 31; ++i)
-                tau_r[i] = exp(-0.008735f * m * pow(g_light_wavelengths_um[i], -4.08f));
+                tau_r[i] = exp(m * m_k1[i]);
 
             // Compute transmittance due to aerosols.
-            const float Alpha = 1.3f;               // ratio of small to large particle sizes (0 to 4, typically 1.3)
             const float beta = 0.04608f * static_cast<float>(turbidity) - 0.04586f;
             Spectrum tau_a;
             tau_a.resize(Spectrum::Samples);
             for (size_t i = 0; i < 31; ++i)
-                tau_a[i] = exp(-beta * m * pow(g_light_wavelengths_um[i], -Alpha));
+                tau_a[i] = exp(-beta * m * m_k2[i]);
 
             // Compute transmittance due to ozone absorption.
             const float L = 0.35f;                  // amount of ozone in cm
@@ -313,23 +330,25 @@ namespace
             for (size_t i = 0; i < 31; ++i)
                 tau_o[i] = exp(-Ko[i] * L * m);
 
+#ifdef COMPUTE_REDUNDANT
             // Compute transmittance due to mixed gases absorption.
             // Disabled since all coefficients are zero in the wavelength range of the simulation.
-            // static const float Kg[31] =
-            // {
-            //     0.000f, 0.000f, 0.000f, 0.000f,
-            //     0.000f, 0.000f, 0.000f, 0.000f,
-            //     0.000f, 0.000f, 0.000f, 0.000f,
-            //     0.000f, 0.000f, 0.000f, 0.000f,
-            //     0.000f, 0.000f, 0.000f, 0.000f,
-            //     0.000f, 0.000f, 0.000f, 0.000f,
-            //     0.000f, 0.000f, 0.000f, 0.000f,
-            //     0.000f, 0.000f, 0.000f
-            // };
-            // Spectrum tau_g;
-            // tau_g.resize(Spectrum::Samples);
-            // for (size_t i = 0; i < 31; ++i)
-            //     tau_g[i] = exp(-1.41f * Kg[i] * m / pow(1.0f + 118.93f * Kg[i] * m, 0.45f));
+            static const float Kg[31] =
+            {
+                0.000f, 0.000f, 0.000f, 0.000f,
+                0.000f, 0.000f, 0.000f, 0.000f,
+                0.000f, 0.000f, 0.000f, 0.000f,
+                0.000f, 0.000f, 0.000f, 0.000f,
+                0.000f, 0.000f, 0.000f, 0.000f,
+                0.000f, 0.000f, 0.000f, 0.000f,
+                0.000f, 0.000f, 0.000f, 0.000f,
+                0.000f, 0.000f, 0.000f
+            };
+            Spectrum tau_g;
+            tau_g.resize(Spectrum::Samples);
+            for (size_t i = 0; i < 31; ++i)
+                tau_g[i] = exp(-1.41f * Kg[i] * m / pow(1.0f + 118.93f * Kg[i] * m, 0.45f));
+#endif
 
             // Compute transmittance due to water vapor absorption.
             const float W = 2.0f;                   // precipitable water vapor in cm
@@ -370,7 +389,9 @@ namespace
             radiance *= tau_r;
             radiance *= tau_a;
             radiance *= tau_o;
-            // radiance *= tau_g;   // always 1.0
+#ifdef COMPUTE_REDUNDANT
+            radiance *= tau_g;      // always 1.0
+#endif
             radiance *= tau_wa;
             radiance *= static_cast<float>(radiance_multiplier);
         }
