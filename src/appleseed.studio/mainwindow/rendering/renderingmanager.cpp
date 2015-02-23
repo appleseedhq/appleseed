@@ -363,6 +363,9 @@ void RenderingManager::slot_rendering_end()
 {
     m_render_widget_update_timer.stop();
 
+    // Save the controller target point into the camera when rendering ends.
+    m_render_tab->get_camera_controller()->save_camera_target();
+
     print_final_rendering_time();
 
     if (m_params.get_optional<bool>("print_final_average_luminance", false))

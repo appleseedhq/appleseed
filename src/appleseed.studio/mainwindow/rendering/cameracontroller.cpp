@@ -69,8 +69,6 @@ CameraController::CameraController(
 CameraController::~CameraController()
 {
     m_render_widget->removeEventFilter(this);
-
-    m_scene->get_camera()->get_parameters().insert("controller_target", m_controller.get_target());
 }
 
 void CameraController::update_camera_transform()
@@ -83,6 +81,12 @@ void CameraController::update_camera_transform()
     // Set the scene camera orientation and position based on the controller.
     const Transformd transform = Transformd::from_local_to_parent(m_controller.get_transform());
     camera->transform_sequence().set_transform(0.0, transform);
+}
+
+void CameraController::save_camera_target()
+{
+    Camera* camera = m_scene->get_camera();
+    camera->get_parameters().insert("controller_target", m_controller.get_target());
 }
 
 bool CameraController::eventFilter(QObject* object, QEvent* event)

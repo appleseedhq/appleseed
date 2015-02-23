@@ -62,6 +62,7 @@ class CameraController
     ~CameraController();
 
     void update_camera_transform();
+    void save_camera_target();
 
   signals:
     void signal_camera_change_begin();
