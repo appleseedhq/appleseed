@@ -36,6 +36,7 @@
 // appleseed.renderer headers.
 #include "renderer/api/frame.h"
 #include "renderer/api/project.h"
+#include "renderer/api/rendering.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
@@ -351,18 +352,6 @@ void RenderTab::recreate_handlers()
             m_render_widget,
             m_info_label));
 
-    // Handler for picking scene entities in the render widget.
-    m_picking_handler.reset(
-        new ScenePickingHandler(
-            m_render_widget,
-            m_picking_mode_combo,
-            *m_mouse_tracker.get(),
-            m_project_explorer,
-            m_project));
-    connect(
-        m_picking_handler.get(), SIGNAL(signal_entity_picked(const renderer::Entity*)),
-        SIGNAL(signal_entity_picked(const renderer::Entity*)));
-
     // Handle for tracking and display the color of the pixel underneath the mouse cursor.
     m_pixel_color_tracker.reset(
         new PixelColorTracker(
@@ -382,6 +371,17 @@ void RenderTab::recreate_handlers()
             m_project_explorer,
             m_project));
 
+    // Handler for picking scene entities in the render widget.
+    m_picking_handler.reset(
+        new ScenePickingHandler(
+            m_render_widget,
+            m_picking_mode_combo,
+            *m_mouse_tracker.get(),
+            m_project_explorer,
+            m_project));
+    connect(
+        m_picking_handler.get(), SIGNAL(signal_entity_picked(renderer::ScenePicker::PickingResult)),
+        SIGNAL(signal_entity_picked(renderer::ScenePicker::PickingResult)));
 
     // Handler for setting render regions with the mouse.
     m_render_region_handler.reset(

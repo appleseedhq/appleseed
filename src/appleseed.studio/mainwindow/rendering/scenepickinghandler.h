@@ -30,19 +30,27 @@
 #ifndef APPLESEED_STUDIO_MAINWINDOW_RENDERING_SCENEPICKINGHANDLER_H
 #define APPLESEED_STUDIO_MAINWINDOW_RENDERING_SCENEPICKINGHANDLER_H
 
+// appleseed.renderer headers.
+#include "renderer/api/rendering.h"
+
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
+
 // Qt headers.
+#include <QMetaType>
 #include <QObject>
 
 // Forward declarations.
 namespace appleseed { namespace studio { class ItemBase; } }
 namespace appleseed { namespace studio { class MouseCoordinatesTracker; } }
 namespace appleseed { namespace studio { class ProjectExplorer; } }
-namespace renderer  { class Entity; }
 namespace renderer  { class Project; }
 class QComboBox;
 class QEvent;
 class QPoint;
 class QWidget;
+
+Q_DECLARE_METATYPE(renderer::ScenePicker::PickingResult);
 
 namespace appleseed {
 namespace studio {
@@ -65,7 +73,7 @@ class ScenePickingHandler
     void set_enabled(const bool enabled);
 
   signals:
-    void signal_entity_picked(const renderer::Entity* entity);
+    void signal_entity_picked(renderer::ScenePicker::PickingResult result);
 
   private:
     QWidget*                                m_widget;
@@ -75,7 +83,7 @@ class ScenePickingHandler
     const renderer::Project&                m_project;
     bool                                    m_enabled;
 
-    virtual bool eventFilter(QObject* object, QEvent* event);
+    virtual bool eventFilter(QObject* object, QEvent* event) APPLESEED_OVERRIDE;
 
     ItemBase* pick(const QPoint& point);
 };

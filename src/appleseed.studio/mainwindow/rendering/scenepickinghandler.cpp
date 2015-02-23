@@ -44,7 +44,6 @@
 #include "renderer/api/material.h"
 #include "renderer/api/object.h"
 #include "renderer/api/project.h"
-#include "renderer/api/rendering.h"
 #include "renderer/api/scene.h"
 #include "renderer/api/surfaceshader.h"
 
@@ -62,6 +61,7 @@
 
 // Standard headers.
 #include <cassert>
+#include <ostream>
 #include <sstream>
 
 using namespace foundation;
@@ -110,34 +110,34 @@ void ScenePickingHandler::set_enabled(const bool enabled)
 
 bool ScenePickingHandler::eventFilter(QObject* object, QEvent* event)
 {
-    if (!m_enabled)
-        return QObject::eventFilter(object, event);
-
-    switch (event->type())
+    if (m_enabled)
     {
-      case QEvent::MouseButtonPress:
+        switch (event->type())
         {
-            const QMouseEvent* mouse_event = static_cast<QMouseEvent*>(event);
-            if (!(mouse_event->modifiers() & (Qt::AltModifier | Qt::ShiftModifier | Qt::ControlModifier)))
+          case QEvent::MouseButtonPress:
             {
-                if (mouse_event->button() == Qt::LeftButton)
+                const QMouseEvent* mouse_event = static_cast<QMouseEvent*>(event);
+                if (!(mouse_event->modifiers() & (Qt::AltModifier | Qt::ShiftModifier | Qt::ControlModifier)))
                 {
-                    pick(mouse_event->pos());
-                    return true;
-                }
-                else if (mouse_event->button() == Qt::RightButton)
-                {
-                    ItemBase* item = pick(mouse_event->pos());
-                    if (item)
+                    if (mouse_event->button() == Qt::LeftButton)
                     {
-                        QMenu* menu = item->get_single_item_context_menu();
-                        menu->exec(mouse_event->globalPos());
+                        pick(mouse_event->pos());
+                        return true;
                     }
-                    return true;
+                    else if (mouse_event->button() == Qt::RightButton)
+                    {
+                        ItemBase* item = pick(mouse_event->pos());
+                        if (item)
+                        {
+                            QMenu* menu = item->get_single_item_context_menu();
+                            menu->exec(mouse_event->globalPos());
+                        }
+                        return true;
+                    }
                 }
             }
+            break;
         }
-        break;
     }
 
     return QObject::eventFilter(object, event);
@@ -234,7 +234,6 @@ ItemBase* ScenePickingHandler::pick(const QPoint& point)
 
     const QString picking_mode =
         m_picking_mode_combo->itemData(m_picking_mode_combo->currentIndex()).value<QString>();
-
     const Entity* picked_entity = get_picked_entity(result, picking_mode);
 
     ItemBase* item;
@@ -249,7 +248,7 @@ ItemBase* ScenePickingHandler::pick(const QPoint& point)
         item = 0;
     }
 
-    emit signal_entity_picked(picked_entity);
+    emit signal_entity_picked(result);
 
     return item;
 }
