@@ -77,7 +77,10 @@ class CameraController
     void set_target(const Vector<T, 3>& target);
     const Vector<T, 3>& get_target() const;
 
-    // Update the camera position and orientation using 2D dragging movements.
+    // Update the camera transform, for instance if the camera target has changed.
+    void update_transform();
+
+    // Modify the camera position and orientation using 2D dragging movements.
     // 'point' is a point on the image plane, in normalized device coordinates.
     void begin_drag(const Movement movement, const Vector<T, 2>& point);
     void update_drag(const Vector<T, 2>& point);
@@ -192,6 +195,23 @@ template <typename T>
 inline const Vector<T, 3>& CameraController<T>::get_target() const
 {
     return m_view.m_target;
+}
+
+template <typename T>
+void CameraController<T>::update_transform()
+{
+    const Vector<T, 3> Up(T(0.0), T(1.0), T(0.0));
+
+    // Compute view vector.
+    const Vector<T, 3> u = m_view.m_position - m_view.m_target;
+
+    // Update camera position.
+    m_view.m_position = m_view.m_target + u;
+
+    // Update camera basis vectors.
+    m_view.m_z = normalize(u);
+    m_view.m_x = normalize(cross(Up, m_view.m_z));
+    m_view.m_y = normalize(cross(m_view.m_z, m_view.m_x));
 }
 
 template <typename T>
