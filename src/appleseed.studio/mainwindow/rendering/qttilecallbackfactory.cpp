@@ -76,9 +76,11 @@ namespace
             if (!m_tile_callbacks_enabled)
                 return;
 
-            assert(m_render_widget);
             if (m_highlight_tiles)
+            {
+                assert(m_render_widget);
                 m_render_widget->highlight_region(x, y, width, height);
+            }
         }
 
         virtual void post_render_tile(
