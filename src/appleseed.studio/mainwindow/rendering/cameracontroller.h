@@ -30,6 +30,9 @@
 #ifndef APPLESEED_STUDIO_MAINWINDOW_RENDERING_CAMERACONTROLLER_H
 #define APPLESEED_STUDIO_MAINWINDOW_RENDERING_CAMERACONTROLLER_H
 
+// appleseed.renderer headers.
+#include "renderer/api/rendering.h"
+
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
@@ -41,6 +44,7 @@
 // Forward declarations.
 namespace renderer  { class Scene; }
 class QEvent;
+class QKeyEvent;
 class QMouseEvent;
 class QWidget;
 
@@ -64,6 +68,9 @@ class CameraController
     void update_camera_transform();
     void save_camera_target();
 
+  public slots:
+    void slot_entity_picked(renderer::ScenePicker::PickingResult result);
+
   signals:
     void signal_camera_change_begin();
     void signal_camera_changed();
@@ -75,15 +82,20 @@ class CameraController
     QWidget*                m_render_widget;
     renderer::Scene*        m_scene;
     ControllerType          m_controller;
+    foundation::Vector3d    m_pivot;
 
     void configure_controller(const renderer::Scene* scene);
 
-    foundation::Vector2d get_mouse_position(const QMouseEvent* event) const;
     virtual bool eventFilter(QObject* object, QEvent* event) APPLESEED_OVERRIDE;
 
     bool handle_mouse_button_press_event(const QMouseEvent* event);
     bool handle_mouse_button_release_event(const QMouseEvent* event);
     bool handle_mouse_move_event(const QMouseEvent* event);
+    bool handle_key_press_event(const QKeyEvent* event);
+
+    foundation::Vector2d get_mouse_position(const QMouseEvent* event) const;
+
+    void frame_selected_object();
 };
 
 }       // namespace studio

@@ -41,6 +41,7 @@
 
 // Qt headers.
 #include <QEvent>
+#include <QKeyEvent>
 #include <QMouseEvent>
 #include <Qt>
 #include <QWidget>
@@ -89,6 +90,22 @@ void CameraController::save_camera_target()
     camera->get_parameters().insert("controller_target", m_controller.get_target());
 }
 
+void CameraController::slot_entity_picked(ScenePicker::PickingResult result)
+{
+    if (result.m_object_instance)
+    {
+        const GAABB3 object_instance_world_bbox =
+            result.m_assembly_instance_transform.to_parent(
+                result.m_object_instance->compute_parent_bbox());
+
+        m_pivot = Vector3d(object_instance_world_bbox.center());
+    }
+    else
+    {
+        m_pivot = m_scene->compute_bbox().center();
+    }
+}
+
 bool CameraController::eventFilter(QObject* object, QEvent* event)
 {
     switch (event->type())
@@ -105,6 +122,11 @@ bool CameraController::eventFilter(QObject* object, QEvent* event)
 
       case QEvent::MouseMove:
         if (handle_mouse_move_event(static_cast<QMouseEvent*>(event)))
+            return true;
+        break;
+
+      case QEvent::KeyPress:
+        if (handle_key_press_event(static_cast<QKeyEvent*>(event)))
             return true;
         break;
     }
@@ -203,6 +225,25 @@ bool CameraController::handle_mouse_move_event(const QMouseEvent* event)
     emit signal_camera_changed();
 
     return true;
+}
+
+bool CameraController::handle_key_press_event(const QKeyEvent* event)
+{
+    switch (event->key())
+    {
+      case Qt::Key_F:
+        frame_selected_object();
+        return true;
+    }
+
+    return false;
+}
+
+void CameraController::frame_selected_object()
+{
+    m_controller.set_target(m_pivot);
+    m_controller.update_transform();
+    emit signal_camera_changed();
 }
 
 }   // namespace studio

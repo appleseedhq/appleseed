@@ -232,6 +232,8 @@ ItemBase* ScenePickingHandler::pick(const QPoint& point)
 
     RENDERER_LOG_INFO("%s", sstr.str().c_str());
 
+    emit signal_entity_picked(result);
+
     const QString picking_mode =
         m_picking_mode_combo->itemData(m_picking_mode_combo->currentIndex()).value<QString>();
     const Entity* picked_entity = get_picked_entity(result, picking_mode);
@@ -248,7 +250,7 @@ ItemBase* ScenePickingHandler::pick(const QPoint& point)
         item = 0;
     }
 
-    emit signal_entity_picked(result);
+    m_widget->setFocus();
 
     return item;
 }

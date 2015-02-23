@@ -162,7 +162,6 @@ ItemBase* ProjectExplorer::select_entity(const UniqueID uid) const
 
         item->setSelected(true);
         expand_parents(item);
-        m_tree_widget->setFocus();
     }
 
     return static_cast<ItemBase*>(item);
