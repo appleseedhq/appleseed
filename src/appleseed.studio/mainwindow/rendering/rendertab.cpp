@@ -36,7 +36,6 @@
 // appleseed.renderer headers.
 #include "renderer/api/frame.h"
 #include "renderer/api/project.h"
-#include "renderer/api/rendering.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
@@ -122,6 +121,11 @@ void RenderTab::update_size()
 RenderWidget* RenderTab::get_render_widget() const
 {
     return m_render_widget;
+}
+
+CameraController* RenderTab::get_camera_controller() const
+{
+    return m_camera_controller.get();
 }
 
 RenderTab::State RenderTab::save_state() const
@@ -280,7 +284,7 @@ void RenderTab::create_toolbar()
     m_toolbar->addWidget(m_picking_mode_combo);
 
     // Add stretchy spacer.
-    // This places interactive elements on the left and info to the right.
+    // This places interactive widgets on the left and info on the right.
     m_spacer = new QWidget();
     m_spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     m_toolbar->addWidget(m_spacer);
@@ -371,6 +375,21 @@ void RenderTab::recreate_handlers()
             m_project_explorer,
             m_project));
 
+    // Camera handler.
+    m_camera_controller.reset(
+        new CameraController(
+            m_render_widget,
+            m_project.get_scene()));
+    connect(
+        m_camera_controller.get(), SIGNAL(signal_camera_change_begin()),
+        SIGNAL(signal_camera_change_begin()));
+    connect(
+        m_camera_controller.get(), SIGNAL(signal_camera_change_end()),
+        SIGNAL(signal_camera_change_end()));
+    connect(
+        m_camera_controller.get(), SIGNAL(signal_camera_changed()),
+        SIGNAL(signal_camera_changed()));
+
     // Handler for picking scene entities in the render widget.
     m_picking_handler.reset(
         new ScenePickingHandler(
@@ -382,6 +401,9 @@ void RenderTab::recreate_handlers()
     connect(
         m_picking_handler.get(), SIGNAL(signal_entity_picked(renderer::ScenePicker::PickingResult)),
         SIGNAL(signal_entity_picked(renderer::ScenePicker::PickingResult)));
+    connect(
+        m_picking_handler.get(), SIGNAL(signal_entity_picked(renderer::ScenePicker::PickingResult)),
+        m_camera_controller.get(), SLOT(slot_entity_picked(renderer::ScenePicker::PickingResult)));
 
     // Handler for setting render regions with the mouse.
     m_render_region_handler.reset(

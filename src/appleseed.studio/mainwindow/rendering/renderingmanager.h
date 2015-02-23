@@ -31,7 +31,6 @@
 #define APPLESEED_STUDIO_MAINWINDOW_RENDERING_RENDERINGMANAGER_H
 
 // appleseed.studio headers.
-#include "mainwindow/rendering/cameracontroller.h"
 #include "mainwindow/rendering/frozendisplayrenderer.h"
 #include "mainwindow/rendering/qtrenderercontroller.h"
 #include "mainwindow/rendering/qttilecallbackfactory.h"
@@ -53,7 +52,7 @@
 #include <vector>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class RenderWidget; } }
+namespace appleseed { namespace studio { class RenderTab; } }
 namespace appleseed { namespace studio { class StatusBar; } }
 namespace renderer  { class Project; }
 class QTimerEvent;
@@ -78,7 +77,7 @@ class RenderingManager
         renderer::Project*              project,
         const renderer::ParamArray&     params,
         const bool                      interactive,
-        RenderWidget*                   render_widget);
+        RenderTab*                      render_tab);
 
     // Return true if currently rendering, false otherwise.
     bool is_rendering() const;
@@ -134,9 +133,9 @@ class RenderingManager
 
     renderer::Project*                          m_project;
     renderer::ParamArray                        m_params;
-    RenderWidget*                               m_render_widget;
+    RenderTab*                                  m_render_tab;
 
-    std::auto_ptr<CameraController>             m_camera_controller;
+    bool                                        m_allow_camera_changes;
     bool                                        m_camera_changed;
     volatile bool                               m_tile_callbacks_enabled;
 

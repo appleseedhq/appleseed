@@ -987,7 +987,7 @@ void MainWindow::start_rendering(const bool interactive)
         project,
         params,
         interactive,
-        m_render_tabs["RGB"]->get_render_widget());
+        m_render_tabs["RGB"]);
 }
 
 void MainWindow::print_startup_information()

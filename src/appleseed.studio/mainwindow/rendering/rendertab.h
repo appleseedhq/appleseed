@@ -30,7 +30,11 @@
 #ifndef APPLESEED_STUDIO_MAINWINDOW_RENDERING_RENDERTAB_H
 #define APPLESEED_STUDIO_MAINWINDOW_RENDERING_RENDERTAB_H
 
+// appleseed.renderer headers.
+#include "renderer/api/rendering.h"
+
 // appleseed.studio headers.
+#include "mainwindow/rendering/cameracontroller.h"
 #include "mainwindow/rendering/pixelcolortracker.h"
 #include "mainwindow/rendering/pixelinspectorhandler.h"
 #include "mainwindow/rendering/renderclipboardhandler.h"
@@ -87,6 +91,7 @@ class RenderTab
     void update_size();
 
     RenderWidget* get_render_widget() const;
+    CameraController* get_camera_controller() const;
 
     struct State
     {
@@ -105,7 +110,12 @@ class RenderTab
     void signal_render_widget_context_menu(const QPoint& point);
     void signal_reset_zoom();
     void signal_clear_frame();
-    void signal_entity_picked(const renderer::Entity* entity);
+
+    void signal_camera_change_begin();
+    void signal_camera_changed();
+    void signal_camera_change_end();
+
+    void signal_entity_picked(renderer::ScenePicker::PickingResult);
 
   private slots:
     void slot_render_widget_context_menu(const QPoint& point);
@@ -140,6 +150,7 @@ class RenderTab
     std::auto_ptr<MouseCoordinatesTracker>  m_mouse_tracker;
     std::auto_ptr<PixelColorTracker>        m_pixel_color_tracker;
     std::auto_ptr<PixelInspectorHandler>    m_pixel_inspector_handler;
+    std::auto_ptr<CameraController>         m_camera_controller;
     std::auto_ptr<ScenePickingHandler>      m_picking_handler;
     std::auto_ptr<RenderRegionHandler>      m_render_region_handler;
     std::auto_ptr<RenderClipboardHandler>   m_clipboard_handler;

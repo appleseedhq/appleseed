@@ -31,6 +31,8 @@
 #include "renderingmanager.h"
 
 // appleseed.studio headers.
+#include "mainwindow/rendering/cameracontroller.h"
+#include "mainwindow/rendering/rendertab.h"
 #include "mainwindow/rendering/renderwidget.h"
 #include "mainwindow/statusbar.h"
 
@@ -99,8 +101,10 @@ namespace
 RenderingManager::RenderingManager(StatusBar& status_bar)
   : m_status_bar(status_bar)
   , m_project(0)
-  , m_render_widget(0)
+  , m_render_tab(0)
+  , m_allow_camera_changes(false)
   , m_camera_changed(false)
+  , m_tile_callbacks_enabled(true)
 {
     //
     // The connections below are using the Qt::BlockingQueuedConnection connection type.
@@ -159,42 +163,38 @@ void RenderingManager::start_rendering(
     Project*                    project,
     const ParamArray&           params,
     const bool                  interactive,
-    RenderWidget*               render_widget)
+    RenderTab*                  render_tab)
 {
     m_project = project;
     m_params = params;
-    m_render_widget = render_widget;
+    m_render_tab = render_tab;
+
+    m_allow_camera_changes = false;
     m_camera_changed = false;
+    m_tile_callbacks_enabled = true;
 
     if (interactive)
     {
-        m_camera_controller.reset(
-            new CameraController(
-                m_render_widget,
-                m_project->get_scene()));
+        connect(
+            m_render_tab, SIGNAL(signal_camera_change_begin()),
+            SLOT(slot_camera_change_begin()));
 
         connect(
-            m_camera_controller.get(), SIGNAL(signal_camera_change_begin()),
-            this, SLOT(slot_camera_change_begin()));
+            m_render_tab, SIGNAL(signal_camera_change_end()),
+            SLOT(slot_camera_change_end()));
 
         connect(
-            m_camera_controller.get(), SIGNAL(signal_camera_change_end()),
-            this, SLOT(slot_camera_change_end()));
+            m_render_tab, SIGNAL(signal_camera_changed()),
+            SLOT(slot_camera_changed()));
 
         connect(
-            m_camera_controller.get(), SIGNAL(signal_camera_changed()),
-            this, SLOT(slot_camera_changed()));
-
-        connect(
-            m_camera_controller.get(), SIGNAL(signal_camera_changed()),
-            this, SIGNAL(signal_camera_changed()));
+            m_render_tab, SIGNAL(signal_camera_changed()),
+            SIGNAL(signal_camera_changed()));
     }
-
-    m_tile_callbacks_enabled = true;
 
     m_tile_callback_factory.reset(
         new QtTileCallbackFactory(
-            m_render_widget,
+            m_render_tab->get_render_widget(),
             !interactive,
             m_tile_callbacks_enabled));
 
@@ -288,7 +288,7 @@ void RenderingManager::slot_reinitialize_rendering()
 void RenderingManager::timerEvent(QTimerEvent* event)
 {
     if (event->timerId() == m_render_widget_update_timer.timerId())
-        m_render_widget->update();
+        m_render_tab->get_render_widget()->update();
     else QObject::timerEvent(event);
 }
 
@@ -357,15 +357,18 @@ void RenderingManager::slot_rendering_begin()
 
     const int IdleUpdateRate = 15;  // hertz
     m_render_widget_update_timer.start(1000 / IdleUpdateRate, this);
+
+    m_allow_camera_changes = true;
 }
 
 void RenderingManager::slot_rendering_end()
 {
-    m_render_widget_update_timer.stop();
+    m_allow_camera_changes = false;
 
     // Save the controller target point into the camera when rendering ends.
     m_render_tab->get_camera_controller()->save_camera_target();
 
+    m_render_widget_update_timer.stop();
     print_final_rendering_time();
 
     if (m_params.get_optional<bool>("print_final_average_luminance", false))
@@ -373,9 +376,6 @@ void RenderingManager::slot_rendering_end()
 
     if (m_params.get_optional<bool>("autosave", true))
         archive_frame_to_disk();
-
-    // Prevent manipulation of the camera after rendering has ended.
-    m_camera_controller.reset();
 }
 
 void RenderingManager::slot_frame_begin()
@@ -383,8 +383,8 @@ void RenderingManager::slot_frame_begin()
     if (m_camera_changed)
     {
         // Update the scene's camera before rendering the frame.
-        if (m_camera_controller.get())
-            m_camera_controller->update_camera_transform();
+        if (m_allow_camera_changes)
+            m_render_tab->get_camera_controller()->update_camera_transform();
 
         if (m_frozen_display_renderer.get())
             m_frozen_display_renderer->render();
@@ -401,7 +401,7 @@ void RenderingManager::slot_frame_end()
     m_rendering_timer.measure();
     m_status_bar.stop_rendering_time_display();
 
-    m_render_widget->update();
+    m_render_tab->get_render_widget()->update();
 }
 
 void RenderingManager::slot_camera_change_begin()
@@ -414,7 +414,7 @@ void RenderingManager::slot_camera_change_begin()
                 get_sampling_context_mode(m_params),
                 *m_project->get_scene()->get_camera(),
                 *m_project->get_frame(),
-                *m_render_widget));
+                *m_render_tab->get_render_widget()));
         m_frozen_display_renderer->capture();
     }
 }
