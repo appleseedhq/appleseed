@@ -112,7 +112,7 @@ namespace studio {
 namespace
 {
     const int UserInterfaceVersion = 1;
-    const int MaxRecentlyOpenedFiles = 5;
+    const int MaxRecentlyOpenedFiles = 15;
     const char* SettingsOrgString = "com.appleseed.studio";
     const char* SettingsRecentFilesEntryString = "appleseed.studio Recent Files";
     const char* SettingsRecentFileListString = "recent_file_list";
