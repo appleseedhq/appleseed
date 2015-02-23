@@ -356,16 +356,32 @@ void RenderTab::recreate_handlers()
         new ScenePickingHandler(
             m_render_widget,
             m_picking_mode_combo,
-            m_r_label,
-            m_g_label,
-            m_b_label,
-            m_a_label,
             *m_mouse_tracker.get(),
             m_project_explorer,
             m_project));
     connect(
         m_picking_handler.get(), SIGNAL(signal_entity_picked(const renderer::Entity*)),
         SIGNAL(signal_entity_picked(const renderer::Entity*)));
+
+    // Handle for tracking and display the color of the pixel underneath the mouse cursor.
+    m_pixel_color_tracker.reset(
+        new PixelColorTracker(
+            m_render_widget,
+            m_r_label,
+            m_g_label,
+            m_b_label,
+            m_a_label,
+            *m_mouse_tracker.get(),
+            m_project));
+
+    // Handler for pixel inspection in the render widget.
+    m_pixel_inspector_handler.reset(
+        new PixelInspectorHandler(
+            m_render_widget,
+            *m_mouse_tracker.get(),
+            m_project_explorer,
+            m_project));
+
 
     // Handler for setting render regions with the mouse.
     m_render_region_handler.reset(
@@ -379,15 +395,7 @@ void RenderTab::recreate_handlers()
     // Clipboard handler.
     m_clipboard_handler.reset(new RenderClipboardHandler(m_render_widget));
 
-    // Handler for pixel inspection in the render widget.
-    m_pixel_inspector_handler.reset(
-        new PixelInspectorHandler(
-            m_render_widget,
-            *m_mouse_tracker.get(),
-            m_project_explorer,
-            m_project));
-
-    // Initially, the picking handler is active and the render region is inactive.
+    // Set initial state.
     m_picking_handler->set_enabled(true);
     m_render_region_handler->set_enabled(false);
     m_pixel_inspector_handler->set_enabled(false);

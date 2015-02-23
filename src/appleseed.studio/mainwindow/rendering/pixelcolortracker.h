@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2015 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,60 +26,62 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_RENDERING_SCENEPICKINGHANDLER_H
-#define APPLESEED_STUDIO_MAINWINDOW_RENDERING_SCENEPICKINGHANDLER_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_RENDERING_PIXELCOLORTRACKER_H
+#define APPLESEED_STUDIO_MAINWINDOW_RENDERING_PIXELCOLORTRACKER_H
+
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
 
 // Qt headers.
 #include <QObject>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class ItemBase; } }
 namespace appleseed { namespace studio { class MouseCoordinatesTracker; } }
-namespace appleseed { namespace studio { class ProjectExplorer; } }
-namespace renderer  { class Entity; }
 namespace renderer  { class Project; }
-class QComboBox;
 class QEvent;
+class QLabel;
 class QPoint;
 class QWidget;
 
 namespace appleseed {
 namespace studio {
 
-class ScenePickingHandler
+class PixelColorTracker
   : public QObject
 {
     Q_OBJECT
 
   public:
-    ScenePickingHandler(
+    PixelColorTracker(
         QWidget*                            widget,
-        QComboBox*                          picking_mode_combo,
+        QLabel*                             r_label,
+        QLabel*                             g_label,
+        QLabel*                             b_label,
+        QLabel*                             a_label,
         const MouseCoordinatesTracker&      mouse_tracker,
-        const ProjectExplorer&              project_explorer,
         const renderer::Project&            project);
 
-    ~ScenePickingHandler();
+    ~PixelColorTracker();
 
     void set_enabled(const bool enabled);
 
-  signals:
-    void signal_entity_picked(const renderer::Entity* entity);
-
   private:
     QWidget*                                m_widget;
-    QComboBox*                              m_picking_mode_combo;
+    QLabel*                                 m_r_label;
+    QLabel*                                 m_g_label;
+    QLabel*                                 m_b_label;
+    QLabel*                                 m_a_label;
     const MouseCoordinatesTracker&          m_mouse_tracker;
-    const ProjectExplorer&                  m_project_explorer;
     const renderer::Project&                m_project;
     bool                                    m_enabled;
 
-    virtual bool eventFilter(QObject* object, QEvent* event);
+    virtual bool eventFilter(QObject* object, QEvent* event) APPLESEED_OVERRIDE;
 
-    ItemBase* pick(const QPoint& point);
+    void clear_rgba_labels() const;
+    void set_rgba_labels(const QPoint& point) const;
 };
 
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_RENDERING_SCENEPICKINGHANDLER_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_RENDERING_PIXELCOLORTRACKER_H

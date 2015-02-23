@@ -40,7 +40,6 @@
 #include "renderer/api/camera.h"
 #include "renderer/api/edf.h"
 #include "renderer/api/entity.h"
-#include "renderer/api/frame.h"
 #include "renderer/api/log.h"
 #include "renderer/api/material.h"
 #include "renderer/api/object.h"
@@ -50,14 +49,11 @@
 #include "renderer/api/surfaceshader.h"
 
 // appleseed.foundation headers.
-#include "foundation/image/color.h"
-#include "foundation/image/image.h"
 #include "foundation/math/vector.h"
 
 // Qt headers.
 #include <QComboBox>
 #include <QEvent>
-#include <QLabel>
 #include <QMenu>
 #include <QMouseEvent>
 #include <QString>
@@ -66,7 +62,6 @@
 
 // Standard headers.
 #include <cassert>
-#include <cstddef>
 #include <sstream>
 
 using namespace foundation;
@@ -79,19 +74,11 @@ namespace studio {
 ScenePickingHandler::ScenePickingHandler(
     QWidget*                        widget,
     QComboBox*                      picking_mode_combo,
-    QLabel*                         r_label,
-    QLabel*                         g_label,
-    QLabel*                         b_label,
-    QLabel*                         a_label,
     const MouseCoordinatesTracker&  mouse_tracker,
     const ProjectExplorer&          project_explorer,
     const Project&                  project)
   : m_widget(widget)
   , m_picking_mode_combo(picking_mode_combo)
-  , m_r_label(r_label)
-  , m_g_label(g_label)
-  , m_b_label(b_label)
-  , m_a_label(a_label)
   , m_mouse_tracker(mouse_tracker)
   , m_project_explorer(project_explorer)
   , m_project(project)
@@ -150,20 +137,6 @@ bool ScenePickingHandler::eventFilter(QObject* object, QEvent* event)
                 }
             }
         }
-        break;
-
-      case QEvent::MouseMove:
-        {
-            const QMouseEvent* mouse_event = static_cast<QMouseEvent*>(event);
-            set_rgba_label(mouse_event->pos());
-        }
-        break;
-
-      case QEvent::Leave:
-        m_r_label->clear();
-        m_g_label->clear();
-        m_b_label->clear();
-        m_a_label->clear();
         break;
     }
 
@@ -279,22 +252,6 @@ ItemBase* ScenePickingHandler::pick(const QPoint& point)
     emit signal_entity_picked(picked_entity);
 
     return item;
-}
-
-void ScenePickingHandler::set_rgba_label(const QPoint& point) const
-{
-    const Vector2i pixel = m_mouse_tracker.widget_to_pixel(point);
-
-    Color4f linear_rgba;
-    m_project.get_frame()->image().get_pixel(
-        static_cast<size_t>(pixel.x),
-        static_cast<size_t>(pixel.y),
-        linear_rgba);
-
-    m_r_label->setText(QString().sprintf("%4.3f", linear_rgba.r));
-    m_g_label->setText(QString().sprintf("%4.3f", linear_rgba.g));
-    m_b_label->setText(QString().sprintf("%4.3f", linear_rgba.b));
-    m_a_label->setText(QString().sprintf("%4.3f", linear_rgba.a));
 }
 
 }   // namespace studio

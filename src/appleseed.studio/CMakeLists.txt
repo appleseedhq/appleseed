@@ -211,6 +211,8 @@ set (mainwindow_rendering_sources
     mainwindow/rendering/cameracontroller.h
     mainwindow/rendering/frozendisplayrenderer.cpp
     mainwindow/rendering/frozendisplayrenderer.h
+    mainwindow/rendering/pixelcolortracker.cpp
+    mainwindow/rendering/pixelcolortracker.h
     mainwindow/rendering/pixelinspectorhandler.cpp
     mainwindow/rendering/pixelinspectorhandler.h
     mainwindow/rendering/qtrenderercontroller.cpp

@@ -31,6 +31,7 @@
 #define APPLESEED_STUDIO_MAINWINDOW_RENDERING_RENDERTAB_H
 
 // appleseed.studio headers.
+#include "mainwindow/rendering/pixelcolortracker.h"
 #include "mainwindow/rendering/pixelinspectorhandler.h"
 #include "mainwindow/rendering/renderclipboardhandler.h"
 #include "mainwindow/rendering/renderregionhandler.h"
@@ -137,10 +138,11 @@ class RenderTab
     std::auto_ptr<WidgetZoomHandler>        m_zoom_handler;
     std::auto_ptr<ScrollAreaPanHandler>     m_pan_handler;
     std::auto_ptr<MouseCoordinatesTracker>  m_mouse_tracker;
+    std::auto_ptr<PixelColorTracker>        m_pixel_color_tracker;
+    std::auto_ptr<PixelInspectorHandler>    m_pixel_inspector_handler;
     std::auto_ptr<ScenePickingHandler>      m_picking_handler;
     std::auto_ptr<RenderRegionHandler>      m_render_region_handler;
     std::auto_ptr<RenderClipboardHandler>   m_clipboard_handler;
-    std::auto_ptr<PixelInspectorHandler>    m_pixel_inspector_handler;
 
     void create_render_widget();
     void create_toolbar();
