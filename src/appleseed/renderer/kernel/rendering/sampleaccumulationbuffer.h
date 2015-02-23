@@ -58,7 +58,7 @@ class SampleAccumulationBuffer
     // Reset the buffer to its initial state. Thread-safe.
     virtual void clear() = 0;
 
-    // Store @samples into the buffer. Thread-safe.
+    // Store a set of samples into the buffer. Thread-safe.
     virtual void store_samples(
         const size_t        sample_count,
         const Sample        samples[]) = 0;

@@ -69,7 +69,7 @@ class SampleGeneratorBase
   protected:
     typedef std::vector<Sample> SampleVector;
 
-    // Generate one or multiple samples for a given sequence index and store them in @samples.
+    // Generate one or multiple samples for a given sequence index and store them in 'samples'.
     // Return the number of samples that were stored.
     virtual size_t generate_samples(
         const size_t                sequence_index,
