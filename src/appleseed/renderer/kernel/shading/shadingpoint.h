@@ -204,6 +204,8 @@ class ShadingPoint
     bool shade_alpha_cutouts() const;
 
 #ifdef APPLESEED_WITH_OSL
+    OSL::ShaderGlobals& get_osl_shader_globals() const;
+
     struct OSLObjectTransformInfo
     {
         bool is_animated() const;
@@ -229,8 +231,6 @@ class ShadingPoint
         float       m_u;
         float       m_v;
     };
-
-    OSL::ShaderGlobals& get_osl_shader_globals() const;
 #endif
 
   private:
@@ -346,10 +346,10 @@ class ShadingPoint
 
 #ifdef APPLESEED_WITH_OSL
     void initialize_osl_shader_globals(
-        const ShaderGroup&          sg,
-        const VisibilityFlags::Type ray_flags,
-        OSL::RendererServices*      renderer,
-        const float                 surface_area = 0.0f) const;
+        const ShaderGroup&              sg,
+        const VisibilityFlags::Type     ray_flags,
+        OSL::RendererServices*          renderer,
+        const float                     surface_area = 0.0f) const;
 #endif
 };
 
@@ -715,6 +715,13 @@ inline bool ShadingPoint::shade_alpha_cutouts() const
 {
     get_material();
     return m_shade_alpha_cutouts;
+}
+
+inline OSL::ShaderGlobals& ShadingPoint::get_osl_shader_globals() const
+{
+    assert(hit());
+    assert(m_members & HasOSLShaderGlobals);
+    return m_shader_globals;
 }
 
 inline void ShadingPoint::cache_source_geometry() const

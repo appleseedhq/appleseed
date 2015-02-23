@@ -604,57 +604,7 @@ void ShadingPoint::compute_alpha() const
     }
 }
 
-
 #ifdef APPLESEED_WITH_OSL
-
-//
-// ShadingPoint::OSLObjectTransformInfo class implementation.
-//
-
-bool ShadingPoint::OSLObjectTransformInfo::is_animated() const
-{
-    return !m_assembly_instance_transform->empty();
-}
-
-OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::get_transform() const
-{
-    assert(!is_animated());
-
-    const Transformd& assembly_xform = m_assembly_instance_transform->get_earliest_transform();
-    const Transformd::MatrixType m(
-        m_object_instance_transform->get_local_to_parent() * assembly_xform.get_local_to_parent());
-
-    return Matrix4f(m);
-}
-
-OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::get_transform(const float t) const
-{
-    const Transformd assembly_xform = m_assembly_instance_transform->evaluate(t);
-    const Transformd::MatrixType m(
-        m_object_instance_transform->get_local_to_parent() * assembly_xform.get_local_to_parent());
-
-    return Matrix4f(m);
-}
-
-OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::get_inverse_transform() const
-{
-    assert(!is_animated());
-
-    const Transformd& assembly_xform = m_assembly_instance_transform->get_earliest_transform();
-    const Transformd::MatrixType m(
-        m_object_instance_transform->get_parent_to_local() * assembly_xform.get_parent_to_local());
-
-    return Matrix4f(m);
-}
-
-OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::get_inverse_transform(const float t) const
-{
-    const Transformd assembly_xform = m_assembly_instance_transform->evaluate(t);
-    const Transformd::MatrixType m(
-        m_object_instance_transform->get_parent_to_local() * assembly_xform.get_parent_to_local());
-
-    return Matrix4f(m);
-}
 
 void ShadingPoint::initialize_osl_shader_globals(
     const ShaderGroup&          sg,
@@ -724,12 +674,58 @@ void ShadingPoint::initialize_osl_shader_globals(
     m_shader_globals.Ci = 0;
 }
 
-OSL::ShaderGlobals& ShadingPoint::get_osl_shader_globals() const
-{
-    assert(hit());
-    assert(m_members & HasOSLShaderGlobals);
+#endif
 
-    return m_shader_globals;
+
+#ifdef APPLESEED_WITH_OSL
+
+//
+// ShadingPoint::OSLObjectTransformInfo class implementation.
+//
+
+bool ShadingPoint::OSLObjectTransformInfo::is_animated() const
+{
+    return !m_assembly_instance_transform->empty();
+}
+
+OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::get_transform() const
+{
+    assert(!is_animated());
+
+    const Transformd& assembly_xform = m_assembly_instance_transform->get_earliest_transform();
+    const Transformd::MatrixType m(
+        m_object_instance_transform->get_local_to_parent() * assembly_xform.get_local_to_parent());
+
+    return Matrix4f(m);
+}
+
+OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::get_transform(const float t) const
+{
+    const Transformd assembly_xform = m_assembly_instance_transform->evaluate(t);
+    const Transformd::MatrixType m(
+        m_object_instance_transform->get_local_to_parent() * assembly_xform.get_local_to_parent());
+
+    return Matrix4f(m);
+}
+
+OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::get_inverse_transform() const
+{
+    assert(!is_animated());
+
+    const Transformd& assembly_xform = m_assembly_instance_transform->get_earliest_transform();
+    const Transformd::MatrixType m(
+        m_object_instance_transform->get_parent_to_local() * assembly_xform.get_parent_to_local());
+
+    return Matrix4f(m);
+}
+
+OSL::Matrix44 ShadingPoint::OSLObjectTransformInfo::get_inverse_transform(const float t) const
+{
+    const Transformd assembly_xform = m_assembly_instance_transform->evaluate(t);
+    const Transformd::MatrixType m(
+        m_object_instance_transform->get_parent_to_local() * assembly_xform.get_parent_to_local());
+
+    return Matrix4f(m);
 }
 
 #endif
