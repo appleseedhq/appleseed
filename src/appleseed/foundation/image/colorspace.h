@@ -295,6 +295,15 @@ inline __m128 fast_linear_rgb_to_srgb(const __m128 linear_rgb);
 Color3f fast_linear_rgb_to_srgb(const Color3f& linear_rgb);
 Color3f fast_srgb_to_linear_rgb(const Color3f& srgb);
 
+// Variants of the above functions using an even faster approximation of the power function.
+float faster_linear_rgb_to_srgb(const float c);
+float faster_srgb_to_linear_rgb(const float c);
+#ifdef APPLESEED_USE_SSE
+inline __m128 faster_linear_rgb_to_srgb(const __m128 linear_rgb);
+#endif
+Color3f faster_linear_rgb_to_srgb(const Color3f& linear_rgb);
+Color3f faster_srgb_to_linear_rgb(const Color3f& srgb);
+
 
 //
 // Compute the relative luminance of a linear RGB triplet as defined
@@ -681,7 +690,7 @@ inline __m128 fast_linear_rgb_to_srgb(const __m128 linear_rgb)
     const __m128 a = _mm_mul_ps(_mm_set1_ps(12.92f), linear_rgb);
     const __m128 b = _mm_sub_ps(_mm_mul_ps(_mm_set1_ps(1.055f), y), _mm_set1_ps(0.055f));
 
-    // Interleave them based on the actual comparison.
+    // Interleave them based on the comparison result.
     const __m128 mask = _mm_cmple_ps(linear_rgb, _mm_set1_ps(0.0031308f));
     return _mm_add_ps(_mm_and_ps(mask, a), _mm_andnot_ps(mask, b));
 }
@@ -719,6 +728,71 @@ inline Color3f fast_srgb_to_linear_rgb(const Color3f& srgb)
         fast_srgb_to_linear_rgb(srgb[0]),
         fast_srgb_to_linear_rgb(srgb[1]),
         fast_srgb_to_linear_rgb(srgb[2]));
+}
+
+inline float faster_linear_rgb_to_srgb(const float c)
+{
+    return c <= 0.0031308f
+        ? 12.92f * c
+        : 1.055f * faster_pow(c, 1.0f / 2.4f) - 0.055f;
+}
+
+inline float faster_srgb_to_linear_rgb(const float c)
+{
+    return c <= 0.04045f
+        ? (1.0f / 12.92f) * c
+        : faster_pow((c + 0.055f) * (1.0f / 1.055f), 2.4f);
+}
+
+#ifdef APPLESEED_USE_SSE
+
+inline __m128 faster_linear_rgb_to_srgb(const __m128 linear_rgb)
+{
+    // Apply 2.4 gamma correction.
+    const __m128 y = faster_pow(linear_rgb, _mm_set1_ps(1.0f / 2.4f));
+
+    // Compute both outcomes of the branch.
+    const __m128 a = _mm_mul_ps(_mm_set1_ps(12.92f), linear_rgb);
+    const __m128 b = _mm_sub_ps(_mm_mul_ps(_mm_set1_ps(1.055f), y), _mm_set1_ps(0.055f));
+
+    // Interleave them based on the comparison result.
+    const __m128 mask = _mm_cmple_ps(linear_rgb, _mm_set1_ps(0.0031308f));
+    return _mm_add_ps(_mm_and_ps(mask, a), _mm_andnot_ps(mask, b));
+}
+
+inline Color3f faster_linear_rgb_to_srgb(const Color3f& linear_rgb)
+{
+    SSE_ALIGN float transfer[4] =
+    {
+        linear_rgb[0],
+        linear_rgb[1],
+        linear_rgb[2],
+        linear_rgb[2]
+    };
+
+    _mm_store_ps(transfer, faster_linear_rgb_to_srgb(_mm_load_ps(transfer)));
+
+    return Color3f(transfer[0], transfer[1], transfer[2]);
+}
+
+#else
+
+inline Color3f faster_linear_rgb_to_srgb(const Color3f& linear_rgb)
+{
+    return Color3f(
+        faster_linear_rgb_to_srgb(linear_rgb[0]),
+        faster_linear_rgb_to_srgb(linear_rgb[1]),
+        faster_linear_rgb_to_srgb(linear_rgb[2]));
+}
+
+#endif  // APPLESEED_USE_SSE
+
+inline Color3f faster_srgb_to_linear_rgb(const Color3f& srgb)
+{
+    return Color3f(
+        faster_srgb_to_linear_rgb(srgb[0]),
+        faster_srgb_to_linear_rgb(srgb[1]),
+        faster_srgb_to_linear_rgb(srgb[2]));
 }
 
 
