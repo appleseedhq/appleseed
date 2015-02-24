@@ -27,6 +27,7 @@
 # THE SOFTWARE.
 #
 
+from __future__ import division
 from __future__ import print_function
 import argparse
 import datetime
@@ -86,7 +87,14 @@ def read_png_file(filepath):
     rows = data[2]
     return width, height, rows
 
+def write_rgba_png_file(filepath, rows):
+    width = len(rows[0]) / 4
+    height = len(rows)
+    writer = png.Writer(width=width, height=height, alpha=True)
+    with open(filepath, 'wb') as file:
+        writer.write(file, rows)
 
+    
 #--------------------------------------------------------------------------------------------------
 # Utility class to log progress.
 #--------------------------------------------------------------------------------------------------
@@ -131,12 +139,12 @@ class ReportWriter:
         self.__write_footer()
         self.file.close()
 
-    def report_failure(self, scene, reference_filepath, output_filepath, log_filepath, error_message, max_diff=None, num_diff=None, num_comps=None):
+    def report_failure(self, scene, reference_filepath, output_filepath, log_filepath, error_message, num_diff=None, max_diff=None, num_comps=None, diff_filepath=None):
         self.failures += 1
         self.file.write("""            <div class="result">
                 <table>
                     <tr>
-                        <td class="title" colspan="2">{0}</td>
+                        <td class="title" colspan="3">{0}</td>
                     </tr>
                     <tr>
                         <td class="reference">
@@ -146,23 +154,29 @@ class ReportWriter:
                         </td>
                         <td class="output">
                             <a href="{2}">
-                                <img src="{2}" alt="Output Image" title="Output Image">
+                                <img src="{2}" alt="Difference Image" title="Difference Image">
+                            </a>
+                        </td>
+                        <td class="diff">
+                            <a href="{3}">
+                                <img src="{3}" alt="Output Image" title="Output Image">
                             </a>
                         </td>
                     </tr>
                     <tr>
-                        <td colspan="2">
+                        <td colspan="3">
                             <table class="details">
                                 <tr>
                                     <td>Reason</td>
-                                    <td>{3}</td>
+                                    <td>{4}</td>
                                 </tr>
                                 <tr>
                                     <td>Log File</td>
-                                    <td><a href="{4}">{5}</a></td>
+                                    <td><a href="{5}">{6}</a></td>
                                 </tr>
 """.format(scene,
            urllib.quote(reference_filepath),
+           urllib.quote(diff_filepath) if diff_filepath is not None else "",
            urllib.quote(output_filepath),
            error_message,
            urllib.quote(log_filepath),
@@ -171,7 +185,7 @@ class ReportWriter:
         if max_diff is not None and num_diff is not None:
             diff_percents = 100.0 * num_diff / num_comps
             self.file.write("""                                <tr>
-                                    <td>Maximum Absolute Component Difference</td>
+                                    <td>Maximum Absolute Component Difference (as an 8-bit integer)</td>
                                     <td>{0}</td>
                                 </tr>
                                 <tr>
@@ -225,7 +239,7 @@ class ReportWriter:
 
             .result
             {{
-                margin-bottom: 60px;
+                margin-bottom: 100px;
             }}
 
             .result .title
@@ -237,13 +251,13 @@ class ReportWriter:
             }}
 
             .result .reference,
-            .result .output
+            .result .output,
+            .result .diff
             {{
                 width: 510px;
             }}
 
-            .result .reference img,
-            .result .output img
+            .result img
             {{
                 max-width: 500px;
                 border: 1px solid #ddd;
@@ -317,21 +331,70 @@ def render_project_file(args, project_filepath, output_filepath, log_filepath):
 
 #--------------------------------------------------------------------------------------------------
 # Compare two images.
-# Returns a pair num_diff, max_diff where:
+# Returns a (num_diff, max_diff, diff_image) where:
 #   num_diff is the number of components whose absolute difference is larger than value_threshold
 #   max_diff is the maximum absolute difference between two components
+#   diff_image is the difference between the two images
 #--------------------------------------------------------------------------------------------------
 
 def compare_images(rows1, rows2, value_threshold):
     num_diff = 0
     max_diff = 0
+    diff_image = []
 
     for row1, row2 in zip(rows1, rows2):
-        diff = [ abs(val1 - val2) for val1, val2 in zip(row1, row2) ]
-        num_diff += sum(d > value_threshold for d in diff)
-        max_diff = max(max_diff, max(diff))
+        diff_row = [ abs(val1 - val2) for val1, val2 in zip(row1, row2) ]
+        num_diff += sum(d > value_threshold for d in diff_row)
+        max_diff = max(max_diff, max(diff_row))
+        diff_image.append(diff_row)
 
-    return num_diff, max_diff
+    return num_diff, max_diff, diff_image
+
+def fit(x, min_x, max_x, min_y, max_y):
+    assert min_x != max_x
+    k = (x - min_x) / (max_x - min_x)
+    return min_y * (1 - k) + max_y * k
+
+def transform_to_false_color(rows):
+    image_min = 255
+    image_max = 0
+
+    for row in rows:
+        for i in range(0, len(row) - 1, 4):
+            r = row[i + 0]
+            g = row[i + 1]
+            b = row[i + 2]
+            a = row[i + 3]
+
+            m = max(r, g, b, a)
+
+            image_min = min(image_min, m)
+            image_max = max(image_max, m)
+
+    assert image_min <= image_max
+
+    for row in rows:
+        for i in range(0, len(row) - 1, 4):
+            r = row[i + 0]
+            g = row[i + 1]
+            b = row[i + 2]
+            a = row[i + 3]
+
+            m = max(r, g, b, a)
+            
+            if m == 0:
+                row[i + 0] = 0
+                row[i + 1] = 0
+                row[i + 2] = 0
+                row[i + 3] = 255
+                continue
+
+            fm = int(fit(m, image_min, image_max, 0, 255))
+
+            row[i + 0] = fm
+            row[i + 1] = 0
+            row[i + 2] = 255 - fm
+            row[i + 3] = 255
 
 
 #--------------------------------------------------------------------------------------------------
@@ -397,14 +460,19 @@ def render_test_scene(args, logger, report_writer, project_directory, project_fi
                                      "Output and reference images have different sizes")
         return False
 
-    num_diff, max_diff = compare_images(out_rows, ref_rows, VALUE_THRESHOLD)
+    num_diff, max_diff, diff_image = compare_images(out_rows, ref_rows, VALUE_THRESHOLD)
 
     if num_diff > MAX_DIFFERING_COMPONENTS:
+        diff_filename = project_basename + '.diff.png'
+        diff_filepath = os.path.join(output_directory, diff_filename)
+        transform_to_false_color(diff_image)
+        write_rgba_png_file(diff_filepath, diff_image)
+
         num_comps = ref_width * ref_height * 4
         logger.fail_rendering(rendering_time, "DIFFERENCES")
         report_writer.report_failure(project_filepath, ref_filepath, output_filepath, log_filepath,
                                      "Output and reference images are significantly different",
-                                     max_diff, num_diff, num_comps)
+                                     num_diff, max_diff, num_comps, diff_filepath)
         return False
 
     logger.pass_rendering(rendering_time)
