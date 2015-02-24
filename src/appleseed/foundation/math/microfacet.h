@@ -122,13 +122,13 @@ class MDF
         const T              alpha_y) const
     {
         // Preconditions.
+        assert(is_normalized(v));
         assert(s[0] >= T(0.0));
         assert(s[0] <  T(1.0));
         assert(s[1] >= T(0.0));
         assert(s[1] <  T(1.0));
         assert(s[2] >= T(0.0));
         assert(s[2] <  T(1.0));
-        assert(is_normalized(v));
         assert(alpha_x > T(0.0));
         assert(alpha_y > T(0.0));
 
@@ -323,7 +323,7 @@ class MDF
             sin_phi * slope[0] + cos_phi * slope[1]);
 
         // Stretch and normalize.
-        Vector<T, 3> m(
+        const Vector<T, 3> m(
             -slope[0] * alpha_x,
             T(1.0),
             -slope[1] * alpha_y);
@@ -642,7 +642,7 @@ class BeckmannMDF
             inv_erf = erf_inv(b);
             value = T(1.0) + b + K * std::exp(-square(inv_erf)) - y_exact;
             b -= value / (T(1.0) - inv_erf * tan_theta); // newton step 2
-            // Compute the slope from the refined value
+            // Compute the slope from the refined value.
             slope[0] = erf_inv(b);
         }
         else
@@ -714,11 +714,12 @@ class GGXMDF
         const T cos_theta_4 = square(cos_theta_2);
         const T tan_theta_2 = (T(1.0) - cos_theta_2) / cos_theta_2;
 
-        const T A = MDF<T>::stretched_roughness(
-            h,
-            MDF<T>::sin_theta(h),
-            alpha_x,
-            alpha_y);
+        const T A =
+            MDF<T>::stretched_roughness(
+                h,
+                MDF<T>::sin_theta(h),
+                alpha_x,
+                alpha_y);
 
         const T tmp = T(1.0) + tan_theta_2 * A;
         return T(1.0) / (T(Pi) * alpha_x * alpha_y * cos_theta_4 * square(tmp));
@@ -806,7 +807,7 @@ class GGXMDF
         const T sin_theta = std::sqrt(T(1.0) - square(cos_theta));
 
         // Special case (normal incidence).
-        if (sin_theta < T(1e-4))
+        if (sin_theta < T(1.0e-4))
         {
             const T r = std::sqrt(s[0] / (T(1.0) - s[0]));
             const T cos_phi = std::cos(TwoPi * s[1]);
