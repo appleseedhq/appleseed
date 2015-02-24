@@ -51,7 +51,7 @@ OIIOComponents::OIIOComponents(
     const Project&      project,
     const ParamArray&   params)
 {
-    m_texture_system = OIIO::TextureSystem::create();
+    m_texture_system = OIIO::TextureSystem::create(false);
 
     const size_t texture_cache_size =
         params.get_optional<size_t>("max_size",  256 * 1024 * 1024);
