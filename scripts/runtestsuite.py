@@ -45,8 +45,8 @@ import urllib
 DEFAULT_TOOL_FILEPATH = "..\\sandbox\\bin\\Release\\appleseed.cli.exe" if os.name == "nt" else \
                         "../sandbox/bin/Release/appleseed.cli"
 
-VALUE_THRESHOLD = 0             # max absolute difference between two pixel components in [0, 255]
-MAX_DIFFERING_COMPONENTS = 0    # max number of pixel components that differ significantly
+VALUE_THRESHOLD = 2                 # max allowed absolute diff between two pixel components, in [0, 255]
+MAX_DIFFERING_COMPONENTS = 4 * 2    # max number of pixel components that are allowed to differ significantly
 
 
 #--------------------------------------------------------------------------------------------------
