@@ -336,7 +336,7 @@ namespace
 
                     if (sample_count == 0)
                     {
-                        sleep(5);
+                        foundation::sleep(5);   // namespace qualifier required
                         continue;
                     }
 
@@ -423,7 +423,7 @@ namespace
                             record_and_print_convergence_stats();
                     }
 
-                    sleep(5);
+                    foundation::sleep(5);   // namespace qualifier required
                 }
             }
 
