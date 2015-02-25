@@ -37,9 +37,7 @@
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer  { class Frame; }
 namespace renderer  { class ISampleGenerator; }
-namespace renderer  { class ITileCallback; }
 namespace renderer  { class SampleAccumulationBuffer; }
 namespace renderer  { class SampleCounter; }
 
@@ -52,11 +50,9 @@ class SampleGeneratorJob
   public:
     // Constructor.
     SampleGeneratorJob(
-        Frame&                      frame,
         SampleAccumulationBuffer&   buffer,
         ISampleGenerator*           sample_generator,
         SampleCounter&              sample_counter,
-        ITileCallback*              tile_callback,
         foundation::JobQueue&       job_queue,
         const size_t                job_index,
         const size_t                job_count,
@@ -67,11 +63,9 @@ class SampleGeneratorJob
     virtual void execute(const size_t thread_index);
 
   private:
-    Frame&                          m_frame;
     SampleAccumulationBuffer&       m_buffer;
     ISampleGenerator*               m_sample_generator;
     SampleCounter&                  m_sample_counter;
-    ITileCallback*                  m_tile_callback;
     foundation::JobQueue&           m_job_queue;
     const size_t                    m_job_index;
     const size_t                    m_job_count;

@@ -209,9 +209,6 @@ void RenderingManager::start_rendering(
         new MasterRendererThread(m_master_renderer.get()));
 
     m_master_renderer_thread->start();
-
-    // todo: refactor.
-    QThread::currentThread()->setPriority(QThread::TimeCriticalPriority);
 }
 
 bool RenderingManager::is_rendering() const
@@ -355,7 +352,7 @@ void RenderingManager::slot_rendering_begin()
 
     m_rendering_timer.clear();
 
-    const int IdleUpdateRate = 15;  // hertz
+    const int IdleUpdateRate = 30;  // hertz
     m_render_widget_update_timer.start(1000 / IdleUpdateRate, this);
 
     m_allow_camera_changes = true;

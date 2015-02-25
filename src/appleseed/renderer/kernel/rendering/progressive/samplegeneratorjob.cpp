@@ -31,15 +31,15 @@
 #include "samplegeneratorjob.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
 #include "renderer/kernel/rendering/progressive/samplecounter.h"
 #include "renderer/kernel/rendering/isamplegenerator.h"
-#include "renderer/kernel/rendering/itilecallback.h"
 #include "renderer/kernel/rendering/sampleaccumulationbuffer.h"
-#include "renderer/modeling/frame/frame.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
+#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <algorithm>
@@ -54,39 +54,18 @@ namespace renderer
 // SampleGeneratorJob class implementation.
 //
 
-namespace
-{
-    const size_t MinSamplePassCount = 1;            // number of passes that will stick to MinSampleCount
-    const size_t MinSampleCount     = 1024 * 2;     // minimum number of samples in one pass
-    const size_t MaxSampleCount     = 1024 * 256;   // maximum number of samples in one pass
-    const size_t SampleIncrement    = 1024 * 4;     // number of samples added at each pass
-
-    size_t compute_sample_count(const size_t pass)
-    {
-        return
-            pass < MinSamplePassCount ? MinSampleCount :
-            min(
-                MinSampleCount + (pass - MinSamplePassCount + 1) * SampleIncrement,
-                MaxSampleCount);
-    }
-}
-
 SampleGeneratorJob::SampleGeneratorJob(
-    Frame&                      frame,
     SampleAccumulationBuffer&   buffer,
     ISampleGenerator*           sample_generator,
     SampleCounter&              sample_counter,
-    ITileCallback*              tile_callback,
     JobQueue&                   job_queue,
     const size_t                job_index,
     const size_t                job_count,
     const size_t                pass,
     IAbortSwitch&               abort_switch)
-  : m_frame(frame)
-  , m_buffer(buffer)
+  : m_buffer(buffer)
   , m_sample_generator(sample_generator)
   , m_sample_counter(sample_counter)
-  , m_tile_callback(tile_callback)
   , m_job_queue(job_queue)
   , m_job_index(job_index)
   , m_job_count(job_count)
@@ -95,56 +74,73 @@ SampleGeneratorJob::SampleGeneratorJob(
 {
 }
 
+//#define PRINT_DETAILED_PROGRESS
+
 void SampleGeneratorJob::execute(const size_t thread_index)
 {
-    const size_t sample_count =
-        m_sample_counter.reserve(compute_sample_count(m_pass));
+    const uint64 MinStoredSamples = 8192;
 
-    if (sample_count == 0)
-        return;
-
-    // Invoke the pre-pass callback if there is one.
-    if (m_tile_callback)
+    if (m_sample_counter.read() < MinStoredSamples)
     {
-        const CanvasProperties& props = m_frame.image().properties();
-        m_tile_callback->pre_render(
-            0,
-            0,
-            props.m_canvas_width,
-            props.m_canvas_height);
-    }
+        // Reserve a number of samples to be rendered by this job.
+        const size_t DesiredSampleCount = 1024;
+        const size_t acquired_sample_count = m_sample_counter.reserve(DesiredSampleCount);
 
-    if (m_pass == 0)
-    {
+        // Terminate this job is there are no more samples to render.
+        if (acquired_sample_count == 0)
+            return;
+
+#ifdef PRINT_DETAILED_PROGRESS
+        RENDERER_LOG_DEBUG(
+            "job " FMT_SIZE_T ", pass " FMT_SIZE_T ", rendering " FMT_SIZE_T " samples, non-abortable",
+            m_job_index,
+            m_pass,
+            acquired_sample_count);
+#endif
+
         // The first pass is uninterruptible in order to always get something
         // on screen during navigation. todo: this needs to change as it will
         // freeze rendering if the first pass cannot generate samples.
         AbortSwitch no_abort;
-        m_sample_generator->generate_samples(sample_count, m_buffer, no_abort);
+        m_sample_generator->generate_samples(
+            acquired_sample_count,
+            m_buffer,
+            no_abort);
     }
     else
     {
-        m_sample_generator->generate_samples(sample_count, m_buffer, m_abort_switch);
+        // Reserve a number of samples to be rendered by this job.
+        const size_t MaxSamplesPerPass = 256 * 1024;
+        const size_t desired_sample_count = min((m_pass + 1) * 8192, MaxSamplesPerPass);
+        const size_t acquired_sample_count = m_sample_counter.reserve(desired_sample_count);
+
+        // Terminate this job is there are no more samples to render.
+        if (acquired_sample_count == 0)
+            return;
+
+#ifdef PRINT_DETAILED_PROGRESS
+        RENDERER_LOG_DEBUG(
+            "job " FMT_SIZE_T ", pass " FMT_SIZE_T ", rendering " FMT_SIZE_T " samples",
+            m_job_index,
+            m_pass,
+            acquired_sample_count);
+#endif
+
+        // Render the samples and store them into the accumulation buffer.
+        m_sample_generator->generate_samples(
+            acquired_sample_count,
+            m_buffer,
+            m_abort_switch);
     }
 
-    if (m_job_index == 0)
-    {
-        m_buffer.develop_to_frame(m_frame);
-
-        if (m_tile_callback)
-            m_tile_callback->post_render(&m_frame);
-    }
-
-    // This job reschedules itself automatically.
+    // Reschedule this job.
     if (!m_abort_switch.is_aborted())
     {
         m_job_queue.schedule(
             new SampleGeneratorJob(
-                m_frame,
                 m_buffer,
                 m_sample_generator,
                 m_sample_counter,
-                m_tile_callback,
                 m_job_queue,
                 m_job_index,
                 m_job_count,

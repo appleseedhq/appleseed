@@ -51,7 +51,7 @@
 #include "foundation/math/aabb.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/compiler.h"
+#include "foundation/platform/defaulttimers.h"
 #include "foundation/platform/thread.h"
 #include "foundation/platform/timers.h"
 #include "foundation/platform/types.h"
@@ -60,6 +60,7 @@
 #include "foundation/utility/job.h"
 #include "foundation/utility/searchpaths.h"
 #include "foundation/utility/statistics.h"
+#include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
@@ -123,12 +124,9 @@ namespace
                     generator_factory->create(i, m_params.m_thread_count));
             }
 
-            // Instantiate tile callbacks, one per rendering thread.
+            // Instantiate a single tile callback.
             if (callback_factory)
-            {
-                for (size_t i = 0; i < m_params.m_thread_count; ++i)
-                    m_tile_callbacks.push_back(callback_factory->create());
-            }
+                m_tile_callback.reset(callback_factory->create());
 
             // Load the reference image if one is specified.
             if (!m_params.m_ref_image_path.empty())
@@ -164,16 +162,15 @@ namespace
 
         virtual ~ProgressiveFrameRenderer()
         {
-            // Tell the statistics printing thread to stop.
+            // Tell the statistics thread to stop.
             m_abort_switch.abort();
 
-            // Wait until the statistics printing thread is terminated.
+            // Wait until the statistics thread is terminated.
             if (m_statistics_thread.get() && m_statistics_thread->joinable())
                 m_statistics_thread->join();
 
-            // Delete tile callbacks.
-            for (const_each<TileCallbackVector> i = m_tile_callbacks; i; ++i)
-                (*i)->release();
+            // Delete the tile callback.
+            m_tile_callback.reset();
 
             // Delete sample generators.
             for (const_each<SampleGeneratorVector> i = m_sample_generators; i; ++i)
@@ -205,16 +202,17 @@ namespace
             for (size_t i = 0; i < m_sample_generators.size(); ++i)
                 m_sample_generators[i]->reset();
 
+            // Start job execution.
+            m_job_manager->start();
+
             // Schedule the first batch of jobs.
             for (size_t i = 0; i < m_sample_generators.size(); ++i)
             {
                 m_job_queue.schedule(
                     new SampleGeneratorJob(
-                        m_frame,
                         *m_buffer.get(),
                         m_sample_generators[i],
                         m_sample_counter,
-                        m_tile_callbacks.empty() ? 0 : m_tile_callbacks[i],
                         m_job_queue,
                         i,                              // job index
                         m_sample_generators.size(),     // job count
@@ -222,10 +220,7 @@ namespace
                         m_abort_switch));
             }
 
-            // Start job execution.
-            m_job_manager->start();
-
-            // Create and start the statistics printing thread.
+            // Create and start the statistics thread.
             m_statistics_func.reset(
                 new StatisticsFunc(
                     m_frame,
@@ -234,8 +229,23 @@ namespace
                     m_ref_image.get(),
                     m_ref_image_avg_lum,
                     m_abort_switch));
-            ThreadFunctionWrapper<StatisticsFunc> wrapper(m_statistics_func.get());
-            m_statistics_thread.reset(new thread(wrapper));
+            m_statistics_thread.reset(
+                new thread(
+                    ThreadFunctionWrapper<StatisticsFunc>(m_statistics_func.get())));
+
+            // Create and start the display thread.
+            if (m_display_thread.get() == 0)
+            {
+                m_display_func.reset(
+                    new DisplayFunc(
+                        m_frame,
+                        *m_buffer.get(),
+                        m_tile_callback.get() ? m_tile_callback.get() : 0,
+                        m_display_thread_abort_switch));
+                m_display_thread.reset(
+                    new thread(
+                        ThreadFunctionWrapper<DisplayFunc>(m_display_func.get())));
+            }
         }
 
         virtual void stop_rendering() APPLESEED_OVERRIDE
@@ -243,14 +253,14 @@ namespace
             // First, delete scheduled jobs to prevent worker threads from picking them up.
             m_job_queue.clear_scheduled_jobs();
 
-            // Tell rendering jobs and the statistics printing thread to stop.
+            // Tell rendering jobs and the statistics thread to stop.
             m_abort_switch.abort();
-
-            // Wait until the statistics printing thread has stopped.
-            m_statistics_thread->join();
 
             // Wait until rendering jobs have effectively stopped.
             m_job_queue.wait_until_completion();
+
+            // Wait until the statistics thread has stopped.
+            m_statistics_thread->join();
         }
 
         virtual void terminate_rendering() APPLESEED_OVERRIDE
@@ -259,9 +269,18 @@ namespace
 
             m_job_manager->stop();
 
-            m_statistics_func->write_rms_deviation_file();
-
             print_sample_generators_stats();
+
+            // The statistics thread has already been joined in stop_rendering().
+            m_statistics_thread.reset();
+            m_statistics_func->write_rms_deviation_file();
+            m_statistics_func.reset();
+
+            // Join and delete the display thread.
+            m_display_thread_abort_switch.abort();
+            m_display_thread->join();
+            m_display_thread.reset();
+            m_display_func.reset();
         }
 
         virtual bool is_rendering() const APPLESEED_OVERRIDE
@@ -284,6 +303,82 @@ namespace
               , m_ref_image_path(params.get_optional<string>("reference_image", ""))
             {
             }
+        };
+
+//#define PRINT_DISPLAY_THREAD_PERFS
+
+        class DisplayFunc
+          : public NonCopyable
+        {
+          public:
+            DisplayFunc(
+                Frame&                      frame,
+                SampleAccumulationBuffer&   buffer,
+                ITileCallback*              tile_callback,
+                foundation::IAbortSwitch&   abort_switch)
+              : m_frame(frame)
+              , m_buffer(buffer)
+              , m_tile_callback(tile_callback)
+              , m_abort_switch(abort_switch)
+            {
+            }
+
+            void operator()()
+            {
+#ifdef PRINT_DISPLAY_THREAD_PERFS
+                Stopwatch<DefaultWallclockTimer> stopwatch;
+                stopwatch.start();
+#endif
+
+                while (!m_abort_switch.is_aborted())
+                {
+                    const size_t sample_count = m_buffer.get_sample_count();
+
+                    if (sample_count == 0)
+                    {
+                        sleep(5);
+                        continue;
+                    }
+
+#ifdef PRINT_DISPLAY_THREAD_PERFS
+                    stopwatch.measure();
+                    const double t1 = stopwatch.get_seconds();
+#endif
+
+                    m_buffer.develop_to_frame(m_frame);
+
+#ifdef PRINT_DISPLAY_THREAD_PERFS
+                    stopwatch.measure();
+                    const double t2 = stopwatch.get_seconds();
+#endif
+
+                    if (m_tile_callback)
+                    {
+                        m_tile_callback->post_render(&m_frame);
+
+#ifdef PRINT_DISPLAY_THREAD_PERFS
+                        stopwatch.measure();
+                        const double t3 = stopwatch.get_seconds();
+
+                        RENDERER_LOG_DEBUG(
+                            "display thread:\n"
+                            "  buffer to frame     : %s\n"
+                            "  frame to widget     : %s\n"
+                            "  total               : %s (%s fps)",
+                            pretty_time(t2 - t1).c_str(),
+                            pretty_time(t3 - t2).c_str(),
+                            pretty_time(t3 - t1).c_str(),
+                            pretty_ratio(1.0, t3 - t2).c_str());
+#endif
+                    }
+                }
+            }
+
+          private:
+            Frame&                          m_frame;
+            SampleAccumulationBuffer&       m_buffer;
+            ITileCallback*                  m_tile_callback;
+            foundation::IAbortSwitch&       m_abort_switch;
         };
 
         class StatisticsFunc
@@ -328,7 +423,7 @@ namespace
                             record_and_print_convergence_stats();
                     }
 
-                    foundation::sleep(5);   // needs full qualification
+                    sleep(5);
                 }
             }
 
@@ -427,10 +522,14 @@ namespace
         AbortSwitch                         m_abort_switch;
 
         SampleGeneratorVector               m_sample_generators;
-        TileCallbackVector                  m_tile_callbacks;
+        auto_release_ptr<ITileCallback>     m_tile_callback;
 
         auto_ptr<Image>                     m_ref_image;
         double                              m_ref_image_avg_lum;
+
+        auto_ptr<DisplayFunc>               m_display_func;
+        auto_ptr<thread>                    m_display_thread;
+        AbortSwitch                         m_display_thread_abort_switch;
 
         auto_ptr<StatisticsFunc>            m_statistics_func;
         auto_ptr<thread>                    m_statistics_thread;
