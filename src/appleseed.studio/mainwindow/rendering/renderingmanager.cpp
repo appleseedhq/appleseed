@@ -195,7 +195,6 @@ void RenderingManager::start_rendering(
     m_tile_callback_factory.reset(
         new QtTileCallbackFactory(
             m_render_tab->get_render_widget(),
-            !interactive,
             m_tile_callbacks_enabled));
 
     m_master_renderer.reset(
