@@ -284,11 +284,11 @@ class MDF
         const T dot_vh  = std::max(dot(v, h), T(0.0));
         const T dot_vhm = std::max(dot(v, hm), T(0.0));
 
-        if (dot_vh == T(0.0))
-            return hm;
+        if (dot_vhm == T(0.0))
+            return h;
 
-        const T w = dot_vh / (dot_vh + dot_vhm);
-        return s < w ? h : hm;
+        const T w = dot_vhm / (dot_vh + dot_vhm);
+        return s < w ? hm : h;
     }
 
     template <typename Distribution>
