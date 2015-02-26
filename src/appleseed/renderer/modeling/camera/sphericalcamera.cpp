@@ -107,6 +107,7 @@ namespace
         virtual void generate_ray(
             SamplingContext&        sampling_context,
             const Vector2d&         point,
+            const Vector2d*         point_differential,
             ShadingRay&             ray) const APPLESEED_OVERRIDE
         {
             // Initialize the ray.
@@ -124,6 +125,18 @@ namespace
 
             // Compute the direction of the ray.
             ray.m_dir = transform.vector_to_parent(ndc_to_camera(point));
+
+            if (point_differential)
+            {
+                ray.m_has_differentials = true;
+                ray.m_rx.m_org = ray.m_org;
+                const Vector2d px(point.x + point_differential->x, point.y);
+                ray.m_rx.m_dir = transform.vector_to_parent(ndc_to_camera(px));
+
+                ray.m_ry.m_org = ray.m_org;
+                const Vector2d py(point.x, point.y + point_differential->y);
+                ray.m_ry.m_dir = transform.vector_to_parent(ndc_to_camera(py));
+            }
         }
 
         virtual bool project_camera_space_point(

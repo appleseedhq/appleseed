@@ -55,6 +55,7 @@
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
+#include "foundation/image/image.h"
 #include "foundation/image/regularspectrum.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
@@ -140,6 +141,10 @@ namespace
                 m_params.m_max_iterations)
           , m_shading_engine(shading_engine)
         {
+            // 1/4 of a pixel, like in prman RIS.
+            const CanvasProperties& c = frame.image().properties();
+            m_differentials_offset.x = 1.0 / (4.0 * c.m_canvas_width);
+            m_differentials_offset.y = 1.0 / (4.0 * c.m_canvas_height);
         }
 
         ~GenericSampleRenderer()
@@ -170,6 +175,7 @@ namespace
             m_scene.get_camera()->generate_ray(
                 sampling_context,
                 image_point,
+                &m_differentials_offset,
                 primary_ray);
 
             ShadingPoint shading_points[2];
@@ -319,6 +325,7 @@ namespace
         ILightingEngine*            m_lighting_engine;
         const ShadingContext        m_shading_context;
         ShadingEngine&              m_shading_engine;
+        Vector2d                    m_differentials_offset;
     };
 }
 

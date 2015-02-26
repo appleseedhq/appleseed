@@ -233,6 +233,7 @@ namespace
         virtual void generate_ray(
             SamplingContext&        sampling_context,
             const Vector2d&         point,
+            const Vector2d*         point_differential,
             ShadingRay&             ray) const APPLESEED_OVERRIDE
         {
             // Initialize the ray.
@@ -293,11 +294,20 @@ namespace
             if (w != 1.0)
                 ray.m_org /= w;
 
-            // Compute the direction of the ray.
-            ray.m_dir.x = (point.x - 0.5) * m_kx - lens_point.x;
-            ray.m_dir.y = (0.5 - point.y) * m_ky - lens_point.y;
-            ray.m_dir.z = -m_focal_distance;
-            ray.m_dir = transform.vector_to_parent(ray.m_dir);
+            ray.m_dir = ray_direction(point, lens_point, transform);
+
+            if (point_differential)
+            {
+                ray.m_has_differentials = true;
+
+                ray.m_rx.m_org = ray.m_org;
+                const Vector2d px(point.x + point_differential->x, point.y);
+                ray.m_rx.m_dir = ray_direction(px, lens_point, transform);
+
+                ray.m_ry.m_org = ray.m_org;
+                const Vector2d py(point.x, point.y + point_differential->y);
+                ray.m_ry.m_dir = ray_direction(py, lens_point, transform);
+            }
         }
 
         virtual bool project_camera_space_point(
@@ -521,6 +531,19 @@ namespace
                     (point.x - 0.5) * m_film_dimensions[0],
                     (0.5 - point.y) * m_film_dimensions[1],
                     -m_focal_length);
+        }
+
+        Vector3d ray_direction(
+            const Vector2d&     point,
+            const Vector2d&     lens_point,
+             const Transformd&  transform) const
+        {
+            const Vector3d dir(
+                (point.x - 0.5) * m_kx - lens_point.x,
+                (0.5 - point.y) * m_ky - lens_point.y,
+                -m_focal_distance);
+
+            return transform.vector_to_parent(dir);
         }
     };
 }

@@ -97,6 +97,7 @@ ScenePicker::PickingResult ScenePicker::pick(const Vector2d& ndc) const
     camera->generate_ray(
         sampling_context,
         ndc,
+        0,
         ray);
 
     ShadingPoint shading_point;

@@ -104,6 +104,7 @@ class APPLESEED_DLLSYMBOL Camera
     virtual void generate_ray(
         SamplingContext&                sampling_context,
         const foundation::Vector2d&     point,
+        const foundation::Vector2d*     point_differential,
         ShadingRay&                     ray) const = 0;
 
     // Project a 3D point back to the film plane. The input point is expressed in

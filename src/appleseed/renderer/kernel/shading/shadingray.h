@@ -46,7 +46,6 @@ namespace renderer
 // A ray as it is used throughout the renderer.
 //
 // todo: add importance/contribution?
-// todo: replace ray by ray differential.
 //
 
 class ShadingRay
@@ -65,6 +64,9 @@ class ShadingRay
     double                          m_dtime;
     VisibilityFlags::Type           m_flags;
     DepthType                       m_depth;
+    bool                            m_has_differentials;
+    RayType                         m_rx;
+    RayType                         m_ry;
 
     // Constructors.
     ShadingRay();                   // leave all fields uninitialized
@@ -74,6 +76,14 @@ class ShadingRay
         const double                dtime,
         const VisibilityFlags::Type flags,
         const DepthType             depth);
+    ShadingRay(
+        const RayType&              ray,
+        const double                time,
+        const double                dtime,
+        const VisibilityFlags::Type flags,
+        const DepthType             depth,
+        const RayType&              rx,
+        const RayType&              ry);
     ShadingRay(
         const VectorType&           org,
         const VectorType&           dir,
@@ -108,6 +118,7 @@ ShadingRay transform_to_parent(
 //
 
 inline ShadingRay::ShadingRay()
+  : m_has_differentials(false)
 {
 }
 
@@ -122,6 +133,26 @@ inline ShadingRay::ShadingRay(
   , m_dtime(dtime)
   , m_flags(flags)
   , m_depth(depth)
+  , m_has_differentials(false)
+{
+}
+
+inline ShadingRay::ShadingRay(
+    const RayType&                  ray,
+    const double                    time,
+    const double                    dtime,
+    const VisibilityFlags::Type     flags,
+    const DepthType                 depth,
+    const RayType&                  rx,
+    const RayType&                  ry)
+  : RayType(ray)
+  , m_time(time)
+  , m_dtime(dtime)
+  , m_flags(flags)
+  , m_depth(depth)
+  , m_has_differentials(true)
+  , m_rx(rx)
+  , m_ry(ry)
 {
 }
 
@@ -137,6 +168,7 @@ inline ShadingRay::ShadingRay(
   , m_dtime(dtime)
   , m_flags(flags)
   , m_depth(depth)
+  , m_has_differentials(false)
 {
 }
 
@@ -154,6 +186,7 @@ inline ShadingRay::ShadingRay(
   , m_dtime(dtime)
   , m_flags(flags)
   , m_depth(depth)
+  , m_has_differentials(false)
 {
 }
 
@@ -162,13 +195,24 @@ inline ShadingRay transform_to_local(
     const foundation::Transform<U>& transform,
     const ShadingRay&               ray)
 {
-    return
-        ShadingRay(
-            transform.transform_to_local(ray),
-            ray.m_time,
-            ray.m_dtime,
-            ray.m_flags,
-            ray.m_depth);
+    if (ray.m_has_differentials)
+        return
+            ShadingRay(
+                transform.transform_to_local(ray),
+                ray.m_time,
+                ray.m_dtime,
+                ray.m_flags,
+                ray.m_depth,
+                transform.transform_to_local(ray.m_rx),
+                transform.transform_to_local(ray.m_ry));
+    else
+        return
+            ShadingRay(
+                transform.transform_to_local(ray),
+                ray.m_time,
+                ray.m_dtime,
+                ray.m_flags,
+                ray.m_depth);
 }
 
 template <typename U>
@@ -176,13 +220,24 @@ inline ShadingRay transform_to_parent(
     const foundation::Transform<U>& transform,
     const ShadingRay&               ray)
 {
-    return
-        ShadingRay(
-            transform.transform_to_parent(ray),
-            ray.m_time,
-            ray.m_dtime,
-            ray.m_flags,
-            ray.m_depth);
+    if (ray.m_has_differentials)
+        return
+            ShadingRay(
+                transform.transform_to_parent(ray),
+                ray.m_time,
+                ray.m_dtime,
+                ray.m_flags,
+                ray.m_depth,
+                transform.transform_to_parent(ray.m_rx),
+                transform.transform_to_parent(ray.m_ry));
+    else
+        return
+            ShadingRay(
+                transform.transform_to_parent(ray),
+                ray.m_time,
+                ray.m_dtime,
+                ray.m_flags,
+                ray.m_depth);
 }
 
 }       // namespace renderer
