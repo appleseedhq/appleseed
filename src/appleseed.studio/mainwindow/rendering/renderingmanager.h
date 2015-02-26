@@ -33,7 +33,7 @@
 // appleseed.studio headers.
 #include "mainwindow/rendering/frozendisplayrenderer.h"
 #include "mainwindow/rendering/qtrenderercontroller.h"
-#include "mainwindow/rendering/qttilecallbackfactory.h"
+#include "mainwindow/rendering/qttilecallback.h"
 #include "mainwindow/rendering/renderingtimer.h"
 
 // appleseed.renderer headers.

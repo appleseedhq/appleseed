@@ -217,8 +217,8 @@ set (mainwindow_rendering_sources
     mainwindow/rendering/pixelinspectorhandler.h
     mainwindow/rendering/qtrenderercontroller.cpp
     mainwindow/rendering/qtrenderercontroller.h
-    mainwindow/rendering/qttilecallbackfactory.cpp
-    mainwindow/rendering/qttilecallbackfactory.h
+    mainwindow/rendering/qttilecallback.cpp
+    mainwindow/rendering/qttilecallback.h
     mainwindow/rendering/renderclipboardhandler.cpp
     mainwindow/rendering/renderclipboardhandler.h
     mainwindow/rendering/renderingmanager.cpp

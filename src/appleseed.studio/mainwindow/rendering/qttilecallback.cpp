@@ -28,7 +28,7 @@
 //
 
 // Interface header.
-#include "qttilecallbackfactory.h"
+#include "qttilecallback.h"
 
 // appleseed.studio headers.
 #include "mainwindow/rendering/renderwidget.h"
