@@ -81,10 +81,6 @@ namespace renderer
 
 namespace
 {
-    typedef vector<ISampleGenerator*> SampleGeneratorVector;
-    typedef vector<ITileCallback*> TileCallbackVector;
-
-
     //
     // Progressive frame renderer.
     //
@@ -520,6 +516,8 @@ namespace
         JobQueue                            m_job_queue;
         auto_ptr<JobManager>                m_job_manager;
         AbortSwitch                         m_abort_switch;
+
+        typedef vector<ISampleGenerator*> SampleGeneratorVector;
 
         SampleGeneratorVector               m_sample_generators;
         auto_release_ptr<ITileCallback>     m_tile_callback;
