@@ -726,12 +726,14 @@ inline bool ShadingPoint::shade_alpha_cutouts() const
     return m_shade_alpha_cutouts;
 }
 
+#ifdef APPLESEED_WITH_OSL
 inline OSL::ShaderGlobals& ShadingPoint::get_osl_shader_globals() const
 {
     assert(hit());
     assert(m_members & HasOSLShaderGlobals);
     return m_shader_globals;
 }
+#endif
 
 inline void ShadingPoint::cache_source_geometry() const
 {
