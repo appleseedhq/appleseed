@@ -226,6 +226,8 @@ inline double Tracer::trace(
 {
     if (m_assume_no_alpha_mapping)
     {
+        assert(foundation::is_normalized(direction));
+
         const ShadingRay ray(
             origin,
             direction,
@@ -259,6 +261,8 @@ inline double Tracer::trace(
 {
     if (m_assume_no_alpha_mapping)
     {
+        assert(foundation::is_normalized(direction));
+
         const ShadingRay ray(
             origin.get_biased_point(direction),
             direction,
@@ -328,11 +332,14 @@ inline double Tracer::trace_between(
 {
     if (m_assume_no_alpha_mapping)
     {
+        const foundation::Vector3d direction = target - origin;
+        const double dist = foundation::norm(direction);
+
         const ShadingRay ray(
             origin,
-            target - origin,
+            direction / dist,
             0.0,                        // ray tmin
-            1.0 - 1.0e-6,               // ray tmax
+            dist - 1.0e-6,              // ray tmax
             ray_time,
             m_ray_dtime,
             ray_flags,
@@ -364,12 +371,13 @@ inline double Tracer::trace_between(
     if (m_assume_no_alpha_mapping)
     {
         const foundation::Vector3d direction = target - origin.get_point();
+        const double dist = foundation::norm(direction);
 
         const ShadingRay ray(
             origin.get_biased_point(direction),
-            direction,
+            direction / dist,
             0.0,                        // ray tmin
-            1.0 - 1.0e-6,               // ray tmax
+            dist - 1.0e-6,              // ray tmax
             origin.get_time(),
             origin.get_dtime(),
             ray_flags,

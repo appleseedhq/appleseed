@@ -124,16 +124,16 @@ namespace
                     : transform.get_local_to_parent().extract_translation();
 
             // Compute the direction of the ray.
-            ray.m_dir = transform.vector_to_parent(ndc_to_camera(point.m_value));
+            ray.m_dir = normalize(transform.vector_to_parent(ndc_to_camera(point.m_value)));
 
             ray.m_has_differentials = true;
             ray.m_rx.m_org = ray.m_org;
             const Vector2d px(point.m_value + point.m_dx);
-            ray.m_rx.m_dir = transform.vector_to_parent(ndc_to_camera(px));
+            ray.m_rx.m_dir = normalize(transform.vector_to_parent(ndc_to_camera(px)));
 
             ray.m_ry.m_org = ray.m_org;
             const Vector2d py(point.m_value + point.m_dy);
-            ray.m_ry.m_dir = transform.vector_to_parent(ndc_to_camera(py));
+            ray.m_ry.m_dir = normalize(transform.vector_to_parent(ndc_to_camera(py)));
         }
 
         virtual bool project_camera_space_point(
