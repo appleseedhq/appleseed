@@ -36,6 +36,7 @@
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/dual.h"
 #include "foundation/math/frustum.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/uid.h"
@@ -103,8 +104,7 @@ class APPLESEED_DLLSYMBOL Camera
     // The generated ray is expressed in world space.
     virtual void generate_ray(
         SamplingContext&                sampling_context,
-        const foundation::Vector2d&     point,
-        const foundation::Vector2d*     point_differential,
+        const foundation::Dual2d&       point,
         ShadingRay&                     ray) const = 0;
 
     // Project a 3D point back to the film plane. The input point is expressed in

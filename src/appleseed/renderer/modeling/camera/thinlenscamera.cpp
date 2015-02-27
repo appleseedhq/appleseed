@@ -51,6 +51,7 @@
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
+#include "foundation/math/dual.h"
 #include "foundation/math/intersection/frustumsegment.h"
 #include "foundation/math/sampling/imageimportancesampler.h"
 #include "foundation/math/sampling/mappings.h"
@@ -231,10 +232,9 @@ namespace
         }
 
         virtual void generate_ray(
-            SamplingContext&        sampling_context,
-            const Vector2d&         point,
-            const Vector2d*         point_differential,
-            ShadingRay&             ray) const APPLESEED_OVERRIDE
+            SamplingContext&            sampling_context,
+            const foundation::Dual2d&   point,
+            ShadingRay&                 ray) const APPLESEED_OVERRIDE
         {
             // Initialize the ray.
             initialize_ray(sampling_context, ray);
@@ -294,20 +294,16 @@ namespace
             if (w != 1.0)
                 ray.m_org /= w;
 
-            ray.m_dir = ray_direction(point, lens_point, transform);
+            ray.m_dir = ray_direction(point.m_value, lens_point, transform);
 
-            if (point_differential)
-            {
-                ray.m_has_differentials = true;
+            ray.m_has_differentials = true;
+            ray.m_rx.m_org = ray.m_org;
+            const Vector2d px(point.m_value + point.m_dx);
+            ray.m_rx.m_dir = ray_direction(px, lens_point, transform);
 
-                ray.m_rx.m_org = ray.m_org;
-                const Vector2d px(point.x + point_differential->x, point.y);
-                ray.m_rx.m_dir = ray_direction(px, lens_point, transform);
-
-                ray.m_ry.m_org = ray.m_org;
-                const Vector2d py(point.x, point.y + point_differential->y);
-                ray.m_ry.m_dir = ray_direction(py, lens_point, transform);
-            }
+            ray.m_ry.m_org = ray.m_org;
+            const Vector2d py(point.m_value + point.m_dy);
+            ray.m_ry.m_dir = ray_direction(py, lens_point, transform);
         }
 
         virtual bool project_camera_space_point(

@@ -40,6 +40,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
+#include "foundation/math/dual.h"
 #include "foundation/image/image.h"
 #include "foundation/math/intersection/frustumsegment.h"
 #include "foundation/math/frustum.h"
@@ -122,10 +123,9 @@ namespace
         }
 
         virtual void generate_ray(
-            SamplingContext&        sampling_context,
-            const Vector2d&         point,
-            const Vector2d*         point_differential,
-            ShadingRay&             ray) const APPLESEED_OVERRIDE
+            SamplingContext&            sampling_context,
+            const foundation::Dual2d&   point,
+            ShadingRay&                 ray) const APPLESEED_OVERRIDE
         {
             // Initialize the ray.
             initialize_ray(sampling_context, ray);
@@ -141,19 +141,16 @@ namespace
                     : transform.get_local_to_parent().extract_translation();
 
             // Compute the direction of the ray.
-            ray.m_dir = transform.vector_to_parent(ndc_to_camera(point));
+            ray.m_dir = transform.vector_to_parent(ndc_to_camera(point.m_value));
 
-            if (point_differential)
-            {
-                ray.m_has_differentials = true;
-                ray.m_rx.m_org = ray.m_org;
-                const Vector2d px(point.x + point_differential->x, point.y);
-                ray.m_rx.m_dir = transform.vector_to_parent(ndc_to_camera(px));
+            ray.m_has_differentials = true;
+            ray.m_rx.m_org = ray.m_org;
+            const Vector2d px(point.m_value + point.m_dx);
+            ray.m_rx.m_dir = transform.vector_to_parent(ndc_to_camera(px));
 
-                ray.m_ry.m_org = ray.m_org;
-                const Vector2d py(point.x, point.y + point_differential->y);
-                ray.m_ry.m_dir = transform.vector_to_parent(ndc_to_camera(py));
-            }
+            ray.m_ry.m_org = ray.m_org;
+            const Vector2d py(point.m_value + point.m_dy);
+            ray.m_ry.m_dir = transform.vector_to_parent(ndc_to_camera(py));
         }
 
         virtual bool project_camera_space_point(

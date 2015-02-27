@@ -143,8 +143,8 @@ namespace
         {
             // 1/4 of a pixel, like in prman RIS.
             const CanvasProperties& c = frame.image().properties();
-            m_differentials_offset.x = 1.0 / (4.0 * c.m_canvas_width);
-            m_differentials_offset.y = 1.0 / (4.0 * c.m_canvas_height);
+            m_image_point_dx = Vector2d(1.0 / (4.0 * c.m_canvas_width), 0.0);
+            m_image_point_dy = Vector2d(0.0, 1.0 / (4.0 * c.m_canvas_height));
         }
 
         ~GenericSampleRenderer()
@@ -174,8 +174,7 @@ namespace
             ShadingRay primary_ray;
             m_scene.get_camera()->generate_ray(
                 sampling_context,
-                image_point,
-                &m_differentials_offset,
+                Dual2d(image_point, m_image_point_dx, m_image_point_dy),
                 primary_ray);
 
             ShadingPoint shading_points[2];
@@ -325,7 +324,8 @@ namespace
         ILightingEngine*            m_lighting_engine;
         const ShadingContext        m_shading_context;
         ShadingEngine&              m_shading_engine;
-        Vector2d                    m_differentials_offset;
+        Vector2d                    m_image_point_dx;
+        Vector2d                    m_image_point_dy;
     };
 }
 
