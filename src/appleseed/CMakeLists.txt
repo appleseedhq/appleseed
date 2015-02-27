@@ -259,6 +259,7 @@ set (foundation_math_sources
     foundation/math/cdf.h
     foundation/math/combination.h
     foundation/math/distance.h
+    foundation/math/dual.h
     foundation/math/fastmath.h
     foundation/math/filter.h
     foundation/math/fp.h
