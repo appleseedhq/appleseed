@@ -49,6 +49,7 @@
 #include "boost/version.hpp"
 
 // Forward declarations.
+namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class Logger; }
 
 // Starting with Boost 1.48.0, the atomic primitives are defined in boost::interprocess::ipcdetail.
@@ -228,6 +229,7 @@ class APPLESEED_DLLSYMBOL ThreadFlag
 
 // Suspend the current thread for a given number of milliseconds.
 APPLESEED_DLLSYMBOL void sleep(const uint32 ms);
+APPLESEED_DLLSYMBOL void sleep(const uint32 ms, IAbortSwitch& abort_switch);
 
 // Give up the remainder of the current thread's time slice, to allow other threads to run.
 APPLESEED_DLLSYMBOL void yield();
