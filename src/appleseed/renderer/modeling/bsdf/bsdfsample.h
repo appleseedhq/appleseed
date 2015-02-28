@@ -68,7 +68,7 @@ class BSDFSample
 
     const foundation::Vector3d& get_shading_normal() const;
 
-    const foundation::Vector3d& get_outgoing() const;
+    const foundation::Vector3d& get_outgoing_vector() const;
 
     // Input / Output fields.
 
@@ -83,7 +83,8 @@ class BSDFSample
     bool is_absorption() const;
     bool is_specular() const;
 
-    const foundation::Vector3d& get_incoming() const;
+    const foundation::Dual3d& get_incoming() const;
+    const foundation::Vector3d& get_incoming_vector() const;
     void set_incoming(const foundation::Vector3d& incoming);
 
     double get_probability() const;
@@ -142,7 +143,7 @@ inline const foundation::Vector3d& BSDFSample::get_shading_normal() const
     return m_shading_point.get_shading_normal();
 }
 
-inline const foundation::Vector3d& BSDFSample::get_outgoing() const
+inline const foundation::Vector3d& BSDFSample::get_outgoing_vector() const
 {
     return m_outgoing.get_value();
 }
@@ -177,7 +178,12 @@ inline bool BSDFSample::is_specular() const
     return m_mode == Specular;
 }
 
-inline const foundation::Vector3d& BSDFSample::get_incoming() const
+inline const foundation::Dual3d& BSDFSample::get_incoming() const
+{
+    return m_incoming;
+}
+
+inline const foundation::Vector3d& BSDFSample::get_incoming_vector() const
 {
     return m_incoming.get_value();
 }

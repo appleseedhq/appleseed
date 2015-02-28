@@ -97,14 +97,16 @@ namespace
 
             const Vector3d& shading_normal = sample.get_shading_normal();
             const double eta = values->m_from_ior / values->m_to_ior;
-            const double cos_theta_i = dot(sample.get_outgoing(), shading_normal);
+            const double cos_theta_i = dot(sample.get_outgoing_vector(), shading_normal);
             const double sin_theta_i2 = 1.0 - square(cos_theta_i);
             const double cos_theta_t2 = 1.0 - square(eta) * sin_theta_i2;
+
+            Vector3d incoming;
 
             if (cos_theta_t2 < 0.0)
             {
                 // Total internal reflection: compute the reflected direction and radiance.
-                sample.set_incoming(reflect(sample.get_outgoing(), shading_normal));
+                incoming = reflect(sample.get_outgoing_vector(), shading_normal);
                 sample.value() = values->m_transmittance;
                 sample.value() *= static_cast<float>(values->m_transmittance_multiplier);
             }
@@ -127,17 +129,17 @@ namespace
                 if (s < fresnel_reflection)
                 {
                     // Fresnel reflection: compute the reflected direction and radiance.
-                    sample.set_incoming(reflect(sample.get_outgoing(), shading_normal));
+                    incoming = reflect(sample.get_outgoing_vector(), shading_normal);
                     sample.value() = values->m_reflectance;
                     sample.value() *= static_cast<float>(values->m_reflectance_multiplier);
                 }
                 else
                 {
                     // Compute the refracted direction.
-                    sample.set_incoming(
+                    incoming =
                         cos_theta_i > 0.0
-                            ? (eta * cos_theta_i - cos_theta_t) * shading_normal - eta * sample.get_outgoing()
-                            : (eta * cos_theta_i + cos_theta_t) * shading_normal - eta * sample.get_outgoing());
+                            ? (eta * cos_theta_i - cos_theta_t) * shading_normal - eta * sample.get_outgoing_vector()
+                            : (eta * cos_theta_i + cos_theta_t) * shading_normal - eta * sample.get_outgoing_vector();
 
                     // Compute the refracted radiance.
                     sample.value() = values->m_transmittance;
@@ -148,7 +150,7 @@ namespace
                 }
             }
 
-            const double cos_in = abs(dot(sample.get_incoming(), shading_normal));
+            const double cos_in = abs(dot(incoming, shading_normal));
             sample.value() /= static_cast<float>(cos_in);
 
             // The probability density of the sampled direction is the Dirac delta.
@@ -156,6 +158,8 @@ namespace
 
             // Set the scattering mode.
             sample.set_mode(BSDFSample::Specular);
+
+            sample.set_incoming(incoming);
         }
 
         FORCE_INLINE virtual double evaluate(

@@ -85,16 +85,18 @@ namespace
         {
             // No reflection below the shading surface.
             const Vector3d& shading_normal = sample.get_shading_normal();
-            const double cos_on = dot(sample.get_outgoing(), shading_normal);
+            const double cos_on = dot(sample.get_outgoing_vector(), shading_normal);
             if (cos_on < 0.0)
                 return;
 
             // Compute the incoming direction.
-            sample.set_incoming(reflect(sample.get_outgoing(), shading_normal));
-            sample.set_incoming(force_above_surface(sample.get_incoming(), sample.get_geometric_normal()));
+            const Vector3d incoming(
+                force_above_surface(
+                    reflect(sample.get_outgoing_vector(), shading_normal),
+                    sample.get_geometric_normal()));
 
             // No reflection below the shading surface.
-            const double cos_in = dot(sample.get_incoming(), shading_normal);
+            const double cos_in = dot(incoming, shading_normal);
             if (cos_in < 0.0)
                 return;
 
@@ -108,6 +110,8 @@ namespace
 
             // Set the scattering mode.
             sample.set_mode(BSDFSample::Specular);
+
+            sample.set_incoming(incoming);
         }
 
         FORCE_INLINE virtual double evaluate(

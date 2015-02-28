@@ -216,7 +216,7 @@ namespace
             BSDFSample&         sample) const
         {
             // Define aliases to match the notations in the paper.
-            const Vector3d& V = sample.get_outgoing();
+            const Vector3d& V = sample.get_outgoing_vector();
             const Vector3d& N = sample.get_shading_normal();
 
             // No reflection below the shading surface.
@@ -247,7 +247,7 @@ namespace
             const Vector3d s = sample.get_sampling_context().next_vector2<3>();
 
             BSDFSample::ScatteringMode mode;
-            Vector3d H;
+            Vector3d H, incoming;
             double dot_LN, dot_HN, dot_HV;
 
             // Select a component and sample it to compute the incoming direction.
@@ -259,10 +259,10 @@ namespace
                 const Vector3d wi = sample_hemisphere_cosine(Vector2d(s[0], s[1]));
 
                 // Transform the incoming direction to parent space.
-                sample.set_incoming(sample.get_shading_basis().transform_to_parent(wi));
+                incoming = sample.get_shading_basis().transform_to_parent(wi);
 
                 // Compute the halfway vector.
-                H = normalize(sample.get_incoming() + V);
+                H = normalize(incoming + V);
 
                 dot_LN = wi.y;
                 dot_HN = dot(H, N);
@@ -281,9 +281,9 @@ namespace
                 dot_HV = dot(H, V);
 
                 // The incoming direction is the reflection of V around H.
-                sample.set_incoming((dot_HV + dot_HV) * H - V);
+                incoming = (dot_HV + dot_HV) * H - V;
 
-                dot_LN = dot(sample.get_incoming(), N);
+                dot_LN = dot(incoming, N);
                 dot_HN = local_H.y;
 
                 // No reflection below the shading surface.
@@ -327,6 +327,8 @@ namespace
 
             // Set the scattering mode.
             sample.set_mode(mode);
+
+            sample.set_incoming(incoming);
         }
 
         FORCE_INLINE virtual double evaluate(

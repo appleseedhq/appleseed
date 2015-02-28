@@ -96,7 +96,7 @@ namespace
         {
             // No reflection below the shading surface.
             const Vector3d& n = sample.get_shading_normal();
-            const double cos_on = dot(sample.get_outgoing(), n);
+            const double cos_on = dot(sample.get_outgoing_vector(), n);
             if (cos_on < 0.0)
                 return;
 
@@ -106,10 +106,10 @@ namespace
             const Vector3d wi = sample_hemisphere_cosine(s);
 
             // Transform the incoming direction to parent space.
-            sample.set_incoming(sample.get_shading_basis().transform_to_parent(wi));
+            const Vector3d incoming = sample.get_shading_basis().transform_to_parent(wi);
 
             // No reflection below the shading surface.
-            const double cos_in = dot(sample.get_incoming(), n);
+            const double cos_in = dot(incoming, n);
             if (cos_in < 0.0)
                 return;
 
@@ -122,8 +122,8 @@ namespace
                     cos_in,
                     values->m_roughness,
                     values->m_reflectance,
-                    sample.get_outgoing(),
-                    sample.get_incoming(),
+                    sample.get_outgoing_vector(),
+                    incoming,
                     n,
                     sample.value());
             }
@@ -138,6 +138,8 @@ namespace
 
             // Set the scattering mode.
             sample.set_mode(BSDFSample::Diffuse);
+
+            sample.set_incoming(incoming);
         }
 
         FORCE_INLINE virtual double evaluate(

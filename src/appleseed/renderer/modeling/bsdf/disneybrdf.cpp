@@ -161,17 +161,18 @@ namespace
             const Vector3d wi = sample_hemisphere_cosine(s);
 
             // Transform the incoming direction to parent space.
-            sample.set_incoming(sample.get_shading_basis().transform_to_parent(wi));
+            const Vector3d incoming = sample.get_shading_basis().transform_to_parent(wi);
             sample.set_probability(
                 evaluate(
                     values,
                     sample.get_shading_basis(),
-                    sample.get_outgoing(),
-                    sample.get_incoming(),
+                    sample.get_outgoing_vector(),
+                    incoming,
                     sample.value()));
 
             assert(sample.get_probability() > 0.0);
             sample.set_mode(BSDFSample::Diffuse);
+            sample.set_incoming(incoming);
         }
 
         double evaluate(
@@ -246,17 +247,18 @@ namespace
             const Vector3d wi = sample_hemisphere_uniform(s);
 
             // Transform the incoming direction to parent space.
-            sample.set_incoming(sample.get_shading_basis().transform_to_parent(wi));
+            const Vector3d incoming = sample.get_shading_basis().transform_to_parent(wi);
             sample.set_probability(
                 evaluate(
                     values,
                     sample.get_shading_basis(),
-                    sample.get_outgoing(),
-                    sample.get_incoming(),
+                    sample.get_outgoing_vector(),
+                    incoming,
                     sample.value()));
 
             assert(sample.get_probability() > 0.0);
             sample.set_mode(BSDFSample::Diffuse);
+            sample.set_incoming(incoming);
         }
 
         double evaluate(
