@@ -83,8 +83,6 @@ template <typename T>
 inline Dual<T>::Dual(const T& value)
   : m_value(value)
   , m_has_derivatives(false)
-  , m_dx(T(0.0))
-  , m_dy(T(0.0))
 {
 }
 

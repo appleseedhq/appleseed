@@ -294,16 +294,19 @@ namespace
             if (w != 1.0)
                 ray.m_org /= w;
 
-            ray.m_dir = normalize(ray_direction(point.m_value, lens_point, transform));
+            ray.m_dir = normalize(ray_direction(point.get_value(), lens_point, transform));
 
-            ray.m_has_differentials = true;
-            ray.m_rx.m_org = ray.m_org;
-            const Vector2d px(point.m_value + point.m_dx);
-            ray.m_rx.m_dir = normalize(ray_direction(px, lens_point, transform));
+            if (point.has_derivatives())
+            {
+                ray.m_has_differentials = true;
+                ray.m_rx.m_org = ray.m_org;
+                const Vector2d px(point.get_value() + point.get_dx());
+                ray.m_rx.m_dir = normalize(ray_direction(px, lens_point, transform));
 
-            ray.m_ry.m_org = ray.m_org;
-            const Vector2d py(point.m_value + point.m_dy);
-            ray.m_ry.m_dir = normalize(ray_direction(py, lens_point, transform));
+                ray.m_ry.m_org = ray.m_org;
+                const Vector2d py(point.get_value() + point.get_dy());
+                ray.m_ry.m_dir = normalize(ray_direction(py, lens_point, transform));
+            }
         }
 
         virtual bool project_camera_space_point(
