@@ -56,6 +56,7 @@ class Dual
 
     // Value.
     const T& get_value() const;
+    void set_value(const T& value);
 
     // Derivatives.
     bool has_derivatives() const;
@@ -101,6 +102,13 @@ template <typename T>
 inline const T& Dual<T>::get_value() const
 {
     return m_value;
+}
+
+template <typename T>
+inline void Dual<T>::set_value(const T& value)
+{
+    m_value = value;
+    m_has_derivatives = false;
 }
 
 template <typename T>

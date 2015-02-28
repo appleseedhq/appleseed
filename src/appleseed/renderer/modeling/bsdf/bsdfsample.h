@@ -104,7 +104,7 @@ class BSDFSample
     SamplingContext&        m_sampling_context;     // sampling context used to sample BSDFs
     foundation::Dual3d      m_outgoing;             // world space outgoing direction, unit-length
     ScatteringMode          m_mode;                 // scattering mode
-    foundation::Vector3d    m_incoming;             // world space incoming direction, unit-length
+    foundation::Dual3d      m_incoming;             // world space incoming direction, unit-length
     double                  m_probability;          // PDF value
     Spectrum                m_value;                // BSDF value
 };
@@ -179,12 +179,12 @@ inline bool BSDFSample::is_specular() const
 
 inline const foundation::Vector3d& BSDFSample::get_incoming() const
 {
-    return m_incoming;
+    return m_incoming.get_value();
 }
 
 inline void BSDFSample::set_incoming(const foundation::Vector3d& incoming)
 {
-    m_incoming = incoming;
+    m_incoming.set_value(incoming);
 }
 
 inline double BSDFSample::get_probability() const
