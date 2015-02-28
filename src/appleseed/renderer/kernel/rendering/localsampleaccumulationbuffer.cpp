@@ -201,18 +201,18 @@ namespace
             AABB2u::intersect(
                 AABB2u(
                     Vector2u(origin_x, origin_y),
-                    Vector2u(origin_x + color_tile.get_width(), origin_y + color_tile.get_height())),
+                    Vector2u(origin_x + color_tile.get_width() - 1, origin_y + color_tile.get_height() - 1)),
                 crop_window);
 
         if (undo_premultiplied_alpha)
         {
-            for (size_t iy = r.min.y; iy < r.max.y; ++iy)
+            for (size_t iy = r.min.y; iy <= r.max.y; ++iy)
             {
                 const size_t level_width = level.get_width();
                 const size_t src_y = (iy * level.get_height() / image_height) * level_width;
                 const size_t dest_y = (iy - origin_y) * color_tile.get_width() - origin_x;
 
-                for (size_t ix = r.min.x; ix < r.max.x; ++ix)
+                for (size_t ix = r.min.x; ix <= r.max.x; ++ix)
                 {
                     Color<float, 5> values;
 
@@ -232,13 +232,13 @@ namespace
         }
         else
         {
-            for (size_t iy = r.min.y; iy < r.max.y; ++iy)
+            for (size_t iy = r.min.y; iy <= r.max.y; ++iy)
             {
                 const size_t level_width = level.get_width();
                 const size_t src_y = (iy * level.get_height() / image_height) * level_width;
                 const size_t dest_y = (iy - origin_y) * color_tile.get_width() - origin_x;
 
-                for (size_t ix = r.min.x; ix < r.max.x; ++ix)
+                for (size_t ix = r.min.x; ix <= r.max.x; ++ix)
                 {
                     Color<float, 5> values;
 
