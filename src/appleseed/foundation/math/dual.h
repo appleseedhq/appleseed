@@ -32,12 +32,14 @@
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
 
+// standard headers
+#include <cassert>
 
 namespace foundation
 {
 
 //
-// Dual holds a quantity and its partial derivatives wrt. x and y.
+// Dual holds a quantity and optionally its partial derivatives wrt. X and Y.
 //
 
 template <typename T>
@@ -52,9 +54,19 @@ class Dual
     explicit Dual(const T& value);
     Dual(const T& value, const T& dx, const T& dy);
 
-    T m_value;
-    T m_dx;
-    T m_dy;
+    // Accessors.
+    const T& get_value() const;
+
+    bool has_derivatives() const;
+
+    const T& get_dx() const;
+    const T& get_dy() const;
+
+  private:
+    T       m_value;
+    bool    m_has_derivatives;
+    T       m_dx;
+    T       m_dy;
 };
 
 //
@@ -63,12 +75,14 @@ class Dual
 
 template <typename T>
 inline Dual<T>::Dual()
+  : m_has_derivatives(false)
 {
 }
 
 template <typename T>
 inline Dual<T>::Dual(const T& value)
   : m_value(value)
+  , m_has_derivatives(false)
   , m_dx(T(0.0))
   , m_dy(T(0.0))
 {
@@ -77,9 +91,38 @@ inline Dual<T>::Dual(const T& value)
 template <typename T>
 inline Dual<T>::Dual(const T& value, const T& dx, const T& dy)
   : m_value(value)
+  , m_has_derivatives(true)
   , m_dx(dx)
   , m_dy(dy)
 {
+}
+
+template <typename T>
+inline const T& Dual<T>::get_value() const
+{
+    return m_value;
+}
+
+template <typename T>
+inline bool Dual<T>::has_derivatives() const
+{
+    return m_has_derivatives;
+}
+
+template <typename T>
+const T& Dual<T>::get_dx() const
+{
+    assert(m_has_derivatives);
+
+    return m_dx;
+}
+
+template <typename T>
+const T& Dual<T>::get_dy() const
+{
+    assert(m_has_derivatives);
+
+    return m_dy;
 }
 
 
