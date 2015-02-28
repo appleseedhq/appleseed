@@ -338,6 +338,15 @@ void ShadingPoint::compute_world_space_partial_derivatives() const
 
             m_dndu = (dv1 * dn0 - dv0 * dn1) * rcp_det;
             m_dndv = (du0 * dn1 - du1 * dn0) * rcp_det;
+
+            // Transform the normal derivatives to world space.
+            m_dndu =
+                m_assembly_instance_transform.normal_to_parent(
+                    m_object_instance->get_transform().normal_to_parent(m_dndu));
+
+            m_dndv =
+                m_assembly_instance_transform.normal_to_parent(
+                    m_object_instance->get_transform().normal_to_parent(m_dndv));
         }
     }
     else if (m_primitive_type == PrimitiveCurve1)
