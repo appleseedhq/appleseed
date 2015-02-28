@@ -149,6 +149,10 @@ class ShadingPoint
     const foundation::Vector3d& get_dpdu(const size_t uvset) const;
     const foundation::Vector3d& get_dpdv(const size_t uvset) const;
 
+    // Return the world space partial derivatives of the intersection normal wrt. a given UV set.
+    const foundation::Vector3d& get_dndu(const size_t uvset) const;
+    const foundation::Vector3d& get_dndv(const size_t uvset) const;
+
     // Return the screen space partial derivatives of the intersection point.
     const foundation::Vector3d& get_dpdx() const;
     const foundation::Vector3d& get_dpdy() const;
@@ -316,6 +320,8 @@ class ShadingPoint
     mutable foundation::Vector3d        m_biased_point;                 // world space intersection point with per-object-instance bias applied
     mutable foundation::Vector3d        m_dpdu;                         // world space partial derivative of the intersection point wrt. U
     mutable foundation::Vector3d        m_dpdv;                         // world space partial derivative of the intersection point wrt. V
+    mutable foundation::Vector3d        m_dndu;                         // world space partial derivative of the intersection normal wrt. U
+    mutable foundation::Vector3d        m_dndv;                         // world space partial derivative of the intersection normal wrt. V
     mutable foundation::Vector3d        m_dpdx;                         // screen space partial derivative of the intersection point wrt. X
     mutable foundation::Vector3d        m_dpdy;                         // screen space partial derivative of the intersection point wrt. Y
     mutable foundation::Vector3d        m_geometric_normal;             // world space geometric normal, unit-length
@@ -569,6 +575,34 @@ inline const foundation::Vector3d& ShadingPoint::get_dpdv(const size_t uvset) co
     }
 
     return m_dpdv;
+}
+
+inline const foundation::Vector3d& ShadingPoint::get_dndu(const size_t uvset) const
+{
+    assert(hit());
+    assert(uvset == 0);     // todo: support multiple UV sets
+
+    if (!(m_members & HasWorldSpacePartialDerivatives))
+    {
+        compute_world_space_partial_derivatives();
+        m_members |= HasWorldSpacePartialDerivatives;
+    }
+
+    return m_dndu;
+}
+
+inline const foundation::Vector3d& ShadingPoint::get_dndv(const size_t uvset) const
+{
+    assert(hit());
+    assert(uvset == 0);     // todo: support multiple UV sets
+
+    if (!(m_members & HasWorldSpacePartialDerivatives))
+    {
+        compute_world_space_partial_derivatives();
+        m_members |= HasWorldSpacePartialDerivatives;
+    }
+
+    return m_dndv;
 }
 
 inline const foundation::Vector3d& ShadingPoint::get_dpdx() const

@@ -320,16 +320,24 @@ void ShadingPoint::compute_world_space_partial_derivatives() const
 
             m_dpdu = basis.get_tangent_u();
             m_dpdv = basis.get_tangent_v();
+            m_dndu = m_dndv = Vector3d(0.0);
         }
         else
         {
             const Vector3d& v2 = get_vertex(2);
             const Vector3d dp0 = get_vertex(0) - v2;
             const Vector3d dp1 = get_vertex(1) - v2;
+
             const double rcp_det = 1.0 / det;
 
             m_dpdu = (dv1 * dp0 - dv0 * dp1) * rcp_det;
             m_dpdv = (du0 * dp1 - du1 * dp0) * rcp_det;
+
+            const Vector3d dn0 = m_n0 - m_n2;
+            const Vector3d dn1 = m_n1 - m_n2;
+
+            m_dndu = (dv1 * dn0 - dv0 * dn1) * rcp_det;
+            m_dndv = (du0 * dn1 - du1 * dn0) * rcp_det;
         }
     }
     else if (m_primitive_type == PrimitiveCurve1)
@@ -345,6 +353,7 @@ void ShadingPoint::compute_world_space_partial_derivatives() const
 
         m_dpdu = normalize(Vector3d(tangent));
         m_dpdv = normalize(cross(sn, m_dpdu));
+        m_dndu = m_dndv = Vector3d(0.0);
     }
     else
     {
@@ -359,6 +368,7 @@ void ShadingPoint::compute_world_space_partial_derivatives() const
 
         m_dpdu = normalize(Vector3d(tangent));
         m_dpdv = normalize(cross(sn, m_dpdu));
+        m_dndu = m_dndv = Vector3d(0.0);
     }
 }
 
