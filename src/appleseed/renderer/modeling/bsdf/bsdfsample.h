@@ -35,6 +35,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
+#include "foundation/math/dual.h"
 #include "foundation/math/vector.h"
 
 namespace renderer
@@ -57,7 +58,7 @@ class BSDFSample
     BSDFSample(
         const ShadingPoint&         shading_point,
         SamplingContext&            sampling_context,
-        const foundation::Vector3d& outgoing);
+        const foundation::Dual3d&   outgoing);
 
     // Input fields.
 
@@ -101,7 +102,7 @@ class BSDFSample
   private:
     const ShadingPoint&     m_shading_point;        // shading point at which the sampling is done
     SamplingContext&        m_sampling_context;     // sampling context used to sample BSDFs
-    foundation::Vector3d    m_outgoing;             // world space outgoing direction, unit-length
+    foundation::Dual3d      m_outgoing;             // world space outgoing direction, unit-length
     ScatteringMode          m_mode;                 // scattering mode
     foundation::Vector3d    m_incoming;             // world space incoming direction, unit-length
     double                  m_probability;          // PDF value
@@ -116,7 +117,7 @@ class BSDFSample
 inline BSDFSample::BSDFSample(
     const ShadingPoint&         shading_point,
     SamplingContext&            sampling_context,
-    const foundation::Vector3d& outgoing)
+    const foundation::Dual3d&   outgoing)
   : m_shading_point(shading_point)
   , m_sampling_context(sampling_context)
   , m_outgoing(outgoing)
@@ -143,7 +144,7 @@ inline const foundation::Vector3d& BSDFSample::get_shading_normal() const
 
 inline const foundation::Vector3d& BSDFSample::get_outgoing() const
 {
-    return m_outgoing;
+    return m_outgoing.get_value();
 }
 
 inline const foundation::Basis3d& BSDFSample::get_shading_basis() const

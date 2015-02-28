@@ -62,6 +62,8 @@ class Dual
     const T& get_dx() const;
     const T& get_dy() const;
 
+    void set_derivatives(const T& dx, const T& dy);
+
   private:
     T       m_value;
     T       m_dx;
@@ -121,6 +123,14 @@ const T& Dual<T>::get_dy() const
     assert(m_has_derivatives);
 
     return m_dy;
+}
+
+template <typename T>
+void Dual<T>::set_derivatives(const T& dx, const T& dy)
+{
+    m_dx = dx;
+    m_dy = dy;
+    m_has_derivatives = true;
 }
 
 

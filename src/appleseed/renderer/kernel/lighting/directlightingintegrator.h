@@ -45,6 +45,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
+#include "foundation/math/dual.h"
 #include "foundation/math/mis.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
@@ -104,7 +105,7 @@ class DirectLightingIntegrator
         const ShadingContext&           shading_context,
         const LightSampler&             light_sampler,
         const ShadingPoint&             shading_point,
-        const foundation::Vector3d&     outgoing,                   // world space outgoing direction, unit-length
+        const foundation::Dual3d&       outgoing,                   // world space outgoing direction, unit-length
         const BSDF&                     bsdf,
         const void*                     bsdf_data,
         const int                       bsdf_sampling_modes,        // permitted scattering modes during BSDF sampling
@@ -172,7 +173,7 @@ class DirectLightingIntegrator
     const foundation::Vector3d&         m_geometric_normal;
     const foundation::Basis3d&          m_shading_basis;
     const double                        m_time;
-    const foundation::Vector3d&         m_outgoing;
+    const foundation::Dual3d&           m_outgoing;
     const BSDF&                         m_bsdf;
     const void*                         m_bsdf_data;
     const int                           m_bsdf_sampling_modes;
@@ -613,7 +614,7 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
             true,                           // multiply by |cos(incoming, normal)|
             m_geometric_normal,
             m_shading_basis,
-            m_outgoing,
+            m_outgoing.get_value(),
             incoming,
             m_light_sampling_modes,
             bsdf_value);

@@ -179,7 +179,14 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         // Retrieve the ray.
         const ShadingRay& ray = vertex.get_ray();
         assert(foundation::is_normalized(ray.m_dir));
-        vertex.m_outgoing = -ray.m_dir;
+        vertex.m_outgoing = foundation::Dual3d(-ray.m_dir);
+
+        if (ray.m_has_differentials)
+        {
+            vertex.m_outgoing.set_derivatives(
+                -(ray.m_rx.m_dir - ray.m_dir),
+                -(ray.m_ry.m_dir - ray.m_dir));
+        }
 
         // Terminate the path if the ray didn't hit anything.
         if (!vertex.m_shading_point->hit())
@@ -277,7 +284,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         }
 
         // Compute radiance contribution at this vertex.
-        vertex.m_cos_on = foundation::dot(vertex.m_outgoing, vertex.get_shading_normal());
+        vertex.m_cos_on = foundation::dot(vertex.m_outgoing.get_value(), vertex.get_shading_normal());
         m_path_visitor.visit_vertex(vertex);
 
         // Terminate the path if the material doesn't have a BSDF.
