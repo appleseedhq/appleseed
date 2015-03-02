@@ -707,6 +707,8 @@ void ShadingPoint::initialize_osl_shader_globals(
         const ShadingRay& ray(get_ray());
 
         m_shader_globals.P = Vector3f(get_point());
+
+        assert(is_normalized(ray.m_dir));
         m_shader_globals.I = Vector3f(ray.m_dir);
 
         m_shader_globals.N = get_side() == ObjectInstance::FrontSide
