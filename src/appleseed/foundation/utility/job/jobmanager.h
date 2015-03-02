@@ -81,6 +81,13 @@ class APPLESEED_DLLSYMBOL JobManager
     // Stop job execution. Returns once currently running jobs are completed.
     void stop();
 
+    // Pause job execution by preventing worker threads from picking up new jobs.
+    // Jobs already running will continue until completion.
+    void pause();
+
+    // Resume job execution.
+    void resume();
+
   private:
     struct Impl;
     Impl* impl;

@@ -32,7 +32,11 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/platform/thread.h"
 #include "foundation/utility/job/abortswitch.h"
+
+// Boost headers.
+#include "boost/thread/condition_variable.hpp"
 
 // Standard headers.
 #include <cstddef>
@@ -70,6 +74,12 @@ class WorkerThread
     // Stop the worker thread.
     void stop();
 
+    // Pause the worker thread. See JobManager::pause() for details.
+    void pause();
+
+    // Resume the worker thread.
+    void resume();
+
   private:
     // A helper class that encapsulates the run() method of the worker thread
     // into an object that can be passed to the constructor of boost::thread.
@@ -88,14 +98,19 @@ class WorkerThread
         }
     };
 
-    const size_t        m_index;
-    Logger&             m_logger;
-    JobQueue&           m_job_queue;
-    const int           m_flags;
+    const size_t                    m_index;
+    Logger&                         m_logger;
+    JobQueue&                       m_job_queue;
+    const int                       m_flags;
 
-    AbortSwitch         m_abort_switch;
-    ThreadFunc          m_thread_func;
-    boost::thread*      m_thread;
+    AbortSwitch                     m_abort_switch;
+
+    ThreadFunc                      m_thread_func;
+    boost::thread*                  m_thread;
+
+    ThreadFlag                      m_pause_flag;
+    boost::condition_variable_any   m_pause_event;
+    boost::mutex                    m_pause_mutex;
 
     // Main line of the worker thread.
     void run();
