@@ -196,6 +196,7 @@ inline ShadingRay transform_to_local(
     const ShadingRay&               ray)
 {
     if (ray.m_has_differentials)
+    {
         return
             ShadingRay(
                 transform.transform_to_local(ray),
@@ -205,7 +206,9 @@ inline ShadingRay transform_to_local(
                 ray.m_depth,
                 transform.transform_to_local(ray.m_rx),
                 transform.transform_to_local(ray.m_ry));
+    }
     else
+    {
         return
             ShadingRay(
                 transform.transform_to_local(ray),
@@ -213,6 +216,7 @@ inline ShadingRay transform_to_local(
                 ray.m_dtime,
                 ray.m_flags,
                 ray.m_depth);
+    }
 }
 
 template <typename U>
@@ -221,6 +225,7 @@ inline ShadingRay transform_to_parent(
     const ShadingRay&               ray)
 {
     if (ray.m_has_differentials)
+    {
         return
             ShadingRay(
                 transform.transform_to_parent(ray),
@@ -230,7 +235,9 @@ inline ShadingRay transform_to_parent(
                 ray.m_depth,
                 transform.transform_to_parent(ray.m_rx),
                 transform.transform_to_parent(ray.m_ry));
+    }
     else
+    {
         return
             ShadingRay(
                 transform.transform_to_parent(ray),
@@ -238,6 +245,7 @@ inline ShadingRay transform_to_parent(
                 ray.m_dtime,
                 ray.m_flags,
                 ray.m_depth);
+    }
 }
 
 }       // namespace renderer

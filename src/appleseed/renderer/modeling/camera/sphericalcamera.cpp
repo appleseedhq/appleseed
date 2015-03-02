@@ -107,7 +107,7 @@ namespace
 
         virtual void generate_ray(
             SamplingContext&            sampling_context,
-            const foundation::Dual2d&   point,
+            const Dual2d&               point,
             ShadingRay&                 ray) const APPLESEED_OVERRIDE
         {
             // Initialize the ray.
@@ -129,12 +129,14 @@ namespace
             if (point.has_derivatives())
             {
                 ray.m_has_differentials = true;
-                ray.m_rx.m_org = ray.m_org;
-                const Vector2d px(point.get_value() + point.get_dx());
-                ray.m_rx.m_dir = normalize(transform.vector_to_parent(ndc_to_camera(px)));
 
+                ray.m_rx.m_org = ray.m_org;
                 ray.m_ry.m_org = ray.m_org;
+
+                const Vector2d px(point.get_value() + point.get_dx());
                 const Vector2d py(point.get_value() + point.get_dy());
+
+                ray.m_rx.m_dir = normalize(transform.vector_to_parent(ndc_to_camera(px)));
                 ray.m_ry.m_dir = normalize(transform.vector_to_parent(ndc_to_camera(py)));
             }
         }

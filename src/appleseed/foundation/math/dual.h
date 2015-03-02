@@ -32,7 +32,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
 
-// standard headers
+// Standard headers
 #include <cassert>
 
 namespace foundation
@@ -54,19 +54,19 @@ class Dual
     explicit Dual(const T& value);
     Dual(const T& value, const T& dx, const T& dy);
 
-    // Accessors.
+    // Value.
     const T& get_value() const;
 
+    // Derivatives.
     bool has_derivatives() const;
-
     const T& get_dx() const;
     const T& get_dy() const;
 
   private:
     T       m_value;
-    bool    m_has_derivatives;
     T       m_dx;
     T       m_dy;
+    bool    m_has_derivatives;
 };
 
 //

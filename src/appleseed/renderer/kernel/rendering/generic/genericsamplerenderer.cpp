@@ -141,7 +141,7 @@ namespace
                 m_params.m_max_iterations)
           , m_shading_engine(shading_engine)
         {
-            // 1/4 of a pixel, like in prman RIS.
+            // 1/4 of a pixel, like in Renderman RIS.
             const CanvasProperties& c = frame.image().properties();
             m_image_point_dx = Vector2d(1.0 / (4.0 * c.m_canvas_width), 0.0);
             m_image_point_dy = Vector2d(0.0, 1.0 / (4.0 * c.m_canvas_height));

@@ -338,8 +338,8 @@ inline double Tracer::trace_between(
         const ShadingRay ray(
             origin,
             direction / dist,
-            0.0,                        // ray tmin
-            dist - 1.0e-6,              // ray tmax
+            0.0,                    // ray tmin
+            dist * (1.0 - 1.0e-6),  // ray tmax
             ray_time,
             m_ray_dtime,
             ray_flags,
@@ -376,8 +376,8 @@ inline double Tracer::trace_between(
         const ShadingRay ray(
             origin.get_biased_point(direction),
             direction / dist,
-            0.0,                        // ray tmin
-            dist - 1.0e-6,              // ray tmax
+            0.0,                    // ray tmin
+            dist * (1.0 - 1.0e-6),  // ray tmax
             origin.get_time(),
             origin.get_dtime(),
             ray_flags,

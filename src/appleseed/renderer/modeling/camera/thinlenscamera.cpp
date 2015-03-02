@@ -233,7 +233,7 @@ namespace
 
         virtual void generate_ray(
             SamplingContext&            sampling_context,
-            const foundation::Dual2d&   point,
+            const Dual2d&               point,
             ShadingRay&                 ray) const APPLESEED_OVERRIDE
         {
             // Initialize the ray.
@@ -294,18 +294,20 @@ namespace
             if (w != 1.0)
                 ray.m_org /= w;
 
-            ray.m_dir = normalize(ray_direction(point.get_value(), lens_point, transform));
+            ray.m_dir = normalize(compute_ray_direction(point.get_value(), lens_point, transform));
 
             if (point.has_derivatives())
             {
                 ray.m_has_differentials = true;
-                ray.m_rx.m_org = ray.m_org;
-                const Vector2d px(point.get_value() + point.get_dx());
-                ray.m_rx.m_dir = normalize(ray_direction(px, lens_point, transform));
 
+                ray.m_rx.m_org = ray.m_org;
                 ray.m_ry.m_org = ray.m_org;
+
+                const Vector2d px(point.get_value() + point.get_dx());
                 const Vector2d py(point.get_value() + point.get_dy());
-                ray.m_ry.m_dir = normalize(ray_direction(py, lens_point, transform));
+
+                ray.m_rx.m_dir = normalize(compute_ray_direction(px, lens_point, transform));
+                ray.m_ry.m_dir = normalize(compute_ray_direction(py, lens_point, transform));
             }
         }
 
@@ -532,10 +534,10 @@ namespace
                     -m_focal_length);
         }
 
-        Vector3d ray_direction(
+        Vector3d compute_ray_direction(
             const Vector2d&     point,
             const Vector2d&     lens_point,
-             const Transformd&  transform) const
+            const Transformd&   transform) const
         {
             const Vector3d dir(
                 (point.x - 0.5) * m_kx - lens_point.x,

@@ -193,14 +193,14 @@ const ShadingPoint& Tracer::do_trace_between(
         }
 
         // Construct the visibility ray.
-        const foundation::Vector3d direction = target - point;
-        const double dist = foundation::norm(direction);
+        const Vector3d direction = target - point;
+        const double dist = norm(direction);
 
         const ShadingRay ray(
             point,
             direction / dist,
-            0.0,                // ray tmin
-            dist - 1.0e-6,      // ray tmax
+            0.0,                    // ray tmin
+            dist * (1.0 - 1.0e-6),  // ray tmax
             ray_time,
             m_ray_dtime,
             ray_flags,
