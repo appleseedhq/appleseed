@@ -31,7 +31,6 @@
 #include "workerthread.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/thread.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/job/ijob.h"
 #include "foundation/utility/job/jobmanager.h"
@@ -76,7 +75,8 @@ void WorkerThread::start()
     if (m_thread)
         return;
 
-    m_abort_switch.clear();
+    assert(m_pause_flag.is_clear());
+    assert(!m_abort_switch.is_aborted());
 
     // Start the thread.
     m_thread = new thread(m_thread_func);
@@ -88,20 +88,54 @@ void WorkerThread::stop()
     if (!m_thread)
         return;
 
-    // Ask for the thread to stop, and wait until it has.
+    // Resume the thread if it was paused.
+    m_pause_flag.clear();
+    m_pause_event.notify_all();
+
+    // Ask the thread to stop, and wait until it has.
     m_abort_switch.abort();
     m_job_queue.signal_event();
     m_thread->join();
+    m_abort_switch.clear();
 
     // Delete the thread object.
     delete m_thread;
     m_thread = 0;
 }
 
+void WorkerThread::pause()
+{
+    // Don't do anything if the worker thread is not running.
+    if (!m_thread)
+        return;
+
+    mutex::scoped_lock lock(m_pause_mutex);
+    m_pause_flag.set();
+}
+
+void WorkerThread::resume()
+{
+    // Don't do anything if the worker thread is not running.
+    if (!m_thread)
+        return;
+
+    mutex::scoped_lock lock(m_pause_mutex);
+    m_pause_flag.clear();
+    m_pause_event.notify_all();
+}
+
 void WorkerThread::run()
 {
     while (!m_abort_switch.is_aborted())
     {
+        if (m_pause_flag.is_set())
+        {
+            // Wait until the resume event.
+            mutex::scoped_lock lock(m_pause_mutex);
+            while (m_pause_flag.is_set())
+                m_pause_event.wait(lock);
+        }
+
         // Acquire a job.
         const JobQueue::RunningJobInfo running_job_info =
             m_job_queue.wait_for_scheduled_job(m_abort_switch);

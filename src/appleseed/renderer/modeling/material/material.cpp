@@ -48,10 +48,10 @@
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
 #include "foundation/utility/makevector.h"
+#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <cassert>
-#include <cstring>
 #include <string>
 
 using namespace foundation;
@@ -185,7 +185,7 @@ const char* Material::get_non_empty(const ParamArray& params, const char* name) 
 
     const char* value = params.strings().get(name);
 
-    return strlen(value) > 0 ? value : 0;
+    return is_empty_string(value) ? 0 : value;
 }
 
 bool Material::create_basis_modifier(const MessageContext& context)

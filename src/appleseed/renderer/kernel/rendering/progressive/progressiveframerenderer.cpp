@@ -81,10 +81,6 @@ namespace renderer
 
 namespace
 {
-    typedef vector<ISampleGenerator*> SampleGeneratorVector;
-    typedef vector<ITileCallback*> TileCallbackVector;
-
-
     //
     // Progressive frame renderer.
     //
@@ -162,12 +158,15 @@ namespace
 
         virtual ~ProgressiveFrameRenderer()
         {
-            // Tell the statistics thread to stop.
+            // Stop the statistics thread.
             m_abort_switch.abort();
-
-            // Wait until the statistics thread is terminated.
             if (m_statistics_thread.get() && m_statistics_thread->joinable())
                 m_statistics_thread->join();
+
+            // Stop the display thread.
+            m_display_thread_abort_switch.abort();
+            if (m_display_thread.get() && m_display_thread->joinable())
+                m_display_thread->join();
 
             // Delete the tile callback.
             m_tile_callback.reset();
@@ -187,6 +186,11 @@ namespace
             start_rendering();
 
             m_job_queue.wait_until_completion();
+        }
+
+        virtual bool is_rendering() const APPLESEED_OVERRIDE
+        {
+            return m_job_queue.has_scheduled_or_running_jobs();
         }
 
         virtual void start_rendering() APPLESEED_OVERRIDE
@@ -241,11 +245,15 @@ namespace
                         m_frame,
                         *m_buffer.get(),
                         m_tile_callback.get() ? m_tile_callback.get() : 0,
+                        m_params.m_max_fps,
                         m_display_thread_abort_switch));
                 m_display_thread.reset(
                     new thread(
                         ThreadFunctionWrapper<DisplayFunc>(m_display_func.get())));
             }
+
+            // Resume rendering if it was paused.
+            resume_rendering();
         }
 
         virtual void stop_rendering() APPLESEED_OVERRIDE
@@ -261,6 +269,20 @@ namespace
 
             // Wait until the statistics thread has stopped.
             m_statistics_thread->join();
+        }
+
+        virtual void pause_rendering() APPLESEED_OVERRIDE
+        {
+            m_job_manager->pause();
+            m_display_func->pause();
+            m_statistics_func->pause();
+        }
+
+        virtual void resume_rendering() APPLESEED_OVERRIDE
+        {
+            m_statistics_func->resume();
+            m_display_func->resume();
+            m_job_manager->resume();
         }
 
         virtual void terminate_rendering() APPLESEED_OVERRIDE
@@ -283,22 +305,19 @@ namespace
             m_display_func.reset();
         }
 
-        virtual bool is_rendering() const APPLESEED_OVERRIDE
-        {
-            return m_job_queue.has_scheduled_or_running_jobs();
-        }
-
       private:
         struct Parameters
         {
             const size_t    m_thread_count;             // number of rendering threads
             const uint64    m_max_sample_count;         // maximum total number of samples to compute
+            const double    m_max_fps;                  // maximum display frequency in frames/second
             const bool      m_print_luminance_stats;    // compute and print luminance statistics?
             const string    m_ref_image_path;           // path to the reference image
 
             explicit Parameters(const ParamArray& params)
               : m_thread_count(FrameRendererBase::get_rendering_thread_count(params))
               , m_max_sample_count(params.get_optional<uint64>("max_samples", numeric_limits<uint64>::max()))
+              , m_max_fps(params.get_optional<double>("max_fps", 30.0))
               , m_print_luminance_stats(params.get_optional<bool>("print_luminance_statistics", false))
               , m_ref_image_path(params.get_optional<string>("reference_image", ""))
             {
@@ -315,16 +334,32 @@ namespace
                 Frame&                      frame,
                 SampleAccumulationBuffer&   buffer,
                 ITileCallback*              tile_callback,
-                foundation::IAbortSwitch&   abort_switch)
+                const double                max_fps,
+                IAbortSwitch&               abort_switch)
               : m_frame(frame)
               , m_buffer(buffer)
               , m_tile_callback(tile_callback)
+              , m_target_elapsed(1.0 / max_fps)
               , m_abort_switch(abort_switch)
             {
             }
 
+            void pause()
+            {
+                m_pause_flag.set();
+            }
+
+            void resume()
+            {
+                m_pause_flag.clear();
+            }
+
             void operator()()
             {
+                DefaultWallclockTimer timer;
+                const double rcp_timer_freq = 1.0 / timer.frequency();
+                uint64 last_time = timer.read();
+
 #ifdef PRINT_DISPLAY_THREAD_PERFS
                 Stopwatch<DefaultWallclockTimer> stopwatch;
                 stopwatch.start();
@@ -332,45 +367,50 @@ namespace
 
                 while (!m_abort_switch.is_aborted())
                 {
-                    const size_t sample_count = m_buffer.get_sample_count();
-
-                    if (sample_count == 0)
+                    if (m_pause_flag.is_clear())
                     {
-                        foundation::sleep(5);   // namespace qualifier required
-                        continue;
-                    }
-
 #ifdef PRINT_DISPLAY_THREAD_PERFS
-                    stopwatch.measure();
-                    const double t1 = stopwatch.get_seconds();
+                        stopwatch.measure();
+                        const double t1 = stopwatch.get_seconds();
 #endif
 
-                    m_buffer.develop_to_frame(m_frame);
-
-#ifdef PRINT_DISPLAY_THREAD_PERFS
-                    stopwatch.measure();
-                    const double t2 = stopwatch.get_seconds();
-#endif
-
-                    if (m_tile_callback)
-                    {
-                        m_tile_callback->post_render(&m_frame);
+                        m_buffer.develop_to_frame(m_frame);
 
 #ifdef PRINT_DISPLAY_THREAD_PERFS
                         stopwatch.measure();
-                        const double t3 = stopwatch.get_seconds();
-
-                        RENDERER_LOG_DEBUG(
-                            "display thread:\n"
-                            "  buffer to frame     : %s\n"
-                            "  frame to widget     : %s\n"
-                            "  total               : %s (%s fps)",
-                            pretty_time(t2 - t1).c_str(),
-                            pretty_time(t3 - t2).c_str(),
-                            pretty_time(t3 - t1).c_str(),
-                            pretty_ratio(1.0, t3 - t2).c_str());
+                        const double t2 = stopwatch.get_seconds();
 #endif
+
+                        if (m_tile_callback)
+                        {
+                            m_tile_callback->post_render(&m_frame);
+
+#ifdef PRINT_DISPLAY_THREAD_PERFS
+                            stopwatch.measure();
+                            const double t3 = stopwatch.get_seconds();
+
+                            RENDERER_LOG_DEBUG(
+                                "display thread:\n"
+                                "  buffer to frame     : %s\n"
+                                "  frame to widget     : %s\n"
+                                "  total               : %s (%s fps)",
+                                pretty_time(t2 - t1).c_str(),
+                                pretty_time(t3 - t2).c_str(),
+                                pretty_time(t3 - t1).c_str(),
+                                pretty_ratio(1.0, t3 - t2).c_str());
+#endif
+                        }
                     }
+
+                    // Limit frame rate.
+                    const uint64 time = timer.read();
+                    const double elapsed = (time - last_time) * rcp_timer_freq;
+                    if (elapsed < m_target_elapsed)
+                    {
+                        const double ms = ceil(1000.0 * (m_target_elapsed - elapsed));
+                        sleep(truncate<uint32>(ms), m_abort_switch);
+                    }
+                    last_time = time;
                 }
             }
 
@@ -378,7 +418,9 @@ namespace
             Frame&                          m_frame;
             SampleAccumulationBuffer&       m_buffer;
             ITileCallback*                  m_tile_callback;
-            foundation::IAbortSwitch&       m_abort_switch;
+            const double                    m_target_elapsed;
+            IAbortSwitch&                   m_abort_switch;
+            ThreadFlag                      m_pause_flag;
         };
 
         class StatisticsFunc
@@ -399,31 +441,36 @@ namespace
               , m_ref_image_avg_lum(ref_image_avg_lum)
               , m_abort_switch(abort_switch)
               , m_rcp_timer_frequency(1.0 / m_timer.frequency())
-              , m_last_time(m_timer.read() * m_rcp_timer_frequency)
             {
                 const Vector2u crop_window_extent = m_frame.get_crop_window().extent();
                 const size_t pixel_count = (crop_window_extent.x + 1) * (crop_window_extent.y + 1);
                 m_rcp_pixel_count = 1.0 / pixel_count;
             }
 
+            void pause()
+            {
+                m_pause_flag.set();
+            }
+
+            void resume()
+            {
+                m_pause_flag.clear();
+            }
+
             void operator()()
             {
                 while (!m_abort_switch.is_aborted())
                 {
-                    const double time = m_timer.read() * m_rcp_timer_frequency;
-                    const double elapsed_seconds = time - m_last_time;
-
-                    if (elapsed_seconds >= 1.0)
+                    if (m_pause_flag.is_clear())
                     {
-                        m_last_time = time;
-
+                        const double time = m_timer.read() * m_rcp_timer_frequency;
                         record_and_print_perf_stats(time);
 
                         if (m_print_luminance_stats || m_ref_image)
                             record_and_print_convergence_stats();
                     }
 
-                    foundation::sleep(5);   // namespace qualifier required
+                    sleep(1000, m_abort_switch);
                 }
             }
 
@@ -448,10 +495,10 @@ namespace
             const Image*                    m_ref_image;
             const double                    m_ref_image_avg_lum;
             IAbortSwitch&                   m_abort_switch;
+            ThreadFlag                      m_pause_flag;
 
             DefaultWallclockTimer           m_timer;
             double                          m_rcp_timer_frequency;
-            double                          m_last_time;
 
             double                          m_rcp_pixel_count;
             SampleCountHistory<128>         m_sample_count_history;
@@ -520,6 +567,8 @@ namespace
         JobQueue                            m_job_queue;
         auto_ptr<JobManager>                m_job_manager;
         AbortSwitch                         m_abort_switch;
+
+        typedef vector<ISampleGenerator*> SampleGeneratorVector;
 
         SampleGeneratorVector               m_sample_generators;
         auto_release_ptr<ITileCallback>     m_tile_callback;

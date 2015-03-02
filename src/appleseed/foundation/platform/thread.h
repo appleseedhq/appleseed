@@ -45,9 +45,11 @@
 #pragma warning (disable : 4244)    // conversion from '__int64' to 'long', possible loss of data
 #include "boost/thread/thread.hpp"
 #pragma warning (pop)
+#include "boost/cstdint.hpp"
 #include "boost/version.hpp"
 
 // Forward declarations.
+namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class Logger; }
 
 // Starting with Boost 1.48.0, the atomic primitives are defined in boost::interprocess::ipcdetail.
@@ -197,11 +199,37 @@ class ThreadFunctionWrapper
 
 
 //
+// A cross-thread boolean flag.
+//
+
+class APPLESEED_DLLSYMBOL ThreadFlag
+{
+  public:
+    // Constructor, clears the flag.
+    ThreadFlag();
+
+    // Clear the flag.
+    void clear();
+
+    // Set the flag.
+    void set();
+
+    // Check the flag.
+    bool is_clear() const;
+    bool is_set() const;
+
+  private:
+    mutable volatile boost::uint32_t m_flag;
+};
+
+
+//
 // Utility free functions.
 //
 
 // Suspend the current thread for a given number of milliseconds.
 APPLESEED_DLLSYMBOL void sleep(const uint32 ms);
+APPLESEED_DLLSYMBOL void sleep(const uint32 ms, IAbortSwitch& abort_switch);
 
 // Give up the remainder of the current thread's time slice, to allow other threads to run.
 APPLESEED_DLLSYMBOL void yield();
@@ -236,6 +264,36 @@ inline Spinlock::Spinlock()
 inline Spinlock::ScopedLock::ScopedLock(Spinlock& spinlock)
   : m_lock(spinlock.m_sp)
 {
+}
+
+
+//
+// ThreadFlag class implementation.
+//
+
+inline ThreadFlag::ThreadFlag()
+{
+    clear();
+}
+
+inline void ThreadFlag::clear()
+{
+    boost_atomic::atomic_write32(&m_flag, 0);
+}
+
+inline void ThreadFlag::set()
+{
+    boost_atomic::atomic_write32(&m_flag, 1);
+}
+
+inline bool ThreadFlag::is_clear() const
+{
+    return boost_atomic::atomic_read32(&m_flag) == 0;
+}
+
+inline bool ThreadFlag::is_set() const
+{
+    return !is_clear();
 }
 
 }       // namespace foundation

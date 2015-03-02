@@ -212,8 +212,9 @@ namespace
         {
             const IRendererController::Status status = m_renderer_controller.get_status();
             return
-                status != IRendererController::ContinueRendering &&
-                status != IRendererController::RestartRendering;
+                status == IRendererController::TerminateRendering ||
+                status == IRendererController::AbortRendering ||
+                status == IRendererController::ReinitializeRendering;
         }
 
       private:
@@ -397,8 +398,23 @@ IRendererController::Status MasterRenderer::wait_for_event(IFrameRenderer& frame
 
         const IRendererController::Status status = m_renderer_controller->get_status();
 
-        if (status != IRendererController::ContinueRendering)
+        switch (status)
+        {
+          case IRendererController::ContinueRendering:
+            // Nothing to do.
+            break;
+
+          case IRendererController::PauseRendering:
+            frame_renderer.pause_rendering();
+            break;
+
+          case IRendererController::ResumeRendering:
+            frame_renderer.resume_rendering();
+            break;
+
+          default:
             return status;
+        }
 
         m_renderer_controller->on_progress();
 

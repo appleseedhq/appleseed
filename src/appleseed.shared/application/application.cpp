@@ -33,6 +33,7 @@
 // appleseed.foundation headers.
 #include "foundation/platform/path.h"
 #include "foundation/utility/log.h"
+#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <cstring>
@@ -50,8 +51,7 @@ namespace shared {
 
 bool Application::is_correctly_installed()
 {
-    const char* root_path = get_root_path();
-    return strlen(root_path) > 0;
+    return !is_empty_string(get_root_path());
 }
 
 void Application::check_installation(Logger& logger)

@@ -34,6 +34,7 @@
 #ifdef _WIN32
 #include "foundation/platform/windows.h"
 #endif
+#include "foundation/utility/job/iabortswitch.h"
 #include "foundation/utility/log.h"
 
 // Boost headers.
@@ -265,6 +266,14 @@ BenchmarkingThreadContext::~BenchmarkingThreadContext() {}
 void sleep(const uint32 ms)
 {
     this_thread::sleep(posix_time::milliseconds(ms));
+}
+
+void sleep(const uint32 ms, IAbortSwitch& abort_switch)
+{
+    const posix_time::milliseconds one_ms(1);
+
+    for (uint32 i = 0; i < ms && !abort_switch.is_aborted(); ++i)
+        this_thread::sleep(one_ms);
 }
 
 void yield()

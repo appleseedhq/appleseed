@@ -100,7 +100,7 @@ void JobManager::start()
     assert(impl->m_worker_threads.empty() ||
            impl->m_worker_threads.size() == impl->m_thread_count);
 
-    // Create the worker threads if they don't already exist.
+    // Create worker threads if they don't already exist.
     if (impl->m_worker_threads.empty())
     {
         for (size_t i = 0; i < impl->m_thread_count; ++i)
@@ -114,17 +114,29 @@ void JobManager::start()
         }
     }
 
-    // Start the worker threads.
+    // Start worker threads.
     for (each<Impl::WorkerThreads> i = impl->m_worker_threads; i; ++i)
         (*i)->start();
 }
 
 void JobManager::stop()
 {
-    // Stop and delete the worker threads.
+    // Stop and delete worker threads.
     for (each<Impl::WorkerThreads> i = impl->m_worker_threads; i; ++i)
         delete *i;
     impl->m_worker_threads.clear();
+}
+
+void JobManager::pause()
+{
+    for (each<Impl::WorkerThreads> i = impl->m_worker_threads; i; ++i)
+        (*i)->pause();
+}
+
+void JobManager::resume()
+{
+    for (each<Impl::WorkerThreads> i = impl->m_worker_threads; i; ++i)
+        (*i)->resume();
 }
 
 }   // namespace foundation

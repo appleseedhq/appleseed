@@ -38,9 +38,6 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// Boost headers.
-#include "boost/cstdint.hpp"
-
 namespace foundation
 {
 
@@ -52,9 +49,6 @@ class APPLESEED_DLLSYMBOL AbortSwitch
   : public IAbortSwitch
 {
   public:
-    // Constructor, clears the abort flag.
-    AbortSwitch();
-
     // Clear the abort flag.
     void clear();
 
@@ -65,7 +59,7 @@ class APPLESEED_DLLSYMBOL AbortSwitch
     virtual bool is_aborted() const APPLESEED_OVERRIDE;
 
   private:
-    mutable volatile boost::uint32_t m_aborted;
+    ThreadFlag m_abort_flag;
 };
 
 
@@ -73,24 +67,19 @@ class APPLESEED_DLLSYMBOL AbortSwitch
 // AbortSwitch class implementation.
 //
 
-inline AbortSwitch::AbortSwitch()
-{
-    clear();
-}
-
 inline void AbortSwitch::clear()
 {
-    boost_atomic::atomic_write32(&m_aborted, 0);
+    m_abort_flag.clear();
 }
 
 inline void AbortSwitch::abort()
 {
-    boost_atomic::atomic_write32(&m_aborted, 1);
+    m_abort_flag.set();
 }
 
 inline bool AbortSwitch::is_aborted() const
 {
-    return boost_atomic::atomic_read32(&m_aborted) == 1;
+    return m_abort_flag.is_set();
 }
 
 }       // namespace foundation
