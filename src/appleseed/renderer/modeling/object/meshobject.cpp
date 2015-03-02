@@ -35,9 +35,11 @@
 #include "renderer/modeling/object/iregion.h"
 #include "renderer/modeling/object/triangle.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/string.h"
+
 // Standard headers.
 #include <cassert>
-#include <cstring>
 #include <string>
 #include <vector>
 
@@ -151,7 +153,7 @@ bool MeshObject::has_alpha_map() const
 
     const char* value = m_params.strings().get("alpha_map");
 
-    return strlen(value) > 0;
+    return !is_empty_string(value);
 }
 
 const Source* MeshObject::get_uncached_alpha_map() const

@@ -94,8 +94,11 @@ T from_string(const char* s);
 
 
 //
-// String manipulation functions.
+// C strings manipulation functions.
 //
+
+// Return true if a C string is empty.
+bool is_empty_string(const char* s);
 
 // Duplicate a C string. The returned string must be freed using free_string().
 APPLESEED_DLLSYMBOL char* duplicate_string(const char* s);
@@ -105,6 +108,11 @@ APPLESEED_DLLSYMBOL void free_string(const char* s);
 
 // Convert a C string allocated by duplicate_string() to an std::string, and dellocate the C string.
 FORCE_INLINE std::string convert_to_std_string(const char* s);
+
+
+//
+// C++ strings manipulation functions.
+//
 
 // Convert all characters of a string to lower case.
 std::string lower_case(const std::string& s);
@@ -476,7 +484,18 @@ inline uint8 from_string(const std::string& s)
 
 
 //
-// String manipulation functions implementation.
+// C strings manipulation functions implementation.
+//
+
+inline bool is_empty_string(const char* s)
+{
+    assert(s);
+    return s[0] == '\0';
+}
+
+
+//
+// C++ strings manipulation functions implementation.
 //
 
 FORCE_INLINE std::string convert_to_std_string(const char* s)

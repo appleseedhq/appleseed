@@ -46,7 +46,7 @@ const char* Blanks = " \t\n\v\f\r";
 
 
 //
-// String manipulation functions implementation.
+// C strings manipulation functions implementation.
 //
 
 char* duplicate_string(const char* s)
