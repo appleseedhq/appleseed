@@ -115,6 +115,7 @@ RendererServices::RendererServices(
     m_global_attr_getters[OIIO::ustring("path:ray_depth")] = &RendererServices::get_ray_depth;
     m_global_attr_getters[OIIO::ustring("path:ray_length")] = &RendererServices::get_ray_length;
     m_global_attr_getters[OIIO::ustring("path:ray_ior")] = &RendererServices::get_ray_ior;
+    m_global_attr_getters[OIIO::ustring("path:ray_has_differentials")] = &RendererServices::get_ray_has_differentials;
     m_global_attr_getters[OIIO::ustring("appleseed:version_major")] = &RendererServices::get_appleseed_version_major;
     m_global_attr_getters[OIIO::ustring("appleseed:version_minor")] = &RendererServices::get_appleseed_version_minor;
     m_global_attr_getters[OIIO::ustring("appleseed:version_patch")] = &RendererServices::get_appleseed_version_patch;
@@ -702,6 +703,21 @@ IMPLEMENT_ATTR_GETTER(ray_ior)
     if (type == OIIO::TypeDesc::TypeFloat)
     {
         reinterpret_cast<float*>(val)[0] = 1.0f;
+        clear_attr_derivatives(derivs, type, val);
+        return true;
+    }
+
+    return false;
+}
+
+IMPLEMENT_ATTR_GETTER(ray_has_differentials)
+{
+    if (type == OIIO::TypeDesc::TypeInt)
+    {
+        const ShadingPoint* shading_point =
+            reinterpret_cast<const ShadingPoint*>(sg->renderstate);
+
+        reinterpret_cast<int*>(val)[0] = static_cast<int>(shading_point->get_ray().m_has_differentials);
         clear_attr_derivatives(derivs, type, val);
         return true;
     }

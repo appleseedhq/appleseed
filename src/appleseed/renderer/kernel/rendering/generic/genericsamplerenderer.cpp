@@ -55,6 +55,7 @@
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
+#include "foundation/image/image.h"
 #include "foundation/image/regularspectrum.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
@@ -140,6 +141,10 @@ namespace
                 m_params.m_max_iterations)
           , m_shading_engine(shading_engine)
         {
+            // 1/4 of a pixel, like in Renderman RIS.
+            const CanvasProperties& c = frame.image().properties();
+            m_image_point_dx = Vector2d(1.0 / (4.0 * c.m_canvas_width), 0.0);
+            m_image_point_dy = Vector2d(0.0, 1.0 / (4.0 * c.m_canvas_height));
         }
 
         ~GenericSampleRenderer()
@@ -169,7 +174,7 @@ namespace
             ShadingRay primary_ray;
             m_scene.get_camera()->generate_ray(
                 sampling_context,
-                image_point,
+                Dual2d(image_point, m_image_point_dx, m_image_point_dy),
                 primary_ray);
 
             ShadingPoint shading_points[2];
@@ -254,6 +259,13 @@ namespace
 
                 // Move the ray origin to the intersection point.
                 primary_ray.m_org = shading_point_ptr->get_point();
+
+                if (primary_ray.m_has_differentials)
+                {
+                    primary_ray.m_rx.m_org = primary_ray.m_rx.point_at(primary_ray.m_tmax);
+                    primary_ray.m_ry.m_org = primary_ray.m_ry.point_at(primary_ray.m_tmax);
+                }
+
                 primary_ray.m_tmax = numeric_limits<double>::max();
             }
 
@@ -319,6 +331,8 @@ namespace
         ILightingEngine*            m_lighting_engine;
         const ShadingContext        m_shading_context;
         ShadingEngine&              m_shading_engine;
+        Vector2d                    m_image_point_dx;
+        Vector2d                    m_image_point_dy;
     };
 }
 

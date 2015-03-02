@@ -178,7 +178,8 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
 
         // Retrieve the ray.
         const ShadingRay& ray = vertex.get_ray();
-        vertex.m_outgoing = foundation::normalize(-ray.m_dir);
+        assert(foundation::is_normalized(ray.m_dir));
+        vertex.m_outgoing = -ray.m_dir;
 
         // Terminate the path if the ray didn't hit anything.
         if (!vertex.m_shading_point->hit())
@@ -216,13 +217,24 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             if (pass_through(sampling_context, alpha))
             {
                 // Construct a ray that continues in the same direction as the incoming ray.
-                const ShadingRay cutoff_ray(
+                ShadingRay cutoff_ray(
                     vertex.get_point(),
                     ray.m_dir,
                     ray.m_time,
                     ray.m_dtime,
                     ray.m_flags,
                     ray.m_depth);   // ray depth does not increase when passing through an alpha-mapped surface
+
+                // Transfer the differentials if the ray has them.
+                if (ray.m_has_differentials)
+                {
+                    cutoff_ray.m_has_differentials = true;
+                    cutoff_ray.m_rx = ray.m_rx;
+                    cutoff_ray.m_rx.m_org = ray.m_rx.point_at(ray.m_tmax);
+
+                    cutoff_ray.m_ry = ray.m_ry;
+                    cutoff_ray.m_ry.m_org = ray.m_ry.point_at(ray.m_tmax);
+                }
 
                 // Trace the ray.
                 shading_points[shading_point_index].clear();

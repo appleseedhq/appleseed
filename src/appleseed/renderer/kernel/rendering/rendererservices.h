@@ -306,6 +306,7 @@ class RendererServices
     DECLARE_ATTR_GETTER(ray_depth);
     DECLARE_ATTR_GETTER(ray_length);
     DECLARE_ATTR_GETTER(ray_ior);
+    DECLARE_ATTR_GETTER(ray_has_differentials);
 
     // Appleseed version attributes
     DECLARE_ATTR_GETTER(appleseed_version_major);

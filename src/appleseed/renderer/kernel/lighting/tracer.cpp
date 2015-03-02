@@ -95,6 +95,8 @@ const ShadingPoint& Tracer::do_trace(
     double&                     transmission,
     const ShadingPoint*         parent_shading_point)
 {
+    assert(is_normalized(direction));
+
     transmission = 1.0;
 
     const ShadingPoint* shading_point_ptr = parent_shading_point;
@@ -191,11 +193,14 @@ const ShadingPoint& Tracer::do_trace_between(
         }
 
         // Construct the visibility ray.
+        const Vector3d direction = target - point;
+        const double dist = norm(direction);
+
         const ShadingRay ray(
             point,
-            target - point,
-            0.0,                // ray tmin
-            1.0 - 1.0e-6,       // ray tmax
+            direction / dist,
+            0.0,                    // ray tmin
+            dist * (1.0 - 1.0e-6),  // ray tmax
             ray_time,
             m_ray_dtime,
             ray_flags,

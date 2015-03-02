@@ -132,6 +132,10 @@ class ShadingPoint
     // Return the texture coordinates from a given UV set at the intersection point.
     const foundation::Vector2d& get_uv(const size_t uvset) const;
 
+    // Return the screen space partial derivatives of the texture coordinates from a given UV set.
+    const foundation::Vector2d& get_duvdx(const size_t uvset) const;
+    const foundation::Vector2d& get_duvdy(const size_t uvset) const;
+
     // Return the intersection point in world space.
     const foundation::Vector3d& get_point() const;
 
@@ -144,6 +148,14 @@ class ShadingPoint
     // Return the world space partial derivatives of the intersection point wrt. a given UV set.
     const foundation::Vector3d& get_dpdu(const size_t uvset) const;
     const foundation::Vector3d& get_dpdv(const size_t uvset) const;
+
+    // Return the world space partial derivatives of the intersection normal wrt. a given UV set.
+    const foundation::Vector3d& get_dndu(const size_t uvset) const;
+    const foundation::Vector3d& get_dndv(const size_t uvset) const;
+
+    // Return the screen space partial derivatives of the intersection point.
+    const foundation::Vector3d& get_dpdx() const;
+    const foundation::Vector3d& get_dpdy() const;
 
     // Return the world space geometric normal at the intersection point. The geometric normal
     // always faces the incoming ray, i.e. dot(ray_dir, geometric_normal) is always positive or null.
@@ -269,22 +281,23 @@ class ShadingPoint
     // Flags to keep track of which on-demand results have been computed and cached.
     enum Members
     {
-        HasSourceGeometry               = 1 << 0,
-        HasUV0                          = 1 << 1,
-        HasPoint                        = 1 << 2,
-        HasBiasedPoint                  = 1 << 3,
-        HasRefinedPoints                = 1 << 4,
-        HasPartialDerivatives           = 1 << 5,
-        HasGeometricNormal              = 1 << 6,
-        HasOriginalShadingNormal        = 1 << 7,
-        HasShadingBasis                 = 1 << 8,
-        HasWorldSpaceTriangleVertices   = 1 << 9,
-        HasMaterial                     = 1 << 10,
-        HasTriangleVertexTangents       = 1 << 11,
-        HasPointVelocity                = 1 << 12,
-        HasAlpha                        = 1 << 13
+        HasSourceGeometry                = 1 << 0,
+        HasUV0                           = 1 << 1,
+        HasPoint                         = 1 << 2,
+        HasBiasedPoint                   = 1 << 3,
+        HasRefinedPoints                 = 1 << 4,
+        HasWorldSpacePartialDerivatives  = 1 << 5,
+        HasGeometricNormal               = 1 << 6,
+        HasOriginalShadingNormal         = 1 << 7,
+        HasShadingBasis                  = 1 << 8,
+        HasWorldSpaceTriangleVertices    = 1 << 9,
+        HasMaterial                      = 1 << 10,
+        HasTriangleVertexTangents        = 1 << 11,
+        HasPointVelocity                 = 1 << 12,
+        HasAlpha                         = 1 << 13,
+        HasScreenSpacePartialDerivatives = 1 << 14
 #ifdef APPLESEED_WITH_OSL
-        , HasOSLShaderGlobals           = 1 << 14
+        , HasOSLShaderGlobals            = 1 << 15
 #endif
     };
     mutable foundation::uint32          m_members;
@@ -301,10 +314,16 @@ class ShadingPoint
 
     // Additional intersection results, computed on demand.
     mutable foundation::Vector2d        m_uv;                           // texture coordinates from UV set #0
+    mutable foundation::Vector2d        m_duvdx;                        // screen space partial derivative of the texture coords wrt. X
+    mutable foundation::Vector2d        m_duvdy;                        // screen space partial derivative of the texture coords wrt. Y
     mutable foundation::Vector3d        m_point;                        // world space intersection point
     mutable foundation::Vector3d        m_biased_point;                 // world space intersection point with per-object-instance bias applied
     mutable foundation::Vector3d        m_dpdu;                         // world space partial derivative of the intersection point wrt. U
     mutable foundation::Vector3d        m_dpdv;                         // world space partial derivative of the intersection point wrt. V
+    mutable foundation::Vector3d        m_dndu;                         // world space partial derivative of the intersection normal wrt. U
+    mutable foundation::Vector3d        m_dndv;                         // world space partial derivative of the intersection normal wrt. V
+    mutable foundation::Vector3d        m_dpdx;                         // screen space partial derivative of the intersection point wrt. X
+    mutable foundation::Vector3d        m_dpdy;                         // screen space partial derivative of the intersection point wrt. Y
     mutable foundation::Vector3d        m_geometric_normal;             // world space geometric normal, unit-length
     mutable foundation::Vector3d        m_original_shading_normal;      // original world space shading normal, unit-length
     mutable foundation::Basis3d         m_shading_basis;                // world space orthonormal basis around shading normal
@@ -337,7 +356,8 @@ class ShadingPoint
     // Refine and offset the intersection point.
     void refine_and_offset() const;
 
-    void compute_partial_derivatives() const;
+    void compute_world_space_partial_derivatives() const;
+    void compute_screen_space_partial_derivatives() const;
     void compute_geometric_normal() const;
     void compute_shading_normal() const;
     void compute_original_shading_normal() const;
@@ -403,6 +423,8 @@ inline const Scene& ShadingPoint::get_scene() const
 
 inline void ShadingPoint::set_ray(const ShadingRay& ray)
 {
+    assert(foundation::is_normalized(ray.m_dir));
+
     m_ray = ray;
 }
 
@@ -476,6 +498,34 @@ inline const foundation::Vector2d& ShadingPoint::get_uv(const size_t uvset) cons
     return m_uv;
 }
 
+inline const foundation::Vector2d& ShadingPoint::get_duvdx(const size_t uvset) const
+{
+    assert(hit());
+    assert(uvset == 0);     // todo: support multiple UV sets
+
+    if (!(m_members & HasScreenSpacePartialDerivatives))
+    {
+        compute_screen_space_partial_derivatives();
+        m_members |= HasScreenSpacePartialDerivatives;
+    }
+
+    return m_duvdx;
+}
+
+inline const foundation::Vector2d& ShadingPoint::get_duvdy(const size_t uvset) const
+{
+    assert(hit());
+    assert(uvset == 0);     // todo: support multiple UV sets
+
+    if (!(m_members & HasScreenSpacePartialDerivatives))
+    {
+        compute_screen_space_partial_derivatives();
+        m_members |= HasScreenSpacePartialDerivatives;
+    }
+
+    return m_duvdy;
+}
+
 inline const foundation::Vector3d& ShadingPoint::get_point() const
 {
     assert(hit());
@@ -505,10 +555,10 @@ inline const foundation::Vector3d& ShadingPoint::get_dpdu(const size_t uvset) co
     assert(hit());
     assert(uvset == 0);     // todo: support multiple UV sets
 
-    if (!(m_members & HasPartialDerivatives))
+    if (!(m_members & HasWorldSpacePartialDerivatives))
     {
-        compute_partial_derivatives();
-        m_members |= HasPartialDerivatives;
+        compute_world_space_partial_derivatives();
+        m_members |= HasWorldSpacePartialDerivatives;
     }
 
     return m_dpdu;
@@ -519,13 +569,67 @@ inline const foundation::Vector3d& ShadingPoint::get_dpdv(const size_t uvset) co
     assert(hit());
     assert(uvset == 0);     // todo: support multiple UV sets
 
-    if (!(m_members & HasPartialDerivatives))
+    if (!(m_members & HasWorldSpacePartialDerivatives))
     {
-        compute_partial_derivatives();
-        m_members |= HasPartialDerivatives;
+        compute_world_space_partial_derivatives();
+        m_members |= HasWorldSpacePartialDerivatives;
     }
 
     return m_dpdv;
+}
+
+inline const foundation::Vector3d& ShadingPoint::get_dndu(const size_t uvset) const
+{
+    assert(hit());
+    assert(uvset == 0);     // todo: support multiple UV sets
+
+    if (!(m_members & HasWorldSpacePartialDerivatives))
+    {
+        compute_world_space_partial_derivatives();
+        m_members |= HasWorldSpacePartialDerivatives;
+    }
+
+    return m_dndu;
+}
+
+inline const foundation::Vector3d& ShadingPoint::get_dndv(const size_t uvset) const
+{
+    assert(hit());
+    assert(uvset == 0);     // todo: support multiple UV sets
+
+    if (!(m_members & HasWorldSpacePartialDerivatives))
+    {
+        compute_world_space_partial_derivatives();
+        m_members |= HasWorldSpacePartialDerivatives;
+    }
+
+    return m_dndv;
+}
+
+inline const foundation::Vector3d& ShadingPoint::get_dpdx() const
+{
+    assert(hit());
+
+    if (!(m_members & HasScreenSpacePartialDerivatives))
+    {
+        compute_screen_space_partial_derivatives();
+        m_members |= HasScreenSpacePartialDerivatives;
+    }
+
+    return m_dpdx;
+}
+
+inline const foundation::Vector3d& ShadingPoint::get_dpdy() const
+{
+    assert(hit());
+
+    if (!(m_members & HasScreenSpacePartialDerivatives))
+    {
+        compute_screen_space_partial_derivatives();
+        m_members |= HasScreenSpacePartialDerivatives;
+    }
+
+    return m_dpdy;
 }
 
 inline const foundation::Vector3d& ShadingPoint::get_geometric_normal() const
