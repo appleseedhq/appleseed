@@ -52,11 +52,8 @@ namespace
       : public TileCallbackBase
     {
       public:
-        QtTileCallback(
-            RenderWidget*   render_widget,
-            volatile bool&  tile_callbacks_enabled)
+        explicit QtTileCallback(RenderWidget* render_widget)
           : m_render_widget(render_widget)
-          , m_tile_callbacks_enabled(tile_callbacks_enabled)
         {
         }
 
@@ -71,11 +68,9 @@ namespace
             const size_t    width,
             const size_t    height) APPLESEED_OVERRIDE
         {
-            if (!m_tile_callbacks_enabled)
-                return;
-
             assert(m_render_widget);
             m_render_widget->highlight_region(x, y, width, height);
+            m_render_widget->update();
         }
 
         virtual void post_render_tile(
@@ -83,26 +78,21 @@ namespace
             const size_t    tile_x,
             const size_t    tile_y) APPLESEED_OVERRIDE
         {
-            if (!m_tile_callbacks_enabled)
-                return;
-
             assert(m_render_widget);
             m_render_widget->blit_tile(*frame, tile_x, tile_y);
+            m_render_widget->update();
         }
 
         virtual void post_render(
             const Frame*    frame) APPLESEED_OVERRIDE
         {
-            if (!m_tile_callbacks_enabled)
-                return;
-
             assert(m_render_widget);
             m_render_widget->blit_frame(*frame);
+            m_render_widget->update();
         }
 
       private:
-        RenderWidget*       m_render_widget;
-        volatile bool&      m_tile_callbacks_enabled;
+        RenderWidget* m_render_widget;
     };
 }
 
@@ -111,11 +101,8 @@ namespace
 // QtTileCallbackFactory factory.
 //
 
-QtTileCallbackFactory::QtTileCallbackFactory(
-    RenderWidget*   render_widget,
-    volatile bool&  tile_callbacks_enabled)
+QtTileCallbackFactory::QtTileCallbackFactory(RenderWidget* render_widget)
   : m_render_widget(render_widget)
-  , m_tile_callbacks_enabled(tile_callbacks_enabled)
 {
 }
 
@@ -126,10 +113,7 @@ void QtTileCallbackFactory::release()
 
 ITileCallback* QtTileCallbackFactory::create()
 {
-    return
-        new QtTileCallback(
-            m_render_widget,
-            m_tile_callbacks_enabled);
+    return new QtTileCallback(m_render_widget);
 }
 
 }   // namespace studio

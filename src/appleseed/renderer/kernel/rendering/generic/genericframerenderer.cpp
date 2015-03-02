@@ -139,6 +139,11 @@ namespace
             m_job_queue.wait_until_completion();
         }
 
+        virtual bool is_rendering() const APPLESEED_OVERRIDE
+        {
+            return m_is_rendering;
+        }
+
         virtual void start_rendering() APPLESEED_OVERRIDE
         {
             assert(!is_rendering());
@@ -181,16 +186,21 @@ namespace
             m_job_manager->stop();
         }
 
+        virtual void pause_rendering() APPLESEED_OVERRIDE
+        {
+            m_job_manager->pause();
+        }
+
+        virtual void resume_rendering() APPLESEED_OVERRIDE
+        {
+            m_job_manager->resume();
+        }
+
         virtual void terminate_rendering() APPLESEED_OVERRIDE
         {
             stop_rendering();
 
             print_tile_renderers_stats();
-        }
-
-        virtual bool is_rendering() const APPLESEED_OVERRIDE
-        {
-            return m_is_rendering;
         }
 
       private:

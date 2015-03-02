@@ -70,6 +70,12 @@ class APPLESEED_DLLSYMBOL IRendererController
         // Continue rendering.
         ContinueRendering,
 
+        // Pause rendering.
+        PauseRendering,
+
+        // Resume rendering.
+        ResumeRendering,
+
         // Terminate rendering, call on_rendering_success() on the renderer controller.
         TerminateRendering,
 

@@ -29,9 +29,6 @@
 // Interface header.
 #include "frozendisplayrenderer.h"
 
-// appleseed.studio headers.
-#include "mainwindow/rendering/renderwidget.h"
-
 // appleseed.renderer headers.
 #include "renderer/api/aov.h"
 #include "renderer/api/camera.h"
@@ -47,13 +44,10 @@
 #include "foundation/math/transform.h"
 #include "foundation/platform/types.h"
 
-// Qt headers.
-#include <QImage>
-#include <QMutexLocker>
-
 // Standard headers.
+#include <cassert>
 #include <cstddef>
-#include <cstring>
+#include <limits>
 
 using namespace foundation;
 using namespace renderer;
@@ -65,32 +59,17 @@ namespace studio {
 FrozenDisplayRenderer::FrozenDisplayRenderer(
     const SamplingContext::Mode sampling_mode,
     const Camera&               camera,
-    const Frame&                frame,
-    RenderWidget&               render_widget)
+    const Frame&                frame)
   : m_sampling_mode(sampling_mode)
   , m_camera(camera)
   , m_frame(frame)
   , m_frame_props(frame.image().properties())
   , m_color_image(frame.image())
   , m_depth_image(frame.aov_images().get_image(frame.aov_images().get_index("depth")))
-  , m_render_widget(render_widget)
+  , m_temp_image(m_frame_props.m_pixel_count * 4)
+  , m_camera_transform(camera.transform_sequence().get_earliest_transform())
+  , m_points(m_frame_props.m_pixel_count)
 {
-    const QImage& dest_image = m_render_widget.image();
-    m_zbuffer.resize(dest_image.width() * dest_image.height(), 0.0f);
-    m_points.resize(m_frame_props.m_pixel_count);
-}
-
-namespace
-{
-    // todo: factorize with code in utility/interop.h and foundation/image/pixel.h.
-    Color3b rgb32f_to_color3b(const float r, const float g, const float b)
-    {
-        return
-            Color3b(
-                truncate<uint8>(clamp(r * 256.0f, 0.0f, 255.0f)),
-                truncate<uint8>(clamp(g * 256.0f, 0.0f, 255.0f)),
-                truncate<uint8>(clamp(b * 256.0f, 0.0f, 255.0f)));
-    }
 }
 
 void FrozenDisplayRenderer::capture()
@@ -125,26 +104,23 @@ void FrozenDisplayRenderer::capture()
                             px, py,
                             0.5, 0.5);
 
-                    // Generate a world space ray going through that film point.
-                    ShadingRay ray;
-                    m_camera.generate_ray(sampling_context, point, ray);
-
-                    // Retrieve pixel color.
-                    Color4f pixel;
-                    color_tile.get_pixel(px, py, pixel);
-
-                    // todo: hack.
-                    pixel.rgb() = fast_linear_rgb_to_srgb(pixel.rgb());
-
                     // Retrieve pixel depth.
                     const float depth = depth_tile.get_component<float>(px, py, 0);
 
                     if (depth >= 0.0f)
                     {
+                        // Generate a world space ray going through that film point.
+                        ShadingRay ray;
+                        m_camera.generate_ray(sampling_context, point, ray);
+
+                        // Retrieve pixel color.
+                        Color4f pixel;
+                        color_tile.get_pixel(px, py, pixel);
+
                         // Compute and store world space point and color.
                         RenderPoint point;
                         point.m_position = Vector3f(ray.point_at(depth));
-                        point.m_color = rgb32f_to_color3b(pixel[0], pixel[1], pixel[2]);
+                        point.m_color = pixel.rgb();
                         m_points[point_index++] = point;
                     }
                 }
@@ -153,32 +129,33 @@ void FrozenDisplayRenderer::capture()
     }
 }
 
+void FrozenDisplayRenderer::update()
+{
+    boost::mutex::scoped_lock lock(m_camera_transform_mutex);
+
+    m_camera_transform = m_camera.transform_sequence().get_earliest_transform();
+}
+
 void FrozenDisplayRenderer::render()
 {
-    // Get the camera transform.
-    Transformd tmp;
-    const Transformd& camera_transform = m_camera.transform_sequence().evaluate(0.0, tmp);
+    // Make a local copy of the camera transform to prevent update() from blocking.
+    Transformd camera_transform_copy;
+    {
+        boost::mutex::scoped_lock lock(m_camera_transform_mutex);
+        camera_transform_copy = m_camera_transform;
+    }
 
-    // Get exclusive access to the render widget.
-    QMutexLocker render_widget_locker(&m_render_widget.mutex());
+    // Retrieve pointer to temporary image pixels.
+    float* temp_pixels = &m_temp_image[0];
 
-    // Retrieve destination image and associated information.
-    QImage& dest_image = m_render_widget.image();
-    const int image_width = dest_image.width();
-    const int image_height = dest_image.height();
-    const size_t dest_stride = static_cast<size_t>(dest_image.bytesPerLine());
-
-    // Retrieve pointers to the color and depth buffers.
-    uint8* pixels = static_cast<uint8*>(dest_image.scanLine(0));
-    float* zbuffer = &m_zbuffer[0];
-
-    // Clear image.
-    for (size_t y = 0; y < image_height; ++y)
-        memset(pixels + y * dest_stride, 0, dest_stride);
-
-    // Clear Z-buffer.
-    for (size_t i = 0; i < image_width * image_height; ++i)
-        zbuffer[i] = -1.0e38f;
+    // Clear temporary image.
+    for (size_t i = 0; i < m_frame_props.m_pixel_count * 4; i += 4)
+    {
+        temp_pixels[i + 0] = 0.0f;
+        temp_pixels[i + 1] = 0.0f;
+        temp_pixels[i + 2] = 0.0f;
+        temp_pixels[i + 3] = -numeric_limits<float>::max();
+    }
 
     const size_t point_count = m_points.size();
     for (size_t i = 0; i < point_count; ++i)
@@ -186,36 +163,65 @@ void FrozenDisplayRenderer::render()
         const RenderPoint& point = m_points[i];
 
         // Transform point to camera space.
-        const Vector3f point_camera = camera_transform.point_to_local(point.m_position);
+        const Vector3f point_camera = camera_transform_copy.point_to_local(point.m_position);
 
         // Project point to film plane.
         Vector2d ndc;
-        m_camera.project_camera_space_point(Vector3d(point_camera), ndc);
+        if (!m_camera.project_camera_space_point(Vector3d(point_camera), ndc))
+            continue;
 
         // Compute point coordinates in pixels.
-        const int ix = truncate<int>(ndc.x * image_width);
-        const int iy = truncate<int>(ndc.y * image_height);
+        const int ix = truncate<int>(ndc.x * m_frame_props.m_canvas_width);
+        const int iy = truncate<int>(ndc.y * m_frame_props.m_canvas_height);
 
         // Reject points outside the frame.
         if (ix < 0 ||
             iy < 0 ||
-            ix >= image_width ||
-            iy >= image_height)
+            ix >= m_frame_props.m_canvas_width ||
+            iy >= m_frame_props.m_canvas_height)
             continue;
+
+        const size_t pixel_index = (iy * m_frame_props.m_canvas_width + ix) * 4;
 
         // Check point depth against Z-buffer.
-        const size_t zbuffer_index = iy * image_width + ix;
-        if (point_camera.z <= zbuffer[zbuffer_index])
+        if (point_camera.z <= temp_pixels[pixel_index + 3])
             continue;
 
-        // Write to Z-buffer.
-        zbuffer[zbuffer_index] = point_camera.z;
+        // Set point in temporary image.
+        temp_pixels[pixel_index + 0] = point.m_color[0];
+        temp_pixels[pixel_index + 1] = point.m_color[1];
+        temp_pixels[pixel_index + 2] = point.m_color[2];
+        temp_pixels[pixel_index + 3] = point_camera.z;
+    }
 
-        // Draw point on render widget.
-        const size_t base = iy * dest_stride + ix * 3;
-        pixels[base + 0] = point.m_color[0];
-        pixels[base + 1] = point.m_color[1];
-        pixels[base + 2] = point.m_color[2];
+    // Copy the temporary image to the frame.
+    for (size_t ty = 0; ty < m_frame_props.m_tile_count_y; ++ty)
+    {
+        for (size_t tx = 0; tx < m_frame_props.m_tile_count_x; ++tx)
+        {
+            Tile& color_tile = m_color_image.tile(tx, ty);
+            const size_t tile_width = color_tile.get_width();
+            const size_t tile_height = color_tile.get_height();
+
+            for (size_t py = 0; py < tile_height; ++py)
+            {
+                for (size_t px = 0; px < tile_width; ++px)
+                {
+                    const size_t ix = tx * m_frame_props.m_tile_width + px;
+                    const size_t iy = ty * m_frame_props.m_tile_height + py;
+
+                    assert(ix < m_frame_props.m_canvas_width);
+                    assert(iy < m_frame_props.m_canvas_height);
+
+                    const size_t pixel_index = (iy * m_frame_props.m_canvas_width + ix) * 4;
+
+                    // The third channel becomes an alpha channel.
+                    temp_pixels[pixel_index + 3] = 1.0f;
+
+                    color_tile.set_pixel<float>(px, py, temp_pixels + pixel_index);
+                }
+            }
+        }
     }
 }
 

@@ -48,10 +48,12 @@ class IFrameRenderer
     virtual void render() = 0;
 
     // Asynchronous frame rendering.
+    virtual bool is_rendering() const = 0;
     virtual void start_rendering() = 0;
     virtual void stop_rendering() = 0;
+    virtual void pause_rendering() = 0;
+    virtual void resume_rendering() = 0;
     virtual void terminate_rendering() = 0;
-    virtual bool is_rendering() const = 0;
 };
 
 

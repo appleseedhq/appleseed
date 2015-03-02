@@ -782,6 +782,18 @@ void MainWindow::add_render_widget(const QString& label)
     connect(
         render_tab, SIGNAL(signal_entity_picked(renderer::ScenePicker::PickingResult)),
         SLOT(slot_clear_filter()));
+    connect(
+        render_tab, SIGNAL(signal_camera_change_begin()),
+        &m_rendering_manager, SLOT(slot_camera_change_begin()));
+    connect(
+        render_tab, SIGNAL(signal_camera_change_end()),
+        &m_rendering_manager, SLOT(slot_camera_change_end()));
+    connect(
+        render_tab, SIGNAL(signal_camera_changed()),
+        &m_rendering_manager, SLOT(slot_camera_changed()));
+    connect(
+        render_tab, SIGNAL(signal_camera_changed()),
+        &m_rendering_manager, SIGNAL(signal_camera_changed()));
 
     // Add the render tab to the tab bar.
     const int tab_index = m_ui->tab_render_channels->addTab(render_tab, label);
@@ -980,13 +992,14 @@ void MainWindow::start_rendering(const bool interactive)
         i->second->update();
     }
 
+    // Retrieve the right configuration.
     const char* configuration_name = interactive ? "interactive" : "final";
     const ParamArray params = get_project_params(configuration_name);
 
+    // Effectively start rendering.
     m_rendering_manager.start_rendering(
         project,
         params,
-        interactive,
         m_render_tabs["RGB"]);
 }
 

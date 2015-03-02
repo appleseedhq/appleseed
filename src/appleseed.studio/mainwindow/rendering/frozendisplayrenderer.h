@@ -34,13 +34,14 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
+#include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
+#include "foundation/platform/thread.h"
 
 // Standard headers.
 #include <vector>
 
 // Forward declarations.
-namespace appleseed     { namespace studio { class RenderWidget; } }
 namespace foundation    { class CanvasProperties; }
 namespace foundation    { class Image; }
 namespace renderer      { class Camera; }
@@ -55,10 +56,15 @@ class FrozenDisplayRenderer
     FrozenDisplayRenderer(
         const renderer::SamplingContext::Mode   sampling_mode,
         const renderer::Camera&                 camera,
-        const renderer::Frame&                  frame,
-        RenderWidget&                           render_widget);
+        const renderer::Frame&                  frame);
 
+    // Capture the frame as a point cloud.
     void capture();
+
+    // Capture the camera transform. Thread-safe.
+    void update();
+
+    // Render the point cloud to the frame.
     void render();
 
   private:
@@ -66,18 +72,21 @@ class FrozenDisplayRenderer
     const renderer::Camera&                     m_camera;
     const renderer::Frame&                      m_frame;
     const foundation::CanvasProperties&         m_frame_props;
+
     foundation::Image&                          m_color_image;
     foundation::Image&                          m_depth_image;
-    RenderWidget&                               m_render_widget;
+    std::vector<float>                          m_temp_image;
+
+    foundation::Transformd                      m_camera_transform;
+    boost::mutex                                m_camera_transform_mutex;
 
     struct RenderPoint
     {
         foundation::Vector3f    m_position;
-        foundation::Color3b     m_color;
+        foundation::Color3f     m_color;
     };
 
     std::vector<RenderPoint>                    m_points;
-    std::vector<float>                          m_zbuffer;
 };
 
 }       // namespace studio

@@ -49,6 +49,9 @@
 // appleseed.foundation headers.
 #include "foundation/image/analysis.h"
 #include "foundation/image/image.h"
+#include "foundation/platform/defaulttimers.h"
+#include "foundation/platform/types.h"
+#include "foundation/utility/job/iabortswitch.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/string.h"
 
@@ -57,7 +60,6 @@
 
 // Qt headers.
 #include <QApplication>
-#include <QTimerEvent>
 
 // Standard headers.
 #include <cassert>
@@ -102,9 +104,6 @@ RenderingManager::RenderingManager(StatusBar& status_bar)
   : m_status_bar(status_bar)
   , m_project(0)
   , m_render_tab(0)
-  , m_allow_camera_changes(false)
-  , m_camera_changed(false)
-  , m_tile_callbacks_enabled(true)
 {
     //
     // The connections below are using the Qt::BlockingQueuedConnection connection type.
@@ -162,40 +161,15 @@ RenderingManager::~RenderingManager()
 void RenderingManager::start_rendering(
     Project*                    project,
     const ParamArray&           params,
-    const bool                  interactive,
     RenderTab*                  render_tab)
 {
     m_project = project;
     m_params = params;
     m_render_tab = render_tab;
 
-    m_allow_camera_changes = false;
-    m_camera_changed = false;
-    m_tile_callbacks_enabled = true;
-
-    if (interactive)
-    {
-        connect(
-            m_render_tab, SIGNAL(signal_camera_change_begin()),
-            SLOT(slot_camera_change_begin()));
-
-        connect(
-            m_render_tab, SIGNAL(signal_camera_change_end()),
-            SLOT(slot_camera_change_end()));
-
-        connect(
-            m_render_tab, SIGNAL(signal_camera_changed()),
-            SLOT(slot_camera_changed()));
-
-        connect(
-            m_render_tab, SIGNAL(signal_camera_changed()),
-            SIGNAL(signal_camera_changed()));
-    }
-
     m_tile_callback_factory.reset(
         new QtTileCallbackFactory(
-            m_render_tab->get_render_widget(),
-            m_tile_callbacks_enabled));
+            m_render_tab->get_render_widget()));
 
     m_master_renderer.reset(
         new MasterRenderer(
@@ -219,6 +193,33 @@ void RenderingManager::wait_until_rendering_end()
 {
     while (is_rendering())
         QApplication::processEvents();
+}
+
+void RenderingManager::abort_rendering()
+{
+    RENDERER_LOG_DEBUG("aborting rendering...");
+
+    m_renderer_controller.set_status(IRendererController::AbortRendering);
+}
+
+void RenderingManager::restart_rendering()
+{
+    m_renderer_controller.set_status(IRendererController::RestartRendering);
+}
+
+void RenderingManager::reinitialize_rendering()
+{
+    m_renderer_controller.set_status(IRendererController::ReinitializeRendering);
+}
+
+void RenderingManager::pause_rendering()
+{
+    m_renderer_controller.set_status(IRendererController::PauseRendering);
+}
+
+void RenderingManager::resume_rendering()
+{
+    m_renderer_controller.set_status(IRendererController::ResumeRendering);
 }
 
 void RenderingManager::push_delayed_action(auto_ptr<IDelayedAction> action)
@@ -249,23 +250,6 @@ void RenderingManager::clear_permanent_states()
     m_permanent_states.clear();
 }
 
-void RenderingManager::abort_rendering()
-{
-    RENDERER_LOG_DEBUG("aborting rendering...");
-
-    m_renderer_controller.set_status(IRendererController::AbortRendering);
-}
-
-void RenderingManager::restart_rendering()
-{
-    m_renderer_controller.set_status(IRendererController::RestartRendering);
-}
-
-void RenderingManager::reinitialize_rendering()
-{
-    m_renderer_controller.set_status(IRendererController::ReinitializeRendering);
-}
-
 void RenderingManager::slot_abort_rendering()
 {
     abort_rendering();
@@ -279,13 +263,6 @@ void RenderingManager::slot_restart_rendering()
 void RenderingManager::slot_reinitialize_rendering()
 {
     reinitialize_rendering();
-}
-
-void RenderingManager::timerEvent(QTimerEvent* event)
-{
-    if (event->timerId() == m_render_widget_update_timer.timerId())
-        m_render_tab->get_render_widget()->update();
-    else QObject::timerEvent(event);
 }
 
 void RenderingManager::print_final_rendering_time()
@@ -350,21 +327,13 @@ void RenderingManager::slot_rendering_begin()
     consume_delayed_actions();
 
     m_rendering_timer.clear();
-
-    const int IdleUpdateRate = 30;  // hertz
-    m_render_widget_update_timer.start(1000 / IdleUpdateRate, this);
-
-    m_allow_camera_changes = true;
 }
 
 void RenderingManager::slot_rendering_end()
 {
-    m_allow_camera_changes = false;
-
     // Save the controller target point into the camera when rendering ends.
     m_render_tab->get_camera_controller()->save_camera_target();
 
-    m_render_widget_update_timer.stop();
     print_final_rendering_time();
 
     if (m_params.get_optional<bool>("print_final_average_luminance", false))
@@ -376,27 +345,21 @@ void RenderingManager::slot_rendering_end()
 
 void RenderingManager::slot_frame_begin()
 {
-    if (m_camera_changed)
-    {
-        // Update the scene's camera before rendering the frame.
-        if (m_allow_camera_changes)
-            m_render_tab->get_camera_controller()->update_camera_transform();
+    // Update the scene's camera before rendering the frame.
+    m_render_tab->get_camera_controller()->update_camera_transform();
 
-        if (m_frozen_display_renderer.get())
-            m_frozen_display_renderer->render();
-
-        m_camera_changed = false;
-    }
-
+    // Start printing rendering time in the status bar.
     m_status_bar.start_rendering_time_display(&m_rendering_timer);
     m_rendering_timer.start();
 }
 
 void RenderingManager::slot_frame_end()
 {
+    // Stop printing rendering time in the status bar.
     m_rendering_timer.measure();
     m_status_bar.stop_rendering_time_display();
 
+    // Ensure that the render widget is up-to-date.
     m_render_tab->get_render_widget()->update();
 }
 
@@ -404,29 +367,105 @@ void RenderingManager::slot_camera_change_begin()
 {
     if (m_params.get_optional<bool>("freeze_display_during_navigation", false))
     {
-        m_tile_callbacks_enabled = false;
-        m_frozen_display_renderer.reset(
-            new FrozenDisplayRenderer(
+        pause_rendering();
+
+        assert(m_frozen_display_func.get() == 0);
+        assert(m_frozen_display_thread.get() == 0);
+
+        m_frozen_display_abort_switch.clear();
+
+        m_frozen_display_func.reset(
+            new FrozenDisplayFunc(
                 get_sampling_context_mode(m_params),
                 *m_project->get_scene()->get_camera(),
                 *m_project->get_frame(),
-                *m_render_tab->get_render_widget()));
-        m_frozen_display_renderer->capture();
+                *m_tile_callback_factory.get(),
+                m_frozen_display_abort_switch));
+
+        m_frozen_display_thread.reset(
+            new boost::thread(
+                ThreadFunctionWrapper<FrozenDisplayFunc>(m_frozen_display_func.get())));
     }
 }
 
 void RenderingManager::slot_camera_changed()
 {
-    m_camera_changed = true;
-    restart_rendering();
+    if (m_frozen_display_func.get())
+    {
+        m_render_tab->get_camera_controller()->update_camera_transform();
+        m_frozen_display_func->update();
+    }
+    else
+    {
+        restart_rendering();
+    }
 }
 
 void RenderingManager::slot_camera_change_end()
 {
-    if (m_frozen_display_renderer.get())
+    if (m_frozen_display_func.get())
     {
-        m_frozen_display_renderer.reset();
-        m_tile_callbacks_enabled = true;
+        m_frozen_display_abort_switch.abort();
+        m_frozen_display_thread->join();
+        m_frozen_display_thread.reset();
+        m_frozen_display_func.reset();
+
+        m_project->get_frame()->clear_main_image();
+
+        restart_rendering();
+    }
+}
+
+
+//
+// RenderingManager::FrozenDisplayFunc class implementation.
+//
+
+RenderingManager::FrozenDisplayFunc::FrozenDisplayFunc(
+    const SamplingContext::Mode sampling_mode,
+    const Camera&               camera,
+    const Frame&                frame,
+    ITileCallbackFactory&       tile_callback_factory,
+    IAbortSwitch&               abort_switch)
+  : m_renderer(sampling_mode, camera, frame)
+  , m_frame(frame)
+  , m_tile_callback(tile_callback_factory.create())
+  , m_abort_switch(abort_switch)
+{
+    // Start by capturing the current frame as a point cloud.
+    m_renderer.capture();
+}
+
+void RenderingManager::FrozenDisplayFunc::update()
+{
+    m_renderer.update();
+}
+
+void RenderingManager::FrozenDisplayFunc::operator()()
+{
+    const double TargetElapsed = 1.0 / 30.0;
+
+    DefaultWallclockTimer timer;
+    const double rcp_timer_freq = 1.0 / timer.frequency();
+    uint64 last_time = timer.read();
+
+    while (!m_abort_switch.is_aborted())
+    {
+        // Render the point cloud to the frame.
+        m_renderer.render();
+
+        // Display the frame.
+        m_tile_callback->post_render(&m_frame);
+
+        // Limit frame rate.
+        const uint64 time = timer.read();
+        const double elapsed = (time - last_time) * rcp_timer_freq;
+        if (elapsed < TargetElapsed)
+        {
+            const double ms = ceil(1000.0 * (TargetElapsed - elapsed));
+            sleep(truncate<uint32>(ms), m_abort_switch);
+        }
+        last_time = time;
     }
 }
 

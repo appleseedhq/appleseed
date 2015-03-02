@@ -38,10 +38,15 @@
 
 // appleseed.renderer headers.
 #include "renderer/api/rendering.h"
+#include "renderer/api/types.h"
 #include "renderer/api/utility.h"
 
+// appleseed.foundation headers.
+#include "foundation/platform/thread.h"
+#include "foundation/utility/job/abortswitch.h"
+#include "foundation/utility/autoreleaseptr.h"
+
 // Qt headers.
-#include <QBasicTimer>
 #include <QObject>
 #include <QThread>
 
@@ -52,10 +57,11 @@
 #include <vector>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class RenderTab; } }
-namespace appleseed { namespace studio { class StatusBar; } }
-namespace renderer  { class Project; }
-class QTimerEvent;
+namespace appleseed     { namespace studio { class RenderTab; } }
+namespace appleseed     { namespace studio { class StatusBar; } }
+namespace foundation    { class IAbortSwitch; }
+namespace renderer      { class Frame; }
+namespace renderer      { class Project; }
 
 namespace appleseed {
 namespace studio {
@@ -76,7 +82,6 @@ class RenderingManager
     void start_rendering(
         renderer::Project*              project,
         const renderer::ParamArray&     params,
-        const bool                      interactive,
         RenderTab*                      render_tab);
 
     // Return true if currently rendering, false otherwise.
@@ -85,14 +90,12 @@ class RenderingManager
     // Wait until rendering has ended.
     void wait_until_rendering_end();
 
-    // Abort rendering.
+    // Send orders to the renderer via the renderer controller.
     void abort_rendering();
-
-    // Restart rendering.
     void restart_rendering();
-
-    // Reinitialize rendering.
     void reinitialize_rendering();
+    void pause_rendering();
+    void resume_rendering();
 
     // Interface of a delayed action. A delayed action is a procedure
     // that gets executed just before rendering begins.
@@ -135,16 +138,11 @@ class RenderingManager
     renderer::ParamArray                        m_params;
     RenderTab*                                  m_render_tab;
 
-    bool                                        m_allow_camera_changes;
-    bool                                        m_camera_changed;
-    volatile bool                               m_tile_callbacks_enabled;
-
     std::auto_ptr<QtTileCallbackFactory>        m_tile_callback_factory;
     std::auto_ptr<renderer::MasterRenderer>     m_master_renderer;
     std::auto_ptr<QThread>                      m_master_renderer_thread;
 
     RenderingTimer                              m_rendering_timer;
-    QBasicTimer                                 m_render_widget_update_timer;
 
     typedef std::vector<IDelayedAction*> DelayedActionCollection;
     typedef std::map<std::string, IDelayedAction*> PermanentStateCollection;
@@ -152,9 +150,30 @@ class RenderingManager
     DelayedActionCollection                     m_delayed_actions;
     PermanentStateCollection                    m_permanent_states;
 
-    std::auto_ptr<FrozenDisplayRenderer>        m_frozen_display_renderer;
+    class FrozenDisplayFunc
+    {
+      public:
+        FrozenDisplayFunc(
+            const renderer::SamplingContext::Mode   sampling_mode,
+            const renderer::Camera&                 camera,
+            const renderer::Frame&                  frame,
+            renderer::ITileCallbackFactory&         tile_callback_factory,
+            foundation::IAbortSwitch&               abort_switch);
 
-    virtual void timerEvent(QTimerEvent* event);
+        void update();
+
+        void operator()();
+
+      private:
+        FrozenDisplayRenderer                                   m_renderer;
+        const renderer::Frame&                                  m_frame;
+        foundation::auto_release_ptr<renderer::ITileCallback>   m_tile_callback;
+        foundation::IAbortSwitch&                               m_abort_switch;
+    };
+
+    std::auto_ptr<FrozenDisplayFunc>            m_frozen_display_func;
+    std::auto_ptr<boost::thread>                m_frozen_display_thread;
+    foundation::AbortSwitch                     m_frozen_display_abort_switch;
 
     void print_final_rendering_time();
     void print_average_luminance();

@@ -47,9 +47,7 @@ class QtTileCallbackFactory
 {
   public:
     // Constructor.
-    QtTileCallbackFactory(
-        RenderWidget*   render_widget,
-        volatile bool&  tile_callbacks_enabled);
+    explicit QtTileCallbackFactory(RenderWidget* render_widget);
 
     // Delete this instance.
     virtual void release() APPLESEED_OVERRIDE;
@@ -58,8 +56,7 @@ class QtTileCallbackFactory
     virtual renderer::ITileCallback* create() APPLESEED_OVERRIDE;
 
   private:
-    RenderWidget*       m_render_widget;
-    volatile bool&      m_tile_callbacks_enabled;
+    RenderWidget* m_render_widget;
 };
 
 }       // namespace studio
