@@ -31,6 +31,7 @@
 #include "thread.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/defaulttimers.h"
 #ifdef _WIN32
 #include "foundation/platform/windows.h"
 #endif
@@ -272,8 +273,21 @@ void sleep(const uint32 ms, IAbortSwitch& abort_switch)
 {
     const posix_time::milliseconds one_ms(1);
 
-    for (uint32 i = 0; i < ms && !abort_switch.is_aborted(); ++i)
+    DefaultWallclockTimer timer;
+
+    const uint64 freq = timer.frequency();
+    const uint64 start_time = timer.read();
+
+    while (!abort_switch.is_aborted())
+    {
+        const uint64 elapsed_ticks = timer.read() - start_time;
+        const uint64 elapsed_ms = (1000 * elapsed_ticks) / freq;
+
+        if (elapsed_ms >= ms)
+            break;
+
         this_thread::sleep(one_ms);
+    }
 }
 
 void yield()

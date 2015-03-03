@@ -447,6 +447,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_stlallocatortestbed.cpp
     foundation/meta/tests/test_string.cpp
     foundation/meta/tests/test_test.cpp
+    foundation/meta/tests/test_thread.cpp
     foundation/meta/tests/test_tile.cpp
     foundation/meta/tests/test_timers.cpp
     foundation/meta/tests/test_transform.cpp

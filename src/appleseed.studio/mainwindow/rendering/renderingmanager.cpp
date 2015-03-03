@@ -392,8 +392,8 @@ void RenderingManager::slot_camera_changed()
 {
     if (m_frozen_display_func.get())
     {
-        m_render_tab->get_camera_controller()->update_camera_transform();
-        m_frozen_display_func->update();
+        m_frozen_display_func->set_camera_transform(
+            m_render_tab->get_camera_controller()->get_transform());
     }
     else
     {
@@ -436,9 +436,9 @@ RenderingManager::FrozenDisplayFunc::FrozenDisplayFunc(
     m_renderer.capture();
 }
 
-void RenderingManager::FrozenDisplayFunc::update()
+void RenderingManager::FrozenDisplayFunc::set_camera_transform(const Transformd& transform)
 {
-    m_renderer.update();
+    m_renderer.set_camera_transform(transform);
 }
 
 void RenderingManager::FrozenDisplayFunc::operator()()

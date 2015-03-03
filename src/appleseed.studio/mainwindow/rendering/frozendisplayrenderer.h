@@ -61,8 +61,9 @@ class FrozenDisplayRenderer
     // Capture the frame as a point cloud.
     void capture();
 
-    // Capture the camera transform. Thread-safe.
-    void update();
+    // Set the new camera transform. Thread-safe.
+    void set_camera_transform(
+        const foundation::Transformd&           transform);
 
     // Render the point cloud to the frame.
     void render();

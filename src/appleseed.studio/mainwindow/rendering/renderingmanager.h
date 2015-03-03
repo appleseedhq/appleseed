@@ -42,6 +42,7 @@
 #include "renderer/api/utility.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/transform.h"
 #include "foundation/platform/thread.h"
 #include "foundation/utility/job/abortswitch.h"
 #include "foundation/utility/autoreleaseptr.h"
@@ -160,7 +161,8 @@ class RenderingManager
             renderer::ITileCallbackFactory&         tile_callback_factory,
             foundation::IAbortSwitch&               abort_switch);
 
-        void update();
+        void set_camera_transform(
+            const foundation::Transformd&           transform);
 
         void operator()();
 
