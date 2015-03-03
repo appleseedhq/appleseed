@@ -323,7 +323,7 @@ namespace
             if (GammaCorrect)
                 color = fast_pow(color, _mm_set1_ps(rcp_target_gamma));
 
-            // Store the pixel color (leave the alpha channel unmodified).
+            // Store the pixel color (preserve the alpha channel value).
             _mm_store_ps(pixel_ptr, _mm_shuffle_ps(color, _mm_unpackhi_ps(color, original_color), _MM_SHUFFLE(3, 0, 1, 0)));
         }
     }
