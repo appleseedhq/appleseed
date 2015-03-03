@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>appleseed Test Suite Report</title>
+        <style type="text/css">
+            table.details
+            {
+                border-collapse: collapse;
+            }
+
+            table.details td
+            {
+                padding: 5px;
+            }
+
+            table.details,
+            table.details td
+            {
+                border: 1px solid #ddd;
+            }
+
+            .result
+            {
+                margin-bottom: 100px;
+            }
+
+            .result .title
+            {
+                font-family: "Courier New", Courier, monospace;
+                font-size: 18px;
+                font-weight: bold;
+                padding-bottom: 15px;
+            }
+
+            .result .reference,
+            .result .output,
+            .result .diff
+            {
+                width: 510px;
+            }
+
+            .result img
+            {
+                max-width: 500px;
+                border: 1px solid #ddd;
+            }
+
+            ul.commands
+            {
+                padding: 0;
+                list-style-type: none;
+            }
+
+            .command
+            {
+                font-family: "Courier New", Courier, monospace;
+                font-size: 15px;
+                background-color: #eee;
+            }
+        </style>
+    </head>
+    <body>
+        <div>
+            <h1>Information</h1>
+            <table class="details">
+                <tr>
+                    <td>Test Date</td>
+                    <td>{test-date}</td>
+                </tr>
+                <tr>
+                    <td>appleseed Binary</td>
+                    <td>{appleseed-binary-path}</td>
+                </tr>
+                <tr>
+                    <td>Maximum Absolute Component Difference</td>
+                    <td>{max-abs-diff-allowed}</td>
+                </tr>
+                <tr>
+                    <td>Maximum Number of Differing Components</td>
+                    <td>{max-diff-comps-count-allowed}</td>
+                </tr>
+            </table>
+        </div>
+        <div>
+            <h1>Failures</h1>
+            <div>

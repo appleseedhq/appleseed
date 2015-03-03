@@ -1,0 +1,38 @@
+<div class="result">
+    <table>
+        <tr>
+            <td class="title" colspan="3">{project-path}</td>
+        </tr>
+        <tr>
+            <td class="reference">
+                <a href="{ref-image-url}">
+                    <img src="{ref-image-url}" alt="Reference Image" title="Reference Image">
+                </a>
+            </td>
+            <td class="diff">
+                <a href="{diff-image-url}">
+                    <img src="{diff-image-url}" alt="Difference Image" title="Difference Image">
+                </a>
+            </td>
+            <td class="output">
+                <a href="{output-image-url}">
+                    <img src="{output-image-url}" alt="Output Image" title="Output Image">
+                </a>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="3">
+                <table class="details">
+                    <tr>
+                        <td>Reason</td>
+                        <td>{failure-reason}</td>
+                    </tr>
+                    <tr>
+                        <td>Log File</td>
+                        <td><a href="{log-file-url}">{log-file-path}</a></td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</div>

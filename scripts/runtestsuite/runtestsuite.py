@@ -42,8 +42,8 @@ import urllib
 # Constants.
 #--------------------------------------------------------------------------------------------------
 
-DEFAULT_TOOL_FILEPATH = "..\\sandbox\\bin\\Release\\appleseed.cli.exe" if os.name == "nt" else \
-                        "../sandbox/bin/Release/appleseed.cli"
+DEFAULT_TOOL_FILEPATH = "..\\..\\sandbox\\bin\\Release\\appleseed.cli.exe" if os.name == "nt" else \
+                        "../../sandbox/bin/Release/appleseed.cli"
 
 VALUE_THRESHOLD = 2                 # max allowed absolute diff between two pixel components, in [0, 255]
 MAX_DIFFERING_COMPONENTS = 4 * 2    # max number of pixel components that are allowed to differ significantly
@@ -79,6 +79,10 @@ def format_duration(duration):
     minutes = int((total_seconds % 3600) / 60)
     seconds = total_seconds % 60
     return "{0:02}:{1:02}:{2:09.6f}".format(hours, minutes, seconds)
+
+def load_file(filepath):
+    with open(filepath, "rt") as file:
+        return file.read()
 
 def read_png_file(filepath):
     data = png.Reader(filename=filepath).asRGBA8()
@@ -129,6 +133,12 @@ class Logger:
 #--------------------------------------------------------------------------------------------------
 
 class ReportWriter:
+    def __init__(self, template_directory):
+        self.header_template = load_file(os.path.join(template_directory, "header_template.html"))
+        self.footer_template = load_file(os.path.join(template_directory, "footer_template.html"))
+        self.simple_failure_template = load_file(os.path.join(template_directory, "simple_failure_template.html"))
+        self.detailed_failure_template = load_file(os.path.join(template_directory, "detailed_failure_template.html"))
+
     def open(self, args, filepath):
         self.args = args
         self.file = open(filepath, 'w')
@@ -140,191 +150,59 @@ class ReportWriter:
         self.__write_footer()
         self.file.close()
 
-    def report_failure(self, scene, reference_filepath, output_filepath, log_filepath, error_message, num_diff=None, max_diff=None, num_comps=None, diff_filepath=None):
+    def report_simple_failure(self, scene, reference_filepath, output_filepath, log_filepath, error_message):
         self.failures += 1
-        self.file.write("""            <div class="result">
-                <table>
-                    <tr>
-                        <td class="title" colspan="3">{0}</td>
-                    </tr>
-                    <tr>
-                        <td class="reference">
-                            <a href="{1}">
-                                <img src="{1}" alt="Reference Image" title="Reference Image">
-                            </a>
-                        </td>
-                        <td class="output">
-                            <a href="{2}">
-                                <img src="{2}" alt="Difference Image" title="Difference Image">
-                            </a>
-                        </td>
-                        <td class="diff">
-                            <a href="{3}">
-                                <img src="{3}" alt="Output Image" title="Output Image">
-                            </a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="3">
-                            <table class="details">
-                                <tr>
-                                    <td>Reason</td>
-                                    <td>{4}</td>
-                                </tr>
-                                <tr>
-                                    <td>Log File</td>
-                                    <td><a href="{5}">{6}</a></td>
-                                </tr>
-""".format(scene,
-           urllib.quote(reference_filepath),
-           urllib.quote(diff_filepath) if diff_filepath is not None else "",
-           urllib.quote(output_filepath),
-           error_message,
-           urllib.quote(log_filepath),
-           os.path.basename(log_filepath)))
+        self.file.write(self.__render(self.simple_failure_template,
+                                      { 'project-path': scene,
+                                        'ref-image-url': urllib.quote(reference_filepath),
+                                        'diff-image-url': "",
+                                        'output-image-url': urllib.quote(output_filepath),
+                                        'failure-reason': error_message,
+                                        'log-file-url': urllib.quote(log_filepath),
+                                        'log-file-path': os.path.basename(log_filepath) }))
+        self.file.flush()
 
-        if max_diff is not None and num_diff is not None:
-            diff_percents = 100.0 * num_diff / num_comps
-            command = '{0} "{1}" "{2}"'.format("copy" if os.name == 'nt' else "cp", output_filepath, reference_filepath)
-            self.all_commands.append(command)
-            self.file.write("""                                <tr>
-                                    <td>Maximum Absolute Component Difference (as an 8-bit integer)</td>
-                                    <td>{0}</td>
-                                </tr>
-                                <tr>
-                                    <td>Number of Differing Components</td>
-                                    <td>{1} ({2:.2f} %)</td>
-                                </tr>
-                                <tr>
-                                    <td>Update Reference Image</td>
-                                    <td class="command">{3}</td>
-                                </tr>
-""".format(max_diff,
-           num_diff,
-           diff_percents,
-           command))
+    def report_detailed_failure(self, scene, reference_filepath, output_filepath, log_filepath, error_message, num_diff, max_diff, num_comps, diff_filepath):
+        self.failures += 1
 
-        self.file.write("""                            </table>
-                        </td>
-                    </tr>
-""")
+        command = '{0} "{1}" "{2}"'.format("copy" if os.name == 'nt' else "cp", output_filepath, reference_filepath)
+        self.all_commands.append(command)
 
-        self.file.write("""                </table>
-            </div>
-""")
-
+        self.file.write(self.__render(self.detailed_failure_template,
+                                      { 'project-path': scene,
+                                        'ref-image-url': urllib.quote(reference_filepath),
+                                        'diff-image-url': urllib.quote(diff_filepath) if diff_filepath is not None else "",
+                                        'output-image-url': urllib.quote(output_filepath),
+                                        'failure-reason': error_message,
+                                        'log-file-url': urllib.quote(log_filepath),
+                                        'log-file-path': os.path.basename(log_filepath),
+                                        'max-abs-diff': max_diff,
+                                        'diff-comps-count': num_diff,
+                                        'diff-comps-percents': 100.0 * num_diff / num_comps,
+                                        'update-command': command }))
         self.file.flush()
 
     def __write_header(self, args):
-        self.file.write("""<!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="utf-8">
-        <title>appleseed Test Suite Report</title>
-        <style type="text/css">
-            table.details
-            {{
-                border-collapse: collapse;
-            }}
-
-            table.details td
-            {{
-                padding: 5px;
-            }}
-
-            table.details,
-            table.details td
-            {{
-                border: 1px solid #ddd;
-            }}
-
-            .result
-            {{
-                margin-bottom: 100px;
-            }}
-
-            .result .title
-            {{
-                font-family: "Courier New", Courier, monospace;
-                font-size: 18px;
-                font-weight: bold;
-                padding-bottom: 15px;
-            }}
-
-            .result .reference,
-            .result .output,
-            .result .diff
-            {{
-                width: 510px;
-            }}
-
-            .result img
-            {{
-                max-width: 500px;
-                border: 1px solid #ddd;
-            }}
-
-            ul.commands
-            {{
-                padding: 0;
-                list-style-type: none;
-            }}
-
-            .command
-            {{
-                font-family: "Courier New", Courier, monospace;
-                font-size: 15px;
-                background-color: #eee;
-            }}
-        </style>
-    </head>
-    <body>
-        <div>
-            <h1>Information</h1>
-            <table class="details">
-                <tr>
-                    <td>Test Date</td>
-                    <td>{0}</td>
-                </tr>
-                <tr>
-                    <td>appleseed Binary</td>
-                    <td>{1}</td>
-                </tr>
-                <tr>
-                    <td>Maximum Absolute Component Difference</td>
-                    <td>{2}</td>
-                </tr>
-                <tr>
-                    <td>Maximum Number of Differing Components</td>
-                    <td>{3}</td>
-                </tr>
-            </table>
-        </div>
-        <div>
-            <h1>Failures</h1>
-""".format(datetime.datetime.now(),
-           args.tool_path,
-           VALUE_THRESHOLD,
-           MAX_DIFFERING_COMPONENTS))
+        self.file.write(self.__render(self.header_template,
+                                      { 'test-date': datetime.datetime.now(),
+                                        'appleseed-binary-path': args.tool_path,
+                                        'max-abs-diff-allowed': VALUE_THRESHOLD,
+                                        'max-diff-comps-count-allowed': MAX_DIFFERING_COMPONENTS }))
         self.file.flush()
 
     def __write_footer(self):
         if self.failures == 0:
-            self.file.write("            <p>None.</p>")
-        self.file.write("""        </div>
-        <div>
-            <h1>All Update Commands</h1>
-            <div>
-                <ul class="commands">
-""")
-        for command in self.all_commands:
-            self.file.write("""                <li class="command">{0}</li>""".format(command))
-        self.file.write("""                </ul>
-            </div>
-        </div>
-    </body>
-</html>
-""")
+            self.file.write("<p>None.</p>")
+        else:
+            commands_html = "\n".join('<li class="command">{0}</li>'.format(c) for c in self.all_commands)
+            self.file.write(self.__render(self.footer_template,
+                                          { 'commands': commands_html }))
+
+    def __render(self, template, variables):
+        html = template
+        for name, value in variables.iteritems():
+            html = html.replace('{' + name + '}', str(value))
+        return html
 
 
 #--------------------------------------------------------------------------------------------------
@@ -451,7 +329,7 @@ def render_test_scene(args, logger, report_writer, project_directory, project_fi
 
     if not rendering_success:
         logger.fail_rendering(rendering_time, "FAILED")
-        report_writer.report_failure(project_filepath, ref_filepath, output_filepath, log_filepath, "Rendering failed")
+        report_writer.report_simple_failure(project_filepath, ref_filepath, output_filepath, log_filepath, "Rendering failed")
         return False
 
     if not os.path.exists(output_filepath):
@@ -460,12 +338,12 @@ def render_test_scene(args, logger, report_writer, project_directory, project_fi
             return True
         else:
             logger.fail_rendering(rendering_time, "MISSING OUTPUT")
-            report_writer.report_failure(project_filepath, ref_filepath, output_filepath, log_filepath, "Output image is missing")
+            report_writer.report_simple_failure(project_filepath, ref_filepath, output_filepath, log_filepath, "Output image is missing")
             return False
     else:
         if not os.path.exists(ref_filepath):
             logger.fail_rendering(rendering_time, "MISSING REFERENCE")
-            report_writer.report_failure(project_filepath, ref_filepath, output_filepath, log_filepath, "Reference image is missing")
+            report_writer.report_simple_failure(project_filepath, ref_filepath, output_filepath, log_filepath, "Reference image is missing")
             return False
 
     out_width, out_height, out_rows = read_png_file(output_filepath)
@@ -473,7 +351,7 @@ def render_test_scene(args, logger, report_writer, project_directory, project_fi
 
     if out_width != ref_width or out_height != ref_height:
         logger.fail_rendering(rendering_time, "OUTPUT/REFERENCE SIZE MISMATCH")
-        report_writer.report_failure(project_filepath, ref_filepath, output_filepath, log_filepath,
+        report_writer.report_simple_failure(project_filepath, ref_filepath, output_filepath, log_filepath,
                                      "Output and reference images have different sizes")
         return False
 
@@ -487,9 +365,9 @@ def render_test_scene(args, logger, report_writer, project_directory, project_fi
 
         num_comps = ref_width * ref_height * 4
         logger.fail_rendering(rendering_time, "DIFFERENCES")
-        report_writer.report_failure(project_filepath, ref_filepath, output_filepath, log_filepath,
-                                     "Output and reference images are significantly different",
-                                     num_diff, max_diff, num_comps, diff_filepath)
+        report_writer.report_detailed_failure(project_filepath, ref_filepath, output_filepath, log_filepath,
+                                              "Output and reference images are significantly different",
+                                              num_diff, max_diff, num_comps, diff_filepath)
         return False
 
     logger.pass_rendering(rendering_time)
@@ -502,13 +380,13 @@ def render_test_scene(args, logger, report_writer, project_directory, project_fi
 # Returns the number of rendered and passing test scenes.
 #--------------------------------------------------------------------------------------------------
 
-def render_test_scenes(args):
+def render_test_scenes(script_directory, args):
     rendered_scene_count = 0
     passing_scene_count = 0
 
     logger = Logger(args)
 
-    report_writer = ReportWriter()
+    report_writer = ReportWriter(script_directory)
     report_writer.open(args, "report.html")
 
     for dirpath, dirnames, filenames in walk(args.directory, args.recursive):
@@ -553,14 +431,15 @@ def main():
     parser.add_argument("directory", nargs='?', default=".", help="directory to scan")
     args = parser.parse_args()
 
+    script_directory = os.path.dirname(os.path.realpath(__file__))
+
     if args.tool_path is None:
-        script_directory = os.path.dirname(os.path.realpath(__file__))
         args.tool_path = os.path.join(script_directory, DEFAULT_TOOL_FILEPATH)
 
     print("running test suite using {0}".format(args.tool_path))
 
     start_time = datetime.datetime.now()
-    rendered_scene_count, passing_scene_count = render_test_scenes(args)
+    rendered_scene_count, passing_scene_count = render_test_scenes(script_directory, args)
     end_time = datetime.datetime.now()
 
     success = 100.0 * passing_scene_count / rendered_scene_count if rendered_scene_count > 0 else 0.0
