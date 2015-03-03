@@ -62,7 +62,6 @@ class Dual
     bool has_derivatives() const;
     const T& get_dx() const;
     const T& get_dy() const;
-
     void set_derivatives(const T& dx, const T& dy);
 
   private:

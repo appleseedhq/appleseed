@@ -140,7 +140,7 @@ void compute_ibl_bsdf_sampling(
         const double transmission =
             shading_context.get_tracer().trace(
                 shading_point,
-                sample.get_incoming(),
+                sample.get_incoming_vector(),
                 VisibilityFlags::ShadowRay);
         if (transmission == 0.0)
             continue;
@@ -152,7 +152,7 @@ void compute_ibl_bsdf_sampling(
         environment_edf.evaluate(
             shading_context,
             input_evaluator,
-            sample.get_incoming(),
+            sample.get_incoming_vector(),
             env_value,
             env_prob);
 
