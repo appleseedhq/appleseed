@@ -733,13 +733,13 @@ void ShadingPoint::initialize_osl_shader_globals(
             m_shader_globals.dPdx = Vector3f(get_dpdx());
             m_shader_globals.dPdy = Vector3f(get_dpdy());
 
-            const Vector2d duvdx = get_duvdx(0);
-            m_shader_globals.dudx = duvdx[0];
-            m_shader_globals.dvdx = duvdx[1];
+            const Vector2d& duvdx = get_duvdx(0);
+            m_shader_globals.dudx = static_cast<float>(duvdx[0]);
+            m_shader_globals.dvdx = static_cast<float>(duvdx[1]);
 
-            const Vector2d duvdy = get_duvdy(0);
-            m_shader_globals.dudy = duvdy[0];
-            m_shader_globals.dvdy = duvdy[1];
+            const Vector2d& duvdy = get_duvdy(0);
+            m_shader_globals.dudy = static_cast<float>(duvdy[0]);
+            m_shader_globals.dvdy = static_cast<float>(duvdy[1]);
         }
 
         m_shader_globals.time = static_cast<float>(ray.m_time);
