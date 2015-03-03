@@ -134,6 +134,7 @@ class ReportWriter:
         self.file = open(filepath, 'w')
         self.__write_header(args)
         self.failures = 0
+        self.all_commands = []
 
     def close(self):
         self.__write_footer()
@@ -184,6 +185,8 @@ class ReportWriter:
 
         if max_diff is not None and num_diff is not None:
             diff_percents = 100.0 * num_diff / num_comps
+            command = '{0} "{1}" "{2}"'.format("copy" if os.name == 'nt' else "cp", output_filepath, reference_filepath)
+            self.all_commands.append(command)
             self.file.write("""                                <tr>
                                     <td>Maximum Absolute Component Difference (as an 8-bit integer)</td>
                                     <td>{0}</td>
@@ -194,14 +197,12 @@ class ReportWriter:
                                 </tr>
                                 <tr>
                                     <td>Update Reference Image</td>
-                                    <td class="command">{3} "{4}" "{5}"</td>
+                                    <td class="command">{3}</td>
                                 </tr>
 """.format(max_diff,
            num_diff,
            diff_percents,
-           "copy" if os.name == 'nt' else "cp",
-           output_filepath,
-           reference_filepath))
+           command))
 
         self.file.write("""                            </table>
                         </td>
@@ -263,7 +264,13 @@ class ReportWriter:
                 border: 1px solid #ddd;
             }}
 
-            .result table.details .command
+            ul.commands
+            {{
+                padding: 0;
+                list-style-type: none;
+            }}
+
+            .command
             {{
                 font-family: "Courier New", Courier, monospace;
                 font-size: 15px;
@@ -305,6 +312,16 @@ class ReportWriter:
         if self.failures == 0:
             self.file.write("            <p>None.</p>")
         self.file.write("""        </div>
+        <div>
+            <h1>All Update Commands</h1>
+            <div>
+                <ul class="commands">
+""")
+        for command in self.all_commands:
+            self.file.write("""                <li class="command">{0}</li>""".format(command))
+        self.file.write("""                </ul>
+            </div>
+        </div>
     </body>
 </html>
 """)
