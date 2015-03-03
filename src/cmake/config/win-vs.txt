@@ -136,6 +136,7 @@ if (CMAKE_SIZEOF_VOID_P EQUAL 4)
     endif ()
 endif ()
 set (exe_linker_flags_release
+    /DEBUG                                  # Generate Debug Info
     /OPT:REF                                # Eliminate Unreferenced Data
     /OPT:ICF                                # Remove Redundant COMDATs
 )
