@@ -119,7 +119,7 @@ public:
 // in older compilers in order to use it... starting with VC7 we can declare it as "protected"
 protected:
 #endif
-	enum { STACKWALK_MAX_NAMELEN = 1024 }; // max name length for found symbols
+	enum { STACKWALK_MAX_NAMELEN = 4096 }; // max name length for found symbols
 
 protected:
   // Entry for each Callstack-Entry
