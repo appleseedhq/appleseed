@@ -72,6 +72,11 @@ CameraController::~CameraController()
     m_render_widget->removeEventFilter(this);
 }
 
+Transformd CameraController::get_transform() const
+{
+    return Transformd::from_local_to_parent(m_controller.get_transform());
+}
+
 void CameraController::update_camera_transform()
 {
     Camera* camera = m_scene->get_camera();
@@ -80,8 +85,7 @@ void CameraController::update_camera_transform()
     camera->transform_sequence().clear();
 
     // Set the scene camera orientation and position based on the controller.
-    const Transformd transform = Transformd::from_local_to_parent(m_controller.get_transform());
-    camera->transform_sequence().set_transform(0.0, transform);
+    camera->transform_sequence().set_transform(0.0, get_transform());
 }
 
 void CameraController::save_camera_target()

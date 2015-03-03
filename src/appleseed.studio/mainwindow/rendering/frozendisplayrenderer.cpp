@@ -41,7 +41,6 @@
 #include "foundation/image/image.h"
 #include "foundation/image/tile.h"
 #include "foundation/math/scalar.h"
-#include "foundation/math/transform.h"
 #include "foundation/platform/types.h"
 
 // Standard headers.
@@ -129,11 +128,10 @@ void FrozenDisplayRenderer::capture()
     }
 }
 
-void FrozenDisplayRenderer::update()
+void FrozenDisplayRenderer::set_camera_transform(const Transformd& transform)
 {
     boost::mutex::scoped_lock lock(m_camera_transform_mutex);
-
-    m_camera_transform = m_camera.transform_sequence().get_earliest_transform();
+    m_camera_transform = transform;
 }
 
 void FrozenDisplayRenderer::render()

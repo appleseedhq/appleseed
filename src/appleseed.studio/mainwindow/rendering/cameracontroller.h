@@ -65,6 +65,8 @@ class CameraController
     // Destructor.
     ~CameraController();
 
+    foundation::Transformd get_transform() const;
+
     void update_camera_transform();
     void save_camera_target();
 
