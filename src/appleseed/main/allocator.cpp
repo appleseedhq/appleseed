@@ -72,6 +72,7 @@
 #include <sstream>
 #include <string>
 #include <utility>
+#include <vector>
 
 #if _MSC_VER >= 1500
 #include <sal.h>
