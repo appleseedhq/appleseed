@@ -40,6 +40,7 @@
 #endif
 
 // appleseed.foundation headers.
+#include "foundation/math/intersection/rayplane.h"
 #include "foundation/math/scalar.h"
 #include "foundation/utility/attributeset.h"
 #include "foundation/utility/otherwise.h"
@@ -276,7 +277,7 @@ Vector3d ShadingPoint::get_biased_point(const Vector3d& direction) const
           case ObjectInstance::RayBiasMethodIncomingDirection:
             {
                 const double bias = m_object_instance->get_ray_bias_distance();
-                m_biased_point = point + bias * normalize(m_ray.m_dir);
+                m_biased_point = point + bias * m_ray.m_dir;
                 m_members |= HasBiasedPoint;
                 return m_biased_point;
             }
@@ -294,7 +295,7 @@ Vector3d ShadingPoint::get_biased_point(const Vector3d& direction) const
     return m_biased_point;
 }
 
-void ShadingPoint::compute_partial_derivatives() const
+void ShadingPoint::compute_world_space_partial_derivatives() const
 {
     cache_source_geometry();
 
@@ -319,16 +320,36 @@ void ShadingPoint::compute_partial_derivatives() const
 
             m_dpdu = basis.get_tangent_u();
             m_dpdv = basis.get_tangent_v();
+            m_dndu = m_dndv = Vector3d(0.0);
         }
         else
         {
             const Vector3d& v2 = get_vertex(2);
             const Vector3d dp0 = get_vertex(0) - v2;
             const Vector3d dp1 = get_vertex(1) - v2;
+
             const double rcp_det = 1.0 / det;
 
             m_dpdu = (dv1 * dp0 - dv0 * dp1) * rcp_det;
             m_dpdv = (du0 * dp1 - du1 * dp0) * rcp_det;
+
+            const Vector3d dn0 = m_n0 - m_n2;
+            const Vector3d dn1 = m_n1 - m_n2;
+
+            m_dndu = (dv1 * dn0 - dv0 * dn1) * rcp_det;
+            m_dndv = (du0 * dn1 - du1 * dn0) * rcp_det;
+
+            // Transform the normal derivatives to world space.
+            const Transformd& obj_instance_transform =
+                m_object_instance->get_transform();
+
+            m_dndu =
+                m_assembly_instance_transform.normal_to_parent(
+                    obj_instance_transform.normal_to_parent(m_dndu));
+
+            m_dndv =
+                m_assembly_instance_transform.normal_to_parent(
+                    obj_instance_transform.normal_to_parent(m_dndv));
         }
     }
     else if (m_primitive_type == PrimitiveCurve1)
@@ -344,6 +365,7 @@ void ShadingPoint::compute_partial_derivatives() const
 
         m_dpdu = normalize(Vector3d(tangent));
         m_dpdv = normalize(cross(sn, m_dpdu));
+        m_dndu = m_dndv = Vector3d(0.0);
     }
     else
     {
@@ -358,6 +380,69 @@ void ShadingPoint::compute_partial_derivatives() const
 
         m_dpdu = normalize(Vector3d(tangent));
         m_dpdv = normalize(cross(sn, m_dpdu));
+        m_dndu = m_dndv = Vector3d(0.0);
+    }
+}
+
+void ShadingPoint::compute_screen_space_partial_derivatives() const
+{
+    const ShadingRay& ray = get_ray();
+
+    if (ray.m_has_differentials)
+    {
+        const Vector3d& n = get_shading_normal();
+        const Vector3d& p = get_point();
+        double t = intersect(ray.m_rx, p, n);
+        const Vector3d px = ray.m_rx.point_at(t);
+        m_dpdx = px - p;
+
+        t = intersect(ray.m_ry, p, n);
+        const Vector3d py = ray.m_ry.point_at(t);
+        m_dpdy = py - p;
+
+        // Select the two smallest axes.
+        const size_t max_index = max_abs_index(n);
+        size_t axes[2];
+        axes[0] = max_index == 0;
+        axes[1] = 2 - (max_index >> 1);
+
+        const Vector3d& dpdu = get_dpdu(0);
+        const Vector3d& dpdv = get_dpdv(0);
+
+        const Vector2d a0(dpdu[axes[0]], dpdu[axes[1]]);
+        const Vector2d a1(dpdv[axes[0]], dpdv[axes[1]]);
+
+        const double d = det(a0, a1);
+
+        if (d == 0.0)
+        {
+            m_duvdx = Vector2d(0.0);
+            m_duvdy = Vector2d(0.0);
+            return;
+        }
+
+        const double rcp_d = 1.0 / d;
+
+        const Vector2d bx(
+            px[axes[0]] - p[axes[0]],
+            px[axes[1]] - p[axes[1]]);
+
+        m_duvdx[0] = (a1[1] * bx[0] - a0[1] * bx[1]) * rcp_d;
+        m_duvdx[1] = (a0[0] * bx[1] - a1[0] * bx[0]) * rcp_d;
+
+        const Vector2d by(
+            py[axes[0]] - p[axes[0]],
+            py[axes[1]] - p[axes[1]]);
+
+        m_duvdy[0] = (a1[1] * by[0] - a0[1] * by[1]) * rcp_d;
+        m_duvdy[1] = (a0[0] * by[1] - a1[0] * by[0]) * rcp_d;
+    }
+    else
+    {
+        m_dpdx = Vector3d(0.0);
+        m_dpdy = Vector3d(0.0);
+        m_duvdx = Vector2d(0.0);
+        m_duvdy = Vector2d(0.0);
     }
 }
 
@@ -409,7 +494,7 @@ void ShadingPoint::compute_geometric_normal() const
         assert(m_primitive_type == PrimitiveCurve1 || m_primitive_type == PrimitiveCurve3);
 
         // We assume flat ribbons facing incoming rays.
-        m_geometric_normal = -normalize(m_ray.m_dir);
+        m_geometric_normal = -m_ray.m_dir;
         m_side = ObjectInstance::FrontSide;
     }
 }
@@ -439,7 +524,7 @@ void ShadingPoint::compute_original_shading_normal() const
         assert(m_primitive_type == PrimitiveCurve1 || m_primitive_type == PrimitiveCurve3);
 
         // We assume flat ribbons facing incoming rays.
-        m_original_shading_normal = -normalize(m_ray.m_dir);
+        m_original_shading_normal = -m_ray.m_dir;
     }
 }
 
@@ -622,7 +707,9 @@ void ShadingPoint::initialize_osl_shader_globals(
         const ShadingRay& ray(get_ray());
 
         m_shader_globals.P = Vector3f(get_point());
-        m_shader_globals.I = Vector3f(normalize(ray.m_dir));
+
+        assert(is_normalized(ray.m_dir));
+        m_shader_globals.I = Vector3f(ray.m_dir);
 
         m_shader_globals.N = get_side() == ObjectInstance::FrontSide
             ?  Vector3f(get_original_shading_normal())
@@ -637,6 +724,23 @@ void ShadingPoint::initialize_osl_shader_globals(
 
         m_shader_globals.dPdu = Vector3f(get_dpdu(0));
         m_shader_globals.dPdv = Vector3f(get_dpdv(0));
+
+        if (ray.m_has_differentials)
+        {
+            m_shader_globals.dIdx = Vector3f(ray.m_rx.m_dir);
+            m_shader_globals.dIdy = Vector3f(ray.m_ry.m_dir);
+
+            m_shader_globals.dPdx = Vector3f(get_dpdx());
+            m_shader_globals.dPdy = Vector3f(get_dpdy());
+
+            const Vector2d duvdx = get_duvdx(0);
+            m_shader_globals.dudx = duvdx[0];
+            m_shader_globals.dvdx = duvdx[1];
+
+            const Vector2d duvdy = get_duvdy(0);
+            m_shader_globals.dudy = duvdy[0];
+            m_shader_globals.dvdy = duvdy[1];
+        }
 
         m_shader_globals.time = static_cast<float>(ray.m_time);
         m_shader_globals.dtime = static_cast<float>(get_dtime());

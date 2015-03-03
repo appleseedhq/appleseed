@@ -223,7 +223,6 @@ inline Ray<T, N>::Ray(const Ray<U, N>& rhs)
 template <typename T, size_t N>
 inline typename Ray<T, N>::VectorType Ray<T, N>::point_at(const ValueType t) const
 {
-    assert(t >= 0.0);
     return m_org + t * m_dir;
 }
 
