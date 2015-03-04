@@ -148,7 +148,7 @@ namespace
 
             // Compute the halfway vector in world space.
             const Vector3d h = sample.get_shading_basis().transform_to_parent(
-                        Vector3d::unit_vector(cos_theta, sin_theta, cos_phi, sin_phi));
+                Vector3d::unit_vector(cos_theta, sin_theta, cos_phi, sin_phi));
 
             // Compute the incoming direction in world space.
             const Vector3d incoming(

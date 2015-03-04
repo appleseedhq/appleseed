@@ -179,14 +179,17 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         // Retrieve the ray.
         const ShadingRay& ray = vertex.get_ray();
         assert(foundation::is_normalized(ray.m_dir));
-        vertex.m_outgoing = foundation::Dual3d(-ray.m_dir);
 
         if (ray.m_has_differentials)
         {
-            vertex.m_outgoing.set_derivatives(
-                -(ray.m_rx.m_dir - ray.m_dir),
-                -(ray.m_ry.m_dir - ray.m_dir));
+            vertex.m_outgoing =
+                foundation::Dual3d(
+                    -ray.m_dir,
+                    -(ray.m_rx.m_dir - ray.m_dir),
+                    -(ray.m_ry.m_dir - ray.m_dir));
         }
+        else
+            vertex.m_outgoing = foundation::Dual3d(-ray.m_dir);
 
         // Terminate the path if the ray didn't hit anything.
         if (!vertex.m_shading_point->hit())
@@ -232,7 +235,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                     ray.m_flags,
                     ray.m_depth);   // ray depth does not increase when passing through an alpha-mapped surface
 
-                // Transfer the differentials if the ray has them.
+                // Advance the differentials if the ray has them.
                 if (ray.m_has_differentials)
                 {
                     cutoff_ray.m_has_differentials = true;
@@ -359,16 +362,16 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         if (sample.get_incoming().has_derivatives())
         {
             scattered_ray.m_rx.m_org =
-                    scattered_ray.m_org + vertex.m_shading_point->get_dpdx();
+                scattered_ray.m_org + vertex.m_shading_point->get_dpdx();
 
             scattered_ray.m_ry.m_org =
-                    scattered_ray.m_org + vertex.m_shading_point->get_dpdy();
+                scattered_ray.m_org + vertex.m_shading_point->get_dpdy();
 
             scattered_ray.m_rx.m_dir =
-                    scattered_ray.m_dir + sample.get_incoming().get_dx();
+                scattered_ray.m_dir + sample.get_incoming().get_dx();
 
             scattered_ray.m_ry.m_dir =
-                    scattered_ray.m_dir + sample.get_incoming().get_dy();
+                scattered_ray.m_dir + sample.get_incoming().get_dy();
 
             scattered_ray.m_has_differentials = true;
         }

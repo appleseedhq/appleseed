@@ -190,7 +190,7 @@ inline const foundation::Vector3d& BSDFSample::get_incoming_vector() const
 
 inline void BSDFSample::set_incoming(const foundation::Vector3d& incoming)
 {
-    m_incoming.set_value(incoming);
+    m_incoming = foundation::Dual3d(incoming);
 }
 
 inline double BSDFSample::get_probability() const

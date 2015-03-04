@@ -56,13 +56,11 @@ class Dual
 
     // Value.
     const T& get_value() const;
-    void set_value(const T& value);
 
     // Derivatives.
     bool has_derivatives() const;
     const T& get_dx() const;
     const T& get_dy() const;
-    void set_derivatives(const T& dx, const T& dy);
 
   private:
     T       m_value;
@@ -91,9 +89,9 @@ inline Dual<T>::Dual(const T& value)
 template <typename T>
 inline Dual<T>::Dual(const T& value, const T& dx, const T& dy)
   : m_value(value)
-  , m_has_derivatives(true)
   , m_dx(dx)
   , m_dy(dy)
+  , m_has_derivatives(true)
 {
 }
 
@@ -104,20 +102,13 @@ inline const T& Dual<T>::get_value() const
 }
 
 template <typename T>
-inline void Dual<T>::set_value(const T& value)
-{
-    m_value = value;
-    m_has_derivatives = false;
-}
-
-template <typename T>
 inline bool Dual<T>::has_derivatives() const
 {
     return m_has_derivatives;
 }
 
 template <typename T>
-const T& Dual<T>::get_dx() const
+inline const T& Dual<T>::get_dx() const
 {
     assert(m_has_derivatives);
 
@@ -125,19 +116,11 @@ const T& Dual<T>::get_dx() const
 }
 
 template <typename T>
-const T& Dual<T>::get_dy() const
+inline const T& Dual<T>::get_dy() const
 {
     assert(m_has_derivatives);
 
     return m_dy;
-}
-
-template <typename T>
-void Dual<T>::set_derivatives(const T& dx, const T& dy)
-{
-    m_dx = dx;
-    m_dy = dy;
-    m_has_derivatives = true;
 }
 
 
