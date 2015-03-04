@@ -179,7 +179,17 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         // Retrieve the ray.
         const ShadingRay& ray = vertex.get_ray();
         assert(foundation::is_normalized(ray.m_dir));
-        vertex.m_outgoing = -ray.m_dir;
+
+        if (ray.m_has_differentials)
+        {
+            vertex.m_outgoing =
+                foundation::Dual3d(
+                    -ray.m_dir,
+                    -(ray.m_rx.m_dir - ray.m_dir),
+                    -(ray.m_ry.m_dir - ray.m_dir));
+        }
+        else
+            vertex.m_outgoing = foundation::Dual3d(-ray.m_dir);
 
         // Terminate the path if the ray didn't hit anything.
         if (!vertex.m_shading_point->hit())
@@ -225,7 +235,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                     ray.m_flags,
                     ray.m_depth);   // ray depth does not increase when passing through an alpha-mapped surface
 
-                // Transfer the differentials if the ray has them.
+                // Advance the differentials if the ray has them.
                 if (ray.m_has_differentials)
                 {
                     cutoff_ray.m_has_differentials = true;
@@ -277,7 +287,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         }
 
         // Compute radiance contribution at this vertex.
-        vertex.m_cos_on = foundation::dot(vertex.m_outgoing, vertex.get_shading_normal());
+        vertex.m_cos_on = foundation::dot(vertex.m_outgoing.get_value(), vertex.get_shading_normal());
         m_path_visitor.visit_vertex(vertex);
 
         // Terminate the path if the material doesn't have a BSDF.
@@ -341,13 +351,30 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         ++vertex.m_path_length;
 
         // Construct the scattered ray.
-        const ShadingRay scattered_ray(
-            vertex.m_shading_point->get_biased_point(sample.get_incoming()),
-            sample.get_incoming(),
+        ShadingRay scattered_ray(
+            vertex.m_shading_point->get_biased_point(sample.get_incoming_vector()),
+            sample.get_incoming_vector(),
             ray.m_time,
             ray.m_dtime,
             bsdf_mode_to_ray_flags(sample.get_mode()),
             ray.m_depth + 1);
+
+        if (sample.get_incoming().has_derivatives())
+        {
+            scattered_ray.m_rx.m_org =
+                scattered_ray.m_org + vertex.m_shading_point->get_dpdx();
+
+            scattered_ray.m_ry.m_org =
+                scattered_ray.m_org + vertex.m_shading_point->get_dpdy();
+
+            scattered_ray.m_rx.m_dir =
+                scattered_ray.m_dir + sample.get_incoming().get_dx();
+
+            scattered_ray.m_ry.m_dir =
+                scattered_ray.m_dir + sample.get_incoming().get_dy();
+
+            scattered_ray.m_has_differentials = true;
+        }
 
         // Trace the ray.
         shading_points[shading_point_index].clear();

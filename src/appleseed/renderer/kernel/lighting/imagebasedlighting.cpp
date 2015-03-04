@@ -56,7 +56,7 @@ void compute_ibl(
     const ShadingContext&   shading_context,
     const EnvironmentEDF&   environment_edf,
     const ShadingPoint&     shading_point,
-    const Vector3d&         outgoing,
+    const Dual3d&           outgoing,
     const BSDF&             bsdf,
     const void*             bsdf_data,
     const int               bsdf_sampling_modes,
@@ -65,7 +65,7 @@ void compute_ibl(
     const size_t            env_sample_count,
     Spectrum&               radiance)
 {
-    assert(is_normalized(outgoing));
+    assert(is_normalized(outgoing.get_value()));
 
     // Compute IBL by sampling the BSDF.
     compute_ibl_bsdf_sampling(
@@ -103,7 +103,7 @@ void compute_ibl_bsdf_sampling(
     const ShadingContext&   shading_context,
     const EnvironmentEDF&   environment_edf,
     const ShadingPoint&     shading_point,
-    const Vector3d&         outgoing,
+    const Dual3d&           outgoing,
     const BSDF&             bsdf,
     const void*             bsdf_data,
     const int               bsdf_sampling_modes,
@@ -111,7 +111,7 @@ void compute_ibl_bsdf_sampling(
     const size_t            env_sample_count,
     Spectrum&               radiance)
 {
-    assert(is_normalized(outgoing));
+    assert(is_normalized(outgoing.get_value()));
 
     radiance.set(0.0f);
 
@@ -140,7 +140,7 @@ void compute_ibl_bsdf_sampling(
         const double transmission =
             shading_context.get_tracer().trace(
                 shading_point,
-                sample.get_incoming(),
+                sample.get_incoming_vector(),
                 VisibilityFlags::ShadowRay);
         if (transmission == 0.0)
             continue;
@@ -152,7 +152,7 @@ void compute_ibl_bsdf_sampling(
         environment_edf.evaluate(
             shading_context,
             input_evaluator,
-            sample.get_incoming(),
+            sample.get_incoming_vector(),
             env_value,
             env_prob);
 
@@ -182,7 +182,7 @@ void compute_ibl_environment_sampling(
     const ShadingContext&   shading_context,
     const EnvironmentEDF&   environment_edf,
     const ShadingPoint&     shading_point,
-    const Vector3d&         outgoing,
+    const Dual3d&           outgoing,
     const BSDF&             bsdf,
     const void*             bsdf_data,
     const int               env_sampling_modes,
@@ -190,7 +190,7 @@ void compute_ibl_environment_sampling(
     const size_t            env_sample_count,
     Spectrum&               radiance)
 {
-    assert(is_normalized(outgoing));
+    assert(is_normalized(outgoing.get_value()));
 
     const Vector3d& geometric_normal = shading_point.get_geometric_normal();
     const Basis3d& shading_basis = shading_point.get_shading_basis();
@@ -245,7 +245,7 @@ void compute_ibl_environment_sampling(
                 true,                           // multiply by |cos(incoming, normal)|
                 geometric_normal,
                 shading_basis,
-                outgoing,
+                outgoing.get_value(),
                 incoming,
                 env_sampling_modes,
                 bsdf_value);

@@ -45,7 +45,7 @@ DirectLightingIntegrator::DirectLightingIntegrator(
     const ShadingContext&       shading_context,
     const LightSampler&         light_sampler,
     const ShadingPoint&         shading_point,
-    const Vector3d&             outgoing,
+    const Dual3d&               outgoing,
     const BSDF&                 bsdf,
     const void*                 bsdf_data,
     const int                   bsdf_sampling_modes,
@@ -69,7 +69,7 @@ DirectLightingIntegrator::DirectLightingIntegrator(
   , m_light_sample_count(light_sample_count)
   , m_indirect(indirect)
 {
-    assert(is_normalized(outgoing));
+    assert(is_normalized(outgoing.get_value()));
 }
 
 DirectLightingIntegrator::DirectLightingIntegrator(
@@ -97,7 +97,7 @@ DirectLightingIntegrator::DirectLightingIntegrator(
   , m_light_sample_count(light_sample_count)
   , m_indirect(indirect)
 {
-    assert(is_normalized(vertex.m_outgoing));
+    assert(is_normalized(m_outgoing.get_value()));
 }
 
 void DirectLightingIntegrator::sample_bsdf_and_lights(
@@ -249,7 +249,7 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
             true,                           // multiply by |cos(incoming, normal)|
             m_geometric_normal,
             m_shading_basis,
-            m_outgoing,
+            m_outgoing.get_value(),
             incoming,
             m_light_sampling_modes,
             bsdf_value);

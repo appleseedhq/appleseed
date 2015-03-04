@@ -35,6 +35,7 @@
 #include "renderer/kernel/lighting/pathvertex.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/dual.h"
 #include "foundation/math/vector.h"
 
 // Standard headers.
@@ -59,7 +60,7 @@ void compute_ibl(
     const ShadingContext&           shading_context,
     const EnvironmentEDF&           environment_edf,
     const ShadingPoint&             shading_point,
-    const foundation::Vector3d&     outgoing,               // world space outgoing direction, unit-length
+    const foundation::Dual3d&       outgoing,               // world space outgoing direction, unit-length
     const BSDF&                     bsdf,
     const void*                     bsdf_data,
     const int                       bsdf_sampling_modes,    // permitted scattering modes during BSDF sampling
@@ -83,7 +84,7 @@ void compute_ibl_bsdf_sampling(
     const ShadingContext&           shading_context,
     const EnvironmentEDF&           environment_edf,
     const ShadingPoint&             shading_point,
-    const foundation::Vector3d&     outgoing,               // world space outgoing direction, unit-length
+    const foundation::Dual3d&       outgoing,               // world space outgoing direction, unit-length
     const BSDF&                     bsdf,
     const void*                     bsdf_data,
     const int                       bsdf_sampling_modes,    // permitted scattering modes during BSDF sampling
@@ -105,7 +106,7 @@ void compute_ibl_environment_sampling(
     const ShadingContext&           shading_context,
     const EnvironmentEDF&           environment_edf,
     const ShadingPoint&             shading_point,
-    const foundation::Vector3d&     outgoing,               // world space outgoing direction, unit-length
+    const foundation::Dual3d&       outgoing,               // world space outgoing direction, unit-length
     const BSDF&                     bsdf,
     const void*                     bsdf_data,
     const int                       env_sampling_modes,     // permitted scattering modes during environment sampling

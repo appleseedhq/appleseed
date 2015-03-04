@@ -449,7 +449,7 @@ namespace
                             true,                                       // multiply by |cos(incoming, normal)|
                             vertex.get_geometric_normal(),
                             vertex.get_shading_basis(),
-                            vertex.m_outgoing,                          // toward the camera
+                            vertex.m_outgoing.get_value(),              // toward the camera
                             normalize(Vector3d(photon.m_incoming)),     // toward the light
                             BSDFSample::Diffuse,
                             bsdf_value);
@@ -525,7 +525,7 @@ namespace
                             true,                                       // multiply by |cos(incoming, normal)|
                             vertex.get_geometric_normal(),
                             vertex.get_shading_basis(),
-                            vertex.m_outgoing,                          // toward the camera
+                            vertex.m_outgoing.get_value(),              // toward the camera
                             normalize(Vector3d(photon.m_incoming)),     // toward the light
                             BSDFSample::Diffuse,
                             bsdf_value);
@@ -582,7 +582,7 @@ namespace
                 m_env_edf->evaluate(
                     m_shading_context,
                     input_evaluator,
-                    -vertex.m_outgoing,
+                    -vertex.m_outgoing.get_value(),
                     env_radiance,
                     env_prob);
 

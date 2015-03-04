@@ -165,7 +165,7 @@ namespace
 
                     // Create and store a new photon.
                     SPPMMonoPhoton photon;
-                    photon.m_incoming = Vector3f(vertex.m_outgoing);
+                    photon.m_incoming = Vector3f(vertex.m_outgoing.get_value());
                     photon.m_geometric_normal = Vector3f(vertex.get_geometric_normal());
                     photon.m_flux.m_wavelength = wavelength;
                     photon.m_flux.m_amplitude =
@@ -180,7 +180,7 @@ namespace
 
                     // Create and store a new photon.
                     SPPMPolyPhoton photon;
-                    photon.m_incoming = Vector3f(vertex.m_outgoing);
+                    photon.m_incoming = Vector3f(vertex.m_outgoing.get_value());
                     photon.m_geometric_normal = Vector3f(vertex.get_geometric_normal());
                     photon.m_flux = m_initial_flux;
                     photon.m_flux *= vertex.m_throughput;
