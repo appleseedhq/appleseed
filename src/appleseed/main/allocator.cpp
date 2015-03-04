@@ -100,7 +100,7 @@ using namespace std;
 #undef LOG_MEMORY_DEALLOCATIONS
 
 // Define this symbol to dump a (part of) the callstack when a block of memory is allocated.
-#undef DUMP_CALLSTACK_ON_ALLOCATION
+#define DUMP_CALLSTACK_ON_ALLOCATION
 
 namespace
 {
