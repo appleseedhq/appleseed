@@ -40,7 +40,7 @@ namespace foundation
 {
 
 //
-// Xorshift RNG of period 2^32 - 1.
+// Xorshift random number generator of period 2^32 - 1.
 //
 // Very fast and reasonably high quality despite a relatively short period.
 // Can be extended to much higher periods if necessary (see the paper).

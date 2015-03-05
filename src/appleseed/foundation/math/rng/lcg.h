@@ -47,7 +47,7 @@ namespace foundation
 //   increment   b = 715136305
 //   modulus     m = 2^32
 //
-// For any practical purpose, the Mersenne Twister RNG should be used.
+// For all practical purposes, the Mersenne Twister RNG should be used.
 // This generator is implemented for comparison and experimentation only.
 //
 // References:
