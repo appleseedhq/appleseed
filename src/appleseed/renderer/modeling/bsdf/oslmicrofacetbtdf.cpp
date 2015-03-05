@@ -137,19 +137,19 @@ namespace
             // Compute the incoming direction by sampling the MDF.
             sample.get_sampling_context().split_in_place(3, 1);
             const Vector3d s = sample.get_sampling_context().next_vector2<3>();
-            const Vector3d wo = sample.get_shading_basis().transform_to_local(sample.get_outgoing());
+            const Vector3d wo = sample.get_shading_basis().transform_to_local(sample.get_outgoing_vector());
             const Vector3d m = m_mdf->sample(wo, s, values->m_ax, values->m_ay);
             const Vector3d ht = sample.get_shading_basis().transform_to_parent(m);
             const double eta = values->m_from_ior / values->m_to_ior;
 
             Vector3d incoming;
-            if (!refract(sample.get_outgoing(), ht, eta, incoming))
+            if (!refract(sample.get_outgoing_vector(), ht, eta, incoming))
                 return; // Ignore TIR.
 
             // If incoming and outgoing are on the same hemisphere
             // this is not a refraction.
             const Vector3d& n = sample.get_shading_normal();
-            if (dot(incoming, n) * dot(sample.get_outgoing(), n) >= 0.0)
+            if (dot(incoming, n) * dot(sample.get_outgoing_vector(), n) >= 0.0)
                 return;
 
             const double G =
@@ -168,7 +168,7 @@ namespace
             sample.value().set(
                 static_cast<float>(
                     refraction_term(
-                        sample.get_outgoing(),
+                        sample.get_outgoing_vector(),
                         incoming,
                         n,
                         ht,
@@ -179,7 +179,7 @@ namespace
                         adjoint)));
 
             const double ht_norm =
-                norm(values->m_from_ior * sample.get_outgoing() + values->m_to_ior * incoming);
+                norm(values->m_from_ior * sample.get_outgoing_vector() + values->m_to_ior * incoming);
             const double dwh_dwo =
                 refraction_jacobian(
                     incoming,
@@ -187,9 +187,9 @@ namespace
                     ht,
                     ht_norm);
 
-            sample.set_incoming(incoming);
             sample.set_probability(m_mdf->pdf(wo, m, values->m_ax, values->m_ay) * dwh_dwo);
             sample.set_mode(BSDFSample::Glossy);
+            sample.set_incoming(incoming);
         }
 
         FORCE_INLINE virtual double evaluate(

@@ -45,6 +45,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
+#include "foundation/math/dual.h"
 #include "foundation/math/mis.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
@@ -104,7 +105,7 @@ class DirectLightingIntegrator
         const ShadingContext&           shading_context,
         const LightSampler&             light_sampler,
         const ShadingPoint&             shading_point,
-        const foundation::Vector3d&     outgoing,                   // world space outgoing direction, unit-length
+        const foundation::Dual3d&       outgoing,                   // world space outgoing direction, unit-length
         const BSDF&                     bsdf,
         const void*                     bsdf_data,
         const int                       bsdf_sampling_modes,        // permitted scattering modes during BSDF sampling
@@ -172,7 +173,7 @@ class DirectLightingIntegrator
     const foundation::Vector3d&         m_geometric_normal;
     const foundation::Basis3d&          m_shading_basis;
     const double                        m_time;
-    const foundation::Vector3d&         m_outgoing;
+    const foundation::Dual3d&           m_outgoing;
     const BSDF&                         m_bsdf;
     const void*                         m_bsdf_data;
     const int                           m_bsdf_sampling_modes;
@@ -424,7 +425,7 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     const ShadingPoint& light_shading_point =
         m_shading_context.get_tracer().trace(
             m_shading_point,
-            sample.get_incoming(),
+            sample.get_incoming_vector(),
             VisibilityFlags::ShadowRay,
             weight);
 
@@ -447,7 +448,7 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
         return;
 
     // Cull the samples on the back side of the lights' shading surface.
-    const double cos_on = foundation::dot(-sample.get_incoming(), light_shading_point.get_shading_normal());
+    const double cos_on = foundation::dot(-sample.get_incoming_vector(), light_shading_point.get_shading_normal());
     if (cos_on <= 0.0)
         return;
 
@@ -472,7 +473,7 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
         edf_input_evaluator.data(),
         light_shading_point.get_geometric_normal(),
         light_shading_point.get_shading_basis(),
-        -sample.get_incoming(),
+        -sample.get_incoming_vector(),
         edf_value,
         edf_prob);
     if (edf_prob == 0.0)
@@ -613,7 +614,7 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
             true,                           // multiply by |cos(incoming, normal)|
             m_geometric_normal,
             m_shading_basis,
-            m_outgoing,
+            m_outgoing.get_value(),
             incoming,
             m_light_sampling_modes,
             bsdf_value);

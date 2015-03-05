@@ -105,7 +105,7 @@ namespace
         {
             // No reflection below the shading surface.
             const Vector3d& shading_normal = sample.get_shading_normal();
-            const double cos_on = dot(sample.get_outgoing(), shading_normal);
+            const double cos_on = dot(sample.get_outgoing_vector(), shading_normal);
             if (cos_on < 0.0)
                 return;
 
@@ -118,7 +118,6 @@ namespace
             sample.get_sampling_context().split_in_place(2, 1);
             const Vector2d s = sample.get_sampling_context().next_vector2<2>();
 
-            Vector3d h;
             double exp;
             double cos_phi, sin_phi;
 
@@ -148,20 +147,22 @@ namespace
             const double sin_theta = sqrt(1.0 - cos_theta * cos_theta);
 
             // Compute the halfway vector in world space.
-            h = sample.get_shading_basis().transform_to_parent(
-                        Vector3d::unit_vector(cos_theta, sin_theta, cos_phi, sin_phi));
+            const Vector3d h = sample.get_shading_basis().transform_to_parent(
+                Vector3d::unit_vector(cos_theta, sin_theta, cos_phi, sin_phi));
 
             // Compute the incoming direction in world space.
-            sample.set_incoming(reflect(sample.get_outgoing(), h));
-            sample.set_incoming(force_above_surface(sample.get_incoming(), sample.get_geometric_normal()));
+            const Vector3d incoming(
+                force_above_surface(
+                    reflect(sample.get_outgoing_vector(), h),
+                    sample.get_geometric_normal()));
 
             // No reflection below the shading surface.
-            const double cos_in = dot(sample.get_incoming(), shading_normal);
+            const double cos_in = dot(incoming, shading_normal);
             if (cos_in < 0.0)
                 return;
 
             // Compute dot products.
-            const double cos_oh = abs(dot(sample.get_outgoing(), h));
+            const double cos_oh = abs(dot(sample.get_outgoing_vector(), h));
             const double cos_hn = dot(h, shading_normal);
 
             // Evaluate the glossy component of the BRDF (equation 4).
@@ -175,6 +176,8 @@ namespace
 
             // Set the scattering mode.
             sample.set_mode(BSDFSample::Glossy);
+
+            sample.set_incoming(incoming);
         }
 
         FORCE_INLINE virtual double evaluate(

@@ -71,7 +71,7 @@ void PathVertex::compute_emitted_radiance(
         input_evaluator.data(),
         m_shading_point->get_geometric_normal(),
         m_shading_point->get_shading_basis(),
-        m_outgoing,
+        m_outgoing.get_value(),
         radiance);
 }
 

@@ -107,7 +107,7 @@ namespace
         {
             // No reflection below the shading surface.
             const Vector3d& shading_normal = sample.get_shading_normal();
-            const double cos_on = dot(sample.get_outgoing(), shading_normal);
+            const double cos_on = dot(sample.get_outgoing_vector(), shading_normal);
             if (cos_on < 0.0)
                 return;
 
@@ -127,7 +127,7 @@ namespace
             const Vector3d s = sample.get_sampling_context().next_vector2<3>();
 
             BSDFSample::ScatteringMode mode;
-            Vector3d h;
+            Vector3d h, incoming;
             double exp;
 
             // Select a component and sample it to compute the incoming direction.
@@ -139,10 +139,10 @@ namespace
                 const Vector3d wi = sample_hemisphere_cosine(Vector2d(s[0], s[1]));
 
                 // Transform the incoming direction to parent space.
-                sample.set_incoming(sample.get_shading_basis().transform_to_parent(wi));
+                incoming = sample.get_shading_basis().transform_to_parent(wi);
 
                 // Compute the halfway vector in world space.
-                h = normalize(sample.get_incoming() + sample.get_outgoing());
+                h = normalize(incoming + sample.get_outgoing_vector());
 
                 // Compute the glossy exponent, needed to evaluate the PDF.
                 const double cos_hn = dot(h, sample.get_shading_normal());
@@ -189,18 +189,18 @@ namespace
                         Vector3d::unit_vector(cos_theta, sin_theta, cos_phi, sin_phi));
 
                 // Compute the incoming direction in world space.
-                sample.set_incoming(
+                incoming =
                     force_above_surface(
-                        reflect(sample.get_outgoing(), h), sample.get_geometric_normal()));
+                        reflect(sample.get_outgoing_vector(), h), sample.get_geometric_normal());
             }
 
             // No reflection below the shading surface.
-            const double cos_in = dot(sample.get_incoming(), shading_normal);
+            const double cos_in = dot(incoming, shading_normal);
             if (cos_in < 0.0)
                 return;
 
             // Compute dot products.
-            const double cos_oh = abs(dot(sample.get_outgoing(), h));
+            const double cos_oh = abs(dot(sample.get_outgoing_vector(), h));
             const double cos_hn = dot(h, shading_normal);
 
             // Evaluate the diffuse component of the BRDF (equation 5).
@@ -229,6 +229,7 @@ namespace
 
             sample.set_mode(mode);
             sample.set_probability(probability);
+            sample.set_incoming(incoming);
         }
 
         FORCE_INLINE virtual double evaluate(

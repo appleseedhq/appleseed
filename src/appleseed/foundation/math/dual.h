@@ -89,9 +89,9 @@ inline Dual<T>::Dual(const T& value)
 template <typename T>
 inline Dual<T>::Dual(const T& value, const T& dx, const T& dy)
   : m_value(value)
-  , m_has_derivatives(true)
   , m_dx(dx)
   , m_dy(dy)
+  , m_has_derivatives(true)
 {
 }
 
@@ -108,7 +108,7 @@ inline bool Dual<T>::has_derivatives() const
 }
 
 template <typename T>
-const T& Dual<T>::get_dx() const
+inline const T& Dual<T>::get_dx() const
 {
     assert(m_has_derivatives);
 
@@ -116,7 +116,7 @@ const T& Dual<T>::get_dx() const
 }
 
 template <typename T>
-const T& Dual<T>::get_dy() const
+inline const T& Dual<T>::get_dy() const
 {
     assert(m_has_derivatives);
 

@@ -421,7 +421,7 @@ namespace
                         true,                           // multiply by |cos(incoming, normal)|
                         geometric_normal,
                         vertex.get_shading_basis(),
-                        vertex.m_outgoing,              // outgoing (toward the light in this context)
+                        vertex.m_outgoing.get_value(),  // outgoing (toward the light in this context)
                         vertex_to_camera,               // incoming
                         BSDFSample::AllScatteringModes, // todo: likely incorrect
                         bsdf_value);

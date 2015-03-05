@@ -61,22 +61,22 @@ class MicrofacetBRDFHelper
         BSDFSample& sample)
     {
         const VectorType& n = sample.get_shading_normal();
-        const T cos_on = std::min(foundation::dot(sample.get_outgoing(), n), T(1.0));
+        const T cos_on = std::min(foundation::dot(sample.get_outgoing_vector(), n), T(1.0));
         if (cos_on < T(0.0))
             return;
 
         // Compute the incoming direction by sampling the MDF.
         sample.get_sampling_context().split_in_place(3, 1);
         const VectorType s = sample.get_sampling_context().next_vector2<3>();
-        const VectorType wo = sample.get_shading_basis().transform_to_local(sample.get_outgoing());
+        const VectorType wo = sample.get_shading_basis().transform_to_local(sample.get_outgoing_vector());
         const VectorType m = mdf.sample(wo, s, alpha_x, alpha_y);
         const VectorType h = sample.get_shading_basis().transform_to_parent(m);
 
-        sample.set_incoming(foundation::reflect(sample.get_outgoing(), h));
-        const T cos_oh = foundation::dot(sample.get_outgoing(), h);
+        const foundation::Vector3d incoming = foundation::reflect(sample.get_outgoing_vector(), h);
+        const T cos_oh = foundation::dot(sample.get_outgoing_vector(), h);
 
         // No reflection below the shading surface.
-        const T cos_in = foundation::dot(sample.get_incoming(), n);
+        const T cos_in = foundation::dot(incoming, n);
         if (cos_in < T(0.0))
             return;
 
@@ -84,16 +84,17 @@ class MicrofacetBRDFHelper
 
         const T G =
             mdf.G(
-                sample.get_shading_basis().transform_to_local(sample.get_incoming()),
+                sample.get_shading_basis().transform_to_local(incoming),
                 wo,
                 m,
                 g_alpha_x,
                 g_alpha_y);
 
-        f(sample.get_outgoing(), h, sample.get_shading_normal(), sample.value());
+        f(sample.get_outgoing_vector(), h, sample.get_shading_normal(), sample.value());
         sample.value() *= static_cast<float>(D * G / (T(4.0) * cos_on * cos_in));
         sample.set_probability(mdf.pdf(wo, m, alpha_x, alpha_y) / (T(4.0) * cos_oh));
         sample.set_mode(BSDFSample::Glossy);
+        sample.set_incoming(incoming);
     }
 
     template <typename MDF, typename FresnelFun>

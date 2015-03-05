@@ -35,6 +35,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
+#include "foundation/math/dual.h"
 #include "foundation/math/vector.h"
 
 namespace renderer
@@ -57,7 +58,7 @@ class BSDFSample
     BSDFSample(
         const ShadingPoint&         shading_point,
         SamplingContext&            sampling_context,
-        const foundation::Vector3d& outgoing);
+        const foundation::Dual3d&   outgoing);
 
     // Input fields.
 
@@ -67,7 +68,7 @@ class BSDFSample
 
     const foundation::Vector3d& get_shading_normal() const;
 
-    const foundation::Vector3d& get_outgoing() const;
+    const foundation::Vector3d& get_outgoing_vector() const;
 
     // Input / Output fields.
 
@@ -82,7 +83,8 @@ class BSDFSample
     bool is_absorption() const;
     bool is_specular() const;
 
-    const foundation::Vector3d& get_incoming() const;
+    const foundation::Dual3d& get_incoming() const;
+    const foundation::Vector3d& get_incoming_vector() const;
     void set_incoming(const foundation::Vector3d& incoming);
 
     double get_probability() const;
@@ -101,9 +103,9 @@ class BSDFSample
   private:
     const ShadingPoint&     m_shading_point;        // shading point at which the sampling is done
     SamplingContext&        m_sampling_context;     // sampling context used to sample BSDFs
-    foundation::Vector3d    m_outgoing;             // world space outgoing direction, unit-length
+    foundation::Dual3d      m_outgoing;             // world space outgoing direction, unit-length
     ScatteringMode          m_mode;                 // scattering mode
-    foundation::Vector3d    m_incoming;             // world space incoming direction, unit-length
+    foundation::Dual3d      m_incoming;             // world space incoming direction, unit-length
     double                  m_probability;          // PDF value
     Spectrum                m_value;                // BSDF value
 };
@@ -116,7 +118,7 @@ class BSDFSample
 inline BSDFSample::BSDFSample(
     const ShadingPoint&         shading_point,
     SamplingContext&            sampling_context,
-    const foundation::Vector3d& outgoing)
+    const foundation::Dual3d&   outgoing)
   : m_shading_point(shading_point)
   , m_sampling_context(sampling_context)
   , m_outgoing(outgoing)
@@ -141,9 +143,9 @@ inline const foundation::Vector3d& BSDFSample::get_shading_normal() const
     return m_shading_point.get_shading_normal();
 }
 
-inline const foundation::Vector3d& BSDFSample::get_outgoing() const
+inline const foundation::Vector3d& BSDFSample::get_outgoing_vector() const
 {
-    return m_outgoing;
+    return m_outgoing.get_value();
 }
 
 inline const foundation::Basis3d& BSDFSample::get_shading_basis() const
@@ -176,14 +178,19 @@ inline bool BSDFSample::is_specular() const
     return m_mode == Specular;
 }
 
-inline const foundation::Vector3d& BSDFSample::get_incoming() const
+inline const foundation::Dual3d& BSDFSample::get_incoming() const
 {
     return m_incoming;
 }
 
+inline const foundation::Vector3d& BSDFSample::get_incoming_vector() const
+{
+    return m_incoming.get_value();
+}
+
 inline void BSDFSample::set_incoming(const foundation::Vector3d& incoming)
 {
-    m_incoming = incoming;
+    m_incoming = foundation::Dual3d(incoming);
 }
 
 inline double BSDFSample::get_probability() const
