@@ -202,6 +202,7 @@ set (foundation_math_rng_sources
     foundation/math/rng/distribution.h
     foundation/math/rng/lcg.h
     foundation/math/rng/mersennetwister.h
+    foundation/math/rng/pcg.h
     foundation/math/rng/serialmersennetwister.cpp
     foundation/math/rng/serialmersennetwister.h
     foundation/math/rng/xorshift.h
