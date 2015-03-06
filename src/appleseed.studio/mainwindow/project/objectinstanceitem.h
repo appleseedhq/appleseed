@@ -92,6 +92,7 @@ class ObjectInstanceItem
     void update_style();
 
   private slots:
+    void slot_assign_new_disney_material();
     void slot_open_material_assignment_editor();
     void slot_assign_material();
     void slot_assign_material_accepted(QString page_name, QString entity_name, QVariant data);
@@ -99,6 +100,7 @@ class ObjectInstanceItem
 
   private:
     friend class EntityDeletionDelayedAction<ObjectInstanceItem>;
+    friend class AssignNewDisneyMaterialDelayedAction;
 
     typedef SingleModelEntityItem<renderer::ObjectInstance, renderer::Assembly, ObjectInstanceCollectionItem> Base;
 

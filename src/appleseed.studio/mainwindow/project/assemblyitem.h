@@ -88,6 +88,7 @@ class AssemblyItem
 
     typedef InstanceCollectionItem<renderer::ObjectInstance, ObjectInstanceItem, renderer::Assembly> ObjectInstanceCollectionItem;
 
+    MaterialCollectionItem& get_material_collection_item() const;
     ObjectCollectionItem& get_object_collection_item() const;
     ObjectInstanceCollectionItem& get_object_instance_collection_item() const;
 

@@ -208,6 +208,11 @@ void AssemblyItem::add_item(ObjectInstance* object_instance)
     m_object_instance_collection_item->add_item(object_instance);
 }
 
+MaterialCollectionItem& AssemblyItem::get_material_collection_item() const
+{
+    return *m_material_collection_item;
+}
+
 ObjectCollectionItem& AssemblyItem::get_object_collection_item() const
 {
     return *m_object_collection_item;

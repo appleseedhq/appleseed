@@ -55,6 +55,8 @@ class MaterialCollectionItem
         ProjectBuilder&                 project_builder,
         renderer::ParamArray&           settings);
 
+    void create_default_disney_material(const std::string& material_name);
+
   protected:
     typedef CollectionItem<renderer::Material, renderer::Assembly, AssemblyItem> Base;
 
