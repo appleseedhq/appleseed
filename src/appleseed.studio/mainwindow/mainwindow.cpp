@@ -1380,7 +1380,7 @@ namespace
 
 void MainWindow::slot_clear_shading_override()
 {
-    m_rendering_manager.set_permanent_state(
+    m_rendering_manager.set_sticky_action(
         "override_shading",
         auto_ptr<RenderingManager::IDelayedAction>(
             new ClearShadingOverrideDelayedAction()));
@@ -1393,7 +1393,7 @@ void MainWindow::slot_set_shading_override()
     QAction* action = qobject_cast<QAction*>(sender());
     const string shading_mode = action->data().toString().toStdString();
 
-    m_rendering_manager.set_permanent_state(
+    m_rendering_manager.set_sticky_action(
         "override_shading",
         auto_ptr<RenderingManager::IDelayedAction>(
             new SetShadingOverrideDelayedAction(shading_mode)));
@@ -1453,7 +1453,7 @@ namespace
 
 void MainWindow::slot_clear_render_region()
 {
-    m_rendering_manager.push_delayed_action(
+    m_rendering_manager.schedule(
         auto_ptr<RenderingManager::IDelayedAction>(
             new ClearRenderRegionDelayedAction()));
 
@@ -1462,7 +1462,7 @@ void MainWindow::slot_clear_render_region()
 
 void MainWindow::slot_set_render_region(const QRect& rect)
 {
-    m_rendering_manager.push_delayed_action(
+    m_rendering_manager.schedule(
         auto_ptr<RenderingManager::IDelayedAction>(
             new SetRenderRegionDelayedAction(rect)));
 

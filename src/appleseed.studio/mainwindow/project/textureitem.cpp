@@ -117,18 +117,9 @@ namespace
 
 void TextureItem::slot_delete()
 {
-    if (m_project_builder.get_rendering_manager().is_rendering())
-        schedule_delete();
-    else do_delete();
-}
-
-void TextureItem::schedule_delete()
-{
-    m_project_builder.get_rendering_manager().push_delayed_action(
+    m_project_builder.get_rendering_manager().schedule_or_execute(
         auto_ptr<RenderingManager::IDelayedAction>(
             new EntityDeletionDelayedAction<TextureItem>(this)));
-
-    m_project_builder.get_rendering_manager().reinitialize_rendering();
 }
 
 void TextureItem::do_delete()

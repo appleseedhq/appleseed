@@ -148,10 +148,9 @@ void ObjectItem::slot_instantiate()
 
     if (!instance_name.empty())
     {
-        if (m_project_builder.get_rendering_manager().is_rendering())
-            schedule_instantiate(instance_name);
-        else
-            do_instantiate(instance_name);
+        m_project_builder.get_rendering_manager().schedule_or_execute(
+            auto_ptr<RenderingManager::IDelayedAction>(
+                new EntityInstantiationDelayedAction<ObjectItem>(this, instance_name)));
     }
 }
 
@@ -172,29 +171,11 @@ void ObjectItem::do_instantiate(const string& name)
     m_project_builder.notify_project_modification();
 }
 
-void ObjectItem::schedule_instantiate(const string& name)
-{
-    m_project_builder.get_rendering_manager().push_delayed_action(
-        auto_ptr<RenderingManager::IDelayedAction>(
-            new EntityInstantiationDelayedAction<ObjectItem>(this, name)));
-
-    m_project_builder.get_rendering_manager().reinitialize_rendering();
-}
-
 void ObjectItem::slot_delete()
 {
-    if (m_project_builder.get_rendering_manager().is_rendering())
-        schedule_delete();
-    else do_delete();
-}
-
-void ObjectItem::schedule_delete()
-{
-    m_project_builder.get_rendering_manager().push_delayed_action(
+    m_project_builder.get_rendering_manager().schedule_or_execute(
         auto_ptr<RenderingManager::IDelayedAction>(
             new EntityDeletionDelayedAction<ObjectItem>(this)));
-
-    m_project_builder.get_rendering_manager().reinitialize_rendering();
 }
 
 void ObjectItem::do_delete()

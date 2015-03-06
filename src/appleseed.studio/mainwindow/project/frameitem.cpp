@@ -108,21 +108,18 @@ void FrameItem::slot_edit(AttributeEditor* attribute_editor)
 
 void FrameItem::slot_edit_accepted(Dictionary values)
 {
-    catch_entity_creation_errors(
-        m_project_builder.get_rendering_manager().is_rendering()
-            ? &FrameItem::schedule_edit
-            : &FrameItem::edit,
-        values,
-        "Frame");
-}
+    if (m_project_builder.get_rendering_manager().is_rendering())
+    {
+        m_project_builder.get_rendering_manager().schedule(
+            auto_ptr<RenderingManager::IDelayedAction>(
+                new EntityEditionDelayedAction<FrameItem>(this, values)));
 
-void FrameItem::schedule_edit(const Dictionary& values)
-{
-    m_project_builder.get_rendering_manager().push_delayed_action(
-        auto_ptr<RenderingManager::IDelayedAction>(
-            new EntityEditionDelayedAction<FrameItem>(this, values)));
-
-    m_project_builder.get_rendering_manager().reinitialize_rendering();
+        m_project_builder.get_rendering_manager().reinitialize_rendering();
+    }
+    else
+    {
+        catch_entity_creation_errors(&FrameItem::edit, values, "Frame");
+    }
 }
 
 void FrameItem::edit(const Dictionary& values)

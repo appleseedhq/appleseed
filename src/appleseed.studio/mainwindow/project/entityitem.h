@@ -83,16 +83,9 @@ class EntityItem
     ProjectBuilder&         m_project_builder;
 
     virtual void slot_edit_accepted(foundation::Dictionary values) APPLESEED_OVERRIDE;
-
-    void schedule_edit(const foundation::Dictionary& values);
     void edit(const foundation::Dictionary& values);
 
-    void schedule_instantiate(const std::string& name);
-    void do_instantiate(const std::string& name);
-
     virtual void slot_delete() APPLESEED_OVERRIDE;
-
-    void schedule_delete();
     void do_delete();
 
   private:
@@ -140,22 +133,21 @@ bool EntityItem<Entity, ParentEntity, CollectionItem>::is_fixed_position() const
 template <typename Entity, typename ParentEntity, typename CollectionItem>
 void EntityItem<Entity, ParentEntity, CollectionItem>::slot_edit_accepted(foundation::Dictionary values)
 {
-    catch_entity_creation_errors(
-        m_project_builder.get_rendering_manager().is_rendering()
-            ? &EntityItem::schedule_edit
-            : &EntityItem::edit,
-        values,
-        renderer::EntityTraits<Entity>::get_human_readable_entity_type_name());
-}
+    if (m_project_builder.get_rendering_manager().is_rendering())
+    {
+        m_project_builder.get_rendering_manager().schedule(
+            std::auto_ptr<RenderingManager::IDelayedAction>(
+                new EntityEditionDelayedAction<EntityItem>(this, values)));
 
-template <typename Entity, typename ParentEntity, typename CollectionItem>
-void EntityItem<Entity, ParentEntity, CollectionItem>::schedule_edit(const foundation::Dictionary& values)
-{
-    m_project_builder.get_rendering_manager().push_delayed_action(
-        std::auto_ptr<RenderingManager::IDelayedAction>(
-            new EntityEditionDelayedAction<EntityItem>(this, values)));
-
-    m_project_builder.get_rendering_manager().reinitialize_rendering();
+        m_project_builder.get_rendering_manager().reinitialize_rendering();
+    }
+    else
+    {
+        catch_entity_creation_errors(
+            &EntityItem::edit,
+            values,
+            renderer::EntityTraits<Entity>::get_human_readable_entity_type_name());
+    }
 }
 
 template <typename Entity, typename ParentEntity, typename CollectionItem>
@@ -183,38 +175,12 @@ void EntityItem<Entity, ParentEntity, CollectionItem>::edit(const foundation::Di
         move_to_sorted_position(this);
 }
 
-
-template <typename Entity, typename ParentEntity, typename CollectionItem>
-void EntityItem<Entity, ParentEntity, CollectionItem>::schedule_instantiate(const std::string& name)
-{
-    m_project_builder.get_rendering_manager().push_delayed_action(
-            std::auto_ptr<RenderingManager::IDelayedAction>(
-                new EntityInstantiationDelayedAction<EntityItem>(this, name)));
-
-    m_project_builder.get_rendering_manager().reinitialize_rendering();
-}
-
-template <typename Entity, typename ParentEntity, typename CollectionItem>
-void EntityItem<Entity, ParentEntity, CollectionItem>::do_instantiate(const std::string& name)
-{
-}
-
 template <typename Entity, typename ParentEntity, typename CollectionItem>
 void EntityItem<Entity, ParentEntity, CollectionItem>::slot_delete()
 {
-    if (m_project_builder.get_rendering_manager().is_rendering())
-        schedule_delete();
-    else do_delete();
-}
-
-template <typename Entity, typename ParentEntity, typename CollectionItem>
-void EntityItem<Entity, ParentEntity, CollectionItem>::schedule_delete()
-{
-    m_project_builder.get_rendering_manager().push_delayed_action(
+    m_project_builder.get_rendering_manager().schedule_or_execute(
         std::auto_ptr<RenderingManager::IDelayedAction>(
             new EntityDeletionDelayedAction<EntityItem>(this)));
-
-    m_project_builder.get_rendering_manager().reinitialize_rendering();
 }
 
 template <typename Entity, typename ParentEntity, typename CollectionItem>

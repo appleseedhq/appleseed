@@ -220,10 +220,9 @@ AssemblyItem::ObjectInstanceCollectionItem& AssemblyItem::get_object_instance_co
 
 void AssemblyItem::instantiate(const string& name)
 {
-    if (m_project_builder.get_rendering_manager().is_rendering())
-        schedule_instantiate(name);
-    else
-        do_instantiate(name);
+    m_project_builder.get_rendering_manager().schedule_or_execute(
+        auto_ptr<RenderingManager::IDelayedAction>(
+            new EntityInstantiationDelayedAction<AssemblyItem>(this, name)));
 }
 
 void AssemblyItem::slot_instantiate()
@@ -242,15 +241,6 @@ void AssemblyItem::slot_instantiate()
 
     if (!instance_name.empty())
         instantiate(instance_name);
-}
-
-void AssemblyItem::schedule_instantiate(const string& name)
-{
-    m_project_builder.get_rendering_manager().push_delayed_action(
-        auto_ptr<RenderingManager::IDelayedAction>(
-            new EntityInstantiationDelayedAction<AssemblyItem>(this, name)));
-
-    m_project_builder.get_rendering_manager().reinitialize_rendering();
 }
 
 void AssemblyItem::do_instantiate(const string& name)
@@ -361,18 +351,9 @@ namespace
 
 void AssemblyItem::slot_delete()
 {
-    if (m_project_builder.get_rendering_manager().is_rendering())
-        schedule_delete();
-    else do_delete();
-}
-
-void AssemblyItem::schedule_delete()
-{
-    m_project_builder.get_rendering_manager().push_delayed_action(
+    m_project_builder.get_rendering_manager().schedule_or_execute(
         auto_ptr<RenderingManager::IDelayedAction>(
             new EntityDeletionDelayedAction<AssemblyItem>(this)));
-
-    m_project_builder.get_rendering_manager().reinitialize_rendering();
 }
 
 void AssemblyItem::do_delete()

@@ -99,24 +99,6 @@ QMenu* ObjectCollectionItem::get_single_item_context_menu() const
     return menu;
 }
 
-void ObjectCollectionItem::slot_import_objects()
-{
-    const QStringList filepaths =
-        get_open_filenames(
-            treeWidget(),
-            "Import Objects...",
-            "Geometry Files (*.abc;*.binarymesh;*.obj);;All Files (*.*)",
-            m_settings,
-            SETTINGS_FILE_DIALOG_GEOMETRY);
-
-    if (filepaths.empty())
-        return;
-
-    if (m_project_builder.get_rendering_manager().is_rendering())
-        schedule_import_objects(filepaths);
-    else import_objects(filepaths);
-}
-
 namespace
 {
     class ImportObjectsDelayedAction
@@ -144,13 +126,22 @@ namespace
     };
 }
 
-void ObjectCollectionItem::schedule_import_objects(const QStringList& filepaths)
+void ObjectCollectionItem::slot_import_objects()
 {
-    m_project_builder.get_rendering_manager().push_delayed_action(
+    const QStringList filepaths =
+        get_open_filenames(
+            treeWidget(),
+            "Import Objects...",
+            "Geometry Files (*.abc;*.binarymesh;*.obj);;All Files (*.*)",
+            m_settings,
+            SETTINGS_FILE_DIALOG_GEOMETRY);
+
+    if (filepaths.empty())
+        return;
+
+    m_project_builder.get_rendering_manager().schedule_or_execute(
         auto_ptr<RenderingManager::IDelayedAction>(
             new ImportObjectsDelayedAction(this, filepaths)));
-
-    m_project_builder.get_rendering_manager().reinitialize_rendering();
 }
 
 void ObjectCollectionItem::import_objects(const QStringList& filepaths)

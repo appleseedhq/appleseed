@@ -44,6 +44,7 @@
 #include <QObject>
 
 // Forward declarations.
+namespace appleseed     { namespace studio { class ObjectInstanceItem; } }
 namespace appleseed     { namespace studio { class ProjectBuilder; } }
 namespace foundation    { class Dictionary; }
 namespace renderer      { class Assembly; }
@@ -54,8 +55,6 @@ class QVariant;
 
 namespace appleseed {
 namespace studio {
-
-class ObjectInstanceItem;
 
 typedef InstanceCollectionItem<
     renderer::ObjectInstance,
@@ -103,16 +102,7 @@ class ObjectInstanceItem
 
     typedef SingleModelEntityItem<renderer::ObjectInstance, renderer::Assembly, ObjectInstanceCollectionItem> Base;
 
-    void schedule_assign_material(
-        const QString&                  page_name,
-        const QString&                  entity_name,
-        const QVariant&                 data);
-
-    void schedule_clear_material(const QVariant& data);
-
     virtual void slot_delete() APPLESEED_OVERRIDE;
-
-    void schedule_delete();
     void do_delete();
 
     void add_material_assignment_menu_actions(

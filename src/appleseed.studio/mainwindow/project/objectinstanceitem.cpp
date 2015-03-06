@@ -246,15 +246,6 @@ void ObjectInstanceItem::slot_assign_material()
     browser_window->activateWindow();
 }
 
-void ObjectInstanceItem::slot_assign_material_accepted(QString page_name, QString entity_name, QVariant data)
-{
-    if (m_project_builder.get_rendering_manager().is_rendering())
-        schedule_assign_material(page_name, entity_name, data);
-    else assign_material(page_name, entity_name, data);
-
-    qobject_cast<QWidget*>(sender()->parent())->close();
-}
-
 namespace
 {
     class AssignMaterialDelayedAction
@@ -288,16 +279,13 @@ namespace
     };
 }
 
-void ObjectInstanceItem::schedule_assign_material(
-    const QString&                  page_name,
-    const QString&                  entity_name,
-    const QVariant&                 data)
+void ObjectInstanceItem::slot_assign_material_accepted(QString page_name, QString entity_name, QVariant data)
 {
-    m_project_builder.get_rendering_manager().push_delayed_action(
+    m_project_builder.get_rendering_manager().schedule_or_execute(
         auto_ptr<RenderingManager::IDelayedAction>(
             new AssignMaterialDelayedAction(this, page_name, entity_name, data)));
 
-    m_project_builder.get_rendering_manager().reinitialize_rendering();
+    qobject_cast<QWidget*>(sender()->parent())->close();
 }
 
 void ObjectInstanceItem::assign_material(
@@ -323,15 +311,6 @@ void ObjectInstanceItem::assign_material(
             item->do_assign_material(data.m_slot.c_str(), front_side, back_side, material_name.c_str());
         }
     }
-}
-
-void ObjectInstanceItem::slot_clear_material()
-{
-    const QVariant data = qobject_cast<QAction*>(sender())->data();
-
-    if (m_project_builder.get_rendering_manager().is_rendering())
-        schedule_clear_material(data);
-    else clear_material(data);
 }
 
 namespace
@@ -361,13 +340,13 @@ namespace
     };
 }
 
-void ObjectInstanceItem::schedule_clear_material(const QVariant& data)
+void ObjectInstanceItem::slot_clear_material()
 {
-    m_project_builder.get_rendering_manager().push_delayed_action(
+    const QVariant data = qobject_cast<QAction*>(sender())->data();
+
+    m_project_builder.get_rendering_manager().schedule_or_execute(
         auto_ptr<RenderingManager::IDelayedAction>(
             new ClearMaterialDelayedAction(this, data)));
-
-    m_project_builder.get_rendering_manager().reinitialize_rendering();
 }
 
 void ObjectInstanceItem::clear_material(const QVariant& untyped_data)
@@ -392,18 +371,9 @@ void ObjectInstanceItem::clear_material(const QVariant& untyped_data)
 
 void ObjectInstanceItem::slot_delete()
 {
-    if (m_project_builder.get_rendering_manager().is_rendering())
-        schedule_delete();
-    else do_delete();
-}
-
-void ObjectInstanceItem::schedule_delete()
-{
-    m_project_builder.get_rendering_manager().push_delayed_action(
+    m_project_builder.get_rendering_manager().schedule_or_execute(
         auto_ptr<RenderingManager::IDelayedAction>(
             new EntityDeletionDelayedAction<ObjectInstanceItem>(this)));
-
-    m_project_builder.get_rendering_manager().reinitialize_rendering();
 }
 
 void ObjectInstanceItem::do_delete()

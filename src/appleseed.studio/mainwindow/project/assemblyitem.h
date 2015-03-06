@@ -116,13 +116,9 @@ class AssemblyItem
     ObjectInstanceCollectionItem*   m_object_instance_collection_item;
 
     virtual void slot_instantiate() APPLESEED_OVERRIDE;
-
-    void schedule_instantiate(const std::string& name);
     void do_instantiate(const std::string& name);
 
     virtual void slot_delete() APPLESEED_OVERRIDE;
-
-    void schedule_delete();
     void do_delete();
 
     template <typename Entity, typename EntityContainer>

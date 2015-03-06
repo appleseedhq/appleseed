@@ -71,8 +71,6 @@ class FrameItem
     ProjectBuilder&         m_project_builder;
 
     virtual void slot_edit(AttributeEditor* attribute_editor) APPLESEED_OVERRIDE;
-
-    void schedule_edit(const foundation::Dictionary& values);
     void edit(const foundation::Dictionary& values);
 };
 

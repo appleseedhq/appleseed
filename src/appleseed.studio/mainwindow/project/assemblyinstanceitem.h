@@ -66,8 +66,6 @@ class AssemblyInstanceItem
     ProjectBuilder&                     m_project_builder;
 
     virtual void slot_delete() APPLESEED_OVERRIDE;
-
-    void schedule_delete();
     void do_delete();
 };
 
