@@ -56,7 +56,7 @@ void IMaterialFactory::add_common_input_metadata(DictionaryArray& metadata)
             .insert("type", "entity")
             .insert("entity_types",
                 Dictionary().insert("surface_shader", "Surface Shaders"))
-            .insert("use", "required"));
+            .insert("use", "optional"));
 }
 
 }   // namespace renderer
