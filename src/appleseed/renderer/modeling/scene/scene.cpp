@@ -37,6 +37,8 @@
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/textureinstance.h"
+#include "renderer/modeling/surfaceshader/physicalsurfaceshader.h"
+#include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/utility/bbox.h"
 
 // appleseed.foundation headers.
@@ -74,10 +76,15 @@ struct Scene::Impl
     auto_release_ptr<Environment>   m_environment;
     EnvironmentEDFContainer         m_environment_edfs;
     EnvironmentShaderContainer      m_environment_shaders;
+    auto_release_ptr<SurfaceShader> m_default_surface_shader;
 
     explicit Impl(Entity* parent)
       : m_environment_edfs(parent)
       , m_environment_shaders(parent)
+      , m_default_surface_shader(
+            PhysicalSurfaceShaderFactory().create(
+                "default_surface_shader",
+                ParamArray()))
     {
     }
 };
@@ -134,6 +141,11 @@ EnvironmentEDFContainer& Scene::environment_edfs() const
 EnvironmentShaderContainer& Scene::environment_shaders() const
 {
     return impl->m_environment_shaders;
+}
+
+SurfaceShader* Scene::get_default_surface_shader() const
+{
+    return impl->m_default_surface_shader.get();
 }
 
 GAABB3 Scene::compute_bbox() const

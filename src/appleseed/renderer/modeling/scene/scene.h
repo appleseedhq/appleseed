@@ -49,6 +49,7 @@
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class Project; }
+namespace renderer      { class SurfaceShader; }
 
 namespace renderer
 {
@@ -87,6 +88,9 @@ class APPLESEED_DLLSYMBOL Scene
 
     // Access the environment shaders.
     EnvironmentShaderContainer& environment_shaders() const;
+
+    // Return the surface shader that is used by materials without one.
+    SurfaceShader* get_default_surface_shader() const;
 
     // Compute and return the bounding box of the scene.
     GAABB3 compute_bbox() const;

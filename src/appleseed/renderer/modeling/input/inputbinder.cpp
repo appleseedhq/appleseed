@@ -202,6 +202,13 @@ void InputBinder::bind_scene_entities_inputs(
         i->check_texture();
     }
 
+    // Bind the inputs of the default surface shader.
+    bind_scene_entity_inputs(
+        scene,
+        scene_symbols,
+        SymbolTable::symbol_name(SymbolTable::SymbolSurfaceShader),
+        *scene.get_default_surface_shader());
+
     // Bind camera inputs.
     if (scene.get_camera())
     {

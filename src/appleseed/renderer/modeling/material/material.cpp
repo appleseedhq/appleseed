@@ -39,6 +39,8 @@
 #include "renderer/modeling/input/texturesource.h"
 #include "renderer/modeling/material/bumpmappingmodifier.h"
 #include "renderer/modeling/material/normalmappingmodifier.h"
+#include "renderer/modeling/project/project.h"
+#include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/scene/textureinstance.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/modeling/texture/texture.h"
@@ -90,7 +92,7 @@ Material::Material(
 {
     set_name(name);
 
-    m_inputs.declare("surface_shader", InputFormatEntity);
+    m_inputs.declare("surface_shader", InputFormatEntity, "");
 }
 
 bool Material::has_alpha_map() const
@@ -121,6 +123,10 @@ bool Material::on_frame_begin(
     m_shade_alpha_cutouts = m_params.get_optional<bool>("shade_alpha_cutouts", false);
 
     m_surface_shader = get_uncached_surface_shader();
+
+    if (m_surface_shader == 0)
+        m_surface_shader = project.get_scene()->get_default_surface_shader();
+
     m_alpha_map = get_uncached_alpha_map();
 
     return true;
