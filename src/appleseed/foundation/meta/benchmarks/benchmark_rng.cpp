@@ -27,10 +27,14 @@
 //
 
 // appleseed.foundation headers.
+#include "foundation/math/rng/lcg.h"
+#include "foundation/math/rng/pcg.h"
 #include "foundation/math/rng/serialmersennetwister.h"
 #ifdef APPLESEED_USE_SSE
 #include "foundation/math/rng/simdmersennetwister.h"
 #endif
+#include "foundation/math/rng/xorshift.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/benchmark.h"
 
 // Standard headers.
@@ -38,28 +42,76 @@
 
 using namespace foundation;
 
-BENCHMARK_SUITE(Foundation_Math_Rng_SerialMersenneTwister)
+BENCHMARK_SUITE(Foundation_Math_RNG)
 {
-    BENCHMARK_CASE(RandUint32)
+    template <typename RNG>
+    struct Fixture
     {
-        SerialMersenneTwister rng;
+        RNG     m_rng;
+        uint32  m_dummy;
 
-        for (size_t i = 0; i < 1753117; ++i)
-            rng.rand_uint32();
+        Fixture()
+          : m_dummy(0)
+        {
+        }
+    };
+
+    BENCHMARK_CASE_F(LCG_RandUint32, Fixture<LCG>)
+    {
+        for (size_t i = 0; i < 250000; ++i)
+        {
+            m_dummy ^= m_rng.rand_uint32();
+            m_dummy ^= m_rng.rand_uint32();
+            m_dummy ^= m_rng.rand_uint32();
+            m_dummy ^= m_rng.rand_uint32();
+        }
     }
-}
+
+    BENCHMARK_CASE_F(PCG_RandUint32, Fixture<PCG>)
+    {
+        for (size_t i = 0; i < 250000; ++i)
+        {
+            m_dummy ^= m_rng.rand_uint32();
+            m_dummy ^= m_rng.rand_uint32();
+            m_dummy ^= m_rng.rand_uint32();
+            m_dummy ^= m_rng.rand_uint32();
+        }
+    }
+
+    BENCHMARK_CASE_F(SerialMersenneTwister_RandUint32, Fixture<SerialMersenneTwister>)
+    {
+        for (size_t i = 0; i < 250000; ++i)
+        {
+            m_dummy ^= m_rng.rand_uint32();
+            m_dummy ^= m_rng.rand_uint32();
+            m_dummy ^= m_rng.rand_uint32();
+            m_dummy ^= m_rng.rand_uint32();
+        }
+    }
 
 #ifdef APPLESEED_USE_SSE
 
-BENCHMARK_SUITE(Foundation_Math_Rng_SimdMersenneTwister)
-{
-    BENCHMARK_CASE(RandUint32)
+    BENCHMARK_CASE_F(SimdMersenneTwister_RandUint32, Fixture<SimdMersenneTwister>)
     {
-        SimdMersenneTwister rng;
-
-        for (size_t i = 0; i < 1753117; ++i)
-            rng.rand_uint32();
+        for (size_t i = 0; i < 250000; ++i)
+        {
+            m_dummy ^= m_rng.rand_uint32();
+            m_dummy ^= m_rng.rand_uint32();
+            m_dummy ^= m_rng.rand_uint32();
+            m_dummy ^= m_rng.rand_uint32();
+        }
     }
-}
 
 #endif
+
+    BENCHMARK_CASE_F(Xorshift_RandUint32, Fixture<Xorshift>)
+    {
+        for (size_t i = 0; i < 250000; ++i)
+        {
+            m_dummy ^= m_rng.rand_uint32();
+            m_dummy ^= m_rng.rand_uint32();
+            m_dummy ^= m_rng.rand_uint32();
+            m_dummy ^= m_rng.rand_uint32();
+        }
+    }
+}
