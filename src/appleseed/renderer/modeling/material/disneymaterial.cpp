@@ -1021,13 +1021,6 @@ DictionaryArray DisneyMaterialFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "alpha_mask")
-            .insert("label", "Alpha Mask")
-            .insert("type", "colormap")
-            .insert("use", "optional"));
-
-    metadata.push_back(
-        Dictionary()
             .insert("name", "edf")
             .insert("label", "EDF")
             .insert("type", "entity")
