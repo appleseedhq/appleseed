@@ -32,7 +32,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
 
-// Standard headers
+// Standard headers.
 #include <cassert>
 
 namespace foundation
@@ -68,6 +68,7 @@ class Dual
     T       m_dy;
     bool    m_has_derivatives;
 };
+
 
 //
 // Dual class implementation.
