@@ -330,6 +330,7 @@ class RendererServices
     TextureStore&               m_texture_store;
     AttrGetterMapType           m_global_attr_getters;
     OIIO::ustring               m_cam_projection_str;
+    float                       m_shutter[2];
 };
 
 }       // namespace renderer

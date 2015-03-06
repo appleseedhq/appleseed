@@ -258,7 +258,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             tracer.trace(
                 Vector3d(0.0),
                 Vector3d(1.0, 0.0, 0.0),
-                0.0,
+                ShadingRay::TimeType(0.0, 0.0, 0.0),
                 VisibilityFlags::ShadowRay,
                 0,
                 transmission);
@@ -282,7 +282,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             tracer.trace(
                 Vector3d(0.0),
                 Vector3d(1.0, 0.0, 0.0),
-                0.0,
+                ShadingRay::TimeType(0.0, 0.0, 0.0),
                 VisibilityFlags::ShadowRay,
                 0);
 
@@ -305,7 +305,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             tracer.trace_between(
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
-                0.0,
+                ShadingRay::TimeType(0.0, 0.0, 0.0),
                 VisibilityFlags::ShadowRay,
                 0,
                 transmission);
@@ -329,7 +329,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             tracer.trace_between(
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
-                0.0,
+                ShadingRay::TimeType(0.0, 0.0, 0.0),
                 VisibilityFlags::ShadowRay,
                 0);
 
@@ -361,7 +361,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             tracer.trace(
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(1.0, 0.0, 0.0),
-                0.0,
+                ShadingRay::TimeType(0.0, 0.0, 0.0),
                 VisibilityFlags::ShadowRay,
                 0,
                 transmission);
@@ -386,7 +386,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             tracer.trace(
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(1.0, 0.0, 0.0),
-                0.0,
+                ShadingRay::TimeType(0.0, 0.0, 0.0),
                 VisibilityFlags::ShadowRay,
                 0);
 
@@ -409,7 +409,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             tracer.trace_between(
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
-                0.0,
+                ShadingRay::TimeType(0.0, 0.0, 0.0),
                 VisibilityFlags::ShadowRay,
                 0,
                 transmission);
@@ -434,7 +434,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             tracer.trace_between(
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
-                0.0,
+                ShadingRay::TimeType(0.0, 0.0, 0.0),
                 VisibilityFlags::ShadowRay,
                 0);
 
@@ -466,7 +466,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             tracer.trace(
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(1.0, 0.0, 0.0),
-                0.0,
+                ShadingRay::TimeType(0.0, 0.0, 0.0),
                 VisibilityFlags::ShadowRay,
                 0,
                 transmission);
@@ -490,7 +490,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             tracer.trace(
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(1.0, 0.0, 0.0),
-                0.0,
+                ShadingRay::TimeType(0.0, 0.0, 0.0),
                 VisibilityFlags::ShadowRay,
                 0);
 
@@ -513,7 +513,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             tracer.trace_between(
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
-                0.0,
+                ShadingRay::TimeType(0.0, 0.0, 0.0),
                 VisibilityFlags::ShadowRay,
                 0,
                 transmission);
@@ -537,7 +537,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             tracer.trace_between(
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
-                0.0,
+                ShadingRay::TimeType(0.0, 0.0, 0.0),
                 VisibilityFlags::ShadowRay,
                 0);
 
@@ -570,7 +570,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             tracer.trace(
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(1.0, 0.0, 0.0),
-                0.0,
+                ShadingRay::TimeType(0.0, 0.0, 0.0),
                 VisibilityFlags::ShadowRay,
                 0,
                 transmission);
@@ -595,7 +595,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             tracer.trace(
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(1.0, 0.0, 0.0),
-                0.0,
+                ShadingRay::TimeType(0.0, 0.0, 0.0),
                 VisibilityFlags::ShadowRay,
                 0);
 
@@ -618,7 +618,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             tracer.trace_between(
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
-                0.0,
+                ShadingRay::TimeType(0.0, 0.0, 0.0),
                 VisibilityFlags::ShadowRay,
                 0,
                 transmission);
@@ -643,7 +643,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             tracer.trace_between(
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(5.0, 0.0, 0.0),
-                0.0,
+                ShadingRay::TimeType(0.0, 0.0, 0.0),
                 VisibilityFlags::ShadowRay,
                 0);
 
@@ -666,7 +666,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             tracer.trace_between(
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(4.0, 0.0, 0.0),
-                0.0,
+                ShadingRay::TimeType(0.0, 0.0, 0.0),
                 VisibilityFlags::ShadowRay,
                 0,
                 transmission);
@@ -690,7 +690,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             tracer.trace_between(
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(4.0, 0.0, 0.0),
-                0.0,
+                ShadingRay::TimeType(0.0, 0.0, 0.0),
                 VisibilityFlags::ShadowRay,
                 0);
 
@@ -723,7 +723,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             parent_tracer.trace(
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(1.0, 0.0, 0.0),
-                0.0,
+                ShadingRay::TimeType(0.0, 0.0, 0.0),
                 VisibilityFlags::ShadowRay,
                 0,
                 parent_transmission);
@@ -774,7 +774,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
             parent_tracer.trace(
                 Vector3d(0.0, 0.0, 0.0),
                 Vector3d(1.0, 0.0, 0.0),
-                0.0,
+                ShadingRay::TimeType(0.0, 0.0, 0.0),
                 VisibilityFlags::ShadowRay,
                 0,
                 parent_transmission);

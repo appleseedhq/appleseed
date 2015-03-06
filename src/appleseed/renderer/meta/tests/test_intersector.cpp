@@ -115,12 +115,11 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
         const ShadingRay ray(
             Vector3d(0.0, 0.0, 2.0),
             Vector3d(0.0, 0.0, -1.0),
-            0.0,                        // tmin
-            2.0,                        // tmax
-            0.0,                        // time
-            0.0,                        // dtime
+            0.0,                                // tmin
+            2.0,                                // tmax
+            ShadingRay::TimeType(0.0, 0.0, 0.0),
             VisibilityFlags::CameraRay,
-            0);                         // depth
+            0);                                 // depth
 
         ShadingPoint shading_point;
         const bool hit = m_intersector.trace(ray, shading_point);
@@ -133,12 +132,11 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
         const ShadingRay ray(
             Vector3d(0.0, 0.0, 2.0),
             Vector3d(0.0, 0.0, -1.0),
-            0.0,                        // tmin
-            2.0,                        // tmax
-            0.0,                        // time
-            0.0,                        // dtime
+            0.0,                                // tmin
+            2.0,                                // tmax
+            ShadingRay::TimeType(0.0, 0.0, 0.0),
             VisibilityFlags::CameraRay,
-            0);                         // depth
+            0);                                 // depth
 
         const bool hit = m_intersector.trace_probe(ray);
 

@@ -132,7 +132,7 @@ namespace
 
             // Retrieve the camera transform.
             Transformd tmp;
-            const Transformd& transform = m_transform_sequence.evaluate(ray.m_time, tmp);
+            const Transformd& transform = m_transform_sequence.evaluate(ray.m_time.m_absolute, tmp);
 
             // Compute the origin of the ray.
             ray.m_org =

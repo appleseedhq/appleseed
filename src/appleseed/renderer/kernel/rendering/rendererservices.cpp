@@ -134,6 +134,9 @@ void RendererServices::initialize()
         m_cam_projection_str = g_spherical_ustr;
     else
         m_cam_projection_str = g_unknown_proj_ustr;
+
+    m_shutter[0] = m_camera->get_shutter_open_time();
+    m_shutter[1] = m_camera->get_shutter_close_time();
 }
 
 OIIO::TextureSystem* RendererServices::texturesys() const
@@ -343,8 +346,10 @@ bool RendererServices::trace(
         normalize(Vector3f(R)),
         options.mindist,
         options.maxdist,
-        sg->time,
-        sg->dtime,
+        ShadingRay::TimeType(
+            sg->time,
+            (sg->time - m_shutter[0]) / (m_shutter[1] - m_shutter[0]),
+            sg->dtime),
         VisibilityFlags::ProbeRay,
         parent->get_ray().m_depth + 1);
 
@@ -615,8 +620,8 @@ IMPLEMENT_ATTR_GETTER(camera_shutter)
 {
     if (type == g_float_array2_typedesc)
     {
-        reinterpret_cast<float*>(val)[0] = static_cast<float>(m_camera->get_shutter_open_time());
-        reinterpret_cast<float*>(val)[1] = static_cast<float>(m_camera->get_shutter_close_time());
+        reinterpret_cast<float*>(val)[0] = m_shutter[0];
+        reinterpret_cast<float*>(val)[1] = m_shutter[1];
         clear_attr_derivatives(derivs, type, val);
         return true;
     }
@@ -628,7 +633,7 @@ IMPLEMENT_ATTR_GETTER(camera_shutter_open)
 {
     if (type == OIIO::TypeDesc::TypeFloat)
     {
-        reinterpret_cast<float*>(val)[0] = static_cast<float>(m_camera->get_shutter_open_time());
+        reinterpret_cast<float*>(val)[0] = m_shutter[0];
         clear_attr_derivatives(derivs, type, val);
         return true;
     }
@@ -640,7 +645,7 @@ IMPLEMENT_ATTR_GETTER(camera_shutter_close)
 {
     if (type == OIIO::TypeDesc::TypeFloat)
     {
-        reinterpret_cast<float*>(val)[0] = static_cast<float>(m_camera->get_shutter_close_time());
+        reinterpret_cast<float*>(val)[0] = m_shutter[1];
         clear_attr_derivatives(derivs, type, val);
         return true;
     }

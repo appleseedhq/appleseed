@@ -274,7 +274,7 @@ namespace
 
             // Retrieve the camera transform.
             Transformd tmp;
-            const Transformd& transform = m_transform_sequence.evaluate(ray.m_time, tmp);
+            const Transformd& transform = m_transform_sequence.evaluate(ray.m_time.m_absolute, tmp);
 
             // Compute the origin of the ray.
             const Transformd::MatrixType& mat = transform.get_local_to_parent();
@@ -460,7 +460,7 @@ namespace
             ray.m_dir = normalize(transform.point_to_parent(film_point) - ray.m_org);
             ray.m_tmin = 0.0;
             ray.m_tmax = numeric_limits<double>::max();
-            ray.m_time = time;
+            ray.m_time = ShadingRay::TimeType(time, 0.5, get_shutter_open_time_interval());
             ray.m_flags = VisibilityFlags::ProbeRay;
             ray.m_depth = 0;
 
@@ -478,7 +478,7 @@ namespace
                     "camera \"%s\": autofocus sets focal distance to %f (using camera position at time=%.1f).",
                     get_name(),
                     af_focal_distance,
-                    ray.m_time);
+                    ray.m_time.m_absolute);
 
                 return af_focal_distance;
             }
@@ -488,7 +488,7 @@ namespace
                 RENDERER_LOG_INFO(
                     "camera \"%s\": autofocus sets focal distance to infinity (using camera position at time=%.1f).",
                     get_name(),
-                    ray.m_time);
+                    ray.m_time.m_absolute);
 
                 return 1.0e38;
             }

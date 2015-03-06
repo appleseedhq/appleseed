@@ -128,7 +128,7 @@ void ShadingPoint::fetch_triangle_source_geometry() const
     if (motion_segment_count > 0)
     {
         // Fetch triangle vertices from the previous pose.
-        const size_t prev_index = truncate<size_t>(m_ray.m_time * motion_segment_count);
+        const size_t prev_index = truncate<size_t>(m_ray.m_time.m_relative * motion_segment_count);
         GVector3 prev_v0, prev_v1, prev_v2;
         if (prev_index == 0)
         {
@@ -149,7 +149,7 @@ void ShadingPoint::fetch_triangle_source_geometry() const
         const GVector3 next_v2 = tess.get_vertex_pose(triangle.m_v2, prev_index);
 
         // Interpolate triangle vertices.
-        const GScalar k = static_cast<GScalar>(m_ray.m_time * motion_segment_count - prev_index);
+        const GScalar k = static_cast<GScalar>(m_ray.m_time.m_relative * motion_segment_count - prev_index);
         m_v0 = lerp(prev_v0, next_v0, k);
         m_v1 = lerp(prev_v1, next_v1, k);
         m_v2 = lerp(prev_v2, next_v2, k);
@@ -742,8 +742,8 @@ void ShadingPoint::initialize_osl_shader_globals(
             m_shader_globals.dvdy = static_cast<float>(duvdy[1]);
         }
 
-        m_shader_globals.time = static_cast<float>(ray.m_time);
-        m_shader_globals.dtime = static_cast<float>(get_dtime());
+        m_shader_globals.time = static_cast<float>(ray.m_time.m_absolute);
+        m_shader_globals.dtime = static_cast<float>(ray.m_time.m_differential);
 
         m_shader_globals.dPdtime =
             sg.uses_dPdtime()

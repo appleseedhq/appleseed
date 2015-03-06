@@ -249,8 +249,11 @@ namespace
           , m_photon_end(photon_end)
           , m_pass_hash(pass_hash)
           , m_abort_switch(abort_switch)
-          , m_ray_dtime(scene.get_camera()->get_shutter_open_time_interval())
         {
+            const Camera *camera = scene.get_camera();
+            m_shutter_open_time = camera->get_shutter_open_time();
+            m_shutter_close_time = camera->get_shutter_close_time();
+            m_ray_dtime = m_shutter_close_time - m_shutter_open_time;
         }
 
         virtual void execute(const size_t thread_index) APPLESEED_OVERRIDE
@@ -302,6 +305,8 @@ namespace
         const size_t                m_pass_hash;
         IAbortSwitch&               m_abort_switch;
         SPPMPhotonVector            m_local_photons;
+        double                      m_shutter_open_time;
+        double                      m_shutter_close_time;
         double                      m_ray_dtime;
 
         void trace_light_photon(
@@ -391,11 +396,15 @@ namespace
 
             // Build the photon ray.
             child_sampling_context.split_in_place(1, 1);
+            ShadingRay::TimeType time;
+            time.m_relative = sampling_context.next_double2();
+            time.m_absolute = lerp(m_shutter_open_time, m_shutter_close_time, time.m_relative);
+            time.m_differential = m_ray_dtime;
+
             const ShadingRay ray(
                 light_sample.m_point,
                 emission_direction,
-                child_sampling_context.next_double2(),
-                m_ray_dtime,
+                time,
                 VisibilityFlags::LightRay,
                 0);
 
@@ -450,11 +459,15 @@ namespace
 
             // Build the photon ray.
             child_sampling_context.split_in_place(1, 1);
+            ShadingRay::TimeType time;
+            time.m_relative = sampling_context.next_double2();
+            time.m_absolute = lerp(m_shutter_open_time, m_shutter_close_time, time.m_relative);
+            time.m_differential = m_ray_dtime;
+
             const ShadingRay ray(
                 emission_position,
                 emission_direction,
-                child_sampling_context.next_double2(),
-                m_ray_dtime,
+                time,
                 VisibilityFlags::LightRay,
                 0);
 
@@ -536,12 +549,16 @@ namespace
           , m_photon_end(photon_end)
           , m_pass_hash(pass_hash)
           , m_abort_switch(abort_switch)
-          , m_ray_dtime(scene.get_camera()->get_shutter_open_time_interval())
         {
             const GAABB3 scene_bbox = m_scene.compute_bbox();
             m_scene_center = scene_bbox.center();
             m_scene_radius = scene_bbox.radius();
             m_safe_scene_diameter = 1.01 * (2.0 * m_scene_radius);
+
+            const Camera *camera = scene.get_camera();
+            m_shutter_open_time = camera->get_shutter_open_time();
+            m_shutter_close_time = camera->get_shutter_close_time();
+            m_ray_dtime = m_shutter_close_time - m_shutter_open_time;
         }
 
         virtual void execute(const size_t thread_index) APPLESEED_OVERRIDE
@@ -594,7 +611,9 @@ namespace
         const size_t                m_pass_hash;
         IAbortSwitch&               m_abort_switch;
         SPPMPhotonVector            m_local_photons;
-        const double                m_ray_dtime;
+        double                      m_shutter_open_time;
+        double                      m_shutter_close_time;
+        double                      m_ray_dtime;
 
         Vector3d                    m_scene_center;         // world space
         double                      m_scene_radius;         // world space
@@ -657,11 +676,15 @@ namespace
 
             // Build the photon ray.
             child_sampling_context.split_in_place(1, 1);
+            ShadingRay::TimeType time;
+            time.m_relative = sampling_context.next_double2();
+            time.m_absolute = lerp(m_shutter_open_time, m_shutter_close_time, time.m_relative);
+            time.m_differential = m_ray_dtime;
+
             const ShadingRay ray(
                 ray_origin,
                 -outgoing,
-                child_sampling_context.next_double2(),
-                m_ray_dtime,
+                time,
                 VisibilityFlags::LightRay,
                 0);
 

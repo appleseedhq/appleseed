@@ -112,10 +112,7 @@ class ShadingPoint
     const ShadingRay& get_ray() const;
 
     // Return the time stored in the ray.
-    double get_time() const;
-
-    // Return the time differential stored in the ray.
-    double get_dtime() const;
+    const ShadingRay::TimeType& get_time() const;
 
     // Return true if an intersection was found, false otherwise.
     bool hit() const;
@@ -433,14 +430,9 @@ inline const ShadingRay& ShadingPoint::get_ray() const
     return m_ray;
 }
 
-inline double ShadingPoint::get_time() const
+inline const ShadingRay::TimeType& ShadingPoint::get_time() const
 {
     return m_ray.m_time;
-}
-
-inline double ShadingPoint::get_dtime() const
-{
-    return m_ray.m_dtime;
 }
 
 inline bool ShadingPoint::hit() const

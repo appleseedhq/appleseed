@@ -1430,7 +1430,7 @@ bool TriangleLeafVisitor::visit(
             }
 
             // Advance to the motion step immediately before the ray time.
-            const double base_time = m_shading_point.m_ray.m_time * motion_segment_count;
+            const double base_time = m_shading_point.m_ray.m_time.m_relative * motion_segment_count;
             const size_t base_index = truncate<size_t>(base_time);
             reader += base_index * 3 * sizeof(GVector3);
 

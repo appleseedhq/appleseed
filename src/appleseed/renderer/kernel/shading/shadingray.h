@@ -39,8 +39,12 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
 
+// Standard headers.
+#include <cassert>
+
 namespace renderer
 {
+
 
 //
 // A ray as it is used throughout the renderer.
@@ -59,9 +63,22 @@ class ShadingRay
     typedef foundation::RayInfo3d   RayInfoType;
     typedef foundation::uint16      DepthType;
 
+    struct TimeType
+    {
+        TimeType();
+
+        TimeType(
+            const double absolute,
+            const double relative,
+            const double differential);
+
+        double m_absolute;
+        double m_relative;
+        double m_differential;
+    };
+
     // Public members.
-    double                          m_time;
-    double                          m_dtime;
+    TimeType                        m_time;
     VisibilityFlags::Type           m_flags;
     DepthType                       m_depth;
     bool                            m_has_differentials;
@@ -72,14 +89,12 @@ class ShadingRay
     ShadingRay();                   // leave all fields uninitialized
     ShadingRay(
         const RayType&              ray,
-        const double                time,
-        const double                dtime,
+        const TimeType&             time,
         const VisibilityFlags::Type flags,
         const DepthType             depth);
     ShadingRay(
         const RayType&              ray,
-        const double                time,
-        const double                dtime,
+        const TimeType&             time,
         const VisibilityFlags::Type flags,
         const DepthType             depth,
         const RayType&              rx,
@@ -87,8 +102,7 @@ class ShadingRay
     ShadingRay(
         const VectorType&           org,
         const VectorType&           dir,
-        const double                time,
-        const double                dtime,
+        const TimeType&             time,
         const VisibilityFlags::Type flags,
         const DepthType             depth);
     ShadingRay(
@@ -96,8 +110,7 @@ class ShadingRay
         const VectorType&           dir,
         const ValueType             tmin,
         const ValueType             tmax,
-        const double                time,
-        const double                dtime,
+        const TimeType&             time,
         const VisibilityFlags::Type flags,
         const DepthType             depth);
 };
@@ -117,6 +130,22 @@ ShadingRay transform_to_parent(
 // ShadingRay class implementation.
 //
 
+inline ShadingRay::TimeType::TimeType()
+{
+}
+
+inline ShadingRay::TimeType::TimeType(
+    const double absolute,
+    const double relative,
+    const double differential)
+  : m_absolute(absolute)
+  , m_relative(relative)
+  , m_differential(differential)
+{
+    assert(m_relative >= 0.0);
+    assert(m_relative < 1.0);
+}
+
 inline ShadingRay::ShadingRay()
   : m_has_differentials(false)
 {
@@ -124,13 +153,11 @@ inline ShadingRay::ShadingRay()
 
 inline ShadingRay::ShadingRay(
     const RayType&                  ray,
-    const double                    time,
-    const double                    dtime,
+    const TimeType&                 time,
     const VisibilityFlags::Type     flags,
     const DepthType                 depth)
   : RayType(ray)
   , m_time(time)
-  , m_dtime(dtime)
   , m_flags(flags)
   , m_depth(depth)
   , m_has_differentials(false)
@@ -139,15 +166,13 @@ inline ShadingRay::ShadingRay(
 
 inline ShadingRay::ShadingRay(
     const RayType&                  ray,
-    const double                    time,
-    const double                    dtime,
+    const TimeType&                 time,
     const VisibilityFlags::Type     flags,
     const DepthType                 depth,
     const RayType&                  rx,
     const RayType&                  ry)
   : RayType(ray)
   , m_time(time)
-  , m_dtime(dtime)
   , m_flags(flags)
   , m_depth(depth)
   , m_has_differentials(true)
@@ -159,13 +184,11 @@ inline ShadingRay::ShadingRay(
 inline ShadingRay::ShadingRay(
     const VectorType&               org,
     const VectorType&               dir,
-    const double                    time,
-    const double                    dtime,
+    const TimeType&                 time,
     const VisibilityFlags::Type     flags,
     const DepthType                 depth)
   : RayType(org, dir)
   , m_time(time)
-  , m_dtime(dtime)
   , m_flags(flags)
   , m_depth(depth)
   , m_has_differentials(false)
@@ -177,13 +200,11 @@ inline ShadingRay::ShadingRay(
     const VectorType&               dir,
     const ValueType                 tmin,
     const ValueType                 tmax,
-    const double                    time,
-    const double                    dtime,
+    const TimeType&                 time,
     const VisibilityFlags::Type     flags,
     const DepthType                 depth)
   : RayType(org, dir, tmin, tmax)
   , m_time(time)
-  , m_dtime(dtime)
   , m_flags(flags)
   , m_depth(depth)
   , m_has_differentials(false)
@@ -201,7 +222,6 @@ inline ShadingRay transform_to_local(
             ShadingRay(
                 transform.transform_to_local(ray),
                 ray.m_time,
-                ray.m_dtime,
                 ray.m_flags,
                 ray.m_depth,
                 transform.transform_to_local(ray.m_rx),
@@ -213,7 +233,6 @@ inline ShadingRay transform_to_local(
             ShadingRay(
                 transform.transform_to_local(ray),
                 ray.m_time,
-                ray.m_dtime,
                 ray.m_flags,
                 ray.m_depth);
     }
@@ -230,7 +249,6 @@ inline ShadingRay transform_to_parent(
             ShadingRay(
                 transform.transform_to_parent(ray),
                 ray.m_time,
-                ray.m_dtime,
                 ray.m_flags,
                 ray.m_depth,
                 transform.transform_to_parent(ray.m_rx),
@@ -242,7 +260,6 @@ inline ShadingRay transform_to_parent(
             ShadingRay(
                 transform.transform_to_parent(ray),
                 ray.m_time,
-                ray.m_dtime,
                 ray.m_flags,
                 ray.m_depth);
     }
