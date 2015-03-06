@@ -55,6 +55,7 @@
 #include <QComboBox>
 #include <QDialogButtonBox>
 #include <QFileDialog>
+#include <QFont>
 #include <QFormLayout>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -217,9 +218,18 @@ void EntityEditor::create_input_widgets(const Dictionary& metadata)
 
 namespace
 {
-    QString get_label_text(const Dictionary& metadata)
+    QLabel* create_label(const Dictionary& metadata)
     {
-        return metadata.get<QString>("label") + ":";
+        QLabel* label = new QLabel(metadata.get<QString>("label") + ":");
+
+        if (metadata.get<QString>("use") == "required")
+        {
+            QFont font;
+            font.setBold(true);
+            label->setFont(font);
+        }
+
+        return label;
     }
 
     bool should_be_focused(const Dictionary& metadata)
@@ -240,7 +250,7 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_text_input_widgets(const Dictio
         line_edit->setFocus();
     }
 
-    m_form_layout->addRow(get_label_text(metadata), line_edit);
+    m_form_layout->addRow(create_label(metadata), line_edit);
 
     auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
 
@@ -289,7 +299,7 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_numeric_input_widgets(const Dic
     layout->setSpacing(6);
     layout->addWidget(line_edit);
     layout->addWidget(slider);
-    m_form_layout->addRow(get_label_text(metadata), layout);
+    m_form_layout->addRow(create_label(metadata), layout);
 
     auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
 
@@ -347,7 +357,7 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_colormap_input_widgets(const Di
     layout->addWidget(line_edit);
     layout->addWidget(slider);
     layout->addWidget(bind_button);
-    m_form_layout->addRow(get_label_text(metadata), layout);
+    m_form_layout->addRow(create_label(metadata), layout);
 
     auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
 
@@ -364,7 +374,7 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_boolean_input_widgets(const Dic
     if (should_be_focused(metadata))
         checkbox->setFocus();
 
-    m_form_layout->addRow(get_label_text(metadata), checkbox);
+    m_form_layout->addRow(create_label(metadata), checkbox);
 
     auto_ptr<IInputWidgetProxy> widget_proxy(new CheckBoxProxy(checkbox));
 
@@ -394,7 +404,7 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_enumeration_input_widgets(const
     if (should_be_focused(metadata))
         combo_box->setFocus();
 
-    m_form_layout->addRow(get_label_text(metadata), combo_box);
+    m_form_layout->addRow(create_label(metadata), combo_box);
 
     auto_ptr<IInputWidgetProxy> widget_proxy(new ComboBoxProxy(combo_box));
 
@@ -423,7 +433,7 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_entity_input_widgets(const Dict
     layout->setSpacing(6);
     layout->addWidget(line_edit);
     layout->addWidget(bind_button);
-    m_form_layout->addRow(get_label_text(metadata), layout);
+    m_form_layout->addRow(create_label(metadata), layout);
 
     auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
 
@@ -454,7 +464,7 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_color_input_widgets(const Dicti
     layout->setSpacing(6);
     layout->addWidget(line_edit);
     layout->addWidget(picker_button);
-    m_form_layout->addRow(get_label_text(metadata), layout);
+    m_form_layout->addRow(create_label(metadata), layout);
 
     auto_ptr<ColorPickerProxy> widget_proxy(new ColorPickerProxy(line_edit, picker_button));
 
@@ -493,7 +503,7 @@ auto_ptr<IInputWidgetProxy> EntityEditor::create_file_input_widgets(const Dictio
     layout->setSpacing(6);
     layout->addWidget(line_edit);
     layout->addWidget(browse_button);
-    m_form_layout->addRow(get_label_text(metadata), layout);
+    m_form_layout->addRow(create_label(metadata), layout);
 
     auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
 

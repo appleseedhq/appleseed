@@ -687,7 +687,8 @@ DictionaryArray DisneyMaterialLayer::get_input_metadata()
             .insert("name", "mask")
             .insert("label", "Mask")
             .insert("type", "colormap")
-            .insert("default", "1"));
+            .insert("use", "optional")
+            .insert("default", "1.0"));
 
     metadata.push_back(
         Dictionary()
@@ -1023,7 +1024,7 @@ DictionaryArray DisneyMaterialFactory::get_input_metadata() const
             .insert("name", "alpha_mask")
             .insert("label", "Alpha Mask")
             .insert("type", "colormap")
-            .insert("default", "0"));
+            .insert("use", "optional"));
 
     metadata.push_back(
         Dictionary()

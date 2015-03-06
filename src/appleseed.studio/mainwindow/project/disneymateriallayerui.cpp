@@ -51,8 +51,10 @@
 #include <QColorDialog>
 #include <QDir>
 #include <QFileInfo>
+#include <QFont>
 #include <QFormLayout>
 #include <QHBoxLayout>
+#include <QLabel>
 #include <QLineEdit>
 #include <QSignalMapper>
 #include <Qt>
@@ -382,9 +384,18 @@ void DisneyMaterialLayerUI::slot_expression_changed(
 
 namespace
 {
-    QString get_label_text(const Dictionary& metadata)
+    QLabel* create_label(const Dictionary& metadata)
     {
-        return metadata.get<QString>("label") + ":";
+        QLabel* label = new QLabel(metadata.get<QString>("label") + ":");
+
+        if (metadata.get<QString>("use") == "required")
+        {
+            QFont font;
+            font.setBold(true);
+            label->setFont(font);
+        }
+
+        return label;
     }
 
     bool should_be_focused(const Dictionary& metadata)
@@ -405,7 +416,7 @@ auto_ptr<IInputWidgetProxy> DisneyMaterialLayerUI::create_text_input_widgets(con
         line_edit->setFocus();
     }
 
-    m_content_layout->addRow(get_label_text(metadata), line_edit);
+    m_content_layout->addRow(create_label(metadata), line_edit);
 
     auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
 
@@ -438,7 +449,7 @@ auto_ptr<IInputWidgetProxy> DisneyMaterialLayerUI::create_color_input_widgets(co
     layout->addWidget(picker_button);
     layout->addWidget(create_texture_button(name));
     layout->addWidget(create_expression_button(name));
-    m_content_layout->addRow(get_label_text(metadata), layout);
+    m_content_layout->addRow(create_label(metadata), layout);
 
     auto_ptr<IInputWidgetProxy> widget_proxy(new ColorExpressionProxy(line_edit, picker_button));
 
@@ -491,7 +502,7 @@ auto_ptr<IInputWidgetProxy> DisneyMaterialLayerUI::create_colormap_input_widgets
     layout->addWidget(slider);
     layout->addWidget(create_texture_button(name));
     layout->addWidget(create_expression_button(name));
-    m_content_layout->addRow(get_label_text(metadata), layout);
+    m_content_layout->addRow(create_label(metadata), layout);
 
     auto_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
 
@@ -532,7 +543,7 @@ namespace
         for (size_t i = 0; i < input_metadata.size(); ++i)
         {
             if (input_metadata[i].get<string>("name") == "layer_name")
-                return get_label_text(input_metadata[i]);
+                return input_metadata[i].get<QString>("label") + ":";
         }
 
         assert(!"Could not find layer name input metadata.");
