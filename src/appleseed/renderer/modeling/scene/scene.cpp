@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/environmentshader/environmentshader.h"
+#include "renderer/modeling/object/object.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/objectinstance.h"
@@ -156,21 +157,31 @@ GAABB3 Scene::compute_bbox() const
 
 namespace
 {
-    bool assembly_uses_alpha_mapping(const Assembly& assembly, set<UniqueID>& visited_assemblies)
+    bool assembly_instances_use_alpha_mapping(
+        const AssemblyInstanceContainer&  assembly_instances,
+        set<UniqueID>&                    visited_assemblies)
     {
-        if (visited_assemblies.find(assembly.get_uid()) == visited_assemblies.end())
+        for (const_each<AssemblyInstanceContainer> i = assembly_instances; i; ++i)
         {
-            visited_assemblies.insert(assembly.get_uid());
+            // Retrieve the assembly instance.
+            const AssemblyInstance& assembly_instance = *i;
 
-            for (const_each<ObjectInstanceContainer> i = assembly.object_instances(); i; ++i)
-            {
-                if (i->uses_alpha_mapping())
-                    return true;
-            }
+            // Retrieve the assembly.
+            const Assembly& assembly = assembly_instance.get_assembly();
 
-            for (const_each<AssemblyContainer> i = assembly.assemblies(); i; ++i)
+            if (visited_assemblies.find(assembly.get_uid()) == visited_assemblies.end())
             {
-                if (assembly_uses_alpha_mapping(*i, visited_assemblies))
+                visited_assemblies.insert(assembly.get_uid());
+
+                // Check the assembly contents.
+                for (const_each<ObjectInstanceContainer> i = assembly.object_instances(); i; ++i)
+                {
+                    if (i->uses_alpha_mapping())
+                        return true;
+                }
+
+                // Recurse into child assembly instances.
+                if (assembly_instances_use_alpha_mapping(assembly.assembly_instances(), visited_assemblies))
                     return true;
             }
         }
@@ -182,14 +193,7 @@ namespace
 bool Scene::uses_alpha_mapping() const
 {
     set<UniqueID> visited_assemblies;
-
-    for (const_each<AssemblyContainer> i = assemblies(); i; ++i)
-    {
-        if (assembly_uses_alpha_mapping(*i, visited_assemblies))
-            return true;
-    }
-
-    return false;
+    return assembly_instances_use_alpha_mapping(assembly_instances(), visited_assemblies);
 }
 
 namespace
