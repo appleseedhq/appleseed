@@ -251,6 +251,67 @@ void InputBinder::bind_scene_entities_inputs(
     }
 }
 
+void InputBinder::bind_scene_entity_inputs(
+    const Scene&                    scene,
+    const SymbolTable&              scene_symbols,
+    const char*                     entity_type,
+    ConnectableEntity&              entity)
+{
+    const string entity_path = entity.get_path();
+    const ParamArray& entity_params = entity.get_parameters();
+
+    for (each<InputArray> i = entity.get_inputs(); i; ++i)
+    {
+        InputArray::iterator& input = *i;
+        string param_value;
+
+        if (entity_params.strings().exist(input.name()))
+        {
+            // A value is assigned to this input, retrieve it.
+            param_value = entity_params.get<string>(input.name());
+        }
+        else if (input.default_value())
+        {
+            // A default value is assigned to this input, use it.
+            param_value = input.default_value();
+            if (param_value.empty())
+                continue;
+        }
+        else
+        {
+            // No value or default value, this is an error.
+            RENDERER_LOG_ERROR(
+                "while defining %s \"%s\": required parameter \"%s\" missing.",
+                entity_type,
+                entity_path.c_str(),
+                input.name());
+            ++m_error_count;
+            continue;
+        }
+
+        if (try_bind_scene_entity_to_input(
+                scene,
+                scene_symbols,
+                entity_type,
+                entity_path.c_str(),
+                param_value.c_str(),
+                input))
+            continue;
+
+        if (try_bind_scalar_to_input(param_value, input))
+            continue;
+
+        RENDERER_LOG_ERROR(
+            "while defining %s \"%s\": cannot bind \"%s\" to parameter \"%s\".",
+            entity_type,
+            entity_path.c_str(),
+            param_value.c_str(),
+            input.name());
+
+        ++m_error_count;
+    }
+}
+
 void InputBinder::bind_assembly_entities_inputs(
     const Scene&                    scene,
     const SymbolTable&              scene_symbols,
@@ -394,67 +455,6 @@ void InputBinder::bind_assembly_entities_inputs(
 
     // Pop the information about this assembly from the stack.
     m_assembly_info.pop_back();
-}
-
-void InputBinder::bind_scene_entity_inputs(
-    const Scene&                    scene,
-    const SymbolTable&              scene_symbols,
-    const char*                     entity_type,
-    ConnectableEntity&              entity)
-{
-    const string entity_path = entity.get_path();
-    const ParamArray& entity_params = entity.get_parameters();
-
-    for (each<InputArray> i = entity.get_inputs(); i; ++i)
-    {
-        InputArray::iterator& input = *i;
-        string param_value;
-
-        if (entity_params.strings().exist(input.name()))
-        {
-            // A value is assigned to this input, retrieve it.
-            param_value = entity_params.get<string>(input.name());
-        }
-        else if (input.default_value())
-        {
-            // A default value is assigned to this input, use it.
-            param_value = input.default_value();
-            if (param_value.empty())
-                continue;
-        }
-        else
-        {
-            // No value or default value, this is an error.
-            RENDERER_LOG_ERROR(
-                "while defining %s \"%s\": required parameter \"%s\" missing.",
-                entity_type,
-                entity_path.c_str(),
-                input.name());
-            ++m_error_count;
-            continue;
-        }
-
-        if (try_bind_scene_entity_to_input(
-                scene,
-                scene_symbols,
-                entity_type,
-                entity_path.c_str(),
-                param_value.c_str(),
-                input))
-            continue;
-
-        if (try_bind_scalar_to_input(param_value, input))
-            continue;
-
-        RENDERER_LOG_ERROR(
-            "while defining %s \"%s\": cannot bind \"%s\" to parameter \"%s\".",
-            entity_type,
-            entity_path.c_str(),
-            param_value.c_str(),
-            input.name());
-
-        ++m_error_count;
-    }
 }
 
 void InputBinder::bind_assembly_entity_inputs(

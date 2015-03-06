@@ -106,18 +106,18 @@ class InputBinder
         const Scene&                    scene,
         const SymbolTable&              scene_symbols);
 
-    // Bind all inputs of all entities of a given assembly.
-    void bind_assembly_entities_inputs(
-        const Scene&                    scene,
-        const SymbolTable&              scene_symbols,
-        const Assembly&                 assembly);
-
     // Bind all inputs of a given entity of a given scene.
     void bind_scene_entity_inputs(
         const Scene&                    scene,
         const SymbolTable&              scene_symbols,
         const char*                     entity_type,
         ConnectableEntity&              entity);
+
+    // Bind all inputs of all entities of a given assembly.
+    void bind_assembly_entities_inputs(
+        const Scene&                    scene,
+        const SymbolTable&              scene_symbols,
+        const Assembly&                 assembly);
 
     // Bind all inputs of a given entity of a given assembly.
     void bind_assembly_entity_inputs(
