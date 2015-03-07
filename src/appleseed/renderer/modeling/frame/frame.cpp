@@ -268,7 +268,8 @@ namespace
                 color.rgb() = linear_rgb_to_ciexyz(color.rgb());
                 break;
 
-              default:;
+              default:
+                break;
             }
 
             // Apply clamping.
