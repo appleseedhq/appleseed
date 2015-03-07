@@ -47,6 +47,7 @@ using namespace std;
 
 BENCHMARK_SUITE(Renderer_Modeling_Frame)
 {
+    template <PixelFormat pf>
     struct Fixture
     {
         auto_release_ptr<Frame> m_frame;
@@ -60,13 +61,18 @@ BENCHMARK_SUITE(Renderer_Modeling_Frame)
                         .insert("tile_size", "32 32")
                         .insert("pixel_format", "float")
                         .insert("color_space", "srgb")))
-          , m_tile(new Tile(32, 32, 4, PixelFormatFloat))
+          , m_tile(new Tile(32, 32, 4, pf))
         {
             m_tile->clear(Color4f(0.8f, -0.3f, 0.6f, 0.5f));
         }
     };
 
-    BENCHMARK_CASE_F(TransformToOutputColorSpace_GivenTile_AndFrameColorSpaceIsSRGB, Fixture)
+    BENCHMARK_CASE_F(TransformToOutputColorSpace_GivenTileWithFloatPixels_AndFrameColorSpaceIsSRGB, Fixture<PixelFormatFloat>)
+    {
+        m_frame->transform_to_output_color_space(*m_tile.get());
+    }
+
+    BENCHMARK_CASE_F(TransformToOutputColorSpace_GivenTileWithHalfPixels_AndFrameColorSpaceIsSRGB, Fixture<PixelFormatHalf>)
     {
         m_frame->transform_to_output_color_space(*m_tile.get());
     }
