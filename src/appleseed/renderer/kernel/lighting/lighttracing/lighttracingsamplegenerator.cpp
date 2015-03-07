@@ -646,7 +646,7 @@ namespace
             ShadingRay::TimeType time;
             time.m_relative = sampling_context.next_double2();
             time.m_absolute = lerp(m_shutter_open_time, m_shutter_close_time, time.m_relative);
-            time.m_differential = m_ray_dtime;
+            time.m_shutter_interval = m_ray_dtime;
 
             const ShadingRay light_ray(
                 light_sample.m_point,
@@ -723,7 +723,7 @@ namespace
             ShadingRay::TimeType time;
             time.m_relative = sampling_context.next_double2();
             time.m_absolute = lerp(m_shutter_open_time, m_shutter_close_time, time.m_relative);
-            time.m_differential = m_ray_dtime;
+            time.m_shutter_interval = m_ray_dtime;
 
             const ShadingRay light_ray(
                 emission_position,
@@ -811,7 +811,7 @@ namespace
             ShadingRay::TimeType time;
             time.m_relative = sampling_context.next_double2();
             time.m_absolute = lerp(m_shutter_open_time, m_shutter_close_time, time.m_relative);
-            time.m_differential = m_ray_dtime;
+            time.m_shutter_interval = m_ray_dtime;
 
             const ShadingRay light_ray(
                 ray_origin,

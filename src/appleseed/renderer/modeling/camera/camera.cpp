@@ -304,7 +304,7 @@ void Camera::initialize_ray(
                 0.0, 1.0,
                 m_shutter_open_time, m_shutter_close_time);
 
-        ray.m_time.m_differential = m_shutter_open_time_interval;
+        ray.m_time.m_shutter_interval = m_shutter_open_time_interval;
     }
 
     ray.m_flags = VisibilityFlags::CameraRay;

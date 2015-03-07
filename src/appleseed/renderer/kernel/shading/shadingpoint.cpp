@@ -743,7 +743,7 @@ void ShadingPoint::initialize_osl_shader_globals(
         }
 
         m_shader_globals.time = static_cast<float>(ray.m_time.m_absolute);
-        m_shader_globals.dtime = static_cast<float>(ray.m_time.m_differential);
+        m_shader_globals.dtime = static_cast<float>(ray.m_time.m_shutter_interval);
 
         m_shader_globals.dPdtime =
             sg.uses_dPdtime()

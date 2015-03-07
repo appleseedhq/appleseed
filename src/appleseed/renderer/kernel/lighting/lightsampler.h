@@ -369,7 +369,7 @@ inline void LightSampler::sample(
     ShadingRay::TimeType time;
     time.m_relative = s[0];
     time.m_absolute = foundation::lerp(m_shutter_open_time, m_shutter_close_time, time.m_relative);
-    time.m_differential = m_ray_dtime;
+    time.m_shutter_interval = m_ray_dtime;
     sample(time, foundation::Vector3d(s[1], s[2], s[3]), light_sample);
 }
 

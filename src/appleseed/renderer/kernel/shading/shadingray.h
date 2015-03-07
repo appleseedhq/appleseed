@@ -70,11 +70,11 @@ class ShadingRay
         TimeType(
             const double absolute,
             const double relative,
-            const double differential);
+            const double shutter_interval);
 
-        double m_absolute;
-        double m_relative;
-        double m_differential;
+        double m_absolute;          // absolute time of the ray.
+        double m_relative;          // time of the ray, relative to shutter open / close times.
+        double m_shutter_interval;  // time interval between shutter open and close times.
     };
 
     // Public members.
@@ -137,10 +137,10 @@ inline ShadingRay::TimeType::TimeType()
 inline ShadingRay::TimeType::TimeType(
     const double absolute,
     const double relative,
-    const double differential)
+    const double shutter_interval)
   : m_absolute(absolute)
   , m_relative(relative)
-  , m_differential(differential)
+  , m_shutter_interval(shutter_interval)
 {
     assert(m_relative >= 0.0);
     assert(m_relative < 1.0);
@@ -162,6 +162,8 @@ inline ShadingRay::ShadingRay(
   , m_depth(depth)
   , m_has_differentials(false)
 {
+    assert(time.m_relative >= 0.0);
+    assert(time.m_relative < 1.0);
 }
 
 inline ShadingRay::ShadingRay(
@@ -179,6 +181,8 @@ inline ShadingRay::ShadingRay(
   , m_rx(rx)
   , m_ry(ry)
 {
+    assert(time.m_relative >= 0.0);
+    assert(time.m_relative < 1.0);
 }
 
 inline ShadingRay::ShadingRay(
@@ -193,6 +197,8 @@ inline ShadingRay::ShadingRay(
   , m_depth(depth)
   , m_has_differentials(false)
 {
+    assert(time.m_relative >= 0.0);
+    assert(time.m_relative < 1.0);
 }
 
 inline ShadingRay::ShadingRay(
@@ -209,6 +215,8 @@ inline ShadingRay::ShadingRay(
   , m_depth(depth)
   , m_has_differentials(false)
 {
+    assert(time.m_relative >= 0.0);
+    assert(time.m_relative < 1.0);
 }
 
 template <typename U>
