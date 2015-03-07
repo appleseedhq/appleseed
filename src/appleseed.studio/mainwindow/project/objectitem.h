@@ -70,13 +70,9 @@ class ObjectItem
     ProjectBuilder&         m_project_builder;
 
     virtual void slot_instantiate() APPLESEED_OVERRIDE;
-
-    void schedule_instantiate(const std::string& name);
     void do_instantiate(const std::string& name);
 
     virtual void slot_delete() APPLESEED_OVERRIDE;
-
-    void schedule_delete();
     void do_delete();
 };
 

@@ -36,6 +36,7 @@
 #include "mainwindow/project/entitybrowserwindow.h"
 #include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/materialassignmenteditorwindow.h"
+#include "mainwindow/project/materialcollectionitem.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/rendering/renderingmanager.h"
 
@@ -122,6 +123,9 @@ QMenu* ObjectInstanceItem::get_single_item_context_menu() const
     QMenu* menu = ItemBase::get_single_item_context_menu();
 
     menu->addSeparator();
+    menu->addAction("Assign New Disney Material", this, SLOT(slot_assign_new_disney_material()));
+
+    menu->addSeparator();
     menu->addAction("Assign Materials...", this, SLOT(slot_open_material_assignment_editor()));
 
     add_material_assignment_menu_actions(menu);
@@ -162,9 +166,92 @@ QMenu* ObjectInstanceItem::get_multiple_items_context_menu(const QList<ItemBase*
 
     QMenu* menu = ItemBase::get_multiple_items_context_menu(items);
 
+    menu->addSeparator();
+    menu->addAction("Assign New Disney Material", this, SLOT(slot_assign_new_disney_material()))
+        ->setData(QVariant::fromValue(items));
+
     add_material_assignment_menu_actions(menu, items);
 
     return menu;
+}
+
+class AssignNewDisneyMaterialDelayedAction
+  : public RenderingManager::IDelayedAction
+{
+  public:
+    AssignNewDisneyMaterialDelayedAction(
+        const QList<ItemBase*>& items,
+        ProjectBuilder&         project_builder)
+      : m_items(items)
+      , m_project_builder(project_builder)
+    {
+    }
+
+    virtual void operator()(
+        MasterRenderer&         master_renderer,
+        Project&                project) APPLESEED_OVERRIDE
+    {
+        for (int i = 0; i < m_items.size(); ++i)
+        {
+            ObjectInstanceItem* object_instance_item =
+                static_cast<ObjectInstanceItem*>(m_items[i]);
+
+            const ObjectInstance& object_instance = *object_instance_item->m_entity;
+            const Assembly& assembly = object_instance_item->m_parent;
+
+            const string material_name =
+                make_unique_name(
+                    string(object_instance.get_name()) + "_material",
+                    assembly.materials());
+
+            const AssemblyItem* assembly_item =
+                static_cast<AssemblyItem*>(m_project_builder.get_item_registry().get_item(assembly.get_uid()));
+
+            assembly_item->get_material_collection_item().create_default_disney_material(material_name);
+
+            const Object* object = object_instance.find_object();
+
+            if (object)
+            {
+                const size_t slot_count = object->get_material_slot_count();
+
+                for (size_t j = 0; j < slot_count; ++j)
+                {
+                    object_instance_item->do_assign_material(
+                        object->get_material_slot(j),
+                        true,   // assign to front side
+                        true,   // assign to back side
+                        material_name.c_str());
+                }
+            }
+        }
+    }
+
+  private:
+    const QList<ItemBase*>  m_items;
+    ProjectBuilder&         m_project_builder;
+};
+
+void ObjectInstanceItem::slot_assign_new_disney_material()
+{
+    m_project_builder.get_rendering_manager().schedule_or_execute(
+        auto_ptr<RenderingManager::IDelayedAction>(
+            new AssignNewDisneyMaterialDelayedAction(
+                get_action_items(),
+                m_project_builder)));
+}
+
+void ObjectInstanceItem::slot_open_material_assignment_editor()
+{
+    MaterialAssignmentEditorWindow* editor_window =
+        new MaterialAssignmentEditorWindow(
+            QTreeWidgetItem::treeWidget(),
+            *m_entity,
+            *this,
+            m_project_builder);
+
+    editor_window->showNormal();
+    editor_window->activateWindow();
 }
 
 namespace
@@ -193,19 +280,6 @@ namespace
       private:
         const QVariant m_data;
     };
-}
-
-void ObjectInstanceItem::slot_open_material_assignment_editor()
-{
-    MaterialAssignmentEditorWindow* editor_window =
-        new MaterialAssignmentEditorWindow(
-            QTreeWidgetItem::treeWidget(),
-            *m_entity,
-            *this,
-            m_project_builder);
-
-    editor_window->showNormal();
-    editor_window->activateWindow();
 }
 
 void ObjectInstanceItem::slot_assign_material()
@@ -246,15 +320,6 @@ void ObjectInstanceItem::slot_assign_material()
     browser_window->activateWindow();
 }
 
-void ObjectInstanceItem::slot_assign_material_accepted(QString page_name, QString entity_name, QVariant data)
-{
-    if (m_project_builder.get_rendering_manager().is_rendering())
-        schedule_assign_material(page_name, entity_name, data);
-    else assign_material(page_name, entity_name, data);
-
-    qobject_cast<QWidget*>(sender()->parent())->close();
-}
-
 namespace
 {
     class AssignMaterialDelayedAction
@@ -288,16 +353,13 @@ namespace
     };
 }
 
-void ObjectInstanceItem::schedule_assign_material(
-    const QString&                  page_name,
-    const QString&                  entity_name,
-    const QVariant&                 data)
+void ObjectInstanceItem::slot_assign_material_accepted(QString page_name, QString entity_name, QVariant data)
 {
-    m_project_builder.get_rendering_manager().push_delayed_action(
+    m_project_builder.get_rendering_manager().schedule_or_execute(
         auto_ptr<RenderingManager::IDelayedAction>(
             new AssignMaterialDelayedAction(this, page_name, entity_name, data)));
 
-    m_project_builder.get_rendering_manager().reinitialize_rendering();
+    qobject_cast<QWidget*>(sender()->parent())->close();
 }
 
 void ObjectInstanceItem::assign_material(
@@ -323,15 +385,6 @@ void ObjectInstanceItem::assign_material(
             item->do_assign_material(data.m_slot.c_str(), front_side, back_side, material_name.c_str());
         }
     }
-}
-
-void ObjectInstanceItem::slot_clear_material()
-{
-    const QVariant data = qobject_cast<QAction*>(sender())->data();
-
-    if (m_project_builder.get_rendering_manager().is_rendering())
-        schedule_clear_material(data);
-    else clear_material(data);
 }
 
 namespace
@@ -361,13 +414,13 @@ namespace
     };
 }
 
-void ObjectInstanceItem::schedule_clear_material(const QVariant& data)
+void ObjectInstanceItem::slot_clear_material()
 {
-    m_project_builder.get_rendering_manager().push_delayed_action(
+    const QVariant data = qobject_cast<QAction*>(sender())->data();
+
+    m_project_builder.get_rendering_manager().schedule_or_execute(
         auto_ptr<RenderingManager::IDelayedAction>(
             new ClearMaterialDelayedAction(this, data)));
-
-    m_project_builder.get_rendering_manager().reinitialize_rendering();
 }
 
 void ObjectInstanceItem::clear_material(const QVariant& untyped_data)
@@ -392,18 +445,9 @@ void ObjectInstanceItem::clear_material(const QVariant& untyped_data)
 
 void ObjectInstanceItem::slot_delete()
 {
-    if (m_project_builder.get_rendering_manager().is_rendering())
-        schedule_delete();
-    else do_delete();
-}
-
-void ObjectInstanceItem::schedule_delete()
-{
-    m_project_builder.get_rendering_manager().push_delayed_action(
+    m_project_builder.get_rendering_manager().schedule_or_execute(
         auto_ptr<RenderingManager::IDelayedAction>(
             new EntityDeletionDelayedAction<ObjectInstanceItem>(this)));
-
-    m_project_builder.get_rendering_manager().reinitialize_rendering();
 }
 
 void ObjectInstanceItem::do_delete()

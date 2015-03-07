@@ -33,6 +33,10 @@
 // appleseed.studio headers.
 #include "mainwindow/rendering/renderwidget.h"
 
+// Qt headers.
+#include <QObject>
+#include <Qt>
+
 // Standard headers.
 #include <cassert>
 #include <cstddef>
@@ -49,12 +53,19 @@ namespace studio {
 namespace
 {
     class QtTileCallback
-      : public TileCallbackBase
+      : public QObject
+      , public TileCallbackBase
     {
+        Q_OBJECT
+
       public:
         explicit QtTileCallback(RenderWidget* render_widget)
           : m_render_widget(render_widget)
         {
+            connect(
+                this, SIGNAL(signal_update()),
+                m_render_widget, SLOT(update()),
+                Qt::QueuedConnection);
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -70,7 +81,7 @@ namespace
         {
             assert(m_render_widget);
             m_render_widget->highlight_region(x, y, width, height);
-            m_render_widget->update();
+            emit signal_update();
         }
 
         virtual void post_render_tile(
@@ -80,7 +91,7 @@ namespace
         {
             assert(m_render_widget);
             m_render_widget->blit_tile(*frame, tile_x, tile_y);
-            m_render_widget->update();
+            emit signal_update();
         }
 
         virtual void post_render(
@@ -88,8 +99,11 @@ namespace
         {
             assert(m_render_widget);
             m_render_widget->blit_frame(*frame);
-            m_render_widget->update();
+            emit signal_update();
         }
+
+      signals:
+        void signal_update();
 
       private:
         RenderWidget* m_render_widget;
@@ -98,7 +112,7 @@ namespace
 
 
 //
-// QtTileCallbackFactory factory.
+// QtTileCallbackFactory class implementation.
 //
 
 QtTileCallbackFactory::QtTileCallbackFactory(RenderWidget* render_widget)
@@ -118,3 +132,5 @@ ITileCallback* QtTileCallbackFactory::create()
 
 }   // namespace studio
 }   // namespace appleseed
+
+#include "mainwindow/rendering/moc_cpp_qttilecallback.cxx"

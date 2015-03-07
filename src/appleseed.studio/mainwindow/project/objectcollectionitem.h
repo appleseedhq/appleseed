@@ -84,8 +84,6 @@ class ObjectCollectionItem
 
     virtual ItemBase* create_item(renderer::Object* object) APPLESEED_OVERRIDE;
 
-    void schedule_import_objects(const QStringList& filepaths);
-
     void insert_objects(const std::string& path) const;
 };
 

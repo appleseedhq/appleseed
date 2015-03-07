@@ -154,8 +154,8 @@ RenderingManager::RenderingManager(StatusBar& status_bar)
 
 RenderingManager::~RenderingManager()
 {
-    clear_permanent_states();
-    clear_delayed_actions();
+    clear_scheduled_actions();
+    clear_sticky_actions();
 }
 
 void RenderingManager::start_rendering(
@@ -222,32 +222,45 @@ void RenderingManager::resume_rendering()
     m_renderer_controller.set_status(IRendererController::ResumeRendering);
 }
 
-void RenderingManager::push_delayed_action(auto_ptr<IDelayedAction> action)
+void RenderingManager::schedule(auto_ptr<IDelayedAction> action)
 {
-    m_delayed_actions.push_back(action.release());
+    m_scheduled_actions.push_back(action.release());
 }
 
-void RenderingManager::clear_delayed_actions()
+void RenderingManager::schedule_or_execute(auto_ptr<IDelayedAction> action)
 {
-    for (each<DelayedActionCollection> i = m_delayed_actions; i; ++i)
+    if (is_rendering())
+    {
+        m_scheduled_actions.push_back(action.release());
+        reinitialize_rendering();
+    }
+    else
+    {
+        (*action)(*m_master_renderer.get(), *m_project);
+    }
+}
+
+void RenderingManager::clear_scheduled_actions()
+{
+    for (each<ScheduledActionCollection> i = m_scheduled_actions; i; ++i)
         delete *i;
 
-    m_delayed_actions.clear();
+    m_scheduled_actions.clear();
 }
 
-void RenderingManager::set_permanent_state(
+void RenderingManager::set_sticky_action(
     const string&               key,
     auto_ptr<IDelayedAction>    action)
 {
-    m_permanent_states[key] = action.release();
+    m_sticky_actions[key] = action.release();
 }
 
-void RenderingManager::clear_permanent_states()
+void RenderingManager::clear_sticky_actions()
 {
-    for (each<PermanentStateCollection> i = m_permanent_states; i; ++i)
+    for (each<StickyActionCollection> i = m_sticky_actions; i; ++i)
         delete i->second;
 
-    m_permanent_states.clear();
+    m_sticky_actions.clear();
 }
 
 void RenderingManager::slot_abort_rendering()
@@ -298,33 +311,33 @@ void RenderingManager::archive_frame_to_disk()
     m_project->get_frame()->archive(autosave_path.string().c_str());
 }
 
-void RenderingManager::apply_permanent_states()
+void RenderingManager::run_scheduled_actions()
 {
-    for (each<PermanentStateCollection> i = m_permanent_states; i; ++i)
-    {
-        IDelayedAction* action = i->second;
-        (*action)(*m_master_renderer.get(), *m_project);
-    }
-}
-
-void RenderingManager::consume_delayed_actions()
-{
-    for (each<DelayedActionCollection> i = m_delayed_actions; i; ++i)
+    for (each<ScheduledActionCollection> i = m_scheduled_actions; i; ++i)
     {
         IDelayedAction* action = *i;
         (*action)(*m_master_renderer.get(), *m_project);
         delete action;
     }
 
-    m_delayed_actions.clear();
+    m_scheduled_actions.clear();
+}
+
+void RenderingManager::run_sticky_actions()
+{
+    for (each<StickyActionCollection> i = m_sticky_actions; i; ++i)
+    {
+        IDelayedAction* action = i->second;
+        (*action)(*m_master_renderer.get(), *m_project);
+    }
 }
 
 void RenderingManager::slot_rendering_begin()
 {
     assert(m_master_renderer.get());
 
-    apply_permanent_states();
-    consume_delayed_actions();
+    run_sticky_actions();
+    run_scheduled_actions();
 
     m_rendering_timer.clear();
 }

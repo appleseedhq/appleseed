@@ -261,14 +261,19 @@ namespace
             switch (ColorSpace)
             {
               case ColorSpaceSRGB:
-                color.rgb() = fast_linear_rgb_to_srgb(color.rgb());
+                {
+                    const float old_alpha = color[3];
+                    _mm_store_ps(&color[0], fast_linear_rgb_to_srgb(_mm_load_ps(&color[0])));
+                    color[3] = old_alpha;
+                }
                 break;
 
               case ColorSpaceCIEXYZ:
                 color.rgb() = linear_rgb_to_ciexyz(color.rgb());
                 break;
 
-              default:;
+              default:
+                break;
             }
 
             // Apply clamping.
@@ -403,7 +408,7 @@ void Frame::transform_to_output_color_space(Tile& tile) const
             else transform_float_tile<ColorSpace, false, false>(tile, impl->m_rcp_target_gamma);    \
         }
 
-    if (impl->m_pixel_format == PixelFormatFloat)
+    if (tile.get_pixel_format() == PixelFormatFloat)
     {
         switch (m_color_space)
         {

@@ -42,8 +42,6 @@ class BenchmarkRunnerThread
 {
     Q_OBJECT
 
-  public:
-
   signals:
     void signal_cannot_create_benchmark_file();
     void signal_finished();

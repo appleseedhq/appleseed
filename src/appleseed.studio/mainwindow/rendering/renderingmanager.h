@@ -110,17 +110,28 @@ class RenderingManager
             renderer::Project&          project) = 0;
     };
 
-    // Add a delayed action. All delayed actions are deleted after
-    // they are executed, just before rendering begins.
-    void push_delayed_action(std::auto_ptr<IDelayedAction> action);
+    // Schedule an action for execution.
+    // Actions are executed once, right before rendering begins, in the order in which
+    // they were scheduled. They are then deleted.
+    void schedule(std::auto_ptr<IDelayedAction> action);
 
-    void clear_delayed_actions();
+    // Schedule an action for execution if currently rendering, or execute the action
+    // right away if not.
+    void schedule_or_execute(std::auto_ptr<IDelayedAction> action);
 
-    void set_permanent_state(
+    // Remove all actions scheduled since rendering has begun.
+    void clear_scheduled_actions();
+
+    // Add or replace a sticky action associated with a given (arbitrary) key.
+    // A sticky action is one that is executed every time rendering starts.
+    // Sticky actions remain active until explicitly replaced or deleted.
+    // There are no guarantees regarding the order of execution of sticky actions.
+    void set_sticky_action(
         const std::string&              key,
         std::auto_ptr<IDelayedAction>   action);
 
-    void clear_permanent_states();
+    // Remove all sticky actions.
+    void clear_sticky_actions();
 
   signals:
     void signal_camera_changed();
@@ -145,11 +156,11 @@ class RenderingManager
 
     RenderingTimer                              m_rendering_timer;
 
-    typedef std::vector<IDelayedAction*> DelayedActionCollection;
-    typedef std::map<std::string, IDelayedAction*> PermanentStateCollection;
+    typedef std::vector<IDelayedAction*> ScheduledActionCollection;
+    typedef std::map<std::string, IDelayedAction*> StickyActionCollection;
 
-    DelayedActionCollection                     m_delayed_actions;
-    PermanentStateCollection                    m_permanent_states;
+    ScheduledActionCollection                   m_scheduled_actions;
+    StickyActionCollection                      m_sticky_actions;
 
     class FrozenDisplayFunc
     {
@@ -181,8 +192,8 @@ class RenderingManager
     void print_average_luminance();
     void archive_frame_to_disk();
 
-    void apply_permanent_states();
-    void consume_delayed_actions();
+    void run_scheduled_actions();
+    void run_sticky_actions();
 
   private slots:
     void slot_rendering_begin();

@@ -1422,17 +1422,20 @@ bool TriangleLeafVisitor::visit(
         }
         else
         {
+            // Size in bytes of one motion step (i.e. one triangle).
+            const size_t TriangleSize = 3 * sizeof(GVector3);
+
             // Check visibility flags.
             if (!(vis_flags & m_shading_point.m_ray.m_flags))
             {
-                reader += (motion_segment_count + 1) * 3 * sizeof(GVector3);
+                reader += (motion_segment_count + 1) * TriangleSize;
                 continue;
             }
 
             // Advance to the motion step immediately before the ray time.
             const double base_time = m_shading_point.m_ray.m_time.m_relative * motion_segment_count;
             const size_t base_index = truncate<size_t>(base_time);
-            reader += base_index * 3 * sizeof(GVector3);
+            reader += base_index * TriangleSize;
 
             // Fetch and interpolate the triangle's vertices of the motion steps surrounding the ray time.
             const GScalar frac = static_cast<GScalar>(base_time - base_index);
@@ -1443,6 +1446,9 @@ bool TriangleLeafVisitor::visit(
             v0 += reader.read<GVector3>() * frac;
             v1 += reader.read<GVector3>() * frac;
             v2 += reader.read<GVector3>() * frac;
+
+            // Skip the remaining motion steps of this triangle.
+            reader += (motion_segment_count - base_index - 1) * TriangleSize;
 
             // Build the triangle and convert it to the right format if necessary.
             const GTriangleType triangle(v0, v1, v2);
@@ -1553,17 +1559,20 @@ bool TriangleLeafProbeVisitor::visit(
         }
         else
         {
+            // Size in bytes of one motion step (i.e. one triangle).
+            const size_t TriangleSize = 3 * sizeof(GVector3);
+
             // Check visibility flags.
             if (!(vis_flags & m_ray_flags))
             {
-                reader += (motion_segment_count + 1) * 3 * sizeof(GVector3);
+                reader += (motion_segment_count + 1) * TriangleSize;
                 continue;
             }
 
             // Advance to the motion step immediately before the ray time.
             const double base_time = m_ray_time * motion_segment_count;
             const size_t base_index = truncate<size_t>(base_time);
-            reader += base_index * 3 * sizeof(GVector3);
+            reader += base_index * TriangleSize;
 
             // Fetch and interpolate the triangle's vertices of the motion steps surrounding the ray time.
             const GScalar frac = static_cast<GScalar>(base_time - base_index);
@@ -1574,6 +1583,9 @@ bool TriangleLeafProbeVisitor::visit(
             v0 += reader.read<GVector3>() * frac;
             v1 += reader.read<GVector3>() * frac;
             v2 += reader.read<GVector3>() * frac;
+
+            // Skip the remaining motion steps of this triangle.
+            reader += (motion_segment_count - base_index - 1) * TriangleSize;
 
             // Build the triangle and convert it to the right format if necessary.
             const GTriangleType triangle(v0, v1, v2);

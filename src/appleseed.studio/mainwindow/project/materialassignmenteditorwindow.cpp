@@ -311,22 +311,24 @@ MaterialAssignmentEditorWindow::SlotValue MaterialAssignmentEditorWindow::get_sl
     return slot_value;
 }
 
+void MaterialAssignmentEditorWindow::assign_materials(const SlotValueCollection& slot_values)
+{
+    const StringDictionary old_front_mappings = m_object_instance.get_front_material_mappings();
+    const StringDictionary old_back_mappings = m_object_instance.get_back_material_mappings();
+
+    for (const_each<SlotValueCollection> i = slot_values; i; ++i)
+        assign_material(*i);
+
+    if (old_front_mappings != m_object_instance.get_front_material_mappings() ||
+        old_back_mappings != m_object_instance.get_back_material_mappings())
+        m_project_builder.notify_project_modification();
+
+    if (m_project_builder.get_rendering_manager().is_rendering())
+        m_project_builder.get_rendering_manager().reinitialize_rendering();
+}
+
 namespace
 {
-    void do_assign_material(
-        ObjectInstance&                 object_instance,
-        ObjectInstanceItem&             object_instance_item,
-        const string&                   slot,
-        const ObjectInstance::Side      side,
-        const string&                   name)
-    {
-        if (name.empty())
-            object_instance.unassign_material(slot.c_str(), side);
-        else
-            object_instance.assign_material(slot.c_str(), side, name.c_str());
-        object_instance_item.update_style();
-    }
-
     class AssignMaterialDelayedAction
       : public RenderingManager::IDelayedAction
     {
@@ -349,7 +351,11 @@ namespace
             MasterRenderer&             master_renderer,
             Project&                    project) APPLESEED_OVERRIDE
         {
-            do_assign_material(m_object_instance, m_object_instance_item, m_slot, m_side, m_name);
+            m_name.empty()
+              ? m_object_instance.unassign_material(m_slot.c_str(), m_side)
+              : m_object_instance.assign_material(m_slot.c_str(), m_side, m_name.c_str());
+
+            m_object_instance_item.update_style();
         }
 
       private:
@@ -361,44 +367,16 @@ namespace
     };
 }
 
-void MaterialAssignmentEditorWindow::assign_materials(const SlotValueCollection& slot_values)
-{
-    const StringDictionary old_front_mappings = m_object_instance.get_front_material_mappings();
-    const StringDictionary old_back_mappings = m_object_instance.get_back_material_mappings();
-
-    for (const_each<SlotValueCollection> i = slot_values; i; ++i)
-        assign_material(*i);
-
-    if (old_front_mappings != m_object_instance.get_front_material_mappings() ||
-        old_back_mappings != m_object_instance.get_back_material_mappings())
-        m_project_builder.notify_project_modification();
-
-    if (m_project_builder.get_rendering_manager().is_rendering())
-        m_project_builder.get_rendering_manager().reinitialize_rendering();
-}
-
 void MaterialAssignmentEditorWindow::assign_material(const SlotValue& slot_value)
 {
-    if (m_project_builder.get_rendering_manager().is_rendering())
-    {
-        m_project_builder.get_rendering_manager().push_delayed_action(
-            auto_ptr<RenderingManager::IDelayedAction>(
-                new AssignMaterialDelayedAction(
-                    m_object_instance,
-                    m_object_instance_item,
-                    slot_value.m_slot_name,
-                    slot_value.m_side,
-                    slot_value.m_material_name)));
-    }
-    else
-    {
-        do_assign_material(
-            m_object_instance,
-            m_object_instance_item,
-            slot_value.m_slot_name,
-            slot_value.m_side,
-            slot_value.m_material_name);
-    }
+    m_project_builder.get_rendering_manager().schedule_or_execute(
+        auto_ptr<RenderingManager::IDelayedAction>(
+            new AssignMaterialDelayedAction(
+                m_object_instance,
+                m_object_instance_item,
+                slot_value.m_slot_name,
+                slot_value.m_side,
+                slot_value.m_material_name)));
 }
 
 void MaterialAssignmentEditorWindow::slot_change_back_material_mode(int index)

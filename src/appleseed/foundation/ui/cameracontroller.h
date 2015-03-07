@@ -254,7 +254,8 @@ void CameraController<T>::update_drag(const Vector<T, 2>& point)
         }
         break;
 
-      default:;
+      default:
+        break;
     }
 
     const Vector<T, 2> delta = (point - m_drag_origin) * speed;
@@ -275,7 +276,8 @@ void CameraController<T>::update_drag(const Vector<T, 2>& point)
         dolly(delta);
         break;
 
-      default:;
+      default:
+        break;
     }
 }
 

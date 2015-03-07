@@ -83,8 +83,6 @@ class CollectionItem
     bool                m_allow_creation;
 
     virtual void slot_create_accepted(foundation::Dictionary values) APPLESEED_OVERRIDE;
-
-    void schedule_create(const foundation::Dictionary& values);
     void create(const foundation::Dictionary& values);
 
   private:
@@ -144,24 +142,23 @@ QMenu* CollectionItem<Entity, ParentEntity, ParentItem>::get_single_item_context
 template <typename Entity, typename ParentEntity, typename ParentItem>
 void CollectionItem<Entity, ParentEntity, ParentItem>::slot_create_accepted(foundation::Dictionary values)
 {
-    catch_entity_creation_errors(
-        CollectionItemBase<Entity>::m_project_builder.get_rendering_manager().is_rendering()
-            ? &CollectionItem::schedule_create
-            : &CollectionItem::create,
-        values,
-        renderer::EntityTraits<Entity>::get_human_readable_entity_type_name());
-}
-
-template <typename Entity, typename ParentEntity, typename ParentItem>
-void CollectionItem<Entity, ParentEntity, ParentItem>::schedule_create(const foundation::Dictionary& values)
-{
     ProjectBuilder& project_builder = CollectionItemBase<Entity>::m_project_builder;
 
-    project_builder.get_rendering_manager().push_delayed_action(
-        std::auto_ptr<RenderingManager::IDelayedAction>(
-            new EntityCreationDelayedAction<CollectionItem>(this, values)));
+    if (project_builder.get_rendering_manager().is_rendering())
+    {
+        project_builder.get_rendering_manager().schedule(
+            std::auto_ptr<RenderingManager::IDelayedAction>(
+                new EntityCreationDelayedAction<CollectionItem>(this, values)));
 
-    project_builder.get_rendering_manager().reinitialize_rendering();
+        project_builder.get_rendering_manager().reinitialize_rendering();
+    }
+    else
+    {
+        catch_entity_creation_errors(
+            &CollectionItem::create,
+            values,
+            renderer::EntityTraits<Entity>::get_human_readable_entity_type_name());
+    }
 }
 
 template <typename Entity, typename ParentEntity, typename ParentItem>
