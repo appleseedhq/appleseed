@@ -98,7 +98,7 @@ namespace
 
 
 //
-// QtTileCallbackFactory factory.
+// QtTileCallbackFactory class implementation.
 //
 
 QtTileCallbackFactory::QtTileCallbackFactory(RenderWidget* render_widget)
