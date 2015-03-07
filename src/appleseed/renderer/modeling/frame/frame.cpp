@@ -261,7 +261,11 @@ namespace
             switch (ColorSpace)
             {
               case ColorSpaceSRGB:
-                color.rgb() = fast_linear_rgb_to_srgb(color.rgb());
+                {
+                    const float old_alpha = color[3];
+                    _mm_store_ps(&color[0], fast_linear_rgb_to_srgb(_mm_load_ps(&color[0])));
+                    color[3] = old_alpha;
+                }
                 break;
 
               case ColorSpaceCIEXYZ:
