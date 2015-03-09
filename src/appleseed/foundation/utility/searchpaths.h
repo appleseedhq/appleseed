@@ -88,11 +88,7 @@ class APPLESEED_DLLSYMBOL SearchPathsImpl
     void do_push_back(const char* path);
     bool do_exist(const char* filepath) const;
     char* do_qualify(const char* filepath) const;
-    char* do_to_string(
-        const char separator,
-        const bool make_paths_absolute,
-        const bool reversed) const;
-
+    char* do_to_string(const char separator, const bool reversed) const;
 };
 
 class SearchPaths
@@ -131,7 +127,6 @@ class SearchPaths
     // optionally making them absolute and/or listing them in reverse order.
     std::string to_string(
         const char separator = ':',
-        const bool make_paths_absolute = true,
         const bool reversed = false) const;
 };
 
@@ -191,10 +186,9 @@ inline std::string SearchPaths::qualify(const std::string& filepath) const
 
 inline std::string SearchPaths::to_string(
     const char separator,
-    const bool make_paths_absolute,
     const bool reversed) const
 {
-    return convert_to_std_string(do_to_string(separator, make_paths_absolute, reversed));
+    return convert_to_std_string(do_to_string(separator, reversed));
 }
 
 }       // namespace foundation
