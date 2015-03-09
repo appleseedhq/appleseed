@@ -165,10 +165,7 @@ SearchPaths& Project::search_paths() const
 
 string Project::make_search_path_string() const
 {
-    return
-        impl->m_search_paths.has_root_path()
-            ? impl->m_search_paths.to_string(';', true, true)
-            : string();
+    return impl->m_search_paths.to_string(';', true);
 }
 
 void Project::set_scene(auto_release_ptr<Scene> scene)

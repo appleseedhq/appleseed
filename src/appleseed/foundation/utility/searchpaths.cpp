@@ -211,17 +211,13 @@ char* SearchPathsImpl::do_qualify(const char* filepath) const
     return duplicate_string(fp.string().c_str());
 }
 
-char* SearchPathsImpl::do_to_string(
-    const char separator,
-    const bool make_paths_absolute,
-    const bool reversed) const
+char* SearchPathsImpl::do_to_string(const char separator, const bool reversed) const
 {
-    if (make_paths_absolute)
-        assert(has_root_path());
-
     Impl::PathCollection paths;
 
-    if (has_root_path())
+    const bool root_path = has_root_path();
+
+    if (root_path)
         paths.push_back(impl->m_root_path.string().c_str());
 
     copy(impl->m_all_paths.begin(), impl->m_all_paths.end(), back_inserter(paths));
@@ -233,13 +229,19 @@ char* SearchPathsImpl::do_to_string(
 
     for (size_t i = 0, e = paths.size(); i < e; ++i)
     {
-        if (i != 0)
-            paths_str.append(1, separator);
-
         filesystem::path p(paths[i]);
 
-        if (make_paths_absolute && p.is_relative())
+        if (p.is_relative())
+        {
+            // Ignore relative paths.
+            if (!root_path)
+                continue;
+
             p = impl->m_root_path / p;
+        }
+
+        if (!paths_str.empty())
+            paths_str.append(1, separator);
 
         paths_str.append(p.string());
     }
