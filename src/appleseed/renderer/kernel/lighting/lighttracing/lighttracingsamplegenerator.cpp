@@ -204,13 +204,17 @@ namespace
                 m_params.m_max_iterations)
           , m_light_sample_count(0)
           , m_path_count(0)
-          , m_ray_dtime(scene.get_camera()->get_shutter_open_time_interval())
         {
             const GAABB3 scene_bbox = m_scene.compute_bbox();
             m_scene_center = scene_bbox.center();
             m_scene_radius = scene_bbox.radius();
             m_safe_scene_diameter = 1.01 * (2.0 * m_scene_radius);
             m_disk_point_prob = 1.0 / (Pi * m_scene_radius * m_scene_radius);
+
+            const Camera* camera = scene.get_camera();
+            m_shutter_open_time = camera->get_shutter_open_time();
+            m_shutter_close_time = camera->get_shutter_close_time();
+            m_ray_dtime = camera->get_shutter_open_time_interval();
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -306,7 +310,7 @@ namespace
             void visit_area_light_vertex(
                 const LightSample&          light_sample,
                 const Spectrum&             light_particle_flux,
-                const double                time)
+                const ShadingRay::Time&     time)
             {
                 // Compute the vertex-to-camera direction vector.
                 const Vector3d vertex_to_camera = m_camera_position - light_sample.m_point;
@@ -346,7 +350,7 @@ namespace
             void visit_non_physical_light_vertex(
                 const Vector3d&             light_vertex,
                 const Spectrum&             light_particle_flux,
-                const double                time)
+                const ShadingRay::Time&     time)
             {
                 // Compute the transmission factor between the vertex and the camera.
                 Vector2d sample_position;
@@ -441,12 +445,12 @@ namespace
 
             double vertex_visible_to_camera(
                 const Vector3d&             vertex_position,
-                const double                time,
+                const ShadingRay::Time&     time,
                 const ShadingRay::DepthType ray_depth,
                 Vector2d&                   sample_position) const
             {
                 // Compute the position of the vertex on the image plane.
-                if (!m_camera.project_point(time, vertex_position, sample_position))
+                if (!m_camera.project_point(time.m_absolute, vertex_position, sample_position))
                     return 0.0;
 
                 // Reject vertices that don't belong on the image plane of the camera.
@@ -524,7 +528,9 @@ namespace
         uint64                          m_path_count;
         Population<uint64>              m_path_length;
 
-        const double                    m_ray_dtime;
+        double                          m_shutter_open_time;
+        double                          m_shutter_close_time;
+        double                          m_ray_dtime;
 
         virtual size_t generate_samples(
             const size_t                sequence_index,
@@ -637,11 +643,15 @@ namespace
 
             // Build the light ray.
             sampling_context.split_in_place(1, 1);
+            ShadingRay::Time time = ShadingRay::Time::create_with_normalized_time(
+                sampling_context.next_double2(),
+                m_shutter_open_time,
+                m_shutter_close_time,
+                m_ray_dtime);
             const ShadingRay light_ray(
                 light_sample.m_point,
                 emission_direction,
-                sampling_context.next_double2(),
-                m_ray_dtime,
+                time,
                 VisibilityFlags::LightRay,
                 0);
 
@@ -710,11 +720,16 @@ namespace
 
             // Build the light ray.
             sampling_context.split_in_place(1, 1);
+            ShadingRay::Time time = ShadingRay::Time::create_with_normalized_time(
+                sampling_context.next_double2(),
+                m_shutter_open_time,
+                m_shutter_close_time,
+                m_ray_dtime);
+
             const ShadingRay light_ray(
                 emission_position,
                 emission_direction,
-                sampling_context.next_double2(),
-                m_ray_dtime,
+                time,
                 VisibilityFlags::LightRay,
                 0);
 
@@ -794,11 +809,16 @@ namespace
 
             // Build the light ray.
             sampling_context.split_in_place(1, 1);
+            ShadingRay::Time time = ShadingRay::Time::create_with_normalized_time(
+                sampling_context.next_double2(),
+                m_shutter_open_time,
+                m_shutter_close_time,
+                m_ray_dtime);
+
             const ShadingRay light_ray(
                 ray_origin,
                 -outgoing,
-                sampling_context.next_double2(),
-                m_ray_dtime,
+                time,
                 VisibilityFlags::LightRay,
                 0);
 

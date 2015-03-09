@@ -293,20 +293,18 @@ void Camera::initialize_ray(
     ray.m_tmax = numeric_limits<double>::max();
 
     if (m_shutter_open_time == m_shutter_close_time)
-    {
-        ray.m_time = m_shutter_open_time;
-        ray.m_dtime = 0.0;
-    }
+        ray.m_time = ShadingRay::Time(m_shutter_open_time, 0.0, 0.0);
     else
     {
         sampling_context.split_in_place(1, 1);
-        ray.m_time =
+        ray.m_time.m_normalized = sampling_context.next_double2();
+        ray.m_time.m_absolute =
             fit(
-                sampling_context.next_double2(),
+                ray.m_time.m_normalized,
                 0.0, 1.0,
                 m_shutter_open_time, m_shutter_close_time);
 
-        ray.m_dtime = m_shutter_open_time_interval;
+        ray.m_time.m_shutter_interval = m_shutter_open_time_interval;
     }
 
     ray.m_flags = VisibilityFlags::CameraRay;

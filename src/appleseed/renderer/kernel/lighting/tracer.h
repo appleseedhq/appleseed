@@ -85,7 +85,7 @@ class Tracer
     const ShadingPoint& trace(
         const foundation::Vector3d&     origin,
         const foundation::Vector3d&     direction,
-        const double                    ray_time,
+        const ShadingRay::Time&         ray_time,
         const VisibilityFlags::Type     ray_flags,
         const ShadingRay::DepthType     ray_depth,
         double&                         transmission);
@@ -101,7 +101,7 @@ class Tracer
     double trace(
         const foundation::Vector3d&     origin,
         const foundation::Vector3d&     direction,
-        const double                    ray_time,
+        const ShadingRay::Time&         ray_time,
         const VisibilityFlags::Type     ray_flags,
         const ShadingRay::DepthType     ray_depth);
     double trace(
@@ -116,7 +116,7 @@ class Tracer
     const ShadingPoint& trace_between(
         const foundation::Vector3d&     origin,
         const foundation::Vector3d&     target,
-        const double                    ray_time,
+        const ShadingRay::Time&         ray_time,
         const VisibilityFlags::Type     ray_flags,
         const ShadingRay::DepthType     ray_depth,
         double&                         transmission);
@@ -132,7 +132,7 @@ class Tracer
     double trace_between(
         const foundation::Vector3d&     origin,
         const foundation::Vector3d&     target,
-        const double                    ray_time,
+        const ShadingRay::Time&         ray_time,
         const VisibilityFlags::Type     ray_flags,
         const ShadingRay::DepthType     ray_depth);
     double trace_between(
@@ -150,12 +150,11 @@ class Tracer
     const double                        m_transmission_threshold;
     const size_t                        m_max_iterations;
     ShadingPoint                        m_shading_points[2];
-    double                              m_ray_dtime;
 
     const ShadingPoint& do_trace(
         const foundation::Vector3d&     origin,
         const foundation::Vector3d&     direction,
-        const double                    ray_time,
+        const ShadingRay::Time&         ray_time,
         const VisibilityFlags::Type     ray_flags,
         const ShadingRay::DepthType     ray_depth,
         double&                         transmission,
@@ -164,7 +163,7 @@ class Tracer
     const ShadingPoint& do_trace_between(
         const foundation::Vector3d&     origin,
         const foundation::Vector3d&     target,
-        const double                    ray_time,
+        const ShadingRay::Time&         ray_time,
         const VisibilityFlags::Type     ray_flags,
         const ShadingRay::DepthType     ray_depth,
         double&                         transmission,
@@ -184,7 +183,7 @@ class Tracer
 inline const ShadingPoint& Tracer::trace(
     const foundation::Vector3d&         origin,
     const foundation::Vector3d&         direction,
-    const double                        ray_time,
+    const ShadingRay::Time&             ray_time,
     const VisibilityFlags::Type         ray_flags,
     const ShadingRay::DepthType         ray_depth,
     double&                             transmission)
@@ -220,7 +219,7 @@ inline const ShadingPoint& Tracer::trace(
 inline double Tracer::trace(
     const foundation::Vector3d&         origin,
     const foundation::Vector3d&         direction,
-    const double                        ray_time,
+    const ShadingRay::Time&             ray_time,
     const VisibilityFlags::Type         ray_flags,
     const ShadingRay::DepthType         ray_depth)
 {
@@ -232,7 +231,6 @@ inline double Tracer::trace(
             origin,
             direction,
             ray_time,
-            m_ray_dtime,
             ray_flags,
             ray_depth);
 
@@ -267,7 +265,6 @@ inline double Tracer::trace(
             origin.get_biased_point(direction),
             direction,
             origin.get_time(),
-            origin.get_dtime(),
             ray_flags,
             origin.get_ray().m_depth + 1);
 
@@ -290,7 +287,7 @@ inline double Tracer::trace(
 inline const ShadingPoint& Tracer::trace_between(
     const foundation::Vector3d&         origin,
     const foundation::Vector3d&         target,
-    const double                        ray_time,
+    const ShadingRay::Time&             ray_time,
     const VisibilityFlags::Type         ray_flags,
     const ShadingRay::DepthType         ray_depth,
     double&                             transmission)
@@ -326,7 +323,7 @@ inline const ShadingPoint& Tracer::trace_between(
 inline double Tracer::trace_between(
     const foundation::Vector3d&         origin,
     const foundation::Vector3d&         target,
-    const double                        ray_time,
+    const ShadingRay::Time&             ray_time,
     const VisibilityFlags::Type         ray_flags,
     const ShadingRay::DepthType         ray_depth)
 {
@@ -341,7 +338,6 @@ inline double Tracer::trace_between(
             0.0,                    // ray tmin
             dist * (1.0 - 1.0e-6),  // ray tmax
             ray_time,
-            m_ray_dtime,
             ray_flags,
             ray_depth);
 
@@ -379,7 +375,6 @@ inline double Tracer::trace_between(
             0.0,                    // ray tmin
             dist * (1.0 - 1.0e-6),  // ray tmax
             origin.get_time(),
-            origin.get_dtime(),
             ray_flags,
             origin.get_ray().m_depth + 1);
 
