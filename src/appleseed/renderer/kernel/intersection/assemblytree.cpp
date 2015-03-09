@@ -709,7 +709,7 @@ bool AssemblyLeafVisitor::visit(
                         *triangle_tree,
                         local_shading_point.m_ray,
                         local_ray_info,
-                        local_shading_point.m_ray.m_time.m_relative,
+                        local_shading_point.m_ray.m_time.m_normalized,
                         visitor
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
                         , m_triangle_tree_stats
@@ -869,14 +869,14 @@ bool AssemblyLeafProbeVisitor::visit(
             {
                 // Check the intersection between the ray and the triangle tree.
                 TriangleTreeProbeIntersector intersector;
-                TriangleLeafProbeVisitor visitor(*triangle_tree, local_ray.m_time.m_relative, local_ray.m_flags);
+                TriangleLeafProbeVisitor visitor(*triangle_tree, local_ray.m_time.m_normalized, local_ray.m_flags);
                 if (triangle_tree->get_moving_triangle_count() > 0)
                 {
                     intersector.intersect_motion(
                         *triangle_tree,
                         local_ray,
                         local_ray_info,
-                        local_ray.m_time.m_relative,
+                        local_ray.m_time.m_normalized,
                         visitor
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
                         , m_triangle_tree_stats

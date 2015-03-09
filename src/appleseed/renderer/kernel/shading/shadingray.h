@@ -35,6 +35,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/ray.h"
+#include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
@@ -63,22 +64,28 @@ class ShadingRay
     typedef foundation::RayInfo3d   RayInfoType;
     typedef foundation::uint16      DepthType;
 
-    struct TimeType
+    struct Time
     {
-        TimeType();
+        Time();
 
-        TimeType(
+        Time(
             const double absolute,
-            const double relative,
+            const double normalized,
+            const double shutter_interval);
+
+        static Time create_with_normalized_time(
+            const double time,
+            const double shutter_open,
+            const double shutter_close,
             const double shutter_interval);
 
         double m_absolute;          // absolute time of the ray.
-        double m_relative;          // time of the ray, relative to shutter open / close times.
+        double m_normalized;        // time of the ray, relative to shutter open / close times.
         double m_shutter_interval;  // time interval between shutter open and close times.
     };
 
     // Public members.
-    TimeType                        m_time;
+    Time                            m_time;
     VisibilityFlags::Type           m_flags;
     DepthType                       m_depth;
     bool                            m_has_differentials;
@@ -89,12 +96,12 @@ class ShadingRay
     ShadingRay();                   // leave all fields uninitialized
     ShadingRay(
         const RayType&              ray,
-        const TimeType&             time,
+        const Time&                 time,
         const VisibilityFlags::Type flags,
         const DepthType             depth);
     ShadingRay(
         const RayType&              ray,
-        const TimeType&             time,
+        const Time&                 time,
         const VisibilityFlags::Type flags,
         const DepthType             depth,
         const RayType&              rx,
@@ -102,7 +109,7 @@ class ShadingRay
     ShadingRay(
         const VectorType&           org,
         const VectorType&           dir,
-        const TimeType&             time,
+        const Time&                 time,
         const VisibilityFlags::Type flags,
         const DepthType             depth);
     ShadingRay(
@@ -110,7 +117,7 @@ class ShadingRay
         const VectorType&           dir,
         const ValueType             tmin,
         const ValueType             tmax,
-        const TimeType&             time,
+        const Time&                 time,
         const VisibilityFlags::Type flags,
         const DepthType             depth);
 };
@@ -130,20 +137,35 @@ ShadingRay transform_to_parent(
 // ShadingRay class implementation.
 //
 
-inline ShadingRay::TimeType::TimeType()
+inline ShadingRay::Time::Time()
+  : m_absolute(0.0)
+  , m_normalized(0.0)
+  , m_shutter_interval(0.0)
 {
 }
 
-inline ShadingRay::TimeType::TimeType(
+inline ShadingRay::Time::Time(
     const double absolute,
-    const double relative,
+    const double normalized,
     const double shutter_interval)
   : m_absolute(absolute)
-  , m_relative(relative)
+  , m_normalized(normalized)
   , m_shutter_interval(shutter_interval)
 {
-    assert(m_relative >= 0.0);
-    assert(m_relative < 1.0);
+    assert(m_normalized >= 0.0);
+    assert(m_normalized < 1.0);
+}
+
+inline ShadingRay::Time ShadingRay::Time::create_with_normalized_time(
+    const double normalized_time,
+    const double shutter_open,
+    const double shutter_close,
+    const double shutter_interval)
+{
+    return Time(
+        foundation::lerp(shutter_open, shutter_close, normalized_time),
+        normalized_time,
+        shutter_interval);
 }
 
 inline ShadingRay::ShadingRay()
@@ -153,7 +175,7 @@ inline ShadingRay::ShadingRay()
 
 inline ShadingRay::ShadingRay(
     const RayType&                  ray,
-    const TimeType&                 time,
+    const Time&                     time,
     const VisibilityFlags::Type     flags,
     const DepthType                 depth)
   : RayType(ray)
@@ -162,13 +184,11 @@ inline ShadingRay::ShadingRay(
   , m_depth(depth)
   , m_has_differentials(false)
 {
-    assert(time.m_relative >= 0.0);
-    assert(time.m_relative < 1.0);
 }
 
 inline ShadingRay::ShadingRay(
     const RayType&                  ray,
-    const TimeType&                 time,
+    const Time&                     time,
     const VisibilityFlags::Type     flags,
     const DepthType                 depth,
     const RayType&                  rx,
@@ -181,14 +201,12 @@ inline ShadingRay::ShadingRay(
   , m_rx(rx)
   , m_ry(ry)
 {
-    assert(time.m_relative >= 0.0);
-    assert(time.m_relative < 1.0);
 }
 
 inline ShadingRay::ShadingRay(
     const VectorType&               org,
     const VectorType&               dir,
-    const TimeType&                 time,
+    const Time&                     time,
     const VisibilityFlags::Type     flags,
     const DepthType                 depth)
   : RayType(org, dir)
@@ -197,8 +215,6 @@ inline ShadingRay::ShadingRay(
   , m_depth(depth)
   , m_has_differentials(false)
 {
-    assert(time.m_relative >= 0.0);
-    assert(time.m_relative < 1.0);
 }
 
 inline ShadingRay::ShadingRay(
@@ -206,7 +222,7 @@ inline ShadingRay::ShadingRay(
     const VectorType&               dir,
     const ValueType                 tmin,
     const ValueType                 tmax,
-    const TimeType&                 time,
+    const Time&                     time,
     const VisibilityFlags::Type     flags,
     const DepthType                 depth)
   : RayType(org, dir, tmin, tmax)
@@ -215,8 +231,6 @@ inline ShadingRay::ShadingRay(
   , m_depth(depth)
   , m_has_differentials(false)
 {
-    assert(time.m_relative >= 0.0);
-    assert(time.m_relative < 1.0);
 }
 
 template <typename U>

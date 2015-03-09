@@ -172,7 +172,7 @@ class DirectLightingIntegrator
     const foundation::Vector3d&         m_point;
     const foundation::Vector3d&         m_geometric_normal;
     const foundation::Basis3d&          m_shading_basis;
-    const ShadingRay::TimeType&         m_time;
+    const ShadingRay::Time&             m_time;
     const foundation::Dual3d&           m_outgoing;
     const BSDF&                         m_bsdf;
     const void*                         m_bsdf_data;

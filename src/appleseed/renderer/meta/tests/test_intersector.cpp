@@ -117,7 +117,7 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
             Vector3d(0.0, 0.0, -1.0),
             0.0,                                // tmin
             2.0,                                // tmax
-            ShadingRay::TimeType(0.0, 0.0, 0.0),
+            ShadingRay::Time(0.0, 0.0, 0.0),
             VisibilityFlags::CameraRay,
             0);                                 // depth
 
@@ -134,7 +134,7 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
             Vector3d(0.0, 0.0, -1.0),
             0.0,                                // tmin
             2.0,                                // tmax
-            ShadingRay::TimeType(0.0, 0.0, 0.0),
+            ShadingRay::Time(0.0, 0.0, 0.0),
             VisibilityFlags::CameraRay,
             0);                                 // depth
 

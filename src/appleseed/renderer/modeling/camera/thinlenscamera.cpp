@@ -460,7 +460,7 @@ namespace
             ray.m_dir = normalize(transform.point_to_parent(film_point) - ray.m_org);
             ray.m_tmin = 0.0;
             ray.m_tmax = numeric_limits<double>::max();
-            ray.m_time = ShadingRay::TimeType(time, 0.5, get_shutter_open_time_interval());
+            ray.m_time = ShadingRay::Time(time, 0.5, get_shutter_open_time_interval());
             ray.m_flags = VisibilityFlags::ProbeRay;
             ray.m_depth = 0;
 

@@ -250,10 +250,10 @@ namespace
           , m_pass_hash(pass_hash)
           , m_abort_switch(abort_switch)
         {
-            const Camera *camera = scene.get_camera();
+            const Camera* camera = scene.get_camera();
             m_shutter_open_time = camera->get_shutter_open_time();
             m_shutter_close_time = camera->get_shutter_close_time();
-            m_ray_dtime = m_shutter_close_time - m_shutter_open_time;
+            m_ray_dtime = camera->get_shutter_open_time_interval();
         }
 
         virtual void execute(const size_t thread_index) APPLESEED_OVERRIDE
@@ -396,10 +396,11 @@ namespace
 
             // Build the photon ray.
             child_sampling_context.split_in_place(1, 1);
-            ShadingRay::TimeType time;
-            time.m_relative = sampling_context.next_double2();
-            time.m_absolute = lerp(m_shutter_open_time, m_shutter_close_time, time.m_relative);
-            time.m_shutter_interval = m_ray_dtime;
+            ShadingRay::Time time = ShadingRay::Time::create_with_normalized_time(
+                sampling_context.next_double2(),
+                m_shutter_open_time,
+                m_shutter_close_time,
+                m_ray_dtime);
 
             const ShadingRay ray(
                 light_sample.m_point,
@@ -459,10 +460,11 @@ namespace
 
             // Build the photon ray.
             child_sampling_context.split_in_place(1, 1);
-            ShadingRay::TimeType time;
-            time.m_relative = sampling_context.next_double2();
-            time.m_absolute = lerp(m_shutter_open_time, m_shutter_close_time, time.m_relative);
-            time.m_shutter_interval = m_ray_dtime;
+            ShadingRay::Time time = ShadingRay::Time::create_with_normalized_time(
+                sampling_context.next_double2(),
+                m_shutter_open_time,
+                m_shutter_close_time,
+                m_ray_dtime);
 
             const ShadingRay ray(
                 emission_position,
@@ -555,10 +557,10 @@ namespace
             m_scene_radius = scene_bbox.radius();
             m_safe_scene_diameter = 1.01 * (2.0 * m_scene_radius);
 
-            const Camera *camera = scene.get_camera();
+            const Camera* camera = scene.get_camera();
             m_shutter_open_time = camera->get_shutter_open_time();
             m_shutter_close_time = camera->get_shutter_close_time();
-            m_ray_dtime = m_shutter_close_time - m_shutter_open_time;
+            m_ray_dtime = camera->get_shutter_open_time_interval();
         }
 
         virtual void execute(const size_t thread_index) APPLESEED_OVERRIDE
@@ -676,10 +678,11 @@ namespace
 
             // Build the photon ray.
             child_sampling_context.split_in_place(1, 1);
-            ShadingRay::TimeType time;
-            time.m_relative = sampling_context.next_double2();
-            time.m_absolute = lerp(m_shutter_open_time, m_shutter_close_time, time.m_relative);
-            time.m_shutter_interval = m_ray_dtime;
+            ShadingRay::Time time = ShadingRay::Time::create_with_normalized_time(
+                sampling_context.next_double2(),
+                m_shutter_open_time,
+                m_shutter_close_time,
+                m_ray_dtime);
 
             const ShadingRay ray(
                 ray_origin,

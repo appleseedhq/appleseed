@@ -189,26 +189,26 @@ class LightSampler
 
     // Sample the set of non-physical lights.
     void sample_non_physical_lights(
-        const ShadingRay::TimeType&         time,
+        const ShadingRay::Time&             time,
         const foundation::Vector3d&         s,
         LightSample&                        light_sample) const;
 
     // Sample a single given non-physical light.
     void sample_non_physical_light(
-        const ShadingRay::TimeType&         time,
+        const ShadingRay::Time&             time,
         const foundation::Vector2d&         s,
         const size_t                        light_index,
         LightSample&                        light_sample) const;
 
     // Sample the set of emitting triangles.
     void sample_emitting_triangles(
-        const ShadingRay::TimeType&         time,
+        const ShadingRay::Time&             time,
         const foundation::Vector3d&         s,
         LightSample&                        light_sample) const;
 
     // Sample the sets of non-physical lights and emitting triangles.
     void sample(
-        const ShadingRay::TimeType&         time,
+        const ShadingRay::Time&             time,
         const foundation::Vector3d&         s,
         LightSample&                        light_sample) const;
     void sample(
@@ -273,7 +273,7 @@ class LightSampler
 
     // Sample a given non-physical light.
     void sample_non_physical_light(
-        const ShadingRay::TimeType&         time,
+        const ShadingRay::Time&             time,
         const foundation::Vector2d&         s,
         const size_t                        light_index,
         const double                        light_prob,
@@ -281,7 +281,7 @@ class LightSampler
 
     // Sample a given emitting triangle.
     void sample_emitting_triangle(
-        const ShadingRay::TimeType&         time,
+        const ShadingRay::Time&             time,
         const foundation::Vector2d&         s,
         const size_t                        triangle_index,
         const double                        triangle_prob,
@@ -354,7 +354,7 @@ inline bool LightSampler::has_lights_or_emitting_triangles() const
 }
 
 inline void LightSampler::sample_non_physical_light(
-    const ShadingRay::TimeType&             time,
+    const ShadingRay::Time&                 time,
     const foundation::Vector2d&             s,
     const size_t                            light_index,
     LightSample&                            sample) const
@@ -366,10 +366,11 @@ inline void LightSampler::sample(
     const foundation::Vector4d&             s,
     LightSample&                            light_sample) const
 {
-    ShadingRay::TimeType time;
-    time.m_relative = s[0];
-    time.m_absolute = foundation::lerp(m_shutter_open_time, m_shutter_close_time, time.m_relative);
-    time.m_shutter_interval = m_ray_dtime;
+    ShadingRay::Time time = ShadingRay::Time::create_with_normalized_time(
+        s[0],
+        m_shutter_open_time,
+        m_shutter_close_time,
+        m_ray_dtime);
     sample(time, foundation::Vector3d(s[1], s[2], s[3]), light_sample);
 }
 

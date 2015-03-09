@@ -528,7 +528,7 @@ double RegionLeafVisitor::visit(
                 *triangle_tree,
                 ray,
                 ray_info,
-                ray.m_time.m_relative,
+                ray.m_time.m_normalized,
                 visitor
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
                 , m_triangle_tree_stats
@@ -576,14 +576,14 @@ double RegionLeafProbeVisitor::visit(
     {
         // Check the intersection between the ray and the triangle tree.
         TriangleTreeProbeIntersector intersector;
-        TriangleLeafProbeVisitor visitor(*triangle_tree, ray.m_time.m_relative, ray.m_flags);
+        TriangleLeafProbeVisitor visitor(*triangle_tree, ray.m_time.m_normalized, ray.m_flags);
         if (triangle_tree->get_moving_triangle_count() > 0)
         {
             intersector.intersect_motion(
                 *triangle_tree,
                 ray,
                 ray_info,
-                ray.m_time.m_relative,
+                ray.m_time.m_normalized,
                 visitor
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
                 , m_triangle_tree_stats

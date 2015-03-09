@@ -137,6 +137,7 @@ void RendererServices::initialize()
 
     m_shutter[0] = m_camera->get_shutter_open_time();
     m_shutter[1] = m_camera->get_shutter_close_time();
+    m_shutter_interval = m_camera->get_shutter_open_time_interval();
 }
 
 OIIO::TextureSystem* RendererServices::texturesys() const
@@ -346,9 +347,9 @@ bool RendererServices::trace(
         normalize(Vector3f(R)),
         options.mindist,
         options.maxdist,
-        ShadingRay::TimeType(
+        ShadingRay::Time(
             sg->time,
-            (sg->time - m_shutter[0]) / (m_shutter[1] - m_shutter[0]),
+            m_shutter_interval != 0.0f ? (sg->time - m_shutter[0]) / m_shutter_interval : 0.0f,
             sg->dtime),
         VisibilityFlags::ProbeRay,
         parent->get_ray().m_depth + 1);

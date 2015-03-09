@@ -331,6 +331,7 @@ class RendererServices
     AttrGetterMapType           m_global_attr_getters;
     OIIO::ustring               m_cam_projection_str;
     float                       m_shutter[2];
+    float                       m_shutter_interval;
 };
 
 }       // namespace renderer
