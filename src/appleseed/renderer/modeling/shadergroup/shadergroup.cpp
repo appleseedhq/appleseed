@@ -75,13 +75,9 @@ struct ShaderGroup::Impl
 ShaderGroup::ShaderGroup(const char* name)
   : ConnectableEntity(g_class_uid, ParamArray())
   , impl(new Impl())
-  , m_has_emission(false)
-  , m_has_transparency(false)
-  , m_has_holdout(false)
-  , m_has_debug(false)
-  , m_uses_dPdtime(false)
 {
     set_name(name);
+    clear();
 }
 
 ShaderGroup::~ShaderGroup()
@@ -97,6 +93,19 @@ void ShaderGroup::release()
 const char* ShaderGroup::get_model() const
 {
     return ShaderGroupFactory::get_model();
+}
+
+void ShaderGroup::clear()
+{
+    impl->m_shaders.clear();
+    impl->m_connections.clear();
+    impl->m_shader_group_ref.reset();
+
+    m_has_emission = false;
+    m_has_transparency = false;
+    m_has_holdout = false;
+    m_has_debug = false;
+    m_uses_dPdtime = false;
 }
 
 void ShaderGroup::add_shader(

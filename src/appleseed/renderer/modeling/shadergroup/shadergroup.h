@@ -69,6 +69,9 @@ class APPLESEED_DLLSYMBOL ShaderGroup
     // Return a string identifying the model of this shader group.
     const char* get_model() const;
 
+    // Removes all shaders and connections.
+    void clear();
+
     // Adds a new shader to the group.
     void add_shader(
         const char*                     type,
