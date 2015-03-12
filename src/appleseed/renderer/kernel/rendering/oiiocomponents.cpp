@@ -61,7 +61,7 @@ OIIOComponents::OIIOComponents(
         params.get_optional<size_t>("max_size", 256 * 1024 * 1024);
 
     RENDERER_LOG_INFO(
-        "setting OpenImageIO texture cache size to %s",
+        "setting OpenImageIO texture cache size to %s.",
         pretty_size(texture_cache_size_bytes).c_str());
 
     const float texture_cache_size_mb =
@@ -83,7 +83,10 @@ OIIOComponents::OIIOComponents(
 
 OIIOComponents::~OIIOComponents()
 {
-    RENDERER_LOG_DEBUG("%s", m_texture_system->getstats().c_str());
+    const string stats = m_texture_system->getstats();
+    const string trimmed_stats = trim_right(stats, "\r\n");
+
+    RENDERER_LOG_DEBUG("%s", trimmed_stats.c_str());
 
     OIIO::TextureSystem::destroy(m_texture_system);
 }

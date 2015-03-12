@@ -108,7 +108,7 @@ OSLComponents::OSLComponents(
 
 OSLComponents::~OSLComponents()
 {
-    RENDERER_LOG_INFO("releasing osl shader groups...");
+    RENDERER_LOG_DEBUG("releasing osl shader groups...");
     m_project.get_scene()->release_osl_shader_groups();
 
     OSL::ShadingSystem::destroy(m_shading_system);

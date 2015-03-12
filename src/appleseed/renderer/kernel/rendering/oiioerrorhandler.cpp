@@ -32,6 +32,12 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/string.h"
+
+using namespace foundation;
+using namespace std;
+
 namespace renderer
 {
 
@@ -39,28 +45,30 @@ namespace renderer
 // OIIOErrorHandler class implementation.
 //
 
-void OIIOErrorHandler::operator()(int errcode, const std::string& msg)
+void OIIOErrorHandler::operator()(int errcode, const string& msg)
 {
+    const string trimmed_msg = trim_right(msg, "\r\n");
+
     switch (errcode)
     {
       case EH_WARNING:
-        RENDERER_LOG_WARNING("%s", msg.c_str());
+        RENDERER_LOG_WARNING("%s", trimmed_msg.c_str());
         break;
 
       case EH_ERROR:
-        RENDERER_LOG_ERROR("%s", msg.c_str());
+        RENDERER_LOG_ERROR("%s", trimmed_msg.c_str());
         break;
 
       case EH_SEVERE:
-        RENDERER_LOG_FATAL("%s", msg.c_str());
+        RENDERER_LOG_FATAL("%s", trimmed_msg.c_str());
         break;
 
       case EH_DEBUG:
-        RENDERER_LOG_DEBUG("%s", msg.c_str());
+        RENDERER_LOG_DEBUG("%s", trimmed_msg.c_str());
         break;
 
       default:
-        RENDERER_LOG_INFO("%s", msg.c_str());
+        RENDERER_LOG_DEBUG("%s", trimmed_msg.c_str());
         break;
     }
 }

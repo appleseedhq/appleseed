@@ -197,7 +197,7 @@ void RenderingManager::wait_until_rendering_end()
 
 void RenderingManager::abort_rendering()
 {
-    RENDERER_LOG_DEBUG("aborting rendering...");
+    RENDERER_LOG_INFO("aborting rendering...");
 
     m_renderer_controller.set_status(IRendererController::AbortRendering);
 }
