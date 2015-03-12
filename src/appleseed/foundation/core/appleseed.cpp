@@ -57,7 +57,7 @@ const char* Appleseed::get_lib_name()
 
     return "libappleseed.dylib";
 
-// Other operating system.
+// Other platforms.
 #else
 
     return "appleseed.so";

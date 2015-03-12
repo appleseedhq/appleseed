@@ -74,9 +74,11 @@
     #include <sys/types.h>
     #include <unistd.h>
 
-// Unsupported platform.
+// Other platforms.
 #else
+
     #error Unsupported platform.
+
 #endif
 
 using namespace std;

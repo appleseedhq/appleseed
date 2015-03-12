@@ -66,76 +66,78 @@ namespace foundation
 
 #ifdef _WIN32
 
-namespace
-{
-    DWORD get_priority_class(const ProcessPriority priority)
+    namespace
     {
-        switch (priority)
+        DWORD get_priority_class(const ProcessPriority priority)
         {
-          case ProcessPriorityLowest:   return IDLE_PRIORITY_CLASS;
-          case ProcessPriorityLow:      return BELOW_NORMAL_PRIORITY_CLASS;
-          case ProcessPriorityNormal:   return NORMAL_PRIORITY_CLASS;
-          case ProcessPriorityHigh:     return ABOVE_NORMAL_PRIORITY_CLASS;
-          case ProcessPriorityHighest:  return HIGH_PRIORITY_CLASS;
-          default:
-            assert(!"Should never happen.");
-            return NORMAL_PRIORITY_CLASS;
-        }
-    }
-
-    void set_current_process_priority_class(const DWORD priority_class, Logger* logger)
-    {
-        if (!SetPriorityClass(GetCurrentProcess(), priority_class))
-        {
-            if (logger)
+            switch (priority)
             {
-                LOG_WARNING(
-                    *logger,
-                    "failed to set process priority class to %lu (%lu).",
-                    priority_class,
-                    GetLastError());
+              case ProcessPriorityLowest:   return IDLE_PRIORITY_CLASS;
+              case ProcessPriorityLow:      return BELOW_NORMAL_PRIORITY_CLASS;
+              case ProcessPriorityNormal:   return NORMAL_PRIORITY_CLASS;
+              case ProcessPriorityHigh:     return ABOVE_NORMAL_PRIORITY_CLASS;
+              case ProcessPriorityHighest:  return HIGH_PRIORITY_CLASS;
+              default:
+                assert(!"Should never happen.");
+                return NORMAL_PRIORITY_CLASS;
+            }
+        }
+
+        void set_current_process_priority_class(const DWORD priority_class, Logger* logger)
+        {
+            if (!SetPriorityClass(GetCurrentProcess(), priority_class))
+            {
+                if (logger)
+                {
+                    LOG_WARNING(
+                        *logger,
+                        "failed to set process priority class to %lu (%lu).",
+                        priority_class,
+                        GetLastError());
+                }
             }
         }
     }
-}
 
-struct ProcessPriorityContext::Impl
-{
-    Logger* m_logger;
-    DWORD   m_initial_priority_class;
-};
+    struct ProcessPriorityContext::Impl
+    {
+        Logger* m_logger;
+        DWORD   m_initial_priority_class;
+    };
 
-ProcessPriorityContext::ProcessPriorityContext(
-    const ProcessPriority   priority,
-    Logger*                 logger)
-  : impl(new Impl())
-{
-    impl->m_logger = logger;
-    impl->m_initial_priority_class = GetPriorityClass(GetCurrentProcess());
+    ProcessPriorityContext::ProcessPriorityContext(
+        const ProcessPriority   priority,
+        Logger*                 logger)
+      : impl(new Impl())
+    {
+        impl->m_logger = logger;
+        impl->m_initial_priority_class = GetPriorityClass(GetCurrentProcess());
 
-    set_current_process_priority_class(
-        get_priority_class(priority),
-        impl->m_logger);
-}
+        set_current_process_priority_class(
+            get_priority_class(priority),
+            impl->m_logger);
+    }
 
-ProcessPriorityContext::~ProcessPriorityContext()
-{
-    set_current_process_priority_class(
-        impl->m_initial_priority_class,
-        impl->m_logger);
+    ProcessPriorityContext::~ProcessPriorityContext()
+    {
+        set_current_process_priority_class(
+            impl->m_initial_priority_class,
+            impl->m_logger);
 
-    delete impl;
-}
+        delete impl;
+    }
 
 #else
 
-ProcessPriorityContext::ProcessPriorityContext(
-    const ProcessPriority   priority,
-    Logger*                 logger)
-{
-}
+    ProcessPriorityContext::ProcessPriorityContext(
+        const ProcessPriority   priority,
+        Logger*                 logger)
+    {
+    }
 
-ProcessPriorityContext::~ProcessPriorityContext() {}
+    ProcessPriorityContext::~ProcessPriorityContext()
+    {
+    }
 
 #endif
 
@@ -150,76 +152,78 @@ ProcessPriorityContext::~ProcessPriorityContext() {}
 
 #ifdef _WIN32
 
-namespace
-{
-    int get_thread_priority_level(const ProcessPriority priority)
+    namespace
     {
-        switch (priority)
+        int get_thread_priority_level(const ProcessPriority priority)
         {
-          case ProcessPriorityLowest:   return THREAD_PRIORITY_LOWEST;
-          case ProcessPriorityLow:      return THREAD_PRIORITY_BELOW_NORMAL;
-          case ProcessPriorityNormal:   return THREAD_PRIORITY_NORMAL;
-          case ProcessPriorityHigh:     return THREAD_PRIORITY_ABOVE_NORMAL;
-          case ProcessPriorityHighest:  return THREAD_PRIORITY_HIGHEST;
-          default:
-            assert(!"Should never happen.");
-            return THREAD_PRIORITY_NORMAL;
-        }
-    }
-
-    void set_current_thread_priority_level(const int thread_priority, Logger* logger)
-    {
-        if (!SetThreadPriority(GetCurrentThread(), thread_priority))
-        {
-            if (logger)
+            switch (priority)
             {
-                LOG_WARNING(
-                    *logger,
-                    "failed to set thread priority level to %d (%lu).",
-                    thread_priority,
-                    GetLastError());
+              case ProcessPriorityLowest:   return THREAD_PRIORITY_LOWEST;
+              case ProcessPriorityLow:      return THREAD_PRIORITY_BELOW_NORMAL;
+              case ProcessPriorityNormal:   return THREAD_PRIORITY_NORMAL;
+              case ProcessPriorityHigh:     return THREAD_PRIORITY_ABOVE_NORMAL;
+              case ProcessPriorityHighest:  return THREAD_PRIORITY_HIGHEST;
+              default:
+                assert(!"Should never happen.");
+                return THREAD_PRIORITY_NORMAL;
+            }
+        }
+
+        void set_current_thread_priority_level(const int thread_priority, Logger* logger)
+        {
+            if (!SetThreadPriority(GetCurrentThread(), thread_priority))
+            {
+                if (logger)
+                {
+                    LOG_WARNING(
+                        *logger,
+                        "failed to set thread priority level to %d (%lu).",
+                        thread_priority,
+                        GetLastError());
+                }
             }
         }
     }
-}
 
-struct ThreadPriorityContext::Impl
-{
-    Logger* m_logger;
-    int     m_initial_priority_level;
-};
+    struct ThreadPriorityContext::Impl
+    {
+        Logger* m_logger;
+        int     m_initial_priority_level;
+    };
 
-ThreadPriorityContext::ThreadPriorityContext(
-    const ProcessPriority   priority,
-    Logger*                 logger)
-  : impl(new Impl())
-{
-    impl->m_logger = logger;
-    impl->m_initial_priority_level = GetThreadPriority(GetCurrentThread());
+    ThreadPriorityContext::ThreadPriorityContext(
+        const ProcessPriority   priority,
+        Logger*                 logger)
+      : impl(new Impl())
+    {
+        impl->m_logger = logger;
+        impl->m_initial_priority_level = GetThreadPriority(GetCurrentThread());
 
-    set_current_thread_priority_level(
-        get_thread_priority_level(priority),
-        impl->m_logger);
-}
+        set_current_thread_priority_level(
+            get_thread_priority_level(priority),
+            impl->m_logger);
+    }
 
-ThreadPriorityContext::~ThreadPriorityContext()
-{
-    set_current_thread_priority_level(
-        impl->m_initial_priority_level,
-        impl->m_logger);
+    ThreadPriorityContext::~ThreadPriorityContext()
+    {
+        set_current_thread_priority_level(
+            impl->m_initial_priority_level,
+            impl->m_logger);
 
-    delete impl;
-}
+        delete impl;
+    }
 
 #else
 
-ThreadPriorityContext::ThreadPriorityContext(
-    const ProcessPriority   priority,
-    Logger*                 logger)
-{
-}
+    ThreadPriorityContext::ThreadPriorityContext(
+        const ProcessPriority   priority,
+        Logger*                 logger)
+    {
+    }
 
-ThreadPriorityContext::~ThreadPriorityContext() {}
+    ThreadPriorityContext::~ThreadPriorityContext()
+    {
+    }
 
 #endif
 
@@ -230,39 +234,44 @@ ThreadPriorityContext::~ThreadPriorityContext() {}
 
 #ifdef _WIN32
 
-struct BenchmarkingThreadContext::Impl
-{
-    ProcessPriorityContext  m_process_priority_context;
-    ThreadPriorityContext   m_thread_priority_context;
-    uint64                  m_thread_affinity_mask;
+    struct BenchmarkingThreadContext::Impl
+    {
+        ProcessPriorityContext  m_process_priority_context;
+        ThreadPriorityContext   m_thread_priority_context;
+        uint64                  m_thread_affinity_mask;
 
-    explicit Impl(Logger* logger)
-      : m_process_priority_context(ProcessPriorityHighest, logger)
-      , m_thread_priority_context(ProcessPriorityHighest, logger)
-      , m_thread_affinity_mask(SetThreadAffinityMask(GetCurrentThread(), 1))
+        explicit Impl(Logger* logger)
+          : m_process_priority_context(ProcessPriorityHighest, logger)
+          , m_thread_priority_context(ProcessPriorityHighest, logger)
+          , m_thread_affinity_mask(SetThreadAffinityMask(GetCurrentThread(), 1))
+        {
+        }
+
+        ~Impl()
+        {
+            SetThreadAffinityMask(GetCurrentThread(), m_thread_affinity_mask);
+        }
+    };
+
+    BenchmarkingThreadContext::BenchmarkingThreadContext(Logger* logger)
+      : impl(new Impl(logger))
     {
     }
 
-    ~Impl()
+    BenchmarkingThreadContext::~BenchmarkingThreadContext()
     {
-        SetThreadAffinityMask(GetCurrentThread(), m_thread_affinity_mask);
+        delete impl;
     }
-};
-
-BenchmarkingThreadContext::BenchmarkingThreadContext(Logger* logger)
-  : impl(new Impl(logger))
-{
-}
-
-BenchmarkingThreadContext::~BenchmarkingThreadContext()
-{
-    delete impl;
-}
 
 #else
 
-BenchmarkingThreadContext::BenchmarkingThreadContext(Logger* logger) {}
-BenchmarkingThreadContext::~BenchmarkingThreadContext() {}
+    BenchmarkingThreadContext::BenchmarkingThreadContext(Logger* logger)
+    {
+    }
+
+    BenchmarkingThreadContext::~BenchmarkingThreadContext()
+    {
+    }
 
 #endif
 
@@ -324,7 +333,7 @@ BenchmarkingThreadContext::~BenchmarkingThreadContext() {}
         prctl(PR_SET_NAME, (unsigned long)name, 0, 0, 0);
     }
 
-// Unsupported platform.
+// Other platforms.
 #else
 
     void set_current_thread_name(const char* name)

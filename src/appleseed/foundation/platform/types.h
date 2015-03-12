@@ -88,9 +88,11 @@ namespace foundation
         #error Cannot determine machine architecture.
     #endif
 
-// Other platform: abort compilation.
+// Other platforms.
 #else
+
     #error Fixed-size integral types are not defined on this platform.
+
 #endif
 
 BOOST_STATIC_ASSERT(sizeof(int8)   == 1);
@@ -144,9 +146,11 @@ BOOST_STATIC_ASSERT(sizeof(isize_t) == sizeof(size_t));
 
     #define FMT_SIZE_T "%zu"
 
-// Other compilers: abort compilation.
+// Other compilers.
 #else
+
     #error Format strings are not defined on this platform.
+
 #endif
 
 }       // namespace foundation

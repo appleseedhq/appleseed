@@ -206,7 +206,7 @@ TEST_SUITE(Foundation_Platform_Path)
         EXPECT_EQ("bar\\file.ext", r2.make_preferred().string());
     }
 
-#endif  // _WIN32
+#endif
 }
 
 TEST_SUITE(Foundation_Utility_Path)

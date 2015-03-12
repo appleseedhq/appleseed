@@ -33,7 +33,7 @@
 // appleseed.main headers.
 #include "main/dllvisibility.h"
 
-#ifdef appleseed_EXPORTS                        // automatically set by CMake
+#ifdef appleseed_EXPORTS                                    // automatically set by CMake
     #define APPLESEED_DLLSYMBOL APPLESEED_DLL_EXPORT
 #else
     #define APPLESEED_DLLSYMBOL APPLESEED_DLL_IMPORT

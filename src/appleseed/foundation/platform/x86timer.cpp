@@ -113,9 +113,11 @@ uint64 X86Timer::read()
 
     return (static_cast<uint64>(h) << 32) | l;
 
-// Unsupported platform.
+// Other platforms.
 #else
+
     #error The x86 timer is not supported on this platform.
+
 #endif
 }
 

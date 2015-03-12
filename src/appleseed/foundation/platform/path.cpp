@@ -84,9 +84,14 @@ const char* get_executable_path()
 // Linux.
 #elif defined __linux__
 
-        ssize_t result = readlink("/proc/self/exe", path, sizeof(path) - 1);
+        const ssize_t result = readlink("/proc/self/exe", path, sizeof(path) - 1);
         assert(result > 0);
         path[result] = '\0';
+
+// Other platforms.
+#else
+
+        #error Unsupported platform.
 
 #endif
 

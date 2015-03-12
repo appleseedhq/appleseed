@@ -97,7 +97,6 @@ class Intersector
 #define FOUNDATION_VOXEL_TRAVERSAL_STATS(x)
 #endif
 
-// Intersect a ray with a given voxel tree.
 template <typename T, typename Tree, size_t S>
 bool Intersector<T, Tree, S>::intersect(
     const Tree&             tree,
