@@ -227,6 +227,10 @@ class APPLESEED_DLLSYMBOL ThreadFlag
 // Utility free functions.
 //
 
+// Set the name of the current thread.
+// For portability, limit the name to 16 characters, including the terminating zero.
+APPLESEED_DLLSYMBOL void set_current_thread_name(const char* name);
+
 // Suspend the current thread for a given number of milliseconds.
 APPLESEED_DLLSYMBOL void sleep(const uint32 ms);
 APPLESEED_DLLSYMBOL void sleep(const uint32 ms, IAbortSwitch& abort_switch);

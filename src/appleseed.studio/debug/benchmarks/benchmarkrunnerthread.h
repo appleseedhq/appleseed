@@ -30,6 +30,9 @@
 #ifndef APPLESEED_STUDIO_DEBUG_BENCHMARKS_BENCHMARKRUNNERTHREAD_H
 #define APPLESEED_STUDIO_DEBUG_BENCHMARKS_BENCHMARKRUNNERTHREAD_H
 
+// appleseed.foundation headers.
+#include "foundation/platform/compiler.h"
+
 // Qt headers.
 #include <QObject>
 #include <QThread>
@@ -48,7 +51,7 @@ class BenchmarkRunnerThread
 
   private:
     // The starting point for the thread.
-    virtual void run();
+    virtual void run() APPLESEED_OVERRIDE;
 };
 
 }       // namespace studio

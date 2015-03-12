@@ -40,6 +40,7 @@
 #include "renderer/api/log.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/thread.h"
 #include "foundation/utility/test.h"
 
 // Boost headers.
@@ -70,6 +71,8 @@ TestRunnerThread::TestRunnerThread(
 
 void TestRunnerThread::run()
 {
+    set_current_thread_name("tests");
+
     QtTestListener listener(m_output_widget, m_result_widget);
     TestResult result;
 

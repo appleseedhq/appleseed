@@ -112,6 +112,8 @@ class WorkerThread
     boost::condition_variable_any   m_pause_event;
     boost::mutex                    m_pause_mutex;
 
+    void set_thread_name();
+
     // Main line of the worker thread.
     void run();
 

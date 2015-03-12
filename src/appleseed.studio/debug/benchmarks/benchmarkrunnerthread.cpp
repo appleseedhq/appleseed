@@ -34,6 +34,7 @@
 #include "application/application.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/thread.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/benchmark.h"
 #include "foundation/utility/string.h"
@@ -60,6 +61,8 @@ namespace studio {
 
 void BenchmarkRunnerThread::run()
 {
+    set_current_thread_name("benchmarks");
+
     auto_release_ptr<XMLFileBenchmarkListener> xmlfile_listener(
         create_xmlfile_benchmark_listener());
 

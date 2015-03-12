@@ -44,6 +44,13 @@
 // Standard headers.
 #include <cassert>
 
+// Platform headers.
+#if defined __APPLE__
+#include <pthread.h>
+#elif defined __linux__
+#include <sys/prctl.h>
+#endif
+
 using namespace boost;
 
 namespace foundation
@@ -263,6 +270,69 @@ BenchmarkingThreadContext::~BenchmarkingThreadContext() {}
 //
 // Utility free functions implementation.
 //
+
+// Windows.
+#if defined _WIN32
+
+    //
+    // Reference:
+    //
+    //   https://msdn.microsoft.com/en-us/library/xcb2z8hs.aspx
+    //
+
+    #pragma pack(push, 8)
+    struct ThreadNameInfo
+    {
+       DWORD    dwType;         // must be 0x1000
+       LPCSTR   szName;         // pointer to name (in user address space)
+       DWORD    dwThreadID;     // thread ID (-1 = caller thread)
+       DWORD    dwFlags;        // reserved for future use, must be zero
+    };
+    #pragma pack(pop)
+
+    void set_current_thread_name(const char* name)
+    {
+        __try
+        {
+            ThreadNameInfo info;
+            info.dwType = 0x1000;
+            info.szName = name;
+            info.dwThreadID = -1;
+            info.dwFlags = 0;
+
+            const DWORD VisualStudioException = 0x406D1388;
+            RaiseException(VisualStudioException, 0, sizeof(info) / sizeof(ULONG_PTR), (ULONG_PTR*)&info);
+        }
+        __except (EXCEPTION_EXECUTE_HANDLER)
+        {
+        }
+    }
+
+// OS X.
+#elif defined __APPLE__
+
+    void set_current_thread_name(const char* name)
+    {
+        pthread_setname_np(name);
+    }
+
+// Linux.
+#elif defined __linux__
+
+    void set_current_thread_name(const char* name)
+    {
+        prctl(PR_SET_NAME, (unsigned long)name, 0, 0, 0);
+    }
+
+// Unsupported platform.
+#else
+
+    void set_current_thread_name(const char* name)
+    {
+        // Do nothing.
+    }
+
+#endif
 
 void sleep(const uint32 ms)
 {

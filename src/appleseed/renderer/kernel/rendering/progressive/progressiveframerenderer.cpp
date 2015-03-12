@@ -356,6 +356,8 @@ namespace
 
             void operator()()
             {
+                set_current_thread_name("display");
+
                 DefaultWallclockTimer timer;
                 const double rcp_timer_freq = 1.0 / timer.frequency();
                 uint64 last_time = timer.read();
@@ -459,6 +461,8 @@ namespace
 
             void operator()()
             {
+                set_current_thread_name("statistics");
+
                 while (!m_abort_switch.is_aborted())
                 {
                     if (m_pause_flag.is_clear())

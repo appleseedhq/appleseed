@@ -31,6 +31,7 @@
 #include "workerthread.h"
 
 // appleseed.foundation headers.
+#include "foundation/platform/snprintf.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/job/ijob.h"
 #include "foundation/utility/job/jobmanager.h"
@@ -124,8 +125,17 @@ void WorkerThread::resume()
     m_pause_event.notify_all();
 }
 
+void WorkerThread::set_thread_name()
+{
+    char thread_name[16];
+    portable_snprintf(thread_name, sizeof(thread_name), "worker_%03u", m_index);
+    set_current_thread_name(thread_name);
+}
+
 void WorkerThread::run()
 {
+    set_thread_name();
+
     while (!m_abort_switch.is_aborted())
     {
         if (m_pause_flag.is_set())
