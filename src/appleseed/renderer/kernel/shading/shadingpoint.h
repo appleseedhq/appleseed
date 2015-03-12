@@ -282,27 +282,28 @@ class ShadingPoint
     enum Members
     {
         HasSourceGeometry                = 1 << 0,
-        HasUV0                           = 1 << 1,
-        HasPoint                         = 1 << 2,
-        HasBiasedPoint                   = 1 << 3,
-        HasRefinedPoints                 = 1 << 4,
-        HasWorldSpacePartialDerivatives  = 1 << 5,
-        HasGeometricNormal               = 1 << 6,
-        HasOriginalShadingNormal         = 1 << 7,
-        HasShadingBasis                  = 1 << 8,
-        HasWorldSpaceTriangleVertices    = 1 << 9,
-        HasMaterial                      = 1 << 10,
-        HasTriangleVertexTangents        = 1 << 11,
-        HasPointVelocity                 = 1 << 12,
-        HasAlpha                         = 1 << 13,
-        HasScreenSpacePartialDerivatives = 1 << 14
+        HasTriangleVertexNormals         = 1 << 1,
+        HasTriangleVertexTangents        = 1 << 2,
+        HasUV0                           = 1 << 3,
+        HasPoint                         = 1 << 4,
+        HasBiasedPoint                   = 1 << 5,
+        HasRefinedPoints                 = 1 << 6,
+        HasWorldSpacePartialDerivatives  = 1 << 7,
+        HasGeometricNormal               = 1 << 8,
+        HasOriginalShadingNormal         = 1 << 9,
+        HasShadingBasis                  = 1 << 10,
+        HasWorldSpaceTriangleVertices    = 1 << 11,
+        HasMaterial                      = 1 << 12,
+        HasPointVelocity                 = 1 << 13,
+        HasAlpha                         = 1 << 14,
+        HasScreenSpacePartialDerivatives = 1 << 15
 #ifdef APPLESEED_WITH_OSL
-        , HasOSLShaderGlobals            = 1 << 15
+        , HasOSLShaderGlobals            = 1 << 16
 #endif
     };
     mutable foundation::uint32          m_members;
 
-    // Source geometry, fetched on demand.
+    // Source geometry.
     mutable const Assembly*             m_assembly;                     // hit assembly
     mutable const ObjectInstance*       m_object_instance;              // hit object instance
     mutable Object*                     m_object;                       // hit object

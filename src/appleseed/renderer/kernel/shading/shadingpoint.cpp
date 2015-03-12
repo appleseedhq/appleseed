@@ -162,15 +162,18 @@ void ShadingPoint::fetch_triangle_source_geometry() const
     }
 
     // Copy the object instance space vertex normals.
-    assert(triangle.m_n0 != Triangle::None);
-    assert(triangle.m_n1 != Triangle::None);
-    assert(triangle.m_n2 != Triangle::None);
-    m_n0 = tess.m_vertex_normals[triangle.m_n0];
-    m_n1 = tess.m_vertex_normals[triangle.m_n1];
-    m_n2 = tess.m_vertex_normals[triangle.m_n2];
-    assert(is_normalized(m_n0));
-    assert(is_normalized(m_n1));
-    assert(is_normalized(m_n2));
+    if (triangle.m_n0 != Triangle::None &&
+        triangle.m_n1 != Triangle::None &&
+        triangle.m_n2 != Triangle::None)
+    {
+        m_members |= HasTriangleVertexNormals;
+        m_n0 = tess.m_vertex_normals[triangle.m_n0];
+        m_n1 = tess.m_vertex_normals[triangle.m_n1];
+        m_n2 = tess.m_vertex_normals[triangle.m_n2];
+        assert(is_normalized(m_n0));
+        assert(is_normalized(m_n1));
+        assert(is_normalized(m_n2));
+    }
 
     // Copy the object instance space vertex tangents.
     if (triangle_has_vertex_attributes && tess.get_vertex_tangent_count() > 0)
@@ -475,9 +478,13 @@ void ShadingPoint::compute_geometric_normal() const
         // Normalize the geometric normal.
         m_geometric_normal = normalize(m_geometric_normal);
 
-        // Place the geometric normal in the same hemisphere as the original shading normal.
-        if (dot(m_geometric_normal, get_original_shading_normal()) < 0.0)
-            m_geometric_normal = -m_geometric_normal;
+        if (m_members & HasTriangleVertexNormals)
+        {
+            // We have per-vertex normals, so we can compute the original shading normal:
+            // place the geometric normal in the same hemisphere as the original shading normal.
+            if (dot(m_geometric_normal, get_original_shading_normal()) < 0.0)
+                m_geometric_normal = -m_geometric_normal;
+        }
 
         // Remember which side of the geometric surface we hit.
         m_side =
@@ -505,19 +512,27 @@ void ShadingPoint::compute_original_shading_normal() const
     {
         cache_source_geometry();
 
-        // Compute the object instance space shading normal.
-        m_original_shading_normal =
-              Vector3d(m_n0) * (1.0 - m_bary[0] - m_bary[1])
-            + Vector3d(m_n1) * m_bary[0]
-            + Vector3d(m_n2) * m_bary[1];
+        if (m_members & HasTriangleVertexNormals)
+        {
+            // Compute the object instance space shading normal.
+            m_original_shading_normal =
+                  Vector3d(m_n0) * (1.0 - m_bary[0] - m_bary[1])
+                + Vector3d(m_n1) * m_bary[0]
+                + Vector3d(m_n2) * m_bary[1];
 
-        // Transform the shading normal to world space.
-        m_original_shading_normal =
-            m_assembly_instance_transform.normal_to_parent(
-                m_object_instance->get_transform().normal_to_parent(m_original_shading_normal));
+            // Transform the shading normal to world space.
+            m_original_shading_normal =
+                m_assembly_instance_transform.normal_to_parent(
+                    m_object_instance->get_transform().normal_to_parent(m_original_shading_normal));
 
-        // Normalize the shading normal.
-        m_original_shading_normal = normalize(m_original_shading_normal);
+            // Normalize the shading normal.
+            m_original_shading_normal = normalize(m_original_shading_normal);
+        }
+        else
+        {
+            // Use the geometric normal if per-vertex normals are absent.
+            m_original_shading_normal = get_geometric_normal();
+        }
     }
     else
     {

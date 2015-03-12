@@ -375,29 +375,6 @@ namespace
                 triangle.m_n2 = Triangle::None;
             }
 
-            // All vertex normals are mandatory: use the geometric normal if any is missing.
-            if (triangle.m_n0 == Triangle::None ||
-                triangle.m_n1 == Triangle::None ||
-                triangle.m_n2 == Triangle::None)
-            {
-                // Fetch the triangle vertices.
-                const Vector3d v0 = Vector3d(m_objects.back()->get_vertex(triangle.m_v0));
-                const Vector3d v1 = Vector3d(m_objects.back()->get_vertex(triangle.m_v1));
-                const Vector3d v2 = Vector3d(m_objects.back()->get_vertex(triangle.m_v2));
-
-                // Compute the geometric normal to the triangle.
-                const Vector3d geometric_normal = normalize(cross(v1 - v0, v2 - v0));
-
-                // Insert the geometric normal into the mesh.
-                const uint32 geometric_normal_index =
-                    static_cast<uint32>(m_objects.back()->push_vertex_normal(GVector3(geometric_normal)));
-
-                // Assign the geometric normal to all vertices of the triangle.
-                triangle.m_n0 = geometric_normal_index;
-                triangle.m_n1 = geometric_normal_index;
-                triangle.m_n2 = geometric_normal_index;
-            }
-
             // Set triangle vertex texture coordinates (if any).
             if (m_face_tex_coords.size() == m_vertex_count)
             {
