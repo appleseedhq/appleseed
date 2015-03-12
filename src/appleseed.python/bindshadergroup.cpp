@@ -67,6 +67,7 @@ void bind_shader_group()
         .def("__init__", bpy::make_constructor(create_shader_group))
         .def("add_shader", add_shader)
         .def("add_connection", &ShaderGroup::add_connection)
+        .def("clear", &ShaderGroup::clear)
         ;
 
     bind_typed_entity_vector<ShaderGroup>("ShaderGroupContainer");

@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/intersection/intersectionsettings.h"
+#include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/utility/transformsequence.h"
 
@@ -188,26 +189,26 @@ class LightSampler
 
     // Sample the set of non-physical lights.
     void sample_non_physical_lights(
-        const double                        time,
+        const ShadingRay::Time&             time,
         const foundation::Vector3d&         s,
         LightSample&                        light_sample) const;
 
     // Sample a single given non-physical light.
     void sample_non_physical_light(
-        const double                        time,
+        const ShadingRay::Time&             time,
         const foundation::Vector2d&         s,
         const size_t                        light_index,
         LightSample&                        light_sample) const;
 
     // Sample the set of emitting triangles.
     void sample_emitting_triangles(
-        const double                        time,
+        const ShadingRay::Time&             time,
         const foundation::Vector3d&         s,
         LightSample&                        light_sample) const;
 
     // Sample the sets of non-physical lights and emitting triangles.
     void sample(
-        const double                        time,
+        const ShadingRay::Time&             time,
         const foundation::Vector3d&         s,
         LightSample&                        light_sample) const;
     void sample(
@@ -242,6 +243,10 @@ class LightSampler
     EmittingTriangleKeyHasher   m_triangle_key_hasher;
     EmittingTriangleHashTable   m_emitting_triangle_hash_table;
 
+    double                      m_shutter_open_time;
+    double                      m_shutter_close_time;
+    double                      m_ray_dtime;
+
     // Recursively collect non-physical lights from a given set of assembly instances.
     void collect_non_physical_lights(
         const AssemblyInstanceContainer&    assembly_instances,
@@ -268,7 +273,7 @@ class LightSampler
 
     // Sample a given non-physical light.
     void sample_non_physical_light(
-        const double                        time,
+        const ShadingRay::Time&             time,
         const foundation::Vector2d&         s,
         const size_t                        light_index,
         const double                        light_prob,
@@ -276,7 +281,7 @@ class LightSampler
 
     // Sample a given emitting triangle.
     void sample_emitting_triangle(
-        const double                        time,
+        const ShadingRay::Time&             time,
         const foundation::Vector2d&         s,
         const size_t                        triangle_index,
         const double                        triangle_prob,
@@ -349,7 +354,7 @@ inline bool LightSampler::has_lights_or_emitting_triangles() const
 }
 
 inline void LightSampler::sample_non_physical_light(
-    const double                            time,
+    const ShadingRay::Time&                 time,
     const foundation::Vector2d&             s,
     const size_t                            light_index,
     LightSample&                            sample) const
@@ -361,7 +366,12 @@ inline void LightSampler::sample(
     const foundation::Vector4d&             s,
     LightSample&                            light_sample) const
 {
-    sample(s[0], foundation::Vector3d(s[1], s[2], s[3]), light_sample);
+    ShadingRay::Time time = ShadingRay::Time::create_with_normalized_time(
+        s[0],
+        m_shutter_open_time,
+        m_shutter_close_time,
+        m_ray_dtime);
+    sample(time, foundation::Vector3d(s[1], s[2], s[3]), light_sample);
 }
 
 }       // namespace renderer

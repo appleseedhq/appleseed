@@ -53,13 +53,16 @@ OIIOComponents::OIIOComponents(
 {
     m_texture_system = OIIO::TextureSystem::create(false);
 
-    const size_t texture_cache_size =
+    const size_t texture_cache_size_bytes =
         params.get_optional<size_t>("max_size",  256 * 1024 * 1024);
+
+    const size_t texture_cache_size_kb = texture_cache_size_bytes / 1024;
+    const float texture_cache_size_mb = texture_cache_size_kb / 1024.0f;
 
     RENDERER_LOG_INFO(
         "setting OpenImageIO texture cache size to %f MBs",
-        static_cast<float>(texture_cache_size) / 1024.0f);
-    m_texture_system->attribute("max_memory_MB", static_cast<float>(texture_cache_size) / 1024.0f);
+        texture_cache_size_mb);
+    m_texture_system->attribute("max_memory_MB", texture_cache_size_mb);
 
     const string search_paths = project.make_search_path_string();
 
