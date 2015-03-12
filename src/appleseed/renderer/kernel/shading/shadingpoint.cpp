@@ -393,21 +393,20 @@ void ShadingPoint::compute_screen_space_partial_derivatives() const
 
     if (ray.m_has_differentials)
     {
-        const Vector3d& n = get_shading_normal();
         const Vector3d& p = get_point();
-        double t = intersect(ray.m_rx, p, n);
-        const Vector3d px = ray.m_rx.point_at(t);
+        const Vector3d& n = get_shading_normal();
+
+        const double tx = intersect(ray.m_rx, p, n);
+        const Vector3d px = ray.m_rx.point_at(tx);
         m_dpdx = px - p;
 
-        t = intersect(ray.m_ry, p, n);
-        const Vector3d py = ray.m_ry.point_at(t);
+        const double ty = intersect(ray.m_ry, p, n);
+        const Vector3d py = ray.m_ry.point_at(ty);
         m_dpdy = py - p;
 
         // Select the two smallest axes.
         const size_t max_index = max_abs_index(n);
-        size_t axes[2];
-        axes[0] = max_index == 0;
-        axes[1] = 2 - (max_index >> 1);
+        const size_t axes[2] = { max_index == 0, 2 - (max_index >> 1) };
 
         const Vector3d& dpdu = get_dpdu(0);
         const Vector3d& dpdv = get_dpdv(0);
