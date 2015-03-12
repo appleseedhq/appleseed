@@ -34,10 +34,14 @@
 #include "renderer/modeling/project/project.h"
 #include "renderer/utility/paramarray.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/string.h"
+
 // Standard headers.
 #include <cstddef>
 #include <string>
 
+using namespace foundation;
 using namespace std;
 
 namespace renderer
@@ -54,14 +58,15 @@ OIIOComponents::OIIOComponents(
     m_texture_system = OIIO::TextureSystem::create(false);
 
     const size_t texture_cache_size_bytes =
-        params.get_optional<size_t>("max_size",  256 * 1024 * 1024);
-
-    const size_t texture_cache_size_kb = texture_cache_size_bytes / 1024;
-    const float texture_cache_size_mb = texture_cache_size_kb / 1024.0f;
+        params.get_optional<size_t>("max_size", 256 * 1024 * 1024);
 
     RENDERER_LOG_INFO(
-        "setting OpenImageIO texture cache size to %f MBs",
-        texture_cache_size_mb);
+        "setting OpenImageIO texture cache size to %s",
+        pretty_size(texture_cache_size_bytes).c_str());
+
+    const float texture_cache_size_mb =
+        static_cast<float>(texture_cache_size_bytes) / (1024 * 1024);
+
     m_texture_system->attribute("max_memory_MB", texture_cache_size_mb);
 
     const string search_paths = project.make_search_path_string();
@@ -78,7 +83,7 @@ OIIOComponents::OIIOComponents(
 
 OIIOComponents::~OIIOComponents()
 {
-    RENDERER_LOG_INFO("%s", m_texture_system->getstats().c_str());
+    RENDERER_LOG_DEBUG("%s", m_texture_system->getstats().c_str());
 
     OIIO::TextureSystem::destroy(m_texture_system);
 }
