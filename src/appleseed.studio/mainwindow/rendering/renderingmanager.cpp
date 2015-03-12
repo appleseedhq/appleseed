@@ -219,7 +219,7 @@ void RenderingManager::pause_rendering()
 
 void RenderingManager::resume_rendering()
 {
-    m_renderer_controller.set_status(IRendererController::ResumeRendering);
+    m_renderer_controller.set_status(IRendererController::ContinueRendering);
 }
 
 void RenderingManager::schedule(auto_ptr<IDelayedAction> action)

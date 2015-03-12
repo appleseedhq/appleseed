@@ -391,6 +391,8 @@ IRendererController::Status MasterRenderer::render_frame_sequence(
 
 IRendererController::Status MasterRenderer::wait_for_event(IFrameRenderer& frame_renderer) const
 {
+    bool is_paused = false;
+
     while (true)
     {
         if (!frame_renderer.is_rendering())
@@ -401,15 +403,19 @@ IRendererController::Status MasterRenderer::wait_for_event(IFrameRenderer& frame
         switch (status)
         {
           case IRendererController::ContinueRendering:
-            // Nothing to do.
+            if (is_paused)
+            {
+                frame_renderer.resume_rendering();
+                is_paused = false;
+            }
             break;
 
           case IRendererController::PauseRendering:
-            frame_renderer.pause_rendering();
-            break;
-
-          case IRendererController::ResumeRendering:
-            frame_renderer.resume_rendering();
+            if (!is_paused)
+            {
+                frame_renderer.pause_rendering();
+                is_paused = true;
+            }
             break;
 
           default:
