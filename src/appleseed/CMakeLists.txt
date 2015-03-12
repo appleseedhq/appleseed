@@ -1408,7 +1408,7 @@ set (renderer_modeling_environmentedf_sources
     renderer/modeling/environmentedf/sphericalcoordinates.h
 )
 if (WITH_OSL)
-    list (APPEND appleseed_sources
+    list (APPEND renderer_modeling_environmentedf_sources
         renderer/modeling/environmentedf/oslenvironmentedf.cpp
         renderer/modeling/environmentedf/oslenvironmentedf.h
     )
