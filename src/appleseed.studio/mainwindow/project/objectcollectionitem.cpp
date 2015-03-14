@@ -101,11 +101,11 @@ QMenu* ObjectCollectionItem::get_single_item_context_menu() const
 
 namespace
 {
-    class ImportObjectsDelayedAction
-      : public RenderingManager::IDelayedAction
+    class ImportObjectsAction
+      : public RenderingManager::IScheduledAction
     {
       public:
-        ImportObjectsDelayedAction(
+        ImportObjectsAction(
             ObjectCollectionItem*   parent,
             const QStringList&      filepaths)
           : m_parent(parent)
@@ -114,7 +114,6 @@ namespace
         }
 
         virtual void operator()(
-            MasterRenderer&         master_renderer,
             Project&                project) APPLESEED_OVERRIDE
         {
             m_parent->import_objects(m_filepaths);
@@ -140,8 +139,8 @@ void ObjectCollectionItem::slot_import_objects()
         return;
 
     m_project_builder.get_rendering_manager().schedule_or_execute(
-        auto_ptr<RenderingManager::IDelayedAction>(
-            new ImportObjectsDelayedAction(this, filepaths)));
+        auto_ptr<RenderingManager::IScheduledAction>(
+            new ImportObjectsAction(this, filepaths)));
 }
 
 void ObjectCollectionItem::import_objects(const QStringList& filepaths)

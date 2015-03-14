@@ -175,11 +175,11 @@ QMenu* ObjectInstanceItem::get_multiple_items_context_menu(const QList<ItemBase*
     return menu;
 }
 
-class AssignNewDisneyMaterialDelayedAction
-  : public RenderingManager::IDelayedAction
+class AssignNewDisneyMaterialAction
+  : public RenderingManager::IScheduledAction
 {
   public:
-    AssignNewDisneyMaterialDelayedAction(
+    AssignNewDisneyMaterialAction(
         const QList<ItemBase*>& items,
         ProjectBuilder&         project_builder)
       : m_items(items)
@@ -188,7 +188,6 @@ class AssignNewDisneyMaterialDelayedAction
     }
 
     virtual void operator()(
-        MasterRenderer&         master_renderer,
         Project&                project) APPLESEED_OVERRIDE
     {
         for (int i = 0; i < m_items.size(); ++i)
@@ -235,8 +234,8 @@ class AssignNewDisneyMaterialDelayedAction
 void ObjectInstanceItem::slot_assign_new_disney_material()
 {
     m_project_builder.get_rendering_manager().schedule_or_execute(
-        auto_ptr<RenderingManager::IDelayedAction>(
-            new AssignNewDisneyMaterialDelayedAction(
+        auto_ptr<RenderingManager::IScheduledAction>(
+            new AssignNewDisneyMaterialAction(
                 get_action_items(),
                 m_project_builder)));
 }
@@ -322,11 +321,11 @@ void ObjectInstanceItem::slot_assign_material()
 
 namespace
 {
-    class AssignMaterialDelayedAction
-      : public RenderingManager::IDelayedAction
+    class AssignMaterialAction
+      : public RenderingManager::IScheduledAction
     {
       public:
-        AssignMaterialDelayedAction(
+        AssignMaterialAction(
             ObjectInstanceItem*     parent,
             const QString&          page_name,
             const QString&          entity_name,
@@ -339,7 +338,6 @@ namespace
         }
 
         virtual void operator()(
-            MasterRenderer&         master_renderer,
             Project&                project) APPLESEED_OVERRIDE
         {
             m_parent->assign_material(m_page_name, m_entity_name, m_data);
@@ -356,8 +354,8 @@ namespace
 void ObjectInstanceItem::slot_assign_material_accepted(QString page_name, QString entity_name, QVariant data)
 {
     m_project_builder.get_rendering_manager().schedule_or_execute(
-        auto_ptr<RenderingManager::IDelayedAction>(
-            new AssignMaterialDelayedAction(this, page_name, entity_name, data)));
+        auto_ptr<RenderingManager::IScheduledAction>(
+            new AssignMaterialAction(this, page_name, entity_name, data)));
 
     qobject_cast<QWidget*>(sender()->parent())->close();
 }
@@ -389,11 +387,11 @@ void ObjectInstanceItem::assign_material(
 
 namespace
 {
-    class ClearMaterialDelayedAction
-      : public RenderingManager::IDelayedAction
+    class ClearMaterialAction
+      : public RenderingManager::IScheduledAction
     {
       public:
-        ClearMaterialDelayedAction(
+        ClearMaterialAction(
             ObjectInstanceItem*     parent,
             const QVariant&         data)
           : m_parent(parent)
@@ -402,7 +400,6 @@ namespace
         }
 
         virtual void operator()(
-            MasterRenderer&         master_renderer,
             Project&                project) APPLESEED_OVERRIDE
         {
             m_parent->clear_material(m_data);
@@ -419,8 +416,8 @@ void ObjectInstanceItem::slot_clear_material()
     const QVariant data = qobject_cast<QAction*>(sender())->data();
 
     m_project_builder.get_rendering_manager().schedule_or_execute(
-        auto_ptr<RenderingManager::IDelayedAction>(
-            new ClearMaterialDelayedAction(this, data)));
+        auto_ptr<RenderingManager::IScheduledAction>(
+            new ClearMaterialAction(this, data)));
 }
 
 void ObjectInstanceItem::clear_material(const QVariant& untyped_data)
@@ -446,8 +443,8 @@ void ObjectInstanceItem::clear_material(const QVariant& untyped_data)
 void ObjectInstanceItem::slot_delete()
 {
     m_project_builder.get_rendering_manager().schedule_or_execute(
-        auto_ptr<RenderingManager::IDelayedAction>(
-            new EntityDeletionDelayedAction<ObjectInstanceItem>(this)));
+        auto_ptr<RenderingManager::IScheduledAction>(
+            new EntityDeletionAction<ObjectInstanceItem>(this)));
 }
 
 void ObjectInstanceItem::do_delete()

@@ -68,8 +68,8 @@ AssemblyInstanceItem::AssemblyInstanceItem(
 void AssemblyInstanceItem::slot_delete()
 {
     m_project_builder.get_rendering_manager().schedule_or_execute(
-        auto_ptr<RenderingManager::IDelayedAction>(
-            new EntityDeletionDelayedAction<AssemblyInstanceItem>(this)));
+        auto_ptr<RenderingManager::IScheduledAction>(
+            new EntityDeletionAction<AssemblyInstanceItem>(this)));
 }
 
 void AssemblyInstanceItem::do_delete()

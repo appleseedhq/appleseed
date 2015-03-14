@@ -228,12 +228,12 @@ void RenderingManager::resume_rendering()
     m_renderer_controller.set_status(IRendererController::ContinueRendering);
 }
 
-void RenderingManager::schedule(auto_ptr<IDelayedAction> action)
+void RenderingManager::schedule(auto_ptr<IScheduledAction> action)
 {
     m_scheduled_actions.push_back(action.release());
 }
 
-void RenderingManager::schedule_or_execute(auto_ptr<IDelayedAction> action)
+void RenderingManager::schedule_or_execute(auto_ptr<IScheduledAction> action)
 {
     if (is_rendering())
     {
@@ -242,9 +242,7 @@ void RenderingManager::schedule_or_execute(auto_ptr<IDelayedAction> action)
     }
     else
     {
-        // todo: race condition, m_master_renderer.get() may be null here.
-        assert(m_master_renderer.get());
-        (*action)(*m_master_renderer.get(), *m_project);
+        (*action)(*m_project);
     }
 }
 
@@ -258,7 +256,7 @@ void RenderingManager::clear_scheduled_actions()
 
 void RenderingManager::set_sticky_action(
     const string&               key,
-    auto_ptr<IDelayedAction>    action)
+    auto_ptr<IStickyAction>     action)
 {
     m_sticky_actions[key] = action.release();
 }
@@ -321,12 +319,10 @@ void RenderingManager::archive_frame_to_disk()
 
 void RenderingManager::run_scheduled_actions()
 {
-    assert(m_master_renderer.get());
-
     for (each<ScheduledActionCollection> i = m_scheduled_actions; i; ++i)
     {
-        IDelayedAction* action = *i;
-        (*action)(*m_master_renderer.get(), *m_project);
+        IScheduledAction* action = *i;
+        (*action)(*m_project);
         delete action;
     }
 
@@ -339,7 +335,7 @@ void RenderingManager::run_sticky_actions()
 
     for (each<StickyActionCollection> i = m_sticky_actions; i; ++i)
     {
-        IDelayedAction* action = i->second;
+        IStickyAction* action = i->second;
         (*action)(*m_master_renderer.get(), *m_project);
     }
 }

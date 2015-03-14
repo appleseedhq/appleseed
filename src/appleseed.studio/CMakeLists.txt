@@ -120,6 +120,7 @@ set (mainwindow_project_sources
     mainwindow/project/collectionitem.h
     mainwindow/project/collectionitembase.h
     mainwindow/project/customentityui.h
+    mainwindow/project/entityactions.h
     mainwindow/project/entitybrowser.cpp
     mainwindow/project/entitybrowser.h
     mainwindow/project/entitybrowserwindow.cpp
@@ -127,7 +128,6 @@ set (mainwindow_project_sources
     mainwindow/project/entitybrowserwindow.ui
     mainwindow/project/entitycreatorbase.cpp
     mainwindow/project/entitycreatorbase.h
-    mainwindow/project/entitydelayedactions.h
     mainwindow/project/entityeditor.cpp
     mainwindow/project/entityeditor.h
     mainwindow/project/entityeditorformfactorybase.cpp

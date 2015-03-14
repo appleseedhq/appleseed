@@ -31,7 +31,7 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ASSEMBLYINSTANCEITEM_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/entitydelayedactions.h"
+#include "mainwindow/project/entityactions.h"
 #include "mainwindow/project/entityitembase.h"
 #include "mainwindow/project/instancecollectionitem.h"
 
@@ -59,7 +59,7 @@ class AssemblyInstanceItem
         ProjectBuilder&                 project_builder);
 
   private:
-    friend class EntityDeletionDelayedAction<AssemblyInstanceItem>;
+    friend class EntityDeletionAction<AssemblyInstanceItem>;
 
     renderer::BaseGroup&                m_parent;
     AssemblyInstanceCollectionItem*     m_collection_item;

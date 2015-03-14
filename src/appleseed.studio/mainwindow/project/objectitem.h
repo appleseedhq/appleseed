@@ -31,7 +31,7 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_OBJECTITEM_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/entitydelayedactions.h"
+#include "mainwindow/project/entityactions.h"
 #include "mainwindow/project/entityitembase.h"
 
 // appleseed.foundation headers.
@@ -62,8 +62,8 @@ class ObjectItem
     virtual QMenu* get_single_item_context_menu() const APPLESEED_OVERRIDE;
 
   private:
-    friend class EntityInstantiationDelayedAction<ObjectItem>;
-    friend class EntityDeletionDelayedAction<ObjectItem>;
+    friend class EntityInstantiationAction<ObjectItem>;
+    friend class EntityDeletionAction<ObjectItem>;
 
     renderer::Assembly&     m_parent;
     AssemblyItem*           m_parent_item;

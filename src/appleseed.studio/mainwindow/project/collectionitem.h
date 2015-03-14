@@ -32,8 +32,8 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/collectionitembase.h"
+#include "mainwindow/project/entityactions.h"
 #include "mainwindow/project/entitycreatorbase.h"
-#include "mainwindow/project/entitydelayedactions.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/rendering/renderingmanager.h"
 
@@ -87,7 +87,7 @@ class CollectionItem
 
   private:
     friend class EntityCreatorBase;
-    friend class EntityCreationDelayedAction<CollectionItem>;
+    friend class EntityCreationAction<CollectionItem>;
 };
 
 
@@ -147,8 +147,8 @@ void CollectionItem<Entity, ParentEntity, ParentItem>::slot_create_accepted(foun
     if (project_builder.get_rendering_manager().is_rendering())
     {
         project_builder.get_rendering_manager().schedule(
-            std::auto_ptr<RenderingManager::IDelayedAction>(
-                new EntityCreationDelayedAction<CollectionItem>(this, values)));
+            std::auto_ptr<RenderingManager::IScheduledAction>(
+                new EntityCreationAction<CollectionItem>(this, values)));
 
         project_builder.get_rendering_manager().reinitialize_rendering();
     }

@@ -27,8 +27,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYDELAYEDACTIONS_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYDELAYEDACTIONS_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYACTIONS_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYACTIONS_H
 
 // appleseed.studio headers.
 #include "mainwindow/rendering/renderingmanager.h"
@@ -38,23 +38,22 @@
 #include "foundation/utility/containers/dictionary.h"
 
 // Forward declarations.
-namespace renderer { class MasterRenderer; }
 namespace renderer { class Project; }
 
 namespace appleseed {
 namespace studio {
 
 //
-// These delayed actions allow to schedule the creation and edition of scene entities
-// right before rendering starts. They are used to live-edit entities during rendering.
+// These actions allow to schedule the creation and edition of scene entities
+// right before rendering starts. They are used to edit the scene during rendering.
 //
 
 template <typename EntityItem>
-class EntityCreationDelayedAction
-  : public RenderingManager::IDelayedAction
+class EntityCreationAction
+  : public RenderingManager::IScheduledAction
 {
   public:
-    EntityCreationDelayedAction(
+    EntityCreationAction(
         EntityItem*                     parent,
         const foundation::Dictionary&   values)
       : m_parent(parent)
@@ -63,7 +62,6 @@ class EntityCreationDelayedAction
     }
 
     virtual void operator()(
-        renderer::MasterRenderer&       master_renderer,
         renderer::Project&              project) APPLESEED_OVERRIDE
     {
         m_parent->create(m_values);
@@ -75,11 +73,11 @@ class EntityCreationDelayedAction
 };
 
 template <typename EntityItem>
-class EntityEditionDelayedAction
-  : public RenderingManager::IDelayedAction
+class EntityEditionAction
+  : public RenderingManager::IScheduledAction
 {
   public:
-    EntityEditionDelayedAction(
+    EntityEditionAction(
         EntityItem*                     parent,
         const foundation::Dictionary&   values)
       : m_parent(parent)
@@ -88,7 +86,6 @@ class EntityEditionDelayedAction
     }
 
     virtual void operator()(
-        renderer::MasterRenderer&       master_renderer,
         renderer::Project&              project) APPLESEED_OVERRIDE
     {
         m_parent->edit(m_values);
@@ -100,11 +97,11 @@ class EntityEditionDelayedAction
 };
 
 template <typename EntityItem>
-class EntityInstantiationDelayedAction
-  : public RenderingManager::IDelayedAction
+class EntityInstantiationAction
+  : public RenderingManager::IScheduledAction
 {
   public:
-    explicit EntityInstantiationDelayedAction(
+    explicit EntityInstantiationAction(
         EntityItem*                     parent,
         const std::string               name)
       : m_parent(parent)
@@ -113,7 +110,6 @@ class EntityInstantiationDelayedAction
     }
 
     virtual void operator()(
-        renderer::MasterRenderer&       master_renderer,
         renderer::Project&              project) APPLESEED_OVERRIDE
     {
         m_parent->do_instantiate(m_name);
@@ -125,18 +121,17 @@ class EntityInstantiationDelayedAction
 };
 
 template <typename EntityItem>
-class EntityDeletionDelayedAction
-  : public RenderingManager::IDelayedAction
+class EntityDeletionAction
+  : public RenderingManager::IScheduledAction
 {
   public:
-    explicit EntityDeletionDelayedAction(
+    explicit EntityDeletionAction(
         EntityItem*                     parent)
       : m_parent(parent)
     {
     }
 
     virtual void operator()(
-        renderer::MasterRenderer&       master_renderer,
         renderer::Project&              project) APPLESEED_OVERRIDE
     {
         m_parent->do_delete();
@@ -149,4 +144,4 @@ class EntityDeletionDelayedAction
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYDELAYEDACTIONS_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYACTIONS_H

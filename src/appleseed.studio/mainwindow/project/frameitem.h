@@ -31,8 +31,8 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_FRAMEITEM_H
 
 // appleseed.studio headers.
+#include "mainwindow/project/entityactions.h"
 #include "mainwindow/project/entitycreatorbase.h"
-#include "mainwindow/project/entitydelayedactions.h"
 #include "mainwindow/project/itembase.h"
 
 // appleseed.foundation headers.
@@ -65,7 +65,7 @@ class FrameItem
     void slot_edit_accepted(foundation::Dictionary values);
 
   private:
-    friend class EntityEditionDelayedAction<FrameItem>;
+    friend class EntityEditionAction<FrameItem>;
 
     renderer::Frame*        m_frame;
     ProjectBuilder&         m_project_builder;

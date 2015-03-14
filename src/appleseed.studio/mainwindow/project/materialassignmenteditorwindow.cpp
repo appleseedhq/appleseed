@@ -329,11 +329,11 @@ void MaterialAssignmentEditorWindow::assign_materials(const SlotValueCollection&
 
 namespace
 {
-    class AssignMaterialDelayedAction
-      : public RenderingManager::IDelayedAction
+    class AssignMaterialAction
+      : public RenderingManager::IScheduledAction
     {
       public:
-        AssignMaterialDelayedAction(
+        AssignMaterialAction(
             ObjectInstance&             object_instance,
             ObjectInstanceItem&         object_instance_item,
             const string&               slot,
@@ -348,7 +348,6 @@ namespace
         }
 
         virtual void operator()(
-            MasterRenderer&             master_renderer,
             Project&                    project) APPLESEED_OVERRIDE
         {
             m_name.empty()
@@ -370,8 +369,8 @@ namespace
 void MaterialAssignmentEditorWindow::assign_material(const SlotValue& slot_value)
 {
     m_project_builder.get_rendering_manager().schedule_or_execute(
-        auto_ptr<RenderingManager::IDelayedAction>(
-            new AssignMaterialDelayedAction(
+        auto_ptr<RenderingManager::IScheduledAction>(
+            new AssignMaterialAction(
                 m_object_instance,
                 m_object_instance_item,
                 slot_value.m_slot_name,

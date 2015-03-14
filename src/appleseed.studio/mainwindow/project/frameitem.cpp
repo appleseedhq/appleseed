@@ -111,8 +111,8 @@ void FrameItem::slot_edit_accepted(Dictionary values)
     if (m_project_builder.get_rendering_manager().is_rendering())
     {
         m_project_builder.get_rendering_manager().schedule(
-            auto_ptr<RenderingManager::IDelayedAction>(
-                new EntityEditionDelayedAction<FrameItem>(this, values)));
+            auto_ptr<RenderingManager::IScheduledAction>(
+                new EntityEditionAction<FrameItem>(this, values)));
 
         m_project_builder.get_rendering_manager().reinitialize_rendering();
     }

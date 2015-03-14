@@ -32,7 +32,7 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/basegroupitem.h"
-#include "mainwindow/project/entitydelayedactions.h"
+#include "mainwindow/project/entityactions.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -95,8 +95,8 @@ class AssemblyItem
     void instantiate(const std::string& name);
 
   private:
-    friend class EntityInstantiationDelayedAction<AssemblyItem>;
-    friend class EntityDeletionDelayedAction<AssemblyItem>;
+    friend class EntityInstantiationAction<AssemblyItem>;
+    friend class EntityDeletionAction<AssemblyItem>;
 
     renderer::Assembly&             m_assembly;
     renderer::BaseGroup&            m_parent;

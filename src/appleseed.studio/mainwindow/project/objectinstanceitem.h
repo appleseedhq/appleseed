@@ -31,7 +31,7 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_OBJECTINSTANCEITEM_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/entitydelayedactions.h"
+#include "mainwindow/project/entityactions.h"
 #include "mainwindow/project/instancecollectionitem.h"
 #include "mainwindow/project/itembase.h"
 #include "mainwindow/project/singlemodelentityitem.h"
@@ -99,8 +99,8 @@ class ObjectInstanceItem
     void slot_clear_material();
 
   private:
-    friend class EntityDeletionDelayedAction<ObjectInstanceItem>;
-    friend class AssignNewDisneyMaterialDelayedAction;
+    friend class EntityDeletionAction<ObjectInstanceItem>;
+    friend class AssignNewDisneyMaterialAction;
 
     typedef SingleModelEntityItem<renderer::ObjectInstance, renderer::Assembly, ObjectInstanceCollectionItem> Base;
 

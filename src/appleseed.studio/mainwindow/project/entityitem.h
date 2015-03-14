@@ -31,8 +31,8 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYITEM_H
 
 // appleseed.studio headers.
+#include "mainwindow/project/entityactions.h"
 #include "mainwindow/project/entitycreatorbase.h"
-#include "mainwindow/project/entitydelayedactions.h"
 #include "mainwindow/project/entityitembase.h"
 #include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/projectbuilder.h"
@@ -90,9 +90,9 @@ class EntityItem
 
   private:
     friend class EntityCreatorBase;
-    friend class EntityEditionDelayedAction<EntityItem>;
-    friend class EntityInstantiationDelayedAction<EntityItem>;
-    friend class EntityDeletionDelayedAction<EntityItem>;
+    friend class EntityEditionAction<EntityItem>;
+    friend class EntityInstantiationAction<EntityItem>;
+    friend class EntityDeletionAction<EntityItem>;
 
     foundation::UniqueID    m_entity_uid;
     bool                    m_fixed_position;
@@ -136,8 +136,8 @@ void EntityItem<Entity, ParentEntity, CollectionItem>::slot_edit_accepted(founda
     if (m_project_builder.get_rendering_manager().is_rendering())
     {
         m_project_builder.get_rendering_manager().schedule(
-            std::auto_ptr<RenderingManager::IDelayedAction>(
-                new EntityEditionDelayedAction<EntityItem>(this, values)));
+            std::auto_ptr<RenderingManager::IScheduledAction>(
+                new EntityEditionAction<EntityItem>(this, values)));
 
         m_project_builder.get_rendering_manager().reinitialize_rendering();
     }
@@ -179,8 +179,8 @@ template <typename Entity, typename ParentEntity, typename CollectionItem>
 void EntityItem<Entity, ParentEntity, CollectionItem>::slot_delete()
 {
     m_project_builder.get_rendering_manager().schedule_or_execute(
-        std::auto_ptr<RenderingManager::IDelayedAction>(
-            new EntityDeletionDelayedAction<EntityItem>(this)));
+        std::auto_ptr<RenderingManager::IScheduledAction>(
+            new EntityDeletionAction<EntityItem>(this)));
 }
 
 template <typename Entity, typename ParentEntity, typename CollectionItem>

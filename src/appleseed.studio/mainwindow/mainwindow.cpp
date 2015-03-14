@@ -1340,8 +1340,8 @@ void MainWindow::slot_camera_changed()
 
 namespace
 {
-    class ClearShadingOverrideDelayedAction
-      : public RenderingManager::IDelayedAction
+    class ClearShadingOverrideAction
+      : public RenderingManager::IStickyAction
     {
       public:
         virtual void operator()(
@@ -1354,11 +1354,11 @@ namespace
         }
     };
 
-    class SetShadingOverrideDelayedAction
-      : public RenderingManager::IDelayedAction
+    class SetShadingOverrideAction
+      : public RenderingManager::IStickyAction
     {
       public:
-        explicit SetShadingOverrideDelayedAction(const string& shading_mode)
+        explicit SetShadingOverrideAction(const string& shading_mode)
           : m_shading_mode(shading_mode)
         {
         }
@@ -1382,8 +1382,8 @@ void MainWindow::slot_clear_shading_override()
 {
     m_rendering_manager.set_sticky_action(
         "override_shading",
-        auto_ptr<RenderingManager::IDelayedAction>(
-            new ClearShadingOverrideDelayedAction()));
+        auto_ptr<RenderingManager::IStickyAction>(
+            new ClearShadingOverrideAction()));
 
     m_rendering_manager.reinitialize_rendering();
 }
@@ -1395,37 +1395,35 @@ void MainWindow::slot_set_shading_override()
 
     m_rendering_manager.set_sticky_action(
         "override_shading",
-        auto_ptr<RenderingManager::IDelayedAction>(
-            new SetShadingOverrideDelayedAction(shading_mode)));
+        auto_ptr<RenderingManager::IStickyAction>(
+            new SetShadingOverrideAction(shading_mode)));
 
     m_rendering_manager.reinitialize_rendering();
 }
 
 namespace
 {
-    class ClearRenderRegionDelayedAction
-      : public RenderingManager::IDelayedAction
+    class ClearRenderRegionAction
+      : public RenderingManager::IScheduledAction
     {
       public:
         virtual void operator()(
-            MasterRenderer& master_renderer,
             Project&        project) APPLESEED_OVERRIDE
         {
             project.get_frame()->reset_crop_window();
         }
     };
 
-    class SetRenderRegionDelayedAction
-      : public RenderingManager::IDelayedAction
+    class SetRenderRegionAction
+      : public RenderingManager::IScheduledAction
     {
       public:
-        explicit SetRenderRegionDelayedAction(const QRect& rect)
+        explicit SetRenderRegionAction(const QRect& rect)
           : m_rect(rect)
         {
         }
 
         virtual void operator()(
-            MasterRenderer& master_renderer,
             Project&        project) APPLESEED_OVERRIDE
         {
             const int w = m_rect.width();
@@ -1454,8 +1452,8 @@ namespace
 void MainWindow::slot_clear_render_region()
 {
     m_rendering_manager.schedule(
-        auto_ptr<RenderingManager::IDelayedAction>(
-            new ClearRenderRegionDelayedAction()));
+        auto_ptr<RenderingManager::IScheduledAction>(
+            new ClearRenderRegionAction()));
 
     m_rendering_manager.reinitialize_rendering();
 }
@@ -1463,8 +1461,8 @@ void MainWindow::slot_clear_render_region()
 void MainWindow::slot_set_render_region(const QRect& rect)
 {
     m_rendering_manager.schedule(
-        auto_ptr<RenderingManager::IDelayedAction>(
-            new SetRenderRegionDelayedAction(rect)));
+        auto_ptr<RenderingManager::IScheduledAction>(
+            new SetRenderRegionAction(rect)));
 
     if (m_settings.get_path_optional<bool>(SETTINGS_RENDER_REGION_TRIGGERS_RENDERING))
     {

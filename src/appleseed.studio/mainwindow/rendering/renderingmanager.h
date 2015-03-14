@@ -98,29 +98,38 @@ class RenderingManager
     void pause_rendering();
     void resume_rendering();
 
-    // Interface of a delayed action. A delayed action is a procedure
-    // that gets executed just before rendering begins.
-    class IDelayedAction
+    // Interface for scheduled actions.
+    class IScheduledAction
     {
       public:
-        virtual ~IDelayedAction() {}
+        virtual ~IScheduledAction() {}
 
         virtual void operator()(
-            renderer::MasterRenderer&   master_renderer,
             renderer::Project&          project) = 0;
     };
 
     // Schedule an action for execution.
     // Actions are executed once, right before rendering begins, in the order in which
     // they were scheduled. They are then deleted.
-    void schedule(std::auto_ptr<IDelayedAction> action);
+    void schedule(std::auto_ptr<IScheduledAction> action);
 
     // Schedule an action for execution if currently rendering, or execute the action
     // right away if not.
-    void schedule_or_execute(std::auto_ptr<IDelayedAction> action);
+    void schedule_or_execute(std::auto_ptr<IScheduledAction> action);
 
     // Remove all actions scheduled since rendering has begun.
     void clear_scheduled_actions();
+
+    // Interface for sticky actions.
+    class IStickyAction
+    {
+      public:
+        virtual ~IStickyAction() {}
+
+        virtual void operator()(
+            renderer::MasterRenderer&   master_renderer,
+            renderer::Project&          project) = 0;
+    };
 
     // Add or replace a sticky action associated with a given (arbitrary) key.
     // A sticky action is one that is executed every time rendering starts.
@@ -128,7 +137,7 @@ class RenderingManager
     // There are no guarantees regarding the order of execution of sticky actions.
     void set_sticky_action(
         const std::string&              key,
-        std::auto_ptr<IDelayedAction>   action);
+        std::auto_ptr<IStickyAction>    action);
 
     // Remove all sticky actions.
     void clear_sticky_actions();
@@ -156,8 +165,8 @@ class RenderingManager
 
     RenderingTimer                              m_rendering_timer;
 
-    typedef std::vector<IDelayedAction*> ScheduledActionCollection;
-    typedef std::map<std::string, IDelayedAction*> StickyActionCollection;
+    typedef std::vector<IScheduledAction*> ScheduledActionCollection;
+    typedef std::map<std::string, IStickyAction*> StickyActionCollection;
 
     ScheduledActionCollection                   m_scheduled_actions;
     StickyActionCollection                      m_sticky_actions;

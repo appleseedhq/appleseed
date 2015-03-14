@@ -149,8 +149,8 @@ void ObjectItem::slot_instantiate()
     if (!instance_name.empty())
     {
         m_project_builder.get_rendering_manager().schedule_or_execute(
-            auto_ptr<RenderingManager::IDelayedAction>(
-                new EntityInstantiationDelayedAction<ObjectItem>(this, instance_name)));
+            auto_ptr<RenderingManager::IScheduledAction>(
+                new EntityInstantiationAction<ObjectItem>(this, instance_name)));
     }
 }
 
@@ -174,8 +174,8 @@ void ObjectItem::do_instantiate(const string& name)
 void ObjectItem::slot_delete()
 {
     m_project_builder.get_rendering_manager().schedule_or_execute(
-        auto_ptr<RenderingManager::IDelayedAction>(
-            new EntityDeletionDelayedAction<ObjectItem>(this)));
+        auto_ptr<RenderingManager::IScheduledAction>(
+            new EntityDeletionAction<ObjectItem>(this)));
 }
 
 void ObjectItem::do_delete()

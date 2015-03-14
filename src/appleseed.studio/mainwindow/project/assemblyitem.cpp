@@ -226,8 +226,8 @@ AssemblyItem::ObjectInstanceCollectionItem& AssemblyItem::get_object_instance_co
 void AssemblyItem::instantiate(const string& name)
 {
     m_project_builder.get_rendering_manager().schedule_or_execute(
-        auto_ptr<RenderingManager::IDelayedAction>(
-            new EntityInstantiationDelayedAction<AssemblyItem>(this, name)));
+        auto_ptr<RenderingManager::IScheduledAction>(
+            new EntityInstantiationAction<AssemblyItem>(this, name)));
 }
 
 void AssemblyItem::slot_instantiate()
@@ -357,8 +357,8 @@ namespace
 void AssemblyItem::slot_delete()
 {
     m_project_builder.get_rendering_manager().schedule_or_execute(
-        auto_ptr<RenderingManager::IDelayedAction>(
-            new EntityDeletionDelayedAction<AssemblyItem>(this)));
+        auto_ptr<RenderingManager::IScheduledAction>(
+            new EntityDeletionAction<AssemblyItem>(this)));
 }
 
 void AssemblyItem::do_delete()

@@ -31,7 +31,7 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_TEXTUREITEM_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/entitydelayedactions.h"
+#include "mainwindow/project/entityactions.h"
 #include "mainwindow/project/multimodelentityitem.h"
 
 // appleseed.foundation headers.
@@ -59,7 +59,7 @@ class TextureItem
         ProjectBuilder&         project_builder);
 
   private:
-    friend class EntityDeletionDelayedAction<TextureItem>;
+    friend class EntityDeletionAction<TextureItem>;
 
     typedef MultiModelEntityItem<renderer::Texture, renderer::BaseGroup, TextureCollectionItem> Base;
 
