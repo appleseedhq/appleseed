@@ -163,14 +163,6 @@ void MaterialCollectionItem::slot_create_disney()
 void MaterialCollectionItem::slot_import_disney()
 {
 #ifdef APPLESEED_WITH_DISNEY_MATERIAL
-    const filesystem::path root_path(Application::get_root_path());
-    const string schema_file_path = (root_path / "schemas" / "settings.xsd").string();
-
-    const char* project_path = m_project_builder.get_project().get_path();
-    const filesystem::path project_root_path = filesystem::path(project_path).parent_path();
-    const filesystem::path file_path = absolute("material.dmt", project_root_path);
-    const filesystem::path file_root_path = file_path.parent_path();
-
     QString filepath =
         get_open_filename(
             0,
@@ -183,15 +175,18 @@ void MaterialCollectionItem::slot_import_disney()
     {
         filepath = QDir::toNativeSeparators(filepath);
 
+        const filesystem::path root_path(Application::get_root_path());
+        const filesystem::path schema_file_path = root_path / "schemas" / "settings.xsd";
+
         SettingsFileReader reader(global_logger());
         ParamArray parameters;
-        const bool result =
+        const bool success =
             reader.read(
                 filepath.toStdString().c_str(),
-                schema_file_path.c_str(),
+                schema_file_path.string().c_str(),
                 parameters);
 
-        if (!result)
+        if (!success)
         {
             show_error_message_box(
                 "Importing Error",
@@ -199,7 +194,7 @@ void MaterialCollectionItem::slot_import_disney()
             return;
         }
 
-        const string name = parameters.get("__name");
+        string name = parameters.get("__name");
         const string model = parameters.get("__model");
         parameters.strings().remove("__name");
         parameters.strings().remove("__model");
@@ -212,14 +207,13 @@ void MaterialCollectionItem::slot_import_disney()
             return;
         }
 
+        // If there is already a material with the same name, rename the imported material.
         for (const_each<MaterialContainer> i = m_parent.materials(); i; ++i)
         {
             if (strcmp(i->get_name(), name.c_str()) == 0)
             {
-                show_error_message_box(
-                    "Importing Error",
-                    "A material named " + name + " already exists.");
-                return;
+                name = make_unique_name(name, m_parent.materials());
+                break;
             }
         }
 
