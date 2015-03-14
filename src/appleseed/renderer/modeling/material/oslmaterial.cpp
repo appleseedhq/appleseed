@@ -150,11 +150,7 @@ namespace
             const ShaderGroup* sg =
                 static_cast<const ShaderGroup*>(m_inputs.get_entity("osl_surface"));
 
-            // Skip invalid shader groups.
-            if (sg && sg->valid())
-                return sg;
-
-            return 0;
+            return sg && sg->is_valid() ? sg : 0;
         }
     };
 }

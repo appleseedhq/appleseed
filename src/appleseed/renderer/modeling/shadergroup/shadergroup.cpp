@@ -226,7 +226,7 @@ const ShaderConnectionContainer& ShaderGroup::shader_connections() const
     return impl->m_connections;
 }
 
-bool ShaderGroup::valid() const
+bool ShaderGroup::is_valid() const
 {
     return impl->m_shader_group_ref.get() != 0;
 }

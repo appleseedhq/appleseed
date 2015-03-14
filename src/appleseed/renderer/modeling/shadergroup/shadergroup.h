@@ -74,22 +74,22 @@ class APPLESEED_DLLSYMBOL ShaderGroup
 
     // Add a new shader to the group.
     void add_shader(
-        const char*                     type,
-        const char*                     name,
-        const char*                     layer,
-        const ParamArray&               params);
+        const char*                 type,
+        const char*                 name,
+        const char*                 layer,
+        const ParamArray&           params);
 
     // Add a connection between two parameters of two shaders.
     void add_connection(
-        const char*                     src_layer,
-        const char*                     src_param,
-        const char*                     dst_layer,
-        const char*                     dst_param);
+        const char*                 src_layer,
+        const char*                 src_param,
+        const char*                 dst_layer,
+        const char*                 dst_param);
 
     // Create OSL shader group.
     bool create_osl_shader_group(
-        OSL::ShadingSystem&             shading_system,
-        foundation::IAbortSwitch*       abort_switch = 0);
+        OSL::ShadingSystem&         shading_system,
+        foundation::IAbortSwitch*   abort_switch = 0);
 
     // Release internal OSL shader group.
     void release_osl_shader_group();
@@ -101,7 +101,7 @@ class APPLESEED_DLLSYMBOL ShaderGroup
     const ShaderConnectionContainer& shader_connections() const;
 
     // Return true if the shader group was setup correctly.
-    bool valid() const;
+    bool is_valid() const;
 
     // Return true if the shader group contains at least one emission closure.
     bool has_emission() const;
