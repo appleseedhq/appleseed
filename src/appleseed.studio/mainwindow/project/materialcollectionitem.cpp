@@ -44,9 +44,7 @@
 #include "utility/settingskeys.h"
 
 // appleseed.renderer headers.
-#ifdef APPLESEED_WITH_DISNEY_MATERIAL
-#include "renderer/modeling/material/disneymaterial.h"
-#endif
+#include "renderer/api/material.h"
 #include "renderer/api/scene.h"
 
 // appleseed.foundation headers.

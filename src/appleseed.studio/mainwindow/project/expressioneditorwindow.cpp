@@ -38,9 +38,9 @@
 #include "utility/settingskeys.h"
 
 // appleseed.renderer headers.
-#include "renderer/global/globallogger.h"
-#include "renderer/modeling/material/disneymaterial.h"
-#include "renderer/modeling/project/project.h"
+#include "renderer/api/log.h"
+#include "renderer/api/material.h"
+#include "renderer/api/project.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
@@ -66,7 +66,6 @@
 #include <QPushButton>
 #include <QScrollArea>
 #include <QShortcut>
-#include <QString>
 #include <Qt>
 #include <QVBoxLayout>
 

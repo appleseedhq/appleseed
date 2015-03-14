@@ -39,9 +39,7 @@
 #include "utility/settingskeys.h"
 
 // appleseed.renderer headers.
-#ifdef APPLESEED_WITH_DISNEY_MATERIAL
-#include "renderer/modeling/material/disneymaterial.h"
-#endif
+#include "renderer/api/material.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/settings/settingsfilewriter.h"
@@ -177,7 +175,7 @@ void MaterialItem::slot_export()
         {
             show_error_message_box(
                 "Exporting Error",
-                "Failed to export the Disney Material file " + filepath.toStdString());
+                "Failed to export the Disney Material file " + filepath.toStdString() + ".");
         }
     }
 }
