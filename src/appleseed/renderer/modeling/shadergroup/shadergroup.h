@@ -69,17 +69,17 @@ class APPLESEED_DLLSYMBOL ShaderGroup
     // Return a string identifying the model of this shader group.
     const char* get_model() const;
 
-    // Removes all shaders and connections.
+    // Remove all shaders and connections.
     void clear();
 
-    // Adds a new shader to the group.
+    // Add a new shader to the group.
     void add_shader(
         const char*                     type,
         const char*                     name,
         const char*                     layer,
         const ParamArray&               params);
 
-    // Adds a connection between two parameters of two shaders.
+    // Add a connection between two parameters of two shaders.
     void add_connection(
         const char*                     src_layer,
         const char*                     src_param,
@@ -100,26 +100,25 @@ class APPLESEED_DLLSYMBOL ShaderGroup
     // Access the shader connections.
     const ShaderConnectionContainer& shader_connections() const;
 
-    // Returns true if the shader group was setup correctly.
+    // Return true if the shader group was setup correctly.
     bool valid() const;
 
-    // Returns true if the shader group contains at least one emission closure.
+    // Return true if the shader group contains at least one emission closure.
     bool has_emission() const;
 
-    // Returns true if the shader group contains at least one transparency closure.
+    // Return true if the shader group contains at least one transparency closure.
     bool has_transparency() const;
 
-    // Returns true if the shader group contains at least one holdout closure.
+    // Return true if the shader group contains at least one holdout closure.
     bool has_holdout() const;
 
-    // Returns true if the shader group contains at least one debug closure.
+    // Return true if the shader group contains at least one debug closure.
     bool has_debug() const;
 
-    // Returns true if the shader group uses dPdtime.
+    // Return true if the shader group uses dPdtime.
     bool uses_dPdtime() const;
 
-    // Return a reference-counted (but opaque) reference to
-    // the internal OSL shader group.
+    // Return a reference-counted (but opaque) reference to the internal OSL shader group.
     OSL::ShaderGroupRef& shader_group_ref() const;
 
   private:

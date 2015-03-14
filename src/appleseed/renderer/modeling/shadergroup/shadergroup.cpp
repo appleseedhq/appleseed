@@ -121,8 +121,9 @@ void ShaderGroup::add_shader(
             layer,
             params));
 
-    RENDERER_LOG_DEBUG("created shader %s, layer = %s.", name, layer);
     impl->m_shaders.insert(shader);
+
+    RENDERER_LOG_DEBUG("created shader %s, layer = %s.", name, layer);
 }
 
 void ShaderGroup::add_connection(
@@ -141,7 +142,7 @@ void ShaderGroup::add_connection(
     impl->m_connections.insert(connection);
 
     RENDERER_LOG_DEBUG(
-        "created shader connection: src = %s, src_param = %s, dst = %s, dst_param = %s.",
+        "created shader connection: src_layer = %s, src_param = %s, dst_layer = %s, dst_param = %s.",
             src_layer,
             src_param,
             dst_layer,
