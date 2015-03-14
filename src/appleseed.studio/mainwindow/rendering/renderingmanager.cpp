@@ -183,6 +183,10 @@ void RenderingManager::start_rendering(
     m_master_renderer_thread.reset(
         new MasterRendererThread(m_master_renderer.get()));
 
+    connect(
+        m_master_renderer_thread.get(), SIGNAL(finished()),
+        SLOT(slot_master_renderer_thread_finished()));
+
     m_master_renderer_thread->start();
 }
 
@@ -238,6 +242,8 @@ void RenderingManager::schedule_or_execute(auto_ptr<IDelayedAction> action)
     }
     else
     {
+        // todo: race condition, m_master_renderer.get() may be null here.
+        assert(m_master_renderer.get());
         (*action)(*m_master_renderer.get(), *m_project);
     }
 }
@@ -315,6 +321,8 @@ void RenderingManager::archive_frame_to_disk()
 
 void RenderingManager::run_scheduled_actions()
 {
+    assert(m_master_renderer.get());
+
     for (each<ScheduledActionCollection> i = m_scheduled_actions; i; ++i)
     {
         IDelayedAction* action = *i;
@@ -327,6 +335,8 @@ void RenderingManager::run_scheduled_actions()
 
 void RenderingManager::run_sticky_actions()
 {
+    assert(m_master_renderer.get());
+
     for (each<StickyActionCollection> i = m_sticky_actions; i; ++i)
     {
         IDelayedAction* action = i->second;
@@ -429,6 +439,11 @@ void RenderingManager::slot_camera_change_end()
 
         restart_rendering();
     }
+}
+
+void RenderingManager::slot_master_renderer_thread_finished()
+{
+    m_master_renderer.reset();
 }
 
 

@@ -203,6 +203,7 @@ class RenderingManager
     void slot_camera_change_begin();
     void slot_camera_changed();
     void slot_camera_change_end();
+    void slot_master_renderer_thread_finished();
 };
 
 }       // namespace studio
