@@ -149,11 +149,12 @@ void ShaderGroup::add_connection(
             dst_param);
 }
 
-bool ShaderGroup::create_osl_shader_group(
+bool ShaderGroup::create_optimized_osl_shader_group(
     OSL::ShadingSystem& shading_system,
     IAbortSwitch*       abort_switch)
 {
-    assert(impl->m_shader_group_ref.get() == 0);
+    if (is_valid())
+        return true;
 
     RENDERER_LOG_DEBUG("setting up shader group %s...", get_name());
 
@@ -170,7 +171,10 @@ bool ShaderGroup::create_osl_shader_group(
         for (each<ShaderContainer> i = impl->m_shaders; i; ++i)
         {
             if (is_aborted(abort_switch))
+            {
+                shading_system.ShaderGroupEnd();
                 return true;
+            }
 
             if (!i->add(shading_system))
                 return false;
@@ -179,7 +183,10 @@ bool ShaderGroup::create_osl_shader_group(
         for (each<ShaderConnectionContainer> i = impl->m_connections; i; ++i)
         {
             if (is_aborted(abort_switch))
+            {
+                shading_system.ShaderGroupEnd();
                 return true;
+            }
 
             if (!i->add(shading_system))
                 return false;
@@ -211,7 +218,7 @@ bool ShaderGroup::create_osl_shader_group(
     }
 }
 
-void ShaderGroup::release_osl_shader_group()
+void ShaderGroup::release_optimized_osl_shader_group()
 {
     impl->m_shader_group_ref.reset();
 }

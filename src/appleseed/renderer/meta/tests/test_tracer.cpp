@@ -220,7 +220,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
 #endif
 #ifdef APPLESEED_WITH_OSL
             m_renderer_services.reset(
-                new RendererServices(*Base::m_project, *m_texture_system, m_texture_store));
+                new RendererServices(*Base::m_project, *m_texture_system));
             m_shading_system.reset(
                 new OSL::ShadingSystem(
                     m_renderer_services.get(),

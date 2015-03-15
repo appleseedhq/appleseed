@@ -79,12 +79,12 @@ class APPLESEED_DLLSYMBOL BaseGroup
     ShaderGroupContainer& shader_groups() const;
 
     // Create OSL shader groups and optimize them.
-    bool create_osl_shader_groups(
+    bool create_optimized_osl_shader_groups(
         OSL::ShadingSystem&         shading_system,
         foundation::IAbortSwitch*   abort_switch = 0);
 
     // Release internal OSL shader groups.
-    void release_osl_shader_groups();
+    void release_optimized_osl_shader_groups();
 
 #endif
 

@@ -31,11 +31,9 @@
 #define APPLESEED_RENDERER_KERNEL_RENDERING_MASTERRENDERER_H
 
 // appleseed.renderer headers.
+#include "renderer/kernel/rendering/baserenderer.h"
 #include "renderer/kernel/rendering/irenderercontroller.h"
 #include "renderer/utility/paramarray.h"
-
-// appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -57,7 +55,7 @@ namespace renderer
 //
 
 class APPLESEED_DLLSYMBOL MasterRenderer
-  : public foundation::NonCopyable
+  : public BaseRenderer
 {
   public:
     // Constructor.
@@ -77,16 +75,10 @@ class APPLESEED_DLLSYMBOL MasterRenderer
     // Destructor.
     ~MasterRenderer();
 
-    // Return the parameters of the master renderer.
-    ParamArray& get_parameters();
-    const ParamArray& get_parameters() const;
-
     // Render the project. Return true on success, false otherwise.
     bool render();
 
   private:
-    Project&                        m_project;
-    ParamArray                      m_params;
     IRendererController*            m_renderer_controller;
     ITileCallbackFactory*           m_tile_callback_factory;
 
@@ -102,11 +94,8 @@ class APPLESEED_DLLSYMBOL MasterRenderer
 
     // Render a frame sequence until the sequence is completed or rendering is aborted.
     IRendererController::Status render_frame_sequence(
-        IFrameRenderer&             frame_renderer
-#ifdef APPLESEED_WITH_OSL
-        , RendererServices&         renderer_services
-#endif
-        , foundation::IAbortSwitch& abort_switch);
+        IFrameRenderer&             frame_renderer,
+        foundation::IAbortSwitch&   abort_switch);
 
     // Wait until the the frame is completed or rendering is aborted.
     IRendererController::Status wait_for_event(IFrameRenderer& frame_renderer) const;

@@ -70,11 +70,10 @@ class RendererServices
     // Constructor.
     RendererServices(
         const Project&          project,
-        OIIO::TextureSystem&    texture_sys,
-        TextureStore&           texture_store);
+        OIIO::TextureSystem&    texture_sys);
 
     // Initialize before rendering starts.
-    void initialize();
+    void initialize(TextureStore& texture_store);
 
     // Return a pointer to the texture system (if available).
     virtual OIIO::TextureSystem* texturesys() const APPLESEED_OVERRIDE;
@@ -324,11 +323,10 @@ class RendererServices
     static void log_error(const std::string& message);
 
     const Project&              m_project;
-    const Camera*               m_camera;
     OIIO::TextureSystem&        m_texture_sys;
-    const TraceContext&         m_trace_context;
-    TextureStore&               m_texture_store;
     AttrGetterMapType           m_global_attr_getters;
+    const Camera*               m_camera;
+    TextureStore*               m_texture_store;
     OIIO::ustring               m_cam_projection_str;
     float                       m_shutter[2];
     float                       m_shutter_interval;
