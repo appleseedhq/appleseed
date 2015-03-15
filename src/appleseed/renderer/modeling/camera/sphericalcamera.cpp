@@ -40,8 +40,8 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
-#include "foundation/math/dual.h"
 #include "foundation/image/image.h"
+#include "foundation/math/dual.h"
 #include "foundation/math/matrix.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"

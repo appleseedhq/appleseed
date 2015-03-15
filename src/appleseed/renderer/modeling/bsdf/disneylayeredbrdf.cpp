@@ -29,7 +29,7 @@
 // Interface header.
 #include "disneylayeredbrdf.h"
 
-// appleseed.renderer headers
+// appleseed.renderer headers.
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/modeling/bsdf/disneybrdf.h"
 #include "renderer/modeling/input/inputevaluator.h"
