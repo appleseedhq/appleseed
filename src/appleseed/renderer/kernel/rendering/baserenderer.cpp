@@ -31,8 +31,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
-#include "renderer/modeling/project/project.h"
-#include "renderer/modeling/scene/scene.h"
 #ifdef APPLESEED_WITH_OIIO
 #include "renderer/kernel/rendering/oiioerrorhandler.h"
 #endif
@@ -40,6 +38,8 @@
 #include "renderer/kernel/rendering/rendererservices.h"
 #include "renderer/kernel/shading/closures.h"
 #endif
+#include "renderer/modeling/project/project.h"
+#include "renderer/modeling/scene/scene.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -66,8 +66,6 @@ BaseRenderer::BaseRenderer(
   , m_params(params)
 {
 #ifdef APPLESEED_WITH_OIIO
-
-    RENDERER_LOG_DEBUG("%s.", "creating OpenImageIO error handler");
     m_error_handler = new OIIOErrorHandler();
 
 #ifndef NDEBUG
@@ -75,7 +73,7 @@ BaseRenderer::BaseRenderer(
     m_error_handler->verbosity(OIIO::ErrorHandler::VERBOSE);
 #endif
 
-    RENDERER_LOG_DEBUG("%s.", "creating OpenImageIO texture system");
+    RENDERER_LOG_DEBUG("creating OpenImageIO texture system...");
     m_texture_system = OIIO::TextureSystem::create(false);
 
     m_texture_system->attribute("automip", 0);
@@ -86,10 +84,9 @@ BaseRenderer::BaseRenderer(
 #endif
 
 #ifdef APPLESEED_WITH_OSL
-    RENDERER_LOG_DEBUG("%s.", "creating OSL renderer services");
+    RENDERER_LOG_DEBUG("creating OSL shading system...");
     m_renderer_services = new RendererServices(m_project, *m_texture_system);
 
-    RENDERER_LOG_DEBUG("%s.", "creating OSL shading system");
     m_shading_system = OSL::ShadingSystem::create(
         m_renderer_services,
         m_texture_system,
@@ -123,13 +120,9 @@ BaseRenderer::BaseRenderer(
 BaseRenderer::~BaseRenderer()
 {
 #ifdef APPLESEED_WITH_OSL
-    RENDERER_LOG_DEBUG("%s.", "releasing optimized OSL shader groups");
+    RENDERER_LOG_DEBUG("destroying OSL shading system...");
     m_project.get_scene()->release_optimized_osl_shader_groups();
-
-    RENDERER_LOG_DEBUG("%s.", "destroying OSL shading system");
     OSL::ShadingSystem::destroy(m_shading_system);
-
-    RENDERER_LOG_DEBUG("%s.", "destroying OSL renderer services");
     delete m_renderer_services;
 #endif
 
@@ -138,10 +131,8 @@ BaseRenderer::~BaseRenderer()
     const string trimmed_stats = trim_right(stats, "\r\n");
     RENDERER_LOG_INFO("%s", trimmed_stats.c_str());
 
-    RENDERER_LOG_DEBUG("%s.", "destroying OpenImageIO texture system");
+    RENDERER_LOG_DEBUG("destroying OpenImageIO texture system...");
     OIIO::TextureSystem::destroy(m_texture_system);
-
-    RENDERER_LOG_DEBUG("%s.", "destroying OpenImageIO error handler");
     delete m_error_handler;
 #endif
 }
@@ -160,6 +151,8 @@ bool BaseRenderer::initialize_shading_system(
     TextureStore& texture_store,
     IAbortSwitch& abort_switch)
 {
+    // Update OIIO Texture system attributes
+    // if they changed since the last render.
 #ifdef APPLESEED_WITH_OIIO
     const ParamArray& params = m_params.child("texture_store");
 
@@ -193,6 +186,8 @@ bool BaseRenderer::initialize_shading_system(
     }
 #endif
 
+    // Update OSL renderer services and shading system attributes
+    // if they changed since the last render.
 #ifdef APPLESEED_WITH_OSL
     m_renderer_services->initialize(texture_store);
 
@@ -213,6 +208,7 @@ bool BaseRenderer::initialize_shading_system(
         }
     }
 
+    // Re-optimize the shadergroups that needs updating.
     return
         m_project.get_scene()->create_optimized_osl_shader_groups(
             *m_shading_system,
