@@ -73,8 +73,8 @@ namespace
     {
       public:
         SphericalCamera(
-            const char*             name,
-            const ParamArray&       params)
+            const char*         name,
+            const ParamArray&   params)
           : Camera(name, params)
         {
         }
@@ -90,8 +90,8 @@ namespace
         }
 
         virtual bool on_frame_begin(
-            const Project&          project,
-            IAbortSwitch*           abort_switch) APPLESEED_OVERRIDE
+            const Project&      project,
+            IAbortSwitch*       abort_switch) APPLESEED_OVERRIDE
         {
             if (!Camera::on_frame_begin(project, abort_switch))
                 return false;
@@ -106,9 +106,9 @@ namespace
         }
 
         virtual void generate_ray(
-            SamplingContext&            sampling_context,
-            const Dual2d&               point,
-            ShadingRay&                 ray) const APPLESEED_OVERRIDE
+            SamplingContext&    sampling_context,
+            const Dual2d&       point,
+            ShadingRay&         ray) const APPLESEED_OVERRIDE
         {
             // Initialize the ray.
             initialize_ray(sampling_context, ray);
@@ -142,8 +142,8 @@ namespace
         }
 
         virtual bool project_camera_space_point(
-            const Vector3d&         point,
-            Vector2d&               ndc) const APPLESEED_OVERRIDE
+            const Vector3d&     point,
+            Vector2d&           ndc) const APPLESEED_OVERRIDE
         {
             // Compute the unit direction vector from the camera position to the point.
             const Vector3d dir = normalize(point);
@@ -161,17 +161,17 @@ namespace
         }
 
         virtual bool clip_segment(
-            const double            time,
-            Vector3d&               v0,
-            Vector3d&               v1) const APPLESEED_OVERRIDE
+            const double        time,
+            Vector3d&           v0,
+            Vector3d&           v1) const APPLESEED_OVERRIDE
         {
             // No clipping necessary.
             return true;
         }
 
         virtual double get_pixel_solid_angle(
-            const Frame&            frame,
-            const Vector2d&         point) const APPLESEED_OVERRIDE
+            const Frame&        frame,
+            const Vector2d&     point) const APPLESEED_OVERRIDE
         {
             const CanvasProperties& props = frame.image().properties();
             const double half_pixel_width = 0.5 * props.m_rcp_canvas_width;
@@ -191,7 +191,7 @@ namespace
         }
 
       private:
-        Vector3d m_ray_org;         // origin of the rays in world space
+        Vector3d m_ray_org;     // origin of the rays in world space
 
         void print_settings() const
         {
