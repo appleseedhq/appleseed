@@ -323,9 +323,18 @@ void LightSampler::collect_emitting_triangles(
                 assert(is_normalized(geometric_normal));
 
                 // Retrieve object instance space vertex normals.
-                const GVector3& n0_os = tess->m_vertex_normals[triangle.m_n0];
-                const GVector3& n1_os = tess->m_vertex_normals[triangle.m_n1];
-                const GVector3& n2_os = tess->m_vertex_normals[triangle.m_n2];
+                Vector3d n0_os, n1_os, n2_os;
+
+                if (triangle.m_n0 != Triangle::None &&
+                    triangle.m_n1 != Triangle::None &&
+                    triangle.m_n2 != Triangle::None)
+                {
+                    n0_os = tess->m_vertex_normals[triangle.m_n0];
+                    n1_os = tess->m_vertex_normals[triangle.m_n1];
+                    n2_os = tess->m_vertex_normals[triangle.m_n2];
+                }
+                else
+                    n0_os = n1_os = n2_os = geometric_normal;
 
                 // Transform vertex normals to world space.
                 const Vector3d n0(normalize(global_transform.normal_to_parent(n0_os)));
