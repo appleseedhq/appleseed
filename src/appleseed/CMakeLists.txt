@@ -1032,6 +1032,8 @@ source_group ("renderer\\kernel\\rendering\\progressive" FILES
 )
 
 set (renderer_kernel_rendering_sources
+    renderer/kernel/rendering/baserenderer.cpp
+    renderer/kernel/rendering/baserenderer.h
     renderer/kernel/rendering/defaultrenderercontroller.cpp
     renderer/kernel/rendering/defaultrenderercontroller.h
     renderer/kernel/rendering/ephemeralshadingresultframebufferfactory.cpp
@@ -1078,18 +1080,10 @@ set (renderer_kernel_rendering_sources
     renderer/kernel/rendering/timedrenderercontroller.cpp
     renderer/kernel/rendering/timedrenderercontroller.h
 )
-if (WITH_OIIO)
-    list (APPEND renderer_kernel_rendering_sources
-        renderer/kernel/rendering/oiiocomponents.cpp
-        renderer/kernel/rendering/oiiocomponents.h
-    )
-endif ()
 if (WITH_OSL)
     list (APPEND renderer_kernel_rendering_sources
         renderer/kernel/rendering/oiioerrorhandler.cpp
         renderer/kernel/rendering/oiioerrorhandler.h
-        renderer/kernel/rendering/oslcomponents.cpp
-        renderer/kernel/rendering/oslcomponents.h
         renderer/kernel/rendering/rendererservices.cpp
         renderer/kernel/rendering/rendererservices.h
     )

@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2015 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,14 +26,22 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_SCENE_BASEGROUP_H
-#define APPLESEED_RENDERER_MODELING_SCENE_BASEGROUP_H
+#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_BASERENDERER_H
+#define APPLESEED_RENDERER_KERNEL_RENDERING_BASERENDERER_H
 
 // appleseed.renderer headers.
-#include "renderer/modeling/scene/containers.h"
+#include "renderer/utility/paramarray.h"
+
+// appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
+
+// OpenImageIO headers.
+#ifdef APPLESEED_WITH_OIIO
+#include "OpenImageIO/texture.h"
+#endif
 
 // OSL headers.
 #ifdef APPLESEED_WITH_OSL
@@ -46,59 +53,57 @@ END_OSL_INCLUDES
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
-namespace renderer      { class Entity; }
+#ifdef APPLESEED_WITH_OIIO
+namespace renderer      { class OIIOErrorHandler; }
+#endif
+namespace renderer      { class Project; }
+#ifdef APPLESEED_WITH_OSL
+namespace renderer      { class RendererServices; }
+#endif
+namespace renderer      { class TextureStore; }
 
 namespace renderer
 {
 
 //
-// Base class for renderer::Scene and renderer::Assembly.
+// Base renderer, handles rendering of a given project.
 //
 
-class APPLESEED_DLLSYMBOL BaseGroup
+class APPLESEED_DLLSYMBOL BaseRenderer
+  : public foundation::NonCopyable
 {
   public:
-    // Constructor.
-    explicit BaseGroup(Entity* parent = 0);
-
     // Destructor.
-    ~BaseGroup();
+    ~BaseRenderer();
 
-    // Access the colors.
-    ColorContainer& colors() const;
+    // Return the parameters of the base renderer.
+    ParamArray& get_parameters();
+    const ParamArray& get_parameters() const;
 
-    // Access the textures.
-    TextureContainer& textures() const;
+    bool initialize_shading_system(
+        TextureStore&               texture_store,
+        foundation::IAbortSwitch&   abort_switch);
 
-    // Access the texture instances.
-    TextureInstanceContainer& texture_instances() const;
+  protected:
+    // Constructor.
+    BaseRenderer(
+        Project&                    project,
+        const ParamArray&           params);
 
-#ifdef APPLESEED_WITH_OSL
+    Project&                        m_project;
+    ParamArray                      m_params;
 
-    // Access the OSL shader groups.
-    ShaderGroupContainer& shader_groups() const;
-
-    // Create OSL shader groups and optimize them.
-    bool create_optimized_osl_shader_groups(
-        OSL::ShadingSystem&         shading_system,
-        foundation::IAbortSwitch*   abort_switch = 0);
-
-    // Release internal OSL shader groups.
-    void release_optimized_osl_shader_groups();
-
+#ifdef APPLESEED_WITH_OIIO
+    OIIOErrorHandler*               m_error_handler;
+    OIIO::TextureSystem*            m_texture_system;
 #endif
 
-    // Access the assemblies.
-    AssemblyContainer& assemblies() const;
-
-    // Access the assembly instances.
-    AssemblyInstanceContainer& assembly_instances() const;
-
-  private:
-    struct Impl;
-    Impl* impl;
+#ifdef APPLESEED_WITH_OSL
+    RendererServices*               m_renderer_services;
+    OSL::ShadingSystem*             m_shading_system;
+#endif
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_SCENE_BASEGROUP_H
+#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_BASERENDERER_H

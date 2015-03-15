@@ -33,13 +33,6 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/kernel/rendering/iframerenderer.h"
-#ifdef APPLESEED_WITH_OIIO
-#include "renderer/kernel/rendering/oiiocomponents.h"
-#endif
-#ifdef APPLESEED_WITH_OSL
-#include "renderer/kernel/rendering/oslcomponents.h"
-#include "renderer/kernel/rendering/rendererservices.h"
-#endif
 #include "renderer/kernel/rendering/renderercomponents.h"
 #include "renderer/kernel/rendering/serialrenderercontroller.h"
 #include "renderer/kernel/rendering/serialtilecallback.h"
@@ -77,8 +70,7 @@ MasterRenderer::MasterRenderer(
     const ParamArray&       params,
     IRendererController*    renderer_controller,
     ITileCallbackFactory*   tile_callback_factory)
-  : m_project(project)
-  , m_params(params)
+  : BaseRenderer(project, params)
   , m_renderer_controller(renderer_controller)
   , m_tile_callback_factory(tile_callback_factory)
   , m_serial_renderer_controller(0)
@@ -91,8 +83,7 @@ MasterRenderer::MasterRenderer(
     const ParamArray&       params,
     IRendererController*    renderer_controller,
     ITileCallback*          tile_callback)
-  : m_project(project)
-  , m_params(params)
+  : BaseRenderer(project, params)
   , m_serial_renderer_controller(new SerialRendererController(renderer_controller, tile_callback))
   , m_serial_tile_callback_factory(new SerialTileCallbackFactory(m_serial_renderer_controller))
 {
@@ -104,16 +95,6 @@ MasterRenderer::~MasterRenderer()
 {
     delete m_serial_tile_callback_factory;
     delete m_serial_renderer_controller;
-}
-
-ParamArray& MasterRenderer::get_parameters()
-{
-    return m_params;
-}
-
-const ParamArray& MasterRenderer::get_parameters() const
-{
-    return m_params;
 }
 
 bool MasterRenderer::render()
@@ -243,32 +224,12 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
         *m_project.get_scene(),
         m_params.child("texture_store"));
 
-#ifdef APPLESEED_WITH_OIIO
-
-    // Initialize OIIO.
-    OIIOComponents oiio_components(
-        m_project,
-        m_params.child("texture_store"));
-
-#endif
-
-#ifdef APPLESEED_WITH_OSL
-
-    // Initialize OSL.
-    OSLComponents osl_components(
-        m_project,
-        texture_store,
-        oiio_components.get_texture_system());
-
-    // Compile OSL shaders.
-    if (!osl_components.compile_osl_shaders(&abort_switch))
+    if (!initialize_shading_system(texture_store, abort_switch))
         return IRendererController::AbortRendering;
 
     // Don't proceed further if rendering was aborted.
     if (abort_switch.is_aborted())
         return m_renderer_controller->get_status();
-
-#endif
 
     // If needed, open the display plugin.
     CloseDisplayPluginOnScopeExit close_display;
@@ -292,10 +253,10 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
         tile_callback_factory,
         texture_store
 #ifdef APPLESEED_WITH_OIIO
-        , oiio_components.get_texture_system()
+        , *m_texture_system
 #endif
 #ifdef APPLESEED_WITH_OSL
-        , osl_components.get_shading_system()
+        , *m_shading_system
 #endif
         );
     if (!components.initialize())
@@ -304,11 +265,8 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     // Execute the main rendering loop.
     const IRendererController::Status status =
         render_frame_sequence(
-            components.get_frame_renderer()
-#ifdef APPLESEED_WITH_OSL
-            , osl_components.get_renderer_services()
-#endif
-            , abort_switch);
+            components.get_frame_renderer(),
+            abort_switch);
 
     // Print texture store performance statistics.
     RENDERER_LOG_DEBUG("%s", texture_store.get_statistics().to_string().c_str());
@@ -317,11 +275,8 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
 }
 
 IRendererController::Status MasterRenderer::render_frame_sequence(
-    IFrameRenderer&         frame_renderer
-#ifdef APPLESEED_WITH_OSL
-    , RendererServices&     renderer_services
-#endif
-    , IAbortSwitch&         abort_switch)
+    IFrameRenderer&         frame_renderer,
+    IAbortSwitch&           abort_switch)
 {
     while (true)
     {
@@ -345,10 +300,6 @@ IRendererController::Status MasterRenderer::render_frame_sequence(
             m_renderer_controller->on_frame_end();
             return m_renderer_controller->get_status();
         }
-
-#ifdef APPLESEED_WITH_OSL
-        renderer_services.initialize();
-#endif
 
         frame_renderer.start_rendering();
 
