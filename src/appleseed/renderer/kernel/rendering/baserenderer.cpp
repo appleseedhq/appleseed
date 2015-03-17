@@ -151,9 +151,20 @@ bool BaseRenderer::initialize_shading_system(
     TextureStore& texture_store,
     IAbortSwitch& abort_switch)
 {
-    // Update OIIO Texture system attributes
-    // if they changed since the last render.
 #ifdef APPLESEED_WITH_OIIO
+    initialize_oiio();
+#endif
+
+#ifdef APPLESEED_WITH_OSL
+    return initialize_osl(texture_store, abort_switch);
+#endif
+
+    return true;
+}
+
+#ifdef APPLESEED_WITH_OIIO
+void BaseRenderer::initialize_oiio()
+{
     const ParamArray& params = m_params.child("texture_store");
 
     const size_t texture_cache_size_bytes =
@@ -184,11 +195,12 @@ bool BaseRenderer::initialize_shading_system(
             m_texture_system->attribute("searchpath", new_search_path);
         }
     }
+}
 #endif
 
-    // Update OSL renderer services and shading system attributes
-    // if they changed since the last render.
 #ifdef APPLESEED_WITH_OSL
+bool BaseRenderer::initialize_osl(TextureStore& texture_store, IAbortSwitch& abort_switch)
+{
     m_renderer_services->initialize(texture_store);
 
     // search paths
@@ -213,9 +225,7 @@ bool BaseRenderer::initialize_shading_system(
         m_project.get_scene()->create_optimized_osl_shader_groups(
             *m_shading_system,
             &abort_switch);
-#endif
-
-    return true;
 }
+#endif
 
 }   // namespace renderer

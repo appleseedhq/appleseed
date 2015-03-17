@@ -85,11 +85,6 @@ class APPLESEED_DLLSYMBOL BaseRenderer
         foundation::IAbortSwitch&   abort_switch);
 
   protected:
-    // Constructor.
-    BaseRenderer(
-        Project&                    project,
-        const ParamArray&           params);
-
     Project&                        m_project;
     ParamArray                      m_params;
 
@@ -101,6 +96,22 @@ class APPLESEED_DLLSYMBOL BaseRenderer
 #ifdef APPLESEED_WITH_OSL
     RendererServices*               m_renderer_services;
     OSL::ShadingSystem*             m_shading_system;
+#endif
+
+    // Constructor.
+    BaseRenderer(
+        Project&                    project,
+        const ParamArray&           params);
+
+  private:
+#ifdef APPLESEED_WITH_OIIO
+    void initialize_oiio();
+#endif
+
+#ifdef APPLESEED_WITH_OSL
+    bool initialize_osl(
+        TextureStore&               texture_store,
+        foundation::IAbortSwitch&   abort_switch);
 #endif
 };
 
