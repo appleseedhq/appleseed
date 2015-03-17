@@ -240,9 +240,7 @@ const AABB2u& Frame::get_crop_window() const
 
 size_t Frame::get_pixel_count() const
 {
-    return
-        (impl->m_crop_window.max.x - impl->m_crop_window.min.x) *
-        (impl->m_crop_window.max.y - impl->m_crop_window.min.y);
+    return impl->m_crop_window.volume();
 }
 
 namespace

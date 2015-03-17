@@ -157,9 +157,9 @@ bool BaseRenderer::initialize_shading_system(
 
 #ifdef APPLESEED_WITH_OSL
     return initialize_osl(texture_store, abort_switch);
-#endif
-
+#else
     return true;
+#endif
 }
 
 #ifdef APPLESEED_WITH_OIIO
@@ -180,20 +180,18 @@ void BaseRenderer::initialize_oiio()
     m_texture_system->attribute("max_memory_MB", texture_cache_size_mb);
 
     // search paths
+    string prev_search_path;
+    m_texture_system->getattribute("searchpath", prev_search_path);
+    const string new_search_path = m_project.make_search_path_string();
+
+    if (new_search_path != prev_search_path)
     {
-        string prev_search_path;
-        m_texture_system->getattribute("searchpath", prev_search_path);
-        const string new_search_path = m_project.make_search_path_string();
+        RENDERER_LOG_INFO(
+            "setting OpenImageIO search path to %s.",
+            new_search_path.c_str());
 
-        if (new_search_path != prev_search_path)
-        {
-            RENDERER_LOG_INFO(
-                "setting OpenImageIO search path to %s.",
-                new_search_path.c_str());
-
-            m_texture_system->clear();
-            m_texture_system->attribute("searchpath", new_search_path);
-        }
+        m_texture_system->clear();
+        m_texture_system->attribute("searchpath", new_search_path);
     }
 }
 #endif
@@ -204,20 +202,18 @@ bool BaseRenderer::initialize_osl(TextureStore& texture_store, IAbortSwitch& abo
     m_renderer_services->initialize(texture_store);
 
     // search paths
+    string prev_search_path;
+    m_shading_system->getattribute("searchpath:shader", prev_search_path);
+    const string new_search_path = m_project.make_search_path_string();
+
+    if (new_search_path != prev_search_path)
     {
-        string prev_search_path;
-        m_shading_system->getattribute("searchpath:shader", prev_search_path);
-        const string new_search_path = m_project.make_search_path_string();
+        RENDERER_LOG_INFO(
+            "setting OSL shader search path to %s.",
+            new_search_path.c_str());
 
-        if (new_search_path != prev_search_path)
-        {
-            RENDERER_LOG_INFO(
-                "setting OSL shader search path to %s.",
-                new_search_path.c_str());
-
-            m_project.get_scene()->release_optimized_osl_shader_groups();
-            m_shading_system->attribute("searchpath:shader", new_search_path);
-        }
+        m_project.get_scene()->release_optimized_osl_shader_groups();
+        m_shading_system->attribute("searchpath:shader", new_search_path);
     }
 
     // Re-optimize the shadergroups that needs updating.

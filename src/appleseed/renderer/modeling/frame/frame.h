@@ -105,7 +105,7 @@ class APPLESEED_DLLSYMBOL Frame
     void set_crop_window(const foundation::AABB2u& crop_window);
     const foundation::AABB2u& get_crop_window() const;
 
-    // Return the number of pixels in the Frame, taking into account the crop window.
+    // Return the number of pixels in the frame, taking into account the crop window.
     size_t get_pixel_count() const;
 
     // Convert a tile or an image from linear RGB to the output color space.
