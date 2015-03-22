@@ -30,7 +30,6 @@
 #define APPLESEED_RENDERER_MODELING_BSDF_OSLMICROFACETBRDF_H
 
 // appleseed.renderer headers.
-#include "renderer/modeling/bsdf/ibsdffactory.h"
 #include "renderer/modeling/input/inputarray.h"
 
 // appleseed.foundation headers.
@@ -62,22 +61,12 @@ APPLESEED_DECLARE_INPUT_VALUES(OSLMicrofacetBRDFInputValues)
 //
 
 class OSLMicrofacetBRDFFactory
-  : public IBSDFFactory
 {
   public:
-    // Return a string identifying this BSDF model.
-    virtual const char* get_model() const APPLESEED_OVERRIDE;
-
-    // Return metadata for this BSDF model.
-    virtual foundation::Dictionary get_model_metadata() const APPLESEED_OVERRIDE;
-
-    // Return metadata for the inputs of this BSDF model.
-    virtual foundation::DictionaryArray get_input_metadata() const APPLESEED_OVERRIDE;
-
     // Create a new BSDF instance.
-    virtual foundation::auto_release_ptr<BSDF> create(
+    foundation::auto_release_ptr<BSDF> create(
         const char*         name,
-        const ParamArray&   params) const APPLESEED_OVERRIDE;
+        const ParamArray&   params) const;
 };
 
 }       // namespace renderer
