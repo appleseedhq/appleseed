@@ -341,7 +341,7 @@ namespace
               , m_tile_callback(tile_callback)
               , m_target_elapsed(1.0 / max_fps)
               , m_abort_switch(abort_switch)
-              , m_min_pixel_count(frame.get_pixel_count() / 100)
+              , m_min_pixel_count(frame.get_pixel_count() / 150)
             {
             }
 

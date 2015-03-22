@@ -91,8 +91,6 @@ namespace
             const ParamArray&   params)
           : BSDF(name, Reflective, BSDFSample::Glossy, params)
         {
-            m_inputs.declare("ax", InputFormatScalar, "0.1");
-            m_inputs.declare("ay", InputFormatScalar, "0.1");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -208,59 +206,6 @@ namespace
 //
 // OSLMicrofacetBRDFFactory class implementation.
 //
-
-const char* OSLMicrofacetBRDFFactory::get_model() const
-{
-    return Model;
-}
-
-Dictionary OSLMicrofacetBRDFFactory::get_model_metadata() const
-{
-    return
-        Dictionary()
-            .insert("name", Model)
-            .insert("label", "OSL Microfacet BRDF");
-}
-
-DictionaryArray OSLMicrofacetBRDFFactory::get_input_metadata() const
-{
-    DictionaryArray metadata;
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "mdf")
-            .insert("label", "Microfacet Distribution Function")
-            .insert("type", "enumeration")
-            .insert("items",
-                Dictionary()
-                    .insert("Beckmann", "beckmann")
-                    .insert("Blinn", "blinn")
-                    .insert("GGX", "ggx"))
-            .insert("use", "required")
-            .insert("default", "beckmann"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "ax")
-            .insert("label", "Alpha X")
-            .insert("type", "colormap")
-            .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
-            .insert("use", "required")
-            .insert("default", "0.2"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "ay")
-            .insert("label", "Alpha Y")
-            .insert("type", "colormap")
-            .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
-            .insert("use", "optional")
-            .insert("default", "0.2"));
-
-    return metadata;
-}
 
 auto_release_ptr<BSDF> OSLMicrofacetBRDFFactory::create(
     const char*         name,

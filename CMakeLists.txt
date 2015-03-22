@@ -47,6 +47,11 @@ include (src/cmake/utilities.txt)
 # Build configurations.
 #--------------------------------------------------------------------------------------------------
 
+# Disable in source builds.
+if( ${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
+    message (FATAL_ERROR "CMake generation for appleseed is not allowed within the source directory!")
+endif()
+
 # Create the build configurations. Must come before project ().
 set (CMAKE_CONFIGURATION_TYPES "Debug;Release;Profile;Ship" CACHE STRING "" FORCE)
 
