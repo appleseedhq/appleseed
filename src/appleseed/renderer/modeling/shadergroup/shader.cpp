@@ -137,6 +137,7 @@ struct Shader::Impl
                         "error adding osl param %s, of unknown type %s; will use the default value.",
                         i.it().name(),
                         i.it().value());
+                    break;
                 }
             }
             catch (const ExceptionOSLParamParseError&)
@@ -146,8 +147,6 @@ struct Shader::Impl
                     i.it().name(),
                     i.it().value());
             }
-
-            RENDERER_LOG_DEBUG("added osl param %s.", i.it().name());
         }
     }
 
@@ -164,7 +163,7 @@ Shader::Shader(
   : Entity(g_class_uid, params)
   , impl(new Impl(type, shader, layer, params))
 {
-    // We use the layer name as the Entity name, as it's unique.
+    // We use the layer name as the entity name, as it's unique.
     set_name(layer);
 }
 
