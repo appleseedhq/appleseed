@@ -416,6 +416,9 @@ namespace
                     }
                     last_time = time;
                 }
+
+                // Make sure the last samples have contributed to the frame.
+                m_buffer.develop_to_frame(m_frame);
             }
 
           private:
