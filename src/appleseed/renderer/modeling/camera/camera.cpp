@@ -237,7 +237,7 @@ void Camera::extract_focal_distance(
         else
         {
             autofocus_enabled = false;
-            autofocus_target = Vector2d(0.5);
+            autofocus_target = DefaultAFTarget;
             focal_distance = m_params.get_required<double>("focal_distance", DefaultFocalDistance);
         }
     }
@@ -259,30 +259,6 @@ void Camera::extract_focal_distance(
         autofocus_target = DefaultAFTarget;
         focal_distance = DefaultFocalDistance;
     }
-}
-
-Camera::Frustum Camera::compute_view_frustum(
-    const Vector2d&     film_dimensions,
-    const double        focal_length)
-{
-    const double half_film_width = 0.5 * film_dimensions[0];
-    const double half_film_height = 0.5 * film_dimensions[1];
-
-    Frustum frustum;
-
-    // Top plane.
-    frustum.set_plane(0, normalize(Vector3d(0.0, focal_length, half_film_height)));
-
-    // Bottom plane.
-    frustum.set_plane(1, normalize(Vector3d(0.0, -focal_length, half_film_height)));
-
-    // Left plane.
-    frustum.set_plane(2, normalize(Vector3d(-focal_length, 0.0, half_film_width)));
-
-    // Right plane.
-    frustum.set_plane(3, normalize(Vector3d(focal_length, 0.0, half_film_width)));
-
-    return frustum;
 }
 
 void Camera::initialize_ray(

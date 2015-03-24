@@ -258,9 +258,9 @@ namespace
             const Frame&                    m_frame;
             const LightingConditions&       m_lighting_conditions;
             const ShadingContext&           m_shading_context;
+            SamplingContext&                m_sampling_context;
 
             const Spectrum                  m_initial_flux;         // initial particle flux (in W)
-            Vector3d                        m_camera_position;      // camera position in world space
             SampleVector&                   m_samples;
             size_t                          m_sample_count;         // the number of samples added to m_samples
 
@@ -269,6 +269,7 @@ namespace
                 const Scene&                scene,
                 const Frame&                frame,
                 const ShadingContext&       shading_context,
+                SamplingContext&            sampling_context,
                 SampleVector&               samples,
                 const Spectrum&             initial_flux)
               : m_params(params)
@@ -276,14 +277,11 @@ namespace
               , m_frame(frame)
               , m_lighting_conditions(frame.get_lighting_conditions())
               , m_shading_context(shading_context)
+              , m_sampling_context(sampling_context)
               , m_samples(samples)
               , m_sample_count(0)
               , m_initial_flux(initial_flux)
             {
-                // Compute the world space position of the camera.
-                // todo: add support for camera motion blur.
-                // todo: do this outside the performance-sensitive code path.
-                m_camera_position = m_camera.transform_sequence().evaluate(0.0).get_parent_origin();
             }
 
             size_t get_sample_count() const
@@ -312,38 +310,45 @@ namespace
                 const Spectrum&             light_particle_flux,
                 const ShadingRay::Time&     time)
             {
-                // Compute the vertex-to-camera direction vector.
-                const Vector3d vertex_to_camera = m_camera_position - light_sample.m_point;
+                // Connect the light vertex with the camera.
+                Vector3d vertex_to_camera;
+                Vector2d sample_position;
+                double importance;
+                if (!m_camera.connect_vertex(
+                        m_sampling_context,
+                        time.m_absolute,
+                        light_sample.m_point,
+                        vertex_to_camera,
+                        sample_position,
+                        importance))
+                    return;
 
                 // Reject vertices on the back side of the area light.
                 double cos_alpha = dot(vertex_to_camera, light_sample.m_shading_normal);
                 if (cos_alpha <= 0.0)
                     return;
 
-                // Compute the transmission factor between the vertex and the camera.
-                Vector2d sample_position;
+                // Compute the transmission factor between the light vertex and the camera.
+                // Prevent self-intersections by letting the ray originate from the camera.
                 const double transmission =
-                    vertex_visible_to_camera(
+                    m_shading_context.get_tracer().trace_between(
+                        light_sample.m_point + vertex_to_camera,
                         light_sample.m_point,
                         time,
-                        0,
-                        sample_position);
+                        VisibilityFlags::CameraRay,
+                        0);
 
                 // Ignore occluded vertices.
                 if (transmission == 0.0)
                     return;
 
-                // Adjust cos(alpha).
-                const double square_distance = square_norm(vertex_to_camera);
-                const double distance = sqrt(square_distance);
+                // Adjust cos(alpha) to account for the fact that the vertex-to-camera vector was not unit-length.
+                const double distance = norm(vertex_to_camera);
                 cos_alpha /= distance;
-
-                // Compute the solid angle sustained by the pixel.
-                const double solid_angle = m_camera.get_pixel_solid_angle(m_frame, sample_position);
 
                 // Store the contribution of this vertex.
                 Spectrum radiance = light_particle_flux;
-                radiance *= static_cast<float>(transmission * cos_alpha / (square_distance * solid_angle));
+                radiance *= static_cast<float>(transmission * cos_alpha * importance);
                 emit_sample(sample_position, distance, radiance);
             }
 
@@ -352,30 +357,36 @@ namespace
                 const Spectrum&             light_particle_flux,
                 const ShadingRay::Time&     time)
             {
-                // Compute the transmission factor between the vertex and the camera.
+                // Connect the light vertex with the camera.
+                Vector3d vertex_to_camera;
                 Vector2d sample_position;
+                double importance;
+                if (!m_camera.connect_vertex(
+                        m_sampling_context,
+                        time.m_absolute,
+                        light_vertex,
+                        vertex_to_camera,
+                        sample_position,
+                        importance))
+                    return;
+
+                // Compute the transmission factor between the light vertex and the camera.
                 const double transmission =
-                    vertex_visible_to_camera(
+                    m_shading_context.get_tracer().trace_between(
+                        light_vertex + vertex_to_camera,
                         light_vertex,
                         time,
-                        0,
-                        sample_position);
+                        VisibilityFlags::CameraRay,
+                        0);
 
                 // Ignore occluded vertices.
                 if (transmission == 0.0)
                     return;
 
-                // Compute the square distance from the camera to the vertex.
-                const double square_distance = square_norm(m_camera_position - light_vertex);
-                const double distance = sqrt(square_distance);
-
-                // Compute the solid angle sustained by the pixel.
-                const double solid_angle = m_camera.get_pixel_solid_angle(m_frame, sample_position);
-
                 // Store the contribution of this vertex.
                 Spectrum radiance = light_particle_flux;
-                radiance *= static_cast<float>(transmission / (square_distance * solid_angle));
-                emit_sample(sample_position, distance, radiance);
+                radiance *= static_cast<float>(transmission * importance);
+                emit_sample(sample_position, norm(vertex_to_camera), radiance);
             }
 
             void visit_vertex(const PathVertex& vertex)
@@ -384,30 +395,40 @@ namespace
                 if (vertex.m_bsdf == 0)
                     return;
 
-                // Start computing the vertex-to-camera direction vector.
-                Vector3d vertex_to_camera = m_camera_position - vertex.get_point();
+                // Connect the path vertex with the camera.
+                Vector3d vertex_to_camera;
+                Vector2d sample_position;
+                double importance;
+                if (!m_camera.connect_vertex(
+                        m_sampling_context,
+                        vertex.get_time().m_absolute,
+                        vertex.get_point(),
+                        vertex_to_camera,
+                        sample_position,
+                        importance))
+                    return;
 
                 // Reject vertices on the back side of the shading surface.
                 const Vector3d& shading_normal = vertex.get_shading_normal();
                 if (dot(vertex_to_camera, shading_normal) <= 0.0)
                     return;
 
-                // Compute the transmission factor between the vertex and the camera.
-                Vector2d sample_position;
+                // Compute the transmission factor between the path vertex and the camera.
+                // Prevent self-intersections by letting the ray originate from the camera.
                 const double transmission =
-                    vertex_visible_to_camera(
+                    m_shading_context.get_tracer().trace_between(
+                        vertex.get_point() + vertex_to_camera,
                         vertex.get_point(),
                         vertex.get_time(),
-                        static_cast<ShadingRay::DepthType>(vertex.m_path_length),   // ray depth = (path length - 1) + 1
-                        sample_position);
+                        VisibilityFlags::CameraRay,
+                        static_cast<ShadingRay::DepthType>(vertex.m_path_length));  // ray depth = (path length - 1) + 1
 
                 // Ignore occluded vertices.
                 if (transmission == 0.0)
                     return;
 
                 // Normalize the vertex-to-camera vector.
-                const double square_distance = square_norm(vertex_to_camera);
-                const double distance = sqrt(square_distance);
+                const double distance = norm(vertex_to_camera);
                 vertex_to_camera /= distance;
 
                 // Retrieve the geometric normal at the vertex.
@@ -426,47 +447,23 @@ namespace
                         geometric_normal,
                         vertex.get_shading_basis(),
                         vertex.m_outgoing.get_value(),  // outgoing (toward the light in this context)
-                        vertex_to_camera,               // incoming
+                        vertex_to_camera,               // incoming (toward the camera)
                         BSDFSample::AllScatteringModes, // todo: likely incorrect
                         bsdf_value);
                 if (bsdf_prob == 0.0)
                     return;
 
-                // Compute the solid angle sustained by the pixel.
-                const double solid_angle = m_camera.get_pixel_solid_angle(m_frame, sample_position);
-
                 // Store the contribution of this vertex.
                 Spectrum radiance = m_initial_flux;
                 radiance *= vertex.m_throughput;
                 radiance *= bsdf_value;
-                radiance *= static_cast<float>(transmission / (square_distance * solid_angle));
+                radiance *= static_cast<float>(transmission * importance);
                 emit_sample(sample_position, distance, radiance);
             }
 
-            double vertex_visible_to_camera(
-                const Vector3d&             vertex_position,
-                const ShadingRay::Time&     time,
-                const ShadingRay::DepthType ray_depth,
-                Vector2d&                   sample_position) const
+            void visit_environment(const PathVertex& vertex)
             {
-                // Compute the position of the vertex on the image plane.
-                if (!m_camera.project_point(time.m_absolute, vertex_position, sample_position))
-                    return 0.0;
-
-                // Reject vertices that don't belong on the image plane of the camera.
-                if (sample_position[0] < 0.0 || sample_position[0] >= 1.0 ||
-                    sample_position[1] < 0.0 || sample_position[1] >= 1.0)
-                    return 0.0;
-
-                // Compute and return the transmission factor between the vertex and the camera.
-                // Prevent self-intersections by letting the ray originate from the camera.
-                return
-                    m_shading_context.get_tracer().trace_between(
-                        m_camera_position,
-                        vertex_position,
-                        time,
-                        VisibilityFlags::CameraRay,
-                        ray_depth);
+                // The particle escapes.
             }
 
             void emit_sample(
@@ -491,11 +488,6 @@ namespace
                 m_samples.push_back(sample);
 
                 ++m_sample_count;
-            }
-
-            void visit_environment(const PathVertex& vertex)
-            {
-                // The particle escapes.
             }
         };
 
@@ -643,11 +635,12 @@ namespace
 
             // Build the light ray.
             sampling_context.split_in_place(1, 1);
-            ShadingRay::Time time = ShadingRay::Time::create_with_normalized_time(
-                sampling_context.next_double2(),
-                m_shutter_open_time,
-                m_shutter_close_time,
-                m_ray_dtime);
+            const ShadingRay::Time time =
+                ShadingRay::Time::create_with_normalized_time(
+                    sampling_context.next_double2(),
+                    m_shutter_open_time,
+                    m_shutter_close_time,
+                    m_ray_dtime);
             const ShadingRay light_ray(
                 light_sample.m_point,
                 emission_direction,
@@ -661,6 +654,7 @@ namespace
                 m_scene,
                 m_frame,
                 m_shading_context,
+                sampling_context,
                 samples,
                 initial_flux);
             PathTracerType path_tracer(
@@ -720,12 +714,12 @@ namespace
 
             // Build the light ray.
             sampling_context.split_in_place(1, 1);
-            ShadingRay::Time time = ShadingRay::Time::create_with_normalized_time(
-                sampling_context.next_double2(),
-                m_shutter_open_time,
-                m_shutter_close_time,
-                m_ray_dtime);
-
+            const ShadingRay::Time time =
+                ShadingRay::Time::create_with_normalized_time(
+                    sampling_context.next_double2(),
+                    m_shutter_open_time,
+                    m_shutter_close_time,
+                    m_ray_dtime);
             const ShadingRay light_ray(
                 emission_position,
                 emission_direction,
@@ -739,6 +733,7 @@ namespace
                 m_scene,
                 m_frame,
                 m_shading_context,
+                sampling_context,
                 samples,
                 initial_flux);
             PathTracerType path_tracer(
@@ -809,12 +804,12 @@ namespace
 
             // Build the light ray.
             sampling_context.split_in_place(1, 1);
-            ShadingRay::Time time = ShadingRay::Time::create_with_normalized_time(
-                sampling_context.next_double2(),
-                m_shutter_open_time,
-                m_shutter_close_time,
-                m_ray_dtime);
-
+            const ShadingRay::Time time =
+                ShadingRay::Time::create_with_normalized_time(
+                    sampling_context.next_double2(),
+                    m_shutter_open_time,
+                    m_shutter_close_time,
+                    m_ray_dtime);
             const ShadingRay light_ray(
                 ray_origin,
                 -outgoing,
@@ -828,6 +823,7 @@ namespace
                 m_scene,
                 m_frame,
                 m_shading_context,
+                sampling_context,
                 samples,
                 initial_flux);
             PathTracerType path_tracer(

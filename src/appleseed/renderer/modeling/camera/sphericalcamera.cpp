@@ -36,6 +36,7 @@
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/frame/frame.h"
+#include "renderer/modeling/project/project.h"
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
@@ -52,7 +53,6 @@
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
-namespace renderer      { class Project; }
 
 using namespace foundation;
 using namespace std;
@@ -96,16 +96,17 @@ namespace
             if (!Camera::on_frame_begin(project, abort_switch))
                 return false;
 
-            // Precompute the rays origin in world space if the camera is static.
-            if (m_transform_sequence.size() <= 1)
-                m_ray_org = m_transform_sequence.evaluate(0.0).get_parent_origin();
+            // Precompute pixel dimensions.
+            const CanvasProperties& props = project.get_frame()->image().properties();
+            m_half_pixel_width = 0.5 * props.m_rcp_canvas_width;
+            m_half_pixel_height = 0.5 * props.m_rcp_canvas_height;
 
             print_settings();
 
             return true;
         }
 
-        virtual void generate_ray(
+        virtual void spawn_ray(
             SamplingContext&    sampling_context,
             const Dual2d&       point,
             ShadingRay&         ray) const APPLESEED_OVERRIDE
@@ -115,83 +116,86 @@ namespace
 
             // Retrieve the camera transform.
             Transformd tmp;
-            const Transformd& transform = m_transform_sequence.evaluate(ray.m_time.m_absolute, tmp);
+            const Transformd& transform =
+                m_transform_sequence.evaluate(ray.m_time.m_absolute, tmp);
 
-            // Compute the origin of the ray.
-            ray.m_org =
-                m_transform_sequence.size() <= 1
-                    ? m_ray_org
-                    : transform.get_local_to_parent().extract_translation();
-
-            // Compute the direction of the ray.
+            // Compute ray origin and direction.
+            ray.m_org = transform.get_local_to_parent().extract_translation();
             ray.m_dir = normalize(transform.vector_to_parent(ndc_to_camera(point.get_value())));
 
+            // Compute ray derivatives.
             if (point.has_derivatives())
             {
-                ray.m_has_differentials = true;
+                const Vector2d px(point.get_value() + point.get_dx());
+                const Vector2d py(point.get_value() + point.get_dy());
 
                 ray.m_rx.m_org = ray.m_org;
                 ray.m_ry.m_org = ray.m_org;
 
-                const Vector2d px(point.get_value() + point.get_dx());
-                const Vector2d py(point.get_value() + point.get_dy());
-
                 ray.m_rx.m_dir = normalize(transform.vector_to_parent(ndc_to_camera(px)));
                 ray.m_ry.m_dir = normalize(transform.vector_to_parent(ndc_to_camera(py)));
+
+                ray.m_has_differentials = true;
             }
+        }
+
+        virtual bool connect_vertex(
+            SamplingContext&    sampling_context,
+            const double        time,
+            const Vector3d&     point,
+            Vector3d&           direction,
+            Vector2d&           ndc,
+            double&             importance) const APPLESEED_OVERRIDE
+        {
+            // Retrieve the camera transform.
+            Transformd tmp;
+            const Transformd& transform = m_transform_sequence.evaluate(time, tmp);
+
+            // Transform the input point to camera space.
+            const Vector3d p = transform.point_to_local(point);
+
+            // Compute the point-to-camera direction vector in world space.
+            direction = transform.vector_to_parent(-p);
+
+            // Compute the normalized device coordinates of the film point.
+            ndc = camera_to_ndc(p);
+
+            // Compute the emitted importance.
+            const Vector3d q0 = ndc_to_camera(Vector2d(ndc.x - m_half_pixel_width, ndc.y - m_half_pixel_height));
+            const Vector3d q1 = ndc_to_camera(Vector2d(ndc.x + m_half_pixel_width, ndc.y - m_half_pixel_height));
+            const Vector3d q2 = ndc_to_camera(Vector2d(ndc.x + m_half_pixel_width, ndc.y + m_half_pixel_height));
+            const Vector3d q3 = ndc_to_camera(Vector2d(ndc.x - m_half_pixel_width, ndc.y + m_half_pixel_height));
+            const double solid_angle = 0.5 * norm(cross(q2 - q0, q3 - q1));
+            importance = 1.0 / (square_norm(direction) * solid_angle);
+
+            // The connection was possible.
+            return true;
         }
 
         virtual bool project_camera_space_point(
             const Vector3d&     point,
             Vector2d&           ndc) const APPLESEED_OVERRIDE
         {
-            // Compute the unit direction vector from the camera position to the point.
-            const Vector3d dir = normalize(point);
-
-            // Convert that direction to spherical coordinates.
-            const double phi = atan2(dir.z, dir.x);
-            const double theta = acos(dir.y);
-
-            // Convert the spherical coordinates to normalized device coordinates.
-            ndc.x = wrap(phi * RcpTwoPi);
-            ndc.y = saturate(theta * RcpPi);
-
-            // Projection was successful.
+            ndc = camera_to_ndc(point);
             return true;
         }
 
-        virtual bool clip_segment(
+        virtual bool project_segment(
             const double        time,
-            Vector3d&           v0,
-            Vector3d&           v1) const APPLESEED_OVERRIDE
+            const Vector3d&     a,
+            const Vector3d&     b,
+            Vector2d&           a_ndc,
+            Vector2d&           b_ndc) const APPLESEED_OVERRIDE
         {
-            // No clipping necessary.
+            a_ndc = camera_to_ndc(a);
+            b_ndc = camera_to_ndc(b);
             return true;
-        }
-
-        virtual double get_pixel_solid_angle(
-            const Frame&        frame,
-            const Vector2d&     point) const APPLESEED_OVERRIDE
-        {
-            const CanvasProperties& props = frame.image().properties();
-            const double half_pixel_width = 0.5 * props.m_rcp_canvas_width;
-            const double half_pixel_height = 0.5 * props.m_rcp_canvas_height;
-
-            const Vector2d p0 = Vector2d(point.x - half_pixel_width, point.y - half_pixel_height);
-            const Vector2d p1 = Vector2d(point.x + half_pixel_width, point.y - half_pixel_height);
-            const Vector2d p2 = Vector2d(point.x + half_pixel_width, point.y + half_pixel_height);
-            const Vector2d p3 = Vector2d(point.x - half_pixel_width, point.y + half_pixel_height);
-
-            const Vector3d q0 = ndc_to_camera(p0);
-            const Vector3d q1 = ndc_to_camera(p1);
-            const Vector3d q2 = ndc_to_camera(p2);
-            const Vector3d q3 = ndc_to_camera(p3);
-
-            return 0.5 * norm(cross(q2 - q0, q3 - q1));
         }
 
       private:
-        Vector3d m_ray_org;     // origin of the rays in world space
+        // Precomputed values.
+        double  m_half_pixel_width;     // half pixel width in meters, in camera space
+        double  m_half_pixel_height;    // half pixel height in meters, in camera space
 
         void print_settings() const
         {
@@ -208,6 +212,19 @@ namespace
         static Vector3d ndc_to_camera(const Vector2d& point)
         {
             return Vector3d::unit_vector(point.y * Pi, point.x * TwoPi);
+        }
+
+        static Vector2d camera_to_ndc(const Vector3d& point)
+        {
+            // Compute the unit direction vector from the camera position to the point.
+            const Vector3d dir = normalize(point);
+
+            // Convert that direction to spherical coordinates.
+            const double phi = atan2(dir.z, dir.x);
+            const double theta = acos(dir.y);
+
+            // Convert the spherical coordinates to normalized device coordinates.
+            return Vector2d(wrap(phi * RcpTwoPi), saturate(theta * RcpPi));
         }
     };
 }

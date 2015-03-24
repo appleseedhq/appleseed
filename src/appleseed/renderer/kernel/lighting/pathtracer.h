@@ -237,12 +237,13 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                 // Advance the differentials if the ray has them.
                 if (ray.m_has_differentials)
                 {
-                    cutoff_ray.m_has_differentials = true;
                     cutoff_ray.m_rx = ray.m_rx;
                     cutoff_ray.m_rx.m_org = ray.m_rx.point_at(ray.m_tmax);
 
                     cutoff_ray.m_ry = ray.m_ry;
                     cutoff_ray.m_ry.m_org = ray.m_ry.point_at(ray.m_tmax);
+
+                    cutoff_ray.m_has_differentials = true;
                 }
 
                 // Trace the ray.

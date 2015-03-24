@@ -94,7 +94,7 @@ ScenePicker::PickingResult ScenePicker::pick(const Vector2d& ndc) const
     const Camera* camera = scene.get_camera();
 
     ShadingRay ray;
-    camera->generate_ray(
+    camera->spawn_ray(
         sampling_context,
         Dual2d(ndc),
         ray);

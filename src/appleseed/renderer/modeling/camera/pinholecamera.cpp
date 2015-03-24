@@ -36,14 +36,14 @@
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/frame/frame.h"
+#include "renderer/modeling/project/project.h"
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
-#include "foundation/math/intersection/frustumsegment.h"
+#include "foundation/math/intersection/planesegment.h"
 #include "foundation/math/dual.h"
-#include "foundation/math/frustum.h"
 #include "foundation/math/matrix.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
@@ -56,7 +56,6 @@
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
-namespace renderer      { class Project; }
 
 using namespace foundation;
 using namespace std;
@@ -68,6 +67,33 @@ namespace
 {
     //
     // Pinhole camera.
+    //
+    // Geometry of the camera:
+    //
+    //                                          Y+
+    //
+    //       Film Plane                         ^
+    //   Z = m_focal_length                     |
+    //                                          |
+    //            +-----------------------------+
+    //            |                             |
+    //            |                             |
+    //            |                             |
+    //            |                             |
+    //            |                             |
+    //     Z+  <--+-----------------------------o
+    //            |                             | O
+    //            |                             |
+    //            |                             |
+    //            |                             |
+    //            |                             |
+    //            +-----------------------------+
+    //                                          |
+    //                                          |
+    //                                          +
+    //
+    //                                      Lens Plane
+    //                                        Z = 0
     //
 
     const char* Model = "pinhole_camera";
@@ -106,110 +132,135 @@ namespace
             // Extract the focal length from the camera parameters.
             m_focal_length = extract_focal_length(m_film_dimensions[0]);
 
-            // Compute the view frustum of the camera.
-            m_view_frustum = compute_view_frustum(m_film_dimensions, m_focal_length);
-
             // Precompute reciprocals of film dimensions.
             m_rcp_film_width = 1.0 / m_film_dimensions[0];
             m_rcp_film_height = 1.0 / m_film_dimensions[1];
 
-            // Precompute the rays origin in world space if the camera is static.
-            if (m_transform_sequence.size() <= 1)
-                m_ray_org = m_transform_sequence.evaluate(0.0).get_parent_origin();
+            // Precompute pixel area.
+            const size_t pixel_count = project.get_frame()->image().properties().m_pixel_count;
+            m_pixel_area = m_film_dimensions[0] * m_film_dimensions[1] / pixel_count;
 
             print_settings();
 
             return true;
         }
 
-        virtual void generate_ray(
+        virtual void spawn_ray(
             SamplingContext&    sampling_context,
             const Dual2d&       point,
             ShadingRay&         ray) const APPLESEED_OVERRIDE
         {
+            //
+            // We do as if the ray originated on the film plane at Z = m_focal_length
+            // and passed through the pin hole at Z = 0, except we make the ray start
+            // at the pin hole (i.e. at the origin in camera space) since appleseed's
+            // convention is that camera rays originate at the lens.
+            //
+
             // Initialize the ray.
             initialize_ray(sampling_context, ray);
 
             // Retrieve the camera transform.
             Transformd tmp;
-            const Transformd& transform = m_transform_sequence.evaluate(ray.m_time.m_absolute, tmp);
+            const Transformd& transform =
+                m_transform_sequence.evaluate(ray.m_time.m_absolute, tmp);
 
-            // Compute the origin of the ray.
-            ray.m_org =
-                m_transform_sequence.size() <= 1
-                    ? m_ray_org
-                    : transform.get_local_to_parent().extract_translation();
+            // Compute ray origin and direction.
+            ray.m_org = transform.get_local_to_parent().extract_translation();
+            ray.m_dir = normalize(transform.vector_to_parent(-ndc_to_camera(point.get_value())));
 
-            // Compute the direction of the ray.
-            ray.m_dir = normalize(transform.vector_to_parent(ndc_to_camera(point.get_value())));
-
+            // Compute ray derivatives.
             if (point.has_derivatives())
             {
-                ray.m_has_differentials = true;
+                const Vector2d px(point.get_value() + point.get_dx());
+                const Vector2d py(point.get_value() + point.get_dy());
 
                 ray.m_rx.m_org = ray.m_org;
                 ray.m_ry.m_org = ray.m_org;
 
-                const Vector2d px(point.get_value() + point.get_dx());
-                const Vector2d py(point.get_value() + point.get_dy());
+                ray.m_rx.m_dir = normalize(transform.vector_to_parent(-ndc_to_camera(px)));
+                ray.m_ry.m_dir = normalize(transform.vector_to_parent(-ndc_to_camera(py)));
 
-                ray.m_rx.m_dir = normalize(transform.vector_to_parent(ndc_to_camera(px)));
-                ray.m_ry.m_dir = normalize(transform.vector_to_parent(ndc_to_camera(py)));
+                ray.m_has_differentials = true;
             }
+        }
+
+        virtual bool connect_vertex(
+            SamplingContext&    sampling_context,
+            const double        time,
+            const Vector3d&     point,
+            Vector3d&           direction,
+            Vector2d&           ndc,
+            double&             importance) const APPLESEED_OVERRIDE
+        {
+            // Project the point onto the film plane.
+            if (!project_point(time, point, ndc))
+                return false;
+
+            // The connection is impossible if the projected point lies outside the film.
+            if (ndc[0] < 0.0 || ndc[0] >= 1.0 ||
+                ndc[1] < 0.0 || ndc[1] >= 1.0)
+                return false;
+
+            // Retrieve the camera transform.
+            Transformd tmp;
+            const Transformd& transform = m_transform_sequence.evaluate(time, tmp);
+
+            // Compute the point-to-camera direction vector in world space.
+            const Vector3d film_point = ndc_to_camera(ndc);
+            direction = transform.point_to_parent(film_point) - point;
+
+            // Compute the emitted importance.
+            const double square_dist_film_lens = square_norm(film_point);
+            const double dist_film_lens = sqrt(square_dist_film_lens);
+            const double cos_theta = m_focal_length / dist_film_lens;
+            const double solid_angle = m_pixel_area * cos_theta / square_dist_film_lens;
+            importance = 1.0 / (square_norm(direction) * solid_angle);
+
+            // The connection was possible.
+            return true;
         }
 
         virtual bool project_camera_space_point(
             const Vector3d&     point,
             Vector2d&           ndc) const APPLESEED_OVERRIDE
         {
-            // Cannot project the point if it is behind the film plane.
-            if (point.z > -m_focal_length)
+            // Cannot project the point if it is behind the lens plane.
+            if (point.z > 0.0)
                 return false;
 
             // Project the point onto the film plane.
-            const double k = -m_focal_length / point.z;
-            ndc.x = 0.5 + (point.x * k * m_rcp_film_width);
-            ndc.y = 0.5 - (point.y * k * m_rcp_film_height);
+            ndc = camera_to_ndc(point);
 
             // Projection was successful.
             return true;
         }
 
-        virtual bool clip_segment(
+        virtual bool project_segment(
             const double        time,
-            Vector3d&           v0,
-            Vector3d&           v1) const APPLESEED_OVERRIDE
+            const Vector3d&     a,
+            const Vector3d&     b,
+            Vector2d&           a_ndc,
+            Vector2d&           b_ndc) const APPLESEED_OVERRIDE
         {
             // Retrieve the camera transform.
             Transformd tmp;
             const Transformd& transform = m_transform_sequence.evaluate(time, tmp);
 
-            // Transform the segment from world space to camera space.
-            Vector3d v0_camera = transform.point_to_local(v0);
-            Vector3d v1_camera = transform.point_to_local(v1);
+            // Transform the segment to camera space.
+            Vector3d local_a = transform.point_to_local(a);
+            Vector3d local_b = transform.point_to_local(b);
 
-            // Clip the segment against the view frustum.
-            if (clip(m_view_frustum, v0_camera, v1_camera))
-            {
-                v0 = transform.point_to_parent(v0_camera);
-                v1 = transform.point_to_parent(v1_camera);
-                return true;
-            }
-            else return false;
-        }
+            // Clip the segment against the lens plane.
+            if (!clip(Vector3d(0.0, 0.0, 1.0), local_a, local_b))
+                return false;
 
-        virtual double get_pixel_solid_angle(
-            const Frame&        frame,
-            const Vector2d&     point) const APPLESEED_OVERRIDE
-        {
-            const size_t pixel_count = frame.image().properties().m_pixel_count;
-            const double pixel_area = m_film_dimensions[0] * m_film_dimensions[1] / pixel_count;
+            // Project the segment onto the film plane.
+            a_ndc = camera_to_ndc(local_a);
+            b_ndc = camera_to_ndc(local_b);
 
-            const Vector3d film_point = ndc_to_camera(point);
-            const double d = norm(film_point);
-            const double cos_theta = m_focal_length / d;
-
-            return pixel_area * cos_theta / (d * d);
+            // Projection was successful.
+            return true;
         }
 
       private:
@@ -218,10 +269,9 @@ namespace
         double      m_focal_length;         // focal length in camera space, in meters
 
         // Precomputed values.
-        Frustum     m_view_frustum;         // view frustum in world space
         double      m_rcp_film_width;       // film width reciprocal in camera space
         double      m_rcp_film_height;      // film height reciprocal in camera space
-        Vector3d    m_ray_org;              // origin of the rays in world space
+        double      m_pixel_area;           // pixel area in meters, in camera space
 
         void print_settings() const
         {
@@ -245,9 +295,18 @@ namespace
         {
             return
                 Vector3d(
-                    (point.x - 0.5) * m_film_dimensions[0],
-                    (0.5 - point.y) * m_film_dimensions[1],
-                    -m_focal_length);
+                    (0.5 - point.x) * m_film_dimensions[0],
+                    (point.y - 0.5) * m_film_dimensions[1],
+                    m_focal_length);
+        }
+
+        Vector2d camera_to_ndc(const Vector3d& point) const
+        {
+            const double k = m_focal_length / point.z;
+            return
+                Vector2d(
+                    0.5 - (point.x * k * m_rcp_film_width),
+                    0.5 + (point.y * k * m_rcp_film_height));
         }
     };
 }

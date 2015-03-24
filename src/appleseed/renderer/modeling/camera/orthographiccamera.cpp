@@ -35,14 +35,14 @@
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/frame/frame.h"
+#include "renderer/modeling/project/project.h"
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
-#include "foundation/math/intersection/frustumsegment.h"
+#include "foundation/math/intersection/planesegment.h"
 #include "foundation/math/dual.h"
-#include "foundation/math/frustum.h"
 #include "foundation/math/matrix.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
@@ -55,7 +55,6 @@
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
-namespace renderer      { class Project; }
 
 using namespace foundation;
 using namespace std;
@@ -102,19 +101,20 @@ namespace
             // Extract the film dimensions from the camera parameters.
             m_film_dimensions = extract_film_dimensions();
 
-            // Compute the view frustum of the camera.
-            m_view_frustum = compute_view_frustum(m_film_dimensions);
-
             // Precompute reciprocals of film dimensions.
             m_rcp_film_width = 1.0 / m_film_dimensions[0];
             m_rcp_film_height = 1.0 / m_film_dimensions[1];
+
+            // Precompute pixel area.
+            const size_t pixel_count = project.get_frame()->image().properties().m_pixel_count;
+            m_rcp_pixel_area = pixel_count / (m_film_dimensions[0] * m_film_dimensions[1]);
 
             print_settings();
 
             return true;
         }
 
-        virtual void generate_ray(
+        virtual void spawn_ray(
             SamplingContext&    sampling_context,
             const Dual2d&       point,
             ShadingRay&         ray) const APPLESEED_OVERRIDE
@@ -124,71 +124,103 @@ namespace
 
             // Retrieve the camera transform.
             Transformd tmp;
-            const Transformd& transform = m_transform_sequence.evaluate(ray.m_time.m_absolute, tmp);
+            const Transformd& transform =
+                m_transform_sequence.evaluate(ray.m_time.m_absolute, tmp);
 
-            // Compute the origin of the ray.
+            // Compute ray origin and direction.
             ray.m_org = transform.point_to_parent(ndc_to_camera(point.get_value()));
-
-            // Compute the direction of the ray.
             ray.m_dir = normalize(transform.vector_to_parent(Vector3d(0.0, 0.0, -1.0)));
 
+            // Compute ray derivatives.
             if (point.has_derivatives())
             {
-                ray.m_has_differentials = true;
+                const Vector2d px(point.get_value() + point.get_dx());
+                const Vector2d py(point.get_value() + point.get_dy());
 
-                ray.m_rx.m_org = transform.point_to_parent(ndc_to_camera(point.get_value() + point.get_dx()));
-                ray.m_ry.m_org = transform.point_to_parent(ndc_to_camera(point.get_value() + point.get_dy()));
+                ray.m_rx.m_org = transform.point_to_parent(ndc_to_camera(px));
+                ray.m_ry.m_org = transform.point_to_parent(ndc_to_camera(py));
 
                 ray.m_rx.m_dir = ray.m_dir;
                 ray.m_ry.m_dir = ray.m_dir;
+
+                ray.m_has_differentials = true;
             }
+        }
+
+        virtual bool connect_vertex(
+            SamplingContext&    sampling_context,
+            const double        time,
+            const Vector3d&     point,
+            Vector3d&           direction,
+            Vector2d&           ndc,
+            double&             importance) const APPLESEED_OVERRIDE
+        {
+            // Retrieve the camera transform.
+            Transformd tmp;
+            const Transformd& transform = m_transform_sequence.evaluate(time, tmp);
+
+            // Transform the input point to camera space.
+            const Vector3d p = transform.point_to_local(point);
+
+            // Compute the normalized device coordinates of the film point.
+            ndc[0] = 0.5 + p[0];
+            ndc[1] = 0.5 - p[1];
+
+            // The connection is impossible if the projected point lies outside the film.
+            if (ndc[0] < 0.0 || ndc[0] >= 1.0 ||
+                ndc[1] < 0.0 || ndc[1] >= 1.0)
+                return false;
+
+            // Compute the point-to-camera direction vector in world space.
+            direction = transform.vector_to_parent(Vector3d(0.0, 0.0, -p.z));
+
+            // Compute the emitted importance.
+            importance = m_rcp_pixel_area;
+
+            // The connection was possible.
+            return true;
         }
 
         virtual bool project_camera_space_point(
             const Vector3d&     point,
             Vector2d&           ndc) const APPLESEED_OVERRIDE
         {
-            // Cannot project the point if it is behind the film plane.
+            // Cannot project the point if it is behind the lens plane.
             if (point.z > 0.0)
                 return false;
 
             // Project the point onto the film plane.
-            ndc.x = 0.5 + point.x * m_rcp_film_width;
-            ndc.y = 0.5 - point.y * m_rcp_film_height;
+            ndc = camera_to_ndc(point);
 
             // Projection was successful.
             return true;
         }
 
-        virtual bool clip_segment(
+        virtual bool project_segment(
             const double        time,
-            Vector3d&           v0,
-            Vector3d&           v1) const APPLESEED_OVERRIDE
+            const Vector3d&     a,
+            const Vector3d&     b,
+            Vector2d&           a_ndc,
+            Vector2d&           b_ndc) const APPLESEED_OVERRIDE
         {
             // Retrieve the camera transform.
             Transformd tmp;
             const Transformd& transform = m_transform_sequence.evaluate(time, tmp);
 
-            // Transform the segment from world space to camera space.
-            Vector3d v0_camera = transform.point_to_local(v0);
-            Vector3d v1_camera = transform.point_to_local(v1);
+            // Transform the segment to camera space.
+            Vector3d local_a = transform.point_to_local(a);
+            Vector3d local_b = transform.point_to_local(b);
 
-            // Clip the segment against the view frustum.
-            if (clip(m_view_frustum, v0_camera, v1_camera))
-            {
-                v0 = transform.point_to_parent(v0_camera);
-                v1 = transform.point_to_parent(v1_camera);
-                return true;
-            }
-            else return false;
-        }
+            // Clip the segment against the near plane.
+            if (!clip(Vector3d(0.0, 0.0, 1.0), local_a, local_b))
+                return false;
 
-        virtual double get_pixel_solid_angle(
-            const Frame&        frame,
-            const Vector2d&     point) const APPLESEED_OVERRIDE
-        {
-            // todo: implement.
-            return 0.0;
+            // Project the segment onto the film plane.
+            a_ndc = camera_to_ndc(local_a);
+            b_ndc = camera_to_ndc(local_b);
+
+            // Projection was successful.
+            return true;
         }
 
       private:
@@ -196,9 +228,9 @@ namespace
         Vector2d    m_film_dimensions;      // film dimensions in camera space, in meters
 
         // Precomputed values.
-        Frustum     m_view_frustum;         // view frustum in world space
         double      m_rcp_film_width;       // film width reciprocal in camera space
         double      m_rcp_film_height;      // film height reciprocal in camera space
+        double      m_rcp_pixel_area;       // reciprocal of pixel area in camera space
 
         void print_settings() const
         {
@@ -216,28 +248,6 @@ namespace
                 m_shutter_close_time);
         }
 
-        static Camera::Frustum compute_view_frustum(const Vector2d& film_dimensions)
-        {
-            const double half_film_width = 0.5 * film_dimensions[0];
-            const double half_film_height = 0.5 * film_dimensions[1];
-
-            Frustum frustum;
-
-            // Top plane.
-            frustum.set_plane(0, Vector4d(0.0, +1.0, 0.0, -half_film_height));
-
-            // Bottom plane.
-            frustum.set_plane(1, Vector4d(0.0, -1.0, 0.0, -half_film_height));
-
-            // Left plane.
-            frustum.set_plane(2, Vector4d(-1.0, 0.0, 0.0, -half_film_width));
-
-            // Right plane.
-            frustum.set_plane(3, Vector4d(+1.0, 0.0, 0.0, -half_film_width));
-
-            return frustum;
-        }
-
         Vector3d ndc_to_camera(const Vector2d& point) const
         {
             return
@@ -245,6 +255,14 @@ namespace
                     (point.x - 0.5) * m_film_dimensions[0],
                     (0.5 - point.y) * m_film_dimensions[1],
                     0.0);
+        }
+
+        Vector2d camera_to_ndc(const Vector3d& point) const
+        {
+            return
+                Vector2d(
+                    0.5 + point.x * m_rcp_film_width,
+                    0.5 - point.y * m_rcp_film_height);
         }
     };
 }

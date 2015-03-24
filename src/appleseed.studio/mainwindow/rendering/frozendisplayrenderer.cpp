@@ -110,7 +110,7 @@ void FrozenDisplayRenderer::capture()
                     {
                         // Generate a world space ray going through that film point.
                         ShadingRay ray;
-                        m_camera.generate_ray(sampling_context, Dual2d(point), ray);
+                        m_camera.spawn_ray(sampling_context, Dual2d(point), ray);
 
                         // Retrieve pixel color.
                         Color4f pixel;

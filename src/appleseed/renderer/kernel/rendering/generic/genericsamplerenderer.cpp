@@ -172,7 +172,7 @@ namespace
 
             // Construct a primary ray.
             ShadingRay primary_ray;
-            m_scene.get_camera()->generate_ray(
+            m_scene.get_camera()->spawn_ray(
                 sampling_context,
                 Dual2d(image_point, m_image_point_dx, m_image_point_dy),
                 primary_ray);

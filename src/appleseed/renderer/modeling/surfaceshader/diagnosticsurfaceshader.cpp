@@ -326,28 +326,24 @@ void DiagnosticSurfaceShader::evaluate(
                 const Camera& camera = *scene.get_camera();
 
                 // Compute the film space coordinates of the intersection point.
-                Vector2d point_fs;
-                camera.project_point(time, shading_point.get_point(), point_fs);
+                Vector2d point_ndc;
+                camera.project_point(time, shading_point.get_point(), point_ndc);
 
                 // Loop over the triangle edges.
                 for (size_t i = 0; i < 3; ++i)
                 {
                     // Retrieve the end points of this edge.
                     const size_t j = (i + 1) % 3;
-                    Vector3d vi = shading_point.get_vertex(i);
-                    Vector3d vj = shading_point.get_vertex(j);
+                    const Vector3d vi = shading_point.get_vertex(i);
+                    const Vector3d vj = shading_point.get_vertex(j);
 
-                    // Clip the edge against the view frustum.
-                    if (!camera.clip_segment(time, vi, vj))
+                    // Compute the film space coordinates of the edge's end points.
+                    Vector2d vi_ndc, vj_ndc;
+                    if (!camera.project_segment(time, vi, vj, vi_ndc, vj_ndc))
                         continue;
 
-                    // Transform the edge to film space.
-                    Vector2d vi_fs, vj_fs;
-                    camera.project_point(time, vi, vi_fs);
-                    camera.project_point(time, vj, vj_fs);
-
                     // Compute the film space distance from the intersection point to the edge.
-                    const double d = square_distance_point_segment(point_fs, vi_fs, vj_fs);
+                    const double d = square_distance_point_segment(point_ndc, vi_ndc, vj_ndc);
 
                     // Shade with the wire's color if the hit point is close enough to the edge.
                     if (d < SquareWireThickness)

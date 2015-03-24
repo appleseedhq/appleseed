@@ -32,7 +32,9 @@
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/camera/sphericalcamera.h"
+#include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/project/project.h"
+#include "renderer/modeling/scene/scene.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
@@ -48,18 +50,26 @@ TEST_SUITE(Renderer_Modeling_Camera_SphericalCamera)
 {
     TEST_CASE(ProjectPoint)
     {
+        auto_release_ptr<Scene> scene(SceneFactory::create());
+        scene->set_camera(SphericalCameraFactory().create("camera", ParamArray()));
+
         auto_release_ptr<Project> project(ProjectFactory::create("test"));
+        project->set_scene(scene);
+        project->set_frame(
+            FrameFactory::create(
+                "frame",
+                ParamArray()
+                    .insert("resolution", "512 512")));
 
-        SphericalCameraFactory factory;
-        auto_release_ptr<Camera> camera(factory.create("camera", ParamArray()));
+        project->get_scene()->on_frame_begin(project.ref());
 
-        camera->on_frame_begin(project.ref());
+        const Camera* camera = project->get_scene()->get_camera();
 
         SamplingContext::RNGType rng;
         SamplingContext sampling_context(rng, SamplingContext::QMCMode);
 
         ShadingRay ray;
-        camera->generate_ray(sampling_context, Dual2d(Vector2d(1.0, 1.0)), ray);
+        camera->spawn_ray(sampling_context, Dual2d(Vector2d(1.0, 1.0)), ray);
 
         const Vector3d hit_point = ray.m_org + 3.0 * normalize(ray.m_dir);
 
@@ -69,6 +79,6 @@ TEST_SUITE(Renderer_Modeling_Camera_SphericalCamera)
         ASSERT_TRUE(success);
         EXPECT_FEQ(Vector2d(1.0, 1.0), projected);
 
-        camera->on_frame_end(project.ref());
+        project->get_scene()->on_frame_end(project.ref());
     }
 }

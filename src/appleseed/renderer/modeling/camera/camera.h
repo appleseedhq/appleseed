@@ -37,7 +37,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/dual.h"
-#include "foundation/math/frustum.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/uid.h"
 
@@ -99,17 +98,32 @@ class APPLESEED_DLLSYMBOL Camera
     // This method is called once after rendering each frame.
     virtual void on_frame_end(const Project& project);
 
-    // Generate a ray directed toward a given point on the film plane, expressed
-    // in normalized device coordinates (https://github.com/appleseedhq/appleseed/wiki/Terminology).
+    // Generate a ray directed toward a given point on the film plane,
+    // expressed in normalized device coordinates
+    // (https://github.com/appleseedhq/appleseed/wiki/Terminology).
     // The generated ray is expressed in world space.
-    virtual void generate_ray(
+    virtual void spawn_ray(
         SamplingContext&                sampling_context,
         const foundation::Dual2d&       point,
         ShadingRay&                     ray) const = 0;
 
+    // Connect a vertex to the camera and return the direction vector from the
+    // point to the camera, the normalized device coordinates of the projected
+    // point on the camera film and the emitted importance. The direction vector
+    // is not unit-length: its length represents the distance from the point to
+    // the camera lens. The input point and output direction are expressed in
+    // world space. Returns true if the connection was possible, false otherwise.
+    virtual bool connect_vertex(
+        SamplingContext&                sampling_context,
+        const double                    time,
+        const foundation::Vector3d&     point,
+        foundation::Vector3d&           direction,
+        foundation::Vector2d&           ndc,
+        double&                         importance) const = 0;
+
     // Project a 3D point back to the film plane. The input point is expressed in
     // world space. The returned point is expressed in normalized device coordinates.
-    // Returns true if the projection was successful, false otherwise.
+    // Returns true if the projection was possible, false otherwise.
     bool project_point(
         const double                    time,
         const foundation::Vector3d&     point,
@@ -120,22 +134,17 @@ class APPLESEED_DLLSYMBOL Camera
         const foundation::Vector3d&     point,
         foundation::Vector2d&           ndc) const = 0;
 
-    // Clip a 3D segment against the camera frustum. The input segment is expressed
-    // in world space. Returns true if the segment intersects the frustum, false otherwise.
-    virtual bool clip_segment(
+    // Project a 3D segment back to the film plane. The input segment is expressed in
+    // world space. The returned segment is expressed in normalized device coordinates.
+    // Returns true if the projection was possible, false otherwise.
+    virtual bool project_segment(
         const double                    time,
-        foundation::Vector3d&           v0,
-        foundation::Vector3d&           v1) const = 0;
-
-    // Compute the solid angle of a pixel whose center is at 'point' in normalized
-    // device coordinates.
-    virtual double get_pixel_solid_angle(
-        const Frame&                    frame,
-        const foundation::Vector2d&     point) const = 0;
+        const foundation::Vector3d&     a,
+        const foundation::Vector3d&     b,
+        foundation::Vector2d&           a_ndc,
+        foundation::Vector2d&           b_ndc) const = 0;
 
   protected:
-    typedef foundation::Frustum<double, 4> Frustum;
-
     TransformSequence   m_transform_sequence;
     double              m_shutter_open_time;
     double              m_shutter_close_time;
@@ -155,11 +164,6 @@ class APPLESEED_DLLSYMBOL Camera
         bool&                           autofocus_enabled,
         foundation::Vector2d&           autofocus_target,
         double&                         focal_distance) const;
-
-    // Utility function to compute the view frustum of a camera in camera space.
-    static Frustum compute_view_frustum(
-        const foundation::Vector2d&     film_dimensions,
-        const double                    focal_length);
 
     // Initialize a ray but does not set its origin or direction.
     void initialize_ray(
