@@ -100,7 +100,7 @@ ShaderGroupContainer& BaseGroup::shader_groups() const
     return impl->m_shader_groups;
 }
 
-bool BaseGroup::create_osl_shader_groups(
+bool BaseGroup::create_optimized_osl_shader_groups(
     OSL::ShadingSystem& shading_system,
     IAbortSwitch*       abort_switch)
 {
@@ -111,7 +111,7 @@ bool BaseGroup::create_osl_shader_groups(
         if (is_aborted(abort_switch))
             return true;
 
-        success = success && i->create_osl_shader_groups(
+        success = success && i->create_optimized_osl_shader_groups(
             shading_system,
             abort_switch);
     }
@@ -121,7 +121,7 @@ bool BaseGroup::create_osl_shader_groups(
         if (is_aborted(abort_switch))
             return true;
 
-        success = success && i->create_osl_shader_group(
+        success = success && i->create_optimized_osl_shader_group(
             shading_system,
             abort_switch);
     }
@@ -129,13 +129,13 @@ bool BaseGroup::create_osl_shader_groups(
     return success;
 }
 
-void BaseGroup::release_osl_shader_groups()
+void BaseGroup::release_optimized_osl_shader_groups()
 {
     for (each<AssemblyContainer> i = assemblies(); i; ++i)
-        i->release_osl_shader_groups();
+        i->release_optimized_osl_shader_groups();
 
     for (each<ShaderGroupContainer> i = shader_groups(); i; ++i)
-        i->release_osl_shader_group();
+        i->release_optimized_osl_shader_group();
 }
 
 #endif

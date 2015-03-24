@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2015 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,12 +26,17 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_OSLCOMPONENTS_H
-#define APPLESEED_RENDERER_KERNEL_RENDERING_OSLCOMPONENTS_H
+#ifndef APPLESEED_RENDERER_KERNEL_RENDERING_BASERENDERER_H
+#define APPLESEED_RENDERER_KERNEL_RENDERING_BASERENDERER_H
 
 // appleseed.renderer headers.
-#include "renderer/kernel/rendering/oiioerrorhandler.h"
-#include "renderer/kernel/rendering/rendererservices.h"
+#include "renderer/utility/paramarray.h"
+
+// appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // OpenImageIO headers.
 #ifdef APPLESEED_WITH_OIIO
@@ -46,45 +51,70 @@ BEGIN_OSL_INCLUDES
 END_OSL_INCLUDES
 #endif
 
-// Standard headers.
-#include <memory>
-
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
+#ifdef APPLESEED_WITH_OIIO
+namespace renderer      { class OIIOErrorHandler; }
+#endif
 namespace renderer      { class Project; }
+#ifdef APPLESEED_WITH_OSL
+namespace renderer      { class RendererServices; }
+#endif
 namespace renderer      { class TextureStore; }
 
 namespace renderer
 {
 
 //
-// RAII-style OSL initialization.
+// Base renderer, handles rendering of a given project.
 //
 
-class OSLComponents
+class APPLESEED_DLLSYMBOL BaseRenderer
+  : public foundation::NonCopyable
 {
   public:
-    OSLComponents(
-        const Project&              project,
+    // Destructor.
+    ~BaseRenderer();
+
+    // Return the parameters of the base renderer.
+    ParamArray& get_parameters();
+    const ParamArray& get_parameters() const;
+
+    bool initialize_shading_system(
         TextureStore&               texture_store,
-        OIIO::TextureSystem&        texture_system);
+        foundation::IAbortSwitch&   abort_switch);
 
-    ~OSLComponents();
+  protected:
+    Project&                        m_project;
+    ParamArray                      m_params;
 
-    RendererServices& get_renderer_services();
-    OSL::ShadingSystem& get_shading_system();
+#ifdef APPLESEED_WITH_OIIO
+    OIIOErrorHandler*               m_error_handler;
+    OIIO::TextureSystem*            m_texture_system;
+#endif
 
-    bool compile_osl_shaders(foundation::IAbortSwitch* abort_switch);
+#ifdef APPLESEED_WITH_OSL
+    RendererServices*               m_renderer_services;
+    OSL::ShadingSystem*             m_shading_system;
+#endif
+
+    // Constructor.
+    BaseRenderer(
+        Project&                    project,
+        const ParamArray&           params);
 
   private:
-    const Project&                  m_project;
-    TextureStore&                   m_texture_store;
-    OIIO::TextureSystem&            m_texture_system;
-    OIIOErrorHandler                m_error_handler;
-    std::auto_ptr<RendererServices> m_renderer_services;
-    OSL::ShadingSystem*             m_shading_system;
+#ifdef APPLESEED_WITH_OIIO
+    void initialize_oiio();
+#endif
+
+#ifdef APPLESEED_WITH_OSL
+    bool initialize_osl(
+        TextureStore&               texture_store,
+        foundation::IAbortSwitch&   abort_switch);
+#endif
 };
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_OSLCOMPONENTS_H
+#endif  // !APPLESEED_RENDERER_KERNEL_RENDERING_BASERENDERER_H

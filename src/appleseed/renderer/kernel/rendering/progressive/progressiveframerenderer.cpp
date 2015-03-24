@@ -341,6 +341,7 @@ namespace
               , m_tile_callback(tile_callback)
               , m_target_elapsed(1.0 / max_fps)
               , m_abort_switch(abort_switch)
+              , m_min_pixel_count(frame.get_pixel_count() / 150)
             {
             }
 
@@ -376,7 +377,8 @@ namespace
                         const double t1 = stopwatch.get_seconds();
 #endif
 
-                        m_buffer.develop_to_frame(m_frame);
+                        if (m_buffer.get_sample_count() > m_min_pixel_count)
+                            m_buffer.develop_to_frame(m_frame);
 
 #ifdef PRINT_DISPLAY_THREAD_PERFS
                         stopwatch.measure();
@@ -423,6 +425,7 @@ namespace
             const double                    m_target_elapsed;
             IAbortSwitch&                   m_abort_switch;
             ThreadFlag                      m_pause_flag;
+            const size_t                    m_min_pixel_count;
         };
 
         class StatisticsFunc

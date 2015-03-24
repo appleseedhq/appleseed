@@ -107,7 +107,7 @@ TEST_SUITE(Renderer_Modeling_BSDF_BSDFMix)
             boost::bind(&OIIO::TextureSystem::destroy, _1));
 #endif
 #ifdef APPLESEED_WITH_OSL
-        RendererServices renderer_services(*project, *texture_system, texture_store);
+        RendererServices renderer_services(*project, *texture_system);
 
         boost::shared_ptr<OSL::ShadingSystem> shading_system(
             new OSL::ShadingSystem(&renderer_services, texture_system.get()));

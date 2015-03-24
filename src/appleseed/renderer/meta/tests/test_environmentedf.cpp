@@ -195,8 +195,7 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
 #ifdef APPLESEED_WITH_OSL
             RendererServices renderer_services(
                 m_project,
-                *texture_system,
-                texture_store);
+                *texture_system);
 
             boost::shared_ptr<OSL::ShadingSystem> shading_system(
                 new OSL::ShadingSystem(&renderer_services, texture_system.get()));

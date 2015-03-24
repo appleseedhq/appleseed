@@ -84,10 +84,6 @@ namespace
             const ParamArray&   params)
           : BSDF(name, Transmissive, BSDFSample::Glossy, params)
         {
-            m_inputs.declare("ax", InputFormatScalar, "0.05");
-            m_inputs.declare("ay", InputFormatScalar, "0.05");
-            m_inputs.declare("from_ior", InputFormatScalar, "1.0");
-            m_inputs.declare("to_ior", InputFormatScalar, "1.5");
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -374,78 +370,6 @@ namespace
 //
 // OSLMicrofacetBTDFFactory class implementation.
 //
-
-const char* OSLMicrofacetBTDFFactory::get_model() const
-{
-    return Model;
-}
-
-Dictionary OSLMicrofacetBTDFFactory::get_model_metadata() const
-{
-    return
-        Dictionary()
-            .insert("name", Model)
-            .insert("label", "OSL Microfacet BTDF");
-}
-
-DictionaryArray OSLMicrofacetBTDFFactory::get_input_metadata() const
-{
-    DictionaryArray metadata;
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "mdf")
-            .insert("label", "Microfacet Distribution Function")
-            .insert("type", "enumeration")
-            .insert("items",
-                Dictionary()
-                    .insert("Beckmann", "beckmann")
-                    .insert("GGX", "ggx"))
-            .insert("use", "required")
-            .insert("default", "beckmann"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "ax")
-            .insert("label", "Alpha X")
-            .insert("type", "colormap")
-            .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
-            .insert("use", "required")
-            .insert("default", "0.2"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "ay")
-            .insert("label", "Alpha Y")
-            .insert("type", "colormap")
-            .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
-            .insert("use", "optional")
-            .insert("default", "0.2"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "from_ior")
-            .insert("label", "From IOR")
-            .insert("type", "colormap")
-            .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
-            .insert("use", "optional")
-            .insert("default", "1.0"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "to_ior")
-            .insert("label", "To IOR")
-            .insert("type", "colormap")
-            .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
-            .insert("use", "optional")
-            .insert("default", "1.5"));
-
-    return metadata;
-}
 
 auto_release_ptr<BSDF> OSLMicrofacetBTDFFactory::create(
     const char*         name,

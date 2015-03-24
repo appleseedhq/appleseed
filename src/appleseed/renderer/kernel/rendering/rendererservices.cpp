@@ -89,13 +89,11 @@ namespace
 
 RendererServices::RendererServices(
     const Project&          project,
-    OIIO::TextureSystem&    texture_sys,
-    TextureStore&           texture_store)
+    OIIO::TextureSystem&    texture_sys)
   : OSL::RendererServices()
   , m_project(project)
   , m_texture_sys(texture_sys)
-  , m_trace_context(m_project.get_trace_context())
-  , m_texture_store(texture_store)
+  , m_texture_store(0)
 {
     // Set up attribute getters.
     m_global_attr_getters[OIIO::ustring("object:object_instance_id")] = &RendererServices::get_object_instance_id;
@@ -122,8 +120,9 @@ RendererServices::RendererServices(
     m_global_attr_getters[OIIO::ustring("appleseed:version")] = &RendererServices::get_appleseed_version;
 }
 
-void RendererServices::initialize()
+void RendererServices::initialize(TextureStore& texture_store)
 {
+    m_texture_store = &texture_store;
     m_camera = m_project.get_scene()->get_camera();
 
     m_cam_projection_str =
@@ -314,8 +313,10 @@ bool RendererServices::trace(
     const OSL::Vec3&        dRdx,
     const OSL::Vec3&        dRdy)
 {
-    TextureCache texture_cache(m_texture_store);
-    Intersector intersector(m_trace_context, texture_cache);
+    assert(m_texture_store);
+
+    TextureCache texture_cache(*m_texture_store);
+    Intersector intersector(m_project.get_trace_context(), texture_cache);
 
     const ShadingPoint* parent =
         reinterpret_cast<const ShadingPoint*>(sg->renderstate);

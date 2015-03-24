@@ -83,8 +83,6 @@ namespace
             const ParamArray&   params)
           : BSDF(name, Reflective, BSDFSample::Glossy, params)
         {
-            m_inputs.declare("shininess_u", InputFormatScalar);
-            m_inputs.declare("shininess_v", InputFormatScalar);
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -341,46 +339,6 @@ namespace
 //
 // OSLAshikhminBRDFFactory class implementation.
 //
-
-const char* OSLAshikhminBRDFFactory::get_model() const
-{
-    return Model;
-}
-
-Dictionary OSLAshikhminBRDFFactory::get_model_metadata() const
-{
-    return
-        Dictionary()
-            .insert("name", Model)
-            .insert("label", "OSL Ashikhmin-Shirley BRDF");
-}
-
-DictionaryArray OSLAshikhminBRDFFactory::get_input_metadata() const
-{
-    DictionaryArray metadata;
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "shininess_u")
-            .insert("label", "Shininess U")
-            .insert("type", "colormap")
-            .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
-            .insert("use", "required")
-            .insert("default", "100.0"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "shininess_v")
-            .insert("label", "Shininess V")
-            .insert("type", "colormap")
-            .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
-            .insert("use", "required")
-            .insert("default", "100.0"));
-
-    return metadata;
-}
 
 auto_release_ptr<BSDF> OSLAshikhminBRDFFactory::create(
     const char*         name,
