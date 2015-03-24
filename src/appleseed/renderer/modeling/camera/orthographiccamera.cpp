@@ -116,7 +116,7 @@ namespace
 
         virtual void spawn_ray(
             SamplingContext&    sampling_context,
-            const Dual2d&       point,
+            const Dual2d&       ndc,
             ShadingRay&         ray) const APPLESEED_OVERRIDE
         {
             // Initialize the ray.
@@ -128,14 +128,14 @@ namespace
                 m_transform_sequence.evaluate(ray.m_time.m_absolute, tmp);
 
             // Compute ray origin and direction.
-            ray.m_org = transform.point_to_parent(ndc_to_camera(point.get_value()));
+            ray.m_org = transform.point_to_parent(ndc_to_camera(ndc.get_value()));
             ray.m_dir = normalize(transform.vector_to_parent(Vector3d(0.0, 0.0, -1.0)));
 
             // Compute ray derivatives.
-            if (point.has_derivatives())
+            if (ndc.has_derivatives())
             {
-                const Vector2d px(point.get_value() + point.get_dx());
-                const Vector2d py(point.get_value() + point.get_dy());
+                const Vector2d px(ndc.get_value() + ndc.get_dx());
+                const Vector2d py(ndc.get_value() + ndc.get_dy());
 
                 ray.m_rx.m_org = transform.point_to_parent(ndc_to_camera(px));
                 ray.m_ry.m_org = transform.point_to_parent(ndc_to_camera(py));
@@ -151,8 +151,8 @@ namespace
             SamplingContext&    sampling_context,
             const double        time,
             const Vector3d&     point,
-            Vector3d&           direction,
             Vector2d&           ndc,
+            Vector3d&           outgoing,
             double&             importance) const APPLESEED_OVERRIDE
         {
             // Retrieve the camera transform.
@@ -171,8 +171,8 @@ namespace
                 ndc[1] < 0.0 || ndc[1] >= 1.0)
                 return false;
 
-            // Compute the point-to-camera direction vector in world space.
-            direction = transform.vector_to_parent(Vector3d(0.0, 0.0, -p.z));
+            // Compute the outgoing direction vector in world space.
+            outgoing = transform.vector_to_parent(Vector3d(0.0, 0.0, p.z));
 
             // Compute the emitted importance.
             importance = m_rcp_pixel_area;

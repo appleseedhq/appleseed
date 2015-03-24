@@ -104,7 +104,7 @@ class APPLESEED_DLLSYMBOL Camera
     // The generated ray is expressed in world space.
     virtual void spawn_ray(
         SamplingContext&                sampling_context,
-        const foundation::Dual2d&       point,
+        const foundation::Dual2d&       ndc,
         ShadingRay&                     ray) const = 0;
 
     // Connect a vertex to the camera and return the direction vector from the
@@ -117,8 +117,8 @@ class APPLESEED_DLLSYMBOL Camera
         SamplingContext&                sampling_context,
         const double                    time,
         const foundation::Vector3d&     point,
-        foundation::Vector3d&           direction,
         foundation::Vector2d&           ndc,
+        foundation::Vector3d&           outgoing,
         double&                         importance) const = 0;
 
     // Project a 3D point back to the film plane. The input point is expressed in

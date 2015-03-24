@@ -97,7 +97,7 @@ void FrozenDisplayRenderer::capture()
                 for (size_t px = 0; px < tile_width; ++px)
                 {
                     // Compute film point in NDC.
-                    const Vector2d point =
+                    const Vector2d ndc =
                         m_frame.get_sample_position(
                             tx, ty,
                             px, py,
@@ -110,7 +110,7 @@ void FrozenDisplayRenderer::capture()
                     {
                         // Generate a world space ray going through that film point.
                         ShadingRay ray;
-                        m_camera.spawn_ray(sampling_context, Dual2d(point), ray);
+                        m_camera.spawn_ray(sampling_context, Dual2d(ndc), ray);
 
                         // Retrieve pixel color.
                         Color4f pixel;

@@ -108,7 +108,7 @@ namespace
 
         virtual void spawn_ray(
             SamplingContext&    sampling_context,
-            const Dual2d&       point,
+            const Dual2d&       ndc,
             ShadingRay&         ray) const APPLESEED_OVERRIDE
         {
             // Initialize the ray.
@@ -121,13 +121,13 @@ namespace
 
             // Compute ray origin and direction.
             ray.m_org = transform.get_local_to_parent().extract_translation();
-            ray.m_dir = normalize(transform.vector_to_parent(ndc_to_camera(point.get_value())));
+            ray.m_dir = normalize(transform.vector_to_parent(ndc_to_camera(ndc.get_value())));
 
             // Compute ray derivatives.
-            if (point.has_derivatives())
+            if (ndc.has_derivatives())
             {
-                const Vector2d px(point.get_value() + point.get_dx());
-                const Vector2d py(point.get_value() + point.get_dy());
+                const Vector2d px(ndc.get_value() + ndc.get_dx());
+                const Vector2d py(ndc.get_value() + ndc.get_dy());
 
                 ray.m_rx.m_org = ray.m_org;
                 ray.m_ry.m_org = ray.m_org;
@@ -143,8 +143,8 @@ namespace
             SamplingContext&    sampling_context,
             const double        time,
             const Vector3d&     point,
-            Vector3d&           direction,
             Vector2d&           ndc,
+            Vector3d&           outgoing,
             double&             importance) const APPLESEED_OVERRIDE
         {
             // Retrieve the camera transform.
@@ -154,8 +154,8 @@ namespace
             // Transform the input point to camera space.
             const Vector3d p = transform.point_to_local(point);
 
-            // Compute the point-to-camera direction vector in world space.
-            direction = transform.vector_to_parent(-p);
+            // Compute the outgoing direction vector in world space.
+            outgoing = transform.vector_to_parent(p);
 
             // Compute the normalized device coordinates of the film point.
             ndc = camera_to_ndc(p);
@@ -166,7 +166,7 @@ namespace
             const Vector3d q2 = ndc_to_camera(Vector2d(ndc.x + m_half_pixel_width, ndc.y + m_half_pixel_height));
             const Vector3d q3 = ndc_to_camera(Vector2d(ndc.x - m_half_pixel_width, ndc.y + m_half_pixel_height));
             const double solid_angle = 0.5 * norm(cross(q2 - q0, q3 - q1));
-            importance = 1.0 / (square_norm(direction) * solid_angle);
+            importance = 1.0 / (square_norm(outgoing) * solid_angle);
 
             // The connection was possible.
             return true;

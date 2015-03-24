@@ -311,20 +311,20 @@ namespace
                 const ShadingRay::Time&     time)
             {
                 // Connect the light vertex with the camera.
-                Vector3d vertex_to_camera;
                 Vector2d sample_position;
+                Vector3d camera_outgoing;
                 double importance;
                 if (!m_camera.connect_vertex(
                         m_sampling_context,
                         time.m_absolute,
                         light_sample.m_point,
-                        vertex_to_camera,
                         sample_position,
+                        camera_outgoing,
                         importance))
                     return;
 
                 // Reject vertices on the back side of the area light.
-                double cos_alpha = dot(vertex_to_camera, light_sample.m_shading_normal);
+                double cos_alpha = dot(-camera_outgoing, light_sample.m_shading_normal);
                 if (cos_alpha <= 0.0)
                     return;
 
@@ -332,7 +332,7 @@ namespace
                 // Prevent self-intersections by letting the ray originate from the camera.
                 const double transmission =
                     m_shading_context.get_tracer().trace_between(
-                        light_sample.m_point + vertex_to_camera,
+                        light_sample.m_point - camera_outgoing,
                         light_sample.m_point,
                         time,
                         VisibilityFlags::CameraRay,
@@ -342,8 +342,8 @@ namespace
                 if (transmission == 0.0)
                     return;
 
-                // Adjust cos(alpha) to account for the fact that the vertex-to-camera vector was not unit-length.
-                const double distance = norm(vertex_to_camera);
+                // Adjust cos(alpha) to account for the fact that the camera outgoing direction was not unit-length.
+                const double distance = norm(camera_outgoing);
                 cos_alpha /= distance;
 
                 // Store the contribution of this vertex.
@@ -358,22 +358,22 @@ namespace
                 const ShadingRay::Time&     time)
             {
                 // Connect the light vertex with the camera.
-                Vector3d vertex_to_camera;
                 Vector2d sample_position;
+                Vector3d camera_outgoing;
                 double importance;
                 if (!m_camera.connect_vertex(
                         m_sampling_context,
                         time.m_absolute,
                         light_vertex,
-                        vertex_to_camera,
                         sample_position,
+                        camera_outgoing,
                         importance))
                     return;
 
                 // Compute the transmission factor between the light vertex and the camera.
                 const double transmission =
                     m_shading_context.get_tracer().trace_between(
-                        light_vertex + vertex_to_camera,
+                        light_vertex - camera_outgoing,
                         light_vertex,
                         time,
                         VisibilityFlags::CameraRay,
@@ -386,7 +386,7 @@ namespace
                 // Store the contribution of this vertex.
                 Spectrum radiance = light_particle_flux;
                 radiance *= static_cast<float>(transmission * importance);
-                emit_sample(sample_position, norm(vertex_to_camera), radiance);
+                emit_sample(sample_position, norm(camera_outgoing), radiance);
             }
 
             void visit_vertex(const PathVertex& vertex)
@@ -396,28 +396,28 @@ namespace
                     return;
 
                 // Connect the path vertex with the camera.
-                Vector3d vertex_to_camera;
                 Vector2d sample_position;
+                Vector3d camera_outgoing;
                 double importance;
                 if (!m_camera.connect_vertex(
                         m_sampling_context,
                         vertex.get_time().m_absolute,
                         vertex.get_point(),
-                        vertex_to_camera,
                         sample_position,
+                        camera_outgoing,
                         importance))
                     return;
 
                 // Reject vertices on the back side of the shading surface.
                 const Vector3d& shading_normal = vertex.get_shading_normal();
-                if (dot(vertex_to_camera, shading_normal) <= 0.0)
+                if (dot(camera_outgoing, shading_normal) >= 0.0)
                     return;
 
                 // Compute the transmission factor between the path vertex and the camera.
                 // Prevent self-intersections by letting the ray originate from the camera.
                 const double transmission =
                     m_shading_context.get_tracer().trace_between(
-                        vertex.get_point() + vertex_to_camera,
+                        vertex.get_point() - camera_outgoing,
                         vertex.get_point(),
                         vertex.get_time(),
                         VisibilityFlags::CameraRay,
@@ -427,9 +427,9 @@ namespace
                 if (transmission == 0.0)
                     return;
 
-                // Normalize the vertex-to-camera vector.
-                const double distance = norm(vertex_to_camera);
-                vertex_to_camera /= distance;
+                // Normalize the camera outgoing direction.
+                const double distance = norm(camera_outgoing);
+                camera_outgoing /= distance;
 
                 // Retrieve the geometric normal at the vertex.
                 const Vector3d geometric_normal =
@@ -446,8 +446,8 @@ namespace
                         true,                           // multiply by |cos(incoming, normal)|
                         geometric_normal,
                         vertex.get_shading_basis(),
-                        vertex.m_outgoing.get_value(),  // outgoing (toward the light in this context)
-                        vertex_to_camera,               // incoming (toward the camera)
+                        vertex.m_outgoing.get_value(),  // outgoing (toward the light)
+                        -camera_outgoing,               // incoming (toward the camera)
                         BSDFSample::AllScatteringModes, // todo: likely incorrect
                         bsdf_value);
                 if (bsdf_prob == 0.0)

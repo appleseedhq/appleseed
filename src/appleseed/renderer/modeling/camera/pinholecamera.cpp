@@ -147,7 +147,7 @@ namespace
 
         virtual void spawn_ray(
             SamplingContext&    sampling_context,
-            const Dual2d&       point,
+            const Dual2d&       ndc,
             ShadingRay&         ray) const APPLESEED_OVERRIDE
         {
             //
@@ -167,13 +167,13 @@ namespace
 
             // Compute ray origin and direction.
             ray.m_org = transform.get_local_to_parent().extract_translation();
-            ray.m_dir = normalize(transform.vector_to_parent(-ndc_to_camera(point.get_value())));
+            ray.m_dir = normalize(transform.vector_to_parent(-ndc_to_camera(ndc.get_value())));
 
             // Compute ray derivatives.
-            if (point.has_derivatives())
+            if (ndc.has_derivatives())
             {
-                const Vector2d px(point.get_value() + point.get_dx());
-                const Vector2d py(point.get_value() + point.get_dy());
+                const Vector2d px(ndc.get_value() + ndc.get_dx());
+                const Vector2d py(ndc.get_value() + ndc.get_dy());
 
                 ray.m_rx.m_org = ray.m_org;
                 ray.m_ry.m_org = ray.m_org;
@@ -189,8 +189,8 @@ namespace
             SamplingContext&    sampling_context,
             const double        time,
             const Vector3d&     point,
-            Vector3d&           direction,
             Vector2d&           ndc,
+            Vector3d&           outgoing,
             double&             importance) const APPLESEED_OVERRIDE
         {
             // Project the point onto the film plane.
@@ -206,16 +206,16 @@ namespace
             Transformd tmp;
             const Transformd& transform = m_transform_sequence.evaluate(time, tmp);
 
-            // Compute the point-to-camera direction vector in world space.
+            // Compute the outgoing direction vector in world space.
             const Vector3d film_point = ndc_to_camera(ndc);
-            direction = transform.point_to_parent(film_point) - point;
+            outgoing = point - transform.point_to_parent(film_point);
 
             // Compute the emitted importance.
             const double square_dist_film_lens = square_norm(film_point);
             const double dist_film_lens = sqrt(square_dist_film_lens);
             const double cos_theta = m_focal_length / dist_film_lens;
             const double solid_angle = m_pixel_area * cos_theta / square_dist_film_lens;
-            importance = 1.0 / (square_norm(direction) * solid_angle);
+            importance = 1.0 / (square_norm(outgoing) * solid_angle);
 
             // The connection was possible.
             return true;

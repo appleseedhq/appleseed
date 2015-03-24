@@ -259,7 +259,7 @@ namespace
 
         virtual void spawn_ray(
             SamplingContext&    sampling_context,
-            const Dual2d&       point,
+            const Dual2d&       ndc,
             ShadingRay&         ray) const APPLESEED_OVERRIDE
         {
             //
@@ -288,13 +288,13 @@ namespace
 
             // Compute ray origin and direction.
             ray.m_org = lens_point;
-            ray.m_dir = compute_ray_direction(point.get_value(), lens_point, transform);
+            ray.m_dir = compute_ray_direction(ndc.get_value(), lens_point, transform);
 
             // Compute ray derivatives.
-            if (point.has_derivatives())
+            if (ndc.has_derivatives())
             {
-                const Vector2d px(point.get_value() + point.get_dx());
-                const Vector2d py(point.get_value() + point.get_dy());
+                const Vector2d px(ndc.get_value() + ndc.get_dx());
+                const Vector2d py(ndc.get_value() + ndc.get_dy());
 
                 ray.m_rx.m_org = ray.m_org;
                 ray.m_ry.m_org = ray.m_org;
@@ -310,8 +310,8 @@ namespace
             SamplingContext&    sampling_context,
             const double        time,
             const Vector3d&     point,
-            Vector3d&           direction,
             Vector2d&           ndc,
+            Vector3d&           outgoing,
             double&             importance) const APPLESEED_OVERRIDE
         {
             // Retrieve the camera transform.
@@ -324,11 +324,11 @@ namespace
             // Transform input point to camera space.
             const Vector3d p = transform.point_to_local(point);
 
-            // Compute the point-to-camera direction vector in camera space.
-            direction = lens_point - p;
+            // Compute the outgoing direction vector in camera space.
+            outgoing = p - lens_point;
 
             // Compute intersection of ray with plane of focus in camera space.
-            const Vector3d focus_point = lens_point + (m_focal_distance / p.z) * direction;
+            const Vector3d focus_point = lens_point - (m_focal_distance / p.z) * outgoing;
 
             // Compute film point in camera space.
             const Vector3d film_point = -m_rcp_focal_ratio * focus_point;
@@ -341,15 +341,15 @@ namespace
                 ndc[1] < 0.0 || ndc[1] >= 1.0)
                 return false;
 
-            // Transform the point-to-camera direction vector to world space.
-            direction = transform.vector_to_parent(direction);
+            // Transform the outgoing direction vector to world space.
+            outgoing = transform.vector_to_parent(outgoing);
 
             // Compute the emitted importance.
             const double square_dist_film_lens = square_norm(film_point);
             const double dist_film_lens = sqrt(square_dist_film_lens);
             const double cos_theta = m_focal_length / dist_film_lens;
             const double solid_angle = m_pixel_area * cos_theta / square_dist_film_lens;
-            importance = 1.0 / (square_norm(direction) * solid_angle);
+            importance = 1.0 / (square_norm(outgoing) * solid_angle);
 
             // The connection was possible.
             return true;
