@@ -210,10 +210,10 @@ namespace
             const Transformd& transform = m_transform_sequence.evaluate(time, tmp);
 
             // Compute the outgoing direction vector in world space.
-            const Vector3d film_point = ndc_to_camera(ndc);
-            outgoing = point - transform.point_to_parent(film_point);
+            outgoing = point - transform.get_local_to_parent().extract_translation();
 
             // Compute the emitted importance.
+            const Vector3d film_point = ndc_to_camera(ndc);
             const double square_dist_film_lens = square_norm(film_point);
             const double dist_film_lens = sqrt(square_dist_film_lens);
             const double cos_theta = m_focal_length / dist_film_lens;
