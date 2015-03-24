@@ -132,6 +132,9 @@ namespace
             // Extract the focal length from the camera parameters.
             m_focal_length = extract_focal_length(m_film_dimensions[0]);
 
+            // Extract the abscissa of the near plane from the camera parameters.
+            m_near_z = extract_near_z();
+
             // Precompute reciprocals of film dimensions.
             m_rcp_film_width = 1.0 / m_film_dimensions[0];
             m_rcp_film_height = 1.0 / m_film_dimensions[1];
@@ -225,8 +228,8 @@ namespace
             const Vector3d&     point,
             Vector2d&           ndc) const APPLESEED_OVERRIDE
         {
-            // Cannot project the point if it is behind the lens plane.
-            if (point.z > 0.0)
+            // Cannot project the point if it is behind the near plane.
+            if (point.z > m_near_z)
                 return false;
 
             // Project the point onto the film plane.
@@ -251,8 +254,8 @@ namespace
             Vector3d local_a = transform.point_to_local(a);
             Vector3d local_b = transform.point_to_local(b);
 
-            // Clip the segment against the lens plane.
-            if (!clip(Vector3d(0.0, 0.0, 1.0), local_a, local_b))
+            // Clip the segment against the near plane.
+            if (!clip(Vector4d(0.0, 0.0, 1.0, -m_near_z), local_a, local_b))
                 return false;
 
             // Project the segment onto the film plane.
@@ -267,6 +270,7 @@ namespace
         // Parameters.
         Vector2d    m_film_dimensions;      // film dimensions in camera space, in meters
         double      m_focal_length;         // focal length in camera space, in meters
+        double      m_near_z;               // Z value of the near plane in camera space, in meters
 
         // Precomputed values.
         double      m_rcp_film_width;       // film width reciprocal in camera space
@@ -281,12 +285,14 @@ namespace
                 "  film width       %f\n"
                 "  film height      %f\n"
                 "  focal length     %f\n"
+                "  near z           %f\n"
                 "  shutter open     %f\n"
                 "  shutter close    %f",
                 Model,
                 m_film_dimensions[0],
                 m_film_dimensions[1],
                 m_focal_length,
+                m_near_z,
                 m_shutter_open_time,
                 m_shutter_close_time);
         }
@@ -375,6 +381,14 @@ DictionaryArray PinholeCameraFactory::get_input_metadata() const
             .insert("label", "Horizontal FOV")
             .insert("type", "text")
             .insert("use", "required"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "near_z")
+            .insert("label", "Near Z")
+            .insert("type", "text")
+            .insert("use", "optional")
+            .insert("default", "-0.001"));
 
     return metadata;
 }

@@ -141,7 +141,7 @@ Vector2d Camera::extract_film_dimensions() const
         if (film_dimensions[0] <= 0.0 || film_dimensions[1] <= 0.0)
         {
             RENDERER_LOG_ERROR(
-                "while defining camera \"%s\": invalid value \"%f %f\" for parameter \"%s\", "
+                "while defining camera \"%s\": invalid value \"%f %f\" for parameter \"%s\"; "
                 "using default value \"%f %f\".",
                 get_name(),
                 film_dimensions[0],
@@ -197,7 +197,7 @@ double Camera::extract_focal_length(const double film_width) const
     else
     {
         RENDERER_LOG_ERROR(
-            "while defining camera \"%s\": no \"horizontal_fov\" or \"focal_length\" parameter found, "
+            "while defining camera \"%s\": no \"horizontal_fov\" or \"focal_length\" parameter found; "
             "using default focal length value \"%f\".",
             get_name(),
             DefaultFocalLength);
@@ -250,7 +250,7 @@ void Camera::extract_focal_distance(
     else
     {
         RENDERER_LOG_ERROR(
-            "while defining camera \"%s\": no \"focal_distance\" or \"autofocus_target\" parameter found, "
+            "while defining camera \"%s\": no \"focal_distance\" or \"autofocus_target\" parameter found; "
             "using default focal distance value \"%f\".",
             get_name(),
             DefaultFocalDistance);
@@ -259,6 +259,27 @@ void Camera::extract_focal_distance(
         autofocus_target = DefaultAFTarget;
         focal_distance = DefaultFocalDistance;
     }
+}
+
+double Camera::extract_near_z() const
+{
+    const double DefaultNearZ = -0.001;         // in meters
+
+    double near_z = m_params.get_optional<double>("near_z", DefaultNearZ);
+
+    if (near_z > 0.0)
+    {
+        RENDERER_LOG_ERROR(
+            "while defining camera \"%s\": invalid near-Z value \"%f\", near-Z values must be negative or zero; "
+            "using default value \"%f\".",
+            get_name(),
+            near_z,
+            DefaultNearZ);
+
+        near_z = DefaultNearZ;
+    }
+
+    return near_z;
 }
 
 void Camera::initialize_ray(
@@ -306,7 +327,7 @@ double Camera::get_greater_than_zero(
     if (value <= 0.0)
     {
         RENDERER_LOG_ERROR(
-            "while defining camera \"%s\": invalid value \"%f\" for parameter \"%s\", "
+            "while defining camera \"%s\": invalid value \"%f\" for parameter \"%s\"; "
             "using default value \"%f\".",
             get_name(),
             value,

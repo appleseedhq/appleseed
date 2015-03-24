@@ -218,6 +218,9 @@ namespace
             extract_diaphragm_blade_count();
             extract_diaphragm_tilt_angle();
 
+            // Extract the abscissa of the near plane from the camera parameters.
+            m_near_z = extract_near_z();
+
             // Precompute reciprocals of film dimensions.
             m_rcp_film_width = 1.0 / m_film_dimensions[0];
             m_rcp_film_height = 1.0 / m_film_dimensions[1];
@@ -359,8 +362,8 @@ namespace
             const Vector3d&     point,
             Vector2d&           ndc) const APPLESEED_OVERRIDE
         {
-            // Cannot project the point if it is behind the lens plane.
-            if (point.z > 0.0)
+            // Cannot project the point if it is behind the near plane.
+            if (point.z > m_near_z)
                 return false;
 
             // Project the point onto the film plane.
@@ -385,8 +388,8 @@ namespace
             Vector3d local_a = transform.point_to_local(a);
             Vector3d local_b = transform.point_to_local(b);
 
-            // Clip the segment against the lens plane.
-            if (!clip(Vector3d(0.0, 0.0, 1.0), local_a, local_b))
+            // Clip the segment against the near plane.
+            if (!clip(Vector4d(0.0, 0.0, 1.0, -m_near_z), local_a, local_b))
                 return false;
 
             // Project the segment onto the film plane.
@@ -407,6 +410,7 @@ namespace
         double              m_focal_distance;           // focal distance in camera space
         size_t              m_diaphragm_blade_count;    // number of blades of the diaphragm, 0 for round aperture
         double              m_diaphragm_tilt_angle;     // tilt angle of the diaphragm in radians
+        double              m_near_z;                   // Z value of the near plane in camera space, in meters
 
         // Precomputed values.
         double              m_rcp_film_width;           // film width reciprocal in camera space
@@ -541,6 +545,7 @@ namespace
                 "  diaphragm map    %s\n"
                 "  diaphragm blades %s\n"
                 "  diaphragm angle  %f\n"
+                "  near z           %f\n"
                 "  shutter open     %f\n"
                 "  shutter close    %f",
                 Model,
@@ -554,6 +559,7 @@ namespace
                 m_diaphragm_map_bound ? m_diaphragm_map_name.c_str() : "none",
                 pretty_uint(m_diaphragm_blade_count).c_str(),
                 m_diaphragm_tilt_angle,
+                m_near_z,
                 m_shutter_open_time,
                 m_shutter_close_time);
         }
@@ -744,6 +750,14 @@ DictionaryArray ThinLensCameraFactory::get_input_metadata() const
                 Dictionary()
                     .insert("texture_instance", "Textures"))
             .insert("use", "optional"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "near_z")
+            .insert("label", "Near Z")
+            .insert("type", "text")
+            .insert("use", "optional")
+            .insert("default", "-0.001"));
 
     return metadata;
 }

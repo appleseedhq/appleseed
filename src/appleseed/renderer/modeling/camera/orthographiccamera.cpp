@@ -101,6 +101,9 @@ namespace
             // Extract the film dimensions from the camera parameters.
             m_film_dimensions = extract_film_dimensions();
 
+            // Extract the abscissa of the near plane from the camera parameters.
+            m_near_z = extract_near_z();
+
             // Precompute reciprocals of film dimensions.
             m_rcp_film_width = 1.0 / m_film_dimensions[0];
             m_rcp_film_height = 1.0 / m_film_dimensions[1];
@@ -185,8 +188,8 @@ namespace
             const Vector3d&     point,
             Vector2d&           ndc) const APPLESEED_OVERRIDE
         {
-            // Cannot project the point if it is behind the lens plane.
-            if (point.z > 0.0)
+            // Cannot project the point if it is behind the near plane.
+            if (point.z > m_near_z)
                 return false;
 
             // Project the point onto the film plane.
@@ -212,7 +215,7 @@ namespace
             Vector3d local_b = transform.point_to_local(b);
 
             // Clip the segment against the near plane.
-            if (!clip(Vector3d(0.0, 0.0, 1.0), local_a, local_b))
+            if (!clip(Vector4d(0.0, 0.0, 1.0, -m_near_z), local_a, local_b))
                 return false;
 
             // Project the segment onto the film plane.
@@ -226,6 +229,7 @@ namespace
       private:
         // Parameters.
         Vector2d    m_film_dimensions;      // film dimensions in camera space, in meters
+        double      m_near_z;               // Z value of the near plane in camera space, in meters
 
         // Precomputed values.
         double      m_rcp_film_width;       // film width reciprocal in camera space
@@ -239,11 +243,13 @@ namespace
                 "  model            %s\n"
                 "  film width       %f\n"
                 "  film height      %f\n"
+                "  near z           %f\n"
                 "  shutter open     %f\n"
                 "  shutter close    %f",
                 Model,
                 m_film_dimensions[0],
                 m_film_dimensions[1],
+                m_near_z,
                 m_shutter_open_time,
                 m_shutter_close_time);
         }
@@ -316,6 +322,14 @@ DictionaryArray OrthographicCameraFactory::get_input_metadata() const
             .insert("label", "Aspect Ratio")
             .insert("type", "text")
             .insert("use", "required"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "near_z")
+            .insert("label", "Near Z")
+            .insert("type", "text")
+            .insert("use", "optional")
+            .insert("default", "-0.001"));
 
     return metadata;
 }

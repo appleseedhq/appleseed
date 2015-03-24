@@ -165,6 +165,9 @@ class APPLESEED_DLLSYMBOL Camera
         foundation::Vector2d&           autofocus_target,
         double&                         focal_distance) const;
 
+    // Utility function to retrieve the abscissa (in meters) of the near plane from the camera parameters.
+    double extract_near_z() const;
+
     // Initialize a ray but does not set its origin or direction.
     void initialize_ray(
         SamplingContext&                sampling_context,
