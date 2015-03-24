@@ -488,13 +488,10 @@ namespace
             const double time = get_shutter_middle_time();
             const Transformd transform = m_transform_sequence.evaluate(time);
 
-            // Compute the camera space coordinates of the focus point.
-            const Vector3d film_point = ndc_to_camera(m_autofocus_target);
-
             // Create a ray that goes through the center of the lens.
             ShadingRay ray;
-            ray.m_org = transform.point_to_parent(film_point);
-            ray.m_dir = normalize(transform.point_to_parent(Vector3d(0.0)) - ray.m_org);
+            ray.m_org = transform.get_local_to_parent().extract_translation();
+            ray.m_dir = normalize(transform.vector_to_parent(-ndc_to_camera(m_autofocus_target)));
             ray.m_tmin = 0.0;
             ray.m_tmax = numeric_limits<double>::max();
             ray.m_time = ShadingRay::Time(time, 0.5, get_shutter_open_time_interval());
