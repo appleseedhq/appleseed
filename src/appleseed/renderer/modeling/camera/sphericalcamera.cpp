@@ -187,8 +187,15 @@ namespace
             Vector2d&           a_ndc,
             Vector2d&           b_ndc) const APPLESEED_OVERRIDE
         {
-            a_ndc = camera_to_ndc(a);
-            b_ndc = camera_to_ndc(b);
+            // Retrieve the camera transform.
+            Transformd tmp;
+            const Transformd& transform = m_transform_sequence.evaluate(time, tmp);
+
+            // Project the segment onto the film plane.
+            a_ndc = camera_to_ndc(transform.point_to_local(a));
+            b_ndc = camera_to_ndc(transform.point_to_local(b));
+
+            // Projection was successful.
             return true;
         }
 
