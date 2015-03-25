@@ -36,9 +36,11 @@
 
 // Standard headers.
 #include <cstddef>
+#include <memory>
 
 namespace bpy = boost::python;
 using namespace foundation;
+using namespace std;
 
 namespace
 {
@@ -51,7 +53,7 @@ namespace
             bpy::throw_error_already_set();
         }
 
-        Vector<T, N>* r = new Vector<T, N>();
+        auto_ptr<Vector<T, N> > r(new Vector<T, N>());
 
         for (unsigned i = 0; i < N; ++i)
         {
@@ -65,7 +67,7 @@ namespace
             (*r)[i] = ex();
         }
 
-        return r;
+        return r.release();
     }
 
     template <class T, std::size_t N>
