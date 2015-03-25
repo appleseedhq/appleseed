@@ -148,9 +148,13 @@ namespace
                     // Compute the sample position in NDC.
                     const Vector2d sample_position = frame.get_sample_position(ix + s.x, iy + s.y);
 
+                    // Create and initialize a shading result.
+                    // The main output *must* be set by the sample renderer (typically, by the surface shader).
+                    ShadingResult shading_result(aov_count);
+                    shading_result.set_aovs_to_transparent_black_linear_rgba();
+
                     // Render the sample.
                     SamplingContext child_sampling_context(sampling_context);
-                    ShadingResult shading_result(aov_count);
                     m_sample_renderer->render_sample(
                         child_sampling_context,
                         pixel_context,
