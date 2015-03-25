@@ -44,7 +44,7 @@ using namespace std;
 
 namespace
 {
-    template <typename T, std::size_t N>
+    template <typename T, size_t N>
     Vector<T, N>* construct_vec_from_list(bpy::list l)
     {
         if (bpy::len(l) != N)
@@ -55,7 +55,7 @@ namespace
 
         auto_ptr<Vector<T, N> > r(new Vector<T, N>());
 
-        for (unsigned i = 0; i < N; ++i)
+        for (size_t i = 0; i < N; ++i)
         {
             bpy::extract<T> ex(l[i]);
             if (!ex.check())
@@ -70,7 +70,7 @@ namespace
         return r.release();
     }
 
-    template <class T, std::size_t N>
+    template <class T, size_t N>
     struct vector_helper {};
 
     template <class T>
@@ -106,7 +106,7 @@ namespace
         }
     };
 
-    template <typename T, std::size_t N>
+    template <typename T, size_t N>
     struct vector_indexer
     {
         static T get(const Vector<T, N>& x, int i)
@@ -140,7 +140,7 @@ namespace
         }
     };
 
-    template <typename T, std::size_t N>
+    template <typename T, size_t N>
     void do_bind_vector(const char* class_name)
     {
         bpy::class_<Vector<T, N> >(class_name)

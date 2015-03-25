@@ -144,11 +144,11 @@ class APPLESEED_DLLSYMBOL DisneyMaterial
         const Project&              project,
         const Assembly&             assembly) APPLESEED_OVERRIDE;
 
-    std::size_t get_layer_count() const;
+    size_t get_layer_count() const;
 
     const DisneyMaterialLayer& get_layer(
-        const std::size_t           index,
-        const std::size_t           thread_index = ~0) const;
+        const size_t                index,
+        const size_t                thread_index = ~0) const;
 
     foundation::Dictionary get_new_layer_values() const;
 

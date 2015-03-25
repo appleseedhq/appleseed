@@ -42,7 +42,6 @@
 
 // Standard headers.
 #include <cassert>
-#include <cstddef>
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
@@ -103,8 +102,7 @@ void BlankTileRendererFactory::release()
     delete this;
 }
 
-ITileRenderer* BlankTileRendererFactory::create(
-    const size_t    thread_index)
+ITileRenderer* BlankTileRendererFactory::create(const size_t thread_index)
 {
     return new BlankTileRenderer();
 }

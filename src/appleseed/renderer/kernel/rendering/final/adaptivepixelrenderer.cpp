@@ -63,7 +63,6 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
-#include <cstddef>
 #include <memory>
 
 using namespace foundation;
@@ -365,7 +364,7 @@ void AdaptivePixelRendererFactory::release()
 }
 
 IPixelRenderer* AdaptivePixelRendererFactory::create(
-    const size_t    thread_index)
+    const size_t                thread_index)
 {
     return new AdaptivePixelRenderer(
         m_frame,

@@ -42,7 +42,6 @@
 
 // Standard headers.
 #include <cassert>
-#include <cstddef>
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }

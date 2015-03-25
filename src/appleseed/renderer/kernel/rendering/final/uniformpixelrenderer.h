@@ -37,6 +37,9 @@
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 
+// Standard headers.
+#include <cstddef>
+
 // Forward declarations.
 namespace renderer  { class ISampleRendererFactory; }
 
@@ -61,7 +64,7 @@ class UniformPixelRendererFactory
 
     // Return a new uniform pixel renderer instance.
     virtual IPixelRenderer* create(
-        const std::size_t   thread_index) APPLESEED_OVERRIDE;
+        const size_t                thread_index) APPLESEED_OVERRIDE;
 
   private:
     ISampleRendererFactory*         m_factory;

@@ -32,6 +32,7 @@
 #include "unalignedmatrix44.h"
 
 // Standard headers.
+#include <cstddef>
 #include <memory>
 
 namespace bpy = boost::python;
@@ -51,7 +52,7 @@ namespace
 
         auto_ptr<UnalignedMatrix44<T> > r(new UnalignedMatrix44<T>());
 
-        for (unsigned i = 0; i < 4 * 4; ++i)
+        for (size_t i = 0; i < 4 * 4; ++i)
         {
             bpy::extract<T> ex(l[i]);
             if (!ex.check())

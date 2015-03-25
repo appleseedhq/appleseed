@@ -57,7 +57,6 @@
 
 // Standard headers.
 #include <cmath>
-#include <cstddef>
 
 // Forward declarations.
 namespace foundation    { class Tile; }
@@ -267,7 +266,7 @@ void UniformPixelRendererFactory::release()
 }
 
 IPixelRenderer* UniformPixelRendererFactory::create(
-    const size_t    thread_index)
+    const size_t                thread_index)
 {
     return new UniformPixelRenderer(m_factory, m_params, thread_index);
 }

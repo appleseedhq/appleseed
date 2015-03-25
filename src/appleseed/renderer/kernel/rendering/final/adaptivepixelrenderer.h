@@ -37,6 +37,9 @@
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 
+// Standard headers.
+#include <cstddef>
+
 // Forward declarations.
 namespace renderer  { class Frame; }
 namespace renderer  { class ISampleRendererFactory; }
@@ -63,7 +66,7 @@ class AdaptivePixelRendererFactory
 
     // Return a new adaptive pixel renderer instance.
     virtual IPixelRenderer* create(
-        const std::size_t   thread_index) APPLESEED_OVERRIDE;
+        const size_t                thread_index) APPLESEED_OVERRIDE;
 
   private:
     const Frame&                    m_frame;

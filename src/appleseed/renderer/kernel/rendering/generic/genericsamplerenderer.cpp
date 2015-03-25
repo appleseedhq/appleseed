@@ -259,7 +259,6 @@ namespace
 
                 // Move the ray origin to the intersection point.
                 primary_ray.m_org = shading_point_ptr->get_point();
-
                 if (primary_ray.m_has_differentials)
                 {
                     primary_ray.m_rx.m_org = primary_ray.m_rx.point_at(primary_ray.m_tmax);
@@ -376,8 +375,7 @@ void GenericSampleRendererFactory::release()
     delete this;
 }
 
-ISampleRenderer* GenericSampleRendererFactory::create(
-    const std::size_t   thread_index)
+ISampleRenderer* GenericSampleRendererFactory::create(const size_t thread_index)
 {
     return
         new GenericSampleRenderer(

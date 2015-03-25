@@ -36,6 +36,9 @@
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 
+// Standard headers.
+#include <cstddef>
+
 namespace renderer
 {
 
@@ -56,8 +59,7 @@ class DebugTileRendererFactory
     virtual void release() APPLESEED_OVERRIDE;
 
     // Return a new debug tile renderer instance.
-    virtual ITileRenderer* create(
-        const std::size_t   thread_index) APPLESEED_OVERRIDE;
+    virtual ITileRenderer* create(const size_t thread_index) APPLESEED_OVERRIDE;
 };
 
 }       // namespace renderer
