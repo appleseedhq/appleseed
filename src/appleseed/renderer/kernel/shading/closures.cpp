@@ -132,6 +132,12 @@ namespace
         OSL::Vec3       N;
         float           eta;
     };
+
+    struct VelvetBRDFClosureParams
+    {
+        OSL::Vec3   N;
+        float       alpha;
+    };
 }
 
 
@@ -451,6 +457,28 @@ void CompositeSurfaceClosure::process_closure_tree(
                         values);
                 }
                 break;
+
+              case VelvetID:
+              {
+                  const VelvetBRDFClosureParams* p =
+                      reinterpret_cast<const VelvetBRDFClosureParams*>(c->data());
+
+                  VelvetBRDFInputValues values;
+                  values.m_roughness = p->alpha;
+                  values.m_roughness_multiplier = 1.0;
+                  values.m_reflectance.set(1.0f);
+                  values.m_reflectance_multiplier = 1.0;
+                  values.m_fresnel_normal_reflectance = 1.0;
+                  values.m_fresnel_multiplier = 1.0;
+
+                  add_closure<VelvetBRDFInputValues>(
+                      static_cast<ClosureID>(c->id),
+                      w,
+                      Vector3d(p->N),
+                      values);
+              }
+              break;
+
             }
         }
         break;
@@ -713,6 +741,10 @@ void register_appleseed_closures(OSL::ShadingSystem& shading_system)
                                    CLOSURE_FLOAT_PARAM(DisneyBRDFClosureParams, clearcoat),
                                    CLOSURE_FLOAT_PARAM(DisneyBRDFClosureParams, clearcoat_gloss),
                                    CLOSURE_FINISH_PARAM(DisneyBRDFClosureParams) } },
+
+        { "as_velvet", VelvetID, { CLOSURE_VECTOR_PARAM(VelvetBRDFClosureParams, N),
+                                   CLOSURE_FLOAT_PARAM(VelvetBRDFClosureParams, alpha),
+                                   CLOSURE_FINISH_PARAM(VelvetBRDFClosureParams) } },
 
         { "oren_nayar", OrenNayarID, { CLOSURE_VECTOR_PARAM(OrenNayarBRDFClosureParams, N),
                                        CLOSURE_FLOAT_PARAM(OrenNayarBRDFClosureParams, roughness),

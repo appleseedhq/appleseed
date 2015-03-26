@@ -1248,6 +1248,8 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/specularbrdf.h
     renderer/modeling/bsdf/specularbtdf.cpp
     renderer/modeling/bsdf/specularbtdf.h
+    renderer/modeling/bsdf/velvetbrdf.cpp
+    renderer/modeling/bsdf/velvetbrdf.h
 )
 if (WITH_DISNEY_MATERIAL)
 list (APPEND renderer_modeling_bsdf_sources
