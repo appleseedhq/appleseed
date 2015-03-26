@@ -30,6 +30,9 @@
 // Interface header.
 #include "itemregistry.h"
 
+// appleseed.renderer headers.
+#include "renderer/modeling/entity/entity.h"
+
 // Standard headers.
 #include <cassert>
 #include <utility>
@@ -38,6 +41,7 @@
 #include <QMutexLocker>
 
 using namespace foundation;
+using namespace renderer;
 using namespace std;
 
 namespace appleseed {
@@ -57,6 +61,13 @@ void ItemRegistry::insert(
     assert(result.second);
 }
 
+void ItemRegistry::insert(
+    const Entity&   entity,
+    ItemBase*       item)
+{
+    insert(entity.get_uid(), item);
+}
+
 void ItemRegistry::remove(const UniqueID uid)
 {
     QMutexLocker locker(&m_mutex);
@@ -69,6 +80,11 @@ void ItemRegistry::remove(const UniqueID uid)
     assert(result == 1);
 }
 
+void ItemRegistry::remove(const Entity& entity)
+{
+    remove(entity.get_uid());
+}
+
 ItemBase* ItemRegistry::get_item(const UniqueID uid) const
 {
     QMutexLocker locker(&m_mutex);
@@ -76,6 +92,11 @@ ItemBase* ItemRegistry::get_item(const UniqueID uid) const
     const RegistryType::const_iterator i = m_registry.find(uid);
 
     return i == m_registry.end() ? 0 : i->second;
+}
+
+ItemBase* ItemRegistry::get_item(const Entity& entity) const
+{
+    return get_item(entity.get_uid());
 }
 
 }   // namespace studio

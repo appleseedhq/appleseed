@@ -176,7 +176,7 @@ ItemBase* TextureCollectionItem::create_item(Texture* texture)
             m_parent_item,
             m_project_builder);
 
-    m_project_builder.get_item_registry().insert(texture->get_uid(), item);
+    m_project_builder.get_item_registry().insert(*texture, item);
 
     return item;
 }

@@ -131,7 +131,7 @@ ItemBase* AssemblyCollectionItem::create_item(Assembly* assembly)
             m_project_builder,
             m_settings);
 
-    m_project_builder.get_item_registry().insert(assembly->get_uid(), item);
+    m_project_builder.get_item_registry().insert(*assembly, item);
 
     return item;
 }

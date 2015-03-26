@@ -141,7 +141,7 @@ ItemBase* MaterialCollectionItem::create_item(Material* material)
             m_project_builder,
             m_settings);
 
-    m_project_builder.get_item_registry().insert(material->get_uid(), item);
+    m_project_builder.get_item_registry().insert(*material, item);
 
     return item;
 }

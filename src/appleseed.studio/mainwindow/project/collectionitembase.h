@@ -173,7 +173,7 @@ ItemBase* CollectionItemBase<Entity>::create_item(Entity* entity)
 
     ItemBase* item = new ItemBase(entity->get_class_uid(), entity->get_name());
 
-    m_project_builder.get_item_registry().insert(entity->get_uid(), item);
+    m_project_builder.get_item_registry().insert(*entity, item);
 
     return item;
 }

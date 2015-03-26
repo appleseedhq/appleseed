@@ -88,7 +88,7 @@ SceneItem::SceneItem(
                 project_builder));
     m_camera_item->set_allow_deletion(false);
     m_camera_item->set_fixed_position(true);
-    project_builder.get_item_registry().insert(scene.get_camera()->get_uid(), m_camera_item);
+    project_builder.get_item_registry().insert(*scene.get_camera(), m_camera_item);
 
     insertChild(
         1,
@@ -100,7 +100,7 @@ SceneItem::SceneItem(
                 project_builder));
     m_environment_item->set_allow_deletion(false);
     m_environment_item->set_fixed_position(true);
-    project_builder.get_item_registry().insert(scene.get_environment()->get_uid(), m_environment_item);
+    project_builder.get_item_registry().insert(*scene.get_environment(), m_environment_item);
 
     insertChild(
         2,

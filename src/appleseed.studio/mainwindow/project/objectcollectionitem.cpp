@@ -208,7 +208,7 @@ ItemBase* ObjectCollectionItem::create_item(Object* object)
             m_parent_item,
             m_project_builder);
 
-    m_project_builder.get_item_registry().insert(object->get_uid(), item);
+    m_project_builder.get_item_registry().insert(*object, item);
 
     return item;
 }

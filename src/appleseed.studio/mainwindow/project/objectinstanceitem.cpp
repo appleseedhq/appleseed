@@ -204,8 +204,7 @@ class AssignNewDisneyMaterialAction
                     assembly.materials());
 
             const AssemblyItem* assembly_item =
-                static_cast<AssemblyItem*>(m_project_builder.get_item_registry().get_item(assembly.get_uid()));
-
+                m_project_builder.get_item_registry().get_item<AssemblyItem>(assembly);
             assembly_item->get_material_collection_item().create_default_disney_material(material_name);
 
             const Object* object = object_instance.find_object();
