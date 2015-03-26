@@ -175,6 +175,7 @@ QMenu* ObjectInstanceItem::get_multiple_items_context_menu(const QList<ItemBase*
     return menu;
 }
 
+// Friend of ObjectInstanceItem class, thus cannot be placed in anonymous namespace.
 class AssignNewDisneyMaterialAction
   : public RenderingManager::IScheduledAction
 {
@@ -198,25 +199,38 @@ class AssignNewDisneyMaterialAction
             const ObjectInstance& object_instance = *object_instance_item->m_entity;
             const Assembly& assembly = object_instance_item->m_parent;
 
+            // Name the material after the name of the object instance.
             const string material_name =
                 make_unique_name(
                     string(object_instance.get_name()) + "_material",
                     assembly.materials());
 
+            // Create the material and insert it into the assembly.
             const AssemblyItem* assembly_item =
                 m_project_builder.get_item_registry().get_item<AssemblyItem>(assembly);
             assembly_item->get_material_collection_item().create_default_disney_material(material_name);
 
+            // We need the object bound to the instance in order to retrieve the material slots.
             const Object* object = object_instance.find_object();
-
             if (object)
             {
                 const size_t slot_count = object->get_material_slot_count();
 
-                for (size_t j = 0; j < slot_count; ++j)
+                if (slot_count > 0)
+                {
+                    for (size_t j = 0; j < slot_count; ++j)
+                    {
+                        object_instance_item->do_assign_material(
+                            object->get_material_slot(j),
+                            true,   // assign to front side
+                            true,   // assign to back side
+                            material_name.c_str());
+                    }
+                }
+                else
                 {
                     object_instance_item->do_assign_material(
-                        object->get_material_slot(j),
+                        ObjectInstanceItem::DefaultSlotName,
                         true,   // assign to front side
                         true,   // assign to back side
                         material_name.c_str());
