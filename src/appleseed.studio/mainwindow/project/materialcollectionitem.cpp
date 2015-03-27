@@ -93,19 +93,21 @@ MaterialCollectionItem::MaterialCollectionItem(
     add_items(materials);
 }
 
-void MaterialCollectionItem::create_default_disney_material(const string& material_name)
+const Material& MaterialCollectionItem::create_default_disney_material(const string& material_name)
 {
     auto_release_ptr<Material> material =
         DisneyMaterialFactory().create(material_name.c_str(), ParamArray());
+    Material* material_ptr = material.get();
 
     const Dictionary layer_values = static_cast<DisneyMaterial*>(material.get())->get_new_layer_values();
     material->get_parameters().insert(layer_values.get("layer_name"), layer_values);
 
-    add_item(material.get());
+    add_item(material_ptr);
 
     EntityTraits<Material>::insert_entity(material, m_parent);
-
     m_editor_context.m_project_builder.notify_project_modification();
+
+    return *material_ptr;
 }
 
 QMenu* MaterialCollectionItem::get_single_item_context_menu() const

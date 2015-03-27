@@ -37,6 +37,7 @@
 // Forward declarations.
 namespace appleseed { namespace studio { class EntityEditorContext; } }
 namespace renderer  { class Assembly; }
+namespace renderer  { class Material; }
 
 namespace appleseed {
 namespace studio {
@@ -53,7 +54,7 @@ class MaterialCollectionItem
         renderer::Assembly&             parent,
         AssemblyItem*                   parent_item);
 
-    void create_default_disney_material(const std::string& material_name);
+    const renderer::Material& create_default_disney_material(const std::string& material_name);
 
   protected:
     typedef CollectionItem<renderer::Material, renderer::Assembly, AssemblyItem> Base;

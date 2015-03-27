@@ -39,6 +39,7 @@
 #include "mainwindow/project/materialassignmenteditorwindow.h"
 #include "mainwindow/project/materialcollectionitem.h"
 #include "mainwindow/project/projectbuilder.h"
+#include "mainwindow/project/projectexplorer.h"
 #include "mainwindow/rendering/renderingmanager.h"
 
 // appleseed.renderer headers.
@@ -182,75 +183,84 @@ class AssignNewDisneyMaterialAction
 {
   public:
     AssignNewDisneyMaterialAction(
-        const QList<ItemBase*>& items,
-        ItemRegistry&           item_registry)
-      : m_items(items)
-      , m_item_registry(item_registry)
+        EntityEditorContext&    editor_context,
+        const QList<ItemBase*>& items)
+      : m_editor_context(editor_context)
+      , m_items(items)
     {
     }
 
-    virtual void operator()(
-        Project&                project) APPLESEED_OVERRIDE
+    virtual void operator()(Project& project) APPLESEED_OVERRIDE
     {
         for (int i = 0; i < m_items.size(); ++i)
         {
-            ObjectInstanceItem* object_instance_item =
-                static_cast<ObjectInstanceItem*>(m_items[i]);
+            // Create a new Disney material and assign it to the object instance.
+            const Material& material =
+                create_and_assign_new_material(static_cast<ObjectInstanceItem*>(m_items[i]));
 
-            const ObjectInstance& object_instance = *object_instance_item->m_entity;
-            const Assembly& assembly = object_instance_item->m_parent;
+            // Select the last added material.
+            if (i == m_items.size() - 1)
+                m_editor_context.m_project_explorer.select_entity(material.get_uid());
+        }
+    }
 
-            // Name the material after the name of the object instance.
-            const string material_name =
-                make_unique_name(
-                    string(object_instance.get_name()) + "_material",
-                    assembly.materials());
+    const Material& create_and_assign_new_material(ObjectInstanceItem* object_instance_item)
+    {
+        const ObjectInstance& object_instance = *object_instance_item->m_entity;
+        const Assembly& assembly = object_instance_item->m_parent;
 
-            // Create the material and insert it into the assembly.
-            const AssemblyItem* assembly_item = m_item_registry.get_item<AssemblyItem>(assembly);
+        // Name the material after the name of the object instance.
+        const string material_name =
+            make_unique_name(
+                string(object_instance.get_name()) + "_material",
+                assembly.materials());
+
+        // Create the material and insert it into the assembly.
+        const AssemblyItem* assembly_item = m_editor_context.m_item_registry.get_item<AssemblyItem>(assembly);
+        const Material& material =
             assembly_item->get_material_collection_item().create_default_disney_material(material_name);
 
-            // We need the object bound to the instance in order to retrieve the material slots.
-            const Object* object = object_instance.find_object();
-            if (object)
-            {
-                const size_t slot_count = object->get_material_slot_count();
+        // Assign the material to the object instance.
+        // We need the object bound to the instance in order to retrieve the material slots.
+        const Object* object = object_instance.find_object();
+        if (object)
+        {
+            const size_t slot_count = object->get_material_slot_count();
 
-                if (slot_count > 0)
-                {
-                    for (size_t j = 0; j < slot_count; ++j)
-                    {
-                        object_instance_item->do_assign_material(
-                            object->get_material_slot(j),
-                            true,   // assign to front side
-                            true,   // assign to back side
-                            material_name.c_str());
-                    }
-                }
-                else
+            if (slot_count > 0)
+            {
+                for (size_t i = 0; i < slot_count; ++i)
                 {
                     object_instance_item->do_assign_material(
-                        ObjectInstanceItem::DefaultSlotName,
+                        object->get_material_slot(i),
                         true,   // assign to front side
                         true,   // assign to back side
                         material_name.c_str());
                 }
             }
+            else
+            {
+                object_instance_item->do_assign_material(
+                    ObjectInstanceItem::DefaultSlotName,
+                    true,   // assign to front side
+                    true,   // assign to back side
+                    material_name.c_str());
+            }
         }
+
+        return material;
     }
 
   private:
+    EntityEditorContext&    m_editor_context;
     const QList<ItemBase*>  m_items;
-    ItemRegistry&           m_item_registry;
 };
 
 void ObjectInstanceItem::slot_assign_new_disney_material()
 {
     m_editor_context.m_rendering_manager.schedule_or_execute(
         auto_ptr<RenderingManager::IScheduledAction>(
-            new AssignNewDisneyMaterialAction(
-                get_action_items(),
-                m_editor_context.m_item_registry)));
+            new AssignNewDisneyMaterialAction(m_editor_context, get_action_items())));
 }
 
 void ObjectInstanceItem::slot_open_material_assignment_editor()
