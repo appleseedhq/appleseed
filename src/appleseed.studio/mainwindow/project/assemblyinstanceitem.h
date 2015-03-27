@@ -39,6 +39,7 @@
 #include "foundation/platform/compiler.h"
 
 // Forward declarations.
+namespace appleseed { namespace studio { class EntityEditorContext; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace renderer  { class AssemblyInstance; }
 namespace renderer  { class BaseGroup; }
@@ -53,6 +54,7 @@ class AssemblyInstanceItem
     typedef InstanceCollectionItem<renderer::AssemblyInstance, AssemblyInstanceItem, renderer::BaseGroup> AssemblyInstanceCollectionItem;
 
     AssemblyInstanceItem(
+        EntityEditorContext&            editor_context,
         renderer::AssemblyInstance*     assembly_instance,
         renderer::BaseGroup&            parent,
         AssemblyInstanceCollectionItem* collection_item,

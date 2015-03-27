@@ -50,6 +50,9 @@
 #include <memory>
 #include <string>
 
+// Forward declarations.
+namespace appleseed { namespace studio { class EntityEditorContext; } }
+
 namespace appleseed {
 namespace studio {
 
@@ -59,10 +62,11 @@ class FixedModelEntityItem
 {
   public:
     FixedModelEntityItem(
-        Entity*             entity,
-        ParentEntity&       parent,
-        CollectionItem*     collection_item,
-        ProjectBuilder&     project_builder);
+        EntityEditorContext&    editor_context,
+        Entity*                 entity,
+        ParentEntity&           parent,
+        CollectionItem*         collection_item,
+        ProjectBuilder&         project_builder);
 
   protected:
     typedef EntityItem<Entity, ParentEntity, CollectionItem> Base;
@@ -71,6 +75,7 @@ class FixedModelEntityItem
     typedef FixedModelEntityEditorFormFactory<
         typename EntityTraitsType::FactoryRegistrarType
     > FixedModelEntityEditorFormFactoryType;
+
   private:
     virtual void slot_edit(AttributeEditor* attribute_editor) APPLESEED_OVERRIDE;
 };
@@ -82,12 +87,12 @@ class FixedModelEntityItem
 
 template <typename Entity, typename ParentEntity, typename CollectionItem>
 FixedModelEntityItem<Entity, ParentEntity, CollectionItem>::FixedModelEntityItem(
-    Entity*                                         entity,
-    ParentEntity&                                   parent,
-    CollectionItem*                                 collection_item,
-    ProjectBuilder&                                 project_builder)
-
-  : Base(entity, parent, collection_item, project_builder)
+    EntityEditorContext&        editor_context,
+    Entity*                     entity,
+    ParentEntity&               parent,
+    CollectionItem*             collection_item,
+    ProjectBuilder&             project_builder)
+  : Base(editor_context, entity, parent, collection_item, project_builder)
 {
 }
 

@@ -31,6 +31,7 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTEXPLORER_H
 
 // appleseed.studio headers.
+#include "mainwindow/project/entityeditorcontext.h"
 #include "mainwindow/project/projectbuilder.h"
 
 // appleseed.foundation headers.
@@ -89,6 +90,7 @@ class ProjectExplorer
     QTreeWidget*                m_tree_widget;
     AttributeEditor*            m_attribute_editor;
     ProjectBuilder              m_project_builder;
+    EntityEditorContext         m_editor_context;
     std::auto_ptr<QShortcut>    m_delete_shortcut;
 
     QMenu* build_single_item_context_menu(QTreeWidgetItem* item) const;

@@ -65,12 +65,13 @@ namespace
 }
 
 AssemblyCollectionItem::AssemblyCollectionItem(
-    AssemblyContainer&  assemblies,
-    BaseGroup&          parent,
-    BaseGroupItem*      parent_item,
-    ProjectBuilder&     project_builder,
-    ParamArray&         settings)
-  : CollectionItemBase<Assembly>(g_class_uid, "Assemblies", project_builder)
+    EntityEditorContext&    editor_context,
+    AssemblyContainer&      assemblies,
+    BaseGroup&              parent,
+    BaseGroupItem*          parent_item,
+    ProjectBuilder&         project_builder,
+    ParamArray&             settings)
+  : CollectionItemBase<Assembly>(editor_context, g_class_uid, "Assemblies", project_builder)
   , m_parent(parent)
   , m_parent_item(parent_item)
   , m_settings(settings)
@@ -125,6 +126,7 @@ ItemBase* AssemblyCollectionItem::create_item(Assembly* assembly)
 
     ItemBase* item =
         new AssemblyItem(
+            m_editor_context,
             *assembly,
             m_parent,
             m_parent_item,

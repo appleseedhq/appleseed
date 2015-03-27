@@ -45,6 +45,7 @@
 // Forward declarations.
 namespace appleseed { namespace studio { class AssemblyItem; } }
 namespace appleseed { namespace studio { class BaseGroupItem; } }
+namespace appleseed { namespace studio { class EntityEditorContext; } }
 namespace appleseed { namespace studio { class ItemBase; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace renderer  { class ParamArray; }
@@ -60,6 +61,7 @@ class AssemblyCollectionItem
 
   public:
     AssemblyCollectionItem(
+        EntityEditorContext&            editor_context,
         renderer::AssemblyContainer&    assemblies,
         renderer::BaseGroup&            parent,
         BaseGroupItem*                  parent_item,

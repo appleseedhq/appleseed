@@ -53,22 +53,24 @@ namespace appleseed {
 namespace studio {
 
 BaseGroupItem::BaseGroupItem(
-    const UniqueID      class_uid,
-    BaseGroup&          base_group,
-    ProjectBuilder&     project_builder,
-    ParamArray&         settings)
-  : ItemBase(class_uid)
+    EntityEditorContext&    editor_context,
+    const UniqueID          class_uid,
+    BaseGroup&              base_group,
+    ProjectBuilder&         project_builder,
+    ParamArray&             settings)
+  : ItemBase(editor_context, class_uid)
 {
     add_items(base_group, project_builder, settings);
 }
 
 BaseGroupItem::BaseGroupItem(
-    const UniqueID      class_uid,
-    const QString&      title,
-    BaseGroup&          base_group,
-    ProjectBuilder&     project_builder,
-    ParamArray&         settings)
-  : ItemBase(class_uid, title)
+    EntityEditorContext&    editor_context,
+    const UniqueID          class_uid,
+    const QString&          title,
+    BaseGroup&              base_group,
+    ProjectBuilder&         project_builder,
+    ParamArray&             settings)
+  : ItemBase(editor_context, class_uid, title)
 {
     add_items(base_group, project_builder, settings);
 }
@@ -124,13 +126,14 @@ BaseGroupItem::AssemblyInstanceCollectionItem& BaseGroupItem::get_assembly_insta
 }
 
 void BaseGroupItem::add_items(
-    BaseGroup&          base_group,
-    ProjectBuilder&     project_builder,
-    ParamArray&         settings)
+    BaseGroup&              base_group,
+    ProjectBuilder&         project_builder,
+    ParamArray&             settings)
 {
     addChild(
         m_color_collection_item =
             new ColorCollectionItem(
+                m_editor_context,
                 new_guid(),
                 EntityTraits<ColorEntity>::get_human_readable_collection_type_name(),
                 base_group,
@@ -141,6 +144,7 @@ void BaseGroupItem::add_items(
     addChild(
         m_texture_collection_item =
             new TextureCollectionItem(
+                m_editor_context,
                 base_group.textures(),
                 base_group,
                 this,
@@ -150,6 +154,7 @@ void BaseGroupItem::add_items(
     addChild(
         m_texture_instance_collection_item =
             new TextureInstanceCollectionItem(
+                m_editor_context,
                 new_guid(),
                 EntityTraits<TextureInstance>::get_human_readable_collection_type_name(),
                 base_group,
@@ -159,6 +164,7 @@ void BaseGroupItem::add_items(
     addChild(
         m_assembly_collection_item =
             new AssemblyCollectionItem(
+                m_editor_context,
                 base_group.assemblies(),
                 base_group,
                 this,
@@ -168,6 +174,7 @@ void BaseGroupItem::add_items(
     addChild(
         m_assembly_instance_collection_item =
             new AssemblyInstanceCollectionItem(
+                m_editor_context,
                 new_guid(),
                 EntityTraits<AssemblyInstance>::get_human_readable_collection_type_name(),
                 base_group,

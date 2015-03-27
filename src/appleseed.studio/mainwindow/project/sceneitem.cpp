@@ -66,10 +66,11 @@ namespace
 }
 
 SceneItem::SceneItem(
-    Scene&          scene,
-    ProjectBuilder& project_builder,
-    ParamArray&     settings)
-  : BaseGroupItem(g_class_uid, "Scene", scene, project_builder, settings)
+    EntityEditorContext&    editor_context,
+    Scene&                  scene,
+    ProjectBuilder&         project_builder,
+    ParamArray&             settings)
+  : BaseGroupItem(editor_context, g_class_uid, "Scene", scene, project_builder, settings)
 {
     set_allow_deletion(false);
     set_allow_edition(false);
@@ -82,6 +83,7 @@ SceneItem::SceneItem(
         0,
         m_camera_item =
             new CameraItem(
+                editor_context,
                 scene.get_camera(),
                 scene,
                 this,
@@ -94,6 +96,7 @@ SceneItem::SceneItem(
         1,
         m_environment_item =
             new EnvironmentItem(
+                editor_context,
                 scene.get_environment(),
                 scene,
                 this,
@@ -106,6 +109,7 @@ SceneItem::SceneItem(
         2,
         m_environment_edf_collection_item =
             new MultiModelCollectionItem<EnvironmentEDF, Scene, SceneItem>(
+                editor_context,
                 new_guid(),
                 EntityTraits<EnvironmentEDF>::get_human_readable_collection_type_name(),
                 scene,
@@ -117,6 +121,7 @@ SceneItem::SceneItem(
         3,
         m_environment_shader_collection_item =
             new MultiModelCollectionItem<EnvironmentShader, Scene, SceneItem>(
+                editor_context,
                 new_guid(),
                 EntityTraits<EnvironmentShader>::get_human_readable_collection_type_name(),
                 scene,

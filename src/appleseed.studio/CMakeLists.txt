@@ -130,6 +130,7 @@ set (mainwindow_project_sources
     mainwindow/project/entitycreatorbase.h
     mainwindow/project/entityeditor.cpp
     mainwindow/project/entityeditor.h
+    mainwindow/project/entityeditorcontext.h
     mainwindow/project/entityeditorformfactorybase.cpp
     mainwindow/project/entityeditorformfactorybase.h
     mainwindow/project/entityeditorwindow.cpp

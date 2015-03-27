@@ -85,12 +85,13 @@ namespace
 }
 
 AssemblyItem::AssemblyItem(
-    Assembly&       assembly,
-    BaseGroup&      parent,
-    BaseGroupItem*  parent_item,
-    ProjectBuilder& project_builder,
-    ParamArray&     settings)
-  : BaseGroupItem(g_class_uid, assembly, project_builder, settings)
+    EntityEditorContext&    editor_context,
+    Assembly&               assembly,
+    BaseGroup&              parent,
+    BaseGroupItem*          parent_item,
+    ProjectBuilder&         project_builder,
+    ParamArray&             settings)
+  : BaseGroupItem(editor_context, g_class_uid, assembly, project_builder, settings)
   , m_assembly(assembly)
   , m_parent(parent)
   , m_parent_item(parent_item)
@@ -115,6 +116,7 @@ AssemblyItem::AssemblyItem(
     insertChild(
         6,
         m_material_collection_item = new MaterialCollectionItem(
+            m_editor_context,
             assembly.materials(),
             assembly,
             this,
@@ -129,6 +131,7 @@ AssemblyItem::AssemblyItem(
         8,
         m_object_collection_item =
             new ObjectCollectionItem(
+                m_editor_context,
                 assembly.objects(),
                 assembly,
                 this,
@@ -139,6 +142,7 @@ AssemblyItem::AssemblyItem(
         9,
         m_object_instance_collection_item =
             new ObjectInstanceCollectionItem(
+                m_editor_context,
                 new_guid(),
                 EntityTraits<ObjectInstance>::get_human_readable_collection_type_name(),
                 assembly,
@@ -268,6 +272,7 @@ CollectionItem<Entity, Assembly, AssemblyItem>* AssemblyItem::add_single_model_c
 {
     CollectionItem<Entity, Assembly, AssemblyItem>* item =
         new SingleModelCollectionItem<Entity, Assembly, AssemblyItem>(
+            m_editor_context,
             new_guid(),
             EntityTraits<Entity>::get_human_readable_collection_type_name(),
             m_assembly,
@@ -284,6 +289,7 @@ CollectionItem<Entity, Assembly, AssemblyItem>* AssemblyItem::add_multi_model_co
 {
     CollectionItem<Entity, Assembly, AssemblyItem>* item =
         new MultiModelCollectionItem<Entity, Assembly, AssemblyItem>(
+            m_editor_context,
             new_guid(),
             EntityTraits<Entity>::get_human_readable_collection_type_name(),
             m_assembly,

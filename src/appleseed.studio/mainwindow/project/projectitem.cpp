@@ -55,25 +55,35 @@ namespace
 }
 
 ProjectItem::ProjectItem(
-    ProjectBuilder& project_builder,
-    ParamArray&     settings)
-  : ItemBase(g_project_class_uid, "Project")
+    EntityEditorContext&    editor_context,
+    ProjectBuilder&         project_builder,
+    ParamArray&             settings)
+  : ItemBase(editor_context, g_project_class_uid, "Project")
 {
     set_allow_deletion(false);
     set_allow_edition(false);
 
     Project& project = project_builder.get_project();
 
-    m_scene_item = new SceneItem(*project.get_scene(), project_builder, settings);
+    m_scene_item = new SceneItem(
+        editor_context,
+        *project.get_scene(),
+        project_builder,
+        settings);
     addChild(m_scene_item);
 
-    ItemBase* rules_item = new ItemBase(g_rules_class_uid, "Rules");
+    ItemBase* rules_item =
+        new ItemBase(
+            editor_context,    
+            g_rules_class_uid,
+            "Rules");
     rules_item->set_allow_deletion(false);
     rules_item->set_allow_edition(false);
     addChild(rules_item);
 
     m_render_layer_collection_item =
         new MultiModelCollectionItem<RenderLayerRule, Project, ProjectItem>(
+            editor_context,
             new_guid(),
             EntityTraits<RenderLayerRule>::get_human_readable_collection_type_name(),
             project,
@@ -82,7 +92,11 @@ ProjectItem::ProjectItem(
     m_render_layer_collection_item->add_items(project.render_layer_rules());
     rules_item->addChild(m_render_layer_collection_item);
 
-    m_output_item = new OutputItem(project, project_builder);
+    m_output_item =
+        new OutputItem(
+            editor_context,
+            project,
+            project_builder);
     addChild(m_output_item);
 }
 

@@ -81,12 +81,13 @@ namespace
 }
 
 MaterialCollectionItem::MaterialCollectionItem(
-    MaterialContainer&  materials,
-    Assembly&           parent,
-    AssemblyItem*       parent_item,
-    ProjectBuilder&     project_builder,
-    ParamArray&         settings)
-  : Base(g_class_uid, "Materials", parent, parent_item, project_builder)
+    EntityEditorContext&    editor_context,
+    MaterialContainer&      materials,
+    Assembly&               parent,
+    AssemblyItem*           parent_item,
+    ProjectBuilder&         project_builder,
+    ParamArray&             settings)
+  : Base(editor_context, g_class_uid, "Materials", parent, parent_item, project_builder)
   , m_parent(parent)
   , m_parent_item(parent_item)
   , m_settings(settings)
@@ -135,6 +136,7 @@ ItemBase* MaterialCollectionItem::create_item(Material* material)
 
     ItemBase* item =
         new MaterialItem(
+            m_editor_context,
             material,
             m_parent,
             this,

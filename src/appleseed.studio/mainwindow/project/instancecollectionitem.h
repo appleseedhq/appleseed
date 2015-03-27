@@ -43,6 +43,7 @@
 #include <cassert>
 
 // Forward declarations.
+namespace appleseed { namespace studio { class EntityEditorContext; } }
 namespace appleseed { namespace studio { class ItemBase; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
 class QString;
@@ -56,6 +57,7 @@ class InstanceCollectionItem
 {
   public:
     InstanceCollectionItem(
+        EntityEditorContext&        editor_context,
         const foundation::UniqueID  class_uid,
         const QString&              title,
         ParentEntity&               parent,
@@ -74,11 +76,12 @@ class InstanceCollectionItem
 
 template <typename Entity, typename EntityItem, typename ParentEntity>
 InstanceCollectionItem<Entity, EntityItem, ParentEntity>::InstanceCollectionItem(
+    EntityEditorContext&            editor_context,
     const foundation::UniqueID      class_uid,
     const QString&                  title,
     ParentEntity&                   parent,
     ProjectBuilder&                 project_builder)
-  : CollectionItemBase<Entity>(class_uid, title, project_builder)
+  : CollectionItemBase<Entity>(editor_context, class_uid, title, project_builder)
   , m_parent(parent)
 {
 }
@@ -90,6 +93,7 @@ ItemBase* InstanceCollectionItem<Entity, EntityItem, ParentEntity>::create_item(
 
     ItemBase* item =
         new EntityItem(
+            m_editor_context,
             entity,
             m_parent,
             this,

@@ -76,12 +76,13 @@ namespace
 }
 
 ObjectCollectionItem::ObjectCollectionItem(
-    ObjectContainer&    objects,
-    Assembly&           parent,
-    AssemblyItem*       parent_item,
-    ProjectBuilder&     project_builder,
-    ParamArray&         settings)
-  : CollectionItemBase<Object>(g_class_uid, "Objects", project_builder)
+    EntityEditorContext&    editor_context,
+    ObjectContainer&        objects,
+    Assembly&               parent,
+    AssemblyItem*           parent_item,
+    ProjectBuilder&         project_builder,
+    ParamArray&             settings)
+  : CollectionItemBase<Object>(editor_context, g_class_uid, "Objects", project_builder)
   , m_parent(parent)
   , m_parent_item(parent_item)
   , m_settings(settings)
@@ -203,6 +204,7 @@ ItemBase* ObjectCollectionItem::create_item(Object* object)
 
     ItemBase* item =
         new ObjectItem(
+            m_editor_context,
             object,
             m_parent,
             m_parent_item,

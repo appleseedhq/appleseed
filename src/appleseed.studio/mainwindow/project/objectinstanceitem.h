@@ -44,6 +44,7 @@
 #include <QObject>
 
 // Forward declarations.
+namespace appleseed     { namespace studio { class EntityEditorContext; } }
 namespace appleseed     { namespace studio { class ObjectInstanceItem; } }
 namespace appleseed     { namespace studio { class ProjectBuilder; } }
 namespace foundation    { class Dictionary; }
@@ -72,6 +73,7 @@ class ObjectInstanceItem
     static const char* DefaultSlotName;
 
     ObjectInstanceItem(
+        EntityEditorContext&            editor_context,
         renderer::ObjectInstance*       object_instance,
         renderer::Assembly&             parent,
         ObjectInstanceCollectionItem*   collection_item,

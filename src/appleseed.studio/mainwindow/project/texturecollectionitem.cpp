@@ -75,12 +75,13 @@ namespace
 }
 
 TextureCollectionItem::TextureCollectionItem(
-    TextureContainer&   textures,
-    BaseGroup&          parent,
-    BaseGroupItem*      parent_item,
-    ProjectBuilder&     project_builder,
-    ParamArray&         settings)
-  : CollectionItemBase<Texture>(g_class_uid, "Textures", project_builder)
+    EntityEditorContext&    editor_context,
+    TextureContainer&       textures,
+    BaseGroup&              parent,
+    BaseGroupItem*          parent_item,
+    ProjectBuilder&         project_builder,
+    ParamArray&             settings)
+  : CollectionItemBase<Texture>(editor_context, g_class_uid, "Textures", project_builder)
   , m_parent(parent)
   , m_parent_item(parent_item)
   , m_settings(settings)
@@ -170,6 +171,7 @@ ItemBase* TextureCollectionItem::create_item(Texture* texture)
 
     ItemBase* item =
         new TextureItem(
+            m_editor_context,
             texture,
             m_parent,
             this,

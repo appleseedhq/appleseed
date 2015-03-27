@@ -104,11 +104,12 @@ namespace studio {
 const char* ObjectInstanceItem::DefaultSlotName = "default";
 
 ObjectInstanceItem::ObjectInstanceItem(
+    EntityEditorContext&            editor_context,
     ObjectInstance*                 object_instance,
     Assembly&                       parent,
     ObjectInstanceCollectionItem*   collection_item,
     ProjectBuilder&                 project_builder)
-  : Base(object_instance, parent, collection_item, project_builder)
+  : Base(editor_context, object_instance, parent, collection_item, project_builder)
 {
     update_style();
 }

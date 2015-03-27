@@ -57,6 +57,7 @@
 #include <string>
 
 // Forward declarations.
+namespace appleseed     { namespace studio { class EntityEditorContext; } }
 namespace appleseed     { namespace studio { class ItemBase; } }
 namespace appleseed     { namespace studio { class ProjectBuilder; } }
 namespace foundation    { class Dictionary; }
@@ -71,6 +72,7 @@ class MultiModelCollectionItem
 {
   public:
     MultiModelCollectionItem(
+        EntityEditorContext&        editor_context,
         const foundation::UniqueID  class_uid,
         const QString&              title,
         ParentEntity&               parent,
@@ -93,12 +95,13 @@ class MultiModelCollectionItem
 
 template <typename Entity, typename ParentEntity, typename ParentItem>
 MultiModelCollectionItem<Entity, ParentEntity, ParentItem>::MultiModelCollectionItem(
+    EntityEditorContext&            editor_context,
     const foundation::UniqueID      class_uid,
     const QString&                  title,
     ParentEntity&                   parent,
     ParentItem*                     parent_item,
     ProjectBuilder&                 project_builder)
-  : Base(class_uid, title, parent, parent_item, project_builder)
+  : Base(editor_context, class_uid, title, parent, parent_item, project_builder)
 {
 }
 
@@ -109,6 +112,7 @@ ItemBase* MultiModelCollectionItem<Entity, ParentEntity, ParentItem>::create_ite
 
     ItemBase* item =
         new MultiModelEntityItem<Entity, ParentEntity, This>(
+            m_editor_context,
             entity,
             Base::m_parent,
             this,

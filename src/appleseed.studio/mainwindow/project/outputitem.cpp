@@ -54,9 +54,10 @@ namespace
 }
 
 OutputItem::OutputItem(
-    Project&        project,
-    ProjectBuilder& project_builder)
-  : ItemBase(g_class_uid, "Output")
+    EntityEditorContext&    editor_context,
+    Project&                project,
+    ProjectBuilder&         project_builder)
+  : ItemBase(editor_context, g_class_uid, "Output")
 {
     set_allow_deletion(false);
     set_allow_edition(false);
@@ -68,6 +69,7 @@ OutputItem::OutputItem(
     insertChild(
         0,
         new FrameItem(
+            editor_context,
             project.get_frame(),
             project_builder));
 }

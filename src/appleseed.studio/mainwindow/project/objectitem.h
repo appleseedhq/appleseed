@@ -39,6 +39,7 @@
 
 // Forward declarations.
 namespace appleseed { namespace studio { class AssemblyItem; } }
+namespace appleseed { namespace studio { class EntityEditorContext; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace renderer  { class Assembly; }
 namespace renderer  { class Object; }
@@ -54,10 +55,11 @@ class ObjectItem
 
   public:
     ObjectItem(
-        renderer::Object*   object,
-        renderer::Assembly& parent,
-        AssemblyItem*       parent_item,
-        ProjectBuilder&     project_builder);
+        EntityEditorContext&    editor_context,
+        renderer::Object*       object,
+        renderer::Assembly&     parent,
+        AssemblyItem*           parent_item,
+        ProjectBuilder&         project_builder);
 
     virtual QMenu* get_single_item_context_menu() const APPLESEED_OVERRIDE;
 

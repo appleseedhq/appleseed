@@ -53,6 +53,7 @@
 #include <memory>
 
 // Forward declarations.
+namespace appleseed     { namespace studio { class EntityEditorContext; } }
 namespace appleseed     { namespace studio { class ProjectBuilder; } }
 namespace foundation    { class Dictionary; }
 
@@ -66,6 +67,7 @@ class CollectionItem
 {
   public:
     CollectionItem(
+        EntityEditorContext&        editor_context,
         const foundation::UniqueID  class_uid,
         const QString&              title,
         ParentEntity&               parent,
@@ -97,12 +99,13 @@ class CollectionItem
 
 template <typename Entity, typename ParentEntity, typename ParentItem>
 CollectionItem<Entity, ParentEntity, ParentItem>::CollectionItem(
+    EntityEditorContext&            editor_context,
     const foundation::UniqueID      class_uid,
     const QString&                  title,
     ParentEntity&                   parent,
     ParentItem*                     parent_item,
     ProjectBuilder&                 project_builder)
-  : CollectionItemBase<Entity>(class_uid, title, project_builder)
+  : CollectionItemBase<Entity>(editor_context, class_uid, title, project_builder)
   , m_parent(parent)
   , m_parent_item(parent_item)
   , m_allow_creation(true)

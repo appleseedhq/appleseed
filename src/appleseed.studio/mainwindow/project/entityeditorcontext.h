@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2015 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,31 +26,52 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_OUTPUTITEM_H
-#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_OUTPUTITEM_H
+#ifndef APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYEDITORCONTEXT_H
+#define APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYEDITORCONTEXT_H
 
-// appleseed.studio headers.
-#include "mainwindow/project/itembase.h"
+// appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
 
 // Forward declarations.
-namespace appleseed { namespace studio { class EntityEditorContext; } }
-namespace appleseed { namespace studio { class ProjectBuilder; } }
-namespace renderer  { class Project; }
+namespace appleseed { namespace studio { class ItemRegistry; } }
+namespace appleseed { namespace studio { class RenderingManager; } }
 
 namespace appleseed {
 namespace studio {
 
-class OutputItem
-  : public ItemBase
+//
+// This context is passed to all entities of the project explorer.
+//
+
+class EntityEditorContext
+  : public foundation::NonCopyable
 {
   public:
-    OutputItem(
-        EntityEditorContext&    editor_context,
-        renderer::Project&      project,
-        ProjectBuilder&         project_builder);
+    EntityEditorContext(
+        ItemRegistry&       item_registry,
+        RenderingManager&   rendering_manager);
+
+    // todo: add settings
+    // todo: add attribute editor
+    ItemRegistry&           m_item_registry;
+    RenderingManager&       m_rendering_manager;
+
 };
+
+
+//
+// EntityEditorContext class implementation.
+//
+
+inline EntityEditorContext::EntityEditorContext(
+    ItemRegistry&           item_registry,
+    RenderingManager&       rendering_manager)
+  : m_item_registry(item_registry)
+  , m_rendering_manager(rendering_manager)
+{
+}
 
 }       // namespace studio
 }       // namespace appleseed
 
-#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_OUTPUTITEM_H
+#endif  // !APPLESEED_STUDIO_MAINWINDOW_PROJECT_ENTITYEDITORCONTEXT_H

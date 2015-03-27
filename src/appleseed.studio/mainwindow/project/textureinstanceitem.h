@@ -38,6 +38,7 @@
 #include <QObject>
 
 // Forward declarations.
+namespace appleseed { namespace studio { class EntityEditorContext; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace renderer  { class BaseGroup; }
 namespace renderer  { class TextureInstance; }
@@ -60,6 +61,7 @@ class TextureInstanceItem
 
   public:
     TextureInstanceItem(
+        EntityEditorContext&            editor_context,
         renderer::TextureInstance*      texture_instance,
         renderer::BaseGroup&            parent,
         TextureInstanceCollectionItem*  parent_item,

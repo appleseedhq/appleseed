@@ -36,11 +36,12 @@ namespace appleseed {
 namespace studio {
 
 TextureInstanceItem::TextureInstanceItem(
+    EntityEditorContext&            editor_context,
     TextureInstance*                texture_instance,
     BaseGroup&                      parent,
     TextureInstanceCollectionItem*  parent_item,
     ProjectBuilder&                 project_builder)
-  : Base(texture_instance, parent, parent_item, project_builder)
+  : Base(editor_context, texture_instance, parent, parent_item, project_builder)
 {
 }
 

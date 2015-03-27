@@ -63,11 +63,12 @@ namespace appleseed {
 namespace studio {
 
 ObjectItem::ObjectItem(
-    Object*         object,
-    Assembly&       parent,
-    AssemblyItem*   parent_item,
-    ProjectBuilder& project_builder)
-  : EntityItemBase<Object>(object)
+    EntityEditorContext&    editor_context,
+    Object*                 object,
+    Assembly&               parent,
+    AssemblyItem*           parent_item,
+    ProjectBuilder&         project_builder)
+  : EntityItemBase<Object>(editor_context, object)
   , m_parent(parent)
   , m_parent_item(parent_item)
   , m_project_builder(project_builder)

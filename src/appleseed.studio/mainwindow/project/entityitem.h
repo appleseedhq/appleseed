@@ -55,7 +55,8 @@
 #include <string>
 
 // Forward declarations.
-namespace foundation { class Dictionary; }
+namespace appleseed     { namespace studio { class EntityEditorContext; } }
+namespace foundation    { class Dictionary; }
 
 namespace appleseed {
 namespace studio {
@@ -67,10 +68,11 @@ class EntityItem
 {
   public:
     EntityItem(
-        Entity*             entity,
-        ParentEntity&       parent,
-        CollectionItem*     collection_item,
-        ProjectBuilder&     project_builder);
+        EntityEditorContext&    editor_context,
+        Entity*                 entity,
+        ParentEntity&           parent,
+        CollectionItem*         collection_item,
+        ProjectBuilder&         project_builder);
 
     void set_fixed_position(const bool fixed);
     bool is_fixed_position() const;
@@ -78,9 +80,9 @@ class EntityItem
   protected:
     typedef EntityItemBase<Entity> EntityItemBaseType;
 
-    ParentEntity&           m_parent;
-    CollectionItem*         m_collection_item;
-    ProjectBuilder&         m_project_builder;
+    ParentEntity&               m_parent;
+    CollectionItem*             m_collection_item;
+    ProjectBuilder&             m_project_builder;
 
     virtual void slot_edit_accepted(foundation::Dictionary values) APPLESEED_OVERRIDE;
     void edit(const foundation::Dictionary& values);
@@ -94,8 +96,8 @@ class EntityItem
     friend class EntityInstantiationAction<EntityItem>;
     friend class EntityDeletionAction<EntityItem>;
 
-    foundation::UniqueID    m_entity_uid;
-    bool                    m_fixed_position;
+    foundation::UniqueID        m_entity_uid;
+    bool                        m_fixed_position;
 };
 
 
@@ -105,11 +107,12 @@ class EntityItem
 
 template <typename Entity, typename ParentEntity, typename CollectionItem>
 EntityItem<Entity, ParentEntity, CollectionItem>::EntityItem(
-    Entity*                 entity,
-    ParentEntity&           parent,
-    CollectionItem*         collection_item,
-    ProjectBuilder&         project_builder)
-  : EntityItemBaseType(entity)
+    EntityEditorContext&        editor_context,
+    Entity*                     entity,
+    ParentEntity&               parent,
+    CollectionItem*             collection_item,
+    ProjectBuilder&             project_builder)
+  : EntityItemBaseType(editor_context, entity)
   , m_parent(parent)
   , m_collection_item(collection_item)
   , m_project_builder(project_builder)

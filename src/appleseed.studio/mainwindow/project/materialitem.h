@@ -34,6 +34,7 @@
 #include "mainwindow/project/fixedmodelentityitem.h"
 
 // Forward declarations.
+namespace appleseed { namespace studio { class EntityEditorContext; } }
 namespace appleseed { namespace studio { class MaterialCollectionItem; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace renderer  { class Assembly; }
@@ -50,6 +51,7 @@ class MaterialItem
 
   public:
     MaterialItem(
+        EntityEditorContext&        editor_context,
         renderer::Material*         entity,
         renderer::Assembly&         parent,
         MaterialCollectionItem*     collection_item,

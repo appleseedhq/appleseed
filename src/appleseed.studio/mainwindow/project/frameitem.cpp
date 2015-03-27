@@ -64,9 +64,10 @@ namespace
 }
 
 FrameItem::FrameItem(
-    Frame*          frame,
+    EntityEditorContext&    editor_context,
+    Frame*                  frame,
     ProjectBuilder& project_builder)
-  : ItemBase(g_class_uid, frame->get_name())
+  : ItemBase(editor_context, g_class_uid, frame->get_name())
   , m_frame(frame)
   , m_project_builder(project_builder)
 {

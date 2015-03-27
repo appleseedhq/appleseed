@@ -51,6 +51,9 @@
 #include <memory>
 #include <string>
 
+// Forward declarations.
+namespace appleseed { namespace studio { class EntityEditorContext; } }
+
 namespace appleseed {
 namespace studio {
 
@@ -60,10 +63,11 @@ class SingleModelEntityItem
 {
   public:
     SingleModelEntityItem(
-        Entity*             entity,
-        ParentEntity&       parent,
-        CollectionItem*     collection_item,
-        ProjectBuilder&     project_builder);
+        EntityEditorContext&    editor_context,
+        Entity*                 entity,
+        ParentEntity&           parent,
+        CollectionItem*         collection_item,
+        ProjectBuilder&         project_builder);
 
   private:
     typedef EntityItem<Entity, ParentEntity, CollectionItem> Base;
@@ -79,11 +83,12 @@ class SingleModelEntityItem
 
 template <typename Entity, typename ParentEntity, typename CollectionItem>
 SingleModelEntityItem<Entity, ParentEntity, CollectionItem>::SingleModelEntityItem(
-    Entity*                 entity,
-    ParentEntity&           parent,
-    CollectionItem*         collection_item,
-    ProjectBuilder&         project_builder)
-  : Base(entity, parent, collection_item, project_builder)
+    EntityEditorContext&        editor_context,
+    Entity*                     entity,
+    ParentEntity&               parent,
+    CollectionItem*             collection_item,
+    ProjectBuilder&             project_builder)
+  : Base(editor_context, entity, parent, collection_item, project_builder)
 {
 }
 

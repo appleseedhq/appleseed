@@ -39,6 +39,7 @@
 // Forward declarations.
 namespace appleseed { namespace studio { class AssemblyCollectionItem; } }
 namespace appleseed { namespace studio { class AssemblyInstanceItem; } }
+namespace appleseed { namespace studio { class EntityEditorContext; } }
 namespace appleseed { namespace studio { template <typename Entity, typename EntityItem, typename ParentEntity> class InstanceCollectionItem; } }
 namespace appleseed { namespace studio { template <typename Entity, typename ParentEntity, typename ParentItem> class SingleModelCollectionItem; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
@@ -62,12 +63,14 @@ class BaseGroupItem
 {
   public:
     BaseGroupItem(
+        EntityEditorContext&            editor_context,
         const foundation::UniqueID      class_uid,
         renderer::BaseGroup&            base_group,
         ProjectBuilder&                 project_builder,
         renderer::ParamArray&           settings);
 
     BaseGroupItem(
+        EntityEditorContext&            editor_context,
         const foundation::UniqueID      class_uid,
         const QString&                  title,
         renderer::BaseGroup&            base_group,

@@ -53,11 +53,12 @@ namespace appleseed {
 namespace studio {
 
 AssemblyInstanceItem::AssemblyInstanceItem(
+    EntityEditorContext&            editor_context,
     AssemblyInstance*               assembly_instance,
     BaseGroup&                      parent,
     AssemblyInstanceCollectionItem* collection_item,
     ProjectBuilder&                 project_builder)
-  : EntityItemBase<AssemblyInstance>(assembly_instance)
+  : EntityItemBase<AssemblyInstance>(editor_context, assembly_instance)
   , m_parent(parent)
   , m_collection_item(collection_item)
   , m_project_builder(project_builder)

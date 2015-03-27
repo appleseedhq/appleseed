@@ -35,6 +35,7 @@
 #include "mainwindow/project/collectionitem.h"
 
 // Forward declarations.
+namespace appleseed { namespace studio { class EntityEditorContext; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace renderer  { class Assembly; }
 namespace renderer  { class ParamArray; }
@@ -49,6 +50,7 @@ class MaterialCollectionItem
 
   public:
     MaterialCollectionItem(
+        EntityEditorContext&            editor_context,
         renderer::MaterialContainer&    materials,
         renderer::Assembly&             parent,
         AssemblyItem*                   parent_item,

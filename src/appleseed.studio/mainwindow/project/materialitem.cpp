@@ -62,12 +62,18 @@ namespace appleseed {
 namespace studio {
 
 MaterialItem::MaterialItem(
+    EntityEditorContext&        editor_context,
     Material*                   entity,
     Assembly&                   parent,
     MaterialCollectionItem*     collection_item,
     ProjectBuilder&             project_builder,
     ParamArray&                 settings)
-  : FixedModelEntityItem<Material, Assembly, MaterialCollectionItem>(entity, parent, collection_item, project_builder)
+  : FixedModelEntityItem<Material, Assembly, MaterialCollectionItem>(
+        editor_context,
+        entity,
+        parent,
+        collection_item,
+        project_builder)
   , m_settings(settings)
 {
 }

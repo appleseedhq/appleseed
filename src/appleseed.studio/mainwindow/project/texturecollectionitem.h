@@ -45,6 +45,7 @@
 
 // Forward declarations.
 namespace appleseed { namespace studio { class BaseGroupItem; } }
+namespace appleseed { namespace studio { class EntityEditorContext; } }
 namespace appleseed { namespace studio { class ItemBase; } }
 namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace renderer  { class BaseGroup; }
@@ -61,6 +62,7 @@ class TextureCollectionItem
 
   public:
     TextureCollectionItem(
+        EntityEditorContext&        editor_context,
         renderer::TextureContainer& textures,
         renderer::BaseGroup&        parent,
         BaseGroupItem*              parent_item,
