@@ -242,7 +242,7 @@ void ProjectExplorer::slot_item_selection_changed()
 
     const QList<QTreeWidgetItem*> selected_items = m_tree_widget->selectedItems();
 
-    if (!selected_items.isEmpty())
+    if (selected_items.size() == 1)
     {
         static_cast<ItemBase*>(selected_items.first())->slot_edit(m_attribute_editor);
         m_tree_widget->setFocus();
