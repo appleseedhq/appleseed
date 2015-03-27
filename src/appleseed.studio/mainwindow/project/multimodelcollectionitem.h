@@ -135,11 +135,9 @@ void MultiModelCollectionItem<Entity, ParentEntity, ParentItem>::slot_create()
 
     typedef typename EntityTraits::FactoryRegistrarType FactoryRegistrarType;
 
-    ProjectBuilder& project_builder = Base::m_editor_context.m_project_builder;
-
     std::auto_ptr<EntityEditor::IFormFactory> form_factory(
         new MultiModelEntityEditorFormFactory<FactoryRegistrarType>(
-            project_builder.template get_factory_registrar<Entity>(),
+            Base::m_editor_context.m_project_builder.template get_factory_registrar<Entity>(),
             name_suggestion));
 
     std::auto_ptr<EntityEditor::IEntityBrowser> entity_browser(
@@ -148,7 +146,7 @@ void MultiModelCollectionItem<Entity, ParentEntity, ParentItem>::slot_create()
     open_entity_editor(
         QTreeWidgetItem::treeWidget(),
         window_title,
-        project_builder.get_project(),
+        Base::m_editor_context.m_project,
         form_factory,
         entity_browser,
         this,

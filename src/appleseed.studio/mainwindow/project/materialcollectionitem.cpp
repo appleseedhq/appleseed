@@ -263,7 +263,7 @@ void MaterialCollectionItem::do_create_material(const char* model)
     {
         custom_entity_ui.reset(
             new DisneyMaterialCustomUI(
-                m_editor_context.m_project_builder.get_project(),
+                m_editor_context.m_project,
                 m_editor_context.m_settings));
     }
 #endif
@@ -271,7 +271,7 @@ void MaterialCollectionItem::do_create_material(const char* model)
     open_entity_editor(
         QTreeWidgetItem::treeWidget(),
         window_title,
-        m_editor_context.m_project_builder.get_project(),
+        m_editor_context.m_project,
         form_factory,
         entity_browser,
         custom_entity_ui,

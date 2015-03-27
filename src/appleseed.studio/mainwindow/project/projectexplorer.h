@@ -32,6 +32,7 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/entityeditorcontext.h"
+#include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/projectbuilder.h"
 
 // appleseed.foundation headers.
@@ -90,6 +91,7 @@ class ProjectExplorer
     QTreeWidget*                m_tree_widget;
     AttributeEditor*            m_attribute_editor;
     ProjectBuilder              m_project_builder;
+    ItemRegistry                m_item_registry;
     EntityEditorContext         m_editor_context;
     std::auto_ptr<QShortcut>    m_delete_shortcut;
 

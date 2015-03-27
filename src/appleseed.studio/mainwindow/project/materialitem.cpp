@@ -108,7 +108,7 @@ void MaterialItem::slot_edit(AttributeEditor* attribute_editor)
         custom_entity_ui =
             auto_ptr<CustomEntityUI>(
                 new DisneyMaterialCustomUI(
-                    m_editor_context.m_project_builder.get_project(),
+                    m_editor_context.m_project,
                     m_editor_context.m_settings));
     }
 #endif
@@ -135,7 +135,7 @@ void MaterialItem::slot_edit(AttributeEditor* attribute_editor)
         open_entity_editor(
             QTreeWidgetItem::treeWidget(),
             window_title,
-            m_editor_context.m_project_builder.get_project(),
+            m_editor_context.m_project,
             form_factory,
             entity_browser,
             custom_entity_ui,
@@ -149,7 +149,7 @@ void MaterialItem::slot_edit(AttributeEditor* attribute_editor)
 
 void MaterialItem::slot_export()
 {
-    const char* project_path = m_editor_context.m_project_builder.get_project().get_path();
+    const char* project_path = m_editor_context.m_project.get_path();
     const filesystem::path project_root_path = filesystem::path(project_path).parent_path();
     const filesystem::path file_path = absolute("material.dmt", project_root_path);
     const filesystem::path file_root_path = file_path.parent_path();

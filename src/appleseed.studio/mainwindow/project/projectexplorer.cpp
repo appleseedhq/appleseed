@@ -64,11 +64,12 @@ ProjectExplorer::ProjectExplorer(
     ParamArray&         settings)
   : m_tree_widget(tree_widget)
   , m_attribute_editor(attribute_editor)
-  , m_project_builder(project, rendering_manager)
+  , m_project_builder(project)
   , m_editor_context(
+        project,
         *this,
         m_project_builder,
-        m_project_builder.get_item_registry(),
+        m_item_registry,
         rendering_manager,
         settings)
 {
@@ -158,7 +159,7 @@ ItemBase* ProjectExplorer::select_entity(const UniqueID uid) const
 {
     clear_selection();
 
-    QTreeWidgetItem* item = m_project_builder.get_item_registry().get_item(uid);
+    QTreeWidgetItem* item = m_item_registry.get_item(uid);
 
     if (item)
     {

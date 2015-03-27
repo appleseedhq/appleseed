@@ -61,7 +61,7 @@ ProjectItem::ProjectItem(EntityEditorContext& editor_context)
     set_allow_deletion(false);
     set_allow_edition(false);
 
-    Project& project = m_editor_context.m_project_builder.get_project();
+    Project& project = m_editor_context.m_project;
 
     m_scene_item = new SceneItem(editor_context, *project.get_scene());
     addChild(m_scene_item);

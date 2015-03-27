@@ -126,7 +126,7 @@ void SingleModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit(Attr
         open_entity_editor(
             QTreeWidgetItem::treeWidget(),
             window_title,
-            Base::m_editor_context.m_project_builder.get_project(),
+            Base::m_editor_context.m_project,
             form_factory,
             entity_browser,
             values,

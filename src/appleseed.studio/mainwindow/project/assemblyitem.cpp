@@ -256,7 +256,7 @@ void AssemblyItem::do_instantiate(const string& name)
     m_parent_item->get_assembly_instance_collection_item().add_item(assembly_instance.get());
     m_parent.assembly_instances().insert(assembly_instance);
 
-    m_editor_context.m_project_builder.get_project().get_scene()->bump_version_id();
+    m_editor_context.m_project.get_scene()->bump_version_id();
     m_editor_context.m_project_builder.notify_project_modification();
 }
 

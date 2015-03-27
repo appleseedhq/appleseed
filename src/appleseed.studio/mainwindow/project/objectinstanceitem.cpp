@@ -260,7 +260,7 @@ void ObjectInstanceItem::slot_open_material_assignment_editor()
             QTreeWidgetItem::treeWidget(),
             *m_entity,
             *this,
-            m_editor_context.m_project_builder);
+            m_editor_context);
 
     editor_window->showNormal();
     editor_window->activateWindow();

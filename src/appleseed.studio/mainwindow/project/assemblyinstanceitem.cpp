@@ -83,7 +83,7 @@ void AssemblyInstanceItem::do_delete()
     m_parent.assembly_instances().remove(assembly_instance_uid);
 
     // Mark the scene and the project as modified.
-    m_editor_context.m_project_builder.get_project().get_scene()->bump_version_id();
+    m_editor_context.m_project.get_scene()->bump_version_id();
     m_editor_context.m_project_builder.notify_project_modification();
 
     // Remove and delete the assembly instance item.

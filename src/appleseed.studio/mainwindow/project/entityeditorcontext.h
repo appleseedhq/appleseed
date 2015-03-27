@@ -38,6 +38,7 @@ namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace appleseed { namespace studio { class ProjectExplorer; } }
 namespace appleseed { namespace studio { class RenderingManager; } }
 namespace renderer  { class ParamArray; }
+namespace renderer  { class Project; }
 
 namespace appleseed {
 namespace studio {
@@ -51,21 +52,19 @@ class EntityEditorContext
 {
   public:
     EntityEditorContext(
+        renderer::Project&      project,
         ProjectExplorer&        project_explorer,
         ProjectBuilder&         project_builder,
         ItemRegistry&           item_registry,
         RenderingManager&       rendering_manager,
         renderer::ParamArray&   settings);
 
-    // todo: add project?
-    // todo: add attribute editor?
-    // todo: add notify_project_modification()?
+    renderer::Project&          m_project;
     ProjectExplorer&            m_project_explorer;
     ProjectBuilder&             m_project_builder;
     ItemRegistry&               m_item_registry;
     RenderingManager&           m_rendering_manager;
     renderer::ParamArray&       m_settings;
-
 };
 
 
@@ -74,12 +73,14 @@ class EntityEditorContext
 //
 
 inline EntityEditorContext::EntityEditorContext(
+    renderer::Project&          project,
     ProjectExplorer&            project_explorer,
     ProjectBuilder&             project_builder,
     ItemRegistry&               item_registry,
     RenderingManager&           rendering_manager,
     renderer::ParamArray&       settings)
-  : m_project_explorer(project_explorer)
+  : m_project(project)
+  , m_project_explorer(project_explorer)
   , m_project_builder(project_builder)
   , m_item_registry(item_registry)
   , m_rendering_manager(rendering_manager)

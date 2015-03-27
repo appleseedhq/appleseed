@@ -95,7 +95,7 @@ void FrameItem::slot_edit(AttributeEditor* attribute_editor)
         open_entity_editor(
             treeWidget(),
             "Edit Frame",
-            m_editor_context.m_project_builder.get_project(),
+            m_editor_context.m_project,
             form_factory,
             auto_ptr<EntityEditor::IEntityBrowser>(0),
             m_frame->get_parameters(),
