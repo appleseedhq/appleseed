@@ -33,6 +33,7 @@
 #include "mainwindow/project/attributeeditor.h"
 #include "mainwindow/project/entitybrowser.h"
 #include "mainwindow/project/entityeditor.h"
+#include "mainwindow/project/entityeditorcontext.h"
 #include "mainwindow/project/entityitem.h"
 #include "mainwindow/project/fixedmodelentityeditorformfactory.h"
 #include "mainwindow/project/projectbuilder.h"
@@ -50,6 +51,9 @@
 #include <memory>
 #include <string>
 
+// Forward declarations.
+namespace appleseed { namespace studio { class EntityEditorContext; } }
+
 namespace appleseed {
 namespace studio {
 
@@ -59,10 +63,10 @@ class FixedModelEntityItem
 {
   public:
     FixedModelEntityItem(
-        Entity*             entity,
-        ParentEntity&       parent,
-        CollectionItem*     collection_item,
-        ProjectBuilder&     project_builder);
+        EntityEditorContext&    editor_context,
+        Entity*                 entity,
+        ParentEntity&           parent,
+        CollectionItem*         collection_item);
 
   protected:
     typedef EntityItem<Entity, ParentEntity, CollectionItem> Base;
@@ -71,6 +75,7 @@ class FixedModelEntityItem
     typedef FixedModelEntityEditorFormFactory<
         typename EntityTraitsType::FactoryRegistrarType
     > FixedModelEntityEditorFormFactoryType;
+
   private:
     virtual void slot_edit(AttributeEditor* attribute_editor) APPLESEED_OVERRIDE;
 };
@@ -82,12 +87,11 @@ class FixedModelEntityItem
 
 template <typename Entity, typename ParentEntity, typename CollectionItem>
 FixedModelEntityItem<Entity, ParentEntity, CollectionItem>::FixedModelEntityItem(
-    Entity*                                         entity,
-    ParentEntity&                                   parent,
-    CollectionItem*                                 collection_item,
-    ProjectBuilder&                                 project_builder)
-
-  : Base(entity, parent, collection_item, project_builder)
+    EntityEditorContext&        editor_context,
+    Entity*                     entity,
+    ParentEntity&               parent,
+    CollectionItem*             collection_item)
+  : Base(editor_context, entity, parent, collection_item)
 {
 }
 
@@ -99,7 +103,7 @@ void FixedModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit(Attri
 
     std::auto_ptr<EntityEditor::IFormFactory> form_factory(
         new FixedModelEntityEditorFormFactoryType(
-            Base::m_project_builder.template get_factory_registrar<Entity>(),
+            Base::m_editor_context.m_project_builder.template get_factory_registrar<Entity>(),
             Base::m_entity->get_name(),
             Base::m_entity->get_model()));
 
@@ -128,7 +132,7 @@ void FixedModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit(Attri
         open_entity_editor(
             QTreeWidgetItem::treeWidget(),
             window_title,
-            Base::m_project_builder.get_project(),
+            Base::m_editor_context.m_project,
             form_factory,
             entity_browser,
             values,

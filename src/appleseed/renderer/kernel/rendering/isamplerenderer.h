@@ -37,6 +37,9 @@
 #include "foundation/core/concepts/iunknown.h"
 #include "foundation/math/vector.h"
 
+// Standard headers.
+#include <cstddef>
+
 // Forward declarations.
 namespace foundation    { class StatisticsVector; }
 namespace renderer      { class PixelContext; }
@@ -75,8 +78,7 @@ class ISampleRendererFactory
 {
   public:
     // Return a new sample renderer instance.
-    virtual ISampleRenderer* create(
-        const std::size_t   thread_index) = 0;
+    virtual ISampleRenderer* create(const size_t thread_index) = 0;
 };
 
 }       // namespace renderer

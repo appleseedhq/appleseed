@@ -35,9 +35,9 @@
 #include "mainwindow/project/collectionitem.h"
 
 // Forward declarations.
-namespace appleseed { namespace studio { class ProjectBuilder; } }
+namespace appleseed { namespace studio { class EntityEditorContext; } }
 namespace renderer  { class Assembly; }
-namespace renderer  { class ParamArray; }
+namespace renderer  { class Material; }
 
 namespace appleseed {
 namespace studio {
@@ -49,13 +49,12 @@ class MaterialCollectionItem
 
   public:
     MaterialCollectionItem(
+        EntityEditorContext&            editor_context,
         renderer::MaterialContainer&    materials,
         renderer::Assembly&             parent,
-        AssemblyItem*                   parent_item,
-        ProjectBuilder&                 project_builder,
-        renderer::ParamArray&           settings);
+        AssemblyItem*                   parent_item);
 
-    void create_default_disney_material(const std::string& material_name);
+    const renderer::Material& create_default_disney_material(const std::string& material_name);
 
   protected:
     typedef CollectionItem<renderer::Material, renderer::Assembly, AssemblyItem> Base;
@@ -73,9 +72,8 @@ class MaterialCollectionItem
 
     void do_create_material(const char* model);
 
-    renderer::Assembly&                 m_parent;
-    AssemblyItem*                       m_parent_item;
-    renderer::ParamArray&               m_settings;
+    renderer::Assembly& m_parent;
+    AssemblyItem*       m_parent_item;
 };
 
 }       // namespace studio

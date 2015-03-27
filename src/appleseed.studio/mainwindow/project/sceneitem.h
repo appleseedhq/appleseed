@@ -38,14 +38,13 @@
 
 // Forward declarations.
 namespace appleseed { namespace studio { template <typename Entity, typename ParentEntity, typename ParentItem> class CollectionItem; } }
+namespace appleseed { namespace studio { class EntityEditorContext; } }
 namespace appleseed { namespace studio { template <typename Entity, typename ParentEntity, typename CollectionItem> class MultiModelEntityItem; } }
 namespace appleseed { namespace studio { template <typename Entity, typename ParentEntity, typename CollectionItem> class SingleModelEntityItem; } }
-namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace renderer  { class Camera; }
 namespace renderer  { class Environment; }
 namespace renderer  { class EnvironmentEDF; }
 namespace renderer  { class EnvironmentShader; }
-namespace renderer  { class ParamArray; }
 namespace renderer  { class Scene; }
 class QMenu;
 
@@ -57,9 +56,8 @@ class SceneItem
 {
   public:
     SceneItem(
-        renderer::Scene&                scene,
-        ProjectBuilder&                 project_builder,
-        renderer::ParamArray&           settings);
+        EntityEditorContext&            editor_context,
+        renderer::Scene&                scene);
 
     void expand();
 

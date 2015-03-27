@@ -36,9 +36,11 @@
 #include "mainwindow/project/disneymaterialcustomui.h"
 #endif
 #include "mainwindow/project/entityeditor.h"
+#include "mainwindow/project/entityeditorcontext.h"
 #include "mainwindow/project/entityeditorwindow.h"
 #include "mainwindow/project/fixedmodelentityitem.h"
 #include "mainwindow/project/materialitem.h"
+#include "mainwindow/project/projectexplorer.h"
 #include "mainwindow/project/tools.h"
 #include "utility/miscellaneous.h"
 #include "utility/settingskeys.h"
@@ -81,32 +83,32 @@ namespace
 }
 
 MaterialCollectionItem::MaterialCollectionItem(
-    MaterialContainer&  materials,
-    Assembly&           parent,
-    AssemblyItem*       parent_item,
-    ProjectBuilder&     project_builder,
-    ParamArray&         settings)
-  : Base(g_class_uid, "Materials", parent, parent_item, project_builder)
+    EntityEditorContext&    editor_context,
+    MaterialContainer&      materials,
+    Assembly&               parent,
+    AssemblyItem*           parent_item)
+  : Base(editor_context, g_class_uid, "Materials", parent, parent_item)
   , m_parent(parent)
   , m_parent_item(parent_item)
-  , m_settings(settings)
 {
     add_items(materials);
 }
 
-void MaterialCollectionItem::create_default_disney_material(const string& material_name)
+const Material& MaterialCollectionItem::create_default_disney_material(const string& material_name)
 {
     auto_release_ptr<Material> material =
         DisneyMaterialFactory().create(material_name.c_str(), ParamArray());
+    Material* material_ptr = material.get();
 
     const Dictionary layer_values = static_cast<DisneyMaterial*>(material.get())->get_new_layer_values();
     material->get_parameters().insert(layer_values.get("layer_name"), layer_values);
 
-    add_item(material.get());
+    add_item(material_ptr);
 
     EntityTraits<Material>::insert_entity(material, m_parent);
+    m_editor_context.m_project_builder.notify_project_modification();
 
-    m_project_builder.notify_project_modification();
+    return *material_ptr;
 }
 
 QMenu* MaterialCollectionItem::get_single_item_context_menu() const
@@ -135,13 +137,12 @@ ItemBase* MaterialCollectionItem::create_item(Material* material)
 
     ItemBase* item =
         new MaterialItem(
+            m_editor_context,
             material,
             m_parent,
-            this,
-            m_project_builder,
-            m_settings);
+            this);
 
-    m_project_builder.get_item_registry().insert(material->get_uid(), item);
+    m_editor_context.m_item_registry.insert(*material, item);
 
     return item;
 }
@@ -166,7 +167,7 @@ void MaterialCollectionItem::slot_import_disney()
             0,
             "Import...",
             "Disney Material (*.dmt);;All Files (*.*)",
-            m_settings,
+            m_editor_context.m_settings,
             SETTINGS_FILE_DIALOG_MATERIALS);
 
     if (!filepath.isEmpty())
@@ -217,12 +218,14 @@ void MaterialCollectionItem::slot_import_disney()
 
         auto_release_ptr<Material> material =
             DisneyMaterialFactory().create(name.c_str(), parameters);
+        Material* material_ptr = material.get();
 
-        add_item(material.get());
+        add_item(material_ptr);
 
         EntityTraits<Material>::insert_entity(material, m_parent);
+        m_editor_context.m_project_builder.notify_project_modification();
 
-        m_project_builder.notify_project_modification();
+        m_editor_context.m_project_explorer.select_entity(material_ptr->get_uid());
     }
 #endif
 }
@@ -251,7 +254,7 @@ void MaterialCollectionItem::do_create_material(const char* model)
 
     auto_ptr<EntityEditor::IFormFactory> form_factory(
         new FixedModelEntityEditorFormFactory<FactoryRegistrarType>(
-            Base::m_project_builder.get_factory_registrar<Material>(),
+            m_editor_context.m_project_builder.get_factory_registrar<Material>(),
             name_suggestion,
             model));
 
@@ -265,15 +268,15 @@ void MaterialCollectionItem::do_create_material(const char* model)
     {
         custom_entity_ui.reset(
             new DisneyMaterialCustomUI(
-                Base::m_project_builder.get_project(),
-                m_settings));
+                m_editor_context.m_project,
+                m_editor_context.m_settings));
     }
 #endif
 
     open_entity_editor(
         QTreeWidgetItem::treeWidget(),
         window_title,
-        Base::m_project_builder.get_project(),
+        m_editor_context.m_project,
         form_factory,
         entity_browser,
         custom_entity_ui,

@@ -41,6 +41,7 @@
 
 // Forward declarations.
 namespace appleseed { namespace studio { class ItemBase; } }
+namespace renderer  { class Entity; }
 
 namespace appleseed {
 namespace studio {
@@ -57,10 +58,20 @@ class ItemRegistry
     void insert(
         const foundation::UniqueID  uid,
         ItemBase*                   item);
+    void insert(
+        const renderer::Entity&     entity,
+        ItemBase*                   item);
 
     void remove(const foundation::UniqueID uid);
+    void remove(const renderer::Entity& entity);
 
     ItemBase* get_item(const foundation::UniqueID uid) const;
+    ItemBase* get_item(const renderer::Entity& entity) const;
+
+    template <typename ItemType>
+    ItemType* get_item(const foundation::UniqueID uid) const;
+    template <typename ItemType>
+    ItemType* get_item(const renderer::Entity& entity) const;
 
   private:
     typedef std::map<foundation::UniqueID, ItemBase*> RegistryType;
@@ -68,6 +79,23 @@ class ItemRegistry
     mutable QMutex  m_mutex;
     RegistryType    m_registry;
 };
+
+
+//
+// ItemRegistry class implementation.
+//
+
+template <typename ItemType>
+inline ItemType* ItemRegistry::get_item(const foundation::UniqueID uid) const
+{
+    return static_cast<ItemType*>(get_item(uid));
+}
+
+template <typename ItemType>
+inline ItemType* ItemRegistry::get_item(const renderer::Entity& entity) const
+{
+    return static_cast<ItemType*>(get_item(entity));
+}
 
 }       // namespace studio
 }       // namespace appleseed

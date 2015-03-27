@@ -41,6 +41,9 @@
 #include <QObject>
 #include <QString>
 
+// Forward declarations.
+namespace appleseed { namespace studio { class EntityEditorContext; } }
+
 namespace appleseed {
 namespace studio {
 
@@ -51,11 +54,20 @@ class EntityItemBaseSlots
     Q_OBJECT
 
   public:
-    explicit EntityItemBaseSlots(const foundation::UniqueID class_uid)
-      : ItemBase(class_uid) {}
+    EntityItemBaseSlots(
+        EntityEditorContext&        editor_context,
+        const foundation::UniqueID  class_uid)
+      : ItemBase(editor_context, class_uid)
+    {
+    }
 
-    EntityItemBaseSlots(const foundation::UniqueID class_uid, const QString& title)
-      : ItemBase(class_uid, title) {}
+    EntityItemBaseSlots(
+        EntityEditorContext&        editor_context,
+        const foundation::UniqueID  class_uid,
+        const QString&              title)
+      : ItemBase(editor_context, class_uid, title)
+    {
+    }
 
   protected slots:
     virtual void slot_edit_accepted(foundation::Dictionary values) {}
@@ -66,7 +78,9 @@ class EntityItemBase
   : public EntityItemBaseSlots
 {
   public:
-    explicit EntityItemBase(Entity* entity);
+    EntityItemBase(
+        EntityEditorContext&        editor_context,
+        Entity*                     entity);
 
     void update();
 
@@ -80,8 +94,10 @@ class EntityItemBase
 //
 
 template <typename Entity>
-EntityItemBase<Entity>::EntityItemBase(Entity* entity)
-  : EntityItemBaseSlots(entity->get_class_uid())
+EntityItemBase<Entity>::EntityItemBase(
+    EntityEditorContext&    editor_context,
+    Entity*                 entity)
+  : EntityItemBaseSlots(editor_context, entity->get_class_uid())
   , m_entity(entity)
 {
     update();

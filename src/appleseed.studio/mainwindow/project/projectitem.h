@@ -35,10 +35,9 @@
 
 // Forward declarations.
 namespace appleseed { namespace studio { template <typename Entity, typename ParentEntity, typename ParentItem> class CollectionItem; } }
+namespace appleseed { namespace studio { class EntityEditorContext; } }
 namespace appleseed { namespace studio { class OutputItem; } }
-namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace appleseed { namespace studio { class SceneItem; } }
-namespace renderer  { class ParamArray; }
 namespace renderer  { class Project; }
 namespace renderer  { class RenderLayerRule; }
 
@@ -49,9 +48,7 @@ class ProjectItem
   : public ItemBase
 {
   public:
-    ProjectItem(
-        ProjectBuilder&             project_builder,
-        renderer::ParamArray&       settings);
+    explicit ProjectItem(EntityEditorContext& editor_context);
 
     void expand();
 

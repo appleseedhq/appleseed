@@ -33,6 +33,7 @@
 // appleseed.studio headers.
 #include "mainwindow/project/entityactions.h"
 #include "mainwindow/project/entitycreatorbase.h"
+#include "mainwindow/project/entityeditorcontext.h"
 #include "mainwindow/project/entityitembase.h"
 #include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/projectbuilder.h"
@@ -55,7 +56,8 @@
 #include <string>
 
 // Forward declarations.
-namespace foundation { class Dictionary; }
+namespace appleseed     { namespace studio { class EntityEditorContext; } }
+namespace foundation    { class Dictionary; }
 
 namespace appleseed {
 namespace studio {
@@ -67,10 +69,10 @@ class EntityItem
 {
   public:
     EntityItem(
-        Entity*             entity,
-        ParentEntity&       parent,
-        CollectionItem*     collection_item,
-        ProjectBuilder&     project_builder);
+        EntityEditorContext&    editor_context,
+        Entity*                 entity,
+        ParentEntity&           parent,
+        CollectionItem*         collection_item);
 
     void set_fixed_position(const bool fixed);
     bool is_fixed_position() const;
@@ -78,9 +80,8 @@ class EntityItem
   protected:
     typedef EntityItemBase<Entity> EntityItemBaseType;
 
-    ParentEntity&           m_parent;
-    CollectionItem*         m_collection_item;
-    ProjectBuilder&         m_project_builder;
+    ParentEntity&               m_parent;
+    CollectionItem*             m_collection_item;
 
     virtual void slot_edit_accepted(foundation::Dictionary values) APPLESEED_OVERRIDE;
     void edit(const foundation::Dictionary& values);
@@ -94,8 +95,8 @@ class EntityItem
     friend class EntityInstantiationAction<EntityItem>;
     friend class EntityDeletionAction<EntityItem>;
 
-    foundation::UniqueID    m_entity_uid;
-    bool                    m_fixed_position;
+    foundation::UniqueID        m_entity_uid;
+    bool                        m_fixed_position;
 };
 
 
@@ -105,14 +106,13 @@ class EntityItem
 
 template <typename Entity, typename ParentEntity, typename CollectionItem>
 EntityItem<Entity, ParentEntity, CollectionItem>::EntityItem(
-    Entity*                 entity,
-    ParentEntity&           parent,
-    CollectionItem*         collection_item,
-    ProjectBuilder&         project_builder)
-  : EntityItemBaseType(entity)
+    EntityEditorContext&        editor_context,
+    Entity*                     entity,
+    ParentEntity&               parent,
+    CollectionItem*             collection_item)
+  : EntityItemBaseType(editor_context, entity)
   , m_parent(parent)
   , m_collection_item(collection_item)
-  , m_project_builder(project_builder)
   , m_entity_uid(entity->get_uid())
   , m_fixed_position(false)
 {
@@ -133,13 +133,13 @@ bool EntityItem<Entity, ParentEntity, CollectionItem>::is_fixed_position() const
 template <typename Entity, typename ParentEntity, typename CollectionItem>
 void EntityItem<Entity, ParentEntity, CollectionItem>::slot_edit_accepted(foundation::Dictionary values)
 {
-    if (m_project_builder.get_rendering_manager().is_rendering())
+    if (m_editor_context.m_rendering_manager.is_rendering())
     {
-        m_project_builder.get_rendering_manager().schedule(
+        m_editor_context.m_rendering_manager.schedule(
             std::auto_ptr<RenderingManager::IScheduledAction>(
                 new EntityEditionAction<EntityItem>(this, values)));
 
-        m_project_builder.get_rendering_manager().reinitialize_rendering();
+        m_editor_context.m_rendering_manager.reinitialize_rendering();
     }
     else
     {
@@ -153,12 +153,12 @@ void EntityItem<Entity, ParentEntity, CollectionItem>::slot_edit_accepted(founda
 template <typename Entity, typename ParentEntity, typename CollectionItem>
 void EntityItem<Entity, ParentEntity, CollectionItem>::edit(const foundation::Dictionary& values)
 {
-    m_project_builder.get_item_registry().remove(m_entity_uid);
+    m_editor_context.m_item_registry.remove(m_entity_uid);
 
     const std::string old_entity_name = EntityItemBaseType::m_entity->get_name();
 
     EntityItemBaseType::m_entity =
-        m_project_builder.edit_entity(
+        m_editor_context.m_project_builder.edit_entity(
             EntityItemBaseType::m_entity,
             m_parent,
             values);
@@ -166,7 +166,7 @@ void EntityItem<Entity, ParentEntity, CollectionItem>::edit(const foundation::Di
     const std::string new_entity_name = EntityItemBaseType::m_entity->get_name();
 
     m_entity_uid = EntityItemBaseType::m_entity->get_uid();
-    m_project_builder.get_item_registry().insert(m_entity_uid, this);
+    m_editor_context.m_item_registry.insert(m_entity_uid, this);
 
     EntityItemBaseType::update();
 
@@ -178,7 +178,7 @@ void EntityItem<Entity, ParentEntity, CollectionItem>::edit(const foundation::Di
 template <typename Entity, typename ParentEntity, typename CollectionItem>
 void EntityItem<Entity, ParentEntity, CollectionItem>::slot_delete()
 {
-    m_project_builder.get_rendering_manager().schedule_or_execute(
+    m_editor_context.m_rendering_manager.schedule_or_execute(
         std::auto_ptr<RenderingManager::IScheduledAction>(
             new EntityDeletionAction<EntityItem>(this)));
 }
@@ -188,7 +188,7 @@ void EntityItem<Entity, ParentEntity, CollectionItem>::do_delete()
 {
     if (EntityItemBaseType::allows_deletion())
     {
-        m_project_builder.remove_entity(EntityItemBaseType::m_entity, m_parent);
+        m_editor_context.m_project_builder.remove_entity(EntityItemBaseType::m_entity, m_parent);
 
         delete this;
     }

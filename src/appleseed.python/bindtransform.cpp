@@ -37,6 +37,9 @@
 // appleseed.foundation headers.
 #include "foundation/utility/iostreamop.h"
 
+// Standard headers.
+#include <cstddef>
+
 namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
@@ -57,7 +60,7 @@ namespace
 
     bpy::tuple transform_seq_get_transform(
         const TransformSequence*        seq,
-        const std::size_t               index)
+        const size_t                    index)
     {
         double time;
         Transformd xform;

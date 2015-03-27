@@ -32,6 +32,7 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/assemblyitem.h"
+#include "mainwindow/project/entityeditorcontext.h"
 #include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/objectitem.h"
 #include "mainwindow/project/projectbuilder.h"
@@ -76,15 +77,13 @@ namespace
 }
 
 ObjectCollectionItem::ObjectCollectionItem(
-    ObjectContainer&    objects,
-    Assembly&           parent,
-    AssemblyItem*       parent_item,
-    ProjectBuilder&     project_builder,
-    ParamArray&         settings)
-  : CollectionItemBase<Object>(g_class_uid, "Objects", project_builder)
+    EntityEditorContext&    editor_context,
+    ObjectContainer&        objects,
+    Assembly&               parent,
+    AssemblyItem*           parent_item)
+  : CollectionItemBase<Object>(editor_context, g_class_uid, "Objects")
   , m_parent(parent)
   , m_parent_item(parent_item)
-  , m_settings(settings)
 {
     add_items(objects);
 }
@@ -132,13 +131,13 @@ void ObjectCollectionItem::slot_import_objects()
             treeWidget(),
             "Import Objects...",
             "Geometry Files (*.abc;*.binarymesh;*.obj);;All Files (*.*)",
-            m_settings,
+            m_editor_context.m_settings,
             SETTINGS_FILE_DIALOG_GEOMETRY);
 
     if (filepaths.empty())
         return;
 
-    m_project_builder.get_rendering_manager().schedule_or_execute(
+    m_editor_context.m_rendering_manager.schedule_or_execute(
         auto_ptr<RenderingManager::IScheduledAction>(
             new ImportObjectsAction(this, filepaths)));
 }
@@ -193,7 +192,7 @@ void ObjectCollectionItem::insert_objects(const string& path) const
     if (!mesh_objects.empty())
     {
         m_parent.bump_version_id();
-        m_project_builder.notify_project_modification();
+        m_editor_context.m_project_builder.notify_project_modification();
     }
 }
 
@@ -203,12 +202,12 @@ ItemBase* ObjectCollectionItem::create_item(Object* object)
 
     ItemBase* item =
         new ObjectItem(
+            m_editor_context,
             object,
             m_parent,
-            m_parent_item,
-            m_project_builder);
+            m_parent_item);
 
-    m_project_builder.get_item_registry().insert(object->get_uid(), item);
+    m_editor_context.m_item_registry.insert(*object, item);
 
     return item;
 }

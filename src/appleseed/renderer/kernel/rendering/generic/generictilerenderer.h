@@ -37,6 +37,9 @@
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 
+// Standard headers.
+#include <cstddef>
+
 // Forward declarations.
 namespace renderer  { class Frame; }
 namespace renderer  { class IPixelRendererFactory; }
@@ -65,7 +68,7 @@ class GenericTileRendererFactory
 
     // Return a new generic tile renderer instance.
     virtual ITileRenderer* create(
-        const std::size_t   thread_index) APPLESEED_OVERRIDE;
+        const size_t                        thread_index) APPLESEED_OVERRIDE;
 
   private:
     const Frame&                            m_frame;

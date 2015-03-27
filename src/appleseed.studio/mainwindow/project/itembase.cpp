@@ -43,15 +43,22 @@ using namespace foundation;
 namespace appleseed {
 namespace studio {
 
-ItemBase::ItemBase(const UniqueID class_uid)
-  : m_class_uid(class_uid)
+ItemBase::ItemBase(
+    EntityEditorContext&    editor_context,
+    const UniqueID          class_uid)
+  : m_editor_context(editor_context)
+  , m_class_uid(class_uid)
   , m_allow_edition(true)
   , m_allow_deletion(true)
 {
 }
 
-ItemBase::ItemBase(const UniqueID class_uid, const QString& title)
-  : m_class_uid(class_uid)
+ItemBase::ItemBase(
+    EntityEditorContext&    editor_context,
+    const UniqueID          class_uid,
+    const QString&          title)
+  : m_editor_context(editor_context)
+  , m_class_uid(class_uid)
   , m_allow_edition(true)
   , m_allow_deletion(true)
 {

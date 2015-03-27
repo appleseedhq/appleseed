@@ -33,6 +33,7 @@
 // appleseed.studio headers.
 #include "mainwindow/project/assemblycollectionitem.h"
 #include "mainwindow/project/assemblyitem.h"
+#include "mainwindow/project/entityeditorcontext.h"
 #include "mainwindow/project/instancecollectionitem.h"
 #include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/objectcollectionitem.h"
@@ -63,14 +64,13 @@ namespace appleseed {
 namespace studio {
 
 ObjectItem::ObjectItem(
-    Object*         object,
-    Assembly&       parent,
-    AssemblyItem*   parent_item,
-    ProjectBuilder& project_builder)
-  : EntityItemBase<Object>(object)
+    EntityEditorContext&    editor_context,
+    Object*                 object,
+    Assembly&               parent,
+    AssemblyItem*           parent_item)
+  : EntityItemBase<Object>(editor_context, object)
   , m_parent(parent)
   , m_parent_item(parent_item)
-  , m_project_builder(project_builder)
 {
     set_allow_edition(false);
 }
@@ -148,7 +148,7 @@ void ObjectItem::slot_instantiate()
 
     if (!instance_name.empty())
     {
-        m_project_builder.get_rendering_manager().schedule_or_execute(
+        m_editor_context.m_rendering_manager.schedule_or_execute(
             auto_ptr<RenderingManager::IScheduledAction>(
                 new EntityInstantiationAction<ObjectItem>(this, instance_name)));
     }
@@ -168,12 +168,12 @@ void ObjectItem::do_instantiate(const string& name)
     m_parent.object_instances().insert(object_instance);
 
     m_parent.bump_version_id();
-    m_project_builder.notify_project_modification();
+    m_editor_context.m_project_builder.notify_project_modification();
 }
 
 void ObjectItem::slot_delete()
 {
-    m_project_builder.get_rendering_manager().schedule_or_execute(
+    m_editor_context.m_rendering_manager.schedule_or_execute(
         auto_ptr<RenderingManager::IScheduledAction>(
             new EntityDeletionAction<ObjectItem>(this)));
 }
@@ -187,7 +187,7 @@ void ObjectItem::do_delete()
 
     // Remove all object instances and their corresponding project items.
     remove_object_instances(
-        m_project_builder.get_item_registry(),
+        m_editor_context.m_item_registry,
         m_parent,
         object_uid);
 
@@ -195,11 +195,11 @@ void ObjectItem::do_delete()
     m_parent.objects().remove(m_parent.objects().get_by_uid(object_uid));
 
     // Mark the project as modified.
-    m_project_builder.notify_project_modification();
+    m_editor_context.m_project_builder.notify_project_modification();
 
     // Remove and delete the object item.
-    ItemBase* object_item = m_project_builder.get_item_registry().get_item(object_uid);
-    m_project_builder.get_item_registry().remove(object_uid);
+    ItemBase* object_item = m_editor_context.m_item_registry.get_item(object_uid);
+    m_editor_context.m_item_registry.remove(object_uid);
     delete object_item;
 
     // At this point 'this' no longer exists.

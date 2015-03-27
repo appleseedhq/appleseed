@@ -90,7 +90,7 @@ class GenericSampleRendererFactory
 
     // Return a new sample renderer instance.
     virtual ISampleRenderer* create(
-        const std::size_t   thread_index) APPLESEED_OVERRIDE;
+        const size_t            thread_index) APPLESEED_OVERRIDE;
 
   private:
     const Scene&                m_scene;

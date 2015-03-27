@@ -202,17 +202,20 @@ void LineEditDoubleSliderAdaptor::slot_set_line_edit_value(const double value)
 
 void LineEditDoubleSliderAdaptor::slot_set_slider_value(const QString& value)
 {
-    m_slider->blockSignals(true);
+    if (!value.isEmpty())
+    {
+        m_slider->blockSignals(true);
 
-    const double new_value = value.toDouble();
+        const double new_value = value.toDouble();
 
-    // Adjust range if the new value is outside the current range.
-    if (new_value < m_slider->minimum() ||
-        new_value > m_slider->maximum())
-        adjust_slider(new_value);
+        // Adjust range if the new value is outside the current range.
+        if (new_value < m_slider->minimum() ||
+            new_value > m_slider->maximum())
+            adjust_slider(new_value);
 
-    m_slider->setValue(new_value);
-    m_slider->blockSignals(false);
+        m_slider->setValue(new_value);
+        m_slider->blockSignals(false);
+    }
 }
 
 void LineEditDoubleSliderAdaptor::slot_apply_slider_value()

@@ -693,7 +693,9 @@ DictionaryArray ThinLensCameraFactory::get_input_metadata() const
         Dictionary()
             .insert("name", "horizontal_fov")
             .insert("label", "Horizontal FOV")
-            .insert("type", "text")
+            .insert("type", "numeric")
+            .insert("min_value", "1.0")
+            .insert("max_value", "180.0")
             .insert("use", "required"));
 
     metadata.push_back(

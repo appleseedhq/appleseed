@@ -287,11 +287,9 @@ namespace
 
         virtual void terminate_rendering() APPLESEED_OVERRIDE
         {
+            // Completely stop rendering.
             stop_rendering();
-
             m_job_manager->stop();
-
-            print_sample_generators_stats();
 
             // The statistics thread has already been joined in stop_rendering().
             m_statistics_thread.reset();
@@ -302,7 +300,13 @@ namespace
             m_display_thread_abort_switch.abort();
             m_display_thread->join();
             m_display_thread.reset();
+
+            // Make sure the last samples have been merged into the frame.
+            m_display_func->display();
             m_display_func.reset();
+
+            // Merge and print sample generator statistics.
+            print_sample_generators_stats();
         }
 
       private:
@@ -364,47 +368,13 @@ namespace
                 uint64 last_time = timer.read();
 
 #ifdef PRINT_DISPLAY_THREAD_PERFS
-                Stopwatch<DefaultWallclockTimer> stopwatch;
-                stopwatch.start();
+                m_stopwatch.start();
 #endif
 
                 while (!m_abort_switch.is_aborted())
                 {
                     if (m_pause_flag.is_clear())
-                    {
-#ifdef PRINT_DISPLAY_THREAD_PERFS
-                        stopwatch.measure();
-                        const double t1 = stopwatch.get_seconds();
-#endif
-
-                        if (m_buffer.get_sample_count() > m_min_pixel_count)
-                            m_buffer.develop_to_frame(m_frame);
-
-#ifdef PRINT_DISPLAY_THREAD_PERFS
-                        stopwatch.measure();
-                        const double t2 = stopwatch.get_seconds();
-#endif
-
-                        if (m_tile_callback)
-                        {
-                            m_tile_callback->post_render(&m_frame);
-
-#ifdef PRINT_DISPLAY_THREAD_PERFS
-                            stopwatch.measure();
-                            const double t3 = stopwatch.get_seconds();
-
-                            RENDERER_LOG_DEBUG(
-                                "display thread:\n"
-                                "  buffer to frame     : %s\n"
-                                "  frame to widget     : %s\n"
-                                "  total               : %s (%s fps)",
-                                pretty_time(t2 - t1).c_str(),
-                                pretty_time(t3 - t2).c_str(),
-                                pretty_time(t3 - t1).c_str(),
-                                pretty_ratio(1.0, t3 - t2).c_str());
-#endif
-                        }
-                    }
+                        display();
 
                     // Limit frame rate.
                     const uint64 time = timer.read();
@@ -416,19 +386,53 @@ namespace
                     }
                     last_time = time;
                 }
+            }
 
-                // Make sure the last samples have contributed to the frame.
-                m_buffer.develop_to_frame(m_frame);
+            void display()
+            {
+#ifdef PRINT_DISPLAY_THREAD_PERFS
+                m_stopwatch.measure();
+                const double t1 = m_stopwatch.get_seconds();
+#endif
+
+                if (m_buffer.get_sample_count() > m_min_pixel_count)
+                    m_buffer.develop_to_frame(m_frame);
+
+#ifdef PRINT_DISPLAY_THREAD_PERFS
+                m_stopwatch.measure();
+                const double t2 = m_stopwatch.get_seconds();
+#endif
+
+                if (m_tile_callback)
+                {
+                    m_tile_callback->post_render(&m_frame);
+
+#ifdef PRINT_DISPLAY_THREAD_PERFS
+                    m_stopwatch.measure();
+                    const double t3 = m_stopwatch.get_seconds();
+
+                    RENDERER_LOG_DEBUG(
+                        "display thread:\n"
+                        "  buffer to frame     : %s\n"
+                        "  frame to widget     : %s\n"
+                        "  total               : %s (%s fps)",
+                        pretty_time(t2 - t1).c_str(),
+                        pretty_time(t3 - t2).c_str(),
+                        pretty_time(t3 - t1).c_str(),
+                        pretty_ratio(1.0, t3 - t2).c_str());
+#endif
+                }
             }
 
           private:
-            Frame&                          m_frame;
-            SampleAccumulationBuffer&       m_buffer;
-            ITileCallback*                  m_tile_callback;
-            const double                    m_target_elapsed;
-            IAbortSwitch&                   m_abort_switch;
-            ThreadFlag                      m_pause_flag;
-            const size_t                    m_min_pixel_count;
+            Frame&                              m_frame;
+            SampleAccumulationBuffer&           m_buffer;
+            ITileCallback*                      m_tile_callback;
+            const double                        m_target_elapsed;
+            IAbortSwitch&                       m_abort_switch;
+            ThreadFlag                          m_pause_flag;
+            const size_t                        m_min_pixel_count;
+            Stopwatch<DefaultWallclockTimer>    m_stopwatch;
         };
 
         class StatisticsFunc

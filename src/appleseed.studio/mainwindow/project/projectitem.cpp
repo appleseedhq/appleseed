@@ -31,6 +31,7 @@
 #include "projectitem.h"
 
 // appleseed.studio headers.
+#include "mainwindow/project/entityeditorcontext.h"
 #include "mainwindow/project/multimodelcollectionitem.h"
 #include "mainwindow/project/outputitem.h"
 #include "mainwindow/project/projectbuilder.h"
@@ -54,35 +55,37 @@ namespace
     const UniqueID g_rules_class_uid = new_guid();
 }
 
-ProjectItem::ProjectItem(
-    ProjectBuilder& project_builder,
-    ParamArray&     settings)
-  : ItemBase(g_project_class_uid, "Project")
+ProjectItem::ProjectItem(EntityEditorContext& editor_context)
+  : ItemBase(editor_context, g_project_class_uid, "Project")
 {
     set_allow_deletion(false);
     set_allow_edition(false);
 
-    Project& project = project_builder.get_project();
+    Project& project = m_editor_context.m_project;
 
-    m_scene_item = new SceneItem(*project.get_scene(), project_builder, settings);
+    m_scene_item = new SceneItem(editor_context, *project.get_scene());
     addChild(m_scene_item);
 
-    ItemBase* rules_item = new ItemBase(g_rules_class_uid, "Rules");
+    ItemBase* rules_item =
+        new ItemBase(
+            editor_context,    
+            g_rules_class_uid,
+            "Rules");
     rules_item->set_allow_deletion(false);
     rules_item->set_allow_edition(false);
     addChild(rules_item);
 
     m_render_layer_collection_item =
         new MultiModelCollectionItem<RenderLayerRule, Project, ProjectItem>(
+            editor_context,
             new_guid(),
             EntityTraits<RenderLayerRule>::get_human_readable_collection_type_name(),
             project,
-            this,
-            project_builder);
+            this);
     m_render_layer_collection_item->add_items(project.render_layer_rules());
     rules_item->addChild(m_render_layer_collection_item);
 
-    m_output_item = new OutputItem(project, project_builder);
+    m_output_item = new OutputItem(editor_context, project);
     addChild(m_output_item);
 }
 
@@ -94,7 +97,7 @@ void ProjectItem::expand()
     m_output_item->setExpanded(true);
 }
 
-void ProjectItem::add_item(renderer::RenderLayerRule* rule)
+void ProjectItem::add_item(RenderLayerRule* rule)
 {
     m_render_layer_collection_item->add_item(rule);
 }

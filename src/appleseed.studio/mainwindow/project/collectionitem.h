@@ -34,6 +34,7 @@
 #include "mainwindow/project/collectionitembase.h"
 #include "mainwindow/project/entityactions.h"
 #include "mainwindow/project/entitycreatorbase.h"
+#include "mainwindow/project/entityeditorcontext.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/rendering/renderingmanager.h"
 
@@ -53,7 +54,6 @@
 #include <memory>
 
 // Forward declarations.
-namespace appleseed     { namespace studio { class ProjectBuilder; } }
 namespace foundation    { class Dictionary; }
 
 namespace appleseed {
@@ -66,11 +66,11 @@ class CollectionItem
 {
   public:
     CollectionItem(
+        EntityEditorContext&        editor_context,
         const foundation::UniqueID  class_uid,
         const QString&              title,
         ParentEntity&               parent,
-        ParentItem*                 parent_item,
-        ProjectBuilder&             project_builder);
+        ParentItem*                 parent_item);
 
     void set_allow_creation(const bool allow);
     bool allows_creation() const;
@@ -97,12 +97,12 @@ class CollectionItem
 
 template <typename Entity, typename ParentEntity, typename ParentItem>
 CollectionItem<Entity, ParentEntity, ParentItem>::CollectionItem(
+    EntityEditorContext&            editor_context,
     const foundation::UniqueID      class_uid,
     const QString&                  title,
     ParentEntity&                   parent,
-    ParentItem*                     parent_item,
-    ProjectBuilder&                 project_builder)
-  : CollectionItemBase<Entity>(class_uid, title, project_builder)
+    ParentItem*                     parent_item)
+  : CollectionItemBase<Entity>(editor_context, class_uid, title)
   , m_parent(parent)
   , m_parent_item(parent_item)
   , m_allow_creation(true)
@@ -142,15 +142,16 @@ QMenu* CollectionItem<Entity, ParentEntity, ParentItem>::get_single_item_context
 template <typename Entity, typename ParentEntity, typename ParentItem>
 void CollectionItem<Entity, ParentEntity, ParentItem>::slot_create_accepted(foundation::Dictionary values)
 {
-    ProjectBuilder& project_builder = CollectionItemBase<Entity>::m_project_builder;
+    RenderingManager& rendering_manager =
+        CollectionItemBase<Entity>::m_editor_context.m_rendering_manager;
 
-    if (project_builder.get_rendering_manager().is_rendering())
+    if (rendering_manager.is_rendering())
     {
-        project_builder.get_rendering_manager().schedule(
+        rendering_manager.schedule(
             std::auto_ptr<RenderingManager::IScheduledAction>(
                 new EntityCreationAction<CollectionItem>(this, values)));
 
-        project_builder.get_rendering_manager().reinitialize_rendering();
+        rendering_manager.reinitialize_rendering();
     }
     else
     {
@@ -164,7 +165,7 @@ void CollectionItem<Entity, ParentEntity, ParentItem>::slot_create_accepted(foun
 template <typename Entity, typename ParentEntity, typename ParentItem>
 void CollectionItem<Entity, ParentEntity, ParentItem>::create(const foundation::Dictionary& values)
 {
-    ProjectBuilder& project_builder = CollectionItemBase<Entity>::m_project_builder;
+    ProjectBuilder& project_builder = CollectionItemBase<Entity>::m_editor_context.m_project_builder;
     Entity* entity = project_builder.insert_entity<Entity>(m_parent, values);
 
     m_parent_item->add_item(entity);

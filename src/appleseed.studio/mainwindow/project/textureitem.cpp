@@ -34,6 +34,7 @@
 #include "mainwindow/project/assemblycollectionitem.h"
 #include "mainwindow/project/assemblyitem.h"
 #include "mainwindow/project/basegroupitem.h"
+#include "mainwindow/project/entityeditorcontext.h"
 #include "mainwindow/project/instancecollectionitem.h"
 #include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/projectbuilder.h"
@@ -61,12 +62,12 @@ namespace appleseed {
 namespace studio {
 
 TextureItem::TextureItem(
+    EntityEditorContext&    editor_context,
     Texture*                texture,
     BaseGroup&              parent,
     TextureCollectionItem*  collection_item,
-    BaseGroupItem*          base_group_item,
-    ProjectBuilder&         project_builder)
-  : Base(texture, parent, collection_item, project_builder)
+    BaseGroupItem*          base_group_item)
+  : Base(editor_context, texture, parent, collection_item)
   , m_base_group_item(base_group_item)
 {
 }
@@ -117,7 +118,7 @@ namespace
 
 void TextureItem::slot_delete()
 {
-    m_project_builder.get_rendering_manager().schedule_or_execute(
+    m_editor_context.m_rendering_manager.schedule_or_execute(
         auto_ptr<RenderingManager::IScheduledAction>(
             new EntityDeletionAction<TextureItem>(this)));
 }
@@ -131,7 +132,7 @@ void TextureItem::do_delete()
 
     // Remove all texture instances and their corresponding project items.
     remove_texture_instances(
-        m_project_builder.get_item_registry(),
+        m_editor_context.m_item_registry,
         m_parent,
         texture_uid);
 
@@ -139,11 +140,11 @@ void TextureItem::do_delete()
     m_parent.textures().remove(m_parent.textures().get_by_uid(texture_uid));
 
     // Mark the project as modified.
-    m_project_builder.notify_project_modification();
+    m_editor_context.m_project_builder.notify_project_modification();
 
     // Remove and delete the texture item.
-    ItemBase* texture_item = m_project_builder.get_item_registry().get_item(texture_uid);
-    m_project_builder.get_item_registry().remove(texture_uid);
+    ItemBase* texture_item = m_editor_context.m_item_registry.get_item(texture_uid);
+    m_editor_context.m_item_registry.remove(texture_uid);
     delete texture_item;
 
     // At this point 'this' no longer exists.

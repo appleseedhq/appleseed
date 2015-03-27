@@ -34,6 +34,7 @@
 #ifdef APPLESEED_WITH_DISNEY_MATERIAL
 #include "mainwindow/project/disneymaterialcustomui.h"
 #endif
+#include "mainwindow/project/entityeditorcontext.h"
 #include "mainwindow/project/tools.h"
 #include "utility/miscellaneous.h"
 #include "utility/settingskeys.h"
@@ -62,13 +63,15 @@ namespace appleseed {
 namespace studio {
 
 MaterialItem::MaterialItem(
+    EntityEditorContext&        editor_context,
     Material*                   entity,
     Assembly&                   parent,
-    MaterialCollectionItem*     collection_item,
-    ProjectBuilder&             project_builder,
-    ParamArray&                 settings)
-  : FixedModelEntityItem<Material, Assembly, MaterialCollectionItem>(entity, parent, collection_item, project_builder)
-  , m_settings(settings)
+    MaterialCollectionItem*     collection_item)
+  : FixedModelEntityItem<Material, Assembly, MaterialCollectionItem>(
+        editor_context,
+        entity,
+        parent,
+        collection_item)
 {
 }
 
@@ -90,7 +93,7 @@ void MaterialItem::slot_edit(AttributeEditor* attribute_editor)
 {
     auto_ptr<EntityEditor::IFormFactory> form_factory(
         new FixedModelEntityEditorFormFactoryType(
-            m_project_builder.get_factory_registrar<Material>(),
+            m_editor_context.m_project_builder.get_factory_registrar<Material>(),
             m_entity->get_name(),
             m_entity->get_model()));
 
@@ -105,8 +108,8 @@ void MaterialItem::slot_edit(AttributeEditor* attribute_editor)
         custom_entity_ui =
             auto_ptr<CustomEntityUI>(
                 new DisneyMaterialCustomUI(
-                    Base::m_project_builder.get_project(),
-                    m_settings));
+                    m_editor_context.m_project,
+                    m_editor_context.m_settings));
     }
 #endif
 
@@ -132,7 +135,7 @@ void MaterialItem::slot_edit(AttributeEditor* attribute_editor)
         open_entity_editor(
             QTreeWidgetItem::treeWidget(),
             window_title,
-            m_project_builder.get_project(),
+            m_editor_context.m_project,
             form_factory,
             entity_browser,
             custom_entity_ui,
@@ -146,7 +149,7 @@ void MaterialItem::slot_edit(AttributeEditor* attribute_editor)
 
 void MaterialItem::slot_export()
 {
-    const char* project_path = m_project_builder.get_project().get_path();
+    const char* project_path = m_editor_context.m_project.get_path();
     const filesystem::path project_root_path = filesystem::path(project_path).parent_path();
     const filesystem::path file_path = absolute("material.dmt", project_root_path);
     const filesystem::path file_root_path = file_path.parent_path();
@@ -156,7 +159,7 @@ void MaterialItem::slot_export()
             0,
             "Export...",
             "Disney Materials (*.dmt)",
-            m_settings,
+            m_editor_context.m_settings,
             SETTINGS_FILE_DIALOG_MATERIALS);
 
     if (!filepath.isEmpty())

@@ -31,7 +31,6 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_PROJECTBUILDER_H
 
 // appleseed.studio headers.
-#include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/multimodelentityeditorformfactory.h"
 
 // appleseed.renderer headers.
@@ -66,9 +65,6 @@
 #include <cstddef>
 #include <string>
 
-// Forward declarations.
-namespace appleseed { namespace studio { class RenderingManager; } }
-
 namespace appleseed {
 namespace studio {
 
@@ -79,21 +75,10 @@ class ProjectBuilder
     Q_OBJECT
 
   public:
-    ProjectBuilder(
-        renderer::Project&                  project,
-        RenderingManager&                   rendering_manager);
-
-    renderer::Project& get_project();
-    const renderer::Project& get_project() const;
-
-    RenderingManager& get_rendering_manager();
-    const RenderingManager& get_rendering_manager() const;
+    explicit ProjectBuilder(renderer::Project& project);
 
     template <typename Entity>
     const typename renderer::EntityTraits<Entity>::FactoryRegistrarType& get_factory_registrar() const;
-
-    ItemRegistry& get_item_registry();
-    const ItemRegistry& get_item_registry() const;
 
     void notify_project_modification() const;
 
@@ -129,7 +114,6 @@ class ProjectBuilder
 
   private:
     renderer::Project&                              m_project;
-    RenderingManager&                               m_rendering_manager;
 
     renderer::BSDFFactoryRegistrar                  m_bsdf_factory_registrar;
     renderer::CameraFactoryRegistrar                m_camera_factory_registrar;
@@ -141,8 +125,6 @@ class ProjectBuilder
     renderer::RenderLayerRuleFactoryRegistrar       m_render_layer_rule_factory_registrar;
     renderer::SurfaceShaderFactoryRegistrar         m_surface_shader_factory_registrar;
     renderer::TextureFactoryRegistrar               m_texture_factory_registrar;
-
-    ItemRegistry                                    m_item_registry;
 
     static std::string get_entity_name(const foundation::Dictionary& values);
 
@@ -226,16 +208,6 @@ inline const renderer::EntityTraits<renderer::Texture>::FactoryRegistrarType&
 ProjectBuilder::get_factory_registrar<renderer::Texture>() const
 {
     return m_texture_factory_registrar;
-}
-
-inline ItemRegistry& ProjectBuilder::get_item_registry()
-{
-    return m_item_registry;
-}
-
-inline const ItemRegistry& ProjectBuilder::get_item_registry() const
-{
-    return m_item_registry;
 }
 
 template <typename Entity, typename ParentEntity>

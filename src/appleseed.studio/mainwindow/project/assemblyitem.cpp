@@ -34,6 +34,7 @@
 #include "mainwindow/project/assemblycollectionitem.h"
 #include "mainwindow/project/assemblyinstanceitem.h"
 #include "mainwindow/project/collectionitem.h"
+#include "mainwindow/project/entityeditorcontext.h"
 #include "mainwindow/project/instancecollectionitem.h"
 #include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/materialcollectionitem.h"
@@ -85,16 +86,14 @@ namespace
 }
 
 AssemblyItem::AssemblyItem(
-    Assembly&       assembly,
-    BaseGroup&      parent,
-    BaseGroupItem*  parent_item,
-    ProjectBuilder& project_builder,
-    ParamArray&     settings)
-  : BaseGroupItem(g_class_uid, assembly, project_builder, settings)
+    EntityEditorContext&    editor_context,
+    Assembly&               assembly,
+    BaseGroup&              parent,
+    BaseGroupItem*          parent_item)
+  : BaseGroupItem(editor_context, g_class_uid, assembly)
   , m_assembly(assembly)
   , m_parent(parent)
   , m_parent_item(parent_item)
-  , m_project_builder(project_builder)
 {
     set_title(QString::fromAscii(assembly.get_name()));
 
@@ -115,11 +114,10 @@ AssemblyItem::AssemblyItem(
     insertChild(
         6,
         m_material_collection_item = new MaterialCollectionItem(
+            m_editor_context,
             assembly.materials(),
             assembly,
-            this,
-            project_builder,
-            settings));
+            this));
 
     insertChild(
         7,
@@ -129,20 +127,19 @@ AssemblyItem::AssemblyItem(
         8,
         m_object_collection_item =
             new ObjectCollectionItem(
+                m_editor_context,
                 assembly.objects(),
                 assembly,
-                this,
-                project_builder,
-                settings));
+                this));
 
     insertChild(
         9,
         m_object_instance_collection_item =
             new ObjectInstanceCollectionItem(
+                m_editor_context,
                 new_guid(),
                 EntityTraits<ObjectInstance>::get_human_readable_collection_type_name(),
-                assembly,
-                project_builder));
+                assembly));
     m_object_instance_collection_item->add_items(assembly.object_instances());
 }
 
@@ -225,7 +222,7 @@ AssemblyItem::ObjectInstanceCollectionItem& AssemblyItem::get_object_instance_co
 
 void AssemblyItem::instantiate(const string& name)
 {
-    m_project_builder.get_rendering_manager().schedule_or_execute(
+    m_editor_context.m_rendering_manager.schedule_or_execute(
         auto_ptr<RenderingManager::IScheduledAction>(
             new EntityInstantiationAction<AssemblyItem>(this, name)));
 }
@@ -259,8 +256,8 @@ void AssemblyItem::do_instantiate(const string& name)
     m_parent_item->get_assembly_instance_collection_item().add_item(assembly_instance.get());
     m_parent.assembly_instances().insert(assembly_instance);
 
-    m_project_builder.get_project().get_scene()->bump_version_id();
-    m_project_builder.notify_project_modification();
+    m_editor_context.m_project.get_scene()->bump_version_id();
+    m_editor_context.m_project_builder.notify_project_modification();
 }
 
 template <typename Entity, typename EntityContainer>
@@ -268,11 +265,11 @@ CollectionItem<Entity, Assembly, AssemblyItem>* AssemblyItem::add_single_model_c
 {
     CollectionItem<Entity, Assembly, AssemblyItem>* item =
         new SingleModelCollectionItem<Entity, Assembly, AssemblyItem>(
+            m_editor_context,
             new_guid(),
             EntityTraits<Entity>::get_human_readable_collection_type_name(),
             m_assembly,
-            this,
-            m_project_builder);
+            this);
 
     item->add_items(entities);
 
@@ -284,11 +281,11 @@ CollectionItem<Entity, Assembly, AssemblyItem>* AssemblyItem::add_multi_model_co
 {
     CollectionItem<Entity, Assembly, AssemblyItem>* item =
         new MultiModelCollectionItem<Entity, Assembly, AssemblyItem>(
+            m_editor_context,
             new_guid(),
             EntityTraits<Entity>::get_human_readable_collection_type_name(),
             m_assembly,
-            this,
-            m_project_builder);
+            this);
 
     item->add_items(entities);
 
@@ -356,7 +353,7 @@ namespace
 
 void AssemblyItem::slot_delete()
 {
-    m_project_builder.get_rendering_manager().schedule_or_execute(
+    m_editor_context.m_rendering_manager.schedule_or_execute(
         auto_ptr<RenderingManager::IScheduledAction>(
             new EntityDeletionAction<AssemblyItem>(this)));
 }
@@ -375,7 +372,7 @@ void AssemblyItem::do_delete()
 
     // Remove all assembly instances and their corresponding project items.
     remove_assembly_instances(
-        m_project_builder.get_item_registry(),
+        m_editor_context.m_item_registry,
         m_parent,
         assembly_uid);
 
@@ -383,11 +380,11 @@ void AssemblyItem::do_delete()
     m_parent.assemblies().remove(assembly_uid);
 
     // Mark the project as modified.
-    m_project_builder.notify_project_modification();
+    m_editor_context.m_project_builder.notify_project_modification();
 
     // Remove and delete the assembly item.
-    ItemBase* assembly_item = m_project_builder.get_item_registry().get_item(assembly_uid);
-    m_project_builder.get_item_registry().remove(assembly_uid);
+    ItemBase* assembly_item = m_editor_context.m_item_registry.get_item(assembly_uid);
+    m_editor_context.m_item_registry.remove(assembly_uid);
     delete assembly_item;
 
     // At this point 'this' no longer exists.

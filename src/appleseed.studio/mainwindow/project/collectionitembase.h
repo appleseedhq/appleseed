@@ -31,9 +31,9 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_COLLECTIONITEMBASE_H
 
 // appleseed.studio headers.
+#include "mainwindow/project/entityeditorcontext.h"
 #include "mainwindow/project/itembase.h"
 #include "mainwindow/project/itemregistry.h"
-#include "mainwindow/project/projectbuilder.h"
 #include "utility/treewidget.h"
 
 // appleseed.foundation headers.
@@ -49,6 +49,7 @@
 #include <cassert>
 
 // Forward declarations.
+namespace appleseed { namespace studio { class EntityEditorContext; } }
 class QString;
 
 namespace appleseed {
@@ -61,11 +62,20 @@ class CollectionItemBaseSlots
     Q_OBJECT
 
   protected:
-    explicit CollectionItemBaseSlots(const foundation::UniqueID class_uid)
-      : ItemBase(class_uid) {}
+    CollectionItemBaseSlots(
+        EntityEditorContext&        editor_context,
+        const foundation::UniqueID  class_uid)
+      : ItemBase(editor_context, class_uid)
+    {
+    }
 
-    CollectionItemBaseSlots(const foundation::UniqueID class_uid, const QString& title)
-      : ItemBase(class_uid, title) {}
+    CollectionItemBaseSlots(
+        EntityEditorContext&        editor_context,
+        const foundation::UniqueID  class_uid,
+        const QString&              title)
+      : ItemBase(editor_context, class_uid, title)
+    {
+    }
 
   protected slots:
     virtual void slot_create() {}
@@ -81,20 +91,18 @@ class CollectionItemBase
 {
   public:
     CollectionItemBase(
-        const foundation::UniqueID  class_uid,
-        ProjectBuilder&             project_builder);
+        EntityEditorContext&        editor_context,
+        const foundation::UniqueID  class_uid);
     CollectionItemBase(
+        EntityEditorContext&        editor_context,
         const foundation::UniqueID  class_uid,
-        const QString&              title,
-        ProjectBuilder&             project_builder);
+        const QString&              title);
 
     ItemBase* add_item(Entity* entity);
 
     template <typename EntityContainer> void add_items(EntityContainer& items);
 
   protected:
-    ProjectBuilder& m_project_builder;
-
     void initialize();
 
     ItemBase* add_item(const int index, Entity* entity);
@@ -109,21 +117,19 @@ class CollectionItemBase
 
 template <typename Entity>
 CollectionItemBase<Entity>::CollectionItemBase(
-    const foundation::UniqueID  class_uid,
-    ProjectBuilder&             project_builder)
-  : CollectionItemBaseSlots(class_uid)
-  , m_project_builder(project_builder)
+    EntityEditorContext&        editor_context,
+    const foundation::UniqueID  class_uid)
+  : CollectionItemBaseSlots(editor_context, class_uid)
 {
     initialize();
 }
 
 template <typename Entity>
 CollectionItemBase<Entity>::CollectionItemBase(
+    EntityEditorContext&        editor_context,
     const foundation::UniqueID  class_uid,
-    const QString&              title,
-    ProjectBuilder&             project_builder)
-  : CollectionItemBaseSlots(class_uid, title)
-  , m_project_builder(project_builder)
+    const QString&              title)
+  : CollectionItemBaseSlots(editor_context, class_uid, title)
 {
     initialize();
 }
@@ -171,9 +177,13 @@ ItemBase* CollectionItemBase<Entity>::create_item(Entity* entity)
 {
     assert(entity);
 
-    ItemBase* item = new ItemBase(entity->get_class_uid(), entity->get_name());
+    ItemBase* item =
+        new ItemBase(
+            m_editor_context,
+            entity->get_class_uid(),
+            entity->get_name());
 
-    m_project_builder.get_item_registry().insert(entity->get_uid(), item);
+    m_editor_context.m_item_registry.insert(*entity, item);
 
     return item;
 }

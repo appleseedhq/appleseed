@@ -31,6 +31,7 @@
 #include "assemblyinstanceitem.h"
 
 // appleseed.studio headers.
+#include "mainwindow/project/entityeditorcontext.h"
 #include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/rendering/renderingmanager.h"
@@ -53,21 +54,20 @@ namespace appleseed {
 namespace studio {
 
 AssemblyInstanceItem::AssemblyInstanceItem(
+    EntityEditorContext&            editor_context,
     AssemblyInstance*               assembly_instance,
     BaseGroup&                      parent,
-    AssemblyInstanceCollectionItem* collection_item,
-    ProjectBuilder&                 project_builder)
-  : EntityItemBase<AssemblyInstance>(assembly_instance)
+    AssemblyInstanceCollectionItem* collection_item)
+  : EntityItemBase<AssemblyInstance>(editor_context, assembly_instance)
   , m_parent(parent)
   , m_collection_item(collection_item)
-  , m_project_builder(project_builder)
 {
     set_allow_edition(false);
 }
 
 void AssemblyInstanceItem::slot_delete()
 {
-    m_project_builder.get_rendering_manager().schedule_or_execute(
+    m_editor_context.m_rendering_manager.schedule_or_execute(
         auto_ptr<RenderingManager::IScheduledAction>(
             new EntityDeletionAction<AssemblyInstanceItem>(this)));
 }
@@ -83,12 +83,12 @@ void AssemblyInstanceItem::do_delete()
     m_parent.assembly_instances().remove(assembly_instance_uid);
 
     // Mark the scene and the project as modified.
-    m_project_builder.get_project().get_scene()->bump_version_id();
-    m_project_builder.notify_project_modification();
+    m_editor_context.m_project.get_scene()->bump_version_id();
+    m_editor_context.m_project_builder.notify_project_modification();
 
     // Remove and delete the assembly instance item.
-    ItemBase* assembly_instance_item = m_project_builder.get_item_registry().get_item(assembly_instance_uid);
-    m_project_builder.get_item_registry().remove(assembly_instance_uid);
+    ItemBase* assembly_instance_item = m_editor_context.m_item_registry.get_item(assembly_instance_uid);
+    m_editor_context.m_item_registry.remove(assembly_instance_uid);
     delete assembly_instance_item;
 
     // At this point 'this' no longer exists.

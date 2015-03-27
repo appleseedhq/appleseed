@@ -34,11 +34,10 @@
 #include "mainwindow/project/fixedmodelentityitem.h"
 
 // Forward declarations.
+namespace appleseed { namespace studio { class EntityEditorContext; } }
 namespace appleseed { namespace studio { class MaterialCollectionItem; } }
-namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace renderer  { class Assembly; }
 namespace renderer  { class Material; }
-namespace renderer  { class ParamArray; }
 
 namespace appleseed {
 namespace studio {
@@ -50,11 +49,10 @@ class MaterialItem
 
   public:
     MaterialItem(
+        EntityEditorContext&        editor_context,
         renderer::Material*         entity,
         renderer::Assembly&         parent,
-        MaterialCollectionItem*     collection_item,
-        ProjectBuilder&             project_builder,
-        renderer::ParamArray&       settings);
+        MaterialCollectionItem*     collection_item);
 
     virtual QMenu* get_single_item_context_menu() const APPLESEED_OVERRIDE;
 
@@ -62,8 +60,6 @@ class MaterialItem
     void slot_export();
 
   private:
-    renderer::ParamArray&   m_settings;
-
     virtual void slot_edit(AttributeEditor* attribute_editor) APPLESEED_OVERRIDE;
 };
 

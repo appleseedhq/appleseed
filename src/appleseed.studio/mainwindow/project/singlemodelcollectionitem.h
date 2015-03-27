@@ -34,6 +34,7 @@
 #include "mainwindow/project/collectionitem.h"
 #include "mainwindow/project/entitybrowser.h"
 #include "mainwindow/project/entityeditor.h"
+#include "mainwindow/project/entityeditorcontext.h"
 #include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/singlemodelentityeditorformfactory.h"
@@ -58,7 +59,6 @@
 
 // Forward declarations.
 namespace appleseed     { namespace studio { class ItemBase; } }
-namespace appleseed     { namespace studio { class ProjectBuilder; } }
 namespace foundation    { class Dictionary; }
 class QString;
 
@@ -71,11 +71,11 @@ class SingleModelCollectionItem
 {
   public:
     SingleModelCollectionItem(
+        EntityEditorContext&        editor_context,
         const foundation::UniqueID  class_uid,
         const QString&              title,
         ParentEntity&               parent,
-        ParentItem*                 parent_item,
-        ProjectBuilder&             project_builder);
+        ParentItem*                 parent_item);
 
   private:
     typedef CollectionItem<Entity, ParentEntity, ParentItem> Base;
@@ -93,12 +93,12 @@ class SingleModelCollectionItem
 
 template <typename Entity, typename ParentEntity, typename ParentItem>
 SingleModelCollectionItem<Entity, ParentEntity, ParentItem>::SingleModelCollectionItem(
+    EntityEditorContext&            editor_context,
     const foundation::UniqueID      class_uid,
     const QString&                  title,
     ParentEntity&                   parent,
-    ParentItem*                     parent_item,
-    ProjectBuilder&                 project_builder)
-  : Base(class_uid, title, parent, parent_item, project_builder)
+    ParentItem*                     parent_item)
+  : Base(editor_context, class_uid, title, parent, parent_item)
 {
 }
 
@@ -109,12 +109,12 @@ ItemBase* SingleModelCollectionItem<Entity, ParentEntity, ParentItem>::create_it
 
     ItemBase* item =
         new SingleModelEntityItem<Entity, ParentEntity, This>(
+            Base::m_editor_context,
             entity,
             Base::m_parent,
-            this,
-            Base::m_project_builder);
+            this);
 
-    Base::m_project_builder.get_item_registry().insert(entity->get_uid(), item);
+    Base::m_editor_context.m_item_registry.insert(*entity, item);
 
     return item;
 }
@@ -146,7 +146,7 @@ void SingleModelCollectionItem<Entity, ParentEntity, ParentItem>::slot_create()
     open_entity_editor(
         QTreeWidgetItem::treeWidget(),
         window_title,
-        Base::m_project_builder.get_project(),
+        Base::m_editor_context.m_project,
         form_factory,
         entity_browser,
         this,

@@ -33,9 +33,10 @@
 // appleseed.studio headers.
 #include "mainwindow/project/assemblycollectionitem.h"
 #include "mainwindow/project/assemblyinstanceitem.h"
+#include "mainwindow/project/entityeditorcontext.h"
 #include "mainwindow/project/instancecollectionitem.h"
+#include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/multimodelcollectionitem.h"
-#include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/singlemodelcollectionitem.h"
 #include "mainwindow/project/texturecollectionitem.h"
 
@@ -66,10 +67,9 @@ namespace
 }
 
 SceneItem::SceneItem(
-    Scene&          scene,
-    ProjectBuilder& project_builder,
-    ParamArray&     settings)
-  : BaseGroupItem(g_class_uid, "Scene", scene, project_builder, settings)
+    EntityEditorContext&    editor_context,
+    Scene&                  scene)
+  : BaseGroupItem(editor_context, g_class_uid, "Scene", scene)
 {
     set_allow_deletion(false);
     set_allow_edition(false);
@@ -82,46 +82,46 @@ SceneItem::SceneItem(
         0,
         m_camera_item =
             new CameraItem(
+                editor_context,
                 scene.get_camera(),
                 scene,
-                this,
-                project_builder));
+                this));
     m_camera_item->set_allow_deletion(false);
     m_camera_item->set_fixed_position(true);
-    project_builder.get_item_registry().insert(scene.get_camera()->get_uid(), m_camera_item);
+    editor_context.m_item_registry.insert(*scene.get_camera(), m_camera_item);
 
     insertChild(
         1,
         m_environment_item =
             new EnvironmentItem(
+                editor_context,
                 scene.get_environment(),
                 scene,
-                this,
-                project_builder));
+                this));
     m_environment_item->set_allow_deletion(false);
     m_environment_item->set_fixed_position(true);
-    project_builder.get_item_registry().insert(scene.get_environment()->get_uid(), m_environment_item);
+    editor_context.m_item_registry.insert(*scene.get_environment(), m_environment_item);
 
     insertChild(
         2,
         m_environment_edf_collection_item =
             new MultiModelCollectionItem<EnvironmentEDF, Scene, SceneItem>(
+                editor_context,
                 new_guid(),
                 EntityTraits<EnvironmentEDF>::get_human_readable_collection_type_name(),
                 scene,
-                this,
-                project_builder));
+                this));
     m_environment_edf_collection_item->add_items(scene.environment_edfs());
 
     insertChild(
         3,
         m_environment_shader_collection_item =
             new MultiModelCollectionItem<EnvironmentShader, Scene, SceneItem>(
+                editor_context,
                 new_guid(),
                 EntityTraits<EnvironmentShader>::get_human_readable_collection_type_name(),
                 scene,
-                this,
-                project_builder));
+                this));
     m_environment_shader_collection_item->add_items(scene.environment_shaders());
 }
 

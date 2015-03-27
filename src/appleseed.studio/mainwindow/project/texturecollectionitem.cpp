@@ -32,6 +32,7 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/basegroupitem.h"
+#include "mainwindow/project/entityeditorcontext.h"
 #include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/textureitem.h"
@@ -75,15 +76,13 @@ namespace
 }
 
 TextureCollectionItem::TextureCollectionItem(
-    TextureContainer&   textures,
-    BaseGroup&          parent,
-    BaseGroupItem*      parent_item,
-    ProjectBuilder&     project_builder,
-    ParamArray&         settings)
-  : CollectionItemBase<Texture>(g_class_uid, "Textures", project_builder)
+    EntityEditorContext&    editor_context,
+    TextureContainer&       textures,
+    BaseGroup&              parent,
+    BaseGroupItem*          parent_item)
+  : CollectionItemBase<Texture>(editor_context, g_class_uid, "Textures")
   , m_parent(parent)
   , m_parent_item(parent_item)
-  , m_settings(settings)
 {
     add_items(textures);
 }
@@ -136,7 +135,7 @@ void TextureCollectionItem::slot_import_textures()
             treeWidget(),
             "Import Textures...",
             g_bitmap_files_filter,
-            m_settings,
+            m_editor_context.m_settings,
             SETTINGS_FILE_DIALOG_TEXTURES);
 
     if (filepaths.empty())
@@ -161,7 +160,7 @@ void TextureCollectionItem::slot_import_textures()
 
     }
 
-    m_project_builder.notify_project_modification();
+    m_editor_context.m_project_builder.notify_project_modification();
 }
 
 ItemBase* TextureCollectionItem::create_item(Texture* texture)
@@ -170,13 +169,13 @@ ItemBase* TextureCollectionItem::create_item(Texture* texture)
 
     ItemBase* item =
         new TextureItem(
+            m_editor_context,
             texture,
             m_parent,
             this,
-            m_parent_item,
-            m_project_builder);
+            m_parent_item);
 
-    m_project_builder.get_item_registry().insert(texture->get_uid(), item);
+    m_editor_context.m_item_registry.insert(*texture, item);
 
     return item;
 }

@@ -34,7 +34,7 @@
 #include "mainwindow/project/itembase.h"
 
 // Forward declarations.
-namespace appleseed { namespace studio { class ProjectBuilder; } }
+namespace appleseed { namespace studio { class EntityEditorContext; } }
 namespace renderer  { class Project; }
 
 namespace appleseed {
@@ -45,8 +45,8 @@ class OutputItem
 {
   public:
     OutputItem(
-        renderer::Project&  project,
-        ProjectBuilder&     project_builder);
+        EntityEditorContext&    editor_context,
+        renderer::Project&      project);
 };
 
 }       // namespace studio

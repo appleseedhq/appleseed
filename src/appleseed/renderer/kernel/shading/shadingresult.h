@@ -97,6 +97,10 @@ class ShadingResult
 
     // Multiply main and AOV colors by their respective alpha channels.
     void apply_alpha_premult_linear_rgb();
+
+  private:
+    // Set all values to NaN.
+    void poison();
 };
 
 
@@ -107,6 +111,9 @@ class ShadingResult
 inline ShadingResult::ShadingResult(const size_t aov_count)
   : m_aovs(aov_count)
 {
+#ifdef DEBUG
+    poison();
+#endif
 }
 
 inline void ShadingResult::set_main_to_linear_rgb(const foundation::Color3f& linear_rgb)

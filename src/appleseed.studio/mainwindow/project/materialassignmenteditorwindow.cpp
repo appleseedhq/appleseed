@@ -36,6 +36,7 @@
 // appleseed.studio headers.
 #include "mainwindow/project/entitybrowser.h"
 #include "mainwindow/project/entitybrowserwindow.h"
+#include "mainwindow/project/entityeditorcontext.h"
 #include "mainwindow/project/objectinstanceitem.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/rendering/renderingmanager.h"
@@ -78,13 +79,13 @@ MaterialAssignmentEditorWindow::MaterialAssignmentEditorWindow(
     QWidget*                parent,
     ObjectInstance&         object_instance,
     ObjectInstanceItem&     object_instance_item,
-    ProjectBuilder&         project_builder)
+    EntityEditorContext&    editor_context)
   : QWidget(parent)
   , m_ui(new Ui::MaterialAssignmentEditorWindow())
   , m_object_instance(object_instance)
   , m_object_instance_item(object_instance_item)
   , m_object(m_object_instance.find_object())
-  , m_project_builder(project_builder)
+  , m_editor_context(editor_context)
 {
     m_ui->setupUi(this);
 
@@ -321,10 +322,10 @@ void MaterialAssignmentEditorWindow::assign_materials(const SlotValueCollection&
 
     if (old_front_mappings != m_object_instance.get_front_material_mappings() ||
         old_back_mappings != m_object_instance.get_back_material_mappings())
-        m_project_builder.notify_project_modification();
+        m_editor_context.m_project_builder.notify_project_modification();
 
-    if (m_project_builder.get_rendering_manager().is_rendering())
-        m_project_builder.get_rendering_manager().reinitialize_rendering();
+    if (m_editor_context.m_rendering_manager.is_rendering())
+        m_editor_context.m_rendering_manager.reinitialize_rendering();
 }
 
 namespace
@@ -368,7 +369,7 @@ namespace
 
 void MaterialAssignmentEditorWindow::assign_material(const SlotValue& slot_value)
 {
-    m_project_builder.get_rendering_manager().schedule_or_execute(
+    m_editor_context.m_rendering_manager.schedule_or_execute(
         auto_ptr<RenderingManager::IScheduledAction>(
             new AssignMaterialAction(
                 m_object_instance,

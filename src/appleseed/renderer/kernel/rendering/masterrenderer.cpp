@@ -84,8 +84,10 @@ MasterRenderer::MasterRenderer(
     IRendererController*    renderer_controller,
     ITileCallback*          tile_callback)
   : BaseRenderer(project, params)
-  , m_serial_renderer_controller(new SerialRendererController(renderer_controller, tile_callback))
-  , m_serial_tile_callback_factory(new SerialTileCallbackFactory(m_serial_renderer_controller))
+  , m_serial_renderer_controller(
+        new SerialRendererController(renderer_controller, tile_callback))
+  , m_serial_tile_callback_factory(
+        new SerialTileCallbackFactory(m_serial_renderer_controller))
 {
     m_renderer_controller = m_serial_renderer_controller;
     m_tile_callback_factory = m_serial_tile_callback_factory;

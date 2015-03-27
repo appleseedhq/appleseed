@@ -34,6 +34,7 @@
 #include "mainwindow/project/collectionitem.h"
 #include "mainwindow/project/entitybrowser.h"
 #include "mainwindow/project/entityeditor.h"
+#include "mainwindow/project/entityeditorcontext.h"
 #include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/multimodelentityeditorformfactory.h"
 #include "mainwindow/project/multimodelentityitem.h"
@@ -58,7 +59,6 @@
 
 // Forward declarations.
 namespace appleseed     { namespace studio { class ItemBase; } }
-namespace appleseed     { namespace studio { class ProjectBuilder; } }
 namespace foundation    { class Dictionary; }
 class QString;
 
@@ -71,11 +71,11 @@ class MultiModelCollectionItem
 {
   public:
     MultiModelCollectionItem(
+        EntityEditorContext&        editor_context,
         const foundation::UniqueID  class_uid,
         const QString&              title,
         ParentEntity&               parent,
-        ParentItem*                 parent_item,
-        ProjectBuilder&             project_builder);
+        ParentItem*                 parent_item);
 
   private:
     typedef CollectionItem<Entity, ParentEntity, ParentItem> Base;
@@ -93,12 +93,12 @@ class MultiModelCollectionItem
 
 template <typename Entity, typename ParentEntity, typename ParentItem>
 MultiModelCollectionItem<Entity, ParentEntity, ParentItem>::MultiModelCollectionItem(
+    EntityEditorContext&            editor_context,
     const foundation::UniqueID      class_uid,
     const QString&                  title,
     ParentEntity&                   parent,
-    ParentItem*                     parent_item,
-    ProjectBuilder&                 project_builder)
-  : Base(class_uid, title, parent, parent_item, project_builder)
+    ParentItem*                     parent_item)
+  : Base(editor_context, class_uid, title, parent, parent_item)
 {
 }
 
@@ -109,12 +109,12 @@ ItemBase* MultiModelCollectionItem<Entity, ParentEntity, ParentItem>::create_ite
 
     ItemBase* item =
         new MultiModelEntityItem<Entity, ParentEntity, This>(
+            m_editor_context,
             entity,
             Base::m_parent,
-            this,
-            Base::m_project_builder);
+            this);
 
-    Base::m_project_builder.get_item_registry().insert(entity->get_uid(), item);
+    Base::m_editor_context.m_item_registry.insert(*entity, item);
 
     return item;
 }
@@ -137,7 +137,7 @@ void MultiModelCollectionItem<Entity, ParentEntity, ParentItem>::slot_create()
 
     std::auto_ptr<EntityEditor::IFormFactory> form_factory(
         new MultiModelEntityEditorFormFactory<FactoryRegistrarType>(
-            Base::m_project_builder.template get_factory_registrar<Entity>(),
+            Base::m_editor_context.m_project_builder.template get_factory_registrar<Entity>(),
             name_suggestion));
 
     std::auto_ptr<EntityEditor::IEntityBrowser> entity_browser(
@@ -146,7 +146,7 @@ void MultiModelCollectionItem<Entity, ParentEntity, ParentItem>::slot_create()
     open_entity_editor(
         QTreeWidgetItem::treeWidget(),
         window_title,
-        Base::m_project_builder.get_project(),
+        Base::m_editor_context.m_project,
         form_factory,
         entity_browser,
         this,

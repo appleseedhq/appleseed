@@ -41,6 +41,7 @@
 
 // Forward declarations.
 namespace appleseed { namespace studio { class AttributeEditor; } }
+namespace appleseed { namespace studio { class EntityEditorContext; } }
 class QMenu;
 class QString;
 
@@ -54,8 +55,13 @@ class ItemBase
     Q_OBJECT
 
   public:
-    explicit ItemBase(const foundation::UniqueID class_uid);
-    ItemBase(const foundation::UniqueID class_uid, const QString& title);
+    ItemBase(
+        EntityEditorContext&        editor_context,
+        const foundation::UniqueID  class_uid);
+    ItemBase(
+        EntityEditorContext&        editor_context,
+        const foundation::UniqueID  class_uid,
+        const QString&              title);
 
     virtual ~ItemBase() {}
 
@@ -82,6 +88,8 @@ class ItemBase
     virtual void slot_delete_multiple();
 
   protected:
+    EntityEditorContext&        m_editor_context;
+
     QList<ItemBase*> get_action_items();
 
   private:

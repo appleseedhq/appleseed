@@ -36,6 +36,9 @@
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 
+// Standard headers.
+#include <cstddef>
+
 namespace renderer
 {
 
@@ -53,8 +56,7 @@ class BlankSampleRendererFactory
     virtual void release() APPLESEED_OVERRIDE;
 
     // Return a new blank sample renderer instance.
-    virtual ISampleRenderer* create(
-        const std::size_t   thread_index) APPLESEED_OVERRIDE;
+    virtual ISampleRenderer* create(const size_t thread_index) APPLESEED_OVERRIDE;
 };
 
 }       // namespace renderer

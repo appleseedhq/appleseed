@@ -64,12 +64,20 @@ ProjectExplorer::ProjectExplorer(
     ParamArray&         settings)
   : m_tree_widget(tree_widget)
   , m_attribute_editor(attribute_editor)
-  , m_project_builder(project, rendering_manager)
+  , m_project_builder(project)
+  , m_editor_context(
+        project,
+        *this,
+        m_project_builder,
+        m_item_registry,
+        rendering_manager,
+        settings)
 {
     m_tree_widget->setContextMenuPolicy(Qt::CustomContextMenu);
 
-    ProjectItem* project_item = new ProjectItem(m_project_builder, settings);
+    ProjectItem* project_item = new ProjectItem(m_editor_context);
     m_tree_widget->addTopLevelItem(project_item);
+
     project_item->expand();
 
     connect(
@@ -151,7 +159,7 @@ ItemBase* ProjectExplorer::select_entity(const UniqueID uid) const
 {
     clear_selection();
 
-    QTreeWidgetItem* item = m_project_builder.get_item_registry().get_item(uid);
+    QTreeWidgetItem* item = m_item_registry.get_item(uid);
 
     if (item)
     {
@@ -234,7 +242,7 @@ void ProjectExplorer::slot_item_selection_changed()
 
     const QList<QTreeWidgetItem*> selected_items = m_tree_widget->selectedItems();
 
-    if (!selected_items.isEmpty())
+    if (selected_items.size() == 1)
     {
         static_cast<ItemBase*>(selected_items.first())->slot_edit(m_attribute_editor);
         m_tree_widget->setFocus();

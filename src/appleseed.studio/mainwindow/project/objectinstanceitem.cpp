@@ -34,10 +34,12 @@
 #include "mainwindow/project/assemblyitem.h"
 #include "mainwindow/project/entitybrowser.h"
 #include "mainwindow/project/entitybrowserwindow.h"
+#include "mainwindow/project/entityeditorcontext.h"
 #include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/materialassignmenteditorwindow.h"
 #include "mainwindow/project/materialcollectionitem.h"
 #include "mainwindow/project/projectbuilder.h"
+#include "mainwindow/project/projectexplorer.h"
 #include "mainwindow/rendering/renderingmanager.h"
 
 // appleseed.renderer headers.
@@ -104,11 +106,11 @@ namespace studio {
 const char* ObjectInstanceItem::DefaultSlotName = "default";
 
 ObjectInstanceItem::ObjectInstanceItem(
+    EntityEditorContext&            editor_context,
     ObjectInstance*                 object_instance,
     Assembly&                       parent,
-    ObjectInstanceCollectionItem*   collection_item,
-    ProjectBuilder&                 project_builder)
-  : Base(object_instance, parent, collection_item, project_builder)
+    ObjectInstanceCollectionItem*   collection_item)
+  : Base(editor_context, object_instance, parent, collection_item)
 {
     update_style();
 }
@@ -175,69 +177,90 @@ QMenu* ObjectInstanceItem::get_multiple_items_context_menu(const QList<ItemBase*
     return menu;
 }
 
+// Friend of ObjectInstanceItem class, thus cannot be placed in anonymous namespace.
 class AssignNewDisneyMaterialAction
   : public RenderingManager::IScheduledAction
 {
   public:
     AssignNewDisneyMaterialAction(
-        const QList<ItemBase*>& items,
-        ProjectBuilder&         project_builder)
-      : m_items(items)
-      , m_project_builder(project_builder)
+        EntityEditorContext&    editor_context,
+        const QList<ItemBase*>& items)
+      : m_editor_context(editor_context)
+      , m_items(items)
     {
     }
 
-    virtual void operator()(
-        Project&                project) APPLESEED_OVERRIDE
+    virtual void operator()(Project& project) APPLESEED_OVERRIDE
     {
         for (int i = 0; i < m_items.size(); ++i)
         {
-            ObjectInstanceItem* object_instance_item =
-                static_cast<ObjectInstanceItem*>(m_items[i]);
+            // Create a new Disney material and assign it to the object instance.
+            const Material& material =
+                create_and_assign_new_material(static_cast<ObjectInstanceItem*>(m_items[i]));
 
-            const ObjectInstance& object_instance = *object_instance_item->m_entity;
-            const Assembly& assembly = object_instance_item->m_parent;
+            // Select the last added material.
+            if (i == m_items.size() - 1)
+                m_editor_context.m_project_explorer.select_entity(material.get_uid());
+        }
+    }
 
-            const string material_name =
-                make_unique_name(
-                    string(object_instance.get_name()) + "_material",
-                    assembly.materials());
+    const Material& create_and_assign_new_material(ObjectInstanceItem* object_instance_item)
+    {
+        const ObjectInstance& object_instance = *object_instance_item->m_entity;
+        const Assembly& assembly = object_instance_item->m_parent;
 
-            const AssemblyItem* assembly_item =
-                static_cast<AssemblyItem*>(m_project_builder.get_item_registry().get_item(assembly.get_uid()));
+        // Name the material after the name of the object instance.
+        const string material_name =
+            make_unique_name(
+                string(object_instance.get_name()) + "_material",
+                assembly.materials());
 
+        // Create the material and insert it into the assembly.
+        const AssemblyItem* assembly_item = m_editor_context.m_item_registry.get_item<AssemblyItem>(assembly);
+        const Material& material =
             assembly_item->get_material_collection_item().create_default_disney_material(material_name);
 
-            const Object* object = object_instance.find_object();
+        // Assign the material to the object instance.
+        // We need the object bound to the instance in order to retrieve the material slots.
+        const Object* object = object_instance.find_object();
+        if (object)
+        {
+            const size_t slot_count = object->get_material_slot_count();
 
-            if (object)
+            if (slot_count > 0)
             {
-                const size_t slot_count = object->get_material_slot_count();
-
-                for (size_t j = 0; j < slot_count; ++j)
+                for (size_t i = 0; i < slot_count; ++i)
                 {
                     object_instance_item->do_assign_material(
-                        object->get_material_slot(j),
+                        object->get_material_slot(i),
                         true,   // assign to front side
                         true,   // assign to back side
                         material_name.c_str());
                 }
             }
+            else
+            {
+                object_instance_item->do_assign_material(
+                    ObjectInstanceItem::DefaultSlotName,
+                    true,   // assign to front side
+                    true,   // assign to back side
+                    material_name.c_str());
+            }
         }
+
+        return material;
     }
 
   private:
+    EntityEditorContext&    m_editor_context;
     const QList<ItemBase*>  m_items;
-    ProjectBuilder&         m_project_builder;
 };
 
 void ObjectInstanceItem::slot_assign_new_disney_material()
 {
-    m_project_builder.get_rendering_manager().schedule_or_execute(
+    m_editor_context.m_rendering_manager.schedule_or_execute(
         auto_ptr<RenderingManager::IScheduledAction>(
-            new AssignNewDisneyMaterialAction(
-                get_action_items(),
-                m_project_builder)));
+            new AssignNewDisneyMaterialAction(m_editor_context, get_action_items())));
 }
 
 void ObjectInstanceItem::slot_open_material_assignment_editor()
@@ -247,7 +270,7 @@ void ObjectInstanceItem::slot_open_material_assignment_editor()
             QTreeWidgetItem::treeWidget(),
             *m_entity,
             *this,
-            m_project_builder);
+            m_editor_context);
 
     editor_window->showNormal();
     editor_window->activateWindow();
@@ -353,7 +376,7 @@ namespace
 
 void ObjectInstanceItem::slot_assign_material_accepted(QString page_name, QString entity_name, QVariant data)
 {
-    m_project_builder.get_rendering_manager().schedule_or_execute(
+    m_editor_context.m_rendering_manager.schedule_or_execute(
         auto_ptr<RenderingManager::IScheduledAction>(
             new AssignMaterialAction(this, page_name, entity_name, data)));
 
@@ -415,7 +438,7 @@ void ObjectInstanceItem::slot_clear_material()
 {
     const QVariant data = qobject_cast<QAction*>(sender())->data();
 
-    m_project_builder.get_rendering_manager().schedule_or_execute(
+    m_editor_context.m_rendering_manager.schedule_or_execute(
         auto_ptr<RenderingManager::IScheduledAction>(
             new ClearMaterialAction(this, data)));
 }
@@ -442,7 +465,7 @@ void ObjectInstanceItem::clear_material(const QVariant& untyped_data)
 
 void ObjectInstanceItem::slot_delete()
 {
-    m_project_builder.get_rendering_manager().schedule_or_execute(
+    m_editor_context.m_rendering_manager.schedule_or_execute(
         auto_ptr<RenderingManager::IScheduledAction>(
             new EntityDeletionAction<ObjectInstanceItem>(this)));
 }
@@ -460,11 +483,11 @@ void ObjectInstanceItem::do_delete()
 
     // Mark the assembly and the project as modified.
     m_parent.bump_version_id();
-    m_project_builder.notify_project_modification();
+    m_editor_context.m_project_builder.notify_project_modification();
 
     // Remove and delete the object instance item.
-    ItemBase* object_instance_item = m_project_builder.get_item_registry().get_item(object_instance_uid);
-    m_project_builder.get_item_registry().remove(object_instance_uid);
+    ItemBase* object_instance_item = m_editor_context.m_item_registry.get_item(object_instance_uid);
+    m_editor_context.m_item_registry.remove(object_instance_uid);
     delete object_instance_item;
 
     // At this point 'this' no longer exists.
@@ -539,7 +562,7 @@ void ObjectInstanceItem::do_assign_material(
     if (back_side)
         m_entity->assign_material(slot_name, ObjectInstance::BackSide, material_name);
 
-    m_project_builder.notify_project_modification();
+    m_editor_context.m_project_builder.notify_project_modification();
 
     update_style();
 }
@@ -555,7 +578,7 @@ void ObjectInstanceItem::do_unassign_material(
     if (back_side)
         m_entity->unassign_material(slot_name, ObjectInstance::BackSide);
 
-    m_project_builder.notify_project_modification();
+    m_editor_context.m_project_builder.notify_project_modification();
 
     update_style();
 }
