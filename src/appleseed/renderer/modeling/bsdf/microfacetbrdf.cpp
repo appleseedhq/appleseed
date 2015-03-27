@@ -223,6 +223,8 @@ namespace
 
               assert_otherwise;
             }
+
+            sample.value() *= static_cast<float>(values->m_reflectance_multiplier);
         }
 
         FORCE_INLINE virtual double evaluate(
@@ -239,12 +241,14 @@ namespace
             const InputValues* values = static_cast<const InputValues*>(data);
             const double glossiness = values->m_glossiness * values->m_glossiness_multiplier;
 
+            double pdf = 0.0;
+
             switch (m_mdf)
             {
               case Blinn:
                 {
                     const double e = glossiness_to_blinn_exponent(glossiness);
-                    return MicrofacetBRDFHelper<double>::evaluate(
+                    pdf = MicrofacetBRDFHelper<double>::evaluate(
                         BlinnMDF<double>(),
                         e,
                         e,
@@ -262,7 +266,7 @@ namespace
               case Beckmann:
                 {
                     const double a = glossiness_to_roughness(glossiness);
-                    return MicrofacetBRDFHelper<double>::evaluate(
+                    pdf = MicrofacetBRDFHelper<double>::evaluate(
                         BeckmannMDF<double>(),
                         a,
                         a,
@@ -280,7 +284,7 @@ namespace
               case Ward:
                 {
                     const double a = glossiness_to_roughness(glossiness);
-                    return MicrofacetBRDFHelper<double>::evaluate(
+                    pdf = MicrofacetBRDFHelper<double>::evaluate(
                         WardMDF<double>(),
                         a,
                         a,
@@ -298,7 +302,7 @@ namespace
               case GGX:
                 {
                     const double a = glossiness_to_roughness(glossiness);
-                    return MicrofacetBRDFHelper<double>::evaluate(
+                    pdf =  MicrofacetBRDFHelper<double>::evaluate(
                         GGXMDF<double>(),
                         a,
                         a,
@@ -313,10 +317,11 @@ namespace
                 }
                 break;
 
-              default:
-                 assert(false);
-                 return 0.0;
+              assert_otherwise;
             }
+
+            value *= static_cast<float>(values->m_reflectance_multiplier);
+            return pdf;
         }
 
         FORCE_INLINE virtual double evaluate_pdf(
