@@ -63,6 +63,7 @@ namespace
     const OIIO::ustring g_holdout_str("holdout");
     const OIIO::ustring g_debug_str("debug");
     const OIIO::ustring g_dPdtime_str("dPdtime");
+    const OIIO::ustring g_surface_area_str("surfacearea");
 }
 
 struct ShaderGroup::Impl
@@ -106,6 +107,7 @@ void ShaderGroup::clear()
     m_has_holdout = false;
     m_has_debug = false;
     m_uses_dPdtime = false;
+    m_uses_surface_area = false;
 }
 
 void ShaderGroup::add_shader(
@@ -208,6 +210,8 @@ bool ShaderGroup::create_optimized_osl_shader_group(
 
         get_shadergroup_globals_info(shading_system);
         report_uses_global("dPdtime", m_uses_dPdtime);
+        if (m_has_emission)
+            report_uses_global("surfacearea", m_uses_surface_area);
 
         return true;
     }
@@ -374,11 +378,14 @@ void ShaderGroup::get_shadergroup_globals_info(OSL::ShadingSystem& shading_syste
         }
 
         m_uses_dPdtime = false;
+        m_uses_surface_area = false;
 
         for (int i = 0; i < num_globals; ++i)
         {
             if (globals[i] == g_dPdtime_str)
                 m_uses_dPdtime = true;
+            else if (m_has_emission && globals[i] == g_surface_area_str)
+                m_uses_surface_area = true;
         }
     }
 }

@@ -115,8 +115,12 @@ class APPLESEED_DLLSYMBOL ShaderGroup
     // Return true if the shader group contains at least one debug closure.
     bool has_debug() const;
 
-    // Return true if the shader group uses dPdtime.
+    // Return true if the shader group uses the dPdtime global.
     bool uses_dPdtime() const;
+
+    // Return true if the shader group has emission closures and
+    // uses the surfacearea global.
+    bool uses_surface_area() const;
 
     // Return a reference-counted (but opaque) reference to the internal OSL shader group.
     OSL::ShaderGroupRef& shader_group_ref() const;
@@ -132,6 +136,7 @@ class APPLESEED_DLLSYMBOL ShaderGroup
     bool    m_has_holdout;
     bool    m_has_debug;
     bool    m_uses_dPdtime;
+    bool    m_uses_surface_area;
 
     // Constructor.
     explicit ShaderGroup(const char* name);
@@ -189,6 +194,11 @@ inline bool ShaderGroup::has_debug() const
 inline bool ShaderGroup::uses_dPdtime() const
 {
     return m_uses_dPdtime;
+}
+
+inline bool ShaderGroup::uses_surface_area() const
+{
+    return m_uses_surface_area;
 }
 
 }       // namespace renderer
