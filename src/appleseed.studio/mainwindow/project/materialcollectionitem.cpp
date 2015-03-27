@@ -40,6 +40,7 @@
 #include "mainwindow/project/entityeditorwindow.h"
 #include "mainwindow/project/fixedmodelentityitem.h"
 #include "mainwindow/project/materialitem.h"
+#include "mainwindow/project/projectexplorer.h"
 #include "mainwindow/project/tools.h"
 #include "utility/miscellaneous.h"
 #include "utility/settingskeys.h"
@@ -217,12 +218,14 @@ void MaterialCollectionItem::slot_import_disney()
 
         auto_release_ptr<Material> material =
             DisneyMaterialFactory().create(name.c_str(), parameters);
+        Material* material_ptr = material.get();
 
-        add_item(material.get());
+        add_item(material_ptr);
 
         EntityTraits<Material>::insert_entity(material, m_parent);
-
         m_editor_context.m_project_builder.notify_project_modification();
+
+        m_editor_context.m_project_explorer.select_entity(material_ptr->get_uid());
     }
 #endif
 }
