@@ -33,6 +33,7 @@
 // appleseed.studio headers.
 #include "mainwindow/project/assemblyitem.h"
 #include "mainwindow/project/basegroupitem.h"
+#include "mainwindow/project/entityeditorcontext.h"
 #include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/tools.h"
@@ -68,13 +69,10 @@ AssemblyCollectionItem::AssemblyCollectionItem(
     EntityEditorContext&    editor_context,
     AssemblyContainer&      assemblies,
     BaseGroup&              parent,
-    BaseGroupItem*          parent_item,
-    ProjectBuilder&         project_builder,
-    ParamArray&             settings)
-  : CollectionItemBase<Assembly>(editor_context, g_class_uid, "Assemblies", project_builder)
+    BaseGroupItem*          parent_item)
+  : CollectionItemBase<Assembly>(editor_context, g_class_uid, "Assemblies")
   , m_parent(parent)
   , m_parent_item(parent_item)
-  , m_settings(settings)
 {
     add_items(assemblies);
 }
@@ -116,7 +114,7 @@ void AssemblyCollectionItem::slot_create()
 
         assembly_item->instantiate(assembly_instance_name);
 
-        m_project_builder.notify_project_modification();
+        m_editor_context.m_project_builder.notify_project_modification();
     }
 }
 
@@ -129,11 +127,9 @@ ItemBase* AssemblyCollectionItem::create_item(Assembly* assembly)
             m_editor_context,
             *assembly,
             m_parent,
-            m_parent_item,
-            m_project_builder,
-            m_settings);
+            m_parent_item);
 
-    m_project_builder.get_item_registry().insert(*assembly, item);
+    m_editor_context.m_item_registry.insert(*assembly, item);
 
     return item;
 }

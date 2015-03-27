@@ -40,7 +40,6 @@
 
 // Forward declarations.
 namespace appleseed { namespace studio { class EntityEditorContext; } }
-namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace renderer  { class AssemblyInstance; }
 namespace renderer  { class BaseGroup; }
 
@@ -57,15 +56,13 @@ class AssemblyInstanceItem
         EntityEditorContext&            editor_context,
         renderer::AssemblyInstance*     assembly_instance,
         renderer::BaseGroup&            parent,
-        AssemblyInstanceCollectionItem* collection_item,
-        ProjectBuilder&                 project_builder);
+        AssemblyInstanceCollectionItem* collection_item);
 
   private:
     friend class EntityDeletionAction<AssemblyInstanceItem>;
 
     renderer::BaseGroup&                m_parent;
     AssemblyInstanceCollectionItem*     m_collection_item;
-    ProjectBuilder&                     m_project_builder;
 
     virtual void slot_delete() APPLESEED_OVERRIDE;
     void do_delete();

@@ -66,16 +66,15 @@ ProjectExplorer::ProjectExplorer(
   , m_attribute_editor(attribute_editor)
   , m_project_builder(project, rendering_manager)
   , m_editor_context(
+        *this,
+        m_project_builder,
         m_project_builder.get_item_registry(),
-        rendering_manager)
+        rendering_manager,
+        settings)
 {
     m_tree_widget->setContextMenuPolicy(Qt::CustomContextMenu);
 
-    ProjectItem* project_item =
-        new ProjectItem(
-            m_editor_context,
-            m_project_builder,
-            settings);
+    ProjectItem* project_item = new ProjectItem(m_editor_context);
     m_tree_widget->addTopLevelItem(project_item);
 
     project_item->expand();

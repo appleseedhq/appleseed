@@ -42,14 +42,12 @@ namespace appleseed { namespace studio { class AssemblyInstanceItem; } }
 namespace appleseed { namespace studio { class EntityEditorContext; } }
 namespace appleseed { namespace studio { template <typename Entity, typename EntityItem, typename ParentEntity> class InstanceCollectionItem; } }
 namespace appleseed { namespace studio { template <typename Entity, typename ParentEntity, typename ParentItem> class SingleModelCollectionItem; } }
-namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace appleseed { namespace studio { class TextureCollectionItem; } }
 namespace appleseed { namespace studio { class TextureInstanceItem; } }
 namespace renderer  { class Assembly; }
 namespace renderer  { class AssemblyInstance; }
 namespace renderer  { class BaseGroup; }
 namespace renderer  { class ColorEntity; }
-namespace renderer  { class ParamArray; }
 namespace renderer  { class Texture; }
 namespace renderer  { class TextureInstance; }
 class QMenu;
@@ -65,17 +63,13 @@ class BaseGroupItem
     BaseGroupItem(
         EntityEditorContext&            editor_context,
         const foundation::UniqueID      class_uid,
-        renderer::BaseGroup&            base_group,
-        ProjectBuilder&                 project_builder,
-        renderer::ParamArray&           settings);
+        renderer::BaseGroup&            base_group);
 
     BaseGroupItem(
         EntityEditorContext&            editor_context,
         const foundation::UniqueID      class_uid,
         const QString&                  title,
-        renderer::BaseGroup&            base_group,
-        ProjectBuilder&                 project_builder,
-        renderer::ParamArray&           settings);
+        renderer::BaseGroup&            base_group);
 
     ItemBase* add_item(renderer::ColorEntity* color);
     ItemBase* add_item(renderer::Texture* texture);
@@ -100,10 +94,7 @@ class BaseGroupItem
     AssemblyCollectionItem*             m_assembly_collection_item;
     AssemblyInstanceCollectionItem*     m_assembly_instance_collection_item;
 
-    void add_items(
-        renderer::BaseGroup&            base_group,
-        ProjectBuilder&                 project_builder,
-        renderer::ParamArray&           settings);
+    void add_items(renderer::BaseGroup& base_group);
 };
 
 }       // namespace studio

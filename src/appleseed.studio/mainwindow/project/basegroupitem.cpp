@@ -55,24 +55,20 @@ namespace studio {
 BaseGroupItem::BaseGroupItem(
     EntityEditorContext&    editor_context,
     const UniqueID          class_uid,
-    BaseGroup&              base_group,
-    ProjectBuilder&         project_builder,
-    ParamArray&             settings)
+    BaseGroup&              base_group)
   : ItemBase(editor_context, class_uid)
 {
-    add_items(base_group, project_builder, settings);
+    add_items(base_group);
 }
 
 BaseGroupItem::BaseGroupItem(
     EntityEditorContext&    editor_context,
     const UniqueID          class_uid,
     const QString&          title,
-    BaseGroup&              base_group,
-    ProjectBuilder&         project_builder,
-    ParamArray&             settings)
+    BaseGroup&              base_group)
   : ItemBase(editor_context, class_uid, title)
 {
-    add_items(base_group, project_builder, settings);
+    add_items(base_group);
 }
 
 ItemBase* BaseGroupItem::add_item(ColorEntity* color)
@@ -125,10 +121,7 @@ BaseGroupItem::AssemblyInstanceCollectionItem& BaseGroupItem::get_assembly_insta
     return *m_assembly_instance_collection_item;
 }
 
-void BaseGroupItem::add_items(
-    BaseGroup&              base_group,
-    ProjectBuilder&         project_builder,
-    ParamArray&             settings)
+void BaseGroupItem::add_items(BaseGroup& base_group)
 {
     addChild(
         m_color_collection_item =
@@ -137,8 +130,7 @@ void BaseGroupItem::add_items(
                 new_guid(),
                 EntityTraits<ColorEntity>::get_human_readable_collection_type_name(),
                 base_group,
-                this,
-                project_builder));
+                this));
     m_color_collection_item->add_items(base_group.colors());
 
     addChild(
@@ -147,9 +139,7 @@ void BaseGroupItem::add_items(
                 m_editor_context,
                 base_group.textures(),
                 base_group,
-                this,
-                project_builder,
-                settings));
+                this));
 
     addChild(
         m_texture_instance_collection_item =
@@ -157,8 +147,7 @@ void BaseGroupItem::add_items(
                 m_editor_context,
                 new_guid(),
                 EntityTraits<TextureInstance>::get_human_readable_collection_type_name(),
-                base_group,
-                project_builder));
+                base_group));
     m_texture_instance_collection_item->add_items(base_group.texture_instances());
 
     addChild(
@@ -167,9 +156,7 @@ void BaseGroupItem::add_items(
                 m_editor_context,
                 base_group.assemblies(),
                 base_group,
-                this,
-                project_builder,
-                settings));
+                this));
 
     addChild(
         m_assembly_instance_collection_item =
@@ -177,8 +164,7 @@ void BaseGroupItem::add_items(
                 m_editor_context,
                 new_guid(),
                 EntityTraits<AssemblyInstance>::get_human_readable_collection_type_name(),
-                base_group,
-                project_builder));
+                base_group));
     m_assembly_instance_collection_item->add_items(base_group.assembly_instances());
 }
 

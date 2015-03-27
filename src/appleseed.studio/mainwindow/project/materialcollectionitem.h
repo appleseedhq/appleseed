@@ -36,9 +36,7 @@
 
 // Forward declarations.
 namespace appleseed { namespace studio { class EntityEditorContext; } }
-namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace renderer  { class Assembly; }
-namespace renderer  { class ParamArray; }
 
 namespace appleseed {
 namespace studio {
@@ -53,9 +51,7 @@ class MaterialCollectionItem
         EntityEditorContext&            editor_context,
         renderer::MaterialContainer&    materials,
         renderer::Assembly&             parent,
-        AssemblyItem*                   parent_item,
-        ProjectBuilder&                 project_builder,
-        renderer::ParamArray&           settings);
+        AssemblyItem*                   parent_item);
 
     void create_default_disney_material(const std::string& material_name);
 
@@ -75,9 +71,8 @@ class MaterialCollectionItem
 
     void do_create_material(const char* model);
 
-    renderer::Assembly&                 m_parent;
-    AssemblyItem*                       m_parent_item;
-    renderer::ParamArray&               m_settings;
+    renderer::Assembly& m_parent;
+    AssemblyItem*       m_parent_item;
 };
 
 }       // namespace studio

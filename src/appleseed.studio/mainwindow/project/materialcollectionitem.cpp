@@ -36,6 +36,7 @@
 #include "mainwindow/project/disneymaterialcustomui.h"
 #endif
 #include "mainwindow/project/entityeditor.h"
+#include "mainwindow/project/entityeditorcontext.h"
 #include "mainwindow/project/entityeditorwindow.h"
 #include "mainwindow/project/fixedmodelentityitem.h"
 #include "mainwindow/project/materialitem.h"
@@ -84,13 +85,10 @@ MaterialCollectionItem::MaterialCollectionItem(
     EntityEditorContext&    editor_context,
     MaterialContainer&      materials,
     Assembly&               parent,
-    AssemblyItem*           parent_item,
-    ProjectBuilder&         project_builder,
-    ParamArray&             settings)
-  : Base(editor_context, g_class_uid, "Materials", parent, parent_item, project_builder)
+    AssemblyItem*           parent_item)
+  : Base(editor_context, g_class_uid, "Materials", parent, parent_item)
   , m_parent(parent)
   , m_parent_item(parent_item)
-  , m_settings(settings)
 {
     add_items(materials);
 }
@@ -107,7 +105,7 @@ void MaterialCollectionItem::create_default_disney_material(const string& materi
 
     EntityTraits<Material>::insert_entity(material, m_parent);
 
-    m_project_builder.notify_project_modification();
+    m_editor_context.m_project_builder.notify_project_modification();
 }
 
 QMenu* MaterialCollectionItem::get_single_item_context_menu() const
@@ -139,11 +137,9 @@ ItemBase* MaterialCollectionItem::create_item(Material* material)
             m_editor_context,
             material,
             m_parent,
-            this,
-            m_project_builder,
-            m_settings);
+            this);
 
-    m_project_builder.get_item_registry().insert(*material, item);
+    m_editor_context.m_item_registry.insert(*material, item);
 
     return item;
 }
@@ -168,7 +164,7 @@ void MaterialCollectionItem::slot_import_disney()
             0,
             "Import...",
             "Disney Material (*.dmt);;All Files (*.*)",
-            m_settings,
+            m_editor_context.m_settings,
             SETTINGS_FILE_DIALOG_MATERIALS);
 
     if (!filepath.isEmpty())
@@ -224,7 +220,7 @@ void MaterialCollectionItem::slot_import_disney()
 
         EntityTraits<Material>::insert_entity(material, m_parent);
 
-        m_project_builder.notify_project_modification();
+        m_editor_context.m_project_builder.notify_project_modification();
     }
 #endif
 }
@@ -253,7 +249,7 @@ void MaterialCollectionItem::do_create_material(const char* model)
 
     auto_ptr<EntityEditor::IFormFactory> form_factory(
         new FixedModelEntityEditorFormFactory<FactoryRegistrarType>(
-            Base::m_project_builder.get_factory_registrar<Material>(),
+            m_editor_context.m_project_builder.get_factory_registrar<Material>(),
             name_suggestion,
             model));
 
@@ -267,15 +263,15 @@ void MaterialCollectionItem::do_create_material(const char* model)
     {
         custom_entity_ui.reset(
             new DisneyMaterialCustomUI(
-                Base::m_project_builder.get_project(),
-                m_settings));
+                m_editor_context.m_project_builder.get_project(),
+                m_editor_context.m_settings));
     }
 #endif
 
     open_entity_editor(
         QTreeWidgetItem::treeWidget(),
         window_title,
-        Base::m_project_builder.get_project(),
+        m_editor_context.m_project_builder.get_project(),
         form_factory,
         entity_browser,
         custom_entity_ui,

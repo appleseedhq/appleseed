@@ -47,7 +47,6 @@ namespace appleseed { namespace studio { template <typename Entity, typename Ent
 namespace appleseed { namespace studio { class MaterialCollectionItem; } }
 namespace appleseed { namespace studio { class ObjectCollectionItem; } }
 namespace appleseed { namespace studio { class ObjectInstanceItem; } }
-namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace renderer  { class Assembly; }
 namespace renderer  { class BaseGroup; }
 namespace renderer  { class BSDF; }
@@ -56,9 +55,7 @@ namespace renderer  { class Light; }
 namespace renderer  { class Material; }
 namespace renderer  { class Object; }
 namespace renderer  { class ObjectInstance; }
-namespace renderer  { class ParamArray; }
 namespace renderer  { class SurfaceShader; }
-
 class QMenu;
 
 namespace appleseed {
@@ -74,9 +71,7 @@ class AssemblyItem
         EntityEditorContext&        editor_context,
         renderer::Assembly&         assembly,
         renderer::BaseGroup&        parent,
-        BaseGroupItem*              parent_item,
-        ProjectBuilder&             project_builder,
-        renderer::ParamArray&       settings);
+        BaseGroupItem*              parent_item);
 
     virtual QMenu* get_single_item_context_menu() const APPLESEED_OVERRIDE;
 
@@ -103,7 +98,6 @@ class AssemblyItem
     renderer::Assembly&             m_assembly;
     renderer::BaseGroup&            m_parent;
     BaseGroupItem*                  m_parent_item;
-    ProjectBuilder&                 m_project_builder;
 
     typedef CollectionItem<renderer::BSDF, renderer::Assembly, AssemblyItem> BSDFCollectionItem;
     typedef CollectionItem<renderer::EDF, renderer::Assembly, AssemblyItem> EDFCollectionItem;

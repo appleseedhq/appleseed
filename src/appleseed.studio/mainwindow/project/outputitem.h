@@ -35,7 +35,6 @@
 
 // Forward declarations.
 namespace appleseed { namespace studio { class EntityEditorContext; } }
-namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace renderer  { class Project; }
 
 namespace appleseed {
@@ -47,8 +46,7 @@ class OutputItem
   public:
     OutputItem(
         EntityEditorContext&    editor_context,
-        renderer::Project&      project,
-        ProjectBuilder&         project_builder);
+        renderer::Project&      project);
 };
 
 }       // namespace studio

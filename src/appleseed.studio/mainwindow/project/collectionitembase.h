@@ -31,9 +31,9 @@
 #define APPLESEED_STUDIO_MAINWINDOW_PROJECT_COLLECTIONITEMBASE_H
 
 // appleseed.studio headers.
+#include "mainwindow/project/entityeditorcontext.h"
 #include "mainwindow/project/itembase.h"
 #include "mainwindow/project/itemregistry.h"
-#include "mainwindow/project/projectbuilder.h"
 #include "utility/treewidget.h"
 
 // appleseed.foundation headers.
@@ -92,21 +92,17 @@ class CollectionItemBase
   public:
     CollectionItemBase(
         EntityEditorContext&        editor_context,
-        const foundation::UniqueID  class_uid,
-        ProjectBuilder&             project_builder);
+        const foundation::UniqueID  class_uid);
     CollectionItemBase(
         EntityEditorContext&        editor_context,
         const foundation::UniqueID  class_uid,
-        const QString&              title,
-        ProjectBuilder&             project_builder);
+        const QString&              title);
 
     ItemBase* add_item(Entity* entity);
 
     template <typename EntityContainer> void add_items(EntityContainer& items);
 
   protected:
-    ProjectBuilder& m_project_builder;
-
     void initialize();
 
     ItemBase* add_item(const int index, Entity* entity);
@@ -122,10 +118,8 @@ class CollectionItemBase
 template <typename Entity>
 CollectionItemBase<Entity>::CollectionItemBase(
     EntityEditorContext&        editor_context,
-    const foundation::UniqueID  class_uid,
-    ProjectBuilder&             project_builder)
+    const foundation::UniqueID  class_uid)
   : CollectionItemBaseSlots(editor_context, class_uid)
-  , m_project_builder(project_builder)
 {
     initialize();
 }
@@ -134,10 +128,8 @@ template <typename Entity>
 CollectionItemBase<Entity>::CollectionItemBase(
     EntityEditorContext&        editor_context,
     const foundation::UniqueID  class_uid,
-    const QString&              title,
-    ProjectBuilder&             project_builder)
+    const QString&              title)
   : CollectionItemBaseSlots(editor_context, class_uid, title)
-  , m_project_builder(project_builder)
 {
     initialize();
 }
@@ -191,7 +183,7 @@ ItemBase* CollectionItemBase<Entity>::create_item(Entity* entity)
             entity->get_class_uid(),
             entity->get_name());
 
-    m_project_builder.get_item_registry().insert(*entity, item);
+    m_editor_context.m_item_registry.insert(*entity, item);
 
     return item;
 }

@@ -34,6 +34,7 @@
 #include "mainwindow/project/attributeeditor.h"
 #include "mainwindow/project/entitybrowser.h"
 #include "mainwindow/project/entityeditor.h"
+#include "mainwindow/project/entityeditorcontext.h"
 #include "mainwindow/project/entityitem.h"
 #include "mainwindow/project/multimodelentityeditorformfactory.h"
 #include "mainwindow/project/projectbuilder.h"
@@ -51,9 +52,6 @@
 #include <memory>
 #include <string>
 
-// Forward declarations.
-namespace appleseed { namespace studio { class EntityEditorContext; } }
-
 namespace appleseed {
 namespace studio {
 
@@ -66,8 +64,7 @@ class MultiModelEntityItem
         EntityEditorContext&    editor_context,
         Entity*                 entity,
         ParentEntity&           parent,
-        CollectionItem*         collection_item,
-        ProjectBuilder&         project_builder);
+        CollectionItem*         collection_item);
 
   private:
     typedef EntityItem<Entity, ParentEntity, CollectionItem> Base;
@@ -90,9 +87,8 @@ MultiModelEntityItem<Entity, ParentEntity, CollectionItem>::MultiModelEntityItem
     EntityEditorContext&        editor_context,
     Entity*                     entity,
     ParentEntity&               parent,
-    CollectionItem*             collection_item,
-    ProjectBuilder&             project_builder)
-  : Base(editor_context, entity, parent, collection_item, project_builder)
+    CollectionItem*             collection_item)
+  : Base(editor_context, entity, parent, collection_item)
 {
 }
 
@@ -104,7 +100,7 @@ void MultiModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit(Attri
 
     std::auto_ptr<EntityEditor::IFormFactory> form_factory(
         new MultiModelEntityEditorFormFactoryType(
-            Base::m_project_builder.template get_factory_registrar<Entity>(),
+            Base::m_editor_context.m_project_builder.template get_factory_registrar<Entity>(),
             Base::m_entity->get_name()));
 
     std::auto_ptr<EntityEditor::IEntityBrowser> entity_browser(
@@ -136,7 +132,7 @@ void MultiModelEntityItem<Entity, ParentEntity, CollectionItem>::slot_edit(Attri
         open_entity_editor(
             QTreeWidgetItem::treeWidget(),
             window_title,
-            Base::m_project_builder.get_project(),
+            Base::m_editor_context.m_project_builder.get_project(),
             form_factory,
             entity_browser,
             values,

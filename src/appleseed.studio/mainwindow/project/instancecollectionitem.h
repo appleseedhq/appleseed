@@ -32,8 +32,8 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/collectionitembase.h"
+#include "mainwindow/project/entityeditorcontext.h"
 #include "mainwindow/project/itemregistry.h"
-#include "mainwindow/project/projectbuilder.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -43,9 +43,7 @@
 #include <cassert>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class EntityEditorContext; } }
 namespace appleseed { namespace studio { class ItemBase; } }
-namespace appleseed { namespace studio { class ProjectBuilder; } }
 class QString;
 
 namespace appleseed {
@@ -60,8 +58,7 @@ class InstanceCollectionItem
         EntityEditorContext&        editor_context,
         const foundation::UniqueID  class_uid,
         const QString&              title,
-        ParentEntity&               parent,
-        ProjectBuilder&             project_builder);
+        ParentEntity&               parent);
 
   private:
     ParentEntity& m_parent;
@@ -79,9 +76,8 @@ InstanceCollectionItem<Entity, EntityItem, ParentEntity>::InstanceCollectionItem
     EntityEditorContext&            editor_context,
     const foundation::UniqueID      class_uid,
     const QString&                  title,
-    ParentEntity&                   parent,
-    ProjectBuilder&                 project_builder)
-  : CollectionItemBase<Entity>(editor_context, class_uid, title, project_builder)
+    ParentEntity&                   parent)
+  : CollectionItemBase<Entity>(editor_context, class_uid, title)
   , m_parent(parent)
 {
 }
@@ -96,10 +92,9 @@ ItemBase* InstanceCollectionItem<Entity, EntityItem, ParentEntity>::create_item(
             m_editor_context,
             entity,
             m_parent,
-            this,
-            CollectionItemBase<Entity>::m_project_builder);
+            this);
 
-    CollectionItemBase<Entity>::m_project_builder.get_item_registry().insert(*entity, item);
+    m_editor_context.m_item_registry.insert(*entity, item);
 
     return item;
 }

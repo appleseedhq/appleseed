@@ -44,7 +44,6 @@
 // Forward declarations.
 namespace appleseed     { namespace studio { class AttributeEditor; } }
 namespace appleseed     { namespace studio { class EntityEditorContext; } }
-namespace appleseed     { namespace studio { class ProjectBuilder; } }
 namespace foundation    { class Dictionary; }
 namespace renderer      { class Frame; }
 
@@ -60,8 +59,7 @@ class FrameItem
   public:
     FrameItem(
         EntityEditorContext&    editor_context,
-        renderer::Frame*        frame,
-        ProjectBuilder&         project_builder);
+        renderer::Frame*        frame);
 
   private slots:
     void slot_edit_accepted(foundation::Dictionary values);
@@ -69,8 +67,7 @@ class FrameItem
   private:
     friend class EntityEditionAction<FrameItem>;
 
-    renderer::Frame*    m_frame;
-    ProjectBuilder&     m_project_builder;
+    renderer::Frame* m_frame;
 
     virtual void slot_edit(AttributeEditor* attribute_editor) APPLESEED_OVERRIDE;
     void edit(const foundation::Dictionary& values);

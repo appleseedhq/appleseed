@@ -40,7 +40,6 @@
 // Forward declarations.
 namespace appleseed { namespace studio { class BaseGroupItem; } }
 namespace appleseed { namespace studio { class EntityEditorContext; } }
-namespace appleseed { namespace studio { class ProjectBuilder; } }
 namespace appleseed { namespace studio { class TextureCollectionItem; } }
 namespace renderer  { class BaseGroup; }
 namespace renderer  { class Texture; }
@@ -57,8 +56,7 @@ class TextureItem
         renderer::Texture*      texture,
         renderer::BaseGroup&    parent,
         TextureCollectionItem*  parent_item,
-        BaseGroupItem*          base_group_item,
-        ProjectBuilder&         project_builder);
+        BaseGroupItem*          base_group_item);
 
   private:
     friend class EntityDeletionAction<TextureItem>;

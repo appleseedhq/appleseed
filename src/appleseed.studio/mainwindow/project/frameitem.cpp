@@ -33,6 +33,7 @@
 // appleseed.studio headers.
 #include "mainwindow/project/attributeeditor.h"
 #include "mainwindow/project/entityeditor.h"
+#include "mainwindow/project/entityeditorcontext.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/singlemodelentityeditorformfactory.h"
 #include "mainwindow/project/tools.h"
@@ -65,11 +66,9 @@ namespace
 
 FrameItem::FrameItem(
     EntityEditorContext&    editor_context,
-    Frame*                  frame,
-    ProjectBuilder& project_builder)
+    Frame*                  frame)
   : ItemBase(editor_context, g_class_uid, frame->get_name())
   , m_frame(frame)
-  , m_project_builder(project_builder)
 {
     set_allow_deletion(false);
 }
@@ -96,7 +95,7 @@ void FrameItem::slot_edit(AttributeEditor* attribute_editor)
         open_entity_editor(
             treeWidget(),
             "Edit Frame",
-            m_project_builder.get_project(),
+            m_editor_context.m_project_builder.get_project(),
             form_factory,
             auto_ptr<EntityEditor::IEntityBrowser>(0),
             m_frame->get_parameters(),
@@ -109,13 +108,13 @@ void FrameItem::slot_edit(AttributeEditor* attribute_editor)
 
 void FrameItem::slot_edit_accepted(Dictionary values)
 {
-    if (m_project_builder.get_rendering_manager().is_rendering())
+    if (m_editor_context.m_rendering_manager.is_rendering())
     {
-        m_project_builder.get_rendering_manager().schedule(
+        m_editor_context.m_rendering_manager.schedule(
             auto_ptr<RenderingManager::IScheduledAction>(
                 new EntityEditionAction<FrameItem>(this, values)));
 
-        m_project_builder.get_rendering_manager().reinitialize_rendering();
+        m_editor_context.m_rendering_manager.reinitialize_rendering();
     }
     else
     {
@@ -125,7 +124,7 @@ void FrameItem::slot_edit_accepted(Dictionary values)
 
 void FrameItem::edit(const Dictionary& values)
 {
-    m_frame = m_project_builder.edit_frame(values);
+    m_frame = m_editor_context.m_project_builder.edit_frame(values);
 
     set_title(QString::fromAscii(m_frame->get_name()));
 }

@@ -55,8 +55,7 @@ namespace
 
 OutputItem::OutputItem(
     EntityEditorContext&    editor_context,
-    Project&                project,
-    ProjectBuilder&         project_builder)
+    Project&                project)
   : ItemBase(editor_context, g_class_uid, "Output")
 {
     set_allow_deletion(false);
@@ -66,12 +65,7 @@ OutputItem::OutputItem(
     font.setBold(true);
     setFont(0, font);
 
-    insertChild(
-        0,
-        new FrameItem(
-            editor_context,
-            project.get_frame(),
-            project_builder));
+    insertChild(0, new FrameItem(editor_context, project.get_frame()));
 }
 
 }   // namespace studio
