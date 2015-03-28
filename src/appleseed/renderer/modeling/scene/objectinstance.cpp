@@ -64,7 +64,7 @@ APPLESEED_DEFINE_ARRAY(MaterialArray);
 
 bool has_emitting_materials(const MaterialArray& materials)
 {
-    for (size_t i = 0; i < materials.size(); ++i)
+    for (size_t i = 0, e = materials.size(); i < e; ++i)
     {
         if (materials[i] && materials[i]->has_emission())
             return true;
@@ -75,7 +75,7 @@ bool has_emitting_materials(const MaterialArray& materials)
 
 bool uses_alpha_mapping(const MaterialArray& materials)
 {
-    for (size_t i = 0; i < materials.size(); ++i)
+    for (size_t i = 0, e = materials.size(); i < e; ++i)
     {
         if (materials[i])
         {

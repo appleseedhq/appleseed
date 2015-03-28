@@ -49,6 +49,9 @@
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/scene/visibilityflags.h"
+#ifdef APPLESEED_WITH_OSL
+#include "renderer/modeling/shadergroup/shadergroup.h"
+#endif
 
 // appleseed.foundation headers.
 #include "foundation/math/sampling/mappings.h"
@@ -226,6 +229,33 @@ void LightSampler::collect_emitting_triangles(
     }
 }
 
+#ifdef APPLESEED_WITH_OSL
+void LightSampler::store_object_area_in_shadergroups(
+    const AssemblyInstance* assembly_instance,
+    const ObjectInstance*   object_instance,
+    const double            object_area,
+    const MaterialArray&    materials)
+{
+    for (size_t i = 0, e = materials.size(); i < e; ++i)
+    {
+        if (const Material* m = materials[i])
+        {
+            if (const ShaderGroup* sg = m->get_uncached_osl_surface())
+            {
+                if (sg->has_emission())
+                {
+                    sg->set_surface_area(
+                        assembly_instance,
+                        object_instance,
+                        object_area);
+                }
+            }
+        }
+    }
+}
+
+#endif
+
 void LightSampler::collect_emitting_triangles(
     const Assembly&                     assembly,
     const AssemblyInstance&             assembly_instance,
@@ -245,6 +275,8 @@ void LightSampler::collect_emitting_triangles(
         // Skip object instances without light-emitting materials.
         if (!has_emitting_materials(front_materials) && !has_emitting_materials(back_materials))
             continue;
+
+        double object_area = 0.0;
 
         // Compute the object space to world space transformation.
         // todo: add support for moving light-emitters.
@@ -353,6 +385,9 @@ void LightSampler::collect_emitting_triangles(
                     if (edf == 0)
                         continue;
 
+                    // Accumulate the object area for OSL shaders.
+                    object_area += area;
+
                     // Compute the probability density of this triangle.
                     const double triangle_importance = m_params.m_importance_sampling ? area : 1.0;
                     const double triangle_prob = triangle_importance * edf->get_uncached_importance_multiplier();
@@ -384,6 +419,20 @@ void LightSampler::collect_emitting_triangles(
                 }
             }
         }
+
+#ifdef APPLESEED_WITH_OSL
+        store_object_area_in_shadergroups(
+            &assembly_instance,
+            object_instance,
+            object_area,
+            front_materials);
+
+        store_object_area_in_shadergroups(
+            &assembly_instance,
+            object_instance,
+            object_area,
+            back_materials);
+#endif
     }
 }
 

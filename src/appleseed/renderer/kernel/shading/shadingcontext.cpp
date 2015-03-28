@@ -110,13 +110,9 @@ void ShadingContext::execute_osl_transparency(
 
 void ShadingContext::execute_osl_emission(
     const ShaderGroup&          shader_group,
-    const ShadingPoint&         shading_point,
-    const float                 surface_area) const
+    const ShadingPoint&         shading_point) const
 {
-    m_shadergroup_exec.execute_emission(
-        shader_group,
-        shading_point,
-        surface_area);
+    m_shadergroup_exec.execute_emission(shader_group, shading_point);
 }
 
 void ShadingContext::execute_osl_background(

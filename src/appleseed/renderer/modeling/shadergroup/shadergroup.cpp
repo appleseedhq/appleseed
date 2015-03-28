@@ -41,8 +41,12 @@
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/uid.h"
 
+// Boost headers
+#include "boost/unordered/unordered_map.hpp"
+
 // Standard headers.
 #include <exception>
+#include <utility>
 
 using namespace foundation;
 using namespace std;
@@ -63,14 +67,17 @@ namespace
     const OIIO::ustring g_holdout_str("holdout");
     const OIIO::ustring g_debug_str("debug");
     const OIIO::ustring g_dPdtime_str("dPdtime");
-    const OIIO::ustring g_surface_area_str("surfacearea");
 }
 
 struct ShaderGroup::Impl
 {
-    ShaderContainer                 m_shaders;
-    ShaderConnectionContainer       m_connections;
-    mutable OSL::ShaderGroupRef     m_shader_group_ref;
+    typedef pair<const AssemblyInstance*, const ObjectInstance*> SurfaceAreaKey;
+    typedef boost::unordered_map<SurfaceAreaKey, double>         SurfaceAreaMap;
+
+    ShaderContainer             m_shaders;
+    ShaderConnectionContainer   m_connections;
+    mutable OSL::ShaderGroupRef m_shader_group_ref;
+    mutable SurfaceAreaMap      m_surface_areas;
 };
 
 ShaderGroup::ShaderGroup(const char* name)
@@ -107,7 +114,6 @@ void ShaderGroup::clear()
     m_has_holdout = false;
     m_has_debug = false;
     m_uses_dPdtime = false;
-    m_uses_surface_area = false;
 }
 
 void ShaderGroup::add_shader(
@@ -210,8 +216,6 @@ bool ShaderGroup::create_optimized_osl_shader_group(
 
         get_shadergroup_globals_info(shading_system);
         report_uses_global("dPdtime", m_uses_dPdtime);
-        if (m_has_emission)
-            report_uses_global("surfacearea", m_uses_surface_area);
 
         return true;
     }
@@ -240,6 +244,13 @@ const ShaderConnectionContainer& ShaderGroup::shader_connections() const
 bool ShaderGroup::is_valid() const
 {
     return impl->m_shader_group_ref.get() != 0;
+}
+
+double ShaderGroup::get_surface_area(const AssemblyInstance* ass, const ObjectInstance* obj) const
+{
+    assert(m_has_emission);
+
+    return impl->m_surface_areas[Impl::SurfaceAreaKey(ass, obj)];
 }
 
 OSL::ShaderGroupRef& ShaderGroup::shader_group_ref() const
@@ -378,14 +389,11 @@ void ShaderGroup::get_shadergroup_globals_info(OSL::ShadingSystem& shading_syste
         }
 
         m_uses_dPdtime = false;
-        m_uses_surface_area = false;
 
         for (int i = 0; i < num_globals; ++i)
         {
             if (globals[i] == g_dPdtime_str)
                 m_uses_dPdtime = true;
-            else if (m_has_emission && globals[i] == g_surface_area_str)
-                m_uses_surface_area = true;
         }
     }
 }
@@ -406,6 +414,16 @@ void ShaderGroup::report_uses_global(const char* global_name, const bool uses_gl
             get_name(),
             global_name);
     }
+}
+
+void ShaderGroup::set_surface_area(
+    const AssemblyInstance* ass,
+    const ObjectInstance*   obj,
+    const double            area) const
+{
+    assert (m_has_emission);
+
+    impl->m_surface_areas[Impl::SurfaceAreaKey(ass, obj)] = area;
 }
 
 

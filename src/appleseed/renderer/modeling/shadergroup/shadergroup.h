@@ -49,7 +49,10 @@ END_OSL_INCLUDES
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class Assembly; }
+namespace renderer      { class AssemblyInstance; }
+namespace renderer      { class LightSamper; }
 namespace renderer      { class ParamArray; }
+namespace renderer      { class ObjectInstance; }
 namespace renderer      { class Project; }
 
 namespace renderer
@@ -118,14 +121,15 @@ class APPLESEED_DLLSYMBOL ShaderGroup
     // Return true if the shader group uses the dPdtime global.
     bool uses_dPdtime() const;
 
-    // Return true if the shader group has emission closures and
-    // uses the surfacearea global.
-    bool uses_surface_area() const;
+    // Return the surface area of an object.
+    // Can only be called if the shader group has emission closures.
+    double get_surface_area(const AssemblyInstance* ass, const ObjectInstance* obj) const;
 
     // Return a reference-counted (but opaque) reference to the internal OSL shader group.
     OSL::ShaderGroupRef& shader_group_ref() const;
 
   private:
+    friend class LightSampler;
     friend class ShaderGroupFactory;
 
     struct Impl;
@@ -136,7 +140,6 @@ class APPLESEED_DLLSYMBOL ShaderGroup
     bool    m_has_holdout;
     bool    m_has_debug;
     bool    m_uses_dPdtime;
-    bool    m_uses_surface_area;
 
     // Constructor.
     explicit ShaderGroup(const char* name);
@@ -149,6 +152,11 @@ class APPLESEED_DLLSYMBOL ShaderGroup
 
     void get_shadergroup_globals_info(OSL::ShadingSystem& shading_system);
     void report_uses_global(const char* global_name, const bool uses_global) const;
+
+    void set_surface_area(
+        const AssemblyInstance* ass,
+        const ObjectInstance*   obj,
+        const double            area) const;
 };
 
 
@@ -194,11 +202,6 @@ inline bool ShaderGroup::has_debug() const
 inline bool ShaderGroup::uses_dPdtime() const
 {
     return m_uses_dPdtime;
-}
-
-inline bool ShaderGroup::uses_surface_area() const
-{
-    return m_uses_surface_area;
 }
 
 }       // namespace renderer

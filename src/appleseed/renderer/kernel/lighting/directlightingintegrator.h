@@ -455,14 +455,9 @@ void DirectLightingIntegrator::take_single_bsdf_sample(
     // Evaluate the input values of the EDF.
     InputEvaluator edf_input_evaluator(m_shading_context.get_texture_cache());
 
-    // TODO: refactor this code (est.).
 #ifdef APPLESEED_WITH_OSL
     if (const ShaderGroup* sg = material->get_osl_surface())
-    {
-        // TODO: get object area somehow.
-        const float surface_area = 0.0f;
-        m_shading_context.execute_osl_emission(*sg, light_shading_point, surface_area);
-    }
+        m_shading_context.execute_osl_emission(*sg, light_shading_point);
 #endif
     edf->evaluate_inputs(edf_input_evaluator, light_shading_point);
 
@@ -633,11 +628,7 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
 
 #ifdef APPLESEED_WITH_OSL
     if (const ShaderGroup* sg = material->get_osl_surface())
-    {
-        // TODO: get object area somehow.
-        const float surface_area = 0.0f;
-        m_shading_context.execute_osl_emission(*sg, shading_point, surface_area);
-    }
+        m_shading_context.execute_osl_emission(*sg, shading_point);
 #endif
     edf->evaluate_inputs(edf_input_evaluator, shading_point);
 

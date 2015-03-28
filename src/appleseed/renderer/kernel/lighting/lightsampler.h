@@ -56,8 +56,13 @@ namespace renderer  { class AssemblyInstance; }
 namespace renderer  { class Intersector; }
 namespace renderer  { class Light; }
 namespace renderer  { class Material; }
+namespace renderer  { class MaterialArray; }
+namespace renderer  { class ObjectInstance; }
 namespace renderer  { class ParamArray; }
 namespace renderer  { class Scene; }
+#ifdef APPLESEED_WITH_OSL
+namespace renderer  { class ShaderGroup; }
+#endif
 namespace renderer  { class ShadingPoint; }
 
 namespace renderer
@@ -286,6 +291,14 @@ class LightSampler
         const size_t                        triangle_index,
         const double                        triangle_prob,
         LightSample&                        sample) const;
+
+#ifdef APPLESEED_WITH_OSL
+    void store_object_area_in_shadergroups(
+        const AssemblyInstance*             assembly_instance,
+        const ObjectInstance*               object_instance,
+        const double                        object_area,
+        const MaterialArray&                materials);
+#endif
 };
 
 

@@ -105,14 +105,12 @@ void OSLShaderGroupExec::execute_shadow(
 
 void OSLShaderGroupExec::execute_emission(
     const ShaderGroup&              shader_group,
-    const ShadingPoint&             shading_point,
-    const float                     surface_area) const
+    const ShadingPoint&             shading_point) const
 {
     do_execute(
         shader_group,
         shading_point,
-        VisibilityFlags::LightRay,
-        surface_area);
+        VisibilityFlags::LightRay);
 }
 
 Color3f OSLShaderGroupExec::execute_background(
@@ -139,8 +137,7 @@ Color3f OSLShaderGroupExec::execute_background(
 void OSLShaderGroupExec::do_execute(
     const ShaderGroup&              shader_group,
     const ShadingPoint&             shading_point,
-    const VisibilityFlags::Type     ray_flags,
-    const float                     surface_area) const
+    const VisibilityFlags::Type     ray_flags) const
 {
     assert(m_osl_shading_context);
     assert(m_osl_thread_info);
@@ -148,8 +145,7 @@ void OSLShaderGroupExec::do_execute(
     shading_point.initialize_osl_shader_globals(
         shader_group,
         ray_flags,
-        m_osl_shading_system.renderer(),
-        surface_area);
+        m_osl_shading_system.renderer());
 
     m_osl_shading_system.execute(
         *m_osl_shading_context,
