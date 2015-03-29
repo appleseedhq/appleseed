@@ -4,6 +4,7 @@ compiler:
 before_install:
   - sudo service mysql stop
   - sudo service postgresql stop
+  - sudo apt-get remove rabbitmq*
   - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
   - sudo apt-get -y update
   - if [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.8; fi
