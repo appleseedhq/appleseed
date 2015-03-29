@@ -271,10 +271,6 @@ class PackageBuilder:
         shutil.copytree(os.path.join(self.settings.headers_path, "main"), "appleseed/include/main", ignore = ignore_files)
         shutil.copytree(os.path.join(self.settings.headers_path, "renderer"), "appleseed/include/renderer", ignore = ignore_files)
 
-        shutil.copy(os.path.join(self.settings.appleseed_path, "sandbox/shaders", "stdosl.h"), "appleseed/shaders/")
-        shutil.copy(os.path.join(self.settings.appleseed_path, "sandbox/shaders", "oslutil.h"), "appleseed/shaders/")
-
-
     def add_scripts_to_stage(self):
         progress("Adding scripts to staging directory")
         shutil.copy("convertmany.py", "appleseed/bin/")
