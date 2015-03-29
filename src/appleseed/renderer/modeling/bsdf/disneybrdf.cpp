@@ -387,8 +387,9 @@ namespace
             {
                 double alpha_x, alpha_y;
                 specular_roughness(values, alpha_x, alpha_y);
+                const GGXMDF<double> ggx_mdf;
                 MicrofacetBRDFHelper<double>::sample(
-                    GGXMDF<double>(),
+                    ggx_mdf,
                     alpha_x,
                     alpha_y,
                     alpha_x,
@@ -399,8 +400,9 @@ namespace
             else //if (s < cdf[CleatcoatComponent])
             {
                 const double alpha = clearcoat_roughness(values);
+                const BerryMDF<double> berry_mdf;
                 MicrofacetBRDFHelper<double>::sample(
-                    BerryMDF<double>(),
+                    berry_mdf,
                     alpha,
                     alpha,
                     0.25,
@@ -469,8 +471,9 @@ namespace
                     Spectrum spec;
                     double alpha_x, alpha_y;
                     specular_roughness(values, alpha_x, alpha_y);
+                    const GGXMDF<double> ggx_mdf;
                     pdf += MicrofacetBRDFHelper<double>::evaluate(
-                        GGXMDF<double>(),
+                        ggx_mdf,
                         alpha_x,
                         alpha_y,
                         alpha_x,
@@ -488,8 +491,9 @@ namespace
                 {
                     Spectrum clear;
                     const double alpha = clearcoat_roughness(values);
+                    const BerryMDF<double> berry_mdf;
                     pdf += MicrofacetBRDFHelper<double>::evaluate(
-                        BerryMDF<double>(),
+                        berry_mdf,
                         alpha,
                         alpha,
                         0.25,
@@ -546,8 +550,9 @@ namespace
                 {
                     double alpha_x, alpha_y;
                     specular_roughness(values, alpha_x, alpha_y);
+                    const GGXMDF<double> ggx_mdf;
                     pdf += MicrofacetBRDFHelper<double>::pdf(
-                        GGXMDF<double>(),
+                        ggx_mdf,
                         alpha_x,
                         alpha_y,
                         shading_basis,
@@ -559,8 +564,9 @@ namespace
                 if (weights[CleatcoatComponent] != 0.0)
                 {
                     const double alpha = clearcoat_roughness(values);
+                    const BerryMDF<double> berry_mdf;
                     pdf += MicrofacetBRDFHelper<double>::pdf(
-                        BerryMDF<double>(),
+                        berry_mdf,
                         alpha,
                         alpha,
                         shading_basis,

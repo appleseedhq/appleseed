@@ -168,8 +168,9 @@ namespace
               case Blinn:
                 {
                     const double e = glossiness_to_blinn_exponent(glossiness);
+                    const BlinnMDF<double> blinn_mdf;
                     MicrofacetBRDFHelper<double>::sample(
-                        BlinnMDF<double>(),
+                        blinn_mdf,
                         e,
                         e,
                         e,
@@ -182,8 +183,9 @@ namespace
               case Beckmann:
                 {
                     const double a = glossiness_to_roughness(glossiness);
+                    BeckmannMDF<double> beckmann_mdf;
                     MicrofacetBRDFHelper<double>::sample(
-                        BeckmannMDF<double>(),
+                        beckmann_mdf,
                         a,
                         a,
                         a,
@@ -196,8 +198,9 @@ namespace
               case Ward:
                 {
                     const double a = glossiness_to_roughness(glossiness);
+                    const WardMDF<double> ward_mdf;
                     MicrofacetBRDFHelper<double>::sample(
-                        WardMDF<double>(),
+                        ward_mdf,
                         a,
                         a,
                         a,
@@ -210,8 +213,9 @@ namespace
               case GGX:
                 {
                     const double a = glossiness_to_roughness(glossiness);
+                    const GGXMDF<double> ggx_mdf;
                     MicrofacetBRDFHelper<double>::sample(
-                        GGXMDF<double>(),
+                        ggx_mdf,
                         a,
                         a,
                         a,
@@ -248,8 +252,9 @@ namespace
               case Blinn:
                 {
                     const double e = glossiness_to_blinn_exponent(glossiness);
+                    const BlinnMDF<double> blinn_mdf;
                     pdf = MicrofacetBRDFHelper<double>::evaluate(
-                        BlinnMDF<double>(),
+                        blinn_mdf,
                         e,
                         e,
                         e,
@@ -266,8 +271,9 @@ namespace
               case Beckmann:
                 {
                     const double a = glossiness_to_roughness(glossiness);
+                    const BeckmannMDF<double> beckman_mdf;
                     pdf = MicrofacetBRDFHelper<double>::evaluate(
-                        BeckmannMDF<double>(),
+                        beckman_mdf,
                         a,
                         a,
                         a,
@@ -284,8 +290,9 @@ namespace
               case Ward:
                 {
                     const double a = glossiness_to_roughness(glossiness);
+                    const WardMDF<double> ward_mdf;
                     pdf = MicrofacetBRDFHelper<double>::evaluate(
-                        WardMDF<double>(),
+                        ward_mdf,
                         a,
                         a,
                         a,
@@ -302,8 +309,9 @@ namespace
               case GGX:
                 {
                     const double a = glossiness_to_roughness(glossiness);
+                    const GGXMDF<double> ggx_mdf;
                     pdf =  MicrofacetBRDFHelper<double>::evaluate(
-                        GGXMDF<double>(),
+                        ggx_mdf,
                         a,
                         a,
                         a,
@@ -340,8 +348,9 @@ namespace
               case Blinn:
                 {
                     const double e = glossiness_to_blinn_exponent(glossiness);
+                    const BlinnMDF<double> blinn_mdf;
                     return MicrofacetBRDFHelper<double>::pdf(
-                        BlinnMDF<double>(),
+                        blinn_mdf,
                         e,
                         e,
                         shading_basis,
@@ -354,8 +363,9 @@ namespace
               case Beckmann:
                 {
                     const double a = glossiness_to_roughness(glossiness);
+                    const BeckmannMDF<double> beckmann_mdf;
                     return MicrofacetBRDFHelper<double>::pdf(
-                        BeckmannMDF<double>(),
+                        beckmann_mdf,
                         a,
                         a,
                         shading_basis,
@@ -368,8 +378,9 @@ namespace
               case Ward:
                 {
                     const double a = glossiness_to_roughness(glossiness);
+                    WardMDF<double> ward_mdf;
                     return MicrofacetBRDFHelper<double>::pdf(
-                        WardMDF<double>(),
+                        ward_mdf,
                         a,
                         a,
                         shading_basis,
@@ -382,8 +393,9 @@ namespace
               case GGX:
                 {
                     const double a = glossiness_to_roughness(glossiness);
+                    GGXMDF<double> ggx_mdf;
                     return MicrofacetBRDFHelper<double>::pdf(
-                        GGXMDF<double>(),
+                        ggx_mdf,
                         a,
                         a,
                         shading_basis,
