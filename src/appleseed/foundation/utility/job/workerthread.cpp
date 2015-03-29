@@ -128,7 +128,7 @@ void WorkerThread::resume()
 void WorkerThread::set_thread_name()
 {
     char thread_name[16];
-    portable_snprintf(thread_name, sizeof(thread_name), "worker_%03u", m_index);
+    portable_snprintf(thread_name, sizeof(thread_name), "worker_%03lu", (long unsigned int)m_index);
     set_current_thread_name(thread_name);
 }
 
