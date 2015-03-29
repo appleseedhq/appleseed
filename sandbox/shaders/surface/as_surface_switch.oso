@@ -1,0 +1,18 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.6.4dev
+shader as_surface_switch	%meta{string,help,"Chooses between two surface shaders depending on a condition."} 
+param	closure color	BSDF1			%read{1,1} %write{2147483647,-1}
+param	closure color	BSDF2			%read{2,2} %write{2147483647,-1}
+param	int	Cond	1		%read{0,0} %write{2147483647,-1}
+oparam	closure color	BSDF			%read{2147483647,-1} %write{1,2}
+code ___main___
+# as_surface_switch.osl:40
+#     if (Cond)
+	if		Cond 2 3 	%filename{"as_surface_switch.osl"} %line{40} %argrw{"r"}
+# as_surface_switch.osl:41
+#         BSDF = BSDF1;
+	assign		BSDF BSDF1 	%line{41} %argrw{"wr"}
+# as_surface_switch.osl:43
+#         BSDF = BSDF2;
+	assign		BSDF BSDF2 	%line{43} %argrw{"wr"}
+	end

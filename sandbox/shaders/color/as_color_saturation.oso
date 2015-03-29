@@ -1,0 +1,21 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.6.4dev
+shader as_color_saturation
+param	color	Color	0 0 0		%read{1,3} %write{2147483647,-1}
+param	float	Factor	1		%read{3,3} %write{2147483647,-1}
+oparam	color	ColorOut	0 0 0		%read{2147483647,-1} %write{3,3}
+local	float	___299_lum	%read{2,2} %write{1,1}
+const	string	$const1	"saturate"		%read{0,0} %write{2147483647,-1}
+temp	color	$tmp1	%read{3,3} %write{2,2}
+code ___main___
+# as_color_saturation.osl:38
+#     ColorOut = saturate(Color, Factor);
+	functioncall	$const1 4 	%filename{"as_color_saturation.osl"} %line{38} %argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/color.h:34
+#     float lum = luminance(Color);
+	luminance	___299_lum Color 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/color.h"} %line{34} %argrw{"wr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/color.h:35
+#     return mix(color(lum), Color, Factor);
+	assign		$tmp1 ___299_lum 	%line{35} %argrw{"wr"}
+	mix		ColorOut $tmp1 Color Factor 	%argrw{"wrrr"}
+	end

@@ -1,0 +1,41 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.6.4dev
+shader as_color_texture
+param	string	Filename	""		%meta{string,widget,"filename"}  %read{2,2} %write{2147483647,-1}
+param	float	U	0		%read{2,2} %write{0,0} %derivs %initexpr
+param	float	V	0		%read{2,2} %write{1,1} %derivs %initexpr
+param	string	UWrap	"periodic"		%meta{string,widget,"popup"} %meta{string,options,"default|black|periodic|clamp|mirror"}  %read{2,2} %write{2147483647,-1}
+param	string	VWrap	"periodic"		%meta{string,widget,"popup"} %meta{string,options,"default|black|periodic|clamp|mirror"}  %read{2,2} %write{2147483647,-1}
+param	string	Filter	"smartcubic"		%meta{string,widget,"popup"} %meta{string,options,"smartcubic|cubic|linear|closest"}  %read{2147483647,-1} %write{2147483647,-1}
+param	float	UWidth	1		%read{2,2} %write{2147483647,-1}
+param	float	VWidth	1		%read{2,2} %write{2147483647,-1}
+param	float	UBlur	0		%read{2,2} %write{2147483647,-1}
+param	float	VBlur	0		%read{2,2} %write{2147483647,-1}
+param	int	FirstChannel	0		%read{2,2} %write{2147483647,-1}
+param	float	Fill	0		%read{2,2} %write{2147483647,-1}
+oparam	color	ColorOut	0 0 0		%read{2147483647,-1} %write{2,2}
+oparam	float	AlphaOut	1		%read{2147483647,-1} %write{2,2}
+global	float	u	%read{0,0} %write{2147483647,-1} %derivs
+global	float	v	%read{1,1} %write{2147483647,-1} %derivs
+const	string	$const1	"swidth"		%read{2,2} %write{2147483647,-1}
+const	string	$const2	"twidth"		%read{2,2} %write{2147483647,-1}
+const	string	$const3	"sblur"		%read{2,2} %write{2147483647,-1}
+const	string	$const4	"tblur"		%read{2,2} %write{2147483647,-1}
+const	string	$const5	"swrap"		%read{2,2} %write{2147483647,-1}
+const	string	$const6	"twrap"		%read{2,2} %write{2147483647,-1}
+const	string	$const7	"firstchannel"		%read{2,2} %write{2147483647,-1}
+const	string	$const8	"fill"		%read{2,2} %write{2147483647,-1}
+const	string	$const9	"alpha"		%read{2,2} %write{2147483647,-1}
+code U
+# as_color_texture.osl:34
+#     APPLESEED_DECLARE_TEXTURE_UV_PARAMS,
+	assign		U u 	%filename{"as_color_texture.osl"} %line{34} %argrw{"wr"}
+code V
+# as_color_texture.osl:34
+#     APPLESEED_DECLARE_TEXTURE_UV_PARAMS,
+	assign		V v 	%filename{"as_color_texture.osl"} %line{34} %argrw{"wr"}
+code ___main___
+# as_color_texture.osl:57
+#         "alpha", AlphaOut);
+	texture		ColorOut Filename U V $const1 UWidth $const2 VWidth $const3 UBlur $const4 VBlur $const5 UWrap $const6 VWrap $const7 FirstChannel $const8 Fill $const9 AlphaOut 	%filename{"as_color_texture.osl"} %line{57} %argrw{"wrrrrrrrrrrrrrrrrrrrrw"} %argderivs{2,3}
+	end

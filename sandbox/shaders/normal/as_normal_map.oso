@@ -1,0 +1,134 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.6.4dev
+shader as_normal_map
+param	color	Color	0 0 0		%read{8,8} %write{0,0} %initexpr
+param	vector	Normal	0 0 0		%read{18,34} %write{1,1} %initexpr
+param	vector	Tangent	0 0 0		%read{17,17} %write{2,2} %initexpr
+param	string	UpVector	"Blue"		%meta{string,help,"Color channel to use as up direction"} %meta{string,widget,"popup"} %meta{string,options,"Green|Blue"}  %read{11,11} %write{2147483647,-1}
+param	string	Space	"Tangent"		%meta{string,widget,"popup"} %meta{string,options,"Tangent|Object|World"}  %read{19,22} %write{2147483647,-1}
+param	float	Amount	1		%meta{float,min,0} %meta{float,max,1}  %read{32,34} %write{2147483647,-1}
+oparam	vector	NormalOut	0 0 0		%read{37,37} %write{35,36}
+oparam	vector	TangentOut	0 0 0		%read{2147483647,-1} %write{38,38}
+global	normal	N	%read{1,1} %write{2147483647,-1}
+global	vector	dPdu	%read{2,2} %write{2147483647,-1}
+local	normal	n	%read{13,36} %write{10,31}
+local	float	___299_tmp	%read{16,16} %write{13,13}
+local	vector	t	%read{18,25} %write{17,17}
+local	vector	b	%read{27,37} %write{18,18}
+const	color	$const1	0 0 0		%read{0,0} %write{2147483647,-1}
+const	float	$const3	-1		%read{3,3} %write{2147483647,-1}
+temp	normal	$tmp1	%read{10,10} %write{3,3}
+const	int	$const4	1		%read{14,26} %write{2147483647,-1}
+const	float	$const5	1		%read{4,32} %write{2147483647,-1}
+temp	normal	$tmp2	%read{10,10} %write{4,4}
+temp	color	$tmp3	%read{10,10} %write{9,9}
+const	int	$const6	0		%read{24,24} %write{2147483647,-1}
+const	float	$const7	0		%read{5,5} %write{2147483647,-1}
+temp	color	$tmp4	%read{9,9} %write{5,5}
+temp	color	$tmp5	%read{8,8} %write{6,6}
+const	string	$const8	"clamp"		%read{7,7} %write{2147483647,-1}
+temp	color	$tmp6	%read{9,9} %write{8,8}
+const	string	$const9	"Green"		%read{11,11} %write{2147483647,-1}
+temp	int	$tmp7	%read{12,12} %write{11,11}
+const	int	$const10	2		%read{13,29} %write{2147483647,-1}
+temp	float	$tmp8	%read{15,15} %write{14,14}
+const	string	$const11	"Object"		%read{19,19} %write{2147483647,-1}
+temp	int	$tmp9	%read{20,20} %write{19,19}
+const	string	$const12	"object"		%read{21,21} %write{2147483647,-1}
+const	string	$const13	"world"		%read{21,21} %write{2147483647,-1}
+const	string	$const14	"Tangent"		%read{22,22} %write{2147483647,-1}
+temp	int	$tmp10	%read{23,23} %write{22,22}
+temp	float	$tmp11	%read{25,25} %write{24,24}
+temp	vector	$tmp12	%read{28,28} %write{25,25}
+temp	float	$tmp13	%read{27,27} %write{26,26}
+temp	vector	$tmp14	%read{28,28} %write{27,27}
+temp	vector	$tmp15	%read{31,31} %write{28,28}
+temp	float	$tmp16	%read{30,30} %write{29,29}
+temp	vector	$tmp17	%read{31,31} %write{30,30}
+temp	int	$tmp18	%read{33,33} %write{32,32}
+temp	color	$tmp19	%read{35,35} %write{34,34}
+temp	vector	$tmp20	%read{38,38} %write{37,37}
+code Color
+# as_normal_map.osl:34
+#     color Color = color(0),
+	assign		Color $const1 	%filename{"as_normal_map.osl"} %line{34} %argrw{"wr"}
+code Normal
+# as_normal_map.osl:35
+#     vector Normal = N,
+	assign		Normal N 	%filename{"as_normal_map.osl"} %line{35} %argrw{"wr"}
+code Tangent
+# as_normal_map.osl:36
+#     vector Tangent = APPLESEED_DEFAULT_TANGENT,
+	normalize	Tangent dPdu 	%filename{"as_normal_map.osl"} %line{36} %argrw{"wr"}
+code ___main___
+# as_normal_map.osl:56
+#     normal n = (normal) mix(-1, 1, clamp(Color, 0, 1));
+	assign		$tmp1 $const3 	%filename{"as_normal_map.osl"} %line{56} %argrw{"wr"}
+	assign		$tmp2 $const5 	%argrw{"wr"}
+	assign		$tmp4 $const7 	%argrw{"wr"}
+	assign		$tmp5 $const5 	%argrw{"wr"}
+	functioncall	$const8 10 	%argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:156
+# color  radians (color x)  { return x*(M_PI/180.0); }
+	min		$tmp6 Color $tmp5 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{156} %argrw{"wrr"}
+	max		$tmp3 $tmp6 $tmp4 	%argrw{"wrr"}
+# as_normal_map.osl:56
+#     normal n = (normal) mix(-1, 1, clamp(Color, 0, 1));
+	mix		n $tmp1 $tmp2 $tmp3 	%filename{"as_normal_map.osl"} %line{56} %argrw{"wrrr"}
+# as_normal_map.osl:58
+#     if (UpVector == "Green")
+	eq		$tmp7 UpVector $const9 	%line{58} %argrw{"wrr"}
+	if		$tmp7 17 17 	%argrw{"r"}
+# as_normal_map.osl:60
+#         float tmp = n[2];
+	compref		___299_tmp n $const10 	%line{60} %argrw{"wrr"}
+# as_normal_map.osl:61
+#         n[2] = n[1];
+	compref		$tmp8 n $const4 	%line{61} %argrw{"wrr"}
+	compassign	n $const10 $tmp8 	%argrw{"wrr"}
+# as_normal_map.osl:62
+#         n[1] = tmp;
+	compassign	n $const4 ___299_tmp 	%line{62} %argrw{"wrr"}
+# as_normal_map.osl:65
+#     vector t = Tangent;
+	assign		t Tangent 	%line{65} %argrw{"wr"}
+# as_normal_map.osl:66
+#     vector b = cross(t, Normal);
+	cross		b t Normal 	%line{66} %argrw{"wrr"}
+# as_normal_map.osl:68
+#     if (Space == "Object")
+	eq		$tmp9 Space $const11 	%line{68} %argrw{"wrr"}
+	if		$tmp9 22 32 	%argrw{"r"}
+# as_normal_map.osl:70
+#         n = transform("object", "world", n);
+	transformn	n $const12 $const13 n 	%line{70} %argrw{"wrrr"}
+# as_normal_map.osl:72
+#     else if (Space == "Tangent")
+	eq		$tmp10 Space $const14 	%line{72} %argrw{"wrr"}
+	if		$tmp10 32 32 	%argrw{"r"}
+# as_normal_map.osl:74
+#         n = n[0] * t + n[1] * b + n[2] * Normal;
+	compref		$tmp11 n $const6 	%line{74} %argrw{"wrr"}
+	mul		$tmp12 $tmp11 t 	%argrw{"wrr"}
+	compref		$tmp13 n $const4 	%argrw{"wrr"}
+	mul		$tmp14 $tmp13 b 	%argrw{"wrr"}
+	add		$tmp15 $tmp12 $tmp14 	%argrw{"wrr"}
+	compref		$tmp16 n $const10 	%argrw{"wrr"}
+	mul		$tmp17 $tmp16 Normal 	%argrw{"wrr"}
+	add		n $tmp15 $tmp17 	%argrw{"wrr"}
+# as_normal_map.osl:77
+#     if (Amount != 1.0)
+	neq		$tmp18 Amount $const5 	%line{77} %argrw{"wrr"}
+	if		$tmp18 36 37 	%argrw{"r"}
+# as_normal_map.osl:78
+#         NormalOut = normalize(mix(Normal, n, Amount));
+	mix		$tmp19 Normal n Amount 	%line{78} %argrw{"wrrr"}
+	normalize	NormalOut $tmp19 	%argrw{"wr"}
+# as_normal_map.osl:80
+#         NormalOut = normalize(n);
+	normalize	NormalOut n 	%line{80} %argrw{"wr"}
+# as_normal_map.osl:82
+#     TangentOut = normalize(cross(NormalOut, b));
+	cross		$tmp20 NormalOut b 	%line{82} %argrw{"wrr"}
+	normalize	TangentOut $tmp20 	%argrw{"wr"}
+	end

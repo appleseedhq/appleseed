@@ -1,0 +1,12 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.6.4dev
+shader as_vector_build
+param	float	X	0		%read{0,0} %write{2147483647,-1}
+param	float	Y	0		%read{0,0} %write{2147483647,-1}
+param	float	Z	0		%read{0,0} %write{2147483647,-1}
+oparam	vector	VectorOut	0 0 0		%read{2147483647,-1} %write{0,0}
+code ___main___
+# as_vector_build.osl:37
+#     VectorOut = vector(X, Y, Z);
+	vector		VectorOut X Y Z 	%filename{"as_vector_build.osl"} %line{37} %argrw{"wrrr"}
+	end

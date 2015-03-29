@@ -1,0 +1,89 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.6.4dev
+shader as_noise2d
+param	float	U	0		%read{3,3} %write{0,0} %derivs %initexpr
+param	float	V	0		%read{7,7} %write{1,1} %derivs %initexpr
+param	string	NoiseType	"perlin"		%meta{string,widget,"popup"} %meta{string,options,"perlin|uperlin|cell|simplex|usimplex|gabor"}  %read{13,18} %write{2147483647,-1}
+param	int	Periodic	0		%meta{string,widget,"checkBox"}  %read{10,10} %write{2147483647,-1}
+param	vector	Period	1 1 1		%read{11,15} %write{2147483647,-1} %derivs
+param	vector	Frequency	1 1 1		%read{2,6} %write{2147483647,-1} %derivs
+param	vector	Offset	0 0 0		%read{4,8} %write{2147483647,-1} %derivs
+param	int	AnisotropyMode	0		%meta{string,widget,"mapper"} %meta{string,options,"Isotropic:0|Anisotropic:1|Hybrid:2"}  %read{13,18} %write{2147483647,-1}
+param	vector	Direction	0 0 0		%read{13,18} %write{2147483647,-1}
+param	float	Bandwidth	1		%read{13,18} %write{2147483647,-1}
+param	float	Impulses	16		%read{13,18} %write{2147483647,-1}
+oparam	float	FloatOut	0		%read{2147483647,-1} %write{13,17}
+oparam	vector	VectorOut	0 0 0		%read{19,19} %write{16,18}
+oparam	color	ColorOut	0 0 0		%read{2147483647,-1} %write{19,19}
+global	float	u	%read{0,0} %write{2147483647,-1} %derivs
+global	float	v	%read{1,1} %write{2147483647,-1} %derivs
+local	float	uu	%read{13,18} %write{5,5} %derivs
+local	float	vv	%read{13,18} %write{9,9} %derivs
+const	int	$const1	0		%read{2,14} %write{2147483647,-1}
+temp	float	$tmp1	%read{3,3} %write{2,2} %derivs
+temp	float	$tmp2	%read{5,5} %write{3,3} %derivs
+temp	float	$tmp3	%read{5,5} %write{4,4} %derivs
+const	int	$const2	1		%read{6,15} %write{2147483647,-1}
+temp	float	$tmp4	%read{7,7} %write{6,6} %derivs
+temp	float	$tmp5	%read{9,9} %write{7,7} %derivs
+temp	float	$tmp6	%read{9,9} %write{8,8} %derivs
+temp	float	$tmp7	%read{13,13} %write{11,11} %derivs
+temp	float	$tmp8	%read{13,13} %write{12,12} %derivs
+const	string	$const3	"anisotropic"		%read{13,18} %write{2147483647,-1}
+const	string	$const4	"direction"		%read{13,18} %write{2147483647,-1}
+const	string	$const5	"bandwidth"		%read{13,18} %write{2147483647,-1}
+const	string	$const6	"impulses"		%read{13,18} %write{2147483647,-1}
+temp	float	$tmp9	%read{16,16} %write{14,14} %derivs
+temp	float	$tmp10	%read{16,16} %write{15,15} %derivs
+code U
+# as_noise2d.osl:34
+#     APPLESEED_DECLARE_TEXTURE_UV_PARAMS,
+	assign		U u 	%filename{"as_noise2d.osl"} %line{34} %argrw{"wr"}
+code V
+# as_noise2d.osl:34
+#     APPLESEED_DECLARE_TEXTURE_UV_PARAMS,
+	assign		V v 	%filename{"as_noise2d.osl"} %line{34} %argrw{"wr"}
+code ___main___
+# as_noise2d.osl:59
+#     float uu = (U * Frequency[0]) + Offset[0];
+	compref		$tmp1 Frequency $const1 	%filename{"as_noise2d.osl"} %line{59} %argrw{"wrr"}
+	mul		$tmp2 U $tmp1 	%argrw{"wrr"}
+	compref		$tmp3 Offset $const1 	%argrw{"wrr"}
+	add		uu $tmp2 $tmp3 	%argrw{"wrr"}
+# as_noise2d.osl:60
+#     float vv = (V * Frequency[1]) + Offset[1];
+	compref		$tmp4 Frequency $const2 	%line{60} %argrw{"wrr"}
+	mul		$tmp5 V $tmp4 	%argrw{"wrr"}
+	compref		$tmp6 Offset $const2 	%argrw{"wrr"}
+	add		vv $tmp5 $tmp6 	%argrw{"wrr"}
+# as_noise2d.osl:62
+#     if (Periodic)
+	if		Periodic 17 19 	%line{62} %argrw{"r"}
+# as_noise2d.osl:68
+#             Period[0],
+	compref		$tmp7 Period $const1 	%line{68} %argrw{"wrr"}
+# as_noise2d.osl:69
+#             Period[1],
+	compref		$tmp8 Period $const2 	%line{69} %argrw{"wrr"}
+# as_noise2d.osl:70
+#             APPLESEED_GABOR_NOISE_PARAMS);
+	pnoise		FloatOut NoiseType uu vv $tmp7 $tmp8 $const3 AnisotropyMode $const4 Direction $const5 Bandwidth $const6 Impulses 	%line{70} %argrw{"wrrrrrrrrrrrrr"} %argderivs{2,3,4,5}
+# as_noise2d.osl:76
+#             Period[0],
+	compref		$tmp9 Period $const1 	%line{76} %argrw{"wrr"}
+# as_noise2d.osl:77
+#             Period[1],
+	compref		$tmp10 Period $const2 	%line{77} %argrw{"wrr"}
+# as_noise2d.osl:78
+#             APPLESEED_GABOR_NOISE_PARAMS);
+	pnoise		VectorOut NoiseType uu vv $tmp9 $tmp10 $const3 AnisotropyMode $const4 Direction $const5 Bandwidth $const6 Impulses 	%line{78} %argrw{"wrrrrrrrrrrrrr"} %argderivs{2,3,4,5}
+# as_noise2d.osl:86
+#             APPLESEED_GABOR_NOISE_PARAMS);
+	noise		FloatOut NoiseType uu vv $const3 AnisotropyMode $const4 Direction $const5 Bandwidth $const6 Impulses 	%line{86} %argrw{"wrrrrrrrrrrr"} %argderivs{2,3}
+# as_noise2d.osl:92
+#             APPLESEED_GABOR_NOISE_PARAMS);
+	noise		VectorOut NoiseType uu vv $const3 AnisotropyMode $const4 Direction $const5 Bandwidth $const6 Impulses 	%line{92} %argrw{"wrrrrrrrrrrr"} %argderivs{2,3}
+# as_noise2d.osl:95
+#     ColorOut = color(VectorOut);
+	assign		ColorOut VectorOut 	%line{95} %argrw{"wr"}
+	end

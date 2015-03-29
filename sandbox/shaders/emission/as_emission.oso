@@ -1,0 +1,40 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.6.4dev
+shader as_emission
+param	closure color	BSDF1			%read{9,9} %write{2147483647,-1}
+param	float	Emission	1		%read{2,2} %write{2147483647,-1}
+param	color	Color	1 1 1		%read{2,2} %write{2147483647,-1}
+param	int	Normalize	0		%meta{string,help,"normalize light emission"} %meta{string,widget,"checkBox"}  %read{3,3} %write{2147483647,-1}
+oparam	closure color	BSDF			%read{2147483647,-1} %write{8,9}
+local	color	___299_E	%read{6,8} %write{2,6}
+temp	int	$tmp1	%read{1,1} %write{0,0}
+const	string	$const1	"light"		%read{0,0} %write{2147483647,-1}
+temp	float	$tmp2	%read{5,5} %write{4,4}
+const	float	$const2	3.1415927		%read{5,5} %write{2147483647,-1}
+temp	float	$tmp3	%read{6,6} %write{5,5}
+temp	closure color	$tmp4	%read{8,8} %write{7,7}
+const	string	$const3	"emission"		%read{7,7} %write{2147483647,-1}
+code ___main___
+# as_emission.osl:42
+#     if (raytype("light"))
+	raytype		$tmp1 $const1 	%filename{"as_emission.osl"} %line{42} %argrw{"wr"}
+	if		$tmp1 9 10 	%argrw{"r"}
+# as_emission.osl:44
+#         color E = Emission * Color;
+	mul		___299_E Emission Color 	%line{44} %argrw{"wrr"}
+# as_emission.osl:46
+#         if (Normalize)
+	if		Normalize 7 7 	%line{46} %argrw{"r"}
+# as_emission.osl:47
+#             E /= surfacearea() * M_PI;
+	surfacearea	$tmp2 	%line{47} %argrw{"w"}
+	mul		$tmp3 $tmp2 $const2 	%argrw{"wrr"}
+	div		___299_E ___299_E $tmp3 	%argrw{"wrr"}
+# as_emission.osl:49
+#         BSDF = E * emission();
+	closure		$tmp4 $const3 	%line{49} %argrw{"wr"}
+	mul		BSDF $tmp4 ___299_E 	%argrw{"wrr"}
+# as_emission.osl:52
+#         BSDF = BSDF1;
+	assign		BSDF BSDF1 	%line{52} %argrw{"wr"}
+	end

@@ -1,0 +1,10 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.6.4dev
+shader as_wavelength
+param	float	Wavelength	400		%read{0,0} %write{2147483647,-1}
+oparam	color	ColorOut	0 0 0		%read{2147483647,-1} %write{0,0}
+code ___main___
+# as_wavelength.osl:35
+#     ColorOut = wavelength_color(Wavelength);
+	wavelength_color	ColorOut Wavelength 	%filename{"as_wavelength.osl"} %line{35} %argrw{"wr"}
+	end

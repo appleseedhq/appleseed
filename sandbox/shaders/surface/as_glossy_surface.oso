@@ -1,0 +1,94 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.6.4dev
+shader as_glossy_surface	%meta{string,help,"Glossy surface shader"} 
+param	vector	Normal	0 0 0		%read{4,22} %write{0,0} %initexpr
+param	vector	Tangent	0 0 0		%read{22,22} %write{1,1} %initexpr
+param	float	Specular	1		%meta{string,help,"Reflectivity"} %meta{float,min,0} %meta{float,max,1}  %read{5,23} %write{2147483647,-1}
+param	color	Color	0.80000001 0.80000001 0.80000001		%read{5,23} %write{2147483647,-1}
+param	string	Distribution	"sharp"		%meta{string,help,"Microfacet distribution to use: Specular, Beckmann or GGX."} %meta{string,widget,"popup"} %meta{string,options,"sharp|beckmann|ggx"}  %read{2,22} %write{2147483647,-1}
+param	float	Roughness	0.1		%meta{string,help,"Roughness"} %meta{float,min,0.001} %meta{float,max,1}  %read{12,12} %write{2147483647,-1}
+param	float	Anisotropy	0		%meta{string,help,"Anisotropy"} %meta{float,min,-1} %meta{float,max,1}  %read{8,17} %write{2147483647,-1}
+oparam	closure color	BRDF			%read{2147483647,-1} %write{6,24}
+global	normal	N	%read{0,0} %write{2147483647,-1}
+global	vector	dPdu	%read{1,1} %write{2147483647,-1}
+local	float	___299_aspect	%read{13,15} %write{11,11}
+local	float	___299_r2	%read{13,15} %write{12,12}
+local	float	___300_tmp	%read{21,21} %write{19,19}
+local	float	___301_ax	%read{19,22} %write{14,20}
+local	float	___301_ay	%read{20,22} %write{16,21}
+const	string	$const1	"sharp"		%read{2,2} %write{2147483647,-1}
+temp	int	$tmp1	%read{3,3} %write{2,2}
+temp	closure color	$tmp2	%read{6,6} %write{4,4}
+const	string	$const2	"reflection"		%read{4,4} %write{2147483647,-1}
+temp	color	$tmp3	%read{6,6} %write{5,5}
+const	string	$const3	"mdf_roughness"		%read{7,7} %write{2147483647,-1}
+const	float	$const4	1		%read{10,22} %write{2147483647,-1}
+temp	float	$tmp4	%read{9,9} %write{8,8}
+const	float	$const5	0.89999998		%read{9,9} %write{2147483647,-1}
+temp	float	$tmp5	%read{10,10} %write{9,9}
+temp	float	$tmp6	%read{11,11} %write{10,10}
+const	float	$const6	0.001		%read{14,16} %write{2147483647,-1}
+temp	float	$tmp7	%read{14,14} %write{13,13}
+temp	float	$tmp8	%read{16,16} %write{15,15}
+const	int	$const7	0		%read{17,22} %write{2147483647,-1}
+temp	int	$tmp9	%read{18,18} %write{17,17}
+temp	closure color	$tmp10	%read{24,24} %write{22,22}
+const	string	$const9	"microfacet"		%read{22,22} %write{2147483647,-1}
+temp	color	$tmp11	%read{24,24} %write{23,23}
+code Normal
+# as_glossy_surface.osl:38
+#     vector Normal = N,
+	assign		Normal N 	%filename{"as_glossy_surface.osl"} %line{38} %argrw{"wr"}
+code Tangent
+# as_glossy_surface.osl:39
+#     vector Tangent = APPLESEED_DEFAULT_TANGENT,
+	normalize	Tangent dPdu 	%filename{"as_glossy_surface.osl"} %line{39} %argrw{"wr"}
+code ___main___
+# as_glossy_surface.osl:67
+#     if (Distribution == "sharp")
+	eq		$tmp1 Distribution $const1 	%filename{"as_glossy_surface.osl"} %line{67} %argrw{"wrr"}
+	if		$tmp1 7 25 	%argrw{"r"}
+# as_glossy_surface.osl:68
+#         BRDF = Specular * Color * reflection(Normal);
+	closure		$tmp2 $const2 Normal 	%line{68} %argrw{"wrr"}
+	mul		$tmp3 Specular Color 	%argrw{"wrr"}
+	mul		BRDF $tmp2 $tmp3 	%argrw{"wrr"}
+# as_glossy_surface.osl:72
+#         mdf_roughness(Roughness, Anisotropy, ax, ay);
+	functioncall	$const3 22 	%line{72} %argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/microfacet.h:55
+#     float aspect = sqrt(1.0 - fabs(anisotropy) * 0.9);
+	fabs		$tmp4 Anisotropy 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/microfacet.h"} %line{55} %argrw{"wr"}
+	mul		$tmp5 $tmp4 $const5 	%argrw{"wrr"}
+	sub		$tmp6 $const4 $tmp5 	%argrw{"wrr"}
+	sqrt		___299_aspect $tmp6 	%argrw{"wr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/microfacet.h:56
+#     float r2 = roughness * roughness;
+	mul		___299_r2 Roughness Roughness 	%line{56} %argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/microfacet.h:58
+#     ax = max(0.001, r2 / aspect);
+	div		$tmp7 ___299_r2 ___299_aspect 	%line{58} %argrw{"wrr"}
+	max		___301_ax $const6 $tmp7 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/microfacet.h:59
+#     ay = max(0.001, r2 * aspect);
+	mul		$tmp8 ___299_r2 ___299_aspect 	%line{59} %argrw{"wrr"}
+	max		___301_ay $const6 $tmp8 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/microfacet.h:61
+#     if (anisotropy < 0)
+	lt		$tmp9 Anisotropy $const7 	%line{61} %argrw{"wrr"}
+	if		$tmp9 22 22 	%argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/microfacet.h:64
+#         float tmp = ax;
+	assign		___300_tmp ___301_ax 	%line{64} %argrw{"wr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/microfacet.h:65
+#         ax = ay;
+	assign		___301_ax ___301_ay 	%line{65} %argrw{"wr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/microfacet.h:66
+#         ay = tmp;
+	assign		___301_ay ___300_tmp 	%line{66} %argrw{"wr"}
+# as_glossy_surface.osl:73
+# //
+	closure		$tmp10 $const9 Distribution Normal Tangent ___301_ax ___301_ay $const4 $const7 	%filename{"as_glossy_surface.osl"} %line{73} %argrw{"wrrrrrrrr"}
+	mul		$tmp11 Specular Color 	%argrw{"wrr"}
+	mul		BRDF $tmp10 $tmp11 	%argrw{"wrr"}
+	end

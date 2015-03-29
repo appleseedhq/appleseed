@@ -1,0 +1,103 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.6.4dev
+shader as_bump_map
+param	vector	Position	0 0 0		%read{9,10} %write{0,0} %derivs %initexpr
+param	vector	Normal	0 0 0		%read{8,29} %write{1,1} %initexpr
+param	float	Height	0		%read{13,14} %write{2147483647,-1} %derivs
+param	float	Amount	1		%meta{float,min,0} %meta{float,max,1}  %read{25,27} %write{2147483647,-1}
+oparam	vector	NormalOut	0 0 0		%read{27,27} %write{24,29}
+global	point	P	%read{0,0} %write{2147483647,-1} %derivs
+global	normal	N	%read{1,1} %write{2147483647,-1}
+local	int	has_diffs	%read{5,5} %write{2,2}
+local	int	get_attr_ok	%read{3,3} %write{2,2}
+local	vector	___299_n	%read{11,22} %write{8,8}
+local	vector	___299_dpdx	%read{12,15} %write{9,9}
+local	vector	___299_dpdy	%read{11,11} %write{10,10}
+local	vector	___299_rx	%read{15,17} %write{11,11}
+local	vector	___299_ry	%read{18,18} %write{12,12}
+local	float	___299_dhx	%read{17,17} %write{13,13}
+local	float	___299_dhy	%read{18,18} %write{14,14}
+local	float	___299_det	%read{16,21} %write{15,15}
+local	vector	___299_surf_grad	%read{23,23} %write{20,20}
+const	string	$const1	"path:ray_has_differentials"		%read{2,2} %write{2147483647,-1}
+temp	int	$tmp1	%read{4,7} %write{3,6}
+const	int	$const2	0		%read{3,5} %write{2147483647,-1}
+temp	int	$tmp2	%read{6,6} %write{5,5}
+temp	float	$tmp3	%read{20,20} %write{16,16}
+temp	vector	$tmp4	%read{19,19} %write{17,17}
+temp	vector	$tmp5	%read{19,19} %write{18,18}
+temp	vector	$tmp6	%read{20,20} %write{19,19}
+temp	float	$tmp7	%read{22,22} %write{21,21}
+temp	vector	$tmp8	%read{23,23} %write{22,22}
+temp	vector	$tmp9	%read{24,24} %write{23,23}
+const	float	$const3	1		%read{25,25} %write{2147483647,-1}
+temp	int	$tmp10	%read{26,26} %write{25,25}
+temp	vector	$tmp11	%read{28,28} %write{27,27}
+code Position
+# as_bump_map.osl:41
+#     vector Position = P,
+	assign		Position P 	%filename{"as_bump_map.osl"} %line{41} %argrw{"wr"}
+code Normal
+# as_bump_map.osl:42
+#     vector Normal = N,
+	assign		Normal N 	%filename{"as_bump_map.osl"} %line{42} %argrw{"wr"}
+code ___main___
+# as_bump_map.osl:52
+#     int get_attr_ok = getattribute("path:ray_has_differentials", has_diffs);
+	getattribute	get_attr_ok $const1 has_diffs 	%filename{"as_bump_map.osl"} %line{52} %argrw{"wrw"}
+# as_bump_map.osl:55
+#     if (get_attr_ok && has_diffs)
+	neq		$tmp1 get_attr_ok $const2 	%line{55} %argrw{"wrr"}
+	if		$tmp1 7 7 	%argrw{"r"}
+	neq		$tmp2 has_diffs $const2 	%argrw{"wrr"}
+	assign		$tmp1 $tmp2 	%argrw{"wr"}
+	if		$tmp1 29 30 	%argrw{"r"}
+# as_bump_map.osl:57
+#         vector n = normalize(Normal);
+	normalize	___299_n Normal 	%line{57} %argrw{"wr"}
+# as_bump_map.osl:58
+#         vector dpdx = Dx(Position);
+	Dx		___299_dpdx Position 	%line{58} %argrw{"wr"} %argderivs{1}
+# as_bump_map.osl:59
+#         vector dpdy = Dy(Position);
+	Dy		___299_dpdy Position 	%line{59} %argrw{"wr"} %argderivs{1}
+# as_bump_map.osl:61
+#         vector rx = cross(dpdy, n);
+	cross		___299_rx ___299_dpdy ___299_n 	%line{61} %argrw{"wrr"}
+# as_bump_map.osl:62
+#         vector ry = cross(n, dpdx);
+	cross		___299_ry ___299_n ___299_dpdx 	%line{62} %argrw{"wrr"}
+# as_bump_map.osl:64
+#         float dhx = Dx(Height);
+	Dx		___299_dhx Height 	%line{64} %argrw{"wr"} %argderivs{1}
+# as_bump_map.osl:65
+#         float dhy = Dy(Height);
+	Dy		___299_dhy Height 	%line{65} %argrw{"wr"} %argderivs{1}
+# as_bump_map.osl:67
+#         float det = dot(dpdx, rx);
+	dot		___299_det ___299_dpdx ___299_rx 	%line{67} %argrw{"wrr"}
+# as_bump_map.osl:69
+#         vector surf_grad = sign(det) * (dhx * rx + dhy * ry);
+	sign		$tmp3 ___299_det 	%line{69} %argrw{"wr"}
+	mul		$tmp4 ___299_dhx ___299_rx 	%argrw{"wrr"}
+	mul		$tmp5 ___299_dhy ___299_ry 	%argrw{"wrr"}
+	add		$tmp6 $tmp4 $tmp5 	%argrw{"wrr"}
+	mul		___299_surf_grad $tmp3 $tmp6 	%argrw{"wrr"}
+# as_bump_map.osl:70
+#         NormalOut = normalize(abs(det) * n - surf_grad);
+	abs		$tmp7 ___299_det 	%line{70} %argrw{"wr"}
+	mul		$tmp8 $tmp7 ___299_n 	%argrw{"wrr"}
+	sub		$tmp9 $tmp8 ___299_surf_grad 	%argrw{"wrr"}
+	normalize	NormalOut $tmp9 	%argrw{"wr"}
+# as_bump_map.osl:72
+#         if (Amount != 1.0)
+	neq		$tmp10 Amount $const3 	%line{72} %argrw{"wrr"}
+	if		$tmp10 29 29 	%argrw{"r"}
+# as_bump_map.osl:73
+#             NormalOut = normalize(mix(Normal, NormalOut, Amount));
+	mix		$tmp11 Normal NormalOut Amount 	%line{73} %argrw{"wrrr"}
+	normalize	NormalOut $tmp11 	%argrw{"wr"}
+# as_bump_map.osl:76
+#         NormalOut = normalize(Normal);
+	normalize	NormalOut Normal 	%line{76} %argrw{"wr"}
+	end

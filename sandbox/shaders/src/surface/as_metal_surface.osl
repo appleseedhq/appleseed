@@ -1,0 +1,135 @@
+
+//
+// This source file is part of appleseed.
+// Visit http://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2014 The masked shader writer, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+#include "appleseed/defaults.h"
+#include "appleseed/metadata.h"
+#include "appleseed/fresnel.h"
+#include "appleseed/microfacet.h"
+
+shader as_metal_surface
+[[
+    string help = "Metal surface shader"
+]]
+(
+    vector Normal = N,
+    vector Tangent = APPLESEED_DEFAULT_TANGENT,
+
+    float Specular = 1
+    [[
+        string help = "Reflectivity",
+        APPLESEED_01_LIMIT_METADATA
+    ]],
+
+    string Preset = "Chrome"
+    [[
+        string help = "Fresnel presets",
+        string widget = "popup",
+        string options = "Aluminium|Chrome|Copper|Gold|Platinum|Silver|Titanium|Tungsten|Custom"
+    ]],
+
+    color Reflectivity = APPLESEED_PRESET_AL_R,
+
+    color EdgeTint = APPLESEED_PRESET_AL_G,
+
+    string Distribution = APPLESEED_DEFAULT_MDF_DISTRIBUTION
+    [[
+        APPLESEED_MDF_DISTRIBUTION_METADATA
+    ]],
+
+    float Roughness = APPLESEED_DEFAULT_MDF_ROUGHNESS
+    [[
+        APPLESEED_MDF_ROUGHNESS_METADATA
+    ]],
+
+    float Anisotropy = APPLESEED_DEFAULT_ANISOTROPY
+    [[
+        APPLESEED_ANISOTROPY_METADATA
+    ]],
+
+    output closure color BRDF = 0
+)
+{
+    color r, g;
+
+    if (Preset == "Custom")
+    {
+        r = Reflectivity;
+        g = EdgeTint;
+    }
+    else if (Preset == "Aluminium")
+    {
+        r = APPLESEED_PRESET_AL_R;
+        g = APPLESEED_PRESET_AL_G;
+    }
+    else if (Preset == "Chrome")
+    {
+        r = APPLESEED_PRESET_CR_R;
+        g = APPLESEED_PRESET_CR_G;
+    }
+    else if (Preset == "Copper")
+    {
+        r = APPLESEED_PRESET_CU_R;
+        g = APPLESEED_PRESET_CU_G;
+    }
+    else if (Preset == "Gold")
+    {
+        r = APPLESEED_PRESET_AU_R;
+        g = APPLESEED_PRESET_AU_G;
+    }
+    else if (Preset == "Platinum")
+    {
+        r = APPLESEED_PRESET_PT_R;
+        g = APPLESEED_PRESET_PT_G;
+    }
+    else if (Preset == "Silver")
+    {
+        r = APPLESEED_PRESET_AG_R;
+        g = APPLESEED_PRESET_AG_G;
+    }
+    else if (Preset == "Titanium")
+    {
+        r = APPLESEED_PRESET_TI_R;
+        g = APPLESEED_PRESET_TI_G;
+    }
+    else if (Preset == "Tungsten")
+    {
+        r = APPLESEED_PRESET_W_R;
+        g = APPLESEED_PRESET_W_G;
+    }
+
+    color Kf = artist_friendly_fresnel_conductor(I, Normal, r, g);
+
+    if (Distribution == "sharp")
+        BRDF = Specular * Kf * reflection(Normal);
+    else
+    {
+        float ax, ay;
+        mdf_roughness(Roughness, Anisotropy, ax, ay);
+        BRDF = Specular * Kf * microfacet(Distribution, Normal, Tangent, ax, ay, 1, 0);
+    }
+}

@@ -1,0 +1,19 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.6.4dev
+shader as_vector_mix
+param	vector	Vector1	0 0 0		%read{0,0} %write{2147483647,-1}
+param	vector	Vector2	0 0 0		%read{0,0} %write{2147483647,-1}
+param	float	Factor	0.5		%read{0,0} %write{2147483647,-1}
+param	int	Normalize	0		%meta{string,help,"invert"} %meta{string,widget,"checkBox"}  %read{1,1} %write{2147483647,-1}
+oparam	vector	VectorOut	0 0 0		%read{2,2} %write{0,2}
+code ___main___
+# as_vector_mix.osl:42
+#     VectorOut = mix(Vector1, Vector2, Factor);
+	mix		VectorOut Vector1 Vector2 Factor 	%filename{"as_vector_mix.osl"} %line{42} %argrw{"wrrr"}
+# as_vector_mix.osl:44
+#     if (Normalize)
+	if		Normalize 3 3 	%line{44} %argrw{"r"}
+# as_vector_mix.osl:45
+#         VectorOut = normalize(VectorOut);
+	normalize	VectorOut VectorOut 	%line{45} %argrw{"wr"}
+	end

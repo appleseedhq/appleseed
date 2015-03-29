@@ -1,0 +1,22 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.6.4dev
+shader as_translucent_surface	%meta{string,help,"Translucent surface shader."} 
+param	vector	Normal	0 0 0		%read{1,1} %write{0,0} %initexpr
+param	float	Diffuse	1		%read{2,2} %write{2147483647,-1}
+param	color	Color	0.80000001 0.80000001 0.80000001		%read{2,2} %write{2147483647,-1}
+oparam	closure color	BTDF			%read{2147483647,-1} %write{3,3}
+global	normal	N	%read{0,0} %write{2147483647,-1}
+temp	closure color	$tmp1	%read{3,3} %write{1,1}
+const	string	$const1	"translucent"		%read{1,1} %write{2147483647,-1}
+temp	color	$tmp2	%read{3,3} %write{2,2}
+code Normal
+# as_translucent_surface.osl:34
+#     vector Normal = N,
+	assign		Normal N 	%filename{"as_translucent_surface.osl"} %line{34} %argrw{"wr"}
+code ___main___
+# as_translucent_surface.osl:40
+#     BTDF = Diffuse * Color * translucent(Normal);
+	closure		$tmp1 $const1 Normal 	%filename{"as_translucent_surface.osl"} %line{40} %argrw{"wrr"}
+	mul		$tmp2 Diffuse Color 	%argrw{"wrr"}
+	mul		BTDF $tmp1 $tmp2 	%argrw{"wrr"}
+	end

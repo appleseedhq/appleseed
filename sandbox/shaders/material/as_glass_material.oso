@@ -1,0 +1,348 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.6.4dev
+surface as_glass_material	%meta{string,help,"Glass material"} 
+param	vector	Normal	0 0 0		%read{19,108} %write{0,0} %initexpr
+param	vector	Tangent	0 0 0		%read{104,108} %write{1,1} %initexpr
+param	string	Distribution	"sharp"		%meta{string,help,"Microfacet distribution to use: Specular, Beckmann or GGX."} %meta{string,widget,"popup"} %meta{string,options,"sharp|beckmann|ggx"}  %read{77,108} %write{2147483647,-1}
+param	float	Roughness	0.1		%meta{string,help,"Roughness"} %meta{float,min,0.001} %meta{float,max,1}  %read{94,94} %write{2147483647,-1}
+param	float	Anisotropy	0		%meta{string,help,"Anisotropy"} %meta{float,min,-1} %meta{float,max,1}  %read{90,99} %write{2147483647,-1}
+param	float	Reflection	1		%meta{string,help,"Reflection"} %meta{float,min,0} %meta{float,max,1}  %read{80,105} %write{2147483647,-1}
+param	color	ReflectionColor	1 1 1		%read{81,106} %write{2147483647,-1}
+param	float	Refraction	1		%meta{string,help,"Refraction"} %meta{float,min,0} %meta{float,max,1}  %read{84,109} %write{2147483647,-1}
+param	color	RefractionColor	1 1 1		%read{85,110} %write{2147483647,-1}
+param	float	Ior	1.5		%meta{string,help,"Index of refraction"} %meta{float,min,1} %meta{float,max,20}  %read{5,15} %write{2147483647,-1}
+param	float	Absorption	0		%meta{string,help,"Absorption cross section"} %meta{float,min,0}  %read{7,10} %write{2147483647,-1}
+param	color	AbsorptionColor	1 1 1		%meta{string,help,"Absorption color"}  %read{11,11} %write{2147483647,-1}
+global	vector	I	%read{19,67} %write{2147483647,-1}
+global	normal	N	%read{0,0} %write{2147483647,-1}
+global	vector	dPdu	%read{1,1} %write{2147483647,-1}
+global	closure color	Ci	%read{2147483647,-1} %write{88,113}
+local	float	___216_IdotN	%read{60,68} %write{58,58}
+local	float	___216_k	%read{64,69} %write{63,63}
+local	float	___217_c	%read{20,48} %write{19,22}
+local	float	___217_g	%read{34,48} %write{33,36}
+local	float	___219_beta	%read{41,49} %write{37,37}
+local	float	___219_F	%read{45,53} %write{43,52}
+local	vector	___221_R	%read{2147483647,-1} %write{27,27}
+local	vector	___221_T	%read{2147483647,-1} %write{66,76}
+local	float	___300_aspect	%read{95,97} %write{93,93}
+local	float	___300_r2	%read{95,97} %write{94,94}
+local	float	___301_tmp	%read{103,103} %write{101,101}
+local	float	from_ior	%read{16,16} %write{5,14}
+local	float	to_ior	%read{16,16} %write{6,15}
+local	color	Cabs	%read{88,113} %write{2,13}
+local	float	___303_length	%read{12,12} %write{9,9}
+local	float	eta	%read{29,108} %write{16,16}
+local	float	Kr	%read{54,105} %write{53,74}
+local	float	Kt	%read{84,109} %write{56,75}
+local	float	___306_ax	%read{101,108} %write{96,102}
+local	float	___306_ay	%read{102,108} %write{98,103}
+const	float	$const1	1		%read{2,92} %write{2147483647,-1}
+temp	int	$tmp1	%read{4,4} %write{3,3}
+const	float	$const2	0		%read{7,75} %write{2147483647,-1}
+temp	int	$tmp2	%read{8,8} %write{7,7}
+temp	int	$tmp3	%read{2147483647,-1} %write{9,9}
+const	string	$const3	"path:ray_length"		%read{9,9} %write{2147483647,-1}
+temp	float	$tmp4	%read{11,11} %write{10,10}
+temp	color	$tmp5	%read{12,12} %write{11,11}
+temp	color	$tmp6	%read{13,13} %write{12,12}
+const	string	$const4	"fresnel"		%read{17,18} %write{2147483647,-1}
+const	int	$const5	0		%read{20,104} %write{2147483647,-1}
+temp	int	$tmp7	%read{21,21} %write{20,20}
+const	string	$const6	"reflect"		%read{23,23} %write{2147483647,-1}
+temp	float	$tmp8	%read{25,25} %write{24,24}
+temp	float	$tmp9	%read{26,26} %write{25,25}
+const	float	$const8	2		%read{25,25} %write{2147483647,-1}
+temp	vector	$tmp10	%read{27,27} %write{26,26}
+temp	float	$tmp11	%read{30,30} %write{29,29}
+const	string	$const9	"sqr"		%read{28,50} %write{2147483647,-1}
+temp	float	$tmp12	%read{31,31} %write{30,30}
+temp	float	$tmp13	%read{33,33} %write{31,31}
+temp	float	$tmp14	%read{33,33} %write{32,32}
+temp	int	$tmp15	%read{35,35} %write{34,34}
+temp	float	$tmp16	%read{39,39} %write{38,38}
+temp	float	$tmp17	%read{40,40} %write{39,39}
+temp	float	$tmp18	%read{43,43} %write{40,40}
+temp	float	$tmp19	%read{42,42} %write{41,41}
+temp	float	$tmp20	%read{43,43} %write{42,42}
+const	float	$const10	0.5		%read{47,47} %write{2147483647,-1}
+temp	float	$tmp21	%read{46,46} %write{45,45}
+temp	float	$tmp22	%read{47,47} %write{46,46}
+temp	float	$tmp23	%read{52,52} %write{51,51}
+temp	float	$tmp24	%read{49,49} %write{48,48}
+temp	float	$tmp25	%read{51,51} %write{49,49}
+temp	float	$tmp26	%read{55,55} %write{54,54}
+temp	float	$tmp27	%read{56,56} %write{55,55}
+const	string	$const11	"refract"		%read{57,57} %write{2147483647,-1}
+const	int	$const12	1		%read{108,108} %write{2147483647,-1}
+temp	float	$tmp28	%read{62,62} %write{59,59}
+temp	float	$tmp29	%read{61,61} %write{60,60}
+temp	float	$tmp30	%read{62,62} %write{61,61}
+temp	float	$tmp31	%read{63,63} %write{62,62}
+temp	int	$tmp32	%read{65,65} %write{64,64}
+const	vector	$const13	0 0 0		%read{66,76} %write{2147483647,-1}
+temp	vector	$tmp33	%read{72,72} %write{67,67}
+temp	float	$tmp34	%read{70,70} %write{68,68}
+temp	float	$tmp35	%read{70,70} %write{69,69}
+temp	float	$tmp36	%read{71,71} %write{70,70}
+temp	vector	$tmp37	%read{72,72} %write{71,71}
+const	string	$const14	"sharp"		%read{77,77} %write{2147483647,-1}
+temp	int	$tmp38	%read{78,78} %write{77,77}
+temp	closure color	$tmp39	%read{82,82} %write{79,79}
+const	string	$const15	"reflection"		%read{79,79} %write{2147483647,-1}
+temp	float	$tmp40	%read{81,81} %write{80,80}
+temp	color	$tmp41	%read{82,82} %write{81,81}
+temp	closure color	$tmp42	%read{87,87} %write{82,82}
+temp	closure color	$tmp43	%read{86,86} %write{83,83}
+const	string	$const16	"refraction"		%read{83,83} %write{2147483647,-1}
+temp	float	$tmp44	%read{85,85} %write{84,84}
+temp	color	$tmp45	%read{86,86} %write{85,85}
+temp	closure color	$tmp46	%read{87,87} %write{86,86}
+temp	closure color	$tmp47	%read{88,88} %write{87,87}
+const	string	$const17	"mdf_roughness"		%read{89,89} %write{2147483647,-1}
+temp	float	$tmp48	%read{91,91} %write{90,90}
+const	float	$const18	0.89999998		%read{91,91} %write{2147483647,-1}
+temp	float	$tmp49	%read{92,92} %write{91,91}
+temp	float	$tmp50	%read{93,93} %write{92,92}
+const	float	$const19	0.001		%read{96,98} %write{2147483647,-1}
+temp	float	$tmp51	%read{96,96} %write{95,95}
+temp	float	$tmp52	%read{98,98} %write{97,97}
+temp	int	$tmp53	%read{100,100} %write{99,99}
+temp	closure color	$tmp54	%read{107,107} %write{104,104}
+const	string	$const20	"microfacet"		%read{104,108} %write{2147483647,-1}
+temp	float	$tmp55	%read{106,106} %write{105,105}
+temp	color	$tmp56	%read{107,107} %write{106,106}
+temp	closure color	$tmp57	%read{112,112} %write{107,107}
+temp	closure color	$tmp58	%read{111,111} %write{108,108}
+temp	float	$tmp59	%read{110,110} %write{109,109}
+temp	color	$tmp60	%read{111,111} %write{110,110}
+temp	closure color	$tmp61	%read{112,112} %write{111,111}
+temp	closure color	$tmp62	%read{113,113} %write{112,112}
+code Normal
+# as_glass_material.osl:39
+#     vector Normal = N,
+	assign		Normal N 	%filename{"as_glass_material.osl"} %line{39} %argrw{"wr"}
+code Tangent
+# as_glass_material.osl:40
+#     vector Tangent = APPLESEED_DEFAULT_TANGENT,
+	normalize	Tangent dPdu 	%filename{"as_glass_material.osl"} %line{40} %argrw{"wr"}
+code ___main___
+# as_glass_material.osl:91
+#     color Cabs = 1.0;
+	assign		Cabs $const1 	%filename{"as_glass_material.osl"} %line{91} %argrw{"wr"}
+# as_glass_material.osl:93
+#     if (backfacing())
+	backfacing	$tmp1 	%line{93} %argrw{"w"}
+	if		$tmp1 14 16 	%argrw{"r"}
+# as_glass_material.osl:95
+#         from_ior = Ior;
+	assign		from_ior Ior 	%line{95} %argrw{"wr"}
+# as_glass_material.osl:96
+#         to_ior = 1.0;
+	assign		to_ior $const1 	%line{96} %argrw{"wr"}
+# as_glass_material.osl:98
+#         if (Absorption != 0.0)
+	neq		$tmp2 Absorption $const2 	%line{98} %argrw{"wrr"}
+	if		$tmp2 14 14 	%argrw{"r"}
+# as_glass_material.osl:101
+#             getattribute("path:ray_length", length);
+	getattribute	$tmp3 $const3 ___303_length 	%line{101} %argrw{"wrw"}
+# as_glass_material.osl:102
+#             Cabs = exp(-Absorption * AbsorptionColor * length);
+	neg		$tmp4 Absorption 	%line{102} %argrw{"wr"}
+	mul		$tmp5 $tmp4 AbsorptionColor 	%argrw{"wrr"}
+	mul		$tmp6 $tmp5 ___303_length 	%argrw{"wrr"}
+	exp		Cabs $tmp6 	%argrw{"wr"}
+# as_glass_material.osl:107
+#         from_ior = 1.0;
+	assign		from_ior $const1 	%line{107} %argrw{"wr"}
+# as_glass_material.osl:108
+#         to_ior = Ior;
+	assign		to_ior Ior 	%line{108} %argrw{"wr"}
+# as_glass_material.osl:111
+#     float eta = from_ior / to_ior;
+	div		eta from_ior to_ior 	%line{111} %argrw{"wrr"}
+# as_glass_material.osl:114
+#     fresnel(I, Normal, eta, Kr, Kt);
+	functioncall	$const4 77 	%line{114} %argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:244
+# PERCOMP1 (fabs)
+	functioncall	$const4 77 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{244} %argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:216
+#     float c = dot(I, N);
+	dot		___217_c I Normal 	%line{216} %argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:217
+#     if (c < 0)
+	lt		$tmp7 ___217_c $const5 	%line{217} %argrw{"wrr"}
+	if		$tmp7 23 23 	%argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:218
+#         c = -c;
+	neg		___217_c ___217_c 	%line{218} %argrw{"wr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:219
+#     R = reflect(I, N);
+	functioncall	$const6 28 	%line{219} %argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:205
+# vector reflect (vector I, vector N) { return I - 2*dot(N,I)*N; }
+	dot		$tmp8 Normal I 	%line{205} %argrw{"wrr"}
+	mul		$tmp9 $const8 $tmp8 	%argrw{"wrr"}
+	mul		$tmp10 $tmp9 Normal 	%argrw{"wrr"}
+	sub		___221_R I $tmp10 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:220
+#     float g = 1.0 / sqr(eta) - 1.0 + c * c;
+	functioncall	$const9 30 	%line{220} %argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:215
+#     float sqr(float x) { return x*x; }
+	mul		$tmp11 eta eta 	%line{215} %argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:220
+#     float g = 1.0 / sqr(eta) - 1.0 + c * c;
+	div		$tmp12 $const1 $tmp11 	%line{220} %argrw{"wrr"}
+	sub		$tmp13 $tmp12 $const1 	%argrw{"wrr"}
+	mul		$tmp14 ___217_c ___217_c 	%argrw{"wrr"}
+	add		___217_g $tmp13 $tmp14 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:221
+#     if (g >= 0.0) {
+	ge		$tmp15 ___217_g $const2 	%line{221} %argrw{"wrr"}
+	if		$tmp15 74 77 	%argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:222
+#         g = sqrt (g);
+	sqrt		___217_g ___217_g 	%line{222} %argrw{"wr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:223
+#         float beta = g - c;
+	sub		___219_beta ___217_g ___217_c 	%line{223} %argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:224
+#         float F = (c * (g+c) - 1.0) / (c * beta + 1.0);
+	add		$tmp16 ___217_g ___217_c 	%line{224} %argrw{"wrr"}
+	mul		$tmp17 ___217_c $tmp16 	%argrw{"wrr"}
+	sub		$tmp18 $tmp17 $const1 	%argrw{"wrr"}
+	mul		$tmp19 ___217_c ___219_beta 	%argrw{"wrr"}
+	add		$tmp20 $tmp19 $const1 	%argrw{"wrr"}
+	div		___219_F $tmp18 $tmp20 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:225
+#         F = 0.5 * (1.0 + sqr(F));
+	functioncall	$const9 46 	%line{225} %argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:215
+#     float sqr(float x) { return x*x; }
+	mul		$tmp21 ___219_F ___219_F 	%line{215} %argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:225
+#         F = 0.5 * (1.0 + sqr(F));
+	add		$tmp22 $const1 $tmp21 	%line{225} %argrw{"wrr"}
+	mul		___219_F $const10 $tmp22 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:226
+#         F *= sqr (beta / (g+c));
+	add		$tmp24 ___217_g ___217_c 	%line{226} %argrw{"wrr"}
+	div		$tmp25 ___219_beta $tmp24 	%argrw{"wrr"}
+	functioncall	$const9 52 	%argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:215
+#     float sqr(float x) { return x*x; }
+	mul		$tmp23 $tmp25 $tmp25 	%line{215} %argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:226
+#         F *= sqr (beta / (g+c));
+	mul		___219_F ___219_F $tmp23 	%line{226} %argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:227
+#         Kr = F;
+	assign		Kr ___219_F 	%line{227} %argrw{"wr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:228
+#         Kt = (1.0 - Kr) * eta*eta;
+	sub		$tmp26 $const1 Kr 	%line{228} %argrw{"wrr"}
+	mul		$tmp27 $tmp26 eta 	%argrw{"wrr"}
+	mul		Kt $tmp27 eta 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:231
+#         T = refract(I, N, eta);
+	functioncall	$const11 74 	%line{231} %argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:207
+#     float IdotN = dot (I, N);
+	dot		___216_IdotN I Normal 	%line{207} %argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:208
+#     float k = 1 - eta*eta * (1 - IdotN*IdotN);
+	mul		$tmp28 eta eta 	%line{208} %argrw{"wrr"}
+	mul		$tmp29 ___216_IdotN ___216_IdotN 	%argrw{"wrr"}
+	sub		$tmp30 $const1 $tmp29 	%argrw{"wrr"}
+	mul		$tmp31 $tmp28 $tmp30 	%argrw{"wrr"}
+	sub		___216_k $const1 $tmp31 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:209
+#     return (k < 0) ? vector(0,0,0) : (eta*I - N * (eta*IdotN + sqrt(k)));
+	lt		$tmp32 ___216_k $const5 	%line{209} %argrw{"wrr"}
+	if		$tmp32 67 73 	%argrw{"r"}
+	assign		___221_T $const13 	%argrw{"wr"}
+	mul		$tmp33 eta I 	%argrw{"wrr"}
+	mul		$tmp34 eta ___216_IdotN 	%argrw{"wrr"}
+	sqrt		$tmp35 ___216_k 	%argrw{"wr"}
+	add		$tmp36 $tmp34 $tmp35 	%argrw{"wrr"}
+	mul		$tmp37 Normal $tmp36 	%argrw{"wrr"}
+	sub		___221_T $tmp33 $tmp37 	%argrw{"wrr"}
+	return
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:234
+#         Kr = 1.0;
+	assign		Kr $const1 	%line{234} %argrw{"wr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:235
+#         Kt = 0.0;
+	assign		Kt $const2 	%line{235} %argrw{"wr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:236
+#         T = vector (0,0,0);
+	assign		___221_T $const13 	%line{236} %argrw{"wr"}
+# as_glass_material.osl:116
+#     if (Distribution == "sharp")
+	eq		$tmp38 Distribution $const14 	%filename{"as_glass_material.osl"} %line{116} %argrw{"wrr"}
+	if		$tmp38 89 114 	%argrw{"r"}
+# as_glass_material.osl:119
+#             ((Kr * Reflection * ReflectionColor * reflection(Normal)) + 
+	closure		$tmp39 $const15 Normal 	%line{119} %argrw{"wrr"}
+	mul		$tmp40 Kr Reflection 	%argrw{"wrr"}
+	mul		$tmp41 $tmp40 ReflectionColor 	%argrw{"wrr"}
+	mul		$tmp42 $tmp39 $tmp41 	%argrw{"wrr"}
+# as_glass_material.osl:120
+#              (Kt * Refraction * RefractionColor * refraction(Normal, eta)));
+	closure		$tmp43 $const16 Normal eta 	%line{120} %argrw{"wrrr"}
+	mul		$tmp44 Kt Refraction 	%argrw{"wrr"}
+	mul		$tmp45 $tmp44 RefractionColor 	%argrw{"wrr"}
+	mul		$tmp46 $tmp43 $tmp45 	%argrw{"wrr"}
+	add		$tmp47 $tmp42 $tmp46 	%argrw{"wrr"}
+	mul		Ci $tmp47 Cabs 	%argrw{"wrr"}
+# as_glass_material.osl:125
+#         mdf_roughness(Roughness, Anisotropy, ax, ay);
+	functioncall	$const17 104 	%line{125} %argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/microfacet.h:55
+#     float aspect = sqrt(1.0 - fabs(anisotropy) * 0.9);
+	fabs		$tmp48 Anisotropy 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/microfacet.h"} %line{55} %argrw{"wr"}
+	mul		$tmp49 $tmp48 $const18 	%argrw{"wrr"}
+	sub		$tmp50 $const1 $tmp49 	%argrw{"wrr"}
+	sqrt		___300_aspect $tmp50 	%argrw{"wr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/microfacet.h:56
+#     float r2 = roughness * roughness;
+	mul		___300_r2 Roughness Roughness 	%line{56} %argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/microfacet.h:58
+#     ax = max(0.001, r2 / aspect);
+	div		$tmp51 ___300_r2 ___300_aspect 	%line{58} %argrw{"wrr"}
+	max		___306_ax $const19 $tmp51 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/microfacet.h:59
+#     ay = max(0.001, r2 * aspect);
+	mul		$tmp52 ___300_r2 ___300_aspect 	%line{59} %argrw{"wrr"}
+	max		___306_ay $const19 $tmp52 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/microfacet.h:61
+#     if (anisotropy < 0)
+	lt		$tmp53 Anisotropy $const5 	%line{61} %argrw{"wrr"}
+	if		$tmp53 104 104 	%argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/microfacet.h:64
+#         float tmp = ax;
+	assign		___301_tmp ___306_ax 	%line{64} %argrw{"wr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/microfacet.h:65
+#         ax = ay;
+	assign		___306_ax ___306_ay 	%line{65} %argrw{"wr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/microfacet.h:66
+#         ay = tmp;
+	assign		___306_ay ___301_tmp 	%line{66} %argrw{"wr"}
+# as_glass_material.osl:128
+#     color ReflectionColor = 1,
+	closure		$tmp54 $const20 Distribution Normal Tangent ___306_ax ___306_ay eta $const5 	%filename{"as_glass_material.osl"} %line{128} %argrw{"wrrrrrrrr"}
+	mul		$tmp55 Kr Reflection 	%argrw{"wrr"}
+	mul		$tmp56 $tmp55 ReflectionColor 	%argrw{"wrr"}
+	mul		$tmp57 $tmp54 $tmp56 	%argrw{"wrr"}
+# as_glass_material.osl:129
+# 
+	closure		$tmp58 $const20 Distribution Normal Tangent ___306_ax ___306_ay eta $const12 	%line{129} %argrw{"wrrrrrrrr"}
+	mul		$tmp59 Kt Refraction 	%argrw{"wrr"}
+	mul		$tmp60 $tmp59 RefractionColor 	%argrw{"wrr"}
+	mul		$tmp61 $tmp58 $tmp60 	%argrw{"wrr"}
+	add		$tmp62 $tmp57 $tmp61 	%argrw{"wrr"}
+	mul		Ci $tmp62 Cabs 	%argrw{"wrr"}
+	end
