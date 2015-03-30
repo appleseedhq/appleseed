@@ -61,6 +61,8 @@ class InstanceCollectionItem
         ParentEntity&               parent);
 
   private:
+    typedef CollectionItemBase<Entity> Base;
+
     ParentEntity& m_parent;
 
     virtual ItemBase* create_item(Entity* entity) APPLESEED_OVERRIDE;
@@ -89,12 +91,12 @@ ItemBase* InstanceCollectionItem<Entity, EntityItem, ParentEntity>::create_item(
 
     ItemBase* item =
         new EntityItem(
-            m_editor_context,
+            Base::m_editor_context,
             entity,
             m_parent,
             this);
 
-    m_editor_context.m_item_registry.insert(*entity, item);
+    Base::m_editor_context.m_item_registry.insert(*entity, item);
 
     return item;
 }
