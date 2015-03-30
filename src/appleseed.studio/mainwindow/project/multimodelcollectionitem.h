@@ -109,7 +109,7 @@ ItemBase* MultiModelCollectionItem<Entity, ParentEntity, ParentItem>::create_ite
 
     ItemBase* item =
         new MultiModelEntityItem<Entity, ParentEntity, This>(
-            m_editor_context,
+            Base::m_editor_context,
             entity,
             Base::m_parent,
             this);
