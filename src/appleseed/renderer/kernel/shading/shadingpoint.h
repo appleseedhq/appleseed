@@ -369,8 +369,7 @@ class ShadingPoint
     void initialize_osl_shader_globals(
         const ShaderGroup&              sg,
         const VisibilityFlags::Type     ray_flags,
-        OSL::RendererServices*          renderer,
-        const float                     surface_area = 0.0f) const;
+        OSL::RendererServices*          renderer) const;
 #endif
 };
 

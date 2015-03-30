@@ -719,8 +719,7 @@ void ShadingPoint::compute_alpha() const
 void ShadingPoint::initialize_osl_shader_globals(
     const ShaderGroup&          sg,
     const VisibilityFlags::Type ray_flags,
-    OSL::RendererServices*      renderer,
-    const float                 surface_area) const
+    OSL::RendererServices*      renderer) const
 {
     assert(hit());
     assert(renderer);
@@ -796,7 +795,14 @@ void ShadingPoint::initialize_osl_shader_globals(
 
     // Always update the ray type and surface area.
     m_shader_globals.raytype = static_cast<int>(ray_flags);
-    m_shader_globals.surfacearea = surface_area;
+
+    if (ray_flags == VisibilityFlags::LightRay && sg.has_emission())
+    {
+        m_shader_globals.surfacearea =
+            static_cast<float>(sg.get_surface_area(&get_assembly_instance(), &get_object_instance()));
+    }
+    else
+        m_shader_globals.surfacearea = 0.0f;
 
     // These are set by OSL when the shader is executed.
     m_shader_globals.context = 0;

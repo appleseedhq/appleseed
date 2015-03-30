@@ -41,8 +41,12 @@
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/uid.h"
 
+// Boost headers
+#include "boost/unordered/unordered_map.hpp"
+
 // Standard headers.
 #include <exception>
+#include <utility>
 
 using namespace foundation;
 using namespace std;
@@ -67,9 +71,13 @@ namespace
 
 struct ShaderGroup::Impl
 {
-    ShaderContainer                 m_shaders;
-    ShaderConnectionContainer       m_connections;
-    mutable OSL::ShaderGroupRef     m_shader_group_ref;
+    typedef pair<const AssemblyInstance*, const ObjectInstance*> SurfaceAreaKey;
+    typedef boost::unordered_map<SurfaceAreaKey, double>         SurfaceAreaMap;
+
+    ShaderContainer             m_shaders;
+    ShaderConnectionContainer   m_connections;
+    mutable OSL::ShaderGroupRef m_shader_group_ref;
+    mutable SurfaceAreaMap      m_surface_areas;
 };
 
 ShaderGroup::ShaderGroup(const char* name)
@@ -238,6 +246,13 @@ bool ShaderGroup::is_valid() const
     return impl->m_shader_group_ref.get() != 0;
 }
 
+double ShaderGroup::get_surface_area(const AssemblyInstance* ass, const ObjectInstance* obj) const
+{
+    assert(m_has_emission);
+
+    return impl->m_surface_areas[Impl::SurfaceAreaKey(ass, obj)];
+}
+
 OSL::ShaderGroupRef& ShaderGroup::shader_group_ref() const
 {
     return impl->m_shader_group_ref;
@@ -399,6 +414,16 @@ void ShaderGroup::report_uses_global(const char* global_name, const bool uses_gl
             get_name(),
             global_name);
     }
+}
+
+void ShaderGroup::set_surface_area(
+    const AssemblyInstance* ass,
+    const ObjectInstance*   obj,
+    const double            area) const
+{
+    assert (m_has_emission);
+
+    impl->m_surface_areas[Impl::SurfaceAreaKey(ass, obj)] = area;
 }
 
 

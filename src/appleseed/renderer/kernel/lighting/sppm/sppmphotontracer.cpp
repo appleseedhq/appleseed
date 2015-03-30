@@ -349,7 +349,6 @@ namespace
             // Evaluate the EDF inputs.
             InputEvaluator input_evaluator(m_texture_cache);
 
-            // TODO: refactor this code (est.).
             ShadingPoint shading_point;
             light_sample.make_shading_point(
                 shading_point,
@@ -357,11 +356,7 @@ namespace
                 shading_context.get_intersector());
 #ifdef APPLESEED_WITH_OSL
             if (const ShaderGroup* sg = material->get_osl_surface())
-            {
-                // TODO: get object area somehow.
-                const float surface_area = 0.0f;
-                shading_context.execute_osl_emission(*sg, shading_point, surface_area);
-            }
+                shading_context.execute_osl_emission(*sg, shading_point);
 #endif
             edf->evaluate_inputs(input_evaluator, shading_point);
 

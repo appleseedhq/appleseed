@@ -88,8 +88,7 @@ class OSLShaderGroupExec
 
     void execute_emission(
         const ShaderGroup&              shader_group,
-        const ShadingPoint&             shading_point,
-        const float                     surface_area) const;
+        const ShadingPoint&             shading_point) const;
 
     foundation::Color3f execute_background(
         const ShaderGroup&              shader_group,
@@ -98,8 +97,7 @@ class OSLShaderGroupExec
     void do_execute(
         const ShaderGroup&              shader_group,
         const ShadingPoint&             shading_point,
-        const VisibilityFlags::Type     ray_flags,
-        const float                     surface_area = 0.0f) const;
+        const VisibilityFlags::Type     ray_flags) const;
 };
 
 }       // namespace renderer

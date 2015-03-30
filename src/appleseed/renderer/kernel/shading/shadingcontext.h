@@ -115,8 +115,7 @@ class ShadingContext
 
     void execute_osl_emission(
         const ShaderGroup&  shader_group,
-        const ShadingPoint& shading_point,
-        const float         surface_area) const;
+        const ShadingPoint& shading_point) const;
 
     void execute_osl_background(
         const ShaderGroup&          shader_group,
