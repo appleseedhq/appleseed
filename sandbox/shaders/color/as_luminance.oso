@@ -1,0 +1,10 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.6.4dev
+shader as_luminance
+param	color	Color	0 0 0		%read{0,0} %write{2147483647,-1}
+oparam	float	FloatOut	0		%read{2147483647,-1} %write{0,0}
+code ___main___
+# as_luminance.osl:35
+#     FloatOut = luminance(Color);
+	luminance	FloatOut Color 	%filename{"as_luminance.osl"} %line{35} %argrw{"wr"}
+	end

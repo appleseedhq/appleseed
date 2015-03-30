@@ -569,10 +569,8 @@ if (WITH_OSL)
     )
 
     install (
-        FILES
-            sandbox/shaders/oslutil.h
-            sandbox/shaders/stdosl.h
-        DESTINATION shaders
+        DIRECTORY sandbox/shaders
+        DESTINATION .
     )
 endif ()
 

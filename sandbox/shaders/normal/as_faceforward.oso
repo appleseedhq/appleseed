@@ -1,0 +1,34 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.6.4dev
+shader as_faceforward
+param	vector	Normal	0 0 0		%read{6,7} %write{0,0} %initexpr
+param	vector	Incident	0 0 0		%read{3,3} %write{1,1} %initexpr
+param	vector	Nref	0 0 0		%read{3,3} %write{2,2} %initexpr
+oparam	vector	NormalOut	0 0 0		%read{2147483647,-1} %write{6,7}
+global	vector	I	%read{1,1} %write{2147483647,-1}
+global	normal	N	%read{0,0} %write{2147483647,-1}
+global	normal	Ng	%read{2,2} %write{2147483647,-1}
+temp	float	$tmp1	%read{4,4} %write{3,3}
+const	int	$const1	0		%read{4,4} %write{2147483647,-1}
+temp	int	$tmp2	%read{5,5} %write{4,4}
+code Normal
+# as_faceforward.osl:32
+#     vector Normal = N,
+	assign		Normal N 	%filename{"as_faceforward.osl"} %line{32} %argrw{"wr"}
+code Incident
+# as_faceforward.osl:33
+#     vector Incident = I,
+	assign		Incident I 	%filename{"as_faceforward.osl"} %line{33} %argrw{"wr"}
+code Nref
+# as_faceforward.osl:34
+#     vector Nref = Ng,
+	assign		Nref Ng 	%filename{"as_faceforward.osl"} %line{34} %argrw{"wr"}
+code ___main___
+# as_faceforward.osl:38
+#     NormalOut = dot(Incident, Nref) > 0 ? -Normal : Normal;
+	dot		$tmp1 Incident Nref 	%filename{"as_faceforward.osl"} %line{38} %argrw{"wrr"}
+	gt		$tmp2 $tmp1 $const1 	%argrw{"wrr"}
+	if		$tmp2 7 8 	%argrw{"r"}
+	neg		NormalOut Normal 	%argrw{"wr"}
+	assign		NormalOut Normal 	%argrw{"wr"}
+	end

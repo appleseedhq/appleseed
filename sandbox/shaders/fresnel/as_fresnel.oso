@@ -1,0 +1,205 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.6.4dev
+shader as_fresnel	%meta{string,help,"Fresnel dielectric"} 
+param	vector	Normal	0 0 0		%read{10,62} %write{0,0} %initexpr
+param	float	Ior	1.5		%meta{string,help,"Index of refraction"} %meta{float,min,1} %meta{float,max,20}  %read{3,6} %write{2147483647,-1}
+oparam	float	Reflect	0		%read{45,45} %write{44,65}
+oparam	float	Refract	0		%read{2147483647,-1} %write{47,66}
+global	vector	I	%read{10,58} %write{2147483647,-1}
+global	normal	N	%read{0,0} %write{2147483647,-1}
+local	float	___216_IdotN	%read{51,59} %write{49,49}
+local	float	___216_k	%read{55,60} %write{54,54}
+local	float	___217_c	%read{11,39} %write{10,13}
+local	float	___217_g	%read{25,39} %write{24,27}
+local	float	___219_beta	%read{32,40} %write{28,28}
+local	float	___219_F	%read{36,44} %write{34,43}
+local	vector	___221_R	%read{2147483647,-1} %write{18,18}
+local	vector	___221_T	%read{2147483647,-1} %write{57,67}
+local	float	from_ior	%read{7,7} %write{3,5}
+local	float	to_ior	%read{7,7} %write{4,6}
+local	float	eta	%read{20,59} %write{7,7}
+temp	int	$tmp1	%read{2,2} %write{1,1}
+const	float	$const1	1		%read{4,65} %write{2147483647,-1}
+const	string	$const2	"fresnel"		%read{8,9} %write{2147483647,-1}
+const	int	$const3	0		%read{11,55} %write{2147483647,-1}
+temp	int	$tmp2	%read{12,12} %write{11,11}
+const	string	$const4	"reflect"		%read{14,14} %write{2147483647,-1}
+temp	float	$tmp3	%read{16,16} %write{15,15}
+temp	float	$tmp4	%read{17,17} %write{16,16}
+const	float	$const6	2		%read{16,16} %write{2147483647,-1}
+temp	vector	$tmp5	%read{18,18} %write{17,17}
+temp	float	$tmp6	%read{21,21} %write{20,20}
+const	string	$const7	"sqr"		%read{19,41} %write{2147483647,-1}
+temp	float	$tmp7	%read{22,22} %write{21,21}
+temp	float	$tmp8	%read{24,24} %write{22,22}
+temp	float	$tmp9	%read{24,24} %write{23,23}
+const	float	$const8	0		%read{25,66} %write{2147483647,-1}
+temp	int	$tmp10	%read{26,26} %write{25,25}
+temp	float	$tmp11	%read{30,30} %write{29,29}
+temp	float	$tmp12	%read{31,31} %write{30,30}
+temp	float	$tmp13	%read{34,34} %write{31,31}
+temp	float	$tmp14	%read{33,33} %write{32,32}
+temp	float	$tmp15	%read{34,34} %write{33,33}
+const	float	$const9	0.5		%read{38,38} %write{2147483647,-1}
+temp	float	$tmp16	%read{37,37} %write{36,36}
+temp	float	$tmp17	%read{38,38} %write{37,37}
+temp	float	$tmp18	%read{43,43} %write{42,42}
+temp	float	$tmp19	%read{40,40} %write{39,39}
+temp	float	$tmp20	%read{42,42} %write{40,40}
+temp	float	$tmp21	%read{46,46} %write{45,45}
+temp	float	$tmp22	%read{47,47} %write{46,46}
+const	string	$const10	"refract"		%read{48,48} %write{2147483647,-1}
+temp	float	$tmp23	%read{53,53} %write{50,50}
+temp	float	$tmp24	%read{52,52} %write{51,51}
+temp	float	$tmp25	%read{53,53} %write{52,52}
+temp	float	$tmp26	%read{54,54} %write{53,53}
+temp	int	$tmp27	%read{56,56} %write{55,55}
+const	vector	$const12	0 0 0		%read{57,67} %write{2147483647,-1}
+temp	vector	$tmp28	%read{63,63} %write{58,58}
+temp	float	$tmp29	%read{61,61} %write{59,59}
+temp	float	$tmp30	%read{61,61} %write{60,60}
+temp	float	$tmp31	%read{62,62} %write{61,61}
+temp	vector	$tmp32	%read{63,63} %write{62,62}
+code Normal
+# as_fresnel.osl:37
+#     vector Normal = N,
+	assign		Normal N 	%filename{"as_fresnel.osl"} %line{37} %argrw{"wr"}
+code ___main___
+# as_fresnel.osl:51
+#     if (backfacing())
+	backfacing	$tmp1 	%filename{"as_fresnel.osl"} %line{51} %argrw{"w"}
+	if		$tmp1 5 7 	%argrw{"r"}
+# as_fresnel.osl:53
+#         from_ior = Ior;
+	assign		from_ior Ior 	%line{53} %argrw{"wr"}
+# as_fresnel.osl:54
+#         to_ior = 1.0;
+	assign		to_ior $const1 	%line{54} %argrw{"wr"}
+# as_fresnel.osl:58
+#         from_ior = 1.0;
+	assign		from_ior $const1 	%line{58} %argrw{"wr"}
+# as_fresnel.osl:59
+#         to_ior = Ior;
+	assign		to_ior Ior 	%line{59} %argrw{"wr"}
+# as_fresnel.osl:62
+#     float eta = from_ior / to_ior;
+	div		eta from_ior to_ior 	%line{62} %argrw{"wrr"}
+# as_fresnel.osl:63
+#     fresnel(I, Normal, eta, Reflect, Refract);
+	functioncall	$const2 68 	%line{63} %argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:244
+# int isinf (float x) BUILTIN;
+	functioncall	$const2 68 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{244} %argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:216
+#     float c = dot(I, N);
+	dot		___217_c I Normal 	%line{216} %argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:217
+#     if (c < 0)
+	lt		$tmp2 ___217_c $const3 	%line{217} %argrw{"wrr"}
+	if		$tmp2 14 14 	%argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:218
+#         c = -c;
+	neg		___217_c ___217_c 	%line{218} %argrw{"wr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:219
+#     R = reflect(I, N);
+	functioncall	$const4 19 	%line{219} %argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:205
+# vector reflect (vector I, vector N) { return I - 2*dot(N,I)*N; }
+	dot		$tmp3 Normal I 	%line{205} %argrw{"wrr"}
+	mul		$tmp4 $const6 $tmp3 	%argrw{"wrr"}
+	mul		$tmp5 $tmp4 Normal 	%argrw{"wrr"}
+	sub		___221_R I $tmp5 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:220
+#     float g = 1.0 / sqr(eta) - 1.0 + c * c;
+	functioncall	$const7 21 	%line{220} %argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:215
+#     float sqr(float x) { return x*x; }
+	mul		$tmp6 eta eta 	%line{215} %argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:220
+#     float g = 1.0 / sqr(eta) - 1.0 + c * c;
+	div		$tmp7 $const1 $tmp6 	%line{220} %argrw{"wrr"}
+	sub		$tmp8 $tmp7 $const1 	%argrw{"wrr"}
+	mul		$tmp9 ___217_c ___217_c 	%argrw{"wrr"}
+	add		___217_g $tmp8 $tmp9 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:221
+#     if (g >= 0.0) {
+	ge		$tmp10 ___217_g $const8 	%line{221} %argrw{"wrr"}
+	if		$tmp10 65 68 	%argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:222
+#         g = sqrt (g);
+	sqrt		___217_g ___217_g 	%line{222} %argrw{"wr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:223
+#         float beta = g - c;
+	sub		___219_beta ___217_g ___217_c 	%line{223} %argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:224
+#         float F = (c * (g+c) - 1.0) / (c * beta + 1.0);
+	add		$tmp11 ___217_g ___217_c 	%line{224} %argrw{"wrr"}
+	mul		$tmp12 ___217_c $tmp11 	%argrw{"wrr"}
+	sub		$tmp13 $tmp12 $const1 	%argrw{"wrr"}
+	mul		$tmp14 ___217_c ___219_beta 	%argrw{"wrr"}
+	add		$tmp15 $tmp14 $const1 	%argrw{"wrr"}
+	div		___219_F $tmp13 $tmp15 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:225
+#         F = 0.5 * (1.0 + sqr(F));
+	functioncall	$const7 37 	%line{225} %argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:215
+#     float sqr(float x) { return x*x; }
+	mul		$tmp16 ___219_F ___219_F 	%line{215} %argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:225
+#         F = 0.5 * (1.0 + sqr(F));
+	add		$tmp17 $const1 $tmp16 	%line{225} %argrw{"wrr"}
+	mul		___219_F $const9 $tmp17 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:226
+#         F *= sqr (beta / (g+c));
+	add		$tmp19 ___217_g ___217_c 	%line{226} %argrw{"wrr"}
+	div		$tmp20 ___219_beta $tmp19 	%argrw{"wrr"}
+	functioncall	$const7 43 	%argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:215
+#     float sqr(float x) { return x*x; }
+	mul		$tmp18 $tmp20 $tmp20 	%line{215} %argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:226
+#         F *= sqr (beta / (g+c));
+	mul		___219_F ___219_F $tmp18 	%line{226} %argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:227
+#         Kr = F;
+	assign		Reflect ___219_F 	%line{227} %argrw{"wr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:228
+#         Kt = (1.0 - Kr) * eta*eta;
+	sub		$tmp21 $const1 Reflect 	%line{228} %argrw{"wrr"}
+	mul		$tmp22 $tmp21 eta 	%argrw{"wrr"}
+	mul		Refract $tmp22 eta 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:231
+#         T = refract(I, N, eta);
+	functioncall	$const10 65 	%line{231} %argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:207
+#     float IdotN = dot (I, N);
+	dot		___216_IdotN I Normal 	%line{207} %argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:208
+#     float k = 1 - eta*eta * (1 - IdotN*IdotN);
+	mul		$tmp23 eta eta 	%line{208} %argrw{"wrr"}
+	mul		$tmp24 ___216_IdotN ___216_IdotN 	%argrw{"wrr"}
+	sub		$tmp25 $const1 $tmp24 	%argrw{"wrr"}
+	mul		$tmp26 $tmp23 $tmp25 	%argrw{"wrr"}
+	sub		___216_k $const1 $tmp26 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:209
+#     return (k < 0) ? vector(0,0,0) : (eta*I - N * (eta*IdotN + sqrt(k)));
+	lt		$tmp27 ___216_k $const3 	%line{209} %argrw{"wrr"}
+	if		$tmp27 58 64 	%argrw{"r"}
+	assign		___221_T $const12 	%argrw{"wr"}
+	mul		$tmp28 eta I 	%argrw{"wrr"}
+	mul		$tmp29 eta ___216_IdotN 	%argrw{"wrr"}
+	sqrt		$tmp30 ___216_k 	%argrw{"wr"}
+	add		$tmp31 $tmp29 $tmp30 	%argrw{"wrr"}
+	mul		$tmp32 Normal $tmp31 	%argrw{"wrr"}
+	sub		___221_T $tmp28 $tmp32 	%argrw{"wrr"}
+	return
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:234
+#         Kr = 1.0;
+	assign		Reflect $const1 	%line{234} %argrw{"wr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:235
+#         Kt = 0.0;
+	assign		Refract $const8 	%line{235} %argrw{"wr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:236
+#         T = vector (0,0,0);
+	assign		___221_T $const12 	%line{236} %argrw{"wr"}
+	end

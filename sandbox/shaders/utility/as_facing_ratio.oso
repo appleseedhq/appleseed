@@ -1,0 +1,23 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.6.4dev
+shader as_facing_ratio	%meta{string,help,"Facing Ratio"} 
+param	vector	Normal	0 0 0		%read{2147483647,-1} %write{0,0} %initexpr
+param	vector	Incident	0 0 0		%read{2147483647,-1} %write{1,1} %initexpr
+oparam	float	FacingRatio	0		%read{2147483647,-1} %write{3,3}
+global	vector	I	%read{1,2} %write{2147483647,-1}
+global	normal	N	%read{0,2} %write{2147483647,-1}
+temp	float	$tmp1	%read{3,3} %write{2,2}
+code Normal
+# as_facing_ratio.osl:37
+#     vector Normal = N,
+	assign		Normal N 	%filename{"as_facing_ratio.osl"} %line{37} %argrw{"wr"}
+code Incident
+# as_facing_ratio.osl:38
+#     vector Incident = I,
+	assign		Incident I 	%filename{"as_facing_ratio.osl"} %line{38} %argrw{"wr"}
+code ___main___
+# as_facing_ratio.osl:42
+#     FacingRatio = fabs(dot(I, N));
+	dot		$tmp1 I N 	%filename{"as_facing_ratio.osl"} %line{42} %argrw{"wrr"}
+	fabs		FacingRatio $tmp1 	%argrw{"wr"}
+	end

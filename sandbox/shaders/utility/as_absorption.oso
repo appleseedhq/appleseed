@@ -1,0 +1,25 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.6.4dev
+shader as_absorption
+param	float	Absorption	1		%meta{string,help,"Absorption cross section"} %meta{float,min,0}  %read{3,3} %write{2147483647,-1}
+oparam	float	FloatOut	1		%read{2147483647,-1} %write{5,5}
+local	float	___299_length	%read{4,4} %write{2,2}
+temp	int	$tmp1	%read{1,1} %write{0,0}
+temp	int	$tmp2	%read{2147483647,-1} %write{2,2}
+const	string	$const1	"path:ray_length"		%read{2,2} %write{2147483647,-1}
+temp	float	$tmp3	%read{4,4} %write{3,3}
+temp	float	$tmp4	%read{5,5} %write{4,4}
+code ___main___
+# as_absorption.osl:39
+#     if(backfacing())
+	backfacing	$tmp1 	%filename{"as_absorption.osl"} %line{39} %argrw{"w"}
+	if		$tmp1 6 6 	%argrw{"r"}
+# as_absorption.osl:42
+#         getattribute("path:ray_length", length);
+	getattribute	$tmp2 $const1 ___299_length 	%line{42} %argrw{"wrw"}
+# as_absorption.osl:43
+#         FloatOut = exp(-Absorption * length);
+	neg		$tmp3 Absorption 	%line{43} %argrw{"wr"}
+	mul		$tmp4 $tmp3 ___299_length 	%argrw{"wrr"}
+	exp		FloatOut $tmp4 	%argrw{"wr"}
+	end

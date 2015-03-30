@@ -1,0 +1,472 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.6.4dev
+shader as_map3d
+param	vector	Point	0 0 0		%read{0,0} %write{2147483647,-1}
+param	vector	Center	0.5 0.5 0.5		%read{0,176} %write{2147483647,-1}
+param	vector	Scale	1 1 1		%read{1,1} %write{2147483647,-1}
+param	vector	Rotate	0 0 0		%read{2,121} %write{2147483647,-1}
+param	vector	Translate	0 0 0		%read{177,177} %write{2147483647,-1}
+oparam	vector	Pout	0 0 0		%read{2147483647,-1} %write{177,177}
+local	vector	___233_axis	%read{14,132} %write{11,127}
+local	float	___233_cosang	%read{13,170} %write{12,128}
+local	float	___233_sinang	%read{24,165} %write{12,128}
+local	float	___233_cosang1	%read{23,164} %write{13,129}
+local	float	___233_x	%read{17,165} %write{14,130}
+local	float	___233_y	%read{22,163} %write{15,131}
+local	float	___233_z	%read{24,168} %write{16,132}
+local	matrix	___233_M	%read{58,174} %write{56,172}
+local	point	p	%read{57,176} %write{1,175}
+temp	vector	$tmp1	%read{1,1} %write{0,0}
+const	int	$const1	0		%read{2,130} %write{2147483647,-1}
+temp	float	$tmp2	%read{3,3} %write{2,2}
+const	float	$const2	0		%read{3,172} %write{2147483647,-1}
+temp	int	$tmp3	%read{4,4} %write{3,3}
+temp	float	$tmp4	%read{12,12} %write{8,8}
+temp	float	$tmp5	%read{8,8} %write{5,5}
+const	string	$const3	"radians"		%read{6,122} %write{2147483647,-1}
+const	float	$const4	3.1415927		%read{7,123} %write{2147483647,-1}
+const	float	$const5	180		%read{7,123} %write{2147483647,-1}
+temp	float	$tmp6	%read{8,8} %write{7,7}
+const	point	$const6	0 0 0		%read{10,175} %write{2147483647,-1}
+const	point	$const7	1 0 0		%read{10,10} %write{2147483647,-1}
+const	string	$const8	"rotate"		%read{9,125} %write{2147483647,-1}
+temp	vector	$tmp9	%read{11,11} %write{10,10}
+const	float	$const9	1		%read{13,172} %write{2147483647,-1}
+const	int	$const10	1		%read{15,131} %write{2147483647,-1}
+const	int	$const11	2		%read{16,132} %write{2147483647,-1}
+temp	float	$tmp10	%read{21,21} %write{17,17}
+temp	float	$tmp11	%read{19,19} %write{18,18}
+temp	float	$tmp12	%read{20,20} %write{19,19}
+temp	float	$tmp13	%read{21,21} %write{20,20}
+temp	float	$tmp14	%read{56,56} %write{21,21}
+temp	float	$tmp15	%read{23,23} %write{22,22}
+temp	float	$tmp16	%read{25,25} %write{23,23}
+temp	float	$tmp17	%read{25,25} %write{24,24}
+temp	float	$tmp18	%read{56,56} %write{25,25}
+temp	float	$tmp19	%read{27,27} %write{26,26}
+temp	float	$tmp20	%read{29,29} %write{27,27}
+temp	float	$tmp21	%read{29,29} %write{28,28}
+temp	float	$tmp22	%read{56,56} %write{29,29}
+temp	float	$tmp23	%read{31,31} %write{30,30}
+temp	float	$tmp24	%read{33,33} %write{31,31}
+temp	float	$tmp25	%read{33,33} %write{32,32}
+temp	float	$tmp26	%read{56,56} %write{33,33}
+temp	float	$tmp27	%read{38,38} %write{34,34}
+temp	float	$tmp28	%read{36,36} %write{35,35}
+temp	float	$tmp29	%read{37,37} %write{36,36}
+temp	float	$tmp30	%read{38,38} %write{37,37}
+temp	float	$tmp31	%read{56,56} %write{38,38}
+temp	float	$tmp32	%read{40,40} %write{39,39}
+temp	float	$tmp33	%read{42,42} %write{40,40}
+temp	float	$tmp34	%read{42,42} %write{41,41}
+temp	float	$tmp35	%read{56,56} %write{42,42}
+temp	float	$tmp36	%read{44,44} %write{43,43}
+temp	float	$tmp37	%read{46,46} %write{44,44}
+temp	float	$tmp38	%read{46,46} %write{45,45}
+temp	float	$tmp39	%read{56,56} %write{46,46}
+temp	float	$tmp40	%read{48,48} %write{47,47}
+temp	float	$tmp41	%read{50,50} %write{48,48}
+temp	float	$tmp42	%read{50,50} %write{49,49}
+temp	float	$tmp43	%read{56,56} %write{50,50}
+temp	float	$tmp44	%read{55,55} %write{51,51}
+temp	float	$tmp45	%read{53,53} %write{52,52}
+temp	float	$tmp46	%read{54,54} %write{53,53}
+temp	float	$tmp47	%read{55,55} %write{54,54}
+temp	float	$tmp48	%read{56,56} %write{55,55}
+temp	vector	$tmp49	%read{59,59} %write{58,58}
+temp	vector	$tmp50	%read{58,58} %write{57,57}
+temp	float	$tmp51	%read{61,61} %write{60,60}
+temp	int	$tmp52	%read{62,62} %write{61,61}
+temp	float	$tmp53	%read{70,70} %write{66,66}
+temp	float	$tmp54	%read{66,66} %write{63,63}
+temp	float	$tmp55	%read{66,66} %write{65,65}
+const	point	$const12	0 1 0		%read{68,68} %write{2147483647,-1}
+temp	vector	$tmp58	%read{69,69} %write{68,68}
+temp	float	$tmp59	%read{79,79} %write{75,75}
+temp	float	$tmp60	%read{77,77} %write{76,76}
+temp	float	$tmp61	%read{78,78} %write{77,77}
+temp	float	$tmp62	%read{79,79} %write{78,78}
+temp	float	$tmp63	%read{114,114} %write{79,79}
+temp	float	$tmp64	%read{81,81} %write{80,80}
+temp	float	$tmp65	%read{83,83} %write{81,81}
+temp	float	$tmp66	%read{83,83} %write{82,82}
+temp	float	$tmp67	%read{114,114} %write{83,83}
+temp	float	$tmp68	%read{85,85} %write{84,84}
+temp	float	$tmp69	%read{87,87} %write{85,85}
+temp	float	$tmp70	%read{87,87} %write{86,86}
+temp	float	$tmp71	%read{114,114} %write{87,87}
+temp	float	$tmp72	%read{89,89} %write{88,88}
+temp	float	$tmp73	%read{91,91} %write{89,89}
+temp	float	$tmp74	%read{91,91} %write{90,90}
+temp	float	$tmp75	%read{114,114} %write{91,91}
+temp	float	$tmp76	%read{96,96} %write{92,92}
+temp	float	$tmp77	%read{94,94} %write{93,93}
+temp	float	$tmp78	%read{95,95} %write{94,94}
+temp	float	$tmp79	%read{96,96} %write{95,95}
+temp	float	$tmp80	%read{114,114} %write{96,96}
+temp	float	$tmp81	%read{98,98} %write{97,97}
+temp	float	$tmp82	%read{100,100} %write{98,98}
+temp	float	$tmp83	%read{100,100} %write{99,99}
+temp	float	$tmp84	%read{114,114} %write{100,100}
+temp	float	$tmp85	%read{102,102} %write{101,101}
+temp	float	$tmp86	%read{104,104} %write{102,102}
+temp	float	$tmp87	%read{104,104} %write{103,103}
+temp	float	$tmp88	%read{114,114} %write{104,104}
+temp	float	$tmp89	%read{106,106} %write{105,105}
+temp	float	$tmp90	%read{108,108} %write{106,106}
+temp	float	$tmp91	%read{108,108} %write{107,107}
+temp	float	$tmp92	%read{114,114} %write{108,108}
+temp	float	$tmp93	%read{113,113} %write{109,109}
+temp	float	$tmp94	%read{111,111} %write{110,110}
+temp	float	$tmp95	%read{112,112} %write{111,111}
+temp	float	$tmp96	%read{113,113} %write{112,112}
+temp	float	$tmp97	%read{114,114} %write{113,113}
+temp	vector	$tmp98	%read{117,117} %write{116,116}
+temp	vector	$tmp99	%read{116,116} %write{115,115}
+temp	float	$tmp100	%read{119,119} %write{118,118}
+temp	int	$tmp101	%read{120,120} %write{119,119}
+temp	float	$tmp102	%read{128,128} %write{124,124}
+temp	float	$tmp103	%read{124,124} %write{121,121}
+temp	float	$tmp104	%read{124,124} %write{123,123}
+const	point	$const13	0 0 1		%read{126,126} %write{2147483647,-1}
+temp	vector	$tmp107	%read{127,127} %write{126,126}
+temp	float	$tmp108	%read{137,137} %write{133,133}
+temp	float	$tmp109	%read{135,135} %write{134,134}
+temp	float	$tmp110	%read{136,136} %write{135,135}
+temp	float	$tmp111	%read{137,137} %write{136,136}
+temp	float	$tmp112	%read{172,172} %write{137,137}
+temp	float	$tmp113	%read{139,139} %write{138,138}
+temp	float	$tmp114	%read{141,141} %write{139,139}
+temp	float	$tmp115	%read{141,141} %write{140,140}
+temp	float	$tmp116	%read{172,172} %write{141,141}
+temp	float	$tmp117	%read{143,143} %write{142,142}
+temp	float	$tmp118	%read{145,145} %write{143,143}
+temp	float	$tmp119	%read{145,145} %write{144,144}
+temp	float	$tmp120	%read{172,172} %write{145,145}
+temp	float	$tmp121	%read{147,147} %write{146,146}
+temp	float	$tmp122	%read{149,149} %write{147,147}
+temp	float	$tmp123	%read{149,149} %write{148,148}
+temp	float	$tmp124	%read{172,172} %write{149,149}
+temp	float	$tmp125	%read{154,154} %write{150,150}
+temp	float	$tmp126	%read{152,152} %write{151,151}
+temp	float	$tmp127	%read{153,153} %write{152,152}
+temp	float	$tmp128	%read{154,154} %write{153,153}
+temp	float	$tmp129	%read{172,172} %write{154,154}
+temp	float	$tmp130	%read{156,156} %write{155,155}
+temp	float	$tmp131	%read{158,158} %write{156,156}
+temp	float	$tmp132	%read{158,158} %write{157,157}
+temp	float	$tmp133	%read{172,172} %write{158,158}
+temp	float	$tmp134	%read{160,160} %write{159,159}
+temp	float	$tmp135	%read{162,162} %write{160,160}
+temp	float	$tmp136	%read{162,162} %write{161,161}
+temp	float	$tmp137	%read{172,172} %write{162,162}
+temp	float	$tmp138	%read{164,164} %write{163,163}
+temp	float	$tmp139	%read{166,166} %write{164,164}
+temp	float	$tmp140	%read{166,166} %write{165,165}
+temp	float	$tmp141	%read{172,172} %write{166,166}
+temp	float	$tmp142	%read{171,171} %write{167,167}
+temp	float	$tmp143	%read{169,169} %write{168,168}
+temp	float	$tmp144	%read{170,170} %write{169,169}
+temp	float	$tmp145	%read{171,171} %write{170,170}
+temp	float	$tmp146	%read{172,172} %write{171,171}
+temp	vector	$tmp147	%read{175,175} %write{174,174}
+temp	vector	$tmp148	%read{174,174} %write{173,173}
+temp	point	$tmp149	%read{177,177} %write{176,176}
+code ___main___
+# as_map3d.osl:39
+#     point p = (Point - Center) * Scale;
+	sub		$tmp1 Point Center 	%filename{"as_map3d.osl"} %line{39} %argrw{"wrr"}
+	mul		p $tmp1 Scale 	%argrw{"wrr"}
+# as_map3d.osl:41
+#     if (Rotate[0] != 0.0)
+	compref		$tmp2 Rotate $const1 	%line{41} %argrw{"wrr"}
+	neq		$tmp3 $tmp2 $const2 	%argrw{"wrr"}
+	if		$tmp3 60 60 	%argrw{"r"}
+# as_map3d.osl:42
+#         p = rotate(p, radians(Rotate[0]), point(0), point(1, 0, 0));
+	compref		$tmp5 Rotate $const1 	%line{42} %argrw{"wrr"}
+	functioncall	$const3 9 	%argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:101
+# #define M_SQRT2    1.4142135623730950        /* sqrt(2) */
+	div		$tmp6 $const4 $const5 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{101} %argrw{"wrr"}
+	mul		$tmp4 $tmp5 $tmp6 	%argrw{"wrr"}
+# as_map3d.osl:42
+#         p = rotate(p, radians(Rotate[0]), point(0), point(1, 0, 0));
+	functioncall	$const8 60 	%filename{"as_map3d.osl"} %line{42} %argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:263
+#     if (g >= 0.0) {
+	sub		$tmp9 $const7 $const6 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{263} %argrw{"wrr"}
+	normalize	___233_axis $tmp9 	%argrw{"wr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:265
+#         float beta = g - c;
+	sincos		$tmp4 ___233_sinang ___233_cosang 	%line{265} %argrw{"rww"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:266
+#         float F = (c * (g+c) - 1.0) / (c * beta + 1.0);
+	sub		___233_cosang1 $const9 ___233_cosang 	%line{266} %argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:267
+#         F = 0.5 * (1.0 + sqr(F));
+	compref		___233_x ___233_axis $const1 	%line{267} %argrw{"wrr"}
+	compref		___233_y ___233_axis $const10 	%argrw{"wrr"}
+	compref		___233_z ___233_axis $const11 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:268
+#         F *= sqr (beta / (g+c));
+	mul		$tmp10 ___233_x ___233_x 	%line{268} %argrw{"wrr"}
+	mul		$tmp11 ___233_x ___233_x 	%argrw{"wrr"}
+	sub		$tmp12 $const9 $tmp11 	%argrw{"wrr"}
+	mul		$tmp13 $tmp12 ___233_cosang 	%argrw{"wrr"}
+	add		$tmp14 $tmp10 $tmp13 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:269
+#         Kr = F;
+	mul		$tmp15 ___233_x ___233_y 	%line{269} %argrw{"wrr"}
+	mul		$tmp16 $tmp15 ___233_cosang1 	%argrw{"wrr"}
+	mul		$tmp17 ___233_z ___233_sinang 	%argrw{"wrr"}
+	add		$tmp18 $tmp16 $tmp17 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:270
+#         Kt = (1.0 - Kr) * eta*eta;
+	mul		$tmp19 ___233_x ___233_z 	%line{270} %argrw{"wrr"}
+	mul		$tmp20 $tmp19 ___233_cosang1 	%argrw{"wrr"}
+	mul		$tmp21 ___233_y ___233_sinang 	%argrw{"wrr"}
+	sub		$tmp22 $tmp20 $tmp21 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:272
+#         // gives us the same result as if the shader-writer called refract()
+	mul		$tmp23 ___233_x ___233_y 	%line{272} %argrw{"wrr"}
+	mul		$tmp24 $tmp23 ___233_cosang1 	%argrw{"wrr"}
+	mul		$tmp25 ___233_z ___233_sinang 	%argrw{"wrr"}
+	sub		$tmp26 $tmp24 $tmp25 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:273
+#         T = refract(I, N, eta);
+	mul		$tmp27 ___233_y ___233_y 	%line{273} %argrw{"wrr"}
+	mul		$tmp28 ___233_y ___233_y 	%argrw{"wrr"}
+	sub		$tmp29 $const9 $tmp28 	%argrw{"wrr"}
+	mul		$tmp30 $tmp29 ___233_cosang 	%argrw{"wrr"}
+	add		$tmp31 $tmp27 $tmp30 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:274
+#     } else {
+	mul		$tmp32 ___233_y ___233_z 	%line{274} %argrw{"wrr"}
+	mul		$tmp33 $tmp32 ___233_cosang1 	%argrw{"wrr"}
+	mul		$tmp34 ___233_x ___233_sinang 	%argrw{"wrr"}
+	add		$tmp35 $tmp33 $tmp34 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:276
+#         Kr = 1.0;
+	mul		$tmp36 ___233_x ___233_z 	%line{276} %argrw{"wrr"}
+	mul		$tmp37 $tmp36 ___233_cosang1 	%argrw{"wrr"}
+	mul		$tmp38 ___233_y ___233_sinang 	%argrw{"wrr"}
+	add		$tmp39 $tmp37 $tmp38 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:277
+#         Kt = 0.0;
+	mul		$tmp40 ___233_y ___233_z 	%line{277} %argrw{"wrr"}
+	mul		$tmp41 $tmp40 ___233_cosang1 	%argrw{"wrr"}
+	mul		$tmp42 ___233_x ___233_sinang 	%argrw{"wrr"}
+	sub		$tmp43 $tmp41 $tmp42 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:278
+#         T = vector (0,0,0);
+	mul		$tmp44 ___233_z ___233_z 	%line{278} %argrw{"wrr"}
+	mul		$tmp45 ___233_z ___233_z 	%argrw{"wrr"}
+	sub		$tmp46 $const9 $tmp45 	%argrw{"wrr"}
+	mul		$tmp47 $tmp46 ___233_cosang 	%argrw{"wrr"}
+	add		$tmp48 $tmp44 $tmp47 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:280
+# }
+	matrix		___233_M $tmp14 $tmp18 $tmp22 $const2 $tmp26 $tmp31 $tmp35 $const2 $tmp39 $tmp43 $tmp48 $const2 $const2 $const2 $const2 $const9 	%line{280} %argrw{"wrrrrrrrrrrrrrrrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:281
+# 
+	sub		$tmp50 p $const6 	%line{281} %argrw{"wrr"}
+	transformv	$tmp49 ___233_M $tmp50 	%argrw{"wrr"}
+	add		p $tmp49 $const6 	%argrw{"wrr"}
+# as_map3d.osl:44
+#     if (Rotate[1] != 0.0)
+	compref		$tmp51 Rotate $const10 	%filename{"as_map3d.osl"} %line{44} %argrw{"wrr"}
+	neq		$tmp52 $tmp51 $const2 	%argrw{"wrr"}
+	if		$tmp52 118 118 	%argrw{"r"}
+# as_map3d.osl:45
+#         p = rotate(p, radians(Rotate[1]), point(0), point(0, 1, 0));
+	compref		$tmp54 Rotate $const10 	%line{45} %argrw{"wrr"}
+	functioncall	$const3 67 	%argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:101
+# #define M_LN10     2.3025850929940457        /* ln(10) */
+	div		$tmp55 $const4 $const5 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{101} %argrw{"wrr"}
+	mul		$tmp53 $tmp54 $tmp55 	%argrw{"wrr"}
+# as_map3d.osl:45
+#         p = rotate(p, radians(Rotate[1]), point(0), point(0, 1, 0));
+	functioncall	$const8 118 	%filename{"as_map3d.osl"} %line{45} %argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:263
+#         c = -c;
+	sub		$tmp58 $const12 $const6 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{263} %argrw{"wrr"}
+	normalize	___233_axis $tmp58 	%argrw{"wr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:265
+#     float g = 1.0 / sqr(eta) - 1.0 + c * c;
+	sincos		$tmp53 ___233_sinang ___233_cosang 	%line{265} %argrw{"rww"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:266
+#     if (g >= 0.0) {
+	sub		___233_cosang1 $const9 ___233_cosang 	%line{266} %argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:267
+#         g = sqrt (g);
+	compref		___233_x ___233_axis $const1 	%line{267} %argrw{"wrr"}
+	compref		___233_y ___233_axis $const10 	%argrw{"wrr"}
+	compref		___233_z ___233_axis $const11 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:268
+#         float beta = g - c;
+	mul		$tmp59 ___233_x ___233_x 	%line{268} %argrw{"wrr"}
+	mul		$tmp60 ___233_x ___233_x 	%argrw{"wrr"}
+	sub		$tmp61 $const9 $tmp60 	%argrw{"wrr"}
+	mul		$tmp62 $tmp61 ___233_cosang 	%argrw{"wrr"}
+	add		$tmp63 $tmp59 $tmp62 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:269
+#         float F = (c * (g+c) - 1.0) / (c * beta + 1.0);
+	mul		$tmp64 ___233_x ___233_y 	%line{269} %argrw{"wrr"}
+	mul		$tmp65 $tmp64 ___233_cosang1 	%argrw{"wrr"}
+	mul		$tmp66 ___233_z ___233_sinang 	%argrw{"wrr"}
+	add		$tmp67 $tmp65 $tmp66 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:270
+#         F = 0.5 * (1.0 + sqr(F));
+	mul		$tmp68 ___233_x ___233_z 	%line{270} %argrw{"wrr"}
+	mul		$tmp69 $tmp68 ___233_cosang1 	%argrw{"wrr"}
+	mul		$tmp70 ___233_y ___233_sinang 	%argrw{"wrr"}
+	sub		$tmp71 $tmp69 $tmp70 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:272
+#         Kr = F;
+	mul		$tmp72 ___233_x ___233_y 	%line{272} %argrw{"wrr"}
+	mul		$tmp73 $tmp72 ___233_cosang1 	%argrw{"wrr"}
+	mul		$tmp74 ___233_z ___233_sinang 	%argrw{"wrr"}
+	sub		$tmp75 $tmp73 $tmp74 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:273
+#         Kt = (1.0 - Kr) * eta*eta;
+	mul		$tmp76 ___233_y ___233_y 	%line{273} %argrw{"wrr"}
+	mul		$tmp77 ___233_y ___233_y 	%argrw{"wrr"}
+	sub		$tmp78 $const9 $tmp77 	%argrw{"wrr"}
+	mul		$tmp79 $tmp78 ___233_cosang 	%argrw{"wrr"}
+	add		$tmp80 $tmp76 $tmp79 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:274
+#         // OPT: the following recomputes some of the above values, but it
+	mul		$tmp81 ___233_y ___233_z 	%line{274} %argrw{"wrr"}
+	mul		$tmp82 $tmp81 ___233_cosang1 	%argrw{"wrr"}
+	mul		$tmp83 ___233_x ___233_sinang 	%argrw{"wrr"}
+	add		$tmp84 $tmp82 $tmp83 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:276
+#         T = refract(I, N, eta);
+	mul		$tmp85 ___233_x ___233_z 	%line{276} %argrw{"wrr"}
+	mul		$tmp86 $tmp85 ___233_cosang1 	%argrw{"wrr"}
+	mul		$tmp87 ___233_y ___233_sinang 	%argrw{"wrr"}
+	add		$tmp88 $tmp86 $tmp87 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:277
+#     } else {
+	mul		$tmp89 ___233_y ___233_z 	%line{277} %argrw{"wrr"}
+	mul		$tmp90 $tmp89 ___233_cosang1 	%argrw{"wrr"}
+	mul		$tmp91 ___233_x ___233_sinang 	%argrw{"wrr"}
+	sub		$tmp92 $tmp90 $tmp91 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:278
+#         // total internal reflection
+	mul		$tmp93 ___233_z ___233_z 	%line{278} %argrw{"wrr"}
+	mul		$tmp94 ___233_z ___233_z 	%argrw{"wrr"}
+	sub		$tmp95 $const9 $tmp94 	%argrw{"wrr"}
+	mul		$tmp96 $tmp95 ___233_cosang 	%argrw{"wrr"}
+	add		$tmp97 $tmp93 $tmp96 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:280
+#         Kt = 0.0;
+	matrix		___233_M $tmp63 $tmp67 $tmp71 $const2 $tmp75 $tmp80 $tmp84 $const2 $tmp88 $tmp92 $tmp97 $const2 $const2 $const2 $const2 $const9 	%line{280} %argrw{"wrrrrrrrrrrrrrrrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:281
+#         T = vector (0,0,0);
+	sub		$tmp99 p $const6 	%line{281} %argrw{"wrr"}
+	transformv	$tmp98 ___233_M $tmp99 	%argrw{"wrr"}
+	add		p $tmp98 $const6 	%argrw{"wrr"}
+# as_map3d.osl:47
+#     if (Rotate[2] != 0.0)
+	compref		$tmp100 Rotate $const11 	%filename{"as_map3d.osl"} %line{47} %argrw{"wrr"}
+	neq		$tmp101 $tmp100 $const2 	%argrw{"wrr"}
+	if		$tmp101 176 176 	%argrw{"r"}
+# as_map3d.osl:48
+#         p = rotate(p, radians(Rotate[2]), point(0), point(0, 0, 1));
+	compref		$tmp103 Rotate $const11 	%line{48} %argrw{"wrr"}
+	functioncall	$const3 125 	%argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:101
+# #define M_2_SQRTPI 1.1283791670955126        /* 2/sqrt(pi) */
+	div		$tmp104 $const4 $const5 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{101} %argrw{"wrr"}
+	mul		$tmp102 $tmp103 $tmp104 	%argrw{"wrr"}
+# as_map3d.osl:48
+#         p = rotate(p, radians(Rotate[2]), point(0), point(0, 0, 1));
+	functioncall	$const8 176 	%filename{"as_map3d.osl"} %line{48} %argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:263
+#     float sqr(float x) { return x*x; }
+	sub		$tmp107 $const13 $const6 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{263} %argrw{"wrr"}
+	normalize	___233_axis $tmp107 	%argrw{"wr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:265
+#     if (c < 0)
+	sincos		$tmp102 ___233_sinang ___233_cosang 	%line{265} %argrw{"rww"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:266
+#         c = -c;
+	sub		___233_cosang1 $const9 ___233_cosang 	%line{266} %argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:267
+#     R = reflect(I, N);
+	compref		___233_x ___233_axis $const1 	%line{267} %argrw{"wrr"}
+	compref		___233_y ___233_axis $const10 	%argrw{"wrr"}
+	compref		___233_z ___233_axis $const11 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:268
+#     float g = 1.0 / sqr(eta) - 1.0 + c * c;
+	mul		$tmp108 ___233_x ___233_x 	%line{268} %argrw{"wrr"}
+	mul		$tmp109 ___233_x ___233_x 	%argrw{"wrr"}
+	sub		$tmp110 $const9 $tmp109 	%argrw{"wrr"}
+	mul		$tmp111 $tmp110 ___233_cosang 	%argrw{"wrr"}
+	add		$tmp112 $tmp108 $tmp111 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:269
+#     if (g >= 0.0) {
+	mul		$tmp113 ___233_x ___233_y 	%line{269} %argrw{"wrr"}
+	mul		$tmp114 $tmp113 ___233_cosang1 	%argrw{"wrr"}
+	mul		$tmp115 ___233_z ___233_sinang 	%argrw{"wrr"}
+	add		$tmp116 $tmp114 $tmp115 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:270
+#         g = sqrt (g);
+	mul		$tmp117 ___233_x ___233_z 	%line{270} %argrw{"wrr"}
+	mul		$tmp118 $tmp117 ___233_cosang1 	%argrw{"wrr"}
+	mul		$tmp119 ___233_y ___233_sinang 	%argrw{"wrr"}
+	sub		$tmp120 $tmp118 $tmp119 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:272
+#         float F = (c * (g+c) - 1.0) / (c * beta + 1.0);
+	mul		$tmp121 ___233_x ___233_y 	%line{272} %argrw{"wrr"}
+	mul		$tmp122 $tmp121 ___233_cosang1 	%argrw{"wrr"}
+	mul		$tmp123 ___233_z ___233_sinang 	%argrw{"wrr"}
+	sub		$tmp124 $tmp122 $tmp123 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:273
+#         F = 0.5 * (1.0 + sqr(F));
+	mul		$tmp125 ___233_y ___233_y 	%line{273} %argrw{"wrr"}
+	mul		$tmp126 ___233_y ___233_y 	%argrw{"wrr"}
+	sub		$tmp127 $const9 $tmp126 	%argrw{"wrr"}
+	mul		$tmp128 $tmp127 ___233_cosang 	%argrw{"wrr"}
+	add		$tmp129 $tmp125 $tmp128 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:274
+#         F *= sqr (beta / (g+c));
+	mul		$tmp130 ___233_y ___233_z 	%line{274} %argrw{"wrr"}
+	mul		$tmp131 $tmp130 ___233_cosang1 	%argrw{"wrr"}
+	mul		$tmp132 ___233_x ___233_sinang 	%argrw{"wrr"}
+	add		$tmp133 $tmp131 $tmp132 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:276
+#         Kt = (1.0 - Kr) * eta*eta;
+	mul		$tmp134 ___233_x ___233_z 	%line{276} %argrw{"wrr"}
+	mul		$tmp135 $tmp134 ___233_cosang1 	%argrw{"wrr"}
+	mul		$tmp136 ___233_y ___233_sinang 	%argrw{"wrr"}
+	add		$tmp137 $tmp135 $tmp136 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:277
+#         // OPT: the following recomputes some of the above values, but it
+	mul		$tmp138 ___233_y ___233_z 	%line{277} %argrw{"wrr"}
+	mul		$tmp139 $tmp138 ___233_cosang1 	%argrw{"wrr"}
+	mul		$tmp140 ___233_x ___233_sinang 	%argrw{"wrr"}
+	sub		$tmp141 $tmp139 $tmp140 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:278
+#         // gives us the same result as if the shader-writer called refract()
+	mul		$tmp142 ___233_z ___233_z 	%line{278} %argrw{"wrr"}
+	mul		$tmp143 ___233_z ___233_z 	%argrw{"wrr"}
+	sub		$tmp144 $const9 $tmp143 	%argrw{"wrr"}
+	mul		$tmp145 $tmp144 ___233_cosang 	%argrw{"wrr"}
+	add		$tmp146 $tmp142 $tmp145 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:280
+#     } else {
+	matrix		___233_M $tmp112 $tmp116 $tmp120 $const2 $tmp124 $tmp129 $tmp133 $const2 $tmp137 $tmp141 $tmp146 $const2 $const2 $const2 $const2 $const9 	%line{280} %argrw{"wrrrrrrrrrrrrrrrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:281
+#         // total internal reflection
+	sub		$tmp148 p $const6 	%line{281} %argrw{"wrr"}
+	transformv	$tmp147 ___233_M $tmp148 	%argrw{"wrr"}
+	add		p $tmp147 $const6 	%argrw{"wrr"}
+# as_map3d.osl:50
+#     Pout = p + Center + Translate;
+	add		$tmp149 p Center 	%filename{"as_map3d.osl"} %line{50} %argrw{"wrr"}
+	add		Pout $tmp149 Translate 	%argrw{"wrr"}
+	end

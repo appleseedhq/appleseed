@@ -1,0 +1,21 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.6.4dev
+shader as_vector_binormal
+param	vector	Normal	0 0 0		%read{2,2} %write{0,0} %initexpr
+param	vector	Tangent	0 0 0		%read{2,2} %write{1,1} %initexpr
+oparam	vector	Binormal	0 0 0		%read{2147483647,-1} %write{2,2}
+global	normal	N	%read{0,0} %write{2147483647,-1}
+global	vector	dPdu	%read{1,1} %write{2147483647,-1}
+code Normal
+# as_vector_binormal.osl:33
+#     vector Normal = N,
+	assign		Normal N 	%filename{"as_vector_binormal.osl"} %line{33} %argrw{"wr"}
+code Tangent
+# as_vector_binormal.osl:34
+#     vector Tangent = APPLESEED_DEFAULT_TANGENT,
+	normalize	Tangent dPdu 	%filename{"as_vector_binormal.osl"} %line{34} %argrw{"wr"}
+code ___main___
+# as_vector_binormal.osl:38
+#     Binormal = cross(Tangent, Normal);
+	cross		Binormal Tangent Normal 	%filename{"as_vector_binormal.osl"} %line{38} %argrw{"wrr"}
+	end

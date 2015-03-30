@@ -1,0 +1,31 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.6.4dev
+shader as_transform
+param	vector	In	0 0 0		%read{2,6} %write{2147483647,-1}
+param	string	InType	"Point"		%meta{string,widget,"popup"} %meta{string,options,"Point|Vector|Normal"}  %read{0,3} %write{2147483647,-1}
+param	string	FromSpace	"world"		%meta{string,widget,"popup"} %meta{string,options,"object|world|camera"}  %read{2,6} %write{2147483647,-1}
+param	string	ToSpace	"object"		%meta{string,widget,"popup"} %meta{string,options,"object|world|camera"}  %read{2,6} %write{2147483647,-1}
+oparam	vector	Out	0 0 0		%read{2147483647,-1} %write{2,6}
+const	string	$const1	"Point"		%read{0,0} %write{2147483647,-1}
+temp	int	$tmp1	%read{1,1} %write{0,0}
+const	string	$const2	"Normal"		%read{3,3} %write{2147483647,-1}
+temp	int	$tmp2	%read{4,4} %write{3,3}
+code ___main___
+# as_transform.osl:54
+#     if (InType == "Point")
+	eq		$tmp1 InType $const1 	%filename{"as_transform.osl"} %line{54} %argrw{"wrr"}
+	if		$tmp1 3 7 	%argrw{"r"}
+# as_transform.osl:55
+#         Out = transform(FromSpace, ToSpace, (point) In);
+	transform	Out FromSpace ToSpace In 	%line{55} %argrw{"wrrr"}
+# as_transform.osl:56
+#     else if (InType == "Normal")
+	eq		$tmp2 InType $const2 	%line{56} %argrw{"wrr"}
+	if		$tmp2 6 7 	%argrw{"r"}
+# as_transform.osl:57
+#         Out = transform(FromSpace, ToSpace, (normal) In);
+	transformn	Out FromSpace ToSpace In 	%line{57} %argrw{"wrrr"}
+# as_transform.osl:59
+#         Out = transform(FromSpace, ToSpace, In);
+	transformv	Out FromSpace ToSpace In 	%line{59} %argrw{"wrrr"}
+	end

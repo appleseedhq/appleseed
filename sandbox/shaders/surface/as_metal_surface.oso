@@ -1,0 +1,363 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.6.4dev
+shader as_metal_surface	%meta{string,help,"Metal surface shader"} 
+param	vector	Normal	0 0 0		%read{63,105} %write{0,0} %initexpr
+param	vector	Tangent	0 0 0		%read{105,105} %write{1,1} %initexpr
+param	float	Specular	1		%meta{string,help,"Reflectivity"} %meta{float,min,0} %meta{float,max,1}  %read{88,106} %write{2147483647,-1}
+param	string	Preset	"Chrome"		%meta{string,help,"Fresnel presets"} %meta{string,widget,"popup"} %meta{string,options,"Aluminium|Chrome|Copper|Gold|Platinum|Silver|Titanium|Tungsten|Custom"}  %read{2,34} %write{2147483647,-1}
+param	color	Reflectivity	0.91399997 0.921 0.921		%read{4,4} %write{2147483647,-1}
+param	color	EdgeTint	0.97100002 0.97899997 0.98900002		%read{5,5} %write{2147483647,-1}
+param	string	Distribution	"sharp"		%meta{string,help,"Microfacet distribution to use: Specular, Beckmann or GGX."} %meta{string,widget,"popup"} %meta{string,options,"sharp|beckmann|ggx"}  %read{85,105} %write{2147483647,-1}
+param	float	Roughness	0.1		%meta{string,help,"Roughness"} %meta{float,min,0.001} %meta{float,max,1}  %read{95,95} %write{2147483647,-1}
+param	float	Anisotropy	0		%meta{string,help,"Anisotropy"} %meta{float,min,-1} %meta{float,max,1}  %read{91,100} %write{2147483647,-1}
+oparam	closure color	BRDF			%read{2147483647,-1} %write{89,107}
+global	vector	I	%read{63,63} %write{2147483647,-1}
+global	normal	N	%read{0,0} %write{2147483647,-1}
+global	vector	dPdu	%read{1,1} %write{2147483647,-1}
+local	float	___299_CosTheta	%read{68,70} %write{64,64}
+local	color	___299_n2	%read{67,67} %write{65,65}
+local	color	___299_k2	%read{67,67} %write{66,66}
+local	color	___299_N2PlusK2	%read{71,80} %write{67,67}
+local	float	___299_CosTheta2	%read{71,81} %write{68,68}
+local	color	___299_NCosTheta	%read{72,80} %write{70,70}
+local	color	___299_RPar	%read{83,83} %write{77,77}
+local	color	___299_RPerp	%read{83,83} %write{82,82}
+local	color	___300_rr	%read{42,59} %write{41,41}
+local	color	___300_NMin	%read{50,50} %write{44,44}
+local	color	___300_NMax	%read{50,50} %write{49,49}
+local	color	___300_n	%read{51,69} %write{50,50}
+local	color	___300_DoubleNPlusOne	%read{57,57} %write{53,53}
+local	color	___300_DoubleNMinusOne	%read{58,58} %write{56,56}
+local	color	___300_k	%read{66,66} %write{61,61}
+local	float	___301_aspect	%read{96,98} %write{94,94}
+local	float	___301_r2	%read{96,98} %write{95,95}
+local	float	___302_tmp	%read{104,104} %write{102,102}
+local	color	r	%read{40,40} %write{4,36}
+local	color	g	%read{50,50} %write{5,37}
+local	color	Kf	%read{88,106} %write{84,84}
+local	float	___312_ax	%read{102,105} %write{97,103}
+local	float	___312_ay	%read{103,105} %write{99,104}
+const	string	$const1	"Custom"		%read{2,2} %write{2147483647,-1}
+temp	int	$tmp1	%read{3,3} %write{2,2}
+const	string	$const2	"Aluminium"		%read{6,6} %write{2147483647,-1}
+temp	int	$tmp2	%read{7,7} %write{6,6}
+const	color	$const3	0.91399997 0.921 0.921		%read{8,8} %write{2147483647,-1}
+const	color	$const4	0.97100002 0.97899997 0.98900002		%read{9,9} %write{2147483647,-1}
+const	string	$const5	"Chrome"		%read{10,10} %write{2147483647,-1}
+temp	int	$tmp3	%read{11,11} %write{10,10}
+const	color	$const6	0.54799998 0.54900002 0.56999999		%read{12,12} %write{2147483647,-1}
+const	color	$const7	0.579 0.59799999 0.62		%read{13,13} %write{2147483647,-1}
+const	string	$const8	"Copper"		%read{14,14} %write{2147483647,-1}
+temp	int	$tmp4	%read{15,15} %write{14,14}
+const	color	$const9	0.98500001 0.64899999 0.546		%read{16,16} %write{2147483647,-1}
+const	color	$const10	0.99599999 0.91799998 0.85900003		%read{17,17} %write{2147483647,-1}
+const	string	$const11	"Gold"		%read{18,18} %write{2147483647,-1}
+temp	int	$tmp5	%read{19,19} %write{18,18}
+const	color	$const12	0.99000001 0.791587 0.34650001		%read{20,20} %write{2147483647,-1}
+const	color	$const13	0.99000001 0.98009998 0.792		%read{21,21} %write{2147483647,-1}
+const	string	$const14	"Platinum"		%read{22,22} %write{2147483647,-1}
+temp	int	$tmp6	%read{23,23} %write{22,22}
+const	color	$const15	0.67900002 0.64200002 0.58200002		%read{24,24} %write{2147483647,-1}
+const	color	$const16	0.78500003 0.78899997 0.78299999		%read{25,25} %write{2147483647,-1}
+const	string	$const17	"Silver"		%read{26,26} %write{2147483647,-1}
+temp	int	$tmp7	%read{27,27} %write{26,26}
+const	color	$const18	0.97000003 0.95910901 0.92440999		%read{28,28} %write{2147483647,-1}
+const	color	$const19	0.99900001 0.99900001 0.99800003		%read{29,29} %write{2147483647,-1}
+const	string	$const20	"Titanium"		%read{30,30} %write{2147483647,-1}
+temp	int	$tmp8	%read{31,31} %write{30,30}
+const	color	$const21	0.55000001 0.501692 0.44769999		%read{32,32} %write{2147483647,-1}
+const	color	$const22	0.68911898 0.68329799 0.69300002		%read{33,33} %write{2147483647,-1}
+const	string	$const23	"Tungsten"		%read{34,34} %write{2147483647,-1}
+temp	int	$tmp9	%read{35,35} %write{34,34}
+const	color	$const24	0.50400001 0.49513 0.47577599		%read{36,36} %write{2147483647,-1}
+const	color	$const25	0.403 0.419 0.42199999		%read{37,37} %write{2147483647,-1}
+const	string	$const26	"artist_friendly_fresnel_conductor"		%read{38,38} %write{2147483647,-1}
+const	color	$const27	0 0 0		%read{41,41} %write{2147483647,-1}
+const	color	$const28	0.99000001 0.99000001 0.99000001		%read{40,40} %write{2147483647,-1}
+const	string	$const29	"clamp"		%read{39,39} %write{2147483647,-1}
+temp	color	$tmp12	%read{41,41} %write{40,40}
+const	color	$const30	1 1 1		%read{42,59} %write{2147483647,-1}
+temp	color	$tmp14	%read{44,44} %write{42,42}
+temp	color	$tmp16	%read{44,44} %write{43,43}
+temp	color	$tmp18	%read{46,46} %write{45,45}
+temp	color	$tmp19	%read{49,49} %write{46,46}
+temp	color	$tmp21	%read{48,48} %write{47,47}
+temp	color	$tmp22	%read{49,49} %write{48,48}
+temp	color	$tmp24	%read{53,53} %write{51,51}
+temp	color	$tmp26	%read{53,53} %write{52,52}
+temp	color	$tmp28	%read{56,56} %write{54,54}
+temp	color	$tmp30	%read{56,56} %write{55,55}
+temp	color	$tmp31	%read{58,58} %write{57,57}
+temp	color	$tmp32	%read{60,60} %write{58,58}
+temp	color	$tmp34	%read{60,60} %write{59,59}
+temp	color	$tmp35	%read{61,61} %write{60,60}
+const	string	$const31	"fresnel_conductor"		%read{62,62} %write{2147483647,-1}
+temp	float	$tmp36	%read{64,64} %write{63,63}
+const	float	$const32	2		%read{69,84} %write{2147483647,-1}
+temp	color	$tmp37	%read{70,70} %write{69,69}
+temp	color	$tmp38	%read{72,72} %write{71,71}
+temp	color	$tmp39	%read{73,73} %write{72,72}
+temp	color	$tmp40	%read{77,77} %write{73,73}
+const	float	$const34	1		%read{73,105} %write{2147483647,-1}
+temp	color	$tmp41	%read{75,75} %write{74,74}
+temp	color	$tmp42	%read{76,76} %write{75,75}
+temp	color	$tmp43	%read{77,77} %write{76,76}
+temp	color	$tmp44	%read{79,79} %write{78,78}
+temp	color	$tmp45	%read{82,82} %write{79,79}
+temp	color	$tmp46	%read{81,81} %write{80,80}
+temp	color	$tmp47	%read{82,82} %write{81,81}
+temp	color	$tmp48	%read{84,84} %write{83,83}
+const	string	$const35	"sharp"		%read{85,85} %write{2147483647,-1}
+temp	int	$tmp49	%read{86,86} %write{85,85}
+temp	closure color	$tmp50	%read{89,89} %write{87,87}
+const	string	$const36	"reflection"		%read{87,87} %write{2147483647,-1}
+temp	color	$tmp51	%read{89,89} %write{88,88}
+const	string	$const37	"mdf_roughness"		%read{90,90} %write{2147483647,-1}
+temp	float	$tmp52	%read{92,92} %write{91,91}
+const	float	$const38	0.89999998		%read{92,92} %write{2147483647,-1}
+temp	float	$tmp53	%read{93,93} %write{92,92}
+temp	float	$tmp54	%read{94,94} %write{93,93}
+const	float	$const39	0.001		%read{97,99} %write{2147483647,-1}
+temp	float	$tmp55	%read{97,97} %write{96,96}
+temp	float	$tmp56	%read{99,99} %write{98,98}
+const	int	$const40	0		%read{100,105} %write{2147483647,-1}
+temp	int	$tmp57	%read{101,101} %write{100,100}
+temp	closure color	$tmp58	%read{107,107} %write{105,105}
+const	string	$const41	"microfacet"		%read{105,105} %write{2147483647,-1}
+temp	color	$tmp59	%read{107,107} %write{106,106}
+code Normal
+# as_metal_surface.osl:39
+#     vector Normal = N,
+	assign		Normal N 	%filename{"as_metal_surface.osl"} %line{39} %argrw{"wr"}
+code Tangent
+# as_metal_surface.osl:40
+#     vector Tangent = APPLESEED_DEFAULT_TANGENT,
+	normalize	Tangent dPdu 	%filename{"as_metal_surface.osl"} %line{40} %argrw{"wr"}
+code ___main___
+# as_metal_surface.osl:79
+#     if (Preset == "Custom")
+	eq		$tmp1 Preset $const1 	%filename{"as_metal_surface.osl"} %line{79} %argrw{"wrr"}
+	if		$tmp1 6 38 	%argrw{"r"}
+# as_metal_surface.osl:81
+#         r = Reflectivity;
+	assign		r Reflectivity 	%line{81} %argrw{"wr"}
+# as_metal_surface.osl:82
+#         g = EdgeTint;
+	assign		g EdgeTint 	%line{82} %argrw{"wr"}
+# as_metal_surface.osl:84
+#     else if (Preset == "Aluminium")
+	eq		$tmp2 Preset $const2 	%line{84} %argrw{"wrr"}
+	if		$tmp2 10 38 	%argrw{"r"}
+# as_metal_surface.osl:86
+#         r = APPLESEED_PRESET_AL_R;
+	assign		r $const3 	%line{86} %argrw{"wr"}
+# as_metal_surface.osl:87
+#         g = APPLESEED_PRESET_AL_G;
+	assign		g $const4 	%line{87} %argrw{"wr"}
+# as_metal_surface.osl:89
+#     else if (Preset == "Chrome")
+	eq		$tmp3 Preset $const5 	%line{89} %argrw{"wrr"}
+	if		$tmp3 14 38 	%argrw{"r"}
+# as_metal_surface.osl:91
+#         r = APPLESEED_PRESET_CR_R;
+	assign		r $const6 	%line{91} %argrw{"wr"}
+# as_metal_surface.osl:92
+#         g = APPLESEED_PRESET_CR_G;
+	assign		g $const7 	%line{92} %argrw{"wr"}
+# as_metal_surface.osl:94
+#     else if (Preset == "Copper")
+	eq		$tmp4 Preset $const8 	%line{94} %argrw{"wrr"}
+	if		$tmp4 18 38 	%argrw{"r"}
+# as_metal_surface.osl:96
+#         r = APPLESEED_PRESET_CU_R;
+	assign		r $const9 	%line{96} %argrw{"wr"}
+# as_metal_surface.osl:97
+#         g = APPLESEED_PRESET_CU_G;
+	assign		g $const10 	%line{97} %argrw{"wr"}
+# as_metal_surface.osl:99
+#     else if (Preset == "Gold")
+	eq		$tmp5 Preset $const11 	%line{99} %argrw{"wrr"}
+	if		$tmp5 22 38 	%argrw{"r"}
+# as_metal_surface.osl:101
+#         r = APPLESEED_PRESET_AU_R;
+	assign		r $const12 	%line{101} %argrw{"wr"}
+# as_metal_surface.osl:102
+#         g = APPLESEED_PRESET_AU_G;
+	assign		g $const13 	%line{102} %argrw{"wr"}
+# as_metal_surface.osl:104
+#     else if (Preset == "Platinum")
+	eq		$tmp6 Preset $const14 	%line{104} %argrw{"wrr"}
+	if		$tmp6 26 38 	%argrw{"r"}
+# as_metal_surface.osl:106
+#         r = APPLESEED_PRESET_PT_R;
+	assign		r $const15 	%line{106} %argrw{"wr"}
+# as_metal_surface.osl:107
+#         g = APPLESEED_PRESET_PT_G;
+	assign		g $const16 	%line{107} %argrw{"wr"}
+# as_metal_surface.osl:109
+#     else if (Preset == "Silver")
+	eq		$tmp7 Preset $const17 	%line{109} %argrw{"wrr"}
+	if		$tmp7 30 38 	%argrw{"r"}
+# as_metal_surface.osl:111
+#         r = APPLESEED_PRESET_AG_R;
+	assign		r $const18 	%line{111} %argrw{"wr"}
+# as_metal_surface.osl:112
+#         g = APPLESEED_PRESET_AG_G;
+	assign		g $const19 	%line{112} %argrw{"wr"}
+# as_metal_surface.osl:114
+#     else if (Preset == "Titanium")
+	eq		$tmp8 Preset $const20 	%line{114} %argrw{"wrr"}
+	if		$tmp8 34 38 	%argrw{"r"}
+# as_metal_surface.osl:116
+#         r = APPLESEED_PRESET_TI_R;
+	assign		r $const21 	%line{116} %argrw{"wr"}
+# as_metal_surface.osl:117
+#         g = APPLESEED_PRESET_TI_G;
+	assign		g $const22 	%line{117} %argrw{"wr"}
+# as_metal_surface.osl:119
+#     else if (Preset == "Tungsten")
+	eq		$tmp9 Preset $const23 	%line{119} %argrw{"wrr"}
+	if		$tmp9 38 38 	%argrw{"r"}
+# as_metal_surface.osl:121
+#         r = APPLESEED_PRESET_W_R;
+	assign		r $const24 	%line{121} %argrw{"wr"}
+# as_metal_surface.osl:122
+#         g = APPLESEED_PRESET_W_G;
+	assign		g $const25 	%line{122} %argrw{"wr"}
+# as_metal_surface.osl:125
+#     color Kf = artist_friendly_fresnel_conductor(I, Normal, r, g);
+	functioncall	$const26 85 	%line{125} %argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/fresnel.h:62
+#     color rr = clamp(r, color(0.0), color(0.99));
+	functioncall	$const29 42 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/fresnel.h"} %line{62} %argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h:156
+# point  degrees (point x)  { return x*(180.0/M_PI); }
+	min		$tmp12 r $const28 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/stdosl.h"} %line{156} %argrw{"wrr"}
+	max		___300_rr $tmp12 $const27 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/fresnel.h:63
+#     color NMin = (color(1.0) - rr) / (color(1.0) + rr);
+	sub		$tmp14 $const30 ___300_rr 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/fresnel.h"} %line{63} %argrw{"wrr"}
+	add		$tmp16 $const30 ___300_rr 	%argrw{"wrr"}
+	div		___300_NMin $tmp14 $tmp16 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/fresnel.h:64
+#     color NMax = (color(1.0) + sqrt(rr)) / (color(1.0) - sqrt(rr));
+	sqrt		$tmp18 ___300_rr 	%line{64} %argrw{"wr"}
+	add		$tmp19 $const30 $tmp18 	%argrw{"wrr"}
+	sqrt		$tmp21 ___300_rr 	%argrw{"wr"}
+	sub		$tmp22 $const30 $tmp21 	%argrw{"wrr"}
+	div		___300_NMax $tmp19 $tmp22 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/fresnel.h:65
+#     color n = mix(NMax, NMin, g);
+	mix		___300_n ___300_NMax ___300_NMin g 	%line{65} %argrw{"wrrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/fresnel.h:67
+#     color DoubleNPlusOne  = (n + color(1.0)) * (n + color(1.0));
+	add		$tmp24 ___300_n $const30 	%line{67} %argrw{"wrr"}
+	add		$tmp26 ___300_n $const30 	%argrw{"wrr"}
+	mul		___300_DoubleNPlusOne $tmp24 $tmp26 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/fresnel.h:68
+#     color DoubleNMinusOne = (n - color(1.0)) * (n - color(1.0));
+	sub		$tmp28 ___300_n $const30 	%line{68} %argrw{"wrr"}
+	sub		$tmp30 ___300_n $const30 	%argrw{"wrr"}
+	mul		___300_DoubleNMinusOne $tmp28 $tmp30 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/fresnel.h:70
+#     color k = sqrt((DoubleNPlusOne * rr - DoubleNMinusOne) / (color(1.0) - rr));
+	mul		$tmp31 ___300_DoubleNPlusOne ___300_rr 	%line{70} %argrw{"wrr"}
+	sub		$tmp32 $tmp31 ___300_DoubleNMinusOne 	%argrw{"wrr"}
+	sub		$tmp34 $const30 ___300_rr 	%argrw{"wrr"}
+	div		$tmp35 $tmp32 $tmp34 	%argrw{"wrr"}
+	sqrt		___300_k $tmp35 	%argrw{"wr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/fresnel.h:72
+#     return fresnel_conductor(I, N, n, k);
+	functioncall	$const31 85 	%line{72} %argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/fresnel.h:34
+#     float CosTheta = abs(dot(I, N));
+	dot		$tmp36 I Normal 	%line{34} %argrw{"wrr"}
+	abs		___299_CosTheta $tmp36 	%argrw{"wr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/fresnel.h:36
+#     color n2 = n * n;
+	mul		___299_n2 ___300_n ___300_n 	%line{36} %argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/fresnel.h:37
+#     color k2 = k * k;
+	mul		___299_k2 ___300_k ___300_k 	%line{37} %argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/fresnel.h:38
+#     color N2PlusK2 = n2 + k2;
+	add		___299_N2PlusK2 ___299_n2 ___299_k2 	%line{38} %argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/fresnel.h:40
+#     float CosTheta2 = CosTheta * CosTheta;
+	mul		___299_CosTheta2 ___299_CosTheta ___299_CosTheta 	%line{40} %argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/fresnel.h:41
+#     color NCosTheta = n * 2.0 * CosTheta;
+	mul		$tmp37 ___300_n $const32 	%line{41} %argrw{"wrr"}
+	mul		___299_NCosTheta $tmp37 ___299_CosTheta 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/fresnel.h:44
+#         ((N2PlusK2 * CosTheta2) - NCosTheta + 1) /
+	mul		$tmp38 ___299_N2PlusK2 ___299_CosTheta2 	%line{44} %argrw{"wrr"}
+	sub		$tmp39 $tmp38 ___299_NCosTheta 	%argrw{"wrr"}
+	add		$tmp40 $tmp39 $const34 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/fresnel.h:45
+#         ((N2PlusK2 * CosTheta2) + NCosTheta + 1);
+	mul		$tmp41 ___299_N2PlusK2 ___299_CosTheta2 	%line{45} %argrw{"wrr"}
+	add		$tmp42 $tmp41 ___299_NCosTheta 	%argrw{"wrr"}
+	add		$tmp43 $tmp42 $const34 	%argrw{"wrr"}
+	div		___299_RPar $tmp40 $tmp43 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/fresnel.h:48
+#         (N2PlusK2 - NCosTheta + CosTheta2) / 
+	sub		$tmp44 ___299_N2PlusK2 ___299_NCosTheta 	%line{48} %argrw{"wrr"}
+	add		$tmp45 $tmp44 ___299_CosTheta2 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/fresnel.h:49
+#         (N2PlusK2 + NCosTheta + CosTheta2);
+	add		$tmp46 ___299_N2PlusK2 ___299_NCosTheta 	%line{49} %argrw{"wrr"}
+	add		$tmp47 $tmp46 ___299_CosTheta2 	%argrw{"wrr"}
+	div		___299_RPerp $tmp45 $tmp47 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/fresnel.h:51
+#     return (RPar + RPerp) / 2.0;        
+	add		$tmp48 ___299_RPar ___299_RPerp 	%line{51} %argrw{"wrr"}
+	div		Kf $tmp48 $const32 	%argrw{"wrr"}
+# as_metal_surface.osl:127
+# {
+	eq		$tmp49 Distribution $const35 	%filename{"as_metal_surface.osl"} %line{127} %argrw{"wrr"}
+	if		$tmp49 90 108 	%argrw{"r"}
+# as_metal_surface.osl:128
+#     color r, g;
+	closure		$tmp50 $const36 Normal 	%line{128} %argrw{"wrr"}
+	mul		$tmp51 Specular Kf 	%argrw{"wrr"}
+	mul		BRDF $tmp50 $tmp51 	%argrw{"wrr"}
+# as_metal_surface.osl:132
+#         r = Reflectivity;
+	functioncall	$const37 105 	%line{132} %argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/microfacet.h:55
+#     float aspect = sqrt(1.0 - fabs(anisotropy) * 0.9);
+	fabs		$tmp52 Anisotropy 	%filename{"/home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/microfacet.h"} %line{55} %argrw{"wr"}
+	mul		$tmp53 $tmp52 $const38 	%argrw{"wrr"}
+	sub		$tmp54 $const34 $tmp53 	%argrw{"wrr"}
+	sqrt		___301_aspect $tmp54 	%argrw{"wr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/microfacet.h:56
+#     float r2 = roughness * roughness;
+	mul		___301_r2 Roughness Roughness 	%line{56} %argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/microfacet.h:58
+#     ax = max(0.001, r2 / aspect);
+	div		$tmp55 ___301_r2 ___301_aspect 	%line{58} %argrw{"wrr"}
+	max		___312_ax $const39 $tmp55 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/microfacet.h:59
+#     ay = max(0.001, r2 * aspect);
+	mul		$tmp56 ___301_r2 ___301_aspect 	%line{59} %argrw{"wrr"}
+	max		___312_ay $const39 $tmp56 	%argrw{"wrr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/microfacet.h:61
+#     if (anisotropy < 0)
+	lt		$tmp57 Anisotropy $const40 	%line{61} %argrw{"wrr"}
+	if		$tmp57 105 105 	%argrw{"r"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/microfacet.h:64
+#         float tmp = ax;
+	assign		___302_tmp ___312_ax 	%line{64} %argrw{"wr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/microfacet.h:65
+#         ax = ay;
+	assign		___312_ax ___312_ay 	%line{65} %argrw{"wr"}
+# /home/est/Devel/appleseedhq/appleseed/sandbox/shaders/src/include/appleseed/microfacet.h:66
+#         ay = tmp;
+	assign		___312_ay ___302_tmp 	%line{66} %argrw{"wr"}
+# as_metal_surface.osl:133
+#     ]],
+	closure		$tmp58 $const41 Distribution Normal Tangent ___312_ax ___312_ay $const34 $const40 	%filename{"as_metal_surface.osl"} %line{133} %argrw{"wrrrrrrrr"}
+	mul		$tmp59 Specular Kf 	%argrw{"wrr"}
+	mul		BRDF $tmp58 $tmp59 	%argrw{"wrr"}
+	end
