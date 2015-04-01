@@ -877,6 +877,7 @@ DisneyMaterial::DisneyMaterial(
   : Material(name, params)
   , impl(new Impl(this))
 {
+    m_inputs.declare("displacement_map", InputFormatSpectralReflectance, "");
 }
 
 DisneyMaterial::~DisneyMaterial()
@@ -894,19 +895,6 @@ const char* DisneyMaterial::get_model() const
     return Model;
 }
 
-Dictionary DisneyMaterial::get_new_layer_values() const
-{
-    int layer_number = 0;
-
-    for (const_each<Impl::DisneyMaterialLayerContainer> i = impl->m_layers; i; ++i)
-        layer_number = max(layer_number, i->get_layer_number());
-
-    return
-        DisneyMaterialLayer::get_default_values()
-            .insert("layer_name", make_unique_name("layer", impl->m_layers))
-            .insert("layer_number", layer_number);
-}
-
 bool DisneyMaterial::on_frame_begin(
     const Project&          project,
     const Assembly&         assembly,
@@ -915,31 +903,16 @@ bool DisneyMaterial::on_frame_begin(
     if (!Material::on_frame_begin(project, assembly, abort_switch))
         return false;
 
-    try
-    {
-        for (const_each<DictionaryDictionary> it = m_params.dictionaries(); it; ++it)
-            impl->m_layers.push_back(DisneyMaterialLayer(it->name(), it->value()));
-    }
-    // TODO: be more specific about what we catch here,
-    // once we know what can be thrown. (est.)
-    catch (const Exception& e)
-    {
-        RENDERER_LOG_ERROR(
-            "while preparing material \"%s\": %s.",
-            get_path().c_str(),
-            e.what());
-        return false;
-    }
-
-    sort(impl->m_layers.begin(), impl->m_layers.end());
-
-    for (const_each<vector<DisneyMaterialLayer> > it = impl->m_layers; it ; ++it)
-    {
-        if (!it->prepare_expressions())
-            return false;
-    }
+    const EntityDefMessageContext context("material", this);
 
     m_bsdf = impl->m_brdf.get();
+
+    if (!create_basis_modifier(context))
+        return false;
+
+    if (!prepare_layers(context))
+        return false;
+
     return true;
 }
 
@@ -964,31 +937,68 @@ const DisneyMaterialLayer& DisneyMaterial::get_layer(
 {
     assert(index < get_layer_count());
 
-    if (thread_index != ~0)
+    if (thread_index == ~0)
+        return impl->m_layers[index];
+
+    assert(thread_index < Impl::MaxThreadCount);
+
+    vector<DisneyMaterialLayer>* layers =
+        impl->m_per_thread_layers[thread_index];
+
+    if (layers)
+        return (*layers)[index];
+
+    layers = new vector<DisneyMaterialLayer>(impl->m_layers);
+
+    for (const_each<vector<DisneyMaterialLayer> > it = *layers; it; ++it)
     {
-        assert(thread_index < Impl::MaxThreadCount);
-
-        if (!impl->m_per_thread_layers[thread_index])
-        {
-            vector<DisneyMaterialLayer> *ts_layers =
-                    new vector<DisneyMaterialLayer>(impl->m_layers);
-
-            for (const_each<vector<DisneyMaterialLayer> > it = *ts_layers; it ; ++it)
-            {
-                const bool ok = it->prepare_expressions();
-                assert(ok);
-            }
-
-            impl->m_per_thread_layers[thread_index] = ts_layers;
-        }
-
-        const vector<DisneyMaterialLayer>* ts_layers =
-            impl->m_per_thread_layers[thread_index];
-
-        return (*ts_layers)[index];
+        const bool ok = it->prepare_expressions();
+        assert(ok);
     }
 
-    return impl->m_layers[index];
+    impl->m_per_thread_layers[thread_index] = layers;
+
+    return (*layers)[index];
+}
+
+Dictionary DisneyMaterial::get_new_layer_values() const
+{
+    int layer_number = 0;
+
+    for (const_each<Impl::DisneyMaterialLayerContainer> i = impl->m_layers; i; ++i)
+        layer_number = max(layer_number, i->get_layer_number());
+
+    return
+        DisneyMaterialLayer::get_default_values()
+            .insert("layer_name", make_unique_name("layer", impl->m_layers))
+            .insert("layer_number", layer_number);
+}
+
+bool DisneyMaterial::prepare_layers(const MessageContext& context)
+{
+    assert(impl->m_layers.empty());
+
+    try
+    {
+        for (const_each<DictionaryDictionary> it = m_params.dictionaries(); it; ++it)
+        {
+            DisneyMaterialLayer layer(it->name(), it->value());
+
+            if (!layer.prepare_expressions())
+                return false;
+
+            impl->m_layers.push_back(layer);
+        }
+    }
+    catch (const Exception& e)
+    {
+        RENDERER_LOG_ERROR("%s: %s.", context.get(), e.what());
+        return false;
+    }
+
+    sort(impl->m_layers.begin(), impl->m_layers.end());
+
+    return true;
 }
 
 

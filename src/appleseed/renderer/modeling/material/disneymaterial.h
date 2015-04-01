@@ -49,6 +49,7 @@
 namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }
 namespace renderer      { class DisneyMaterial; }
+namespace renderer      { class MessageContext; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class ShadingContext; }
 
@@ -176,6 +177,8 @@ class APPLESEED_DLLSYMBOL DisneyMaterial
 
     // Destructor.
     ~DisneyMaterial();
+
+    bool prepare_layers(const MessageContext& context);
 };
 
 
