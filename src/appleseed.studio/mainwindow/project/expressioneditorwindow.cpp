@@ -233,7 +233,7 @@ void ExpressionEditorWindow::slot_save_script()
                 "Save As...",
                 "Expression Scripts (*.se)",
                 m_settings,
-                SETTINGS_FILE_DIALOG_MATERIALS);
+                SETTINGS_FILE_DIALOG_PROJECTS);
 
         if (!filepath.isEmpty())
         {
@@ -271,7 +271,7 @@ void ExpressionEditorWindow::slot_load_script()
             "Open...",
             "Expression Scripts (*.se);;All Files (*.*)",
             m_settings,
-            SETTINGS_FILE_DIALOG_MATERIALS);
+            SETTINGS_FILE_DIALOG_PROJECTS);
 
     if (!filepath.isEmpty())
     {

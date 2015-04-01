@@ -132,7 +132,7 @@ void ObjectCollectionItem::slot_import_objects()
             "Import Objects...",
             "Geometry Files (*.abc;*.binarymesh;*.obj);;All Files (*.*)",
             m_editor_context.m_settings,
-            SETTINGS_FILE_DIALOG_GEOMETRY);
+            SETTINGS_FILE_DIALOG_PROJECTS);
 
     if (filepaths.empty())
         return;

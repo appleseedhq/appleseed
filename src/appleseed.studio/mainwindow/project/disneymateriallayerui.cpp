@@ -340,7 +340,7 @@ void DisneyMaterialLayerUI::slot_open_file_picker(const QString& widget_name)
             "Pick Texture File...",
             compute_oiio_files_filter(),
             m_settings,
-            SETTINGS_FILE_DIALOG_TEXTURES);
+            SETTINGS_FILE_DIALOG_PROJECTS);
 
     if (!filepath.isEmpty())
     {

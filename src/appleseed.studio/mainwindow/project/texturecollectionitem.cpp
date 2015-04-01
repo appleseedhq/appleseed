@@ -136,7 +136,7 @@ void TextureCollectionItem::slot_import_textures()
             "Import Textures...",
             g_bitmap_files_filter,
             m_editor_context.m_settings,
-            SETTINGS_FILE_DIALOG_TEXTURES);
+            SETTINGS_FILE_DIALOG_PROJECTS);
 
     if (filepaths.empty())
         return;
