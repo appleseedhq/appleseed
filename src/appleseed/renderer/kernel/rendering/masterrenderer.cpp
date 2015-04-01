@@ -75,7 +75,19 @@ MasterRenderer::MasterRenderer(
   , m_tile_callback_factory(tile_callback_factory)
   , m_serial_renderer_controller(0)
   , m_serial_tile_callback_factory(0)
+  , m_display(0)
 {
+    if (!m_tile_callback_factory)
+    {
+        // Try to use the display if there is one in the project
+        // and no tile callback factory was specified.
+        m_display = m_project.get_display();
+
+        if (m_display && m_display->open(m_project))
+            m_tile_callback_factory = m_display->get_tile_callback_factory();
+        else
+            m_display = 0;
+    }
 }
 
 MasterRenderer::MasterRenderer(
@@ -88,6 +100,7 @@ MasterRenderer::MasterRenderer(
         new SerialRendererController(renderer_controller, tile_callback))
   , m_serial_tile_callback_factory(
         new SerialTileCallbackFactory(m_serial_renderer_controller))
+  , m_display(0)
 {
     m_renderer_controller = m_serial_renderer_controller;
     m_tile_callback_factory = m_serial_tile_callback_factory;
@@ -95,6 +108,9 @@ MasterRenderer::MasterRenderer(
 
 MasterRenderer::~MasterRenderer()
 {
+    if (m_display)
+        m_display->close();
+
     delete m_serial_tile_callback_factory;
     delete m_serial_renderer_controller;
 }
@@ -156,31 +172,6 @@ void MasterRenderer::do_render()
 
 namespace
 {
-    // RAII-style handling of display plugins.
-    class CloseDisplayPluginOnScopeExit
-      : public NonCopyable
-    {
-      public:
-        CloseDisplayPluginOnScopeExit()
-          : m_display(0)
-        {
-        }
-
-        ~CloseDisplayPluginOnScopeExit()
-        {
-            if (m_display)
-                m_display->close();
-        }
-
-        void set_display(Display* display)
-        {
-            m_display = display;
-        }
-
-      private:
-        Display* m_display;
-    };
-
     // An abort switch whose abort status is determined by a renderer::IRendererController.
     class RendererControllerAbortSwitch
       : public IAbortSwitch
@@ -233,26 +224,11 @@ IRendererController::Status MasterRenderer::initialize_and_render_frame_sequence
     if (abort_switch.is_aborted())
         return m_renderer_controller->get_status();
 
-    // If needed, open the display plugin.
-    CloseDisplayPluginOnScopeExit close_display;
-    ITileCallbackFactory* tile_callback_factory = m_tile_callback_factory;
-    if (tile_callback_factory == 0)
-    {
-        if (Display* display = m_project.get_display())
-        {
-            if (!display->open(m_project))
-                return IRendererController::AbortRendering;
-
-            close_display.set_display(display);
-            tile_callback_factory = display->get_tile_callback_factory();
-        }
-    }
-
     // Create the renderer components.
     RendererComponents components(
         m_project,
         m_params,
-        tile_callback_factory,
+        m_tile_callback_factory,
         texture_store
 #ifdef APPLESEED_WITH_OIIO
         , *m_texture_system

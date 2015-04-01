@@ -93,7 +93,7 @@ Display::Display(
 
 Display::~Display()
 {
-    delete impl;
+    close();
 }
 
 void Display::release()
@@ -108,13 +108,7 @@ bool Display::open(const Project& project)
     try
     {
         plugin = get_parameters().get("plugin_name");
-
-#ifdef _WIN32
-        plugin += ".dll";
-#else
-        plugin += ".so";
-#endif
-
+        plugin += Plugin::get_default_file_extension();
         plugin = project.search_paths().qualify(plugin);
     }
     catch (const ExceptionDictionaryItemNotFound&)
