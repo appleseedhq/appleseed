@@ -83,10 +83,11 @@ namespace
             if (!Material::on_frame_begin(project, assembly, abort_switch))
                 return false;
 
+            const EntityDefMessageContext context("material", this);
+
             m_bsdf = get_uncached_bsdf();
             m_edf = get_uncached_edf();
 
-            const EntityDefMessageContext context("material", this);
             if (!create_basis_modifier(context))
                 return false;
 

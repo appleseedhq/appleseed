@@ -35,6 +35,7 @@
 #include "renderer/modeling/material/material.h"
 
 // appleseed.foundation headers.
+#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/autoreleaseptr.h"
 
@@ -76,6 +77,11 @@ class APPLESEED_DLLSYMBOL DisneyParamExpression
     struct Impl;
     Impl* impl;
 };
+
+
+//
+// A layer in the Disney material.
+//
 
 class APPLESEED_DLLSYMBOL DisneyMaterialLayer
   : public Entity
@@ -122,6 +128,11 @@ class APPLESEED_DLLSYMBOL DisneyMaterialLayer
     void swap(DisneyMaterialLayer& other);
 };
 
+
+//
+// Disney material.
+//
+
 class APPLESEED_DLLSYMBOL DisneyMaterial
   : public Material
 {
@@ -163,7 +174,7 @@ class APPLESEED_DLLSYMBOL DisneyMaterial
         const char*         name,
         const ParamArray&   params);
 
-    // Destructor
+    // Destructor.
     ~DisneyMaterial();
 };
 

@@ -40,6 +40,7 @@
 #include "foundation/math/scalar.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/foreach.h"
 #include "foundation/utility/tls.h"
 
 // SeExpr headers.
@@ -95,7 +96,7 @@ namespace
             m_texture_options.twrap = OIIO::TextureOpt::WrapPeriodic;
         }
 
-        void set_texture_system(OIIO::TextureSystem*  texture_system)
+        void set_texture_system(OIIO::TextureSystem* texture_system)
         {
             m_texture_system = texture_system;
         }
@@ -125,6 +126,7 @@ namespace
 
             m_texture_filename = OIIO::ustring(node->getStrArg(0), 0);
             m_texture_is_srgb = texture_is_srgb(m_texture_filename);
+
             return true;
         }
 
@@ -134,7 +136,7 @@ namespace
             node->child(1)->eval(u);
             node->child(2)->eval(v);
 
-            float color[3];
+            Color3f color;
             if (!m_texture_system->texture(
                     m_texture_filename,
                     m_texture_options,
@@ -147,17 +149,13 @@ namespace
 #if OIIO_VERSION > 10504
                     3,
 #endif
-                    color))
+                    &color[0]))
             {
                 result = SeVec3d(color[0], color[1], color[2]);
             }
 
             if (!m_texture_is_srgb)
-            {
-                color[0] = linear_rgb_to_srgb(color[0]);
-                color[1] = linear_rgb_to_srgb(color[1]);
-                color[2] = linear_rgb_to_srgb(color[2]);
-            }
+                color = linear_rgb_to_srgb(color);
 
             result = SeVec3d(color[0], color[1], color[2]);
         }
@@ -192,7 +190,6 @@ namespace
         };
 
         SeAppleseedExpr()
-          : SeExpression()
         {
         }
 
@@ -203,9 +200,9 @@ namespace
             m_vars["v"] = Var(0.0);
         }
 
-        void set_expr(const string& e)
+        void set_expr(const string& expr)
         {
-            SeExpression::setExpr(e);
+            SeExpression::setExpr(expr);
             m_vars["u"] = Var(0.0);
             m_vars["v"] = Var(0.0);
         }
@@ -326,165 +323,164 @@ bool DisneyParamExpression::is_constant() const
 
 
 //
-// DisneyLayerParam class implementation.
+// DisneyLayerParam class.
 //
 
-class DisneyLayerParam
+namespace
 {
-  public:
-    DisneyLayerParam(
-        const char*         name,
-        const Dictionary&   params,
-        const bool          is_vector)
-      : m_param_name(name)
-      , m_expr(params.get<string>(m_param_name))
-      , m_is_vector(is_vector)
-      , m_is_constant(false)
-      , m_texture_is_srgb(true)
+    class DisneyLayerParam
     {
-    }
-
-    DisneyLayerParam(const DisneyLayerParam& other)
-      : m_param_name(other.m_param_name)
-      , m_expr(other.m_expr)
-      , m_is_vector(other.m_is_vector)
-      , m_is_constant(other.m_is_constant)
-      , m_constant_value(other.m_constant_value)
-      , m_texture_filename(other.m_texture_filename)
-      , m_texture_options(other.m_texture_options)
-      , m_texture_is_srgb(other.m_texture_is_srgb)
-    {
-    }
-
-    void swap(DisneyLayerParam& other)
-    {
-        std::swap(m_param_name, other.m_param_name);
-        std::swap(m_expr, other.m_expr);
-        std::swap(m_is_vector, other.m_is_vector);
-        std::swap(m_is_constant, other.m_is_constant);
-        std::swap(m_constant_value, other.m_constant_value);
-        std::swap(m_texture_filename, other.m_texture_filename);
-        std::swap(m_texture_options, other.m_texture_options);
-        std::swap(m_texture_is_srgb, other.m_texture_is_srgb);
-    }
-
-    DisneyLayerParam& operator=(const DisneyLayerParam& other)
-    {
-        DisneyLayerParam tmp(other);
-        swap(tmp);
-        return *this;
-    }
-
-    bool prepare()
-    {
-        m_expression.setWantVec(m_is_vector);
-        m_expression.set_expr(m_expr);
-
-        if (!m_expression.isValid())
+      public:
+        DisneyLayerParam(
+            const char*         name,
+            const Dictionary&   params,
+            const bool          is_vector)
+          : m_param_name(name)
+          , m_expr(params.get<string>(m_param_name))
+          , m_is_vector(is_vector)
+          , m_is_constant(false)
+          , m_texture_is_srgb(true)
         {
-            report_expression_error("Expression error: ", m_param_name, m_expression);
-            return false;
         }
 
-        m_is_constant = m_expression.isConstant();
-        if (m_is_constant)
+        DisneyLayerParam(const DisneyLayerParam& other)
+          : m_param_name(other.m_param_name)
+          , m_expr(other.m_expr)
+          , m_is_vector(other.m_is_vector)
+          , m_is_constant(other.m_is_constant)
+          , m_constant_value(other.m_constant_value)
+          , m_texture_filename(other.m_texture_filename)
+          , m_texture_options(other.m_texture_options)
+          , m_texture_is_srgb(other.m_texture_is_srgb)
         {
-            const SeVec3d result = m_expression.evaluate();
-            m_constant_value = Color3d(result[0], result[1], result[2]);
+        }
+
+        void swap(DisneyLayerParam& other)
+        {
+            std::swap(m_param_name, other.m_param_name);
+            std::swap(m_expr, other.m_expr);
+            std::swap(m_is_vector, other.m_is_vector);
+            std::swap(m_is_constant, other.m_is_constant);
+            std::swap(m_constant_value, other.m_constant_value);
+            std::swap(m_texture_filename, other.m_texture_filename);
+            std::swap(m_texture_options, other.m_texture_options);
+            std::swap(m_texture_is_srgb, other.m_texture_is_srgb);
+        }
+
+        DisneyLayerParam& operator=(const DisneyLayerParam& other)
+        {
+            DisneyLayerParam tmp(other);
+            swap(tmp);
+            return *this;
+        }
+
+        bool prepare()
+        {
+            m_expression.setWantVec(m_is_vector);
+            m_expression.set_expr(m_expr);
+
+            if (!m_expression.isValid())
+            {
+                report_expression_error("Expression error: ", m_param_name, m_expression);
+                return false;
+            }
+
+            m_is_constant = m_expression.isConstant();
+            if (m_is_constant)
+            {
+                const SeVec3d result = m_expression.evaluate();
+                m_constant_value = Color3d(result[0], result[1], result[2]);
+                return true;
+            }
+
+            // Check for simple texture lookups.
+            {
+                const string expression = trim_both(m_expression.getExpr(), " \r\n");
+                vector<string> tokens;
+                tokenize(expression, "()", tokens);
+
+                if (tokens.size() != 2)
+                    return true;
+
+                if (trim_both(tokens[0]) != "texture")
+                    return true;
+
+                const string inner_content = tokens[1];
+                tokens.clear();
+                tokenize(inner_content, ",", tokens);
+
+                if (tokens.size() != 3)
+                    return true;
+
+                if (trim_both(tokens[1]) != "$u")
+                    return true;
+
+                if (trim_both(tokens[2]) != "$v")
+                    return true;
+
+                m_texture_filename = OIIO::ustring(trim_both(tokens[0], " \""));
+                m_texture_is_srgb = texture_is_srgb(m_texture_filename);
+                m_texture_options.swrap = OIIO::TextureOpt::WrapPeriodic;
+                m_texture_options.rwrap = OIIO::TextureOpt::WrapPeriodic;
+#if OIIO_VERSION <= 10504
+                m_texture_options.nchannels = 3;
+#endif
+            }
+
             return true;
         }
 
-        // Check for simple texture lookups.
+        Color3d evaluate(
+            const ShadingPoint&     shading_point,
+            OIIO::TextureSystem&    texture_system) const
         {
-            const string expression = trim_both(m_expression.getExpr(), " \r\n");
-            vector<string> tokens;
-            tokenize(expression, "()", tokens);
+            if (m_is_constant)
+                return m_constant_value;
 
-            if (tokens.size() != 2)
-                return true;
-
-            if (trim_both(tokens[0]) != "texture")
-                return true;
-
-            const string inner_content = tokens[1];
-            tokens.clear();
-            tokenize(inner_content, ",", tokens);
-
-            if (tokens.size() != 3)
-                return true;
-
-            if (trim_both(tokens[1]) != "$u")
-                return true;
-
-            if (trim_both(tokens[2]) != "$v")
-                return true;
-
-            m_texture_filename = OIIO::ustring(trim_both(tokens[0], " \""));
-            m_texture_is_srgb = texture_is_srgb(m_texture_filename);
-            m_texture_options.swrap = OIIO::TextureOpt::WrapPeriodic;
-            m_texture_options.rwrap = OIIO::TextureOpt::WrapPeriodic;
-#if OIIO_VERSION <= 10504
-            m_texture_options.nchannels = 3;
-#endif
-        }
-
-        return true;
-    }
-
-    Color3d evaluate(
-        const ShadingPoint&     shading_point,
-        OIIO::TextureSystem&    texture_system) const
-    {
-        if (m_is_constant)
-            return m_constant_value;
-
-        if (!m_texture_filename.empty())
-        {
-            const Vector2d& uv = shading_point.get_uv(0);
-            float color[3];
-            if (!texture_system.texture(
-                    m_texture_filename,
-                    m_texture_options,
-                    static_cast<float>(uv[0]),
-                    static_cast<float>(1.0 - uv[1]),
-                    0.0f,
-                    0.0f,
-                    0.0f,
-                    0.0f,
+            if (!m_texture_filename.empty())
+            {
+                const Vector2d& uv = shading_point.get_uv(0);
+                Color3f color;
+                if (!texture_system.texture(
+                        m_texture_filename,
+                        m_texture_options,
+                        static_cast<float>(uv[0]),
+                        static_cast<float>(1.0 - uv[1]),
+                        0.0f,
+                        0.0f,
+                        0.0f,
+                        0.0f,
 #if OIIO_VERSION > 10504
-                    3,
+                        3,
 #endif
-                    color))
-            {
-                return Color3d(1.0, 0.0, 1.0);
+                        &color[0]))
+                {
+                    return Color3d(1.0, 0.0, 1.0);
+                }
+
+                if (!m_texture_is_srgb)
+                    color = linear_rgb_to_srgb(color);
+
+                return Color3d(color);
             }
 
-            if (!m_texture_is_srgb)
-            {
-                color[0] = linear_rgb_to_srgb(color[0]);
-                color[1] = linear_rgb_to_srgb(color[1]);
-                color[2] = linear_rgb_to_srgb(color[2]);
-            }
-
-            return Color3d(color[0], color[1], color[2]);
+            return m_expression.update_and_evaluate(
+                shading_point,
+                texture_system);
         }
 
-        return m_expression.update_and_evaluate(
-            shading_point,
-            texture_system);
-    }
-
-  private:
-    const char*                 m_param_name;
-    string                      m_expr;
-    bool                        m_is_vector;
-    bool                        m_is_constant;
-    Color3d                     m_constant_value;
-    OIIO::ustring               m_texture_filename;
-    mutable OIIO::TextureOpt    m_texture_options;
-    bool                        m_texture_is_srgb;
-    mutable SeAppleseedExpr     m_expression;
-};
+      private:
+        const char*                 m_param_name;
+        string                      m_expr;
+        bool                        m_is_vector;
+        bool                        m_is_constant;
+        Color3d                     m_constant_value;
+        OIIO::ustring               m_texture_filename;
+        mutable OIIO::TextureOpt    m_texture_options;
+        bool                        m_texture_is_srgb;
+        mutable SeAppleseedExpr     m_expression;
+    };
+}
 
 
 //
@@ -953,6 +949,7 @@ void DisneyMaterial::on_frame_end(
 {
     impl->clear_per_thread_layers();
     impl->m_layers.clear();
+
     Material::on_frame_end(project, assembly);
 }
 
@@ -962,8 +959,8 @@ size_t DisneyMaterial::get_layer_count() const
 }
 
 const DisneyMaterialLayer& DisneyMaterial::get_layer(
-    const size_t index,
-    const size_t thread_index) const
+    const size_t            index,
+    const size_t            thread_index) const
 {
     assert(index < get_layer_count());
 
