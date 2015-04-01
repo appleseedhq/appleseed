@@ -49,11 +49,6 @@ namespace
       , public bpy::wrapper<IRendererController>
     {
       public:
-        virtual void release() APPLESEED_OVERRIDE
-        {
-            delete this;
-        }
-
         virtual void on_rendering_begin() APPLESEED_OVERRIDE
         {
             // Lock Python's global interpreter lock (GIL),

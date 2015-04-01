@@ -44,11 +44,6 @@ QtRendererController::QtRendererController()
     set_status(ContinueRendering);
 }
 
-void QtRendererController::release()
-{
-    delete this;
-}
-
 void QtRendererController::on_rendering_begin()
 {
     set_status(ContinueRendering);

@@ -51,11 +51,6 @@ SerialRendererController::SerialRendererController(
 {
 }
 
-void SerialRendererController::release()
-{
-    delete this;
-}
-
 void SerialRendererController::on_rendering_begin()
 {
     m_controller->on_rendering_begin();
