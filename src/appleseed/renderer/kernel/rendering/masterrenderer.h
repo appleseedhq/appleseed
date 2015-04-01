@@ -40,6 +40,7 @@
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
+namespace renderer      { class Display; }
 namespace renderer      { class IFrameRenderer; }
 namespace renderer      { class ITileCallback; }
 namespace renderer      { class ITileCallbackFactory; }
@@ -79,6 +80,10 @@ class APPLESEED_DLLSYMBOL MasterRenderer
     bool render();
 
   private:
+
+    // Displays.
+    Display*                        m_display;
+
     IRendererController*            m_renderer_controller;
     ITileCallbackFactory*           m_tile_callback_factory;
 
