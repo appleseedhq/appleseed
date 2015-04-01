@@ -168,7 +168,7 @@ void MaterialCollectionItem::slot_import_disney()
             "Import...",
             "Disney Material (*.dmt);;All Files (*.*)",
             m_editor_context.m_settings,
-            SETTINGS_FILE_DIALOG_MATERIALS);
+            SETTINGS_FILE_DIALOG_PROJECTS);
 
     if (!filepath.isEmpty())
     {
