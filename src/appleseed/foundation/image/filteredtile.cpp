@@ -35,9 +35,6 @@
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 
-// Standard headers.
-#include <cmath>
-
 using namespace std;
 
 namespace foundation
@@ -98,25 +95,26 @@ void FilteredTile::add(
 
     // Find the pixels affected by this sample.
     AABB2i footprint;
-    footprint.min.x = truncate<int>(ceil(dx - m_filter.get_xradius()));
-    footprint.min.y = truncate<int>(ceil(dy - m_filter.get_yradius()));
-    footprint.max.x = truncate<int>(floor(dx + m_filter.get_xradius()));
-    footprint.max.y = truncate<int>(floor(dy + m_filter.get_yradius()));
+    footprint.min.x = truncate<int>(fast_ceil(dx - m_filter.get_xradius()));
+    footprint.min.y = truncate<int>(fast_ceil(dy - m_filter.get_yradius()));
+    footprint.max.x = truncate<int>(fast_floor(dx + m_filter.get_xradius()));
+    footprint.max.y = truncate<int>(fast_floor(dy + m_filter.get_yradius()));
 
     // Don't affect pixels outside the crop window.
     footprint = AABB2i::intersect(footprint, m_crop_window);
 
     for (int ry = footprint.min.y; ry <= footprint.max.y; ++ry)
     {
+        float* RESTRICT ptr = reinterpret_cast<float*>(pixel(footprint.min.x, ry));
+
         for (int rx = footprint.min.x; rx <= footprint.max.x; ++rx)
         {
-            float* RESTRICT ptr = reinterpret_cast<float*>(pixel(rx, ry));
             const float weight = m_filter.evaluate(rx - dx, ry - dy);
 
             *ptr++ += weight;
 
             for (size_t i = 0; i < m_channel_count - 1; ++i)
-                ptr[i] += values[i] * weight;
+                *ptr++ += values[i] * weight;
         }
     }
 }
