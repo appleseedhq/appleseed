@@ -91,10 +91,11 @@ class APPLESEED_DLLSYMBOL CanvasProperties
 // CanvasProperties class implementation.
 //
 
-// Constructors.
+
 inline CanvasProperties::CanvasProperties()
 {
 }
+
 inline CanvasProperties::CanvasProperties(
     const size_t            canvas_width,
     const size_t            canvas_height,
@@ -126,7 +127,6 @@ inline CanvasProperties::CanvasProperties(
     m_pixel_size = m_channel_count * Pixel::size(m_pixel_format);
 }
 
-// Compute the width and height in pixels of a given tile.
 inline size_t CanvasProperties::get_tile_width(const size_t tile_x) const
 {
     return
@@ -134,6 +134,7 @@ inline size_t CanvasProperties::get_tile_width(const size_t tile_x) const
             m_canvas_width - tile_x * m_tile_width,
             m_tile_width);
 }
+
 inline size_t CanvasProperties::get_tile_height(const size_t tile_y) const
 {
     return
