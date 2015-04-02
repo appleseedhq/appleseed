@@ -39,6 +39,7 @@
 #include "renderer/modeling/bsdf/oslmicrofacetbtdf.h"
 #include "renderer/modeling/bsdf/specularbrdf.h"
 #include "renderer/modeling/bsdf/specularbtdf.h"
+#include "renderer/modeling/bsdf/velvetbrdf.h"
 #include "renderer/modeling/edf/diffuseedf.h"
 
 // appleseed.foundation headers.
@@ -87,6 +88,7 @@ enum ClosureID
     ReflectionID,
     RefractionID,
     TranslucentID,
+    VelvetID,
 
     // Special closures.
     BackgroundID,
@@ -138,7 +140,8 @@ class APPLESEED_ALIGN(16) CompositeSurfaceClosure
         OSLMicrofacetBTDFInputValues,
         OrenNayarBRDFInputValues,
         SpecularBRDFInputValues,
-        SpecularBTDFInputValues> InputValuesTypeList;
+        SpecularBTDFInputValues,
+        VelvetBRDFInputValues> InputValuesTypeList;
 
     // Find the biggest InputValues type.
     typedef boost::mpl::max_element<
