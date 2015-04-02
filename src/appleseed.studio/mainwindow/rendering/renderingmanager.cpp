@@ -469,6 +469,8 @@ void RenderingManager::FrozenDisplayFunc::set_camera_transform(const Transformd&
 
 void RenderingManager::FrozenDisplayFunc::operator()()
 {
+    set_current_thread_name("frozen_display");
+
     const double TargetElapsed = 1.0 / 30.0;
 
     DefaultWallclockTimer timer;
