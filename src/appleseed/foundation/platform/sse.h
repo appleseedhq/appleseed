@@ -34,9 +34,39 @@
     #error SSE support not enabled.
 #endif
 
+// appleseed.foundation headers.
+#include "foundation/platform/types.h"
+
 // Platform headers.
 #include <xmmintrin.h>      // SSE1 intrinsics
 #include <emmintrin.h>      // SSE2 intrinsics
 #include <smmintrin.h>      // SSE4 intrinsics
+
+namespace foundation
+{
+
+struct M128Fields
+{
+    union
+    {
+        __m128      m128;
+        __m128d     m128d;
+        __m128i     m128i;
+
+        float       f32[4];
+        double      f64[2];
+
+        int8        i8[16];
+        int16       i16[8];
+        int32       i32[4];
+        int64       i64[2];
+        uint8       u8[16];
+        uint16      u16[8];
+        uint32      u32[4];
+        uint64      u64[2];
+    };
+};
+
+}
 
 #endif  // !APPLESEED_FOUNDATION_PLATFORM_SSE_H
