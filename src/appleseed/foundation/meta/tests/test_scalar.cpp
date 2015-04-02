@@ -41,7 +41,7 @@ using namespace std;
 
 TEST_SUITE(Foundation_Math_Scalar)
 {
-    TEST_CASE(TestDegToRad)
+    TEST_CASE(DegToRad)
     {
         EXPECT_FEQ(0.0,      deg_to_rad(0.0));
         EXPECT_FEQ(Pi / 4.0, deg_to_rad(45.0));
@@ -49,7 +49,7 @@ TEST_SUITE(Foundation_Math_Scalar)
         EXPECT_FEQ(2.0 * Pi, deg_to_rad(360.0));
     }
 
-    TEST_CASE(TestRadToDeg)
+    TEST_CASE(RadToDeg)
     {
         EXPECT_FEQ(0.0,      rad_to_deg(0.0));
         EXPECT_FEQ(45.0,     rad_to_deg(Pi / 4.0));
@@ -57,7 +57,7 @@ TEST_SUITE(Foundation_Math_Scalar)
         EXPECT_FEQ(360.0,    rad_to_deg(2.0 * Pi));
     }
 
-    TEST_CASE(TestNextPow2)
+    TEST_CASE(NextPow2)
     {
         EXPECT_EQ(1,   next_pow2(1));
         EXPECT_EQ(2,   next_pow2(2));
@@ -71,14 +71,14 @@ TEST_SUITE(Foundation_Math_Scalar)
         EXPECT_EQ(256, next_pow2(256));
     }
 
-    TEST_CASE(TestNextPow2Large)
+    TEST_CASE(NextPow2_Large)
     {
         const int32 TwoPower29 = 512 * 1024 * 1024;
         const int32 TwoPower30 = 512 * 1024 * 1024 * 2;
         EXPECT_EQ(TwoPower30, next_pow2(TwoPower29 + 1));
     }
 
-    TEST_CASE(TestNextPow2Int64)
+    TEST_CASE(NextPow2_Int64)
     {
         EXPECT_EQ(1,   next_pow2<int64>(1));
         EXPECT_EQ(2,   next_pow2<int64>(2));
@@ -92,14 +92,14 @@ TEST_SUITE(Foundation_Math_Scalar)
         EXPECT_EQ(256, next_pow2<int64>(256));
     }
 
-    TEST_CASE(TestNextPow2Int64Large)
+    TEST_CASE(NextPow2_Int64_Large)
     {
         const int64 TwoPower34 = 17179869184LL;
         const int64 TwoPower35 = 17179869184LL * 2;
         EXPECT_EQ(TwoPower35, next_pow2(TwoPower34 + 1));
     }
 
-    TEST_CASE(TestNextPow2UInt64)
+    TEST_CASE(NextPow2_UInt64)
     {
         EXPECT_EQ(1,   next_pow2<uint64>(1));
         EXPECT_EQ(2,   next_pow2<uint64>(2));
@@ -113,14 +113,14 @@ TEST_SUITE(Foundation_Math_Scalar)
         EXPECT_EQ(256, next_pow2<uint64>(256));
     }
 
-    TEST_CASE(TestNextPow2UInt64Large)
+    TEST_CASE(NextPow2_UInt64_Large)
     {
         const uint64 TwoPower34 = 17179869184ULL;
         const uint64 TwoPower35 = 17179869184ULL * 2;
         EXPECT_EQ(TwoPower35, next_pow2(TwoPower34 + 1));
     }
 
-    TEST_CASE(TestIsPow2OnPowerOfTwoValues)
+    TEST_CASE(IsPow2_PowerOfTwoValues)
     {
         EXPECT_TRUE(is_pow2(0));
         EXPECT_TRUE(is_pow2(1));
@@ -130,7 +130,7 @@ TEST_SUITE(Foundation_Math_Scalar)
         EXPECT_TRUE(is_pow2(256));
     }
 
-    TEST_CASE(TestIsPow2OnNonPowerOfTwoValues)
+    TEST_CASE(IsPow2_NonPowerOfTwoValues)
     {
         EXPECT_FALSE(is_pow2(3));
         EXPECT_FALSE(is_pow2(5));
@@ -140,7 +140,7 @@ TEST_SUITE(Foundation_Math_Scalar)
         EXPECT_FALSE(is_pow2(255));
     }
 
-    TEST_CASE(TestLog2)
+    TEST_CASE(Log2)
     {
         EXPECT_EQ(0,  int_log2(1));
         EXPECT_EQ(1,  int_log2(2));
@@ -156,7 +156,7 @@ TEST_SUITE(Foundation_Math_Scalar)
         EXPECT_EQ(31, int_log2(1UL << 31));
     }
 
-    TEST_CASE(TestFactorial)
+    TEST_CASE(Factorial)
     {
         EXPECT_EQ(1,   factorial(0));
         EXPECT_EQ(1,   factorial(1));
@@ -166,7 +166,7 @@ TEST_SUITE(Foundation_Math_Scalar)
         EXPECT_EQ(120, factorial(5));
     }
 
-    TEST_CASE(TestBinomial)
+    TEST_CASE(Binomial)
     {
         EXPECT_EQ(1,   binomial(0, 0));
 
@@ -196,50 +196,26 @@ TEST_SUITE(Foundation_Math_Scalar)
         EXPECT_EQ(1,   binomial(5, 5));
     }
 
-    TEST_CASE(Wrap_Given0_Returns0)
+    TEST_CASE(Wrap)
     {
         EXPECT_EQ(0.0, wrap(0.0));
-    }
-
-    TEST_CASE(Wrap_Given0Dot5_Returns0Dot5)
-    {
         EXPECT_EQ(0.5, wrap(0.5));
-    }
-
-    TEST_CASE(Wrap_Given1_Returns0)
-    {
         EXPECT_EQ(0.0, wrap(1.0));
-    }
-
-    TEST_CASE(Wrap_Given1Dot5_Returns0Dot5)
-    {
         EXPECT_EQ(0.5, wrap(1.5));
-    }
-
-    TEST_CASE(Wrap_GivenMinus0Dot5_Returns0Dot5)
-    {
         EXPECT_EQ(0.5, wrap(-0.5));
-    }
-
-    TEST_CASE(Wrap_GivenMinus1_Returns0)
-    {
         EXPECT_EQ(0.0, wrap(-1.0));
-    }
-
-    TEST_CASE(Wrap_GivenMinus1Dot5_Returns0Dot5)
-    {
         EXPECT_EQ(0.5, wrap(-1.5));
     }
 
     TEST_CASE(Truncate_FloatToSignedInteger)
     {
-        EXPECT_EQ(static_cast<int>(-1.5f), truncate<int>(-1.5f));
-        EXPECT_EQ(static_cast<int>(-1.0f), truncate<int>(-1.0f));
-        EXPECT_EQ(static_cast<int>(-0.5f), truncate<int>(-0.5f));
-        EXPECT_EQ(static_cast<int>( 0.0f), truncate<int>( 0.0f));
-        EXPECT_EQ(static_cast<int>(+0.5f), truncate<int>(+0.5f));
-        EXPECT_EQ(static_cast<int>(+1.0f), truncate<int>(+1.0f));
-        EXPECT_EQ(static_cast<int>(+1.5f), truncate<int>(+1.5f));
+        EXPECT_EQ(-1, truncate<int>(-1.5f));
+        EXPECT_EQ(-1, truncate<int>(-1.0f));
+        EXPECT_EQ( 0, truncate<int>(-0.5f));
+        EXPECT_EQ( 0, truncate<int>( 0.0f));
+        EXPECT_EQ( 0, truncate<int>(+0.5f));
+        EXPECT_EQ(+1, truncate<int>(+1.0f));
+        EXPECT_EQ(+1, truncate<int>(+1.5f));
     }
 
     TEST_CASE(Truncate_FloatToUnsignedInteger)
@@ -252,107 +228,35 @@ TEST_SUITE(Foundation_Math_Scalar)
         EXPECT_EQ(3221225472UL, truncate<uint32>(3221225472.0));
     }
 
-    TEST_CASE(Round_Given0_Returns0)
+    TEST_CASE(Round_FloatToSignedInteger)
     {
-        EXPECT_EQ(0, round<int>(0.0));
+        EXPECT_EQ(0, round<int>(0.0f));
+        EXPECT_EQ(3, round<int>(3.0f));
+        EXPECT_EQ(3, round<int>(3.1f));
+        EXPECT_EQ(4, round<int>(3.5f));
+        EXPECT_EQ(4, round<int>(3.9f));
+        EXPECT_EQ(-3, round<int>(-3.0f));
+        EXPECT_EQ(-3, round<int>(-3.1f));
+        EXPECT_EQ(-4, round<int>(-3.5f));
+        EXPECT_EQ(-4, round<int>(-3.9f));
     }
 
-    TEST_CASE(Round_Given3_Returns3)
-    {
-        EXPECT_EQ(3, round<int>(3.0));
-    }
-
-    TEST_CASE(Round_Given3Dot1_Returns3)
-    {
-        EXPECT_EQ(3, round<int>(3.1));
-    }
-
-    TEST_CASE(Round_Given3Dot5_Returns4)
-    {
-        EXPECT_EQ(4, round<int>(3.5));
-    }
-
-    TEST_CASE(Round_Given3Dot9_Returns4)
-    {
-        EXPECT_EQ(4, round<int>(3.9));
-    }
-
-    TEST_CASE(Round_GivenMinus3_ReturnsMinus3)
-    {
-        EXPECT_EQ(-3, round<int>(-3.0));
-    }
-
-    TEST_CASE(Round_GivenMinus3Dot1_ReturnsMinus3)
-    {
-        EXPECT_EQ(-3, round<int>(-3.1));
-    }
-
-    TEST_CASE(Round_GivenMinus3Dot5_ReturnsMinus4)
-    {
-        EXPECT_EQ(-4, round<int>(-3.5));
-    }
-
-    TEST_CASE(Round_GivenMinus3Dot9_ReturnsMinus4)
-    {
-        EXPECT_EQ(-4, round<int>(-3.9));
-    }
-
-    TEST_CASE(Mod_Given0Mod3_Returns0)
+    TEST_CASE(Mod)
     {
         EXPECT_EQ(0, mod(0, 3));
-    }
-
-    TEST_CASE(Mod_Given1Mod3_Returns1)
-    {
         EXPECT_EQ(1, mod(1, 3));
-    }
-
-    TEST_CASE(Mod_Given2Mod3_Returns2)
-    {
         EXPECT_EQ(2, mod(2, 3));
-    }
-
-    TEST_CASE(Mod_Given3Mod3_Returns0)
-    {
         EXPECT_EQ(0, mod(3, 3));
-    }
-
-    TEST_CASE(Mod_Given4Mod3_Returns1)
-    {
         EXPECT_EQ(1, mod(4, 3));
-    }
-
-    TEST_CASE(Mod_GivenMinus1Mod3_Returns2)
-    {
         EXPECT_EQ(2, mod(-1, 3));
-    }
-
-    TEST_CASE(Mod_GivenMinus2Mod3_Returns1)
-    {
         EXPECT_EQ(1, mod(-2, 3));
-    }
-
-    TEST_CASE(Mod_GivenMinus3Mod3_Returns0)
-    {
         EXPECT_EQ(0, mod(-3, 3));
-    }
-
-    TEST_CASE(Mod_GivenMinus4Mod3_Returns2)
-    {
         EXPECT_EQ(2, mod(-4, 3));
-    }
-
-    TEST_CASE(Mod_Given0Dot5Mod2_Returns0Dot5)
-    {
         EXPECT_EQ(0.5, mod(0.5, 2.0));
-    }
-
-    TEST_CASE(Mod_GivenMinus0Dot5Mod2_Returns1Dot5)
-    {
         EXPECT_EQ(1.5, mod(-0.5, 2.0));
     }
 
-    TEST_CASE(TestSmoothStep)
+    TEST_CASE(SmoothStep)
     {
         EXPECT_EQ(0.0, smoothstep(10.0, 20.0,  0.0));
         EXPECT_EQ(0.0, smoothstep(10.0, 20.0, 10.0));
@@ -439,14 +343,14 @@ TEST_SUITE(Foundation_Math_Scalar)
         EXPECT_FEQ(4.0 / 19.0, result);
     }
 
-    TEST_CASE(TestFeqScalarScalarReturnsTrue)
+    TEST_CASE(Feq_ScalarScalar_ReturnsTrue)
     {
         EXPECT_TRUE(feq(  0.0,   0.0));
         EXPECT_TRUE(feq( 42.0,  42.0));
         EXPECT_TRUE(feq(-42.0, -42.0));
     }
 
-    TEST_CASE(TestFeqScalarScalarReturnsFalse)
+    TEST_CASE(Feq_ScalarScalar_ReturnsFalse)
     {
         EXPECT_FALSE(feq(  0.0,  42.0));
         EXPECT_FALSE(feq( 42.0,   0.0));
@@ -454,23 +358,23 @@ TEST_SUITE(Foundation_Math_Scalar)
         EXPECT_FALSE(feq(-42.0,  42.0));
     }
 
-    TEST_CASE(TestFeqScalarScalarOverflows)
+    TEST_CASE(Feq_ScalarScalar_Overflows)
     {
         EXPECT_FALSE(feq(0.5 * numeric_limits<double>::max(), 0.1));
     }
 
-    TEST_CASE(TestFeqScalarScalarUnderflows)
+    TEST_CASE(Feq_ScalarScalar_Underflows)
     {
         EXPECT_FALSE(feq(2.0 * numeric_limits<double>::min(), 10.0));
     }
 
-    TEST_CASE(TestFzScalarReturnsTrue)
+    TEST_CASE(Fz_Scalar_ReturnsTrue)
     {
         EXPECT_TRUE(fz(+0.0));
         EXPECT_TRUE(fz(-0.0));
     }
 
-    TEST_CASE(TestFzScalarReturnsFalse)
+    TEST_CASE(Fz_Scalar_ReturnsFalse)
     {
         EXPECT_FALSE(fz( 42.0));
         EXPECT_FALSE(fz(-42.0));

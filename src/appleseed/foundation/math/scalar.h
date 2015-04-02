@@ -167,9 +167,9 @@ T wrap(const T x);
 template <typename T>
 T normalize_angle(const T angle);
 
-// Return the integer part of a floating-point value.
-template <typename Int> Int truncate(const float x);
-template <typename Int> Int truncate(const double x);
+// Same as static_cast<Int>(x).
+template <typename Int, typename T>
+Int truncate(const T x);
 
 // Round x to the nearest integer with Round Half Away from Zero tie breaking rule.
 // Reference: http://en.wikipedia.org/wiki/Rounding#Round_half_away_from_zero.
@@ -477,8 +477,8 @@ inline T normalize_angle(const T angle)
     return a < T(0.0) ? a + T(TwoPi) : a;
 }
 
-template <typename Int>
-inline Int truncate(const float x)
+template <typename Int, typename T>
+inline Int truncate(const T x)
 {
     return static_cast<Int>(x);
 }
@@ -508,16 +508,6 @@ inline int64 truncate<int64>(const float x)
 {
     return static_cast<int64>(_mm_cvttss_si32(_mm_load_ss(&x)));
 }
-
-#endif
-
-template <typename Int>
-inline Int truncate(const double x)
-{
-    return static_cast<Int>(x);
-}
-
-#ifdef APPLESEED_USE_SSE
 
 template <>
 inline int8 truncate<int8>(const double x)
