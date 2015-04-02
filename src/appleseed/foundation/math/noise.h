@@ -161,9 +161,9 @@ template <typename T>
 T noise(const Vector<T, 3>& p)
 {
     // Find the coordinates of the unit cube that contains the point.
-    const int ix = truncate<int>(std::floor(p.x));
-    const int iy = truncate<int>(std::floor(p.y));
-    const int iz = truncate<int>(std::floor(p.z));
+    const int ix = truncate<int>(fast_floor(p.x));
+    const int iy = truncate<int>(fast_floor(p.y));
+    const int iz = truncate<int>(fast_floor(p.z));
 
     // Compute the fractional coordinates of the point inside the cube.
     const T fx = p.x - ix;

@@ -451,7 +451,7 @@ inline T log(const T x, const T base)
 template <typename T>
 inline T next_power(const T x, const T base)
 {
-    return std::pow(base, std::ceil(log(x, base)));
+    return std::pow(base, fast_ceil(log(x, base)));
 }
 
 template <typename T>
