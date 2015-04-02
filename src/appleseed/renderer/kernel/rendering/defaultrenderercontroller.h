@@ -50,9 +50,6 @@ class APPLESEED_DLLSYMBOL DefaultRendererController
   : public IRendererController
 {
   public:
-    // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
-
     // This method is called before rendering begins.
     virtual void on_rendering_begin() APPLESEED_OVERRIDE;
 

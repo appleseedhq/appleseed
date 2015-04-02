@@ -61,8 +61,6 @@ class SerialRendererController
         IRendererController*    controller,
         ITileCallback*          tile_callback);
 
-    virtual void release() APPLESEED_OVERRIDE;
-
     virtual void on_rendering_begin() APPLESEED_OVERRIDE;
     virtual void on_rendering_success() APPLESEED_OVERRIDE;
     virtual void on_rendering_abort() APPLESEED_OVERRIDE;
