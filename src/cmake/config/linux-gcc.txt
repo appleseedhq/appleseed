@@ -70,6 +70,9 @@ if (USE_SSE)
          ${c_compiler_flags_common}
         -msse                                           # enable the SSE instruction set
         -msse2                                          # enable the SSE 2 instruction set
+        -msse4                                          # enable the SSE 4 instruction set
+        -msse4.1                                        # enable the SSE 4.1 instruction set
+        -msse4.2                                        # enable the SSE 4.2 instruction set
     )
 endif ()
 set (exe_linker_flags_common
