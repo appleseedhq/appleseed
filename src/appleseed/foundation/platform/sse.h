@@ -37,29 +37,6 @@
 // Platform headers.
 #include <xmmintrin.h>      // SSE1 intrinsics
 #include <emmintrin.h>      // SSE2 intrinsics
-
-namespace foundation
-{
-
-//
-// 4-way SSE implementation of std::floor().
-//
-// Reference:
-//
-//   http://www.masm32.com/board/index.php?topic=9515.msg78719#msg78719
-//
-// Note: SSE 4.1 has an _mm_floor_ps() intrinsic (see smmintrin.h).
-//
-
-inline __m128 floorps(const __m128 x)
-{
-    return
-        _mm_cvtepi32_ps(
-            _mm_sub_epi32(
-                _mm_cvttps_epi32(x),
-                _mm_srli_epi32(_mm_castps_si128(x), 31)));
-}
-
-}       // namespace foundation
+#include <smmintrin.h>      // SSE4 intrinsics
 
 #endif  // !APPLESEED_FOUNDATION_PLATFORM_SSE_H

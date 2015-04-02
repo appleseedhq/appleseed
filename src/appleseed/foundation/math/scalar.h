@@ -167,9 +167,17 @@ T wrap(const T x);
 template <typename T>
 T normalize_angle(const T angle);
 
-// Same as static_cast<Int>(x).
+// Semantically identical to static_cast<Int>(x).
 template <typename Int, typename T>
 Int truncate(const T x);
+
+// Semantically identical to std::floor().
+template <typename T>
+T fast_floor(const T x);
+
+// Semantically identical to std::ceil().
+template <typename T>
+T fast_ceil(const T x);
 
 // Round x to the nearest integer with Round Half Away from Zero tie breaking rule.
 // Reference: http://en.wikipedia.org/wiki/Rounding#Round_half_away_from_zero.
@@ -531,6 +539,46 @@ template <>
 inline int64 truncate<int64>(const double x)
 {
     return static_cast<int64>(_mm_cvttsd_si32(_mm_load_sd(&x)));
+}
+
+#endif
+
+template <typename T>
+inline T fast_floor(const T x)
+{
+    return std::floor(x);
+}
+
+template <typename T>
+inline T fast_ceil(const T x)
+{
+    return std::ceil(x);
+}
+
+#ifdef APPLESEED_USE_SSE
+
+template <>
+inline float fast_floor(const float x)
+{
+    return _mm_floor_ss(_mm_set1_ps(x), _mm_set1_ps(x)).m128_f32[0];
+}
+
+template <>
+inline double fast_floor(const double x)
+{
+    return _mm_floor_sd(_mm_set1_pd(x), _mm_set1_pd(x)).m128d_f64[0];
+}
+
+template <>
+inline float fast_ceil(const float x)
+{
+    return _mm_ceil_ss(_mm_set1_ps(x), _mm_set1_ps(x)).m128_f32[0];
+}
+
+template <>
+inline double fast_ceil(const double x)
+{
+    return _mm_ceil_sd(_mm_set1_pd(x), _mm_set1_pd(x)).m128d_f64[0];
 }
 
 #endif

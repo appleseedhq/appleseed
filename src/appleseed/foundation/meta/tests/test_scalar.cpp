@@ -228,6 +228,28 @@ TEST_SUITE(Foundation_Math_Scalar)
         EXPECT_EQ(3221225472UL, truncate<uint32>(3221225472.0));
     }
 
+    TEST_CASE(FastFloor)
+    {
+        EXPECT_EQ(-2.0f, fast_floor(-1.5f));
+        EXPECT_EQ(-1.0f, fast_floor(-1.0f));
+        EXPECT_EQ(-1.0f, fast_floor(-0.5f));
+        EXPECT_EQ( 0.0f, fast_floor( 0.0f));
+        EXPECT_EQ( 0.0f, fast_floor(+0.5f));
+        EXPECT_EQ(+1.0f, fast_floor(+1.0f));
+        EXPECT_EQ(+1.0f, fast_floor(+1.5f));
+    }
+
+    TEST_CASE(FastCeil)
+    {
+        EXPECT_EQ(-1.0f, fast_ceil(-1.5f));
+        EXPECT_EQ(-1.0f, fast_ceil(-1.0f));
+        EXPECT_EQ( 0.0f, fast_ceil(-0.5f));
+        EXPECT_EQ( 0.0f, fast_ceil( 0.0f));
+        EXPECT_EQ(+1.0f, fast_ceil(+0.5f));
+        EXPECT_EQ(+1.0f, fast_ceil(+1.0f));
+        EXPECT_EQ(+2.0f, fast_ceil(+1.5f));
+    }
+
     TEST_CASE(Round_FloatToSignedInteger)
     {
         EXPECT_EQ(0, round<int>(0.0f));

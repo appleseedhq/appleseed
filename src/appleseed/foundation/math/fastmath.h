@@ -107,9 +107,6 @@ namespace foundation
 //
 // Other interesting references:
 //
-//   Fast floor:
-//     http://www.masm32.com/board/index.php?topic=9515.msg78719#msg78719
-//
 //   Fast log2 and pow2:
 //     Production Rendering, Springer-Verlag, 2004
 //       and
