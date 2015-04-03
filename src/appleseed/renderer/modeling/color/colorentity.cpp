@@ -191,12 +191,14 @@ void ColorEntity::extract_values()
     ColorValueArray black;
     black.push_back(0.0f);
 
-    impl->m_values = m_params.get_required("color", black);
-
     ColorValueArray opaque;
     opaque.push_back(1.0f);
 
+    impl->m_values = m_params.get_required("color", black);
     impl->m_alpha = m_params.get_optional("alpha", opaque);
+
+    m_params.strings().remove("color");
+    m_params.strings().remove("alpha");
 }
 
 void ColorEntity::check_validity()
