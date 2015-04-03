@@ -38,6 +38,7 @@
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/textureinstance.h"
+#include "renderer/modeling/scene/visibilityflags.h"
 #include "renderer/modeling/surfaceshader/physicalsurfaceshader.h"
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/utility/bbox.h"
@@ -161,10 +162,18 @@ namespace
         const AssemblyInstanceContainer&  assembly_instances,
         set<UniqueID>&                    visited_assemblies)
     {
+        // Regarding transparency in the Tracer,
+        // we only care about camera and shadow rays.
+        const uint32 visibility_mask = VisibilityFlags::CameraRay | VisibilityFlags::ShadowRay;
+
         for (const_each<AssemblyInstanceContainer> i = assembly_instances; i; ++i)
         {
             // Retrieve the assembly instance.
             const AssemblyInstance& assembly_instance = *i;
+
+            // Skip invisible assembly instances.
+            if ((assembly_instance.get_vis_flags() & visibility_mask) == 0)
+                continue;
 
             // Retrieve the assembly.
             const Assembly& assembly = assembly_instance.get_assembly();
@@ -176,6 +185,10 @@ namespace
                 // Check the assembly contents.
                 for (const_each<ObjectInstanceContainer> i = assembly.object_instances(); i; ++i)
                 {
+                    // Skip invisible object instances.
+                    if ((i->get_vis_flags() & visibility_mask) == 0)
+                        continue;
+
                     if (i->uses_alpha_mapping())
                         return true;
                 }
