@@ -283,7 +283,7 @@ TEST_SUITE(Foundation_Math_QMC)
     {
         Vector<T, 2> p;
         p[0] = static_cast<T>(n) / count;
-        p[1] = radical_inverse_base2<T>(r, n);
+        p[1] = radical_inverse_base2<T>(n ^ r);
         return p;
     }
 

@@ -70,12 +70,6 @@ template <typename T>
 T radical_inverse_base2(
     size_t              input);         // input digits
 
-// Radical inverse in base 2 with digits scrambling.
-template <typename T>
-T radical_inverse_base2(
-    const size_t        scrambling,     // scrambling value
-    size_t              input);         // input digits
-
 // Folded radical inverse in base 2.
 template <typename T>
 T folded_radical_inverse_base2(
@@ -217,22 +211,6 @@ inline T radical_inverse_base2(
 }
 
 template <typename T>
-inline T radical_inverse_base2(
-    const size_t        scrambling,
-    size_t              input)
-{
-    input = (input >> 16) | (input << 16);                                  // 16-bit swap
-    input = ((input & 0xFF00FF00) >> 8) | ((input & 0x00FF00FF) << 8);      // 8-bit swap
-    input = ((input & 0xF0F0F0F0) >> 4) | ((input & 0x0F0F0F0F) << 4);      // 4-bit swap
-    input = ((input & 0xCCCCCCCC) >> 2) | ((input & 0x33333333) << 2);      // 2-bit swap
-    input = ((input & 0xAAAAAAAA) >> 1) | ((input & 0x55555555) << 1);      // 1-bit swap
-
-    input ^= scrambling;
-
-    return static_cast<T>(input) / static_cast<T>(0x100000000LL);
-}
-
-template <typename T>
 inline T folded_radical_inverse_base2(
     size_t              input)
 {
@@ -242,7 +220,8 @@ inline T folded_radical_inverse_base2(
 
     while (x + b > x)
     {
-        if ((input + offset) & 1) x += b;
+        if ((input + offset) & 1)
+            x += b;
         b *= T(0.5);
         input >>= 1;
         ++offset;
