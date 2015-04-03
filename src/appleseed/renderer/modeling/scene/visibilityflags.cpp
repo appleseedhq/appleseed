@@ -39,6 +39,8 @@
 namespace renderer
 {
 
+// The Names array must be kept in sync with the VisibilityFlags::Values enum and 
+// the order of the strings has to match the order of the enum.
 const char* VisibilityFlags::Names[] =
 {
     "camera",
