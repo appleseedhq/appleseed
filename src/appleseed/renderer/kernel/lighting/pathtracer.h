@@ -180,16 +180,18 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         const ShadingRay& ray = vertex.get_ray();
         assert(foundation::is_normalized(ray.m_dir));
 
-        if (ray.m_has_differentials)
-        {
-            vertex.m_outgoing =
-                foundation::Dual3d(
+        // Compute the outgoing direction at this vertex.
+        // Derivation:
+        //   ray.dir + d(ray.dir)/dx = ray.dx.dir
+        //   outgoing = -ray.dir
+        //   d(outgoing)/dx = d(-ray.dir)/dx = ray.dir - ray.dx.dir
+        vertex.m_outgoing =
+            ray.m_has_differentials
+                ? foundation::Dual3d(
                     -ray.m_dir,
-                    -(ray.m_rx.m_dir - ray.m_dir),
-                    -(ray.m_ry.m_dir - ray.m_dir));
-        }
-        else
-            vertex.m_outgoing = foundation::Dual3d(-ray.m_dir);
+                    ray.m_dir - ray.m_rx.m_dir,
+                    ray.m_dir - ray.m_ry.m_dir)
+                : foundation::Dual3d(-ray.m_dir);
 
         // Terminate the path if the ray didn't hit anything.
         if (!vertex.m_shading_point->hit())

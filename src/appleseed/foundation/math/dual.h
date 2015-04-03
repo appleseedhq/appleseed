@@ -112,7 +112,6 @@ template <typename T>
 inline const T& Dual<T>::get_dx() const
 {
     assert(m_has_derivatives);
-
     return m_dx;
 }
 
@@ -120,7 +119,6 @@ template <typename T>
 inline const T& Dual<T>::get_dy() const
 {
     assert(m_has_derivatives);
-
     return m_dy;
 }
 
