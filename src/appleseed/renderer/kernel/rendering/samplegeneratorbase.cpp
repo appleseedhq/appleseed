@@ -47,6 +47,9 @@ namespace renderer
 
 namespace
 {
+    // Number of consecutive samples rendered by a job.
+    // This parameter is only used to break correlation between jobs and samples.
+    // It has no impact on performance.
     const size_t SampleBatchSize = 67;
 }
 
@@ -75,12 +78,11 @@ void SampleGeneratorBase::generate_samples(
     clear_keep_memory(m_samples);
     m_samples.reserve(sample_count);
 
-    size_t stored_sample_count = 0;
+    size_t stored = 0;
 
-    while (stored_sample_count < sample_count)
+    while (stored < sample_count)
     {
-        stored_sample_count += generate_samples(m_sequence_index, m_samples);
-
+        stored += generate_samples(m_sequence_index, m_samples);
         ++m_sequence_index;
 
         if (++m_current_batch_size == SampleBatchSize)
@@ -93,8 +95,8 @@ void SampleGeneratorBase::generate_samples(
         }
     }
 
-    if (stored_sample_count > 0)
-        buffer.store_samples(stored_sample_count, &m_samples[0]);
+    if (stored > 0)
+        buffer.store_samples(stored, &m_samples[0]);
 }
 
 }   // namespace renderer
