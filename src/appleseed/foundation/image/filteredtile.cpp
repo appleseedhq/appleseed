@@ -103,6 +103,11 @@ void FilteredTile::add(
     // Don't affect pixels outside the crop window.
     footprint = AABB2i::intersect(footprint, m_crop_window);
 
+    // Bail out if the point does not fall inside the crop window.
+    // Only check the x coordinate; the y coordinate is checked in the loop below.
+    if (footprint.min.x > footprint.max.x)
+        return;
+
     for (int ry = footprint.min.y; ry <= footprint.max.y; ++ry)
     {
         float* RESTRICT ptr = reinterpret_cast<float*>(pixel(footprint.min.x, ry));
