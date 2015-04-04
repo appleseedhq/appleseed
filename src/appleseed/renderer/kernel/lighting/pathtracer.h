@@ -274,7 +274,8 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
 #endif
 
         // Retrieve the EDF and the BSDF.
-        vertex.m_edf = material->get_edf();
+        vertex.m_edf =
+            vertex.m_shading_point->is_curve_primitive() ? 0 : material->get_edf();
         vertex.m_bsdf = material->get_bsdf();
 
         // Evaluate the input values of the BSDF.
