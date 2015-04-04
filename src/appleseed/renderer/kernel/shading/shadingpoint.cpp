@@ -75,7 +75,7 @@ void ShadingPoint::fetch_source_geometry() const
         fetch_triangle_source_geometry();
     else
     {
-        assert(m_primitive_type == PrimitiveCurve1 || m_primitive_type == PrimitiveCurve3);
+        assert(is_curve_primitive());
         fetch_curve_source_geometry();
     }
 }
@@ -239,7 +239,7 @@ void ShadingPoint::refine_and_offset() const
     }
     else
     {
-        assert(m_primitive_type == PrimitiveCurve1 || m_primitive_type == PrimitiveCurve3);
+        assert(is_curve_primitive());
 
         m_asm_geo_normal = normalize(-local_ray.m_dir);
 
@@ -355,30 +355,18 @@ void ShadingPoint::compute_world_space_partial_derivatives() const
                     obj_instance_transform.normal_to_parent(m_dndv));
         }
     }
-    else if (m_primitive_type == PrimitiveCurve1)
-    {
-        assert(m_primitive_type == PrimitiveCurve1);
-
-        const CurveObject* curves = static_cast<const CurveObject*>(m_object);
-        const CurveType1& curve = curves->get_curve1(m_primitive_index);
-
-        const GScalar v = static_cast<GScalar>(m_bary[1]);
-        const GVector3 tangent = curve.evaluate_tangent(v);
-        const Vector3d& sn = get_original_shading_normal();
-
-        m_dpdu = normalize(Vector3d(tangent));
-        m_dpdv = normalize(cross(sn, m_dpdu));
-        m_dndu = m_dndv = Vector3d(0.0);
-    }
     else
     {
-        assert(m_primitive_type == PrimitiveCurve3);
-
-        const CurveObject* curves = static_cast<const CurveObject*>(m_object);
-        const CurveType3& curve = curves->get_curve3(m_primitive_index);
+        assert(is_curve_primitive());
 
         const GScalar v = static_cast<GScalar>(m_bary[1]);
-        const GVector3 tangent = curve.evaluate_tangent(v);
+
+        const CurveObject* curves = static_cast<const CurveObject*>(m_object);
+        const GVector3 tangent =
+            m_primitive_type == PrimitiveCurve1
+                ? curves->get_curve1(m_primitive_index).evaluate_tangent(v)
+                : curves->get_curve3(m_primitive_index).evaluate_tangent(v);
+
         const Vector3d& sn = get_original_shading_normal();
 
         m_dpdu = normalize(Vector3d(tangent));
@@ -508,7 +496,7 @@ void ShadingPoint::compute_geometric_normal() const
     }
     else
     {
-        assert(m_primitive_type == PrimitiveCurve1 || m_primitive_type == PrimitiveCurve3);
+        assert(is_curve_primitive());
 
         // We assume flat ribbons facing incoming rays.
         m_geometric_normal = -m_ray.m_dir;
@@ -546,7 +534,7 @@ void ShadingPoint::compute_original_shading_normal() const
     }
     else
     {
-        assert(m_primitive_type == PrimitiveCurve1 || m_primitive_type == PrimitiveCurve3);
+        assert(is_curve_primitive());
 
         // We assume flat ribbons facing incoming rays.
         m_original_shading_normal = -m_ray.m_dir;
@@ -709,7 +697,8 @@ void ShadingPoint::compute_alpha() const
     }
     else
     {
-        assert(m_primitive_type == PrimitiveCurve1 || m_primitive_type == PrimitiveCurve3);
+        assert(is_curve_primitive());
+
         // TODO: interpolate per vertex alpha for curves here...
     }
 }

@@ -315,7 +315,7 @@ void DiagnosticSurfaceShader::evaluate(
             // Initialize the shading result to the background color.
             shading_result.set_main_to_linear_rgba(Color4f(0.0f, 0.0f, 0.8f, 0.5f));
 
-            if (shading_point.get_primitive_type() == ShadingPoint::PrimitiveTriangle)
+            if (shading_point.is_triangle_primitive())
             {
                 // Film space thickness of the wires.
                 const double SquareWireThickness = square(0.00025);
@@ -355,8 +355,7 @@ void DiagnosticSurfaceShader::evaluate(
             }
             else
             {
-                assert(shading_point.get_primitive_type() == ShadingPoint::PrimitiveCurve1 ||
-                       shading_point.get_primitive_type() == ShadingPoint::PrimitiveCurve3);
+                assert(shading_point.is_curve_primitive());
 
                 // todo: implement.
             }
@@ -368,7 +367,7 @@ void DiagnosticSurfaceShader::evaluate(
             // Initialize the shading result to the background color.
             shading_result.set_main_to_linear_rgba(Color4f(0.0f, 0.0f, 0.8f, 0.5f));
 
-            if (shading_point.get_primitive_type() == ShadingPoint::PrimitiveTriangle)
+            if (shading_point.is_triangle_primitive())
             {
                 // World space thickness of the wires.
                 const double SquareWireThickness = square(0.0015);
@@ -397,8 +396,7 @@ void DiagnosticSurfaceShader::evaluate(
             }
             else
             {
-                assert(shading_point.get_primitive_type() == ShadingPoint::PrimitiveCurve1 ||
-                       shading_point.get_primitive_type() == ShadingPoint::PrimitiveCurve3);
+                assert(shading_point.is_curve_primitive());
 
                 // todo: implement.
             }

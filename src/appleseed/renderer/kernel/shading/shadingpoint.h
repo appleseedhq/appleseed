@@ -89,10 +89,11 @@ class ShadingPoint
     // The type of the primitive at the shading point.
     enum PrimitiveType
     {
-        PrimitiveNone,
-        PrimitiveTriangle,
-        PrimitiveCurve1,
-        PrimitiveCurve3
+        PrimitiveNone       = 0,
+        PrimitiveTriangle   = 1 << 1,
+        PrimitiveCurve      = 1 << 2,
+        PrimitiveCurve1     = PrimitiveCurve | 0,
+        PrimitiveCurve3     = PrimitiveCurve | 1
     };
 
     // Constructor, calls clear().
@@ -119,6 +120,8 @@ class ShadingPoint
 
     // Return the type of the hit primitive.
     PrimitiveType get_primitive_type() const;
+    bool is_triangle_primitive() const;
+    bool is_curve_primitive() const;
 
     // Return the distance from the ray origin to the intersection point.
     double get_distance() const;
@@ -445,6 +448,16 @@ inline ShadingPoint::PrimitiveType ShadingPoint::get_primitive_type() const
     return m_primitive_type;
 }
 
+inline bool ShadingPoint::is_triangle_primitive() const
+{
+    return (m_primitive_type & PrimitiveTriangle) != 0;
+}
+
+inline bool ShadingPoint::is_curve_primitive() const
+{
+    return (m_primitive_type & PrimitiveCurve) != 0;
+}
+
 inline double ShadingPoint::get_distance() const
 {
     assert(hit());
@@ -479,7 +492,7 @@ inline const foundation::Vector2d& ShadingPoint::get_uv(const size_t uvset) cons
         }
         else
         {
-            assert(m_primitive_type == PrimitiveCurve1 || m_primitive_type == PrimitiveCurve3);
+            assert(is_curve_primitive());
             m_uv = m_bary;
         }
 

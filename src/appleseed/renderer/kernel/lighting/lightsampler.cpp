@@ -538,7 +538,7 @@ void LightSampler::sample(
 
 double LightSampler::evaluate_pdf(const ShadingPoint& shading_point) const
 {
-    assert(shading_point.get_primitive_type() == ShadingPoint::PrimitiveTriangle);
+    assert(shading_point.is_triangle_primitive());
 
     const EmittingTriangleKey triangle_key(
         shading_point.get_assembly_instance().get_uid(),
