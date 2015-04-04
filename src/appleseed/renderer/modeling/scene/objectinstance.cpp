@@ -413,6 +413,9 @@ void ObjectInstance::check_materials() const
 
 bool ObjectInstance::uses_alpha_mapping() const
 {
+    if (get_object().has_alpha_map())
+        return true;
+
     return
         renderer::uses_alpha_mapping(m_back_materials) ||
         renderer::uses_alpha_mapping(m_front_materials);

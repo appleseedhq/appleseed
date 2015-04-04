@@ -39,6 +39,8 @@
 namespace renderer
 {
 
+// The Names array must be kept in sync with the VisibilityFlags::Values enum and 
+// the order of the strings has to match the order of the enum.
 const char* VisibilityFlags::Names[] =
 {
     "camera",
@@ -59,29 +61,11 @@ VisibilityFlags::Type VisibilityFlags::parse(
 {
     Type flags = 0;
 
-    if (params.get_optional<bool>("camera", true, message_context))
-        flags |= CameraRay;
-
-    if (params.get_optional<bool>("light", true, message_context))
-        flags |= LightRay;
-
-    if (params.get_optional<bool>("shadow", true, message_context))
-        flags |= ShadowRay;
-
-    if (params.get_optional<bool>("transparency", true, message_context))
-        flags |= TransparencyRay;
-
-    if (params.get_optional<bool>("probe", true, message_context))
-        flags |= ProbeRay;
-
-    if (params.get_optional<bool>("diffuse", true, message_context))
-        flags |= DiffuseRay;
-
-    if (params.get_optional<bool>("glossy", true, message_context))
-        flags |= GlossyRay;
-
-    if (params.get_optional<bool>("specular", true, message_context))
-        flags |= SpecularRay;
+    for (size_t i = 0; i < Count; ++i)
+    {
+        if (params.get_optional<bool>(Names[i], true, message_context))
+            flags |= 1 << i;
+    }
 
     return flags;
 }
