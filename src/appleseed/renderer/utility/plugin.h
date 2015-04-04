@@ -49,13 +49,17 @@ class ExceptionPluginInitializationFailed
     ExceptionPluginInitializationFailed();
 };
 
+
+//
+// A renderer plugin.
+//
+
 class Plugin
   : public foundation::NonCopyable
 {
   public:
-
-    typedef bool(*InitPluginFnType)();
-    typedef void(*UnInitPluginFnType)();
+    typedef bool (*InitPluginFnType)();
+    typedef void (*UnInitPluginFnType)();
 
     // Delete this instance.
     void release();
@@ -63,7 +67,7 @@ class Plugin
     // Get a symbol from the plugin.
     void* get_symbol(const char* name, const bool no_throw = true) const;
 
-    // Return the os default file extension for plugins.
+    // Return the OS default file extension for plugins.
     static const char* get_default_file_extension();
 
   private:
@@ -80,9 +84,14 @@ class Plugin
 };
 
 
+//
+// An application-wide plugin cache.
+//
+
 class PluginCache
 {
   public:
+    // Retrieve a plugin by its path. Thread-safe.
     static foundation::auto_release_ptr<Plugin> load(const char* path);
 };
 
