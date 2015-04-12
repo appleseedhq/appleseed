@@ -250,7 +250,6 @@ class LightSampler
 
     double                      m_shutter_open_time;
     double                      m_shutter_close_time;
-    double                      m_ray_dtime;
 
     // Recursively collect non-physical lights from a given set of assembly instances.
     void collect_non_physical_lights(
@@ -382,8 +381,7 @@ inline void LightSampler::sample(
     ShadingRay::Time time = ShadingRay::Time::create_with_normalized_time(
         s[0],
         m_shutter_open_time,
-        m_shutter_close_time,
-        m_ray_dtime);
+        m_shutter_close_time);
     sample(time, foundation::Vector3d(s[1], s[2], s[3]), light_sample);
 }
 

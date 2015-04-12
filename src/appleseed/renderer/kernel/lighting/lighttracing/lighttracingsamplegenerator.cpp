@@ -214,7 +214,6 @@ namespace
             const Camera* camera = scene.get_camera();
             m_shutter_open_time = camera->get_shutter_open_time();
             m_shutter_close_time = camera->get_shutter_close_time();
-            m_ray_dtime = camera->get_shutter_open_time_interval();
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -522,7 +521,6 @@ namespace
 
         double                          m_shutter_open_time;
         double                          m_shutter_close_time;
-        double                          m_ray_dtime;
 
         virtual size_t generate_samples(
             const size_t                sequence_index,
@@ -634,8 +632,7 @@ namespace
                 ShadingRay::Time::create_with_normalized_time(
                     sampling_context.next_double2(),
                     m_shutter_open_time,
-                    m_shutter_close_time,
-                    m_ray_dtime);
+                    m_shutter_close_time);
             const ShadingRay light_ray(
                 light_sample.m_point,
                 emission_direction,
@@ -713,8 +710,7 @@ namespace
                 ShadingRay::Time::create_with_normalized_time(
                     sampling_context.next_double2(),
                     m_shutter_open_time,
-                    m_shutter_close_time,
-                    m_ray_dtime);
+                    m_shutter_close_time);
             const ShadingRay light_ray(
                 emission_position,
                 emission_direction,
@@ -803,8 +799,7 @@ namespace
                 ShadingRay::Time::create_with_normalized_time(
                     sampling_context.next_double2(),
                     m_shutter_open_time,
-                    m_shutter_close_time,
-                    m_ray_dtime);
+                    m_shutter_close_time);
             const ShadingRay light_ray(
                 ray_origin,
                 -outgoing,

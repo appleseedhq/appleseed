@@ -322,7 +322,7 @@ bool RendererServices::trace(
         reinterpret_cast<const ShadingPoint*>(sg->renderstate);
     const ShadingPoint* origin_shading_point = 0;
 
-    Vector3d PP = Vector3f(P);
+    Vector3d pos = Vector3f(P);
 
     if (P == sg->P)
     {
@@ -335,20 +335,18 @@ bool RendererServices::trace(
             front,
             back);
 
-        PP = sg->N.dot(R) >= 0.0f ? front : back;
+        pos = sg->N.dot(R) >= 0.0f ? front : back;
 
         origin_shading_point = parent;
     }
 
+    const Vector3d dir = Vector3f(R);
     const ShadingRay ray(
-        PP,
-        normalize(Vector3f(R)),
+        pos,
+        normalize(dir),
         options.mindist,
         options.maxdist,
-        ShadingRay::Time(
-            sg->time,
-            m_shutter_interval != 0.0f ? (sg->time - m_shutter[0]) / m_shutter_interval : 0.0f,
-            sg->dtime),
+        parent->get_ray().m_time,
         VisibilityFlags::ProbeRay,
         parent->get_ray().m_depth + 1);
 
@@ -367,7 +365,7 @@ bool RendererServices::trace(
     {
         trace_data->m_hit = true;
         trace_data->m_P = Imath::V3d(shading_point.get_point());
-        trace_data->m_hit_distance = (trace_data->m_P - P).length();
+        trace_data->m_hit_distance = shading_point.get_distance();
         trace_data->m_N = Imath::V3d(shading_point.get_shading_normal());
         trace_data->m_Ng = Imath::V3d(shading_point.get_geometric_normal());
         const Vector2d& uv = shading_point.get_uv(0);

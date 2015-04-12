@@ -88,7 +88,7 @@ void LightSample::make_shading_point(
             direction,
             0.0,
             0.0,
-            ShadingRay::Time(0.0, 0.0, 0.0),
+            ShadingRay::Time(),
             VisibilityFlags::CameraRay, 0),
         ShadingPoint::PrimitiveTriangle,    // note: we assume light samples are always on triangles (and not on curves)
         m_triangle->m_assembly_instance,
@@ -111,7 +111,6 @@ LightSampler::LightSampler(const Scene& scene, const ParamArray& params)
     const Camera* camera = scene.get_camera();
     m_shutter_open_time = camera->get_shutter_open_time();
     m_shutter_close_time = camera->get_shutter_close_time();
-    m_ray_dtime = camera->get_shutter_open_time_interval();
 
     RENDERER_LOG_INFO("collecting light emitters...");
 
