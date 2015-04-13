@@ -253,7 +253,6 @@ namespace
             const Camera* camera = scene.get_camera();
             m_shutter_open_time = camera->get_shutter_open_time();
             m_shutter_close_time = camera->get_shutter_close_time();
-            m_ray_dtime = camera->get_shutter_open_time_interval();
         }
 
         virtual void execute(const size_t thread_index) APPLESEED_OVERRIDE
@@ -307,7 +306,6 @@ namespace
         SPPMPhotonVector            m_local_photons;
         double                      m_shutter_open_time;
         double                      m_shutter_close_time;
-        double                      m_ray_dtime;
 
         void trace_light_photon(
             const ShadingContext&   shading_context,
@@ -394,8 +392,7 @@ namespace
             ShadingRay::Time time = ShadingRay::Time::create_with_normalized_time(
                 sampling_context.next_double2(),
                 m_shutter_open_time,
-                m_shutter_close_time,
-                m_ray_dtime);
+                m_shutter_close_time);
 
             const ShadingRay ray(
                 light_sample.m_point,
@@ -458,8 +455,7 @@ namespace
             ShadingRay::Time time = ShadingRay::Time::create_with_normalized_time(
                 sampling_context.next_double2(),
                 m_shutter_open_time,
-                m_shutter_close_time,
-                m_ray_dtime);
+                m_shutter_close_time);
 
             const ShadingRay ray(
                 emission_position,
@@ -555,7 +551,6 @@ namespace
             const Camera* camera = scene.get_camera();
             m_shutter_open_time = camera->get_shutter_open_time();
             m_shutter_close_time = camera->get_shutter_close_time();
-            m_ray_dtime = camera->get_shutter_open_time_interval();
         }
 
         virtual void execute(const size_t thread_index) APPLESEED_OVERRIDE
@@ -610,7 +605,6 @@ namespace
         SPPMPhotonVector            m_local_photons;
         double                      m_shutter_open_time;
         double                      m_shutter_close_time;
-        double                      m_ray_dtime;
 
         Vector3d                    m_scene_center;         // world space
         double                      m_scene_radius;         // world space
@@ -676,8 +670,7 @@ namespace
             ShadingRay::Time time = ShadingRay::Time::create_with_normalized_time(
                 sampling_context.next_double2(),
                 m_shutter_open_time,
-                m_shutter_close_time,
-                m_ray_dtime);
+                m_shutter_close_time);
 
             const ShadingRay ray(
                 ray_origin,

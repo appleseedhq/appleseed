@@ -288,24 +288,24 @@ void Camera::initialize_ray(
 {
     ray.m_tmin = 0.0;
     ray.m_tmax = numeric_limits<double>::max();
+    ray.m_flags = VisibilityFlags::CameraRay;
+    ray.m_depth = 0;
 
     if (m_shutter_open_time == m_shutter_close_time)
-        ray.m_time = ShadingRay::Time(m_shutter_open_time, 0.0, 0.0);
+    {
+        ray.m_time = ShadingRay::Time::create_with_normalized_time(
+            0.0,
+            m_shutter_open_time,
+            m_shutter_close_time);
+    }
     else
     {
         sampling_context.split_in_place(1, 1);
-        ray.m_time.m_normalized = sampling_context.next_double2();
-        ray.m_time.m_absolute =
-            fit(
-                ray.m_time.m_normalized,
-                0.0, 1.0,
-                m_shutter_open_time, m_shutter_close_time);
-
-        ray.m_time.m_shutter_interval = m_shutter_open_time_interval;
+        ray.m_time = ShadingRay::Time::create_with_normalized_time(
+            sampling_context.next_double2(),
+            m_shutter_open_time,
+            m_shutter_close_time);
     }
-
-    ray.m_flags = VisibilityFlags::CameraRay;
-    ray.m_depth = 0;
 }
 
 bool Camera::has_param(const char* name) const
