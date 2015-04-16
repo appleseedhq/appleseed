@@ -601,9 +601,10 @@ void ShadingPoint::compute_world_space_triangle_vertices() const
     m_v2_w = m_assembly_instance_transform.point_to_parent(m_v2_w);
 }
 
-void ShadingPoint::compute_point_velocity() const
+void ShadingPoint::compute_world_space_point_velocity() const
 {
-    m_point_velocity = Vector3d(0.0);
+    Vector3d p0 = get_point();
+    Vector3d p1 = p0;
 
     if (m_primitive_type == PrimitiveTriangle)
     {
@@ -632,36 +633,55 @@ void ShadingPoint::compute_point_velocity() const
         assert(triangle.m_v2 != Triangle::None);
         if (motion_segment_count > 0)
         {
+            // Fetch triangle vertices from the first pose.
+            const GVector3 first_v0 = tess.m_vertices[triangle.m_v0];
+            const GVector3 first_v1 = tess.m_vertices[triangle.m_v1];
+            const GVector3 first_v2 = tess.m_vertices[triangle.m_v2];
+
             // Fetch triangle vertices from the last pose.
             const GVector3 last_v0 = tess.get_vertex_pose(triangle.m_v0, motion_segment_count - 1);
             const GVector3 last_v1 = tess.get_vertex_pose(triangle.m_v1, motion_segment_count - 1);
             const GVector3 last_v2 = tess.get_vertex_pose(triangle.m_v2, motion_segment_count - 1);
 
-            // Compute velocities per vertex.
-            const GVector3 vel_v0 = last_v0 - tess.m_vertices[triangle.m_v0];
-            const GVector3 vel_v1 = last_v1 - tess.m_vertices[triangle.m_v1];
-            const GVector3 vel_v2 = last_v2 - tess.m_vertices[triangle.m_v2];
-
+            // Compute the barycentric coordinates.
             const float v = static_cast<float>(m_bary[0]);
             const float w = static_cast<float>(m_bary[1]);
             const float u = 1.0f - v - w;
 
-            // Compute point velocity.
-            const GVector3 velocity =
-                vel_v0 * u
-              + vel_v1 * v
-              + vel_v2 * w;
-
-            m_point_velocity = Vector3d(velocity);
-
-            // Transform to assembly space.
-            const Transformd& obj_instance_transform = m_object_instance->get_transform();
-            m_point_velocity = obj_instance_transform.vector_to_parent(m_point_velocity);
-
-            // Transform to world space.
-            m_point_velocity = m_assembly_instance_transform.vector_to_parent(m_point_velocity);
+            // Compute positions at shutter open and close times.
+            p0 = first_v0 * u + first_v1 * v + first_v2 * w;
+            p1 =  last_v0 * u +  last_v1 * v +  last_v2 * w;
         }
     }
+
+    // Transform positions to assembly space.
+    const Transformd& obj_instance_transform = m_object_instance->get_transform();
+    p0 = obj_instance_transform.point_to_parent(p0);
+    p1 = obj_instance_transform.point_to_parent(p1);
+
+    // Transform positions to world space.
+    if (m_assembly_instance_transform_seq->size() > 1)
+    {
+        Transformd tmp;
+        const Transformd& assembly_instance_transform0 =
+            m_assembly_instance_transform_seq->evaluate(
+                get_ray().m_time.m_shutter_open,
+                tmp);
+        p0 = assembly_instance_transform0.point_to_parent(p0);
+
+        const Transformd& assembly_instance_transform1 =
+            m_assembly_instance_transform_seq->evaluate(
+                get_ray().m_time.m_shutter_close,
+                tmp);
+        p1 = assembly_instance_transform1.point_to_parent(p1);
+    }
+    else
+    {
+        p0 = m_assembly_instance_transform.point_to_parent(p0);
+        p1 = m_assembly_instance_transform.point_to_parent(p1);
+    }
+
+    m_point_velocity = p1 - p0;
 }
 
 void ShadingPoint::compute_alpha() const
@@ -756,11 +776,11 @@ void ShadingPoint::initialize_osl_shader_globals(
         }
 
         m_shader_globals.time = static_cast<float>(ray.m_time.m_absolute);
-        m_shader_globals.dtime = static_cast<float>(ray.m_time.m_shutter_interval);
+        m_shader_globals.dtime = static_cast<float>(ray.m_time.m_shutter_close - ray.m_time.m_shutter_open);
 
         m_shader_globals.dPdtime =
             sg.uses_dPdtime()
-                ? Vector3f(get_point_velocity())
+                ? Vector3f(get_world_space_point_velocity())
                 : Vector3f(0.0f);
 
         m_shader_globals.renderer = renderer;

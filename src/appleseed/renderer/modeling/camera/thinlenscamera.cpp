@@ -494,7 +494,7 @@ namespace
             ray.m_dir = normalize(transform.vector_to_parent(-ndc_to_camera(m_autofocus_target)));
             ray.m_tmin = 0.0;
             ray.m_tmax = numeric_limits<double>::max();
-            ray.m_time = ShadingRay::Time(time, 0.5, get_shutter_open_time_interval());
+            ray.m_time = ShadingRay::Time::create_with_normalized_time(0.5, get_shutter_open_time(), get_shutter_close_time());
             ray.m_flags = VisibilityFlags::ProbeRay;
             ray.m_depth = 0;
 

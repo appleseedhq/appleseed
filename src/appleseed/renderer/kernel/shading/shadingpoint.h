@@ -180,7 +180,7 @@ class ShadingPoint
     const foundation::Vector3d& get_vertex(const size_t i) const;
 
     // Return the world space point velocity.
-    const foundation::Vector3d& get_point_velocity() const;
+    const foundation::Vector3d& get_world_space_point_velocity() const;
 
     // Return the material at the intersection point, or 0 if there is none.
     const Material* get_material() const;
@@ -294,7 +294,7 @@ class ShadingPoint
         HasShadingBasis                  = 1 << 10,
         HasWorldSpaceTriangleVertices    = 1 << 11,
         HasMaterial                      = 1 << 12,
-        HasPointVelocity                 = 1 << 13,
+        HasWorldSpacePointVelocity       = 1 << 13,
         HasAlpha                         = 1 << 14,
         HasScreenSpacePartialDerivatives = 1 << 15
 #ifdef APPLESEED_WITH_OSL
@@ -364,7 +364,7 @@ class ShadingPoint
     void compute_original_shading_normal() const;
     void compute_shading_basis() const;
     void compute_world_space_triangle_vertices() const;
-    void compute_point_velocity() const;
+    void compute_world_space_point_velocity() const;
 
     void compute_alpha() const;
 
@@ -711,14 +711,14 @@ inline const foundation::Vector3d& ShadingPoint::get_vertex(const size_t i) cons
     return (&m_v0_w)[i];
 }
 
-inline const foundation::Vector3d& ShadingPoint::get_point_velocity() const
+inline const foundation::Vector3d& ShadingPoint::get_world_space_point_velocity() const
 {
     assert(hit());
 
-    if (!(m_members & HasPointVelocity))
+    if (!(m_members & HasWorldSpacePointVelocity))
     {
-        compute_point_velocity();
-        m_members |= HasPointVelocity;
+        compute_world_space_point_velocity();
+        m_members |= HasWorldSpacePointVelocity;
     }
 
     return m_point_velocity;
