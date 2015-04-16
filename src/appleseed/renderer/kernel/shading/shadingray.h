@@ -73,10 +73,10 @@ class ShadingRay
             const double shutter_open,
             const double shutter_close);
 
-        double m_absolute;          // absolute time of the ray.
-        double m_normalized;        // time of the ray, relative to shutter open / close times.
-        double m_shutter_open;      // shutter open time.
-        double m_shutter_close;     // shutter close time.
+        double m_absolute;          // absolute time of the ray
+        double m_normalized;        // time of the ray, relative to shutter open / close times
+        double m_shutter_open;      // shutter open time
+        double m_shutter_close;     // shutter close time
 
       private:
         Time(
