@@ -493,6 +493,65 @@ namespace
         return true;
     }
 
+    void emit_mismatching_feature_count_error_message(
+        const char*             object_path,
+        const char*             filename,
+        const char*             feature_name_singular,
+        const char*             feature_name_plural,
+        const size_t            expected_count,
+        const size_t            actual_count)
+    {
+        RENDERER_LOG_ERROR(
+            "while reading key frame for object \"%s\" from mesh file %s: "
+            "expected " FMT_SIZE_T " %s, got " FMT_SIZE_T ".",
+            object_path,
+            filename,
+            expected_count,
+            expected_count > 1 ? feature_name_plural : feature_name_singular,
+            actual_count);
+    }
+
+    bool have_identical_topology(
+        const MeshObject&       object,
+        const char*             filename,
+        const MeshObject&       pose)
+    {
+        if (object.get_vertex_count() != pose.get_vertex_count())
+        {
+            emit_mismatching_feature_count_error_message(
+                object.get_path().c_str(),
+                filename,
+                "vertex", "vertices",
+                object.get_vertex_count(),
+                pose.get_vertex_count());
+            return false;
+        }
+
+        if (object.get_vertex_normal_count() != pose.get_vertex_normal_count())
+        {
+            emit_mismatching_feature_count_error_message(
+                object.get_path().c_str(),
+                filename,
+                "vertex normal", "vertex normals",
+                object.get_vertex_normal_count(),
+                pose.get_vertex_normal_count());
+            return false;
+        }
+
+        if (object.get_triangle_count() != pose.get_triangle_count())
+        {
+            emit_mismatching_feature_count_error_message(
+                object.get_path().c_str(),
+                filename,
+                "triangle", "triangles",
+                object.get_vertex_normal_count(),
+                pose.get_vertex_normal_count());
+            return false;
+        }
+
+        return true;
+    }
+
     bool set_vertex_poses(
         MeshObjectArray&        objects,
         const MeshObjectArray&  poses,
@@ -502,53 +561,28 @@ namespace
     {
         if (objects.size() != poses.size())
         {
-            RENDERER_LOG_ERROR(
-                "while reading key frame for object \"%s\" from mesh file %s: "
-                "expected " FMT_SIZE_T " object%s, got " FMT_SIZE_T ".",
+            emit_mismatching_feature_count_error_message(
                 base_object_name,
                 filename,
+                "objects", "object",
                 objects.size(),
-                objects.size() > 1 ? "s" : "",
                 poses.size());
-
             return false;
         }
 
         for (size_t i = 0; i < objects.size(); ++i)
         {
-            MeshObject* object = objects[i];
-            const MeshObject* pose = poses[i];
+            MeshObject& object = *objects[i];
+            const MeshObject& pose = *poses[i];
 
-            if (object->get_vertex_count() != pose->get_vertex_count())
-            {
-                RENDERER_LOG_ERROR(
-                    "while reading key frame for object \"%s\" from mesh file %s: "
-                    "expected " FMT_SIZE_T " %s, got " FMT_SIZE_T ".",
-                    object->get_name(),
-                    filename,
-                    object->get_vertex_count(),
-                    object->get_vertex_count() > 1 ? "vertices" : "vertex",
-                    pose->get_vertex_count());
-
+            if (!have_identical_topology(object, filename, pose))
                 return false;
-            }
 
-            if (object->get_triangle_count() != pose->get_triangle_count())
-            {
-                RENDERER_LOG_WARNING(
-                    "while reading key frame for object \"%s\" from mesh file %s: "
-                    "expected " FMT_SIZE_T " %s, got " FMT_SIZE_T ".",
-                    object->get_name(),
-                    filename,
-                    object->get_triangle_count(),
-                    object->get_triangle_count() > 1 ? "triangles" : "triangle",
-                    pose->get_triangle_count());
-            }
+            for (size_t j = 0, e = pose.get_vertex_count(); j < e; ++j)
+                object.set_vertex_pose(j, motion_segment_index, pose.get_vertex(j));
 
-            const size_t vertex_count = pose->get_vertex_count();
-
-            for (size_t j = 0; j < vertex_count; ++j)
-                object->set_vertex_pose(j, motion_segment_index, pose->get_vertex(j));
+            for (size_t j = 0, e = pose.get_vertex_normal_count(); j < e; ++j)
+                object.set_vertex_normal_pose(j, motion_segment_index, pose.get_vertex_normal(j));
         }
 
         return true;
@@ -586,6 +620,15 @@ namespace
             for (size_t j = 1; j < motion_segment_count; ++j)
             {
                 if (object.get_vertex_pose(i, j) != object.get_vertex_pose(i, j - 1))
+                    return true;
+            }
+
+            if (object.get_vertex_normal_pose(i, 0) != object.get_vertex_normal(i))
+                return true;
+
+            for (size_t j = 1; j < motion_segment_count; ++j)
+            {
+                if (object.get_vertex_normal_pose(i, j) != object.get_vertex_normal_pose(i, j - 1))
                     return true;
             }
         }

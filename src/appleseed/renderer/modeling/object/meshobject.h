@@ -107,17 +107,17 @@ class APPLESEED_DLLSYMBOL MeshObject
     size_t get_vertex_normal_count() const;
     const GVector3& get_vertex_normal(const size_t index) const;
 
-    // Insert and access texture coordinates.
-    void reserve_tex_coords(const size_t count);
-    size_t push_tex_coords(const GVector2& tex_coords);
-    size_t get_tex_coords_count() const;
-    GVector2 get_tex_coords(const size_t index) const;
-
     // Insert and access vertex tangents.
     void reserve_vertex_tangents(const size_t count);
     size_t push_vertex_tangent(const GVector3& tangent);    // the tangent must be unit-length
     size_t get_vertex_tangent_count() const;
     GVector3 get_vertex_tangent(const size_t index) const;
+
+    // Insert and access texture coordinates.
+    void reserve_tex_coords(const size_t count);
+    size_t push_tex_coords(const GVector2& tex_coords);
+    size_t get_tex_coords_count() const;
+    GVector2 get_tex_coords(const size_t index) const;
 
     // Insert and access triangles.
     void reserve_triangles(const size_t count);
@@ -129,21 +129,47 @@ class APPLESEED_DLLSYMBOL MeshObject
     void set_motion_segment_count(const size_t count);
     size_t get_motion_segment_count() const;
 
-    // Set the position of a given vertex for a given motion segment.
-    // All vertices must have been inserted before this method can be called.
-    // Conversely, no vertex can be inserted after this method has been called.
+    // Set/get a vertex position for a given motion segment.
+    // All vertices must have been inserted before vertex poses can be set.
+    // Conversely, no vertex can be inserted after vertex poses have been set.
     void set_vertex_pose(
         const size_t    vertex_index,
         const size_t    motion_segment_index,
-        const GVector3& v);
-
-    // Get the position of a given vertex for a given motion segment.
+        const GVector3& vertex);
     GVector3 get_vertex_pose(
         const size_t    vertex_index,
         const size_t    motion_segment_index) const;
 
     // Remove all vertex poses.
     void clear_vertex_poses();
+
+    // Set/get a vertex normal for a given motion segment.
+    // All vertex normals must have been inserted before vertex normal poses can be set.
+    // Conversely, no vertex normal can be inserted after vertex normal poses have been set.
+    void set_vertex_normal_pose(
+        const size_t    normal_index,
+        const size_t    motion_segment_index,
+        const GVector3& normal);
+    GVector3 get_vertex_normal_pose(
+        const size_t    normal_index,
+        const size_t    motion_segment_index) const;
+
+    // Remove all vertex normal poses.
+    void clear_vertex_normal_poses();
+
+    // Set/get a vertex tangent for a given motion segment.
+    // All vertex tangents must have been inserted before vertex tangent poses can be set.
+    // Conversely, no vertex tangent can be inserted after vertex tangent poses have been set.
+    void set_vertex_tangent_pose(
+        const size_t    tangent_index,
+        const size_t    motion_segment_index,
+        const GVector3& tangent);
+    GVector3 get_vertex_tangent_pose(
+        const size_t    tangent_index,
+        const size_t    motion_segment_index) const;
+
+    // Remove all vertex tangent poses.
+    void clear_vertex_tangent_poses();
 
     // Insert and access material slots.
     void reserve_material_slots(const size_t count);

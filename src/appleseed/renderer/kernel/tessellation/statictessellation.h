@@ -72,9 +72,13 @@ class StaticTessellation
     PrimitiveArray              m_primitives;
 
     // Additional attributes.
+    // todo: we could live with a single attribute set with multiple channels.
     foundation::AttributeSet    m_tessellation_attributes;
-    foundation::AttributeSet    m_primitive_attributes;
     foundation::AttributeSet    m_vertex_attributes;
+    foundation::AttributeSet    m_vertex_normal_attributes;
+    foundation::AttributeSet    m_vertex_tangent_attributes;
+    foundation::AttributeSet    m_vertex_tangent_poses;
+    foundation::AttributeSet    m_primitive_attributes;
 
     // Constructor.
     StaticTessellation();
@@ -91,27 +95,51 @@ class StaticTessellation
     size_t get_vertex_tangent_count() const;
     GVector3 get_vertex_tangent(const size_t index) const;
 
-    // Set the number of motion segments for this tessellation.
+    // Set/get the number of motion segments (the number of motion vectors per vertex).
     void set_motion_segment_count(const size_t count);
-
-    // Get the number of motion segments for this tessellation.
     size_t get_motion_segment_count() const;
 
-    // Set the position of a given vertex for a given motion segment.
-    // All vertices must have been inserted before this method can be called.
-    // Conversely, no vertex can be inserted after this method has been called.
+    // Set/get a vertex position for a given motion segment.
+    // All vertices must have been inserted before vertex poses can be set.
+    // Conversely, no vertex can be inserted after vertex poses have been set.
     void set_vertex_pose(
         const size_t    vertex_index,
         const size_t    motion_segment_index,
-        const GVector3& v);
-
-    // Get the position of a given vertex for a given motion segment.
+        const GVector3& vertex);
     GVector3 get_vertex_pose(
         const size_t    vertex_index,
         const size_t    motion_segment_index) const;
 
     // Remove all vertex poses.
     void clear_vertex_poses();
+
+    // Set/get a vertex normal for a given motion segment.
+    // All vertex normals must have been inserted before vertex normal poses can be set.
+    // Conversely, no vertex normal can be inserted after vertex normal poses have been set.
+    void set_vertex_normal_pose(
+        const size_t    normal_index,
+        const size_t    motion_segment_index,
+        const GVector3& normal);
+    GVector3 get_vertex_normal_pose(
+        const size_t    normal_index,
+        const size_t    motion_segment_index) const;
+
+    // Remove all vertex normal poses.
+    void clear_vertex_normal_poses();
+
+    // Set/get a vertex tangent for a given motion segment.
+    // All vertex tangents must have been inserted before vertex tangent poses can be set.
+    // Conversely, no vertex tangent can be inserted after vertex tangent poses have been set.
+    void set_vertex_tangent_pose(
+        const size_t    tangent_index,
+        const size_t    motion_segment_index,
+        const GVector3& tangent);
+    GVector3 get_vertex_tangent_pose(
+        const size_t    tangent_index,
+        const size_t    motion_segment_index) const;
+
+    // Remove all vertex tangent poses.
+    void clear_vertex_tangent_poses();
 
     // Compute the local space bounding box of the tessellation over the shutter interval.
     GAABB3 compute_local_bbox() const;
@@ -121,11 +149,11 @@ class StaticTessellation
     foundation::AttributeSet::ChannelID m_tangents_cid;     // per-vertex tangent vectors
     foundation::AttributeSet::ChannelID m_ms_count_cid;     // motion segment count
     foundation::AttributeSet::ChannelID m_vp_cid;           // vertex poses
+    foundation::AttributeSet::ChannelID m_vnp_cid;          // vertex normal poses
+    foundation::AttributeSet::ChannelID m_vtp_cid;          // vertex tangent poses
 
     void create_uv_0_attribute();
     void create_tangents_attribute();
-    void create_motion_segment_count_attribute();
-    void create_vertex_poses_attribute();
 };
 
 // Specialization of the StaticTessellation class for triangles.
@@ -154,6 +182,8 @@ inline StaticTessellation<Primitive>::StaticTessellation()
   , m_tangents_cid(foundation::AttributeSet::InvalidChannelID)
   , m_ms_count_cid(foundation::AttributeSet::InvalidChannelID)
   , m_vp_cid(foundation::AttributeSet::InvalidChannelID)
+  , m_vnp_cid(foundation::AttributeSet::InvalidChannelID)
+  , m_vtp_cid(foundation::AttributeSet::InvalidChannelID)
 {
 }
 
@@ -187,8 +217,7 @@ inline size_t StaticTessellation<Primitive>::get_tex_coords_count() const
 template <typename Primitive>
 inline GVector2 StaticTessellation<Primitive>::get_tex_coords(const size_t index) const
 {
-    if (m_uv_0_cid == foundation::AttributeSet::InvalidChannelID)
-        return GVector2(0.0);
+    assert(m_uv_0_cid != foundation::AttributeSet::InvalidChannelID);
 
     GVector2 uv;
     m_vertex_attributes.get_attribute(m_uv_0_cid, index, &uv);
@@ -226,8 +255,7 @@ inline size_t StaticTessellation<Primitive>::get_vertex_tangent_count() const
 template <typename Primitive>
 inline GVector3 StaticTessellation<Primitive>::get_vertex_tangent(const size_t index) const
 {
-    if (m_tangents_cid == foundation::AttributeSet::InvalidChannelID)
-        return GVector3(0.0);
+    assert(m_tangents_cid != foundation::AttributeSet::InvalidChannelID);
 
     GVector3 tangent;
     m_vertex_attributes.get_attribute(m_tangents_cid, index, &tangent);
@@ -239,7 +267,13 @@ template <typename Primitive>
 inline void StaticTessellation<Primitive>::set_motion_segment_count(const size_t count)
 {
     if (m_ms_count_cid == foundation::AttributeSet::InvalidChannelID)
-        create_motion_segment_count_attribute();
+    {
+        m_ms_count_cid =
+            m_tessellation_attributes.create_channel(
+                "motion_segment_count",
+                foundation::NumericTypeUInt32,
+                1);
+    }
 
     m_tessellation_attributes.set_attribute(m_ms_count_cid, 0, static_cast<foundation::uint32>(count));
 }
@@ -260,20 +294,26 @@ template <typename Primitive>
 inline void StaticTessellation<Primitive>::set_vertex_pose(
     const size_t    vertex_index,
     const size_t    motion_segment_index,
-    const GVector3& v)
+    const GVector3& vertex)
 {
-    const size_t motion_segment_count = get_motion_segment_count();
-
     assert(vertex_index < m_vertices.size());
+
+    const size_t motion_segment_count = get_motion_segment_count();
     assert(motion_segment_index < motion_segment_count);
 
     if (m_vp_cid == foundation::AttributeSet::InvalidChannelID)
-        create_vertex_poses_attribute();
+    {
+        m_vp_cid =
+            m_vertex_attributes.create_channel(
+                "vertex_poses",
+                foundation::NumericType::id<GVector3::ValueType>(),
+                3);
+    }
 
     m_vertex_attributes.set_attribute(
         m_vp_cid,
         vertex_index * motion_segment_count + motion_segment_index,
-        v);
+        vertex);
 }
 
 template <typename Primitive>
@@ -281,21 +321,19 @@ inline GVector3 StaticTessellation<Primitive>::get_vertex_pose(
     const size_t    vertex_index,
     const size_t    motion_segment_index) const
 {
-    const size_t motion_segment_count = get_motion_segment_count();
-
+    assert(m_vp_cid != foundation::AttributeSet::InvalidChannelID);
     assert(vertex_index < m_vertices.size());
+
+    const size_t motion_segment_count = get_motion_segment_count();
     assert(motion_segment_index < motion_segment_count);
 
-    if (m_vp_cid == foundation::AttributeSet::InvalidChannelID)
-        return GVector3(0.0);
-
-    GVector3 v;
+    GVector3 vertex;
     m_vertex_attributes.get_attribute(
         m_vp_cid,
         vertex_index * motion_segment_count + motion_segment_index,
-        &v);
+        &vertex);
 
-    return v;
+    return vertex;
 }
 
 template <typename Primitive>
@@ -305,6 +343,118 @@ void StaticTessellation<Primitive>::clear_vertex_poses()
     {
         m_vertex_attributes.delete_channel(m_vp_cid);
         m_vp_cid = foundation::AttributeSet::InvalidChannelID;
+    }
+}
+
+template <typename Primitive>
+inline void StaticTessellation<Primitive>::set_vertex_normal_pose(
+    const size_t    normal_index,
+    const size_t    motion_segment_index,
+    const GVector3& normal)
+{
+    assert(normal_index < m_vertex_normals.size());
+
+    const size_t motion_segment_count = get_motion_segment_count();
+    assert(motion_segment_index < motion_segment_count);
+
+    if (m_vnp_cid == foundation::AttributeSet::InvalidChannelID)
+    {
+        m_vnp_cid =
+            m_vertex_normal_attributes.create_channel(
+                "vertex_normal_poses",
+                foundation::NumericType::id<GVector3::ValueType>(),
+                3);
+    }
+
+    m_vertex_normal_attributes.set_attribute(
+        m_vnp_cid,
+        normal_index * motion_segment_count + motion_segment_index,
+        normal);
+}
+
+template <typename Primitive>
+inline GVector3 StaticTessellation<Primitive>::get_vertex_normal_pose(
+    const size_t    normal_index,
+    const size_t    motion_segment_index) const
+{
+    assert(m_vnp_cid != foundation::AttributeSet::InvalidChannelID);
+    assert(normal_index < m_vertex_normals.size());
+
+    const size_t motion_segment_count = get_motion_segment_count();
+    assert(motion_segment_index < motion_segment_count);
+
+    GVector3 normal;
+    m_vertex_normal_attributes.get_attribute(
+        m_vnp_cid,
+        normal_index * motion_segment_count + motion_segment_index,
+        &normal);
+
+    return normal;
+}
+
+template <typename Primitive>
+void StaticTessellation<Primitive>::clear_vertex_normal_poses()
+{
+    if (m_vnp_cid != foundation::AttributeSet::InvalidChannelID)
+    {
+        m_vertex_normal_attributes.delete_channel(m_vnp_cid);
+        m_vnp_cid = foundation::AttributeSet::InvalidChannelID;
+    }
+}
+
+template <typename Primitive>
+inline void StaticTessellation<Primitive>::set_vertex_tangent_pose(
+    const size_t    tangent_index,
+    const size_t    motion_segment_index,
+    const GVector3& tangent)
+{
+    assert(tangent_index < get_vertex_tangent_count());
+
+    const size_t motion_segment_count = get_motion_segment_count();
+    assert(motion_segment_index < motion_segment_count);
+
+    if (m_vtp_cid == foundation::AttributeSet::InvalidChannelID)
+    {
+        m_vtp_cid =
+            m_vertex_tangent_poses.create_channel(
+                "vertex_tangent_poses",
+                foundation::NumericType::id<GVector3::ValueType>(),
+                3);
+    }
+
+    m_vertex_tangent_poses.set_attribute(
+        m_vtp_cid,
+        tangent_index * motion_segment_count + motion_segment_index,
+        tangent);
+}
+
+template <typename Primitive>
+inline GVector3 StaticTessellation<Primitive>::get_vertex_tangent_pose(
+    const size_t    tangent_index,
+    const size_t    motion_segment_index) const
+{
+    assert(m_vtp_cid != foundation::AttributeSet::InvalidChannelID);
+    assert(tangent_index < m_vertex_normals.size());
+
+    const size_t motion_segment_count = get_motion_segment_count();
+    assert(motion_segment_index < motion_segment_count);
+
+    GVector3 tangent;
+    m_vertex_tangent_poses.get_attribute(
+        m_vtp_cid,
+        tangent_index * motion_segment_count + motion_segment_index,
+        &tangent);
+
+    return tangent;
+}
+
+template <typename Primitive>
+void StaticTessellation<Primitive>::clear_vertex_tangent_poses()
+{
+    if (m_vtp_cid != foundation::AttributeSet::InvalidChannelID)
+    {
+        m_vertex_tangent_poses.delete_channel(m_vtp_cid);
+        m_vtp_cid = foundation::AttributeSet::InvalidChannelID;
     }
 }
 
@@ -344,26 +494,6 @@ void StaticTessellation<Primitive>::create_tangents_attribute()
     m_tangents_cid =
         m_vertex_attributes.create_channel(
             "tangents",
-            foundation::NumericType::id<GVector3::ValueType>(),
-            3);
-}
-
-template <typename Primitive>
-void StaticTessellation<Primitive>::create_motion_segment_count_attribute()
-{
-    m_ms_count_cid =
-        m_tessellation_attributes.create_channel(
-            "motion_segment_count",
-            foundation::NumericTypeUInt32,
-            1);
-}
-
-template <typename Primitive>
-void StaticTessellation<Primitive>::create_vertex_poses_attribute()
-{
-    m_vp_cid =
-        m_vertex_attributes.create_channel(
-            "vertex_poses",
             foundation::NumericType::id<GVector3::ValueType>(),
             3);
 }
