@@ -55,25 +55,22 @@ namespace renderer
 
 namespace
 {
-    // A dummy region that simply wraps a tessellation.
+    // A region that simply wraps a static tessellation.
     class MeshRegion
       : public IRegion
     {
       public:
-        // Constructor.
         explicit MeshRegion(StaticTriangleTess* tess)
           : m_tess(tess)
           , m_lazy_tess(tess)
         {
         }
 
-        // Compute the local space bounding box of the region over the shutter interval.
         virtual GAABB3 compute_local_bbox() const APPLESEED_OVERRIDE
         {
             return m_tess->compute_local_bbox();
         }
 
-        // Return the static triangle tessellation of the region.
         virtual Lazy<StaticTriangleTess>& get_static_triangle_tess() const APPLESEED_OVERRIDE
         {
             return m_lazy_tess;
