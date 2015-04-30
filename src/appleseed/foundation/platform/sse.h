@@ -40,7 +40,6 @@
 // Platform headers.
 #include <xmmintrin.h>      // SSE1 intrinsics
 #include <emmintrin.h>      // SSE2 intrinsics
-#include <smmintrin.h>      // SSE4 intrinsics
 
 namespace foundation
 {
