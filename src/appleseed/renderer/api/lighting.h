@@ -31,8 +31,8 @@
 #define APPLESEED_RENDERER_API_LIGHTING_H
 
 // API headers.
-#include "renderer/kernel/lighting/drt/drt.h"
+#include "renderer/kernel/lighting/drt/drtlightingengine.h"
 #include "renderer/kernel/lighting/ilightingengine.h"
-#include "renderer/kernel/lighting/pathtracing/pathtracing.h"
+#include "renderer/kernel/lighting/pt/ptlightingengine.h"
 
 #endif  // !APPLESEED_RENDERER_API_LIGHTING_H
