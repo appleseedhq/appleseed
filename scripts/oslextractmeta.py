@@ -24,15 +24,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-# TODO: check the amount of times open is used on a file, 
-#       i bet this could be reduced quite a bit.
 # add option to specify path to oslinfo -> use ini file
-# DONE: add option for rsl shaders and vex shaders, detect file extension
-# add option to query json file? YES, maybe other tool
 # add option to add or overwrite
 # add option to check if shader already exists
-# DONE: add option to parse the/multiple directory/ies (or is default behaviour, check if it is a path or if we have files
-# DONE: add option to read paths and files from a file
 
 
 import json
@@ -40,37 +34,32 @@ import glob
 import os.path
 import sys
 import optparse
+from ConfigParser import ConfigParser
 import hashlib
 import datetime
 import getpass
 
-DEBUG = True
 
+DEBUG = False
 
-class Shader():
-    def __init__( self ):
-        self.name = "name"
-        self.path = "path"
-        self.hash = "hash"
-        self.num  = "num"
-    
-
-FileTypes = {'.oso' : "openshadinglanguage",
-             '.sdl' : "3delight rsl",
-             '.slo' : "RSL",
-             '.otl' : "vex"
-            }
+FileTypes = {'.oso' : "openshadinglanguage" }
 
 # metadata according to the OSL specification
 _shaderTypes = ["surface", "displacement", "light", "volume", "shader"]
 _dataTypes   = ["int", "float", "point", "vector", "normal", "color", "matrix", "string", "void"]
 _shaderKeys  = ["name", "label", "type", "help", "url", "value", "page", "widget", "units"]
+# These osl parameters are not part of the official shadinglanguage but more guidelines as how to
+# make up the interface of the shader inside a 3rd party program. Not yet decided what to do with it...
 #_parmWidgets = ["number", "string", "boolean", "checkBox", "popup", "mapper", "filename", "null"]
 #_parmInteger = ["min", "max", "sensitivity", "slider"]
 #_parmFloat   = _parmInteger + ["digits"]
 #_parmSlider  = ["slidermin", "slidermax", "slidercenter", "sliderexponent"]
 #_parmKeyword = ["output"]
 
+
+#----------------------------------------------------------
+# Functions to sanitize olsinfo output
+#----------------------------------------------------------
 
 def _error( msg, crash = False ):
     sys.stderr.write( msg )
@@ -95,9 +84,9 @@ def _getKeyValue( st ):
     return (key, value)
 
 
-def checkInfoExecutables():
-    pass
-
+#----------------------------------------------------------
+# File handling
+#----------------------------------------------------------
 
 def isValidFile( fp ):
     return ( os.path.isdir( fp ) or os.path.isfile( fp ) )
@@ -107,6 +96,8 @@ def isValidExtension( fp, filetypes ):
     return  ( os.path.splitext( fp )[1] in filetypes )
 
 
+#TODO: better/more efficient traveling of directories
+# and parsing of files/globs/env-vars
 def createFileList( filetypes, args = None, pathfile = None ):
     global DEBUG
     fileList = list()
@@ -141,9 +132,14 @@ def createFileList( filetypes, args = None, pathfile = None ):
 
     # if there are no files/paths quit
     if len( fileList ) < 1:
-        _error( "No files or directories found, exiting.", True )    
+        _error( "No files or directories found, exiting.", True )
+    
     return fileList
 
+
+#----------------------------------------------------------
+# Functions for parsing *.oso files
+#----------------------------------------------------------
 
 def parseOslInfo( compiledShader ):
     global DEBUG
@@ -152,13 +148,11 @@ def parseOslInfo( compiledShader ):
         cmd = 'oslinfo -v %s' % compiledShader
         fp = os.popen(cmd, 'r')
     except:
-        # this should give an error oslinfo not found
         _error( "Could not run oslinfo, exiting." )
         return False
     
     # check if output of oslinfo is correct
     # if false skip shader and write error message to console
-
     lines = fp.readlines()
     if not lines:
         _error('Missing shader definition for %s' % compiledShader)
@@ -204,7 +198,6 @@ def parseOslInfo( compiledShader ):
                 tempparm['name']   = _formatVal( args[0] )
                 tempparm['type']   = _formatVal( args[2] )
             condition = True
-            #widget = list()
             widget = str()
             while condition:
                 # read next line
@@ -221,7 +214,6 @@ def parseOslInfo( compiledShader ):
                     if key != 'widget':
                         tempparm[key] = value
                     else:
-                        #widget.append( value )
                         widget = value
                 else:
                     condition = False
@@ -255,31 +247,11 @@ def parseOslInfo( compiledShader ):
     return tempShader
 
 
-def calcCheckSum( compiledShader, blocksize=65536 ):
-    try:
-        fp = open( compiledShader, 'rb' )
-    except:
-        return None
-
-    hashMethod = hashlib.sha256()
-    buf = fp.read( blocksize )
-    while len( buf ) > 0:
-        hashMethod.update( buf )
-        buf = fp.read( blocksize )
-    fp.close()
-
-    return hashMethod.digest()[:16]
-
-
 def parseShaderInfo( compiledShader, FileTypes ):
     (name, extension) = os.path.splitext( compiledShader )
     shaderUI = None
     if extension == '.oso':
         shaderUI = parseOslInfo( compiledShader )
-    #if extension == '.sdl':
-    #    shaderUI = parseRSL3Delight( compiledShader )
-    #if extension == '.slo':
-    #    shaderUI = parseRSLPixar( compiledShader )
 
     if not shaderUI:
         _error( "Could not process %s" % compiledShader )
@@ -287,34 +259,38 @@ def parseShaderInfo( compiledShader, FileTypes ):
     else:
         compShader = dict()
         #initialize id here, set one level up
-        compShader[ 'element' ]    = 0
-        compShader[ 'name' ]  = shaderUI[ 'name' ]
-        compShader[ 'path' ] = compiledShader
-        compShader[ 'hash' ]  = 1
-        #str( calcCheckSum( compiledShader ) )
-        compShader[ 'mtime' ] = str( os.path.getmtime( compiledShader ) )
-        compShader[ 'ctime' ] = str( datetime.datetime.now() )
-        compShader[ 'language' ] = FileTypes[ extension ]
-        compShader[ 'ui'   ]  = shaderUI
+        compShader[ 'element' ] = 0
+        compShader[ 'name' ]    = shaderUI[ 'name' ]
+        compShader[ 'path' ]    = compiledShader
+        compShader[ 'mtime' ]   = str( os.path.getmtime( compiledShader ) )
+        compShader[ 'ctime' ]   = str( datetime.datetime.now() )
+        compShader[ 'language' ]= FileTypes[ extension ]
+        # holds the output of parseOslInfo (the actual shader metadata/ui )
+        compShader[ 'ui'   ]    = shaderUI
 
         return compShader
 
+#----------------------------------------------------------
+# Functions for handling the shader dictionary
+#----------------------------------------------------------
 
-def getNumberOfElements( jsonFile ):
-    for i in range ( len( jsonFile ) ):
-        if 'path' not in jsonFile[i]:
-            return jsonFile[i][ 'elements' ]
+def getNumberOfShaders( jsonFile ):
+    return len( jsonFile['shaders'] )
+
+
+def cleanJsonShaders( jsonDict ):
+    for shaderpath in jsonDict.keys():
+        if not os.path.isfile( shaderpath ):
+            del jsonDict[ shaderpath ]
+    return jsonDict
+
+
+def existsJsonShader( jsonFile, shaderName ):
+    for shader in jsonFile['shaders']:
+        if data[ 'name' ] == shaderName:
+            return True
         else:
-            return None
-
-
-def getShaderElement( jsonFile, shaderName, key ):
-    for i in range( len( jsonFile ) ):
-        if jsonFile[i][ 'name' ] == shaderName:
-            return jsonFile[i][ key ]
-            break
-        else:
-            return None
+            return False
 
 
 def writeJsonHeader( filename, numElements ):
@@ -324,143 +300,105 @@ def writeJsonHeader( filename, numElements ):
     headerDict[ 'name' ]          = os.path.basename( filename )
     headerDict[ 'elements' ]      = numElements
     headerDict[ 'last update' ]   = str( datetime.datetime.now() )
+    
     return headerDict
 
 
 def updateJsonHeader( jsonFile, numElements ):
-    for i in range( len( jsonFile) ):
-        if 'creator' in jsonFile[i]:
-            existingHeader = jsonFile[i]
-            existingHeader[ 'last update' ] = str( datetime.datetime.now() )
-            existingHeader[ 'elements' ] = numElements
-            return  existingHeader
+    headerDict = jsonFile
+    headerDict[ 'last update' ] = str( datetime.datetime.now() )
+    headerDict[ 'elements' ] = numElements
 
-
-def deleteHeader( jsonFile ):
-    deleted = False
-    for i in range( len( jsonFile) ):
-        if 'creator' in jsonFile[i]:
-            jsonFile.pop( i )
-            deleted = True
-            break
-    return deleted
-
-
-def deleteJsonShaderObject( jsonFile, shaderName ):
-    deleted = False
-    for i in range( len( jsonFile ) ):
-        if jsonFile[i][ 'name' ] == shaderName and jsonFile[i]['hash'] != None:
-            jsonFile.pop( i )
-            deleted = True
-            break
-    return deleted
-
-
-def existsJsonShader( jsonFile, shaderName ):
-    for i in range( len( jsonFile ) ):
-        if jsonFile[i][ 'name' ] == shaderName:
-            return True
-        else:
-            return False
+    return headerDict
 
 
 #----------------------------------------------------------
 # Main body
 #----------------------------------------------------------
 
-usage = """%prog [options] [shaderfiles]
-oslui stores the user interface of compiled OSL (openshadinglanguage)
-shaders into a single json file and/or into multiple xml files.
-"""
+def main():
+    usage = """%prog [options] [shaderfiles]
+    oslextractmetadata stores the user interface and metadata of a 
+    compiled OSL (openshadinglanguage) shaders into a JSON file. The
+    user interface of the shader is stored as a sub-dictionary in 
+    the file and can be retrieved using the 'ui' key on the elements.
+    """
 
-parser = optparse.OptionParser( usage )
+    parser = optparse.OptionParser( usage )
 
-parser.add_option( "-v", "--verbose", action="store_true", dest="verbose", help="Output verbosity." )
-parser.add_option( "-j", "--json", action="store", type="string", dest="create_json", help="Store shader UI in json file." )
-parser.add_option( "-f", "--file", action="store", type="string", dest="read_file", help="Read paths from file." )
-parser.add_option( "-u", "--update", action="store_true", dest="update", help="Update existing shader file." )
-parser.add_option( "-o", "--overwrite", action="store_true", dest="overwrite", help="Overwrite existing files." )
+    parser.add_option( "-v", "--verbose", action="store_true", dest="verbose", help="Output verbosity." )
+    parser.add_option( "-o", "--output", action="store", type="string", dest="output_file", help="Store shader UI in file." )
+    parser.add_option( "-f", "--file", action="store", type="string", dest="read_file", help="Read paths from file." )
+    parser.add_option( "-U", "--update", action="store_true", dest="update", help="Update existing shader file." )
+    parser.add_option( "-O", "--overwrite", action="store_true", dest="overwrite", help="Overwrite existing files." )
+    parser.add_option( "-c", "--clean", action="store_true", dest="clean", help="Clean file, remove non existant shaders." )
 
-parser.set_defaults(
-    create_json = "oslui_json",
-    read_file = None )
+    parser.set_defaults(
+        output_file = "oslui.json",
+        read_file = None )
     
-(options, args) = parser.parse_args()
-verbose = options.verbose
-sui_json = options.create_json
-inp_file = options.read_file
-update = options.update
-overwrite = options.overwrite
+    (options, args) = parser.parse_args()
+    verbose = options.verbose
+    out_file = options.output_file
+    inp_file = options.read_file
+    update = options.update
+    overwrite = options.overwrite
+    clean = options.clean
 
-if len( sys.argv[1:] ) == 0:
-    parser.print_help()
-    _error( "", True )
-if len( args ) == 0 and inp_file == None:
-    _error( "No shader files specified. Exiting.", True )
+    # user input checks
+    if len( sys.argv[1:] ) == 0:
+        parser.print_help()
+        _error( "", True )
+    if len( args ) == 0 and inp_file == None:
+        _error( "No shader files specified. Exiting.", True )
 
-files = createFileList( FileTypes, args, inp_file )
+    existingFile = os.path.exists( out_file )
+    if existingFile and not ( update or overwrite):
+        _error( "File already exists. Exiting.", True )
+    if not existingFile:
+        overwrite = False
+        update = False
+        clean = False
 
-# copy, write, save method?
-if json:
-    numElements = 0
+    # create list of files specified on cli or read from file
+    files = createFileList( FileTypes, args, inp_file )
 
-    existingFile = os.path.exists( sui_json )
-    if existingFile and not overwrite:
-        with open( sui_json, 'r' ) as fp_json:
-            #try:
-            json_temp = json.load( fp_json )
-            #print( json_temp )
-            #numElements = getNumberOfElements( json_temp )
-            #except ValueError:
-            #    print( "Could not read value from file." )
-            #    json_temp = None
+    # parse files for shaders
+    shaders = dict()
+    for shaderfile in files:
+        if verbose:
+            print( "Processing file %s" % shaderfile )
+        shaderUI = parseShaderInfo( shaderfile, FileTypes )
+        if shaderUI:
+            shaders[ shaderUI['path'] ] = shaderUI
 
-    with open( sui_json, 'w' ) as fp_json:
-        fp_json.seek( 0 )
-        fp_json.truncate()
+    # retrieve existing values in case of updating or cleaning
+    if existingFile and (update or clean):
+        with open( out_file, 'r' ) as fp:
+            json_temp = json.load( fp )
+            json_temp_header  = json_temp[ 'header' ]
+            json_temp_shaders = json_temp[ 'shaders' ]
 
-        for shader in files:
-            if verbose:
-                print( "Processing: %s" % shader )
-
-            shaderUI = parseShaderInfo( shader, FileTypes )
-            if shaderUI:
-                if update and existingFile:
-                    element = getShaderElement( json_temp, shaderUI[ 'name' ], 'element' )
-                    deleted = deleteJsonShaderObject( json_temp, shaderUI[ 'name' ] )
-                    #add new shader
-                    shaderUI[ 'element' ] = element
-                    json.dump( shaderUI, fp_json )
-                else:
-                    if existingFile:
-                        if not existsJsonShader( json_temp, shaderUI['name'] ):
-                            numElements = numElements + 1
-                            shaderUI[ 'element' ] = numElements
-                            json.dump( shaderUI, fp_json )
-                        else:
-                            pass
-                    else:
-                        numElements = numElements + 1
-                        shaderUI[ 'element' ] = numElements
-                        json.dump( shaderUI, fp_json )
-      
-                        
-
-        # dump the remaining part of the file
-        if update and existingFile:
-            newHeader = updateJsonHeader( json_temp, numElements )
-            deleteHeader( json_temp )
-            json.dump( json_temp, sui_json )
-            # and update the header
-            json.dump( newHeader, fp_json )
+    # write shaders to file
+    with open( out_file, 'w' ) as fp:
+        if existingFile and (overwrite or update):
+            fp.seek( 0 )
+            fp.truncate()
+        jsonDict = dict()
+        if update or clean:
+            if clean:
+                json_temp_shaders = cleanJsonShaders( json_temp_shaders )
+            if update:
+                json_temp_shaders.update( shaders )
+            jsonDict['header']  = updateJsonHeader( json_temp_header, len( json_temp_shaders ) )
+            jsonDict['shaders'] = json_temp_shaders          
         else:
-            json.dump( writeJsonHeader( sui_json, numElements ), fp_json )
+            jsonDict['header']  = writeJsonHeader( out_file, len( shaders ) )
+            jsonDict['shaders'] = shaders
+        json.dump( jsonDict, fp )
 
-#if DEBUG:
-#    print( json.dump( shaderUI, indent=4 ) )
+    return 0
 
-#   for shader in files
-#       if json:
-#           createJson()
-#       if xml:
-#           createXML()
+
+if __name__ == "__main__":
+    main()
