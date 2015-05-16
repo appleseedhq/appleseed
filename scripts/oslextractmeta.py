@@ -97,7 +97,7 @@ def isValidExtension( fp, filetypes ):
 
 
 #TODO: better/more efficient traveling of directories
-# and parsing of files/globs/env-vars
+# and parsing of files/globs/env-vars, read default dir from config
 def createFileList( filetypes, args = None, pathfile = None ):
     global DEBUG
     fileList = list()
@@ -141,15 +141,20 @@ def createFileList( filetypes, args = None, pathfile = None ):
 # Functions for parsing *.oso files
 #----------------------------------------------------------
 
-def parseOslInfo( compiledShader ):
+def parseOslInfo( compiledShader, osl_cfg ):
     global DEBUG
 
-    try:
+    oslpath = osl_cfg.get( 'settings', 'oslpath' )
+    if oslpath == "":
         cmd = 'oslinfo -v %s' % compiledShader
+    else:
+        cmd = str( oslpath ) + ' -v %s' % compiledShader
+
+    # rewrite using subproces
+    try:
         fp = os.popen(cmd, 'r')
     except:
-        _error( "Could not run oslinfo, exiting." )
-        return False
+        _error( "Could not run oslinfo, exiting.", True )
     
     # check if output of oslinfo is correct
     # if false skip shader and write error message to console
@@ -247,11 +252,11 @@ def parseOslInfo( compiledShader ):
     return tempShader
 
 
-def parseShaderInfo( compiledShader, FileTypes ):
+def parseShaderInfo( compiledShader, FileTypes, osl_cfg ):
     (name, extension) = os.path.splitext( compiledShader )
     shaderUI = None
     if extension == '.oso':
-        shaderUI = parseOslInfo( compiledShader )
+        shaderUI = parseOslInfo( compiledShader, osl_cfg )
 
     if not shaderUI:
         _error( "Could not process %s" % compiledShader )
@@ -360,6 +365,11 @@ def main():
         update = False
         clean = False
 
+    # read configuration file
+    cfg_defaults = { 'oslpath' : '/usr/bin/oslinfo' }
+    osl_cfg = ConfigParser(cfg_defaults)
+    osl_cfg.read( 'oslextractmeta.conf' )
+
     # create list of files specified on cli or read from file
     files = createFileList( FileTypes, args, inp_file )
 
@@ -368,7 +378,7 @@ def main():
     for shaderfile in files:
         if verbose:
             print( "Processing file %s" % shaderfile )
-        shaderUI = parseShaderInfo( shaderfile, FileTypes )
+        shaderUI = parseShaderInfo( shaderfile, FileTypes, osl_cfg )
         if shaderUI:
             shaders[ shaderUI['path'] ] = shaderUI
 
