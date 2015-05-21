@@ -38,10 +38,11 @@
 #include "foundation/platform/compiler.h"
 
 // Forward declarations.
-namespace renderer  { class Frame; }
-namespace renderer  { class IPassCallback; }
-namespace renderer  { class ITileCallbackFactory; }
-namespace renderer  { class ITileRendererFactory; }
+namespace foundation    { class Dictionary; }
+namespace renderer      { class Frame; }
+namespace renderer      { class IPassCallback; }
+namespace renderer      { class ITileCallbackFactory; }
+namespace renderer      { class ITileRendererFactory; }
 
 namespace renderer
 {
@@ -75,6 +76,9 @@ class GenericFrameRendererFactory
         ITileCallbackFactory*   tile_callback_factory,      // may be 0
         IPassCallback*          pass_callback,              // may be 0
         const ParamArray&       params);
+
+    // Get the metadata dictionary describing the generic frame renderer params.
+    static foundation::Dictionary get_params_metadata();
 
   private:
     const Frame&                m_frame;

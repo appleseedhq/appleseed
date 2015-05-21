@@ -53,6 +53,7 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/autoreleaseptr.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/statistics.h"
 
 // Standard headers.
@@ -273,6 +274,28 @@ IPixelRenderer* UniformPixelRendererFactory::create(
     const size_t                thread_index)
 {
     return new UniformPixelRenderer(m_factory, m_params, thread_index);
+}
+
+Dictionary UniformPixelRendererFactory::get_params_metadata()
+{
+    Dictionary metadata;
+    metadata.dictionaries().insert(
+        "samples",
+        Dictionary()
+            .insert("type", "int")
+            .insert("default", "64")
+            .insert("help", "Number of anti-aliasing samples"));
+
+    metadata.dictionaries().insert(
+        "force_antialiasing",
+        Dictionary()
+            .insert("type", "bool")
+            .insert("default", "false")
+            .insert(
+                "help",
+                "When using 1 sample/pixel and force_antialiasing is disabled, samples are placed in the middle of the pixels"));
+
+    return metadata;
 }
 
 }   // namespace renderer

@@ -55,6 +55,7 @@
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/statistics.h"
 
 // Standard headers.
@@ -662,6 +663,142 @@ ILightingEngine* SPPMLightingEngineFactory::create()
             m_pass_callback,
             m_light_sampler,
             m_params);
+}
+
+Dictionary SPPMLightingEngineFactory::get_params_metadata()
+{
+    Dictionary metadata;
+    add_common_params_metadata(metadata, false);
+
+    metadata.dictionaries().insert(
+        "enable_caustics",
+        Dictionary()
+            .insert("type", "bool")
+            .insert("default", "false")
+            .insert("help", "Enable caustics"));
+
+    metadata.dictionaries().insert(
+        "photon_type",
+        Dictionary()
+            .insert("type", "enum")
+            .insert("values", "mono|poly")
+            .insert("default", "poly")
+            .insert("help", "TODO: Not documented yet")
+            .insert(
+                "options",
+                Dictionary()
+                    .insert(
+                        "mono",
+                        Dictionary()
+                            .insert(
+                                "help",
+                                "TODO: Not documented yet"))
+                    .insert(
+                        "poly",
+                        Dictionary()
+                            .insert(
+                                "help",
+                                "TODO: Not documented yet"))));
+
+    metadata.dictionaries().insert(
+        "dl_type",
+        Dictionary()
+            .insert("type", "enum")
+            .insert("values", "rt|sppm|off")
+            .insert("default", "rt")
+            .insert("help", "Method used to estimate direct lighting")
+            .insert(
+                "options",
+                Dictionary()
+                    .insert(
+                        "rt",
+                        Dictionary()
+                            .insert(
+                                "help",
+                                "Use ray tracing to estimate direct lighting"))
+                    .insert(
+                        "sppm",
+                        Dictionary()
+                            .insert(
+                                "help",
+                                "Use photon maps to estimate direct lighting"))
+                    .insert(
+                        "off",
+                        Dictionary()
+                            .insert(
+                                "help",
+                                "Do not estimate direct lighting"))));
+
+    metadata.dictionaries().insert(
+        "photon_tracing_max_path_length",
+        Dictionary()
+            .insert("type", "int")
+            .insert("default", "8")
+            .insert("unlimited", "true")
+            .insert("help", "Maximum number of photon bounces"));
+
+    metadata.dictionaries().insert(
+        "photon_tracing_rr_min_path_length",
+        Dictionary()
+            .insert("type", "int")
+            .insert("default", "3")
+            .insert("help", "Consider pruning low contribution photons starting with this bounce"));
+
+    metadata.dictionaries().insert(
+        "path_tracing_max_path_length",
+        Dictionary()
+            .insert("type", "int")
+            .insert("default", "8")
+            .insert("unlimited", "true")
+            .insert("help", "Maximum number of path bounces"));
+
+    metadata.dictionaries().insert(
+        "path_tracing_rr_min_path_length",
+        Dictionary()
+            .insert("type", "int")
+            .insert("default", "3")
+            .insert("help", "Consider pruning low contribution paths starting with this bounce"));
+
+    metadata.dictionaries().insert(
+        "light_photons_per_pass",
+        Dictionary()
+            .insert("type", "int")
+            .insert("default", "1000000")
+            .insert("help", "Number of photons per render pass"));
+
+    metadata.dictionaries().insert(
+        "env_photons_per_pass",
+        Dictionary()
+            .insert("type", "int")
+            .insert("default", "1000000")
+            .insert("help", "Number of environment photons per render pass"));
+
+    metadata.dictionaries().insert(
+        "initial_radius",
+        Dictionary()
+            .insert("type", "float")
+            .insert("default", "1.0")
+            .insert("unit", "percent")
+            .insert("min", "0.0")
+            .insert("max", "100.0")
+            .insert("help", "Initial photon gathering radius in percent of the scene diameter."));
+
+    metadata.dictionaries().insert(
+        "max_photons_per_estimate",
+        Dictionary()
+            .insert("type", "int")
+            .insert("default", "100")
+            .insert("min", "1")
+            .insert("help", "Maximum number of photons used to estimate radiance"));
+
+    metadata.dictionaries().insert(
+        "alpha",
+        Dictionary()
+            .insert("type", "float")
+            .insert("default", "0.7")
+            .insert("help", "Evolution rate of photon gathering radius"));
+
+    return metadata;
 }
 
 }   // namespace renderer

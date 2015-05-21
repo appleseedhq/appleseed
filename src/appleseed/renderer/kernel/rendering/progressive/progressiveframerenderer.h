@@ -38,9 +38,10 @@
 #include "foundation/platform/compiler.h"
 
 // Forward declarations.
-namespace renderer  { class ISampleGeneratorFactory; }
-namespace renderer  { class ITileCallbackFactory; }
-namespace renderer  { class Project; }
+namespace foundation    { class Dictionary; }
+namespace renderer      { class ISampleGeneratorFactory; }
+namespace renderer      { class ITileCallbackFactory; }
+namespace renderer      { class Project; }
 
 namespace renderer
 {
@@ -72,6 +73,10 @@ class ProgressiveFrameRendererFactory
         ISampleGeneratorFactory*    generator_factory,
         ITileCallbackFactory*       callback_factory,       // may be 0
         const ParamArray&           params);
+
+    // Get the metadata dictionary describing
+    // the progressive frame renderer params.
+    static foundation::Dictionary get_params_metadata();
 
   private:
     const Project&                  m_project;

@@ -55,6 +55,7 @@
 #include "foundation/platform/thread.h"
 #include "foundation/platform/timers.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/gnuplotfile.h"
 #include "foundation/utility/job.h"
@@ -655,6 +656,25 @@ IFrameRenderer* ProgressiveFrameRendererFactory::create(
             generator_factory,
             callback_factory,
             params);
+}
+
+Dictionary ProgressiveFrameRendererFactory::get_params_metadata()
+{
+    Dictionary metadata;
+    metadata.dictionaries().insert(
+        "max_fps",
+        Dictionary()
+            .insert("type", "float")
+            .insert("default", "30.0")
+            .insert("help", "Maximum progressive rendering update rate in frames per second"));
+
+    metadata.dictionaries().insert(
+        "max_samples",
+        Dictionary()
+            .insert("type", "int")
+            .insert("help", "Maximum number of samples per pixel"));
+
+    return metadata;
 }
 
 }   // namespace renderer
