@@ -64,6 +64,8 @@ def _error(msg, crash=False):
         sys.exit(1)
     return False
 
+def _fatalError(msg):
+    _error(msg,True)
 
 def _formatVal(st):
     value = st.replace('"','',2)
@@ -150,7 +152,7 @@ def createFileList(filetypes, osl_cfg, recursive=False, args=None, pathfile=None
 
     # if there are no files/paths quit
     if len(filelist) < 1:
-        _error("No files or directories found, exiting.", True)
+        _fatalError("No files or directories found, exiting.", True)
     
     return filelist
 
@@ -170,7 +172,7 @@ def parseOslInfo(compiledShader, osl_cfg):
     try:
         fp = subprocess.check_output(cmd)
     except subprocess.CalledProcessError as fp_ret:
-        _error("Could not run oslinfo, exiting.\nReturncode: %s" % fp_ret.returncode, True)
+        _fatalError("Could not run oslinfo, exiting.\nReturncode: %s" % fp_ret.returncode, True)
     
     # check if output of oslinfo is correct
     # if false skip shader and write error message to console
@@ -396,7 +398,7 @@ def main():
             try:
                 jsonDict = json.load(fp)
             except:
-                _error("JSON object could not be decoded.")
+                _fatalError("JSON object could not be decoded.")
 
     # create/update/clean json shader and header dictionaries
     changes = 0
