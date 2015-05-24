@@ -152,7 +152,7 @@ def createFileList(filetypes, osl_cfg, recursive=False, args=None, pathfile=None
 
     # if there are no files/paths quit
     if len(filelist) < 1:
-        _fatalError("No files or directories found, exiting.", True)
+        _fatalError("No files or directories found, exiting.")
     
     return filelist
 
@@ -172,7 +172,7 @@ def parseOslInfo(compiledShader, osl_cfg):
     try:
         fp = subprocess.check_output(cmd)
     except subprocess.CalledProcessError as fp_ret:
-        _fatalError("Could not run oslinfo, exiting.\nReturncode: %s" % fp_ret.returncode, True)
+        _fatalError("Could not run oslinfo, exiting.\nReturncode: %s" % fp_ret.returncode)
     
     # check if output of oslinfo is correct
     # if false skip shader and write error message to console
