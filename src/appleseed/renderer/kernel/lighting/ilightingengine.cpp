@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2015 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,51 +26,44 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_KERNEL_LIGHTING_DRT_DRTLIGHTINGENGINE_H
-#define APPLESEED_RENDERER_KERNEL_LIGHTING_DRT_DRTLIGHTINGENGINE_H
-
-// appleseed.renderer headers.
-#include "renderer/kernel/lighting/ilightingengine.h"
-#include "renderer/utility/paramarray.h"
+// Interface header.
+#include "ilightingengine.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
+#include "foundation/utility/containers/dictionary.h"
 
-// Forward declarations.
-namespace foundation    { class Dictionary; }
-namespace renderer      { class LightSampler; }
+using namespace foundation;
 
 namespace renderer
 {
 
-//
-// Distribution Ray Tracing (DRT) lighting engine factory.
-//
-
-class DRTLightingEngineFactory
-  : public ILightingEngineFactory
+void ILightingEngineFactory::add_common_params_metadata(
+    Dictionary& metadata,
+    const bool  add_lighting_samples)
 {
-  public:
-    // Constructor.
-    DRTLightingEngineFactory(
-        const LightSampler& light_sampler,
-        const ParamArray&   params);
+    metadata.dictionaries().insert(
+        "enable_ibl",
+        Dictionary()
+            .insert("type", "bool")
+            .insert("default", "on")
+            .insert("help", "Enable image-based lighting"));
 
-    // Delete this instance.
-    virtual void release() APPLESEED_OVERRIDE;
+    if (add_lighting_samples)
+    {
+        metadata.dictionaries().insert(
+            "dl_light_samples",
+            Dictionary()
+                .insert("type", "float")
+                .insert("default", "1.0")
+                .insert("help", "Number of samples used to estimate direct lighting"));
 
-    // Return a new DRT lighting engine instance.
-    virtual ILightingEngine* create() APPLESEED_OVERRIDE;
-
-    // Get the metadata dictionary describing
-    // the DRT lighting engine params.
-    static foundation::Dictionary get_params_metadata();
-
-  private:
-    const LightSampler&     m_light_sampler;
-    ParamArray              m_params;
-};
+        metadata.dictionaries().insert(
+            "ibl_env_samples",
+            Dictionary()
+                .insert("type", "float")
+                .insert("default", "1.0")
+                .insert("help", "Number of samples used to estimate environment lighting"));
+    }
+}
 
 }       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_KERNEL_LIGHTING_DRT_DRTLIGHTINGENGINE_H

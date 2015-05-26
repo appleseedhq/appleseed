@@ -41,7 +41,8 @@
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer  { class ISampleRendererFactory; }
+namespace foundation    { class Dictionary; }
+namespace renderer      { class ISampleRendererFactory; }
 
 namespace renderer
 {
@@ -65,6 +66,9 @@ class UniformPixelRendererFactory
     // Return a new uniform pixel renderer instance.
     virtual IPixelRenderer* create(
         const size_t                thread_index) APPLESEED_OVERRIDE;
+
+    // Get the metadata dictionary describing the uniform pixel renderer params.
+    static foundation::Dictionary get_params_metadata();
 
   private:
     ISampleRendererFactory*         m_factory;

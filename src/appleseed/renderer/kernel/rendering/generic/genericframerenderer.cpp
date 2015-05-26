@@ -44,6 +44,7 @@
 #include "foundation/math/hash.h"
 #include "foundation/platform/thread.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/job.h"
 #include "foundation/utility/statistics.h"
@@ -416,6 +417,54 @@ IFrameRenderer* GenericFrameRendererFactory::create(
             tile_callback_factory,
             pass_callback,
             params);
+}
+
+Dictionary GenericFrameRendererFactory::get_params_metadata()
+{
+    Dictionary metadata;
+    metadata.dictionaries().insert(
+        "passes",
+        Dictionary()
+            .insert("type", "int")
+            .insert("default", "1")
+            .insert("help", "Number of render passes"));
+
+    metadata.dictionaries().insert(
+        "tile_ordering",
+        Dictionary()
+            .insert("type", "enum")
+            .insert("values", "linear|spiral|hilbert|random")
+            .insert("default", "hilbert")
+            .insert("help", "Tile rendering order")
+            .insert(
+                "options",
+                Dictionary()
+                    .insert(
+                        "linear",
+                        Dictionary()
+                            .insert(
+                                "help",
+                                "Linear tile ordering"))
+                    .insert(
+                        "spiral",
+                        Dictionary()
+                            .insert(
+                                "help",
+                                "Spiral tile ordering"))
+                    .insert(
+                        "hilbert",
+                        Dictionary()
+                            .insert(
+                                "help",
+                                "Hilbert tile ordering"))
+                    .insert(
+                        "random",
+                        Dictionary()
+                            .insert(
+                                "help",
+                                "Random tile ordering"))));
+
+    return metadata;
 }
 
 }   // namespace renderer

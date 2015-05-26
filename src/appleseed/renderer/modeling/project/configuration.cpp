@@ -31,7 +31,17 @@
 #include "configuration.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/lighting/drt/drtlightingengine.h"
+#include "renderer/kernel/lighting/pt/ptlightingengine.h"
+#include "renderer/kernel/lighting/sppm/sppmlightingengine.h"
+#include "renderer/kernel/rendering/final/uniformpixelrenderer.h"
+#include "renderer/kernel/rendering/generic/genericframerenderer.h"
+#include "renderer/kernel/rendering/progressive/progressiveframerenderer.h"
+#include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/utility/paramarray.h"
+
+// appleseed.foundation headers.
+#include "foundation/utility/containers/dictionary.h"
 
 // Standard headers.
 #include <cassert>
@@ -91,6 +101,95 @@ ParamArray Configuration::get_inherited_parameters() const
     {
         return m_params;
     }
+}
+
+Dictionary Configuration::get_metadata()
+{
+    ParamArray metadata;
+
+    metadata.insert(
+        "sampling_mode",
+        Dictionary()
+            .insert("type", "enum")
+            .insert("values", "rng|qmc")
+            .insert("default", "rng")
+            .insert(
+                "help",
+                "Sampler to use when generating samples")
+            .insert(
+                "options",
+                Dictionary()
+                    .insert(
+                        "rng",
+                        Dictionary()
+                            .insert(
+                                "help",
+                                "Random sampler"))
+                        .insert(
+                        "qmc",
+                        Dictionary()
+                            .insert(
+                                "help",
+                                "Quasi monte carlo sampler"))));
+
+    metadata.insert(
+        "lighting_engine",
+        Dictionary()
+            .insert("type", "enum")
+            .insert("values", "drt|pt|sppm")
+            .insert("default", "pt")
+            .insert(
+                "help",
+                "Lighting engine used when rendering.")
+            .insert(
+                "options",
+                Dictionary()
+                    .insert(
+                        "drt",
+                        Dictionary()
+                            .insert(
+                                "help",
+                                "Distribution ray tracing"))
+                    .insert(
+                        "pt",
+                        Dictionary()
+                            .insert(
+                                "help",
+                                "Unidirectional path tracing"))
+                    .insert(
+                        "sppm",
+                        Dictionary()
+                            .insert(
+                                "help",
+                                "Stochastic progressive photon mapping"))));
+
+    metadata.insert(
+        "rendering_threads",
+        Dictionary()
+            .insert("type", "int")
+            .insert("help", "Number of threads to use for rendering"));
+
+    metadata.dictionaries().insert(
+        "texture_store",
+        TextureStore::get_params_metadata());
+
+    metadata.dictionaries().insert(
+        "uniform_pixel_renderer",
+        UniformPixelRendererFactory::get_params_metadata());
+
+    metadata.dictionaries().insert(
+        "generic_frame_renderer",
+        GenericFrameRendererFactory::get_params_metadata());
+
+    metadata.dictionaries().insert(
+        "progressive_frame_renderer",
+        ProgressiveFrameRendererFactory::get_params_metadata());
+
+    metadata.dictionaries().insert("drt", DRTLightingEngineFactory::get_params_metadata());
+    metadata.dictionaries().insert("pt", PTLightingEngineFactory::get_params_metadata());
+    metadata.dictionaries().insert("sppm", SPPMLightingEngineFactory::get_params_metadata());
+
+    return metadata;
 }
 
 
