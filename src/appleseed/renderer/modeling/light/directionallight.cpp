@@ -254,7 +254,8 @@ Dictionary DirectionalLightFactory::get_model_metadata() const
     return
         Dictionary()
             .insert("name", Model)
-            .insert("label", "Directional Light");
+            .insert("label", "Directional Light")
+            .insert("help", "A light source that emits light in a single direction");
 }
 
 DictionaryArray DirectionalLightFactory::get_input_metadata() const
@@ -270,7 +271,8 @@ DictionaryArray DirectionalLightFactory::get_input_metadata() const
                 Dictionary()
                     .insert("color", "Colors"))
             .insert("use", "required")
-            .insert("default", "1.0"));
+            .insert("default", "1.0")
+            .insert("help", "Light intensity"));
 
     metadata.push_back(
         Dictionary()
@@ -280,7 +282,8 @@ DictionaryArray DirectionalLightFactory::get_input_metadata() const
             .insert("min_value", "0.0")
             .insert("max_value", "10.0")
             .insert("use", "optional")
-            .insert("default", "1.0"));
+            .insert("default", "1.0")
+            .insert("help", "Light intensity multiplier"));
 
     add_common_input_metadata(metadata);
 
