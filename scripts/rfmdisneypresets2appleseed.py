@@ -88,7 +88,7 @@ def main():
                     if args.stop_error:
                         sys.exit(1)
 
-                # Subsurface color is missing in appleseed"s Disney BRDF implementation.
+                # Subsurface color is missing in appleseed's Disney BRDF implementation.
                 if params["subsurface"] != "0.0":
                     if params["subsurfaceColorR"] != params["baseColorR"] or params["subsurfaceColorG"] != params["baseColorG"] or params["subsurfaceColorB"] != params["baseColorB"]:
                         print "Error: material preset %s uses subsurface color." % material_name
