@@ -214,6 +214,11 @@ const GVector3& MeshObject::get_vertex_normal(const size_t index) const
     return impl->m_tess.m_vertex_normals[index];
 }
 
+void MeshObject::clear_vertex_normals()
+{
+    impl->m_tess.m_vertex_normals.clear();
+}
+
 void MeshObject::reserve_vertex_tangents(const size_t count)
 {
     impl->m_tess.reserve_vertex_tangents(count);
@@ -274,6 +279,11 @@ size_t MeshObject::get_triangle_count() const
 const Triangle& MeshObject::get_triangle(const size_t index) const
 {
     return impl->m_tess.m_primitives[index];
+}
+
+void MeshObject::clear_triangles()
+{
+    impl->m_tess.m_primitives.clear();
 }
 
 void MeshObject::set_motion_segment_count(const size_t count)

@@ -106,6 +106,7 @@ class APPLESEED_DLLSYMBOL MeshObject
     size_t push_vertex_normal(const GVector3& normal);      // the normal must be unit-length
     size_t get_vertex_normal_count() const;
     const GVector3& get_vertex_normal(const size_t index) const;
+    void clear_vertex_normals();
 
     // Insert and access vertex tangents.
     void reserve_vertex_tangents(const size_t count);
@@ -124,6 +125,7 @@ class APPLESEED_DLLSYMBOL MeshObject
     size_t push_triangle(const Triangle& triangle);
     size_t get_triangle_count() const;
     const Triangle& get_triangle(const size_t index) const;
+    void clear_triangles();
 
     // Set/get the number of motion segments (the number of motion vectors per vertex).
     void set_motion_segment_count(const size_t count);
