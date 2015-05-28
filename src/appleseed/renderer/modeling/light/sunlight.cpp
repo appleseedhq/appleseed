@@ -445,7 +445,8 @@ Dictionary SunLightFactory::get_model_metadata() const
     return
         Dictionary()
             .insert("name", Model)
-            .insert("label", "Sun Light");
+            .insert("label", "Sun Light")
+            .insert("help", "Physically-based sun light");
 }
 
 DictionaryArray SunLightFactory::get_input_metadata() const
@@ -459,7 +460,8 @@ DictionaryArray SunLightFactory::get_input_metadata() const
             .insert("type", "entity")
             .insert("entity_types",
                 Dictionary().insert("environment_edf", "Environment EDFs"))
-            .insert("use", "optional"));
+            .insert("use", "optional")
+            .insert("help", "If an environment EDF is bound, use the sun angles and turbidity values from the environment"));
 
     metadata.push_back(
         Dictionary()
@@ -469,7 +471,8 @@ DictionaryArray SunLightFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "required")
-            .insert("default", "4.0"));
+            .insert("default", "4.0")
+            .insert("help", "Atmospheric haziness"));
 
     metadata.push_back(
         Dictionary()
@@ -479,7 +482,8 @@ DictionaryArray SunLightFactory::get_input_metadata() const
             .insert("min_value", "0.0")
             .insert("max_value", "10.0")
             .insert("use", "optional")
-            .insert("default", "1.0"));
+            .insert("default", "1.0")
+            .insert("help", "Light intensity multiplier"));
 
     add_common_input_metadata(metadata);
 

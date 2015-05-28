@@ -165,7 +165,8 @@ Dictionary PointLightFactory::get_model_metadata() const
         Dictionary()
             .insert("name", Model)
             .insert("label", "Point Light")
-            .insert("default_model", "true");
+            .insert("default_model", "true")
+            .insert("help", "A light source that emits light equally in all directions from a point");
 }
 
 DictionaryArray PointLightFactory::get_input_metadata() const
@@ -181,7 +182,8 @@ DictionaryArray PointLightFactory::get_input_metadata() const
                 Dictionary()
                     .insert("color", "Colors"))
             .insert("use", "required")
-            .insert("default", "1.0"));
+            .insert("default", "1.0")
+            .insert("help", "Light intensity"));
 
     metadata.push_back(
         Dictionary()
@@ -191,7 +193,8 @@ DictionaryArray PointLightFactory::get_input_metadata() const
             .insert("min_value", "0.0")
             .insert("max_value", "10.0")
             .insert("use", "optional")
-            .insert("default", "1.0"));
+            .insert("default", "1.0")
+            .insert("help", "Light intensity multiplier"));
 
     add_common_input_metadata(metadata);
 

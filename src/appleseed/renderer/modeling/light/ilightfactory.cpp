@@ -47,7 +47,8 @@ void ILightFactory::add_common_input_metadata(DictionaryArray& metadata)
             .insert("label", "Cast Indirect Light")
             .insert("type", "boolean")
             .insert("use", "optional")
-            .insert("default", "true"));
+            .insert("default", "true")
+            .insert("help", "If enabled, this light contributes to indirect lighting"));
 
     metadata.push_back(
         Dictionary()
@@ -55,7 +56,8 @@ void ILightFactory::add_common_input_metadata(DictionaryArray& metadata)
             .insert("label", "Importance Multiplier")
             .insert("type", "text")
             .insert("use", "optional")
-            .insert("default", "1.0"));
+            .insert("default", "1.0")
+            .insert("help", "Adjust the sampling effort for this light with respect to the other lights"));
 }
 
 }   // namespace renderer
