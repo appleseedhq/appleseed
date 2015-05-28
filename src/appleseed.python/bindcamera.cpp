@@ -69,6 +69,7 @@ namespace
 void bind_camera()
 {
     bpy::class_<Camera, auto_release_ptr<Camera>, bpy::bases<Entity>, boost::noncopyable>("Camera", bpy::no_init)
+        .def("get_model_metadata", &detail::get_entity_model_metadata<CameraFactoryRegistrar>).staticmethod("get_model_metadata")
         .def("get_input_metadata", &detail::get_entity_input_metadata<CameraFactoryRegistrar>).staticmethod("get_input_metadata")
         .def("__init__", bpy::make_constructor(create_camera))
         .def("get_model", &Camera::get_model)

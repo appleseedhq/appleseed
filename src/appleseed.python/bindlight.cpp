@@ -75,6 +75,7 @@ namespace
 void bind_light()
 {
     bpy::class_<Light, auto_release_ptr<Light>, bpy::bases<ConnectableEntity>, boost::noncopyable>("Light", bpy::no_init)
+        .def("get_model_metadata", &detail::get_entity_model_metadata<LightFactoryRegistrar>).staticmethod("get_model_metadata")
         .def("get_input_metadata", &detail::get_entity_input_metadata<LightFactoryRegistrar>).staticmethod("get_input_metadata")
         .def("__init__", bpy::make_constructor(create_light))
         .def("get_model", &Light::get_model)

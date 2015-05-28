@@ -83,6 +83,7 @@ namespace
 void bind_surface_shader()
 {
     bpy::class_<SurfaceShader, auto_release_ptr<SurfaceShader>, bpy::bases<ConnectableEntity>, boost::noncopyable>("SurfaceShader", bpy::no_init)
+        .def("get_model_metadata", &detail::get_entity_model_metadata<SurfaceShaderFactoryRegistrar>).staticmethod("get_model_metadata")
         .def("get_input_metadata", &detail::get_entity_input_metadata<SurfaceShaderFactoryRegistrar>).staticmethod("get_input_metadata")
         .def("__init__", bpy::make_constructor(create_surface_shader))
         .def("__init__", bpy::make_constructor(create_surface_shader_with_params))

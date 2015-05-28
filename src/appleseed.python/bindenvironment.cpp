@@ -89,6 +89,7 @@ namespace
 void bind_environment()
 {
     bpy::class_<EnvironmentEDF, auto_release_ptr<EnvironmentEDF>, bpy::bases<ConnectableEntity>, boost::noncopyable >("EnvironmentEDF", bpy::no_init)
+        .def("get_model_metadata", &detail::get_entity_model_metadata<EnvironmentEDFFactoryRegistrar>).staticmethod("get_model_metadata")
         .def("get_input_metadata", &detail::get_entity_input_metadata<EnvironmentEDFFactoryRegistrar>).staticmethod("get_input_metadata")
         .def("__init__", bpy::make_constructor(create_environment_edf))
         .def("get_model", &EnvironmentEDF::get_model)
@@ -97,6 +98,7 @@ void bind_environment()
     bind_typed_entity_vector<EnvironmentEDF>("EnvironmentEDFContainer");
 
     bpy::class_<EnvironmentShader, auto_release_ptr<EnvironmentShader>, bpy::bases<ConnectableEntity>, boost::noncopyable >("EnvironmentShader", bpy::no_init)
+        .def("get_model_metadata", &detail::get_entity_model_metadata<EnvironmentShaderFactoryRegistrar>).staticmethod("get_model_metadata")
         .def("get_input_metadata", &detail::get_entity_input_metadata<EnvironmentShaderFactoryRegistrar>).staticmethod("get_input_metadata")
         .def("__init__", bpy::make_constructor(create_environment_shader))
         .def("get_model", &EnvironmentShader::get_model)
