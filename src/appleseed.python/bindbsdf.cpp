@@ -67,6 +67,7 @@ namespace
 void bind_bsdf()
 {
     bpy::class_<BSDF, auto_release_ptr<BSDF>, bpy::bases<ConnectableEntity>, boost::noncopyable>("BSDF", bpy::no_init)
+        .def("get_model_metadata", &detail::get_entity_model_metadata<BSDFFactoryRegistrar>).staticmethod("get_model_metadata")
         .def("get_input_metadata", &detail::get_entity_input_metadata<BSDFFactoryRegistrar>).staticmethod("get_input_metadata")
         .def("__init__", bpy::make_constructor(create_bsdf))
         .def("get_model", &BSDF::get_model)

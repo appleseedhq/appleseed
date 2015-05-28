@@ -64,6 +64,7 @@ namespace
 void bind_edf()
 {
     bpy::class_<EDF, auto_release_ptr<EDF>, bpy::bases<ConnectableEntity>, boost::noncopyable>("EDF", bpy::no_init)
+        .def("get_model_metadata", &detail::get_entity_model_metadata<EDFFactoryRegistrar>).staticmethod("get_model_metadata")
         .def("get_input_metadata", &detail::get_entity_input_metadata<EDFFactoryRegistrar>).staticmethod("get_input_metadata")
         .def("__init__", bpy::make_constructor(create_edf))
         .def("get_model", &EDF::get_model)
