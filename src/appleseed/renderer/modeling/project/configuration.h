@@ -42,7 +42,8 @@
 #include "main/dllsymbol.h"
 
 // Forward declarations.
-namespace renderer  { class ParamArray; }
+namespace foundation    { class Dictionary; }
+namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
@@ -73,6 +74,9 @@ class APPLESEED_DLLSYMBOL Configuration
     // Construct a set of parameters from the parameters inherited
     // from the base configuration and the ones of this configuration.
     ParamArray get_inherited_parameters() const;
+
+    // Get the metadata dictionary describing the configuration settings.
+    static foundation::Dictionary get_metadata();
 
   private:
     friend class BaseConfigurationFactory;

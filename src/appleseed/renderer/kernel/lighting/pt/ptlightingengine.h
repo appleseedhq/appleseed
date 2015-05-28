@@ -38,7 +38,8 @@
 #include "foundation/platform/compiler.h"
 
 // Forward declarations.
-namespace renderer  { class LightSampler; }
+namespace foundation    { class Dictionary; }
+namespace renderer      { class LightSampler; }
 
 namespace renderer
 {
@@ -61,6 +62,10 @@ class PTLightingEngineFactory
 
     // Return a new path tracing lighting engine instance.
     virtual ILightingEngine* create() APPLESEED_OVERRIDE;
+
+    // Get the metadata dictionary describing
+    // the PT lighting engine params.
+    static foundation::Dictionary get_params_metadata();
 
   private:
     const LightSampler&     m_light_sampler;

@@ -49,6 +49,7 @@
 #include <map>
 
 // Forward declarations.
+namespace foundation    { class Dictionary; }
 namespace foundation    { class Statistics; }
 namespace foundation    { class Tile; }
 namespace renderer      { class Assemblies; }
@@ -119,6 +120,9 @@ class TextureStore
 
     // Retrieve performance statistics.
     foundation::StatisticsVector get_statistics() const;
+
+    // Get the metadata dictionary describing the texture store params.
+    static foundation::Dictionary get_params_metadata();
 
   private:
     class TileSwapper
