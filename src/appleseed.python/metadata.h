@@ -67,7 +67,7 @@ namespace detail
         for (size_t i = 0, e = factories.size(); i < e; ++i)
         {
             input_metadata[factories[i]->get_model()] =
-                dictionary_array_to_bpy_list(factories[i]->get_input_metadata());
+                dictionary_array_to_bpy_dict(factories[i]->get_input_metadata(), "name");
         }
 
         return input_metadata;
