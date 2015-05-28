@@ -45,57 +45,100 @@ using namespace renderer;
 
 namespace
 {
-    std::auto_ptr<MasterRenderer> create_master_renderer(
-        Project*                project,
+    // A class that wraps MasterRenderer and keeps a python
+    // reference to the project object to prevent it being
+    // destroyed by python before the MasterRenderer is destroyed.
+    struct MasterRendererWrapper
+    {
+        MasterRendererWrapper(
+            bpy::object                 project,
+            const ParamArray&           params,
+            IRendererController*        renderer_controller,
+            ITileCallbackFactory*       tile_callback_factory = 0)
+          : m_project(project)
+        {
+            Project* proj = bpy::extract<Project*>(project);
+            m_renderer.reset(
+                new MasterRenderer(
+                    *proj,
+                    params,
+                    renderer_controller,
+                    tile_callback_factory));
+        }
+
+        MasterRendererWrapper(
+            bpy::object                 project,
+            const ParamArray&           params,
+            IRendererController*        renderer_controller,
+            ITileCallback*              tile_callback)
+            : m_project(project)
+        {
+            Project* proj = bpy::extract<Project*>(project);
+            m_renderer.reset(
+                new MasterRenderer(
+                    *proj,
+                    params,
+                    renderer_controller,
+                    tile_callback));
+        }
+
+        bpy::object                     m_project;
+        std::auto_ptr<MasterRenderer>   m_renderer;
+    };
+
+    std::auto_ptr<MasterRendererWrapper> create_master_renderer(
+        bpy::object             project,
         const bpy::dict&        params,
         IRendererController*    renderer_controller)
     {
         return
-            std::auto_ptr<MasterRenderer>(
-                new MasterRenderer(
+            std::auto_ptr<MasterRendererWrapper>(
+                new MasterRendererWrapper(
                     *project,
                     bpy_dict_to_param_array(params),
                     renderer_controller));
     }
 
-    std::auto_ptr<MasterRenderer> create_master_renderer_with_tile_callback(
-        Project*                project,
+    std::auto_ptr<MasterRendererWrapper> create_master_renderer_with_tile_callback(
+        bpy::object             project,
         const bpy::dict&        params,
         IRendererController*    renderer_controller,
         ITileCallback*          tile_callback)
     {
         return
-            std::auto_ptr<MasterRenderer>(
-                new MasterRenderer(
+            std::auto_ptr<MasterRendererWrapper>(
+                new MasterRendererWrapper(
                     *project,
                     bpy_dict_to_param_array(params),
                     renderer_controller,
                     tile_callback));
     }
 
-    bpy::dict master_renderer_get_parameters(const MasterRenderer* m)
+    bpy::dict master_renderer_get_parameters(const MasterRendererWrapper* m)
     {
-        return param_array_to_bpy_dict(m->get_parameters());
+        return param_array_to_bpy_dict(m->m_renderer->get_parameters());
     }
 
-    void master_renderer_set_parameters(MasterRenderer* m, const bpy::dict& params)
+    void master_renderer_set_parameters(
+        MasterRendererWrapper*  m,
+        const bpy::dict&        params)
     {
-        m->get_parameters() = bpy_dict_to_param_array(params);
+        m->m_renderer->get_parameters() = bpy_dict_to_param_array(params);
     }
 
-    bool master_renderer_render(MasterRenderer* m)
+    bool master_renderer_render(MasterRendererWrapper* m)
     {
         // Unlock Python's global interpreter lock (GIL) while we do lenghty C++ computations.
         // The GIL is locked again when unlock goes out of scope.
         ScopedGILUnlock unlock;
 
-        return m->render();
+        return m->m_renderer->render();
     }
 }
 
 void bind_master_renderer()
 {
-    bpy::class_<MasterRenderer, std::auto_ptr<MasterRenderer>, boost::noncopyable>("MasterRenderer", bpy::no_init)
+    bpy::class_<MasterRendererWrapper, std::auto_ptr<MasterRendererWrapper>, boost::noncopyable>("MasterRenderer", bpy::no_init)
         .def("__init__", bpy::make_constructor(create_master_renderer))
         .def("__init__", bpy::make_constructor(create_master_renderer_with_tile_callback))
         .def("get_parameters", master_renderer_get_parameters)

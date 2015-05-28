@@ -149,6 +149,11 @@ namespace
         return param_array_to_bpy_dict(params);
     }
 
+    bpy::dict config_get_metadata()
+    {
+        return dictionary_to_bpy_dict(Configuration::get_metadata());
+    }
+
     bpy::object project_file_reader_read_default_opts(
         ProjectFileReader*                  reader,
         const char*                         project_filename,
@@ -187,6 +192,7 @@ void bind_project()
         .def("set_base", &Configuration::set_base)
         .def("get_base", &Configuration::get_base, bpy::return_value_policy<bpy::reference_existing_object>())
         .def("get_inherited_parameters", config_get_inherited_parameters)
+        .def("get_metadata", config_get_metadata).staticmethod("get_metadata")
         ;
 
     bind_typed_entity_map<Configuration>("ConfigurationContainer");

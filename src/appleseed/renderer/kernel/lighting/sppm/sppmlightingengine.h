@@ -38,8 +38,9 @@
 #include "foundation/platform/compiler.h"
 
 // Forward declarations.
-namespace renderer  { class LightSampler; }
-namespace renderer  { class SPPMPassCallback; }
+namespace foundation    { class Dictionary; }
+namespace renderer      { class LightSampler; }
+namespace renderer      { class SPPMPassCallback; }
 
 namespace renderer
 {
@@ -63,6 +64,10 @@ class SPPMLightingEngineFactory
 
     // Return a new SPPM lighting engine instance.
     virtual ILightingEngine* create() APPLESEED_OVERRIDE;
+
+    // Get the metadata dictionary describing
+    // the SPPM lighting engine params.
+    static foundation::Dictionary get_params_metadata();
 
   private:
     const SPPMParameters            m_params;

@@ -42,6 +42,7 @@
 #include "foundation/image/colorspace.h"
 #include "foundation/image/tile.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/memory.h"
 #include "foundation/utility/statistics.h"
@@ -75,6 +76,19 @@ StatisticsVector TextureStore::get_statistics() const
     stats.insert_size("peak size", m_tile_swapper.get_peak_memory_size());
 
     return StatisticsVector::make("texture store statistics", stats);
+}
+
+Dictionary TextureStore::get_params_metadata()
+{
+    Dictionary metadata;
+    metadata.dictionaries().insert(
+        "max_size",
+        Dictionary()
+            .insert("type", "int")
+            .insert("default", "268435456")
+            .insert("help", "Texture cache size in bytes"));
+
+    return metadata;
 }
 
 

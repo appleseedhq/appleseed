@@ -53,6 +53,7 @@
 #include "foundation/math/population.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
+#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/statistics.h"
 #include "foundation/utility/string.h"
 
@@ -458,6 +459,31 @@ void DRTLightingEngineFactory::release()
 ILightingEngine* DRTLightingEngineFactory::create()
 {
     return new DRTLightingEngine(m_light_sampler, m_params);
+}
+
+Dictionary DRTLightingEngineFactory::get_params_metadata()
+{
+    Dictionary metadata;
+    add_common_params_metadata(metadata, true);
+
+    metadata.dictionaries().insert(
+        "max_path_length",
+        Dictionary()
+            .insert("type", "int")
+            .insert("default", "8")
+            .insert("unlimited", "true")
+            .insert("min", "1")
+            .insert("help", "Maximum ray trace depth"));
+
+    metadata.dictionaries().insert(
+        "rr_min_path_length",
+        Dictionary()
+            .insert("type", "int")
+            .insert("default", "3")
+            .insert("min", "1")
+            .insert("help", "Consider pruning low contribution paths starting with this bounce"));
+
+    return metadata;
 }
 
 }   // namespace renderer

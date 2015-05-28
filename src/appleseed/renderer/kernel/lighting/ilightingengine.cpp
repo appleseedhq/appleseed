@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2015 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,12 +26,44 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_LIGHTING_H
-#define APPLESEED_RENDERER_API_LIGHTING_H
+// Interface header.
+#include "ilightingengine.h"
 
-// API headers.
-#include "renderer/kernel/lighting/drt/drtlightingengine.h"
-#include "renderer/kernel/lighting/ilightingengine.h"
-#include "renderer/kernel/lighting/pt/ptlightingengine.h"
+// appleseed.foundation headers.
+#include "foundation/utility/containers/dictionary.h"
 
-#endif  // !APPLESEED_RENDERER_API_LIGHTING_H
+using namespace foundation;
+
+namespace renderer
+{
+
+void ILightingEngineFactory::add_common_params_metadata(
+    Dictionary& metadata,
+    const bool  add_lighting_samples)
+{
+    metadata.dictionaries().insert(
+        "enable_ibl",
+        Dictionary()
+            .insert("type", "bool")
+            .insert("default", "on")
+            .insert("help", "Enable image-based lighting"));
+
+    if (add_lighting_samples)
+    {
+        metadata.dictionaries().insert(
+            "dl_light_samples",
+            Dictionary()
+                .insert("type", "float")
+                .insert("default", "1.0")
+                .insert("help", "Number of samples used to estimate direct lighting"));
+
+        metadata.dictionaries().insert(
+            "ibl_env_samples",
+            Dictionary()
+                .insert("type", "float")
+                .insert("default", "1.0")
+                .insert("help", "Number of samples used to estimate environment lighting"));
+    }
+}
+
+}       // namespace renderer

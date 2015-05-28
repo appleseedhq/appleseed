@@ -555,42 +555,6 @@ inline T fast_ceil(const T x)
     return std::ceil(x);
 }
 
-#ifdef APPLESEED_USE_SSE
-
-template <>
-inline float fast_floor(const float x)
-{
-    M128Fields f;
-    f.m128 = _mm_floor_ss(_mm_set1_ps(x), _mm_set1_ps(x));
-    return f.f32[0];
-}
-
-template <>
-inline double fast_floor(const double x)
-{
-    M128Fields f;
-    f.m128d = _mm_floor_sd(_mm_set1_pd(x), _mm_set1_pd(x));
-    return f.f64[0];
-}
-
-template <>
-inline float fast_ceil(const float x)
-{
-    M128Fields f;
-    f.m128 = _mm_ceil_ss(_mm_set1_ps(x), _mm_set1_ps(x));
-    return f.f32[0];
-}
-
-template <>
-inline double fast_ceil(const double x)
-{
-    M128Fields f;
-    f.m128d = _mm_ceil_sd(_mm_set1_pd(x), _mm_set1_pd(x));
-    return f.f64[0];
-}
-
-#endif
-
 template <typename Int, typename T>
 inline Int round(const T x)
 {

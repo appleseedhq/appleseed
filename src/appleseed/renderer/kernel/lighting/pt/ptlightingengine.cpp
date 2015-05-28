@@ -710,4 +710,52 @@ ILightingEngine* PTLightingEngineFactory::create()
     return new PTLightingEngine(m_light_sampler, m_params);
 }
 
+Dictionary PTLightingEngineFactory::get_params_metadata()
+{
+    Dictionary metadata;
+    add_common_params_metadata(metadata, true);
+
+    metadata.dictionaries().insert(
+        "enable_dl",
+        Dictionary()
+            .insert("type", "bool")
+            .insert("default", "true")
+            .insert("help", "Enable direct lighting"));
+
+    metadata.dictionaries().insert(
+        "enable_caustics",
+        Dictionary()
+            .insert("type", "bool")
+            .insert("default", "false")
+            .insert("help", "Enable caustics"));
+
+    metadata.dictionaries().insert(
+        "max_path_length",
+        Dictionary()
+            .insert("type", "int")
+            .insert("default", "8")
+            .insert("unlimited", "true")
+            .insert("min", "1")
+            .insert("help", "Maximum number of path bounces"));
+
+    metadata.dictionaries().insert(
+        "rr_min_path_length",
+        Dictionary()
+            .insert("type", "int")
+            .insert("default", "3")
+            .insert("min", "1")
+            .insert("help", "Consider pruning low contribution paths starting with this bounce"));
+
+    metadata.dictionaries().insert(
+        "max_ray_intensity",
+        Dictionary()
+            .insert("type", "float")
+            .insert("default", "1.0")
+            .insert("unlimited", "true")
+            .insert("min", "0.0")
+            .insert("help", "Clamp intensity of rays (after the first bounce) to this value to reduce fireflies"));
+
+    return metadata;
+}
+
 }   // namespace renderer
