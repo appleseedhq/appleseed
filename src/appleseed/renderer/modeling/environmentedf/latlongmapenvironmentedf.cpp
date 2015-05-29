@@ -423,7 +423,8 @@ Dictionary LatLongMapEnvironmentEDFFactory::get_model_metadata() const
     return
         Dictionary()
             .insert("name", Model)
-            .insert("label", "Latitude-Longitude Map Environment EDF");
+            .insert("label", "Latitude-Longitude Map Environment EDF")
+            .insert("help", "Lat-Long image-based lighting environment");
 }
 
 DictionaryArray LatLongMapEnvironmentEDFFactory::get_input_metadata() const
@@ -439,7 +440,8 @@ DictionaryArray LatLongMapEnvironmentEDFFactory::get_input_metadata() const
                 Dictionary()
                     .insert("texture_instance", "Textures"))
             .insert("use", "required")
-            .insert("default", "1.0"));
+            .insert("default", "1.0")
+            .insert("help", "Environment texture"));
 
     metadata.push_back(
         Dictionary()
@@ -449,7 +451,8 @@ DictionaryArray LatLongMapEnvironmentEDFFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "optional")
-            .insert("default", "1.0"));
+            .insert("default", "1.0")
+            .insert("help", "Environment texture radiance multiplier"));
 
     metadata.push_back(
         Dictionary()
@@ -459,7 +462,8 @@ DictionaryArray LatLongMapEnvironmentEDFFactory::get_input_metadata() const
             .insert("min_value", "-360.0")
             .insert("max_value", "360.0")
             .insert("default", "0.0")
-            .insert("use", "optional"));
+            .insert("use", "optional")
+            .insert("help", "Environment texture horizontal shift in degrees"));
 
     metadata.push_back(
         Dictionary()
@@ -469,7 +473,8 @@ DictionaryArray LatLongMapEnvironmentEDFFactory::get_input_metadata() const
             .insert("min_value", "-360.0")
             .insert("max_value", "360.0")
             .insert("default", "0.0")
-            .insert("use", "optional"));
+            .insert("use", "optional")
+            .insert("help", "Environment texture vertical shift in degrees"));
 
     return metadata;
 }

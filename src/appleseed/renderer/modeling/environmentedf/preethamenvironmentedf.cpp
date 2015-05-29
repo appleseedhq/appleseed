@@ -445,90 +445,15 @@ Dictionary PreethamEnvironmentEDFFactory::get_model_metadata() const
     return
         Dictionary()
             .insert("name", Model)
-            .insert("label", "Preetham Environment EDF");
+            .insert("label", "Preetham Environment EDF")
+            .insert("help", "Sky dome environment");
 }
 
 DictionaryArray PreethamEnvironmentEDFFactory::get_input_metadata() const
 {
     DictionaryArray metadata;
 
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "sun_theta")
-            .insert("label", "Sun Theta Angle")
-            .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "90.0")
-            .insert("use", "required")
-            .insert("default", "45.0"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "sun_phi")
-            .insert("label", "Sun Phi Angle")
-            .insert("type", "numeric")
-            .insert("min_value", "-360.0")
-            .insert("max_value", "360.0")
-            .insert("use", "required")
-            .insert("default", "0.0"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "turbidity")
-            .insert("label", "Turbidity")
-            .insert("type", "colormap")
-            .insert("entity_types",
-                Dictionary().insert("texture_instance", "Textures"))
-            .insert("use", "required")
-            .insert("default", "1.0"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "turbidity_multiplier")
-            .insert("label", "Turbidity Multiplier")
-            .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "8.0")
-            .insert("use", "optional")
-            .insert("default", "2.0"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "luminance_multiplier")
-            .insert("label", "Luminance Multiplier")
-            .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "10.0")
-            .insert("use", "optional")
-            .insert("default", "1.0"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "luminance_gamma")
-            .insert("label", "Luminance Gamma")
-            .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "3.0")
-            .insert("use", "optional")
-            .insert("default", "1.0"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "saturation_multiplier")
-            .insert("label", "Saturation Multiplier")
-            .insert("type", "numeric")
-            .insert("min_value", "0.0")
-            .insert("max_value", "10.0")
-            .insert("use", "optional")
-            .insert("default", "1.0"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "horizon_shift")
-            .insert("label", "Horizon Shift")
-            .insert("type", "text")
-            .insert("use", "optional")
-            .insert("default", "0.0"));
+    add_common_sky_input_metadata(metadata);
 
     return metadata;
 }

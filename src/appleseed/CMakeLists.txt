@@ -1398,6 +1398,7 @@ set (renderer_modeling_environmentedf_sources
     renderer/modeling/environmentedf/gradientenvironmentedf.h
     renderer/modeling/environmentedf/hosekenvironmentedf.cpp
     renderer/modeling/environmentedf/hosekenvironmentedf.h
+    renderer/modeling/environmentedf/ienvironmentedffactory.cpp
     renderer/modeling/environmentedf/ienvironmentedffactory.h
     renderer/modeling/environmentedf/latlongmapenvironmentedf.cpp
     renderer/modeling/environmentedf/latlongmapenvironmentedf.h
