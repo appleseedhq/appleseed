@@ -157,7 +157,12 @@ if (USE_STATIC_BOOST)
     set (Boost_USE_STATIC_LIBS TRUE)
 endif ()
 
-set (BOOST_NEEDED_LIBS chrono date_time filesystem regex system thread wave)
+set (BOOST_NEEDED_LIBS chrono date_time filesystem regex system thread)
+
+if (WITH_OSL)
+    set (BOOST_NEEDED_LIBS ${BOOST_NEEDED_LIBS} wave)
+endif ()
+
 find_package (Boost 1.47 REQUIRED ${BOOST_NEEDED_LIBS})
 
 add_definitions (-DBOOST_FILESYSTEM_VERSION=3 -DBOOST_FILESYSTEM_NO_DEPRECATED)
