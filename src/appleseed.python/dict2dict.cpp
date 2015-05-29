@@ -227,12 +227,17 @@ bpy::dict param_array_to_bpy_dict(const ParamArray& array)
     return dictionary_to_bpy_dict(array);
 }
 
-bpy::list dictionary_array_to_bpy_list(const DictionaryArray& array)
+boost::python::dict dictionary_array_to_bpy_dict(
+    const DictionaryArray&  array,
+    const char*             key)
 {
-    bpy::list dictionaries;
+    bpy::dict dictionaries;
 
     for (size_t i = 0, e = array.size(); i < e; ++i)
-        dictionaries.append(dictionary_to_bpy_dict(array[i]));
+    {
+        bpy::dict d(dictionary_to_bpy_dict(array[i]));
+        dictionaries[d[key]] = d;
+    }
 
     return dictionaries;
 }
