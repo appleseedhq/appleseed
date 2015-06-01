@@ -70,6 +70,10 @@ class APPLESEED_DLLSYMBOL IEnvironmentEDFFactory
     virtual foundation::auto_release_ptr<EnvironmentEDF> create(
         const char*         name,
         const ParamArray&   params) const = 0;
+
+  protected:
+    // Add the input metadata common to all sky dome environment models.
+    static void add_common_sky_input_metadata(foundation::DictionaryArray& metadata);
 };
 
 }       // namespace renderer

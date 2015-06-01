@@ -190,7 +190,8 @@ Dictionary MirrorBallMapEnvironmentEDFFactory::get_model_metadata() const
     return
         Dictionary()
             .insert("name", Model)
-            .insert("label", "Mirror Ball Map Environment EDF");
+            .insert("label", "Mirror Ball Map Environment EDF")
+            .insert("help", "Mirror ball image-based lighting environment");
 }
 
 DictionaryArray MirrorBallMapEnvironmentEDFFactory::get_input_metadata() const
@@ -207,7 +208,8 @@ DictionaryArray MirrorBallMapEnvironmentEDFFactory::get_input_metadata() const
                     .insert("color", "Colors")
                     .insert("texture_instance", "Textures"))
             .insert("use", "required")
-            .insert("default", "1.0"));
+            .insert("default", "1.0")
+            .insert("help", "Environment texture"));
 
     metadata.push_back(
         Dictionary()
@@ -217,7 +219,8 @@ DictionaryArray MirrorBallMapEnvironmentEDFFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "optional")
-            .insert("default", "1.0"));
+            .insert("default", "1.0")
+            .insert("help", "Environment texture radiance multiplier"));
 
     return metadata;
 }

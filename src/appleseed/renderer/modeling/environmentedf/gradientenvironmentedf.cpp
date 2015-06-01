@@ -191,7 +191,8 @@ Dictionary GradientEnvironmentEDFFactory::get_model_metadata() const
     return
         Dictionary()
             .insert("name", Model)
-            .insert("label", "Gradient Environment EDF");
+            .insert("label", "Gradient Environment EDF")
+            .insert("help", "An environment made of a vertical radiance gradient, from zenith to horizon");
 }
 
 DictionaryArray GradientEnvironmentEDFFactory::get_input_metadata() const
@@ -207,7 +208,8 @@ DictionaryArray GradientEnvironmentEDFFactory::get_input_metadata() const
                 Dictionary()
                     .insert("color", "Colors"))
             .insert("use", "required")
-            .insert("default", "0.3"));
+            .insert("default", "0.3")
+            .insert("help", "Horizon radiance"));
 
     metadata.push_back(
         Dictionary()
@@ -218,7 +220,8 @@ DictionaryArray GradientEnvironmentEDFFactory::get_input_metadata() const
                 Dictionary()
                     .insert("color", "Colors"))
             .insert("use", "required")
-            .insert("default", "0.7"));
+            .insert("default", "0.7")
+            .insert("help", "Zenith radiance"));
 
     return metadata;
 }
