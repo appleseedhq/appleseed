@@ -41,7 +41,7 @@ cmake \
     -D SEEXPR_LIBRARY=$DEPSDIR/lib/libSeExpr.so \
     -D USE_EXTERNAL_OIIO=ON \
     -D OPENIMAGEIO_INCLUDE_DIR=$DEPSDIR/include \
-    -D OPENIMAGEIO_LIBRARY=$DEPSDIR/lib/libOpenImageIO.so.1.5.15 \
+    -D OPENIMAGEIO_LIBRARY=$DEPSDIR/lib/libOpenImageIO.so.1.5 \
     -D USE_EXTERNAL_OSL=ON \
     -D OSL_INCLUDE_DIR=$DEPSDIR/include \
     -D OSL_COMP_LIBRARY=$DEPSDIR/lib/liboslcomp.so \
