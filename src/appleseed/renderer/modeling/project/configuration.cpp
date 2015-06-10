@@ -199,6 +199,8 @@ auto_release_ptr<Configuration> BaseConfigurationFactory::create_base_final()
 
     ParamArray& parameters = configuration->get_parameters();
 
+    parameters.insert("sampling_mode", "rng");
+
     parameters.insert("frame_renderer", "generic");
     parameters.insert("tile_renderer", "generic");
 
@@ -219,6 +221,8 @@ auto_release_ptr<Configuration> BaseConfigurationFactory::create_base_interactiv
     auto_release_ptr<Configuration> configuration(new Configuration("base_interactive"));
 
     ParamArray& parameters = configuration->get_parameters();
+
+    parameters.insert("sampling_mode", "rng");
 
     parameters.insert("frame_renderer", "progressive");
     parameters.insert("sample_generator", "generic");
