@@ -57,6 +57,7 @@ namespace
 void bind_material()
 {
     bpy::class_<Material, auto_release_ptr<Material>, bpy::bases<ConnectableEntity>, boost::noncopyable>("Material", bpy::no_init)
+        .def("get_model_metadata", &detail::get_entity_model_metadata<MaterialFactoryRegistrar>).staticmethod("get_model_metadata")
         .def("get_input_metadata", &detail::get_entity_input_metadata<MaterialFactoryRegistrar>).staticmethod("get_input_metadata")
         .def("__init__", bpy::make_constructor(create_material))
         .def("get_model", &Material::get_model)

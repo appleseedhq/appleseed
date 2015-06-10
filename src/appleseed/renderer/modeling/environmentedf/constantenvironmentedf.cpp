@@ -173,7 +173,8 @@ Dictionary ConstantEnvironmentEDFFactory::get_model_metadata() const
     return
         Dictionary()
             .insert("name", Model)
-            .insert("label", "Constant Environment EDF");
+            .insert("label", "Constant Environment EDF")
+            .insert("help", "Constant environment");
 }
 
 DictionaryArray ConstantEnvironmentEDFFactory::get_input_metadata() const
@@ -188,7 +189,8 @@ DictionaryArray ConstantEnvironmentEDFFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary().insert("color", "Colors"))
             .insert("use", "required")
-            .insert("default", "1.0"));
+            .insert("default", "1.0")
+            .insert("help", "Environment radiance"));
 
     return metadata;
 }

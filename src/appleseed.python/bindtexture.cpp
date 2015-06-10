@@ -130,6 +130,7 @@ void bind_texture()
         ;
 
     bpy::class_<Texture, auto_release_ptr<Texture>, bpy::bases<Entity>, boost::noncopyable>("Texture", bpy::no_init)
+        .def("get_model_metadata", &detail::get_entity_model_metadata<TextureFactoryRegistrar>).staticmethod("get_model_metadata")
         .def("get_input_metadata", &detail::get_entity_input_metadata<TextureFactoryRegistrar>).staticmethod("get_input_metadata")
         .def("__init__", bpy::make_constructor(create_texture))
         .def("get_model", &Texture::get_model)

@@ -229,7 +229,8 @@ Dictionary SpotLightFactory::get_model_metadata() const
     return
         Dictionary()
             .insert("name", Model)
-            .insert("label", "Spot Light");
+            .insert("label", "Spot Light")
+            .insert("help", "A light source that emits light in a cone of directions from a point");
 }
 
 DictionaryArray SpotLightFactory::get_input_metadata() const
@@ -246,7 +247,8 @@ DictionaryArray SpotLightFactory::get_input_metadata() const
                     .insert("color", "Colors")
                     .insert("texture_instance", "Textures"))
             .insert("use", "required")
-            .insert("default", "1.0"));
+            .insert("default", "1.0")
+            .insert("help", "Light intensity"));
 
     metadata.push_back(
         Dictionary()
@@ -256,7 +258,8 @@ DictionaryArray SpotLightFactory::get_input_metadata() const
             .insert("entity_types",
                 Dictionary().insert("texture_instance", "Textures"))
             .insert("use", "optional")
-            .insert("default", "1.0"));
+            .insert("default", "1.0")
+            .insert("help", "Light intensity multiplier"));
 
     metadata.push_back(
         Dictionary()
@@ -266,7 +269,8 @@ DictionaryArray SpotLightFactory::get_input_metadata() const
             .insert("min_value", "-180.0")
             .insert("max_value", "180.0")
             .insert("use", "required")
-            .insert("default", "20.0"));
+            .insert("default", "20.0")
+            .insert("help", "Cone distribution inner angle"));
 
     metadata.push_back(
         Dictionary()
@@ -276,7 +280,8 @@ DictionaryArray SpotLightFactory::get_input_metadata() const
             .insert("min_value", "-180.0")
             .insert("max_value", "180.0")
             .insert("use", "required")
-            .insert("default", "30.0"));
+            .insert("default", "30.0")
+            .insert("help", "Cone distribution outer angle"));
 
     metadata.push_back(
         Dictionary()
@@ -286,7 +291,8 @@ DictionaryArray SpotLightFactory::get_input_metadata() const
             .insert("min_value", "-360.0")
             .insert("max_value", "360.0")
             .insert("use", "optional")
-            .insert("default", "0.0"));
+            .insert("default", "0.0")
+            .insert("help", "Rotate the spot light around its axis; only useful when using the light intensity is textured (gobo)"));
 
     add_common_input_metadata(metadata);
 
