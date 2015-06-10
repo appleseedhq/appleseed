@@ -52,7 +52,8 @@ namespace foundation
 //
 //   http://mrl.nyu.edu/~perlin/paper445.pdf
 //   http://mrl.nyu.edu/~perlin/noise/
-//   http://developer.amd.com/assets/Tatarchuk-Noise(GDC07-D3D_Day).pdf
+//   http://amd-dev.wpengine.netdna-cdn.com/wordpress/media/2012/10/Tatarchuk-Noise%28GDC07-D3D_Day%29.pdf
+//   http://jcgt.org/published/0003/02/02/
 //
 
 template <typename T, size_t N>

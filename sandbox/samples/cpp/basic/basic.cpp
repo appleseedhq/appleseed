@@ -294,19 +294,23 @@ int main()
 
     // Create the master renderer.
     asr::DefaultRendererController renderer_controller;
-    asr::MasterRenderer renderer(
-        project.ref(),
-        project->configurations().get_by_name("final")->get_inherited_parameters(),
-        &renderer_controller);
+    std::auto_ptr<asr::MasterRenderer> renderer(
+        new asr::MasterRenderer(
+            project.ref(),
+            project->configurations().get_by_name("final")->get_inherited_parameters(),
+            &renderer_controller));
 
     // Render the frame.
-    renderer.render();
+    renderer->render();
 
     // Save the frame to disk.
     project->get_frame()->write_main_image("output/test.png");
 
     // Save the project to disk.
     asr::ProjectFileWriter::write(project.ref(), "output/test.appleseed");
+
+    // Make sure to delete the master renderer before the project and the logger / log target.
+    renderer.reset();
 
     return 0;
 }
