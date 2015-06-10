@@ -80,16 +80,14 @@ class APPLESEED_DLLSYMBOL MasterRenderer
     bool render();
 
   private:
-
-    // Displays.
-    Display*                        m_display;
-
     IRendererController*            m_renderer_controller;
     ITileCallbackFactory*           m_tile_callback_factory;
 
     // Storage for serial tile callbacks.
     SerialRendererController*       m_serial_renderer_controller;
     ITileCallbackFactory*           m_serial_tile_callback_factory;
+
+    Display*                        m_display;
 
     // Render frame sequences, each time reinitializing the rendering components.
     void do_render();

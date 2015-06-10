@@ -113,24 +113,12 @@ Dictionary Configuration::get_metadata()
             .insert("type", "enum")
             .insert("values", "rng|qmc")
             .insert("default", "rng")
-            .insert(
-                "help",
-                "Sampler to use when generating samples")
+            .insert("help", "Sampler to use when generating samples")
             .insert(
                 "options",
                 Dictionary()
-                    .insert(
-                        "rng",
-                        Dictionary()
-                            .insert(
-                                "help",
-                                "Random sampler"))
-                        .insert(
-                        "qmc",
-                        Dictionary()
-                            .insert(
-                                "help",
-                                "Quasi monte carlo sampler"))));
+                    .insert("rng", Dictionary().insert("help", "Random sampler"))
+                    .insert("qmc", Dictionary().insert("help", "Quasi Monte Carlo sampler"))));
 
     metadata.insert(
         "lighting_engine",
@@ -138,30 +126,13 @@ Dictionary Configuration::get_metadata()
             .insert("type", "enum")
             .insert("values", "drt|pt|sppm")
             .insert("default", "pt")
-            .insert(
-                "help",
-                "Lighting engine used when rendering.")
+            .insert("help", "Lighting engine used when rendering")
             .insert(
                 "options",
                 Dictionary()
-                    .insert(
-                        "drt",
-                        Dictionary()
-                            .insert(
-                                "help",
-                                "Distribution ray tracing"))
-                    .insert(
-                        "pt",
-                        Dictionary()
-                            .insert(
-                                "help",
-                                "Unidirectional path tracing"))
-                    .insert(
-                        "sppm",
-                        Dictionary()
-                            .insert(
-                                "help",
-                                "Stochastic progressive photon mapping"))));
+                    .insert("drt", Dictionary().insert("help", "Distribution ray tracing"))
+                    .insert("pt", Dictionary().insert("help", "Unidirectional path tracing"))
+                    .insert("sppm", Dictionary().insert("help", "Stochastic progressive photon mapping"))));
 
     metadata.insert(
         "rendering_threads",
