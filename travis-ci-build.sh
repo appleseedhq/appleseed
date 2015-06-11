@@ -55,6 +55,8 @@ cmake \
     -D USE_EXTERNAL_ZLIB=ON \
     -D USE_EXTERNAL_PNG=ON \
     -D USE_EXTERNAL_XERCES=ON \
+    -D USE_SSE=ON \
+    -D USE_SSE42=ON \
     -D CMAKE_BUILD_TYPE=Debug \
     ..
 
