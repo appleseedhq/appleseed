@@ -55,25 +55,22 @@ namespace renderer
 
 namespace
 {
-    // A dummy region that simply wraps a tessellation.
+    // A region that simply wraps a static tessellation.
     class MeshRegion
       : public IRegion
     {
       public:
-        // Constructor.
         explicit MeshRegion(StaticTriangleTess* tess)
           : m_tess(tess)
           , m_lazy_tess(tess)
         {
         }
 
-        // Compute the local space bounding box of the region over the shutter interval.
         virtual GAABB3 compute_local_bbox() const APPLESEED_OVERRIDE
         {
             return m_tess->compute_local_bbox();
         }
 
-        // Return the static triangle tessellation of the region.
         virtual Lazy<StaticTriangleTess>& get_static_triangle_tess() const APPLESEED_OVERRIDE
         {
             return m_lazy_tess;
@@ -217,24 +214,9 @@ const GVector3& MeshObject::get_vertex_normal(const size_t index) const
     return impl->m_tess.m_vertex_normals[index];
 }
 
-void MeshObject::reserve_tex_coords(const size_t count)
+void MeshObject::clear_vertex_normals()
 {
-    impl->m_tess.reserve_tex_coords(count);
-}
-
-size_t MeshObject::push_tex_coords(const GVector2& tex_coords)
-{
-    return impl->m_tess.push_tex_coords(tex_coords);
-}
-
-size_t MeshObject::get_tex_coords_count() const
-{
-    return impl->m_tess.get_tex_coords_count();
-}
-
-GVector2 MeshObject::get_tex_coords(const size_t index) const
-{
-    return impl->m_tess.get_tex_coords(index);
+    impl->m_tess.m_vertex_normals.clear();
 }
 
 void MeshObject::reserve_vertex_tangents(const size_t count)
@@ -255,6 +237,26 @@ size_t MeshObject::get_vertex_tangent_count() const
 GVector3 MeshObject::get_vertex_tangent(const size_t index) const
 {
     return impl->m_tess.get_vertex_tangent(index);
+}
+
+void MeshObject::reserve_tex_coords(const size_t count)
+{
+    impl->m_tess.reserve_tex_coords(count);
+}
+
+size_t MeshObject::push_tex_coords(const GVector2& tex_coords)
+{
+    return impl->m_tess.push_tex_coords(tex_coords);
+}
+
+size_t MeshObject::get_tex_coords_count() const
+{
+    return impl->m_tess.get_tex_coords_count();
+}
+
+GVector2 MeshObject::get_tex_coords(const size_t index) const
+{
+    return impl->m_tess.get_tex_coords(index);
 }
 
 void MeshObject::reserve_triangles(const size_t count)
@@ -279,6 +281,11 @@ const Triangle& MeshObject::get_triangle(const size_t index) const
     return impl->m_tess.m_primitives[index];
 }
 
+void MeshObject::clear_triangles()
+{
+    impl->m_tess.m_primitives.clear();
+}
+
 void MeshObject::set_motion_segment_count(const size_t count)
 {
     impl->m_tess.set_motion_segment_count(count);
@@ -292,9 +299,9 @@ size_t MeshObject::get_motion_segment_count() const
 void MeshObject::set_vertex_pose(
     const size_t        vertex_index,
     const size_t        motion_segment_index,
-    const GVector3&     v)
+    const GVector3&     vertex)
 {
-    impl->m_tess.set_vertex_pose(vertex_index, motion_segment_index, v);
+    impl->m_tess.set_vertex_pose(vertex_index, motion_segment_index, vertex);
 }
 
 GVector3 MeshObject::get_vertex_pose(
@@ -307,6 +314,46 @@ GVector3 MeshObject::get_vertex_pose(
 void MeshObject::clear_vertex_poses()
 {
     impl->m_tess.clear_vertex_poses();
+}
+
+void MeshObject::set_vertex_normal_pose(
+    const size_t        normal_index,
+    const size_t        motion_segment_index,
+    const GVector3&     normal)
+{
+    impl->m_tess.set_vertex_normal_pose(normal_index, motion_segment_index, normal);
+}
+
+GVector3 MeshObject::get_vertex_normal_pose(
+    const size_t        normal_index,
+    const size_t        motion_segment_index) const
+{
+    return impl->m_tess.get_vertex_normal_pose(normal_index, motion_segment_index);
+}
+
+void MeshObject::clear_vertex_normal_poses()
+{
+    impl->m_tess.clear_vertex_normal_poses();
+}
+
+void MeshObject::set_vertex_tangent_pose(
+    const size_t        tangent_index,
+    const size_t        motion_segment_index,
+    const GVector3&     tangent)
+{
+    impl->m_tess.set_vertex_tangent_pose(tangent_index, motion_segment_index, tangent);
+}
+
+GVector3 MeshObject::get_vertex_tangent_pose(
+    const size_t        tangent_index,
+    const size_t        motion_segment_index) const
+{
+    return impl->m_tess.get_vertex_tangent_pose(tangent_index, motion_segment_index);
+}
+
+void MeshObject::clear_vertex_tangent_poses()
+{
+    impl->m_tess.clear_vertex_tangent_poses();
 }
 
 void MeshObject::reserve_material_slots(const size_t count)
