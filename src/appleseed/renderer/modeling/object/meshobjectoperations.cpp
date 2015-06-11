@@ -48,7 +48,7 @@ using namespace std;
 namespace renderer
 {
 
-void compute_smooth_vertex_tangents(MeshObject& object)
+void compute_smooth_vertex_tangents_base_pose(MeshObject& object)
 {
     assert(object.get_vertex_tangent_count() == 0);
     assert(object.get_tex_coords_count() > 0);
@@ -98,6 +98,63 @@ void compute_smooth_vertex_tangents(MeshObject& object)
 
     for (size_t i = 0; i < vertex_count; ++i)
         object.push_vertex_tangent(normalize(tangents[i]));
+}
+
+void compute_smooth_vertex_tangents_pose(MeshObject& object, const size_t motion_segment_index)
+{
+    assert(object.get_tex_coords_count() > 0);
+
+    const size_t vertex_count = object.get_vertex_count();
+    const size_t triangle_count = object.get_triangle_count();
+
+    vector<GVector3> tangents(vertex_count, GVector3(0.0));
+
+    for (size_t i = 0; i < triangle_count; ++i)
+    {
+        const Triangle& triangle = object.get_triangle(i);
+
+        if (!triangle.has_vertex_attributes())
+            continue;
+
+        const GVector2 v0_uv = object.get_tex_coords(triangle.m_a0);
+        const GVector2 v1_uv = object.get_tex_coords(triangle.m_a1);
+        const GVector2 v2_uv = object.get_tex_coords(triangle.m_a2);
+
+        //
+        // Reference:
+        //
+        //   Physically Based Rendering, first edition, pp. 128-129
+        //
+
+        const GScalar du0 = v0_uv[0] - v2_uv[0];
+        const GScalar dv0 = v0_uv[1] - v2_uv[1];
+        const GScalar du1 = v1_uv[0] - v2_uv[0];
+        const GScalar dv1 = v1_uv[1] - v2_uv[1];
+        const GScalar det = du0 * dv1 - dv0 * du1;
+
+        if (det == GScalar(0.0))
+            continue;
+
+        const GVector3& v2 = object.get_vertex_pose(triangle.m_v2, motion_segment_index);
+        const GVector3 dp0 = object.get_vertex_pose(triangle.m_v0, motion_segment_index) - v2;
+        const GVector3 dp1 = object.get_vertex_pose(triangle.m_v1, motion_segment_index) - v2;
+        const GVector3 tangent = normalize(dv1 * dp0 - dv0 * dp1);
+
+        tangents[triangle.m_v0] += tangent;
+        tangents[triangle.m_v1] += tangent;
+        tangents[triangle.m_v2] += tangent;
+    }
+
+    for (size_t i = 0; i < vertex_count; ++i)
+        object.set_vertex_tangent_pose(i, motion_segment_index, normalize(tangents[i]));
+}
+
+void compute_smooth_vertex_tangents(MeshObject& object)
+{
+    compute_smooth_vertex_tangents_base_pose(object);
+
+    for (size_t i = 0; i < object.get_motion_segment_count(); ++i)
+        compute_smooth_vertex_tangents_pose(object, i);
 }
 
 }   // namespace renderer

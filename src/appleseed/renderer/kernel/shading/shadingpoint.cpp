@@ -96,7 +96,13 @@ void ShadingPoint::fetch_triangle_source_geometry() const
     const StaticTriangleTess& tess =
         *m_tess_cache->access(
             region->get_uid(), region->get_static_triangle_tess());
+
+    // Compute motion interpolation parameters.
     const size_t motion_segment_count = tess.get_motion_segment_count();
+    const double base_time = m_ray.m_time.m_normalized * motion_segment_count;
+    const size_t base_index = truncate<size_t>(base_time);
+    const GScalar frac = static_cast<GScalar>(base_time - base_index);
+    const GScalar one_minus_frac = GScalar(1.0) - frac;
 
     // Retrieve the triangle.
     const Triangle& triangle = tess.m_primitives[m_primitive_index];
@@ -121,38 +127,33 @@ void ShadingPoint::fetch_triangle_source_geometry() const
         m_v2_uv = GVector2(0.0, 1.0);
     }
 
-    // Copy the object instance space triangle vertices.
+    // Copy or compute triangle vertices (in object instance space).
     assert(triangle.m_v0 != Triangle::None);
     assert(triangle.m_v1 != Triangle::None);
     assert(triangle.m_v2 != Triangle::None);
     if (motion_segment_count > 0)
     {
-        // Fetch triangle vertices from the previous pose.
-        const size_t prev_index = truncate<size_t>(m_ray.m_time.m_normalized * motion_segment_count);
-        GVector3 prev_v0, prev_v1, prev_v2;
-        if (prev_index == 0)
+        // Fetch vertices from previous pose.
+        if (base_index == 0)
         {
-            prev_v0 = tess.m_vertices[triangle.m_v0];
-            prev_v1 = tess.m_vertices[triangle.m_v1];
-            prev_v2 = tess.m_vertices[triangle.m_v2];
+            m_v0 = tess.m_vertices[triangle.m_v0];
+            m_v1 = tess.m_vertices[triangle.m_v1];
+            m_v2 = tess.m_vertices[triangle.m_v2];
         }
         else
         {
-            prev_v0 = tess.get_vertex_pose(triangle.m_v0, prev_index - 1);
-            prev_v1 = tess.get_vertex_pose(triangle.m_v1, prev_index - 1);
-            prev_v2 = tess.get_vertex_pose(triangle.m_v2, prev_index - 1);
+            m_v0 = tess.get_vertex_pose(triangle.m_v0, base_index - 1);
+            m_v1 = tess.get_vertex_pose(triangle.m_v1, base_index - 1);
+            m_v2 = tess.get_vertex_pose(triangle.m_v2, base_index - 1);
         }
 
-        // Fetch triangle vertices from the next pose.
-        const GVector3 next_v0 = tess.get_vertex_pose(triangle.m_v0, prev_index);
-        const GVector3 next_v1 = tess.get_vertex_pose(triangle.m_v1, prev_index);
-        const GVector3 next_v2 = tess.get_vertex_pose(triangle.m_v2, prev_index);
-
-        // Interpolate triangle vertices.
-        const GScalar k = static_cast<GScalar>(m_ray.m_time.m_normalized * motion_segment_count - prev_index);
-        m_v0 = lerp(prev_v0, next_v0, k);
-        m_v1 = lerp(prev_v1, next_v1, k);
-        m_v2 = lerp(prev_v2, next_v2, k);
+        // Interpolate with vertices from next pose.
+        m_v0 *= one_minus_frac;
+        m_v1 *= one_minus_frac;
+        m_v2 *= one_minus_frac;
+        m_v0 += tess.get_vertex_pose(triangle.m_v0, base_index) * frac;
+        m_v1 += tess.get_vertex_pose(triangle.m_v1, base_index) * frac;
+        m_v2 += tess.get_vertex_pose(triangle.m_v2, base_index) * frac;
     }
     else
     {
@@ -161,30 +162,100 @@ void ShadingPoint::fetch_triangle_source_geometry() const
         m_v2 = tess.m_vertices[triangle.m_v2];
     }
 
-    // Copy the object instance space vertex normals.
+    // Copy or compute triangle vertex normals (in object instance space).
     if (triangle.m_n0 != Triangle::None &&
         triangle.m_n1 != Triangle::None &&
         triangle.m_n2 != Triangle::None)
     {
-        m_members |= HasTriangleVertexNormals;
-        m_n0 = tess.m_vertex_normals[triangle.m_n0];
-        m_n1 = tess.m_vertex_normals[triangle.m_n1];
-        m_n2 = tess.m_vertex_normals[triangle.m_n2];
+        if (motion_segment_count > 0)
+        {
+            // Fetch vertex normals from previous pose.
+            if (base_index == 0)
+            {
+                m_n0 = tess.m_vertex_normals[triangle.m_n0];
+                m_n1 = tess.m_vertex_normals[triangle.m_n1];
+                m_n2 = tess.m_vertex_normals[triangle.m_n2];
+            }
+            else
+            {
+                m_n0 = tess.get_vertex_normal_pose(triangle.m_n0, base_index - 1);
+                m_n1 = tess.get_vertex_normal_pose(triangle.m_n1, base_index - 1);
+                m_n2 = tess.get_vertex_normal_pose(triangle.m_n2, base_index - 1);
+            }
+
+            // Interpolate with vertex normals from next pose.
+            // Assume small motion, stick to linear interpolation.
+            m_n0 *= one_minus_frac;
+            m_n1 *= one_minus_frac;
+            m_n2 *= one_minus_frac;
+            m_n0 += tess.get_vertex_normal_pose(triangle.m_n0, base_index) * frac;
+            m_n1 += tess.get_vertex_normal_pose(triangle.m_n1, base_index) * frac;
+            m_n2 += tess.get_vertex_normal_pose(triangle.m_n2, base_index) * frac;
+
+            // Renormalize interpolated normals.
+            m_n0 = normalize(m_n0);
+            m_n1 = normalize(m_n1);
+            m_n2 = normalize(m_n2);
+        }
+        else
+        {
+            m_n0 = tess.m_vertex_normals[triangle.m_n0];
+            m_n1 = tess.m_vertex_normals[triangle.m_n1];
+            m_n2 = tess.m_vertex_normals[triangle.m_n2];
+        }
+
         assert(is_normalized(m_n0));
         assert(is_normalized(m_n1));
         assert(is_normalized(m_n2));
+
+        m_members |= HasTriangleVertexNormals;
     }
 
-    // Copy the object instance space vertex tangents.
+    // Copy vertex tangents (in object instance space).
     if (triangle_has_vertex_attributes && tess.get_vertex_tangent_count() > 0)
     {
-        m_members |= HasTriangleVertexTangents;
-        m_t0 = tess.get_vertex_tangent(triangle.m_v0);
-        m_t1 = tess.get_vertex_tangent(triangle.m_v1);
-        m_t2 = tess.get_vertex_tangent(triangle.m_v2);
+        if (motion_segment_count > 0)
+        {
+            // Fetch vertex tangents from previous pose.
+            if (base_index == 0)
+            {
+                m_t0 = tess.get_vertex_tangent(triangle.m_v0);
+                m_t1 = tess.get_vertex_tangent(triangle.m_v1);
+                m_t2 = tess.get_vertex_tangent(triangle.m_v2);
+            }
+            else
+            {
+                m_t0 = tess.get_vertex_tangent_pose(triangle.m_v0, base_index - 1);
+                m_t1 = tess.get_vertex_tangent_pose(triangle.m_v1, base_index - 1);
+                m_t2 = tess.get_vertex_tangent_pose(triangle.m_v2, base_index - 1);
+            }
+
+            // Interpolate with vertex tangents from next pose.
+            // Assume small motion, stick to linear interpolation.
+            m_t0 *= one_minus_frac;
+            m_t1 *= one_minus_frac;
+            m_t2 *= one_minus_frac;
+            m_t0 += tess.get_vertex_tangent_pose(triangle.m_v0, base_index) * frac;
+            m_t1 += tess.get_vertex_tangent_pose(triangle.m_v1, base_index) * frac;
+            m_t2 += tess.get_vertex_tangent_pose(triangle.m_v2, base_index) * frac;
+
+            // Renormalize interpolated tangents.
+            m_t0 = normalize(m_t0);
+            m_t1 = normalize(m_t1);
+            m_t2 = normalize(m_t2);
+        }
+        else
+        {
+            m_t0 = tess.get_vertex_tangent(triangle.m_v0);
+            m_t1 = tess.get_vertex_tangent(triangle.m_v1);
+            m_t2 = tess.get_vertex_tangent(triangle.m_v2);
+        }
+
         assert(is_normalized(m_t0));
         assert(is_normalized(m_t1));
         assert(is_normalized(m_t2));
+
+        m_members |= HasTriangleVertexTangents;
     }
 }
 
@@ -634,16 +705,16 @@ void ShadingPoint::compute_world_space_point_velocity() const
         if (motion_segment_count > 0)
         {
             // Fetch triangle vertices from the first pose.
-            const GVector3 first_v0 = tess.m_vertices[triangle.m_v0];
-            const GVector3 first_v1 = tess.m_vertices[triangle.m_v1];
-            const GVector3 first_v2 = tess.m_vertices[triangle.m_v2];
+            const GVector3& first_v0 = tess.m_vertices[triangle.m_v0];
+            const GVector3& first_v1 = tess.m_vertices[triangle.m_v1];
+            const GVector3& first_v2 = tess.m_vertices[triangle.m_v2];
 
             // Fetch triangle vertices from the last pose.
             const GVector3 last_v0 = tess.get_vertex_pose(triangle.m_v0, motion_segment_count - 1);
             const GVector3 last_v1 = tess.get_vertex_pose(triangle.m_v1, motion_segment_count - 1);
             const GVector3 last_v2 = tess.get_vertex_pose(triangle.m_v2, motion_segment_count - 1);
 
-            // Compute the barycentric coordinates.
+            // Compute barycentric coordinates.
             const float v = static_cast<float>(m_bary[0]);
             const float w = static_cast<float>(m_bary[1]);
             const float u = 1.0f - v - w;
