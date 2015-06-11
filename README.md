@@ -43,3 +43,9 @@ Developer and contributor documentation can be found in the [wiki](https://githu
 ##### Fetch, a very short film
 
 [![Fetch](https://raw.github.com/appleseedhq/appleseed-wiki/master/images/fetch.png)](https://vimeo.com/appleseedhq/fetchaveryshortfilm)
+
+### Demos
+
+##### Interactive lookdev inside appleseed.studio
+
+[![Interactive lookdev inside appleseed.studio](https://i.vimeocdn.com/video/518464756_1280.jpg)](https://vimeo.com/127622613)
