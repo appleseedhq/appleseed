@@ -93,8 +93,8 @@ option (USE_STATIC_BOOST        "Use static Boost libraries"                    
 option (USE_STATIC_OIIO         "Use static OpenImageIO libraries"                      ON)
 option (USE_STATIC_OSL          "Use static OpenShadingLanguage libraries"              ON)
 
-option (USE_SSE                 "Use SSE and SSE 2 instruction sets"                    ON)
-option (USE_SSE42               "Use SSE 4.2 instruction set"                           OFF)
+option (USE_SSE                 "Use SSE instruction sets up to version 2"              ON)
+option (USE_SSE42               "Use SSE instruction sets up to version 4.2"            OFF)
 
 option (HIDE_SYMBOLS            "When using gcc, hide symbols not on the public API"    ON)
 
