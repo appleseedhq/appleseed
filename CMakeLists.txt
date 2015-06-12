@@ -338,11 +338,15 @@ endif ()
 
 # SSE
 if (USE_SSE42)
-    set (USE_SSE TRUE)
-    set (preprocessor_definitions_common
-        ${preprocessor_definitions_common}
-        APPLESEED_USE_SSE42
-    )
+    if (CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_SIZEOF_VOID_P MATCHES 4)
+        message (WARNING "Building appleseed with SSE/SSE2 instruction sets on 32-bit Linux is not supported; continuing without SSE4.2.")
+    else ()
+        set (USE_SSE TRUE)
+        set (preprocessor_definitions_common
+            ${preprocessor_definitions_common}
+            APPLESEED_USE_SSE42
+        )
+    endif ()
 endif ()
 if (USE_SSE)
     if (CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_SIZEOF_VOID_P MATCHES 4)
