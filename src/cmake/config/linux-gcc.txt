@@ -71,6 +71,12 @@ if (USE_SSE)
         -msse2                                          # enable SSE instruction sets up to SSE 2
     )
 endif ()
+if (USE_SSE42)
+    set (c_compiler_flags_common
+         ${c_compiler_flags_common}
+        -msse4.2                                        # enable SSE instruction sets up to SSE 4.2
+    )
+endif ()
 set (exe_linker_flags_common
     -Werror                                             # Treat Warnings As Errors
 )
