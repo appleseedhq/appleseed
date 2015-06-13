@@ -171,6 +171,8 @@ class RenderingManager
     ScheduledActionCollection                   m_scheduled_actions;
     StickyActionCollection                      m_sticky_actions;
 
+    bool                                        m_has_camera_changed;
+
     class FrozenDisplayFunc
     {
       public:
