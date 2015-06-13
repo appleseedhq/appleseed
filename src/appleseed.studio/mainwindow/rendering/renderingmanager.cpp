@@ -348,6 +348,8 @@ void RenderingManager::slot_rendering_begin()
     run_scheduled_actions();
 
     m_rendering_timer.clear();
+
+    m_has_camera_changed = false;
 }
 
 void RenderingManager::slot_rendering_end()
@@ -367,7 +369,11 @@ void RenderingManager::slot_rendering_end()
 void RenderingManager::slot_frame_begin()
 {
     // Update the scene's camera before rendering the frame.
-    m_render_tab->get_camera_controller()->update_camera_transform();
+    if (m_has_camera_changed)
+    {
+        m_render_tab->get_camera_controller()->update_camera_transform();
+        m_has_camera_changed = false;
+    }
 
     // Start printing rendering time in the status bar.
     m_status_bar.start_rendering_time_display(&m_rendering_timer);
@@ -411,6 +417,8 @@ void RenderingManager::slot_camera_change_begin()
 
 void RenderingManager::slot_camera_changed()
 {
+    m_has_camera_changed = true;
+
     if (m_frozen_display_func.get())
     {
         m_frozen_display_func->set_camera_transform(
