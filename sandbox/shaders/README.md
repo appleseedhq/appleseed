@@ -3,12 +3,10 @@ appleseed.shaders
 
 A library of OSL shaders for appleseed.
 
-Building:
----------
+Building
+--------
 
-    Compiled shaders are already provided.
-    If for any reason you need to recompile them,
+Compiled shaders are already provided. If for any reason you need to recompile them, run:
 
-    run:
-        cd src
-        python compile_shaders.py [path/to/appleseed/bin/oslc]
+    cd src
+    python compile_shaders.py [path/to/appleseed/bin/oslc]
