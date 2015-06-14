@@ -1,7 +1,12 @@
 appleseed.shaders
 =================
 
-A library of OSL shaders for appleseed.
+A library of OSL nodes for appleseed.
+
+Source Code
+-----------
+
+The source code for these OSL nodes is located in the `src/` subdirectory.
 
 Building
 --------
