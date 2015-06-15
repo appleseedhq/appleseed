@@ -50,6 +50,7 @@ namespace appleseed { namespace studio { class ObjectInstanceItem; } }
 namespace renderer  { class Assembly; }
 namespace renderer  { class BaseGroup; }
 namespace renderer  { class BSDF; }
+namespace renderer  { class BSSRDF; }
 namespace renderer  { class EDF; }
 namespace renderer  { class Light; }
 namespace renderer  { class Material; }
@@ -76,6 +77,7 @@ class AssemblyItem
     virtual QMenu* get_single_item_context_menu() const APPLESEED_OVERRIDE;
 
     void add_item(renderer::BSDF* bsdf);
+    void add_item(renderer::BSSRDF* bssrdf);
     void add_item(renderer::EDF* edf);
     void add_item(renderer::SurfaceShader* surface_shader);
     void add_item(renderer::Material* material);
@@ -100,11 +102,13 @@ class AssemblyItem
     BaseGroupItem*                  m_parent_item;
 
     typedef CollectionItem<renderer::BSDF, renderer::Assembly, AssemblyItem> BSDFCollectionItem;
+    typedef CollectionItem<renderer::BSSRDF, renderer::Assembly, AssemblyItem> BSSRDFCollectionItem;
     typedef CollectionItem<renderer::EDF, renderer::Assembly, AssemblyItem> EDFCollectionItem;
     typedef CollectionItem<renderer::SurfaceShader, renderer::Assembly, AssemblyItem> SurfaceShaderCollectionItem;
     typedef CollectionItem<renderer::Light, renderer::Assembly, AssemblyItem> LightCollectionItem;
 
     BSDFCollectionItem*             m_bsdf_collection_item;
+    BSSRDFCollectionItem*           m_bssrdf_collection_item;
     EDFCollectionItem*              m_edf_collection_item;
     SurfaceShaderCollectionItem*    m_surface_shader_collection_item;
     MaterialCollectionItem*         m_material_collection_item;

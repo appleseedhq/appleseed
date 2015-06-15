@@ -36,6 +36,9 @@
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdffactoryregistrar.h"
 #include "renderer/modeling/bsdf/ibsdffactory.h"
+#include "renderer/modeling/bssrdf/bssrdf.h"
+#include "renderer/modeling/bssrdf/bssrdffactoryregistrar.h"
+#include "renderer/modeling/bssrdf/ibssrdffactory.h"
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/camera/camerafactoryregistrar.h"
 #include "renderer/modeling/camera/icamerafactory.h"
@@ -373,6 +376,7 @@ namespace
         ElementAssemblyInstance,
         ElementAssignMaterial,
         ElementBSDF,
+        ElementBSSRDF,
         ElementCamera,
         ElementColor,
         ElementConfiguration,
@@ -1295,6 +1299,27 @@ namespace
 
 
     //
+    // <bssrdf> element handler.
+    //
+
+    class BSSRDFElementHandler
+      : public EntityElementHandler<
+                   BSSRDF,
+                   BSSRDFFactoryRegistrar,
+                   ParametrizedElementHandler>
+    {
+      public:
+        explicit BSSRDFElementHandler(ParseContext& context)
+          : EntityElementHandler<
+                BSSRDF,
+                BSSRDFFactoryRegistrar,
+                ParametrizedElementHandler>("bssrdf", context)
+        {
+        }
+    };
+
+
+    //
     // <edf> element handler.
     //
 
@@ -2025,6 +2050,7 @@ namespace
             m_assemblies.clear();
             m_assembly_instances.clear();
             m_bsdfs.clear();
+            m_bssrdfs.clear();
             m_colors.clear();
             m_edfs.clear();
             m_lights.clear();
@@ -2056,6 +2082,7 @@ namespace
                 m_assembly->assemblies().swap(m_assemblies);
                 m_assembly->assembly_instances().swap(m_assembly_instances);
                 m_assembly->bsdfs().swap(m_bsdfs);
+                m_assembly->bssrdfs().swap(m_bssrdfs);
                 m_assembly->colors().swap(m_colors);
                 m_assembly->edfs().swap(m_edfs);
                 m_assembly->lights().swap(m_lights);
@@ -2101,6 +2128,12 @@ namespace
                 insert(
                     m_bsdfs,
                     static_cast<BSDFElementHandler*>(handler)->get_entity());
+                break;
+
+              case ElementBSSRDF:
+                insert(
+                    m_bssrdfs,
+                    static_cast<BSSRDFElementHandler*>(handler)->get_entity());
                 break;
 
               case ElementColor:
@@ -2183,6 +2216,7 @@ namespace
         AssemblyContainer           m_assemblies;
         AssemblyInstanceContainer   m_assembly_instances;
         BSDFContainer               m_bsdfs;
+        BSSRDFContainer             m_bssrdfs;
         ColorContainer              m_colors;
         EDFContainer                m_edfs;
         LightContainer              m_lights;
@@ -2898,6 +2932,7 @@ namespace
             register_factory_helper<AssemblyInstanceElementHandler>("assembly_instance", ElementAssemblyInstance);
             register_factory_helper<AssignMaterialElementHandler>("assign_material", ElementAssignMaterial);
             register_factory_helper<BSDFElementHandler>("bsdf", ElementBSDF);
+            register_factory_helper<BSSRDFElementHandler>("bssrdf", ElementBSSRDF);
             register_factory_helper<CameraElementHandler>("camera", ElementCamera);
             register_factory_helper<ColorElementHandler>("color", ElementColor);
             register_factory_helper<ConfigurationElementHandler>("configuration", ElementConfiguration);

@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/bsdf/bsdf.h"
+#include "renderer/modeling/bssrdf/bssrdf.h"
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/color/colorentity.h"
 #include "renderer/modeling/display/display.h"
@@ -449,6 +450,7 @@ namespace
                 !assembly.textures().empty() ||
                 !assembly.texture_instances().empty() ||
                 !assembly.bsdfs().empty() ||
+                !assembly.bssrdfs().empty() ||
                 !assembly.edfs().empty() ||
 #ifdef APPLESEED_WITH_OSL
                 !assembly.shader_groups().empty() ||
@@ -469,6 +471,7 @@ namespace
             write_collection(assembly.textures());
             write_collection(assembly.texture_instances());
             write_collection(assembly.bsdfs());
+            write_collection(assembly.bssrdfs());
             write_collection(assembly.edfs());
 #ifdef APPLESEED_WITH_OSL
             write_collection(assembly.shader_groups());
@@ -522,6 +525,12 @@ namespace
         void write(const BSDF& bsdf)
         {
             write_entity("bsdf", bsdf);
+        }
+
+        // Write a <bssrdf> element.
+        void write(const BSSRDF& bssrdf)
+        {
+            write_entity("bssrdf", bssrdf);
         }
 
         // Write a <camera> element.
