@@ -7,13 +7,13 @@
          Valid values for this parameter are: linux-gcc4, mac-gcc4 and win-vs100.
          For the definitive list of accepted values, see the name of the configuration
          files in src/cmake/config/. -->
-    <platform_id>win-vs110</platform_id>
+    <platform_id>win-vs120</platform_id>
 
     <!-- The name of the target platform. May differ from the platform ID, e.g. to indicate
          if the build is a 32-bit or 64-bit variant. This parameter is only used to name
          the final archive file. Example values: win32-vs100, win64-vs100, linux64-gcc4,
          mac64-gcc4, etc. -->
-    <platform_name>win64-vs110</platform_name>
+    <platform_name>win64-vs120</platform_name>
 
     <!-- The path to the appleseed installation where binaries files will be taken from. -->
     <appleseed_path>C:\appleseed</appleseed_path>
@@ -25,8 +25,8 @@
     <package_output_path>C:\appleseed\archives\releases</package_output_path>
 
     <!-- The path to the Qt shared libraries. -->
-    <qt_runtime_path>C:\qt-4.8.2\lib</qt_runtime_path>
+    <qt_runtime_path>C:\qt-everywhere-opensource-src-4.8.6\lib</qt_runtime_path>
 
     <!-- The path to the platform runtime files (Windows only). -->
-    <platform_runtime_path>C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\redist\x86\Microsoft.VC100.CRT</platform_runtime_path>
+    <platform_runtime_path>C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\redist\x64\Microsoft.VC120.CRT</platform_runtime_path>
 </configuration>
