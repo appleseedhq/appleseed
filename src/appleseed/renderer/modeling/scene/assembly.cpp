@@ -71,6 +71,7 @@ UniqueID Assembly::get_class_uid()
 struct Assembly::Impl
 {
     BSDFContainer               m_bsdfs;
+    BSSRDFContainer             m_bssrdfs;
     EDFContainer                m_edfs;
     SurfaceShaderContainer      m_surface_shaders;
     MaterialContainer           m_materials;
@@ -80,6 +81,7 @@ struct Assembly::Impl
 
     explicit Impl(Entity* parent)
       : m_bsdfs(parent)
+      , m_bssrdfs(parent)
       , m_edfs(parent)
       , m_surface_shaders(parent)
       , m_materials(parent)
@@ -120,6 +122,11 @@ const char* Assembly::get_model() const
 BSDFContainer& Assembly::bsdfs() const
 {
     return impl->m_bsdfs;
+}
+
+BSSRDFContainer& Assembly::bssrdfs() const
+{
+    return impl->m_bssrdfs;
 }
 
 EDFContainer& Assembly::edfs() const

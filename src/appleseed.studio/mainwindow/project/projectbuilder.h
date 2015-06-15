@@ -35,6 +35,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/api/bsdf.h"
+#include "renderer/api/bssrdf.h"
 #include "renderer/api/camera.h"
 #include "renderer/api/color.h"
 #include "renderer/api/edf.h"
@@ -116,6 +117,7 @@ class ProjectBuilder
     renderer::Project&                              m_project;
 
     renderer::BSDFFactoryRegistrar                  m_bsdf_factory_registrar;
+    renderer::BSSRDFFactoryRegistrar                m_bssrdf_factory_registrar;
     renderer::CameraFactoryRegistrar                m_camera_factory_registrar;
     renderer::EDFFactoryRegistrar                   m_edf_factory_registrar;
     renderer::EnvironmentEDFFactoryRegistrar        m_environment_edf_factory_registrar;
@@ -145,6 +147,13 @@ inline const renderer::EntityTraits<renderer::BSDF>::FactoryRegistrarType&
 ProjectBuilder::get_factory_registrar<renderer::BSDF>() const
 {
     return m_bsdf_factory_registrar;
+}
+
+template <>
+inline const renderer::EntityTraits<renderer::BSSRDF>::FactoryRegistrarType&
+ProjectBuilder::get_factory_registrar<renderer::BSSRDF>() const
+{
+    return m_bssrdf_factory_registrar;
 }
 
 template <>

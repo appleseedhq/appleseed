@@ -49,6 +49,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/api/bsdf.h"
+#include "renderer/api/bssrdf.h"
 #include "renderer/api/edf.h"
 #include "renderer/api/entity.h"
 #include "renderer/api/light.h"
@@ -105,14 +106,18 @@ AssemblyItem::AssemblyItem(
 
     insertChild(
         4,
-        m_edf_collection_item = add_multi_model_collection_item<EDF>(assembly.edfs()));
+        m_bssrdf_collection_item = add_multi_model_collection_item<BSSRDF>(assembly.bssrdfs()));
 
     insertChild(
         5,
-        m_surface_shader_collection_item = add_multi_model_collection_item<SurfaceShader>(assembly.surface_shaders()));
+        m_edf_collection_item = add_multi_model_collection_item<EDF>(assembly.edfs()));
 
     insertChild(
         6,
+        m_surface_shader_collection_item = add_multi_model_collection_item<SurfaceShader>(assembly.surface_shaders()));
+
+    insertChild(
+        7,
         m_material_collection_item = new MaterialCollectionItem(
             m_editor_context,
             assembly.materials(),
@@ -120,11 +125,11 @@ AssemblyItem::AssemblyItem(
             this));
 
     insertChild(
-        7,
+        8,
         m_light_collection_item = add_multi_model_collection_item<Light>(assembly.lights()));
 
     insertChild(
-        8,
+        9,
         m_object_collection_item =
             new ObjectCollectionItem(
                 m_editor_context,
@@ -133,7 +138,7 @@ AssemblyItem::AssemblyItem(
                 this));
 
     insertChild(
-        9,
+        10,
         m_object_instance_collection_item =
             new ObjectInstanceCollectionItem(
                 m_editor_context,
@@ -157,6 +162,7 @@ QMenu* AssemblyItem::get_single_item_context_menu() const
     menu->addSeparator();
     menu->addAction("Create Assembly...", &get_assembly_collection_item(), SLOT(slot_create()));
     menu->addAction("Create BSDF...", m_bsdf_collection_item, SLOT(slot_create()));
+    menu->addAction("Create BSSRDF...", m_bssrdf_collection_item, SLOT(slot_create()));
     menu->addAction("Create Color...", &get_color_collection_item(), SLOT(slot_create()));
     menu->addAction("Create EDF...", m_edf_collection_item, SLOT(slot_create()));
     menu->addAction("Create Light...", m_light_collection_item, SLOT(slot_create()));
@@ -173,6 +179,11 @@ QMenu* AssemblyItem::get_single_item_context_menu() const
 void AssemblyItem::add_item(BSDF* bsdf)
 {
     m_bsdf_collection_item->add_item(bsdf);
+}
+
+void AssemblyItem::add_item(BSSRDF* bssrdf)
+{
+    m_bssrdf_collection_item->add_item(bssrdf);
 }
 
 void AssemblyItem::add_item(EDF* edf)
