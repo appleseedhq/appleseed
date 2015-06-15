@@ -1,14 +1,17 @@
 appleseed.shaders
 =================
 
-A library of OSL shaders for appleseed.
+A library of OSL nodes for appleseed.
 
-Building:
----------
+Source Code
+-----------
 
-    Compiled shaders are already provided.
-    If for any reason you need to recompile them,
+The source code for these OSL nodes is located in the `src/` subdirectory.
 
-    run:
-        cd src
-        python compile_shaders.py [path/to/appleseed/bin/oslc]
+Building
+--------
+
+Compiled shaders are already provided. If for any reason you need to recompile them, run:
+
+    cd src
+    python compile_shaders.py [path/to/appleseed/bin/oslc]
