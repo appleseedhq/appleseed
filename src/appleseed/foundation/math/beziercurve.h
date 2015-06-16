@@ -365,7 +365,8 @@ size_t BezierCurveBase<T, N>::compute_recursion_depth(const ValueType epsilon) c
             max(
                 l0,
                 std::abs(m_ctrl_pts[i].x - ValueType(2.0) * m_ctrl_pts[i + 1].x + m_ctrl_pts[i + 2].x),
-                std::abs(m_ctrl_pts[i].y - ValueType(2.0) * m_ctrl_pts[i + 1].y + m_ctrl_pts[i + 2].y));
+                std::abs(m_ctrl_pts[i].y - ValueType(2.0) * m_ctrl_pts[i + 1].y + m_ctrl_pts[i + 2].y),
+                std::abs(m_ctrl_pts[i].z - ValueType(2.0) * m_ctrl_pts[i + 1].z + m_ctrl_pts[i + 2].z));
     }
 
     const ValueType value = (ValueType(SqrtTwo) * N * (N - 1) * l0) / (ValueType(8.0) * epsilon);
