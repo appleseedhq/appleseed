@@ -54,7 +54,6 @@
 #include <cstddef>
 #include <fstream>
 #include <string>
-#include <vector>
 
 using namespace foundation;
 using namespace std;
@@ -106,13 +105,14 @@ auto_release_ptr<CurveObject> CurveObjectReader::create_hair_ball(
     const GScalar curve_width = params.get_optional<GScalar>("width", GScalar(0.002));
     const size_t split_count = params.get_optional<size_t>("presplits", 0);
 
-    GVector3 points[ControlPointCount];
-    MersenneTwister rng;
-
     object->reserve_curves3(curve_count);
+
+    MersenneTwister rng;
 
     for (size_t c = 0; c < curve_count; ++c)
     {
+        GVector3 points[ControlPointCount];
+
         for (size_t p = 0; p < ControlPointCount; ++p)
         {
             // http://math.stackexchange.com/questions/87230/picking-random-points-in-the-volume-of-sphere-with-uniform-probability
@@ -121,7 +121,7 @@ auto_release_ptr<CurveObject> CurveObjectReader::create_hair_ball(
             points[p] = r * d;
         }
 
-        const CurveType3 curve(&points[0], curve_width);
+        const CurveType3 curve(points, curve_width);
         split_and_store(object.ref(), curve, split_count);
     }
 
@@ -143,15 +143,15 @@ auto_release_ptr<CurveObject> CurveObjectReader::create_furry_ball(
     const GScalar curliness = params.get_optional<GScalar>("curliness", GScalar(0.5));
     const size_t split_count = params.get_optional<size_t>("presplits", 0);
 
-    GVector3 points[ControlPointCount];
-    GScalar widths[ControlPointCount];
+    object->reserve_curves3(curve_count);
 
     MersenneTwister rng;
 
-    object->reserve_curves3(curve_count);
-
     for (size_t c = 0; c < curve_count; ++c)
     {
+        GVector3 points[ControlPointCount];
+        GScalar widths[ControlPointCount];
+
         static const size_t Bases[] = { 2 };
         const GVector2 s = hammersley_sequence<GScalar, 2>(Bases, c, curve_count);
         const GVector3 d = sample_sphere_uniform(s);
@@ -170,7 +170,7 @@ auto_release_ptr<CurveObject> CurveObjectReader::create_furry_ball(
             widths[p] = lerp(root_width, tip_width, r);
         }
 
-        const CurveType3 curve(&points[0], &widths[0]);
+        const CurveType3 curve(points, widths);
         split_and_store(object.ref(), curve, split_count);
     }
 
@@ -204,11 +204,6 @@ auto_release_ptr<CurveObject> CurveObjectReader::load_curve_file(
     input >> curve1_count;
     input >> curve3_count;
 
-    vector<GVector3> points1(2);
-    vector<GScalar> widths1(2);
-    vector<GVector3> points3(4);
-    vector<GScalar> widths3(4);
-
     object->reserve_curves1(curve1_count);
     object->reserve_curves3(curve3_count);
 
@@ -227,27 +222,33 @@ auto_release_ptr<CurveObject> CurveObjectReader::load_curve_file(
 
         if (control_point_count == 2)
         {
+            GVector3 points[2];
+            GScalar widths[2];
+
             for (size_t p = 0; p < control_point_count; ++p)
             {
-                input >> points1[p].x >> points1[p].y >> points1[p].z;
-                input >> widths1[p];
+                input >> points[p].x >> points[p].y >> points[p].z;
+                input >> widths[p];
             }
 
             // We never presplit degree-1 curves.
-            const CurveType1 curve(&points1[0], &widths1[0]);
+            const CurveType1 curve(points, widths);
             object->push_curve1(curve);
         }
         else
         {
             assert(control_point_count == 4);
 
+            GVector3 points[4];
+            GScalar widths[4];
+
             for (size_t p = 0; p < control_point_count; ++p)
             {
-                input >> points3[p].x >> points3[p].y >> points3[p].z;
-                input >> widths3[p];
+                input >> points[p].x >> points[p].y >> points[p].z;
+                input >> widths[p];
             }
 
-            const CurveType3 curve(&points3[0], &widths3[0]);
+            const CurveType3 curve(points, widths);
             split_and_store(object.ref(), curve, split_count);
         }
     }
