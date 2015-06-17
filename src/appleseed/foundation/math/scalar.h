@@ -456,7 +456,7 @@ inline T next_power(const T x, const T base)
 template <typename T>
 inline T clamp(const T x, const T low, const T high)
 {
-    assert(min <= max);
+    assert(low <= high);
     return x < low ? low :
            x > high ? high :
            x;
