@@ -780,6 +780,7 @@ source_group ("main" FILES
 set (renderer_api_sources
     renderer/api/aov.h
     renderer/api/bsdf.h
+    renderer/api/bssrdf.h
     renderer/api/camera.h
     renderer/api/color.h
     renderer/api/display.h
@@ -1276,6 +1277,21 @@ list (APPEND appleseed_sources
 )
 source_group ("renderer\\modeling\\bsdf" FILES
     ${renderer_modeling_bsdf_sources}
+)
+
+set (renderer_modeling_bssrdf_sources
+    renderer/modeling/bssrdf/bssrdf.cpp
+    renderer/modeling/bssrdf/bssrdf.h
+    renderer/modeling/bssrdf/bssrdffactoryregistrar.cpp
+    renderer/modeling/bssrdf/bssrdffactoryregistrar.h
+    renderer/modeling/bssrdf/bssrdftraits.h
+    renderer/modeling/bssrdf/ibssrdffactory.h
+)
+list (APPEND appleseed_sources
+    ${renderer_modeling_bssrdf_sources}
+)
+source_group ("renderer\\modeling\\bssrdf" FILES
+    ${renderer_modeling_bssrdf_sources}
 )
 
 set (renderer_modeling_camera_sources

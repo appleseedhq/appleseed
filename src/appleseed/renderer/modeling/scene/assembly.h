@@ -75,6 +75,9 @@ class APPLESEED_DLLSYMBOL Assembly
     // Access the BSDFs.
     BSDFContainer& bsdfs() const;
 
+    // Access the BSSRDFs.
+    BSSRDFContainer& bssrdfs() const;
+
     // Access the EDFs.
     EDFContainer& edfs() const;
 
