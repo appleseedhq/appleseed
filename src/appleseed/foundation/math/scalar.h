@@ -97,7 +97,7 @@ T rad_to_deg(const T angle);
 
 // Return the absolute value of the argument. This function complements
 // the standard function std::abs() which is not necessary available for
-// compiler-dependent types (e.g. __int64).
+// compiler-specific types (e.g. __int64).
 template <typename T>
 T abs(const T x);
 
@@ -151,15 +151,15 @@ T log(const T x, const T base);
 template <typename T>
 T next_power(const T x, const T base);
 
-// Clamp the argument to [min, max].
+// Clamp the argument to [low, high].
 template <typename T>
-T clamp(const T x, const T min, const T max);
+T clamp(const T x, const T low, const T high);
 
-// Clamp the argument to [0,1].
+// Clamp the argument to [0, 1].
 template <typename T>
 T saturate(const T x);
 
-// Wrap the argument back to [0,1).
+// Wrap the argument back to [0, 1).
 template <typename T>
 T wrap(const T x);
 
@@ -438,7 +438,6 @@ template <typename T>
 inline T binomial(const T n, const T k)
 {
     assert(k <= n);
-
     return factorial(n) / (factorial(k) * factorial(n - k));
 }
 
@@ -455,20 +454,18 @@ inline T next_power(const T x, const T base)
 }
 
 template <typename T>
-inline T clamp(const T x, const T min, const T max)
+inline T clamp(const T x, const T low, const T high)
 {
-    assert(min <= max);
-    return x <= min ? min :
-           x >= max ? max :
+    assert(low <= high);
+    return x < low ? low :
+           x > high ? high :
            x;
 }
 
 template <typename T>
 inline T saturate(const T x)
 {
-    return x <= T(0.0) ? T(0.0) :
-           x >= T(1.0) ? T(1.0) :
-           x;
+    return clamp(x, T(0.0), T(1.0));
 }
 
 template <typename T>

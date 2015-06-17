@@ -83,19 +83,19 @@ class VoxelGrid3
     // 'point' must be expressed in the unit cube [0,1]^3.
     void nearest_lookup(
         const PointType&    point,
-        ValueType           values[]) const;
+        ValueType*          values) const;
 
     // Perform a trilinearly interpolated lookup of the voxel grid.
     // 'point' must be expressed in the unit cube [0,1]^3.
     void linear_lookup(
         const PointType&    point,
-        ValueType           values[]) const;
+        ValueType*          values) const;
 
     // Perform a triquadratically interpolated lookup of the voxel grid.
     // 'point' must be expressed in the unit cube [0,1]^3.
     void quadratic_lookup(
         const PointType&    point,
-        ValueType           values[]) const;
+        ValueType*          values) const;
 
   private:
     const size_t            m_nx;
@@ -259,10 +259,9 @@ void VoxelGrid3<ValueType, CoordType>::linear_lookup(
     const ValueType* RESTRICT src111 = src110 + dz;
 
     // Blend.
-    ValueType* RESTRICT dest = values;
     for (size_t i = 0; i < m_channel_count; ++i)
     {
-       *dest++ =
+       *values++ =
            *src000++ * w000 +
            *src100++ * w100 +
            *src010++ * w010 +
@@ -277,7 +276,7 @@ void VoxelGrid3<ValueType, CoordType>::linear_lookup(
 template <typename ValueType, typename CoordType>
 void VoxelGrid3<ValueType, CoordType>::quadratic_lookup(
     const PointType&        point,
-    ValueType               values[]) const
+    ValueType* RESTRICT     values) const
 {
     //
     // The quadratic interpolation polynomial used here is defined as follow:
@@ -375,7 +374,6 @@ void VoxelGrid3<ValueType, CoordType>::quadratic_lookup(
     const ValueType* RESTRICT src222 = src221 + dzp;
 
     // Blend.
-    ValueType* RESTRICT dest = values;
     for (size_t i = 0; i < m_channel_count; ++i)
     {
         const ValueType p00 = *src000++ * wx0 + *src100++ * wx1 + *src200++ * wx2;
@@ -394,7 +392,7 @@ void VoxelGrid3<ValueType, CoordType>::quadratic_lookup(
         const ValueType q1 = p01 * wy0 + p11 * wy1 + p21 * wy2;
         const ValueType q2 = p02 * wy0 + p12 * wy1 + p22 * wy2;
 
-        *dest++ = q0 * wz0 + q1 * wz1 + q2 * wz2;
+        *values++ = q0 * wz0 + q1 * wz1 + q2 * wz2;
     }
 }
 

@@ -1386,6 +1386,7 @@ bool TriangleLeafVisitor::visit(
         // Retrieve the number of motion segments for this triangle.
         const uint32 motion_segment_count = reader.read<uint32>();
 
+        // todo: get rid of this test by sorting triangles by their number of motion segments.
         if (motion_segment_count == 0)
         {
             // Check visibility flags.
@@ -1537,6 +1538,7 @@ bool TriangleLeafProbeVisitor::visit(
         // Retrieve the number of motion segments for this triangle.
         const uint32 motion_segment_count = reader.read<uint32>();
 
+        // todo: get rid of this test by sorting triangles by their number of motion segments.
         if (motion_segment_count == 0)
         {
             // Check visibility flags.
