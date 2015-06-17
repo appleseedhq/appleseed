@@ -168,8 +168,7 @@ inline void Source::evaluate(
     foundation::Color3f&            linear_rgb,
     Alpha&                          alpha) const
 {
-    evaluate(texture_cache, uv, linear_rgb);
-    evaluate(texture_cache, uv, alpha);
+    evaluate_uniform(linear_rgb, alpha);
 }
 
 inline void Source::evaluate(
@@ -178,8 +177,7 @@ inline void Source::evaluate(
     Spectrum&                       spectrum,
     Alpha&                          alpha) const
 {
-    evaluate(texture_cache, uv, spectrum);
-    evaluate(texture_cache, uv, alpha);
+    evaluate_uniform(spectrum, alpha);
 }
 
 inline void Source::evaluate_uniform(
