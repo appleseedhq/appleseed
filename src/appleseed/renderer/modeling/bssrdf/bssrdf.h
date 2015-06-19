@@ -31,7 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/modeling/bsdf/bsdfsample.h"
+#include "renderer/modeling/bssrdf/bssrdfsample.h"
 #include "renderer/modeling/entity/connectableentity.h"
 
 // appleseed.foundation headers.
@@ -49,6 +49,7 @@
 namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class Assembly; }
 namespace renderer      { class InputEvaluator; }
+namespace renderer      { class Intersector; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 namespace renderer      { class ShadingContext; }
@@ -56,6 +57,21 @@ namespace renderer      { class ShadingPoint; }
 
 namespace renderer
 {
+
+//
+// BSSRDF input values.
+//
+
+APPLESEED_DECLARE_INPUT_VALUES(BSSRDFInputValues)
+{
+    Spectrum    m_sigma_a;          // Absorption coefficient.
+    Spectrum    m_sigma_s_prime;    // Reduced scattering coefficient.
+
+    // Not so sure about the next ones...
+    double      m_g;                // Anisotropy.
+    double      m_ior;              // Index of refraction.
+};
+
 
 //
 // Bidirectional Surface Scattering Reflectance Distribution Function (BSSRDF).
@@ -90,21 +106,10 @@ class APPLESEED_DLLSYMBOL BSSRDF
     // Constructor.
     BSSRDF(
         const char*                 name,
-        const int                   modes,
         const ParamArray&           params);
 
     // Return a string identifying the model of this entity.
     virtual const char* get_model() const = 0;
-
-    // Return the possible scattering modes of the BSSRDF.
-    int get_modes() const;
-
-    // Convenient functions to check the possible scattering modes of the BSSRDF.
-    bool is_purely_diffuse() const;
-    bool is_purely_glossy() const;
-    bool is_purely_specular() const;
-    bool is_purely_diffuse_or_glossy() const;
-    bool is_purely_glossy_or_specular() const;
 
     // This method is called once before rendering each frame.
     // Returns true on success, false otherwise.
@@ -123,107 +128,17 @@ class APPLESEED_DLLSYMBOL BSSRDF
     virtual size_t compute_input_data_size(
         const Assembly&             assembly) const;
 
-    // Evaluate the inputs of this BSSRDF and of its child BSSRDFs, if any.
-    // Input values are stored in the input evaluator. This method is called
-    // once per shading point and pair of incoming/outgoing directions.
     virtual void evaluate_inputs(
         const ShadingContext&       shading_context,
         InputEvaluator&             input_evaluator,
         const ShadingPoint&         shading_point,
         const size_t                offset = 0) const;
 
-    // Given an outgoing direction, sample the BSSRDF and compute the incoming
-    // direction, its probability density and the value of the BSSRDF for this
-    // pair of directions. Return the scattering mode. If the scattering mode
-    // is Absorption, the BSSRDF and PDF values are undefined.
     virtual void sample(
-        const void*                 data,                       // input values
-        const bool                  adjoint,                    // if true, use the adjoint scattering kernel
-        const bool                  cosine_mult,                // if true, multiply by |cos(incoming, normal)|
-        BSDFSample&                 sample) const = 0;
-
-    // Evaluate the BSSRDF for a given pair of directions. Return the PDF value
-    // for this pair of directions. If the returned probability is zero, the
-    // BSSRDF value is undefined.
-    virtual double evaluate(
-        const void*                 data,                       // input values
-        const bool                  adjoint,                    // if true, use the adjoint scattering kernel
-        const bool                  cosine_mult,                // if true, multiply by |cos(incoming, normal)|
-        const foundation::Vector3d& geometric_normal,           // world space geometric normal, unit-length
-        const foundation::Basis3d&  shading_basis,              // world space orthonormal basis around shading normal
-        const foundation::Vector3d& outgoing,                   // world space outgoing direction, unit-length
-        const foundation::Vector3d& incoming,                   // world space incoming direction, unit-length
-        const int                   modes,                      // selected scattering modes
-        Spectrum&                   value) const = 0;           // BSSRDF value, or BSSRDF value * |cos(incoming, normal)|
-
-    // Evaluate the PDF for a given pair of directions.
-    virtual double evaluate_pdf(
-        const void*                 data,                       // input values
-        const foundation::Vector3d& geometric_normal,           // world space geometric normal, unit-length
-        const foundation::Basis3d&  shading_basis,              // world space orthonormal basis around shading normal
-        const foundation::Vector3d& outgoing,                   // world space outgoing direction, unit-length
-        const foundation::Vector3d& incoming,                   // world space incoming direction, unit-length
-        const int                   modes) const = 0;           // selected scattering modes
-
-  protected:
-    // Force a given direction to lie above a surface described by its normal vector.
-    static foundation::Vector3d force_above_surface(
-        const foundation::Vector3d& direction,
-        const foundation::Vector3d& normal);
-
-  private:
-    const int m_modes;
+        const void*                 data,
+        const Intersector&          intersector,
+        BSSRDFSample&               sample) const;
 };
-
-
-//
-// BSSRDF class implementation.
-//
-
-inline int BSSRDF::get_modes() const
-{
-    return m_modes;
-}
-
-inline bool BSSRDF::is_purely_diffuse() const
-{
-    return m_modes == BSDFSample::Diffuse;
-}
-
-inline bool BSSRDF::is_purely_glossy() const
-{
-    return m_modes == BSDFSample::Glossy;
-}
-
-inline bool BSSRDF::is_purely_specular() const
-{
-    return m_modes == BSDFSample::Specular;
-}
-
-inline bool BSSRDF::is_purely_diffuse_or_glossy() const
-{
-    return m_modes == (BSDFSample::Diffuse | BSDFSample::Glossy);
-}
-
-inline bool BSSRDF::is_purely_glossy_or_specular() const
-{
-    return m_modes == (BSDFSample::Glossy | BSDFSample::Specular);
-}
-
-inline foundation::Vector3d BSSRDF::force_above_surface(
-    const foundation::Vector3d& direction,
-    const foundation::Vector3d& normal)
-{
-    const double Eps = 1.0e-4;
-
-    const double cos_theta = foundation::dot(direction, normal);
-    const double correction = Eps - cos_theta;
-
-    return
-        correction > 0.0
-            ? foundation::normalize(direction + correction * normal)
-            : direction;
-}
 
 }       // namespace renderer
 

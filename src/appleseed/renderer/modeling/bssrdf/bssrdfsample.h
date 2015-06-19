@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2015 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,66 +26,61 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "bssrdffactoryregistrar.h"
+#ifndef APPLESEED_RENDERER_MODELING_BSSRDF_BSSRDFSAMPLE_H
+#define APPLESEED_RENDERER_MODELING_BSSRDF_BSSRDFSAMPLE_H
 
 // appleseed.renderer headers.
-#include "renderer/modeling/bssrdf/dirpolebssrdf.h"
-#include "renderer/modeling/bssrdf/ibssrdffactory.h"
+#include "renderer/global/globaltypes.h"
+#include "renderer/kernel/shading/shadingpoint.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/foreach.h"
-#include "foundation/utility/registrar.h"
-
-// Standard headers.
-#include <cassert>
-#include <string>
-
-using namespace foundation;
-using namespace std;
+#include "foundation/math/basis.h"
+#include "foundation/math/vector.h"
 
 namespace renderer
 {
 
-APPLESEED_DEFINE_ARRAY(BSSRDFFactoryArray);
-
-struct BSSRDFFactoryRegistrar::Impl
+class BSSRDFSample
 {
-    Registrar<IBSSRDFFactory> m_registrar;
+  public:
+    // Constructor.
+    BSSRDFSample(
+        const ShadingPoint& shading_point,
+        SamplingContext&    sampling_context);
+
+    // Input fields.
+
+    SamplingContext& get_sampling_context();
+    const ShadingPoint& get_shading_point();
+
+  private:
+    const ShadingPoint&     m_shading_point;        // shading point at which the sampling is done
+    SamplingContext&        m_sampling_context;     // sampling context used to sample BSDFs
 };
 
-BSSRDFFactoryRegistrar::BSSRDFFactoryRegistrar()
-  : impl(new Impl())
+
+//
+// BSSRDFSample class implementation.
+//
+
+inline BSSRDFSample::BSSRDFSample(
+    const ShadingPoint&         shading_point,
+    SamplingContext&            sampling_context)
+  : m_shading_point(shading_point)
+  , m_sampling_context(sampling_context)
 {
-    register_factory(auto_ptr<FactoryType>(new DirpoleBSSRDFFactory()));
 }
 
-BSSRDFFactoryRegistrar::~BSSRDFFactoryRegistrar()
+inline SamplingContext& BSSRDFSample::get_sampling_context()
 {
-    delete impl;
+    return m_sampling_context;
 }
 
-void BSSRDFFactoryRegistrar::register_factory(auto_ptr<FactoryType> factory)
+inline const ShadingPoint& BSSRDFSample::get_shading_point()
 {
-    const string model = factory->get_model();
-    impl->m_registrar.insert(model, factory);
+    return m_shading_point;
 }
 
-BSSRDFFactoryArray BSSRDFFactoryRegistrar::get_factories() const
-{
-    FactoryArrayType factories;
+}       // namespace renderer
 
-    for (const_each<Registrar<FactoryType>::Items> i = impl->m_registrar.items(); i; ++i)
-        factories.push_back(i->second);
-
-    return factories;
-}
-
-const BSSRDFFactoryRegistrar::FactoryType* BSSRDFFactoryRegistrar::lookup(const char* name) const
-{
-    assert(name);
-
-    return impl->m_registrar.lookup(name);
-}
-
-}   // namespace renderer
+#endif  // !APPLESEED_RENDERER_MODELING_BSSRDF_BSSRDFSAMPLE_H

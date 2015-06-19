@@ -1284,7 +1284,10 @@ set (renderer_modeling_bssrdf_sources
     renderer/modeling/bssrdf/bssrdf.h
     renderer/modeling/bssrdf/bssrdffactoryregistrar.cpp
     renderer/modeling/bssrdf/bssrdffactoryregistrar.h
+    renderer/modeling/bssrdf/bssrdfsample.h
     renderer/modeling/bssrdf/bssrdftraits.h
+    renderer/modeling/bssrdf/dirpolebssrdf.cpp
+    renderer/modeling/bssrdf/dirpolebssrdf.h
     renderer/modeling/bssrdf/ibssrdffactory.h
 )
 list (APPEND appleseed_sources

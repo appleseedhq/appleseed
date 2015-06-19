@@ -35,8 +35,90 @@
 
 using namespace foundation;
 
+/*
+
+Quick ref:
+----------
+
+    sigma_a     absorption coeff.;
+    sigma_s     scattering coeff.;
+    g           anisotropy;
+
+    sigma_t         extinction coeff.           -> sigma_a + sigma_s;
+    sigma_s_prime   reduced scattering coeff.   -> sigma_s * (1 - g)
+    sigma_t_prime   reduced extinction coeff.   -> sigma_a + sigma_s_prime
+    sigma_tr        effective extinction coeff. -> sqrt( 3 * sigma_a * sigma_t_prime)
+
+    Texture mapping:
+    ----------------
+
+    Fdr             fresnel diffuse reflectance
+    A                                           -> (1 + Fdr) / (1 - Fdr);
+    alpha_prime                                 -> sigma_s_prime / sigma_t_prime;
+    ld              mean free path              -> 1 / sigma_tr;
+
+    sigma_t_prime = sigma_tr / sqrt( 3 * (1 - alpha_prime));
+    sigma_s_prime = alpha_prime * sigma_t_prime;
+    sigma_a = sigma_t_prime - sigma_s_prime;
+*/
+
 namespace renderer
 {
+
+namespace
+{
+
+// A Better Dipole, Eugene d’Eon
+
+template<typename T>
+T C1(const T eta)
+{
+    if (eta >= T(1.0))
+        return (T(-9.23372) + eta * (T(22.2272) + eta * (T(-20.9292) + eta * (T(10.2291) + eta * (T(-2.54396) + T(0.254913) * eta))))) * T(0.5);
+    else
+        return (T(0.919317) + eta * (T(-3.4793) + eta * (T(6.75335) + eta * (T(-7.80989) + eta *(T(4.98554) - T(1.36881) * eta))))) * T(0.5);
+}
+
+template<typename T>
+T C2(const T eta)
+{
+    T r = T(-1641.1) + eta * (T(1213.67) + eta * (T(-568.556) + eta * (T(164.798) + eta * (T(-27.0181) + T(1.91826) * eta))));
+    r += (((T(135.926) / eta) - T(656.175)) / eta + T(1376.53)) / eta;
+    return r * T(0.333333);
+}
+
+// Texture mapping for the Better Dipole model, Christophe Hery
+
+template<typename T>
+T compute_rd(T alpha_prime, T two_c1, T three_c2)
+{
+    T cphi = T(0.25) * (T(1.0) - two_c1);
+    T ce = T(0.5) * (T(1.0) - three_c2);
+    T mu_tr_D = std::sqrt((T(1.0) - alpha_prime) * (T(2.0) - alpha_prime) / T(3.0));
+    T myexp = std::exp(-((T(1.0) + three_c2) / cphi) * mu_tr_D);
+    return T(0.5) * square(alpha_prime) * std::exp(-std::sqrt(T(3.0) * (T(1.0) - alpha_prime) / (T(2.0) - alpha_prime))) * (ce * (T(1.0) + myexp) + cphi / mu_tr_D * (T(1.0) - myexp));
+}
+
+template<typename T>
+T compute_alpha_prime(T rd, T C1, T C2)
+{
+    const T C12 = T(2.0) * C1;
+    const T C23 = T(3.0) * C2;
+
+    T x0 = T(0), x1 = T(1), xmid;
+
+    // For now simple bisection.
+    for (int i = 0, iters = 50; i < iters; ++i)
+    {
+        xmid = T(0.5) * (x0 + x1);
+        const T f = compute_rd(xmid, C12, C23);
+        f < rd ? x0 = xmid : x1 = xmid;
+    }
+
+    return xmid;
+}
+
+}
 
 //
 // BSSRDF class implementation.
@@ -54,10 +136,8 @@ UniqueID BSSRDF::get_class_uid()
 
 BSSRDF::BSSRDF(
     const char*             name,
-    const int               modes,
     const ParamArray&       params)
   : ConnectableEntity(g_class_uid, params)
-  , m_modes(modes)
 {
     set_name(name);
 }
@@ -89,6 +169,14 @@ void BSSRDF::evaluate_inputs(
     const size_t            offset) const
 {
     input_evaluator.evaluate(get_inputs(), shading_point.get_uv(0), offset);
+}
+
+void BSSRDF::sample(
+    const void*                 data,
+    const Intersector&          intersector,
+    BSSRDFSample&               sample) const
+{
+    // sample a point near sample.m_shading_point here...
 }
 
 }   // namespace renderer
