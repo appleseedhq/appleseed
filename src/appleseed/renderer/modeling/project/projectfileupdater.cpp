@@ -55,6 +55,7 @@
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/project/configuration.h"
 #include "renderer/modeling/project/project.h"
+#include "renderer/modeling/project/projectformatrevision.h"
 #include "renderer/modeling/project/regexrenderlayerrule.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
@@ -850,7 +851,10 @@ bool ProjectFileUpdater::update(Project& project, const size_t to_revision)
         break;
 
       default:
-        RENDERER_LOG_ERROR("unsupported project format revision: " FMT_SIZE_T, format_revision);
+        RENDERER_LOG_ERROR(
+            "cannot update project following format revision " FMT_SIZE_T ", latest supported revision is " FMT_SIZE_T ".",
+            format_revision,
+            ProjectFormatRevision);
         break;
     }
 

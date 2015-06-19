@@ -46,6 +46,7 @@
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/project/configuration.h"
 #include "renderer/modeling/project/configurationcontainer.h"
+#include "renderer/modeling/project/projectformatrevision.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/basegroup.h"
@@ -87,12 +88,6 @@ namespace
 UniqueID Project::get_class_uid()
 {
     return g_class_uid;
-}
-
-namespace
-{
-    // Revision number of the project format.
-    const size_t ProjectFormatRevision = 9;
 }
 
 struct Project::Impl

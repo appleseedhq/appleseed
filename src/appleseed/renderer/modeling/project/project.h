@@ -73,7 +73,7 @@ class APPLESEED_DLLSYMBOL Project
     virtual void release() APPLESEED_OVERRIDE;
 
     // Set/get the format revision of the project.
-    // By default, the format revision is set to 0.
+    // The default value is renderer::ProjectFormatRevision (see projectformatrevision.h).
     void set_format_revision(const size_t format_revision);
     size_t get_format_revision() const;
 

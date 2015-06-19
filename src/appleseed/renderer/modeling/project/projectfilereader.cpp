@@ -72,6 +72,7 @@
 #include "renderer/modeling/project/irenderlayerrulefactory.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/project/projectfileupdater.h"
+#include "renderer/modeling/project/projectformatrevision.h"
 #include "renderer/modeling/project/renderlayerrule.h"
 #include "renderer/modeling/project/renderlayerrulefactoryregistrar.h"
 #include "renderer/modeling/project-builtin/cornellboxproject.h"
@@ -2783,10 +2784,11 @@ namespace
         }
 
       private:
-        ParseContext&                   m_context;
-        string                          m_name;
-        Project*                        m_project;
+        ParseContext&   m_context;
+        string          m_name;
+        Project*        m_project;
     };
+
 
     //
     // <project> element handler.
@@ -2809,6 +2811,13 @@ namespace
             const size_t format_revision =
                 from_string<size_t>(
                     ElementHandlerBase::get_value(attrs, "format_revision", "2"));
+
+            if (format_revision > ProjectFormatRevision)
+            {
+                RENDERER_LOG_WARNING(
+                    "this project was created with a newer version of appleseed; it may fail to load with this version.");
+                m_context.get_event_counters().signal_warning();
+            }
 
             m_project->set_format_revision(format_revision);
         }
@@ -3204,7 +3213,9 @@ void ProjectFileReader::postprocess_project(
     if (!event_counters.has_errors())
         complete_project(project, event_counters);
 
-    if (!event_counters.has_errors() && !(options & OmitProjectFileUpdate))
+    if (!event_counters.has_errors() &&
+        !(options & OmitProjectFileUpdate) &&
+        project.get_format_revision() < ProjectFormatRevision)
         upgrade_project(project, event_counters);
 }
 

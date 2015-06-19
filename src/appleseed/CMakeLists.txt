@@ -1592,6 +1592,7 @@ set (renderer_modeling_project_sources
     renderer/modeling/project/projectfileupdater.h
     renderer/modeling/project/projectfilewriter.cpp
     renderer/modeling/project/projectfilewriter.h
+    renderer/modeling/project/projectformatrevision.h
     renderer/modeling/project/regexrenderlayerrule.cpp
     renderer/modeling/project/regexrenderlayerrule.h
     renderer/modeling/project/renderlayerrule.cpp
