@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSSRDF_DIRPOLE_BSSRDF_H
-#define APPLESEED_RENDERER_MODELING_BSSRDF_DIRPOLE_BSSRDF_H
+#ifndef APPLESEED_RENDERER_MODELING_BSSRDF_DIRECTIONALDIPOLEBSSRDF_H
+#define APPLESEED_RENDERER_MODELING_BSSRDF_DIRECTIONALDIPOLEBSSRDF_H
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -60,9 +60,9 @@ namespace renderer
 // Directional dipole BSSRDF input values.
 //
 
-// The layout of DirpoleBSSRDFInputValues matches the layout of BSSRDFInputValues.
+// The layout of DirectionalDipoleBSSRDFInputValues matches the layout of BSSRDFInputValues.
 // In evaluate_inputs, these values could be converted to BSSRDFInputValues in place.
-APPLESEED_DECLARE_INPUT_VALUES(DirpoleBSSRDFInputValues)
+APPLESEED_DECLARE_INPUT_VALUES(DirectionalDipoleBSSRDFInputValues)
 {
     Spectrum    m_diffuse;
     Spectrum    m_mfp;
@@ -75,7 +75,7 @@ APPLESEED_DECLARE_INPUT_VALUES(DirpoleBSSRDFInputValues)
 // Directional dipole BSSRDF factory.
 //
 
-class APPLESEED_DLLSYMBOL DirpoleBSSRDFFactory
+class APPLESEED_DLLSYMBOL DirectionalDipoleBSSRDFFactory
   : public IBSSRDFFactory
 {
   public:
@@ -96,4 +96,4 @@ class APPLESEED_DLLSYMBOL DirpoleBSSRDFFactory
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_BSSRDF_DIRPOLE_BSSRDF_H
+#endif  // !APPLESEED_RENDERER_MODELING_BSSRDF_DIRECTIONALDIPOLEBSSRDF_H

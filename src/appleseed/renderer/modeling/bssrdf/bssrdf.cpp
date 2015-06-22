@@ -40,11 +40,11 @@ using namespace foundation;
 Quick ref:
 ----------
 
-    sigma_a     absorption coeff.;
-    sigma_s     scattering coeff.;
-    g           anisotropy;
+    sigma_a     absorption coeff.
+    sigma_s     scattering coeff.
+    g           anisotropy
 
-    sigma_t         extinction coeff.           -> sigma_a + sigma_s;
+    sigma_t         extinction coeff.           -> sigma_a + sigma_s
     sigma_s_prime   reduced scattering coeff.   -> sigma_s * (1 - g)
     sigma_t_prime   reduced extinction coeff.   -> sigma_a + sigma_s_prime
     sigma_tr        effective extinction coeff. -> sqrt( 3 * sigma_a * sigma_t_prime)
@@ -53,13 +53,13 @@ Quick ref:
     ----------------
 
     Fdr             fresnel diffuse reflectance
-    A                                           -> (1 + Fdr) / (1 - Fdr);
-    alpha_prime                                 -> sigma_s_prime / sigma_t_prime;
-    ld              mean free path              -> 1 / sigma_tr;
+    A                                           -> (1 + Fdr) / (1 - Fdr)
+    alpha_prime                                 -> sigma_s_prime / sigma_t_prime
+    ld              mean free path              -> 1 / sigma_tr
 
-    sigma_t_prime = sigma_tr / sqrt( 3 * (1 - alpha_prime));
-    sigma_s_prime = alpha_prime * sigma_t_prime;
-    sigma_a = sigma_t_prime - sigma_s_prime;
+    sigma_t_prime = sigma_tr / sqrt( 3 * (1 - alpha_prime))
+    sigma_s_prime = alpha_prime * sigma_t_prime
+    sigma_a = sigma_t_prime - sigma_s_prime
 */
 
 namespace renderer

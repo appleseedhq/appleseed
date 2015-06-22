@@ -27,7 +27,7 @@
 //
 
 // Interface header.
-#include "dirpolebssrdf.h"
+#include "directionaldipolebssrdf.h"
 
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/shadingpoint.h"
@@ -51,11 +51,11 @@ namespace
     // Directional dipole BSSRDF.
     //
 
-    class DirpoleBSSRDF
+    class DirectionalDipoleBSSRDF
       : public BSSRDF
     {
       public:
-        DirpoleBSSRDF(
+        DirectionalDipoleBSSRDF(
             const char*                 name,
             const ParamArray&           params)
           : BSSRDF(name, params)
@@ -86,15 +86,15 @@ namespace
 }
 
 //
-// DirpoleBSSRDFFactory class implementation.
+// DirectionalDipoleBSSRDFFactory class implementation.
 //
 
-const char* DirpoleBSSRDFFactory::get_model() const
+const char* DirectionalDipoleBSSRDFFactory::get_model() const
 {
     return Model;
 }
 
-Dictionary DirpoleBSSRDFFactory::get_model_metadata() const
+Dictionary DirectionalDipoleBSSRDFFactory::get_model_metadata() const
 {
     return
         Dictionary()
@@ -102,17 +102,17 @@ Dictionary DirpoleBSSRDFFactory::get_model_metadata() const
             .insert("label", "Directional Dipole BSSRDF");
 }
 
-DictionaryArray DirpoleBSSRDFFactory::get_input_metadata() const
+DictionaryArray DirectionalDipoleBSSRDFFactory::get_input_metadata() const
 {
     DictionaryArray metadata;
     return metadata;
 }
 
-auto_release_ptr<BSSRDF> DirpoleBSSRDFFactory::create(
+auto_release_ptr<BSSRDF> DirectionalDipoleBSSRDFFactory::create(
     const char*         name,
     const ParamArray&   params) const
 {
-    return auto_release_ptr<BSSRDF>(new DirpoleBSSRDF(name, params));
+    return auto_release_ptr<BSSRDF>(new DirectionalDipoleBSSRDF(name, params));
 }
 
 }   // namespace renderer

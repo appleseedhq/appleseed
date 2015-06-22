@@ -30,7 +30,7 @@
 #include "bssrdffactoryregistrar.h"
 
 // appleseed.renderer headers.
-#include "renderer/modeling/bssrdf/dirpolebssrdf.h"
+#include "renderer/modeling/bssrdf/directionaldipolebssrdf.h"
 #include "renderer/modeling/bssrdf/ibssrdffactory.h"
 
 // appleseed.foundation headers.
@@ -57,7 +57,7 @@ struct BSSRDFFactoryRegistrar::Impl
 BSSRDFFactoryRegistrar::BSSRDFFactoryRegistrar()
   : impl(new Impl())
 {
-    register_factory(auto_ptr<FactoryType>(new DirpoleBSSRDFFactory()));
+    register_factory(auto_ptr<FactoryType>(new DirectionalDipoleBSSRDFFactory()));
 }
 
 BSSRDFFactoryRegistrar::~BSSRDFFactoryRegistrar()
