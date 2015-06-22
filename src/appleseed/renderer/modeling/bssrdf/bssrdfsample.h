@@ -45,17 +45,21 @@ class BSSRDFSample
   public:
     // Constructor.
     BSSRDFSample(
-        const ShadingPoint& shading_point,
+        const ShadingPoint& outgoing_point,
         SamplingContext&    sampling_context);
 
     // Input fields.
 
     SamplingContext& get_sampling_context();
-    const ShadingPoint& get_shading_point();
+    const ShadingPoint& get_outgoing_point() const;
+
+    // Output fields.
+    const ShadingPoint& get_incoming_point() const;
 
   private:
-    const ShadingPoint&     m_shading_point;        // shading point at which the sampling is done
+    const ShadingPoint&     m_outgoing_point;       // shading point at which the sampling is done
     SamplingContext&        m_sampling_context;     // sampling context used to sample BSDFs
+    ShadingPoint            m_incoming_point;
 };
 
 
@@ -64,9 +68,9 @@ class BSSRDFSample
 //
 
 inline BSSRDFSample::BSSRDFSample(
-    const ShadingPoint&         shading_point,
+    const ShadingPoint&         outgoing_point,
     SamplingContext&            sampling_context)
-  : m_shading_point(shading_point)
+  : m_outgoing_point(outgoing_point)
   , m_sampling_context(sampling_context)
 {
 }
@@ -76,9 +80,14 @@ inline SamplingContext& BSSRDFSample::get_sampling_context()
     return m_sampling_context;
 }
 
-inline const ShadingPoint& BSSRDFSample::get_shading_point()
+inline const ShadingPoint& BSSRDFSample::get_outgoing_point() const
 {
-    return m_shading_point;
+    return m_outgoing_point;
+}
+
+inline const ShadingPoint& BSSRDFSample::get_incoming_point() const
+{
+    return m_incoming_point;
 }
 
 }       // namespace renderer
