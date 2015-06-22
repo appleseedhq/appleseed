@@ -37,6 +37,7 @@
 void bind_assembly();
 void bind_bbox();
 void bind_bsdf();
+void bind_bssrdf();
 void bind_camera();
 void bind_color();
 void bind_display();
@@ -89,6 +90,7 @@ BOOST_PYTHON_MODULE(_appleseedpython)
     bind_color();
     bind_texture();
     bind_bsdf();
+    bind_bssrdf();
     bind_edf();
 #ifdef APPLESEED_WITH_OSL
     bind_shader_group();

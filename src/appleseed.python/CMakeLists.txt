@@ -68,6 +68,7 @@ set (sources
     bindassembly.cpp
     bindbbox.cpp
     bindbsdf.cpp
+    bindbssrdf.cpp
     bindcamera.cpp
     bindcolor.cpp
     binddisplay.cpp
