@@ -47,6 +47,7 @@
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
+namespace foundation    { class LightingConditions; }
 namespace renderer      { class Assembly; }
 namespace renderer      { class InputEvaluator; }
 namespace renderer      { class Intersector; }
@@ -66,10 +67,6 @@ APPLESEED_DECLARE_INPUT_VALUES(BSSRDFInputValues)
 {
     Spectrum    m_sigma_a;          // Absorption coefficient.
     Spectrum    m_sigma_s_prime;    // Reduced scattering coefficient.
-
-    // Not so sure about the next ones...
-    double      m_g;                // Anisotropy.
-    double      m_ior;              // Index of refraction.
 };
 
 
@@ -132,12 +129,16 @@ class APPLESEED_DLLSYMBOL BSSRDF
         const ShadingContext&       shading_context,
         InputEvaluator&             input_evaluator,
         const ShadingPoint&         shading_point,
-        const size_t                offset = 0) const;
+        const size_t                offset = 0) const = 0;
 
-    virtual void sample(
-        const void*                 data,
-        const Intersector&          intersector,
-        BSSRDFSample&               sample) const;
+  protected:
+    static void subsurface_from_diffuse(
+        const Spectrum&    diffuse,
+        const Spectrum&    mfp,
+        Spectrum&          sigma_s_prime,
+        Spectrum&          sigma_a);
+
+    const foundation::LightingConditions* m_lighting_conditions;
 };
 
 }       // namespace renderer

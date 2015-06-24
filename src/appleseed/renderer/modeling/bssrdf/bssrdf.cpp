@@ -31,7 +31,12 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/input/inputevaluator.h"
+#include "renderer/modeling/project/project.h"
+
+// appleseed.foundation headers.
+#include "foundation/image/colorspace.h"
 
 using namespace foundation;
 
@@ -71,7 +76,7 @@ namespace
 // A Better Dipole, Eugene d’Eon
 
 template<typename T>
-T C1(const T eta)
+static T C1(const T eta)
 {
     if (eta >= T(1.0))
         return (T(-9.23372) + eta * (T(22.2272) + eta * (T(-20.9292) + eta * (T(10.2291) + eta * (T(-2.54396) + T(0.254913) * eta))))) * T(0.5);
@@ -80,7 +85,7 @@ T C1(const T eta)
 }
 
 template<typename T>
-T C2(const T eta)
+static T C2(const T eta)
 {
     T r = T(-1641.1) + eta * (T(1213.67) + eta * (T(-568.556) + eta * (T(164.798) + eta * (T(-27.0181) + T(1.91826) * eta))));
     r += (((T(135.926) / eta) - T(656.175)) / eta + T(1376.53)) / eta;
@@ -138,6 +143,7 @@ BSSRDF::BSSRDF(
     const char*             name,
     const ParamArray&       params)
   : ConnectableEntity(g_class_uid, params)
+  , m_lighting_conditions(0)
 {
     set_name(name);
 }
@@ -147,6 +153,7 @@ bool BSSRDF::on_frame_begin(
     const Assembly&         assembly,
     IAbortSwitch*           abort_switch)
 {
+    m_lighting_conditions = &project.get_frame()->get_lighting_conditions();
     return true;
 }
 
@@ -154,12 +161,15 @@ void BSSRDF::on_frame_end(
     const Project&          project,
     const Assembly&         assembly)
 {
+    m_lighting_conditions = 0;
 }
 
 size_t BSSRDF::compute_input_data_size(
     const Assembly&         assembly) const
 {
-    return get_inputs().compute_data_size();
+    size_t s = get_inputs().compute_data_size();
+    assert( s >= sizeof(BSSRDFInputValues));
+    return s;
 }
 
 void BSSRDF::evaluate_inputs(
@@ -171,12 +181,35 @@ void BSSRDF::evaluate_inputs(
     input_evaluator.evaluate(get_inputs(), shading_point.get_uv(0), offset);
 }
 
-void BSSRDF::sample(
-    const void*                 data,
-    const Intersector&          intersector,
-    BSSRDFSample&               sample) const
+void BSSRDF::subsurface_from_diffuse(
+    const Spectrum&    diffuse,
+    const Spectrum&    mfp,
+    Spectrum&          sigma_s_prime,
+    Spectrum&          sigma_a)
 {
-    // sample a point near sample.m_shading_point here...
+    assert(diffuse.size() == mfp.size());
+
+    sigma_s_prime.resize(diffuse.size());
+    sigma_a.resize(diffuse.size());
+
+    const double eta = 1.3;
+    const double c1 = C1(eta);
+    const double c2 = C2(eta);
+
+    for (int i = 0, e = diffuse.size(); i < e; ++i)
+    {
+        const double alpha_prime = compute_alpha_prime(
+            clamp(static_cast<double>(diffuse[i]), 0.0, 1.0),
+            c1,
+            c2);
+
+        const double sigma_tr = 1.0 / mfp[i];
+        const double sigma_t_prime =
+            sigma_tr / std::sqrt( 3.0 * (1.0 - alpha_prime));
+
+        sigma_s_prime[i] = alpha_prime * sigma_t_prime;
+        sigma_a[i] = sigma_t_prime - sigma_s_prime[i];
+    }
 }
 
 }   // namespace renderer

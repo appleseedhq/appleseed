@@ -66,8 +66,6 @@ APPLESEED_DECLARE_INPUT_VALUES(DirectionalDipoleBSSRDFInputValues)
 {
     Spectrum    m_diffuse;
     Spectrum    m_mfp;
-    double      m_g;
-    double      m_ior;
 };
 
 
