@@ -76,7 +76,7 @@ namespace
 // A Better Dipole, Eugene d’Eon
 
 template<typename T>
-static T C1(const T eta)
+T C1(const T eta)
 {
     if (eta >= T(1.0))
         return (T(-9.23372) + eta * (T(22.2272) + eta * (T(-20.9292) + eta * (T(10.2291) + eta * (T(-2.54396) + T(0.254913) * eta))))) * T(0.5);
@@ -85,7 +85,7 @@ static T C1(const T eta)
 }
 
 template<typename T>
-static T C2(const T eta)
+T C2(const T eta)
 {
     T r = T(-1641.1) + eta * (T(1213.67) + eta * (T(-568.556) + eta * (T(164.798) + eta * (T(-27.0181) + T(1.91826) * eta))));
     r += (((T(135.926) / eta) - T(656.175)) / eta + T(1376.53)) / eta;
