@@ -88,7 +88,6 @@ namespace
         mutex               m_mutex;
         filesystem::path    m_output_path;
         filesystem::path    m_tmp_output_path;
-        bool                m_write_tiled_image;
 
         virtual void do_post_render_tile(
             const Frame*    frame,
