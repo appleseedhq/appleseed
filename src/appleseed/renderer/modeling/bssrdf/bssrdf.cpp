@@ -70,60 +70,6 @@ Quick ref:
 namespace renderer
 {
 
-namespace
-{
-
-// A Better Dipole, Eugene d’Eon
-
-template<typename T>
-T C1(const T eta)
-{
-    if (eta >= T(1.0))
-        return (T(-9.23372) + eta * (T(22.2272) + eta * (T(-20.9292) + eta * (T(10.2291) + eta * (T(-2.54396) + T(0.254913) * eta))))) * T(0.5);
-    else
-        return (T(0.919317) + eta * (T(-3.4793) + eta * (T(6.75335) + eta * (T(-7.80989) + eta *(T(4.98554) - T(1.36881) * eta))))) * T(0.5);
-}
-
-template<typename T>
-T C2(const T eta)
-{
-    T r = T(-1641.1) + eta * (T(1213.67) + eta * (T(-568.556) + eta * (T(164.798) + eta * (T(-27.0181) + T(1.91826) * eta))));
-    r += (((T(135.926) / eta) - T(656.175)) / eta + T(1376.53)) / eta;
-    return r * T(0.333333);
-}
-
-// Texture mapping for the Better Dipole model, Christophe Hery
-
-template<typename T>
-T compute_rd(T alpha_prime, T two_c1, T three_c2)
-{
-    T cphi = T(0.25) * (T(1.0) - two_c1);
-    T ce = T(0.5) * (T(1.0) - three_c2);
-    T mu_tr_D = std::sqrt((T(1.0) - alpha_prime) * (T(2.0) - alpha_prime) / T(3.0));
-    T myexp = std::exp(-((T(1.0) + three_c2) / cphi) * mu_tr_D);
-    return T(0.5) * square(alpha_prime) * std::exp(-std::sqrt(T(3.0) * (T(1.0) - alpha_prime) / (T(2.0) - alpha_prime))) * (ce * (T(1.0) + myexp) + cphi / mu_tr_D * (T(1.0) - myexp));
-}
-
-template<typename T>
-T compute_alpha_prime(T rd, T C1, T C2)
-{
-    const T C12 = T(2.0) * C1;
-    const T C23 = T(3.0) * C2;
-
-    T x0 = T(0), x1 = T(1), xmid;
-
-    // For now simple bisection.
-    for (int i = 0, iters = 50; i < iters; ++i)
-    {
-        xmid = T(0.5) * (x0 + x1);
-        const T f = compute_rd(xmid, C12, C23);
-        f < rd ? x0 = xmid : x1 = xmid;
-    }
-
-    return xmid;
-}
-
-}
 
 //
 // BSSRDF class implementation.
@@ -167,9 +113,7 @@ void BSSRDF::on_frame_end(
 size_t BSSRDF::compute_input_data_size(
     const Assembly&         assembly) const
 {
-    size_t s = get_inputs().compute_data_size();
-    assert( s >= sizeof(BSSRDFInputValues));
-    return s;
+    return get_inputs().compute_data_size();
 }
 
 void BSSRDF::evaluate_inputs(
@@ -181,35 +125,22 @@ void BSSRDF::evaluate_inputs(
     input_evaluator.evaluate(get_inputs(), shading_point.get_uv(0), offset);
 }
 
-void BSSRDF::subsurface_from_diffuse(
-    const Spectrum&    diffuse,
-    const Spectrum&    mfp,
-    Spectrum&          sigma_s_prime,
-    Spectrum&          sigma_a)
+// A better dipole, Eugene d’Eon
+// http://www.eugenedeon.com/papers/betterdipole.pdf
+
+double BSSRDF::fresnel_moment_1(const double eta)
 {
-    assert(diffuse.size() == mfp.size());
+    if (eta >= 1.0)
+        return (-9.23372 + eta * (22.2272 + eta * (-20.9292 + eta * (10.2291 + eta * (-2.54396 + 0.254913 * eta))))) * 0.5;
+    else
+        return (0.919317 + eta * (-3.4793 + eta * (6.75335 + eta * (-7.80989 + eta *(4.98554 - 1.36881 * eta))))) * 0.5;
+}
 
-    sigma_s_prime.resize(diffuse.size());
-    sigma_a.resize(diffuse.size());
-
-    const double eta = 1.3;
-    const double c1 = C1(eta);
-    const double c2 = C2(eta);
-
-    for (int i = 0, e = diffuse.size(); i < e; ++i)
-    {
-        const double alpha_prime = compute_alpha_prime(
-            clamp(static_cast<double>(diffuse[i]), 0.0, 1.0),
-            c1,
-            c2);
-
-        const double sigma_tr = 1.0 / mfp[i];
-        const double sigma_t_prime =
-            sigma_tr / std::sqrt( 3.0 * (1.0 - alpha_prime));
-
-        sigma_s_prime[i] = alpha_prime * sigma_t_prime;
-        sigma_a[i] = sigma_t_prime - sigma_s_prime[i];
-    }
+double BSSRDF::fresnel_moment_2(const double eta)
+{
+    double r = -1641.1 + eta * (1213.67 + eta * (-568.556 + eta * (164.798 + eta * (-27.0181 + 1.91826 * eta))));
+    r += (((135.926 / eta) - 656.175) / eta + 1376.53) / eta;
+    return r * 0.33333333;
 }
 
 }   // namespace renderer

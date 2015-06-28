@@ -59,16 +59,6 @@ namespace renderer      { class ShadingPoint; }
 namespace renderer
 {
 
-//
-// BSSRDF input values.
-//
-
-APPLESEED_DECLARE_INPUT_VALUES(BSSRDFInputValues)
-{
-    Spectrum    m_sigma_a;          // Absorption coefficient.
-    Spectrum    m_sigma_s_prime;    // Reduced scattering coefficient.
-};
-
 
 //
 // Bidirectional Surface Scattering Reflectance Distribution Function (BSSRDF).
@@ -129,14 +119,21 @@ class APPLESEED_DLLSYMBOL BSSRDF
         const ShadingContext&       shading_context,
         InputEvaluator&             input_evaluator,
         const ShadingPoint&         shading_point,
-        const size_t                offset = 0) const = 0;
+        const size_t                offset = 0) const;
+
+    virtual void evaluate(
+        const void*                 data,
+        const foundation::Vector3d& outgoing_point,
+        const foundation::Vector3d& outgoing_normal,
+        const foundation::Vector3d& outgoing_dir,
+        const foundation::Vector3d& incoming_point,
+        const foundation::Vector3d& incoming_normal,
+        const foundation::Vector3d& incoming_dir,
+        Spectrum&                   value) const = 0;
 
   protected:
-    static void subsurface_from_diffuse(
-        const Spectrum&    diffuse,
-        const Spectrum&    mfp,
-        Spectrum&          sigma_s_prime,
-        Spectrum&          sigma_a);
+    static double fresnel_moment_1(const double eta);
+    static double fresnel_moment_2(const double eta);
 
     const foundation::LightingConditions* m_lighting_conditions;
 };

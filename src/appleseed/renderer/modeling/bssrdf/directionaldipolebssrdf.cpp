@@ -45,132 +45,23 @@ namespace renderer
 namespace
 {
 
-// Directional dipole profile
-template<typename T>
-T sp_d(
-    const T                     sigma_a,
-    const T                     sigma_s_prime,
-    const T                     dot_xw,
-    const T                     dot_wn,
-    const T                     dot_xn,
-    const T                     r)
-{
-    // constants
-    const T four_pisq_rcp = 0.0253303;  // 1.0 / (4.0 * square(Pi));
-    const T cp_norm = T(1.06509);       // 1.0 / (1.0 - 2.0 * C1(1.0 / eta));
-    const T cp = T(0.138676);           // (1.0 - 2.0 * C1(eta)) / 4.0
-    const T ce = T(0.351276);           // (1.0 - 3.0 * C2(eta)) / 2.0;
-
-    const T r2 = square(r);
-    const T r3_rcp = T(1.0) / (r2 * r);
-
-    const T sigma_t_prime = sigma_a + sigma_s_prime;
-    const T D = T(1.0) / (T(3.0) * sigma_t_prime);
-    const T sigma_tr = std::sqrt(sigma_a / D);
-    const T s_tr_r = sigma_tr * r;
-    const T s_tr_r_one = T(1.0) + s_tr_r;
-    const T t0 = cp_norm * four_pisq_rcp * std::exp(-s_tr_r) * r3_rcp;
-    const T t1 = r2 / D + T(3.0) * s_tr_r_one * dot_xw;
-    const T t2 = T(3.0) * D * s_tr_r_one * dot_wn;
-    const T t3 = (s_tr_r_one + T(3.0) * D * (T(3.0) * s_tr_r_one + square(s_tr_r)) / r2 * dot_xw) * dot_xn;
-    return t0 * (cp * t1 - ce * (t2 - t3));
-}
-
-template<typename T>
-void bssrdf(
-    const BSSRDFInputValues*    values,
-    const Vector<T,3>&          xi,
-    const Vector<T,3>&          ni,
-    const Vector<T,3>&          wi,
-    const Vector<T,3>&          xo,
-    const Vector<T,3>&          no,
-    const Vector<T,3>&          wo,
-    Spectrum&                   result)
-{
-    // distance
-    const Vector<T,3> xoxi = xo - xi;
-    const T r = norm(xoxi);
-    const T r2 = square(r);
-
-    // modified normal
-    const Vector<T,3> ni_s = cross(normalize(xoxi), normalize(cross(ni, xoxi)));
-
-    // directions of ray sources
-    const T eta = T(1.3);
-    const T nnt = T(1.0) / eta;
-    const T ddn = -dot(wi, ni);
-    Vector<T,3> wr =
-        normalize(wi * -nnt - ni * (ddn * nnt + std::sqrt(1.0 - nnt * nnt * (1.0 - ddn * ddn))));
-    const Vector<T,3> wv = wr - ni_s * (2.0 * dot(ni_s, wr));
-
-    const T cp = T(0.138676);       // (1.0 - 2.0 * C1(eta)) / 4.0
-    const T ce = T(0.351276);       // (1.0 - 3.0 * C2(eta)) / 2.0;
-    const T A = (1.0 - ce) / (2.0 * cp);
-
-    const T dot_xiwr = dot(xoxi, wr);
-    const T dot_wrn = dot(wr, no);
-    const T dot_xin = dot(xoxi, no);
-    const T dot_wvn = dot(wv, no);
-
-    for (int i = 0, e = result.size(); i < e; ++i)
-    {
-        const T sigma_a = values->m_sigma_a[i];
-        const T sigma_s_prime = values->m_sigma_s_prime[i];
-        const T sigma_t_prime = sigma_a + sigma_s_prime;
-        const T D = T(1.0) / (T(3.0) * sigma_t_prime);
-        const T alpha_prime = sigma_s_prime / sigma_t_prime;
-        const T de = T(2.131) * D / std::sqrt(alpha_prime);
-
-        // assume g == 0 for now.
-        const T sigma_t = sigma_t_prime;
-
-        // distance to real sources
-        const T cos_beta = -std::sqrt((r2 - square(dot(wr, xoxi))) / (r2 + square(de)));
-
-        T dr;
-
-        if (dot_wrn > T(0.0))
-            dr = std::sqrt((D * dot_wrn) * ((D * dot_wrn) - de * cos_beta * T(2.0)) + r2);
-        else
-            dr = std::sqrt(T(1.0) / square(3.0 * sigma_t) + r2);
-
-        // distance to virtual source
-        const Vector<T,3> xoxv = xo - (xi + ni_s * (T(2.0) * A * de));
-        const T dv = norm(xoxv);
-
-        // BSSRDF
-        const T sp_i = sp_d(
-            sigma_a,
-            sigma_s_prime,
-            dot_xiwr,
-            dot_wrn,
-            dot_xin,
-            dr);
-
-        const T sp_v = sp_d(
-            sigma_a,
-            sigma_s_prime,
-            dot(xoxv, wv),
-            dot_wvn,
-            dot(xoxv, no),
-            dv);
-
-        result[i] += std::max(sp_i - sp_v, T(0));
-    }
-}
-
-}
-
-namespace
-{
-
     const char* Model = "directional_dipole_bssrdf";
 
     //
     // Directional dipole BSSRDF.
     //
 
-    // reference: dirpole, directional dipole by T. Hachisuka and J. R. Frisvad
+    //
+    // references:
+    //
+    // [1] Directional Dipole for Subsurface Scattering
+    // Jeppe Revall Frisvad, Toshiya Hachisuka and Thomas Kim Kjeldsen.
+    // http://www.ci.i.u-tokyo.ac.jp/~hachisuka/dirpole.pdf
+    //
+    // [2] Texture mapping for the Better Dipole model
+    // Christophe Hery
+    // http://graphics.pixar.com/library/TexturingBetterDipole/paper.pdf
+    //
 
     class DirectionalDipoleBSSRDF
       : public BSSRDF
@@ -181,6 +72,12 @@ namespace
             const ParamArray&           params)
           : BSSRDF(name, params)
         {
+            m_inputs.declare("reflectance", InputFormatSpectralReflectance);
+            m_inputs.declare("mean_free_path", InputFormatSpectralReflectance);
+            m_inputs.declare("mean_free_path_multiplier", InputFormatScalar, "1.0");
+            m_inputs.declare("anisotropy", InputFormatScalar);
+            m_inputs.declare("from_ior", InputFormatScalar);
+            m_inputs.declare("to_ior", InputFormatScalar);
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -191,6 +88,12 @@ namespace
         virtual const char* get_model() const APPLESEED_OVERRIDE
         {
             return Model;
+        }
+
+        virtual size_t compute_input_data_size(
+            const Assembly&             assembly) const
+        {
+            return align(sizeof(DirectionalDipoleBSSRDFInputValues), 16);
         }
 
         virtual void evaluate_inputs(
@@ -204,36 +107,60 @@ namespace
             DirectionalDipoleBSSRDFInputValues* values =
                 reinterpret_cast<DirectionalDipoleBSSRDFInputValues*>(input_evaluator.data());
 
-            if (values->m_diffuse.size() != values->m_mfp.size())
+            values->m_mean_free_path *= static_cast<float>(values->m_mean_free_path_multiplier);
+
+            if (values->m_reflectance.size() != values->m_mean_free_path.size())
             {
-                if (values->m_diffuse.is_spectral())
-                    Spectrum::upgrade(values->m_mfp, values->m_mfp);
+                if (values->m_reflectance.is_spectral())
+                    Spectrum::upgrade(values->m_mean_free_path, values->m_mean_free_path);
                 else
-                    values->m_mfp.convert_to_rgb(*m_lighting_conditions);
+                    values->m_mean_free_path.convert_to_rgb(*m_lighting_conditions);
             }
 
-            // convert in place.
-            subsurface_from_diffuse(
-                values->m_diffuse,
-                values->m_mfp,
-                values->m_diffuse,
-                values->m_mfp);
+            // convert values and precompute stuff...
+            values->m_cdf.set(0.0f);
+            double sum_alpha_prime = 0.0;
+            values->m_max_mean_free_path = 0.0;
+
+            const double eta = values->m_to_ior / values->m_from_ior;
+            const double c1 = fresnel_moment_1(eta);
+            const double c2 = fresnel_moment_2(eta);
+
+            for (size_t i = 0, e = values->m_reflectance.size(); i < e; ++i)
+            {
+                const double alpha_prime = compute_alpha_prime(
+                    clamp(static_cast<double>(values->m_reflectance[i]), 0.0, 1.0), c1, c2);
+
+                sum_alpha_prime += alpha_prime;
+                values->m_cdf[i] = sum_alpha_prime;
+                const double mfp = static_cast<double>(values->m_mean_free_path[i]);
+                values->m_max_mean_free_path = std::max(values->m_max_mean_free_path, mfp);
+
+                const double sigma_tr = 1.0 / mfp;
+                const double sigma_t_prime = sigma_tr / std::sqrt( 3.0 * (1.0 - alpha_prime));
+
+                values->sigma_s_prime()[i] = alpha_prime * sigma_t_prime;
+                values->sigma_a()[i] = sigma_t_prime - values->sigma_s_prime()[i];
+            }
+
+            if (sum_alpha_prime > 0.0)
+                values->m_cdf *= static_cast<float>(1.0 / sum_alpha_prime);
         }
 
-        void evaluate(
-            const void*                 data,                       // input values
+        virtual void evaluate(
+            const void*                 data,
             const Vector3d&             outgoing_point,
             const Vector3d&             outgoing_normal,
             const Vector3d&             outgoing_dir,
             const Vector3d&             incoming_point,
             const Vector3d&             incoming_normal,
             const Vector3d&             incoming_dir,
-            Spectrum&                   value) const
+            Spectrum&                   value) const APPLESEED_OVERRIDE
         {
-            const BSSRDFInputValues* values =
-                reinterpret_cast<const BSSRDFInputValues*>(data);
+            const DirectionalDipoleBSSRDFInputValues* values =
+                reinterpret_cast<const DirectionalDipoleBSSRDFInputValues*>(data);
 
-            value.resize(values->m_sigma_a.size());
+            value.resize(values->sigma_a().size());
             value.set(0.0f);
 
             bssrdf(
@@ -243,10 +170,11 @@ namespace
                 incoming_dir,
                 outgoing_point,
                 outgoing_normal,
-                outgoing_dir,
                 value);
 
+#if 0
             // reciprocal evaluation with the reciprocity hack.
+            // not sure we want this...
             bssrdf(
                 values,
                 outgoing_point,
@@ -254,12 +182,151 @@ namespace
                 outgoing_dir,
                 incoming_point,
                 incoming_normal,
-                incoming_dir,
                 value);
 
             value *= 0.5f;
+#endif
+        }
+      private:
+
+        static double compute_rd(double alpha_prime, double two_c1, double three_c2)
+        {
+            double cphi = 0.25 * (1.0 - two_c1);
+            double ce = 0.5 * (1.0 - three_c2);
+            double mu_tr_D = std::sqrt((1.0 - alpha_prime) * (2.0 - alpha_prime) / 3.0);
+            double myexp = std::exp(-((1.0 + three_c2) / cphi) * mu_tr_D);
+            return 0.5 * square(alpha_prime) * std::exp(-std::sqrt(3.0 * (1.0 - alpha_prime) / (2.0 - alpha_prime))) * (ce * (1.0 + myexp) + cphi / mu_tr_D * (1.0 - myexp));
         }
 
+        static double compute_alpha_prime(double rd, double c1, double c2)
+        {
+            const double c12 = 2.0 * c1;
+            const double c23 = 3.0 * c2;
+
+            double x0 = 0.0, x1 = 1.0, xmid;
+
+            // For now simple bisection.
+            for (size_t i = 0, iters = 50; i < iters; ++i)
+            {
+                xmid = 0.5 * (x0 + x1);
+                const double f = compute_rd(xmid, c12, c23);
+                f < rd ? x0 = xmid : x1 = xmid;
+            }
+
+            return xmid;
+        }
+
+        static double sp_d(
+            const double    sigma_a,
+            const double    sigma_s_prime,
+            const double    eta,
+            const double    dot_xw,
+            const double    dot_wn,
+            const double    dot_xn,
+            const double    r)
+        {
+            // constants
+            const double four_pisq_rcp = 0.0253303;  // 1.0 / (4.0 * square(Pi));
+
+            const double cp = (1.0 - 2.0 * fresnel_moment_1(eta)) * 0.25;
+            const double ce = (1.0 - 3.0 * fresnel_moment_2(eta)) * 0.5;
+            const double cp_norm = 1.0 / (1.0 - 2.0 * fresnel_moment_1(1.0 / eta));
+
+            const double r2 = square(r);
+            const double r3_rcp = 1.0 / (r2 * r);
+
+            const double sigma_t_prime = sigma_a + sigma_s_prime;
+            const double D = 1.0 / (3.0 * sigma_t_prime);
+            const double sigma_tr = std::sqrt(sigma_a / D);
+            const double s_tr_r = sigma_tr * r;
+            const double s_tr_r_one = 1.0 + s_tr_r;
+            const double t0 = cp_norm * four_pisq_rcp * std::exp(-s_tr_r) * r3_rcp;
+            const double t1 = r2 / D + 3.0 * s_tr_r_one * dot_xw;
+            const double t2 = 3.0 * D * s_tr_r_one * dot_wn;
+            const double t3 = (s_tr_r_one + 3.0 * D * (3.0 * s_tr_r_one + square(s_tr_r)) / r2 * dot_xw) * dot_xn;
+            return t0 * (cp * t1 - ce * (t2 - t3));
+        }
+
+        static void bssrdf(
+            const DirectionalDipoleBSSRDFInputValues*   values,
+            const Vector3d&                             xi,
+            const Vector3d&                             ni,
+            const Vector3d&                             wi,
+            const Vector3d&                             xo,
+            const Vector3d&                             no,
+            Spectrum&                                   result)
+        {
+            // distance
+            const Vector3d xoxi = xo - xi;
+            const double r = norm(xoxi);
+            const double r2 = square(r);
+
+            // modified normal
+            const Vector3d ni_s = cross(normalize(xoxi), normalize(cross(ni, xoxi)));
+
+            // directions of ray sources
+            const double eta = values->m_to_ior / values->m_from_ior;
+            const double nnt = 1.0 / eta;
+            const double ddn = -dot(wi, ni);
+            Vector3d wr = normalize(wi * -nnt - ni * (ddn * nnt + std::sqrt(1.0 - nnt * nnt * (1.0 - ddn * ddn))));
+            const Vector3d wv = wr - ni_s * (2.0 * dot(ni_s, wr));
+
+            const double cp = (1.0 - 2.0 * fresnel_moment_1(eta)) * 0.25;
+            const double ce = (1.0 - 3.0 * fresnel_moment_2(eta)) * 0.5;
+            const double A = (1.0 - ce) / (2.0 * cp);
+
+            const double dot_xiwr = dot(xoxi, wr);
+            const double dot_wrn = dot(wr, no);
+            const double dot_xin = dot(xoxi, no);
+            const double dot_wvn = dot(wv, no);
+
+            for (size_t i = 0, e = result.size(); i < e; ++i)
+            {
+                const double sigma_a = values->sigma_a()[i];
+                const double sigma_s_prime = values->sigma_s_prime()[i];
+                const double sigma_t_prime = sigma_a + sigma_s_prime;
+                const double D = 1.0 / (3.0 * sigma_t_prime);
+                const double alpha_prime = sigma_s_prime / sigma_t_prime;
+                const double de = 2.131 * D / std::sqrt(alpha_prime);
+
+                const double sigma_s = sigma_s_prime / (1.0 - values->m_anisotropy);
+                const double sigma_t = sigma_a + sigma_s;
+
+                // distance to real sources
+                const double cos_beta = -std::sqrt((r2 - square(dot(wr, xoxi))) / (r2 + square(de)));
+
+                double dr;
+
+                if (dot_wrn > 0.0)
+                    dr = std::sqrt((D * dot_wrn) * ((D * dot_wrn) - de * cos_beta * 2.0) + r2);
+                else
+                    dr = std::sqrt(1.0 / square(3.0 * sigma_t) + r2);
+
+                // distance to virtual source
+                const Vector3d xoxv = xo - (xi + ni_s * (2.0 * A * de));
+                const double dv = norm(xoxv);
+
+                const double sp_i = sp_d(
+                    sigma_a,
+                    sigma_s_prime,
+                    eta,
+                    dot_xiwr,
+                    dot_wrn,
+                    dot_xin,
+                    dr);
+
+                const double sp_v = sp_d(
+                    sigma_a,
+                    sigma_s_prime,
+                    eta,
+                    dot(xoxv, wv),
+                    dot_wvn,
+                    dot(xoxv, no),
+                    dv);
+
+                result[i] += std::max(sp_i - sp_v, 0.0);
+            }
+        }
     };
 }
 
@@ -283,6 +350,71 @@ Dictionary DirectionalDipoleBSSRDFFactory::get_model_metadata() const
 DictionaryArray DirectionalDipoleBSSRDFFactory::get_input_metadata() const
 {
     DictionaryArray metadata;
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "reflectance")
+            .insert("label", "Reflectance")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary()
+                    .insert("color", "Colors")
+                    .insert("texture_instance", "Textures"))
+            .insert("use", "required")
+            .insert("default", "0.5"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "mean_free_path")
+            .insert("label", "Mean Free Path")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary()
+                    .insert("color", "Colors")
+                    .insert("texture_instance", "Textures"))
+            .insert("use", "required")
+            .insert("default", "0.5"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "mean_free_path_multiplier")
+            .insert("label", "Mean Free Path Multiplier")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Textures"))
+            .insert("use", "optional")
+            .insert("default", "1.0"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "anisotropy")
+            .insert("label", "Anisotropy")
+            .insert("type", "numeric")
+            .insert("min_value", "-1.0")
+            .insert("max_value", "1.0")
+            .insert("use", "required")
+            .insert("default", "0.0"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "from_ior")
+            .insert("label", "From Index of Refraction")
+            .insert("type", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "5.0")
+            .insert("use", "required")
+            .insert("default", "1.0"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "to_ior")
+            .insert("label", "To Index of Refraction")
+            .insert("type", "numeric")
+            .insert("min_value", "0.0")
+            .insert("max_value", "5.0")
+            .insert("use", "required")
+            .insert("default", "1.5"));
+
     return metadata;
 }
 
