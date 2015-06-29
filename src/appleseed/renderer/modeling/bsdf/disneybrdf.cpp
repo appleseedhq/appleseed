@@ -46,6 +46,7 @@
 #include "foundation/math/vector.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
+#include "foundation/utility/memory.h"
 
 // Standard headers.
 #include <cmath>
@@ -344,6 +345,12 @@ namespace
         virtual const char* get_model() const APPLESEED_OVERRIDE
         {
             return Model;
+        }
+
+        virtual size_t compute_input_data_size(
+            const Assembly&         assembly) const APPLESEED_OVERRIDE
+        {
+            return align(sizeof(DisneyBRDFInputValues), 16);
         }
 
         virtual void evaluate_inputs(
