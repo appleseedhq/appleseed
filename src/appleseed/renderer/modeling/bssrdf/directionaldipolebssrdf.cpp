@@ -117,7 +117,7 @@ namespace
                     values->m_mean_free_path.convert_to_rgb(*m_lighting_conditions);
             }
 
-            // convert values and precompute stuff...
+            // Convert values and precompute stuff.
             values->m_cdf.set(0.0f);
             double sum_alpha_prime = 0.0;
             values->m_max_mean_free_path = 0.0;
@@ -173,8 +173,7 @@ namespace
                 value);
 
 #if 0
-            // reciprocal evaluation with the reciprocity hack.
-            // not sure we want this...
+            // Reciprocal evaluation with the reciprocity hack. Not sure we want it.
             bssrdf(
                 values,
                 outgoing_point,
@@ -225,9 +224,6 @@ namespace
             const double    dot_xn,
             const double    r)
         {
-            // constants
-            const double four_pisq_rcp = 0.0253303;  // 1.0 / (4.0 * square(Pi));
-
             const double cp = (1.0 - 2.0 * fresnel_moment_1(eta)) * 0.25;
             const double ce = (1.0 - 3.0 * fresnel_moment_2(eta)) * 0.5;
             const double cp_norm = 1.0 / (1.0 - 2.0 * fresnel_moment_1(1.0 / eta));
@@ -240,6 +236,8 @@ namespace
             const double sigma_tr = std::sqrt(sigma_a / D);
             const double s_tr_r = sigma_tr * r;
             const double s_tr_r_one = 1.0 + s_tr_r;
+
+            const double four_pisq_rcp = 1.0 / (4.0 * square(Pi));
             const double t0 = cp_norm * four_pisq_rcp * std::exp(-s_tr_r) * r3_rcp;
             const double t1 = r2 / D + 3.0 * s_tr_r_one * dot_xw;
             const double t2 = 3.0 * D * s_tr_r_one * dot_wn;
@@ -256,15 +254,15 @@ namespace
             const Vector3d&                             no,
             Spectrum&                                   result)
         {
-            // distance
+            // Distance.
             const Vector3d xoxi = xo - xi;
             const double r = norm(xoxi);
             const double r2 = square(r);
 
-            // modified normal
+            // Modified normal.
             const Vector3d ni_s = cross(normalize(xoxi), normalize(cross(ni, xoxi)));
 
-            // directions of ray sources
+            // Directions of ray sources.
             const double eta = values->m_to_ior / values->m_from_ior;
             const double nnt = 1.0 / eta;
             const double ddn = -dot(wi, ni);
@@ -292,7 +290,7 @@ namespace
                 const double sigma_s = sigma_s_prime / (1.0 - values->m_anisotropy);
                 const double sigma_t = sigma_a + sigma_s;
 
-                // distance to real sources
+                // Distance to real sources.
                 const double cos_beta = -std::sqrt((r2 - square(dot(wr, xoxi))) / (r2 + square(de)));
 
                 double dr;
@@ -302,7 +300,7 @@ namespace
                 else
                     dr = std::sqrt(1.0 / square(3.0 * sigma_t) + r2);
 
-                // distance to virtual source
+                // Distance to virtual source.
                 const Vector3d xoxv = xo - (xi + ni_s * (2.0 * A * de));
                 const double dv = norm(xoxv);
 
@@ -324,6 +322,7 @@ namespace
                     dot(xoxv, no),
                     dv);
 
+                // Clamp negative values to zero.
                 result[i] += std::max(sp_i - sp_v, 0.0);
             }
         }

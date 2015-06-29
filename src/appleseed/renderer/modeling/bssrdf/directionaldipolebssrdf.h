@@ -69,11 +69,13 @@ APPLESEED_DECLARE_INPUT_VALUES(DirectionalDipoleBSSRDFInputValues)
     double      m_from_ior;
     double      m_to_ior;
 
-    // precomputed values
+    // Precomputed values.
     Spectrum    m_cdf;
     double      m_max_mean_free_path;
 
-    // convenience accessors
+    // Convenience accessors for use after reflectance and
+    // mean free path are converted to absorption and scattering coefficients.
+
     const Spectrum& sigma_a() const
     {
         return m_reflectance;

@@ -50,7 +50,6 @@ namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class LightingConditions; }
 namespace renderer      { class Assembly; }
 namespace renderer      { class InputEvaluator; }
-namespace renderer      { class Intersector; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 namespace renderer      { class ShadingContext; }
@@ -115,12 +114,16 @@ class APPLESEED_DLLSYMBOL BSSRDF
     virtual size_t compute_input_data_size(
         const Assembly&             assembly) const;
 
+    // Evaluate the inputs of this BSSRDF and of its child BSSRDFs, if any.
+    // Input values are stored in the input evaluator. This method is called
+    // once per shading point and pair of incoming/outgoing directions.
     virtual void evaluate_inputs(
         const ShadingContext&       shading_context,
         InputEvaluator&             input_evaluator,
         const ShadingPoint&         shading_point,
         const size_t                offset = 0) const;
 
+    // Evaluate the BSSRDF for a given pair of points and directions.
     virtual void evaluate(
         const void*                 data,
         const foundation::Vector3d& outgoing_point,
