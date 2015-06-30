@@ -157,11 +157,9 @@ namespace
 
         virtual void evaluate(
             const void*                 data,
-            const Vector3d&             outgoing_point,
-            const Vector3d&             outgoing_normal,
+            const ShadingPoint&         outgoing_point,
             const Vector3d&             outgoing_dir,
-            const Vector3d&             incoming_point,
-            const Vector3d&             incoming_normal,
+            const ShadingPoint&         incoming_point,
             const Vector3d&             incoming_dir,
             Spectrum&                   value) const APPLESEED_OVERRIDE
         {
@@ -173,26 +171,27 @@ namespace
 
             bssrdf(
                 values,
-                incoming_point,
-                incoming_normal,
+                incoming_point.get_point(),
+                incoming_point.get_shading_normal(),
                 incoming_dir,
-                outgoing_point,
-                outgoing_normal,
+                outgoing_point.get_point(),
+                outgoing_point.get_shading_normal(),
                 value);
 
-#if 0
-            // Reciprocal evaluation with the reciprocity hack. Not sure we want it.
+            // Reciprocal evaluation with the reciprocity hack.
+            // Not sure we want it.
+            /*
             bssrdf(
                 values,
-                outgoing_point,
-                outgoing_normal,
+                outgoing_point.get_point(),
+                outgoing_point.get_shading_normal(),
                 outgoing_dir,
-                incoming_point,
-                incoming_normal,
+                incoming_point.get_point(),
+                incoming_point.get_shading_normal(),
                 value);
 
             value *= 0.5f;
-#endif
+            */
         }
 
       private:
@@ -211,8 +210,7 @@ namespace
                 cdf + values->m_channel_cdf.size(),
                 r[0]) - cdf;
 
-            // Sample radius and angle.
-            // From alshaders.
+            // Sample a radius and an angle.
             const double radius = -std::log(1.0 - r[1]) * values->m_mean_free_path[ch];
             const double phi = 2.0 * Pi * r[2];
 
@@ -229,7 +227,6 @@ namespace
             const DirectionalDipoleBSSRDFInputValues* values =
                 reinterpret_cast<const DirectionalDipoleBSSRDFInputValues*>(data);
 
-            // From alshaders.
             const double s = 1.0 / values->m_mean_free_path[channel];
             return s * std::exp(-s * dist) * values->m_channel_weights[channel];
         }

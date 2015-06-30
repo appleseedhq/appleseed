@@ -131,11 +131,9 @@ class APPLESEED_DLLSYMBOL BSSRDF
     // Evaluate the BSSRDF for a given pair of points and directions.
     virtual void evaluate(
         const void*                 data,
-        const foundation::Vector3d& outgoing_point,
-        const foundation::Vector3d& outgoing_normal,
+        const ShadingPoint&         outgoing_point,
         const foundation::Vector3d& outgoing_dir,
-        const foundation::Vector3d& incoming_point,
-        const foundation::Vector3d& incoming_normal,
+        const ShadingPoint&         incoming_point,
         const foundation::Vector3d& incoming_dir,
         Spectrum&                   value) const = 0;
 

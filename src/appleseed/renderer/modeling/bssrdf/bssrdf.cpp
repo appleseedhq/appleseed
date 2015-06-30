@@ -152,7 +152,7 @@ void BSSRDF::sample(
     }
 
     size_t ch;
-    const Vector2d d = sample(data, Vector3d(d[1], d[2], d[3]), ch);
+    const Vector2d d = sample(data, Vector3d(r[1], r[2], r[3]), ch);
     s.set_channel(ch);
     s.set_origin(
         s.get_shading_point().get_point() +
