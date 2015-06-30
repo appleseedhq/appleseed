@@ -41,13 +41,12 @@
 using namespace foundation;
 
 /*
-
 Quick ref:
 ----------
 
-    sigma_a     absorption coeff.
-    sigma_s     scattering coeff.
-    g           anisotropy
+    sigma_a         absorption coeff.
+    sigma_s         scattering coeff.
+    g               anisotropy
 
     sigma_t         extinction coeff.           -> sigma_a + sigma_s
     sigma_s_prime   reduced scattering coeff.   -> sigma_s * (1 - g)
@@ -57,8 +56,6 @@ Quick ref:
     Texture mapping:
     ----------------
 
-    Fdr             fresnel diffuse reflectance
-    A                                           -> (1 + Fdr) / (1 - Fdr)
     alpha_prime                                 -> sigma_s_prime / sigma_t_prime
     ld              mean free path              -> 1 / sigma_tr
 
@@ -123,6 +120,77 @@ void BSSRDF::evaluate_inputs(
     const size_t            offset) const
 {
     input_evaluator.evaluate(get_inputs(), shading_point.get_uv(0), offset);
+}
+
+void BSSRDF::sample(
+    const void*     data,
+    BSSRDFSample&   s) const
+{
+    s.get_sampling_context().split_in_place(4, 1);
+    const Vector4d r = s.get_sampling_context().next_vector2<4>();
+
+    Basis3d& basis(s.get_sample_basis());
+
+    if (r[0] <= 0.5)
+    {
+        basis = s.get_shading_point().get_shading_basis();
+        s.set_use_offset_origin(true);
+    }
+    else if (r[0] <= 0.75)
+    {
+        basis.build(
+            basis.get_tangent_u(),
+            basis.get_normal(),
+            basis.get_tangent_v());
+    }
+    else
+    {
+        basis.build(
+            basis.get_tangent_v(),
+            basis.get_tangent_u(),
+            basis.get_normal());
+    }
+
+    size_t ch;
+    const Vector2d d = sample(data, Vector3d(d[1], d[2], d[3]), ch);
+    s.set_channel(ch);
+    s.set_origin(
+        s.get_shading_point().get_point() +
+        basis.get_tangent_u() * d.x +
+        basis.get_tangent_v() * d.y);
+}
+
+double BSSRDF::pdf(
+    const void*         data,
+    const ShadingPoint& outgoing_point,
+    const ShadingPoint& incoming_point,
+    const Basis3d&      basis,
+    const size_t        channel) const
+{
+    // From PBRT3.
+    const Vector3d d = outgoing_point.get_point() - incoming_point.get_point();
+    const Vector3d dlocal(
+        dot(basis.get_tangent_u(), d),
+        dot(basis.get_tangent_v(), d),
+        dot(basis.get_normal()   , d));
+
+    const Vector3d& n = incoming_point.get_shading_normal();
+    const Vector3d nlocal(
+        dot(basis.get_tangent_u(), n),
+        dot(basis.get_tangent_v(), n),
+        dot(basis.get_normal()   , n));
+
+    const double axis_prob[3] = {.25f, .25f, .5f};
+    const double dist_sqr[3] = {
+        square(dlocal.y) + square(dlocal.z),
+        square(dlocal.z) + square(dlocal.x),
+        square(dlocal.x) + square(dlocal.y)};
+
+    double result = 0.0;
+    for (size_t i = 0; i < 3; ++i)
+        result += 0.5 * pdf(data, channel, std::sqrt(dist_sqr[i])) * axis_prob[i] * std::abs(nlocal[i]);
+
+    return result;
 }
 
 // A better dipole, Eugene d’Eon

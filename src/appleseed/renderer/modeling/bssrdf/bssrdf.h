@@ -123,6 +123,11 @@ class APPLESEED_DLLSYMBOL BSSRDF
         const ShadingPoint&         shading_point,
         const size_t                offset = 0) const;
 
+    // Sample the BSSRDF.
+    void sample(
+        const void*     data,
+        BSSRDFSample&   s) const;
+
     // Evaluate the BSSRDF for a given pair of points and directions.
     virtual void evaluate(
         const void*                 data,
@@ -133,6 +138,24 @@ class APPLESEED_DLLSYMBOL BSSRDF
         const foundation::Vector3d& incoming_normal,
         const foundation::Vector3d& incoming_dir,
         Spectrum&                   value) const = 0;
+
+    double pdf(
+        const void*                 data,
+        const ShadingPoint&         outgoing_point,
+        const ShadingPoint&         incoming_point,
+        const foundation::Basis3d&  basis,
+        const size_t                channel) const;
+
+  private:
+    virtual foundation::Vector2d sample(
+        const void*                 data,
+        const foundation::Vector3d& r,
+        size_t&                     ch) const = 0;
+
+    virtual double pdf(
+        const void*     data,
+        const size_t    channel,
+        const double    dist) const = 0;
 
   protected:
     static double fresnel_moment_1(const double eta);

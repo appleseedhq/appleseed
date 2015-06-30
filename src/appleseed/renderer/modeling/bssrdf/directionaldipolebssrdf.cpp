@@ -37,6 +37,9 @@
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
 
+// standard headers.
+#include <algorithm>
+
 using namespace foundation;
 
 namespace renderer
@@ -118,7 +121,7 @@ namespace
             }
 
             // Convert values and precompute stuff.
-            values->m_cdf.set(0.0f);
+            values->m_channel_cdf.set(0.0f);
             double sum_alpha_prime = 0.0;
             values->m_max_mean_free_path = 0.0;
 
@@ -132,19 +135,24 @@ namespace
                     clamp(static_cast<double>(values->m_reflectance[i]), 0.0, 1.0), c1, c2);
 
                 sum_alpha_prime += alpha_prime;
-                values->m_cdf[i] = sum_alpha_prime;
+                values->m_channel_weights[i] = alpha_prime;
+                values->m_channel_cdf[i] = sum_alpha_prime;
                 const double mfp = static_cast<double>(values->m_mean_free_path[i]);
                 values->m_max_mean_free_path = std::max(values->m_max_mean_free_path, mfp);
 
                 const double sigma_tr = 1.0 / mfp;
                 const double sigma_t_prime = sigma_tr / std::sqrt( 3.0 * (1.0 - alpha_prime));
 
-                values->sigma_s_prime()[i] = alpha_prime * sigma_t_prime;
-                values->sigma_a()[i] = sigma_t_prime - values->sigma_s_prime()[i];
+                values->m_sigma_s_prime[i] = alpha_prime * sigma_t_prime;
+                values->m_sigma_a[i] = sigma_t_prime - values->m_sigma_s_prime[i];
             }
 
             if (sum_alpha_prime > 0.0)
-                values->m_cdf *= static_cast<float>(1.0 / sum_alpha_prime);
+            {
+                const float rcp_sum_alpha_prime = static_cast<float>(1.0 / sum_alpha_prime);
+                values->m_channel_weights *= rcp_sum_alpha_prime;
+                values->m_channel_cdf *= rcp_sum_alpha_prime;
+            }
         }
 
         virtual void evaluate(
@@ -160,7 +168,7 @@ namespace
             const DirectionalDipoleBSSRDFInputValues* values =
                 reinterpret_cast<const DirectionalDipoleBSSRDFInputValues*>(data);
 
-            value.resize(values->sigma_a().size());
+            value.resize(values->m_sigma_a.size());
             value.set(0.0f);
 
             bssrdf(
@@ -186,7 +194,45 @@ namespace
             value *= 0.5f;
 #endif
         }
+
       private:
+        virtual Vector2d sample(
+            const void*     data,
+            const Vector3d& r,
+            size_t&         ch) const APPLESEED_OVERRIDE
+        {
+            const DirectionalDipoleBSSRDFInputValues* values =
+                reinterpret_cast<const DirectionalDipoleBSSRDFInputValues*>(data);
+
+            // Sample a color channel.
+            const float* cdf = &(values->m_channel_cdf[0]);
+            ch = std::upper_bound(
+                cdf,
+                cdf + values->m_channel_cdf.size(),
+                r[0]) - cdf;
+
+            // Sample radius and angle.
+            // From alshaders.
+            const double radius = -std::log(1.0 - r[1]) * values->m_mean_free_path[ch];
+            const double phi = 2.0 * Pi * r[2];
+
+            return Vector2d(
+                radius * std::cos(phi),
+                radius * std::sin(phi));
+        }
+
+        virtual double pdf(
+            const void*     data,
+            const size_t    channel,
+            const double    dist) const APPLESEED_OVERRIDE
+        {
+            const DirectionalDipoleBSSRDFInputValues* values =
+                reinterpret_cast<const DirectionalDipoleBSSRDFInputValues*>(data);
+
+            // From alshaders.
+            const double s = 1.0 / values->m_mean_free_path[channel];
+            return s * std::exp(-s * dist) * values->m_channel_weights[channel];
+        }
 
         static double compute_rd(double alpha_prime, double two_c1, double three_c2)
         {
@@ -266,7 +312,7 @@ namespace
             const double eta = values->m_to_ior / values->m_from_ior;
             const double nnt = 1.0 / eta;
             const double ddn = -dot(wi, ni);
-            Vector3d wr = normalize(wi * -nnt - ni * (ddn * nnt + std::sqrt(1.0 - nnt * nnt * (1.0 - ddn * ddn))));
+            const Vector3d wr = normalize(wi * -nnt - ni * (ddn * nnt + std::sqrt(1.0 - nnt * nnt * (1.0 - ddn * ddn))));
             const Vector3d wv = wr - ni_s * (2.0 * dot(ni_s, wr));
 
             const double cp = (1.0 - 2.0 * fresnel_moment_1(eta)) * 0.25;
@@ -280,8 +326,8 @@ namespace
 
             for (size_t i = 0, e = result.size(); i < e; ++i)
             {
-                const double sigma_a = values->sigma_a()[i];
-                const double sigma_s_prime = values->sigma_s_prime()[i];
+                const double sigma_a = values->m_sigma_a[i];
+                const double sigma_s_prime = values->m_sigma_s_prime[i];
                 const double sigma_t_prime = sigma_a + sigma_s_prime;
                 const double D = 1.0 / (3.0 * sigma_t_prime);
                 const double alpha_prime = sigma_s_prime / sigma_t_prime;
@@ -412,7 +458,7 @@ DictionaryArray DirectionalDipoleBSSRDFFactory::get_input_metadata() const
             .insert("min_value", "0.0")
             .insert("max_value", "5.0")
             .insert("use", "required")
-            .insert("default", "1.5"));
+            .insert("default", "1.3"));
 
     return metadata;
 }

@@ -37,6 +37,9 @@
 #include "foundation/math/basis.h"
 #include "foundation/math/vector.h"
 
+// standard headers
+#include <limits>
+
 namespace renderer
 {
 
@@ -45,21 +48,40 @@ class BSSRDFSample
   public:
     // Constructor.
     BSSRDFSample(
-        const ShadingPoint& outgoing_point,
+        const ShadingPoint& shading_point,
         SamplingContext&    sampling_context);
 
     // Input fields.
 
     SamplingContext& get_sampling_context();
-    const ShadingPoint& get_outgoing_point() const;
+    const ShadingPoint& get_shading_point() const;
 
     // Output fields.
-    const ShadingPoint& get_incoming_point() const;
 
-  private:
-    const ShadingPoint&     m_outgoing_point;       // shading point at which the sampling is done
-    SamplingContext&        m_sampling_context;     // sampling context used to sample BSDFs
-    ShadingPoint            m_incoming_point;
+    const foundation::Basis3d& get_sample_basis() const;
+    foundation::Basis3d& get_sample_basis();
+
+    size_t get_channel() const;
+    void set_channel(size_t ch);
+
+    const foundation::Vector3d& get_origin() const;
+    void set_origin(const foundation::Vector3d& origin);
+
+    bool get_use_offset_origin() const;
+    void set_use_offset_origin(bool b);
+
+    double get_max_distance() const;
+    void set_max_distance(double max_distance);
+
+    private:
+    const ShadingPoint&     m_shading_point;       // shading point at which the sampling is done
+    SamplingContext&        m_sampling_context;    // sampling context used to sample BSDFs
+
+    foundation::Basis3d     m_sample_basis;
+    size_t                  m_channel;
+    foundation::Vector3d    m_origin;
+    bool                    m_use_offset_origin;
+    double                  m_max_distance;
 };
 
 
@@ -68,10 +90,12 @@ class BSSRDFSample
 //
 
 inline BSSRDFSample::BSSRDFSample(
-    const ShadingPoint&         outgoing_point,
+    const ShadingPoint&         shading_point,
     SamplingContext&            sampling_context)
-  : m_outgoing_point(outgoing_point)
+  : m_shading_point(shading_point)
   , m_sampling_context(sampling_context)
+  , m_use_offset_origin(false)
+  , m_max_distance(std::numeric_limits<double>::max())
 {
 }
 
@@ -80,14 +104,59 @@ inline SamplingContext& BSSRDFSample::get_sampling_context()
     return m_sampling_context;
 }
 
-inline const ShadingPoint& BSSRDFSample::get_outgoing_point() const
+inline const ShadingPoint& BSSRDFSample::get_shading_point() const
 {
-    return m_outgoing_point;
+    return m_shading_point;
 }
 
-inline const ShadingPoint& BSSRDFSample::get_incoming_point() const
+inline const foundation::Basis3d& BSSRDFSample::get_sample_basis() const
 {
-    return m_incoming_point;
+    return m_sample_basis;
+}
+
+inline foundation::Basis3d& BSSRDFSample::get_sample_basis()
+{
+    return m_sample_basis;
+}
+
+inline size_t BSSRDFSample::get_channel() const
+{
+    return m_channel;
+}
+
+inline void BSSRDFSample::set_channel(size_t ch)
+{
+    m_channel = ch;
+}
+
+inline const foundation::Vector3d&BSSRDFSample::get_origin() const
+{
+    return m_origin;
+}
+
+inline void BSSRDFSample::set_origin(const foundation::Vector3d& origin)
+{
+    m_origin = origin;
+}
+
+inline bool BSSRDFSample::get_use_offset_origin() const
+{
+    return m_use_offset_origin;
+}
+
+inline void BSSRDFSample::set_use_offset_origin(bool b)
+{
+    m_use_offset_origin = b;
+}
+
+inline double BSSRDFSample::get_max_distance() const
+{
+    return m_max_distance;
+}
+
+inline void BSSRDFSample::set_max_distance(double max_distance)
+{
+    m_max_distance = max_distance;
 }
 
 }       // namespace renderer
