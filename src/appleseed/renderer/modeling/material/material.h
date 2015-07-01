@@ -45,6 +45,7 @@
 namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class Assembly; }
 namespace renderer      { class BSDF; }
+namespace renderer      { class BSSRDF; }
 namespace renderer      { class EDF; }
 namespace renderer      { class IBasisModifier; }
 namespace renderer      { class MessageContext; }
@@ -82,6 +83,9 @@ class APPLESEED_DLLSYMBOL Material
     // Return the name the BSDF bound to this material, or 0 if the material doesn't have one.
     const char* get_bsdf_name() const;
 
+    // Return the name the BSSRDF bound to this material, or 0 if the material doesn't have one.
+    const char* get_bssrdf_name() const;
+
     // Return the name the EDF bound to this material, or 0 if the material doesn't have one.
     const char* get_edf_name() const;
 
@@ -114,6 +118,10 @@ class APPLESEED_DLLSYMBOL Material
     const BSDF* get_bsdf() const;
     const BSDF* get_uncached_bsdf() const;
 
+    // Return the BSSRDF of the material, or 0 if the material doesn't have one.
+    const BSSRDF* get_bssrdf() const;
+    const BSSRDF* get_uncached_bssrdf() const;
+
     // Return the EDF of the material, or 0 if the material doesn't have one.
     const EDF* get_edf() const;
     virtual const EDF* get_uncached_edf() const;
@@ -138,6 +146,7 @@ class APPLESEED_DLLSYMBOL Material
     bool                            m_shade_alpha_cutouts;
     const SurfaceShader*            m_surface_shader;
     const BSDF*                     m_bsdf;
+    const BSSRDF*                   m_bssrdf;
     const EDF*                      m_edf;
     const Source*                   m_alpha_map;
     const IBasisModifier*           m_basis_modifier;
@@ -173,6 +182,11 @@ inline const SurfaceShader* Material::get_surface_shader() const
 inline const BSDF* Material::get_bsdf() const
 {
     return m_bsdf;
+}
+
+inline const BSSRDF* Material::get_bssrdf() const
+{
+    return m_bssrdf;
 }
 
 inline const EDF* Material::get_edf() const

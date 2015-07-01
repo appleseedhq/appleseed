@@ -219,6 +219,23 @@ class APPLESEED_ALIGN(16) CompositeEmissionClosure
 
 
 //
+// Composite OSL subsurface closure.
+//
+
+class APPLESEED_ALIGN(16) CompositeSubsurfaceClosure
+  : public foundation::NonCopyable
+{
+  public:
+    explicit CompositeSubsurfaceClosure(const OSL::ClosureColor* ci);
+
+  private:
+    void process_closure_tree(
+        const OSL::ClosureColor*    closure,
+        const foundation::Color3f&  weight);
+};
+
+
+//
 // Utility functions.
 //
 

@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/bsdf/bsdf.h"
+#include "renderer/modeling/bssrdf/bssrdf.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/light/light.h"
 #include "renderer/modeling/material/material.h"
@@ -248,6 +249,7 @@ bool Assembly::on_frame_begin(
     success = success && invoke_on_frame_begin(project, texture_instances(), abort_switch);
     success = success && invoke_on_frame_begin(project, *this, surface_shaders(), abort_switch);
     success = success && invoke_on_frame_begin(project, *this, bsdfs(), abort_switch);
+    success = success && invoke_on_frame_begin(project, *this, bssrdfs(), abort_switch);
     success = success && invoke_on_frame_begin(project, *this, edfs(), abort_switch);
     success = success && invoke_on_frame_begin(project, *this, materials(), abort_switch);
     success = success && invoke_on_frame_begin(project, *this, lights(), abort_switch);
@@ -267,6 +269,7 @@ void Assembly::on_frame_end(const Project& project)
     invoke_on_frame_end(project, *this, lights());
     invoke_on_frame_end(project, *this, materials());
     invoke_on_frame_end(project, *this, edfs());
+    invoke_on_frame_end(project, *this, bssrdfs());
     invoke_on_frame_end(project, *this, bsdfs());
     invoke_on_frame_end(project, *this, surface_shaders());
     invoke_on_frame_end(project, texture_instances());
