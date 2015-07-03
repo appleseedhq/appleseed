@@ -138,6 +138,13 @@ namespace
         OSL::Vec3   N;
         float       alpha;
     };
+
+    struct SubsurfaceClosureParams
+    {
+        OSL::ustring    type;
+        OSL::Vec3       mean_free_path;
+        float           eta;
+    };
 }
 
 
@@ -676,7 +683,9 @@ void CompositeSubsurfaceClosure::process_closure_tree(
       case OSL::ClosureColor::COMPONENT:
         {
             const OSL::ClosureComponent* c = reinterpret_cast<const OSL::ClosureComponent*>(closure);
-            // TODO: handle subsurface closures here...
+
+            if (c->id == SubsurfaceID)
+                ; // TODO: handle subsurface closures here...
         }
         break;
 
@@ -826,6 +835,11 @@ void register_appleseed_closures(OSL::ShadingSystem& shading_system)
                                           CLOSURE_FINISH_PARAM(DiffuseBSDFClosureParams) } },
 
         { "transparent", TransparentID, { CLOSURE_FINISH_PARAM(EmptyClosureParams) } },
+
+        { "subsurface", SubsurfaceID, { CLOSURE_STRING_PARAM(SubsurfaceClosureParams, type),
+                                        CLOSURE_VECTOR_PARAM(SubsurfaceClosureParams, mean_free_path),
+                                        CLOSURE_FLOAT_PARAM(SubsurfaceClosureParams, eta),
+                                        CLOSURE_FINISH_PARAM(SubsurfaceClosureParams) } },
 
         { 0, 0, {} }    // mark end of the array
     };

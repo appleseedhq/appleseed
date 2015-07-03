@@ -90,20 +90,21 @@ enum ClosureID
     TranslucentID,
     VelvetID,
 
-    // Special closures.
-    BackgroundID,
-    DebugID,
-    EmissionID,
-    HoldoutID,
-    TransparentID,
-
-    // Microfacets shoud always be last.
     MicrofacetID,
     MicrofacetBeckmannReflectionID,
     MicrofacetBlinnReflectionID,
     MicrofacetGGXReflectionID,
     MicrofacetBeckmannRefractionID,
     MicrofacetGGXRefractionID,
+
+    SubsurfaceID,
+
+    // Special closures.
+    BackgroundID,
+    DebugID,
+    EmissionID,
+    HoldoutID,
+    TransparentID,
 
     NumClosuresIDs
 };

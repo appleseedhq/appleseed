@@ -107,8 +107,9 @@ namespace
         {
             BSSRDF::evaluate_inputs(shading_context, input_evaluator, shading_point, offset);
 
+            char* ptr = reinterpret_cast<char*>(input_evaluator.data());
             DirectionalDipoleBSSRDFInputValues* values =
-                reinterpret_cast<DirectionalDipoleBSSRDFInputValues*>(input_evaluator.data());
+                reinterpret_cast<DirectionalDipoleBSSRDFInputValues*>(ptr + offset);
 
             values->m_mean_free_path *= static_cast<float>(values->m_mean_free_path_multiplier);
 
