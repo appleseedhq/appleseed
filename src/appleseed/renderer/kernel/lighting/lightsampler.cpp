@@ -374,22 +374,22 @@ void LightSampler::collect_emitting_triangles(
 
                 for (size_t side = 0; side < 2; ++side)
                 {
-                    // Retrieve the material; skip sides without a material.
+                    // Retrieve the material; skip sides without a material or without emission.
                     const Material* material = side == 0 ? front_material : back_material;
-                    if (material == 0)
+                    if (material == 0 || material->has_emission() == false)
                         continue;
 
-                    // Retrieve the EDF; skip sides without a light-emitting material.
-                    const EDF* edf = material->get_uncached_edf();
-                    if (edf == 0)
-                        continue;
+                    // Retrieve the EDF and get the importance multiplier.
+                    double importance_multiplier = 1.0;
+                    if (const EDF* edf = material->get_uncached_edf())
+                        importance_multiplier = edf->get_uncached_importance_multiplier();
 
                     // Accumulate the object area for OSL shaders.
                     object_area += area;
 
                     // Compute the probability density of this triangle.
                     const double triangle_importance = m_params.m_importance_sampling ? area : 1.0;
-                    const double triangle_prob = triangle_importance * edf->get_uncached_importance_multiplier();
+                    const double triangle_prob = triangle_importance * importance_multiplier;
 
                     // Create a light-emitting triangle.
                     EmittingTriangle emitting_triangle;
