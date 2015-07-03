@@ -32,6 +32,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/api/bsdf.h"
+#include "renderer/api/bssrdf.h"
 #include "renderer/api/color.h"
 #include "renderer/api/edf.h"
 #include "renderer/api/environmentedf.h"
@@ -151,6 +152,7 @@ StringDictionary EntityBrowser<Assembly>::get_entities(const string& type) const
 {
     StringDictionary entities =
         type == "bsdf" ? build_entity_dictionary(m_assembly.bsdfs()) :
+        type == "bssrdf" ? build_entity_dictionary(m_assembly.bssrdfs()) :
         type == "edf" ? build_entity_dictionary(m_assembly.edfs()) :
         type == "material" ? build_entity_dictionary(m_assembly.materials()) :
         type == "surface_shader" ? build_entity_dictionary(m_assembly.surface_shaders()) :

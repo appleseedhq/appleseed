@@ -345,6 +345,57 @@ bool Intersector::trace_probe(
     return visitor.hit();
 }
 
+bool Intersector::trace_sss(
+    const ShadingRay&               ray,
+    ShadingPoint&                   shading_point,
+    const ShadingPoint&             parent_shading_point,
+    const bool                      offset_origin) const
+{
+    // Trace the ray.
+    ShadingPoint up_shading_point;
+    trace_facing(
+        ray,
+        up_shading_point,
+        offset_origin ? &parent_shading_point : 0);
+
+    // Discard objects with different materials.
+    if (up_shading_point.hit())
+    {
+        if (up_shading_point.get_material() != parent_shading_point.get_material())
+            up_shading_point.clear();
+    }
+
+    // Trace the opposite ray.
+    ShadingRay opposite_ray(ray);
+    opposite_ray.m_dir = -opposite_ray.m_dir;
+
+    ShadingPoint down_shading_point;
+    trace_facing(
+        ray,
+        down_shading_point,
+        offset_origin ? &parent_shading_point : 0);
+
+    // Discard objects with different materials.
+    if (down_shading_point.hit())
+    {
+        if (down_shading_point.get_material() != parent_shading_point.get_material())
+            down_shading_point.clear();
+    }
+
+    // Keep the nearest hit, if any.
+    if (up_shading_point.hit() && down_shading_point.hit())
+    {
+        shading_point =
+            up_shading_point.get_distance() < down_shading_point.get_distance() ? up_shading_point : down_shading_point;
+    }
+    else if (up_shading_point.hit())
+        shading_point = up_shading_point;
+    else
+        shading_point = down_shading_point;
+
+    return shading_point.hit();
+}
+
 void Intersector::manufacture_hit(
     ShadingPoint&                       shading_point,
     const ShadingRay&                   shading_ray,
@@ -369,6 +420,21 @@ void Intersector::manufacture_hit(
     shading_point.m_region_index = region_index;
     shading_point.m_primitive_index = primitive_index;
     shading_point.m_triangle_support_plane = triangle_support_plane;
+}
+
+void Intersector::trace_facing(
+    const ShadingRay&               ray,
+    ShadingPoint&                   shading_point,
+    const ShadingPoint*             parent_shading_point) const
+{
+    const ShadingPoint* p = parent_shading_point;
+    while (trace(ray, shading_point, p))
+    {
+        if (dot(ray.m_dir, shading_point.get_shading_normal()) > 0.0)
+            break;
+
+        p = &shading_point;
+    }
 }
 
 namespace

@@ -60,6 +60,7 @@ namespace
           : Material(name, params)
         {
             m_inputs.declare("bsdf", InputFormatEntity, "");
+            m_inputs.declare("bssrdf", InputFormatEntity, "");
             m_inputs.declare("edf", InputFormatEntity, "");
             m_inputs.declare("alpha_map", InputFormatScalar, "");
             m_inputs.declare("displacement_map", InputFormatSpectralReflectance, "");
@@ -86,6 +87,7 @@ namespace
             const EntityDefMessageContext context("material", this);
 
             m_bsdf = get_uncached_bsdf();
+            m_bssrdf = get_uncached_bssrdf();
             m_edf = get_uncached_edf();
 
             if (!create_basis_modifier(context))
@@ -141,6 +143,14 @@ DictionaryArray GenericMaterialFactory::get_input_metadata() const
             .insert("label", "BSDF")
             .insert("type", "entity")
             .insert("entity_types", Dictionary().insert("bsdf", "BSDF"))
+            .insert("use", "optional"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "bssrdf")
+            .insert("label", "BSSRDF")
+            .insert("type", "entity")
+            .insert("entity_types", Dictionary().insert("bssrdf", "BSSRDF"))
             .insert("use", "optional"));
 
     metadata.push_back(

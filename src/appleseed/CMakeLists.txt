@@ -1290,6 +1290,12 @@ set (renderer_modeling_bssrdf_sources
     renderer/modeling/bssrdf/directionaldipolebssrdf.h
     renderer/modeling/bssrdf/ibssrdffactory.h
 )
+if (WITH_OSL)
+    list (APPEND renderer_modeling_bssrdf_sources
+        renderer/modeling/bssrdf/oslbssrdf.cpp
+        renderer/modeling/bssrdf/oslbssrdf.h
+    )
+endif ()
 list (APPEND appleseed_sources
     ${renderer_modeling_bssrdf_sources}
 )

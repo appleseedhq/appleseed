@@ -47,9 +47,9 @@
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
+namespace foundation    { class LightingConditions; }
 namespace renderer      { class Assembly; }
 namespace renderer      { class InputEvaluator; }
-namespace renderer      { class Intersector; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
 namespace renderer      { class ShadingContext; }
@@ -57,20 +57,6 @@ namespace renderer      { class ShadingPoint; }
 
 namespace renderer
 {
-
-//
-// BSSRDF input values.
-//
-
-APPLESEED_DECLARE_INPUT_VALUES(BSSRDFInputValues)
-{
-    Spectrum    m_sigma_a;          // Absorption coefficient.
-    Spectrum    m_sigma_s_prime;    // Reduced scattering coefficient.
-
-    // Not so sure about the next ones...
-    double      m_g;                // Anisotropy.
-    double      m_ior;              // Index of refraction.
-};
 
 
 //
@@ -128,16 +114,52 @@ class APPLESEED_DLLSYMBOL BSSRDF
     virtual size_t compute_input_data_size(
         const Assembly&             assembly) const;
 
+    // Evaluate the inputs of this BSSRDF and of its child BSSRDFs, if any.
+    // Input values are stored in the input evaluator. This method is called
+    // once per shading point and pair of incoming/outgoing directions.
     virtual void evaluate_inputs(
         const ShadingContext&       shading_context,
         InputEvaluator&             input_evaluator,
         const ShadingPoint&         shading_point,
         const size_t                offset = 0) const;
 
-    virtual void sample(
+    // Sample the BSSRDF.
+    void sample(
+        const void*     data,
+        BSSRDFSample&   s) const;
+
+    // Evaluate the BSSRDF for a given pair of points and directions.
+    virtual void evaluate(
         const void*                 data,
-        const Intersector&          intersector,
-        BSSRDFSample&               sample) const;
+        const ShadingPoint&         outgoing_point,
+        const foundation::Vector3d& outgoing_dir,
+        const ShadingPoint&         incoming_point,
+        const foundation::Vector3d& incoming_dir,
+        Spectrum&                   value) const = 0;
+
+    double pdf(
+        const void*                 data,
+        const ShadingPoint&         outgoing_point,
+        const ShadingPoint&         incoming_point,
+        const foundation::Basis3d&  basis,
+        const size_t                channel) const;
+
+  private:
+    virtual foundation::Vector2d sample(
+        const void*                 data,
+        const foundation::Vector3d& r,
+        size_t&                     ch) const = 0;
+
+    virtual double pdf(
+        const void*     data,
+        const size_t    channel,
+        const double    dist) const = 0;
+
+  protected:
+    static double fresnel_moment_1(const double eta);
+    static double fresnel_moment_2(const double eta);
+
+    const foundation::LightingConditions* m_lighting_conditions;
 };
 
 }       // namespace renderer

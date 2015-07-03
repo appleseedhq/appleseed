@@ -60,14 +60,21 @@ namespace renderer
 // Directional dipole BSSRDF input values.
 //
 
-// The layout of DirectionalDipoleBSSRDFInputValues matches the layout of BSSRDFInputValues.
-// In evaluate_inputs, these values could be converted to BSSRDFInputValues in place.
 APPLESEED_DECLARE_INPUT_VALUES(DirectionalDipoleBSSRDFInputValues)
 {
-    Spectrum    m_diffuse;
-    Spectrum    m_mfp;
-    double      m_g;
-    double      m_ior;
+    Spectrum    m_reflectance;
+    Spectrum    m_mean_free_path;
+    double      m_mean_free_path_multiplier;
+    double      m_anisotropy;
+    double      m_from_ior;
+    double      m_to_ior;
+
+    // Precomputed values.
+    Spectrum    m_channel_weights;
+    Spectrum    m_channel_cdf;
+    double      m_max_mean_free_path;
+    Spectrum    m_sigma_a;
+    Spectrum    m_sigma_s_prime;
 };
 
 

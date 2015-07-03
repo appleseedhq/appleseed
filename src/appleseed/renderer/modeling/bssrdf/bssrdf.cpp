@@ -31,18 +31,22 @@
 
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/input/inputevaluator.h"
+#include "renderer/modeling/project/project.h"
+
+// appleseed.foundation headers.
+#include "foundation/image/colorspace.h"
 
 using namespace foundation;
 
 /*
-
 Quick ref:
 ----------
 
-    sigma_a     absorption coeff.
-    sigma_s     scattering coeff.
-    g           anisotropy
+    sigma_a         absorption coeff.
+    sigma_s         scattering coeff.
+    g               anisotropy
 
     sigma_t         extinction coeff.           -> sigma_a + sigma_s
     sigma_s_prime   reduced scattering coeff.   -> sigma_s * (1 - g)
@@ -52,8 +56,6 @@ Quick ref:
     Texture mapping:
     ----------------
 
-    Fdr             fresnel diffuse reflectance
-    A                                           -> (1 + Fdr) / (1 - Fdr)
     alpha_prime                                 -> sigma_s_prime / sigma_t_prime
     ld              mean free path              -> 1 / sigma_tr
 
@@ -65,60 +67,6 @@ Quick ref:
 namespace renderer
 {
 
-namespace
-{
-
-// A Better Dipole, Eugene d’Eon
-
-template<typename T>
-T C1(const T eta)
-{
-    if (eta >= T(1.0))
-        return (T(-9.23372) + eta * (T(22.2272) + eta * (T(-20.9292) + eta * (T(10.2291) + eta * (T(-2.54396) + T(0.254913) * eta))))) * T(0.5);
-    else
-        return (T(0.919317) + eta * (T(-3.4793) + eta * (T(6.75335) + eta * (T(-7.80989) + eta *(T(4.98554) - T(1.36881) * eta))))) * T(0.5);
-}
-
-template<typename T>
-T C2(const T eta)
-{
-    T r = T(-1641.1) + eta * (T(1213.67) + eta * (T(-568.556) + eta * (T(164.798) + eta * (T(-27.0181) + T(1.91826) * eta))));
-    r += (((T(135.926) / eta) - T(656.175)) / eta + T(1376.53)) / eta;
-    return r * T(0.333333);
-}
-
-// Texture mapping for the Better Dipole model, Christophe Hery
-
-template<typename T>
-T compute_rd(T alpha_prime, T two_c1, T three_c2)
-{
-    T cphi = T(0.25) * (T(1.0) - two_c1);
-    T ce = T(0.5) * (T(1.0) - three_c2);
-    T mu_tr_D = std::sqrt((T(1.0) - alpha_prime) * (T(2.0) - alpha_prime) / T(3.0));
-    T myexp = std::exp(-((T(1.0) + three_c2) / cphi) * mu_tr_D);
-    return T(0.5) * square(alpha_prime) * std::exp(-std::sqrt(T(3.0) * (T(1.0) - alpha_prime) / (T(2.0) - alpha_prime))) * (ce * (T(1.0) + myexp) + cphi / mu_tr_D * (T(1.0) - myexp));
-}
-
-template<typename T>
-T compute_alpha_prime(T rd, T C1, T C2)
-{
-    const T C12 = T(2.0) * C1;
-    const T C23 = T(3.0) * C2;
-
-    T x0 = T(0), x1 = T(1), xmid;
-
-    // For now simple bisection.
-    for (int i = 0, iters = 50; i < iters; ++i)
-    {
-        xmid = T(0.5) * (x0 + x1);
-        const T f = compute_rd(xmid, C12, C23);
-        f < rd ? x0 = xmid : x1 = xmid;
-    }
-
-    return xmid;
-}
-
-}
 
 //
 // BSSRDF class implementation.
@@ -138,6 +86,7 @@ BSSRDF::BSSRDF(
     const char*             name,
     const ParamArray&       params)
   : ConnectableEntity(g_class_uid, params)
+  , m_lighting_conditions(0)
 {
     set_name(name);
 }
@@ -147,6 +96,7 @@ bool BSSRDF::on_frame_begin(
     const Assembly&         assembly,
     IAbortSwitch*           abort_switch)
 {
+    m_lighting_conditions = &project.get_frame()->get_lighting_conditions();
     return true;
 }
 
@@ -154,6 +104,7 @@ void BSSRDF::on_frame_end(
     const Project&          project,
     const Assembly&         assembly)
 {
+    m_lighting_conditions = 0;
 }
 
 size_t BSSRDF::compute_input_data_size(
@@ -172,11 +123,92 @@ void BSSRDF::evaluate_inputs(
 }
 
 void BSSRDF::sample(
-    const void*                 data,
-    const Intersector&          intersector,
-    BSSRDFSample&               sample) const
+    const void*     data,
+    BSSRDFSample&   s) const
 {
-    // sample a point near sample.m_shading_point here...
+    s.get_sampling_context().split_in_place(4, 1);
+    const Vector4d r = s.get_sampling_context().next_vector2<4>();
+
+    Basis3d& basis(s.get_sample_basis());
+
+    if (r[0] <= 0.5)
+    {
+        basis = s.get_shading_point().get_shading_basis();
+        s.set_use_offset_origin(true);
+    }
+    else if (r[0] <= 0.75)
+    {
+        basis.build(
+            basis.get_tangent_u(),
+            basis.get_normal(),
+            basis.get_tangent_v());
+    }
+    else
+    {
+        basis.build(
+            basis.get_tangent_v(),
+            basis.get_tangent_u(),
+            basis.get_normal());
+    }
+
+    size_t ch;
+    const Vector2d d = sample(data, Vector3d(r[1], r[2], r[3]), ch);
+    s.set_channel(ch);
+    s.set_origin(
+        s.get_shading_point().get_point() +
+        basis.get_tangent_u() * d.x +
+        basis.get_tangent_v() * d.y);
+}
+
+double BSSRDF::pdf(
+    const void*         data,
+    const ShadingPoint& outgoing_point,
+    const ShadingPoint& incoming_point,
+    const Basis3d&      basis,
+    const size_t        channel) const
+{
+    // From PBRT3.
+    const Vector3d d = outgoing_point.get_point() - incoming_point.get_point();
+    const Vector3d dlocal(
+        dot(basis.get_tangent_u(), d),
+        dot(basis.get_tangent_v(), d),
+        dot(basis.get_normal()   , d));
+
+    const Vector3d& n = incoming_point.get_shading_normal();
+    const Vector3d nlocal(
+        dot(basis.get_tangent_u(), n),
+        dot(basis.get_tangent_v(), n),
+        dot(basis.get_normal()   , n));
+
+    const double axis_prob[3] = {.25f, .25f, .5f};
+    const double dist_sqr[3] = {
+        square(dlocal.y) + square(dlocal.z),
+        square(dlocal.z) + square(dlocal.x),
+        square(dlocal.x) + square(dlocal.y)};
+
+    double result = 0.0;
+    for (size_t i = 0; i < 3; ++i)
+        result += 0.5 * pdf(data, channel, std::sqrt(dist_sqr[i])) * axis_prob[i] * std::abs(nlocal[i]);
+
+    return result;
+}
+
+// A better dipole, Eugene d’Eon
+// http://www.eugenedeon.com/papers/betterdipole.pdf
+
+double BSSRDF::fresnel_moment_1(const double eta)
+{
+    if (eta >= 1.0)
+        return (-9.23372 + eta * (22.2272 + eta * (-20.9292 + eta * (10.2291 + eta * (-2.54396 + 0.254913 * eta))))) * 0.5;
+    else
+        return (0.919317 + eta * (-3.4793 + eta * (6.75335 + eta * (-7.80989 + eta *(4.98554 - 1.36881 * eta))))) * 0.5;
+}
+
+double BSSRDF::fresnel_moment_2(const double eta)
+{
+    double r = -1641.1 + eta * (1213.67 + eta * (-568.556 + eta * (164.798 + eta * (-27.0181 + 1.91826 * eta))));
+    r += (((135.926 / eta) - 656.175) / eta + 1376.53) / eta;
+    return r * 0.33333333;
 }
 
 }   // namespace renderer

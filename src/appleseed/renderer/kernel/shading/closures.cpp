@@ -138,6 +138,13 @@ namespace
         OSL::Vec3   N;
         float       alpha;
     };
+
+    struct SubsurfaceClosureParams
+    {
+        OSL::ustring    type;
+        OSL::Vec3       mean_free_path;
+        float           eta;
+    };
 }
 
 
@@ -613,8 +620,7 @@ void CompositeEmissionClosure::process_closure_tree(
       case OSL::ClosureColor::MUL:
         {
             const OSL::ClosureMul* c = reinterpret_cast<const OSL::ClosureMul*>(closure);
-            const Color3f w = weight * Color3f(c->weight);
-            process_closure_tree(c->closure, w);
+            process_closure_tree(c->closure, weight * Color3f(c->weight));
         }
         break;
 
@@ -629,10 +635,57 @@ void CompositeEmissionClosure::process_closure_tree(
       case OSL::ClosureColor::COMPONENT:
         {
             const OSL::ClosureComponent* c = reinterpret_cast<const OSL::ClosureComponent*>(closure);
-            const Color3f w = weight * Color3f(c->w);
 
             if (c->id == EmissionID)
-                m_total_weight += w;
+                m_total_weight += weight * Color3f(c->w);
+        }
+        break;
+
+      assert_otherwise;
+    }
+}
+
+
+//
+// CompositeSubsurfaceClosure class implementation.
+//
+
+CompositeSubsurfaceClosure::CompositeSubsurfaceClosure(
+    const OSL::ClosureColor*    ci)
+{
+    process_closure_tree(ci, Color3f(1.0f));
+}
+
+void CompositeSubsurfaceClosure::process_closure_tree(
+    const OSL::ClosureColor*    closure,
+    const foundation::Color3f&  weight)
+{
+    if (closure == 0)
+        return;
+
+    switch (closure->type)
+    {
+      case OSL::ClosureColor::MUL:
+        {
+            const OSL::ClosureMul* c = reinterpret_cast<const OSL::ClosureMul*>(closure);
+            process_closure_tree(c->closure, weight * Color3f(c->weight));
+        }
+        break;
+
+      case OSL::ClosureColor::ADD:
+        {
+            const OSL::ClosureAdd* c = reinterpret_cast<const OSL::ClosureAdd*>(closure);
+            process_closure_tree(c->closureA, weight);
+            process_closure_tree(c->closureB, weight);
+        }
+        break;
+
+      case OSL::ClosureColor::COMPONENT:
+        {
+            const OSL::ClosureComponent* c = reinterpret_cast<const OSL::ClosureComponent*>(closure);
+
+            if (c->id == SubsurfaceID)
+                ; // TODO: handle subsurface closures here...
         }
         break;
 
@@ -782,6 +835,11 @@ void register_appleseed_closures(OSL::ShadingSystem& shading_system)
                                           CLOSURE_FINISH_PARAM(DiffuseBSDFClosureParams) } },
 
         { "transparent", TransparentID, { CLOSURE_FINISH_PARAM(EmptyClosureParams) } },
+
+        { "subsurface", SubsurfaceID, { CLOSURE_STRING_PARAM(SubsurfaceClosureParams, type),
+                                        CLOSURE_VECTOR_PARAM(SubsurfaceClosureParams, mean_free_path),
+                                        CLOSURE_FLOAT_PARAM(SubsurfaceClosureParams, eta),
+                                        CLOSURE_FINISH_PARAM(SubsurfaceClosureParams) } },
 
         { 0, 0, {} }    // mark end of the array
     };

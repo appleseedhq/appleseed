@@ -90,20 +90,21 @@ enum ClosureID
     TranslucentID,
     VelvetID,
 
-    // Special closures.
-    BackgroundID,
-    DebugID,
-    EmissionID,
-    HoldoutID,
-    TransparentID,
-
-    // Microfacets shoud always be last.
     MicrofacetID,
     MicrofacetBeckmannReflectionID,
     MicrofacetBlinnReflectionID,
     MicrofacetGGXReflectionID,
     MicrofacetBeckmannRefractionID,
     MicrofacetGGXRefractionID,
+
+    SubsurfaceID,
+
+    // Special closures.
+    BackgroundID,
+    DebugID,
+    EmissionID,
+    HoldoutID,
+    TransparentID,
 
     NumClosuresIDs
 };
@@ -215,6 +216,23 @@ class APPLESEED_ALIGN(16) CompositeEmissionClosure
 
     DiffuseEDFInputValues   m_edf_values;
     foundation::Color3f     m_total_weight;
+};
+
+
+//
+// Composite OSL subsurface closure.
+//
+
+class APPLESEED_ALIGN(16) CompositeSubsurfaceClosure
+  : public foundation::NonCopyable
+{
+  public:
+    explicit CompositeSubsurfaceClosure(const OSL::ClosureColor* ci);
+
+  private:
+    void process_closure_tree(
+        const OSL::ClosureColor*    closure,
+        const foundation::Color3f&  weight);
 };
 
 
