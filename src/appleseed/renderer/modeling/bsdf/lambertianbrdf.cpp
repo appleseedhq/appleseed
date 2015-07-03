@@ -111,6 +111,8 @@ namespace
 
             // Set the scattering mode.
             sample.set_mode(BSDFSample::Diffuse);
+
+            sample.compute_reflected_differentials();
         }
 
         FORCE_INLINE virtual double evaluate(

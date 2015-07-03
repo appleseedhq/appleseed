@@ -174,6 +174,7 @@ namespace
             assert(sample.get_probability() > 0.0);
             sample.set_mode(BSDFSample::Diffuse);
             sample.set_incoming(incoming);
+            sample.compute_reflected_differentials();
         }
 
         double evaluate(
@@ -260,6 +261,7 @@ namespace
             assert(sample.get_probability() > 0.0);
             sample.set_mode(BSDFSample::Diffuse);
             sample.set_incoming(incoming);
+            sample.compute_reflected_differentials();
         }
 
         double evaluate(

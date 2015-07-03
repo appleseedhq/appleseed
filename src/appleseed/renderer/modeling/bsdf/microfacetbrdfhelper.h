@@ -95,6 +95,7 @@ class MicrofacetBRDFHelper
         sample.set_probability(mdf.pdf(wo, m, alpha_x, alpha_y) / (T(4.0) * cos_oh));
         sample.set_mode(BSDFSample::Glossy);
         sample.set_incoming(incoming);
+        sample.compute_reflected_differentials();
     }
 
     template <typename MDF, typename FresnelFun>
