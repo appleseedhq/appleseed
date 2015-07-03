@@ -116,7 +116,7 @@ class APPLESEED_DLLSYMBOL Material
 
     // Return the EDF of the material, or 0 if the material doesn't have one.
     const EDF* get_edf() const;
-    virtual const EDF* get_uncached_edf() const;
+    const EDF* get_uncached_edf() const;
 
     // Return the source bound to the alpha map input, or 0 if the material doesn't have an alpha map.
     const Source* get_alpha_map() const;

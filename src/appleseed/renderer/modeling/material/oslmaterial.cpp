@@ -133,14 +133,6 @@ namespace
             return false;
         }
 
-        virtual const EDF* get_uncached_edf() const APPLESEED_OVERRIDE
-        {
-            if (has_emission())
-                return m_osl_edf.get();
-
-            return 0;
-        }
-
       private:
         auto_release_ptr<BSDF>  m_osl_bsdf;
         auto_release_ptr<EDF>   m_osl_edf;
