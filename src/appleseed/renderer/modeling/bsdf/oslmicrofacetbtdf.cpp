@@ -186,6 +186,7 @@ namespace
             sample.set_probability(m_mdf->pdf(wo, m, values->m_ax, values->m_ay) * dwh_dwo);
             sample.set_mode(BSDFSample::Glossy);
             sample.set_incoming(incoming);
+            sample.compute_transmitted_differentials(eta);
         }
 
         FORCE_INLINE virtual double evaluate(

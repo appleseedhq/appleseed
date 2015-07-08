@@ -93,6 +93,10 @@ class BSDFSample
     const Spectrum& value() const;
     Spectrum& value();
 
+    // Ray differentials.
+    void compute_reflected_differentials();
+    void compute_transmitted_differentials(const double eta);
+
     // Test for the presence of specific scattering modes.
     static bool has_diffuse(const ScatteringMode mode);
     static bool has_glossy(const ScatteringMode mode);
@@ -101,6 +105,14 @@ class BSDFSample
     static bool has_glossy_or_specular(const ScatteringMode mode);
 
   private:
+    void compute_normal_derivatives(
+        foundation::Vector3d&   dndx,
+        foundation::Vector3d&   dndy,
+        double&                 ddndx,
+        double&                 ddndy) const;
+
+    void apply_pdf_differentials_heuristic();
+
     const ShadingPoint&     m_shading_point;        // shading point at which the sampling is done
     SamplingContext&        m_sampling_context;     // sampling context used to sample BSDFs
     foundation::Dual3d      m_outgoing;             // world space outgoing direction, unit-length

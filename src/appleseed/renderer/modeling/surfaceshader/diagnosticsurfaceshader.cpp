@@ -56,6 +56,7 @@
 #include "foundation/utility/containers/specializedarrays.h"
 
 // Standard headers.
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 
@@ -94,7 +95,8 @@ const KeyValuePair<const char*, DiagnosticSurfaceShader::ShadingMode>
     { "object_instances",           ObjectInstances },
     { "regions",                    Regions },
     { "primitives",                 Primitives },
-    { "materials",                  Materials }
+    { "materials",                  Materials },
+    { "ray_spread",                 RaySpread }
 };
 
 const KeyValuePair<const char*, const char*> DiagnosticSurfaceShader::ShadingModeNames[] =
@@ -111,14 +113,15 @@ const KeyValuePair<const char*, const char*> DiagnosticSurfaceShader::ShadingMod
     { "world_space_position",       "World Space Position" },
     { "sides",                      "Sides" },
     { "depth",                      "Depth" },
-    { "screen_space_wireframe" ,    "Screen-space Wireframe" },
-    { "world_space_wireframe" ,     "World-space Wireframe" },
+    { "screen_space_wireframe",     "Screen-space Wireframe" },
+    { "world_space_wireframe",      "World-space Wireframe" },
     { "ambient_occlusion",          "Ambient Occlusion" },
     { "assembly_instances",         "Assembly Instances" },
     { "object_instances",           "Object Instances" },
     { "regions",                    "Regions" },
     { "primitives",                 "Primitives" },
-    { "materials",                  "Materials" }
+    { "materials",                  "Materials" },
+    { "ray_spread",                 "Ray Spread" }
 };
 
 DiagnosticSurfaceShader::DiagnosticSurfaceShader(
@@ -458,6 +461,67 @@ void DiagnosticSurfaceShader::evaluate(
             if (material)
                 shading_result.set_main_to_linear_rgb(integer_to_color(material->get_uid()));
             else shading_result.set_main_to_opaque_pink_linear_rgba();
+        }
+        break;
+
+      case RaySpread:
+        {
+            const ShadingRay& ray = shading_point.get_ray();
+            if (!ray.m_has_differentials)
+                return;
+
+            const Material* material = shading_point.get_material();
+            if (material)
+            {
+#ifdef APPLESEED_WITH_OSL
+                // Execute the OSL shader if there is one.
+                if (material->get_osl_surface())
+                {
+                    shading_context.execute_osl_shading(
+                        *material->get_osl_surface(),
+                        shading_point);
+                }
+#endif
+
+                const BSDF* bsdf = material->get_bsdf();
+                if (bsdf)
+                {
+                    InputEvaluator input_evaluator(shading_context.get_texture_cache());
+                    bsdf->evaluate_inputs(
+                        shading_context,
+                        input_evaluator,
+                        shading_point);
+
+                    const Dual3d outgoing(
+                        -ray.m_dir,
+                        ray.m_dir - ray.m_rx.m_dir,
+                        ray.m_dir - ray.m_ry.m_dir);
+
+                    BSDFSample sample(
+                        shading_point,
+                        sampling_context,
+                        outgoing);
+
+                    bsdf->sample(
+                        input_evaluator.data(),
+                        false,
+                        false,
+                        sample);
+
+                    if (!sample.get_incoming().has_derivatives())
+                        return;
+
+                    // The 3.0 factor is choosen so that ray spread
+                    // from lambertian BRDFs is approx. 1.
+                    const double spread =
+                        max(
+                            norm(sample.get_incoming().get_dx()),
+                            norm(sample.get_incoming().get_dy())) * 3.0;
+
+                    shading_result.set_main_to_linear_rgb(
+                        Color3f(static_cast<float>(spread)));
+                }
+            }
         }
         break;
 

@@ -1229,6 +1229,7 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/bsdffactoryregistrar.h
     renderer/modeling/bsdf/bsdfmix.cpp
     renderer/modeling/bsdf/bsdfmix.h
+    renderer/modeling/bsdf/bsdfsample.cpp
     renderer/modeling/bsdf/bsdfsample.h
     renderer/modeling/bsdf/bsdftraits.h
     renderer/modeling/bsdf/bsdfwrapper.h

@@ -176,6 +176,7 @@ namespace
             sample.set_mode(BSDFSample::Glossy);
 
             sample.set_incoming(incoming);
+            sample.compute_reflected_differentials();
         }
 
         FORCE_INLINE virtual double evaluate(

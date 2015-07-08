@@ -102,6 +102,7 @@ namespace
             const double cos_theta_t2 = 1.0 - square(eta) * sin_theta_i2;
 
             Vector3d incoming;
+            bool refract_differentials = true;
 
             if (cos_theta_t2 < 0.0)
             {
@@ -109,6 +110,7 @@ namespace
                 incoming = reflect(sample.get_outgoing_vector(), shading_normal);
                 sample.value() = values->m_transmittance;
                 sample.value() *= static_cast<float>(values->m_transmittance_multiplier);
+                refract_differentials = false;
             }
             else
             {
@@ -132,6 +134,7 @@ namespace
                     incoming = reflect(sample.get_outgoing_vector(), shading_normal);
                     sample.value() = values->m_reflectance;
                     sample.value() *= static_cast<float>(values->m_reflectance_multiplier);
+                    refract_differentials = false;
                 }
                 else
                 {
@@ -160,6 +163,11 @@ namespace
             sample.set_mode(BSDFSample::Specular);
 
             sample.set_incoming(incoming);
+
+            if (refract_differentials)
+                sample.compute_transmitted_differentials(eta);
+            else
+                sample.compute_reflected_differentials();
         }
 
         FORCE_INLINE virtual double evaluate(
