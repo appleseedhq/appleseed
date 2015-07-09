@@ -136,16 +136,16 @@ namespace
                     clamp(static_cast<double>(values->m_reflectance[i]), 0.0, 1.0), c1, c2);
 
                 sum_alpha_prime += alpha_prime;
-                values->m_channel_weights[i] = alpha_prime;
-                values->m_channel_cdf[i] = sum_alpha_prime;
+                values->m_channel_weights[i] = static_cast<float>(alpha_prime);
+                values->m_channel_cdf[i] = static_cast<float>(sum_alpha_prime);
                 const double mfp = static_cast<double>(values->m_mean_free_path[i]);
                 values->m_max_mean_free_path = std::max(values->m_max_mean_free_path, mfp);
 
                 const double sigma_tr = 1.0 / mfp;
                 const double sigma_t_prime = sigma_tr / std::sqrt( 3.0 * (1.0 - alpha_prime));
 
-                values->m_sigma_s_prime[i] = alpha_prime * sigma_t_prime;
-                values->m_sigma_a[i] = sigma_t_prime - values->m_sigma_s_prime[i];
+                values->m_sigma_s_prime[i] = static_cast<float>(alpha_prime * sigma_t_prime);
+                values->m_sigma_a[i] = static_cast<float>(sigma_t_prime) - values->m_sigma_s_prime[i];
             }
 
             if (sum_alpha_prime > 0.0)
@@ -367,7 +367,7 @@ namespace
                     dv);
 
                 // Clamp negative values to zero.
-                result[i] += std::max(sp_i - sp_v, 0.0);
+                result[i] += std::max(static_cast<float>(sp_i - sp_v), 0.0f);
             }
         }
     };

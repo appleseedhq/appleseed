@@ -684,8 +684,9 @@ void CompositeSubsurfaceClosure::process_closure_tree(
         {
             const OSL::ClosureComponent* c = reinterpret_cast<const OSL::ClosureComponent*>(closure);
 
-            if (c->id == SubsurfaceID)
-                ; // TODO: handle subsurface closures here...
+            // TODO: handle subsurface closures here...
+            //if (c->id == SubsurfaceID)
+            //  ...
         }
         break;
 
