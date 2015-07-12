@@ -71,7 +71,7 @@ class InputEvaluator
     const void* data() const;
     void* data();
 
-    enum { DataSize = 8 * 1024 }; // bytes
+    enum { DataSize = 12 * 1024 }; // bytes
 
   private:
     SSE_ALIGN foundation::uint8     m_data[DataSize];

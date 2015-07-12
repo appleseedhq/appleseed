@@ -185,8 +185,11 @@ class ShadingPoint
     // Return the world space point velocity.
     const foundation::Vector3d& get_world_space_point_velocity() const;
 
-    // Return the material at the intersection point, or 0 if there is none.
+    // Return the material of the side (front or back) that was hit, at the intersection point, or 0 if there is none.
     const Material* get_material() const;
+
+    // Return the material of the opposite side to the side that was hit, at the intersection point, or 0 if there is none.
+    const Material* get_opposite_material() const;
 
     // Return the assembly instance that was hit.
     const AssemblyInstance& get_assembly_instance() const;
@@ -296,7 +299,7 @@ class ShadingPoint
         HasOriginalShadingNormal         = 1 << 9,
         HasShadingBasis                  = 1 << 10,
         HasWorldSpaceTriangleVertices    = 1 << 11,
-        HasMaterial                      = 1 << 12,
+        HasMaterials                     = 1 << 12,
         HasWorldSpacePointVelocity       = 1 << 13,
         HasAlpha                         = 1 << 14,
         HasScreenSpacePartialDerivatives = 1 << 15
@@ -335,6 +338,7 @@ class ShadingPoint
     mutable foundation::Vector3d        m_v0_w, m_v1_w, m_v2_w;         // world space triangle vertices
     mutable foundation::Vector3d        m_point_velocity;               // world space point velocity
     mutable const Material*             m_material;                     // material at intersection point
+    mutable const Material*             m_opposite_material;            // opposite material at intersection point
     mutable Alpha                       m_alpha;                        // opacity at intersection point
     mutable bool                        m_shade_alpha_cutouts;
 
@@ -370,6 +374,8 @@ class ShadingPoint
     void compute_world_space_point_velocity() const;
 
     void compute_alpha() const;
+
+    void fetch_materials() const;
 
 #ifdef APPLESEED_WITH_OSL
     void initialize_osl_shader_globals(
@@ -751,36 +757,30 @@ inline const Material* ShadingPoint::get_material() const
 {
     assert(hit());
 
-    if (!(m_members & HasMaterial))
+    if (!(m_members & HasMaterials))
     {
-        cache_source_geometry();
-
-        m_material = 0;
-
-        // Proceed with retrieving the material only if the hit primitive has one.
-        if (m_primitive_pa != Triangle::None)
-        {
-            // Retrieve material indices from the object instance.
-            const MaterialArray& materials =
-                get_side() == ObjectInstance::BackSide
-                    ? m_object_instance->get_back_materials()
-                    : m_object_instance->get_front_materials();
-
-            // Fetch the material.
-            if (static_cast<size_t>(m_primitive_pa) < materials.size())
-                m_material = materials[m_primitive_pa];
-        }
-
-        m_shade_alpha_cutouts = m_object->shade_alpha_cutouts();
-
-        if (m_material && m_material->shade_alpha_cutouts())
-            m_shade_alpha_cutouts = true;
+        fetch_materials();
 
         // The material at the intersection point is now available.
-        m_members |= HasMaterial;
+        m_members |= HasMaterials;
     }
 
     return m_material;
+}
+
+inline const Material* ShadingPoint::get_opposite_material() const
+{
+    assert(hit());
+
+    if (!(m_members & HasMaterials))
+    {
+        fetch_materials();
+
+        // The material at the intersection point is now available.
+        m_members |= HasMaterials;
+    }
+
+    return m_opposite_material;
 }
 
 inline const AssemblyInstance& ShadingPoint::get_assembly_instance() const
@@ -874,6 +874,46 @@ inline void ShadingPoint::cache_source_geometry() const
         fetch_source_geometry();
         m_members |= HasSourceGeometry;
     }
+}
+
+inline void ShadingPoint::fetch_materials() const
+{
+    cache_source_geometry();
+
+    m_material = 0;
+    m_opposite_material = 0;
+
+    // Proceed with retrieving the material only if the hit primitive has one.
+    if (m_primitive_pa != Triangle::None)
+    {
+        // Retrieve material indices from the object instance.
+        const MaterialArray* materials;
+        const MaterialArray* opposite_materials;
+
+        if (get_side() == ObjectInstance::BackSide)
+        {
+            materials = &m_object_instance->get_back_materials();
+            opposite_materials = &m_object_instance->get_front_materials();
+        }
+        else
+        {
+            materials = &m_object_instance->get_front_materials();
+            opposite_materials = &m_object_instance->get_back_materials();
+
+        }
+
+        // Fetch the materials.
+        if (static_cast<size_t>(m_primitive_pa) < materials->size())
+            m_material = (*materials)[m_primitive_pa];
+
+        if (static_cast<size_t>(m_primitive_pa) < opposite_materials->size())
+            m_opposite_material = (*opposite_materials)[m_primitive_pa];
+    }
+
+    m_shade_alpha_cutouts = m_object->shade_alpha_cutouts();
+
+    if (m_material && m_material->shade_alpha_cutouts())
+        m_shade_alpha_cutouts = true;
 }
 
 }       // namespace renderer

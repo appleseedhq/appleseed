@@ -31,6 +31,7 @@
 #include "shadingcontext.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/shading/closures.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #ifdef APPLESEED_WITH_OSL
 #include "renderer/modeling/shadergroup/shadergroup.h"
@@ -113,6 +114,28 @@ void ShadingContext::execute_osl_emission(
     const ShadingPoint&         shading_point) const
 {
     m_shadergroup_exec.execute_emission(shader_group, shading_point);
+}
+
+void ShadingContext::execute_osl_normal(
+    const ShaderGroup&          shader_group,
+    const ShadingPoint&         shading_point,
+    const void*                 data,
+    const double                s) const
+{
+    execute_osl_shading(shader_group, shading_point);
+    const CompositeSurfaceClosure* c =
+        reinterpret_cast<const CompositeSurfaceClosure*>(data);
+
+    if (c->get_num_closures())
+    {
+        const size_t index = c->choose_closure(s);
+        shading_point.set_shading_basis(
+            Basis3d(
+                c->get_closure_normal(index),
+                c->closure_has_tangent(index)
+                    ? c->get_closure_tangent(index)
+                    : shading_point.get_shading_basis().get_tangent_u()));
+    }
 }
 
 void ShadingContext::execute_osl_background(

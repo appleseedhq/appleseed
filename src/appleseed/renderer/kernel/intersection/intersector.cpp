@@ -345,40 +345,47 @@ bool Intersector::trace_probe(
     return visitor.hit();
 }
 
-bool Intersector::trace_sss(
+bool Intersector::trace_same_material(
     const ShadingRay&               ray,
-    ShadingPoint&                   shading_point,
     const ShadingPoint&             parent_shading_point,
-    const bool                      offset_origin) const
+    const bool                      offset_origin,
+    ShadingPoint&                   shading_point) const
 {
+    ShadingRay up_ray(ray);
+    ShadingRay down_ray(ray);
+    down_ray.m_dir = -down_ray.m_dir;
+
+    if (offset_origin)
+    {
+        parent_shading_point.refine_and_offset();
+        up_ray.m_org = parent_shading_point.get_offset_point(down_ray.m_dir);
+    }
+
+    const Material* parent_material = parent_shading_point.get_material();
+
     // Trace the ray.
     ShadingPoint up_shading_point;
-    trace_facing(
-        ray,
-        up_shading_point,
-        offset_origin ? &parent_shading_point : 0);
+    trace_back_sides(
+        up_ray,
+        up_shading_point);
 
     // Discard objects with different materials.
     if (up_shading_point.hit())
     {
-        if (up_shading_point.get_material() != parent_shading_point.get_material())
+        if (up_shading_point.get_opposite_material() != parent_material)
             up_shading_point.clear();
     }
 
     // Trace the opposite ray.
-    ShadingRay opposite_ray(ray);
-    opposite_ray.m_dir = -opposite_ray.m_dir;
-
     ShadingPoint down_shading_point;
-    trace_facing(
-        ray,
-        down_shading_point,
-        offset_origin ? &parent_shading_point : 0);
+    trace_back_sides(
+        down_ray,
+        down_shading_point);
 
     // Discard objects with different materials.
     if (down_shading_point.hit())
     {
-        if (down_shading_point.get_material() != parent_shading_point.get_material())
+        if (down_shading_point.get_opposite_material() != parent_material)
             down_shading_point.clear();
     }
 
@@ -387,13 +394,21 @@ bool Intersector::trace_sss(
     {
         shading_point =
             up_shading_point.get_distance() < down_shading_point.get_distance() ? up_shading_point : down_shading_point;
+
+        return true;
     }
     else if (up_shading_point.hit())
+    {
         shading_point = up_shading_point;
-    else
+        return true;
+    }
+    else if (down_shading_point.hit())
+    {
         shading_point = down_shading_point;
+        return true;
+    }
 
-    return shading_point.hit();
+    return false;
 }
 
 void Intersector::manufacture_hit(
@@ -422,18 +437,18 @@ void Intersector::manufacture_hit(
     shading_point.m_triangle_support_plane = triangle_support_plane;
 }
 
-void Intersector::trace_facing(
-    const ShadingRay&               ray,
-    ShadingPoint&                   shading_point,
-    const ShadingPoint*             parent_shading_point) const
+void Intersector::trace_back_sides(
+    ShadingRay                      ray,
+    ShadingPoint&                   shading_point) const
 {
-    const ShadingPoint* p = parent_shading_point;
-    while (trace(ray, shading_point, p))
+    while (trace(ray, shading_point))
     {
-        if (dot(ray.m_dir, shading_point.get_shading_normal()) > 0.0)
+        if (dot(ray.m_dir, shading_point.get_original_shading_normal()) > 0.0)
             break;
 
-        p = &shading_point;
+        shading_point.refine_and_offset();
+        ray.m_org = shading_point.get_offset_point(ray.m_dir);
+        shading_point.clear();
     }
 }
 

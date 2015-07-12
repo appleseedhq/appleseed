@@ -117,10 +117,17 @@ class ShadingContext
         const ShaderGroup&  shader_group,
         const ShadingPoint& shading_point) const;
 
+    void execute_osl_normal(
+        const ShaderGroup&          shader_group,
+        const ShadingPoint&         shading_point,
+        const void*                 data,
+        const double                s) const;
+
     void execute_osl_background(
         const ShaderGroup&          shader_group,
         const foundation::Vector3d& outgoing,
         Spectrum&                   value) const;
+
 #endif
 
   private:

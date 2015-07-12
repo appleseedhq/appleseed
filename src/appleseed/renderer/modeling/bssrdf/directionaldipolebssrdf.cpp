@@ -121,6 +121,11 @@ namespace
                     values->m_mean_free_path.convert_to_rgb(*m_lighting_conditions);
             }
 
+            values->m_channel_weights.resize(values->m_reflectance.size());
+            values->m_channel_cdf.resize(values->m_reflectance.size());
+            values->m_sigma_a.resize(values->m_reflectance.size());
+            values->m_sigma_s_prime.resize(values->m_reflectance.size());
+
             // Convert values and precompute stuff.
             values->m_channel_cdf.set(0.0f);
             double sum_alpha_prime = 0.0;
@@ -196,28 +201,36 @@ namespace
         }
 
       private:
-        virtual Vector2d sample(
+        virtual bool do_sample(
             const void*     data,
-            const Vector3d& r,
-            size_t&         ch) const APPLESEED_OVERRIDE
+            BSSRDFSample&   sample,
+            Vector2d&       point) const APPLESEED_OVERRIDE
         {
             const DirectionalDipoleBSSRDFInputValues* values =
                 reinterpret_cast<const DirectionalDipoleBSSRDFInputValues*>(data);
 
+            sample.set_is_directional(true);
+            sample.set_eta(values->m_to_ior / values->m_from_ior);
+
+            sample.get_sampling_context().split_in_place(3, 1);
+            const Vector3d r = sample.get_sampling_context().next_vector2<3>();
+
             // Sample a color channel.
             const float* cdf = &(values->m_channel_cdf[0]);
-            ch = std::upper_bound(
-                cdf,
-                cdf + values->m_channel_cdf.size(),
-                r[0]) - cdf;
+            sample.set_channel(
+                std::upper_bound(
+                    cdf,
+                    cdf + values->m_channel_cdf.size(),
+                    r[0]) - cdf);
 
             // Sample a radius and an angle.
-            const double radius = -std::log(1.0 - r[1]) * values->m_mean_free_path[ch];
+            const double radius = -std::log(1.0 - r[1]) * values->m_mean_free_path[sample.get_channel()];
             const double phi = 2.0 * Pi * r[2];
-
-            return Vector2d(
+            point = Vector2d(
                 radius * std::cos(phi),
                 radius * std::sin(phi));
+
+            return true;
         }
 
         virtual double pdf(

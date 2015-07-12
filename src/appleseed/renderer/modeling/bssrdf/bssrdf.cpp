@@ -122,42 +122,49 @@ void BSSRDF::evaluate_inputs(
     input_evaluator.evaluate(get_inputs(), shading_point.get_uv(0), offset);
 }
 
-void BSSRDF::sample(
+bool BSSRDF::sample(
     const void*     data,
-    BSSRDFSample&   s) const
+    BSSRDFSample&   sample) const
 {
-    s.get_sampling_context().split_in_place(4, 1);
-    const Vector4d r = s.get_sampling_context().next_vector2<4>();
+    sample.get_sampling_context().split_in_place(1, 1);
+    const double r = sample.get_sampling_context().next_double2();
 
-    Basis3d& basis(s.get_sample_basis());
+    const Basis3d& shading_basis = sample.get_shading_point().get_shading_basis();
 
-    if (r[0] <= 0.5)
+    if (r <= 0.5)
     {
-        basis = s.get_shading_point().get_shading_basis();
-        s.set_use_offset_origin(true);
+        sample.set_sample_basis(shading_basis);
+        sample.set_use_offset_origin(true);
     }
-    else if (r[0] <= 0.75)
+    else if (r <= 0.75)
     {
-        basis.build(
-            basis.get_tangent_u(),
-            basis.get_normal(),
-            basis.get_tangent_v());
+        sample.set_sample_basis(
+            Basis3d(
+                shading_basis.get_tangent_u(),
+                shading_basis.get_tangent_v(),
+                shading_basis.get_normal()));
     }
     else
     {
-        basis.build(
-            basis.get_tangent_v(),
-            basis.get_tangent_u(),
-            basis.get_normal());
+        sample.set_sample_basis(
+            Basis3d(
+                shading_basis.get_tangent_v(),
+                shading_basis.get_normal(),
+                shading_basis.get_tangent_u()));
     }
 
-    size_t ch;
-    const Vector2d d = sample(data, Vector3d(r[1], r[2], r[3]), ch);
-    s.set_channel(ch);
-    s.set_origin(
-        s.get_shading_point().get_point() +
-        basis.get_tangent_u() * d.x +
-        basis.get_tangent_v() * d.y);
+    Vector2d d;
+    if (do_sample(data, sample, d))
+    {
+        sample.set_origin(
+            sample.get_shading_point().get_point() +
+            sample.get_sample_basis().get_tangent_u() * d.x +
+            sample.get_sample_basis().get_tangent_v() * d.y);
+
+        return true;
+    }
+
+    return false;
 }
 
 double BSSRDF::pdf(

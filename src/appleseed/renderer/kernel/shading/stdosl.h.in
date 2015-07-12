@@ -512,6 +512,9 @@ closure color as_disney(
 
 closure color as_velvet(normal N, float alpha) BUILTIN;
 
+closure color as_subsurface(string profile, color reflectance,
+                            color mean_free_path) BUILTIN;
+
 /********************************/
 // Standard OSL closures
 
