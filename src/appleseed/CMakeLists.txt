@@ -1229,6 +1229,7 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/bsdffactoryregistrar.h
     renderer/modeling/bsdf/bsdfmix.cpp
     renderer/modeling/bsdf/bsdfmix.h
+    renderer/modeling/bsdf/bsdfsample.cpp
     renderer/modeling/bsdf/bsdfsample.h
     renderer/modeling/bsdf/bsdftraits.h
     renderer/modeling/bsdf/bsdfwrapper.h
@@ -1284,9 +1285,18 @@ set (renderer_modeling_bssrdf_sources
     renderer/modeling/bssrdf/bssrdf.h
     renderer/modeling/bssrdf/bssrdffactoryregistrar.cpp
     renderer/modeling/bssrdf/bssrdffactoryregistrar.h
+    renderer/modeling/bssrdf/bssrdfsample.h
     renderer/modeling/bssrdf/bssrdftraits.h
+    renderer/modeling/bssrdf/directionaldipolebssrdf.cpp
+    renderer/modeling/bssrdf/directionaldipolebssrdf.h
     renderer/modeling/bssrdf/ibssrdffactory.h
 )
+if (WITH_OSL)
+    list (APPEND renderer_modeling_bssrdf_sources
+        renderer/modeling/bssrdf/oslbssrdf.cpp
+        renderer/modeling/bssrdf/oslbssrdf.h
+    )
+endif ()
 list (APPEND appleseed_sources
     ${renderer_modeling_bssrdf_sources}
 )

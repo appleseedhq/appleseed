@@ -102,6 +102,9 @@ class ShadingPoint
     // Copy constructor.
     explicit ShadingPoint(const ShadingPoint& rhs);
 
+    // Assignment.
+    ShadingPoint& operator=(const ShadingPoint& rhs);
+
     // Reset the shading point to its initial state (no intersection).
     void clear();
 
@@ -403,6 +406,26 @@ inline ShadingPoint::ShadingPoint(const ShadingPoint& rhs)
   , m_triangle_support_plane(rhs.m_triangle_support_plane)
   , m_members(0)
 {
+}
+
+inline ShadingPoint& ShadingPoint::operator=(const ShadingPoint& rhs)
+{
+    m_region_kit_cache = rhs.m_region_kit_cache;
+    m_tess_cache = rhs.m_tess_cache;
+    m_texture_cache = rhs.m_texture_cache;
+    m_scene = rhs.m_scene;
+    m_ray = rhs.m_ray;
+    m_primitive_type = rhs.m_primitive_type;
+    m_bary = rhs.m_bary;
+    m_assembly_instance = rhs.m_assembly_instance;
+    m_assembly_instance_transform = rhs.m_assembly_instance_transform;
+    m_assembly_instance_transform_seq = rhs.m_assembly_instance_transform_seq;
+    m_object_instance_index = rhs.m_object_instance_index;
+    m_region_index = rhs.m_region_index;
+    m_primitive_index = rhs.m_primitive_index;
+    m_triangle_support_plane = rhs.m_triangle_support_plane;
+    m_members = 0;
+    return *this;
 }
 
 FORCE_INLINE void ShadingPoint::clear()

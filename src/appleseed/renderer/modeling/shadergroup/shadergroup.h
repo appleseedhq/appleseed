@@ -112,6 +112,9 @@ class APPLESEED_DLLSYMBOL ShaderGroup
     // Return true if the shader group contains at least one transparency closure.
     bool has_transparency() const;
 
+    // Return true if the shader group contains at least one subsurface closure.
+    bool has_subsurface() const;
+
     // Return true if the shader group contains at least one holdout closure.
     bool has_holdout() const;
 
@@ -137,6 +140,7 @@ class APPLESEED_DLLSYMBOL ShaderGroup
 
     bool    m_has_emission;
     bool    m_has_transparency;
+    bool    m_has_subsurface;
     bool    m_has_holdout;
     bool    m_has_debug;
     bool    m_uses_dPdtime;
@@ -187,6 +191,11 @@ inline bool ShaderGroup::has_emission() const
 inline bool ShaderGroup::has_transparency() const
 {
     return m_has_transparency;
+}
+
+inline bool ShaderGroup::has_subsurface() const
+{
+    return m_has_subsurface;
 }
 
 inline bool ShaderGroup::has_holdout() const

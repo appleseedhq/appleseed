@@ -88,6 +88,7 @@ class APPLESEED_DLLSYMBOL DiagnosticSurfaceShader
         Regions,                    // assign a unique color to each region
         Primitives,                 // assign a unique color to each primitive
         Materials,                  // assign a unique color to each material
+        RaySpread,                  // shade according to the reflected ray spread
         ShadingModeCount            // number of shading modes -- keep last
     };
 

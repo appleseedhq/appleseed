@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2015 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2015 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,14 +26,29 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_API_BSSRDF_H
-#define APPLESEED_RENDERER_API_BSSRDF_H
+#ifndef APPLESEED_RENDERER_MODELING_BSSRDF_OSLBSSRDF_H
+#define APPLESEED_RENDERER_MODELING_BSSRDF_OSLBSSRDF_H
 
-// API headers.
-#include "renderer/modeling/bssrdf/bssrdf.h"
-#include "renderer/modeling/bssrdf/bssrdffactoryregistrar.h"
-#include "renderer/modeling/bssrdf/bssrdftraits.h"
-#include "renderer/modeling/bssrdf/directionaldipolebssrdf.h"
-#include "renderer/modeling/bssrdf/ibssrdffactory.h"
+// appleseed.foundation headers.
+#include "foundation/utility/autoreleaseptr.h"
 
-#endif  // !APPLESEED_RENDERER_API_BSSRDF_H
+// Forward declarations.
+namespace renderer  { class BSSRDF; }
+
+namespace renderer
+{
+
+//
+// OSLBSSRDF factory.
+//
+
+class OSLBSSRDFFactory
+{
+  public:
+    // Create a new OSLBSSDRF instance.
+    foundation::auto_release_ptr<BSSRDF> create() const;
+};
+
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_MODELING_BSSRDF_OSLBSSRDF_H

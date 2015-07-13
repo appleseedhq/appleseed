@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/modeling/bsdf/bsdf.h"
+#include "renderer/modeling/bssrdf/bssrdf.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/source.h"
@@ -83,6 +84,7 @@ Material::Material(
   , m_shade_alpha_cutouts(false)
   , m_surface_shader(0)
   , m_bsdf(0)
+  , m_bssrdf(0)
   , m_edf(0)
   , m_alpha_map(0)
   , m_basis_modifier(0)
@@ -108,6 +110,11 @@ const char* Material::get_surface_shader_name() const
 const char* Material::get_bsdf_name() const
 {
     return get_non_empty(m_params, "bsdf");
+}
+
+const char* Material::get_bssrdf_name() const
+{
+    return get_non_empty(m_params, "bssrdf");
 }
 
 const char* Material::get_edf_name() const
@@ -138,6 +145,7 @@ void Material::on_frame_end(
 {
     m_surface_shader = 0;
     m_bsdf = 0;
+    m_bssrdf = 0;
     m_edf = 0;
     m_alpha_map = 0;
 
@@ -153,6 +161,11 @@ const SurfaceShader* Material::get_uncached_surface_shader() const
 const BSDF* Material::get_uncached_bsdf() const
 {
     return static_cast<const BSDF*>(m_inputs.get_entity("bsdf"));
+}
+
+const BSSRDF* Material::get_uncached_bssrdf() const
+{
+    return static_cast<const BSSRDF*>(m_inputs.get_entity("bssrdf"));
 }
 
 const EDF* Material::get_uncached_edf() const

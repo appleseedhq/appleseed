@@ -64,6 +64,7 @@ namespace
 
     const OIIO::ustring g_emission_str("emission");
     const OIIO::ustring g_transparent_str("transparent");
+    const OIIO::ustring g_subsurface_str("subsurface");
     const OIIO::ustring g_holdout_str("holdout");
     const OIIO::ustring g_debug_str("debug");
     const OIIO::ustring g_dPdtime_str("dPdtime");
@@ -111,6 +112,7 @@ void ShaderGroup::clear()
 
     m_has_emission = false;
     m_has_transparency = false;
+    m_has_subsurface = false;
     m_has_holdout = false;
     m_has_debug = false;
     m_uses_dPdtime = false;
@@ -211,6 +213,7 @@ bool ShaderGroup::create_optimized_osl_shader_group(
         get_shadergroup_closures_info(shading_system);
         report_has_closure("emission", m_has_emission);
         report_has_closure("transparent", m_has_transparency);
+        report_has_closure("subsurface", m_has_subsurface);
         report_has_closure("holdout", m_has_holdout);
         report_has_closure("debug", m_has_debug);
 
@@ -262,6 +265,7 @@ void ShaderGroup::get_shadergroup_closures_info(OSL::ShadingSystem& shading_syst
 {
     m_has_emission = true;
     m_has_transparency = true;
+    m_has_subsurface = true;
     m_has_holdout = true;
     m_has_debug = true;
 
@@ -317,6 +321,7 @@ void ShaderGroup::get_shadergroup_closures_info(OSL::ShadingSystem& shading_syst
 
         m_has_emission = false;
         m_has_transparency = false;
+        m_has_subsurface = false;
         m_has_holdout = false;
         m_has_debug = false;
 
@@ -327,6 +332,9 @@ void ShaderGroup::get_shadergroup_closures_info(OSL::ShadingSystem& shading_syst
 
             if (closures[i] == g_transparent_str)
                 m_has_transparency = true;
+
+            if (closures[i] == g_subsurface_str)
+                m_has_subsurface = true;
 
             if (closures[i] == g_holdout_str)
                 m_has_holdout = true;

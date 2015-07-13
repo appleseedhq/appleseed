@@ -32,6 +32,8 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/oslbsdf.h"
+#include "renderer/modeling/bssrdf/bssrdf.h"
+#include "renderer/modeling/bssrdf/oslbssrdf.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/edf/osledf.h"
 #include "renderer/modeling/input/inputarray.h"
@@ -68,6 +70,7 @@ namespace
             m_inputs.declare("alpha_map", InputFormatScalar, "");
 
             m_osl_bsdf = OSLBSDFFactory().create();
+            m_osl_bssrdf = OSLBSSRDFFactory().create();
             m_osl_edf = OSLEDFFactory().create();
         }
 
@@ -96,6 +99,12 @@ namespace
                 m_bsdf = m_osl_bsdf.get();
                 m_osl_bsdf->on_frame_begin(project, assembly, abort_switch);
 
+                if (m_shader_group->has_subsurface())
+                {
+                    m_bssrdf = m_osl_bssrdf.get();
+                    m_osl_bssrdf->on_frame_begin(project, assembly, abort_switch);
+                }
+
                 if (m_shader_group->has_emission())
                 {
                     m_edf = m_osl_edf.get();
@@ -110,14 +119,17 @@ namespace
             const Project&              project,
             const Assembly&             assembly) APPLESEED_OVERRIDE
         {
-            Material::on_frame_end(project, assembly);
-
             m_osl_bsdf->on_frame_end(project, assembly);
+
+            if (m_shader_group && m_shader_group->has_subsurface())
+                m_osl_bssrdf->on_frame_end(project, assembly);
 
             if (m_shader_group && m_shader_group->has_emission())
                 m_osl_edf->on_frame_end(project, assembly);
 
             m_shader_group = 0;
+
+            Material::on_frame_end(project, assembly);
         }
 
         virtual bool has_osl_surface() const APPLESEED_OVERRIDE
@@ -133,17 +145,10 @@ namespace
             return false;
         }
 
-        virtual const EDF* get_uncached_edf() const APPLESEED_OVERRIDE
-        {
-            if (has_emission())
-                return m_osl_edf.get();
-
-            return 0;
-        }
-
       private:
-        auto_release_ptr<BSDF>  m_osl_bsdf;
-        auto_release_ptr<EDF>   m_osl_edf;
+        auto_release_ptr<BSDF>      m_osl_bsdf;
+        auto_release_ptr<BSSRDF>    m_osl_bssrdf;
+        auto_release_ptr<EDF>       m_osl_edf;
 
         virtual const ShaderGroup* get_uncached_osl_surface() const APPLESEED_OVERRIDE
         {

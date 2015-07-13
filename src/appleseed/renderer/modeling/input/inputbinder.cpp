@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/modeling/bsdf/bsdf.h"
+#include "renderer/modeling/bssrdf/bssrdf.h"
 #include "renderer/modeling/camera/camera.h"
 #include "renderer/modeling/color/colorentity.h"
 #include "renderer/modeling/edf/edf.h"
@@ -171,6 +172,7 @@ void InputBinder::build_assembly_symbol_table(
         insert_entities(symbols, assembly.textures(), SymbolTable::SymbolTexture);
         insert_entities(symbols, assembly.texture_instances(), SymbolTable::SymbolTextureInstance);
         insert_entities(symbols, assembly.bsdfs(), SymbolTable::SymbolBSDF);
+        insert_entities(symbols, assembly.bssrdfs(), SymbolTable::SymbolBSSRDF);
         insert_entities(symbols, assembly.edfs(), SymbolTable::SymbolEDF);
 #ifdef APPLESEED_WITH_OSL
         insert_entities(symbols, assembly.shader_groups(), SymbolTable::SymbolShaderGroup);
@@ -356,6 +358,16 @@ void InputBinder::bind_assembly_entities_inputs(
             scene,
             scene_symbols,
             SymbolTable::symbol_name(SymbolTable::SymbolBSDF),
+            *i);
+    }
+
+    // Bind BSSRDFs inputs.
+    for (each<BSSRDFContainer> i = assembly.bssrdfs(); i; ++i)
+    {
+        bind_assembly_entity_inputs(
+            scene,
+            scene_symbols,
+            SymbolTable::symbol_name(SymbolTable::SymbolBSSRDF),
             *i);
     }
 
@@ -637,6 +649,7 @@ bool InputBinder::try_bind_assembly_entity_to_input(
           BIND(SymbolTable::SymbolTexture, assembly.textures());
           BIND(SymbolTable::SymbolTextureInstance, assembly.texture_instances());
           BIND(SymbolTable::SymbolBSDF, assembly.bsdfs());
+          BIND(SymbolTable::SymbolBSSRDF, assembly.bssrdfs());
           BIND(SymbolTable::SymbolEDF, assembly.edfs());
 #ifdef APPLESEED_WITH_OSL
           BIND(SymbolTable::SymbolShaderGroup, assembly.shader_groups());
