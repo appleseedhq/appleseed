@@ -162,7 +162,7 @@ void DirectLightingIntegrator::take_single_bsdf_or_light_sample(
 
         if (sampling_context.next_double2() < 0.5)
         {
-            sampling_context.split_in_place(3, m_light_sample_count);
+            sampling_context.split_in_place(3, 1);
             take_single_light_sample(
                 sampling_context,
                 DirectLightingIntegrator::mis_balance,
