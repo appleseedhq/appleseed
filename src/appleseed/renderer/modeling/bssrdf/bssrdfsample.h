@@ -74,6 +74,7 @@ class BSSRDFSample
     double get_max_distance() const;
     void set_max_distance(double max_distance);
 
+    // 'Directional' means that BSSRDF::evaluate() depends on the incoming vector.
     bool is_directional() const;
     void set_is_directional(const bool is_directional);
 

@@ -308,21 +308,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             if (vertex.m_bssrdf->sample(vertex.m_bssrdf_data, sample))
             {
                 vertex.m_bssrdf_eta = sample.get_eta();
-                vertex.m_bssrdf_outgoing_fresnel =
-                    foundation::fresnel_transmission(
-                        foundation::dot(
-                            vertex.m_outgoing.get_value(),
-                            vertex.get_shading_normal()),
-                        vertex.m_bssrdf_eta);
 
-                if (vertex.m_bssrdf_outgoing_fresnel == 0.0)
-                    vertex.m_bssrdf = 0;
-            }
-            else
-                vertex.m_bssrdf = 0;
-
-            if (vertex.m_bssrdf)
-            {
                 ShadingRay ray(
                     sample.get_origin(),
                     sample.get_sample_basis().get_normal(),
@@ -370,22 +356,10 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                             sample.get_channel());
 
                     vertex.m_bssrdf_directional = sample.is_directional();
-
-                    // If the BSSRDF is not directional, we can evaluate it and cache its value for later use.
-                    if (!vertex.m_bssrdf_directional)
-                    {
-                        vertex.m_bssrdf->evaluate(
-                            vertex.m_bssrdf_data,
-                            *vertex.m_shading_point,
-                            vertex.m_outgoing.get_value(),
-                            vertex.m_bssrdf_incoming_point,
-                            foundation::Vector3d(0.0),
-                            vertex.m_bssrdf_value);
-                    }
                 }
-                else
-                    vertex.m_bssrdf = 0;
+                else vertex.m_bssrdf = 0;
             }
+            else vertex.m_bssrdf = 0;
         }
 
         // Compute radiance contribution at this vertex.
