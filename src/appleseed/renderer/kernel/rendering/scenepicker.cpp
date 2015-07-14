@@ -37,17 +37,15 @@
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/kernel/texturing/texturestore.h"
-#include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdftraits.h"
-#include "renderer/modeling/edf/edf.h"
-#include "renderer/modeling/edf/edftraits.h"
+#include "renderer/modeling/bssrdf/bssrdftraits.h"
 #include "renderer/modeling/camera/camera.h"
+#include "renderer/modeling/edf/edftraits.h"
 #include "renderer/modeling/input/inputbinder.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/material/materialtraits.h"
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
-#include "renderer/modeling/surfaceshader/surfaceshader.h"
 #include "renderer/modeling/surfaceshader/surfaceshadertraits.h"
 
 // Standard headers.
@@ -94,10 +92,7 @@ ScenePicker::PickingResult ScenePicker::pick(const Vector2d& ndc) const
     const Camera* camera = scene.get_camera();
 
     ShadingRay ray;
-    camera->spawn_ray(
-        sampling_context,
-        Dual2d(ndc),
-        ray);
+    camera->spawn_ray(sampling_context, Dual2d(ndc), ray);
 
     ShadingPoint shading_point;
     impl->m_intersector.trace(ray, shading_point);
@@ -131,6 +126,7 @@ ScenePicker::PickingResult ScenePicker::pick(const Vector2d& ndc) const
     result.m_material = 0;
     result.m_surface_shader = 0;
     result.m_bsdf = 0;
+    result.m_bssrdf = 0;
     result.m_edf = 0;
 
     if (result.m_hit)
@@ -161,6 +157,9 @@ ScenePicker::PickingResult ScenePicker::pick(const Vector2d& ndc) const
 
         const char* bsdf_name = result.m_material->get_bsdf_name();
         result.m_bsdf = bsdf_name ? InputBinder::find_entity<BSDF>(bsdf_name, parent) : 0;
+
+        const char* bssrdf_name = result.m_material->get_bssrdf_name();
+        result.m_bssrdf = bssrdf_name ? InputBinder::find_entity<BSSRDF>(bssrdf_name, parent) : 0;
 
         const char* edf = result.m_material->get_edf_name();
         result.m_edf = edf ? InputBinder::find_entity<EDF>(edf, parent) : 0;

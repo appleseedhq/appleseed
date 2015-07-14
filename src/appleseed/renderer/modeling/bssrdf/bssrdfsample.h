@@ -37,7 +37,8 @@
 #include "foundation/math/basis.h"
 #include "foundation/math/vector.h"
 
-// standard headers
+// Standard headers
+#include <cstddef>
 #include <limits>
 
 namespace renderer
@@ -62,26 +63,27 @@ class BSSRDFSample
     void set_sample_basis(const foundation::Basis3d& basis);
 
     size_t get_channel() const;
-    void set_channel(const size_t ch);
+    void set_channel(const size_t channel);
 
     const foundation::Vector3d& get_origin() const;
     void set_origin(const foundation::Vector3d& origin);
 
     bool get_use_offset_origin() const;
-    void set_use_offset_origin(const bool b);
+    void set_use_offset_origin(const bool use_offset_origin);
 
     double get_max_distance() const;
     void set_max_distance(double max_distance);
 
+    // 'Directional' means that BSSRDF::evaluate() depends on the incoming vector.
     bool is_directional() const;
     void set_is_directional(const bool is_directional);
 
     double get_eta() const;
     void set_eta(const double eta);
 
-    private:
+  private:
     const ShadingPoint&     m_shading_point;       // shading point at which the sampling is done
-    SamplingContext&        m_sampling_context;    // sampling context used to sample BSDFs
+    SamplingContext&        m_sampling_context;    // sampling context used to sample BSSRDFs
 
     bool                    m_is_directional;
     foundation::Basis3d     m_sample_basis;
@@ -98,8 +100,8 @@ class BSSRDFSample
 //
 
 inline BSSRDFSample::BSSRDFSample(
-    const ShadingPoint&         shading_point,
-    SamplingContext&            sampling_context)
+    const ShadingPoint&     shading_point,
+    SamplingContext&        sampling_context)
   : m_shading_point(shading_point)
   , m_sampling_context(sampling_context)
   , m_is_directional(false)
@@ -133,9 +135,9 @@ inline size_t BSSRDFSample::get_channel() const
     return m_channel;
 }
 
-inline void BSSRDFSample::set_channel(const size_t ch)
+inline void BSSRDFSample::set_channel(const size_t channel)
 {
-    m_channel = ch;
+    m_channel = channel;
 }
 
 inline const foundation::Vector3d&BSSRDFSample::get_origin() const
@@ -153,9 +155,9 @@ inline bool BSSRDFSample::get_use_offset_origin() const
     return m_use_offset_origin;
 }
 
-inline void BSSRDFSample::set_use_offset_origin(const bool b)
+inline void BSSRDFSample::set_use_offset_origin(const bool use_offset_origin)
 {
-    m_use_offset_origin = b;
+    m_use_offset_origin = use_offset_origin;
 }
 
 inline double BSSRDFSample::get_max_distance() const

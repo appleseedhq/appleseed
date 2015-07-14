@@ -37,9 +37,6 @@
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
 
-// standard headers.
-#include <algorithm>
-
 using namespace foundation;
 
 namespace renderer
@@ -65,8 +62,8 @@ namespace
     {
       public:
         NormalizedDiffusionBSSRDF(
-            const char*                 name,
-            const ParamArray&           params)
+            const char*             name,
+            const ParamArray&       params)
           : BSSRDF(name, params)
         {
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
@@ -87,16 +84,16 @@ namespace
         }
 
         virtual size_t compute_input_data_size(
-            const Assembly&             assembly) const
+            const Assembly&         assembly) const
         {
             return align(sizeof(NormalizedDiffusionBSSRDFInputValues), 16);
         }
 
         virtual void evaluate_inputs(
-            const ShadingContext&       shading_context,
-            InputEvaluator&             input_evaluator,
-            const ShadingPoint&         shading_point,
-            const size_t                offset = 0) const APPLESEED_OVERRIDE
+            const ShadingContext&   shading_context,
+            InputEvaluator&         input_evaluator,
+            const ShadingPoint&     shading_point,
+            const size_t            offset = 0) const APPLESEED_OVERRIDE
         {
             BSSRDF::evaluate_inputs(shading_context, input_evaluator, shading_point, offset);
 
@@ -116,12 +113,12 @@ namespace
         }
 
         virtual void evaluate(
-            const void*                 data,
-            const ShadingPoint&         outgoing_point,
-            const Vector3d&             outgoing_dir,
-            const ShadingPoint&         incoming_point,
-            const Vector3d&             incoming_dir,
-            Spectrum&                   value) const APPLESEED_OVERRIDE
+            const void*             data,
+            const ShadingPoint&     outgoing_point,
+            const Vector3d&         outgoing_dir,
+            const ShadingPoint&     incoming_point,
+            const Vector3d&         incoming_dir,
+            Spectrum&               value) const APPLESEED_OVERRIDE
         {
             const NormalizedDiffusionBSSRDFInputValues* values =
                 reinterpret_cast<const NormalizedDiffusionBSSRDFInputValues*>(data);
@@ -134,9 +131,9 @@ namespace
 
       private:
         virtual bool do_sample(
-            const void*     data,
-            BSSRDFSample&   sample,
-            Vector2d&       point) const APPLESEED_OVERRIDE
+            const void*             data,
+            BSSRDFSample&           sample,
+            Vector2d&               point) const APPLESEED_OVERRIDE
         {
             const NormalizedDiffusionBSSRDFInputValues* values =
                 reinterpret_cast<const NormalizedDiffusionBSSRDFInputValues*>(data);
@@ -149,10 +146,10 @@ namespace
             return false;
         }
 
-        virtual double pdf(
-            const void*     data,
-            const size_t    channel,
-            const double    dist) const APPLESEED_OVERRIDE
+        virtual double do_pdf(
+            const void*             data,
+            const size_t            channel,
+            const double            dist) const APPLESEED_OVERRIDE
         {
             const NormalizedDiffusionBSSRDFInputValues* values =
                 reinterpret_cast<const NormalizedDiffusionBSSRDFInputValues*>(data);
@@ -162,6 +159,7 @@ namespace
         }
     };
 }
+
 
 //
 // NormalizedDiffusionBSSRDFFactory class implementation.

@@ -296,31 +296,19 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         InputEvaluator bssrdf_input_evaluator(shading_context.get_texture_cache());
         if (vertex.m_bssrdf)
         {
+            // Evaluate the inputs of the BSSRDF.
             vertex.m_bssrdf->evaluate_inputs(
                 shading_context,
                 bssrdf_input_evaluator,
                 *vertex.m_shading_point);
             vertex.m_bssrdf_data = bssrdf_input_evaluator.data();
 
+            // Sample the BSSRDF.
             BSSRDFSample sample(*vertex.m_shading_point, vertex.m_sampling_context);
             if (vertex.m_bssrdf->sample(vertex.m_bssrdf_data, sample))
             {
                 vertex.m_bssrdf_eta = sample.get_eta();
-                vertex.m_bssrdf_outgoing_fresnel =
-                    foundation::fresnel_transmission(
-                        foundation::dot(
-                            vertex.m_outgoing.get_value(),
-                            vertex.get_shading_normal()),
-                        vertex.m_bssrdf_eta);
 
-                if (vertex.m_bssrdf_outgoing_fresnel == 0.0)
-                    vertex.m_bssrdf = 0;
-            }
-            else
-                vertex.m_bssrdf = 0;
-
-            if (vertex.m_bssrdf)
-            {
                 ShadingRay ray(
                     sample.get_origin(),
                     sample.get_sample_basis().get_normal(),
@@ -339,7 +327,6 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                     // Apply OSL bump mapping if needed.
                     const Material* incoming_material =
                         vertex.m_bssrdf_incoming_point.get_opposite_material();
-
                     if (incoming_material->has_osl_surface())
                     {
                         shading_context.execute_osl_shading(
@@ -369,23 +356,10 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                             sample.get_channel());
 
                     vertex.m_bssrdf_directional = sample.is_directional();
-
-                    // if the bssrdf is not directional we can eval it
-                    // and cache its value for later use.
-                    if (!vertex.m_bssrdf_directional)
-                    {
-                        vertex.m_bssrdf->evaluate(
-                            vertex.m_bssrdf_data,
-                            *vertex.m_shading_point,
-                            vertex.m_outgoing.get_value(),
-                            vertex.m_bssrdf_incoming_point,
-                            foundation::Vector3d(0.0),
-                            vertex.m_bssrdf_value);
-                    }
                 }
-                else
-                    vertex.m_bssrdf = 0;
+                else vertex.m_bssrdf = 0;
             }
+            else vertex.m_bssrdf = 0;
         }
 
         // Compute radiance contribution at this vertex.
@@ -460,20 +434,13 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             bsdf_mode_to_ray_flags(sample.get_mode()),
             ray.m_depth + 1);
 
+        // Compute scattered ray differentials.
         if (sample.get_incoming().has_derivatives())
         {
-            scattered_ray.m_rx.m_org =
-                scattered_ray.m_org + vertex.m_shading_point->get_dpdx();
-
-            scattered_ray.m_ry.m_org =
-                scattered_ray.m_org + vertex.m_shading_point->get_dpdy();
-
-            scattered_ray.m_rx.m_dir =
-                scattered_ray.m_dir + sample.get_incoming().get_dx();
-
-            scattered_ray.m_ry.m_dir =
-                scattered_ray.m_dir + sample.get_incoming().get_dy();
-
+            scattered_ray.m_rx.m_org = scattered_ray.m_org + vertex.m_shading_point->get_dpdx();
+            scattered_ray.m_ry.m_org = scattered_ray.m_org + vertex.m_shading_point->get_dpdy();
+            scattered_ray.m_rx.m_dir = scattered_ray.m_dir + sample.get_incoming().get_dx();
+            scattered_ray.m_ry.m_dir = scattered_ray.m_dir + sample.get_incoming().get_dy();
             scattered_ray.m_has_differentials = true;
         }
 

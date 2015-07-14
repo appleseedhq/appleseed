@@ -457,6 +457,111 @@ namespace
                     }
                 }
 
+                // Subsurface scattering.
+                if (vertex.m_bssrdf)
+                {
+                    if (m_light_sampler.has_lights_or_emitting_triangles())
+                    {
+                        // Sample the lights.
+                        m_sampling_context.split_in_place(3, 1);
+                        const Vector3d s = m_sampling_context.next_vector2<3>();
+                        LightSample light_sample;
+                        m_light_sampler.sample(vertex.m_shading_point->get_time(), s, light_sample);
+
+                        Vector3d incoming;
+                        double cos_on_light;
+                        double transmission;
+                        Spectrum edf_value;
+
+                        if (light_sample.m_triangle)
+                        {
+                            const Material* material = light_sample.m_triangle->m_material;
+                            const EDF* edf = material->get_edf();
+
+                            // todo: check EDF flags.
+
+                            // Compute the incoming direction in world space.
+                            incoming = light_sample.m_point - vertex.m_bssrdf_incoming_point.get_point();
+
+                            // Compute cosine factor at the light.
+                            cos_on_light = dot(-incoming, light_sample.m_shading_normal);
+
+                            // Compute the transmission factor between the light sample and the shading point.
+                            transmission =
+                                m_shading_context.get_tracer().trace_between(
+                                    vertex.m_bssrdf_incoming_point,
+                                    light_sample.m_point,
+                                    VisibilityFlags::ShadowRay);
+
+                            // Compute the square distance between the light sample and the shading point.
+                            const double square_distance = square_norm(incoming);
+                            const double rcp_sample_square_distance = 1.0 / square_distance;
+                            const double rcp_sample_distance = sqrt(rcp_sample_square_distance);
+
+                            // todo: handle light near start.
+
+                            // Normalize the incoming direction.
+                            incoming *= rcp_sample_distance;
+                            cos_on_light *= rcp_sample_distance;
+
+                            // Evaluate the input values of the EDF.
+                            InputEvaluator edf_input_evaluator(m_shading_context.get_texture_cache());
+                            edf->evaluate_inputs(edf_input_evaluator, vertex.m_bssrdf_incoming_point);
+
+                            // Evaluate the EDF.
+                            edf->evaluate(
+                                edf_input_evaluator.data(),
+                                light_sample.m_geometric_normal,
+                                Basis3d(light_sample.m_shading_normal),
+                                -incoming,
+                                edf_value);
+                        }
+                        else
+                        {
+                            // todo: implement.
+                            assert(!"Not implemented yet.");
+                        }
+
+                        // Compute Fresnel coefficient at outgoing point.
+                        const double cos_on = 
+                            dot(
+                                vertex.m_outgoing.get_value(),
+                                vertex.get_shading_normal());
+                        const double outgoing_fresnel =
+                            fresnel_transmission(cos_on, vertex.m_bssrdf_eta);
+
+                        // Compute Fresnel coefficient at incoming point.
+                        const double cos_in = 1.0;/*
+                            dot(
+                                incoming,
+                                vertex.m_bssrdf_incoming_point.get_shading_normal());*/
+                        const double incoming_fresnel =
+                            fresnel_transmission(cos_in, 1.0 / vertex.m_bssrdf_eta);    // todo: eta or 1/eta?
+
+                        if (cos_on_light > 0.0 &&
+                            transmission > 0.0 &&
+                            incoming_fresnel > 0.0 &&
+                            outgoing_fresnel > 0.0)
+                        {
+                            // Evaluate the BSSRDF.
+                            Spectrum bssrdf_value;
+                            vertex.m_bssrdf->evaluate(
+                                vertex.m_bssrdf_data,
+                                *vertex.m_shading_point,
+                                vertex.m_outgoing.get_value(),
+                                vertex.m_bssrdf_incoming_point,
+                                incoming,
+                                bssrdf_value);
+
+                            // Add the contribution of this sample to the illumination.
+                            const double weight = transmission * cos_in * cos_on * cos_on_light * incoming_fresnel * outgoing_fresnel;
+                            edf_value *= static_cast<float>(weight);
+                            edf_value *= bssrdf_value;
+                            vertex_radiance += edf_value;
+                        }
+                    }
+                }
+
                 // Emitted light.
                 if ((!m_omit_emitted_light || m_params.m_enable_caustics) &&
                     vertex.m_edf &&

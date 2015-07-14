@@ -616,9 +616,6 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     if (bsdf_prob == 0.0)
         return;
 
-    // Evaluate the input values of the EDF.
-    InputEvaluator edf_input_evaluator(m_shading_context.get_texture_cache());
-
     // TODO: refactor this code (est.).
     ShadingPoint shading_point;
     sample.make_shading_point(
@@ -630,6 +627,9 @@ void DirectLightingIntegrator::add_emitting_triangle_sample_contribution(
     if (const ShaderGroup* sg = material->get_osl_surface())
         m_shading_context.execute_osl_emission(*sg, shading_point);
 #endif
+
+    // Evaluate the input values of the EDF.
+    InputEvaluator edf_input_evaluator(m_shading_context.get_texture_cache());
     edf->evaluate_inputs(edf_input_evaluator, shading_point);
 
     // Evaluate the EDF.

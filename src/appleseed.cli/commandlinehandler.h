@@ -65,7 +65,7 @@ class CommandLineHandler
     foundation::FlagOptionHandler                   m_disable_autosave;
 
     // Aliases for rendering options.
-    foundation::ValueOptionHandler<int>             m_threads;
+    foundation::ValueOptionHandler<std::string>     m_threads;  // std::string because we need to handle 'auto'
     foundation::ValueOptionHandler<std::string>     m_output;
     foundation::FlagOptionHandler                   m_continuous_saving;
     foundation::ValueOptionHandler<int>             m_resolution;

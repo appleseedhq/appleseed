@@ -44,6 +44,7 @@
 namespace renderer  { class Assembly; }
 namespace renderer  { class AssemblyInstance; }
 namespace renderer  { class BSDF; }
+namespace renderer  { class BSSRDF; }
 namespace renderer  { class Camera; }
 namespace renderer  { class EDF; }
 namespace renderer  { class Material; }
@@ -74,6 +75,7 @@ class APPLESEED_DLLSYMBOL ScenePicker
         const Material*                 m_material;
         const SurfaceShader*            m_surface_shader;
         const BSDF*                     m_bsdf;
+        const BSSRDF*                   m_bssrdf;
         const EDF*                      m_edf;
     };
 

@@ -40,36 +40,33 @@
 
 using namespace foundation;
 
-/*
-Quick ref:
-----------
-
-    sigma_a         absorption coeff.
-    sigma_s         scattering coeff.
-    g               anisotropy
-
-    sigma_t         extinction coeff.           -> sigma_a + sigma_s
-    sigma_s_prime   reduced scattering coeff.   -> sigma_s * (1 - g)
-    sigma_t_prime   reduced extinction coeff.   -> sigma_a + sigma_s_prime
-    sigma_tr        effective extinction coeff. -> sqrt( 3 * sigma_a * sigma_t_prime)
-
-    Texture mapping:
-    ----------------
-
-    alpha_prime                                 -> sigma_s_prime / sigma_t_prime
-    ld              mean free path              -> 1 / sigma_tr
-
-    sigma_t_prime = sigma_tr / sqrt( 3 * (1 - alpha_prime))
-    sigma_s_prime = alpha_prime * sigma_t_prime
-    sigma_a = sigma_t_prime - sigma_s_prime
-*/
-
 namespace renderer
 {
 
-
 //
 // BSSRDF class implementation.
+//
+// Quick reference
+// ---------------
+//
+//     sigma_a         absorption coeff.
+//     sigma_s         scattering coeff.
+//     g               anisotropy
+//     
+//     sigma_t         extinction coeff.           -> sigma_a + sigma_s
+//     sigma_s_prime   reduced scattering coeff.   -> sigma_s * (1 - g)
+//     sigma_t_prime   reduced extinction coeff.   -> sigma_a + sigma_s_prime
+//     sigma_tr        effective extinction coeff. -> sqrt(3 * sigma_a * sigma_t_prime)
+// 
+// Texture mapping
+// ---------------
+// 
+//     alpha_prime                                 -> sigma_s_prime / sigma_t_prime
+//     ld              mean free path              -> 1 / sigma_tr
+//    
+//     sigma_t_prime = sigma_tr / sqrt(3 * (1 - alpha_prime))
+//     sigma_s_prime = alpha_prime * sigma_t_prime
+//     sigma_a = sigma_t_prime - sigma_s_prime
 //
 
 namespace
@@ -123,8 +120,8 @@ void BSSRDF::evaluate_inputs(
 }
 
 bool BSSRDF::sample(
-    const void*     data,
-    BSSRDFSample&   sample) const
+    const void*             data,
+    BSSRDFSample&           sample) const
 {
     sample.get_sampling_context().split_in_place(1, 1);
     const double r = sample.get_sampling_context().next_double2();
@@ -168,13 +165,14 @@ bool BSSRDF::sample(
 }
 
 double BSSRDF::pdf(
-    const void*         data,
-    const ShadingPoint& outgoing_point,
-    const ShadingPoint& incoming_point,
-    const Basis3d&      basis,
-    const size_t        channel) const
+    const void*             data,
+    const ShadingPoint&     outgoing_point,
+    const ShadingPoint&     incoming_point,
+    const Basis3d&          basis,
+    const size_t            channel) const
 {
-    // From PBRT3.
+    // From PBRT 3.
+
     const Vector3d d = outgoing_point.get_point() - incoming_point.get_point();
     const Vector3d dlocal(
         dot(basis.get_tangent_u(), d),
@@ -187,32 +185,30 @@ double BSSRDF::pdf(
         dot(basis.get_tangent_v(), n),
         dot(basis.get_normal()   , n));
 
-    const double axis_prob[3] = {.25f, .25f, .5f};
-    const double dist_sqr[3] = {
-        square(dlocal.y) + square(dlocal.z),
-        square(dlocal.z) + square(dlocal.x),
-        square(dlocal.x) + square(dlocal.y)};
-
-    double result = 0.0;
-    for (size_t i = 0; i < 3; ++i)
-        result += 0.5 * pdf(data, channel, std::sqrt(dist_sqr[i])) * axis_prob[i] * std::abs(nlocal[i]);
-
-    return result;
+    return
+        do_pdf(data, channel, std::sqrt(square(dlocal.y) + square(dlocal.z))) * 0.125 * std::abs(nlocal[0]) +
+        do_pdf(data, channel, std::sqrt(square(dlocal.z) + square(dlocal.x))) * 0.125 * std::abs(nlocal[1]) +
+        do_pdf(data, channel, std::sqrt(square(dlocal.x) + square(dlocal.y))) * 0.250 * std::abs(nlocal[2]);
 }
 
-// A better dipole, Eugene d’Eon
-// http://www.eugenedeon.com/papers/betterdipole.pdf
+//
+// Reference:
+//
+//   A better dipole, Eugene d’Eon
+//   http://www.eugenedeon.com/papers/betterdipole.pdf
+//
 
 double BSSRDF::fresnel_moment_1(const double eta)
 {
-    if (eta >= 1.0)
-        return (-9.23372 + eta * (22.2272 + eta * (-20.9292 + eta * (10.2291 + eta * (-2.54396 + 0.254913 * eta))))) * 0.5;
-    else
-        return (0.919317 + eta * (-3.4793 + eta * (6.75335 + eta * (-7.80989 + eta *(4.98554 - 1.36881 * eta))))) * 0.5;
+    return
+        eta >= 1.0
+            ? (-9.23372 + eta * (22.2272 + eta * (-20.9292 + eta * (10.2291 + eta * (-2.54396 + 0.254913 * eta))))) * 0.5
+            : (0.919317 + eta * (-3.4793 + eta * (6.75335 + eta * (-7.80989 + eta *(4.98554 - 1.36881 * eta))))) * 0.5;
 }
 
 double BSSRDF::fresnel_moment_2(const double eta)
 {
+    // todo: precompute 1/eta?
     double r = -1641.1 + eta * (1213.67 + eta * (-568.556 + eta * (164.798 + eta * (-27.0181 + 1.91826 * eta))));
     r += (((135.926 / eta) - 656.175) / eta + 1376.53) / eta;
     return r * 0.33333333;

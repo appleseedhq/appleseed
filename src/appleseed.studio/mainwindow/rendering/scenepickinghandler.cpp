@@ -94,8 +94,10 @@ ScenePickingHandler::ScenePickingHandler(
     m_picking_mode_combo->addItem("Material", "material");
     m_picking_mode_combo->addItem("Surface Shader", "surface_shader");
     m_picking_mode_combo->addItem("BSDF", "bsdf");
+    m_picking_mode_combo->addItem("BSSRDF", "bssrdf");
     m_picking_mode_combo->addItem("EDF", "edf");
-    m_picking_mode_combo->setCurrentIndex(3);
+
+    m_picking_mode_combo->setCurrentIndex(3);   // default to Object Instance mode
 }
 
 ScenePickingHandler::~ScenePickingHandler()
@@ -187,6 +189,8 @@ namespace
             return picking_result.m_surface_shader;
         else if (picking_mode == "bsdf")
             return picking_result.m_bsdf;
+        else if (picking_mode == "bssrdf")
+            return picking_result.m_bssrdf;
         else if (picking_mode == "edf")
             return picking_result.m_edf;
         else
@@ -228,6 +232,7 @@ ItemBase* ScenePickingHandler::pick(const QPoint& point)
     sstr << print_entity("  material         ", result.m_material) << endl;
     sstr << print_entity("  surface shader   ", result.m_surface_shader) << endl;
     sstr << print_entity("  bsdf             ", result.m_bsdf) << endl;
+    sstr << print_entity("  bssrdf           ", result.m_bssrdf) << endl;
     sstr << print_entity("  edf              ", result.m_edf);
 
     RENDERER_LOG_INFO("%s", sstr.str().c_str());

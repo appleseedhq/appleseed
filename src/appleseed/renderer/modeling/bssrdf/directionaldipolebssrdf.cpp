@@ -37,8 +37,9 @@
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
 
-// standard headers.
+// Standard headers.
 #include <algorithm>
+#include <cmath>
 
 using namespace foundation;
 using namespace std;
@@ -54,17 +55,15 @@ namespace
     //
     // Directional dipole BSSRDF.
     //
-
+    // References:
     //
-    // references:
+    //   [1] Directional Dipole for Subsurface Scattering
+    //       Jeppe Revall Frisvad, Toshiya Hachisuka and Thomas Kim Kjeldsen.
+    //       http://www.ci.i.u-tokyo.ac.jp/~hachisuka/dirpole.pdf
     //
-    // [1] Directional Dipole for Subsurface Scattering
-    // Jeppe Revall Frisvad, Toshiya Hachisuka and Thomas Kim Kjeldsen.
-    // http://www.ci.i.u-tokyo.ac.jp/~hachisuka/dirpole.pdf
-    //
-    // [2] Texture mapping for the Better Dipole model
-    // Christophe Hery
-    // http://graphics.pixar.com/library/TexturingBetterDipole/paper.pdf
+    //   [2] Texture mapping for the Better Dipole model
+    //       Christophe Hery
+    //       http://graphics.pixar.com/library/TexturingBetterDipole/paper.pdf
     //
 
     class DirectionalDipoleBSSRDF
@@ -72,8 +71,8 @@ namespace
     {
       public:
         DirectionalDipoleBSSRDF(
-            const char*                 name,
-            const ParamArray&           params)
+            const char*             name,
+            const ParamArray&       params)
           : BSSRDF(name, params)
         {
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
@@ -95,16 +94,16 @@ namespace
         }
 
         virtual size_t compute_input_data_size(
-            const Assembly&             assembly) const
+            const Assembly&         assembly) const
         {
             return align(sizeof(DirectionalDipoleBSSRDFInputValues), 16);
         }
 
         virtual void evaluate_inputs(
-            const ShadingContext&       shading_context,
-            InputEvaluator&             input_evaluator,
-            const ShadingPoint&         shading_point,
-            const size_t                offset = 0) const APPLESEED_OVERRIDE
+            const ShadingContext&   shading_context,
+            InputEvaluator&         input_evaluator,
+            const ShadingPoint&     shading_point,
+            const size_t            offset = 0) const APPLESEED_OVERRIDE
         {
             BSSRDF::evaluate_inputs(shading_context, input_evaluator, shading_point, offset);
 
@@ -138,17 +137,20 @@ namespace
 
             for (size_t i = 0, e = values->m_reflectance.size(); i < e; ++i)
             {
-                const double alpha_prime = compute_alpha_prime(
-                    clamp(static_cast<double>(values->m_reflectance[i]), 0.0, 1.0), c1, c2);
-
+                const double alpha_prime =
+                    compute_alpha_prime(
+                        saturate(static_cast<double>(values->m_reflectance[i])),
+                        c1, c2);
                 sum_alpha_prime += alpha_prime;
+
                 values->m_channel_weights[i] = static_cast<float>(alpha_prime);
                 values->m_channel_cdf[i] = static_cast<float>(sum_alpha_prime);
+
                 const double mfp = static_cast<double>(values->m_mean_free_path[i]);
                 values->m_max_mean_free_path = max(values->m_max_mean_free_path, mfp);
 
                 const double sigma_tr = 1.0 / mfp;
-                const double sigma_t_prime = sigma_tr / sqrt( 3.0 * (1.0 - alpha_prime));
+                const double sigma_t_prime = sigma_tr / sqrt(3.0 * (1.0 - alpha_prime));
 
                 values->m_sigma_s_prime[i] = static_cast<float>(alpha_prime * sigma_t_prime);
                 values->m_sigma_a[i] = static_cast<float>(sigma_t_prime) - values->m_sigma_s_prime[i];
@@ -163,12 +165,12 @@ namespace
         }
 
         virtual void evaluate(
-            const void*                 data,
-            const ShadingPoint&         outgoing_point,
-            const Vector3d&             outgoing_dir,
-            const ShadingPoint&         incoming_point,
-            const Vector3d&             incoming_dir,
-            Spectrum&                   value) const APPLESEED_OVERRIDE
+            const void*             data,
+            const ShadingPoint&     outgoing_point,
+            const Vector3d&         outgoing_dir,
+            const ShadingPoint&     incoming_point,
+            const Vector3d&         incoming_dir,
+            Spectrum&               value) const APPLESEED_OVERRIDE
         {
             const DirectionalDipoleBSSRDFInputValues* values =
                 reinterpret_cast<const DirectionalDipoleBSSRDFInputValues*>(data);
@@ -203,9 +205,9 @@ namespace
 
       private:
         virtual bool do_sample(
-            const void*     data,
-            BSSRDFSample&   sample,
-            Vector2d&       point) const APPLESEED_OVERRIDE
+            const void*             data,
+            BSSRDFSample&           sample,
+            Vector2d&               point) const APPLESEED_OVERRIDE
         {
             const DirectionalDipoleBSSRDFInputValues* values =
                 reinterpret_cast<const DirectionalDipoleBSSRDFInputValues*>(data);
@@ -226,18 +228,16 @@ namespace
 
             // Sample a radius and an angle.
             const double radius = -log(1.0 - r[1]) * values->m_mean_free_path[sample.get_channel()];
-            const double phi = 2.0 * Pi * r[2];
-            point = Vector2d(
-                radius * cos(phi),
-                radius * sin(phi));
+            const double phi = TwoPi * r[2];
+            point = Vector2d(radius * cos(phi), radius * sin(phi));
 
             return true;
         }
 
-        virtual double pdf(
-            const void*     data,
-            const size_t    channel,
-            const double    dist) const APPLESEED_OVERRIDE
+        virtual double do_pdf(
+            const void*             data,
+            const size_t            channel,
+            const double            dist) const APPLESEED_OVERRIDE
         {
             const DirectionalDipoleBSSRDFInputValues* values =
                 reinterpret_cast<const DirectionalDipoleBSSRDFInputValues*>(data);
@@ -266,6 +266,7 @@ namespace
             double x0 = 0.0, x1 = 1.0, xmid;
 
             // For now simple bisection.
+            // todo: switch to faster algorithm.
             for (size_t i = 0, iters = 50; i < iters; ++i)
             {
                 xmid = 0.5 * (x0 + x1);
@@ -277,13 +278,13 @@ namespace
         }
 
         static double sp_d(
-            const double    sigma_a,
-            const double    sigma_s_prime,
-            const double    eta,
-            const double    dot_xw,
-            const double    dot_wn,
-            const double    dot_xn,
-            const double    r)
+            const double            sigma_a,
+            const double            sigma_s_prime,
+            const double            eta,
+            const double            dot_xw,
+            const double            dot_wn,
+            const double            dot_xn,
+            const double            r)
         {
             const double cp = (1.0 - 2.0 * fresnel_moment_1(eta)) * 0.25;
             const double ce = (1.0 - 3.0 * fresnel_moment_2(eta)) * 0.5;
@@ -353,35 +354,35 @@ namespace
 
                 // Distance to real sources.
                 const double cos_beta = -sqrt((r2 - square(dot(wr, xoxi))) / (r2 + square(de)));
-
-                double dr;
                 const double mu0 = -dot_wrn;
-                if (mu0 > 0.0)
-                    dr = sqrt((D * mu0) * ((D * mu0) - de * cos_beta * 2.0) + r2);
-                else
-                    dr = sqrt(1.0 / square(3.0 * sigma_t) + r2);
+                const double dr =
+                    mu0 > 0.0
+                        ? sqrt((D * mu0) * ((D * mu0) - de * cos_beta * 2.0) + r2)
+                        : sqrt(1.0 / square(3.0 * sigma_t) + r2);
 
                 // Distance to virtual source.
                 const Vector3d xoxv = xo - (xi + ni_s * (2.0 * A * de));
                 const double dv = norm(xoxv);
 
-                const double sp_i = sp_d(
-                    sigma_a,
-                    sigma_s_prime,
-                    eta,
-                    dot_xiwr,
-                    dot_wrn,
-                    dot_xin,
-                    dr);
+                const double sp_i =
+                    sp_d(
+                        sigma_a,
+                        sigma_s_prime,
+                        eta,
+                        dot_xiwr,
+                        dot_wrn,
+                        dot_xin,
+                        dr);
 
-                const double sp_v = sp_d(
-                    sigma_a,
-                    sigma_s_prime,
-                    eta,
-                    dot(xoxv, wv),
-                    dot_wvn,
-                    dot(xoxv, no),
-                    dv);
+                const double sp_v =
+                    sp_d(
+                        sigma_a,
+                        sigma_s_prime,
+                        eta,
+                        dot(xoxv, wv),
+                        dot_wvn,
+                        dot(xoxv, no),
+                        dv);
 
                 // Clamp negative values to zero.
                 result[i] += max(static_cast<float>(sp_i - sp_v), 0.0f);
@@ -389,6 +390,7 @@ namespace
         }
     };
 }
+
 
 //
 // DirectionalDipoleBSSRDFFactory class implementation.
