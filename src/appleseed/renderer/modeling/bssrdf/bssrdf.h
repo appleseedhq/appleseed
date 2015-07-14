@@ -124,9 +124,9 @@ class APPLESEED_DLLSYMBOL BSSRDF
         const size_t                offset = 0) const;
 
     // Sample the BSSRDF.
-    void sample(
+    bool sample(
         const void*     data,
-        BSSRDFSample&   s) const;
+        BSSRDFSample&   sample) const;
 
     // Evaluate the BSSRDF for a given pair of points and directions.
     virtual void evaluate(
@@ -145,10 +145,10 @@ class APPLESEED_DLLSYMBOL BSSRDF
         const size_t                channel) const;
 
   private:
-    virtual foundation::Vector2d sample(
+    virtual bool do_sample(
         const void*                 data,
-        const foundation::Vector3d& r,
-        size_t&                     ch) const = 0;
+        BSSRDFSample&               sample,
+        foundation::Vector2d&       point) const = 0;
 
     virtual double pdf(
         const void*     data,

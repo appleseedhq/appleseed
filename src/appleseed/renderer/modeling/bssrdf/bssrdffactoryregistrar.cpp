@@ -32,6 +32,7 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/bssrdf/directionaldipolebssrdf.h"
 #include "renderer/modeling/bssrdf/ibssrdffactory.h"
+#include "renderer/modeling/bssrdf/normalizeddiffusionbssrdf.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/foreach.h"
@@ -58,6 +59,7 @@ BSSRDFFactoryRegistrar::BSSRDFFactoryRegistrar()
   : impl(new Impl())
 {
     register_factory(auto_ptr<FactoryType>(new DirectionalDipoleBSSRDFFactory()));
+    register_factory(auto_ptr<FactoryType>(new NormalizedDiffusionBSSRDFFactory()));
 }
 
 BSSRDFFactoryRegistrar::~BSSRDFFactoryRegistrar()

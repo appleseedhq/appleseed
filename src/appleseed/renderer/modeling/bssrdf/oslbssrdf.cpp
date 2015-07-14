@@ -33,6 +33,8 @@
 #include "renderer/kernel/shading/closures.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bssrdf/bssrdf.h"
+#include "renderer/modeling/bssrdf/directionaldipolebssrdf.h"
+#include "renderer/modeling/bssrdf/normalizeddiffusionbssrdf.h"
 #include "renderer/modeling/input/inputevaluator.h"
 
 // appleseed.foundation headers.
@@ -63,6 +65,15 @@ namespace
             const ParamArray&           params)
           : BSSRDF(name, params)
         {
+            m_directional_bssrdf =
+                DirectionalDipoleBSSRDFFactory().create(
+                    "osl_dir_bssrdf",
+                    ParamArray());
+
+            m_normalized_bssrdf =
+                NormalizedDiffusionBSSRDFFactory().create(
+                    "osl_norm_bssrdf",
+                    ParamArray());
         }
 
         virtual void release() APPLESEED_OVERRIDE
@@ -73,6 +84,32 @@ namespace
         virtual const char* get_model() const APPLESEED_OVERRIDE
         {
             return "osl_bssrdf";
+        }
+
+        virtual bool on_frame_begin(
+            const Project&              project,
+            const Assembly&             assembly,
+            foundation::IAbortSwitch*   abort_switch = 0) APPLESEED_OVERRIDE
+        {
+            if (!BSSRDF::on_frame_begin(project, assembly, abort_switch))
+                return false;
+
+            if (!m_directional_bssrdf->on_frame_begin(project, assembly, abort_switch))
+                return false;
+
+            if (!m_normalized_bssrdf->on_frame_begin(project, assembly, abort_switch))
+                return false;
+
+            return true;
+        }
+
+        virtual void on_frame_end(
+            const Project&              project,
+            const Assembly&             assembly) APPLESEED_OVERRIDE
+        {
+            m_directional_bssrdf->on_frame_end(project, assembly);
+            m_normalized_bssrdf->on_frame_end(project, assembly);
+            BSSRDF::on_frame_end(project, assembly);
         }
 
         virtual size_t compute_input_data_size(
@@ -89,7 +126,28 @@ namespace
         {
             CompositeSubsurfaceClosure* c = reinterpret_cast<CompositeSubsurfaceClosure*>(input_evaluator.data());
             new (c) CompositeSubsurfaceClosure(shading_point.get_osl_shader_globals().Ci);
-            // evaluate all child bssrdf inputs here...
+
+            for (size_t i = 0, e = c->get_num_closures(); i < e; ++i)
+            {
+                if (c->get_closure_type(i) == SubsurfaceDirectionalID)
+                {
+                    m_directional_bssrdf->evaluate_inputs(
+                        shading_context,
+                        input_evaluator,
+                        shading_point,
+                        c->get_closure_input_offset(i));
+                }
+                else if (c->get_closure_type(i) == SubsurfaceNormalizedID)
+                {
+                    m_normalized_bssrdf->evaluate_inputs(
+                        shading_context,
+                        input_evaluator,
+                        shading_point,
+                        c->get_closure_input_offset(i));
+                }
+                else
+                    assert(false);
+            }
         }
 
         virtual void evaluate(
@@ -100,16 +158,31 @@ namespace
             const Vector3d&             incoming_dir,
             Spectrum&                   value) const APPLESEED_OVERRIDE
         {
+            const CompositeSubsurfaceClosure* c =
+                reinterpret_cast<const CompositeSubsurfaceClosure*>(data);
+
+            // TODO: implement this...
             value.set(0.0f);
         }
 
       private:
-        virtual Vector2d sample(
+        auto_release_ptr<BSSRDF>    m_directional_bssrdf;
+        auto_release_ptr<BSSRDF>    m_normalized_bssrdf;
+
+        virtual bool do_sample(
             const void*     data,
-            const Vector3d& r,
-            size_t&         ch) const APPLESEED_OVERRIDE
+            BSSRDFSample&   sample,
+            Vector2d&       point) const APPLESEED_OVERRIDE
         {
-            return Vector2d(0.0, 0.0);
+            const CompositeSubsurfaceClosure* c =
+                reinterpret_cast<const CompositeSubsurfaceClosure*>(data);
+
+            if (c->get_num_closures())
+            {
+                // ...
+            }
+
+            return false;
         }
 
         virtual double pdf(
@@ -117,6 +190,10 @@ namespace
             const size_t    channel,
             const double    dist) const APPLESEED_OVERRIDE
         {
+            const CompositeSubsurfaceClosure* c =
+                reinterpret_cast<const CompositeSubsurfaceClosure*>(data);
+
+            // TODO: implement this...
             return 0.0;
         }
     };

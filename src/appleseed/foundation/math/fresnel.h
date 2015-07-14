@@ -106,6 +106,8 @@ void fresnel_dielectric_schlick(
     const T             cos_theta,              // cos(incident direction, normal)
     const T             multiplier = T(1.0));   // reflectance multiplier at tangent incidence
 
+template <typename T>
+T fresnel_transmission(const T cos_theta, const T eta);
 
 //
 // Implementation.
@@ -250,6 +252,20 @@ void fresnel_dielectric_schlick(
     reflectance = normal_reflectance;
     reflectance *= static_cast<ValueType>(T(1.0) - k5);
     reflectance += SpectrumType(static_cast<ValueType>(k5 * multiplier));
+}
+
+template <typename T>
+T fresnel_transmission(const T cos_theta, const T eta)
+{
+    const T sin_theta_t_sqr = T(1.0) / square(eta) * (T(1.0) - square(cos_theta));
+
+    if (sin_theta_t_sqr >= T(1.0))
+        return T(0.0);
+
+    const double cos_theta_t = std::sqrt(T(1.0) - sin_theta_t_sqr);
+    const double r_s = (cos_theta - eta * cos_theta_t) / (cos_theta + eta * cos_theta_t);
+    const double r_p = (eta * cos_theta - cos_theta_t) / (eta * cos_theta + cos_theta_t);
+    return T(1.0) - ((r_s * r_s + r_p * r_p) * T(0.5));
 }
 
 }       // namespace foundation
