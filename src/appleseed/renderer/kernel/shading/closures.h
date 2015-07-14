@@ -40,6 +40,8 @@
 #include "renderer/modeling/bsdf/specularbrdf.h"
 #include "renderer/modeling/bsdf/specularbtdf.h"
 #include "renderer/modeling/bsdf/velvetbrdf.h"
+#include "renderer/modeling/bssrdf/directionaldipolebssrdf.h"
+#include "renderer/modeling/bssrdf/normalizeddiffusionbssrdf.h"
 #include "renderer/modeling/edf/diffuseedf.h"
 
 // appleseed.foundation headers.
@@ -98,6 +100,8 @@ enum ClosureID
     MicrofacetGGXRefractionID,
 
     SubsurfaceID,
+    SubsurfaceDirectionalID,
+    SubsurfaceNormalizedID,
 
     // Special closures.
     BackgroundID,
@@ -111,27 +115,24 @@ enum ClosureID
 
 
 //
-// Composite OSL surface closure.
+// Composite OSL closure.
 //
 
-class APPLESEED_ALIGN(16) CompositeSurfaceClosure
+class APPLESEED_ALIGN(16) CompositeClosure
   : public foundation::NonCopyable
 {
   public:
-    explicit CompositeSurfaceClosure(const OSL::ClosureColor* ci);
 
     size_t get_num_closures() const;
     ClosureID get_closure_type(const size_t index) const;
     const Spectrum& get_closure_weight(const size_t index) const;
     double get_closure_pdf_weight(const size_t index) const;
-    const foundation::Vector3d& get_closure_normal(const size_t index) const;
-    bool closure_has_tangent(const size_t index) const;
-    const foundation::Vector3d& get_closure_tangent(const size_t index) const;
     void* get_closure_input_values(const size_t index) const;
+    size_t get_closure_input_offset(const size_t index) const;
 
     size_t choose_closure(const double w) const;
 
-  private:
+  protected:
     typedef boost::mpl::vector<
         OSLAshikhminBRDFInputValues,
         DiffuseBTDFInputValues,
@@ -142,7 +143,9 @@ class APPLESEED_ALIGN(16) CompositeSurfaceClosure
         OrenNayarBRDFInputValues,
         SpecularBRDFInputValues,
         SpecularBTDFInputValues,
-        VelvetBRDFInputValues> InputValuesTypeList;
+        VelvetBRDFInputValues,
+        DirectionalDipoleBSSRDFInputValues,
+        NormalizedDiffusionBSSRDFInputValues> InputValuesTypeList;
 
     // Find the biggest InputValues type.
     typedef boost::mpl::max_element<
@@ -152,20 +155,42 @@ class APPLESEED_ALIGN(16) CompositeSurfaceClosure
 
     enum { InputValuesAlignment = 16 };
     enum { MaxClosureEntries = 8 };
-    enum { MaxPoolSize = MaxClosureEntries * (sizeof(boost::mpl::deref<BiggestInputValueType::base>::type) + 16) };
+    enum { MaxPoolSize = MaxClosureEntries * (sizeof(boost::mpl::deref<BiggestInputValueType::base>::type) + InputValuesAlignment) };
 
     // m_pool has to be first, because it has to be aligned.
     char                            m_pool[MaxPoolSize];
     void*                           m_input_values[MaxClosureEntries];
     ClosureID                       m_closure_types[MaxClosureEntries];
-    foundation::Vector3d            m_normals[MaxClosureEntries];
-    bool                            m_has_tangent[MaxClosureEntries];
-    foundation::Vector3d            m_tangents[MaxClosureEntries];
     size_t                          m_num_closures;
     size_t                          m_num_bytes;
     Spectrum                        m_weights[MaxClosureEntries];
     double                          m_cdf[MaxClosureEntries];
     double                          m_pdf_weights[MaxClosureEntries];
+
+    CompositeClosure();
+
+    void compute_cdf();
+};
+
+
+//
+// Composite OSL surface closure.
+//
+
+class APPLESEED_ALIGN(16) CompositeSurfaceClosure
+  : public CompositeClosure
+{
+  public:
+    explicit CompositeSurfaceClosure(const OSL::ClosureColor* ci);
+
+    const foundation::Vector3d& get_closure_normal(const size_t index) const;
+    bool closure_has_tangent(const size_t index) const;
+    const foundation::Vector3d& get_closure_tangent(const size_t index) const;
+
+  private:
+    foundation::Vector3d            m_normals[MaxClosureEntries];
+    bool                            m_has_tangent[MaxClosureEntries];
+    foundation::Vector3d            m_tangents[MaxClosureEntries];
 
     void process_closure_tree(
         const OSL::ClosureColor*    closure,
@@ -198,6 +223,30 @@ class APPLESEED_ALIGN(16) CompositeSurfaceClosure
 
 
 //
+// Composite OSL subsurface closure.
+//
+
+class APPLESEED_ALIGN(16) CompositeSubsurfaceClosure
+  : public CompositeClosure
+{
+  public:
+    explicit CompositeSubsurfaceClosure(const OSL::ClosureColor* ci);
+
+  private:
+    void process_closure_tree(
+        const OSL::ClosureColor*    closure,
+        const foundation::Color3f&  weight);
+
+    template <typename InputValues>
+    void add_closure(
+        const ClosureID             closure_type,
+        const foundation::Color3f&  weight,
+        const InputValues&          values);
+
+};
+
+
+//
 // Composite OSL emission closure.
 //
 
@@ -220,23 +269,6 @@ class APPLESEED_ALIGN(16) CompositeEmissionClosure
 
 
 //
-// Composite OSL subsurface closure.
-//
-
-class APPLESEED_ALIGN(16) CompositeSubsurfaceClosure
-  : public foundation::NonCopyable
-{
-  public:
-    explicit CompositeSubsurfaceClosure(const OSL::ClosureColor* ci);
-
-  private:
-    void process_closure_tree(
-        const OSL::ClosureColor*    closure,
-        const foundation::Color3f&  weight);
-};
-
-
-//
 // Utility functions.
 //
 
@@ -248,31 +280,48 @@ void register_closures(OSL::ShadingSystem& shading_system);
 
 
 //
-// CompositeSurfaceClosure class implementation.
+// CompositeClosure class implementation.
 //
 
-inline size_t CompositeSurfaceClosure::get_num_closures() const
+inline size_t CompositeClosure::get_num_closures() const
 {
     return m_num_closures;
 }
 
-inline ClosureID CompositeSurfaceClosure::get_closure_type(const size_t index) const
+inline ClosureID CompositeClosure::get_closure_type(const size_t index) const
 {
     assert(index < get_num_closures());
     return m_closure_types[index];
 }
 
-inline const Spectrum& CompositeSurfaceClosure::get_closure_weight(const size_t index) const
+inline const Spectrum& CompositeClosure::get_closure_weight(const size_t index) const
 {
     assert(index < get_num_closures());
     return m_weights[index];
 }
 
-inline double CompositeSurfaceClosure::get_closure_pdf_weight(const size_t index) const
+inline double CompositeClosure::get_closure_pdf_weight(const size_t index) const
 {
     assert(index < get_num_closures());
     return m_pdf_weights[index];
 }
+
+inline void* CompositeClosure::get_closure_input_values(const size_t index) const
+{
+    assert(index < get_num_closures());
+    return m_input_values[index];
+}
+
+inline size_t CompositeClosure::get_closure_input_offset(const size_t index) const
+{
+    assert(index < get_num_closures());
+    return reinterpret_cast<char*>(m_input_values[index]) - m_pool;
+}
+
+
+//
+// CompositeSurfaceClosure class implementation.
+//
 
 inline const foundation::Vector3d& CompositeSurfaceClosure::get_closure_normal(const size_t index) const
 {
@@ -291,12 +340,6 @@ inline const foundation::Vector3d& CompositeSurfaceClosure::get_closure_tangent(
     assert(index < get_num_closures());
     assert(closure_has_tangent(index));
     return m_tangents[index];
-}
-
-inline void* CompositeSurfaceClosure::get_closure_input_values(const size_t index) const
-{
-    assert(index < get_num_closures());
-    return m_input_values[index];
 }
 
 

@@ -26,8 +26,8 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_RENDERER_MODELING_BSSRDF_DIRECTIONALDIPOLEBSSRDF_H
-#define APPLESEED_RENDERER_MODELING_BSSRDF_DIRECTIONALDIPOLEBSSRDF_H
+#ifndef APPLESEED_RENDERER_MODELING_BSSRDF_NORMALIZEDDIFFUSIONBSSRDF_H
+#define APPLESEED_RENDERER_MODELING_BSSRDF_NORMALIZEDDIFFUSIONBSSRDF_H
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
@@ -57,32 +57,24 @@ namespace renderer
 {
 
 //
-// Directional dipole BSSRDF input values.
+// Normalized diffusion BSSRDF input values.
 //
 
-APPLESEED_DECLARE_INPUT_VALUES(DirectionalDipoleBSSRDFInputValues)
+APPLESEED_DECLARE_INPUT_VALUES(NormalizedDiffusionBSSRDFInputValues)
 {
     Spectrum    m_reflectance;
     Spectrum    m_mean_free_path;
     double      m_mean_free_path_multiplier;
-    double      m_anisotropy;
     double      m_from_ior;
     double      m_to_ior;
-
-    // Precomputed values.
-    Spectrum    m_channel_weights;
-    Spectrum    m_channel_cdf;
-    double      m_max_mean_free_path;
-    Spectrum    m_sigma_a;
-    Spectrum    m_sigma_s_prime;
 };
 
 
 //
-// Directional dipole BSSRDF factory.
+// Normalized diffusion BSSRDF factory.
 //
 
-class APPLESEED_DLLSYMBOL DirectionalDipoleBSSRDFFactory
+class APPLESEED_DLLSYMBOL NormalizedDiffusionBSSRDFFactory
   : public IBSSRDFFactory
 {
   public:
@@ -103,4 +95,4 @@ class APPLESEED_DLLSYMBOL DirectionalDipoleBSSRDFFactory
 
 }       // namespace renderer
 
-#endif  // !APPLESEED_RENDERER_MODELING_BSSRDF_DIRECTIONALDIPOLEBSSRDF_H
+#endif  // !APPLESEED_RENDERER_MODELING_BSSRDF_NORMALIZEDDIFFUSIONBSSRDF_H

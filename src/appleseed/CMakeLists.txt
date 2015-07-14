@@ -1290,6 +1290,8 @@ set (renderer_modeling_bssrdf_sources
     renderer/modeling/bssrdf/directionaldipolebssrdf.cpp
     renderer/modeling/bssrdf/directionaldipolebssrdf.h
     renderer/modeling/bssrdf/ibssrdffactory.h
+    renderer/modeling/bssrdf/normalizeddiffusionbssrdf.cpp
+    renderer/modeling/bssrdf/normalizeddiffusionbssrdf.h
 )
 if (WITH_OSL)
     list (APPEND renderer_modeling_bssrdf_sources

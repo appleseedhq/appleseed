@@ -59,26 +59,34 @@ class BSSRDFSample
     // Output fields.
 
     const foundation::Basis3d& get_sample_basis() const;
-    foundation::Basis3d& get_sample_basis();
+    void set_sample_basis(const foundation::Basis3d& basis);
 
     size_t get_channel() const;
-    void set_channel(size_t ch);
+    void set_channel(const size_t ch);
 
     const foundation::Vector3d& get_origin() const;
     void set_origin(const foundation::Vector3d& origin);
 
     bool get_use_offset_origin() const;
-    void set_use_offset_origin(bool b);
+    void set_use_offset_origin(const bool b);
 
     double get_max_distance() const;
     void set_max_distance(double max_distance);
+
+    bool is_directional() const;
+    void set_is_directional(const bool is_directional);
+
+    double get_eta() const;
+    void set_eta(const double eta);
 
     private:
     const ShadingPoint&     m_shading_point;       // shading point at which the sampling is done
     SamplingContext&        m_sampling_context;    // sampling context used to sample BSDFs
 
+    bool                    m_is_directional;
     foundation::Basis3d     m_sample_basis;
     size_t                  m_channel;
+    double                  m_eta;
     foundation::Vector3d    m_origin;
     bool                    m_use_offset_origin;
     double                  m_max_distance;
@@ -94,6 +102,7 @@ inline BSSRDFSample::BSSRDFSample(
     SamplingContext&            sampling_context)
   : m_shading_point(shading_point)
   , m_sampling_context(sampling_context)
+  , m_is_directional(false)
   , m_use_offset_origin(false)
   , m_max_distance(std::numeric_limits<double>::max())
 {
@@ -114,9 +123,9 @@ inline const foundation::Basis3d& BSSRDFSample::get_sample_basis() const
     return m_sample_basis;
 }
 
-inline foundation::Basis3d& BSSRDFSample::get_sample_basis()
+inline void BSSRDFSample::set_sample_basis(const foundation::Basis3d& basis)
 {
-    return m_sample_basis;
+    m_sample_basis = basis;
 }
 
 inline size_t BSSRDFSample::get_channel() const
@@ -124,7 +133,7 @@ inline size_t BSSRDFSample::get_channel() const
     return m_channel;
 }
 
-inline void BSSRDFSample::set_channel(size_t ch)
+inline void BSSRDFSample::set_channel(const size_t ch)
 {
     m_channel = ch;
 }
@@ -144,7 +153,7 @@ inline bool BSSRDFSample::get_use_offset_origin() const
     return m_use_offset_origin;
 }
 
-inline void BSSRDFSample::set_use_offset_origin(bool b)
+inline void BSSRDFSample::set_use_offset_origin(const bool b)
 {
     m_use_offset_origin = b;
 }
@@ -154,9 +163,29 @@ inline double BSSRDFSample::get_max_distance() const
     return m_max_distance;
 }
 
-inline void BSSRDFSample::set_max_distance(double max_distance)
+inline void BSSRDFSample::set_max_distance(const double max_distance)
 {
     m_max_distance = max_distance;
+}
+
+inline bool BSSRDFSample::is_directional() const
+{
+    return m_is_directional;
+}
+
+inline void BSSRDFSample::set_is_directional(const bool is_directional)
+{
+    m_is_directional = is_directional;
+}
+
+inline double BSSRDFSample::get_eta() const
+{
+    return m_eta;
+}
+
+inline void BSSRDFSample::set_eta(const double eta)
+{
+    m_eta = eta;
 }
 
 }       // namespace renderer

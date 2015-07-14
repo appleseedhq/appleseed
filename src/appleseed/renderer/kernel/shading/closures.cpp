@@ -139,9 +139,13 @@ namespace
         float       alpha;
     };
 
+    OSL::ustring directional_profile_name("directional");
+    OSL::ustring normalized_profile_name("normalized");
+
     struct SubsurfaceClosureParams
     {
-        OSL::ustring    type;
+        OSL::ustring    profile;
+        OSL::Color3     reflectance;
         OSL::Vec3       mean_free_path;
         float           eta;
     };
@@ -149,20 +153,19 @@ namespace
 
 
 //
-// CompositeSurfaceClosure class implementation.
+// CompositeClosure class implementation.
 //
 
-BOOST_STATIC_ASSERT(sizeof(CompositeSurfaceClosure) <= InputEvaluator::DataSize);
-
-CompositeSurfaceClosure::CompositeSurfaceClosure(
-    const OSL::ClosureColor*    ci)
+CompositeClosure::CompositeClosure()
   : m_num_closures(0)
   , m_num_bytes(0)
 {
     assert(is_aligned(m_pool, InputValuesAlignment));
 
-    process_closure_tree(ci, Color3f(1.0f));
+}
 
+void CompositeClosure::compute_cdf()
+{
     const size_t closure_count = get_num_closures();
     if (closure_count > 0)
     {
@@ -185,7 +188,7 @@ CompositeSurfaceClosure::CompositeSurfaceClosure(
     }
 }
 
-size_t CompositeSurfaceClosure::choose_closure(const double w) const
+size_t CompositeClosure::choose_closure(const double w) const
 {
     assert(w >= 0.0);
     assert(w < 1.0);
@@ -199,6 +202,20 @@ size_t CompositeSurfaceClosure::choose_closure(const double w) const
     assert(i < m_cdf + get_num_closures());
 
     return i - m_cdf;
+}
+
+
+//
+// CompositeSurfaceClosure class implementation.
+//
+
+BOOST_STATIC_ASSERT(sizeof(CompositeSurfaceClosure) <= InputEvaluator::DataSize);
+
+CompositeSurfaceClosure::CompositeSurfaceClosure(
+    const OSL::ClosureColor*    ci)
+{
+    process_closure_tree(ci, Color3f(1.0f));
+    compute_cdf();
 }
 
 void CompositeSurfaceClosure::process_closure_tree(
@@ -582,6 +599,130 @@ void CompositeSurfaceClosure::do_add_closure(
 
 
 //
+// CompositeSubsurfaceClosure class implementation.
+//
+
+CompositeSubsurfaceClosure::CompositeSubsurfaceClosure(
+    const OSL::ClosureColor*    ci)
+{
+    process_closure_tree(ci, Color3f(1.0f));
+    compute_cdf();
+}
+
+void CompositeSubsurfaceClosure::process_closure_tree(
+    const OSL::ClosureColor*    closure,
+    const foundation::Color3f&  weight)
+{
+    if (closure == 0)
+        return;
+
+    switch (closure->type)
+    {
+      case OSL::ClosureColor::MUL:
+        {
+            const OSL::ClosureMul* c = reinterpret_cast<const OSL::ClosureMul*>(closure);
+            process_closure_tree(c->closure, weight * Color3f(c->weight));
+        }
+        break;
+
+      case OSL::ClosureColor::ADD:
+        {
+            const OSL::ClosureAdd* c = reinterpret_cast<const OSL::ClosureAdd*>(closure);
+            process_closure_tree(c->closureA, weight);
+            process_closure_tree(c->closureB, weight);
+        }
+        break;
+
+      case OSL::ClosureColor::COMPONENT:
+        {
+            const OSL::ClosureComponent* c = reinterpret_cast<const OSL::ClosureComponent*>(closure);
+            const Color3f w = weight * Color3f(c->w);
+
+            if (c->id == SubsurfaceID)
+            {
+                const SubsurfaceClosureParams* p =
+                    reinterpret_cast<const SubsurfaceClosureParams*>(c->data());
+
+                if (p->profile == directional_profile_name)
+                {
+                    DirectionalDipoleBSSRDFInputValues values;
+                    values.m_reflectance = Color3f(p->reflectance);
+                    values.m_mean_free_path = Color3f(p->mean_free_path);
+                    values.m_mean_free_path_multiplier = 1.0;
+                    values.m_anisotropy = 0.0;
+                    values.m_from_ior = 1.0;
+                    values.m_to_ior = 1.0 / p->eta;
+
+                    add_closure<DirectionalDipoleBSSRDFInputValues>(
+                        SubsurfaceDirectionalID,
+                        w,
+                        values);
+
+                }
+                else if (p->profile == normalized_profile_name)
+                {
+                    NormalizedDiffusionBSSRDFInputValues values;
+                    values.m_reflectance = Color3f(p->reflectance);
+                    values.m_mean_free_path = Color3f(p->mean_free_path);
+                    values.m_mean_free_path_multiplier = 1.0;
+                    values.m_from_ior = 1.0;
+                    values.m_to_ior = 1.0 / p->eta;
+
+                    add_closure<NormalizedDiffusionBSSRDFInputValues>(
+                        SubsurfaceNormalizedID,
+                        w,
+                        values);
+                }
+                else
+                    assert(false);
+            }
+        }
+        break;
+
+      assert_otherwise;
+    }
+}
+
+template <typename InputValues>
+void CompositeSubsurfaceClosure::add_closure(
+    const ClosureID             closure_type,
+    const Color3f&              weight,
+    const InputValues&          params)
+{
+    // Check that InputValues is included in our type list.
+    typedef typename boost::mpl::contains<InputValuesTypeList, InputValues>::type value_in_list;
+    BOOST_STATIC_ASSERT(value_in_list::value);
+
+    // Make sure we have enough space.
+    if (get_num_closures() >= MaxClosureEntries)
+    {
+        RENDERER_LOG_WARNING("maximum number of subsurface closures in osl shader group exceeded; ignoring closure.");
+        return;
+    }
+
+    assert(m_num_bytes + sizeof(InputValues) <= MaxPoolSize);
+
+    // We use the luminance of the weight as the BSSRDF weight.
+    const double w = luminance(weight);
+
+    // Ignore zero or negative weights.
+    if (w <= 0.0)
+        return;
+
+    m_pdf_weights[m_num_closures] = w;
+    m_weights[m_num_closures] = weight;
+    m_closure_types[m_num_closures] = closure_type;
+
+    char* values_ptr = m_pool + m_num_bytes;
+    assert(is_aligned(values_ptr, InputValuesAlignment));
+    new (values_ptr) InputValues(params);
+    m_input_values[m_num_closures] = values_ptr;
+    m_num_bytes += align(sizeof(InputValues), InputValuesAlignment);
+    ++m_num_closures;
+}
+
+
+//
 // CompositeEmissionClosure class implementation.
 //
 
@@ -638,55 +779,6 @@ void CompositeEmissionClosure::process_closure_tree(
 
             if (c->id == EmissionID)
                 m_total_weight += weight * Color3f(c->w);
-        }
-        break;
-
-      assert_otherwise;
-    }
-}
-
-
-//
-// CompositeSubsurfaceClosure class implementation.
-//
-
-CompositeSubsurfaceClosure::CompositeSubsurfaceClosure(
-    const OSL::ClosureColor*    ci)
-{
-    process_closure_tree(ci, Color3f(1.0f));
-}
-
-void CompositeSubsurfaceClosure::process_closure_tree(
-    const OSL::ClosureColor*    closure,
-    const foundation::Color3f&  weight)
-{
-    if (closure == 0)
-        return;
-
-    switch (closure->type)
-    {
-      case OSL::ClosureColor::MUL:
-        {
-            const OSL::ClosureMul* c = reinterpret_cast<const OSL::ClosureMul*>(closure);
-            process_closure_tree(c->closure, weight * Color3f(c->weight));
-        }
-        break;
-
-      case OSL::ClosureColor::ADD:
-        {
-            const OSL::ClosureAdd* c = reinterpret_cast<const OSL::ClosureAdd*>(closure);
-            process_closure_tree(c->closureA, weight);
-            process_closure_tree(c->closureB, weight);
-        }
-        break;
-
-      case OSL::ClosureColor::COMPONENT:
-        {
-            const OSL::ClosureComponent* c = reinterpret_cast<const OSL::ClosureComponent*>(closure);
-
-            // TODO: handle subsurface closures here...
-            //if (c->id == SubsurfaceID)
-            //  ...
         }
         break;
 
@@ -796,6 +888,12 @@ void register_appleseed_closures(OSL::ShadingSystem& shading_system)
                                    CLOSURE_FLOAT_PARAM(DisneyBRDFClosureParams, clearcoat_gloss),
                                    CLOSURE_FINISH_PARAM(DisneyBRDFClosureParams) } },
 
+        { "as_subsurface", SubsurfaceID, { CLOSURE_STRING_PARAM(SubsurfaceClosureParams, profile),
+                                           CLOSURE_COLOR_PARAM(SubsurfaceClosureParams, reflectance),
+                                           CLOSURE_VECTOR_PARAM(SubsurfaceClosureParams, mean_free_path),
+                                           CLOSURE_FLOAT_PARAM(SubsurfaceClosureParams, eta),
+                                           CLOSURE_FINISH_PARAM(SubsurfaceClosureParams) } },
+
         { "as_velvet", VelvetID, { CLOSURE_VECTOR_PARAM(VelvetBRDFClosureParams, N),
                                    CLOSURE_FLOAT_PARAM(VelvetBRDFClosureParams, alpha),
                                    CLOSURE_FINISH_PARAM(VelvetBRDFClosureParams) } },
@@ -836,11 +934,6 @@ void register_appleseed_closures(OSL::ShadingSystem& shading_system)
                                           CLOSURE_FINISH_PARAM(DiffuseBSDFClosureParams) } },
 
         { "transparent", TransparentID, { CLOSURE_FINISH_PARAM(EmptyClosureParams) } },
-
-        { "subsurface", SubsurfaceID, { CLOSURE_STRING_PARAM(SubsurfaceClosureParams, type),
-                                        CLOSURE_VECTOR_PARAM(SubsurfaceClosureParams, mean_free_path),
-                                        CLOSURE_FLOAT_PARAM(SubsurfaceClosureParams, eta),
-                                        CLOSURE_FINISH_PARAM(SubsurfaceClosureParams) } },
 
         { 0, 0, {} }    // mark end of the array
     };

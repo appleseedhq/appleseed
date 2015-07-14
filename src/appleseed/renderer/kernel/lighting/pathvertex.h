@@ -47,6 +47,7 @@
 #include <cstddef>
 
 // Forward declarations.
+namespace renderer  { class BSSRDF; }
 namespace renderer  { class EDF; }
 namespace renderer  { class Material; }
 namespace renderer  { class ShadingContext; }
@@ -72,6 +73,17 @@ class PathVertex
     const EDF*                  m_edf;
     const BSDF*                 m_bsdf;
     const void*                 m_bsdf_data;
+
+    // BSSRDF data
+    const BSSRDF*               m_bssrdf;
+    const void*                 m_bssrdf_data;
+    ShadingPoint                m_bssrdf_incoming_point;
+    double                      m_bssrdf_eta;
+    double                      m_bssrdf_outgoing_fresnel;
+    bool                        m_bssrdf_directional;
+    Spectrum                    m_bssrdf_value;
+    double                      m_bssrdf_pdf;
+
     size_t                      m_path_length;
     BSDFSample::ScatteringMode  m_prev_bsdf_mode;
     double                      m_prev_bsdf_prob;
