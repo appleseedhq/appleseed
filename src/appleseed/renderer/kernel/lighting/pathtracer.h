@@ -460,20 +460,13 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
             bsdf_mode_to_ray_flags(sample.get_mode()),
             ray.m_depth + 1);
 
+        // Compute scattered ray differentials.
         if (sample.get_incoming().has_derivatives())
         {
-            scattered_ray.m_rx.m_org =
-                scattered_ray.m_org + vertex.m_shading_point->get_dpdx();
-
-            scattered_ray.m_ry.m_org =
-                scattered_ray.m_org + vertex.m_shading_point->get_dpdy();
-
-            scattered_ray.m_rx.m_dir =
-                scattered_ray.m_dir + sample.get_incoming().get_dx();
-
-            scattered_ray.m_ry.m_dir =
-                scattered_ray.m_dir + sample.get_incoming().get_dy();
-
+            scattered_ray.m_rx.m_org = scattered_ray.m_org + vertex.m_shading_point->get_dpdx();
+            scattered_ray.m_ry.m_org = scattered_ray.m_org + vertex.m_shading_point->get_dpdy();
+            scattered_ray.m_rx.m_dir = scattered_ray.m_dir + sample.get_incoming().get_dx();
+            scattered_ray.m_ry.m_dir = scattered_ray.m_dir + sample.get_incoming().get_dy();
             scattered_ray.m_has_differentials = true;
         }
 
