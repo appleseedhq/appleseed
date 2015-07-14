@@ -277,6 +277,7 @@ namespace
             return xmid;
         }
 
+        // Diffusive part of the BSSRDF.
         static double sp_d(
             const double            sigma_a,
             const double            sigma_s_prime,
@@ -318,8 +319,7 @@ namespace
         {
             // Distance.
             const Vector3d xoxi = xo - xi;
-            const double r = norm(xoxi);
-            const double r2 = square(r);
+            const double r2 = square_norm(xoxi);
 
             // Modified normal.
             const Vector3d ni_s = cross(normalize(xoxi), normalize(cross(ni, xoxi)));
@@ -340,27 +340,31 @@ namespace
             const double dot_xin = dot(xoxi, no);
             const double dot_wvn = dot(wv, no);
 
+            assert(result.size() == values->m_sigma_a.size());
+            assert(result.size() == values->m_sigma_s_prime.size());
+
             for (size_t i = 0, e = result.size(); i < e; ++i)
             {
-                const double sigma_a = values->m_sigma_a[i];
-                const double sigma_s_prime = values->m_sigma_s_prime[i];
-                const double sigma_t_prime = sigma_a + sigma_s_prime;
-                const double D = 1.0 / (3.0 * sigma_t_prime);
-                const double alpha_prime = sigma_s_prime / sigma_t_prime;
-                const double de = 2.131 * D / sqrt(alpha_prime);
+                const double sigma_a = values->m_sigma_a[i];                            // absorption coefficient
+                const double sigma_s_prime = values->m_sigma_s_prime[i];                // reduced scattering coefficient
+                const double sigma_t_prime = sigma_s_prime + sigma_a;                   // reduced extinction coefficient
+                const double alpha_prime = sigma_s_prime / sigma_t_prime;               // reduced scattering albedo
+                const double sigma_s = sigma_s_prime / (1.0 - values->m_anisotropy);    // scattering coefficient
+                const double sigma_t = sigma_a + sigma_s;                               // extinction coefficient
 
-                const double sigma_s = sigma_s_prime / (1.0 - values->m_anisotropy);
-                const double sigma_t = sigma_a + sigma_s;
+                // Compute extrapolation distance (equation 21).
+                const double D = 1.0 / (3.0 * sigma_t_prime);                           // diffusion coefficient
+                const double de = 2.131 * D / sqrt(alpha_prime);                        // extrapolation distance
 
-                // Distance to real sources.
-                const double cos_beta = -sqrt((r2 - square(dot(wr, xoxi))) / (r2 + square(de)));
+                // Compute distance to real source.
                 const double mu0 = -dot_wrn;
+                const double cos_beta = -sqrt((r2 - square(dot(wr, xoxi))) / (r2 + square(de)));
                 const double dr =
                     mu0 > 0.0
-                        ? sqrt((D * mu0) * ((D * mu0) - de * cos_beta * 2.0) + r2)
-                        : sqrt(1.0 / square(3.0 * sigma_t) + r2);
+                        ? sqrt(r2 + D * mu0 * (D * mu0 - 2.0 * de * cos_beta))          // frontlit
+                        : sqrt(r2 + 1.0 / square(3.0 * sigma_t));                       // backlit
 
-                // Distance to virtual source.
+                // Compute distance to virtual source.
                 const Vector3d xoxv = xo - (xi + ni_s * (2.0 * A * de));
                 const double dv = norm(xoxv);
 
