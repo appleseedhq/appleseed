@@ -504,6 +504,9 @@ namespace
                             incoming *= rcp_sample_distance;
                             cos_on_light *= rcp_sample_distance;
 
+                            // todo: check for OSL here and possibly
+                            // exec the shader.
+
                             // Evaluate the input values of the EDF.
                             InputEvaluator edf_input_evaluator(m_shading_context.get_texture_cache());
                             edf->evaluate_inputs(edf_input_evaluator, vertex.m_bssrdf_incoming_point);
@@ -523,7 +526,7 @@ namespace
                         }
 
                         // Compute Fresnel coefficient at outgoing point.
-                        const double cos_on = 
+                        const double cos_on =
                             dot(
                                 vertex.m_outgoing.get_value(),
                                 vertex.get_shading_normal());
@@ -552,6 +555,8 @@ namespace
                                 vertex.m_bssrdf_incoming_point,
                                 incoming,
                                 bssrdf_value);
+
+                            bssrdf_value *= static_cast<float>(1.0 / vertex.m_bssrdf_pdf);
 
                             // Add the contribution of this sample to the illumination.
                             const double weight = transmission * cos_in * cos_on * cos_on_light * incoming_fresnel * outgoing_fresnel;
