@@ -37,9 +37,6 @@
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
 
-// standard headers.
-#include <algorithm>
-
 using namespace foundation;
 
 namespace renderer
@@ -162,6 +159,7 @@ namespace
         }
     };
 }
+
 
 //
 // NormalizedDiffusionBSSRDFFactory class implementation.

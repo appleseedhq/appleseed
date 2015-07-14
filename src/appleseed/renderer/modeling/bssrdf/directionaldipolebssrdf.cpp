@@ -37,8 +37,9 @@
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
 
-// standard headers.
+// Standard headers.
 #include <algorithm>
+#include <cmath>
 
 using namespace foundation;
 
@@ -53,17 +54,15 @@ namespace
     //
     // Directional dipole BSSRDF.
     //
-
+    // References:
     //
-    // references:
+    //   [1] Directional Dipole for Subsurface Scattering
+    //       Jeppe Revall Frisvad, Toshiya Hachisuka and Thomas Kim Kjeldsen.
+    //       http://www.ci.i.u-tokyo.ac.jp/~hachisuka/dirpole.pdf
     //
-    // [1] Directional Dipole for Subsurface Scattering
-    // Jeppe Revall Frisvad, Toshiya Hachisuka and Thomas Kim Kjeldsen.
-    // http://www.ci.i.u-tokyo.ac.jp/~hachisuka/dirpole.pdf
-    //
-    // [2] Texture mapping for the Better Dipole model
-    // Christophe Hery
-    // http://graphics.pixar.com/library/TexturingBetterDipole/paper.pdf
+    //   [2] Texture mapping for the Better Dipole model
+    //       Christophe Hery
+    //       http://graphics.pixar.com/library/TexturingBetterDipole/paper.pdf
     //
 
     class DirectionalDipoleBSSRDF
@@ -137,17 +136,20 @@ namespace
 
             for (size_t i = 0, e = values->m_reflectance.size(); i < e; ++i)
             {
-                const double alpha_prime = compute_alpha_prime(
-                    clamp(static_cast<double>(values->m_reflectance[i]), 0.0, 1.0), c1, c2);
-
+                const double alpha_prime =
+                    compute_alpha_prime(
+                        saturate(static_cast<double>(values->m_reflectance[i])),
+                        c1, c2);
                 sum_alpha_prime += alpha_prime;
+
                 values->m_channel_weights[i] = static_cast<float>(alpha_prime);
                 values->m_channel_cdf[i] = static_cast<float>(sum_alpha_prime);
+
                 const double mfp = static_cast<double>(values->m_mean_free_path[i]);
                 values->m_max_mean_free_path = std::max(values->m_max_mean_free_path, mfp);
 
                 const double sigma_tr = 1.0 / mfp;
-                const double sigma_t_prime = sigma_tr / std::sqrt( 3.0 * (1.0 - alpha_prime));
+                const double sigma_t_prime = sigma_tr / std::sqrt(3.0 * (1.0 - alpha_prime));
 
                 values->m_sigma_s_prime[i] = static_cast<float>(alpha_prime * sigma_t_prime);
                 values->m_sigma_a[i] = static_cast<float>(sigma_t_prime) - values->m_sigma_s_prime[i];
@@ -225,10 +227,8 @@ namespace
 
             // Sample a radius and an angle.
             const double radius = -std::log(1.0 - r[1]) * values->m_mean_free_path[sample.get_channel()];
-            const double phi = 2.0 * Pi * r[2];
-            point = Vector2d(
-                radius * std::cos(phi),
-                radius * std::sin(phi));
+            const double phi = TwoPi * r[2];
+            point = Vector2d(radius * std::cos(phi), radius * std::sin(phi));
 
             return true;
         }
@@ -385,6 +385,7 @@ namespace
         }
     };
 }
+
 
 //
 // DirectionalDipoleBSSRDFFactory class implementation.

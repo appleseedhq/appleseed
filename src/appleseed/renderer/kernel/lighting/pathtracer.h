@@ -296,12 +296,14 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
         InputEvaluator bssrdf_input_evaluator(shading_context.get_texture_cache());
         if (vertex.m_bssrdf)
         {
+            // Evaluate the inputs of the BSSRDF.
             vertex.m_bssrdf->evaluate_inputs(
                 shading_context,
                 bssrdf_input_evaluator,
                 *vertex.m_shading_point);
             vertex.m_bssrdf_data = bssrdf_input_evaluator.data();
 
+            // Sample the BSSRDF.
             BSSRDFSample sample(*vertex.m_shading_point, vertex.m_sampling_context);
             if (vertex.m_bssrdf->sample(vertex.m_bssrdf_data, sample))
             {
@@ -339,7 +341,6 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
                     // Apply OSL bump mapping if needed.
                     const Material* incoming_material =
                         vertex.m_bssrdf_incoming_point.get_opposite_material();
-
                     if (incoming_material->has_osl_surface())
                     {
                         shading_context.execute_osl_shading(
@@ -370,8 +371,7 @@ size_t PathTracer<PathVisitor, Adjoint>::trace(
 
                     vertex.m_bssrdf_directional = sample.is_directional();
 
-                    // if the bssrdf is not directional we can eval it
-                    // and cache its value for later use.
+                    // If the BSSRDF is not directional, we can evaluate it and cache its value for later use.
                     if (!vertex.m_bssrdf_directional)
                     {
                         vertex.m_bssrdf->evaluate(

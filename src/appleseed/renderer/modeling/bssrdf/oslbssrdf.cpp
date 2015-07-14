@@ -41,8 +41,8 @@
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
 
-// standard headers.
-#include <algorithm>
+// Standard headers.
+#include <cassert>
 
 using namespace foundation;
 
@@ -198,6 +198,7 @@ namespace
         }
     };
 }
+
 
 //
 // OSLBSSRDFFactory class implementation.

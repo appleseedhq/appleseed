@@ -174,7 +174,8 @@ double BSSRDF::pdf(
     const Basis3d&      basis,
     const size_t        channel) const
 {
-    // From PBRT3.
+    // From PBRT 3.
+
     const Vector3d d = outgoing_point.get_point() - incoming_point.get_point();
     const Vector3d dlocal(
         dot(basis.get_tangent_u(), d),
@@ -200,15 +201,19 @@ double BSSRDF::pdf(
     return result;
 }
 
-// A better dipole, Eugene d’Eon
-// http://www.eugenedeon.com/papers/betterdipole.pdf
+//
+// Reference:
+//
+//   A better dipole, Eugene d’Eon
+//   http://www.eugenedeon.com/papers/betterdipole.pdf
+//
 
 double BSSRDF::fresnel_moment_1(const double eta)
 {
-    if (eta >= 1.0)
-        return (-9.23372 + eta * (22.2272 + eta * (-20.9292 + eta * (10.2291 + eta * (-2.54396 + 0.254913 * eta))))) * 0.5;
-    else
-        return (0.919317 + eta * (-3.4793 + eta * (6.75335 + eta * (-7.80989 + eta *(4.98554 - 1.36881 * eta))))) * 0.5;
+    return
+        eta >= 1.0
+            ? (-9.23372 + eta * (22.2272 + eta * (-20.9292 + eta * (10.2291 + eta * (-2.54396 + 0.254913 * eta))))) * 0.5
+            : (0.919317 + eta * (-3.4793 + eta * (6.75335 + eta * (-7.80989 + eta *(4.98554 - 1.36881 * eta))))) * 0.5;
 }
 
 double BSSRDF::fresnel_moment_2(const double eta)
