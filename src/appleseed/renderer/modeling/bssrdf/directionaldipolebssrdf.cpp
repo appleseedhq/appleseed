@@ -35,6 +35,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/fresnel.h"
+#include "foundation/math/sss.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
 
@@ -244,37 +245,6 @@ namespace
 
             const double s = 1.0 / values->m_mean_free_path[channel];
             return s * exp(-s * dist) * values->m_channel_weights[channel];
-        }
-
-        static double compute_rd(double alpha_prime, double two_c1, double three_c2)
-        {
-            const double cphi = 0.25 * (1.0 - two_c1);
-            const double ce = 0.5 * (1.0 - three_c2);
-            const double four_a = (1.0 + three_c2) / cphi;
-            const double mu_tr_d = sqrt((1.0 - alpha_prime) * (2.0 - alpha_prime) / 3.0);
-            const double myexp = exp(-four_a * mu_tr_d);
-            return 0.5 * square(alpha_prime)
-                       * exp(-sqrt(3.0 * (1.0 - alpha_prime) / (2.0 - alpha_prime)))
-                       * (ce * (1.0 + myexp) + cphi / mu_tr_d * (1.0 - myexp));
-        }
-
-        static double compute_alpha_prime(double rd, double c1, double c2)
-        {
-            const double c12 = 2.0 * c1;
-            const double c23 = 3.0 * c2;
-
-            double x0 = 0.0, x1 = 1.0, xmid;
-
-            // For now simple bisection.
-            // todo: switch to faster algorithm.
-            for (size_t i = 0, iters = 50; i < iters; ++i)
-            {
-                xmid = 0.5 * (x0 + x1);
-                const double f = compute_rd(xmid, c12, c23);
-                f < rd ? x0 = xmid : x1 = xmid;
-            }
-
-            return xmid;
         }
 
         // Diffusive part of the BSSRDF.
