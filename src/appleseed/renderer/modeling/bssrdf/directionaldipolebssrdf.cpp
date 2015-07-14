@@ -277,36 +277,34 @@ namespace
             return xmid;
         }
 
-        static double sp_d(
-            const double            sigma_a,
-            const double            sigma_s_prime,
+        // Diffusive part of the BSSRDF.
+        static double sd_prime(
             const double            eta,
+            const double            cp,
+            const double            ce,
+            const double            D,
+            const double            sigma_a,
             const double            dot_xw,
             const double            dot_wn,
             const double            dot_xn,
-            const double            r)
+            const double            r)                                                  // distance from point of incidence
         {
-            const double cp = (1.0 - 2.0 * fresnel_moment_1(eta)) * 0.25;
-            const double ce = (1.0 - 3.0 * fresnel_moment_2(eta)) * 0.5;
-            const double cp_norm = 1.0 / (1.0 - 2.0 * fresnel_moment_1(1.0 / eta));
+            const double sigma_tr = sqrt(sigma_a / D);                                  // effective transport coefficient
 
             const double r2 = square(r);
-            const double r3_rcp = 1.0 / (r2 * r);
+            const double sigma_tr_r = sigma_tr * r;
+            const double sigma_tr_r_one = 1.0 + sigma_tr_r;
+            const double cp_rcp_eta = 1.0 - 2.0 * fresnel_moment_1(1.0 / eta);          // Cphi(1/eta) * 4
 
-            const double sigma_t_prime = sigma_a + sigma_s_prime;
-            const double D = 1.0 / (3.0 * sigma_t_prime);
-            const double sigma_tr = sqrt(sigma_a / D);
-            const double s_tr_r = sigma_tr * r;
-            const double s_tr_r_one = 1.0 + s_tr_r;
+            const double t0 = exp(-sigma_tr_r) / (cp_rcp_eta * 4.0 * square(Pi) * r2 * r);
+            const double t1 = r2 / D + 3.0 * sigma_tr_r_one * dot_xw;
+            const double t2 = 3.0 * D * sigma_tr_r_one * dot_wn;
+            const double t3 = (sigma_tr_r_one + 3.0 * D * (3.0 * sigma_tr_r_one + square(sigma_tr_r)) / r2 * dot_xw) * dot_xn;
 
-            const double four_pisq_rcp = 1.0 / (4.0 * square(Pi));
-            const double t0 = cp_norm * four_pisq_rcp * exp(-s_tr_r) * r3_rcp;
-            const double t1 = r2 / D + 3.0 * s_tr_r_one * dot_xw;
-            const double t2 = 3.0 * D * s_tr_r_one * dot_wn;
-            const double t3 = (s_tr_r_one + 3.0 * D * (3.0 * s_tr_r_one + square(s_tr_r)) / r2 * dot_xw) * dot_xn;
             return t0 * (cp * t1 - ce * (t2 - t3));
         }
 
+        // Directional dipole BSSRDF.
         static void bssrdf(
             const DirectionalDipoleBSSRDFInputValues*   values,
             const Vector3d&                             xi,
@@ -316,71 +314,81 @@ namespace
             const Vector3d&                             no,
             Spectrum&                                   result)
         {
-            // Distance.
+            // Compute square distance between points of incidence and emergence.
             const Vector3d xoxi = xo - xi;
-            const double r = norm(xoxi);
-            const double r2 = square(r);
+            const double r2 = square_norm(xoxi);
 
-            // Modified normal.
-            const Vector3d ni_s = cross(normalize(xoxi), normalize(cross(ni, xoxi)));
+            // Compute normal to modified tangent plane.
+            const Vector3d ni_star = cross(xoxi / sqrt(r2), normalize(cross(ni, xoxi)));
 
             // Directions of ray sources.
             const double eta = values->m_to_ior / values->m_from_ior;
             const double nnt = 1.0 / eta;
             const double ddn = -dot(wi, ni);
             const Vector3d wr = normalize(wi * -nnt - ni * (ddn * nnt + sqrt(1.0 - square(nnt) * (1.0 - square(ddn)))));
-            const Vector3d wv = wr - ni_s * (2.0 * dot(ni_s, wr));
+            const Vector3d wv = wr - ni_star * (2.0 * dot(ni_star, wr));
 
-            const double cp = (1.0 - 2.0 * fresnel_moment_1(eta)) * 0.25;
-            const double ce = (1.0 - 3.0 * fresnel_moment_2(eta)) * 0.5;
-            const double A = (1.0 - ce) / (2.0 * cp);
+            // Compute Fresnel integrals.
+            const double cp = 0.25 * (1.0 - 2.0 * fresnel_moment_1(eta));
+            const double ce = 0.5 * (1.0 - 3.0 * fresnel_moment_2(eta));
 
-            const double dot_xiwr = dot(xoxi, wr);
-            const double dot_wrn = dot(wr, no);
-            const double dot_xin = dot(xoxi, no);
-            const double dot_wvn = dot(wv, no);
+            const double A = (1.0 - ce) / (2.0 * cp);                                   // reflection parameter
+
+            const double dot_xoxi_wr = dot(xoxi, wr);
+            const double dot_wr_no = dot(wr, no);
+            const double dot_xoxi_no = dot(xoxi, no);
+            const double dot_wv_no = dot(wv, no);
+
+            assert(result.size() == values->m_sigma_a.size());
+            assert(result.size() == values->m_sigma_s_prime.size());
 
             for (size_t i = 0, e = result.size(); i < e; ++i)
             {
-                const double sigma_a = values->m_sigma_a[i];
-                const double sigma_s_prime = values->m_sigma_s_prime[i];
-                const double sigma_t_prime = sigma_a + sigma_s_prime;
-                const double D = 1.0 / (3.0 * sigma_t_prime);
-                const double alpha_prime = sigma_s_prime / sigma_t_prime;
-                const double de = 2.131 * D / sqrt(alpha_prime);
+                const double sigma_a = values->m_sigma_a[i];                            // absorption coefficient
+                const double sigma_s_prime = values->m_sigma_s_prime[i];                // reduced scattering coefficient
+                const double sigma_t_prime = sigma_s_prime + sigma_a;                   // reduced extinction coefficient
+                const double alpha_prime = sigma_s_prime / sigma_t_prime;               // reduced scattering albedo
+                const double sigma_s = sigma_s_prime / (1.0 - values->m_anisotropy);    // scattering coefficient
+                const double sigma_t = sigma_a + sigma_s;                               // extinction coefficient
 
-                const double sigma_s = sigma_s_prime / (1.0 - values->m_anisotropy);
-                const double sigma_t = sigma_a + sigma_s;
+                // Compute extrapolation distance (equation 21).
+                const double D = 1.0 / (3.0 * sigma_t_prime);                           // diffusion coefficient
+                const double de = 2.131 * D / sqrt(alpha_prime);                        // extrapolation distance
 
-                // Distance to real sources.
+                // Compute corrected distance to real source.
+                const double mu0 = -dot_wr_no;
                 const double cos_beta = -sqrt((r2 - square(dot(wr, xoxi))) / (r2 + square(de)));
-                const double mu0 = -dot_wrn;
                 const double dr =
                     mu0 > 0.0
-                        ? sqrt((D * mu0) * ((D * mu0) - de * cos_beta * 2.0) + r2)
-                        : sqrt(1.0 / square(3.0 * sigma_t) + r2);
+                        ? sqrt(r2 + D * mu0 * (D * mu0 - 2.0 * de * cos_beta))          // frontlit
+                        : sqrt(r2 + 1.0 / square(3.0 * sigma_t));                       // backlit
 
-                // Distance to virtual source.
-                const Vector3d xoxv = xo - (xi + ni_s * (2.0 * A * de));
+                // Compute position and distance to virtual source.
+                const Vector3d xv = xi + 2.0 * A * de * ni_star;                        // position of the virtual ray source
+                const Vector3d xoxv = xo - xv;
                 const double dv = norm(xoxv);
 
                 const double sp_i =
-                    sp_d(
-                        sigma_a,
-                        sigma_s_prime,
+                    sd_prime(
                         eta,
-                        dot_xiwr,
-                        dot_wrn,
-                        dot_xin,
+                        cp,
+                        ce,
+                        D,
+                        sigma_a,
+                        dot_xoxi_wr,
+                        dot_wr_no,
+                        dot_xoxi_no,
                         dr);
 
                 const double sp_v =
-                    sp_d(
-                        sigma_a,
-                        sigma_s_prime,
+                    sd_prime(
                         eta,
+                        cp,
+                        ce,
+                        D,
+                        sigma_a,
                         dot(xoxv, wv),
-                        dot_wvn,
+                        dot_wv_no,
                         dot(xoxv, no),
                         dv);
 
