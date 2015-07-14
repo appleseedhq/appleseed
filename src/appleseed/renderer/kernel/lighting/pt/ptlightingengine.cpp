@@ -534,10 +534,10 @@ namespace
                             fresnel_transmission(cos_on, vertex.m_bssrdf_eta);
 
                         // Compute Fresnel coefficient at incoming point.
-                        const double cos_in = 1.0;/*
-                            dot(
+                        const double cos_in =
+                            -dot(
                                 incoming,
-                                vertex.m_bssrdf_incoming_point.get_shading_normal());*/
+                                vertex.m_bssrdf_incoming_point.get_shading_normal());
                         const double incoming_fresnel =
                             fresnel_transmission(cos_in, 1.0 / vertex.m_bssrdf_eta);    // todo: eta or 1/eta?
 
