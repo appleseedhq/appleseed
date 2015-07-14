@@ -208,10 +208,15 @@ double BSSRDF::fresnel_moment_1(const double eta)
 
 double BSSRDF::fresnel_moment_2(const double eta)
 {
-    // todo: precompute 1/eta?
-    double r = -1641.1 + eta * (1213.67 + eta * (-568.556 + eta * (164.798 + eta * (-27.0181 + 1.91826 * eta))));
-    r += (((135.926 / eta) - 656.175) / eta + 1376.53) / eta;
-    return r * 0.33333333;
+    const double rcp_eta = 1.0 / eta;
+
+    const double three_c2 =
+        eta < 1.0
+            ? 0.828421 + eta * (-2.62051 + eta * (3.36231 + eta * (-1.95284 + eta * (0.236494 + eta * 0.145787))))
+            : -1641.1 + (((135.926 * rcp_eta) - 656.175) * rcp_eta + 1376.53) * rcp_eta
+              + eta * (1213.67 + eta * (-568.556 + eta * (164.798 + eta * (-27.0181 + eta * 1.91826))));
+
+    return three_c2 * (1.0 / 3);
 }
 
 }   // namespace renderer
