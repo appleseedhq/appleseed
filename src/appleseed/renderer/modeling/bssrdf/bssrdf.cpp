@@ -188,17 +188,10 @@ double BSSRDF::pdf(
         dot(basis.get_tangent_v(), n),
         dot(basis.get_normal()   , n));
 
-    const double axis_prob[3] = {.25f, .25f, .5f};
-    const double dist_sqr[3] = {
-        square(dlocal.y) + square(dlocal.z),
-        square(dlocal.z) + square(dlocal.x),
-        square(dlocal.x) + square(dlocal.y)};
-
-    double result = 0.0;
-    for (size_t i = 0; i < 3; ++i)
-        result += 0.5 * pdf(data, channel, std::sqrt(dist_sqr[i])) * axis_prob[i] * std::abs(nlocal[i]);
-
-    return result;
+    return
+        pdf(data, channel, std::sqrt(square(dlocal.y) + square(dlocal.z))) * 0.125 * std::abs(nlocal[0]) +
+        pdf(data, channel, std::sqrt(square(dlocal.z) + square(dlocal.x))) * 0.125 * std::abs(nlocal[1]) +
+        pdf(data, channel, std::sqrt(square(dlocal.x) + square(dlocal.y))) * 0.250 * std::abs(nlocal[2]);
 }
 
 //
