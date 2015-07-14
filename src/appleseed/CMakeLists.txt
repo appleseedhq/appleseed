@@ -292,6 +292,8 @@ set (foundation_math_sources
     foundation/math/sphericaltriangle.h
     foundation/math/spline.h
     foundation/math/split.h
+    foundation/math/sss.cpp
+    foundation/math/sss.h
     foundation/math/transform.h
     foundation/math/treeoptimizer.h
     foundation/math/triangulator.h
@@ -445,6 +447,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_snprintf.cpp
     foundation/meta/tests/test_sphericalimportancesampler.cpp
     foundation/meta/tests/test_spline.cpp
+    foundation/meta/tests/test_sss.cpp
     foundation/meta/tests/test_statistics.cpp
     foundation/meta/tests/test_stlallocatortestbed.cpp
     foundation/meta/tests/test_string.cpp
