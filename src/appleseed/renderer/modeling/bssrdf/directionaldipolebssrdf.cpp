@@ -42,6 +42,7 @@
 #include <cmath>
 
 using namespace foundation;
+using namespace std;
 
 namespace renderer
 {
@@ -146,10 +147,10 @@ namespace
                 values->m_channel_cdf[i] = static_cast<float>(sum_alpha_prime);
 
                 const double mfp = static_cast<double>(values->m_mean_free_path[i]);
-                values->m_max_mean_free_path = std::max(values->m_max_mean_free_path, mfp);
+                values->m_max_mean_free_path = max(values->m_max_mean_free_path, mfp);
 
                 const double sigma_tr = 1.0 / mfp;
-                const double sigma_t_prime = sigma_tr / std::sqrt(3.0 * (1.0 - alpha_prime));
+                const double sigma_t_prime = sigma_tr / sqrt(3.0 * (1.0 - alpha_prime));
 
                 values->m_sigma_s_prime[i] = static_cast<float>(alpha_prime * sigma_t_prime);
                 values->m_sigma_a[i] = static_cast<float>(sigma_t_prime) - values->m_sigma_s_prime[i];
@@ -220,15 +221,15 @@ namespace
             // Sample a color channel.
             const float* cdf = &(values->m_channel_cdf[0]);
             sample.set_channel(
-                std::upper_bound(
+                upper_bound(
                     cdf,
                     cdf + values->m_channel_cdf.size(),
                     r[0]) - cdf);
 
             // Sample a radius and an angle.
-            const double radius = -std::log(1.0 - r[1]) * values->m_mean_free_path[sample.get_channel()];
+            const double radius = -log(1.0 - r[1]) * values->m_mean_free_path[sample.get_channel()];
             const double phi = TwoPi * r[2];
-            point = Vector2d(radius * std::cos(phi), radius * std::sin(phi));
+            point = Vector2d(radius * cos(phi), radius * sin(phi));
 
             return true;
         }
@@ -242,16 +243,19 @@ namespace
                 reinterpret_cast<const DirectionalDipoleBSSRDFInputValues*>(data);
 
             const double s = 1.0 / values->m_mean_free_path[channel];
-            return s * std::exp(-s * dist) * values->m_channel_weights[channel];
+            return s * exp(-s * dist) * values->m_channel_weights[channel];
         }
 
         static double compute_rd(double alpha_prime, double two_c1, double three_c2)
         {
-            double cphi = 0.25 * (1.0 - two_c1);
-            double ce = 0.5 * (1.0 - three_c2);
-            double mu_tr_D = std::sqrt((1.0 - alpha_prime) * (2.0 - alpha_prime) / 3.0);
-            double myexp = std::exp(-((1.0 + three_c2) / cphi) * mu_tr_D);
-            return 0.5 * square(alpha_prime) * std::exp(-std::sqrt(3.0 * (1.0 - alpha_prime) / (2.0 - alpha_prime))) * (ce * (1.0 + myexp) + cphi / mu_tr_D * (1.0 - myexp));
+            const double cphi = 0.25 * (1.0 - two_c1);
+            const double ce = 0.5 * (1.0 - three_c2);
+            const double four_a = (1.0 + three_c2) / cphi;
+            const double mu_tr_d = sqrt((1.0 - alpha_prime) * (2.0 - alpha_prime) / 3.0);
+            const double myexp = exp(-four_a * mu_tr_d);
+            return 0.5 * square(alpha_prime)
+                       * exp(-sqrt(3.0 * (1.0 - alpha_prime) / (2.0 - alpha_prime)))
+                       * (ce * (1.0 + myexp) + cphi / mu_tr_d * (1.0 - myexp));
         }
 
         static double compute_alpha_prime(double rd, double c1, double c2)
@@ -291,12 +295,12 @@ namespace
 
             const double sigma_t_prime = sigma_a + sigma_s_prime;
             const double D = 1.0 / (3.0 * sigma_t_prime);
-            const double sigma_tr = std::sqrt(sigma_a / D);
+            const double sigma_tr = sqrt(sigma_a / D);
             const double s_tr_r = sigma_tr * r;
             const double s_tr_r_one = 1.0 + s_tr_r;
 
             const double four_pisq_rcp = 1.0 / (4.0 * square(Pi));
-            const double t0 = cp_norm * four_pisq_rcp * std::exp(-s_tr_r) * r3_rcp;
+            const double t0 = cp_norm * four_pisq_rcp * exp(-s_tr_r) * r3_rcp;
             const double t1 = r2 / D + 3.0 * s_tr_r_one * dot_xw;
             const double t2 = 3.0 * D * s_tr_r_one * dot_wn;
             const double t3 = (s_tr_r_one + 3.0 * D * (3.0 * s_tr_r_one + square(s_tr_r)) / r2 * dot_xw) * dot_xn;
@@ -324,7 +328,7 @@ namespace
             const double eta = values->m_to_ior / values->m_from_ior;
             const double nnt = 1.0 / eta;
             const double ddn = -dot(wi, ni);
-            const Vector3d wr = normalize(wi * -nnt - ni * (ddn * nnt + std::sqrt(1.0 - nnt * nnt * (1.0 - ddn * ddn))));
+            const Vector3d wr = normalize(wi * -nnt - ni * (ddn * nnt + sqrt(1.0 - square(nnt) * (1.0 - square(ddn)))));
             const Vector3d wv = wr - ni_s * (2.0 * dot(ni_s, wr));
 
             const double cp = (1.0 - 2.0 * fresnel_moment_1(eta)) * 0.25;
@@ -343,17 +347,18 @@ namespace
                 const double sigma_t_prime = sigma_a + sigma_s_prime;
                 const double D = 1.0 / (3.0 * sigma_t_prime);
                 const double alpha_prime = sigma_s_prime / sigma_t_prime;
-                const double de = 2.131 * D / std::sqrt(alpha_prime);
+                const double de = 2.131 * D / sqrt(alpha_prime);
 
                 const double sigma_s = sigma_s_prime / (1.0 - values->m_anisotropy);
                 const double sigma_t = sigma_a + sigma_s;
 
                 // Distance to real sources.
-                const double cos_beta = -std::sqrt((r2 - square(dot(wr, xoxi))) / (r2 + square(de)));
+                const double cos_beta = -sqrt((r2 - square(dot(wr, xoxi))) / (r2 + square(de)));
+                const double mu0 = -dot_wrn;
                 const double dr =
-                    dot_wrn > 0.0
-                        ? std::sqrt((D * dot_wrn) * ((D * dot_wrn) - de * cos_beta * 2.0) + r2)
-                        : std::sqrt(1.0 / square(3.0 * sigma_t) + r2);
+                    mu0 > 0.0
+                        ? sqrt((D * mu0) * ((D * mu0) - de * cos_beta * 2.0) + r2)
+                        : sqrt(1.0 / square(3.0 * sigma_t) + r2);
 
                 // Distance to virtual source.
                 const Vector3d xoxv = xo - (xi + ni_s * (2.0 * A * de));
@@ -380,7 +385,7 @@ namespace
                         dv);
 
                 // Clamp negative values to zero.
-                result[i] += std::max(static_cast<float>(sp_i - sp_v), 0.0f);
+                result[i] += max(static_cast<float>(sp_i - sp_v), 0.0f);
             }
         }
     };
