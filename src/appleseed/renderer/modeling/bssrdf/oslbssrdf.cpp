@@ -170,25 +170,25 @@ namespace
         auto_release_ptr<BSSRDF>    m_normalized_bssrdf;
 
         virtual bool do_sample(
-            const void*     data,
-            BSSRDFSample&   sample,
-            Vector2d&       point) const APPLESEED_OVERRIDE
+            const void*                 data,
+            BSSRDFSample&               sample,
+            Vector2d&                   point) const APPLESEED_OVERRIDE
         {
             const CompositeSubsurfaceClosure* c =
                 reinterpret_cast<const CompositeSubsurfaceClosure*>(data);
 
-            if (c->get_num_closures())
+            if (c->get_num_closures() > 0)
             {
-                // ...
+                // TODO: implement this...
             }
 
             return false;
         }
 
-        virtual double pdf(
-            const void*     data,
-            const size_t    channel,
-            const double    dist) const APPLESEED_OVERRIDE
+        virtual double do_pdf(
+            const void*                 data,
+            const size_t                channel,
+            const double                dist) const APPLESEED_OVERRIDE
         {
             const CompositeSubsurfaceClosure* c =
                 reinterpret_cast<const CompositeSubsurfaceClosure*>(data);

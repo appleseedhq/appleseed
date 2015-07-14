@@ -126,7 +126,7 @@ void ShadingContext::execute_osl_normal(
     const CompositeSurfaceClosure* c =
         reinterpret_cast<const CompositeSurfaceClosure*>(data);
 
-    if (c->get_num_closures())
+    if (c->get_num_closures() > 0)
     {
         const size_t index = c->choose_closure(s);
         shading_point.set_shading_basis(

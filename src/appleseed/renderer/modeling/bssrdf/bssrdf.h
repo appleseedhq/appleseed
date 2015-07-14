@@ -125,8 +125,8 @@ class APPLESEED_DLLSYMBOL BSSRDF
 
     // Sample the BSSRDF.
     bool sample(
-        const void*     data,
-        BSSRDFSample&   sample) const;
+        const void*                 data,
+        BSSRDFSample&               sample) const;
 
     // Evaluate the BSSRDF for a given pair of points and directions.
     virtual void evaluate(
@@ -144,22 +144,22 @@ class APPLESEED_DLLSYMBOL BSSRDF
         const foundation::Basis3d&  basis,
         const size_t                channel) const;
 
+  protected:
+    const foundation::LightingConditions* m_lighting_conditions;
+
+    static double fresnel_moment_1(const double eta);
+    static double fresnel_moment_2(const double eta);
+
   private:
     virtual bool do_sample(
         const void*                 data,
         BSSRDFSample&               sample,
         foundation::Vector2d&       point) const = 0;
 
-    virtual double pdf(
-        const void*     data,
-        const size_t    channel,
-        const double    dist) const = 0;
-
-  protected:
-    static double fresnel_moment_1(const double eta);
-    static double fresnel_moment_2(const double eta);
-
-    const foundation::LightingConditions* m_lighting_conditions;
+    virtual double do_pdf(
+        const void*                 data,
+        const size_t                channel,
+        const double                dist) const = 0;
 };
 
 }       // namespace renderer

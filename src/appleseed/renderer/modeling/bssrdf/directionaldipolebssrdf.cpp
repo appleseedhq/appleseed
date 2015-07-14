@@ -70,8 +70,8 @@ namespace
     {
       public:
         DirectionalDipoleBSSRDF(
-            const char*                 name,
-            const ParamArray&           params)
+            const char*             name,
+            const ParamArray&       params)
           : BSSRDF(name, params)
         {
             m_inputs.declare("reflectance", InputFormatSpectralReflectance);
@@ -93,16 +93,16 @@ namespace
         }
 
         virtual size_t compute_input_data_size(
-            const Assembly&             assembly) const
+            const Assembly&         assembly) const
         {
             return align(sizeof(DirectionalDipoleBSSRDFInputValues), 16);
         }
 
         virtual void evaluate_inputs(
-            const ShadingContext&       shading_context,
-            InputEvaluator&             input_evaluator,
-            const ShadingPoint&         shading_point,
-            const size_t                offset = 0) const APPLESEED_OVERRIDE
+            const ShadingContext&   shading_context,
+            InputEvaluator&         input_evaluator,
+            const ShadingPoint&     shading_point,
+            const size_t            offset = 0) const APPLESEED_OVERRIDE
         {
             BSSRDF::evaluate_inputs(shading_context, input_evaluator, shading_point, offset);
 
@@ -164,12 +164,12 @@ namespace
         }
 
         virtual void evaluate(
-            const void*                 data,
-            const ShadingPoint&         outgoing_point,
-            const Vector3d&             outgoing_dir,
-            const ShadingPoint&         incoming_point,
-            const Vector3d&             incoming_dir,
-            Spectrum&                   value) const APPLESEED_OVERRIDE
+            const void*             data,
+            const ShadingPoint&     outgoing_point,
+            const Vector3d&         outgoing_dir,
+            const ShadingPoint&     incoming_point,
+            const Vector3d&         incoming_dir,
+            Spectrum&               value) const APPLESEED_OVERRIDE
         {
             const DirectionalDipoleBSSRDFInputValues* values =
                 reinterpret_cast<const DirectionalDipoleBSSRDFInputValues*>(data);
@@ -204,9 +204,9 @@ namespace
 
       private:
         virtual bool do_sample(
-            const void*     data,
-            BSSRDFSample&   sample,
-            Vector2d&       point) const APPLESEED_OVERRIDE
+            const void*             data,
+            BSSRDFSample&           sample,
+            Vector2d&               point) const APPLESEED_OVERRIDE
         {
             const DirectionalDipoleBSSRDFInputValues* values =
                 reinterpret_cast<const DirectionalDipoleBSSRDFInputValues*>(data);
@@ -233,10 +233,10 @@ namespace
             return true;
         }
 
-        virtual double pdf(
-            const void*     data,
-            const size_t    channel,
-            const double    dist) const APPLESEED_OVERRIDE
+        virtual double do_pdf(
+            const void*             data,
+            const size_t            channel,
+            const double            dist) const APPLESEED_OVERRIDE
         {
             const DirectionalDipoleBSSRDFInputValues* values =
                 reinterpret_cast<const DirectionalDipoleBSSRDFInputValues*>(data);
@@ -262,6 +262,7 @@ namespace
             double x0 = 0.0, x1 = 1.0, xmid;
 
             // For now simple bisection.
+            // todo: switch to faster algorithm.
             for (size_t i = 0, iters = 50; i < iters; ++i)
             {
                 xmid = 0.5 * (x0 + x1);
@@ -273,13 +274,13 @@ namespace
         }
 
         static double sp_d(
-            const double    sigma_a,
-            const double    sigma_s_prime,
-            const double    eta,
-            const double    dot_xw,
-            const double    dot_wn,
-            const double    dot_xn,
-            const double    r)
+            const double            sigma_a,
+            const double            sigma_s_prime,
+            const double            eta,
+            const double            dot_xw,
+            const double            dot_wn,
+            const double            dot_xn,
+            const double            r)
         {
             const double cp = (1.0 - 2.0 * fresnel_moment_1(eta)) * 0.25;
             const double ce = (1.0 - 3.0 * fresnel_moment_2(eta)) * 0.5;
@@ -349,35 +350,34 @@ namespace
 
                 // Distance to real sources.
                 const double cos_beta = -std::sqrt((r2 - square(dot(wr, xoxi))) / (r2 + square(de)));
-
-                double dr;
-
-                if (dot_wrn > 0.0)
-                    dr = std::sqrt((D * dot_wrn) * ((D * dot_wrn) - de * cos_beta * 2.0) + r2);
-                else
-                    dr = std::sqrt(1.0 / square(3.0 * sigma_t) + r2);
+                const double dr =
+                    dot_wrn > 0.0
+                        ? std::sqrt((D * dot_wrn) * ((D * dot_wrn) - de * cos_beta * 2.0) + r2)
+                        : std::sqrt(1.0 / square(3.0 * sigma_t) + r2);
 
                 // Distance to virtual source.
                 const Vector3d xoxv = xo - (xi + ni_s * (2.0 * A * de));
                 const double dv = norm(xoxv);
 
-                const double sp_i = sp_d(
-                    sigma_a,
-                    sigma_s_prime,
-                    eta,
-                    dot_xiwr,
-                    dot_wrn,
-                    dot_xin,
-                    dr);
+                const double sp_i =
+                    sp_d(
+                        sigma_a,
+                        sigma_s_prime,
+                        eta,
+                        dot_xiwr,
+                        dot_wrn,
+                        dot_xin,
+                        dr);
 
-                const double sp_v = sp_d(
-                    sigma_a,
-                    sigma_s_prime,
-                    eta,
-                    dot(xoxv, wv),
-                    dot_wvn,
-                    dot(xoxv, no),
-                    dv);
+                const double sp_v =
+                    sp_d(
+                        sigma_a,
+                        sigma_s_prime,
+                        eta,
+                        dot(xoxv, wv),
+                        dot_wvn,
+                        dot(xoxv, no),
+                        dv);
 
                 // Clamp negative values to zero.
                 result[i] += std::max(static_cast<float>(sp_i - sp_v), 0.0f);

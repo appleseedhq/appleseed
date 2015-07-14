@@ -186,9 +186,9 @@ double BSSRDF::pdf(
         dot(basis.get_normal()   , n));
 
     return
-        pdf(data, channel, std::sqrt(square(dlocal.y) + square(dlocal.z))) * 0.125 * std::abs(nlocal[0]) +
-        pdf(data, channel, std::sqrt(square(dlocal.z) + square(dlocal.x))) * 0.125 * std::abs(nlocal[1]) +
-        pdf(data, channel, std::sqrt(square(dlocal.x) + square(dlocal.y))) * 0.250 * std::abs(nlocal[2]);
+        do_pdf(data, channel, std::sqrt(square(dlocal.y) + square(dlocal.z))) * 0.125 * std::abs(nlocal[0]) +
+        do_pdf(data, channel, std::sqrt(square(dlocal.z) + square(dlocal.x))) * 0.125 * std::abs(nlocal[1]) +
+        do_pdf(data, channel, std::sqrt(square(dlocal.x) + square(dlocal.y))) * 0.250 * std::abs(nlocal[2]);
 }
 
 //
