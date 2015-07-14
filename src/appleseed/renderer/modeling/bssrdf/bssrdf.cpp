@@ -40,36 +40,33 @@
 
 using namespace foundation;
 
-/*
-Quick ref:
-----------
-
-    sigma_a         absorption coeff.
-    sigma_s         scattering coeff.
-    g               anisotropy
-
-    sigma_t         extinction coeff.           -> sigma_a + sigma_s
-    sigma_s_prime   reduced scattering coeff.   -> sigma_s * (1 - g)
-    sigma_t_prime   reduced extinction coeff.   -> sigma_a + sigma_s_prime
-    sigma_tr        effective extinction coeff. -> sqrt( 3 * sigma_a * sigma_t_prime)
-
-    Texture mapping:
-    ----------------
-
-    alpha_prime                                 -> sigma_s_prime / sigma_t_prime
-    ld              mean free path              -> 1 / sigma_tr
-
-    sigma_t_prime = sigma_tr / sqrt( 3 * (1 - alpha_prime))
-    sigma_s_prime = alpha_prime * sigma_t_prime
-    sigma_a = sigma_t_prime - sigma_s_prime
-*/
-
 namespace renderer
 {
 
-
 //
 // BSSRDF class implementation.
+//
+// Quick reference
+// ---------------
+//
+//     sigma_a         absorption coeff.
+//     sigma_s         scattering coeff.
+//     g               anisotropy
+//     
+//     sigma_t         extinction coeff.           -> sigma_a + sigma_s
+//     sigma_s_prime   reduced scattering coeff.   -> sigma_s * (1 - g)
+//     sigma_t_prime   reduced extinction coeff.   -> sigma_a + sigma_s_prime
+//     sigma_tr        effective extinction coeff. -> sqrt(3 * sigma_a * sigma_t_prime)
+// 
+// Texture mapping
+// ---------------
+// 
+//     alpha_prime                                 -> sigma_s_prime / sigma_t_prime
+//     ld              mean free path              -> 1 / sigma_tr
+//    
+//     sigma_t_prime = sigma_tr / sqrt(3 * (1 - alpha_prime))
+//     sigma_s_prime = alpha_prime * sigma_t_prime
+//     sigma_a = sigma_t_prime - sigma_s_prime
 //
 
 namespace
@@ -123,8 +120,8 @@ void BSSRDF::evaluate_inputs(
 }
 
 bool BSSRDF::sample(
-    const void*     data,
-    BSSRDFSample&   sample) const
+    const void*             data,
+    BSSRDFSample&           sample) const
 {
     sample.get_sampling_context().split_in_place(1, 1);
     const double r = sample.get_sampling_context().next_double2();
@@ -168,11 +165,11 @@ bool BSSRDF::sample(
 }
 
 double BSSRDF::pdf(
-    const void*         data,
-    const ShadingPoint& outgoing_point,
-    const ShadingPoint& incoming_point,
-    const Basis3d&      basis,
-    const size_t        channel) const
+    const void*             data,
+    const ShadingPoint&     outgoing_point,
+    const ShadingPoint&     incoming_point,
+    const Basis3d&          basis,
+    const size_t            channel) const
 {
     // From PBRT 3.
 
@@ -211,6 +208,7 @@ double BSSRDF::fresnel_moment_1(const double eta)
 
 double BSSRDF::fresnel_moment_2(const double eta)
 {
+    // todo: precompute 1/eta?
     double r = -1641.1 + eta * (1213.67 + eta * (-568.556 + eta * (164.798 + eta * (-27.0181 + 1.91826 * eta))));
     r += (((135.926 / eta) - 656.175) / eta + 1376.53) / eta;
     return r * 0.33333333;
