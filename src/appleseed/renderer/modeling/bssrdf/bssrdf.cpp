@@ -39,34 +39,13 @@
 #include "foundation/image/colorspace.h"
 
 using namespace foundation;
+using namespace std;
 
 namespace renderer
 {
 
 //
 // BSSRDF class implementation.
-//
-// Quick reference
-// ---------------
-//
-//     sigma_a         absorption coeff.
-//     sigma_s         scattering coeff.
-//     g               anisotropy
-//     
-//     sigma_t         extinction coeff.           -> sigma_a + sigma_s
-//     sigma_s_prime   reduced scattering coeff.   -> sigma_s * (1 - g)
-//     sigma_t_prime   reduced extinction coeff.   -> sigma_a + sigma_s_prime
-//     sigma_tr        effective extinction coeff. -> sqrt(3 * sigma_a * sigma_t_prime)
-// 
-// Texture mapping
-// ---------------
-// 
-//     alpha_prime                                 -> sigma_s_prime / sigma_t_prime
-//     ld              mean free path              -> 1 / sigma_tr
-//    
-//     sigma_t_prime = sigma_tr / sqrt(3 * (1 - alpha_prime))
-//     sigma_s_prime = alpha_prime * sigma_t_prime
-//     sigma_a = sigma_t_prime - sigma_s_prime
 //
 
 namespace
@@ -186,32 +165,39 @@ double BSSRDF::pdf(
         dot(basis.get_normal()   , n));
 
     return
-        do_pdf(data, channel, std::sqrt(square(dlocal.y) + square(dlocal.z))) * 0.125 * std::abs(nlocal[0]) +
-        do_pdf(data, channel, std::sqrt(square(dlocal.z) + square(dlocal.x))) * 0.125 * std::abs(nlocal[1]) +
-        do_pdf(data, channel, std::sqrt(square(dlocal.x) + square(dlocal.y))) * 0.250 * std::abs(nlocal[2]);
+        do_pdf(data, channel, sqrt(square(dlocal.y) + square(dlocal.z))) * 0.125 * abs(nlocal[0]) +
+        do_pdf(data, channel, sqrt(square(dlocal.z) + square(dlocal.x))) * 0.125 * abs(nlocal[1]) +
+        do_pdf(data, channel, sqrt(square(dlocal.x) + square(dlocal.y))) * 0.250 * abs(nlocal[2]);
 }
 
 //
 // Reference:
 //
-//   A better dipole, Eugene d’Eon
-//   http://www.eugenedeon.com/papers/betterdipole.pdf
+//   A better dipole, Eugene d'Eon
+//   http://www.eugenedeon.com/wp-content/uploads/2014/04/betterdipole.pdf
 //
 
-double BSSRDF::fresnel_moment_1(const double eta)
+double BSSRDF::fresnel_moment_c1(const double eta)
 {
-    return
-        eta >= 1.0
-            ? (-9.23372 + eta * (22.2272 + eta * (-20.9292 + eta * (10.2291 + eta * (-2.54396 + 0.254913 * eta))))) * 0.5
-            : (0.919317 + eta * (-3.4793 + eta * (6.75335 + eta * (-7.80989 + eta *(4.98554 - 1.36881 * eta))))) * 0.5;
+    const double two_c1 =
+        eta < 1.0
+            ? 0.919317 + eta * (-3.4793 + eta * (6.75335 + eta * (-7.80989 + eta * (4.98554 - eta * 1.36881))))
+            : -9.23372 + eta * (22.2272 + eta * (-20.9292 + eta * (10.2291 + eta * (-2.54396 + eta * 0.254913))));
+
+    return two_c1 * 0.5;
 }
 
-double BSSRDF::fresnel_moment_2(const double eta)
+double BSSRDF::fresnel_moment_c2(const double eta)
 {
-    // todo: precompute 1/eta?
-    double r = -1641.1 + eta * (1213.67 + eta * (-568.556 + eta * (164.798 + eta * (-27.0181 + 1.91826 * eta))));
-    r += (((135.926 / eta) - 656.175) / eta + 1376.53) / eta;
-    return r * 0.33333333;
+    const double rcp_eta = 1.0 / eta;
+
+    const double three_c2 =
+        eta < 1.0
+            ? 0.828421 + eta * (-2.62051 + eta * (3.36231 + eta * (-1.95284 + eta * (0.236494 + eta * 0.145787))))
+            : -1641.1 + (((135.926 * rcp_eta) - 656.175) * rcp_eta + 1376.53) * rcp_eta
+              + eta * (1213.67 + eta * (-568.556 + eta * (164.798 + eta * (-27.0181 + eta * 1.91826))));
+
+    return three_c2 * (1.0 / 3);
 }
 
 }   // namespace renderer

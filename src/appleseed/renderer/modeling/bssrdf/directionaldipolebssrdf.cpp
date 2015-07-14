@@ -132,8 +132,8 @@ namespace
             values->m_max_mean_free_path = 0.0;
 
             const double eta = values->m_to_ior / values->m_from_ior;
-            const double c1 = fresnel_moment_1(eta);
-            const double c2 = fresnel_moment_2(eta);
+            const double c1 = fresnel_moment_c1(eta);
+            const double c2 = fresnel_moment_c2(eta);
 
             for (size_t i = 0, e = values->m_reflectance.size(); i < e; ++i)
             {
@@ -187,9 +187,8 @@ namespace
                 outgoing_point.get_shading_normal(),
                 value);
 
-            // Reciprocal evaluation with the reciprocity hack.
-            // Not sure we want it.
-            /*
+#if 0
+            // Hack to make the BSSRDF reciprocal (section 6.3).
             bssrdf(
                 values,
                 outgoing_point.get_point(),
@@ -198,9 +197,8 @@ namespace
                 incoming_point.get_point(),
                 incoming_point.get_shading_normal(),
                 value);
-
             value *= 0.5f;
-            */
+#endif
         }
 
       private:
@@ -216,19 +214,20 @@ namespace
             sample.set_eta(values->m_to_ior / values->m_from_ior);
 
             sample.get_sampling_context().split_in_place(3, 1);
-            const Vector3d r = sample.get_sampling_context().next_vector2<3>();
+            const Vector3d s = sample.get_sampling_context().next_vector2<3>();
 
             // Sample a color channel.
-            const float* cdf = &(values->m_channel_cdf[0]);
-            sample.set_channel(
+            const float* cdf = &values->m_channel_cdf[0];
+            const size_t channel =
                 upper_bound(
                     cdf,
                     cdf + values->m_channel_cdf.size(),
-                    r[0]) - cdf);
+                    s[0]) - cdf;
+            sample.set_channel(channel);
 
             // Sample a radius and an angle.
-            const double radius = -log(1.0 - r[1]) * values->m_mean_free_path[sample.get_channel()];
-            const double phi = TwoPi * r[2];
+            const double radius = -log(1.0 - s[1]) * values->m_mean_free_path[channel];
+            const double phi = TwoPi * s[2];
             point = Vector2d(radius * cos(phi), radius * sin(phi));
 
             return true;
@@ -294,9 +293,9 @@ namespace
             const double r2 = square(r);
             const double sigma_tr_r = sigma_tr * r;
             const double sigma_tr_r_one = 1.0 + sigma_tr_r;
-            const double cp_rcp_eta = 1.0 - 2.0 * fresnel_moment_1(1.0 / eta);          // Cphi(1/eta) * 4
+            const double cp_rcp_eta = 1.0 - 2.0 * fresnel_moment_c1(1.0 / eta);          // Cphi(1/eta) * 4
 
-            const double t0 = exp(-sigma_tr_r) / (cp_rcp_eta * 4.0 * square(Pi) * r2 * r);
+            const double t0 = exp(-sigma_tr_r) / (cp_rcp_eta * FourPiSquare * r2 * r);
             const double t1 = r2 / D + 3.0 * sigma_tr_r_one * dot_xw;
             const double t2 = 3.0 * D * sigma_tr_r_one * dot_wn;
             const double t3 = (sigma_tr_r_one + 3.0 * D * (3.0 * sigma_tr_r_one + square(sigma_tr_r)) / r2 * dot_xw) * dot_xn;
@@ -304,7 +303,7 @@ namespace
             return t0 * (cp * t1 - ce * (t2 - t3));
         }
 
-        // Directional dipole BSSRDF.
+        // Evaluate the directional dipole BSSRDF.
         static void bssrdf(
             const DirectionalDipoleBSSRDFInputValues*   values,
             const Vector3d&                             xi,
@@ -321,16 +320,16 @@ namespace
             // Compute normal to modified tangent plane.
             const Vector3d ni_star = cross(xoxi / sqrt(r2), normalize(cross(ni, xoxi)));
 
-            // Directions of ray sources.
-            const double eta = values->m_to_ior / values->m_from_ior;
+            // Compute direction of ray sources.
+            const double eta = values->m_to_ior / values->m_from_ior;                   // relative refractive index
             const double nnt = 1.0 / eta;
             const double ddn = -dot(wi, ni);
             const Vector3d wr = normalize(wi * -nnt - ni * (ddn * nnt + sqrt(1.0 - square(nnt) * (1.0 - square(ddn)))));
-            const Vector3d wv = wr - ni_star * (2.0 * dot(ni_star, wr));
+            const Vector3d wv = -reflect(wr, ni_star);                                  // direction of the virtual ray source
 
             // Compute Fresnel integrals.
-            const double cp = 0.25 * (1.0 - 2.0 * fresnel_moment_1(eta));
-            const double ce = 0.5 * (1.0 - 3.0 * fresnel_moment_2(eta));
+            const double cp = 0.25 * (1.0 - 2.0 * fresnel_moment_c1(eta));
+            const double ce = 0.5 * (1.0 - 3.0 * fresnel_moment_c2(eta));
 
             const double A = (1.0 - ce) / (2.0 * cp);                                   // reflection parameter
 
@@ -392,9 +391,11 @@ namespace
                         dot(xoxv, no),
                         dv);
 
-                // Clamp negative values to zero.
+                // Clamp negative values to zero (section 6.1).
                 result[i] += max(static_cast<float>(sp_i - sp_v), 0.0f);
             }
+
+            // todo: we seem to be missing the S_sigma_E term (single scattering).
         }
     };
 }

@@ -147,8 +147,8 @@ class APPLESEED_DLLSYMBOL BSSRDF
   protected:
     const foundation::LightingConditions* m_lighting_conditions;
 
-    static double fresnel_moment_1(const double eta);
-    static double fresnel_moment_2(const double eta);
+    static double fresnel_moment_c1(const double eta);
+    static double fresnel_moment_c2(const double eta);
 
   private:
     virtual bool do_sample(
