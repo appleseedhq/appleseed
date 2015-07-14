@@ -38,6 +38,9 @@
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
 
+// Standard headers.
+#include <cmath>
+
 using namespace foundation;
 using namespace std;
 
@@ -103,16 +106,16 @@ bool BSSRDF::sample(
     BSSRDFSample&           sample) const
 {
     sample.get_sampling_context().split_in_place(1, 1);
-    const double r = sample.get_sampling_context().next_double2();
+    const double s = sample.get_sampling_context().next_double2();
 
     const Basis3d& shading_basis = sample.get_shading_point().get_shading_basis();
 
-    if (r <= 0.5)
+    if (s <= 0.5)
     {
         sample.set_sample_basis(shading_basis);
         sample.set_use_offset_origin(true);
     }
-    else if (r <= 0.75)
+    else if (s <= 0.75)
     {
         sample.set_sample_basis(
             Basis3d(
@@ -168,36 +171,6 @@ double BSSRDF::pdf(
         do_pdf(data, channel, sqrt(square(dlocal.y) + square(dlocal.z))) * 0.125 * abs(nlocal[0]) +
         do_pdf(data, channel, sqrt(square(dlocal.z) + square(dlocal.x))) * 0.125 * abs(nlocal[1]) +
         do_pdf(data, channel, sqrt(square(dlocal.x) + square(dlocal.y))) * 0.250 * abs(nlocal[2]);
-}
-
-//
-// Reference:
-//
-//   A better dipole, Eugene d'Eon
-//   http://www.eugenedeon.com/wp-content/uploads/2014/04/betterdipole.pdf
-//
-
-double BSSRDF::fresnel_moment_c1(const double eta)
-{
-    const double two_c1 =
-        eta < 1.0
-            ? 0.919317 + eta * (-3.4793 + eta * (6.75335 + eta * (-7.80989 + eta * (4.98554 - eta * 1.36881))))
-            : -9.23372 + eta * (22.2272 + eta * (-20.9292 + eta * (10.2291 + eta * (-2.54396 + eta * 0.254913))));
-
-    return two_c1 * 0.5;
-}
-
-double BSSRDF::fresnel_moment_c2(const double eta)
-{
-    const double rcp_eta = 1.0 / eta;
-
-    const double three_c2 =
-        eta < 1.0
-            ? 0.828421 + eta * (-2.62051 + eta * (3.36231 + eta * (-1.95284 + eta * (0.236494 + eta * 0.145787))))
-            : -1641.1 + (((135.926 * rcp_eta) - 656.175) * rcp_eta + 1376.53) * rcp_eta
-              + eta * (1213.67 + eta * (-568.556 + eta * (164.798 + eta * (-27.0181 + eta * 1.91826))));
-
-    return three_c2 * (1.0 / 3);
 }
 
 }   // namespace renderer
