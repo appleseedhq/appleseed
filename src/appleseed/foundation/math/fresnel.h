@@ -32,6 +32,7 @@
 
 // Standard headers.
 #include <cassert>
+#include <cmath>
 
 namespace foundation
 {
@@ -106,8 +107,32 @@ void fresnel_dielectric_schlick(
     const T             cos_theta,              // cos(incident direction, normal)
     const T             multiplier = T(1.0));   // reflectance multiplier at tangent incidence
 
+
+//
+// Compute Fresnel transmission.
+//
+// todo: add reference.
+//
+
 template <typename T>
 T fresnel_transmission(const T cos_theta, const T eta);
+
+
+//
+// Compute Fresnel moments C1 and C2.
+//
+// Reference:
+//
+//   A better dipole, Eugene d'Eon
+//   http://www.eugenedeon.com/wp-content/uploads/2014/04/betterdipole.pdf
+//
+
+template <typename T>
+T fresnel_moment_c1(const T eta);
+
+template <typename T>
+T fresnel_moment_c2(const T eta);
+
 
 //
 // Implementation.
@@ -257,15 +282,41 @@ void fresnel_dielectric_schlick(
 template <typename T>
 T fresnel_transmission(const T cos_theta, const T eta)
 {
-    const T sin_theta_t_sqr = T(1.0) / square(eta) * (T(1.0) - square(cos_theta));
+    const T sin_theta_t_sqr = (T(1.0) - square(cos_theta)) / square(eta);
 
     if (sin_theta_t_sqr >= T(1.0))
         return T(0.0);
 
-    const double cos_theta_t = std::sqrt(T(1.0) - sin_theta_t_sqr);
-    const double r_s = (cos_theta - eta * cos_theta_t) / (cos_theta + eta * cos_theta_t);
-    const double r_p = (eta * cos_theta - cos_theta_t) / (eta * cos_theta + cos_theta_t);
+    const T cos_theta_t = std::sqrt(T(1.0) - sin_theta_t_sqr);
+    const T r_s = (cos_theta - eta * cos_theta_t) / (cos_theta + eta * cos_theta_t);
+    const T r_p = (eta * cos_theta - cos_theta_t) / (eta * cos_theta + cos_theta_t);
+
     return T(1.0) - ((r_s * r_s + r_p * r_p) * T(0.5));
+}
+
+template <typename T>
+T fresnel_moment_c1(const T eta)
+{
+    const T two_c1 =
+        eta < T(1.0)
+            ? T(0.919317) + eta * (T(-3.4793) + eta * (T(6.75335) + eta * (T(-7.80989) + eta * (T(4.98554) - eta * T(1.36881)))))
+            : T(-9.23372) + eta * (T(22.2272) + eta * (T(-20.9292) + eta * (T(10.2291) + eta * (T(-2.54396) + eta * T(0.254913)))));
+
+    return two_c1 * T(0.5);
+}
+
+template <typename T>
+T fresnel_moment_c2(const T eta)
+{
+    const T rcp_eta = T(1.0) / eta;
+
+    const T three_c2 =
+        eta < T(1.0)
+            ? T(0.828421) + eta * (T(-2.62051) + eta * (T(3.36231) + eta * (T(-1.95284) + eta * (T(0.236494) + eta * T(0.145787)))))
+            : T(-1641.1) + (((T(135.926) * rcp_eta) - T(656.175)) * rcp_eta + T(1376.53)) * rcp_eta
+              + eta * (T(1213.67) + eta * (T(-568.556) + eta * (T(164.798) + eta * (T(-27.0181) + eta * T(1.91826)))));
+
+    return three_c2 * T(1.0 / 3.0);
 }
 
 }       // namespace foundation
