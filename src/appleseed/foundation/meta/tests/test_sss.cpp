@@ -27,10 +27,10 @@
 //
 
 // appleseed.foundation headers.
-#include "foundation/math/fresnel.h"
-#include "foundation/math/sss.h"
 #include "foundation/math/rng/distribution.h"
 #include "foundation/math/rng/mersennetwister.h"
+#include "foundation/math/fresnel.h"
+#include "foundation/math/sss.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.
