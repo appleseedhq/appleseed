@@ -33,6 +33,8 @@
 #include "foundation/math/scalar.h"
 
 // Standard headers.
+#include <algorithm>
+#include <cassert>
 #include <cmath>
 
 using namespace std;
@@ -70,6 +72,65 @@ double compute_alpha_prime(double rd, double c1, double c2)
         xmid = 0.5 * (x0 + x1);
         const double f = compute_rd(xmid, c12, c23);
         f < rd ? x0 = xmid : x1 = xmid;
+    }
+
+    return xmid;
+}
+
+//
+// Normalized diffusion
+//
+
+double normalized_diffusion_s(const double a)
+{
+    const double x = abs(a - 0.8);
+    return 1.85 - a + (7.0 * square(x) * x);
+}
+
+double normalized_diffusion_r(
+    const double r,
+    const double l,
+    const double s,
+    const double a)
+{
+    const double d = l / s;
+    const double denom = Pi * 8.0 * d * r;
+    const double num = exp(-r * d) + exp(-r / (3.0 * d));
+    return (a * s * num) / denom;
+}
+
+double normalized_diffusion_cdf(
+    const double r,
+    const double s,
+    const double l)
+{
+    const double d = l / s;
+    return 1.0 - (0.25 * exp(-r / d)) - (0.75 * exp(-r / (3.0 * d)));
+}
+
+double normalized_diffusion_pdf(
+    const double r,
+    const double s,
+    const double l)
+{
+    const double d = l / s;
+    return (exp(-r / d) + exp(-r / (3.0 * d))) / (4.0 * d);
+}
+
+double normalized_diffusion_sample(
+    const double s,
+    const double l,
+    const double e)
+{
+    double x0 = 0.0, x1 = 10.0 * l, xmid;
+
+    // For now simple bisection.
+    // todo: switch to faster algorithm.
+    for (size_t i = 0; i < 50; ++i)
+    {
+        xmid = 0.5 * (x0 + x1);
+        const double f = normalized_diffusion_cdf(xmid, s, l);
+        f < e ? x0 = xmid : x1 = xmid;
     }
 
     return xmid;
