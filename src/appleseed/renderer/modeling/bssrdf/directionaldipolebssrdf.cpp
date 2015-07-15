@@ -35,6 +35,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/fresnel.h"
+#include "foundation/math/scalar.h"
 #include "foundation/math/sss.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
@@ -205,7 +206,7 @@ namespace
             const Vector3d s = sample.get_sampling_context().next_vector2<3>();
 
             // Sample a color channel.
-            const size_t channel = floor(s[0] * values->m_reflectance.size());
+            const size_t channel = truncate<size_t>(floor(s[0] * values->m_reflectance.size()));
             sample.set_channel(channel);
 
             // Sample a radius and an angle.

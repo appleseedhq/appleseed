@@ -34,6 +34,7 @@
 #include "renderer/modeling/input/inputevaluator.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/scalar.h"
 #include "foundation/math/sss.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/containers/specializedarrays.h"
@@ -133,7 +134,7 @@ namespace
                 const double a = values->m_reflectance[i];
                 const double s = normalized_diffusion_s(a);
                 const double ld = values->m_mean_free_path[i];
-                value[i] = normalized_diffusion_r(dist, ld, s, a);
+                value[i] = static_cast<float>(normalized_diffusion_r(dist, ld, s, a));
             }
         }
 
@@ -153,7 +154,7 @@ namespace
             const Vector3d s = sample.get_sampling_context().next_vector2<3>();
 
             // Sample a color channel uniformly.
-            const size_t channel = s[0] * values->m_reflectance.size();
+            const size_t channel = truncate<size_t>(s[0] * values->m_reflectance.size());
             sample.set_channel(channel);
 
             // Sample a radius and an angle.
